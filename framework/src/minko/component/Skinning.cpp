@@ -18,6 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/component/Skinning.hpp"
+#include "minko/component/AbstractComponent.hpp"
 
 #include <minko/scene/Node.hpp>
 #include <minko/scene/NodeSet.hpp>
@@ -29,6 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <minko/math/Matrix4x4.hpp>
 #include <minko/component/Surface.hpp>
 #include <minko/component/SceneManager.hpp>
+#include <minko/component/MasterAnimation.hpp>
 #include <minko/component/Animation.hpp>
 #include <minko/component/Transform.hpp>
 
@@ -53,11 +55,10 @@ using namespace minko::render;
 Skinning::Skinning(const Skin::Ptr                        skin,
                    SkinningMethod                        method,
                    AbstractContext::Ptr                    context,
-                   const std::vector<Animation::Ptr>&    animations,
                    Node::Ptr                            skeletonRoot,
                    bool                                    moveTargetBelowRoot,
                    bool                                    isLooping):
-    MasterAnimation(animations, isLooping),
+	AbstractAnimation(isLooping),
     _skin(skin),
     _context(context),
     _method(method),
@@ -71,10 +72,43 @@ Skinning::Skinning(const Skin::Ptr                        skin,
 {
 }
 
+Skinning::Skinning(const Skinning& skinning, const CloneOption& option) :
+	AbstractAnimation(skinning, option),
+	_skin(),
+	_context(skinning._context),
+	_method(skinning._method),
+	_skeletonRoot(skinning._skeletonRoot),
+	_moveTargetBelowRoot(skinning._moveTargetBelowRoot),
+	_boneVertexBuffer(nullptr),
+	_targetGeometry(),
+	_targetInputPositions(),
+	_targetInputNormals(),
+	_targetAddedSlot(nullptr)
+{	
+	_skin = skinning._skin->clone();
+
+	auto targetGeometry = skinning._targetGeometry;	
+
+	for (auto it = targetGeometry.begin(); it != targetGeometry.end(); ++it)
+	{
+		_targetGeometry[it->first] = it->second->clone();
+	}
+}
+
+AbstractComponent::Ptr
+Skinning::clone(const CloneOption& option)
+{
+	auto skin = std::shared_ptr<Skinning>(new Skinning(*this, option));
+
+	skin->initialize();	
+
+	return skin;
+}
+
 void
 Skinning::initialize()
 {
-    MasterAnimation::initialize();
+	AbstractAnimation::initialize();
 
     if (_skin == nullptr)
         throw std::invalid_argument("skin");
@@ -104,7 +138,7 @@ Skinning::initialize()
     // for which the skinning matrices have been computed.
     _targetAddedSlot = targetAdded()->connect(std::bind(
         &Skinning::targetAddedHandler,
-        std::static_pointer_cast<Skinning>(shared_from_this()),
+		dynamic_cast<Skinning*>(this),
         std::placeholders::_1,
         std::placeholders::_2
     ));
@@ -143,7 +177,7 @@ Skinning::addedHandler(Node::Ptr node, Node::Ptr target, Node::Ptr parent)
 
                 UniformArrayPtr<float>    uniformArray(new UniformArray<float>(0, nullptr));
                 geometry->data()->set<UniformArrayPtr<float>>(PNAME_BONE_MATRICES,    uniformArray);
-                geometry->data()->set<int>                     (PNAME_NUM_BONES,        0);
+				geometry->data()->set<int>(PNAME_NUM_BONES, _skin->numBones());
             }
         }
     }
@@ -222,8 +256,6 @@ Skinning::createVertexBufferForBones() const
 void
 Skinning::update()
 {
-    MasterAnimation::update();
-
     const uint frameId = _skin->getFrameId(_currentTime);
 
     for (auto& target : targets())
@@ -372,4 +404,21 @@ Skinning::targetAddedHandler(component::AbstractComponent::Ptr,
 
     if (target->hasComponent<Transform>())
         target->component<Transform>()->matrix()->identity();
+
+	if (target->hasComponent<MasterAnimation>())
+	{
+		auto masterAnimation = target->component<MasterAnimation>();
+		masterAnimation->initAnimations();
+	}
+}
+
+void
+Skinning::rebindDependencies(std::map<AbstractComponent::Ptr, AbstractComponent::Ptr>& componentsMap, std::map<NodePtr, NodePtr>& nodeMap, CloneOption option)
+{
+	_skeletonRoot = nodeMap[_skeletonRoot];
+
+	auto oldSurface = _targetGeometry.begin()->first->component<Surface>();
+	auto oldGeometry = oldSurface->geometry();
+
+	std::dynamic_pointer_cast<Surface>(componentsMap[oldSurface])->geometry(oldGeometry->clone());
 }

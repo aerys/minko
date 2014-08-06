@@ -28,74 +28,91 @@ using namespace minko::animation;
 using namespace minko::math;
 
 Matrix4x4Timeline::Matrix4x4Timeline(const std::string& propertyName,
-                                     uint duration,
-                                     const std::vector<uint>& timetable,
-                                     const std::vector<Matrix4x4Ptr>& matrices,
-                                     bool interpolate):
-    AbstractTimeline(propertyName, duration),
-    _matrices(),
-    _interpolate(interpolate)
+									 uint duration,
+									 const std::vector<uint>& timetable,
+									 const std::vector<Matrix4x4Ptr>& matrices,
+									 bool interpolate):
+	AbstractTimeline(propertyName, duration),
+	_matrices(),
+	_interpolate(interpolate)
 {
-    initializeMatrixTimetable(timetable, matrices);
+	initializeMatrixTimetable(timetable, matrices);
+}
+
+Matrix4x4Timeline::Matrix4x4Timeline(const Matrix4x4Timeline& matrix) :
+	AbstractTimeline(matrix._propertyName, matrix._duration),
+	_matrices(matrix._matrices.size()),
+	_interpolate(matrix._interpolate)
+{
+	for (uint keyId = 0; keyId < matrix._matrices.size(); ++keyId)
+	{
+		_matrices[keyId] = matrix._matrices[keyId];
+	}
+}
+
+AbstractTimeline::Ptr
+Matrix4x4Timeline::clone()
+{
+	return Matrix4x4Timeline::create(*this);
 }
 
 void
 Matrix4x4Timeline::initializeMatrixTimetable(const std::vector<uint>& timetable,
-                                             const std::vector<Matrix4x4Ptr>& matrices)
+											 const std::vector<Matrix4x4Ptr>& matrices)
 {
-    if (timetable.empty())
-        throw std::invalid_argument("timetable");
-    if (matrices.empty())
-        throw std::invalid_argument("matrices");
-    if (timetable.size() != matrices.size())
-        throw std::logic_error("The number of keys must match in both the 'timetable' and 'matrices' parameters.");
+	if (timetable.empty())
+		throw std::invalid_argument("timetable");
+	if (matrices.empty())
+		throw std::invalid_argument("matrices");
+	if (timetable.size() != matrices.size())
+		throw std::logic_error("The number of keys must match in both the 'timetable' and 'matrices' parameters.");
 
-    const uint numKeys = timetable.size();
+	const uint numKeys = timetable.size();
 
-    _matrices.clear();
-    _matrices.resize(numKeys);
-    for (uint keyId = 0; keyId < numKeys; ++keyId)
-    {
-        _matrices[keyId].first    = timetable[keyId];
-        _matrices[keyId].second    = matrices[keyId];
-    }
+	_matrices.clear();
+	_matrices.resize(numKeys);
+	for (uint keyId = 0; keyId < numKeys; ++keyId)
+	{
+		_matrices[keyId].first	= timetable[keyId];
+		_matrices[keyId].second	= matrices[keyId];
+	}
 
-    std::sort(_matrices.begin(), _matrices.end());
+	std::sort(_matrices.begin(), _matrices.end());
 }
 
 void
-Matrix4x4Timeline::update(uint time,
-                          UpdateTargetPtr data,
-                          bool /*skipPropertyNameFormatting*/)
+Matrix4x4Timeline::update(uint time, 
+						  UpdateTargetPtr data, 
+						  bool /*skipPropertyNameFormatting*/)
 {
-    if (_isLocked || _duration == 0 || _matrices.empty())
-        return;
+	if (_isLocked || _duration == 0 || _matrices.empty())
+		return;
 
-    if (data == nullptr || !data->hasProperty(_propertyName))
-        return;
+	if (data == nullptr || !data->hasProperty(_propertyName))
+		return;
 
-    auto matrix    = data->get<Matrix4x4::Ptr>(_propertyName);
+	auto matrix	= data->get<Matrix4x4::Ptr>(_propertyName);
 
-    if (matrix == nullptr)
-        return;
+	if (matrix == nullptr)
+		return;
 
     if (_interpolate)
         matrix = interpolate(time, matrix);
     else
     {
-        const uint    t        = getTimeInRange(time, _duration + 1);
-        const uint    keyId    = getIndexForTime(t, _matrices);
+        const uint	t		= getTimeInRange(time, _duration + 1);
+	    const uint	keyId	= getIndexForTime(t, _matrices);
 
-           matrix->copyFrom(_matrices[keyId].second);
+   		matrix->copyFrom(_matrices[keyId].second);
     }
 }
 
 Matrix4x4::Ptr
-Matrix4x4Timeline::interpolate(uint             time,
+Matrix4x4Timeline::interpolate(uint             time, 
                                Matrix4x4::Ptr   output) const
 {
-    const uint    t        = getTimeInRange(time, _duration + 1);
-    const uint    keyId    = getIndexForTime(t, _matrices);
+    const uint	t		= getTimeInRange(time, _duration + 1);
+	const uint	keyId	= getIndexForTime(t, _matrices);
 
     if (output == nullptr)
         output = Matrix4x4::create();
@@ -105,18 +122,18 @@ Matrix4x4Timeline::interpolate(uint             time,
         output->copyFrom(_matrices[keyId].second);
     else
     {
-        assert(keyId + 1 < (int)_matrices.size());
+		assert(keyId + 1 < (int)_matrices.size());
+        
+		const auto& current	= _matrices[keyId];
+		const auto& next	= _matrices[keyId + 1];
 
-        const auto& current    = _matrices[keyId];
-        const auto& next    = _matrices[keyId + 1];
+		const float ratio	= current.first < next.first 
+			? (t - current.first) / (float)(next.first - current.first)
+			: 0.0f;
 
-        const float ratio    = current.first < next.first
-            ? (t - current.first) / (float)(next.first - current.first)
-            : 0.0f;
-
-        output
-            ->copyFrom(current.second)
-            ->interpolateTo(next.second, ratio);
+		output
+			->copyFrom(current.second)
+			->interpolateTo(next.second, ratio);
     }
 
     return output;

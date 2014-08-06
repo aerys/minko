@@ -87,8 +87,7 @@ main(int argc, char** argv)
     ppTarget->upload();
 
     auto ppRenderer = Renderer::create(0x7f7f7fff);
-
-    auto ppData = data::Provider::create()
+	auto ppData = material::Material::create()
         ->set("backbuffer", ppTarget)
         ->set("invBackbufferSize", Vector2::create(1.f / float(ppTarget->width()), 1.f / float(ppTarget->height())));
 

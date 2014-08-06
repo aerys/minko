@@ -43,6 +43,13 @@ namespace minko
 
             inline static
             Ptr
+			create(const std::string& name)
+			{
+				return std::shared_ptr<Material>(new Material(name));
+			}
+
+			inline static
+			Ptr
             create(Ptr source)
             {
                 auto mat = create();
@@ -53,8 +60,18 @@ namespace minko
                 return mat;
             }
 
+			template <typename T>
+			inline
+			Ptr
+			set(const std::string& propertyName, T value)
+			{
+				return std::static_pointer_cast<Material>(Provider::set(propertyName, value));
+			}
+
         protected:
             Material();
+
+			Material(const std::string& name);
         };
     }
 }

@@ -28,3 +28,20 @@ AmbientLight::AmbientLight(float ambient) :
 {
     data()->set("ambient", ambient);
 }
+
+AmbientLight::AmbientLight(const AmbientLight& ambientLight, const CloneOption& option) :
+	AbstractLight("ambientLights"),
+	_ambient(ambientLight._ambient)
+{
+	data()->set("ambient", ambientLight._ambient);
+}
+
+AbstractComponent::Ptr
+AmbientLight::clone(const CloneOption& option)
+{
+	auto al = std::shared_ptr<AmbientLight>(new AmbientLight(*this, option));
+
+	al->initialize();
+
+	return al;
+}

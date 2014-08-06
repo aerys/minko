@@ -306,3 +306,26 @@ TEST_F(TransformTest, NodeHierarchyTransformIssueWithoutBlockingNode)
 	ASSERT_TRUE(n3->component<Transform>()->modelToWorld(Vector3::create())->equals(Vector3::create(4, 1, 0)));
 	ASSERT_TRUE(n4->component<Transform>()->modelToWorld(Vector3::create())->equals(Vector3::create(5, 1, 0)));
 }
+
+TEST_F(TransformTest, Clone)
+{
+	auto sceneManager = SceneManager::create(MinkoTests::context());
+	auto root = Node::create()->addComponent(sceneManager);
+	auto n1 = Node::create()
+		->addComponent(Transform::create(Matrix4x4::create()));
+
+
+	auto n2 = n1->clone(CloneOption::DEEP);
+
+	root->addChild(n1);
+	root->addChild(n2);
+
+	sceneManager->nextFrame(0.0f, 0.0f);
+
+	ASSERT_TRUE(n2->component<Transform>()->matrix()->equals(n1->component<Transform>()->matrix()));
+
+	n2->component<Transform>()->matrix()->prependTranslation(Vector3::create(-5., 0, 2));
+	sceneManager->nextFrame(0.0f, 0.0f);
+
+	ASSERT_FALSE(n2->component<Transform>()->matrix()->equals(n1->component<Transform>()->matrix()));
+}

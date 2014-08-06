@@ -60,6 +60,9 @@ namespace minko
                 return std::shared_ptr<Geometry>(new Geometry());
             }
 
+			Ptr
+			clone();
+
             inline
             ProviderPtr
             data() const
@@ -198,6 +201,8 @@ namespace minko
 
         protected:
             Geometry();
+
+			Geometry(const Geometry& geometry);
 
             inline
             void

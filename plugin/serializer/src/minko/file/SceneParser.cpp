@@ -19,18 +19,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/file/SceneParser.hpp"
-#include "minko/scene/Node.hpp"
-#include "msgpack.hpp"
+#include "minko/file/Options.hpp"
+#include "minko/file/Dependency.hpp"
 #include "minko/Types.hpp"
-#include <stack>
 #include "minko/component/Transform.hpp"
 #include "minko/component/JobManager.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/BoundingBox.hpp"
+#include "minko/component/MasterAnimation.hpp"
+#include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
-#include "minko/file/Options.hpp"
-#include "minko/file/Dependency.hpp"
-#include "minko/scene/NodeSet.hpp"
+
+#include "msgpack.hpp"
+
+#include <stack>
 
 using namespace minko;
 using namespace minko::file;
@@ -245,7 +247,10 @@ SceneParser::parseNode(std::vector<SerializedNode>&            nodePack,
         std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[serialize::SKINNING](componentPack[componentIndex2], assetLibrary, _dependencies);
 
         for (scene::Node::Ptr node : componentIdToNodes[componentIndex2])
+		{
             node->addComponent(newComponent);
+			node->addComponent(component::MasterAnimation::create());
+		}
     }
 
     if (isSkinningFree)

@@ -62,6 +62,7 @@ namespace minko
     template<typename... A>
     class Signal;
     class Color;
+	enum class CloneOption;
     class AbstractCanvas;
 
     namespace render
@@ -146,6 +147,7 @@ namespace minko
     namespace component
     {
         class AbstractComponent;
+		class AbstractRebindableComponent;
         template <class ProviderClass, class Enable = void>
         class AbstractRootDataComponent;
         class SceneManager;

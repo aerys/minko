@@ -50,6 +50,13 @@ namespace minko
                 return std::shared_ptr<ArrayProvider>(new ArrayProvider(name));
             }
 
+			inline static
+			Ptr
+			create(const ArrayProvider& provider)
+			{
+				return std::shared_ptr<ArrayProvider>(new ArrayProvider(provider));
+			}
+
 
             inline
             IndexChangedSignalPtr
@@ -88,6 +95,8 @@ namespace minko
         protected:
             explicit
             ArrayProvider(const std::string& name);
+
+			ArrayProvider(const ArrayProvider& provider);
         };
     }
 }

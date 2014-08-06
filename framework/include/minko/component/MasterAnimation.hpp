@@ -23,59 +23,104 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 
 #include "minko/component/AbstractAnimation.hpp"
+#include "minko/component/AbstractRebindableComponent.hpp"
 
 namespace minko
 {
-    namespace component
-    {
-        class MasterAnimation :
-            public AbstractAnimation
-        {
-        public:
-            typedef std::shared_ptr<MasterAnimation>    Ptr;
+	namespace component
+	{
+		class MasterAnimation :
+			public AbstractAnimation,
+			public AbstractRebindableComponent
+		{
+		public:
+			typedef std::shared_ptr<MasterAnimation>	Ptr;
 
-        private:
-            typedef std::shared_ptr<Animation>            AnimationPtr;
+		private:
+			typedef std::shared_ptr<Animation>				AnimationPtr;
+			typedef std::shared_ptr<AbstractAnimation>		AbstractAnimationPtr;
+			typedef std::shared_ptr<scene::Node>			NodePtr;
+			typedef std::shared_ptr<AbstractComponent>		AbsCmpPtr;
 
-        private:
-            std::vector<AnimationPtr>                    _animations;
+		private:
+			std::vector<AbstractAnimationPtr>				_animations;
 
-        public:
-            AbstractAnimation::Ptr
-            play();
+		public:
 
-            AbstractAnimation::Ptr
-            stop();
+			inline static
+			Ptr
+			create(bool isLooping = true)
+			{
+				Ptr ptr(new MasterAnimation(isLooping));
 
-            AbstractAnimation::Ptr
-            addLabel(const std::string& name, uint time);
+				ptr->initialize();
 
-            AbstractAnimation::Ptr
-            changeLabel(const std::string& name, const std::string& newName);
+				return ptr;
+			}
 
-            AbstractAnimation::Ptr
-            setTimeForLabel(const std::string& name, uint newTime);
+			AbstractAnimation::Ptr
+			play();
 
-            AbstractAnimation::Ptr
-            removeLabel(const std::string& name);
+			AbstractAnimation::Ptr
+			stop();
 
-            AbstractAnimation::Ptr
-            setPlaybackWindow(uint, uint, bool forceRestart = false);
+			AbstractAnimation::Ptr
+			seek(const std::string& labelName);
 
-            AbstractAnimation::Ptr
-            setPlaybackWindow(const std::string&, const std::string&, bool forceRestart = false);
+			AbsCmpPtr
+			clone(const CloneOption& option);
 
-            AbstractAnimation::Ptr
-            resetPlaybackWindow();
+			AbstractAnimation::Ptr
+			addLabel(const std::string& name, uint time);
 
-        protected:
-            MasterAnimation(const std::vector<AnimationPtr>&, bool isLooping);
+			AbstractAnimation::Ptr
+			changeLabel(const std::string& name, const std::string& newName);
 
-            void
-            initialize();
+			AbstractAnimation::Ptr
+			setTimeForLabel(const std::string& name, uint newTime);
 
-            void
-            update();
-        };
-    }
+			AbstractAnimation::Ptr
+			removeLabel(const std::string& name);
+
+			AbstractAnimation::Ptr
+			setPlaybackWindow(uint, uint, bool forceRestart = false);
+
+			AbstractAnimation::Ptr
+			setPlaybackWindow(const std::string&, const std::string&, bool forceRestart = false);
+
+			AbstractAnimation::Ptr
+			resetPlaybackWindow();
+
+			void
+			initAnimations();
+
+			void
+			rebindDependencies(std::map<AbsCmpPtr, AbsCmpPtr>& componentsMap, std::map<NodePtr, NodePtr>& nodeMap, CloneOption option);
+
+		protected:
+			MasterAnimation(bool isLooping);
+
+			MasterAnimation(const MasterAnimation& masterAnim, const CloneOption& option);
+
+			void
+			initialize();
+
+			void
+			targetAddedHandler(AbsCmpPtr cmp, NodePtr node);
+
+			void
+			targetRemovedHandler(AbsCmpPtr cmp, NodePtr node);
+
+			virtual
+			void
+			addedHandler(NodePtr node, NodePtr target, NodePtr parent);
+
+			virtual
+			void
+			removedHandler(NodePtr node, NodePtr target, NodePtr parent);
+
+			void
+			update();
+		};
+	}
 }

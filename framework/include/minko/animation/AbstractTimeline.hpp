@@ -23,70 +23,78 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-    namespace animation
-    {
-        class AbstractTimeline
-        {
-        public:
-            typedef std::shared_ptr<AbstractTimeline>    Ptr;
+	namespace animation
+	{
+		class AbstractTimeline
+		{
+		public:
+			typedef std::shared_ptr<AbstractTimeline>	Ptr;
 
-        protected:
-            typedef std::shared_ptr<data::Container>    UpdateTargetPtr;
+		protected:
+			typedef std::shared_ptr<data::Container>	UpdateTargetPtr;
 
-        protected:
-            std::string    _propertyName;
-            uint        _duration;
-            bool        _isLocked;
+		protected:
+			std::string	_propertyName;
+			uint		_duration;
+			bool		_isLocked;
 
-        public:
-            inline
-            const std::string&
-            propertyName() const
-            {
-                return _propertyName;
-            }
+		public:
+			virtual
+			AbstractTimeline::Ptr
+			clone()
+			{
+				throw std::logic_error("Missing clone function for a component.");
+				return nullptr;
+			}
 
-            inline
-            void
-            propertyName(const std::string& value)
-            {
-                _propertyName = value;
-            }
+			inline
+			const std::string&
+			propertyName() const
+			{
+				return _propertyName;
+			}
 
-            inline
-            uint
-            duration() const
-            {
-                return _duration;
-            }
+			inline
+			void
+			propertyName(const std::string& value)
+			{
+				_propertyName = value;
+			}
 
-            inline
-            void
-            duration(uint value)
-            {
-                _duration = value;
-            }
+			inline
+			uint
+			duration() const
+			{
+				return _duration;
+			}
 
-            inline
-            bool
-            isLocked()
-            {
-                return _isLocked;
-            }
+			inline
+			void
+			duration(uint value)
+			{
+				_duration = value;
+			}
 
-            inline
-            void
-            isLocked(bool value)
-            {
-                _isLocked = value;
-            }
+			inline
+			bool 
+			isLocked()
+			{
+				return _isLocked;
+			}
 
-            virtual
-            void
-            update(uint time, UpdateTargetPtr, bool skipPropertyNameFormatting = true) = 0;
+			inline
+			void
+			isLocked(bool value)
+			{
+				_isLocked = value;
+			}
 
-        protected:
-            AbstractTimeline(const std::string& propertyName, uint duration);
-        };
-    }
+			virtual
+			void
+			update(uint time, UpdateTargetPtr, bool skipPropertyNameFormatting = true) = 0;
+
+		protected:
+			AbstractTimeline(const std::string& propertyName, uint duration);
+		};
+	}
 }

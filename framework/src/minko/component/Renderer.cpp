@@ -71,6 +71,44 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
     }
 }
 
+Renderer::Renderer(const Renderer& renderer, const CloneOption& option) :
+	_backgroundColor(renderer._backgroundColor),
+	_viewportBox(),
+	_scissorBox(),
+	_enabled(renderer._enabled),
+	_renderingBegin(Signal<Ptr>::create()),
+	_renderingEnd(Signal<Ptr>::create()),
+	_beforePresent(Signal<Ptr>::create()),
+	_surfaceDrawCalls(),
+	_surfaceTechniqueChangedSlot(),
+	_effect(nullptr),
+	_priority(renderer._priority),
+	_targetDataFilters(),
+	_rendererDataFilters(),
+	_rootDataFilters(),
+	_targetDataFilterChangedSlots(),
+	_rendererDataFilterChangedSlots(),
+	_rootDataFilterChangedSlots(),
+	_lightMaskFilter(data::LightMaskFilter::create()),
+	_filterChanged(Signal<Ptr, data::AbstractFilter::Ptr, data::BindingSource, SurfacePtr>::create())
+{
+	if (renderer._renderTarget)
+	{
+		renderer._renderTarget->upload();
+		_renderTarget = renderer._renderTarget;
+	}
+}
+
+AbstractComponent::Ptr
+Renderer::clone(const CloneOption& option)
+{
+	auto renderer = std::shared_ptr<Renderer>(new Renderer(*this, option));
+
+	renderer->initialize();
+
+	return renderer;
+}
+
 void
 Renderer::initialize()
 {

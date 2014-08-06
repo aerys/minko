@@ -30,3 +30,11 @@ ArrayProvider::ArrayProvider(const std::string& name) :
     if (_name.find(NO_STRUCT_SEP) != std::string::npos)
         throw std::invalid_argument("The name of a ArrayProvider cannot contain the following character sequence: " + NO_STRUCT_SEP);
 }
+
+ArrayProvider::ArrayProvider(const ArrayProvider& provider) :
+_name(provider._name),
+_indexChanged(IndexChangedSignal::create())
+{
+	if (_name.find(NO_STRUCT_SEP) != std::string::npos)
+		throw std::invalid_argument("The name of a ArrayProvider cannot contain the following character sequence: " + NO_STRUCT_SEP);
+}

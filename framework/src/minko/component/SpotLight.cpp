@@ -42,6 +42,34 @@ SpotLight::SpotLight(float diffuse,
     data()->set("direction",            _worldDirection);
 }
 
+SpotLight::SpotLight(const SpotLight& spotlight, const CloneOption& option) :
+	AbstractDiscreteLight("spotLights", spotlight.diffuse(), spotlight.specular()),
+	_attenuationCoeffs(Vector3::create(spotlight._attenuationCoeffs->x(), spotlight._attenuationCoeffs->y(), spotlight._attenuationCoeffs->z())),
+	_worldPosition(Vector3::create(spotlight.data()->get<Vector3::Ptr>("position"))),
+	_worldDirection(Vector3::create(spotlight.data()->get<Vector3::Ptr>("direction"))),
+	_cosInnerConeAngle(spotlight.cosInnerConeAngle()),
+	_cosOuterConeAngle(spotlight.cosOuterConeAngle())
+{
+
+	data()->set("attenuationCoeffs", _attenuationCoeffs);
+	data()->set("position", _worldPosition);
+	data()->set("direction", _worldDirection);
+
+	data()->set<float>("cosInnerConeAngle", _cosInnerConeAngle);
+	data()->set<float>("cosOuterConeAngle", _cosOuterConeAngle);
+
+}
+
+AbstractComponent::Ptr
+SpotLight::clone(const CloneOption& option)
+{
+	auto light = std::shared_ptr<SpotLight>(new SpotLight(*this, option));
+
+	light->AbstractDiscreteLight::initialize();
+
+	return light;
+}
+
 void
 SpotLight::initialize(float innerAngleRadians,
                       float outerAngleRadians)

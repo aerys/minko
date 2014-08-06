@@ -29,89 +29,89 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-    namespace component
-    {
-        class LuaMasterAnimation :
-            public LuaWrapper
-        {
-        public:
-            static
-            void
-            bind(LuaGlue& state)
-            {
-                state.Class<MasterAnimation>("MasterAnimation")
-                    .property("loopStartTime",  static_cast<uint (MasterAnimation::*)() const>(&MasterAnimation::loopStartTime))
-                    .property("loopEndTime",    static_cast<uint (MasterAnimation::*)() const>(&MasterAnimation::loopEndTime))
-                    .property("isPlaying",        static_cast<bool (MasterAnimation::*)() const>(&MasterAnimation::isPlaying))
-                    .property("isLooping",        static_cast<bool (MasterAnimation::*)() const>(&MasterAnimation::isLooping))
-                    .property("maxTime",        static_cast<uint (MasterAnimation::*)() const>(&MasterAnimation::maxTime))
-                    .method("hasLabel",            static_cast<bool (MasterAnimation::*)(const std::string&) const>(&MasterAnimation::hasLabel))
-                    .method("addLabel",            static_cast<AbstractAnimation::Ptr (MasterAnimation::*)(const std::string&, uint)>(&MasterAnimation::addLabel))
-                    .method("play",                static_cast<AbstractAnimation::Ptr (MasterAnimation::*)()>(&MasterAnimation::play))
-                    .method("stop", static_cast<AbstractAnimation::Ptr(MasterAnimation::*)()>(&MasterAnimation::stop))
-                    .method("currentTime", static_cast<uint(MasterAnimation::*)() const>(&MasterAnimation::currentTime))
-                    .method("resetPlaybackWindow",        static_cast<AbstractAnimation::Ptr (MasterAnimation::*)()>(&MasterAnimation::resetPlaybackWindow))
-                    .methodWrapper("seekTime",    &LuaMasterAnimation::seekTimeWrapper)
-                    .methodWrapper("seekLabel",    &LuaMasterAnimation::seekLabelWrapper)
-                    .methodWrapper("labelTime", &LuaMasterAnimation::labelTimeWrapper)
-                    .methodWrapper("setPlaybackWindowLabel",    &LuaMasterAnimation::setPlaybackWindowLabelWrapper);
+	namespace component
+	{
+		class LuaMasterAnimation :
+			public LuaWrapper
+		{
+		public:
+			static
+			void
+			bind(LuaGlue& state)
+			{
+				state.Class<MasterAnimation>("MasterAnimation")
+					.property("loopStartTime",  static_cast<uint (MasterAnimation::*)() const>(&MasterAnimation::loopStartTime))
+					.property("loopEndTime",	static_cast<uint (MasterAnimation::*)() const>(&MasterAnimation::loopEndTime))
+					.property("isPlaying",		static_cast<bool (MasterAnimation::*)() const>(&MasterAnimation::isPlaying))
+					.property("isLooping",		static_cast<bool (MasterAnimation::*)() const>(&MasterAnimation::isLooping))
+					.property("maxTime",		static_cast<uint (MasterAnimation::*)() const>(&MasterAnimation::maxTime))
+					.method("hasLabel",			static_cast<bool (MasterAnimation::*)(const std::string&) const>(&MasterAnimation::hasLabel))
+					.method("addLabel",			static_cast<AbstractAnimation::Ptr (MasterAnimation::*)(const std::string&, uint)>(&MasterAnimation::addLabel))
+					.method("play",				static_cast<AbstractAnimation::Ptr (MasterAnimation::*)()>(&MasterAnimation::play))
+					.method("stop", static_cast<AbstractAnimation::Ptr(MasterAnimation::*)()>(&MasterAnimation::stop))
+					.method("currentTime", static_cast<uint(MasterAnimation::*)() const>(&MasterAnimation::currentTime))
+					.method("resetPlaybackWindow",		static_cast<AbstractAnimation::Ptr (MasterAnimation::*)()>(&MasterAnimation::resetPlaybackWindow))
+					.methodWrapper("seekTime",	&LuaMasterAnimation::seekTimeWrapper)
+					.methodWrapper("seekLabel",	&LuaMasterAnimation::seekLabelWrapper)
+					.methodWrapper("labelTime", &LuaMasterAnimation::labelTimeWrapper)
+					.methodWrapper("setPlaybackWindowLabel",	&LuaMasterAnimation::setPlaybackWindowLabelWrapper);
 
-                    // FIXME: Bind the rest of MasterAnimation.
-                    // AbstractAnimation::Ptr
-                    // play();
+					// FIXME: Bind the rest of MasterAnimation.
+					// AbstractAnimation::Ptr
+					// play();
 
-                    // AbstractAnimation::Ptr
-                    // stop();
+					// AbstractAnimation::Ptr
+					// stop();
 
-                    // AbstractAnimation::Ptr
-                    // addLabel(const std::string& name, uint time);
+					// AbstractAnimation::Ptr
+					// addLabel(const std::string& name, uint time);
 
-                    // AbstractAnimation::Ptr
-                    // changeLabel(const std::string& name, const std::string& newName);
+					// AbstractAnimation::Ptr
+					// changeLabel(const std::string& name, const std::string& newName);
 
-                    // AbstractAnimation::Ptr
-                    // setTimeForLabel(const std::string& name, uint newTime);
+					// AbstractAnimation::Ptr
+					// setTimeForLabel(const std::string& name, uint newTime);
 
-                    // AbstractAnimation::Ptr
-                    // removeLabel(const std::string& name);
+					// AbstractAnimation::Ptr
+					// removeLabel(const std::string& name);
 
-                    // AbstractAnimation::Ptr
-                    // setPlaybackWindow(uint, uint, bool forceRestart = false);
+					// AbstractAnimation::Ptr
+					// setPlaybackWindow(uint, uint, bool forceRestart = false);
 
-                    // AbstractAnimation::Ptr
-                    // setPlaybackWindow(const std::string&, const std::string&, bool forceRestart = false);
+					// AbstractAnimation::Ptr
+					// setPlaybackWindow(const std::string&, const std::string&, bool forceRestart = false);
 
-                    // AbstractAnimation::Ptr
-                    // resetPlaybackWindow();
-            }
+					// AbstractAnimation::Ptr
+					// resetPlaybackWindow();
+			}
 
-            static
-            void
-            seekTimeWrapper(MasterAnimation::Ptr animation, uint time)
-            {
-                animation->seek(time);
-            }
+			static
+			void
+			seekTimeWrapper(MasterAnimation::Ptr animation, uint time)
+			{
+				animation->AbstractAnimation::seek(time);
+			}
 
-            static
-            void
-            seekLabelWrapper(MasterAnimation::Ptr animation, std::string label)
-            {
-                animation->seek(label);
-            }
+			static
+			void
+			seekLabelWrapper(MasterAnimation::Ptr animation, std::string label)
+			{
+				animation->seek(label);
+			}
 
-            static
-            int
-            labelTimeWrapper(MasterAnimation::Ptr animation, std::string label)
-            {
-                return animation->labelTime(label);
-            }
+			static
+			int
+			labelTimeWrapper(MasterAnimation::Ptr animation, std::string label)
+			{
+				return animation->labelTime(label);
+			}
 
-            static
-            void
-            setPlaybackWindowLabelWrapper(MasterAnimation::Ptr animation, std::string& begin, std::string& end)
-            {
-                animation->setPlaybackWindow(begin, end);
-            }
-        };
-    }
+			static
+			void
+			setPlaybackWindowLabelWrapper(MasterAnimation::Ptr animation, std::string& begin, std::string& end)
+			{
+				animation->setPlaybackWindow(begin, end);
+			}
+		};
+	}
 }

@@ -208,7 +208,7 @@ ComponentDeserializer::deserializeSurface(std::string&                          
     deserialized.convert(&dst);
 
     geometry::Geometry::Ptr        geometry    = dependencies->getGeometryReference(dst.a0);
-    data::Provider::Ptr            material    = dependencies->getMaterialReference(dst.a1);
+	material::Material::Ptr		material	= dependencies->getMaterialReference(dst.a1);
     render::Effect::Ptr            effect        = dependencies->getEffectReference(dst.a2);
     std::string                    technique    = "default";
     bool                        visible        = true;
@@ -325,6 +325,7 @@ ComponentDeserializer::deserializeSkinning(std::string&        serializedAnimati
     std::vector<std::vector<uint>> bonesVertexIds;
     std::vector<std::vector<float>> bonesWeights;
     std::vector<scene::Node::Ptr> nodes;
+	std::vector<scene::Node::Ptr> boneNodes;
     std::vector<std::shared_ptr<math::Matrix4x4>> offsetMatrices;
 
     for (uint i = 0; i < numBones; i++)
@@ -342,14 +343,18 @@ ComponentDeserializer::deserializeSkinning(std::string&        serializedAnimati
             ->where([&](scene::Node::Ptr n){ return n->name() == nodeName; });
 
         if (!nodeSet->nodes().empty())
-            bones.push_back(geometry::Bone::create(nodeSet->nodes()[0], offsetMatrix, vertexShortIds, boneWeight));
+		{
 
+			bones.push_back(geometry::Bone::create(offsetMatrix, vertexShortIds, boneWeight));
+			boneNodes.push_back(nodeSet->nodes()[0]);
+		}
     }
 
     return SkinningComponentDeserializer::computeSkinning(
         assetLibrary->loader()->options(),
         assetLibrary->context(),
         bones,
+		boneNodes,
         root->children().size() == 1 ? root->children().front() : root  // FIXME (for soccerpunch) there is one extra level wrt minko studio ! ->issues w/ precomputation and collider
    );
 }

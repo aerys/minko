@@ -50,6 +50,9 @@ namespace minko
                 return light;
             }
 
+			AbstractComponent::Ptr
+			clone(const CloneOption& option);
+
             ~DirectionalLight()
             {
             }
@@ -61,6 +64,8 @@ namespace minko
         private:
             DirectionalLight(float diffuse,
                              float specular);
+
+			DirectionalLight(const DirectionalLight& directionalLight, const CloneOption& option);
         };
     }
 }

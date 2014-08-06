@@ -39,18 +39,18 @@ namespace minko
             typedef msgpack::type::tuple<unsigned int, short, std::string> SerializedAsset;
             typedef std::function<SerializedAsset(std::shared_ptr<file::Dependency>, std::shared_ptr<file::AssetLibrary>, std::shared_ptr<geometry::Geometry>, uint, std::shared_ptr<file::Options>, std::shared_ptr<file::WriterOptions>, std::vector<Dependency::SerializedAsset>&)>        GeometryWriterFunction;
             typedef std::function<SerializedAsset(std::shared_ptr<file::Dependency>, std::shared_ptr<file::AssetLibrary>, std::shared_ptr<render::AbstractTexture>, uint, std::shared_ptr<file::Options>, std::shared_ptr<file::WriterOptions>)>    TextureWriterFunction;
-            typedef std::function<SerializedAsset(std::shared_ptr<file::Dependency>, std::shared_ptr<file::AssetLibrary>, std::shared_ptr<data::Provider>, uint, std::shared_ptr<file::Options>, std::shared_ptr<file::WriterOptions>)>            MaterialWriterFunction;
+			typedef std::function<SerializedAsset(std::shared_ptr<file::Dependency>, std::shared_ptr<file::AssetLibrary>, std::shared_ptr<material::Material>, uint, std::shared_ptr<file::Options>, std::shared_ptr<file::WriterOptions>)>			MaterialWriterFunction;
             typedef std::function<bool(std::shared_ptr<geometry::Geometry>)>            GeometryTestFunc;
 
         private:
             std::unordered_map<AbsTexturePtr, uint>                            _textureDependencies;
-            std::unordered_map<std::shared_ptr<data::Provider>, uint>        _materialDependencies;
+			std::unordered_map<std::shared_ptr<material::Material>, uint>	_materialDependencies;
             std::unordered_map<std::shared_ptr<scene::Node>, uint>            _subSceneDependencies;
             std::unordered_map<std::shared_ptr<geometry::Geometry>, uint>    _geometryDependencies;
             std::unordered_map<std::shared_ptr<render::Effect>, uint>        _effectDependencies;
 
             std::unordered_map<uint, AbsTexturePtr>                            _textureReferences;
-            std::unordered_map<uint, std::shared_ptr<data::Provider>>        _materialReferences;
+			std::unordered_map<uint, std::shared_ptr<material::Material>>	_materialReferences;
             std::unordered_map<uint, std::shared_ptr<scene::Node>>            _subSceneReferences;
             std::unordered_map<uint, std::shared_ptr<geometry::Geometry>>    _geometryReferences;
             std::unordered_map<uint, std::shared_ptr<render::Effect>>        _effectReferences;
@@ -109,10 +109,10 @@ namespace minko
             registerDependency(std::shared_ptr<geometry::Geometry> geometry);
 
             bool
-            hasDependency(std::shared_ptr<data::Provider> material);
+			hasDependency(std::shared_ptr<material::Material> material);
 
             uint
-            registerDependency(std::shared_ptr<data::Provider> material);
+			registerDependency(std::shared_ptr<material::Material> material);
 
             bool
             hasDependency(AbsTexturePtr texture);
@@ -138,11 +138,11 @@ namespace minko
             void
             registerReference(uint referenceId, std::shared_ptr<geometry::Geometry> geometry);
 
-            std::shared_ptr<data::Provider>
+			std::shared_ptr<material::Material>
             getMaterialReference(uint materialId);
 
             void
-            registerReference(uint referenceId, std::shared_ptr<data::Provider> material);
+			registerReference(uint referenceId, std::shared_ptr<material::Material> material);
 
             AbsTexturePtr
             getTextureReference(uint textureId);
@@ -202,7 +202,7 @@ namespace minko
             SerializedAsset
             serializeMaterial(std::shared_ptr<file::Dependency>        dependecies,
                               std::shared_ptr<file::AssetLibrary>    assetLibrary,
-                              std::shared_ptr<data::Provider>        material,
+							  std::shared_ptr<material::Material>	material,
                               uint                                    resourceId,
                               std::shared_ptr<file::Options>        options,
                               std::shared_ptr<file::WriterOptions>  writerOptions);

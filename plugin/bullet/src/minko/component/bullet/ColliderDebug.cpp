@@ -32,132 +32,158 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/ArrayProvider.hpp"
 #include "minko/render/CompareMode.hpp"
 #include "minko/render/Priority.hpp"
+#include "minko/material/Material.hpp"
 
 using namespace minko;
 using namespace minko::scene;
 using namespace minko::component;
 using namespace minko::math;
 
-bullet::ColliderDebug::ColliderDebug(file::AssetLibrary::Ptr assets):
-    AbstractComponent(),
-    _assets(assets),
-    _node(nullptr),
-    _physicsTransformChangedSlot(nullptr),
-    _targetAddedSlot(nullptr),
-    _targetRemovedSlot(nullptr),
-    _addedSlot(nullptr),
-    _removedSlot(nullptr)
+bullet::ColliderDebug::ColliderDebug(file::AssetLibrary::Ptr assets) :
+	AbstractComponent(),
+	_assets(assets),
+	_surface(nullptr),
+	_physicsTransformChangedSlot(nullptr),
+	_targetAddedSlot(nullptr),
+	_targetRemovedSlot(nullptr),
+	_addedSlot(nullptr),
+	_removedSlot(nullptr)
 {
-    if (_assets == nullptr ||
-        _assets->context() == nullptr ||
-        _assets->effect("line") == nullptr)
-        throw std::invalid_argument("assets");
+	if (_assets == nullptr ||
+		_assets->context() == nullptr ||
+		_assets->effect("line") == nullptr)
+	{
+		throw std::invalid_argument("assets");
+	}
+}
+
+AbstractComponent::Ptr
+bullet::ColliderDebug::clone(const CloneOption& option)
+{
+	ColliderDebug::Ptr origin = std::static_pointer_cast<ColliderDebug>(shared_from_this());
+	for (auto component : targets().front()->components<Surface>())
+	{	
+		if (component->name() == "ColliderDebugSurface") 
+		{
+			targets().front()->removeComponent(component);
+		}
+	}
+	return ColliderDebug::create(origin->_assets);
 }
 
 void
 bullet::ColliderDebug::initialize()
 {
-    _targetAddedSlot = targetAdded()->connect(std::bind(
-        &ColliderDebug::targetAddedHandler,
-        std::static_pointer_cast<ColliderDebug>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2
-    ));
+	_targetAddedSlot = targetAdded()->connect(std::bind(
+		&ColliderDebug::targetAddedHandler,
+		std::static_pointer_cast<ColliderDebug>(shared_from_this()),
+		std::placeholders::_1,
+		std::placeholders::_2
+		));
 
-    _targetRemovedSlot = targetRemoved()->connect(std::bind(
-        &ColliderDebug::targetRemovedHandler,
-        std::static_pointer_cast<ColliderDebug>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2
-    ));
+	_targetRemovedSlot = targetRemoved()->connect(std::bind(
+		&ColliderDebug::targetRemovedHandler,
+		std::static_pointer_cast<ColliderDebug>(shared_from_this()),
+		std::placeholders::_1,
+		std::placeholders::_2
+		));
 }
 
 void
 bullet::ColliderDebug::targetAddedHandler(AbstractComponent::Ptr, Node::Ptr target)
 {
-    if (targets().size() > 1)
-        throw std::logic_error("Collider debugging component cannot be added twice.");
+	if (targets().size() > 1)
+		throw std::logic_error("Collider debugging component cannot be added twice.");
 
-    _addedSlot = target->added()->connect(std::bind(
-        &ColliderDebug::addedHandler,
-        std::static_pointer_cast<ColliderDebug>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3
-      ));
+	_addedSlot = target->added()->connect(std::bind(
+		&ColliderDebug::addedHandler,
+		std::static_pointer_cast<ColliderDebug>(shared_from_this()),
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3
+		));
 
-    _removedSlot = target->removed()->connect(std::bind(
-        &ColliderDebug::removedHandler,
-        std::static_pointer_cast<ColliderDebug>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3
-    ));
+	_removedSlot = target->removed()->connect(std::bind(
+		&ColliderDebug::removedHandler,
+		std::static_pointer_cast<ColliderDebug>(shared_from_this()),
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3
+		));
 
-    initializeDisplay();
+	initializeDisplay();
 }
 
 void
 bullet::ColliderDebug::targetRemovedHandler(AbstractComponent::Ptr, Node::Ptr target)
 {
-    if (_node && _node->parent())
-        _node->parent()->removeChild(_node);
+	_surface = nullptr;
+	_physicsTransformChangedSlot = nullptr;
 
-    _node                            = nullptr;
-    _physicsTransformChangedSlot    = nullptr;
-
-    _addedSlot                        = nullptr;
-    _removedSlot                    = nullptr;
+	_addedSlot = nullptr;
+	_removedSlot = nullptr;
 }
 
 void
 bullet::ColliderDebug::initializeDisplay()
 {
-    if (_node)
-        return; // Collider is already being tracked
+	if (_surface)
+		return; // Collider is already being tracked
 
-    if (targets().empty() || !targets().front()->hasComponent<Collider>())
-        return;
+	if (targets().empty() || !targets().front()->hasComponent<Collider>())
+		return;
 
-    auto collider = targets().front()->component<Collider>();
-    assert(collider);
+	auto collider = targets().front()->component<Collider>();
+	assert(collider);
 
-    _node = Node::create("collider_debug_" + targets().front()->name())
-        ->addComponent(Surface::create(
-            collider->colliderData()->shape()->getGeometry(_assets->context()),
-            data::ArrayProvider::create("material")
-                ->set("diffuseColor",    math::Vector4::create(0.0f, 1.0f, 1.0f, 1.0f))
-                ->set("lineThickness",    1.0f)
-                ->set("depthFunc",        render::CompareMode::ALWAYS)
-                ->set("priority",        render::Priority::LAST),
-            _assets->effect("line")
-        ))
-        ->addComponent(Transform::create(
-            collider->getPhysicsTransform()
-        ));
+	/*
+	_node = Node::create("collider_debug_" + targets().front()->name())
+		->addComponent(Surface::create(
+			collider->colliderData()->shape()->getGeometry(_assets->context()),
+			data::ArrayProvider::create("material")
+				->set("diffuseColor",	math::Vector4::create(0.0f, 1.0f, 1.0f, 1.0f))
+				->set("lineThickness",	1.0f)
+				->set("depthFunc",		render::CompareMode::ALWAYS)
+				->set("priority",		render::Priority::LAST),
+			_assets->effect("line")
+		))
+		->addComponent(Transform::create(
+			collider->getPhysicsTransform()
+		));
+	*/
+	
+	auto geomCollider = collider->colliderData()->shape()->getGeometry(_assets->context());
 
-    _physicsTransformChangedSlot = collider->physicsTransformChanged()->connect(std::bind(
-        &bullet::ColliderDebug::physicsTransformChangedHandler,
-        std::static_pointer_cast<ColliderDebug>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2
-    ));
+	auto target = targets().front()->root();
 
-    targets().front()->root()->addChild(_node);
+	_surface = Surface::create(
+		"ColliderDebugSurface",
+		geomCollider,
+		material::Material::create("material")
+			->set("diffuseColor", math::Vector4::create(0.0f, 1.0f, 1.0f, 1.0f))
+			->set("lineThickness", 1.0f)
+			->set("depthFunc", render::CompareMode::ALWAYS)
+			->set("priority", render::Priority::LAST),
+		_assets->effect("line"),
+		"default"
+	);
+
+	/*
+	_physicsTransformChangedSlot = collider->physicsTransformChanged()->connect(std::bind(
+		&bullet::ColliderDebug::physicsTransformChangedHandler,
+		std::static_pointer_cast<ColliderDebug>(shared_from_this()),
+		std::placeholders::_1,
+		std::placeholders::_2
+	));
+	*/
+
+	targets().front()->root()->addComponent(_surface);
 }
 
 void
 bullet::ColliderDebug::addedHandler(Node::Ptr node, Node::Ptr target, Node::Ptr)
 {
-    initializeDisplay();
-
-    if (_node && _node->parent() != targets().front()->root())
-    {
-        if (_node->parent())
-            _node->parent()->removeChild(_node);
-
-        targets().front()->root()->addChild(_node);
-    }
+	initializeDisplay();
 }
 
 void
@@ -166,10 +192,12 @@ bullet::ColliderDebug::removedHandler(Node::Ptr, Node::Ptr, Node::Ptr)
 
 }
 
+/*
 void
-bullet::ColliderDebug::physicsTransformChangedHandler(Collider::Ptr,
-                                                      Matrix4x4::Ptr physicsTransform)
+bullet::ColliderDebug::physicsTransformChangedHandler(Collider::Ptr, 
+													  Matrix4x4::Ptr physicsTransform)
 {
-    if (_node)
-        _node->component<Transform>()->matrix()->copyFrom(physicsTransform);
+	if (_node)
+		_node->component<Transform>()->matrix()->copyFrom(physicsTransform);
 }
+*/

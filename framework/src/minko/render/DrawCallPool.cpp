@@ -28,6 +28,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Blending.hpp"
 #include "minko/geometry/Geometry.hpp"
 #include "minko/data/ArrayProvider.hpp"
+#include "minko/material/Material.hpp"
 
 using namespace minko;
 using namespace minko::math;

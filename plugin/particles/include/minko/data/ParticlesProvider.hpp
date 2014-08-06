@@ -20,14 +20,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/ParticlesCommon.hpp"
-#include "minko/data/Provider.hpp"
+#include "minko/material/Material.hpp"
 
 namespace minko
 {
     namespace data
     {
         class ParticlesProvider:
-            public data::Provider
+            public material::Material
         {
         public:
             typedef std::shared_ptr<ParticlesProvider>  Ptr;

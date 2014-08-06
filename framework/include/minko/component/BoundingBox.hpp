@@ -102,6 +102,9 @@ namespace minko
                 return bb;
             }
 
+			AbstractComponent::Ptr
+			clone(const CloneOption& option);
+
             inline
             std::shared_ptr<math::AbstractShape>
             shape()
@@ -126,6 +129,8 @@ namespace minko
             BoundingBox(std::shared_ptr<math::Vector3> topRight, std::shared_ptr<math::Vector3> bottomLeft);
 
             BoundingBox();
+
+			BoundingBox(const BoundingBox& bbox, const CloneOption& option);
 
             void
             initialize();

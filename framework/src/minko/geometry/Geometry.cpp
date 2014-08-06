@@ -38,6 +38,23 @@ Geometry::Geometry() :
 {
 }
 
+Geometry::Geometry(const Geometry& geometry) :
+	_data(geometry._data->clone()),
+	_vertexSize(geometry._vertexSize),
+	_numVertices(geometry._numVertices),
+	_vertexBuffers(geometry._vertexBuffers),
+	_indexBuffer(geometry._indexBuffer)
+{
+}
+
+std::shared_ptr<Geometry>
+Geometry::clone()
+{
+	Ptr geometry(new Geometry(*this));	
+
+	return geometry;
+}
+
 void
 Geometry::addVertexBuffer(render::VertexBuffer::Ptr vertexBuffer)
 {

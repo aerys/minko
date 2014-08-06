@@ -36,6 +36,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/SceneManager.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/Skinning.hpp"
+#include "minko/component/MasterAnimation.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
 #include "minko/component/AbstractAnimation.hpp"
 #include "minko/component/Animation.hpp"
@@ -795,19 +796,24 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
     auto    boneTransforms        = std::vector<std::vector<float>>(numBones, std::vector<float>(numFrames * 16, 0.0f));
     auto    modelToRootMatrices    = std::vector<Matrix4x4::Ptr>(numFrames);
 
+	std::vector<scene::Node::Ptr> boneNodes;
+
     for (auto& m : modelToRootMatrices)
         m = Matrix4x4::create();
 
     for (uint boneId = 0; boneId < numBones; ++boneId)
     {
+		
         const auto bone = createBone(aimesh->mBones[boneId]);
+		const auto boneName = std::string(aimesh->mBones[boneId]->mName.data);
+		auto node = _nameToNode.find(boneName)->second;
+		boneNodes.push_back(node);
         if (!bone)
             return;
 
-        const auto boneNode            = bone->node();
         const auto boneOffsetMatrix    = bone->offsetMatrix();
 
-        precomputeModelToRootMatrices(bone->node(), skeletonRoot, modelToRootMatrices);
+		precomputeModelToRootMatrices(node, skeletonRoot, modelToRootMatrices);
         skin->bone(boneId, bone);
 
         for (uint frameId = 0; frameId < numFrames; ++frameId)
@@ -824,7 +830,7 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
 
     for (uint boneId = 0; boneId < numBones; ++boneId)
     {
-        auto childrenWithSurface = NodeSet::create(skin->bone(boneId)->node())
+		auto childrenWithSurface = NodeSet::create(boneNodes[boneId])
         ->descendants(true)
         ->where([](Node::Ptr n)
         {
@@ -864,12 +870,13 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
 
     // add skinning component to mesh
     meshNode->addComponent(Skinning::create(
-        skin->reorganizeByVertices()->transposeMatrices()->disposeBones(),
+		skin->reorganizeByVertices()->transposeMatrices(),
         _options->skinningMethod(),
         _assetLibrary->context(),
-        slaveAnimations,
         skeletonRoot
     ));
+
+	meshNode->addComponent(MasterAnimation::create());
 
     auto irrelevantTransforms = NodeSet::create(skeletonRoot)
         ->descendants(false)
@@ -1029,7 +1036,6 @@ AbstractASSIMPParser::createBone(const aiBone* aibone) const
     if (aibone == nullptr || _nameToNode.count(boneName) == 0)
         return nullptr;
 
-    auto node            = _nameToNode.find(boneName)->second;
     auto offsetMatrix    = convert(aibone->mOffsetMatrix);
 
     std::vector<unsigned short> boneVertexIds        (aibone->mNumWeights, 0);
@@ -1041,7 +1047,7 @@ AbstractASSIMPParser::createBone(const aiBone* aibone) const
         boneVertexWeights[i]    = aibone->mWeights[i].mWeight;
     }
 
-    return Bone::create(node, offsetMatrix, boneVertexIds, boneVertexWeights);
+	return Bone::create(offsetMatrix, boneVertexIds, boneVertexWeights);
 }
 
 void

@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/math/Vector4.hpp"
 #include "minko/math/Matrix4x4.hpp"
+#include "minko/CloneOption.hpp"
 
 using namespace minko;
 using namespace minko::math;
@@ -38,6 +39,26 @@ PointLight::PointLight(float diffuse,
     data()
         ->set("attenuationCoeffs",    _attenuationCoeffs)
         ->set("position",            _worldPosition);
+}
+
+PointLight::PointLight(const PointLight& pointLight, const CloneOption& option) :
+	AbstractDiscreteLight("pointLights", pointLight.diffuse(), pointLight.specular()),
+	_attenuationCoeffs(Vector3::create(pointLight._attenuationCoeffs->x(), pointLight._attenuationCoeffs->y(), pointLight._attenuationCoeffs->z())),
+	_worldPosition(Vector3::create(pointLight.data()->get<Vector3::Ptr>("position")))
+{
+	data()
+		->set("attenuationCoeffs", _attenuationCoeffs)
+		->set("position", _worldPosition);
+}
+
+AbstractComponent::Ptr
+PointLight::clone(const CloneOption& option)
+{
+	auto light = std::shared_ptr<PointLight>(new PointLight(*this, option));
+
+	light->AbstractDiscreteLight::initialize();
+
+	return light;
 }
 
 void

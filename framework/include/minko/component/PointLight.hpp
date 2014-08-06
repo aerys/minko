@@ -61,6 +61,9 @@ namespace minko
 
             ~PointLight() = default;
 
+			AbstractComponent::Ptr
+			clone(const CloneOption& option);
+	
             bool
             attenuationEnabled() const;
 
@@ -73,6 +76,22 @@ namespace minko
             Ptr
             attenuationCoefficients(std::shared_ptr<math::Vector3>);
 
+			inline
+			std::shared_ptr<math::Vector3>
+			position() const
+			{
+				return data()->get<std::shared_ptr<math::Vector3>>("position");
+			}
+
+			inline
+			Ptr
+			position(std::shared_ptr<math::Vector3> position)
+			{
+				data()->set<std::shared_ptr<math::Vector3>>("position", position);
+
+				return std::static_pointer_cast<PointLight>(shared_from_this());
+			}
+
         protected:
             void
             updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld);
@@ -83,6 +102,8 @@ namespace minko
                        float attenuationConstant,
                        float attenuationLinear,
                        float attenuationQuadratic);
+
+			PointLight(const PointLight& pointLight, const CloneOption& option);
         };
     }
 }

@@ -23,313 +23,331 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 
 #include "minko/component/AbstractComponent.hpp"
+#include "minko/component/AbstractRebindableComponent.hpp"
 
 namespace minko
 {
-    namespace component
-    {
-        class AbstractAnimation :
-            public AbstractComponent
-        {
-        public:
-            typedef std::shared_ptr<AbstractAnimation>        Ptr;
+	namespace component
+	{
+		class AbstractAnimation :
+			public virtual AbstractComponent
+		{
+		public:
+			typedef std::shared_ptr<AbstractAnimation>		Ptr;
 
-        private:
-            typedef std::shared_ptr<scene::Node>            NodePtr;
-            typedef std::shared_ptr<AbstractComponent>        AbsCmpPtr;
+		private:
+			typedef std::shared_ptr<scene::Node>			NodePtr;
+			typedef std::shared_ptr<AbstractComponent>		AbsCmpPtr;
+			
+			struct Label
+			{
+				std::string name;
+				uint		time; // label time in milliseconds
 
-            struct Label
-            {
-                std::string name;
-                uint        time; // label time in milliseconds
+				inline
+				Label(const std::string n, uint t):
+					name(n), time(t)
+				{
+				}
+			};
 
-                inline
-                Label(const std::string n, uint t):
-                    name(n), time(t)
-                {
-                }
-            };
+		protected:
+			uint														_maxTime;
+			uint														_currentTime;	// relative to animation 
+			Signal<AbsCmpPtr, NodePtr>::Slot				            _targetAddedSlot;
+			Signal<AbsCmpPtr, NodePtr>::Slot				            _targetRemovedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot			            _addedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot			            _removedSlot;
 
-        protected:
-            uint        _maxTime;
-            uint        _currentTime;    // relative to animation
+		private:
+			uint		_loopMinTime;
+			uint		_loopMaxTime;
+			uint		_loopTimeRange;
+			uint		_previousTime;	// relative to animation
+			uint		_previousGlobalTime;
 
-        private:
-            uint        _loopMinTime;
-            uint        _loopMaxTime;
-            uint        _loopTimeRange;
-            uint        _previousTime;    // relative to animation
-            uint        _previousGlobalTime;
-
-            bool        _isPlaying;
-            bool        _isLooping;
-            bool        _isReversed;
-            bool        _canUpdateOnce;
+			bool		_isPlaying;
+			bool		_isLooping;
+			bool		_isReversed;
+			bool		_mustUpdateOnce;
 
 
-            clock_t        _clockStart;
+			clock_t		_clockStart;
 
-            std::function<uint(uint)>                                    _timeFunction;
+			std::function<uint(uint)>						            _timeFunction;
 
-            std::vector<Label>                                            _labels;
-            std::unordered_map<std::string, uint>                        _labelNameToIndex;
-            std::vector<uint>                                            _nextLabelIds;
+			std::vector<Label>								            _labels;
+			std::unordered_map<std::string, uint>			            _labelNameToIndex;
+			std::vector<uint>								            _nextLabelIds;
 
-            std::shared_ptr<SceneManager>                                _sceneManager;
+			std::shared_ptr<SceneManager>					            _sceneManager;
 
-            std::shared_ptr<Signal<Ptr>>                                _started;
-            std::shared_ptr<Signal<Ptr>>                                _looped;
-            std::shared_ptr<Signal<Ptr>>                                _stopped;
-            std::shared_ptr<Signal<Ptr, std::string, uint>>                _labelHit;
+			std::shared_ptr<Signal<Ptr>>					            _started;
+			std::shared_ptr<Signal<Ptr>>					            _looped;
+			std::shared_ptr<Signal<Ptr>>					            _stopped;
+			std::shared_ptr<Signal<Ptr, std::string, uint>>	            _labelHit;
 
-            Signal<AbsCmpPtr, NodePtr>::Slot                            _targetAddedSlot;
-            Signal<AbsCmpPtr, NodePtr>::Slot                            _targetRemovedSlot;
-            Signal<NodePtr, NodePtr, NodePtr>::Slot                        _addedSlot;
-            Signal<NodePtr, NodePtr, NodePtr>::Slot                        _removedSlot;
-            Signal<std::shared_ptr<SceneManager>, float, float>::Slot    _frameBeginSlot;
+			Signal<std::shared_ptr<SceneManager>, float, float>::Slot	_frameBeginSlot;
 
-        public:
-            virtual
-            Ptr
-            play();
+			
 
-            virtual
-            Ptr
-            stop();
+		public:
+			NodePtr														_target;
 
-            Ptr
-            seek(uint time);
+			virtual
+			Ptr
+			play();
 
-            Ptr
-            seek(const std::string&);
+			virtual
+			Ptr
+			stop();
 
-            inline
-            uint
-            currentTime() const
-            {
-                return _currentTime;
-            }
+			virtual
+			AbstractComponent::Ptr
+			AbstractAnimation::clone(const CloneOption& option) = 0;
 
-            inline
-            uint
-            loopStartTime() const
-            {
-                return !_isReversed ? _loopMinTime : _loopMaxTime;
-            }
+			Ptr
+			seek(uint time);
 
-            inline
-            uint
-            loopEndTime() const
-            {
-                return !_isReversed ? _loopMaxTime : _loopMinTime;
-            }
+			Ptr
+			seek(const std::string&);
 
-            bool
-            hasLabel(const std::string& name) const;
+			inline
+			uint
+			currentTime() const
+			{
+				return _currentTime;
+			}
 
-            virtual
-            Ptr
-            addLabel(const std::string& name, uint time);
+			inline
+			uint
+			getMaxTime() const
+			{
+				return _maxTime;
+			}
 
-            virtual
-            Ptr
-            changeLabel(const std::string& name, const std::string& newName);
+			inline
+			uint
+			loopStartTime() const
+			{
+				return !_isReversed ? _loopMinTime : _loopMaxTime;
+			}
 
-            virtual
-            Ptr
-            setTimeForLabel(const std::string& name, uint newTime);
+			inline
+			uint
+			loopEndTime() const
+			{
+				return !_isReversed ? _loopMaxTime : _loopMinTime;
+			}
 
-            virtual
-            Ptr
-            removeLabel(const std::string& name);
+			bool
+			hasLabel(const std::string& name) const;
 
-            virtual
-            Ptr
-            setPlaybackWindow(uint, uint, bool forceRestart = false);
+			virtual
+			Ptr
+			addLabel(const std::string& name, uint time);
 
-            virtual
-            Ptr
-            setPlaybackWindow(const std::string&, const std::string&, bool forceRestart = false);
+			virtual
+			Ptr
+			changeLabel(const std::string& name, const std::string& newName);
 
-            virtual
-            Ptr
-            resetPlaybackWindow();
+			virtual
+			Ptr
+			setTimeForLabel(const std::string& name, uint newTime);
 
-            uint
-            numLabels() const
-            {
-                return _labels.size();
-            }
+			virtual
+			Ptr
+			removeLabel(const std::string& name);
 
-            const std::string&
-            labelName(uint labelId) const
-            {
-                return _labels[labelId].name;
-            }
+			virtual
+			Ptr
+			setPlaybackWindow(uint, uint, bool forceRestart = false);
 
-            uint
-            labelTime(uint labelId) const
-            {
-                return _labels[labelId].time;
-            }
+			virtual
+			Ptr
+			setPlaybackWindow(const std::string&, const std::string&, bool forceRestart = false);
 
-            uint
-            labelTime(const std::string& name) const;
+			virtual
+			Ptr
+			resetPlaybackWindow();
 
-            inline
-            bool
-            isPlaying() const
-            {
-                return _isPlaying;
-            }
+			uint
+			numLabels() const
+			{
+				return _labels.size();
+			}
 
-            inline
-            void
-            isPlaying(bool value)
-            {
-                _isPlaying = value;
-            }
+			const std::string&
+			labelName(uint labelId) const
+			{
+				return _labels[labelId].name;
+			}
 
-            inline
-            bool
-            isLooping() const
-            {
-                return _isLooping;
-            }
+			uint
+			labelTime(uint labelId) const
+			{
+				return _labels[labelId].time;
+			}
 
-            inline
-            void
-            isLooping(bool value)
-            {
-                _isLooping = value;
-            }
+			uint
+			labelTime(const std::string& name) const;
 
-            inline
-            bool
-            isReversed() const
-            {
-                return _isReversed;
-            }
+			inline
+			bool
+			isPlaying() const
+			{
+				return _isPlaying;
+			}
 
-            void
-            isReversed(bool);
+			inline
+			void
+			isPlaying(bool value)
+			{
+				_isPlaying = value;
+			}
 
-            inline
-            uint
-            maxTime() const
-            {
-                return _maxTime;
-            }
+			inline
+			bool
+			isLooping() const
+			{
+				return _isLooping;
+			}
 
-            inline
-            void
-            timeFunction(const std::function<uint(uint)>& func)
-            {
-                _timeFunction = func;
-            }
+			inline
+			void
+			isLooping(bool value)
+			{
+				_isLooping = value;
+			}
 
-            inline
-            std::shared_ptr<Signal<Ptr>>
-            started() const
-            {
-                return _started;
-            }
+			inline
+			bool
+			isReversed() const
+			{
+				return _isReversed;
+			}
 
-            inline
-            std::shared_ptr<Signal<Ptr>>
-            looped() const
-            {
-                return _looped;
-            }
+			void
+			isReversed(bool);
 
-            inline
-            std::shared_ptr<Signal<Ptr>>
-            stopped() const
-            {
-                return _stopped;
-            }
+			inline
+			uint
+			maxTime() const
+			{
+				return _maxTime;
+			}
 
-            inline
-            std::shared_ptr<Signal<Ptr, std::string, uint>>
-            labelHit() const
-            {
-                return _labelHit;
-            }
+			inline
+			void
+			timeFunction(const std::function<uint(uint)>& func)
+			{
+				_timeFunction = func;
+			}
 
-        protected:
-            AbstractAnimation(bool isLooping);
+			inline
+			std::shared_ptr<Signal<Ptr>>
+			started() const
+			{
+				return _started;
+			}
 
-            virtual
-            inline
-            ~AbstractAnimation()
-            {
-                _targetAddedSlot    = nullptr;
-                _targetRemovedSlot    = nullptr;
-                _addedSlot            = nullptr;
-                _removedSlot        = nullptr;
-                _frameBeginSlot        = nullptr;
-            }
+			inline
+			std::shared_ptr<Signal<Ptr>>
+			looped() const
+			{
+				return _looped;
+			}
 
-            virtual
-            void
-            initialize();
+			inline
+			std::shared_ptr<Signal<Ptr>>
+			stopped() const
+			{
+				return _stopped;
+			}
 
-            void
-            targetAddedHandler(AbsCmpPtr cmp, NodePtr node);
+			inline
+			std::shared_ptr<Signal<Ptr, std::string, uint>>
+			labelHit() const
+			{
+				return _labelHit;
+			}			
 
-            void
-            targetRemovedHandler(AbsCmpPtr cmp, NodePtr node);
+		protected:
+			AbstractAnimation(bool isLooping);
 
-            virtual
+			AbstractAnimation(const AbstractAnimation& absAnimation, const CloneOption& option);
+
+			virtual
+			inline
+			~AbstractAnimation()
+			{
+				_targetAddedSlot	= nullptr;
+				_targetRemovedSlot	= nullptr;
+				_addedSlot			= nullptr;
+				_removedSlot		= nullptr;
+				_frameBeginSlot		= nullptr;
+			}
+
+			virtual
+			void
+			initialize();
+
+			void
+			targetAddedHandler(AbsCmpPtr cmp, NodePtr node);
+
+			void
+			targetRemovedHandler(AbsCmpPtr cmp, NodePtr node);
+
+			virtual
             void
             addedHandler(NodePtr node, NodePtr target, NodePtr parent);
 
-            virtual
-            void
+			virtual
+			void
             removedHandler(NodePtr node, NodePtr target, NodePtr parent);
 
-            void
-            componentAddedHandler(NodePtr node, NodePtr    target, AbsCmpPtr component);
+			void
+			componentAddedHandler(NodePtr node, NodePtr	target, AbsCmpPtr component);
 
-            void
-            componentRemovedHandler(NodePtr    node, NodePtr target, AbsCmpPtr    component);
+			void
+			componentRemovedHandler(NodePtr	node, NodePtr target, AbsCmpPtr	component);
 
-            void
-            findSceneManager();
+			void
+			findSceneManager();
 
-            void
-            setSceneManager(std::shared_ptr<SceneManager>);
+			void
+			setSceneManager(std::shared_ptr<SceneManager>);
 
-            virtual
-            void
-            frameBeginHandler(std::shared_ptr<SceneManager>, float, float);
+			virtual
+			void
+			frameBeginHandler(std::shared_ptr<SceneManager>, float, float);
 
-            // record the indices of the labels that lie directly after the specified time value
-            // in the animation.
-            virtual
-            void
-            updateNextLabelIds(uint time);
+			// record the indices of the labels that lie directly after the specified time value
+			// in the animation.
+			virtual
+			void
+			updateNextLabelIds(uint time);
 
-            virtual
-            void
-            checkLabelHit(uint previousTime, uint newTime);
+			virtual
+			void 
+			checkLabelHit(uint previousTime, uint newTime);
 
-            bool
-            isInPlaybackWindow(uint) const;
+			bool
+			isInPlaybackWindow(uint) const;
 
-            virtual
-            bool
-            update(uint rawGlobalTime); // absolute, untransformed animation time (in milliseconds)
+			virtual 
+			bool
+			update(uint rawGlobalTime); // absolute, untransformed animation time (in milliseconds)
 
-            virtual
-            void
-            update() = 0;
+			virtual
+			void
+			update() = 0;
 
-            uint
-            getTimerMilliseconds() const;
+			uint
+			getTimerMilliseconds() const;
 
-            uint
-            getNewLoopTime(uint time, int deltaTime) const;
-        };
-    }
+			uint
+			getNewLoopTime(uint time, int deltaTime) const;
+		};
+	}
 }

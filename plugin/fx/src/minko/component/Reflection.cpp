@@ -45,10 +45,34 @@ Reflection::Reflection(
     _rootAdded(Signal<AbsCmpPtr, std::shared_ptr<scene::Node>>::create()),
     _clipPlane(),
     _activeCamera(nullptr),
-    _enabled(true),
-    _reflectedViewMatrix(Matrix4x4::create())
+	_enabled(true),
+	_reflectedViewMatrix(Matrix4x4::create())
 {
     _renderTarget = render::Texture::create(_assets->context(), clp2(_width), clp2(_height), false, true);
+}
+
+Reflection::Reflection(const Reflection& reflection, const CloneOption& option) : 
+	_assets(reflection._assets),
+	_width(reflection._width),
+	_height(reflection._height),
+	_clearColor(reflection._clearColor),
+	_rootAdded(Signal<AbsCmpPtr, std::shared_ptr<scene::Node>>::create()),
+	_clipPlane(),
+	_activeCamera(reflection._activeCamera),
+	_enabled(reflection._enabled),
+	_reflectedViewMatrix(Matrix4x4::create())
+{
+	_renderTarget = render::Texture::create(_assets->context(), clp2(_width), clp2(_height), false, true);
+}
+
+AbstractComponent::Ptr
+Reflection::clone(const CloneOption& option)
+{
+	auto reflection = std::shared_ptr<Reflection>(new Reflection(*this, option));
+
+	reflection->initialize();
+
+	return reflection;
 }
 
 void
@@ -161,38 +185,38 @@ Reflection::targetAddedToScene(NodePtr node, NodePtr target, NodePtr ancestor)
     {
         _addedToSceneSlot = nullptr;
 
-        auto renderTarget = render::Texture::create(_assets->context(), _width, _height, false, true);
+		auto renderTarget = render::Texture::create(_assets->context(), _width, _height, false, true);
 
-        // Create a new render target
-        _renderTargets.push_back(renderTarget);
+		// Create a new render target
+		_renderTargets.push_back(renderTarget);
 
-        auto originalCamera = target->components<PerspectiveCamera>()[0];
+		auto originalCamera = target->components<PerspectiveCamera>()[0];
 
-        // Create a virtual camera
-        auto virtualPerspectiveCameraComponent = PerspectiveCamera::create(
-            originalCamera->aspectRatio(), originalCamera->fieldOfView(), originalCamera->zNear(), originalCamera->zFar());
+		// Create a virtual camera
+		auto virtualPerspectiveCameraComponent = PerspectiveCamera::create(
+			originalCamera->aspectRatio(), originalCamera->fieldOfView(), originalCamera->zNear(), originalCamera->zFar());
 
-        auto cameraTarget = Vector3::create();
-        auto reflectedPosition = Vector3::create();
+		auto cameraTarget = Vector3::create();
+		auto reflectedPosition = Vector3::create();
 
-        auto renderer = Renderer::create(_clearColor, _renderTarget, _reflectionEffect, 1000000.f, "Reflection");
+		auto renderer = Renderer::create(_clearColor, _renderTarget, _reflectionEffect, 1000000.f, "Reflection");
 
-        renderer->layoutMask(scene::Layout::Group::REFLECTION);
+		renderer->layoutMask(scene::Layout::Group::REFLECTION);
 
-        _virtualCamera = scene::Node::create("virtualCamera")
-            ->addComponent(renderer)
-            ->addComponent(virtualPerspectiveCameraComponent)
-            ->addComponent(Transform::create());
+		_virtualCamera = scene::Node::create("virtualCamera")
+			->addComponent(renderer)
+			->addComponent(virtualPerspectiveCameraComponent)
+			->addComponent(Transform::create());
 
-        enabled(_enabled);
+		enabled(_enabled);
 
-        // Add the virtual camera to the scene
-        target->root()->addChild(_virtualCamera);
+		// Add the virtual camera to the scene
+		target->root()->addChild(_virtualCamera);
 
-        // Bind this camera with a virtual camera (by index for now)
-        // TODO: Use unordered_map instead
-        //_cameras.push_back(child);
-        //_virtualCameras.push_back(virtualCamera);
+		// Bind this camera with a virtual camera (by index for now)
+		// TODO: Use unordered_map instead
+		//_cameras.push_back(child);
+		//_virtualCameras.push_back(virtualCamera);
 
         // We first check that the target has a camera component
         if (target->components<component::PerspectiveCamera>().size() < 1)
@@ -202,10 +226,10 @@ Reflection::targetAddedToScene(NodePtr node, NodePtr target, NodePtr ancestor)
         //_activeCamera = target;
 
         // Listen scene manager
-        _frameRenderingSlot = target->root()->component<SceneManager>()->renderingBegin()->connect(
-            [&](std::shared_ptr<SceneManager>                sceneManager,
-            uint                            frameId,
-            std::shared_ptr<render::AbstractTexture>            renderTarge)
+		_frameRenderingSlot = target->root()->component<SceneManager>()->renderingBegin()->connect(
+			[&](std::shared_ptr<SceneManager>				sceneManager,
+			uint							frameId,
+			std::shared_ptr<render::AbstractTexture>			renderTarge)
         {
             updateReflectionMatrix();
         }, -100.f);
@@ -227,18 +251,18 @@ Reflection::cameraPropertyValueChangedHandler(std::shared_ptr<data::Provider> pr
 void
 Reflection::updateReflectionMatrix()
 {
-    if (!_enabled)
-        return;
+	if (!_enabled)
+		return;
 
-    auto transformCmp = targets()[0]->component<Transform>();
+	auto transformCmp = targets()[0]->component<Transform>();
 
-    auto transform = transformCmp->modelToWorldMatrix();
+	auto transform = transformCmp->modelToWorldMatrix();
 
-    auto camera = targets()[0]->component<PerspectiveCamera>();
-    auto virtualCamera = _virtualCamera->component<PerspectiveCamera>();
-
-    virtualCamera->fieldOfView(camera->fieldOfView());
-    virtualCamera->aspectRatio(camera->aspectRatio());
+	auto camera = targets()[0]->component<PerspectiveCamera>();
+	auto virtualCamera = _virtualCamera->component<PerspectiveCamera>();
+	
+	virtualCamera->fieldOfView(camera->fieldOfView());
+	virtualCamera->aspectRatio(camera->aspectRatio());
 
     // Compute active camera data
     auto cameraPosition = transform->translation();
@@ -251,13 +275,13 @@ Reflection::updateReflectionMatrix()
 
     // Compute reflected view matrix
     _reflectedViewMatrix->lookAt(reflectedTargetPosition, reflectedPosition);
+    
+	_reflectedViewMatrix->lock();
+	_reflectedViewMatrix->transform(Vector3::zero(), reflectedPosition);
+	_reflectedViewMatrix->invert();
+	_reflectedViewMatrix->unlock();
 
-    _reflectedViewMatrix->lock();
-    _reflectedViewMatrix->transform(Vector3::zero(), reflectedPosition);
-    _reflectedViewMatrix->invert();
-    _reflectedViewMatrix->unlock();
-
-    _reflectionEffect->setUniform("ReflectedViewMatrix", _reflectedViewMatrix);
+	_reflectionEffect->setUniform("ReflectedViewMatrix", _reflectedViewMatrix);
 
 }
 
@@ -269,13 +293,13 @@ Reflection::updateReflectionMatrixes()
 void
 Reflection::enabled(bool value)
 {
-    _enabled = value;
+	_enabled = value;
 
-    if (_virtualCamera != nullptr)
-    {
-        auto renderer = _virtualCamera->component<Renderer>();
+	if (_virtualCamera != nullptr)
+	{
+		auto renderer = _virtualCamera->component<Renderer>();
 
-        if (renderer != nullptr)
-            renderer->enabled(value);
-    }
+		if (renderer != nullptr)
+			renderer->enabled(value);
+	}
 }

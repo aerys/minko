@@ -89,6 +89,9 @@ namespace minko
                     return collider;
                 }
 
+				AbstractComponent::Ptr
+				clone(const CloneOption& option);
+
                 ~Collider()
                 {
                 }

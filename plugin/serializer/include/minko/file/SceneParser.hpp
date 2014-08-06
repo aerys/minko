@@ -20,11 +20,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "msgpack.hpp"
 #include "minko/file/AbstractSerializerParser.hpp"
 #include "minko/deserialize/ComponentDeserializer.hpp"
 #include "minko/file/GeometryParser.hpp"
 #include "minko/file/MaterialParser.hpp"
+
+#include "msgpack.hpp"
 
 namespace minko
 {

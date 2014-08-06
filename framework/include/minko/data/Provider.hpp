@@ -156,16 +156,8 @@ namespace minko
                 if (foundIt == _values.end())
                     throw std::invalid_argument("propertyName");
 
-                try
-                {
-                    Any::cast<T>(foundIt->second);
-                }
-                catch (...)
-                {
-                    return false;
-                }
+				return Any::cast<T>(&foundIt->second) != nullptr;
 
-                return true;
             }
 
             template <typename T>
@@ -244,7 +236,7 @@ namespace minko
             Ptr
             set(const std::string& propertyName, T value)
             {
-                return set(propertyName, value, false);
+				return Provider::set(propertyName, value, false);
             }
 
             virtual
