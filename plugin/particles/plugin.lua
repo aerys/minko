@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 minko.plugin.particles = {}
 
 function minko.plugin.particles:enable()
-	defines { "MINKO_PLUGIN_PARTICES" }
+	defines { "MINKO_PLUGIN_PARTICLES" }
 
 	minko.plugin.links { "particles" }
 
