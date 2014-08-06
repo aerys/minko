@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -27,67 +27,67 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace math
-	{
-		enum class ShapePosition
-		{
-			AROUND	= -2,
-			INSIDE	= -1,
-			LEFT	= 0,
-			TOP		= 1,
-			RIGHT	= 2,
-			BOTTOM	= 3,
-			NEAR	= 4,
-			FAR		= 5
-		};
+    namespace math
+    {
+        enum class ShapePosition
+        {
+            AROUND    = -2,
+            INSIDE    = -1,
+            LEFT    = 0,
+            TOP        = 1,
+            RIGHT    = 2,
+            BOTTOM    = 3,
+            NEAR    = 4,
+            FAR        = 5
+        };
 
-		enum class PlanePosition
-		{
-			LEFT	= 0,
-			TOP		= 1,
-			RIGHT	= 2,
-			BOTTOM	= 3,
-			NEAR	= 4,
-			FAR		= 5
-		};
-	}
+        enum class PlanePosition
+        {
+            LEFT    = 0,
+            TOP        = 1,
+            RIGHT    = 2,
+            BOTTOM    = 3,
+            NEAR    = 4,
+            FAR        = 5
+        };
+    }
 }
 
 namespace std
 {
-	template<>
-	struct hash<minko::math::ShapePosition>
-	{
-		inline
-		size_t
-		operator()(const minko::math::ShapePosition& p) const
-		{
-			return static_cast<int>(p);
-		}
-	};
+    template<>
+    struct hash<minko::math::ShapePosition>
+    {
+        inline
+        size_t
+        operator()(const minko::math::ShapePosition& p) const
+        {
+            return static_cast<int>(p);
+        }
+    };
 }
 
 namespace minko
 {
-	namespace math
-	{
-		class AbstractShape
-		{
-		public:
-			typedef std::shared_ptr<AbstractShape>	Ptr;
+    namespace math
+    {
+        class AbstractShape
+        {
+        public:
+            typedef std::shared_ptr<AbstractShape>    Ptr;
 
-		public:
-			virtual
-			bool
-			cast(std::shared_ptr<Ray> ray, float& distance) = 0;
-	
-			virtual
-			ShapePosition
-			testBoundingBox(std::shared_ptr<math::Box> box) = 0;
+        public:
+            virtual
+            bool
+            cast(std::shared_ptr<Ray> ray, float& distance) = 0;
 
-			virtual
-			void
-			updateFromMatrix(std::shared_ptr<math::Matrix4x4> matrix) = 0;
-		};
-	}
+            virtual
+            ShapePosition
+            testBoundingBox(std::shared_ptr<math::Box> box) = 0;
+
+            virtual
+            void
+            updateFromMatrix(std::shared_ptr<math::Matrix4x4> matrix) = 0;
+        };
+    }
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,217 +25,223 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace component
-	{
-		class Surface :
-			public AbstractComponent
-		{
-			friend render::DrawCallPool;
+    namespace component
+    {
+        class Surface :
+            public AbstractComponent
+        {
+            friend render::DrawCallPool;
 
-		public:
-			typedef std::shared_ptr<Surface>										Ptr;
-			typedef Signal<Ptr, const std::string&, bool>							TechniqueChangedSignal;	
-			typedef Signal<Ptr, std::shared_ptr<component::Renderer>, bool>			VisibilityChangedSignal;
+        public:
+            typedef std::shared_ptr<Surface>                                        Ptr;
+            typedef Signal<Ptr, const std::string&, bool>                            TechniqueChangedSignal;
+            typedef Signal<Ptr, std::shared_ptr<component::Renderer>, bool>            VisibilityChangedSignal;
 
-		private:
-			typedef std::shared_ptr<data::ArrayProvider>							ArrayProviderPtr;
-			typedef std::shared_ptr<scene::Node>									NodePtr;
-			typedef std::shared_ptr<data::Container>								ContainerPtr;
-			typedef Signal<ContainerPtr, const std::string&>						PropertyChangedSignal;
-			typedef PropertyChangedSignal::Slot										PropertyChangedSlot;
-			typedef std::shared_ptr<render::Effect>									EffectPtr;
-			typedef const std::string&												StringRef;
-			typedef Signal<ArrayProviderPtr, uint>::Slot							ArrayIndexChangedSlot;
+        private:
+            typedef std::shared_ptr<data::ArrayProvider>                            ArrayProviderPtr;
+            typedef std::shared_ptr<scene::Node>                                    NodePtr;
+            typedef std::shared_ptr<data::Container>                                ContainerPtr;
+            typedef Signal<ContainerPtr, const std::string&>                        PropertyChangedSignal;
+            typedef PropertyChangedSignal::Slot                                        PropertyChangedSlot;
+            typedef std::shared_ptr<render::Effect>                                    EffectPtr;
+            typedef const std::string&                                                StringRef;
+            typedef Signal<ArrayProviderPtr, uint>::Slot                            ArrayIndexChangedSlot;
 
 
-		private:
-			std::string																_name;
+        private:
+            std::string                                                                _name;
 
-			std::shared_ptr<geometry::Geometry>										_geometry;
-			std::shared_ptr<data::Provider>											_material;
-			std::shared_ptr<render::Effect>											_effect;
-			std::string 															_technique;
+            std::shared_ptr<geometry::Geometry>                                        _geometry;
+			std::shared_ptr<material::Material>										_material;
+            std::shared_ptr<render::Effect>                                            _effect;
+            std::string                                                             _technique;
 
-			bool																	_visible;
-			std::unordered_map<std::shared_ptr<component::Renderer>, bool>			_rendererToVisibility;
-			std::unordered_map<std::shared_ptr<component::Renderer>, bool>			_rendererToComputedVisibility;
+            bool                                                                    _visible;
+            std::unordered_map<std::shared_ptr<component::Renderer>, bool>            _rendererToVisibility;
+            std::unordered_map<std::shared_ptr<component::Renderer>, bool>            _rendererToComputedVisibility;
+
+            TechniqueChangedSignal::Ptr                                                _techniqueChanged;
+            VisibilityChangedSignal::Ptr                                            _visibilityChanged;
+            VisibilityChangedSignal::Ptr                                            _computedVisibilityChanged;
+
+            Signal<AbstractComponent::Ptr, NodePtr>::Slot                            _targetAddedSlot;
+            Signal<AbstractComponent::Ptr, NodePtr>::Slot                            _targetRemovedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot                                    _addedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot                                    _removedSlot;
+
+        public:
+            static
+            Ptr
+            create(std::shared_ptr<geometry::Geometry>         geometry,
+					std::shared_ptr<material::Material>		material,
+                   std::shared_ptr<render::Effect>            effect)
+            {
+                return create("", geometry, material, effect, "default");
+            }
+
+            static
+            Ptr
+            create(const std::string&                        name,
+                   std::shared_ptr<geometry::Geometry>         geometry,
+				   std::shared_ptr<material::Material>		material,
+                   std::shared_ptr<render::Effect>            effect,
+                   const std::string&                        technique)
+            {
+                Ptr surface(new Surface(name, geometry, material, effect, technique));
+
+                surface->initialize();
+
+                return surface;
+            }
+
 			
-			TechniqueChangedSignal::Ptr												_techniqueChanged;
-			VisibilityChangedSignal::Ptr											_visibilityChanged;
-			VisibilityChangedSignal::Ptr											_computedVisibilityChanged;
+			AbstractComponent::Ptr
+			clone(const CloneOption& option);
 
-			Signal<AbstractComponent::Ptr, NodePtr>::Slot							_targetAddedSlot;
-			Signal<AbstractComponent::Ptr, NodePtr>::Slot							_targetRemovedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot									_addedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot									_removedSlot;
+            ~Surface()
+            {
+            }
 
-		public:
-			static
-			Ptr
-			create(std::shared_ptr<geometry::Geometry> 		geometry,
-				   std::shared_ptr<data::Provider>			material,
-				   std::shared_ptr<render::Effect>			effect)
-			{
-				return create("", geometry, material, effect, "default");
-			}
+            inline
+            const std::string&
+            name() const
+            {
+                return _name;
+            }
 
-			static
-			Ptr
-			create(const std::string&					    name,
-				   std::shared_ptr<geometry::Geometry> 		geometry,
-				   std::shared_ptr<data::Provider>			material,
-				   std::shared_ptr<render::Effect>			effect,
-				   const std::string&						technique)
-			{
-				Ptr surface(new Surface(name, geometry, material, effect, technique));
+            inline
+            void
+            name(const std::string& value)
+            {
+                _name = value;
+            }
 
-				surface->initialize();
-
-				return surface;
-			}
-
-			~Surface()
-			{
-			}
-
-			inline
-			const std::string&
-			name() const
-			{
-				return _name;
-			}
-
-			inline
-			void
-			name(const std::string& value)
-			{
-				_name = value;
-			}
-
-			inline
-			std::shared_ptr<geometry::Geometry>
-			geometry() const
-			{
-				return _geometry;
-			}
+            inline
+            std::shared_ptr<geometry::Geometry>
+            geometry() const
+            {
+                return _geometry;
+            }
 
             void
             geometry(std::shared_ptr<geometry::Geometry>);
 
-			inline
-			std::shared_ptr<data::Provider>
-			material() const
-			{
-				return _material;
-			}
+            inline
+			std::shared_ptr<material::Material>
+            material() const
+            {
+                return _material;
+            }
 
-			inline
-			std::shared_ptr<render::Effect>
-			effect() const
-			{
-				return _effect;
-			}
+            inline
+            std::shared_ptr<render::Effect>
+            effect() const
+            {
+                return _effect;
+            }
 
-			inline
-			const std::string&
-			technique() const
-			{
-				return _technique;
-			}
+            inline
+            const std::string&
+            technique() const
+            {
+                return _technique;
+            }
 
-			void
-			effect(std::shared_ptr<render::Effect>, const std::string& = "default");
+            void
+            effect(std::shared_ptr<render::Effect>, const std::string& = "default");
 
-			inline
-			bool
-			visible() const
-			{
-				return _visible;
-			}
+            inline
+            bool
+            visible() const
+            {
+                return _visible;
+            }
 
-			inline
-			bool
-			visible(std::shared_ptr<component::Renderer> renderer)
-			{
-				if (_rendererToVisibility.find(renderer) == _rendererToVisibility.end())
-					_rendererToVisibility[renderer] = _visible;
-				return _rendererToVisibility[renderer];
-			}
+            inline
+            bool
+            visible(std::shared_ptr<component::Renderer> renderer)
+            {
+                if (_rendererToVisibility.find(renderer) == _rendererToVisibility.end())
+                    _rendererToVisibility[renderer] = _visible;
+                return _rendererToVisibility[renderer];
+            }
 
-			inline
-			void
-			visible(bool value)
-			{
-				for (auto& visibility : _rendererToVisibility)
-					visible(visibility.first, value);
+            inline
+            void
+            visible(bool value)
+            {
+                for (auto& visibility : _rendererToVisibility)
+                    visible(visibility.first, value);
 
-				if (_visible != value)
-				{
-					_visible = value;
-					_visibilityChanged->execute(std::static_pointer_cast<Surface>(shared_from_this()), nullptr, _visible);
-				}
-			}
+                if (_visible != value)
+                {
+                    _visible = value;
+                    _visibilityChanged->execute(std::static_pointer_cast<Surface>(shared_from_this()), nullptr, _visible);
+                }
+            }
 
-			void
-			visible(std::shared_ptr<component::Renderer>, bool value);
-			
-			inline
-			bool
-			computedVisibility(std::shared_ptr<component::Renderer> renderer)
-			{
-				if (_rendererToComputedVisibility.find(renderer) == _rendererToComputedVisibility.end())
-					_rendererToComputedVisibility[renderer] = true;
-				return _rendererToComputedVisibility[renderer];
-			}
+            void
+            visible(std::shared_ptr<component::Renderer>, bool value);
 
-			void
-			computedVisibility(std::shared_ptr<component::Renderer>, bool value);
+            inline
+            bool
+            computedVisibility(std::shared_ptr<component::Renderer> renderer)
+            {
+                if (_rendererToComputedVisibility.find(renderer) == _rendererToComputedVisibility.end())
+                    _rendererToComputedVisibility[renderer] = true;
+                return _rendererToComputedVisibility[renderer];
+            }
 
-			inline
-			TechniqueChangedSignal::Ptr	
-			techniqueChanged() const
-			{
-				return _techniqueChanged;
-			}
+            void
+            computedVisibility(std::shared_ptr<component::Renderer>, bool value);
 
-			inline
-			VisibilityChangedSignal::Ptr
-			visibilityChanged() const
-			{
-				return _visibilityChanged;
-			}
+            inline
+            TechniqueChangedSignal::Ptr
+            techniqueChanged() const
+            {
+                return _techniqueChanged;
+            }
 
-			inline
-			VisibilityChangedSignal::Ptr
-			computedVisibilityChanged() const
-			{
-				return _computedVisibilityChanged;
-			}
+            inline
+            VisibilityChangedSignal::Ptr
+            visibilityChanged() const
+            {
+                return _visibilityChanged;
+            }
 
-		private:
-			Surface(std::string								name,
-					std::shared_ptr<geometry::Geometry>		geometry,
-					std::shared_ptr<data::Provider>			material,
-					std::shared_ptr<render::Effect>			effect,
-					const std::string&						technique);
+            inline
+            VisibilityChangedSignal::Ptr
+            computedVisibilityChanged() const
+            {
+                return _computedVisibilityChanged;
+            }
 
-			void
-			initialize();
+        private:
+            Surface(std::string                                name,
+                    std::shared_ptr<geometry::Geometry>        geometry,
+					std::shared_ptr<material::Material>			material,
+                    std::shared_ptr<render::Effect>            effect,
+                    const std::string&                        technique);
 
-			void
-			targetAddedHandler(AbstractComponent::Ptr, NodePtr);
+			Surface(const Surface& surface, const CloneOption& option);
 
-			void
-			targetRemovedHandler(AbstractComponent::Ptr, NodePtr);
+            void
+            initialize();
 
-			void
-			addedHandler(NodePtr, NodePtr, NodePtr);
+            void
+            targetAddedHandler(AbstractComponent::Ptr, NodePtr);
 
-			void
-			removedHandler(NodePtr, NodePtr, NodePtr);
+            void
+            targetRemovedHandler(AbstractComponent::Ptr, NodePtr);
 
-			void
-			setEffectAndTechnique(EffectPtr, const std::string&, bool updateDrawcalls = true);
-		};
-	}
+            void
+            addedHandler(NodePtr, NodePtr, NodePtr);
+
+            void
+            removedHandler(NodePtr, NodePtr, NodePtr);
+
+            void
+            setEffectAndTechnique(EffectPtr, const std::string&, bool updateDrawcalls = true);
+        };
+    }
 }

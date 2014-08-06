@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,69 +25,78 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace data
-	{
-		class ArrayProvider :
-			public Provider
-		{
-		public:
-			typedef std::shared_ptr<ArrayProvider>			Ptr;
+    namespace data
+    {
+        class ArrayProvider :
+            public Provider
+        {
+        public:
+            typedef std::shared_ptr<ArrayProvider>            Ptr;
 
-		private:
-			typedef std::shared_ptr<Provider>				ProviderPtr;
-			typedef Signal<Ptr, uint>						IndexChangedSignal;
-			typedef std::shared_ptr<IndexChangedSignal>		IndexChangedSignalPtr;
+        private:
+            typedef std::shared_ptr<Provider>                ProviderPtr;
+            typedef Signal<Ptr, uint>                        IndexChangedSignal;
+            typedef std::shared_ptr<IndexChangedSignal>        IndexChangedSignalPtr;
 
-		private:
-			std::string										_name;
-			IndexChangedSignalPtr							_indexChanged;
+        private:
+            std::string                                        _name;
+            IndexChangedSignalPtr                            _indexChanged;
 
-		public:
+        public:
+            inline static
+            Ptr
+            create(const std::string& name)
+            {
+                return std::shared_ptr<ArrayProvider>(new ArrayProvider(name));
+            }
+
 			inline static
 			Ptr
-			create(const std::string& name)
+			create(const ArrayProvider& provider)
 			{
-				return std::shared_ptr<ArrayProvider>(new ArrayProvider(name));
+				return std::shared_ptr<ArrayProvider>(new ArrayProvider(provider));
 			}
 
 
-			inline
-			IndexChangedSignalPtr
-			indexChanged()
-			{
-				return _indexChanged;
-			}
+            inline
+            IndexChangedSignalPtr
+            indexChanged()
+            {
+                return _indexChanged;
+            }
 
-			inline
-			const std::string&
-			arrayName() const
-			{
-				return _name;
-			}
+            inline
+            const std::string&
+            arrayName() const
+            {
+                return _name;
+            }
 
-			inline
-			Ptr
-			copyFrom(Ptr source)
-			{
-				Provider::copyFrom(std::static_pointer_cast<Provider>(source));
+            inline
+            Ptr
+            copyFrom(Ptr source)
+            {
+                Provider::copyFrom(std::static_pointer_cast<Provider>(source));
 
-				_name = source->_name;
+                _name = source->_name;
 
-				return std::static_pointer_cast<ArrayProvider>(shared_from_this());
-			}
+                return std::static_pointer_cast<ArrayProvider>(shared_from_this());
+            }
 
-			inline
-			Ptr
-			clone()
-			{
-				auto that = std::static_pointer_cast<ArrayProvider>(shared_from_this());
+            inline
+            Ptr
+            clone()
+            {
+                auto that = std::static_pointer_cast<ArrayProvider>(shared_from_this());
 
-				return ArrayProvider::create(_name)->copyFrom(that);
-			}
+                return ArrayProvider::create(_name)->copyFrom(that);
+            }
 
-		protected:
-			explicit
-			ArrayProvider(const std::string& name);
-		};
-	}
+        protected:
+            explicit
+            ArrayProvider(const std::string& name);
+
+			ArrayProvider(const ArrayProvider& provider);
+        };
+    }
 }

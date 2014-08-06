@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,17 +25,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace file
-	{
-		class TextureWriter
-		{
-		public:
-			typedef std::shared_ptr<TextureWriter>										Ptr;
+    namespace file
+    {
+        class TextureWriter
+        {
+        public:
+            typedef std::shared_ptr<TextureWriter>                                        Ptr;
 
-		private:
-			typedef std::shared_ptr<AssetLibrary>					AssetLibraryPtr;
-			typedef std::shared_ptr<Options>							OptionsPtr;
-			typedef std::shared_ptr<WriterOptions>					    WriterOptionsPtr;
+        private:
+            typedef std::shared_ptr<AssetLibrary>                    AssetLibraryPtr;
+            typedef std::shared_ptr<Options>                            OptionsPtr;
+            typedef std::shared_ptr<WriterOptions>                        WriterOptionsPtr;
 
             typedef std::shared_ptr<render::Texture>                    TexturePtr;
 
@@ -43,13 +43,13 @@ namespace minko
             serialize::ImageFormat _imageFormat;
             TexturePtr _data;
 
-		public:
-			inline static
-			Ptr
-			create()
-			{
-				return std::shared_ptr<TextureWriter>(new TextureWriter());
-			}
+        public:
+            inline static
+            Ptr
+            create()
+            {
+                return std::shared_ptr<TextureWriter>(new TextureWriter());
+            }
 
             void
             data(TexturePtr data);
@@ -60,17 +60,17 @@ namespace minko
             void
             writeRawTexture(std::string&        filename,
                             AssetLibraryPtr     assetLibrary,
-                            OptionsPtr		    options,
+                            OptionsPtr            options,
                             WriterOptionsPtr    writerOptions);
 
-			std::string
-			embedTexture(AssetLibraryPtr    assetLibrary,
+            std::string
+            embedTexture(AssetLibraryPtr    assetLibrary,
                          OptionsPtr         options,
                          WriterOptionsPtr   writerOptions);
 
-		protected:
-			TextureWriter();
-		};
-	}
+        protected:
+            TextureWriter();
+        };
+    }
 }
 

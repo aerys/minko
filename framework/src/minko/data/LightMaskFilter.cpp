@@ -31,111 +31,111 @@ using namespace minko::data;
 using namespace minko::scene;
 using namespace minko::component;
 
-/*static*/ std::vector<std::string>	LightMaskFilter::_numLightPropertyNames = initializeNumLightPropertyNames();
+/*static*/ std::vector<std::string>    LightMaskFilter::_numLightPropertyNames = initializeNumLightPropertyNames();
 
 LightMaskFilter::LightMaskFilter():
-	AbstractFilter(),
-	_target(nullptr),
-	_root(nullptr),
-	_providerToLight(),
-	_rootPropertyChangedSlots()
+    AbstractFilter(),
+    _target(nullptr),
+    _root(nullptr),
+    _providerToLight(),
+    _rootPropertyChangedSlots()
 {
 }
 
 LightMaskFilter::Ptr
 LightMaskFilter::root(Node::Ptr root)
 {
-	reset();
+    reset();
 
-	if (root)
-	{
-		_root = root;
+    if (root)
+    {
+        _root = root;
 
-		for (auto& n : _numLightPropertyNames)
-		{
-			auto slot = _root->data()->propertyReferenceChanged(n)->connect([=](Container::Ptr, const std::string&){ 
-				lightsChangedHandler(); 
-			}, 
-			10.0f);
+        for (auto& n : _numLightPropertyNames)
+        {
+            auto slot = _root->data()->propertyReferenceChanged(n)->connect([=](Container::Ptr, const std::string&){
+                lightsChangedHandler();
+            },
+            10.0f);
 
-			_rootPropertyChangedSlots.push_back(slot);
-		}
+            _rootPropertyChangedSlots.push_back(slot);
+        }
 
-		lightsChangedHandler();
-	}
+        lightsChangedHandler();
+    }
 
-	return std::static_pointer_cast<LightMaskFilter>(shared_from_this());
+    return std::static_pointer_cast<LightMaskFilter>(shared_from_this());
 }
 
 void
 LightMaskFilter::reset()
 {
-	_root = nullptr;
-	_providerToLight.clear();
-	_rootPropertyChangedSlots.clear();
+    _root = nullptr;
+    _providerToLight.clear();
+    _rootPropertyChangedSlots.clear();
 }
 
 bool
 LightMaskFilter::operator()(Provider::Ptr data)
 {
-	if (_root == nullptr 
-		|| currentSurface() == nullptr 
-		|| currentSurface()->targets().front()->root() != _root)
-		return false;
+    if (_root == nullptr
+        || currentSurface() == nullptr
+        || currentSurface()->targets().front()->root() != _root)
+        return false;
 
 #ifdef DEBUG
-	assert(_root);
-	assert(currentSurface());
-	assert(currentSurface()->targets().front()->root() == _root);
+    assert(_root);
+    assert(currentSurface());
+    assert(currentSurface()->targets().front()->root() == _root);
 #endif // DEBUG
 
-	auto foundLightIt = _providerToLight.find(data);
+    auto foundLightIt = _providerToLight.find(data);
 
-	if (foundLightIt == _providerToLight.end())
-		return true; // the specified provider does not belong to a light
+    if (foundLightIt == _providerToLight.end())
+        return true; // the specified provider does not belong to a light
 
-	auto	surfaceLayouts	= currentSurface()->targets().front()->layouts();
-	Layouts	lightMask		= foundLightIt->second->layoutMask();
+    auto    surfaceLayouts    = currentSurface()->targets().front()->layouts();
+    Layouts    lightMask        = foundLightIt->second->layoutMask();
 
-	return (surfaceLayouts & lightMask) != 0;
+    return (surfaceLayouts & lightMask) != 0;
 }
 
 void
 LightMaskFilter::lightsChangedHandler()
 {
-	if (_root == nullptr)
-		return;
+    if (_root == nullptr)
+        return;
 
-	_layoutMaskChangedSlots.clear();
-	_providerToLight.clear();
+    _layoutMaskChangedSlots.clear();
+    _providerToLight.clear();
 
-	auto withLights	= NodeSet::create(_root)
-		->descendants(true)
-		->where([](Node::Ptr n){ return n->hasComponent<AbstractLight>(); });
+    auto withLights    = NodeSet::create(_root)
+        ->descendants(true)
+        ->where([](Node::Ptr n){ return n->hasComponent<AbstractLight>(); });
 
-	for (auto& n : withLights->nodes())
-	{
-		auto light = n->component<AbstractLight>();
+    for (auto& n : withLights->nodes())
+    {
+        auto light = n->component<AbstractLight>();
 
-		_providerToLight[light->data()] = light;
+        _providerToLight[light->data()] = light;
 
-		_layoutMaskChangedSlots.push_back(light->data()->propertyValueChanged()->connect([=](Provider::Ptr provider, const std::string& lightProperty)
-		{
-			changed()->execute(shared_from_this(), nullptr);
-		}));
-	}
+        _layoutMaskChangedSlots.push_back(light->data()->propertyValueChanged()->connect([=](Provider::Ptr provider, const std::string& lightProperty)
+        {
+            changed()->execute(shared_from_this(), nullptr);
+        }));
+    }
 }
 
 /*static*/
 std::vector<std::string>
 LightMaskFilter::initializeNumLightPropertyNames()
 {
-	std::vector<std::string> names;
+    std::vector<std::string> names;
 
-	names.push_back("ambientLights.length");
-	names.push_back("directionalLights.length");
-	names.push_back("pointLights.length");
-	names.push_back("spotLights.length");
+    names.push_back("ambientLights.length");
+    names.push_back("directionalLights.length");
+    names.push_back("pointLights.length");
+    names.push_back("spotLights.length");
 
-	return names;
+    return names;
 }

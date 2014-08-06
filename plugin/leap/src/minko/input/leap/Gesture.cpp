@@ -27,66 +27,66 @@ using namespace minko::input;
 using namespace minko::input::leap;
 
 Gesture::Gesture(const Leap::Gesture& leapGesture):
-	_leapGesture(std::make_shared<Leap::Gesture>(leapGesture))
+    _leapGesture(std::make_shared<Leap::Gesture>(leapGesture))
 {
-	if (_leapGesture == nullptr)
-		throw std::invalid_argument("leapGesture");
+    if (_leapGesture == nullptr)
+        throw std::invalid_argument("leapGesture");
 }
 
 int32_t
 Gesture::id() const
 {
-	return _leapGesture->id();
+    return _leapGesture->id();
 }
 
 bool
 Gesture::isValid() const
 {
-	return _leapGesture->isValid();
+    return _leapGesture->isValid();
 }
 
 int64_t
 Gesture::durationMicroseconds() const
 {
-	return _leapGesture->duration();
+    return _leapGesture->duration();
 }
 
 Gesture::State
 Gesture::state() const
 {
-	return convert(_leapGesture->state());
+    return convert(_leapGesture->state());
 }
 
 Gesture::Type
 Gesture::type() const
 {
-	return convert(_leapGesture->type());
+    return convert(_leapGesture->type());
 }
 
 void
 Gesture::handIDs(std::unordered_set<int32_t>& ids) const
 {
-	const Leap::HandList& hands = _leapGesture->hands();
+    const Leap::HandList& hands = _leapGesture->hands();
 
-	ids.clear();
-	for (auto& hand : hands)
-		ids.insert(hand.id());
+    ids.clear();
+    for (auto& hand : hands)
+        ids.insert(hand.id());
 }
 
 void
 Gesture::pointablesIDs(std::unordered_set<int32_t>& ids) const
 {
-	const Leap::PointableList& pointables = _leapGesture->pointables();
+    const Leap::PointableList& pointables = _leapGesture->pointables();
 
-	ids.clear();
-	for (auto& pointable : pointables)
-		ids.insert(pointable.id());
+    ids.clear();
+    for (auto& pointable : pointables)
+        ids.insert(pointable.id());
 }
 
 std::shared_ptr<SwipeGesture>
 Gesture::toSwipeGesture() const
 {
-	return _leapGesture->type() == Leap::Gesture::Type::TYPE_SWIPE
-	? std::shared_ptr<SwipeGesture>(new SwipeGesture(*this))
-	: nullptr;
+    return _leapGesture->type() == Leap::Gesture::Type::TYPE_SWIPE
+    ? std::shared_ptr<SwipeGesture>(new SwipeGesture(*this))
+    : nullptr;
 }

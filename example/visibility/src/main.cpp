@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -27,103 +27,104 @@ using namespace minko::math;
 
 const std::string TEXTURE_FILENAME = "texture/box.png";
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Example - Visibility", 800, 600);
+    auto canvas = Canvas::create("Minko Example - Visibility");
 
-	auto sceneManager = SceneManager::create(canvas->context());
+    auto sceneManager = SceneManager::create(canvas->context());
 
-	// setup assets
-	sceneManager->assets()->loader()->options()->resizeSmoothly(true);
-	sceneManager->assets()->loader()->options()->generateMipmaps(true);
-	sceneManager->assets()->loader()->options()
-                ->registerParser<file::PNGParser>("png");
-        sceneManager->assets()->loader()
-                ->queue(TEXTURE_FILENAME)
-		->queue("effect/Basic.effect");
+    // setup assets
+    sceneManager->assets()->loader()->options()
+        ->resizeSmoothly(true)
+        ->generateMipmaps(true)
+        ->registerParser<file::PNGParser>("png");
 
-	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
+    sceneManager->assets()->loader()
+        ->queue(TEXTURE_FILENAME)
+        ->queue("effect/Basic.effect");
 
-	std::cout << "Press [SPACE]\tto change a cube visibility" << std::endl;
+    sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
+
+    std::cout << "Press [SPACE]\tto change a cube visibility" << std::endl;
 
 
-	auto root = scene::Node::create("root")
-		->addComponent(sceneManager);
+    auto root = scene::Node::create("root")
+        ->addComponent(sceneManager);
 
-	auto camera = scene::Node::create("camera")
-		->addComponent(Renderer::create(0x7f7f7fff))
-		->addComponent(Transform::create(
-			Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 17.f))
-		))
-		->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
-	root->addChild(camera);
+    auto camera = scene::Node::create("camera")
+        ->addComponent(Renderer::create(0x7f7f7fff))
+        ->addComponent(Transform::create(
+            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 17.f))
+        ))
+        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
 
-	auto cubes = scene::Node::create("cubesContainer");
+    root->addChild(camera);
 
-	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
-	{
-		sceneManager->assets()->material("boxMaterial", material::BasicMaterial::create()->diffuseMap(sceneManager->assets()->texture(TEXTURE_FILENAME)));
-		sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
+    auto cubes = scene::Node::create("cubesContainer");
 
-		for (int j = 3; j >= -3; --j)
-		{
-			for (int i = -3; i <= 3; ++i)
-			{
-				auto mesh = scene::Node::create("mesh")
-					->addComponent(Surface::create(
-						sceneManager->assets()->geometry("cube"),
-						sceneManager->assets()->material("boxMaterial"),
-						sceneManager->assets()->effect("effect/Basic.effect")
-						))
-					->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(i * 2.f, j * 2.f)));
-				cubes->addChild(mesh);
-			}
-		}
+    auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
+    {
+        sceneManager->assets()->material("boxMaterial", material::BasicMaterial::create()->diffuseMap(sceneManager->assets()->texture(TEXTURE_FILENAME)));
+        sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
 
-		root->addChild(cubes);
-	});
+        for (int j = 3; j >= -3; --j)
+        {
+            for (int i = -3; i <= 3; ++i)
+            {
+                cubes
+                    ->addChild(scene::Node::create("mesh")
+                    ->addComponent(Surface::create(
+                        sceneManager->assets()->geometry("cube"),
+                        sceneManager->assets()->material("boxMaterial"),
+                        sceneManager->assets()->effect("effect/Basic.effect")
+                        ))
+                    ->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(i * 2.f, j * 2.f)))
+                );
+            }
+        }
 
-	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
-	{
-		camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
-	});
+        root->addChild(cubes);
+    });
 
-	auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
-	{
-		if (k->keyDown(input::Keyboard::SPACE))
-		{
-			auto numChildren = cubes->children().size();
-			auto randomChild = cubes->children()[rand() % numChildren];
+    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+    {
+        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+    });
 
-			randomChild->component<Surface>()->visible(!randomChild->component<Surface>()->visible());
-		}
-	});
+    auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
+    {
+        if (k->keyDown(input::Keyboard::SPACE))
+        {
+            auto numChildren = cubes->children().size();
+            auto randomChild = cubes->children()[rand() % numChildren];
 
-	int frameId = 0;
-	int cubeId = 0;
+            randomChild->component<Surface>()->visible(!randomChild->component<Surface>()->visible());
+        }
+    });
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
-	{
-		frameId++;
-		sceneManager->nextFrame(time, deltaTime);
+    int frameId = 0;
+    int cubeId = 0;
 
-		if (frameId % 10 == 0)
-		{
-			cubeId++;
-			auto numChildren = cubes->children().size();
-			auto visibleChild = cubes->children()[(cubeId - 1) % numChildren];
-			auto invisibleChild = cubes->children()[cubeId % numChildren];
+    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    {
+        frameId++;
+        sceneManager->nextFrame(time, deltaTime);
 
-			visibleChild->component<Surface>()->visible(true);
-			invisibleChild->component<Surface>()->visible(false);
-		}
-	});
+        if (frameId % 10 == 0)
+        {
+            cubeId++;
+            auto numChildren = cubes->children().size();
+            auto visibleChild = cubes->children()[(cubeId - 1) % numChildren];
+            auto invisibleChild = cubes->children()[cubeId % numChildren];
 
-	sceneManager->assets()->loader()->load();
+            visibleChild->component<Surface>()->visible(true);
+            invisibleChild->component<Surface>()->visible(false);
+        }
+    });
 
-	canvas->run();
-
-	return 0;
+    sceneManager->assets()->loader()->load();
+    canvas->run();
 }
 
 

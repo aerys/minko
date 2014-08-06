@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -26,121 +26,121 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace component
-	{
-		class JobManager :
-			public AbstractScript
-		{
+    namespace component
+    {
+        class JobManager :
+            public AbstractScript
+        {
 
-		public:
-			
-			class Job
-			{
-			public :
-				typedef std::shared_ptr<Job> Ptr;
+        public:
 
-				friend JobManager;
+            class Job
+            {
+            public :
+                typedef std::shared_ptr<Job> Ptr;
 
-			protected :
-				std::shared_ptr<JobManager>		_jobManager;
-				bool							_running;
-				bool							_oneStepPerFrame;
-				
-			public:
+                friend JobManager;
 
-				virtual
-				bool
-				complete() = 0;
+            protected :
+                std::shared_ptr<JobManager>        _jobManager;
+                bool                            _running;
+                bool                            _oneStepPerFrame;
 
-				virtual
-				void
-				beforeFirstStep() = 0;
+            public:
 
-				virtual
-				void
-				step() = 0;
-				
-				virtual
-				float
-				priority() = 0;
-				
-				virtual
-				void
-				afterLastStep() = 0;
+                virtual
+                bool
+                complete() = 0;
 
-				inline
-				bool
-				running()
-				{
-					return _running;
-				}
+                virtual
+                void
+                beforeFirstStep() = 0;
 
-				inline
-				void
-				running(bool value)
-				{
-					_running = value;
-				}
+                virtual
+                void
+                step() = 0;
 
-				inline
-				bool
-				oneStepPerFrame()
-				{
-					return _oneStepPerFrame;
-				}
+                virtual
+                float
+                priority() = 0;
 
-				inline
-				void
-				oneStepPerFrame(bool value)
-				{
-					_oneStepPerFrame = value;
-				}
+                virtual
+                void
+                afterLastStep() = 0;
 
-				inline
-				std::shared_ptr<JobManager>
-				jobManager()
-				{
-					return _jobManager;
-				}
-			protected :
-				Job();
-			};
+                inline
+                bool
+                running()
+                {
+                    return _running;
+                }
 
-		public:
-			typedef std::shared_ptr<JobManager>	Ptr;
+                inline
+                void
+                running(bool value)
+                {
+                    _running = value;
+                }
 
-		private:
-			typedef std::shared_ptr<scene::Node> NodePtr;
-		
-		private:
-			unsigned int			_loadingFramerate;
-			float					_frameTime;
-			std::vector<Job::Ptr>	_jobs;
-			clock_t					_frameStartTime;
+                inline
+                bool
+                oneStepPerFrame()
+                {
+                    return _oneStepPerFrame;
+                }
 
-		public:
-			static
-			Ptr
-			create(unsigned int loadingFramerate)
-			{
-				Ptr taskManager(new JobManager(loadingFramerate));
+                inline
+                void
+                oneStepPerFrame(bool value)
+                {
+                    _oneStepPerFrame = value;
+                }
 
-				taskManager->initialize();
+                inline
+                std::shared_ptr<JobManager>
+                jobManager()
+                {
+                    return _jobManager;
+                }
+            protected :
+                Job();
+            };
 
-				return taskManager;
-			};
+        public:
+            typedef std::shared_ptr<JobManager>    Ptr;
 
-			Ptr
-			pushJob(Job::Ptr task);
+        private:
+            typedef std::shared_ptr<scene::Node> NodePtr;
 
-			void
-			update(NodePtr target);
+        private:
+            unsigned int            _loadingFramerate;
+            float                    _frameTime;
+            std::vector<Job::Ptr>    _jobs;
+            clock_t                    _frameStartTime;
 
-			void
-			end(NodePtr target);
+        public:
+            static
+            Ptr
+            create(unsigned int loadingFramerate)
+            {
+                Ptr taskManager(new JobManager(loadingFramerate));
 
-		private:
-			JobManager(unsigned int loadingFramerate);
-		};
-	}
+                taskManager->initialize();
+
+                return taskManager;
+            };
+
+            Ptr
+            pushJob(Job::Ptr task);
+
+            void
+            update(NodePtr target);
+
+            void
+            end(NodePtr target);
+
+        private:
+            JobManager(unsigned int loadingFramerate);
+        };
+    }
 }

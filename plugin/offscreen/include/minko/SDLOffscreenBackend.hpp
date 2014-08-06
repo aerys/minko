@@ -24,30 +24,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	class SDLOffscreenBackend :
-		public SDLBackend
-	{
-	public:
-		typedef std::shared_ptr<SDLOffscreenBackend>		Ptr;
+    class SDLOffscreenBackend :
+        public SDLBackend
+    {
+    public:
+        typedef std::shared_ptr<SDLOffscreenBackend>        Ptr;
 
-	public:
-		static
-		std::shared_ptr<SDLOffscreenBackend>
-		create()
-		{
-		    return std::shared_ptr<SDLOffscreenBackend>(new SDLOffscreenBackend());
-		}
+    public:
+        static
+        std::shared_ptr<SDLOffscreenBackend>
+        create()
+        {
+            return std::shared_ptr<SDLOffscreenBackend>(new SDLOffscreenBackend());
+        }
 
-		virtual void
-		initialize(std::shared_ptr<Canvas> canvas);
+        virtual void
+        initialize(std::shared_ptr<Canvas> canvas);
 
-		virtual void
-		swapBuffers(std::shared_ptr<Canvas> canvas);
+        virtual void
+        swapBuffers(std::shared_ptr<Canvas> canvas);
 
-	private:
-		SDLOffscreenBackend() = default;
+    private:
+        SDLOffscreenBackend() = default;
 
-	private:
-		std::shared_ptr<std::vector<float>> _backBuffer;
-	};
+    private:
+        std::shared_ptr<std::vector<float>> _backBuffer;
+    };
 }

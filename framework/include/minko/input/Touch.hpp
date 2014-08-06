@@ -27,121 +27,121 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace input
-	{
-		class Touch
-		{
-		public:
-			typedef std::shared_ptr<Touch> Ptr;
+    namespace input
+    {
+        class Touch
+        {
+        public:
+            typedef std::shared_ptr<Touch> Ptr;
 
-		protected:
-			std::shared_ptr<AbstractCanvas> _canvas;
-            
+        protected:
+            std::shared_ptr<AbstractCanvas> _canvas;
+
             int                                  _fingerId;
-            
+
             float                                _x;
-			float                                _y;
+            float                                _y;
             float                                _dx;
-			float                                _dy;
-            
-			Signal<Ptr, float, float>::Ptr		_touchMotion; // dx, dy
-			Signal<Ptr, float, float>::Ptr		_touchDown; // x, y
-			Signal<Ptr, float, float>::Ptr		_touchUp; // x, y
-            
+            float                                _dy;
+
+            Signal<Ptr, float, float>::Ptr        _touchMotion; // dx, dy
+            Signal<Ptr, float, float>::Ptr        _touchDown; // x, y
+            Signal<Ptr, float, float>::Ptr        _touchUp; // x, y
+
             // Gestures
             Signal<Ptr>::Ptr                    _swipeRight;
             Signal<Ptr>::Ptr                    _swipeLeft;
             Signal<Ptr>::Ptr                    _swipeUp;
             Signal<Ptr>::Ptr                    _swipeDown;
 
-		public:
+        public:
             inline
             int
             fingerId()
             {
                 return _fingerId;
             }
-            
+
             inline
-			float
-			x()
-			{
-				return _x;
-			}
-            
-			inline
-			float
-			y()
-			{
-				return _y;
-			}
-            
+            float
+            x()
+            {
+                return _x;
+            }
+
             inline
-			float
-			dx()
-			{
-				return _dx;
-			}
-            
-			inline
-			float
-			dy()
-			{
-				return _dy;
-			}
+            float
+            y()
+            {
+                return _y;
+            }
 
-			inline
-			Signal<Ptr, float, float>::Ptr
-			touchMotion()
-			{
-				return _touchMotion;
-			}
+            inline
+            float
+            dx()
+            {
+                return _dx;
+            }
 
-			inline
-			Signal<Ptr, float, float>::Ptr
-			touchDown()
-			{
-				return _touchDown;
-			}
+            inline
+            float
+            dy()
+            {
+                return _dy;
+            }
 
-			inline
-			Signal<Ptr, float, float>::Ptr
-			touchUp()
-			{
-				return _touchUp;
-			}
-            
+            inline
+            Signal<Ptr, float, float>::Ptr
+            touchMotion()
+            {
+                return _touchMotion;
+            }
+
+            inline
+            Signal<Ptr, float, float>::Ptr
+            touchDown()
+            {
+                return _touchDown;
+            }
+
+            inline
+            Signal<Ptr, float, float>::Ptr
+            touchUp()
+            {
+                return _touchUp;
+            }
+
             inline
             Signal<Ptr>::Ptr
             swipeLeft()
             {
                 return _swipeLeft;
             }
-            
+
             inline
             Signal<Ptr>::Ptr
             swipeRight()
             {
                 return _swipeRight;
             }
-            
+
             inline
             Signal<Ptr>::Ptr
             swipeUp()
             {
                 return _swipeUp;
             }
-            
+
             inline
             Signal<Ptr>::Ptr
             swipeDown()
             {
                 return _swipeDown;
             }
-            
 
-		protected:
-			Touch(std::shared_ptr<AbstractCanvas> canvas);
-		};
-	}
+
+        protected:
+            Touch(std::shared_ptr<AbstractCanvas> canvas);
+        };
+    }
 }

@@ -27,36 +27,36 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace input
-	{
-		class LuaTouch :
-			public LuaWrapper
-		{
-		public:
-			static
-			void
-			bind(LuaGlue& state)
-			{
-			    auto& inputTouch = state.Class<input::Touch>("Touch");
-			        
+    namespace input
+    {
+        class LuaTouch :
+            public LuaWrapper
+        {
+        public:
+            static
+            void
+            bind(LuaGlue& state)
+            {
+                auto& inputTouch = state.Class<input::Touch>("Touch");
 
-			    MINKO_LUAGLUE_BIND_SIGNAL(state, input::Touch::Ptr);
-			    MINKO_LUAGLUE_BIND_SIGNAL(state, input::Touch::Ptr, float, float);
 
-			    inputTouch
+                MINKO_LUAGLUE_BIND_SIGNAL(state, input::Touch::Ptr);
+                MINKO_LUAGLUE_BIND_SIGNAL(state, input::Touch::Ptr, float, float);
+
+                inputTouch
                     .property("x",                  &Touch::x)
                     .property("y",                  &input::Touch::y)
                     .property("dx",                 &input::Touch::dx)
                     .property("dy",                 &input::Touch::dy)
-			        .property("touchDown",         &Touch::touchDown)
+                    .property("touchDown",         &Touch::touchDown)
                     .property("touchUp",           &input::Touch::touchUp)
-			        .property("touchMotion",       &input::Touch::touchMotion)
-			        .property("swipeLeft",          &input::Touch::swipeLeft)
+                    .property("touchMotion",       &input::Touch::touchMotion)
+                    .property("swipeLeft",          &input::Touch::swipeLeft)
                     .property("swipeRight",         &input::Touch::swipeRight)
                     .property("swipeUp",            &input::Touch::swipeUp)
                     .property("swipeDown",          &input::Touch::swipeDown)
                 ;
-			}
-		};
-	}
+            }
+        };
+    }
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -27,43 +27,43 @@ namespace minko
 {
     namespace geometry
     {
-	    class QuadGeometry :
+        class QuadGeometry :
             public Geometry
-	    {
-	    public:
-		    typedef std::shared_ptr<QuadGeometry> Ptr;
+        {
+        public:
+            typedef std::shared_ptr<QuadGeometry> Ptr;
 
-		private:
-			uint		_numColumns;
-			uint		_numRows;
-			float		_width;
-			float		_height;
+        private:
+            uint        _numColumns;
+            uint        _numRows;
+            float        _width;
+            float        _height;
 
-	    public:
-		    inline static
-		    Ptr
-		    create(std::shared_ptr<render::AbstractContext> context, 
-				   uint										numColumns	= 1,
-				   uint										numRows		= 1,
-				   float									width		= 1.f,
-				   float									height		= 1.f)
-		    {
-		    	auto geom = std::shared_ptr<QuadGeometry>(new QuadGeometry(numColumns, numRows, width, height));
+        public:
+            inline static
+            Ptr
+            create(std::shared_ptr<render::AbstractContext> context,
+                   uint                                        numColumns    = 1,
+                   uint                                        numRows        = 1,
+                   float                                    width        = 1.f,
+                   float                                    height        = 1.f)
+            {
+                auto geom = std::shared_ptr<QuadGeometry>(new QuadGeometry(numColumns, numRows, width, height));
 
-		    	geom->initialize(context);
+                geom->initialize(context);
 
-			    return geom;
-		    }
+                return geom;
+            }
 
-		protected:
-			QuadGeometry(uint	numColumns	= 1,
-						 uint	numRows		= 1,
-						 float	width		= 1.f,
-						 float	height		= 1.f);
+        protected:
+            QuadGeometry(uint    numColumns    = 1,
+                         uint    numRows        = 1,
+                         float    width        = 1.f,
+                         float    height        = 1.f);
 
-	    private:
-	    	void
-		    initialize(std::shared_ptr<render::AbstractContext> context);
-	    };
+        private:
+            void
+            initialize(std::shared_ptr<render::AbstractContext> context);
+        };
     }
 }

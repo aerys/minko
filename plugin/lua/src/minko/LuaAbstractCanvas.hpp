@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -27,52 +27,52 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	class LuaAbstractCanvas :
-		public LuaWrapper
-	{
-	public:
-		static
-		void
-		bind(LuaGlue& state)
-		{
-			auto& abstractCanvas = state.Class<AbstractCanvas>("AbstractCanvas")
-				.property("width",					&AbstractCanvas::width)
-				.property("height",					&AbstractCanvas::height)
-				.property("mouse", 					&AbstractCanvas::mouse)
-				.property("keyboard",				&AbstractCanvas::keyboard)
-				.property("width",		            &AbstractCanvas::width)
-				.property("height",		            &AbstractCanvas::height)
-				.property("numTouches",				&AbstractCanvas::numTouches)
+    class LuaAbstractCanvas :
+        public LuaWrapper
+    {
+    public:
+        static
+        void
+        bind(LuaGlue& state)
+        {
+            auto& abstractCanvas = state.Class<AbstractCanvas>("AbstractCanvas")
+                .property("width",                    &AbstractCanvas::width)
+                .property("height",                    &AbstractCanvas::height)
+                .property("mouse",                     &AbstractCanvas::mouse)
+                .property("keyboard",                &AbstractCanvas::keyboard)
+                .property("width",                    &AbstractCanvas::width)
+                .property("height",                    &AbstractCanvas::height)
+                .property("numTouches",                &AbstractCanvas::numTouches)
                 .property("mouse",                  &AbstractCanvas::mouse)
                 .property("keyboard",               &AbstractCanvas::keyboard)
-				.property("numJoysticks",			&AbstractCanvas::numJoysticks)
-				.methodWrapper("getJoystickAxis",   &LuaAbstractCanvas::getJoystickAxisWrapper)
-				.methodWrapper("joystick",			&LuaAbstractCanvas::joystickWrapper);
+                .property("numJoysticks",            &AbstractCanvas::numJoysticks)
+                .methodWrapper("getJoystickAxis",   &LuaAbstractCanvas::getJoystickAxisWrapper)
+                .methodWrapper("joystick",            &LuaAbstractCanvas::joystickWrapper);
 
-		    MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr);
-		    MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr, uint, uint);
-			MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr, input::Joystick::Ptr);
+            MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr);
+            MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr, uint, uint);
+            MINKO_LUAGLUE_BIND_SIGNAL(state, AbstractCanvas::Ptr, input::Joystick::Ptr);
             MINKO_LUAGLUE_BIND_SIGNAL(state, input::Touch::Ptr, float);
 
-		    abstractCanvas.property("resized", &AbstractCanvas::resized);
-			abstractCanvas.property("joystickAdded", &AbstractCanvas::joystickAdded);
-			abstractCanvas.property("joystickRemoved", &AbstractCanvas::joystickRemoved);
-			abstractCanvas.property("touchZoom", &AbstractCanvas::touchZoom);
-		}
+            abstractCanvas.property("resized", &AbstractCanvas::resized);
+            abstractCanvas.property("joystickAdded", &AbstractCanvas::joystickAdded);
+            abstractCanvas.property("joystickRemoved", &AbstractCanvas::joystickRemoved);
+            abstractCanvas.property("touchZoom", &AbstractCanvas::touchZoom);
+        }
 
-	private:
-		static
-		std::shared_ptr<input::Joystick>
-		joystickWrapper(AbstractCanvas::Ptr c, uint id)
-		{
-			return c->joystick(id - 1);
-		}
+    private:
+        static
+        std::shared_ptr<input::Joystick>
+        joystickWrapper(AbstractCanvas::Ptr c, uint id)
+        {
+            return c->joystick(id - 1);
+        }
 
-		static
-		int
-		getJoystickAxisWrapper(AbstractCanvas::Ptr c, std::shared_ptr<input::Joystick> joystick, int axis)
-		{			
-			return c->getJoystickAxis(joystick, axis);
-		}
-	};
+        static
+        int
+        getJoystickAxisWrapper(AbstractCanvas::Ptr c, std::shared_ptr<input::Joystick> joystick, int axis)
+        {
+            return c->getJoystickAxis(joystick, axis);
+        }
+    };
 }

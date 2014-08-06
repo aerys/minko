@@ -27,21 +27,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace component
-	{
-		class LuaRenderer :
-			public LuaWrapper
-		{
-		public:
-			static
-			void
-			bind(LuaGlue& state)
-			{
-				state.Class<Renderer>("Renderer")
-		            .method("create",				static_cast<Renderer::Ptr (*)(void)>(&Renderer::create))
-					.property("enabled",			static_cast<bool (Renderer::*)(void)>(&Renderer::enabled), static_cast<void (Renderer::*)(bool)>(&Renderer::enabled))
-					.property("backgroundColor",	&Renderer::backgroundColor, &Renderer::backgroundColor);
-			}
-		};
-	}
+    namespace component
+    {
+        class LuaRenderer :
+            public LuaWrapper
+        {
+        public:
+            static
+            void
+            bind(LuaGlue& state)
+            {
+                state.Class<Renderer>("Renderer")
+                    .method("create",                static_cast<Renderer::Ptr (*)(void)>(&Renderer::create))
+                    .property("enabled",            static_cast<bool (Renderer::*)(void)>(&Renderer::enabled), static_cast<void (Renderer::*)(bool)>(&Renderer::enabled))
+                    .property("backgroundColor",    &Renderer::backgroundColor, &Renderer::backgroundColor);
+            }
+        };
+    }
 }

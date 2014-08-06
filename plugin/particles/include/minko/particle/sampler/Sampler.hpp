@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,33 +23,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace particle
-	{
-		namespace sampler
-		{
-			template <class T>
-			class Sampler
-			{
-			public:
-				typedef std::shared_ptr<Sampler<T> > Ptr;
+    namespace particle
+    {
+        namespace sampler
+        {
+            template <class T>
+            class Sampler
+            {
+            public:
+                typedef std::shared_ptr<Sampler<T> > Ptr;
 
-			public:
-				virtual
-				T
-				value(float time = 0) const	= 0;
-				
-				virtual
-				void
-				set(T& target, float time = 0) const = 0;
+            public:
+                virtual
+                T
+                value(float time = 0) const    = 0;
 
-				virtual
-				T
-				max() const = 0;
-				
-				virtual
-				T
-				min() const = 0;
-			};
-		}
-	}
+                virtual
+                void
+                set(T& target, float time = 0) const = 0;
+
+                virtual
+                T
+                max() const = 0;
+
+                virtual
+                T
+                min() const = 0;
+            };
+        }
+    }
 }

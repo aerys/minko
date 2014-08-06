@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -26,53 +26,53 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace component
-	{
-		class AbstractDiscreteLight :
-			public AbstractLight
-		{
-		private:
-			Signal<std::shared_ptr<data::Container>, const std::string&>::Slot	_modelToWorldChangedSlot;
+    namespace component
+    {
+        class AbstractDiscreteLight :
+            public AbstractLight
+        {
+        private:
+            Signal<std::shared_ptr<data::Container>, const std::string&>::Slot    _modelToWorldChangedSlot;
 
-		public:
-			inline
-		    float
-		    diffuse()
-		    {
-		    	return data()->get<float>("diffuse");
-		    }
+        public:
+            inline
+            float
+		    diffuse() const
+            {
+                return data()->get<float>("diffuse");
+            }
 
-		    inline
-		    Ptr
-		    diffuse(float diffuse)
-		    {
-		    	data()->set<float>("diffuse", diffuse);
+            inline
+            Ptr
+            diffuse(float diffuse)
+            {
+                data()->set<float>("diffuse", diffuse);
 
-				return std::static_pointer_cast<AbstractDiscreteLight>(shared_from_this());
-		    }
+                return std::static_pointer_cast<AbstractDiscreteLight>(shared_from_this());
+            }
 
-			inline
-			float
-			specular()
-			{
-				return data()->get<float>("specular");
-			}
+            inline
+            float
+			specular() const
+            {
+                return data()->get<float>("specular");
+            }
 
-			inline
-			Ptr
-			specular(float specular)
-			{
-				data()->set<float>("specular", specular);
+            inline
+            Ptr
+            specular(float specular)
+            {
+                data()->set<float>("specular", specular);
 
-				return std::static_pointer_cast<AbstractDiscreteLight>(shared_from_this());
-			}
+                return std::static_pointer_cast<AbstractDiscreteLight>(shared_from_this());
+            }
 
-		protected:
-			AbstractDiscreteLight(const std::string&	arrayName, 
-								  float					diffuse		= 1.0f, 
-								  float					specular	= 1.0f);
+        protected:
+            AbstractDiscreteLight(const std::string&    arrayName,
+                                  float                    diffuse        = 1.0f,
+                                  float                    specular    = 1.0f);
 
-			virtual
+            virtual
             void
             targetAddedHandler(AbstractComponent::Ptr cmp, std::shared_ptr<scene::Node> target);
 
@@ -81,12 +81,12 @@ namespace minko
             targetRemovedHandler(AbstractComponent::Ptr cmp, std::shared_ptr<scene::Node> target);
 
             void
-            modelToWorldMatrixChangedHandler(std::shared_ptr<data::Container> 	container,
-            								 const std::string& 				propertyName);
+            modelToWorldMatrixChangedHandler(std::shared_ptr<data::Container>     container,
+                                             const std::string&                 propertyName);
 
             virtual
             void
             updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld) = 0;
-		};
-	}
+        };
+    }
 }

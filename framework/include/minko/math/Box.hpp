@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -26,106 +26,106 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace math
-	{
-		class Box :
-			public AbstractShape,
-			public std::enable_shared_from_this<Box>
-		{
-		public:
-			typedef std::shared_ptr<Box>	Ptr;
+    namespace math
+    {
+        class Box :
+            public AbstractShape,
+            public std::enable_shared_from_this<Box>
+        {
+        public:
+            typedef std::shared_ptr<Box>    Ptr;
 
-		private:
-			std::shared_ptr<Vector3>	_topRight;
-			std::shared_ptr<Vector3>	_bottomLeft;
+        private:
+            std::shared_ptr<Vector3>    _topRight;
+            std::shared_ptr<Vector3>    _bottomLeft;
 
-		public:
-			inline static
-			Ptr
-			create()
-			{
-				return std::shared_ptr<Box>(new Box());
-			}
+        public:
+            inline static
+            Ptr
+            create()
+            {
+                return std::shared_ptr<Box>(new Box());
+            }
 
-			inline static
-			Ptr
-			create(std::shared_ptr<math::Vector3> topRight, std::shared_ptr<math::Vector3> bottomLeft)
-			{
-				auto box = std::shared_ptr<Box>(new Box());
+            inline static
+            Ptr
+            create(std::shared_ptr<math::Vector3> topRight, std::shared_ptr<math::Vector3> bottomLeft)
+            {
+                auto box = std::shared_ptr<Box>(new Box());
 
-				box->_topRight->copyFrom(topRight);
-				box->_bottomLeft->copyFrom(bottomLeft);
+                box->_topRight->copyFrom(topRight);
+                box->_bottomLeft->copyFrom(bottomLeft);
 
-				return box;
-			}
+                return box;
+            }
 
-			static
-			Ptr
-			merge(Ptr box1, Ptr box2, Ptr out = nullptr);
+            static
+            Ptr
+            merge(Ptr box1, Ptr box2, Ptr out = nullptr);
 
-			Ptr
-			merge(Ptr box2);
-			
-			inline
-			std::shared_ptr<Vector3>
-			topRight() const
-			{
-				return _topRight;
-			}
+            Ptr
+            merge(Ptr box2);
 
-			inline
-			std::shared_ptr<Vector3>
-			bottomLeft() const
-			{
-				return _bottomLeft;
-			}
+            inline
+            std::shared_ptr<Vector3>
+            topRight() const
+            {
+                return _topRight;
+            }
 
-			inline
-			float
-			width() const
-			{
-				return _topRight->x() - _bottomLeft->x();
-			}
+            inline
+            std::shared_ptr<Vector3>
+            bottomLeft() const
+            {
+                return _bottomLeft;
+            }
 
-			inline
-			float
-			height() const
-			{
-				return _topRight->y() - _bottomLeft->y();
-			}
+            inline
+            float
+            width() const
+            {
+                return _topRight->x() - _bottomLeft->x();
+            }
 
-			inline
-			float
-			depth() const
-			{
-				return _topRight->z() - _bottomLeft->z();
-			}
+            inline
+            float
+            height() const
+            {
+                return _topRight->y() - _bottomLeft->y();
+            }
 
-			inline
-			Ptr
-			copyFrom(Ptr box)
-			{
-				_topRight->copyFrom(box->_topRight);
-				_bottomLeft->copyFrom(box->_bottomLeft);
+            inline
+            float
+            depth() const
+            {
+                return _topRight->z() - _bottomLeft->z();
+            }
 
-				return shared_from_this();
-			}
+            inline
+            Ptr
+            copyFrom(Ptr box)
+            {
+                _topRight->copyFrom(box->_topRight);
+                _bottomLeft->copyFrom(box->_bottomLeft);
 
-			bool
-			cast(std::shared_ptr<Ray> ray, float& distance);
+                return shared_from_this();
+            }
 
-			std::array<std::shared_ptr<Vector3>, 8>
-			getVertices();
+            bool
+            cast(std::shared_ptr<Ray> ray, float& distance);
 
-			
-			ShapePosition
-			testBoundingBox(std::shared_ptr<math::Box> box);
+            std::array<std::shared_ptr<Vector3>, 8>
+            getVertices();
 
-			void
-			updateFromMatrix(std::shared_ptr<math::Matrix4x4> matrix);
 
-		private:
-			Box();
-		};
-	}
+            ShapePosition
+            testBoundingBox(std::shared_ptr<math::Box> box);
+
+            void
+            updateFromMatrix(std::shared_ptr<math::Matrix4x4> matrix);
+
+        private:
+            Box();
+        };
+    }
 }

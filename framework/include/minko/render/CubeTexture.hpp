@@ -25,89 +25,89 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace render
-	{
-		class CubeTexture:
-			public AbstractTexture
-		{
-		public:
-			typedef std::shared_ptr<CubeTexture>		Ptr;
+    namespace render
+    {
+        class CubeTexture:
+            public AbstractTexture
+        {
+        public:
+            typedef std::shared_ptr<CubeTexture>        Ptr;
 
-		private:
-			typedef std::shared_ptr<AbstractContext>	AbstractContextPtr;
+        private:
+            typedef std::shared_ptr<AbstractContext>    AbstractContextPtr;
 
-		public:
-			enum class Face
-			{
-				POSITIVE_X = 0,
-				NEGATIVE_X = 1,
-				POSITIVE_Y = 2,
-				NEGATIVE_Y = 3,
-				POSITIVE_Z = 4,
-				NEGATIVE_Z = 5
-			};
+        public:
+            enum class Face
+            {
+                POSITIVE_X = 0,
+                NEGATIVE_X = 1,
+                POSITIVE_Y = 2,
+                NEGATIVE_Y = 3,
+                POSITIVE_Z = 4,
+                NEGATIVE_Z = 5
+            };
 
-		private:
-			std::vector<std::vector<unsigned char>>	_data; // pixel RGBA data indexed by face index
-			uint									_faceWidth;	// power of two
-			uint									_faceHeight; // power of two
+        private:
+            std::vector<std::vector<unsigned char>>    _data; // pixel RGBA data indexed by face index
+            uint                                    _faceWidth;    // power of two
+            uint                                    _faceHeight; // power of two
 
-		public:
-			inline static
-			Ptr
-			create(AbstractContextPtr	context,
-				   unsigned int			width,
-				   unsigned int			height,
+        public:
+            inline static
+            Ptr
+            create(AbstractContextPtr    context,
+                   unsigned int            width,
+                   unsigned int            height,
                    bool                 mipMapping                  = false,
-				   bool					optimizeForRenderToTexture	= false,
-				   bool					resizeSmoothly				= true,
-				   const std::string&	filename					= "")
-			{
-				return std::shared_ptr<CubeTexture>(
-					new CubeTexture(
-						context, 
-						width, 
-						height, 
-						mipMapping, 
-						optimizeForRenderToTexture,
-						resizeSmoothly, 
-						filename
-					)
-				);
-			}
+                   bool                    optimizeForRenderToTexture    = false,
+                   bool                    resizeSmoothly                = true,
+                   const std::string&    filename                    = "")
+            {
+                return std::shared_ptr<CubeTexture>(
+                    new CubeTexture(
+                        context,
+                        width,
+                        height,
+                        mipMapping,
+                        optimizeForRenderToTexture,
+                        resizeSmoothly,
+                        filename
+                    )
+                );
+            }
 
-			void
-			data(unsigned char*, 
-				 TextureFormat	format		= TextureFormat::RGBA,
-				 int			widthGPU	= -1,
-				 int			heightGPU	= -1);
+            void
+            data(unsigned char*,
+                 TextureFormat    format        = TextureFormat::RGBA,
+                 int            widthGPU    = -1,
+                 int            heightGPU    = -1);
 
-			void
-			upload();
+            void
+            upload();
 
-			//void
-			//uploadMipLevel(uint	level,
-			//			   unsigned char*);
+            //void
+            //uploadMipLevel(uint    level,
+            //               unsigned char*);
 
-			void
-			dispose();
+            void
+            dispose();
 
-			void
-			disposeData();
+            void
+            disposeData();
 
-			~CubeTexture()
-			{
-				dispose();
-			}
+            ~CubeTexture()
+            {
+                dispose();
+            }
 
-		private:
-			CubeTexture(AbstractContextPtr	context,
-						unsigned int		width,
-						unsigned int		height,
-						bool                mipMapping,
-						bool				optimizeForRenderToTexture,
-						bool				resizeSmoothly,
-						const std::string&	filename);
-		};
-	}
+        private:
+            CubeTexture(AbstractContextPtr    context,
+                        unsigned int        width,
+                        unsigned int        height,
+                        bool                mipMapping,
+                        bool                optimizeForRenderToTexture,
+                        bool                resizeSmoothly,
+                        const std::string&    filename);
+        };
+    }
 }

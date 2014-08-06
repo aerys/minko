@@ -25,110 +25,110 @@ using namespace minko::input;
 using namespace minko::input::leap;
 
 Pointable::Pointable(const Leap::Pointable& leapPointable):
-	_leapPointable(std::make_shared<Leap::Pointable>(leapPointable))
+    _leapPointable(std::make_shared<Leap::Pointable>(leapPointable))
 {
-	if (_leapPointable == nullptr)
-		throw std::invalid_argument("leapPointable");
+    if (_leapPointable == nullptr)
+        throw std::invalid_argument("leapPointable");
 }
 
 int32_t
 Pointable::id() const
 {
-	return _leapPointable->id();
+    return _leapPointable->id();
 }
 
 bool
 Pointable::isValid() const
 {
-	return _leapPointable->isValid();
+    return _leapPointable->isValid();
 }
 
 bool
 Pointable::isFinger() const
 {
-	return _leapPointable->isFinger();
+    return _leapPointable->isFinger();
 }
 
 bool
 Pointable::isTool() const
 {
-	return _leapPointable->isTool();
+    return _leapPointable->isTool();
 }
 
 uint64_t
 Pointable::frameID() const
 {
-	return _leapPointable->frame().id();
+    return _leapPointable->frame().id();
 }
 
 uint32_t
 Pointable::handID() const
 {
-	return _leapPointable->hand().id();
+    return _leapPointable->hand().id();
 }
 
 math::Vector3::Ptr
 Pointable::direction(math::Vector3::Ptr output) const
 {
-	return convert(_leapPointable->direction(), output);
+    return convert(_leapPointable->direction(), output);
 }
 
 math::Vector3::Ptr
 Pointable::stabilizedTipPosition(math::Vector3::Ptr output) const
 {
-	return convert(_leapPointable->stabilizedTipPosition(), output);
+    return convert(_leapPointable->stabilizedTipPosition(), output);
 }
 
 math::Vector3::Ptr
 Pointable::tipPosition(math::Vector3::Ptr output) const
 {
-	return convert(_leapPointable->tipPosition(), output);
+    return convert(_leapPointable->tipPosition(), output);
 }
 
 math::Vector3::Ptr
 Pointable::tipVelocity(math::Vector3::Ptr output) const
 {
-	return convert(_leapPointable->tipVelocity(), output);
+    return convert(_leapPointable->tipVelocity(), output);
 }
 
 float
 Pointable::lengthMillimeters() const
 {
-	return _leapPointable->length();
+    return _leapPointable->length();
 }
 
 float
 Pointable::widthMillimeters() const
 {
-	return _leapPointable->width();
-}	
+    return _leapPointable->width();
+}
 
 float
 Pointable::timeVisible() const
 {
-	return _leapPointable->timeVisible();
+    return _leapPointable->timeVisible();
 }
 
 float
 Pointable::touchDistance() const
 {
-	return _leapPointable->touchDistance();
+    return _leapPointable->touchDistance();
 }
 
 Pointable::Zone
 Pointable::touchZone() const
 {
-	return convert(_leapPointable->touchZone());
+    return convert(_leapPointable->touchZone());
 }
 
 bool
 Pointable::operator!=(const Pointable& other) const
 {
-	return _leapPointable->operator!=(*other._leapPointable);
+    return _leapPointable->operator!=(*other._leapPointable);
 }
 
 bool
 Pointable::operator==(const Pointable& other) const
 {
-	return _leapPointable->operator==(*other._leapPointable);
+    return _leapPointable->operator==(*other._leapPointable);
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,157 +23,183 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace geometry
-	{
-		class Bone;
-		
-		class Skin:
-			public std::enable_shared_from_this<Skin>
-		{
-		public:
-			typedef std::shared_ptr<Skin>					Ptr;
+    namespace geometry
+    {
+        class Bone;
 
-		private:
-			typedef std::shared_ptr<Bone>					BonePtr;
-			typedef std::shared_ptr<math::Matrix4x4>		Matrix4x4Ptr;
+        class Skin:
+            public std::enable_shared_from_this<Skin>
+        {
+        public:
+            typedef std::shared_ptr<Skin>                    Ptr;
 
-		private:
-			const unsigned int				_numBones;
-			std::vector<BonePtr>			_bones;
+        private:
+            typedef std::shared_ptr<Bone>                    BonePtr;
+            typedef std::shared_ptr<math::Matrix4x4>        Matrix4x4Ptr;
 
-			const uint						_duration;				// in milliseconds
-			const float						_timeFactor;
-			std::vector<std::vector<float>>	_boneMatricesPerFrame;
+        private:
+            const unsigned int                _numBones;
+            std::vector<BonePtr>            _bones;
 
-			unsigned int					_maxNumVertexBones;
-			std::vector<unsigned int>		_numVertexBones;		// size = #vertices
-			std::vector<unsigned int>		_vertexBones;			// size = #vertices * #bones      
-			std::vector<float>				_vertexBoneWeights;		// size = #vertices * #bones   
-			
-		public:
-			inline
-			static
+            const uint                        _duration;                // in milliseconds
+            const float                        _timeFactor;
+            std::vector<std::vector<float>>    _boneMatricesPerFrame;
+
+            unsigned int                    _maxNumVertexBones;
+            std::vector<unsigned int>        _numVertexBones;        // size = #vertices
+            std::vector<unsigned int>        _vertexBones;            // size = #vertices * #bones
+            std::vector<float>                _vertexBoneWeights;        // size = #vertices * #bones
+
+        public:
+            inline
+            static
+            Ptr
+            create(unsigned int numBones, unsigned int duration, unsigned int numFrames)
+            {
+                return std::shared_ptr<Skin>(new Skin(numBones, duration, numFrames));
+            }
+
 			Ptr
-			create(unsigned int numBones, unsigned int duration, unsigned int numFrames)
-			{
-				return std::shared_ptr<Skin>(new Skin(numBones, duration, numFrames));
-			}
+			clone();
 
-			inline
-			unsigned int
-			numBones() const
-			{
-				return _numBones;
-			}
+            inline
+            unsigned int
+            numBones() const
+            {
+                return _numBones;
+            }
 
-			inline
-			unsigned int
-			maxNumVertexBones() const
-			{
-				return _maxNumVertexBones;
-			}
+            inline
+            unsigned int
+            maxNumVertexBones() const
+            {
+                return _maxNumVertexBones;
+            }
 
-			inline
-			std::vector<BonePtr>&
-			bones()
-			{
-				return _bones;
-			}
+            inline
+            std::vector<BonePtr>&
+            bones()
+            {
+                return _bones;
+            }
 
-			inline
-			BonePtr
-			bone(unsigned int boneId) const
-			{
-				return _bones[boneId];
-			}
-
-			inline
+            inline
 			void
-			bone(unsigned int boneId, BonePtr value)
+			bones(std::vector<BonePtr> bones)
 			{
-				_bones[boneId] = value;
+				_bones = bones;
 			}
 
 			inline
-			uint
-			duration() const
-			{
-				return _duration;
-			}
+            BonePtr
+            bone(unsigned int boneId) const
+            {
+                return _bones[boneId];
+            }
 
-			uint
-			getFrameId(uint) const;
+            inline
+            void
+            bone(unsigned int boneId, BonePtr value)
+            {
+                _bones[boneId] = value;
+            }
 
-			inline
-			unsigned int
-			numFrames() const
-			{
-				return _boneMatricesPerFrame.size();
-			}
+            inline
+            uint
+            duration() const
+            {
+                return _duration;
+            }
 
-			inline
-			const std::vector<float>&
-			matrices(unsigned int frameId) const
-			{
-				return _boneMatricesPerFrame[frameId];
-			}
+            uint
+            getFrameId(uint) const;
 
+            inline
+            unsigned int
+            numFrames() const
+            {
+                return _boneMatricesPerFrame.size();
+            }
+
+            inline
 			void
-			matrix(unsigned int frameId, unsigned int boneId, Matrix4x4Ptr);
-
-			inline
-			unsigned int
-			numVertices() const
+			setBoneMatricesPerFrame(std::vector<std::vector<float>> boneMatricesPerFrame)
 			{
-				return _numVertexBones.size();
+				_boneMatricesPerFrame = boneMatricesPerFrame;
 			}
 
 			inline
-			unsigned int
-			numVertexBones(unsigned int vertexId) const
+			std::vector<std::vector<float>>
+			getBoneMatricesPerFrame()
 			{
+				return _boneMatricesPerFrame;
+			}
+
+			inline
+            const std::vector<float>&
+            matrices(unsigned int frameId) const
+            {
+                return _boneMatricesPerFrame[frameId];
+            }
+
+            void
+            matrix(unsigned int frameId, unsigned int boneId, Matrix4x4Ptr);
+
+            inline
+            unsigned int
+            numVertices() const
+            {
+                return _numVertexBones.size();
+            }
+
+            inline
+            unsigned int
+            numVertexBones(unsigned int vertexId) const
+            {
 #ifdef DEBUG_SKINNING
-				assert(vertexId < numVertices());
+                assert(vertexId < numVertices());
 #endif // DEBUG_SKINNING
 
-				return _numVertexBones[vertexId];
-			}
+                return _numVertexBones[vertexId];
+            }
 
-			void
-			vertexBoneData(unsigned int vertexId, unsigned int j, unsigned int& boneId, float& boneWeight) const;
+            void
+            vertexBoneData(unsigned int vertexId, unsigned int j, unsigned int& boneId, float& boneWeight) const;
 
-			unsigned int
-			vertexBoneId(unsigned int vertexId, unsigned int j) const;
+            unsigned int
+            vertexBoneId(unsigned int vertexId, unsigned int j) const;
 
-			float 
-			vertexBoneWeight(unsigned int vertexId, unsigned int j) const;
+            float
+            vertexBoneWeight(unsigned int vertexId, unsigned int j) const;
 
-			Ptr
-			reorganizeByVertices();
+            Ptr
+            reorganizeByVertices();
 
-			Ptr
-			disposeBones();
+            Ptr
+            disposeBones();
 
-			Ptr
-			transposeMatrices();
+            Ptr
+            transposeMatrices();
 
-		private:
-			Skin(unsigned int numBones, unsigned int duration, unsigned int numFrames);
+        private:
+            Skin(unsigned int numBones, unsigned int duration, unsigned int numFrames);
 
-			unsigned short
-			lastVertexId() const;
+			Skin(const Skin& skin);
 
-			inline
-			unsigned int
-			vertexArraysIndex(unsigned int vertexId, unsigned int j) const
-			{
+            unsigned short
+            lastVertexId() const;
+
+            inline
+            unsigned int
+            vertexArraysIndex(unsigned int vertexId, unsigned int j) const
+            {
 #ifdef DEBUG_SKINNING
-				assert(vertexId < numVertices() && j < numVertexBones(vertexId));
+                assert(vertexId < numVertices() && j < numVertexBones(vertexId));
 #endif // DEBUG_SKINNING
 
-				return j + _numBones * vertexId;
-			}
+                return j + _numBones * vertexId;
+            }
 
-		};
-	}
+        };
+    }
 }

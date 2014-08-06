@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -29,52 +29,52 @@ using namespace minko;
 using namespace minko::component;
 
 AbstractLight::AbstractLight(const std::string& arrayName) :
-	AbstractRootDataComponent<data::ArrayProvider>(data::ArrayProvider::create(arrayName)),
-	_color(math::Vector3::create(1.0f, 1.0f, 1.0f)),
-	_targetLayoutChangedSlot(nullptr)
+    AbstractRootDataComponent<data::ArrayProvider>(data::ArrayProvider::create(arrayName)),
+    _color(math::Vector3::create(1.0f, 1.0f, 1.0f)),
+    _targetLayoutChangedSlot(nullptr)
 {
-	data()->set("color", _color);
+    data()->set("color", _color);
 }
 
 void
 AbstractLight::layoutMask(Layouts value)
 {
-	data()->set("layoutMask", value);
-	AbstractComponent::layoutMask(value);
+    data()->set("layoutMask", value);
+    AbstractComponent::layoutMask(value);
 }
 
 AbstractLight::Ptr
 AbstractLight::color(math::Vector3::Ptr color)
 {
-	_color->copyFrom(color);
+    _color->copyFrom(color);
 
-	return std::static_pointer_cast<AbstractLight>(shared_from_this());
+    return std::static_pointer_cast<AbstractLight>(shared_from_this());
 }
 
 AbstractLight::Ptr
 AbstractLight::color(math::Vector4::Ptr color)
 {
-	_color->setTo(color->x(), color->y(), color->z());
+    _color->setTo(color->x(), color->y(), color->z());
 
-	return std::static_pointer_cast<AbstractLight>(shared_from_this());
+    return std::static_pointer_cast<AbstractLight>(shared_from_this());
 }
 
 AbstractLight::Ptr
 AbstractLight::color(uint rgba)
 {
-	return color(Color::uintToVec4(rgba));
+    return color(Color::uintToVec4(rgba));
 }
 
 void
-AbstractLight::targetAddedHandler(component::AbstractComponent::Ptr component, 
-								  scene::Node::Ptr					target)
+AbstractLight::targetAddedHandler(component::AbstractComponent::Ptr component,
+                                  scene::Node::Ptr                    target)
 {
-	AbstractRootDataComponent<data::ArrayProvider>::targetAddedHandler(component, target);
+    AbstractRootDataComponent<data::ArrayProvider>::targetAddedHandler(component, target);
 }
 
 void
 AbstractLight::targetRemovedHandler(component::AbstractComponent::Ptr component,
-									scene::Node::Ptr					target)
+                                    scene::Node::Ptr                    target)
 {
-	AbstractRootDataComponent<data::ArrayProvider>::targetRemovedHandler(component, target);
+    AbstractRootDataComponent<data::ArrayProvider>::targetRemovedHandler(component, target);
 }

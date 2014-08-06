@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -42,66 +42,70 @@ namespace minko
             typedef std::shared_ptr<scene::Node>                    NodePtr;
             typedef std::shared_ptr<animation::Matrix4x4Timeline>   MatrixTimelinePtr;
             typedef std::shared_ptr<render::AbstractContext>        AbsContextPtr;
-			typedef std::shared_ptr<component::Animation>			AnimationPtr;
+            typedef std::shared_ptr<component::Animation>            AnimationPtr;
 
             typedef std::vector<std::shared_ptr<math::Matrix4x4>>   Matrices4x4Ptr;
             typedef std::unordered_map<NodePtr, Matrices4x4Ptr>     NodeMatrices;
             typedef std::unordered_map<NodePtr, MatrixTimelinePtr>  NodeTransformTimeline;
 
         public:
-			static const std::string PNAME_TRANSFORM;
+            static const std::string PNAME_TRANSFORM;
 
-            static 
+            static
             SkinningPtr
-            computeSkinning(OptionsPtr, 
-							AbsContextPtr, 
-							const std::vector<BonePtr>&, 
-							NodePtr);
+            computeSkinning(OptionsPtr,
+                            AbsContextPtr,
+                            const std::vector<BonePtr>&,
+							const std::vector<NodePtr>&,
+                            NodePtr);
 
         private:
             static
             unsigned int
-            collectAnimations(const std::vector<BonePtr>&, 
-							  NodePtr, 
-							  NodeTransformTimeline&);
+            collectAnimations(const std::vector<BonePtr>&,
+							  const std::vector<NodePtr>&,
+                              NodePtr,
+                              NodeTransformTimeline&);
 
             static
             unsigned int
-            sampleAnimations(OptionsPtr, 
-							 const std::vector<BonePtr>&, 
-							 NodePtr, 
-							 unsigned int duration, 
-							 const NodeTransformTimeline&, 
-							 NodeMatrices&);
+            sampleAnimations(OptionsPtr,
+                             const std::vector<BonePtr>&,
+                             NodePtr,
+                             unsigned int duration,
+                             const NodeTransformTimeline&,
+                             NodeMatrices&);
 
             static
             void
-            precomputeModelToRootMatrices(NodePtr, 
-										  NodePtr, 
-										  const NodeMatrices&, 
-										  Matrices4x4Ptr&);
+            precomputeModelToRootMatrices(NodePtr,
+                                          NodePtr,
+                                          const NodeMatrices&,
+                                          Matrices4x4Ptr&);
 
-			static 
-			void
-			computeSurfaceAnimations(unsigned int duration, 
-									 unsigned int numFrames, 
-									 NodePtr, 
-									 const std::vector<BonePtr>&, 
-									 const NodeMatrices&,
-									 std::vector<AnimationPtr>&);
+            static
+            void
+            computeSurfaceAnimations(unsigned int duration,
+                                     unsigned int numFrames,
+                                     NodePtr,
+                                     const std::vector<BonePtr>&,
+									 const std::vector<NodePtr>&,
+                                     const NodeMatrices&,
+                                     std::vector<AnimationPtr>&);
 
-			static
-			void
-			clean(NodePtr);
+            static
+            void
+            clean(NodePtr);
 
-			static
-			void
-			removeAnimations(NodePtr);
+            static
+            void
+            removeAnimations(NodePtr);
 
             static
             bool
-            haveBonesCommonRoot(const std::vector<BonePtr>&, 
-								NodePtr);
+            haveBonesCommonRoot(const std::vector<BonePtr>&,
+								const std::vector<NodePtr>&,
+                                NodePtr);
         };
     }
 }

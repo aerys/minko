@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,333 +25,351 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace data
-	{
-		class LightMaskFilter;
-	}
+    namespace data
+    {
+        class LightMaskFilter;
+    }
 
-	namespace component
-	{
-		class Renderer :
-			public AbstractComponent
-		{
-		public:
-			typedef std::shared_ptr<Renderer>							Ptr;
+    namespace component
+    {
+        class Renderer :
+            public AbstractComponent
+        {
+        public:
+            typedef std::shared_ptr<Renderer>                            Ptr;
 
-		private:
-			typedef std::shared_ptr<scene::Node>						NodePtr;
-			typedef std::shared_ptr<AbstractComponent>					AbsCmpPtr;
-			typedef std::shared_ptr<render::AbstractContext>			AbsContext;
-			typedef std::shared_ptr<Surface>							SurfacePtr;
-			typedef std::shared_ptr<render::DrawCall>					DrawCallPtr;
-			typedef std::list<DrawCallPtr>								DrawCallList;
-			typedef std::shared_ptr<SceneManager>						SceneManagerPtr;
-			typedef std::shared_ptr<render::AbstractTexture>			AbsTexturePtr;
-			typedef std::shared_ptr<render::Effect>						EffectPtr;
-			typedef std::shared_ptr<render::DrawCallPool>				DrawCallFactoryPtr;
-			typedef std::shared_ptr<data::AbstractFilter>				AbsFilterPtr;
-			typedef Signal<SurfacePtr, const std::string&, bool>::Slot	SurfaceTechniqueChangedSlot;
-			typedef Signal<AbsFilterPtr, SurfacePtr>::Slot				FilterChangedSlot;
-			typedef Signal<Ptr, AbsFilterPtr, data::BindingSource, SurfacePtr>		RendererFilterChangedSignal;
+        private:
+            typedef std::shared_ptr<scene::Node>                        NodePtr;
+            typedef std::shared_ptr<AbstractComponent>                    AbsCmpPtr;
+            typedef std::shared_ptr<render::AbstractContext>            AbsContext;
+            typedef std::shared_ptr<Surface>                            SurfacePtr;
+            typedef std::shared_ptr<render::DrawCall>                    DrawCallPtr;
+            typedef std::list<DrawCallPtr>                                DrawCallList;
+            typedef std::shared_ptr<SceneManager>                        SceneManagerPtr;
+            typedef std::shared_ptr<render::AbstractTexture>            AbsTexturePtr;
+            typedef std::shared_ptr<render::Effect>                        EffectPtr;
+            typedef std::shared_ptr<render::DrawCallPool>                DrawCallFactoryPtr;
+            typedef std::shared_ptr<data::AbstractFilter>                AbsFilterPtr;
+            typedef Signal<SurfacePtr, const std::string&, bool>::Slot    SurfaceTechniqueChangedSlot;
+            typedef Signal<AbsFilterPtr, SurfacePtr>::Slot                FilterChangedSlot;
+            typedef Signal<Ptr, AbsFilterPtr, data::BindingSource, SurfacePtr>        RendererFilterChangedSignal;
 
-		private:
-			std::string													_name;
+        private:
+            std::string                                                    _name;
 
-			DrawCallList												_drawCalls;
-			std::unordered_map<SurfacePtr, DrawCallList>				_surfaceDrawCalls; 
+            DrawCallList                                                _drawCalls;
+            std::unordered_map<SurfacePtr, DrawCallList>                _surfaceDrawCalls;
 
-			unsigned int												_backgroundColor;
-            render::ScissorBox											_viewportBox;
-			render::ScissorBox											_scissorBox;
-			std::shared_ptr<SceneManager>								_sceneManager;
-			Signal<Ptr>::Ptr											_renderingBegin;
-			Signal<Ptr>::Ptr											_renderingEnd;
-			Signal<Ptr>::Ptr											_beforePresent;
-			AbsTexturePtr												_renderTarget;
+            unsigned int                                                _backgroundColor;
+            render::ScissorBox                                            _viewportBox;
+            render::ScissorBox                                            _scissorBox;
+            std::shared_ptr<SceneManager>                                _sceneManager;
+            Signal<Ptr>::Ptr                                            _renderingBegin;
+            Signal<Ptr>::Ptr                                            _renderingEnd;
+            Signal<Ptr>::Ptr                                            _beforePresent;
+            AbsTexturePtr                                                _renderTarget;
 
-			std::set<std::shared_ptr<Surface>>							_toCollect;
-			EffectPtr													_effect;
-			float														_priority;
-			bool														_enabled;
+            std::set<std::shared_ptr<Surface>>                            _toCollect;
+            EffectPtr                                                    _effect;
+            float                                                        _priority;
+            bool                                                        _enabled;
 
-			Signal<AbsCmpPtr, NodePtr>::Slot							_targetAddedSlot;
-			Signal<AbsCmpPtr, NodePtr>::Slot							_targetRemovedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot						_addedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot						_removedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot						_rootDescendantAddedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot						_rootDescendantRemovedSlot;
-			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot					_componentAddedSlot;
-			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot					_componentRemovedSlot;
-			Signal<SceneManagerPtr, uint, AbsTexturePtr>::Slot			_renderingBeginSlot;
-			std::unordered_map<SurfacePtr, SurfaceTechniqueChangedSlot>	_surfaceTechniqueChangedSlot;
+            Signal<AbsCmpPtr, NodePtr>::Slot                            _targetAddedSlot;
+            Signal<AbsCmpPtr, NodePtr>::Slot                            _targetRemovedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot                        _addedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot                        _removedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot                        _rootDescendantAddedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot                        _rootDescendantRemovedSlot;
+            Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot                    _componentAddedSlot;
+            Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot                    _componentRemovedSlot;
+            Signal<SceneManagerPtr, uint, AbsTexturePtr>::Slot            _renderingBeginSlot;
+            std::unordered_map<SurfacePtr, SurfaceTechniqueChangedSlot>    _surfaceTechniqueChangedSlot;
 
-			DrawCallFactoryPtr											_drawCallPool;
+            DrawCallFactoryPtr                                            _drawCallPool;
 
-			std::set<AbsFilterPtr>										_targetDataFilters;
-			std::set<AbsFilterPtr>										_rendererDataFilters;
-			std::set<AbsFilterPtr>										_rootDataFilters;
-			std::shared_ptr<data::LightMaskFilter>						_lightMaskFilter;
+            std::set<AbsFilterPtr>                                        _targetDataFilters;
+            std::set<AbsFilterPtr>                                        _rendererDataFilters;
+            std::set<AbsFilterPtr>                                        _rootDataFilters;
+            std::shared_ptr<data::LightMaskFilter>                        _lightMaskFilter;
 
-			std::unordered_map<AbsFilterPtr, FilterChangedSlot>			_targetDataFilterChangedSlots;
-			std::unordered_map<AbsFilterPtr, FilterChangedSlot>			_rendererDataFilterChangedSlots;
-			std::unordered_map<AbsFilterPtr, FilterChangedSlot>			_rootDataFilterChangedSlots;
+            std::unordered_map<AbsFilterPtr, FilterChangedSlot>            _targetDataFilterChangedSlots;
+            std::unordered_map<AbsFilterPtr, FilterChangedSlot>            _rendererDataFilterChangedSlots;
+            std::unordered_map<AbsFilterPtr, FilterChangedSlot>            _rootDataFilterChangedSlots;
 
-			std::shared_ptr<RendererFilterChangedSignal>				_filterChanged;
+            std::shared_ptr<RendererFilterChangedSignal>                _filterChanged;
 
-			static const unsigned int									NUM_FALLBACK_ATTEMPTS;
+            static const unsigned int                                    NUM_FALLBACK_ATTEMPTS;
 
-		public:
-			inline static
-			Ptr
-			create()
-			{
-				auto ctrl = std::shared_ptr<Renderer>(new Renderer());
-
-				ctrl->initialize();
-				return ctrl;
-			}
-
-			inline static
-			Ptr
-			create(uint					backgroundColor, 
-				   AbsTexturePtr		renderTarget = nullptr,
-				   EffectPtr			effect			= nullptr,
-				   float				priority		= 0.f, 
-				   std::string			name			= "")
-			{
-				auto ctrl = std::shared_ptr<Renderer>(new Renderer(renderTarget, effect, priority));
-
-				ctrl->initialize();
-				ctrl->backgroundColor(backgroundColor);
-				ctrl->name(name);
-
-				return ctrl;
-			}
-
-			~Renderer()
-			{
-			}
-
-			inline
-			EffectPtr
-			effect()
-			{
-				return _effect;
-			}
-
-			inline
-			unsigned int
-			numDrawCalls()
-			{
-				return _drawCalls.size();
-			}
-
-			inline
-			unsigned int
-			backgroundColor()
-			{
-				return _backgroundColor;
-			}
-
-			inline
-			void
-			backgroundColor(const unsigned int backgroundColor)
-			{
-				_backgroundColor = backgroundColor;
-			}
-
-			inline
-			void
-			name(const std::string name)
-			{
-				_name = name;
-			}
-
-			inline
-			std::string
-			name()
-			{
-				return _name;
-			}
-
-
-            inline 
-			void viewport(const int x, const int y, const int w, const int h)
+        public:
+            inline static
+            Ptr
+            create()
             {
-				_viewportBox.x			= x;
-				_viewportBox.y			= y;
-				_viewportBox.width		= w;
-				_viewportBox.height		= h;
+                auto ctrl = std::shared_ptr<Renderer>(new Renderer());
+
+                ctrl->initialize();
+                return ctrl;
             }
 
-			inline
-			void scissor(const int x, const int y, const int w, const int h)
+            inline static
+            Ptr
+            create(uint                    backgroundColor,
+                   AbsTexturePtr        renderTarget = nullptr,
+                   EffectPtr            effect            = nullptr,
+                   float                priority        = 0.f,
+                   std::string            name            = "")
+            {
+                auto ctrl = std::shared_ptr<Renderer>(new Renderer(renderTarget, effect, priority));
+
+                ctrl->initialize();
+                ctrl->backgroundColor(backgroundColor);
+                ctrl->name(name);
+
+                return ctrl;
+            }
+
+			AbstractComponent::Ptr
+			clone(const CloneOption& option);
+
+            ~Renderer()
+            {
+            }
+
+            inline
+            EffectPtr
+            effect()
+            {
+                return _effect;
+            }
+
+            inline
+            unsigned int
+            numDrawCalls()
+            {
+                return _drawCalls.size();
+            }
+
+            inline
+            unsigned int
+            backgroundColor()
+            {
+                return _backgroundColor;
+            }
+
+            inline
+            void
+            backgroundColor(const unsigned int backgroundColor)
+            {
+                _backgroundColor = backgroundColor;
+            }
+
+            inline
+            void
+            name(const std::string name)
+            {
+                _name = name;
+            }
+
+            inline
+            std::string
+            name()
+            {
+                return _name;
+            }
+
+			float
+			priority()
 			{
-				_scissorBox.x		= x;
-				_scissorBox.y		= y;
-				_scissorBox.width	= w;
-				_scissorBox.height	= h;
+				return _priority;
 			}
 
 			inline
-			AbsTexturePtr
-			target()
+			void
+			priority(const float priority)
 			{
-				return _renderTarget;
+				_priority = priority;
 			}
 
-			inline
-			void
-			target(AbsTexturePtr target)
-			{
-				_renderTarget = target;
-			}
 
-			inline
-			bool
-			enabled()
-			{
-				return _enabled;
-			}
+            inline
+            void viewport(const int x, const int y, const int w, const int h)
+            {
+                _viewportBox.x            = x;
+                _viewportBox.y            = y;
+                _viewportBox.width        = w;
+                _viewportBox.height        = h;
+            }
 
-			inline
-			void
-			enabled(bool value)
-			{
-				_enabled = value;
-			}
+            inline
+            void scissor(const int x, const int y, const int w, const int h)
+            {
+                _scissorBox.x        = x;
+                _scissorBox.y        = y;
+                _scissorBox.width    = w;
+                _scissorBox.height    = h;
+            }
 
-			void
-			render(std::shared_ptr<render::AbstractContext> context,
-				   AbsTexturePtr 		renderTarget = nullptr);
+            inline
+            AbsTexturePtr
+            target()
+            {
+                return _renderTarget;
+            }
 
-			inline
-			Signal<Ptr>::Ptr
-			renderingBegin()
-			{
-				return _renderingBegin;
-			}
+            inline
+            void
+            target(AbsTexturePtr target)
+            {
+                _renderTarget = target;
+            }
 
-			inline
-			Signal<Ptr>::Ptr
-			beforePresent()
-			{
-				return _beforePresent;
-			}
+            inline
+            bool
+            enabled()
+            {
+                return _enabled;
+            }
 
-			inline
-			Signal<Ptr>::Ptr
-			renderingEnd()
-			{
-				return _renderingEnd;
-			}
+            inline
+            void
+            enabled(bool value)
+            {
+                _enabled = value;
+            }
 
-			Ptr
-			addFilter(AbsFilterPtr, data::BindingSource);
+            void
+            render(std::shared_ptr<render::AbstractContext> context,
+                   AbsTexturePtr         renderTarget = nullptr);
 
-			Ptr
-			removeFilter(AbsFilterPtr, data::BindingSource);
+            inline
+            Signal<Ptr>::Ptr
+            renderingBegin()
+            {
+                return _renderingBegin;
+            }
 
-			const std::set<AbsFilterPtr>&
-			filters(data::BindingSource source) const
-			{
-				return 
-				source == data::BindingSource::TARGET
-				? _targetDataFilters
-				: source == data::BindingSource::RENDERER
-					? _rendererDataFilters
-					: _rootDataFilters;
-			}
+            inline
+            Signal<Ptr>::Ptr
+            beforePresent()
+            {
+                return _beforePresent;
+            }
 
-			Ptr
-			setFilterSurface(SurfacePtr);
+            inline
+            Signal<Ptr>::Ptr
+            renderingEnd()
+            {
+                return _renderingEnd;
+            }
 
-			inline
-			std::shared_ptr<RendererFilterChangedSignal>
-			filterChanged() const
-			{
-				return _filterChanged;
-			}
+            Ptr
+            addFilter(AbsFilterPtr, data::BindingSource);
 
-		private:
-			Renderer(AbsTexturePtr		renderTarget = nullptr,
-					 EffectPtr			effect			= nullptr,
-					 float				priority		= 0.f);
+            Ptr
+            removeFilter(AbsFilterPtr, data::BindingSource);
 
-			void
-			initialize();
+            const std::set<AbsFilterPtr>&
+            filters(data::BindingSource source) const
+            {
+                return
+                source == data::BindingSource::TARGET
+                ? _targetDataFilters
+                : source == data::BindingSource::RENDERER
+                    ? _rendererDataFilters
+                    : _rootDataFilters;
+            }
 
-			void
-			targetAddedHandler(AbsCmpPtr ctrl, NodePtr target);
+            Ptr
+            setFilterSurface(SurfacePtr);
 
-			void
-			targetRemovedHandler(AbsCmpPtr ctrl, NodePtr target);
+            inline
+            std::shared_ptr<RendererFilterChangedSignal>
+            filterChanged() const
+            {
+                return _filterChanged;
+            }
 
-			void
-			addedHandler(NodePtr node, NodePtr target, NodePtr parent);
+        private:
+            Renderer(AbsTexturePtr        renderTarget = nullptr,
+                     EffectPtr            effect            = nullptr,
+                     float                priority        = 0.f);
 
-			void
-			removedHandler(NodePtr node, NodePtr target, NodePtr parent);
+			Renderer(const Renderer& renderer, const CloneOption& option);
 
-			void
-			rootDescendantAddedHandler(NodePtr node, NodePtr target, NodePtr parent);
+            void
+            initialize();
 
-			void
-			rootDescendantRemovedHandler(NodePtr node, NodePtr target, NodePtr parent);
+            void
+            targetAddedHandler(AbsCmpPtr ctrl, NodePtr target);
 
-			void
-			componentAddedHandler(NodePtr node, NodePtr target, AbsCmpPtr	ctrl);
+            void
+            targetRemovedHandler(AbsCmpPtr ctrl, NodePtr target);
 
-			void
-			componentRemovedHandler(NodePtr node, NodePtr target, AbsCmpPtr ctrl);
+            void
+            addedHandler(NodePtr node, NodePtr target, NodePtr parent);
 
-			void
-			addSurface(SurfacePtr);
+            void
+            removedHandler(NodePtr node, NodePtr target, NodePtr parent);
 
-			void
-			removeSurface(SurfacePtr);
+            void
+            rootDescendantAddedHandler(NodePtr node, NodePtr target, NodePtr parent);
 
-			void
-			geometryChanged(SurfacePtr ctrl);
+            void
+            rootDescendantRemovedHandler(NodePtr node, NodePtr target, NodePtr parent);
 
-			void
-			materialChanged(SurfacePtr ctrl);
+            void
+            componentAddedHandler(NodePtr node, NodePtr target, AbsCmpPtr    ctrl);
 
-			void
-			sceneManagerRenderingBeginHandler(std::shared_ptr<SceneManager>	sceneManager,
-											  uint							frameId,
-											  AbsTexturePtr					renderTarget);
+            void
+            componentRemovedHandler(NodePtr node, NodePtr target, AbsCmpPtr ctrl);
 
-			void
-			findSceneManager();
+            void
+            addSurface(SurfacePtr);
 
-			void
-			setSceneManager(std::shared_ptr<SceneManager> sceneManager);
+            void
+            removeSurface(SurfacePtr);
 
-			inline
-			std::set<AbsFilterPtr>&
-			filtersRef(data::BindingSource source)
-			{
-				return source == data::BindingSource::TARGET
-				? _targetDataFilters
-				: source == data::BindingSource::RENDERER
-					? _rendererDataFilters
-					: _rootDataFilters;
-			}
+            void
+            geometryChanged(SurfacePtr ctrl);
 
-			inline
-			std::unordered_map<AbsFilterPtr, FilterChangedSlot>&
-			filterChangedSlotsRef(data::BindingSource source)
-			{
-				return source == data::BindingSource::TARGET
-				? _targetDataFilterChangedSlots
-				: source == data::BindingSource::RENDERER
-					? _rendererDataFilterChangedSlots
-					: _rootDataFilterChangedSlots;
-			}
+            void
+            materialChanged(SurfacePtr ctrl);
 
-			void
-			filterChangedHandler(AbsFilterPtr, data::BindingSource, SurfacePtr);
-		};
-	}
+            void
+            sceneManagerRenderingBeginHandler(std::shared_ptr<SceneManager>    sceneManager,
+                                              uint                            frameId,
+                                              AbsTexturePtr                    renderTarget);
+
+            void
+            findSceneManager();
+
+            void
+            setSceneManager(std::shared_ptr<SceneManager> sceneManager);
+
+            inline
+            std::set<AbsFilterPtr>&
+            filtersRef(data::BindingSource source)
+            {
+                return source == data::BindingSource::TARGET
+                ? _targetDataFilters
+                : source == data::BindingSource::RENDERER
+                    ? _rendererDataFilters
+                    : _rootDataFilters;
+            }
+
+            inline
+            std::unordered_map<AbsFilterPtr, FilterChangedSlot>&
+            filterChangedSlotsRef(data::BindingSource source)
+            {
+                return source == data::BindingSource::TARGET
+                ? _targetDataFilterChangedSlots
+                : source == data::BindingSource::RENDERER
+                    ? _rendererDataFilterChangedSlots
+                    : _rootDataFilterChangedSlots;
+            }
+
+            void
+            filterChangedHandler(AbsFilterPtr, data::BindingSource, SurfacePtr);
+        };
+    }
 }

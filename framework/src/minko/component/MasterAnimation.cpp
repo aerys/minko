@@ -19,15 +19,40 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/MasterAnimation.hpp"
 #include "minko/component/Animation.hpp"
+#include "minko/component/Skinning.hpp"
+#include "minko/scene/Node.hpp"
+#include "minko/scene/NodeSet.hpp"
 
 using namespace minko;
+using namespace minko::scene;
 using namespace minko::component;
 
-MasterAnimation::MasterAnimation(const std::vector<AnimationPtr>& animations, 
-								 bool isLooping) :
+MasterAnimation::MasterAnimation(bool isLooping) :
 	AbstractAnimation(isLooping),
-	_animations(animations)
+	_animations()
 {
+}
+
+MasterAnimation::MasterAnimation(const MasterAnimation& masterAnim, const CloneOption& option) :
+	AbstractAnimation(masterAnim, option),
+	_animations()
+{
+	/*
+	for (auto animation : masterAnim._animations) 
+	{
+		_animations.push_back(std::dynamic_pointer_cast<Animation>(animation->clone(option)));
+	}
+	*/
+}
+
+AbstractComponent::Ptr
+MasterAnimation::clone(const CloneOption& option)
+{
+	auto anim = std::shared_ptr<MasterAnimation>(new MasterAnimation(*this, option));
+
+	anim->initialize();
+
+	return anim;
 }
 
 /*virtual*/
@@ -35,16 +60,107 @@ void
 MasterAnimation::initialize()
 {
 	AbstractAnimation::initialize();
+
+	_targetAddedSlot = targetAdded()->connect(std::bind(
+		&MasterAnimation::targetAddedHandler,
+		std::dynamic_pointer_cast<MasterAnimation>(shared_from_this()),
+		std::placeholders::_1,
+		std::placeholders::_2
+		));
+
+	_targetRemovedSlot = targetRemoved()->connect(std::bind(
+		&MasterAnimation::targetRemovedHandler,
+		std::dynamic_pointer_cast<MasterAnimation>(shared_from_this()),
+		std::placeholders::_1,
+		std::placeholders::_2
+		));
 	
+	/*
 	_maxTime = 0;
 
 	for (auto& animation : _animations)
 	{
-		animation->_master = std::static_pointer_cast<MasterAnimation>(shared_from_this());
+		animation->_master = std::dynamic_pointer_cast<MasterAnimation>(shared_from_this());
 		_maxTime = std::max(_maxTime, animation->_maxTime);
 	}
 
 	setPlaybackWindow(0, _maxTime)->seek(0)->play();
+	*/
+}
+
+void
+MasterAnimation::targetAddedHandler(AbstractComponent::Ptr cmp,
+									  Node::Ptr node)
+{
+	_addedSlot = node->added()->connect(std::bind(
+		&MasterAnimation::addedHandler,
+		std::dynamic_pointer_cast<MasterAnimation>(shared_from_this()),
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3
+		));
+
+	_removedSlot = node->removed()->connect(std::bind(
+		&MasterAnimation::removedHandler,
+		std::dynamic_pointer_cast<MasterAnimation>(shared_from_this()),
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3
+		));
+
+	_target = node;
+
+	if (node->hasComponent<Skinning>())
+	{
+		initAnimations();
+	}
+}
+
+void
+MasterAnimation::initAnimations()
+{
+	auto descendants = NodeSet::create(_target)->descendants(true);
+	for (auto descendant : descendants->nodes())
+	{
+		if (descendant->hasComponent<Skinning>())
+		{
+			_animations.push_back(descendant->component<Skinning>());
+		}
+	}
+
+	_maxTime = 0;
+
+	for (auto& animation : _animations)
+	{
+		// animation->_master = std::dynamic_pointer_cast<MasterAnimation>(shared_from_this());
+		_maxTime = std::max(_maxTime, animation->getMaxTime());
+	}
+
+	setPlaybackWindow(0, _maxTime)->seek(0)->play();
+}
+
+void
+MasterAnimation::targetRemovedHandler(AbstractComponent::Ptr cmp,
+										Node::Ptr node)
+{
+}
+
+/*virtual*/
+void
+MasterAnimation::addedHandler(Node::Ptr node,
+								Node::Ptr target,
+								Node::Ptr parent)
+{
+	AbstractAnimation::addedHandler(node, target, parent);
+}
+
+/*virtual*/
+void
+MasterAnimation::removedHandler(Node::Ptr node,
+									Node::Ptr target,
+									Node::Ptr parent)
+{
+	AbstractAnimation::removedHandler(node, target, parent);
 }
 
 /*virtual*/
@@ -56,7 +172,7 @@ MasterAnimation::play()
 	for (auto& animation : _animations)
 		animation->play();
 
-	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
+	return std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 /*virtual*/
@@ -68,8 +184,18 @@ MasterAnimation::stop()
 	for (auto& animation : _animations)
 		animation->stop();
 
-	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
+	return std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this());
 }
+
+AbstractAnimation::Ptr
+MasterAnimation::seek(const std::string& labelName)
+{
+	for (auto& animation : _animations)
+		animation->seek(labelTime(labelName));
+
+	return std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this());
+}
+
 
 /*virtual*/
 AbstractAnimation::Ptr
@@ -80,7 +206,7 @@ MasterAnimation::addLabel(const std::string& name, uint time)
 	for (auto& animation : _animations)
 		animation->addLabel(name, time);
 
-	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
+	return std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 /*virtual*/
@@ -92,7 +218,7 @@ MasterAnimation::changeLabel(const std::string& name, const std::string& newName
 	for (auto& animation : _animations)
 		animation->changeLabel(name, newName);
 
-	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
+	return std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 /*virtual*/
@@ -104,7 +230,7 @@ MasterAnimation::setTimeForLabel(const std::string& name, uint newTime)
 	for (auto& animation : _animations)
 		animation->setTimeForLabel(name, newTime);
 
-	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
+	return std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 /*virtual*/
@@ -116,7 +242,7 @@ MasterAnimation::removeLabel(const std::string& name)
 	for (auto& animation : _animations)
 		animation->removeLabel(name);
 
-	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
+	return std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 /*virtual*/
@@ -130,7 +256,7 @@ MasterAnimation::setPlaybackWindow(uint beginTime,
 	for (auto& animation : _animations)
 		animation->setPlaybackWindow(beginTime, endTime, forceRestart);
 
-	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
+	return std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 /*virtual*/
@@ -144,7 +270,7 @@ MasterAnimation::setPlaybackWindow(const std::string&	beginLabelName,
 	for (auto& animation : _animations)
 		animation->setPlaybackWindow(beginLabelName, endLabelName, forceRestart);
 
-	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
+	return std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 /*virtual*/
@@ -156,7 +282,7 @@ MasterAnimation::resetPlaybackWindow()
 	for (auto& animation : _animations)
 		animation->resetPlaybackWindow();
 
-	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
+	return std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 /*virtual*/
@@ -165,7 +291,41 @@ MasterAnimation::update()
 {
 	for (auto& animation : _animations)
 	{
-		animation->_currentTime = _currentTime;
-		animation->update();
+		auto anim = std::dynamic_pointer_cast<Animation>(animation);
+		if (anim != nullptr) {
+			anim->_currentTime = _currentTime;
+			anim->update();
+		}		
 	}
+}
+
+void
+MasterAnimation::rebindDependencies(std::map<AbstractComponent::Ptr, AbstractComponent::Ptr>& componentsMap, std::map<NodePtr, NodePtr>& nodeMap, CloneOption option)
+{
+	/*
+	var newAnimations : Vector.<AnimationController> = new Vector.<AnimationController>();
+
+	for (var i : int = 0; i < _animations.length; ++i)
+	{
+		var newController : AbstractAnimationController = controllerMap[_animations[i]] as AbstractAnimationController;
+		if (newController)
+			newAnimations.push(newController);
+	}
+
+	_animations = newAnimations;
+	*/
+
+	std::vector<AbstractAnimationPtr> newAnimations;
+
+	for (auto animation : _animations) 
+	{
+		std::map<AbstractComponent::Ptr, AbstractComponent::Ptr>::iterator it;
+
+		it = componentsMap.find(animation);
+	
+		if (it != componentsMap.end())
+			newAnimations.push_back(animation);
+	}
+
+	_animations = newAnimations;
 }

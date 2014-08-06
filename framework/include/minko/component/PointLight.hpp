@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,64 +25,85 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace component
-	{
-		class PointLight:
-			public AbstractDiscreteLight
-		{
-		public:
-			typedef std::shared_ptr<PointLight> Ptr;
+    namespace component
+    {
+        class PointLight:
+            public AbstractDiscreteLight
+        {
+        public:
+            typedef std::shared_ptr<PointLight> Ptr;
 
-		private:
-			std::shared_ptr<math::Vector3>	_attenuationCoeffs;
-			std::shared_ptr<math::Vector3>	_worldPosition;
+        private:
+            std::shared_ptr<math::Vector3>    _attenuationCoeffs;
+            std::shared_ptr<math::Vector3>    _worldPosition;
 
-		public:
-			inline static
-			Ptr
-			create(float diffuse				= 1.0f,
-				   float specular				= 1.0f,
-				   float attenuationConstant	= -1.0f,
-				   float attenuationLinear		= -1.0f,
-				   float attenuationQuadratic	= -1.0f)
+        public:
+            inline static
+            Ptr
+            create(float diffuse                = 1.0f,
+                   float specular                = 1.0f,
+                   float attenuationConstant    = -1.0f,
+                   float attenuationLinear        = -1.0f,
+                   float attenuationQuadratic    = -1.0f)
+            {
+                auto light = std::shared_ptr<PointLight>(new PointLight(
+                    diffuse,
+                    specular,
+                    attenuationConstant,
+                    attenuationLinear,
+                    attenuationQuadratic
+                ));
+
+                light->initialize();
+
+                return light;
+            }
+
+            ~PointLight() = default;
+
+			AbstractComponent::Ptr
+			clone(const CloneOption& option);
+	
+            bool
+            attenuationEnabled() const;
+
+            std::shared_ptr<math::Vector3>
+            attenuationCoefficients() const;
+
+            Ptr
+            attenuationCoefficients(float constant, float linear, float quadratic);
+
+            Ptr
+            attenuationCoefficients(std::shared_ptr<math::Vector3>);
+
+			inline
+			std::shared_ptr<math::Vector3>
+			position() const
 			{
-				auto light = std::shared_ptr<PointLight>(new PointLight(
-					diffuse,
-					specular,
-					attenuationConstant,
-					attenuationLinear,
-					attenuationQuadratic
-				));
-
-				light->initialize();
-
-				return light;
+				return data()->get<std::shared_ptr<math::Vector3>>("position");
 			}
 
-			~PointLight() = default;
-
-			bool
-			attenuationEnabled() const;
-
-			std::shared_ptr<math::Vector3>
-			attenuationCoefficients() const;
-
+			inline
 			Ptr
-			attenuationCoefficients(float constant, float linear, float quadratic);
+			position(std::shared_ptr<math::Vector3> position)
+			{
+				data()->set<std::shared_ptr<math::Vector3>>("position", position);
 
-			Ptr
-			attenuationCoefficients(std::shared_ptr<math::Vector3>);
+				return std::static_pointer_cast<PointLight>(shared_from_this());
+			}
 
-		protected:
-			void
-			updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld);
+        protected:
+            void
+            updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld);
 
-		private:
-			PointLight(float diffuse,
-					   float specular,
-					   float attenuationConstant,
-					   float attenuationLinear,
-					   float attenuationQuadratic);
-		};
-	}
+        private:
+            PointLight(float diffuse,
+                       float specular,
+                       float attenuationConstant,
+                       float attenuationLinear,
+                       float attenuationQuadratic);
+
+			PointLight(const PointLight& pointLight, const CloneOption& option);
+        };
+    }
 }

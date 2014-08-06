@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,47 +23,47 @@ using namespace minko;
 using namespace component;
 
 bullet::LinearIdAllocator::LinearIdAllocator(uint maxUid):
-	_uids(),
-	_uidToIndex(),
-	_numUsedUids(0),
-	_MAX_UID(maxUid)
+    _uids(),
+    _uidToIndex(),
+    _numUsedUids(0),
+    _MAX_UID(maxUid)
 {
-	_uids.resize(_MAX_UID);
-	_uidToIndex.resize(_MAX_UID);
+    _uids.resize(_MAX_UID);
+    _uidToIndex.resize(_MAX_UID);
 
-	for (uint i = 0; i < _MAX_UID; ++i)
-		_uids[i] = _uidToIndex[i] = i;
+    for (uint i = 0; i < _MAX_UID; ++i)
+        _uids[i] = _uidToIndex[i] = i;
 }
 
 uint
 bullet::LinearIdAllocator::allocate()
 {
-	if (_numUsedUids == _MAX_UID)
-		throw std::logic_error("failed to allocate a new unique id (max number of ids reached).");
+    if (_numUsedUids == _MAX_UID)
+        throw std::logic_error("failed to allocate a new unique id (max number of ids reached).");
 
-	const uint ret = _uids[_numUsedUids];
+    const uint ret = _uids[_numUsedUids];
 
-	++_numUsedUids;
+    ++_numUsedUids;
 
-	return ret;
+    return ret;
 }
 
 void
 bullet::LinearIdAllocator::free(uint uid)
 {
-	if (uid > _MAX_UID || _uidToIndex[uid] >= _numUsedUids)
-		throw std::invalid_argument("uid");
+    if (uid > _MAX_UID || _uidToIndex[uid] >= _numUsedUids)
+        throw std::invalid_argument("uid");
 
-	const unsigned int pos	= _uidToIndex[uid];
+    const unsigned int pos    = _uidToIndex[uid];
 
-	const unsigned int pos2 = _numUsedUids-1;
-	const unsigned int uid2 = _uids[pos2];
+    const unsigned int pos2 = _numUsedUids-1;
+    const unsigned int uid2 = _uids[pos2];
 
-	_uids[_numUsedUids-1]	= uid;
-	_uidToIndex[uid]		= _numUsedUids-1;
+    _uids[_numUsedUids-1]    = uid;
+    _uidToIndex[uid]        = _numUsedUids-1;
 
-	_uids[pos]				= uid2;
-	_uidToIndex[uid2]		= pos;
+    _uids[pos]                = uid2;
+    _uidToIndex[uid2]        = pos;
 
-	--_numUsedUids;
+    --_numUsedUids;
 }

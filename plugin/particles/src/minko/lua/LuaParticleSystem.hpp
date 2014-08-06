@@ -25,38 +25,38 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	class LuaWrapper;
+    class LuaWrapper;
 
-	namespace component
-	{
-		class LuaParticleSystem: public LuaWrapper
-		{
-		public:
-			static 
-			ParticleSystem::Ptr
-			extractParticleSystemFromNode(scene::Node::Ptr node)
-			{
-				return node->hasComponent<ParticleSystem>() 
-					? node->component<ParticleSystem>() 
-					: nullptr;
-			}
+    namespace component
+    {
+        class LuaParticleSystem: public LuaWrapper
+        {
+        public:
+            static
+            ParticleSystem::Ptr
+            extractParticleSystemFromNode(scene::Node::Ptr node)
+            {
+                return node->hasComponent<ParticleSystem>()
+                    ? node->component<ParticleSystem>()
+                    : nullptr;
+            }
 
-			static
-			void
-			bind(LuaGlue& state)
-			{
-				auto node = (LuaGlueClass<scene::Node>*)state.lookupClass("Node");
-				
-				node->methodWrapper("getParticles",	&LuaParticleSystem::extractParticleSystemFromNode);
-				
-				state.Class<ParticleSystem>("ParticleSystem")
-					.method("play",					static_cast<ParticleSystem::Ptr (ParticleSystem::*)()>		(&ParticleSystem::play))
-					.method("stop",					static_cast<ParticleSystem::Ptr (ParticleSystem::*)()>		(&ParticleSystem::stop))
-					.method("getEmitting",			static_cast<bool (ParticleSystem::*)() const>				(&ParticleSystem::emitting))
-					.method("setEmitting",			static_cast<ParticleSystem::Ptr (ParticleSystem::*)(bool)>	(&ParticleSystem::emitting))
-					.method("getIsInWorldSpace",	static_cast<bool (ParticleSystem::*)() const>				(&ParticleSystem::isInWorldSpace))
-					.method("setIsInWorldSpace",	static_cast<ParticleSystem::Ptr (ParticleSystem::*)(bool)>	(&ParticleSystem::isInWorldSpace));
-			}
-		};
-	}
+            static
+            void
+            bind(LuaGlue& state)
+            {
+                auto node = (LuaGlueClass<scene::Node>*)state.lookupClass("Node");
+
+                node->methodWrapper("getParticles",    &LuaParticleSystem::extractParticleSystemFromNode);
+
+                state.Class<ParticleSystem>("ParticleSystem")
+                    .method("play",                    static_cast<ParticleSystem::Ptr (ParticleSystem::*)()>        (&ParticleSystem::play))
+                    .method("stop",                    static_cast<ParticleSystem::Ptr (ParticleSystem::*)()>        (&ParticleSystem::stop))
+                    .method("getEmitting",            static_cast<bool (ParticleSystem::*)() const>                (&ParticleSystem::emitting))
+                    .method("setEmitting",            static_cast<ParticleSystem::Ptr (ParticleSystem::*)(bool)>    (&ParticleSystem::emitting))
+                    .method("getIsInWorldSpace",    static_cast<bool (ParticleSystem::*)() const>                (&ParticleSystem::isInWorldSpace))
+                    .method("setIsInWorldSpace",    static_cast<ParticleSystem::Ptr (ParticleSystem::*)(bool)>    (&ParticleSystem::isInWorldSpace));
+            }
+        };
+    }
 }

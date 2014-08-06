@@ -32,5 +32,5 @@ SDLTouch::SDLTouch(std::shared_ptr<Canvas> canvas) :
 std::shared_ptr<SDLTouch>
 SDLTouch::create(std::shared_ptr<Canvas> canvas)
 {
-	return std::shared_ptr<SDLTouch>(new SDLTouch(canvas));
+    return std::shared_ptr<SDLTouch>(new SDLTouch(canvas));
 }

@@ -24,33 +24,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	class SDLWebGLBackend :
-		public SDLBackend
-	{
-	public:
-		typedef std::shared_ptr<SDLWebGLBackend>		Ptr;
+    class SDLWebGLBackend :
+        public SDLBackend
+    {
+    public:
+        typedef std::shared_ptr<SDLWebGLBackend>        Ptr;
 
-	public:
-		static
-		std::shared_ptr<SDLWebGLBackend>
-		create()
-		{
-		    return std::shared_ptr<SDLWebGLBackend>(new SDLWebGLBackend());
-		}
+    public:
+        static
+        std::shared_ptr<SDLWebGLBackend>
+        create()
+        {
+            return std::shared_ptr<SDLWebGLBackend>(new SDLWebGLBackend());
+        }
 
-		virtual void
-		initialize(std::shared_ptr<Canvas> canvas);
+        virtual void
+        initialize(std::shared_ptr<Canvas> canvas);
 
-		virtual void
-		swapBuffers(std::shared_ptr<Canvas> canvas);
+        virtual void
+        swapBuffers(std::shared_ptr<Canvas> canvas);
 
-		virtual void
-		run(std::shared_ptr<Canvas> canvas);
+        virtual void
+        run(std::shared_ptr<Canvas> canvas);
 
-		virtual void
-		wait(std::shared_ptr<Canvas> canvas, uint ms);
+        virtual void
+        wait(std::shared_ptr<Canvas> canvas, uint ms);
 
-	private:
-		SDLWebGLBackend() = default;
-	};
+    private:
+        SDLWebGLBackend() = default;
+    };
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -28,75 +28,75 @@ using namespace minko::component;
 void
 AbstractNextFrameComponent::initialize()
 {
-	_targetAddedSlot = targetAdded()->connect(std::bind(
-		&AbstractNextFrameComponent::targetAddedHandler,
-		std::static_pointer_cast<AbstractNextFrameComponent>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2
-	));
+    _targetAddedSlot = targetAdded()->connect(std::bind(
+        &AbstractNextFrameComponent::targetAddedHandler,
+        std::static_pointer_cast<AbstractNextFrameComponent>(shared_from_this()),
+        std::placeholders::_1,
+        std::placeholders::_2
+    ));
 
-	_targetRemovedSlot = targetRemoved()->connect(std::bind(
-		&AbstractNextFrameComponent::targetRemovedHandler,
-		std::static_pointer_cast<AbstractNextFrameComponent>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2
-	));
+    _targetRemovedSlot = targetRemoved()->connect(std::bind(
+        &AbstractNextFrameComponent::targetRemovedHandler,
+        std::static_pointer_cast<AbstractNextFrameComponent>(shared_from_this()),
+        std::placeholders::_1,
+        std::placeholders::_2
+    ));
 }
 
 void
 AbstractNextFrameComponent::targetAddedHandler(AbstractComponent::Ptr cmp, NodePtr target)
 {
-	_componentAddedSlot = target->componentAdded()->connect(std::bind(
-		&AbstractNextFrameComponent::componentAddedHandler,
-		std::static_pointer_cast<AbstractNextFrameComponent>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	));
+    _componentAddedSlot = target->componentAdded()->connect(std::bind(
+        &AbstractNextFrameComponent::componentAddedHandler,
+        std::static_pointer_cast<AbstractNextFrameComponent>(shared_from_this()),
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3
+    ));
 
-	_componentRemovedSlot = target->componentRemoved()->connect(std::bind(
-		&AbstractNextFrameComponent::componentRemovedHandler,
-		std::static_pointer_cast<AbstractNextFrameComponent>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	));
+    _componentRemovedSlot = target->componentRemoved()->connect(std::bind(
+        &AbstractNextFrameComponent::componentRemovedHandler,
+        std::static_pointer_cast<AbstractNextFrameComponent>(shared_from_this()),
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3
+    ));
 }
 
 void
 AbstractNextFrameComponent::targetRemovedHandler(AbstractComponent::Ptr cmp, NodePtr target)
 {
-	_componentAddedSlot = nullptr;
-	_componentRemovedSlot = nullptr;
+    _componentAddedSlot = nullptr;
+    _componentRemovedSlot = nullptr;
 }
 
 void
 AbstractNextFrameComponent::componentAddedHandler(NodePtr node, NodePtr target, AbstractComponent::Ptr cmp)
 {
-	SceneManager::Ptr sceneManager = std::dynamic_pointer_cast<SceneManager>(cmp);
+    SceneManager::Ptr sceneManager = std::dynamic_pointer_cast<SceneManager>(cmp);
 
-	if (sceneManager)
-		setSceneManager(sceneManager);
+    if (sceneManager)
+        setSceneManager(sceneManager);
 }
 
 void
 AbstractNextFrameComponent::componentRemovedHandler(NodePtr node, NodePtr target, AbstractComponent::Ptr cmp)
 {
-	SceneManager::Ptr sceneManager = std::dynamic_pointer_cast<SceneManager>(cmp);
+    SceneManager::Ptr sceneManager = std::dynamic_pointer_cast<SceneManager>(cmp);
 
-	if (sceneManager)
-		setSceneManager(nullptr);
+    if (sceneManager)
+        setSceneManager(nullptr);
 }
 
 void
 AbstractNextFrameComponent::setSceneManager(SceneManager::Ptr sceneManager)
 {
-	if (sceneManager)
-	{
+    if (sceneManager)
+    {
 
-	}
-	else
-	{
+    }
+    else
+    {
 
-	}
+    }
 }

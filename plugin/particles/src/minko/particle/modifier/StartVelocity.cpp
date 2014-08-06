@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -27,28 +27,28 @@ using namespace minko::particle;
 using namespace minko::particle::modifier;
 
 StartVelocity::StartVelocity(SamplerPtr vx,
-						     SamplerPtr vy,
-						     SamplerPtr vz): 
+                             SamplerPtr vy,
+                             SamplerPtr vz):
     IParticleInitializer(),
     Modifier3<float> (vx, vy, vz)
 {
 }
 
 void
-StartVelocity::initialize(ParticleData& 	particle,
-	    			  	  float				time) const 
+StartVelocity::initialize(ParticleData&     particle,
+                            float                time) const
 {
-	particle.startvx    += _x->value();
-	particle.startvy    += _y->value();
-	particle.startvz    += _z->value();
+    particle.startvx    += _x->value();
+    particle.startvy    += _y->value();
+    particle.startvz    += _z->value();
 
-	particle.x          += particle.startvx * time;
-	particle.y          += particle.startvy * time;
-	particle.z          += particle.startvz * time;
+    particle.x          += particle.startvx * time;
+    particle.y          += particle.startvy * time;
+    particle.z          += particle.startvz * time;
 }
 
 unsigned int
-StartVelocity::getNeededComponents() const 
+StartVelocity::getNeededComponents() const
 {
-	return VertexComponentFlags::DEFAULT;
+    return VertexComponentFlags::DEFAULT;
 }

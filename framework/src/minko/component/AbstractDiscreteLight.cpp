@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -27,42 +27,42 @@ using namespace minko;
 using namespace minko::component;
 
 AbstractDiscreteLight::AbstractDiscreteLight(const std::string& arrayName,
-											 float				diffuse,
-											 float				specular) :
-	AbstractLight(arrayName)
+                                             float                diffuse,
+                                             float                specular) :
+    AbstractLight(arrayName)
 {
-	data()
-		->set("diffuse", diffuse)
-		->set("specular", specular);
+    data()
+        ->set("diffuse", diffuse)
+        ->set("specular", specular);
 }
 
 void
 AbstractDiscreteLight::targetAddedHandler(AbstractComponent::Ptr cmp, std::shared_ptr<scene::Node> target)
 {
-	AbstractLight::targetAddedHandler(cmp, target);
+    AbstractLight::targetAddedHandler(cmp, target);
 
-	_modelToWorldChangedSlot = target->data()->propertyValueChanged("transform.modelToWorldMatrix")->connect(std::bind(
-		&AbstractDiscreteLight::modelToWorldMatrixChangedHandler,
-		std::dynamic_pointer_cast<AbstractDiscreteLight>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2
-	));
+    _modelToWorldChangedSlot = target->data()->propertyValueChanged("transform.modelToWorldMatrix")->connect(std::bind(
+        &AbstractDiscreteLight::modelToWorldMatrixChangedHandler,
+        std::dynamic_pointer_cast<AbstractDiscreteLight>(shared_from_this()),
+        std::placeholders::_1,
+        std::placeholders::_2
+    ));
 
-	if (target->data()->hasProperty("transform.modelToWorldMatrix"))
-		updateModelToWorldMatrix(target->data()->get<math::Matrix4x4::Ptr>("transform.modelToWorldMatrix"));
+    if (target->data()->hasProperty("transform.modelToWorldMatrix"))
+        updateModelToWorldMatrix(target->data()->get<math::Matrix4x4::Ptr>("transform.modelToWorldMatrix"));
 }
 
 void
 AbstractDiscreteLight::targetRemovedHandler(AbstractComponent::Ptr cmp, std::shared_ptr<scene::Node> target)
 {
-	AbstractLight::targetRemovedHandler(cmp, target);
+    AbstractLight::targetRemovedHandler(cmp, target);
 
-	_modelToWorldChangedSlot = nullptr;
+    _modelToWorldChangedSlot = nullptr;
 }
 
 void
-AbstractDiscreteLight::modelToWorldMatrixChangedHandler(std::shared_ptr<data::Container> 	container,
-								 						const std::string& 					propertyName)
+AbstractDiscreteLight::modelToWorldMatrixChangedHandler(std::shared_ptr<data::Container>     container,
+                                                         const std::string&                     propertyName)
 {
-	updateModelToWorldMatrix(container->get<math::Matrix4x4::Ptr>(propertyName));
+    updateModelToWorldMatrix(container->get<math::Matrix4x4::Ptr>(propertyName));
 }

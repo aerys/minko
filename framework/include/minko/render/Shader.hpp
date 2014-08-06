@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,84 +25,84 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace render
-	{
-		class Shader :
-			public AbstractResource
-		{
-		public:
-			typedef std::shared_ptr<Shader> Ptr;
+    namespace render
+    {
+        class Shader :
+            public AbstractResource
+        {
+        public:
+            typedef std::shared_ptr<Shader> Ptr;
 
-			enum class Type
-			{
-				VERTEX_SHADER,
-				FRAGMENT_SHADER
-			};
+            enum class Type
+            {
+                VERTEX_SHADER,
+                FRAGMENT_SHADER
+            };
 
-		private:
-			Type		_type;
-			std::string _source;
+        private:
+            Type        _type;
+            std::string _source;
 
-		public:
-			inline static
-			Ptr
-			create(std::shared_ptr<AbstractContext> context, Type type)
-			{
-				return std::shared_ptr<Shader>(new Shader(context, type));
-			}
+        public:
+            inline static
+            Ptr
+            create(std::shared_ptr<AbstractContext> context, Type type)
+            {
+                return std::shared_ptr<Shader>(new Shader(context, type));
+            }
 
-			inline static
-			Ptr
-			create(std::shared_ptr<AbstractContext> context, Type type, const std::string& source)
-			{
-				auto s = create(context, type);
+            inline static
+            Ptr
+            create(std::shared_ptr<AbstractContext> context, Type type, const std::string& source)
+            {
+                auto s = create(context, type);
 
-				s->_source = source;
+                s->_source = source;
 
-				return s;
-			}
+                return s;
+            }
 
-			inline static
-			Ptr
-			create(Ptr shader)
-			{
-				return create(shader->_context, shader->_type, shader->_source);
-			}
+            inline static
+            Ptr
+            create(Ptr shader)
+            {
+                return create(shader->_context, shader->_type, shader->_source);
+            }
 
-			inline
-			Type
-			type() const
-			{
-				return _type;
-			}
+            inline
+            Type
+            type() const
+            {
+                return _type;
+            }
 
-			inline
-			const std::string&
-			source()
-			{
-				return _source;
-			}
+            inline
+            const std::string&
+            source()
+            {
+                return _source;
+            }
 
-			inline
-			void
-			source(const std::string& source)
-			{
-				_source = source;
-			}
+            inline
+            void
+            source(const std::string& source)
+            {
+                _source = source;
+            }
 
-			void
-			dispose();
+            void
+            dispose();
 
-			void
-			upload();
+            void
+            upload();
 
-		private:
-			Shader(std::shared_ptr<AbstractContext> context,
-				   Type								type) :
-				AbstractResource(context),
-				_type(type)
-			{
-			}
-		};
-	}
+        private:
+            Shader(std::shared_ptr<AbstractContext> context,
+                   Type                                type) :
+                AbstractResource(context),
+                _type(type)
+            {
+            }
+        };
+    }
 }

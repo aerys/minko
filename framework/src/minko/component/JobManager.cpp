@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -28,83 +28,83 @@ using namespace minko::component;
 
 JobManager::Job::Job()
 {
-	_running = false;
-	_oneStepPerFrame = false;
+    _running = false;
+    _oneStepPerFrame = false;
 }
 
 JobManager::JobManager(unsigned int loadingFramerate):
-	_loadingFramerate(loadingFramerate)
+    _loadingFramerate(loadingFramerate)
 {
-	_frameTime = 1.f / loadingFramerate;
+    _frameTime = 1.f / loadingFramerate;
 }
 
 JobManager::Ptr
 JobManager::pushJob(Job::Ptr Job)
 {
-	float JobPriority	= Job->priority();
-	bool inserted		= false;
-	uint i				= 0;
-	
-	for (; i < _jobs.size() && inserted; ++i)
-	{
-		if (_jobs[i]->priority() > JobPriority)
-			inserted = true;
-	}
+    float JobPriority    = Job->priority();
+    bool inserted        = false;
+    uint i                = 0;
 
-	_jobs.insert(_jobs.begin() + i, Job);
+    for (; i < _jobs.size() && inserted; ++i)
+    {
+        if (_jobs[i]->priority() > JobPriority)
+            inserted = true;
+    }
 
-	return std::dynamic_pointer_cast<JobManager>(shared_from_this());
+    _jobs.insert(_jobs.begin() + i, Job);
+
+    return std::dynamic_pointer_cast<JobManager>(shared_from_this());
 }
 
 void
 JobManager::update(NodePtr target)
 {
-	_frameStartTime = std::clock();
+    _frameStartTime = std::clock();
 }
 
 void
 JobManager::end(NodePtr target)
 {
-	if (_jobs.size() == 0)
-		return;
+    if (_jobs.size() == 0)
+        return;
 
-	float consumeTime	= (float(std::clock() - _frameStartTime) / CLOCKS_PER_SEC);
-	Job::Ptr currentJob	= nullptr;
+    float consumeTime    = (float(std::clock() - _frameStartTime) / CLOCKS_PER_SEC);
+    Job::Ptr currentJob    = nullptr;
 
-	while (consumeTime < _frameTime)
-	{
-		if (currentJob == nullptr)
-		{
-			currentJob = _jobs.back();
-			if (!currentJob->running())
-			{
-				currentJob->_jobManager = std::dynamic_pointer_cast<JobManager>(shared_from_this());
-				currentJob->running(true);
-				currentJob->beforeFirstStep();
-			}
-		}
-		
-		currentJob->step();
-		
-		consumeTime = (float(std::clock() - _frameStartTime) / CLOCKS_PER_SEC);
-		
-		if (currentJob->complete())
-		{
-			_jobs.pop_back();
-			currentJob->afterLastStep();
-			currentJob = nullptr;
-			if (_jobs.size() == 0)
-				return;
-		}
-		else
-		{
-			if (currentJob->oneStepPerFrame())
-			{
-				_jobs.push_back(currentJob);
-				currentJob = nullptr;
-				consumeTime = _frameTime;
-			}
-		}
+    while (consumeTime < _frameTime)
+    {
+        if (currentJob == nullptr)
+        {
+            currentJob = _jobs.back();
+            if (!currentJob->running())
+            {
+                currentJob->_jobManager = std::dynamic_pointer_cast<JobManager>(shared_from_this());
+                currentJob->running(true);
+                currentJob->beforeFirstStep();
+            }
+        }
 
-	}
+        currentJob->step();
+
+        consumeTime = (float(std::clock() - _frameStartTime) / CLOCKS_PER_SEC);
+
+        if (currentJob->complete())
+        {
+            _jobs.pop_back();
+            currentJob->afterLastStep();
+            currentJob = nullptr;
+            if (_jobs.size() == 0)
+                return;
+        }
+        else
+        {
+            if (currentJob->oneStepPerFrame())
+            {
+                _jobs.push_back(currentJob);
+                currentJob = nullptr;
+                consumeTime = _frameTime;
+            }
+        }
+
+    }
 }

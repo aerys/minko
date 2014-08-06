@@ -26,68 +26,68 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace data
-	{
-		class LightMaskFilter:
-			public AbstractFilter
-		{
-		public:
-			typedef std::shared_ptr<LightMaskFilter>			Ptr;
+    namespace data
+    {
+        class LightMaskFilter:
+            public AbstractFilter
+        {
+        public:
+            typedef std::shared_ptr<LightMaskFilter>            Ptr;
 
-		private:
-			typedef std::shared_ptr<scene::Node>				NodePtr;
-			typedef std::shared_ptr<Container>					ContainerPtr;
-			typedef std::shared_ptr<Provider>					ProviderPtr;
-			typedef std::shared_ptr<component::AbstractLight>	AbsLightPtr;
+        private:
+            typedef std::shared_ptr<scene::Node>                NodePtr;
+            typedef std::shared_ptr<Container>                    ContainerPtr;
+            typedef std::shared_ptr<Provider>                    ProviderPtr;
+            typedef std::shared_ptr<component::AbstractLight>    AbsLightPtr;
 
-			typedef Signal<ContainerPtr, const std::string&>	ContainerPropertyChangedSignal;
-			typedef Signal<ProviderPtr, const std::string&>		ProviderPropertyChangedSignal;
+            typedef Signal<ContainerPtr, const std::string&>    ContainerPropertyChangedSignal;
+            typedef Signal<ProviderPtr, const std::string&>        ProviderPropertyChangedSignal;
 
-		private:
-			static std::vector<std::string>						_numLightPropertyNames;
+        private:
+            static std::vector<std::string>                        _numLightPropertyNames;
 
-			NodePtr												_target;
-			NodePtr												_root;
-			std::unordered_map<ProviderPtr, AbsLightPtr>		_providerToLight;
+            NodePtr                                                _target;
+            NodePtr                                                _root;
+            std::unordered_map<ProviderPtr, AbsLightPtr>        _providerToLight;
 
-			std::list<ContainerPropertyChangedSignal::Slot>		_rootPropertyChangedSlots;
+            std::list<ContainerPropertyChangedSignal::Slot>        _rootPropertyChangedSlots;
 
-			std::list<ProviderPropertyChangedSignal::Slot>		_layoutMaskChangedSlots;
+            std::list<ProviderPropertyChangedSignal::Slot>        _layoutMaskChangedSlots;
 
-		public:
-			inline static
-			Ptr
-			create(NodePtr root = nullptr)
-			{
-				Ptr ptr = std::shared_ptr<LightMaskFilter>(new LightMaskFilter());
+        public:
+            inline static
+            Ptr
+            create(NodePtr root = nullptr)
+            {
+                Ptr ptr = std::shared_ptr<LightMaskFilter>(new LightMaskFilter());
 
-				ptr->watchProperty("node.layouts");
-				ptr->root(root);
+                ptr->watchProperty("node.layouts");
+                ptr->root(root);
 
-				return ptr;
-			}
+                return ptr;
+            }
 
-			Ptr
-			root(NodePtr);
+            Ptr
+            root(NodePtr);
 
-			bool
-			operator()(ProviderPtr); 
+            bool
+            operator()(ProviderPtr);
 
-		private:
-			LightMaskFilter();
+        private:
+            LightMaskFilter();
 
-			void
-			reset();
+            void
+            reset();
 
-			void
-			initialize(NodePtr);
+            void
+            initialize(NodePtr);
 
-			void
-			lightsChangedHandler();
+            void
+            lightsChangedHandler();
 
-			static
-			std::vector<std::string>
-			initializeNumLightPropertyNames();
-		};
-	}
+            static
+            std::vector<std::string>
+            initializeNumLightPropertyNames();
+        };
+    }
 }

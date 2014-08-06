@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -26,8 +26,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace file
-	{
+    namespace file
+    {
         class WriterError :
             public std::runtime_error
         {
@@ -56,31 +56,31 @@ namespace minko
             }
         };
 
-		template <typename T>
-		class AbstractWriter :
-			public std::enable_shared_from_this<AbstractWriter<T>>
-		{
-		public:
-			typedef std::shared_ptr<AbstractWriter> Ptr;
+        template <typename T>
+        class AbstractWriter :
+            public std::enable_shared_from_this<AbstractWriter<T>>
+        {
+        public:
+            typedef std::shared_ptr<AbstractWriter> Ptr;
 
-		private:
-			typedef std::vector<msgpack::type::tuple<unsigned int, short, std::string>> SerializedDependency;
+        private:
+            typedef std::vector<msgpack::type::tuple<unsigned int, short, std::string>> SerializedDependency;
 
-		protected:
-			std::shared_ptr<Signal<Ptr>>	                    _complete;
+        protected:
+            std::shared_ptr<Signal<Ptr>>                        _complete;
             std::shared_ptr<Signal<Ptr, const WriterError&>>    _error;
-			T								                    _data;
-			std::shared_ptr<Dependency>		                    _parentDependencies;
+            T                                                    _data;
+            std::shared_ptr<Dependency>                            _parentDependencies;
 
-			int								_magicNumber;
+            int                                _magicNumber;
 
-		public:
-			inline
-			std::shared_ptr<Signal<Ptr>>
-			complete()
-			{
-				return _complete;
-			}
+        public:
+            inline
+            std::shared_ptr<Signal<Ptr>>
+            complete()
+            {
+                return _complete;
+            }
 
             inline
             std::shared_ptr<Signal<Ptr, const WriterError&>>
@@ -89,44 +89,44 @@ namespace minko
                 return _error;
             }
 
-			inline
-			T
-			data()
-			{
-				return _data;
-			}
+            inline
+            T
+            data()
+            {
+                return _data;
+            }
 
-			inline
-			void
-			data(const T& data)
-			{
-				_data = data;
-			}
+            inline
+            void
+            data(const T& data)
+            {
+                _data = data;
+            }
 
-			inline
-			void
-			parentDependencies(std::shared_ptr<Dependency> parentDependencies)
-			{
-				_parentDependencies = parentDependencies;
-			}
+            inline
+            void
+            parentDependencies(std::shared_ptr<Dependency> parentDependencies)
+            {
+                _parentDependencies = parentDependencies;
+            }
 
-			void
-			write(std::string&                          filename,
-				  std::shared_ptr<AssetLibrary>         assetLibrary,
-				  std::shared_ptr<Options>              options,
-				  std::shared_ptr<WriterOptions>        writerOptions)
-			{
-				SerializedDependency includeDependency;
+            void
+            write(std::string&                          filename,
+                  std::shared_ptr<AssetLibrary>         assetLibrary,
+                  std::shared_ptr<Options>              options,
+                  std::shared_ptr<WriterOptions>        writerOptions)
+            {
+                SerializedDependency includeDependency;
 
-				write(filename, assetLibrary, options, writerOptions, includeDependency);
-			}
+                write(filename, assetLibrary, options, writerOptions, includeDependency);
+            }
 
-			void
+            void
             write(std::string&                          filename,
                   std::shared_ptr<AssetLibrary>         assetLibrary,
                   std::shared_ptr<Options>              options,
                   std::shared_ptr<WriterOptions>        writerOptions,
-                  SerializedDependency&					includeDependency)
+                  SerializedDependency&                    includeDependency)
             {
                 try
                 {
@@ -134,9 +134,9 @@ namespace minko
 
                     if (file)
                     {
-                        Dependency::Ptr			dependencies = Dependency::create();
-                        std::string				serializedData = embed(assetLibrary, options, dependencies, writerOptions);
-                        SerializedDependency	serializedDependencies = dependencies->serialize(assetLibrary, options, writerOptions);
+                        Dependency::Ptr            dependencies = Dependency::create();
+                        std::string                serializedData = embed(assetLibrary, options, dependencies, writerOptions);
+                        SerializedDependency    serializedDependencies = dependencies->serialize(assetLibrary, options, writerOptions);
 
                         if (includeDependency.size() > 0)
                             serializedDependencies.insert(serializedDependencies.begin(), includeDependency.begin(), includeDependency.end());
@@ -195,135 +195,135 @@ namespace minko
                 complete()->execute(this->shared_from_this());
             }
 
-			char *
-			getHeader(unsigned int dependenciesSize, unsigned int dataSize)
-			{
-				auto headerSize = MINKO_SCENE_HEADER_SIZE;
+            char *
+            getHeader(unsigned int dependenciesSize, unsigned int dataSize)
+            {
+                auto headerSize = MINKO_SCENE_HEADER_SIZE;
 
-				char *header = (char*)(malloc(headerSize));
+                char *header = (char*)(malloc(headerSize));
 
-				//MAGIC NUMBER
-				writeInt(header, _magicNumber, 0);
+                //MAGIC NUMBER
+                writeInt(header, _magicNumber, 0);
 
-				//VERSION
-				auto version = ((MINKO_SCENE_VERSION_HI & 0xFF) << 24) | ((MINKO_SCENE_VERSION_LO << 8) & 0xFFFF) | (MINKO_SCENE_VERSION_BUILD & 0xFF);
-				writeInt(header, version, 4);
+                //VERSION
+                auto version = ((MINKO_SCENE_VERSION_HI & 0xFF) << 24) | ((MINKO_SCENE_VERSION_LO << 8) & 0xFFFF) | (MINKO_SCENE_VERSION_BUILD & 0xFF);
+                writeInt(header, version, 4);
 
-				auto fileSize = headerSize + dependenciesSize + dataSize;
+                auto fileSize = headerSize + dependenciesSize + dataSize;
 
-				//FILE SIZE
-				writeInt(header, fileSize, 8);
+                //FILE SIZE
+                writeInt(header, fileSize, 8);
 
-				//HEADER SIZE
-				writeShort(header, headerSize, 12);
+                //HEADER SIZE
+                writeShort(header, headerSize, 12);
 
-				//DEPENDENCIES SIZE
-				writeInt(header, dependenciesSize, 14);
+                //DEPENDENCIES SIZE
+                writeInt(header, dependenciesSize, 14);
 
-				//DATA SIZE
-				writeInt(header, dataSize, 18);
+                //DATA SIZE
+                writeInt(header, dataSize, 18);
 
-				//RESERVED FOR FUTURE USE
-				writeInt(header, 0x00000000, 22);
-				writeInt(header, 0x00000000, 26);
+                //RESERVED FOR FUTURE USE
+                writeInt(header, 0x00000000, 22);
+                writeInt(header, 0x00000000, 26);
 
-				return header;
-			}
+                return header;
+            }
 
-			void
-			writeInt(std::ofstream& file, int i)
-			{
-				char data[4];
+            void
+            writeInt(std::ofstream& file, int i)
+            {
+                char data[4];
 
-				data[0] = (i >> 24) & 0xFF;
-				data[1] = (i >> 16) & 0xFF;
-				data[2] = (i >> 8) & 0xFF;
-				data[3] = i & 0xFF;
+                data[0] = (i >> 24) & 0xFF;
+                data[1] = (i >> 16) & 0xFF;
+                data[2] = (i >> 8) & 0xFF;
+                data[3] = i & 0xFF;
 
-				file.write(data, 4);
-			}
+                file.write(data, 4);
+            }
 
-			void
-			writeShort(std::ofstream& file, int s)
-			{
-				char data[2];
+            void
+            writeShort(std::ofstream& file, int s)
+            {
+                char data[2];
 
-				data[0] = (s >> 8) & 0xFF;
-				data[1] = s & 0xFF;
+                data[0] = (s >> 8) & 0xFF;
+                data[1] = s & 0xFF;
 
-				file.write(data, 2);
-			}
+                file.write(data, 2);
+            }
 
-			void
-			writeInt(char *data, int i, int offset)
-			{
-				data[offset] = (i >> 24) & 0xFF;
-				data[offset + 1] = (i >> 16) & 0xFF;
-				data[offset + 2] = (i >> 8) & 0xFF;
-				data[offset + 3] = i & 0xFF;
-			}
+            void
+            writeInt(char *data, int i, int offset)
+            {
+                data[offset] = (i >> 24) & 0xFF;
+                data[offset + 1] = (i >> 16) & 0xFF;
+                data[offset + 2] = (i >> 8) & 0xFF;
+                data[offset + 3] = i & 0xFF;
+            }
 
-			void
-			writeShort(char *data, int s, int offset)
-			{
-				data[offset] = (s >> 8) & 0xFF;
-				data[offset + 1] = s & 0xFF;
-			}
+            void
+            writeShort(char *data, int s, int offset)
+            {
+                data[offset] = (s >> 8) & 0xFF;
+                data[offset + 1] = s & 0xFF;
+            }
 
-			std::string
-			embedAll(std::shared_ptr<AssetLibrary>  assetLibrary,
-					 std::shared_ptr<Options>       options,
-					 std::shared_ptr<WriterOptions> writerOptions)
-			{
-				SerializedDependency includeDependency;
+            std::string
+            embedAll(std::shared_ptr<AssetLibrary>  assetLibrary,
+                     std::shared_ptr<Options>       options,
+                     std::shared_ptr<WriterOptions> writerOptions)
+            {
+                SerializedDependency includeDependency;
 
-				return embedAll(assetLibrary, options, writerOptions, includeDependency);
-			}
+                return embedAll(assetLibrary, options, writerOptions, includeDependency);
+            }
 
             std::string
             embedAll(std::shared_ptr<AssetLibrary>  assetLibrary,
                      std::shared_ptr<Options>       options,
                      std::shared_ptr<WriterOptions> writerOptions,
-					 SerializedDependency&			includeDependency)
+                     SerializedDependency&            includeDependency)
             {
 
             try
             {
-					Dependency::Ptr			dependencies	= _parentDependencies;
-					std::string				serializedData	= embed(assetLibrary, options, dependencies, writerOptions);
-					SerializedDependency	serializedDependencies = Dependency::create()->serialize(assetLibrary,
+                    Dependency::Ptr            dependencies    = _parentDependencies;
+                    std::string                serializedData    = embed(assetLibrary, options, dependencies, writerOptions);
+                    SerializedDependency    serializedDependencies = Dependency::create()->serialize(assetLibrary,
                                                                                                  options,
                                                                                                  writerOptions);
-				if (includeDependency.size() > 0)
-					serializedDependencies.insert(serializedDependencies.begin(), includeDependency.begin(), includeDependency.end());
+                if (includeDependency.size() > 0)
+                    serializedDependencies.insert(serializedDependencies.begin(), includeDependency.begin(), includeDependency.end());
 
                 msgpack::type::tuple<SerializedDependency> res(serializedDependencies);
 
-				std::stringstream data;
+                std::stringstream data;
 
-				std::stringstream sbuf;
-				msgpack::pack(sbuf, res);
+                std::stringstream sbuf;
+                msgpack::pack(sbuf, res);
 
-				auto dependenciesSize = sbuf.str().size();
-				auto sceneDataSize = serializedData.size();
-				auto header = getHeader(dependenciesSize, sceneDataSize);
+                auto dependenciesSize = sbuf.str().size();
+                auto sceneDataSize = serializedData.size();
+                auto header = getHeader(dependenciesSize, sceneDataSize);
 
-				auto headerSize = MINKO_SCENE_HEADER_SIZE;
+                auto headerSize = MINKO_SCENE_HEADER_SIZE;
 
-				data.write(header, headerSize);
-				data.write(sbuf.str().c_str(), dependenciesSize);
-				data.write(serializedData.c_str(), sceneDataSize);
+                data.write(header, headerSize);
+                data.write(sbuf.str().c_str(), dependenciesSize);
+                data.write(serializedData.c_str(), sceneDataSize);
 
                 complete()->execute(this->shared_from_this());
 
-				sbuf.clear();
-				serializedData.clear();
-				serializedData.shrink_to_fit();
-				free(header);
+                sbuf.clear();
+                serializedData.clear();
+                serializedData.shrink_to_fit();
+                free(header);
 
-				return data.str();
+                return data.str();
 
-				}
+                }
                 catch (const WriterError& exception)
                 {
                     if (error()->numCallbacks() > 0)
@@ -335,20 +335,20 @@ namespace minko
                 return std::string();
             }
 
-			virtual
-			std::string
-			embed(std::shared_ptr<AssetLibrary>		assetLibrary,
-				  std::shared_ptr<Options>			options,
-				  Dependency::Ptr					dependencies,
+            virtual
+            std::string
+            embed(std::shared_ptr<AssetLibrary>        assetLibrary,
+                  std::shared_ptr<Options>            options,
+                  Dependency::Ptr                    dependencies,
                   std::shared_ptr<WriterOptions>    writerOptions) = 0;
 
-		protected:
-			AbstractWriter() :
-				_complete(Signal<Ptr>::create()),
+        protected:
+            AbstractWriter() :
+                _complete(Signal<Ptr>::create()),
                 _error(Signal<Ptr, const WriterError&>::create()),
-				_parentDependencies(nullptr)
-			{
-			}
-		};
-	}
+                _parentDependencies(nullptr)
+            {
+            }
+        };
+    }
 }

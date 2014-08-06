@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -141,39 +141,39 @@ Options::initializeDefaultFunctions()
         return effect;
     };
 
-	if (!_defaultProtocolFunction)
-		_defaultProtocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
-	{
-		auto defaultProtocol = options->getProtocol("file"); // "file" might be overriden (by APKProtocol for instance)
+    if (!_defaultProtocolFunction)
+        _defaultProtocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
+    {
+        auto defaultProtocol = options->getProtocol("file"); // "file" might be overriden (by APKProtocol for instance)
 
-		defaultProtocol->options(Options::create(options));
+        defaultProtocol->options(Options::create(options));
 
-		return defaultProtocol;
-	};
+        return defaultProtocol;
+    };
 
-	_protocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
-	{
-		std::string protocol = "";
+    _protocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
+    {
+        std::string protocol = "";
 
-		uint i;
+        uint i;
 
-		for (i = 0; i < filename.length(); ++i)
-		{
-			if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
-				break;
+        for (i = 0; i < filename.length(); ++i)
+        {
+            if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
+                break;
 
-			protocol += filename.at(i);
-		}
+            protocol += filename.at(i);
+        }
 
-		if (i != filename.length())
-		{
-			auto loader = options->getProtocol(protocol);
+        if (i != filename.length())
+        {
+            auto loader = options->getProtocol(protocol);
 
-			if (loader)
-				return loader;
-		}
+            if (loader)
+                return loader;
+        }
 
-		return _defaultProtocolFunction(filename);
-	};
+        return _defaultProtocolFunction(filename);
+    };
 
 }

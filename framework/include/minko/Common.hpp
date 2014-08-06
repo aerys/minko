@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -56,75 +56,76 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 namespace minko
 {
     typedef unsigned int uint;
-	typedef std::shared_ptr<std::regex>	RegexPtr;
+    typedef std::shared_ptr<std::regex>    RegexPtr;
 
-	class Any;
-	template<typename... A>
-	class Signal;
-	class Color;
-	class AbstractCanvas;
-    
-	namespace render
-	{
-		class DrawCallPool;
-		class AbstractContext;
-		class OpenGLES2Context;
+    class Any;
+    template<typename... A>
+    class Signal;
+    class Color;
+	enum class CloneOption;
+    class AbstractCanvas;
+
+    namespace render
+    {
+        class DrawCallPool;
+        class AbstractContext;
+        class OpenGLES2Context;
         class Blending;
-		enum class CompareMode;
+        enum class CompareMode;
         enum class TriangleCulling;
 
         enum class WrapMode;
         enum class TextureFilter;
         enum class MipFilter;
-		enum class StencilOperation;
-        typedef std::tuple<WrapMode, TextureFilter, MipFilter>	SamplerState;
+        enum class StencilOperation;
+        typedef std::tuple<WrapMode, TextureFilter, MipFilter>    SamplerState;
 
         class States;
-		class DrawCall;
-		class Pass;
-		class Effect;
-		class ProgramInputs;
+        class DrawCall;
+        class Pass;
+        class Effect;
+        class ProgramInputs;
 
-		class AbstractResource;
-		class Shader;
-		class Program;
-		class ProgramSignature;
-		class VertexFormat;
-		class VertexBuffer;
-		class IndexBuffer;
+        class AbstractResource;
+        class Shader;
+        class Program;
+        class ProgramSignature;
+        class VertexFormat;
+        class VertexBuffer;
+        class IndexBuffer;
 
-		enum class TextureType
-		{
-			Texture2D	= 0,
-			CubeTexture	= 1
-		};
+        enum class TextureType
+        {
+            Texture2D    = 0,
+            CubeTexture    = 1
+        };
 
-		enum class EnvironmentMap2dType
-		{
-			Unset		= -1,
-			Probe		= 0,
-			BlinnNewell	= 1
-		};
+        enum class EnvironmentMap2dType
+        {
+            Unset        = -1,
+            Probe        = 0,
+            BlinnNewell    = 1
+        };
 
-		enum class TextureFormat
-		{
-			RGB,
-			RGBA
-		};
-		class AbstractTexture;
-		class Texture;
-		class CubeTexture;
+        enum class TextureFormat
+        {
+            RGB,
+            RGBA
+        };
+        class AbstractTexture;
+        class Texture;
+        class CubeTexture;
 
-		struct ScissorBox
-		{
-			int		x, y;
-			int	width, height;
+        struct ScissorBox
+        {
+            int        x, y;
+            int    width, height;
 
-			inline
-			ScissorBox(): x(0), y(0), width(-1), height(-1)
-			{
-			}
-		};
+            inline
+            ScissorBox(): x(0), y(0), width(-1), height(-1)
+            {
+            }
+        };
 
         enum class FogType
         {
@@ -134,188 +135,189 @@ namespace minko
             Exponential2,
         };
 
-		typedef std::function<std::string(const std::string&)> FormatNameFunction;
-	}
+        typedef std::function<std::string(const std::string&)> FormatNameFunction;
+    }
 
-	namespace scene
-	{
-		class Node;
-		class NodeSet;
-	}
+    namespace scene
+    {
+        class Node;
+        class NodeSet;
+    }
 
-	namespace component
-	{
-		class AbstractComponent;
-		template <class ProviderClass, class Enable = void>
-	    class AbstractRootDataComponent;
-	    class SceneManager;
-    	class Transform;
-		class Surface;
-		class Renderer;
-		class PerspectiveCamera;
-		class Culling;
-		class Picking;
-		class JobManager;
+    namespace component
+    {
+        class AbstractComponent;
+		class AbstractRebindableComponent;
+        template <class ProviderClass, class Enable = void>
+        class AbstractRootDataComponent;
+        class SceneManager;
+        class Transform;
+        class Surface;
+        class Renderer;
+        class PerspectiveCamera;
+        class Culling;
+        class Picking;
+        class JobManager;
 
         class AbstractLight;
         class AmbientLight;
         class AbstractDiscreteLight;
         class DirectionalLight;
-		class SpotLight;
-		class PointLight;
+        class SpotLight;
+        class PointLight;
 
-		class BoundingBox;
+        class BoundingBox;
 
-		class MousePicking;
-		class MouseManager;
+        class MousePicking;
+        class MouseManager;
         class AbstractScript;
-		enum class SkinningMethod;
+        enum class SkinningMethod;
 
-		class AbstractAnimation;
-		class MasterAnimation;
-		class Animation;
-		class Skinning;
-	}
+        class AbstractAnimation;
+        class MasterAnimation;
+        class Animation;
+        class Skinning;
+    }
 
-	namespace data
-	{
-		class Provider;
-		class ArrayProvider;
-		class StructureProvider;
-		class ValueBase;
-		class Value;
-		class Container;
-		class AbstractFilter;
-        
-		enum class BindingSource
-		{
-			TARGET,
-			RENDERER,
-			ROOT
-		};
+    namespace data
+    {
+        class Provider;
+        class ArrayProvider;
+        class StructureProvider;
+        class ValueBase;
+        class Value;
+        class Container;
+        class AbstractFilter;
 
-		typedef std::pair<std::string, BindingSource>						Binding;
-		typedef std::unordered_map<std::string, Binding>					BindingMap;
-		typedef std::pair<std::shared_ptr<data::Container>, std::string>	ContainerAndName;
+        enum class BindingSource
+        {
+            TARGET,
+            RENDERER,
+            ROOT
+        };
+
+        typedef std::pair<std::string, BindingSource>                        Binding;
+        typedef std::unordered_map<std::string, Binding>                    BindingMap;
+        typedef std::pair<std::shared_ptr<data::Container>, std::string>    ContainerAndName;
 
 
-		template<typename T>
-		using UniformArray = std::pair<uint, const T*>;
+        template<typename T>
+        using UniformArray = std::pair<uint, const T*>;
 
-		template<typename T>
-		using UniformArrayPtr = std::shared_ptr<UniformArray<T>>;
+        template<typename T>
+        using UniformArrayPtr = std::shared_ptr<UniformArray<T>>;
 
-		enum class MacroBindingDefaultValueSemantic
-		{
-			UNSET,
-			VALUE,
-			PROPERTY_EXISTS
-		};
+        enum class MacroBindingDefaultValueSemantic
+        {
+            UNSET,
+            VALUE,
+            PROPERTY_EXISTS
+        };
 
-		union MacroBindingDefaultValue
-		{
-			bool	propertyExists;
-			int		value;
-		};
+        union MacroBindingDefaultValue
+        {
+            bool    propertyExists;
+            int        value;
+        };
 
-		struct MacroBindingDefault
-		{
-			MacroBindingDefaultValueSemantic	semantic;
-			MacroBindingDefaultValue			value;
-		};
+        struct MacroBindingDefault
+        {
+            MacroBindingDefaultValueSemantic    semantic;
+            MacroBindingDefaultValue            value;
+        };
 
         typedef std::function<bool(const std::string&)> MacroRegexPredicate;
-		typedef std::tuple<std::string, BindingSource, MacroBindingDefault, int, int, MacroRegexPredicate>	MacroBinding;
+        typedef std::tuple<std::string, BindingSource, MacroBindingDefault, int, int, MacroRegexPredicate>    MacroBinding;
 
-		typedef std::unordered_map<std::string, MacroBinding> MacroBindingMap;
+        typedef std::unordered_map<std::string, MacroBinding> MacroBindingMap;
 
-		class ContainerProperty;
-	}
+        class ContainerProperty;
+    }
 
-	namespace geometry
-	{
-		class Geometry;
-		class CubeGeometry;
-		class SphereGeometry;
+    namespace geometry
+    {
+        class Geometry;
+        class CubeGeometry;
+        class SphereGeometry;
         class QuadGeometry;
-		class TeapotGeometry;
-		class LineGeometry;
-	}
+        class TeapotGeometry;
+        class LineGeometry;
+    }
 
-	namespace animation
-	{
-		class AbstractTimeline;
-		class Matrix4x4Timeline;
-	}
+    namespace animation
+    {
+        class AbstractTimeline;
+        class Matrix4x4Timeline;
+    }
 
-	namespace math
-	{
-		class Vector2;
-		class Vector3;
-		class Vector4;
-		class Matrix4x4;
-		class Quaternion;
-		class Ray;
-		class AbstractShape;
-		class Box;
-		class Frustum;
-		class OctTree;
+    namespace math
+    {
+        class Vector2;
+        class Vector3;
+        class Vector4;
+        class Matrix4x4;
+        class Quaternion;
+        class Ray;
+        class AbstractShape;
+        class Box;
+        class Frustum;
+        class OctTree;
 
-		inline
-		bool
-		isp2(unsigned int x)
-		{
-			return x == 0 || (x & (x-1)) == 0;
-		}
+        inline
+        bool
+        isp2(unsigned int x)
+        {
+            return x == 0 || (x & (x-1)) == 0;
+        }
 
-		inline
-		uint
-		getp2(unsigned int x)
-		{
-			unsigned int tmp	= x;
-			unsigned int p		= 0;
-			while (tmp >>= 1)
-				++p;
+        inline
+        uint
+        getp2(unsigned int x)
+        {
+            unsigned int tmp    = x;
+            unsigned int p        = 0;
+            while (tmp >>= 1)
+                ++p;
 
-			return p;
-		}
+            return p;
+        }
 
-		inline
-		unsigned int
-		flp2(unsigned int x)
-		{
-			x = x | (x >> 1);
-			x = x | (x >> 2);
-			x = x | (x >> 4);
-			x = x | (x >> 8);
-			x = x | (x >> 16);
+        inline
+        unsigned int
+        flp2(unsigned int x)
+        {
+            x = x | (x >> 1);
+            x = x | (x >> 2);
+            x = x | (x >> 4);
+            x = x | (x >> 8);
+            x = x | (x >> 16);
 
-			return x - (x >> 1);
-		}
+            return x - (x >> 1);
+        }
 
-		inline
-		unsigned int
-		clp2(unsigned int x)
-		{
-			x = x - 1;
-			x = x | (x >> 1);
-			x = x | (x >> 2);
-			x = x | (x >> 4);
-			x = x | (x >> 8);
-			x = x | (x >> 16);
+        inline
+        unsigned int
+        clp2(unsigned int x)
+        {
+            x = x - 1;
+            x = x | (x >> 1);
+            x = x | (x >> 2);
+            x = x | (x >> 4);
+            x = x | (x >> 8);
+            x = x | (x >> 16);
 
-			return x + 1;
-		}
-	}
+            return x + 1;
+        }
+    }
 
-	namespace file
-	{
+    namespace file
+    {
         class File;
-		class Options;
-		class Loader;
+        class Options;
+        class Loader;
         class AbstractProtocol;
-		class AbstractParser;
-		class EffectParser;
+        class AbstractParser;
+        class EffectParser;
         class AssetLibrary;
 
         class ParserError : public std::runtime_error
@@ -344,129 +346,129 @@ namespace minko
                 return _type;
             }
         };
-	}
+    }
 
-	namespace material
-	{
-		class Material;
-		class BasicMaterial;
-		class PhongMaterial;
-	}
+    namespace material
+    {
+        class Material;
+        class BasicMaterial;
+        class PhongMaterial;
+    }
 
-	namespace input
-	{
-		class Mouse;
+    namespace input
+    {
+        class Mouse;
         class Keyboard;
-		class Joystick;
+        class Joystick;
         class Touch;
-	}
+    }
 
-	namespace async
-	{
-		class Worker;
-	}
+    namespace async
+    {
+        class Worker;
+    }
 
-	namespace log
-	{
-		class Logger;
-		class ConsoleSink;
-	}
+    namespace log
+    {
+        class Logger;
+        class ConsoleSink;
+    }
 }
 
 template<typename T>
 std::shared_ptr<T>
 operator*(std::shared_ptr<T> a, float b)
 {
-	return (*a) * b;
+    return (*a) * b;
 }
 
 template<typename T>
 std::shared_ptr<T>
 operator*(std::shared_ptr<T> a, std::shared_ptr<T> b)
 {
-	return *a * b;
+    return *a * b;
 }
 
 template<typename T>
 std::shared_ptr<T>
 operator-(std::shared_ptr<T> a, std::shared_ptr<T> b)
 {
-	return *a - b;
+    return *a - b;
 }
 
 template<typename T>
 std::shared_ptr<T>
 operator+(std::shared_ptr<T> a, std::shared_ptr<T> b)
 {
-	return *a + b;
+    return *a + b;
 }
 
 template<typename T>
 std::shared_ptr<T>
 operator/(std::shared_ptr<T> a, std::shared_ptr<T> b)
 {
-	return *a / b;
+    return *a / b;
 }
 
 template<typename T>
 std::shared_ptr<T>
 operator*=(std::shared_ptr<T> a, std::shared_ptr<T> b)
 {
-	return *a *= b;
+    return *a *= b;
 }
 
 template<typename T>
 std::shared_ptr<T>
 operator+=(std::shared_ptr<T> a, std::shared_ptr<T> b)
 {
-	return *a += b;
+    return *a += b;
 }
 
 template<typename T>
 std::shared_ptr<T>
 operator-=(std::shared_ptr<T> a, std::shared_ptr<T> b)
 {
-	return *a -= b;
+    return *a -= b;
 }
 
 namespace std
 {
-	template <class T>
-	inline 
-	void 
-	hash_combine(size_t & seed, const T& v)
-	{
-		hash<T> hasher;
-		seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-	}
+    template <class T>
+    inline
+    void
+    hash_combine(size_t & seed, const T& v)
+    {
+        hash<T> hasher;
+        seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
 
 #ifdef __ANDROID__
-	template <typename T>
-	inline
-	string
-	to_string(T v)
-	{
-		ostringstream oss;
-		oss << v;
-		return oss.str();
-	}
+    template <typename T>
+    inline
+    string
+    to_string(T v)
+    {
+        ostringstream oss;
+        oss << v;
+        return oss.str();
+    }
 #endif
 }
 
 namespace std
 {
-	template<> struct hash<minko::data::ContainerAndName>
-	{
-		inline
-		size_t 
-		operator()(const minko::data::ContainerAndName& x) const
-		{
-			size_t seed = std::hash<std::shared_ptr<minko::data::Container>>()(x.first);
+    template<> struct hash<minko::data::ContainerAndName>
+    {
+        inline
+        size_t
+        operator()(const minko::data::ContainerAndName& x) const
+        {
+            size_t seed = std::hash<std::shared_ptr<minko::data::Container>>()(x.first);
 
-			hash_combine<std::string>(seed, x.second);
+            hash_combine<std::string>(seed, x.second);
 
-			return seed;
-		}
-	};
+            return seed;
+        }
+    };
 }
 //using namespace minko;

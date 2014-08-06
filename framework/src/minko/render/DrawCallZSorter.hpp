@@ -1,5 +1,5 @@
-	/*
-Copyright (c) 2013 Aerys
+    /*
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -24,93 +24,93 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace render
-	{
-		class DrawCallZSorter: 
-			public std::enable_shared_from_this<DrawCallZSorter>
-		{
-		public:
-			typedef std::shared_ptr<DrawCallZSorter>	Ptr;
+    namespace render
+    {
+        class DrawCallZSorter:
+            public std::enable_shared_from_this<DrawCallZSorter>
+        {
+        public:
+            typedef std::shared_ptr<DrawCallZSorter>    Ptr;
 
-		private:
-			typedef std::shared_ptr<DrawCall>			DrawCallPtr;
-			typedef std::shared_ptr<data::Container>	ContainerPtr;
-			typedef std::shared_ptr<data::Value>		ValuePtr;
+        private:
+            typedef std::shared_ptr<DrawCall>            DrawCallPtr;
+            typedef std::shared_ptr<data::Container>    ContainerPtr;
+            typedef std::shared_ptr<data::Value>        ValuePtr;
 
-		private:
-			struct PropertyInfo
-			{
-				data::BindingSource source;
-				bool				isMatrix;
+        private:
+            struct PropertyInfo
+            {
+                data::BindingSource source;
+                bool                isMatrix;
 
-				inline
-				PropertyInfo(): source(data::BindingSource::TARGET), isMatrix(false) { }
+                inline
+                PropertyInfo(): source(data::BindingSource::TARGET), isMatrix(false) { }
 
-				inline
-				PropertyInfo(data::BindingSource src, bool isMat): source(src), isMatrix(isMat)	{ }
-			};
+                inline
+                PropertyInfo(data::BindingSource src, bool isMat): source(src), isMatrix(isMat)    { }
+            };
 
-			typedef std::shared_ptr<Signal<DrawCallPtr>>			ZSortNeedSignalPtr;
-			typedef std::shared_ptr<render::VertexBuffer>			VertexBufferPtr;
-			typedef std::shared_ptr<math::Matrix4x4>				Matrix4x4Ptr;	
-			typedef Signal<ContainerPtr, const std::string&>::Slot	PropertyChangedSlot;
-			typedef Signal<ValuePtr>::Slot							ValueChangedSlot;
-			typedef std::unordered_map<std::string, PropertyInfo>	PropertyInfos;								
+            typedef std::shared_ptr<Signal<DrawCallPtr>>            ZSortNeedSignalPtr;
+            typedef std::shared_ptr<render::VertexBuffer>            VertexBufferPtr;
+            typedef std::shared_ptr<math::Matrix4x4>                Matrix4x4Ptr;
+            typedef Signal<ContainerPtr, const std::string&>::Slot    PropertyChangedSlot;
+            typedef Signal<ValuePtr>::Slot                            ValueChangedSlot;
+            typedef std::unordered_map<std::string, PropertyInfo>    PropertyInfos;
 
-		private:	
-			static const PropertyInfos								_rawProperties;
+        private:
+            static const PropertyInfos                                _rawProperties;
 
-			const DrawCallPtr										_drawcall;
+            const DrawCallPtr                                        _drawcall;
 
-			PropertyInfos											_properties;
-			PropertyChangedSlot										_targetPropAddedSlot;
-			PropertyChangedSlot										_targetPropRemovedSlot;
-			PropertyChangedSlot										_rendererPropAddedSlot;
-			PropertyChangedSlot										_rendererPropRemovedSlot;
+            PropertyInfos                                            _properties;
+            PropertyChangedSlot                                        _targetPropAddedSlot;
+            PropertyChangedSlot                                        _targetPropRemovedSlot;
+            PropertyChangedSlot                                        _rendererPropAddedSlot;
+            PropertyChangedSlot                                        _rendererPropRemovedSlot;
 
-			std::unordered_map<std::string, PropertyChangedSlot>	_propChangedSlots;
-			std::unordered_map<std::string, ValueChangedSlot>		_matrixChangedSlots;
+            std::unordered_map<std::string, PropertyChangedSlot>    _propChangedSlots;
+            std::unordered_map<std::string, ValueChangedSlot>        _matrixChangedSlots;
 
-			// positional members
-			std::pair<std::string, VertexBufferPtr>					_vertexPositions;
-			std::pair<std::string, Matrix4x4Ptr>					_modelToWorldMatrix;
-			std::pair<std::string, Matrix4x4Ptr>					_worldToScreenMatrix;
+            // positional members
+            std::pair<std::string, VertexBufferPtr>                    _vertexPositions;
+            std::pair<std::string, Matrix4x4Ptr>                    _modelToWorldMatrix;
+            std::pair<std::string, Matrix4x4Ptr>                    _worldToScreenMatrix;
 
-		public:
-			inline static
-			Ptr
-			create(DrawCallPtr drawCall)
-			{
-				return std::shared_ptr<DrawCallZSorter>(new DrawCallZSorter(drawCall));
-			}
+        public:
+            inline static
+            Ptr
+            create(DrawCallPtr drawCall)
+            {
+                return std::shared_ptr<DrawCallZSorter>(new DrawCallZSorter(drawCall));
+            }
 
-			void
-			initialize(ContainerPtr targetData, ContainerPtr rendererData, ContainerPtr rootData);
+            void
+            initialize(ContainerPtr targetData, ContainerPtr rendererData, ContainerPtr rootData);
 
-			void
-			clear();
+            void
+            clear();
 
-			std::shared_ptr<math::Vector3>
-			getEyeSpacePosition(std::shared_ptr<math::Vector3> output = nullptr) const;
+            std::shared_ptr<math::Vector3>
+            getEyeSpacePosition(std::shared_ptr<math::Vector3> output = nullptr) const;
 
-		private:
-			DrawCallZSorter(DrawCallPtr drawcall);
+        private:
+            DrawCallZSorter(DrawCallPtr drawcall);
 
-			static
-			PropertyInfos
-			initializeRawProperties();
+            static
+            PropertyInfos
+            initializeRawProperties();
 
-			void
-			propertyAddedHandler(ContainerPtr, const std::string&);
+            void
+            propertyAddedHandler(ContainerPtr, const std::string&);
 
-			void
-			propertyRemovedHandler(ContainerPtr, const std::string&);
+            void
+            propertyRemovedHandler(ContainerPtr, const std::string&);
 
-			void
-			requestZSort();
+            void
+            requestZSort();
 
-			void
-			recordIfPositionalMembers(ContainerPtr, const std::string&, bool, bool);
-		};
-	}
+            void
+            recordIfPositionalMembers(ContainerPtr, const std::string&, bool, bool);
+        };
+    }
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,38 +25,38 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace log
-	{
-		class AndroidLogSink :
-			public Logger::Sink
-		{
-		public:
-			static
-			Ptr
-			create()
-			{
-				return std::shared_ptr<AndroidLogSink>(new AndroidLogSink());
-			}
+    namespace log
+    {
+        class AndroidLogSink :
+            public Logger::Sink
+        {
+        public:
+            static
+            Ptr
+            create()
+            {
+                return std::shared_ptr<AndroidLogSink>(new AndroidLogSink());
+            }
 
-			void
-			write(const std::string& log, Logger::Level level)
-			{
-				auto logLevel = ANDROID_LOG_INFO;
+            void
+            write(const std::string& log, Logger::Level level)
+            {
+                auto logLevel = ANDROID_LOG_INFO;
 
-				if (level == Logger::Level::Debug)
-					logLevel = ANDROID_LOG_DEBUG;
-				else if (level == Logger::Level::Info)
-					logLevel = ANDROID_LOG_INFO;
-				else if (level == Logger::Level::Warning)
-					logLevel = ANDROID_LOG_WARN;
-				else if (level == Logger::Level::Error)
-					logLevel = ANDROID_LOG_ERROR;
+                if (level == Logger::Level::Debug)
+                    logLevel = ANDROID_LOG_DEBUG;
+                else if (level == Logger::Level::Info)
+                    logLevel = ANDROID_LOG_INFO;
+                else if (level == Logger::Level::Warning)
+                    logLevel = ANDROID_LOG_WARN;
+                else if (level == Logger::Level::Error)
+                    logLevel = ANDROID_LOG_ERROR;
 
-				__android_log_print(logLevel, "minko", log.c_str());
-			}
+                __android_log_print(logLevel, "minko", log.c_str());
+            }
 
-		private:
-			AndroidLogSink() = default;
-		};
-	}
+        private:
+            AndroidLogSink() = default;
+        };
+    }
 }

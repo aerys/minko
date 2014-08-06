@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -27,43 +27,43 @@ using namespace minko::render;
 
 
 void
-IndexBuffer::upload(uint	offset,
-					int		count)
+IndexBuffer::upload(uint    offset,
+                    int        count)
 {
-	if (_data.empty())
-		return;
-	
-	assert(count <= (int)_data.size());
+    if (_data.empty())
+        return;
 
-	if (_id == -1)
-    	_id = _context->createIndexBuffer(_data.size());
+    assert(count <= (int)_data.size());
 
-	const auto oldNumIndices	= _numIndices;
-	_numIndices					= count >= 0 ? count : _data.size();
+    if (_id == -1)
+        _id = _context->createIndexBuffer(_data.size());
 
-	_context->uploaderIndexBufferData(
-		_id,
-		offset,
-		_numIndices,
-		&_data[0]
-	);
+    const auto oldNumIndices    = _numIndices;
+    _numIndices                    = count >= 0 ? count : _data.size();
 
-	if (_numIndices != oldNumIndices)
-		_changed->execute(shared_from_this());
+    _context->uploaderIndexBufferData(
+        _id,
+        offset,
+        _numIndices,
+        &_data[0]
+    );
+
+    if (_numIndices != oldNumIndices)
+        _changed->execute(shared_from_this());
 }
 
 void
 IndexBuffer::dispose()
 {
     if (_id != -1)
-	    _context->deleteIndexBuffer(_id);
+        _context->deleteIndexBuffer(_id);
 
-	_id			= -1;
-	_numIndices	= 0;
+    _id            = -1;
+    _numIndices    = 0;
 
     disposeData();
 
-	_changed->execute(shared_from_this());
+    _changed->execute(shared_from_this());
 }
 
 void IndexBuffer::disposeData()

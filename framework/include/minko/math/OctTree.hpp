@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,99 +25,99 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace math
-	{
-		class OctTree :
-			public std::enable_shared_from_this<OctTree>
-		{
-		public:
-			typedef std::shared_ptr<OctTree> Ptr;
-		
-		private:
-			typedef std::shared_ptr<scene::Node> NodePtr;
+    namespace math
+    {
+        class OctTree :
+            public std::enable_shared_from_this<OctTree>
+        {
+        public:
+            typedef std::shared_ptr<OctTree> Ptr;
 
-		private:
-			static const uint _k = 2;
+        private:
+            typedef std::shared_ptr<scene::Node> NodePtr;
 
-		private:
-			uint																		_maxDepth;
-			uint																		_depth;
-			bool																		_splitted; 
-			Ptr																			_parent;
-			std::vector<Ptr>															_children; //x, y, z in {0, 1}, child index : x + y << 1 + z << 2 
-			std::list<NodePtr>															_content;
-			std::list<NodePtr>															_childrenContent;
-			float																		_worldSize;
-			std::shared_ptr<math::Vector3>												_center;
-			std::unordered_map<NodePtr, Ptr>											_nodeToOctant;
-			std::unordered_map<NodePtr, data::Container::PropertyChangedSignal::Slot>	_nodeToTransformChangedSlot;
-			std::unordered_map<std::shared_ptr<math::Matrix4x4>, NodePtr>				_matrixToNode;
-			std::shared_ptr<math::Box>													_octantBox;
+        private:
+            static const uint _k = 2;
+
+        private:
+            uint                                                                        _maxDepth;
+            uint                                                                        _depth;
+            bool                                                                        _splitted;
+            Ptr                                                                            _parent;
+            std::vector<Ptr>                                                            _children; //x, y, z in {0, 1}, child index : x + y << 1 + z << 2
+            std::list<NodePtr>                                                            _content;
+            std::list<NodePtr>                                                            _childrenContent;
+            float                                                                        _worldSize;
+            std::shared_ptr<math::Vector3>                                                _center;
+            std::unordered_map<NodePtr, Ptr>                                            _nodeToOctant;
+            std::unordered_map<NodePtr, data::Container::PropertyChangedSignal::Slot>    _nodeToTransformChangedSlot;
+            std::unordered_map<std::shared_ptr<math::Matrix4x4>, NodePtr>                _matrixToNode;
+            std::shared_ptr<math::Box>                                                    _octantBox;
 
 
-			bool _inside;
-			NodePtr debugNode;
+            bool _inside;
+            NodePtr debugNode;
 
-		public:
-			inline static
-			Ptr
-			create(float							worldSize,
-				   uint								maxDepth,
-				   std::shared_ptr<math::Vector3>	center,
-				   uint								depth = 0)
-			{
-				return std::shared_ptr<OctTree>(new OctTree(worldSize, maxDepth, center, depth));
-			}
+        public:
+            inline static
+            Ptr
+            create(float                            worldSize,
+                   uint                                maxDepth,
+                   std::shared_ptr<math::Vector3>    center,
+                   uint                                depth = 0)
+            {
+                return std::shared_ptr<OctTree>(new OctTree(worldSize, maxDepth, center, depth));
+            }
 
-			Ptr
-			insert(NodePtr node);
+            Ptr
+            insert(NodePtr node);
 
-			Ptr
-			remove(NodePtr node);
+            Ptr
+            remove(NodePtr node);
 
-			uint
-			computeDepth(NodePtr node);
+            uint
+            computeDepth(NodePtr node);
 
-			NodePtr
-			generateVisual(std::shared_ptr<file::AssetLibrary>	assetLibrary, 
-						   NodePtr			rootNode = nullptr);
+            NodePtr
+            generateVisual(std::shared_ptr<file::AssetLibrary>    assetLibrary,
+                           NodePtr            rootNode = nullptr);
 
-			uint
-			testFrustum(std::shared_ptr<math::Frustum> frustum);
+            uint
+            testFrustum(std::shared_ptr<math::Frustum> frustum);
 
-			void
-			testFrustum(std::shared_ptr<math::AbstractShape>				frustum, 
-						std::function<void(std::shared_ptr<scene::Node>)>	insideFrustumCallback,
-						std::function<void(std::shared_ptr<scene::Node>)>	outsideFustumCallback);
+            void
+            testFrustum(std::shared_ptr<math::AbstractShape>                frustum,
+                        std::function<void(std::shared_ptr<scene::Node>)>    insideFrustumCallback,
+                        std::function<void(std::shared_ptr<scene::Node>)>    outsideFustumCallback);
 
-		private:
+        private:
 
-			bool
-			nodeChangedOctant(NodePtr node);
+            bool
+            nodeChangedOctant(NodePtr node);
 
-			void
-			nodeModelToWorldChanged(std::shared_ptr<data::Container>	data,
-									const std::string&					propertyName);
+            void
+            nodeModelToWorldChanged(std::shared_ptr<data::Container>    data,
+                                    const std::string&                    propertyName);
 
-			void
-			split();
+            void
+            split();
 
-			float
-			computeRadius(std::shared_ptr<component::BoundingBox> boundingBox);
+            float
+            computeRadius(std::shared_ptr<component::BoundingBox> boundingBox);
 
-			void
-			addChildContent(NodePtr node);
+            void
+            addChildContent(NodePtr node);
 
-			void
-			removeChildContent(NodePtr node);
+            void
+            removeChildContent(NodePtr node);
 
-			float
-			edgeLength();
+            float
+            edgeLength();
 
-			OctTree(float							worldSize,
-					 uint							maxDepth,
-					 std::shared_ptr<math::Vector3> center,
-					 uint							depth);
-		};
-	}
+            OctTree(float                            worldSize,
+                     uint                            maxDepth,
+                     std::shared_ptr<math::Vector3> center,
+                     uint                            depth);
+        };
+    }
 }

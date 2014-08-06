@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,88 +25,88 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace render
-	{
-		class Texture :
-			public AbstractTexture
-		{
-		public:
-			typedef std::shared_ptr<Texture>			Ptr;
+    namespace render
+    {
+        class Texture :
+            public AbstractTexture
+        {
+        public:
+            typedef std::shared_ptr<Texture>            Ptr;
 
-		private:
-			typedef std::shared_ptr<AbstractContext>	AbstractContextPtr;
+        private:
+            typedef std::shared_ptr<AbstractContext>    AbstractContextPtr;
 
-		private:
-			std::vector<unsigned char>	_data;
+        private:
+            std::vector<unsigned char>    _data;
 
-		public:
-			inline static
-			Ptr
-			create(AbstractContextPtr	context,
-				   unsigned int			width,
-				   unsigned int			height,
-                   bool					mipMapping                  = false,
-                   bool					optimizeForRenderToTexture  = false,
-				   bool					resizeSmoothly				= true,
-				   const std::string&	filename					= "")
-			{
-				return std::shared_ptr<Texture>(
-					new Texture(
-						context,
-						width,
-						height,
-						mipMapping,
-						optimizeForRenderToTexture,
-						resizeSmoothly,
-						filename
-					)
-				);
-			}
+        public:
+            inline static
+            Ptr
+            create(AbstractContextPtr    context,
+                   unsigned int            width,
+                   unsigned int            height,
+                   bool                    mipMapping                  = false,
+                   bool                    optimizeForRenderToTexture  = false,
+                   bool                    resizeSmoothly                = true,
+                   const std::string&    filename                    = "")
+            {
+                return std::shared_ptr<Texture>(
+                    new Texture(
+                        context,
+                        width,
+                        height,
+                        mipMapping,
+                        optimizeForRenderToTexture,
+                        resizeSmoothly,
+                        filename
+                    )
+                );
+            }
 
-			std::vector<unsigned char>&
-			data()
-			{
-				return _data;
-			}
+            std::vector<unsigned char>&
+            data()
+            {
+                return _data;
+            }
 
-			const std::vector<unsigned char>&
-			data() const
-			{
-				return _data;
-			}
+            const std::vector<unsigned char>&
+            data() const
+            {
+                return _data;
+            }
 
-			void
-			data(unsigned char*,
-				 TextureFormat	format		= TextureFormat::RGBA,
-				 int			widthGPU	= -1,
-				 int			heightGPU	= -1);
+            void
+            data(unsigned char*,
+                 TextureFormat    format        = TextureFormat::RGBA,
+                 int            widthGPU    = -1,
+                 int            heightGPU    = -1);
 
-			void
-			dispose();
+            void
+            dispose();
 
-			void
-			disposeData();
+            void
+            disposeData();
 
-			void
-			upload();
+            void
+            upload();
 
-			void
-			uploadMipLevel(uint				level,
-						   unsigned char*	data);
+            void
+            uploadMipLevel(uint                level,
+                           unsigned char*    data);
 
-			~Texture()
-			{
-				dispose();
-			}
+            ~Texture()
+            {
+                dispose();
+            }
 
-		private:
-			Texture(AbstractContextPtr	context,
-					unsigned int		width,
-					unsigned int		height,
-                    bool				mipMapping,
-                    bool				optimizeForRenderToTexture,
-					bool				resizeSmoothly,
-				    const std::string&	filename);
-		};
-	}
+        private:
+            Texture(AbstractContextPtr    context,
+                    unsigned int        width,
+                    unsigned int        height,
+                    bool                mipMapping,
+                    bool                optimizeForRenderToTexture,
+                    bool                resizeSmoothly,
+                    const std::string&    filename);
+        };
+    }
 }

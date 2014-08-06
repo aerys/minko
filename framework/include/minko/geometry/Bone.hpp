@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,66 +23,58 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace geometry
-	{
-		class Bone:
-			public std::enable_shared_from_this<Bone>
-		{
-		public:
-			typedef std::shared_ptr<Bone>				Ptr;
+    namespace geometry
+    {
+        class Bone:
+            public std::enable_shared_from_this<Bone>
+        {
+        public:
+            typedef std::shared_ptr<Bone>                Ptr;
 
-		private:
-			typedef std::shared_ptr<scene::Node>		NodePtr;
-			typedef std::shared_ptr<math::Matrix4x4>	Matrix4x4Ptr;
+        private:
+            typedef std::shared_ptr<scene::Node>        NodePtr;
+            typedef std::shared_ptr<math::Matrix4x4>    Matrix4x4Ptr;
 
-		private:
-			const NodePtr								_node;
-			const Matrix4x4Ptr							_offsetMatrix;
-			const std::vector<unsigned short>			_vertexIds;
-			const std::vector<float>					_vertexWeights;
-		
-		public:
-			static
-			inline
-			Ptr
-			create(NodePtr								node, 
-				   Matrix4x4Ptr							offsetMatrix, 
-				   const std::vector<unsigned short>&	vertexIds, 
-				   const std::vector<float>&			vertexWeights)
-			{
-				return std::shared_ptr<Bone>(new Bone(node, offsetMatrix, vertexIds, vertexWeights));
-			}
+        private:
+			
+			Matrix4x4Ptr								_offsetMatrix;
+            const std::vector<unsigned short>            _vertexIds;
+            const std::vector<float>                    _vertexWeights;
 
-			inline
-			std::shared_ptr<scene::Node>
-			node() const
-			{
-				return _node;
-			}
+        public:
+            static
+            inline
+            Ptr
+			create(Matrix4x4Ptr							offsetMatrix, 
+                   const std::vector<unsigned short>&    vertexIds,
+                   const std::vector<float>&            vertexWeights)
+            {
+				return std::shared_ptr<Bone>(new Bone(offsetMatrix, vertexIds, vertexWeights));
+            }
 
-			inline
-			Matrix4x4Ptr
-			offsetMatrix() const
-			{
-				return _offsetMatrix;
-			}
+            inline
+            Matrix4x4Ptr
+            offsetMatrix() const
+            {
+                return _offsetMatrix;
+            }
 
-			inline
-			const std::vector<unsigned short>&
-			vertexIds() const
-			{
-				return _vertexIds;
-			}
+            inline
+            const std::vector<unsigned short>&
+            vertexIds() const
+            {
+                return _vertexIds;
+            }
 
-			inline
-			const std::vector<float>&
-			vertexWeights() const
-			{
-				return _vertexWeights;
-			}
+            inline
+            const std::vector<float>&
+            vertexWeights() const
+            {
+                return _vertexWeights;
+            }
 
-		private:
-			Bone(NodePtr, Matrix4x4Ptr, const std::vector<unsigned short>&, const std::vector<float>&);
-		};
-	}
+        private:
+			Bone(Matrix4x4Ptr, const std::vector<unsigned short>&, const std::vector<float>&);
+        };
+    }
 }

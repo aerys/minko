@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -20,60 +20,61 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "msgpack.hpp"
 #include "minko/file/AbstractSerializerParser.hpp"
 #include "minko/deserialize/ComponentDeserializer.hpp"
 #include "minko/file/GeometryParser.hpp"
 #include "minko/file/MaterialParser.hpp"
 
+#include "msgpack.hpp"
+
 namespace minko
 {
-	namespace file
-	{
-		class SceneParser : 
-			public AbstractSerializerParser
-		{
+    namespace file
+    {
+        class SceneParser :
+            public AbstractSerializerParser
+        {
 
 
-		//typedef
-		public:
-			typedef std::shared_ptr<SceneParser>																														Ptr;
-			typedef std::function<std::shared_ptr<component::AbstractComponent>(std::string&, std::shared_ptr<file::AssetLibrary>, std::shared_ptr<file::Dependency>)>	ComponentReadFunction;
-			typedef msgpack::type::tuple<std::string, uint, uint, std::vector<uint>, std::string>																		SerializedNode;
-			typedef std::shared_ptr<AssetLibrary>																														AssetLibraryPtr;
+        //typedef
+        public:
+            typedef std::shared_ptr<SceneParser>                                                                                                                        Ptr;
+            typedef std::function<std::shared_ptr<component::AbstractComponent>(std::string&, std::shared_ptr<file::AssetLibrary>, std::shared_ptr<file::Dependency>)>    ComponentReadFunction;
+            typedef msgpack::type::tuple<std::string, uint, uint, std::vector<uint>, std::string>                                                                        SerializedNode;
+            typedef std::shared_ptr<AssetLibrary>                                                                                                                        AssetLibraryPtr;
 
-		private:
-			static std::unordered_map<int8_t, ComponentReadFunction> _componentIdToReadFunction;
-		
-			// methods
-		public:
-			inline static
-			Ptr
-			create()
-			{
-				return std::shared_ptr<SceneParser>(new SceneParser());
-			}
+        private:
+            static std::unordered_map<int8_t, ComponentReadFunction> _componentIdToReadFunction;
 
-			static
-			void
-			registerComponent(int8_t				componentId,
-							  ComponentReadFunction readFunction);
+            // methods
+        public:
+            inline static
+            Ptr
+            create()
+            {
+                return std::shared_ptr<SceneParser>(new SceneParser());
+            }
 
-			void
-			parse(const std::string&				filename,
-				  const std::string&                resolvedFilename,
+            static
+            void
+            registerComponent(int8_t                componentId,
+                              ComponentReadFunction readFunction);
+
+            void
+            parse(const std::string&                filename,
+                  const std::string&                resolvedFilename,
                   std::shared_ptr<Options>          options,
-				  const std::vector<unsigned char>&	data,
-				  AssetLibraryPtr					assetLibrary);
+                  const std::vector<unsigned char>&    data,
+                  AssetLibraryPtr                    assetLibrary);
 
-		private:
-			std::shared_ptr<scene::Node>
-			parseNode(std::vector<SerializedNode>&	nodePack, 
-					  std::vector<std::string>&		componentPack,
-					  AssetLibraryPtr				assetLibrary,
-					  std::shared_ptr<Options>		options);
+        private:
+            std::shared_ptr<scene::Node>
+            parseNode(std::vector<SerializedNode>&    nodePack,
+                      std::vector<std::string>&        componentPack,
+                      AssetLibraryPtr                assetLibrary,
+                      std::shared_ptr<Options>        options);
 
-			SceneParser();
-		};
-	}
+            SceneParser();
+        };
+    }
 }

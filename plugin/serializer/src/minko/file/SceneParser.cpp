@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -19,18 +19,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/file/SceneParser.hpp"
-#include "minko/scene/Node.hpp"
-#include "msgpack.hpp"
+#include "minko/file/Options.hpp"
+#include "minko/file/Dependency.hpp"
 #include "minko/Types.hpp"
-#include <stack>
 #include "minko/component/Transform.hpp"
 #include "minko/component/JobManager.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/BoundingBox.hpp"
+#include "minko/component/MasterAnimation.hpp"
+#include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
-#include "minko/file/Options.hpp"
-#include "minko/file/Dependency.hpp"
-#include "minko/scene/NodeSet.hpp"
+
+#include "msgpack.hpp"
+
+#include <stack>
 
 using namespace minko;
 using namespace minko::file;
@@ -41,148 +43,148 @@ std::unordered_map<int8_t, SceneParser::ComponentReadFunction> SceneParser::_com
 
 SceneParser::SceneParser()
 {
-	_geometryParser = file::GeometryParser::create();
-	_materialParser = file::MaterialParser::create();
+    _geometryParser = file::GeometryParser::create();
+    _materialParser = file::MaterialParser::create();
 
-	registerComponent(serialize::PROJECTION_CAMERA,
-		std::bind(&deserialize::ComponentDeserializer::deserializeProjectionCamera,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+    registerComponent(serialize::PROJECTION_CAMERA,
+        std::bind(&deserialize::ComponentDeserializer::deserializeProjectionCamera,
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3));
 
-	registerComponent(serialize::TRANSFORM,
-		std::bind(&deserialize::ComponentDeserializer::deserializeTransform,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+    registerComponent(serialize::TRANSFORM,
+        std::bind(&deserialize::ComponentDeserializer::deserializeTransform,
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3));
 
-	registerComponent(serialize::AMBIENT_LIGHT,
-		std::bind(&deserialize::ComponentDeserializer::deserializeAmbientLight,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+    registerComponent(serialize::AMBIENT_LIGHT,
+        std::bind(&deserialize::ComponentDeserializer::deserializeAmbientLight,
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3));
 
-	registerComponent(serialize::DIRECTIONAL_LIGHT,
-		std::bind(&deserialize::ComponentDeserializer::deserializeDirectionalLight,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+    registerComponent(serialize::DIRECTIONAL_LIGHT,
+        std::bind(&deserialize::ComponentDeserializer::deserializeDirectionalLight,
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3));
 
-	registerComponent(serialize::SPOT_LIGHT,
-		std::bind(&deserialize::ComponentDeserializer::deserializeSpotLight,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+    registerComponent(serialize::SPOT_LIGHT,
+        std::bind(&deserialize::ComponentDeserializer::deserializeSpotLight,
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3));
 
-	registerComponent(serialize::POINT_LIGHT,
-		std::bind(&deserialize::ComponentDeserializer::deserializePointLight,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+    registerComponent(serialize::POINT_LIGHT,
+        std::bind(&deserialize::ComponentDeserializer::deserializePointLight,
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3));
 
-	registerComponent(serialize::SURFACE,
-		std::bind(&deserialize::ComponentDeserializer::deserializeSurface,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+    registerComponent(serialize::SURFACE,
+        std::bind(&deserialize::ComponentDeserializer::deserializeSurface,
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3));
 
-	registerComponent(serialize::RENDERER,
-		std::bind(&deserialize::ComponentDeserializer::deserializeRenderer,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+    registerComponent(serialize::RENDERER,
+        std::bind(&deserialize::ComponentDeserializer::deserializeRenderer,
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3));
 
-	registerComponent(serialize::ANIMATION,
-		std::bind(&deserialize::ComponentDeserializer::deserializeAnimation,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+    registerComponent(serialize::ANIMATION,
+        std::bind(&deserialize::ComponentDeserializer::deserializeAnimation,
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3));
 
-	registerComponent(serialize::SKINNING,
-		std::bind(&deserialize::ComponentDeserializer::deserializeSkinning,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+    registerComponent(serialize::SKINNING,
+        std::bind(&deserialize::ComponentDeserializer::deserializeSkinning,
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3));
 
-	registerComponent(serialize::BOUNDINGBOX,
-		std::bind(&deserialize::ComponentDeserializer::deserializeBoundingBox,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+    registerComponent(serialize::BOUNDINGBOX,
+        std::bind(&deserialize::ComponentDeserializer::deserializeBoundingBox,
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3));
 }
 
 void
-SceneParser::registerComponent(int8_t					componentId,
-							   ComponentReadFunction	readFunction)
+SceneParser::registerComponent(int8_t                    componentId,
+                               ComponentReadFunction    readFunction)
 {
-	_componentIdToReadFunction[componentId] = readFunction;
+    _componentIdToReadFunction[componentId] = readFunction;
 }
 
 void
-SceneParser::parse(const std::string&					filename,
-				   const std::string&					resolvedFilename,
-				   std::shared_ptr<Options>				options,
-				   const std::vector<unsigned char>&	data,
-				   AssetLibraryPtr					    assetLibrary)
+SceneParser::parse(const std::string&                    filename,
+                   const std::string&                    resolvedFilename,
+                   std::shared_ptr<Options>                options,
+                   const std::vector<unsigned char>&    data,
+                   AssetLibraryPtr                        assetLibrary)
 {
-	_dependencies->options(options);
-	
-	readHeader(filename, data);
-	std::string 		folderPath = extractFolderPath(resolvedFilename);
+    _dependencies->options(options);
 
-	extractDependencies(assetLibrary, data, _headerSize, _dependenciesSize, options, folderPath);
+    readHeader(filename, data);
+    std::string         folderPath = extractFolderPath(resolvedFilename);
 
-	msgpack::object		deserialized;
-	msgpack::zone		mempool;
-	msgpack::unpack((char*)&data[_headerSize + _dependenciesSize], _sceneDataSize, NULL, &mempool, &deserialized);
+    extractDependencies(assetLibrary, data, _headerSize, _dependenciesSize, options, folderPath);
 
-	msgpack::type::tuple<std::vector<std::string>, std::vector<SerializedNode>> dst;
-	deserialized.convert(&dst);
+    msgpack::object        deserialized;
+    msgpack::zone        mempool;
+    msgpack::unpack((char*)&data[_headerSize + _dependenciesSize], _sceneDataSize, NULL, &mempool, &deserialized);
 
-	std::vector<unsigned char>* d = (std::vector<unsigned char>*)&data;
-	d->clear();
-	d->shrink_to_fit();
+    msgpack::type::tuple<std::vector<std::string>, std::vector<SerializedNode>> dst;
+    deserialized.convert(&dst);
 
-	assetLibrary->symbol(filename, parseNode(dst.a1, dst.a0, assetLibrary, options));
+    std::vector<unsigned char>* d = (std::vector<unsigned char>*)&data;
+    d->clear();
+    d->shrink_to_fit();
 
-	if (_jobList.size() > 0)
-	{
-		auto jobManager = component::JobManager::create(30);
+    assetLibrary->symbol(filename, parseNode(dst.a1, dst.a0, assetLibrary, options));
 
-		for (auto it = _jobList.begin(); it != _jobList.end(); ++it)
-			jobManager->pushJob(*it);
+    if (_jobList.size() > 0)
+    {
+        auto jobManager = component::JobManager::create(30);
 
-		assetLibrary->symbol(filename)->addComponent(jobManager);
-	}
+        for (auto it = _jobList.begin(); it != _jobList.end(); ++it)
+            jobManager->pushJob(*it);
 
-	complete()->execute(shared_from_this());
+        assetLibrary->symbol(filename)->addComponent(jobManager);
+    }
+
+    complete()->execute(shared_from_this());
 }
 
 scene::Node::Ptr
-SceneParser::parseNode(std::vector<SerializedNode>&			nodePack,
-					   std::vector<std::string>&			componentPack,
-					   AssetLibraryPtr						assetLibrary,
-					   Options::Ptr							options)
+SceneParser::parseNode(std::vector<SerializedNode>&            nodePack,
+                       std::vector<std::string>&            componentPack,
+                       AssetLibraryPtr                        assetLibrary,
+                       Options::Ptr                            options)
 {
-	scene::Node::Ptr									root;
-	std::queue<std::tuple<scene::Node::Ptr, uint>>		nodeStack;
-	std::map<int, std::vector<scene::Node::Ptr>>		componentIdToNodes;
+    scene::Node::Ptr                                    root;
+    std::queue<std::tuple<scene::Node::Ptr, uint>>        nodeStack;
+    std::map<int, std::vector<scene::Node::Ptr>>        componentIdToNodes;
     std::map<scene::Node::Ptr, scene::Node::Ptr>        nodeToParentMap;
 
-	for (uint i = 0; i < nodePack.size(); ++i)
-	{
-		scene::Node::Ptr	newNode			= scene::Node::create();
-		uint				layouts			= nodePack[i].a1;
-		uint				numChildren		= nodePack[i].a2;
-		std::vector<uint>	componentsId	= nodePack[i].a3;
-		std::string			uuid			= nodePack[i].a4;
+    for (uint i = 0; i < nodePack.size(); ++i)
+    {
+        scene::Node::Ptr    newNode            = scene::Node::create();
+        uint                layouts            = nodePack[i].a1;
+        uint                numChildren        = nodePack[i].a2;
+        std::vector<uint>    componentsId    = nodePack[i].a3;
+        std::string            uuid            = nodePack[i].a4;
 
-		newNode->layouts(layouts);
-		newNode->name(nodePack[i].a0);
-		newNode->uuid(uuid);
+        newNode->layouts(layouts);
+        newNode->name(nodePack[i].a0);
+        newNode->uuid(uuid);
 
-		for (uint componentId : componentsId)
-			componentIdToNodes[componentId].push_back(newNode);
+        for (uint componentId : componentsId)
+            componentIdToNodes[componentId].push_back(newNode);
 
         if (nodeStack.size() == 0)
         {
@@ -190,87 +192,90 @@ SceneParser::parseNode(std::vector<SerializedNode>&			nodePack,
 
             nodeToParentMap.insert(std::make_pair(root, nullptr));
         }
-		else
-		{
-			scene::Node::Ptr parent = std::get<0>(nodeStack.front());
+        else
+        {
+            scene::Node::Ptr parent = std::get<0>(nodeStack.front());
 
-			std::get<1>(nodeStack.front())--;
+            std::get<1>(nodeStack.front())--;
 
-			if (std::get<1>(nodeStack.front()) == 0)
-				nodeStack.pop();
+            if (std::get<1>(nodeStack.front()) == 0)
+                nodeStack.pop();
 
             nodeToParentMap.insert(std::make_pair(newNode, parent));
-		}
+        }
 
-		if (numChildren > 0)
-			nodeStack.push(std::make_tuple(newNode, numChildren));
-	}
+        if (numChildren > 0)
+            nodeStack.push(std::make_tuple(newNode, numChildren));
+    }
 
-	for (auto nodeToParentPair : nodeToParentMap)
-	{
-		auto node = nodeToParentPair.first;
-		auto parent = nodeToParentPair.second;
+    for (auto nodeToParentPair : nodeToParentMap)
+    {
+        auto node = nodeToParentPair.first;
+        auto parent = nodeToParentPair.second;
 
-		if (parent != nullptr)
-			parent->addChild(node);
-	}
+        if (parent != nullptr)
+            parent->addChild(node);
+    }
 
-	_dependencies->loadedRoot(root);
+    _dependencies->loadedRoot(root);
 
-	std::set<uint> markedComponent;
+    std::set<uint> markedComponent;
 
-	for (uint componentIndex = 0; componentIndex < componentPack.size(); ++componentIndex)
-	{
-		int8_t			dst = componentPack[componentIndex].at(componentPack[componentIndex].size() - 1);
+    for (uint componentIndex = 0; componentIndex < componentPack.size(); ++componentIndex)
+    {
+        int8_t            dst = componentPack[componentIndex].at(componentPack[componentIndex].size() - 1);
 
-		if (dst == serialize::SKINNING)
-			markedComponent.insert(componentIndex);
-		else
+        if (dst == serialize::SKINNING)
+            markedComponent.insert(componentIndex);
+        else
+        {
+            if (_componentIdToReadFunction.find(dst) != _componentIdToReadFunction.end())
+            {
+                std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[dst](componentPack[componentIndex], assetLibrary, _dependencies);
+
+                for (scene::Node::Ptr node : componentIdToNodes[componentIndex])
+                    node->addComponent(newComponent);
+            }
+        }
+    }
+
+    bool isSkinningFree = true; // FIXME
+
+    for (auto componentIndex2 : markedComponent)
+    {
+        isSkinningFree = false;
+        std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[serialize::SKINNING](componentPack[componentIndex2], assetLibrary, _dependencies);
+
+        for (scene::Node::Ptr node : componentIdToNodes[componentIndex2])
 		{
-			if (_componentIdToReadFunction.find(dst) != _componentIdToReadFunction.end())
-			{
-				std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[dst](componentPack[componentIndex], assetLibrary, _dependencies);
-
-				for (scene::Node::Ptr node : componentIdToNodes[componentIndex])
-					node->addComponent(newComponent);
-			}
+            node->addComponent(newComponent);
+			node->addComponent(component::MasterAnimation::create());
 		}
-	}
+    }
 
-	bool isSkinningFree = true; // FIXME
+    if (isSkinningFree)
+    {
+        auto nodeSet = scene::NodeSet::create(root)->descendants(true)->where([](scene::Node::Ptr n){ return n->components<component::Surface>().size() != 0; });
 
-	for (auto componentIndex2 : markedComponent)
-	{
-		isSkinningFree = false;
-		std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[serialize::SKINNING](componentPack[componentIndex2], assetLibrary, _dependencies);
+        for (auto n : nodeSet->nodes())
+        {
+            n->addComponent(component::BoundingBox::create());
+        }
+    }
 
-		for (scene::Node::Ptr node : componentIdToNodes[componentIndex2])
-			node->addComponent(newComponent);
-	}
-    
-	if (isSkinningFree)
-	{
-		auto nodeSet = scene::NodeSet::create(root)->descendants(true)->where([](scene::Node::Ptr n){ return n->components<component::Surface>().size() != 0; });
-    
-		for (auto n : nodeSet->nodes())
-		{
-			n->addComponent(component::BoundingBox::create());
-		}
-	}
+    for (auto nodeToParentPair : nodeToParentMap)
+    {
+        auto node = nodeToParentPair.first;
 
-	for (auto nodeToParentPair : nodeToParentMap)
-	{
-		auto node = nodeToParentPair.first;
+        auto newNode = options->nodeFunction()(node);
 
-		auto newNode = options->nodeFunction()(node);
-		
-		if (newNode != node)
-		{
-			auto parent = node->parent();
-			parent->removeChild(node);
-			parent->addChild(newNode);
-		}
-	}
+        if (newNode != node)
+        {
+            auto parent = node->parent();
+            parent->removeChild(node);
+            parent->addChild(newNode);
+        }
+    }
 
-	return root;
+    return root;
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -24,38 +24,38 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace file
-	{
-		class AbstractParser :
-			public std::enable_shared_from_this<AbstractParser>
-		{
-		public:
-			typedef std::shared_ptr<AbstractParser>				Ptr;
+    namespace file
+    {
+        class AbstractParser :
+            public std::enable_shared_from_this<AbstractParser>
+        {
+        public:
+            typedef std::shared_ptr<AbstractParser>                Ptr;
 
-			std::shared_ptr<Signal<Ptr>>	_complete;
+            std::shared_ptr<Signal<Ptr>>    _complete;
 
-		public:
-			inline
-			std::shared_ptr<Signal<Ptr>>
-			complete()
-			{
-				return _complete;
-			}
+        public:
+            inline
+            std::shared_ptr<Signal<Ptr>>
+            complete()
+            {
+                return _complete;
+            }
 
-			virtual
-			void
-			parse(const std::string&				filename,
-				  const std::string&                resolvedFilename,
+            virtual
+            void
+            parse(const std::string&                filename,
+                  const std::string&                resolvedFilename,
                   std::shared_ptr<Options>          options,
-				  const std::vector<unsigned char>&	data,
-				  std::shared_ptr<AssetLibrary>		assetLibrary) = 0;
+                  const std::vector<unsigned char>&    data,
+                  std::shared_ptr<AssetLibrary>        assetLibrary) = 0;
 
-		protected:
-			AbstractParser() :
-				_complete(Signal<Ptr>::create())
-			{
+        protected:
+            AbstractParser() :
+                _complete(Signal<Ptr>::create())
+            {
 
-			}
-		};
-	}
+            }
+        };
+    }
 }

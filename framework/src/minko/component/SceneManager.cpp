@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -30,15 +30,15 @@ using namespace minko::component;
 
 SceneManager::SceneManager(const std::shared_ptr<render::AbstractContext>& context) :
     _frameId(0),
-	_time(0.f),
-	_assets(file::AssetLibrary::create(context)),
+    _time(0.f),
+    _assets(file::AssetLibrary::create(context)),
     _frameBegin(Signal<Ptr, float, float>::create()),
     _frameEnd(Signal<Ptr, float, float>::create()),
-	_cullBegin(Signal<Ptr>::create()),
-	_cullEnd(Signal<Ptr>::create()),
-	_renderBegin(Signal<Ptr, uint, render::AbstractTexture::Ptr>::create()),
-	_renderEnd(Signal<Ptr, uint, render::AbstractTexture::Ptr>::create()),
-	_data(data::StructureProvider::create("scene"))
+    _cullBegin(Signal<Ptr>::create()),
+    _cullEnd(Signal<Ptr>::create()),
+    _renderBegin(Signal<Ptr, uint, render::AbstractTexture::Ptr>::create()),
+    _renderEnd(Signal<Ptr, uint, render::AbstractTexture::Ptr>::create()),
+    _data(data::StructureProvider::create("scene"))
 {
 }
 
@@ -46,32 +46,32 @@ void
 SceneManager::initialize()
 {
     _targetAddedSlot = targetAdded()->connect(std::bind(
-        &SceneManager::targetAddedHandler, 
-		std::static_pointer_cast<SceneManager>(shared_from_this()), 
-		std::placeholders::_1, 
-		std::placeholders::_2
+        &SceneManager::targetAddedHandler,
+        std::static_pointer_cast<SceneManager>(shared_from_this()),
+        std::placeholders::_1,
+        std::placeholders::_2
     ));
     _targetRemovedSlot = targetAdded()->connect(std::bind(
-        &SceneManager::targetAddedHandler, 
-		std::static_pointer_cast<SceneManager>(shared_from_this()), 
-		std::placeholders::_1, 
-		std::placeholders::_2
+        &SceneManager::targetAddedHandler,
+        std::static_pointer_cast<SceneManager>(shared_from_this()),
+        std::placeholders::_1,
+        std::placeholders::_2
     ));
 }
 
 void
 SceneManager::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 {
-	if (target->root() != target)
+    if (target->root() != target)
         throw std::logic_error("SceneManager must be on the root node only.");
-	if (target->components<SceneManager>().size() > 1)
-		throw std::logic_error("The same root node cannot have more than one SceneManager.");
+    if (target->components<SceneManager>().size() > 1)
+        throw std::logic_error("The same root node cannot have more than one SceneManager.");
 
-	target->data()->addProvider(_data);
+    target->data()->addProvider(_data);
 
     _addedSlot = target->added()->connect(std::bind(
         &SceneManager::addedHandler,
-        std::static_pointer_cast<SceneManager>(shared_from_this()), 
+        std::static_pointer_cast<SceneManager>(shared_from_this()),
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3
@@ -82,7 +82,7 @@ void
 SceneManager::targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 {
     _addedSlot = nullptr;
-	target->data()->removeProvider(_data);
+    target->data()->removeProvider(_data);
 }
 
 void
@@ -96,14 +96,14 @@ void
 SceneManager::nextFrame(float time, float deltaTime, render::AbstractTexture::Ptr renderTarget)
 {
     _time = time;
-	_data->set("time", _time);
+    _data->set("time", _time);
 
-	_frameBegin->execute(std::static_pointer_cast<SceneManager>(shared_from_this()), time, deltaTime);
-	_cullBegin->execute(std::static_pointer_cast<SceneManager>(shared_from_this()));
-	_cullEnd->execute(std::static_pointer_cast<SceneManager>(shared_from_this()));
-	_renderBegin->execute(std::static_pointer_cast<SceneManager>(shared_from_this()), _frameId, renderTarget);
-	_renderEnd->execute(std::static_pointer_cast<SceneManager>(shared_from_this()), _frameId, renderTarget);
+    _frameBegin->execute(std::static_pointer_cast<SceneManager>(shared_from_this()), time, deltaTime);
+    _cullBegin->execute(std::static_pointer_cast<SceneManager>(shared_from_this()));
+    _cullEnd->execute(std::static_pointer_cast<SceneManager>(shared_from_this()));
+    _renderBegin->execute(std::static_pointer_cast<SceneManager>(shared_from_this()), _frameId, renderTarget);
+    _renderEnd->execute(std::static_pointer_cast<SceneManager>(shared_from_this()), _frameId, renderTarget);
     _frameEnd->execute(std::static_pointer_cast<SceneManager>(shared_from_this()), time, deltaTime);
 
-	++_frameId;
+    ++_frameId;
 }

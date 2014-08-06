@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -27,225 +27,208 @@ using namespace minko::scene;
 using namespace minko::component;
 using namespace minko::math;
 
-const std::string	CUBE_TEXTURE		= "texture/entrance_hall_hor.jpg";
+const std::string   CUBE_TEXTURE        = "texture/entrance_hall_hor.jpg";
 
-const uint			WINDOW_WIDTH		= 800;
-const uint			WINDOW_HEIGHT		= 600;
+const uint          NUM_SPHERES         = 24;
+const float         SPHERES_DIST        = 5.0f;
+const float         SPHERES_MOVE_AMPL   = 2.0f;
+const float         SPHERES_MOVE_SPEED  = 2.5f;
+const float         SPHERES_PRIORITY    = render::Priority::TRANSPARENT;
 
-const uint			NUM_SPHERES			= 24;
-const float			SPHERES_DIST		= 5.0f;
-const float			SPHERES_MOVE_AMPL	= 2.0f;
-const float			SPHERES_MOVE_SPEED	= 2.5f;
-const float			SPHERES_PRIORITY	= render::Priority::TRANSPARENT;
-
-const uint			NUM_QUADS			= 16;
-const float			QUADS_DIST			= 7.5f;
-const float			QUADS_MOVE_AMPL		= 2.0f;
-const float			QUADS_MOVE_SPEED	= 2.5f;
-const float			QUADS_PRIORITY		= render::Priority::TRANSPARENT + 1.0f;
+const uint          NUM_QUADS           = 16;
+const float         QUADS_DIST          = 7.5f;
+const float         QUADS_MOVE_AMPL     = 2.0f;
+const float         QUADS_MOVE_SPEED    = 2.5f;
+const float         QUADS_PRIORITY      = render::Priority::TRANSPARENT + 1.0f;
 
 typedef std::pair<Transform::Ptr, Vector3::Ptr> AnimData;
 
-float
-getTime();
-
 Node::Ptr
-createObjectGroup(unsigned int	numObjects,
-				  bool			doSpheres,
-				  float			distanceToEye,
-				  float			priority,
-				  file::AssetLibrary::Ptr,
-				  std::vector<AnimData>&);
+createObjectGroup(unsigned int                  numObjects,
+                  bool                          doSpheres,
+                  float                         distanceToEye,
+                  float                         priority,
+                  file::AssetLibrary::Ptr       assets,
+                  std::vector<AnimData>&        nodeAnimData);
 
 void
-animateObjects(float	moveAmplitude,
-			   float	moveSpeed,
-			   float&	prevTime,
-			   const std::vector<AnimData>&);
+animateObjects(float                            moveAmplitude,
+               float                            moveSpeed,
+               const float                      currTime,
+               const std::vector<AnimData>&     nodeAnimData);
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Example - Oculus", WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto canvas = Canvas::create("Minko Example - Oculus");
 
-	auto sceneManager = SceneManager::create(canvas->context());
+    auto sceneManager = SceneManager::create(canvas->context());
 
-	auto loader = sceneManager->assets()->loader();
-	// setup assets
-	loader->options()
-		->resizeSmoothly(true)
-		->generateMipmaps(true);
+    auto loader = sceneManager->assets()->loader();
 
-	loader->options()
-		->registerParser<file::JPEGParser>("jpg");
-
-	loader
-		->queue(CUBE_TEXTURE, file::Options::create(loader->options())->isCubeTexture(true));
+    // setup assets
+    loader->options()
+        ->resizeSmoothly(true)
+        ->generateMipmaps(true)
+        ->registerParser<file::JPEGParser>("jpg");
 
     sceneManager->assets()
-        ->geometry("cube",		geometry::CubeGeometry::create(sceneManager->assets()->context()))
-		->geometry("quad",		geometry::QuadGeometry::create(sceneManager->assets()->context()))
-        ->geometry("sphere",	geometry::SphereGeometry::create(sceneManager->assets()->context(), 16, 16));
+        ->geometry("cube",        geometry::CubeGeometry::create(sceneManager->assets()->context()))
+        ->geometry("quad",        geometry::QuadGeometry::create(sceneManager->assets()->context()))
+        ->geometry("sphere",    geometry::SphereGeometry::create(sceneManager->assets()->context(), 16, 16));
 
     loader
+        ->queue(CUBE_TEXTURE, file::Options::create(loader->options())->isCubeTexture(true))
         ->queue("effect/Basic.effect")
-		->queue("effect/OculusVR/OculusVR.effect");
+        ->queue("effect/OculusVR/OculusVR.effect");
 
-	auto prevTime = getTime();
+    std::vector<AnimData> spheresAnimData;
+    std::vector<AnimData> quadsAnimData;
 
-	std::vector<AnimData> spheresAnimData;
-	std::vector<AnimData> quadsAnimData;
+    Node::Ptr spheres;
+    Node::Ptr quads;
 
-	Node::Ptr spheres	= nullptr;
-	Node::Ptr quads		= nullptr;
+    auto _ = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
+    {
+        auto root = scene::Node::create("root")
+            ->addComponent(sceneManager);
 
-	auto _ = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
-	{
+        auto camera = scene::Node::create("camera")
+            ->addComponent(Renderer::create(0x7f7f7fff))
+            ->addComponent(Transform::create())
+            ->addComponent(OculusVRCamera::create(canvas->aspectRatio(), 0.1f, 100.0f));
 
-		auto root = scene::Node::create("root")
-			->addComponent(sceneManager);
+        spheres = createObjectGroup(NUM_SPHERES, false, SPHERES_DIST, SPHERES_PRIORITY, sceneManager->assets(), spheresAnimData);
+        quads = createObjectGroup(NUM_QUADS, true, QUADS_DIST, QUADS_PRIORITY, sceneManager->assets(), quadsAnimData);
 
-		auto camera = scene::Node::create("camera")
-			->addComponent(Renderer::create(0x7f7f7fff))
-			->addComponent(Transform::create())
-			->addComponent(OculusVRCamera::create(WINDOW_WIDTH / (float)WINDOW_HEIGHT, 0.1f, 100.0f));
+        auto cube = scene::Node::create("cube")
+            ->addComponent(Transform::create(
+                Matrix4x4::create()->appendScale(50.0f)
+            ))
+            ->addComponent(Surface::create(
+                sceneManager->assets()->geometry("cube"),
+                material::BasicMaterial::create()->diffuseCubeMap(
+                    sceneManager->assets()->cubeTexture(CUBE_TEXTURE)
+                )->set("triangleCulling", render::TriangleCulling::FRONT),
+                sceneManager->assets()->effect("basic")
+            ));
 
-		spheres	= createObjectGroup(NUM_SPHERES, false, SPHERES_DIST, SPHERES_PRIORITY, sceneManager->assets(), spheresAnimData);
-		quads	= createObjectGroup(NUM_QUADS, true, QUADS_DIST, QUADS_PRIORITY, sceneManager->assets(), quadsAnimData);
+        root->addChild(camera);
+        root->addChild(spheres);
+        root->addChild(quads);
+        root->addChild(cube);
+    });
 
-		auto cube	= scene::Node::create("cube")
-			->addComponent(Transform::create(
-				Matrix4x4::create()->appendScale(50.0f)
-			))
-			->addComponent(Surface::create(
-				sceneManager->assets()->geometry("cube"),
-				material::BasicMaterial::create()->diffuseCubeMap(sceneManager->assets()->cubeTexture(CUBE_TEXTURE))->set("triangleCulling", render::TriangleCulling::FRONT),
-				sceneManager->assets()->effect("basic")
-			));
+    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    {
+        animateObjects(SPHERES_MOVE_AMPL, SPHERES_MOVE_SPEED, time, spheresAnimData);
+        spheres->component<Transform>()->matrix()->appendRotationY(.001f);
 
-		root->addChild(camera);
-		root->addChild(spheres);
-		root->addChild(quads);
-		root->addChild(cube);
-	});
+        animateObjects(QUADS_MOVE_AMPL, QUADS_MOVE_SPEED, time, quadsAnimData);
+        quads->component<Transform>()->matrix()->appendRotationY(-.0005f);
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
-	{
-		animateObjects(SPHERES_MOVE_AMPL, SPHERES_MOVE_SPEED, prevTime, spheresAnimData);
-		spheres->component<Transform>()->matrix()->appendRotationY(.001f);
+        sceneManager->nextFrame(time, deltaTime);
+    });
 
-		animateObjects(QUADS_MOVE_AMPL, QUADS_MOVE_SPEED, prevTime, quadsAnimData);
-		quads->component<Transform>()->matrix()->appendRotationY(-.0005f);
-
-		sceneManager->nextFrame(time, deltaTime);
-	});
-
-	loader->load();
-	canvas->run();
-
-	return 0;
+    loader->load();
+    canvas->run();
 }
 
 Node::Ptr
-createObjectGroup(unsigned int				numObjects,
-				  bool						doQuads,
-				  float						distanceToEye,
-				  float						priority,
-				  file::AssetLibrary::Ptr	assets,
-				  std::vector<AnimData>&	nodeAnimData)
+createObjectGroup(unsigned int              numObjects,
+                  bool                      doQuads,
+                  float                     distanceToEye,
+                  float                     priority,
+                  file::AssetLibrary::Ptr   assets,
+                  std::vector<AnimData>&    nodeAnimData)
 {
-	nodeAnimData.clear();
-	nodeAnimData.resize(numObjects);
+    nodeAnimData.clear();
+    nodeAnimData.resize(numObjects);
 
-	const float invNumObjects	= 1.0f / (float)numObjects;
-	const float maxSize			= float(M_PI) * distanceToEye * invNumObjects - 1e-2f;
-	const float minSize			= maxSize * 0.75f;
-	const float deltaAng		= 2.0f * float(M_PI) * invNumObjects;
-	const float cDelta			= cosf(deltaAng);
-	const float sDelta			= sinf(deltaAng);
+    const float invNumObjects   = 1.0f / float(numObjects);
+    const float maxSize         = float(M_PI) * distanceToEye * invNumObjects - 1e-2f;
+    const float minSize         = maxSize * 0.75f;
+    const float deltaAng        = 2.0f * float(M_PI) * invNumObjects;
+    const float cDelta          = std::cos(deltaAng);
+    const float sDelta          = std::sin(deltaAng);
 
-	auto objectGroup = scene::Node::create(doQuads ? "quads" : "spheres")
-		->addComponent(Transform::create());
+    auto objectGroup = scene::Node::create(doQuads ? "quads" : "spheres")
+        ->addComponent(Transform::create());
 
-	if (assets == nullptr)
-		return objectGroup;
+    if (assets == nullptr)
+        return objectGroup;
 
-	float cAng = 1.0f;
-	float sAng = 0.0f;
-	float cPrev = 1.0f;
-	float sPrev = 0.0f;
-	for (uint i = 0; i < numObjects; ++i)
-	{
-		auto color		 = Color::hslaToRgba(((i + (doQuads ? numObjects >> 1 : 0)) % numObjects) * invNumObjects, 1.0f, 0.5f, 0.5f);
-		auto size		 = minSize + (rand() / (float)RAND_MAX) * (maxSize - minSize);
+    float cAng = 1.0f;
+    float sAng = 0.0f;
+    float cPrev = 1.0f;
+    float sPrev = 0.0f;
 
-		auto toEyeVector = Vector3::create(cAng, 0.0f, sAng);
+    for (uint i = 0; i < numObjects; ++i)
+    {
+        auto color          = Color::hslaToRgba(((i + (doQuads ? numObjects >> 1 : 0)) % numObjects) * invNumObjects, 1.0f, 0.5f, 0.5f);
+        auto size           = minSize + (rand() / float(RAND_MAX)) * (maxSize - minSize);
 
-		auto matrix		 = Matrix4x4::create();
-		if (doQuads)
-			matrix
-				->appendScale(2.0f * size, 3.0f * size, 1.0f)
-				->append(Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(toEyeVector)->scaleBy(distanceToEye)));
-		else
-			matrix
-				->appendScale(2.0f * size)
-				->appendTranslation(Vector3::create(toEyeVector)->scaleBy(distanceToEye));
+        auto toEyeVector    = Vector3::create(cAng, 0.0f, sAng);
 
-		auto transform	= Transform::create(matrix);
+        auto matrix         = Matrix4x4::create();
 
-		auto objectNode	= scene::Node::create((doQuads ? "quad_" : "sphere_") + std::to_string(i))
-			->addComponent(transform)
-			->addComponent(Surface::create(
-				assets->geometry(doQuads? "quad" : "sphere"),
-				material::BasicMaterial::create()
-					->diffuseColor(color)
-					->triangleCulling(doQuads ? render::TriangleCulling::FRONT : render::TriangleCulling::BACK)
-					->set("priority", priority)
-					->set("blendMode", render::Blending::Mode::ALPHA)
-					->set("zsorted", false),
-				assets->effect("basic")
-			));
+        if (doQuads)
+            matrix
+                ->appendScale(2.0f * size, 3.0f * size, 1.0f)
+                ->append(Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(toEyeVector)->scaleBy(distanceToEye)));
+        else
+            matrix
+                ->appendScale(2.0f * size)
+                ->appendTranslation(Vector3::create(toEyeVector)->scaleBy(distanceToEye));
 
-		cPrev = cAng;
-		sPrev = sAng;
+        auto transform      = Transform::create(matrix);
 
-		cAng = cDelta * cPrev - sDelta * sPrev;
-		sAng = cDelta * sPrev + sDelta * cPrev;
+        auto objectNode     = scene::Node::create((doQuads ? "quad_" : "sphere_") + std::to_string(i))
+            ->addComponent(transform)
+            ->addComponent(Surface::create(
+                assets->geometry(doQuads? "quad" : "sphere"),
+                material::BasicMaterial::create()
+                    ->diffuseColor(color)
+                    ->triangleCulling(doQuads ? render::TriangleCulling::FRONT : render::TriangleCulling::BACK)
+                    ->set("priority", priority)
+                    ->set("blendMode", render::Blending::Mode::ALPHA)
+                    ->set("zsorted", false),
+                assets->effect("basic")
+            ));
 
-		objectGroup->addChild(objectNode);
-		nodeAnimData[i] = std::make_pair(transform, toEyeVector);
-	}
+        cPrev = cAng;
+        sPrev = sAng;
 
-	return objectGroup;
+        cAng = cDelta * cPrev - sDelta * sPrev;
+        sAng = cDelta * sPrev + sDelta * cPrev;
+
+        objectGroup->addChild(objectNode);
+        nodeAnimData[i] = std::make_pair(transform, toEyeVector);
+    }
+
+    return objectGroup;
 }
 
 void
-animateObjects(float	moveAmplitude,
-			   float	moveSpeed,
-			   float&	prevTime,
-			   const std::vector<AnimData>&	nodeAnimData)
+animateObjects(float                            moveAmplitude,
+               float                            moveSpeed,
+               const float                      currTime,
+               const std::vector<AnimData>&     nodeAnimData)
 {
-	const float	currTime	= getTime();
-	const float fPrev		= 0.5f + 0.5f * cosf(prevTime * moveSpeed); // [0, 1]
-	const float fCurr		= 0.5f + 0.5f * cosf(currTime * moveSpeed); // [0, 1]
+    static float    prevTime    = 0;
+    const  float    fPrev       = 0.5f + 0.5f * cosf(prevTime * moveSpeed); // [0, 1]
+    const  float    fCurr       = 0.5f + 0.5f * cosf(currTime * moveSpeed); // [0, 1]
 
-	auto		transl		= Vector3::create();
+    auto        translation  = Vector3::create();
 
-	for (auto& animData : nodeAnimData)
-	{
-		transl
-			->copyFrom(animData.second)
-			->scaleBy(moveAmplitude * (fPrev - fCurr));
+    for (auto& animData : nodeAnimData)
+    {
+        translation
+            ->copyFrom(animData.second)
+            ->scaleBy(moveAmplitude * (fPrev - fCurr));
 
-		animData.first->matrix()->appendTranslation(transl);
-	}
+        animData.first->matrix()->appendTranslation(translation);
+    }
 
-	prevTime = currTime;
-}
-
-float
-getTime()
-{
-	static const float invClocksPerSec = 1.0f / (float)CLOCKS_PER_SEC;
-
-	return clock() * invClocksPerSec;
+    prevTime = currTime;
 }

@@ -24,98 +24,98 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace data
-	{
-		class AbstractFilter :
-			public std::enable_shared_from_this<AbstractFilter>
-		{
-		public:
-			typedef std::shared_ptr<AbstractFilter>							Ptr;
+    namespace data
+    {
+        class AbstractFilter :
+            public std::enable_shared_from_this<AbstractFilter>
+        {
+        public:
+            typedef std::shared_ptr<AbstractFilter>                            Ptr;
 
-		private:
-			typedef std::shared_ptr<component::Surface>						SurfacePtr;
-			typedef std::shared_ptr<component::AbstractComponent>			AbsCmpPtr;
-			typedef std::shared_ptr<scene::Node>							NodePtr;
-			typedef std::shared_ptr<Provider>								ProviderPtr;
-			typedef std::shared_ptr<Container>								ContainerPtr;
+        private:
+            typedef std::shared_ptr<component::Surface>                        SurfacePtr;
+            typedef std::shared_ptr<component::AbstractComponent>            AbsCmpPtr;
+            typedef std::shared_ptr<scene::Node>                            NodePtr;
+            typedef std::shared_ptr<Provider>                                ProviderPtr;
+            typedef std::shared_ptr<Container>                                ContainerPtr;
 
-			typedef std::shared_ptr<Signal<Ptr, SurfacePtr>>				FilterSignalPtr;
-			typedef Signal<ContainerPtr, const std::string&>				ContainerPropertyChangedSignal;
+            typedef std::shared_ptr<Signal<Ptr, SurfacePtr>>                FilterSignalPtr;
+            typedef Signal<ContainerPtr, const std::string&>                ContainerPropertyChangedSignal;
 
-		private:
-			SurfacePtr												_currentSurface;
-			Signal<AbsCmpPtr, NodePtr>::Slot						_currentSurfaceRemovedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot					_currentSurfaceTargetRemovedSlot;
+        private:
+            SurfacePtr                                                _currentSurface;
+            Signal<AbsCmpPtr, NodePtr>::Slot                        _currentSurfaceRemovedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot                    _currentSurfaceTargetRemovedSlot;
 
-			FilterSignalPtr											_changed;
+            FilterSignalPtr                                            _changed;
 
-			std::list<std::string>									_watchedProperties;
+            std::list<std::string>                                    _watchedProperties;
 
-			std::unordered_map<NodePtr, std::list<ContainerPropertyChangedSignal::Slot>> _surfaceTargetPropertyChangedSlots;
+            std::unordered_map<NodePtr, std::list<ContainerPropertyChangedSignal::Slot>> _surfaceTargetPropertyChangedSlots;
 
-		public:
-			AbstractFilter():
-				_currentSurface(nullptr),
-				_currentSurfaceRemovedSlot(nullptr),
-				_currentSurfaceTargetRemovedSlot(nullptr),
-				_changed(Signal<Ptr, SurfacePtr>::create())
-			{
-			}
+        public:
+            AbstractFilter():
+                _currentSurface(nullptr),
+                _currentSurfaceRemovedSlot(nullptr),
+                _currentSurfaceTargetRemovedSlot(nullptr),
+                _changed(Signal<Ptr, SurfacePtr>::create())
+            {
+            }
 
-			virtual
-			~AbstractFilter() = default;
+            virtual
+            ~AbstractFilter() = default;
 
-			void
-			watchProperty(const std::string value);
+            void
+            watchProperty(const std::string value);
 
-			void
-			unwatchProperty(const std::string value);
+            void
+            unwatchProperty(const std::string value);
 
-			virtual
-			bool
-			operator()(std::shared_ptr<Provider>) = 0;
+            virtual
+            bool
+            operator()(std::shared_ptr<Provider>) = 0;
 
-			Ptr
-			currentSurface(SurfacePtr);
+            Ptr
+            currentSurface(SurfacePtr);
 
-			inline
-			SurfacePtr
-			currentSurface() const
-			{
-				return _currentSurface;
-			}
+            inline
+            SurfacePtr
+            currentSurface() const
+            {
+                return _currentSurface;
+            }
 
-			inline
-			FilterSignalPtr
-			changed() const
-			{
-				return _changed;
-			}
+            inline
+            FilterSignalPtr
+            changed() const
+            {
+                return _changed;
+            }
 
-		private:
-			virtual
-			void
-			currentSurfaceRemovedHandler(AbsCmpPtr, NodePtr)
-			{
-				forgetCurrentSurface();
-			}
+        private:
+            virtual
+            void
+            currentSurfaceRemovedHandler(AbsCmpPtr, NodePtr)
+            {
+                forgetCurrentSurface();
+            }
 
-			virtual
-			void
-			currentSurfaceTargetRemovedHandler(NodePtr, NodePtr, NodePtr)
-			{
-				forgetCurrentSurface();
-			}
+            virtual
+            void
+            currentSurfaceTargetRemovedHandler(NodePtr, NodePtr, NodePtr)
+            {
+                forgetCurrentSurface();
+            }
 
-			inline
-			void
-			forgetCurrentSurface()
-			{
-				_currentSurface						= nullptr;
+            inline
+            void
+            forgetCurrentSurface()
+            {
+                _currentSurface                        = nullptr;
 
-				_currentSurfaceRemovedSlot			= nullptr;
-				_currentSurfaceTargetRemovedSlot	= nullptr;
-			}
-		};
-	}
+                _currentSurfaceRemovedSlot            = nullptr;
+                _currentSurfaceTargetRemovedSlot    = nullptr;
+            }
+        };
+    }
 }

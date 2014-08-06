@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -26,96 +26,96 @@ using namespace minko;
 scene::NodeSet::Ptr
 scene::NodeSet::descendants(bool andSelf, bool depthFirst, scene::NodeSet::Ptr result)
 {
-	if (result == nullptr)
-		result = create();
+    if (result == nullptr)
+        result = create();
 
-	std::list<std::shared_ptr<Node>> nodesStack;
+    std::list<std::shared_ptr<Node>> nodesStack;
 
-	for (auto node : _nodes)
-	{
-		nodesStack.push_front(node);
+    for (auto node : _nodes)
+    {
+        nodesStack.push_front(node);
 
-		while (nodesStack.size() != 0)
-		{
-			auto descendant = nodesStack.front();
+        while (nodesStack.size() != 0)
+        {
+            auto descendant = nodesStack.front();
 
-			nodesStack.pop_front();
+            nodesStack.pop_front();
 
-			if (descendant != node || andSelf)
-				result->_nodes.push_back(descendant);
+            if (descendant != node || andSelf)
+                result->_nodes.push_back(descendant);
 
-			nodesStack.insert(
-				depthFirst ? nodesStack.begin() : nodesStack.end(),
-				descendant->children().begin(),
-				descendant->children().end()
-			);
-		}
-	}
+            nodesStack.insert(
+                depthFirst ? nodesStack.begin() : nodesStack.end(),
+                descendant->children().begin(),
+                descendant->children().end()
+            );
+        }
+    }
 
-	return result;
+    return result;
 }
 
 scene::NodeSet::Ptr
 scene::NodeSet::ancestors(bool andSelf, scene::NodeSet::Ptr result)
 {
-	if (result == nullptr)
-		result = create();
+    if (result == nullptr)
+        result = create();
 
-	for (auto node : _nodes)
-	{
-		if (andSelf)
-			result->_nodes.push_back(node);
-		
-		while (node != nullptr)
-		{
-			if (node->parent() != nullptr)
-				result->_nodes.push_back(node->parent());
-			node = node->parent();
-		}
-	}
+    for (auto node : _nodes)
+    {
+        if (andSelf)
+            result->_nodes.push_back(node);
 
-	return result;
+        while (node != nullptr)
+        {
+            if (node->parent() != nullptr)
+                result->_nodes.push_back(node->parent());
+            node = node->parent();
+        }
+    }
+
+    return result;
 }
 
 scene::NodeSet::Ptr
 scene::NodeSet::children(bool andSelf, scene::NodeSet::Ptr result)
 {
-	if (result == nullptr)
-		result = create();
+    if (result == nullptr)
+        result = create();
 
-	for (auto node : _nodes)
-	{
-		if (andSelf)
-			result->_nodes.push_back(node);
+    for (auto node : _nodes)
+    {
+        if (andSelf)
+            result->_nodes.push_back(node);
 
-		result->_nodes.insert(result->_nodes.end(), node->children().begin(), node->children().end());
-	}
+        result->_nodes.insert(result->_nodes.end(), node->children().begin(), node->children().end());
+    }
 
-	return result;
+    return result;
 }
 
 scene::NodeSet::Ptr
 scene::NodeSet::where(std::function<bool(std::shared_ptr<Node>)> filter, scene::NodeSet::Ptr result)
 {
-	if (result == nullptr)
-		result = create();
+    if (result == nullptr)
+        result = create();
 
-	for (auto node : _nodes)
-		if (filter(node))
-			result->_nodes.push_back(node);
+    for (auto node : _nodes)
+        if (filter(node))
+            result->_nodes.push_back(node);
 
-	return result;
+    return result;
 }
 
 scene::NodeSet::Ptr
-	scene::NodeSet::roots(scene::NodeSet::Ptr result)
+    scene::NodeSet::roots(scene::NodeSet::Ptr result)
 {
-	if (result == nullptr)
-		result = create();
+    if (result == nullptr)
+        result = create();
 
-	for (auto node : _nodes)
-		if (std::find(result->_nodes.begin(), result->_nodes.end(), node->root()) == result->_nodes.end())
-			result->_nodes.push_back(node->root());
+    for (auto node : _nodes)
+        if (std::find(result->_nodes.begin(), result->_nodes.end(), node->root()) == result->_nodes.end())
+            result->_nodes.push_back(node->root());
 
-	return result;
+    return result;
 }

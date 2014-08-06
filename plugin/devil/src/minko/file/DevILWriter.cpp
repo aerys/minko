@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -34,13 +34,13 @@ DevILWriter::createScaledImage(const std::vector<unsigned char>&    src,
                                uint                                 dstHeight,
                                uint                                 componentCount)
 {
-	ILuint devilID;
+    ILuint devilID;
 
-	ilInit();
-	iluInit();
+    ilInit();
+    iluInit();
 
-	ilGenImages(1, &devilID);
-	ilBindImage(devilID);
+    ilGenImages(1, &devilID);
+    ilBindImage(devilID);
 
     int format;
 
@@ -60,7 +60,7 @@ DevILWriter::createScaledImage(const std::vector<unsigned char>&    src,
                const_cast<unsigned char*> (src.data()));
     iluFlipImage();
     iluScale(dstWidth, dstHeight, 1);
-	checkError();
+    checkError();
 
     return devilID;
 }
@@ -74,15 +74,15 @@ DevILWriter::writeToFile(const std::string&                     filename,
                          uint                                   dstHeight,
                          uint                                   componentCount)
 {
-	uint devilID = createScaledImage(src, srcWidth, srcHeight, dstWidth, dstHeight, componentCount);
+    uint devilID = createScaledImage(src, srcWidth, srcHeight, dstWidth, dstHeight, componentCount);
 
-	ilEnable(IL_FILE_OVERWRITE);
-	ilSaveImage(filename.c_str());
-	checkError();
+    ilEnable(IL_FILE_OVERWRITE);
+    ilSaveImage(filename.c_str());
+    checkError();
 
     ilDeleteImages(1, &devilID);
 
-	ilShutDown();
+    ilShutDown();
 }
 
 void
@@ -105,7 +105,7 @@ DevILWriter::writeToStream(std::vector<unsigned char>&          dst,
 
     auto imageType = devilExtensions.at(extension);
 
-	uint devilID = createScaledImage(src, srcWidth, srcHeight, dstWidth, dstHeight, componentCount);
+    uint devilID = createScaledImage(src, srcWidth, srcHeight, dstWidth, dstHeight, componentCount);
 
     uint size = ilSaveL(imageType, nullptr, 0);
 
@@ -120,48 +120,48 @@ DevILWriter::writeToStream(std::vector<unsigned char>&          dst,
 
     ilDeleteImages(1, &devilID);
 
-	ilShutDown();
+    ilShutDown();
 }
 
 void
 DevILWriter::checkError()
 {
-	ILuint error = ilGetError();
+    ILuint error = ilGetError();
 
-	if (error != IL_NO_ERROR)
-		throw std::runtime_error(std::string("DevILWriter::write, ") + iluErrorString(error));
+    if (error != IL_NO_ERROR)
+        throw std::runtime_error(std::string("DevILWriter::write, ") + iluErrorString(error));
 }
 
 std::set<std::string>
 DevILWriter::getSupportedFileExensions()
 {
-	std::set<std::string> result;
+    std::set<std::string> result;
 
-	result.insert("bmp");
-	result.insert("dds");
-	//result.insert("exr");
-	result.insert("h");
-	result.insert("hdr");
-	result.insert("jpg");
-	result.insert("jpe");
-	result.insert("jpeg");
-	result.insert("jp2");
-	result.insert("pal");
-	result.insert("pcx");
-	result.insert("png");
-	result.insert("pbm");
-	result.insert("pgm");
-	result.insert("pnm");
-	result.insert("psd");
-	result.insert("raw");
-	result.insert("sgi");
-	result.insert("bw");
-	result.insert("rgb");
-	result.insert("rgba");
-	result.insert("tga");
-	result.insert("tif");
-	result.insert("vtf");
+    result.insert("bmp");
+    result.insert("dds");
+    //result.insert("exr");
+    result.insert("h");
+    result.insert("hdr");
+    result.insert("jpg");
+    result.insert("jpe");
+    result.insert("jpeg");
+    result.insert("jp2");
+    result.insert("pal");
+    result.insert("pcx");
+    result.insert("png");
+    result.insert("pbm");
+    result.insert("pgm");
+    result.insert("pnm");
+    result.insert("psd");
+    result.insert("raw");
+    result.insert("sgi");
+    result.insert("bw");
+    result.insert("rgb");
+    result.insert("rgba");
+    result.insert("tga");
+    result.insert("tif");
+    result.insert("vtf");
 
-	return result;
+    return result;
 }
 

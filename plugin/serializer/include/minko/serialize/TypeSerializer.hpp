@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,60 +23,60 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace serialize
-	{
-		class TypeSerializer
-		{
-		private :
-			template <typename T, typename ST = T>
-			static void
-			write(std::stringstream& stream, const T& value)
-			{
-				stream.write(reinterpret_cast<const char*>(&value), sizeof (ST));
-			}
+    namespace serialize
+    {
+        class TypeSerializer
+        {
+        private :
+            template <typename T, typename ST = T>
+            static void
+            write(std::stringstream& stream, const T& value)
+            {
+                stream.write(reinterpret_cast<const char*>(&value), sizeof (ST));
+            }
 
-		public:
+        public:
 
-			template <typename T, typename ST = T>
-			static
-			std::string
-			serializeVector(std::vector<T> vect)
-			{
-				std::stringstream			stream;
+            template <typename T, typename ST = T>
+            static
+            std::string
+            serializeVector(std::vector<T> vect)
+            {
+                std::stringstream            stream;
 
-				for (T value : vect)
-					write<T, ST>(stream, value);
+                for (T value : vect)
+                    write<T, ST>(stream, value);
 
-				return stream.str();
-			}
+                return stream.str();
+            }
 
-			static
-			std::tuple<uint, std::string>
-			serializeVector4(Any value);
-		
-			static
-			std::tuple<uint, std::string>
-			serializeVector3(Any value);
+            static
+            std::tuple<uint, std::string>
+            serializeVector4(Any value);
 
-			static
-			std::tuple<uint, std::string>
-			serializeVector2(Any value);
+            static
+            std::tuple<uint, std::string>
+            serializeVector3(Any value);
 
-			static
-			std::tuple<uint, std::string>
-			serializeMatrix4x4(Any value);
-			
-			static
-			std::tuple<uint, std::string>
-			serializeBlending(Any value);
+            static
+            std::tuple<uint, std::string>
+            serializeVector2(Any value);
 
-			static
-			std::tuple<uint, std::string>
-			serializeCulling(Any value);
+            static
+            std::tuple<uint, std::string>
+            serializeMatrix4x4(Any value);
 
-			static
-			std::tuple<uint, std::string>
-			serializeTexture(Any value);
-		};
-	}
+            static
+            std::tuple<uint, std::string>
+            serializeBlending(Any value);
+
+            static
+            std::tuple<uint, std::string>
+            serializeCulling(Any value);
+
+            static
+            std::tuple<uint, std::string>
+            serializeTexture(Any value);
+        };
+    }
 }

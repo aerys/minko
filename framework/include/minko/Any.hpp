@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -113,7 +113,7 @@ namespace minko
         &static_cast<Any::Holder<ValueType> *>(operand->_content)->_held : 0;
     }
 
-	template <typename ValueType>
+    template <typename ValueType>
     static ValueType*
     unsafe_cast(Any* operand)
     {
@@ -127,7 +127,7 @@ namespace minko
       return Any::cast<ValueType>(const_cast<Any*>(operand));
     }
 
-	template <typename ValueType>
+    template <typename ValueType>
     static inline const ValueType*
     unsafe_cast(const Any* operand)
     {
@@ -148,7 +148,7 @@ namespace minko
       return *result;
     }
 
-	template <typename ValueType>
+    template <typename ValueType>
     static ValueType
     unsafe_cast(Any& operand)
     {
@@ -171,7 +171,7 @@ namespace minko
       return cast<const NonRef&>(const_cast<Any&>(operand));
     }
 
-	template <typename ValueType>
+    template <typename ValueType>
     static inline ValueType
     unsafe_cast(const Any& operand)
     {

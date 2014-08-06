@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -29,10 +29,10 @@ PNGWriter::write(const std::string&                 filename,
                  minko::uint                        width,
                  minko::uint                        height)
 {
-	unsigned status = lodepng::encode(filename, data, width, height);
+    unsigned status = lodepng::encode(filename, data, width, height);
 
-	if (status != 0)
-		throw std::runtime_error(std::string("PNGWriter::write: ") + lodepng_error_text(status));
+    if (status != 0)
+        throw std::runtime_error(std::string("PNGWriter::write: ") + lodepng_error_text(status));
 }
 
 void
@@ -45,5 +45,5 @@ PNGWriter::writeToStream(std::vector<unsigned char>&       destination,
     unsigned status = lodepng::encode(destination, source, width, height);
 
     if (status != 0)
-		throw std::runtime_error(std::string("PNGWriter::writeToStream: ") + lodepng_error_text(status));
+        throw std::runtime_error(std::string("PNGWriter::writeToStream: ") + lodepng_error_text(status));
 }

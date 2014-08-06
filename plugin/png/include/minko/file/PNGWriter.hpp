@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,27 +23,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace file
-	{
-		class PNGWriter :
-			public std::enable_shared_from_this<PNGWriter>
-		{
-		public:
-			typedef std::shared_ptr<PNGWriter> Ptr;
+    namespace file
+    {
+        class PNGWriter :
+            public std::enable_shared_from_this<PNGWriter>
+        {
+        public:
+            typedef std::shared_ptr<PNGWriter> Ptr;
 
-		public:
-			inline static
-			Ptr
-			create()
-			{
-				return std::shared_ptr<PNGWriter>(new PNGWriter());
-			}
+        public:
+            inline static
+            Ptr
+            create()
+            {
+                return std::shared_ptr<PNGWriter>(new PNGWriter());
+            }
 
-			void
-			write(const std::string&                 filename,
-			      const std::vector<unsigned char>&  data,
-			      minko::uint                        width,
-			      minko::uint                        height);
+            void
+            write(const std::string&                 filename,
+                  const std::vector<unsigned char>&  data,
+                  minko::uint                        width,
+                  minko::uint                        height);
 
             void
             writeToStream(std::vector<unsigned char>&       destination,
@@ -51,10 +51,10 @@ namespace minko
                           minko::uint                       width,
                           minko::uint                       height);
 
-		private:
-			PNGWriter()
-			{
-			}
-		};
-	}
+        private:
+            PNGWriter()
+            {
+            }
+        };
+    }
 }

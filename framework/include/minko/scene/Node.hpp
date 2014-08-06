@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -22,295 +22,311 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
 #include "minko/scene/Layout.hpp"
+#include "minko/component/AbstractRebindableComponent.hpp"
 
 namespace minko
 {
-	namespace scene
-	{
-		class Node :
-			public std::enable_shared_from_this<Node>
-		{
-		public:
-			typedef std::shared_ptr<Node>							Ptr;
+    namespace scene
+    {
+        class Node :
+            public std::enable_shared_from_this<Node>
+        {
+        public:
+            typedef std::shared_ptr<Node>                            Ptr;
 
-		private:
-			typedef std::shared_ptr<component::AbstractComponent>	AbsCtrlPtr;
+        private:
+			typedef std::shared_ptr<component::AbstractComponent>	AbsCmpPtr;
 
-			static uint												_lastId;
-			uint													_id;
+            static uint                                                _lastId;
+            uint                                                    _id;
 
-		protected:
-			std::string 											_name;
-			std::vector<Ptr>										_children;
+        protected:
+            std::string                                             _name;
+            std::vector<Ptr>                                        _children;
 
-		private:
-			Ptr 													_root;
-			Ptr														_parent;
-			std::shared_ptr<data::Container>						_container;
-			std::shared_ptr<data::Provider>							_data;
-			std::list<AbsCtrlPtr>									_components;
+        private:
+            Ptr                                                     _root;
+            Ptr                                                        _parent;
+            std::shared_ptr<data::Container>                        _container;
+            std::shared_ptr<data::Provider>                            _data;
+			std::list<AbsCmpPtr>									_components;
 
-			uint													_depth;
+            uint                                                    _depth;
 
-			std::shared_ptr<Signal<Ptr, Ptr, Ptr>>					_added;
-			std::shared_ptr<Signal<Ptr, Ptr, Ptr>>					_removed;
-			std::shared_ptr<Signal<Ptr, Ptr>>						_layoutsChanged;
-			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>			_componentAdded;
-			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>			_componentRemoved;
+            std::shared_ptr<Signal<Ptr, Ptr, Ptr>>                    _added;
+            std::shared_ptr<Signal<Ptr, Ptr, Ptr>>                    _removed;
+            std::shared_ptr<Signal<Ptr, Ptr>>                        _layoutsChanged;
+			std::shared_ptr<Signal<Ptr, Ptr, AbsCmpPtr>>			_componentAdded;
+			std::shared_ptr<Signal<Ptr, Ptr, AbsCmpPtr>>			_componentRemoved;
 
-			std::string												_uuid;
+            std::string                                                _uuid;
 
-		public:
+        public:
 
-			static
+            static
+            Ptr
+            create()
+            {
+                Ptr node = std::shared_ptr<Node>(new Node());
+
+                node->_root = node;
+
+                return node;
+            }
+
+            static
+            Ptr
+            create(const std::list<Ptr>& children)
+            {
+                Ptr node = create();
+
+                for (auto child : children)
+                    node->addChild(child);
+
+                return node;
+            }
+
+            static
+            Ptr
+            create(const std::string& name)
+            {
+                Ptr node = create();
+
+                node->name(name);
+
+                return node;
+            }
+
+            static
+            Ptr
+            create(const std::string& name, const std::list<Ptr>& children)
+            {
+                Ptr node = create(name);
+
+                for (auto child : children)
+                    node->addChild(child);
+
+                return node;
+            }
+
 			Ptr
-			create()
-			{
-				Ptr node = std::shared_ptr<Node>(new Node());
+			clone(const CloneOption& option);
 
-				node->_root = node;
-
-				return node;
-			}
-
-			static
 			Ptr
-			create(const std::list<Ptr>& children)
-			{
-				Ptr node = create();
+			cloneNode();
 
-				for (auto child : children)
-					node->addChild(child);
-
-				return node;
-			}
-
-			static
-			Ptr
-			create(const std::string& name)
-			{
-				Ptr node = create();
-
-				node->name(name);
-
-				return node;
-			}
-
-			static
-			Ptr
-			create(const std::string& name, const std::list<Ptr>& children)
-			{
-				Ptr node = create(name);
-
-				for (auto child : children)
-					node->addChild(child);
-
-				return node;
-			}
-
-			inline
-			const std::string&
-			name() const
-			{
-				return _name;
-			}
-
-			inline
-			int
-			id() const
-			{
-				return _id;
-			}
-
-			inline
-			std::string
-			uuid() const
-			{
-				return _uuid;
-			}
-
-			inline
 			void
-			uuid(std::string uuid)
-			{
-				_uuid = uuid;
-			}
+			Node::listItems(Node::Ptr clonedRoot, std::map<Node::Ptr, Node::Ptr>& nodeMap, std::map<AbsCmpPtr, AbsCmpPtr>& components);
 
-			inline
 			void
-			name(const std::string& name)
-			{
-				_name = name;
-			}
+			Node::cloneComponents(std::map<AbsCmpPtr, AbsCmpPtr>& componentsMap, CloneOption option);
 
-			Layouts
-			layouts() const;
+			void
+			rebindControllerDependencies(std::map<AbsCmpPtr, AbsCmpPtr>& componentsMap, std::map<Node::Ptr, Node::Ptr> nodeMap, CloneOption option);
 			
-			Ptr
-			layouts(Layouts);
+            inline
+            const std::string&
+            name() const
+            {
+                return _name;
+            }
 
-			inline
-			Ptr
-			parent() const
-			{
-				return _parent;
-			}
+            inline
+            int
+            id() const
+            {
+                return _id;
+            }
 
-			inline
-			Ptr
-			root() const
-			{
-				return _root;
-			}
+            inline
+            std::string
+            uuid() const
+            {
+                return _uuid;
+            }
 
-			inline
-			const std::vector<Ptr>&
-			children() const
-			{
-				return _children;
-			}
+            inline
+            void
+            uuid(std::string uuid)
+            {
+                _uuid = uuid;
+            }
 
-			inline
-			std::shared_ptr<data::Container>
-			data() const
-			{
-				return _container;
-			}
+            inline
+            void
+            name(const std::string& name)
+            {
+                _name = name;
+            }
 
-			inline
-			uint
-			depth() const
-			{
-				return _depth;
-			}
+            Layouts
+            layouts() const;
 
-			inline
-			Signal<Ptr, Ptr, Ptr>::Ptr
-			added() const
-			{
-				return _added;
-			}
+            Ptr
+            layouts(Layouts);
 
-			inline
-			Signal<Ptr, Ptr, Ptr>::Ptr
-			removed() const
-			{
-				return _removed;
-			}
+            inline
+            Ptr
+            parent() const
+            {
+                return _parent;
+            }
 
-			inline
-			Signal<Ptr, Ptr>::Ptr
-			layoutsChanged() const
-			{
-				return _layoutsChanged;
-			}
+            inline
+            Ptr
+            root() const
+            {
+                return _root;
+            }
 
-			inline
-			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>
-			componentAdded() const
-			{
-				return _componentAdded;
-			}
+            inline
+            const std::vector<Ptr>&
+            children() const
+            {
+                return _children;
+            }
 
-			inline
-			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>
-			componentRemoved() const
-			{
-				return _componentRemoved;
-			}
+            inline
+            std::shared_ptr<data::Container>
+            data() const
+            {
+                return _container;
+            }
 
-			Ptr
-			addChild(Ptr Node);
+            inline
+            uint
+            depth() const
+            {
+                return _depth;
+            }
 
-			Ptr
-			removeChild(Ptr Node);
+            inline
+            Signal<Ptr, Ptr, Ptr>::Ptr
+            added() const
+            {
+                return _added;
+            }
 
-			Ptr
-			removeChildren();
+            inline
+            Signal<Ptr, Ptr, Ptr>::Ptr
+            removed() const
+            {
+                return _removed;
+            }
 
-			bool
-			contains(Ptr Node);
+            inline
+            Signal<Ptr, Ptr>::Ptr
+            layoutsChanged() const
+            {
+                return _layoutsChanged;
+            }
 
-			Ptr
-			addComponent(AbsCtrlPtr component);
+            inline
+			std::shared_ptr<Signal<Ptr, Ptr, AbsCmpPtr>>
+            componentAdded() const
+            {
+                return _componentAdded;
+            }
 
-			Ptr
-			removeComponent(AbsCtrlPtr component);
+            inline
+			std::shared_ptr<Signal<Ptr, Ptr, AbsCmpPtr>>
+            componentRemoved() const
+            {
+                return _componentRemoved;
+            }
 
-			bool
-			hasComponent(AbsCtrlPtr component);
+            Ptr
+            addChild(Ptr Node);
 
-			template <typename T>
-			inline
-			bool
-			hasComponent()
-			{
-				return component<T>() != nullptr;
-			}
+            Ptr
+            removeChild(Ptr Node);
 
-			template <typename T>
-			std::vector<std::shared_ptr<T>>
-			components()
-			{
-				std::vector<std::shared_ptr<T>> result;
+            Ptr
+            removeChildren();
 
-				for (auto component : _components)
-				{
-					std::shared_ptr<T> typedComponent = std::dynamic_pointer_cast<T>(component);
+            bool
+            contains(Ptr Node);
 
-					if (typedComponent != nullptr)
-						result.push_back(typedComponent);
-				}
+            Ptr
+			addComponent(AbsCmpPtr component);
 
-				return result;
-			}
+            Ptr
+			removeComponent(AbsCmpPtr component);
 
-			template <typename T>
-			std::shared_ptr<T>
-			component(const unsigned int position = 0)
-			{
-				unsigned int counter = 0;
+            bool
+			hasComponent(AbsCmpPtr component);
 
-				for (auto component : _components)
-				{
-					std::shared_ptr<T> typedComponent = std::dynamic_pointer_cast<T>(component);
+            template <typename T>
+            inline
+            bool
+            hasComponent()
+            {
+                return component<T>() != nullptr;
+            }
 
-					if (typedComponent != nullptr)
-					{
-						if (counter == position)
-							return typedComponent;
-						else
-							++counter;
-					}
-				}
+            template <typename T>
+            std::vector<std::shared_ptr<T>>
+            components()
+            {
+                std::vector<std::shared_ptr<T>> result;
 
-				return nullptr;
-			}
+                for (auto component : _components)
+                {
+                    std::shared_ptr<T> typedComponent = std::dynamic_pointer_cast<T>(component);
 
-			virtual
-			~Node()
-			{
-			}
+                    if (typedComponent != nullptr)
+                        result.push_back(typedComponent);
+                }
 
-			std::string
-			toString() const
-			{
-				std::stringstream stream;
+                return result;
+            }
 
-				stream << "Node (" << _name << ")";
+            template <typename T>
+            std::shared_ptr<T>
+            component(const unsigned int position = 0)
+            {
+                unsigned int counter = 0;
 
-				return stream.str();
-			}
+                for (auto component : _components)
+                {
+                    std::shared_ptr<T> typedComponent = std::dynamic_pointer_cast<T>(component);
 
-		protected:
-			Node();
+                    if (typedComponent != nullptr)
+                    {
+                        if (counter == position)
+                            return typedComponent;
+                        else
+                            ++counter;
+                    }
+                }
 
-			void
-			updateRoot();
+                return nullptr;
+            }
 
-		private:
-			void
-			initialize();
-		};
-	}
+            virtual
+            ~Node()
+            {
+            }
+
+            std::string
+            toString() const
+            {
+                std::stringstream stream;
+
+                stream << "Node (" << _name << ")";
+
+                return stream.str();
+            }
+
+        protected:
+            Node();
+
+            void
+            updateRoot();
+
+        private:
+            void
+            initialize();
+        };
+    }
 }

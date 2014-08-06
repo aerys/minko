@@ -36,42 +36,42 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #endif
 
 #if defined(MINKO_WORKER_IMPL_WEBWORKER)
-# define MINKO_DEFINE_WORKER(Class, Code)										\
-	void minkoWorkerEntryPoint(char* data, int size)							\
-	{																			\
-		auto worker = Class ::create("");										\
-		std::vector<char> input(data, data + size);								\
-		worker->run(input);														\
-	}																			\
-																				\
-	void Class ::run(const std::vector<char>& input)							\
-	{																			\
-		Code ;																	\
-	}
+# define MINKO_DEFINE_WORKER(Class, Code)                                        \
+    void minkoWorkerEntryPoint(char* data, int size)                            \
+    {                                                                            \
+        auto worker = Class ::create("");                                        \
+        std::vector<char> input(data, data + size);                                \
+        worker->run(input);                                                        \
+    }                                                                            \
+                                                                                \
+    void Class ::run(const std::vector<char>& input)                            \
+    {                                                                            \
+        Code ;                                                                    \
+    }
 #endif
 
 #if defined(MINKO_WORKER_IMPL_THREAD)
-# define MINKO_DEFINE_WORKER(Class, Code)										\
-	void Class ::run(const std::vector<char>& input)							\
-	{																			\
-		Code ;																	\
-	}
+# define MINKO_DEFINE_WORKER(Class, Code)                                        \
+    void Class ::run(const std::vector<char>& input)                            \
+    {                                                                            \
+        Code ;                                                                    \
+    }
 #endif
 
 // Not specific to any implementation (at the moment).
-#define MINKO_DECLARE_WORKER(Class)												\
-	class Class : public ::minko::async::Worker									\
-	{																			\
-	public:																		\
-		static Ptr create(const std::string& name)								\
-		{																		\
-			return std::shared_ptr<Class>(new Class(name));						\
-		}																		\
-																				\
-		void run(const std::vector<char>& input);								\
-																				\
-	private:																	\
-		Class(const std::string& name) : Worker(name)							\
-		{																		\
-		}																		\
-	};
+#define MINKO_DECLARE_WORKER(Class)                                                \
+    class Class : public ::minko::async::Worker                                    \
+    {                                                                            \
+    public:                                                                        \
+        static Ptr create(const std::string& name)                                \
+        {                                                                        \
+            return std::shared_ptr<Class>(new Class(name));                        \
+        }                                                                        \
+                                                                                \
+        void run(const std::vector<char>& input);                                \
+                                                                                \
+    private:                                                                    \
+        Class(const std::string& name) : Worker(name)                            \
+        {                                                                        \
+        }                                                                        \
+    };

@@ -55,10 +55,10 @@ std::shared_ptr<render::Texture> Hologram::_depthMapRenderTarget1 = nullptr;
 
 const uint Hologram::MAP_RESOLUTION = 1024;
 
-Hologram::Hologram(std::shared_ptr<render::Effect>			effect,
-				   std::shared_ptr<render::AbstractContext> context) :
-	_context(context),
-	_effect(effect)
+Hologram::Hologram(std::shared_ptr<render::Effect>            effect,
+                   std::shared_ptr<render::AbstractContext> context) :
+    _context(context),
+    _effect(effect)
 {
 }
 
@@ -66,93 +66,93 @@ void
 Hologram::initialize()
 {
 
-	_targetAddedSlot = targetAdded()->connect([&](AbstractComponent::Ptr cmp, NodePtr target)
-	{
-		if (target->root()->hasComponent<SceneManager>())
-			initTarget(nullptr, target, nullptr);
-		else
-			_addedToSceneSlot = target->added()->connect(std::bind(
-			&Hologram::targetAddedToScene,
-			std::static_pointer_cast<Hologram>(shared_from_this()),
-			std::placeholders::_1,
-			std::placeholders::_2,
-			std::placeholders::_3));
-	});
+    _targetAddedSlot = targetAdded()->connect([&](AbstractComponent::Ptr cmp, NodePtr target)
+    {
+        if (target->root()->hasComponent<SceneManager>())
+            initTarget(nullptr, target, nullptr);
+        else
+            _addedToSceneSlot = target->added()->connect(std::bind(
+            &Hologram::targetAddedToScene,
+            std::static_pointer_cast<Hologram>(shared_from_this()),
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3));
+    });
 }
 
 void
 Hologram::initTarget(AbstractComponent::Ptr cmp, NodePtr target, NodePtr ancestor)
 {
-	if (_frontFaceNormalRenderer0 == nullptr && _frontFaceNormalRenderer1 == nullptr)
-	{
-		_depthMapRenderer0 = Renderer::create(0xFFFFFFFF, nullptr, _effect, 10.f);
-		//_depthMapRenderer0->layoutMask(1u << 21);
+    if (_frontFaceNormalRenderer0 == nullptr && _frontFaceNormalRenderer1 == nullptr)
+    {
+        _depthMapRenderer0 = Renderer::create(0xFFFFFFFF, nullptr, _effect, 10.f);
+        //_depthMapRenderer0->layoutMask(1u << 21);
 
-		auto nodeSet = scene::NodeSet::create(target->root())->descendants(false, false)->where(
-			[=](scene::Node::Ptr node) -> bool
-		{
-			return node->hasComponent<PerspectiveCamera>();
-		});
+        auto nodeSet = scene::NodeSet::create(target->root())->descendants(false, false)->where(
+            [=](scene::Node::Ptr node) -> bool
+        {
+            return node->hasComponent<PerspectiveCamera>();
+        });
 
-		auto leftEyeNode = nodeSet->nodes()[0];
+        auto leftEyeNode = nodeSet->nodes()[0];
 
-		//leftEyeNode->addComponent(_depthMapRenderer0);		
+        //leftEyeNode->addComponent(_depthMapRenderer0);
 
-		if (nodeSet->nodes().size() > 1)
-		{
-			auto rightEyeNode = nodeSet->nodes()[1];
+        if (nodeSet->nodes().size() > 1)
+        {
+            auto rightEyeNode = nodeSet->nodes()[1];
 
-			_depthMapRenderer1 = Renderer::create(0xFFFFFFFF, nullptr, _effect, 11.f);
-			//_depthMapRenderer1->layoutMask(1u << 21);
+            _depthMapRenderer1 = Renderer::create(0xFFFFFFFF, nullptr, _effect, 11.f);
+            //_depthMapRenderer1->layoutMask(1u << 21);
 
-			//rightEyeNode->addComponent(_depthMapRenderer1);
-		}
+            //rightEyeNode->addComponent(_depthMapRenderer1);
+        }
 
-		
-	}
 
-	if (target->hasComponent<Surface>())
-	{
+    }
 
-		/*target->component<Surface>()->material()			
-			->set("mapResolution", float(MAP_RESOLUTION));*/
+    if (target->hasComponent<Surface>())
+    {
 
-		/*target->component<Surface>()->material()
-			->set("frontFaceNormalMap", _frontFaceNormalRenderTarget1)
-			->set("backFaceNormalMap", _backFaceNormalRenderTarget1)
-			->set("depthMap", _depthMapRenderTarget1)
-			->set("mapResolution", float(MAP_RESOLUTION));*/
+        /*target->component<Surface>()->material()
+            ->set("mapResolution", float(MAP_RESOLUTION));*/
 
-		//target->layouts(target->layouts() | 1u << 21);
-	}
+        /*target->component<Surface>()->material()
+            ->set("frontFaceNormalMap", _frontFaceNormalRenderTarget1)
+            ->set("backFaceNormalMap", _backFaceNormalRenderTarget1)
+            ->set("depthMap", _depthMapRenderTarget1)
+            ->set("mapResolution", float(MAP_RESOLUTION));*/
 
-	//targetAddedToScene(target, target, target->parent());
+        //target->layouts(target->layouts() | 1u << 21);
+    }
+
+    //targetAddedToScene(target, target, target->parent());
 }
 
 void
 Hologram::targetAddedHandler(AbstractComponent::Ptr cmp, NodePtr target)
 {
-	_addedToSceneSlot = target->added()->connect(std::bind(
-		&Hologram::initTarget,
-		std::static_pointer_cast<Hologram>(shared_from_this()),
-		cmp,
-		std::placeholders::_2,
-		std::placeholders::_3
-		));
+    _addedToSceneSlot = target->added()->connect(std::bind(
+        &Hologram::initTarget,
+        std::static_pointer_cast<Hologram>(shared_from_this()),
+        cmp,
+        std::placeholders::_2,
+        std::placeholders::_3
+        ));
 }
 
 void
 Hologram::targetAddedToScene(NodePtr node, NodePtr target, NodePtr ancestor)
 {
-	_addedToSceneSlot = nullptr;
+    _addedToSceneSlot = nullptr;
 
-	for (auto target : targets())
-		initTarget(shared_from_this(), target, ancestor);
+    for (auto target : targets())
+        initTarget(shared_from_this(), target, ancestor);
 
-	_frameBeginSlot = target->root()->component<SceneManager>()->frameBegin()->connect(
-		[&](std::shared_ptr<SceneManager> sceneManager, float time, float deltaTime)
-	{
-		for (auto target : targets())
-			target->component<Surface>()->material()->set("time", time);
-	});
+    _frameBeginSlot = target->root()->component<SceneManager>()->frameBegin()->connect(
+        [&](std::shared_ptr<SceneManager> sceneManager, float time, float deltaTime)
+    {
+        for (auto target : targets())
+            target->component<Surface>()->material()->set("time", time);
+    });
 }

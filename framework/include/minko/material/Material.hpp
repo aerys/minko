@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,36 +25,53 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace material
-	{
-		class Material :
-			public data::ArrayProvider
-		{
-		public:
-			typedef std::shared_ptr<Material>	Ptr;
+    namespace material
+    {
+        class Material :
+            public data::ArrayProvider
+        {
+        public:
+            typedef std::shared_ptr<Material>    Ptr;
 
-		public:
-			inline static
-			Ptr
-			create()
+        public:
+            inline static
+            Ptr
+            create()
+            {
+                return std::shared_ptr<Material>(new Material());
+            }
+
+            inline static
+            Ptr
+			create(const std::string& name)
 			{
-				return std::shared_ptr<Material>(new Material());
+				return std::shared_ptr<Material>(new Material(name));
 			}
 
 			inline static
 			Ptr
-			create(Ptr source)
+            create(Ptr source)
+            {
+                auto mat = create();
+
+                if (source)
+                    mat->copyFrom(source);
+
+                return mat;
+            }
+
+			template <typename T>
+			inline
+			Ptr
+			set(const std::string& propertyName, T value)
 			{
-				auto mat = create();
-
-				if (source)
-					mat->copyFrom(source);
-
-				return mat;
+				return std::static_pointer_cast<Material>(Provider::set(propertyName, value));
 			}
 
-		protected:
-			Material();
-		};
-	}
+        protected:
+            Material();
+
+			Material(const std::string& name);
+        };
+    }
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -26,11 +26,11 @@ using namespace minko;
 using namespace minko::file;
 
 void
-LuaScriptParser::parse(const std::string&				          filename,
+LuaScriptParser::parse(const std::string&                          filename,
                        const std::string&                 resolvedFilename,
                        std::shared_ptr<Options>           options,
-                       const std::vector<unsigned char>&	data,
-                       std::shared_ptr<AssetLibrary>	    assetLibrary)
+                       const std::vector<unsigned char>&    data,
+                       std::shared_ptr<AssetLibrary>        assetLibrary)
 {
     auto scriptStr = std::string((char*)&data[0], data.size());
     auto sepPos = resolvedFilename.find_last_of("/\\");
@@ -42,7 +42,7 @@ LuaScriptParser::parse(const std::string&				          filename,
     auto scriptCmp = component::LuaScript::create(scriptName, scriptStr);
 
     assetLibrary->script(filename, scriptCmp);
-	assetLibrary->blob(filename, data);
+    assetLibrary->blob(filename, data);
 
     _complete->execute(shared_from_this());
 }

@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -33,9 +33,9 @@ namespace minko
         public:
             typedef std::shared_ptr<Keyboard>   Ptr;
 
-            typedef enum 
+            typedef enum
             {
-                // IDs are the same than the official DOM codes: 
+                // IDs are the same than the official DOM codes:
                 // https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent
 
                 CANCEL = 3, // Cancel key.
@@ -52,7 +52,7 @@ namespace minko
                 CAPS_LOCK = 20, // Caps lock.
                 KANA = 21, // Linux support for this keycode was added in Gecko 4.0.
                 //HANGUL = 21, // Linux support for this keycode was added in Gecko 4.0.
-                EISU = 22, // "英数" key on Japanese Mac keyboard. 
+                EISU = 22, // "英数" key on Japanese Mac keyboard.
                 JUNJA = 23, // Linux support for this keycode was added in Gecko 4.0.
                 FINAL = 24, // Linux support for this keycode was added in Gecko 4.0.
                 //HANJA = 25, // Linux support for this keycode was added in Gecko 4.0.
@@ -87,13 +87,13 @@ namespace minko
                 _7 = 55, // "7" key in standard key location.
                 _8 = 56, // "8" key in standard key location.
                 _9 = 57, // "9" key in standard key location.
-                COLON = 58, // Colon (":") key. 
+                COLON = 58, // Colon (":") key.
                 SEMICOLON = 59, // Semicolon (";") key.
-                LESS_THAN = 60, // Less-than ("&lt;") key. 
+                LESS_THAN = 60, // Less-than ("&lt;") key.
                 EQUALS = 61, // Equals ("=") key.
-                GREATER_THAN = 62, // Greater-than ("&gt;") key. 
-                QUESTION_MARK = 63, // Question mark ("?") key. 
-                AT = 64, // Atmark ("@") key. 
+                GREATER_THAN = 62, // Greater-than ("&gt;") key.
+                QUESTION_MARK = 63, // Question mark ("?") key.
+                AT = 64, // Atmark ("@") key.
                 A = 65, // "A" key.
                 B = 66, // "B" key.
                 C = 67, // "C" key.
@@ -120,7 +120,7 @@ namespace minko
                 X = 88, // "X" key.
                 Y = 89, // "Y" key.
                 Z = 90, // "Z" key.
-                WIN = 91, // Windows logo key on Windows. Or Super or Hyper key on Linux. 
+                WIN = 91, // Windows logo key on Windows. Or Super or Hyper key on Linux.
                 CONTEXT_MENU = 93, // Opening context menu key.
                 SLEEP = 95, // Linux support for this keycode was added in Gecko 4.0.
                 NUMPAD0 = 96, // "0" on the numeric keypad.
@@ -165,31 +165,31 @@ namespace minko
                 F24 = 135, // F24 key.
                 NUM_LOCK = 144, // Num Lock key.
                 SCROLL_LOCK = 145, // Scroll Lock key.
-                WIN_OEM_FJ_JISHO = 146, // An OEM specific key on Windows. This was used for "Dictionary" key on Fujitsu OASYS. 
-                WIN_OEM_FJ_MASSHOU = 147, // An OEM specific key on Windows. This was used for "Unregister word" key on Fujitsu OASYS. 
-                WIN_OEM_FJ_TOUROKU = 148, // An OEM specific key on Windows. This was used for "Register word" key on Fujitsu OASYS. 
-                WIN_OEM_FJ_LOYA = 149, // An OEM specific key on Windows. This was used for "Left OYAYUBI" key on Fujitsu OASYS. 
-                WIN_OEM_FJ_ROYA = 150, // An OEM specific key on Windows. This was used for "Right OYAYUBI" key on Fujitsu OASYS. 
-                CIRCUMFLEX = 160, // Circumflex ("^") key. 
-                EXCLAMATION = 161, // Exclamation ("!") key. 
-                DOUBLE_QUOTE = 162, // Double quote (""") key. 
-                HASH = 163, // Hash ("#") key. 
-                DOLLAR = 164, // Dollar sign ("$") key. 
-                PERCENT = 165, // Percent ("%") key. 
-                AMPERSAND = 166, // Ampersand ("&amp;") key. 
-                UNDERSCORE = 167, // Underscore ("_") key. 
-                OPEN_PAREN = 168, // Open parenthesis ("(") key. 
-                CLOSE_PAREN = 169, // Close parenthesis (")") key. 
-                ASTERISK = 170, // Asterisk ("*") key. 
-                PLUS = 171, // Plus ("+") key. 
-                PIPE = 172, // Pipe ("|") key. 
-                HYPHEN_MINUS = 173, // Hyphen-US/docs/Minus ("-") key. 
-                OPEN_CURLY_BRACKET = 174, // Open curly bracket ("{") key. 
-                CLOSE_CURLY_BRACKET = 175, // Close curly bracket ("}") key. 
-                TILDE = 176, // Tilde ("~") key. 
-                VOLUME_MUTE = 181, // Audio mute key. 
-                VOLUME_DOWN = 182, // Audio volume down key 
-                VOLUME_UP = 183, // Audio volume up key 
+                WIN_OEM_FJ_JISHO = 146, // An OEM specific key on Windows. This was used for "Dictionary" key on Fujitsu OASYS.
+                WIN_OEM_FJ_MASSHOU = 147, // An OEM specific key on Windows. This was used for "Unregister word" key on Fujitsu OASYS.
+                WIN_OEM_FJ_TOUROKU = 148, // An OEM specific key on Windows. This was used for "Register word" key on Fujitsu OASYS.
+                WIN_OEM_FJ_LOYA = 149, // An OEM specific key on Windows. This was used for "Left OYAYUBI" key on Fujitsu OASYS.
+                WIN_OEM_FJ_ROYA = 150, // An OEM specific key on Windows. This was used for "Right OYAYUBI" key on Fujitsu OASYS.
+                CIRCUMFLEX = 160, // Circumflex ("^") key.
+                EXCLAMATION = 161, // Exclamation ("!") key.
+                DOUBLE_QUOTE = 162, // Double quote (""") key.
+                HASH = 163, // Hash ("#") key.
+                DOLLAR = 164, // Dollar sign ("$") key.
+                PERCENT = 165, // Percent ("%") key.
+                AMPERSAND = 166, // Ampersand ("&amp;") key.
+                UNDERSCORE = 167, // Underscore ("_") key.
+                OPEN_PAREN = 168, // Open parenthesis ("(") key.
+                CLOSE_PAREN = 169, // Close parenthesis (")") key.
+                ASTERISK = 170, // Asterisk ("*") key.
+                PLUS = 171, // Plus ("+") key.
+                PIPE = 172, // Pipe ("|") key.
+                HYPHEN_MINUS = 173, // Hyphen-US/docs/Minus ("-") key.
+                OPEN_CURLY_BRACKET = 174, // Open curly bracket ("{") key.
+                CLOSE_CURLY_BRACKET = 175, // Close curly bracket ("}") key.
+                TILDE = 176, // Tilde ("~") key.
+                VOLUME_MUTE = 181, // Audio mute key.
+                VOLUME_DOWN = 182, // Audio volume down key
+                VOLUME_UP = 183, // Audio volume up key
                 COMMA = 188, // Comma (",") key.
                 PERIOD = 190, // Period (".") key.
                 SLASH = 191, // Slash ("/") key.
@@ -199,7 +199,7 @@ namespace minko
                 CLOSE_BRACKET = 221, // Close square bracket ("]") key.
                 QUOTE = 222, // Quote (''') key.
                 META = 224, // Meta key on Linux, Command key on Mac.
-                ALTGR = 225, // AltGr key (Level 3 Shift key or Level 5 Shift key) on Linux. 
+                ALTGR = 225, // AltGr key (Level 3 Shift key or Level 5 Shift key) on Linux.
                 WIN_ICO_HELP = 227, // An OEM specific key on Windows. This is (was?) used for Olivetti ICO keyboard.
                 WIN_ICO_00 = 228, // An OEM specific key on Windows. This is (was?) used for Olivetti ICO keyboard.
                 WIN_ICO_CLEAR = 230, // An OEM specific key on Windows. This is (was?) used for Olivetti ICO keyboard.
@@ -216,14 +216,14 @@ namespace minko
                 WIN_OEM_AUTO = 243, // An OEM specific key on Windows. This was used for Nokia/Ericsson's device.
                 WIN_OEM_ENLW = 244, // An OEM specific key on Windows. This was used for Nokia/Ericsson's device.
                 WIN_OEM_BACKTAB = 245, // An OEM specific key on Windows. This was used for Nokia/Ericsson's device.
-                ATTN = 246, // Attn (Attension) key of IBM midrange computers, e.g., AS/400. 
-                CRSEL = 247, // CrSel (Cursor Selection) key of IBM 3270 keyboard layout. 
-                EXSEL = 248, // ExSel (Extend Selection) key of IBM 3270 keyboard layout. 
-                EREOF = 249, // Erase EOF key of IBM 3270 keyboard layout. 
-                PLAY = 250, // Play key of IBM 3270 keyboard layout. 
-                ZOOM = 251, // Zoom key. 
-                PA1 = 253, // PA1 key of IBM 3270 keyboard layout. 
-                WIN_OEM_CLEAR = 254, // Clear key, but we're not sure the meaning difference from DOM_VK_CLEAR. 
+                ATTN = 246, // Attn (Attension) key of IBM midrange computers, e.g., AS/400.
+                CRSEL = 247, // CrSel (Cursor Selection) key of IBM 3270 keyboard layout.
+                EXSEL = 248, // ExSel (Extend Selection) key of IBM 3270 keyboard layout.
+                EREOF = 249, // Erase EOF key of IBM 3270 keyboard layout.
+                PLAY = 250, // Play key of IBM 3270 keyboard layout.
+                ZOOM = 251, // Zoom key.
+                PA1 = 253, // PA1 key of IBM 3270 keyboard layout.
+                WIN_OEM_CLEAR = 254, // Clear key, but we're not sure the meaning difference from DOM_VK_CLEAR.
 
                 // Additional keys (specific to Minko and for native support of some keys)
                 CONTROL_RIGHT = 300, // Right control key
@@ -675,7 +675,7 @@ namespace minko
 
         public:
             static const uint NUM_KEYS = 350;
-        
+
         private:
             typedef std::array<std::string, NUM_KEYS>           KeyToNameArray;
 

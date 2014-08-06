@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,60 +23,60 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace render
-	{
-		class AbstractResource
-		{
-		public:
-			typedef std::shared_ptr<AbstractResource> Ptr;
+    namespace render
+    {
+        class AbstractResource
+        {
+        public:
+            typedef std::shared_ptr<AbstractResource> Ptr;
 
-		protected:
-			std::shared_ptr<render::AbstractContext>	_context;
-			int											_id;
+        protected:
+            std::shared_ptr<render::AbstractContext>    _context;
+            int                                            _id;
 
-		public:
-			inline
-			std::shared_ptr<render::AbstractContext>
-			context()
-			{
-				return _context;
-			}
+        public:
+            inline
+            std::shared_ptr<render::AbstractContext>
+            context()
+            {
+                return _context;
+            }
 
-			inline
-			const int
-			id()
-			{
-				if (_id == -1)
-					throw;
+            inline
+            const int
+            id()
+            {
+                if (_id == -1)
+                    throw;
 
-				return _id;
-			}
+                return _id;
+            }
 
-			inline
-			const bool
-			isReady()
-			{
-				return _id != -1;
-			}
+            inline
+            const bool
+            isReady()
+            {
+                return _id != -1;
+            }
 
-			virtual
-			void
-			dispose() = 0;
+            virtual
+            void
+            dispose() = 0;
 
-			virtual
-			void
-			upload() = 0;
+            virtual
+            void
+            upload() = 0;
 
-		protected:
-			AbstractResource(std::shared_ptr<render::AbstractContext> context) :
-				_context(context),
-				_id(-1)
-			{
-			}
+        protected:
+            AbstractResource(std::shared_ptr<render::AbstractContext> context) :
+                _context(context),
+                _id(-1)
+            {
+            }
 
-			~AbstractResource()
-			{
-			}
-		};
-	}
+            ~AbstractResource()
+            {
+            }
+        };
+    }
 }

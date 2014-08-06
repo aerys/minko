@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,34 +23,34 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace render
-	{
-		enum class StencilOperation
-		{
-			KEEP,
-			ZERO,
-			REPLACE,
-			INCR,
-			INCR_WRAP,
-			DECR,
-			DECR_WRAP,
-			INVERT,
-			UNSET
-		};
-	}
+    namespace render
+    {
+        enum class StencilOperation
+        {
+            KEEP,
+            ZERO,
+            REPLACE,
+            INCR,
+            INCR_WRAP,
+            DECR,
+            DECR_WRAP,
+            INVERT,
+            UNSET
+        };
+    }
 }
 
 #ifndef _WIN32
 namespace std
 {
-	// Hash function to allow StencilOperation to be an index in a map.
-	template <>
-	struct hash<minko::render::StencilOperation>
-	{
-		size_t operator()(const minko::render::StencilOperation& v) const
-		{
-			return hash<unsigned int>()(static_cast<unsigned int>(v));
-		}
-	};
+    // Hash function to allow StencilOperation to be an index in a map.
+    template <>
+    struct hash<minko::render::StencilOperation>
+    {
+        size_t operator()(const minko::render::StencilOperation& v) const
+        {
+            return hash<unsigned int>()(static_cast<unsigned int>(v));
+        }
+    };
 }
 #endif

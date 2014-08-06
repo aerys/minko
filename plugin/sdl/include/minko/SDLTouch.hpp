@@ -30,45 +30,45 @@ namespace minko
     public input::Touch
     {
         friend class Canvas;
-        
+
     public :
         static
         std::shared_ptr<SDLTouch>
         create(std::shared_ptr<Canvas> canvas);
-        
+
         void
         fingerId(int fingerId)
         {
             _fingerId = fingerId;
         }
-        
+
         void
         x(float x)
         {
             _x = float(x);
         }
-        
+
         void
         y(float y)
         {
             _y = float(y);
         }
-        
+
         void
         dx(float dx)
         {
             _dx = float(dx);
         }
-        
+
         void
         dy(float dy)
         {
             _dy = float(dy);
         }
-        
+
     private:
         SDLTouch(std::shared_ptr<Canvas> canvas);
-        
+
     public:
         static const float SWIPE_PRECISION;
     };

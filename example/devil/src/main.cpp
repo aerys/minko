@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -35,92 +35,94 @@ const std::string TEXTURE_DDS = "texture/bricks.dds";
 
 std::vector<minko::render::Texture::Ptr> textures;
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Example - DevIL", 800, 600);
+    auto canvas = Canvas::create("Minko Example - DevIL", 800, 600);
 
-	auto sceneManager = SceneManager::create(canvas->context());
+    auto sceneManager = SceneManager::create(canvas->context());
 
-	// setup assets
-	sceneManager->assets()->loader()->options()->generateMipmaps(true);
-	sceneManager->assets()->loader()
-		->queue(TEXTURE_JPG)
-		->queue(TEXTURE_PNG)
-		->queue(TEXTURE_TGA)
-		->queue(TEXTURE_TIF)
-		->queue(TEXTURE_BMP)
-		->queue(TEXTURE_PSD)
-		->queue(TEXTURE_DDS)
-		->queue("effect/Basic.effect");
+    // setup assets
+    sceneManager->assets()->loader()->options()->generateMipmaps(true);
+    sceneManager->assets()->loader()
+        ->queue(TEXTURE_JPG)
+        ->queue(TEXTURE_PNG)
+        ->queue(TEXTURE_TGA)
+        ->queue(TEXTURE_TIF)
+        ->queue(TEXTURE_BMP)
+        ->queue(TEXTURE_PSD)
+        ->queue(TEXTURE_DDS)
+        ->queue("effect/Basic.effect");
 
-	std::vector<std::string> extensions = file::DevILParser::getSupportedFileExensions();
+    std::vector<std::string> extensions = file::DevILParser::getSupportedFileExensions();
 
-	for (uint i = 0; i < extensions.size(); i++)
-	{
-		std::string extension = extensions[i];
-		sceneManager->assets()->loader()->options()->registerParser<file::DevILParser>(extension);
-	}
+    for (uint i = 0; i < extensions.size(); i++)
+    {
+        std::string extension = extensions[i];
+        sceneManager->assets()->loader()->options()->registerParser<file::DevILParser>(extension);
+    }
 
-	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
+    sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
 
-	auto root = scene::Node::create("root")
-		->addComponent(sceneManager);
+    auto root = scene::Node::create("root")
+        ->addComponent(sceneManager);
 
-	auto mesh = scene::Node::create("mesh")
-		->addComponent(Transform::create());
-	root->addChild(mesh);
+    auto mesh = scene::Node::create("mesh")
+        ->addComponent(Transform::create());
+    root->addChild(mesh);
 
-	auto camera = scene::Node::create("camera")
-		->addComponent(Renderer::create(0x7f7f7fff))
-		->addComponent(Transform::create(
-		Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
-		))
-		->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
-	root->addChild(camera);
+    auto camera = scene::Node::create("camera")
+        ->addComponent(Renderer::create(0x7f7f7fff))
+        ->addComponent(Transform::create(
+            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+        ))
+        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
 
-	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
-	{
-		textures.push_back(sceneManager->assets()->texture(TEXTURE_JPG));
-		textures.push_back(sceneManager->assets()->texture(TEXTURE_PNG));
-		textures.push_back(sceneManager->assets()->texture(TEXTURE_TGA));
-		textures.push_back(sceneManager->assets()->texture(TEXTURE_TIF));
-		textures.push_back(sceneManager->assets()->texture(TEXTURE_BMP));
-		textures.push_back(sceneManager->assets()->texture(TEXTURE_PSD));
-		textures.push_back(sceneManager->assets()->texture(TEXTURE_DDS));
+    root->addChild(camera);
 
-		mesh->addComponent(Surface::create(
-				geometry::CubeGeometry::create(sceneManager->assets()->context()),
-				material::BasicMaterial::create()->diffuseMap(textures[0]),
-				sceneManager->assets()->effect("effect/Basic.effect")
-			));
-	});
+    auto _ = sceneManager->assets()->loader()->complete()->connect([ = ](file::Loader::Ptr loader)
+    {
+        textures.push_back(sceneManager->assets()->texture(TEXTURE_JPG));
+        textures.push_back(sceneManager->assets()->texture(TEXTURE_PNG));
+        textures.push_back(sceneManager->assets()->texture(TEXTURE_TGA));
+        textures.push_back(sceneManager->assets()->texture(TEXTURE_TIF));
+        textures.push_back(sceneManager->assets()->texture(TEXTURE_BMP));
+        textures.push_back(sceneManager->assets()->texture(TEXTURE_PSD));
+        textures.push_back(sceneManager->assets()->texture(TEXTURE_DDS));
 
-	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
-	{
-		camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
-	});
+        mesh->addComponent(Surface::create(
+            geometry::CubeGeometry::create(sceneManager->assets()->context()),
+            material::BasicMaterial::create()->diffuseMap(textures[0]),
+            sceneManager->assets()->effect("effect/Basic.effect")
+        ));
+    });
 
-	float lastChangeTime = 0;
-	int currentTextureId = 0;
+    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+    {
+        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+    });
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
-	{
-		mesh->component<Transform>()->matrix()->appendRotationY(.01f);
+    float lastChangeTime = 0;
+    int currentTextureId = 0;
 
-		sceneManager->nextFrame(time, deltaTime);
+    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    {
+        mesh->component<Transform>()->matrix()->appendRotationY(.01f);
 
-		if (lastChangeTime + 1000 < time)
-		{
-			lastChangeTime = time;
+        sceneManager->nextFrame(time, deltaTime);
 
-			mesh->component<Surface>()->material()->set("diffuseMap", textures[++currentTextureId % textures.size()]);
-		}
-	});
+        if (lastChangeTime + 1000 < time)
+        {
+            lastChangeTime = time;
 
-	sceneManager->assets()->loader()->load();
-	canvas->run();
+            mesh->component<Surface>()->material()->set("diffuseMap", textures[++currentTextureId % textures.size()]);
+        }
+    });
 
-	return 0;
+    sceneManager->assets()->loader()->load();
+    canvas->run();
+
+    return 0;
 }
 
 

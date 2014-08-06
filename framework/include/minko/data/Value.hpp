@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -28,46 +28,46 @@ namespace
 
 namespace minko
 {
-	namespace data
-	{
-		class Value
-		{
-		public:
-			typedef std::shared_ptr<Value> Ptr;
+    namespace data
+    {
+        class Value
+        {
+        public:
+            typedef std::shared_ptr<Value> Ptr;
 
-		protected:
-			std::shared_ptr<Signal<Ptr>>	_changed;
+        protected:
+            std::shared_ptr<Signal<Ptr>>    _changed;
 
-		public:
-			inline
-			std::shared_ptr<Signal<Ptr>>
-			changed()
-			{
-				return _changed;
-			}
+        public:
+            inline
+            std::shared_ptr<Signal<Ptr>>
+            changed()
+            {
+                return _changed;
+            }
 
-			virtual
-			~Value()
-			{
-			}
+            virtual
+            ~Value()
+            {
+            }
 
-			virtual
-			bool
-			operator==(const Value& x) const
-			{
-				return false;
-			}
+            virtual
+            bool
+            operator==(const Value& x) const
+            {
+                return false;
+            }
 
-		protected:
-			Value() :
-				_changed(Signal<Ptr>::create())
-			{
-			}
+        protected:
+            Value() :
+                _changed(Signal<Ptr>::create())
+            {
+            }
 
-			Value(std::shared_ptr<Signal<Ptr>> changed) :
-				_changed(changed)
-			{
-			}
-		};
-	}
+            Value(std::shared_ptr<Signal<Ptr>> changed) :
+                _changed(changed)
+            {
+            }
+        };
+    }
 }

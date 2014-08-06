@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -32,81 +32,77 @@ using namespace minko::math;
 
 const std::string TEXTURE_FILENAME = "http://static.aerys.in:8080/minko3/http/box.png";
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Example - HTTP", 800, 600);
+    auto canvas = Canvas::create("Minko Example - HTTP");
 
 #if !defined(EMSCRIPTEN) // FIXME: Automate this in the HTTPLoader
-	canvas->registerWorker<net::HTTPWorker>("http");
+    canvas->registerWorker<net::HTTPWorker>("http");
 #endif
 
-	auto sceneManager = SceneManager::create(canvas->context());
-	auto defaultOptions = sceneManager->assets()->loader()->options();
+    auto sceneManager = SceneManager::create(canvas->context());
+    auto defaultOptions = sceneManager->assets()->loader()->options();
 
-	defaultOptions
-		->resizeSmoothly(true)
-		->generateMipmaps(true)
-		->loadAsynchronously(true);
+    defaultOptions
+        ->resizeSmoothly(true)
+        ->generateMipmaps(true)
+        ->loadAsynchronously(true);
 
-	sceneManager->assets()->loader()->queue("effect/Basic.effect")->load();
+    sceneManager->assets()->loader()->queue("effect/Basic.effect")->load();
 
-	// setup assets
-	defaultOptions->loadAsynchronously(true)
-		->registerProtocol<net::HTTPProtocol>("http")
-		->registerProtocol<net::HTTPProtocol>("https")
-	    ->registerParser<file::PNGParser>("png");
+    // setup assets
+    defaultOptions->loadAsynchronously(true)
+        ->registerProtocol<net::HTTPProtocol>("http")
+        ->registerProtocol<net::HTTPProtocol>("https")
+        ->registerParser<file::PNGParser>("png");
 
-	sceneManager->assets()->loader()->queue(TEXTURE_FILENAME);
+    sceneManager->assets()->loader()->queue(TEXTURE_FILENAME);
 
-	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
+    sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
 
-	auto root = scene::Node::create("root")
-		->addComponent(sceneManager);
+    auto root = scene::Node::create("root")
+        ->addComponent(sceneManager);
 
-	auto camera = scene::Node::create("camera")
-		->addComponent(Renderer::create(0x7f7f7fff))
-		->addComponent(Transform::create(
-			Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
-		))
-		->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
+    auto camera = scene::Node::create("camera")
+        ->addComponent(Renderer::create(0x7f7f7fff))
+        ->addComponent(Transform::create(
+            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+        ))
+        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
 
-	root->addChild(camera);
+    root->addChild(camera);
 
-	auto mesh = scene::Node::create("mesh")
-		->addComponent(Transform::create());
+    auto mesh = scene::Node::create("mesh")
+        ->addComponent(Transform::create());
 
-	root->addChild(mesh);
+    root->addChild(mesh);
 
-	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
-	{
-		camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
-	});
+    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+    {
+        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+    });
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
-	{
-		mesh->component<Transform>()->matrix()->appendRotationY(.01f);
+    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    {
+        mesh->component<Transform>()->matrix()->appendRotationY(.01f);
 
-		sceneManager->nextFrame(time, deltaTime);
-	});
+        sceneManager->nextFrame(time, deltaTime);
+    });
 
-	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
-	{
-		std::cout << "main(): asset complete" << std::endl;
+    auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
+    {
+        std::cout << "main(): asset complete" << std::endl;
 
-		mesh->addComponent(Surface::create(
-				sceneManager->assets()->geometry("cube"),
-				material::BasicMaterial::create()->diffuseMap(sceneManager->assets()->texture(TEXTURE_FILENAME)),
-				sceneManager->assets()->effect("effect/Basic.effect")
-			));
-	});
+        mesh->addComponent(Surface::create(
+            sceneManager->assets()->geometry("cube"),
+            material::BasicMaterial::create()->diffuseMap(sceneManager->assets()->texture(TEXTURE_FILENAME)),
+            sceneManager->assets()->effect("effect/Basic.effect")
+        ));
+    });
 
-	sceneManager->assets()->loader()->load();
-	std::cout << "main(): after load" << std::endl;
-
-	canvas->run();
-	std::cout << "main(): after run" << std::endl;
-
-	return 0;
+    sceneManager->assets()->loader()->load();
+    canvas->run();
 }
 
 

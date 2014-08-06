@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,36 +23,36 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	template <typename T>
-	class Convertible
-	{
-	public:
-		typedef std::shared_ptr<Convertible> Ptr;
+    template <typename T>
+    class Convertible
+    {
+    public:
+        typedef std::shared_ptr<Convertible> Ptr;
 
-	public:
-		
-		bool
-		equal(std::shared_ptr<T> convertible)
-		{
-			return false;
-		}
-	};
+    public:
 
-	template <typename T>
-	inline
-	typename std::enable_if<std::is_convertible<T, Convertible<T>>::value, bool>::type
-	operator==(std::shared_ptr<T> &first, 
-	   		   std::shared_ptr<T> &other)
-	{
-		return first->equals(other);
-	}
+        bool
+        equal(std::shared_ptr<T> convertible)
+        {
+            return false;
+        }
+    };
 
-	template <typename T>
-	inline
-	typename std::enable_if<std::is_convertible<T, Convertible<T>>::value, bool>::type
-	operator!=(std::shared_ptr<T> &first, 
-	   		   std::shared_ptr<T> &other)
-	{
-		return !(first->equals(other));
-	}
+    template <typename T>
+    inline
+    typename std::enable_if<std::is_convertible<T, Convertible<T>>::value, bool>::type
+    operator==(std::shared_ptr<T> &first,
+                  std::shared_ptr<T> &other)
+    {
+        return first->equals(other);
+    }
+
+    template <typename T>
+    inline
+    typename std::enable_if<std::is_convertible<T, Convertible<T>>::value, bool>::type
+    operator!=(std::shared_ptr<T> &first,
+                  std::shared_ptr<T> &other)
+    {
+        return !(first->equals(other));
+    }
 }

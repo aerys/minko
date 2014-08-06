@@ -29,44 +29,44 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 /*
 * Below are defined a couple of methods that are used to convert basic objects from the
-* Leap API to their Minko counterparts (and vice versa). 
+* Leap API to their Minko counterparts (and vice versa).
 *
 * This file is not intended to be accessible to
 * users and is meant to be included in the *.cpp files of the Minko Leap plugin ONLY.
 */
 namespace minko
 {
-	namespace input
-	{
-		namespace leap
-		{
-			static
-			minko::math::Vector3::Ptr
-			convert(const Leap::Vector&, minko::math::Vector3::Ptr output = nullptr);
+    namespace input
+    {
+        namespace leap
+        {
+            static
+            minko::math::Vector3::Ptr
+            convert(const Leap::Vector&, minko::math::Vector3::Ptr output = nullptr);
 
-			static
-			minko::math::Matrix4x4::Ptr
-			convert(const Leap::Matrix&, minko::math::Matrix4x4::Ptr output = nullptr);
+            static
+            minko::math::Matrix4x4::Ptr
+            convert(const Leap::Matrix&, minko::math::Matrix4x4::Ptr output = nullptr);
 
-			static 
-			Leap::Gesture::State 
-			convert(Gesture::State);
+            static
+            Leap::Gesture::State
+            convert(Gesture::State);
 
-			static 
-			Gesture::Type 
-			convert(Leap::Gesture::Type);
+            static
+            Gesture::Type
+            convert(Leap::Gesture::Type);
 
-			static 
-			Gesture::State 
-			convert(Leap::Gesture::State);
+            static
+            Gesture::State
+            convert(Leap::Gesture::State);
 
-			static 
-			Leap::Gesture::Type 
-			convert(Gesture::Type);
+            static
+            Leap::Gesture::Type
+            convert(Gesture::Type);
 
-			static
-			Pointable::Zone
-			convert(Leap::Pointable::Zone);
+            static
+            Pointable::Zone
+            convert(Leap::Pointable::Zone);
 
             static
             Finger::Type
@@ -79,130 +79,130 @@ namespace minko
             static
             Leap::Bone::Type
             convert(Finger::Bone::Type);
-		}
-	}
+        }
+    }
 }
 
 minko::math::Vector3::Ptr
-minko::input::leap::convert(const Leap::Vector& value, 
-							minko::math::Vector3::Ptr output)
+minko::input::leap::convert(const Leap::Vector& value,
+                            minko::math::Vector3::Ptr output)
 {
-	if (output == nullptr)
-		output = minko::math::Vector3::create(value.x, value.y, value.z);
-	else
-		output->setTo(value.x, value.y, value.z);
+    if (output == nullptr)
+        output = minko::math::Vector3::create(value.x, value.y, value.z);
+    else
+        output->setTo(value.x, value.y, value.z);
 
-	return output;
+    return output;
 }
 
 minko::math::Matrix4x4::Ptr
-minko::input::leap::convert(const Leap::Matrix& value, 
-							minko::math::Matrix4x4::Ptr output)
+minko::input::leap::convert(const Leap::Matrix& value,
+                            minko::math::Matrix4x4::Ptr output)
 {
-	if (output == nullptr)
-		output = minko::math::Matrix4x4::create();
+    if (output == nullptr)
+        output = minko::math::Matrix4x4::create();
 
-	value.toArray4x4(&(output->data()[0]));
+    value.toArray4x4(&(output->data()[0]));
 
-	return output->transpose();
+    return output->transpose();
 }
 
-Leap::Gesture::State 
+Leap::Gesture::State
 minko::input::leap::convert(minko::input::leap::Gesture::State value)
 {
-	switch (value)
-	{
-	case minko::input::leap::Gesture::State::Start:
-		return Leap::Gesture::State::STATE_START;
-		
-	case minko::input::leap::Gesture::State::Update:
-		return Leap::Gesture::State::STATE_UPDATE;
-		
-	case minko::input::leap::Gesture::State::Stop:
-		return Leap::Gesture::State::STATE_STOP;
+    switch (value)
+    {
+    case minko::input::leap::Gesture::State::Start:
+        return Leap::Gesture::State::STATE_START;
 
-	default:
-		return Leap::Gesture::State::STATE_INVALID;
-	}
+    case minko::input::leap::Gesture::State::Update:
+        return Leap::Gesture::State::STATE_UPDATE;
+
+    case minko::input::leap::Gesture::State::Stop:
+        return Leap::Gesture::State::STATE_STOP;
+
+    default:
+        return Leap::Gesture::State::STATE_INVALID;
+    }
 }
 
-Leap::Gesture::Type 
+Leap::Gesture::Type
 minko::input::leap::convert(minko::input::leap::Gesture::Type value)
 {
-	switch (value)
-	{
-	case minko::input::leap::Gesture::Type::Circle:
-		return Leap::Gesture::Type::TYPE_CIRCLE;
-		
-	case minko::input::leap::Gesture::Type::KeyTap:
-		return Leap::Gesture::Type::TYPE_KEY_TAP;
-		
-	case minko::input::leap::Gesture::Type::ScreenTap:
-		return Leap::Gesture::Type::TYPE_SCREEN_TAP;
+    switch (value)
+    {
+    case minko::input::leap::Gesture::Type::Circle:
+        return Leap::Gesture::Type::TYPE_CIRCLE;
 
-	case minko::input::leap::Gesture::Type::Swipe:
-		return Leap::Gesture::Type::TYPE_SWIPE;
+    case minko::input::leap::Gesture::Type::KeyTap:
+        return Leap::Gesture::Type::TYPE_KEY_TAP;
 
-	default:
-		return Leap::Gesture::Type::TYPE_INVALID;
-	}
+    case minko::input::leap::Gesture::Type::ScreenTap:
+        return Leap::Gesture::Type::TYPE_SCREEN_TAP;
+
+    case minko::input::leap::Gesture::Type::Swipe:
+        return Leap::Gesture::Type::TYPE_SWIPE;
+
+    default:
+        return Leap::Gesture::Type::TYPE_INVALID;
+    }
 }
 
-minko::input::leap::Gesture::State 
+minko::input::leap::Gesture::State
 minko::input::leap::convert(Leap::Gesture::State value)
 {
-	switch (value)
-	{
-	case Leap::Gesture::State::STATE_START:
-		return minko::input::leap::Gesture::State::Start;
-		
-	case Leap::Gesture::State::STATE_UPDATE:
-		return minko::input::leap::Gesture::State::Update;
-		
-	case Leap::Gesture::State::STATE_STOP:
-		return minko::input::leap::Gesture::State::Stop;
+    switch (value)
+    {
+    case Leap::Gesture::State::STATE_START:
+        return minko::input::leap::Gesture::State::Start;
 
-	default:
-		return minko::input::leap::Gesture::State::Invalid;
-	}
+    case Leap::Gesture::State::STATE_UPDATE:
+        return minko::input::leap::Gesture::State::Update;
+
+    case Leap::Gesture::State::STATE_STOP:
+        return minko::input::leap::Gesture::State::Stop;
+
+    default:
+        return minko::input::leap::Gesture::State::Invalid;
+    }
 }
 
-minko::input::leap::Gesture::Type 
+minko::input::leap::Gesture::Type
 minko::input::leap::convert(Leap::Gesture::Type value)
 {
-	switch (value)
-	{
-	case Leap::Gesture::Type::TYPE_SWIPE:
-		return minko::input::leap::Gesture::Type::Swipe;
-		
-	case Leap::Gesture::Type::TYPE_CIRCLE:
-		return minko::input::leap::Gesture::Type::Circle;
-		
-	case Leap::Gesture::Type::TYPE_SCREEN_TAP:
-		return minko::input::leap::Gesture::Type::ScreenTap;
+    switch (value)
+    {
+    case Leap::Gesture::Type::TYPE_SWIPE:
+        return minko::input::leap::Gesture::Type::Swipe;
 
-	case Leap::Gesture::Type::TYPE_KEY_TAP:
-		return minko::input::leap::Gesture::Type::KeyTap;
+    case Leap::Gesture::Type::TYPE_CIRCLE:
+        return minko::input::leap::Gesture::Type::Circle;
 
-	default:
-		return minko::input::leap::Gesture::Type::Invalid;
-	}
+    case Leap::Gesture::Type::TYPE_SCREEN_TAP:
+        return minko::input::leap::Gesture::Type::ScreenTap;
+
+    case Leap::Gesture::Type::TYPE_KEY_TAP:
+        return minko::input::leap::Gesture::Type::KeyTap;
+
+    default:
+        return minko::input::leap::Gesture::Type::Invalid;
+    }
 }
 
 minko::input::leap::Pointable::Zone
 minko::input::leap::convert(Leap::Pointable::Zone value)
 {
-	switch (value)
-	{
-	case Leap::Pointable::ZONE_HOVERING:
-		return minko::input::leap::Pointable::Zone::Hovering;
-		
-	case Leap::Pointable::ZONE_TOUCHING:
-		return minko::input::leap::Pointable::Zone::Touching;
+    switch (value)
+    {
+    case Leap::Pointable::ZONE_HOVERING:
+        return minko::input::leap::Pointable::Zone::Hovering;
 
-	default:
-		return minko::input::leap::Pointable::Zone::None;
-	}
+    case Leap::Pointable::ZONE_TOUCHING:
+        return minko::input::leap::Pointable::Zone::Touching;
+
+    default:
+        return minko::input::leap::Pointable::Zone::None;
+    }
 }
 
 minko::input::leap::Finger::Type

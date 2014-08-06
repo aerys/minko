@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -34,9 +34,9 @@ using namespace minko;
 using namespace minko::component;
 
 MouseManager::MouseManager() :
-	_ray(math::Ray::create()),
-	_previousRayOrigin(math::Vector3::create()),
-	_lastItemUnderCursor(nullptr)
+    _ray(math::Ray::create()),
+    _previousRayOrigin(math::Vector3::create()),
+    _lastItemUnderCursor(nullptr)
 {
 
 }
@@ -44,90 +44,90 @@ MouseManager::MouseManager() :
 void
 MouseManager::initialize()
 {
-	if (_mouse)
-	{
-		_targetAddedSlot = targetAdded()->connect([&](AbstractComponent::Ptr cmp, scene::Node::Ptr target)
-		{
-			_mouseMoveSlot = _mouse->move()->connect([&](MousePtr m, int dx, int dy)
-			{
-				// FIXME: should unproject from properties stored in data()
-				auto cam = targets()[0]->component<PerspectiveCamera>();
+    if (_mouse)
+    {
+        _targetAddedSlot = targetAdded()->connect([&](AbstractComponent::Ptr cmp, scene::Node::Ptr target)
+        {
+            _mouseMoveSlot = _mouse->move()->connect([&](MousePtr m, int dx, int dy)
+            {
+                // FIXME: should unproject from properties stored in data()
+                auto cam = targets()[0]->component<PerspectiveCamera>();
 
-				if (cam)
-					pick(cam->unproject(m->normalizedX(), m->normalizedY(), _ray));
-			});
-			_mouseLeftButtonDownSlot = _mouse->leftButtonDown()->connect([&](MousePtr m)
-			{
-				// FIXME
-			});
+                if (cam)
+                    pick(cam->unproject(m->normalizedX(), m->normalizedY(), _ray));
+            });
+            _mouseLeftButtonDownSlot = _mouse->leftButtonDown()->connect([&](MousePtr m)
+            {
+                // FIXME
+            });
 
-		});
+        });
 
-		_targetRemovedSlot = targetRemoved()->connect([&](AbstractComponent::Ptr cmp, scene::Node::Ptr node)
-		{
-			_mouseMoveSlot = nullptr;
-			_mouseLeftButtonDownSlot = nullptr;
-		});
-	}
+        _targetRemovedSlot = targetRemoved()->connect([&](AbstractComponent::Ptr cmp, scene::Node::Ptr node)
+        {
+            _mouseMoveSlot = nullptr;
+            _mouseLeftButtonDownSlot = nullptr;
+        });
+    }
 }
 
 void
 MouseManager::pick(std::shared_ptr<math::Ray> ray)
 {
-	MouseManager::HitList hits;
+    MouseManager::HitList hits;
 
-	auto target = targets()[0];
-	auto descendants = scene::NodeSet::create(target->root())
-		->descendants(true)
-		->where([&](scene::Node::Ptr node) { return node->hasComponent<BoundingBox>(); });
+    auto target = targets()[0];
+    auto descendants = scene::NodeSet::create(target->root())
+        ->descendants(true)
+        ->where([&](scene::Node::Ptr node) { return node->hasComponent<BoundingBox>(); });
 
-	std::unordered_map<scene::Node::Ptr, float> distance;
-	math::Ray::Ptr localRay = math::Ray::create();
+    std::unordered_map<scene::Node::Ptr, float> distance;
+    math::Ray::Ptr localRay = math::Ray::create();
 
-	for (auto& descendant : descendants->nodes())
-	{
-		auto distance = 0.f;
+    for (auto& descendant : descendants->nodes())
+    {
+        auto distance = 0.f;
 
-		if (descendant->component<BoundingBox>()->box()->cast(ray, distance))
-		{
-			hits.push_back(Hit(descendant, distance));
+        if (descendant->component<BoundingBox>()->box()->cast(ray, distance))
+        {
+            hits.push_back(Hit(descendant, distance));
 
-			/*
-			auto transform = descendant->component<Transform>();
-			uint triangleId = 0;
+            /*
+            auto transform = descendant->component<Transform>();
+            uint triangleId = 0;
 
-			if (transform)
-			{
-				transform->worldToModel(ray->origin(), localRay->origin());
-				transform->deltaWorldToModel(ray->direction(), localRay->direction());
-			}
+            if (transform)
+            {
+                transform->worldToModel(ray->origin(), localRay->origin());
+                transform->deltaWorldToModel(ray->direction(), localRay->direction());
+            }
 
-			for (auto& surface : descendant->components<Surface>())
-			{
-				if (surface->geometry()->cast(transform ? localRay : ray, distance, triangleId))
-				{
-					hits.push_back(Hit(descendant, distance));
-				}
-			}
-			*/
-		}
-	}
+            for (auto& surface : descendant->components<Surface>())
+            {
+                if (surface->geometry()->cast(transform ? localRay : ray, distance, triangleId))
+                {
+                    hits.push_back(Hit(descendant, distance));
+                }
+            }
+            */
+        }
+    }
 
-	hits.sort([&](Hit& a, Hit& b) { return a.second < b.second; });
+    hits.sort([&](Hit& a, Hit& b) { return a.second < b.second; });
 
-	if (!hits.empty())
-	{
-		auto mp = hits.front().first->component<MousePicking>();
+    if (!hits.empty())
+    {
+        auto mp = hits.front().first->component<MousePicking>();
 
-		if (!_previousRayOrigin->equals(ray->origin()))
-		{
-			//_move->execute(shared_from_this(), hits, ray);
-			if (mp)
-				mp->move()->execute(mp, hits, ray);
+        if (!_previousRayOrigin->equals(ray->origin()))
+        {
+            //_move->execute(shared_from_this(), hits, ray);
+            if (mp)
+                mp->move()->execute(mp, hits, ray);
 
-			_previousRayOrigin->copyFrom(ray->origin());
-		}
+            _previousRayOrigin->copyFrom(ray->origin());
+        }
 
-		//_over->execute(shared_from_this(), hits, ray);
-	}
+        //_over->execute(shared_from_this(), hits, ray);
+    }
 }

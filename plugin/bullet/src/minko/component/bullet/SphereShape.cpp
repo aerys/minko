@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -30,45 +30,45 @@ using namespace minko::geometry;
 LineGeometry::Ptr
 bullet::SphereShape::getGeometry(render::AbstractContext::Ptr context) const
 {
-	static const unsigned int	numSteps	= 36;
-	static const float			angStep		= 2.0f * float(M_PI) / float(numSteps); 
-	static const float			cAngStep	= cosf(angStep);
-	static const float			sAngStep	= sinf(angStep);
+    static const unsigned int    numSteps    = 36;
+    static const float            angStep        = 2.0f * float(M_PI) / float(numSteps);
+    static const float            cAngStep    = cosf(angStep);
+    static const float            sAngStep    = sinf(angStep);
 
-	auto lines = LineGeometry::create(context);
-	
-	const auto radiusX = _radius * localScaling()->x();
-	const auto radiusY = _radius * localScaling()->y();
-	const auto radiusZ = _radius * localScaling()->z();
+    auto lines = LineGeometry::create(context);
 
-	for (unsigned int j = 0; j < 3; ++j)
-	{
-		float cAng = 1.0f;
-		float sAng = 0.0f;
-		
-		if (j == 0)
-			lines->moveTo(0.0f,				radiusY * cAng,	radiusZ * sAng);
-		else if (j == 1)
-			lines->moveTo(radiusX * cAng,	0.0f,			radiusZ * sAng);
-		else
-			lines->moveTo(radiusX * cAng,	radiusY * sAng,	0.0f);
-		
-		for (unsigned int i = 0; i < numSteps; ++i)
-		{
-			float c	= cAng * cAngStep - sAng * sAngStep;
-			float s	= cAng * sAngStep + sAng * cAngStep;
-			
-			cAng	= c;
-			sAng	= s;
-		
-			if (j == 0)
-				lines->lineTo(0.0f,				radiusY * cAng,	radiusZ * sAng);
-			else if (j == 1)
-				lines->lineTo(radiusX * cAng,	0.0f,			radiusZ * sAng);
-			else
-				lines->lineTo(radiusX * cAng,	radiusY * sAng,	0.0f);
-		}
-	}
+    const auto radiusX = _radius * localScaling()->x();
+    const auto radiusY = _radius * localScaling()->y();
+    const auto radiusZ = _radius * localScaling()->z();
 
-	return lines;
+    for (unsigned int j = 0; j < 3; ++j)
+    {
+        float cAng = 1.0f;
+        float sAng = 0.0f;
+
+        if (j == 0)
+            lines->moveTo(0.0f,                radiusY * cAng,    radiusZ * sAng);
+        else if (j == 1)
+            lines->moveTo(radiusX * cAng,    0.0f,            radiusZ * sAng);
+        else
+            lines->moveTo(radiusX * cAng,    radiusY * sAng,    0.0f);
+
+        for (unsigned int i = 0; i < numSteps; ++i)
+        {
+            float c    = cAng * cAngStep - sAng * sAngStep;
+            float s    = cAng * sAngStep + sAng * cAngStep;
+
+            cAng    = c;
+            sAng    = s;
+
+            if (j == 0)
+                lines->lineTo(0.0f,                radiusY * cAng,    radiusZ * sAng);
+            else if (j == 1)
+                lines->lineTo(radiusX * cAng,    0.0f,            radiusZ * sAng);
+            else
+                lines->lineTo(radiusX * cAng,    radiusY * sAng,    0.0f);
+        }
+    }
+
+    return lines;
 }

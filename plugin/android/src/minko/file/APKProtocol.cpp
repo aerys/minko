@@ -34,66 +34,66 @@ APKProtocol::APKProtocol()
 void
 APKProtocol::load()
 {
-	auto filename = _file->filename();
-	auto options = _options;
+    auto filename = _file->filename();
+    auto options = _options;
 
-	std::string cleanFilename = "";
+    std::string cleanFilename = "";
 
-	for(uint i = 0; i < filename.length(); ++i)
-	{
-		if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
-		{
-			cleanFilename = "";
-			i += 2;
-			continue;
-		}
+    for(uint i = 0; i < filename.length(); ++i)
+    {
+        if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
+        {
+            cleanFilename = "";
+            i += 2;
+            continue;
+        }
 
-		cleanFilename += filename.at(i);
-	}
+        cleanFilename += filename.at(i);
+    }
 
-	cleanFilename = File::canonizeFilename(cleanFilename);
+    cleanFilename = File::canonizeFilename(cleanFilename);
 
-	_options = options;
+    _options = options;
 
-	auto realFilename = options->uriFunction()(File::sanitizeFilename(cleanFilename));
+    auto realFilename = options->uriFunction()(File::sanitizeFilename(cleanFilename));
 
-	SDL_RWops* file = SDL_RWFromFile(cleanFilename.c_str(), "rb");
+    SDL_RWops* file = SDL_RWFromFile(cleanFilename.c_str(), "rb");
 
-	if (!file)
-		for (auto path : _options->includePaths())
-		{
-			auto testFilename = options->uriFunction()(File::sanitizeFilename(path + '/' + cleanFilename));
+    if (!file)
+        for (auto path : _options->includePaths())
+        {
+            auto testFilename = options->uriFunction()(File::sanitizeFilename(path + '/' + cleanFilename));
 
-			file = SDL_RWFromFile(testFilename.c_str(), "rb");
-			if (file)
-			{
-				realFilename = testFilename;
-				break;
-			}
-		}
+            file = SDL_RWFromFile(testFilename.c_str(), "rb");
+            if (file)
+            {
+                realFilename = testFilename;
+                break;
+            }
+        }
 
     auto loader = shared_from_this();
 
-	if (file)
-	{
+    if (file)
+    {
         resolvedFilename(realFilename);
 
-		unsigned int size = file->size(file);
+        unsigned int size = file->size(file);
 
-		_progress->execute(shared_from_this(), 0.0);
+        _progress->execute(shared_from_this(), 0.0);
 
-		data().resize(size);
+        data().resize(size);
 
-		file->seek(file, RW_SEEK_SET, 0);
-		file->read(file, (char*) &data()[0], size, 1);
-		file->close(file);
+        file->seek(file, RW_SEEK_SET, 0);
+        file->read(file, (char*) &data()[0], size, 1);
+        file->close(file);
 
-		_progress->execute(loader, 1.0);
+        _progress->execute(loader, 1.0);
 
-		_complete->execute(shared_from_this());
-	}
-	else
-	{
-		_error->execute(shared_from_this());
-	}
+        _complete->execute(shared_from_this());
+    }
+    else
+    {
+        _error->execute(shared_from_this());
+    }
 }

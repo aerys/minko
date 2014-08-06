@@ -23,13 +23,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 
 #include "minko/component/AbstractComponent.hpp"
+#include "minko/component/AbstractRebindableComponent.hpp"
 
 namespace minko
 {
 	namespace component
 	{
 		class AbstractAnimation :
-			public AbstractComponent
+			public virtual AbstractComponent
 		{
 		public:
 			typedef std::shared_ptr<AbstractAnimation>		Ptr;
@@ -51,8 +52,12 @@ namespace minko
 			};
 
 		protected:
-			uint		_maxTime;
-			uint		_currentTime;	// relative to animation 
+			uint														_maxTime;
+			uint														_currentTime;	// relative to animation 
+			Signal<AbsCmpPtr, NodePtr>::Slot				            _targetAddedSlot;
+			Signal<AbsCmpPtr, NodePtr>::Slot				            _targetRemovedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot			            _addedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot			            _removedSlot;
 
 		private:
 			uint		_loopMinTime;
@@ -64,7 +69,7 @@ namespace minko
 			bool		_isPlaying;
 			bool		_isLooping;
 			bool		_isReversed;
-			bool		_canUpdateOnce;
+			bool		_mustUpdateOnce;
 
 
 			clock_t		_clockStart;
@@ -82,13 +87,13 @@ namespace minko
 			std::shared_ptr<Signal<Ptr>>					            _stopped;
 			std::shared_ptr<Signal<Ptr, std::string, uint>>	            _labelHit;
 
-			Signal<AbsCmpPtr, NodePtr>::Slot				            _targetAddedSlot;
-			Signal<AbsCmpPtr, NodePtr>::Slot				            _targetRemovedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot			            _addedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot			            _removedSlot;
 			Signal<std::shared_ptr<SceneManager>, float, float>::Slot	_frameBeginSlot;
 
+			
+
 		public:
+			NodePtr														_target;
+
 			virtual
 			Ptr
 			play();
@@ -96,6 +101,10 @@ namespace minko
 			virtual
 			Ptr
 			stop();
+
+			virtual
+			AbstractComponent::Ptr
+			AbstractAnimation::clone(const CloneOption& option) = 0;
 
 			Ptr
 			seek(uint time);
@@ -108,6 +117,13 @@ namespace minko
 			currentTime() const
 			{
 				return _currentTime;
+			}
+
+			inline
+			uint
+			getMaxTime() const
+			{
+				return _maxTime;
 			}
 
 			inline
@@ -258,6 +274,8 @@ namespace minko
 
 		protected:
 			AbstractAnimation(bool isLooping);
+
+			AbstractAnimation(const AbstractAnimation& absAnimation, const CloneOption& option);
 
 			virtual
 			inline

@@ -24,27 +24,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	class SDLAngleBackend :
-		public SDLBackend
-	{
-	public:
-		typedef std::shared_ptr<SDLAngleBackend>		Ptr;
+    class SDLAngleBackend :
+        public SDLBackend
+    {
+    public:
+        typedef std::shared_ptr<SDLAngleBackend>        Ptr;
 
-	private:
-		void*											_context;
+    private:
+        void*                                           _context;
 
-	public:
-		static
-		std::shared_ptr<SDLAngleBackend>
-		create()
-		{
-		    return std::shared_ptr<SDLAngleBackend>(new SDLAngleBackend());
-		}
+    public:
+        static
+        std::shared_ptr<SDLAngleBackend>
+        create()
+        {
+            return std::shared_ptr<SDLAngleBackend>(new SDLAngleBackend());
+        }
 
-		virtual void
-		initialize(std::shared_ptr<Canvas> canvas);
+        virtual void
+        initialize(std::shared_ptr<Canvas> canvas);
 
-	private:
-		SDLAngleBackend() = default;
-	};
+    private:
+        SDLAngleBackend() = default;
+    };
 }

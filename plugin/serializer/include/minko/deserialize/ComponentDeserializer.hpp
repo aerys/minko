@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -24,86 +24,86 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace deserialize
-	{
-		class ComponentDeserializer
-		{
+    namespace deserialize
+    {
+        class ComponentDeserializer
+        {
 
-		private:
-			typedef std::shared_ptr<math::Matrix4x4>				Matrix4x4Ptr;
-			typedef std::shared_ptr<file::Dependency>				DependencyPtr;
-			typedef std::shared_ptr<file::AssetLibrary>				AssetLibraryPtr;
-			typedef std::shared_ptr<component::AbstractComponent>	AbsComponentPtr;
-			typedef msgpack::type::tuple<uint, std::string>			SerializedMatrix;
-			typedef std::vector<SerializedMatrix>					VectorOfSerializedMatrix;
-			typedef msgpack::type::tuple<std::string, std::string>	SurfaceExtension;
+        private:
+            typedef std::shared_ptr<math::Matrix4x4>                Matrix4x4Ptr;
+            typedef std::shared_ptr<file::Dependency>                DependencyPtr;
+            typedef std::shared_ptr<file::AssetLibrary>                AssetLibraryPtr;
+            typedef std::shared_ptr<component::AbstractComponent>    AbsComponentPtr;
+            typedef msgpack::type::tuple<uint, std::string>            SerializedMatrix;
+            typedef std::vector<SerializedMatrix>                    VectorOfSerializedMatrix;
+            typedef msgpack::type::tuple<std::string, std::string>    SurfaceExtension;
 
-		public:
-			static
-			AbsComponentPtr
-			deserializeTransform(std::string&		serializedTransformData,
-								 AssetLibraryPtr	assetLibrary,
-								 DependencyPtr		dependencies);
+        public:
+            static
+            AbsComponentPtr
+            deserializeTransform(std::string&        serializedTransformData,
+                                 AssetLibraryPtr    assetLibrary,
+                                 DependencyPtr        dependencies);
 
-			static
-			AbsComponentPtr
-			deserializeProjectionCamera(std::string&	serializedCameraData,
-										AssetLibraryPtr	assetLibrary,
-										DependencyPtr	dependencies);
+            static
+            AbsComponentPtr
+            deserializeProjectionCamera(std::string&    serializedCameraData,
+                                        AssetLibraryPtr    assetLibrary,
+                                        DependencyPtr    dependencies);
 
-			static
-			AbsComponentPtr
-			deserializeAmbientLight(std::string&	serializedAmbientLight,
-									AssetLibraryPtr	assetLibrary,
-									DependencyPtr	dependencies);
+            static
+            AbsComponentPtr
+            deserializeAmbientLight(std::string&    serializedAmbientLight,
+                                    AssetLibraryPtr    assetLibrary,
+                                    DependencyPtr    dependencies);
 
-			static
-			AbsComponentPtr
-			deserializeDirectionalLight(std::string&	serializedDirectionalLight,
-										AssetLibraryPtr	assetLibrary,
-										DependencyPtr	dependencies);
+            static
+            AbsComponentPtr
+            deserializeDirectionalLight(std::string&    serializedDirectionalLight,
+                                        AssetLibraryPtr    assetLibrary,
+                                        DependencyPtr    dependencies);
 
-			static
-			AbsComponentPtr
-			deserializePointLight(std::string&		serializedPointLight,
-								  AssetLibraryPtr	assetLibrary,
-								  DependencyPtr		dependencies);
+            static
+            AbsComponentPtr
+            deserializePointLight(std::string&        serializedPointLight,
+                                  AssetLibraryPtr    assetLibrary,
+                                  DependencyPtr        dependencies);
 
-			static
-			AbsComponentPtr
-			deserializeSpotLight(std::string&		serializedSpotLight,
-								 AssetLibraryPtr	assetLibrary,
-								 DependencyPtr		dependencies);
+            static
+            AbsComponentPtr
+            deserializeSpotLight(std::string&        serializedSpotLight,
+                                 AssetLibraryPtr    assetLibrary,
+                                 DependencyPtr        dependencies);
 
-			static
-			AbsComponentPtr
-			deserializeSurface(std::string&		serializedSurface,
-							   AssetLibraryPtr	assetLibrary,
-							   DependencyPtr	dependencies);
+            static
+            AbsComponentPtr
+            deserializeSurface(std::string&        serializedSurface,
+                               AssetLibraryPtr    assetLibrary,
+                               DependencyPtr    dependencies);
 
-			static
-			AbsComponentPtr
-			deserializeRenderer(std::string&	serializedRenderer,
-							   AssetLibraryPtr	assetLibrary,
-							   DependencyPtr	dependencies);
+            static
+            AbsComponentPtr
+            deserializeRenderer(std::string&    serializedRenderer,
+                               AssetLibraryPtr    assetLibrary,
+                               DependencyPtr    dependencies);
 
-			static
-			AbsComponentPtr
-			deserializeAnimation(std::string&		serializedAnimation,
-								 AssetLibraryPtr	assetLibrary,
-								 DependencyPtr		dependencies);
+            static
+            AbsComponentPtr
+            deserializeAnimation(std::string&        serializedAnimation,
+                                 AssetLibraryPtr    assetLibrary,
+                                 DependencyPtr        dependencies);
 
-			static
-			AbsComponentPtr
-			deserializeSkinning(std::string&		serializedAnimation,
-								AssetLibraryPtr		assetLibrary,
-								DependencyPtr		dependencies);
+            static
+            AbsComponentPtr
+            deserializeSkinning(std::string&        serializedAnimation,
+                                AssetLibraryPtr        assetLibrary,
+                                DependencyPtr        dependencies);
 
-			static
-			AbsComponentPtr
-			deserializeBoundingBox(std::string&		serializedBoundingBox,
+            static
+            AbsComponentPtr
+            deserializeBoundingBox(std::string&        serializedBoundingBox,
                                    AssetLibraryPtr  assetLibrary,
-                                   DependencyPtr	dependencies);
-		};
-	}
+                                   DependencyPtr    dependencies);
+        };
+    }
 }

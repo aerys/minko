@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -29,148 +29,148 @@ using namespace minko::geometry;
 using namespace minko::render;
 using namespace minko::math;
 
-/*static*/ const uint			LineGeometry::MAX_NUM_LINES			= 16000;
-/*static*/ const std::string	LineGeometry::ATTRNAME_START_POS	= "startPosition";
-/*static*/ const std::string	LineGeometry::ATTRNAME_STOP_POS		= "stopPosition";
-/*static*/ const std::string	LineGeometry::ATTRNAME_WEIGHTS		= "weights";
+/*static*/ const uint            LineGeometry::MAX_NUM_LINES            = 16000;
+/*static*/ const std::string    LineGeometry::ATTRNAME_START_POS    = "startPosition";
+/*static*/ const std::string    LineGeometry::ATTRNAME_STOP_POS        = "stopPosition";
+/*static*/ const std::string    LineGeometry::ATTRNAME_WEIGHTS        = "weights";
 
 LineGeometry::LineGeometry():
-	Geometry(),
-	_currentX(0.0f),
-	_currentY(0.0f),
-	_currentZ(0.0f),
-	_numLines(0),
-	_vertexBuffer(nullptr),
-	_indexBuffer(nullptr)
+    Geometry(),
+    _currentX(0.0f),
+    _currentY(0.0f),
+    _currentZ(0.0f),
+    _numLines(0),
+    _vertexBuffer(nullptr),
+    _indexBuffer(nullptr)
 {
 }
 
 void
 LineGeometry::initialize(AbstractContext::Ptr context)
 {
-	if (context == nullptr)
-		throw std::invalid_argument("context");
+    if (context == nullptr)
+        throw std::invalid_argument("context");
 
-	_vertexBuffer	= VertexBuffer::create(context);
-	_indexBuffer	= IndexBuffer::create(context);
+    _vertexBuffer    = VertexBuffer::create(context);
+    _indexBuffer    = IndexBuffer::create(context);
 
-	_vertexBuffer->addAttribute(ATTRNAME_START_POS,	3, 0);
-	_vertexBuffer->addAttribute(ATTRNAME_STOP_POS,	3, 3);
-	_vertexBuffer->addAttribute(ATTRNAME_WEIGHTS,	3, 6);
+    _vertexBuffer->addAttribute(ATTRNAME_START_POS,    3, 0);
+    _vertexBuffer->addAttribute(ATTRNAME_STOP_POS,    3, 3);
+    _vertexBuffer->addAttribute(ATTRNAME_WEIGHTS,    3, 6);
 
-	addVertexBuffer(_vertexBuffer);
-	indices(_indexBuffer);
+    addVertexBuffer(_vertexBuffer);
+    indices(_indexBuffer);
 }
 
 math::Vector3::Ptr
 LineGeometry::currentXYZ(math::Vector3::Ptr output) const
 {
-	if (output == nullptr)
-		output = Vector3::create(_currentX, _currentY, _currentZ);
-	else
-		output->setTo(_currentX, _currentY, _currentZ);
+    if (output == nullptr)
+        output = Vector3::create(_currentX, _currentY, _currentZ);
+    else
+        output->setTo(_currentX, _currentY, _currentZ);
 
-	return output;
+    return output;
 }
 
 LineGeometry::Ptr
 LineGeometry::moveTo(math::Vector3::Ptr xyz)
 {
-	if (xyz == nullptr)
-		throw std::invalid_argument("xyz");
+    if (xyz == nullptr)
+        throw std::invalid_argument("xyz");
 
-	return moveTo(xyz->x(), xyz->y(), xyz->z());
+    return moveTo(xyz->x(), xyz->y(), xyz->z());
 }
 
 LineGeometry::Ptr
 LineGeometry::lineTo(std::shared_ptr<math::Vector3> xyz, unsigned int numSegments)
 {
-	return lineTo(xyz->x(), xyz->y(), xyz->z(), numSegments);
+    return lineTo(xyz->x(), xyz->y(), xyz->z(), numSegments);
 }
 
 LineGeometry::Ptr
 LineGeometry::lineTo(float x, float y, float z, unsigned int numSegments)
 {
-	if (numSegments == 0)
-		return moveTo(x, y, z);
+    if (numSegments == 0)
+        return moveTo(x, y, z);
 
-	const uint					vertexSize			= _vertexBuffer->vertexSize();
-	const unsigned int			oldVertexDataSize	= _vertexBuffer->data().size();
-	const unsigned int			oldIndexDataSize	= _indexBuffer->data().size();
+    const uint                    vertexSize            = _vertexBuffer->vertexSize();
+    const unsigned int            oldVertexDataSize    = _vertexBuffer->data().size();
+    const unsigned int            oldIndexDataSize    = _indexBuffer->data().size();
 
-	std::vector<float>			vertexData	(oldVertexDataSize	+ 4 * numSegments * vertexSize);
-	std::vector<unsigned short>	indexData	(oldIndexDataSize	+ 6 * numSegments);
+    std::vector<float>            vertexData    (oldVertexDataSize    + 4 * numSegments * vertexSize);
+    std::vector<unsigned short>    indexData    (oldIndexDataSize    + 6 * numSegments);
 
-	if (oldVertexDataSize > 0)
-		memcpy(&vertexData[0], &_vertexBuffer->data()[0], sizeof(float) * oldVertexDataSize);
-	if (oldIndexDataSize > 0)
-		memcpy(&indexData[0], &_indexBuffer->data()[0], sizeof(unsigned short) * oldIndexDataSize);
+    if (oldVertexDataSize > 0)
+        memcpy(&vertexData[0], &_vertexBuffer->data()[0], sizeof(float) * oldVertexDataSize);
+    if (oldIndexDataSize > 0)
+        memcpy(&indexData[0], &_indexBuffer->data()[0], sizeof(unsigned short) * oldIndexDataSize);
 
-	_vertexBuffer->dispose();
-	_indexBuffer->dispose();
+    _vertexBuffer->dispose();
+    _indexBuffer->dispose();
 
-	const float invNumSegments	= 1.0f / (float)numSegments;
-	const float stepX			= (x - _currentX) * invNumSegments;
-	const float stepY			= (y - _currentY) * invNumSegments;
-	const float stepZ			= (z - _currentZ) * invNumSegments;
-	unsigned int vid			= oldVertexDataSize;
-	unsigned int iid			= oldIndexDataSize;
+    const float invNumSegments    = 1.0f / (float)numSegments;
+    const float stepX            = (x - _currentX) * invNumSegments;
+    const float stepY            = (y - _currentY) * invNumSegments;
+    const float stepZ            = (z - _currentZ) * invNumSegments;
+    unsigned int vid            = oldVertexDataSize;
+    unsigned int iid            = oldIndexDataSize;
 
-	for (unsigned int segmentId = 0; segmentId < numSegments; ++segmentId)
-	{
-		if (_numLines >= MAX_NUM_LINES)
-			throw std::logic_error("Maximal number of segments (" + std::to_string(_numLines) + ") for line geometry reached.");
+    for (unsigned int segmentId = 0; segmentId < numSegments; ++segmentId)
+    {
+        if (_numLines >= MAX_NUM_LINES)
+            throw std::logic_error("Maximal number of segments (" + std::to_string(_numLines) + ") for line geometry reached.");
 
-		const float nextX = _currentX + stepX;
-		const float nextY = _currentY + stepY;
-		const float nextZ = _currentZ + stepZ;
+        const float nextX = _currentX + stepX;
+        const float nextY = _currentY + stepY;
+        const float nextZ = _currentZ + stepZ;
 
-		for (unsigned int k = 0; k < 4; ++k)
-		{
-			const float wStart		= k < 2 ? 1.0f : 0.0f;
-			const float	wStop		= k < 2 ? 0.0f : 1.0f;
-			const float lineSpread	= 0 < k && k < 3 ? 1.0f : -1.0f;
+        for (unsigned int k = 0; k < 4; ++k)
+        {
+            const float wStart        = k < 2 ? 1.0f : 0.0f;
+            const float    wStop        = k < 2 ? 0.0f : 1.0f;
+            const float lineSpread    = 0 < k && k < 3 ? 1.0f : -1.0f;
 
-			// start position
-			vertexData[vid++] = _currentX;
-			vertexData[vid++] = _currentY;
-			vertexData[vid++] = _currentZ;
+            // start position
+            vertexData[vid++] = _currentX;
+            vertexData[vid++] = _currentY;
+            vertexData[vid++] = _currentZ;
 
-			// stop position
-			vertexData[vid++] = nextX;
-			vertexData[vid++] = nextY;
-			vertexData[vid++] = nextZ;
+            // stop position
+            vertexData[vid++] = nextX;
+            vertexData[vid++] = nextY;
+            vertexData[vid++] = nextZ;
 
-			// weights attribute
-			vertexData[vid++] = wStart;
-			vertexData[vid++] = wStop;
-			vertexData[vid++] = lineSpread;
-		}
+            // weights attribute
+            vertexData[vid++] = wStart;
+            vertexData[vid++] = wStop;
+            vertexData[vid++] = lineSpread;
+        }
 
-		const unsigned int iOffset = (_numLines << 2);
-		indexData[iid++] = iOffset;
-		indexData[iid++] = iOffset + 2;
-		indexData[iid++] = iOffset + 1;
+        const unsigned int iOffset = (_numLines << 2);
+        indexData[iid++] = iOffset;
+        indexData[iid++] = iOffset + 2;
+        indexData[iid++] = iOffset + 1;
 
-		indexData[iid++] = iOffset;
-		indexData[iid++] = iOffset + 3;
-		indexData[iid++] = iOffset + 2;
+        indexData[iid++] = iOffset;
+        indexData[iid++] = iOffset + 3;
+        indexData[iid++] = iOffset + 2;
 
-		_currentX	= nextX;
-		_currentY	= nextY;
-		_currentZ	= nextZ;
-		++_numLines;
-	}
+        _currentX    = nextX;
+        _currentY    = nextY;
+        _currentZ    = nextZ;
+        ++_numLines;
+    }
 
-	assert(vid == vertexData.size());
-	assert(iid == indexData.size());
+    assert(vid == vertexData.size());
+    assert(iid == indexData.size());
 
-	std::swap(_vertexBuffer->data(), vertexData);
-	std::swap(_indexBuffer->data(), indexData);
+    std::swap(_vertexBuffer->data(), vertexData);
+    std::swap(_indexBuffer->data(), indexData);
 
-	_vertexBuffer->upload();
-	_indexBuffer->upload();
+    _vertexBuffer->upload();
+    _indexBuffer->upload();
 
-	return std::static_pointer_cast<LineGeometry>(shared_from_this());
+    return std::static_pointer_cast<LineGeometry>(shared_from_this());
 }
 

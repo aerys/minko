@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -29,19 +29,19 @@ using namespace minko::geometry;
 void
 ParticlesGeometry::initialize(render::AbstractContext::Ptr context)
 {
-	_particleVertices   = render::ParticleVertexBuffer::create(context);
-	_particleIndices    = render::ParticleIndexBuffer::create(context);	
-	
-	addVertexBuffer(_particleVertices);
-	indices(_particleIndices);
+    _particleVertices   = render::ParticleVertexBuffer::create(context);
+    _particleIndices    = render::ParticleIndexBuffer::create(context);
+
+    addVertexBuffer(_particleVertices);
+    indices(_particleIndices);
 }
 
 void
 ParticlesGeometry::initStreams(unsigned int maxParticles)
 {
-	if (maxParticles == 0)
-		return;
-	
-	_particleVertices->resize(maxParticles, vertexSize());
-	_particleIndices->resize(maxParticles);
+    if (maxParticles == 0)
+        return;
+
+    _particleVertices->resize(maxParticles, vertexSize());
+    _particleIndices->resize(maxParticles);
 }
