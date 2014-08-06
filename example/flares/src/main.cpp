@@ -155,9 +155,9 @@ main(int argc, char** argv)
         camera->component<Transform>()->matrix()->lookAt(
             lookAt,
             Vector3::create(
-                lookAt->x() + distance * std::cosf(yaw) * sinf(pitch),
-                lookAt->y() + distance * std::cosf(pitch),
-                lookAt->z() + distance * std::sinf(yaw) * sinf(pitch)
+                lookAt->x() + distance * std::cos(yaw) * std::sin(pitch),
+                lookAt->y() + distance * std::cos(pitch),
+                lookAt->z() + distance * std::sin(yaw) * std::sin(pitch)
             )
         );
 
