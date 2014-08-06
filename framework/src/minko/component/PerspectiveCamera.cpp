@@ -57,10 +57,10 @@ PerspectiveCamera::PerspectiveCamera(const PerspectiveCamera& camera, const Clon
 	_aspectRatio(camera._aspectRatio),
 	_zNear(camera._zNear),
 	_zFar(camera._zFar),
-	_view(camera._view),
-	_projection(camera._projection),
-	_viewProjection(camera._viewProjection),
-	_position(camera._position),
+	_view(Matrix4x4::create()),
+	_projection(Matrix4x4::create()->perspective(camera._fov, camera._aspectRatio, camera._zNear, camera._zFar)),
+	_viewProjection(Matrix4x4::create()->copyFrom(_projection)),
+	_position(Vector3::create()),
 	_postProjection(camera._postProjection)
 {
 }

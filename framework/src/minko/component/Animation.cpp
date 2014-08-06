@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Animation.hpp"
 #include "minko/component/SceneManager.hpp"
 #include "minko/animation/AbstractTimeline.hpp"
+#include "minko/animation/Matrix4x4Timeline.hpp"
 #include "minko/scene/Node.hpp"
 
 using namespace minko;
@@ -32,6 +33,28 @@ Animation::Animation(const std::vector<AbstractTimeline::Ptr>& timelines,
 	_timelines(timelines),
 	_master(nullptr)
 {
+}
+
+Animation::Animation(const Animation& anim, const CloneOption& option) :
+	AbstractAnimation(anim),
+	_timelines(anim._timelines.size()),
+	_master(nullptr)
+{
+	for (int i = 0; i < anim._timelines.size(); i++)
+	{
+		auto var = anim._timelines[i]->clone();
+		_timelines[i] = var;
+	}
+}
+
+AbstractComponent::Ptr
+Animation::clone(const CloneOption& option)
+{
+	auto anim = std::shared_ptr<Animation>(new Animation(*this, option));
+
+	anim->initialize();
+
+	return anim;
 }
 
 void

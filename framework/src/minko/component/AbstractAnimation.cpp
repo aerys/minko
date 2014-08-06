@@ -20,9 +20,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <climits>
 
 #include "minko/component/AbstractAnimation.hpp"
+#include "minko/component/MasterAnimation.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
 #include "minko/component/SceneManager.hpp"
+#include "minko/CloneOption.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -40,7 +42,7 @@ AbstractAnimation::AbstractAnimation(bool isLooping):
 	_isPlaying(false),
 	_isLooping(isLooping),
 	_isReversed(false),
-	_canUpdateOnce(false),
+	_mustUpdateOnce(false),
 	_clockStart(clock()),
 	_timeFunction(),
 	_labels(),
@@ -63,20 +65,64 @@ AbstractAnimation::AbstractAnimation(bool isLooping):
 	};
 }
 
+AbstractAnimation::AbstractAnimation(const AbstractAnimation& absAnimation, const CloneOption& option) :
+	AbstractComponent(absAnimation),
+	_maxTime(absAnimation._maxTime),
+	_loopMinTime(absAnimation._loopMinTime),
+	_loopMaxTime(absAnimation._loopMaxTime),
+	_loopTimeRange(absAnimation._loopTimeRange),
+	_currentTime(0),
+	_previousTime(0),
+	_previousGlobalTime(0),
+	_isPlaying(false),
+	_isLooping(absAnimation._isLooping),
+	_isReversed(absAnimation._isReversed),
+	_mustUpdateOnce(absAnimation._mustUpdateOnce),
+	_clockStart(clock()),
+	_timeFunction(),
+	_labels(),
+	_labelNameToIndex(),
+	_nextLabelIds(),
+	_sceneManager(nullptr),
+	_started(Signal<Ptr>::create()),
+	_looped(Signal<Ptr>::create()),
+	_stopped(Signal<Ptr>::create()),
+	_labelHit(Signal<Ptr, std::string, uint>::create()),
+	_targetAddedSlot(nullptr),
+	_targetRemovedSlot(nullptr),
+	_addedSlot(nullptr),
+	_removedSlot(nullptr),
+	_frameBeginSlot(nullptr)
+{
+	if (option == CloneOption::DEEP)
+	{
+		_currentTime = absAnimation._currentTime;
+		_previousTime = absAnimation._previousTime;
+		_previousGlobalTime = absAnimation._previousGlobalTime;
+		_isPlaying = absAnimation._isPlaying;
+	}
+	_timeFunction = [](uint t) -> uint
+	{
+		return t;
+	};
+}
+
+
+
 /*virtual*/
 void
 AbstractAnimation::initialize()
 {
 	_targetAddedSlot = targetAdded()->connect(std::bind(
 		&AbstractAnimation::targetAddedHandler,
-		std::static_pointer_cast<AbstractAnimation>(shared_from_this()),
+		std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
 
 	_targetRemovedSlot = targetRemoved()->connect(std::bind(
 		&AbstractAnimation::targetRemovedHandler,
-		std::static_pointer_cast<AbstractAnimation>(shared_from_this()),
+		std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
@@ -88,7 +134,7 @@ AbstractAnimation::targetAddedHandler(AbstractComponent::Ptr cmp,
 {
 	_addedSlot = node->added()->connect(std::bind(
 		&AbstractAnimation::addedHandler,
-		std::static_pointer_cast<AbstractAnimation>(shared_from_this()),
+		std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
@@ -96,11 +142,13 @@ AbstractAnimation::targetAddedHandler(AbstractComponent::Ptr cmp,
 
 	_removedSlot = node->removed()->connect(std::bind(
 		&AbstractAnimation::removedHandler,
-		std::static_pointer_cast<AbstractAnimation>(shared_from_this()),
+		std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
 	));
+
+	_target = node;
 }
 
 void
@@ -154,7 +202,7 @@ AbstractAnimation::setSceneManager(SceneManager::Ptr sceneManager)
 	{
 		_frameBeginSlot = sceneManager->frameBegin()->connect(std::bind(
 			&AbstractAnimation::frameBeginHandler, 
-			std::static_pointer_cast<AbstractAnimation>(shared_from_this()),
+			std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this()),
 			std::placeholders::_1,
             std::placeholders::_2,
             std::placeholders::_3
@@ -177,10 +225,10 @@ AbstractAnimation::play()
 {
 	_previousGlobalTime = _timeFunction(_sceneManager ? uint(_sceneManager->time()) : 0);
 	_isPlaying	 		= true;
-	_started->execute(std::static_pointer_cast<AbstractAnimation>(shared_from_this()));
+	_started->execute(std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this()));
 	checkLabelHit(_currentTime, _currentTime);
 
-	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
+	return std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 AbstractAnimation::Ptr
@@ -193,17 +241,25 @@ AbstractAnimation::stop()
 	}
 
 	_isPlaying			= false;
-	_stopped->execute(std::static_pointer_cast<AbstractAnimation>(shared_from_this()));
-	_canUpdateOnce		= true;
+	_stopped->execute(std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this()));
+	_mustUpdateOnce		= true;
 	_previousGlobalTime = _timeFunction(_sceneManager ? uint(_sceneManager->time()) : 0);
 
-	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
+	return std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 AbstractAnimation::Ptr
 AbstractAnimation::seek(const std::string& labelName)
 {
-	return seek(labelTime(labelName));
+	auto masterAnim = std::dynamic_pointer_cast<MasterAnimation>(shared_from_this());
+	if (masterAnim != nullptr)
+	{
+		return masterAnim->seek(labelName);
+	} 
+	else
+	{
+		return seek(labelTime(labelName));
+	}
 }
 
 AbstractAnimation::Ptr
@@ -216,7 +272,7 @@ AbstractAnimation::seek(uint currentTime)
 
 	updateNextLabelIds(_currentTime);
 
-	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
+	return std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 bool
@@ -234,7 +290,7 @@ AbstractAnimation::addLabel(const std::string& name, uint time)
 	_labelNameToIndex[name] = _labels.size();
 	_labels.push_back(Label(name, time));
 
-	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
+	return std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 AbstractAnimation::Ptr
@@ -251,7 +307,7 @@ AbstractAnimation::changeLabel(const std::string& name, const std::string& newNa
 	label.name = newName;
 	_labelNameToIndex[newName] = labelId;
 
-	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
+	return std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 AbstractAnimation::Ptr
@@ -266,7 +322,7 @@ AbstractAnimation::setTimeForLabel(const std::string& name, uint newTime)
 
 	label.time = newTime;
 
-	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
+	return std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 AbstractAnimation::Ptr
@@ -284,7 +340,7 @@ AbstractAnimation::removeLabel(const std::string& name)
 	_labelNameToIndex[lastLabelName]	= labelId;
 	_labels.pop_back();
 
-	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
+	return std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 uint
@@ -315,7 +371,7 @@ AbstractAnimation::setPlaybackWindow(uint beginTime,
 
 	updateNextLabelIds(_currentTime);
 
-	return std::static_pointer_cast<AbstractAnimation>(shared_from_this());
+	return std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
 AbstractAnimation::Ptr
@@ -458,7 +514,7 @@ AbstractAnimation::checkLabelHit(uint previousTime, uint newTime)
 			const auto& label = _labels[labelId];
 
 			_labelHit->execute(
-				std::static_pointer_cast<AbstractAnimation>(shared_from_this()), 
+				std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this()), 
 				label.name, 
 				label.time
 			);
@@ -487,10 +543,10 @@ AbstractAnimation::frameBeginHandler(SceneManager::Ptr sceneManager, float time,
 bool
 AbstractAnimation::update(uint rawGlobalTime)
 {
-	if (!_isPlaying && !_canUpdateOnce)
+	if (!_isPlaying && !_mustUpdateOnce)
 		return false;
 
-	_canUpdateOnce = false;
+	_mustUpdateOnce = false;
 
 	const uint	globalTime		= _timeFunction(rawGlobalTime);
 	const uint	globalDeltaTime	= globalTime - _previousGlobalTime;
@@ -510,7 +566,7 @@ AbstractAnimation::update(uint rawGlobalTime)
 	if (looped)
 	{
 		if (_isLooping)
-			_looped->execute(std::static_pointer_cast<AbstractAnimation>(shared_from_this()));
+			_looped->execute(std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this()));
 		else
 		{
 			_currentTime = loopEndTime();
@@ -522,7 +578,7 @@ AbstractAnimation::update(uint rawGlobalTime)
 
 	checkLabelHit(_previousTime, _currentTime);
 
-	return _isPlaying || _canUpdateOnce;
+	return _isPlaying || _mustUpdateOnce;
 }
 
 uint

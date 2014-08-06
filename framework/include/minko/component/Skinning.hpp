@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include <minko/component/MasterAnimation.hpp>
+#include <minko/component/AbstractAnimation.hpp>
 #include <minko/render/VertexBuffer.hpp>
 #include <minko/component/SkinningMethod.hpp>
 
@@ -30,12 +30,14 @@ namespace minko
 	namespace geometry
 	{
 		class Skin;
+		class Bone;
 	};
 
 	namespace component
 	{
 		class Skinning:
-			public MasterAnimation
+			public AbstractAnimation,
+			public AbstractRebindableComponent
 			/*,
 			public std::enable_shared_from_this<Skinning>*/
 		{
@@ -52,6 +54,7 @@ namespace minko
 			typedef std::shared_ptr<component::Animation>			AnimationPtr;
 			typedef std::shared_ptr<geometry::Geometry>				GeometryPtr;
 			typedef std::shared_ptr<geometry::Skin>					SkinPtr;
+			typedef std::shared_ptr<geometry::Bone>					BonePtr;
 			typedef std::shared_ptr<data::Provider>					ProviderPtr;
 			typedef std::shared_ptr<data::ArrayProvider>			ArrayProviderPtr;
 
@@ -73,7 +76,7 @@ namespace minko
 			static const std::string								ATTRNAME_NORMAL;
 
 		private:
-			const SkinPtr											_skin;
+			SkinPtr													_skin;
 			AbstractContextPtr										_context;
 			SkinningMethod											_method;
 
@@ -93,27 +96,31 @@ namespace minko
 			Ptr
 			create(const SkinPtr						skin, 
 				   SkinningMethod						method, 
-				   AbstractContextPtr					context, 
-				   const std::vector<AnimationPtr>&		animations,
+				   AbstractContextPtr					context, 				   
 				   NodePtr								skeletonRoot,
 				   bool									moveTargetBelowRoot = false,
 				   bool									isLooping = true)
 			{
-				Ptr ptr(new Skinning(skin, method, context, animations, skeletonRoot, moveTargetBelowRoot, isLooping));
+				Ptr ptr(new Skinning(skin, method, context, skeletonRoot, moveTargetBelowRoot, isLooping));
 
 				ptr->initialize();
 
 				return ptr;
 			}
 
+			AbsCmpPtr
+			clone(const CloneOption& option);
+
 		private:
 			Skinning(const SkinPtr, 
 					 SkinningMethod, 
-					 AbstractContextPtr, 
-					 const std::vector<AnimationPtr>&,
+					 AbstractContextPtr, 					 
 					 NodePtr,
 					 bool,
 					 bool);
+
+			Skinning(const Skinning& skinning,
+				const CloneOption& option);
 
 			void
 			initialize();
@@ -145,6 +152,9 @@ namespace minko
 
 			render::VertexBuffer::Ptr
 			createVertexBufferForBones() const;
+
+			void
+			rebindDependencies(std::map<AbstractComponent::Ptr, AbstractComponent::Ptr>& componentsMap, std::map<NodePtr, NodePtr>& nodeMap, CloneOption option);
 		};
 	}
 }

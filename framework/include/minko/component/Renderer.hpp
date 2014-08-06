@@ -128,6 +128,9 @@ namespace minko
 				return ctrl;
 			}
 
+			AbstractComponent::Ptr
+			clone(const CloneOption& option);
+
 			~Renderer()
 			{
 			}
@@ -172,6 +175,19 @@ namespace minko
 			name()
 			{
 				return _name;
+			}
+			
+			float
+			priority()
+			{
+				return _priority;
+			}
+
+			inline
+			void
+			priority(const float priority)
+			{
+				_priority = priority;
 			}
 
 
@@ -277,6 +293,8 @@ namespace minko
 			Renderer(AbsTexturePtr		renderTarget = nullptr,
 					 EffectPtr			effect			= nullptr,
 					 float				priority		= 0.f);
+
+			Renderer(const Renderer& renderer, const CloneOption& option);
 
 			void
 			initialize();

@@ -70,7 +70,7 @@ Surface::Surface(std::string				name,
 Surface::Surface(const Surface& surface, const CloneOption& option) :
 	AbstractComponent(surface, option),
 	_name(surface._name),
-	_geometry(surface._geometry),
+	_geometry(surface._geometry), //needed for skinning: option == CloneOption::SHALLOW ? surface._geometry : surface._geometry->clone()
 	_material(option == CloneOption::SHALLOW ? surface._material : std::static_pointer_cast<Material>(surface._material->clone())),
 	_effect(surface._effect),
 	_technique(surface._technique),

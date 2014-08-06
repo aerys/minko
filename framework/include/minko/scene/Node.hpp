@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
 #include "minko/scene/Layout.hpp"
+#include "minko/component/AbstractRebindableComponent.hpp"
 
 namespace minko
 {
@@ -109,7 +110,19 @@ namespace minko
 			}
 						
 			Ptr
-			clone(minko::CloneOption option);
+			clone(const CloneOption& option);
+
+			Ptr
+			cloneNode();
+
+			void
+			Node::listItems(Node::Ptr clonedRoot, std::map<Node::Ptr, Node::Ptr>& nodeMap, std::map<AbsCtrlPtr, AbsCtrlPtr>& components);
+
+			void
+			Node::cloneComponents(std::map<AbsCtrlPtr, AbsCtrlPtr>& componentsMap, CloneOption option);
+
+			void
+			rebindControllerDependencies(std::map<AbsCtrlPtr, AbsCtrlPtr>& componentsMap, std::map<Node::Ptr, Node::Ptr> nodeMap, CloneOption option);
 			
 			inline
 			const std::string&

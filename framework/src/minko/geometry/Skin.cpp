@@ -42,6 +42,28 @@ Skin::Skin(unsigned int numBones, unsigned int duration, unsigned int numFrames)
 
 }
 
+Skin::Skin(const Skin& skin) :
+	_bones(),
+	_numBones(skin._numBones),
+	_duration(skin._duration),
+	_timeFactor(skin._timeFactor),
+	_boneMatricesPerFrame(skin._boneMatricesPerFrame),
+	_maxNumVertexBones(skin._maxNumVertexBones),
+	_numVertexBones(skin._numVertexBones),
+	_vertexBones(skin._vertexBones),
+	_vertexBoneWeights(skin._vertexBoneWeights)
+{
+
+}
+
+std::shared_ptr<Skin>
+Skin::clone()
+{
+	auto skin = std::shared_ptr<Skin>(new Skin(*this));
+	
+	return skin;
+}
+
 void
 Skin::matrix(unsigned int	frameId, 
 			 unsigned int	boneId, 

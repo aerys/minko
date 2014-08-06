@@ -38,7 +38,7 @@ namespace minko
 			typedef std::shared_ptr<MasterAnimation>				MasterAnimationPtr;
 
 		private:
-			const std::vector<AbsTimelinePtr>						_timelines;
+			std::vector<AbsTimelinePtr>								_timelines;
 			MasterAnimationPtr										_master;
 
 		public:
@@ -52,6 +52,9 @@ namespace minko
 
 				return ptr;
 			}
+
+			AbstractComponent::Ptr
+			Animation::clone(const CloneOption& option);
 
 			inline
 			uint
@@ -76,6 +79,8 @@ namespace minko
 
 		private:
 			Animation(const std::vector<AbsTimelinePtr>&, bool isLooping);
+
+			Animation(const Animation& anim,const CloneOption& option);
 
 			/*virtual*/
 			void

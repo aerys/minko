@@ -55,13 +55,15 @@ namespace minko
             SkinningPtr
             computeSkinning(OptionsPtr, 
 							AbsContextPtr, 
-							const std::vector<BonePtr>&, 
+							const std::vector<BonePtr>&,
+							const std::vector<NodePtr>&,
 							NodePtr);
 
         private:
             static
             unsigned int
             collectAnimations(const std::vector<BonePtr>&, 
+							  const std::vector<NodePtr>&,
 							  NodePtr, 
 							  NodeTransformTimeline&);
 
@@ -86,7 +88,8 @@ namespace minko
 			computeSurfaceAnimations(unsigned int duration, 
 									 unsigned int numFrames, 
 									 NodePtr, 
-									 const std::vector<BonePtr>&, 
+									 const std::vector<BonePtr>&,
+									 const std::vector<NodePtr>&,
 									 const NodeMatrices&,
 									 std::vector<AnimationPtr>&);
 
@@ -101,6 +104,7 @@ namespace minko
             static
             bool
             haveBonesCommonRoot(const std::vector<BonePtr>&, 
+								const std::vector<NodePtr>&,
 								NodePtr);
         };
     }
