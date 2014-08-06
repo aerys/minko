@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "PointLightTest.hpp"
+#include "SpotLightTest.hpp"
 
 #include "minko/MinkoTests.hpp"
 
@@ -26,27 +26,26 @@ using namespace minko::component;
 using namespace minko::math;
 using namespace minko::scene;
 
-TEST_F(PointLightTest, Create)
+TEST_F(SpotLightTest, Create)
 {
 	auto root = Node::create();
-	auto n1 = Node::create()->addComponent(PointLight::create(10.f));
+	auto n1 = Node::create()->addComponent(SpotLight::create((float)PI * 0.25f, -1.0f, 10.f));
 	
-	ASSERT_TRUE(n1->hasComponent<PointLight>());
-	ASSERT_TRUE(n1->component<PointLight>()->diffuse() == 10.0f);
-	
+	ASSERT_TRUE(n1->hasComponent<SpotLight>());
+	ASSERT_TRUE(n1->component<SpotLight>()->diffuse() == 10.0f);
 }
 
-TEST_F(PointLightTest, Clone)
+TEST_F(SpotLightTest, Clone)
 {
 	auto sceneManager = SceneManager::create(MinkoTests::context());
 	auto root = Node::create()->addComponent(sceneManager);
 	auto n1 = Node::create()
 		->addComponent(Transform::create(Matrix4x4::create()))
-		->addComponent(PointLight::create(10.f));
+		->addComponent(SpotLight::create((float)PI * 0.25f, -1.0f, 10.f));
 	
 
 	auto n2 = n1->clone(CloneOption::DEEP);
-	n2->component<PointLight>()->diffuse(.1f);
+	n2->component<SpotLight>()->diffuse(.1f);
 	
 	
 	root->addChild(n1);
@@ -54,13 +53,13 @@ TEST_F(PointLightTest, Clone)
 
 	sceneManager->nextFrame(0.0f, 0.0f);
 
-	ASSERT_TRUE(n1->hasComponent<PointLight>());
-	ASSERT_TRUE(n1->component<PointLight>()->diffuse() == 10.0f);
-	ASSERT_TRUE(n2->hasComponent<PointLight>());
-	ASSERT_TRUE(n2->component<PointLight>()->diffuse() == 0.1f);
+	ASSERT_TRUE(n1->hasComponent<SpotLight>());
+	ASSERT_TRUE(n1->component<SpotLight>()->diffuse() == 10.0f);
+	ASSERT_TRUE(n2->hasComponent<SpotLight>());
+	ASSERT_TRUE(n2->component<SpotLight>()->diffuse() == 0.1f);
 
-	PointLight::Ptr l1 = n1->component<PointLight>();
-	PointLight::Ptr l2 = n2->component<PointLight>();	
+	SpotLight::Ptr l1 = n1->component<SpotLight>();
+	SpotLight::Ptr l2 = n2->component<SpotLight>();
 	ASSERT_TRUE(l1->attenuationCoefficients()->equals(l2->attenuationCoefficients()));
 
 	Vector3::Ptr newCoeffs = Vector3::create(1.5, 1, 1.5);
