@@ -798,19 +798,19 @@ propertyHasVariable(const std::string& propertyName)
     if (!subStringIsNotEmpty(propertyName, '[', offset))
         return false;
 
-    if (offset < propertyName.size() || propertyName[offset++] != '$')
+    if (offset < propertyName.size() && propertyName[offset++] != '$')
         return false;
 
-    if (offset < propertyName.size() || propertyName[offset++] != '{')
+    if (offset < propertyName.size() && propertyName[offset++] != '{')
         return false;
 
     if (!subStringIsNotEmpty(propertyName, '}', offset))
         return false;
 
-    if (offset < propertyName.size() || propertyName[offset++] != ']')
+    if (offset < propertyName.size() && propertyName[offset++] != ']')
         return false;
 
-    if (offset < propertyName.size() || propertyName[offset++] != '.')
+    if (offset < propertyName.size() && propertyName[offset++] != '.')
         return false;
 
     return true;

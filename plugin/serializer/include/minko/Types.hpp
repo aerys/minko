@@ -73,7 +73,7 @@ namespace minko
             SOURCE  = 1,
             PNG     = 2,
             JPEG    = 3,
-            TGA     = 4,
+            TGA     = 4
         };
 
         namespace
@@ -82,7 +82,7 @@ namespace minko
             {
                 { ImageFormat::PNG, "png" },
                 { ImageFormat::JPEG, "jpg" },
-                { ImageFormat::TGA, "tga" },
+                { ImageFormat::TGA, "tga" }
             };
 
             static const auto defaultImageFormat = ImageFormat::PNG;
