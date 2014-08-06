@@ -181,8 +181,6 @@ Skinning::addedHandler(Node::Ptr node, Node::Ptr target, Node::Ptr parent)
 			}
 		}
 	}
-	
-	
 }
 
 void
@@ -423,5 +421,4 @@ Skinning::rebindDependencies(std::map<AbstractComponent::Ptr, AbstractComponent:
 	auto oldGeometry = oldSurface->geometry();
 
 	std::dynamic_pointer_cast<Surface>(componentsMap[oldSurface])->geometry(oldGeometry->clone());
-	
 }

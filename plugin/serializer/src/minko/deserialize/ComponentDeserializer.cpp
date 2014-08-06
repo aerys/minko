@@ -348,9 +348,6 @@ ComponentDeserializer::deserializeSkinning(std::string&		serializedAnimation,
 			bones.push_back(geometry::Bone::create(offsetMatrix, vertexShortIds, boneWeight));
 			boneNodes.push_back(nodeSet->nodes()[0]);
 		}
-
-		
-
 	}
 
 	return SkinningComponentDeserializer::computeSkinning(
@@ -359,7 +356,7 @@ ComponentDeserializer::deserializeSkinning(std::string&		serializedAnimation,
         bones,
 		boneNodes,
         root->children().size() == 1 ? root->children().front() : root  // FIXME (for soccerpunch) there is one extra level wrt minko studio ! ->issues w/ precomputation and collider
-   );
+	);
 }
 
 std::shared_ptr<component::AbstractComponent>

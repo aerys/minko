@@ -43,8 +43,8 @@ Node::Node() :
 	_data(data::StructureProvider::create("node")),
 	_added(Signal<Ptr, Ptr, Ptr>::create()),
 	_removed(Signal<Ptr, Ptr, Ptr>::create()),
-	_componentAdded(Signal<Ptr, Ptr, Node::AbsCtrlPtr>::create()),
-	_componentRemoved(Signal<Ptr, Ptr, Node::AbsCtrlPtr>::create()),
+	_componentAdded(Signal<Ptr, Ptr, Node::AbsCmpPtr>::create()),
+	_componentRemoved(Signal<Ptr, Ptr, Node::AbsCmpPtr>::create()),
 	_layoutsChanged(Signal<Ptr, Ptr>::create()),
 	_uuid(minko::Uuid::getUuid())
 {
@@ -62,12 +62,10 @@ Node::layouts() const
 Node::Ptr
 Node::clone(const CloneOption& option)
 {
-
 	auto clone = cloneNode();
-	//map linking nodes to their clone
-	std::map<Node::Ptr, Node::Ptr> nodeMap;
-	//map linking components to their clone
-	std::map<AbsCtrlPtr, AbsCtrlPtr>  componentsMap;
+	
+	std::map<Node::Ptr, Node::Ptr>		nodeMap;		// map linking nodes to their clone
+	std::map<AbsCmpPtr, AbsCmpPtr>	componentsMap;	// map linking components to their clone
 	
 	listItems(clone, nodeMap, componentsMap);
 	
@@ -75,20 +73,19 @@ Node::clone(const CloneOption& option)
 
 	rebindControllerDependencies(componentsMap, nodeMap, option);
 
-	typedef std::map<Node::Ptr, Node::Ptr>::iterator node_it;
-	for (node_it itn = nodeMap.begin(); itn != nodeMap.end(); itn++)
+	for (auto itn = nodeMap.begin(); itn != nodeMap.end(); itn++)
 	{
-	
 		auto node = itn->first;
 
 		auto originComponents = node->components<AbstractComponent>();
 
-		typedef std::map<AbsCtrlPtr, AbsCtrlPtr>::iterator comp_it;
-		for (comp_it itc = componentsMap.begin(); itc != componentsMap.end(); itc++)
+		for (auto itc = componentsMap.begin(); itc != componentsMap.end(); itc++)
 		{
 			auto component = itc->first;
-			//if the current node has a particular component, we clone it
-			if (std::find(originComponents.begin(), originComponents.end(), component) != originComponents.end()) {
+
+			// if the current node has a particular component, we clone it
+			if (std::find(originComponents.begin(), originComponents.end(), component) != originComponents.end())
+			{
 				nodeMap[node]->addComponent(componentsMap[component]);
 			}			
 		}	
@@ -101,7 +98,9 @@ Node::Ptr
 Node::cloneNode()
 {	
 	Node::Ptr clone = Node::create();
+
 	clone->_name = shared_from_this()->name() + "_clone";
+
 	for (auto child : children())
 		clone->addChild(child->cloneNode());
 
@@ -109,7 +108,7 @@ Node::cloneNode()
 }
 
 void
-Node::listItems(Node::Ptr clonedRoot, std::map<Node::Ptr, Node::Ptr>& nodeMap, std::map<AbsCtrlPtr, AbsCtrlPtr>& components)
+Node::listItems(Node::Ptr clonedRoot, std::map<Node::Ptr, Node::Ptr>& nodeMap, std::map<AbsCmpPtr, AbsCmpPtr>& components)
 {
 	for (auto component : _components)
 	{
@@ -122,34 +121,36 @@ Node::listItems(Node::Ptr clonedRoot, std::map<Node::Ptr, Node::Ptr>& nodeMap, s
 	{
 		auto child = children().at(childId);
 		auto clonedChild = clonedRoot->children().at(childId);
+
 		child->listItems(clonedChild, nodeMap, components);
 	}	
 }
 
 void
-Node::cloneComponents(std::map<AbsCtrlPtr, AbsCtrlPtr>& componentsMap, CloneOption option)
+Node::cloneComponents(std::map<AbsCmpPtr, AbsCmpPtr>& componentsMap, CloneOption option)
 {
-	/*for (int i = 0; i < componentsMap.size(); i++)
+	/*
+	for (int i = 0; i < componentsMap.size(); i++)
 	{
 		componentsMap[i] = componentsMap[i]->clone(option);
-	}*/
+	}
+	*/
 }
 
 void 
-Node::rebindControllerDependencies(std::map<AbsCtrlPtr, AbsCtrlPtr>& componentsMap, std::map<Node::Ptr, Node::Ptr> nodeMap, CloneOption option)
+Node::rebindControllerDependencies(std::map<AbsCmpPtr, AbsCmpPtr>& componentsMap, std::map<Node::Ptr, Node::Ptr> nodeMap, CloneOption option)
 {
-	typedef std::map<AbsCtrlPtr, AbsCtrlPtr>::iterator comp_it;
-	for (comp_it itc = componentsMap.begin(); itc != componentsMap.end(); itc++)
+	for (auto itc = componentsMap.begin(); itc != componentsMap.end(); itc++)
 	{
 		auto comp = itc->first;
 		auto compClone = std::dynamic_pointer_cast<AbstractRebindableComponent>(itc->second);
 		
-		if (compClone != 0) {
+		if (compClone != nullptr)
+		{
 			compClone->rebindDependencies(componentsMap, nodeMap, option);
 		}
 	}
 }
-
 
 Node::Ptr
 Node::layouts(Layouts value)
@@ -272,9 +273,7 @@ Node::removeComponent(std::shared_ptr<AbstractComponent> component)
 	if (!component)
 		throw std::invalid_argument("component");
 
-	std::list<AbsCtrlPtr>::iterator it = std::find(
-		_components.begin(), _components.end(), component
-	);
+	auto it = std::find(_components.begin(), _components.end(), component);
 
 	if (it == _components.end())
 		throw std::invalid_argument("component");

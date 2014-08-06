@@ -156,8 +156,6 @@ namespace minko
 				if (foundIt == _values.end())
 					throw std::invalid_argument("propertyName");
 
-				//typedef typename RemoveReference<T>::Type NonRef;
-
 				return Any::cast<T>(&foundIt->second) != nullptr;
 				
 			}

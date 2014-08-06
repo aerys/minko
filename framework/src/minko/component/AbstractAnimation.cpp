@@ -252,14 +252,8 @@ AbstractAnimation::Ptr
 AbstractAnimation::seek(const std::string& labelName)
 {
 	auto masterAnim = std::dynamic_pointer_cast<MasterAnimation>(shared_from_this());
-	if (masterAnim != nullptr)
-	{
-		return masterAnim->seek(labelName);
-	} 
-	else
-	{
-		return seek(labelTime(labelName));
-	}
+	
+	return masterAnim ? masterAnim->seek(labelName) : seek(labelTime(labelName));
 }
 
 AbstractAnimation::Ptr
@@ -451,7 +445,6 @@ AbstractAnimation::updateNextLabelIds(uint time)
 	}
 	else if (_isLooping && nextLabelTime == loopEndTime())
 	{
-		// _nextLabelIds.clear();
 		for (uint labelId = 0; labelId < _labels.size(); ++labelId)
 		{
 			if (_labels[labelId].time == loopStartTime() && 

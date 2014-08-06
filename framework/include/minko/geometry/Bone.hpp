@@ -45,26 +45,12 @@ namespace minko
 			static
 			inline
 			Ptr
-			create( Matrix4x4Ptr							offsetMatrix, 
+			create(Matrix4x4Ptr							offsetMatrix, 
 				   const std::vector<unsigned short>&	vertexIds, 
 				   const std::vector<float>&			vertexWeights)
 			{
 				return std::shared_ptr<Bone>(new Bone(offsetMatrix, vertexIds, vertexWeights));
 			}
-
-			/*inline
-			std::shared_ptr<scene::Node>
-			node() const
-			{
-				return _node;
-			}*/
-
-			/*inline
-			void
-			node(NodePtr node)
-			{
-				_node = node;
-			}*/
 
 			inline
 			Matrix4x4Ptr

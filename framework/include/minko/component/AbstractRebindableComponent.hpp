@@ -42,7 +42,6 @@ namespace minko
 			virtual
 			void
 			rebindDependencies(std::map<AbstractComponent::Ptr, AbstractComponent::Ptr>& componentsMap, std::map<NodePtr, NodePtr>& nodeMap, CloneOption option) = 0;
-			
 		};
 	}
 }

@@ -26,7 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/WriterOptions.hpp"
 #include "minko/material/Material.hpp"
 
-
 using namespace minko;
 using namespace minko::file;
 

@@ -37,10 +37,12 @@ MasterAnimation::MasterAnimation(const MasterAnimation& masterAnim, const CloneO
 	AbstractAnimation(masterAnim, option),
 	_animations()
 {
-	/*for (auto animation : masterAnim._animations) 
+	/*
+	for (auto animation : masterAnim._animations) 
 	{
 		_animations.push_back(std::dynamic_pointer_cast<Animation>(animation->clone(option)));
-	}*/
+	}
+	*/
 }
 
 AbstractComponent::Ptr
@@ -73,7 +75,8 @@ MasterAnimation::initialize()
 		std::placeholders::_2
 		));
 	
-	/*_maxTime = 0;
+	/*
+	_maxTime = 0;
 
 	for (auto& animation : _animations)
 	{
@@ -81,7 +84,8 @@ MasterAnimation::initialize()
 		_maxTime = std::max(_maxTime, animation->_maxTime);
 	}
 
-	setPlaybackWindow(0, _maxTime)->seek(0)->play();	*/
+	setPlaybackWindow(0, _maxTime)->seek(0)->play();
+	*/
 }
 
 void
@@ -109,8 +113,7 @@ MasterAnimation::targetAddedHandler(AbstractComponent::Ptr cmp,
 	if (node->hasComponent<Skinning>())
 	{
 		initAnimations();
-	}	
-
+	}
 }
 
 void
@@ -129,9 +132,8 @@ MasterAnimation::initAnimations()
 
 	for (auto& animation : _animations)
 	{
-		//animation->_master = std::dynamic_pointer_cast<MasterAnimation>(shared_from_this());
+		// animation->_master = std::dynamic_pointer_cast<MasterAnimation>(shared_from_this());
 		_maxTime = std::max(_maxTime, animation->getMaxTime());
-
 	}
 
 	setPlaybackWindow(0, _maxTime)->seek(0)->play();
@@ -300,7 +302,8 @@ MasterAnimation::update()
 void
 MasterAnimation::rebindDependencies(std::map<AbstractComponent::Ptr, AbstractComponent::Ptr>& componentsMap, std::map<NodePtr, NodePtr>& nodeMap, CloneOption option)
 {
-	/*var newAnimations : Vector.<AnimationController> = new Vector.<AnimationController>();
+	/*
+	var newAnimations : Vector.<AnimationController> = new Vector.<AnimationController>();
 
 	for (var i : int = 0; i < _animations.length; ++i)
 	{
@@ -309,7 +312,8 @@ MasterAnimation::rebindDependencies(std::map<AbstractComponent::Ptr, AbstractCom
 			newAnimations.push(newController);
 	}
 
-	_animations = newAnimations;*/
+	_animations = newAnimations;
+	*/
 
 	std::vector<AbstractAnimationPtr> newAnimations;
 
@@ -324,5 +328,4 @@ MasterAnimation::rebindDependencies(std::map<AbstractComponent::Ptr, AbstractCom
 	}
 
 	_animations = newAnimations;
-
 }
