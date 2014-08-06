@@ -27,7 +27,7 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-const std::string MODEL_FILENAME = "model/Iron_Man.scene";
+const std::string MODEL_FILENAME = "model/pirate.scene";
 const float WIDTH = 1024;
 const float HEIGHT = 1024;
 
@@ -38,26 +38,27 @@ int main(int argc, char** argv)
 	auto sceneManager = SceneManager::create(canvas->context());
 
 	// setup assets 
-	sceneManager->assets()->loader()->options()->resizeSmoothly(true);
+	//sceneManager->assets()->loader()->options()->resizeSmoothly(true);
 	sceneManager->assets()->loader()->options()->generateMipmaps(true);
-	sceneManager->assets()->loader()->options()->disposeVertexBufferAfterLoading(true);
-	sceneManager->assets()->loader()->options()->disposeTextureAfterLoading(true);
-	sceneManager->assets()->loader()->options()->disposeIndexBufferAfterLoading(true);
+	//sceneManager->assets()->loader()->options()->disposeVertexBufferAfterLoading(true);
+	//sceneManager->assets()->loader()->options()->disposeTextureAfterLoading(true);
+	//sceneManager->assets()->loader()->options()->disposeIndexBufferAfterLoading(true);
 	sceneManager->assets()->loader()->options()
 		->registerParser<file::SceneParser>("scene")
 		->registerParser<file::PNGParser>("png");
 
 	auto fxLoader = file::Loader::create(sceneManager->assets()->loader())
 		->queue("effect/Phong.effect")
-		->queue("effect/FXAA/FXAA.effect")
-		->queue("effect/Basic.effect")
-		->queue("effect/VertexNormal.effect")
+		//->queue("effect/FXAA/FXAA.effect")
+		->queue("effect/Basic.effect");
+		//->queue("effect/VertexNormal.effect")
 		//->queue("texture/noise.png")
-		->queue("effect/Depth/Depth.effect");
+		//->queue("effect/Depth/Depth.effect");
 
 	auto fxComplete = fxLoader->complete()->connect([&](file::Loader::Ptr l)
 	{
-		sceneManager->assets()->loader()->options()->effect(sceneManager->assets()->effect("effect/Basic.effect"));
+		sceneManager->assets()->loader()->options()->effect(sceneManager->assets()->effect("effect/Phong.effect"));
+		sceneManager->assets()->loader()->options()->disposeTextureAfterLoading(false);
 		sceneManager->assets()->loader()->queue(MODEL_FILENAME);
 		sceneManager->assets()->loader()->load();
 	});
@@ -65,16 +66,16 @@ int main(int argc, char** argv)
 	auto root = scene::Node::create("root")
 		->addComponent(sceneManager);
 
-	auto mesh = scene::Node::create("mesh")
+	/*auto mesh = scene::Node::create("mesh")
 		->addComponent(Transform::create());
 
 	auto mesh2 = scene::Node::create("mesh2")
-		->addComponent(Transform::create());
+		->addComponent(Transform::create());*/
 
 	auto camera = scene::Node::create("camera")
 		->addComponent(Renderer::create(0x7f7f7fff))
 		->addComponent(Transform::create(
-		Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.8f, 0.f), Vector3::create(0.f, 10.0f, 8.f))
+		Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.f, 0.f), Vector3::create(0.f, .0f, 20.f))
 		))
 		->addComponent(PerspectiveCamera::create(WIDTH / HEIGHT, (float)PI * 0.25f, .1f, 1000.f));
 	root->addChild(camera);
@@ -90,7 +91,7 @@ int main(int argc, char** argv)
 		sceneManager->assets()->geometry("cubeGeometry", cubeGeometry);
 		sceneManager->assets()->geometry("sphereGeometry", sphereGeometry);
 
-		mesh->addComponent(Surface::create(
+	/*	mesh->addComponent(Surface::create(
 			sceneManager->assets()->geometry("cubeGeometry"),
 			material::Material::create(),
 			sceneManager->assets()->effect("effect/Basic.effect")
@@ -103,7 +104,7 @@ int main(int argc, char** argv)
 			));
 
 		mesh->component<Transform>()->matrix()->appendTranslation(2.5f, 0.f, 0.f);
-		mesh2->component<Transform>()->matrix()->appendTranslation(-2.5f, 0.f, 0.f);
+		mesh2->component<Transform>()->matrix()->appendTranslation(-2.5f, 0.f, 0.f);*/
 
 
 		//root->addChild(mesh);
@@ -112,9 +113,12 @@ int main(int argc, char** argv)
 		//auto armor2 = armor->clone(CloneOption::DEEP);
 		//mesh->component<Transform>()->matrix()->prependTranslation(0, 3, 0);
 		//armor2->component<Transform>()->matrix()->prependTranslation(2, 0, 0);
-		//root->addChild(armor);
+		root->addChild(armor);
+
+		if (!armor->hasComponent<Transform>())
+			armor->addComponent(Transform::create());
 		//root->addChild(armor2);
-		int c = 0;
+		/*int c = 0;
 		for (int x = 0; x < 6; x=x+2)
 		{
 			for (int z = 0; z < 5; z++)
@@ -125,7 +129,7 @@ int main(int argc, char** argv)
 				c++;
 				std::cout << "bot no : " << c << std::endl;
 			}
-		}
+		}*/
 
 		auto meshes = scene::NodeSet::create(sceneManager->assets()->symbol(MODEL_FILENAME))->descendants(false, false)->where([=](scene::Node::Ptr node)
 		{
