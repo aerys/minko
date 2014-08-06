@@ -36,6 +36,8 @@ namespace minko
 		private:
 			typedef std::shared_ptr<animation::AbstractTimeline>	AbsTimelinePtr;
 			typedef std::shared_ptr<MasterAnimation>				MasterAnimationPtr;
+			typedef std::shared_ptr<scene::Node>					NodePtr;
+			typedef std::shared_ptr<AbstractComponent>				AbsCmpPtr;
 
 		private:
 			std::vector<AbsTimelinePtr>								_timelines;
@@ -54,7 +56,10 @@ namespace minko
 			}
 
 			AbstractComponent::Ptr
-			Animation::clone(const CloneOption& option);
+			clone(const CloneOption& option);
+
+			void
+			rebindDependencies(std::map<AbsCmpPtr, AbsCmpPtr>& componentsMap, std::map<NodePtr, NodePtr>& nodeMap, CloneOption option);
 
 			inline
 			uint

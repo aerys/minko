@@ -30,7 +30,7 @@ namespace minko
 	namespace component
 	{
 		class AbstractAnimation :
-			public virtual AbstractComponent
+			public AbstractRebindableComponent
 		{
 		public:
 			typedef std::shared_ptr<AbstractAnimation>		Ptr;
@@ -104,7 +104,7 @@ namespace minko
 
 			virtual
 			AbstractComponent::Ptr
-			AbstractAnimation::clone(const CloneOption& option) = 0;
+			clone(const CloneOption& option) = 0;
 
 			Ptr
 			seek(uint time);

@@ -84,3 +84,9 @@ Animation::update()
 		}
 	}
 }
+
+void
+Animation::rebindDependencies(std::map<AbstractComponent::Ptr, AbstractComponent::Ptr>& componentsMap, std::map<NodePtr, NodePtr>& nodeMap, CloneOption option)
+{
+	//Implement when animation clones are tested (without skinning)
+}

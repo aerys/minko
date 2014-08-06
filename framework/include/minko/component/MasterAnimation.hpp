@@ -30,8 +30,7 @@ namespace minko
 	namespace component
 	{
 		class MasterAnimation :
-			public AbstractAnimation,
-			public AbstractRebindableComponent
+			public AbstractAnimation
 		{
 		public:
 			typedef std::shared_ptr<MasterAnimation>	Ptr;

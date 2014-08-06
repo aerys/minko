@@ -69,9 +69,7 @@ Node::clone(const CloneOption& option)
 	
 	listItems(clone, nodeMap, componentsMap);
 	
-	cloneComponents(componentsMap, option);
-
-	rebindControllerDependencies(componentsMap, nodeMap, option);
+	rebindComponentsDependencies(componentsMap, nodeMap, option);
 
 	for (auto itn = nodeMap.begin(); itn != nodeMap.end(); itn++)
 	{
@@ -126,19 +124,8 @@ Node::listItems(Node::Ptr clonedRoot, std::map<Node::Ptr, Node::Ptr>& nodeMap, s
 	}	
 }
 
-void
-Node::cloneComponents(std::map<AbsCmpPtr, AbsCmpPtr>& componentsMap, CloneOption option)
-{
-	/*
-	for (int i = 0; i < componentsMap.size(); i++)
-	{
-		componentsMap[i] = componentsMap[i]->clone(option);
-	}
-	*/
-}
-
 void 
-Node::rebindControllerDependencies(std::map<AbsCmpPtr, AbsCmpPtr>& componentsMap, std::map<Node::Ptr, Node::Ptr> nodeMap, CloneOption option)
+Node::rebindComponentsDependencies(std::map<AbsCmpPtr, AbsCmpPtr>& componentsMap, std::map<Node::Ptr, Node::Ptr> nodeMap, CloneOption option)
 {
 	for (auto itc = componentsMap.begin(); itc != componentsMap.end(); itc++)
 	{

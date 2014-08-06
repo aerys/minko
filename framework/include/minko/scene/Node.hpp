@@ -116,13 +116,10 @@ namespace minko
 			cloneNode();
 
 			void
-			Node::listItems(Node::Ptr clonedRoot, std::map<Node::Ptr, Node::Ptr>& nodeMap, std::map<AbsCmpPtr, AbsCmpPtr>& components);
+			listItems(Node::Ptr clonedRoot, std::map<Node::Ptr, Node::Ptr>& nodeMap, std::map<AbsCmpPtr, AbsCmpPtr>& components);
 
 			void
-			Node::cloneComponents(std::map<AbsCmpPtr, AbsCmpPtr>& componentsMap, CloneOption option);
-
-			void
-			rebindControllerDependencies(std::map<AbsCmpPtr, AbsCmpPtr>& componentsMap, std::map<Node::Ptr, Node::Ptr> nodeMap, CloneOption option);
+			rebindComponentsDependencies(std::map<AbsCmpPtr, AbsCmpPtr>& componentsMap, std::map<Node::Ptr, Node::Ptr> nodeMap, CloneOption option);
 			
             inline
             const std::string&
