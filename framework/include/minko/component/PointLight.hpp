@@ -61,6 +61,9 @@ namespace minko
 
 			~PointLight() = default;
 
+			AbstractComponent::Ptr
+			clone(const CloneOption& option);
+	
 			bool
 			attenuationEnabled() const;
 
@@ -83,6 +86,8 @@ namespace minko
 					   float attenuationConstant,
 					   float attenuationLinear,
 					   float attenuationQuadratic);
+
+			PointLight(const PointLight& pointLight, const CloneOption& option);
 		};
 	}
 }

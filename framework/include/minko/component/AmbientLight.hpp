@@ -48,6 +48,9 @@ namespace minko
 				return al;
 			}
 
+			AbstractComponent::Ptr
+			clone(const CloneOption& option);
+
 			~AmbientLight()
 			{
 			}
@@ -71,6 +74,8 @@ namespace minko
 
 		protected:
 			AmbientLight(float ambient);
+
+			AmbientLight(const AmbientLight& ambientLight, const CloneOption& option);
 		};
 	}
 }

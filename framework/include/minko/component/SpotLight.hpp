@@ -66,19 +66,8 @@ namespace minko
 			    return light;
 			}
 
-			inline static
-			Ptr
-			create(Ptr spotLight)
-			{
-				auto light = std::shared_ptr<SpotLight>(new SpotLight(spotLight));
-
-				light->AbstractDiscreteLight::initialize();
-
-				return light;
-			}
-
 			AbstractComponent::Ptr
-			clone();
+			clone(const CloneOption& option);
 
 			inline
 			float
@@ -123,7 +112,7 @@ namespace minko
 					  float attenuationLinear,
 					  float attenuationQuadratic);
 
-			SpotLight(Ptr spotlight);
+			SpotLight(const SpotLight& spotlight, const CloneOption& option);
 
 			void 
 			initialize(float innerAngleRadians,

@@ -33,6 +33,23 @@ DirectionalLight::DirectionalLight(float diffuse,
 	data()->set("direction", _worldDirection);
 }
 
+DirectionalLight::DirectionalLight(const DirectionalLight& directionalLight, const CloneOption& option) :
+AbstractDiscreteLight("directionalLights", directionalLight.diffuse(), directionalLight.specular()),
+	_worldDirection(Vector3::create(directionalLight.data()->get<Vector3::Ptr>("direction")))
+{
+	data()->set("direction", _worldDirection);
+}
+
+AbstractComponent::Ptr
+DirectionalLight::clone(const CloneOption& option)
+{
+	auto light = std::shared_ptr<DirectionalLight>(new DirectionalLight(*this, option));
+
+	light->initialize();
+
+	return light;
+}
+
 void
 DirectionalLight::updateModelToWorldMatrix(std::shared_ptr<Matrix4x4> modelToWorld)
 {

@@ -175,10 +175,10 @@ LuaScriptManager::initializeBindings()
 		.method("create", &DirectionalLight::create)
 		.property("color", static_cast<math::Vector3::Ptr(DirectionalLight::*)()>(&AbstractLight::color));
 	_state.Class<SpotLight>("SpotLight")
-		.method("create", &SpotLight::create)
+		.method("create", static_cast<SpotLight::Ptr(*)(float, float, float, float, float, float, float)>(&SpotLight::create))
 		.property("color", static_cast<math::Vector3::Ptr(SpotLight::*)()>(&AbstractLight::color));
 	_state.Class<PointLight>("PointLight")
-		.method("create", &PointLight::create)
+		.method("create", static_cast<PointLight::Ptr(*)(float, float, float, float, float)>(&PointLight::create))
 		.property("color", static_cast<math::Vector3::Ptr(PointLight::*)()>(&AbstractLight::color));
 
     math::LuaMatrix4x4::bind(_state);
