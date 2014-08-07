@@ -34,58 +34,58 @@ namespace minko
 
         public:
             typedef std::shared_ptr<Surface>                                        Ptr;
-            typedef Signal<Ptr, const std::string&, bool>                            TechniqueChangedSignal;
-            typedef Signal<Ptr, std::shared_ptr<component::Renderer>, bool>            VisibilityChangedSignal;
+            typedef Signal<Ptr, const std::string&, bool>                           TechniqueChangedSignal;
+            typedef Signal<Ptr, std::shared_ptr<component::Renderer>, bool>         VisibilityChangedSignal;
 
         private:
             typedef std::shared_ptr<data::ArrayProvider>                            ArrayProviderPtr;
             typedef std::shared_ptr<scene::Node>                                    NodePtr;
             typedef std::shared_ptr<data::Container>                                ContainerPtr;
             typedef Signal<ContainerPtr, const std::string&>                        PropertyChangedSignal;
-            typedef PropertyChangedSignal::Slot                                        PropertyChangedSlot;
-            typedef std::shared_ptr<render::Effect>                                    EffectPtr;
-            typedef const std::string&                                                StringRef;
+            typedef PropertyChangedSignal::Slot                                     PropertyChangedSlot;
+            typedef std::shared_ptr<render::Effect>                                 EffectPtr;
+            typedef const std::string&                                              StringRef;
             typedef Signal<ArrayProviderPtr, uint>::Slot                            ArrayIndexChangedSlot;
 
 
         private:
-            std::string                                                                _name;
+            std::string                                                             _name;
 
-            std::shared_ptr<geometry::Geometry>                                        _geometry;
-			std::shared_ptr<material::Material>										_material;
-            std::shared_ptr<render::Effect>                                            _effect;
+            std::shared_ptr<geometry::Geometry>                                     _geometry;
+            std::shared_ptr<material::Material>                                     _material;
+            std::shared_ptr<render::Effect>                                         _effect;
             std::string                                                             _technique;
 
             bool                                                                    _visible;
-            std::unordered_map<std::shared_ptr<component::Renderer>, bool>            _rendererToVisibility;
-            std::unordered_map<std::shared_ptr<component::Renderer>, bool>            _rendererToComputedVisibility;
+            std::unordered_map<std::shared_ptr<component::Renderer>, bool>          _rendererToVisibility;
+            std::unordered_map<std::shared_ptr<component::Renderer>, bool>          _rendererToComputedVisibility;
 
-            TechniqueChangedSignal::Ptr                                                _techniqueChanged;
+            TechniqueChangedSignal::Ptr                                             _techniqueChanged;
             VisibilityChangedSignal::Ptr                                            _visibilityChanged;
             VisibilityChangedSignal::Ptr                                            _computedVisibilityChanged;
 
-            Signal<AbstractComponent::Ptr, NodePtr>::Slot                            _targetAddedSlot;
-            Signal<AbstractComponent::Ptr, NodePtr>::Slot                            _targetRemovedSlot;
-            Signal<NodePtr, NodePtr, NodePtr>::Slot                                    _addedSlot;
-            Signal<NodePtr, NodePtr, NodePtr>::Slot                                    _removedSlot;
+            Signal<AbstractComponent::Ptr, NodePtr>::Slot                           _targetAddedSlot;
+            Signal<AbstractComponent::Ptr, NodePtr>::Slot                           _targetRemovedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot                                 _addedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot                                 _removedSlot;
 
         public:
             static
             Ptr
-            create(std::shared_ptr<geometry::Geometry>         geometry,
-					std::shared_ptr<material::Material>		material,
-                   std::shared_ptr<render::Effect>            effect)
+            create(std::shared_ptr<geometry::Geometry>      geometry,
+                   std::shared_ptr<material::Material>      material,
+                   std::shared_ptr<render::Effect>          effect)
             {
                 return create("", geometry, material, effect, "default");
             }
 
             static
             Ptr
-            create(const std::string&                        name,
-                   std::shared_ptr<geometry::Geometry>         geometry,
-				   std::shared_ptr<material::Material>		material,
-                   std::shared_ptr<render::Effect>            effect,
-                   const std::string&                        technique)
+            create(const std::string&                       name,
+                   std::shared_ptr<geometry::Geometry>      geometry,
+                   std::shared_ptr<material::Material>      material,
+                   std::shared_ptr<render::Effect>          effect,
+                   const std::string&                       technique)
             {
                 Ptr surface(new Surface(name, geometry, material, effect, technique));
 
@@ -94,7 +94,6 @@ namespace minko
                 return surface;
             }
 
-			
 			AbstractComponent::Ptr
 			clone(const CloneOption& option);
 
@@ -127,7 +126,7 @@ namespace minko
             geometry(std::shared_ptr<geometry::Geometry>);
 
             inline
-			std::shared_ptr<material::Material>
+            std::shared_ptr<material::Material>
             material() const
             {
                 return _material;
@@ -163,6 +162,7 @@ namespace minko
             {
                 if (_rendererToVisibility.find(renderer) == _rendererToVisibility.end())
                     _rendererToVisibility[renderer] = _visible;
+
                 return _rendererToVisibility[renderer];
             }
 
@@ -219,11 +219,11 @@ namespace minko
         private:
             Surface(std::string                                name,
                     std::shared_ptr<geometry::Geometry>        geometry,
-					std::shared_ptr<material::Material>			material,
+                    std::shared_ptr<material::Material>        material,
                     std::shared_ptr<render::Effect>            effect,
-                    const std::string&                        technique);
+                    const std::string&                         technique);
 
-			Surface(const Surface& surface, const CloneOption& option);
+            Surface(const Surface& surface, const CloneOption& option);
 
             void
             initialize();

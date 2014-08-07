@@ -46,41 +46,41 @@ namespace minko
              typedef std::shared_ptr<Program>                                            ProgramPtr;
             typedef std::shared_ptr<VertexBuffer>                                        VertexBufferPtr;
             typedef std::unordered_map<std::string, SamplerState>                        SamplerStatesMap;
-            typedef std::shared_ptr<States>                                                StatesPtr;
-            typedef std::unordered_map<ProgramSignature, ProgramPtr>                    SignatureProgramMap;
-            typedef std::shared_ptr<std::function<void(ProgramPtr)>>                    OnProgramFunctionPtr;
-            typedef std::list<std::function<void(ProgramPtr)>>                            OnProgramFunctionList;
-            typedef std::unordered_map<std::string, data::MacroBinding>                    MacroBindingsMap;
+            typedef std::shared_ptr<States>                                              StatesPtr;
+            typedef std::unordered_map<ProgramSignature, ProgramPtr>                     SignatureProgramMap;
+            typedef std::shared_ptr<std::function<void(ProgramPtr)>>                     OnProgramFunctionPtr;
+            typedef std::list<std::function<void(ProgramPtr)>>                           OnProgramFunctionList;
+            typedef std::unordered_map<std::string, data::MacroBinding>                  MacroBindingsMap;
 
         private:
-            const std::string                        _name;
-            ProgramPtr                                _programTemplate;
+            const std::string                       _name;
+            ProgramPtr                              _programTemplate;
             data::BindingMap                        _attributeBindings;
             data::BindingMap                        _uniformBindings;
             data::BindingMap                        _stateBindings;
-            data::MacroBindingMap                    _macroBindings;
-            StatesPtr                                _states;
-            std::string                                _fallback;
-            SignatureProgramMap                        _signatureToProgram;
+            data::MacroBindingMap                   _macroBindings;
+            StatesPtr                               _states;
+            std::string                             _fallback;
+            SignatureProgramMap                     _signatureToProgram;
 
-            OnProgramFunctionList                    _uniformFunctions;
-            OnProgramFunctionList                    _attributeFunctions;
+            OnProgramFunctionList                   _uniformFunctions;
+            OnProgramFunctionList                   _attributeFunctions;
             OnProgramFunctionPtr                    _indexFunction;
-            std::set<std::string>                    _undefinedMacros;
-            std::set<std::string>                    _definedBoolMacros;
+            std::set<std::string>                   _undefinedMacros;
+            std::set<std::string>                   _definedBoolMacros;
             std::unordered_map<std::string, int>    _definedIntMacros;
 
         public:
             inline static
             Ptr
-            create(const std::string&                name,
-                   std::shared_ptr<render::Program>    program,
-                   const data::BindingMap&            attributeBindings,
-                   const data::BindingMap&            uniformBindings,
-                   const data::BindingMap&            stateBindings,
-                   const data::MacroBindingMap&        macroBindings,
-                   StatesPtr                         states,
-                   const std::string&                fallback)
+            create(const std::string&               name,
+                   std::shared_ptr<render::Program> program,
+                   const data::BindingMap&          attributeBindings,
+                   const data::BindingMap&          uniformBindings,
+                   const data::BindingMap&          stateBindings,
+                   const data::MacroBindingMap&     macroBindings,
+                   StatesPtr                        states,
+                   const std::string&               fallback)
             {
                 return std::shared_ptr<Pass>(new Pass(
                     name,
@@ -186,9 +186,9 @@ namespace minko
 
             std::shared_ptr<Program>
             selectProgram(FormatNameFunction,
-                          std::shared_ptr<data::Container>    targetData,
-                          std::shared_ptr<data::Container>    rendererData,
-                          std::shared_ptr<data::Container>    rootData,
+                          std::shared_ptr<data::Container>   targetData,
+                          std::shared_ptr<data::Container>   rendererData,
+                          std::shared_ptr<data::Container>   rootData,
                           std::list<std::string>&            booleanMacros,
                           std::list<std::string>&            integerMacros,
                           std::list<std::string>&            incorrectIntegerMacros);
@@ -270,14 +270,14 @@ namespace minko
             }
 
         private:
-            Pass(const std::string&                    name,
-                 std::shared_ptr<render::Program>    program,
+            Pass(const std::string&                 name,
+                 std::shared_ptr<render::Program>   program,
                  const data::BindingMap&            attributeBindings,
                  const data::BindingMap&            uniformBindings,
                  const data::BindingMap&            stateBindings,
-                 const data::MacroBindingMap&        macroBindings,
+                 const data::MacroBindingMap&       macroBindings,
                  std::shared_ptr<States>            states,
-                 const std::string&                    fallback);
+                 const std::string&                 fallback);
 
             template <typename... T>
             static

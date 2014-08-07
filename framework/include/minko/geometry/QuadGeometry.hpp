@@ -34,8 +34,8 @@ namespace minko
             typedef std::shared_ptr<QuadGeometry> Ptr;
 
         private:
-            uint        _numColumns;
-            uint        _numRows;
+            uint         _numColumns;
+            uint         _numRows;
             float        _width;
             float        _height;
 
@@ -43,10 +43,10 @@ namespace minko
             inline static
             Ptr
             create(std::shared_ptr<render::AbstractContext> context,
-                   uint                                        numColumns    = 1,
-                   uint                                        numRows        = 1,
+                   uint                                     numColumns   = 1,
+                   uint                                     numRows      = 1,
                    float                                    width        = 1.f,
-                   float                                    height        = 1.f)
+                   float                                    height       = 1.f)
             {
                 auto geom = std::shared_ptr<QuadGeometry>(new QuadGeometry(numColumns, numRows, width, height));
 
@@ -56,10 +56,10 @@ namespace minko
             }
 
         protected:
-            QuadGeometry(uint    numColumns    = 1,
-                         uint    numRows        = 1,
-                         float    width        = 1.f,
-                         float    height        = 1.f);
+            QuadGeometry(uint   numColumns  = 1,
+                         uint   numRows     = 1,
+                         float  width       = 1.f,
+                         float  height      = 1.f);
 
         private:
             void

@@ -91,12 +91,12 @@ OpenGLES2Context::initializeDepthFuncsMap()
 {
     CompareFuncsMap m;
 
-    m[CompareMode::ALWAYS]            = GL_ALWAYS;
+    m[CompareMode::ALWAYS]           = GL_ALWAYS;
     m[CompareMode::EQUAL]            = GL_EQUAL;
-    m[CompareMode::GREATER]            = GL_GREATER;
+    m[CompareMode::GREATER]          = GL_GREATER;
     m[CompareMode::GREATER_EQUAL]    = GL_GEQUAL;
-    m[CompareMode::LESS]            = GL_LESS;
-    m[CompareMode::LESS_EQUAL]        = GL_LEQUAL;
+    m[CompareMode::LESS]             = GL_LESS;
+    m[CompareMode::LESS_EQUAL]       = GL_LEQUAL;
     m[CompareMode::NEVER]            = GL_NEVER;
     m[CompareMode::NOT_EQUAL]        = GL_NOTEQUAL;
 
@@ -111,12 +111,12 @@ OpenGLES2Context::initializeStencilOperationsMap()
 
     m[StencilOperation::KEEP]        = GL_KEEP;
     m[StencilOperation::ZERO]        = GL_ZERO;
-    m[StencilOperation::REPLACE]    = GL_REPLACE;
+    m[StencilOperation::REPLACE]     = GL_REPLACE;
     m[StencilOperation::INCR]        = GL_INCR;
-    m[StencilOperation::INCR_WRAP]    = GL_INCR_WRAP;
+    m[StencilOperation::INCR_WRAP]   = GL_INCR_WRAP;
     m[StencilOperation::DECR]        = GL_DECR;
-    m[StencilOperation::DECR_WRAP]    = GL_DECR_WRAP;
-    m[StencilOperation::INVERT]        = GL_INVERT;
+    m[StencilOperation::DECR_WRAP]   = GL_DECR_WRAP;
+    m[StencilOperation::INVERT]      = GL_INVERT;
 
     return m;
 }

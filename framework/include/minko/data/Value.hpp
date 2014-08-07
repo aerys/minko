@@ -33,7 +33,7 @@ namespace minko
         class Value
         {
         public:
-            typedef std::shared_ptr<Value> Ptr;
+            typedef std::shared_ptr<Value>  Ptr;
 
         protected:
             std::shared_ptr<Signal<Ptr>>    _changed;

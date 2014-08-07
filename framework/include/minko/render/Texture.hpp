@@ -37,17 +37,17 @@ namespace minko
             typedef std::shared_ptr<AbstractContext>    AbstractContextPtr;
 
         private:
-            std::vector<unsigned char>    _data;
+            std::vector<unsigned char>                  _data;
 
         public:
             inline static
             Ptr
             create(AbstractContextPtr    context,
-                   unsigned int            width,
-                   unsigned int            height,
-                   bool                    mipMapping                  = false,
-                   bool                    optimizeForRenderToTexture  = false,
-                   bool                    resizeSmoothly                = true,
+                   unsigned int          width,
+                   unsigned int          height,
+                   bool                  mipMapping                  = false,
+                   bool                  optimizeForRenderToTexture  = false,
+                   bool                  resizeSmoothly              = true,
                    const std::string&    filename                    = "")
             {
                 return std::shared_ptr<Texture>(
@@ -76,10 +76,10 @@ namespace minko
             }
 
             void
-            data(unsigned char*,
-                 TextureFormat    format        = TextureFormat::RGBA,
+            data(unsigned char* data,
+                 TextureFormat  format      = TextureFormat::RGBA,
                  int            widthGPU    = -1,
-                 int            heightGPU    = -1);
+                 int            heightGPU   = -1);
 
             void
             dispose();
@@ -91,7 +91,7 @@ namespace minko
             upload();
 
             void
-            uploadMipLevel(uint                level,
+            uploadMipLevel(uint              level,
                            unsigned char*    data);
 
             ~Texture()
@@ -100,13 +100,13 @@ namespace minko
             }
 
         private:
-            Texture(AbstractContextPtr    context,
+            Texture(AbstractContextPtr  context,
                     unsigned int        width,
                     unsigned int        height,
                     bool                mipMapping,
                     bool                optimizeForRenderToTexture,
                     bool                resizeSmoothly,
-                    const std::string&    filename);
+                    const std::string&  filename);
         };
     }
 }

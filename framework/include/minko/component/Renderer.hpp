@@ -36,69 +36,69 @@ namespace minko
             public AbstractComponent
         {
         public:
-            typedef std::shared_ptr<Renderer>                            Ptr;
+            typedef std::shared_ptr<Renderer>                                   Ptr;
 
         private:
-            typedef std::shared_ptr<scene::Node>                        NodePtr;
-            typedef std::shared_ptr<AbstractComponent>                    AbsCmpPtr;
-            typedef std::shared_ptr<render::AbstractContext>            AbsContext;
-            typedef std::shared_ptr<Surface>                            SurfacePtr;
-            typedef std::shared_ptr<render::DrawCall>                    DrawCallPtr;
-            typedef std::list<DrawCallPtr>                                DrawCallList;
-            typedef std::shared_ptr<SceneManager>                        SceneManagerPtr;
-            typedef std::shared_ptr<render::AbstractTexture>            AbsTexturePtr;
-            typedef std::shared_ptr<render::Effect>                        EffectPtr;
-            typedef std::shared_ptr<render::DrawCallPool>                DrawCallFactoryPtr;
-            typedef std::shared_ptr<data::AbstractFilter>                AbsFilterPtr;
-            typedef Signal<SurfacePtr, const std::string&, bool>::Slot    SurfaceTechniqueChangedSlot;
-            typedef Signal<AbsFilterPtr, SurfacePtr>::Slot                FilterChangedSlot;
-            typedef Signal<Ptr, AbsFilterPtr, data::BindingSource, SurfacePtr>        RendererFilterChangedSignal;
+            typedef std::shared_ptr<scene::Node>                                NodePtr;
+            typedef std::shared_ptr<AbstractComponent>                          AbsCmpPtr;
+            typedef std::shared_ptr<render::AbstractContext>                    AbsContext;
+            typedef std::shared_ptr<Surface>                                    SurfacePtr;
+            typedef std::shared_ptr<render::DrawCall>                           DrawCallPtr;
+            typedef std::list<DrawCallPtr>                                      DrawCallList;
+            typedef std::shared_ptr<SceneManager>                               SceneManagerPtr;
+            typedef std::shared_ptr<render::AbstractTexture>                    AbsTexturePtr;
+            typedef std::shared_ptr<render::Effect>                             EffectPtr;
+            typedef std::shared_ptr<render::DrawCallPool>                       DrawCallFactoryPtr;
+            typedef std::shared_ptr<data::AbstractFilter>                       AbsFilterPtr;
+            typedef Signal<SurfacePtr, const std::string&, bool>::Slot          SurfaceTechniqueChangedSlot;
+            typedef Signal<AbsFilterPtr, SurfacePtr>::Slot                      FilterChangedSlot;
+            typedef Signal<Ptr, AbsFilterPtr, data::BindingSource, SurfacePtr>  RendererFilterChangedSignal;
 
         private:
-            std::string                                                    _name;
+            std::string                                                         _name;
 
-            DrawCallList                                                _drawCalls;
-            std::unordered_map<SurfacePtr, DrawCallList>                _surfaceDrawCalls;
+            DrawCallList                                                        _drawCalls;
+            std::unordered_map<SurfacePtr, DrawCallList>                        _surfaceDrawCalls;
 
-            unsigned int                                                _backgroundColor;
-            render::ScissorBox                                            _viewportBox;
-            render::ScissorBox                                            _scissorBox;
-            std::shared_ptr<SceneManager>                                _sceneManager;
-            Signal<Ptr>::Ptr                                            _renderingBegin;
-            Signal<Ptr>::Ptr                                            _renderingEnd;
-            Signal<Ptr>::Ptr                                            _beforePresent;
-            AbsTexturePtr                                                _renderTarget;
+            unsigned int                                                        _backgroundColor;
+            render::ScissorBox                                                  _viewportBox;
+            render::ScissorBox                                                  _scissorBox;
+            std::shared_ptr<SceneManager>                                       _sceneManager;
+            Signal<Ptr>::Ptr                                                    _renderingBegin;
+            Signal<Ptr>::Ptr                                                    _renderingEnd;
+            Signal<Ptr>::Ptr                                                    _beforePresent;
+            AbsTexturePtr                                                       _renderTarget;
 
-            std::set<std::shared_ptr<Surface>>                            _toCollect;
-            EffectPtr                                                    _effect;
-            float                                                        _priority;
-            bool                                                        _enabled;
+            std::set<std::shared_ptr<Surface>>                                  _toCollect;
+            EffectPtr                                                           _effect;
+            float                                                               _priority;
+            bool                                                                _enabled;
 
-            Signal<AbsCmpPtr, NodePtr>::Slot                            _targetAddedSlot;
-            Signal<AbsCmpPtr, NodePtr>::Slot                            _targetRemovedSlot;
-            Signal<NodePtr, NodePtr, NodePtr>::Slot                        _addedSlot;
-            Signal<NodePtr, NodePtr, NodePtr>::Slot                        _removedSlot;
-            Signal<NodePtr, NodePtr, NodePtr>::Slot                        _rootDescendantAddedSlot;
-            Signal<NodePtr, NodePtr, NodePtr>::Slot                        _rootDescendantRemovedSlot;
-            Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot                    _componentAddedSlot;
-            Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot                    _componentRemovedSlot;
-            Signal<SceneManagerPtr, uint, AbsTexturePtr>::Slot            _renderingBeginSlot;
-            std::unordered_map<SurfacePtr, SurfaceTechniqueChangedSlot>    _surfaceTechniqueChangedSlot;
+            Signal<AbsCmpPtr, NodePtr>::Slot                                    _targetAddedSlot;
+            Signal<AbsCmpPtr, NodePtr>::Slot                                    _targetRemovedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot                             _addedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot                             _removedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot                             _rootDescendantAddedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot                             _rootDescendantRemovedSlot;
+            Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot                           _componentAddedSlot;
+            Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot                           _componentRemovedSlot;
+            Signal<SceneManagerPtr, uint, AbsTexturePtr>::Slot                  _renderingBeginSlot;
+            std::unordered_map<SurfacePtr, SurfaceTechniqueChangedSlot>         _surfaceTechniqueChangedSlot;
 
-            DrawCallFactoryPtr                                            _drawCallPool;
+            DrawCallFactoryPtr                                                  _drawCallPool;
 
-            std::set<AbsFilterPtr>                                        _targetDataFilters;
-            std::set<AbsFilterPtr>                                        _rendererDataFilters;
-            std::set<AbsFilterPtr>                                        _rootDataFilters;
-            std::shared_ptr<data::LightMaskFilter>                        _lightMaskFilter;
+            std::set<AbsFilterPtr>                                              _targetDataFilters;
+            std::set<AbsFilterPtr>                                              _rendererDataFilters;
+            std::set<AbsFilterPtr>                                              _rootDataFilters;
+            std::shared_ptr<data::LightMaskFilter>                              _lightMaskFilter;
 
-            std::unordered_map<AbsFilterPtr, FilterChangedSlot>            _targetDataFilterChangedSlots;
-            std::unordered_map<AbsFilterPtr, FilterChangedSlot>            _rendererDataFilterChangedSlots;
-            std::unordered_map<AbsFilterPtr, FilterChangedSlot>            _rootDataFilterChangedSlots;
+            std::unordered_map<AbsFilterPtr, FilterChangedSlot>                 _targetDataFilterChangedSlots;
+            std::unordered_map<AbsFilterPtr, FilterChangedSlot>                 _rendererDataFilterChangedSlots;
+            std::unordered_map<AbsFilterPtr, FilterChangedSlot>                 _rootDataFilterChangedSlots;
 
-            std::shared_ptr<RendererFilterChangedSignal>                _filterChanged;
+            std::shared_ptr<RendererFilterChangedSignal>                        _filterChanged;
 
-            static const unsigned int                                    NUM_FALLBACK_ATTEMPTS;
+            static const unsigned int                                           NUM_FALLBACK_ATTEMPTS;
 
         public:
             inline static
@@ -113,11 +113,11 @@ namespace minko
 
             inline static
             Ptr
-            create(uint                    backgroundColor,
-                   AbsTexturePtr        renderTarget = nullptr,
-                   EffectPtr            effect            = nullptr,
-                   float                priority        = 0.f,
-                   std::string            name            = "")
+            create(uint                 backgroundColor,
+                   AbsTexturePtr        renderTarget        = nullptr,
+                   EffectPtr            effect              = nullptr,
+                   float                priority            = 0.f,
+                   std::string          name                = "")
             {
                 auto ctrl = std::shared_ptr<Renderer>(new Renderer(renderTarget, effect, priority));
 
@@ -239,7 +239,7 @@ namespace minko
 
             void
             render(std::shared_ptr<render::AbstractContext> context,
-                   AbsTexturePtr         renderTarget = nullptr);
+                   AbsTexturePtr renderTarget = nullptr);
 
             inline
             Signal<Ptr>::Ptr
@@ -291,8 +291,8 @@ namespace minko
 
         private:
             Renderer(AbsTexturePtr        renderTarget = nullptr,
-                     EffectPtr            effect            = nullptr,
-                     float                priority        = 0.f);
+                     EffectPtr            effect       = nullptr,
+                     float                priority     = 0.f);
 
 			Renderer(const Renderer& renderer, const CloneOption& option);
 
@@ -337,7 +337,7 @@ namespace minko
 
             void
             sceneManagerRenderingBeginHandler(std::shared_ptr<SceneManager>    sceneManager,
-                                              uint                            frameId,
+                                              uint                             frameId,
                                               AbsTexturePtr                    renderTarget);
 
             void

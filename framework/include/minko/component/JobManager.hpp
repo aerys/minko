@@ -37,12 +37,12 @@ namespace minko
             class Job
             {
             public :
-                typedef std::shared_ptr<Job> Ptr;
+                typedef std::shared_ptr<Job>    Ptr;
 
                 friend JobManager;
 
             protected :
-                std::shared_ptr<JobManager>        _jobManager;
+                std::shared_ptr<JobManager>     _jobManager;
                 bool                            _running;
                 bool                            _oneStepPerFrame;
 
@@ -107,16 +107,16 @@ namespace minko
             };
 
         public:
-            typedef std::shared_ptr<JobManager>    Ptr;
+            typedef std::shared_ptr<JobManager>     Ptr;
 
         private:
-            typedef std::shared_ptr<scene::Node> NodePtr;
+            typedef std::shared_ptr<scene::Node>    NodePtr;
 
         private:
-            unsigned int            _loadingFramerate;
-            float                    _frameTime;
-            std::vector<Job::Ptr>    _jobs;
-            clock_t                    _frameStartTime;
+            unsigned int                            _loadingFramerate;
+            float                                   _frameTime;
+            std::vector<Job::Ptr>                   _jobs;
+            clock_t                                 _frameStartTime;
 
         public:
             static

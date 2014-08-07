@@ -104,12 +104,13 @@ namespace minko
         ImageFormat
         imageFormatFromExtension(const std::string& extension)
         {
-            auto imageFormatToExtensionPairIt = std::find_if(imageFormatToExtensionMap.begin(),
-                                              imageFormatToExtensionMap.end(),
-            [=](const std::pair<ImageFormat, std::string>& imageFormatToExtensionPair)
-            {
-                return imageFormatToExtensionPair.second == extension;
-            });
+            auto imageFormatToExtensionPairIt = std::find_if(
+                imageFormatToExtensionMap.begin(),
+                imageFormatToExtensionMap.end(),
+                [=](const std::pair<ImageFormat, std::string>& imageFormatToExtensionPair)
+                {
+                    return imageFormatToExtensionPair.second == extension;
+                });
 
             if (imageFormatToExtensionPairIt == imageFormatToExtensionMap.end())
                 return ImageFormat::SOURCE;

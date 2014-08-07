@@ -32,21 +32,21 @@ namespace minko
         class Touch
         {
         public:
-            typedef std::shared_ptr<Touch> Ptr;
+            typedef std::shared_ptr<Touch>      Ptr;
 
         protected:
-            std::shared_ptr<AbstractCanvas> _canvas;
+            std::shared_ptr<AbstractCanvas>     _canvas;
 
-            int                                  _fingerId;
+            int                                 _fingerId;
 
-            float                                _x;
-            float                                _y;
-            float                                _dx;
-            float                                _dy;
+            float                               _x;
+            float                               _y;
+            float                               _dx;
+            float                               _dy;
 
-            Signal<Ptr, float, float>::Ptr        _touchMotion; // dx, dy
-            Signal<Ptr, float, float>::Ptr        _touchDown; // x, y
-            Signal<Ptr, float, float>::Ptr        _touchUp; // x, y
+            Signal<Ptr, float, float>::Ptr      _touchMotion; // dx, dy
+            Signal<Ptr, float, float>::Ptr      _touchDown; // x, y
+            Signal<Ptr, float, float>::Ptr      _touchUp; // x, y
 
             // Gestures
             Signal<Ptr>::Ptr                    _swipeRight;

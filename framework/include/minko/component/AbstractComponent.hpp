@@ -37,12 +37,12 @@ namespace minko
             typedef std::shared_ptr<AbstractComponent>                    Ptr;
 
         private:
-            std::vector<std::shared_ptr<scene::Node>>                    _targets;
+            std::vector<std::shared_ptr<scene::Node>>                      _targets;
             Layouts                                                        _layoutMask;
 
-            std::shared_ptr<Signal<Ptr, std::shared_ptr<scene::Node>>>    _targetAdded;
-            std::shared_ptr<Signal<Ptr, std::shared_ptr<scene::Node>>>    _targetRemoved;
-            std::shared_ptr<Signal<Ptr>>                                _layoutMaskChanged;
+            std::shared_ptr<Signal<Ptr, std::shared_ptr<scene::Node>>>     _targetAdded;
+            std::shared_ptr<Signal<Ptr, std::shared_ptr<scene::Node>>>     _targetRemoved;
+            std::shared_ptr<Signal<Ptr>>                                   _layoutMaskChanged;
 
         public:
             AbstractComponent(Layouts layoutMask = scene::Layout::Mask::EVERYTHING) :

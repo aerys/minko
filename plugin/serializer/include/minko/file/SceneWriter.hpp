@@ -41,24 +41,24 @@ namespace minko
         {
         public:
             typedef std::shared_ptr<SceneWriter>                                                    Ptr;
-            typedef msgpack::type::tuple<std::string, uint, uint, std::vector<uint>, std::string>    SerializedNode;
+            typedef msgpack::type::tuple<std::string, uint, uint, std::vector<uint>, std::string>   SerializedNode;
 
         private:
-            typedef std::shared_ptr<file::Dependency>                     DependencyPtr;
+            typedef std::shared_ptr<file::Dependency>                    DependencyPtr;
             typedef std::shared_ptr<scene::Node>                         NodePtr;
-            typedef std::function<std::string(NodePtr, DependencyPtr)>    NodeWriterFunc;
+            typedef std::function<std::string(NodePtr, DependencyPtr)>   NodeWriterFunc;
             typedef std::shared_ptr<component::AbstractComponent>        AbsComponentPtr;
-            typedef std::shared_ptr<file::AssetLibrary>                    AssetLibraryPtr;
-            typedef std::shared_ptr<Options>                            OptionsPtr;
+            typedef std::shared_ptr<file::AssetLibrary>                  AssetLibraryPtr;
+            typedef std::shared_ptr<Options>                             OptionsPtr;
 
         private:
-            static std::map<const std::type_info*, NodeWriterFunc> _componentIdToWriteFunction;
+            static std::map<const std::type_info*, NodeWriterFunc>       _componentIdToWriteFunction;
 
         public:
             static
             void
-            registerComponent(const std::type_info*    componentType,
-                              NodeWriterFunc        readFunction);
+            registerComponent(const std::type_info*     componentType,
+                              NodeWriterFunc            readFunction);
 
             inline static
             Ptr
@@ -74,11 +74,11 @@ namespace minko
                   std::shared_ptr<WriterOptions>        writerOptions);
 
             SerializedNode
-            writeNode(std::shared_ptr<scene::Node>            node,
-                      std::vector<std::string>&                serializedControllerList,
-                      std::map<AbsComponentPtr, int>&        controllerMap,
-                      AssetLibraryPtr                        assetLibrary,
-                      DependencyPtr                            dependency);
+            writeNode(std::shared_ptr<scene::Node>      node,
+                      std::vector<std::string>&         serializedControllerList,
+                      std::map<AbsComponentPtr, int>&   controllerMap,
+                      AssetLibraryPtr                   assetLibrary,
+                      DependencyPtr                     dependency);
 
         private :
             inline

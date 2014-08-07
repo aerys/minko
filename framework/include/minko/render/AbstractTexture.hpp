@@ -40,7 +40,7 @@ namespace minko
             static const uint MAX_SIZE;
 
         protected:
-            const TextureType    _type;
+            const TextureType   _type;
             unsigned int        _width;
             unsigned int        _height;
             unsigned int        _widthGPU;    // always power of 2
@@ -48,7 +48,7 @@ namespace minko
             bool                _mipMapping;
             bool                _resizeSmoothly;
             bool                _optimizeForRenderToTexture;
-            std::string            _filename;
+            std::string         _filename;
 
         public:
             inline
@@ -88,43 +88,36 @@ namespace minko
 
             virtual
             void
-            data(unsigned char*,
-                 TextureFormat    format        = TextureFormat::RGBA,
-                 int            widthGPU    = -1,
-                 int            heightGPU    = -1) = 0;
-
-            //virtual
-            //void
-            //uploadMipLevel(uint    level,
-            //               unsigned char*) = 0;
+            data(unsigned char*     data,
+                 TextureFormat      format      = TextureFormat::RGBA,
+                 int                widthGPU    = -1,
+                 int                heightGPU   = -1) = 0;
 
             virtual
             void
             disposeData() = 0;
 
         protected:
-            AbstractTexture(TextureType            type,
-                            AbstractContextPtr    context,
+            AbstractTexture(TextureType         type,
+                            AbstractContextPtr  context,
                             unsigned int        width,
                             unsigned int        height,
                             bool                mipMapping,
                             bool                optimizeForRenderToTexture,
                             bool                resizeSmoothly,
-                            const std::string&    filename);
+                            const std::string&  filename);
 
-            ~AbstractTexture()
-            {
-            }
+            ~AbstractTexture() = default;
 
             static
             void
-            resizeData(unsigned int width,
-                       unsigned int height,
-                       std::vector<unsigned char>&    data,
-                       unsigned int newWidth,
-                       unsigned int newHeight,
-                       bool resizeSmoothly,
-                       std::vector<unsigned char>&    newData);
+            resizeData(unsigned int                 width,
+                       unsigned int                 height,
+                       std::vector<unsigned char>&  data,
+                       unsigned int                 newWidth,
+                       unsigned int                 newHeight,
+                       bool                         resizeSmoothly,
+                       std::vector<unsigned char>&  newData);
 
             uint
             getMipmapWidth(uint level) const;

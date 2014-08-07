@@ -35,22 +35,22 @@ namespace minko
             typedef std::shared_ptr<Effect>    Ptr;
 
         private:
-            typedef std::shared_ptr<Pass>                                        PassPtr;
-            typedef std::shared_ptr<VertexBuffer>                                VertexBufferPtr;
-            typedef std::shared_ptr<std::function<void(PassPtr)>>                OnPassFunctionPtr;
-            typedef std::list<std::function<void(PassPtr)>>                        OnPassFunctionList;
-            typedef std::vector<PassPtr>                                         Technique;
+            typedef std::shared_ptr<Pass>                                       PassPtr;
+            typedef std::shared_ptr<VertexBuffer>                               VertexBufferPtr;
+            typedef std::shared_ptr<std::function<void(PassPtr)>>               OnPassFunctionPtr;
+            typedef std::list<std::function<void(PassPtr)>>                     OnPassFunctionList;
+            typedef std::vector<PassPtr>                                        Technique;
             typedef Signal<Ptr, const std::string&, const std::string&>::Ptr    TechniqueChangedSignalPtr;
 
         private:
-            std::unordered_map<std::string, Technique>        _techniques;
-            std::unordered_map<std::string, std::string>    _fallback;
-            std::shared_ptr<data::Provider>                    _data;
+            std::unordered_map<std::string, Technique>                          _techniques;
+            std::unordered_map<std::string, std::string>                        _fallback;
+            std::shared_ptr<data::Provider>                                     _data;
 
-            OnPassFunctionList                                _uniformFunctions;
-            OnPassFunctionList                                _attributeFunctions;
-            OnPassFunctionPtr                                _indexFunction;
-            OnPassFunctionList                                _macroFunctions;
+            OnPassFunctionList                                                  _uniformFunctions;
+            OnPassFunctionList                                                  _attributeFunctions;
+            OnPassFunctionPtr                                                   _indexFunction;
+            OnPassFunctionList                                                  _macroFunctions;
 
         public:
             inline static

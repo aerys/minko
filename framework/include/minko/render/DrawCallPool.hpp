@@ -49,60 +49,60 @@ namespace minko
             public std::enable_shared_from_this<DrawCallPool>
         {
         public:
-            typedef std::shared_ptr<DrawCallPool>                                                        Ptr;
+            typedef std::shared_ptr<DrawCallPool>                                                       Ptr;
 
         private:
-            typedef std::shared_ptr<DrawCall>                                                            DrawCallPtr;
-            typedef std::shared_ptr<math::Vector3>                                                        Vector3Ptr;
+            typedef std::shared_ptr<DrawCall>                                                           DrawCallPtr;
+            typedef std::shared_ptr<math::Vector3>                                                      Vector3Ptr;
             typedef std::shared_ptr<data::Container>                                                    ContainerPtr;
-            typedef std::shared_ptr<component::Surface>                                                    SurfacePtr;
+            typedef std::shared_ptr<component::Surface>                                                 SurfacePtr;
             typedef std::shared_ptr<component::Renderer>                                                RendererPtr;
-            typedef std::shared_ptr<render::Pass>                                                        PassPtr;
+            typedef std::shared_ptr<render::Pass>                                                       PassPtr;
             typedef std::shared_ptr<scene::Node>                                                        NodePtr;
             typedef std::shared_ptr<data::ArrayProvider>                                                ArrayProviderPtr;
-            typedef std::shared_ptr<data::AbstractFilter>                                                AbstractFilterPtr;
+            typedef std::shared_ptr<data::AbstractFilter>                                               AbstractFilterPtr;
 
-            typedef std::unordered_set<std::string>                                                        Techniques;
+            typedef std::unordered_set<std::string>                                                     Techniques;
 
-            typedef Signal<DrawCallPtr, ContainerPtr, const std::string&>                                DrawCallMacroChanged;
+            typedef Signal<DrawCallPtr, ContainerPtr, const std::string&>                               DrawCallMacroChanged;
             typedef Signal<ContainerPtr, const std::string&>                                            PropertyChanged;
             typedef Signal<SurfacePtr, const std::string&, bool>                                        TechniqueChanged;
-            typedef Signal<SurfacePtr, RendererPtr, bool>                                                VisibilityChanged;
-            typedef Signal<DrawCallPtr>                                                                    ZSortNeeded;
-            typedef Signal<ArrayProviderPtr, uint>                                                        ArrayIndexChanged;
-            typedef Signal<RendererPtr, AbstractFilterPtr, data::BindingSource, SurfacePtr>                RendererFilterChanged;
+            typedef Signal<SurfacePtr, RendererPtr, bool>                                               VisibilityChanged;
+            typedef Signal<DrawCallPtr>                                                                 ZSortNeeded;
+            typedef Signal<ArrayProviderPtr, uint>                                                      ArrayIndexChanged;
+            typedef Signal<RendererPtr, AbstractFilterPtr, data::BindingSource, SurfacePtr>             RendererFilterChanged;
 
         private:
-            static const unsigned int                                                                    NUM_FALLBACK_ATTEMPTS;
-            static std::unordered_map<std::string, std::pair<std::string, int>>                            _variablePropertyNameToPosition;
-            static std::unordered_map<DrawCallPtr, Vector3Ptr>                                            _cachedDrawcallPositions; // in eye space
+            static const unsigned int                                                                   NUM_FALLBACK_ATTEMPTS;
+            static std::unordered_map<std::string, std::pair<std::string, int>>                         _variablePropertyNameToPosition;
+            static std::unordered_map<DrawCallPtr, Vector3Ptr>                                          _cachedDrawcallPositions; // in eye space
 
-            RendererPtr                                                                                    _renderer;
+            RendererPtr                                                                                 _renderer;
 
             // surface that will generate new draw call next frame
             std::set<SurfacePtr>                                                                        _toCollect;
             std::set<SurfacePtr>                                                                        _toRemove;
             std::set<SurfacePtr>                                                                        _invisibleSurfaces;
 
-            std::unordered_map<SurfacePtr, std::list<DrawCallPtr>>                                        _surfaceToDrawCalls;
-            std::unordered_map<DrawCallPtr, SurfacePtr>                                                    _drawcallToSurface;
-            std::unordered_map<DrawCallPtr, DrawCallMacroChanged::Slot>                                    _drawcallToMacroChangedSlot;
-            std::unordered_map<DrawCallPtr, ZSortNeeded::Slot>                                            _drawcallToZSortNeededSlot;
+            std::unordered_map<SurfacePtr, std::list<DrawCallPtr>>                                      _surfaceToDrawCalls;
+            std::unordered_map<DrawCallPtr, SurfacePtr>                                                 _drawcallToSurface;
+            std::unordered_map<DrawCallPtr, DrawCallMacroChanged::Slot>                                 _drawcallToMacroChangedSlot;
+            std::unordered_map<DrawCallPtr, ZSortNeeded::Slot>                                          _drawcallToZSortNeededSlot;
             std::unordered_map<SurfacePtr, ContainerPtr>                                                _surfaceToRootContainer;
             std::unordered_map<SurfacePtr, uint>                                                        _surfaceToMaterialProviderIndex;
-            std::list<DrawCallPtr>                                                                        _drawCalls;
+            std::list<DrawCallPtr>                                                                      _drawCalls;
 
-            std::set<DrawCallPtr>                                                                        _dirtyDrawCalls;
+            std::set<DrawCallPtr>                                                                       _dirtyDrawCalls;
             bool                                                                                        _mustZSort; // forces z-sorting at next frame
 
-            std::unordered_map<SurfacePtr, TechniqueChanged::Slot>                                        _surfaceToTechniqueChangedSlot;
+            std::unordered_map<SurfacePtr, TechniqueChanged::Slot>                                      _surfaceToTechniqueChangedSlot;
             std::unordered_multimap<SurfacePtr, VisibilityChanged::Slot>                                _surfaceToVisibilityChangedSlots;
             std::unordered_multimap<SurfacePtr, ArrayIndexChanged::Slot>                                _surfaceToIndexChangedSlots;
 
-            std::unordered_map<SurfacePtr, std::unordered_map<std::string, Techniques>>                    _surfaceBadMacroToTechniques;
-            std::unordered_map<SurfacePtr, std::unordered_map<std::string, PropertyChanged::Slot>>        _surfaceBadMacroToChangedSlot;
+            std::unordered_map<SurfacePtr, std::unordered_map<std::string, Techniques>>                 _surfaceBadMacroToTechniques;
+            std::unordered_map<SurfacePtr, std::unordered_map<std::string, PropertyChanged::Slot>>      _surfaceBadMacroToChangedSlot;
 
-            RendererFilterChanged::Slot                                                                    _rendererFilterChangedSlot;
+            RendererFilterChanged::Slot                                                                 _rendererFilterChangedSlot;
 
         public:
             inline static
@@ -186,7 +186,7 @@ namespace minko
             rendererFilterChangedHandler(RendererPtr, AbstractFilterPtr, data::BindingSource, SurfacePtr);
 
             std::string
-            formatPropertyName(const std::string&                                rawPropertyName,
+            formatPropertyName(const std::string&                               rawPropertyName,
                                std::unordered_map<std::string, std::string>&    variablesToValue);
 
             static

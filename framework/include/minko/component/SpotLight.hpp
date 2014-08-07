@@ -31,25 +31,25 @@ namespace minko
             public AbstractDiscreteLight
         {
         public:
-            typedef std::shared_ptr<SpotLight> Ptr;
+            typedef std::shared_ptr<SpotLight>  Ptr;
 
         private:
-            float                            _cosInnerConeAngle;
-            float                            _cosOuterConeAngle;
-            std::shared_ptr<math::Vector3>    _attenuationCoeffs;
-            std::shared_ptr<math::Vector3>    _worldPosition;
-            std::shared_ptr<math::Vector3>    _worldDirection;
+            float                               _cosInnerConeAngle;
+            float                               _cosOuterConeAngle;
+            std::shared_ptr<math::Vector3>      _attenuationCoeffs;
+            std::shared_ptr<math::Vector3>      _worldPosition;
+            std::shared_ptr<math::Vector3>      _worldDirection;
 
         public:
             inline static
             Ptr
-            create(float innerAngleRadians        = float(M_PI) * 0.25f,
-                   float outerAngleRadians        = -1.0f,
+            create(float innerAngleRadians      = float(M_PI) * 0.25f,
+                   float outerAngleRadians      = -1.0f,
                    float diffuse                = 1.0f,
-                   float specular                = 1.0f,
+                   float specular               = 1.0f,
                    float attenuationConstant    = -1.0f,
-                   float attenuationLinear        = -1.0f,
-                   float attenuationQuadratic    = -1.0f)
+                   float attenuationLinear      = -1.0f,
+                   float attenuationQuadratic   = -1.0f)
             {
                 auto light = std::shared_ptr<SpotLight>(
                     new SpotLight(

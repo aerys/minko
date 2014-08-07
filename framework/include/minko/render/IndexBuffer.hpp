@@ -41,7 +41,7 @@ namespace minko
             typedef std::shared_ptr<AbstractContext>    AbsContextPtr;
 
         private:
-            std::vector<unsigned short>                    _data;
+            std::vector<unsigned short>                 _data;
             unsigned int                                _numIndices;
 
             std::shared_ptr<Signal<Ptr>>                _changed;
@@ -57,7 +57,7 @@ namespace minko
             inline static
             Ptr
             create(AbsContextPtr                        context,
-                   const std::vector<unsigned short>&    data)
+                   const std::vector<unsigned short>&   data)
             {
                 Ptr ptr = std::shared_ptr<IndexBuffer>(new IndexBuffer(context, data));
 
@@ -136,30 +136,27 @@ namespace minko
                 _numIndices(0),
                 _changed(Signal<IndexBuffer::Ptr>::create())
             {
-
             }
 
             inline
             IndexBuffer(AbsContextPtr                        context,
-                        const std::vector<unsigned short>&    data) :
+                        const std::vector<unsigned short>&   data) :
                 AbstractResource(context),
                 _data(data),
                 _numIndices(data.size()),
                 _changed(Signal<IndexBuffer::Ptr>::create())
             {
-
             }
 
             template <typename T>
             IndexBuffer(AbsContextPtr    context,
-                        T*                begin,
-                        T*                end) :
+                        T*               begin,
+                        T*               end) :
                 AbstractResource(context),
                 _data(begin, end),
                 _numIndices(0),
                 _changed(Signal<Ptr>::create())
             {
-
             }
         };
     }

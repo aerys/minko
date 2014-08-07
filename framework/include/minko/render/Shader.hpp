@@ -98,7 +98,7 @@ namespace minko
 
         private:
             Shader(std::shared_ptr<AbstractContext> context,
-                   Type                                type) :
+                   Type type) :
                 AbstractResource(context),
                 _type(type)
             {

@@ -31,15 +31,15 @@ namespace minko
             public Provider
         {
         public:
-            typedef std::shared_ptr<ArrayProvider>            Ptr;
+            typedef std::shared_ptr<ArrayProvider>           Ptr;
 
         private:
             typedef std::shared_ptr<Provider>                ProviderPtr;
             typedef Signal<Ptr, uint>                        IndexChangedSignal;
-            typedef std::shared_ptr<IndexChangedSignal>        IndexChangedSignalPtr;
+            typedef std::shared_ptr<IndexChangedSignal>      IndexChangedSignalPtr;
 
         private:
-            std::string                                        _name;
+            std::string                                      _name;
             IndexChangedSignalPtr                            _indexChanged;
 
         public:

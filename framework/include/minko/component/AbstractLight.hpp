@@ -45,12 +45,12 @@ namespace minko
 
         private:
             typedef    std::shared_ptr<scene::Node>        NodePtr;
-            typedef std::shared_ptr<AbstractComponent>    AbsCmpPtr;
+            typedef std::shared_ptr<AbstractComponent>     AbsCmpPtr;
 
         private:
-            std::shared_ptr<math::Vector3>                _color;
+            std::shared_ptr<math::Vector3>                 _color;
 
-            Signal<NodePtr, NodePtr>::Slot                _targetLayoutChangedSlot;
+            Signal<NodePtr, NodePtr>::Slot                 _targetLayoutChangedSlot;
 
         public:
             inline

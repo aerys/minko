@@ -33,7 +33,7 @@ namespace minko
         {
         public:
             typedef std::shared_ptr<Provider>                        Ptr;
-            typedef std::shared_ptr<const Provider>                    ConstPtr;
+            typedef std::shared_ptr<const Provider>                  ConstPtr;
 
         private:
             template <typename P>
@@ -44,8 +44,8 @@ namespace minko
         private:
             std::vector<std::string>                                _names;
             std::unordered_map<std::string, Any>                    _values;
-            std::unordered_map<std::string, ChangedSignalSlot>        _valueChangedSlots;
-            std::unordered_map<std::string, ChangedSignalSlot>        _referenceChangedSlots;
+            std::unordered_map<std::string, ChangedSignalSlot>      _valueChangedSlots;
+            std::unordered_map<std::string, ChangedSignalSlot>      _referenceChangedSlots;
 
             std::shared_ptr<Signal<Ptr, const std::string&>>        _propertyAdded;
             std::shared_ptr<Signal<Ptr, const std::string&>>        _propValueChanged;

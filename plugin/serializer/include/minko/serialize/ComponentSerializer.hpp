@@ -31,60 +31,61 @@ namespace minko
         {
         public:
             typedef std::shared_ptr<scene::Node>                        NodePtr;
-            typedef std::shared_ptr<component::Surface>                    SurfacePtr;
-            typedef std::shared_ptr<file::Dependency>                    DependencyPtr;
-            typedef msgpack::type::tuple<std::string, std::string>        SimpleProperty;
-            typedef msgpack::type::tuple<std::vector<SimpleProperty>>    SimplePropertyVector;
+            typedef std::shared_ptr<component::Surface>                 SurfacePtr;
+            typedef std::shared_ptr<file::Dependency>                   DependencyPtr;
+            typedef msgpack::type::tuple<std::string, std::string>      SimpleProperty;
+            typedef msgpack::type::tuple<std::vector<SimpleProperty>>   SimplePropertyVector;
 
         public:
             static
             std::string
-            serializeTransform(NodePtr            node,
-                               DependencyPtr    dependencies);
+            serializeTransform(NodePtr                  node,
+                               DependencyPtr            dependencies);
 
             static
             std::string
-            serializePerspectiveCamera(NodePtr            node,
+            serializePerspectiveCamera(NodePtr          node,
                                        DependencyPtr    dependencies);
 
             static
             std::string
-            serializeAmbientLight(NodePtr        node,
-                                  DependencyPtr dependencies);
+            serializeAmbientLight(NodePtr               node,
+                                  DependencyPtr         dependencies);
 
             static
             std::string
-            serializeDirectionalLight(NodePtr        node,
-                                      DependencyPtr dependencies);
+            serializeDirectionalLight(NodePtr           node,
+                                      DependencyPtr     dependencies);
 
             static
             std::string
-            serializePointLight(NodePtr            node,
-                                DependencyPtr    dependencies);
+            serializePointLight(NodePtr                 node,
+                                DependencyPtr           dependencies);
 
             static
             std::string
-            serializeSpotLight(NodePtr            node,
-                               DependencyPtr    dependencies);
+            serializeSpotLight(NodePtr                  node,
+                               DependencyPtr            dependencies);
 
             static
             std::string
-            serializeSurface(NodePtr        node,
-                             DependencyPtr    dependencies);
+            serializeSurface(NodePtr                    node,
+                             DependencyPtr              dependencies);
 
             static
             std::string
-            serializeRenderer(NodePtr        node,
-                              DependencyPtr dependencies);
+            serializeRenderer(NodePtr                   node,
+                              DependencyPtr             dependencies);
 
             static
             std::string
-            serializeBoundingBox(NodePtr         node,
-                                 DependencyPtr     dependencies);
+            serializeBoundingBox(NodePtr                node,
+                                 DependencyPtr          dependencies);
 
             static
             std::string
-            getSurfaceExtension(NodePtr, SurfacePtr);
+            getSurfaceExtension(NodePtr                 node,
+                                SurfacePtr              dependencies);
 
 
             static

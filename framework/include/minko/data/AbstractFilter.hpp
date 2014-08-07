@@ -30,26 +30,26 @@ namespace minko
             public std::enable_shared_from_this<AbstractFilter>
         {
         public:
-            typedef std::shared_ptr<AbstractFilter>                            Ptr;
+            typedef std::shared_ptr<AbstractFilter>                         Ptr;
 
         private:
-            typedef std::shared_ptr<component::Surface>                        SurfacePtr;
-            typedef std::shared_ptr<component::AbstractComponent>            AbsCmpPtr;
+            typedef std::shared_ptr<component::Surface>                     SurfacePtr;
+            typedef std::shared_ptr<component::AbstractComponent>           AbsCmpPtr;
             typedef std::shared_ptr<scene::Node>                            NodePtr;
-            typedef std::shared_ptr<Provider>                                ProviderPtr;
-            typedef std::shared_ptr<Container>                                ContainerPtr;
+            typedef std::shared_ptr<Provider>                               ProviderPtr;
+            typedef std::shared_ptr<Container>                              ContainerPtr;
 
             typedef std::shared_ptr<Signal<Ptr, SurfacePtr>>                FilterSignalPtr;
             typedef Signal<ContainerPtr, const std::string&>                ContainerPropertyChangedSignal;
 
         private:
-            SurfacePtr                                                _currentSurface;
-            Signal<AbsCmpPtr, NodePtr>::Slot                        _currentSurfaceRemovedSlot;
-            Signal<NodePtr, NodePtr, NodePtr>::Slot                    _currentSurfaceTargetRemovedSlot;
+            SurfacePtr                                                      _currentSurface;
+            Signal<AbsCmpPtr, NodePtr>::Slot                                _currentSurfaceRemovedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot                         _currentSurfaceTargetRemovedSlot;
 
-            FilterSignalPtr                                            _changed;
+            FilterSignalPtr                                                 _changed;
 
-            std::list<std::string>                                    _watchedProperties;
+            std::list<std::string>                                          _watchedProperties;
 
             std::unordered_map<NodePtr, std::list<ContainerPropertyChangedSignal::Slot>> _surfaceTargetPropertyChangedSlots;
 
@@ -111,9 +111,8 @@ namespace minko
             void
             forgetCurrentSurface()
             {
-                _currentSurface                        = nullptr;
-
-                _currentSurfaceRemovedSlot            = nullptr;
+                _currentSurface                     = nullptr;
+                _currentSurfaceRemovedSlot          = nullptr;
                 _currentSurfaceTargetRemovedSlot    = nullptr;
             }
         };

@@ -33,17 +33,17 @@ namespace minko
             typedef std::shared_ptr<LineGeometry> Ptr;
 
         private:
-            static const uint                        MAX_NUM_LINES;
+            static const uint                       MAX_NUM_LINES;
             static const std::string                ATTRNAME_START_POS;
             static const std::string                ATTRNAME_STOP_POS;
             static const std::string                ATTRNAME_WEIGHTS;
 
-            float                                    _currentX;
-            float                                    _currentY;
-            float                                    _currentZ;
+            float                                   _currentX;
+            float                                   _currentY;
+            float                                   _currentZ;
             uint                                    _numLines;
 
-            std::shared_ptr<render::VertexBuffer>    _vertexBuffer;
+            std::shared_ptr<render::VertexBuffer>   _vertexBuffer;
             std::shared_ptr<render::IndexBuffer>    _indexBuffer;
 
         public:

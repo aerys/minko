@@ -42,7 +42,7 @@ namespace minko
             std::string
             serializeVector(std::vector<T> vect)
             {
-                std::stringstream            stream;
+                std::stringstream stream;
 
                 for (T value : vect)
                     write<T, ST>(stream, value);

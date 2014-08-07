@@ -30,9 +30,9 @@ namespace minko
             public std::enable_shared_from_this<AbstractParser>
         {
         public:
-            typedef std::shared_ptr<AbstractParser>                Ptr;
+            typedef std::shared_ptr<AbstractParser>     Ptr;
 
-            std::shared_ptr<Signal<Ptr>>    _complete;
+            std::shared_ptr<Signal<Ptr>>                _complete;
 
         public:
             inline
@@ -44,9 +44,9 @@ namespace minko
 
             virtual
             void
-            parse(const std::string&                filename,
-                  const std::string&                resolvedFilename,
-                  std::shared_ptr<Options>          options,
+            parse(const std::string&                   filename,
+                  const std::string&                   resolvedFilename,
+                  std::shared_ptr<Options>             options,
                   const std::vector<unsigned char>&    data,
                   std::shared_ptr<AssetLibrary>        assetLibrary) = 0;
 

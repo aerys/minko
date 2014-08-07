@@ -37,10 +37,10 @@ namespace minko
         public:
             inline static
             Ptr
-            create(std::shared_ptr<render::AbstractContext>    context,
+            create(std::shared_ptr<render::AbstractContext> context,
                     unsigned int                            numParallels    = 10,
                     unsigned int                            numMeridians    = 0,
-                    bool                                    withNormals        = true)
+                    bool                                    withNormals     = true)
             {
                 numMeridians = numMeridians != 0 ? numMeridians : numParallels;
 
@@ -60,9 +60,9 @@ namespace minko
                                bool                                        withNormals);
 
             void
-            initializeIndices(std::shared_ptr<render::AbstractContext>    context,
-                                unsigned int                            numParallels,
-                                unsigned int                            numMeridians);
+            initializeIndices(std::shared_ptr<render::AbstractContext>     context,
+                                unsigned int                               numParallels,
+                                unsigned int                               numMeridians);
         };
     }
 }

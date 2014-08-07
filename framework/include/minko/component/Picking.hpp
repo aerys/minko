@@ -33,73 +33,73 @@ namespace minko
         {
         public:
             typedef std::shared_ptr<Picking>                    Ptr;
-            typedef std::shared_ptr<Renderer>                    RendererPtr;
-            typedef std::shared_ptr<AbstractComponent>            AbsCtrlPtr;
+            typedef std::shared_ptr<Renderer>                   RendererPtr;
+            typedef std::shared_ptr<AbstractComponent>          AbsCtrlPtr;
             typedef std::shared_ptr<scene::Node>                NodePtr;
             typedef std::shared_ptr<render::Texture>            TexturePtr;
             typedef std::shared_ptr<render::AbstractContext>    ContextPtr;
-            typedef std::shared_ptr<SceneManager>                SceneManagerPtr;
-            typedef std::shared_ptr<input::Mouse>                MousePtr;
+            typedef std::shared_ptr<SceneManager>               SceneManagerPtr;
+            typedef std::shared_ptr<input::Mouse>               MousePtr;
             typedef std::shared_ptr<math::Matrix4x4>            MatrixPtr;
             typedef std::shared_ptr<Surface>                    SurfacePtr;
             typedef std::shared_ptr<data::ArrayProvider>        ArrayProviderPtr;
             typedef std::shared_ptr<data::StructureProvider>    StructureProviderPtr;
-            typedef std::shared_ptr<AbstractCanvas>                AbstractCanvasPtr;
+            typedef std::shared_ptr<AbstractCanvas>             AbstractCanvasPtr;
 
         private:
-            TexturePtr                                    _renderTarget;
-            RendererPtr                                    _renderer;
-            SceneManagerPtr                                _sceneManager;
-            MousePtr                                    _mouse;
-            NodePtr                                        _camera;
-            MatrixPtr                                    _pickingProjection;
-            std::map<SurfacePtr, uint>                    _surfaceToPickingId;
-            std::map<uint, SurfacePtr>                    _pickingIdToSurface;
-            std::map<SurfacePtr, StructureProviderPtr>    _surfaceToProvider;
-            std::map<NodePtr, StructureProviderPtr>        _targetToProvider;
-            uint                                        _pickingId;
-            ContextPtr                                    _context;
-            StructureProviderPtr                        _pickingProvider;
+            TexturePtr                                          _renderTarget;
+            RendererPtr                                         _renderer;
+            SceneManagerPtr                                     _sceneManager;
+            MousePtr                                            _mouse;
+            NodePtr                                             _camera;
+            MatrixPtr                                           _pickingProjection;
+            std::map<SurfacePtr, uint>                          _surfaceToPickingId;
+            std::map<uint, SurfacePtr>                          _pickingIdToSurface;
+            std::map<SurfacePtr, StructureProviderPtr>          _surfaceToProvider;
+            std::map<NodePtr, StructureProviderPtr>             _targetToProvider;
+            uint                                                _pickingId;
+            ContextPtr                                          _context;
+            StructureProviderPtr                                _pickingProvider;
 
-            std::vector<NodePtr>                        _descendants;
+            std::vector<NodePtr>                                _descendants;
 
-            Signal<AbsCtrlPtr, NodePtr>::Slot            _targetAddedSlot;
-            Signal<AbsCtrlPtr, NodePtr>::Slot            _targetRemovedSlot;
-            Signal<NodePtr, NodePtr, NodePtr>::Slot        _addedSlot;
-            Signal<NodePtr, NodePtr, NodePtr>::Slot        _removedSlot;
-            Signal<RendererPtr>::Slot                    _renderingBeginSlot;
-            Signal<RendererPtr>::Slot                    _renderingEndSlot;
-            Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot    _componentAddedSlot;
-            Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot    _componentRemovedSlot;
+            Signal<AbsCtrlPtr, NodePtr>::Slot                   _targetAddedSlot;
+            Signal<AbsCtrlPtr, NodePtr>::Slot                   _targetRemovedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot             _addedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot             _removedSlot;
+            Signal<RendererPtr>::Slot                           _renderingBeginSlot;
+            Signal<RendererPtr>::Slot                           _renderingEndSlot;
+            Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot          _componentAddedSlot;
+            Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot          _componentRemovedSlot;
 
-            Signal<NodePtr>::Ptr                        _mouseOver;
-            Signal<NodePtr>::Ptr                        _mouseRightDown;
-            Signal<NodePtr>::Ptr                        _mouseLeftDown;
-            Signal<NodePtr>::Ptr                        _mouseRightUp;
-            Signal<NodePtr>::Ptr                        _mouseLeftUp;
-            Signal<NodePtr>::Ptr                        _mouseRightClick;
-            Signal<NodePtr>::Ptr                        _mouseLeftClick;
-            Signal<NodePtr>::Ptr                        _mouseOut;
-            Signal<NodePtr>::Ptr                        _mouseMove;
+            Signal<NodePtr>::Ptr                                _mouseOver;
+            Signal<NodePtr>::Ptr                                _mouseRightDown;
+            Signal<NodePtr>::Ptr                                _mouseLeftDown;
+            Signal<NodePtr>::Ptr                                _mouseRightUp;
+            Signal<NodePtr>::Ptr                                _mouseLeftUp;
+            Signal<NodePtr>::Ptr                                _mouseRightClick;
+            Signal<NodePtr>::Ptr                                _mouseLeftClick;
+            Signal<NodePtr>::Ptr                                _mouseOut;
+            Signal<NodePtr>::Ptr                                _mouseMove;
 
-            unsigned char                                _lastColor[4];
-            SurfacePtr                                    _lastPickedSurface;
-            SurfacePtr                                    _lastRightDownPickedSurface;
-            SurfacePtr                                    _lastLeftDownPickedSurface;
+            unsigned char                                       _lastColor[4];
+            SurfacePtr                                          _lastPickedSurface;
+            SurfacePtr                                          _lastRightDownPickedSurface;
+            SurfacePtr                                          _lastLeftDownPickedSurface;
 
-            Signal<MousePtr, int, int>::Slot            _mouseMoveSlot;
-            Signal<MousePtr>::Slot                        _mouseRightDownSlot;
-            Signal<MousePtr>::Slot                        _mouseLeftDownSlot;
-            Signal<MousePtr>::Slot                        _mouseRightClickSlot;
-            Signal<MousePtr>::Slot                        _mouseLeftClickSlot;
+            Signal<MousePtr, int, int>::Slot                    _mouseMoveSlot;
+            Signal<MousePtr>::Slot                              _mouseRightDownSlot;
+            Signal<MousePtr>::Slot                              _mouseLeftDownSlot;
+            Signal<MousePtr>::Slot                              _mouseRightClickSlot;
+            Signal<MousePtr>::Slot                              _mouseLeftClickSlot;
 
-            bool                                        _executeMoveHandler;
-            bool                                        _executeRightClickHandler;
-            bool                                        _executeLeftClickHandler;
-            bool                                        _executeRightDownHandler;
-            bool                                        _executeLeftDownHandler;
+            bool                                                _executeMoveHandler;
+            bool                                                _executeRightClickHandler;
+            bool                                                _executeLeftClickHandler;
+            bool                                                _executeRightDownHandler;
+            bool                                                _executeLeftDownHandler;
 
-            bool                                        _addPickingLayout;
+            bool                                                _addPickingLayout;
 
         public:
             inline static

@@ -37,10 +37,10 @@ namespace minko
             typedef std::shared_ptr<OpenGLES2Context> Ptr;
 
         private:
-            typedef std::unordered_map<unsigned int, unsigned int>        BlendFactorsMap;
+            typedef std::unordered_map<unsigned int, unsigned int>       BlendFactorsMap;
             typedef std::unordered_map<CompareMode, unsigned int>        CompareFuncsMap;
-            typedef std::unordered_map<StencilOperation, unsigned int>    StencilOperationMap;
-            typedef std::unordered_map<unsigned int, unsigned int>        TextureToBufferMap;
+            typedef std::unordered_map<StencilOperation, unsigned int>   StencilOperationMap;
+            typedef std::unordered_map<unsigned int, unsigned int>       TextureToBufferMap;
             typedef std::pair<uint, uint>                                TextureSize;
 
         protected:
@@ -48,52 +48,52 @@ namespace minko
             static CompareFuncsMap                    _compareFuncs;
             static StencilOperationMap                _stencilOps;
 
-            bool                                    _errorsEnabled;
+            bool                                      _errorsEnabled;
 
-            std::list<uint>                            _textures;
-            std::unordered_map<uint, TextureSize>    _textureSizes;
-            std::unordered_map<uint, bool>          _textureHasMipmaps;
-            std::unordered_map<uint, TextureType>   _textureTypes;
+            std::list<uint>                           _textures;
+            std::unordered_map<uint, TextureSize>     _textureSizes;
+            std::unordered_map<uint, bool>            _textureHasMipmaps;
+            std::unordered_map<uint, TextureType>     _textureTypes;
 
-            std::string                             _driverInfo;
+            std::string                               _driverInfo;
 
-            std::list<unsigned int>                    _vertexBuffers;
-            std::list<unsigned int>                    _indexBuffers;
-            std::list<unsigned int>                 _programs;
-            std::list<unsigned int>                 _vertexShaders;
-            std::list<unsigned int>                 _fragmentShaders;
+            std::list<unsigned int>                   _vertexBuffers;
+            std::list<unsigned int>                   _indexBuffers;
+            std::list<unsigned int>                   _programs;
+            std::list<unsigned int>                   _vertexShaders;
+            std::list<unsigned int>                   _fragmentShaders;
 
-            TextureToBufferMap                      _frameBuffers;
-            TextureToBufferMap                      _renderBuffers;
+            TextureToBufferMap                        _frameBuffers;
+            TextureToBufferMap                        _renderBuffers;
 
-            unsigned int                            _viewportX;
-            unsigned int                            _viewportY;
-            unsigned int                            _viewportWidth;
-            unsigned int                            _viewportHeight;
+            unsigned int                              _viewportX;
+            unsigned int                              _viewportY;
+            unsigned int                              _viewportWidth;
+            unsigned int                              _viewportHeight;
 
-            unsigned int                            _currentTarget;
-            int                                        _currentIndexBuffer;
-            std::vector<int>                        _currentVertexBuffer;
-            std::vector<int>                        _currentVertexSize;
-            std::vector<int>                        _currentVertexStride;
-            std::vector<int>                        _currentVertexOffset;
-            uint                                    _currentBoundTexture;
-            std::vector<int>                        _currentTexture;
-            std::unordered_map<uint, WrapMode>      _currentWrapMode;
-            std::unordered_map<uint, TextureFilter> _currentTextureFilter;
-            std::unordered_map<uint, MipFilter>     _currentMipFilter;
-            int                                        _currentProgram;
+            unsigned int                              _currentTarget;
+            int                                       _currentIndexBuffer;
+            std::vector<int>                          _currentVertexBuffer;
+            std::vector<int>                          _currentVertexSize;
+            std::vector<int>                          _currentVertexStride;
+            std::vector<int>                          _currentVertexOffset;
+            uint                                      _currentBoundTexture;
+            std::vector<int>                          _currentTexture;
+            std::unordered_map<uint, WrapMode>        _currentWrapMode;
+            std::unordered_map<uint, TextureFilter>   _currentTextureFilter;
+            std::unordered_map<uint, MipFilter>       _currentMipFilter;
+            int                                       _currentProgram;
             Blending::Mode                            _currentBlendMode;
-            bool                                    _currentColorMask;
-            bool                                    _currentDepthMask;
-            CompareMode                                _currentDepthFunc;
-            TriangleCulling                         _currentTriangleCulling;
-            CompareMode                                _currentStencilFunc;
-            int                                        _currentStencilRef;
-            uint                                    _currentStencilMask;
-            StencilOperation                        _currentStencilFailOp;
-            StencilOperation                        _currentStencilZFailOp;
-            StencilOperation                        _currentStencilZPassOp;
+            bool                                      _currentColorMask;
+            bool                                      _currentDepthMask;
+            CompareMode                               _currentDepthFunc;
+            TriangleCulling                           _currentTriangleCulling;
+            CompareMode                               _currentStencilFunc;
+            int                                       _currentStencilRef;
+            uint                                      _currentStencilMask;
+            StencilOperation                          _currentStencilFailOp;
+            StencilOperation                          _currentStencilZFailOp;
+            StencilOperation                          _currentStencilZPassOp;
 
         public:
             ~OpenGLES2Context();
@@ -161,13 +161,13 @@ namespace minko
                               const uint height);
 
             void
-            clear(float red             = 0.f,
-                  float green            = 0.f,
-                  float blue            = 0.f,
-                  float alpha            = 0.f,
-                  float depth            = 1.f,
-                  unsigned int stencil    = 0,
-                  unsigned int mask        = 0xffffffff);
+            clear(float         red     = 0.f,
+                  float         green   = 0.f,
+                  float         blue    = 0.f,
+                  float         alpha   = 0.f,
+                  float         depth   = 1.f,
+                  unsigned int  stencil = 0,
+                  unsigned int  mask    = 0xffffffff);
 
             void
             present();
@@ -179,64 +179,64 @@ namespace minko
             createVertexBuffer(const uint size);
 
             void
-            setVertexBufferAt(const uint    position,
-                              const uint    vertexBuffer,
-                              const uint    size,
-                              const uint    stride,
-                              const uint    offset);
+            setVertexBufferAt(const uint          position,
+                              const uint          vertexBuffer,
+                              const uint          size,
+                              const uint          stride,
+                              const uint          offset);
             void
             uploadVertexBufferData(const uint     vertexBuffer,
                                    const uint     offset,
                                    const uint     size,
-                                   void*                 data);
+                                   void*          data);
 
             void
-            deleteVertexBuffer(const uint vertexBuffer);
+            deleteVertexBuffer(const uint         vertexBuffer);
 
             const uint
-            createIndexBuffer(const uint size);
+            createIndexBuffer(const uint          size);
 
             void
-            uploaderIndexBufferData(const uint     indexBuffer,
-                                    const uint     offset,
-                                    const uint     size,
-                                    void*                data);
+            uploaderIndexBufferData(const uint    indexBuffer,
+                                    const uint    offset,
+                                    const uint    size,
+                                    void*         data);
 
             void
-            deleteIndexBuffer(const uint indexBuffer);
+            deleteIndexBuffer(const uint          indexBuffer);
 
             uint
-            createTexture(TextureType    type,
-                          unsigned int  width,
-                          unsigned int  height,
-                          bool            mipMapping,
-                          bool          optimizeForRenderToTexture = false);
+            createTexture(TextureType             type,
+                          unsigned int            width,
+                          unsigned int            height,
+                          bool                    mipMapping,
+                          bool                    optimizeForRenderToTexture = false);
 
             void
-            uploadTexture2dData(uint            texture,
-                                unsigned int     width,
-                                unsigned int     height,
-                                unsigned int     mipLevel,
-                                void*            data);
+            uploadTexture2dData(uint              texture,
+                                unsigned int      width,
+                                unsigned int      height,
+                                unsigned int      mipLevel,
+                                void*             data);
 
             void
             uploadCubeTextureData(uint                texture,
-                                  CubeTexture::Face face,
-                                  unsigned int         width,
-                                  unsigned int         height,
-                                  unsigned int         mipLevel,
-                                  void*                data);
+                                  CubeTexture::Face   face,
+                                  unsigned int        width,
+                                  unsigned int        height,
+                                  unsigned int        mipLevel,
+                                  void*               data);
 
             void
             deleteTexture(uint texture);
 
             void
-            setTextureAt(uint            position,
-                         int            texture        = 0,
+            setTextureAt(uint           position,
+                         int            texture     = 0,
                          int            location    = -1);
 
             void
-            setSamplerStateAt(uint                position,
+            setSamplerStateAt(uint              position,
                               WrapMode          wrapping,
                               TextureFilter     filtering,
                               MipFilter         mipFiltering);
@@ -349,8 +349,8 @@ namespace minko
             setColorMask(bool);
 
             void
-            setStencilTest(CompareMode        stencilFunc,
-                           int                stencilRef,
+            setStencilTest(CompareMode         stencilFunc,
+                           int                 stencilRef,
                            uint                stencilMask,
                            StencilOperation    stencilFailOp,
                            StencilOperation    stencilZFailOp,
@@ -382,17 +382,17 @@ namespace minko
 
             virtual
             void
-            fillUniformInputs(const uint                program,
-                              std::vector<std::string>&            names,
-                              std::vector<ProgramInputs::Type>&    types,
+            fillUniformInputs(const uint                        program,
+                              std::vector<std::string>&         names,
+                              std::vector<ProgramInputs::Type>& types,
                               std::vector<unsigned int>&        locations);
 
             virtual
             void
-            fillAttributeInputs(const uint                    program,
-                                std::vector<std::string>&            names,
-                                std::vector<ProgramInputs::Type>&    types,
-                                std::vector<unsigned int>&            locations);
+            fillAttributeInputs(const uint                          program,
+                                std::vector<std::string>&           names,
+                                std::vector<ProgramInputs::Type>&   types,
+                                std::vector<unsigned int>&          locations);
 
             static
             ProgramInputs::Type
@@ -412,12 +412,13 @@ namespace minko
 
             void
             createRTTBuffers(TextureType    type,
-                             uint            texture,
-                             unsigned int    width,
-                             unsigned int height);
+                             uint           texture,
+                             unsigned int   width,
+                             unsigned int   height);
 
             void
-            getShaderSource(unsigned int shader, std::string&);
+            getShaderSource(unsigned int    shader,
+                            std::string&    output);
 
             inline
             void

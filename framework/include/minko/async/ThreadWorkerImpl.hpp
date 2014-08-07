@@ -87,12 +87,12 @@ namespace minko
             }
 
         private:
-            Worker*                                            _that;
-            std::string                                        _name;
-            std::mutex                                        _mutex;
-            std::queue<Message>                                _messages;
-            std::shared_ptr<Signal<Ptr, Message>>            _message;
-            std::vector<char>                                _input;
+            Worker*                                         _that;
+            std::string                                     _name;
+            std::mutex                                      _mutex;
+            std::queue<Message>                             _messages;
+            std::shared_ptr<Signal<Ptr, Message>>           _message;
+            std::vector<char>                               _input;
         };
     }
 }

@@ -34,7 +34,7 @@ namespace minko
             typedef std::shared_ptr<Frustum> Ptr;
 
         private:
-            std::vector<std::shared_ptr<math::Vector3>>                            _points;
+            std::vector<std::shared_ptr<math::Vector3>>   _points;
             std::array<std::shared_ptr<math::Vector4>, 6> _planes;
 
             std::array<bool, 6> _blfResult;

@@ -56,5 +56,3 @@ namespace minko
         }
     };
 }
-
-bool minko::Uuid::_randSeeded = false;

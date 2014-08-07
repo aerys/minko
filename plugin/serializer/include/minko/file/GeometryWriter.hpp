@@ -35,9 +35,9 @@ namespace minko
             public AbstractWriter<std::shared_ptr<geometry::Geometry>>
         {
         public:
-            typedef std::shared_ptr<GeometryWriter> Ptr;
+            typedef std::shared_ptr<GeometryWriter>                                     Ptr;
             typedef std::function<std::string(std::shared_ptr<render::IndexBuffer>)>    IndexBufferWriteFunc;
-            typedef std::function<std::string(std::shared_ptr<render::VertexBuffer>)>    VertexBufferWriteFunc;
+            typedef std::function<std::string(std::shared_ptr<render::VertexBuffer>)>   VertexBufferWriteFunc;
             typedef std::function<bool(std::shared_ptr<geometry::Geometry>)>            GeometryTestFunc;
 
         private:
@@ -45,7 +45,7 @@ namespace minko
 
         private :
             static std::unordered_map<uint, IndexBufferWriteFunc>        indexBufferWriterFunctions;
-            static std::unordered_map<uint, VertexBufferWriteFunc>        vertexBufferWriterFunctions;
+            static std::unordered_map<uint, VertexBufferWriteFunc>       vertexBufferWriterFunctions;
 
             static std::unordered_map<uint, GeometryTestFunc>            indexBufferTestFunctions;
             static std::unordered_map<uint, GeometryTestFunc>            vertexBufferTestFunctions;
@@ -59,9 +59,9 @@ namespace minko
             }
 
             std::string
-            embed(std::shared_ptr<AssetLibrary>        assetLibrary,
+            embed(std::shared_ptr<AssetLibrary>       assetLibrary,
                   std::shared_ptr<Options>            options,
-                  Dependency::Ptr                    dependency,
+                  Dependency::Ptr                     dependency,
                   WriterOptionsPtr                    writerOptions);
 
             inline
@@ -69,8 +69,8 @@ namespace minko
             void
             registerIndexBufferWriterFunction(IndexBufferWriteFunc f, GeometryTestFunc testFunc, uint functionId)
             {
-                indexBufferWriterFunctions[functionId]    = f;
-                indexBufferTestFunctions[functionId]    = testFunc;
+                indexBufferWriterFunctions[functionId] = f;
+                indexBufferTestFunctions[functionId] = testFunc;
             }
 
             inline
@@ -79,7 +79,7 @@ namespace minko
             registerVertexBufferWriterFunction(VertexBufferWriteFunc f, GeometryTestFunc testFunc, uint functionId)
             {
                 vertexBufferWriterFunctions[functionId] = f;
-                vertexBufferTestFunctions[functionId]    = testFunc;
+                vertexBufferTestFunctions[functionId] = testFunc;
             }
 
             static
@@ -97,8 +97,8 @@ namespace minko
 
             unsigned char
             computeMetaByte(std::shared_ptr<geometry::Geometry> geometry,
-                            uint&                                indexBufferFunctionId,
-                            uint&                                vertexBufferFunctionId,
+                            uint&                               indexBufferFunctionId,
+                            uint&                               vertexBufferFunctionId,
                             WriterOptionsPtr                    writerOptions);
 
 

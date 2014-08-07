@@ -417,7 +417,7 @@ Transform::RootTransform::forceUpdate(scene::Node::Ptr node, bool updateTransfor
 }
 
 void
-Transform::RootTransform::renderingBeginHandler(std::shared_ptr<SceneManager>                sceneManager,
+Transform::RootTransform::renderingBeginHandler(std::shared_ptr<SceneManager>               sceneManager,
                                                 uint                                        frameId,
                                                 std::shared_ptr<render::AbstractTexture>    abstractTexture)
 {

@@ -30,14 +30,14 @@ namespace minko
         class TextureWriter
         {
         public:
-            typedef std::shared_ptr<TextureWriter>                                        Ptr;
+            typedef std::shared_ptr<TextureWriter>                   Ptr;
 
         private:
             typedef std::shared_ptr<AssetLibrary>                    AssetLibraryPtr;
-            typedef std::shared_ptr<Options>                            OptionsPtr;
-            typedef std::shared_ptr<WriterOptions>                        WriterOptionsPtr;
+            typedef std::shared_ptr<Options>                         OptionsPtr;
+            typedef std::shared_ptr<WriterOptions>                   WriterOptionsPtr;
 
-            typedef std::shared_ptr<render::Texture>                    TexturePtr;
+            typedef std::shared_ptr<render::Texture>                 TexturePtr;
 
         private:
             serialize::ImageFormat _imageFormat;
@@ -60,13 +60,13 @@ namespace minko
             void
             writeRawTexture(std::string&        filename,
                             AssetLibraryPtr     assetLibrary,
-                            OptionsPtr            options,
+                            OptionsPtr          options,
                             WriterOptionsPtr    writerOptions);
 
             std::string
-            embedTexture(AssetLibraryPtr    assetLibrary,
-                         OptionsPtr         options,
-                         WriterOptionsPtr   writerOptions);
+            embedTexture(AssetLibraryPtr        assetLibrary,
+                         OptionsPtr             options,
+                         WriterOptionsPtr       writerOptions);
 
         protected:
             TextureWriter();

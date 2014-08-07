@@ -32,34 +32,35 @@ namespace minko
             public std::enable_shared_from_this<Options>
         {
         private:
-            typedef std::shared_ptr<AbstractProtocol>                                    AbsProtocolPtr;
-            typedef std::shared_ptr<data::Provider>                                        ProviderPtr;
-            typedef std::shared_ptr<material::Material>                                    MaterialPtr;
-            typedef std::shared_ptr<geometry::Geometry>                                    GeomPtr;
+            typedef std::shared_ptr<AbstractProtocol>                                   AbsProtocolPtr;
+            typedef std::shared_ptr<data::Provider>                                     ProviderPtr;
+            typedef std::shared_ptr<material::Material>                                 MaterialPtr;
+            typedef std::shared_ptr<geometry::Geometry>                                 GeomPtr;
             typedef std::shared_ptr<scene::Node>                                        NodePtr;
-            typedef std::shared_ptr<render::Effect>                                        EffectPtr;
+            typedef std::shared_ptr<render::Effect>                                     EffectPtr;
             typedef std::shared_ptr<Loader>                                             LoaderPtr;
             typedef std::shared_ptr<AbstractParser>                                     AbsParserPtr;
             typedef std::function<AbsParserPtr(void)>                                   ParserHandler;
-            typedef std::function<AbsProtocolPtr(void)>                                    ProtocolHandler;
+            typedef std::function<AbsProtocolPtr(void)>                                 ProtocolHandler;
 
         public:
             typedef std::shared_ptr<Options>                                            Ptr;
-            typedef std::function<MaterialPtr(const std::string&, MaterialPtr)>            MaterialFunction;
+
+            typedef std::function<MaterialPtr(const std::string&, MaterialPtr)>         MaterialFunction;
             typedef std::function<GeomPtr(const std::string&, GeomPtr)>                 GeometryFunction;
-            typedef std::function<AbsProtocolPtr(const std::string&)>                    ProtocolFunction;
+            typedef std::function<AbsProtocolPtr(const std::string&)>                   ProtocolFunction;
             typedef std::function<const std::string(const std::string&)>                UriFunction;
-            typedef std::function<NodePtr(NodePtr)>                                        NodeFunction;
-            typedef std::function<EffectPtr(EffectPtr)>                                    EffectFunction;
+            typedef std::function<NodePtr(NodePtr)>                                     NodeFunction;
+            typedef std::function<EffectPtr(EffectPtr)>                                 EffectFunction;
 
         private:
             std::shared_ptr<render::AbstractContext>            _context;
             std::shared_ptr<AssetLibrary>                       _assets;
-            std::list<std::string>                                _includePaths;
-            std::list<std::string>                                _platforms;
-            std::list<std::string>                                _userFlags;
+            std::list<std::string>                              _includePaths;
+            std::list<std::string>                              _platforms;
+            std::list<std::string>                              _userFlags;
 
-            std::unordered_map<std::string, ParserHandler>        _parsers;
+            std::unordered_map<std::string, ParserHandler>      _parsers;
             std::unordered_map<std::string, ProtocolHandler>    _protocols;
 
             bool                                                _generateMipMaps;
@@ -71,17 +72,17 @@ namespace minko
             bool                                                _disposeVertexBufferAfterLoading;
             bool                                                _disposeTextureAfterLoading;
             unsigned int                                        _skinningFramerate;
-            component::SkinningMethod                            _skinningMethod;
+            component::SkinningMethod                           _skinningMethod;
             std::shared_ptr<render::Effect>                     _effect;
-            MaterialPtr                                            _material;
+            MaterialPtr                                         _material;
             MaterialFunction                                    _materialFunction;
             GeometryFunction                                    _geometryFunction;
             ProtocolFunction                                    _protocolFunction;
-            UriFunction                                            _uriFunction;
+            UriFunction                                         _uriFunction;
             NodeFunction                                        _nodeFunction;
-            EffectFunction                                        _effectFunction;
+            EffectFunction                                      _effectFunction;
 
-            static ProtocolFunction                                _defaultProtocolFunction;
+            static ProtocolFunction                             _defaultProtocolFunction;
 
         public:
             inline static

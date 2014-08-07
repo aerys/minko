@@ -29,9 +29,9 @@ namespace minko
             public std::enable_shared_from_this<Quaternion>
         {
         public:
-            typedef std::shared_ptr<Quaternion> Ptr;
+            typedef std::shared_ptr<Quaternion>         Ptr;
 
-            typedef std::shared_ptr<Matrix4x4>            Matrix4x4Ptr;
+            typedef std::shared_ptr<Matrix4x4>          Matrix4x4Ptr;
             typedef std::shared_ptr<const Matrix4x4>    Matrix4x4ConstPtr;
             typedef std::shared_ptr<Vector3>            Vector3Ptr;
 

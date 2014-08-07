@@ -56,9 +56,9 @@ namespace minko
         public:
             static
             Ptr
-            create(std::shared_ptr<AbstractContext>    context,
-                   const unsigned int                 program,
-                   const std::vector<std::string>&     names,
+            create(std::shared_ptr<AbstractContext> context,
+                   const unsigned int               program,
+                   const std::vector<std::string>&  names,
                    const std::vector<Type>&         types,
                    const std::vector<unsigned int>& locations)
             {
@@ -166,19 +166,19 @@ namespace minko
 
         private:
             std::shared_ptr<AbstractContext>                _context;
-            const unsigned int                                 _program;
+            const unsigned int                              _program;
             std::vector<std::string>                        _names;
-            std::vector<Type>                                 _types;
-            std::vector<unsigned int>                        _locations;
-            std::unordered_map<std::string, Type>            _nameToType;
-            std::unordered_map<std::string, unsigned int>    _nameToLocation;
+            std::vector<Type>                               _types;
+            std::vector<unsigned int>                       _locations;
+            std::unordered_map<std::string, Type>           _nameToType;
+            std::unordered_map<std::string, unsigned int>   _nameToLocation;
 
         private:
-            ProgramInputs(std::shared_ptr<AbstractContext>    context,
-                          const unsigned int                 program,
-                          const std::vector<std::string>&     names,
-                          const std::vector<Type>&             types,
-                          const std::vector<unsigned int>&     locations) :
+            ProgramInputs(std::shared_ptr<AbstractContext>  context,
+                          const unsigned int                program,
+                          const std::vector<std::string>&   names,
+                          const std::vector<Type>&          types,
+                          const std::vector<unsigned int>&  locations) :
                 _context(context),
                 _program(program),
                 _names(names),
@@ -195,8 +195,8 @@ namespace minko
                 for (unsigned int i = 0; i < _names.size(); ++i)
                 {
                     const std::string& name = _names[i];
-                    _nameToType[name]        = _types[i];
-                    _nameToLocation[name]    = _locations[i];
+                    _nameToType[name]       = _types[i];
+                    _nameToLocation[name]   = _locations[i];
                 }
             }
         };

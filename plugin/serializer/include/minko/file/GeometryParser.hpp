@@ -26,83 +26,83 @@ namespace minko
 {
     namespace file
     {
-    class GeometryParser:
-        public AbstractSerializerParser
-    {
-    public:
-        typedef std::shared_ptr<GeometryParser>                Ptr;
-        typedef std::shared_ptr<render::AbstractContext>    AbstractContextPtr;
-        typedef std::shared_ptr<render::IndexBuffer>        IndexBufferPtr;
-        typedef std::shared_ptr<render::VertexBuffer>        VertexBufferPtr;
-
-    private:
-        typedef unsigned char                                                                    uchar;
-        typedef msgpack::type::tuple<std::string, uchar, uchar>                                    SerializeAttribute;
-        typedef msgpack::type::tuple<uchar, std::string, std::string, std::vector<std::string>> SerializedGeometry;
-
-    private:
-        static std::unordered_map<uint, std::function<IndexBufferPtr(std::string&, AbstractContextPtr)>>    indexBufferParserFunctions;
-        static std::unordered_map<uint, std::function<VertexBufferPtr(std::string&, AbstractContextPtr)>>    vertexBufferParserFunctions;
-
-    public:
-        inline static
-        Ptr
-        create()
+        class GeometryParser:
+            public AbstractSerializerParser
         {
-            return std::shared_ptr<GeometryParser>(new GeometryParser());
-        }
+        public:
+            typedef std::shared_ptr<GeometryParser>             Ptr;
+            typedef std::shared_ptr<render::AbstractContext>    AbstractContextPtr;
+            typedef std::shared_ptr<render::IndexBuffer>        IndexBufferPtr;
+            typedef std::shared_ptr<render::VertexBuffer>       VertexBufferPtr;
 
-        void
-        parse(const std::string&                filename,
-              const std::string&                resolvedFilename,
-              std::shared_ptr<Options>          options,
-              const std::vector<unsigned char>&    data,
-              std::shared_ptr<AssetLibrary>        assetLibrary);
+        private:
+            typedef unsigned char                                                                    uchar;
+            typedef msgpack::type::tuple<std::string, uchar, uchar>                                  SerializeAttribute;
+            typedef msgpack::type::tuple<uchar, std::string, std::string, std::vector<std::string>>  SerializedGeometry;
 
-        inline
-        static
-        void
-        registerIndexBufferParserFunction(std::function<IndexBufferPtr(std::string&, AbstractContextPtr)> f, uint functionId)
-        {
-            indexBufferParserFunctions[functionId] = f;
-        }
+        private:
+            static std::unordered_map<uint, std::function<IndexBufferPtr(std::string&, AbstractContextPtr)>>    indexBufferParserFunctions;
+            static std::unordered_map<uint, std::function<VertexBufferPtr(std::string&, AbstractContextPtr)>>   vertexBufferParserFunctions;
 
-        inline
-        static
-        void
-        registerVertexBufferParserFunction(std::function<VertexBufferPtr(std::string&, AbstractContextPtr)> f, uint functionId)
-        {
-            vertexBufferParserFunctions[functionId] = f;
-        }
+        public:
+            inline static
+            Ptr
+            create()
+            {
+                return std::shared_ptr<GeometryParser>(new GeometryParser());
+            }
 
-        static
-        IndexBufferPtr
-        deserializeIndexBuffer(std::string&            serializedIndexBuffer,
-                               AbstractContextPtr    context);
+            void
+            parse(const std::string&                filename,
+                  const std::string&                resolvedFilename,
+                  std::shared_ptr<Options>          options,
+                  const std::vector<unsigned char>& data,
+                  std::shared_ptr<AssetLibrary>     assetLibrary);
 
-    private:
-        GeometryParser()
-        {
-            initialize();
-        }
+            inline
+            static
+            void
+            registerIndexBufferParserFunction(std::function<IndexBufferPtr(std::string&, AbstractContextPtr)> f, uint functionId)
+            {
+                indexBufferParserFunctions[functionId] = f;
+            }
 
-        void
-        computeMetaByte(unsigned char byte, uint& indexBufferFunctionId, uint& vertexBufferFunctionId);
+            inline
+            static
+            void
+            registerVertexBufferParserFunction(std::function<VertexBufferPtr(std::string&, AbstractContextPtr)> f, uint functionId)
+            {
+                vertexBufferParserFunctions[functionId] = f;
+            }
 
-        void
-        initialize();
-
-        static
-        VertexBufferPtr
-        deserializeVertexBuffer(std::string&        serializedVertexBuffer,
-                                AbstractContextPtr    context);
-
-
-        static
-        IndexBufferPtr
-        deserializeIndexBufferChar(std::string&            serializedIndexBuffer,
+            static
+            IndexBufferPtr
+            deserializeIndexBuffer(std::string&          serializedIndexBuffer,
                                    AbstractContextPtr    context);
 
-    };
+        private:
+            GeometryParser()
+            {
+                initialize();
+            }
+
+            void
+            computeMetaByte(unsigned char byte, uint& indexBufferFunctionId, uint& vertexBufferFunctionId);
+
+            void
+            initialize();
+
+            static
+            VertexBufferPtr
+            deserializeVertexBuffer(std::string&        serializedVertexBuffer,
+                                    AbstractContextPtr  context);
+
+
+            static
+            IndexBufferPtr
+            deserializeIndexBufferChar(std::string&          serializedIndexBuffer,
+                                       AbstractContextPtr    context);
+
+        };
     }
 }

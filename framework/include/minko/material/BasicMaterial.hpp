@@ -35,15 +35,15 @@ namespace minko
             public Material
         {
         public:
-            typedef std::shared_ptr<BasicMaterial>                Ptr;
+            typedef std::shared_ptr<BasicMaterial>              Ptr;
 
         protected:
             typedef std::shared_ptr<render::AbstractTexture>    AbsTexturePtr;
             typedef std::shared_ptr<render::Texture>            TexturePtr;
             typedef std::shared_ptr<render::CubeTexture>        CubeTexturePtr;
-            typedef std::shared_ptr<render::States>                RenderStatesPtr;
-            typedef std::shared_ptr<math::Vector2>                Vector2Ptr;
-            typedef std::shared_ptr<math::Vector4>                Vector4Ptr;
+            typedef std::shared_ptr<render::States>             RenderStatesPtr;
+            typedef std::shared_ptr<math::Vector2>              Vector2Ptr;
+            typedef std::shared_ptr<math::Vector4>              Vector4Ptr;
 
         protected:
             static const RenderStatesPtr                        _defaultStates;

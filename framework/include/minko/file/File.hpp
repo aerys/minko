@@ -30,13 +30,13 @@ namespace minko
             friend class AbstractProtocol;
 
         public:
-            typedef std::shared_ptr<File>   Ptr;
+            typedef std::shared_ptr<File>       Ptr;
 
         private:
-            std::string                 _filename;
+            std::string                         _filename;
 
-            std::vector<unsigned char>  _data;
-            std::string                 _resolvedFilename;
+            std::vector<unsigned char>          _data;
+            std::string                         _resolvedFilename;
 
         public:
             inline static

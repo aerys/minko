@@ -31,16 +31,17 @@ namespace minko
             public AbstractSerializerParser
         {
         private:
-            typedef msgpack::type::tuple<uint, std::string>                        ComplexPropertyValue;
-            typedef std::shared_ptr<MaterialParser>                                Ptr;
-            typedef msgpack::type::tuple<std::string, std::string>                BasicProperty;
-            typedef msgpack::type::tuple<std::string, ComplexPropertyValue>        ComplexProperty;
-            typedef std::shared_ptr<material::Material>                            MaterialPtr;
-            typedef std::shared_ptr<AssetLibrary>                                AssetLibraryPtr;
+            typedef std::shared_ptr<MaterialParser>                             Ptr;
+
+            typedef msgpack::type::tuple<uint, std::string>                     ComplexPropertyValue;
+            typedef msgpack::type::tuple<std::string, std::string>              BasicProperty;
+            typedef msgpack::type::tuple<std::string, ComplexPropertyValue>     ComplexProperty;
+            typedef std::shared_ptr<material::Material>                         MaterialPtr;
+            typedef std::shared_ptr<AssetLibrary>                               AssetLibraryPtr;
             typedef std::shared_ptr<Options>                                    OptionsPtr;
-            typedef std::shared_ptr<math::Vector4>                                Vector4Ptr;
-            typedef std::shared_ptr<math::Vector3>                                Vector3Ptr;
-            typedef std::shared_ptr<math::Vector2>                                Vector2Ptr;
+            typedef std::shared_ptr<math::Vector4>                              Vector4Ptr;
+            typedef std::shared_ptr<math::Vector3>                              Vector3Ptr;
+            typedef std::shared_ptr<math::Vector2>                              Vector2Ptr;
             typedef std::shared_ptr<math::Matrix4x4>                            Matrix4x4Ptr;
             typedef std::shared_ptr<render::AbstractTexture>                    TexturePtr;
 
@@ -59,17 +60,17 @@ namespace minko
             parse(const std::string&                filename,
                   const std::string&                resolvedFilename,
                   OptionsPtr                        options,
-                  const std::vector<unsigned char>&    data,
-                  AssetLibraryPtr                    assetLibrary);
+                  const std::vector<unsigned char>& data,
+                  AssetLibraryPtr                   assetLibrary);
 
         private:
             void
-            deserializeComplexProperty(MaterialPtr            material,
-                                       ComplexProperty        serializedProperty);
+            deserializeComplexProperty(MaterialPtr      material,
+                                       ComplexProperty  serializedProperty);
 
             void
             deserializeBasicProperty(MaterialPtr        material,
-                                     BasicProperty        serializedProperty);
+                                     BasicProperty      serializedProperty);
 
             MaterialParser();
         };

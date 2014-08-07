@@ -41,10 +41,10 @@ namespace minko
             inline static
             Ptr
             create(float diffuse                = 1.0f,
-                   float specular                = 1.0f,
+                   float specular               = 1.0f,
                    float attenuationConstant    = -1.0f,
-                   float attenuationLinear        = -1.0f,
-                   float attenuationQuadratic    = -1.0f)
+                   float attenuationLinear      = -1.0f,
+                   float attenuationQuadratic   = -1.0f)
             {
                 auto light = std::shared_ptr<PointLight>(new PointLight(
                     diffuse,
@@ -63,7 +63,7 @@ namespace minko
 
 			AbstractComponent::Ptr
 			clone(const CloneOption& option);
-	
+
             bool
             attenuationEnabled() const;
 

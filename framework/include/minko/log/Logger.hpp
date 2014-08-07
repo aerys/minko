@@ -62,10 +62,10 @@ namespace minko
 
             void
             operator()(const std::string&            message,
-                       Level                        level,
-                       char const*                    function,
-                       char const*                    file,
-                       int                            line);
+                       Level                         level,
+                       char const*                   function,
+                       char const*                   file,
+                       int                           line);
 
             static
             void

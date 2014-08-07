@@ -57,12 +57,12 @@ namespace minko
         private:
             std::shared_ptr<AbstractCanvas> _canvas;
 
-            Signal<Ptr, int, int, int>::Ptr        _joystickAxisMotion;
-            Signal<Ptr, int, int, int>::Ptr        _joystickHatMotion;
+            Signal<Ptr, int, int, int>::Ptr       _joystickAxisMotion;
+            Signal<Ptr, int, int, int>::Ptr       _joystickHatMotion;
             Signal<Ptr, int, int>::Ptr            _joystickButtonDown;
             Signal<Ptr, int, int>::Ptr            _joystickButtonUp;
 
-            int                                    _joystickId;
+            int                                   _joystickId;
 
         public:
             inline
