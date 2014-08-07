@@ -190,6 +190,7 @@ minko.project.application = function(name)
 			minko.action.copy("asset"),
 		}
 
+	if premake.tools.gcc.tools.emscripten then
 	configuration { "html5", "release" }
 		local emcc = premake.tools.gcc.tools.emscripten.cc
 		local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O2'
@@ -253,6 +254,7 @@ minko.project.application = function(name)
 		libdirs {
 			minko.sdk.path("/framework/bin/html5/debug")
 		}
+	end
 
 	configuration { "ios" }
 
