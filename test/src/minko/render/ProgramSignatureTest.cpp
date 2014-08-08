@@ -33,6 +33,12 @@ ProgramSignatureTest::SetUp()
     _targetProvider->set("foo", 42);
     _targetProvider->set("foo2", 24);
     _targetProvider->set("bar", true);
+    auto targetCollection = data::Collection::create("target");
+    auto targetProvider = data::Provider::create();
+    targetCollection->pushBack(targetProvider);
+    targetProvider->set("foo", 4242);
+    _targetData->addCollection(targetCollection);
+    _variables["targetId"] = "0";
     
     _rendererProvider = data::Provider::create();
     _rendererData = data::Container::create();
@@ -42,7 +48,9 @@ ProgramSignatureTest::SetUp()
 
     _rootProvider = data::Provider::create();
     _rootData = data::Container::create();
-    _rootData->addProvider(_rootProvider);
+    auto rootCollection = data::Collection::create("root");
+    rootCollection->pushBack(_rootProvider);
+    _rootData->addCollection(rootCollection);
     _rootProvider->set("foo", 424242);
     _rootProvider->set("bar", true);
     _variables["rootId"] = "0";
@@ -64,6 +72,26 @@ TEST_F(ProgramSignatureTest, TargetDefinedIntegerValue)
     ASSERT_EQ(signature.mask(), 0x00000001);
     ASSERT_EQ(signature.values().size(), 1);
     ASSERT_EQ(signature.values()[0], 42);
+    ASSERT_EQ(signature.states().size(), 1);
+    ASSERT_EQ(signature.states()[0], data::MacroBinding::State::DEFINED_INTEGER_VALUE);
+}
+
+TEST_F(ProgramSignatureTest, TargetDefinedIntegerValueFromCollection)
+{
+    data::MacroBindingMap macroBindings;
+
+    macroBindings["FOO"] = {
+        "target[${targetId}].foo",
+        data::BindingSource::TARGET,
+        data::MacroBinding::State::UNDEFINED,
+        data::MacroBinding::Value()
+    };
+
+    ProgramSignature signature(macroBindings, _variables, _targetData, _rendererData, _rootData);
+
+    ASSERT_EQ(signature.mask(), 0x00000001);
+    ASSERT_EQ(signature.values().size(), 1);
+    ASSERT_EQ(signature.values()[0], 4242);
     ASSERT_EQ(signature.states().size(), 1);
     ASSERT_EQ(signature.states()[0], data::MacroBinding::State::DEFINED_INTEGER_VALUE);
 }
@@ -103,4 +131,24 @@ TEST_F(ProgramSignatureTest, TargetUndefined)
     ASSERT_EQ(signature.mask(), 0x00000000);
     ASSERT_EQ(signature.values().size(), 0);
     ASSERT_EQ(signature.states().size(), 0);
+}
+
+TEST_F(ProgramSignatureTest, RootDefinedIntegerValueFromCollection)
+{
+    data::MacroBindingMap macroBindings;
+
+    macroBindings["FOO"] = {
+        "root[${rootId}].foo",
+        data::BindingSource::ROOT,
+        data::MacroBinding::State::UNDEFINED,
+        data::MacroBinding::Value()
+    };
+
+    ProgramSignature signature(macroBindings, _variables, _targetData, _rendererData, _rootData);
+
+    ASSERT_EQ(signature.mask(), 0x00000001);
+    ASSERT_EQ(signature.values().size(), 1);
+    ASSERT_EQ(signature.values()[0], 424242);
+    ASSERT_EQ(signature.states().size(), 1);
+    ASSERT_EQ(signature.states()[0], data::MacroBinding::State::DEFINED_INTEGER_VALUE);
 }
