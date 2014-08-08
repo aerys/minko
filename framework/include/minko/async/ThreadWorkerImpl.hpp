@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/async/Worker.hpp"
 
-#if defined(EMSCRIPTEN)
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
 # error "ThreadWorkerImpl is not available under Emscripten"
 #endif
 

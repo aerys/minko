@@ -19,10 +19,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/WebGLContext.hpp"
 
-#ifdef EMSCRIPTEN
-# include <GLES2/gl2.h>
-# include <EGL/egl.h>
-#endif // EMSCRIPTEN
+#include <GLES2/gl2.h>
+#include <EGL/egl.h>
 
 using namespace minko::render;
 

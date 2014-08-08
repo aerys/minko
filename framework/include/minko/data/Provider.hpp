@@ -130,7 +130,7 @@ namespace minko
             get(const std::string& propertyName, bool skipPropertyNameFormatting) const
             {
                 const std::string&    formattedName    = skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
-                auto                foundIt            = values().find(formattedName);
+                auto                  foundIt          = values().find(formattedName);
 
                 if (foundIt == values().end())
                     throw std::invalid_argument("propertyName");
@@ -151,7 +151,7 @@ namespace minko
             propertyHasType(const std::string& propertyName, bool skipPropertyNameFormatting = false) const
             {
                 const std::string&    formattedName    = skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
-                const auto            foundIt            = _values.find(formattedName);
+                const auto            foundIt          = _values.find(formattedName);
 
                 if (foundIt == _values.end())
                     throw std::invalid_argument("propertyName");
@@ -164,11 +164,10 @@ namespace minko
             typename std::enable_if<!std::is_convertible<T, Value::Ptr>::value, Provider::Ptr>::type
             set(const std::string& propertyName, T value, bool skipPropertyNameFormatting)
             {
-                auto        formattedName    = skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
+                auto          formattedName    = skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
 
-                const auto    foundValueIt    = _values.find(formattedName);
-                const bool    isNewValue        = foundValueIt == _values.end();
-                //const bool    changed            = !isNewValue;// || !((*value) == (*foundValueIt->second));
+                const auto    foundValueIt     = _values.find(formattedName);
+                const bool    isNewValue       = foundValueIt == _values.end();
 
                 _values[formattedName] = value;
 
@@ -179,11 +178,8 @@ namespace minko
                     _propertyAdded->execute(shared_from_this(), formattedName);
                 }
 
-                //if (changed)
-                {
-                    _propReferenceChanged->execute(shared_from_this(), formattedName);
-                    _propValueChanged->execute(shared_from_this(), formattedName);
-                }
+                _propReferenceChanged->execute(shared_from_this(), formattedName);
+                _propValueChanged->execute(shared_from_this(), formattedName);
 
                 return shared_from_this();
             }
@@ -192,41 +188,29 @@ namespace minko
             typename std::enable_if<std::is_convertible<T, Value::Ptr>::value, Provider::Ptr>::type
             set(const std::string& propertyName, T value, bool skipPropertyNameFormatting)
             {
-                auto        formattedName    = skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
+                auto          formattedName    = skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
 
-                const auto    foundValueIt    = _values.find(formattedName);
-                const bool    isNewValue        = (foundValueIt == _values.end());
-                //const bool    changed            = !isNewValue;// || !((*value) == (*foundValueIt->second));
+                const auto    foundValueIt     = _values.find(formattedName);
+                const bool    isNewValue       = (foundValueIt == _values.end());
 
                 _values[formattedName] = value;
 
                 if (isNewValue)
                 {
-#if defined(EMSCRIPTEN)
-                    auto that = shared_from_this();
-                    _valueChangedSlots[formattedName] = value->changed()->connect([&, that, formattedName, this](Value::Ptr)
-                    {
-                        _propValueChanged->execute(that, formattedName);
-                    });
-#else
                     _valueChangedSlots[formattedName] = value->changed()->connect(std::bind(
                          &Signal<Provider::Ptr, const std::string&>::execute,
                          _propValueChanged,
                          shared_from_this(),
                          formattedName
                     ));
-#endif
 
                     _names.push_back(formattedName);
 
                     _propertyAdded->execute(shared_from_this(), formattedName);
                 }
 
-                //if (changed)
-                {
-                    _propReferenceChanged->execute(shared_from_this(), formattedName);
-                    _propValueChanged->execute(shared_from_this(), formattedName);
-                }
+                _propReferenceChanged->execute(shared_from_this(), formattedName);
+                _propValueChanged->execute(shared_from_this(), formattedName);
 
                 return shared_from_this();
             }
