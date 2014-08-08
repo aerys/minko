@@ -51,7 +51,7 @@ SpotLight::updateModelToWorldMatrix(const math::mat4& modelToWorld)
 }
 
 float
-SpotLight::innerConeAngle()
+SpotLight::innerConeAngle() const
 {
     return acos(data()->get<float>("cosInnerConeAngle"));
 }
@@ -68,7 +68,7 @@ SpotLight::innerConeAngle(float radians)
 }
 
 float
-SpotLight::outerConeAngle()
+SpotLight::outerConeAngle() const
 {
     return acos(data()->get<float>("cosOuterConeAngle"));
 }

@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/Signal.hpp"
 #include "minko/data/Container.hpp"
+#include "minko/data/Collection.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/scene/Node.hpp"
 
@@ -38,7 +39,8 @@ namespace minko
             typedef std::shared_ptr<scene::Node>            NodePtr;
 
         private:
-            std::shared_ptr<data::Provider>                 _data;
+            std::shared_ptr<data::Provider>                 _provider;
+            std::shared_ptr<data::Collection>               _collection;
             bool                                            _enabled;
             NodePtr                                         _root;
 
@@ -50,9 +52,16 @@ namespace minko
 	    protected:
             inline
             std::shared_ptr<data::Provider>
-            data() const
+            provider() const
             {
-                return _data;
+                return _provider;
+            }
+
+            inline
+            std::shared_ptr<data::Collection>
+            collection() const
+            {
+                return _collection;
             }
 
             inline
@@ -62,10 +71,13 @@ namespace minko
                 return _root;
             }
 
-            AbstractRootDataComponent(std::shared_ptr<data::Provider> provider) :
-                _data(provider),
+            AbstractRootDataComponent(std::shared_ptr<data::Provider>   provider,
+                                      std::shared_ptr<data::Collection> collection = nullptr) :
+                _provider(provider),
+                _collection(collection),
                 _enabled(true)
             {
+                assert(provider);
             }
 
             virtual
@@ -130,12 +142,44 @@ namespace minko
                     return;
 
                 if (_root)
-                    _root->data()->removeProvider(_data);
+                {
+                    if (_collection)
+                    {
+                        const auto& collections = _root->data()->collections();
+                        auto collectionIt = std::find_if(collections.begin(), collections.end(), [&](data::Collection::Ptr c)
+                        {
+                            return c->name() == _collection->name();
+                        });
+
+                        if (*collectionIt == _collection)
+                            _root->data()->removeCollection(_collection);
+                        else
+                            (*collectionIt)->remove(_provider);
+                    }
+                    else if (_provider)
+                        _root->data()->removeProvider(_provider);
+                }
                 
                 _root = root;
 
                 if (_root)
-                    _root->data()->addProvider(_data);
+                {
+                    if (_collection)
+                    {
+                        const auto& collections = _root->data()->collections();
+                        auto collectionIt = std::find_if(collections.begin(), collections.end(), [&](data::Collection::Ptr c)
+                        {
+                            return c->name() == _collection->name();
+                        });
+
+                        if (collectionIt == collections.end())
+                            _root->data()->addCollection(_collection);
+                        else
+                            (*collectionIt)->pushBack(_provider);
+                    }
+                    else if (_provider)
+                        _root->data()->addProvider(_provider);
+                }
             }
 	    };
     }

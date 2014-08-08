@@ -19,15 +19,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/data/Provider.hpp"
 
-#include "minko/Uuid.hpp"
-
 using namespace minko;
 using namespace minko::data;
 
-Provider::Provider(const std::string& key) :
+Provider::Provider() :
 	enable_shared_from_this(),
-    _key(key),
-    _uuid(minko::Uuid::getUuid()),
 	_propertyAdded(Signal<Ptr, const std::string&>::create()),
     _propertyChanged(Signal<Ptr, const std::string&>::create()),
 	_propertyRemoved(Signal<Ptr, const std::string&>::create())
@@ -35,13 +31,11 @@ Provider::Provider(const std::string& key) :
 }
 
 Provider::Ptr
-Provider::unset(const std::string& propertyName, bool skipPropertyNameFormatting)
-{
-	const auto& formattedPropertyName = skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
-	
-	if (_values.count(formattedPropertyName) != 0)
+Provider::unset(const std::string& propertyName)
+{	
+    if (_values.count(propertyName) != 0)
 	{
-		_values.erase(formattedPropertyName);
+        _values.erase(propertyName);
 		_propertyRemoved->execute(shared_from_this(), propertyName);
 	}
 
@@ -49,25 +43,21 @@ Provider::unset(const std::string& propertyName, bool skipPropertyNameFormatting
 }
 
 Provider::Ptr
-Provider::swap(const std::string& propertyName1, const std::string& propertyName2, bool skipPropertyNameFormatting)
+Provider::swap(const std::string& propertyName1, const std::string& propertyName2)
 {
-	auto formattedPropertyName1	= skipPropertyNameFormatting ? propertyName1 : formatPropertyName(propertyName1);
-	auto formattedPropertyName2	= skipPropertyNameFormatting ? propertyName2 : formatPropertyName(propertyName2);
-	auto hasProperty1			= hasProperty(formattedPropertyName1, true);
-	auto hasProperty2			= hasProperty(formattedPropertyName2, true);
+    auto hasProperty1 = hasProperty(propertyName1);
+    auto hasProperty2 = hasProperty(propertyName2);
 
 	if (!hasProperty1 && !hasProperty2)
 		throw;
 
 	if (!hasProperty1 || !hasProperty2)
 	{
-		auto formattedSource = hasProperty1 ? formattedPropertyName1 : formattedPropertyName2;
-		auto formattedDestination = hasProperty1 ? formattedPropertyName2 : formattedPropertyName1;
-        auto source = hasProperty1 ? formattedPropertyName1 : formattedPropertyName2;
-        auto destination = hasProperty1 ? formattedPropertyName2 : formattedPropertyName1;
+        auto source = hasProperty1 ? propertyName1 : propertyName2;
+        auto destination = hasProperty1 ? propertyName2 : propertyName1;
 
-        _values[formattedDestination] = _values[formattedSource];
-        _values.erase(formattedSource);
+        _values[destination] = _values[source];
+        _values.erase(source);
 
 		_propertyRemoved->execute(shared_from_this(), source);
 		_propertyAdded->execute(shared_from_this(), destination);
@@ -75,12 +65,12 @@ Provider::swap(const std::string& propertyName1, const std::string& propertyName
 	}
 	else
 	{
-		auto value1	= _values[formattedPropertyName1];
-		auto value2	= _values[formattedPropertyName2];
+        auto value1 = _values[propertyName1];
+        auto value2 = _values[propertyName2];
 		bool changed = value1 != value2;
 
-		_values[formattedPropertyName1] = value2;
-		_values[formattedPropertyName2] = value1;
+        _values[propertyName1] = value2;
+        _values[propertyName2] = value1;
 
 		if (changed)
 		{
@@ -95,7 +85,7 @@ Provider::swap(const std::string& propertyName1, const std::string& propertyName
 Provider::Ptr
 Provider::clone()
 {
-	auto provider = Provider::create(_key);
+	auto provider = Provider::create();
 	
 	provider->copyFrom(shared_from_this());
 
@@ -105,29 +95,9 @@ Provider::clone()
 Provider::Ptr
 Provider::copyFrom(Provider::Ptr source)
 {
-    _key = source->_key;
-
-    for (auto nameAndValue : source->_values)
-    	_values[formatPropertyName(unformatPropertyName(nameAndValue.first))] = nameAndValue.second;
+    _values = source->_values;
 
 	return shared_from_this();
-}
-
-std::string
-Provider::formatPropertyName(const std::string& propertyName) const
-{
-    return _key + "[" + _uuid + "]." + propertyName;
-}
-
-std::string
-Provider::unformatPropertyName(const std::string& propertyName) const
-{
-    std::size_t pos = propertyName.find_first_of('.');
-    if (pos == std::string::npos)
-        return propertyName;
-    ++pos;
-
-    return propertyName.substr(pos);
 }
 
 const std::string

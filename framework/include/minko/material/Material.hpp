@@ -65,7 +65,7 @@ namespace minko
 
 		protected:
 			Material::Material(const std::string& name) :
-	            data::Provider("material"),
+	            data::Provider(),
                 _name(name)
             {
 	

@@ -119,12 +119,12 @@ namespace minko
 		void
 		sortSignals()
 		{
-			_callbacks.sort([&](const Callback& callback1, const Callback& callback2) -> bool
+			_callbacks.sort([](const Callback& callback1, const Callback& callback2) -> bool
 			{
 				return callback1.first > callback2.first;
 			});
 
-			_slotIds.sort([&](const std::pair<float, unsigned int>& slot1, const std::pair<float, unsigned int>& slot2) -> bool
+			_slotIds.sort([](const std::pair<float, unsigned int>& slot1, const std::pair<float, unsigned int>& slot2) -> bool
 			{
 				return slot1.first > slot2.first;
 			});

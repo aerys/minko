@@ -37,7 +37,7 @@ namespace minko
 
         private:
             typedef std::shared_ptr<Provider>                       ProviderPtr;
-            typedef std::list<ProviderPtr>                          Items;
+            typedef std::vector<ProviderPtr>                        Items;
             typedef Signal<ProviderPtr, const std::string&>::Ptr    PropertySignalPtr;
             typedef Signal<ProviderPtr, const std::string&>::Slot   PropertySignalSlot;
 
@@ -119,7 +119,7 @@ namespace minko
             {
                 _items.insert(position, provider);
                 addProvider(provider);
-
+                
                 return *this;
             }
 
@@ -137,19 +137,19 @@ namespace minko
 
             inline
             Collection&
-            pushBack(ProviderPtr provider)
+            remove(ProviderPtr provider)
             {
-                _items.push_back(provider);
-                addProvider(provider);
+                _items.erase(std::find(_items.begin(), _items.end(), provider));
+                removeProvider(provider);
 
                 return *this;
             }
 
             inline
             Collection&
-            pushFront(ProviderPtr provider)
+            pushBack(ProviderPtr provider)
             {
-                _items.push_front(provider);
+                _items.push_back(provider);
                 addProvider(provider);
 
                 return *this;
@@ -167,22 +167,10 @@ namespace minko
                 return *this;
             }
 
-            inline
-            Collection&
-            popFront()
-            {
-                auto provider = _items.front();
-
-                _items.pop_front();
-                removeProvider(provider);
-
-                return *this;
-            }
-
         private:
             Collection(const std::string& name) :
                 _name(name),
-                _lengthProvider(Provider::create(name))
+                _lengthProvider(Provider::create())
             {
                 _lengthProvider->set("length", 0u);
             }

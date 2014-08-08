@@ -25,10 +25,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 
-AbstractLight::AbstractLight(const std::string& arrayName) :
-	AbstractRootDataComponent(data::Provider::create(arrayName)),
+AbstractLight::AbstractLight(const std::string& collectionName) :
+    AbstractRootDataComponent(data::Provider::create(), data::Collection::create(collectionName)),
 	_color(math::vec3(1.0f, 1.0f, 1.0f))
 {
+    collection()->pushBack(provider());
 	data()->set("color", _color);
 }
 

@@ -86,7 +86,8 @@ Culling::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 		&Culling::worldToScreenChangedHandler,
 		std::static_pointer_cast<Culling>(shared_from_this()),
 		std::placeholders::_1,
-		std::placeholders::_2
+		std::placeholders::_2,
+        std::placeholders::_3
 	));
 }
 
@@ -144,7 +145,9 @@ Culling::layoutChangedHandler(NodePtr node, NodePtr target)
 }
 
 void
-Culling::worldToScreenChangedHandler(std::shared_ptr<data::Container> data, const std::string& propertyName)
+Culling::worldToScreenChangedHandler(std::shared_ptr<data::Container>   data,
+                                     const std::string&                 propertyName,
+                                     const std::string&                 fullPropertyName)
 {
 	_frustum->updateFromMatrix(data->get<math::mat4>(propertyName));
 	

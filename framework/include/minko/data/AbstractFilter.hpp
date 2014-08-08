@@ -33,14 +33,13 @@ namespace minko
 			typedef std::shared_ptr<AbstractFilter>							Ptr;
 
 		private:
-			typedef std::shared_ptr<component::Surface>						SurfacePtr;
-			typedef std::shared_ptr<component::AbstractComponent>			AbsCmpPtr;
-			typedef std::shared_ptr<scene::Node>							NodePtr;
-			typedef std::shared_ptr<Provider>								ProviderPtr;
-			typedef std::shared_ptr<Container>								ContainerPtr;
-
-			typedef std::shared_ptr<Signal<Ptr, SurfacePtr>>				FilterSignalPtr;
-			typedef Signal<ContainerPtr, const std::string&>				ContainerPropertyChangedSignal;
+			typedef std::shared_ptr<component::Surface>						        SurfacePtr;
+			typedef std::shared_ptr<component::AbstractComponent>			        AbsCmpPtr;
+			typedef std::shared_ptr<scene::Node>							        NodePtr;
+			typedef std::shared_ptr<Provider>								        ProviderPtr;
+			typedef std::shared_ptr<Container>								        ContainerPtr;
+			typedef std::shared_ptr<Signal<Ptr, SurfacePtr>>				        FilterSignalPtr;
+			typedef Signal<ContainerPtr, const std::string&, const std::string&>    ContainerPropertyChangedSignal;
 
 		private:
 			SurfacePtr												_currentSurface;

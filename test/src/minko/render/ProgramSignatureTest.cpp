@@ -27,27 +27,25 @@ using namespace minko::render;
 void
 ProgramSignatureTest::SetUp()
 {
-    _targetProvider = data::Provider::create("targetData");
+    _targetProvider = data::Provider::create();
     _targetData = data::Container::create();
     _targetData->addProvider(_targetProvider);
-    _variables["targetId"] = _targetProvider->uuid();
     _targetProvider->set("foo", 42);
     _targetProvider->set("foo2", 24);
     _targetProvider->set("bar", true);
     
-    _rendererProvider = data::Provider::create("rendererData");
+    _rendererProvider = data::Provider::create();
     _rendererData = data::Container::create();
     _rendererData->addProvider(_rendererProvider);
-    _variables["rendererId"] = _rendererProvider->uuid();
     _rendererProvider->set("foo", 4242);
     _rendererProvider->set("bar", true);
 
-    _rootProvider = data::Provider::create("rootData");
+    _rootProvider = data::Provider::create();
     _rootData = data::Container::create();
     _rootData->addProvider(_rootProvider);
-    _variables["rootId"] = _rootProvider->uuid();
     _rootProvider->set("foo", 424242);
     _rootProvider->set("bar", true);
+    _variables["rootId"] = "0";
 }
 
 TEST_F(ProgramSignatureTest, TargetDefinedIntegerValue)
@@ -55,7 +53,7 @@ TEST_F(ProgramSignatureTest, TargetDefinedIntegerValue)
     data::MacroBindingMap macroBindings;
 
     macroBindings["FOO"] = {
-        "targetData[${targetId}].foo",
+        "foo",
         data::BindingSource::TARGET,
         data::MacroBinding::State::UNDEFINED,
         data::MacroBinding::Value()
@@ -75,7 +73,7 @@ TEST_F(ProgramSignatureTest, TargetDefined)
     data::MacroBindingMap macroBindings;
 
     macroBindings["BAR"] = {
-        "targetData[${targetId}].bar",
+        "bar",
         data::BindingSource::TARGET,
         data::MacroBinding::State::UNDEFINED,
         data::MacroBinding::Value()
@@ -94,7 +92,7 @@ TEST_F(ProgramSignatureTest, TargetUndefined)
     data::MacroBindingMap macroBindings;
 
     macroBindings["BAR"] = {
-        "targetData[${targetId}].fooBar",
+        "fooBar",
         data::BindingSource::TARGET,
         data::MacroBinding::State::UNDEFINED,
         data::MacroBinding::Value()

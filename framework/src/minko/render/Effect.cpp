@@ -28,7 +28,7 @@ using namespace minko::render;
 Effect::Effect() :
     _techniques(),
     _fallback(),
-    _data(data::Provider::create("effect")),
+    _data(data::Provider::create()),
     _uniformFunctions(),
     _attributeFunctions(),
     _macroFunctions()

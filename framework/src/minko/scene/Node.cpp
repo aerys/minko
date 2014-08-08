@@ -36,7 +36,7 @@ Node::Node() :
 	_root(nullptr),
 	_parent(nullptr),
 	_container(data::Container::create()),
-	_data(data::Provider::create("node")),
+	_data(data::Provider::create()),
 	_added(Signal<Ptr, Ptr, Ptr>::create()),
 	_removed(Signal<Ptr, Ptr, Ptr>::create()),
 	_componentAdded(Signal<Ptr, Ptr, Node::AbsCtrlPtr>::create()),

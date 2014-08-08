@@ -52,9 +52,7 @@ namespace minko
             };
 
 		private:
-            std::string                                         _key;
 			std::unordered_map<std::string, Any>				_values;
-            std::string                                         _uuid;
 
 			std::shared_ptr<Signal<Ptr, const std::string&>>	_propertyAdded;
             std::shared_ptr<Signal<Ptr, const std::string&>>	_propertyChanged;
@@ -63,9 +61,9 @@ namespace minko
 		public:
 			static
 			Ptr
-			create(const std::string& key)
+			create()
 			{
-				Ptr provider = std::shared_ptr<Provider>(new Provider(key));
+				Ptr provider = std::shared_ptr<Provider>(new Provider());
 				
 				return provider;
 			}
@@ -74,26 +72,14 @@ namespace minko
 			Ptr
 			create(Ptr source)
 			{
-				return create(source->_key)->copyFrom(source);
+				return create()->copyFrom(source);
 			}
-
-            const std::string&
-            key()
-            {
-                return _key;
-            }
-
-            const std::string&
-            uuid()
-            {
-                return _uuid;
-            }
 
 			inline
 			bool 
-            hasProperty(const std::string& name, bool skipPropertyNameFormatting = false) const
+            hasProperty(const std::string& propertyName) const
             {
-                return _values.count(skipPropertyNameFormatting ? name : formatPropertyName(name)) != 0;
+                return _values.count(propertyName) != 0;
             }
 
 			inline
@@ -127,39 +113,37 @@ namespace minko
 			template <typename T>
 			inline
             typename std::enable_if<is_valid<T>::value, const T&>::type
-            get(const std::string& name, bool skipPropertyNameFormatting = false) const
+            get(const std::string& propertyName) const
 			{
-                return *Any::cast<T>(&_values.at(skipPropertyNameFormatting ? name : formatPropertyName(name)));
+                return *Any::cast<T>(&_values.at(propertyName));
 			}
 
             template <typename T>
             inline
             typename std::enable_if<is_valid<T>::value, const T*>::type
-            getPointer(const std::string& name, bool skipPropertyNameFormatting = false) const
+            getPointer(const std::string& propertyName) const
             {
-                return Any::cast<T>(&_values.at(skipPropertyNameFormatting ? name : formatPropertyName(name)));
+                return Any::cast<T>(&_values.at(propertyName));
             }
 
             template <typename T>
             typename std::enable_if<is_valid<T>::value, Ptr>::type
-            set(const std::string& name, T value, bool skipPropertyNameFormatting = false)
+                set(const std::string& propertyName, T value)
             {
-                auto formattedPropertyName = skipPropertyNameFormatting ? name : formatPropertyName(name);
-
-                if (_values.count(formattedPropertyName) != 0)
+                if (_values.count(propertyName) != 0)
                 {
-                    T* ptr = Any::cast<T>(&_values[formattedPropertyName]);
+                    T* ptr = Any::cast<T>(&_values[propertyName]);
                     auto changed = !(*ptr == value);
 
                     *ptr = value;
                     if (changed)
-                        _propertyChanged->execute(shared_from_this(), name);
+                        _propertyChanged->execute(shared_from_this(), propertyName);
                 }
                 else
                 {
-                    _values[formattedPropertyName] = value;
-                    _propertyAdded->execute(shared_from_this(), name);
-                    _propertyChanged->execute(shared_from_this(), name);
+                    _values[propertyName] = value;
+                    _propertyAdded->execute(shared_from_this(), propertyName);
+                    _propertyChanged->execute(shared_from_this(), propertyName);
                 }
 
                 return shared_from_this();
@@ -167,10 +151,9 @@ namespace minko
 
             template <typename T>
 			bool
-			propertyHasType(const std::string& name, bool skipPropertyNameFormatting = false) const
+                propertyHasType(const std::string& propertyName) const
 			{
-                const std::string&	formattedName   = skipPropertyNameFormatting ? name : formatPropertyName(name);
-				const auto			foundIt			= _values.find(formattedName);
+                const auto foundIt = _values.find(propertyName);
 
 				if (foundIt == _values.end())
 					throw std::invalid_argument("propertyName");
@@ -189,12 +172,11 @@ namespace minko
 
 			virtual
 			Ptr
-            unset(const std::string& propertyName, bool skipPropertyNameFormatting = false);
+            unset(const std::string& propertyName);
 
 			Ptr
 			swap(const std::string& propertyName1,
-                 const std::string& propertyName2,
-                 bool               skipPropertyNameFormatting = false);
+                 const std::string& propertyName2);
 
 			Ptr
 			clone();
@@ -209,13 +191,7 @@ namespace minko
                                   const std::string&                                    propertyName);
 
 		protected:
-			Provider(const std::string& key);
-
-			std::string
-			formatPropertyName(const std::string& propertyName) const;
-
-			std::string
-			unformatPropertyName(const std::string& propertyName) const;
+			Provider();
 		};
 	}
 }

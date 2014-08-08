@@ -32,25 +32,27 @@ namespace minko
 			public AbstractComponent
 		{
 		public:
-			typedef std::shared_ptr<Culling>									Ptr;
+			typedef std::shared_ptr<Culling>    Ptr;
 
 		private:
-			typedef std::shared_ptr<scene::Node>								NodePtr;
-			typedef std::shared_ptr<math::AbstractShape>						ShapePtr;
+			typedef std::shared_ptr<scene::Node>			NodePtr;
+			typedef std::shared_ptr<math::AbstractShape>	ShapePtr;
+            typedef std::shared_ptr<data::Container>        ContainerPtr;
+            typedef const std::string&                      String;
+            typedef Signal<ContainerPtr, String, String>    PropertyChangedSignal;
 
 		private:
-			static std::shared_ptr<math::OctTree>								_octTree;
+			static std::shared_ptr<math::OctTree>			_octTree;
 
-			std::shared_ptr<math::AbstractShape>								_frustum;
+			std::string										_bindProperty;
+			std::shared_ptr<math::AbstractShape>			_frustum;
 
-			Signal<AbstractComponent::Ptr, NodePtr>::Slot						_targetAddedSlot;
-            Signal<AbstractComponent::Ptr, NodePtr>::Slot						_targetRemovedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot								_addedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot								_addedToSceneSlot;
-			Signal<NodePtr, NodePtr>::Slot										_layoutChangedSlot;
-			Signal<std::shared_ptr<data::Container>, const std::string&>::Slot	_viewMatrixChangedSlot;
-
-			std::string															_bindProperty;
+			Signal<AbstractComponent::Ptr, NodePtr>::Slot	_targetAddedSlot;
+            Signal<AbstractComponent::Ptr, NodePtr>::Slot	_targetRemovedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot			_addedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot			_addedToSceneSlot;
+			Signal<NodePtr, NodePtr>::Slot					_layoutChangedSlot;
+			PropertyChangedSignal::Slot	                    _viewMatrixChangedSlot;
 
 		public:
 			inline static
@@ -85,7 +87,9 @@ namespace minko
 			layoutChangedHandler(NodePtr node, NodePtr target);
 
 			void
-			worldToScreenChangedHandler(std::shared_ptr<data::Container> data, const std::string& propertyName);
+			worldToScreenChangedHandler(std::shared_ptr<data::Container>    data,
+                                        const std::string&                  propertyName,
+                                        const std::string&                  fullPropertyName);
 
 			void
 			targetAddedToSceneHandler(NodePtr node, NodePtr target, NodePtr ancestor);

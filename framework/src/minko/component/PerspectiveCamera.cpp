@@ -36,7 +36,7 @@ PerspectiveCamera::PerspectiveCamera(float			      fov,
                                      float			      zNear,
                                      float			      zFar,
 									 const math::mat4&	  postPerspective) :
-	_data(data::Provider::create("camera")),
+	_data(data::Provider::create()),
 	_fov(fov),
 	_aspectRatio(aspectRatio),
 	_zNear(zNear),

@@ -40,6 +40,7 @@ namespace minko
 			typedef std::shared_ptr<scene::Node>		NodePtr;
 			typedef std::shared_ptr<AbstractComponent>	AbsCmpPtr;
 			typedef std::shared_ptr<data::Container>	ContainerPtr;
+            typedef const std::string&                  String;
 
 		private:
 			const bool										_fixed;
@@ -54,7 +55,7 @@ namespace minko
 			Signal<AbsCmpPtr, NodePtr>::Slot				_targetRemovedSlot;
 			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot		_componentAddedSlot;
 			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot		_componentRemovedSlot;
-			Signal<ContainerPtr, const std::string&>::Slot	_modelToWorldChangedSlot;
+			Signal<ContainerPtr, String, String>::Slot	    _modelToWorldChangedSlot;
 
 		public:
 			inline static

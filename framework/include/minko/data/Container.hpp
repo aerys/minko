@@ -32,7 +32,7 @@ namespace minko
 
 		public:
 			typedef std::shared_ptr<Container>							Ptr;
-			typedef Signal<Ptr, const std::string&>						PropertyChangedSignal;
+			typedef Signal<Ptr, const std::string&, const std::string&>	PropertyChangedSignal;
 
 		private:
 			typedef std::shared_ptr<PropertyChangedSignal>				PropertyChangedSignalPtr;
@@ -47,13 +47,14 @@ namespace minko
         private:
 			std::list<ProviderPtr>										    _providers;
             std::list<CollectionPtr>                                        _collections;
-            std::unordered_map<ProviderPtr, uint>                           _numUses;
 
 			PropertyChangedSignalPtr									    _propertyAdded;
 			PropertyChangedSignalPtr									    _propertyRemoved;
             std::unordered_map<std::string, PropertyChangedSignalPtr>       _propertyChanged;
             Signal<Ptr, ProviderPtr>::Ptr								    _providerAdded;
             Signal<Ptr, ProviderPtr>::Ptr								    _providerRemoved;
+            Signal<Ptr, CollectionPtr>::Ptr								    _collectionAdded;
+            Signal<Ptr, CollectionPtr>::Ptr								    _collectionRemoved;
 
             std::unordered_map<ProviderPtr, std::list<Any>>				    _propertySlots;
             std::unordered_map<std::string, PropertyChangedSignalPtr>	    _propertyChangedSlots;
@@ -65,81 +66,55 @@ namespace minko
 			Ptr
 			create()
 			{
-				auto container = std::shared_ptr<Container>(new Container());
-
-				container->initialize();
-
-				return container;
+                return std::shared_ptr<Container>(new Container());
 			}
 
-			void
-			initialize();
-
-			void
-			addProvider(std::shared_ptr<Provider> provider);
-
-			void
-			removeProvider(std::shared_ptr<Provider> provider);
-
-            bool
-            hasProvider(std::shared_ptr<Provider> provider) const;
-
-            void
-            addCollection(std::shared_ptr<Collection> collection);
-
-            void
-            removeCollection(std::shared_ptr<Collection> collection);
-
-            bool
-            hasCollection(std::shared_ptr<Collection> collection);
-
-			bool
-			hasProperty(const std::string& propertyName, uint index = 0) const;
-
-            uint
-			countProperty(const std::string& propertyName) const;
-			
             template <typename T>
 			bool
-			propertyHasType(const std::string& propertyName, bool skipPropertyNameFormatting = false) const
+			propertyHasType(const std::string& propertyName) const
 			{
-                auto provider = getProviderByPropertyName(propertyName);
+                auto providerAndToken = getProviderByPropertyName(propertyName);
+                auto provider = std::get<0>(providerAndToken);
 
                 assert(provider != nullptr);
 
-				return provider->propertyHasType<T>(propertyName, skipPropertyNameFormatting);
+				return provider->propertyHasType<T>(std::get<1>(providerAndToken));
 			}
 
 			template <typename T>
 			const T&
 			get(const std::string& propertyName) const
 			{
-                auto provider = getProviderByPropertyName(propertyName);
+                auto providerAndToken = getProviderByPropertyName(propertyName);
+                auto provider = std::get<0>(providerAndToken);
 
                 assert(provider != nullptr);
 
-				return provider->get<T>(propertyName, true);
+                return provider->get<T>(std::get<1>(providerAndToken));
 			}
 
             template <typename T>
             const T*
             getPointer(const std::string& propertyName) const
             {
-                auto provider = getProviderByPropertyName(propertyName);
+                auto providerAndToken = getProviderByPropertyName(propertyName);
+                auto provider = std::get<0>(providerAndToken);
 
                 assert(provider != nullptr);
 
-                return provider->getPointer<T>(propertyName, true);
+                return provider->getPointer<T>(std::get<1>(providerAndToken));
             }
 
 			template <typename T>
 			void
 			set(const std::string& propertyName, T value)
 			{
-                auto provider = getProviderByPropertyName(propertyName);
+                auto providerAndToken = getProviderByPropertyName(propertyName);
+                auto provider = std::get<0>(providerAndToken);
 
                 assert(provider != nullptr);
-				provider->set<T>(propertyName, value);
+
+                provider->set<T>(std::get<1>(providerAndToken), value);
 			}
 
 			inline
@@ -161,7 +136,7 @@ namespace minko
             propertyChanged(const std::string& propertyName)
             {
                 if (_propertyChanged.count(propertyName) == 0)
-                    _propertyChanged[propertyName] = Signal<Container::Ptr, const std::string&>::create();
+                    _propertyChanged[propertyName] = PropertyChangedSignal::create();
 
                 return _propertyChanged[propertyName];
             }
@@ -187,23 +162,81 @@ namespace minko
 				return _providers;
 			}
 
-			Ptr
-			filter(const std::set<AbsFilterPtr>&, Ptr = nullptr) const;
+            inline
+			Signal<Ptr, CollectionPtr>::Ptr
+			collectionAdded() const
+			{
+				return _collectionAdded;
+			}
+
+			inline
+			Signal<Ptr, CollectionPtr>::Ptr
+			collectionRemoved() const
+			{
+				return _collectionRemoved;
+			}
+
+            inline
+			const std::list<CollectionPtr>&
+			collections() const
+			{
+				return _collections;
+			}
+
+            inline
+            void
+			addProvider(std::shared_ptr<Provider> provider)
+            {
+                doAddProvider(provider);
+            }
+
+			void
+			removeProvider(std::shared_ptr<Provider> provider)
+            {
+                doRemoveProvider(provider);
+            }
+
+            void
+            addCollection(std::shared_ptr<Collection> collection);
+
+            void
+            removeCollection(std::shared_ptr<Collection> collection);
+
+			bool
+			hasProperty(const std::string& propertyName) const;
 
 		private:
 			Container();
 
-            ProviderPtr
-            getProviderByPropertyName(const std::string& propertyName, uint index = 0) const;
+            std::pair<ProviderPtr, std::string>
+            getProviderByPropertyName(const std::string& propertyName) const;
 
 			void
-			providerPropertyAddedHandler(ProviderPtr, const std::string& propertyName);
+			providerPropertyAddedHandler(ProviderPtr        provider,
+                                         CollectionPtr      collection,
+                                         const std::string& propertyName);
 
 			void
-			providerPropertyRemovedHandler(ProviderPtr, const std::string& propertyName);
+			providerPropertyRemovedHandler(ProviderPtr          provider,
+                                           CollectionPtr        collection,
+                                           const std::string&   propertyName);
 
             void
-            providerPropertyChangedHandler(ProviderPtr, const std::string& propertyName);
+            providerPropertyChangedHandler(ProviderPtr          provider,
+                                           CollectionPtr        collection,
+                                           const std::string&   propertyName);
+
+            void
+            doAddProvider(ProviderPtr provider, CollectionPtr collection = nullptr);
+
+            void
+            doRemoveProvider(ProviderPtr provider, CollectionPtr collection = nullptr);
+
+            std::string
+            formatPropertyName(CollectionPtr collection, ProviderPtr provider, const std::string& propertyName);
+
+            std::string
+            formatPropertyName(CollectionPtr collection, uint index, const std::string& propertyName);
 		};
 	}
 }

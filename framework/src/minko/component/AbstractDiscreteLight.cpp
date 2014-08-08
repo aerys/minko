@@ -44,7 +44,8 @@ AbstractDiscreteLight::targetAddedHandler(AbstractComponent::Ptr cmp, std::share
 		&AbstractDiscreteLight::modelToWorldMatrixChangedHandler,
 		std::dynamic_pointer_cast<AbstractDiscreteLight>(shared_from_this()),
 		std::placeholders::_1,
-		std::placeholders::_2
+		std::placeholders::_2,
+        std::placeholders::_3
 	));
 
 	if (target->data()->hasProperty("transform.modelToWorldMatrix"))
@@ -60,8 +61,9 @@ AbstractDiscreteLight::targetRemovedHandler(AbstractComponent::Ptr cmp, std::sha
 }
 
 void
-AbstractDiscreteLight::modelToWorldMatrixChangedHandler(std::shared_ptr<data::Container> 	container,
-								 						const std::string& 					propertyName)
+AbstractDiscreteLight::modelToWorldMatrixChangedHandler(data::Container::Ptr 	container,
+								 						const std::string& 		propertyName,
+                                                        const std::string&      fullPropertyName)
 {
 	updateModelToWorldMatrix(container->get<math::mat4>(propertyName));
 }

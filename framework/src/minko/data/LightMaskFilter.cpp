@@ -55,10 +55,13 @@ LightMaskFilter::root(Node::Ptr root)
 
 		for (auto& n : _numLightPropertyNames)
 		{
-			auto slot = _root->data()->propertyChanged(n)->connect([=](Container::Ptr, const std::string&){ 
-				lightsChangedHandler(); 
-			}, 
-			10.0f);
+			auto slot = _root->data()->propertyChanged(n)->connect(
+                [=](Container::Ptr, const std::string&, const std::string&)
+                { 
+				    lightsChangedHandler(); 
+			    }, 
+			    10.f
+            );
 
 			_rootPropertyChangedSlots.push_back(slot);
 		}
@@ -115,17 +118,18 @@ LightMaskFilter::lightsChangedHandler()
 		->descendants(true)
 		->where([](Node::Ptr n){ return n->hasComponent<AbstractLight>(); });
 
-	for (auto& n : withLights->nodes())
-	{
-		auto light = n->component<AbstractLight>();
+    // FIXME
+	//for (auto& n : withLights->nodes())
+	//{
+	//	auto light = n->component<AbstractLight>();
 
-		_providerToLight[light->data()] = light;
+	//	_providerToLight[light->data()] = light;
 
-		_layoutMaskChangedSlots.push_back(light->data()->propertyChanged()->connect([=](Provider::Ptr provider, const std::string& lightProperty)
-		{
-			changed()->execute(shared_from_this(), nullptr);
-		}));
-	}
+	//	_layoutMaskChangedSlots.push_back(light->data()->propertyChanged()->connect([=](Provider::Ptr provider, const std::string& lightProperty)
+	//	{
+	//		changed()->execute(shared_from_this(), nullptr);
+	//	}));
+	//}
 }
 
 /*static*/

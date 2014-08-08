@@ -46,7 +46,7 @@ AbstractFilter::currentSurface(component::Surface::Ptr value)
 			for (auto propertyName : _watchedProperties)
 			{
 				_surfaceTargetPropertyChangedSlots[target].push_back(target->data()->propertyChanged(propertyName)->connect(
-					[=](Container::Ptr, const std::string&)
+					[=](Container::Ptr, const std::string&, const std::string&)
 					{
 						changed()->execute(shared_from_this(), value);
 					}

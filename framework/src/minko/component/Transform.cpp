@@ -32,7 +32,7 @@ Transform::Transform() :
 	_matrix(1.),
 	_modelToWorld(1.),
 //	_worldToModel(1.),
-	_data(data::Provider::create("transform"))
+	_data(data::Provider::create())
 {
 }
 
@@ -303,21 +303,24 @@ Transform::RootTransform::juxtaposeSiblings(std::vector<NodePtr>& nodes)
 
 	for (unsigned int nodeId = 0; nodeId < nodes.size(); ++nodeId)
 	{
-		auto it			= nodes.begin() + nodeId;
-		auto node		= *it;
-		auto ancestor	= node->parent();
-		while (ancestor != nullptr 
-			&& std::find(nodes.begin(), it, ancestor) == nodes.end())
-			ancestor = ancestor->parent();
+		auto it = nodes.begin() + nodeId;
+		auto node = *it;
+        auto ancestor = node->parent();
 
-		if (firstChild.count(ancestor) == 0)
-			firstChild[ancestor] = nodeId;
+        while (ancestor != nullptr && std::find(nodes.begin(), nodes.end(), ancestor) == nodes.end())
+            ancestor = ancestor->parent();
+
+        if (!ancestor)
+            continue;
+
+        if (firstChild.count(ancestor) == 0)
+            firstChild[ancestor] = nodeId;
 		else
 		{
-			assert(firstChild[ancestor] <= nodeId);
+            assert(firstChild[ancestor] <= nodeId);
 
 			nodes.erase(it);
-			nodes.insert(nodes.begin() + firstChild[ancestor], node);
+            nodes.insert(nodes.begin() + firstChild[ancestor], node);
 		}
 	}
 }
@@ -339,9 +342,9 @@ Transform::RootTransform::updateTransforms()
 
         	_transforms[nodeId]->_data->set("modelToWorldMatrix", *modelToWorldMatrix);
 
-			auto numChildren 		= _numChildren[nodeId];
-			auto firstChildId 		= _firstChildId[nodeId];
-			auto lastChildId 		= firstChildId + numChildren;
+			auto numChildren = _numChildren[nodeId];
+			auto firstChildId = _firstChildId[nodeId];
+			auto lastChildId = firstChildId + numChildren;
 
 			for (auto childId = firstChildId; childId < lastChildId; ++childId)
 				_dirty[childId] = true;

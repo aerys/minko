@@ -29,7 +29,7 @@ using namespace minko::geometry;
 using namespace minko::render;
 
 Geometry::Geometry() :
-	_data(data::Provider::create("geometry")),
+	_data(data::Provider::create()),
 	_vertexSize(0),
 	_numVertices(0),
 	_indexBuffer(nullptr)

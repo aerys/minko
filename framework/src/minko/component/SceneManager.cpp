@@ -38,7 +38,7 @@ SceneManager::SceneManager(const std::shared_ptr<render::AbstractContext>& conte
 	_cullEnd(Signal<Ptr>::create()),
 	_renderBegin(Signal<Ptr, uint, render::AbstractTexture::Ptr>::create()),
 	_renderEnd(Signal<Ptr, uint, render::AbstractTexture::Ptr>::create()),
-	_data(data::Provider::create("scene"))
+	_data(data::Provider::create())
 {
 }
 
@@ -51,8 +51,8 @@ SceneManager::initialize()
 		std::placeholders::_1, 
 		std::placeholders::_2
     ));
-    _targetRemovedSlot = targetAdded()->connect(std::bind(
-        &SceneManager::targetAddedHandler, 
+    _targetRemovedSlot = targetRemoved()->connect(std::bind(
+        &SceneManager::targetRemovedHandler, 
 		std::static_pointer_cast<SceneManager>(shared_from_this()), 
 		std::placeholders::_1, 
 		std::placeholders::_2

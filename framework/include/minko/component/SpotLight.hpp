@@ -58,13 +58,13 @@ namespace minko
 			}
 
             float
-            innerConeAngle();
+            innerConeAngle() const;
 
 			Ptr
 			innerConeAngle(float radians);
 
             float
-            outerConeAngle();
+            outerConeAngle() const;
 
 			Ptr
 			outerConeAngle(float radians);

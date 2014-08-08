@@ -42,12 +42,21 @@ namespace minko
 			typedef std::shared_ptr<AbstractComponent>	AbsCmpPtr;
 
 		private:
-			math::vec3 	_color;
+			math::vec3 	                    _color;
+            std::shared_ptr<data::Provider> _provider;
+
+        protected:
+            inline
+            std::shared_ptr<data::Provider>
+            data() const
+            {
+                return _provider;
+            }
 
 		public:
 			inline
 			const math::vec3&
-			color()
+			color() const
 			{
 				return _color;
 			}

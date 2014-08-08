@@ -62,7 +62,7 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, boo
     _name(name),
     _useStencil(useStencil),
     _chromeless(chromeless),
-    _data(data::Provider::create("canvas")),
+    _data(data::Provider::create()),
     _active(false),
     _previousTime(std::chrono::high_resolution_clock::now()),
     _startTime(std::chrono::high_resolution_clock::now()),

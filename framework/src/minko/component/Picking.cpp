@@ -47,7 +47,7 @@ Picking::Picking(SceneManagerPtr	sceneManager,
 	_context(sceneManager->assets()->context()),
 	_pickingProjection(1.f),
 	_sceneManager(sceneManager),
-	_pickingProvider(data::Provider::create("picking")),
+	_pickingProvider(data::Provider::create()),
 	_mouseMove(Signal<NodePtr>::create()),
 	_mouseLeftClick(Signal<NodePtr>::create()),
 	_mouseRightClick(Signal<NodePtr>::create()),
@@ -241,7 +241,7 @@ Picking::addSurface(SurfacePtr surface)
 		_surfaceToPickingId[surface] = _pickingId;
 		_pickingIdToSurface[_pickingId] = surface;
 
-		_surfaceToProvider[surface] = data::Provider::create("picking");
+		_surfaceToProvider[surface] = data::Provider::create();
 
 		_surfaceToProvider[surface]->set("color", math::vec4(
 			((_pickingId >> 16) & 0xff) / 255.f,

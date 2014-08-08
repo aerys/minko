@@ -26,7 +26,7 @@ TEST_F(ProviderTest, Create)
 {
 	try
 	{
-		auto p = Provider::create("test");
+		auto p = Provider::create();
 	}
 	catch (...)
 	{
@@ -38,7 +38,7 @@ TEST_F(ProviderTest, CreateCopy)
 {
 	try
 	{
-		auto p1 = Provider::create("test");
+		auto p1 = Provider::create();
 
 		p1->set("foo", 42);
 
@@ -54,7 +54,7 @@ TEST_F(ProviderTest, CreateCopy)
 
 TEST_F(ProviderTest, TestInt)
 {
-	auto provider = Provider::create("test");
+	auto provider = Provider::create();
 
 	provider->set("foo", 42);
 
@@ -63,7 +63,7 @@ TEST_F(ProviderTest, TestInt)
 
 TEST_F(ProviderTest, TestUint)
 {
-	auto provider = Provider::create("test");
+	auto provider = Provider::create();
 	uint v = 42;
 
 	provider->set("foo", v);
@@ -73,7 +73,7 @@ TEST_F(ProviderTest, TestUint)
 
 TEST_F(ProviderTest, TestFloat)
 {
-	auto provider = Provider::create("test");
+	auto provider = Provider::create();
 	float v = 42;
 
 	provider->set("foo", v);
@@ -83,7 +83,7 @@ TEST_F(ProviderTest, TestFloat)
 
 TEST_F(ProviderTest, PropertyAdded)
 {
-	auto p = Provider::create("test");
+	auto p = Provider::create();
 	auto v = 0;
 	auto _ = p->propertyAdded()->connect(
 		[&](Provider::Ptr provider, const std::string& propertyName)
@@ -100,7 +100,7 @@ TEST_F(ProviderTest, PropertyAdded)
 
 TEST_F(ProviderTest, PropertyRemoved)
 {
-	auto p = Provider::create("test");
+	auto p = Provider::create();
 	auto v = 0;
 	auto _ = p->propertyRemoved()->connect(
 		[&](Provider::Ptr provider, const std::string& propertyName)
@@ -118,7 +118,7 @@ TEST_F(ProviderTest, PropertyRemoved)
 
 TEST_F(ProviderTest, PropertyChanged)
 {
-	auto p = Provider::create("test");
+	auto p = Provider::create();
 	auto v = 0;
 	auto _ = p->propertyChanged()->connect(
 		[&](Provider::Ptr provider, const std::string& propertyName)
@@ -135,7 +135,7 @@ TEST_F(ProviderTest, PropertyChanged)
 
 TEST_F(ProviderTest, ValueChangedNot)
 {
-	auto p = Provider::create("test");
+	auto p = Provider::create();
 	auto v = 0;
 
 	p->set("foo", 42);
@@ -155,7 +155,7 @@ TEST_F(ProviderTest, ValueChangedNot)
 
 TEST_F(ProviderTest, Swap)
 {
-	auto p = Provider::create("test");
+	auto p = Provider::create();
 	auto vFoo = 0;
 	auto vBar = 0;
 
@@ -180,7 +180,7 @@ TEST_F(ProviderTest, Swap)
 
 TEST_F(ProviderTest, IntegerPointerConsistency)
 {
-    auto p = Provider::create("test");
+    auto p = Provider::create();
 
     p->set("integer", 42);
 
@@ -189,7 +189,7 @@ TEST_F(ProviderTest, IntegerPointerConsistency)
 
 TEST_F(ProviderTest, IntegerPointerConsistency2)
 {
-    auto p = Provider::create("test");
+    auto p = Provider::create();
 
     p->set("integer", 42);
     auto ptr1 = p->getPointer<int>("integer");
@@ -202,7 +202,7 @@ TEST_F(ProviderTest, IntegerPointerConsistency2)
 
 TEST_F(ProviderTest, TextureSamplerPointerConsistency)
 {
-    auto p = Provider::create("test");
+    auto p = Provider::create();
     auto t1 = render::Texture::create(MinkoTests::context(), 2, 2);
 
     p->set("texture", t1->sampler());
@@ -212,7 +212,7 @@ TEST_F(ProviderTest, TextureSamplerPointerConsistency)
 
 TEST_F(ProviderTest, TextureSamplerPointerConsistency2)
 {
-    auto p = Provider::create("test");
+    auto p = Provider::create();
     auto t1 = render::Texture::create(MinkoTests::context(), 2, 2);
     auto t2 = render::Texture::create(MinkoTests::context(), 4, 4);
 
@@ -227,7 +227,7 @@ TEST_F(ProviderTest, TextureSamplerPointerConsistency2)
 
 TEST_F(ProviderTest, VertexAttributePointerConsistency)
 {
-    auto p = Provider::create("test");
+    auto p = Provider::create();
     auto g = geometry::CubeGeometry::create(MinkoTests::context());
     const auto& a1 = g->getVertexAttribute("position");
 
@@ -238,7 +238,7 @@ TEST_F(ProviderTest, VertexAttributePointerConsistency)
 
 TEST_F(ProviderTest, VertexAttributePointerConsistency2)
 {
-    auto p = Provider::create("test");
+    auto p = Provider::create();
     auto cube = geometry::CubeGeometry::create(MinkoTests::context());
     auto sphere = geometry::SphereGeometry::create(MinkoTests::context());
 

@@ -76,20 +76,20 @@ TEST_F(TransformTest, ModelToWorldUpdate)
 	auto n2 = Node::create()->addComponent(Transform::create());
 
 	root->addChild(n1)->addChild(n2);
-	// init. transform.modelToWorldMatrix by performing a first frame
+	// init. modelToWorldMatrix by performing a first frame
 	sceneManager->nextFrame(0.0f, 0.0f);
 
 	auto updated1 = false;
-	auto _ = n1->data()->propertyChanged("transform.modelToWorldMatrix")->connect(
-		[&](data::Container::Ptr c, const std::string& propertyName)
+	auto _ = n1->data()->propertyChanged("modelToWorldMatrix")->connect(
+		[&](data::Container::Ptr c, const std::string& propertyName, const std::string& fullPropertyName)
 		{
 			updated1 = true;
 		}
 	);
 
 	auto updated2 = false;
-	auto __ = n2->data()->propertyChanged("transform.modelToWorldMatrix")->connect(
-		[&](data::Container::Ptr c, const std::string& propertyName)
+	auto __ = n2->data()->propertyChanged("modelToWorldMatrix")->connect(
+        [&](data::Container::Ptr c, const std::string& propertyName, const std::string& fullPropertyName)
 		{
 			updated2 = true;
 		}
@@ -116,20 +116,20 @@ TEST_F(TransformTest, ModelToWorldMultipleUpdates)
 
 	root->addChild(n1)->addChild(n2);
 	n2->addChild(n3);
-	// init. transform.modelToWorldMatrix by performing a first frame
+	// init. modelToWorldMatrix by performing a first frame
 	sceneManager->nextFrame(0.0f, 0.0f);
 
 	auto updated1 = false;
-	auto _ = n1->data()->propertyChanged("transform.modelToWorldMatrix")->connect(
-		[&](data::Container::Ptr c, const std::string& propertyName)
+	auto _ = n1->data()->propertyChanged("modelToWorldMatrix")->connect(
+        [&](data::Container::Ptr c, const std::string& propertyName, const std::string& fullPropertyName)
 		{
 			updated1 = true;
 		}
 	);
 
 	auto updated2 = false;
-	auto __ = n3->data()->propertyChanged("transform.modelToWorldMatrix")->connect(
-		[&](data::Container::Ptr c, const std::string& propertyName)
+	auto __ = n3->data()->propertyChanged("modelToWorldMatrix")->connect(
+        [&](data::Container::Ptr c, const std::string& propertyName, const std::string& fullPropertyName)
 		{
 			updated2 = true;
 		}
@@ -157,20 +157,20 @@ TEST_F(TransformTest, ModelToWorldMultipleUpdatesMultipleFrames)
 
 	root->addChild(n1)->addChild(n2);
 
-	// init. transform.modelToWorldMatrix by performing a first frame
+	// init. modelToWorldMatrix by performing a first frame
 	sceneManager->nextFrame(0.0f, 0.0f);
 
 	auto updated1 = false;
-	auto _ = n1->data()->propertyChanged("transform.modelToWorldMatrix")->connect(
-		[&](data::Container::Ptr c, const std::string& propertyName)
+	auto _ = n1->data()->propertyChanged("modelToWorldMatrix")->connect(
+        [&](data::Container::Ptr c, const std::string& propertyName, const std::string& fullPropertyName)
 		{
 			updated1 = true;
 		}
 	);
 
 	auto updated2 = false;
-	auto __ = n3->data()->propertyChanged("transform.modelToWorldMatrix")->connect(
-		[&](data::Container::Ptr c, const std::string& propertyName)
+	auto __ = n3->data()->propertyChanged("modelToWorldMatrix")->connect(
+        [&](data::Container::Ptr c, const std::string& propertyName, const std::string& fullPropertyName)
 		{
 			updated2 = true;
 		}
@@ -237,10 +237,12 @@ TEST_F(TransformTest, NodeHierarchyTransformIssueWithBlockingNode)
 
 	sceneManager->nextFrame(0.0f, 0.0f);
 
-	ASSERT_EQ((n1->component<Transform>()->matrix() * math::vec4()).xyz(), math::vec3(-4.f, -1.f, 0.f));
-	ASSERT_EQ((n2->component<Transform>()->matrix() * math::vec4()).xyz(), math::vec3(-5.f, 0.f, 0.f));
-	ASSERT_EQ((n3->component<Transform>()->modelToWorldMatrix() * math::vec4()).xyz(), math::vec3(4.f, 1.f, 0.f));
-	ASSERT_EQ((n4->component<Transform>()->modelToWorldMatrix() * math::vec4()).xyz(), math::vec3(5.f, 1.f, 0.f));
+    auto zero = math::vec4(0.f, 0.f, 0.f, 1.f);
+
+	ASSERT_EQ((n1->component<Transform>()->matrix() * zero).xyz(), math::vec3(-4.f, -1.f, 0.f));
+	ASSERT_EQ((n2->component<Transform>()->matrix() * zero).xyz(), math::vec3(-5.f, 0.f, 0.f));
+    ASSERT_EQ((n3->component<Transform>()->modelToWorldMatrix() * zero).xyz(), math::vec3(4.f, 1.f, 0.f));
+    ASSERT_EQ((n4->component<Transform>()->modelToWorldMatrix() * zero).xyz(), math::vec3(5.f, 1.f, 0.f));
 }
 
 TEST_F(TransformTest, NodeHierarchyTransformIssueWithoutBlockingNode)
@@ -301,8 +303,10 @@ TEST_F(TransformTest, NodeHierarchyTransformIssueWithoutBlockingNode)
 
 	sceneManager->nextFrame(0.0f, 0.0f);
 
-	ASSERT_EQ((n1->component<Transform>()->matrix() * math::vec4()).xyz(), math::vec3(-4.f, -1.f, 0.f));
-	ASSERT_EQ((n2->component<Transform>()->matrix() * math::vec4()).xyz(), math::vec3(-5.f, 0.f, 0.f));
-	ASSERT_EQ((n3->component<Transform>()->modelToWorldMatrix() * math::vec4()).xyz(), math::vec3(4.f, 1.f, 0.f));
-	ASSERT_EQ((n4->component<Transform>()->modelToWorldMatrix() * math::vec4()).xyz(), math::vec3(5.f, 1.f, 0.f));
+    auto zero = math::vec4(0.f, 0.f, 0.f, 1.f);
+
+	ASSERT_EQ((n1->component<Transform>()->matrix() * zero).xyz(), math::vec3(-4.f, -1.f, 0.f));
+    ASSERT_EQ((n2->component<Transform>()->matrix() * zero).xyz(), math::vec3(-5.f, 0.f, 0.f));
+    ASSERT_EQ((n3->component<Transform>()->modelToWorldMatrix() * zero).xyz(), math::vec3(20.f, 1.f, 0.f));
+    ASSERT_EQ((n4->component<Transform>()->modelToWorldMatrix() * zero).xyz(), math::vec3(50.f, 1.f, 0.f));
 }

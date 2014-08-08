@@ -39,9 +39,10 @@ namespace minko
 			typedef std::shared_ptr<Container>					ContainerPtr;
 			typedef std::shared_ptr<Provider>					ProviderPtr;
 			typedef std::shared_ptr<component::AbstractLight>	AbsLightPtr;
+            typedef const std::string&                          StringRef;
 
-			typedef Signal<ContainerPtr, const std::string&>	ContainerPropertyChangedSignal;
-			typedef Signal<ProviderPtr, const std::string&>		ProviderPropertyChangedSignal;
+            typedef Signal<ContainerPtr, StringRef, StringRef>	ContainerPropertyChangedSignal;
+            typedef Signal<ProviderPtr, StringRef, StringRef>   ProviderPropertyChangedSignal;
 
 		private:
 			static std::vector<std::string>						_numLightPropertyNames;

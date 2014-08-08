@@ -31,88 +31,10 @@ Container::Container() :
 	_propertyAdded(Container::PropertyChangedSignal::create()),
 	_propertyRemoved(Container::PropertyChangedSignal::create()),
 	_providerAdded(Signal<Ptr, Provider::Ptr>::create()),
-	_providerRemoved(Signal<Ptr, Provider::Ptr>::create())
+	_providerRemoved(Signal<Ptr, Provider::Ptr>::create()),
+    _collectionAdded(Signal<Ptr, Collection::Ptr>::create()),
+    _collectionRemoved(Signal<Ptr, Collection::Ptr>::create())
 {
-}
-
-void
-Container::initialize()
-{
-}
-
-void
-Container::addProvider(Provider::Ptr provider)
-{
-    if (std::find(_providers.begin(), _providers.end(), provider) != _providers.end())
-    {
-        _numUses[provider]++;
-        return;
-    }
-
-    _numUses[provider] = 0;
-    _providers.push_back(provider);
-
-    _propertySlots[provider].push_back(provider->propertyAdded()->connect(std::bind(
-        &Container::providerPropertyAddedHandler,
-        shared_from_this(),
-        std::placeholders::_1,
-        std::placeholders::_2
-    )));
-
-    _propertySlots[provider].push_back(provider->propertyRemoved()->connect(std::bind(
-        &Container::providerPropertyRemovedHandler,
-        shared_from_this(),
-        std::placeholders::_1,
-        std::placeholders::_2
-    )));
-
-    _propertySlots[provider].push_back(provider->propertyChanged()->connect(std::bind(
-        &Container::providerPropertyChangedHandler,
-        shared_from_this(),
-        std::placeholders::_1,
-        std::placeholders::_2
-    )));
-
-    for (auto property : provider->values())
-        providerPropertyAddedHandler(provider, property.first);
-
-    _providerAdded->execute(shared_from_this(), provider);
-}
-
-void
-Container::removeProvider(Provider::Ptr provider)
-{
-    assert(std::find(_providers.begin(), _providers.end(), provider) != _providers.end());
-
-    if (_numUses[provider] != 1)
-    {
-        _numUses[provider]--;
-        return;
-    }
-
-    _numUses.erase(provider);
-
-    // we have to make sure the provider is not 
-    for (auto property : provider->values())
-        providerPropertyRemovedHandler(provider, property.first);
-
-    // erase all the slots (property added, changed, removed) for this provider
-    _propertySlots.erase(provider);
-    // destroy all signals that might have been created for each property declared by the provider
-    // warning! erase the signal only if it has no callbacks anymore, otherwise it should be kept valid
-    for (const auto& nameAndValue : provider->values())
-        if (_propertyChanged.count(nameAndValue.first) != 0 && _propertyChanged[nameAndValue.first]->numCallbacks() == 0)
-            _propertyChanged.erase(nameAndValue.first);
-
-    _providers.erase(std::find(_providers.begin(), _providers.end(), provider));
-
-    _providerRemoved->execute(shared_from_this(), provider);
-}
-
-bool
-Container::hasProvider(std::shared_ptr<Provider> provider) const
-{
-	return std::find(_providers.begin(), _providers.end(), provider) != _providers.end();
 }
 
 void
@@ -127,9 +49,11 @@ Container::addCollection(std::shared_ptr<Collection> collection)
         &Container::removeProvider, shared_from_this(), std::placeholders::_2
     );
 
-    for (auto provider : collection->items())
-        addProvider(provider);
     addProvider(collection->_lengthProvider);
+    for (auto provider : collection->items())
+        doAddProvider(provider, collection);
+
+    _collectionAdded->execute(shared_from_this(), collection);
 }
 
 void
@@ -140,101 +64,165 @@ Container::removeCollection(std::shared_ptr<Collection> collection)
     _collectionItemAddedSlots.erase(collection);
     _collectionItemRemovedSlots.erase(collection);
 
-    for (auto provider : collection->items())
-        removeProvider(provider);
     removeProvider(collection->_lengthProvider);
-}
+    for (auto provider : collection->items())
+        doRemoveProvider(provider, collection);
 
-bool
-Container::hasCollection(std::shared_ptr<Collection> collection)
-{
-    return std::find(_collections.begin(), _collections.end(), collection) != _collections.end();
-}
-
-bool
-Container::hasProperty(const std::string& propertyName, uint index) const
-{
-    for (auto provider : _providers)
-        if (index == 0 && provider->hasProperty(propertyName, false))
-            return true;
-        else
-            --index;
-	
-    return false;
-}
-
-uint
-Container::countProperty(const std::string& propertyName) const
-{
-    auto count = 0u;
-
-    for (auto provider : _providers)
-        if (provider->hasProperty(propertyName, false))
-            ++count;
-
-    return count;
+    _collectionRemoved->execute(shared_from_this(), collection);
 }
 
 void
-Container::providerPropertyChangedHandler(ProviderPtr provider, const std::string& propertyName)
+Container::providerPropertyChangedHandler(Provider::Ptr         provider,
+                                          Collection::Ptr       collection,
+                                          const std::string&    propertyName)
 {
-    if (_propertyChanged.count(propertyName) != 0)
-        propertyChanged(propertyName)->execute(shared_from_this(), propertyName);
+    auto formattedPropertyName = propertyName;
+
+    // provider is in a collection
+    if (collection)
+        formattedPropertyName = formatPropertyName(collection, provider, propertyName);
+    
+    if (_propertyChanged.count(formattedPropertyName) != 0)
+        propertyChanged(formattedPropertyName)->execute(shared_from_this(), propertyName, formattedPropertyName);
 }
 
 void
-Container::providerPropertyAddedHandler(std::shared_ptr<Provider> 	provider,
-                                        const std::string& 			propertyName)
+Container::providerPropertyAddedHandler(Provider::Ptr       provider,
+                                        Collection::Ptr     collection,
+                                        const std::string& 	propertyName)
 {
-    _propertyAdded->execute(shared_from_this(), propertyName);
-    providerPropertyChangedHandler(provider, propertyName);
+    _propertyAdded->execute(shared_from_this(), propertyName, formatPropertyName(collection, provider, propertyName));
+    providerPropertyChangedHandler(provider, collection, propertyName);
 }
 
 
 void
-Container::providerPropertyRemovedHandler(std::shared_ptr<Provider> provider,
-                                          const std::string&		propertyName)
+Container::providerPropertyRemovedHandler(Provider::Ptr         provider,
+                                          Collection::Ptr       collection,
+                                          const std::string&	propertyName)
 {
     if (_propertyChanged.count(propertyName) && _propertyChanged[propertyName]->numCallbacks() == 0)
         _propertyChanged.erase(propertyName);
 
-    _propertyRemoved->execute(shared_from_this(), propertyName);
+    _propertyRemoved->execute(
+        shared_from_this(),
+        propertyName,
+        formatPropertyName(collection, provider, propertyName)
+    );
 }
 
-Container::Ptr
-Container::filter(const std::set<data::AbstractFilter::Ptr>&	filters,
-				  Container::Ptr								output) const
+std::pair<Provider::Ptr, std::string>
+Container::getProviderByPropertyName(const std::string& propertyName) const
 {
-	if (output == nullptr)
-		output = data::Container::create();
+    auto pos = propertyName.find_first_of("[");
 
-	for (auto& p : _providers)
-	{
-		bool isProviderRelevant = true;
-		for (auto& f : filters)
-			if (!(*f)(p))
-			{
-				isProviderRelevant = false;
-				break;
-			}
+    if (pos != std::string::npos)
+    {
+        auto collectionName = propertyName.substr(0, pos);
 
-		if (isProviderRelevant && output->hasProvider(p) == false)
-			output->addProvider(p);
-		else if (!isProviderRelevant && output->hasProvider(p))
-			output->removeProvider(p);
-	}
+        for (auto collection : _collections)
+            if (collection->name() == collectionName)
+            {
+                auto pos2 = propertyName.find_first_of("]");
+                auto indexStr = propertyName.substr(pos + 1, pos2 - pos - 1);
 
-	return output;
+                return std::pair<Provider::Ptr, std::string>(
+                    collection->items()[std::stoi(indexStr)],
+                    propertyName.substr(pos2 + 2)
+                );
+            }
+    }
+    else
+    {
+        for (auto provider : _providers)
+            if (provider->hasProperty(propertyName))
+                return std::pair<Provider::Ptr, std::string>(provider, propertyName);
+    }
+
+    return std::pair<Provider::Ptr, std::string>(nullptr, propertyName);
 }
 
-Provider::Ptr
-Container::getProviderByPropertyName(const std::string& propertyName, uint index) const
+bool
+Container::hasProperty(const std::string& propertyName) const
 {
-    for (auto provider : _providers)
-        if (index == 0 && provider->hasProperty(propertyName))
-            return provider;
-        else
-            --index;
+    return std::get<0>(getProviderByPropertyName(propertyName)) != nullptr;
+}
 
-    return nullptr;
+void
+Container::doAddProvider(ProviderPtr provider, CollectionPtr collection)
+{
+    assert(std::find(_providers.begin(), _providers.end(), provider) == _providers.end());
+
+    _providers.push_back(provider);
+
+    _propertySlots[provider].push_back(provider->propertyAdded()->connect(std::bind(
+        &Container::providerPropertyAddedHandler,
+        shared_from_this(),
+        provider,
+        collection,
+        std::placeholders::_2
+    )));
+
+    _propertySlots[provider].push_back(provider->propertyRemoved()->connect(std::bind(
+        &Container::providerPropertyRemovedHandler,
+        shared_from_this(),
+        provider,
+        collection,
+        std::placeholders::_2
+    )));
+
+    _propertySlots[provider].push_back(provider->propertyChanged()->connect(std::bind(
+        &Container::providerPropertyChangedHandler,
+        shared_from_this(),
+        provider,
+        collection,
+        std::placeholders::_2
+    )));
+
+    for (auto property : provider->values())
+        providerPropertyAddedHandler(provider, collection, property.first);
+
+    _providerAdded->execute(shared_from_this(), provider);
+}
+
+void
+Container::doRemoveProvider(ProviderPtr provider, CollectionPtr collection)
+{
+    assert(std::find(_providers.begin(), _providers.end(), provider) != _providers.end());
+
+    // we have to make sure the provider is not 
+    for (auto property : provider->values())
+        providerPropertyRemovedHandler(provider, nullptr, property.first);
+
+    // erase all the slots (property added, changed, removed) for this provider
+    _propertySlots.erase(provider);
+    // destroy all signals that might have been created for each property declared by the provider
+    // warning! erase the signal only if it has no callbacks anymore, otherwise it should be kept valid
+    for (const auto& nameAndValue : provider->values())
+        if (_propertyChanged.count(nameAndValue.first) != 0 && _propertyChanged[nameAndValue.first]->numCallbacks() == 0)
+            _propertyChanged.erase(nameAndValue.first);
+
+    _providers.erase(std::find(_providers.begin(), _providers.end(), provider));
+
+    _providerRemoved->execute(shared_from_this(), provider);
+}
+
+std::string
+Container::formatPropertyName(Collection::Ptr collection, Provider::Ptr provider, const std::string& propertyName)
+{
+    if (collection == nullptr)
+        return propertyName;
+
+    auto it = std::find(collection->items().begin(), collection->items().end(), provider);
+
+    return formatPropertyName(collection, it - collection->items().begin(), propertyName);
+}
+
+std::string
+Container::formatPropertyName(Collection::Ptr collection, uint index, const std::string& propertyName)
+{
+    if (collection == nullptr)
+        return propertyName;
+
+    return collection->name() + "[" + std::to_string(index) + "]." + propertyName;
 }
