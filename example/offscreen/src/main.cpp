@@ -10,12 +10,9 @@ using namespace minko::component;
 using namespace minko::math;
 using namespace minko::file;
 
-const uint      WINDOW_WIDTH  = 800;
-const uint      WINDOW_HEIGHT = 600;
-
 int main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Minko Example - Offscreen", WINDOW_WIDTH, WINDOW_HEIGHT, true);
+    auto canvas = Canvas::create("Minko Example - Offscreen", 1280, 720, true);
 
     auto sceneManager   = SceneManager::create(canvas->context());
     auto assets         = sceneManager->assets();
@@ -44,16 +41,16 @@ int main(int argc, char** argv)
         camera->addComponent(Renderer::create(0x7F7F7FFF));
         camera->addComponent(Transform::create());
         camera->component<Transform>()->matrix()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f));
-        camera->addComponent(PerspectiveCamera::create(.785f, 800.f / 600.f, .1f, 1000.f));
+        camera->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
         root->addChild(camera);
 
         // setup mesh
         mesh->addComponent(Transform::create());
         mesh->addComponent(Surface::create(
             assets->geometry("cube"),
-            data::Provider::create()
-                ->set("material.diffuseColor",  Vector4::create(0.f, 0.f, 1.f, 1.f))
-                ->set("material.diffuseMap",  assets->texture("texture/box.png")),
+            material::Material::create()
+                ->set("material.diffuseColor", Vector4::create(0.f, 0.f, 1.f, 1.f))
+                ->set("material.diffuseMap", assets->texture("texture/box.png")),
             assets->effect("effect/Basic.effect")
         ));
         root->addChild(mesh);
