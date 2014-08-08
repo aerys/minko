@@ -282,6 +282,7 @@ TEST_F(ContainerTest, removeProviderFromCollection)
     cc->remove(p);
 
     ASSERT_TRUE(providerRemoved);
+    ASSERT_EQ(c->get<unsigned int>("test.length"), 0u);
 }
 
 TEST_F(ContainerTest, getCollectionNth)
@@ -295,8 +296,14 @@ TEST_F(ContainerTest, getCollectionNth)
     p0->set("foo", 42);
     p1->set("foo", 4242);
     p2->set("foo", 424242);
-    cc->pushBack(p0).pushBack(p1).pushBack(p2);
     c->addCollection(cc);
+    ASSERT_EQ(c->get<unsigned int>("test.length"), 0u);
+    cc->pushBack(p0);
+    ASSERT_EQ(c->get<unsigned int>("test.length"), 1u);
+    cc->pushBack(p1);
+    ASSERT_EQ(c->get<unsigned int>("test.length"), 2u);
+    cc->pushBack(p2);
+    ASSERT_EQ(c->get<unsigned int>("test.length"), 3u);
 
     ASSERT_EQ(c->get<int>("test[0].foo"), 42);
     ASSERT_EQ(c->get<int>("test[1].foo"), 4242);
@@ -421,4 +428,25 @@ TEST_F(ContainerTest, collectionNthPropertyChanged)
     p1->set("foo", 42);
 
     ASSERT_TRUE(propertyChanged);
+}
+
+TEST_F(ContainerTest, collectionPropertyPointerConsistency)
+{
+    auto c = Container::create();
+    auto p0 = Provider::create();
+    auto p1 = Provider::create();
+    auto cc = Collection::create("test");
+    auto propertyChanged = false;
+
+    p0->set("foo", 42);
+    p1->set("foo", 4242);
+    cc->pushBack(p0).pushBack(p1);
+    c->addCollection(cc);
+
+    ASSERT_EQ(c->getPointer<int>("test[0].foo"), c->getPointer<int>("test[0].foo"));
+    ASSERT_EQ(c->getPointer<int>("test[0].foo"), p0->getPointer<int>("foo"));
+    ASSERT_EQ(*p0->getPointer<int>("foo"), 42);
+    ASSERT_EQ(c->getPointer<int>("test[1].foo"), c->getPointer<int>("test[1].foo"));
+    ASSERT_EQ(c->getPointer<int>("test[1].foo"), p1->getPointer<int>("foo"));
+    ASSERT_EQ(*p1->getPointer<int>("foo"), 4242);
 }

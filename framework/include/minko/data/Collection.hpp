@@ -172,20 +172,20 @@ namespace minko
                 _name(name),
                 _lengthProvider(Provider::create())
             {
-                _lengthProvider->set("length", 0u);
+                _lengthProvider->set(_name + ".length", 0u);
             }
 
             void
             addProvider(ProviderPtr provider)
             {
-                //_lengthProvider->set("length", _items.size());
+                _lengthProvider->set(_name + ".length", _items.size());
                 _itemAdded.execute(*this, provider);
             }
 
             void
             removeProvider(ProviderPtr provider)
             {
-                //_lengthProvider->set("length", _items.size());
+                _lengthProvider->set(_name + ".length", _items.size());
                 _itemRemoved.execute(*this, provider);
             }
         };
