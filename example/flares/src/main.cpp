@@ -89,7 +89,7 @@ main(int argc, char** argv)
                 assets->effect("effect/Sprite.effect")
             ))
             ->addComponent(Transform::create(
-                Matrix4x4::create()->appendTranslation(100.f, 100.f, -150.f)->prependScale(100.f)
+                Matrix4x4::create()->appendTranslation(100.f, 100.f, -150.f)->prependScale(50.f)
             ));
 
         root->addChild(sprite);
