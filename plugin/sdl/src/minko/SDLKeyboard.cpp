@@ -471,7 +471,7 @@ bool SDLKeyboard::keyIsDown(input::Keyboard::Key key)
         if (keyCode == keyToKeyCodeMap.end())
             return false;
 
-#if defined(EMSCRIPTEN)
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
         // Note: bug in emscripten, GetKeyStates is indexed by key codes.
         return _keyboardState[static_cast<int>(keyCode->second)] != 0;
 #else
@@ -488,7 +488,7 @@ bool SDLKeyboard::keyIsDown(input::Keyboard::Key key)
         if (scanCode == keyToScanCodeMap.end())
             return false;
 
-#if defined(EMSCRIPTEN)
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
         return _keyboardState[static_cast<int>(
             getKeyCodeFromScanCode(static_cast<input::Keyboard::ScanCode>(scanCode->second)))] != 0;
 #else
