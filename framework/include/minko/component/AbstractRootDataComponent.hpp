@@ -40,7 +40,7 @@ namespace minko
 
         private:
             std::shared_ptr<data::Provider>                 _provider;
-            std::shared_ptr<data::Collection>               _collection;
+            std::string                                     _collectionName;
             bool                                            _enabled;
             NodePtr                                         _root;
 
@@ -58,26 +58,17 @@ namespace minko
             }
 
             inline
-            std::shared_ptr<data::Collection>
-            collection() const
-            {
-                return _collection;
-            }
-
-            inline
             NodePtr
             root()
             {
                 return _root;
             }
 
-            AbstractRootDataComponent(std::shared_ptr<data::Provider>   provider,
-                                      std::shared_ptr<data::Collection> collection = nullptr) :
-                _provider(provider),
-                _collection(collection),
+            AbstractRootDataComponent(const std::string& collectionName) :
+                _provider(data::Provider::create()),
+                _collectionName(collectionName),
                 _enabled(true)
             {
-                assert(provider);
             }
 
             virtual
@@ -143,42 +134,35 @@ namespace minko
 
                 if (_root)
                 {
-                    if (_collection)
+                    const auto& collections = _root->data()->collections();
+                    auto collectionIt = std::find_if(collections.begin(), collections.end(), [&](data::Collection::Ptr c)
                     {
-                        const auto& collections = _root->data()->collections();
-                        auto collectionIt = std::find_if(collections.begin(), collections.end(), [&](data::Collection::Ptr c)
-                        {
-                            return c->name() == _collection->name();
-                        });
+                        return c->name() == _collectionName;
+                    });
+                    auto collection = *collectionIt;
 
-                        if (*collectionIt == _collection)
-                            _root->data()->removeCollection(_collection);
-                        else
-                            (*collectionIt)->remove(_provider);
-                    }
-                    else if (_provider)
-                        _root->data()->removeProvider(_provider);
+                    collection->remove(_provider);
                 }
                 
                 _root = root;
 
                 if (_root)
                 {
-                    if (_collection)
+                    const auto& collections = _root->data()->collections();
+                    auto collectionIt = std::find_if(collections.begin(), collections.end(), [&](data::Collection::Ptr c)
                     {
-                        const auto& collections = _root->data()->collections();
-                        auto collectionIt = std::find_if(collections.begin(), collections.end(), [&](data::Collection::Ptr c)
-                        {
-                            return c->name() == _collection->name();
-                        });
+                        return c->name() == _collectionName;
+                    });
 
-                        if (collectionIt == collections.end())
-                            _root->data()->addCollection(_collection);
-                        else
-                            (*collectionIt)->pushBack(_provider);
+                    if (collectionIt == collections.end())
+                    {
+                        auto collection = data::Collection::create(_collectionName);
+
+                        collection->pushBack(_provider);
+                        _root->data()->addCollection(collection);
                     }
-                    else if (_provider)
-                        _root->data()->addProvider(_provider);
+                    else
+                        (*collectionIt)->pushBack(_provider);
                 }
             }
 	    };

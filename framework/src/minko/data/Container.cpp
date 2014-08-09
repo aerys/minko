@@ -124,10 +124,10 @@ Container::getProviderByPropertyName(const std::string& propertyName) const
             if (collection->name() == collectionName)
             {
                 auto pos2 = propertyName.find_first_of("]");
-                auto indexStr = propertyName.substr(pos + 1, pos2 - pos - 1);
+                auto index = std::stoi(propertyName.substr(pos + 1, pos2 - pos - 1));
 
                 return std::pair<Provider::Ptr, std::string>(
-                    collection->items()[std::stoi(indexStr)],
+                    index < collection->items().size() ? collection->items()[index] : nullptr,
                     propertyName.substr(pos2 + 2)
                 );
             }

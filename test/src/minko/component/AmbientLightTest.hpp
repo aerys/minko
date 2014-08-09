@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -17,36 +17,21 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/component/AbstractLight.hpp"
+#pragma once
 
-#include "minko/scene/Node.hpp"
-#include "minko/Signal.hpp"
+#include "minko/Minko.hpp"
+#include "minko/MinkoTests.hpp"
 
-using namespace minko;
-using namespace minko::component;
+#include "gtest/gtest.h"
 
-AbstractLight::AbstractLight(const std::string& collectionName) :
-    AbstractRootDataComponent(collectionName),
-	_color(math::vec3(1.0f, 1.0f, 1.0f))
+namespace minko
 {
-	data()->set("color", _color);
-}
+    namespace component
+    {
+        class AmbientLightTest :
+            public ::testing::Test
+        {
 
-void
-AbstractLight::layoutMask(Layouts value)
-{
-	data()->set("layoutMask", value);
-	AbstractComponent::layoutMask(value);
-}
-
-AbstractLight::Ptr
-AbstractLight::color(const math::vec3& color)
-{
-	if (color != _color)
-	{
-		_color = color;
-		data()->set("color", _color);		
-	}
-
-	return std::static_pointer_cast<AbstractLight>(shared_from_this());
+        };
+    }
 }

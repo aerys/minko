@@ -128,7 +128,7 @@ namespace minko
 
             template <typename T>
             typename std::enable_if<is_valid<T>::value, Ptr>::type
-                set(const std::string& propertyName, T value)
+            set(const std::string& propertyName, T value)
             {
                 if (_values.count(propertyName) != 0)
                 {
