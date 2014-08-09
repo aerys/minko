@@ -96,24 +96,10 @@ Picking::initialize()
 		&Picking::mouseRightClickHandler,
 		std::static_pointer_cast<Picking>(shared_from_this()),
 		std::placeholders::_1));
-
-	_targetAddedSlot = targetAdded()->connect(std::bind(
-		&Picking::targetAddedHandler,
-		std::static_pointer_cast<Picking>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2
-	));	
-
-	_targetRemovedSlot = targetRemoved()->connect(std::bind(
-		&Picking::targetRemovedHandler,
-		std::static_pointer_cast<Picking>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2
-	));
 }
 
 void
-Picking::targetAddedHandler(AbsCtrlPtr ctrl, NodePtr target)
+Picking::targetAdded(NodePtr target)
 {
 	if (target->components<Picking>().size() > 1)
 		throw std::logic_error("There cannot be two Picking on the same node.");
@@ -150,7 +136,7 @@ Picking::targetAddedHandler(AbsCtrlPtr ctrl, NodePtr target)
 }
 
 void
-Picking::targetRemovedHandler(AbsCtrlPtr ctrl, NodePtr target)
+Picking::targetRemoved(NodePtr target)
 {
 	_addedSlot = nullptr;
 	_removedSlot = nullptr;
@@ -251,17 +237,14 @@ Picking::addSurface(SurfacePtr surface)
 		));
 
 
-		auto target = surface->targets()[0];
-
-		if (_targetToProvider.find(target) == _targetToProvider.end())
+		if (_targetToProvider.find(target()) == _targetToProvider.end())
 		{
-			_targetToProvider[target] = _surfaceToProvider[surface];
-
-			target->data()->addProvider(_surfaceToProvider[surface]);
+			_targetToProvider[target()] = _surfaceToProvider[surface];
+			target()->data()->addProvider(_surfaceToProvider[surface]);
 		}
 
 		if (_addPickingLayout)
-			target->layouts(target->layouts() | scene::Layout::Group::PICKING);
+			target()->layouts(target()->layouts() | scene::Layout::Group::PICKING);
 	}
 }
 
@@ -368,45 +351,45 @@ Picking::renderingEnd(RendererPtr renderer)
     if (_lastPickedSurface != _pickingIdToSurface[pickedSurfaceId])
     {
         if (_lastPickedSurface && _mouseOut->numCallbacks() > 0)
-            _mouseOut->execute(_lastPickedSurface->targets()[0]);
+            _mouseOut->execute(_lastPickedSurface->target());
 
         _lastPickedSurface = _pickingIdToSurface[pickedSurfaceId];
 
         if (_lastPickedSurface && _mouseOver->numCallbacks() > 0)
-            _mouseOver->execute(_lastPickedSurface->targets()[0]);
+            _mouseOver->execute(_lastPickedSurface->target());
     }
 
     if (_executeMoveHandler && _lastPickedSurface)
     {
-        _mouseMove->execute(_lastPickedSurface->targets()[0]);
+        _mouseMove->execute(_lastPickedSurface->target());
     }
 
     if (_executeRightDownHandler && _lastPickedSurface)
     {
-        _mouseRightDown->execute(_lastPickedSurface->targets()[0]);
+        _mouseRightDown->execute(_lastPickedSurface->target());
 
         _lastRightDownPickedSurface = _lastPickedSurface;
     }
 
     if (_executeLeftDownHandler && _lastPickedSurface)
     {
-        _mouseLeftDown->execute(_lastPickedSurface->targets()[0]);
+        _mouseLeftDown->execute(_lastPickedSurface->target());
 
         _lastLeftDownPickedSurface = _lastPickedSurface;
     }
 
     if (_executeRightClickHandler && _lastPickedSurface && _lastPickedSurface == _lastRightDownPickedSurface)
     {
-        _mouseRightClick->execute(_lastPickedSurface->targets()[0]);
-        _mouseRightUp->execute(_lastPickedSurface->targets()[0]);
+        _mouseRightClick->execute(_lastPickedSurface->target());
+        _mouseRightUp->execute(_lastPickedSurface->target());
 
         _lastRightDownPickedSurface = nullptr;
     }
 
     if (_executeLeftClickHandler && _lastPickedSurface && _lastPickedSurface == _lastLeftDownPickedSurface)
     {
-        _mouseLeftClick->execute(_lastLeftDownPickedSurface->targets()[0]);
-        _mouseLeftUp->execute(_lastLeftDownPickedSurface->targets()[0]);
+        _mouseLeftClick->execute(_lastLeftDownPickedSurface->target());
+        _mouseLeftUp->execute(_lastLeftDownPickedSurface->target());
 
         _lastLeftDownPickedSurface = nullptr;
     }

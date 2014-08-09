@@ -33,14 +33,16 @@ AbstractDiscreteLight::AbstractDiscreteLight(const std::string& arrayName,
 	data()
 		->set("diffuse", 	diffuse)
 		->set("specular", 	specular);
+
+    updateModelToWorldMatrix(math::mat4(1.f));
 }
 
 void
-AbstractDiscreteLight::targetAddedHandler(AbstractComponent::Ptr cmp, std::shared_ptr<scene::Node> target)
+AbstractDiscreteLight::targetAdded(std::shared_ptr<scene::Node> target)
 {
-	AbstractLight::targetAddedHandler(cmp, target);
+	AbstractLight::targetAdded(target);
 
-	_modelToWorldChangedSlot = target->data()->propertyChanged("transform.modelToWorldMatrix")->connect(std::bind(
+	_modelToWorldChangedSlot = target->data()->propertyChanged("modelToWorldMatrix")->connect(std::bind(
 		&AbstractDiscreteLight::modelToWorldMatrixChangedHandler,
 		std::dynamic_pointer_cast<AbstractDiscreteLight>(shared_from_this()),
 		std::placeholders::_1,
@@ -48,14 +50,14 @@ AbstractDiscreteLight::targetAddedHandler(AbstractComponent::Ptr cmp, std::share
         std::placeholders::_3
 	));
 
-	if (target->data()->hasProperty("transform.modelToWorldMatrix"))
-		updateModelToWorldMatrix(target->data()->get<math::mat4>("transform.modelToWorldMatrix"));
+	if (target->data()->hasProperty("modelToWorldMatrix"))
+		updateModelToWorldMatrix(target->data()->get<math::mat4>("modelToWorldMatrix"));
 }
 
 void
-AbstractDiscreteLight::targetRemovedHandler(AbstractComponent::Ptr cmp, std::shared_ptr<scene::Node> target)
+AbstractDiscreteLight::targetRemoved(std::shared_ptr<scene::Node> target)
 {
-	AbstractLight::targetRemovedHandler(cmp, target);
+	AbstractLight::targetRemoved(target);
 
 	_modelToWorldChangedSlot = nullptr;
 }
@@ -66,12 +68,4 @@ AbstractDiscreteLight::modelToWorldMatrixChangedHandler(data::Container::Ptr 	co
                                                         const std::string&      fullPropertyName)
 {
 	updateModelToWorldMatrix(container->get<math::mat4>(propertyName));
-}
-
-void
-AbstractDiscreteLight::initialize()
-{
-	AbstractLight::initialize();
-
-	updateModelToWorldMatrix(math::mat4(1.f));
 }

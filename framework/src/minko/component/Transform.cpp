@@ -34,36 +34,14 @@ Transform::Transform() :
 //	_worldToModel(1.),
 	_data(data::Provider::create())
 {
-}
-
-void
-Transform::initialize()
-{
-	_targetAddedSlot = targetAdded()->connect(std::bind(
-		&Transform::targetAddedHandler,
-		std::static_pointer_cast<Transform>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2
-	));
-
-	_targetRemovedSlot = targetRemoved()->connect(std::bind(
-		&Transform::targetRemovedHandler,
-		std::static_pointer_cast<Transform>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2
-	));
-
 	_data
 		->set<math::mat4>("matrix", 				_matrix)
 		->set<math::mat4>("modelToWorldMatrix", 	_modelToWorld);
 }
 
 void
-Transform::targetAddedHandler(AbstractComponent::Ptr	ctrl,
-							  scene::Node::Ptr			target)
+Transform::targetAdded(scene::Node::Ptr	target)
 {
-	if (targets().size() > 1)
-		throw std::logic_error("Transform cannot have more than one target.");
 	if (target->component<Transform>(1) != nullptr)
 		throw std::logic_error("A node cannot have more than one Transform.");
 
@@ -93,8 +71,7 @@ Transform::addedOrRemovedHandler(scene::Node::Ptr node,
 }
 
 void
-Transform::targetRemovedHandler(AbstractComponent::Ptr ctrl,
-								scene::Node::Ptr 		target)
+Transform::targetRemoved(scene::Node::Ptr target)
 {
 	target->data()->removeProvider(_data);
 
@@ -103,26 +80,7 @@ Transform::targetRemovedHandler(AbstractComponent::Ptr ctrl,
 }
 
 void
-Transform::RootTransform::initialize()
-{
-	_targetSlots.push_back(targetAdded()->connect(std::bind(
-		&Transform::RootTransform::targetAddedHandler,
-		std::static_pointer_cast<RootTransform>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2
-	)));
-
-	_targetSlots.push_back(targetRemoved()->connect(std::bind(
-		&Transform::RootTransform::targetRemovedHandler,
-		std::static_pointer_cast<RootTransform>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2
-	)));
-}
-
-void
-Transform::RootTransform::targetAddedHandler(AbstractComponent::Ptr 	ctrl,
-											 scene::Node::Ptr			target)
+Transform::RootTransform::targetAdded(scene::Node::Ptr target)
 {
 	_targetSlots.push_back(target->added()->connect(std::bind(
 		&Transform::RootTransform::addedHandler,
@@ -168,8 +126,7 @@ Transform::RootTransform::targetAddedHandler(AbstractComponent::Ptr 	ctrl,
 }
 
 void
-Transform::RootTransform::targetRemovedHandler(AbstractComponent::Ptr 	ctrl,
-											   scene::Node::Ptr			target)
+Transform::RootTransform::targetRemoved(scene::Node::Ptr target)
 {
 	_targetSlots.clear();
 	_renderingBeginSlot = nullptr;
@@ -244,7 +201,7 @@ Transform::RootTransform::updateTransformsList()
 	_firstChildId.clear();
 	_numChildren.clear();
 
-	auto withTransforms	= scene::NodeSet::create(targets())
+	auto withTransforms	= scene::NodeSet::create(target())
 		->descendants(true, false)
 		->where([](scene::Node::Ptr n){ return n->hasComponent<Transform>(); });
 

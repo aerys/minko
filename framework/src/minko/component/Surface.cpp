@@ -65,26 +65,7 @@ Surface::Surface(std::string				name,
 }
 
 void
-Surface::initialize()
-{
-	_targetAddedSlot = targetAdded()->connect(std::bind(
-		&Surface::targetAddedHandler,
-		std::static_pointer_cast<Surface>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2
-	));
-
-	_targetRemovedSlot = targetRemoved()->connect(std::bind(
-		&Surface::targetRemovedHandler,
-		std::static_pointer_cast<Surface>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2
-	));
-}
-
-void
-Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
-							scene::Node::Ptr		target)
+Surface::targetAdded(scene::Node::Ptr target)
 
 {
 	auto targetData	= target->data();
@@ -117,8 +98,7 @@ Surface::targetAddedHandler(AbstractComponent::Ptr	ctrl,
 }
 
 void
-Surface::targetRemovedHandler(AbstractComponent::Ptr	ctrl,
-							  scene::Node::Ptr			target)
+Surface::targetRemoved(scene::Node::Ptr target)
 {
 	auto data = target->data();
 
@@ -142,14 +122,8 @@ Surface::removedHandler(Node::Ptr, Node::Ptr target, Node::Ptr)
 void
 Surface::geometry(geometry::Geometry::Ptr newGeometry)
 {
-	for (unsigned int i = 0; i < targets().size(); ++i)
-	{
-		std::shared_ptr<scene::Node> target = targets()[i];
-
-		target->data()->removeProvider(_geometry->data());
-		target->data()->addProvider(newGeometry->data());
-	}
-
+	target()->data()->removeProvider(_geometry->data());
+	target()->data()->addProvider(newGeometry->data());
 	_geometry = newGeometry;
 }
 
@@ -203,11 +177,8 @@ Surface::setEffectAndTechnique(Effect::Ptr			effect,
 	if (!effect->hasTechnique(technique))
 		throw std::logic_error("Effect does not provide a '" + technique + "' technique.");
 
-	for (auto& n : targets())
-	{
-		n->data()->removeProvider(_effect->data());
-		n->data()->addProvider(effect->data());
-	}
+	target()->data()->removeProvider(_effect->data());
+	target()->data()->addProvider(effect->data());
 
 	_effect		= effect;
 	_technique	= technique;

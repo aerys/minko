@@ -44,29 +44,27 @@ namespace minko
 				   float attenuationLinear		= -1.0f,
 				   float attenuationQuadratic	= -1.0f)
 			{
-				auto light = std::shared_ptr<SpotLight>(new SpotLight(diffuse, specular));
-
-                light->initialize(
+                return std::shared_ptr<SpotLight>(new SpotLight(
+                    diffuse,
+                    specular,
                     innerAngleRadians,
                     outerAngleRadians,
                     attenuationConstant,
                     attenuationLinear,
                     attenuationQuadratic
-                );
-
-			    return light;
+                ));
 			}
 
             float
             innerConeAngle() const;
 
-			Ptr
+			SpotLight&
 			innerConeAngle(float radians);
 
             float
             outerConeAngle() const;
 
-			Ptr
+			SpotLight&
 			outerConeAngle(float radians);
 
 			bool
@@ -75,10 +73,10 @@ namespace minko
 			const math::vec3&
 			attenuationCoefficients() const;
 
-			Ptr
+			SpotLight&
 			attenuationCoefficients(float constant, float linear, float quadratic);
 
-			Ptr
+			SpotLight&
 			attenuationCoefficients(const math::vec3&);
 
 		protected:
@@ -86,14 +84,13 @@ namespace minko
             updateModelToWorldMatrix(const math::mat4& modelToWorld);
 
 		private:
-			SpotLight(float diffuse, float specular);
-
-			void 
-			initialize(float innerAngleRadians,
-                       float outerAngleRadians,
-                       float attenuationConstant,
-                       float attenuationLinear,
-                       float attenuationQuadratic);
+			SpotLight(float diffuse,
+                      float specular,
+                      float innerAngleRadians,
+                      float outerAngleRadians,
+                      float attenuationConstant,
+                      float attenuationLinear,
+                      float attenuationQuadratic);
 		};
 	}
 }

@@ -41,11 +41,7 @@ namespace minko
 		    Ptr
 		    create(float diffuse = 1.0f, float specular	= 1.0f)
 		    {
-                auto light = std::shared_ptr<DirectionalLight>(new DirectionalLight(diffuse, specular));
-
-                light->initialize();
-
-			    return light;
+                return std::shared_ptr<DirectionalLight>(new DirectionalLight(diffuse, specular));
 		    }
 
 		    ~DirectionalLight()

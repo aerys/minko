@@ -43,24 +43,7 @@ SceneManager::SceneManager(const std::shared_ptr<render::AbstractContext>& conte
 }
 
 void
-SceneManager::initialize()
-{
-    _targetAddedSlot = targetAdded()->connect(std::bind(
-        &SceneManager::targetAddedHandler, 
-		std::static_pointer_cast<SceneManager>(shared_from_this()), 
-		std::placeholders::_1, 
-		std::placeholders::_2
-    ));
-    _targetRemovedSlot = targetRemoved()->connect(std::bind(
-        &SceneManager::targetRemovedHandler, 
-		std::static_pointer_cast<SceneManager>(shared_from_this()), 
-		std::placeholders::_1, 
-		std::placeholders::_2
-    ));
-}
-
-void
-SceneManager::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
+SceneManager::targetAdded(NodePtr target)
 {
 	if (target->root() != target)
         throw std::logic_error("SceneManager must be on the root node only.");
@@ -79,7 +62,7 @@ SceneManager::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 }
 
 void
-SceneManager::targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
+SceneManager::targetRemoved(NodePtr target)
 {
     _addedSlot = nullptr;
 	target->data()->removeProvider(_data);
@@ -88,7 +71,7 @@ SceneManager::targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 void
 SceneManager::addedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 {
-    if (target == targets()[0])
+    if (target == this->target())
         throw std::logic_error("SceneManager must be on the root node only.");
 }
 

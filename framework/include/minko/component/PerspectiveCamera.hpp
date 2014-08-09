@@ -67,13 +67,9 @@ namespace minko
 				   float 				zFar			= 1000.f,
 				   const math::mat4& 	postProjection 	= math::mat4(1.f))
 			{
-				auto ctrl  = std::shared_ptr<PerspectiveCamera>(new PerspectiveCamera(
-					fov, aspectRatio, zNear, zFar, postProjection
-				));
-
-				ctrl->initialize();
-
-				return ctrl;
+                return std::shared_ptr<PerspectiveCamera>(new PerspectiveCamera(
+                    fov, aspectRatio, zNear, zFar, postProjection
+                ));
 			}
 
 			inline
@@ -191,10 +187,10 @@ namespace minko
 
         protected:
             void
-            targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
+            targetAdded(NodePtr target);
 
 			void
-			targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
+			targetRemoved(NodePtr target);
 
 		private:
 			PerspectiveCamera(float				fov,
@@ -202,9 +198,6 @@ namespace minko
 							  float				zNear,
 							  float				zFar,
 							  const math::mat4&	postPerspective);
-
-			void
-			initialize();
 
 			void
 			localToWorldChangedHandler(std::shared_ptr<data::Container> data,

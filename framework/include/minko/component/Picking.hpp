@@ -181,16 +181,16 @@ namespace minko
 				return _lastPickedSurface;
 			}
 
-		private:
+        protected:
+			void
+			targetAdded(NodePtr target);
 
+			void
+			targetRemoved(NodePtr target);
+
+		private:
 			void
 			initialize();
-
-			void
-			targetAddedHandler(AbsCtrlPtr ctrl, NodePtr target);
-
-			void
-			targetRemovedHandler(AbsCtrlPtr ctrl, NodePtr target);
 
 			void
 			addedHandler(NodePtr node, NodePtr target, NodePtr parent);

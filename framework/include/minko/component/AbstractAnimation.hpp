@@ -270,15 +270,11 @@ namespace minko
 				_frameBeginSlot		= nullptr;
 			}
 
-			virtual
 			void
-			initialize();
+			targetAdded(NodePtr node);
 
 			void
-			targetAddedHandler(AbsCmpPtr cmp, NodePtr node);
-
-			void
-			targetRemovedHandler(AbsCmpPtr cmp, NodePtr node);
+			targetRemoved(NodePtr node);
 
 			virtual
             void

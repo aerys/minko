@@ -42,24 +42,7 @@ Culling::Culling(ShapePtr shape,
 }
 
 void
-Culling::initialize()
-{
-	_targetAddedSlot = targetAdded()->connect(std::bind(
-        &Culling::targetAddedHandler, 
-		std::static_pointer_cast<Culling>(shared_from_this()), 
-		std::placeholders::_1, 
-		std::placeholders::_2
-    ));
-    _targetRemovedSlot = targetAdded()->connect(std::bind(
-        &Culling::targetAddedHandler, 
-		std::static_pointer_cast<Culling>(shared_from_this()), 
-		std::placeholders::_1, 
-		std::placeholders::_2
-    ));
-}
-
-void
-Culling::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
+Culling::targetAdded(NodePtr target)
 {
 	if (target->components<Culling>().size() > 1)
 		throw std::logic_error("The same camera node cannot have more than one Culling.");
@@ -92,7 +75,7 @@ Culling::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 }
 
 void
-Culling::targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
+Culling::targetRemoved(NodePtr target)
 {
 	_addedSlot			= nullptr;
 	_layoutChangedSlot	= nullptr;
@@ -151,7 +134,7 @@ Culling::worldToScreenChangedHandler(std::shared_ptr<data::Container>   data,
 {
 	_frustum->updateFromMatrix(data->get<math::mat4>(propertyName));
 	
-	auto renderer = targets()[0]->component<Renderer>();
+	auto renderer = target()->component<Renderer>();
 
 	_octTree->testFrustum(
 		_frustum, 

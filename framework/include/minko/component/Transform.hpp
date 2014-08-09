@@ -57,11 +57,7 @@ namespace minko
 			Ptr
 			create()
 			{
-				Ptr ctrl = std::shared_ptr<Transform>(new Transform());
-
-				ctrl->initialize();
-
-				return ctrl;
+                return std::shared_ptr<Transform>(new Transform());
 			}
 
 			inline static
@@ -93,10 +89,10 @@ namespace minko
 				_matrix = matrix;
 				_data->set("matrix", _matrix);
 
-				auto rootTransform = targets()[0]->root()->component<RootTransform>();
+				auto rootTransform = target()->root()->component<RootTransform>();
 
 				if (rootTransform && !rootTransform->_invalidLists)
-					rootTransform->_dirty[rootTransform->_nodeToId[targets()[0]]] = true;
+					rootTransform->_dirty[rootTransform->_nodeToId[target()]] = true;
 				else
 					_modelToWorld = matrix;
 			}
@@ -114,26 +110,23 @@ namespace minko
 			{
 				if (forceUpdate)
 				{
-					auto node		= targets()[0];
-					auto rootCtrl	= node->root()->component<RootTransform>();
+					auto rootCtrl = target()->root()->component<RootTransform>();
 
-					rootCtrl->forceUpdate(node, true);
+					rootCtrl->forceUpdate(target(), true);
 				}
 
 				return _modelToWorld;
 			}
 
+        protected:
+			void
+			targetAdded(NodePtr target);
+
+			void
+			targetRemoved(NodePtr target);
+
 		private:
 			Transform();
-
-			void
-			initialize();
-
-			void
-			targetAddedHandler(AbsCtrlPtr ctrl, NodePtr target);
-
-			void
-			targetRemovedHandler(AbsCtrlPtr ctrl, NodePtr target);
 
 			void
 			addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
@@ -165,11 +158,7 @@ namespace minko
 				Ptr
 				create()
 				{
-					auto ctrl = std::shared_ptr<RootTransform>(new RootTransform());
-
-					ctrl->initialize();
-
-					return ctrl;
+                    return std::shared_ptr<RootTransform>(new RootTransform());
 				}
 
 				void
@@ -191,16 +180,14 @@ namespace minko
 				std::list<Any>					_targetSlots;
 				RenderingBeginSlot				_renderingBeginSlot;
 
+            protected:
+            	void
+				targetAdded(NodePtr target);
+
+				void
+				targetRemoved(NodePtr target);
+
 			private:
-				void
-				initialize();
-
-				void
-				targetAddedHandler(AbsCtrlPtr ctrl, NodePtr target);
-
-				void
-				targetRemovedHandler(AbsCtrlPtr ctrl, NodePtr target);
-
 				void
 				componentRemovedHandler(NodePtr node, NodePtr target, AbsCtrlPtr ctrl);
 
@@ -223,13 +210,11 @@ namespace minko
 				updateTransformPath(const std::vector<unsigned int>& path);
 
 				void
-				renderingBeginHandler(SceneMgrPtr 	sceneManager, 
-									  uint			frameId, 
-									  AbsTexturePtr	target);
+				renderingBeginHandler(SceneMgrPtr sceneManager, uint frameId, AbsTexturePtr target);
 
 				static
 				void
-				juxtaposeSiblings(std::vector<NodePtr>&);
+				juxtaposeSiblings(std::vector<NodePtr>& nodes);
 			};
 		};
 	}

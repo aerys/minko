@@ -46,17 +46,13 @@ namespace minko
 				   float attenuationLinear		= -1.0f,
 				   float attenuationQuadratic	= -1.0f)
 			{
-				auto light = std::shared_ptr<PointLight>(new PointLight(
-					diffuse,
-					specular,
-					attenuationConstant,
-					attenuationLinear,
-					attenuationQuadratic
-				));
-
-				light->initialize();
-
-				return light;
+                return std::shared_ptr<PointLight>(new PointLight(
+                    diffuse,
+                    specular,
+                    attenuationConstant,
+                    attenuationLinear,
+                    attenuationQuadratic
+                ));;
 			}
 	
 			~PointLight()
@@ -78,9 +74,6 @@ namespace minko
 		protected:
 			void
             updateModelToWorldMatrix(const math::mat4& modelToWorld);
-
-            void
-            initialize();
 
 		private:
 			PointLight(float diffuse,

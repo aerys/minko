@@ -63,28 +63,8 @@ AbstractAnimation::AbstractAnimation(bool isLooping):
 	};
 }
 
-/*virtual*/
 void
-AbstractAnimation::initialize()
-{
-	_targetAddedSlot = targetAdded()->connect(std::bind(
-		&AbstractAnimation::targetAddedHandler,
-		std::static_pointer_cast<AbstractAnimation>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2
-	));
-
-	_targetRemovedSlot = targetRemoved()->connect(std::bind(
-		&AbstractAnimation::targetRemovedHandler,
-		std::static_pointer_cast<AbstractAnimation>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2
-	));
-}
-
-void
-AbstractAnimation::targetAddedHandler(AbstractComponent::Ptr cmp, 
-									  Node::Ptr node)
+AbstractAnimation::targetAdded(Node::Ptr node)
 {
 	_addedSlot = node->added()->connect(std::bind(
 		&AbstractAnimation::addedHandler,
@@ -104,8 +84,7 @@ AbstractAnimation::targetAddedHandler(AbstractComponent::Ptr cmp,
 }
 
 void
-AbstractAnimation::targetRemovedHandler(AbstractComponent::Ptr cmp, 
-									    Node::Ptr node)
+AbstractAnimation::targetRemoved(Node::Ptr node)
 {
 	_addedSlot = nullptr;
 	_removedSlot = nullptr;
@@ -132,7 +111,7 @@ AbstractAnimation::removedHandler(Node::Ptr node,
 void
 AbstractAnimation::findSceneManager()
 {
-	NodeSet::Ptr roots = NodeSet::create(targets())
+	NodeSet::Ptr roots = NodeSet::create(target())
 		->roots()
 		->where([](NodePtr node)
 		{

@@ -102,10 +102,7 @@ namespace minko
 			Ptr
 			create()
 			{
-				auto ctrl = std::shared_ptr<Renderer>(new Renderer());
-
-				ctrl->initialize();
-				return ctrl;
+                return std::shared_ptr<Renderer>(new Renderer());
 			}
 
 			inline static
@@ -118,7 +115,6 @@ namespace minko
 			{
 				auto ctrl = std::shared_ptr<Renderer>(new Renderer(renderTarget, effect, priority));
 
-				ctrl->initialize();
 				ctrl->backgroundColor(backgroundColor);
 				ctrl->name(name);
 
@@ -192,14 +188,14 @@ namespace minko
 
 			inline
 			AbsTexturePtr
-			target()
+			renderTarget()
 			{
 				return _renderTarget;
 			}
 
 			inline
 			void
-			target(AbsTexturePtr target)
+            renderTarget(AbsTexturePtr target)
 			{
 				_renderTarget = target;
 			}
@@ -270,19 +266,17 @@ namespace minko
 				return _filterChanged;
 			}
 
+        protected:
+			void
+			targetAdded(NodePtr target);
+
+			void
+			targetRemoved(NodePtr target);
+
 		private:
 			Renderer(AbsTexturePtr		renderTarget = nullptr,
 					 EffectPtr			effect			= nullptr,
 					 float				priority		= 0.f);
-
-			void
-			initialize();
-
-			void
-			targetAddedHandler(AbsCmpPtr ctrl, NodePtr target);
-
-			void
-			targetRemovedHandler(AbsCmpPtr ctrl, NodePtr target);
 
 			void
 			addedHandler(NodePtr node, NodePtr target, NodePtr parent);

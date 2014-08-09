@@ -23,19 +23,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 
-MasterAnimation::MasterAnimation(const std::vector<AnimationPtr>& animations, 
-								 bool isLooping) :
+MasterAnimation::MasterAnimation(const std::vector<AnimationPtr>&   animations, 
+								 bool                               isLooping) :
 	AbstractAnimation(isLooping),
 	_animations(animations)
 {
-}
-
-/*virtual*/
-void
-MasterAnimation::initialize()
-{
-	AbstractAnimation::initialize();
-	
 	_maxTime = 0;
 
 	for (auto& animation : _animations)

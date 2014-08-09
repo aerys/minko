@@ -86,11 +86,7 @@ namespace minko
 				   std::shared_ptr<render::Effect>			effect,
 				   const std::string&						technique)
 			{
-				Ptr surface(new Surface(name, geometry, material, effect, technique));
-
-				surface->initialize();
-
-				return surface;
+                return std::shared_ptr<Surface>(new Surface(name, geometry, material, effect, technique));
 			}
 
 			~Surface()
@@ -211,21 +207,19 @@ namespace minko
 				return _computedVisibilityChanged;
 			}
 
+        protected:
+			void
+			targetAdded(NodePtr);
+
+			void
+			targetRemoved(NodePtr);
+
 		private:
 			Surface(std::string								name,
 					std::shared_ptr<geometry::Geometry>		geometry,
 					std::shared_ptr<data::Provider>			material,
 					std::shared_ptr<render::Effect>			effect,
 					const std::string&						technique);
-
-			void
-			initialize();
-
-			void
-			targetAddedHandler(AbstractComponent::Ptr, NodePtr);
-
-			void
-			targetRemovedHandler(AbstractComponent::Ptr, NodePtr);
 
 			void
 			addedHandler(NodePtr, NodePtr, NodePtr);

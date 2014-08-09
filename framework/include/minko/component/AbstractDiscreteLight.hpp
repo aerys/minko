@@ -78,11 +78,11 @@ namespace minko
 
 			virtual
             void
-            targetAddedHandler(AbstractComponent::Ptr cmp, std::shared_ptr<scene::Node> target);
+            targetAdded(std::shared_ptr<scene::Node> target);
 
             virtual
             void
-            targetRemovedHandler(AbstractComponent::Ptr cmp, std::shared_ptr<scene::Node> target);
+            targetRemoved(std::shared_ptr<scene::Node> target);
 
             void
             modelToWorldMatrixChangedHandler(std::shared_ptr<data::Container> 	container,
@@ -91,11 +91,10 @@ namespace minko
 
             virtual
             void
-            updateModelToWorldMatrix(const math::mat4& modelToWorld) = 0;
-
-            virtual
-            void
-            initialize();
+            updateModelToWorldMatrix(const math::mat4& modelToWorld)
+            {
+                // nothing
+            };
 		};
 	}
 }

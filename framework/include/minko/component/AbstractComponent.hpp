@@ -34,22 +34,16 @@ namespace minko
 			friend class scene::Node;
 
 		public:
-			typedef std::shared_ptr<AbstractComponent>					Ptr;
+			typedef std::shared_ptr<AbstractComponent>  Ptr;
 
 		private:
-			std::vector<std::shared_ptr<scene::Node>>					_targets;
-			Layouts														_layoutMask;
-
-			std::shared_ptr<Signal<Ptr, std::shared_ptr<scene::Node>>>	_targetAdded;
-			std::shared_ptr<Signal<Ptr, std::shared_ptr<scene::Node>>>	_targetRemoved;
-			std::shared_ptr<Signal<Ptr>>								_layoutMaskChanged;
+			std::shared_ptr<scene::Node>    _target;
+			Layouts							_layoutMask;
+			std::shared_ptr<Signal<Ptr>>	_layoutMaskChanged;
 
 		public:
 			AbstractComponent(Layouts layoutMask = scene::Layout::Mask::EVERYTHING) :
-				_targets(),
 				_layoutMask(layoutMask),
-				_targetAdded(Signal<Ptr, std::shared_ptr<scene::Node>>::create()),
-				_targetRemoved(Signal<Ptr, std::shared_ptr<scene::Node>>::create()),
 				_layoutMaskChanged(Signal<Ptr>::create())
 			{
 			}
@@ -59,24 +53,10 @@ namespace minko
             }
 
 			inline
-			const std::vector<std::shared_ptr<scene::Node>>&
-			targets() const
-			{
-				return _targets;
-			}
-
-			inline
-			const unsigned int
-			numTargets() const
-			{
-				return _targets.size();
-			}
-
-			inline
 			std::shared_ptr<scene::Node>
-			getTarget(unsigned int index) const
+			target() const
 			{
-				return _targets[index];
+				return _target;
 			}
 
 			virtual
@@ -98,25 +78,48 @@ namespace minko
 			}
 
 			inline
-			Signal<Ptr, std::shared_ptr<scene::Node>>::Ptr
-			targetAdded() const
-			{
-				return _targetAdded;
-			}
-
-			inline
-			Signal<Ptr, std::shared_ptr<scene::Node>>::Ptr
-			targetRemoved() const
-			{
-				return _targetRemoved;
-			}
-
-			inline
 			Signal<Ptr>::Ptr
 			layoutMaskChanged() const
 			{
 				return _layoutMaskChanged;
 			}
+
+        private:
+            virtual
+            void
+            target(std::shared_ptr<scene::Node> target)
+            {
+                if (_target != target)
+                {
+                    if (target == nullptr)
+                    {
+                        auto oldTarget = _target;
+
+                        _target = nullptr;
+                        targetRemoved(oldTarget);
+                    }
+                    else
+                    {
+                        _target = target;
+                        targetAdded(_target);
+                    }
+                }
+            }
+
+        protected:
+            virtual
+            void
+            targetAdded(std::shared_ptr<scene::Node> target)
+            {
+                // nothing
+            }
+
+            virtual
+            void
+            targetRemoved(std::shared_ptr<scene::Node> target)
+            {
+                // nothing
+            }
 		};
 	}
 }

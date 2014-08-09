@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -61,40 +61,20 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 	_rendererDataFilterChangedSlots(),
 	_rootDataFilterChangedSlots(),
 	_lightMaskFilter(data::LightMaskFilter::create()),
-	_filterChanged(Signal<Ptr, data::AbstractFilter::Ptr, data::BindingSource, SurfacePtr>::create())
+	_filterChanged(Signal<Ptr, data::AbstractFilter::Ptr, data::BindingSource, SurfacePtr>::create()),
+    _drawCallPool(DrawCallPool::create())
 {
 	if (renderTarget)
 	{
 		renderTarget->upload();
 		_renderTarget = renderTarget;
 	}
-}
-
-void
-Renderer::initialize()
-{
-	_drawCallPool = DrawCallPool::create();
-
-	_targetAddedSlot = targetAdded()->connect(std::bind(
-		&Renderer::targetAddedHandler,
-		std::static_pointer_cast<Renderer>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2
-	));	
-
-	_targetRemovedSlot = targetRemoved()->connect(std::bind(
-		&Renderer::targetRemovedHandler,
-		std::static_pointer_cast<Renderer>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2
-	));
 
 	addFilter(_lightMaskFilter, data::BindingSource::ROOT);
 }
 
 void
-Renderer::targetAddedHandler(std::shared_ptr<AbstractComponent>,
-							 std::shared_ptr<Node> 				target)
+Renderer::targetAdded(std::shared_ptr<Node> target)
 {
     // Comment due to reflection component
 	//if (target->components<Renderer>().size() > 1)
@@ -120,8 +100,7 @@ Renderer::targetAddedHandler(std::shared_ptr<AbstractComponent>,
 }
 
 void
-Renderer::targetRemovedHandler(std::shared_ptr<AbstractComponent>,
-							    std::shared_ptr<Node> 				target)
+Renderer::targetRemoved(std::shared_ptr<Node> target)
 {
 	_addedSlot = nullptr;
 	_removedSlot = nullptr;
@@ -322,7 +301,7 @@ Renderer::render(render::AbstractContext::Ptr	context,
 void
 Renderer::findSceneManager()
 {
-	NodeSet::Ptr roots = NodeSet::create(targets())
+	NodeSet::Ptr roots = NodeSet::create(target())
 		->roots()
 		->where([](NodePtr node)
 		{

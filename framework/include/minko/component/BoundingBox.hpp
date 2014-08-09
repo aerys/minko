@@ -121,6 +121,13 @@ namespace minko
 			void
 			update();
 
+        protected:
+            void
+            targetAdded(NodePtr target);
+
+            void
+            targetRemoved(NodePtr target);
+
 		private:
 			BoundingBox(const math::vec3& topRight, const math::vec3& bottomLeft);
 

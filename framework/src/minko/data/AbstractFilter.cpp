@@ -29,6 +29,7 @@ using namespace minko::data;
 AbstractFilter::Ptr
 AbstractFilter::currentSurface(component::Surface::Ptr value)
 {
+    /*
 	_currentSurface				= value;
 	_currentSurfaceRemovedSlot	= _currentSurface->targetRemoved()->connect([=](AbsCmpPtr c, NodePtr n){ 
 		currentSurfaceRemovedHandler(c, n); 
@@ -54,6 +55,7 @@ AbstractFilter::currentSurface(component::Surface::Ptr value)
 			}
 		}
 	}
+    */
 
 	return shared_from_this();
 }

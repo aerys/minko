@@ -97,16 +97,6 @@ Skinning::initialize()
 	_maxTime = _skin->duration();
 
 	setPlaybackWindow(0, _maxTime)->seek(0);
-
-	// FIXME: in certain circumstances (deserialization from minko studio)
-	// it may be necessary to move the target directly below the skeleton root
-	// for which the skinning matrices have been computed.
-	_targetAddedSlot = targetAdded()->connect(std::bind(
-		&Skinning::targetAddedHandler,
-		std::static_pointer_cast<Skinning>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2
-	));
 }
 
 void
@@ -224,8 +214,7 @@ Skinning::update()
 
 	const uint frameId = _skin->getFrameId(_currentTime);
 
-	for (auto& target : targets())
-		updateFrame(frameId, target);
+	updateFrame(frameId, target());
 }
 
 void
@@ -346,8 +335,7 @@ Skinning::performSoftwareSkinning(const VertexAttribute&		attr,
 }
 
 void
-Skinning::targetAddedHandler(component::AbstractComponent::Ptr, 
-							 Node::Ptr target)
+Skinning::targetAdded(Node::Ptr target)
 {
 	// FIXME: in certain circumstances (deserialization from minko studio)
 	// it may be necessary to move the target directly below the skeleton root

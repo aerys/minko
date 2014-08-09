@@ -63,7 +63,7 @@ MousePicking::pick(std::shared_ptr<math::Ray>	ray)
 {
 	MousePicking::HitList hits;
 
-	auto descendants = scene::NodeSet::create(targets())
+	auto descendants = scene::NodeSet::create(target())
 		->descendants(true)
 		->where([&](scene::Node::Ptr node) 
 		{ 

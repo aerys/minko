@@ -153,9 +153,7 @@ Node::addComponent(std::shared_ptr<AbstractComponent> component)
 		throw std::logic_error("The same component cannot be added twice.");
 
 	_components.push_back(component);
-	component->_targets.push_back(shared_from_this());
-
-    component->targetAdded()->execute(component, shared_from_this());
+	component->target(shared_from_this());
 
 	// bubble down
 	auto descendants = NodeSet::create(shared_from_this())->descendants(true);
@@ -184,11 +182,7 @@ Node::removeComponent(std::shared_ptr<AbstractComponent> component)
 		throw std::invalid_argument("component");
 
 	_components.erase(it);
-	component->_targets.erase(
-		std::find(component->_targets.begin(), component->_targets.end(), shared_from_this())
-	);
-
-   	component->targetRemoved()->execute(component, shared_from_this());
+    component->target(nullptr);
 
 	// bubble down
 	auto descendants = NodeSet::create(shared_from_this())->descendants(true);

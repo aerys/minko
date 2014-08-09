@@ -123,11 +123,7 @@ namespace minko
 			Ptr
 			create(unsigned int loadingFramerate)
 			{
-				Ptr taskManager(new JobManager(loadingFramerate));
-
-				taskManager->initialize();
-
-				return taskManager;
+                return std::shared_ptr<JobManager>(new JobManager(loadingFramerate));
 			};
 
 			Ptr

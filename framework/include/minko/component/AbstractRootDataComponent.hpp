@@ -71,32 +71,9 @@ namespace minko
             {
             }
 
-            virtual
             void
-            initialize()
+            targetAdded(NodePtr target)
             {
-                _targetAddedSlot = targetAdded()->connect(std::bind(
-                    &AbstractRootDataComponent::targetAddedHandler,
-                    std::static_pointer_cast<AbstractRootDataComponent>(shared_from_this()),
-                    std::placeholders::_1,
-                    std::placeholders::_2
-                ));
-
-                _targetRemovedSlot = targetRemoved()->connect(std::bind(
-                    &AbstractRootDataComponent::targetRemovedHandler,
-                    std::static_pointer_cast<AbstractRootDataComponent>(shared_from_this()),
-                    std::placeholders::_1,
-                    std::placeholders::_2
-                ));
-            }
-
-            virtual
-            void
-            targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
-            {
-                if (targets().size() > 1)
-                    throw std::logic_error("This component cannot have more than 1 target.");
-
                 auto cb = std::bind(
                     &AbstractRootDataComponent::addedOrRemovedHandler,
                     std::static_pointer_cast<AbstractRootDataComponent>(shared_from_this()),
@@ -111,9 +88,8 @@ namespace minko
                 updateRoot(target->root());
             }
 
-            virtual
             void
-            targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
+            targetRemoved(NodePtr target)
             {
                 updateRoot(nullptr);
             }

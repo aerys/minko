@@ -57,28 +57,20 @@ namespace minko
 		public:
 			inline static
 			Ptr
-			create(ShapePtr				shape, 
-				   const std::string&	bindPropertyName)
+			create(ShapePtr	shape, const std::string& bindPropertyName)
 			{
-				Ptr CullingComponent = std::shared_ptr<Culling>(new Culling(shape, bindPropertyName));
-
-				CullingComponent->initialize();
-
-				return CullingComponent;
+                return std::shared_ptr<Culling>(new Culling(shape, bindPropertyName));
 			}
 
-		private:
-			Culling(ShapePtr			shape, 
-					const std::string&	bindProperty);
-
+        protected:
 			void
-			initialize();
-
-			void
-            targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
+            targetAdded(NodePtr target);
 
             void
-            targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
+            targetRemoved(NodePtr target);
+
+		private:
+			Culling(ShapePtr shape, const std::string& bindProperty);
 
             void
             addedHandler(NodePtr node, NodePtr target, NodePtr ancestor);

@@ -47,25 +47,6 @@ PerspectiveCamera::PerspectiveCamera(float			      fov,
     _position(),
 	_postProjection(postPerspective)
 {
-}
-
-void
-PerspectiveCamera::initialize()
-{
-	_targetAddedSlot = targetAdded()->connect(std::bind(
-		&PerspectiveCamera::targetAddedHandler,
-		std::static_pointer_cast<PerspectiveCamera>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2
-	));
-
-	_targetRemovedSlot = targetRemoved()->connect(std::bind(
-		&PerspectiveCamera::targetRemovedHandler,
-		std::static_pointer_cast<PerspectiveCamera>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2
-	));
-
 	_data
 		->set("position",				_position)
   		->set("viewMatrix",				_view)
@@ -74,7 +55,7 @@ PerspectiveCamera::initialize()
 }
 
 void
-PerspectiveCamera::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
+PerspectiveCamera::targetAdded(NodePtr target)
 {
 	target->data()->addProvider(_data);
 
@@ -90,7 +71,7 @@ PerspectiveCamera::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr targe
 }
 
 void
-PerspectiveCamera::targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
+PerspectiveCamera::targetRemoved(NodePtr target)
 {
 	target->data()->removeProvider(_data);
 }
@@ -136,7 +117,7 @@ PerspectiveCamera::unproject(float x, float y)
 	auto origin = math::vec3(dx * _zNear, dy * _zNear, -_zNear);
 	auto direction = math::normalize(math::vec3(dx * _zNear, dy * _zNear, -_zNear));
 
-	auto t = targets()[0]->component<Transform>();
+	auto t = target()->component<Transform>();
 
 	if (t)
 	{
@@ -150,7 +131,7 @@ PerspectiveCamera::unproject(float x, float y)
 math::vec3
 PerspectiveCamera::project(math::vec3 worldPosition)
 {
-    auto context   = getTarget(0)->root()->component<SceneManager>()->assets()->context();
+    auto context   = target()->root()->component<SceneManager>()->assets()->context();
     auto width     = context->viewportWidth();
     auto height    = context->viewportHeight();
     auto pos       = math::vec4(worldPosition, 1.f);

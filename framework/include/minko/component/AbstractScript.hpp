@@ -96,15 +96,11 @@ namespace minko
 		protected:
 			virtual
 			void
-			initialize();
+			targetAdded(NodePtr node);
 
 			virtual
 			void
-			targetAddedHandler(AbsCmpPtr cmp, NodePtr node);
-
-			virtual
-			void
-			targetRemovedHandler(AbsCmpPtr cmp, NodePtr node);
+			targetRemoved(NodePtr node);
 
             void
             addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr parent);

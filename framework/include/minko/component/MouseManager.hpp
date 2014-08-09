@@ -44,7 +44,7 @@ namespace minko
 
 		private:
 			MousePtr										_mouse;
-			math::vec3									_previousRayOrigin;
+			math::vec3									    _previousRayOrigin;
 			NodePtr											_lastItemUnderCursor;
 
 			RayPtr											_ray;
@@ -57,25 +57,9 @@ namespace minko
 		public:
 			inline static
 			Ptr
-			create()
+			create(std::shared_ptr<input::Mouse> mouse = nullptr)
 			{
-				auto mm = std::shared_ptr<MouseManager>(new MouseManager());
-
-				mm->initialize();
-
-				return mm;
-			}
-
-			inline static
-			Ptr
-			create(std::shared_ptr<input::Mouse> mouse)
-			{
-				auto mm = std::shared_ptr<MouseManager>(new MouseManager());
-
-				mm->_mouse = mouse;
-				mm->initialize();
-
-				return mm;
+                return std::shared_ptr<MouseManager>(new MouseManager(mouse));
 			}
 
 			inline
@@ -88,8 +72,15 @@ namespace minko
 			void
 			pick(std::shared_ptr<math::Ray> ray);
 
+        protected:
+            void
+            targetAdded(scene::Node::Ptr target);
+
+            void
+            targetRemoved(scene::Node::Ptr target);
+
 		private:
-			MouseManager();
+            MouseManager(std::shared_ptr<input::Mouse> mouse);
 
 			void
 			initialize();

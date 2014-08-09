@@ -61,11 +61,7 @@ namespace minko
 		    Ptr
 		    create(const std::shared_ptr<render::AbstractContext>& context)
 		    {
-                auto sm = std::shared_ptr<SceneManager>(new SceneManager(context));
-
-                sm->initialize();
-
-			    return sm;
+                return std::shared_ptr<SceneManager>(new SceneManager(context));
 		    }
 
             ~SceneManager()
@@ -136,19 +132,17 @@ namespace minko
             }
 
             void
-            initialize();
+            nextFrame(float time, float deltaTime, AbsTexturePtr target = nullptr);
+
+        protected:
+            void
+            targetAdded(NodePtr target);
 
             void
-            nextFrame(float time, float deltaTime, AbsTexturePtr target = nullptr);
+            targetRemoved(NodePtr target);
 
 	    private:
 		    SceneManager(const std::shared_ptr<render::AbstractContext>& context);
-
-            void
-            targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
-
-            void
-            targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
 
             void
             addedHandler(NodePtr node, NodePtr target, NodePtr ancestor);

@@ -27,18 +27,11 @@ using namespace minko::component;
 using namespace minko::animation;
 
 Animation::Animation(const std::vector<AbstractTimeline::Ptr>& timelines, 
-					 bool isLooping):
+					 bool                                      isLooping):
 	AbstractAnimation(isLooping),
 	_timelines(timelines),
 	_master(nullptr)
 {
-}
-
-void
-Animation::initialize()
-{
-	AbstractAnimation::initialize();
-
 	_maxTime = 0;
 	for (auto& timeline : _timelines)
 		_maxTime = std::max(_maxTime, timeline->duration());
@@ -49,15 +42,6 @@ Animation::initialize()
 void
 Animation::update()
 {
-	for (auto& target : targets())
-	{
-		auto container = target->data();
-
-		for (auto& timeline : _timelines)
-		{
-			const uint currentTime = _currentTime % (timeline->duration() + 1); // Warning: bounds !
-
-			timeline->update(currentTime, target->data());
-		}
-	}
+	for (auto& timeline : _timelines)
+        timeline->update(_currentTime % (timeline->duration() + 1), target()->data());
 }

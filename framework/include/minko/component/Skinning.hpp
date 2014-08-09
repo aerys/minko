@@ -103,6 +103,10 @@ namespace minko
 				return ptr;
 			}
 
+        protected:
+            void
+            targetAdded(NodePtr target);
+
 		private:
 			Skinning(const SkinPtr, 
 					 SkinningMethod, 
@@ -126,9 +130,6 @@ namespace minko
 
 			void
 			updateFrame(uint frameId, NodePtr);
-
-			void
-			targetAddedHandler(AbsCmpPtr, NodePtr);
 
 			void
 			performSoftwareSkinning(NodePtr, const std::vector<float>&);

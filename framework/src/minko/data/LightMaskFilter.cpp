@@ -85,13 +85,13 @@ LightMaskFilter::operator()(Provider::Ptr data)
 {
 	if (_root == nullptr 
 		|| currentSurface() == nullptr 
-		|| currentSurface()->targets().front()->root() != _root)
+		|| currentSurface()->target()->root() != _root)
 		return false;
 
 #ifdef DEBUG
 	assert(_root);
 	assert(currentSurface());
-	assert(currentSurface()->targets().front()->root() == _root);
+	assert(currentSurface()->target()->root() == _root);
 #endif // DEBUG
 
 	auto foundLightIt = _providerToLight.find(data);
@@ -99,7 +99,7 @@ LightMaskFilter::operator()(Provider::Ptr data)
 	if (foundLightIt == _providerToLight.end())
 		return true; // the specified provider does not belong to a light
 
-	auto	surfaceLayouts	= currentSurface()->targets().front()->layouts();
+	auto	surfaceLayouts	= currentSurface()->target()->layouts();
 	Layouts	lightMask		= foundLightIt->second->layoutMask();
 
 	return (surfaceLayouts & lightMask) != 0;

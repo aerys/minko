@@ -33,7 +33,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 
-MouseManager::MouseManager() :
+MouseManager::MouseManager(std::shared_ptr<input::Mouse> mouse) :
+    _mouse(mouse),
 	_ray(math::Ray::create()),
 	_previousRayOrigin(0.f),
 	_lastItemUnderCursor(nullptr)
@@ -42,33 +43,30 @@ MouseManager::MouseManager() :
 }
 
 void
-MouseManager::initialize()
+MouseManager::targetAdded(scene::Node::Ptr target)
 {
-	if (_mouse)
-	{
-		_targetAddedSlot = targetAdded()->connect([&](AbstractComponent::Ptr cmp, scene::Node::Ptr target)
-		{
-			_mouseMoveSlot = _mouse->move()->connect([&](MousePtr m, int dx, int dy)
-			{
-				// FIXME: should unproject from properties stored in data()
-				auto cam = targets()[0]->component<PerspectiveCamera>();
+    if (!_mouse)
+        return;
 
-				if (cam)
-					pick(_ray = cam->unproject(m->normalizedX(), m->normalizedY()));
-			});
-			_mouseLeftButtonDownSlot = _mouse->leftButtonDown()->connect([&](MousePtr m)
-			{
-				// FIXME
-			});
+    _mouseMoveSlot = _mouse->move()->connect([&](MousePtr m, int dx, int dy)
+    {
+        // FIXME: should unproject from properties stored in data()
+        auto cam = target->component<PerspectiveCamera>();
 
-		});
+        if (cam)
+            pick(_ray = cam->unproject(m->normalizedX(), m->normalizedY()));
+    });
+    _mouseLeftButtonDownSlot = _mouse->leftButtonDown()->connect([&](MousePtr m)
+    {
+        // FIXME
+    });
+}
 
-		_targetRemovedSlot = targetRemoved()->connect([&](AbstractComponent::Ptr cmp, scene::Node::Ptr node)
-		{
-			_mouseMoveSlot = nullptr;
-			_mouseLeftButtonDownSlot = nullptr;
-		});
-	}
+void
+MouseManager::targetRemoved(scene::Node::Ptr target)
+{
+    _mouseMoveSlot = nullptr;
+    _mouseLeftButtonDownSlot = nullptr;
 }
 
 void
@@ -76,8 +74,7 @@ MouseManager::pick(std::shared_ptr<math::Ray> ray)
 {
 	MouseManager::HitList hits;
 
-	auto target = targets()[0];
-	auto descendants = scene::NodeSet::create(target->root())
+	auto descendants = scene::NodeSet::create(target()->root())
 		->descendants(true)
 		->where([&](scene::Node::Ptr node) { return node->hasComponent<BoundingBox>(); });
 

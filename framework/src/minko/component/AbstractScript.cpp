@@ -28,25 +28,7 @@ using namespace minko::scene;
 using namespace minko::component;
 
 void
-AbstractScript::initialize()
-{
-	_targetAddedSlot = targetAdded()->connect(std::bind(
-		&AbstractScript::targetAddedHandler, 
-		std::static_pointer_cast<AbstractScript>(shared_from_this()), 
-		std::placeholders::_1, 
-		std::placeholders::_2
-	));
-
-	_targetRemovedSlot = targetRemoved()->connect(std::bind(
-		&AbstractScript::targetRemovedHandler, 
-		std::static_pointer_cast<AbstractScript>(shared_from_this()), 
-		std::placeholders::_1, 
-		std::placeholders::_2
-	));
-}
-
-void
-AbstractScript::targetAddedHandler(AbstractComponent::Ptr cmp, scene::Node::Ptr target)
+AbstractScript::targetAdded(scene::Node::Ptr target)
 {
 	_componentAddedSlot = target->componentAdded()->connect(std::bind(
 		&AbstractScript::componentAddedHandler,
@@ -93,7 +75,7 @@ AbstractScript::addedOrRemovedHandler(scene::Node::Ptr node, scene::Node::Ptr ta
 }
 
 void
-AbstractScript::targetRemovedHandler(AbstractComponent::Ptr cmp, scene::Node::Ptr target)
+AbstractScript::targetRemoved(scene::Node::Ptr target)
 {
 	_componentAddedSlot     = nullptr;
 	_componentRemovedSlot   = nullptr;
@@ -130,36 +112,32 @@ AbstractScript::componentRemovedHandler(scene::Node::Ptr		node,
 void
 AbstractScript::frameBeginHandler(SceneManager::Ptr sceneManager, float time, float deltaTime)
 {
-	for (auto& target : targets())
+    auto target = this->target();
+
+    if (!_started[target] && ready(target))
 	{
-		if (!_started[target] && ready(target))
-		{
-			_started[target] = true;
+        _started[target] = true;
 
-			start(target);
-		}
-
-		if (running(target))
-			update(target);
-		else
-			_started[target] = false;
+        start(target);
 	}
+
+    if (running(target))
+        update(target);
+	else
+		_started[target] = false;
 }
 
 void
 AbstractScript::frameEndHandler(std::shared_ptr<SceneManager> sceneManager, float time, float deltaTime)
 {
-	for (auto& target : targets())
-	{
-		if (running(target))
-			end(target);
-	}
+	if (running(target()))
+		end(target());
 }
 
 void
 AbstractScript::findSceneManager()
 {
-	NodeSet::Ptr roots = NodeSet::create(targets())
+	NodeSet::Ptr roots = NodeSet::create(target())
 		->roots()
 		->where([](NodePtr node)
 		{
@@ -198,11 +176,8 @@ AbstractScript::setSceneManager(SceneManager::Ptr sceneManager)
 	}
 	else if (_frameBeginSlot)
 	{
-		for (auto& target : targets())
-		{
-			_started[target] = false;
-			stop(target);
-		}
+		_started[target()] = false;
+		stop(target());
 
 		_frameBeginSlot = nullptr;
 		_frameEndSlot   = nullptr;

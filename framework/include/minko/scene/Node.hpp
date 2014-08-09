@@ -292,16 +292,6 @@ namespace minko
 			{
 			}
 
-			std::string
-			toString() const
-			{
-				std::stringstream stream;
-
-				stream << "Node (" << _name << ")";
-
-				return stream.str();
-			}
-
 		protected:
 			Node();
 

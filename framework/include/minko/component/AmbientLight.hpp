@@ -41,11 +41,7 @@ namespace minko
 			Ptr
 			create(float ambient = .2f)
 			{
-				auto al = std::shared_ptr<AmbientLight>(new AmbientLight(ambient));
-
-				al->initialize();
-
-				return al;
+                return std::shared_ptr<AmbientLight>(new AmbientLight(ambient));
 			}
 
 			~AmbientLight()

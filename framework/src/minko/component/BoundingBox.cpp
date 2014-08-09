@@ -50,40 +50,35 @@ BoundingBox::BoundingBox() :
 }
 
 void
-BoundingBox::initialize()
+BoundingBox::targetAdded(scene::Node::Ptr target)
 {
-	_targetAddedSlot = targetAdded()->connect([&](AbstractComponent::Ptr cmp, scene::Node::Ptr target)
-	{
-		if (targets().size() > 1)
-			throw std::logic_error("The same BoundingBox cannot have 2 different targets");
-
-		_modelToWorldChangedSlot = target->data()->propertyChanged("modelToWorldMatrix")->connect(
-			[&](data::Container::Ptr data, const std::string& propertyName, const std::string& fullPropertyName)
-			{
-				_invalidWorldSpaceBox = true;
-			}
-		);
-
-		auto componentAddedOrRemovedCallback = [&](scene::Node::Ptr node, scene::Node::Ptr target, AbstractComponent::Ptr cmp)
+	_modelToWorldChangedSlot = target->data()->propertyChanged("modelToWorldMatrix")->connect(
+		[&](data::Container::Ptr data, const std::string& propertyName, const std::string& fullPropertyName)
 		{
-			if (std::dynamic_pointer_cast<Surface>(cmp))
-			{
-				_invalidBox = true;
-				_invalidWorldSpaceBox = true;
-			}
-		};
+			_invalidWorldSpaceBox = true;
+		}
+	);
 
-		_componentAddedSlot = target->componentAdded()->connect(componentAddedOrRemovedCallback);
-		_componentRemovedSlot = target->componentAdded()->connect(componentAddedOrRemovedCallback);
-
-		_invalidBox = true;
-	});
-
-	_targetRemovedSlot = targetRemoved()->connect([&](AbstractComponent::Ptr cmp, scene::Node::Ptr target)
+	auto componentAddedOrRemovedCallback = [&](scene::Node::Ptr node, scene::Node::Ptr target, AbstractComponent::Ptr cmp)
 	{
-		_componentAddedSlot = nullptr;
-		_componentRemovedSlot = nullptr;
-	});
+		if (std::dynamic_pointer_cast<Surface>(cmp))
+		{
+			_invalidBox = true;
+			_invalidWorldSpaceBox = true;
+		}
+	};
+
+	_componentAddedSlot = target->componentAdded()->connect(componentAddedOrRemovedCallback);
+	_componentRemovedSlot = target->componentAdded()->connect(componentAddedOrRemovedCallback);
+
+	_invalidBox = true;
+}
+
+void
+BoundingBox::targetRemoved(scene::Node::Ptr target)
+{
+	_componentAddedSlot = nullptr;
+	_componentRemovedSlot = nullptr;
 }
 
 void
@@ -91,8 +86,7 @@ BoundingBox::update()
 {
 	_invalidBox = false;
 
-	auto target = targets()[0];
-	auto surfaces = target->components<Surface>();
+	auto surfaces = target()->components<Surface>();
 
 	if (!_fixed)
 	{
@@ -167,14 +161,14 @@ BoundingBox::updateWorldSpaceBox()
 
 	_invalidWorldSpaceBox = false;
 
-	if (!targets()[0]->data()->hasProperty("transform.modelToWorldMatrix"))
+	if (!target()->data()->hasProperty("transform.modelToWorldMatrix"))
 	{
 		_worldSpaceBox->topRight(_box->topRight());
 		_worldSpaceBox->bottomLeft(_box->bottomLeft());
 	}
 	else
 	{
-		auto t = targets()[0]->data()->get<math::mat4>("transform.modelToWorldMatrix");
+		auto t = target()->data()->get<math::mat4>("transform.modelToWorldMatrix");
 		auto vertices = _box->getVertices();
 		auto numVertices = vertices.size();
 
