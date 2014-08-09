@@ -8,12 +8,12 @@ BFG_BIN=`basename ${BFG_URL}`
 BFG="/tmp/${BFG_BIN}"
 
 [[ -n "$1" ]] || {
-	echo "usage: bfg.sh git://path/to/repo.git" 2> /dev/null
-	exit 1
+    echo "usage: bfg.sh git://path/to/repo.git" 2> /dev/null
+    exit 1
 }
 
 [[ -e "${BFG}" ]] || {
-	wget -O ${BFG} ${BFG_URL}
+    wget -O ${BFG} ${BFG_URL}
 }
 
 REPO="$1"
@@ -23,10 +23,16 @@ rm -rf ${TMP}
 mkdir -p ${TMP}
 
 pushd "${TMP}"
-git clone --mirror ${REPO} .
+git clone ${REPO} .
 
 BRANCHES=`git branch -a -r | grep -v HEAD | cut -d/ -f2,3 | tr "\\n" "," | sed 's/,$//'`
 # BRANCHES=master,dev
+
+for BRANCH in `echo ${BRANCHES} | sed "s/,/ /g"`; do
+    git checkout ${BRANCH}
+done
+
+git checkout master
 
 OLD_SIZE=`du -hs ${TMP} | cut -f1`
 
@@ -44,10 +50,9 @@ read -p "Push? [y/N] " -r
 echo
 
 if [[ "${REPLY}" != "y" ]]; then
-	echo "Canceled. Repo still visible in ${TMP}."
-	exit 1
+    echo "Canceled. Repo still visible in ${TMP}."
+    exit 1
 fi
 
-git push
-
+git push -f --all
 popd
