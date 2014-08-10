@@ -152,6 +152,8 @@ Node::addComponent(std::shared_ptr<AbstractComponent> component)
 	if (hasComponent(component))
 		throw std::logic_error("The same component cannot be added twice.");
 
+    if (component->target())
+        component->target()->removeComponent(component);
 	_components.push_back(component);
 	component->target(shared_from_this());
 
