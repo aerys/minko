@@ -219,3 +219,180 @@ TEST_F(SpotLightTest, RemoveLastLight)
     ASSERT_TRUE(root->data()->hasProperty("spotLights[1].specular"));
     ASSERT_EQ(root->data()->get<float>("spotLights[1].specular"), .4f);
 }
+
+TEST_F(SpotLightTest, RotateXPi)
+{
+    auto root = scene::Node::create("root");
+    auto lights = scene::Node::create("lights");
+
+    root->addChild(lights);
+
+    auto al1 = SpotLight::create(.1f, .2f);
+    al1->color(math::vec3(1.f, 0.f, 0.f));
+    lights->addComponent(al1);
+
+    lights->addComponent(Transform::create(math::rotate(math::pi<float>(), math::vec3(1.f, 0.f, 0.f))));
+    lights->component<Transform>()->updateModelToWorldMatrix();
+
+    ASSERT_EQ(
+        math::epsilonEqual(
+            root->data()->get<math::vec3>("spotLights[0].direction"),
+            math::vec3(0.f, 0.f, 1.f),
+            math::epsilon<float>()
+        ),
+        math::bvec3(true)
+    );
+}
+
+TEST_F(SpotLightTest, RotateXHalfPi)
+{
+    auto root = scene::Node::create("root");
+    auto lights = scene::Node::create("lights");
+
+    root->addChild(lights);
+
+    auto al1 = SpotLight::create(.1f, .2f);
+    al1->color(math::vec3(1.f, 0.f, 0.f));
+    lights->addComponent(al1);
+
+    lights->addComponent(Transform::create(math::rotate(math::half_pi<float>(), math::vec3(1.f, 0.f, 0.f))));
+    lights->component<Transform>()->updateModelToWorldMatrix();
+
+    ASSERT_EQ(
+        math::epsilonEqual(
+            root->data()->get<math::vec3>("spotLights[0].direction"),
+            math::vec3(0.f, 1.f, 0.f),
+            math::epsilon<float>()
+        ),
+        math::bvec3(true)
+    );
+}
+
+TEST_F(SpotLightTest, RotateYPi)
+{
+    auto root = scene::Node::create("root");
+    auto lights = scene::Node::create("lights");
+
+    root->addChild(lights);
+
+    auto al1 = SpotLight::create(.1f, .2f);
+    al1->color(math::vec3(1.f, 0.f, 0.f));
+    lights->addComponent(al1);
+
+    lights->addComponent(Transform::create(math::rotate(math::pi<float>(), math::vec3(0.f, 1.f, 0.f))));
+    lights->component<Transform>()->updateModelToWorldMatrix();
+
+    ASSERT_EQ(
+        math::epsilonEqual(
+            root->data()->get<math::vec3>("spotLights[0].direction"),
+            math::vec3(0.f, 0.f, 1.f),
+            math::epsilon<float>()
+        ),
+        math::bvec3(true)
+    );
+}
+
+TEST_F(SpotLightTest, RotateYHalfPi)
+{
+    auto root = scene::Node::create("root");
+    auto lights = scene::Node::create("lights");
+
+    root->addChild(lights);
+
+    auto al1 = SpotLight::create(.1f, .2f);
+    al1->color(math::vec3(1.f, 0.f, 0.f));
+    lights->addComponent(al1);
+
+    lights->addComponent(Transform::create(math::rotate(math::half_pi<float>(), math::vec3(0.f, 1.f, 0.f))));
+    lights->component<Transform>()->updateModelToWorldMatrix();
+
+    ASSERT_EQ(
+        math::epsilonEqual(
+            root->data()->get<math::vec3>("spotLights[0].direction"),
+            math::vec3(-1.f, 0.f, 0.f),
+            math::epsilon<float>()
+        ),
+        math::bvec3(true)
+    );
+}
+
+TEST_F(SpotLightTest, RotateZPi)
+{
+    auto root = scene::Node::create("root");
+    auto lights = scene::Node::create("lights");
+
+    root->addChild(lights);
+
+    auto al1 = SpotLight::create(.1f, .2f);
+    al1->color(math::vec3(1.f, 0.f, 0.f));
+    lights->addComponent(al1);
+
+    lights->addComponent(Transform::create(math::rotate(math::pi<float>(), math::vec3(0.f, 0.f, 1.f))));
+    lights->component<Transform>()->updateModelToWorldMatrix();
+
+    ASSERT_EQ(
+        math::epsilonEqual(
+            root->data()->get<math::vec3>("spotLights[0].direction"),
+            math::vec3(0.f, 0.f, -1.f),
+            math::epsilon<float>()
+        ),
+        math::bvec3(true)
+    );
+}
+
+TEST_F(SpotLightTest, RotateZHalfPi)
+{
+    auto root = scene::Node::create("root");
+    auto lights = scene::Node::create("lights");
+
+    root->addChild(lights);
+
+    auto al1 = SpotLight::create(.1f, .2f);
+    al1->color(math::vec3(1.f, 0.f, 0.f));
+    lights->addComponent(al1);
+
+    lights->addComponent(Transform::create(math::rotate(math::half_pi<float>(), math::vec3(0.f, 0.f, 1.f))));
+    lights->component<Transform>()->updateModelToWorldMatrix();
+
+    ASSERT_EQ(
+        math::epsilonEqual(
+            root->data()->get<math::vec3>("spotLights[0].direction"),
+            math::vec3(0.f, 0.f, -1.f),
+            math::epsilon<float>()
+        ),
+        math::bvec3(true)
+    );
+}
+
+TEST_F(SpotLightTest, TranslateXYZ)
+{
+    auto root = scene::Node::create("root");
+    auto lights = scene::Node::create("lights");
+
+    root->addChild(lights);
+
+    auto al1 = SpotLight::create(.1f, .2f);
+    al1->color(math::vec3(1.f, 0.f, 0.f));
+    lights->addComponent(al1);
+
+    auto t = math::sphericalRand(100.f);
+    lights->addComponent(Transform::create(math::translate(t)));
+    lights->component<Transform>()->updateModelToWorldMatrix();
+
+    ASSERT_EQ(
+        math::epsilonEqual(
+            root->data()->get<math::vec3>("spotLights[0].direction"),
+            math::vec3(0.f, 0.f, -1.f),
+            math::epsilon<float>()
+        ),
+        math::bvec3(true)
+    );
+    ASSERT_EQ(
+        math::epsilonEqual(
+            root->data()->get<math::vec3>("spotLights[0].position"),
+            t,
+            math::epsilon<float>()
+        ),
+        math::bvec3(true)
+    );
+}

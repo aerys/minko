@@ -219,3 +219,28 @@ TEST_F(PointLightTest, RemoveLastLight)
     ASSERT_TRUE(root->data()->hasProperty("pointLights[1].specular"));
     ASSERT_EQ(root->data()->get<float>("pointLights[1].specular"), .4f);
 }
+
+TEST_F(PointLightTest, TranslateXYZ)
+{
+    auto root = scene::Node::create("root");
+    auto lights = scene::Node::create("lights");
+
+    root->addChild(lights);
+
+    auto al1 = PointLight::create(.1f, .2f);
+    al1->color(math::vec3(1.f, 0.f, 0.f));
+    lights->addComponent(al1);
+
+    auto t = math::sphericalRand(100.f);
+    lights->addComponent(Transform::create(math::translate(t)));
+    lights->component<Transform>()->updateModelToWorldMatrix();
+
+    ASSERT_EQ(
+        math::epsilonEqual(
+            root->data()->get<math::vec3>("pointLights[0].position"),
+            t,
+            math::epsilon<float>()
+        ),
+        math::bvec3(true)
+    );
+}

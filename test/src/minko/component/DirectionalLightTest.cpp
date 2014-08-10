@@ -68,6 +68,7 @@ TEST_F(DirectionalLightTest, RemoveSingleLight)
     ASSERT_FALSE(root->data()->hasProperty("directionalLights[0].color"));
     ASSERT_FALSE(root->data()->hasProperty("directionalLights[0].diffuse"));
     ASSERT_FALSE(root->data()->hasProperty("directionalLights[0].specular"));
+    ASSERT_FALSE(root->data()->hasProperty("directionalLights[0].direction"));
 }
 
 TEST_F(DirectionalLightTest, AddMultipleLights)
@@ -88,6 +89,8 @@ TEST_F(DirectionalLightTest, AddMultipleLights)
     ASSERT_EQ(root->data()->get<float>("directionalLights[0].diffuse"), .1f);
     ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].specular"));
     ASSERT_EQ(root->data()->get<float>("directionalLights[0].specular"), .2f);
+    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].direction"));
+    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[0].direction"), math::vec3(0.f, 0.f, -1.f));
 
     auto al2 = DirectionalLight::create(.3f, .4f);
     al2->color(math::vec3(0.f, 1.f, 0.f));
@@ -100,6 +103,8 @@ TEST_F(DirectionalLightTest, AddMultipleLights)
     ASSERT_EQ(root->data()->get<float>("directionalLights[1].diffuse"), .3f);
     ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].specular"));
     ASSERT_EQ(root->data()->get<float>("directionalLights[1].specular"), .4f);
+    ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].direction"));
+    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[1].direction"), math::vec3(0.f, 0.f, -1.f));
 
     auto al3 = DirectionalLight::create(.5f, .6f);
     al3->color(math::vec3(0.f, 0.f, 1.f));
@@ -112,6 +117,8 @@ TEST_F(DirectionalLightTest, AddMultipleLights)
     ASSERT_EQ(root->data()->get<float>("directionalLights[2].diffuse"), .5f);
     ASSERT_TRUE(root->data()->hasProperty("directionalLights[2].specular"));
     ASSERT_EQ(root->data()->get<float>("directionalLights[2].specular"), .6f);
+    ASSERT_TRUE(root->data()->hasProperty("directionalLights[2].direction"));
+    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[2].direction"), math::vec3(0.f, 0.f, -1.f));
 }
 
 TEST_F(DirectionalLightTest, RemoveFirstLight)
@@ -142,12 +149,17 @@ TEST_F(DirectionalLightTest, RemoveFirstLight)
     ASSERT_EQ(root->data()->get<float>("directionalLights[0].diffuse"), .3f);
     ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].specular"));
     ASSERT_EQ(root->data()->get<float>("directionalLights[0].specular"), .4f);
+    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].direction"));
+    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[0].direction"), math::vec3(0.f, 0.f, -1.f));
+
     ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].color"));
     ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[1].color"), math::vec3(0.f, 0.f, 1.f));
     ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].diffuse"));
     ASSERT_EQ(root->data()->get<float>("directionalLights[1].diffuse"), .5f);
     ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].specular"));
     ASSERT_EQ(root->data()->get<float>("directionalLights[1].specular"), .6f);
+    ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].direction"));
+    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[1].direction"), math::vec3(0.f, 0.f, -1.f));
 }
 
 TEST_F(DirectionalLightTest, RemoveNthLight)
@@ -173,17 +185,22 @@ TEST_F(DirectionalLightTest, RemoveNthLight)
 
     ASSERT_EQ(root->data()->get<uint>("directionalLights.length"), 2);
     ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].color"));
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].diffuse"));
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].specular"));
     ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[0].color"), math::vec3(1.f, 0.f, 0.f));
+    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].diffuse"));
     ASSERT_EQ(root->data()->get<float>("directionalLights[0].diffuse"), .1f);
+    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].specular"));
     ASSERT_EQ(root->data()->get<float>("directionalLights[0].specular"), .2f);
+    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].direction"));
+    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[0].direction"), math::vec3(0.f, 0.f, -1.f));
+
     ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].color"));
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].diffuse"));
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].specular"));
     ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[1].color"), math::vec3(0.f, 0.f, 1.f));
+    ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].diffuse"));
     ASSERT_EQ(root->data()->get<float>("directionalLights[1].diffuse"), .5f);
+    ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].specular"));
     ASSERT_EQ(root->data()->get<float>("directionalLights[1].specular"), .6f);
+    ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].direction"));
+    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[1].direction"), math::vec3(0.f, 0.f, -1.f));
 }
 
 TEST_F(DirectionalLightTest, RemoveLastLight)
@@ -214,10 +231,183 @@ TEST_F(DirectionalLightTest, RemoveLastLight)
     ASSERT_EQ(root->data()->get<float>("directionalLights[0].diffuse"), .1f);
     ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].specular"));
     ASSERT_EQ(root->data()->get<float>("directionalLights[0].specular"), .2f);
+    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].direction"));
+    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[0].direction"), math::vec3(0.f, 0.f, -1.f));
+
     ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].color"));
     ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[1].color"), math::vec3(0.f, 1.f, 0.f));
     ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].diffuse"));
     ASSERT_EQ(root->data()->get<float>("directionalLights[1].diffuse"), .3f);
     ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].specular"));
     ASSERT_EQ(root->data()->get<float>("directionalLights[1].specular"), .4f);
+    ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].direction"));
+    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[1].direction"), math::vec3(0.f, 0.f, -1.f));
+}
+
+TEST_F(DirectionalLightTest, RotateXPi)
+{
+    auto root = scene::Node::create("root");
+    auto lights = scene::Node::create("lights");
+
+    root->addChild(lights);
+
+    auto al1 = DirectionalLight::create(.1f, .2f);
+    al1->color(math::vec3(1.f, 0.f, 0.f));
+    lights->addComponent(al1);
+
+    lights->addComponent(Transform::create(math::rotate(math::pi<float>(), math::vec3(1.f, 0.f, 0.f))));
+    lights->component<Transform>()->updateModelToWorldMatrix();
+
+    ASSERT_EQ(
+        math::epsilonEqual(
+        root->data()->get<math::vec3>("directionalLights[0].direction"),
+        math::vec3(0.f, 0.f, 1.f),
+        math::epsilon<float>()
+        ),
+        math::bvec3(true)
+        );
+}
+
+TEST_F(DirectionalLightTest, RotateXHalfPi)
+{
+    auto root = scene::Node::create("root");
+    auto lights = scene::Node::create("lights");
+
+    root->addChild(lights);
+
+    auto al1 = DirectionalLight::create(.1f, .2f);
+    al1->color(math::vec3(1.f, 0.f, 0.f));
+    lights->addComponent(al1);
+
+    lights->addComponent(Transform::create(math::rotate(math::half_pi<float>(), math::vec3(1.f, 0.f, 0.f))));
+    lights->component<Transform>()->updateModelToWorldMatrix();
+
+    ASSERT_EQ(
+        math::epsilonEqual(
+            root->data()->get<math::vec3>("directionalLights[0].direction"),
+            math::vec3(0.f, 1.f, 0.f),
+            math::epsilon<float>()
+        ),
+        math::bvec3(true)
+    );
+}
+
+TEST_F(DirectionalLightTest, RotateYPi)
+{
+    auto root = scene::Node::create("root");
+    auto lights = scene::Node::create("lights");
+
+    root->addChild(lights);
+
+    auto al1 = DirectionalLight::create(.1f, .2f);
+    al1->color(math::vec3(1.f, 0.f, 0.f));
+    lights->addComponent(al1);
+
+    lights->addComponent(Transform::create(math::rotate(math::pi<float>(), math::vec3(0.f, 1.f, 0.f))));
+    lights->component<Transform>()->updateModelToWorldMatrix();
+
+    ASSERT_EQ(
+        math::epsilonEqual(
+            root->data()->get<math::vec3>("directionalLights[0].direction"),
+            math::vec3(0.f, 0.f, 1.f),
+            math::epsilon<float>()
+       ),
+       math::bvec3(true)
+    );
+}
+
+TEST_F(DirectionalLightTest, RotateYHalfPi)
+{
+    auto root = scene::Node::create("root");
+    auto lights = scene::Node::create("lights");
+
+    root->addChild(lights);
+
+    auto al1 = DirectionalLight::create(.1f, .2f);
+    al1->color(math::vec3(1.f, 0.f, 0.f));
+    lights->addComponent(al1);
+
+    lights->addComponent(Transform::create(math::rotate(math::half_pi<float>(), math::vec3(0.f, 1.f, 0.f))));
+    lights->component<Transform>()->updateModelToWorldMatrix();
+
+    ASSERT_EQ(
+        math::epsilonEqual(
+            root->data()->get<math::vec3>("directionalLights[0].direction"),
+            math::vec3(-1.f, 0.f, 0.f),
+            math::epsilon<float>()
+        ),
+        math::bvec3(true)
+    );
+}
+
+TEST_F(DirectionalLightTest, RotateZPi)
+{
+    auto root = scene::Node::create("root");
+    auto lights = scene::Node::create("lights");
+
+    root->addChild(lights);
+
+    auto al1 = DirectionalLight::create(.1f, .2f);
+    al1->color(math::vec3(1.f, 0.f, 0.f));
+    lights->addComponent(al1);
+
+    lights->addComponent(Transform::create(math::rotate(math::pi<float>(), math::vec3(0.f, 0.f, 1.f))));
+    lights->component<Transform>()->updateModelToWorldMatrix();
+
+    ASSERT_EQ(
+        math::epsilonEqual(
+            root->data()->get<math::vec3>("directionalLights[0].direction"),
+            math::vec3(0.f, 0.f, -1.f),
+            math::epsilon<float>()
+        ),
+        math::bvec3(true)
+    );
+}
+
+TEST_F(DirectionalLightTest, RotateZHalfPi)
+{
+    auto root = scene::Node::create("root");
+    auto lights = scene::Node::create("lights");
+
+    root->addChild(lights);
+
+    auto al1 = DirectionalLight::create(.1f, .2f);
+    al1->color(math::vec3(1.f, 0.f, 0.f));
+    lights->addComponent(al1);
+
+    lights->addComponent(Transform::create(math::rotate(math::half_pi<float>(), math::vec3(0.f, 0.f, 1.f))));
+    lights->component<Transform>()->updateModelToWorldMatrix();
+
+    ASSERT_EQ(
+        math::epsilonEqual(
+            root->data()->get<math::vec3>("directionalLights[0].direction"),
+            math::vec3(0.f, 0.f, -1.f),
+            math::epsilon<float>()
+        ),
+        math::bvec3(true)
+    );
+}
+
+TEST_F(DirectionalLightTest, TranslateXYZ)
+{
+    auto root = scene::Node::create("root");
+    auto lights = scene::Node::create("lights");
+
+    root->addChild(lights);
+
+    auto al1 = DirectionalLight::create(.1f, .2f);
+    al1->color(math::vec3(1.f, 0.f, 0.f));
+    lights->addComponent(al1);
+
+    lights->addComponent(Transform::create(math::translate(math::sphericalRand(100.f))));
+    lights->component<Transform>()->updateModelToWorldMatrix();
+
+    ASSERT_EQ(
+        math::epsilonEqual(
+            root->data()->get<math::vec3>("directionalLights[0].direction"),
+            math::vec3(0.f, 0.f, -1.f),
+            math::epsilon<float>()
+        ),
+        math::bvec3(true)
+    );
 }

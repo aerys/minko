@@ -38,7 +38,7 @@ PointLight::PointLight(float diffuse,
 void
 PointLight::updateModelToWorldMatrix(const math::mat4& modelToWorld)
 {
-	data()->set("position", _worldPosition = modelToWorld[3].xyz());
+    data()->set("position", (modelToWorld * math::vec4(0.f, 0.f, 0.f, 1.f)).xyz());
 }
 
 const math::vec3&
