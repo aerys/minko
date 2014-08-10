@@ -109,14 +109,17 @@ namespace minko
 			modelToWorldMatrix(bool forceUpdate)
 			{
 				if (forceUpdate)
-				{
-					auto rootCtrl = target()->root()->component<RootTransform>();
-
-					rootCtrl->forceUpdate(target(), true);
-				}
+                    updateModelToWorldMatrix();
 
 				return _modelToWorld;
 			}
+
+            inline
+            void
+            updateModelToWorldMatrix()
+            {
+                target()->root()->component<RootTransform>()->forceUpdate(target(), true);
+            }
 
         protected:
 			void
