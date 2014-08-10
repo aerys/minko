@@ -25,6 +25,7 @@ using namespace minko::component;
 DirectionalLight::DirectionalLight(float diffuse, float specular) :
 	AbstractDiscreteLight("directionalLights", diffuse, specular)
 {
+    updateModelToWorldMatrix(math::mat4(1.f));
 }
 
 void

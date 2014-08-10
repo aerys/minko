@@ -209,10 +209,10 @@ TEST_F(TransformTest, NodeHierarchyTransformIssueWithBlockingNode)
 
 	auto n5 = Node::create("cb");
 	n5->addComponent(Transform::create());
-	n1->addComponent(Transform::create(math::translate(math::mat4(), math::vec3(-4.f, 0.f, 0.f))));
-    n2->addComponent(Transform::create(math::translate(math::mat4(), math::vec3(-5.f, 0.f, 0.f))));
-    n3->addComponent(Transform::create(math::translate(math::mat4(), math::vec3(4.f, 0, 0.f))));
-    n4->addComponent(Transform::create(math::translate(math::mat4(), math::vec3(5.f, 0.f, 0.f))));
+	n1->addComponent(Transform::create(math::translate(math::vec3(-4.f, 0.f, 0.f))));
+    n2->addComponent(Transform::create(math::translate(math::vec3(-5.f, 0.f, 0.f))));
+    n3->addComponent(Transform::create(math::translate(math::vec3(4.f, 0, 0.f))));
+    n4->addComponent(Transform::create(math::translate(math::vec3(5.f, 0.f, 0.f))));
 
 	root->addChild(p2);
 		p2->addChild(p1);
@@ -265,19 +265,19 @@ TEST_F(TransformTest, NodeHierarchyTransformIssueWithoutBlockingNode)
 	n5->addComponent(Transform::create());
 
 	n1->addComponent(Transform::create(
-        math::translate(math::mat4(), math::vec3(-4.f, 0.f, 0.f))
+        math::translate(math::vec3(-4.f, 0.f, 0.f))
 	));
 
 	n2->addComponent(Transform::create(
-        math::translate(math::mat4(), math::vec3(-5.f, 0.f, 0.f))
+        math::translate(math::vec3(-5.f, 0.f, 0.f))
 	));
 
 	n3->addComponent(Transform::create(
-        math::translate(math::scale(math::mat4(), math::vec3(5.f)), math::vec3(4.f, 0.f, 0.f))
+        math::scale(math::vec3(5.f)) * math::translate(math::vec3(4.f, 0.f, 0.f))
 	));
 	
     n4->addComponent(Transform::create(
-        math::translate(math::scale(math::mat4(), math::vec3(10.f)), math::vec3(5.f, 0.f, 0.f))
+        math::scale(math::vec3(10.f)) * math::translate(math::vec3(5.f, 0.f, 0.f))
 	));
 
 	root->addChild(p2);

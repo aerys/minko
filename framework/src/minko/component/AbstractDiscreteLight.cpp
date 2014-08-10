@@ -33,8 +33,6 @@ AbstractDiscreteLight::AbstractDiscreteLight(const std::string& arrayName,
 	data()
 		->set("diffuse", 	diffuse)
 		->set("specular", 	specular);
-
-    updateModelToWorldMatrix(math::mat4(1.f));
 }
 
 void

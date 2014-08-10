@@ -50,6 +50,8 @@ TEST_F(DirectionalLightTest, AddLight)
     ASSERT_EQ(root->data()->get<float>("directionalLights[0].diffuse"), .1f);
     ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].specular"));
     ASSERT_EQ(root->data()->get<float>("directionalLights[0].specular"), .3f);
+    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].direction"));
+    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[0].direction"), math::vec3(0.f, 0.f, -1.f));
 }
 
 TEST_F(DirectionalLightTest, RemoveSingleLight)

@@ -61,6 +61,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #define GLM_SWIZZLE
 #include "glm/glm.hpp"
 #include "glm/gtc/type_ptr.hpp"
+#include "glm/gtx/transform.hpp"
 #include "glm/gtx/matrix_interpolation.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtx/color_space.hpp"

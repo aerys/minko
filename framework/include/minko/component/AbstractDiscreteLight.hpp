@@ -91,10 +91,7 @@ namespace minko
 
             virtual
             void
-            updateModelToWorldMatrix(const math::mat4& modelToWorld)
-            {
-                // nothing
-            };
+            updateModelToWorldMatrix(const math::mat4& modelToWorld) = 0;
 		};
 	}
 }

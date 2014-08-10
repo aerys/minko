@@ -31,6 +31,7 @@ SpotLight::SpotLight(float diffuse,
                      float attenuationQuadratic) :
 	AbstractDiscreteLight("spotLights", diffuse, specular)
 {
+    updateModelToWorldMatrix(math::mat4(1.f));
     attenuationCoefficients(math::vec3(attenuationConstant, attenuationLinear, attenuationQuadratic));
 	innerConeAngle(innerAngleRadians);
 	outerConeAngle(outerAngleRadians);

@@ -31,9 +31,8 @@ PointLight::PointLight(float diffuse,
 	_attenuationCoeffs(math::vec3(attenuationConstant, attenuationLinear, attenuationQuadratic)),
 	_worldPosition(math::vec3(0.f))
 {
-	data()
-		->set("attenuationCoeffs",	_attenuationCoeffs)
-		->set("position",			_worldPosition);	
+	data()->set("attenuationCoeffs", _attenuationCoeffs);
+    updateModelToWorldMatrix(math::mat4(1.f));
 }
 
 void
