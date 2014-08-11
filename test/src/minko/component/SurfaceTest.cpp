@@ -78,15 +78,15 @@ TEST_F(SurfaceTest, SingleSurface)
         _sceneManager->assets()->effect("effect/Basic.effect")
         ));
 
-    ASSERT_EQ(node->data()->get<uint>("geometries.length"), 1);
-    ASSERT_EQ(node->data()->get<uint>("materials.length"), 1);
-    ASSERT_EQ(node->data()->get<uint>("effects.length"), 1);
-    ASSERT_TRUE(node->data()->hasProperty("geometries[0].position"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[0].position"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("position"));
-    ASSERT_TRUE(node->data()->hasProperty("geometries[0].uv"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[0].uv"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("uv"));
-    ASSERT_TRUE(node->data()->hasProperty("materials[0].diffuseColor"));
-    ASSERT_EQ(node->data()->get<math::vec4>("materials[0].diffuseColor"), math::vec4(1.f, 0.f, 0.f, 1.f));
+    ASSERT_EQ(node->data()->get<uint>("geometry.length"), 1);
+    ASSERT_EQ(node->data()->get<uint>("material.length"), 1);
+    ASSERT_EQ(node->data()->get<uint>("effect.length"), 1);
+    ASSERT_TRUE(node->data()->hasProperty("geometry[0].position"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[0].position"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("position"));
+    ASSERT_TRUE(node->data()->hasProperty("geometry[0].uv"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[0].uv"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("uv"));
+    ASSERT_TRUE(node->data()->hasProperty("material[0].diffuseColor"));
+    ASSERT_EQ(node->data()->get<math::vec4>("material[0].diffuseColor"), math::vec4(1.f, 0.f, 0.f, 1.f));
 }
 
 TEST_F(SurfaceTest, MultipleSurfaces)
@@ -105,21 +105,21 @@ TEST_F(SurfaceTest, MultipleSurfaces)
         _sceneManager->assets()->effect("effect/Basic.effect")
     ));
 
-    ASSERT_EQ(node->data()->get<uint>("geometries.length"), 2);
-    ASSERT_EQ(node->data()->get<uint>("materials.length"), 2);
-    ASSERT_EQ(node->data()->get<uint>("effects.length"), 2);
-    ASSERT_TRUE(node->data()->hasProperty("geometries[0].position"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[0].position"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("position"));
-    ASSERT_TRUE(node->data()->hasProperty("geometries[0].uv"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[0].uv"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("uv"));
-    ASSERT_TRUE(node->data()->hasProperty("materials[0].diffuseColor"));
-    ASSERT_EQ(node->data()->get<math::vec4>("materials[0].diffuseColor"), math::vec4(1.f, 0.f, 0.f, 1.f));
-    ASSERT_TRUE(node->data()->hasProperty("geometries[1].position"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[1].position"), _sceneManager->assets()->geometry("sphere")->getVertexAttribute("position"));
-    ASSERT_TRUE(node->data()->hasProperty("geometries[1].uv"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[1].uv"), _sceneManager->assets()->geometry("sphere")->getVertexAttribute("uv"));
-    ASSERT_TRUE(node->data()->hasProperty("materials[1].diffuseColor"));
-    ASSERT_EQ(node->data()->get<math::vec4>("materials[1].diffuseColor"), math::vec4(0.f, 1.f, 0.f, 1.f));
+    ASSERT_EQ(node->data()->get<uint>("geometry.length"), 2);
+    ASSERT_EQ(node->data()->get<uint>("material.length"), 2);
+    ASSERT_EQ(node->data()->get<uint>("effect.length"), 2);
+    ASSERT_TRUE(node->data()->hasProperty("geometry[0].position"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[0].position"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("position"));
+    ASSERT_TRUE(node->data()->hasProperty("geometry[0].uv"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[0].uv"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("uv"));
+    ASSERT_TRUE(node->data()->hasProperty("material[0].diffuseColor"));
+    ASSERT_EQ(node->data()->get<math::vec4>("material[0].diffuseColor"), math::vec4(1.f, 0.f, 0.f, 1.f));
+    ASSERT_TRUE(node->data()->hasProperty("geometry[1].position"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[1].position"), _sceneManager->assets()->geometry("sphere")->getVertexAttribute("position"));
+    ASSERT_TRUE(node->data()->hasProperty("geometry[1].uv"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[1].uv"), _sceneManager->assets()->geometry("sphere")->getVertexAttribute("uv"));
+    ASSERT_TRUE(node->data()->hasProperty("material[1].diffuseColor"));
+    ASSERT_EQ(node->data()->get<math::vec4>("material[1].diffuseColor"), math::vec4(0.f, 1.f, 0.f, 1.f));
 }
 
 TEST_F(SurfaceTest, RemoveFirstSurface)
@@ -142,45 +142,45 @@ TEST_F(SurfaceTest, RemoveFirstSurface)
         _sceneManager->assets()->effect("effect/Basic.effect")
     ));
 
-    ASSERT_EQ(node->data()->get<uint>("geometries.length"), 3);
-    ASSERT_EQ(node->data()->get<uint>("materials.length"), 3);
-    ASSERT_EQ(node->data()->get<uint>("effects.length"), 3);
-    ASSERT_TRUE(node->data()->hasProperty("geometries[0].position"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[0].position"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("position"));
-    ASSERT_TRUE(node->data()->hasProperty("geometries[0].uv"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[0].uv"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("uv"));
-    ASSERT_TRUE(node->data()->hasProperty("materials[0].diffuseColor"));
-    ASSERT_EQ(node->data()->get<math::vec4>("materials[0].diffuseColor"), math::vec4(1.f, 0.f, 0.f, 1.f));
-    ASSERT_TRUE(node->data()->hasProperty("geometries[1].position"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[1].position"), _sceneManager->assets()->geometry("sphere")->getVertexAttribute("position"));
-    ASSERT_TRUE(node->data()->hasProperty("geometries[1].uv"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[1].uv"), _sceneManager->assets()->geometry("sphere")->getVertexAttribute("uv"));
-    ASSERT_TRUE(node->data()->hasProperty("materials[1].diffuseColor"));
-    ASSERT_EQ(node->data()->get<math::vec4>("materials[1].diffuseColor"), math::vec4(0.f, 1.f, 0.f, 1.f));
-    ASSERT_TRUE(node->data()->hasProperty("geometries[2].position"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[2].position"), _sceneManager->assets()->geometry("quad")->getVertexAttribute("position"));
-    ASSERT_TRUE(node->data()->hasProperty("geometries[2].uv"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[2].uv"), _sceneManager->assets()->geometry("quad")->getVertexAttribute("uv"));
-    ASSERT_TRUE(node->data()->hasProperty("materials[2].diffuseColor"));
-    ASSERT_EQ(node->data()->get<math::vec4>("materials[2].diffuseColor"), math::vec4(0.f, 0.f, 1.f, 1.f));
+    ASSERT_EQ(node->data()->get<uint>("geometry.length"), 3);
+    ASSERT_EQ(node->data()->get<uint>("material.length"), 3);
+    ASSERT_EQ(node->data()->get<uint>("effect.length"), 3);
+    ASSERT_TRUE(node->data()->hasProperty("geometry[0].position"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[0].position"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("position"));
+    ASSERT_TRUE(node->data()->hasProperty("geometry[0].uv"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[0].uv"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("uv"));
+    ASSERT_TRUE(node->data()->hasProperty("material[0].diffuseColor"));
+    ASSERT_EQ(node->data()->get<math::vec4>("material[0].diffuseColor"), math::vec4(1.f, 0.f, 0.f, 1.f));
+    ASSERT_TRUE(node->data()->hasProperty("geometry[1].position"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[1].position"), _sceneManager->assets()->geometry("sphere")->getVertexAttribute("position"));
+    ASSERT_TRUE(node->data()->hasProperty("geometry[1].uv"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[1].uv"), _sceneManager->assets()->geometry("sphere")->getVertexAttribute("uv"));
+    ASSERT_TRUE(node->data()->hasProperty("material[1].diffuseColor"));
+    ASSERT_EQ(node->data()->get<math::vec4>("material[1].diffuseColor"), math::vec4(0.f, 1.f, 0.f, 1.f));
+    ASSERT_TRUE(node->data()->hasProperty("geometry[2].position"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[2].position"), _sceneManager->assets()->geometry("quad")->getVertexAttribute("position"));
+    ASSERT_TRUE(node->data()->hasProperty("geometry[2].uv"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[2].uv"), _sceneManager->assets()->geometry("quad")->getVertexAttribute("uv"));
+    ASSERT_TRUE(node->data()->hasProperty("material[2].diffuseColor"));
+    ASSERT_EQ(node->data()->get<math::vec4>("material[2].diffuseColor"), math::vec4(0.f, 0.f, 1.f, 1.f));
 
     node->removeComponent(node->component<Surface>(0));
 
-    ASSERT_EQ(node->data()->get<uint>("geometries.length"), 2);
-    ASSERT_EQ(node->data()->get<uint>("materials.length"), 2);
-    ASSERT_EQ(node->data()->get<uint>("effects.length"), 2);
-    ASSERT_TRUE(node->data()->hasProperty("geometries[0].position"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[0].position"), _sceneManager->assets()->geometry("sphere")->getVertexAttribute("position"));
-    ASSERT_TRUE(node->data()->hasProperty("geometries[0].uv"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[0].uv"), _sceneManager->assets()->geometry("sphere")->getVertexAttribute("uv"));
-    ASSERT_TRUE(node->data()->hasProperty("materials[0].diffuseColor"));
-    ASSERT_EQ(node->data()->get<math::vec4>("materials[0].diffuseColor"), math::vec4(0.f, 1.f, 0.f, 1.f));
-    ASSERT_TRUE(node->data()->hasProperty("geometries[1].position"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[1].position"), _sceneManager->assets()->geometry("quad")->getVertexAttribute("position"));
-    ASSERT_TRUE(node->data()->hasProperty("geometries[1].uv"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[1].uv"), _sceneManager->assets()->geometry("quad")->getVertexAttribute("uv"));
-    ASSERT_TRUE(node->data()->hasProperty("materials[1].diffuseColor"));
-    ASSERT_EQ(node->data()->get<math::vec4>("materials[1].diffuseColor"), math::vec4(0.f, 0.f, 1.f, 1.f));
+    ASSERT_EQ(node->data()->get<uint>("geometry.length"), 2);
+    ASSERT_EQ(node->data()->get<uint>("material.length"), 2);
+    ASSERT_EQ(node->data()->get<uint>("effect.length"), 2);
+    ASSERT_TRUE(node->data()->hasProperty("geometry[0].position"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[0].position"), _sceneManager->assets()->geometry("sphere")->getVertexAttribute("position"));
+    ASSERT_TRUE(node->data()->hasProperty("geometry[0].uv"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[0].uv"), _sceneManager->assets()->geometry("sphere")->getVertexAttribute("uv"));
+    ASSERT_TRUE(node->data()->hasProperty("material[0].diffuseColor"));
+    ASSERT_EQ(node->data()->get<math::vec4>("material[0].diffuseColor"), math::vec4(0.f, 1.f, 0.f, 1.f));
+    ASSERT_TRUE(node->data()->hasProperty("geometry[1].position"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[1].position"), _sceneManager->assets()->geometry("quad")->getVertexAttribute("position"));
+    ASSERT_TRUE(node->data()->hasProperty("geometry[1].uv"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[1].uv"), _sceneManager->assets()->geometry("quad")->getVertexAttribute("uv"));
+    ASSERT_TRUE(node->data()->hasProperty("material[1].diffuseColor"));
+    ASSERT_EQ(node->data()->get<math::vec4>("material[1].diffuseColor"), math::vec4(0.f, 0.f, 1.f, 1.f));
 }
 
 TEST_F(SurfaceTest, RemoveNthSurface)
@@ -203,45 +203,45 @@ TEST_F(SurfaceTest, RemoveNthSurface)
         _sceneManager->assets()->effect("effect/Basic.effect")
     ));
 
-    ASSERT_EQ(node->data()->get<uint>("geometries.length"), 3);
-    ASSERT_EQ(node->data()->get<uint>("materials.length"), 3);
-    ASSERT_EQ(node->data()->get<uint>("effects.length"), 3);
-    ASSERT_TRUE(node->data()->hasProperty("geometries[0].position"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[0].position"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("position"));
-    ASSERT_TRUE(node->data()->hasProperty("geometries[0].uv"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[0].uv"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("uv"));
-    ASSERT_TRUE(node->data()->hasProperty("materials[0].diffuseColor"));
-    ASSERT_EQ(node->data()->get<math::vec4>("materials[0].diffuseColor"), math::vec4(1.f, 0.f, 0.f, 1.f));
-    ASSERT_TRUE(node->data()->hasProperty("geometries[1].position"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[1].position"), _sceneManager->assets()->geometry("sphere")->getVertexAttribute("position"));
-    ASSERT_TRUE(node->data()->hasProperty("geometries[1].uv"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[1].uv"), _sceneManager->assets()->geometry("sphere")->getVertexAttribute("uv"));
-    ASSERT_TRUE(node->data()->hasProperty("materials[1].diffuseColor"));
-    ASSERT_EQ(node->data()->get<math::vec4>("materials[1].diffuseColor"), math::vec4(0.f, 1.f, 0.f, 1.f));
-    ASSERT_TRUE(node->data()->hasProperty("geometries[2].position"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[2].position"), _sceneManager->assets()->geometry("quad")->getVertexAttribute("position"));
-    ASSERT_TRUE(node->data()->hasProperty("geometries[2].uv"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[2].uv"), _sceneManager->assets()->geometry("quad")->getVertexAttribute("uv"));
-    ASSERT_TRUE(node->data()->hasProperty("materials[2].diffuseColor"));
-    ASSERT_EQ(node->data()->get<math::vec4>("materials[2].diffuseColor"), math::vec4(0.f, 0.f, 1.f, 1.f));
+    ASSERT_EQ(node->data()->get<uint>("geometry.length"), 3);
+    ASSERT_EQ(node->data()->get<uint>("material.length"), 3);
+    ASSERT_EQ(node->data()->get<uint>("effect.length"), 3);
+    ASSERT_TRUE(node->data()->hasProperty("geometry[0].position"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[0].position"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("position"));
+    ASSERT_TRUE(node->data()->hasProperty("geometry[0].uv"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[0].uv"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("uv"));
+    ASSERT_TRUE(node->data()->hasProperty("material[0].diffuseColor"));
+    ASSERT_EQ(node->data()->get<math::vec4>("material[0].diffuseColor"), math::vec4(1.f, 0.f, 0.f, 1.f));
+    ASSERT_TRUE(node->data()->hasProperty("geometry[1].position"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[1].position"), _sceneManager->assets()->geometry("sphere")->getVertexAttribute("position"));
+    ASSERT_TRUE(node->data()->hasProperty("geometry[1].uv"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[1].uv"), _sceneManager->assets()->geometry("sphere")->getVertexAttribute("uv"));
+    ASSERT_TRUE(node->data()->hasProperty("material[1].diffuseColor"));
+    ASSERT_EQ(node->data()->get<math::vec4>("material[1].diffuseColor"), math::vec4(0.f, 1.f, 0.f, 1.f));
+    ASSERT_TRUE(node->data()->hasProperty("geometry[2].position"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[2].position"), _sceneManager->assets()->geometry("quad")->getVertexAttribute("position"));
+    ASSERT_TRUE(node->data()->hasProperty("geometry[2].uv"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[2].uv"), _sceneManager->assets()->geometry("quad")->getVertexAttribute("uv"));
+    ASSERT_TRUE(node->data()->hasProperty("material[2].diffuseColor"));
+    ASSERT_EQ(node->data()->get<math::vec4>("material[2].diffuseColor"), math::vec4(0.f, 0.f, 1.f, 1.f));
 
     node->removeComponent(node->component<Surface>(1));
 
-    ASSERT_EQ(node->data()->get<uint>("geometries.length"), 2);
-    ASSERT_EQ(node->data()->get<uint>("materials.length"), 2);
-    ASSERT_EQ(node->data()->get<uint>("effects.length"), 2);
-    ASSERT_TRUE(node->data()->hasProperty("geometries[0].position"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[0].position"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("position"));
-    ASSERT_TRUE(node->data()->hasProperty("geometries[0].uv"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[0].uv"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("uv"));
-    ASSERT_TRUE(node->data()->hasProperty("materials[0].diffuseColor"));
-    ASSERT_EQ(node->data()->get<math::vec4>("materials[0].diffuseColor"), math::vec4(1.f, 0.f, 0.f, 1.f));
-    ASSERT_TRUE(node->data()->hasProperty("geometries[1].position"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[1].position"), _sceneManager->assets()->geometry("quad")->getVertexAttribute("position"));
-    ASSERT_TRUE(node->data()->hasProperty("geometries[1].uv"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[1].uv"), _sceneManager->assets()->geometry("quad")->getVertexAttribute("uv"));
-    ASSERT_TRUE(node->data()->hasProperty("materials[1].diffuseColor"));
-    ASSERT_EQ(node->data()->get<math::vec4>("materials[1].diffuseColor"), math::vec4(0.f, 0.f, 1.f, 1.f));
+    ASSERT_EQ(node->data()->get<uint>("geometry.length"), 2);
+    ASSERT_EQ(node->data()->get<uint>("material.length"), 2);
+    ASSERT_EQ(node->data()->get<uint>("effect.length"), 2);
+    ASSERT_TRUE(node->data()->hasProperty("geometry[0].position"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[0].position"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("position"));
+    ASSERT_TRUE(node->data()->hasProperty("geometry[0].uv"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[0].uv"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("uv"));
+    ASSERT_TRUE(node->data()->hasProperty("material[0].diffuseColor"));
+    ASSERT_EQ(node->data()->get<math::vec4>("material[0].diffuseColor"), math::vec4(1.f, 0.f, 0.f, 1.f));
+    ASSERT_TRUE(node->data()->hasProperty("geometry[1].position"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[1].position"), _sceneManager->assets()->geometry("quad")->getVertexAttribute("position"));
+    ASSERT_TRUE(node->data()->hasProperty("geometry[1].uv"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[1].uv"), _sceneManager->assets()->geometry("quad")->getVertexAttribute("uv"));
+    ASSERT_TRUE(node->data()->hasProperty("material[1].diffuseColor"));
+    ASSERT_EQ(node->data()->get<math::vec4>("material[1].diffuseColor"), math::vec4(0.f, 0.f, 1.f, 1.f));
 }
 
 TEST_F(SurfaceTest, RemoveLastSurface)
@@ -264,43 +264,43 @@ TEST_F(SurfaceTest, RemoveLastSurface)
         _sceneManager->assets()->effect("effect/Basic.effect")
     ));
 
-    ASSERT_EQ(node->data()->get<uint>("geometries.length"), 3);
-    ASSERT_EQ(node->data()->get<uint>("materials.length"), 3);
-    ASSERT_EQ(node->data()->get<uint>("effects.length"), 3);
-    ASSERT_TRUE(node->data()->hasProperty("geometries[0].position"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[0].position"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("position"));
-    ASSERT_TRUE(node->data()->hasProperty("geometries[0].uv"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[0].uv"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("uv"));
-    ASSERT_TRUE(node->data()->hasProperty("materials[0].diffuseColor"));
-    ASSERT_EQ(node->data()->get<math::vec4>("materials[0].diffuseColor"), math::vec4(1.f, 0.f, 0.f, 1.f));
-    ASSERT_TRUE(node->data()->hasProperty("geometries[1].position"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[1].position"), _sceneManager->assets()->geometry("sphere")->getVertexAttribute("position"));
-    ASSERT_TRUE(node->data()->hasProperty("geometries[1].uv"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[1].uv"), _sceneManager->assets()->geometry("sphere")->getVertexAttribute("uv"));
-    ASSERT_TRUE(node->data()->hasProperty("materials[1].diffuseColor"));
-    ASSERT_EQ(node->data()->get<math::vec4>("materials[1].diffuseColor"), math::vec4(0.f, 1.f, 0.f, 1.f));
-    ASSERT_TRUE(node->data()->hasProperty("geometries[2].position"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[2].position"), _sceneManager->assets()->geometry("quad")->getVertexAttribute("position"));
-    ASSERT_TRUE(node->data()->hasProperty("geometries[2].uv"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[2].uv"), _sceneManager->assets()->geometry("quad")->getVertexAttribute("uv"));
-    ASSERT_TRUE(node->data()->hasProperty("materials[2].diffuseColor"));
-    ASSERT_EQ(node->data()->get<math::vec4>("materials[2].diffuseColor"), math::vec4(0.f, 0.f, 1.f, 1.f));
+    ASSERT_EQ(node->data()->get<uint>("geometry.length"), 3);
+    ASSERT_EQ(node->data()->get<uint>("material.length"), 3);
+    ASSERT_EQ(node->data()->get<uint>("effect.length"), 3);
+    ASSERT_TRUE(node->data()->hasProperty("geometry[0].position"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[0].position"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("position"));
+    ASSERT_TRUE(node->data()->hasProperty("geometry[0].uv"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[0].uv"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("uv"));
+    ASSERT_TRUE(node->data()->hasProperty("material[0].diffuseColor"));
+    ASSERT_EQ(node->data()->get<math::vec4>("material[0].diffuseColor"), math::vec4(1.f, 0.f, 0.f, 1.f));
+    ASSERT_TRUE(node->data()->hasProperty("geometry[1].position"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[1].position"), _sceneManager->assets()->geometry("sphere")->getVertexAttribute("position"));
+    ASSERT_TRUE(node->data()->hasProperty("geometry[1].uv"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[1].uv"), _sceneManager->assets()->geometry("sphere")->getVertexAttribute("uv"));
+    ASSERT_TRUE(node->data()->hasProperty("material[1].diffuseColor"));
+    ASSERT_EQ(node->data()->get<math::vec4>("material[1].diffuseColor"), math::vec4(0.f, 1.f, 0.f, 1.f));
+    ASSERT_TRUE(node->data()->hasProperty("geometry[2].position"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[2].position"), _sceneManager->assets()->geometry("quad")->getVertexAttribute("position"));
+    ASSERT_TRUE(node->data()->hasProperty("geometry[2].uv"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[2].uv"), _sceneManager->assets()->geometry("quad")->getVertexAttribute("uv"));
+    ASSERT_TRUE(node->data()->hasProperty("material[2].diffuseColor"));
+    ASSERT_EQ(node->data()->get<math::vec4>("material[2].diffuseColor"), math::vec4(0.f, 0.f, 1.f, 1.f));
 
     node->removeComponent(node->component<Surface>(2));
 
-    ASSERT_EQ(node->data()->get<uint>("geometries.length"), 2);
-    ASSERT_EQ(node->data()->get<uint>("materials.length"), 2);
-    ASSERT_EQ(node->data()->get<uint>("effects.length"), 2);
-    ASSERT_TRUE(node->data()->hasProperty("geometries[0].position"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[0].position"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("position"));
-    ASSERT_TRUE(node->data()->hasProperty("geometries[0].uv"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[0].uv"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("uv"));
-    ASSERT_TRUE(node->data()->hasProperty("materials[0].diffuseColor"));
-    ASSERT_EQ(node->data()->get<math::vec4>("materials[0].diffuseColor"), math::vec4(1.f, 0.f, 0.f, 1.f));
-    ASSERT_TRUE(node->data()->hasProperty("geometries[1].position"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[1].position"), _sceneManager->assets()->geometry("sphere")->getVertexAttribute("position"));
-    ASSERT_TRUE(node->data()->hasProperty("geometries[1].uv"));
-    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometries[1].uv"), _sceneManager->assets()->geometry("sphere")->getVertexAttribute("uv"));
-    ASSERT_TRUE(node->data()->hasProperty("materials[1].diffuseColor"));
-    ASSERT_EQ(node->data()->get<math::vec4>("materials[1].diffuseColor"), math::vec4(0.f, 1.f, 0.f, 1.f));
+    ASSERT_EQ(node->data()->get<uint>("geometry.length"), 2);
+    ASSERT_EQ(node->data()->get<uint>("material.length"), 2);
+    ASSERT_EQ(node->data()->get<uint>("effect.length"), 2);
+    ASSERT_TRUE(node->data()->hasProperty("geometry[0].position"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[0].position"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("position"));
+    ASSERT_TRUE(node->data()->hasProperty("geometry[0].uv"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[0].uv"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("uv"));
+    ASSERT_TRUE(node->data()->hasProperty("material[0].diffuseColor"));
+    ASSERT_EQ(node->data()->get<math::vec4>("material[0].diffuseColor"), math::vec4(1.f, 0.f, 0.f, 1.f));
+    ASSERT_TRUE(node->data()->hasProperty("geometry[1].position"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[1].position"), _sceneManager->assets()->geometry("sphere")->getVertexAttribute("position"));
+    ASSERT_TRUE(node->data()->hasProperty("geometry[1].uv"));
+    ASSERT_EQ(node->data()->get<render::VertexAttribute>("geometry[1].uv"), _sceneManager->assets()->geometry("sphere")->getVertexAttribute("uv"));
+    ASSERT_TRUE(node->data()->hasProperty("material[1].diffuseColor"));
+    ASSERT_EQ(node->data()->get<math::vec4>("material[1].diffuseColor"), math::vec4(0.f, 1.f, 0.f, 1.f));
 }

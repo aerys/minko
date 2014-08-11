@@ -46,6 +46,10 @@ namespace minko
 			typedef const std::string&												StringRef;
 			typedef Signal<std::shared_ptr<data::Provider>, uint>::Slot				ArrayIndexChangedSlot;
 
+        public:
+            static const std::string GEOMETRY_COLLECTION_NAME;
+            static const std::string MATERIAL_COLLECTION_NAME;
+            static const std::string EFFECT_COLLECTION_NAME;
 
 		private:
 			std::string														_name;
