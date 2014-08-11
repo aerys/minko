@@ -94,8 +94,6 @@ namespace minko
             void
             define(const std::string& macroName)
             {
-                assert(_id != -1);
-
                 _source = "#define " + macroName + "\n";
             }
 
