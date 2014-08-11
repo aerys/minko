@@ -120,6 +120,14 @@ namespace minko
             {
                 // nothing
             }
+
+            void
+            addProviderToCollection(std::shared_ptr<data::Provider> provider,
+                                    const std::string&              collectionName);
+
+            void
+            removeProviderFromCollection(std::shared_ptr<data::Provider> provider,
+                                         const std::string&              collectionName);
 		};
 	}
 }
