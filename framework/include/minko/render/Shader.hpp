@@ -94,7 +94,7 @@ namespace minko
             void
             define(const std::string& macroName)
             {
-                _source = "#define " + macroName + "\n";
+                _source = "#define " + macroName + "\n" + _source;
             }
 
             template <typename T>
@@ -102,9 +102,7 @@ namespace minko
             void
             define(const std::string& macroName, T value)
             {
-                assert(_id != -1);
-
-                _source = "#define " + macroName + " " + std::to_string(value) + "\n";
+                _source = "#define " + macroName + " " + std::to_string(value) + "\n" + _source;
             }
 
 			void
