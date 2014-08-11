@@ -151,8 +151,6 @@ Container::hasProperty(const std::string& propertyName) const
 void
 Container::doAddProvider(ProviderPtr provider, CollectionPtr collection)
 {
-    assert(std::find(_providers.begin(), _providers.end(), provider) == _providers.end());
-
     _providers.push_back(provider);
 
     _propertySlots[provider].push_back(provider->propertyAdded()->connect(std::bind(
