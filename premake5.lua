@@ -105,7 +105,7 @@ solution "minko"
 	-- example
 	if not _OPTIONS['no-example'] then
 		--include 'example/assimp'
-		--include 'example/cube'
+		include 'example/cube'
 		--include 'example/devil'
 		--include 'example/effect-config'
 		--include 'example/fog'
@@ -113,7 +113,7 @@ solution "minko"
 		--include 'example/jobs'
 		--include 'example/joystick'
 		--include 'example/leap-motion'
-		include 'example/light'
+		--include 'example/light'
 		--include 'example/line-geometry'
 		--include 'example/lua-scripts'
 		--include 'example/offscreen'
