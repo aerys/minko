@@ -78,7 +78,7 @@ namespace minko
 			typedef std::shared_ptr<Program>			ProgramPtr;
 
 		private:
-            const data::BindingMap&             _macroBindings;
+            const data::MacroBindingMap&        _macroBindings;
 
 			std::shared_ptr<render::Pass>		_pass;
 			std::shared_ptr<Program>			_program;
@@ -93,23 +93,23 @@ namespace minko
             std::shared_ptr<States>             _states;
 
 		public:
-            DrawCall(const data::BindingMap& macroBindings) :
+            DrawCall(const data::MacroBindingMap& macroBindings) :
                 _macroBindings(macroBindings)
             {
 
             }
 
-            const data::BindingMap&
+            const data::MacroBindingMap&
             macroBindings()
             {
                 return _macroBindings;
             }
             
 			void
-			render(const std::shared_ptr<AbstractContext>& context, AbsTexturePtr renderTarget) const;
+			render(std::shared_ptr<AbstractContext> context, AbsTexturePtr renderTarget) const;
 
             void
-            bind(std::shared_ptr<Program>   Program,
+            bind(std::shared_ptr<Program>   program,
                  ContainerPtr               rootData,
                  ContainerPtr               rendererData,
                  ContainerPtr               targetData,
@@ -120,7 +120,7 @@ namespace minko
 		private:
             void
             bindUniform(std::shared_ptr<Program>    program,
-                        ConstUniformInputRef        uniformInput,
+                        ConstUniformInputRef        input,
                         ContainerPtr                container,
                         const std::string&          propertyName);
 
