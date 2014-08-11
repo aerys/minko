@@ -38,6 +38,10 @@ using namespace minko::geometry;
 using namespace minko::render;
 using namespace minko::material;
 
+const std::string Surface::GEOMETRY_COLLECTION_NAME  = "geometry";
+const std::string Surface::MATERIAL_COLLECTION_NAME = "material";
+const std::string Surface::EFFECT_COLLECTION_NAME = "effect";
+
 Surface::Surface(std::string		name,
 				 Geometry::Ptr 		geometry,
 				 Material::Ptr 		material,
@@ -65,9 +69,9 @@ Surface::Surface(std::string		name,
 void
 Surface::targetAdded(scene::Node::Ptr target)
 {
-    target->data()->addProvider(_material->data(), "materials");
-    target->data()->addProvider(_geometry->data(), "geometries");
-    target->data()->addProvider(_effect->data(), "effects");
+    target->data()->addProvider(_material->data(), MATERIAL_COLLECTION_NAME);
+    target->data()->addProvider(_geometry->data(), GEOMETRY_COLLECTION_NAME);
+    target->data()->addProvider(_effect->data(), EFFECT_COLLECTION_NAME);
 }
 
 void
@@ -75,27 +79,27 @@ Surface::targetRemoved(scene::Node::Ptr target)
 {
 	auto data = target->data();
 
-    target->data()->removeProvider(_material->data(), "materials");
-    target->data()->removeProvider(_geometry->data(), "geometries");
-    target->data()->removeProvider(_effect->data(), "effects");
+    target->data()->removeProvider(_material->data(), MATERIAL_COLLECTION_NAME);
+    target->data()->removeProvider(_geometry->data(), GEOMETRY_COLLECTION_NAME);
+    target->data()->removeProvider(_effect->data(), EFFECT_COLLECTION_NAME);
 }
 
 void
 Surface::geometry(geometry::Geometry::Ptr geometry)
 {
-    target()->data()->removeProvider(_geometry->data(), "geometries");
+    target()->data()->removeProvider(_geometry->data(), GEOMETRY_COLLECTION_NAME);
 
     _geometry = geometry;
-    target()->data()->addProvider(_geometry->data(), "geometries");
+    target()->data()->addProvider(_geometry->data(), GEOMETRY_COLLECTION_NAME);
 }
 
 void
 Surface::material(material::Material::Ptr material)
 {
-    target()->data()->removeProvider(_material->data(), "materials");
+    target()->data()->removeProvider(_material->data(), MATERIAL_COLLECTION_NAME);
 
     _material = material;
-    target()->data()->addProvider(_material->data(), "materials");
+    target()->data()->addProvider(_material->data(), MATERIAL_COLLECTION_NAME);
 }
 
 void
