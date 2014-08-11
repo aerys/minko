@@ -40,8 +40,9 @@ namespace minko
 			};
 
 		private:
-			Type		_type;
-			std::string _source;
+			Type		            _type;
+			std::string             _source;
+            std::set<std::string>   _definedMacros;
 
 		public:
 			inline static
@@ -66,7 +67,12 @@ namespace minko
 			Ptr
 			create(Ptr shader)
 			{
-				return create(shader->_context, shader->_type, shader->_source);
+                auto s = create(shader->context(), shader->_type);
+
+                s->_source = shader->_source;
+                s->_definedMacros = shader->_definedMacros;
+
+				return s;
 			}
 
 			inline
@@ -94,7 +100,11 @@ namespace minko
             void
             define(const std::string& macroName)
             {
-                _source = "#define " + macroName + "\n" + _source;
+                if (std::find(_definedMacros.begin(), _definedMacros.end(), macroName) == _definedMacros.end())
+                {
+                    _source = "#define " + macroName + "\n" + _source;
+                    _definedMacros.insert(macroName);
+                }
             }
 
             template <typename T>
@@ -102,7 +112,11 @@ namespace minko
             void
             define(const std::string& macroName, T value)
             {
-                _source = "#define " + macroName + " " + std::to_string(value) + "\n" + _source;
+                if (std::find(_definedMacros.begin(), _definedMacros.end(), macroName) == _definedMacros.end())
+                {
+                    _source = "#define " + macroName + " " + std::to_string(value) + "\n" + _source;
+                    _definedMacros.insert(macroName);
+                }
             }
 
 			void
