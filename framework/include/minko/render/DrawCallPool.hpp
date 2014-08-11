@@ -37,7 +37,7 @@ namespace minko
 			typedef std::shared_ptr<DrawCallPool>   Ptr;
 
 		private:
-            std::list<DrawCall>     _drawCalls;
+            std::list<DrawCall*>    _drawCalls;
             std::set<std::string>   _watchedProperties;
 
 		public:
@@ -45,21 +45,15 @@ namespace minko
 			Ptr
 			create()
 			{
-				Ptr ptr = std::shared_ptr<DrawCallPool>(new DrawCallPool());
-
-				return ptr;
+                return std::shared_ptr<DrawCallPool>(new DrawCallPool());
 			}
 
-			const std::list<DrawCall>&
-			drawCalls();
+			const std::list<DrawCall*>&
+            drawCalls()
+            {
+                return _drawCalls;
+            }
 			
-		private:
-			explicit
-			DrawCallPool();
-
-			void
-			initialize();
-
             void
             addDrawCalls(std::shared_ptr<Effect>                                effect,
                          const std::unordered_map<std::string, std::string>&    variables,
@@ -73,8 +67,28 @@ namespace minko
                 for (const auto& pass : technique)
                 {
                     auto program = pass->selectProgram(variables, targetData, rendererData, rootData);
+                    auto* drawCall = new DrawCall(pass->macroBindings());
+
+                    drawCall->bind(
+                        program,
+                        rootData,
+                        rendererData,
+                        targetData,
+                        pass->attributeBindings(),
+                        pass->uniformBindings(),
+                        pass->stateBindings()
+                    );
+
+                    _drawCalls.push_back(drawCall);
                 }
             }
+
+		private:
+			explicit
+			DrawCallPool();
+
+			void
+			initialize();
 		};
 	}
 }
