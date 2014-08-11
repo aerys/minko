@@ -82,9 +82,9 @@ namespace minko
 
 			std::shared_ptr<render::Pass>		_pass;
 			std::shared_ptr<Program>			_program;
-            uint*								_numIndices;
+            int*								_indexBuffer;
             uint*                               _firstIndex;
-            uint*								_indexBuffer;
+            uint*								_numIndices;
             std::vector<UniformValue<int>>      _uniformInt;
             std::vector<UniformValue<float>>    _uniformFloat;
             std::vector<UniformValue<bool>>     _uniformBool;
@@ -109,13 +109,14 @@ namespace minko
 			render(std::shared_ptr<AbstractContext> context, AbsTexturePtr renderTarget) const;
 
             void
-            bind(std::shared_ptr<Program>   program,
-                 ContainerPtr               rootData,
-                 ContainerPtr               rendererData,
-                 ContainerPtr               targetData,
-                 const data::BindingMap&    attributeBindings,
-                 const data::BindingMap&    uniformBindings,
-                 const data::BindingMap&    stateBindings);
+            bind(std::shared_ptr<Program>                               program,
+                 const std::unordered_map<std::string, std::string>&    variables,
+                 ContainerPtr                                           rootData,
+                 ContainerPtr                                           rendererData,
+                 ContainerPtr                                           targetData,
+                 const data::BindingMap&                                attributeBindings,
+                 const data::BindingMap&                                uniformBindings,
+                 const data::BindingMap&                                stateBindings);
 
 		private:
             void
@@ -131,7 +132,8 @@ namespace minko
 						  const std::string&          propertyName);
 
 			void
-			bindIndexBuffer();
+			bindIndexBuffer(const std::unordered_map<std::string, std::string>&   variables,
+                            ContainerPtr                                          targetData);
 
 			void
 			bindStates();
@@ -144,6 +146,6 @@ namespace minko
                          ContainerPtr           rendererData,
                          ContainerPtr           targetData,
                          data::BindingSource    source);
-		};		
+		};
 	}
 }

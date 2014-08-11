@@ -47,21 +47,30 @@ DrawCall::getContainer(ContainerPtr         rootData,
 }
 
 void
-DrawCall::bind(Program::Ptr                 program,
-               ContainerPtr                 rootData,
-               ContainerPtr                 rendererData,
-               ContainerPtr                 targetData,
-               const data::BindingMap&      attributeBindings,
-               const data::BindingMap&      uniformBindings,
-               const data::BindingMap&      stateBindings)
+DrawCall::bind(Program::Ptr                                         program,
+               const std::unordered_map<std::string, std::string>&  variables,
+               ContainerPtr                                         rootData,
+               ContainerPtr                                         rendererData,
+               ContainerPtr                                         targetData,
+               const data::BindingMap&                              attributeBindings,
+               const data::BindingMap&                              uniformBindings,
+               const data::BindingMap&                              stateBindings)
 {
+    _program = program;
+
+    bindIndexBuffer(variables, targetData);
+
     for (const auto& input : program->inputs().uniforms())
     {
         const auto& binding = uniformBindings.at(input.name);
         auto container = getContainer(rootData, rendererData, targetData, binding.source);
 
-        // FIXME: format binding.propertyName
-        bindUniform(program, input, container, binding.propertyName);
+        bindUniform(
+            program,
+            input,
+            container,
+            data::Container::getActualPropertyName(variables, binding.propertyName)
+        );
     }
      
     for (const auto& input : program->inputs().attributes())
@@ -69,15 +78,28 @@ DrawCall::bind(Program::Ptr                 program,
         const auto& binding = attributeBindings.at(input.name);
         auto container = getContainer(rootData, rendererData, targetData, binding.source);
 
-        // FIXME: format binding.propertyName
-        bindAttribute(program, input, container, binding.propertyName);
+        bindAttribute(
+            program,
+            input,
+            container,
+            data::Container::getActualPropertyName(variables, binding.propertyName)
+        );
     }
 }
 
 void
-DrawCall::bindIndexBuffer()
+DrawCall::bindIndexBuffer(const std::unordered_map<std::string, std::string>&   variables,
+                          ContainerPtr                                          targetData)
 {
-    // FIXME
+    _indexBuffer = const_cast<int*>(targetData->getPointer<int>(
+        data::Container::getActualPropertyName(variables, "geometry[${geometryId}].indices")
+    ));
+    _firstIndex = const_cast<uint*>(targetData->getPointer<uint>(
+        data::Container::getActualPropertyName(variables, "geometry[${geometryId}].firstIndex")
+    ));
+    _numIndices = const_cast<uint*>(targetData->getPointer<uint>(
+        data::Container::getActualPropertyName(variables, "geometry[${geometryId}].numIndices")
+    ));
 }
 
 void
@@ -166,10 +188,11 @@ DrawCall::render(AbstractContext::Ptr context, AbstractTexture::Ptr renderTarget
 {
     context->setProgram(_program->id());
 
-    if (_states->target())
+    // FIXME: handle RTT
+    /*if (_states->target())
         context->setRenderToTexture(_states->target()->id(), true);
     else if (renderTarget)
-        context->setRenderToTexture(renderTarget->id(), true);
+        context->setRenderToTexture(renderTarget->id(), true);*/
 
     for (const auto& u : _uniformFloat)
     {
@@ -181,6 +204,8 @@ DrawCall::render(AbstractContext::Ptr context, AbstractTexture::Ptr renderTarget
             context->setUniformFloat3(u.location, 1, u.data);
         else if (u.size == 4)
             context->setUniformFloat4(u.location, 1, u.data);
+        else if (u.size == 16)
+            context->setUniformMatrix4x4(u.location, 1, u.data);
     }
 
     for (const auto& u : _uniformInt)
@@ -195,8 +220,8 @@ DrawCall::render(AbstractContext::Ptr context, AbstractTexture::Ptr renderTarget
             context->setUniformInt4(u.location, 1, u.data);
     }
 
+    // FIXME: bind bool uniforms
     /*
-    FIXME: bind bool uniforms
     for (const auto& u : _uniformBool)
     {
         if (u.size == 1)
@@ -219,4 +244,20 @@ DrawCall::render(AbstractContext::Ptr context, AbstractTexture::Ptr renderTarget
         context->setVertexBufferAt(a.position, *a.resourceId, a.size, *a.stride, a.offset);
 
     context->drawTriangles(*_indexBuffer, *_numIndices / 3);
+}
+
+const std::string
+DrawCall::getActualPropertyName(const std::unordered_map<std::string, std::string>& vars,
+                                const std::string&                                  propertyName)
+{
+    for (const auto& variableName : vars)
+    {
+        auto pos = propertyName.find("${" + variableName.first + "}");
+
+        if (pos != std::string::npos)
+            return propertyName.substr(0, pos) + variableName.second
+            + propertyName.substr(pos + variableName.first.size() + 3);
+    }
+
+    return propertyName;
 }
