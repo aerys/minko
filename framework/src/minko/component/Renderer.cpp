@@ -236,7 +236,22 @@ Renderer::componentRemovedHandler(std::shared_ptr<Node>					node,
 void
 Renderer::addSurface(Surface::Ptr surface)
 {
+    std::unordered_map<std::string, std::string> variables;
+
     // FIXME
+    variables["surfaceId"] = "0";
+    variables["geometryId"] = "0";
+    variables["materialId"] = "0";
+    variables["effectId"] = "0";
+
+    _drawCallPool->addDrawCalls(
+        surface->effect(),
+        variables,
+        surface->technique(),
+        surface->target()->root()->data(),
+        target()->data(),
+        surface->target()->data()
+    );
 }
 
 void
@@ -286,7 +301,7 @@ Renderer::render(render::AbstractContext::Ptr	context,
     for (const auto& drawCall : _drawCallPool->drawCalls())
         // FIXME: render the draw call only if it's the right layout
 		//if ((drawCall->layouts() & layoutMask()) != 0)
-			drawCall.render(context, renderTarget);
+			drawCall->render(context, renderTarget);
 
     if (bCustomViewport)
         context->setScissorTest(false, _viewportBox);
