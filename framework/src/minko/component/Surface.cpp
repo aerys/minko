@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/scene/Node.hpp"
 #include "minko/geometry/Geometry.hpp"
+#include "minko/material/Material.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/render/DrawCall.hpp"
 #include "minko/render/Pass.hpp"
@@ -35,12 +36,13 @@ using namespace minko::data;
 using namespace minko::component;
 using namespace minko::geometry;
 using namespace minko::render;
+using namespace minko::material;
 
-Surface::Surface(std::string				name,
-				 Geometry::Ptr 				geometry,
-				 data::Provider::Ptr 		material,
-				 Effect::Ptr				effect,
-				 const std::string&			technique) :
+Surface::Surface(std::string		name,
+				 Geometry::Ptr 		geometry,
+				 Material::Ptr 		material,
+				 Effect::Ptr		effect,
+				 const std::string&	technique) :
 	AbstractComponent(),
 	_name(name),
 	_geometry(geometry),
@@ -86,7 +88,7 @@ Surface::targetAdded(scene::Node::Ptr target)
 		std::placeholders::_3
 	));
 
-    addProviderToCollection(_material, "materials");
+    addProviderToCollection(_material->data(), "materials");
     addProviderToCollection(_geometry->data(), "geometries");
     addProviderToCollection(_effect->data(), "effects");
 }
@@ -98,7 +100,7 @@ Surface::targetRemoved(scene::Node::Ptr target)
 
 	_removedSlot = nullptr;
 	
-    removeProviderFromCollection(_material, "materials");
+    removeProviderFromCollection(_material->data(), "materials");
     removeProviderFromCollection(_geometry->data(), "geometries");
     removeProviderFromCollection(_effect->data(), "effects");
 }
@@ -114,11 +116,21 @@ Surface::removedHandler(Node::Ptr, Node::Ptr target, Node::Ptr)
 }
 
 void
-Surface::geometry(geometry::Geometry::Ptr newGeometry)
+Surface::geometry(geometry::Geometry::Ptr geometry)
 {
-	target()->data()->removeProvider(_geometry->data());
-	target()->data()->addProvider(newGeometry->data());
-	_geometry = newGeometry;
+    removeProviderFromCollection(_geometry->data(), "geometries");
+
+    _geometry = geometry;
+    addProviderToCollection(_geometry->data(), "geometries");
+}
+
+void
+Surface::material(material::Material::Ptr material)
+{
+    removeProviderFromCollection(_material->data(), "materials");
+
+    _material = material;
+    addProviderToCollection(_material->data(), "materials");
 }
 
 void

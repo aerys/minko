@@ -48,7 +48,7 @@ namespace minko
 			typedef std::shared_ptr<file::Loader>		    	LoaderPtr;
 			typedef std::shared_ptr<scene::Node>				NodePtr;
             typedef std::shared_ptr<component::AbstractScript>  AbsScriptPtr;
-			typedef std::shared_ptr<data::Provider>				MaterialPtr;
+			typedef std::shared_ptr<material::Material>		    MaterialPtr;
 
 		private:
 			AbsContextPtr												   _context;

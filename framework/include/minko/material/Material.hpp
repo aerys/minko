@@ -28,13 +28,14 @@ namespace minko
 	namespace material
 	{
 		class Material :
-			public data::Provider
+            public std::enable_shared_from_this<Material>
 		{
 		public:
 			typedef std::shared_ptr<Material>	Ptr;
 
         private:
-            std::string _name;
+            std::string                     _name;
+            std::shared_ptr<data::Provider> _provider;
 
 		public:
 			inline static
@@ -50,7 +51,7 @@ namespace minko
 			{
 				auto mat = create();
 
-				mat->copyFrom(source);
+				mat->_provider->copyFrom(source->_provider);
                 mat->_name = source->_name;
 
 				return mat;
@@ -58,15 +59,22 @@ namespace minko
 
             inline
             const std::string&
-            name()
+            name() const
             {
                 return _name;
             }
 
+            inline
+            std::shared_ptr<data::Provider>
+            data() const
+            {
+                return _provider;
+            }
+
 		protected:
 			Material::Material(const std::string& name) :
-	            data::Provider(),
-                _name(name)
+                _name(name),
+                _provider(data::Provider::create())
             {
 	
             }

@@ -36,12 +36,12 @@ namespace minko
 	{
 
 		class MaterialWriter:
-			public AbstractWriter<data::Provider::Ptr>
+            public AbstractWriter<material::Material::Ptr>
 		{
 
 		public:
 			typedef std::shared_ptr<MaterialWriter>						Ptr;
-			typedef std::shared_ptr<render::AbstractTexture>			        TexturePtr;
+			typedef std::shared_ptr<render::AbstractTexture>			TexturePtr;
 			typedef msgpack::type::tuple<uint, std::string>				TupleIntString;
 			typedef msgpack::type::tuple<std::string, TupleIntString>	ComplexPropertyTuple;
 			typedef msgpack::type::tuple<std::string, std::string>		BasicPropertyTuple;
@@ -75,10 +75,10 @@ namespace minko
 								   std::vector<BasicPropertyTuple>								*basicTypeSeriliazedProperties,
 								   Dependency::Ptr												dependency)
 			{
-				if (material->propertyHasType<TexturePtr>(propertyName))
+				if (material->data()->propertyHasType<TexturePtr>(propertyName))
 				{
 					std::tuple<uint, std::string> serializedTexture = serialize::TypeSerializer::serializeTexture(Any(dependency->registerDependency(
-                        assets->getTextureByUuid(material->get<render::TextureSampler>(propertyName).uuid)
+                        assets->getTextureByUuid(material->data()->get<render::TextureSampler>(propertyName).uuid)
                     )));
 					TupleIntString serializedMsgTexture(std::get<0>(serializedTexture), std::get<1>(serializedTexture));
 
@@ -100,9 +100,9 @@ namespace minko
 								   	Dependency::Ptr												dependency)
 			{
 				if (_typeToWriteFunction.find(&typeid(T)) != _typeToWriteFunction.end() &&
-					material->propertyHasType<T>(propertyName))
+					material->data()->propertyHasType<T>(propertyName))
 				{
-					Any								propertyValue			= material->get<T>(propertyName);
+					Any								propertyValue			= material->data()->get<T>(propertyName);
 					std::tuple<uint, std::string>	serializedMaterialValue = _typeToWriteFunction[&typeid(T)](propertyValue);
 					TupleIntString					serializedMsgMaterialValue(std::get<0>(serializedMaterialValue), std::get<1>(serializedMaterialValue));
 
@@ -123,18 +123,20 @@ namespace minko
 								   std::vector<BasicPropertyTuple>					*basicTypeSeriliazedProperties,
 								   Dependency::Ptr									dependency)
 			{
-				if (material->propertyHasType<T>(propertyName))
+				if (material->data()->propertyHasType<T>(propertyName))
 				{
 					std::vector<float> propertyValue;
 					
-					propertyValue.push_back(static_cast<float>(material->get<T>(propertyName)));
+					propertyValue.push_back(static_cast<float>(material->data()->get<T>(propertyName)));
 
 					std::string serializePropertyValue = serialize::TypeSerializer::serializeVector<float>(propertyValue);
 
 					BasicPropertyTuple basicTypeSerializedProperty(
-							propertyName,
-							serializePropertyValue);
-						basicTypeSeriliazedProperties->push_back(basicTypeSerializedProperty);
+						propertyName,
+						serializePropertyValue
+                    );
+
+					basicTypeSeriliazedProperties->push_back(basicTypeSerializedProperty);
 
 					return true;
 				}

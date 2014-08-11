@@ -162,7 +162,7 @@ DrawCall::bindStates()
 }
 
 void
-DrawCall::render(const AbstractContext::Ptr& context, AbstractTexture::Ptr renderTarget) const
+DrawCall::render(AbstractContext::Ptr context, AbstractTexture::Ptr renderTarget) const
 {
     context->setProgram(_program->id());
 

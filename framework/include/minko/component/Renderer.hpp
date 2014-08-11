@@ -55,6 +55,8 @@ namespace minko
 			typedef Signal<Ptr, AbsFilterPtr, data::BindingSource, SurfacePtr>	RendererFilterChangedSignal;
 
 		private:
+			static const unsigned int									NUM_FALLBACK_ATTEMPTS;
+
 			std::string													_name;
 
 			unsigned int												_backgroundColor;
@@ -94,8 +96,6 @@ namespace minko
 			std::unordered_map<AbsFilterPtr, FilterChangedSlot>			_rootDataFilterChangedSlots;
 
 			std::shared_ptr<RendererFilterChangedSignal>				_filterChanged;
-
-			static const unsigned int									NUM_FALLBACK_ATTEMPTS;
 
 		public:
 			inline static

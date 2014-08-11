@@ -182,7 +182,7 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 			resolvedPath = "material_" + std::to_string(asset.a1);
 
 		_materialParser->parse(resolvedPath, assetCompletePath, options, data, assetLibrary);
-		_dependencies->registerReference(asset.a1, std::dynamic_pointer_cast<data::Provider>(assetLibrary->material(_materialParser->_lastParsedAssetName)));
+		_dependencies->registerReference(asset.a1, assetLibrary->material(_materialParser->_lastParsedAssetName));
 		_jobList.splice(_jobList.end(), _materialParser->_jobList);
 	}
 	else if ((asset.a0 == serialize::AssetType::TEXTURE_ASSET ||

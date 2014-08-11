@@ -49,7 +49,7 @@ MaterialWriter::embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 	std::vector<ComplexPropertyTuple>	serializedComplexProperties;
 	std::vector<BasicPropertyTuple>		serializedBasicProperties;
 
-	for (const auto& value : material->values())
+	for (const auto& value : material->data()->values())
 	{
 		std::string propertyName = value.first;
 

@@ -105,13 +105,13 @@ Dependency::registerDependency(std::shared_ptr<geometry::Geometry> geometry)
 }
 
 bool
-Dependency::hasDependency(std::shared_ptr<data::Provider> material)
+Dependency::hasDependency(std::shared_ptr<material::Material> material)
 {
 	return _materialDependencies.find(material) != _materialDependencies.end();
 }
 
 uint
-Dependency::registerDependency(std::shared_ptr<data::Provider> material)
+Dependency::registerDependency(std::shared_ptr<material::Material> material)
 {
 	if (!hasDependency(material))
 		_materialDependencies[material] = _currentId++;
@@ -161,14 +161,14 @@ Dependency::registerReference(uint referenceId, std::shared_ptr<geometry::Geomet
 	_geometryReferences[referenceId] = geometry;
 }
 
-std::shared_ptr<data::Provider>
+std::shared_ptr<material::Material>
 Dependency::getMaterialReference(uint materialId)
 {
 	return _materialReferences[materialId];
 }
 
 void
-Dependency::registerReference(uint referenceId, std::shared_ptr<data::Provider> material)
+Dependency::registerReference(uint referenceId, std::shared_ptr<material::Material> material)
 {
 	_materialReferences[referenceId] = material;
 }
@@ -339,7 +339,7 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
 Dependency::SerializedAsset
 Dependency::serializeMaterial(std::shared_ptr<Dependency>			dependency,
 							  std::shared_ptr<file::AssetLibrary>	assetLibrary,
-							  std::shared_ptr<data::Provider>       material,
+							  std::shared_ptr<material::Material>   material,
 							  uint									resourceId,
 							  std::shared_ptr<file::Options>		options,
                               std::shared_ptr<file::WriterOptions>  writerOptions)
