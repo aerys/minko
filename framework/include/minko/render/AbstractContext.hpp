@@ -290,6 +290,10 @@ namespace minko
 
             virtual
             void
+            setUniformMatrix4x4(uint location, uint count, const float* v) = 0;
+
+            virtual
+            void
             setUniformInt(uint location, uint count, const int* v) = 0;
 
             virtual

@@ -396,6 +396,9 @@ namespace minko
             setUniformFloat4(uint location, uint count, const float* v);
 
             void
+            setUniformMatrix4x4(uint location, uint count, const float* v);
+
+            void
             setUniformInt(uint location, uint count, const int* v);
 
             void

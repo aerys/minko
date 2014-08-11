@@ -1548,6 +1548,12 @@ OpenGLES2Context::setUniformFloat4(uint location, uint count, const float* v)
 }
 
 void
+OpenGLES2Context::setUniformMatrix4x4(uint location, uint count, const float* v)
+{
+    glUniformMatrix4fv(location, count, false, v);
+}
+
+void
 OpenGLES2Context::setUniformInt(uint location, uint count, const int* v)
 {
     glUniform1iv(location, count, v);
