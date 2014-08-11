@@ -86,15 +86,9 @@ Surface::targetAdded(scene::Node::Ptr target)
 		std::placeholders::_3
 	));
 
-	auto arrayProviderMaterial = std::dynamic_pointer_cast<data::Provider>(_material);
-
-	if (arrayProviderMaterial)
-		targetData->addProvider(std::dynamic_pointer_cast<data::Provider>(_material));
-	else
-		targetData->addProvider(_material);
-
-	targetData->addProvider(_geometry->data());
-	targetData->addProvider(_effect->data());
+    addProviderToCollection(_material, "materials");
+    addProviderToCollection(_geometry->data(), "geometries");
+    addProviderToCollection(_effect->data(), "effects");
 }
 
 void
@@ -102,11 +96,11 @@ Surface::targetRemoved(scene::Node::Ptr target)
 {
 	auto data = target->data();
 
-	_removedSlot	= nullptr;
+	_removedSlot = nullptr;
 	
-	data->removeProvider(_material);
-	data->removeProvider(_geometry->data());
-	data->removeProvider(_effect->data());
+    removeProviderFromCollection(_material, "materials");
+    removeProviderFromCollection(_geometry->data(), "geometries");
+    removeProviderFromCollection(_effect->data(), "effects");
 }
 
 void
