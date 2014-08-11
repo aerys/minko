@@ -78,7 +78,7 @@ Loader::load()
                 &Loader::protocolErrorHandler,
                 shared_from_this(),
                 std::placeholders::_1
-				)));
+	        )));
 			_protocolSlots.push_back(protocol->complete()->connect(std::bind(
 				&Loader::protocolCompleteHandler,
 				shared_from_this(),
