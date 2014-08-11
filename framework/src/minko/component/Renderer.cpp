@@ -70,7 +70,7 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 		_renderTarget = renderTarget;
 	}
 
-	addFilter(_lightMaskFilter, data::BindingSource::ROOT);
+	//addFilter(_lightMaskFilter, data::BindingSource::ROOT);
 }
 
 void
@@ -367,6 +367,8 @@ Renderer::Ptr
 Renderer::addFilter(data::AbstractFilter::Ptr	filter, 
 					data::BindingSource			source)
 {
+    // FIXME
+    /*
 	if (filter)
 	{
 		auto& filters				= this->filtersRef(source);
@@ -380,6 +382,7 @@ Renderer::addFilter(data::AbstractFilter::Ptr	filter,
 			});
 		}
 	}
+    */
 
 	return std::static_pointer_cast<Renderer>(shared_from_this());
 }

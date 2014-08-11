@@ -85,26 +85,8 @@ namespace minko
 			}
 
         private:
-            virtual
             void
-            target(std::shared_ptr<scene::Node> target)
-            {
-                if (_target != target)
-                {
-                    if (target == nullptr)
-                    {
-                        auto oldTarget = _target;
-
-                        _target = nullptr;
-                        targetRemoved(oldTarget);
-                    }
-                    else
-                    {
-                        _target = target;
-                        targetAdded(_target);
-                    }
-                }
-            }
+            target(std::shared_ptr<scene::Node> target);
 
         protected:
             virtual
@@ -120,14 +102,6 @@ namespace minko
             {
                 // nothing
             }
-
-            void
-            addProviderToCollection(std::shared_ptr<data::Provider> provider,
-                                    const std::string&              collectionName);
-
-            void
-            removeProviderFromCollection(std::shared_ptr<data::Provider> provider,
-                                         const std::string&              collectionName);
 		};
 	}
 }

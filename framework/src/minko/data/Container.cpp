@@ -43,10 +43,10 @@ Container::addCollection(std::shared_ptr<Collection> collection)
     _collections.push_back(collection);
 
     _collectionItemAddedSlots[collection] = collection->itemAdded() += std::bind(
-        &Container::addProvider, shared_from_this(), std::placeholders::_2
+        &Container::doAddProvider, shared_from_this(), std::placeholders::_2, collection
     );
     _collectionItemRemovedSlots[collection] = collection->itemRemoved() += std::bind(
-        &Container::removeProvider, shared_from_this(), std::placeholders::_2
+        &Container::doRemoveProvider, shared_from_this(), std::placeholders::_2, collection
     );
 
     addProvider(collection->_lengthProvider);
@@ -223,4 +223,46 @@ Container::formatPropertyName(Collection::Ptr collection, uint index, const std:
         return propertyName;
 
     return collection->name() + "[" + std::to_string(index) + "]." + propertyName;
+}
+
+void
+Container::addProviderToCollection(std::shared_ptr<data::Provider> provider,
+                                   const std::string&              collectionName)
+{
+    auto collectionIt = std::find_if(_collections.begin(), _collections.end(), [&](data::Collection::Ptr c)
+    {
+        return c->name() == collectionName;
+    });
+
+    data::Collection::Ptr collection;
+
+    // if the collection does not already exist
+    if (collectionIt == _collections.end())
+    {
+        // create and add it
+        collection = data::Collection::create(collectionName);
+        addCollection(collection);
+    }
+    else
+    {
+        // just use the existing collection
+        collection = *collectionIt;
+    }
+
+    collection->pushBack(provider);
+}
+
+void
+Container::removeProviderFromCollection(std::shared_ptr<data::Provider> provider,
+                                        const std::string&              collectionName)
+{
+    auto collectionIt = std::find_if(_collections.begin(), _collections.end(), [&](data::Collection::Ptr c)
+    {
+        return c->name() == collectionName;
+    });
+
+    if (collectionIt == _collections.end())
+        throw std::invalid_argument("collectionName = " + collectionName);
+
+    (*collectionIt)->remove(provider);
 }

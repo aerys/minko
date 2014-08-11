@@ -27,49 +27,21 @@ using namespace minko;
 using namespace minko::component;
 
 void
-AbstractComponent::addProviderToCollection(std::shared_ptr<data::Provider> provider,
-                                           const std::string&              collectionName)
+AbstractComponent::target(std::shared_ptr<scene::Node> target)
 {
-    assert(target() != nullptr);
-
-    const auto& collections = target()->data()->collections();
-    auto collectionIt = std::find_if(collections.begin(), collections.end(), [&](data::Collection::Ptr c)
+    if (_target != target)
     {
-        return c->name() == collectionName;
-    });
+        if (target == nullptr)
+        {
+            auto oldTarget = _target;
 
-    data::Collection::Ptr collection;
-
-    // if the collection does not already exist
-    if (collectionIt == collections.end())
-    {
-        // create and add it
-        collection = data::Collection::create(collectionName);
-        target()->data()->addCollection(collection);
+            targetRemoved(oldTarget);
+            _target = nullptr;
+        }
+        else
+        {
+            _target = target;
+            targetAdded(_target);
+        }
     }
-    else
-    {
-        // just use the existing collection
-        collection = *collectionIt;
-    }
-
-    collection->pushBack(provider);
-}
-
-void
-AbstractComponent::removeProviderFromCollection(std::shared_ptr<data::Provider> provider,
-                                                const std::string&              collectionName)
-{
-    assert(target() != nullptr);
-
-    const auto& collections = target()->data()->collections();
-    auto collectionIt = std::find_if(collections.begin(), collections.end(), [&](data::Collection::Ptr c)
-    {
-        return c->name() == collectionName;
-    });
-
-    if (collectionIt == collections.end())
-        throw std::invalid_argument("collectionName = " + collectionName);
-
-    (*collectionIt)->remove(provider);
 }

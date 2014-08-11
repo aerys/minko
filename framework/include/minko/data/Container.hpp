@@ -190,6 +190,13 @@ namespace minko
                 doAddProvider(provider);
             }
 
+            inline
+            void
+			addProvider(std::shared_ptr<Provider> provider, const std::string& collectionName)
+            {
+                addProviderToCollection(provider, collectionName);
+            }
+
 			void
 			removeProvider(std::shared_ptr<Provider> provider)
             {
@@ -197,10 +204,17 @@ namespace minko
             }
 
             void
+			removeProvider(std::shared_ptr<Provider> provider, const std::string& collectionName)
+            {
+                removeProviderFromCollection(provider, collectionName);
+            }
+
+            void
             addCollection(std::shared_ptr<Collection> collection);
 
             void
             removeCollection(std::shared_ptr<Collection> collection);
+
 
 			bool
 			hasProperty(const std::string& propertyName) const;
@@ -237,6 +251,14 @@ namespace minko
 
             std::string
             formatPropertyName(CollectionPtr collection, uint index, const std::string& propertyName);
+
+            void
+            addProviderToCollection(std::shared_ptr<data::Provider> provider,
+                                    const std::string&              collectionName);
+
+            void
+            removeProviderFromCollection(std::shared_ptr<data::Provider> provider,
+                                         const std::string&              collectionName);
 		};
 	}
 }

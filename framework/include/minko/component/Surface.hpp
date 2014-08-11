@@ -48,25 +48,20 @@ namespace minko
 
 
 		private:
-			std::string																_name;
+			std::string														_name;
 
-			std::shared_ptr<geometry::Geometry>										_geometry;
-			std::shared_ptr<material::Material>										_material;
-			std::shared_ptr<render::Effect>											_effect;
-			std::string 															_technique;
+			std::shared_ptr<geometry::Geometry>								_geometry;
+			std::shared_ptr<material::Material>								_material;
+			std::shared_ptr<render::Effect>									_effect;
+			std::string 													_technique;
 
-			bool																	_visible;
-			std::unordered_map<std::shared_ptr<component::Renderer>, bool>			_rendererToVisibility;
-			std::unordered_map<std::shared_ptr<component::Renderer>, bool>			_rendererToComputedVisibility;
+			bool															_visible;
+			std::unordered_map<std::shared_ptr<component::Renderer>, bool>	_rendererToVisibility;
+			std::unordered_map<std::shared_ptr<component::Renderer>, bool>  _rendererToComputedVisibility;
 			
-			TechniqueChangedSignal::Ptr												_techniqueChanged;
-			VisibilityChangedSignal::Ptr											_visibilityChanged;
-			VisibilityChangedSignal::Ptr											_computedVisibilityChanged;
-
-			Signal<AbstractComponent::Ptr, NodePtr>::Slot							_targetAddedSlot;
-			Signal<AbstractComponent::Ptr, NodePtr>::Slot							_targetRemovedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot									_addedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot									_removedSlot;
+			TechniqueChangedSignal::Ptr										_techniqueChanged;
+			VisibilityChangedSignal::Ptr									_visibilityChanged;
+			VisibilityChangedSignal::Ptr									_computedVisibilityChanged;
 
 		public:
 			static
@@ -223,12 +218,6 @@ namespace minko
 					std::shared_ptr<material::Material>	    material,
 					std::shared_ptr<render::Effect>			effect,
 					const std::string&						technique);
-
-			void
-			addedHandler(NodePtr, NodePtr, NodePtr);
-
-			void
-			removedHandler(NodePtr, NodePtr, NodePtr);
 
 			void
 			setEffectAndTechnique(EffectPtr, const std::string&, bool updateDrawcalls = true);

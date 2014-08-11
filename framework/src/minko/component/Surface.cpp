@@ -54,11 +54,7 @@ Surface::Surface(std::string		name,
 	_rendererToComputedVisibility(),
 	_techniqueChanged(TechniqueChangedSignal::create()),
 	_visibilityChanged(VisibilityChangedSignal::create()),
-	_computedVisibilityChanged(VisibilityChangedSignal::create()),
-	_targetAddedSlot(nullptr),
-	_targetRemovedSlot(nullptr),
-	_addedSlot(nullptr),
-	_removedSlot(nullptr)
+	_computedVisibilityChanged(VisibilityChangedSignal::create())
 {
 	if (_effect == nullptr)
 		throw std::invalid_argument("effect");
@@ -68,29 +64,10 @@ Surface::Surface(std::string		name,
 
 void
 Surface::targetAdded(scene::Node::Ptr target)
-
 {
-	auto targetData	= target->data();
-
-	_addedSlot = target->added()->connect(std::bind(
-		&Surface::addedHandler,
-		std::static_pointer_cast<Surface>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	));
-
-	_removedSlot = target->removed()->connect(std::bind(
-		&Surface::removedHandler,
-		std::static_pointer_cast<Surface>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	));
-
-    addProviderToCollection(_material->data(), "materials");
-    addProviderToCollection(_geometry->data(), "geometries");
-    addProviderToCollection(_effect->data(), "effects");
+    target->data()->addProvider(_material->data(), "materials");
+    target->data()->addProvider(_geometry->data(), "geometries");
+    target->data()->addProvider(_effect->data(), "effects");
 }
 
 void
@@ -98,39 +75,27 @@ Surface::targetRemoved(scene::Node::Ptr target)
 {
 	auto data = target->data();
 
-	_removedSlot = nullptr;
-	
-    removeProviderFromCollection(_material->data(), "materials");
-    removeProviderFromCollection(_geometry->data(), "geometries");
-    removeProviderFromCollection(_effect->data(), "effects");
-}
-
-void
-Surface::addedHandler(Node::Ptr, Node::Ptr target, Node::Ptr)
-{
-}
-
-void
-Surface::removedHandler(Node::Ptr, Node::Ptr target, Node::Ptr)
-{
+    target->data()->removeProvider(_material->data(), "materials");
+    target->data()->removeProvider(_geometry->data(), "geometries");
+    target->data()->removeProvider(_effect->data(), "effects");
 }
 
 void
 Surface::geometry(geometry::Geometry::Ptr geometry)
 {
-    removeProviderFromCollection(_geometry->data(), "geometries");
+    target()->data()->removeProvider(_geometry->data(), "geometries");
 
     _geometry = geometry;
-    addProviderToCollection(_geometry->data(), "geometries");
+    target()->data()->addProvider(_geometry->data(), "geometries");
 }
 
 void
 Surface::material(material::Material::Ptr material)
 {
-    removeProviderFromCollection(_material->data(), "materials");
+    target()->data()->removeProvider(_material->data(), "materials");
 
     _material = material;
-    addProviderToCollection(_material->data(), "materials");
+    target()->data()->addProvider(_material->data(), "materials");
 }
 
 void
