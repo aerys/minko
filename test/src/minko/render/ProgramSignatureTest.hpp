@@ -40,7 +40,8 @@ namespace minko
             std::unordered_map<std::string, std::string>    _variables;
 
         protected:
-            virtual void SetUp();
+            virtual
+            void SetUp();
         };
     }
 }
