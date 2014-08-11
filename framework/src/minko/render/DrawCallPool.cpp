@@ -26,3 +26,32 @@ DrawCallPool::DrawCallPool()
 {
 }
 
+void
+DrawCallPool::addDrawCalls(std::shared_ptr<Effect>                                effect,
+                           const std::unordered_map<std::string, std::string>&    variables,
+                           const std::string&                                     techniqueName,
+                           std::shared_ptr<data::Container>                       rootData,
+                           std::shared_ptr<data::Container>                       rendererData,
+                           std::shared_ptr<data::Container>                       targetData)
+{
+    const auto& technique = effect->technique(techniqueName);
+                
+    for (const auto& pass : technique)
+    {
+        auto program = pass->selectProgram(variables, targetData, rendererData, rootData);
+        auto* drawCall = new DrawCall(pass->macroBindings());
+
+        drawCall->bind(
+            program,
+            variables,
+            rootData,
+            rendererData,
+            targetData,
+            pass->attributeBindings(),
+            pass->uniformBindings(),
+            pass->stateBindings()
+        );
+
+        _drawCalls.push_back(drawCall);
+    }
+}
