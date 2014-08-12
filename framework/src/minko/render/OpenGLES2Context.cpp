@@ -692,6 +692,41 @@ OpenGLES2Context::uploadCubeTextureData(uint                texture,
 }
 
 void
+OpenGLES2Context::uploadCompressedTexture2dData(uint          texture,
+                                                TextureFormat format,
+                                                unsigned int  width,
+                                                unsigned int  height,
+                                                unsigned int  size,
+                                                unsigned int  mipLevel,
+                                                void*         data)
+{
+    assert(getTextureType(texture) == TextureType::Texture2D);
+
+    auto formats = std::unordered_map<TextureFormat, unsigned int>();
+
+    availableTextureFormats(formats);
+
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glCompressedTexImage2D(GL_TEXTURE_2D, mipLevel, formats.at(format), width, height, 0, size, data);
+
+    _currentBoundTexture = texture;
+
+    checkForErrors();
+}
+
+void
+OpenGLES2Context::uploadCompressedCubeTextureData(uint                texture,
+                                                  CubeTexture::Face   face,
+                                                  TextureFormat       format,
+                                                  unsigned int        width,
+                                                  unsigned int        height,
+                                                  unsigned int        mipLevel,
+                                                  void*               data)
+{
+    // TODO
+}
+
+void
 OpenGLES2Context::deleteTexture(uint texture)
 {
     _textures.erase(std::find(_textures.begin(), _textures.end(), texture));
@@ -1656,4 +1691,49 @@ OpenGLES2Context::generateMipmaps(uint texture)
     _currentBoundTexture = texture;
 
     checkForErrors();
+}
+
+void
+OpenGLES2Context::availableTextureFormats(std::unordered_map<TextureFormat, unsigned int>& formats)
+{
+    auto formatCount = GLint();
+    auto rawFormats = std::vector<GLenum>();
+
+    glGetIntegerv(GL_NUM_COMPRESSED_TEXTURE_FORMATS, &formatCount);
+
+    rawFormats.resize(formatCount);
+
+    glGetIntegerv(GL_COMPRESSED_TEXTURE_FORMATS, reinterpret_cast<GLint*>(rawFormats.data()));
+
+    for (auto rawFormat : rawFormats)
+    {
+        switch (rawFormat)
+        {
+#if MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
+# if defined(MINKO_PLUGIN_ANGLE)
+        case GL_COMPRESSED_RGB_S3TC_DXT1_ANGLE:
+            formats.insert(std::make_pair(TextureFormat::RGB_DXT1, GL_COMPRESSED_RGB_S3TC_DXT1_ANGLE));
+            break;
+        case GL_COMPRESSED_RGBA_S3TC_DXT3_ANGLE:
+            formats.insert(std::make_pair(TextureFormat::RGBA_DXT3, GL_COMPRESSED_RGBA_S3TC_DXT3_ANGLE));
+            break;
+        case GL_COMPRESSED_RGBA_S3TC_DXT5_ANGLE:
+            formats.insert(std::make_pair(TextureFormat::RGBA_DXT5, GL_COMPRESSED_RGBA_S3TC_DXT5_ANGLE));
+            break;
+# else
+        case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+            formats.insert(std::make_pair(TextureFormat::RGB_DXT1, GL_COMPRESSED_RGB_S3TC_DXT1_EXT));
+            break;
+        case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+            formats.insert(std::make_pair(TextureFormat::RGBA_DXT3, GL_COMPRESSED_RGBA_S3TC_DXT3_EXT));
+            break;
+        case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+            formats.insert(std::make_pair(TextureFormat::RGBA_DXT5, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT));
+            break;
+# endif
+#endif
+        default:
+            break;
+        }
+    }
 }

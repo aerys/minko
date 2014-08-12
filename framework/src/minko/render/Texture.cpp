@@ -38,10 +38,12 @@ Texture::Texture(AbstractContext::Ptr    context,
 
 void
 Texture::data(unsigned char*    data,
-              TextureFormat        format,
-              int                widthGPU,
-              int                heightGPU)
+              TextureFormat     format,
+              int               widthGPU,
+              int               heightGPU)
 {
+    _format = format;
+
     if (widthGPU >= 0)
     {
         if (widthGPU > (int)MAX_SIZE)
@@ -59,27 +61,56 @@ Texture::data(unsigned char*    data,
         _heightGPU    = heightGPU;
     }
 
-    const auto size = _width * _height * sizeof(int);
-
-    std::vector<unsigned char> rgba(size, 0);
-
-    if (format == TextureFormat::RGBA)
-    {
-        std::memcpy(&rgba[0], data, size);
-    }
-    else if (format == TextureFormat::RGB)
-    {
-        for (unsigned int i = 0, j = 0; j < size; i += 3, j += 4)
-        {
-            rgba[j]        = data[i];
-            rgba[j + 1] = data[i + 1];
-            rgba[j + 2] = data[i + 2];
-            rgba[j + 3] = std::numeric_limits<unsigned char>::max();
-        }
-    }
-
     assert(math::isp2(_widthGPU) && math::isp2(_heightGPU));
-    resizeData(_width, _height, rgba, _widthGPU, _heightGPU, _resizeSmoothly, _data);
+
+    if (!isCompressed())
+    {
+        const auto size = _width * _height * sizeof(int);
+
+        std::vector<unsigned char> rgba(size, 0);
+
+        if (format == TextureFormat::RGBA)
+        {
+            std::memcpy(&rgba[0], data, size);
+        }
+        else if (format == TextureFormat::RGB)
+        {
+            for (unsigned int i = 0, j = 0; j < size; i += 3, j += 4)
+            {
+                rgba[j] = data[i];
+                rgba[j + 1] = data[i + 1];
+                rgba[j + 2] = data[i + 2];
+                rgba[j + 3] = std::numeric_limits<unsigned char>::max();
+            }
+        }
+
+        resizeData(_width, _height, rgba, _widthGPU, _heightGPU, _resizeSmoothly, _data);
+    }
+    else
+    {
+        // TODO FIX ME
+        // make format info aggregation
+
+        auto bitCountPerTexel = 0;
+
+        switch (_format)
+        {
+        case TextureFormat::RGB_DXT1:
+            bitCountPerTexel = 4;
+            break;
+        case TextureFormat::RGBA_DXT3:
+        case TextureFormat::RGBA_DXT5:
+            bitCountPerTexel = 8;
+            break;
+        default:
+            break;
+        }
+
+        const auto size = _width * _height * bitCountPerTexel / 8;
+        _data.resize(size);
+
+        std::memcpy(_data.data(), data, size);
+    }
 }
 
 void
@@ -96,13 +127,20 @@ Texture::upload()
 
     if (!_data.empty())
     {
-        _context->uploadTexture2dData(
-            _id,
-            _widthGPU,
-            _heightGPU,
-            0,
-            &_data.front()
-        );
+        if (isCompressed())
+        {
+            _context->uploadCompressedTexture2dData(_id, _format, _widthGPU, _heightGPU, _data.size(), 0, _data.data());
+        }
+        else
+        {
+            _context->uploadTexture2dData(
+                _id,
+                _widthGPU,
+                _heightGPU,
+                0,
+                &_data.front()
+                );
+        }
 
         if (_mipMapping)
             _context->generateMipmaps(_id);

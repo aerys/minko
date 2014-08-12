@@ -41,6 +41,7 @@ namespace minko
 
         protected:
             const TextureType    _type;
+            TextureFormat       _format;
             unsigned int        _width;
             unsigned int        _height;
             unsigned int        _widthGPU;    // always power of 2
@@ -56,6 +57,13 @@ namespace minko
             type() const
             {
                 return _type;
+            }
+
+            inline
+            TextureFormat
+            format() const
+            {
+                return _format;
             }
 
             inline
@@ -131,6 +139,9 @@ namespace minko
 
             uint
             getMipmapHeight(uint level) const;
+
+            bool
+            isCompressed() const;
         };
     }
 }

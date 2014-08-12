@@ -48,7 +48,7 @@ namespace minko
             static CompareFuncsMap                    _compareFuncs;
             static StencilOperationMap                _stencilOps;
 
-            bool                                    _errorsEnabled;
+            bool                                      _errorsEnabled;
 
             std::list<uint>                            _textures;
             std::unordered_map<uint, TextureSize>    _textureSizes;
@@ -104,6 +104,10 @@ namespace minko
             {
                 return std::shared_ptr<OpenGLES2Context>(new OpenGLES2Context());
             }
+
+            static
+            void
+            availableTextureFormats(std::unordered_map<TextureFormat, unsigned int>& formats);
 
             inline
             bool
@@ -226,6 +230,26 @@ namespace minko
                                   unsigned int         height,
                                   unsigned int         mipLevel,
                                   void*                data);
+
+            virtual
+            void
+            uploadCompressedTexture2dData(uint          texture,
+                                          TextureFormat format,
+                                          unsigned int  width,
+                                          unsigned int  height,
+                                          unsigned int  size,
+                                          unsigned int  mipLevel,
+                                          void*         data);
+
+            virtual
+            void
+            uploadCompressedCubeTextureData(uint                texture,
+                                            CubeTexture::Face   face,
+                                            TextureFormat       format,
+                                            unsigned int        width,
+                                            unsigned int        height,
+                                            unsigned int        mipLevel,
+                                            void*               data);
 
             void
             deleteTexture(uint texture);

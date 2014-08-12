@@ -141,19 +141,39 @@ namespace minko
             virtual
             void
             uploadTexture2dData(uint            texture,
-                                unsigned int     width,
-                                unsigned int     height,
-                                unsigned int     mipLevel,
-                                void*            data) = 0;
+                                unsigned int    width,
+                                unsigned int    height,
+                                unsigned int    mipLevel,
+                                void*           data) = 0;
 
             virtual
             void
             uploadCubeTextureData(uint                texture,
-                                  CubeTexture::Face    face,
+                                  CubeTexture::Face   face,
                                   unsigned int        width,
                                   unsigned int        height,
                                   unsigned int        mipLevel,
-                                  void*                data) = 0;
+                                  void*               data) = 0;
+
+            virtual
+            void
+            uploadCompressedTexture2dData(uint          texture,
+                                          TextureFormat format,
+                                          unsigned int  width,
+                                          unsigned int  height,
+                                          unsigned int  size,
+                                          unsigned int  mipLevel,
+                                          void*         data) = 0;
+
+            virtual
+            void
+            uploadCompressedCubeTextureData(uint                texture,
+                                            CubeTexture::Face   face,
+                                            TextureFormat       format,
+                                            unsigned int        width,
+                                            unsigned int        height,
+                                            unsigned int        mipLevel,
+                                            void*               data) = 0;
 
             virtual
             void

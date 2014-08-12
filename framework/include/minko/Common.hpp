@@ -110,8 +110,23 @@ namespace minko
         enum class TextureFormat
         {
             RGB,
-            RGBA
+            RGBA,
+
+            RGB_DXT1,
+            RGBA_DXT3,
+            RGBA_DXT5,
+
+            RGB_ETC1,
+            RGB_ETC2,
+
+            RGB_PVRTC,
+            RGBA_PVRTC,
+            RGBA_PVRTC2,
+
+            RGBA_ATITC1,
+            RGBA_ATITC2
         };
+
         class AbstractTexture;
         class Texture;
         class CubeTexture;

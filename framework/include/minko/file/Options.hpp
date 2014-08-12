@@ -73,6 +73,7 @@ namespace minko
             bool                                                _disposeTextureAfterLoading;
             unsigned int                                        _skinningFramerate;
             component::SkinningMethod                            _skinningMethod;
+            render::TextureFormat                               _textureFormat;
             std::shared_ptr<render::Effect>                     _effect;
             MaterialPtr                                            _material;
             MaterialFunction                                    _materialFunction;
@@ -133,6 +134,7 @@ namespace minko
                 opt->_disposeTextureAfterLoading = options->_disposeTextureAfterLoading;
                 opt->_skinningFramerate = options->_skinningFramerate;
                 opt->_skinningMethod = options->_skinningMethod;
+                opt->_textureFormat = options->_textureFormat;
                 opt->_effect = options->_effect;
                 opt->_materialFunction = options->_materialFunction;
                 opt->_geometryFunction = options->_geometryFunction;
@@ -352,6 +354,22 @@ namespace minko
             skinningMethod(component::SkinningMethod value)
             {
                 _skinningMethod    = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            render::TextureFormat
+            textureFormat() const
+            {
+                return _textureFormat;
+            }
+
+            inline
+            Ptr
+            textureFormat(render::TextureFormat value)
+            {
+                _textureFormat = value;
 
                 return shared_from_this();
             }

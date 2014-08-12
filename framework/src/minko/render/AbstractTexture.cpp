@@ -158,3 +158,17 @@ AbstractTexture::getMipmapHeight(uint level) const
     const uint p = math::getp2(_heightGPU);
     return 1 << (p - level);
 }
+
+bool
+AbstractTexture::isCompressed() const
+{
+    switch (_format)
+    {
+    case TextureFormat::RGB:
+    case TextureFormat::RGBA:
+        return false;
+
+    default:
+        return true;
+    }
+}

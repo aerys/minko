@@ -48,6 +48,7 @@ Options::Options() :
     _skinningFramerate(30),
     _skinningMethod(component::SkinningMethod::HARDWARE),
     _material(nullptr),
+    _textureFormat(render::TextureFormat::RGBA),
     _effect(nullptr),
     _seekingOffset(0),
     _seekedLength(0)
