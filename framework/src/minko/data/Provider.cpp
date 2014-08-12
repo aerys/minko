@@ -36,7 +36,7 @@ Provider::unset(const std::string& propertyName)
     if (_values.count(propertyName) != 0)
 	{
         _values.erase(propertyName);
-		_propertyRemoved->execute(shared_from_this(), propertyName);
+		_propertyRemoved.execute(shared_from_this(), propertyName);
 	}
 
 	return shared_from_this();
@@ -59,9 +59,9 @@ Provider::swap(const std::string& propertyName1, const std::string& propertyName
         _values[destination] = _values[source];
         _values.erase(source);
 
-		_propertyRemoved->execute(shared_from_this(), source);
-		_propertyAdded->execute(shared_from_this(), destination);
-        _propertyChanged->execute(shared_from_this(), destination);
+		_propertyRemoved.execute(shared_from_this(), source);
+		_propertyAdded.execute(shared_from_this(), destination);
+        _propertyChanged.execute(shared_from_this(), destination);
 	}
 	else
 	{
@@ -74,8 +74,8 @@ Provider::swap(const std::string& propertyName1, const std::string& propertyName
 
 		if (changed)
 		{
-            _propertyChanged->execute(shared_from_this(), propertyName1);
-            _propertyChanged->execute(shared_from_this(), propertyName2);
+            _propertyChanged.execute(shared_from_this(), propertyName1);
+            _propertyChanged.execute(shared_from_this(), propertyName2);
 		}
 	}
 

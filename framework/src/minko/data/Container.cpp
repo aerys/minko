@@ -152,7 +152,7 @@ Container::doAddProvider(ProviderPtr provider, CollectionPtr collection)
 {
     _providers.push_back(provider);
 
-    _propertySlots[provider].push_back(provider->propertyAdded()->connect(std::bind(
+    _propertySlots[provider].push_back(provider->propertyAdded().connect(std::bind(
         &Container::providerPropertyAddedHandler,
         this,
         provider,
@@ -160,7 +160,7 @@ Container::doAddProvider(ProviderPtr provider, CollectionPtr collection)
         std::placeholders::_2
     )));
 
-    _propertySlots[provider].push_back(provider->propertyRemoved()->connect(std::bind(
+    _propertySlots[provider].push_back(provider->propertyRemoved().connect(std::bind(
         &Container::providerPropertyRemovedHandler,
         this,
         provider,
@@ -168,7 +168,7 @@ Container::doAddProvider(ProviderPtr provider, CollectionPtr collection)
         std::placeholders::_2
     )));
 
-    _propertySlots[provider].push_back(provider->propertyChanged()->connect(std::bind(
+    _propertySlots[provider].push_back(provider->propertyChanged().connect(std::bind(
         &Container::providerPropertyChangedHandler,
         this,
         provider,

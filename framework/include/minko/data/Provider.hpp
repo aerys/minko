@@ -52,11 +52,11 @@ namespace minko
             };
 
 		private:
-			std::unordered_map<std::string, Any>				_values;
+			std::unordered_map<std::string, Any>	_values;
 
-			std::shared_ptr<Signal<Ptr, const std::string&>>	_propertyAdded;
-            std::shared_ptr<Signal<Ptr, const std::string&>>	_propertyChanged;
-			std::shared_ptr<Signal<Ptr, const std::string&>>	_propertyRemoved;
+			Signal<Ptr, const std::string&>	        _propertyAdded;
+            Signal<Ptr, const std::string&>	        _propertyChanged;
+			Signal<Ptr, const std::string&>	        _propertyRemoved;
 
 		public:
 			static
@@ -90,21 +90,21 @@ namespace minko
 			}
 
 			inline
-			std::shared_ptr<Signal<Ptr, const std::string&>>
+			Signal<Ptr, const std::string&>
 			propertyAdded() const
 			{
 				return _propertyAdded;
 			}
 
             inline
-			std::shared_ptr<Signal<Ptr, const std::string&>>
+			Signal<Ptr, const std::string&>
 			propertyChanged() const
 			{
 				return _propertyChanged;
 			}
 
 			inline
-			std::shared_ptr<Signal<Ptr, const std::string&>>
+			Signal<Ptr, const std::string&>
 			propertyRemoved() const
 			{
 				return _propertyRemoved;
@@ -137,13 +137,13 @@ namespace minko
 
                     *ptr = value;
                     if (changed)
-                        _propertyChanged->execute(shared_from_this(), propertyName);
+                        _propertyChanged.execute(shared_from_this(), propertyName);
                 }
                 else
                 {
                     _values[propertyName] = value;
-                    _propertyAdded->execute(shared_from_this(), propertyName);
-                    _propertyChanged->execute(shared_from_this(), propertyName);
+                    _propertyAdded.execute(shared_from_this(), propertyName);
+                    _propertyChanged.execute(shared_from_this(), propertyName);
                 }
 
                 return shared_from_this();
