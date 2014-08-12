@@ -36,7 +36,7 @@ namespace minko
             typedef const std::string&                  String;
 
 		private:
-			Signal<ContainerPtr, String, String>::Slot	_modelToWorldChangedSlot;
+			Signal<data::Container&, String, String>::Slot	_modelToWorldChangedSlot;
 
 		public:
 			inline
@@ -85,9 +85,9 @@ namespace minko
             targetRemoved(std::shared_ptr<scene::Node> target);
 
             void
-            modelToWorldMatrixChangedHandler(std::shared_ptr<data::Container> 	container,
-            								 const std::string& 				propertyName,
-                                             const std::string&                 fullPropertyName);
+            modelToWorldMatrixChangedHandler(data::Container& 	container,
+            								 const std::string& propertyName,
+                                             const std::string& fullPropertyName);
 
             virtual
             void

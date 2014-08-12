@@ -20,8 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+
 #include "minko/Signal.hpp"
 #include "minko/scene/Layout.hpp"
+#include "minko/data/Container.hpp"
 
 namespace minko
 {
@@ -36,31 +38,29 @@ namespace minko
 		private:
 			typedef std::shared_ptr<component::AbstractComponent>	AbsCtrlPtr;
 
-			static uint												_lastId;
-			uint													_id;
-
-		protected:
-			std::string 											_name;
-			std::vector<Ptr>										_children;
-
 		private:
-			Ptr 													_root;
-			Ptr														_parent;
-			std::shared_ptr<data::Container>						_container;
-			std::shared_ptr<data::Provider>							_data;
-			std::list<AbsCtrlPtr>									_components;
+			std::string 						_name;
+			std::vector<Ptr>					_children;
+			std::weak_ptr<Node> 				_root;
+            std::weak_ptr<Node>					_parent;
+			data::Container                     _container;
+			std::list<AbsCtrlPtr>				_components;
 
-			uint													_depth;
+			Signal<Ptr, Ptr, Ptr>				_added;
+			Signal<Ptr, Ptr, Ptr>				_removed;
+			Signal<Ptr, Ptr>					_layoutsChanged;
+			Signal<Ptr, Ptr, AbsCtrlPtr>		_componentAdded;
+			Signal<Ptr, Ptr, AbsCtrlPtr>		_componentRemoved;
 
-			std::shared_ptr<Signal<Ptr, Ptr, Ptr>>					_added;
-			std::shared_ptr<Signal<Ptr, Ptr, Ptr>>					_removed;
-			std::shared_ptr<Signal<Ptr, Ptr>>						_layoutsChanged;
-			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>			_componentAdded;
-			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>			_componentRemoved;
-
-			std::string												_uuid;
+			std::string							_uuid;
 
 		public:
+            ~Node()
+            {
+                _root.reset();
+                _parent.reset();
+                _components.clear();
+            }
 
 			static
 			Ptr
@@ -116,13 +116,6 @@ namespace minko
 			}
 
 			inline
-			int
-			id() const
-			{
-				return _id;
-			}
-
-			inline
 			std::string
 			uuid() const
 			{
@@ -153,14 +146,14 @@ namespace minko
 			Ptr
 			parent() const
 			{
-				return _parent;
+				return _parent.lock();
 			}
 
 			inline
 			Ptr
 			root() const
 			{
-				return _root;
+				return _root.lock();
 			}
 
 			inline
@@ -171,50 +164,43 @@ namespace minko
 			}
 
 			inline
-			std::shared_ptr<data::Container>
-			data() const
+			data::Container&
+			data()
 			{
 				return _container;
 			}
 
 			inline
-			uint
-			depth() const
-			{
-				return _depth;
-			}
-
-			inline
-			Signal<Ptr, Ptr, Ptr>::Ptr
-			added() const
+			Signal<Ptr, Ptr, Ptr>&
+			added()
 			{
 				return _added;
 			}
 
 			inline
-			Signal<Ptr, Ptr, Ptr>::Ptr
-			removed() const
+			Signal<Ptr, Ptr, Ptr>&
+			removed()
 			{
 				return _removed;
 			}
 
 			inline
-			Signal<Ptr, Ptr>::Ptr
-			layoutsChanged() const
+			Signal<Ptr, Ptr>&
+			layoutsChanged()
 			{
 				return _layoutsChanged;
 			}
 
 			inline
-			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>
-			componentAdded() const
+			Signal<Ptr, Ptr, AbsCtrlPtr>&
+			componentAdded()
 			{
 				return _componentAdded;
 			}
 
 			inline
-			std::shared_ptr<Signal<Ptr, Ptr, AbsCtrlPtr>>
-			componentRemoved() const
+			Signal<Ptr, Ptr, AbsCtrlPtr>&
+			componentRemoved()
 			{
 				return _componentRemoved;
 			}
@@ -247,6 +233,12 @@ namespace minko
 			{
 				return component<T>() != nullptr;
 			}
+
+            const std::list<AbsCtrlPtr>
+            components()
+            {
+                return _components;
+            }
 
 			template <typename T>
 			std::vector<std::shared_ptr<T>>
@@ -287,20 +279,11 @@ namespace minko
 				return nullptr;
 			}
 
-			virtual
-			~Node()
-			{
-			}
-
 		protected:
 			Node();
 
 			void
 			updateRoot();
-
-		private:
-			void
-			initialize();
 		};
 	}
 }

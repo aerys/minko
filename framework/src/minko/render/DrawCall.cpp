@@ -27,11 +27,11 @@ using namespace minko::render;
 const unsigned int	DrawCall::MAX_NUM_TEXTURES		= 8;
 const unsigned int	DrawCall::MAX_NUM_VERTEXBUFFERS	= 8;
 
-DrawCall::ContainerPtr
-DrawCall::getContainer(ContainerPtr         rootData,
-                       ContainerPtr         rendererData,
-                       ContainerPtr         targetData,
-                       data::BindingSource  source)
+const data::Container&
+DrawCall::getContainer(const data::Container&   rootData,
+                       const data::Container&   rendererData,
+                       const data::Container&   targetData,
+                       data::BindingSource      source)
 {
     switch (source)
     {
@@ -43,15 +43,15 @@ DrawCall::getContainer(ContainerPtr         rootData,
             return targetData;
     }
 
-    return nullptr;
+    throw;
 }
 
 void
 DrawCall::bind(Program::Ptr                                         program,
                const std::unordered_map<std::string, std::string>&  variables,
-               ContainerPtr                                         rootData,
-               ContainerPtr                                         rendererData,
-               ContainerPtr                                         targetData,
+               const data::Container&                               rootData,
+               const data::Container&                               rendererData,
+               const data::Container&                               targetData,
                const data::BindingMap&                              attributeBindings,
                const data::BindingMap&                              uniformBindings,
                const data::BindingMap&                              stateBindings)
@@ -89,26 +89,26 @@ DrawCall::bind(Program::Ptr                                         program,
 
 void
 DrawCall::bindIndexBuffer(const std::unordered_map<std::string, std::string>&   variables,
-                          ContainerPtr                                          targetData)
+                          const data::Container&                                targetData)
 {
-    _indexBuffer = const_cast<int*>(targetData->getPointer<int>(
+    _indexBuffer = const_cast<int*>(targetData.getPointer<int>(
         data::Container::getActualPropertyName(variables, "geometry[${geometryId}].indices")
     ));
-    _firstIndex = const_cast<uint*>(targetData->getPointer<uint>(
+    _firstIndex = const_cast<uint*>(targetData.getPointer<uint>(
         data::Container::getActualPropertyName(variables, "geometry[${geometryId}].firstIndex")
     ));
-    _numIndices = const_cast<uint*>(targetData->getPointer<uint>(
+    _numIndices = const_cast<uint*>(targetData.getPointer<uint>(
         data::Container::getActualPropertyName(variables, "geometry[${geometryId}].numIndices")
     ));
 }
 
 void
-DrawCall::bindAttribute(Program::Ptr          program,
-                        ConstAttrInputRef     input,
-                        ContainerPtr          container,
-                        const std::string&    propertyName)
+DrawCall::bindAttribute(Program::Ptr            program,
+                        ConstAttrInputRef       input,
+                        const data::Container&  container,
+                        const std::string&      propertyName)
 {
-    const auto& attr = container->getPointer<VertexAttribute>(propertyName);
+    const auto& attr = container.getPointer<VertexAttribute>(propertyName);
 
     _attributes.push_back({
         program->setAttributeNames().size() + _attributes.size(),
@@ -123,54 +123,54 @@ DrawCall::bindAttribute(Program::Ptr          program,
 void
 DrawCall::bindUniform(Program::Ptr            program,
                       ConstUniformInputRef    input,
-                      ContainerPtr            container,
+                      const data::Container&  container,
                       const std::string&      propertyName)
 {
     switch (input.type)
     {
         case ProgramInputs::Type::int1:
-            _uniformInt.push_back({ input.location, 1, container->getPointer<int>(propertyName) });
+            _uniformInt.push_back({ input.location, 1, container.getPointer<int>(propertyName) });
             break;
         case ProgramInputs::Type::int2:
-            _uniformInt.push_back({ input.location, 2, math::value_ptr(container->get<math::ivec2>(propertyName)) });
+            _uniformInt.push_back({ input.location, 2, math::value_ptr(container.get<math::ivec2>(propertyName)) });
             break;
         case ProgramInputs::Type::int3:
-            _uniformInt.push_back({ input.location, 3, math::value_ptr(container->get<math::ivec3>(propertyName)) });
+            _uniformInt.push_back({ input.location, 3, math::value_ptr(container.get<math::ivec3>(propertyName)) });
             break;
         case ProgramInputs::Type::int4:
-            _uniformInt.push_back({ input.location, 4, math::value_ptr(container->get<math::ivec4>(propertyName)) });
+            _uniformInt.push_back({ input.location, 4, math::value_ptr(container.get<math::ivec4>(propertyName)) });
             break;
         case ProgramInputs::Type::float1:
-            _uniformFloat.push_back({ input.location, 1, container->getPointer<float>(propertyName) });
+            _uniformFloat.push_back({ input.location, 1, container.getPointer<float>(propertyName) });
             break;
         case ProgramInputs::Type::float2:
-            _uniformFloat.push_back({ input.location, 2, math::value_ptr(container->get<math::vec2>(propertyName)) });
+            _uniformFloat.push_back({ input.location, 2, math::value_ptr(container.get<math::vec2>(propertyName)) });
             break;
         case ProgramInputs::Type::float3:
-            _uniformFloat.push_back({ input.location, 3, math::value_ptr(container->get<math::vec3>(propertyName)) });
+            _uniformFloat.push_back({ input.location, 3, math::value_ptr(container.get<math::vec3>(propertyName)) });
             break;
         case ProgramInputs::Type::float4:
-            _uniformFloat.push_back({ input.location, 4, math::value_ptr(container->get<math::vec4>(propertyName)) });
+            _uniformFloat.push_back({ input.location, 4, math::value_ptr(container.get<math::vec4>(propertyName)) });
             break;
         case ProgramInputs::Type::float16:
-            _uniformFloat.push_back({ input.location, 16, math::value_ptr(container->get<math::mat4>(propertyName)) });
+            _uniformFloat.push_back({ input.location, 16, math::value_ptr(container.get<math::mat4>(propertyName)) });
             break;
         case ProgramInputs::Type::bool1:
-            _uniformBool.push_back({ input.location, 1, container->getPointer<bool>(propertyName) });
+            _uniformBool.push_back({ input.location, 1, container.getPointer<bool>(propertyName) });
             break;
         case ProgramInputs::Type::bool2:
-            _uniformBool.push_back({ input.location, 2, math::value_ptr(container->get<math::bvec2>(propertyName)) });
+            _uniformBool.push_back({ input.location, 2, math::value_ptr(container.get<math::bvec2>(propertyName)) });
             break;
         case ProgramInputs::Type::bool3:
-            _uniformBool.push_back({ input.location, 3, math::value_ptr(container->get<math::bvec3>(propertyName)) });
+            _uniformBool.push_back({ input.location, 3, math::value_ptr(container.get<math::bvec3>(propertyName)) });
             break;
         case ProgramInputs::Type::bool4:
-            _uniformBool.push_back({ input.location, 4, math::value_ptr(container->get<math::bvec4>(propertyName)) });
+            _uniformBool.push_back({ input.location, 4, math::value_ptr(container.get<math::bvec4>(propertyName)) });
             break;
         case ProgramInputs::Type::sampler2d:
             _samplers.push_back({
                 program->setTextureNames().size() + _samplers.size(),
-                container->getPointer<TextureSampler>(propertyName)->id,
+                container.getPointer<TextureSampler>(propertyName)->id,
                 input.location
             });
             break;
@@ -244,20 +244,4 @@ DrawCall::render(AbstractContext::Ptr context, AbstractTexture::Ptr renderTarget
         context->setVertexBufferAt(a.position, *a.resourceId, a.size, *a.stride, a.offset);
 
     context->drawTriangles(*_indexBuffer, *_numIndices / 3);
-}
-
-const std::string
-DrawCall::getActualPropertyName(const std::unordered_map<std::string, std::string>& vars,
-                                const std::string&                                  propertyName)
-{
-    for (const auto& variableName : vars)
-    {
-        auto pos = propertyName.find("${" + variableName.first + "}");
-
-        if (pos != std::string::npos)
-            return propertyName.substr(0, pos) + variableName.second
-            + propertyName.substr(pos + variableName.first.size() + 3);
-    }
-
-    return propertyName;
 }

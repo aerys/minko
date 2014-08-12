@@ -32,6 +32,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/DrawCallPool.hpp"
 #include "minko/data/AbstractFilter.hpp"
 #include "minko/data/LightMaskFilter.hpp"
+#include "minko/data/Collection.hpp"
+#include "minko/geometry/Geometry.hpp"
+#include "minko/material/Material.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -80,7 +83,7 @@ Renderer::targetAdded(std::shared_ptr<Node> target)
 	//if (target->components<Renderer>().size() > 1)
 	//	throw std::logic_error("There cannot be two Renderer on the same node.");
 
-	_addedSlot = target->added()->connect(std::bind(
+	_addedSlot = target->added().connect(std::bind(
 		&Renderer::addedHandler,
 		std::static_pointer_cast<Renderer>(shared_from_this()),
 		std::placeholders::_1,
@@ -88,7 +91,7 @@ Renderer::targetAdded(std::shared_ptr<Node> target)
 		std::placeholders::_3
 	));
 
-	_removedSlot = target->removed()->connect(std::bind(
+	_removedSlot = target->removed().connect(std::bind(
 		&Renderer::removedHandler,
 		std::static_pointer_cast<Renderer>(shared_from_this()),
 		std::placeholders::_1,
@@ -119,7 +122,7 @@ Renderer::addedHandler(std::shared_ptr<Node> node,
 {
 	findSceneManager();
 
-	_rootDescendantAddedSlot = target->root()->added()->connect(std::bind(
+	_rootDescendantAddedSlot = target->root()->added().connect(std::bind(
 		&Renderer::rootDescendantAddedHandler,
 		std::static_pointer_cast<Renderer>(shared_from_this()),
 		std::placeholders::_1,
@@ -127,7 +130,7 @@ Renderer::addedHandler(std::shared_ptr<Node> node,
 		std::placeholders::_3
 	));
 
-	_rootDescendantRemovedSlot = target->root()->removed()->connect(std::bind(
+	_rootDescendantRemovedSlot = target->root()->removed().connect(std::bind(
 		&Renderer::rootDescendantRemovedHandler,
 		std::static_pointer_cast<Renderer>(shared_from_this()),
 		std::placeholders::_1,
@@ -135,7 +138,7 @@ Renderer::addedHandler(std::shared_ptr<Node> node,
 		std::placeholders::_3
 	));
 
-	_componentAddedSlot = target->root()->componentAdded()->connect(std::bind(
+	_componentAddedSlot = target->root()->componentAdded().connect(std::bind(
 		&Renderer::componentAddedHandler,
 		std::static_pointer_cast<Renderer>(shared_from_this()),
 		std::placeholders::_1,
@@ -143,7 +146,7 @@ Renderer::addedHandler(std::shared_ptr<Node> node,
 		std::placeholders::_3
 	));
 
-	_componentRemovedSlot = target->root()->componentRemoved()->connect(std::bind(
+	_componentRemovedSlot = target->root()->componentRemoved().connect(std::bind(
 		&Renderer::componentRemovedHandler,
 		std::static_pointer_cast<Renderer>(shared_from_this()),
 		std::placeholders::_1,
@@ -238,7 +241,23 @@ Renderer::addSurface(Surface::Ptr surface)
 {
     std::unordered_map<std::string, std::string> variables;
 
-    // FIXME
+    auto c = surface->target()->data();
+    auto surfaceId = 0;
+
+//    while (surface->target()->component<Surface>(surfaceId) != surface)
+//        ++surfaceId;
+
+    /*variables["surfaceId"] = std::to_string(surfaceId);
+    variables["geometryId"] = std::to_string(
+        getProviderId(c, Surface::GEOMETRY_COLLECTION_NAME, surface->geometry()->data())
+    );
+    variables["materialId"] = std::to_string(
+        getProviderId(c, Surface::MATERIAL_COLLECTION_NAME, surface->material()->data())
+    );
+    variables["effectId"] = std::to_string(
+        getProviderId(c, Surface::EFFECT_COLLECTION_NAME, surface->effect()->data())
+    );*/
+
     variables["surfaceId"] = "0";
     variables["geometryId"] = "0";
     variables["materialId"] = "0";
@@ -252,6 +271,27 @@ Renderer::addSurface(Surface::Ptr surface)
         target()->data(),
         surface->target()->data()
     );
+}
+
+uint
+Renderer::getProviderId(const data::Container&  container,
+                        const std::string&      collectionName,
+                        data::Provider::Ptr     provider) const
+{
+    const auto& collections = container.collections();
+    auto collectionIt = std::find_if(collections.begin(), collections.end(), [&](data::Collection::Ptr c)
+    {
+        return c->name() == collectionName;
+    });
+
+    assert(collectionIt != collections.end());
+
+    const auto& collectionItems = (*collectionIt)->items();
+    auto providerIt = std::find(collectionItems.begin(), collectionItems.end(), provider);
+
+    assert(providerIt != collectionItems.end());
+
+    return providerIt - collectionItems.begin();
 }
 
 void

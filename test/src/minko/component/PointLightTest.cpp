@@ -42,14 +42,14 @@ TEST_F(PointLightTest, AddLight)
     lights->addComponent(PointLight::create(.1f, .3f));
     root->addChild(lights);
 
-    ASSERT_TRUE(root->data()->hasProperty("pointLights.length"));
-    ASSERT_EQ(root->data()->get<uint>("pointLights.length"), 1);
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[0].color"));
-    ASSERT_EQ(root->data()->get<math::vec3>("pointLights[0].color"), math::vec3(1.f));
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[0].diffuse"));
-    ASSERT_EQ(root->data()->get<float>("pointLights[0].diffuse"), .1f);
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[0].specular"));
-    ASSERT_EQ(root->data()->get<float>("pointLights[0].specular"), .3f);
+    ASSERT_TRUE(root->data().hasProperty("pointLights.length"));
+    ASSERT_EQ(root->data().get<uint>("pointLights.length"), 1);
+    ASSERT_TRUE(root->data().hasProperty("pointLights[0].color"));
+    ASSERT_EQ(root->data().get<math::vec3>("pointLights[0].color"), math::vec3(1.f));
+    ASSERT_TRUE(root->data().hasProperty("pointLights[0].diffuse"));
+    ASSERT_EQ(root->data().get<float>("pointLights[0].diffuse"), .1f);
+    ASSERT_TRUE(root->data().hasProperty("pointLights[0].specular"));
+    ASSERT_EQ(root->data().get<float>("pointLights[0].specular"), .3f);
 }
 
 TEST_F(PointLightTest, RemoveSingleLight)
@@ -62,10 +62,10 @@ TEST_F(PointLightTest, RemoveSingleLight)
     root->addChild(lights);
     lights->removeComponent(al);
 
-    ASSERT_EQ(root->data()->get<uint>("pointLights.length"), 0);
-    ASSERT_FALSE(root->data()->hasProperty("pointLights[0].color"));
-    ASSERT_FALSE(root->data()->hasProperty("pointLights[0].diffuse"));
-    ASSERT_FALSE(root->data()->hasProperty("pointLights[0].specular"));
+    ASSERT_EQ(root->data().get<uint>("pointLights.length"), 0);
+    ASSERT_FALSE(root->data().hasProperty("pointLights[0].color"));
+    ASSERT_FALSE(root->data().hasProperty("pointLights[0].diffuse"));
+    ASSERT_FALSE(root->data().hasProperty("pointLights[0].specular"));
 }
 
 TEST_F(PointLightTest, AddMultipleLights)
@@ -79,37 +79,37 @@ TEST_F(PointLightTest, AddMultipleLights)
     al1->color(math::vec3(1.f, 0.f, 0.f));
     lights->addComponent(al1);
 
-    ASSERT_EQ(root->data()->get<uint>("pointLights.length"), 1);
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[0].color"));
-    ASSERT_EQ(root->data()->get<math::vec3>("pointLights[0].color"), math::vec3(1.f, 0.f, 0.f));
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[0].diffuse"));
-    ASSERT_EQ(root->data()->get<float>("pointLights[0].diffuse"), .1f);
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[0].specular"));
-    ASSERT_EQ(root->data()->get<float>("pointLights[0].specular"), .2f);
+    ASSERT_EQ(root->data().get<uint>("pointLights.length"), 1);
+    ASSERT_TRUE(root->data().hasProperty("pointLights[0].color"));
+    ASSERT_EQ(root->data().get<math::vec3>("pointLights[0].color"), math::vec3(1.f, 0.f, 0.f));
+    ASSERT_TRUE(root->data().hasProperty("pointLights[0].diffuse"));
+    ASSERT_EQ(root->data().get<float>("pointLights[0].diffuse"), .1f);
+    ASSERT_TRUE(root->data().hasProperty("pointLights[0].specular"));
+    ASSERT_EQ(root->data().get<float>("pointLights[0].specular"), .2f);
 
     auto al2 = PointLight::create(.3f, .4f);
     al2->color(math::vec3(0.f, 1.f, 0.f));
     lights->addComponent(al2);
 
-    ASSERT_EQ(root->data()->get<uint>("pointLights.length"), 2);
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[1].color"));
-    ASSERT_EQ(root->data()->get<math::vec3>("pointLights[1].color"), math::vec3(0.f, 1.f, 0.f));
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[1].diffuse"));
-    ASSERT_EQ(root->data()->get<float>("pointLights[1].diffuse"), .3f);
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[1].specular"));
-    ASSERT_EQ(root->data()->get<float>("pointLights[1].specular"), .4f);
+    ASSERT_EQ(root->data().get<uint>("pointLights.length"), 2);
+    ASSERT_TRUE(root->data().hasProperty("pointLights[1].color"));
+    ASSERT_EQ(root->data().get<math::vec3>("pointLights[1].color"), math::vec3(0.f, 1.f, 0.f));
+    ASSERT_TRUE(root->data().hasProperty("pointLights[1].diffuse"));
+    ASSERT_EQ(root->data().get<float>("pointLights[1].diffuse"), .3f);
+    ASSERT_TRUE(root->data().hasProperty("pointLights[1].specular"));
+    ASSERT_EQ(root->data().get<float>("pointLights[1].specular"), .4f);
 
     auto al3 = PointLight::create(.5f, .6f);
     al3->color(math::vec3(0.f, 0.f, 1.f));
     lights->addComponent(al3);
 
-    ASSERT_EQ(root->data()->get<uint>("pointLights.length"), 3);
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[2].color"));
-    ASSERT_EQ(root->data()->get<math::vec3>("pointLights[2].color"), math::vec3(0.f, 0.f, 1.f));
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[2].diffuse"));
-    ASSERT_EQ(root->data()->get<float>("pointLights[2].diffuse"), .5f);
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[2].specular"));
-    ASSERT_EQ(root->data()->get<float>("pointLights[2].specular"), .6f);
+    ASSERT_EQ(root->data().get<uint>("pointLights.length"), 3);
+    ASSERT_TRUE(root->data().hasProperty("pointLights[2].color"));
+    ASSERT_EQ(root->data().get<math::vec3>("pointLights[2].color"), math::vec3(0.f, 0.f, 1.f));
+    ASSERT_TRUE(root->data().hasProperty("pointLights[2].diffuse"));
+    ASSERT_EQ(root->data().get<float>("pointLights[2].diffuse"), .5f);
+    ASSERT_TRUE(root->data().hasProperty("pointLights[2].specular"));
+    ASSERT_EQ(root->data().get<float>("pointLights[2].specular"), .6f);
 }
 
 TEST_F(PointLightTest, RemoveFirstLight)
@@ -133,19 +133,19 @@ TEST_F(PointLightTest, RemoveFirstLight)
 
     lights->removeComponent(al1);
 
-    ASSERT_EQ(root->data()->get<uint>("pointLights.length"), 2);
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[0].color"));
-    ASSERT_EQ(root->data()->get<math::vec3>("pointLights[0].color"), math::vec3(0.f, 1.f, 0.f));
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[0].diffuse"));
-    ASSERT_EQ(root->data()->get<float>("pointLights[0].diffuse"), .3f);
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[0].specular"));
-    ASSERT_EQ(root->data()->get<float>("pointLights[0].specular"), .4f);
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[1].color"));
-    ASSERT_EQ(root->data()->get<math::vec3>("pointLights[1].color"), math::vec3(0.f, 0.f, 1.f));
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[1].diffuse"));
-    ASSERT_EQ(root->data()->get<float>("pointLights[1].diffuse"), .5f);
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[1].specular"));
-    ASSERT_EQ(root->data()->get<float>("pointLights[1].specular"), .6f);
+    ASSERT_EQ(root->data().get<uint>("pointLights.length"), 2);
+    ASSERT_TRUE(root->data().hasProperty("pointLights[0].color"));
+    ASSERT_EQ(root->data().get<math::vec3>("pointLights[0].color"), math::vec3(0.f, 1.f, 0.f));
+    ASSERT_TRUE(root->data().hasProperty("pointLights[0].diffuse"));
+    ASSERT_EQ(root->data().get<float>("pointLights[0].diffuse"), .3f);
+    ASSERT_TRUE(root->data().hasProperty("pointLights[0].specular"));
+    ASSERT_EQ(root->data().get<float>("pointLights[0].specular"), .4f);
+    ASSERT_TRUE(root->data().hasProperty("pointLights[1].color"));
+    ASSERT_EQ(root->data().get<math::vec3>("pointLights[1].color"), math::vec3(0.f, 0.f, 1.f));
+    ASSERT_TRUE(root->data().hasProperty("pointLights[1].diffuse"));
+    ASSERT_EQ(root->data().get<float>("pointLights[1].diffuse"), .5f);
+    ASSERT_TRUE(root->data().hasProperty("pointLights[1].specular"));
+    ASSERT_EQ(root->data().get<float>("pointLights[1].specular"), .6f);
 }
 
 TEST_F(PointLightTest, RemoveNthLight)
@@ -169,19 +169,19 @@ TEST_F(PointLightTest, RemoveNthLight)
 
     lights->removeComponent(al2);
 
-    ASSERT_EQ(root->data()->get<uint>("pointLights.length"), 2);
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[0].color"));
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[0].diffuse"));
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[0].specular"));
-    ASSERT_EQ(root->data()->get<math::vec3>("pointLights[0].color"), math::vec3(1.f, 0.f, 0.f));
-    ASSERT_EQ(root->data()->get<float>("pointLights[0].diffuse"), .1f);
-    ASSERT_EQ(root->data()->get<float>("pointLights[0].specular"), .2f);
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[1].color"));
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[1].diffuse"));
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[1].specular"));
-    ASSERT_EQ(root->data()->get<math::vec3>("pointLights[1].color"), math::vec3(0.f, 0.f, 1.f));
-    ASSERT_EQ(root->data()->get<float>("pointLights[1].diffuse"), .5f);
-    ASSERT_EQ(root->data()->get<float>("pointLights[1].specular"), .6f);
+    ASSERT_EQ(root->data().get<uint>("pointLights.length"), 2);
+    ASSERT_TRUE(root->data().hasProperty("pointLights[0].color"));
+    ASSERT_TRUE(root->data().hasProperty("pointLights[0].diffuse"));
+    ASSERT_TRUE(root->data().hasProperty("pointLights[0].specular"));
+    ASSERT_EQ(root->data().get<math::vec3>("pointLights[0].color"), math::vec3(1.f, 0.f, 0.f));
+    ASSERT_EQ(root->data().get<float>("pointLights[0].diffuse"), .1f);
+    ASSERT_EQ(root->data().get<float>("pointLights[0].specular"), .2f);
+    ASSERT_TRUE(root->data().hasProperty("pointLights[1].color"));
+    ASSERT_TRUE(root->data().hasProperty("pointLights[1].diffuse"));
+    ASSERT_TRUE(root->data().hasProperty("pointLights[1].specular"));
+    ASSERT_EQ(root->data().get<math::vec3>("pointLights[1].color"), math::vec3(0.f, 0.f, 1.f));
+    ASSERT_EQ(root->data().get<float>("pointLights[1].diffuse"), .5f);
+    ASSERT_EQ(root->data().get<float>("pointLights[1].specular"), .6f);
 }
 
 TEST_F(PointLightTest, RemoveLastLight)
@@ -205,19 +205,19 @@ TEST_F(PointLightTest, RemoveLastLight)
 
     lights->removeComponent(al3);
 
-    ASSERT_EQ(root->data()->get<uint>("pointLights.length"), 2);
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[0].color"));
-    ASSERT_EQ(root->data()->get<math::vec3>("pointLights[0].color"), math::vec3(1.f, 0.f, 0.f));
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[0].diffuse"));
-    ASSERT_EQ(root->data()->get<float>("pointLights[0].diffuse"), .1f);
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[0].specular"));
-    ASSERT_EQ(root->data()->get<float>("pointLights[0].specular"), .2f);
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[1].color"));
-    ASSERT_EQ(root->data()->get<math::vec3>("pointLights[1].color"), math::vec3(0.f, 1.f, 0.f));
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[1].diffuse"));
-    ASSERT_EQ(root->data()->get<float>("pointLights[1].diffuse"), .3f);
-    ASSERT_TRUE(root->data()->hasProperty("pointLights[1].specular"));
-    ASSERT_EQ(root->data()->get<float>("pointLights[1].specular"), .4f);
+    ASSERT_EQ(root->data().get<uint>("pointLights.length"), 2);
+    ASSERT_TRUE(root->data().hasProperty("pointLights[0].color"));
+    ASSERT_EQ(root->data().get<math::vec3>("pointLights[0].color"), math::vec3(1.f, 0.f, 0.f));
+    ASSERT_TRUE(root->data().hasProperty("pointLights[0].diffuse"));
+    ASSERT_EQ(root->data().get<float>("pointLights[0].diffuse"), .1f);
+    ASSERT_TRUE(root->data().hasProperty("pointLights[0].specular"));
+    ASSERT_EQ(root->data().get<float>("pointLights[0].specular"), .2f);
+    ASSERT_TRUE(root->data().hasProperty("pointLights[1].color"));
+    ASSERT_EQ(root->data().get<math::vec3>("pointLights[1].color"), math::vec3(0.f, 1.f, 0.f));
+    ASSERT_TRUE(root->data().hasProperty("pointLights[1].diffuse"));
+    ASSERT_EQ(root->data().get<float>("pointLights[1].diffuse"), .3f);
+    ASSERT_TRUE(root->data().hasProperty("pointLights[1].specular"));
+    ASSERT_EQ(root->data().get<float>("pointLights[1].specular"), .4f);
 }
 
 TEST_F(PointLightTest, TranslateXYZ)
@@ -237,7 +237,7 @@ TEST_F(PointLightTest, TranslateXYZ)
 
     ASSERT_EQ(
         math::epsilonEqual(
-            root->data()->get<math::vec3>("pointLights[0].position"),
+            root->data().get<math::vec3>("pointLights[0].position"),
             t,
             math::epsilon<float>()
         ),

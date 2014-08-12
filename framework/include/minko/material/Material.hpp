@@ -38,6 +38,11 @@ namespace minko
             std::shared_ptr<data::Provider> _provider;
 
 		public:
+            ~Material()
+            {
+                _provider = nullptr;
+            }
+
 			inline static
 			Ptr
 			create(const std::string& name = "material")

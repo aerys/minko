@@ -28,8 +28,7 @@ void
 ProgramSignatureTest::SetUp()
 {
     _targetProvider = data::Provider::create();
-    _targetData = data::Container::create();
-    _targetData->addProvider(_targetProvider);
+    _targetData.addProvider(_targetProvider);
     _targetProvider->set("foo", 42);
     _targetProvider->set("foo2", 24);
     _targetProvider->set("bar", true);
@@ -37,20 +36,18 @@ ProgramSignatureTest::SetUp()
     auto targetProvider = data::Provider::create();
     targetCollection->pushBack(targetProvider);
     targetProvider->set("foo", 4242);
-    _targetData->addCollection(targetCollection);
+    _targetData.addCollection(targetCollection);
     _variables["targetId"] = "0";
     
     _rendererProvider = data::Provider::create();
-    _rendererData = data::Container::create();
-    _rendererData->addProvider(_rendererProvider);
+    _rendererData.addProvider(_rendererProvider);
     _rendererProvider->set("foo", 4242);
     _rendererProvider->set("bar", true);
 
     _rootProvider = data::Provider::create();
-    _rootData = data::Container::create();
     auto rootCollection = data::Collection::create("root");
     rootCollection->pushBack(_rootProvider);
-    _rootData->addCollection(rootCollection);
+    _rootData.addCollection(rootCollection);
     _rootProvider->set("foo", 424242);
     _rootProvider->set("bar", true);
     _variables["rootId"] = "0";

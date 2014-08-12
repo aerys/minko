@@ -80,16 +80,16 @@ TEST_F(TransformTest, ModelToWorldUpdate)
 	sceneManager->nextFrame(0.0f, 0.0f);
 
 	auto updated1 = false;
-	auto _ = n1->data()->propertyChanged("modelToWorldMatrix")->connect(
-		[&](data::Container::Ptr c, const std::string& propertyName, const std::string& fullPropertyName)
+	auto _ = n1->data().propertyChanged("modelToWorldMatrix")->connect(
+		[&](data::Container& c, const std::string& propertyName, const std::string& fullPropertyName)
 		{
 			updated1 = true;
 		}
 	);
 
 	auto updated2 = false;
-	auto __ = n2->data()->propertyChanged("modelToWorldMatrix")->connect(
-        [&](data::Container::Ptr c, const std::string& propertyName, const std::string& fullPropertyName)
+	auto __ = n2->data().propertyChanged("modelToWorldMatrix")->connect(
+        [&](data::Container& c, const std::string& propertyName, const std::string& fullPropertyName)
 		{
 			updated2 = true;
 		}
@@ -120,16 +120,16 @@ TEST_F(TransformTest, ModelToWorldMultipleUpdates)
 	sceneManager->nextFrame(0.0f, 0.0f);
 
 	auto updated1 = false;
-	auto _ = n1->data()->propertyChanged("modelToWorldMatrix")->connect(
-        [&](data::Container::Ptr c, const std::string& propertyName, const std::string& fullPropertyName)
+	auto _ = n1->data().propertyChanged("modelToWorldMatrix")->connect(
+        [&](data::Container& c, const std::string& propertyName, const std::string& fullPropertyName)
 		{
 			updated1 = true;
 		}
 	);
 
 	auto updated2 = false;
-	auto __ = n3->data()->propertyChanged("modelToWorldMatrix")->connect(
-        [&](data::Container::Ptr c, const std::string& propertyName, const std::string& fullPropertyName)
+	auto __ = n3->data().propertyChanged("modelToWorldMatrix")->connect(
+        [&](data::Container& c, const std::string& propertyName, const std::string& fullPropertyName)
 		{
 			updated2 = true;
 		}
@@ -161,16 +161,16 @@ TEST_F(TransformTest, ModelToWorldMultipleUpdatesMultipleFrames)
 	sceneManager->nextFrame(0.0f, 0.0f);
 
 	auto updated1 = false;
-	auto _ = n1->data()->propertyChanged("modelToWorldMatrix")->connect(
-        [&](data::Container::Ptr c, const std::string& propertyName, const std::string& fullPropertyName)
+	auto _ = n1->data().propertyChanged("modelToWorldMatrix")->connect(
+        [&](data::Container& c, const std::string& propertyName, const std::string& fullPropertyName)
 		{
 			updated1 = true;
 		}
 	);
 
 	auto updated2 = false;
-	auto __ = n3->data()->propertyChanged("modelToWorldMatrix")->connect(
-        [&](data::Container::Ptr c, const std::string& propertyName, const std::string& fullPropertyName)
+	auto __ = n3->data().propertyChanged("modelToWorldMatrix")->connect(
+        [&](data::Container& c, const std::string& propertyName, const std::string& fullPropertyName)
 		{
 			updated2 = true;
 		}

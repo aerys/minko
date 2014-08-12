@@ -27,12 +27,12 @@ DrawCallPool::DrawCallPool()
 }
 
 void
-DrawCallPool::addDrawCalls(std::shared_ptr<Effect>                                effect,
-                           const std::unordered_map<std::string, std::string>&    variables,
-                           const std::string&                                     techniqueName,
-                           std::shared_ptr<data::Container>                       rootData,
-                           std::shared_ptr<data::Container>                       rendererData,
-                           std::shared_ptr<data::Container>                       targetData)
+DrawCallPool::addDrawCalls(std::shared_ptr<Effect>                              effect,
+                           const std::unordered_map<std::string, std::string>&  variables,
+                           const std::string&                                   techniqueName,
+                           const data::Container&                               rootData,
+                           const data::Container&                               rendererData,
+                           const data::Container&                               targetData)
 {
     const auto& technique = effect->technique(techniqueName);
                 

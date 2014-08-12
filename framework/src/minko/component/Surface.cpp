@@ -53,12 +53,7 @@ Surface::Surface(std::string		name,
 	_material(material),
 	_effect(effect),
 	_technique(technique),
-	_visible(true),
-	_rendererToVisibility(),
-	_rendererToComputedVisibility(),
-	_techniqueChanged(TechniqueChangedSignal::create()),
-	_visibilityChanged(VisibilityChangedSignal::create()),
-	_computedVisibilityChanged(VisibilityChangedSignal::create())
+	_techniqueChanged(TechniqueChangedSignal::create())
 {
 	if (_effect == nullptr)
 		throw std::invalid_argument("effect");
@@ -69,37 +64,39 @@ Surface::Surface(std::string		name,
 void
 Surface::targetAdded(scene::Node::Ptr target)
 {
-    target->data()->addProvider(_material->data(), MATERIAL_COLLECTION_NAME);
-    target->data()->addProvider(_geometry->data(), GEOMETRY_COLLECTION_NAME);
-    target->data()->addProvider(_effect->data(), EFFECT_COLLECTION_NAME);
+    auto& targetData = target->data();
+
+    targetData.addProvider(_material->data(), MATERIAL_COLLECTION_NAME);
+    targetData.addProvider(_geometry->data(), GEOMETRY_COLLECTION_NAME);
+    targetData.addProvider(_effect->data(), EFFECT_COLLECTION_NAME);
 }
 
 void
 Surface::targetRemoved(scene::Node::Ptr target)
 {
-	auto data = target->data();
+    auto& targetData = target->data();
 
-    target->data()->removeProvider(_material->data(), MATERIAL_COLLECTION_NAME);
-    target->data()->removeProvider(_geometry->data(), GEOMETRY_COLLECTION_NAME);
-    target->data()->removeProvider(_effect->data(), EFFECT_COLLECTION_NAME);
+    targetData.removeProvider(_material->data(), MATERIAL_COLLECTION_NAME);
+    targetData.removeProvider(_geometry->data(), GEOMETRY_COLLECTION_NAME);
+    targetData.removeProvider(_effect->data(), EFFECT_COLLECTION_NAME);
 }
 
 void
 Surface::geometry(geometry::Geometry::Ptr geometry)
 {
-    target()->data()->removeProvider(_geometry->data(), GEOMETRY_COLLECTION_NAME);
+    target()->data().removeProvider(_geometry->data(), GEOMETRY_COLLECTION_NAME);
 
     _geometry = geometry;
-    target()->data()->addProvider(_geometry->data(), GEOMETRY_COLLECTION_NAME);
+    target()->data().addProvider(_geometry->data(), GEOMETRY_COLLECTION_NAME);
 }
 
 void
 Surface::material(material::Material::Ptr material)
 {
-    target()->data()->removeProvider(_material->data(), MATERIAL_COLLECTION_NAME);
+    target()->data().removeProvider(_material->data(), MATERIAL_COLLECTION_NAME);
 
     _material = material;
-    target()->data()->addProvider(_material->data(), MATERIAL_COLLECTION_NAME);
+    target()->data().addProvider(_material->data(), MATERIAL_COLLECTION_NAME);
 }
 
 void
@@ -107,36 +104,6 @@ Surface::effect(render::Effect::Ptr		effect,
 				const std::string&		technique)
 {
 	setEffectAndTechnique(effect, technique, true);
-}
-
-void
-Surface::visible(component::Renderer::Ptr	renderer, 
-				 bool						value)
-{
-	if (visible(renderer) != value)
-	{
-		_rendererToVisibility[renderer] = value;
-		_visibilityChanged->execute(
-			std::static_pointer_cast<Surface>(shared_from_this()), 
-			renderer, 
-			value
-		);
-	}
-}
-
-void
-Surface::computedVisibility(component::Renderer::Ptr	renderer, 
-							bool						value)
-{
-	if (computedVisibility(renderer) != value)
-	{
-		_rendererToComputedVisibility[renderer] = value;
-		_computedVisibilityChanged->execute(
-			std::static_pointer_cast<Surface>(shared_from_this()), 
-			renderer, 
-			value
-		);
-	}
 }
 
 void
@@ -152,8 +119,8 @@ Surface::setEffectAndTechnique(Effect::Ptr			effect,
 	if (!effect->hasTechnique(technique))
 		throw std::logic_error("Effect does not provide a '" + technique + "' technique.");
 
-	target()->data()->removeProvider(_effect->data());
-	target()->data()->addProvider(effect->data());
+	target()->data().removeProvider(_effect->data());
+	target()->data().addProvider(effect->data());
 
 	_effect		= effect;
 	_technique	= technique;

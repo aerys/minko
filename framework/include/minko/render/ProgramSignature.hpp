@@ -40,9 +40,18 @@ namespace minko
 		public:
 			ProgramSignature(const data::MacroBindingMap&                           macroBindings,
                              const std::unordered_map<std::string, std::string>&    variables,
-						     std::shared_ptr<data::Container>                       targetData,
-                             std::shared_ptr<data::Container>		                rendererData,
-                             std::shared_ptr<data::Container>                       rootData);
+						     const data::Container&                                 targetData,
+                             const data::Container&		                            rendererData,
+                             const data::Container&                                 rootData);
+
+            ProgramSignature(const ProgramSignature& signature);
+
+            ~ProgramSignature()
+            {
+                _values.clear();
+                _states.clear();
+                _macros.clear();
+            }
 			
 			bool 
 			operator==(const ProgramSignature&) const;

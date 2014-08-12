@@ -44,12 +44,19 @@ namespace minko
             bool                                            _enabled;
             NodePtr                                         _root;
 
-            Signal<AbstractComponent::Ptr, NodePtr>::Slot   _targetAddedSlot;
-            Signal<AbstractComponent::Ptr, NodePtr>::Slot   _targetRemovedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot         _addedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot         _removedSlot;
 
 	    protected:
+            virtual
+            ~AbstractRootDataComponent()
+            {
+                _provider = nullptr;
+                _root = nullptr;
+                _addedSlot = nullptr;
+                _removedSlot = nullptr;
+            }
+
             inline
             std::shared_ptr<data::Provider>
             provider() const
@@ -82,8 +89,8 @@ namespace minko
                     std::placeholders::_3
                 );
 
-                _addedSlot = target->added()->connect(cb);
-                _removedSlot = target->removed()->connect(cb);
+                _addedSlot = target->added().connect(cb);
+                _removedSlot = target->removed().connect(cb);
 
                 updateRoot(target->root());
             }
@@ -110,7 +117,7 @@ namespace minko
 
                 if (_root)
                 {
-                    const auto& collections = _root->data()->collections();
+                    const auto& collections = _root->data().collections();
                     auto collectionIt = std::find_if(collections.begin(), collections.end(), [&](data::Collection::Ptr c)
                     {
                         return c->name() == _collectionName;
@@ -124,7 +131,7 @@ namespace minko
 
                 if (_root)
                 {
-                    const auto& collections = _root->data()->collections();
+                    const auto& collections = _root->data().collections();
                     auto collectionIt = std::find_if(collections.begin(), collections.end(), [&](data::Collection::Ptr c)
                     {
                         return c->name() == _collectionName;
@@ -135,7 +142,7 @@ namespace minko
                         auto collection = data::Collection::create(_collectionName);
 
                         collection->pushBack(_provider);
-                        _root->data()->addCollection(collection);
+                        _root->data().addCollection(collection);
                     }
                     else
                         (*collectionIt)->pushBack(_provider);

@@ -53,6 +53,11 @@ namespace minko
             }
 
 		public:
+            virtual
+            ~AbstractLight()
+            {
+            }
+
 			inline
 			const math::vec3&
 			color() const

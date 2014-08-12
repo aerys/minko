@@ -26,16 +26,16 @@ namespace minko
 {
 	namespace data
 	{
-		class Container :
-			public std::enable_shared_from_this<Container>
+		class Container
 		{
 
 		public:
-			typedef std::shared_ptr<Container>							Ptr;
-			typedef Signal<Ptr, const std::string&, const std::string&>	PropertyChangedSignal;
+			typedef Signal<Container&, const std::string&, const std::string&>	PropertyChangedSignal;
 
 		private:
 			typedef std::shared_ptr<PropertyChangedSignal>				PropertyChangedSignalPtr;
+            typedef Signal<Provider::Ptr, const std::string&>	        ProviderChangedSignal;
+            typedef std::list<ProviderChangedSignal::Slot>              ProviderChangedSignalSlotList;
 
 			typedef std::shared_ptr<Provider>							ProviderPtr;
             typedef std::shared_ptr<Collection>							CollectionPtr;
@@ -47,27 +47,24 @@ namespace minko
         private:
 			std::list<ProviderPtr>										    _providers;
             std::list<CollectionPtr>                                        _collections;
+            Provider::Ptr                                                   _lengthProvider;
 
 			PropertyChangedSignalPtr									    _propertyAdded;
 			PropertyChangedSignalPtr									    _propertyRemoved;
             std::unordered_map<std::string, PropertyChangedSignalPtr>       _propertyChanged;
-            Signal<Ptr, ProviderPtr>::Ptr								    _providerAdded;
-            Signal<Ptr, ProviderPtr>::Ptr								    _providerRemoved;
-            Signal<Ptr, CollectionPtr>::Ptr								    _collectionAdded;
-            Signal<Ptr, CollectionPtr>::Ptr								    _collectionRemoved;
 
-            std::unordered_map<ProviderPtr, std::list<Any>>				    _propertySlots;
+            std::unordered_map<ProviderPtr, ProviderChangedSignalSlotList>	_propertySlots;
             std::unordered_map<std::string, PropertyChangedSignalPtr>	    _propertyChangedSlots;
             std::unordered_map<CollectionPtr, CollectionChangedSignalSlot>  _collectionItemAddedSlots;
             std::unordered_map<CollectionPtr, CollectionChangedSignalSlot>  _collectionItemRemovedSlots;
 
 		public:
-			static
-			Ptr
-			create()
-			{
-                return std::shared_ptr<Container>(new Container());
-			}
+            Container();
+
+            ~Container()
+            {
+
+            }
 
             template <typename T>
 			bool
@@ -141,39 +138,11 @@ namespace minko
                 return _propertyChanged[propertyName];
             }
 
-			inline
-			Signal<Ptr, Provider::Ptr>::Ptr
-			providerAdded() const
-			{
-				return _providerAdded;
-			}
-
-			inline
-			Signal<Ptr, Provider::Ptr>::Ptr
-			providerRemoved() const
-			{
-				return _providerRemoved;
-			}
-
-			inline
+            inline
 			const std::list<ProviderPtr>&
 			providers() const
 			{
 				return _providers;
-			}
-
-            inline
-			Signal<Ptr, CollectionPtr>::Ptr
-			collectionAdded() const
-			{
-				return _collectionAdded;
-			}
-
-			inline
-			Signal<Ptr, CollectionPtr>::Ptr
-			collectionRemoved() const
-			{
-				return _collectionRemoved;
 			}
 
             inline
@@ -219,10 +188,13 @@ namespace minko
 			bool
 			hasProperty(const std::string& propertyName) const;
 
-		private:
-			Container();
+            static
+            const std::string
+            getActualPropertyName(const std::unordered_map<std::string, std::string>&   variables,
+                                  const std::string&                                    propertyName);
 
-            std::pair<ProviderPtr, std::string>
+		private:
+			std::pair<ProviderPtr, std::string>
             getProviderByPropertyName(const std::string& propertyName) const;
 
 			void
@@ -259,6 +231,9 @@ namespace minko
             void
             removeProviderFromCollection(std::shared_ptr<data::Provider> provider,
                                          const std::string&              collectionName);
+
+            void
+            updateCollectionLength(CollectionPtr collection);
 		};
 	}
 }

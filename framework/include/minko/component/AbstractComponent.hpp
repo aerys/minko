@@ -48,8 +48,11 @@ namespace minko
 			{
 			}
 
+            virtual
             ~AbstractComponent()
             {
+                _target = nullptr;
+                _layoutMaskChanged = nullptr;
             }
 
 			inline

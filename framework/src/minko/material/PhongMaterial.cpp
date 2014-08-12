@@ -29,14 +29,6 @@ using namespace minko::render;
 PhongMaterial::PhongMaterial():
 	BasicMaterial()
 {
-
-}
-
-void
-PhongMaterial::initialize()
-{
-	BasicMaterial::initialize();
-
 	specularColor(0xffffffff);
 	shininess(8.0f);
 }

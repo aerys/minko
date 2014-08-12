@@ -151,7 +151,7 @@ namespace minko
 
             template <typename T>
 			bool
-                propertyHasType(const std::string& propertyName) const
+            propertyHasType(const std::string& propertyName) const
 			{
                 const auto foundIt = _values.find(propertyName);
 
@@ -184,11 +184,6 @@ namespace minko
 			virtual
 			Ptr
 			copyFrom(Ptr source);
-
-            static
-            const std::string
-            getActualPropertyName(const std::unordered_map<std::string, std::string>&   variables,
-                                  const std::string&                                    propertyName);
 
 		protected:
 			Provider();

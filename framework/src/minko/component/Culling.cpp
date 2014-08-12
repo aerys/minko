@@ -57,7 +57,7 @@ Culling::targetAdded(NodePtr target)
 	if (target->root()->hasComponent<SceneManager>())
 		targetAddedToSceneHandler(nullptr, target, nullptr);
 	else
-		_addedToSceneSlot = target->added()->connect(std::bind(
+		_addedToSceneSlot = target->added().connect(std::bind(
 			&Culling::targetAddedToSceneHandler,
 			std::static_pointer_cast<Culling>(shared_from_this()),
 			std::placeholders::_1,
@@ -65,7 +65,7 @@ Culling::targetAdded(NodePtr target)
 			std::placeholders::_3
 		));
 	
-	_viewMatrixChangedSlot = target->data()->propertyChanged(_bindProperty)->connect(std::bind(
+	_viewMatrixChangedSlot = target->data().propertyChanged(_bindProperty)->connect(std::bind(
 		&Culling::worldToScreenChangedHandler,
 		std::static_pointer_cast<Culling>(shared_from_this()),
 		std::placeholders::_1,
@@ -88,14 +88,14 @@ Culling::targetAddedToSceneHandler(NodePtr node, NodePtr target, NodePtr ancesto
 	{
 		_addedToSceneSlot = nullptr;
 
-		_layoutChangedSlot = target->root()->layoutsChanged()->connect(std::bind(
+		_layoutChangedSlot = target->root()->layoutsChanged().connect(std::bind(
 			&Culling::layoutChangedHandler,
 			std::static_pointer_cast<Culling>(shared_from_this()),
 			std::placeholders::_1,
 			std::placeholders::_2
 		));
 
-		_addedSlot = target->root()->added()->connect(std::bind(
+		_addedSlot = target->root()->added().connect(std::bind(
 			&Culling::addedHandler,
 			std::static_pointer_cast<Culling>(shared_from_this()),
 			std::placeholders::_1,
@@ -128,11 +128,11 @@ Culling::layoutChangedHandler(NodePtr node, NodePtr target)
 }
 
 void
-Culling::worldToScreenChangedHandler(std::shared_ptr<data::Container>   data,
-                                     const std::string&                 propertyName,
-                                     const std::string&                 fullPropertyName)
+Culling::worldToScreenChangedHandler(data::Container&       data,
+                                     const std::string&     propertyName,
+                                     const std::string&     fullPropertyName)
 {
-	_frustum->updateFromMatrix(data->get<math::mat4>(propertyName));
+	_frustum->updateFromMatrix(data.get<math::mat4>(propertyName));
 	
 	auto renderer = target()->component<Renderer>();
 
@@ -140,11 +140,11 @@ Culling::worldToScreenChangedHandler(std::shared_ptr<data::Container>   data,
 		_frustum, 
 		[&](NodePtr node)
 		{
-			node->component<Surface>()->computedVisibility(renderer, true);
+			//node->component<Surface>()->computedVisibility(renderer, true);
 		},
 		[&](NodePtr node)
 		{
-			node->component<Surface>()->computedVisibility(renderer, false);
+			//node->component<Surface>()->computedVisibility(renderer, false);
 		}
 	);
 }

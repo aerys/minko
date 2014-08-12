@@ -47,12 +47,17 @@ namespace minko
 			math::mat4										_modelToWorld;
 			std::shared_ptr<data::Provider>		            _data;
 
-			Signal<AbsCtrlPtr, NodePtr>::Slot 				_targetAddedSlot;
-			Signal<AbsCtrlPtr, NodePtr>::Slot 				_targetRemovedSlot;
 			Signal<NodePtr, NodePtr, NodePtr>::Slot 		_addedSlot;
 			Signal<NodePtr, NodePtr, NodePtr>::Slot 		_removedSlot;
 
 		public:
+            ~Transform()
+            {
+                _data = nullptr;
+                _addedSlot = nullptr;
+                _removedSlot = nullptr;
+            }
+
 			inline static
 			Ptr
 			create()
@@ -69,10 +74,6 @@ namespace minko
 				ctrl->_matrix = transform;
 
 				return ctrl;
-			}
-
-			~Transform()
-			{
 			}
 
 			inline
@@ -166,6 +167,21 @@ namespace minko
 
 				void
 				forceUpdate(NodePtr node, bool updateTransformLists = false);
+
+                ~RootTransform()
+                {
+                    _transforms.clear();
+                    _matrix.clear();
+                    _modelToWorld.clear();
+                    _nodeToId.clear();
+                    _idToNode.clear();
+                    _parentId.clear();
+                    _firstChildId.clear();
+                    _numChildren.clear();
+                    _dirty.clear();
+                    _targetSlots.clear();
+                    _renderingBeginSlot = nullptr;
+                }
 
 			private:
 				std::vector<TransformPtr>		_transforms;

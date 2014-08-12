@@ -111,6 +111,8 @@ namespace minko
 			{
 				_indexBuffer = indices;
 				_data->set("indices", indices->id());
+                _data->set("firstIndex", 0u);
+                _data->set("numIndices", indices->numIndices());
 			}
 
 			inline

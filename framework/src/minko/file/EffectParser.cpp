@@ -763,48 +763,30 @@ EffectParser::parsePriority(const Json::Value& contextNode,
 
 void
 EffectParser::parseBindingNameAndSource(const Json::Value&	contextNode, 
-										std::string&		propertyName, 
-										BindingSource&		source,
-										RegexPtr&			regexp)
+										Binding&            binding)
 {
-	source	= BindingSource::TARGET;
-	regexp	= nullptr;
+    binding.source = BindingSource::TARGET;
+
 	if (contextNode.isString())
-		propertyName = contextNode.asString();
+	    binding.propertyName = contextNode.asString();
 	else if (contextNode.isObject())
 	{
 		auto propertyValue = contextNode.get("property", 0);
 		auto sourceValue = contextNode.get("source", 0);
 
 		if (propertyValue.isString())
-			propertyName = propertyValue.asString();
+            binding.propertyName = propertyValue.asString();
 
 		if (sourceValue.isString())
 		{
 			auto sourceString = sourceValue.asString();
 
 			if (sourceString == "target")
-				source = BindingSource::TARGET;
+                binding.source = BindingSource::TARGET;
 			else if (sourceString == "renderer")
-				source = BindingSource::RENDERER;
+                binding.source = BindingSource::RENDERER;
 			else if (sourceString == "root")
-				source = BindingSource::ROOT;
-		}
-	}
-
-	if (!propertyName.empty())
-	{
-		const auto withVariableRegex	= std::regex(".*\\[\\$\\{.*\\}\\].*");
-		const auto variableRegex		= std::regex("(\\$\\{)(.*)\\}");
-	
-		if (std::regex_match(propertyName, withVariableRegex))
-		{
-			// generate regex to recognize the macro when coming from filtered out data provider
-	
-			auto regexString	= std::regex_replace(propertyName, variableRegex, std::string("\\d"));
-			regexString			= std::regex_replace(regexString, std::regex("(\\[|\\.|\\])"), std::string("\\$&"));
-
-			regexp				= std::shared_ptr<std::regex>(new std::regex(regexString));
+                binding.source = BindingSource::ROOT;
 		}
 	}
 }
@@ -822,8 +804,7 @@ EffectParser::parseBindings(const Json::Value&	contextNode,
 		for (auto propertyName : attributeBindingsValue.getMemberNames())
 			parseBindingNameAndSource(
 				attributeBindingsValue.get(propertyName, 0),
-				attributeBindings[propertyName].propertyName,
-				attributeBindings[propertyName].source
+				attributeBindings[propertyName]
 			);
 
 	parseUniformBindings(contextNode, uniformBindings, uniformDefaultValues);
@@ -833,8 +814,7 @@ EffectParser::parseBindings(const Json::Value&	contextNode,
 		for (auto propertyName : stateBindingsValue.getMemberNames())
 			parseBindingNameAndSource(
 				stateBindingsValue.get(propertyName, 0),
-				stateBindings[propertyName].propertyName,
-				stateBindings[propertyName].source
+				stateBindings[propertyName]
 			);
 
 	parseMacroBindings(contextNode, macroBindings);
@@ -850,21 +830,16 @@ EffectParser::parseMacroBindings(const Json::Value&	contextNode, MacroBindingMap
 		for (auto propertyName : macroBindingsValue.getMemberNames())
 		{
 			auto macroBindingValue = macroBindingsValue.get(propertyName, 0);
-            auto macroBinding = macroBindings[propertyName];
+            auto& macroBinding = macroBindings[propertyName];
 
             macroBinding.defaultState = MacroBinding::State::UNDEFINED;
             macroBinding.minValue = -INT_MAX;
             macroBinding.maxValue = INT_MAX;
 
-			parseBindingNameAndSource(
-				macroBindingValue,
-                macroBinding.propertyName,
-                macroBinding.source
-			);
+			parseBindingNameAndSource(macroBindingValue, macroBinding);
 
 			if (macroBindingValue.isObject())
 			{
-				auto nameValue		= macroBindingValue.get("property", 0);
 				auto minValue		= macroBindingValue.get("min", -INT_MAX);
 				auto maxValue		= macroBindingValue.get("max", INT_MAX);
 				auto defaultValue	= macroBindingValue.get("default", "");
@@ -908,11 +883,7 @@ EffectParser::parseUniformBindings(const Json::Value&	contextNode,
 		{
 			auto uniformBindingValue = uniformBindingsValue.get(propertyName, 0);
 
-			parseBindingNameAndSource(
-				uniformBindingValue,
-				uniformBindings[propertyName].propertyName,
-				uniformBindings[propertyName].source
-			);
+			parseBindingNameAndSource(uniformBindingValue, uniformBindings[propertyName]);
 
 			if (uniformBindingValue.isObject())
 			{
@@ -1089,23 +1060,23 @@ EffectParser::parseScissorTest(const Json::Value& contextNode,
 								bool&			  scissorTest,
 								ScissorBox&	      scissorBox) const
 {
-	auto scissorTestNode		= contextNode.get("scissorTest", 0);
+	auto scissorTestNode = contextNode.get("scissorTest", 0);
 
 	if (!scissorTestNode.isNull() && scissorTestNode.isBool())
 		scissorTest = scissorTestNode.asBool();
 
-	auto scissorBoxNode			= contextNode.get("scissorBox", 0);
+	auto scissorBoxNode	= contextNode.get("scissorBox", 0);
 
 	if (!scissorBoxNode.isNull() && scissorBoxNode.isArray())
 	{
 		if (scissorBoxNode[0].isInt())
-			scissorBox.x		= scissorBoxNode[0].asInt();
+			scissorBox.x = scissorBoxNode[0].asInt();
 		if (scissorBoxNode[1].isInt())
-			scissorBox.y		= scissorBoxNode[1].asInt();
+			scissorBox.y = scissorBoxNode[1].asInt();
 		if (scissorBoxNode[2].isInt())
-			scissorBox.width	= scissorBoxNode[2].asInt();
+			scissorBox.width = scissorBoxNode[2].asInt();
 		if (scissorBoxNode[3].isInt())
-			scissorBox.height	= scissorBoxNode[3].asInt();
+			scissorBox.height = scissorBoxNode[3].asInt();
 	}
 }
 

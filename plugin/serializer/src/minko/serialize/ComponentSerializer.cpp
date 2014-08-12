@@ -215,8 +215,8 @@ ComponentSerializer::getSurfaceExtension(NodePtr node, SurfacePtr surface)
 	if (surface->technique() != "default")
 		properties.push_back(serializeSimpleProperty(std::string("technique"), technique));
 
-	if (!surface->visible())
-		properties.push_back(serializeSimpleProperty(std::string("visible"), surface->visible()));
+	/*if (!surface->visible())
+		properties.push_back(serializeSimpleProperty(std::string("visible"), surface->visible()));*/
 
 	std::stringstream buffer;
 

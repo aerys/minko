@@ -44,26 +44,32 @@ namespace minko
 			typedef std::shared_ptr<VertexBuffer>						VertexBufferPtr;
             typedef std::unordered_map<std::string, SamplerState>		SamplerStatesMap;
 			typedef std::shared_ptr<States>								StatesPtr;
-			typedef std::unordered_map<ProgramSignature, ProgramPtr>	SignatureProgramMap;
+            typedef std::unordered_map<ProgramSignature*, ProgramPtr>	SignatureToProgramMap;
 			typedef std::list<std::function<void(ProgramPtr)>>			OnProgramFunctionList;	
 			typedef std::unordered_map<std::string, data::MacroBinding> MacroBindingsMap;
 
 		private:
-			const std::string						_name;
-			ProgramPtr								_programTemplate;
-			data::BindingMap						_attributeBindings;
-			data::BindingMap						_uniformBindings;
-			data::BindingMap						_stateBindings;
-			data::MacroBindingMap					_macroBindings;
-            StatesPtr								_states;
-			std::string								_fallback;
-			SignatureProgramMap						_signatureToProgram;
+			const std::string		_name;
+			ProgramPtr				_programTemplate;
+			data::BindingMap		_attributeBindings;
+			data::BindingMap		_uniformBindings;
+			data::BindingMap		_stateBindings;
+			data::MacroBindingMap	_macroBindings;
+            StatesPtr				_states;
+			std::string				_fallback;
+            SignatureToProgramMap	_signatureToProgram;
 
-			OnProgramFunctionList					_uniformFunctions;
-			OnProgramFunctionList					_attributeFunctions;
-            OnProgramFunctionList                   _macroFunctions;
+			OnProgramFunctionList	_uniformFunctions;
+			OnProgramFunctionList	_attributeFunctions;
+            OnProgramFunctionList   _macroFunctions;
 
 		public:
+            ~Pass()
+            {
+                for (auto& signatureAndProgram : _signatureToProgram)
+                    delete signatureAndProgram.first;
+            }
+            
 			inline static
 			Ptr
 			create(const std::string&				name,
@@ -102,7 +108,8 @@ namespace minko
 					pass->_fallback
 				);
 
-				p->_signatureToProgram = pass->_signatureToProgram;
+                for (auto& signatureProgram : pass->_signatureToProgram)
+                    p->_signatureToProgram[new ProgramSignature(*signatureProgram.first)] = signatureProgram.second;
 
 				p->_uniformFunctions = pass->_uniformFunctions;
 				p->_attributeFunctions = pass->_attributeFunctions;
@@ -176,9 +183,9 @@ namespace minko
 
 			std::shared_ptr<Program>
             selectProgram(const std::unordered_map<std::string, std::string>&   translatedPropertyNames,
-						  std::shared_ptr<data::Container>	                    targetData,
-						  std::shared_ptr<data::Container>	                    rendererData,
-						  std::shared_ptr<data::Container>	                    rootData);
+						  const data::Container&	                            targetData,
+						  const data::Container&	                            rendererData,
+                          const data::Container&	                            rootData);
 			
 			template <typename... T>
 			void

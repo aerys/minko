@@ -58,14 +58,8 @@ namespace minko
 			std::shared_ptr<material::Material>								_material;
 			std::shared_ptr<render::Effect>									_effect;
 			std::string 													_technique;
-
-			bool															_visible;
-			std::unordered_map<std::shared_ptr<component::Renderer>, bool>	_rendererToVisibility;
-			std::unordered_map<std::shared_ptr<component::Renderer>, bool>  _rendererToComputedVisibility;
 			
 			TechniqueChangedSignal::Ptr										_techniqueChanged;
-			VisibilityChangedSignal::Ptr									_visibilityChanged;
-			VisibilityChangedSignal::Ptr									_computedVisibilityChanged;
 
 		public:
 			static
@@ -144,69 +138,10 @@ namespace minko
 			effect(std::shared_ptr<render::Effect>, const std::string& = "default");
 
 			inline
-			bool
-			visible() const
-			{
-				return _visible;
-			}
-
-			inline
-			bool
-			visible(std::shared_ptr<component::Renderer> renderer)
-			{
-				if (_rendererToVisibility.find(renderer) == _rendererToVisibility.end())
-					_rendererToVisibility[renderer] = _visible;
-				return _rendererToVisibility[renderer];
-			}
-
-			inline
-			void
-			visible(bool value)
-			{
-				for (auto& visibility : _rendererToVisibility)
-					visible(visibility.first, value);
-
-				if (_visible != value)
-				{
-					_visible = value;
-					_visibilityChanged->execute(std::static_pointer_cast<Surface>(shared_from_this()), nullptr, _visible);
-				}
-			}
-
-			void
-			visible(std::shared_ptr<component::Renderer>, bool value);
-			
-			inline
-			bool
-			computedVisibility(std::shared_ptr<component::Renderer> renderer)
-			{
-				if (_rendererToComputedVisibility.find(renderer) == _rendererToComputedVisibility.end())
-					_rendererToComputedVisibility[renderer] = true;
-				return _rendererToComputedVisibility[renderer];
-			}
-
-			void
-			computedVisibility(std::shared_ptr<component::Renderer>, bool value);
-
-			inline
 			TechniqueChangedSignal::Ptr	
 			techniqueChanged() const
 			{
 				return _techniqueChanged;
-			}
-
-			inline
-			VisibilityChangedSignal::Ptr
-			visibilityChanged() const
-			{
-				return _visibilityChanged;
-			}
-
-			inline
-			VisibilityChangedSignal::Ptr
-			computedVisibilityChanged() const
-			{
-				return _computedVisibilityChanged;
 			}
 
         protected:

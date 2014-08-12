@@ -70,25 +70,25 @@ Matrix4x4Timeline::initializeMatrixTimetable(const std::vector<uint>& 			timetab
 
 void
 Matrix4x4Timeline::update(uint time, 
-						  UpdateTargetPtr data, 
+						  data::Container& data, 
 						  bool /*skipPropertyNameFormatting*/)
 {
 	if (_isLocked || _duration == 0 || _matrices.empty())
 		return;
 
-	if (data == nullptr || !data->hasProperty(_propertyName))
+	if (!data.hasProperty(_propertyName))
 		return;
 
-	auto matrix	= data->get<math::mat4>(_propertyName);
+	auto matrix	= data.get<math::mat4>(_propertyName);
 
     if (_interpolate)
-    	data->set(_propertyName, interpolate(time));
+    	data.set(_propertyName, interpolate(time));
     else
     {
         const uint	t		= getTimeInRange(time, _duration + 1);
 	    const uint	keyId	= getIndexForTime(t, _matrices);
 
-    	data->set(_propertyName, _matrices[keyId].second);
+    	data.set(_propertyName, _matrices[keyId].second);
     }
 }
 

@@ -44,90 +44,86 @@ namespace minko
 			typedef std::shared_ptr<render::States>				RenderStatesPtr;
 
 		protected:
-			static const RenderStatesPtr						_defaultStates;
+			static const std::shared_ptr<render::States>		_defaultStates;
 
 		public:
 			inline static
 			Ptr
 			create()
 			{
-				Ptr ptr = std::shared_ptr<BasicMaterial>(new BasicMaterial());
-
-				ptr->initialize();
-
-				return ptr;
+                return std::shared_ptr<BasicMaterial>(new BasicMaterial());
 			}
 
-			Ptr
+			BasicMaterial&
 			diffuseColor(const math::vec4&);
 
-			Ptr
+			BasicMaterial&
 			diffuseColor(uint);
 
 			math::vec4
 			diffuseColor() const;
 
-			Ptr
+			BasicMaterial&
 			uvScale(const math::vec2& v);
 
 			const math::vec2&
 			uvScale() const;
 
-			Ptr
+			BasicMaterial&
 			uvOffset(const math::vec2& v);
 
 			const math::vec2&
 			uvOffset() const;
 
-			Ptr
+			BasicMaterial&
             diffuseMap(TexturePtr);
 
 			render::ResourceId
 			diffuseMap() const;
 
-			Ptr
+			BasicMaterial&
 			diffuseCubeMap(AbsTexturePtr);
 
 			render::ResourceId
 			diffuseCubeMap() const;
 
-			Ptr
+			BasicMaterial&
 			fogColor(const math::vec4&);
 
-			Ptr
+			BasicMaterial&
 			fogColor(uint);
 
 			math::vec4
 			fogColor() const;
 
-            Ptr
+            BasicMaterial&
             fogDensity(float);
 
             float
             fogDensity() const;
 
-            Ptr
+            BasicMaterial&
             fogStart(float);
 
             float
             fogStart() const;
 
-            Ptr
+            BasicMaterial&
             fogEnd(float);
 
             float
             fogEnd() const;
 
-            Ptr
+            BasicMaterial&
             fogType(render::FogType);
 
             render::FogType
             fogType() const;
 
-			Ptr
+			BasicMaterial&
 			blendingMode(render::Blending::Source, render::Blending::Destination);
 
-			Ptr
+			BasicMaterial&
 			blendingMode(render::Blending::Mode);
 
 			render::Blending::Source
@@ -136,73 +132,73 @@ namespace minko
 			render::Blending::Destination
 			blendingDestinationFactor() const;
 
-			Ptr
+			BasicMaterial&
 			colorMask(bool);
 
 			bool
 			colorMask() const;
 
-			Ptr
+			BasicMaterial&
 			depthMask(bool);
 
 			bool
 			depthMask() const;
 
-			Ptr
+			BasicMaterial&
 			depthFunction(render::CompareMode);
 
 			render::CompareMode
 			depthFunction() const;
 
-			Ptr
+			BasicMaterial&
 			triangleCulling(render::TriangleCulling);
 
 			render::TriangleCulling
 			triangleCulling() const;
 
-			Ptr
+			BasicMaterial&
 			stencilFunction(render::CompareMode);
 
 			render::CompareMode
 			stencilFunction() const;
 
-			Ptr
+			BasicMaterial&
 			stencilReference(int);
 
 			int
 			stencilReference() const;
 
-			Ptr
+			BasicMaterial&
 			stencilMask(uint);
 
 			uint
 			stencilMask() const;
 
-			Ptr
+			BasicMaterial&
 			stencilFailOperation(render::StencilOperation);
 
 			render::StencilOperation
 			stencilFailOperation() const;
 
-			Ptr
+			BasicMaterial&
 			stencilDepthFailOperation(render::StencilOperation);
 
 			render::StencilOperation
 			stencilDepthFailOperation() const;
 
-			Ptr
+			BasicMaterial&
 			stencilDepthPassOperation(render::StencilOperation);
 
 			render::StencilOperation
 			stencilDepthPassOperation() const;
 
-			Ptr
+			BasicMaterial&
 			priority(float);
 
 			float 
 			priority() const;
 
-			Ptr
+			BasicMaterial&
 			zSorted(bool);
 
 			bool
@@ -210,10 +206,6 @@ namespace minko
 
 		protected:
 			BasicMaterial();
-
-			virtual
-			void
-			initialize();
 		};
 	}
 }

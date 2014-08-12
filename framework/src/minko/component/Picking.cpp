@@ -106,7 +106,7 @@ Picking::targetAdded(NodePtr target)
 
 	updateDescendants(target);
 
-	_addedSlot = target->added()->connect(std::bind(
+	_addedSlot = target->added().connect(std::bind(
 		&Picking::addedHandler,
 		std::static_pointer_cast<Picking>(shared_from_this()),
 		std::placeholders::_1,
@@ -114,7 +114,7 @@ Picking::targetAdded(NodePtr target)
 		std::placeholders::_3
 	));
 
-	_removedSlot = target->removed()->connect(std::bind(
+	_removedSlot = target->removed().connect(std::bind(
 		&Picking::removedHandler,
 		std::static_pointer_cast<Picking>(shared_from_this()),
 		std::placeholders::_1,
@@ -129,8 +129,8 @@ Picking::targetAdded(NodePtr target)
 
 	auto perspectiveCamera = _camera->component<component::PerspectiveCamera>();
 
-	target->data()->addProvider(_pickingProvider);
-	target->data()->addProvider(perspectiveCamera->data());
+	target->data().addProvider(_pickingProvider);
+	target->data().addProvider(perspectiveCamera->data());
 	
 	addSurfacesForNode(target);
 }
@@ -164,7 +164,7 @@ Picking::addedHandler(NodePtr target, NodePtr child, NodePtr parent)
 			std::static_pointer_cast<Picking>(shared_from_this()),
 			std::placeholders::_1));
 	
-		_componentAddedSlot = child->componentAdded()->connect(std::bind(
+		_componentAddedSlot = child->componentAdded().connect(std::bind(
 			&Picking::componentAddedHandler,
 			std::static_pointer_cast<Picking>(shared_from_this()),
 			std::placeholders::_1,
@@ -172,7 +172,7 @@ Picking::addedHandler(NodePtr target, NodePtr child, NodePtr parent)
 			std::placeholders::_3
 		));
 
-		_componentRemovedSlot = child->componentRemoved()->connect(std::bind(
+		_componentRemovedSlot = child->componentRemoved().connect(std::bind(
 			&Picking::componentRemovedHandler,
 			std::static_pointer_cast<Picking>(shared_from_this()),
 			std::placeholders::_1,
@@ -240,7 +240,7 @@ Picking::addSurface(SurfacePtr surface)
 		if (_targetToProvider.find(target()) == _targetToProvider.end())
 		{
 			_targetToProvider[target()] = _surfaceToProvider[surface];
-			target()->data()->addProvider(_surfaceToProvider[surface]);
+			target()->data().addProvider(_surfaceToProvider[surface]);
 		}
 
 		if (_addPickingLayout)
@@ -258,7 +258,7 @@ Picking::removeSurface(SurfacePtr surface, NodePtr node)
 
 	if (_surfaceToProvider.find(surface) == _surfaceToProvider.end())
 	{
-		node->data()->removeProvider(_surfaceToProvider[surface]);
+		node->data().removeProvider(_surfaceToProvider[surface]);
 
 		if (_targetToProvider[node] == _surfaceToProvider[surface])
 			_targetToProvider.erase(node);

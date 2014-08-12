@@ -65,14 +65,17 @@ math::OctTree::generateVisual(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 		math::scale(t, math::vec3(1.f));
 		math::translate(t, _center);
 
+        auto material = material::BasicMaterial::create();
+
+        material->diffuseColor(0x00FF0030)
+            .blendingMode(render::Blending::Mode::ALPHA)
+            .triangleCulling(render::TriangleCulling::NONE);
+
 		node
 			->addComponent(component::Transform::create(t))
 			->addComponent(component::Surface::create(
 				geometry::CubeGeometry::create(assetLibrary->context()),
-				material::BasicMaterial::create()
-					->diffuseColor(0x00FF0030)
-					->blendingMode(render::Blending::Mode::ALPHA)
-					->triangleCulling(render::TriangleCulling::NONE),
+				material,
 				assetLibrary->effect("effect/Basic.effect")
 			));
 		rootNode->addChild(node);
@@ -170,7 +173,7 @@ math::OctTree::insert(std::shared_ptr<scene::Node> node)
 
 	if (_nodeToTransformChangedSlot.find(node) == _nodeToTransformChangedSlot.end())
 	{
-		_nodeToTransformChangedSlot[node] = node->data()->propertyChanged("transform.modelToWorldMatrix")->connect(std::bind(
+		_nodeToTransformChangedSlot[node] = node->data().propertyChanged("transform.modelToWorldMatrix")->connect(std::bind(
 			&math::OctTree::nodeModelToWorldChanged,
 			shared_from_this(),
 			std::placeholders::_1,
@@ -199,8 +202,8 @@ math::OctTree::nodeChangedOctant(std::shared_ptr<scene::Node> node)
 }
 
 void
-math::OctTree::nodeModelToWorldChanged(data::Container::Ptr	data,
-								 const std::string&		propertyName)
+math::OctTree::nodeModelToWorldChanged(data::Container&     data,
+								       const std::string&	propertyName)
 {
 	/*auto node		= _matrixToNode[data->get<std::shared_ptr<math::mat4>>(propertyName)];
 	auto octant		= _nodeToOctant[node];

@@ -100,17 +100,3 @@ Provider::copyFrom(Provider::Ptr source)
 	return shared_from_this();
 }
 
-const std::string
-Provider::getActualPropertyName(const std::unordered_map<std::string, std::string>& vars, const std::string& propertyName)
-{
-    for (const auto& variableName : vars)
-    {
-        auto pos = propertyName.find("${" + variableName.first + "}");
-
-        if (pos != std::string::npos)
-            return propertyName.substr(0, pos) + variableName.second
-                + propertyName.substr(pos + variableName.first.size() + 3);
-    }
-
-    return propertyName;
-}

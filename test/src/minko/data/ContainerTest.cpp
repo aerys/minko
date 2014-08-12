@@ -21,123 +21,111 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko::data;
 
-TEST_F(ContainerTest, Create)
-{
-	try
-	{
-		auto c = Container::create();
-	}
-	catch (...)
-	{
-		ASSERT_TRUE(false);
-	}
-}
-
 TEST_F(ContainerTest, AddProvider)
 {
-	auto c = Container::create();
+	Container c;
 	auto p = Provider::create();
 
 	p->set("foo", 42);
 
-	c->addProvider(p);
+	c.addProvider(p);
 
-	ASSERT_NE(std::find(c->providers().begin(), c->providers().end(), p), c->providers().end());
-	ASSERT_TRUE(c->hasProperty("foo"));
-	ASSERT_EQ(c->get<int>("foo"), 42);
+	ASSERT_NE(std::find(c.providers().begin(), c.providers().end(), p), c.providers().end());
+	ASSERT_TRUE(c.hasProperty("foo"));
+	ASSERT_EQ(c.get<int>("foo"), 42);
 }
 
 TEST_F(ContainerTest, RemoveProvider)
 {
-	auto c = Container::create();
+	Container c;
 	auto p = Provider::create();
 
 	p->set("foo", 42);
 
-	c->addProvider(p);
-	c->removeProvider(p);
+	c.addProvider(p);
+	c.removeProvider(p);
 
-    ASSERT_EQ(std::find(c->providers().begin(), c->providers().end(), p), c->providers().end());
-	ASSERT_FALSE(c->hasProperty("foo"));
+    ASSERT_EQ(std::find(c.providers().begin(), c.providers().end(), p), c.providers().end());
+	ASSERT_FALSE(c.hasProperty("foo"));
 }
 
 TEST_F(ContainerTest, PropertyAdded)
 {
-	auto c = Container::create();
+	Container c;
 	auto p = Provider::create();
 	int v = 0;
 
 	p->set("foo", 42);
 
-	auto _ = c->propertyAdded()->connect(
-		[&](Container::Ptr container, const std::string& propertyName, const std::string& fullPropertyName)
+	auto _ = c.propertyAdded()->connect(
+		[&](Container& container, const std::string& propertyName, const std::string& fullPropertyName)
 		{
-			if (container == c && propertyName == "foo")
-				v = container->get<int>("foo");
+			if (propertyName == "foo")
+				v = container.get<int>("foo");
 		}
 	);
 
-	c->addProvider(p);
+	c.addProvider(p);
 
 	ASSERT_EQ(v, 42);
 }
 
 TEST_F(ContainerTest, PropertyRemoved)
 {
-	auto c = Container::create();
+	Container c;
 	auto p = Provider::create();
 	int v = 0;
 
 	p->set("foo", 42);
 
-	auto _ = c->propertyAdded()->connect(
-        [&](Container::Ptr container, const std::string& propertyName, const std::string& fullPropertyName)
+	auto _ = c.propertyAdded()->connect(
+        [&](Container& container, const std::string& propertyName, const std::string& fullPropertyName)
 		{
-			if (container == c && propertyName == "foo")
+			if (propertyName == "foo")
 				v = 42;
 		}
 	);
 
-	c->addProvider(p);
-	c->removeProvider(p);
+	c.addProvider(p);
+	c.removeProvider(p);
 
 	ASSERT_EQ(v, 42);
 }
 
 TEST_F(ContainerTest, propertyChangedWhenAdded)
 {
-	auto c = Container::create();
+	Container c;
 	auto p = Provider::create();
 	int v = 0;
 
 	p->set("foo", 42);
 
-	auto _ = c->propertyChanged("foo")->connect(
-        [&](Container::Ptr container, const std::string& propertyName, const std::string& fullPropertyName)
+	auto _ = c.propertyChanged("foo")->connect(
+        [&](Container& container, const std::string& propertyName, const std::string& fullPropertyName)
 		{
-			if (container == c && propertyName == "foo")
-				v = container->get<int>("foo");
+			if (propertyName == "foo")
+				v = container.get<int>("foo");
 		}
 	);
 
-	c->addProvider(p);
+	c.addProvider(p);
 
 	ASSERT_EQ(v, 42);
 }
 
 TEST_F(ContainerTest, propertyChangedWhenAddedOnProvider)
 {
-	auto c = Container::create();
+	Container c;
 	auto p = Provider::create();
 	int v = 0;
 
-	c->addProvider(p);
+	c.addProvider(p);
 
-	auto _ = c->propertyChanged("foo")->connect(
-        [&](Container::Ptr container, const std::string& propertyName, const std::string& fullPropertyName)
+	auto _ = c.propertyChanged("foo")->connect(
+        [&](Container& container, const std::string& propertyName, const std::string& fullPropertyName)
 		{
-			if (container == c && propertyName == "foo")
-				v = container->get<int>("foo");
+			if (propertyName == "foo")
+				v = container.get<int>("foo");
 		}
 	);
 
@@ -148,18 +136,18 @@ TEST_F(ContainerTest, propertyChangedWhenAddedOnProvider)
 
 TEST_F(ContainerTest, propertyChangedWhenSetOnProvider)
 {
-	auto c = Container::create();
+	Container c;
 	auto p = Provider::create();
 	int v = 0;
 
-	c->addProvider(p);
+	c.addProvider(p);
 	p->set("foo", 23);
 
-	auto _ = c->propertyChanged("foo")->connect(
-        [&](Container::Ptr container, const std::string& propertyName, const std::string& fullPropertyName)
+	auto _ = c.propertyChanged("foo")->connect(
+        [&](Container& container, const std::string& propertyName, const std::string& fullPropertyName)
 		{
-			if (container == c && propertyName == "foo")
-				v = container->get<int>("foo");
+			if (propertyName == "foo")
+				v = container.get<int>("foo");
 		}
 	);
 
@@ -170,18 +158,18 @@ TEST_F(ContainerTest, propertyChangedWhenSetOnProvider)
 
 TEST_F(ContainerTest, propertyChangedNot)
 {
-	auto c = Container::create();
+	Container c;
 	auto p = Provider::create();
 	int v = 0;
 
-	c->addProvider(p);
+	c.addProvider(p);
 	p->set("foo", 42);
 
-	auto _ = c->propertyChanged("foo")->connect(
-        [&](Container::Ptr container, const std::string& propertyName, const std::string& fullPropertyName)
+	auto _ = c.propertyChanged("foo")->connect(
+        [&](Container& container, const std::string& propertyName, const std::string& fullPropertyName)
 		{
-			if (container == c && propertyName == "foo")
-				v = container->get<int>("foo");
+			if (propertyName == "foo")
+				v = container.get<int>("foo");
 		}
 	);
 
@@ -192,102 +180,68 @@ TEST_F(ContainerTest, propertyChangedNot)
 
 TEST_F(ContainerTest, addCollection)
 {
-    auto c = Container::create();
+    Container c;
     auto p = Provider::create();
     auto cc = Collection::create("test");
-    auto collectionAdded = false;
-    auto providerAdded = false;
 
     cc->pushBack(p);
+    c.addCollection(cc);
 
-    auto _ = c->collectionAdded()->connect([&](Container::Ptr container, Collection::Ptr collection)
-    {
-        collectionAdded = collection == cc;
-    });
-
-    auto __ = c->providerAdded()->connect([&](Container::Ptr container, Provider::Ptr provider)
-    {
-        providerAdded = provider == p;
-    });
-
-    c->addCollection(cc);
-
-    ASSERT_NE(std::find(c->collections().begin(), c->collections().end(), cc), c->collections().end());
-    ASSERT_TRUE(collectionAdded);
-    ASSERT_TRUE(providerAdded);
+    ASSERT_NE(std::find(c.collections().begin(), c.collections().end(), cc), c.collections().end());
 }
 
 TEST_F(ContainerTest, addProviderToCollection)
 {
-    auto c = Container::create();
+    Container c;
     auto p = Provider::create();
     auto cc = Collection::create("test");
-    auto providerAdded = false;
 
-    c->addCollection(cc);
-
-    auto _ = c->providerAdded()->connect([&](Container::Ptr container, Provider::Ptr provider)
-    {
-        providerAdded = provider == p;
-    });
-
+    p->set("foo", 42);
+    c.addCollection(cc);
     cc->pushBack(p);
 
-    ASSERT_TRUE(providerAdded);
+    ASSERT_NE(std::find(c.providers().begin(), c.providers().end(), p), c.providers().end());
+    ASSERT_TRUE(c.hasProperty("test[0].foo"));
+    ASSERT_EQ(c.get<unsigned int>("test[0].foo"), 42);
 }
 
 TEST_F(ContainerTest, removeCollection)
 {
-    auto c = Container::create();
+    Container c;
     auto p = Provider::create();
     auto cc = Collection::create("test");
     auto collectionRemoved = false;
     auto providerRemoved = false;
 
+    p->set("foo", 42);
     cc->pushBack(p);
-    c->addCollection(cc);
+    c.addCollection(cc);
+    c.removeCollection(cc);
 
-    auto _ = c->collectionRemoved()->connect([&](Container::Ptr container, Collection::Ptr collection)
-    {
-        collectionRemoved = collection == cc;
-    });
-
-    auto __ = c->providerRemoved()->connect([&](Container::Ptr container, Provider::Ptr provider)
-    {
-        providerRemoved = provider == p;
-    });
-
-    c->removeCollection(cc);
-
-    ASSERT_EQ(std::find(c->collections().begin(), c->collections().end(), cc), c->collections().end());
-    ASSERT_TRUE(collectionRemoved);
-    ASSERT_TRUE(providerRemoved);
+    ASSERT_EQ(std::find(c.collections().begin(), c.collections().end(), cc), c.collections().end());
+    ASSERT_EQ(std::find(c.providers().begin(), c.providers().end(), p), c.providers().end());
+    ASSERT_FALSE(c.hasProperty("test[0].foo"));
 }
 
 TEST_F(ContainerTest, removeProviderFromCollection)
 {
-    auto c = Container::create();
+    Container c;
     auto p = Provider::create();
     auto cc = Collection::create("test");
-    auto providerRemoved = false;
 
+    p->set("foo", 42);
     cc->pushBack(p);
-    c->addCollection(cc);
-
-    auto _ = c->providerRemoved()->connect([&](Container::Ptr container, Provider::Ptr provider)
-    {
-        providerRemoved = provider == p;
-    });
-
+    c.addCollection(cc);
     cc->remove(p);
 
-    ASSERT_TRUE(providerRemoved);
-    ASSERT_EQ(c->get<unsigned int>("test.length"), 0u);
+    ASSERT_NE(std::find(c.collections().begin(), c.collections().end(), cc), c.collections().end());
+    ASSERT_EQ(std::find(c.providers().begin(), c.providers().end(), p), c.providers().end());
+    ASSERT_EQ(c.get<unsigned int>("test.length"), 0u);
 }
 
 TEST_F(ContainerTest, getCollectionNth)
 {
-    auto c = Container::create();
+    Container c;
     auto p0 = Provider::create();
     auto p1 = Provider::create();
     auto p2 = Provider::create();
@@ -296,35 +250,35 @@ TEST_F(ContainerTest, getCollectionNth)
     p0->set("foo", 42);
     p1->set("foo", 4242);
     p2->set("foo", 424242);
-    c->addCollection(cc);
-    ASSERT_EQ(c->get<unsigned int>("test.length"), 0u);
+    c.addCollection(cc);
+    ASSERT_EQ(c.get<unsigned int>("test.length"), 0u);
     cc->pushBack(p0);
-    ASSERT_EQ(c->get<unsigned int>("test.length"), 1u);
+    ASSERT_EQ(c.get<unsigned int>("test.length"), 1u);
     cc->pushBack(p1);
-    ASSERT_EQ(c->get<unsigned int>("test.length"), 2u);
+    ASSERT_EQ(c.get<unsigned int>("test.length"), 2u);
     cc->pushBack(p2);
-    ASSERT_EQ(c->get<unsigned int>("test.length"), 3u);
+    ASSERT_EQ(c.get<unsigned int>("test.length"), 3u);
 
-    ASSERT_EQ(c->get<int>("test[0].foo"), 42);
-    ASSERT_EQ(c->get<int>("test[1].foo"), 4242);
-    ASSERT_EQ(c->get<int>("test[2].foo"), 424242);
+    ASSERT_EQ(c.get<int>("test[0].foo"), 42);
+    ASSERT_EQ(c.get<int>("test[1].foo"), 4242);
+    ASSERT_EQ(c.get<int>("test[2].foo"), 424242);
 }
 
 TEST_F(ContainerTest, collectionPropertyAdded)
 {
-    auto c = Container::create();
+    Container c;
     auto p = Provider::create();
     auto cc = Collection::create("test");
     auto propertyAdded = false;
 
     cc->pushBack(p);
-    c->addCollection(cc);
+    c.addCollection(cc);
 
-    auto _ = c->propertyAdded()->connect(
-        [&](Container::Ptr container, const std::string& propertyName, const std::string& fullPropertyName)
+    auto _ = c.propertyAdded()->connect(
+        [&](Container& container, const std::string& propertyName, const std::string& fullPropertyName)
         {
-            propertyAdded = container == c && propertyName == "foo" && fullPropertyName == "test[0].foo"
-                && container->get<int>(fullPropertyName) == 42;
+            propertyAdded = propertyName == "foo" && fullPropertyName == "test[0].foo"
+                && container.get<int>(fullPropertyName) == 42;
         }
     );
 
@@ -335,20 +289,20 @@ TEST_F(ContainerTest, collectionPropertyAdded)
 
 TEST_F(ContainerTest, collectionPropertyChanged)
 {
-    auto c = Container::create();
+    Container c;
     auto p = Provider::create();
     auto cc = Collection::create("test");
     auto propertyChanged = false;
 
     cc->pushBack(p);
-    c->addCollection(cc);
+    c.addCollection(cc);
     p->set("foo", 42);
 
-    auto _ = c->propertyChanged("test[0].foo")->connect(
-        [&](Container::Ptr container, const std::string& propertyName, const std::string& fullPropertyName)
+    auto _ = c.propertyChanged("test[0].foo")->connect(
+        [&](Container& container, const std::string& propertyName, const std::string& fullPropertyName)
         {
-            propertyChanged = container == c && propertyName == "foo" && fullPropertyName == "test[0].foo"
-                && container->get<int>(fullPropertyName) == 4242;
+            propertyChanged = propertyName == "foo" && fullPropertyName == "test[0].foo"
+                && container.get<int>(fullPropertyName) == 4242;
         }
     );
 
@@ -359,20 +313,20 @@ TEST_F(ContainerTest, collectionPropertyChanged)
 
 TEST_F(ContainerTest, collectionPropertyChangedNot)
 {
-    auto c = Container::create();
+    Container c;
     auto p = Provider::create();
     auto cc = Collection::create("test");
     auto propertyChanged = false;
 
     cc->pushBack(p);
-    c->addCollection(cc);
+    c.addCollection(cc);
     p->set("foo", 42);
 
-    auto _ = c->propertyChanged("test[0].foo")->connect(
-        [&](Container::Ptr container, const std::string& propertyName, const std::string& fullPropertyName)
+    auto _ = c.propertyChanged("test[0].foo")->connect(
+        [&](Container& container, const std::string& propertyName, const std::string& fullPropertyName)
         {
-            propertyChanged = c == container && propertyName == "foo" && fullPropertyName == "test[0].foo"
-                && container->get<int>(fullPropertyName) == 42;
+            propertyChanged = propertyName == "foo" && fullPropertyName == "test[0].foo"
+                && container.get<int>(fullPropertyName) == 42;
         }
     );
 
@@ -383,19 +337,19 @@ TEST_F(ContainerTest, collectionPropertyChangedNot)
 
 TEST_F(ContainerTest, collectionPropertyRemoved)
 {
-    auto c = Container::create();
+    Container c;
     auto p = Provider::create();
     auto cc = Collection::create("test");
     auto propertyRemoved = false;
 
     p->set("foo", 42);
     cc->pushBack(p);
-    c->addCollection(cc);
+    c.addCollection(cc);
 
-    auto _ = c->propertyRemoved()->connect(
-        [&](Container::Ptr container, const std::string& propertyName, const std::string& fullPropertyName)
+    auto _ = c.propertyRemoved()->connect(
+        [&](Container& container, const std::string& propertyName, const std::string& fullPropertyName)
         {
-            propertyRemoved = container == c && propertyName == "foo" && fullPropertyName == "test[0].foo";
+            propertyRemoved = propertyName == "foo" && fullPropertyName == "test[0].foo";
         }
     );
 
@@ -406,7 +360,7 @@ TEST_F(ContainerTest, collectionPropertyRemoved)
 
 TEST_F(ContainerTest, collectionNthPropertyChanged)
 {
-    auto c = Container::create();
+    Container c;
     auto p0 = Provider::create();
     auto p1 = Provider::create();
     auto cc = Collection::create("test");
@@ -415,13 +369,13 @@ TEST_F(ContainerTest, collectionNthPropertyChanged)
     p0->set("foo", 42);
     p1->set("foo", 4242);
     cc->pushBack(p0).pushBack(p1);
-    c->addCollection(cc);
+    c.addCollection(cc);
 
-    auto _ = c->propertyChanged("test[1].foo")->connect(
-        [&](Container::Ptr container, const std::string& propertyName, const std::string& fullPropertyName)
+    auto _ = c.propertyChanged("test[1].foo")->connect(
+        [&](Container& container, const std::string& propertyName, const std::string& fullPropertyName)
         {
-            propertyChanged = container == c && propertyName == "foo" &&  fullPropertyName == "test[1].foo"
-                && container->get<int>(fullPropertyName) == 42;
+            propertyChanged = propertyName == "foo" &&  fullPropertyName == "test[1].foo"
+                && container.get<int>(fullPropertyName) == 42;
         }
     );
 
@@ -432,7 +386,7 @@ TEST_F(ContainerTest, collectionNthPropertyChanged)
 
 TEST_F(ContainerTest, collectionPropertyPointerConsistency)
 {
-    auto c = Container::create();
+    Container c;
     auto p0 = Provider::create();
     auto p1 = Provider::create();
     auto cc = Collection::create("test");
@@ -441,12 +395,12 @@ TEST_F(ContainerTest, collectionPropertyPointerConsistency)
     p0->set("foo", 42);
     p1->set("foo", 4242);
     cc->pushBack(p0).pushBack(p1);
-    c->addCollection(cc);
+    c.addCollection(cc);
 
-    ASSERT_EQ(c->getPointer<int>("test[0].foo"), c->getPointer<int>("test[0].foo"));
-    ASSERT_EQ(c->getPointer<int>("test[0].foo"), p0->getPointer<int>("foo"));
+    ASSERT_EQ(c.getPointer<int>("test[0].foo"), c.getPointer<int>("test[0].foo"));
+    ASSERT_EQ(c.getPointer<int>("test[0].foo"), p0->getPointer<int>("foo"));
     ASSERT_EQ(*p0->getPointer<int>("foo"), 42);
-    ASSERT_EQ(c->getPointer<int>("test[1].foo"), c->getPointer<int>("test[1].foo"));
-    ASSERT_EQ(c->getPointer<int>("test[1].foo"), p1->getPointer<int>("foo"));
+    ASSERT_EQ(c.getPointer<int>("test[1].foo"), c.getPointer<int>("test[1].foo"));
+    ASSERT_EQ(c.getPointer<int>("test[1].foo"), p1->getPointer<int>("foo"));
     ASSERT_EQ(*p1->getPointer<int>("foo"), 4242);
 }

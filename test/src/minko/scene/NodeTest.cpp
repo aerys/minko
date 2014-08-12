@@ -90,11 +90,11 @@ TEST_F(NodeTest, Added)
     auto n2 = Node::create("b");
     auto added1 = false;
     auto added2 = false;
-    auto _ = n1->added()->connect([&](Node::Ptr node, Node::Ptr target, Node::Ptr ancestor)
+    auto _ = n1->added().connect([&](Node::Ptr node, Node::Ptr target, Node::Ptr ancestor)
     {
         added1 = node == n1 && target == n2 && ancestor == n1;
     });
-    auto __ = n2->added()->connect([&](Node::Ptr node, Node::Ptr target, Node::Ptr ancestor)
+    auto __ = n2->added().connect([&](Node::Ptr node, Node::Ptr target, Node::Ptr ancestor)
     {
         added2 = node == n2 && target == n2 && ancestor == n1;
     });
@@ -111,11 +111,11 @@ TEST_F(NodeTest, Removed)
     auto n2 = Node::create("b");
     auto removed1 = false;
     auto removed2 = false;
-    auto _ = n1->removed()->connect([&](Node::Ptr node, Node::Ptr target, Node::Ptr ancestor)
+    auto _ = n1->removed().connect([&](Node::Ptr node, Node::Ptr target, Node::Ptr ancestor)
     {
         removed1 = node == n1 && target == n2 && ancestor == n1;
     });
-    auto __ = n2->removed()->connect([&](Node::Ptr node, Node::Ptr target, Node::Ptr ancestor)
+    auto __ = n2->removed().connect([&](Node::Ptr node, Node::Ptr target, Node::Ptr ancestor)
     {
         removed2 = node == n2 && target == n2 && ancestor == n1;
     });
@@ -132,7 +132,7 @@ TEST_F(NodeTest, ComponentAdded)
     auto node = Node::create();
     auto componentAdded = false;
     auto comp = component::SceneManager::create(MinkoTests::context());
-    auto _ = node->componentAdded()->connect([&](Node::Ptr n, Node::Ptr t, component::AbstractComponent::Ptr c)
+    auto _ = node->componentAdded().connect([&](Node::Ptr n, Node::Ptr t, component::AbstractComponent::Ptr c)
     {
         componentAdded = node == n && node == t && c == comp;
     });
@@ -149,7 +149,7 @@ TEST_F(NodeTest, ComponentRemoved)
     auto node = Node::create();
     auto componentRemoved = false;
     auto comp = component::SceneManager::create(MinkoTests::context());
-    auto _ = node->componentAdded()->connect([&](Node::Ptr n, Node::Ptr t, component::AbstractComponent::Ptr c)
+    auto _ = node->componentAdded().connect([&](Node::Ptr n, Node::Ptr t, component::AbstractComponent::Ptr c)
     {
         componentRemoved = node == n && node == t && c == comp;
     });

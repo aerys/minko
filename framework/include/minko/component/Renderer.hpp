@@ -343,6 +343,11 @@ namespace minko
 
 			void
 			filterChangedHandler(AbsFilterPtr, data::BindingSource, SurfacePtr);
+
+            uint
+            getProviderId(const data::Container&  container,
+                          const std::string&      collectionName,
+                          data::Provider::Ptr     provider) const;
 		};
 	}
 }

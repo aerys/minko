@@ -55,7 +55,7 @@ namespace minko
 			Signal<AbsCmpPtr, NodePtr>::Slot				_targetRemovedSlot;
 			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot		_componentAddedSlot;
 			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot		_componentRemovedSlot;
-			Signal<ContainerPtr, String, String>::Slot	    _modelToWorldChangedSlot;
+			Signal<data::Container&, String, String>::Slot	_modelToWorldChangedSlot;
 
 		public:
 			inline static

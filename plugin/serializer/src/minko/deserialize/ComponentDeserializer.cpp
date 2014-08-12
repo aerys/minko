@@ -248,7 +248,7 @@ ComponentDeserializer::deserializeSurface(std::string&							serializedSurface,
 		(effect != nullptr ? effect : assetLibrary->effect("effect/Phong.effect")),
 		technique);
 
-	surface->visible(visible);
+	//surface->visible(visible);
 
 	return surface;
 }

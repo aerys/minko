@@ -30,7 +30,7 @@ using namespace minko::component;
 void
 AbstractScript::targetAdded(scene::Node::Ptr target)
 {
-	_componentAddedSlot = target->componentAdded()->connect(std::bind(
+	_componentAddedSlot = target->componentAdded().connect(std::bind(
 		&AbstractScript::componentAddedHandler,
 		std::static_pointer_cast<AbstractScript>(shared_from_this()), 
 		std::placeholders::_1,
@@ -38,7 +38,7 @@ AbstractScript::targetAdded(scene::Node::Ptr target)
 		std::placeholders::_3
 	));
 
-	_componentRemovedSlot = target->componentRemoved()->connect(std::bind(
+	_componentRemovedSlot = target->componentRemoved().connect(std::bind(
 		&AbstractScript::componentRemovedHandler,
 		std::static_pointer_cast<AbstractScript>(shared_from_this()), 
 		std::placeholders::_1,
@@ -53,8 +53,8 @@ AbstractScript::targetAdded(scene::Node::Ptr target)
         std::placeholders::_2,
         std::placeholders::_3
     );
-    _addedSlot = target->added()->connect(addedOrRemovedCallback);
-    _removedSlot = target->removed()->connect(addedOrRemovedCallback);
+    _addedSlot = target->added().connect(addedOrRemovedCallback);
+    _removedSlot = target->removed().connect(addedOrRemovedCallback);
 
 	_started[target] = false;
 

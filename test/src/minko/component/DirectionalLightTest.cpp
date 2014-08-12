@@ -42,16 +42,16 @@ TEST_F(DirectionalLightTest, AddLight)
     lights->addComponent(DirectionalLight::create(.1f, .3f));
     root->addChild(lights);
 
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights.length"));
-    ASSERT_EQ(root->data()->get<uint>("directionalLights.length"), 1);
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].color"));
-    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[0].color"), math::vec3(1.f));
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].diffuse"));
-    ASSERT_EQ(root->data()->get<float>("directionalLights[0].diffuse"), .1f);
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].specular"));
-    ASSERT_EQ(root->data()->get<float>("directionalLights[0].specular"), .3f);
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].direction"));
-    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[0].direction"), math::vec3(0.f, 0.f, -1.f));
+    ASSERT_TRUE(root->data().hasProperty("directionalLights.length"));
+    ASSERT_EQ(root->data().get<uint>("directionalLights.length"), 1);
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[0].color"));
+    ASSERT_EQ(root->data().get<math::vec3>("directionalLights[0].color"), math::vec3(1.f));
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[0].diffuse"));
+    ASSERT_EQ(root->data().get<float>("directionalLights[0].diffuse"), .1f);
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[0].specular"));
+    ASSERT_EQ(root->data().get<float>("directionalLights[0].specular"), .3f);
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[0].direction"));
+    ASSERT_EQ(root->data().get<math::vec3>("directionalLights[0].direction"), math::vec3(0.f, 0.f, -1.f));
 }
 
 TEST_F(DirectionalLightTest, RemoveSingleLight)
@@ -64,11 +64,11 @@ TEST_F(DirectionalLightTest, RemoveSingleLight)
     root->addChild(lights);
     lights->removeComponent(al);
 
-    ASSERT_EQ(root->data()->get<uint>("directionalLights.length"), 0);
-    ASSERT_FALSE(root->data()->hasProperty("directionalLights[0].color"));
-    ASSERT_FALSE(root->data()->hasProperty("directionalLights[0].diffuse"));
-    ASSERT_FALSE(root->data()->hasProperty("directionalLights[0].specular"));
-    ASSERT_FALSE(root->data()->hasProperty("directionalLights[0].direction"));
+    ASSERT_EQ(root->data().get<uint>("directionalLights.length"), 0);
+    ASSERT_FALSE(root->data().hasProperty("directionalLights[0].color"));
+    ASSERT_FALSE(root->data().hasProperty("directionalLights[0].diffuse"));
+    ASSERT_FALSE(root->data().hasProperty("directionalLights[0].specular"));
+    ASSERT_FALSE(root->data().hasProperty("directionalLights[0].direction"));
 }
 
 TEST_F(DirectionalLightTest, AddMultipleLights)
@@ -82,43 +82,43 @@ TEST_F(DirectionalLightTest, AddMultipleLights)
     al1->color(math::vec3(1.f, 0.f, 0.f));
     lights->addComponent(al1);
 
-    ASSERT_EQ(root->data()->get<uint>("directionalLights.length"), 1);
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].color"));
-    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[0].color"), math::vec3(1.f, 0.f, 0.f));
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].diffuse"));
-    ASSERT_EQ(root->data()->get<float>("directionalLights[0].diffuse"), .1f);
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].specular"));
-    ASSERT_EQ(root->data()->get<float>("directionalLights[0].specular"), .2f);
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].direction"));
-    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[0].direction"), math::vec3(0.f, 0.f, -1.f));
+    ASSERT_EQ(root->data().get<uint>("directionalLights.length"), 1);
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[0].color"));
+    ASSERT_EQ(root->data().get<math::vec3>("directionalLights[0].color"), math::vec3(1.f, 0.f, 0.f));
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[0].diffuse"));
+    ASSERT_EQ(root->data().get<float>("directionalLights[0].diffuse"), .1f);
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[0].specular"));
+    ASSERT_EQ(root->data().get<float>("directionalLights[0].specular"), .2f);
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[0].direction"));
+    ASSERT_EQ(root->data().get<math::vec3>("directionalLights[0].direction"), math::vec3(0.f, 0.f, -1.f));
 
     auto al2 = DirectionalLight::create(.3f, .4f);
     al2->color(math::vec3(0.f, 1.f, 0.f));
     lights->addComponent(al2);
 
-    ASSERT_EQ(root->data()->get<uint>("directionalLights.length"), 2);
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].color"));
-    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[1].color"), math::vec3(0.f, 1.f, 0.f));
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].diffuse"));
-    ASSERT_EQ(root->data()->get<float>("directionalLights[1].diffuse"), .3f);
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].specular"));
-    ASSERT_EQ(root->data()->get<float>("directionalLights[1].specular"), .4f);
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].direction"));
-    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[1].direction"), math::vec3(0.f, 0.f, -1.f));
+    ASSERT_EQ(root->data().get<uint>("directionalLights.length"), 2);
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[1].color"));
+    ASSERT_EQ(root->data().get<math::vec3>("directionalLights[1].color"), math::vec3(0.f, 1.f, 0.f));
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[1].diffuse"));
+    ASSERT_EQ(root->data().get<float>("directionalLights[1].diffuse"), .3f);
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[1].specular"));
+    ASSERT_EQ(root->data().get<float>("directionalLights[1].specular"), .4f);
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[1].direction"));
+    ASSERT_EQ(root->data().get<math::vec3>("directionalLights[1].direction"), math::vec3(0.f, 0.f, -1.f));
 
     auto al3 = DirectionalLight::create(.5f, .6f);
     al3->color(math::vec3(0.f, 0.f, 1.f));
     lights->addComponent(al3);
 
-    ASSERT_EQ(root->data()->get<uint>("directionalLights.length"), 3);
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[2].color"));
-    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[2].color"), math::vec3(0.f, 0.f, 1.f));
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[2].diffuse"));
-    ASSERT_EQ(root->data()->get<float>("directionalLights[2].diffuse"), .5f);
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[2].specular"));
-    ASSERT_EQ(root->data()->get<float>("directionalLights[2].specular"), .6f);
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[2].direction"));
-    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[2].direction"), math::vec3(0.f, 0.f, -1.f));
+    ASSERT_EQ(root->data().get<uint>("directionalLights.length"), 3);
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[2].color"));
+    ASSERT_EQ(root->data().get<math::vec3>("directionalLights[2].color"), math::vec3(0.f, 0.f, 1.f));
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[2].diffuse"));
+    ASSERT_EQ(root->data().get<float>("directionalLights[2].diffuse"), .5f);
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[2].specular"));
+    ASSERT_EQ(root->data().get<float>("directionalLights[2].specular"), .6f);
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[2].direction"));
+    ASSERT_EQ(root->data().get<math::vec3>("directionalLights[2].direction"), math::vec3(0.f, 0.f, -1.f));
 }
 
 TEST_F(DirectionalLightTest, RemoveFirstLight)
@@ -142,24 +142,24 @@ TEST_F(DirectionalLightTest, RemoveFirstLight)
 
     lights->removeComponent(al1);
 
-    ASSERT_EQ(root->data()->get<uint>("directionalLights.length"), 2);
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].color"));
-    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[0].color"), math::vec3(0.f, 1.f, 0.f));
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].diffuse"));
-    ASSERT_EQ(root->data()->get<float>("directionalLights[0].diffuse"), .3f);
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].specular"));
-    ASSERT_EQ(root->data()->get<float>("directionalLights[0].specular"), .4f);
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].direction"));
-    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[0].direction"), math::vec3(0.f, 0.f, -1.f));
+    ASSERT_EQ(root->data().get<uint>("directionalLights.length"), 2);
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[0].color"));
+    ASSERT_EQ(root->data().get<math::vec3>("directionalLights[0].color"), math::vec3(0.f, 1.f, 0.f));
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[0].diffuse"));
+    ASSERT_EQ(root->data().get<float>("directionalLights[0].diffuse"), .3f);
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[0].specular"));
+    ASSERT_EQ(root->data().get<float>("directionalLights[0].specular"), .4f);
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[0].direction"));
+    ASSERT_EQ(root->data().get<math::vec3>("directionalLights[0].direction"), math::vec3(0.f, 0.f, -1.f));
 
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].color"));
-    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[1].color"), math::vec3(0.f, 0.f, 1.f));
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].diffuse"));
-    ASSERT_EQ(root->data()->get<float>("directionalLights[1].diffuse"), .5f);
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].specular"));
-    ASSERT_EQ(root->data()->get<float>("directionalLights[1].specular"), .6f);
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].direction"));
-    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[1].direction"), math::vec3(0.f, 0.f, -1.f));
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[1].color"));
+    ASSERT_EQ(root->data().get<math::vec3>("directionalLights[1].color"), math::vec3(0.f, 0.f, 1.f));
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[1].diffuse"));
+    ASSERT_EQ(root->data().get<float>("directionalLights[1].diffuse"), .5f);
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[1].specular"));
+    ASSERT_EQ(root->data().get<float>("directionalLights[1].specular"), .6f);
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[1].direction"));
+    ASSERT_EQ(root->data().get<math::vec3>("directionalLights[1].direction"), math::vec3(0.f, 0.f, -1.f));
 }
 
 TEST_F(DirectionalLightTest, RemoveNthLight)
@@ -183,24 +183,24 @@ TEST_F(DirectionalLightTest, RemoveNthLight)
 
     lights->removeComponent(al2);
 
-    ASSERT_EQ(root->data()->get<uint>("directionalLights.length"), 2);
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].color"));
-    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[0].color"), math::vec3(1.f, 0.f, 0.f));
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].diffuse"));
-    ASSERT_EQ(root->data()->get<float>("directionalLights[0].diffuse"), .1f);
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].specular"));
-    ASSERT_EQ(root->data()->get<float>("directionalLights[0].specular"), .2f);
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].direction"));
-    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[0].direction"), math::vec3(0.f, 0.f, -1.f));
+    ASSERT_EQ(root->data().get<uint>("directionalLights.length"), 2);
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[0].color"));
+    ASSERT_EQ(root->data().get<math::vec3>("directionalLights[0].color"), math::vec3(1.f, 0.f, 0.f));
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[0].diffuse"));
+    ASSERT_EQ(root->data().get<float>("directionalLights[0].diffuse"), .1f);
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[0].specular"));
+    ASSERT_EQ(root->data().get<float>("directionalLights[0].specular"), .2f);
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[0].direction"));
+    ASSERT_EQ(root->data().get<math::vec3>("directionalLights[0].direction"), math::vec3(0.f, 0.f, -1.f));
 
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].color"));
-    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[1].color"), math::vec3(0.f, 0.f, 1.f));
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].diffuse"));
-    ASSERT_EQ(root->data()->get<float>("directionalLights[1].diffuse"), .5f);
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].specular"));
-    ASSERT_EQ(root->data()->get<float>("directionalLights[1].specular"), .6f);
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].direction"));
-    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[1].direction"), math::vec3(0.f, 0.f, -1.f));
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[1].color"));
+    ASSERT_EQ(root->data().get<math::vec3>("directionalLights[1].color"), math::vec3(0.f, 0.f, 1.f));
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[1].diffuse"));
+    ASSERT_EQ(root->data().get<float>("directionalLights[1].diffuse"), .5f);
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[1].specular"));
+    ASSERT_EQ(root->data().get<float>("directionalLights[1].specular"), .6f);
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[1].direction"));
+    ASSERT_EQ(root->data().get<math::vec3>("directionalLights[1].direction"), math::vec3(0.f, 0.f, -1.f));
 }
 
 TEST_F(DirectionalLightTest, RemoveLastLight)
@@ -224,24 +224,24 @@ TEST_F(DirectionalLightTest, RemoveLastLight)
 
     lights->removeComponent(al3);
 
-    ASSERT_EQ(root->data()->get<uint>("directionalLights.length"), 2);
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].color"));
-    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[0].color"), math::vec3(1.f, 0.f, 0.f));
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].diffuse"));
-    ASSERT_EQ(root->data()->get<float>("directionalLights[0].diffuse"), .1f);
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].specular"));
-    ASSERT_EQ(root->data()->get<float>("directionalLights[0].specular"), .2f);
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[0].direction"));
-    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[0].direction"), math::vec3(0.f, 0.f, -1.f));
+    ASSERT_EQ(root->data().get<uint>("directionalLights.length"), 2);
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[0].color"));
+    ASSERT_EQ(root->data().get<math::vec3>("directionalLights[0].color"), math::vec3(1.f, 0.f, 0.f));
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[0].diffuse"));
+    ASSERT_EQ(root->data().get<float>("directionalLights[0].diffuse"), .1f);
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[0].specular"));
+    ASSERT_EQ(root->data().get<float>("directionalLights[0].specular"), .2f);
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[0].direction"));
+    ASSERT_EQ(root->data().get<math::vec3>("directionalLights[0].direction"), math::vec3(0.f, 0.f, -1.f));
 
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].color"));
-    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[1].color"), math::vec3(0.f, 1.f, 0.f));
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].diffuse"));
-    ASSERT_EQ(root->data()->get<float>("directionalLights[1].diffuse"), .3f);
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].specular"));
-    ASSERT_EQ(root->data()->get<float>("directionalLights[1].specular"), .4f);
-    ASSERT_TRUE(root->data()->hasProperty("directionalLights[1].direction"));
-    ASSERT_EQ(root->data()->get<math::vec3>("directionalLights[1].direction"), math::vec3(0.f, 0.f, -1.f));
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[1].color"));
+    ASSERT_EQ(root->data().get<math::vec3>("directionalLights[1].color"), math::vec3(0.f, 1.f, 0.f));
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[1].diffuse"));
+    ASSERT_EQ(root->data().get<float>("directionalLights[1].diffuse"), .3f);
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[1].specular"));
+    ASSERT_EQ(root->data().get<float>("directionalLights[1].specular"), .4f);
+    ASSERT_TRUE(root->data().hasProperty("directionalLights[1].direction"));
+    ASSERT_EQ(root->data().get<math::vec3>("directionalLights[1].direction"), math::vec3(0.f, 0.f, -1.f));
 }
 
 TEST_F(DirectionalLightTest, RotateXPi)
@@ -260,7 +260,7 @@ TEST_F(DirectionalLightTest, RotateXPi)
 
     ASSERT_EQ(
         math::epsilonEqual(
-        root->data()->get<math::vec3>("directionalLights[0].direction"),
+        root->data().get<math::vec3>("directionalLights[0].direction"),
         math::vec3(0.f, 0.f, 1.f),
         math::epsilon<float>()
         ),
@@ -284,7 +284,7 @@ TEST_F(DirectionalLightTest, RotateXHalfPi)
 
     ASSERT_EQ(
         math::epsilonEqual(
-            root->data()->get<math::vec3>("directionalLights[0].direction"),
+            root->data().get<math::vec3>("directionalLights[0].direction"),
             math::vec3(0.f, 1.f, 0.f),
             math::epsilon<float>()
         ),
@@ -308,7 +308,7 @@ TEST_F(DirectionalLightTest, RotateYPi)
 
     ASSERT_EQ(
         math::epsilonEqual(
-            root->data()->get<math::vec3>("directionalLights[0].direction"),
+            root->data().get<math::vec3>("directionalLights[0].direction"),
             math::vec3(0.f, 0.f, 1.f),
             math::epsilon<float>()
        ),
@@ -332,7 +332,7 @@ TEST_F(DirectionalLightTest, RotateYHalfPi)
 
     ASSERT_EQ(
         math::epsilonEqual(
-            root->data()->get<math::vec3>("directionalLights[0].direction"),
+            root->data().get<math::vec3>("directionalLights[0].direction"),
             math::vec3(-1.f, 0.f, 0.f),
             math::epsilon<float>()
         ),
@@ -356,7 +356,7 @@ TEST_F(DirectionalLightTest, RotateZPi)
 
     ASSERT_EQ(
         math::epsilonEqual(
-            root->data()->get<math::vec3>("directionalLights[0].direction"),
+            root->data().get<math::vec3>("directionalLights[0].direction"),
             math::vec3(0.f, 0.f, -1.f),
             math::epsilon<float>()
         ),
@@ -380,7 +380,7 @@ TEST_F(DirectionalLightTest, RotateZHalfPi)
 
     ASSERT_EQ(
         math::epsilonEqual(
-            root->data()->get<math::vec3>("directionalLights[0].direction"),
+            root->data().get<math::vec3>("directionalLights[0].direction"),
             math::vec3(0.f, 0.f, -1.f),
             math::epsilon<float>()
         ),
@@ -404,7 +404,7 @@ TEST_F(DirectionalLightTest, TranslateXYZ)
 
     ASSERT_EQ(
         math::epsilonEqual(
-            root->data()->get<math::vec3>("directionalLights[0].direction"),
+            root->data().get<math::vec3>("directionalLights[0].direction"),
             math::vec3(0.f, 0.f, -1.f),
             math::epsilon<float>()
         ),

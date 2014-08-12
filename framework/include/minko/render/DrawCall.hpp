@@ -74,7 +74,6 @@ namespace minko
 
             typedef std::shared_ptr<AbstractContext>	AbsCtxPtr;
 			typedef std::shared_ptr<AbstractTexture>	AbsTexturePtr;
-            typedef std::shared_ptr<data::Container>	ContainerPtr;
 			typedef std::shared_ptr<Program>			ProgramPtr;
 
 		private:
@@ -111,9 +110,9 @@ namespace minko
             void
             bind(std::shared_ptr<Program>                               program,
                  const std::unordered_map<std::string, std::string>&    variables,
-                 ContainerPtr                                           rootData,
-                 ContainerPtr                                           rendererData,
-                 ContainerPtr                                           targetData,
+                 const data::Container&                                 rootData,
+                 const data::Container&                                 rendererData,
+                 const data::Container&                                 targetData,
                  const data::BindingMap&                                attributeBindings,
                  const data::BindingMap&                                uniformBindings,
                  const data::BindingMap&                                stateBindings);
@@ -122,18 +121,18 @@ namespace minko
             void
             bindUniform(std::shared_ptr<Program>    program,
                         ConstUniformInputRef        input,
-                        ContainerPtr                container,
+                        const data::Container&      container,
                         const std::string&          propertyName);
 
             void
             bindAttribute(std::shared_ptr<Program>    program,
                           ConstAttrInputRef           input,
-						  ContainerPtr                container,
+						  const data::Container&      container,
 						  const std::string&          propertyName);
 
 			void
-			bindIndexBuffer(const std::unordered_map<std::string, std::string>&   variables,
-                            ContainerPtr                                          targetData);
+			bindIndexBuffer(const std::unordered_map<std::string, std::string>& variables,
+                            const data::Container&                              targetData);
 
 			void
 			bindStates();
@@ -141,10 +140,10 @@ namespace minko
 			void
 			bindState(const std::string& stateName);
 
-            ContainerPtr
-            getContainer(ContainerPtr           rootData,
-                         ContainerPtr           rendererData,
-                         ContainerPtr           targetData,
+            const data::Container&
+            getContainer(const data::Container& rootData,
+                         const data::Container& rendererData,
+                         const data::Container& targetData,
                          data::BindingSource    source);
 		};
 	}

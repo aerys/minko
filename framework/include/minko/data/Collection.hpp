@@ -44,7 +44,6 @@ namespace minko
         private:
             std::string                         _name;
             Items                               _items;
-            ProviderPtr                         _lengthProvider;
 
             Signal<Collection&, ProviderPtr>    _itemAdded;
             Signal<Collection&, ProviderPtr>    _itemRemoved;
@@ -118,7 +117,7 @@ namespace minko
             insert(Items::const_iterator position, ProviderPtr provider)
             {
                 _items.insert(position, provider);
-                addProvider(provider);
+                _itemAdded.execute(*this, provider);
                 
                 return *this;
             }
@@ -130,7 +129,7 @@ namespace minko
                 auto provider = *position;
 
                 _items.erase(position);
-                removeProvider(provider);
+                _itemRemoved.execute(*this, provider);
 
                 return *this;
             }
@@ -140,7 +139,7 @@ namespace minko
             remove(ProviderPtr provider)
             {
                 _items.erase(std::find(_items.begin(), _items.end(), provider));
-                removeProvider(provider);
+                _itemRemoved.execute(*this, provider);
 
                 return *this;
             }
@@ -150,7 +149,7 @@ namespace minko
             pushBack(ProviderPtr provider)
             {
                 _items.push_back(provider);
-                addProvider(provider);
+                _itemAdded.execute(*this, provider);
 
                 return *this;
             }
@@ -162,31 +161,15 @@ namespace minko
                 auto provider = _items.back();
 
                 _items.pop_back();
-                removeProvider(provider);
+                _itemRemoved.execute(*this, provider);
 
                 return *this;
             }
 
         private:
             Collection(const std::string& name) :
-                _name(name),
-                _lengthProvider(Provider::create())
+                _name(name)
             {
-                _lengthProvider->set(_name + ".length", 0u);
-            }
-
-            void
-            addProvider(ProviderPtr provider)
-            {
-                _lengthProvider->set(_name + ".length", _items.size());
-                _itemAdded.execute(*this, provider);
-            }
-
-            void
-            removeProvider(ProviderPtr provider)
-            {
-                _lengthProvider->set(_name + ".length", _items.size());
-                _itemRemoved.execute(*this, provider);
             }
         };
     }

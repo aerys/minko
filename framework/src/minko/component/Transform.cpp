@@ -45,7 +45,7 @@ Transform::targetAdded(scene::Node::Ptr	target)
 	if (target->component<Transform>(1) != nullptr)
 		throw std::logic_error("A node cannot have more than one Transform.");
 
-	target->data()->addProvider(_data);
+	target->data().addProvider(_data);
 
 	auto callback = std::bind(
 		&Transform::addedOrRemovedHandler,
@@ -55,7 +55,7 @@ Transform::targetAdded(scene::Node::Ptr	target)
 		std::placeholders::_3
 	);
 
-	_addedSlot = target->added()->connect(callback);
+	_addedSlot = target->added().connect(callback);
 	//_removedSlot = target->removed()->connect(callback);
 
 	addedOrRemovedHandler(nullptr, target, target->parent());
@@ -66,14 +66,14 @@ Transform::addedOrRemovedHandler(scene::Node::Ptr node,
 								 scene::Node::Ptr target,
 								 scene::Node::Ptr parent)
 {
-	if (!target->root()->component<RootTransform>())
+    if (!target->root()->component<RootTransform>())
 		target->root()->addComponent(RootTransform::create());
 }
 
 void
 Transform::targetRemoved(scene::Node::Ptr target)
 {
-	target->data()->removeProvider(_data);
+	target->data().removeProvider(_data);
 
 	_addedSlot = nullptr;
 	_removedSlot = nullptr;
@@ -82,28 +82,28 @@ Transform::targetRemoved(scene::Node::Ptr target)
 void
 Transform::RootTransform::targetAdded(scene::Node::Ptr target)
 {
-	_targetSlots.push_back(target->added()->connect(std::bind(
+	_targetSlots.push_back(target->added().connect(std::bind(
 		&Transform::RootTransform::addedHandler,
 		std::static_pointer_cast<RootTransform>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
 	)));
-	_targetSlots.push_back(target->removed()->connect(std::bind(
+	_targetSlots.push_back(target->removed().connect(std::bind(
 		&Transform::RootTransform::removedHandler,
 		std::static_pointer_cast<RootTransform>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
 	)));
-	_targetSlots.push_back(target->componentAdded()->connect(std::bind(
+	_targetSlots.push_back(target->componentAdded().connect(std::bind(
 		&Transform::RootTransform::componentAddedHandler,
 		std::static_pointer_cast<RootTransform>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
 	)));
-	_targetSlots.push_back(target->componentRemoved()->connect(std::bind(
+	_targetSlots.push_back(target->componentRemoved().connect(std::bind(
 		&Transform::RootTransform::componentRemovedHandler,
 		std::static_pointer_cast<RootTransform>(shared_from_this()),
 		std::placeholders::_1,
@@ -122,7 +122,7 @@ Transform::RootTransform::targetAdded(scene::Node::Ptr target)
 			std::placeholders::_3
 		), 1000.f);
 
-	addedHandler(nullptr, target, target->parent());
+	addedHandler(target, target->root(), target->parent());
 }
 
 void
@@ -169,7 +169,14 @@ Transform::RootTransform::addedHandler(scene::Node::Ptr node,
 									   scene::Node::Ptr target,
 									   scene::Node::Ptr ancestor)
 {
-	auto descendants = scene::NodeSet::create(target->root())->descendants(false);
+    if (node->root() != this->target())
+    {
+        this->target()->removeComponent(shared_from_this());
+        return;
+    }
+
+    /*
+	auto descendants = scene::NodeSet::create(target)->descendants(false);
 	for (auto descendant : descendants->nodes())
 	{
 		auto rootTransformCtrl = descendant->component<RootTransform>();
@@ -177,6 +184,7 @@ Transform::RootTransform::addedHandler(scene::Node::Ptr node,
 		if (rootTransformCtrl)
 			descendant->removeComponent(rootTransformCtrl);
 	}
+    */
 
 	_invalidLists = true;
 }
@@ -228,7 +236,6 @@ Transform::RootTransform::updateTransformsList()
 			ancestor = ancestor->parent();
 
 		_nodeToId[node]			= nodeId;
-
 		_transforms[nodeId]		= transform;
 		_matrix[nodeId]			= &transform->_matrix;
 		_modelToWorld[nodeId]	= &transform->_modelToWorld;

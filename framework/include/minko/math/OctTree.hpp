@@ -98,8 +98,8 @@ namespace minko
 			nodeChangedOctant(NodePtr node);
 
 			void
-			nodeModelToWorldChanged(std::shared_ptr<data::Container>	data,
-									const std::string&					propertyName);
+			nodeModelToWorldChanged(data::Container&	data,
+									const std::string&	propertyName);
 
 			void
 			split();
@@ -116,10 +116,10 @@ namespace minko
 			float
 			edgeLength();
 
-			OctTree(float					worldSize,
-					 uint					maxDepth,
-					 const math::vec3& 	center,
-					 uint					depth);
+			OctTree(float				worldSize,
+					uint				maxDepth,
+					const math::vec3& 	center,
+					uint				depth);
 		};
 	}
 }

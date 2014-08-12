@@ -83,7 +83,7 @@ namespace minko
 
 			virtual
 			void
-			update(uint time, UpdateTargetPtr, bool skipPropertyNameFormatting = true) = 0;
+			update(uint time, data::Container& data, bool skipPropertyNameFormatting = true) = 0;
 
 		protected:
 			AbstractTimeline(const std::string& propertyName, uint duration);

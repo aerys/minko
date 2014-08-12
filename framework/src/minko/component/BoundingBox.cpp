@@ -52,8 +52,8 @@ BoundingBox::BoundingBox() :
 void
 BoundingBox::targetAdded(scene::Node::Ptr target)
 {
-	_modelToWorldChangedSlot = target->data()->propertyChanged("modelToWorldMatrix")->connect(
-		[&](data::Container::Ptr data, const std::string& propertyName, const std::string& fullPropertyName)
+	_modelToWorldChangedSlot = target->data().propertyChanged("modelToWorldMatrix")->connect(
+		[&](data::Container& data, const std::string& propertyName, const std::string& fullPropertyName)
 		{
 			_invalidWorldSpaceBox = true;
 		}
@@ -68,8 +68,8 @@ BoundingBox::targetAdded(scene::Node::Ptr target)
 		}
 	};
 
-	_componentAddedSlot = target->componentAdded()->connect(componentAddedOrRemovedCallback);
-	_componentRemovedSlot = target->componentAdded()->connect(componentAddedOrRemovedCallback);
+	_componentAddedSlot = target->componentAdded().connect(componentAddedOrRemovedCallback);
+	_componentRemovedSlot = target->componentAdded().connect(componentAddedOrRemovedCallback);
 
 	_invalidBox = true;
 }
@@ -161,14 +161,14 @@ BoundingBox::updateWorldSpaceBox()
 
 	_invalidWorldSpaceBox = false;
 
-	if (!target()->data()->hasProperty("transform.modelToWorldMatrix"))
+	if (!target()->data().hasProperty("transform.modelToWorldMatrix"))
 	{
 		_worldSpaceBox->topRight(_box->topRight());
 		_worldSpaceBox->bottomLeft(_box->bottomLeft());
 	}
 	else
 	{
-		auto t = target()->data()->get<math::mat4>("transform.modelToWorldMatrix");
+		auto t = target()->data().get<math::mat4>("transform.modelToWorldMatrix");
 		auto vertices = _box->getVertices();
 		auto numVertices = vertices.size();
 

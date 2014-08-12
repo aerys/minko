@@ -35,11 +35,11 @@ namespace minko
 			typedef std::shared_ptr<Culling>    Ptr;
 
 		private:
-			typedef std::shared_ptr<scene::Node>			NodePtr;
-			typedef std::shared_ptr<math::AbstractShape>	ShapePtr;
-            typedef std::shared_ptr<data::Container>        ContainerPtr;
-            typedef const std::string&                      String;
-            typedef Signal<ContainerPtr, String, String>    PropertyChangedSignal;
+			typedef std::shared_ptr<scene::Node>			    NodePtr;
+			typedef std::shared_ptr<math::AbstractShape>	    ShapePtr;
+            typedef std::shared_ptr<data::Container>            ContainerPtr;
+            typedef const std::string&                          String;
+            typedef Signal<data::Container&, String, String>    PropertyChangedSignal;
 
 		private:
 			static std::shared_ptr<math::OctTree>			_octTree;
@@ -79,9 +79,9 @@ namespace minko
 			layoutChangedHandler(NodePtr node, NodePtr target);
 
 			void
-			worldToScreenChangedHandler(std::shared_ptr<data::Container>    data,
-                                        const std::string&                  propertyName,
-                                        const std::string&                  fullPropertyName);
+			worldToScreenChangedHandler(data::Container&    data,
+                                        const std::string&  propertyName,
+                                        const std::string&  fullPropertyName);
 
 			void
 			targetAddedToSceneHandler(NodePtr node, NodePtr target, NodePtr ancestor);

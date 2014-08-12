@@ -36,12 +36,11 @@ namespace minko
 
 		private:
 			typedef std::shared_ptr<scene::Node>				NodePtr;
-			typedef std::shared_ptr<Container>					ContainerPtr;
 			typedef std::shared_ptr<Provider>					ProviderPtr;
 			typedef std::shared_ptr<component::AbstractLight>	AbsLightPtr;
             typedef const std::string&                          StringRef;
 
-            typedef Signal<ContainerPtr, StringRef, StringRef>	ContainerPropertyChangedSignal;
+            typedef Signal<Container&, StringRef, StringRef>	ContainerPropertyChangedSignal;
             typedef Signal<ProviderPtr, StringRef, StringRef>   ProviderPropertyChangedSignal;
 
 		private:

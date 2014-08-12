@@ -30,9 +30,9 @@ using namespace minko::data;
 
 ProgramSignature::ProgramSignature(const data::MacroBindingMap&                         macroBindings,
                                    const std::unordered_map<std::string, std::string>&  variables,
-                                   Container::Ptr			                            targetData,
-                                   Container::Ptr			                            rendererData,
-                                   Container::Ptr			                            rootData) :
+                                   const Container&			                            targetData,
+                                   const Container&			                            rendererData,
+                                   const Container&			                            rootData) :
     _mask(0)
 {
     const uint maxNumMacros = sizeof(MaskType) * 8;
@@ -46,12 +46,12 @@ ProgramSignature::ProgramSignature(const data::MacroBindingMap&                 
     {
         const auto&	macroName = macroNameAndBinding.first;
         const auto&	macroBinding = macroNameAndBinding.second;
-        auto propertyName = Provider::getActualPropertyName(variables, macroBinding.propertyName);
+        auto propertyName = Container::getActualPropertyName(variables, macroBinding.propertyName);
         auto container = macroBinding.source == BindingSource::TARGET
             ? targetData
             : (macroBinding.source == BindingSource::RENDERER ? rendererData : rootData);
-        bool macroIsDefined = container->hasProperty(propertyName);
-        bool macroIsInteger = macroIsDefined && container->propertyHasType<int>(propertyName);
+        bool macroIsDefined = container.hasProperty(propertyName);
+        bool macroIsInteger = false;//macroIsDefined && container->propertyHasType<int>(propertyName);
 
         if (macroIsDefined || macroBinding.defaultState != MacroBinding::State::UNDEFINED)
 		{
@@ -64,7 +64,7 @@ ProgramSignature::ProgramSignature(const data::MacroBindingMap&                 
             _macros.push_back(macroName);
             if (macroIsInteger || macroBinding.defaultState == MacroBinding::State::DEFINED_INTEGER_VALUE)
 			{
-				int	value = macroIsDefined ? container->get<int>(propertyName) : macroBinding.defaultValue.value;
+				int	value = macroIsDefined ? container.get<int>(propertyName) : macroBinding.defaultValue.value;
 
 				value = std::max(macroBinding.minValue, std::min(macroBinding.maxValue, value));
 
@@ -79,14 +79,25 @@ ProgramSignature::ProgramSignature(const data::MacroBindingMap&                 
 	}
 }
 
+ProgramSignature::ProgramSignature(const ProgramSignature& signature) :
+    _mask(signature._mask),
+    _values(signature._values),
+    _states(signature._states)
+{
+}
+
 bool 
 ProgramSignature::operator==(const ProgramSignature& x) const
 {
 	if (_mask != x._mask)
 		return false;
 
-	for (unsigned int i = 0; i < 32; ++i)
-		if (_values[i] != x._values[i] && _states[i] != x._states[i])
+    auto j = 0;
+	for (unsigned int i = 0; i < _states.size(); ++i)
+        if (_states[i] != x._states[i] &&
+            (_states[i] == MacroBinding::State::UNDEFINED
+             || _states[i] == MacroBinding::State::DEFINED
+             || (_states[i] == MacroBinding::State::DEFINED_INTEGER_VALUE && _values[j] != x._values[j++])))
 			return false;
 
 	return true;

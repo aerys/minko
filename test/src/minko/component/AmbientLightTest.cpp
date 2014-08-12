@@ -42,12 +42,12 @@ TEST_F(AmbientLightTest, AddLight)
     lights->addComponent(AmbientLight::create());
     root->addChild(lights);
 
-    ASSERT_TRUE(root->data()->hasProperty("ambientLights.length"));
-    ASSERT_EQ(root->data()->get<uint>("ambientLights.length"), 1);
-    ASSERT_TRUE(root->data()->hasProperty("ambientLights[0].color"));
-    ASSERT_EQ(root->data()->get<math::vec3>("ambientLights[0].color"), math::vec3(1.f));
-    ASSERT_TRUE(root->data()->hasProperty("ambientLights[0].ambient"));
-    ASSERT_EQ(root->data()->get<float>("ambientLights[0].ambient"), .2f);
+    ASSERT_TRUE(root->data().hasProperty("ambientLights.length"));
+    ASSERT_EQ(root->data().get<uint>("ambientLights.length"), 1);
+    ASSERT_TRUE(root->data().hasProperty("ambientLights[0].color"));
+    ASSERT_EQ(root->data().get<math::vec3>("ambientLights[0].color"), math::vec3(1.f));
+    ASSERT_TRUE(root->data().hasProperty("ambientLights[0].ambient"));
+    ASSERT_EQ(root->data().get<float>("ambientLights[0].ambient"), .2f);
 }
 
 TEST_F(AmbientLightTest, RemoveSingleLight)
@@ -60,9 +60,9 @@ TEST_F(AmbientLightTest, RemoveSingleLight)
     root->addChild(lights);
     lights->removeComponent(al);
 
-    ASSERT_EQ(root->data()->get<uint>("ambientLights.length"), 0);
-    ASSERT_FALSE(root->data()->hasProperty("ambientLights[0].color"));
-    ASSERT_FALSE(root->data()->hasProperty("ambientLights[0].ambient"));
+    ASSERT_EQ(root->data().get<uint>("ambientLights.length"), 0);
+    ASSERT_FALSE(root->data().hasProperty("ambientLights[0].color"));
+    ASSERT_FALSE(root->data().hasProperty("ambientLights[0].ambient"));
 }
 
 TEST_F(AmbientLightTest, AddMultipleLights)
@@ -76,31 +76,31 @@ TEST_F(AmbientLightTest, AddMultipleLights)
     al1->color(math::vec3(1.f, 0.f, 0.f));
     lights->addComponent(al1);
 
-    ASSERT_EQ(root->data()->get<uint>("ambientLights.length"), 1);
-    ASSERT_TRUE(root->data()->hasProperty("ambientLights[0].color"));
-    ASSERT_TRUE(root->data()->hasProperty("ambientLights[0].ambient"));
-    ASSERT_EQ(root->data()->get<math::vec3>("ambientLights[0].color"), math::vec3(1.f, 0.f, 0.f));
-    ASSERT_EQ(root->data()->get<float>("ambientLights[0].ambient"), .1f);
+    ASSERT_EQ(root->data().get<uint>("ambientLights.length"), 1);
+    ASSERT_TRUE(root->data().hasProperty("ambientLights[0].color"));
+    ASSERT_TRUE(root->data().hasProperty("ambientLights[0].ambient"));
+    ASSERT_EQ(root->data().get<math::vec3>("ambientLights[0].color"), math::vec3(1.f, 0.f, 0.f));
+    ASSERT_EQ(root->data().get<float>("ambientLights[0].ambient"), .1f);
 
     auto al2 = AmbientLight::create(.2f);
     al2->color(math::vec3(0.f, 1.f, 0.f));
     lights->addComponent(al2);
 
-    ASSERT_EQ(root->data()->get<uint>("ambientLights.length"), 2);
-    ASSERT_TRUE(root->data()->hasProperty("ambientLights[1].color"));
-    ASSERT_TRUE(root->data()->hasProperty("ambientLights[1].ambient"));
-    ASSERT_EQ(root->data()->get<math::vec3>("ambientLights[1].color"), math::vec3(0.f, 1.f, 0.f));
-    ASSERT_EQ(root->data()->get<float>("ambientLights[1].ambient"), .2f);
+    ASSERT_EQ(root->data().get<uint>("ambientLights.length"), 2);
+    ASSERT_TRUE(root->data().hasProperty("ambientLights[1].color"));
+    ASSERT_TRUE(root->data().hasProperty("ambientLights[1].ambient"));
+    ASSERT_EQ(root->data().get<math::vec3>("ambientLights[1].color"), math::vec3(0.f, 1.f, 0.f));
+    ASSERT_EQ(root->data().get<float>("ambientLights[1].ambient"), .2f);
 
     auto al3 = AmbientLight::create(.3f);
     al3->color(math::vec3(0.f, 0.f, 1.f));
     lights->addComponent(al3);
 
-    ASSERT_EQ(root->data()->get<uint>("ambientLights.length"), 3);
-    ASSERT_TRUE(root->data()->hasProperty("ambientLights[2].color"));
-    ASSERT_TRUE(root->data()->hasProperty("ambientLights[2].ambient"));
-    ASSERT_EQ(root->data()->get<math::vec3>("ambientLights[2].color"), math::vec3(0.f, 0.f, 1.f));
-    ASSERT_EQ(root->data()->get<float>("ambientLights[2].ambient"), .3f);
+    ASSERT_EQ(root->data().get<uint>("ambientLights.length"), 3);
+    ASSERT_TRUE(root->data().hasProperty("ambientLights[2].color"));
+    ASSERT_TRUE(root->data().hasProperty("ambientLights[2].ambient"));
+    ASSERT_EQ(root->data().get<math::vec3>("ambientLights[2].color"), math::vec3(0.f, 0.f, 1.f));
+    ASSERT_EQ(root->data().get<float>("ambientLights[2].ambient"), .3f);
 }
 
 TEST_F(AmbientLightTest, RemoveFirstLight)
@@ -124,15 +124,15 @@ TEST_F(AmbientLightTest, RemoveFirstLight)
 
     lights->removeComponent(al1);
 
-    ASSERT_EQ(root->data()->get<uint>("ambientLights.length"), 2);
-    ASSERT_TRUE(root->data()->hasProperty("ambientLights[0].color"));
-    ASSERT_TRUE(root->data()->hasProperty("ambientLights[0].ambient"));
-    ASSERT_EQ(root->data()->get<math::vec3>("ambientLights[0].color"), math::vec3(0.f, 1.f, 0.f));
-    ASSERT_EQ(root->data()->get<float>("ambientLights[0].ambient"), .2f);
-    ASSERT_TRUE(root->data()->hasProperty("ambientLights[1].color"));
-    ASSERT_TRUE(root->data()->hasProperty("ambientLights[1].ambient"));
-    ASSERT_EQ(root->data()->get<math::vec3>("ambientLights[1].color"), math::vec3(0.f, 0.f, 1.f));
-    ASSERT_EQ(root->data()->get<float>("ambientLights[1].ambient"), .3f);
+    ASSERT_EQ(root->data().get<uint>("ambientLights.length"), 2);
+    ASSERT_TRUE(root->data().hasProperty("ambientLights[0].color"));
+    ASSERT_TRUE(root->data().hasProperty("ambientLights[0].ambient"));
+    ASSERT_EQ(root->data().get<math::vec3>("ambientLights[0].color"), math::vec3(0.f, 1.f, 0.f));
+    ASSERT_EQ(root->data().get<float>("ambientLights[0].ambient"), .2f);
+    ASSERT_TRUE(root->data().hasProperty("ambientLights[1].color"));
+    ASSERT_TRUE(root->data().hasProperty("ambientLights[1].ambient"));
+    ASSERT_EQ(root->data().get<math::vec3>("ambientLights[1].color"), math::vec3(0.f, 0.f, 1.f));
+    ASSERT_EQ(root->data().get<float>("ambientLights[1].ambient"), .3f);
 }
 
 TEST_F(AmbientLightTest, RemoveNthLight)
@@ -156,15 +156,15 @@ TEST_F(AmbientLightTest, RemoveNthLight)
 
     lights->removeComponent(al2);
 
-    ASSERT_EQ(root->data()->get<uint>("ambientLights.length"), 2);
-    ASSERT_TRUE(root->data()->hasProperty("ambientLights[0].color"));
-    ASSERT_TRUE(root->data()->hasProperty("ambientLights[0].ambient"));
-    ASSERT_EQ(root->data()->get<math::vec3>("ambientLights[0].color"), math::vec3(1.f, 0.f, 0.f));
-    ASSERT_EQ(root->data()->get<float>("ambientLights[0].ambient"), .1f);
-    ASSERT_TRUE(root->data()->hasProperty("ambientLights[1].color"));
-    ASSERT_TRUE(root->data()->hasProperty("ambientLights[1].ambient"));
-    ASSERT_EQ(root->data()->get<math::vec3>("ambientLights[1].color"), math::vec3(0.f, 0.f, 1.f));
-    ASSERT_EQ(root->data()->get<float>("ambientLights[1].ambient"), .3f);
+    ASSERT_EQ(root->data().get<uint>("ambientLights.length"), 2);
+    ASSERT_TRUE(root->data().hasProperty("ambientLights[0].color"));
+    ASSERT_TRUE(root->data().hasProperty("ambientLights[0].ambient"));
+    ASSERT_EQ(root->data().get<math::vec3>("ambientLights[0].color"), math::vec3(1.f, 0.f, 0.f));
+    ASSERT_EQ(root->data().get<float>("ambientLights[0].ambient"), .1f);
+    ASSERT_TRUE(root->data().hasProperty("ambientLights[1].color"));
+    ASSERT_TRUE(root->data().hasProperty("ambientLights[1].ambient"));
+    ASSERT_EQ(root->data().get<math::vec3>("ambientLights[1].color"), math::vec3(0.f, 0.f, 1.f));
+    ASSERT_EQ(root->data().get<float>("ambientLights[1].ambient"), .3f);
 }
 
 TEST_F(AmbientLightTest, RemoveLastLight)
@@ -188,13 +188,13 @@ TEST_F(AmbientLightTest, RemoveLastLight)
 
     lights->removeComponent(al3);
 
-    ASSERT_EQ(root->data()->get<uint>("ambientLights.length"), 2);
-    ASSERT_TRUE(root->data()->hasProperty("ambientLights[0].color"));
-    ASSERT_TRUE(root->data()->hasProperty("ambientLights[0].ambient"));
-    ASSERT_EQ(root->data()->get<math::vec3>("ambientLights[0].color"), math::vec3(1.f, 0.f, 0.f));
-    ASSERT_EQ(root->data()->get<float>("ambientLights[0].ambient"), .1f);
-    ASSERT_TRUE(root->data()->hasProperty("ambientLights[1].color"));
-    ASSERT_TRUE(root->data()->hasProperty("ambientLights[1].ambient"));
-    ASSERT_EQ(root->data()->get<math::vec3>("ambientLights[1].color"), math::vec3(0.f, 1.f, 0.f));
-    ASSERT_EQ(root->data()->get<float>("ambientLights[1].ambient"), .2f);
+    ASSERT_EQ(root->data().get<uint>("ambientLights.length"), 2);
+    ASSERT_TRUE(root->data().hasProperty("ambientLights[0].color"));
+    ASSERT_TRUE(root->data().hasProperty("ambientLights[0].ambient"));
+    ASSERT_EQ(root->data().get<math::vec3>("ambientLights[0].color"), math::vec3(1.f, 0.f, 0.f));
+    ASSERT_EQ(root->data().get<float>("ambientLights[0].ambient"), .1f);
+    ASSERT_TRUE(root->data().hasProperty("ambientLights[1].color"));
+    ASSERT_TRUE(root->data().hasProperty("ambientLights[1].ambient"));
+    ASSERT_EQ(root->data().get<math::vec3>("ambientLights[1].color"), math::vec3(0.f, 1.f, 0.f));
+    ASSERT_EQ(root->data().get<float>("ambientLights[1].ambient"), .2f);
 }

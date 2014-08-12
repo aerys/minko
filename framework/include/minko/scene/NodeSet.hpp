@@ -34,6 +34,11 @@ namespace minko
 			std::vector<std::shared_ptr<Node>> _nodes;
 
 		public:
+            ~NodeSet()
+            {
+                _nodes.clear();
+            }
+
 			inline static
 			Ptr
 			create(const std::list<std::shared_ptr<Node>>& nodes)

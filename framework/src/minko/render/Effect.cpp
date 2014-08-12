@@ -71,3 +71,27 @@ Effect::removeTechnique(const std::string& name)
 	_techniques.erase(name);
 	_fallback.erase(name);
 }
+
+void
+Effect::setAttribute(const std::string& name, const VertexAttribute& attribute)
+{
+	_attributeFunctions.push_back(std::bind(
+		&Effect::setVertexAttributeOnPass, std::placeholders::_1, name, attribute
+	));
+
+	for (auto& technique : _techniques)
+		for (auto& pass : technique.second)
+			pass->setAttribute(name, attribute);
+}
+
+void
+Effect::define(const std::string& macroName)
+{
+    _macroFunctions.push_back(std::bind(
+        &Effect::defineOnPass, std::placeholders::_1, macroName
+    ));
+
+	for (auto& technique : _techniques)
+		for (auto& pass : technique.second)
+			pass->define(macroName);
+}

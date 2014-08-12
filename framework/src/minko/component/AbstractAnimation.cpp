@@ -66,7 +66,7 @@ AbstractAnimation::AbstractAnimation(bool isLooping):
 void
 AbstractAnimation::targetAdded(Node::Ptr node)
 {
-	_addedSlot = node->added()->connect(std::bind(
+	_addedSlot = node->added().connect(std::bind(
 		&AbstractAnimation::addedHandler,
 		std::static_pointer_cast<AbstractAnimation>(shared_from_this()),
 		std::placeholders::_1,
@@ -74,7 +74,7 @@ AbstractAnimation::targetAdded(Node::Ptr node)
 		std::placeholders::_3
 	));
 
-	_removedSlot = node->removed()->connect(std::bind(
+	_removedSlot = node->removed().connect(std::bind(
 		&AbstractAnimation::removedHandler,
 		std::static_pointer_cast<AbstractAnimation>(shared_from_this()),
 		std::placeholders::_1,

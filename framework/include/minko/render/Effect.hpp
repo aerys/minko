@@ -136,31 +136,11 @@ namespace minko
 			}
 
 		public:
-			inline
 			void
-			setAttribute(const std::string& name, const VertexAttribute& attribute)
-			{
-				_attributeFunctions.push_back(std::bind(
-					&Effect::setVertexAttributeOnPass, std::placeholders::_1, name, attribute
-				));
+			setAttribute(const std::string& name, const VertexAttribute& attribute);
 
-				for (auto& technique : _techniques)
-					for (auto& pass : technique.second)
-						pass->setAttribute(name, attribute);
-			}
-
-			inline
 			void
-			define(const std::string& macroName)
-			{
-                _macroFunctions.push_back(std::bind(
-                    &Effect::defineOnPass, std::placeholders::_1, macroName
-                ));
-
-				for (auto& technique : _techniques)
-					for (auto& pass : technique.second)
-						pass->define(macroName);
-			}
+			define(const std::string& macroName);
 
             template <typename T>
 			inline
