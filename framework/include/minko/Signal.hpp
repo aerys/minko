@@ -24,89 +24,46 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 namespace minko
 {
 	template <typename... A>
-	class Signal :
-		public std::enable_shared_from_this<Signal<A...>>
+	class Signal
 	{
 	private:
-		typedef std::function<void(A...)>										CallbackFunction;
-		typedef std::pair<float, CallbackFunction>								Callback;
-		typedef typename std::list<Callback>::iterator							CallbackIterator;
-		typedef typename std::list<std::pair<float, unsigned int>>::iterator	SlotIterator;
-
 		template <typename... B>
 		class SignalSlot;
 
-	public:
-		typedef std::shared_ptr<Signal<A...>>			Ptr;
-		typedef std::shared_ptr<SignalSlot<A...>>		Slot;
-
-	private:
-		std::list<Callback>										_callbacks;
-		std::list<std::pair<float, unsigned int>>				_slotIds;
-		unsigned int 											_nextSlotId;
-
-		bool													_locked;
-		std::list<std::pair<Callback, uint>>					_toAdd;
-		std::list<std::pair<CallbackIterator, SlotIterator>>	_toRemove;
-		std::list<unsigned int>									_toRemoveSlotId;
-		bool													_signalListDirty;
-
-	private:
-		void
-		removeConnectionById(const unsigned int connectionId)
-		{
-			auto connectionIdIt = _slotIds.begin();
-			auto callbackIt 	= _callbacks.begin();
-
-			while ((*connectionIdIt).second != connectionId)
-			{
-				connectionIdIt++;
-				callbackIt++;
-			}
-
-			removeConnectionByIterator(connectionIdIt, callbackIt);
-		}
-
-		void
-		removeConnectionByIterator(SlotIterator		 connectionIdIt,
-								   CallbackIterator	 callbackIt)
-		{
-			if (_locked)
-			{
-				auto addIt = std::find_if(_toAdd.begin(), _toAdd.end(), [&](std::pair<Callback, unsigned int>& add)
-				{
-					return add.second == (*connectionIdIt).second;
-				});
-
-				if (addIt != _toAdd.end())
-					_toAdd.erase(addIt);
-				else
-				{
-					_toRemove.push_back(std::pair<CallbackIterator, SlotIterator>(callbackIt, connectionIdIt));
-					_toRemoveSlotId.push_back(connectionIdIt->second);
-				}
-			}
-			else
-			{
-				_callbacks.erase(callbackIt);
-				_slotIds.erase(connectionIdIt);
-			}
-		}
+        typedef std::weak_ptr<SignalSlot<A...>>                     SlotWeakPtr;
+		typedef std::function<void(A...)>							CallbackFunction;
+        typedef std::tuple<float, CallbackFunction, SlotWeakPtr>	Callback;
+		typedef typename std::list<Callback>::iterator			    CallbackIterator;
 
 	public:
-        Signal() :
-            std::enable_shared_from_this<Signal<A...>>(),
-            _nextSlotId(0),
-            _locked(false),
-            _signalListDirty(false)
+		typedef std::shared_ptr<Signal<A...>>		Ptr;
+		typedef std::shared_ptr<SignalSlot<A...>>   Slot;
+
+	private:
+		std::list<Callback> _callbacks;
+
+	public:
+        Signal()
         {
         }
 
+        ~Signal()
+        {
+            for (const auto& callback : _callbacks)
+            {
+                auto slot = std::get<2>(callback).lock();
+
+                if (slot)
+                    slot->_signal = nullptr;
+            }
+        }
+
+        inline
 		static
 		Ptr
 		create()
 		{
-			return std::shared_ptr<Signal<A...>>(new Signal<A...>());
+			return std::make_shared<Signal<A...>>();
 		}
 
 		inline
@@ -116,40 +73,25 @@ namespace minko
 			return _callbacks.size();
 		}
 
-		void
-		sortSignals()
-		{
-			_callbacks.sort([](const Callback& callback1, const Callback& callback2) -> bool
-			{
-				return callback1.first > callback2.first;
-			});
-
-			_slotIds.sort([](const std::pair<float, unsigned int>& slot1, const std::pair<float, unsigned int>& slot2) -> bool
-			{
-				return slot1.first > slot2.first;
-			});
-		}
-
 		Slot
 		connect(CallbackFunction callback, float priority = 0)
 		{
-			auto connection = SignalSlot<A...>::create(this, _nextSlotId++);
+			auto connection = std::make_shared<SignalSlot<A...>>(this);
 			
-			if (_locked)
-				_toAdd.push_back(std::pair<Callback, unsigned int>(std::pair<float, CallbackFunction>(priority, callback), connection->_id));
-			else
-			{
-
-				_callbacks.push_back(std::pair<float, CallbackFunction>(priority, callback));
-				_slotIds.push_back(std::pair<float, unsigned int>(priority, connection->_id));
+			_callbacks.push_back(Callback(priority, callback, connection));
+            connection->_it = std::prev(_callbacks.end());
 				
-				if (_callbacks.size() >= 2)
-				{
-					auto prec = std::prev(_callbacks.end(), 2);
+			if (_callbacks.size() >= 2)
+			{
+				auto prec = std::prev(_callbacks.end(), 2);
 
-					if (priority > prec->first)
-						sortSignals();
-				}
+                if (priority > std::get<0>(*prec))
+                {
+                    _callbacks.sort([](const Callback& callback1, const Callback& callback2) -> bool
+                    {
+                        return std::get<0>(callback1) > std::get<0>(callback2);
+                    });
+                }
 			}
 
 			return connection;
@@ -158,41 +100,9 @@ namespace minko
 		void
 		execute(A... arguments)
 		{
-
-			_locked = true;
-			for (auto& callback : _callbacks)
-				callback.second(arguments...);
-			_locked = false;
-
-			for (auto& callbackIt : _toRemove)
-			{
-				_callbacks.erase(callbackIt.first);
-				_slotIds.erase(callbackIt.second);
-			}
-
-			for (auto& callbackAndConnectionId : _toAdd)
-			{
-
-				_callbacks.push_back(callbackAndConnectionId.first);
-				_slotIds.push_back(std::pair<float, unsigned int>(callbackAndConnectionId.first.first, callbackAndConnectionId.second));
-
-				if (_callbacks.size() >= 2)
-				{
-					auto prec = std::prev(_callbacks.end(), 2);
-
-					if (callbackAndConnectionId.first.first > prec->first)
-						_signalListDirty = true;
-				}
-			}
-			
-			if (_signalListDirty)
-			{
-				_signalListDirty = false;
-				sortSignals();
-			}
-
-			_toAdd.clear();
-			_toRemove.clear();
+            auto callbacks = _callbacks;
+			for (auto& callback : callbacks)
+				std::get<1>(callback)(arguments...);
 		}
 
         inline
@@ -212,6 +122,10 @@ namespace minko
 		public:
 			typedef std::shared_ptr<SignalSlot<T...>>	Ptr;
 
+		private:
+			Signal<T...>* 	  _signal;
+            CallbackIterator  _it;
+
 		public:
 			const Signal<T...>&
 			signal()
@@ -222,8 +136,11 @@ namespace minko
 			void
 			disconnect()
 			{
-				_signal->removeConnectionById(_id);
-                _signal = nullptr;
+                if (_signal)
+                {
+                    _signal->_callbacks.erase(_it);
+                    _signal = nullptr;
+                }
 			}
 
 			~SignalSlot()
@@ -231,21 +148,8 @@ namespace minko
 				disconnect();
 			}
 
-		private:
-			Signal<T...>* 	    _signal;
-			const unsigned int	_id;
-
-		private:
-			inline static
-			Ptr
-			create(Signal<T...>* signal, const unsigned int id)
-			{
-				return std::shared_ptr<SignalSlot<T...>>(new SignalSlot(signal, id));
-			}
-
-			SignalSlot(Signal<T...>* signal, const unsigned int id) :
-				_signal(signal),
-				_id(id)
+			SignalSlot(Signal<T...>* signal) :
+				_signal(signal)
 			{
 			}
 		};
