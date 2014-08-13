@@ -33,14 +33,15 @@ namespace minko
         typedef std::weak_ptr<SignalSlot<A...>>                     SlotWeakPtr;
 		typedef std::function<void(A...)>							CallbackFunction;
         typedef std::tuple<float, CallbackFunction, SlotWeakPtr>	Callback;
-		typedef typename std::list<Callback>::iterator			    CallbackIterator;
+        typedef std::list<Callback>                                 CallbackCollection;
+		typedef typename CallbackCollection::iterator			    CallbackIterator;
 
 	public:
 		typedef std::shared_ptr<Signal<A...>>		Ptr;
 		typedef std::shared_ptr<SignalSlot<A...>>   Slot;
 
 	private:
-		std::list<Callback> _callbacks;
+        CallbackCollection _callbacks;
 
 	public:
         Signal()
@@ -87,7 +88,7 @@ namespace minko
 
                 if (priority > std::get<0>(*prec))
                 {
-                    _callbacks.sort([](const Callback& callback1, const Callback& callback2) -> bool
+                    _callbacks.sort([](const Callback& callback1, const Callback& callback2)
                     {
                         return std::get<0>(callback1) > std::get<0>(callback2);
                     });
