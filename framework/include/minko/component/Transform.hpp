@@ -191,8 +191,8 @@ namespace minko
 				std::map<NodePtr, unsigned int>	_nodeToId;
 				std::vector<NodePtr>			_idToNode;
 				std::vector<int>		 		_parentId;
-				std::vector<unsigned int> 		_firstChildId;
-				std::vector<unsigned int>		_numChildren;
+				std::vector<int> 		        _firstChildId;
+				std::vector<int>		        _numChildren;
 				std::vector<bool>				_dirty;
 				bool							_invalidLists;
 
