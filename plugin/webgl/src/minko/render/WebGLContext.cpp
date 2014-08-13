@@ -43,111 +43,67 @@ WebGLContext::setShaderSource(const unsigned int shader,
 	checkForErrors();
 }
 
-void
-WebGLContext::fillUniformInputs(const unsigned int						program,
-								   std::vector<std::string>&				names,
-								   std::vector<ProgramInputs::Type>&	types,
-								   std::vector<unsigned int>&				locations)
+std::vector<ProgramInputs::UniformInput>
+WebGLContext::getUniformInputs(const uint program)
 {
-	int total = -1;
-	int maxUniformNameLength = 128;
+    std::vector<ProgramInputs::UniformInput> inputs;
 
-	glUseProgram(program);
-	glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &total);
+    int total = -1;
+    int maxUniformNameLength = 128;
 
-	for (int i = 0; i < total; ++i)
-	{
-    	int nameLength = -1;
-    	int size = -1;
-    	GLenum type = GL_ZERO;
-    	std::vector<char> name(maxUniformNameLength);
+    //glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &maxUniformNameLength);
+    glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &total);
 
-    	glGetActiveUniform(program, i, maxUniformNameLength, &nameLength, &size, &type, &name[0]);
+    for (int i = 0; i < total; ++i)
+    {
+        int nameLength = -1;
+        int size = -1;
+        GLenum type = GL_ZERO;
+        std::vector<char> name(maxUniformNameLength);
 
-	    name[nameLength] = 0;
+        glGetActiveUniform(program, i, maxUniformNameLength, &nameLength, &size, &type, &name[0]);
+        checkForErrors();
 
-	    ProgramInputs::Type	inputType	= convertInputType(type);
-	    int					location	= glGetUniformLocation(program, &name[0]);
+        name[nameLength] = 0;
 
-	    if (location >= 0 && inputType != ProgramInputs::Type::unknown)
-	    {
-		    names.push_back(std::string(&name[0], nameLength));
-		    types.push_back(inputType);
-		    locations.push_back(location);
-		}
-	}
+        ProgramInputs::Type	inputType = convertInputType(type);
+        int					location = glGetUniformLocation(program, &name[0]);
+
+        if (location >= 0 && inputType != ProgramInputs::Type::unknown)
+            inputs.push_back({ std::string(&name[0], nameLength), inputType, location });
+    }
+
+    return inputs;
 }
 
-void
-WebGLContext::fillAttributeInputs(const unsigned int							program,
-									 std::vector<std::string>&					names,
-								     std::vector<ProgramInputs::Type>&	types,
-								     std::vector<unsigned int>&					locations)
+std::vector<ProgramInputs::AttributeInput>
+WebGLContext::getAttributeInputs(const uint program)
 {
-	int total = -1;
-	int maxAttributeNameLength = 128;
+    std::vector<ProgramInputs::AttributeInput> inputs;
 
-	glUseProgram(program);
-	glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &total);
+    int total = -1;
+    int maxAttributeNameLength = 128;
 
-	for (int i = 0; i < total; ++i)
-	{
-    	int nameLength = -1;
-    	int size = -1;
-    	GLenum type = GL_ZERO;
-    	std::vector<char> name(maxAttributeNameLength);
+    //glGetProgramiv(program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &maxAttributeNameLength);
+    glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &total);
 
-		glGetActiveAttrib(program, i, maxAttributeNameLength, &nameLength, &size, &type, &name[0]);
+    for (int i = 0; i < total; ++i)
+    {
+        int nameLength = -1;
+        int size = -1;
+        GLenum type = GL_ZERO;
+        std::vector<char> name(maxAttributeNameLength);
 
-	    name[nameLength] = 0;
+        glGetActiveAttrib(program, i, maxAttributeNameLength, &nameLength, &size, &type, &name[0]);
+        checkForErrors();
 
-	    ProgramInputs::Type inputType = ProgramInputs::Type::attribute;
+        name[nameLength] = 0;
 
-		int location = glGetAttribLocation(program, &name[0]);
+        int location = glGetAttribLocation(program, &name[0]);
 
-	    if (location >= 0)
-	    {
-		    names.push_back(std::string(&name[0]));
-		    types.push_back(inputType);
-		    locations.push_back(location);
-		}
-	}
-}
+        if (location >= 0)
+            inputs.push_back({ std::string(&name[0], nameLength), location });
+    }
 
-void
-WebGLContext::setUniform(const unsigned int& location, const unsigned int& size, bool transpose, const float* values)
-{
-	if (transpose)
-	{
-		float* transposed = new float[size << 4];
-
-		for (uint i = 0; i < size; ++i)
-		{
-			const float*	matrix	= values		+ (i << 4);
-			float*			tmatrix	= transposed	+ (i << 4);
-
-			tmatrix[0]	= matrix[0];
-			tmatrix[1]	= matrix[4];
-			tmatrix[2]	= matrix[8];
-			tmatrix[3]	= matrix[12];
-			tmatrix[4]	= matrix[1];
-			tmatrix[5]	= matrix[5];
-			tmatrix[6]	= matrix[9];
-			tmatrix[7]	= matrix[13];
-			tmatrix[8]	= matrix[2];
-			tmatrix[9]	= matrix[6];
-			tmatrix[10] = matrix[10];
-			tmatrix[11] = matrix[14];
-			tmatrix[12] = matrix[3];
-			tmatrix[13] = matrix[7];
-			tmatrix[14] = matrix[11];
-			tmatrix[15] = matrix[15];
-		}
-
-		glUniformMatrix4fv(location, size, false, transposed);
-
-		delete[] transposed;
-	}
-	else
-		glUniformMatrix4fv(location, size, false, values);
+    return inputs;
 }

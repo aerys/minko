@@ -48,23 +48,12 @@ namespace minko
 			setShaderSource(const unsigned int shader,
 							const std::string& source);
 
-			void
-			fillUniformInputs(const unsigned int				program,
-							  std::vector<std::string>&			names,
-							  std::vector<ProgramInputs::Type>&	types,
-							  std::vector<unsigned int>&		locations);
+            std::vector<ProgramInputs::UniformInput>
+            getUniformInputs(const uint program);
 
-			void
-			fillAttributeInputs(const unsigned int					program,
-								std::vector<std::string>&			names,
-								std::vector<ProgramInputs::Type>&	types,
-								std::vector<unsigned int>&			locations);
+            std::vector<ProgramInputs::AttributeInput>
+            getAttributeInputs(const uint program);
 
-			void
-			setUniform(const unsigned int&	location,
-					   const unsigned int&	size,
-					   bool			transpose,
-					   const float*	values);
 		};
 	}
 }
