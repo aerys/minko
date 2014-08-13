@@ -842,6 +842,7 @@ EffectParser::parseMacroBindings(const Json::Value&	contextNode, MacroBindingMap
 			{
 				auto minValue		= macroBindingValue.get("min", -INT_MAX);
 				auto maxValue		= macroBindingValue.get("max", INT_MAX);
+                auto typeValue      = macroBindingsValue.get("type", 0);
 				auto defaultValue	= macroBindingValue.get("default", "");
 
 				if (defaultValue.isInt())
@@ -855,17 +856,27 @@ EffectParser::parseMacroBindings(const Json::Value&	contextNode, MacroBindingMap
                     macroBinding.defaultValue.defined = defaultValue.asBool();
 				}
 
+                if (typeValue.isString())
+                {
+                    auto typeString = typeValue.asString();
+
+                    // FIXME: add support for other types
+                    if (typeString == "integer")
+                        macroBinding.isInteger = true;
+                }
+
 				macroBinding.minValue = minValue.asInt();
                 macroBinding.maxValue = maxValue.asInt();
 			}
 			else if (macroBindingValue.isInt())
 			{
-                macroBinding.defaultState = MacroBinding::State::UNDEFINED;
+                macroBinding.defaultState = MacroBinding::State::DEFINED_INTEGER_VALUE;
+                macroBinding.isInteger = true;
                 macroBinding.defaultValue.value = macroBindingValue.asInt();
 			}
 			else if (macroBindingValue.isBool())
 			{
-                macroBinding.defaultState = MacroBinding::State::DEFINED_INTEGER_VALUE;
+                macroBinding.defaultState = MacroBinding::State::DEFINED;
                 macroBinding.defaultValue.defined = macroBindingValue.asBool();
 			}
 		}

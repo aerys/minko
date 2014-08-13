@@ -42,6 +42,7 @@ namespace minko
 
             State   defaultState;
             Value   defaultValue;
+            bool    isInteger;
             int     minValue;
             int     maxValue;
 
@@ -49,11 +50,13 @@ namespace minko
                          BindingSource      source,
                          State              defaultState,
                          Value              defaultValue,
-                         int                min = -std::numeric_limits<int>::max(),
-                         int                max = std::numeric_limits<int>::max()) :
+                         bool               isInteger   = false,
+                         int                min         = -std::numeric_limits<int>::max(),
+                         int                max         = std::numeric_limits<int>::max()) :
                 Binding(propertyName, source),
                 defaultState(defaultState),
                 defaultValue(defaultValue),
+                isInteger(isInteger),
                 minValue(min),
                 maxValue(max)
             {}
@@ -62,6 +65,7 @@ namespace minko
                 Binding(),
                 defaultState(State::UNDEFINED),
                 defaultValue(),
+                isInteger(false),
                 minValue(-std::numeric_limits<int>::max()),
                 maxValue(std::numeric_limits<int>::max())
             {}

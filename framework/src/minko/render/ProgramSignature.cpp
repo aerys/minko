@@ -51,7 +51,8 @@ ProgramSignature::ProgramSignature(const data::MacroBindingMap&                 
             ? targetData
             : (macroBinding.source == BindingSource::RENDERER ? rendererData : rootData);
         bool macroIsDefined = container.hasProperty(propertyName);
-        bool macroIsInteger = false;//macroIsDefined && container->propertyHasType<int>(propertyName);
+        bool macroIsInteger = (macroIsDefined && macroBinding.isInteger)
+            || macroBinding.defaultState == MacroBinding::State::DEFINED_INTEGER_VALUE;
 
         if (macroIsDefined || macroBinding.defaultState != MacroBinding::State::UNDEFINED)
 		{
@@ -62,7 +63,7 @@ ProgramSignature::ProgramSignature(const data::MacroBindingMap&                 
 			_mask |= 1 << macroId; // update program signature
 
             _macros.push_back(macroName);
-            if (macroIsInteger || macroBinding.defaultState == MacroBinding::State::DEFINED_INTEGER_VALUE)
+            if (macroIsInteger)
 			{
 				int	value = macroIsDefined ? container.get<int>(propertyName) : macroBinding.defaultValue.value;
 

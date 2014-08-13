@@ -61,7 +61,8 @@ TEST_F(ProgramSignatureTest, TargetDefinedIntegerValue)
         "foo",
         data::BindingSource::TARGET,
         data::MacroBinding::State::UNDEFINED,
-        data::MacroBinding::Value()
+        data::MacroBinding::Value(),
+        true
     };
 
     ProgramSignature signature(macroBindings, _variables, _targetData, _rendererData, _rootData);
@@ -81,7 +82,8 @@ TEST_F(ProgramSignatureTest, TargetDefinedIntegerValueFromCollection)
         "target[${targetId}].foo",
         data::BindingSource::TARGET,
         data::MacroBinding::State::UNDEFINED,
-        data::MacroBinding::Value()
+        data::MacroBinding::Value(),
+        true
     };
 
     ProgramSignature signature(macroBindings, _variables, _targetData, _rendererData, _rootData);
@@ -138,7 +140,8 @@ TEST_F(ProgramSignatureTest, RootDefinedIntegerValueFromCollection)
         "root[${rootId}].foo",
         data::BindingSource::ROOT,
         data::MacroBinding::State::UNDEFINED,
-        data::MacroBinding::Value()
+        data::MacroBinding::Value(),
+        true
     };
 
     ProgramSignature signature(macroBindings, _variables, _targetData, _rendererData, _rootData);
