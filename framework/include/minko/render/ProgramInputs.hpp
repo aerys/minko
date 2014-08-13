@@ -152,6 +152,18 @@ namespace minko
             {
                 if (this != &rhs)
                 {
+                    _uniforms = std::move(rhs._uniforms);
+                    _attributes = std::move(rhs._attributes);
+                }
+
+                return *this;
+            }
+
+            ProgramInputs&
+            operator=(const ProgramInputs& rhs)
+            {
+                if (this != &rhs)
+                {
                     _uniforms = rhs._uniforms;
                     _attributes = rhs._attributes;
                 }

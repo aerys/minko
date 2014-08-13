@@ -229,62 +229,70 @@ namespace minko
             void
             setUniformOnContext(uint location, uint count, T* v)
             {}
-
-            template <>
-            void
-            setUniformOnContext<float, 1>(uint location, uint count, float* v)
-            {
-                _context->setUniformFloat(location, count, v);
-            }
-
-            template <>
-            void
-            setUniformOnContext<float, 2>(uint location, uint count, float* v)
-            {
-                _context->setUniformFloat2(location, count, v);
-            }
-
-            template <>
-            void
-            setUniformOnContext<float, 3>(uint location, uint count, float* v)
-            {
-                _context->setUniformFloat3(location, count, v);
-            }
-
-            template <>
-            void
-            setUniformOnContext<float, 4>(uint location, uint count, float* v)
-            {
-                _context->setUniformFloat4(location, count, v);
-            }
-
-            template <>
-            void
-            setUniformOnContext<int, 1>(uint location, uint count, int* v)
-            {
-                _context->setUniformInt(location, count, v);
-            }
-
-            template <>
-            void
-            setUniformOnContext<int, 2>(uint location, uint count, int* v)
-            {
-                _context->setUniformInt2(location, count, v);
-            }
-
-            template <>
-            void
-            setUniformOnContext<int, 3>(uint location, uint count, int* v)
-            {
-                _context->setUniformInt3(location, count, v);
-            }
-
-            template <>
-            void
-            setUniformOnContext<int, 4>(uint location, uint count, int* v)
-            {
-                _context->setUniformInt4(location, count, v);
-            }
 		};
+
+        template <>
+        inline
+        void
+        Program::setUniformOnContext<float, 1>(uint location, uint count, float* v)
+        {
+            _context->setUniformFloat(location, count, v);
+        }
+
+        template <>
+        inline
+        void
+        Program::setUniformOnContext<float, 2>(uint location, uint count, float* v)
+        {
+            _context->setUniformFloat2(location, count, v);
+        }
+
+        template <>
+        inline
+        void
+        Program::setUniformOnContext<float, 3>(uint location, uint count, float* v)
+        {
+            _context->setUniformFloat3(location, count, v);
+        }
+
+        template <>
+        inline
+        void
+        Program::setUniformOnContext<float, 4>(uint location, uint count, float* v)
+        {
+            _context->setUniformFloat4(location, count, v);
+        }
+
+        template <>
+        inline
+        void
+        Program::setUniformOnContext<int, 1>(uint location, uint count, int* v)
+        {
+            _context->setUniformInt(location, count, v);
+        }
+
+        template <>
+        inline
+        void
+        Program::setUniformOnContext<int, 2>(uint location, uint count, int* v)
+        {
+            _context->setUniformInt2(location, count, v);
+        }
+
+        template <>
+        inline
+        void
+        Program::setUniformOnContext<int, 3>(uint location, uint count, int* v)
+        {
+            _context->setUniformInt3(location, count, v);
+        }
+
+        template <>
+        inline
+        void
+        Program::setUniformOnContext<int, 4>(uint location, uint count, int* v)
+        {
+            _context->setUniformInt4(location, count, v);
+        }
 	}
 }

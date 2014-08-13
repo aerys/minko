@@ -180,6 +180,11 @@ DrawCall::bindUniform(Program::Ptr            program,
                 input.location
             });
             break;
+        case ProgramInputs::Type::float9:
+        case ProgramInputs::Type::unknown:
+        case ProgramInputs::Type::samplerCube:
+            throw std::runtime_error("unsupported program input type: " + ProgramInputs::typeToString(input.type));
+            break;
     }
 }
 

@@ -29,7 +29,7 @@ using namespace minko::serialize;
 std::tuple<uint, std::string>
 TypeSerializer::serializeVector4(Any value)
 {
-	auto& vect4 = Any::cast<math::vec4>(value);
+	auto vect4 = Any::cast<math::vec4>(value);
 	uint type = 0x00000000;
 	float* values = math::value_ptr(vect4);
 	std::stringstream stream;
@@ -57,7 +57,7 @@ TypeSerializer::serializeVector4(Any value)
 std::tuple<uint, std::string>
 TypeSerializer::serializeVector3(Any value)
 {
-	auto& vect3 = Any::cast<math::vec3>(value);
+	auto vect3 = Any::cast<math::vec3>(value);
 	uint type = 0x00000000;
     float* values = math::value_ptr(vect3);
 	std::stringstream stream;
@@ -80,7 +80,7 @@ TypeSerializer::serializeVector3(Any value)
 std::tuple<uint, std::string>
 TypeSerializer::serializeVector2(Any value)
 {
-	auto& vect2 = Any::cast<math::vec2>(value);
+	auto vect2 = Any::cast<math::vec2>(value);
 	uint type = 0x00000000;
 	float* values = math::value_ptr(vect2);
 	std::stringstream	stream;
@@ -103,7 +103,7 @@ TypeSerializer::serializeVector2(Any value)
 std::tuple<uint, std::string>
 TypeSerializer::serializeMatrix4x4(Any value)
 {
-	auto& mat = Any::cast<math::mat4>(value);
+	auto mat = Any::cast<math::mat4>(value);
 	float* values = math::value_ptr(mat);
 	std::stringstream stream;
 

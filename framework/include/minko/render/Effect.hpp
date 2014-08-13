@@ -148,7 +148,7 @@ namespace minko
 			define(const std::string& macroName, T macroValue)
 			{
                 _macroFunctions.push_back(std::bind(
-                    &Effect::defineOnPass<T>, std::placeholders::_1, macroName, macroValue
+                    &Effect::defineOnPassWithValue<T>, std::placeholders::_1, macroName, macroValue
                 ));
 
 				for (auto& technique : _techniques)
@@ -193,7 +193,7 @@ namespace minko
             template <typename T>
             static
             void
-            defineOnPass(std::shared_ptr<Pass> pass, const std::string& macroName, T macroValue)
+            defineOnPassWithValue(std::shared_ptr<Pass> pass, const std::string& macroName, T macroValue)
             {
                 pass->define(macroName, macroValue);
             }

@@ -229,7 +229,7 @@ namespace minko
 			define(const std::string& macroName, T macroValue)
 			{
                 _macroFunctions.push_back(std::bind(
-                    &Pass::defineOnProgram<T>, std::placeholders::_1, macroName, macroValue
+                    &Pass::defineOnProgramWithValue<T>, std::placeholders::_1, macroName, macroValue
                 ));
                 _programTemplate->define(macroName, macroValue);
 			}
@@ -269,7 +269,7 @@ namespace minko
             template <typename T>
             static
             void
-            defineOnProgram(std::shared_ptr<Program> program, const std::string& macroName, T value)
+            defineOnProgramWithValue(std::shared_ptr<Program> program, const std::string& macroName, T value)
             {
                 program->define(macroName, value);
             }

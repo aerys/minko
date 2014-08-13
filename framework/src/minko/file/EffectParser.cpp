@@ -1310,15 +1310,15 @@ EffectParser::definePlatform()
 #if MINKO_PLATFORM & MINKO_PLATFORM_WINDOWS
     _effect->define("MINKO_PLATFORM_WINDOWS");
 #elif MINKO_PLATFORM & MINKO_PLATFORM_OSX
-    _effect->define("MINKO_PLATFORM_OSX";
+    _effect->define("MINKO_PLATFORM_OSX");
 #elif MINKO_PLATFORM & MINKO_PLATFORM_LINUX
-    _effect->define("MINKO_PLATFORM_LINUX";
+    _effect->define("MINKO_PLATFORM_LINUX");
 #elif MINKO_PLATFORM & MINKO_PLATFORM_IOS
-    _effect->define("MINKO_PLATFORM_IOS";
+    _effect->define("MINKO_PLATFORM_IOS");
 #elif MINKO_PLATFORM & MINKO_PLATFORM_ANDROID
-    _effect->define("MINKO_PLATFORM_ANDROID";
+    _effect->define("MINKO_PLATFORM_ANDROID");
 #elif MINKO_PLATFORM & MINKO_PLATFORM_HTML5
-    _effect->define("MINKO_PLATFORM_HTML5";
+    _effect->define("MINKO_PLATFORM_HTML5");
 #endif
 }
 

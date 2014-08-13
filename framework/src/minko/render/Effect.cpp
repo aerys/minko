@@ -87,9 +87,7 @@ Effect::setAttribute(const std::string& name, const VertexAttribute& attribute)
 void
 Effect::define(const std::string& macroName)
 {
-    _macroFunctions.push_back(std::bind(
-        &Effect::defineOnPass, std::placeholders::_1, macroName
-    ));
+    _macroFunctions.push_back(std::bind(&Effect::defineOnPass, std::placeholders::_1, macroName));
 
 	for (auto& technique : _techniques)
 		for (auto& pass : technique.second)

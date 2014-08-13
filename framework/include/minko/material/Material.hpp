@@ -77,7 +77,7 @@ namespace minko
             }
 
 		protected:
-			Material::Material(const std::string& name) :
+			Material(const std::string& name) :
                 _name(name),
                 _provider(data::Provider::create())
             {
