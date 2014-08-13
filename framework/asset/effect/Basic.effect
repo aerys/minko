@@ -3,8 +3,8 @@
     "name"  	: "basic",
     	
     "attributeBindings" : {
-        "position"              : "geometry[${geometryId}].position",
-        "uv"                    : "geometry[${geometryId}].uv",
+        "aPosition"             : "geometry[${geometryId}].position",
+        "aUV"                   : "geometry[${geometryId}].uv",
 		"boneIdsA"				: "geometry[${geometryId}].boneIdsA",
 		"boneIdsB"				: "geometry[${geometryId}].boneIdsB",		
 		"boneWeightsA"			: "geometry[${geometryId}].boneWeightsA",
@@ -12,34 +12,36 @@
     },
     
     "uniformBindings"   : {
-        "uvScale"               : { "property" : "material[${materialId}].uvScale", "default" : [1.0, 1.0] },
-        "uvOffset"              : { "property" : "material[${materialId}].uvOffset", "default" : [0.0, 0.0] },
+        "uModelToWorldMatrix"   : "modelToWorldMatrix",
+        "uUVOffset"             : "material[${materialId}].uvOffset",
+        "uUVScale"              : "material[${materialId}].uvScale",
         "diffuseColor"          : "material[${materialId}].diffuseColor",
         "diffuseMap"            : "material[${materialId}].diffuseMap",
 		"alphaMap"				: "material[${materialId}].alphaMap",
 		"alphaThreshold"		: "material[${materialId}].alphaThreshold",
         "diffuseCubeMap"        : "material[${materialId}].diffuseCubeMap",
-        "modelToWorldMatrix"    : "modelToWorldMatrix",
-        "worldToScreenMatrix"   : { "property" : "worldToScreenMatrix", "source" : "renderer" },
-		"boneMatrices"			: { "property" : "geometry[${geometryId}].boneMatrices",			"source" : "target" },
-		"numBones"				: { "property" : "geometry[${geometryId}].numBones",				"source" : "target" },
 		"fogColor"				: "material[${materialId}].fogColor",
 		"fogDensity"			: "material[${materialId}].fogDensity",
 		"fogStart"				: "material[${materialId}].fogStart",
-		"fogEnd"				: "material[${materialId}].fogEnd"
+		"fogEnd"				: "material[${materialId}].fogEnd",
+		"boneMatrices"			: "geometry[${geometryId}].boneMatrices",
+		"numBones"				: "geometry[${geometryId}].numBones",
+        "uWorldToScreenMatrix"  : { "property" : "worldToScreenMatrix", "source" : "renderer" }
     },
     
     "macroBindings" : {
+        "MODEL_TO_WORLD"        : "modelToWorldMatrix",
+        "HAS_NORMAL"            : "geometry[${geometryId}].normal",
+        "NUM_BONES"             : "geometry[${geometryId}].numBones",
         "DIFFUSE_MAP"           : "material[${materialId}].diffuseMap",
         "DIFFUSE_CUBEMAP"       : "material[${materialId}].diffuseCubeMap",
 		"ALPHA_MAP"				: "material[${materialId}].alphaMap",
 		"ALPHA_THRESHOLD"		: "material[${materialId}].alphaThreshold",
-        "MODEL_TO_WORLD"        : "modelToWorldMatrix",
-        "HAS_NORMAL"            : "geometry[${geometryId}].normal",
-        "NUM_BONES"             : { "property" : "geometry[${geometryId}].numBones",   "source" : "target" },
 		"FOG_LIN"				: "material[${materialId}].fogLinear",
 		"FOG_EXP"				: "material[${materialId}].fogExponential",
-		"FOG_EXP2"				: "material[${materialId}].fogExponential2"
+		"FOG_EXP2"				: "material[${materialId}].fogExponential2",
+        "UV_OFFSET"             : "material[${materialId}].uvOffset",
+        "UV_SCALE"              : "material[${materialId}].uvScale"
     },
 
     "stateBindings" : {
@@ -54,12 +56,12 @@
         "stencilFailOp"         : "material[${materialId}].stencilFailOp",
         "stencilZFailOp"        : "material[${materialId}].stencilZFailOp",
         "stencilZPassOp"        : "material[${materialId}].stencilZPassOp",
-        "scissorBox.x"          : { "property" : "scissorBox.x",        "source" : "renderer" },
-        "scissorBox.y"          : { "property" : "scissorBox.y",        "source" : "renderer" },
-        "scissorBox.width"      : { "property" : "scissorBox.width",    "source" : "renderer" },
-        "scissorBox.height"     : { "property" : "scissorBox.height",   "source" : "renderer" },
         "priority"              : "material[${materialId}].priority",
         "zSort"                 : "material[${materialId}].zSort",
+        "scissorBox.x"          : { "property" : "scissorBox.x", "source" : "renderer" },
+        "scissorBox.y"          : { "property" : "scissorBox.y", "source" : "renderer" },
+        "scissorBox.width"      : { "property" : "scissorBox.width", "source" : "renderer" },
+        "scissorBox.height"     : { "property" : "scissorBox.height", "source" : "renderer" },
         "layouts"               : "node.layouts"
     },
     

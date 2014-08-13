@@ -14,21 +14,21 @@ uniform samplerCube	diffuseCubeMap;
 uniform sampler2D 	alphaMap;
 uniform float 		alphaThreshold;
 
-varying vec2 vertexUV;
-varying vec3 vertexUVW;
+varying vec2 vVertexUV;
+varying vec3 vVertexUVW;
 
 void main(void)
 {
-	vec4 	diffuse 		= diffuseColor;
+	vec4 diffuse = diffuseColor;
 	
 	#if defined(DIFFUSE_CUBEMAP)
-		diffuse		= textureCube(diffuseCubeMap, vertexUVW);
+		diffuse	= textureCube(diffuseCubeMap, vVertexUVW);
 	#elif defined(DIFFUSE_MAP)
-		diffuse 	= texture2D(diffuseMap, vertexUV);
+		diffuse = texture2D(diffuseMap, vVertexUV);
 	#endif
 	
 	#ifdef ALPHA_MAP
-		diffuse.a = texture2D(alphaMap, vertexUV).r;
+		diffuse.a = texture2D(alphaMap, vVertexUV).r;
 	#endif // ALPHA_MAP
 
 	#ifdef ALPHA_THRESHOLD

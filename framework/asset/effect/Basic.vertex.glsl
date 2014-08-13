@@ -6,38 +6,48 @@
 
 #pragma include("Skinning.function.glsl")
 
-attribute vec3 position;
-attribute vec2 uv;
+attribute vec3 aPosition;
+attribute vec2 aUV;
 
-uniform mat4 modelToWorldMatrix;
-uniform mat4 worldToScreenMatrix;
-uniform vec2 uvScale;
-uniform vec2 uvOffset;
+uniform mat4 uModelToWorldMatrix;
+uniform mat4 uWorldToScreenMatrix;
+uniform vec2 uUVScale;
+uniform vec2 uUVOffset;
 
-varying vec2 vertexUV;
-varying vec3 vertexUVW;
+varying vec2 vVertexUV;
+varying vec3 vVertexUVW;
 
 void main(void)
 {
 	#if defined(DIFFUSE_MAP) || defined(ALPHA_MAP)
-		vertexUV = uvScale * uv + uvOffset;
+		vec2 uv = aUV;
+
+		#if defined(UV_SCALE)
+			uv *= uUVScale;
+		#endif
+
+		#if defined(UV_OFFSET)
+			uv += uUVOffset;
+		#endif
+
+		vertexUV = uv;
 	#endif
 
 	#ifdef DIFFUSE_CUBEMAP
-		vertexUVW = position;
+		vertexUVW = aPosition;
 	#endif 
 
-	vec4 pos = vec4(position, 1.0);
+	vec4 pos = vec4(aPosition, 1.0);
 
 	#ifdef NUM_BONES
 		pos = skinning_moveVertex(pos);
-	#endif // NUM_BONES
-	
-	#ifdef MODEL_TO_WORLD
-		pos = modelToWorldMatrix * pos;
 	#endif
 	
-	gl_Position =  worldToScreenMatrix * pos;
+	#ifdef MODEL_TO_WORLD
+		pos = uModelToWorldMatrix * pos;
+	#endif
+	
+	gl_Position = uWorldToScreenMatrix * pos;
 }
 
 #endif // VERTEX_SHADER

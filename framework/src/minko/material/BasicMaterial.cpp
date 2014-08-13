@@ -35,8 +35,6 @@ BasicMaterial::BasicMaterial():
 	Material("BasicMaterial")
 {
 	diffuseColor(0xffffffff);
-	uvScale(math::vec2(1.f));
-	uvOffset(math::vec2(0.f));
 }
 
 BasicMaterial&
