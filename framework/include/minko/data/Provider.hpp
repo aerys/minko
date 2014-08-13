@@ -90,22 +90,22 @@ namespace minko
 			}
 
 			inline
-			Signal<Ptr, const std::string&>
-			propertyAdded() const
+			Signal<Ptr, const std::string&>&
+			propertyAdded()
 			{
 				return _propertyAdded;
 			}
 
             inline
-			Signal<Ptr, const std::string&>
-			propertyChanged() const
+			Signal<Ptr, const std::string&>&
+			propertyChanged()
 			{
 				return _propertyChanged;
 			}
 
 			inline
-			Signal<Ptr, const std::string&>
-			propertyRemoved() const
+			Signal<Ptr, const std::string&>&
+			propertyRemoved()
 			{
 				return _propertyRemoved;
 			}
