@@ -45,18 +45,18 @@ namespace minko
             typedef Signal<Collection&, ProviderPtr>::Slot              CollectionChangedSignalSlot;
 
         private:
-			std::list<ProviderPtr>										    _providers;
-            std::list<CollectionPtr>                                        _collections;
-            Provider::Ptr                                                   _lengthProvider;
+			std::list<ProviderPtr>									_providers;
+            std::list<CollectionPtr>                                _collections;
+            Provider::Ptr                                           _lengthProvider;
 
-			PropertyChangedSignalPtr									    _propertyAdded;
-			PropertyChangedSignalPtr									    _propertyRemoved;
-            std::unordered_map<std::string, PropertyChangedSignalPtr>       _propertyChanged;
+			PropertyChangedSignalPtr								_propertyAdded;
+			PropertyChangedSignalPtr								_propertyRemoved;
+            std::map<std::string, PropertyChangedSignalPtr>         _propertyChanged;
 
-            std::unordered_map<ProviderPtr, ProviderChangedSignalSlotList>	_propertySlots;
-            std::unordered_map<std::string, PropertyChangedSignalPtr>	    _propertyChangedSlots;
-            std::unordered_map<CollectionPtr, CollectionChangedSignalSlot>  _collectionItemAddedSlots;
-            std::unordered_map<CollectionPtr, CollectionChangedSignalSlot>  _collectionItemRemovedSlots;
+            std::map<ProviderPtr, ProviderChangedSignalSlotList>	_propertySlots;
+            std::map<std::string, PropertyChangedSignalPtr>	        _propertyChangedSlots;
+            std::map<CollectionPtr, CollectionChangedSignalSlot>    _collectionItemAddedSlots;
+            std::map<CollectionPtr, CollectionChangedSignalSlot>    _collectionItemRemovedSlots;
 
 		public:
             Container();

@@ -33,13 +33,11 @@ namespace minko
             friend class Container;
 
         public:
-            typedef std::shared_ptr<Collection>                     Ptr;
+            typedef std::shared_ptr<Collection>     Ptr;
 
         private:
-            typedef std::shared_ptr<Provider>                       ProviderPtr;
-            typedef std::vector<ProviderPtr>                        Items;
-            typedef Signal<ProviderPtr, const std::string&>::Ptr    PropertySignalPtr;
-            typedef Signal<ProviderPtr, const std::string&>::Slot   PropertySignalSlot;
+            typedef std::shared_ptr<Provider>       ProviderPtr;
+            typedef std::vector<ProviderPtr>        Items;
 
         private:
             std::string                         _name;
