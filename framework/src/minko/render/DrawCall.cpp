@@ -62,6 +62,9 @@ DrawCall::bind(Program::Ptr                                         program,
 
     for (const auto& input : program->inputs().uniforms())
     {
+        if (uniformBindings.count(input.name) == 0)
+            continue;
+
         const auto& binding = uniformBindings.at(input.name);
         auto container = getContainer(rootData, rendererData, targetData, binding.source);
 
@@ -75,6 +78,9 @@ DrawCall::bind(Program::Ptr                                         program,
      
     for (const auto& input : program->inputs().attributes())
     {
+        if (attributeBindings.count(input.name) == 0)
+            continue;
+
         const auto& binding = attributeBindings.at(input.name);
         auto container = getContainer(rootData, rendererData, targetData, binding.source);
 
