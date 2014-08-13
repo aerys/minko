@@ -29,24 +29,24 @@ namespace minko
 {
 	namespace render
 	{
-
 		class DrawCallPool :
 			public std::enable_shared_from_this<DrawCallPool>
 		{
-		public:
-			typedef std::shared_ptr<DrawCallPool>   Ptr;
+        private:
+            typedef std::list<DrawCall*>::iterator                  DrawCallIterator;
+
+        public:
+            typedef std::pair<DrawCallIterator, DrawCallIterator>   DrawCallIteratorPair;
 
 		private:
             std::list<DrawCall*>    _drawCalls;
             std::set<std::string>   _watchedProperties;
 
 		public:
-			inline static
-			Ptr
-			create()
-			{
-                return std::shared_ptr<DrawCallPool>(new DrawCallPool());
-			}
+            ~DrawCallPool()
+            {
+
+            }
 
 			const std::list<DrawCall*>&
             drawCalls()
@@ -54,7 +54,7 @@ namespace minko
                 return _drawCalls;
             }
 			
-            void
+            DrawCallIteratorPair
             addDrawCalls(std::shared_ptr<Effect>                                effect,
                          const std::unordered_map<std::string, std::string>&    variables,
                          const std::string&                                     techniqueName,
@@ -62,12 +62,9 @@ namespace minko
                          const data::Container&                                 rendererData,
                          const data::Container&                                 targetData);
 
-		private:
-			explicit
-			DrawCallPool();
+            void
+            removeDrawCalls(const DrawCallIteratorPair& iterators);
 
-			void
-			initialize();
 		};
 	}
 }

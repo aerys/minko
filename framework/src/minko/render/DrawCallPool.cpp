@@ -22,11 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::render;
 
-DrawCallPool::DrawCallPool()
-{
-}
-
-void
+std::pair<std::list<DrawCall*>::iterator, std::list<DrawCall*>::iterator>
 DrawCallPool::addDrawCalls(std::shared_ptr<Effect>                              effect,
                            const std::unordered_map<std::string, std::string>&  variables,
                            const std::string&                                   techniqueName,
@@ -35,7 +31,7 @@ DrawCallPool::addDrawCalls(std::shared_ptr<Effect>                              
                            const data::Container&                               targetData)
 {
     const auto& technique = effect->technique(techniqueName);
-                
+    
     for (const auto& pass : technique)
     {
         auto program = pass->selectProgram(variables, targetData, rendererData, rootData);
@@ -54,4 +50,18 @@ DrawCallPool::addDrawCalls(std::shared_ptr<Effect>                              
 
         _drawCalls.push_back(drawCall);
     }
+
+    return std::pair<std::list<DrawCall*>::iterator, std::list<DrawCall*>::iterator>(
+        std::prev(_drawCalls.end(), technique.size()),
+        _drawCalls.end()
+    );
+}
+
+void
+DrawCallPool::removeDrawCalls(const DrawCallIteratorPair& iterators)
+{
+    for (auto it = iterators.first; it != iterators.second; ++it)
+        delete *it;
+
+    _drawCalls.erase(iterators.first, iterators.second);
 }

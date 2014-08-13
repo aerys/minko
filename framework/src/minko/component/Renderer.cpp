@@ -64,8 +64,7 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 	_rendererDataFilterChangedSlots(),
 	_rootDataFilterChangedSlots(),
 	_lightMaskFilter(data::LightMaskFilter::create()),
-	_filterChanged(Signal<Ptr, data::AbstractFilter::Ptr, data::BindingSource, SurfacePtr>::create()),
-    _drawCallPool(DrawCallPool::create())
+	_filterChanged(Signal<Ptr, data::AbstractFilter::Ptr, data::BindingSource, SurfacePtr>::create())
 {
 	if (renderTarget)
 	{
@@ -244,10 +243,10 @@ Renderer::addSurface(Surface::Ptr surface)
     auto c = surface->target()->data();
     auto surfaceId = 0;
 
-//    while (surface->target()->component<Surface>(surfaceId) != surface)
-//        ++surfaceId;
+    while (surface->target()->component<Surface>(surfaceId) != surface)
+        ++surfaceId;
 
-    /*variables["surfaceId"] = std::to_string(surfaceId);
+    variables["surfaceId"] = std::to_string(surfaceId);
     variables["geometryId"] = std::to_string(
         getProviderId(c, Surface::GEOMETRY_COLLECTION_NAME, surface->geometry()->data())
     );
@@ -256,14 +255,9 @@ Renderer::addSurface(Surface::Ptr surface)
     );
     variables["effectId"] = std::to_string(
         getProviderId(c, Surface::EFFECT_COLLECTION_NAME, surface->effect()->data())
-    );*/
+    );
 
-    variables["surfaceId"] = "0";
-    variables["geometryId"] = "0";
-    variables["materialId"] = "0";
-    variables["effectId"] = "0";
-
-    _drawCallPool->addDrawCalls(
+    _surfaceToDrawCallIterator[surface] = _drawCallPool.addDrawCalls(
         surface->effect(),
         variables,
         surface->technique(),
@@ -271,6 +265,14 @@ Renderer::addSurface(Surface::Ptr surface)
         target()->data(),
         surface->target()->data()
     );
+}
+
+
+void
+Renderer::removeSurface(Surface::Ptr surface)
+{
+    _drawCallPool.removeDrawCalls(_surfaceToDrawCallIterator[surface]);
+    _surfaceToDrawCallIterator.erase(surface);
 }
 
 uint
@@ -292,12 +294,6 @@ Renderer::getProviderId(const data::Container&  container,
     assert(providerIt != collectionItems.end());
 
     return providerIt - collectionItems.begin();
-}
-
-void
-Renderer::removeSurface(Surface::Ptr surface)
-{
-    // FIXME
 }
 
 void
@@ -338,7 +334,7 @@ Renderer::render(render::AbstractContext::Ptr	context,
 		(_backgroundColor & 0xff) / 255.f
 	);
 
-    for (const auto& drawCall : _drawCallPool->drawCalls())
+    for (const auto& drawCall : _drawCallPool.drawCalls())
         // FIXME: render the draw call only if it's the right layout
 		//if ((drawCall->layouts() & layoutMask()) != 0)
 			drawCall->render(context, renderTarget);

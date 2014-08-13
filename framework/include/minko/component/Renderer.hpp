@@ -48,11 +48,11 @@ namespace minko
 			typedef std::shared_ptr<SceneManager>						        SceneManagerPtr;
 			typedef std::shared_ptr<render::AbstractTexture>			        AbsTexturePtr;
 			typedef std::shared_ptr<render::Effect>						        EffectPtr;
-			typedef std::shared_ptr<render::DrawCallPool>				        DrawCallPoolPtr;
 			typedef std::shared_ptr<data::AbstractFilter>				        AbsFilterPtr;
 			typedef Signal<SurfacePtr, const std::string&, bool>::Slot	        SurfaceTechniqueChangedSlot;
 			typedef Signal<AbsFilterPtr, SurfacePtr>::Slot				        FilterChangedSlot;
 			typedef Signal<Ptr, AbsFilterPtr, data::BindingSource, SurfacePtr>	RendererFilterChangedSignal;
+            typedef render::DrawCallPool::DrawCallIteratorPair                  DrawCallIteratorPair;
 
 		private:
 			static const unsigned int									NUM_FALLBACK_ATTEMPTS;
@@ -84,7 +84,8 @@ namespace minko
 			Signal<SceneManagerPtr, uint, AbsTexturePtr>::Slot			_renderingBeginSlot;
 			std::unordered_map<SurfacePtr, SurfaceTechniqueChangedSlot>	_surfaceTechniqueChangedSlot;
 
-			DrawCallPoolPtr											    _drawCallPool;
+			render::DrawCallPool								        _drawCallPool;
+            std::map<SurfacePtr, DrawCallIteratorPair>                  _surfaceToDrawCallIterator;
 
 			std::set<AbsFilterPtr>										_targetDataFilters;
 			std::set<AbsFilterPtr>										_rendererDataFilters;
@@ -136,7 +137,7 @@ namespace minko
 			unsigned int
 			numDrawCalls()
 			{
-				return _drawCallPool->drawCalls().size();
+				return _drawCallPool.drawCalls().size();
 			}
 
 			inline
