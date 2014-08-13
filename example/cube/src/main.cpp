@@ -27,17 +27,17 @@ using namespace minko::component;
 const std::string TEXTURE_FILENAME = "texture/box.png";
 
 void
-createRandomCube(scene::Node::Ptr root, material::Material::Ptr mat, geometry::Geometry::Ptr geom, render::Effect::Ptr effect)
+createRandomCube(scene::Node::Ptr root, geometry::Geometry::Ptr geom, render::Effect::Ptr effect)
 {
     auto node = scene::Node::create();
     auto r = math::sphericalRand(1.f);
     auto material = material::BasicMaterial::create();
 
-    //material->diffuseColor(math::vec4(r, 1.f));
+    material->diffuseColor(math::vec4((r + 1.f) * .5f, 1.f));
 
-    /*node->addComponent(Transform::create(
-        math::translate(r * 50.f) * math::scale(math::vec3(.02f))
-    ));*/
+    node->addComponent(Transform::create(
+        math::translate(r * 50.f) * math::scale(math::vec3(.2f))
+    ));
     node->addComponent(Surface::create(geom, material, effect));
 
     root->addChild(node);
@@ -68,9 +68,9 @@ int main(int argc, char** argv)
 		//->addComponent(Transform::create());
 
 	auto camera = scene::Node::create("camera")
-		->addComponent(Renderer::create(0x7f7f7fff))
+		->addComponent(Renderer::create())
 		->addComponent(Transform::create(
-			math::inverse(math::lookAt(math::vec3(0.f, 0.f, 3.f), math::vec3(0.f), math::vec3(0.f, 1.f, 0.f)))
+			math::inverse(math::lookAt(math::vec3(0.f, 0.f, 150.f), math::vec3(0.f), math::vec3(0.f, 1.f, 0.f)))
 		))
 		->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
 	root->addChild(camera);
@@ -82,39 +82,29 @@ int main(int argc, char** argv)
 	{
         auto numFrames = 0;
 
-        /*for (auto i = 0; i < 30000; ++i)
-            createRandomCube(
-                meshes,
-                sceneManager->assets()->material("material"),
-                sceneManager->assets()->geometry("cube"),
-                sceneManager->assets()->effect("effect/Basic.effect")
-            );*/
-
-        //std::vector<component::Surface::Ptr> surfaces(10000);
-        //for (auto i = 0; i < 10000; ++i)
-        //    surfaces[i] = Surface::create(
-        //        sceneManager->assets()->geometry("cube"),
-        //        sceneManager->assets()->material("material"),
-        //        sceneManager->assets()->effect("effect/Basic.effect")
-        //    );
-
-        //surfaces.clear();
-
         auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
         {
+            camera->component<Transform>()->matrix(
+                math::rotate(0.01f, math::vec3(0.f, 1.f, 0.f))
+                * camera->component<Transform>()->matrix()
+            );
+
             if (canvas->framerate() > 30.f)
             {
                 for (auto i = 0; i < 10; ++i)
                     createRandomCube(
                         meshes,
-                        sceneManager->assets()->material("material"),
                         sceneManager->assets()->geometry("cube"),
                         sceneManager->assets()->effect("effect/Basic.effect")
                     );
             }
+            else if (meshes->children().size() > 0)
+                meshes->removeChild(meshes->children().back());
             
             if (++numFrames % 100 == 0)
-                std::cout << "num meshes = " << meshes->children().size() << ", framerate = " << canvas->framerate() << std::endl;
+                std::cout << "num meshes = " << meshes->children().size()
+                    << ", num draw calls = " << camera->component<Renderer>()->numDrawCalls()
+                    << ", framerate = " << canvas->framerate() << std::endl;
 
             sceneManager->nextFrame(time, deltaTime);
         });
@@ -122,13 +112,9 @@ int main(int argc, char** argv)
     	canvas->run();
 	});
 
-    /*std::vector<scene::Node::Ptr> nodes(10000);
-    for (auto i = 0; i < 10000; ++i)
-        nodes[i] = scene::Node::create();*/
-
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
-		//camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+		camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
 	});
 
 	sceneManager->assets()->loader()->load();
