@@ -83,6 +83,13 @@ namespace minko
                              OptionsPtr options,
                              const std::vector<unsigned char>& data,
                              AssetLibraryPtr assetLibrary);
+
+            static
+            bool
+            parseRGBDXT1Texture(const std::string& fileName,
+                                OptionsPtr options,
+                                const std::vector<unsigned char>& data,
+                                AssetLibraryPtr assetLibrary);
         };
     }
 }

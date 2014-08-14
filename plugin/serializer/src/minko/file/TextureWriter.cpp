@@ -27,13 +27,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/WriterOptions.hpp"
 #include "minko/Types.hpp"
 
+#include "squish.h"
+
 using namespace minko;
 using namespace minko::file;
 using namespace minko::render;
 
 std::unordered_map<TextureFormat, TextureWriter::FormatWriterFunction> TextureWriter::_formatWriterFunctions = 
 {
-    { TextureFormat::RGBA, std::bind(writeRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) }
+    { TextureFormat::RGBA, std::bind(writeRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
+    { TextureFormat::RGB_DXT1, std::bind(writeRGBDXT1Texture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) }
 };
 
 TextureWriter::TextureWriter() :
@@ -113,6 +116,28 @@ TextureWriter::writeRGBATexture(AbstractTexture::Ptr abstractTexture,
     msgpack::type::tuple<int, std::vector<unsigned char>> serializedTexture(static_cast<int>(imageFormat), textureData);
 
     msgpack::pack(blob, serializedTexture);
+
+    return true;
+}
+
+bool
+TextureWriter::writeRGBDXT1Texture(AbstractTexture::Ptr abstractTexture,
+                                   WriterOptions::Ptr writerOptions,
+                                   std::stringstream& blob)
+{
+    auto texture = std::static_pointer_cast<Texture>(abstractTexture);
+
+    auto width = texture->width();
+    auto height = texture->height();
+
+    auto flags = squish::kDxt1;
+
+    auto compressedSize = squish::GetStorageRequirements(width, height, flags);
+    auto textureData = std::vector<unsigned char>(compressedSize);
+
+    squish::CompressImage(texture->data().data(), texture->width(), texture->height(), textureData.data(), flags);
+    
+    msgpack::pack(blob, textureData);
 
     return true;
 }

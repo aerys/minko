@@ -34,7 +34,8 @@ using namespace minko::serialize;
 
 std::unordered_map<render::TextureFormat, TextureParser::FormatParserFunction> TextureParser::_formatParserFunctions =
 {
-    { TextureFormat::RGBA, std::bind(parseRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) }
+    { TextureFormat::RGBA, std::bind(parseRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
+    { TextureFormat::RGB_DXT1, std::bind(parseRGBDXT1Texture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) }
 };
 
 TextureParser::TextureParser() :
@@ -88,7 +89,7 @@ TextureParser::parse(const std::string&                filename,
     {
         auto textureData = assetLibrary->blob(resolvedFilename);
 
-        if (!_formatParserFunctions.at(desiredFormat)(resolvedFilename, options, textureData, assetLibrary))
+        if (!_formatParserFunctions.at(desiredFormat)(resolvedFilename, textureLoaderOptions, textureData, assetLibrary))
         {
             // TODO
             // handle parsing error
@@ -126,6 +127,26 @@ TextureParser::parseRGBATexture(const std::string& fileName,
     }
 
     parser->parse(fileName, fileName, options, deserializedTexture.a1, assetLibrary);
+
+    return true;
+}
+
+bool
+TextureParser::parseRGBDXT1Texture(const std::string& fileName,
+                                   Options::Ptr options,
+                                   const std::vector<unsigned char>& data,
+                                   AssetLibrary::Ptr assetLibrary)
+{
+    msgpack::unpacked unpacked;
+    msgpack::unpack(&unpacked, reinterpret_cast<const char*>(data.data()), data.size());
+
+    auto deserializedTexture = unpacked.get().as<std::vector<unsigned char>>();
+
+    auto parser = DDSParser::create();
+
+    parser->textureFormat(TextureFormat::RGB_DXT1);
+
+    parser->parse(fileName, fileName, options, deserializedTexture, assetLibrary);
 
     return true;
 }

@@ -13,9 +13,8 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"lib/msgpack-c/include/**.hpp",
 		"lib/dds-loader/**.h",
 		"lib/dds-loader/**.cpp",
-		"lib/crunch/**.h",
-		"lib/crunch/**.hpp",
-		"lib/crunch/**.cpp"
+		"lib/squish/**.h",
+		"lib/squish/**.cpp"
 	}
 
 	includedirs {
@@ -24,7 +23,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"lib/msgpack-c/include",
 		"lib/msgpack-c/src",
 		"lib/dds-loader",
-		"lib/crunch/inc"
+		"lib/squish"
 	}
 
 	configuration { "windows" }
