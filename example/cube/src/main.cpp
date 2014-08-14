@@ -81,6 +81,8 @@ int main(int argc, char** argv)
 	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
         auto numFrames = 0;
+        auto t = 0;
+        auto p = 0;
 
         auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
         {
@@ -90,16 +92,28 @@ int main(int argc, char** argv)
             );
 
             if (canvas->framerate() > 30.f)
+                t++;
+            else
+                p++;
+
+            if (t > 10)
             {
-                for (auto i = 0; i < 10; ++i)
+                t = 0;
+                p = 0;
+                for (auto i = 0; i < 100; ++i)
                     createRandomCube(
                         meshes,
                         sceneManager->assets()->geometry("cube"),
                         sceneManager->assets()->effect("effect/Basic.effect")
                     );
             }
-            else if (meshes->children().size() > 0)
+
+            if (p > 10 && meshes->children().size() > 0)
+            {
+                t = 0;
+                p = 0;
                 meshes->removeChild(meshes->children().back());
+            }
             
             if (++numFrames % 100 == 0)
                 std::cout << "num meshes = " << meshes->children().size()
