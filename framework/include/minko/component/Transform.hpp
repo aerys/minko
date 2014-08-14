@@ -155,7 +155,6 @@ namespace minko
 				typedef std::shared_ptr<render::AbstractTexture> 	AbsTexturePtr;
 				typedef Signal<SceneMgrPtr, uint, AbsTexturePtr> 	RenderingBeginSignal;
 				typedef RenderingBeginSignal::Slot 					RenderingBeginSlot;
-				typedef std::shared_ptr<Transform>					TransformPtr;
 
 			public:
 				inline static
@@ -170,7 +169,6 @@ namespace minko
 
                 ~RootTransform()
                 {
-                    _transforms.clear();
                     _matrix.clear();
                     _modelToWorld.clear();
                     _nodeToId.clear();
@@ -184,7 +182,6 @@ namespace minko
                 }
 
 			private:
-				std::vector<TransformPtr>		_transforms;
 				std::vector<math::mat4*>		_matrix;
 				std::vector<math::mat4*>		_modelToWorld;
 
@@ -198,6 +195,9 @@ namespace minko
 
 				std::list<Any>					_targetSlots;
 				RenderingBeginSlot				_renderingBeginSlot;
+
+                std::list<NodePtr>              _toAdd;
+                std::list<NodePtr>              _toRemove;
 
             protected:
             	void

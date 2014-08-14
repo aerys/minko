@@ -123,6 +123,11 @@ Transform::RootTransform::targetAdded(scene::Node::Ptr target)
 		), 1000.f);
 
 	addedHandler(target, target->root(), target->parent());
+
+    /*auto withTransforms = scene::NodeSet::create(this->target())
+        ->descendants(true, false)
+        ->where([](scene::Node::Ptr n){ return n->hasComponent<Transform>(); });
+    _toAdd.insert(_toAdd.begin(), withTransforms->nodes().begin(), withTransforms->nodes().end());*/
 }
 
 void
@@ -147,8 +152,21 @@ Transform::RootTransform::componentAddedHandler(scene::Node::Ptr		node,
 			std::placeholders::_2, 
 			std::placeholders::_3
 		), 1000.f);
-	else if (std::dynamic_pointer_cast<Transform>(ctrl) != nullptr)
-		_invalidLists = true;
+    else
+    {
+        if (std::dynamic_pointer_cast<Transform>(ctrl) != nullptr)
+        {
+            auto removeIt = std::find(_toRemove.begin(), _toRemove.end(), target);
+
+            if (removeIt != _toRemove.end())
+                _toRemove.erase(removeIt);
+            else
+            {
+                _toAdd.push_back(target);
+                _invalidLists = true;
+            }
+        }
+    }
 }
 
 void
@@ -160,8 +178,21 @@ Transform::RootTransform::componentRemovedHandler(scene::Node::Ptr			node,
 
 	if (sceneManager)
 		_renderingBeginSlot = nullptr;
-	else if (std::dynamic_pointer_cast<Transform>(ctrl) != nullptr)
-		_invalidLists = true;
+    else
+    {
+        if (std::dynamic_pointer_cast<Transform>(ctrl) != nullptr)
+        {
+            auto addIt = std::find(_toAdd.begin(), _toAdd.end(), target);
+
+            if (addIt != _toAdd.end())
+                _toAdd.erase(addIt);
+            else
+            {
+                _toRemove.push_back(target);
+                _invalidLists = true;
+            }
+        }
+    }
 }
 
 void
@@ -169,24 +200,21 @@ Transform::RootTransform::addedHandler(scene::Node::Ptr node,
 									   scene::Node::Ptr target,
 									   scene::Node::Ptr ancestor)
 {
-    if (node->root() != this->target())
+    if (node->root() == this->target() && node != target)
     {
-        this->target()->removeComponent(shared_from_this());
-        return;
+        auto otherRoot = target->component<RootTransform>();
+
+        if (otherRoot != nullptr)
+        {
+            _toAdd.insert(_toAdd.begin(), otherRoot->_idToNode.begin(), otherRoot->_idToNode.end());
+            _toAdd.insert(_toAdd.begin(), otherRoot->_toAdd.begin(), otherRoot->_toAdd.end());
+            for (const auto& toRemove : _toRemove)
+                _toAdd.remove(toRemove);
+            _invalidLists = true;
+        
+            target->removeComponent(otherRoot);
+        }
     }
-
-    /*
-	auto descendants = scene::NodeSet::create(target)->descendants(false);
-	for (auto descendant : descendants->nodes())
-	{
-		auto rootTransformCtrl = descendant->component<RootTransform>();
-
-		if (rootTransformCtrl)
-			descendant->removeComponent(rootTransformCtrl);
-	}
-    */
-
-	_invalidLists = true;
 }
 
 void
@@ -200,47 +228,38 @@ Transform::RootTransform::removedHandler(scene::Node::Ptr node,
 void
 Transform::RootTransform::updateTransformsList()
 {
-	_transforms.clear();
-	_matrix.clear();
-	_modelToWorld.clear();
-	_nodeToId.clear();
-	_idToNode.clear();
-	_parentId.clear();
-	_firstChildId.clear();
-	_numChildren.clear();
+    for (const auto& toRemove : _toRemove)
+        _nodeToId.erase(toRemove);
+    _idToNode.clear();
+    _idToNode.reserve(_nodeToId.size() + _toAdd.size());
+    for (const auto& nodeAndId : _nodeToId)
+        _idToNode.push_back(nodeAndId.first);
+    for (const auto& node : _toAdd)
+        _idToNode.push_back(node);
 
-	auto withTransforms	= scene::NodeSet::create(target())
-		->descendants(true, false)
-		->where([](scene::Node::Ptr n){ return n->hasComponent<Transform>(); });
+    juxtaposeSiblings(_idToNode); // make sure siblings are at contiguous positions in the vector
 
-	auto nodesWithTransform	= withTransforms->nodes();
+    _matrix.resize(_idToNode.size());
+    _modelToWorld.resize(_idToNode.size());
+    _idToNode.resize(_idToNode.size());
+    _parentId.resize(_idToNode.size(), -1);
+    _firstChildId.resize(_idToNode.size(), -1);
+    _numChildren.resize(_idToNode.size(), -1);
+    _dirty.resize(_idToNode.size(), true);
 
-	juxtaposeSiblings(nodesWithTransform); // make sure siblings are at contiguous positions in the vector
-
-	_transforms.resize(nodesWithTransform.size());
-	_matrix.resize(nodesWithTransform.size());
-	_modelToWorld.resize(nodesWithTransform.size());
-	_idToNode.resize(nodesWithTransform.size());
-	_parentId.resize(nodesWithTransform.size(), -1);
-	_firstChildId.resize(nodesWithTransform.size(), 0);
-	_numChildren.resize(nodesWithTransform.size(), 0);
-	_dirty.resize(nodesWithTransform.size(), true);
-
-	for (uint nodeId = 0; nodeId < nodesWithTransform.size(); ++nodeId)
+    auto nodeId = 0;
+    for (const auto& node : _idToNode)
 	{
-		auto node		= nodesWithTransform[nodeId];
 		auto transform	= node->component<Transform>();
 		auto ancestor	= node->parent();
 
 		while (ancestor != nullptr && _nodeToId.count(ancestor) == 0)
 			ancestor = ancestor->parent();
 
-		_nodeToId[node]			= nodeId;
-		_transforms[nodeId]		= transform;
-		_matrix[nodeId]			= &transform->_matrix;
-		_modelToWorld[nodeId]	= &transform->_modelToWorld;
-		_idToNode[nodeId]		= node;
-        _dirty[nodeId]          = true;
+		_nodeToId[node] = nodeId;
+		_matrix[nodeId] = &transform->_matrix;
+		_modelToWorld[nodeId] = node->data().getUnsafePointer<math::mat4>("modelToWorldMatrix");
+        _dirty[nodeId] = true;
 		
 		if (ancestor)
 		{
@@ -253,9 +272,13 @@ Transform::RootTransform::updateTransformsList()
 				_firstChildId[ancestorId] = nodeId;
 			++_numChildren[ancestorId];
 		}
+
+        ++nodeId;
 	}
 
 	_invalidLists = false;
+    _toAdd.clear();
+    _toRemove.clear();
 }
 
 /*static*/
@@ -267,11 +290,11 @@ Transform::RootTransform::juxtaposeSiblings(std::vector<NodePtr>& nodes)
 
 	for (unsigned int nodeId = 0; nodeId < nodes.size(); ++nodeId)
 	{
-		auto it = nodes.begin() + nodeId;
+		auto it = std::next(nodes.begin(), nodeId);
 		auto node = *it;
         auto ancestor = node->parent();
 
-        while (ancestor != nullptr && std::find(nodes.begin(), nodes.end(), ancestor) == nodes.end())
+        while (ancestor != nullptr && !ancestor->hasComponent<Transform>())
             ancestor = ancestor->parent();
 
         if (!ancestor)
@@ -284,7 +307,7 @@ Transform::RootTransform::juxtaposeSiblings(std::vector<NodePtr>& nodes)
             assert(firstChild[ancestor] <= nodeId);
 
 			nodes.erase(it);
-            nodes.insert(nodes.begin() + firstChild[ancestor], node);
+            nodes.insert(std::next(nodes.begin(), firstChild[ancestor]), node);
 		}
 	}
 }
@@ -292,7 +315,7 @@ Transform::RootTransform::juxtaposeSiblings(std::vector<NodePtr>& nodes)
 void
 Transform::RootTransform::updateTransforms()
 {
-	for (unsigned int nodeId = 0; nodeId < _transforms.size(); ++nodeId)
+    for (unsigned int nodeId = 0; nodeId < _matrix.size(); ++nodeId)
 	{
 		if (_dirty[nodeId])
 		{
@@ -304,7 +327,11 @@ Transform::RootTransform::updateTransforms()
 			else
 				*modelToWorldMatrix = *_modelToWorld[parentId] * *_matrix[nodeId];
 
-        	_transforms[nodeId]->_data->set("modelToWorldMatrix", *modelToWorldMatrix);
+            _idToNode[nodeId]->data().propertyChanged("modelToWorldMatrix")->execute(
+                _idToNode[nodeId]->data(),
+                "modelToWorldMatrix",
+                "modelToWorldMatrix"
+            );
 
 			auto numChildren = _numChildren[nodeId];
 			auto firstChildId = _firstChildId[nodeId];
@@ -365,7 +392,7 @@ Transform::RootTransform::renderingBeginHandler(std::shared_ptr<SceneManager>			
 												std::shared_ptr<render::AbstractTexture>	abstractTexture)
 {
 	if (_invalidLists)
-		updateTransformsList();
+	    updateTransformsList();
 
 	updateTransforms();
 }
