@@ -194,22 +194,38 @@ Container::doRemoveProvider(ProviderPtr provider, CollectionPtr collection)
 {
     assert(std::find(_providers.begin(), _providers.end(), provider) != _providers.end());
 
-    // we have to make sure the provider is not 
+    // execute all the "property removed" signals
     for (auto property : provider->values())
         providerPropertyRemovedHandler(provider, nullptr, property.first);
 
-    // erase all the slots (property added, changed, removed) for this provider
-    _propertySlots.erase(provider);
-    // destroy all signals that might have been created for each property declared by the provider
-    // warning! erase the signal only if it has no callbacks anymore, otherwise it should be kept valid
-    for (const auto& nameAndValue : provider->values())
-        if (_propertyChanged.count(nameAndValue.first) != 0 && _propertyChanged[nameAndValue.first]->numCallbacks() == 0)
-            _propertyChanged.erase(nameAndValue.first);
-
     _providers.erase(std::find(_providers.begin(), _providers.end(), provider));
 
-    if (collection)
+    // erase all the slots (property added, changed, removed) for this provider
+    _propertySlots.erase(provider);
+
+    // destroy all signals that might have been created for each property declared by the provider
+    // warning! erase the signal only if it has no callbacks anymore, otherwise it should be kept valid
+    if (!collection)
+    {
+        for (const auto& nameAndValue : provider->values())
+            if (_propertyChanged.count(nameAndValue.first) != 0
+                && _propertyChanged[nameAndValue.first]->numCallbacks() == 0)
+                _propertyChanged.erase(nameAndValue.first);
+    }
+    else
+    {
+        int providerIndex = std::find(collection->items().begin(), collection->items().end(), provider)
+            - collection->items().begin();
+        auto prefix = collection->name() + "[" + std::to_string(providerIndex) + "].";
+        
+        for (const auto& nameAndValue : provider->values())
+            if (_propertyChanged.count(prefix + nameAndValue.first) != 0
+                && _propertyChanged[prefix + nameAndValue.first]->numCallbacks() == 0)
+                _propertyChanged.erase(prefix + nameAndValue.first);
+
         updateCollectionLength(collection);
+    }
+
 }
 
 std::string
