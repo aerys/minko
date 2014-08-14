@@ -75,7 +75,8 @@ namespace minko
                                    std::vector<BasicPropertyTuple>                                *basicTypeSeriliazedProperties,
                                    Dependency::Ptr                                                dependency)
             {
-                if (material->propertyHasType<TexturePtr>(propertyName))
+                if (material->propertyHasType<TexturePtr>(propertyName) ||
+                    material->propertyHasType<std::shared_ptr<render::Texture>>(propertyName))
                 {
                     std::tuple<uint, std::string> serializedTexture = serialize::TypeSerializer::serializeTexture(Any(dependency->registerDependency(material->get<TexturePtr>(propertyName))));
                     TupleIntString serializedMsgTexture(std::get<0>(serializedTexture), std::get<1>(serializedTexture));

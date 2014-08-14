@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/SceneParser.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/Dependency.hpp"
+#include "minko/file/TextureParser.hpp"
 #include "minko/Types.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/JobManager.hpp"
@@ -45,6 +46,7 @@ SceneParser::SceneParser()
 {
     _geometryParser = file::GeometryParser::create();
     _materialParser = file::MaterialParser::create();
+    _textureParser = file::TextureParser::create();
 
     registerComponent(serialize::PROJECTION_CAMERA,
         std::bind(&deserialize::ComponentDeserializer::deserializeProjectionCamera,

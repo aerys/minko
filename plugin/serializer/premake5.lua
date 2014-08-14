@@ -12,14 +12,19 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"include/**.hpp",
 		"lib/msgpack-c/include/**.hpp",
 		"lib/dds-loader/**.h",
-		"lib/dds-loader/**.cpp" }
+		"lib/dds-loader/**.cpp",
+		"lib/crunch/**.h",
+		"lib/crunch/**.hpp",
+		"lib/crunch/**.cpp"
+	}
 
 	includedirs {
 		"include",
 		"src",
 		"lib/msgpack-c/include",
 		"lib/msgpack-c/src",
-		"lib/dds-loader"
+		"lib/dds-loader",
+		"lib/crunch/inc"
 	}
 
 	configuration { "windows" }

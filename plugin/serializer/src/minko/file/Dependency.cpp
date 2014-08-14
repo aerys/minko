@@ -281,56 +281,41 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>                dependen
                              std::shared_ptr<file::Options>                options,
                              std::shared_ptr<file::WriterOptions>       writerOptions)
 {
+    static const auto textureExtension = "texture";
+
     auto writer                 = TextureWriter::create();
+    auto fileName = assetLibrary->textureName(texture);
     auto assetType              = serialize::AssetType();
-    unsigned char metaByte      = 0;
     auto content                = std::string();
-    auto textureName            = assetLibrary->textureName(texture);
-    auto sourceExtension        = textureName.substr(textureName.find_last_of(".") + 1);
 
-    auto destinationFormat = writerOptions->imageFormat();
+    auto extension = fileName.substr(fileName.find_last_of(".") + 1);
+    if (extension != textureExtension)
+        fileName = fileName.substr(0, fileName.size() - (extension.size())) + std::string(textureExtension);
 
-    if (destinationFormat == serialize::ImageFormat::SOURCE)
-        destinationFormat = serialize::imageFormatFromExtension(sourceExtension);
-
-    auto destinationExtension = serialize::extensionFromImageFormat(destinationFormat);
-
-    if (sourceExtension != destinationExtension)
-        textureName = textureName.substr(0, textureName.size() - sourceExtension.size()) + destinationExtension;
-
-    writer->data(std::static_pointer_cast<render::Texture>(texture));
-    writer->imageFormat(destinationFormat);
+    writer->data(texture);
 
     if (writerOptions->embedAll())
     {
-        assetType = serialize::AssetType::EMBED_TEXTURE_ASSET;
+        assetType = serialize::AssetType::EMBED_TEXTURE_PACK_ASSET;
 
-        content = writer->embedTexture(assetLibrary, options, writerOptions);
-
-        metaByte = static_cast<unsigned char>(destinationFormat);
+        content = writer->embedAll(assetLibrary, options, writerOptions);
     }
     else
     {
-        assetType = serialize::AssetType::TEXTURE_ASSET;
+        assetType = serialize::AssetType::TEXTURE_PACK_ASSET;
 
-        auto filename = std::string { };
+        auto completeFilename = writerOptions->outputAssetUriFunction()(fileName);
 
-        for (int charIndex = textureName.size() - 1;
-             charIndex >= 0 && textureName[charIndex] != '/';
-             --charIndex)
-        {
-            filename.insert(0, textureName.substr(charIndex, 1));
-        }
+        writer->write(completeFilename, assetLibrary, options, writerOptions);
 
-        auto completeFilename = writerOptions->outputAssetUriFunction()(filename);
-
-        writer->writeRawTexture(completeFilename, assetLibrary, options, writerOptions);
-
-        content = filename;
+        content = fileName;
     }
 
-    auto metaData = static_cast<unsigned int>(metaByte << 24) +
-                    static_cast<unsigned int>(assetType);
+    auto metaByte = static_cast<unsigned char>(writer->headerSize());
+
+    auto metaData =
+        static_cast<unsigned int>(assetType) +
+        static_cast<unsigned int>(metaByte << 24);
 
     SerializedAsset res(metaData, resourceId, content);
 

@@ -42,6 +42,7 @@ namespace minko
             UriFunction             _outputAssetUriFunction;
 
             serialize::ImageFormat  _imageFormat;
+            std::list<render::TextureFormat> _textureFormats;
 
         public:
             inline static
@@ -113,6 +114,22 @@ namespace minko
             imageFormat(serialize::ImageFormat value)
             {
                 _imageFormat = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            const std::list<render::TextureFormat>&
+            textureFormats() const
+            {
+                return _textureFormats;
+            }
+
+            inline
+            Ptr
+            addTextureFormat(render::TextureFormat textureFormat)
+            {
+                _textureFormats.push_back(textureFormat);
 
                 return shared_from_this();
             }

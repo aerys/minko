@@ -9,5 +9,6 @@
 #include "minko/file/GeometryParser.hpp"
 #include "minko/file/MaterialParser.hpp"
 #include "minko/file/MaterialWriter.hpp"
+#include "minko/file/TextureParser.hpp"
 #include "minko/file/TextureWriter.hpp"
 #include "minko/file/WriterOptions.hpp"

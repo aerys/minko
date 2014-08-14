@@ -19,64 +19,84 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/TextureWriter.hpp"
 
-#include "minko/file/AbstractWriter.hpp"
 #include "minko/render/AbstractTexture.hpp"
 #include "minko/render/Texture.hpp"
+#include "minko/file/AbstractWriter.hpp"
 #include "minko/file/Dependency.hpp"
 #include "minko/file/PNGWriter.hpp"
+#include "minko/file/WriterOptions.hpp"
 #include "minko/Types.hpp"
 
 using namespace minko;
 using namespace minko::file;
+using namespace minko::render;
+
+std::unordered_map<TextureFormat, TextureWriter::FormatWriterFunction> TextureWriter::_formatWriterFunctions = 
+{
+    { TextureFormat::RGBA, std::bind(writeRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) }
+};
 
 TextureWriter::TextureWriter() :
-    _imageFormat()
+    AbstractWriter<AbstractTexture::Ptr>(),
+    _headerSize(0)
 {
-}
-
-void
-TextureWriter::data(TexturePtr data)
-{
-    _data = data;
-}
-
-void
-TextureWriter::imageFormat(serialize::ImageFormat imageFormat)
-{
-    _imageFormat = imageFormat;
-}
-
-void
-TextureWriter::writeRawTexture(std::string&     filename,
-                               AssetLibraryPtr  assetLibrary,
-                               OptionsPtr       options,
-                               WriterOptionsPtr writerOptions)
-{
-    std::ofstream file(filename, std::ios::out | std::ios::binary | std::ios::trunc);
-
-    if (file)
-    {
-        auto serializedData = embedTexture(assetLibrary, options, writerOptions);
-
-        file.write(serializedData.c_str(), serializedData.size());
-        file.close();
-    }
-    else
-        std::cerr << "File " << filename << " can't be opened" << std::endl;
+    _magicNumber = 0x0000004E | MINKO_SCENE_MAGIC_NUMBER;
 }
 
 std::string
-TextureWriter::embedTexture(AssetLibraryPtr      assetLibrary,
-                            OptionsPtr           options,
-                            WriterOptionsPtr     writerOptions)
+TextureWriter::embed(AssetLibraryPtr     assetLibrary,
+                     OptionsPtr          options,
+                     Dependency::Ptr     dependency,
+                     WriterOptionsPtr    writerOptions)
 {
-    auto extension = serialize::extensionFromImageFormat(_imageFormat);
+    const auto& textureFormats = writerOptions->textureFormats();
 
-    auto texture = std::dynamic_pointer_cast<render::Texture>(_data);
+    std::stringstream headerStream;
+    std::stringstream blobStream;
+
+    auto headerData = std::vector<msgpack::type::tuple<int, int, int>>();
+
+    for (auto textureFormat : textureFormats)
+    {
+        auto offset = blobStream.str().size();
+
+        if (!_formatWriterFunctions.at(textureFormat)(_data, writerOptions, blobStream))
+        {
+            // TODO
+            // handle error
+        }
+
+        auto length = blobStream.str().size() - offset;
+
+        headerData.push_back(msgpack::type::make_tuple<int, int, int>(
+            static_cast<int>(textureFormat),
+            offset,
+            length));
+    }
+
+    msgpack::pack(headerStream, headerData);
+
+    _headerSize = headerStream.str().size();
+
+    std::stringstream result;
+
+    result << headerStream.str() << blobStream.str();
+
+    return result.str();
+}
+
+bool
+TextureWriter::writeRGBATexture(AbstractTexture::Ptr abstractTexture,
+                                WriterOptions::Ptr writerOptions,
+                                std::stringstream& blob)
+{
+    auto imageFormat = writerOptions->imageFormat();
+
+    auto texture = std::static_pointer_cast<Texture>(abstractTexture);
 
     auto textureData = std::vector<unsigned char>();
 
-    switch (_imageFormat)
+    switch (imageFormat)
     {
     case serialize::ImageFormat::PNG:
     {
@@ -87,10 +107,12 @@ TextureWriter::embedTexture(AssetLibraryPtr      assetLibrary,
         break;
     }
     default:
-        throw WriterError("UnsupportedOutputImageFormat", "No writer found for extension: '" + extension + "'");
+        return false;
     }
 
-    auto textureContent = std::string(textureData.begin(), textureData.end());
+    msgpack::type::tuple<int, std::vector<unsigned char>> serializedTexture(static_cast<int>(imageFormat), textureData);
 
-    return textureContent;
+    msgpack::pack(blob, serializedTexture);
+
+    return true;
 }

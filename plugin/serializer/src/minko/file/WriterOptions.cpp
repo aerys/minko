@@ -26,6 +26,7 @@ WriterOptions::WriterOptions() :
     _embedAll(false),
     _addBoundingBoxes(false),
     _outputAssetUriFunction([=](const std::string& str) -> std::string { return str; }),
-    _imageFormat(serialize::ImageFormat::SOURCE)
+    _imageFormat(serialize::ImageFormat::PNG),
+    _textureFormats()
 {
 }

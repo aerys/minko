@@ -45,6 +45,7 @@ namespace minko
             DependencyPtr                        _dependencies;
             std::shared_ptr<GeometryParser>        _geometryParser;
             std::shared_ptr<MaterialParser>        _materialParser;
+            std::shared_ptr<TextureParser>      _textureParser;
 
             std::string                                                _lastParsedAssetName;
             std::list<std::shared_ptr<component::JobManager::Job>>    _jobList;
@@ -130,6 +131,15 @@ namespace minko
             {
                 return (short)(data[offset] << 8 | data[offset + 1]);
             }
+
+            static
+            void
+            deserializeTexture(unsigned char metaByte,
+                               AssetLibraryPtr assetLibrary,
+                               std::string& assetCompletePath,
+                               DependencyPtr dependency,
+                               short assetId,
+                               std::list<JobPtr>& jobs);
         };
     }
 }
