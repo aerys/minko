@@ -172,7 +172,7 @@ namespace minko
                     _matrix.clear();
                     _modelToWorld.clear();
                     _nodeToId.clear();
-                    _idToNode.clear();
+                    _nodes.clear();
                     _parentId.clear();
                     _firstChildId.clear();
                     _numChildren.clear();
@@ -186,7 +186,7 @@ namespace minko
 				std::vector<math::mat4*>		_modelToWorld;
 
 				std::map<NodePtr, unsigned int>	_nodeToId;
-				std::vector<NodePtr>			_idToNode;
+				std::vector<NodePtr>			_nodes;
 				std::vector<int>		 		_parentId;
 				std::vector<int> 		        _firstChildId;
 				std::vector<int>		        _numChildren;
