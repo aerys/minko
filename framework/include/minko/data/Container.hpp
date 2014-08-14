@@ -102,6 +102,18 @@ namespace minko
                 return provider->getPointer<T>(std::get<1>(providerAndToken));
             }
 
+            template <typename T>
+            T*
+            getUnsafePointer(const std::string& propertyName) const
+            {
+                auto providerAndToken = getProviderByPropertyName(propertyName);
+                auto provider = std::get<0>(providerAndToken);
+
+                assert(provider != nullptr);
+
+                return provider->getUnsafePointer<T>(std::get<1>(providerAndToken));
+            }
+
 			template <typename T>
 			void
 			set(const std::string& propertyName, T value)
@@ -184,9 +196,12 @@ namespace minko
             void
             removeCollection(std::shared_ptr<Collection> collection);
 
-
+            inline
 			bool
-			hasProperty(const std::string& propertyName) const;
+			hasProperty(const std::string& propertyName) const
+            {
+                return std::get<0>(getProviderByPropertyName(propertyName)) != nullptr;
+            }
 
             static
             const std::string

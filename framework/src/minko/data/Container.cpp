@@ -124,7 +124,7 @@ Container::getProviderByPropertyName(const std::string& propertyName) const
                 {
                     auto provider = collection->items()[index];
 
-                    if (provider->hasProperty(token))
+                    if (provider->hasProperty(token) != 0)
                         return std::pair<Provider::Ptr, std::string>(provider, token);
                 }
 
@@ -134,17 +134,11 @@ Container::getProviderByPropertyName(const std::string& propertyName) const
     else
     {
         for (const auto& provider : _providers)
-            if (provider->hasProperty(propertyName))
+            if (provider->hasProperty(propertyName) != 0)
                 return std::pair<Provider::Ptr, std::string>(provider, propertyName);
     }
 
     return std::pair<Provider::Ptr, std::string>(nullptr, propertyName);
-}
-
-bool
-Container::hasProperty(const std::string& propertyName) const
-{
-    return std::get<0>(getProviderByPropertyName(propertyName)) != nullptr;
 }
 
 void

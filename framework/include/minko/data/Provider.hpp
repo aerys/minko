@@ -127,6 +127,14 @@ namespace minko
             }
 
             template <typename T>
+            inline
+            typename std::enable_if<is_valid<T>::value, T*>::type
+            getUnsafePointer(const std::string& propertyName)
+            {
+                return Any::unsafe_cast<T>(&_values.at(propertyName));
+            }
+
+            template <typename T>
             typename std::enable_if<is_valid<T>::value, Ptr>::type
             set(const std::string& propertyName, T value)
             {
