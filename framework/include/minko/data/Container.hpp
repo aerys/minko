@@ -203,6 +203,13 @@ namespace minko
                 return std::get<0>(getProviderByPropertyName(propertyName)) != nullptr;
             }
 
+            inline
+            bool
+            hasPropertyChangedSignal(const std::string& propertyName) const
+            {
+                return _propertyChanged.count(propertyName) != 0;
+            }
+
             static
             const std::string
             getActualPropertyName(const std::unordered_map<std::string, std::string>&   variables,
