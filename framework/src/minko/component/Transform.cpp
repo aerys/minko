@@ -349,11 +349,12 @@ Transform::RootTransform::updateTransforms()
                 auto nodeData = _nodes[nodeId]->data();
 
                 *_modelToWorld[nodeId] = modelToWorldMatrix;
-                nodeData.propertyChanged("modelToWorldMatrix")->execute(
-                    nodeData,
-                    "modelToWorldMatrix",
-                    "modelToWorldMatrix"
-                );
+                if (nodeData.hasPropertyChangedSignal("modelToWorldMatrix"))
+                    nodeData.propertyChanged("modelToWorldMatrix")->execute(
+                        nodeData,
+                        "modelToWorldMatrix",
+                        "modelToWorldMatrix"
+                    );
             }
 
 			auto numChildren = _numChildren[nodeId];
