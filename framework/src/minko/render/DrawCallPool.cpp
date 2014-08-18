@@ -47,14 +47,15 @@ DrawCallPool::addDrawCalls(std::shared_ptr<Effect>                              
 
         _drawCalls.push_back(drawCall);
 
-        watchProgramSignature(
-            drawCall,
-            *programAndSignature.second,
-            pass->macroBindings(),
-            rootData,
-            rendererData,
-            targetData
-        );
+        if (programAndSignature.second != nullptr)
+            watchProgramSignature(
+                drawCall,
+                *programAndSignature.second,
+                pass->macroBindings(),
+                rootData,
+                rendererData,
+                targetData
+            );
     }
 
     return std::pair<std::list<DrawCall*>::iterator, std::list<DrawCall*>::iterator>(

@@ -86,9 +86,10 @@ Pass::selectProgram(const std::unordered_map<std::string, std::string>& vars,
             signature->updateProgram(*program);
 
 			_signatureToProgram[signature] = program;
+
+            return std::pair<std::shared_ptr<Program>, const ProgramSignature*>(finalizeProgram(program), signature);
 		}
 
-        return std::pair<std::shared_ptr<Program>, const ProgramSignature*>(finalizeProgram(program), signature);
 	}
 
     return std::pair<std::shared_ptr<Program>, const ProgramSignature*>(finalizeProgram(program), nullptr);
