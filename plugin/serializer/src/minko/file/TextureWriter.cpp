@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/AbstractTexture.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/file/AbstractWriter.hpp"
+#include "minko/file/DDSImage.hpp"
 #include "minko/file/Dependency.hpp"
 #include "minko/file/PNGWriter.hpp"
 #include "minko/file/WriterOptions.hpp"
@@ -35,6 +36,7 @@ using namespace minko::render;
 
 std::unordered_map<TextureFormat, TextureWriter::FormatWriterFunction> TextureWriter::_formatWriterFunctions = 
 {
+    { TextureFormat::RGB, std::bind(writeRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
     { TextureFormat::RGBA, std::bind(writeRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
     { TextureFormat::RGB_DXT1, std::bind(writeRGBDXT1Texture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) }
 };
@@ -136,8 +138,16 @@ TextureWriter::writeRGBDXT1Texture(AbstractTexture::Ptr abstractTexture,
     auto textureData = std::vector<unsigned char>(compressedSize);
 
     squish::CompressImage(texture->data().data(), texture->width(), texture->height(), textureData.data(), flags);
+
+    auto ddsImage = DDSImage();
+
+    auto ddsOutputStream = std::stringstream();
+
+    ddsImage.save(ddsOutputStream, texture, TextureFormat::RGB_DXT1, textureData);
+
+    auto& ddsData = ddsOutputStream.str();
     
-    msgpack::pack(blob, textureData);
+    msgpack::pack(blob, std::vector<unsigned char>(ddsData.begin(), ddsData.end()));
 
     return true;
 }

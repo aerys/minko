@@ -18,6 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/file/AssetLibrary.hpp"
+#include "minko/file/DDSImage.hpp"
 #include "minko/file/DDSParser.hpp"
 #include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
@@ -25,15 +26,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/Texture.hpp"
 
-#include "ddsloader.h"
-
 using namespace minko;
 using namespace minko::file;
 using namespace minko::render;
 
 DDSParser::DDSParser() :
-    AbstractParser(),
-    _textureFormat(TextureFormat::RGBA)
+    AbstractParser()
 {
 }
 
@@ -44,34 +42,33 @@ DDSParser::parse(const std::string&                filename,
                  const std::vector<unsigned char>& data,
                  std::shared_ptr<AssetLibrary>     assetLibrary)
 {
-    static const auto ddsFormatToTextureFormat = std::unordered_map<unsigned int, TextureFormat>
-    {
-        { DDS_LOADER_FORMAT_DXT1, TextureFormat::RGB_DXT1 },
-        { DDS_LOADER_FORMAT_DXT3, TextureFormat::RGBA_DXT3 },
-        { DDS_LOADER_FORMAT_DXT5, TextureFormat::RGBA_DXT5 }
-    };
+    auto targetTextureFormat = options->textureFormat();
+
+    auto ddsImage = DDSImage();
 
     unsigned int width = 0;
     unsigned int height = 0;
-    unsigned int format = 0;
+
+    unsigned int size = 0;
+
+    auto textureType = TextureType::Texture2D;
+    auto textureFormat = TextureFormat::RGBA;
 
     auto textureData = std::vector<unsigned char>();
 
-    if (!loadDDS(data, textureData, format, width, height))
+    if (!ddsImage.load(data, textureData, width, height, size, textureType, textureFormat))
     {
         LOG_ERROR("DDSParser: fail to load DDS file `" << resolvedFilename << "'");
 
         return;
     }
 
-    auto loadedTextureFormat = ddsFormatToTextureFormat.at(format);
-
-    if (_textureFormat != loadedTextureFormat)
+    if (targetTextureFormat != textureFormat)
     {
         LOG_ERROR("DDSParser: target format mismatched (" <<
-                  static_cast<int>(_textureFormat) <<
+                  static_cast<int>(targetTextureFormat) <<
                   ", " <<
-                  static_cast<int>(loadedTextureFormat) <<
+                  static_cast<int>(textureFormat) <<
                   ")");
 
         return;
@@ -79,7 +76,7 @@ DDSParser::parse(const std::string&                filename,
 
     auto texture = render::Texture::create(options->context(), width, height, options->generateMipmaps());
 
-    texture->data(textureData.data(), _textureFormat);
+    texture->data(textureData.data(), targetTextureFormat);
     texture->upload();
 
     assetLibrary->texture(filename, texture);

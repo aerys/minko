@@ -34,6 +34,7 @@ using namespace minko::serialize;
 
 std::unordered_map<render::TextureFormat, TextureParser::FormatParserFunction> TextureParser::_formatParserFunctions =
 {
+    { TextureFormat::RGB, std::bind(parseRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
     { TextureFormat::RGBA, std::bind(parseRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
     { TextureFormat::RGB_DXT1, std::bind(parseRGBDXT1Texture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) }
 };
@@ -99,6 +100,8 @@ TextureParser::parse(const std::string&                filename,
     textureLoader
         ->queue(resolvedFilename)
         ->load();
+
+    complete()->execute(shared_from_this());
 }
 
 bool
@@ -143,8 +146,6 @@ TextureParser::parseRGBDXT1Texture(const std::string& fileName,
     auto deserializedTexture = unpacked.get().as<std::vector<unsigned char>>();
 
     auto parser = DDSParser::create();
-
-    parser->textureFormat(TextureFormat::RGB_DXT1);
 
     parser->parse(fileName, fileName, options, deserializedTexture, assetLibrary);
 

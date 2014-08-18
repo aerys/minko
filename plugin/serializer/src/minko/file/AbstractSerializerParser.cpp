@@ -348,10 +348,7 @@ AbstractSerializerParser::deserializeTexture(unsigned char      metaByte,
 
     auto textureLoader = Loader::create();
     textureLoader->options(options);
-    textureLoader
-        ->queue(assetCompletePath)
-        ->load();
-    
+
     auto texture = render::AbstractTexture::Ptr();
 
     auto loaderCompleteSlot = textureLoader->complete()->connect([&](Loader::Ptr loader)
@@ -359,8 +356,12 @@ AbstractSerializerParser::deserializeTexture(unsigned char      metaByte,
         texture = assetLibrary->texture(assetCompletePath);
     });
 
+    textureLoader
+        ->queue(assetCompletePath)
+        ->load();
+
     if (options->disposeTextureAfterLoading())
         texture->disposeData();
-    
-    dependency->registerReference(serialize::AssetType::TEXTURE_PACK_ASSET, texture);
+
+    dependency->registerReference(assetId, texture);
 }
