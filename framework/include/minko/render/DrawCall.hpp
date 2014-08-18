@@ -77,7 +77,9 @@ namespace minko
 			typedef std::shared_ptr<Program>			ProgramPtr;
 
 		private:
-            const data::MacroBindingMap&        _macroBindings;
+            const data::Container&              _rootData;
+            const data::Container&              _rendererData;
+            const data::Container&              _targetData;
 
 			std::shared_ptr<render::Pass>		_pass;
 			std::shared_ptr<Program>			_program;
@@ -92,27 +94,31 @@ namespace minko
             std::shared_ptr<States>             _states;
 
 		public:
-            DrawCall(const data::MacroBindingMap& macroBindings) :
-                _macroBindings(macroBindings)
+            DrawCall(std::shared_ptr<render::Pass>  pass,
+                     const data::Container&         rootData,
+                     const data::Container&         rendererData,
+                     const data::Container&         targetData) :
+                _pass(pass),
+                _rootData(rootData),
+                _rendererData(rendererData),
+                _targetData(targetData)
             {
 
-            }
-
-            const data::MacroBindingMap&
-            macroBindings()
-            {
-                return _macroBindings;
             }
             
+            inline
+            std::shared_ptr<render::Pass>
+            pass()
+            {
+                return _pass;
+            }
+
 			void
 			render(std::shared_ptr<AbstractContext> context, AbsTexturePtr renderTarget) const;
 
             void
             bind(std::shared_ptr<Program>                               program,
                  const std::unordered_map<std::string, std::string>&    variables,
-                 const data::Container&                                 rootData,
-                 const data::Container&                                 rendererData,
-                 const data::Container&                                 targetData,
                  const data::BindingMap&                                attributeBindings,
                  const data::BindingMap&                                uniformBindings,
                  const data::BindingMap&                                stateBindings);
@@ -141,10 +147,7 @@ namespace minko
 			bindState(const std::string& stateName);
 
             const data::Container&
-            getContainer(const data::Container& rootData,
-                         const data::Container& rendererData,
-                         const data::Container& targetData,
-                         data::BindingSource    source);
+            getContainer(data::BindingSource source);
 		};
 	}
 }

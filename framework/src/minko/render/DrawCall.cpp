@@ -28,19 +28,16 @@ const unsigned int	DrawCall::MAX_NUM_TEXTURES		= 8;
 const unsigned int	DrawCall::MAX_NUM_VERTEXBUFFERS	= 8;
 
 const data::Container&
-DrawCall::getContainer(const data::Container&   rootData,
-                       const data::Container&   rendererData,
-                       const data::Container&   targetData,
-                       data::BindingSource      source)
+DrawCall::getContainer(data::BindingSource source)
 {
     switch (source)
     {
         case data::BindingSource::ROOT:
-            return rootData;
+            return _rootData;
         case data::BindingSource::RENDERER:
-            return rendererData;
+            return _rendererData;
         case data::BindingSource::TARGET:
-            return targetData;
+            return _targetData;
     }
 
     throw;
@@ -49,16 +46,13 @@ DrawCall::getContainer(const data::Container&   rootData,
 void
 DrawCall::bind(Program::Ptr                                         program,
                const std::unordered_map<std::string, std::string>&  variables,
-               const data::Container&                               rootData,
-               const data::Container&                               rendererData,
-               const data::Container&                               targetData,
                const data::BindingMap&                              attributeBindings,
                const data::BindingMap&                              uniformBindings,
                const data::BindingMap&                              stateBindings)
 {
     _program = program;
 
-    bindIndexBuffer(variables, targetData);
+    bindIndexBuffer(variables, _targetData);
 
     for (const auto& input : program->inputs().uniforms())
     {
@@ -66,7 +60,7 @@ DrawCall::bind(Program::Ptr                                         program,
             continue;
 
         const auto& binding = uniformBindings.at(input.name);
-        auto container = getContainer(rootData, rendererData, targetData, binding.source);
+        auto container = getContainer(binding.source);
 
         bindUniform(
             program,
@@ -82,7 +76,7 @@ DrawCall::bind(Program::Ptr                                         program,
             continue;
 
         const auto& binding = attributeBindings.at(input.name);
-        auto container = getContainer(rootData, rendererData, targetData, binding.source);
+        auto container = getContainer(binding.source);
 
         bindAttribute(
             program,

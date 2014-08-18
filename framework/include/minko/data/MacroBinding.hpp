@@ -72,3 +72,17 @@ namespace minko
         };
     }
 }
+
+//namespace std
+//{
+//    template<>
+//    struct hash<minko::data::MacroBinding>
+//    {
+//        inline
+//        size_t
+//        operator()(const minko::data::MacroBinding& binding) const
+//        {
+//            return hash<minko::data::Binding>()(binding);
+//        }
+//    };
+//}

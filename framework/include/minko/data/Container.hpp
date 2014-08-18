@@ -33,7 +33,6 @@ namespace minko
 			typedef Signal<Container&, const std::string&, const std::string&>	PropertyChangedSignal;
 
 		private:
-			typedef std::shared_ptr<PropertyChangedSignal>				PropertyChangedSignalPtr;
             typedef Signal<Provider::Ptr, const std::string&>	        ProviderChangedSignal;
             typedef std::list<ProviderChangedSignal::Slot>              ProviderChangedSignalSlotList;
 
@@ -49,12 +48,11 @@ namespace minko
             std::list<CollectionPtr>                                _collections;
             Provider::Ptr                                           _lengthProvider;
 
-			PropertyChangedSignalPtr								_propertyAdded;
-			PropertyChangedSignalPtr								_propertyRemoved;
-            std::map<std::string, PropertyChangedSignalPtr>         _propertyChanged;
+			PropertyChangedSignal	    							_propertyAdded;
+			PropertyChangedSignal     								_propertyRemoved;
+            std::map<std::string, PropertyChangedSignal>            _propertyChanged;
 
             std::map<ProviderPtr, ProviderChangedSignalSlotList>	_propertySlots;
-            std::map<std::string, PropertyChangedSignalPtr>	        _propertyChangedSlots;
             std::map<CollectionPtr, CollectionChangedSignalSlot>    _collectionItemAddedSlots;
             std::map<CollectionPtr, CollectionChangedSignalSlot>    _collectionItemRemovedSlots;
 
@@ -127,26 +125,23 @@ namespace minko
 			}
 
 			inline
-			PropertyChangedSignalPtr
-			propertyAdded() const
+			PropertyChangedSignal&
+			propertyAdded()
 			{
 				return _propertyAdded;
 			}
 
 			inline
-			PropertyChangedSignalPtr
-			propertyRemoved() const
+			PropertyChangedSignal&
+			propertyRemoved()
 			{
 				return _propertyRemoved;
 			}
 
             inline
-            PropertyChangedSignalPtr
+            PropertyChangedSignal&
             propertyChanged(const std::string& propertyName)
             {
-                if (_propertyChanged.count(propertyName) == 0)
-                    _propertyChanged[propertyName] = PropertyChangedSignal::create();
-
                 return _propertyChanged[propertyName];
             }
 

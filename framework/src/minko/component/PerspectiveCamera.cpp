@@ -59,7 +59,7 @@ PerspectiveCamera::targetAdded(NodePtr target)
 {
 	target->data().addProvider(_data);
 
-  	_modelToWorldChangedSlot = target->data().propertyChanged("modelToWorldMatrix")->connect(std::bind(
+  	_modelToWorldChangedSlot = target->data().propertyChanged("modelToWorldMatrix").connect(std::bind(
     	&PerspectiveCamera::localToWorldChangedHandler,
 		std::static_pointer_cast<PerspectiveCamera>(shared_from_this()),
     	std::placeholders::_1,

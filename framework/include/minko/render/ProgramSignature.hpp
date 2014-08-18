@@ -77,28 +77,35 @@ namespace minko
 				return _states;
 			}
 
+            inline
+            const std::vector<std::string>&
+            macros() const
+            {
+                return _macros;
+            }
+
             void
             updateProgram(Program& program) const;
 		};
 	}
 }
-
-namespace std
-{
-	template<>
-    struct hash<minko::render::ProgramSignature>
-	{
-		inline
-		size_t 
-		operator()(const minko::render::ProgramSignature& x) const
-		{
-			size_t seed = std::hash<minko::uint>()(x.mask());
-            auto i = 0u;
-
-            for (auto value : x.values())
-                hash_combine(seed, (x.mask() >> i) != 0 ? value : 0);
-
-			return seed;
-		}
-	};
-}
+//
+//namespace std
+//{
+//	template<>
+//    struct hash<minko::render::ProgramSignature>
+//	{
+//		inline
+//		size_t 
+//		operator()(const minko::render::ProgramSignature& x) const
+//		{
+//			size_t seed = std::hash<minko::uint>()(x.mask());
+//            auto i = 0u;
+//
+//            for (auto value : x.values())
+//                hash_combine(seed, (x.mask() >> i) != 0 ? value : 0);
+//
+//			return seed;
+//		}
+//	};
+//}

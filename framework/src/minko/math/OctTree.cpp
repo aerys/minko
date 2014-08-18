@@ -173,7 +173,7 @@ math::OctTree::insert(std::shared_ptr<scene::Node> node)
 
 	if (_nodeToTransformChangedSlot.find(node) == _nodeToTransformChangedSlot.end())
 	{
-		_nodeToTransformChangedSlot[node] = node->data().propertyChanged("transform.modelToWorldMatrix")->connect(std::bind(
+		_nodeToTransformChangedSlot[node] = node->data().propertyChanged("modelToWorldMatrix").connect(std::bind(
 			&math::OctTree::nodeModelToWorldChanged,
 			shared_from_this(),
 			std::placeholders::_1,

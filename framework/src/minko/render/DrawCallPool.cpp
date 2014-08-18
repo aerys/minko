@@ -26,29 +26,35 @@ std::pair<std::list<DrawCall*>::iterator, std::list<DrawCall*>::iterator>
 DrawCallPool::addDrawCalls(std::shared_ptr<Effect>                              effect,
                            const std::unordered_map<std::string, std::string>&  variables,
                            const std::string&                                   techniqueName,
-                           const data::Container&                               rootData,
-                           const data::Container&                               rendererData,
-                           const data::Container&                               targetData)
+                           data::Container&                                     rootData,
+                           data::Container&                                     rendererData,
+                           data::Container&                                     targetData)
 {
     const auto& technique = effect->technique(techniqueName);
     
     for (const auto& pass : technique)
     {
-        auto program = pass->selectProgram(variables, targetData, rendererData, rootData);
-        auto* drawCall = new DrawCall(pass->macroBindings());
+        auto programAndSignature = pass->selectProgram(variables, targetData, rendererData, rootData);
+        auto* drawCall = new DrawCall(pass, rootData, rendererData, targetData);
 
         drawCall->bind(
-            program,
+            programAndSignature.first,
             variables,
-            rootData,
-            rendererData,
-            targetData,
             pass->attributeBindings(),
             pass->uniformBindings(),
             pass->stateBindings()
         );
 
         _drawCalls.push_back(drawCall);
+
+        watchProgramSignature(
+            drawCall,
+            *programAndSignature.second,
+            pass->macroBindings(),
+            rootData,
+            rendererData,
+            targetData
+        );
     }
 
     return std::pair<std::list<DrawCall*>::iterator, std::list<DrawCall*>::iterator>(
@@ -64,4 +70,71 @@ DrawCallPool::removeDrawCalls(const DrawCallIteratorPair& iterators)
         delete *it;
 
     _drawCalls.erase(iterators.first, iterators.second);
+}
+
+void
+DrawCallPool::watchProgramSignature(DrawCall*                       drawCall,
+                                    const ProgramSignature&         signature,
+                                    const data::MacroBindingMap&    macroBindings,
+                                    data::Container&                rootData,
+                                    data::Container&                rendererData,
+                                    data::Container&                targetData)
+{
+    for (const auto& macroName : signature.macros())
+    {
+        const auto& macro = macroBindings.at(macroName);
+
+        _macroToDrawCalls[macro].push_back(drawCall);
+
+        rootData.propertyChanged(macroName).connect(std::bind(
+            &DrawCallPool::macroPropertyChangedHandler,
+            this,
+            macro
+        ));
+    }
+}
+
+void
+DrawCallPool::unwatchProgramSignature(DrawCall*                       drawCall,
+                                      const ProgramSignature&         signature,
+                                      const data::MacroBindingMap&    macroBindings)
+{
+    for (const auto& macroName : signature.macros())
+    {
+        const auto& macro = macroBindings.at(macroName);
+
+        // FIXME
+    }
+}
+
+void
+DrawCallPool::macroPropertyChangedHandler(const data::Binding&  binding)
+{
+    const auto& drawCalls = _macroToDrawCalls[binding];
+
+    _changedDrawCalls.insert(drawCalls.begin(), drawCalls.end());
+}
+
+void
+DrawCallPool::update()
+{
+    for (const auto* drawCall : _changedDrawCalls)
+    {
+        /*auto programAndSignature = drawCall->pass()->selectProgram(variables, targetData, rendererData, rootData);
+
+        drawCall->bind(
+            programAndSignature.first,
+            variables,
+            pass->attributeBindings(),
+            pass->uniformBindings(),
+            pass->stateBindings()
+        );*/
+    }
+
+    _changedDrawCalls.clear();
+
+   /* _drawCalls.sort([](const DrawCall& a, const DrawCall& b)
+    {
+        return a.priority > b.priority;
+    );*/
 }

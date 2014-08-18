@@ -40,7 +40,7 @@ AbstractDiscreteLight::targetAdded(std::shared_ptr<scene::Node> target)
 {
 	AbstractLight::targetAdded(target);
 
-	_modelToWorldChangedSlot = target->data().propertyChanged("modelToWorldMatrix")->connect(std::bind(
+	_modelToWorldChangedSlot = target->data().propertyChanged("modelToWorldMatrix").connect(std::bind(
 		&AbstractDiscreteLight::modelToWorldMatrixChangedHandler,
 		std::dynamic_pointer_cast<AbstractDiscreteLight>(shared_from_this()),
 		std::placeholders::_1,

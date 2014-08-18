@@ -181,7 +181,7 @@ namespace minko
 				return _fallback;
 			}
 
-			std::shared_ptr<Program>
+            std::pair<std::shared_ptr<Program>, const ProgramSignature*>
             selectProgram(const std::unordered_map<std::string, std::string>&   translatedPropertyNames,
 						  const data::Container&	                            targetData,
 						  const data::Container&	                            rendererData,

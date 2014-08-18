@@ -39,8 +39,10 @@ namespace minko
             typedef std::pair<DrawCallIterator, DrawCallIterator>   DrawCallIteratorPair;
 
 		private:
-            std::list<DrawCall*>    _drawCalls;
-            std::set<std::string>   _watchedProperties;
+            std::list<DrawCall*>                                    _drawCalls;
+            std::set<std::string>                                   _watchedProperties;
+            std::unordered_map<data::Binding, std::list<DrawCall*>> _macroToDrawCalls;
+            std::unordered_set<DrawCall*>                           _changedDrawCalls;
 
 		public:
             ~DrawCallPool()
@@ -58,13 +60,32 @@ namespace minko
             addDrawCalls(std::shared_ptr<Effect>                                effect,
                          const std::unordered_map<std::string, std::string>&    variables,
                          const std::string&                                     techniqueName,
-                         const data::Container&                                 rootData,
-                         const data::Container&                                 rendererData,
-                         const data::Container&                                 targetData);
+                         data::Container&                                       rootData,
+                         data::Container&                                       rendererData,
+                         data::Container&                                       targetData);
 
             void
             removeDrawCalls(const DrawCallIteratorPair& iterators);
 
+            void
+            update();
+
+        private:
+            void
+            watchProgramSignature(DrawCall*                     drawCall,
+                                  const ProgramSignature&       signature,
+                                  const data::MacroBindingMap&  macroBindings,
+                                  data::Container&              rootData,
+                                  data::Container&              rendererData,
+                                  data::Container&              targetData);
+
+            void
+            unwatchProgramSignature(DrawCall*                     drawCall,
+                                    const ProgramSignature&       signature,
+                                    const data::MacroBindingMap&  macroBindings);
+
+            void
+            macroPropertyChangedHandler(const data::Binding& binding);
 		};
 	}
 }

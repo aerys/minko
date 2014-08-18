@@ -302,7 +302,7 @@ Renderer::render(render::AbstractContext::Ptr	context,
 {
 	if (!_enabled)
 		return;
-
+    
 	_renderingBegin->execute(std::static_pointer_cast<Renderer>(shared_from_this()));
 
 	if (_renderTarget)
@@ -334,6 +334,7 @@ Renderer::render(render::AbstractContext::Ptr	context,
 		(_backgroundColor & 0xff) / 255.f
 	);
 
+    _drawCallPool.update();
     for (const auto& drawCall : _drawCallPool.drawCalls())
         // FIXME: render the draw call only if it's the right layout
 		//if ((drawCall->layouts() & layoutMask()) != 0)

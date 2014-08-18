@@ -350,7 +350,7 @@ Transform::RootTransform::updateTransforms()
 
                 *_modelToWorld[nodeId] = modelToWorldMatrix;
                 if (nodeData.hasPropertyChangedSignal("modelToWorldMatrix"))
-                    nodeData.propertyChanged("modelToWorldMatrix")->execute(
+                    nodeData.propertyChanged("modelToWorldMatrix").execute(
                         nodeData,
                         "modelToWorldMatrix",
                         "modelToWorldMatrix"

@@ -222,7 +222,13 @@ namespace minko
             Binding(const std::string& propertyName, BindingSource source) :
                 propertyName(propertyName),
                 source(source)
+            {}
+
+            inline
+            bool
+            operator==(const Binding& rhs) const
             {
+                return propertyName == rhs.propertyName && source == rhs.source;
             }
         };
 
@@ -386,16 +392,30 @@ namespace minko
 
 namespace std
 {
-	template <class T>
+	/*template <class T>
 	inline 
 	void 
-	hash_combine(size_t & seed, const T& v)
+	hash_combine(size_t& seed, const T& v)
 	{
 		hash<T> hasher;
 		seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-	}
+	}*/
 
-	template<>
+    template<>
+    struct hash<minko::data::Binding>
+    {
+        inline
+        size_t
+        operator()(const minko::data::Binding& binding) const
+        {
+            auto h1 = std::hash<minko::uint>()((minko::uint)binding.source);
+            auto h2 = std::hash<std::string>()(binding.propertyName);
+
+            return h1 ^ (h2 << 1);
+        }
+    };
+
+    template<>
 	struct hash<minko::math::mat4>
 	{
 		inline

@@ -53,7 +53,7 @@ Pass::Pass(const std::string&		name,
 {
 }
 
-std::shared_ptr<Program>
+std::pair<std::shared_ptr<Program>, const ProgramSignature*>
 Pass::selectProgram(const std::unordered_map<std::string, std::string>& vars,
 					const Container&			                        targetData,
 					const Container&			                        rendererData,
@@ -87,9 +87,11 @@ Pass::selectProgram(const std::unordered_map<std::string, std::string>& vars,
 
 			_signatureToProgram[signature] = program;
 		}
+
+        return std::pair<std::shared_ptr<Program>, const ProgramSignature*>(finalizeProgram(program), signature);
 	}
 
-	return finalizeProgram(program);
+    return std::pair<std::shared_ptr<Program>, const ProgramSignature*>(finalizeProgram(program), nullptr);
 }
 
 Program::Ptr
