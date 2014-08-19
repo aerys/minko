@@ -54,6 +54,9 @@ namespace minko
             typedef std::function<NodePtr(NodePtr)>                                        NodeFunction;
             typedef std::function<EffectPtr(EffectPtr)>                                    EffectFunction;
 
+            typedef std::function<render::TextureFormat(const std::unordered_set<render::TextureFormat>&)>
+                                                                                        TextureFormatFunction;
+
         private:
             std::shared_ptr<render::AbstractContext>            _context;
             std::shared_ptr<AssetLibrary>                       _assets;
@@ -74,9 +77,9 @@ namespace minko
             bool                                                _disposeTextureAfterLoading;
             unsigned int                                        _skinningFramerate;
             component::SkinningMethod                            _skinningMethod;
-            render::TextureFormat                               _textureFormat;
             std::shared_ptr<render::Effect>                     _effect;
             MaterialPtr                                            _material;
+            std::list<render::TextureFormat>                    _desiredTextureFormats;
             MaterialFunction                                    _materialFunction;
             GeometryFunction                                    _geometryFunction;
             ProtocolFunction                                    _protocolFunction;
@@ -84,6 +87,7 @@ namespace minko
             UriFunction                                            _uriFunction;
             NodeFunction                                        _nodeFunction;
             EffectFunction                                        _effectFunction;
+            TextureFormatFunction                               _textureFormatFunction;
 
             int                                                 _seekingOffset;
             int                                                 _seekedLength;
@@ -135,14 +139,15 @@ namespace minko
                 opt->_disposeTextureAfterLoading = options->_disposeTextureAfterLoading;
                 opt->_skinningFramerate = options->_skinningFramerate;
                 opt->_skinningMethod = options->_skinningMethod;
-                opt->_textureFormat = options->_textureFormat;
                 opt->_effect = options->_effect;
+                opt->_desiredTextureFormats = options->_desiredTextureFormats;
                 opt->_materialFunction = options->_materialFunction;
                 opt->_geometryFunction = options->_geometryFunction;
                 opt->_protocolFunction = options->_protocolFunction;
                 opt->_parserFunction = options->_parserFunction;
                 opt->_uriFunction = options->_uriFunction;
                 opt->_nodeFunction = options->_nodeFunction;
+                opt->_textureFormatFunction = options->_textureFormatFunction;
                 opt->_loadAsynchronously = options->_loadAsynchronously;
                 opt->_seekingOffset = options->_seekingOffset;
                 opt->_seekedLength = options->_seekedLength;
@@ -360,22 +365,6 @@ namespace minko
             }
 
             inline
-            render::TextureFormat
-            textureFormat() const
-            {
-                return _textureFormat;
-            }
-
-            inline
-            Ptr
-            textureFormat(render::TextureFormat value)
-            {
-                _textureFormat = value;
-
-                return shared_from_this();
-            }
-
-            inline
             std::shared_ptr<render::Effect>
             effect() const
             {
@@ -403,6 +392,15 @@ namespace minko
             material(MaterialPtr material)
             {
                 _material = material;
+
+                return shared_from_this();
+            }
+
+            inline
+            Ptr
+            addDesiredTextureFormat(render::TextureFormat textureFormat)
+            {
+                _desiredTextureFormats.push_back(textureFormat);
 
                 return shared_from_this();
             }
@@ -515,6 +513,22 @@ namespace minko
             effectFunction(const EffectFunction& func)
             {
                 _effectFunction = func;
+
+                return shared_from_this();
+            }
+
+            inline
+            const TextureFormatFunction&
+            textureFormatFunction() const
+            {
+                return _textureFormatFunction;
+            }
+
+            inline
+            Ptr
+            textureFormatFunction(const TextureFormatFunction& func)
+            {
+                _textureFormatFunction = func;
 
                 return shared_from_this();
             }

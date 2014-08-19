@@ -304,11 +304,12 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>                dependen
     {
         assetType = serialize::AssetType::TEXTURE_PACK_ASSET;
 
-        auto completeFilename = writerOptions->outputAssetUriFunction()(fileName);
+        auto resolvedFileName = writerOptions->fileNameSolverUriFunction()(fileName);
+        auto completeFileName = writerOptions->outputAssetUriFunction()(resolvedFileName);
 
-        writer->write(completeFilename, assetLibrary, options, writerOptions);
+        writer->write(completeFileName, assetLibrary, options, writerOptions);
 
-        content = fileName;
+        content = resolvedFileName;
     }
 
     auto metaByte = static_cast<unsigned char>(writer->headerSize());

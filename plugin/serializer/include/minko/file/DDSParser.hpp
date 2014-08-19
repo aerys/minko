@@ -34,6 +34,9 @@ namespace minko
         private:
             typedef std::shared_ptr<render::AbstractTexture> AbstractTexturePtr;
 
+        private:
+            render::TextureFormat _targetTextureFormat;
+
         public:
             inline
             static
@@ -51,6 +54,15 @@ namespace minko
                   std::shared_ptr<Options>          options,
                   const std::vector<unsigned char>& data,
                   std::shared_ptr<AssetLibrary>     assetLibrary);
+
+            inline
+            Ptr
+            targetTextureFormat(render::TextureFormat value)
+            {
+                _targetTextureFormat = value;
+
+                return std::static_pointer_cast<DDSParser>(shared_from_this());
+            }
 
         private:
             DDSParser();

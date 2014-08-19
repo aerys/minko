@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/material/Material.hpp"
 #include "minko/file/AbstractProtocol.hpp"
 #include "minko/file/AssetLibrary.hpp"
+#include "minko/log/Logger.hpp"
 
 #ifdef __APPLE__
 # include "CoreFoundation/CoreFoundation.h"
@@ -48,7 +49,6 @@ Options::Options() :
     _skinningFramerate(30),
     _skinningMethod(component::SkinningMethod::HARDWARE),
     _material(nullptr),
-    _textureFormat(render::TextureFormat::RGBA),
     _effect(nullptr),
     _seekingOffset(0),
     _seekedLength(0)
@@ -145,6 +145,37 @@ Options::initializeDefaultFunctions()
     _effectFunction = [](EffectPtr effect) -> EffectPtr
     {
         return effect;
+    };
+
+    _textureFormatFunction = [this](const std::unordered_set<render::TextureFormat>& availableTextureFormats)
+                                ->render::TextureFormat
+    {
+        auto textureFormatIt = std::find_if(_desiredTextureFormats.begin(), _desiredTextureFormats.end(),
+                            [&](render::TextureFormat textureFormat) -> bool
+        {
+            return availableTextureFormats.find(textureFormat) != availableTextureFormats.end();
+        });
+
+        if (textureFormatIt != _desiredTextureFormats.end())
+            return *textureFormatIt;
+
+        if (std::find(_desiredTextureFormats.begin(),
+                      _desiredTextureFormats.end(),
+                      render::TextureFormat::RGB) != _desiredTextureFormats.end() &&
+            availableTextureFormats.find(render::TextureFormat::RGBA) != availableTextureFormats.end())
+            return render::TextureFormat::RGBA;
+
+        if (std::find(_desiredTextureFormats.begin(),
+                      _desiredTextureFormats.end(),
+                      render::TextureFormat::RGBA) != _desiredTextureFormats.end() &&
+            availableTextureFormats.find(render::TextureFormat::RGB) != availableTextureFormats.end())
+            return render::TextureFormat::RGB;
+
+        static const auto errorMessage = "No desired texture format available";
+
+        LOG_DEBUG(errorMessage);
+
+        throw std::runtime_error(errorMessage);
     };
 
     if (!_defaultProtocolFunction)

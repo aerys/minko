@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/TextureParser.hpp"
 #include "minko/file/TextureWriter.hpp"
 #include "minko/render/AbstractContext.hpp"
+#include "minko/render/OpenGLES2Context.hpp"
 #include "minko/render/Texture.hpp"
 
 using namespace minko;
@@ -65,7 +66,30 @@ TextureParser::parse(const std::string&                filename,
 
     auto formats = unpacked.get().as<std::vector<msgpack::type::tuple<int, int, int>>>();
 
-    auto desiredFormat = options->textureFormat();
+    auto contextAvailableTextureFormats = std::unordered_map<TextureFormat, unsigned int>();
+    OpenGLES2Context::availableTextureFormats(contextAvailableTextureFormats);
+
+    auto availableTextureFormats = std::unordered_multiset<TextureFormat>(contextAvailableTextureFormats.size());
+
+    for (const auto& entry : contextAvailableTextureFormats)
+    {
+        availableTextureFormats.insert(entry.first);
+    }
+
+    for (const auto& entry : formats)
+    {
+        availableTextureFormats.insert(static_cast<TextureFormat>(entry.a0));
+    }
+
+    auto filteredAvailableTextureFormats = std::unordered_set<TextureFormat>(availableTextureFormats.size());
+
+    for (auto textureFormat : availableTextureFormats)
+    {
+        if (availableTextureFormats.count(textureFormat) == 2)
+            filteredAvailableTextureFormats.insert(textureFormat);
+    }
+
+    auto desiredFormat = options->textureFormatFunction()(filteredAvailableTextureFormats);
 
     auto desiredFormatInfo = *std::find_if(formats.begin(), formats.end(),
                                            [&](const msgpack::type::tuple<int, int, int>& entry) -> bool
@@ -146,6 +170,8 @@ TextureParser::parseRGBDXT1Texture(const std::string& fileName,
     auto deserializedTexture = unpacked.get().as<std::vector<unsigned char>>();
 
     auto parser = DDSParser::create();
+
+    parser->targetTextureFormat(TextureFormat::RGB_DXT1);
 
     parser->parse(fileName, fileName, options, deserializedTexture, assetLibrary);
 

@@ -31,7 +31,8 @@ using namespace minko::file;
 using namespace minko::render;
 
 DDSParser::DDSParser() :
-    AbstractParser()
+    AbstractParser(),
+    _targetTextureFormat(TextureFormat::RGBA)
 {
 }
 
@@ -42,7 +43,7 @@ DDSParser::parse(const std::string&                filename,
                  const std::vector<unsigned char>& data,
                  std::shared_ptr<AssetLibrary>     assetLibrary)
 {
-    auto targetTextureFormat = options->textureFormat();
+    auto targetTextureFormat = _targetTextureFormat;
 
     auto ddsImage = DDSImage();
 

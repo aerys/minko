@@ -1696,6 +1696,9 @@ OpenGLES2Context::generateMipmaps(uint texture)
 void
 OpenGLES2Context::availableTextureFormats(std::unordered_map<TextureFormat, unsigned int>& formats)
 {
+    formats.insert(std::make_pair(TextureFormat::RGB, GL_RGB));
+    formats.insert(std::make_pair(TextureFormat::RGBA, GL_RGBA));
+
     auto formatCount = GLint();
     auto rawFormats = std::vector<GLenum>();
 

@@ -40,6 +40,7 @@ namespace minko
             bool                    _addBoundingBoxes;
 
             UriFunction             _outputAssetUriFunction;
+            UriFunction             _fileNameSolverUriFunction;
 
             serialize::ImageFormat  _imageFormat;
             std::list<render::TextureFormat> _textureFormats;
@@ -98,6 +99,22 @@ namespace minko
             outputAssetUriFunction(const UriFunction& func)
             {
                 _outputAssetUriFunction = func;
+
+                return shared_from_this();
+            }
+            
+            inline
+            const UriFunction&
+            fileNameSolverUriFunction() const
+            {
+                return _fileNameSolverUriFunction;
+            }
+
+            inline
+            Ptr
+            fileNameSolverUriFunction(const UriFunction& func)
+            {
+                _fileNameSolverUriFunction = func;
 
                 return shared_from_this();
             }
