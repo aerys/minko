@@ -25,17 +25,17 @@ namespace minko
 {
     namespace data
     {
-
         class HalfEdge
         {
         public :
-            typedef std::shared_ptr<HalfEdge>    HalfEdgePtr;
+            typedef std::shared_ptr<HalfEdge> HalfEdgePtr;
 
         public:
             inline static
-            HalfEdgePtr    create(unsigned int startNodeId,
-                               unsigned int endNodeId,
-                               unsigned int edgeId)
+            HalfEdgePtr
+            create(unsigned int startNodeId,
+                   unsigned int endNodeId,
+                   unsigned int edgeId)
             {
                 auto he = std::shared_ptr<HalfEdge>(new HalfEdge(startNodeId, endNodeId, edgeId));
 
@@ -46,9 +46,9 @@ namespace minko
             unsigned int                _startNodeId;
             unsigned int                _endNodeId;
             unsigned int                _edgeId;
-            HalfEdgePtr                    _next;
-            HalfEdgePtr                    _prec;
-            HalfEdgePtr                    _adjacent;
+            HalfEdgePtr                 _next;
+            HalfEdgePtr                 _prec;
+            HalfEdgePtr                 _adjacent;
             std::vector<HalfEdgePtr>    _face;
             std::vector<HalfEdgePtr>    _firstReverseFace;
             std::vector<HalfEdgePtr>    _secondReverseFace;
@@ -195,10 +195,7 @@ namespace minko
         };
 
         // debug
-
         std::ostream &operator<<(std::ostream &flux, const HalfEdge& halfEdge);
         std::ostream &operator<<(std::ostream &flux, std::shared_ptr<HalfEdge> halfEdge);
-
     }
 }
-

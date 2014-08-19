@@ -41,6 +41,7 @@ namespace minko
 
         public:
             typedef std::shared_ptr<MaterialWriter>                        Ptr;
+
             typedef std::shared_ptr<render::AbstractTexture>                    TexturePtr;
             typedef msgpack::type::tuple<uint, std::string>                TupleIntString;
             typedef msgpack::type::tuple<std::string, TupleIntString>    ComplexPropertyTuple;
@@ -86,6 +87,7 @@ namespace minko
 
                     return true;
                 }
+
                 return false;
             }
 
@@ -107,6 +109,7 @@ namespace minko
 
                     ComplexPropertyTuple serializedProperty(propertyName, serializedMsgMaterialValue);
                     complexSerializedProperties->push_back(serializedProperty);
+
                     return true;
                 }
 
@@ -132,7 +135,9 @@ namespace minko
 
                     BasicPropertyTuple basicTypeSerializedProperty(
                             propertyName,
-                            serializePropertyValue);
+                        serializePropertyValue
+                    );
+
                         basicTypeSeriliazedProperties->push_back(basicTypeSerializedProperty);
 
                     return true;

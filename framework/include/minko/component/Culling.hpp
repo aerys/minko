@@ -39,24 +39,24 @@ namespace minko
             typedef std::shared_ptr<math::AbstractShape>                        ShapePtr;
 
         private:
-            static std::shared_ptr<math::OctTree>                                _octTree;
+            static std::shared_ptr<math::OctTree>                               _octTree;
 
             std::shared_ptr<math::AbstractShape>                                _frustum;
 
-            Signal<AbstractComponent::Ptr, NodePtr>::Slot                        _targetAddedSlot;
-            Signal<AbstractComponent::Ptr, NodePtr>::Slot                        _targetRemovedSlot;
-            Signal<NodePtr, NodePtr, NodePtr>::Slot                                _addedSlot;
-            Signal<NodePtr, NodePtr, NodePtr>::Slot                                _addedToSceneSlot;
-            Signal<NodePtr, NodePtr>::Slot                                        _layoutChangedSlot;
-            Signal<std::shared_ptr<data::Container>, const std::string&>::Slot    _viewMatrixChangedSlot;
+            Signal<AbstractComponent::Ptr, NodePtr>::Slot                       _targetAddedSlot;
+            Signal<AbstractComponent::Ptr, NodePtr>::Slot                       _targetRemovedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot                             _addedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot                             _addedToSceneSlot;
+            Signal<NodePtr, NodePtr>::Slot                                      _layoutChangedSlot;
+            Signal<std::shared_ptr<data::Container>, const std::string&>::Slot  _viewMatrixChangedSlot;
 
-            std::string                                                            _bindProperty;
+            std::string                                                         _bindProperty;
 
         public:
             inline static
             Ptr
-            create(ShapePtr                shape,
-                   const std::string&    bindPropertyName)
+            create(ShapePtr                 shape,
+                   const std::string&       bindPropertyName)
             {
                 Ptr CullingComponent = std::shared_ptr<Culling>(new Culling(shape, bindPropertyName));
 
@@ -66,8 +66,8 @@ namespace minko
             }
 
         private:
-            Culling(ShapePtr            shape,
-                    const std::string&    bindProperty);
+            Culling(ShapePtr                shape,
+                    const std::string&      bindProperty);
 
             void
             initialize();

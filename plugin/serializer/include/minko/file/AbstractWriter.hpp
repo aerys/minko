@@ -69,10 +69,10 @@ namespace minko
         protected:
             std::shared_ptr<Signal<Ptr>>                        _complete;
             std::shared_ptr<Signal<Ptr, const WriterError&>>    _error;
-            T                                                    _data;
-            std::shared_ptr<Dependency>                            _parentDependencies;
+            T                                                   _data;
+            std::shared_ptr<Dependency>                         _parentDependencies;
 
-            int                                _magicNumber;
+            int                                                 _magicNumber;
 
         public:
             inline
@@ -126,7 +126,7 @@ namespace minko
                   std::shared_ptr<AssetLibrary>         assetLibrary,
                   std::shared_ptr<Options>              options,
                   std::shared_ptr<WriterOptions>        writerOptions,
-                  SerializedDependency&                    includeDependency)
+                  SerializedDependency&                 includeDependency)
             {
                 try
                 {
@@ -136,7 +136,7 @@ namespace minko
                     {
                         Dependency::Ptr            dependencies = Dependency::create();
                         std::string                serializedData = embed(assetLibrary, options, dependencies, writerOptions);
-                        SerializedDependency    serializedDependencies = dependencies->serialize(assetLibrary, options, writerOptions);
+                        SerializedDependency       serializedDependencies = dependencies->serialize(assetLibrary, options, writerOptions);
 
                         if (includeDependency.size() > 0)
                             serializedDependencies.insert(serializedDependencies.begin(), includeDependency.begin(), includeDependency.end());
@@ -337,9 +337,9 @@ namespace minko
 
             virtual
             std::string
-            embed(std::shared_ptr<AssetLibrary>        assetLibrary,
-                  std::shared_ptr<Options>            options,
-                  Dependency::Ptr                    dependencies,
+            embed(std::shared_ptr<AssetLibrary>     assetLibrary,
+                  std::shared_ptr<Options>          options,
+                  Dependency::Ptr                   dependencies,
                   std::shared_ptr<WriterOptions>    writerOptions) = 0;
 
         protected:

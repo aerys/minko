@@ -34,17 +34,17 @@ namespace minko
             typedef std::shared_ptr<Geometry> Ptr;
 
         private:
-            typedef std::shared_ptr<render::VertexBuffer> VBPtr;
-            typedef std::shared_ptr<data::ArrayProvider>  ProviderPtr;
+            typedef std::shared_ptr<render::VertexBuffer>       VBPtr;
+            typedef std::shared_ptr<data::ArrayProvider>        ProviderPtr;
 
         private:
-            ProviderPtr                                _data;
-            unsigned int                            _vertexSize;
-            unsigned int                            _numVertices;
-            std::list<VBPtr>                        _vertexBuffers;
-            std::shared_ptr<render::IndexBuffer>    _indexBuffer;
+            ProviderPtr                                         _data;
+            unsigned int                                        _vertexSize;
+            unsigned int                                        _numVertices;
+            std::list<VBPtr>                                    _vertexBuffers;
+            std::shared_ptr<render::IndexBuffer>                _indexBuffer;
 
-            std::unordered_map<VBPtr, Signal<VBPtr, int>::Slot>    _vbToVertexSizeChangedSlot;
+            std::unordered_map<VBPtr, Signal<VBPtr, int>::Slot> _vbToVertexSizeChangedSlot;
 
         public:
             virtual
@@ -163,7 +163,7 @@ namespace minko
             bool
             cast(std::shared_ptr<math::Ray>        ray,
                  float&                            distance,
-                 uint&                            triangle,
+                 uint&                             triangle,
                  std::shared_ptr<math::Vector3>    hitXyz        = nullptr,
                  std::shared_ptr<math::Vector2>    hitUv         = nullptr,
                  std::shared_ptr<math::Vector3>    hitNormal     = nullptr);
@@ -181,8 +181,8 @@ namespace minko
             bool
             equals(Ptr geom)
             {
-                bool vertexEquality        = _vertexBuffers.size() == geom->_vertexBuffers.size();
-                bool indexEquality        = _indexBuffer == geom->_indexBuffer;
+                bool vertexEquality     = _vertexBuffers.size() == geom->_vertexBuffers.size();
+                bool indexEquality      = _indexBuffer == geom->_indexBuffer;
                 auto vertexBuffer1Start = _vertexBuffers.begin();
                 auto vertexBuffer2Start = geom->_vertexBuffers.begin();
 

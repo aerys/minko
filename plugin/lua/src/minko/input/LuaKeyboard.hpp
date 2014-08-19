@@ -37,16 +37,16 @@ namespace minko
             void
             bind(LuaGlue& state)
             {
-                auto& input_key = state.Enum<Keyboard::Key>("Key");
+                auto& input_keyboard = state.Class<Keyboard>("Keyboard");
+
                 for (int key = 0; key < (int) Keyboard::NUM_KEYS; ++key)
                 {
                     auto& keyName = Keyboard::getKeyName(static_cast<Keyboard::Key>(key));
 
                     if (keyName.size())
-                        input_key.constant(keyName, key);
+                        input_keyboard.constant(keyName, key);
                 }
 
-                auto& input_keyboard = state.Class<Keyboard>("Keyboard");
                 MINKO_LUAGLUE_BIND_SIGNAL(state, Keyboard::Ptr, uint);
                 MINKO_LUAGLUE_BIND_SIGNAL(state, Keyboard::Ptr);
                 input_keyboard

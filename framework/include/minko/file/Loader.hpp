@@ -34,20 +34,20 @@ namespace minko
             typedef std::shared_ptr<Loader>        Ptr;
 
         private:
-            typedef std::shared_ptr<AbstractParser>                                            AbsParserPtr;
-            typedef std::unordered_map<std::string, std::shared_ptr<Options>>                FilenameToOptions;
-            typedef std::unordered_map<std::string, std::shared_ptr<File>>                    FilenameToFile;
+            typedef std::shared_ptr<AbstractParser>                                         AbsParserPtr;
+            typedef std::unordered_map<std::string, std::shared_ptr<Options>>               FilenameToOptions;
+            typedef std::unordered_map<std::string, std::shared_ptr<File>>                  FilenameToFile;
             typedef std::unordered_map<std::shared_ptr<AbstractProtocol>, float>            ProtocolToProgress;
             typedef std::vector<Signal<std::shared_ptr<AbstractProtocol>>::Slot>            ProtocolSlots;
-            typedef std::vector<Signal<std::shared_ptr<AbstractProtocol>, float>::Slot>        ProtocolProgressSlots;
+            typedef std::vector<Signal<std::shared_ptr<AbstractProtocol>, float>::Slot>     ProtocolProgressSlots;
             typedef std::unordered_map<AbsParserPtr, Signal<AbsParserPtr>::Slot>            ParserSlots;
 
         protected:
             std::shared_ptr<Options>                            _options;
 
-            std::list<std::string>                                _filesQueue;
-            std::list<std::string>                                _loading;
-            FilenameToOptions                                    _filenameToOptions;
+            std::list<std::string>                              _filesQueue;
+            std::list<std::string>                              _loading;
+            FilenameToOptions                                   _filenameToOptions;
             FilenameToFile                                      _files;
 
             std::shared_ptr<Signal<Ptr, float>>                 _progress;
@@ -58,9 +58,9 @@ namespace minko
             ProtocolProgressSlots                               _protocolProgressSlots;
             ParserSlots                                         _parserSlots;
 
-            ProtocolToProgress                                    _protocolToProgress;
+            ProtocolToProgress                                  _protocolToProgress;
 
-            int                                                    _numFiles;
+            int                                                 _numFiles;
 
         public:
             inline static

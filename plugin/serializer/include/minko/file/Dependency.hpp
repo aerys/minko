@@ -31,39 +31,39 @@ namespace minko
             public std::enable_shared_from_this<Dependency>
         {
         public:
-            typedef std::shared_ptr<Dependency>                    Ptr;
+            typedef std::shared_ptr<Dependency>                 Ptr;
             typedef std::shared_ptr<render::AbstractTexture>    AbsTexturePtr;
-            typedef std::shared_ptr<geometry::Geometry>            GeometryPtr;
+            typedef std::shared_ptr<geometry::Geometry>         GeometryPtr;
 
         private:
             typedef msgpack::type::tuple<unsigned int, short, std::string> SerializedAsset;
             typedef std::function<SerializedAsset(std::shared_ptr<file::Dependency>, std::shared_ptr<file::AssetLibrary>, std::shared_ptr<geometry::Geometry>, uint, std::shared_ptr<file::Options>, std::shared_ptr<file::WriterOptions>, std::vector<Dependency::SerializedAsset>&)>        GeometryWriterFunction;
             typedef std::function<SerializedAsset(std::shared_ptr<file::Dependency>, std::shared_ptr<file::AssetLibrary>, std::shared_ptr<render::AbstractTexture>, uint, std::shared_ptr<file::Options>, std::shared_ptr<file::WriterOptions>)>    TextureWriterFunction;
 			typedef std::function<SerializedAsset(std::shared_ptr<file::Dependency>, std::shared_ptr<file::AssetLibrary>, std::shared_ptr<material::Material>, uint, std::shared_ptr<file::Options>, std::shared_ptr<file::WriterOptions>)>			MaterialWriterFunction;
-            typedef std::function<bool(std::shared_ptr<geometry::Geometry>)>            GeometryTestFunc;
+            typedef std::function<bool(std::shared_ptr<geometry::Geometry>)> GeometryTestFunc;
 
         private:
-            std::unordered_map<AbsTexturePtr, uint>                            _textureDependencies;
+            std::unordered_map<AbsTexturePtr, uint>                         _textureDependencies;
 			std::unordered_map<std::shared_ptr<material::Material>, uint>	_materialDependencies;
-            std::unordered_map<std::shared_ptr<scene::Node>, uint>            _subSceneDependencies;
-            std::unordered_map<std::shared_ptr<geometry::Geometry>, uint>    _geometryDependencies;
-            std::unordered_map<std::shared_ptr<render::Effect>, uint>        _effectDependencies;
+            std::unordered_map<std::shared_ptr<scene::Node>, uint>          _subSceneDependencies;
+            std::unordered_map<std::shared_ptr<geometry::Geometry>, uint>   _geometryDependencies;
+            std::unordered_map<std::shared_ptr<render::Effect>, uint>       _effectDependencies;
 
-            std::unordered_map<uint, AbsTexturePtr>                            _textureReferences;
+            std::unordered_map<uint, AbsTexturePtr>                         _textureReferences;
 			std::unordered_map<uint, std::shared_ptr<material::Material>>	_materialReferences;
-            std::unordered_map<uint, std::shared_ptr<scene::Node>>            _subSceneReferences;
-            std::unordered_map<uint, std::shared_ptr<geometry::Geometry>>    _geometryReferences;
-            std::unordered_map<uint, std::shared_ptr<render::Effect>>        _effectReferences;
+            std::unordered_map<uint, std::shared_ptr<scene::Node>>          _subSceneReferences;
+            std::unordered_map<uint, std::shared_ptr<geometry::Geometry>>   _geometryReferences;
+            std::unordered_map<uint, std::shared_ptr<render::Effect>>       _effectReferences;
 
             uint                                                            _currentId;
             std::shared_ptr<Options>                                        _options;
             std::shared_ptr<scene::Node>                                    _loadedRoot;
 
-            static std::unordered_map<uint, GeometryWriterFunction>            _geometryWriteFunctions;
-            static std::unordered_map<uint, GeometryTestFunc>                _geometryTestFunctions;
+            static std::unordered_map<uint, GeometryWriterFunction>         _geometryWriteFunctions;
+            static std::unordered_map<uint, GeometryTestFunc>               _geometryTestFunctions;
 
             static TextureWriterFunction                                    _textureWriteFunction;
-            static MaterialWriterFunction                                    _materialWriteFunction;
+            static MaterialWriterFunction                                   _materialWriteFunction;
 
 
         public:
@@ -225,8 +225,8 @@ namespace minko
             void
             setGeometryFunction(GeometryWriterFunction geometryFunc, GeometryTestFunc testFunc, uint priority)
             {
-                _geometryTestFunctions[priority]    = testFunc;
-                _geometryWriteFunctions[priority]    = geometryFunc;
+                _geometryTestFunctions[priority] = testFunc;
+                _geometryWriteFunctions[priority] = geometryFunc;
             }
 
         private:

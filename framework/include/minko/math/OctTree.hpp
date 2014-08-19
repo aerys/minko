@@ -43,16 +43,16 @@ namespace minko
             uint                                                                        _maxDepth;
             uint                                                                        _depth;
             bool                                                                        _splitted;
-            Ptr                                                                            _parent;
+            Ptr                                                                         _parent;
             std::vector<Ptr>                                                            _children; //x, y, z in {0, 1}, child index : x + y << 1 + z << 2
-            std::list<NodePtr>                                                            _content;
-            std::list<NodePtr>                                                            _childrenContent;
-            float                                                                        _worldSize;
-            std::shared_ptr<math::Vector3>                                                _center;
+            std::list<NodePtr>                                                          _content;
+            std::list<NodePtr>                                                          _childrenContent;
+            float                                                                       _worldSize;
+            std::shared_ptr<math::Vector3>                                              _center;
             std::unordered_map<NodePtr, Ptr>                                            _nodeToOctant;
-            std::unordered_map<NodePtr, data::Container::PropertyChangedSignal::Slot>    _nodeToTransformChangedSlot;
-            std::unordered_map<std::shared_ptr<math::Matrix4x4>, NodePtr>                _matrixToNode;
-            std::shared_ptr<math::Box>                                                    _octantBox;
+            std::unordered_map<NodePtr, data::Container::PropertyChangedSignal::Slot>   _nodeToTransformChangedSlot;
+            std::unordered_map<std::shared_ptr<math::Matrix4x4>, NodePtr>               _matrixToNode;
+            std::shared_ptr<math::Box>                                                  _octantBox;
 
 
             bool _inside;
@@ -62,9 +62,9 @@ namespace minko
             inline static
             Ptr
             create(float                            worldSize,
-                   uint                                maxDepth,
-                   std::shared_ptr<math::Vector3>    center,
-                   uint                                depth = 0)
+                   uint                             maxDepth,
+                   std::shared_ptr<math::Vector3>   center,
+                   uint                             depth = 0)
             {
                 return std::shared_ptr<OctTree>(new OctTree(worldSize, maxDepth, center, depth));
             }
@@ -79,16 +79,16 @@ namespace minko
             computeDepth(NodePtr node);
 
             NodePtr
-            generateVisual(std::shared_ptr<file::AssetLibrary>    assetLibrary,
-                           NodePtr            rootNode = nullptr);
+            generateVisual(std::shared_ptr<file::AssetLibrary>              assetLibrary,
+                           NodePtr                                          rootNode = nullptr);
 
             uint
-            testFrustum(std::shared_ptr<math::Frustum> frustum);
+            testFrustum(std::shared_ptr<math::Frustum>                      frustum);
 
             void
             testFrustum(std::shared_ptr<math::AbstractShape>                frustum,
-                        std::function<void(std::shared_ptr<scene::Node>)>    insideFrustumCallback,
-                        std::function<void(std::shared_ptr<scene::Node>)>    outsideFustumCallback);
+                        std::function<void(std::shared_ptr<scene::Node>)>   insideFrustumCallback,
+                        std::function<void(std::shared_ptr<scene::Node>)>   outsideFustumCallback);
 
         private:
 
@@ -96,28 +96,28 @@ namespace minko
             nodeChangedOctant(NodePtr node);
 
             void
-            nodeModelToWorldChanged(std::shared_ptr<data::Container>    data,
-                                    const std::string&                    propertyName);
+            nodeModelToWorldChanged(std::shared_ptr<data::Container>        data,
+                                    const std::string&                      propertyName);
 
             void
             split();
 
             float
-            computeRadius(std::shared_ptr<component::BoundingBox> boundingBox);
+            computeRadius(std::shared_ptr<component::BoundingBox>           boundingBox);
 
             void
-            addChildContent(NodePtr node);
+            addChildContent(NodePtr                                         node);
 
             void
-            removeChildContent(NodePtr node);
+            removeChildContent(NodePtr                                      node);
 
             float
             edgeLength();
 
-            OctTree(float                            worldSize,
-                     uint                            maxDepth,
-                     std::shared_ptr<math::Vector3> center,
-                     uint                            depth);
+            OctTree(float                                                   worldSize,
+                     uint                                                   maxDepth,
+                     std::shared_ptr<math::Vector3>                         center,
+                     uint                                                   depth);
         };
     }
 }

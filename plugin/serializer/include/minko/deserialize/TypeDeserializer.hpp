@@ -36,15 +36,14 @@ namespace minko
                 stream.read(reinterpret_cast<char*>(&value), sizeof (ST));
             }
 
-        public :
-
+        public:
             template <typename T, typename ST = T>
             static
             std::vector<T>
             deserializeVector(std::string& serializedValue)
             {
-                std::stringstream    stream;
-                std::vector<T>        result(serializedValue.size() / sizeof(ST));
+                std::stringstream   stream;
+                std::vector<T>      result(serializedValue.size() / sizeof(ST));
                 uint                i = 0;
 
                 stream << serializedValue;
@@ -86,7 +85,6 @@ namespace minko
             static
             Any
             deserializeEnvironmentMap2dType(std::tuple<uint, std::string&>&);
-
         };
     }
 }

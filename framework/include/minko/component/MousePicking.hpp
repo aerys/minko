@@ -33,30 +33,30 @@ namespace minko
             public AbstractComponent
         {
         private:
-            typedef std::shared_ptr<scene::Node>            NodePtr;
-            typedef std::shared_ptr<math::Ray>                RayPtr;
+            typedef std::shared_ptr<scene::Node>                NodePtr;
+            typedef std::shared_ptr<math::Ray>                  RayPtr;
 
         public:
-            typedef std::pair<NodePtr, float>                Hit;
-            typedef std::list<Hit>                            HitList;
-            typedef std::shared_ptr<MousePicking>            Ptr;
-            typedef Signal<Ptr, HitList&, RayPtr>            MouseSignal;
-            typedef MouseSignal::Ptr                        MouseSignalPtr;
+            typedef std::pair<NodePtr, float>                   Hit;
+            typedef std::list<Hit>                              HitList;
+            typedef std::shared_ptr<MousePicking>               Ptr;
+            typedef Signal<Ptr, HitList&, RayPtr>               MouseSignal;
+            typedef MouseSignal::Ptr                            MouseSignalPtr;
 
         private:
-            MouseSignalPtr                                    _move;
-            MouseSignalPtr                                    _over;
-            MouseSignalPtr                                    _out;
-            MouseSignalPtr                                    _rollOver;
-            MouseSignalPtr                                    _rollOut;
-            MouseSignalPtr                                    _leftButtonUp;
-            MouseSignalPtr                                    _leftButtonDown;
+            MouseSignalPtr                                      _move;
+            MouseSignalPtr                                      _over;
+            MouseSignalPtr                                      _out;
+            MouseSignalPtr                                      _rollOver;
+            MouseSignalPtr                                      _rollOut;
+            MouseSignalPtr                                      _leftButtonUp;
+            MouseSignalPtr                                      _leftButtonDown;
 
-            std::shared_ptr<math::Vector3>                    _previousRayOrigin;
-            NodePtr                                            _lastItemUnderCursor;
+            std::shared_ptr<math::Vector3>                      _previousRayOrigin;
+            NodePtr                                             _lastItemUnderCursor;
 
-            Signal<AbstractComponent::Ptr, NodePtr>::Slot    _targetAddedSlot;
-            Signal<AbstractComponent::Ptr, NodePtr>::Slot    _targetRemovedSlot;
+            Signal<AbstractComponent::Ptr, NodePtr>::Slot       _targetAddedSlot;
+            Signal<AbstractComponent::Ptr, NodePtr>::Slot       _targetRemovedSlot;
 
         public:
             inline static

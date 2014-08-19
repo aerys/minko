@@ -81,7 +81,7 @@ namespace minko
             targetRemovedHandler(AbstractComponent::Ptr cmp, std::shared_ptr<scene::Node> target);
 
             void
-            modelToWorldMatrixChangedHandler(std::shared_ptr<data::Container>     container,
+            modelToWorldMatrixChangedHandler(std::shared_ptr<data::Container>   container,
                                              const std::string&                 propertyName);
 
             virtual

@@ -35,22 +35,22 @@ namespace minko
             typedef std::shared_ptr<Effect>    Ptr;
 
         private:
-            typedef std::shared_ptr<Pass>                                        PassPtr;
-            typedef std::shared_ptr<VertexBuffer>                                VertexBufferPtr;
-            typedef std::shared_ptr<std::function<void(PassPtr)>>                OnPassFunctionPtr;
-            typedef std::list<std::function<void(PassPtr)>>                        OnPassFunctionList;
-            typedef std::vector<PassPtr>                                         Technique;
+            typedef std::shared_ptr<Pass>                                       PassPtr;
+            typedef std::shared_ptr<VertexBuffer>                               VertexBufferPtr;
+            typedef std::shared_ptr<std::function<void(PassPtr)>>               OnPassFunctionPtr;
+            typedef std::list<std::function<void(PassPtr)>>                     OnPassFunctionList;
+            typedef std::vector<PassPtr>                                        Technique;
             typedef Signal<Ptr, const std::string&, const std::string&>::Ptr    TechniqueChangedSignalPtr;
 
         private:
-            std::unordered_map<std::string, Technique>        _techniques;
-            std::unordered_map<std::string, std::string>    _fallback;
-            std::shared_ptr<data::Provider>                    _data;
+            std::unordered_map<std::string, Technique>                          _techniques;
+            std::unordered_map<std::string, std::string>                        _fallback;
+            std::shared_ptr<data::Provider>                                     _data;
 
-            OnPassFunctionList                                _uniformFunctions;
-            OnPassFunctionList                                _attributeFunctions;
-            OnPassFunctionPtr                                _indexFunction;
-            OnPassFunctionList                                _macroFunctions;
+            OnPassFunctionList                                                  _uniformFunctions;
+            OnPassFunctionList                                                  _attributeFunctions;
+            OnPassFunctionPtr                                                   _indexFunction;
+            OnPassFunctionList                                                  _macroFunctions;
 
         public:
             inline static
@@ -127,16 +127,10 @@ namespace minko
             void
             setUniform(const std::string& name, const T&... values)
             {
-#if defined(EMSCRIPTEN)
-                auto that = shared_from_this();
-                _uniformFunctions.push_back([=](std::shared_ptr<Pass> pass) {
-                    that->setUniformOnPass<T...>(pass, name, values...);
-                });
-#else
                 _uniformFunctions.push_back(std::bind(
                     &Effect::setUniformOnPass<T...>, std::placeholders::_1, name, values...
                 ));
-#endif
+
                 for (auto& technique : _techniques)
                     for (auto& pass : technique.second)
                         pass->setUniform(name, values...);

@@ -29,7 +29,7 @@ namespace minko
             public std::enable_shared_from_this<Bone>
         {
         public:
-            typedef std::shared_ptr<Bone>                Ptr;
+            typedef std::shared_ptr<Bone>               Ptr;
 
         private:
             typedef std::shared_ptr<scene::Node>        NodePtr;
@@ -38,7 +38,7 @@ namespace minko
         private:
 			
 			Matrix4x4Ptr								_offsetMatrix;
-            const std::vector<unsigned short>            _vertexIds;
+            const std::vector<unsigned short>           _vertexIds;
             const std::vector<float>                    _vertexWeights;
 
         public:
@@ -46,7 +46,7 @@ namespace minko
             inline
             Ptr
 			create(Matrix4x4Ptr							offsetMatrix, 
-                   const std::vector<unsigned short>&    vertexIds,
+                   const std::vector<unsigned short>&   vertexIds,
                    const std::vector<float>&            vertexWeights)
             {
 				return std::shared_ptr<Bone>(new Bone(offsetMatrix, vertexIds, vertexWeights));

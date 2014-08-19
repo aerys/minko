@@ -31,24 +31,24 @@ namespace minko
             public std::enable_shared_from_this<Skin>
         {
         public:
-            typedef std::shared_ptr<Skin>                    Ptr;
+            typedef std::shared_ptr<Skin>               Ptr;
 
         private:
-            typedef std::shared_ptr<Bone>                    BonePtr;
-            typedef std::shared_ptr<math::Matrix4x4>        Matrix4x4Ptr;
+            typedef std::shared_ptr<Bone>               BonePtr;
+            typedef std::shared_ptr<math::Matrix4x4>    Matrix4x4Ptr;
 
         private:
-            const unsigned int                _numBones;
-            std::vector<BonePtr>            _bones;
+            const unsigned int                          _numBones;
+            std::vector<BonePtr>                        _bones;
 
-            const uint                        _duration;                // in milliseconds
-            const float                        _timeFactor;
-            std::vector<std::vector<float>>    _boneMatricesPerFrame;
+            const uint                                  _duration;               // in milliseconds
+            const float                                 _timeFactor;
+            std::vector<std::vector<float>>             _boneMatricesPerFrame;
 
-            unsigned int                    _maxNumVertexBones;
-            std::vector<unsigned int>        _numVertexBones;        // size = #vertices
-            std::vector<unsigned int>        _vertexBones;            // size = #vertices * #bones
-            std::vector<float>                _vertexBoneWeights;        // size = #vertices * #bones
+            unsigned int                                _maxNumVertexBones;
+            std::vector<unsigned int>                   _numVertexBones;         // size = #vertices
+            std::vector<unsigned int>                   _vertexBones;            // size = #vertices * #bones
+            std::vector<float>                          _vertexBoneWeights;      // size = #vertices * #bones
 
         public:
             inline

@@ -99,11 +99,11 @@ SDLJoystick::button(int platformSpecificButtonId)
 {
     Button button = static_cast<SDLJoystick::Button>(platformSpecificButtonId);
 
-#if defined(EMSCRIPTEN)
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
     // Conversion from HTML5 buttons.
     auto buttonIterator = HtmlToNativeMap.find(button);
     button = buttonIterator == HtmlToNativeMap.end() ? Button::Nothing : buttonIterator->second;
-#endif // EMSCRIPTEN
+#endif
 
     return button;
 }
@@ -117,11 +117,11 @@ SDLJoystick::buttonId(Button button)
 bool
 SDLJoystick::isButtonDown(Button button)
 {
-#if defined(EMSCRIPTEN)
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
     // Conversion to HTML5 buttons.
     auto buttonIterator = NativeToHtmlMap.find(button);
     button = buttonIterator == NativeToHtmlMap.end() ? Button::Nothing : buttonIterator->second;
-#endif // EMSCRIPTEN
+#endif
 
     return SDL_JoystickGetButton(_joystick, buttonId(button));
 }

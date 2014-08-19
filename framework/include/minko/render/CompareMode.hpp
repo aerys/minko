@@ -40,7 +40,7 @@ namespace minko
     }
 }
 
-#ifndef _WIN32
+#if MINKO_PLATFORM != MINKO_PLATFORM_WINDOWS
 namespace std
 {
     // Hash function to allow CompareMode to be an index in a map.

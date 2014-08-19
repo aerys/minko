@@ -96,15 +96,10 @@ namespace minko
 
             virtual
             void
-            data(unsigned char*,
+            data(unsigned char*     data,
                  TextureFormat    format        = TextureFormat::RGBA,
                  int            widthGPU    = -1,
                  int            heightGPU    = -1) = 0;
-
-            //virtual
-            //void
-            //uploadMipLevel(uint    level,
-            //               unsigned char*) = 0;
 
             virtual
             void
@@ -120,9 +115,7 @@ namespace minko
                             bool                resizeSmoothly,
                             const std::string&    filename);
 
-            ~AbstractTexture()
-            {
-            }
+            ~AbstractTexture() = default;
 
             static
             void

@@ -36,19 +36,19 @@ namespace minko
 
         private:
             typedef std::shared_ptr<scene::Node>                            NodePtr;
-            typedef std::shared_ptr<AbstractComponent>                        AbsCmpPtr;
+            typedef std::shared_ptr<AbstractComponent>                      AbsCmpPtr;
 
         private:
-            std::unordered_map<NodePtr, bool>                                _started;
+            std::unordered_map<NodePtr, bool>                               _started;
 
             Signal<AbsCmpPtr, NodePtr>::Slot                                _targetAddedSlot;
             Signal<AbsCmpPtr, NodePtr>::Slot                                _targetRemovedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot                         _addedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot                         _removedSlot;
-            Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot                        _componentAddedSlot;
-            Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot                        _componentRemovedSlot;
-            Signal<std::shared_ptr<SceneManager>, float, float>::Slot        _frameBeginSlot;
-            Signal<std::shared_ptr<SceneManager>, float, float>::Slot        _frameEndSlot;
+            Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot                       _componentAddedSlot;
+            Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot                       _componentRemovedSlot;
+            Signal<std::shared_ptr<SceneManager>, float, float>::Slot       _frameBeginSlot;
+            Signal<std::shared_ptr<SceneManager>, float, float>::Slot       _frameEndSlot;
 
         protected:
             virtual
@@ -110,10 +110,10 @@ namespace minko
             addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr parent);
 
             void
-            componentAddedHandler(NodePtr node, NodePtr    target, AbsCmpPtr component);
+            componentAddedHandler(NodePtr node, NodePtr target, AbsCmpPtr component);
 
             void
-            componentRemovedHandler(NodePtr    node, NodePtr target, AbsCmpPtr    component);
+            componentRemovedHandler(NodePtr node, NodePtr target, AbsCmpPtr component);
 
             void
             frameBeginHandler(std::shared_ptr<SceneManager> sceneManager, float, float);

@@ -84,11 +84,11 @@ namespace minko
             }
 
         private:
-            Worker*                                        _that;
-            std::string                                    _messageType;
-            std::queue<Message>                            _messages;
-            std::shared_ptr<Signal<Ptr, Message>>        _message;
-            int                                            _handle;
+            Worker*                                     _that;
+            std::string                                 _messageType;
+            std::queue<Message>                         _messages;
+            std::shared_ptr<Signal<Ptr, Message>>       _message;
+            int                                         _handle;
 
             static
             void

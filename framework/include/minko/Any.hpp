@@ -35,193 +35,196 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-  template <typename T>
-  struct RemoveReference
-  {
-    typedef T Type;
-  };
-
-  template <typename T>
-  struct RemoveReference<T&>
-  {
-    typedef T Type;
-  };
-
-  class Any
-  {
-  public:
-    Any() :
-      _content(0)
+    template <typename T>
+    struct RemoveReference
     {
-    }
-
-    template <typename ValueType>
-    Any(const ValueType & value) :
-      _content(new Holder<ValueType>(value))
-    {
-    }
-
-    Any(const Any& other) :
-      _content(other._content ? other._content->clone() : 0)
-    {
-    }
-
-    ~Any()
-    {
-      delete _content;
-    }
-
-    Any&
-    swap(Any& rhs)
-    {
-      std::swap(_content, rhs._content);
-      return *this;
-    }
-
-    template <typename ValueType>
-    Any&
-    operator=(const ValueType& rhs)
-    {
-        Any(rhs).swap(*this);
-        return *this;
-    }
-
-    Any&
-    operator=(Any rhs)
-    {
-      rhs.swap(*this);
-      return *this;
-    }
-
-    bool
-    empty() const
-    {
-      return !_content;
-    }
-
-    const std::type_info&
-    type() const
-    {
-      return _content ? _content->type() : typeid(void);
-    }
-
-    template <typename ValueType>
-    static ValueType*
-    cast(Any* operand)
-    {
-      return operand && operand->type() == typeid(ValueType) ?
-        &static_cast<Any::Holder<ValueType> *>(operand->_content)->_held : 0;
-    }
-
-    template <typename ValueType>
-    static ValueType*
-    unsafe_cast(Any* operand)
-    {
-      return operand ? &static_cast<Any::Holder<ValueType> *>(operand->_content)->_held : 0;
-    }
-
-    template <typename ValueType>
-    static inline const ValueType*
-    cast(const Any* operand)
-    {
-      return Any::cast<ValueType>(const_cast<Any*>(operand));
-    }
-
-    template <typename ValueType>
-    static inline const ValueType*
-    unsafe_cast(const Any* operand)
-    {
-      return Any::unsafe_cast<ValueType>(const_cast<Any*>(operand));
-    }
-
-    template <typename ValueType>
-    static ValueType
-    cast(Any& operand)
-    {
-      typedef typename RemoveReference<ValueType>::Type NonRef;
-
-      NonRef* result = cast<NonRef>(&operand);
-
-      if (!result)
-          throw std::bad_cast();
-
-      return *result;
-    }
-
-    template <typename ValueType>
-    static ValueType
-    unsafe_cast(Any& operand)
-    {
-      typedef typename RemoveReference<ValueType>::Type NonRef;
-
-      NonRef* result = unsafe_cast<NonRef>(&operand);
-
-      if (!result)
-          throw std::bad_cast();
-
-      return *result;
-    }
-
-    template <typename ValueType>
-    static inline ValueType
-    cast(const Any& operand)
-    {
-      typedef typename RemoveReference<ValueType>::Type NonRef;
-
-      return cast<const NonRef&>(const_cast<Any&>(operand));
-    }
-
-    template <typename ValueType>
-    static inline ValueType
-    unsafe_cast(const Any& operand)
-    {
-      typedef typename RemoveReference<ValueType>::Type NonRef;
-
-      return unsafe_cast<const NonRef&>(const_cast<Any&>(operand));
-    }
-
-    class Placeholder
-    {
-    public:
-      virtual ~Placeholder()
-      {
-      }
-
-    public:
-      virtual const std::type_info& type() const = 0;
-
-      virtual Placeholder* clone() const = 0;
+        typedef T Type;
     };
 
-    template <typename ValueType>
-    class Holder : public Placeholder
+    template <typename T>
+    struct RemoveReference<T&>
     {
-    public:
-      Holder(const ValueType & value) :
-        _held(value)
-      {
-      }
-
-      virtual const std::type_info&
-      type() const
-      {
-        return typeid(ValueType);
-      }
-
-      virtual Placeholder*
-      clone() const
-      {
-        return new Holder(_held);
-      }
-
-    public:
-      ValueType _held;
-
-    private:
-      // Intentionally left unimplemented.
-      Holder& operator=(const Holder &);
+        typedef T Type;
     };
 
-    Placeholder* _content;
-  };
+    class Any
+    {
+    public:
+        Any() :
+            _content(0)
+        {
+        }
+
+        template <typename ValueType>
+        Any(const ValueType & value) :
+            _content(new Holder<ValueType>(value))
+        {
+        }
+
+        Any(const Any& other) :
+            _content(other._content ? other._content->clone() : 0)
+        {
+        }
+
+        ~Any()
+        {
+            delete _content;
+        }
+
+        Any&
+        swap(Any& rhs)
+        {
+            std::swap(_content, rhs._content);
+            return *this;
+        }
+
+        template <typename ValueType>
+        Any&
+        operator=(const ValueType& rhs)
+        {
+            Any(rhs).swap(*this);
+            return *this;
+        }
+
+        Any&
+        operator=(Any rhs)
+        {
+            rhs.swap(*this);
+            return *this;
+        }
+
+        bool
+        empty() const
+        {
+            return !_content;
+        }
+
+        const std::type_info&
+        type() const
+        {
+            return _content ? _content->type() : typeid(void);
+        }
+
+        template <typename ValueType>
+        static ValueType*
+        cast(Any* operand)
+        {
+            return operand && operand->type() == typeid(ValueType) ?
+                &static_cast<Any::Holder<ValueType> *>(operand->_content)->_held : 0;
+        }
+
+        template <typename ValueType>
+        static ValueType*
+        unsafe_cast(Any* operand)
+        {
+            return operand ? &static_cast<Any::Holder<ValueType> *>(operand->_content)->_held : 0;
+        }
+
+        template <typename ValueType>
+        static inline const ValueType*
+        cast(const Any* operand)
+        {
+            return Any::cast<ValueType>(const_cast<Any*>(operand));
+        }
+
+        template <typename ValueType>
+        static inline const ValueType*
+        unsafe_cast(const Any* operand)
+        {
+            return Any::unsafe_cast<ValueType>(const_cast<Any*>(operand));
+        }
+
+        template <typename ValueType>
+        static ValueType
+        cast(Any& operand)
+        {
+            typedef typename RemoveReference<ValueType>::Type NonRef;
+
+            NonRef* result = cast<NonRef>(&operand);
+
+            if (!result)
+                throw std::bad_cast();
+
+            return *result;
+        }
+
+        template <typename ValueType>
+        static ValueType
+        unsafe_cast(Any& operand)
+        {
+            typedef typename RemoveReference<ValueType>::Type NonRef;
+
+            NonRef* result = unsafe_cast<NonRef>(&operand);
+
+            if (!result)
+                throw std::bad_cast();
+
+            return *result;
+        }
+
+        template <typename ValueType>
+        static inline ValueType
+        cast(const Any& operand)
+        {
+            typedef typename RemoveReference<ValueType>::Type NonRef;
+
+            return cast<const NonRef&>(const_cast<Any&>(operand));
+        }
+
+        template <typename ValueType>
+        static inline ValueType
+        unsafe_cast(const Any& operand)
+        {
+            typedef typename RemoveReference<ValueType>::Type NonRef;
+
+            return unsafe_cast<const NonRef&>(const_cast<Any&>(operand));
+        }
+
+        class Placeholder
+        {
+        public:
+            virtual ~Placeholder()
+            {
+            }
+
+        public:
+            virtual const std::type_info&
+            type() const = 0;
+
+            virtual Placeholder*
+            clone() const = 0;
+        };
+
+        template <typename ValueType>
+        class Holder :
+            public Placeholder
+        {
+        public:
+            Holder(const ValueType & value) :
+                _held(value)
+            {
+            }
+
+            virtual const std::type_info&
+            type() const
+            {
+                return typeid(ValueType);
+            }
+
+            virtual Placeholder*
+            clone() const
+            {
+                return new Holder(_held);
+            }
+
+        public:
+            ValueType _held;
+
+        private:
+            // Intentionally left unimplemented.
+            Holder& operator=(const Holder &);
+        };
+
+        Placeholder* _content;
+    };
 }

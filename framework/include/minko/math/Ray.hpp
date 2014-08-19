@@ -30,14 +30,14 @@ namespace minko
         class Ray
         {
         public:
-            typedef std::shared_ptr<Ray>    Ptr;
+            typedef std::shared_ptr<Ray>        Ptr;
 
         private:
             typedef std::shared_ptr<Vector3>    Vector3Ptr;
 
         private:
-            Vector3Ptr    _origin;
-            Vector3Ptr    _direction;
+            Vector3Ptr                          _origin;
+            Vector3Ptr                          _direction;
 
         public:
             inline static

@@ -441,7 +441,8 @@ namespace minko
                              unsigned int height);
 
             void
-            getShaderSource(unsigned int shader, std::string&);
+            getShaderSource(unsigned int    shader,
+                            std::string&    output);
 
             inline
             void

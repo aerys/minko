@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-//#include "minko/component/AbstractRootDataComponent.hpp"
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/data/Container.hpp"
@@ -35,19 +34,19 @@ namespace minko
             public AbstractComponent
         {
         public:
-            typedef std::shared_ptr<PerspectiveCamera> Ptr;
+            typedef std::shared_ptr<PerspectiveCamera>      Ptr;
 
         private:
-            typedef std::shared_ptr<AbstractComponent>    AbsCtrlPtr;
-            typedef std::shared_ptr<scene::Node>        NodePtr;
-            typedef std::shared_ptr<scene::NodeSet>     NodeSetPtr;
+            typedef std::shared_ptr<AbstractComponent>      AbsCtrlPtr;
+            typedef std::shared_ptr<scene::Node>            NodePtr;
+            typedef std::shared_ptr<scene::NodeSet>         NodeSetPtr;
 
         private:
             std::shared_ptr<data::StructureProvider>        _data;
-            float                                            _fov;
-            float                                            _aspectRatio;
-            float                                            _zNear;
-            float                                            _zFar;
+            float                                           _fov;
+            float                                           _aspectRatio;
+            float                                           _zNear;
+            float                                           _zFar;
 
             std::shared_ptr<math::Matrix4x4>                _view;
             std::shared_ptr<math::Matrix4x4>                _projection;
@@ -56,17 +55,17 @@ namespace minko
 
             std::shared_ptr<math::Matrix4x4>                _postProjection;
 
-            Signal<AbsCtrlPtr, NodePtr>::Slot                _targetAddedSlot;
-            Signal<AbsCtrlPtr, NodePtr>::Slot                _targetRemovedSlot;
+            Signal<AbsCtrlPtr, NodePtr>::Slot               _targetAddedSlot;
+            Signal<AbsCtrlPtr, NodePtr>::Slot               _targetRemovedSlot;
             data::Container::PropertyChangedSignal::Slot    _modelToWorldChangedSlot;
 
         public:
             inline static
             Ptr
             create(float aspectRatio,
-                   float fov    = .785f,
-                   float zNear    = 0.1f,
-                   float zFar    = 1000.f)
+                   float fov            = .785f,
+                   float zNear          = 0.1f,
+                   float zFar           = 1000.f)
             {
                 auto ctrl  = std::shared_ptr<PerspectiveCamera>(new PerspectiveCamera(fov, aspectRatio, zNear, zFar));
 
@@ -197,7 +196,7 @@ namespace minko
                               float                                aspectRatio,
                               float                                zNear,
                               float                                zFar,
-                              std::shared_ptr<math::Matrix4x4>    postPerspective = nullptr);
+                              std::shared_ptr<math::Matrix4x4>     postPerspective = nullptr);
 
 			PerspectiveCamera(const PerspectiveCamera& camera, const CloneOption& option);
 
@@ -206,7 +205,7 @@ namespace minko
 
             void
             localToWorldChangedHandler(std::shared_ptr<data::Container> data,
-                                       const std::string&                propertyName);
+                                       const std::string&               propertyName);
 
             void
             updateMatrices(std::shared_ptr<math::Matrix4x4> modelToWorldMatrix);

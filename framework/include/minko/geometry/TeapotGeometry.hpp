@@ -46,7 +46,7 @@ namespace minko
             }
 
         private:
-            static const uint    _patches[32][16];
+            static const uint     _patches[32][16];
             static const float    _points[306][3];
 
         private:
@@ -62,7 +62,7 @@ namespace minko
             genPatchIndices(const uint offset, const uint divs, std::vector<unsigned short>& indices);
 
             void
-            bernstein(float                    u,
+            bernstein(float                  u,
                       std::vector<float>&    p0,
                       std::vector<float>&    p1,
                       std::vector<float>&    p2,

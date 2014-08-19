@@ -48,20 +48,20 @@ namespace minko
             };
 
         private:
-            std::vector<std::vector<unsigned char>>    _data; // pixel RGBA data indexed by face index
-            uint                                    _faceWidth;    // power of two
+            std::vector<std::vector<unsigned char>> _data;       // pixel RGBA data indexed by face index
+            uint                                    _faceWidth;  // power of two
             uint                                    _faceHeight; // power of two
 
         public:
             inline static
             Ptr
-            create(AbstractContextPtr    context,
-                   unsigned int            width,
-                   unsigned int            height,
-                   bool                 mipMapping                  = false,
-                   bool                    optimizeForRenderToTexture    = false,
-                   bool                    resizeSmoothly                = true,
-                   const std::string&    filename                    = "")
+            create(AbstractContextPtr       context,
+                   unsigned int             width,
+                   unsigned int             height,
+                   bool                     mipMapping                  = false,
+                   bool                     optimizeForRenderToTexture  = false,
+                   bool                     resizeSmoothly              = true,
+                   const std::string&       filename                    = "")
             {
                 return std::shared_ptr<CubeTexture>(
                     new CubeTexture(
@@ -77,17 +77,13 @@ namespace minko
             }
 
             void
-            data(unsigned char*,
-                 TextureFormat    format        = TextureFormat::RGBA,
-                 int            widthGPU    = -1,
-                 int            heightGPU    = -1);
+            data(unsigned char*     data,
+                 TextureFormat      format      = TextureFormat::RGBA,
+                 int                widthGPU    = -1,
+                 int                heightGPU   = -1);
 
             void
             upload();
-
-            //void
-            //uploadMipLevel(uint    level,
-            //               unsigned char*);
 
             void
             dispose();
@@ -101,13 +97,13 @@ namespace minko
             }
 
         private:
-            CubeTexture(AbstractContextPtr    context,
+            CubeTexture(AbstractContextPtr  context,
                         unsigned int        width,
                         unsigned int        height,
                         bool                mipMapping,
                         bool                optimizeForRenderToTexture,
                         bool                resizeSmoothly,
-                        const std::string&    filename);
+                        const std::string&  filename);
         };
     }
 }

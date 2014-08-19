@@ -32,10 +32,10 @@ namespace minko
         class Mouse
         {
         public:
-            typedef std::shared_ptr<Mouse>    Ptr;
+            typedef std::shared_ptr<Mouse>  Ptr;
 
         protected:
-            std::shared_ptr<AbstractCanvas>    _canvas;
+            std::shared_ptr<AbstractCanvas> _canvas;
 
             uint                            _x;
             uint                            _y;
@@ -43,8 +43,8 @@ namespace minko
             bool                            _leftButtonIsDown;
             bool                            _rightButtonIsDown;
 
-            Signal<Ptr, int, int>::Ptr        _mouseMove;
-            Signal<Ptr, int, int>::Ptr        _mouseWheel;
+            Signal<Ptr, int, int>::Ptr      _mouseMove;
+            Signal<Ptr, int, int>::Ptr      _mouseWheel;
             Signal<Ptr>::Ptr                _mouseLeftButtonDown;
             Signal<Ptr>::Ptr                _mouseLeftButtonUp;
             Signal<Ptr>::Ptr                _mouseRightButtonDown;
@@ -52,7 +52,7 @@ namespace minko
             Signal<Ptr>::Ptr                _mouseMiddleButtonDown;
             Signal<Ptr>::Ptr                _mouseMiddleButtonUp;
 
-            std::list<Any>                    _slots;
+            std::list<Any>                  _slots;
 
         public:
             inline static

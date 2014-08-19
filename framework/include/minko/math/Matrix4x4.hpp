@@ -37,16 +37,16 @@ namespace minko
             friend component::Transform;
 
         public:
-            typedef std::shared_ptr<Matrix4x4>    Ptr;
+            typedef std::shared_ptr<Matrix4x4>      Ptr;
 
         private:
-            typedef std::shared_ptr<Vector3>    Vector3Ptr;
-            typedef std::shared_ptr<Quaternion>    QuaternionPtr;
+            typedef std::shared_ptr<Vector3>        Vector3Ptr;
+            typedef std::shared_ptr<Quaternion>     QuaternionPtr;
 
         private:
-            std::vector<float>    _m;
-            bool                _lock;
-            bool                _hasChanged;
+            std::vector<float>                      _m;
+            bool                                    _lock;
+            bool                                    _hasChanged;
 
         public:
             inline static

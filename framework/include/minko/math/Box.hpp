@@ -36,8 +36,8 @@ namespace minko
             typedef std::shared_ptr<Box>    Ptr;
 
         private:
-            std::shared_ptr<Vector3>    _topRight;
-            std::shared_ptr<Vector3>    _bottomLeft;
+            std::shared_ptr<Vector3>        _topRight;
+            std::shared_ptr<Vector3>        _bottomLeft;
 
         public:
             inline static

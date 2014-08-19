@@ -45,6 +45,7 @@ namespace minko
 
         public:
             typedef std::shared_ptr<Options>                                            Ptr;
+
             typedef std::function<MaterialPtr(const std::string&, MaterialPtr)>            MaterialFunction;
             typedef std::function<GeomPtr(const std::string&, GeomPtr)>                 GeometryFunction;
             typedef std::function<AbsProtocolPtr(const std::string&)>                    ProtocolFunction;

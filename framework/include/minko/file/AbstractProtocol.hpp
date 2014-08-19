@@ -32,15 +32,15 @@ namespace minko
             public std::enable_shared_from_this<AbstractProtocol>
         {
         public:
-            typedef std::shared_ptr<AbstractProtocol> Ptr;
+            typedef std::shared_ptr<AbstractProtocol>   Ptr;
 
         protected:
-            std::shared_ptr<File>               _file;
-            std::shared_ptr<Options>            _options;
+            std::shared_ptr<File>                       _file;
+            std::shared_ptr<Options>                    _options;
 
-            std::shared_ptr<Signal<Ptr, float>> _progress;
-            std::shared_ptr<Signal<Ptr>>        _complete;
-            std::shared_ptr<Signal<Ptr>>        _error;
+            std::shared_ptr<Signal<Ptr, float>>         _progress;
+            std::shared_ptr<Signal<Ptr>>                _complete;
+            std::shared_ptr<Signal<Ptr>>                _error;
 
         public:
             static Ptr

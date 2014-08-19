@@ -31,37 +31,37 @@ namespace minko
         {
 
         public:
-            typedef std::shared_ptr<Container>                                Ptr;
-            typedef Signal<Ptr, const std::string&>                            PropertyChangedSignal;
+            typedef std::shared_ptr<Container>                              Ptr;
+            typedef Signal<Ptr, const std::string&>                         PropertyChangedSignal;
 
         private:
-            typedef std::shared_ptr<PropertyChangedSignal>                    PropertyChangedSignalPtr;
+            typedef std::shared_ptr<PropertyChangedSignal>                  PropertyChangedSignalPtr;
 
-            typedef std::shared_ptr<Provider>                                ProviderPtr;
-            typedef std::shared_ptr<data::AbstractFilter>                    AbsFilterPtr;
-            typedef Signal<ProviderPtr, const std::string&>                    ProviderPropertyChangedSignal;
-            typedef ProviderPropertyChangedSignal::Slot                        ProviderPropertyChangedSlot;
+            typedef std::shared_ptr<Provider>                               ProviderPtr;
+            typedef std::shared_ptr<data::AbstractFilter>                   AbsFilterPtr;
+            typedef Signal<ProviderPtr, const std::string&>                 ProviderPropertyChangedSignal;
+            typedef ProviderPropertyChangedSignal::Slot                     ProviderPropertyChangedSlot;
 
-            std::list<ProviderPtr>                                            _providers;
+            std::list<ProviderPtr>                                          _providers;
             std::unordered_map<std::string, ProviderPtr>                    _propertyNameToProvider;
-            std::unordered_map<ProviderPtr, uint>                            _providersToNumUse;
-            std::unordered_map<ProviderPtr, uint>                            _providerToIndex;
+            std::unordered_map<ProviderPtr, uint>                           _providersToNumUse;
+            std::unordered_map<ProviderPtr, uint>                           _providerToIndex;
 
-            std::shared_ptr<Provider>                                        _arrayLengths;
+            std::shared_ptr<Provider>                                       _arrayLengths;
 
             PropertyChangedSignalPtr                                        _propertyAdded;
             PropertyChangedSignalPtr                                        _propertyRemoved;
-            std::unordered_map<std::string, PropertyChangedSignalPtr>        _propValueChanged;
-            std::unordered_map<std::string, PropertyChangedSignalPtr>        _propReferenceChanged;
+            std::unordered_map<std::string, PropertyChangedSignalPtr>       _propValueChanged;
+            std::unordered_map<std::string, PropertyChangedSignalPtr>       _propReferenceChanged;
 
-            std::unordered_map<ProviderPtr, std::list<Any>>                    _propertyAddedOrRemovedSlots;
+            std::unordered_map<ProviderPtr, std::list<Any>>                 _propertyAddedOrRemovedSlots;
             std::unordered_map<ProviderPtr, ProviderPropertyChangedSlot>    _providerValueChangedSlot;
             std::unordered_map<ProviderPtr, ProviderPropertyChangedSlot>    _providerReferenceChangedSlot;
 
-            Signal<Ptr, ProviderPtr>::Ptr                                    _providerAdded;
-            Signal<Ptr, ProviderPtr>::Ptr                                    _providerRemoved;
+            Signal<Ptr, ProviderPtr>::Ptr                                   _providerAdded;
+            Signal<Ptr, ProviderPtr>::Ptr                                   _providerRemoved;
 
-            static uint CONTAINER_ID;
+            static uint                                                     CONTAINER_ID;
 
 
         public:

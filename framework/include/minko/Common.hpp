@@ -486,4 +486,3 @@ namespace std
         }
     };
 }
-//using namespace minko;

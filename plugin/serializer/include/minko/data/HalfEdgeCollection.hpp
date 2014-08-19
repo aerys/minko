@@ -51,18 +51,17 @@ namespace minko
         class HalfEdgeCollection
         {
         private:
-            typedef std::shared_ptr<minko::render::IndexBuffer>                            IndexStreamPtr;
+            typedef std::shared_ptr<minko::render::IndexBuffer>                              IndexStreamPtr;
             typedef std::pair<unsigned short, unsigned short>                                PairOfShort;
             typedef std::shared_ptr<HalfEdge>                                                HalfEdgePtr;
-            typedef std::unordered_map<PairOfShort, HalfEdgePtr, pair_hash, pair_comparer>    HalfEdgeMap;
-            typedef std::list<HalfEdgePtr>                                                    HalfEdgeList;
+            typedef std::unordered_map<PairOfShort, HalfEdgePtr, pair_hash, pair_comparer>   HalfEdgeMap;
+            typedef std::list<HalfEdgePtr>                                                   HalfEdgeList;
 
-        private :
-            IndexStreamPtr                _indexStream;
+        private:
+            IndexStreamPtr                 _indexStream;
             std::list<HalfEdgeList>        _subMeshesList;
 
         public:
-
             inline static
             std::shared_ptr<HalfEdgeCollection>
             create(std::shared_ptr<minko::render::IndexBuffer> indexStream)

@@ -32,12 +32,12 @@ namespace minko
             public std::enable_shared_from_this<Node>
         {
         public:
-            typedef std::shared_ptr<Node>                            Ptr;
+            typedef std::shared_ptr<Node>                           Ptr;
 
         private:
 			typedef std::shared_ptr<component::AbstractComponent>	AbsCmpPtr;
 
-            static uint                                                _lastId;
+            static uint                                             _lastId;
             uint                                                    _id;
 
         protected:
@@ -46,20 +46,20 @@ namespace minko
 
         private:
             Ptr                                                     _root;
-            Ptr                                                        _parent;
+            Ptr                                                     _parent;
             std::shared_ptr<data::Container>                        _container;
-            std::shared_ptr<data::Provider>                            _data;
+            std::shared_ptr<data::Provider>                         _data;
 			std::list<AbsCmpPtr>									_components;
 
             uint                                                    _depth;
 
-            std::shared_ptr<Signal<Ptr, Ptr, Ptr>>                    _added;
-            std::shared_ptr<Signal<Ptr, Ptr, Ptr>>                    _removed;
-            std::shared_ptr<Signal<Ptr, Ptr>>                        _layoutsChanged;
+            std::shared_ptr<Signal<Ptr, Ptr, Ptr>>                  _added;
+            std::shared_ptr<Signal<Ptr, Ptr, Ptr>>                  _removed;
+            std::shared_ptr<Signal<Ptr, Ptr>>                       _layoutsChanged;
 			std::shared_ptr<Signal<Ptr, Ptr, AbsCmpPtr>>			_componentAdded;
 			std::shared_ptr<Signal<Ptr, Ptr, AbsCmpPtr>>			_componentRemoved;
 
-            std::string                                                _uuid;
+            std::string                                             _uuid;
 
         public:
 
@@ -120,7 +120,7 @@ namespace minko
 
 			void
 			rebindComponentsDependencies(std::map<AbsCmpPtr, AbsCmpPtr>& componentsMap, std::map<Node::Ptr, Node::Ptr> nodeMap, CloneOption option);
-			
+
             inline
             const std::string&
             name() const

@@ -28,11 +28,11 @@ namespace minko
         class AbstractResource
         {
         public:
-            typedef std::shared_ptr<AbstractResource> Ptr;
+            typedef std::shared_ptr<AbstractResource>   Ptr;
 
         protected:
             std::shared_ptr<render::AbstractContext>    _context;
-            int                                            _id;
+            int                                         _id;
 
         public:
             inline

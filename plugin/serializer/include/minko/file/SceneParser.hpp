@@ -34,19 +34,30 @@ namespace minko
         class SceneParser :
             public AbstractSerializerParser
         {
-
-
-        //typedef
         public:
-            typedef std::shared_ptr<SceneParser>                                                                                                                        Ptr;
-            typedef std::function<std::shared_ptr<component::AbstractComponent>(std::string&, std::shared_ptr<file::AssetLibrary>, std::shared_ptr<file::Dependency>)>    ComponentReadFunction;
-            typedef msgpack::type::tuple<std::string, uint, uint, std::vector<uint>, std::string>                                                                        SerializedNode;
-            typedef std::shared_ptr<AssetLibrary>                                                                                                                        AssetLibraryPtr;
+            typedef std::shared_ptr<SceneParser>        Ptr;
+
+            typedef std::function<
+                std::shared_ptr<component::AbstractComponent>
+                (
+                    std::string&,
+                    std::shared_ptr<file::AssetLibrary>,
+                    std::shared_ptr<file::Dependency>
+                )
+            >                                           ComponentReadFunction;
+            typedef msgpack::type::tuple<
+                std::string,
+                uint,
+                uint,
+                std::vector<uint>,
+                std::string
+            >                                           SerializedNode;
+
+            typedef std::shared_ptr<AssetLibrary>       AssetLibraryPtr;
 
         private:
-            static std::unordered_map<int8_t, ComponentReadFunction> _componentIdToReadFunction;
+            static std::unordered_map<int8_t, ComponentReadFunction>    _componentIdToReadFunction;
 
-            // methods
         public:
             inline static
             Ptr
@@ -64,15 +75,15 @@ namespace minko
             parse(const std::string&                filename,
                   const std::string&                resolvedFilename,
                   std::shared_ptr<Options>          options,
-                  const std::vector<unsigned char>&    data,
-                  AssetLibraryPtr                    assetLibrary);
+                  const std::vector<unsigned char>& data,
+                  AssetLibraryPtr                   assetLibrary);
 
         private:
             std::shared_ptr<scene::Node>
-            parseNode(std::vector<SerializedNode>&    nodePack,
-                      std::vector<std::string>&        componentPack,
-                      AssetLibraryPtr                assetLibrary,
-                      std::shared_ptr<Options>        options);
+            parseNode(std::vector<SerializedNode>&  nodePack,
+                      std::vector<std::string>&     componentPack,
+                      AssetLibraryPtr               assetLibrary,
+                      std::shared_ptr<Options>      options);
 
             SceneParser();
         };

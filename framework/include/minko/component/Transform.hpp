@@ -36,11 +36,11 @@ namespace minko
         {
 
         public:
-            typedef std::shared_ptr<Transform>    Ptr;
+            typedef std::shared_ptr<Transform>              Ptr;
 
         private:
             typedef std::shared_ptr<scene::Node>            NodePtr;
-            typedef std::shared_ptr<AbstractComponent>        AbsCtrlPtr;
+            typedef std::shared_ptr<AbstractComponent>      AbsCtrlPtr;
 
         private:
             std::shared_ptr<math::Matrix4x4>                _matrix;
@@ -48,8 +48,8 @@ namespace minko
             std::shared_ptr<math::Matrix4x4>                _worldToModel;
             std::shared_ptr<data::StructureProvider>        _data;
 
-            Signal<AbsCtrlPtr, NodePtr>::Slot                 _targetAddedSlot;
-            Signal<AbsCtrlPtr, NodePtr>::Slot                 _targetRemovedSlot;
+            Signal<AbsCtrlPtr, NodePtr>::Slot               _targetAddedSlot;
+            Signal<AbsCtrlPtr, NodePtr>::Slot               _targetRemovedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot         _addedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot         _removedSlot;
 
@@ -183,11 +183,13 @@ namespace minko
                 public AbstractComponent
             {
             public:
-                typedef std::shared_ptr<RootTransform> Ptr;
+                typedef std::shared_ptr<RootTransform>              Ptr;
 
             private:
-                typedef std::shared_ptr<Renderer>        RendererCtrlPtr;
-                typedef Signal<RendererCtrlPtr>::Slot     EnterFrameCallback;
+                typedef std::shared_ptr<Renderer>                   RendererCtrlPtr;
+                typedef std::shared_ptr<render::AbstractTexture>    AbsTexPtr;
+                typedef std::shared_ptr<SceneManager>               SceneMgrPtr;
+                typedef Signal<RendererCtrlPtr>::Slot               EnterFrameCallback;
 
             public:
                 inline static
@@ -208,18 +210,18 @@ namespace minko
                 forceUpdate(NodePtr node, bool updateTransformLists = false);
 
             private:
-                std::vector<std::shared_ptr<math::Matrix4x4>>    _transforms;
-                std::vector<std::shared_ptr<math::Matrix4x4>>    _modelToWorld;
+                std::vector<std::shared_ptr<math::Matrix4x4>>   _transforms;
+                std::vector<std::shared_ptr<math::Matrix4x4>>   _modelToWorld;
 
-                std::map<NodePtr, unsigned int>                    _nodeToId;
+                std::map<NodePtr, unsigned int>                 _nodeToId;
                 std::vector<NodePtr>                            _idToNode;
-                std::vector<int>                                 _parentId;
-                std::vector<unsigned int>                         _firstChildId;
-                std::vector<unsigned int>                        _numChildren;
+                std::vector<int>                                _parentId;
+                std::vector<unsigned int>                       _firstChildId;
+                std::vector<unsigned int>                       _numChildren;
                 bool                                            _invalidLists;
 
-                std::list<Any>                                    _targetSlots;
-                Signal<std::shared_ptr<SceneManager>, uint, std::shared_ptr<render::AbstractTexture>>::Slot        _renderingBeginSlot;
+                std::list<Any>                                  _targetSlots;
+                Signal<SceneMgrPtr, uint, AbsTexPtr>::Slot      _renderingBeginSlot;
 
             private:
                 void
@@ -235,7 +237,7 @@ namespace minko
                 componentRemovedHandler(NodePtr node, NodePtr target, AbsCtrlPtr ctrl);
 
                 void
-                componentAddedHandler(NodePtr node, NodePtr target, AbsCtrlPtr    ctrl);
+                componentAddedHandler(NodePtr node, NodePtr target, AbsCtrlPtr ctrl);
 
                 void
                 removedHandler(NodePtr node, NodePtr target, NodePtr parent);
@@ -253,9 +255,9 @@ namespace minko
                 updateTransformPath(const std::vector<unsigned int>& path);
 
                 void
-                renderingBeginHandler(std::shared_ptr<SceneManager> sceneManager,
-                                      uint                            frameId,
-                                      std::shared_ptr<render::AbstractTexture>);
+                renderingBeginHandler(std::shared_ptr<SceneManager>             sceneManager,
+                                      uint                                      frameId,
+                                      std::shared_ptr<render::AbstractTexture>  abstractTexture);
 
                 static
                 void

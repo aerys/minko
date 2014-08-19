@@ -475,17 +475,9 @@ DrawCall::bindUniform(const std::string&    inputName,
 
         if (_referenceChangedSlots.count(propertyName) == 0)
         {
-#if defined(EMSCRIPTEN)
-            // See issue #1848 in Emscripten: https://github.com/kripken/emscripten/issues/1848
-            auto that = shared_from_this();
-            _referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect([&, that, type, location](Container::Ptr, const std::string&) {
-                that->bindUniform(inputName, type, location);
-            }));
-#else
             _referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect(std::bind(
                 &DrawCall::bindUniform, shared_from_this(), inputName, type, location
             )));
-#endif
         }
     }
 }

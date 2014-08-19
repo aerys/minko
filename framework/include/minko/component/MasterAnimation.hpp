@@ -33,7 +33,7 @@ namespace minko
 			public AbstractAnimation
 		{
 		public:
-			typedef std::shared_ptr<MasterAnimation>	Ptr;
+			typedef std::shared_ptr<MasterAnimation>		Ptr;
 
 		private:
 			typedef std::shared_ptr<Animation>				AnimationPtr;

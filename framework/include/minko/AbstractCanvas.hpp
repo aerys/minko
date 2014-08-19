@@ -28,7 +28,7 @@ namespace minko
     class AbstractCanvas
     {
     public:
-        typedef std::shared_ptr<AbstractCanvas>                        Ptr;
+        typedef std::shared_ptr<AbstractCanvas>                     Ptr;
         typedef std::function<std::shared_ptr<async::Worker> ()>    WorkerHandler;
 
     public:
@@ -148,6 +148,6 @@ namespace minko
         std::unordered_map<std::string, WorkerHandler>        _workers;
 
         static
-        std::shared_ptr<AbstractCanvas>                        _defaultCanvas;
+        std::shared_ptr<AbstractCanvas>                       _defaultCanvas;
     };
 }

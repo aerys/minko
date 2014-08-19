@@ -190,6 +190,7 @@ minko.project.application = function(name)
 			minko.action.copy("asset"),
 		}
 
+	if premake.tools.gcc.tools.emscripten then
 	configuration { "html5", "release" }
 		local emcc = premake.tools.gcc.tools.emscripten.cc
 		local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O2'
@@ -253,6 +254,7 @@ minko.project.application = function(name)
 		libdirs {
 			minko.sdk.path("/framework/bin/html5/debug")
 		}
+	end
 
 	configuration { "ios" }
 
@@ -334,13 +336,15 @@ minko.project.worker = function(name)
 
 	removelinks { "minko-framework" }
 
+	if premake.tools.gcc.tools.emscripten then
 	configuration { "html5" }
 		local emcc = premake.tools.gcc.tools.emscripten.cc
 
 		postbuildcommands {
 			emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.js -O2 --closure 1 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 -s EXPORTED_FUNCTIONS="[\'minkoWorkerEntryPoint\']" || ' .. minko.action.fail()
 		}
-
+	end
+	
 	configuration { }
 end
 

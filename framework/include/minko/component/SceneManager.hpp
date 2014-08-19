@@ -32,29 +32,29 @@ namespace minko
             public AbstractComponent
         {
         public:
-            typedef std::shared_ptr<SceneManager> Ptr;
+            typedef std::shared_ptr<SceneManager>               Ptr;
 
         private:
             typedef std::shared_ptr<scene::Node>                NodePtr;
             typedef std::shared_ptr<render::AbstractTexture>    AbsTexturePtr;
 
         private:
-            uint                                            _frameId;
-            float                                           _time;
-            std::shared_ptr<file::AssetLibrary>             _assets;
+            uint                                                _frameId;
+            float                                               _time;
+            std::shared_ptr<file::AssetLibrary>                 _assets;
 
-            Signal<Ptr, float, float>::Ptr                  _frameBegin;
-            Signal<Ptr, float, float>::Ptr                  _frameEnd;
-            Signal<Ptr>::Ptr                                _cullBegin;
-            Signal<Ptr>::Ptr                                _cullEnd;
-            Signal<Ptr, uint, AbsTexturePtr>::Ptr           _renderBegin;
-            Signal<Ptr, uint, AbsTexturePtr>::Ptr           _renderEnd;
+            Signal<Ptr, float, float>::Ptr                      _frameBegin;
+            Signal<Ptr, float, float>::Ptr                      _frameEnd;
+            Signal<Ptr>::Ptr                                    _cullBegin;
+            Signal<Ptr>::Ptr                                    _cullEnd;
+            Signal<Ptr, uint, AbsTexturePtr>::Ptr               _renderBegin;
+            Signal<Ptr, uint, AbsTexturePtr>::Ptr               _renderEnd;
 
-            std::shared_ptr<data::StructureProvider>        _data;
+            std::shared_ptr<data::StructureProvider>            _data;
 
-            Signal<AbstractComponent::Ptr, NodePtr>::Slot   _targetAddedSlot;
-            Signal<AbstractComponent::Ptr, NodePtr>::Slot   _targetRemovedSlot;
-            Signal<NodePtr, NodePtr, NodePtr>::Slot         _addedSlot;
+            Signal<AbstractComponent::Ptr, NodePtr>::Slot       _targetAddedSlot;
+            Signal<AbstractComponent::Ptr, NodePtr>::Slot       _targetRemovedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot             _addedSlot;
 
         public:
             inline static

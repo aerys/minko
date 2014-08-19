@@ -80,13 +80,13 @@ namespace minko
             NodePtr                                                 _skeletonRoot;
             bool                                                    _moveTargetBelowRoot;
 
-            render::VertexBuffer::Ptr                                _boneVertexBuffer; // vertex buffer storing vertex attributes
+            render::VertexBuffer::Ptr                               _boneVertexBuffer;      // vertex buffer storing vertex attributes
 
-            std::unordered_map<NodePtr, GeometryPtr>                 _targetGeometry;
-            std::unordered_map<NodePtr,    std::vector<float>>       _targetInputPositions;    // only for software skinning
-            std::unordered_map<NodePtr,    std::vector<float>>       _targetInputNormals;    // only for software skinning
+            std::unordered_map<NodePtr, GeometryPtr>                _targetGeometry;
+            std::unordered_map<NodePtr,    std::vector<float>>      _targetInputPositions;  // only for software skinning
+            std::unordered_map<NodePtr,    std::vector<float>>      _targetInputNormals;    // only for software skinning
 
-            TargetAddedOrRemovedSignal::Slot                         _targetAddedSlot;
+            TargetAddedOrRemovedSignal::Slot                        _targetAddedSlot;
 
         public:
             inline static
@@ -95,8 +95,8 @@ namespace minko
                    SkinningMethod                          method,
                    AbstractContextPtr                      context,
                    NodePtr                                 skeletonRoot,
-                   bool                                    moveTargetBelowRoot = false,
-                   bool                                    isLooping = true)
+                   bool                                    moveTargetBelowRoot  = false,
+                   bool                                    isLooping            = true)
             {
 				Ptr ptr(new Skinning(skin, method, context, skeletonRoot, moveTargetBelowRoot, isLooping));
 
@@ -116,8 +116,8 @@ namespace minko
                      bool,
                      bool);
 
-			Skinning(const Skinning& skinning,
-				const CloneOption& option);
+			Skinning(const Skinning&     skinning,
+	                 const CloneOption&  option);
 
             void
             initialize();

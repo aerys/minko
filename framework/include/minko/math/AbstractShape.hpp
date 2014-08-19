@@ -33,22 +33,22 @@ namespace minko
         {
             AROUND    = -2,
             INSIDE    = -1,
-            LEFT    = 0,
-            TOP        = 1,
-            RIGHT    = 2,
+            LEFT      = 0,
+            TOP       = 1,
+            RIGHT     = 2,
             BOTTOM    = 3,
-            NEAR    = 4,
-            FAR        = 5
+            NEAR      = 4,
+            FAR       = 5
         };
 
         enum class PlanePosition
         {
-            LEFT    = 0,
-            TOP        = 1,
-            RIGHT    = 2,
+            LEFT      = 0,
+            TOP       = 1,
+            RIGHT     = 2,
             BOTTOM    = 3,
-            NEAR    = 4,
-            FAR        = 5
+            NEAR      = 4,
+            FAR       = 5
         };
     }
 }
