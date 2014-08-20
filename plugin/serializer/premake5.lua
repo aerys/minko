@@ -10,11 +10,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"**.cpp",
 		"**.c",
 		"include/**.hpp",
-		"lib/msgpack-c/include/**.hpp",
-		"lib/dds-loader/**.h",
-		"lib/dds-loader/**.cpp",
-		"lib/squish/**.h",
-		"lib/squish/**.cpp"
+		"lib/msgpack-c/include/**.hpp"
 	}
 
 	includedirs {
@@ -22,8 +18,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"src",
 		"lib/msgpack-c/include",
 		"lib/msgpack-c/src",
-		"lib/dds-loader",
-		"lib/squish"
+		"lib/PVRTexTool/Include"
 	}
 
 	configuration { "windows" }
@@ -34,7 +29,8 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"_CRT_SECURE_NO_DEPRECATE",
 			"__STDC_VERSION__=199901L",
 			"__STDC__",
-			"WIN32"
+			"WIN32",
+			"_WINDLL_IMPORT"
 		}
 		buildoptions {
 			"/wd4028",

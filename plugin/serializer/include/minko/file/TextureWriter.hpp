@@ -89,6 +89,12 @@ namespace minko
             writeRGBDXT1Texture(AbstractTexturePtr abstractTexture,
                                 WriterOptionsPtr writerOptions,
                                 std::stringstream& blob);
+
+            static
+            bool
+            writeRGBAPVRTC1Texture(AbstractTexturePtr abstractTexture,
+                                   WriterOptionsPtr writerOptions,
+                                   std::stringstream& blob);
         };
     }
 }

@@ -12,6 +12,46 @@ function minko.plugin.serializer:enable()
 	}
 	defines { "MINKO_PLUGIN_SERIALIZER" }
 
+	configuration { "windows32" }
+		links { "PVRTexLib" }
+		libdirs { minko.plugin.path("serializer") .. "/lib/PVRTexTool/Windows_x86_32/Dynamic" }
+	
+		prelinkcommands {
+			minko.action.copy(minko.plugin.path("serializer") .. "/lib/PVRTexTool/Windows_x86_32/Dynamic/*.dll")
+		}
+
+	configuration { "windows64" }
+		links { "PVRTexLib" }
+		libdirs { minko.plugin.path("serializer") .. "/lib/PVRTexTool/Windows_x86_64/Dynamic" }
+	
+		prelinkcommands {
+			minko.action.copy(minko.plugin.path("serializer") .. "/lib/PVRTexTool/Windows_x86_64/Dynamic/*.dll")
+		}
+
+	configuration { "linux32" }
+		links { "PVRTexLib" }
+		libdirs { minko.plugin.path("serializer") .. "/lib/PVRTexTool/Linux_x86_32/Dynamic" }
+	
+		prelinkcommands {
+			minko.action.copy(minko.plugin.path("serializer") .. "/lib/PVRTexTool/Linux_x86_32/Dynamic/*.so")
+		}
+
+	configuration { "linux64" }
+		links { "PVRTexLib" }
+		libdirs { minko.plugin.path("serializer") .. "/lib/PVRTexTool/Linux_x86_64/Dynamic" }
+	
+		prelinkcommands {
+			minko.action.copy(minko.plugin.path("serializer") .. "/lib/PVRTexTool/Linux_x86_64/Dynamic/*.so")
+		}
+
+	configuration { "osx" }
+		links { "PVRTexLib" }
+		libdirs { minko.plugin.path("serializer") .. "/lib/PVRTexTool/OSX_x86/Dynamic" }
+	
+		prelinkcommands {
+			minko.action.copy(minko.plugin.path("serializer") .. "/lib/PVRTexTool/OSX_x86/Dynamic/*.dylib")
+		}
+
 	configuration { "linux" }
 		buildoptions {
 			"-Wno-deprecated-declarations"

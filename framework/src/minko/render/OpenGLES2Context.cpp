@@ -1734,6 +1734,19 @@ OpenGLES2Context::availableTextureFormats(std::unordered_map<TextureFormat, unsi
             formats.insert(std::make_pair(TextureFormat::RGBA_DXT5, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT));
             break;
 # endif
+#elif MINKO_PLATFORM == MINKO_PLATFORM_IOS
+        case COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
+            formats.insert(std::make_pair(TextureFormat::RGB_PVRTC1, COMPRESSED_RGB_PVRTC_2BPPV1_IMG));
+            break;
+        case COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
+            formats.insert(std::make_pair(TextureFormat::RGBA_PVRTC1, COMPRESSED_RGBA_PVRTC_2BPPV1_IMG));
+            break;
+        case COMPRESSED_RGB_PVRTC_2BPPV2_IMG:
+            formats.insert(std::make_pair(TextureFormat::RGB_PVRTC2, COMPRESSED_RGB_PVRTC_2BPPV2_IMG));
+            break;
+        case COMPRESSED_RGBA_PVRTC_2BPPV2_IMG:
+            formats.insert(std::make_pair(TextureFormat::RGBA_PVRTC2, COMPRESSED_RGBA_PVRTC_2BPPV2_IMG));
+            break;
 #endif
         default:
             break;
