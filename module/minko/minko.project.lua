@@ -207,7 +207,7 @@ minko.project.application = function(name)
 		-- treat undefined symbol warnings as errors
 		cmd = cmd .. ' -s ERROR_ON_UNDEFINED_SYMBOLS=1'
 		-- disable exception catching
-		cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=0'
+		--cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=0'
 		--[[
 			optimize (very) long functions by breaking them into smaller ones
 
@@ -231,7 +231,7 @@ minko.project.application = function(name)
 		postbuildcommands {
 			cmd .. ' || ' .. minko.action.fail(),
 			-- fix the "invalid increment operand" syntax error caused by ++0 in the output file
-			'python "' .. minko.sdk.path('/module/emscripten/fix_invalid_increment_operand.py') .. '"  ${TARGETDIR}/' .. name .. '.js'
+			--'python "' .. minko.sdk.path('/module/emscripten/fix_invalid_increment_operand.py') .. '"  ${TARGETDIR}/' .. name .. '.js'
 		}
 
 		libdirs {
@@ -255,7 +255,7 @@ minko.project.application = function(name)
 		postbuildcommands {
 			cmd .. ' || ' .. minko.action.fail(),
 			-- fix the "invalid increment operand" syntax error caused by ++0 in the output file
-			'python "' .. minko.sdk.path('/module/emscripten/fix_invalid_increment_operand.py') .. '"  ${TARGETDIR}/' .. name .. '.js'
+			--'python "' .. minko.sdk.path('/module/emscripten/fix_invalid_increment_operand.py') .. '"  ${TARGETDIR}/' .. name .. '.js'
 		}
 
 		libdirs {
