@@ -30,7 +30,7 @@ void main(void)
 			uv += uUVOffset;
 		#endif
 
-		vertexUV = uv;
+		vVertexUV = uv;
 	#endif
 
 	#ifdef DIFFUSE_CUBEMAP
