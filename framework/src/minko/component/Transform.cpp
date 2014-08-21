@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -29,14 +29,17 @@ using namespace minko::component;
 
 Transform::Transform() :
 	minko::component::AbstractComponent(),
-	_matrix(1.),
-	_modelToWorld(1.),
+	_matrix(nullptr),
+    _modelToWorld(nullptr),
 //	_worldToModel(1.),
 	_data(data::Provider::create())
 {
 	_data
-		->set<math::mat4>("matrix", 				_matrix)
-		->set<math::mat4>("modelToWorldMatrix", 	_modelToWorld);
+		->set<math::mat4>("matrix", 			math::mat4(1.f))
+        ->set<math::mat4>("modelToWorldMatrix", math::mat4(1.f));
+
+    _matrix = _data->getUnsafePointer<math::mat4>("matrix");
+    _modelToWorld = _data->getUnsafePointer<math::mat4>("modelToWorldMatrix");
 }
 
 void
@@ -236,7 +239,7 @@ Transform::RootTransform::updateTransformsList()
     for (const auto& toRemove : _toRemove)
         _nodeToId.erase(toRemove);
     _nodes.clear();
-    _nodes.reserve(_nodeToId.size() + _toAdd.size());
+    //_nodes.reserve(_nodeToId.size() + _toAdd.size());
     for (const auto& nodeAndId : _nodeToId)
         _nodes.push_back(nodeAndId.first);
     for (const auto& node : _toAdd)
@@ -244,47 +247,23 @@ Transform::RootTransform::updateTransformsList()
     _toAdd.clear();
     _toRemove.clear();
 
-    juxtaposeSiblings(_nodes); // make sure siblings are at contiguous positions in the vector
-
-    //_nodeToId.clear();
-    _matrix.clear();
-    _modelToWorld.clear();
-    _parentId.clear();
-    _firstChildId.clear();
-    _numChildren.clear();
-    _dirty.clear();
     _matrix.resize(_nodes.size());
     _modelToWorld.resize(_nodes.size());
-    _parentId.resize(_nodes.size(), -1);
-    _firstChildId.resize(_nodes.size(), -1);
     _numChildren.resize(_nodes.size(), -1);
     _dirty.resize(_nodes.size(), true);
+    _parentId.resize(_nodes.size(), -1);
+
+    _firstChildId.clear();
+    _firstChildId.resize(_nodes.size(), -1);
+
+    sortNodes();
 
     auto nodeId = 0;
     for (const auto& node : _nodes)
 	{
-		auto transform	= node->component<Transform>();
-		auto ancestor	= node->parent();
-
-		while (ancestor != nullptr && _nodeToId.count(ancestor) == 0)
-			ancestor = ancestor->parent();
-
 		_nodeToId[node] = nodeId;
-		_matrix[nodeId] = &transform->_matrix;
+        _matrix[nodeId] = node->data().getPointer<math::mat4>("matrix");
 		_modelToWorld[nodeId] = node->data().getUnsafePointer<math::mat4>("modelToWorldMatrix");
-        _dirty[nodeId] = true;
-		
-		if (ancestor)
-		{
-			assert(_nodeToId.count(ancestor) > 0);
-			auto ancestorId = _nodeToId[ancestor];
-
-			_parentId[nodeId]	= ancestorId;
-
-			if (_numChildren[ancestorId] == 0)
-				_firstChildId[ancestorId] = nodeId;
-			++_numChildren[ancestorId];
-		}
 
         ++nodeId;
 	}
@@ -292,16 +271,13 @@ Transform::RootTransform::updateTransformsList()
 	_invalidLists = false;
 }
 
-/*static*/
 void
-Transform::RootTransform::juxtaposeSiblings(std::vector<NodePtr>& nodes)
+Transform::RootTransform::sortNodes()
 {
 	// assumes 'nodes' is the result of a breadth-first search from the nodes
-	std::unordered_map<scene::Node::Ptr, unsigned int>	firstChild;
-
-	for (unsigned int nodeId = 0; nodeId < nodes.size(); ++nodeId)
+	for (unsigned int nodeId = 0; nodeId < _nodes.size(); ++nodeId)
 	{
-		auto it = std::next(nodes.begin(), nodeId);
+		auto it = std::next(_nodes.begin(), nodeId);
 		auto node = *it;
         auto ancestor = node->parent();
 
@@ -309,16 +285,49 @@ Transform::RootTransform::juxtaposeSiblings(std::vector<NodePtr>& nodes)
             ancestor = ancestor->parent();
 
         if (!ancestor)
+        {
+            _parentId[nodeId] = -1;
             continue;
+        }
 
-        if (firstChild.count(ancestor) == 0)
-            firstChild[ancestor] = nodeId;
-		else
+        // find ancestor's actual it and index
+        auto ancestorId = 0u;
+        for (const auto& node : _nodes)
+        {
+            if (node == ancestor)
+                break;
+
+            ++ancestorId;            
+        }
+        auto ancestorIt = std::next(_nodes.begin(), ancestorId);
+
+        if (_firstChildId[ancestorId] == -1)
+        {
+            if (ancestorId > nodeId)
+            {
+                _nodes.erase(ancestorIt);
+                _nodes.insert(it, ancestor);
+                _parentId[nodeId + 1] = nodeId;
+                _numChildren[nodeId] = 1;
+                _firstChildId[nodeId] = nodeId + 1;
+                _dirty[nodeId] = true;
+                ++nodeId;
+            }
+            else
+            {
+                _parentId[nodeId] = ancestorId;
+                _firstChildId[ancestorId] = nodeId;
+                _numChildren[ancestorId] = 1;
+            }
+        }
+        else
 		{
-            assert(firstChild[ancestor] <= nodeId);
-
-			nodes.erase(it);
-            nodes.insert(std::next(nodes.begin(), firstChild[ancestor]), node);
+            _parentId[nodeId] = ancestorId;
+            _numChildren[nodeId] = 0;
+            _firstChildId[nodeId] = -1;
+			_nodes.erase(it);
+            _nodes.insert(std::next(ancestorIt, _numChildren[ancestorId]), node);
+            ++_numChildren[ancestorId];
 		}
 	}
 }
@@ -327,8 +336,9 @@ void
 Transform::RootTransform::updateTransforms()
 {
     math::mat4 modelToWorldMatrix;
+    uint nodeId = 0;
 
-    for (unsigned int nodeId = 0; nodeId < _matrix.size(); ++nodeId)
+    for (const auto& node : _nodes)
 	{
 		if (_dirty[nodeId])
 		{
@@ -342,11 +352,11 @@ Transform::RootTransform::updateTransforms()
             // Because we use an unsafe pointer that gives us a direct access to the
             // data provider internal value for "modelToWorldMatrix", we have to trigger
             // the "property changed" signal manually.
-            // This technique completely bypasses the container property name solving
+            // This technique completely bypasses the container property name resolving
             // mechanism and is a lot faster.
             if (*_modelToWorld[nodeId] != modelToWorldMatrix)
             {
-                auto nodeData = _nodes[nodeId]->data();
+                auto nodeData = node->data();
 
                 *_modelToWorld[nodeId] = modelToWorldMatrix;
                 if (nodeData.hasPropertyChangedSignal("modelToWorldMatrix"))
@@ -355,17 +365,19 @@ Transform::RootTransform::updateTransforms()
                         "modelToWorldMatrix",
                         "modelToWorldMatrix"
                     );
+
+			    auto numChildren = _numChildren[nodeId];
+			    auto firstChildId = _firstChildId[nodeId];
+			    auto lastChildId = firstChildId + numChildren;
+
+			    for (auto childId = firstChildId; childId < lastChildId; ++childId)
+				    _dirty[childId] = true;
             }
-
-			auto numChildren = _numChildren[nodeId];
-			auto firstChildId = _firstChildId[nodeId];
-			auto lastChildId = firstChildId + numChildren;
-
-			for (auto childId = firstChildId; childId < lastChildId; ++childId)
-				_dirty[childId] = true;
 
 	       	_dirty[nodeId] = false;
 		}
+
+        ++nodeId;
 	}
 }
 

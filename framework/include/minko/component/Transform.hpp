@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -43,8 +43,8 @@ namespace minko
 			typedef std::shared_ptr<AbstractComponent>	AbsCtrlPtr;
 
 		private:
-			math::mat4										_matrix;
-			math::mat4										_modelToWorld;
+			math::mat4*										_matrix;
+			math::mat4*										_modelToWorld;
 			std::shared_ptr<data::Provider>		            _data;
 
 			Signal<NodePtr, NodePtr, NodePtr>::Slot 		_addedSlot;
@@ -71,7 +71,7 @@ namespace minko
 			{
 				auto ctrl = create();
 
-				ctrl->_matrix = transform;
+				*ctrl->_matrix = transform;
 
 				return ctrl;
 			}
@@ -80,22 +80,24 @@ namespace minko
 			const math::mat4&
 			matrix()
 			{
-				return _matrix;
+				return *_matrix;
 			}
 
 			inline
 			void
 			matrix(const math::mat4& matrix)
 			{
-				_matrix = matrix;
-				_data->set("matrix", _matrix);
+                if (matrix == *_matrix)
+                    return;
+
+				*_matrix = matrix;
 
 				auto rootTransform = target()->root()->component<RootTransform>();
 
 				if (rootTransform && !rootTransform->_invalidLists)
 					rootTransform->_dirty[rootTransform->_nodeToId[target()]] = true;
-				else
-					_modelToWorld = matrix;
+				/*else
+					*_modelToWorld = matrix;*/
 			}
 
 			inline
@@ -112,7 +114,7 @@ namespace minko
 				if (forceUpdate)
                     updateModelToWorldMatrix();
 
-				return _modelToWorld;
+				return *_modelToWorld;
 			}
 
             inline
@@ -182,11 +184,11 @@ namespace minko
                 }
 
 			private:
-				std::vector<math::mat4*>		_matrix;
+				std::vector<const math::mat4*>  _matrix;
 				std::vector<math::mat4*>		_modelToWorld;
 
 				std::map<NodePtr, unsigned int>	_nodeToId;
-				std::vector<NodePtr>			_nodes;
+				std::list<NodePtr>			    _nodes;
 				std::vector<int>		 		_parentId;
 				std::vector<int> 		        _firstChildId;
 				std::vector<int>		        _numChildren;
@@ -231,9 +233,8 @@ namespace minko
 				void
 				renderingBeginHandler(SceneMgrPtr sceneManager, uint frameId, AbsTexturePtr target);
 
-				static
 				void
-				juxtaposeSiblings(std::vector<NodePtr>& nodes);
+				sortNodes();
 			};
 		};
 	}
