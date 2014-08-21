@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/render/DrawCall.hpp"
+#include "minko/data/Container.hpp"
 
 namespace minko
 {
@@ -34,6 +35,7 @@ namespace minko
 		{
         private:
             typedef std::list<DrawCall*>::iterator                  DrawCallIterator;
+            typedef data::Container::PropertyChangedSignal::Slot    PropertyChangedSlot;
 
         public:
             typedef std::pair<DrawCallIterator, DrawCallIterator>   DrawCallIteratorPair;
@@ -43,6 +45,8 @@ namespace minko
             std::set<std::string>                                   _watchedProperties;
             std::unordered_map<data::Binding, std::list<DrawCall*>> _macroToDrawCalls;
             std::unordered_set<DrawCall*>                           _changedDrawCalls;
+
+            std::unordered_map<data::Binding, PropertyChangedSlot>  _macroChangedSlot;
 
 		public:
             ~DrawCallPool()
@@ -85,7 +89,10 @@ namespace minko
                                     const data::MacroBindingMap&  macroBindings);
 
             void
-            macroPropertyChangedHandler(const data::Binding& binding);
+            macroPropertyChangedHandler(const std::list<DrawCall*>& drawCalls);
+
+            void
+            initializeDrawCall(DrawCall& drawCall);
 		};
 	}
 }

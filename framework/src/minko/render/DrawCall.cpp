@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -44,15 +44,14 @@ DrawCall::getContainer(data::BindingSource source)
 }
 
 void
-DrawCall::bind(Program::Ptr                                         program,
-               const std::unordered_map<std::string, std::string>&  variables,
-               const data::BindingMap&                              attributeBindings,
-               const data::BindingMap&                              uniformBindings,
-               const data::BindingMap&                              stateBindings)
+DrawCall::bind(Program::Ptr             program,
+               const data::BindingMap&  attributeBindings,
+               const data::BindingMap&  uniformBindings,
+               const data::BindingMap&  stateBindings)
 {
     _program = program;
 
-    bindIndexBuffer(variables, _targetData);
+    bindIndexBuffer(_variables, _targetData);
 
     for (const auto& input : program->inputs().uniforms())
     {
@@ -66,7 +65,7 @@ DrawCall::bind(Program::Ptr                                         program,
             program,
             input,
             container,
-            data::Container::getActualPropertyName(variables, binding.propertyName)
+            data::Container::getActualPropertyName(_variables, binding.propertyName)
         );
     }
      
@@ -82,7 +81,7 @@ DrawCall::bind(Program::Ptr                                         program,
             program,
             input,
             container,
-            data::Container::getActualPropertyName(variables, binding.propertyName)
+            data::Container::getActualPropertyName(_variables, binding.propertyName)
         );
     }
 }
@@ -225,7 +224,7 @@ DrawCall::render(AbstractContext::Ptr context, AbstractTexture::Ptr renderTarget
             context->setUniformInt4(u.location, 1, u.data);
     }
 
-    // FIXME: bind bool uniforms
+    // FIXME: handle bool uniforms
     /*
     for (const auto& u : _uniformBool)
     {

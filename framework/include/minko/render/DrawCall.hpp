@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -72,14 +72,16 @@ namespace minko
                 const uint offset;
             };
 
-            typedef std::shared_ptr<AbstractContext>	AbsCtxPtr;
-			typedef std::shared_ptr<AbstractTexture>	AbsTexturePtr;
-			typedef std::shared_ptr<Program>			ProgramPtr;
+            typedef std::shared_ptr<AbstractContext>	            AbsCtxPtr;
+			typedef std::shared_ptr<AbstractTexture>	            AbsTexturePtr;
+			typedef std::shared_ptr<Program>			            ProgramPtr;
+            typedef std::unordered_map<std::string, std::string>    StringMap;
 
 		private:
             const data::Container&              _rootData;
             const data::Container&              _rendererData;
             const data::Container&              _targetData;
+            StringMap                           _variables;
 
 			std::shared_ptr<render::Pass>		_pass;
 			std::shared_ptr<Program>			_program;
@@ -95,10 +97,12 @@ namespace minko
 
 		public:
             DrawCall(std::shared_ptr<render::Pass>  pass,
+                     const StringMap&               variables,
                      const data::Container&         rootData,
                      const data::Container&         rendererData,
                      const data::Container&         targetData) :
                 _pass(pass),
+                _variables(variables),
                 _rootData(rootData),
                 _rendererData(rendererData),
                 _targetData(targetData)
@@ -108,20 +112,47 @@ namespace minko
             
             inline
             std::shared_ptr<render::Pass>
-            pass()
+            pass() const
             {
                 return _pass;
+            }
+
+            inline
+            const StringMap&
+            variables() const
+            {
+                return _variables;
+            }
+
+            inline
+            const data::Container&
+            rootData() const
+            {
+                return _rootData;
+            }
+
+            inline
+            const data::Container&
+            rendererData() const
+            {
+                return _rendererData;
+            }
+
+            inline
+            const data::Container&
+            targetData() const
+            {
+                return _targetData;
             }
 
 			void
 			render(std::shared_ptr<AbstractContext> context, AbsTexturePtr renderTarget) const;
 
             void
-            bind(std::shared_ptr<Program>                               program,
-                 const std::unordered_map<std::string, std::string>&    variables,
-                 const data::BindingMap&                                attributeBindings,
-                 const data::BindingMap&                                uniformBindings,
-                 const data::BindingMap&                                stateBindings);
+            bind(std::shared_ptr<Program>   program,
+                 const data::BindingMap&    attributeBindings,
+                 const data::BindingMap&    uniformBindings,
+                 const data::BindingMap&    stateBindings);
 
 		private:
             void

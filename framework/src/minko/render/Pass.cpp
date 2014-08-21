@@ -100,30 +100,20 @@ Pass::finalizeProgram(Program::Ptr program)
 {
 	if (program)
 	{
-		try
+		if (!program->vertexShader()->isReady())
+			program->vertexShader()->upload();
+		if (!program->fragmentShader()->isReady())
+			program->fragmentShader()->upload();
+		if (!program->isReady())
 		{
-			if (!program->vertexShader()->isReady())
-				program->vertexShader()->upload();
-			if (!program->fragmentShader()->isReady())
-				program->fragmentShader()->upload();
-			if (!program->isReady())
-			{
-				program->upload();
+			program->upload();
 
-				for (auto& func : _uniformFunctions)
-					func(program);
-				for (auto& func : _attributeFunctions)
-					func(program);
-                for (auto& func : _macroFunctions)
-                    func(program);
-			}
-		}
-		catch (std::exception& e)
-		{
-			if (_fallback.length())
-				return nullptr;
-
-			throw e;
+			for (auto& func : _uniformFunctions)
+				func(program);
+			for (auto& func : _attributeFunctions)
+				func(program);
+            for (auto& func : _macroFunctions)
+                func(program);
 		}
 	}
 

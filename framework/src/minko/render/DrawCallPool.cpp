@@ -1,5 +1,5 @@
 /*,
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -34,28 +34,11 @@ DrawCallPool::addDrawCalls(std::shared_ptr<Effect>                              
     
     for (const auto& pass : technique)
     {
-        auto programAndSignature = pass->selectProgram(variables, targetData, rendererData, rootData);
-        auto* drawCall = new DrawCall(pass, rootData, rendererData, targetData);
+        auto* drawCall = new DrawCall(pass, variables, rootData, rendererData, targetData);
 
-        drawCall->bind(
-            programAndSignature.first,
-            variables,
-            pass->attributeBindings(),
-            pass->uniformBindings(),
-            pass->stateBindings()
-        );
+        initializeDrawCall(*drawCall);
 
         _drawCalls.push_back(drawCall);
-
-        if (programAndSignature.second != nullptr)
-            watchProgramSignature(
-                drawCall,
-                *programAndSignature.second,
-                pass->macroBindings(),
-                rootData,
-                rendererData,
-                targetData
-            );
     }
 
     return std::pair<std::list<DrawCall*>::iterator, std::list<DrawCall*>::iterator>(
@@ -84,14 +67,23 @@ DrawCallPool::watchProgramSignature(DrawCall*                       drawCall,
     for (const auto& macroName : signature.macros())
     {
         const auto& macro = macroBindings.at(macroName);
+        auto& drawCalls = _macroToDrawCalls[macro];
+        auto container = macro.source == data::BindingSource::ROOT ? rootData
+            : macro.source == data::BindingSource::RENDERER ? rendererData
+            : targetData;
 
-        _macroToDrawCalls[macro].push_back(drawCall);
+        drawCalls.push_back(drawCall);
+        if (_macroChangedSlot.count(macro) == 0)
+        {
+            auto propertyName = data::Container::getActualPropertyName(drawCall->variables(), macro.propertyName);
+            auto& signal = container.propertyChanged(propertyName);
 
-        rootData.propertyChanged(macroName).connect(std::bind(
-            &DrawCallPool::macroPropertyChangedHandler,
-            this,
-            macro
-        ));
+            _macroChangedSlot[macro] = signal.connect(std::bind(
+                &DrawCallPool::macroPropertyChangedHandler,
+                this,
+                drawCalls
+            ));
+        }
     }
 }
 
@@ -109,32 +101,48 @@ DrawCallPool::unwatchProgramSignature(DrawCall*                       drawCall,
 }
 
 void
-DrawCallPool::macroPropertyChangedHandler(const data::Binding&  binding)
+DrawCallPool::macroPropertyChangedHandler(const std::list<DrawCall*>&  drawCalls)
 {
-    const auto& drawCalls = _macroToDrawCalls[binding];
-
     _changedDrawCalls.insert(drawCalls.begin(), drawCalls.end());
+}
+
+void
+DrawCallPool::initializeDrawCall(DrawCall& drawCall)
+{
+    auto pass = drawCall.pass();
+    auto programAndSignature = pass->selectProgram(
+        drawCall.variables(), drawCall.targetData(), drawCall.rendererData(), drawCall.rootData()
+    );
+
+    drawCall.bind(
+        programAndSignature.first,
+        pass->attributeBindings(),
+        pass->uniformBindings(),
+        pass->stateBindings()
+    );
+
+    // FIXME: avoid const_cast
+    if (programAndSignature.second != nullptr)
+        watchProgramSignature(
+        &drawCall,
+        *programAndSignature.second,
+        pass->macroBindings(),
+        const_cast<data::Container&>(drawCall.rootData()),
+        const_cast<data::Container&>(drawCall.rendererData()),
+        const_cast<data::Container&>(drawCall.targetData())
+    );
 }
 
 void
 DrawCallPool::update()
 {
-    for (const auto* drawCall : _changedDrawCalls)
-    {
-        /*auto programAndSignature = drawCall->pass()->selectProgram(variables, targetData, rendererData, rootData);
-
-        drawCall->bind(
-            programAndSignature.first,
-            variables,
-            pass->attributeBindings(),
-            pass->uniformBindings(),
-            pass->stateBindings()
-        );*/
-    }
+    for (auto* drawCall : _changedDrawCalls)
+        initializeDrawCall(*drawCall);
 
     _changedDrawCalls.clear();
 
-   /* _drawCalls.sort([](const DrawCall& a, const DrawCall& b)
+    // FIXME: sort draw calls back-to-front and according to their priority
+    /* _drawCalls.sort([](const DrawCall& a, const DrawCall& b)
     {
         return a.priority > b.priority;
     );*/
