@@ -78,6 +78,15 @@ namespace minko
 	class Signal;
 	class Color;
 	class AbstractCanvas;
+
+    template <class T>
+    inline
+    void
+    hash_combine(std::size_t & seed, const T & v)
+    {
+        std::hash<T> hasher;
+        seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
     
 	namespace render
 	{
@@ -209,29 +218,7 @@ namespace minko
 			ROOT
 		};
 
-        struct Binding
-        {
-            std::string     propertyName;
-            BindingSource   source;
-
-            Binding() :
-                propertyName(),
-                source(BindingSource::TARGET)
-            {}
-
-            Binding(const std::string& propertyName, BindingSource source) :
-                propertyName(propertyName),
-                source(source)
-            {}
-
-            inline
-            bool
-            operator==(const Binding& rhs) const
-            {
-                return propertyName == rhs.propertyName && source == rhs.source;
-            }
-        };
-
+        struct Binding;
         struct MacroBinding;
 
         typedef std::unordered_map<std::string, Binding>        BindingMap;
@@ -392,29 +379,6 @@ namespace minko
 
 namespace std
 {
-	/*template <class T>
-	inline 
-	void 
-	hash_combine(size_t& seed, const T& v)
-	{
-		hash<T> hasher;
-		seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-	}*/
-
-    template<>
-    struct hash<minko::data::Binding>
-    {
-        inline
-        size_t
-        operator()(const minko::data::Binding& binding) const
-        {
-            auto h1 = std::hash<minko::uint>()((minko::uint)binding.source);
-            auto h2 = std::hash<std::string>()(binding.propertyName);
-
-            return h1 ^ (h2 << 1);
-        }
-    };
-
     template<>
 	struct hash<minko::math::mat4>
 	{

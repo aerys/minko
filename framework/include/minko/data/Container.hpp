@@ -50,7 +50,8 @@ namespace minko
 
 			PropertyChangedSignal	    							_propertyAdded;
 			PropertyChangedSignal     								_propertyRemoved;
-            std::map<std::string, PropertyChangedSignal>            _propertyChanged;
+            PropertyChangedSignal                                   _propertyChanged;
+            std::map<std::string, PropertyChangedSignal>            _propertyNameToChangedSignal;
 
             std::map<ProviderPtr, ProviderChangedSignalSlotList>	_propertySlots;
             std::map<CollectionPtr, CollectionChangedSignalSlot>    _collectionItemAddedSlots;
@@ -140,9 +141,16 @@ namespace minko
 
             inline
             PropertyChangedSignal&
+            propertyChanged()
+            {
+                return _propertyChanged;
+            }
+
+            inline
+            PropertyChangedSignal&
             propertyChanged(const std::string& propertyName)
             {
-                return _propertyChanged[propertyName];
+                return _propertyNameToChangedSignal[propertyName];
             }
 
             inline
@@ -202,7 +210,7 @@ namespace minko
             bool
             hasPropertyChangedSignal(const std::string& propertyName) const
             {
-                return _propertyChanged.count(propertyName) != 0;
+                return _propertyNameToChangedSignal.count(propertyName) != 0;
             }
 
             static

@@ -73,7 +73,8 @@ Container::providerPropertyChangedHandler(Provider::Ptr         provider,
     if (collection)
         formattedPropertyName = formatPropertyName(collection, provider, propertyName);
     
-    if (_propertyChanged.count(formattedPropertyName) != 0)
+    _propertyChanged.execute(*this, propertyName, formattedPropertyName);
+    if (_propertyNameToChangedSignal.count(formattedPropertyName) != 0)
         propertyChanged(formattedPropertyName).execute(*this, propertyName, formattedPropertyName);
 }
 
@@ -92,14 +93,20 @@ Container::providerPropertyRemovedHandler(Provider::Ptr         provider,
                                           Collection::Ptr       collection,
                                           const std::string&	propertyName)
 {
-    if (_propertyChanged.count(propertyName) && _propertyChanged[propertyName].numCallbacks() == 0)
-        _propertyChanged.erase(propertyName);
+    auto formattedPropertyName = propertyName;
 
-    _propertyRemoved.execute(
-        *this,
-        propertyName,
-        formatPropertyName(collection, provider, propertyName)
-    );
+    if (collection)
+        formattedPropertyName = formatPropertyName(collection, provider, propertyName);
+
+    _propertyChanged.execute(*this, propertyName, formattedPropertyName);
+    if (_propertyNameToChangedSignal.count(formattedPropertyName) != 0)
+        propertyChanged(formattedPropertyName).execute(*this, propertyName, formattedPropertyName);
+
+    _propertyRemoved.execute(*this, propertyName, formattedPropertyName);
+
+    if (_propertyNameToChangedSignal.count(propertyName)
+        && _propertyNameToChangedSignal[propertyName].numCallbacks() == 0)
+        _propertyNameToChangedSignal.erase(propertyName);
 }
 
 std::pair<Provider::Ptr, std::string>
@@ -206,9 +213,9 @@ Container::doRemoveProvider(ProviderPtr provider, CollectionPtr collection)
     if (!collection)
     {
         for (const auto& nameAndValue : provider->values())
-            if (_propertyChanged.count(nameAndValue.first) != 0
-                && _propertyChanged[nameAndValue.first].numCallbacks() == 0)
-                _propertyChanged.erase(nameAndValue.first);
+            if (_propertyNameToChangedSignal.count(nameAndValue.first) != 0
+                && _propertyNameToChangedSignal[nameAndValue.first].numCallbacks() == 0)
+                _propertyNameToChangedSignal.erase(nameAndValue.first);
     }
     else
     {
@@ -217,9 +224,9 @@ Container::doRemoveProvider(ProviderPtr provider, CollectionPtr collection)
         auto prefix = collection->name() + "[" + std::to_string(providerIndex) + "].";
         
         for (const auto& nameAndValue : provider->values())
-            if (_propertyChanged.count(prefix + nameAndValue.first) != 0
-                && _propertyChanged[prefix + nameAndValue.first].numCallbacks() == 0)
-                _propertyChanged.erase(prefix + nameAndValue.first);
+            if (_propertyNameToChangedSignal.count(prefix + nameAndValue.first) != 0
+                && _propertyNameToChangedSignal[prefix + nameAndValue.first].numCallbacks() == 0)
+                _propertyNameToChangedSignal.erase(prefix + nameAndValue.first);
 
         updateCollectionLength(collection);
     }

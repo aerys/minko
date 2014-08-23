@@ -26,6 +26,43 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/DrawCall.hpp"
 #include "minko/data/Container.hpp"
 
+namespace std
+{
+    template<>
+    struct hash<std::pair<const minko::data::MacroBinding&, const minko::data::Container*>>
+    {
+        inline
+        size_t
+        operator()(const std::pair<const minko::data::MacroBinding&, const minko::data::Container*>& bindingInstance) const
+        {
+            size_t seed = 0;
+
+            minko::hash_combine(seed, std::hash<minko::uint>()(static_cast<int>(bindingInstance.first.source)));
+            minko::hash_combine(seed, std::hash<std::string>()(bindingInstance.first.propertyName));
+            minko::hash_combine(seed, bindingInstance.first.isInteger ? 0 : 1);
+            minko::hash_combine(seed, std::hash<void*>()((void*)(&bindingInstance.second)));
+
+            return seed;
+        }
+    };
+
+    template<>
+    struct hash<std::pair<minko::data::Container*, minko::data::Container::PropertyChangedSignal*>>
+    {
+        inline
+        size_t
+        operator()(const std::pair<minko::data::Container*, minko::data::Container::PropertyChangedSignal*>& cp) const
+        {
+            size_t seed = 0;
+
+            minko::hash_combine(seed, std::hash<void*>()((void*)cp.first));
+            minko::hash_combine(seed, std::hash<void*>()((void*)cp.second));
+
+            return seed;
+        }
+    };
+}
+
 namespace minko
 {
 	namespace render
@@ -33,9 +70,27 @@ namespace minko
 		class DrawCallPool :
 			public std::enable_shared_from_this<DrawCallPool>
 		{
+            friend struct std::hash<std::pair<data::Container*, data::Container::PropertyChangedSignal*>>;
+            friend struct std::hash<std::pair<const minko::data::MacroBinding&, const minko::data::Container*>>;
+
         private:
-            typedef std::list<DrawCall*>::iterator                  DrawCallIterator;
-            typedef data::Container::PropertyChangedSignal::Slot    PropertyChangedSlot;
+            typedef std::list<DrawCall*>::iterator                      DrawCallIterator;
+            typedef data::Container::PropertyChangedSignal              PropertyChanged;
+            typedef PropertyChanged::Slot                               PropertyChangedSlot;
+            typedef std::list<PropertyChangedSlot>                      ChangedSlotList;
+            typedef ChangedSlotList::iterator                           ChangedSlotListIterator;
+            typedef std::list<DrawCall*>                                DrawCallList;
+            typedef data::Container                                     Container;
+            typedef data::MacroBinding                                  MacroBinding;
+            typedef std::pair<const MacroBinding&, const Container*>    MacroBindingInstance;
+            typedef std::pair<data::Container*, PropertyChanged*>       ContainerKey;
+
+            enum class PropertyAction
+            {
+                ADDED,
+                CHANGED,
+                REMOVED
+            };
 
         public:
             typedef std::pair<DrawCallIterator, DrawCallIterator>   DrawCallIteratorPair;
@@ -43,10 +98,9 @@ namespace minko
 		private:
             std::list<DrawCall*>                                    _drawCalls;
             std::set<std::string>                                   _watchedProperties;
-            std::unordered_map<data::Binding, std::list<DrawCall*>> _macroToDrawCalls;
+            std::unordered_map<MacroBindingInstance, DrawCallList>  _macroToDrawCalls;
             std::unordered_set<DrawCall*>                           _changedDrawCalls;
-
-            std::unordered_map<data::Binding, PropertyChangedSlot>  _macroChangedSlot;
+            std::unordered_map<ContainerKey, PropertyChangedSlot>   _macroChangedSlot;
 
 		public:
             ~DrawCallPool()
@@ -92,8 +146,7 @@ namespace minko
             macroPropertyChangedHandler(const std::list<DrawCall*>& drawCalls);
 
             void
-            initializeDrawCall(DrawCall& drawCall);
+            initializeDrawCall(DrawCall* drawCall);
 		};
 	}
 }
-

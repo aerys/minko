@@ -358,7 +358,11 @@ Transform::RootTransform::updateTransforms()
             {
                 auto nodeData = node->data();
 
+                // manually update the data provider internal mat4 object
                 *_modelToWorld[nodeId] = modelToWorldMatrix;
+
+                // execute the "property changed" signal(s) manually
+                nodeData.propertyChanged().execute(nodeData, "modelToWorldMatrix", "modelToWorldMatrix");
                 if (nodeData.hasPropertyChangedSignal("modelToWorldMatrix"))
                     nodeData.propertyChanged("modelToWorldMatrix").execute(
                         nodeData,

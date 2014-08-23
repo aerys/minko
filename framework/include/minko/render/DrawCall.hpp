@@ -109,12 +109,28 @@ namespace minko
             {
 
             }
+
+            DrawCall(const DrawCall& drawCall) :
+                _pass(drawCall._pass),
+                _variables(drawCall._variables),
+                _rootData(drawCall._rootData),
+                _rendererData(drawCall._rendererData),
+                _targetData(drawCall._targetData)
+            {
+            }
             
             inline
-            std::shared_ptr<render::Pass>
+            std::shared_ptr<Pass>
             pass() const
             {
                 return _pass;
+            }
+
+            inline
+            std::shared_ptr<Program>
+            program() const
+            {
+                return _program;
             }
 
             inline
@@ -155,6 +171,9 @@ namespace minko
                  const data::BindingMap&    stateBindings);
 
 		private:
+            void
+            reset();
+
             void
             bindUniform(std::shared_ptr<Program>    program,
                         ConstUniformInputRef        input,

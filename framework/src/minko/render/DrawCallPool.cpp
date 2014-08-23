@@ -36,7 +36,7 @@ DrawCallPool::addDrawCalls(std::shared_ptr<Effect>                              
     {
         auto* drawCall = new DrawCall(pass, variables, rootData, rendererData, targetData);
 
-        initializeDrawCall(*drawCall);
+        initializeDrawCall(drawCall);
 
         _drawCalls.push_back(drawCall);
     }
@@ -64,26 +64,32 @@ DrawCallPool::watchProgramSignature(DrawCall*                       drawCall,
                                     data::Container&                rendererData,
                                     data::Container&                targetData)
 {
-    for (const auto& macroName : signature.macros())
+    for (const auto& macroNameAndBinding : macroBindings)
     {
-        const auto& macro = macroBindings.at(macroName);
-        auto& drawCalls = _macroToDrawCalls[macro];
-        auto container = macro.source == data::BindingSource::ROOT ? rootData
+        const auto& macro = macroNameAndBinding.second;
+        auto& container = macro.source == data::BindingSource::ROOT ? rootData
             : macro.source == data::BindingSource::RENDERER ? rendererData
             : targetData;
+        auto bindingInstance = MacroBindingInstance(macro, &container);
+        auto& drawCalls = _macroToDrawCalls[bindingInstance];
 
         drawCalls.push_back(drawCall);
-        if (_macroChangedSlot.count(macro) == 0)
-        {
-            auto propertyName = data::Container::getActualPropertyName(drawCall->variables(), macro.propertyName);
-            auto& signal = container.propertyChanged(propertyName);
 
-            _macroChangedSlot[macro] = signal.connect(std::bind(
+        ContainerKey key;
+
+        if (macro.isInteger)
+            key = { &container, &container.propertyChanged() };
+        else if (container.hasProperty(Container::getActualPropertyName(drawCall->variables(), macro.propertyName)))
+            key = { &container, &container.propertyRemoved() };
+        else
+            key = { &container, &container.propertyAdded() };
+
+        if (_macroChangedSlot.count(key) == 0)
+            _macroChangedSlot[key] = key.second->connect(std::bind(
                 &DrawCallPool::macroPropertyChangedHandler,
                 this,
                 drawCalls
             ));
-        }
     }
 }
 
@@ -96,25 +102,40 @@ DrawCallPool::unwatchProgramSignature(DrawCall*                       drawCall,
     {
         const auto& macro = macroBindings.at(macroName);
 
-        // FIXME
+        //_macroToDrawCalls[macro].remove(drawCall);
+
+        //// if this macro is not used by any draw call anymore, then we must erase:
+        //// - the draw call list itself
+        //// - the signal slot watching it
+        //if (_macroToDrawCalls[macro].size() == 0)
+        //{
+        //    _macroToDrawCalls.erase(macro);
+        //    _macroChangedSlot.erase(macro);
+        //}
     }
 }
 
 void
-DrawCallPool::macroPropertyChangedHandler(const std::list<DrawCall*>&  drawCalls)
+DrawCallPool::macroPropertyChangedHandler(const std::list<DrawCall*>& drawCalls)
 {
     _changedDrawCalls.insert(drawCalls.begin(), drawCalls.end());
 }
 
 void
-DrawCallPool::initializeDrawCall(DrawCall& drawCall)
+DrawCallPool::initializeDrawCall(DrawCall* drawCall)
 {
-    auto pass = drawCall.pass();
+    auto pass = drawCall->pass();
     auto programAndSignature = pass->selectProgram(
-        drawCall.variables(), drawCall.targetData(), drawCall.rendererData(), drawCall.rootData()
+        drawCall->variables(), drawCall->targetData(), drawCall->rendererData(), drawCall->rootData()
     );
 
-    drawCall.bind(
+    if (programAndSignature.first == drawCall->program())
+        return;
+
+    // FIXME: unwatch the "old" program signature
+    //unwatchProgramSignature(&drawCall, ...)
+
+    drawCall->bind(
         programAndSignature.first,
         pass->attributeBindings(),
         pass->uniformBindings(),
@@ -124,20 +145,20 @@ DrawCallPool::initializeDrawCall(DrawCall& drawCall)
     // FIXME: avoid const_cast
     if (programAndSignature.second != nullptr)
         watchProgramSignature(
-        &drawCall,
-        *programAndSignature.second,
-        pass->macroBindings(),
-        const_cast<data::Container&>(drawCall.rootData()),
-        const_cast<data::Container&>(drawCall.rendererData()),
-        const_cast<data::Container&>(drawCall.targetData())
-    );
+            drawCall,
+            *programAndSignature.second,
+            pass->macroBindings(),
+            const_cast<data::Container&>(drawCall->rootData()),
+            const_cast<data::Container&>(drawCall->rendererData()),
+            const_cast<data::Container&>(drawCall->targetData())
+        );
 }
 
 void
 DrawCallPool::update()
 {
     for (auto* drawCall : _changedDrawCalls)
-        initializeDrawCall(*drawCall);
+        initializeDrawCall(drawCall);
 
     _changedDrawCalls.clear();
 

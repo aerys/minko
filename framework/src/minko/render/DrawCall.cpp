@@ -44,11 +44,27 @@ DrawCall::getContainer(data::BindingSource source)
 }
 
 void
+DrawCall::reset()
+{
+    _program = nullptr;
+    _indexBuffer = 0;
+    _firstIndex = 0;
+    _numIndices = 0;
+    _uniformFloat.clear();
+    _uniformInt.clear();
+    _uniformBool.clear();
+    _samplers.clear();
+    _attributes.clear();
+}
+
+void
 DrawCall::bind(Program::Ptr             program,
                const data::BindingMap&  attributeBindings,
                const data::BindingMap&  uniformBindings,
                const data::BindingMap&  stateBindings)
 {
+    reset();
+
     _program = program;
 
     bindIndexBuffer(_variables, _targetData);
