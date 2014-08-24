@@ -123,7 +123,6 @@ namespace minko
         private:
             void
             watchProgramSignature(DrawCall*                     drawCall,
-                                  const ProgramSignature&       signature,
                                   const data::MacroBindingMap&  macroBindings,
                                   data::Container&              rootData,
                                   data::Container&              rendererData,
@@ -131,8 +130,10 @@ namespace minko
 
             void
             unwatchProgramSignature(DrawCall*                     drawCall,
-                                    const ProgramSignature&       signature,
-                                    const data::MacroBindingMap&  macroBindings);
+                                    const data::MacroBindingMap&  macroBindings,
+                                    data::Container&              rootData,
+                                    data::Container&              rendererData,
+                                    data::Container&              targetData);
 
             void
             macroPropertyChangedHandler(const std::list<DrawCall*>& drawCalls);

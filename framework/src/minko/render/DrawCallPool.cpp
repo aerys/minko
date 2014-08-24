@@ -58,7 +58,6 @@ DrawCallPool::removeDrawCalls(const DrawCallIteratorPair& iterators)
 
 void
 DrawCallPool::watchProgramSignature(DrawCall*                       drawCall,
-                                    const ProgramSignature&         signature,
                                     const data::MacroBindingMap&    macroBindings,
                                     data::Container&                rootData,
                                     data::Container&                rendererData,
@@ -92,23 +91,27 @@ DrawCallPool::macroPropertyChangedHandler(const std::list<DrawCall*>& drawCalls)
 
 void
 DrawCallPool::unwatchProgramSignature(DrawCall*                       drawCall,
-                                      const ProgramSignature&         signature,
-                                      const data::MacroBindingMap&    macroBindings)
+                                      const data::MacroBindingMap&    macroBindings,
+                                      data::Container&                rootData,
+                                      data::Container&                rendererData,
+                                      data::Container&                targetData)
 {
-    for (const auto& macroName : signature.macros())
+    for (const auto& macroNameAndBinding : macroBindings)
     {
-        const auto& macro = macroBindings.at(macroName);
+        const auto& macroBinding = macroNameAndBinding.second;
+        auto& container = macroBinding.source == data::BindingSource::ROOT ? rootData
+            : macroBinding.source == data::BindingSource::RENDERER ? rendererData
+            : targetData;
+        auto bindingInstance = MacroBindingInstance(macroBinding, &container);
+        auto& drawCalls = _macroToDrawCalls[bindingInstance];
 
-        //_macroToDrawCalls[macro].remove(drawCall);
+        drawCalls.remove(drawCall);
 
-        //// if this macro is not used by any draw call anymore, then we must erase:
-        //// - the draw call list itself
-        //// - the signal slot watching it
-        //if (_macroToDrawCalls[macro].size() == 0)
-        //{
-        //    _macroToDrawCalls.erase(macro);
-        //    _macroChangedSlot.erase(macro);
-        //}
+        if (drawCalls.size() == 0)
+        {
+            _macroToDrawCalls.erase(bindingInstance);
+            _macroChangedSlot.erase(&container);
+        }
     }
 }
 
@@ -123,8 +126,18 @@ DrawCallPool::initializeDrawCall(DrawCall* drawCall)
     if (programAndSignature.first == drawCall->program())
         return;
 
-    // FIXME: unwatch the "old" program signature
-    //unwatchProgramSignature(&drawCall, ...)
+    // FIXME: avoid const_cast
+    auto& rootData = const_cast<data::Container&>(drawCall->rootData());
+    auto& rendererData = const_cast<data::Container&>(drawCall->rendererData());
+    auto& targetData = const_cast<data::Container&>(drawCall->targetData());
+
+    /*unwatchProgramSignature(
+        drawCall,
+        pass->macroBindings(),
+        rootData,
+        rendererData,
+        targetData
+    );*/
 
     drawCall->bind(
         programAndSignature.first,
@@ -133,15 +146,13 @@ DrawCallPool::initializeDrawCall(DrawCall* drawCall)
         pass->stateBindings()
     );
 
-    // FIXME: avoid const_cast
     if (programAndSignature.second != nullptr)
         watchProgramSignature(
             drawCall,
-            *programAndSignature.second,
             pass->macroBindings(),
-            const_cast<data::Container&>(drawCall->rootData()),
-            const_cast<data::Container&>(drawCall->rendererData()),
-            const_cast<data::Container&>(drawCall->targetData())
+            rootData,
+            rendererData,
+            targetData
         );
 }
 
