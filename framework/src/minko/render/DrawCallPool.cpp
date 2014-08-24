@@ -75,22 +75,19 @@ DrawCallPool::watchProgramSignature(DrawCall*                       drawCall,
 
         drawCalls.push_back(drawCall);
 
-        ContainerKey key;
-
-        if (macro.isInteger)
-            key = { &container, &container.propertyChanged() };
-        else if (container.hasProperty(Container::getActualPropertyName(drawCall->variables(), macro.propertyName)))
-            key = { &container, &container.propertyRemoved() };
-        else
-            key = { &container, &container.propertyAdded() };
-
-        if (_macroChangedSlot.count(key) == 0)
-            _macroChangedSlot[key] = key.second->connect(std::bind(
+        if (_macroChangedSlot.count(&container) == 0)
+            _macroChangedSlot[&container] = container.propertyChanged().connect(std::bind(
                 &DrawCallPool::macroPropertyChangedHandler,
                 this,
                 drawCalls
             ));
     }
+}
+
+void
+DrawCallPool::macroPropertyChangedHandler(const std::list<DrawCall*>& drawCalls)
+{
+    _changedDrawCalls.insert(drawCalls.begin(), drawCalls.end());
 }
 
 void
@@ -113,12 +110,6 @@ DrawCallPool::unwatchProgramSignature(DrawCall*                       drawCall,
         //    _macroChangedSlot.erase(macro);
         //}
     }
-}
-
-void
-DrawCallPool::macroPropertyChangedHandler(const std::list<DrawCall*>& drawCalls)
-{
-    _changedDrawCalls.insert(drawCalls.begin(), drawCalls.end());
 }
 
 void

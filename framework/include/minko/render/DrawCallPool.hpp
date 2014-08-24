@@ -46,7 +46,7 @@ namespace std
         }
     };
 
-    template<>
+    /*template<>
     struct hash<std::pair<minko::data::Container*, minko::data::Container::PropertyChangedSignal*>>
     {
         inline
@@ -60,7 +60,7 @@ namespace std
 
             return seed;
         }
-    };
+    };*/
 }
 
 namespace minko
@@ -83,14 +83,6 @@ namespace minko
             typedef data::Container                                     Container;
             typedef data::MacroBinding                                  MacroBinding;
             typedef std::pair<const MacroBinding&, const Container*>    MacroBindingInstance;
-            typedef std::pair<data::Container*, PropertyChanged*>       ContainerKey;
-
-            enum class PropertyAction
-            {
-                ADDED,
-                CHANGED,
-                REMOVED
-            };
 
         public:
             typedef std::pair<DrawCallIterator, DrawCallIterator>   DrawCallIteratorPair;
@@ -100,7 +92,7 @@ namespace minko
             std::set<std::string>                                   _watchedProperties;
             std::unordered_map<MacroBindingInstance, DrawCallList>  _macroToDrawCalls;
             std::unordered_set<DrawCall*>                           _changedDrawCalls;
-            std::unordered_map<ContainerKey, PropertyChangedSlot>   _macroChangedSlot;
+            std::unordered_map<Container*, PropertyChangedSlot>     _macroChangedSlot;
 
 		public:
             ~DrawCallPool()
