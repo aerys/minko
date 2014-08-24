@@ -89,10 +89,13 @@ BasicMaterial&
 BasicMaterial::diffuseMap(TexturePtr texture)
 {
 #ifdef DEBUG
-	assert(texture->type() == TextureType::Texture2D);
+	assert(texture == nullptr || texture->type() == TextureType::Texture2D);
 #endif
 
-	data()->set("diffuseMap", texture->sampler());
+    if (texture)
+    	data()->set("diffuseMap", texture->sampler());
+    else
+        data()->unset("diffuseMap");
 
 	return *this;
 }
