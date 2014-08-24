@@ -51,7 +51,20 @@ void
 DrawCallPool::removeDrawCalls(const DrawCallIteratorPair& iterators)
 {
     for (auto it = iterators.first; it != iterators.second; ++it)
-        delete *it;
+    {
+        DrawCall* drawCall = *it;
+
+        // FIXME: avoid const_cast
+        unwatchProgramSignature(
+            drawCall,
+            drawCall->pass()->macroBindings(),
+            const_cast<data::Container&>(drawCall->rootData()),
+            const_cast<data::Container&>(drawCall->rendererData()),
+            const_cast<data::Container&>(drawCall->targetData())
+        );
+
+        delete drawCall;
+    }
 
     _drawCalls.erase(iterators.first, iterators.second);
 }
@@ -126,19 +139,6 @@ DrawCallPool::initializeDrawCall(DrawCall* drawCall)
     if (programAndSignature.first == drawCall->program())
         return;
 
-    // FIXME: avoid const_cast
-    auto& rootData = const_cast<data::Container&>(drawCall->rootData());
-    auto& rendererData = const_cast<data::Container&>(drawCall->rendererData());
-    auto& targetData = const_cast<data::Container&>(drawCall->targetData());
-
-    /*unwatchProgramSignature(
-        drawCall,
-        pass->macroBindings(),
-        rootData,
-        rendererData,
-        targetData
-    );*/
-
     drawCall->bind(
         programAndSignature.first,
         pass->attributeBindings(),
@@ -146,13 +146,14 @@ DrawCallPool::initializeDrawCall(DrawCall* drawCall)
         pass->stateBindings()
     );
 
+    // FIXME: avoid const_cast
     if (programAndSignature.second != nullptr)
         watchProgramSignature(
             drawCall,
             pass->macroBindings(),
-            rootData,
-            rendererData,
-            targetData
+            const_cast<data::Container&>(drawCall->rootData()),
+            const_cast<data::Container&>(drawCall->rendererData()),
+            const_cast<data::Container&>(drawCall->targetData())
         );
 }
 
