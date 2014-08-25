@@ -52,8 +52,8 @@ Surface::Surface(std::string		name,
 	_geometry(geometry),
 	_material(material),
 	_effect(effect),
-	_technique(technique),
-	_techniqueChanged(TechniqueChangedSignal::create())
+	_technique(technique)//,
+	//_techniqueChanged(TechniqueChangedSignal::create())
 {
 	if (_effect == nullptr)
 		throw std::invalid_argument("effect");
@@ -88,6 +88,8 @@ Surface::geometry(geometry::Geometry::Ptr geometry)
 
     _geometry = geometry;
     target()->data().addProvider(_geometry->data(), GEOMETRY_COLLECTION_NAME);
+
+    _changed.execute(std::static_pointer_cast<Surface>(shared_from_this()));
 }
 
 void
@@ -97,6 +99,8 @@ Surface::material(material::Material::Ptr material)
 
     _material = material;
     target()->data().addProvider(_material->data(), MATERIAL_COLLECTION_NAME);
+
+    _changed.execute(std::static_pointer_cast<Surface>(shared_from_this()));
 }
 
 void
@@ -125,9 +129,11 @@ Surface::setEffectAndTechnique(Effect::Ptr			effect,
 	_effect		= effect;
 	_technique	= technique;
 
-	_techniqueChanged->execute(
+	/*_techniqueChanged->execute(
 		std::static_pointer_cast<Surface>(shared_from_this()), 
 		_technique, 
 		updateDrawcalls
-	);
+	);*/
+
+    _changed.execute(std::static_pointer_cast<Surface>(shared_from_this()));
 }
