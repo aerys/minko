@@ -52,14 +52,14 @@ namespace minko
             static const std::string EFFECT_COLLECTION_NAME;
 
 		private:
-			std::string														_name;
+			std::string								_name;
 
-			std::shared_ptr<geometry::Geometry>								_geometry;
-			std::shared_ptr<material::Material>								_material;
-			std::shared_ptr<render::Effect>									_effect;
-			std::string 													_technique;
+			std::shared_ptr<geometry::Geometry>		_geometry;
+			std::shared_ptr<material::Material>		_material;
+			std::shared_ptr<render::Effect>			_effect;
+			std::string 							_technique;
 			
-			TechniqueChangedSignal::Ptr										_techniqueChanged;
+            Signal<Ptr>                             _changed;
 
 		public:
 			static
@@ -137,12 +137,12 @@ namespace minko
 			void
 			effect(std::shared_ptr<render::Effect>, const std::string& = "default");
 
-			inline
-			TechniqueChangedSignal::Ptr	
-			techniqueChanged() const
-			{
-				return _techniqueChanged;
-			}
+            inline
+            Signal<Ptr>&
+            changed()
+            {
+                return _changed;
+            }
 
         protected:
 			void
