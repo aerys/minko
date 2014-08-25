@@ -26,43 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/DrawCall.hpp"
 #include "minko/data/Container.hpp"
 
-namespace std
-{
-    template<>
-    struct hash<std::pair<const minko::data::MacroBinding&, const minko::data::Container*>>
-    {
-        inline
-        size_t
-        operator()(const std::pair<const minko::data::MacroBinding&, const minko::data::Container*>& bindingInstance) const
-        {
-            size_t seed = 0;
-
-            minko::hash_combine(seed, std::hash<minko::uint>()(static_cast<int>(bindingInstance.first.source)));
-            minko::hash_combine(seed, std::hash<std::string>()(bindingInstance.first.propertyName));
-            minko::hash_combine(seed, bindingInstance.first.isInteger ? 0 : 1);
-            minko::hash_combine(seed, std::hash<void*>()((void*)(&bindingInstance.second)));
-
-            return seed;
-        }
-    };
-
-    /*template<>
-    struct hash<std::pair<minko::data::Container*, minko::data::Container::PropertyChangedSignal*>>
-    {
-        inline
-        size_t
-        operator()(const std::pair<minko::data::Container*, minko::data::Container::PropertyChangedSignal*>& cp) const
-        {
-            size_t seed = 0;
-
-            minko::hash_combine(seed, std::hash<void*>()((void*)cp.first));
-            minko::hash_combine(seed, std::hash<void*>()((void*)cp.second));
-
-            return seed;
-        }
-    };*/
-}
-
 namespace minko
 {
 	namespace render
@@ -70,29 +33,59 @@ namespace minko
 		class DrawCallPool :
 			public std::enable_shared_from_this<DrawCallPool>
 		{
-            friend struct std::hash<std::pair<data::Container*, data::Container::PropertyChangedSignal*>>;
-            friend struct std::hash<std::pair<const minko::data::MacroBinding&, const minko::data::Container*>>;
-
         private:
-            typedef std::list<DrawCall*>::iterator                      DrawCallIterator;
-            typedef data::Container::PropertyChangedSignal              PropertyChanged;
-            typedef PropertyChanged::Slot                               PropertyChangedSlot;
-            typedef std::list<PropertyChangedSlot>                      ChangedSlotList;
-            typedef ChangedSlotList::iterator                           ChangedSlotListIterator;
-            typedef std::list<DrawCall*>                                DrawCallList;
-            typedef data::Container                                     Container;
-            typedef data::MacroBinding                                  MacroBinding;
-            typedef std::pair<const MacroBinding&, const Container*>    MacroBindingInstance;
+            typedef std::list<DrawCall*>::iterator                                          DrawCallIterator;
+            typedef data::Container::PropertyChangedSignal                                  PropertyChanged;
+            typedef std::pair<PropertyChanged::Slot, uint>                                  ChangedSlot;
+            typedef std::list<DrawCall*>                                                    DrawCallList;
+            typedef data::Container                                                         Container;
+            typedef data::MacroBinding                                                      MacroBinding;
+            typedef std::pair<const MacroBinding*, const Container*>                        MacroBindingKey;
+            typedef std::pair<const Container*, const PropertyChanged*>                     ContainerKey;
+            typedef std::function<void(Container&, const std::string&, const std::string&)> MacroCallback;
+            
+            template<typename T, typename V>
+            struct PtrPairHash
+            {
+                size_t
+                operator()(const std::pair<const T*, const V*>& key) const
+                {
+                    size_t seed = 0;
+
+                    minko::hash_combine(seed, (void*)(key.first));
+                    minko::hash_combine(seed, (void*)(key.second));
+
+                    return seed;
+                }
+            };
+
+            template<typename T, typename V>
+            struct PtrPairEq
+            {
+                bool
+                operator()(const std::pair<const T*, const V*>& lhs,
+                           const std::pair<const T*, const V*>& rhs) const
+                {
+                    return lhs.first == rhs.first && lhs.second == rhs.second;
+                }
+            };
+
+            typedef PtrPairHash<MacroBinding, Container>                                       BindingHash;
+            typedef PtrPairEq<MacroBinding, Container>                                         BindingEq;
+            typedef std::unordered_map<MacroBindingKey, DrawCallList, BindingHash, BindingEq>  MacroToDrawCallsMap;
+            typedef PtrPairHash<Container, PropertyChanged>                                    ContainerHash;
+            typedef PtrPairEq<Container, PropertyChanged>                                      ContainerEq;
+            typedef std::unordered_map<ContainerKey, ChangedSlot, ContainerHash, ContainerEq>  MacroToChangedSlotMap;
 
         public:
             typedef std::pair<DrawCallIterator, DrawCallIterator>   DrawCallIteratorPair;
 
 		private:
-            std::list<DrawCall*>                                    _drawCalls;
-            std::set<std::string>                                   _watchedProperties;
-            std::unordered_map<MacroBindingInstance, DrawCallList>  _macroToDrawCalls;
-            std::unordered_set<DrawCall*>                           _changedDrawCalls;
-            std::unordered_map<Container*, PropertyChangedSlot>     _macroChangedSlot;
+            std::list<DrawCall*>            _drawCalls;
+            std::set<std::string>           _watchedProperties;
+            MacroToDrawCallsMap             _macroToDrawCalls;
+            std::unordered_set<DrawCall*>   _changedDrawCalls;
+            MacroToChangedSlotMap           _macroChangedSlot;
 
 		public:
             ~DrawCallPool()
@@ -136,10 +129,26 @@ namespace minko
                                     data::Container&              targetData);
 
             void
+            macroPropertyAddedHandler(data::Container&            container,
+                                      const std::list<DrawCall*>& drawCalls);
+
+            void
+            macroPropertyRemovedHandler(data::Container&            container,
+                                        const std::list<DrawCall*>& drawCalls);
+
+            void
             macroPropertyChangedHandler(const std::list<DrawCall*>& drawCalls);
 
             void
             initializeDrawCall(DrawCall* drawCall);
+            
+            void
+            addMacroCallback(const ContainerKey&  key,
+                             data::Container&     container,
+                             const MacroCallback& callback);
+
+            void
+            removeMacroCallback(const ContainerKey& key);
 		};
 	}
 }

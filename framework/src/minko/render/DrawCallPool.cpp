@@ -63,6 +63,7 @@ DrawCallPool::removeDrawCalls(const DrawCallIteratorPair& iterators)
             const_cast<data::Container&>(drawCall->targetData())
         );
 
+        _changedDrawCalls.erase(drawCall);
         delete drawCall;
     }
 
@@ -78,28 +79,128 @@ DrawCallPool::watchProgramSignature(DrawCall*                       drawCall,
 {
     for (const auto& macroNameAndBinding : macroBindings)
     {
-        const auto& macro = macroNameAndBinding.second;
-        auto& container = macro.source == data::BindingSource::ROOT ? rootData
-            : macro.source == data::BindingSource::RENDERER ? rendererData
+        const auto& macroBinding = macroNameAndBinding.second;
+        auto& container = macroBinding.source == data::BindingSource::ROOT ? rootData
+            : macroBinding.source == data::BindingSource::RENDERER ? rendererData
             : targetData;
-        auto bindingInstance = MacroBindingInstance(macro, &container);
-        auto& drawCalls = _macroToDrawCalls[bindingInstance];
+        auto bindingKey = MacroBindingKey(&macroBinding, &container);
+        auto& drawCalls = _macroToDrawCalls[bindingKey];
 
         drawCalls.push_back(drawCall);
 
-        if (_macroChangedSlot.count(&container) == 0)
-            _macroChangedSlot[&container] = container.propertyChanged().connect(std::bind(
-                &DrawCallPool::macroPropertyChangedHandler,
-                this,
-                drawCalls
-            ));
+        if (macroBinding.isInteger)
+        {
+            addMacroCallback(
+                { &container, &container.propertyChanged() },
+                container,
+                std::bind(
+                    &DrawCallPool::macroPropertyChangedHandler,
+                    this,
+                    drawCalls
+                )
+            );
+        }
+        else
+        {
+            auto propertyName = Container::getActualPropertyName(drawCall->variables(), macroBinding.propertyName);
+            
+            if (container.hasProperty(propertyName))
+            {
+                addMacroCallback(
+                    { &container, &container.propertyRemoved() },
+                    container,
+                    std::bind(
+                        &DrawCallPool::macroPropertyRemovedHandler,
+                        this,
+                        container,
+                        drawCalls
+                    )
+                );
+            }
+            else
+            {
+                addMacroCallback(
+                    { &container, &container.propertyAdded() },
+                    container,
+                    std::bind(
+                        &DrawCallPool::macroPropertyAddedHandler,
+                        this,
+                        container,
+                        drawCalls
+                    )
+                );
+            }
+
+        }
     }
+}
+
+void
+DrawCallPool::addMacroCallback(const ContainerKey&  key,
+                               data::Container&     container,
+                               const MacroCallback& callback)
+{
+    if (_macroChangedSlot.count(key) == 0)
+    {
+        _macroChangedSlot[key].first = container.propertyAdded().connect(callback);
+        _macroChangedSlot[key].second = 1;
+    }
+    else
+        _macroChangedSlot[key].second++;
+}
+
+void
+DrawCallPool::removeMacroCallback(const ContainerKey& key)
+{
+    _macroChangedSlot[key].second--;
+    if (_macroChangedSlot[key].second == 0)
+        _macroChangedSlot.erase(key);
 }
 
 void
 DrawCallPool::macroPropertyChangedHandler(const std::list<DrawCall*>& drawCalls)
 {
     _changedDrawCalls.insert(drawCalls.begin(), drawCalls.end());
+}
+
+void
+DrawCallPool::macroPropertyAddedHandler(data::Container&            container,
+                                        const std::list<DrawCall*>& drawCalls)
+{
+    removeMacroCallback({ &container, &container.propertyAdded() });
+
+    addMacroCallback(
+        { &container, &container.propertyRemoved() },
+        container,
+        std::bind(
+            &DrawCallPool::macroPropertyRemovedHandler,
+            this,
+            container,
+            drawCalls
+        )
+    );
+
+    macroPropertyChangedHandler(drawCalls);
+}
+
+void
+DrawCallPool::macroPropertyRemovedHandler(data::Container&            container,
+                                          const std::list<DrawCall*>& drawCalls)
+{
+    removeMacroCallback({ &container, &container.propertyRemoved() });
+
+    addMacroCallback(
+        { &container, &container.propertyAdded() },
+        container,
+        std::bind(
+            &DrawCallPool::macroPropertyAddedHandler,
+            this,
+            container,
+            drawCalls
+        )
+    );
+
+    macroPropertyChangedHandler(drawCalls);
 }
 
 void
@@ -115,15 +216,24 @@ DrawCallPool::unwatchProgramSignature(DrawCall*                       drawCall,
         auto& container = macroBinding.source == data::BindingSource::ROOT ? rootData
             : macroBinding.source == data::BindingSource::RENDERER ? rendererData
             : targetData;
-        auto bindingInstance = MacroBindingInstance(macroBinding, &container);
-        auto& drawCalls = _macroToDrawCalls[bindingInstance];
+        auto bindingKey = MacroBindingKey(&macroBinding, &container);
+        auto& drawCalls = _macroToDrawCalls.at(bindingKey);
 
         drawCalls.remove(drawCall);
 
         if (drawCalls.size() == 0)
+            _macroToDrawCalls.erase(bindingKey);
+        
+        if (macroBinding.isInteger)
+            removeMacroCallback({ &container, &container.propertyChanged() });
+        else
         {
-            _macroToDrawCalls.erase(bindingInstance);
-            _macroChangedSlot.erase(&container);
+            auto propertyName = Container::getActualPropertyName(drawCall->variables(), macroBinding.propertyName);
+
+            if (container.hasProperty(propertyName))
+                removeMacroCallback({ &container, &container.propertyRemoved() });
+            else
+                removeMacroCallback({ &container, &container.propertyAdded() });
         }
     }
 }

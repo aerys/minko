@@ -54,16 +54,16 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 	_renderingBegin(Signal<Ptr>::create()),
 	_renderingEnd(Signal<Ptr>::create()),
 	_beforePresent(Signal<Ptr>::create()),
-	_surfaceTechniqueChangedSlot(),
+	//_surfaceTechniqueChangedSlot(),
 	_effect(effect),
 	_priority(priority),
-	_targetDataFilters(),
+	/*_targetDataFilters(),
 	_rendererDataFilters(),
 	_rootDataFilters(),
 	_targetDataFilterChangedSlots(),
 	_rendererDataFilterChangedSlots(),
 	_rootDataFilterChangedSlots(),
-	_lightMaskFilter(data::LightMaskFilter::create()),
+	_lightMaskFilter(data::LightMaskFilter::create()),*/
 	_filterChanged(Signal<Ptr, data::AbstractFilter::Ptr, data::BindingSource, SurfacePtr>::create())
 {
 	if (renderTarget)
@@ -109,9 +109,9 @@ Renderer::targetRemoved(std::shared_ptr<Node> target)
 
 	removedHandler(target->root(), target, target->parent());
 
-	_targetDataFilters.clear();
+	/*_targetDataFilters.clear();
 	_rendererDataFilters.clear();
-	_rootDataFilters.clear();
+	_rootDataFilters.clear();*/
 }
 
 void
@@ -153,7 +153,7 @@ Renderer::addedHandler(std::shared_ptr<Node> node,
 		std::placeholders::_3
 	), 10.f);
 
-	_lightMaskFilter->root(target->root());
+	//_lightMaskFilter->root(target->root());
 
 	rootDescendantAddedHandler(nullptr, target->root(), nullptr);
 }
@@ -187,7 +187,7 @@ Renderer::rootDescendantAddedHandler(std::shared_ptr<Node> node,
 
 	for (auto surfaceNode : surfaceNodes->nodes())
 		for (auto surface : surfaceNode->components<Surface>())
-			addSurface(surface);
+            _toCollect.insert(surface);
 }
 
 void
@@ -216,7 +216,7 @@ Renderer::componentAddedHandler(std::shared_ptr<Node>				node,
 	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
 	
 	if (surfaceCtrl)
-		addSurface(surfaceCtrl);
+        _toCollect.insert(surfaceCtrl);
 	else if (sceneManager)
 		setSceneManager(sceneManager);
 }
@@ -243,6 +243,7 @@ Renderer::addSurface(Surface::Ptr surface)
     auto c = surface->target()->data();
     auto surfaceId = 0;
 
+    // FIXME: find some way to avoid linear search for all the ids
     while (surface->target()->component<Surface>(surfaceId) != surface)
         ++surfaceId;
 
@@ -265,14 +266,37 @@ Renderer::addSurface(Surface::Ptr surface)
         target()->data(),
         surface->target()->data()
     );
+
+    _surfaceChangedSlot[surface] = surface->changed().connect(std::bind(
+        &Renderer::surfaceChangedHandler,
+        std::static_pointer_cast<Renderer>(shared_from_this()),
+        std::placeholders::_1
+    ));
 }
 
 
 void
 Renderer::removeSurface(Surface::Ptr surface)
 {
-    _drawCallPool.removeDrawCalls(_surfaceToDrawCallIterator[surface]);
-    _surfaceToDrawCallIterator.erase(surface);
+    if (_toCollect.erase(surface) == 0)
+    {
+        _drawCallPool.removeDrawCalls(_surfaceToDrawCallIterator[surface]);
+        _surfaceToDrawCallIterator.erase(surface);
+        _surfaceChangedSlot.erase(surface);
+    }
+}
+
+void
+Renderer::surfaceChangedHandler(Surface::Ptr surface)
+{
+    // The surface's material, geometry or effect is different
+    // we completely remove the surface and re-add it again because
+    // it's way simpler than just updating what has changed.
+    //removeSurface(surface);
+
+    // We don't actually add the surface right away: we collect it and it
+    // will be added before the next frame rendering (if any) starts.
+    //_toCollect.insert(surface);
 }
 
 uint
@@ -302,6 +326,13 @@ Renderer::render(render::AbstractContext::Ptr	context,
 {
     if (!_enabled)
 		return;
+
+    // some surfaces have been added during the frame and collected
+    // in _toCollect: we now have to take them into account to build
+    // the corresponding draw calls before rendering
+    for (auto& surface : _toCollect)
+        addSurface(surface);
+    _toCollect.clear();
     
 	_renderingBegin->execute(std::static_pointer_cast<Renderer>(shared_from_this()));
 
@@ -428,7 +459,8 @@ Renderer::Ptr
 Renderer::removeFilter(data::AbstractFilter::Ptr	filter, 
 					   data::BindingSource			source)
 {
-	if (filter)
+    // FIXME
+	/*if (filter)
 	{
 		auto& filters				= this->filtersRef(source);
 		auto& filterChangedSlots	= this->filterChangedSlotsRef(source);
@@ -439,23 +471,23 @@ Renderer::removeFilter(data::AbstractFilter::Ptr	filter,
 			filters.erase(foundFilterIt);
 			filterChangedSlots.erase(filter);
 		}
-	}
+	}*/
 
 	return std::static_pointer_cast<Renderer>(shared_from_this());
 }
 
-Renderer::Ptr
-Renderer::setFilterSurface(Surface::Ptr surface)
-{
-	for (auto& f : _targetDataFilters)
-		f->currentSurface(surface);
-	for (auto& f : _rendererDataFilters)
-		f->currentSurface(surface);
-	for (auto& f : _rootDataFilters)
-		f->currentSurface(surface);
-
-	return std::static_pointer_cast<Renderer>(shared_from_this());
-}
+//Renderer::Ptr
+//Renderer::setFilterSurface(Surface::Ptr surface)
+//{
+//	for (auto& f : _targetDataFilters)
+//		f->currentSurface(surface);
+//	for (auto& f : _rendererDataFilters)
+//		f->currentSurface(surface);
+//	for (auto& f : _rootDataFilters)
+//		f->currentSurface(surface);
+//
+//	return std::static_pointer_cast<Renderer>(shared_from_this());
+//}
 
 void
 Renderer::filterChangedHandler(data::AbstractFilter::Ptr	filter, 
