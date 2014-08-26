@@ -767,7 +767,6 @@ private:
 
 		// find user defined properties (3ds Max)
 		data->Set(index++, "UserProperties", aiString(PropertyGet<std::string>(props, "UDP3DSMAX", "")));
-		unparsedProperties.erase("UDP3DSMAX");
 		// preserve the info that a node was marked as Null node in the original file.
 		data->Set(index++, "IsNull", model.IsNull() ? true : false);
 
@@ -1320,7 +1319,7 @@ private:
 
 
 	// ------------------------------------------------------------------------------------------------
-	void ConvertCluster(std::vector<aiBone*>& bones, const Model& model, const Cluster& cl, 		
+	void ConvertCluster(std::vector<aiBone*>& bones, const Model& /*model*/, const Cluster& cl,
 		std::vector<size_t>& out_indices,
 		std::vector<size_t>& index_out_indices,
 		std::vector<size_t>& count_out_indices,
@@ -2348,7 +2347,7 @@ private:
 
 	// ------------------------------------------------------------------------------------------------
 	aiNodeAnim* GenerateScalingNodeAnim(const std::string& name, 
-		const Model& target, 
+		const Model& /*target*/,
 		const std::vector<const AnimationCurveNode*>& curves,
 		const LayerMap& layer_map,
 		double& max_time,
@@ -2379,7 +2378,7 @@ private:
 
 	// ------------------------------------------------------------------------------------------------
 	aiNodeAnim* GenerateTranslationNodeAnim(const std::string& name, 
-		const Model& target, 
+		const Model& /*target*/,
 		const std::vector<const AnimationCurveNode*>& curves,
 		const LayerMap& layer_map,
 		double& max_time,
@@ -2831,7 +2830,7 @@ private:
 
 
 	// ------------------------------------------------------------------------------------------------
-	void ConvertScaleKeys(aiNodeAnim* na, const std::vector<const AnimationCurveNode*>& nodes, const LayerMap& layers,
+	void ConvertScaleKeys(aiNodeAnim* na, const std::vector<const AnimationCurveNode*>& nodes, const LayerMap& /*layers*/,
 		double& maxTime,
 		double& minTime)
 	{
@@ -2852,7 +2851,7 @@ private:
 
 	// ------------------------------------------------------------------------------------------------
 	void ConvertTranslationKeys(aiNodeAnim* na, const std::vector<const AnimationCurveNode*>& nodes, 
-		const LayerMap& layers,
+		const LayerMap& /*layers*/,
 		double& maxTime,
 		double& minTime)
 	{
@@ -2870,7 +2869,7 @@ private:
 
 	// ------------------------------------------------------------------------------------------------
 	void ConvertRotationKeys(aiNodeAnim* na, const std::vector<const AnimationCurveNode*>& nodes, 
-		const LayerMap& layers, 
+		const LayerMap& /*layers*/,
 		double& maxTime,
 		double& minTime,
 		Model::RotOrder order)
