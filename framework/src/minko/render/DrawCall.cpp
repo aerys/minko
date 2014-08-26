@@ -75,7 +75,7 @@ DrawCall::bind(Program::Ptr             program,
             continue;
 
         const auto& binding = uniformBindings.at(input.name);
-        auto container = getContainer(binding.source);
+        auto& container = getContainer(binding.source);
 
         bindUniform(
             program,
@@ -91,7 +91,7 @@ DrawCall::bind(Program::Ptr             program,
             continue;
 
         const auto& binding = attributeBindings.at(input.name);
-        auto container = getContainer(binding.source);
+        auto& container = getContainer(binding.source);
 
         bindAttribute(
             program,

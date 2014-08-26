@@ -274,11 +274,14 @@ Transform::RootTransform::updateTransformsList()
 void
 Transform::RootTransform::sortNodes()
 {
+    uint nodeId = 0;
+
 	// assumes 'nodes' is the result of a breadth-first search from the nodes
-	for (unsigned int nodeId = 0; nodeId < _nodes.size(); ++nodeId)
+    for (auto& node : _nodes)
+	//for (unsigned int nodeId = 0; nodeId < _nodes.size(); ++nodeId)
 	{
-		auto it = std::next(_nodes.begin(), nodeId);
-		auto node = *it;
+		//auto it = std::next(_nodes.begin(), nodeId);
+		//auto node = *it;
         auto ancestor = node->parent();
 
         while (ancestor != nullptr && !ancestor->hasComponent<Transform>())
@@ -306,7 +309,7 @@ Transform::RootTransform::sortNodes()
             if (ancestorId > nodeId)
             {
                 _nodes.erase(ancestorIt);
-                _nodes.insert(it, ancestor);
+                _nodes.insert(_nodes.begin() + nodeId, ancestor);
                 _parentId[nodeId + 1] = nodeId;
                 _numChildren[nodeId] = 1;
                 _firstChildId[nodeId] = nodeId + 1;
@@ -325,10 +328,12 @@ Transform::RootTransform::sortNodes()
             _parentId[nodeId] = ancestorId;
             _numChildren[nodeId] = 0;
             _firstChildId[nodeId] = -1;
-			_nodes.erase(it);
+            _nodes.erase(_nodes.begin() + nodeId);
             _nodes.insert(std::next(ancestorIt, _numChildren[ancestorId]), node);
             ++_numChildren[ancestorId];
 		}
+
+        ++nodeId;
 	}
 }
 
@@ -356,7 +361,7 @@ Transform::RootTransform::updateTransforms()
             // mechanism and is a lot faster.
             if (*_modelToWorld[nodeId] != modelToWorldMatrix)
             {
-                auto nodeData = node->data();
+                auto& nodeData = node->data();
 
                 // manually update the data provider internal mat4 object
                 *_modelToWorld[nodeId] = modelToWorldMatrix;

@@ -84,7 +84,7 @@ namespace minko
             std::list<DrawCall*>            _drawCalls;
             std::set<std::string>           _watchedProperties;
             MacroToDrawCallsMap             _macroToDrawCalls;
-            std::unordered_set<DrawCall*>   _changedDrawCalls;
+            std::unordered_set<DrawCall*>   _invalidDrawCalls;
             MacroToChangedSlotMap           _macroChangedSlot;
 
 		public:
@@ -109,6 +109,9 @@ namespace minko
 
             void
             removeDrawCalls(const DrawCallIteratorPair& iterators);
+
+            void
+            invalidateDrawCalls(const DrawCallIteratorPair& iterators);
 
             void
             update();

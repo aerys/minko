@@ -59,19 +59,20 @@ Pass::selectProgram(const std::unordered_map<std::string, std::string>& vars,
 					const Container&			                        rendererData,
 					const Container&			                        rootData)
 {
-	Program::Ptr program;
+	Program::Ptr program = nullptr;
+    ProgramSignature* signature = nullptr;
 
 	if (_macroBindings.size() == 0)
 		program = _programTemplate;
 	else
 	{
-		ProgramSignature* signature = new ProgramSignature(_macroBindings, vars, targetData, rendererData, rootData);
+		signature = new ProgramSignature(_macroBindings, vars, targetData, rendererData, rootData);
 		const auto foundProgramIt = std::find_if(
             _signatureToProgram.begin(),
             _signatureToProgram.end(),
             [&](const std::pair<const ProgramSignature*, Program::Ptr>& signatureAndProgram)
             {
-                return *std::get<0>(signatureAndProgram) == *signature;
+                return *signatureAndProgram.first == *signature;
             }
         );
 
@@ -79,6 +80,7 @@ Pass::selectProgram(const std::unordered_map<std::string, std::string>& vars,
         {
 			program = foundProgramIt->second;
             delete signature;
+            signature = foundProgramIt->first;
         }
 		else
 		{
@@ -86,35 +88,30 @@ Pass::selectProgram(const std::unordered_map<std::string, std::string>& vars,
             signature->updateProgram(*program);
 
 			_signatureToProgram[signature] = program;
-
-            return std::pair<std::shared_ptr<Program>, const ProgramSignature*>(finalizeProgram(program), signature);
 		}
 
 	}
 
-    return std::pair<std::shared_ptr<Program>, const ProgramSignature*>(finalizeProgram(program), nullptr);
+    return std::pair<std::shared_ptr<Program>, const ProgramSignature*>(finalizeProgram(program), signature);
 }
 
 Program::Ptr
 Pass::finalizeProgram(Program::Ptr program)
 {
-	if (program)
+	if (!program->vertexShader()->isReady())
+		program->vertexShader()->upload();
+	if (!program->fragmentShader()->isReady())
+		program->fragmentShader()->upload();
+	if (!program->isReady())
 	{
-		if (!program->vertexShader()->isReady())
-			program->vertexShader()->upload();
-		if (!program->fragmentShader()->isReady())
-			program->fragmentShader()->upload();
-		if (!program->isReady())
-		{
-			program->upload();
+		program->upload();
 
-			for (auto& func : _uniformFunctions)
-				func(program);
-			for (auto& func : _attributeFunctions)
-				func(program);
-            for (auto& func : _macroFunctions)
-                func(program);
-		}
+		for (auto& func : _uniformFunctions)
+			func(program);
+		for (auto& func : _attributeFunctions)
+			func(program);
+        for (auto& func : _macroFunctions)
+            func(program);
 	}
 
 	return program;

@@ -43,14 +43,16 @@ DrawCallPool::addDrawCalls(std::shared_ptr<Effect>                              
 
     return std::pair<std::list<DrawCall*>::iterator, std::list<DrawCall*>::iterator>(
         std::prev(_drawCalls.end(), technique.size()),
-        _drawCalls.end()
+        std::prev(_drawCalls.end())
     );
 }
 
 void
 DrawCallPool::removeDrawCalls(const DrawCallIteratorPair& iterators)
 {
-    for (auto it = iterators.first; it != iterators.second; ++it)
+    auto end = std::next(iterators.second);
+
+    for (auto it = iterators.first; it != end; ++it)
     {
         DrawCall* drawCall = *it;
 
@@ -63,11 +65,11 @@ DrawCallPool::removeDrawCalls(const DrawCallIteratorPair& iterators)
             const_cast<data::Container&>(drawCall->targetData())
         );
 
-        _changedDrawCalls.erase(drawCall);
+        _invalidDrawCalls.erase(drawCall);
         delete drawCall;
     }
 
-    _drawCalls.erase(iterators.first, iterators.second);
+    _drawCalls.erase(iterators.first, end);
 }
 
 void
@@ -93,11 +95,7 @@ DrawCallPool::watchProgramSignature(DrawCall*                       drawCall,
             addMacroCallback(
                 { &container, &container.propertyChanged() },
                 container,
-                std::bind(
-                    &DrawCallPool::macroPropertyChangedHandler,
-                    this,
-                    drawCalls
-                )
+                std::bind(&DrawCallPool::macroPropertyChangedHandler, this, drawCalls)
             );
         }
         else
@@ -109,12 +107,7 @@ DrawCallPool::watchProgramSignature(DrawCall*                       drawCall,
                 addMacroCallback(
                     { &container, &container.propertyRemoved() },
                     container,
-                    std::bind(
-                        &DrawCallPool::macroPropertyRemovedHandler,
-                        this,
-                        container,
-                        drawCalls
-                    )
+                    std::bind(&DrawCallPool::macroPropertyRemovedHandler, this, std::ref(container), drawCalls)
                 );
             }
             else
@@ -122,12 +115,7 @@ DrawCallPool::watchProgramSignature(DrawCall*                       drawCall,
                 addMacroCallback(
                     { &container, &container.propertyAdded() },
                     container,
-                    std::bind(
-                        &DrawCallPool::macroPropertyAddedHandler,
-                        this,
-                        container,
-                        drawCalls
-                    )
+                    std::bind(&DrawCallPool::macroPropertyAddedHandler, this, std::ref(container), drawCalls)
                 );
             }
 
@@ -141,10 +129,7 @@ DrawCallPool::addMacroCallback(const ContainerKey&  key,
                                const MacroCallback& callback)
 {
     if (_macroChangedSlot.count(key) == 0)
-    {
-        _macroChangedSlot[key].first = container.propertyAdded().connect(callback);
-        _macroChangedSlot[key].second = 1;
-    }
+        _macroChangedSlot.emplace(key, ChangedSlot(container.propertyAdded().connect(callback), 1));
     else
         _macroChangedSlot[key].second++;
 }
@@ -160,7 +145,7 @@ DrawCallPool::removeMacroCallback(const ContainerKey& key)
 void
 DrawCallPool::macroPropertyChangedHandler(const std::list<DrawCall*>& drawCalls)
 {
-    _changedDrawCalls.insert(drawCalls.begin(), drawCalls.end());
+    _invalidDrawCalls.insert(drawCalls.begin(), drawCalls.end());
 }
 
 void
@@ -172,12 +157,7 @@ DrawCallPool::macroPropertyAddedHandler(data::Container&            container,
     addMacroCallback(
         { &container, &container.propertyRemoved() },
         container,
-        std::bind(
-            &DrawCallPool::macroPropertyRemovedHandler,
-            this,
-            container,
-            drawCalls
-        )
+        std::bind(&DrawCallPool::macroPropertyRemovedHandler, this, container, drawCalls)
     );
 
     macroPropertyChangedHandler(drawCalls);
@@ -192,12 +172,7 @@ DrawCallPool::macroPropertyRemovedHandler(data::Container&            container,
     addMacroCallback(
         { &container, &container.propertyAdded() },
         container,
-        std::bind(
-            &DrawCallPool::macroPropertyAddedHandler,
-            this,
-            container,
-            drawCalls
-        )
+        std::bind(&DrawCallPool::macroPropertyAddedHandler, this, container, drawCalls)
     );
 
     macroPropertyChangedHandler(drawCalls);
@@ -270,14 +245,23 @@ DrawCallPool::initializeDrawCall(DrawCall* drawCall)
 void
 DrawCallPool::update()
 {
-    for (auto* drawCall : _changedDrawCalls)
+    for (auto* drawCall : _invalidDrawCalls)
         initializeDrawCall(drawCall);
 
-    _changedDrawCalls.clear();
+    _invalidDrawCalls.clear();
 
     // FIXME: sort draw calls back-to-front and according to their priority
     /* _drawCalls.sort([](const DrawCall& a, const DrawCall& b)
     {
         return a.priority > b.priority;
     );*/
+}
+
+void
+DrawCallPool::invalidateDrawCalls(const DrawCallIteratorPair& iterators)
+{
+    auto end = std::next(iterators.second);
+
+    for (auto it = iterators.first; it != end; ++it)
+        _invalidDrawCalls.insert(*it);
 }

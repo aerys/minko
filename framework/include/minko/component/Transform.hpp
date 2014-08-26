@@ -188,7 +188,7 @@ namespace minko
 				std::vector<math::mat4*>		_modelToWorld;
 
 				std::map<NodePtr, unsigned int>	_nodeToId;
-				std::list<NodePtr>			    _nodes;
+				std::vector<NodePtr>			_nodes;
 				std::vector<int>		 		_parentId;
 				std::vector<int> 		        _firstChildId;
 				std::vector<int>		        _numChildren;

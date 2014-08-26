@@ -47,7 +47,7 @@ ProgramSignature::ProgramSignature(const data::MacroBindingMap&                 
         const auto&	macroName = macroNameAndBinding.first;
         const auto&	macroBinding = macroNameAndBinding.second;
         auto propertyName = Container::getActualPropertyName(variables, macroBinding.propertyName);
-        auto container = macroBinding.source == BindingSource::TARGET
+        auto& container = macroBinding.source == BindingSource::TARGET
             ? targetData
             : (macroBinding.source == BindingSource::RENDERER ? rendererData : rootData);
         bool macroIsDefined = container.hasProperty(propertyName);

@@ -240,7 +240,7 @@ Renderer::addSurface(Surface::Ptr surface)
 {
     std::unordered_map<std::string, std::string> variables;
 
-    auto c = surface->target()->data();
+    auto& c = surface->target()->data();
     auto surfaceId = 0;
 
     // FIXME: find some way to avoid linear search for all the ids
@@ -292,11 +292,7 @@ Renderer::surfaceChangedHandler(Surface::Ptr surface)
     // The surface's material, geometry or effect is different
     // we completely remove the surface and re-add it again because
     // it's way simpler than just updating what has changed.
-    //removeSurface(surface);
-
-    // We don't actually add the surface right away: we collect it and it
-    // will be added before the next frame rendering (if any) starts.
-    //_toCollect.insert(surface);
+    _drawCallPool.invalidateDrawCalls(_surfaceToDrawCallIterator[surface]);
 }
 
 uint
