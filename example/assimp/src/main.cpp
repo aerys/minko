@@ -142,14 +142,14 @@ main(int argc, char** argv)
             ->descendants(true)
             ->where([](scene::Node::Ptr n)
         {
-            return n->hasComponent<Skinning>();
+			return n->hasComponent<MasterAnimation>();
         });
 
         auto skinnedNode = !skinnedNodes->nodes().empty()
                            ? skinnedNodes->nodes().front()
                            : nullptr;
 
-        anim = skinnedNode->component<Skinning>()
+		anim = skinnedNode->component<MasterAnimation>()
             ->addLabel(LABEL_RUN_START,        0)
             ->addLabel(LABEL_RUN_STOP,        800)
             ->addLabel(LABEL_IDLE,            900)
