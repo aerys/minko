@@ -34,7 +34,6 @@ namespace minko
 			typedef std::shared_ptr<Material>	Ptr;
 
         private:
-            std::string                     _name;
             std::shared_ptr<data::Provider> _provider;
 
 		public:
@@ -57,7 +56,6 @@ namespace minko
 				auto mat = create();
 
 				mat->_provider->copyFrom(source->_provider);
-                mat->_name = source->_name;
 
 				return mat;
 			}
@@ -66,7 +64,7 @@ namespace minko
             const std::string&
             name() const
             {
-                return _name;
+                return _provider->get<std::string>("name");
             }
 
             inline
@@ -78,10 +76,9 @@ namespace minko
 
 		protected:
 			Material(const std::string& name) :
-                _name(name),
                 _provider(data::Provider::create())
             {
-	
+                _provider->set("name", name);
             }
 		};
 	}
