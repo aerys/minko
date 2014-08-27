@@ -88,13 +88,8 @@ namespace minko
 			Ptr
 			lineTo(const math::vec3&, unsigned int numSegments = 1);
 
-
 		protected:
-            LineGeometry() :
-                Geometry("line")
-            {
-
-            }
+            LineGeometry();
 
 			void
 			initialize(std::shared_ptr<render::AbstractContext> context);

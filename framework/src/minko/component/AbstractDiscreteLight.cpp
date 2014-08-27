@@ -44,7 +44,6 @@ AbstractDiscreteLight::targetAdded(std::shared_ptr<scene::Node> target)
 		&AbstractDiscreteLight::modelToWorldMatrixChangedHandler,
 		std::dynamic_pointer_cast<AbstractDiscreteLight>(shared_from_this()),
 		std::placeholders::_1,
-		std::placeholders::_2,
         std::placeholders::_3
 	));
 
@@ -62,8 +61,7 @@ AbstractDiscreteLight::targetRemoved(std::shared_ptr<scene::Node> target)
 
 void
 AbstractDiscreteLight::modelToWorldMatrixChangedHandler(data::Container& 	container,
-								 						const std::string& 	propertyName,
-                                                        const std::string&  fullPropertyName)
+								 						const std::string& 	propertyName)
 {
 	updateModelToWorldMatrix(container.get<math::mat4>(propertyName));
 }

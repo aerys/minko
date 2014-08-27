@@ -56,7 +56,7 @@ LightMaskFilter::root(Node::Ptr root)
 		for (auto& n : _numLightPropertyNames)
 		{
 			auto slot = _root->data().propertyChanged(n).connect(
-                [=](Container&, const std::string&, const std::string&)
+                [=](Container&, data::Provider::Ptr, const std::string&)
                 { 
 				    lightsChangedHandler(); 
 			    }, 

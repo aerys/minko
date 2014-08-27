@@ -22,13 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/data/Provider.hpp"
+#include "minko/Uuid.hpp"
 
 namespace minko
 {
 	namespace material
 	{
 		class Material :
-            public std::enable_shared_from_this<Material>
+            public std::enable_shared_from_this<Material>,
+            public Uuid::has_uuid
 		{
 		public:
 			typedef std::shared_ptr<Material>	Ptr;
@@ -59,6 +61,13 @@ namespace minko
 
 				return mat;
 			}
+            
+            inline
+            const std::string&
+            uuid()
+            {
+                return _provider->uuid();
+            }
 
             inline
             const std::string&
@@ -79,6 +88,7 @@ namespace minko
                 _provider(data::Provider::create())
             {
                 _provider->set("name", name);
+                _provider->set("uuid", _provider->uuid());
             }
 		};
 	}

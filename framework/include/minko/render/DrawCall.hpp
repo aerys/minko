@@ -93,7 +93,25 @@ namespace minko
             std::vector<UniformValue<bool>>     _uniformBool;
             std::vector<SamplerValue>           _samplers;
             std::vector<AttributeValue>         _attributes;
-            std::shared_ptr<States>             _states;
+
+            float*				                _priority;
+            bool*						        _zsorted;
+            Blending::Source*		            _blendingSourceFactor;
+            Blending::Destination*	            _blendingDestinationFactor;
+            bool*						        _colorMask;
+            bool*					            _depthMask;
+            CompareMode*		    		    _depthFunc;
+            TriangleCulling*                    _triangleCulling;
+            CompareMode*					    _stencilFunction;
+            int*							    _stencilReference;
+            uint*						        _stencilMask;
+            StencilOperation*			        _stencilFailOp;
+            StencilOperation*			        _stencilZFailOp;
+            StencilOperation*			        _stencilZPassOp;
+            bool*						        _scissorTest;
+            ScissorBox*					        _scissorBox;
+            /*SamplerStates               _samplerStates;
+            AbstractTexturePtr		    _target;*/
 
 		public:
             DrawCall(std::shared_ptr<render::Pass>  pass,
@@ -134,8 +152,8 @@ namespace minko
             }
 
             inline
-            const StringMap&
-            variables() const
+            StringMap&
+            variables()
             {
                 return _variables;
             }

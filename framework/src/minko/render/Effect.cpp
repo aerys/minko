@@ -26,14 +26,10 @@ using namespace minko;
 using namespace minko::render;
 
 Effect::Effect(const std::string& name) :
-    _techniques(),
-    _fallback(),
-    _data(data::Provider::create()),
-    _uniformFunctions(),
-    _attributeFunctions(),
-    _macroFunctions()
+    _data(data::Provider::create())
 {
     _data->set("name", name);
+    _data->set("uuid", _data->uuid());
 }
 
 void

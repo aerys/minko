@@ -23,13 +23,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Provider.hpp"
 #include "minko/render/VertexBuffer.hpp"
 #include "minko/render/IndexBuffer.hpp"
+#include "minko/Uuid.hpp"
 
 namespace minko
 {
 	namespace geometry
 	{
 		class Geometry :
-			public std::enable_shared_from_this<Geometry>
+			public std::enable_shared_from_this<Geometry>,
+            public Uuid::has_uuid
 		{
 		public:
 			typedef std::shared_ptr<Geometry> Ptr;
@@ -62,6 +64,13 @@ namespace minko
 			{
 				return std::shared_ptr<Geometry>(new Geometry(name));
 			}
+
+            inline
+            const std::string&
+            uuid()
+            {
+                return _data->uuid();
+            }
 
 			inline
 			ProviderPtr

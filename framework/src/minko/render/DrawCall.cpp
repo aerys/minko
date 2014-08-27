@@ -107,13 +107,13 @@ DrawCall::bindIndexBuffer(const std::unordered_map<std::string, std::string>&   
                           const data::Container&                                targetData)
 {
     _indexBuffer = const_cast<int*>(targetData.getPointer<int>(
-        data::Container::getActualPropertyName(variables, "geometry[${geometryId}].indices")
+        data::Container::getActualPropertyName(variables, "geometry[${geometryUuid}].indices")
     ));
     _firstIndex = const_cast<uint*>(targetData.getPointer<uint>(
-        data::Container::getActualPropertyName(variables, "geometry[${geometryId}].firstIndex")
+        data::Container::getActualPropertyName(variables, "geometry[${geometryUuid}].firstIndex")
     ));
     _numIndices = const_cast<uint*>(targetData.getPointer<uint>(
-        data::Container::getActualPropertyName(variables, "geometry[${geometryId}].numIndices")
+        data::Container::getActualPropertyName(variables, "geometry[${geometryUuid}].numIndices")
     ));
 }
 

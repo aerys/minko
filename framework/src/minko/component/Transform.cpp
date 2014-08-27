@@ -246,6 +246,7 @@ Transform::RootTransform::updateTransformsList()
     _numChildren.resize(_nodes.size(), -1);
     _dirty.resize(_nodes.size(), true);
     _parentId.resize(_nodes.size(), -1);
+    _providers.resize(_nodes.size(), nullptr);
 
     _firstChildId.clear();
     _firstChildId.resize(_nodes.size(), -1);
@@ -258,6 +259,7 @@ Transform::RootTransform::updateTransformsList()
 		_nodeToId[node] = nodeId;
         _matrix[nodeId] = node->data().getPointer<math::mat4>("matrix");
 		_modelToWorld[nodeId] = node->data().getUnsafePointer<math::mat4>("modelToWorldMatrix");
+        _providers[nodeId] = node->component<Transform>()->_data;
 
         ++nodeId;
 	}
@@ -354,16 +356,17 @@ Transform::RootTransform::updateTransforms()
             if (*_modelToWorld[nodeId] != modelToWorldMatrix)
             {
                 auto& nodeData = node->data();
+                auto provider = _providers[nodeId];
 
                 // manually update the data provider internal mat4 object
                 *_modelToWorld[nodeId] = modelToWorldMatrix;
 
                 // execute the "property changed" signal(s) manually
-                nodeData.propertyChanged().execute(nodeData, "modelToWorldMatrix", "modelToWorldMatrix");
+                nodeData.propertyChanged().execute(nodeData, provider, "modelToWorldMatrix");
                 if (nodeData.hasPropertyChangedSignal("modelToWorldMatrix"))
                     nodeData.propertyChanged("modelToWorldMatrix").execute(
                         nodeData,
-                        "modelToWorldMatrix",
+                        provider,
                         "modelToWorldMatrix"
                     );
 

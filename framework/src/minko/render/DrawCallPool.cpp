@@ -258,10 +258,17 @@ DrawCallPool::update()
 }
 
 void
-DrawCallPool::invalidateDrawCalls(const DrawCallIteratorPair& iterators)
+DrawCallPool::invalidateDrawCalls(const DrawCallIteratorPair&                         iterators,
+                                  const std::unordered_map<std::string, std::string>& variables)
 {
     auto end = std::next(iterators.second);
 
     for (auto it = iterators.first; it != end; ++it)
-        _invalidDrawCalls.insert(*it);
+    {
+        auto drawCallPtr = *it;
+
+        _invalidDrawCalls.insert(drawCallPtr);
+        for (auto& variable : variables)
+            drawCallPtr->variables()[variable.first] = variable.second;
+    }
 }

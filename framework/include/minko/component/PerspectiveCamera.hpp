@@ -200,8 +200,7 @@ namespace minko
 							  const math::mat4&	postPerspective);
 
 			void
-			localToWorldChangedHandler(data::Container&     data,
-									   const std::string&	propertyName);
+			localToWorldChangedHandler(data::Container& data);
 
             void
             updateMatrices(const math::mat4& modelToWorldMatrix);

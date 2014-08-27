@@ -24,8 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::data;
 
-Provider::Provider() :
-    _uuid(Uuid::getUuid())
+Provider::Provider()
 {
 }
 

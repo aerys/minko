@@ -34,15 +34,17 @@ namespace minko
 			public std::enable_shared_from_this<DrawCallPool>
 		{
         private:
-            typedef std::list<DrawCall*>::iterator                                          DrawCallIterator;
-            typedef data::Container::PropertyChangedSignal                                  PropertyChanged;
-            typedef std::pair<PropertyChanged::Slot, uint>                                  ChangedSlot;
-            typedef std::list<DrawCall*>                                                    DrawCallList;
-            typedef data::Container                                                         Container;
-            typedef data::MacroBinding                                                      MacroBinding;
-            typedef std::pair<const MacroBinding*, const Container*>                        MacroBindingKey;
-            typedef std::pair<const Container*, const PropertyChanged*>                     ContainerKey;
-            typedef std::function<void(Container&, const std::string&, const std::string&)> MacroCallback;
+            typedef std::list<DrawCall*>::iterator                                      DrawCallIterator;
+            typedef data::Container::PropertyChangedSignal                              PropertyChanged;
+            typedef std::pair<PropertyChanged::Slot, uint>                              ChangedSlot;
+            typedef std::list<DrawCall*>                                                DrawCallList;
+            typedef data::Container                                                     Container;
+            typedef std::shared_ptr<data::Collection>                                   CollectionPtr;
+            typedef std::shared_ptr<data::Provider>                                     ProviderPtr;
+            typedef data::MacroBinding                                                  MacroBinding;
+            typedef std::pair<const MacroBinding*, const Container*>                    MacroBindingKey;
+            typedef std::pair<const Container*, const PropertyChanged*>                 ContainerKey;
+            typedef std::function<void(Container&, ProviderPtr, const std::string&)>    MacroCallback;
             
             template<typename T, typename V>
             struct PtrPairHash
@@ -111,7 +113,8 @@ namespace minko
             removeDrawCalls(const DrawCallIteratorPair& iterators);
 
             void
-            invalidateDrawCalls(const DrawCallIteratorPair& iterators);
+            invalidateDrawCalls(const DrawCallIteratorPair&                         iterators,
+                                const std::unordered_map<std::string, std::string>& variables);
 
             void
             update();

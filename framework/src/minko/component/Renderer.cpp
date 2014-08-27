@@ -41,9 +41,6 @@ using namespace minko::component;
 using namespace minko::scene;
 using namespace minko::render;
 
-const unsigned int Renderer::NUM_FALLBACK_ATTEMPTS = 32;
-
-
 Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 				   EffectPtr								effect,
 				   float									priority) :
@@ -241,22 +238,15 @@ Renderer::addSurface(Surface::Ptr surface)
     std::unordered_map<std::string, std::string> variables;
 
     auto& c = surface->target()->data();
-    auto surfaceId = 0;
+    auto surfaceUuid = surface->uuid();
+    auto geometryUuid = surface->geometry()->uuid();
+    auto materialUuid = surface->material()->uuid();
+    auto effectUuid = surface->effect()->uuid();
 
-    // FIXME: find some way to avoid linear search for all the ids
-    while (surface->target()->component<Surface>(surfaceId) != surface)
-        ++surfaceId;
-
-    variables["surfaceId"] = std::to_string(surfaceId);
-    variables["geometryId"] = std::to_string(
-        getProviderId(c, Surface::GEOMETRY_COLLECTION_NAME, surface->geometry()->data())
-    );
-    variables["materialId"] = std::to_string(
-        getProviderId(c, Surface::MATERIAL_COLLECTION_NAME, surface->material()->data())
-    );
-    variables["effectId"] = std::to_string(
-        getProviderId(c, Surface::EFFECT_COLLECTION_NAME, surface->effect()->data())
-    );
+    variables["surfaceUuid"] = surfaceUuid;
+    variables["geometryUuid"] = geometryUuid;
+    variables["materialUuid"] = materialUuid;
+    variables["effectUuid"] = effectUuid;
 
     _surfaceToDrawCallIterator[surface] = _drawCallPool.addDrawCalls(
         surface->effect(),
@@ -267,13 +257,20 @@ Renderer::addSurface(Surface::Ptr surface)
         surface->target()->data()
     );
 
-    _surfaceChangedSlot[surface] = surface->changed().connect(std::bind(
-        &Renderer::surfaceChangedHandler,
+    auto callback = std::bind(
+        &Renderer::surfaceGeometryOrMaterialChangedHandler,
         std::static_pointer_cast<Renderer>(shared_from_this()),
-        std::placeholders::_1
-    ));
-}
+        surface
+    );
 
+    _surfaceChangedSlots[surface].push_back(surface->geometryChanged().connect(callback));
+    _surfaceChangedSlots[surface].push_back(surface->materialChanged().connect(callback));
+    _surfaceChangedSlots[surface].push_back(surface->effectChanged().connect(std::bind(
+        &Renderer::surfaceEffectChangedHandler,
+        std::static_pointer_cast<Renderer>(shared_from_this()),
+        surface
+    )));
+}
 
 void
 Renderer::removeSurface(Surface::Ptr surface)
@@ -282,38 +279,33 @@ Renderer::removeSurface(Surface::Ptr surface)
     {
         _drawCallPool.removeDrawCalls(_surfaceToDrawCallIterator[surface]);
         _surfaceToDrawCallIterator.erase(surface);
-        _surfaceChangedSlot.erase(surface);
+        _surfaceChangedSlots.erase(surface);
     }
 }
 
 void
-Renderer::surfaceChangedHandler(Surface::Ptr surface)
+Renderer::surfaceGeometryOrMaterialChangedHandler(Surface::Ptr surface)
 {
     // The surface's material, geometry or effect is different
     // we completely remove the surface and re-add it again because
     // it's way simpler than just updating what has changed.
-    _drawCallPool.invalidateDrawCalls(_surfaceToDrawCallIterator[surface]);
+
+    std::unordered_map<std::string, std::string> variables;
+    //variables["surfaceUuid"] = surface->uuid();
+    variables["geometryUuid"] = surface->geometry()->uuid();
+    variables["materialUuid"] = surface->material()->uuid();
+    //variables["effectUuid"] = surface->effect()->uuid();
+
+    _drawCallPool.invalidateDrawCalls(_surfaceToDrawCallIterator[surface], variables);
+    //removeSurface(surface);
+    //_toCollect.insert(surface);
 }
 
-uint
-Renderer::getProviderId(const data::Container&  container,
-                        const std::string&      collectionName,
-                        data::Provider::Ptr     provider) const
+void
+Renderer::surfaceEffectChangedHandler(SurfacePtr surface)
 {
-    const auto& collections = container.collections();
-    auto collectionIt = std::find_if(collections.begin(), collections.end(), [&](data::Collection::Ptr c)
-    {
-        return c->name() == collectionName;
-    });
-
-    assert(collectionIt != collections.end());
-
-    const auto& collectionItems = (*collectionIt)->items();
-    auto providerIt = std::find(collectionItems.begin(), collectionItems.end(), provider);
-
-    assert(providerIt != collectionItems.end());
-
-    return providerIt - collectionItems.begin();
+    removeSurface(surface);
+    _toCollect.insert(surface);
 }
 
 void

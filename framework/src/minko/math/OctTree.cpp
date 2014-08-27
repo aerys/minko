@@ -175,9 +175,7 @@ math::OctTree::insert(std::shared_ptr<scene::Node> node)
 	{
 		_nodeToTransformChangedSlot[node] = node->data().propertyChanged("modelToWorldMatrix").connect(std::bind(
 			&math::OctTree::nodeModelToWorldChanged,
-			shared_from_this(),
-			std::placeholders::_1,
-			std::placeholders::_2
+			shared_from_this()
         ));
 	}
 
@@ -202,9 +200,9 @@ math::OctTree::nodeChangedOctant(std::shared_ptr<scene::Node> node)
 }
 
 void
-math::OctTree::nodeModelToWorldChanged(data::Container&     data,
-								       const std::string&	propertyName)
+math::OctTree::nodeModelToWorldChanged()
 {
+    // FIXME
 	/*auto node		= _matrixToNode[data->get<std::shared_ptr<math::mat4>>(propertyName)];
 	auto octant		= _nodeToOctant[node];
 

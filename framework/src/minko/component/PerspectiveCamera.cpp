@@ -62,8 +62,7 @@ PerspectiveCamera::targetAdded(NodePtr target)
   	_modelToWorldChangedSlot = target->data().propertyChanged("modelToWorldMatrix").connect(std::bind(
     	&PerspectiveCamera::localToWorldChangedHandler,
 		std::static_pointer_cast<PerspectiveCamera>(shared_from_this()),
-    	std::placeholders::_1,
-    	std::placeholders::_2
+    	std::placeholders::_1
   	));
 
     if (target->data().hasProperty("modelToWorldMatrix"))
@@ -77,8 +76,7 @@ PerspectiveCamera::targetRemoved(NodePtr target)
 }
 
 void
-PerspectiveCamera::localToWorldChangedHandler(data::Container&	    data,
-											  const std::string&	propertyName)
+PerspectiveCamera::localToWorldChangedHandler(data::Container& data)
 {
     updateMatrices(data.get<math::mat4>("modelToWorldMatrix"));
 }

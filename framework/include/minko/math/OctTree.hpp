@@ -98,8 +98,7 @@ namespace minko
 			nodeChangedOctant(NodePtr node);
 
 			void
-			nodeModelToWorldChanged(data::Container&	data,
-									const std::string&	propertyName);
+			nodeModelToWorldChanged();
 
 			void
 			split();

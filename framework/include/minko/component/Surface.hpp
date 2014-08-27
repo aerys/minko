@@ -28,7 +28,8 @@ namespace minko
 	namespace component
 	{
 		class Surface :
-			public AbstractComponent
+			public AbstractComponent,
+            public Uuid::enable_uuid
 		{
 			friend render::DrawCallPool;
 
@@ -47,6 +48,7 @@ namespace minko
 			typedef Signal<std::shared_ptr<data::Provider>, uint>::Slot				ArrayIndexChangedSlot;
 
         public:
+            static const std::string SURFACE_COLLECTION_NAME;
             static const std::string GEOMETRY_COLLECTION_NAME;
             static const std::string MATERIAL_COLLECTION_NAME;
             static const std::string EFFECT_COLLECTION_NAME;
@@ -58,8 +60,11 @@ namespace minko
 			std::shared_ptr<material::Material>		_material;
 			std::shared_ptr<render::Effect>			_effect;
 			std::string 							_technique;
-			
-            Signal<Ptr>                             _changed;
+            std::shared_ptr<data::Provider>         _provider;
+
+            Signal<Ptr>                             _geometryChanged;
+            Signal<Ptr>                             _materialChanged;
+            Signal<Ptr>                             _effectChanged;
 
 		public:
 			static
@@ -139,9 +144,23 @@ namespace minko
 
             inline
             Signal<Ptr>&
-            changed()
+            geometryChanged()
             {
-                return _changed;
+                return _geometryChanged;
+            }
+
+            inline
+            Signal<Ptr>&
+            materialChanged()
+            {
+                return _materialChanged;
+            }
+
+            inline
+            Signal<Ptr>&
+            effectChanged()
+            {
+                return _effectChanged;
             }
 
         protected:
@@ -159,7 +178,7 @@ namespace minko
 					const std::string&						technique);
 
 			void
-			setEffectAndTechnique(EffectPtr, const std::string&, bool updateDrawcalls = true);
+			setEffectAndTechnique(EffectPtr, const std::string&);
 		};
 	}
 }

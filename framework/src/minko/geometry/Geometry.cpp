@@ -35,6 +35,7 @@ Geometry::Geometry(const std::string& name) :
 	_indexBuffer(nullptr)
 {
     _data->set("name", name);
+    _data->set("uuid", _data->uuid());
 }
 
 void

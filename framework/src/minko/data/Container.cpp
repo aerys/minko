@@ -67,15 +67,19 @@ Container::providerPropertyChangedHandler(Provider::Ptr         provider,
                                           Collection::Ptr       collection,
                                           const std::string&    propertyName)
 {
-    auto formattedPropertyName = propertyName;
 
     // provider is in a collection
+    _propertyChanged.execute(*this, provider, propertyName);
     if (collection)
+    {
+        auto formattedPropertyName = formatPropertyName(collection, provider, propertyName, true);
+        if (_propertyNameToChangedSignal.count(formattedPropertyName) != 0)
+            propertyChanged(formattedPropertyName).execute(*this, provider, propertyName);
+
         formattedPropertyName = formatPropertyName(collection, provider, propertyName);
-    
-    _propertyChanged.execute(*this, propertyName, formattedPropertyName);
-    if (_propertyNameToChangedSignal.count(formattedPropertyName) != 0)
-        propertyChanged(formattedPropertyName).execute(*this, propertyName, formattedPropertyName);
+        if (_propertyNameToChangedSignal.count(formattedPropertyName) != 0)
+            propertyChanged(formattedPropertyName).execute(*this, provider, propertyName);
+    }
 }
 
 void
@@ -83,7 +87,7 @@ Container::providerPropertyAddedHandler(Provider::Ptr       provider,
                                         Collection::Ptr     collection,
                                         const std::string& 	propertyName)
 {
-    _propertyAdded.execute(*this, propertyName, formatPropertyName(collection, provider, propertyName));
+    _propertyAdded.execute(*this, provider, propertyName);
     providerPropertyChangedHandler(provider, collection, propertyName);
 }
 
@@ -93,20 +97,19 @@ Container::providerPropertyRemovedHandler(Provider::Ptr         provider,
                                           Collection::Ptr       collection,
                                           const std::string&	propertyName)
 {
-    auto formattedPropertyName = propertyName;
+    providerPropertyChangedHandler(provider, collection, propertyName);
 
-    if (collection)
-        formattedPropertyName = formatPropertyName(collection, provider, propertyName);
+    _propertyRemoved.execute(*this, provider, propertyName);
 
-    _propertyChanged.execute(*this, propertyName, formattedPropertyName);
-    if (_propertyNameToChangedSignal.count(formattedPropertyName) != 0)
-        propertyChanged(formattedPropertyName).execute(*this, propertyName, formattedPropertyName);
+    auto formattedName = formatPropertyName(collection, provider, propertyName);
+    if (_propertyNameToChangedSignal.count(formattedName)
+        && _propertyNameToChangedSignal[formattedName].numCallbacks() == 0)
+        _propertyNameToChangedSignal.erase(formattedName);
 
-    _propertyRemoved.execute(*this, propertyName, formattedPropertyName);
-
-    if (_propertyNameToChangedSignal.count(propertyName)
-        && _propertyNameToChangedSignal[propertyName].numCallbacks() == 0)
-        _propertyNameToChangedSignal.erase(propertyName);
+    formattedName = formatPropertyName(collection, provider, propertyName, true);
+    if (_propertyNameToChangedSignal.count(formattedName)
+        && _propertyNameToChangedSignal[formattedName].numCallbacks() == 0)
+        _propertyNameToChangedSignal.erase(formattedName);
 }
 
 std::pair<Provider::Ptr, std::string>
@@ -257,23 +260,29 @@ Container::doRemoveProvider(ProviderPtr provider, CollectionPtr collection)
 }
 
 std::string
-Container::formatPropertyName(Collection::Ptr collection, Provider::Ptr provider, const std::string& propertyName)
+Container::formatPropertyName(Collection::Ptr       collection,
+                              Provider::Ptr         provider,
+                              const std::string&    propertyName,
+                              bool                  useUuid)
 {
     if (collection == nullptr)
         return propertyName;
+
+    if (useUuid)
+        return formatPropertyName(collection, provider->uuid(), propertyName);
 
     auto it = std::find(collection->items().begin(), collection->items().end(), provider);
 
-    return formatPropertyName(collection, it - collection->items().begin(), propertyName);
+    return formatPropertyName(collection, std::to_string(it - collection->items().begin()), propertyName);
 }
 
 std::string
-Container::formatPropertyName(Collection::Ptr collection, uint index, const std::string& propertyName)
+Container::formatPropertyName(Collection::Ptr collection, const std::string& index, const std::string& propertyName)
 {
     if (collection == nullptr)
         return propertyName;
 
-    return collection->name() + "[" + std::to_string(index) + "]." + propertyName;
+    return collection->name() + "[" + index + "]." + propertyName;
 }
 
 void

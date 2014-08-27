@@ -23,13 +23,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Signal.hpp"
 #include "minko/render/Pass.hpp"
+#include "minko/data/Provider.hpp"
+#include "minko/Uuid.hpp"
 
 namespace minko
 {
 	namespace render
 	{
 		class Effect :
-			public std::enable_shared_from_this<Effect>
+            public Uuid::has_uuid
 		{
 		public:
 			typedef std::shared_ptr<Effect>	Ptr;
@@ -70,7 +72,14 @@ namespace minko
 				return effect;
 			}
 
-			inline
+            inline
+            const std::string&
+            uuid()
+            {
+                return _data->uuid();
+            }
+
+            inline
 			const std::unordered_map<std::string, Technique>&
 			techniques() const
 			{

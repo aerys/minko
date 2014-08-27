@@ -157,6 +157,7 @@ namespace minko
 				typedef std::shared_ptr<render::AbstractTexture> 	AbsTexturePtr;
 				typedef Signal<SceneMgrPtr, uint, AbsTexturePtr> 	RenderingBeginSignal;
 				typedef RenderingBeginSignal::Slot 					RenderingBeginSlot;
+                typedef std::shared_ptr<data::Provider>             ProviderPtr;
 
 			public:
 				inline static
@@ -193,6 +194,7 @@ namespace minko
 				std::vector<int> 		        _firstChildId;
 				std::vector<int>		        _numChildren;
 				std::vector<bool>				_dirty;
+                std::vector<ProviderPtr>        _providers;
 				bool							_invalidLists;
 
 				std::list<Any>					_targetSlots;

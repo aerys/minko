@@ -33,7 +33,7 @@ using namespace minko::render;
 /*static*/ const std::string	LineGeometry::ATTRNAME_WEIGHTS		= "weights";
 
 LineGeometry::LineGeometry():
-	Geometry(),
+	Geometry("line"),
 	_currentX(0.0f),
 	_currentY(0.0f),
 	_currentZ(0.0f),

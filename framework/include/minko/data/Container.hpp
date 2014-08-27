@@ -29,19 +29,19 @@ namespace minko
 		class Container
 		{
 
-		public:
-			typedef Signal<Container&, const std::string&, const std::string&>	PropertyChangedSignal;
-
 		private:
             typedef Signal<Provider::Ptr, const std::string&>	        ProviderChangedSignal;
             typedef std::list<ProviderChangedSignal::Slot>              ProviderChangedSignalSlotList;
 
-			typedef std::shared_ptr<Provider>							ProviderPtr;
-            typedef std::shared_ptr<Collection>							CollectionPtr;
-			typedef std::shared_ptr<data::AbstractFilter>				AbsFilterPtr;
-			typedef Signal<ProviderPtr, const std::string&>				ProviderPropertyChangedSignal;
-			typedef ProviderPropertyChangedSignal::Slot					ProviderPropertyChangedSlot;
+			typedef std::shared_ptr<Provider>						    ProviderPtr;
+            typedef std::shared_ptr<Collection>						    CollectionPtr;
+			typedef std::shared_ptr<data::AbstractFilter>			    AbsFilterPtr;
+			typedef Signal<ProviderPtr, const std::string&>			    ProviderPropertyChangedSignal;
+			typedef ProviderPropertyChangedSignal::Slot				    ProviderPropertyChangedSlot;
             typedef Signal<Collection&, ProviderPtr>::Slot              CollectionChangedSignalSlot;
+
+        public:
+            typedef Signal<Container&, ProviderPtr, const std::string&>	PropertyChangedSignal;
 
         private:
 			std::list<ProviderPtr>									_providers;
@@ -244,10 +244,13 @@ namespace minko
             doRemoveProvider(ProviderPtr provider, CollectionPtr collection = nullptr);
 
             std::string
-            formatPropertyName(CollectionPtr collection, ProviderPtr provider, const std::string& propertyName);
+            formatPropertyName(CollectionPtr        collection,
+                               ProviderPtr          provider,
+                               const std::string&   propertyName,
+                               bool                 useUuid = false);
 
             std::string
-            formatPropertyName(CollectionPtr collection, uint index, const std::string& propertyName);
+            formatPropertyName(CollectionPtr collection, const std::string& index, const std::string& propertyName);
 
             void
             addProviderToCollection(std::shared_ptr<data::Provider> provider,

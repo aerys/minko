@@ -22,13 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/Any.hpp"
 #include "minko/Signal.hpp"
+#include "minko/Uuid.hpp"
 
 namespace minko
 {
 	namespace data
 	{			
 		class Provider :
-			public std::enable_shared_from_this<Provider>
+			public std::enable_shared_from_this<Provider>,
+            public Uuid::enable_uuid
 		{
 		public:
 			typedef std::shared_ptr<Provider>		Ptr;
@@ -53,7 +55,6 @@ namespace minko
 
 		private:
 			std::map<std::string, Any>	    _values;
-            std::string                     _uuid;
 
 			Signal<Ptr, const std::string&> _propertyAdded;
             Signal<Ptr, const std::string&>	_propertyChanged;
@@ -75,13 +76,6 @@ namespace minko
 			{
 				return create()->copyFrom(source);
 			}
-
-            inline
-            const std::string&
-            uuid()
-            {
-                return _uuid;
-            }
 
 			inline
 			bool 
