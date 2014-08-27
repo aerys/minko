@@ -122,14 +122,22 @@ Container::getProviderByPropertyName(const std::string& propertyName) const
             if (collection->name() == collectionName)
             {
                 auto pos2 = propertyName.find_first_of("]");
-                auto index = (uint)std::stoi(propertyName.substr(pos + 1, pos2 - pos - 1));
+                auto index = propertyName.substr(pos + 1, pos2 - pos - 1);
+                auto pos3 = index.find_first_of("-");
                 auto token = propertyName.substr(pos2 + 2);
 
-                if (index < collection->items().size())
+                // fetch provider by uuid
+                if (pos3 != std::string::npos)
                 {
-                    auto provider = collection->items()[index];
+                    for (const auto& provider : collection->items())
+                        if (provider->uuid() == index && provider->hasProperty(token))
+                            return std::pair<Provider::Ptr, std::string>(provider, token);
+                }
+                else // fetch provider by index
+                {
+                    auto provider = collection->items()[std::stoi(index)];
 
-                    if (provider->hasProperty(token) != 0)
+                    if (provider->hasProperty(token))
                         return std::pair<Provider::Ptr, std::string>(provider, token);
                 }
 
@@ -201,7 +209,7 @@ Container::doRemoveProvider(ProviderPtr provider, CollectionPtr collection)
 
     // execute all the "property removed" signals
     for (auto property : provider->values())
-        providerPropertyRemovedHandler(provider, nullptr, property.first);
+        providerPropertyRemovedHandler(provider, collection, property.first);
 
     _providers.erase(std::find(_providers.begin(), _providers.end(), provider));
 
@@ -229,6 +237,21 @@ Container::doRemoveProvider(ProviderPtr provider, CollectionPtr collection)
                 _propertyNameToChangedSignal.erase(prefix + nameAndValue.first);
 
         updateCollectionLength(collection);
+
+        // the removed provider might very well be anything but the last item of the collection
+        // thus, all properties of all providers will have a different name.
+        // Ex: "material[2].diffuseMap" will become "material[1].diffuseMap" when the material 1
+        // is removed.
+        // In other words, the value targeted by "material[1].diffuseMap" will be different and thus
+        // we should trigger the "property changed" signal for each property of each provider which is
+        // "after" the one being removed from the collection.
+        for (uint i = providerIndex; i < collection->items().size(); ++i)
+        {
+            const auto& provider = collection->items()[i];
+
+            for (const auto& property : provider->values())
+                providerPropertyChangedHandler(provider, collection, property.first);
+        }
     }
 
 }
