@@ -1443,7 +1443,7 @@ AbstractASSIMPParser::chooseEffectByShadingMode(const aiMaterial* aiMat) const
     if (effect == nullptr && aiMat)
     {
         int shadingMode;
-        unsigned int max;
+        unsigned int max = 1;
         if (aiMat->Get(AI_MATKEY_SHADING_MODEL, &shadingMode, &max) == AI_SUCCESS)
         {
             switch(static_cast<aiShadingMode>(shadingMode))
