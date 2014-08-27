@@ -74,7 +74,7 @@ namespace minko
 
             inline
             const std::string&
-            uuid()
+            uuid() const
             {
                 return _data->uuid();
             }

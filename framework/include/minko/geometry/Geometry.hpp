@@ -60,14 +60,14 @@ namespace minko
 
 			static
 			Ptr
-            create(const std::string& name)
+            create(const std::string& name = "geometry")
 			{
 				return std::shared_ptr<Geometry>(new Geometry(name));
 			}
 
             inline
             const std::string&
-            uuid()
+            uuid() const
             {
                 return _data->uuid();
             }

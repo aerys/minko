@@ -34,7 +34,7 @@ namespace minko
         public:
             virtual
             const std::string&
-            uuid() = 0;
+            uuid() const = 0;
         };
 
         class enable_uuid
@@ -61,7 +61,7 @@ namespace minko
 
             inline
             const std::string&
-            uuid()
+            uuid() const
             {
                 return _uuid;
             }
