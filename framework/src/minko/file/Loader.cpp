@@ -32,7 +32,8 @@ Loader::Loader() :
     _options(Options::create()),
     _complete(Signal<Loader::Ptr>::create()),
     _progress(Signal<Loader::Ptr, float>::create()),
-    _error(Signal<Loader::Ptr, const ParserError&>::create())
+    _error(Signal<Loader::Ptr, const Error&>::create()),
+    _numFilesToParse(0)
 {
 }
 
@@ -103,12 +104,16 @@ Loader::protocolErrorHandler(std::shared_ptr<AbstractProtocol> protocol)
 {
     LOG_ERROR(protocol->file()->filename());
 
-    auto error = ParserError("ProtocolError", "Protocol error: " + protocol->file()->filename());
+    auto error = Error("ProtocolError", "Protocol error: " + protocol->file()->filename());
 
     if (_error->numCallbacks() != 0)
         _error->execute(shared_from_this(), error);
     else
+    {
+        LOG_DEBUG(error.type() << ": " << error.what());
+        
         throw error;
+    }
 }
 
 void
@@ -141,6 +146,8 @@ Loader::protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol)
     _loading.erase(std::find(_loading.begin(), _loading.end(), filename));
     //_filenameToProtocol.erase(protocol->filename());
     _filenameToOptions.erase(filename);
+    
+    _numFilesToParse++;
 
     LOG_DEBUG("file '" << protocol->file()->filename() << "' loaded, "
         << _loading.size() << " file(s) still loading, "
@@ -154,7 +161,11 @@ Loader::protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol)
     );
 
     if (!parsed)
+    {
+        --_numFilesToParse;
+        
         finalize();
+    }
 }
 
 bool
@@ -171,28 +182,20 @@ Loader::processData(const std::string&                      filename,
 
     if (parser)
     {
-        _parserSlots[parser] = parser->complete()->connect(std::bind(
+        _parserCompleteSlots[parser] = parser->complete()->connect(std::bind(
             &Loader::parserCompleteHandler,
             shared_from_this(),
             std::placeholders::_1
         ));
+        
+        _parserErrorSlots[parser] = parser->error()->connect(std::bind(
+                                                                       &Loader::parserErrorHandler,
+                                                                       shared_from_this(),
+                                                                       std::placeholders::_1,
+                                                                       std::placeholders::_2
+                                                                       ));
 
-        try
-        {
-            parser->parse(filename, resolvedFilename, options, data, options->assetLibrary());
-        }
-        catch (const ParserError& parserError)
-        {
-            if (_error->numCallbacks() != 0)
-            {
-                _error->execute(shared_from_this(), parserError);
-            }
-            else
-            {
-                LOG_DEBUG("parsing failed (" << parserError.type() << "): " << parserError.what());
-                throw parserError;
-            }
-        }
+        parser->parse(filename, resolvedFilename, options, data, options->assetLibrary());
     }
     else
     {
@@ -208,17 +211,32 @@ Loader::processData(const std::string&                      filename,
 void
 Loader::parserCompleteHandler(AbstractParser::Ptr parser)
 {
-    _parserSlots.erase(parser);
+    --_numFilesToParse;
+    _parserCompleteSlots.erase(parser);
 
     finalize();
 }
 
 void
+Loader::parserErrorHandler(AbstractParser::Ptr parser, const Error& error)
+{
+    if (_error->numCallbacks() != 0)
+        _error->execute(shared_from_this(), error);
+    else
+    {
+        LOG_DEBUG(error.type() << ": " << error.what());
+        
+        throw error;
+    }
+}
+
+void
 Loader::finalize()
 {
-    if (_loading.size() == 0 && _filesQueue.size() == 0 && _parserSlots.size() == 0)
+    if (_loading.size() == 0 && _filesQueue.size() == 0 && _numFilesToParse == 0)
     {
         _protocolSlots.clear();
+        _parserErrorSlots.clear();
         _filenameToOptions.clear();
 
         _complete->execute(shared_from_this());
