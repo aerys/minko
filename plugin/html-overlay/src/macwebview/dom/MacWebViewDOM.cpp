@@ -60,7 +60,8 @@ std::string replaceAll(std::string str, const std::string& from, const std::stri
 void
 MacWebViewDOM::sendMessage(std::string message, bool async)
 {
-    message = replaceAll(message, std::string("'"), std::string("\\'"));
+    message = replaceAll(message, "\\", "\\\\");
+    message = replaceAll(message, "'", "\\'");
 
 	std::string eval = "if (" + _jsAccessor + ".window.Minko.onmessage) " + _jsAccessor + ".window.Minko.onmessage('" + message + "');";
 
