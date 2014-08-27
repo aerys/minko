@@ -54,16 +54,16 @@ namespace minko
 		public:
 			inline static
 			Ptr
-			create()
+            create(const std::string& name)
 			{
-				return std::shared_ptr<Effect>(new Effect());
+				return std::shared_ptr<Effect>(new Effect(name));
 			}
 
 			inline static
 			Ptr
-			create(std::vector<PassPtr>& passes)
+            create(const std::string& name, std::vector<PassPtr>& passes)
 			{
-				auto effect = create();
+				auto effect = create(name);
 
 				effect->_techniques["default"] = passes;
 
@@ -166,7 +166,7 @@ namespace minko
             removeTechnique(const std::string& name);
 
 		private:
-			Effect();
+            Effect(const std::string& name);
 
 			template <typename... T>
 			static 

@@ -218,7 +218,7 @@ EffectParser::parse(const std::string&				    filename,
 	// the global list of passes becomes the "default" techinque
 	parseTechniques(root, resolvedFilename, _options, context);
 
-    _effect = render::Effect::create();
+    _effect = render::Effect::create(_effectName);
     definePlatform();
 
 	if (_numDependencies == _numLoadedDependencies)
