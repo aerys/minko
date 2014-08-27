@@ -394,7 +394,7 @@ namespace std
 	std::string
 	to_string(const minko::math::mat4& matrix)
 	{
-		std::string str = "(";
+		std::string str = "mat4(";
 		auto ptr = minko::math::value_ptr(matrix);
 		for (auto i = 0; i < 15; ++i)
 			str += to_string(ptr[i]) + ", ";
@@ -407,21 +407,21 @@ namespace std
 	std::string
 	to_string(const minko::math::vec2& v)
 	{
-		return "(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ")";
+		return "vec2(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ")";
 	}
 
 	inline
 	std::string
 	to_string(const minko::math::vec3& v)
 	{
-		return "(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ", " + std::to_string(v.z) + ")";
+		return "vec3(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ", " + std::to_string(v.z) + ")";
 	}
 
 	inline
 	std::string
 	to_string(const minko::math::vec4& v)
 	{
-		return "(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ", " + std::to_string(v.z) + ", "
+		return "vec4(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ", " + std::to_string(v.z) + ", "
 			+ std::to_string(v.w) + ")";
 	}
 	
