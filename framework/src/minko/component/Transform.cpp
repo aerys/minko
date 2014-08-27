@@ -277,11 +277,9 @@ Transform::RootTransform::sortNodes()
     uint nodeId = 0;
 
 	// assumes 'nodes' is the result of a breadth-first search from the nodes
-    for (auto& node : _nodes)
-	//for (unsigned int nodeId = 0; nodeId < _nodes.size(); ++nodeId)
+    for (auto nodeIt = _nodes.begin(); nodeIt != _nodes.end(); ++nodeIt)
 	{
-		//auto it = std::next(_nodes.begin(), nodeId);
-		//auto node = *it;
+		auto node = *nodeIt;
         auto ancestor = node->parent();
 
         while (ancestor != nullptr && !ancestor->hasComponent<Transform>())
@@ -309,7 +307,7 @@ Transform::RootTransform::sortNodes()
             if (ancestorId > nodeId)
             {
                 _nodes.erase(ancestorIt);
-                _nodes.insert(_nodes.begin() + nodeId, ancestor);
+                _nodes.insert(nodeIt, ancestor);
                 _parentId[nodeId + 1] = nodeId;
                 _numChildren[nodeId] = 1;
                 _firstChildId[nodeId] = nodeId + 1;
@@ -328,7 +326,7 @@ Transform::RootTransform::sortNodes()
             _parentId[nodeId] = ancestorId;
             _numChildren[nodeId] = 0;
             _firstChildId[nodeId] = -1;
-            _nodes.erase(_nodes.begin() + nodeId);
+            _nodes.erase(nodeIt);
             _nodes.insert(std::next(ancestorIt, _numChildren[ancestorId]), node);
             ++_numChildren[ancestorId];
 		}
