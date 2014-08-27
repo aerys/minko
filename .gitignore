@@ -21,6 +21,7 @@ Makefile
 *.lastbuildstate
 *.vsglog
 *.cache
+*.vspx
 doc/html
 remove.me
 dist
