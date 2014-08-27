@@ -75,7 +75,7 @@ namespace minko
             typedef std::vector<Matrix4x4Ptr>                                    Matrices4x4;
 
             typedef Signal<LoaderPtr>::Slot                                        LoaderCompleteSignalSlot;
-            typedef Signal<LoaderPtr, const file::ParserError&>::Slot            LoaderErrorSignalSlot;
+            typedef Signal<LoaderPtr, const file::Error&>::Slot            LoaderErrorSignalSlot;
 
             typedef std::unordered_map<LoaderPtr, LoaderCompleteSignalSlot>        LoaderToCompleteSlotMap;
             typedef std::unordered_map<LoaderPtr, LoaderErrorSignalSlot>        LoaderToErrorSlotMap;
