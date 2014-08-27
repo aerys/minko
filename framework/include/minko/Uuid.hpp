@@ -28,8 +28,46 @@ namespace minko
 	private:
 		static bool	_randSeeded;
 
-	public:
+    public:
+        class has_uuid
+        {
+        public:
+            virtual
+            const std::string&
+            uuid() = 0;
+        };
 
+        class enable_uuid
+            : public has_uuid
+        {
+        protected:
+            const std::string _uuid;
+
+        protected:
+            enable_uuid() :
+                _uuid(Uuid::getUuid())
+            {
+            }
+
+            enable_uuid(const std::string& uuid) :
+                _uuid(uuid)
+            {
+            }
+
+        public:
+            virtual
+            ~enable_uuid()
+            {}
+
+            inline
+            const std::string&
+            uuid()
+            {
+                return _uuid;
+            }
+        };
+
+	public:
 		static
 		std::string
 		getUuid()
@@ -38,7 +76,6 @@ namespace minko
 		}
 
 	private:
-
 		static
 		std::string
 		s4()
