@@ -51,14 +51,16 @@ namespace minko
 			virtual
 			~Geometry()
 			{
-
+                _data = nullptr;
+                _vertexBuffers.clear();
+                _indexBuffer = nullptr;
 			}
 
 			static
 			Ptr
-			create()
+            create(const std::string& name)
 			{
-				return std::shared_ptr<Geometry>(new Geometry());
+				return std::shared_ptr<Geometry>(new Geometry(name));
 			}
 
 			inline
@@ -74,6 +76,13 @@ namespace minko
 			{
 				return _vertexBuffers;
 			}
+
+            inline
+            const std::string&
+            name()
+            {
+                return _data->get<std::string>("name");
+            }
 
 			inline
 			VBPtr
@@ -184,7 +193,7 @@ namespace minko
 			equals(Ptr geom) const;
 
 		protected:
-			Geometry();
+			Geometry(const std::string& name);
 
 			inline
 			void

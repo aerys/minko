@@ -166,7 +166,8 @@ const float TeapotGeometry::_points[306][3] =
 	{ 1.5f, -0.84f, 0.075f }, { 0.798f, -1.425f, 0.0f }, { 1.425f, -0.798f, 0.0f }
 };
 
-TeapotGeometry::TeapotGeometry()
+TeapotGeometry::TeapotGeometry() :
+    Geometry("teapot")
 {
 }
 

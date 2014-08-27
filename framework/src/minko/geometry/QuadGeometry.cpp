@@ -29,7 +29,7 @@ QuadGeometry::QuadGeometry(uint		numColumns,
 						   uint		numRows,
 						   float	width,
 						   float	height):
-	geometry::Geometry(),
+	Geometry("quad_" + std::to_string(numColumns) + "x" + std::to_string(numRows)),
 	_numColumns(numColumns),
 	_numRows(numRows),
 	_width(width),

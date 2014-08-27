@@ -46,6 +46,12 @@ namespace minko
 			}
 
 		protected:
+            CubeGeometry() :
+                Geometry("cube")
+            {
+
+            }
+
 			void
 			initialize(std::shared_ptr<render::AbstractContext> context);
 		};			

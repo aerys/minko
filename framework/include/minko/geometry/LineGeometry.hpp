@@ -89,11 +89,15 @@ namespace minko
 			lineTo(const math::vec3&, unsigned int numSegments = 1);
 
 
-		private:
-			LineGeometry();
+		protected:
+            LineGeometry() :
+                Geometry("line")
+            {
+
+            }
 
 			void
-			initialize(std::shared_ptr<render::AbstractContext>);
+			initialize(std::shared_ptr<render::AbstractContext> context);
 		};
 	}
 }

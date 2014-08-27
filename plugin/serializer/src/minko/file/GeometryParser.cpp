@@ -119,7 +119,7 @@ GeometryParser::parse(const std::string&				filename,
 	msgpack::zone			mempool;
 	std::string				folderPathName = extractFolderPath(resolvedFilename);
 	extractDependencies(assetLibrary, data, _headerSize, _dependenciesSize, options, folderPathName);
-	geometry::Geometry::Ptr geom	= geometry::Geometry::create();
+	geometry::Geometry::Ptr geom	= geometry::Geometry::create(filename);
 	SerializedGeometry		serializedGeometry;
 
 	msgpack::unpack((char*)&data[_headerSize + _dependenciesSize], _sceneDataSize, NULL, &mempool, &msgpackObject);

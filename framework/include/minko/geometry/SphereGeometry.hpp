@@ -32,8 +32,6 @@ namespace minko
 		public:
 			typedef std::shared_ptr<SphereGeometry>	Ptr;
 
-		private:
-
 		public:
 			inline static
 			Ptr
@@ -51,6 +49,12 @@ namespace minko
 
 				return geom;
 			}
+
+        protected:
+            SphereGeometry() :
+                Geometry("sphere")
+            {
+            }
 
 		private:
 			void

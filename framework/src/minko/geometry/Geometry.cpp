@@ -28,12 +28,13 @@ using namespace minko;
 using namespace minko::geometry;
 using namespace minko::render;
 
-Geometry::Geometry() :
+Geometry::Geometry(const std::string& name) :
 	_data(data::Provider::create()),
 	_vertexSize(0),
 	_numVertices(0),
 	_indexBuffer(nullptr)
 {
+    _data->set("name", name);
 }
 
 void
