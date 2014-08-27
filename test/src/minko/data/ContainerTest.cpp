@@ -58,7 +58,7 @@ TEST_F(ContainerTest, PropertyAdded)
 	p->set("foo", 42);
 
 	auto _ = c.propertyAdded().connect(
-		[&](Container& container, const std::string& propertyName, const std::string& fullPropertyName)
+		[&](Container& container, Provider::Ptr provider, const std::string& propertyName)
 		{
 			if (propertyName == "foo")
 				v = container.get<int>("foo");
@@ -79,7 +79,7 @@ TEST_F(ContainerTest, PropertyRemoved)
 	p->set("foo", 42);
 
 	auto _ = c.propertyAdded().connect(
-        [&](Container& container, const std::string& propertyName, const std::string& fullPropertyName)
+        [&](Container& container, Provider::Ptr provider, const std::string& propertyName)
 		{
 			if (propertyName == "foo")
 				v = 42;
@@ -101,7 +101,7 @@ TEST_F(ContainerTest, propertyChangedWhenAdded)
 	p->set("foo", 42);
 
 	auto _ = c.propertyChanged("foo").connect(
-        [&](Container& container, const std::string& propertyName, const std::string& fullPropertyName)
+        [&](Container& container, Provider::Ptr provider, const std::string& propertyName)
 		{
 			if (propertyName == "foo")
 				v = container.get<int>("foo");
@@ -122,7 +122,7 @@ TEST_F(ContainerTest, propertyChangedWhenAddedOnProvider)
 	c.addProvider(p);
 
 	auto _ = c.propertyChanged("foo").connect(
-        [&](Container& container, const std::string& propertyName, const std::string& fullPropertyName)
+        [&](Container& container, Provider::Ptr provider, const std::string& propertyName)
 		{
 			if (propertyName == "foo")
 				v = container.get<int>("foo");
@@ -144,7 +144,7 @@ TEST_F(ContainerTest, propertyChangedWhenSetOnProvider)
 	p->set("foo", 23);
 
 	auto _ = c.propertyChanged("foo").connect(
-        [&](Container& container, const std::string& propertyName, const std::string& fullPropertyName)
+        [&](Container& container, Provider::Ptr provider, const std::string& propertyName)
 		{
 			if (propertyName == "foo")
 				v = container.get<int>("foo");
@@ -166,7 +166,7 @@ TEST_F(ContainerTest, propertyChangedNot)
 	p->set("foo", 42);
 
 	auto _ = c.propertyChanged("foo").connect(
-        [&](Container& container, const std::string& propertyName, const std::string& fullPropertyName)
+        [&](Container& container, Provider::Ptr provider, const std::string& propertyName)
 		{
 			if (propertyName == "foo")
 				v = container.get<int>("foo");
@@ -275,10 +275,9 @@ TEST_F(ContainerTest, collectionPropertyAdded)
     c.addCollection(cc);
 
     auto _ = c.propertyAdded().connect(
-        [&](Container& container, const std::string& propertyName, const std::string& fullPropertyName)
+        [&](Container& container, Provider::Ptr provider, const std::string& propertyName)
         {
-            propertyAdded = propertyName == "foo" && fullPropertyName == "test[0].foo"
-                && container.get<int>(fullPropertyName) == 42;
+            propertyAdded = propertyName == "foo" && provider->get<int>(propertyName) == 42;
         }
     );
 
@@ -299,10 +298,9 @@ TEST_F(ContainerTest, collectionPropertyChanged)
     p->set("foo", 42);
 
     auto _ = c.propertyChanged("test[0].foo").connect(
-        [&](Container& container, const std::string& propertyName, const std::string& fullPropertyName)
+        [&](Container& container, Provider::Ptr provider, const std::string& propertyName)
         {
-            propertyChanged = propertyName == "foo" && fullPropertyName == "test[0].foo"
-                && container.get<int>(fullPropertyName) == 4242;
+          propertyChanged = propertyName == "foo" && provider->get<int>(propertyName) == 4242;
         }
     );
 
@@ -323,10 +321,9 @@ TEST_F(ContainerTest, collectionPropertyChangedNot)
     p->set("foo", 42);
 
     auto _ = c.propertyChanged("test[0].foo").connect(
-        [&](Container& container, const std::string& propertyName, const std::string& fullPropertyName)
+        [&](Container& container, Provider::Ptr provider, const std::string& propertyName)
         {
-            propertyChanged = propertyName == "foo" && fullPropertyName == "test[0].foo"
-                && container.get<int>(fullPropertyName) == 42;
+            propertyChanged = propertyName == "foo" && provider->get<int>(propertyName) == 42;
         }
     );
 
@@ -347,9 +344,9 @@ TEST_F(ContainerTest, collectionPropertyRemoved)
     c.addCollection(cc);
 
     auto _ = c.propertyRemoved().connect(
-        [&](Container& container, const std::string& propertyName, const std::string& fullPropertyName)
+        [&](Container& container, Provider::Ptr provider, const std::string& propertyName)
         {
-            propertyRemoved = propertyName == "foo" && fullPropertyName == "test[0].foo";
+            propertyRemoved = propertyName == "foo";
         }
     );
 
@@ -372,10 +369,9 @@ TEST_F(ContainerTest, collectionNthPropertyChanged)
     c.addCollection(cc);
 
     auto _ = c.propertyChanged("test[1].foo").connect(
-        [&](Container& container, const std::string& propertyName, const std::string& fullPropertyName)
+        [&](Container& container, Provider::Ptr provider, const std::string& propertyName)
         {
-            propertyChanged = propertyName == "foo" &&  fullPropertyName == "test[1].foo"
-                && container.get<int>(fullPropertyName) == 42;
+            propertyChanged = propertyName == "foo" && provider->get<int>(propertyName) == 42;
         }
     );
 
