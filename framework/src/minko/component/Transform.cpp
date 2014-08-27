@@ -126,11 +126,6 @@ Transform::RootTransform::targetAdded(scene::Node::Ptr target)
 		), 1000.f);
 
 	addedHandler(target, target->root(), target->parent());
-
-    /*auto withTransforms = scene::NodeSet::create(this->target())
-        ->descendants(true, false)
-        ->where([](scene::Node::Ptr n){ return n->hasComponent<Transform>(); });
-    _toAdd.insert(_toAdd.begin(), withTransforms->nodes().begin(), withTransforms->nodes().end());*/
 }
 
 void
@@ -239,7 +234,6 @@ Transform::RootTransform::updateTransformsList()
     for (const auto& toRemove : _toRemove)
         _nodeToId.erase(toRemove);
     _nodes.clear();
-    //_nodes.reserve(_nodeToId.size() + _toAdd.size());
     for (const auto& nodeAndId : _nodeToId)
         _nodes.push_back(nodeAndId.first);
     for (const auto& node : _toAdd)
@@ -395,38 +389,6 @@ Transform::RootTransform::forceUpdate(scene::Node::Ptr node, bool updateTransfor
 		updateTransformsList();
 
 	updateTransforms();
-
-/*
-	auto				targetNodeId	= _nodeToId[node];
-	int					nodeId			= targetNodeId;
-	auto				dirtyRoot		= -1;
-	std::vector<uint>	path;
-
-	// find the "dirty" root and build the path to get back to the target node
-	while (nodeId >= 0)
-	{
-		if ((_transforms[nodeId]->_hasChanged)
-			|| (nodeId != targetNodeId && _modelToWorld[nodeId]->_hasChanged))
-			dirtyRoot = nodeId;
-
-		path.push_back(nodeId);
-
-		nodeId = _parentId[nodeId];
-	}
-
-	// update that path starting from the dirty root
-	for (int i = path.size() - 1; i >= 0; --i)
-	{
-		auto dirtyNodeId	= path[i];
-		auto parentId		= _parentId[dirtyNodeId];
-		auto modelToWorld	= _modelToWorld[dirtyNodeId];
-
-		modelToWorld->copyFrom(_transforms[dirtyNodeId]);
-		if (parentId != -1)
-			modelToWorld->append(_modelToWorld[parentId]);
-		modelToWorld->_hasChanged = false;
-	}
-	*/
 }
 
 void
