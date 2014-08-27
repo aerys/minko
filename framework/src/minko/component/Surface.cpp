@@ -84,6 +84,9 @@ Surface::targetRemoved(scene::Node::Ptr target)
 void
 Surface::geometry(geometry::Geometry::Ptr geometry)
 {
+    if (geometry == _geometry)
+        return;
+
     target()->data().removeProvider(_geometry->data(), GEOMETRY_COLLECTION_NAME);
 
     _geometry = geometry;
@@ -95,6 +98,9 @@ Surface::geometry(geometry::Geometry::Ptr geometry)
 void
 Surface::material(material::Material::Ptr material)
 {
+    if (material == _material)
+        return;
+
     target()->data().removeProvider(_material->data(), MATERIAL_COLLECTION_NAME);
 
     _material = material;
@@ -123,8 +129,8 @@ Surface::setEffectAndTechnique(Effect::Ptr			effect,
 	if (!effect->hasTechnique(technique))
 		throw std::logic_error("Effect does not provide a '" + technique + "' technique.");
 
-	target()->data().removeProvider(_effect->data());
-	target()->data().addProvider(effect->data());
+	target()->data().removeProvider(_effect->data(), EFFECT_COLLECTION_NAME);
+    target()->data().addProvider(effect->data(), EFFECT_COLLECTION_NAME);
 
 	_effect		= effect;
 	_technique	= technique;
