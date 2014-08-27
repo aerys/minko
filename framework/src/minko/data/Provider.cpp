@@ -19,11 +19,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/data/Provider.hpp"
 
+#include "minko/Uuid.hpp"
+
 using namespace minko;
 using namespace minko::data;
 
 Provider::Provider() :
-	enable_shared_from_this()
+    _uuid(Uuid::getUuid())
 {
 }
 

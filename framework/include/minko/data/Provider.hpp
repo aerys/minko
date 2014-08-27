@@ -52,11 +52,12 @@ namespace minko
             };
 
 		private:
-			std::map<std::string, Any>	            _values;
+			std::map<std::string, Any>	    _values;
+            std::string                     _uuid;
 
-			Signal<Ptr, const std::string&>	        _propertyAdded;
-            Signal<Ptr, const std::string&>	        _propertyChanged;
-			Signal<Ptr, const std::string&>	        _propertyRemoved;
+			Signal<Ptr, const std::string&> _propertyAdded;
+            Signal<Ptr, const std::string&>	_propertyChanged;
+			Signal<Ptr, const std::string&>	_propertyRemoved;
 
 		public:
 			static
@@ -74,6 +75,13 @@ namespace minko
 			{
 				return create()->copyFrom(source);
 			}
+
+            inline
+            const std::string&
+            uuid()
+            {
+                return _uuid;
+            }
 
 			inline
 			bool 
