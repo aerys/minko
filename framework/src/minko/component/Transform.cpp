@@ -270,10 +270,10 @@ Transform::RootTransform::updateTransformsList()
 void
 Transform::RootTransform::sortNodes()
 {
-    uint nodeId = 0;
+    auto nodeIt = _nodes.begin();
 
 	// assumes 'nodes' is the result of a breadth-first search from the nodes
-    for (auto nodeIt = _nodes.begin(); nodeIt != _nodes.end(); ++nodeIt)
+    for (uint nodeId = 0; nodeId < _nodes.size(); ++nodeId)
 	{
 		auto node = *nodeIt;
         auto ancestor = node->parent();
@@ -327,7 +327,7 @@ Transform::RootTransform::sortNodes()
             ++_numChildren[ancestorId];
 		}
 
-        ++nodeId;
+        ++nodeIt;
 	}
 }
 
