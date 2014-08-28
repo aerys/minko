@@ -81,7 +81,7 @@ TEST_F(TransformTest, ModelToWorldUpdate)
 
 	auto updated1 = false;
 	auto _ = n1->data().propertyChanged("modelToWorldMatrix").connect(
-		[&](data::Container& c, const std::string& propertyName, const std::string& fullPropertyName)
+		[&](data::Container& c, data::Provider::Ptr p, const std::string& propertyName)
 		{
 			updated1 = true;
 		}
@@ -89,7 +89,7 @@ TEST_F(TransformTest, ModelToWorldUpdate)
 
 	auto updated2 = false;
 	auto __ = n2->data().propertyChanged("modelToWorldMatrix").connect(
-        [&](data::Container& c, const std::string& propertyName, const std::string& fullPropertyName)
+        [&](data::Container& c, data::Provider::Ptr p, const std::string& propertyName)
 		{
 			updated2 = true;
 		}
@@ -121,7 +121,7 @@ TEST_F(TransformTest, ModelToWorldMultipleUpdates)
 
 	auto updated1 = false;
 	auto _ = n1->data().propertyChanged("modelToWorldMatrix").connect(
-        [&](data::Container& c, const std::string& propertyName, const std::string& fullPropertyName)
+        [&](data::Container& c, data::Provider::Ptr p, const std::string& propertyName)
 		{
 			updated1 = true;
 		}
@@ -129,7 +129,7 @@ TEST_F(TransformTest, ModelToWorldMultipleUpdates)
 
 	auto updated2 = false;
 	auto __ = n3->data().propertyChanged("modelToWorldMatrix").connect(
-        [&](data::Container& c, const std::string& propertyName, const std::string& fullPropertyName)
+        [&](data::Container& c, data::Provider::Ptr p, const std::string& propertyName)
 		{
 			updated2 = true;
 		}
@@ -162,7 +162,7 @@ TEST_F(TransformTest, ModelToWorldMultipleUpdatesMultipleFrames)
 
 	auto updated1 = false;
 	auto _ = n1->data().propertyChanged("modelToWorldMatrix").connect(
-        [&](data::Container& c, const std::string& propertyName, const std::string& fullPropertyName)
+        [&](data::Container& c, data::Provider::Ptr p, const std::string& propertyName)
 		{
 			updated1 = true;
 		}
@@ -170,7 +170,7 @@ TEST_F(TransformTest, ModelToWorldMultipleUpdatesMultipleFrames)
 
 	auto updated2 = false;
 	auto __ = n3->data().propertyChanged("modelToWorldMatrix").connect(
-        [&](data::Container& c, const std::string& propertyName, const std::string& fullPropertyName)
+        [&](data::Container& c, data::Provider::Ptr p, const std::string& propertyName)
 		{
 			updated2 = true;
 		}
