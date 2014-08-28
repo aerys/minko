@@ -244,9 +244,10 @@ Transform::RootTransform::updateTransformsList()
     _matrix.resize(_nodes.size());
     _modelToWorld.resize(_nodes.size());
     _numChildren.resize(_nodes.size(), -1);
-    _dirty.resize(_nodes.size(), true);
     _parentId.resize(_nodes.size(), -1);
     _providers.resize(_nodes.size(), nullptr);
+    _dirty.clear();
+    _dirty.resize(_nodes.size(), true);
 
     _firstChildId.clear();
     _firstChildId.resize(_nodes.size(), -1);
@@ -284,6 +285,7 @@ Transform::RootTransform::sortNodes()
         if (!ancestor)
         {
             _parentId[nodeId] = -1;
+            ++nodeIt;
             continue;
         }
 
@@ -307,7 +309,6 @@ Transform::RootTransform::sortNodes()
                 _parentId[nodeId + 1] = nodeId;
                 _numChildren[nodeId] = 1;
                 _firstChildId[nodeId] = nodeId + 1;
-                _dirty[nodeId] = true;
                 ++nodeId;
             }
             else
@@ -316,18 +317,21 @@ Transform::RootTransform::sortNodes()
                 _firstChildId[ancestorId] = nodeId;
                 _numChildren[ancestorId] = 1;
             }
+
+            ++nodeIt;
         }
         else
 		{
+            auto removeIt = nodeIt;
+
+            ++nodeIt;
             _parentId[nodeId] = ancestorId;
             _numChildren[nodeId] = 0;
             _firstChildId[nodeId] = -1;
-            _nodes.erase(nodeIt);
+            _nodes.erase(removeIt);
             _nodes.insert(std::next(ancestorIt, _numChildren[ancestorId]), node);
             ++_numChildren[ancestorId];
 		}
-
-        ++nodeIt;
 	}
 }
 
