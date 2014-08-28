@@ -80,6 +80,11 @@ Container::providerPropertyChangedHandler(Provider::Ptr         provider,
         if (_propertyNameToChangedSignal.count(formattedPropertyName) != 0)
             propertyChanged(formattedPropertyName).execute(*this, provider, propertyName);
     }
+    else
+    {
+        if (_propertyNameToChangedSignal.count(propertyName) != 0)
+            propertyChanged(propertyName).execute(*this, provider, propertyName);
+    }
 }
 
 void
@@ -125,23 +130,28 @@ Container::getProviderByPropertyName(const std::string& propertyName) const
             if (collection->name() == collectionName)
             {
                 auto pos2 = propertyName.find_first_of("]");
-                auto index = propertyName.substr(pos + 1, pos2 - pos - 1);
-                auto pos3 = index.find_first_of("-");
+                auto indexStr = propertyName.substr(pos + 1, pos2 - pos - 1);
+                auto pos3 = indexStr.find_first_of("-");
                 auto token = propertyName.substr(pos2 + 2);
 
                 // fetch provider by uuid
-                if (pos3 != std::string::npos)
+                if (pos3 != std::string::npos && pos3 < pos2)
                 {
                     for (const auto& provider : collection->items())
-                        if (provider->uuid() == index && provider->hasProperty(token))
+                        if (provider->uuid() == indexStr && provider->hasProperty(token))
                             return std::pair<Provider::Ptr, std::string>(provider, token);
                 }
                 else // fetch provider by index
                 {
-                    auto provider = collection->items()[std::stoi(index)];
+                    auto index = std::stoi(indexStr);
 
-                    if (provider->hasProperty(token))
-                        return std::pair<Provider::Ptr, std::string>(provider, token);
+                    if (index < collection->items().size())
+                    {
+                        auto provider = collection->items()[index];
+
+                        if (provider->hasProperty(token))
+                            return std::pair<Provider::Ptr, std::string>(provider, token);
+                    }
                 }
 
                 return std::pair<Provider::Ptr, std::string>(nullptr, token);
