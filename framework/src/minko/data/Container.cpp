@@ -143,7 +143,7 @@ Container::getProviderByPropertyName(const std::string& propertyName) const
                 }
                 else // fetch provider by index
                 {
-                    auto index = std::stoi(indexStr);
+                    uint index = std::stoi(indexStr);
 
                     if (index < collection->items().size())
                     {
