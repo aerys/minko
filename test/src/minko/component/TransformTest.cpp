@@ -310,3 +310,29 @@ TEST_F(TransformTest, NodeHierarchyTransformIssueWithoutBlockingNode)
     ASSERT_EQ((n3->component<Transform>()->modelToWorldMatrix() * zero).xyz(), math::vec3(20.f, 1.f, 0.f));
     ASSERT_EQ((n4->component<Transform>()->modelToWorldMatrix() * zero).xyz(), math::vec3(50.f, 1.f, 0.f));
 }
+
+TEST_F(TransformTest, RemoveParentTransform)
+{
+    auto root = Node::create("root");
+    auto a = Node::create("a");
+    auto b = Node::create("b");
+    auto c = Node::create("c");
+
+    root->addComponent(Transform::create(math::translate(math::vec3(0.f, 0.f, 1.f))));
+
+    a->addComponent(Transform::create(math::translate(math::vec3(1.f, 0.f, 0.f))));
+    root->addChild(a);
+
+
+    b->addComponent(Transform::create(math::translate(math::vec3(0.f, 1.f, 0.f))));
+    root->addChild(b);
+
+    c->addComponent(Transform::create(math::translate(math::vec3(2.f, 1.f, 0.f))));
+    b->addChild(c);
+
+    b->removeComponent(b->component<Transform>());
+
+    c->component<Transform>()->updateModelToWorldMatrix();
+
+    ASSERT_EQ(c->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(2.f, 1.f, 1.f)));
+}
