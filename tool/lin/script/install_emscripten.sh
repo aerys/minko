@@ -34,7 +34,7 @@ set -e
 
 EMSCRIPTEN_VERSION="1.21.0"
 
-EMSDK_WIKI="http://github.com/kripken/emscripten/wiki/Emscripten-SDK#wiki-downloads"
+EMSDK_WIKI="=http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html"
 EMSDK_URL="https://s3.amazonaws.com/mozilla-games/emscripten/releases"
 EMSDK_ARCHIVE="emsdk-${EMSCRIPTEN_VERSION}-portable-64bit.zip"
 EMSDK_SDK="sdk-${EMSCRIPTEN_VERSION}-64bit"
