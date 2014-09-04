@@ -38,7 +38,7 @@ mv asset assets
 
 ant $CONFIG
 # adb uninstall org.libsdl.app
-$ANDROID/platform-tools/adb install -r bin/android/$CONFIG/bin/$APP_NAME-$CONFIG.apk
+$ANDROID/platform-tools/adb install -r bin/$APP_NAME-$CONFIG.apk
 #adb devices | tail -n +2 | cut -sf 1 | xargs -I {} adb -s {} install -r $TARGET_NAME-$CONFIG.apk
 
 popd > /dev/null
