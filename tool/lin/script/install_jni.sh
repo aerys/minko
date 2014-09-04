@@ -38,7 +38,7 @@ ANDROID_TOOLCHAIN="arm-linux-androideabi-4.8"
 ANDROID_SYSTEM=""
 
 if [ $OSTYPE == "cygwin" ]; then
-	ANDROID=`cygpath -u "${ANDROID}"`
+	ANDROID=`cygpath -u "${ANDROID_HOME}"`
 	ANDROID_SYSTEM="windows-x86_64"
 fi 
 

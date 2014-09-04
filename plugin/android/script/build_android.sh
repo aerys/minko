@@ -6,7 +6,7 @@ set -e
 
 if [ $OSTYPE == "cygwin" ]; then
 	MINKO_HOME=`cygpath -u "${MINKO_HOME}"`
-	ANDROID=`cygpath -u "${ANDROID}"`
+	ANDROID=`cygpath -u "${ANDROID_HOME}"`
 fi
 
 #RSYNC_OPTIONS="--ignore-existing"

@@ -17,13 +17,10 @@ api.addAllowed("architecture", { "armv5te" })
 local ANDROID
 local TOOLCHAIN = "arm-linux-androideabi"
 
-if os.getenv('ANDROID') then
-	ANDROID = os.getenv('ANDROID');
-elseif os.getenv('ANDROID_HOME') then
+if os.getenv('ANDROID_HOME') then
 	ANDROID = os.getenv('ANDROID_HOME');
 else
-	print(color.fg.yellow .. 'You must define the environment variable ANDROID to be able to target Android.' .. color.reset)
-	do return end
+	error(color.fg.red .. 'You must define the environment variable ANDROID_HOME to be able to target Android.' .. color.reset)
 end
 
 if not os.isfile(ANDROID .. "/tools/android") and not os.isfile(ANDROID .. "/tools/android.bat") then
