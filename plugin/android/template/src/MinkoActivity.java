@@ -1,10 +1,11 @@
 package {{PACKAGE}};
 
-import org.libsdl.app.*;
+
+import minko.plugin.htmloverlay.*;
 
 /**
     Minko Activity
 */
-public class MinkoActivity extends SDLActivity
+public class MinkoActivity extends WebViewActivity
 {
 }
