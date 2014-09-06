@@ -34,17 +34,17 @@ namespace minko
             friend class scene::Node;
 
         public:
-            typedef std::shared_ptr<AbstractComponent>                    Ptr;
+            typedef std::shared_ptr<AbstractComponent>  Ptr;
 
         private:
-            std::vector<std::shared_ptr<scene::Node>>                      _targets;
-            Layouts                                                        _layoutMask;
+            std::vector<std::shared_ptr<scene::Node>>                       _targets;
+            Layouts                                                         _layoutMask;
 
-            std::shared_ptr<Signal<Ptr, std::shared_ptr<scene::Node>>>     _targetAdded;
-            std::shared_ptr<Signal<Ptr, std::shared_ptr<scene::Node>>>     _targetRemoved;
-            std::shared_ptr<Signal<Ptr>>                                   _layoutMaskChanged;
+            std::shared_ptr<Signal<Ptr, std::shared_ptr<scene::Node>>>      _targetAdded;
+            std::shared_ptr<Signal<Ptr, std::shared_ptr<scene::Node>>>      _targetRemoved;
+            std::shared_ptr<Signal<Ptr>>                                    _layoutMaskChanged;
 
-        public:
+        protected:
             AbstractComponent(Layouts layoutMask = scene::Layout::Mask::EVERYTHING) :
                 _targets(),
                 _layoutMask(layoutMask),
@@ -63,6 +63,7 @@ namespace minko
 			{
 			}
 
+        public:
             virtual
             ~AbstractComponent() = 0;
 
