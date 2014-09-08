@@ -6,8 +6,6 @@ end
 
 minko.project.application("minko-example-" .. PROJECT_NAME)
 
-	removeplatforms { "android" }
-
 	files {
 		"src/**.cpp",
 		"src/**.hpp",

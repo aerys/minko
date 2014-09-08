@@ -17,18 +17,14 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+/* Set up for C function definitions, even when using C++ */
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <jni.h>
 
-extern "C" {
-
-/* returns a new global reference which needs to be released later */
-JNIEXPORT void JNICALL Java_minko_plugin_WebViewActivity_initWebView(JNIEnv* env, jobject obj)
-{
-    jmethodID mid;
-    jclass cls = env->GetObjectClass(obj);
-
-    mid = env->GetMethodID(cls, "helloWorld", "()V");
-    env->CallVoidMethod(obj, mid);
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
 }
-
-}
+#endif

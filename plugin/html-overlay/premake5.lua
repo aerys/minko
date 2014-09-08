@@ -154,3 +154,10 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		links {
 			"WebKit.framework"
 		}
+
+	-- Android webview
+	configuration { "android" }
+		files {
+			"include/android/*.hpp",
+			"src/android/*.cpp."
+		}
