@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/android/AndroidWebView.hpp"
+#include "android/AndroidWebView.hpp"
 #include <android/log.h>
 
 #define LOG_TAG "MINKO"
@@ -59,5 +59,5 @@ void WebViewInit(JNIEnv* env, jobject obj)
 	LOGI("Get loadUrl method");
     jmethodID loadUrlMethod = env->GetMethodID(webViewClass, "loadUrl", "(Ljava/lang/String;)V");
     LOGI("Load an URL");
-    env->CallVoidMethod(webView, loadUrlMethod, env->NewStringUTF("file:///android_asset/iframe.html"));
+    env->CallVoidMethod(webView, loadUrlMethod, env->NewStringUTF("file:///android_asset/index.html"));
 }

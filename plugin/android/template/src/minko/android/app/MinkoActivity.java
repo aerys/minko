@@ -1,4 +1,4 @@
-package {{PACKAGE}};
+package minko.android.app;
 
 import org.libsdl.app.*;
 import android.app.Activity;
@@ -12,7 +12,6 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.os.Bundle;
 import android.content.Context;
-
 import static android.util.Log.*;
 
 /**

@@ -24,16 +24,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 *******************************************************************************/
 #include <jni.h>
 
-
-/* Called before SDL_main() to initialize JNI bindings in SDL library */
+/* Called to initialize JNI bindings for Minko */
 extern void WebViewInit(JNIEnv* env, jobject obj);
+
+// Get JVM from SDL (from JNI_OnLoad signal => SDL_android.c)
+extern JavaVM* mJavaVM;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/* Start up the SDL app */
-void Java_minko_example_cube_MinkoActivity_minkoNativeInit(JNIEnv* env, jobject obj)
+/* Start up the Minko app */
+void Java_minko_android_app_MinkoActivity_minkoNativeInit(JNIEnv* env, jobject obj)
 {
     /* This interface could expand with ABI negotiation, calbacks, etc. */
     WebViewInit(env, obj);
