@@ -19,14 +19,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "android/AndroidWebView.hpp"
 #include <android/log.h>
+#include "SDL.h"
 
 #define LOG_TAG "MINKO"
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
-void WebViewInit(JNIEnv* env, jobject obj)
+void WebViewInit(JNIEnv* oldEnv, jobject obj)
 {
+    LOGI("Get a new JNIEnv");
+    // Retrieve the JNI environment from SDL 
+    JNIEnv* env = (JNIEnv*)SDL_AndroidGetJNIEnv();
+
     LOGI("Init WebView");
 
     jclass cls = env->GetObjectClass(obj);

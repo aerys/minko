@@ -27,9 +27,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 /* Called to initialize JNI bindings for Minko */
 extern void WebViewInit(JNIEnv* env, jobject obj);
 
-// Get JVM from SDL (from JNI_OnLoad signal => SDL_android.c)
-extern JavaVM* mJavaVM;
-
 #ifdef __cplusplus
 extern "C" {
 #endif
