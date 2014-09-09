@@ -13,6 +13,7 @@ import android.widget.LinearLayout;
 import android.os.Bundle;
 import android.content.Context;
 import static android.util.Log.*;
+import android.webkit.WebChromeClient;
 
 /**
     Minko Activity

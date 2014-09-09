@@ -69,7 +69,7 @@ AndroidWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Pt
 	_sceneManager = sceneManager;
 
     // URL of the local file that contains JS callback handler
-    std::string uri = "file://assets/html/iframe.html";
+    std::string uri = "file:///assets/html/iframe.html";
 
 /*    const char *cURI = uri.c_str();
     NSString *nsURI = [NSString stringWithCString:cURI encoding:[NSString defaultCStringEncoding]];
