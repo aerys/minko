@@ -17,6 +17,11 @@ api.addAllowed("architecture", { "armv5te" })
 local ANDROID
 local TOOLCHAIN = "arm-linux-androideabi"
 
+-- If we try to build Android on Windows without Cygwin
+if os.is("windows")  and os.getenv('OSTYPE') == nil then
+	return
+end
+
 if os.getenv('ANDROID_HOME') then
 	ANDROID = os.getenv('ANDROID_HOME');
 else
