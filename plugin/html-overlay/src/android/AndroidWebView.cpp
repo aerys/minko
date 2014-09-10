@@ -26,11 +26,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
-void WebViewInit(JNIEnv* oldEnv, jobject obj)
+void WebViewInit(JNIEnv* oldEnv, jobject oldObj)
 {
-    LOGI("Get a new JNIEnv");
+/*
+    LOGI("Get the SDL JNIEnv");
     // Retrieve the JNI environment from SDL 
     JNIEnv* env = (JNIEnv*)SDL_AndroidGetJNIEnv();
+
+    LOGI("Get the SDLActivity instance");
+    // retrieve the Java instance of the SDLActivity
+    jobject obj = (jobject)SDL_AndroidGetActivity();
 
     LOGI("Init WebView");
 
@@ -104,4 +109,5 @@ void WebViewInit(JNIEnv* oldEnv, jobject obj)
     jmethodID loadUrlMethod = env->GetMethodID(webViewClass, "loadUrl", "(Ljava/lang/String;)V");
     LOGI("Load an URL");
     env->CallVoidMethod(webView, loadUrlMethod, env->NewStringUTF("file:///android_asset/html/interface.html"));
+*/
 }
