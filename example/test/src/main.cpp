@@ -38,6 +38,31 @@ using namespace minko::math;
 
 const std::string TEXTURE_FILENAME = "texture/box.png";
 
+static bool webViewInitialized = false;
+static JNIEnv* env = nullptr;
+static jobject sdlActivity = nullptr;
+static jmethodID runOnUiThreadMethod = nullptr;
+static jclass initWebViewTaskClass = nullptr;
+static jobject initWebViewTask = nullptr;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* Start up the Minko app */
+void Java_minko_plugin_htmloverlay_InitWebViewTask_webViewInitialized(JNIEnv* env, jobject obj)
+{
+    webViewInitialized = true;
+
+    LOGI("WEBVIEW INITIALIZED (FROM C++)");
+}
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
+
+
 int
 main(int argc, char** argv)
 {
@@ -88,36 +113,24 @@ main(int argc, char** argv)
 
         LOGI("Get the SDL JNIEnv");
         // Retrieve the JNI environment from SDL 
-        JNIEnv* env = (JNIEnv*)SDL_AndroidGetJNIEnv();
+        env = (JNIEnv*)SDL_AndroidGetJNIEnv();
         LOGI("Get the SDLActivity instance");
         // Retrieve the Java instance of the SDLActivity
-        jobject sdlActivity = (jobject)SDL_AndroidGetActivity();
+        sdlActivity = (jobject)SDL_AndroidGetActivity();
         LOGI("Get sdlActivity class");
         jclass sdlActivityClass = env->GetObjectClass(sdlActivity);
 
         LOGI("Get initWebViewTask class");
-        jclass initWebViewTaskClass = env->FindClass("minko/plugin/htmloverlay/InitWebViewTask");
+        initWebViewTaskClass = env->FindClass("minko/plugin/htmloverlay/InitWebViewTask");
         LOGI("Get initWebViewTask constructor method");
         jmethodID initWebViewTaskCtor = env->GetMethodID(initWebViewTaskClass, "<init>", "(Landroid/app/Activity;Ljava/lang/String;)V");
         LOGI("Instanciate a initWebViewTask");
-        jobject initWebViewTask = env->NewObject(initWebViewTaskClass, initWebViewTaskCtor, sdlActivity, env->NewStringUTF("file:///android_asset/html/interface.html"));
+        initWebViewTask = env->NewObject(initWebViewTaskClass, initWebViewTaskCtor, sdlActivity, env->NewStringUTF("file:///android_asset/html/interface.html"));
         
         LOGI("Get runOnUiThread method from sdlActivity");
-        jmethodID runOnUiThreadMethod = env->GetMethodID(sdlActivityClass, "runOnUiThread", "(Ljava/lang/Runnable;)V");
+        runOnUiThreadMethod = env->GetMethodID(sdlActivityClass, "runOnUiThread", "(Ljava/lang/Runnable;)V");
         LOGI("Call runOnUiThread with initWebViewTask");
         env->CallVoidMethod(sdlActivity, runOnUiThreadMethod, initWebViewTask);
-
-        // Get the WebView instance
-        jmethodID getWebViewMethod = env->GetMethodID(initWebViewTaskClass, "getWebView", "()Landroid/webkit/WebView;");
-        jobject webView = env->CallObjectMethod(initWebViewTask, getWebViewMethod);
-        
-        // Call JS eval
-        jclass evalJSTaskClass = env->FindClass("minko/plugin/htmloverlay/EvalJSTask");
-        jmethodID evalJSTaskCtor = env->GetMethodID(evalJSTaskClass, "<init>", "(Landroid/webkit/WebView;Ljava/lang/String;)V");
-        jobject evalJSTask = env->NewObject(evalJSTaskClass, evalJSTaskCtor, webView, env->NewStringUTF("alert('COUCOU from C++')"));
-         LOGI("Call runOnUiThread with evalJSTask");
-        env->CallVoidMethod(sdlActivity, runOnUiThreadMethod, evalJSTask);
-
     });
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
@@ -127,6 +140,22 @@ main(int argc, char** argv)
 
     auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
     {
+        if (webViewInitialized)
+        {
+            // Get the WebView instance
+            jmethodID getWebViewMethod = env->GetMethodID(initWebViewTaskClass, "getWebView", "()Landroid/webkit/WebView;");
+            jobject webView = env->CallObjectMethod(initWebViewTask, getWebViewMethod);
+            
+            // Call JS eval
+            jclass evalJSTaskClass = env->FindClass("minko/plugin/htmloverlay/EvalJSTask");
+            jmethodID evalJSTaskCtor = env->GetMethodID(evalJSTaskClass, "<init>", "(Landroid/webkit/WebView;Ljava/lang/String;)V");
+            jobject evalJSTask = env->NewObject(evalJSTaskClass, evalJSTaskCtor, webView, env->NewStringUTF("alert('COUCOU from C++')"));
+            LOGI("Call runOnUiThread with evalJSTask");
+            env->CallVoidMethod(sdlActivity, runOnUiThreadMethod, evalJSTask);
+
+            webViewInitialized = false;
+        }
+
         mesh->component<Transform>()->matrix()->appendRotationY(0.001f * deltaTime);
 
         sceneManager->nextFrame(time, deltaTime);

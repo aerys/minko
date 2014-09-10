@@ -16,6 +16,8 @@ public class InitWebViewTask implements Runnable
 	String _url;
 	WebView _webView;
 	
+	public native void webViewInitialized();
+	
 	public InitWebViewTask(Activity sdlActivity, String url)
 	{
 		_sdlActivity = sdlActivity;
@@ -58,6 +60,8 @@ public class InitWebViewTask implements Runnable
         _webView.loadUrl(_url);
 		
 		d("MINKO", "WEBVIEW HAS NOW LOAD AN URL!");
+		
+		webViewInitialized();
     }
 	
 	public WebView getWebView()
