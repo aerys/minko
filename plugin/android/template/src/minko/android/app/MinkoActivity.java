@@ -38,7 +38,7 @@ public class MinkoActivity extends SDLActivity
 		//wv.loadUrl("http://www.final-rpg.com");
 		wv.loadUrl("file:///android_asset/iframe.html");
 		*/
-		minkoNativeInit();
+		//minkoNativeInit();
 	}
 
 	public native void minkoNativeInit();
@@ -47,12 +47,7 @@ public class MinkoActivity extends SDLActivity
 	{
 		d("Minko", "HELLO WORLD!");
 	}
-
-	public ViewGroup getLayout()
-	{
-		return SDLActivity.mLayout;
-	}
-
+	
 	public static Context getContext()
 	{
 		return SDLActivity.getContext();
