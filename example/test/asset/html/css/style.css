@@ -1,0 +1,113 @@
+html, body
+{
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+	background: transparent;
+	font-family: Arial;
+}
+
+*
+{
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+*:focus
+{
+	background-color: transparent;
+}
+
+#content
+{
+	margin: 0;
+	padding: 0;
+	
+	position: relative;
+	
+	width: 100%;
+	height: 100%;
+	
+	top: 0;
+	left: 0;
+}
+
+#scoreBanner
+{
+	width: 786px;
+	height: 257px;
+	position: relative;
+	margin: 0 auto;
+	left: 0;
+	right: 0;
+	color: #FFFFFF;
+	font-weight: bold;
+}
+
+#scoreBannerBackground
+{
+	position: absolute;
+	width: 786px;
+	height: 257px;
+	background-image: url('../image/header.png');
+	background-repeat: no-repeat;
+	opacity: 0.6;
+}
+
+.teamScore
+{
+	position: absolute;
+	top: 59px;
+	width: 112px;
+	height: 78px;
+	text-align: center;
+	font-size: 66pt;
+}
+
+.teamScore#teamScoreRed
+{
+	text-shadow: #FF0000 4px 4px, #FF0000 -4px 4px, #FF0000 -4px -4px, #FF0000 4px -4px;
+	left: 549px;
+}
+
+.teamScore#teamScoreBlue
+{
+	text-shadow: #00BAFF 4px 4px, #00BAFF -4px 4px, #00BAFF -4px -4px, #00BAFF 4px -4px;
+	text-shadow: #00BAFF;
+	left: 100px;
+}
+
+.gameTimeLeft
+{
+	font-size: 45pt;
+	text-shadow: 5px 0 0 #000000, -5px 0 0 #000000, 0 5px 0 #000000, 0 -5px 0 #000000;
+	position: absolute;
+	top: 70px;
+	height: 49px;
+}
+
+.gameTimeLeft#gameTimeLeftMn
+{
+	width: 104px;
+	left: 261px;
+	text-align: right;
+}
+
+.gameTimeLeft#gameTimeLeftSec
+{
+	width: 110px;
+	left: 396px;
+	text-align: left;
+}
+
+.gameTimeLeft#gameTimeLeftSeparator
+{
+	width: 28px;
+	left: 366px;
+	text-align: center;
+}
