@@ -314,6 +314,10 @@ public class SDLActivity extends Activity {
         return mSingleton;
     }
 
+    public static ViewGroup getLayout() {
+        return mLayout;
+    }
+
     /**
      * @return result of getSystemService(name) but executed on UI thread.
      */
