@@ -99,6 +99,12 @@ AbstractScript::targetRemovedHandler(AbstractComponent::Ptr cmp, scene::Node::Pt
     _componentRemovedSlot   = nullptr;
     _frameBeginSlot         = nullptr;
     _frameEndSlot           = nullptr;
+
+    if (running(target))
+    {
+        _started[target] = false;
+        stop(target);
+    }
 }
 
 void
