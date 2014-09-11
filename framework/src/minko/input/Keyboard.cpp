@@ -225,6 +225,7 @@ Keyboard::initializeKeyNames()
 
 Keyboard::Keyboard() :
     _down(Signal<Ptr>::create()),
-    _up(Signal<Ptr>::create())
+    _up(Signal<Ptr>::create()),
+    _textInput(Signal<Ptr, char>::create())
 {
 }

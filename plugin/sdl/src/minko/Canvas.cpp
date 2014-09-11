@@ -332,13 +332,27 @@ Canvas::step()
             quit();
             break;
         }
+        case SDL_TEXTINPUT:
+        {
+            int i = 0;
 
+            while (event.text.text[i] != '\0' && event.text.text[i] != 0)
+            {
+                _keyboard->textInput()->execute(_keyboard, event.text.text[i++]);
+            }
+            break;
+        }
+        case SDL_TEXTEDITING:
+        {
+            //std::cout << "text editing" << std::endl;
+            break;
+        }
         case SDL_KEYDOWN:
         {
             _keyboard->keyDown()->execute(_keyboard);
 
             auto keyCode = static_cast<input::Keyboard::KeyCode>(event.key.keysym.sym);
-
+            
             for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
             {
                 auto code = static_cast<input::Keyboard::Key>(i);
