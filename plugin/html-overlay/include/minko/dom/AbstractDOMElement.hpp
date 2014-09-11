@@ -147,6 +147,10 @@ namespace minko
 			Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 			onmouseover() = 0;
 
+            virtual
+            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
+            onchange() = 0;
+
 		private:
 
 		};
