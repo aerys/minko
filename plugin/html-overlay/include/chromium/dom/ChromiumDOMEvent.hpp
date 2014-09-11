@@ -29,8 +29,7 @@ namespace chromium
 {
     namespace dom
     {
-        class ChromiumDOMEvent : public virtual minko::dom::AbstractDOMEvent,
-            public std::enable_shared_from_this < ChromiumDOMEvent >
+        class ChromiumDOMEvent : public virtual minko::dom::AbstractDOMEvent
         {
         public:
             typedef std::shared_ptr<ChromiumDOMEvent> Ptr;
@@ -40,9 +39,12 @@ namespace chromium
             ChromiumDOMEvent(CefRefPtr<CefV8Value>, CefRefPtr<CefV8Context>);
 
         public:
-            static
+            static inline
             Ptr
-            create(CefRefPtr<CefV8Value>, CefRefPtr<CefV8Context>);
+            create(CefRefPtr<CefV8Value> value, CefRefPtr<CefV8Context> context)
+            {
+                return std::shared_ptr<ChromiumDOMEvent>(new ChromiumDOMEvent(value, context));
+            }
 
             void
             preventDefault();

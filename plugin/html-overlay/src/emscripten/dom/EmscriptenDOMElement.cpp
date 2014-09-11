@@ -53,6 +53,11 @@ EmscriptenDOMElement::EmscriptenDOMElement(std::string jsAccessor) :
 	_onmouseupSet(false),
 	_onmouseoverSet(false),
 	_onmouseoutSet(false)
+<<<<<<< Updated upstream
+=======
+    _onchangeSet(false),
+    _oninputSet(false)
+>>>>>>> Stashed changes
 {
 	std::string eval = jsAccessor + ".minkoName = '" + jsAccessor + "';";
 	emscripten_run_script(eval.c_str());
@@ -164,6 +169,21 @@ EmscriptenDOMElement::textContent(std::string newTextContent)
 {
 	std::string eval = _jsAccessor + ".textContent = '" + newTextContent + "';";
 	emscripten_run_script(eval.c_str());
+}
+
+std::string
+EmscriptenDOMElement::value()
+{
+    std::string eval = "(" + _jsAccessor + ".value)";
+    char* result = emscripten_run_script_string(eval.c_str());
+    return std::string(result);
+}
+
+void
+EmscriptenDOMElement::value(const std::string& value)
+{
+    std::string eval = _jsAccessor + ".value = '" + value + "';";
+    emscripten_run_script(eval.c_str());
 }
 
 std::string
@@ -338,6 +358,33 @@ EmscriptenDOMElement::onmouseover()
 	return _onmouseover;
 }
 
+<<<<<<< Updated upstream
+=======
+Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+EmscriptenDOMElement::onchange()
+{
+    if (!_onchangeSet)
+    {
+        addEventListener("change");
+        _onchangeSet = true;
+    }
+
+    return _onchange;
+}
+
+Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+EmscriptenDOMElement::oninput()
+{
+    if (!_oninputSet)
+    {
+        addEventListener("input");
+        _oninputSet = true;
+    }
+
+    return _oninput;
+}
+
+>>>>>>> Stashed changes
 void
 EmscriptenDOMElement::update()
 {

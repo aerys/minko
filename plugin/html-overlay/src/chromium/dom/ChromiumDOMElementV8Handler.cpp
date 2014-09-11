@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #if defined(CHROMIUM)
 #include "chromium/dom/ChromiumDOMElementV8Handler.hpp"
 #include "chromium/dom/ChromiumDOMElement.hpp"
+#include "chromium/dom/ChromiumDOMElement.hpp"
 
 using namespace chromium::dom;
 using namespace minko::dom;
@@ -41,29 +42,36 @@ ChromiumDOMElementV8Handler::Execute(const CefString& name, CefRefPtr<CefV8Value
 		{
 			std::string type = event->GetValue("type")->GetStringValue();
 
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr signal;
+            if (type == "change" && _element->onchange()->numCallbacks() > 0)
+                _element->onchange()->execute(ChromiumDOMEvent::create(event, CefV8Context::GetCurrentContext()));
+            else if (type == "input" && _element->oninput()->numCallbacks() > 0)
+                _element->oninput()->execute(ChromiumDOMEvent::create(event, CefV8Context::GetCurrentContext()));
+            else
+            {
+                minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr signal;
 
-			if (type == "click" && _element->onclick()->numCallbacks() > 0)
-				signal = _element->onclick();
-			else if (type == "mousedown" && _element->onmousedown()->numCallbacks() > 0)
-				signal = _element->onmousedown();
-			else if (type == "mousemove" && _element->onmousemove()->numCallbacks() > 0)
-				signal = _element->onmousemove();
-			else if (type == "mouseup" && _element->onmouseup()->numCallbacks() > 0)
-				signal = _element->onmouseup();
-			else if (type == "mouseover" && _element->onmouseover()->numCallbacks() > 0)
-				signal = _element->onmouseover();
-			else if (type == "mouseout" && _element->onmouseout()->numCallbacks() > 0)
-				signal = _element->onmouseout();
-
-			if (signal != nullptr)
-			{
-				ChromiumDOMMouseEvent::Ptr domEvent = ChromiumDOMMouseEvent::create(event, CefV8Context::GetCurrentContext());
-				_element->addFunction([=]()
-				{
-					signal->execute(domEvent);
-				});
-			}
+			    if (type == "click" && _element->onclick()->numCallbacks() > 0)
+				    signal = _element->onclick();
+			    else if (type == "mousedown" && _element->onmousedown()->numCallbacks() > 0)
+				    signal = _element->onmousedown();
+			    else if (type == "mousemove" && _element->onmousemove()->numCallbacks() > 0)
+				    signal = _element->onmousemove();
+			    else if (type == "mouseup" && _element->onmouseup()->numCallbacks() > 0)
+				    signal = _element->onmouseup();
+			    else if (type == "mouseover" && _element->onmouseover()->numCallbacks() > 0)
+				    signal = _element->onmouseover();
+			    else if (type == "mouseout" && _element->onmouseout()->numCallbacks() > 0)
+				    signal = _element->onmouseout();
+            
+			    if (signal != nullptr)
+			    {
+				    ChromiumDOMMouseEvent::Ptr domEvent = ChromiumDOMMouseEvent::create(event, CefV8Context::GetCurrentContext());
+				    _element->addFunction([=]()
+				    {
+					    signal->execute(domEvent);
+				    });
+			    }
+            }
 		}
 	}
 	return true;

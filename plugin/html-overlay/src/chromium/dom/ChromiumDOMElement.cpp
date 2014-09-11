@@ -41,12 +41,23 @@ std::map<ChromiumDOMElement::Ptr, CefRefPtr<CefV8Value>>
 ChromiumDOMElement::_elementToV8Object;
 
 ChromiumDOMElement::ChromiumDOMElement(CefRefPtr<CefV8Value> v8NodeObject, CefRefPtr<CefV8Context> v8Context) :
+<<<<<<< Updated upstream
 	_onclickCallbackSet(false),
 	_onmousedownCallbackSet(false),
 	_onmousemoveCallbackSet(false),
 	_onmouseupCallbackSet(false),
 	_onmouseoverCallbackSet(false),
 	_onmouseoutCallbackSet(false),
+=======
+    _onclickCallbackSet(false),
+    _onmousedownCallbackSet(false),
+    _onmousemoveCallbackSet(false),
+    _onmouseupCallbackSet(false),
+    _onmouseoverCallbackSet(false),
+    _onmouseoutCallbackSet(false),
+    _onchangeCallbackSet(false),
+    _oninputCallbackSet(false),
+>>>>>>> Stashed changes
 	_cleared(false),
 	_v8Handler(),
 	_v8NodeObject(v8NodeObject),
@@ -474,6 +485,61 @@ ChromiumDOMElement::textContent(std::string content)
 
 		while (_blocker.load());
 	}
+}
+
+std::string
+ChromiumDOMElement::value()
+{
+    std::string result;
+
+    if (CefCurrentlyOn(TID_RENDERER))
+    {
+        _v8Context->Enter();
+        result = getProperty("value")->GetStringValue();
+        _v8Context->Exit();
+    }
+    else
+    {
+        CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+        _blocker.store(true);
+
+        auto fn = [&]()
+        {
+            result = value();
+            _blocker.store(false);
+        };
+
+        runner->PostTask(NewCefRunnableFunction(&fn));
+
+        while (_blocker.load());
+    }
+    return result;
+}
+
+void
+ChromiumDOMElement::value(const std::string& v)
+{
+    if (CefCurrentlyOn(TID_RENDERER))
+    {
+        _v8Context->Enter();
+        setProperty("value", CefV8Value::CreateString(v));
+        _v8Context->Exit();
+    }
+    else
+    {
+        CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+        _blocker.store(true);
+
+        auto fn = [&]()
+        {
+            value(v);
+            _blocker.store(false);
+        };
+
+        runner->PostTask(NewCefRunnableFunction(&fn));
+
+        while (_blocker.load());
+    }
 }
 
 std::string
@@ -958,6 +1024,35 @@ ChromiumDOMElement::onmouseover()
     return _onmouseover;
 }
 
+<<<<<<< Updated upstream
+=======
+Signal<AbstractDOMEvent::Ptr>::Ptr
+ChromiumDOMElement::onchange()
+{
+    if (!_onchangeCallbackSet)
+    {
+        _onchange = Signal<minko::dom::AbstractDOMEvent::Ptr>::create();
+        addEventListener("change");
+        _onchangeCallbackSet = true;
+    }
+
+    return _onchange;
+}
+
+Signal<AbstractDOMEvent::Ptr>::Ptr
+ChromiumDOMElement::oninput()
+{
+    if (!_oninputCallbackSet)
+    {
+        _oninput = Signal<minko::dom::AbstractDOMEvent::Ptr>::create();
+        addEventListener("input");
+        _oninputCallbackSet = true;
+    }
+
+    return _oninput;
+}
+
+>>>>>>> Stashed changes
 void
 ChromiumDOMElement::update()
 {
