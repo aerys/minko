@@ -68,9 +68,17 @@ namespace minko
 			std::vector<Ptr>
 			childNodes() = 0;
 
-			virtual
+            virtual
 			std::string
 			textContent() = 0;
+
+			virtual
+			std::string
+			value() = 0;
+
+            virtual
+            void
+            value(const std::string& value) = 0;
 
 			virtual
 			void
@@ -92,7 +100,6 @@ namespace minko
 			Ptr
 			removeChild(Ptr) = 0;
 
-
 			virtual
 			Ptr
 			insertBefore(Ptr, Ptr) = 0;
@@ -100,7 +107,6 @@ namespace minko
 			virtual
 			Ptr
 			cloneNode(bool deep = true) = 0;
-
 
 			virtual
 			std::string
@@ -113,7 +119,6 @@ namespace minko
 			virtual
 			std::vector<Ptr>
 			getElementsByTagName(std::string tagName) = 0;
-
 
 			virtual
 			std::string
@@ -147,10 +152,17 @@ namespace minko
 			Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 			onmouseover() = 0;
 
+<<<<<<< Updated upstream
+=======
             virtual
             minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
             onchange() = 0;
 
+            virtual
+            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
+            oninput() = 0;
+
+>>>>>>> Stashed changes
 		private:
 
 		};

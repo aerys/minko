@@ -30,11 +30,13 @@ namespace chromium
 {
 	namespace dom
 	{
-        class ChromiumDOMMouseEvent : public virtual ChromiumDOMEvent, public virtual minko::dom::AbstractDOMMouseEvent,
-			public std::enable_shared_from_this<ChromiumDOMMouseEvent>
+        class ChromiumDOMMouseEvent :
+            public ChromiumDOMEvent,
+            public virtual minko::dom::AbstractDOMMouseEvent
 		{
 		public:
 			typedef std::shared_ptr<ChromiumDOMMouseEvent> Ptr;
+
 			~ChromiumDOMMouseEvent();
 
         private:
@@ -57,13 +59,11 @@ namespace chromium
 			int
 			pageY();
 
-
 			int
 			layerX();
 
 			int
 			layerY();
-
 
 			int
 			screenX();
