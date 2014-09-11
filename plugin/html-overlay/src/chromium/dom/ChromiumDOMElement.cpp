@@ -948,14 +948,14 @@ ChromiumDOMElement::onmouseout()
 Signal<AbstractDOMMouseEvent::Ptr>::Ptr
 ChromiumDOMElement::onmouseover()
 {
-	if (!_onmouseoverCallbackSet)
-	{
-		_onmouseover = Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::create();
-		addEventListener("mouseover");
-		_onmouseoverCallbackSet = true;
-	}
+    if (!_onmouseoverCallbackSet)
+    {
+        _onmouseover = Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::create();
+        addEventListener("mouseover");
+        _onmouseoverCallbackSet = true;
+    }
 
-	return _onmouseover;
+    return _onmouseover;
 }
 
 void
