@@ -958,6 +958,19 @@ ChromiumDOMElement::onmouseover()
 	return _onmouseover;
 }
 
+Signal<AbstractDOMEvent::Ptr>::Ptr
+ChromiumDOMElement::onchange()
+{
+    if (!_onchangeCallbackSet)
+    {
+        _onchange = Signal<minko::dom::AbstractDOMEvent::Ptr>::create();
+        addEventListener("change");
+        _onchangeCallbackSet = true;
+    }
+
+    return _onchange;
+}
+
 void
 ChromiumDOMElement::update()
 {

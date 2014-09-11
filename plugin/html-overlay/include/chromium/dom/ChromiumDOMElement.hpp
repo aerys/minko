@@ -146,6 +146,9 @@ namespace chromium
 			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr
 			onmouseover();
 
+            minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr
+            onchange();
+
 			static
 			void
 			addFunction(std::function<void()>);
@@ -178,6 +181,8 @@ namespace chromium
 
 			std::atomic<bool>	_blocker;
 
+            std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>>      _onchange;
+
 			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onclick;
 			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onmousedown;
 			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onmousemove;
@@ -185,6 +190,8 @@ namespace chromium
 			
 			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onmouseover;
 			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onmouseout;
+
+            bool _onchangeCallbackSet;
 
 			bool _onclickCallbackSet;
 			bool _onmousedownCallbackSet;
