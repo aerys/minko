@@ -76,7 +76,7 @@ namespace minko
                 EXECUTE = 43, // Linux support for this keycode was added in Gecko 4.0.
                 PRINTSCREEN = 44, // Print Screen key.
                 INSERT = 45, // Ins(ert) key.
-                //DELETE = 46, // Del(ete) key.
+                DEL = 46, // Del(ete) key.
                 _0 = 48, // "0" key in standard key location.
                 _1 = 49, // "1" key in standard key location.
                 _2 = 50, // "2" key in standard key location.
@@ -315,7 +315,7 @@ namespace minko
                 INSERT = 73,
                 HOME = 74,
                 PAGEUP = 75,
-                //DELETE = 76,
+                DEL = 76,
                 END = 77,
                 PAGEDOWN = 78,
                 RIGHT = 79,
@@ -574,7 +574,7 @@ namespace minko
                 PIPE = 124,
                 RIGHTCURLYBRACKET = 125,
                 TILDE = 126,
-                //DELETE = 127,
+                DEL = 127,
                 WORLD_0 = 160,
                 WORLD_1 = 161,
                 WORLD_2 = 162,
@@ -677,6 +677,7 @@ namespace minko
             static const uint NUM_KEYS = 350;
 
         private:
+
             typedef std::array<std::string, NUM_KEYS>           KeyToNameArray;
 
             static const KeyToNameArray                         _keyToName;
@@ -765,6 +766,31 @@ namespace minko
             static
             const KeyToNameArray
             initializeKeyNames();
+        };
+    }
+}
+
+namespace std
+{
+    template <>
+    class hash<minko::input::Keyboard::Key>
+    {
+    public:
+        size_t operator()(const minko::input::Keyboard::Key &key) const{
+            return hash<int>()(key);
+        }
+    };
+}
+
+namespace minko
+{
+    namespace input
+    {
+        class KeyMap
+        {
+        public:
+            static const std::unordered_map<Keyboard::Key, Keyboard::KeyCode> keyToKeyCodeMap;
+            static const std::unordered_map<Keyboard::Key, Keyboard::ScanCode> keyToScanCodeMap;
         };
     }
 }

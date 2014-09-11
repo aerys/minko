@@ -223,7 +223,7 @@ ChromiumApp::bindControls()
                     _keyIsDown[key] = true;
 
                     CefKeyEvent keyEvent;
-
+                    
                     keyEvent.windows_key_code = key;
                     keyEvent.type = KEYEVENT_KEYDOWN;
                     keyEvent.modifiers = 0;
@@ -241,6 +241,14 @@ ChromiumApp::bindControls()
                         keyEvent.modifiers |= EVENTFLAG_COMMAND_DOWN;
 
                     _impl->browser->GetHost()->SendKeyEvent(keyEvent);
+
+                    if (key == input::Keyboard::Key::RETURN || 
+                        key == input::Keyboard::Key::TAB ||
+                        key == input::Keyboard::Key::BACK_SPACE)
+                    {
+                        keyEvent.type = KEYEVENT_CHAR;
+                        _impl->browser->GetHost()->SendKeyEvent(keyEvent);
+                    }
                 }
             }
         }
