@@ -338,6 +338,18 @@ EmscriptenDOMElement::onmouseover()
 	return _onmouseover;
 }
 
+Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+EmscriptenDOMElement::onchange()
+{
+    if (!_onchangeSet)
+    {
+        addEventListener("change");
+        _onchangeSet = true;
+    }
+
+    return _onchange;
+}
+
 void
 EmscriptenDOMElement::update()
 {
