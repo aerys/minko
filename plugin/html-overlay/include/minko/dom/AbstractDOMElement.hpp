@@ -152,8 +152,6 @@ namespace minko
 			Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 			onmouseover() = 0;
 
-<<<<<<< Updated upstream
-=======
             virtual
             minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
             onchange() = 0;
@@ -162,7 +160,6 @@ namespace minko
             minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
             oninput() = 0;
 
->>>>>>> Stashed changes
 		private:
 
 		};
