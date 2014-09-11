@@ -23,54 +23,68 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/dom/AbstractDOMMouseEvent.hpp"
 #include "minko/dom/AbstractDOMElement.hpp"
-#include "chromium/dom/ChromiumDOMEvent.hpp"
 #include "include/cef_render_process_handler.h"
 
 namespace chromium
 {
-	namespace dom
-	{
-        class ChromiumDOMMouseEvent : public virtual ChromiumDOMEvent, public virtual minko::dom::AbstractDOMMouseEvent,
-			public std::enable_shared_from_this<ChromiumDOMMouseEvent>
-		{
-		public:
-			typedef std::shared_ptr<ChromiumDOMMouseEvent> Ptr;
-			~ChromiumDOMMouseEvent();
+    namespace dom
+    {
+        class ChromiumDOMEvent : public virtual minko::dom::AbstractDOMEvent,
+            public std::enable_shared_from_this < ChromiumDOMEvent >
+        {
+        public:
+            typedef std::shared_ptr<ChromiumDOMEvent> Ptr;
+            ~ChromiumDOMEvent();
 
-        private:
-			ChromiumDOMMouseEvent(CefRefPtr<CefV8Value>, CefRefPtr<CefV8Context>);
-			
-		public:
+        protected:
+            ChromiumDOMEvent(CefRefPtr<CefV8Value>, CefRefPtr<CefV8Context>);
+
+        public:
+            static
+            Ptr
+            create(CefRefPtr<CefV8Value>, CefRefPtr<CefV8Context>);
+
+            void
+            preventDefault();
+
+            void
+            stopPropagation();
+
+            std::string
+            accessor();
+
+            std::string
+            type();
+
+            minko::dom::AbstractDOMElement::Ptr
+            target();
+
 			static
-			Ptr
-			create(CefRefPtr<CefV8Value>, CefRefPtr<CefV8Context>);
+			void
+			clearAll();
 
-			int
-			clientX();
+			void
+			clear();
+            
+        protected:
 
-			int
-			clientY();
+            CefRefPtr<CefV8Value>
+            getFunction(std::string name);
 
-			int
-			pageX();
+            CefRefPtr<CefV8Value>
+            getProperty(std::string name);
 
-			int
-			pageY();
+            std::atomic<bool> _blocker;
 
+            static
+            std::list<Ptr> _events;
 
-			int
-			layerX();
+            CefRefPtr<CefV8Context> _v8Context;
 
-			int
-			layerY();
+            bool _cleared;
 
-
-			int
-			screenX();
-
-			int
-			screenY();
-		};
-	}
+            CefRefPtr<CefV8Value> _v8NodeObject;
+        };
+    }
 }
 #endif
