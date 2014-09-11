@@ -76,7 +76,7 @@ namespace minko
                 EXECUTE = 43, // Linux support for this keycode was added in Gecko 4.0.
                 PRINTSCREEN = 44, // Print Screen key.
                 INSERT = 45, // Ins(ert) key.
-                DELETE = 46, // Del(ete) key.
+                //DELETE = 46, // Del(ete) key.
                 _0 = 48, // "0" key in standard key location.
                 _1 = 49, // "1" key in standard key location.
                 _2 = 50, // "2" key in standard key location.
@@ -315,7 +315,7 @@ namespace minko
                 INSERT = 73,
                 HOME = 74,
                 PAGEUP = 75,
-                DELETE = 76,
+                //DELETE = 76,
                 END = 77,
                 PAGEDOWN = 78,
                 RIGHT = 79,
@@ -396,7 +396,7 @@ namespace minko
                 PRIOR = 157,
                 RETURN2 = 158,
                 SEPARATOR = 159,
-                OUT = 160,
+                //OUT = 160,
                 OPER = 161,
                 CLEARAGAIN = 162,
                 CRSEL = 163,
@@ -574,7 +574,7 @@ namespace minko
                 PIPE = 124,
                 RIGHTCURLYBRACKET = 125,
                 TILDE = 126,
-                DELETE = 127,
+                //DELETE = 127,
                 WORLD_0 = 160,
                 WORLD_1 = 161,
                 WORLD_2 = 162,

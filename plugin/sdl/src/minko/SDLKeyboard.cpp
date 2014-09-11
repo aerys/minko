@@ -41,7 +41,7 @@ const std::unordered_map<SDLKeyboard::Key, SDLKeyboard::KeyType> SDLKeyboard::ke
     { Key::MODECHANGE, KeyType::KeyCode },
     { Key::SPACE, KeyType::KeyCode },
 
-    { Key::DELETE, KeyType::KeyCode },
+    //{ Key::DELETE, KeyType::KeyCode },
     { Key::_0, KeyType::KeyCode },
     { Key::_1, KeyType::KeyCode },
     { Key::_2, KeyType::KeyCode },
@@ -254,7 +254,7 @@ const std::unordered_map<SDLKeyboard::Key, SDLKeyboard::KeyCode> SDLKeyboard::ke
 
     { Key::SPACE, input::Keyboard::KeyCode::SPACE },
 
-    { Key::DELETE, input::Keyboard::KeyCode::DELETE },
+    //{ Key::DELETE, input::Keyboard::KeyCode::DELETE },
     { Key::_0, input::Keyboard::KeyCode::_0 },
     { Key::_1, input::Keyboard::KeyCode::_1 },
     { Key::_2, input::Keyboard::KeyCode::_2 },

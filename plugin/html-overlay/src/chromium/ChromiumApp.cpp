@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #if defined(CHROMIUM)
 #include "chromium/ChromiumApp.hpp"
 #include "minko/input/Mouse.hpp"
+#include "minko/input/Keyboard.hpp"
 #include "chromium/ChromiumPimpl.hpp"
 #include "chromium/ChromiumRenderProcessHandler.hpp"
 #include "chromium/ChromiumRenderHandler.hpp"
@@ -169,7 +170,55 @@ ChromiumApp::bindControls()
 		}
 
 		_impl->browser->GetHost()->SendMouseClickEvent(mouseEvent, CefBrowserHost::MouseButtonType::MBT_MIDDLE, true, 1);
-	});
+    });
+
+    _keyDownSlot = _canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr keyboard)
+    {
+        if (!_enableInput)
+            return;
+
+        for (uint key = 0; key < input::Keyboard::NUM_KEYS; ++key)
+        {
+            if (_canvas->keyboard()->keyIsDown(static_cast<input::Keyboard::Key>(key)))
+            {
+                if (_keyIsDown.find(key) == _keyIsDown.end() || !_keyIsDown[key])
+                {
+                    _keyIsDown[key] = true;
+
+                    CefKeyEvent keyEvent;
+
+                    keyEvent.windows_key_code = key;
+                    keyEvent.type = KEYEVENT_RAWKEYDOWN;
+                    _impl->browser->GetHost()->SendKeyEvent(keyEvent);
+                    keyEvent.type = KEYEVENT_CHAR;
+                    _impl->browser->GetHost()->SendKeyEvent(keyEvent);
+                }
+            }
+        }
+    });
+
+    _keyUpSlot = _canvas->keyboard()->keyUp()->connect([&](input::Keyboard::Ptr keyboard)
+    {
+        if (!_enableInput)
+            return;
+
+        for (uint key = 0; key < input::Keyboard::NUM_KEYS; ++key)
+        {
+            if (!_canvas->keyboard()->keyIsDown(static_cast<input::Keyboard::Key>(key)))
+            {
+                if (_keyIsDown.find(key) != _keyIsDown.end() && _keyIsDown[key])
+                {
+                    _keyIsDown[key] = false;
+
+                    CefKeyEvent keyEvent;
+
+                    keyEvent.windows_key_code = key;
+                    keyEvent.type = KEYEVENT_KEYUP;
+                    _impl->browser->GetHost()->SendKeyEvent(keyEvent);
+                }
+            }
+        }
+    });
 }
 
 CefRefPtr<CefRenderProcessHandler>
