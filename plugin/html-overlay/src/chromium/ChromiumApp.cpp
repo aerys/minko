@@ -65,7 +65,8 @@ ChromiumApp::OnContextInitialized()
 
 	_impl->browser = CefBrowserHost::CreateBrowserSync(window_info, browserClient.get(), "", browserSettings, nullptr);
 
-	_impl->browser->GetHost()->SetMouseCursorChangeDisabled(false);
+    _impl->browser->GetHost()->SetMouseCursorChangeDisabled(false);
+    _impl->browser->GetHost()->SetFocus(true);
 
 	bindControls();
 }
@@ -104,7 +105,8 @@ ChromiumApp::bindControls()
 			mouseEvent.y = m->y();
 		}
 
-		_impl->browser->GetHost()->SendMouseClickEvent(mouseEvent, CefBrowserHost::MouseButtonType::MBT_LEFT, false, 1);
+        _impl->browser->GetHost()->SendMouseClickEvent(mouseEvent, CefBrowserHost::MouseButtonType::MBT_LEFT, false, 1);
+        _impl->browser->GetHost()->SendFocusEvent(true);
 	});
 
 	_leftUpSlot = _canvas->mouse()->leftButtonUp()->connect([&](input::Mouse::Ptr m)
@@ -130,7 +132,8 @@ ChromiumApp::bindControls()
 			mouseEvent.y = m->y();
 		}
 
-		_impl->browser->GetHost()->SendMouseClickEvent(mouseEvent, CefBrowserHost::MouseButtonType::MBT_RIGHT, false, 1);
+        _impl->browser->GetHost()->SendMouseClickEvent(mouseEvent, CefBrowserHost::MouseButtonType::MBT_RIGHT, false, 1);
+        _impl->browser->GetHost()->SendFocusEvent(true);
 	});
 
 	_rightUpSlot = _canvas->mouse()->rightButtonUp()->connect([&](input::Mouse::Ptr m)
@@ -143,7 +146,7 @@ ChromiumApp::bindControls()
 			mouseEvent.y = m->y();
 		}
 
-		_impl->browser->GetHost()->SendMouseClickEvent(mouseEvent, CefBrowserHost::MouseButtonType::MBT_RIGHT, true, 1);
+        _impl->browser->GetHost()->SendMouseClickEvent(mouseEvent, CefBrowserHost::MouseButtonType::MBT_RIGHT, true, 1);
 	});
 
 	_middleDownSlot = _canvas->mouse()->middleButtonDown()->connect([&](input::Mouse::Ptr m)
@@ -156,7 +159,8 @@ ChromiumApp::bindControls()
 			mouseEvent.y = m->y();
 		}
 
-		_impl->browser->GetHost()->SendMouseClickEvent(mouseEvent, CefBrowserHost::MouseButtonType::MBT_MIDDLE, false, 1);
+        _impl->browser->GetHost()->SendMouseClickEvent(mouseEvent, CefBrowserHost::MouseButtonType::MBT_MIDDLE, false, 1);
+        _impl->browser->GetHost()->SendFocusEvent(true);
 	});
 
 	_middleUpSlot = _canvas->mouse()->middleButtonUp()->connect([&](input::Mouse::Ptr m)
@@ -223,7 +227,7 @@ ChromiumApp::bindControls()
                     _keyIsDown[key] = true;
 
                     CefKeyEvent keyEvent;
-
+                    
                     keyEvent.windows_key_code = key;
                     keyEvent.type = KEYEVENT_KEYDOWN;
                     keyEvent.modifiers = 0;
@@ -241,6 +245,15 @@ ChromiumApp::bindControls()
                         keyEvent.modifiers |= EVENTFLAG_COMMAND_DOWN;
 
                     _impl->browser->GetHost()->SendKeyEvent(keyEvent);
+
+                    if (key == input::Keyboard::Key::RETURN || 
+                        key == input::Keyboard::Key::TAB ||
+                        key == input::Keyboard::Key::BACK_SPACE ||
+                        key == input::Keyboard::Key::DEL)
+                    {
+                        keyEvent.type = KEYEVENT_CHAR;
+                        _impl->browser->GetHost()->SendKeyEvent(keyEvent);
+                    }
                 }
             }
         }
@@ -295,6 +308,7 @@ ChromiumApp::bindControls()
         keyEvent.character = c;
 
         _impl->browser->GetHost()->SendKeyEvent(keyEvent);
+        _impl->browser->GetHost()->SendFocusEvent(true);
     });
 }
 
