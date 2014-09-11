@@ -49,16 +49,8 @@ HtmlOverlay::HtmlOverlay(int argc, char** argv) :
 	_cleared(false)
 {
 #if defined(__APPLE__)
-# include "TargetConditionals.h"
     MacWebViewDOMEngine::Ptr engine = MacWebViewDOMEngine::create();
     _domEngine = engine;
-//# if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
-//    IOSWebViewDOMEngine::Ptr engine = IOSWebViewDOMEngine::create();
-//    _domEngine = engine;
-//# elif TARGET_OS_MAC // OSX
-//    OSXWebViewDOMEngine::Ptr engine = OSXWebViewDOMEngine::create();
-//    _domEngine = engine;
-//# endif
 #elif defined(__ANDROID__)
     AndroidWebViewDOMEngine::Ptr engine = AndroidWebViewDOMEngine::create();
     _domEngine = engine;

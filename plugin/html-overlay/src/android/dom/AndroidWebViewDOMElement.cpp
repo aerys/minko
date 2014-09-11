@@ -27,8 +27,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::dom;
-using namespace androidwebview;
-using namespace androidwebview::dom;
+using namespace android;
+using namespace android::dom;
 
 int
 AndroidWebViewDOMElement::_elementUid = 0;
@@ -365,7 +365,6 @@ AndroidWebViewDOMElement::onmouseover()
 	return _onmouseover;
 }
 
-#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
 Signal<std::shared_ptr<AbstractDOMTouchEvent>>::Ptr
 AndroidWebViewDOMElement::ontouchdown()
 {
@@ -401,11 +400,11 @@ AndroidWebViewDOMElement::ontouchmotion()
     
     return _ontouchmotion;
 }
-#endif
 
 void
 AndroidWebViewDOMElement::update()
 {
+    /*
     if (_engine->isReady())
     {
         std::string js = "(Minko.getEventsCount(" + _jsAccessor + "))";
@@ -473,27 +472,10 @@ AndroidWebViewDOMElement::update()
                     }
                 }
             }
-/*#elif TARGET_OS_MAC // OSX
-            AndroidWebViewDOMMouseEvent::Ptr event = AndroidWebViewDOMMouseEvent::create(eventName, _engine);
-            
-            std::string type = event->type();
-            
-            if (type == "click")
-                _onclick->execute(event);
-            else if (type == "mousedown")
-                _onmousedown->execute(event);
-            else if (type == "mouseup")
-                _onmouseup->execute(event);
-            else if (type == "mousemove")
-                _onmousemove->execute(event);
-            else if (type == "mouseover")
-                _onmouseover->execute(event);
-            else if (type == "mouseout")
-                _onmouseout->execute(event);
-#endif*/
         }
         
         js = "Minko.clearEvents(" + _jsAccessor + ");";
         _engine->eval(js);
     }
+    */
 }

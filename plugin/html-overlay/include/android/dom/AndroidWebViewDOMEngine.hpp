@@ -169,14 +169,11 @@ namespace android
 
 			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onload;
 			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onmessage;
-
-			bool _visible;
             
             /*
             // WebView
             UIWindow *_window;
             IOSWebView *_webView;
-            uint _webViewWidth;
             
             // WebView
             NSWindow *_window;
@@ -184,6 +181,9 @@ namespace android
             
             WebViewJavascriptBridge* _bridge;
             */
+
+            bool _visible;
+            uint _webViewWidth;
 
             // Fingers
             std::map<int, std::shared_ptr<minko::SDLTouch>> _touches;

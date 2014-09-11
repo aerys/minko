@@ -25,18 +25,34 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoSDL.hpp"
 
 #include "SDL.h"
-#include "SDL_syswm.h"
+#include <jni.h>
+#include <android/log.h>
 
 #include "minko/dom/AbstractDOMTouchEvent.hpp"
 
 #include "android/dom/AndroidWebViewDOMEngine.hpp"
 #include "android/dom/AndroidWebViewDOMMouseEvent.hpp"
 
+#define LOG_TAG "MINKO"
+#define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+
 using namespace minko;
 using namespace minko::component;
 using namespace minko::dom;
-using namespace androidwebview;
-using namespace androidwebview::dom;
+using namespace android;
+using namespace android::dom;
+
+static bool webViewInitialized = false;
+static JNIEnv* env = nullptr;
+static jobject sdlActivity = nullptr;
+static jmethodID runOnUiThreadMethod = nullptr;
+static jclass initWebViewTaskClass = nullptr;
+static jobject initWebViewTask = nullptr;
+static std::string jsGlobalResult = "";
+static jclass sdlActivityClass = nullptr;
+static jmethodID runOnUiThreadWithReturnValueMethod = nullptr;
 
 int
 AndroidWebViewDOMEngine::_domUid = 0;
@@ -51,6 +67,43 @@ Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot onmouseupSlot;
 Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot ontouchdownSlot;
 Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot ontouchupSlot;
 Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot ontouchmotionSlot;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* Start up the Minko app */
+void Java_minko_plugin_htmloverlay_InitWebViewTask_webViewInitialized(JNIEnv* env, jobject obj)
+{
+    webViewInitialized = true;
+
+    LOGI("WEBVIEW INITIALIZED (FROM C++)");
+}
+
+void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnMessage(JNIEnv* env, jobject obj, jstring message)
+{
+    LOGI("RECEIVED A MESSAGE FROM JS: ");
+    
+    const char *nativeString = env->GetStringUTFChars(message, 0);
+
+    LOGI(nativeString);
+}
+
+void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnJSResult(JNIEnv* env, jobject obj, jstring jsResult)
+{
+    LOGI("RECEIVED A JS RESULT: ");
+    
+    const char *nativeString = env->GetStringUTFChars(jsResult, 0);
+
+    jsGlobalResult = std::string(nativeString);
+
+    LOGI(nativeString);
+}
+
+/* Ends C function definitions when using C++ */
+#ifdef __cplusplus
+}
+#endif
 
 AndroidWebViewDOMEngine::AndroidWebViewDOMEngine() :
 	_onload(Signal<AbstractDOM::Ptr, std::string>::create()),
@@ -69,152 +122,29 @@ AndroidWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Pt
 	_sceneManager = sceneManager;
 
     // URL of the local file that contains JS callback handler
-    std::string uri = "file:///assets/html/iframe.html";
+    std::string uri = "file:///android_asset/html/iframe.html";
 
-/*    const char *cURI = uri.c_str();
-    NSString *nsURI = [NSString stringWithCString:cURI encoding:[NSString defaultCStringEncoding]];
+    // JNI
+    LOGI("Get the SDL JNIEnv");
+    // Retrieve the JNI environment from SDL 
+    env = (JNIEnv*)SDL_AndroidGetJNIEnv();
+    LOGI("Get the SDLActivity instance");
+    // Retrieve the Java instance of the SDLActivity
+    sdlActivity = (jobject)SDL_AndroidGetActivity();
+    LOGI("Get sdlActivity class");
+    sdlActivityClass = env->GetObjectClass(sdlActivity);
 
-    // FIXME: Replate by a proper call to Loader.
-    NSURL *url = [NSURL URLWithString:nsURI];
-    NSURLRequest *request = [NSURLRequest requestWithURL:url];
-    
-    // Get window from canvas
-    auto newCanvas = std::static_pointer_cast<Canvas>(canvas);
-    SDL_Window* sdlWindow = newCanvas->window();
-    SDL_SysWMinfo info;
-    
-    SDL_VERSION(&info.version);
-    
-    if (SDL_GetWindowWMInfo(sdlWindow, &info))
-    {*/
-/*#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
-        // Get the UIKit window from SDL
-        _window = info.info.uikit.window;
-        
-        // Create the web view
-        _webView = [[IOSWebView alloc] initWithFrame:_window.bounds];
-        
-        // Change web view's background properties
-        UIColor * clearColor = [UIColor colorWithRed:255/255.0f green:1/255.0f blue:0/255.0f alpha:0.f];
-        [_webView setBackgroundColor: clearColor];
-        [_webView setOpaque: NO];
-        [_webView.scrollView setDelaysContentTouches: NO];
-        
-        // Disable web view scroll
-        _webView.scrollView.scrollEnabled = NO;
-        _webView.scrollView.bounces = NO;
-        
-        // Resize the web view according to device dimension and orientation
-        _webView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin |
-        UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin |
-        UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        _webView.scalesPageToFit = YES;
-        
-        // Disable web view interaction
-        //[_webView setUserInteractionEnabled:NO];
-        
-        _window.rootViewController.view.autoresizesSubviews = YES;
-        
-        // Add the web view to the current window
-        [_window.rootViewController.view addSubview:_webView];
-        
-        // Save the web view width
-        _webViewWidth = _webView.frame.size.width;
-        
-        // Load iframe containing bridge JS callback handler
-        [_webView loadRequest:request];
-        
-        _canvasResizedSlot = _canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
-        {
-            // Change the width of the webview directly
-            CGRect webViewFrame = _webView.frame;
-            webViewFrame.size.width = w / 2;
-            webViewFrame.size.height = h / 2;
-            _webView.frame = webViewFrame;
-            
-            _webViewWidth = w;
-            // Useful on iOS to have the same coordinates on the web view as on the canvas
-            updateWebViewWidth();
-        });
+    LOGI("Get initWebViewTask class");
+    initWebViewTaskClass = env->FindClass("minko/plugin/htmloverlay/InitWebViewTask");
+    LOGI("Get initWebViewTask constructor method");
+    jmethodID initWebViewTaskCtor = env->GetMethodID(initWebViewTaskClass, "<init>", "(Landroid/app/Activity;Ljava/lang/String;)V");
+    LOGI("Instanciate a initWebViewTask");
+    initWebViewTask = env->NewObject(initWebViewTaskClass, initWebViewTaskCtor, sdlActivity, env->NewStringUTF(uri.c_str()));
 
-#elif TARGET_OS_MAC // OSX
-        // Get the Cocoa window from SDL
-        _window = info.info.cocoa.window;
-        
-        // Create the web view
-        _webView = [[OSXWebView alloc] initWithFrame:NSMakeRect(0, 0, _canvas->width(), _canvas->height())];
-
-        // Display the webview
-        [_webView setWantsLayer: YES];
-        
-        // Webview's background
-        CGColorRef clearColor = CGColorCreateGenericRGB(255/255.0f, 1/255.0f, 0/255.0f, 0.f);
-        _webView.layer.backgroundColor = clearColor;
-        
-        // Display the canvas behind the overlay
-        [_webView setDrawsBackground:NO];
-        
-        // Disable web view scroll
-        [[[_webView mainFrame] frameView] setAllowsScrolling:NO];
-        _webView.mainFrame.frameView.documentView.enclosingScrollView.verticalScrollElasticity = NSScrollElasticityNone;
-        
-        // Set UIDelegate (used to enable JS alert and disable right click)
-        [_webView setUIDelegate:[OSXWebUIDelegate alloc]];
-        
-        // Resize the overlay according to the window's size
-        [_window.contentView setAutoresizesSubviews:YES];
-        [_webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-        
-        // Add the web view to the current window
-        [_window.contentView addSubview:_webView];
-        
-        // Load iframe containing bridge JS callback handler
-        [[_webView mainFrame] loadRequest:request];
-#endif*/
-        
-       /* // Create a C++ handler to process the message received by the Javascript bridge
-        handleJavascriptMessageWrapper = std::bind(
-                       &AndroidWebViewDOMEngine::handleJavascriptMessage,
-                       this,
-                       std::placeholders::_1,
-                       std::placeholders::_2
-        );
-        
-        // Create the bridge
-        _bridge = [WebViewJavascriptBridge bridgeForWebView:_webView handler:
-                   ^(id data, WVJBResponseCallback responseCallback) {
-
-                   // If the message is a dictionary (of this form: {type: 'ready', value: 'true'})
-                   if([data isKindOfClass:[NSDictionary class]])
-                   {
-                        std::string type;
-                        std::string value;
-                
-                        for (NSString *key in [data allKeys])
-                        {
-                            id val = [data objectForKey:key];
-                   
-                            if ([key isEqualToString:@"type"])
-                                type = [val UTF8String];
-                            else if ([key isEqualToString:@"value"])
-                                value = [val UTF8String];
-                        }
-                   
-                        AndroidWebViewDOMEngine::handleJavascriptMessageWrapper(type, value);
-                   }
-                   else if ([data isKindOfClass:[NSString class]])
-                   {
-                        NSString* dataString = (NSString *)data;
-                        std::string value([dataString UTF8String]);
-                        std::string type = "log";
-                   
-                        AndroidWebViewDOMEngine::handleJavascriptMessageWrapper(type, value);
-                   }
-         }];*/
-        
-        // Enable bridge logging
-        // [WebViewJavascriptBridge enableLogging];
-    }
+    LOGI("Get runOnUiThread method from sdlActivity");
+    runOnUiThreadMethod = env->GetMethodID(sdlActivityClass, "runOnUiThread", "(Ljava/lang/Runnable;)V");
+    LOGI("Call runOnUiThread with initWebViewTask");
+    env->CallVoidMethod(sdlActivity, runOnUiThreadMethod, initWebViewTask);
 
     visible(_visible);
 
@@ -241,21 +171,35 @@ AndroidWebViewDOMEngine::mainDOM()
 void
 AndroidWebViewDOMEngine::enterFrame()
 {
+    if (!webViewInitialized)
+        return;
+
     if (_waitingForLoad)
     {
+        LOGI("ENTER FRAME");
         std::string jsEval = "try{ var loaded = Minko.loaded; ('true')} catch(e) {('false')}";
         
         std::string res = eval(jsEval);
         
+        eval("Minko.testouille");
+        eval("Minko.testFunction('CECI EST UN ELEMENT');");
+
+        // TO REMOVE
+         _waitingForLoad = false;
+
+         load(_uriToLoad);
+        /*
         if (res == "true")
         {
             _waitingForLoad = false;
             load(_uriToLoad);
             updateWebViewWidth();
         }
-        
+        */
+
         return;
     }
+    /*
 	std::string jsEval = "(Minko.loaded + '')";
 
     std::string res = eval(jsEval);
@@ -307,6 +251,7 @@ AndroidWebViewDOMEngine::enterFrame()
 			eval(jsEval);
 		}
 	}
+    */
 }
 
 AndroidWebViewDOMEngine::Ptr
@@ -322,6 +267,9 @@ AndroidWebViewDOMEngine::load(std::string uri)
     if (_currentDOM == nullptr || _currentDOM->initialized())
         createNewDom();
     
+    LOGI("Try to load the URI: ");
+    LOGI(uri.c_str());
+
     if (_waitingForLoad)
     {
         _uriToLoad = uri;
@@ -386,14 +334,18 @@ AndroidWebViewDOMEngine::visible(bool value)
         {
             if (value)
             {
-/*#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+/*
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
                 [_window addSubview:_webView];
 #elif TARGET_OS_MAC // OSX
                 [_window.contentView addSubview:_webView];
 #endif
+*/
             }
+            /*
             else
-                [_webView removeFromSuperview];*/
+                [_webView removeFromSuperview];
+            */
         }
 	}
     
@@ -536,10 +488,46 @@ AndroidWebViewDOMEngine::updateWebViewWidth()
 std::string
 AndroidWebViewDOMEngine::eval(std::string data)
 {
-    const char *dataChar = data.c_str();
-    NSString *nsString = [NSString stringWithCString:dataChar encoding:[NSString defaultCStringEncoding]];
-    NSString *result = [_webView stringByEvaluatingJavaScriptFromString: nsString];
-    std::string resultString([result UTF8String]);
+    // Get the WebView instance
+    jmethodID getWebViewMethod = env->GetMethodID(initWebViewTaskClass, "getWebView", "()Landroid/webkit/WebView;");
+    jobject webView = env->CallObjectMethod(initWebViewTask, getWebViewMethod);
     
-    return resultString;
+    // Call JS eval
+    jclass evalJSTaskClass = env->FindClass("minko/plugin/htmloverlay/EvalJSTask");
+    jmethodID evalJSTaskCtor = env->GetMethodID(evalJSTaskClass, "<init>", "(Landroid/webkit/WebView;Ljava/lang/String;)V");
+    jobject evalJSTask = env->NewObject(evalJSTaskClass, evalJSTaskCtor, webView, env->NewStringUTF(data.c_str()));
+    
+    runOnUiThreadWithReturnValueMethod = env->GetMethodID(sdlActivityClass, "runOnUiThread", "(Ljava/lang/Runnable;)V");
+    LOGI("Call runOnUiThread with initWebViewTask");
+    env->CallVoidMethod(sdlActivity, runOnUiThreadMethod, initWebViewTask);
+
+    // Create a FutureTask
+    jclass futureTaskClass = env->FindClass("java/util/concurrent/FutureTask");
+    jmethodID futureTaskCtor = env->GetMethodID(futureTaskClass, "<init>", "(Ljava/util/concurrent/Callable;)V");
+    jobject futureTask = env->NewObject(futureTaskClass, futureTaskCtor, evalJSTask);
+
+    LOGI("Call runOnUiThread with evalJSTask");
+    env->CallVoidMethod(sdlActivity, runOnUiThreadMethod, futureTask);
+
+    /*
+    LOGI("Get get method of FutureTask");
+    jmethodID futureTaskGetMethod = env->GetMethodID(futureTaskClass, "get", "()Ljava/lang/String;");
+    
+    jstring returnValue = (jstring)env->CallObjectMethod(futureTaskClass, futureTaskGetMethod);
+
+    LOGI("REAL RETURN VALUE: ");
+    const char *returnValueChar = env->GetStringUTFChars(returnValue, 0);
+    LOGI(returnValueChar);
+    */
+/*
+    while(true)
+    {
+        if (jsResult != "")
+            return jsResult;
+    }
+*/
+    // How to get the result of the eval ?
+    LOGI("Try to evaluate JS!");
+    
+    return "";
 }

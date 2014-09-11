@@ -315,7 +315,8 @@ minko.project.application = function(name)
 			"-Wl,--no-undefined",
 			"-Wl,--undefined=Java_org_libsdl_app_SDLActivity_nativeInit",
 			"-Wl,--undefined=Java_minko_plugin_htmloverlay_InitWebViewTask_webViewInitialized",
-			"-Wl,--undefined=Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnMessage"
+			"-Wl,--undefined=Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnMessage",
+			"-Wl,--undefined=Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnJSResult"			
 		}
 
 		prelinkcommands {

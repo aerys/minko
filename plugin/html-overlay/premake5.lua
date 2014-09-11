@@ -158,6 +158,6 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	-- Android webview
 	configuration { "android" }
 		files {
-			"include/android/*.hpp",
-			"src/android/*.cpp"
+			"include/android/**.hpp",
+			"src/android/**.cpp"
 		}

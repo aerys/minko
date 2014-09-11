@@ -23,8 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::dom;
-using namespace androidwebview;
-using namespace androidwebview::dom;
+using namespace android;
+using namespace android::dom;
 
 AndroidWebViewDOM::AndroidWebViewDOM(std::string jsAccessor) :
 	_initialized(false),
@@ -164,7 +164,7 @@ AndroidWebViewDOM::initialized(bool v)
 	if (!_initialized && v)
 	{
         runScript(_jsAccessor + " = {};");
-        
+
 		std::string eval = "";
 		eval += _jsAccessor + ".window = Minko.iframeElement.contentWindow;\n";
 		eval += _jsAccessor + ".document = Minko.iframeElement.contentDocument;\n";

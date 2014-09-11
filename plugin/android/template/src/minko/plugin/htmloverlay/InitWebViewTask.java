@@ -74,7 +74,7 @@ public class InitWebViewTask implements Runnable
 		d("MINKO", "WEBVIEW HAS NOW LOAD AN URL!");
 		
 		// Add a JavaScript interface
-		_webView.addJavascriptInterface(new WebViewJSInterface(), "Minko");
+		_webView.addJavascriptInterface(new WebViewJSInterface(), "MinkoNativeInterface");
 		
 		webViewInitialized();
     }
