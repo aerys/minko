@@ -65,7 +65,7 @@ namespace minko
         touch() = 0;
 
         virtual
-            std::shared_ptr<input::Touch>
+        std::shared_ptr<input::Touch>
         touch(uint id) = 0;
 
         virtual

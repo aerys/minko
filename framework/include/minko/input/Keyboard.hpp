@@ -688,6 +688,8 @@ namespace minko
             Signal<Ptr>::Ptr                                    _down;
             Signal<Ptr>::Ptr                                    _up;
 
+            Signal<Ptr, char>::Ptr                              _textInput;
+
         public:
             inline static
             const std::string&
@@ -708,6 +710,13 @@ namespace minko
             keyDown() const
             {
                 return _down;
+            }
+
+            virtual
+            Signal<Ptr, char>::Ptr
+            textInput() const
+            {
+                return _textInput;
             }
 
             virtual

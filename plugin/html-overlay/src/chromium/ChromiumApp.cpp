@@ -188,9 +188,58 @@ ChromiumApp::bindControls()
                     CefKeyEvent keyEvent;
 
                     keyEvent.windows_key_code = key;
-                    keyEvent.type = KEYEVENT_RAWKEYDOWN;
+                    keyEvent.type = KEYEVENT_KEYDOWN;
+                    keyEvent.modifiers = 0;
+
+                    if (_canvas->keyboard()->keyIsDown(input::Keyboard::SHIFT) || _canvas->keyboard()->keyIsDown(input::Keyboard::SHIFT_RIGHT))
+                        keyEvent.modifiers |= EVENTFLAG_SHIFT_DOWN;
+
+                    if (_canvas->keyboard()->keyIsDown(input::Keyboard::ALT))
+                        keyEvent.modifiers |= EVENTFLAG_ALT_DOWN;
+
+                    if (_canvas->keyboard()->keyIsDown(input::Keyboard::CONTROL) || _canvas->keyboard()->keyIsDown(input::Keyboard::CONTROL_RIGHT))
+                        keyEvent.modifiers |= EVENTFLAG_CONTROL_DOWN;
+
+                    if (_canvas->keyboard()->keyIsDown(input::Keyboard::WIN))
+                        keyEvent.modifiers |= EVENTFLAG_COMMAND_DOWN;
+
                     _impl->browser->GetHost()->SendKeyEvent(keyEvent);
-                    keyEvent.type = KEYEVENT_CHAR;
+                }
+            }
+        }
+    });
+
+    _keyDownSlot = _canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr keyboard)
+    {
+        if (!_enableInput)
+            return;
+
+        for (uint key = 0; key < input::Keyboard::NUM_KEYS; ++key)
+        {
+            if (_canvas->keyboard()->keyIsDown(static_cast<input::Keyboard::Key>(key)))
+            {
+                if (_keyIsDown.find(key) == _keyIsDown.end() || !_keyIsDown[key])
+                {
+                    _keyIsDown[key] = true;
+
+                    CefKeyEvent keyEvent;
+
+                    keyEvent.windows_key_code = key;
+                    keyEvent.type = KEYEVENT_KEYDOWN;
+                    keyEvent.modifiers = 0;
+
+                    if (_canvas->keyboard()->keyIsDown(input::Keyboard::SHIFT) || _canvas->keyboard()->keyIsDown(input::Keyboard::SHIFT_RIGHT))
+                        keyEvent.modifiers |= EVENTFLAG_SHIFT_DOWN;
+
+                    if (_canvas->keyboard()->keyIsDown(input::Keyboard::ALT))
+                        keyEvent.modifiers |= EVENTFLAG_ALT_DOWN;
+
+                    if (_canvas->keyboard()->keyIsDown(input::Keyboard::CONTROL) || _canvas->keyboard()->keyIsDown(input::Keyboard::CONTROL_RIGHT))
+                        keyEvent.modifiers |= EVENTFLAG_CONTROL_DOWN;
+
+                    if (_canvas->keyboard()->keyIsDown(input::Keyboard::WIN))
+                        keyEvent.modifiers |= EVENTFLAG_COMMAND_DOWN;
+
                     _impl->browser->GetHost()->SendKeyEvent(keyEvent);
                 }
             }
@@ -214,10 +263,38 @@ ChromiumApp::bindControls()
 
                     keyEvent.windows_key_code = key;
                     keyEvent.type = KEYEVENT_KEYUP;
+                    keyEvent.modifiers = 0;
+
+                    if (_canvas->keyboard()->keyIsDown(input::Keyboard::SHIFT) || _canvas->keyboard()->keyIsDown(input::Keyboard::SHIFT_RIGHT))
+                        keyEvent.modifiers |= EVENTFLAG_SHIFT_DOWN;
+
+                    if (_canvas->keyboard()->keyIsDown(input::Keyboard::ALT))
+                        keyEvent.modifiers |= EVENTFLAG_ALT_DOWN;
+
+                    if (_canvas->keyboard()->keyIsDown(input::Keyboard::CONTROL) || _canvas->keyboard()->keyIsDown(input::Keyboard::CONTROL_RIGHT))
+                        keyEvent.modifiers |= EVENTFLAG_CONTROL_DOWN;
+
+                    if (_canvas->keyboard()->keyIsDown(input::Keyboard::WIN))
+                        keyEvent.modifiers |= EVENTFLAG_COMMAND_DOWN;
+
                     _impl->browser->GetHost()->SendKeyEvent(keyEvent);
                 }
             }
         }
+    });
+
+    _textInputSlot = _canvas->keyboard()->textInput()->connect([&](input::Keyboard::Ptr keyboard, char c)
+    {
+        if (!_enableInput)
+            return;
+
+        CefKeyEvent keyEvent;
+
+        keyEvent.type = KEYEVENT_CHAR;
+        keyEvent.windows_key_code = c;
+        keyEvent.character = c;
+
+        _impl->browser->GetHost()->SendKeyEvent(keyEvent);
     });
 }
 
