@@ -29,7 +29,6 @@ using namespace minko::dom;
 using namespace emscripten;
 using namespace emscripten::dom;
 
-
 int
 EmscriptenDOMElement::_elementUid = 0;
 
@@ -53,6 +52,7 @@ EmscriptenDOMElement::EmscriptenDOMElement(std::string jsAccessor) :
 	_onmouseupSet(false),
 	_onmouseoverSet(false),
 	_onmouseoutSet(false)
+    _onchangeSet(false)
 {
 	std::string eval = jsAccessor + ".minkoName = '" + jsAccessor + "';";
 	emscripten_run_script(eval.c_str());

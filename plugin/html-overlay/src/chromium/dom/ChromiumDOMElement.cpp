@@ -41,12 +41,13 @@ std::map<ChromiumDOMElement::Ptr, CefRefPtr<CefV8Value>>
 ChromiumDOMElement::_elementToV8Object;
 
 ChromiumDOMElement::ChromiumDOMElement(CefRefPtr<CefV8Value> v8NodeObject, CefRefPtr<CefV8Context> v8Context) :
-	_onclickCallbackSet(false),
-	_onmousedownCallbackSet(false),
-	_onmousemoveCallbackSet(false),
-	_onmouseupCallbackSet(false),
-	_onmouseoverCallbackSet(false),
-	_onmouseoutCallbackSet(false),
+    _onclickCallbackSet(false),
+    _onmousedownCallbackSet(false),
+    _onmousemoveCallbackSet(false),
+    _onmouseupCallbackSet(false),
+    _onmouseoverCallbackSet(false),
+    _onmouseoutCallbackSet(false),
+    _onchangeCallbackSet(false),
 	_cleared(false),
 	_v8Handler(),
 	_v8NodeObject(v8NodeObject),
