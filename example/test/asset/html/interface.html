@@ -3,7 +3,7 @@
 		<link rel="stylesheet" type="text/css" href="css/style.css">
 	</head>
 	<body>
-		<div id="content">
+		<div id="content" onclick="test();">
 			<div id="scoreBanner">
 				<div id="scoreBannerBackground"></div>
 				<div class="teamScore" id="teamScoreRed">0</div>
@@ -14,9 +14,15 @@
 			</div>
 		</div>
 		<script type="text/javascript">
+		/*
 			Minko.onmessage = function(message)
 			{
 			    console.log(message);
+			}
+		*/
+			function test()
+			{
+				Minko.onmessage("SALUT");
 			}
 		</script>
 	</body>

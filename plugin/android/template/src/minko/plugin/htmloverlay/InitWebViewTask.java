@@ -55,11 +55,26 @@ public class InitWebViewTask implements Runnable
         _webView.getSettings().setLoadWithOverviewMode(true);
         _webView.getSettings().setUseWideViewPort(true);
 
+		// Disable zoom
+		_webView.getSettings().setSupportZoom(false);
+		_webView.getSettings().setBuiltInZoomControls(true);
+		_webView.getSettings().setDisplayZoomControls(false);
+		
+		// Disable zoom when double tap
+		//_webView.getSettings().setUseWideViewPort(false);
+		
+		// Disable scroll bar
+		_webView.setVerticalScrollBarEnabled(false);
+		_webView.setHorizontalScrollBarEnabled(false);
+		
 		// Add the WebView
         layout.addView(_webView);
         _webView.loadUrl(_url);
 		
 		d("MINKO", "WEBVIEW HAS NOW LOAD AN URL!");
+		
+		// Add a JavaScript interface
+		_webView.addJavascriptInterface(new WebViewJSInterface(), "Minko");
 		
 		webViewInitialized();
     }
