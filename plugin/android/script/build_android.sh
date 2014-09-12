@@ -22,10 +22,10 @@ pushd $TARGET_DIR > /dev/null
 rm -rf src
 rsync -vr "${MINKO_HOME}/plugin/android/template/" .
 mkdir -p src/${PACKAGE//.//}
-mv src/MainActivity.java src/${PACKAGE//.//}
+mv src/MinkoActivity.java src/${PACKAGE//.//}
 
 sed -i "s/{{APP_NAME}}/${APP_NAME}/" res/values/strings.xml build.xml
-sed -i "s/{{PACKAGE}}/${PACKAGE}/" AndroidManifest.xml src/${PACKAGE//.//}/MainActivity.java
+sed -i "s/{{PACKAGE}}/${PACKAGE}/" AndroidManifest.xml src/${PACKAGE//.//}/MinkoActivity.java
 
 mkdir -p libs/armeabi-v7a/
 # mkdir -p libs/x86/
