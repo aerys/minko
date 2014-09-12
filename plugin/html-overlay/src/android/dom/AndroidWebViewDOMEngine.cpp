@@ -53,6 +53,7 @@ static jobject initWebViewTask = nullptr;
 static std::string jsGlobalResult = "";
 static jclass sdlActivityClass = nullptr;
 static jmethodID runOnUiThreadWithReturnValueMethod = nullptr;
+static jmethodID evalJSMethod = nullptr;
 
 int
 AndroidWebViewDOMEngine::_domUid = 0;
@@ -91,12 +92,13 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnMessage(JNIEn
 
 void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnJSResult(JNIEnv* env, jobject obj, jstring jsResult)
 {
-    LOGI("RECEIVED A JS RESULT: ");
-    
     const char *nativeString = env->GetStringUTFChars(jsResult, 0);
 
-    jsGlobalResult = std::string(nativeString);
+    env->ReleaseStringUTFChars(jsResult, 0);
 
+    jsGlobalResult = std::string(nativeString);
+    
+    LOGI("RECEIVED A JS RESULT: ");
     LOGI(nativeString);
 }
 
@@ -146,6 +148,8 @@ AndroidWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Pt
     LOGI("Call runOnUiThread with initWebViewTask");
     env->CallVoidMethod(sdlActivity, runOnUiThreadMethod, initWebViewTask);
 
+    evalJSMethod = env->GetMethodID(initWebViewTaskClass, "evalJS", "(Ljava/lang/String;)Ljava/lang/String;");
+
     visible(_visible);
 
 	_enterFrameSlot = _sceneManager->frameBegin()->connect([&](std::shared_ptr<component::SceneManager>, float, float)
@@ -181,21 +185,20 @@ AndroidWebViewDOMEngine::enterFrame()
         
         std::string res = eval(jsEval);
         
+        /*
         eval("Minko.testouille");
         eval("Minko.testFunction('CECI EST UN ELEMENT');");
+        */
 
-        // TO REMOVE
-         _waitingForLoad = false;
+        LOGI("GET RETURN OF EVAL: ");
+        LOGI(res.c_str());
 
-         load(_uriToLoad);
-        /*
         if (res == "true")
         {
             _waitingForLoad = false;
             load(_uriToLoad);
             updateWebViewWidth();
         }
-        */
 
         return;
     }
@@ -282,16 +285,20 @@ AndroidWebViewDOMEngine::load(std::string uri)
         
         if (!isHttp && !isHttps)
         {
-/*#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+#if __ANDROID__
+    uri = "file:///android_asset/" + uri;
+#else
+# if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
             uri = "../../asset/" + uri;
-#elif TARGET_OS_MAC // OSX
+# elif TARGET_OS_MAC // OSX
             std::string path = file::File::getBinaryDirectory();
-# if DEBUG
+#  if DEBUG
             uri = path + "/../../../asset/" + uri;
-# else
+#  else
             uri = path + "/asset/" + uri;
+#  endif
 # endif
-#endif*/
+#endif
         }
         
         std::string jsEval = "Minko.loadUrl('" + uri + "')";
@@ -488,6 +495,7 @@ AndroidWebViewDOMEngine::updateWebViewWidth()
 std::string
 AndroidWebViewDOMEngine::eval(std::string data)
 {
+    /*
     // Get the WebView instance
     jmethodID getWebViewMethod = env->GetMethodID(initWebViewTaskClass, "getWebView", "()Landroid/webkit/WebView;");
     jobject webView = env->CallObjectMethod(initWebViewTask, getWebViewMethod);
@@ -496,12 +504,38 @@ AndroidWebViewDOMEngine::eval(std::string data)
     jclass evalJSTaskClass = env->FindClass("minko/plugin/htmloverlay/EvalJSTask");
     jmethodID evalJSTaskCtor = env->GetMethodID(evalJSTaskClass, "<init>", "(Landroid/webkit/WebView;Ljava/lang/String;)V");
     jobject evalJSTask = env->NewObject(evalJSTaskClass, evalJSTaskCtor, webView, env->NewStringUTF(data.c_str()));
-    
-    runOnUiThreadWithReturnValueMethod = env->GetMethodID(sdlActivityClass, "runOnUiThread", "(Ljava/lang/Runnable;)V");
-    LOGI("Call runOnUiThread with initWebViewTask");
-    env->CallVoidMethod(sdlActivity, runOnUiThreadMethod, initWebViewTask);
+    */
+    // Call JS eval manager
+    /*
+    jclass evalJSManagerClass = env->FindClass("minko/plugin/htmloverlay/EvalJSManagerTask");
+    jmethodID evalJSMethod = env->GetStaticMethodID(evalJSManagerClass, "evalJS", "(Landroid/app/Activity;Landroid/webkit/WebView;Ljava/lang/String;)Ljava/lang/String;");
+    jstring evalJSResult = (jstring)env->CallObjectMethod(evalJSManagerClass, evalJSMethod, sdlActivity, webView, env->NewStringUTF(data.c_str()));
+    */
+
+    // Get the evalJS instance
+    jstring js = env->NewStringUTF(data.c_str());
+
+    jstring evalJSResult = (jstring)env->CallObjectMethod(initWebViewTask, evalJSMethod, js);
+
+    const char *evalJSResultString = env->GetStringUTFChars(evalJSResult, 0);
+
+    // clean up the local references.
+    env->DeleteLocalRef(js);
+    env->DeleteLocalRef(evalJSResult);
+
+    LOGI("EVAL FINAL VALUE: ");
+    LOGI(evalJSResultString);
+    return std::string(evalJSResultString);
+/*
+    //runOnUiThreadWithReturnValueMethod = env->GetMethodID(sdlActivityClass, "runOnUiThread", "(Ljava/lang/Runnable;)V");
+    LOGI("Call runOnUiThread with evalJSTask with this JS:");
+    LOGI(data.c_str());
+    jsGlobalResult = "";
+    env->CallVoidMethod(sdlActivity, runOnUiThreadMethod, evalJSTask);
+*/
 
     // Create a FutureTask
+    /*
     jclass futureTaskClass = env->FindClass("java/util/concurrent/FutureTask");
     jmethodID futureTaskCtor = env->GetMethodID(futureTaskClass, "<init>", "(Ljava/util/concurrent/Callable;)V");
     jobject futureTask = env->NewObject(futureTaskClass, futureTaskCtor, evalJSTask);
@@ -509,23 +543,26 @@ AndroidWebViewDOMEngine::eval(std::string data)
     LOGI("Call runOnUiThread with evalJSTask");
     env->CallVoidMethod(sdlActivity, runOnUiThreadMethod, futureTask);
 
-    /*
     LOGI("Get get method of FutureTask");
     jmethodID futureTaskGetMethod = env->GetMethodID(futureTaskClass, "get", "()Ljava/lang/String;");
-    
+      
     jstring returnValue = (jstring)env->CallObjectMethod(futureTaskClass, futureTaskGetMethod);
 
     LOGI("REAL RETURN VALUE: ");
     const char *returnValueChar = env->GetStringUTFChars(returnValue, 0);
     LOGI(returnValueChar);
     */
-/*
+    
+    /*
+    // Very poor workaround that doesn't work in most cases
     while(true)
     {
-        if (jsResult != "")
-            return jsResult;
+        LOGI("Wait for JS RESULT");
+        if (jsGlobalResult != "")
+            return jsGlobalResult;
     }
-*/
+    */
+
     // How to get the result of the eval ?
     LOGI("Try to evaluate JS!");
     

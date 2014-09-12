@@ -5,7 +5,6 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.graphics.Color;
 
 import static android.util.Log.*;
@@ -16,6 +15,8 @@ public class InitWebViewTask implements Runnable
 	Activity _sdlActivity;
 	String _url;
 	WebView _webView;
+	EvalJSManager _evalJSManager;
+	private int _uniqueId;
 	
 	public native void webViewInitialized();
 	
@@ -24,6 +25,7 @@ public class InitWebViewTask implements Runnable
 		_sdlActivity = sdlActivity;
 		_url = url;
 		_webView = null;
+		_uniqueId = 0;
 	}
 
     @Override
@@ -35,28 +37,20 @@ public class InitWebViewTask implements Runnable
 		ViewGroup layout = SDLActivity.getLayout();
 		layout.setBackgroundColor(Color.RED);
 		
-		d("MINKO", "Layout instance = " + layout);
-		d("MINKO", "SDL activity = " + _sdlActivity);
+		d("MINKOJAVA", "Layout instance = " + layout);
+		d("MINKOJAVA", "SDL activity = " + _sdlActivity);
 		
 		// Create the WebView from SDLActivity context
 		_webView = new WebView(SDLActivity.getContext());
 		
-		d("MINKO", "WEBVIEW IS NOW INSTANCIATE: " + _webView);
+		d("MINKOJAVA", "WEBVIEW IS NOW INSTANCIATED: " + _webView);
 		
 		// Enable the JS for the WebView
         _webView.getSettings().setJavaScriptEnabled(true);
         WebChromeClient wcc = new WebChromeClient();
         _webView.setWebChromeClient(wcc);
 		
-		_webView.setWebViewClient(new WebViewClient() 
-		{
-			@Override
-			public boolean shouldOverrideUrlLoading(WebView view, String url) 
-			{
-				view.loadUrl(url);
-				return true;
-			}
-		});
+		_webView.setWebViewClient(new MinkoWebViewClient());
 
         // Transparent background
         _webView.setBackgroundColor(0x00000000);
@@ -82,17 +76,30 @@ public class InitWebViewTask implements Runnable
         layout.addView(_webView);
         _webView.loadUrl(_url);
 		
-		d("MINKO", "WEBVIEW HAS NOW LOAD AN URL!");
+		d("MINKOJAVA", "WEBVIEW HAS NOW LOADED AN URL! (" + _url + ")");
 		
 		// Add a JavaScript interface
 		_webView.addJavascriptInterface(new WebViewJSInterface(), "MinkoNativeInterface");
+		
+		// Instantiate the EvalJS manager
+		_evalJSManager = new EvalJSManager(_sdlActivity, _webView);
 		
 		webViewInitialized();
     }
 	
 	public WebView getWebView()
 	{
-		d("MINKO", "RETURN WEBVIEW: " + _webView);
+		d("MINKOJAVA", "RETURN WEBVIEW: " + _webView);
+		
 		return _webView;
+	}
+	
+	public String evalJS(String js)
+	{
+		_uniqueId++;
+		
+		d("MINKOJAVA", "[ID = " + _uniqueId + "]Try to evaluate JS: " + js);
+		
+		return _evalJSManager.evalJS(js, _uniqueId);
 	}
 }
