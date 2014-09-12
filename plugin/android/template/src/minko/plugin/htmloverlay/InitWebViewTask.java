@@ -5,6 +5,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.graphics.Color;
 
 import static android.util.Log.*;
@@ -46,6 +47,16 @@ public class InitWebViewTask implements Runnable
         _webView.getSettings().setJavaScriptEnabled(true);
         WebChromeClient wcc = new WebChromeClient();
         _webView.setWebChromeClient(wcc);
+		
+		_webView.setWebViewClient(new WebViewClient() 
+		{
+			@Override
+			public boolean shouldOverrideUrlLoading(WebView view, String url) 
+			{
+				view.loadUrl(url);
+				return true;
+			}
+		});
 
         // Transparent background
         _webView.setBackgroundColor(0x00000000);
