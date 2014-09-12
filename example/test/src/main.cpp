@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoSDL.hpp"
 #include "minko/MinkoAndroid.hpp"
 
-#include "android/AndroidWebView.hpp"
 #include <android/log.h>
 #include "SDL.h"
 #include <jni.h>

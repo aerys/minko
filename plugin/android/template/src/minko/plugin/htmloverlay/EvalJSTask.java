@@ -4,7 +4,7 @@ import android.webkit.WebView;
 import java.util.concurrent.Callable;
 import static android.util.Log.*;
 
-public class EvalJSTask implements Callable<String> 
+public class EvalJSTask implements Runnable 
 {
 	WebView _webView;
 	String _js;
@@ -17,6 +17,7 @@ public class EvalJSTask implements Callable<String>
 		d("MINKO", "WebView: " + _webView);
 	}
 	
+	/*
 	@Override
     public String call() throws Exception 
 	{
@@ -24,7 +25,7 @@ public class EvalJSTask implements Callable<String>
 
 		return "JS RETURN COUCOU";
     }
-/*
+	*/
     @Override
     public void run() 
 	{
@@ -32,5 +33,4 @@ public class EvalJSTask implements Callable<String>
 		
 		_webView.loadUrl("javascript:MinkoNativeInterface.onNativeJSResult(eval(\"" + _js + "\"))");
     }
-*/
 }
