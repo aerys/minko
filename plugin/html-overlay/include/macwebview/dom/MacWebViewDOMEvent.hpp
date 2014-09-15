@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2013 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -20,7 +20,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "macwebview/dom/MacWebViewDOMEvent.hpp"
 #include "minko/dom/AbstractDOMElement.hpp"
 #include "minko/dom/AbstractDOMTouchEvent.hpp"
 
@@ -30,68 +29,43 @@ namespace macwebview
     {
         class MacWebViewDOMEngine;
 
-        class MacWebViewDOMTouchEvent :
-            public virtual minko::dom::AbstractDOMTouchEvent,
-            public macwebview::dom::MacWebViewDOMEvent
-
+        class MacWebViewDOMEvent : public virtual minko::dom::AbstractDOMEvent
         {
         public:
-            typedef std::shared_ptr<MacWebViewDOMTouchEvent> Ptr;
+            typedef std::shared_ptr<MacWebViewDOMEvent> Ptr;
 
-        private:
-            MacWebViewDOMTouchEvent(std::string jsAccessor, int fingerId, int index):
-                MacWebViewDOMEvent(jsAccessor),
-                _fingerId(fingerId),
-                _index(index)
+        protected:
+            MacWebViewDOMEvent(std::string jsAccessor):
+                _jsAccessor(jsAccessor)
             {
             }
 
         public:
             static
             Ptr
-            create(std::string jsAccessor, int fingerId, int index, std::shared_ptr<MacWebViewDOMEngine> engine)
+            create(std::string jsAccessor, std::shared_ptr<MacWebViewDOMEngine> engine)
             {
-                Ptr event(new MacWebViewDOMTouchEvent(jsAccessor, fingerId, index));
+                Ptr event(new MacWebViewDOMEvent(jsAccessor));
                 event->_engine = engine;
 
                 return event;
             }
 
-            int
-            clientX();
+            void
+            preventDefault();
 
-            int
-            clientY();
+            void
+            stopPropagation();
 
-            int
-            pageX();
+            std::string
+            type();
 
-            int
-            pageY();
+            minko::dom::AbstractDOMElement::Ptr
+            target();
 
-            int
-            layerX();
-
-            int
-            layerY();
-
-            int
-            screenX();
-
-            int
-            screenY();
-
-            int
-            fingerId();
-
-            std::string&
-            jsAccessor();
-
-        private:
-            // The JS touch event property called "identifier" similar to SDL fingerId (a unique id)
-            int _fingerId;
-            // The index in the current changedTouches array
-            int _index;
+        protected:
+            std::string _jsAccessor;
+            std::shared_ptr<MacWebViewDOMEngine> _engine;
         };
     }
 }
