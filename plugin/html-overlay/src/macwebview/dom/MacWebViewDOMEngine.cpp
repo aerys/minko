@@ -122,7 +122,7 @@ MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
         _webView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin |
         UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin |
         UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        _webView.scalesPageToFit = NO;
+        _webView.scalesPageToFit = YES;
         
         // Disable web view interaction
         //[_webView setUserInteractionEnabled:NO];
