@@ -2,14 +2,14 @@
 <html>
 	<head>
 		<link rel="stylesheet" type="text/css" href="css/iframe.css">
-		<meta name="viewport" id="metaViewport" />
+		<meta name="viewport" id="metaViewport" content="width=device-width, initial-scale=1.0"/>
 	</head>
 	<body>
 		<!-- <div id="eventCatcher"> -->
 			<iframe id="overlayiframe" allowTransparency="true" frameborder="0" scrolling="no"></iframe>
 		<!-- </div> -->
 		<div id="debug"></div>
-		
+
 		<script type="text/javascript">
 			window.onerror = function (message, url, linenumber){
 				//document.getElementById("debug").innerHTML += message + " line " + linenumber + " " + url + "</br>";
@@ -84,7 +84,7 @@
 			{
 				if(!accessor.minkoEvents)
 					accessor.minkoEvents = [];
-				
+
 				accessor.addEventListener(type, function(event)
 				{
 					// If it's a MouseEvent, we propagate the event only for left click
@@ -106,6 +106,7 @@
 
 			m.changeViewportWidth = function(width)
 			{
+				return;
 				var metaElement = document.getElementById("metaViewport");
 
 				metaElement.setAttribute("content", "width=" + width);
