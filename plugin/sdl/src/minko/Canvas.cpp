@@ -324,7 +324,9 @@ Canvas::step()
 
     SDL_Event event;
 
+#if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
     SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
+#endif // MINKO_PLATFORM != MINKO_PLATFORM_HTML5
 
     while (SDL_PollEvent(&event))
     {
@@ -335,11 +337,13 @@ Canvas::step()
             quit();
             break;
         }
-        case (SDL_DROPFILE):
+#if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
+        case SDL_DROPFILE:
         {
             _fileDropped->execute(std::string(event.drop.file));
             break;
         }
+#endif // MINKO_PLATFORM != MINKO_PLATFORM_HTML5
         case SDL_TEXTINPUT:
         {
             int i = 0;
