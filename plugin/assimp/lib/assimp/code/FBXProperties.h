@@ -101,6 +101,7 @@ private:
 };
 
 
+typedef std::fbx_unordered_map<std::string,boost::shared_ptr<Property> > DirectPropertyMap;
 typedef std::fbx_unordered_map<std::string,const Property*> PropertyMap;
 typedef std::fbx_unordered_map<std::string,const Element*> LazyPropertyMap;
 
@@ -128,6 +129,8 @@ public:
 		return templateProps.get();
 	}
 
+	DirectPropertyMap GetUnparsedProperties() const;
+
 private:
 
 	LazyPropertyMap lazyProps;
@@ -140,8 +143,7 @@ private:
 // ------------------------------------------------------------------------------------------------
 template <typename T>
 inline T PropertyGet(const PropertyTable& in, const std::string& name, 
-	const T& defaultValue, 
-	bool ignoreTemplate = false)
+	const T& defaultValue)
 {
 	const Property* const prop = in.Get(name);
 	if(!prop) {
@@ -161,8 +163,7 @@ inline T PropertyGet(const PropertyTable& in, const std::string& name,
 // ------------------------------------------------------------------------------------------------
 template <typename T>
 inline T PropertyGet(const PropertyTable& in, const std::string& name, 
-	bool& result, 
-	bool ignoreTemplate = false)
+	bool& result)
 {
 	const Property* const prop = in.Get(name);
 	if(!prop) {

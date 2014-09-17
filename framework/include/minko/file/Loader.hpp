@@ -40,7 +40,9 @@ namespace minko
             typedef std::unordered_map<std::shared_ptr<AbstractProtocol>, float>            ProtocolToProgress;
             typedef std::vector<Signal<std::shared_ptr<AbstractProtocol>>::Slot>            ProtocolSlots;
             typedef std::vector<Signal<std::shared_ptr<AbstractProtocol>, float>::Slot>     ProtocolProgressSlots;
-            typedef std::unordered_map<AbsParserPtr, Signal<AbsParserPtr>::Slot>            ParserSlots;
+            typedef std::unordered_map<AbsParserPtr, Signal<AbsParserPtr>::Slot>            ParserCompleteSlots;
+            
+            typedef std::unordered_map<AbsParserPtr, Signal<AbsParserPtr, const Error&>::Slot>            ParserErrorSlots;
 
         protected:
             std::shared_ptr<Options>                            _options;
@@ -52,15 +54,19 @@ namespace minko
 
             std::shared_ptr<Signal<Ptr, float>>                 _progress;
             std::shared_ptr<Signal<Ptr>>                        _complete;
-            std::shared_ptr<Signal<Ptr, const ParserError&>>    _error;
+            std::shared_ptr<Signal<Ptr, const Error&>>          _error;
 
             ProtocolSlots                                       _protocolSlots;
             ProtocolProgressSlots                               _protocolProgressSlots;
-            ParserSlots                                         _parserSlots;
+            ParserCompleteSlots                                 _parserCompleteSlots;
+            ParserErrorSlots                                    _parserErrorSlots;
 
             ProtocolToProgress                                  _protocolToProgress;
 
             int                                                 _numFiles;
+        
+        private:
+            int                                                 _numFilesToParse;
 
         public:
             inline static
@@ -121,7 +127,7 @@ namespace minko
             }
 
             inline
-            std::shared_ptr<Signal<Ptr, const ParserError&>>
+            std::shared_ptr<Signal<Ptr, const Error&>>
             error()
             {
                 return _error;
@@ -165,6 +171,7 @@ namespace minko
 
             void
             protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol);
+            
 
             void
             protocolProgressHandler(std::shared_ptr<AbstractProtocol> protocol, float);
@@ -180,6 +187,9 @@ namespace minko
 
             void
             parserCompleteHandler(std::shared_ptr<AbstractParser> parser);
+            
+            void
+            parserErrorHandler(std::shared_ptr<AbstractParser> parser, const Error& error);
         };
     }
 }

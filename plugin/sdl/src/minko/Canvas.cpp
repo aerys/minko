@@ -63,6 +63,7 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, boo
     _desiredFramerate(60.f),
     _enterFrame(Signal<Canvas::Ptr, float, float>::create()),
     _resized(Signal<AbstractCanvas::Ptr, uint, uint>::create()),
+    _fileDropped(Signal<const std::string&>::create()),
     _joystickAdded(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
     _joystickRemoved(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
     _touchZoom(Signal<std::shared_ptr<input::Touch>, float>::create()),
@@ -323,6 +324,8 @@ Canvas::step()
 
     SDL_Event event;
 
+    SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
+
     while (SDL_PollEvent(&event))
     {
         switch (event.type)
@@ -330,6 +333,11 @@ Canvas::step()
         case SDL_QUIT:
         {
             quit();
+            break;
+        }
+        case (SDL_DROPFILE):
+        {
+            _fileDropped->execute(std::string(event.drop.file));
             break;
         }
         case SDL_TEXTINPUT:
@@ -352,7 +360,7 @@ Canvas::step()
             _keyboard->keyDown()->execute(_keyboard);
 
             auto keyCode = static_cast<input::Keyboard::KeyCode>(event.key.keysym.sym);
-            
+
             for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
             {
                 auto code = static_cast<input::Keyboard::Key>(i);
