@@ -209,13 +209,30 @@ namespace minko
                             const data::Container&                              targetData);
 
 			void
-			bindStates();
+			bindStates(const data::BindingMap& stateBindings);
 			
 			void
 			bindState(const std::string& stateName);
 
             const data::Container&
             getContainer(data::BindingSource source);
+
+            template <typename T>
+            T*
+            bindState(const std::string         stateName,
+                      const data::BindingMap&   stateBindings,
+                      const T*                  defaultValue)
+            {
+                if (stateBindings.count(stateName) == 0)
+                    return const_cast<T*>(defaultValue);
+
+                const auto& binding = stateBindings.at(stateName);
+                auto& container = getContainer(binding.source);
+
+                return container.getUnsafePointer<T>(
+                    data::Container::getActualPropertyName(_variables, binding.propertyName)
+                );
+            }
 		};
 	}
 }

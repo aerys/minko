@@ -68,6 +68,7 @@ DrawCall::bind(Program::Ptr             program,
     _program = program;
 
     bindIndexBuffer(_variables, _targetData);
+    bindStates(stateBindings);
 
     for (const auto& input : program->inputs().uniforms())
     {
@@ -198,9 +199,28 @@ DrawCall::bindUniform(Program::Ptr            program,
 }
 
 void
-DrawCall::bindStates()
+DrawCall::bindStates(const data::BindingMap& stateBindings)
 {
-    // FIXME
+    _priority = bindState<float>("priority", stateBindings, &States::DEFAULT_PRIORITY);
+    _zsorted = bindState<bool>("zSort", stateBindings, &States::DEFAULT_ZSORTED);
+    _blendingSourceFactor = bindState<Blending::Source>(
+        "blendingSourceFactor",
+        stateBindings,
+        &States::DEFAULT_BLENDING_SOURCE
+    );
+    _blendingDestinationFactor = bindState<Blending::Destination>(
+        "blendingDestinationFactor",
+        stateBindings,
+        &States::DEFAULT_BLENDING_DESTINATION
+    );
+    _colorMask = bindState<bool>("colorMask", stateBindings, &States::DEFAULT_COLOR_MASK);
+    _depthMask = bindState<bool>("depthMask", stateBindings, &States::DEFAULT_DEPTH_MASK);
+    _depthFunc = bindState<CompareMode>("depthFunction", stateBindings, &States::DEFAULT_DEPTH_FUNC);
+    _triangleCulling = bindState<TriangleCulling>("triangleCulling", stateBindings, &States::DEFAULT_TRIANGLE_CULLING);
+    _stencilFunction = bindState<CompareMode>("stencilFunction", stateBindings, &States::DEFAULT_STENCIL_FUNCTION);
+    _stencilReference = bindState<int>("stencilReference", stateBindings, &States::DEFAULT_STENCIL_REFERENCE);
+    _scissorTest = bindState<bool>("scissorTest", stateBindings, &States::DEFAULT_SCISSOR_TEST);
+    _scissorBox = bindState<ScissorBox>("scissorBox", stateBindings, &States::DEFAULT_SCISSOR_BOX);
 }
 
 void
@@ -255,7 +275,12 @@ DrawCall::render(AbstractContext::Ptr context, AbstractTexture::Ptr renderTarget
     }
     */
 
-    // FIXME: handle states
+    context->setColorMask(*_colorMask);
+    context->setBlendMode(*_blendingSourceFactor, *_blendingDestinationFactor);
+    context->setDepthTest(*_depthMask, *_depthFunc);
+    context->setStencilTest(*_stencilFunction, *_stencilReference, *_stencilMask, *_stencilFailOp, *_stencilZFailOp, *_stencilZPassOp);
+    context->setScissorTest(*_scissorTest, *_scissorBox);
+    context->setTriangleCulling(*_triangleCulling);
 
     for (const auto& s : _samplers)
         context->setTextureAt(s.position, *s.resourceId, s.location);
