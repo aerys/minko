@@ -33,7 +33,9 @@ namespace minko
     {
 	    class States
 	    {
-	    public:
+            friend class DrawCall;
+
+        public:
 		    typedef std::shared_ptr<States>                                 Ptr;
             typedef std::unordered_map<std::string, render::SamplerState>   SamplerStates;
 			typedef std::shared_ptr<render::AbstractTexture>				AbstractTexturePtr;

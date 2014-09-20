@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/render/Pass.hpp"
+#include "minko/render/DrawCall.hpp"
 #include "minko/render/States.hpp"
 
 namespace minko
@@ -209,11 +210,8 @@ namespace minko
                             const data::Container&                              targetData);
 
 			void
-			bindStates(const data::BindingMap& stateBindings);
+            bindStates(const data::BindingMap& stateBindings);
 			
-			void
-			bindState(const std::string& stateName);
-
             const data::Container&
             getContainer(data::BindingSource source);
 
@@ -221,10 +219,10 @@ namespace minko
             T*
             bindState(const std::string         stateName,
                       const data::BindingMap&   stateBindings,
-                      const T*                  defaultValue)
+                      T*                        defaultValue)
             {
                 if (stateBindings.count(stateName) == 0)
-                    return const_cast<T*>(defaultValue);
+                    return defaultValue;
 
                 const auto& binding = stateBindings.at(stateName);
                 auto& container = getContainer(binding.source);

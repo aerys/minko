@@ -201,26 +201,24 @@ DrawCall::bindUniform(Program::Ptr            program,
 void
 DrawCall::bindStates(const data::BindingMap& stateBindings)
 {
-    _priority = bindState<float>("priority", stateBindings, &States::DEFAULT_PRIORITY);
-    _zsorted = bindState<bool>("zSort", stateBindings, &States::DEFAULT_ZSORTED);
-    _blendingSourceFactor = bindState<Blending::Source>(
-        "blendingSourceFactor",
-        stateBindings,
-        &States::DEFAULT_BLENDING_SOURCE
-    );
-    _blendingDestinationFactor = bindState<Blending::Destination>(
-        "blendingDestinationFactor",
-        stateBindings,
-        &States::DEFAULT_BLENDING_DESTINATION
-    );
-    _colorMask = bindState<bool>("colorMask", stateBindings, &States::DEFAULT_COLOR_MASK);
-    _depthMask = bindState<bool>("depthMask", stateBindings, &States::DEFAULT_DEPTH_MASK);
-    _depthFunc = bindState<CompareMode>("depthFunction", stateBindings, &States::DEFAULT_DEPTH_FUNC);
-    _triangleCulling = bindState<TriangleCulling>("triangleCulling", stateBindings, &States::DEFAULT_TRIANGLE_CULLING);
-    _stencilFunction = bindState<CompareMode>("stencilFunction", stateBindings, &States::DEFAULT_STENCIL_FUNCTION);
-    _stencilReference = bindState<int>("stencilReference", stateBindings, &States::DEFAULT_STENCIL_REFERENCE);
-    _scissorTest = bindState<bool>("scissorTest", stateBindings, &States::DEFAULT_SCISSOR_TEST);
-    _scissorBox = bindState<ScissorBox>("scissorBox", stateBindings, &States::DEFAULT_SCISSOR_BOX);
+    States::Ptr def = _pass->states();
+
+    _priority = bindState<float>("priority", stateBindings, &def->_priority);
+    _zsorted = bindState<bool>("zSort", stateBindings, &def->_zsorted);
+    _blendingSourceFactor = bindState<Blending::Source>("blendingSourceFactor", stateBindings, &def->_blendingSourceFactor);
+    _blendingDestinationFactor = bindState<Blending::Destination>("blendingDestinationFactor", stateBindings, &def->_blendingDestinationFactor);
+    _colorMask = bindState<bool>("colorMask", stateBindings, &def->_colorMask);
+    _depthMask = bindState<bool>("depthMask", stateBindings, &def->_depthMask);
+    _depthFunc = bindState<CompareMode>("depthFunction", stateBindings, &def->_depthFunc);
+    _triangleCulling = bindState<TriangleCulling>("triangleCulling", stateBindings, &def->_triangleCulling);
+    _stencilFunction = bindState<CompareMode>("stencilFunction", stateBindings, &def->_stencilFunction);
+    _stencilReference = bindState<int>("stencilReference", stateBindings, &def->_stencilReference);
+    _stencilMask = bindState<uint>("stencilMask", stateBindings, &def->_stencilMask);
+    _stencilFailOp = bindState<StencilOperation>("stencilFailOperation", stateBindings, &def->_stencilFailOp);
+    _stencilZFailOp = bindState<StencilOperation>("stencilZFailOperation", stateBindings, &def->_stencilZFailOp);
+    _stencilZPassOp = bindState<StencilOperation>("stencilZPassOperation", stateBindings, &def->_stencilZPassOp);
+    _scissorTest = bindState<bool>("scissorTest", stateBindings, &def->_scissorTest);
+    _scissorBox = bindState<ScissorBox>("scissorBox", stateBindings, &def->_scissorBox);
 }
 
 void
