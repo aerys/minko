@@ -38,6 +38,24 @@ namespace minko
             typedef std::unordered_map<std::string, render::SamplerState>   SamplerStates;
 			typedef std::shared_ptr<render::AbstractTexture>				AbstractTexturePtr;
 
+        public:
+            static const float				    DEFAULT_PRIORITY;
+            static const bool					DEFAULT_ZSORTED;
+            static const Blending::Source		DEFAULT_BLENDING_SOURCE;
+            static const Blending::Destination	DEFAULT_BLENDING_DESTINATION;
+            static const bool					DEFAULT_COLOR_MASK;
+            static const bool					DEFAULT_DEPTH_MASK;
+            static const CompareMode		    DEFAULT_DEPTH_FUNC;
+            static const TriangleCulling        DEFAULT_TRIANGLE_CULLING;
+            static const CompareMode			DEFAULT_STENCIL_FUNCTION;
+            static const int					DEFAULT_STENCIL_REFERENCE;
+            static const uint					DEFAULT_STENCIL_MASK;
+            static const StencilOperation		DEFAULT_STENCIL_FAIL_OP;
+            static const StencilOperation		DEFAULT_STENCIL_ZFAIL_OP;
+            static const StencilOperation		DEFAULT_STENCIL_ZPASS_OP;
+            static const bool					DEFAULT_SCISSOR_TEST;
+            static const ScissorBox 			DEFAULT_SCISSOR_BOX;
+
         private:
             float				        _priority;
 			bool						_zsorted;
@@ -62,22 +80,22 @@ namespace minko
 		    inline static
 		    Ptr
 		    create(const SamplerStates&     samplerStates,
-				   float					priority					= 0.f,
-				   bool						zSorted						= false,
-				   Blending::Source			blendingSourceFactor		= Blending::Source::ONE,
-				   Blending::Destination	blendingDestinationFactor	= Blending::Destination::ZERO,
-				   bool						colorMask					= true,
-				   bool						depthMask					= true,
-				   CompareMode				depthFunc					= CompareMode::LESS,
-                   TriangleCulling          triangleCulling             = TriangleCulling::BACK,
-				   CompareMode				stencilFunction				= CompareMode::ALWAYS,
-				   int						stencilRef					= 0,
-				   uint						stencilMask					= 0x1,
-				   StencilOperation			stencilFailOp				= StencilOperation::KEEP, 
-				   StencilOperation			stencilZFailOp				= StencilOperation::KEEP, 
-				   StencilOperation			stencilZPassOp				= StencilOperation::KEEP, 
-				   bool						scissorTest					= false,
-				   const ScissorBox&		scissorBox					= ScissorBox(),
+				   float					priority					= DEFAULT_PRIORITY,
+				   bool						zSorted						= DEFAULT_ZSORTED,
+				   Blending::Source			blendingSourceFactor		= DEFAULT_BLENDING_SOURCE,
+				   Blending::Destination	blendingDestinationFactor	= DEFAULT_BLENDING_DESTINATION,
+				   bool						colorMask					= DEFAULT_COLOR_MASK,
+				   bool						depthMask					= DEFAULT_DEPTH_MASK,
+				   CompareMode				depthFunc					= DEFAULT_DEPTH_FUNC,
+                   TriangleCulling          triangleCulling             = DEFAULT_TRIANGLE_CULLING,
+				   CompareMode				stencilFunction				= DEFAULT_STENCIL_FUNCTION,
+				   int						stencilRef					= DEFAULT_STENCIL_REFERENCE,
+				   uint						stencilMask					= DEFAULT_STENCIL_MASK,
+				   StencilOperation			stencilFailOp				= DEFAULT_STENCIL_FAIL_OP, 
+				   StencilOperation			stencilZFailOp				= DEFAULT_STENCIL_ZFAIL_OP, 
+				   StencilOperation			stencilZPassOp				= DEFAULT_STENCIL_ZPASS_OP, 
+				   bool						scissorTest					= DEFAULT_SCISSOR_TEST,
+				   const ScissorBox&		scissorBox					= DEFAULT_SCISSOR_BOX,
                    AbstractTexturePtr		target                      = nullptr)
 		    {
 			    return std::shared_ptr<States>(new States(
