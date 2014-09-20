@@ -8,7 +8,7 @@ minko.project.library = function(name)
 
 	location "."
 	includedirs { minko.sdk.path("/framework/include") }
-	
+
 	-- glm
 	includedirs { minko.sdk.path("/framework/lib/glm") }
 
@@ -200,7 +200,7 @@ minko.project.application = function(name)
 
 	configuration { "html5", "release" }
 		local emcc = premake.tools.gcc.tools.emscripten.cc
-		local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O2'
+		local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O3 --llvm-lto 1'
 
 		-- enable the closure compiler
 		cmd = cmd .. ' --closure 1 -s CLOSURE_ANNOTATIONS=1'
