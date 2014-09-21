@@ -56,9 +56,9 @@ namespace minko
             Signal<AbstractComponent::Ptr, NodePtr>::Slot       _targetRemovedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot             _addedSlot;
 
-			bool												_clearContext;
+            bool                                                _clearContext;
 
-		public:
+        public:
             inline static
             Ptr
             create(const std::shared_ptr<render::AbstractContext>& context)
@@ -144,14 +144,14 @@ namespace minko
                 _clearContext = clearContext;
             }
 
-			inline
-			bool
-			clearContext() const
-			{
-				return	_clearContext;
-			}
+            inline
+            bool
+            clearContext() const
+            {
+                return    _clearContext;
+            }
 
-			void
+            void
             initialize();
 
             void

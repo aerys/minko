@@ -39,7 +39,7 @@ SceneManager::SceneManager(const std::shared_ptr<render::AbstractContext>& conte
     _renderBegin(Signal<Ptr, uint, render::AbstractTexture::Ptr>::create()),
     _renderEnd(Signal<Ptr, uint, render::AbstractTexture::Ptr>::create()),
     _data(data::StructureProvider::create("scene")),
-	_clearContext(true)
+    _clearContext(true)
 {
 }
 
