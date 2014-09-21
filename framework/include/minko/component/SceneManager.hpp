@@ -56,6 +56,8 @@ namespace minko
             Signal<AbstractComponent::Ptr, NodePtr>::Slot       _targetRemovedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot             _addedSlot;
 
+            bool                                                _clearContext;
+
         public:
             inline static
             Ptr
@@ -133,6 +135,20 @@ namespace minko
             time() const
             {
                 return _time; // in milliseconds
+            }
+
+            inline
+            void
+            clearContext(bool clearContext)
+            {
+                _clearContext = clearContext;
+            }
+
+            inline
+            bool
+            clearContext() const
+            {
+                return    _clearContext;
             }
 
             void

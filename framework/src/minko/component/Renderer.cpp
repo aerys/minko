@@ -338,12 +338,16 @@ Renderer::render(render::AbstractContext::Ptr    context,
          context->setRenderToTexture(renderTarget->id(), true);
      else
         context->setRenderToBackBuffer();
-    context->clear(
-        ((_backgroundColor >> 24) & 0xff) / 255.f,
-        ((_backgroundColor >> 16) & 0xff) / 255.f,
-        ((_backgroundColor >> 8) & 0xff) / 255.f,
-        (_backgroundColor & 0xff) / 255.f
-    );
+
+    if (nullptr == _sceneManager || true == _sceneManager->clearContext())
+    {
+        context->clear(
+            ((_backgroundColor >> 24) & 0xff) / 255.f,
+            ((_backgroundColor >> 16) & 0xff) / 255.f,
+            ((_backgroundColor >> 8) & 0xff) / 255.f,
+            (_backgroundColor & 0xff) / 255.f
+        );
+    }
 
     for (auto& drawCall : _drawCalls)
         if ((drawCall->layouts() & layoutMask()) != 0)
