@@ -73,6 +73,7 @@ namespace minko
             EffectPtr                                                           _effect;
             float                                                               _priority;
             bool                                                                _enabled;
+            bool                                                                _clearContext;
 
             Signal<AbsCmpPtr, NodePtr>::Slot                                    _targetAddedSlot;
             Signal<AbsCmpPtr, NodePtr>::Slot                                    _targetRemovedSlot;
@@ -190,6 +191,19 @@ namespace minko
 				_priority = priority;
 			}
 
+            inline
+            bool
+            clearContext()
+            {
+                return _clearContext;
+            }
+
+            inline
+            void
+            clearContext(bool clearContext)
+            {
+                _clearContext = clearContext;
+            }
 
             inline
             void viewport(const int x, const int y, const int w, const int h)
