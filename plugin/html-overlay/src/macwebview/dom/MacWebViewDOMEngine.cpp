@@ -65,7 +65,10 @@ MacWebViewDOMEngine::MacWebViewDOMEngine() :
 	_onmessage(Signal<AbstractDOM::Ptr, std::string>::create()),
 	_visible(true),
     _waitingForLoad(true),
-    _isReady(false)
+    _isReady(false), 
+    _updateNextFrame(false),
+    _pollRate(-1),
+    _lastUpdateTime(0.0)
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
     , _webViewWidth(0)
 #endif
@@ -232,9 +235,9 @@ MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
 
     visible(_visible);
 
-	_enterFrameSlot = _sceneManager->frameBegin()->connect([&](std::shared_ptr<component::SceneManager>, float, float)
+	_enterFrameSlot = _sceneManager->frameBegin()->connect([&](std::shared_ptr<component::SceneManager>, float t, float dt)
 	{
-		enterFrame();
+		enterFrame(t);
 	});
 }
 
@@ -253,7 +256,7 @@ MacWebViewDOMEngine::mainDOM()
 }
 
 void
-MacWebViewDOMEngine::enterFrame()
+MacWebViewDOMEngine::enterFrame(float time)
 {
     if (_waitingForLoad)
     {
@@ -292,37 +295,43 @@ MacWebViewDOMEngine::enterFrame()
         
         registerDomEvents();
 	}
-    
-    for(auto element : MacWebViewDOMElement::domElements)
+
+    if (_pollRate == -1 || _updateNextFrame || (_pollRate != 0 && (time - _lastUpdateTime) > (1000.0 / (float)(_pollRate)))
     {
-        element->update();
+        for(auto element : MacWebViewDOMElement::domElements)
+        {
+            element->update();
+        }
+
+        if (_currentDOM->initialized() && _isReady)
+        {
+            std::string jsEval = "(Minko.iframeElement.contentWindow.Minko.messagesToSend.length);";
+            std::string evalResult = eval(jsEval);
+            int l = atoi(evalResult.c_str());
+
+            if (l > 0)
+            {
+                std::cout << "Messages found!" << std::endl;
+                for(int i = 0; i < l; ++i)
+                {
+                    jsEval = "(Minko.iframeElement.contentWindow.Minko.messagesToSend[" + std::to_string(i) + "])";
+                    
+                    std::string message = eval(jsEval);
+                    
+                    std::cout << "Message: " << message << std::endl;
+                    
+                    _currentDOM->onmessage()->execute(_currentDOM, message);
+                    _onmessage->execute(_currentDOM, message);
+                }
+
+                jsEval = "Minko.iframeElement.contentWindow.Minko.messagesToSend = [];";
+                eval(jsEval);
+            }
+        }
+
+        _updateNextFrame = false;
     }
-
-	if (_currentDOM->initialized() && _isReady)
-	{
-		std::string jsEval = "(Minko.iframeElement.contentWindow.Minko.messagesToSend.length);";
-        std::string evalResult = eval(jsEval);
-        int l = atoi(evalResult.c_str());
-
-		if (l > 0)
-		{
-            std::cout << "Messages found!" << std::endl;
-			for(int i = 0; i < l; ++i)
-			{
-                jsEval = "(Minko.iframeElement.contentWindow.Minko.messagesToSend[" + std::to_string(i) + "])";
-                
-				std::string message = eval(jsEval);
-                
-                std::cout << "Message: " << message << std::endl;
-                
-				_currentDOM->onmessage()->execute(_currentDOM, message);
-				_onmessage->execute(_currentDOM, message);
-			}
-
-			jsEval = "Minko.iframeElement.contentWindow.Minko.messagesToSend = [];";
-			eval(jsEval);
-		}
-	}
+    
 }
 
 MacWebViewDOMEngine::Ptr
