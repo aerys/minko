@@ -186,7 +186,7 @@ MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
         [_window.contentView addSubview:_webView];
         
         // Load iframe containing bridge JS callback handler
-        [[_webView mainFrame] loadRequest:request];
+        //[[_webView mainFrame] loadRequest:request];
 #endif
         
         // Create a C++ handler to process the message received by the Javascript bridge
@@ -305,7 +305,7 @@ MacWebViewDOMEngine::enterFrame(float time)
 
         if (_currentDOM->initialized() && _isReady)
         {
-            std::string jsEval = "(Minko.iframeElement.contentWindow.Minko.messagesToSend.length);";
+            std::string jsEval = "(Minko.messagesToSend.length);";
             std::string evalResult = eval(jsEval);
             int l = atoi(evalResult.c_str());
 
@@ -314,7 +314,7 @@ MacWebViewDOMEngine::enterFrame(float time)
                 std::cout << "Messages found!" << std::endl;
                 for(int i = 0; i < l; ++i)
                 {
-                    jsEval = "(Minko.iframeElement.contentWindow.Minko.messagesToSend[" + std::to_string(i) + "])";
+                    jsEval = "(Minko.messagesToSend[" + std::to_string(i) + "])";
                     
                     std::string message = eval(jsEval);
                     
@@ -324,7 +324,7 @@ MacWebViewDOMEngine::enterFrame(float time)
                     _onmessage->execute(_currentDOM, message);
                 }
 
-                jsEval = "Minko.iframeElement.contentWindow.Minko.messagesToSend = [];";
+                jsEval = "Minko.messagesToSend = [];";
                 eval(jsEval);
             }
         }
@@ -371,10 +371,18 @@ MacWebViewDOMEngine::load(std::string uri)
 # endif
 #endif
         }
+
+    const char *cURI = uri.c_str();
+    NSString *nsURI = [NSString stringWithCString:cURI encoding:[NSString defaultCStringEncoding]];
+
+    NSURL *url = [NSURL URLWithString:nsURI];
+    NSURLRequest *request = [NSURLRequest requestWithURL:url];
+
+    [[_webView mainFrame] loadRequest:request];
         
-        std::string jsEval = "Minko.loadUrl('" + uri + "')";
+    //std::string jsEval = "Minko.loadUrl('" + uri + "')";
         
-        eval(jsEval);
+    //eval(jsEval);
     }
 
 	return _currentDOM;
