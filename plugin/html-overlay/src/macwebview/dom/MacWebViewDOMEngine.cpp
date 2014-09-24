@@ -296,7 +296,7 @@ MacWebViewDOMEngine::enterFrame(float time)
         registerDomEvents();
 	}
 
-    if (_pollRate == -1 || _updateNextFrame || (_pollRate != 0 && (time - _lastUpdateTime) > (1000.0 / (float)(_pollRate)))
+    if (_pollRate == -1 || _updateNextFrame || (_pollRate != 0 && (time - _lastUpdateTime) > (1000.0 / (float)(_pollRate))))
     {
         for(auto element : MacWebViewDOMElement::domElements)
         {
