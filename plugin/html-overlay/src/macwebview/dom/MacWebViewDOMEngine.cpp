@@ -330,6 +330,7 @@ MacWebViewDOMEngine::enterFrame(float time)
         }
 
         _updateNextFrame = false;
+        _lastUpdateTime = time;
     }
     
 }
