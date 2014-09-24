@@ -63,6 +63,15 @@ namespace minko
             virtual
 			bool
 			visible() = 0;
+
+
+            virtual
+            void
+            updateNextFrame() = 0;
+
+            virtual
+            void
+            pollRate(int) = 0;
 		};
 	}
 }
