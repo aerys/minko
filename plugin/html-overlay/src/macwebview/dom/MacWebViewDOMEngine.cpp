@@ -65,7 +65,7 @@ MacWebViewDOMEngine::MacWebViewDOMEngine() :
 	_onmessage(Signal<AbstractDOM::Ptr, std::string>::create()),
 	_visible(true),
     _waitingForLoad(true),
-    _isReady(false), 
+    _isReady(false),
     _updateNextFrame(false),
     _pollRate(-1),
     _lastUpdateTime(0.0)
@@ -94,56 +94,56 @@ MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
     // FIXME: Replate by a proper call to Loader.
     NSURL *url = [NSURL URLWithString:nsURI];
     NSURLRequest *request = [NSURLRequest requestWithURL:url];
-    
+
     // Get window from canvas
     auto newCanvas = std::static_pointer_cast<Canvas>(canvas);
     SDL_Window* sdlWindow = newCanvas->window();
     SDL_SysWMinfo info;
-    
+
     SDL_VERSION(&info.version);
-    
+
     if (SDL_GetWindowWMInfo(sdlWindow, &info))
     {
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
         // Get the UIKit window from SDL
         _window = info.info.uikit.window;
-        
+
         // Create the web view
         _webView = [[IOSWebView alloc] initWithFrame:_window.bounds];
-        
+
         // Change web view's background properties
         UIColor * clearColor = [UIColor colorWithRed:255/255.0f green:1/255.0f blue:0/255.0f alpha:0.f];
         [_webView setBackgroundColor: clearColor];
         [_webView setOpaque: NO];
         [_webView.scrollView setDelaysContentTouches: NO];
-        
+
         // Disable web view scroll
         _webView.scrollView.scrollEnabled = NO;
         _webView.scrollView.bounces = NO;
-        
+
         // Resize the web view according to device dimension and orientation
         _webView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin |
         UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin |
         UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         _webView.scalesPageToFit = YES;
-        
+
         NSHTTPCookieStorage *cookieStorage = [NSHTTPCookieStorage sharedHTTPCookieStorage];
         [cookieStorage setCookieAcceptPolicy:NSHTTPCookieAcceptPolicyAlways];
 
         // Disable web view interaction
         //[_webView setUserInteractionEnabled:NO];
-        
+
         _window.rootViewController.view.autoresizesSubviews = YES;
-        
+
         // Add the web view to the current window
         [_window.rootViewController.view addSubview:_webView];
-        
+
         // Save the web view width
         _webViewWidth = _webView.frame.size.width;
-        
+
         // Load iframe containing bridge JS callback handler
-        [_webView loadRequest:request];
-        
+        // [_webView loadRequest:request];
+
         _canvasResizedSlot = _canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
         {
             // Change the width of the webview directly
@@ -151,7 +151,7 @@ MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
             webViewFrame.size.width = w / 2;
             webViewFrame.size.height = h / 2;
             _webView.frame = webViewFrame;
-            
+
             _webViewWidth = w;
             // Useful on iOS to have the same coordinates on the web view as on the canvas
             updateWebViewWidth();
@@ -160,38 +160,38 @@ MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
 #elif TARGET_OS_MAC // OSX
         // Get the Cocoa window from SDL
         _window = info.info.cocoa.window;
-        
+
         // Create the web view
         _webView = [[OSXWebView alloc] initWithFrame:NSMakeRect(0, 0, _canvas->width(), _canvas->height())];
 
         // Display the webview
         [_webView setWantsLayer: YES];
-        
+
         // Webview's background
         CGColorRef clearColor = CGColorCreateGenericRGB(255/255.0f, 1/255.0f, 0/255.0f, 0.f);
         _webView.layer.backgroundColor = clearColor;
-        
+
         // Display the canvas behind the overlay
         [_webView setDrawsBackground:NO];
-        
+
         // Disable web view scroll
         [[[_webView mainFrame] frameView] setAllowsScrolling:NO];
         _webView.mainFrame.frameView.documentView.enclosingScrollView.verticalScrollElasticity = NSScrollElasticityNone;
-        
+
         // Set UIDelegate (used to enable JS alert and disable right click)
         [_webView setUIDelegate:[OSXWebUIDelegate alloc]];
-        
+
         // Resize the overlay according to the window's size
         [_window.contentView setAutoresizesSubviews:YES];
         [_webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-        
+
         // Add the web view to the current window
         [_window.contentView addSubview:_webView];
-        
+
         // Load iframe containing bridge JS callback handler
         //[[_webView mainFrame] loadRequest:request];
 #endif
-        
+
         // Create a C++ handler to process the message received by the Javascript bridge
         handleJavascriptMessageWrapper = std::bind(
                        &MacWebViewDOMEngine::handleJavascriptMessage,
@@ -199,7 +199,7 @@ MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
                        std::placeholders::_1,
                        std::placeholders::_2
         );
-        
+
         // Create the bridge
         _bridge = [WebViewJavascriptBridge bridgeForWebView:_webView handler:
                    ^(id data, WVJBResponseCallback responseCallback) {
@@ -209,17 +209,17 @@ MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
                    {
                         std::string type;
                         std::string value;
-                
+
                         for (NSString *key in [data allKeys])
                         {
                             id val = [data objectForKey:key];
-                   
+
                             if ([key isEqualToString:@"type"])
                                 type = [val UTF8String];
                             else if ([key isEqualToString:@"value"])
                                 value = [val UTF8String];
                         }
-                   
+
                         MacWebViewDOMEngine::handleJavascriptMessageWrapper(type, value);
                    }
                    else if ([data isKindOfClass:[NSString class]])
@@ -227,11 +227,11 @@ MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
                         NSString* dataString = (NSString *)data;
                         std::string value([dataString UTF8String]);
                         std::string type = "log";
-                   
+
                         MacWebViewDOMEngine::handleJavascriptMessageWrapper(type, value);
                    }
          }];
-        
+
         // Enable bridge logging
         // [WebViewJavascriptBridge enableLogging];
     }
@@ -264,9 +264,9 @@ MacWebViewDOMEngine::enterFrame(float time)
     if (_waitingForLoad)
     {
         std::string jsEval = "try{ var loaded = Minko.loaded; ('true')} catch(e) {('false')}";
-        
+
         std::string res = eval(jsEval);
-        
+
         if (res == "true")
         {
             _waitingForLoad = false;
@@ -275,7 +275,7 @@ MacWebViewDOMEngine::enterFrame(float time)
             updateWebViewWidth();
 #endif
         }
-        
+
         return;
     }
 	std::string jsEval = "(Minko.loaded + '')";
@@ -287,7 +287,7 @@ MacWebViewDOMEngine::enterFrame(float time)
 	{
 		jsEval = "Minko.loaded = 0";
 		eval(jsEval);
-        
+
 		if (_currentDOM->initialized())
 			createNewDom();
 
@@ -295,7 +295,7 @@ MacWebViewDOMEngine::enterFrame(float time)
 
 		_currentDOM->onload()->execute(_currentDOM, _currentDOM->fullUrl());
 		_onload->execute(_currentDOM, _currentDOM->fullUrl());
-        
+
         registerDomEvents();
 	}
 
@@ -318,11 +318,11 @@ MacWebViewDOMEngine::enterFrame(float time)
                 for(int i = 0; i < l; ++i)
                 {
                     jsEval = "(Minko.messagesToSend[" + std::to_string(i) + "])";
-                    
+
                     std::string message = eval(jsEval);
-                    
+
                     std::cout << "Message: " << message << std::endl;
-                    
+
                     _currentDOM->onmessage()->execute(_currentDOM, message);
                     _onmessage->execute(_currentDOM, message);
                 }
@@ -335,7 +335,7 @@ MacWebViewDOMEngine::enterFrame(float time)
         _updateNextFrame = false;
         _lastUpdateTime = time;
     }
-    
+
 }
 
 MacWebViewDOMEngine::Ptr
@@ -350,17 +350,17 @@ MacWebViewDOMEngine::load(std::string uri)
 {
     if (_currentDOM == nullptr || _currentDOM->initialized())
         createNewDom();
-    
-    if (_waitingForLoad)
+
+    /*if (_waitingForLoad)
     {
         _uriToLoad = uri;
     }
     else
-    {
+    {*/
         bool isHttp		= uri.substr(0, 7) == "http://";
         bool isHttps	= uri.substr(0, 8) == "https://";
-        
-        
+
+
         if (!isHttp && !isHttps)
         {
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
@@ -375,18 +375,14 @@ MacWebViewDOMEngine::load(std::string uri)
 #endif
         }
 
-    const char *cURI = uri.c_str();
-    NSString *nsURI = [NSString stringWithCString:cURI encoding:[NSString defaultCStringEncoding]];
+        const char *cURI = uri.c_str();
+        NSString *nsURI = [NSString stringWithCString:cURI encoding:[NSString defaultCStringEncoding]];
 
-    NSURL *url = [NSURL URLWithString:nsURI];
-    NSURLRequest *request = [NSURLRequest requestWithURL:url];
+        NSURL *url = [NSURL URLWithString:nsURI];
+        NSURLRequest *request = [NSURLRequest requestWithURL:url];
 
-    [[_webView mainFrame] loadRequest:request];
-        
-    //std::string jsEval = "Minko.loadUrl('" + uri + "')";
-        
-    //eval(jsEval);
-    }
+        [_webView loadRequest:request];
+//    }
 
 	return _currentDOM;
 }
@@ -433,7 +429,7 @@ MacWebViewDOMEngine::visible(bool value)
                 [_webView removeFromSuperview];
         }
 	}
-    
+
 	_visible = value;
 }
 
@@ -460,10 +456,10 @@ MacWebViewDOMEngine::registerDomEvents()
     {
         int x = event->clientX();
         int y = event->clientY();
-        
+
         _canvas->mouse()->x(x);
         _canvas->mouse()->y(y);
-        
+
         _canvas->mouse()->leftButtonDown()->execute(_canvas->mouse());
     });
 
@@ -471,10 +467,10 @@ MacWebViewDOMEngine::registerDomEvents()
     {
         int x = event->clientX();
         int y = event->clientY();
-        
+
         _canvas->mouse()->x(x);
         _canvas->mouse()->y(y);
-        
+
         _canvas->mouse()->leftButtonUp()->execute(_canvas->mouse());
     });
 
@@ -482,23 +478,23 @@ MacWebViewDOMEngine::registerDomEvents()
     {
         int x = event->clientX();
         int y = event->clientY();
-        
+
         _canvas->mouse()->x(x);
         _canvas->mouse()->y(y);
-        
+
         auto oldX = _canvas->mouse()->x();
         auto oldY = _canvas->mouse()->y();
-        
+
         _canvas->mouse()->move()->execute(_canvas->mouse(), event->clientX() - oldX, event->clientY() - oldY);
     });
-    
+
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
     ontouchdownSlot = std::static_pointer_cast<MacWebViewDOMElement>(_currentDOM->document())->ontouchdown()->connect([&](AbstractDOMTouchEvent::Ptr event)
     {
             int fingerId = event->fingerId();
             float x = event->clientX();
             float y = event->clientY();
-            
+
             SDL_Event sdlEvent;
             sdlEvent.type = SDL_FINGERDOWN;
             sdlEvent.tfinger.fingerId = fingerId;
@@ -506,7 +502,7 @@ MacWebViewDOMEngine::registerDomEvents()
             sdlEvent.tfinger.y = y / _canvas->height();
 
             SDL_PushEvent(&sdlEvent);
-            
+
             // Create a new touch object and keep it with a list
             auto touch = minko::SDLTouch::create(std::static_pointer_cast<Canvas>(_canvas));
             touch->fingerId(fingerId);
@@ -515,13 +511,13 @@ MacWebViewDOMEngine::registerDomEvents()
 
             _touches.insert(std::pair<int, std::shared_ptr<minko::SDLTouch>>(fingerId, touch));
     });
-    
+
     ontouchupSlot = std::static_pointer_cast<MacWebViewDOMElement>(_currentDOM->document())->ontouchup()->connect([&](AbstractDOMTouchEvent::Ptr event)
     {
         int fingerId = event->fingerId();
         float x = event->clientX();
         float y = event->clientY();
-        
+
         SDL_Event sdlEvent;
         sdlEvent.type = SDL_FINGERUP;
         sdlEvent.tfinger.fingerId = fingerId;
@@ -529,14 +525,14 @@ MacWebViewDOMEngine::registerDomEvents()
         sdlEvent.tfinger.y = y / _canvas->height();
 
         SDL_PushEvent(&sdlEvent);
-        
+
         // We check that the finger is into the list before removing it
         if (_touches.find(fingerId) != _touches.end())
         {
             _touches.erase(fingerId);
         }
     });
-    
+
     ontouchmotionSlot = std::static_pointer_cast<MacWebViewDOMElement>(_currentDOM->document())->ontouchmotion()->connect([&](AbstractDOMTouchEvent::Ptr event)
     {
             int fingerId = event->fingerId();
@@ -544,7 +540,7 @@ MacWebViewDOMEngine::registerDomEvents()
             float oldY = _touches.at(fingerId)->minko::input::Touch::y();
             float x = event->clientX();
             float y = event->clientY();
-            
+
             SDL_Event sdlEvent;
             sdlEvent.type = SDL_FINGERMOTION;
             sdlEvent.tfinger.fingerId = fingerId;
@@ -552,9 +548,9 @@ MacWebViewDOMEngine::registerDomEvents()
             sdlEvent.tfinger.y = y / _canvas->height();
             sdlEvent.tfinger.dx = (x - oldX) / _canvas->width();
             sdlEvent.tfinger.dy = (y - oldY) / _canvas->height();
-        
+
             SDL_PushEvent(&sdlEvent);
-            
+
             // Store finger information
             _touches.at(fingerId)->x(x);
             _touches.at(fingerId)->y(y);
@@ -567,7 +563,7 @@ void
 MacWebViewDOMEngine::updateWebViewWidth()
 {
     std::string jsEval = "Minko.changeViewportWidth(" + std::to_string(_webViewWidth) + ");";
-    
+
     eval(jsEval);
 }
 #endif
@@ -579,6 +575,6 @@ MacWebViewDOMEngine::eval(std::string data)
     NSString *nsString = [NSString stringWithCString:dataChar encoding:[NSString defaultCStringEncoding]];
     NSString *result = [_webView stringByEvaluatingJavaScriptFromString: nsString];
     std::string resultString([result UTF8String]);
-    
+
     return resultString;
 }
