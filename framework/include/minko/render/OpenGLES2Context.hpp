@@ -212,6 +212,11 @@ namespace minko
                           bool                    mipMapping,
                           bool                    optimizeForRenderToTexture = false);
 
+            uint
+            createRectangleTexture(TextureType  type,
+                                   unsigned int width,
+                                   unsigned int height);
+
             void
             uploadTexture2dData(uint              texture,
                                 unsigned int      width,
@@ -409,6 +414,14 @@ namespace minko
             static
             StencilOperationMap
             initializeStencilOperationsMap();
+
+            uint
+            createTexture(TextureType             type,
+                          unsigned int            width,
+                          unsigned int            height,
+                          bool                    mipMapping,
+                          bool                    optimizeForRenderToTexture,
+                          bool                    assertPowerOfTwoSized);
 
             void
             createRTTBuffers(TextureType    type,

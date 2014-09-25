@@ -498,21 +498,47 @@ OpenGLES2Context::deleteIndexBuffer(const uint indexBuffer)
 }
 
 uint
-OpenGLES2Context::createTexture(TextureType    type,
-                                uint         width,
-                                uint         height,
-                                bool        mipMapping,
-                                bool        optimizeForRenderToTexture)
+OpenGLES2Context::createTexture(TextureType     type,
+                                uint            width,
+                                uint            height,
+                                bool            mipMapping,
+                                bool            optimizeForRenderToTexture)
+{
+    return createTexture(type, width, height, mipMapping, optimizeForRenderToTexture, true);
+}
+
+uint OpenGLES2Context::createRectangleTexture(TextureType   type,
+                                              uint          width,
+                                              uint          height)
+{
+    return createTexture(type, width, height, false, false, false);
+}
+
+uint
+OpenGLES2Context::createTexture(TextureType     type,
+                                uint            width,
+                                uint            height,
+                                bool            mipMapping,
+                                bool            optimizeForRenderToTexture,
+                                bool            assertPowerOfTwoSized)
 {
     uint texture;
 
-    // make sure width is a power of 2
-    if (!((width != 0) && !(width & (width - 1))))
-        throw std::invalid_argument("width");
-
-    // make sure height is a power of 2
-    if (!((height != 0) && !(height & (height - 1))))
-        throw std::invalid_argument("height");
+    if (assertPowerOfTwoSized)
+    {
+        // make sure width is a power of 2
+        if (!((width != 0) && !(width & (width - 1))))
+            throw std::invalid_argument("width");
+    
+        // make sure height is a power of 2
+        if (!((height != 0) && !(height & (height - 1))))
+            throw std::invalid_argument("height");
+    }
+    else
+    {
+        if (mipMapping)
+            throw std::logic_error("assertPowerOfTwoSized must be true when mipMapping is true");
+    }
 
     // http://www.opengl.org/sdk/docs/man/xhtml/glGenTextures.xml
     //

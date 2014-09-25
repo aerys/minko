@@ -139,6 +139,12 @@ namespace minko
                           bool          optimizeForRenderToTexture = false) = 0;
 
             virtual
+            uint
+            createRectangleTexture(TextureType  type,
+                                   unsigned int width,
+                                   unsigned int height) = 0;
+
+            virtual
             void
             uploadTexture2dData(uint             texture,
                                 unsigned int     width,
