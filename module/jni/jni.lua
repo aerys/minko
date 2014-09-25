@@ -15,17 +15,16 @@ api.addAllowed("system", { "android" })
 api.addAllowed("architecture", { "armv5te" })
 
 local ANDROID
+local TOOLCHAIN = "arm-linux-androideabi"
 
-if os.getenv('ANDROID') then
-	ANDROID = os.getenv('ANDROID');
-elseif os.getenv('ANDROID_HOME') then
+if os.getenv('ANDROID_HOME') then
 	ANDROID = os.getenv('ANDROID_HOME');
 else
-	print(color.fg.yellow .. 'You must define the environment variable ANDROID to be able to target Android.' .. color.reset)
+	print(color.fg.yellow .. 'You must define the environment variable ANDROID_HOME to be able to target Android.' .. color.reset)
 	do return end
 end
 
-if not os.isfile(ANDROID .. "/tools/android") then
+if not os.isfile(ANDROID .. "/tools/android") and not os.isfile(ANDROID .. "/tools/android.bat") then
 	print(color.fg.yellow .. 'Cannot find SDK tools for Android. Make sure ANDROID points to a correct Android SDK directory.' .. color.reset)
 	do return end
 end
@@ -36,28 +35,38 @@ if not os.isdir(ANDROID .. "/toolchains") then
 end
 
 -- writing toolchain name in a fake symlink to avoid actual symlinks on Windows (requiring privileges)
-local NDK_HOME = ANDROID .. "/toolchains/" .. io.lines(ANDROID .. "/toolchains/default.txt")()
+local NDK_HOME = ANDROID .. "/toolchains/default"
+local extension = ''
 
-local matches = os.matchdirs(NDK_HOME .. "/*abi")
-
-local TOOLCHAIN
-
-for i, basedir in ipairs(matches) do
-	TOOLCHAIN = path.getbasename(basedir)
-	break
+if os.is("windows") then
+	NDK_HOME = os.capture('cygpath -u "' .. NDK_HOME .. '"')
+	extension = '.exe'
 end
 
-if not TOOLCHAIN then
-	error(color.fg.red .. 'Installed NDK is not supported: ' .. NDK_HOME .. color.reset)
+if not os.execute('ls "' .. NDK_HOME .. '"') then
+	error(color.fg.red .. 'Installed NDK is not correctly installed: ' .. NDK_HOME .. color.reset)
 end
+
+-- local matches = os.matchdirs(NDK_HOME .. "/*abi")
+
+-- local TOOLCHAIN
+
+-- for i, basedir in ipairs(matches) do
+-- 	TOOLCHAIN = path.getbasename(basedir)
+-- 	break
+-- end
+
+-- if not TOOLCHAIN then
+-- 	error(color.fg.red .. 'Installed NDK is not correctly installed: ' .. NDK_HOME .. color.reset)
+-- end
 
 table.inject(premake.tools.gcc, 'tools.android', {
-	cc			= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-gcc',
-	cxx			= MINKO_HOME .. '/tool/lin/script/g++.sh ' .. NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-g++',
-	ar			= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-ar',
-	ld			= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-ld',
-	ranlib		= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-ranlib',
-	strip		= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-strip',
+	cc			= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-gcc' .. extension,
+	cxx			= MINKO_HOME .. '/tool/lin/script/g++.sh ' .. NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-g++' .. extension,
+	ar			= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-ar' .. extension,
+	ld			= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-ld' .. extension,
+	ranlib		= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-ranlib' .. extension,
+	strip		= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-strip' .. extension,
 })
 
 table.inject(premake.tools.gcc, 'cppflags.system.android', {
@@ -78,8 +87,9 @@ table.inject(premake.tools.gcc, 'ldflags.system.android', {
 	-- "-L" .. NDK_HOME .. "/sources/cxx-stl/gnu-libstdc++/4.8/libs/armeabi-v7a/"
 })
 
-if not os.isfile(premake.tools.gcc.tools.android.cc) then
-	error(color.fg.red ..'Cannot find GCC for Android. Make sure NDK_HOME points to a correct Android NDK directory.' .. color.reset)
+if not os.execute('ls "' .. premake.tools.gcc.tools.android.cc .. '"') then
+	error(color.fg.red ..'Cannot find GCC for Android. Make sure ANDROID contains NDK.' ..
+		' (Missing file: ' .. premake.tools.gcc.tools.android.cc .. ')' .. color.reset)
 end
 
 if not os.capture("which ant") then

@@ -3,13 +3,19 @@
 set -x
 set -e
 
+
+if [ $OSTYPE == "cygwin" ]; then
+	MINKO_HOME=`cygpath -u "${MINKO_HOME}"`
+	ANDROID=`cygpath -u "${ANDROID_HOME}"`
+fi
+
 #RSYNC_OPTIONS="--ignore-existing"
 TARGET=$1
 TARGET_NAME=$(basename $TARGET)
 TARGET_DIR=$(dirname $TARGET)
 CONFIG=$(basename $TARGET_DIR)
-APP_NAME=$(sed -r 's/lib(.*).so/\1/;s/([A-Za-z])([A-Za-z]+)/\U\1\L\2/g;s/[^[:alpha:]]//g' <<< "${TARGET_NAME}")
-PACKAGE=$(sed -r 's/lib(.*).so/\1/;s/-/\./g;s/(.*)/\L\1/' <<< "${TARGET_NAME}")
+APP_NAME=$(sed -r 's/lib(.*).so/\1/;s/([A-Za-z])([A-Za-z]+)/\U\1\L\2/g;s/([0-9]+)/_\1/g;s/[^[:alpha:]]//g' <<< "${TARGET_NAME}")
+PACKAGE=$(sed -r 's/lib(.*).so/\1/;s/-/\./g;s/([0-9]+)/_\1/g;s/(.*)/\L\1/' <<< "${TARGET_NAME}")
 
 pushd $TARGET_DIR > /dev/null
 
@@ -32,7 +38,7 @@ mv asset assets
 
 ant $CONFIG
 # adb uninstall org.libsdl.app
-adb install -r bin/$APP_NAME-$CONFIG.apk
+$ANDROID/platform-tools/adb install -r bin/$APP_NAME-$CONFIG.apk
 #adb devices | tail -n +2 | cut -sf 1 | xargs -I {} adb -s {} install -r $TARGET_NAME-$CONFIG.apk
 
 popd > /dev/null
