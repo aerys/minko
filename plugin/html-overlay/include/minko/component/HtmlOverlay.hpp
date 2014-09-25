@@ -111,6 +111,20 @@ namespace minko
             bool
 			visible();
 
+            inline
+            void
+            pollRate(int rate)
+            {
+                _domEngine->pollRate(rate);
+            }
+
+            inline
+            void
+            updateNextFrame()
+            {
+                _domEngine->updateNextFrame();
+            }
+
 		private:
 
 			minko::dom::AbstractDOMEngine::Ptr

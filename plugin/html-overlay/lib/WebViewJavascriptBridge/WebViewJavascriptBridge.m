@@ -259,6 +259,10 @@ static bool logging = false;
         NSString *filePath = [bundle pathForResource:@"WebViewJavascriptBridge.js" ofType:@"txt"];
         NSString *js = [NSString stringWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:nil];
         [webView stringByEvaluatingJavaScriptFromString:js];
+
+        NSString *minkoFilePath = [bundle pathForResource:@"MinkoOverlay.js" ofType:@"txt"];
+        NSString *minkoJs = [NSString stringWithContentsOfFile:minkoFilePath encoding:NSUTF8StringEncoding error:nil];
+        [webView stringByEvaluatingJavaScriptFromString:minkoJs];
     }
     
     if (_startupMessageQueue) {
