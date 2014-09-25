@@ -36,10 +36,12 @@ end
 
 -- writing toolchain name in a fake symlink to avoid actual symlinks on Windows (requiring privileges)
 local NDK_HOME = ANDROID .. "/toolchains/default"
+local LOCAL_MINKO_HOME = MINKO_HOME
 local extension = ''
 
 if os.is("windows") then
 	NDK_HOME = os.capture('cygpath -u "' .. NDK_HOME .. '"')
+	LOCAL_MINKO_HOME = os.capture('cygpath -u "' .. LOCAL_MINKO_HOME .. '"')
 	extension = '.exe'
 end
 
@@ -62,7 +64,7 @@ end
 
 table.inject(premake.tools.gcc, 'tools.android', {
 	cc			= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-gcc' .. extension,
-	cxx			= MINKO_HOME .. '/tool/lin/script/g++.sh ' .. NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-g++' .. extension,
+	cxx			= LOCAL_MINKO_HOME .. '/tool/lin/script/g++.sh ' .. NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-g++' .. extension,
 	ar			= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-ar' .. extension,
 	ld			= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-ld' .. extension,
 	ranlib		= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-ranlib' .. extension,
