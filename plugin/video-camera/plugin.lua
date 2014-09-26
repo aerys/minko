@@ -17,12 +17,13 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]--
 
--- png plugin
+-- video-camera plugin
 minko.plugin["video-camera"] = {}
 
 minko.plugin["video-camera"].enable = function()
 
-    minko.plugin.enable("android")
+    configuration { "android" }
+        minko.plugin.enable("android")
 
 	minko.plugin.links { "video-camera" }
 	includedirs { minko.plugin.path("video-camera") .. "/include" }

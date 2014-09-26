@@ -92,9 +92,42 @@ public class VideoCamera
     {
         Camera.Parameters cameraParams = _camera.getParameters();
 
+        int maxPreviewFrameRate = 0;
+        int bestPreviewFrameRate = 0;
+
+        int maxPreviewFpsRangeUpperBound = 0;
+        int[] bestPreviewFpsRange = null;
+
+        for (int format : cameraParams.getSupportedPreviewFormats())
+        {
+            Log.i("minko", "available format: " + format);
+        }
+
+        for (int fps : cameraParams.getSupportedPreviewFrameRates())
+        {
+            Log.i("minko", "available fps: " + fps);
+
+            if (fps > maxPreviewFrameRate)
+                maxPreviewFrameRate = fps;
+        }
+
+        for (int[] fpsRange : cameraParams.getSupportedPreviewFpsRange())
+        {
+            Log.i("minko", "available fps range: " + fpsRange[0] + ", " + fpsRange[1]);
+
+            if (fpsRange[1] > maxPreviewFpsRangeUpperBound)
+            {
+                maxPreviewFpsRangeUpperBound = fpsRange[1];
+
+                bestPreviewFpsRange = fpsRange;
+            }
+        }
+
+        bestPreviewFrameRate = maxPreviewFrameRate;
+
         cameraParams.setPreviewFormat(_srcFormat);
-        cameraParams.setPreviewFpsRange(30000, 30000);
-        cameraParams.setPreviewFrameRate(30);
+        cameraParams.setPreviewFpsRange(bestPreviewFpsRange[0], bestPreviewFpsRange[1]);
+        cameraParams.setPreviewFrameRate(bestPreviewFrameRate);
         cameraParams.setRecordingHint(true);
         cameraParams.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
         cameraParams.setPreviewSize(size.x, size.y);
@@ -198,23 +231,6 @@ public class VideoCamera
 
         Size bestSize = _size == null ? bestSize(_desiredSize) : _size;
 
-        Camera.Parameters cameraParams = _camera.getParameters();
-
-        for (int format : cameraParams.getSupportedPreviewFormats())
-        {
-            Log.i("minko", "available format: " + format);
-        }
-
-        for (int fps : cameraParams.getSupportedPreviewFrameRates())
-        {
-            Log.i("minko", "available fps: " + fps);
-        }
-
-        for (int[] fpsRange : cameraParams.getSupportedPreviewFpsRange())
-        {
-            Log.i("minko", "available fps range: " + fpsRange[0] + ", " + fpsRange[1]);
-        }
-
         startPreview(bestSize);
     }
 
@@ -227,6 +243,8 @@ public class VideoCamera
     {
         if (!isActive())
             return;
+
+        stopPreview();
 
         Log.i("minko", "VideoCamera.startPreview");
 
@@ -243,7 +261,14 @@ public class VideoCamera
 
         _camera.addCallbackBuffer(writeBuffer());
 
-        _camera.startPreview();
+        try
+        {
+            _camera.startPreview();
+        }
+        catch (Exception exception)
+        {
+            Log.e("minko", "VideoCamera.startPreview, failed starting camera preview");
+        }
     }
 
     private static void stopPreview()
