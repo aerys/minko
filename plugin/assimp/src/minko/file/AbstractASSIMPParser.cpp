@@ -109,6 +109,7 @@ AbstractASSIMPParser::AbstractASSIMPParser() :
     _nameToNode(),
     _nameToAnimMatrices(),
     _alreadyAnimatedNodes(),
+    _meshNames(),
     _loaderCompleteSlots(),
     _loaderErrorSlots(),
     _importer(nullptr)
@@ -425,8 +426,20 @@ AbstractASSIMPParser::createMeshSurface(scene::Node::Ptr     minkoNode,
         return;
 
     const auto    meshName    = getMeshName(std::string(mesh->mName.data));
+    
+    std::string realMeshName = meshName;
+
+    int id = 0;
+
+    while (_meshNames.find(realMeshName) != _meshNames.end())
+    {
+        realMeshName = meshName + "_" + std::to_string(id++);
+    }
+
+    _meshNames.insert(realMeshName);
+
     const auto    aiMat        = scene->mMaterials[mesh->mMaterialIndex];
-    auto        geometry    = createMeshGeometry(minkoNode, mesh, meshName);
+    auto        geometry = createMeshGeometry(minkoNode, mesh, realMeshName);
     auto        material    = createMaterial(aiMat);
     auto        effect        = chooseEffectByShadingMode(aiMat);
 
@@ -434,7 +447,7 @@ AbstractASSIMPParser::createMeshSurface(scene::Node::Ptr     minkoNode,
     {
         minkoNode->addComponent(
             Surface::create(
-                meshName,
+                realMeshName,
                 geometry,
                 material,
                 effect,
