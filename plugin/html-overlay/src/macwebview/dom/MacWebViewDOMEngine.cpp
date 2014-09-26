@@ -84,17 +84,6 @@ MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
     // URL of the local file that contains JS callback handler
     std::string uri = "asset/html/iframe.html";
 
-#if TARGET_OS_MAC // OSX
-    uri = "file://" + file::File::getBinaryDirectory() + "/" + uri;
-#endif
-
-    const char *cURI = uri.c_str();
-    NSString *nsURI = [NSString stringWithCString:cURI encoding:[NSString defaultCStringEncoding]];
-
-    // FIXME: Replate by a proper call to Loader.
-    NSURL *url = [NSURL URLWithString:nsURI];
-    NSURLRequest *request = [NSURLRequest requestWithURL:url];
-
     // Get window from canvas
     auto newCanvas = std::static_pointer_cast<Canvas>(canvas);
     SDL_Window* sdlWindow = newCanvas->window();
@@ -120,6 +109,7 @@ MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
         // Disable web view scroll
         _webView.scrollView.scrollEnabled = NO;
         _webView.scrollView.bounces = NO;
+        _webView.scrollView.decelerationRate = UIScrollViewDecelerationRateNormal;
 
         // Resize the web view according to device dimension and orientation
         _webView.autoresizingMask = UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin |
@@ -187,9 +177,6 @@ MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
 
         // Add the web view to the current window
         [_window.contentView addSubview:_webView];
-
-        // Load iframe containing bridge JS callback handler
-        //[[_webView mainFrame] loadRequest:request];
 #endif
 
         // Create a C++ handler to process the message received by the Javascript bridge
@@ -202,38 +189,36 @@ MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
 
         // Create the bridge
         _bridge = [WebViewJavascriptBridge bridgeForWebView:_webView handler:
-                   ^(id data, WVJBResponseCallback responseCallback) {
+                   ^(id data, WVJBResponseCallback responseCallback)
+        {
 
-                   // If the message is a dictionary (of this form: {type: 'ready', value: 'true'})
-                   if([data isKindOfClass:[NSDictionary class]])
-                   {
-                        std::string type;
-                        std::string value;
+            // If the message is a dictionary (of this form: {type: 'ready', value: 'true'})
+            if([data isKindOfClass:[NSDictionary class]])
+            {
+                std::string type;
+                std::string value;
 
-                        for (NSString *key in [data allKeys])
-                        {
-                            id val = [data objectForKey:key];
+                for (NSString *key in [data allKeys])
+                {
+                    id val = [data objectForKey:key];
 
-                            if ([key isEqualToString:@"type"])
-                                type = [val UTF8String];
-                            else if ([key isEqualToString:@"value"])
-                                value = [val UTF8String];
-                        }
+                    if ([key isEqualToString:@"type"])
+                        type = [val UTF8String];
+                    else if ([key isEqualToString:@"value"])
+                        value = [val UTF8String];
+                }
 
-                        MacWebViewDOMEngine::handleJavascriptMessageWrapper(type, value);
-                   }
-                   else if ([data isKindOfClass:[NSString class]])
-                   {
-                        NSString* dataString = (NSString *)data;
-                        std::string value([dataString UTF8String]);
-                        std::string type = "log";
+                MacWebViewDOMEngine::handleJavascriptMessageWrapper(type, value);
+            }
+            else if ([data isKindOfClass:[NSString class]])
+            {
+                NSString* dataString = (NSString *)data;
+                std::string value([dataString UTF8String]);
+                std::string type = "log";
 
-                        MacWebViewDOMEngine::handleJavascriptMessageWrapper(type, value);
-                   }
+                MacWebViewDOMEngine::handleJavascriptMessageWrapper(type, value);
+            }
          }];
-
-        // Enable bridge logging
-        // [WebViewJavascriptBridge enableLogging];
     }
 
     visible(_visible);
@@ -270,7 +255,6 @@ MacWebViewDOMEngine::enterFrame(float time)
         if (res == "true")
         {
             _waitingForLoad = false;
-            load(_uriToLoad);
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
             updateWebViewWidth();
 #endif
@@ -278,6 +262,7 @@ MacWebViewDOMEngine::enterFrame(float time)
 
         return;
     }
+
 	std::string jsEval = "(Minko.loaded + '')";
 
     std::string res = eval(jsEval);
@@ -351,40 +336,36 @@ MacWebViewDOMEngine::load(std::string uri)
     if (_currentDOM == nullptr || _currentDOM->initialized())
         createNewDom();
 
-    /*if (_waitingForLoad)
+    bool isHttp		= uri.substr(0, 7) == "http://";
+    bool isHttps	= uri.substr(0, 8) == "https://";
+
+    if (!isHttp && !isHttps)
     {
-        _uriToLoad = uri;
-    }
-    else
-    {*/
-        bool isHttp		= uri.substr(0, 7) == "http://";
-        bool isHttps	= uri.substr(0, 8) == "https://";
-
-
-        if (!isHttp && !isHttps)
-        {
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
-            uri = "../../asset/" + uri;
+        uri = "file://" + file::File::getBinaryDirectory() + "/asset/" + uri;
 #elif TARGET_OS_MAC // OSX
-            std::string path = file::File::getBinaryDirectory();
+        std::string path = file::File::getBinaryDirectory();
 # if DEBUG
-            uri = path + "/../../../asset/" + uri;
+        uri = path + "/../../../asset/" + uri;
 # else
-            uri = path + "/asset/" + uri;
+        uri = path + "/asset/" + uri;
 # endif
 #endif
-        }
+    }
 
-        const char *cURI = uri.c_str();
-        NSString *nsURI = [NSString stringWithCString:cURI encoding:[NSString defaultCStringEncoding]];
+    std::cout << "MacWebViewDOMEngine::load(): " << uri << std::endl;
 
-        NSURL *url = [NSURL URLWithString:nsURI];
-        NSURLRequest *request = [NSURLRequest requestWithURL:url];
+    const char *cURI = uri.c_str();
+    NSString *nsURI = [NSString stringWithCString:cURI encoding:[NSString defaultCStringEncoding]];
 
-        [_webView loadRequest:request];
-//    }
+    NSURL *url = [NSURL URLWithString:nsURI];
+    NSURLRequest *request = [NSURLRequest requestWithURL:url];
 
-	return _currentDOM;
+    [_webView loadRequest:request];
+
+    _waitingForLoad = true;
+
+    return _currentDOM;
 }
 
 void
@@ -491,25 +472,25 @@ MacWebViewDOMEngine::registerDomEvents()
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
     ontouchdownSlot = std::static_pointer_cast<MacWebViewDOMElement>(_currentDOM->document())->ontouchdown()->connect([&](AbstractDOMTouchEvent::Ptr event)
     {
-            int fingerId = event->fingerId();
-            float x = event->clientX();
-            float y = event->clientY();
+        int fingerId = event->fingerId();
+        float x = event->clientX();
+        float y = event->clientY();
 
-            SDL_Event sdlEvent;
-            sdlEvent.type = SDL_FINGERDOWN;
-            sdlEvent.tfinger.fingerId = fingerId;
-            sdlEvent.tfinger.x =  x / _canvas->width();
-            sdlEvent.tfinger.y = y / _canvas->height();
+        SDL_Event sdlEvent;
+        sdlEvent.type = SDL_FINGERDOWN;
+        sdlEvent.tfinger.fingerId = fingerId;
+        sdlEvent.tfinger.x =  x / _canvas->width();
+        sdlEvent.tfinger.y = y / _canvas->height();
 
-            SDL_PushEvent(&sdlEvent);
+        SDL_PushEvent(&sdlEvent);
 
-            // Create a new touch object and keep it with a list
-            auto touch = minko::SDLTouch::create(std::static_pointer_cast<Canvas>(_canvas));
-            touch->fingerId(fingerId);
-            touch->x(x);
-            touch->y(y);
+        // Create a new touch object and keep it with a list
+        auto touch = minko::SDLTouch::create(std::static_pointer_cast<Canvas>(_canvas));
+        touch->fingerId(fingerId);
+        touch->x(x);
+        touch->y(y);
 
-            _touches.insert(std::pair<int, std::shared_ptr<minko::SDLTouch>>(fingerId, touch));
+        _touches.insert(std::pair<int, std::shared_ptr<minko::SDLTouch>>(fingerId, touch));
     });
 
     ontouchupSlot = std::static_pointer_cast<MacWebViewDOMElement>(_currentDOM->document())->ontouchup()->connect([&](AbstractDOMTouchEvent::Ptr event)
@@ -535,25 +516,25 @@ MacWebViewDOMEngine::registerDomEvents()
 
     ontouchmotionSlot = std::static_pointer_cast<MacWebViewDOMElement>(_currentDOM->document())->ontouchmotion()->connect([&](AbstractDOMTouchEvent::Ptr event)
     {
-            int fingerId = event->fingerId();
-            float oldX = _touches.at(fingerId)->minko::input::Touch::x();
-            float oldY = _touches.at(fingerId)->minko::input::Touch::y();
-            float x = event->clientX();
-            float y = event->clientY();
+        int fingerId = event->fingerId();
+        float oldX = _touches.at(fingerId)->minko::input::Touch::x();
+        float oldY = _touches.at(fingerId)->minko::input::Touch::y();
+        float x = event->clientX();
+        float y = event->clientY();
 
-            SDL_Event sdlEvent;
-            sdlEvent.type = SDL_FINGERMOTION;
-            sdlEvent.tfinger.fingerId = fingerId;
-            sdlEvent.tfinger.x = x / _canvas->width();
-            sdlEvent.tfinger.y = y / _canvas->height();
-            sdlEvent.tfinger.dx = (x - oldX) / _canvas->width();
-            sdlEvent.tfinger.dy = (y - oldY) / _canvas->height();
+        SDL_Event sdlEvent;
+        sdlEvent.type = SDL_FINGERMOTION;
+        sdlEvent.tfinger.fingerId = fingerId;
+        sdlEvent.tfinger.x = x / _canvas->width();
+        sdlEvent.tfinger.y = y / _canvas->height();
+        sdlEvent.tfinger.dx = (x - oldX) / _canvas->width();
+        sdlEvent.tfinger.dy = (y - oldY) / _canvas->height();
 
-            SDL_PushEvent(&sdlEvent);
+        SDL_PushEvent(&sdlEvent);
 
-            // Store finger information
-            _touches.at(fingerId)->x(x);
-            _touches.at(fingerId)->y(y);
+        // Store finger information
+        _touches.at(fingerId)->x(x);
+        _touches.at(fingerId)->y(y);
     });
 #endif
 }
