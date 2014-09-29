@@ -133,6 +133,7 @@ namespace minko
                 opt->_materialFunction = options->_materialFunction;
                 opt->_geometryFunction = options->_geometryFunction;
                 opt->_protocolFunction = options->_protocolFunction;
+                opt->_effectFunction = options->_effectFunction;
                 opt->_uriFunction = options->_uriFunction;
                 opt->_nodeFunction = options->_nodeFunction;
                 opt->_loadAsynchronously = options->_loadAsynchronously;
