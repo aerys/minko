@@ -66,6 +66,7 @@ namespace minko
             bool                                                _generateMipMaps;
             bool                                                _resizeSmoothly;
             bool                                                _isCubeTexture;
+            bool                                                _isRectangleTexture;
             bool                                                _startAnimation;
             bool                                                _loadAsynchronously;
             bool                                                _disposeIndexBufferAfterLoading;
@@ -123,6 +124,7 @@ namespace minko
                 opt->_generateMipMaps = options->_generateMipMaps;
                 opt->_resizeSmoothly = options->_resizeSmoothly;
                 opt->_isCubeTexture = options->_isCubeTexture;
+                opt->_isRectangleTexture = options->_isRectangleTexture;
                 opt->_startAnimation = options->_startAnimation;
                 opt->_disposeIndexBufferAfterLoading = options->_disposeIndexBufferAfterLoading;
                 opt->_disposeVertexBufferAfterLoading = options->_disposeVertexBufferAfterLoading;
@@ -265,6 +267,22 @@ namespace minko
             isCubeTexture(bool value)
             {
                 _isCubeTexture = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            bool
+            isRectangleTexture() const
+            {
+                return _isRectangleTexture;
+            }
+
+            inline
+            Ptr
+            isRectangleTexture(bool value)
+            {
+                _isRectangleTexture = value;
 
                 return shared_from_this();
             }

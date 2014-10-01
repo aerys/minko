@@ -40,6 +40,7 @@ Options::Options() :
     _generateMipMaps(false),
     _resizeSmoothly(false),
     _isCubeTexture(false),
+    _isRectangleTexture(false),
     _startAnimation(true),
     _loadAsynchronously(false),
     _disposeIndexBufferAfterLoading(false),

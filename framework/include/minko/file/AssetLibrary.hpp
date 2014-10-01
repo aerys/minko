@@ -43,6 +43,7 @@ namespace minko
             typedef std::shared_ptr<render::AbstractTexture>                AbsTexturePtr;
             typedef std::shared_ptr<render::Texture>                        TexturePtr;
             typedef std::shared_ptr<render::CubeTexture>                    CubeTexturePtr;
+            typedef std::shared_ptr<render::RectangleTexture>               RectangleTexturePtr;
             typedef std::shared_ptr<geometry::Geometry>                     GeometryPtr;
             typedef std::shared_ptr<file::AbstractParser>                   AbsParserPtr;
             typedef std::shared_ptr<file::Loader>                           LoaderPtr;
@@ -59,6 +60,7 @@ namespace minko
             std::unordered_map<std::string, EffectPtr>                      _effects;
             std::unordered_map<std::string, TexturePtr>                     _textures;
             std::unordered_map<std::string, CubeTexturePtr>                 _cubeTextures;
+            std::unordered_map<std::string, RectangleTexturePtr>            _rectangleTextures;
             std::unordered_map<std::string, NodePtr>                        _symbols;
             std::unordered_map<std::string, std::vector<unsigned char>>     _blobs;
             std::unordered_map<std::string, AbsScriptPtr>                   _scripts;
@@ -131,6 +133,12 @@ namespace minko
 
             Ptr
             cubeTexture(const std::string& name, CubeTexturePtr texture);
+
+            RectangleTexturePtr
+            rectangleTexture(const std::string& name) const;
+
+            Ptr
+            rectangleTexture(const std::string& name, RectangleTexturePtr texture);
 
             CubeTexturePtr
             cubeTexture(const std::string& name) const;

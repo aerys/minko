@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Options.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/render/CubeTexture.hpp"
+#include "minko/render/RectangleTexture.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/geometry/Geometry.hpp"
 
@@ -110,6 +111,24 @@ AssetLibrary::Ptr
 AssetLibrary::cubeTexture(const std::string& name, render::CubeTexture::Ptr texture)
 {
     _cubeTextures[name] = texture;
+
+    return std::enable_shared_from_this<AssetLibrary>::shared_from_this();
+}
+
+render::RectangleTexture::Ptr
+AssetLibrary::rectangleTexture(const std::string& name) const
+{
+    const auto foundTextureIt = _rectangleTextures.find(name);
+
+    return foundTextureIt != _rectangleTextures.end()
+        ? foundTextureIt->second
+        : nullptr;
+}
+
+AssetLibrary::Ptr
+AssetLibrary::rectangleTexture(const std::string& name, render::RectangleTexture::Ptr texture)
+{
+    _rectangleTextures[name] = texture;
 
     return std::enable_shared_from_this<AssetLibrary>::shared_from_this();
 }
