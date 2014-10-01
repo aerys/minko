@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
+#include "minko/file/AbstractWriterPreprocessor.hpp"
 #include "minko/file/Dependency.hpp"
 #include "msgpack.hpp"
 
@@ -66,13 +67,18 @@ namespace minko
 		private:
 			typedef std::vector<msgpack::type::tuple<unsigned int, short, std::string>> SerializedDependency;
 
+            typedef std::shared_ptr<AbstractWriterPreprocessor<T>> PreprocessorPtr;
+
 		protected:
 			std::shared_ptr<Signal<Ptr>>	                    _complete;
+
             std::shared_ptr<Signal<Ptr, const WriterError&>>    _error;
 			T								                    _data;
 			std::shared_ptr<Dependency>		                    _parentDependencies;
 
-			int								_magicNumber;
+            std::list<PreprocessorPtr>                          _preprocessors;
+
+            int                                                 _magicNumber;
 
 		public:
 			inline
@@ -89,45 +95,65 @@ namespace minko
                 return _error;
             }
 
-			inline
-			T
-			data()
-			{
-				return _data;
-			}
+            inline
+            T
+            data()
+            {
+                return _data;
+            }
 
-			inline
-			void
-			data(const T& data)
-			{
-				_data = data;
-			}
+            inline
+            void
+            data(const T& data)
+            {
+                _data = data;
+            }
 
-			inline
-			void
-			parentDependencies(std::shared_ptr<Dependency> parentDependencies)
-			{
-				_parentDependencies = parentDependencies;
-			}
+            inline
+            Ptr
+            registerPreprocessor(PreprocessorPtr preprocessor)
+            {
+                _preprocessors.push_back(preprocessor);
 
-			void
-			write(std::string&                          filename,
-				  std::shared_ptr<AssetLibrary>         assetLibrary,
-				  std::shared_ptr<Options>              options,
-				  std::shared_ptr<WriterOptions>        writerOptions)
-			{
-				SerializedDependency includeDependency;
+                return shared_from_this();
+            }
 
-				write(filename, assetLibrary, options, writerOptions, includeDependency);
-			}
+            inline
+            Ptr
+            unregisterPreprocessor(PreprocessorPtr preprocessor)
+            {
+                _preprocessors.remove(preprocessor);
 
-			void
+                return shared_from_this();
+            }
+
+            inline
+            void
+            parentDependencies(std::shared_ptr<Dependency> parentDependencies)
+            {
+                _parentDependencies = parentDependencies;
+            }
+
+            void
+            write(std::string&                          filename,
+                  std::shared_ptr<AssetLibrary>         assetLibrary,
+                  std::shared_ptr<Options>              options,
+                  std::shared_ptr<WriterOptions>        writerOptions)
+            {
+                SerializedDependency includeDependency;
+
+                write(filename, assetLibrary, options, writerOptions, includeDependency);
+            }
+
+            void
             write(std::string&                          filename,
                   std::shared_ptr<AssetLibrary>         assetLibrary,
                   std::shared_ptr<Options>              options,
                   std::shared_ptr<WriterOptions>        writerOptions,
                   SerializedDependency&					includeDependency)
             {
+                preprocess(data(), assetLibrary);
+
                 try
                 {
                     std::ofstream file(filename, std::ios::out | std::ios::binary | std::ios::trunc);
@@ -286,6 +312,7 @@ namespace minko
                      std::shared_ptr<WriterOptions> writerOptions,
 					 SerializedDependency&			includeDependency)
             {
+                preprocess(data(), assetLibrary);
 
             try
             {
@@ -346,9 +373,18 @@ namespace minko
 			AbstractWriter() :
 				_complete(Signal<Ptr>::create()),
                 _error(Signal<Ptr, const WriterError&>::create()),
-				_parentDependencies(nullptr)
-			{
-			}
-		};
-	}
+                _parentDependencies(nullptr)
+            {
+            }
+
+        private:
+            inline
+            void
+            preprocess(T& data, std::shared_ptr<file::AssetLibrary> assetLibrary)
+            {
+                for (auto preprocessor : _preprocessors)
+                    preprocessor->process(data, assetLibrary);
+            }
+        };
+    }
 }

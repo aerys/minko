@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/SerializerCommon.hpp"
 #include "minko/Types.hpp"
 
 namespace minko
@@ -29,11 +30,11 @@ namespace minko
         class WriterOptions:
             public std::enable_shared_from_this<WriterOptions>
         {
-        private:
-            typedef std::function<const std::string(const std::string&)>        UriFunction;
-
         public:
             typedef std::shared_ptr<WriterOptions>                              Ptr;
+
+        private:
+            typedef std::function<const std::string(const std::string&)>        UriFunction;
 
         private:
             bool                    _embedAll;

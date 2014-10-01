@@ -13,28 +13,31 @@
 
 namespace minko
 {
-	namespace extension
-	{
-		class SerializerExtension;
-		class AbstractExtension;
-	}
+    namespace extension
+    {
+        class SerializerExtension;
+        class AbstractExtension;
+    }
 
-	namespace data
-	{
-		class HalfEdge;
-		class HalfEdgeCollection;
-	}
+    namespace data
+    {
+        class HalfEdge;
+        class HalfEdgeCollection;
+    }
 
-	namespace deserialize
-	{
-		class ComponentDeserializer;
-		class TypeDeserializer;
-	}
+    namespace deserialize
+    {
+        class ComponentDeserializer;
+        class TypeDeserializer;
+    }
 
-	namespace file
-	{
-		class AbstractMkParser;
-		class AbtractWriter;
+    namespace file
+    {
+        class AbstractMkParser;
+        template <typename T>
+        class AbstractWriter;
+        template <typename T>
+        class AbstractWriterPreprocessor;
         class SceneWriter;
 		class SceneParser;
 		class GeometryWriter;
