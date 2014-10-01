@@ -249,7 +249,7 @@ SceneParser::parseNode(std::vector<SerializedNode>&			nodePack,
     
 	if (isSkinningFree)
 	{
-		auto nodeSet = scene::NodeSet::create(root)->descendants(true)->where([](scene::Node::Ptr n){ return n->components<component::Surface>().size() != 0; });
+        auto nodeSet = scene::NodeSet::create(root)->descendants(true)->where([](scene::Node::Ptr n){ return !n->components<component::Surface>().empty() && n->components<component::BoundingBox>().empty(); });
     
 		for (auto n : nodeSet->nodes())
 		{
