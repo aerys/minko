@@ -25,6 +25,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "android/dom/AndroidWebViewDOM.hpp"
 #include "android/dom/AndroidWebViewDOMTouchEvent.hpp"
 
+#include <android/log.h>
+#define LOG_TAG "MINKOTEST"
+#define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
+
 using namespace minko;
 using namespace minko::dom;
 using namespace android;
@@ -68,6 +74,9 @@ AndroidWebViewDOMElement::initialize(std::shared_ptr<AndroidWebViewDOMEngine> en
 {
     _engine = engine;
     
+    LOGI("Initialize: ");
+    LOGI(_jsAccessor.c_str());
+
     std::string jsEval = _jsAccessor + ".minkoName = '" + _jsAccessor + "';";
     _engine->eval(jsEval);
 }
@@ -404,11 +413,10 @@ AndroidWebViewDOMElement::ontouchmotion()
 void
 AndroidWebViewDOMElement::update()
 {
-    /*
     if (_engine->isReady())
     {
-        std::string js = "(Minko.getEventsCount(" + _jsAccessor + "))";
-        int l = atoi(_engine->eval(js).c_str());
+        std::string js = "(Minko.getEventsCount(" + _jsAccessor + "));";
+        /*int l = atoi(_engine->eval(js).c_str());
         
         for(int i = 0; i < l; ++i)
         {
@@ -425,10 +433,12 @@ AndroidWebViewDOMElement::update()
                 
                 for (auto i = 0; i < touchNumber; i++)
                 {
+                       
                     // Get the finger id (note: JS events can send identifier > INT_MAX, that's why there is a modulo)
-                    js = "(" + eventName + ".changedTouches[" + std::to_string(i) + "].identifier % 2147483647)";
+                    js = "((" + eventName + ".changedTouches[" + std::to_string(i) + "].identifier));";
+
                     int fingerId = atoi(_engine->eval(js).c_str());
-                    
+
                     // Create the touch event
                     AndroidWebViewDOMTouchEvent::Ptr event = AndroidWebViewDOMTouchEvent::create(eventName, fingerId, i, _engine);
                     
@@ -474,8 +484,7 @@ AndroidWebViewDOMElement::update()
             }
         }
         
-        js = "Minko.clearEvents(" + _jsAccessor + ");";
-        _engine->eval(js);
+        js = "(Minko.clearEvents(" + _jsAccessor + "));";
+        _engine->eval(js);*/
     }
-    */
 }

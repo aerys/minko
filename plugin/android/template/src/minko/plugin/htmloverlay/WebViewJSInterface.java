@@ -2,17 +2,17 @@ package minko.plugin.htmloverlay;
 
 import android.webkit.WebView;
 import android.webkit.JavascriptInterface;
-import java.util.HashMap;
+
 import static android.util.Log.*;
 
 public class WebViewJSInterface
 {
-	public static HashMap<Integer, String> ReturnValues;
-		
-	public WebViewJSInterface()
-	{
-		ReturnValues = new HashMap<Integer, String>();
-	}
+	public static boolean ResultReady = false;
+	public static String Result = "[UNKNOWN]";
+
+	// Native functions
+	public native void minkoNativeOnMessage(String message);
+	public native void minkoNativeOnJSResult(String jsResult);
 	
 	@JavascriptInterface
 	public void onmessage(String message)
@@ -21,17 +21,9 @@ public class WebViewJSInterface
 	}
 	
 	@JavascriptInterface
-	public void onNativeJSResult(int uniqueId, String jsResult)
+	public void onNativeJSResult(String jsResult)
 	{
-		d("MINKOJAVA", "[ID = " + uniqueId + "]Get result from JS: " + jsResult);
-		
-		if (EvalJSManager.UniqueIds.indexOf(uniqueId) != -1)
-		{
-			WebViewJSInterface.ReturnValues.put(uniqueId, jsResult);
-			EvalJSManager.UniqueIds.remove(uniqueId);
-		}
+		WebViewJSInterface.Result = jsResult;
+		WebViewJSInterface.ResultReady = true;
 	}
-	
-	public native void minkoNativeOnMessage(String message);
-	public native void minkoNativeOnJSResult(String jsResult);
 }

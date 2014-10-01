@@ -6,34 +6,33 @@ import android.widget.LinearLayout;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.graphics.Color;
+import android.view.View;
+
+import java.util.Vector;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
+import java.lang.Exception;
 
 import static android.util.Log.*;
 import org.libsdl.app.*;
 
 public class InitWebViewTask implements Runnable 
 {
-	Activity _sdlActivity;
-	String _url;
-	WebView _webView;
-	EvalJSManager _evalJSManager;
-	private int _uniqueId;
+	private Activity _sdlActivity;
+	private WebView _webView;
 	
+	// Native functions
 	public native void webViewInitialized();
 	
-	public InitWebViewTask(Activity sdlActivity, String url)
+	public InitWebViewTask(Activity sdlActivity)
 	{
 		_sdlActivity = sdlActivity;
-		_url = url;
 		_webView = null;
-		_uniqueId = 0;
 	}
 
     @Override
     public void run() 
 	{
-		// LinearLayout layout = (LinearLayout) _sdlActivity.findViewById(R.id.mainview);
-		// ViewGroup view = (ViewGroup)_sdlActivity.getWindow().getDecorView();
-        // LinearLayout layout = (LinearLayout)view.getChildAt(0);
 		ViewGroup layout = SDLActivity.getLayout();
 		layout.setBackgroundColor(Color.RED);
 		
@@ -50,6 +49,8 @@ public class InitWebViewTask implements Runnable
         WebChromeClient wcc = new WebChromeClient();
         _webView.setWebChromeClient(wcc);
 		
+		// Set our own WebViewClient to override some 
+		// methods and inject Minko overlay JS script
 		_webView.setWebViewClient(new MinkoWebViewClient());
 
         // Transparent background
@@ -65,24 +66,23 @@ public class InitWebViewTask implements Runnable
 		_webView.getSettings().setBuiltInZoomControls(true);
 		_webView.getSettings().setDisplayZoomControls(false);
 		
-		// Disable zoom when double tap
+		// Disable zoom when double tap <= only on simulator?
 		//_webView.getSettings().setUseWideViewPort(false);
 		
 		// Disable scroll bar
 		_webView.setVerticalScrollBarEnabled(false);
 		_webView.setHorizontalScrollBarEnabled(false);
 		
+		// Disable scroll edge gradient
+		_webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+		
 		// Add the WebView
         layout.addView(_webView);
-        _webView.loadUrl(_url);
-		
-		d("MINKOJAVA", "WEBVIEW HAS NOW LOADED AN URL! (" + _url + ")");
 		
 		// Add a JavaScript interface
 		_webView.addJavascriptInterface(new WebViewJSInterface(), "MinkoNativeInterface");
 		
-		// Instantiate the EvalJS manager
-		_evalJSManager = new EvalJSManager(_sdlActivity, _webView);
+		d("MINKOJAVA", "WEBVIEW VALUE AFTER WEBVIEW INITIALIZATION: " + _webView);
 		
 		webViewInitialized();
     }
@@ -96,10 +96,37 @@ public class InitWebViewTask implements Runnable
 	
 	public String evalJS(String js)
 	{
-		_uniqueId++;
+		d("MINKOJAVA", "Try to evaluate JS: " + js);
 		
-		d("MINKOJAVA", "[ID = " + _uniqueId + "]Try to evaluate JS: " + js);
+		EvalJSCallable evalJSCallable = new EvalJSCallable(_webView, js);
+		FutureTask<String> task = new FutureTask<String>(evalJSCallable);
+
+        _sdlActivity.runOnUiThread(task);
 		
-		return _evalJSManager.evalJS(js, _uniqueId);
+		String returnValue = "";
+		try 
+		{
+			returnValue = task.get();
+		}
+		catch (Exception e) 
+		{
+			d("MINKOJAVA", "Exception: " + e.toString());
+			returnValue = e.getMessage();
+		}
+		
+		d("MINKOJAVA", "Return value of eval JS result: " + returnValue);
+		
+		return returnValue;
+	}
+	
+	public void loadUrl(String url)
+	{
+		d("MINKOJAVA", "TRY TO LOAD THIS URL: " + url);
+		d("MINKOJAVA", "WEBVIEW VALUE: " + _webView);
+		// It's an operation on the WebView, don't forget to perform it on UI thread!
+		LoadUrlRunnable loadUrlRunnable = new LoadUrlRunnable(_webView, url);
+		_sdlActivity.runOnUiThread(loadUrlRunnable);
+		
+		d("MINKOJAVA", "WEBVIEW HAS LOADED AN URL! (" + url + ")");
 	}
 }
