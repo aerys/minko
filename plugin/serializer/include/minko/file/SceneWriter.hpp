@@ -46,8 +46,8 @@ namespace minko
 		private:
 			typedef std::shared_ptr<file::Dependency> 					DependencyPtr;
 			typedef std::shared_ptr<scene::Node> 						NodePtr;
-			typedef std::function<std::string(NodePtr, DependencyPtr)>	NodeWriterFunc;
-			typedef std::shared_ptr<component::AbstractComponent>		AbsComponentPtr;
+			typedef std::shared_ptr<component::AbstractComponent>		AbstractComponentPtr;
+			typedef std::function<std::string(NodePtr, AbstractComponentPtr, DependencyPtr)>	NodeWriterFunc;
 			typedef std::shared_ptr<file::AssetLibrary>					AssetLibraryPtr;
 			typedef std::shared_ptr<Options>                            OptionsPtr;
 
@@ -76,7 +76,7 @@ namespace minko
 			SerializedNode
 			writeNode(std::shared_ptr<scene::Node>			node,
 					  std::vector<std::string>&				serializedControllerList,
-					  std::map<AbsComponentPtr, int>&		controllerMap,
+					  std::map<AbstractComponentPtr, int>&	controllerMap,
 					  AssetLibraryPtr						assetLibrary,
 					  DependencyPtr							dependency);
 

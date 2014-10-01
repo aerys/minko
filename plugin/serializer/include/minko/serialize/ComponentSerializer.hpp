@@ -31,6 +31,7 @@ namespace minko
 		{
 		public:
 			typedef std::shared_ptr<scene::Node>						NodePtr;
+            typedef std::shared_ptr<component::AbstractComponent>       AbstractComponentPtr;
 			typedef std::shared_ptr<component::Surface>					SurfacePtr;
 			typedef std::shared_ptr<file::Dependency>					DependencyPtr;
 			typedef msgpack::type::tuple<std::string, std::string>		SimpleProperty;
@@ -39,53 +40,61 @@ namespace minko
 		public:
 			static
 			std::string
-			serializeTransform(NodePtr			node, 
-							   DependencyPtr	dependencies);
+			serializeTransform(NodePtr			    node,
+                               AbstractComponentPtr component,
+                               DependencyPtr	    dependencies);
 
 			static
 			std::string
-			serializePerspectiveCamera(NodePtr			node, 
-									   DependencyPtr	dependencies);
+			serializePerspectiveCamera(NodePtr			    node, 
+                                       AbstractComponentPtr component,
+									   DependencyPtr	    dependencies);
 
 			static
 			std::string
-			serializeAmbientLight(NodePtr		node, 
-								  DependencyPtr dependencies);
+			serializeAmbientLight(NodePtr		        node, 
+                                  AbstractComponentPtr  component,
+								  DependencyPtr         dependencies);
 
 			static
 			std::string
-			serializeDirectionalLight(NodePtr		node, 
-									  DependencyPtr dependencies);
+			serializeDirectionalLight(NodePtr		        node,
+                                      AbstractComponentPtr  component,
+									  DependencyPtr         dependencies);
 
 			static
 			std::string
-			serializePointLight(NodePtr			node, 
-								DependencyPtr	dependencies);
+			serializePointLight(NodePtr			        node, 
+                                AbstractComponentPtr    component,
+								DependencyPtr	        dependencies);
 
 			static
 			std::string
-			serializeSpotLight(NodePtr			node, 
-							   DependencyPtr	dependencies);
+			serializeSpotLight(NodePtr			    node,
+                               AbstractComponentPtr component,
+							   DependencyPtr	    dependencies);
 
 			static
 			std::string
-			serializeSurface(NodePtr		node, 
-							 DependencyPtr	dependencies);
+			serializeSurface(NodePtr		        node, 
+                             AbstractComponentPtr   component,
+							 DependencyPtr	        dependencies);
 
 			static
 			std::string
-			serializeRenderer(NodePtr		node, 
-							  DependencyPtr dependencies);
+			serializeRenderer(NodePtr		        node, 
+                              AbstractComponentPtr  component,
+							  DependencyPtr         dependencies);
 
 			static
 			std::string
-			serializeBoundingBox(NodePtr 		node,
-								 DependencyPtr 	dependencies);
+			serializeBoundingBox(NodePtr 		        node,
+                                 AbstractComponentPtr   component,
+								 DependencyPtr 	        dependencies);
 
 			static
 			std::string
 			getSurfaceExtension(NodePtr, SurfacePtr);
-
 
 			static
 			SimpleProperty
