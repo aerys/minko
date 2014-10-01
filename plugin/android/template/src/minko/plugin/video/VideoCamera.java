@@ -52,17 +52,13 @@ public class VideoCamera
     }
 
     private static abstract class DummyCameraPreviewCallback
-        implements Runnable
     {
         public DummyCameraPreviewCallback()
         {
 
         }
 
-        public final void run(SurfaceHolder surfaceHolder)
-        {
-            run();
-        }
+        public abstract void run(SurfaceHolder surfaceHolder, int format, int width, int height);
     }
 
     private static final class DummyCameraPreview
@@ -86,8 +82,8 @@ public class VideoCamera
 
             getHolder().addCallback(this);
 
-            setScaleX(0.0f);
-            setScaleY(0.0f);
+            setScaleX(1.0f);
+            setScaleY(1.0f);
         }
 
         public final boolean isActive()
@@ -106,7 +102,7 @@ public class VideoCamera
             Log.d("minko", "DummyCameraPreview.surfaceCreated");
 
             if (isActive())
-                _callback.run(surfaceHolder);
+                _callback.run(surfaceHolder, 0, 0, 0);
         }
 
         @Override
@@ -115,7 +111,7 @@ public class VideoCamera
             Log.d("minko", "DummyCameraPreview.surfaceChanged");
 
             if (isActive())
-                _callback.run(surfaceHolder);
+                _callback.run(surfaceHolder, i, i2, i3);
         }
 
         @Override
@@ -124,7 +120,7 @@ public class VideoCamera
         }
     }
 
-    private static final Size _defaultDesiredSize = new Size(800, 600);
+    private static final Size _defaultDesiredSize = new Size(600, 600);
 
     private static Camera _camera = null;
 
@@ -198,6 +194,11 @@ public class VideoCamera
             }
         }
 
+        //for (Camera.Area focusArea : cameraParams.getFocusAreas())
+        //{
+        //    Log.d("minko", "focus area: " + focusArea.rect.left + ", " + focusArea.rect.top + "//, " + focusArea.rect.right + ", " + focusArea.rect.bottom);
+        //}
+
         bestPreviewFrameRate = maxPreviewFrameRate;
 
         cameraParams.setPreviewFormat(_srcFormat);
@@ -206,6 +207,7 @@ public class VideoCamera
         cameraParams.setRecordingHint(true);
         cameraParams.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
         cameraParams.setPreviewSize(size.x, size.y);
+        cameraParams.setZoom(0);
 
         _camera.setParameters(cameraParams);
     }
@@ -345,8 +347,10 @@ public class VideoCamera
                     _dummyCameraPreview = new DummyCameraPreview(getContext(), _camera, new         DummyCameraPreviewCallback()
                     {
                         @Override
-                        public final void run()
+                        public final void run(SurfaceHolder surfaceHolder, int format, int width, int height)
                         {
+                            Log.d("minko", "surface changed: " + width + "x" + height);
+
                             try
                             {
                                 _camera.setPreviewDisplay(_dummyCameraPreview.getHolder());
@@ -355,16 +359,18 @@ public class VideoCamera
                             {
                                 Log.d("minko", exception.getMessage());
                             }
+
+                            // Size actualBestSize = bestSize(new Size(width, height));
                 
                             startPreview(bestSize);
                         }
                     });
         
                     _dummyCameraPreview.activate(true);
+
+                    ViewGroup.LayoutParams defaultLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.FILL_PARENT);
         
-                    ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(1, 1);
-        
-                    getContext().addContentView(_dummyCameraPreview,        layoutParams);
+                    getContext().addContentView(_dummyCameraPreview, defaultLayoutParams);
                 }
             });
         }
