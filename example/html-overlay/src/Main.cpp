@@ -106,7 +106,6 @@ main(int argc, char** argv)
         overlay->load("html/interface.html");
     });
 
-/*
     onloadSlot = overlay->onload()->connect([=](minko::dom::AbstractDOM::Ptr dom, std::string page)
     {
         if (!dom->isMain())
@@ -124,7 +123,6 @@ main(int argc, char** argv)
             blueScoreElement = gameInterfaceDom->getElementById("teamScoreBlue");
         }
     });
-*/
 
     auto rightButtonDown = canvas->mouse()->rightButtonDown()->connect([&](input::Mouse::Ptr m)
     {
@@ -147,7 +145,7 @@ main(int argc, char** argv)
     sceneManager->assets()->loader()->load();
     canvas->run();
 
-    //overlay->clear();
+    overlay->clear();
 
     return 0;
 }
