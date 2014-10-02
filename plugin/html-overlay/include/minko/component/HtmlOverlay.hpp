@@ -74,6 +74,9 @@ namespace minko
 			minko::dom::AbstractDOM::Ptr
 			load(std::string uri)
 			{
+                if (_domEngine == nullptr || numTargets() == 0)
+                    throw std::logic_error("HtmlOverlay component should be added to a node and initialized before HtmlOverlay::load is called");
+
 				return _domEngine->load(uri);
 			}
 
