@@ -65,7 +65,7 @@ HtmlOverlay::HtmlOverlay(int argc, char** argv) :
 
 HtmlOverlay::~HtmlOverlay()
 {
-    clear();
+	clear();
 }
 
 void
@@ -87,7 +87,7 @@ HtmlOverlay::initialize(AbstractCanvas::Ptr canvas)
 		std::placeholders::_2
 	));
 
-    if (numTargets() != 0)
+    if (numTargets)
         targetAddedHandler(shared_from_this(), getTarget(0));
 }
 
