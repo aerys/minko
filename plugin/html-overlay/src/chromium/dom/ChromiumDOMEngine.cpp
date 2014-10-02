@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "chromium/dom/ChromiumDOMEngine.hpp"
 #include "chromium/dom/ChromiumDOMElement.hpp"
 #include "minko/dom/AbstractDOMElement.hpp"
+#include "minko/file/AssetLibrary.hpp"
 
 #include "include/cef_app.h"
 #include "include/cef_client.h"
@@ -85,6 +86,8 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 	_canvas = canvas;
 	_sceneManager = sceneManager;
 
+    //_assets = file::AssetLibrary::create(_canvas->context());
+
 	if (_quad != nullptr)
 		remove();
 
@@ -110,13 +113,13 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 		float hRatio = (float)canvas->height() / (float)math::clp2(canvas->height());
 		_overlayMaterial->set("overlayRatio", math::Vector2::create(wRatio, hRatio));
 		
-		auto overlayEffect = _sceneManager->assets()->effect("effect/Overlay.effect");
+        auto overlayEffect = _sceneManager->assets()->effect("effect/HtmlOverlay.effect");
 		
 		if (overlayEffect && _quad == nullptr)
 		{
 			_quad = scene::Node::create("quad")
 				->addComponent(component::Surface::create(
-				geometry::QuadGeometry::create(sceneManager->assets()->context()),
+                geometry::QuadGeometry::create(_sceneManager->assets()->context()),
 				_overlayMaterial,
 				overlayEffect
 			));
@@ -126,7 +129,7 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 		}
 		else
 		{
-			std::cout << "WARNING: Overlay.effect has not been loaded. Overlay will not be displayed" << std::endl;
+			std::cout << "WARNING: HtmlOverlay.effect has not been loaded. Overlay will not be displayed" << std::endl;
 		}
 
 		_chromiumInitialized = true;
@@ -171,12 +174,17 @@ ChromiumDOMEngine::remove()
 void
 ChromiumDOMEngine::loadOverlayEffect()
 {
-	auto overlayEffectLoader = file::Loader::create(_sceneManager->assets()->loader());
+    auto overlayEffectLoader = file::Loader::create(_sceneManager->assets()->loader());
 
-	overlayEffectLoader->options(file::Options::create(overlayEffectLoader->options()));
+    overlayEffectLoader->options(overlayEffectLoader->options());
 	overlayEffectLoader->options()->loadAsynchronously(false);
+    //overlayEffectLoader->options()->assetLibrary(_assets);
 
-	overlayEffectLoader->queue("effect/Overlay.effect")->load();
+	overlayEffectLoader->queue("effect/HtmlOverlay.effect")->load();
+
+    /*overlayEffectLoader->complete()->connect([&](file::Loader::Ptr loader){
+        std::cout << "loaded" << std::endl;
+    });*/
 }
 
 void

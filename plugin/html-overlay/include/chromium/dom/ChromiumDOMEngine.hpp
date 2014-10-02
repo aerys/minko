@@ -23,9 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/Signal.hpp"
-#include "minko/component/SceneManager.hpp"
 #include "minko/render/AbstractTexture.hpp"
-#include "minko/AbstractCanvas.hpp"
 #include "minko/dom/AbstractDOMEngine.hpp"
 #include "ChromiumDOM.hpp"
 #include "include/cef_render_process_handler.h"
@@ -126,13 +124,15 @@ namespace chromium
 			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onload;
 			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onmessage;
 
-			minko::AbstractCanvas::Ptr _canvas;
-			minko::component::SceneManager::Ptr _sceneManager;
+            std::shared_ptr<minko::AbstractCanvas> _canvas;
+            std::shared_ptr<minko::component::SceneManager> _sceneManager;
+
+            std::shared_ptr<minko::file::AssetLibrary> _assets;
 
 			minko::Signal<minko::AbstractCanvas::Ptr, minko::uint, minko::uint>::Slot _canvasResizedSlot;
-			minko::Signal<minko::component::SceneManager::Ptr, float, float>::Slot _enterFrameSlot;
-			minko::Signal<minko::component::SceneManager::Ptr, minko::uint, minko::render::AbstractTexture::Ptr>::Slot _renderBeginSlot;
-			minko::Signal<minko::component::SceneManager::Ptr, float, float>::Slot _endFrameSlot;
+            minko::Signal< std::shared_ptr<minko::component::SceneManager>, float, float>::Slot _enterFrameSlot;
+            minko::Signal< std::shared_ptr<minko::component::SceneManager>, minko::uint, minko::render::AbstractTexture::Ptr>::Slot _renderBeginSlot;
+            minko::Signal< std::shared_ptr<minko::component::SceneManager>, float, float>::Slot _endFrameSlot;
 
 			ChromiumPimpl* _impl;
 			std::shared_ptr<minko::material::BasicMaterial> _overlayMaterial;

@@ -1,5 +1,5 @@
 {
-	"name" : "overlay",
+	"name" : "HTML overlay",
 	"attributeBindings" : {
 		"position"	: "geometry[${geometryId}].position",
 		"uv"		: "geometry[${geometryId}].uv"
@@ -40,6 +40,6 @@
 			}
 		",
 
-		"fragmentShader" : "#pragma include('Overlay.fragment.glsl')"
+		"fragmentShader" : "#pragma include('HtmlOverlay.fragment.glsl')"
 	}]
 }

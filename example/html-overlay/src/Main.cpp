@@ -54,16 +54,13 @@ main(int argc, char** argv)
 
     auto sceneManager = SceneManager::create(canvas->context());
 
-    overlay->initialize(canvas, sceneManager);
-
     // setup assets
     sceneManager->assets()->loader()->options()
         ->resizeSmoothly(true)
         ->generateMipmaps(true);
 
     sceneManager->assets()->loader()
-        ->queue("effect/Basic.effect")
-        ->queue("effect/Overlay.effect");
+        ->queue("effect/Basic.effect");
 
     sceneManager->assets()->context()->errorsEnabled(true);
 
@@ -96,6 +93,7 @@ main(int argc, char** argv)
     auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
     {
         root->addComponent(overlay);
+        overlay->initialize(canvas);
 
         mesh->addComponent(Surface::create(
             sceneManager->assets()->geometry("cubeGeometry"),
@@ -145,7 +143,7 @@ main(int argc, char** argv)
     sceneManager->assets()->loader()->load();
     canvas->run();
 
-    overlay->clear();
+    //overlay->clear();
 
     return 0;
 }

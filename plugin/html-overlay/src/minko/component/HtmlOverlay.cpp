@@ -65,14 +65,13 @@ HtmlOverlay::HtmlOverlay(int argc, char** argv) :
 
 HtmlOverlay::~HtmlOverlay()
 {
-	clear();
+    clear();
 }
 
 void
-HtmlOverlay::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sceneManager)
+HtmlOverlay::initialize(AbstractCanvas::Ptr canvas)
 {
 	_canvas = canvas;
-	_sceneManager = sceneManager;
 
 	_targetAddedSlot = targetAdded()->connect(std::bind(
 		&HtmlOverlay::targetAddedHandler,
@@ -86,12 +85,20 @@ HtmlOverlay::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sceneManag
 		std::static_pointer_cast<HtmlOverlay>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
-		));
+	));
+
+    if (numTargets() != 0)
+        targetAddedHandler(shared_from_this(), getTarget(0));
 }
 
 void
 HtmlOverlay::targetAddedHandler(AbstractComponent::Ptr	ctrl, scene::Node::Ptr		target)
 {
+    if (target->root() != nullptr && target->root()->hasComponent<SceneManager>())
+        _sceneManager = target->root()->component<SceneManager>();
+    else
+        throw std::logic_error("root node should have a SceneManager");
+
 #if defined(__APPLE__)
 # include "TargetConditionals.h"
     MacWebViewDOMEngine::Ptr engine = std::dynamic_pointer_cast<MacWebViewDOMEngine>(_domEngine);

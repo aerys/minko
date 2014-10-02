@@ -48,7 +48,7 @@ namespace minko
 		public:
 
 			void
-			initialize(AbstractCanvas::Ptr, SceneManager::Ptr);
+			initialize(AbstractCanvas::Ptr);
 
 			static
 			Ptr
