@@ -229,7 +229,7 @@ void
 ChromiumDOMEngine::loadHttp(std::string url)
 {
 	std::cout << url << std::endl;
-	_impl->browser.get()->GetMainFrame()->LoadURL(url);
+	_impl->browser->GetMainFrame()->LoadURL(url);
 }
 
 void
