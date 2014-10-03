@@ -47,17 +47,16 @@ EmscriptenDOMElement::EmscriptenDOMElement(std::string jsAccessor) :
 	_onmouseup(Signal<AbstractDOMMouseEvent::Ptr>::create()),
 	_onmouseover(Signal<AbstractDOMMouseEvent::Ptr>::create()),
 	_onmouseout(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+	_oninput(Signal<AbstractDOMEvent::Ptr>::create()),
+	_onchange(Signal<AbstractDOMEvent::Ptr>::create()),
 	_onclickSet(false),
 	_onmousedownSet(false),
 	_onmousemoveSet(false),
 	_onmouseupSet(false),
 	_onmouseoverSet(false),
-	_onmouseoutSet(false)
-<<<<<<< Updated upstream
-=======
+	_onmouseoutSet(false),
     _onchangeSet(false),
     _oninputSet(false)
->>>>>>> Stashed changes
 {
 	std::string eval = jsAccessor + ".minkoName = '" + jsAccessor + "';";
 	emscripten_run_script(eval.c_str());
@@ -358,8 +357,6 @@ EmscriptenDOMElement::onmouseover()
 	return _onmouseover;
 }
 
-<<<<<<< Updated upstream
-=======
 Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
 EmscriptenDOMElement::onchange()
 {
@@ -384,7 +381,6 @@ EmscriptenDOMElement::oninput()
     return _oninput;
 }
 
->>>>>>> Stashed changes
 void
 EmscriptenDOMElement::update()
 {

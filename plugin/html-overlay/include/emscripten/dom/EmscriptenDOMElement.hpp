@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
 #include "minko/dom/AbstractDOMElement.hpp"
+#include "minko/dom/AbstractDOMEvent.hpp"
 #include "minko/dom/AbstractDOMMouseEvent.hpp"
 #include "minko/dom/AbstractDOMTouchEvent.hpp"
 
@@ -61,6 +62,12 @@ namespace emscripten
 
 			void
 			id(std::string);
+
+			std::string
+			value();
+
+			void
+			value(const std::string& value);
 
 			std::string
 			className();
@@ -134,6 +141,12 @@ namespace emscripten
 			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
 			onmouseover();
 
+			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
+			onchange();
+
+			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
+			oninput();
+
 			void
 			update();
 
@@ -163,6 +176,9 @@ namespace emscripten
 			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmouseover;
 			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmouseout;
 
+			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _oninput;
+			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onchange;
+
 			bool _onclickSet;
 			bool _onmousedownSet;
 			bool _onmousemoveSet;
@@ -170,6 +186,9 @@ namespace emscripten
 
 			bool _onmouseoverSet;
 			bool _onmouseoutSet;
+
+			bool _onchangeSet;
+			bool _oninputSet;
 		};
 	}
 }
