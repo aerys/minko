@@ -64,44 +64,97 @@ namespace chromium
 			void
 			clear();
 
-			std::string
-			id();
 
-			void
-			id(std::string);
-
-			std::string
-			className();
-
-			void
-			className(std::string);
-
-			std::string
-			tagName();
-            
-			AbstractDOMElement::Ptr
-			parentNode();
-
-			std::vector<AbstractDOMElement::Ptr>
-			childNodes();
-            			
-			std::string
-			textContent();
-
-			void
-			textContent(std::string content);
-
+            inline
             std::string
-            value();
+            id()
+            {
+                return getProperty<std::string>("id");
+            }
 
+            inline
             void
-            value(const std::string& value);
+            id(std::string newId)
+            {
+                setProperty<std::string>("id", newId);
+            }
 
-			std::string
-			innerHTML();
+            inline
+            std::string
+            className()
+            {
+                return getProperty<std::string>("className");
+            }
 
-			void
-			innerHTML(std::string html);
+            inline
+            void
+            className(std::string newClass)
+            {
+                setProperty<std::string>("className", newClass);
+            }
+
+            inline
+            std::string
+            tagName()
+            {
+                return getProperty<std::string>("tagName");
+            }
+
+            inline
+            AbstractDOMElement::Ptr
+            parentNode()
+            {
+                return getProperty<AbstractDOMElement::Ptr>("parentNode");
+            }
+
+            inline
+            std::vector<AbstractDOMElement::Ptr>
+            childNodes()
+            {
+                return getProperty<std::vector<AbstractDOMElement::Ptr>>("childNodes");
+            }
+
+            inline
+            std::string
+            textContent()
+            {
+                return getProperty<std::string>("textContent");
+            }
+
+            inline
+            void
+            textContent(std::string content)
+            {
+                setProperty<std::string>("textContent", content);
+            }
+
+            inline
+            std::string
+            value()
+            {
+                return getProperty<std::string>("value");
+            }
+
+            inline
+            void
+            value(const std::string& v)
+            {
+                setProperty<std::string>("value", v);
+            }
+
+            inline
+            std::string
+            innerHTML()
+            {
+                return getProperty<std::string>("innerHTML");
+            }
+
+            inline
+            void
+            innerHTML(std::string html)
+            {
+                setProperty<std::string>("innerHTML", html);
+            }
 
 			AbstractDOMElement::Ptr
 			appendChild(AbstractDOMElement::Ptr);
@@ -167,12 +220,22 @@ namespace chromium
 
 			CefRefPtr<CefV8Value>
 			getFunction(std::string name);
+            
+            template <typename T>
+            T
+            getProperty(std::string name);
 
-			CefRefPtr<CefV8Value>
-			getProperty(std::string name);
+            template <typename T>
+            void
+            setProperty(std::string name, T);
 
+            template <typename T>
+			T
+			getV8Property(std::string name);
+
+            template <typename T>
 			void
-			setProperty(std::string name, CefRefPtr<CefV8Value>);
+			setV8Property(std::string name, T);
 
 			void
 			addEventListener(std::string type);

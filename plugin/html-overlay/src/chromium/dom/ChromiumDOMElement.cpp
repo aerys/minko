@@ -179,7 +179,7 @@ ChromiumDOMElement::clearAll()
 CefRefPtr<CefV8Value>
 ChromiumDOMElement::getFunction(std::string name)
 {
-	CefRefPtr<CefV8Value> func = _v8NodeObject->GetValue(name);
+    CefRefPtr<CefV8Value> func = getV8Property<CefRefPtr<CefV8Value>>(name);
 
 	if (!func->IsFunction())
 		throw;
@@ -187,16 +187,131 @@ ChromiumDOMElement::getFunction(std::string name)
 	return func;
 }
 
-CefRefPtr<CefV8Value>
+template<typename T>
+T
 ChromiumDOMElement::getProperty(std::string name)
 {
-	return _v8NodeObject->GetValue(name);
+    T result;
+
+    if (CefCurrentlyOn(TID_RENDERER))
+    {
+        _v8Context->Enter();
+        result = getV8Property<T>(name);
+        _v8Context->Exit();
+    }
+    else
+    {
+        CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+        _blocker.store(true);
+
+        auto fn = [&]()
+        {
+            result = getProperty<T>(name);
+            _blocker.store(false);
+        };
+
+        runner->PostTask(NewCefRunnableFunction(&fn));
+
+        while (_blocker.load());
+    }
+
+    return result;
 }
 
+template<typename T>
 void
-ChromiumDOMElement::setProperty(std::string name, CefRefPtr<CefV8Value> value)
+ChromiumDOMElement::setProperty(std::string name, T value)
 {
-	_v8NodeObject->SetValue(name, value, V8_PROPERTY_ATTRIBUTE_NONE);
+    if (CefCurrentlyOn(TID_RENDERER))
+    {
+        _v8Context->Enter();
+        setV8Property<T>(name, value);
+        _v8Context->Exit();
+    }
+    else
+    {
+        CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
+        _blocker.store(true);
+
+        auto fn = [&]()
+        {
+            setProperty<T>(name, value);
+            _blocker.store(false);
+        };
+
+        runner->PostTask(NewCefRunnableFunction(&fn));
+        while (_blocker.load());
+    }
+}
+
+template<>
+CefRefPtr<CefV8Value>
+ChromiumDOMElement::getV8Property(std::string name)
+{
+    return _v8NodeObject->GetValue(name);
+}
+
+template<>
+std::string
+ChromiumDOMElement::getV8Property(std::string name)
+{
+    return getV8Property<CefRefPtr<CefV8Value>>(name)->GetStringValue();
+}
+
+template<>
+bool
+ChromiumDOMElement::getV8Property(std::string name)
+{
+    return getV8Property<CefRefPtr<CefV8Value>>(name)->GetBoolValue();
+}
+
+template<>
+int
+ChromiumDOMElement::getV8Property(std::string name)
+{
+    return getV8Property<CefRefPtr<CefV8Value>>(name)->GetIntValue();
+}
+
+template<>
+std::vector<AbstractDOMElement::Ptr>
+ChromiumDOMElement::getV8Property(std::string name)
+{
+    return v8ElementArrayToList(getV8Property<CefRefPtr<CefV8Value>>(name), _v8Context);
+}
+
+template<>
+AbstractDOMElement::Ptr
+ChromiumDOMElement::getV8Property(std::string name)
+{
+    return getDOMElementFromV8Object(getV8Property<CefRefPtr<CefV8Value>>(name), _v8Context);
+}
+
+template<>
+void
+ChromiumDOMElement::setV8Property<CefRefPtr<CefV8Value>>(std::string name, CefRefPtr<CefV8Value> value)
+{
+    _v8NodeObject->SetValue(name, value, V8_PROPERTY_ATTRIBUTE_NONE);
+}
+
+template<>
+void
+ChromiumDOMElement::setV8Property<std::string>(std::string name, std::string value)
+{
+    setV8Property(name, CefV8Value::CreateString(value));
+}
+
+template<>
+void
+ChromiumDOMElement::setV8Property<bool>(std::string name, bool value)
+{
+    setV8Property(name, CefV8Value::CreateBool(value));
+}
+
+template<>
+void
+ChromiumDOMElement::setV8Property<int>(std::string name, int value)
+{
+    setV8Property(name, CefV8Value::CreateInt(value));
 }
 
 std::vector<AbstractDOMElement::Ptr>
@@ -223,369 +338,6 @@ ChromiumDOMElement::v8ElementArrayToList(CefRefPtr<CefV8Value> v8Nodes, CefRefPt
 	}
 
 	return result;
-}
-
-
-std::string
-ChromiumDOMElement::id()
-{
-	std::string result;
-
-	if (CefCurrentlyOn(TID_RENDERER))
-	{
-		_v8Context->Enter();
-		result = getProperty("id")->GetStringValue();
-		_v8Context->Exit();
-	}
-	else
-	{
-		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		_blocker.store(true);
-
-		auto fn = [&]()
-		{
-			result = id();
-			_blocker.store(false);
-		};
-
-		runner->PostTask(NewCefRunnableFunction(&fn));
-
-		while (_blocker.load());
-	}
-	return result;
-}
-
-void
-ChromiumDOMElement::id(std::string newId)
-{
-	if (CefCurrentlyOn(TID_RENDERER))
-	{
-		_v8Context->Enter();
-		setProperty("id", CefV8Value::CreateString(newId));
-		_v8Context->Exit();
-	}
-	else
-	{
-		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		_blocker.store(true);
-
-		auto fn = [&]()
-		{
-			id(newId);
-			_blocker.store(false);
-		};
-
-		runner->PostTask(NewCefRunnableFunction(&fn));
-		while (_blocker.load());
-	}
-}
-
-std::string
-ChromiumDOMElement::className()
-{
-	std::string result;
-
-	if (CefCurrentlyOn(TID_RENDERER))
-	{
-		_v8Context->Enter();
-		result = getProperty("className")->GetStringValue();
-		_v8Context->Exit();
-	}
-	else
-	{
-		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		_blocker.store(true);
-
-		auto fn =[&]()
-		{
-			result = className();
-			_blocker.store(false);
-		};
-
-		runner->PostTask(NewCefRunnableFunction(&fn));
-
-		while (_blocker.load());
-	}
-	return result;
-}
-
-void
-ChromiumDOMElement::className(std::string newClass)
-{
-	if (CefCurrentlyOn(TID_RENDERER))
-	{
-		_v8Context->Enter();
-		setProperty("className", CefV8Value::CreateString(newClass));
-		_v8Context->Exit();
-	}
-	else
-	{
-		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		_blocker.store(true);
-
-		auto fn = [&]()
-		{
-			className(newClass);
-			_blocker.store(false);
-		};
-
-		runner->PostTask(NewCefRunnableFunction(&fn));
-		while (_blocker.load());
-	}
-}
-
-std::string
-ChromiumDOMElement::tagName()
-{
-	std::string result;
-
-	if (CefCurrentlyOn(TID_RENDERER))
-	{
-		_v8Context->Enter();
-		result = getProperty("tagName")->GetStringValue();
-		_v8Context->Exit();
-	}
-	else
-	{
-		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		_blocker.store(true);
-
-		auto fn = [&]()
-		{
-			result = tagName();
-			_blocker.store(false);
-		};
-
-		runner->PostTask(NewCefRunnableFunction(&fn));
-
-		while (_blocker.load());
-	}
-	return result;
-}
-
-AbstractDOMElement::Ptr
-ChromiumDOMElement::parentNode()
-{
-	AbstractDOMElement::Ptr result;
-
-	if (CefCurrentlyOn(TID_RENDERER))
-	{
-		_v8Context->Enter();
-		CefRefPtr<CefV8Value> parentNodeV8 = getProperty("parentNode");
-
-		result = getDOMElementFromV8Object(parentNodeV8, _v8Context);
-		_v8Context->Exit();
-	}
-	else
-	{
-		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		_blocker.store(true);
-
-		auto fn = [&]()
-		{
-			result = parentNode();
-			_blocker.store(false);
-		};
-
-		runner->PostTask(NewCefRunnableFunction(&fn));
-
-		while (_blocker.load());
-	}
-	return result;
-}
-
-std::vector<AbstractDOMElement::Ptr>
-ChromiumDOMElement::childNodes()
-{
-	std::vector<AbstractDOMElement::Ptr> result;
-
-	if (CefCurrentlyOn(TID_RENDERER))
-	{
-		_v8Context->Enter();
-		result = v8ElementArrayToList(getProperty("childNodes"), _v8Context);
-		_v8Context->Exit();
-	}
-	else
-	{
-		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		_blocker.store(true);
-
-		auto fn = [&]()
-		{
-			result = childNodes();
-			_blocker.store(false);
-		};
-
-		runner->PostTask(NewCefRunnableFunction(&fn));
-
-		while (_blocker.load());
-	}
-	return result;
-}
-
-std::string
-ChromiumDOMElement::textContent()
-{
-	std::string result;
-
-	if (CefCurrentlyOn(TID_RENDERER))
-	{
-		_v8Context->Enter();
-		result = getProperty("textContent")->GetStringValue();
-		_v8Context->Exit();
-	}
-	else
-	{
-		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		_blocker.store(true);
-
-		auto fn = [&]()
-		{
-			result = textContent();
-			_blocker.store(false);
-		};
-
-		runner->PostTask(NewCefRunnableFunction(&fn));
-
-		while (_blocker.load());
-	}
-	return result;
-}
-
-void
-ChromiumDOMElement::textContent(std::string content)
-{
-	if (CefCurrentlyOn(TID_RENDERER))
-	{
-		_v8Context->Enter();
-		setProperty("textContent", CefV8Value::CreateString(content));
-		_v8Context->Exit();
-	}
-	else
-	{
-		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		_blocker.store(true);
-
-		auto fn = [&]()
-		{
-			textContent(content);
-			_blocker.store(false);
-		};
-
-		runner->PostTask(NewCefRunnableFunction(&fn));
-
-		while (_blocker.load());
-	}
-}
-
-std::string
-ChromiumDOMElement::value()
-{
-    std::string result;
-
-    if (CefCurrentlyOn(TID_RENDERER))
-    {
-        _v8Context->Enter();
-        result = getProperty("value")->GetStringValue();
-        _v8Context->Exit();
-    }
-    else
-    {
-        CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-        _blocker.store(true);
-
-        auto fn = [&]()
-        {
-            result = value();
-            _blocker.store(false);
-        };
-
-        runner->PostTask(NewCefRunnableFunction(&fn));
-
-        while (_blocker.load());
-    }
-    return result;
-}
-
-void
-ChromiumDOMElement::value(const std::string& v)
-{
-    if (CefCurrentlyOn(TID_RENDERER))
-    {
-        _v8Context->Enter();
-        setProperty("value", CefV8Value::CreateString(v));
-        _v8Context->Exit();
-    }
-    else
-    {
-        CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-        _blocker.store(true);
-
-        auto fn = [&]()
-        {
-            value(v);
-            _blocker.store(false);
-        };
-
-        runner->PostTask(NewCefRunnableFunction(&fn));
-
-        while (_blocker.load());
-    }
-}
-
-std::string
-ChromiumDOMElement::innerHTML()
-{
-	std::string result;
-
-	if (CefCurrentlyOn(TID_RENDERER))
-	{
-		_v8Context->Enter();
-		result = getProperty("innerHTML")->GetStringValue();
-		_v8Context->Exit();
-	}
-	else
-	{
-		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		_blocker.store(true);
-
-		auto fn = [&]()
-		{
-			result = innerHTML();
-			_blocker.store(false);
-		};
-
-		runner->PostTask(NewCefRunnableFunction(&fn));
-
-		while (_blocker.load());
-	}
-	return result;
-}
-
-void
-ChromiumDOMElement::innerHTML(std::string html)
-{
-	if (CefCurrentlyOn(TID_RENDERER))
-	{
-		_v8Context->Enter();
-		setProperty("innerHTML", CefV8Value::CreateString(html));
-		_v8Context->Exit();
-	}
-	else
-	{
-		CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-		_blocker.store(true);
-
-		auto fn = [&]()
-		{
-			innerHTML(html);
-			_blocker.store(false);
-		};
-
-		runner->PostTask(NewCefRunnableFunction(&fn));
-
-		while (_blocker.load());
-	}
 }
 
 AbstractDOMElement::Ptr
@@ -851,7 +603,7 @@ ChromiumDOMElement::style(std::string name)
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
 		_v8Context->Enter();
-		CefRefPtr<CefV8Value> styleObject = getProperty("style");
+        CefRefPtr<CefV8Value> styleObject = getV8Property<CefRefPtr<CefV8Value>>("style");
 		CefRefPtr<CefV8Value> styleProperty = styleObject->GetValue(name);
 
 		if (styleProperty->IsString())
@@ -883,7 +635,7 @@ ChromiumDOMElement::style(std::string name, std::string value)
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
 		_v8Context->Enter();
-		getProperty("style")->SetValue(name, CefV8Value::CreateString(value), V8_PROPERTY_ATTRIBUTE_NONE);
+        getV8Property<CefRefPtr<CefV8Value>>("style")->SetValue(name, CefV8Value::CreateString(value), V8_PROPERTY_ATTRIBUTE_NONE);
 		_v8Context->Exit();
 	}
 	else
