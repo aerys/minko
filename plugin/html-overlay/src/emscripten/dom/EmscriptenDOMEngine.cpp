@@ -55,7 +55,7 @@ EmscriptenDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
 	_canvas = canvas;
 	_sceneManager = sceneManager;
 
-	loadScript("script/minko.overlay.js");
+	loadScript("script/minko.overlay.emscripten.js");
 
 	visible(_visible);
 
