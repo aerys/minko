@@ -40,9 +40,14 @@ namespace minko
             bind(LuaGlue& state)
             {
                 state.Class<std::vector<Node::Ptr>>("std__vector_scene__Node__Ptr_")
-                    .methodWrapper("at",    &LuaNode::atWrapper)
-                    .property("size",         &std::vector<Node::Ptr>::size);
+                    .methodWrapper("at", &LuaNode::atWrapper)
+                    .property("size",    &std::vector<Node::Ptr>::size);
                     //.index(&LuaNode::getWrapper);
+                
+                state.Class<std::vector<component::Surface::Ptr>>("std__vector_component__Surface__Ptr_")
+                    .methodWrapper("at", &LuaNode::atSurfacesWrapper)
+                    .property("size",    &std::vector<component::Surface::Ptr>::size);
+
 
                 MINKO_LUAGLUE_BIND_SIGNAL(state, Node::Ptr, Node::Ptr, Node::Ptr);
 
@@ -62,6 +67,7 @@ namespace minko
                     .methodWrapper("getMasterAnimation",    &LuaNode::getMasterAnimationWrapper)
                     .methodWrapper("getPerspectiveCamera",  &LuaNode::getPerspectiveCameraWrapper)
                     .methodWrapper("getSurface",            &LuaNode::getSurfaceWrapper)
+                    .methodWrapper("getSurfaces",           &LuaNode::getSurfacesWrapper)
                     .methodWrapper("getRenderer",            &LuaNode::getRendererWrapper)
                     .methodWrapper("getLuaScript",            &LuaNode::getLuaScriptWrapper)
                     .methodWrapper("hasLight",                &LuaNode::hasLightWrapper)
@@ -81,6 +87,13 @@ namespace minko
             static
             Node::Ptr
             atWrapper(std::vector<Node::Ptr>* v, uint index)
+            {
+                return v->at(index - 1);
+            }
+            
+            static
+            component::Surface::Ptr
+            atSurfacesWrapper(std::vector<component::Surface::Ptr>* v, uint index)
             {
                 return v->at(index - 1);
             }
@@ -132,6 +145,13 @@ namespace minko
             getSurfaceWrapper(Node::Ptr node)
             {
                 return node->component<component::Surface>();
+            }
+            
+            static
+            std::vector<std::shared_ptr<component::Surface>>
+            getSurfacesWrapper(Node::Ptr node)
+            {
+                return node->components<component::Surface>();
             }
 
             static

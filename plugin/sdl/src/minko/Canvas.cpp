@@ -63,6 +63,7 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, boo
     _desiredFramerate(60.f),
     _enterFrame(Signal<Canvas::Ptr, float, float>::create()),
     _resized(Signal<AbstractCanvas::Ptr, uint, uint>::create()),
+    _fileDropped(Signal<const std::string&>::create()),
     _joystickAdded(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
     _joystickRemoved(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
     _touchZoom(Signal<std::shared_ptr<input::Touch>, float>::create()),
@@ -322,6 +323,8 @@ Canvas::step()
 #endif
 
     SDL_Event event;
+    
+    SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 
     while (SDL_PollEvent(&event))
     {
@@ -332,9 +335,12 @@ Canvas::step()
             quit();
             break;
         }
-        case SDL_TEXTINPUT:
+                
+        case (SDL_DROPFILE):
         {
-            int i = 0;
+            _fileDropped->execute(std::string(event.drop.file));
+            break;
+        }
 
             while (event.text.text[i] != '\0' && event.text.text[i] != 0)
             {

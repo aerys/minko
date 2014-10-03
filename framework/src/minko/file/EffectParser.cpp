@@ -189,7 +189,7 @@ EffectParser::parse(const std::string&				    filename,
 	Json::Reader reader;
 
 	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1], root, false))
-		throw file::ParserError(resolvedFilename + ": " + reader.getFormattedErrorMessages());
+		_error->execute(shared_from_this(), file::Error(resolvedFilename + ": " + reader.getFormattedErrorMessages()));
 
     int pos	= resolvedFilename.find_last_of("/\\");
 
@@ -352,7 +352,7 @@ EffectParser::parsePasses(const Json::Value&		root,
 	        );
 
             if (passIt == _globalPasses.end())
-                throw file::ParserError("Pass '" + name + "' does not exist.");
+                _error->execute(shared_from_this(), file::Error("Pass '" + name + "' does not exist."));
 
             auto pass = *passIt;
             auto passCopy = Pass::create(pass, true);
@@ -406,7 +406,7 @@ EffectParser::parsePasses(const Json::Value&		root,
             );
 
             if (!vertexShader)
-            	throw file::ParserError("Missing vertex shader for pass '" + name + "'");
+            	_error->execute(shared_from_this(), Error("Missing vertex shader for pass '" + name + "'"));
 
             auto fragmentShaderValue = passValue.get("fragmentShader", 0);
             auto fragmentShader = parseShader(
@@ -414,7 +414,7 @@ EffectParser::parsePasses(const Json::Value&		root,
             );
 
             if (!fragmentShader)
-				throw file::ParserError("Missing fragment shader for pass '" + name + "'");
+				_error->execute(shared_from_this(), Error("Missing fragment shader for pass '" + name + "'"));
 
             auto pass = render::Pass::create(
                 name,
@@ -630,13 +630,13 @@ EffectParser::glslIncludeCompleteHandler(LoaderPtr 			        loader,
 }
 
 void
-EffectParser::dependencyErrorHandler(std::shared_ptr<Loader> loader, const ParserError& error, const std::string& filename)
+EffectParser::dependencyErrorHandler(std::shared_ptr<Loader> loader, const Error& error, const std::string& filename)
 {
 	LOG_ERROR("unable to load dependency '" << filename << "', included paths are:");
 	for (auto& path : loader->options()->includePaths())
 		LOG_ERROR("\t" << path);
 
-	throw file::ParserError("Unable to load dependencies.");
+    _error->execute(shared_from_this(), file::Error("Unable to load dependencies."));
 }
 
 void

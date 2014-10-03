@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/Box.hpp"
 #include "minko/math/Vector3.hpp"
 #include "minko/scene/Node.hpp"
+#include "minko/scene/NodeSet.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/geometry/Geometry.hpp"
@@ -110,65 +111,86 @@ BoundingBox::initialize()
 }
 
 void
+BoundingBox::computeBox(const std::vector<component::Surface::Ptr>& surfaces, math::Vector3::Ptr min, math::Vector3::Ptr max)
+{
+    for (auto& surface : surfaces)
+    {
+        auto geom = surface->geometry();
+        if (geom->hasVertexAttribute("position"))
+        {
+            auto xyzBuffer = geom->vertexBuffer("position");
+            auto attr = xyzBuffer->attribute("position");
+            auto offset = std::get<2>(*attr);
+            
+            for (uint i = 0; i < xyzBuffer->numVertices(); ++i)
+            {
+                auto x = xyzBuffer->data()[i * xyzBuffer->vertexSize() + offset];
+                auto y = xyzBuffer->data()[i * xyzBuffer->vertexSize() + offset + 1];
+                auto z = xyzBuffer->data()[i * xyzBuffer->vertexSize() + offset + 2];
+                
+                if (x < min->x())
+                    min->x(x);
+                if (x > max->x())
+                    max->x(x);
+                
+                if (y < min->y())
+                    min->y(y);
+                if (y > max->y())
+                    max->y(y);
+                
+                if (z < min->z())
+                    min->z(z);
+                if (z > max->z())
+                    max->z(z);
+            }
+        }
+        else
+        {
+            min->setTo(0.f, 0.f, 0.f);
+            max->setTo(0.f, 0.f, 0.f);
+        }
+    }
+}
+
+void
 BoundingBox::update()
 {
     _invalidBox = false;
 
     auto target = targets()[0];
-    auto surfaces = target->components<Surface>();
 
     if (!_fixed)
     {
+        // Get all surfaces of the current node
+        auto surfaces = target->components<Surface>();
+        
+        // We don't forget to add surfaces of node's children
+//        auto childrenWithSurface = scene::NodeSet::create(target)->descendants(true)->where([=](scene::Node::Ptr node)
+//        {
+//            return node->hasComponent<Surface>();
+//        });
+//        
+//        for (auto node : childrenWithSurface->nodes())
+//        {
+//            auto nodeSurfaces = node->components<component::Surface>();
+//            surfaces.insert(surfaces.begin(), nodeSurfaces.begin(), nodeSurfaces.end());
+//        }
+        
+        auto min = Vector3::create(
+            std::numeric_limits<float>::max(),
+            std::numeric_limits<float>::max(),
+            std::numeric_limits<float>::max()
+        );
+        
+        auto max = Vector3::create(
+            -std::numeric_limits<float>::max(),
+            -std::numeric_limits<float>::max(),
+            -std::numeric_limits<float>::max()
+        );
+        
         if (!surfaces.empty())
         {
-            auto min = Vector3::create(
-                std::numeric_limits<float>::max(),
-                std::numeric_limits<float>::max(),
-                std::numeric_limits<float>::max()
-            );
-            auto max = Vector3::create(
-                -std::numeric_limits<float>::max(),
-                -std::numeric_limits<float>::max(),
-                -std::numeric_limits<float>::max()
-            );
-
-            for (auto& surface : surfaces)
-            {
-                auto geom = surface->geometry();
-                if (geom->hasVertexAttribute("position"))
-                {
-                    auto xyzBuffer = geom->vertexBuffer("position");
-                    auto attr = xyzBuffer->attribute("position");
-                    auto offset = std::get<2>(*attr);
-
-                    for (uint i = 0; i < xyzBuffer->numVertices(); ++i)
-                    {
-                        auto x = xyzBuffer->data()[i * xyzBuffer->vertexSize() + offset];
-                        auto y = xyzBuffer->data()[i * xyzBuffer->vertexSize() + offset + 1];
-                        auto z = xyzBuffer->data()[i * xyzBuffer->vertexSize() + offset + 2];
-
-                        if (x < min->x())
-                            min->x(x);
-                        if (x > max->x())
-                            max->x(x);
-
-                        if (y < min->y())
-                            min->y(y);
-                        if (y > max->y())
-                            max->y(y);
-
-                        if (z < min->z())
-                            min->z(z);
-                        if (z > max->z())
-                            max->z(z);
-                    }
-                }
-                else
-                {
-                    min->setTo(0.f, 0.f, 0.f);
-                    max->setTo(0.f, 0.f, 0.f);
-                }
-            }
+            computeBox(surfaces, min, max);
 
             _box->bottomLeft()->copyFrom(min);
             _box->topRight()->copyFrom(max);
