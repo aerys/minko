@@ -52,7 +52,7 @@ main(int argc, char** argv)
 
     auto canvas = Canvas::create("Minko Example - Overlay");
 
-    auto sceneManager = SceneManager::create(canvas->context());
+    auto sceneManager = SceneManager::create(canvas);
 
     // setup assets
     sceneManager->assets()->loader()->options()
@@ -93,7 +93,6 @@ main(int argc, char** argv)
     auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
     {
         root->addComponent(overlay);
-        overlay->initialize(canvas);
 
         mesh->addComponent(Surface::create(
             sceneManager->assets()->geometry("cubeGeometry"),
@@ -142,8 +141,6 @@ main(int argc, char** argv)
 
     sceneManager->assets()->loader()->load();
     canvas->run();
-
-    //overlay->clear();
 
     return 0;
 }

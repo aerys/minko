@@ -47,9 +47,6 @@ namespace minko
 
 		public:
 
-			void
-			initialize(AbstractCanvas::Ptr);
-
 			static
 			Ptr
 			create(int argc, char** argv)
@@ -58,6 +55,8 @@ namespace minko
 					throw("Only one instance of HtmlOverlay is permitted");
 
 				Ptr overlay(new HtmlOverlay(argc, argv));
+
+                overlay->initialize();
 
 				_instance = overlay;
 
@@ -114,7 +113,10 @@ namespace minko
             bool
 			visible();
 
-		private:
+        private:
+
+            void
+            initialize();
 
 			minko::dom::AbstractDOMEngine::Ptr
 			domEngine()

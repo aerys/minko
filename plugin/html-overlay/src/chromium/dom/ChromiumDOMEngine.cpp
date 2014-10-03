@@ -86,8 +86,6 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 	_canvas = canvas;
 	_sceneManager = sceneManager;
 
-    //_assets = file::AssetLibrary::create(_canvas->context());
-
 	if (_quad != nullptr)
 		remove();
 
@@ -178,13 +176,8 @@ ChromiumDOMEngine::loadOverlayEffect()
 
     overlayEffectLoader->options(overlayEffectLoader->options());
 	overlayEffectLoader->options()->loadAsynchronously(false);
-    //overlayEffectLoader->options()->assetLibrary(_assets);
 
 	overlayEffectLoader->queue("effect/HtmlOverlay.effect")->load();
-
-    /*overlayEffectLoader->complete()->connect([&](file::Loader::Ptr loader){
-        std::cout << "loaded" << std::endl;
-    });*/
 }
 
 void

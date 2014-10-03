@@ -127,8 +127,6 @@ namespace chromium
             std::shared_ptr<minko::AbstractCanvas> _canvas;
             std::shared_ptr<minko::component::SceneManager> _sceneManager;
 
-            std::shared_ptr<minko::file::AssetLibrary> _assets;
-
 			minko::Signal<minko::AbstractCanvas::Ptr, minko::uint, minko::uint>::Slot _canvasResizedSlot;
             minko::Signal< std::shared_ptr<minko::component::SceneManager>, float, float>::Slot _enterFrameSlot;
             minko::Signal< std::shared_ptr<minko::component::SceneManager>, minko::uint, minko::render::AbstractTexture::Ptr>::Slot _renderBeginSlot;

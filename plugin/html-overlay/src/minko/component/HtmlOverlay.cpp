@@ -14,6 +14,9 @@
 
 #include "minko/component/HtmlOverlay.hpp"
 #include "minko/scene/Node.hpp"
+#include "minko/data/Container.hpp"
+#include "minko/math/Vector4.hpp"
+
 
 using namespace minko;
 using namespace minko::component;
@@ -69,10 +72,8 @@ HtmlOverlay::~HtmlOverlay()
 }
 
 void
-HtmlOverlay::initialize(AbstractCanvas::Ptr canvas)
+HtmlOverlay::initialize()
 {
-	_canvas = canvas;
-
 	_targetAddedSlot = targetAdded()->connect(std::bind(
 		&HtmlOverlay::targetAddedHandler,
 		std::static_pointer_cast<HtmlOverlay>(shared_from_this()),
@@ -86,9 +87,6 @@ HtmlOverlay::initialize(AbstractCanvas::Ptr canvas)
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
-
-    if (numTargets)
-        targetAddedHandler(shared_from_this(), getTarget(0));
 }
 
 void
@@ -98,6 +96,8 @@ HtmlOverlay::targetAddedHandler(AbstractComponent::Ptr	ctrl, scene::Node::Ptr		t
         _sceneManager = target->root()->component<SceneManager>();
     else
         throw std::logic_error("root node should have a SceneManager");
+
+    _canvas = _sceneManager->canvas();
 
 #if defined(__APPLE__)
 # include "TargetConditionals.h"
