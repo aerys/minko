@@ -30,7 +30,7 @@ int
 main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Example - Particles");
-    auto sceneManager = SceneManager::create(canvas->context());
+    auto sceneManager = SceneManager::create(canvas);
     auto assets = sceneManager->assets();
 
     // setup assets

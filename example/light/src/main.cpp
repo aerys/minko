@@ -59,7 +59,7 @@ main(int argc, char** argv)
 
     canvas->context()->errorsEnabled(true);
 
-    auto sceneManager        = SceneManager::create(canvas->context());
+    auto sceneManager        = SceneManager::create(canvas);
     auto root                = scene::Node::create("root")->addComponent(sceneManager);
     auto assets                = sceneManager->assets();
     auto sphereMaterial        = material::PhongMaterial::create()

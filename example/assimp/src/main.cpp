@@ -78,7 +78,7 @@ int
 main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Example - Assimp", WINDOW_WIDTH, WINDOW_HEIGHT);
-    auto sceneManager = SceneManager::create(canvas->context());
+    auto sceneManager = SceneManager::create(canvas);
     auto defaultOptions = sceneManager->assets()->loader()->options();
 
     // setup assets

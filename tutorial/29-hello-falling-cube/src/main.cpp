@@ -35,7 +35,7 @@ const std::string TEXTURE_FILENAME = "texture/box.png";
 int main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Tutorial - Hello falling cube!", WINDOW_WIDTH, WINDOW_HEIGHT);
-    auto sceneManager = SceneManager::create(canvas->context());
+    auto sceneManager = SceneManager::create(canvas);
 
 	sceneManager->assets()->loader()
         ->queue(TEXTURE_FILENAME)
