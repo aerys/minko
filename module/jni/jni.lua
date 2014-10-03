@@ -39,6 +39,7 @@ end
 
 -- writing toolchain name in a fake symlink to avoid actual symlinks on Windows (requiring privileges)
 local NDK_HOME = ANDROID .. "/toolchains/default"
+local dirndk = ANDROID .. "/toolchains"
 local extension = ''
 
 if os.is("windows") then
@@ -46,9 +47,10 @@ if os.is("windows") then
 	extension = '.exe'
 end
 
-if not os.execute('ls "' .. NDK_HOME .. '"') then
+if not os.isfile(dirndk .. '/default') then
 	error(color.fg.red .. 'Installed NDK is not correctly installed: ' .. NDK_HOME .. color.reset)
 end
+
 
 -- local matches = os.matchdirs(NDK_HOME .. "/*abi")
 
@@ -90,7 +92,13 @@ table.inject(premake.tools.gcc, 'ldflags.system.android', {
 	-- "-L" .. NDK_HOME .. "/sources/cxx-stl/gnu-libstdc++/4.8/libs/armeabi-v7a/"
 })
 
-if not os.execute('ls "' .. premake.tools.gcc.tools.android.cc .. '"') then
+local file = premake.tools.gcc.tools.android.cc
+
+if os.is('windows') then
+	file = os.capture('cygpath -aw "' .. file .. '"')
+end
+
+if not os.isfile(file) then
 	error(color.fg.red ..'Cannot find GCC for Android. Make sure ANDROID contains NDK.' ..
 		' (Missing file: ' .. premake.tools.gcc.tools.android.cc .. ')' .. color.reset)
 end
