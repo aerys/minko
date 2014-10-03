@@ -25,7 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoSDL.hpp"
 
 #include "SDL.h"
-#include <jni.h>
 #include <android/log.h>
 
 #include "minko/dom/AbstractDOMTouchEvent.hpp"
@@ -44,25 +43,18 @@ using namespace minko::dom;
 using namespace android;
 using namespace android::dom;
 
-static bool webViewInitialized = false;
-static bool webViewPageLoaded = false;
-static jobject sdlActivity = nullptr;
-static jmethodID runOnUiThreadMethod = nullptr;
-static jclass initWebViewTaskClass = nullptr;
-static jobject initWebViewTask = nullptr;
-static std::string jsGlobalResult = "";
-static jclass sdlActivityClass = nullptr;
-static jmethodID runOnUiThreadWithReturnValueMethod = nullptr;
-static jmethodID evalJSMethod = nullptr;
-static jmethodID loadUrlMethod = nullptr;
-
 int
 AndroidWebViewDOMEngine::_domUid = 0;
 
-std::function<void(std::string&, std::string&)>
-AndroidWebViewDOMEngine::handleJavascriptMessageWrapper;
+// WebView Signals
+static Signal<>::Ptr onWebViewInitialized = Signal<>::create();
+static Signal<>::Ptr onWebViewPageLoaded = Signal<>::create();
 
-// Slots
+// WebView Slots
+Signal<>::Slot onWebViewInitializedSlot;
+Signal<>::Slot onWebViewPageLoadedSlot;
+
+// Inputs Slots
 Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot onmousemoveSlot;
 Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot onmousedownSlot;
 Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot onmouseupSlot;
@@ -78,16 +70,12 @@ extern "C" {
 
 void Java_minko_plugin_htmloverlay_InitWebViewTask_webViewInitialized(JNIEnv* env, jobject obj)
 {
-    webViewInitialized = true;
-
-    LOGI("WEBVIEW INITIALIZED (FROM C++)");
+    onWebViewInitialized->execute();
 }
 
 void Java_minko_plugin_htmloverlay_MinkoWebViewClient_webViewPageLoaded(JNIEnv* env, jobject obj)
 {
-    webViewPageLoaded = true;
-
-    LOGI("WEBVIEW HAS FINISHED TO LOAD THE PAGE (FROM C++)");
+    onWebViewPageLoaded->execute();
 }
 
 void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnMessage(JNIEnv* env, jobject obj, jstring message)
@@ -101,6 +89,7 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnMessage(JNIEn
 
 void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnJSResult(JNIEnv* env, jobject obj, jstring jsResult)
 {
+    /*
     const char *nativeString = env->GetStringUTFChars(jsResult, 0);
 
     env->ReleaseStringUTFChars(jsResult, 0);
@@ -109,6 +98,7 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnJSResult(JNIE
     
     LOGI("RECEIVED A JS RESULT: ");
     LOGI(nativeString);
+    */
 }
 
 /* Ends C function definitions when using C++ */
@@ -121,9 +111,30 @@ AndroidWebViewDOMEngine::AndroidWebViewDOMEngine() :
 	_onmessage(Signal<AbstractDOM::Ptr, std::string>::create()),
 	_visible(true),
     _waitingForLoad(true),
-    _isReady(false), 
-    _webViewWidth(0)
+    _isReady(false),
+    _webViewInitialized(false),
+    _webViewPageLoaded(false),
+    _updateNextFrame(false),
+    _pollRate(-1),
+    _lastUpdateTime(0.0),
+    // JNI
+    _initWebViewTask(nullptr),
+    _evalJSMethod(nullptr),
+    _changeResolutionMethod(nullptr),
+    _loadUrlMethod(nullptr)
 {
+    onWebViewInitializedSlot = onWebViewInitialized->connect([&]()
+    {
+        _webViewInitialized = true;
+        //updateWebViewResolution(_canvas->width(), _canvas->height());
+        LOGI("WEBVIEW INITIALIZED (FROM C++)");
+    });
+
+    onWebViewPageLoadedSlot = onWebViewPageLoaded->connect([&]()
+    {
+        _webViewPageLoaded = true;
+        LOGI("WEBVIEW HAS FINISHED TO LOAD THE PAGE (FROM C++)");
+    });
 }
 
 void
@@ -132,53 +143,51 @@ AndroidWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Pt
 	_canvas = canvas;
 	_sceneManager = sceneManager;
 
+    LOGI("Canvas size:");
+    LOGI(std::to_string(_canvas->height()).c_str());
+    LOGI(std::to_string(_canvas->width()).c_str());
+
     // JNI
     LOGI("Get the SDL JNIEnv");
     // Retrieve the JNI environment from SDL 
     auto env = (JNIEnv*)SDL_AndroidGetJNIEnv();
     LOGI("Get the SDLActivity instance");
     // Retrieve the Java instance of the SDLActivity
-    sdlActivity = (jobject)SDL_AndroidGetActivity();
+    jobject sdlActivity = (jobject)SDL_AndroidGetActivity();
     LOGI("Get sdlActivity class");
-    sdlActivityClass = env->GetObjectClass(sdlActivity);
+    jclass sdlActivityClass = env->GetObjectClass(sdlActivity);
 
     LOGI("Get initWebViewTask class");
-    initWebViewTaskClass = env->FindClass("minko/plugin/htmloverlay/InitWebViewTask");
+    jclass initWebViewTaskClass = env->FindClass("minko/plugin/htmloverlay/InitWebViewTask");
     LOGI("Get initWebViewTask constructor method");
     jmethodID initWebViewTaskCtor = env->GetMethodID(initWebViewTaskClass, "<init>", "(Landroid/app/Activity;)V");
     LOGI("Instanciate a initWebViewTask");
-    initWebViewTask = env->NewObject(initWebViewTaskClass, initWebViewTaskCtor, sdlActivity);
+    _initWebViewTask = env->NewGlobalRef(env->NewObject(initWebViewTaskClass, initWebViewTaskCtor, sdlActivity));
 
     LOGI("Get runOnUiThread method from sdlActivity");
-    runOnUiThreadMethod = env->GetMethodID(sdlActivityClass, "runOnUiThread", "(Ljava/lang/Runnable;)V");
+    jmethodID runOnUiThreadMethod = env->GetMethodID(sdlActivityClass, "runOnUiThread", "(Ljava/lang/Runnable;)V");
     LOGI("Call runOnUiThread with initWebViewTask");
 
-    env->CallVoidMethod(sdlActivity, runOnUiThreadMethod, initWebViewTask);
-    LOGI("Get eval function from Java WebView");
-    evalJSMethod = env->GetMethodID(initWebViewTaskClass, "evalJS", "(Ljava/lang/String;)Ljava/lang/String;");
+    // Init the WebView
+    env->CallVoidMethod(sdlActivity, runOnUiThreadMethod, _initWebViewTask);
 
+    // Get eval method
+    _evalJSMethod = env->GetMethodID(initWebViewTaskClass, "evalJS", "(Ljava/lang/String;)Ljava/lang/String;");
     // Get loadUrl method
-    loadUrlMethod = env->GetMethodID(initWebViewTaskClass, "loadUrl", "(Ljava/lang/String;)V");
+    _loadUrlMethod = env->GetMethodID(initWebViewTaskClass, "loadUrl", "(Ljava/lang/String;)V");
+    // Get changeResolution method
+    _changeResolutionMethod = env->GetMethodID(initWebViewTaskClass, "changeResolution", "(II)V");
 
     visible(_visible);
 
     _canvasResizedSlot = _canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
     {
-        /*
-        // Change the width of the webview directly
-        CGRect webViewFrame = _webView.frame;
-        webViewFrame.size.width = w / 2;
-        webViewFrame.size.height = h / 2;
-        _webView.frame = webViewFrame;
-        */
-        _webViewWidth = w;
-        // Useful on iOS to have the same coordinates on the web view as on the canvas
-        updateWebViewWidth();
+        updateWebViewResolution(w, h);
     });
 
-	_enterFrameSlot = _sceneManager->frameBegin()->connect([&](std::shared_ptr<component::SceneManager>, float, float)
+	_enterFrameSlot = _sceneManager->frameBegin()->connect([&](std::shared_ptr<component::SceneManager>, float t, float dt)
 	{
-		enterFrame();
+		enterFrame(t);
 	});
 }
 
@@ -197,21 +206,20 @@ AndroidWebViewDOMEngine::mainDOM()
 }
 
 void
-AndroidWebViewDOMEngine::enterFrame()
+AndroidWebViewDOMEngine::enterFrame(float time)
 {
     if (_waitingForLoad)
     {
-        if (webViewInitialized)
+        if (_webViewInitialized)
         {
             _waitingForLoad = false;
             load(_uriToLoad);
-            updateWebViewWidth();
         }
 
         return;
     }
 
-    if (!_isReady && webViewPageLoaded)
+    if (!_isReady && _webViewPageLoaded)
     {
     	if (_currentDOM->initialized())
     		createNewDom();
@@ -226,37 +234,42 @@ AndroidWebViewDOMEngine::enterFrame()
         _isReady = true;
     }
 
-
-    for(auto element : AndroidWebViewDOMElement::domElements)
+    if (_pollRate == -1 || _updateNextFrame || (_pollRate != 0 && (time - _lastUpdateTime) > (1000.0 / (float)(_pollRate))))
     {
-        element->update();
+        for(auto element : AndroidWebViewDOMElement::domElements)
+        {
+            element->update();
+        }
+
+    	if (_currentDOM->initialized() && _isReady)
+    	{
+            std::string jsEval = "(Minko.messagesToSend.length);";
+            std::string evalResult = eval(jsEval);
+            int l = atoi(evalResult.c_str());
+
+    		if (l > 0)
+    		{
+                std::cout << "Messages found!" << std::endl;
+    			for(int i = 0; i < l; ++i)
+    			{
+                    jsEval = "(Minko.messagesToSend[" + std::to_string(i) + "])";
+                    
+    				std::string message = eval(jsEval);
+                    
+                    std::cout << "Message: " << message << std::endl;
+                    
+    				_currentDOM->onmessage()->execute(_currentDOM, message);
+    				_onmessage->execute(_currentDOM, message);
+    			}
+
+                jsEval = "Minko.messagesToSend = [];";
+    			eval(jsEval);
+    		}
+    	}
+
+        _updateNextFrame = false;
+        _lastUpdateTime = time;
     }
-
-	if (_currentDOM->initialized() && _isReady)
-	{
-        std::string jsEval = "(Minko.messagesToSend.length);";
-        std::string evalResult = eval(jsEval);
-        int l = atoi(evalResult.c_str());
-
-		if (l > 0)
-		{
-            std::cout << "Messages found!" << std::endl;
-			for(int i = 0; i < l; ++i)
-			{
-                jsEval = "(Minko.messagesToSend[" + std::to_string(i) + "])";
-                
-				std::string message = eval(jsEval);
-                
-                std::cout << "Message: " << message << std::endl;
-                
-				_currentDOM->onmessage()->execute(_currentDOM, message);
-				_onmessage->execute(_currentDOM, message);
-			}
-
-            jsEval = "Minko.messagesToSend = [];";
-			eval(jsEval);
-		}
-	}
 }
 
 AndroidWebViewDOMEngine::Ptr
@@ -306,12 +319,7 @@ AndroidWebViewDOMEngine::load(std::string uri)
         // Call URL loading method
         LOGI("Try to load this URL:");
         LOGI(uri.c_str());
-        env->CallVoidMethod(initWebViewTask, loadUrlMethod, env->NewStringUTF(uri.c_str()));
-
-        /*
-        std::string jsEval = "Minko.loadUrl('" + uri + "')";
-        eval(jsEval);
-        */
+        env->CallVoidMethod(_initWebViewTask, _loadUrlMethod, env->NewStringUTF(uri.c_str()));
     }
 
 	return _currentDOM;
@@ -475,25 +483,17 @@ AndroidWebViewDOMEngine::registerDomEvents()
 }
 
 void
-AndroidWebViewDOMEngine::updateWebViewWidth()
+AndroidWebViewDOMEngine::updateWebViewResolution(int width, int height)
 {
-    /*
-    std::string jsEval = "Minko.changeViewportWidth(" + std::to_string(_webViewWidth) + ");";
-    
-    eval(jsEval);
-    */
+    // Retrieve the JNI environment from SDL 
+    auto env = (JNIEnv*)SDL_AndroidGetJNIEnv();
+
+    env->CallVoidMethod(_initWebViewTask, _changeResolutionMethod, width, height);
 }
 
 std::string
 AndroidWebViewDOMEngine::eval(std::string data)
 {
-    if (!webViewPageLoaded)
-    {
-        LOGI("Try to eval before WebView page is loaded!");
-        LOGI(data.c_str());
-        return "null";
-    }
-
     // Retrieve the JNI environment from SDL 
     auto env = (JNIEnv*)SDL_AndroidGetJNIEnv();
 
@@ -502,7 +502,7 @@ AndroidWebViewDOMEngine::eval(std::string data)
 
     LOGI("EVAL JS: ");
     LOGI(data.c_str());
-    jstring evalJSResult = (jstring)env->CallObjectMethod(initWebViewTask, evalJSMethod, js);
+    jstring evalJSResult = (jstring)env->CallObjectMethod(_initWebViewTask, _evalJSMethod, js);
 
     const char* evalJSResultString = env->GetStringUTFChars(evalJSResult, JNI_FALSE);
 

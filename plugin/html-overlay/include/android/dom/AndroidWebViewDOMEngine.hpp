@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/dom/AbstractDOM.hpp"
 #include "minko/dom/AbstractDOMEngine.hpp"
 #include "AndroidWebViewDOM.hpp"
+#include <jni.h>
 
 namespace minko
 {
@@ -53,7 +54,7 @@ namespace android
 			initialize(minko::AbstractCanvas::Ptr, minko::component::SceneManager::Ptr);
 			
 			void
-			enterFrame();
+			enterFrame(float);
 
 			minko::dom::AbstractDOM::Ptr
 			load(std::string uri);
@@ -79,16 +80,7 @@ namespace android
             
             bool
             visible();
-            
-            /*
-            inline
-            WebViewJavascriptBridge*
-            bridge()
-            {
-                return _bridge;
-            }
-            */
-            
+
             inline
             AndroidWebViewDOM::Ptr
             currentDOM()
@@ -106,17 +98,7 @@ namespace android
                 return _isReady;
             }
             
-            void
-            handleJavascriptMessage(std::string type, std::string value);
-            
-            static
-            std::function<void(std::string&, std::string&)>
-            handleJavascriptMessageWrapper;
-            
 		private:
-
-			void
-			loadScript(std::string filename);
 
 			void
 			createNewDom();
@@ -125,7 +107,7 @@ namespace android
             registerDomEvents();
             
             void
-            updateWebViewWidth();
+            updateWebViewResolution(int width, int height);
             
         public:
             inline
@@ -159,6 +141,8 @@ namespace android
 			static
 			int _domUid;
 
+        private:
+
 			AndroidWebViewDOM::Ptr _currentDOM;
 
 			minko::AbstractCanvas::Ptr _canvas;
@@ -169,21 +153,8 @@ namespace android
 
 			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onload;
 			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onmessage;
-            
-            /*
-            // WebView
-            UIWindow *_window;
-            IOSWebView *_webView;
-            
-            // WebView
-            NSWindow *_window;
-            OSXWebView *_webView;
-            
-            WebViewJavascriptBridge* _bridge;
-            */
 
             bool _visible;
-            uint _webViewWidth;
 
             // Fingers
             std::map<int, std::shared_ptr<minko::SDLTouch>> _touches;
@@ -192,6 +163,23 @@ namespace android
             bool _waitingForLoad;
             std::string _uriToLoad;
             bool _isReady;
+
+            bool _webViewInitialized;
+            bool _webViewPageLoaded;
+
+            float _lastUpdateTime;
+            int _pollRate;
+            bool _updateNextFrame;
+
+            // JNI part
+
+            // Java Objects
+            jobject _initWebViewTask = nullptr;
+
+            // Java Method IDs
+            jmethodID _evalJSMethod = nullptr;
+            jmethodID _changeResolutionMethod = nullptr;
+            jmethodID _loadUrlMethod = nullptr;
 		};
 	}
 }

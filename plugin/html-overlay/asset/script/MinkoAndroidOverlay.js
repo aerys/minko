@@ -37,8 +37,6 @@
 		event.preventDefault(); 
 		return false;
 	};
-	
-	console.log("BIND WINDOW.ONLOAD ON M.IFRAMELOADHANDLER");
 
 	m.addListener = function(accessor, type)
 	{
@@ -47,13 +45,13 @@
 		
 		accessor.addEventListener(type, function(event)
 		{
-			//console.log("GET AN EVENT FROM JS: " + type);
-			
 			// If it's a MouseEvent, we propagate the event only for left click
 			if ((event.button != undefined && event.button == 0) || event.button == undefined)
 			{
 				accessor.minkoEvents.push(event);
-				var eventIndex = accessor.minkoEvents.length - 1;
+				
+				//var eventIndex = accessor.minkoEvents.length - 1;
+				//console.log("GET AN EVENT FROM JS: " + type + "(event index: " + eventIndex + ")");
 			}
 		});
 	};
@@ -94,4 +92,6 @@
 	{
 		window.Minko.messagesToSend.push(message);
 	}
+	
+	console.log("Finished to inject JS into web page.");
 })();

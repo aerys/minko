@@ -415,9 +415,10 @@ AndroidWebViewDOMElement::update()
 {
     if (_engine->isReady())
     {
-        std::string js = "(Minko.getEventsCount(" + _jsAccessor + "));";
-        /*int l = atoi(_engine->eval(js).c_str());
         
+        std::string js = "(Minko.getEventsCount(" + _jsAccessor + "));";
+        int l = atoi(_engine->eval(js).c_str());
+
         for(int i = 0; i < l; ++i)
         {
             std::string eventName = "Minko.event" + std::to_string(_elementUid++);
@@ -483,8 +484,8 @@ AndroidWebViewDOMElement::update()
                 }
             }
         }
-        
+
         js = "(Minko.clearEvents(" + _jsAccessor + "));";
-        _engine->eval(js);*/
+        _engine->eval(js);
     }
 }

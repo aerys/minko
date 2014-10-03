@@ -20,9 +20,10 @@ public class EvalJSCallable implements Callable<String>
     public String call() throws Exception 
 	{
 		String evalString = "javascript:MinkoNativeInterface.onNativeJSResult(eval(\"" + _js + "\"));";
+		/*
 		d("MINKOJAVA", "EVAL JS CALLABLE");
 		d("MINKOJAVA", "Eval string: " + evalString);
-		
+		*/
 		_webView.loadUrl(evalString);
 		
 		//_webView.loadUrl("javascript: eval(\"test[0]\");");
@@ -35,7 +36,7 @@ public class EvalJSCallable implements Callable<String>
 		{
 			if (WebViewJSInterface.ResultReady)
 			{
-				d("MINKOJAVA", "RESULT IS READY: " + WebViewJSInterface.Result);
+				//d("MINKOJAVA", "RESULT IS READY: " + WebViewJSInterface.Result);
 				WebViewJSInterface.ResultReady = false;
 				
 				return WebViewJSInterface.Result;

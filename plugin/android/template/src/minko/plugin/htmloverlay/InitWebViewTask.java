@@ -36,13 +36,8 @@ public class InitWebViewTask implements Runnable
 		ViewGroup layout = SDLActivity.getLayout();
 		layout.setBackgroundColor(Color.RED);
 		
-		d("MINKOJAVA", "Layout instance = " + layout);
-		d("MINKOJAVA", "SDL activity = " + _sdlActivity);
-		
 		// Create the WebView from SDLActivity context
 		_webView = new WebView(SDLActivity.getContext());
-		
-		d("MINKOJAVA", "WEBVIEW IS NOW INSTANCIATED: " + _webView);
 		
 		// Enable the JS for the WebView
         _webView.getSettings().setJavaScriptEnabled(true);
@@ -52,9 +47,9 @@ public class InitWebViewTask implements Runnable
 		// Set our own WebViewClient to override some 
 		// methods and inject Minko overlay JS script
 		_webView.setWebViewClient(new MinkoWebViewClient());
-
+		
         // Transparent background
-        _webView.setBackgroundColor(0x00000000);
+        _webView.setBackgroundColor(0xaaff0000);
         _webView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
 
 		// Scale to fit the page
@@ -82,21 +77,22 @@ public class InitWebViewTask implements Runnable
 		// Add a JavaScript interface
 		_webView.addJavascriptInterface(new WebViewJSInterface(), "MinkoNativeInterface");
 		
-		d("MINKOJAVA", "WEBVIEW VALUE AFTER WEBVIEW INITIALIZATION: " + _webView);
-		
+		d("MINKOJAVA", "WEBVIEW IS NOW INSTANCIATED: " + _webView);
 		webViewInitialized();
     }
 	
+	/*
 	public WebView getWebView()
 	{
 		d("MINKOJAVA", "RETURN WEBVIEW: " + _webView);
 		
 		return _webView;
 	}
+	*/
 	
 	public String evalJS(String js)
 	{
-		d("MINKOJAVA", "Try to evaluate JS: " + js);
+		//d("MINKOJAVA", "Try to evaluate JS: " + js);
 		
 		EvalJSCallable evalJSCallable = new EvalJSCallable(_webView, js);
 		FutureTask<String> task = new FutureTask<String>(evalJSCallable);
@@ -114,7 +110,7 @@ public class InitWebViewTask implements Runnable
 			returnValue = e.getMessage();
 		}
 		
-		d("MINKOJAVA", "Return value of eval JS result: " + returnValue);
+		//d("MINKOJAVA", "Return value of eval JS result: " + returnValue);
 		
 		return returnValue;
 	}
@@ -128,5 +124,16 @@ public class InitWebViewTask implements Runnable
 		_sdlActivity.runOnUiThread(loadUrlRunnable);
 		
 		d("MINKOJAVA", "WEBVIEW HAS LOADED AN URL! (" + url + ")");
+	}
+	
+	public void changeResolution(int width, int height)
+	{
+		if (_webView == null)
+			return;
+			
+		d("MINKOJAVA", "Change the resolution with these values: " + width + ", " + height);
+
+		ChangeResolutionRunnable changeResolutionRunnable = new ChangeResolutionRunnable(_webView, width, height);
+		_sdlActivity.runOnUiThread(changeResolutionRunnable);
 	}
 }
