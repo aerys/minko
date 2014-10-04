@@ -334,13 +334,13 @@ DrawCall::bindVertexAttribute(const std::string&    inputName,
                 throw std::logic_error("missing required vertex attribute: " + attributeName);
 #endif
 
-            auto attribute    = vertexBuffer->attribute(attributeName);
+            auto attribute = vertexBuffer->attribute(attributeName);
 
-            _vertexBufferIds        [vertexBufferIndex]    = vertexBuffer->id();
-            _vertexBufferLocations    [vertexBufferIndex]    = location;
-            _vertexAttributeSizes    [vertexBufferIndex]    = std::get<1>(*attribute);
-            _vertexSizes            [vertexBufferIndex]    = vertexBuffer->vertexSize();
-            _vertexAttributeOffsets    [vertexBufferIndex]    = std::get<2>(*attribute);
+            _vertexBufferIds[vertexBufferIndex] = vertexBuffer->id();
+            _vertexBufferLocations[vertexBufferIndex] = location;
+            _vertexAttributeSizes[vertexBufferIndex] = std::get<1>(*attribute);
+            _vertexSizes[vertexBufferIndex] = vertexBuffer->vertexSize();
+            _vertexAttributeOffsets[vertexBufferIndex] = std::get<2>(*attribute);
         }
 
 
