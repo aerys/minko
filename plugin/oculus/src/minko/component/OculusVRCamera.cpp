@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoOculus.hpp"
 
 #include "OVR_CAPI.h"
+#include "CAPI/CAPI_HMDState.h"
+#include "OVR_Stereo.h"
 #include "Kernel/OVR_Math.h"
 
 #include "minko/scene/Node.hpp"
@@ -54,9 +56,9 @@ OculusVRCamera::OculusVRCamera(float aspectRatio, float zNear, float zFar) :
     _eyePosition(Vector3::create(0.0f, 0.0f, 0.0f)),
     _eyeOrientation(Matrix4x4::create()),
     _sceneManager(nullptr),
-    _leftCamera(nullptr),
+    _leftCameraNode(nullptr),
     _leftRenderer(nullptr),
-    _rightCamera(nullptr),
+    _rightCameraNode(nullptr),
     _rightRenderer(nullptr),
     _targetAddedSlot(nullptr),
     _targetRemovedSlot(nullptr),
@@ -204,29 +206,29 @@ OculusVRCamera::initializeCameras()
 {
     auto aspectRatio = (float)_renderTargetWidth / (float)_renderTargetHeight;
 
-    _leftCamera = PerspectiveCamera::create(
+    auto leftCamera = PerspectiveCamera::create(
         aspectRatio,
         atan(_hmd->DefaultEyeFov[0].LeftTan + _hmd->DefaultEyeFov[0].RightTan),
         _zNear,
         _zFar
     );
-    auto leftCameraNode = scene::Node::create("oculusLeftEye")
+    _leftCameraNode = scene::Node::create("oculusLeftEye")
         ->addComponent(Transform::create())
-        ->addComponent(_leftCamera)
+        ->addComponent(leftCamera)
         ->addComponent(_leftRenderer);
-    targets()[0]->addChild(leftCameraNode);
+    targets()[0]->addChild(_leftCameraNode);
 
-    _rightCamera = PerspectiveCamera::create(
+    auto rightCamera = PerspectiveCamera::create(
         aspectRatio,
         atan(_hmd->DefaultEyeFov[1].LeftTan + _hmd->DefaultEyeFov[1].RightTan),
         _zNear,
         _zFar
     );
-    auto rightCameraNode = scene::Node::create("oculusRightEye")
+    _rightCameraNode = scene::Node::create("oculusRightEye")
         ->addComponent(Transform::create())
-        ->addComponent(_rightCamera)
+        ->addComponent(rightCamera)
         ->addComponent(_rightRenderer);
-    targets()[0]->addChild(rightCameraNode);
+    targets()[0]->addChild(_rightCameraNode);
 }
 
 void
@@ -346,7 +348,10 @@ OculusVRCamera::setSceneManager(SceneManager::Ptr sceneManager)
 
     initializeDistortionGeometry(context);
 
-    // FIXME
+    _renderEndSlot = sceneManager->renderingEnd()->connect(std::bind(
+        &OculusVRCamera::updateCameraOrientation,
+        std::static_pointer_cast<OculusVRCamera>(shared_from_this())
+    ));
 }
 
 void
@@ -358,22 +363,6 @@ OculusVRCamera::renderEndHandler(std::shared_ptr<SceneManager>    sceneManager,
 
     /*_leftRenderer->render(sceneManager->assets()->context());
     _rightRenderer->render(sceneManager->assets()->context());*/
-}
-
-/*static*/
-float
-OculusVRCamera::distort(float r, Vector4::Ptr distortionK)
-{
-    const float r2 = r * r;
-    const float r4 = r2 * r2;
-    const float r6 = r4 * r2;
-
-    return r * (
-        distortionK->x()
-        + r2 * distortionK->y()
-        + r4 * distortionK->z()
-        + r6 * distortionK->w()
-    );
 }
 
 bool
@@ -393,21 +382,48 @@ OculusVRCamera::sensorDeviceDetected() const
 void
 OculusVRCamera::updateCameraOrientation()
 {
-    /*if (_ovrSensorFusion == nullptr || _targetTransform == nullptr)
-        return;
+    static ovrPosef eyeRenderPose[2];
+    static float BodyYaw(3.141592f);
+    static OVR::Vector3f HeadPos(0.0f, 1.6f, -5.0f);
+    static auto state = (OVR::CAPI::HMDState*)(_hmd->Handle);
+    static auto renderInfo = state->RenderState.RenderInfo;
 
-    const OVR::Quatf&    measurement    = _ovrSensorFusion->GetPredictedOrientation();
-    auto                quaternion    = math::Quaternion::create(measurement.x, measurement.y, measurement.z, measurement.w);
+    HeadPos.y = ovrHmd_GetFloat(_hmd, OVR_KEY_EYE_HEIGHT, HeadPos.y);
 
-    quaternion->toMatrix(_eyeOrientation);
+    for (int eyeIndex = 0; eyeIndex < ovrEye_Count; eyeIndex++)
+    {
+        ovrEyeType eye = _hmd->EyeRenderOrder[eyeIndex];
+        eyeRenderPose[eye] = ovrHmd_GetEyePose(_hmd, eye);
 
-    _targetTransform->matrix()->copyTranslation(_eyePosition);
+        OVR::Matrix4f rollPitchYaw = OVR::Matrix4f::RotationY(BodyYaw);
+        OVR::Matrix4f finalRollPitchYaw = rollPitchYaw * OVR::Matrix4f(eyeRenderPose[eye].Orientation);
+        OVR::Vector3f finalUp = finalRollPitchYaw.Transform(OVR::Vector3f(0, 1, 0));
+        OVR::Vector3f finalForward = finalRollPitchYaw.Transform(OVR::Vector3f(0, 0, -1));
+        OVR::Vector3f shiftedEyePos = HeadPos + rollPitchYaw.Transform(eyeRenderPose[eye].Position);
+        OVR::Matrix4f view = OVR::Matrix4f::LookAtRH(shiftedEyePos, shiftedEyePos + finalForward, finalUp);
+        OVR::Vector3f viewAdjust = OVR::Util::Render::CalculateEyeVirtualCameraOffset(
+            renderInfo,
+            eyeIndex == 0 ? OVR::StereoEye::StereoEye_Left : OVR::StereoEye::StereoEye_Right,
+            false
+        );
 
-    _targetTransform->matrix()
-        ->lock()
-        ->copyFrom(_eyeOrientation)
-        ->appendTranslation(_eyePosition)
-        ->unlock();*/
+        auto m = view.M;
+        auto cameraNode = eyeIndex == 0 ? _leftCameraNode : _rightCameraNode;
+        auto matrix = cameraNode->component<Transform>()->matrix();
+
+        matrix->lock();
+        matrix->initialize(
+            m[0][0], m[0][1], m[0][2], m[0][3],
+            m[1][0], m[1][1], m[1][2], m[1][3],
+            m[2][0], m[2][1], m[2][2], m[2][3],
+            m[3][0], m[3][1], m[3][2], m[3][3]
+        );
+        matrix->appendTranslation(viewAdjust.x, viewAdjust.y, viewAdjust.z);
+        /*matrix->transpose();
+        matrix->invert();*/
+        matrix->unlock();
+
+    }
 }
 
 void

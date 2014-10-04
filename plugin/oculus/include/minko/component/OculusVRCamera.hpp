@@ -77,9 +77,9 @@ namespace minko
             uint                                                _renderTargetWidth;
             uint                                                _renderTargetHeight;
             std::shared_ptr<render::Texture>                    _renderTarget;
-            std::shared_ptr<PerspectiveCamera>                  _leftCamera;
+            std::shared_ptr<scene::Node>                        _leftCameraNode;
             std::shared_ptr<Renderer>                           _leftRenderer;
-            std::shared_ptr<PerspectiveCamera>                  _rightCamera;
+            std::shared_ptr<scene::Node>                        _rightCameraNode;
             std::shared_ptr<Renderer>                           _rightRenderer;
 
             Signal<AbsCmpPtr, NodePtr>::Slot                    _targetAddedSlot;
@@ -173,10 +173,6 @@ namespace minko
 
             void
             getHMDInfo(HMDInfo&) const;
-
-            static
-            float
-            distort(float, std::shared_ptr<math::Vector4>);
         };
     }
 }
