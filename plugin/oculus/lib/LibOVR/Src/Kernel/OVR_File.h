@@ -11,16 +11,16 @@ Notes       :   errno may not be preserved across use of BaseFile member functio
             :   Directories cannot be deleted while files opened from them are in use
                 (For the GetFullName function)
 
-Copyright   :   Copyright 2013 Oculus VR, Inc. All Rights reserved.
+Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 
-Licensed under the Oculus VR SDK License Version 2.0 (the "License"); 
-you may not use the Oculus VR SDK except in compliance with the License, 
+Licensed under the Oculus VR Rift SDK License Version 3.1 (the "License"); 
+you may not use the Oculus VR Rift SDK except in compliance with the License, 
 which is provided at the time of installation or download, or which 
 otherwise accompanies this software in either electronic or hard copy form.
 
 You may obtain a copy of the License at
 
-http://www.oculusvr.com/licenses/LICENSE-2.0 
+http://www.oculusvr.com/licenses/LICENSE-3.1 
 
 Unless required by applicable law or agreed to in writing, the Oculus VR SDK 
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -136,11 +136,11 @@ public:
                                                                                         
     // Return position
     virtual int         Tell() = 0;
-    virtual SInt64      LTell() = 0;
+    virtual int64_t     LTell() = 0;
     
     // File size                                                                        
     virtual int         GetLength() = 0;
-    virtual SInt64      LGetLength() = 0;
+    virtual int64_t     LGetLength() = 0;
                                                                                         
     // Returns file stats                                                               
     // 0 for failure                                                                    
@@ -156,12 +156,12 @@ public:
     // Blocking write, will write in the given number of bytes to the stream
     // Returns : -1 for error
     //           Otherwise number of bytes read 
-    virtual int         Write(const UByte *pbufer, int numBytes) = 0;
+    virtual int         Write(const uint8_t *pbufer, int numBytes) = 0;
     // Blocking read, will read in the given number of bytes or less from the stream
     // Returns : -1 for error
     //           Otherwise number of bytes read,
     //           if 0 or < numBytes, no more bytes available; end of file or the other side of stream is closed
-    virtual int         Read(UByte *pbufer, int numBytes) = 0;
+    virtual int         Read(uint8_t *pbufer, int numBytes) = 0;
 
     // Skips (ignores) a given # of bytes
     // Same return values as Read
@@ -183,7 +183,7 @@ public:
     // Seeking                                                                              
     // Returns new position, -1 for error                                                   
     virtual int         Seek(int offset, int origin=Seek_Set) = 0;
-    virtual SInt64      LSeek(SInt64 offset, int origin=Seek_Set) = 0;
+    virtual int64_t     LSeek(int64_t offset, int origin=Seek_Set) = 0;
     // Seek simplification
     int                 SeekToBegin()           {return Seek(0); }
     int                 SeekToEnd()             {return Seek(0,Seek_End); }
@@ -203,70 +203,70 @@ public:
 
     // Read/Write helpers
 private:
-    UInt64  PRead64()           { UInt64 v = 0; Read((UByte*)&v, 8); return v; }
-    UInt32  PRead32()           { UInt32 v = 0; Read((UByte*)&v, 4); return v; }
-    UInt16  PRead16()           { UInt16 v = 0; Read((UByte*)&v, 2); return v; }
-    UByte   PRead8()            { UByte  v = 0; Read((UByte*)&v, 1); return v; }
-    void    PWrite64(UInt64 v)  { Write((UByte*)&v, 8); }
-    void    PWrite32(UInt32 v)  { Write((UByte*)&v, 4); }
-    void    PWrite16(UInt16 v)  { Write((UByte*)&v, 2); }
-    void    PWrite8(UByte v)    { Write((UByte*)&v, 1); }
+    uint64_t  PRead64()           { uint64_t v = 0; Read((uint8_t*)&v, 8); return v; }
+    uint32_t  PRead32()           { uint32_t v = 0; Read((uint8_t*)&v, 4); return v; }
+    uint16_t  PRead16()           { uint16_t v = 0; Read((uint8_t*)&v, 2); return v; }
+    uint8_t PRead8()            { uint8_t  v = 0; Read((uint8_t*)&v, 1); return v; }
+    void    PWrite64(uint64_t v)  { Write((uint8_t*)&v, 8); }
+    void    PWrite32(uint32_t v)  { Write((uint8_t*)&v, 4); }
+    void    PWrite16(uint16_t v)  { Write((uint8_t*)&v, 2); }
+    void    PWrite8(uint8_t v)  { Write((uint8_t*)&v, 1); }
 
 public:
 
     // Writing primitive types - Little Endian
-    inline void    WriteUByte(UByte v)         { PWrite8((UByte)Alg::ByteUtil::SystemToLE(v));     }
-    inline void    WriteSByte(SByte v)         { PWrite8((UByte)Alg::ByteUtil::SystemToLE(v));     }
-    inline void    WriteUInt8(UByte v)         { PWrite8((UByte)Alg::ByteUtil::SystemToLE(v));     }
-    inline void    WriteSInt8(SByte v)         { PWrite8((UByte)Alg::ByteUtil::SystemToLE(v));     }
-    inline void    WriteUInt16(UInt16 v)       { PWrite16((UInt16)Alg::ByteUtil::SystemToLE(v));   }
-    inline void    WriteSInt16(SInt16 v)       { PWrite16((UInt16)Alg::ByteUtil::SystemToLE(v));   }
-    inline void    WriteUInt32(UInt32 v)       { PWrite32((UInt32)Alg::ByteUtil::SystemToLE(v));   }
-    inline void    WriteSInt32(SInt32 v)       { PWrite32((UInt32)Alg::ByteUtil::SystemToLE(v));   }
-    inline void    WriteUInt64(UInt64 v)       { PWrite64((UInt64)Alg::ByteUtil::SystemToLE(v));   }
-    inline void    WriteSInt64(SInt64 v)       { PWrite64((UInt64)Alg::ByteUtil::SystemToLE(v));   }
-    inline void    WriteFloat(float v)         { v = Alg::ByteUtil::SystemToLE(v); Write((UByte*)&v, 4); } 
-    inline void    WriteDouble(double v)       { v = Alg::ByteUtil::SystemToLE(v); Write((UByte*)&v, 8); }
+    inline void    WriteUByte(uint8_t v)       { PWrite8((uint8_t)Alg::ByteUtil::SystemToLE(v));     }
+    inline void    WriteSByte(int8_t v)        { PWrite8((uint8_t)Alg::ByteUtil::SystemToLE(v));     }
+    inline void    WriteUInt8(uint8_t v)       { PWrite8((uint8_t)Alg::ByteUtil::SystemToLE(v));     }
+    inline void    WriteSInt8(int8_t v)        { PWrite8((uint8_t)Alg::ByteUtil::SystemToLE(v));     }
+    inline void    WriteUInt16(uint16_t v)       { PWrite16((uint16_t)Alg::ByteUtil::SystemToLE(v));   }
+    inline void    WriteSInt16(int16_t v)       { PWrite16((uint16_t)Alg::ByteUtil::SystemToLE(v));   }
+    inline void    WriteUInt32(uint32_t v)       { PWrite32((uint32_t)Alg::ByteUtil::SystemToLE(v));   }
+    inline void    WriteSInt32(int32_t v)       { PWrite32((uint32_t)Alg::ByteUtil::SystemToLE(v));   }
+    inline void    WriteUInt64(uint64_t v)       { PWrite64((uint64_t)Alg::ByteUtil::SystemToLE(v));   }
+    inline void    WriteSInt64(int64_t v)       { PWrite64((uint64_t)Alg::ByteUtil::SystemToLE(v));   }
+    inline void    WriteFloat(float v)         { v = Alg::ByteUtil::SystemToLE(v); Write((uint8_t*)&v, 4); } 
+    inline void    WriteDouble(double v)       { v = Alg::ByteUtil::SystemToLE(v); Write((uint8_t*)&v, 8); }
     // Writing primitive types - Big Endian
-    inline void    WriteUByteBE(UByte v)       { PWrite8((UByte)Alg::ByteUtil::SystemToBE(v));     }
-    inline void    WriteSByteBE(SByte v)       { PWrite8((UByte)Alg::ByteUtil::SystemToBE(v));     }
-    inline void    WriteUInt8BE(UInt16 v)      { PWrite8((UByte)Alg::ByteUtil::SystemToBE(v));     }
-    inline void    WriteSInt8BE(SInt16 v)      { PWrite8((UByte)Alg::ByteUtil::SystemToBE(v));     }
-    inline void    WriteUInt16BE(UInt16 v)     { PWrite16((UInt16)Alg::ByteUtil::SystemToBE(v));   }
-    inline void    WriteSInt16BE(UInt16 v)     { PWrite16((UInt16)Alg::ByteUtil::SystemToBE(v));   }
-    inline void    WriteUInt32BE(UInt32 v)     { PWrite32((UInt32)Alg::ByteUtil::SystemToBE(v));   }
-    inline void    WriteSInt32BE(UInt32 v)     { PWrite32((UInt32)Alg::ByteUtil::SystemToBE(v));   }
-    inline void    WriteUInt64BE(UInt64 v)     { PWrite64((UInt64)Alg::ByteUtil::SystemToBE(v));   }
-    inline void    WriteSInt64BE(UInt64 v)     { PWrite64((UInt64)Alg::ByteUtil::SystemToBE(v));   }
-    inline void    WriteFloatBE(float v)       { v = Alg::ByteUtil::SystemToBE(v); Write((UByte*)&v, 4); }
-    inline void    WriteDoubleBE(double v)     { v = Alg::ByteUtil::SystemToBE(v); Write((UByte*)&v, 8); }
+    inline void    WriteUByteBE(uint8_t v)     { PWrite8((uint8_t)Alg::ByteUtil::SystemToBE(v));     }
+    inline void    WriteSByteBE(int8_t v)      { PWrite8((uint8_t)Alg::ByteUtil::SystemToBE(v));     }
+    inline void    WriteUInt8BE(uint16_t v)      { PWrite8((uint8_t)Alg::ByteUtil::SystemToBE(v));     }
+    inline void    WriteSInt8BE(int16_t v)      { PWrite8((uint8_t)Alg::ByteUtil::SystemToBE(v));     }
+    inline void    WriteUInt16BE(uint16_t v)     { PWrite16((uint16_t)Alg::ByteUtil::SystemToBE(v));   }
+    inline void    WriteSInt16BE(uint16_t v)     { PWrite16((uint16_t)Alg::ByteUtil::SystemToBE(v));   }
+    inline void    WriteUInt32BE(uint32_t v)     { PWrite32((uint32_t)Alg::ByteUtil::SystemToBE(v));   }
+    inline void    WriteSInt32BE(uint32_t v)     { PWrite32((uint32_t)Alg::ByteUtil::SystemToBE(v));   }
+    inline void    WriteUInt64BE(uint64_t v)     { PWrite64((uint64_t)Alg::ByteUtil::SystemToBE(v));   }
+    inline void    WriteSInt64BE(uint64_t v)     { PWrite64((uint64_t)Alg::ByteUtil::SystemToBE(v));   }
+    inline void    WriteFloatBE(float v)       { v = Alg::ByteUtil::SystemToBE(v); Write((uint8_t*)&v, 4); }
+    inline void    WriteDoubleBE(double v)     { v = Alg::ByteUtil::SystemToBE(v); Write((uint8_t*)&v, 8); }
         
     // Reading primitive types - Little Endian
-    inline UByte   ReadUByte()                 { return (UByte)Alg::ByteUtil::LEToSystem(PRead8());    }
-    inline SByte   ReadSByte()                 { return (SByte)Alg::ByteUtil::LEToSystem(PRead8());    }
-    inline UByte   ReadUInt8()                 { return (UByte)Alg::ByteUtil::LEToSystem(PRead8());    }
-    inline SByte   ReadSInt8()                 { return (SByte)Alg::ByteUtil::LEToSystem(PRead8());    }
-    inline UInt16  ReadUInt16()                { return (UInt16)Alg::ByteUtil::LEToSystem(PRead16());  }
-    inline SInt16  ReadSInt16()                { return (SInt16)Alg::ByteUtil::LEToSystem(PRead16());  }
-    inline UInt32  ReadUInt32()                { return (UInt32)Alg::ByteUtil::LEToSystem(PRead32());  }
-    inline SInt32  ReadSInt32()                { return (SInt32)Alg::ByteUtil::LEToSystem(PRead32());  }
-    inline UInt64  ReadUInt64()                { return (UInt64)Alg::ByteUtil::LEToSystem(PRead64());  }
-    inline SInt64  ReadSInt64()                { return (SInt64)Alg::ByteUtil::LEToSystem(PRead64());  }
-    inline float   ReadFloat()                 { float v = 0.0f; Read((UByte*)&v, 4); return Alg::ByteUtil::LEToSystem(v); }
-    inline double  ReadDouble()                { double v = 0.0; Read((UByte*)&v, 8); return Alg::ByteUtil::LEToSystem(v); }
+    inline uint8_t ReadUByte()                 { return (uint8_t)Alg::ByteUtil::LEToSystem(PRead8());    }
+    inline int8_t  ReadSByte()                 { return (int8_t)Alg::ByteUtil::LEToSystem(PRead8());    }
+    inline uint8_t ReadUInt8()                 { return (uint8_t)Alg::ByteUtil::LEToSystem(PRead8());    }
+    inline int8_t  ReadSInt8()                 { return (int8_t)Alg::ByteUtil::LEToSystem(PRead8());    }
+    inline uint16_t  ReadUInt16()                { return (uint16_t)Alg::ByteUtil::LEToSystem(PRead16());  }
+    inline int16_t ReadSInt16()                { return (int16_t)Alg::ByteUtil::LEToSystem(PRead16());  }
+    inline uint32_t  ReadUInt32()                { return (uint32_t)Alg::ByteUtil::LEToSystem(PRead32());  }
+    inline int32_t ReadSInt32()                { return (int32_t)Alg::ByteUtil::LEToSystem(PRead32());  }
+    inline uint64_t  ReadUInt64()                { return (uint64_t)Alg::ByteUtil::LEToSystem(PRead64());  }
+    inline int64_t ReadSInt64()                { return (int64_t)Alg::ByteUtil::LEToSystem(PRead64());  }
+    inline float   ReadFloat()                 { float v = 0.0f; Read((uint8_t*)&v, 4); return Alg::ByteUtil::LEToSystem(v); }
+    inline double  ReadDouble()                { double v = 0.0; Read((uint8_t*)&v, 8); return Alg::ByteUtil::LEToSystem(v); }
     // Reading primitive types - Big Endian
-    inline UByte   ReadUByteBE()               { return (UByte)Alg::ByteUtil::BEToSystem(PRead8());    }
-    inline SByte   ReadSByteBE()               { return (SByte)Alg::ByteUtil::BEToSystem(PRead8());    }
-    inline UByte   ReadUInt8BE()               { return (UByte)Alg::ByteUtil::BEToSystem(PRead8());    }
-    inline SByte   ReadSInt8BE()               { return (SByte)Alg::ByteUtil::BEToSystem(PRead8());    }
-    inline UInt16  ReadUInt16BE()              { return (UInt16)Alg::ByteUtil::BEToSystem(PRead16());  }
-    inline SInt16  ReadSInt16BE()              { return (SInt16)Alg::ByteUtil::BEToSystem(PRead16());  }
-    inline UInt32  ReadUInt32BE()              { return (UInt32)Alg::ByteUtil::BEToSystem(PRead32());  }
-    inline SInt32  ReadSInt32BE()              { return (SInt32)Alg::ByteUtil::BEToSystem(PRead32());  }
-    inline UInt64  ReadUInt64BE()              { return (UInt64)Alg::ByteUtil::BEToSystem(PRead64());  }
-    inline SInt64  ReadSInt64BE()              { return (SInt64)Alg::ByteUtil::BEToSystem(PRead64());  }
-    inline float   ReadFloatBE()               { float v = 0.0f; Read((UByte*)&v, 4); return Alg::ByteUtil::BEToSystem(v); }
-    inline double  ReadDoubleBE()              { double v = 0.0; Read((UByte*)&v, 8); return Alg::ByteUtil::BEToSystem(v); }
+    inline uint8_t ReadUByteBE()               { return (uint8_t)Alg::ByteUtil::BEToSystem(PRead8());    }
+    inline int8_t  ReadSByteBE()               { return (int8_t)Alg::ByteUtil::BEToSystem(PRead8());    }
+    inline uint8_t ReadUInt8BE()               { return (uint8_t)Alg::ByteUtil::BEToSystem(PRead8());    }
+    inline int8_t  ReadSInt8BE()               { return (int8_t)Alg::ByteUtil::BEToSystem(PRead8());    }
+    inline uint16_t  ReadUInt16BE()              { return (uint16_t)Alg::ByteUtil::BEToSystem(PRead16());  }
+    inline int16_t ReadSInt16BE()              { return (int16_t)Alg::ByteUtil::BEToSystem(PRead16());  }
+    inline uint32_t  ReadUInt32BE()              { return (uint32_t)Alg::ByteUtil::BEToSystem(PRead32());  }
+    inline int32_t ReadSInt32BE()              { return (int32_t)Alg::ByteUtil::BEToSystem(PRead32());  }
+    inline uint64_t  ReadUInt64BE()              { return (uint64_t)Alg::ByteUtil::BEToSystem(PRead64());  }
+    inline int64_t ReadSInt64BE()              { return (int64_t)Alg::ByteUtil::BEToSystem(PRead64());  }
+    inline float   ReadFloatBE()               { float v = 0.0f; Read((uint8_t*)&v, 4); return Alg::ByteUtil::BEToSystem(v); }
+    inline double  ReadDoubleBE()              { double v = 0.0; Read((uint8_t*)&v, 8); return Alg::ByteUtil::BEToSystem(v); }
 };
 
 
@@ -294,18 +294,18 @@ public:
 //  virtual bool        IsRecoverable()                             { return pFile->IsRecoverable(); }          
                                                                     
     virtual int         Tell()                                      { return pFile->Tell(); }
-    virtual SInt64      LTell()                                     { return pFile->LTell(); }
+    virtual int64_t     LTell()                                     { return pFile->LTell(); }
     
     virtual int         GetLength()                                 { return pFile->GetLength(); }
-    virtual SInt64      LGetLength()                                { return pFile->LGetLength(); }
+    virtual int64_t     LGetLength()                                { return pFile->LGetLength(); }
     
     //virtual bool      Stat(FileStats *pfs)                        { return pFile->Stat(pfs); }
     
     virtual int         GetErrorCode()                              { return pFile->GetErrorCode(); }
     
     // ** Stream implementation & I/O
-    virtual int         Write(const UByte *pbuffer, int numBytes)   { return pFile->Write(pbuffer,numBytes); }  
-    virtual int         Read(UByte *pbuffer, int numBytes)          { return pFile->Read(pbuffer,numBytes); }   
+    virtual int         Write(const uint8_t *pbuffer, int numBytes)   { return pFile->Write(pbuffer,numBytes); }  
+    virtual int         Read(uint8_t *pbuffer, int numBytes)          { return pFile->Read(pbuffer,numBytes); }   
     
     virtual int         SkipBytes(int numBytes)                     { return pFile->SkipBytes(numBytes); }      
     
@@ -315,7 +315,7 @@ public:
                                                                     
     // Seeking                                                      
     virtual int         Seek(int offset, int origin=Seek_Set)       { return pFile->Seek(offset,origin); }
-    virtual SInt64      LSeek(SInt64 offset, int origin=Seek_Set)   { return pFile->LSeek(offset,origin); }
+    virtual int64_t     LSeek(int64_t offset, int origin=Seek_Set)   { return pFile->LSeek(offset,origin); }
 
     virtual int         CopyFromStream(File *pstream, int byteSize) { return pFile->CopyFromStream(pstream,byteSize); }
                         
@@ -342,14 +342,14 @@ protected:
     };
 
     // Buffer & the mode it's in
-    UByte*          pBuffer;
+    uint8_t*          pBuffer;
     BufferModeType  BufferMode;
     // Position in buffer
     unsigned        Pos;
     // Data in buffer if reading
     unsigned        DataSize;
     // Underlying file position 
-    UInt64          FilePos;
+    uint64_t        FilePos;
 
     // Initializes buffering to a certain mode
     bool    SetBufferMode(BufferModeType mode);
@@ -376,15 +376,15 @@ public:
     // We override all the functions that can possibly
     // require buffer mode switch, flush, or extra calculations
     virtual int         Tell();
-    virtual SInt64      LTell();
+    virtual int64_t     LTell();
 
     virtual int         GetLength();
-    virtual SInt64      LGetLength();
+    virtual int64_t     LGetLength();
 
 //  virtual bool        Stat(GFileStats *pfs);  
 
-    virtual int         Write(const UByte *pbufer, int numBytes);
-    virtual int         Read(UByte *pbufer, int numBytes);
+    virtual int         Write(const uint8_t *pbufer, int numBytes);
+    virtual int         Read(uint8_t *pbufer, int numBytes);
 
     virtual int         SkipBytes(int numBytes);
 
@@ -393,7 +393,7 @@ public:
     virtual bool        Flush();
 
     virtual int         Seek(int offset, int origin=Seek_Set);
-    virtual SInt64      LSeek(SInt64 offset, int origin=Seek_Set);
+    virtual int64_t     LSeek(int64_t offset, int origin=Seek_Set);
 
     virtual int         CopyFromStream(File *pstream, int byteSize);
     
@@ -417,10 +417,10 @@ public:
     int         GetErrorCode()      { return 0; }
 
     int         Tell()              { return FileIndex; }
-    SInt64      LTell()             { return (SInt64) FileIndex; }
+    int64_t     LTell()             { return (int64_t) FileIndex; }
 
     int         GetLength()         { return FileSize; }
-    SInt64      LGetLength()        { return (SInt64) FileSize; }
+    int64_t     LGetLength()        { return (int64_t) FileSize; }
 
     bool        Close()
     {
@@ -433,12 +433,12 @@ public:
         return 0;
     }
 
-    int         Write(const UByte *pbuffer, int numBytes)
+    int         Write(const uint8_t *pbuffer, int numBytes)
     {   OVR_UNUSED2(pbuffer, numBytes);
         return 0;
     }
 
-    int         Read(UByte *pbufer, int numBytes)
+    int         Read(uint8_t *pbufer, int numBytes)
     {
         if (FileIndex + numBytes > FileSize)
         {
@@ -484,14 +484,14 @@ public:
         return FileIndex;
     }
 
-    SInt64      LSeek(SInt64 offset, int origin = Seek_Set)
+    int64_t     LSeek(int64_t offset, int origin = Seek_Set)
     {
-        return (SInt64) Seek((int) offset, origin);
+        return (int64_t) Seek((int) offset, origin);
     }
 
 public:
 
-    MemoryFile (const String& fileName, const UByte *pBuffer, int buffSize)
+    MemoryFile (const String& fileName, const uint8_t *pBuffer, int buffSize)
         : FilePath(fileName)
     {
         FileData  = pBuffer;
@@ -501,7 +501,7 @@ public:
     }
 
     // pfileName should be encoded as UTF-8 to support international file names.
-    MemoryFile (const char* pfileName, const UByte *pBuffer, int buffSize)
+    MemoryFile (const char* pfileName, const uint8_t *pBuffer, int buffSize)
         : FilePath(pfileName)
     {
         FileData  = pBuffer;
@@ -512,7 +512,7 @@ public:
 private:
 
     String       FilePath;
-    const UByte *FileData;
+    const uint8_t *FileData;
     int          FileSize;
     int          FileIndex;
     bool         Valid;

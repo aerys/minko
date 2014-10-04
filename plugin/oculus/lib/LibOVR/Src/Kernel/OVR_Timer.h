@@ -6,16 +6,16 @@ Content     :   Provides static functions for precise timing
 Created     :   September 19, 2012
 Notes       : 
 
-Copyright   :   Copyright 2013 Oculus VR, Inc. All Rights reserved.
+Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 
-Licensed under the Oculus VR SDK License Version 2.0 (the "License"); 
-you may not use the Oculus VR SDK except in compliance with the License, 
+Licensed under the Oculus VR Rift SDK License Version 3.1 (the "License"); 
+you may not use the Oculus VR Rift SDK except in compliance with the License, 
 which is provided at the time of installation or download, or which 
 otherwise accompanies this software in either electronic or hard copy form.
 
 You may obtain a copy of the License at
 
-http://www.oculusvr.com/licenses/LICENSE-2.0 
+http://www.oculusvr.com/licenses/LICENSE-3.1 
 
 Unless required by applicable law or agreed to in writing, the Oculus VR SDK 
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -43,62 +43,32 @@ class Timer
 public:
     enum {
         MsPerSecond     = 1000, // Milliseconds in one second.
-        MksPerMs        = 1000, // Microseconds in one millisecond.
-        MksPerSecond    = MsPerSecond * MksPerMs
+        NanosPerSecond  = MsPerSecond * 1000 * 1000,
+        MksPerSecond    = MsPerSecond * 1000
     };
 
-
     // ***** Timing APIs for Application    
+
     // These APIs should be used to guide animation and other program functions
     // that require precision.
 
-    // Returns ticks in milliseconds, as a 32-bit number. May wrap around every
-    // 49.2 days. Use either time difference of two values of GetTicks to avoid
-    // wrap-around.  GetTicksMs may perform better then GetTicks.
-    static UInt32  OVR_STDCALL GetTicksMs();
-
-    // GetTicks returns general-purpose high resolution application timer value,
-    // measured in microseconds (mks, or 1/1000000 of a second). The actual precision
-    // is system-specific and may be much lower, such as 1 ms.
-    static UInt64  OVR_STDCALL GetTicks();
-
     // Returns global high-resolution application timer in seconds.
-    static double  OVR_STDCALL GetSeconds();
+    static double  OVR_STDCALL GetSeconds();    
 
-    
-    // ***** Profiling APIs.
-    // These functions should be used for profiling, but may have system specific
-    // artifacts that make them less appropriate for general system use.
-    // On Win32, for example these rely on QueryPerformanceConter  may have
-    // problems with thread-core switching and power modes.
+    // Returns time in Nanoseconds, using highest possible system resolution.
+    static uint64_t  OVR_STDCALL GetTicksNanos();
 
-    // Return a hi-res timer value in mks (1/1000000 of a sec).
-    // Generally you want to call this at the start and end of an
-    // operation, and pass the difference to
-    // TicksToSeconds() to find out how long the operation took. 
-    static UInt64  OVR_STDCALL GetProfileTicks();
+    // Kept for compatibility.
+    // Returns ticks in milliseconds, as a 32-bit number. May wrap around every 49.2 days.
+    // Use either time difference of two values of GetTicks to avoid wrap-around.
+    static uint32_t  OVR_STDCALL GetTicksMs()
+    { return  uint32_t(GetTicksNanos() / 1000000); }
 
-    // More convenient zero-based profile timer in seconds. First call initializes 
-    // the "zero" value; future calls return the difference. Not thread safe for first call.
-    // Due to low precision of Double, may malfunction after long runtime.
-    static double  OVR_STDCALL GetProfileSeconds();
-
-    // Get the raw cycle counter value, providing the maximum possible timer resolution.
-    static UInt64  OVR_STDCALL GetRawTicks();
-    static UInt64  OVR_STDCALL GetRawFrequency();
-
-    
-    // ***** Tick and time unit conversion.
-
-    // Convert micro-second ticks value into seconds value.
-    static inline double TicksToSeconds(UInt64 ticks)
-    {
-        return static_cast<double>(ticks) * (1.0 / (double)MksPerSecond);
-    }
-    // Convert Raw or frequency-unit ticks to seconds based on specified frequency.
-    static inline double RawTicksToSeconds(UInt64 rawTicks, UInt64 rawFrequency)
-    {
-        return static_cast<double>(rawTicks) * rawFrequency;
+    // for recorded data playback
+    static void SetFakeSeconds(double fakeSeconds) 
+    { 
+        FakeSeconds = fakeSeconds; 
+        useFakeSeconds = true; 
     }
 
 private:
@@ -106,12 +76,11 @@ private:
     // System called during program startup/shutdown.
     static void initializeTimerSystem();
     static void shutdownTimerSystem();
+
+    // for recorded data playback
+    static double FakeSeconds;
+    static bool   useFakeSeconds; 
 };
-
-
-// Global high-resolution time in seconds. This is intended to replace Timer class in OVR.
-double ovr_GetTimeInSeconds();
-
 
 
 } // OVR::Timer

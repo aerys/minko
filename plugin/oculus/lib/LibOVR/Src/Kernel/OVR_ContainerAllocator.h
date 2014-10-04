@@ -1,21 +1,21 @@
 /************************************************************************************
 
-PublicHeader:   OVR.h
+PublicHeader:   OVR_Kernel.h
 Filename    :   OVR_ContainerAllocator.h
 Content     :   Template allocators and constructors for containers.
 Created     :   September 19, 2012
 Notes       : 
 
-Copyright   :   Copyright 2013 Oculus VR, Inc. All Rights reserved.
+Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 
-Licensed under the Oculus VR SDK License Version 2.0 (the "License"); 
-you may not use the Oculus VR SDK except in compliance with the License, 
+Licensed under the Oculus VR Rift SDK License Version 3.1 (the "License"); 
+you may not use the Oculus VR Rift SDK except in compliance with the License, 
 which is provided at the time of installation or download, or which 
 otherwise accompanies this software in either electronic or hard copy form.
 
 You may obtain a copy of the License at
 
-http://www.oculusvr.com/licenses/LICENSE-2.0 
+http://www.oculusvr.com/licenses/LICENSE-3.1 
 
 Unless required by applicable law or agreed to in writing, the Oculus VR SDK 
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -45,8 +45,8 @@ namespace OVR {
 class ContainerAllocatorBase
 {
 public:
-    static void* Alloc(UPInt size)                { return OVR_ALLOC(size); }
-    static void* Realloc(void* p, UPInt newSize)  { return OVR_REALLOC(p, newSize); }
+    static void* Alloc(size_t size)                { return OVR_ALLOC(size); }
+    static void* Realloc(void* p, size_t newSize)  { return OVR_REALLOC(p, newSize); }
     static void  Free(void *p)                    { OVR_FREE(p); }
 };
 
@@ -73,29 +73,29 @@ public:
         *(T*)p = source;
     }
 
-    static void ConstructArray(void*, UPInt) {}
+    static void ConstructArray(void*, size_t) {}
 
-    static void ConstructArray(void* p, UPInt count, const T& source)
+    static void ConstructArray(void* p, size_t count, const T& source)
     {
-        UByte *pdata = (UByte*)p;
-        for (UPInt i=0; i< count; ++i, pdata += sizeof(T))
+        uint8_t *pdata = (uint8_t*)p;
+        for (size_t i=0; i< count; ++i, pdata += sizeof(T))
             *(T*)pdata = source;
     }
 
-    static void ConstructArray(void* p, UPInt count, const T* psource)
+    static void ConstructArray(void* p, size_t count, const T* psource)
     {
         memcpy(p, psource, sizeof(T) * count);
     }
 
     static void Destruct(T*) {}
-    static void DestructArray(T*, UPInt) {}
+    static void DestructArray(T*, size_t) {}
 
-    static void CopyArrayForward(T* dst, const T* src, UPInt count)
+    static void CopyArrayForward(T* dst, const T* src, size_t count)
     {
         memmove(dst, src, count * sizeof(T));
     }
 
-    static void CopyArrayBackward(T* dst, const T* src, UPInt count)
+    static void CopyArrayBackward(T* dst, const T* src, size_t count)
     {
         memmove(dst, src, count * sizeof(T));
     }
@@ -129,24 +129,24 @@ public:
         OVR::ConstructAlt<T,S>(p, source);
     }
 
-    static void ConstructArray(void* p, UPInt count)
+    static void ConstructArray(void* p, size_t count)
     {
-        UByte* pdata = (UByte*)p;
-        for (UPInt i=0; i< count; ++i, pdata += sizeof(T))
+        uint8_t* pdata = (uint8_t*)p;
+        for (size_t i=0; i< count; ++i, pdata += sizeof(T))
             Construct(pdata);
     }
 
-    static void ConstructArray(void* p, UPInt count, const T& source)
+    static void ConstructArray(void* p, size_t count, const T& source)
     {
-        UByte* pdata = (UByte*)p;
-        for (UPInt i=0; i< count; ++i, pdata += sizeof(T))
+        uint8_t* pdata = (uint8_t*)p;
+        for (size_t i=0; i< count; ++i, pdata += sizeof(T))
             Construct(pdata, source);
     }
 
-    static void ConstructArray(void* p, UPInt count, const T* psource)
+    static void ConstructArray(void* p, size_t count, const T* psource)
     {
-        UByte* pdata = (UByte*)p;
-        for (UPInt i=0; i< count; ++i, pdata += sizeof(T))
+        uint8_t* pdata = (uint8_t*)p;
+        for (size_t i=0; i< count; ++i, pdata += sizeof(T))
             Construct(pdata, *psource++);
     }
 
@@ -156,19 +156,19 @@ public:
         OVR_UNUSED(p); // Suppress silly MSVC warning
     }
 
-    static void DestructArray(T* p, UPInt count)
+    static void DestructArray(T* p, size_t count)
     {   
         p += count - 1;
-        for (UPInt i=0; i<count; ++i, --p)
+        for (size_t i=0; i<count; ++i, --p)
             p->~T();
     }
 
-    static void CopyArrayForward(T* dst, const T* src, UPInt count)
+    static void CopyArrayForward(T* dst, const T* src, size_t count)
     {
         memmove(dst, src, count * sizeof(T));
     }
 
-    static void CopyArrayBackward(T* dst, const T* src, UPInt count)
+    static void CopyArrayBackward(T* dst, const T* src, size_t count)
     {
         memmove(dst, src, count * sizeof(T));
     }
@@ -202,24 +202,24 @@ public:
         OVR::ConstructAlt<T,S>(p, source);        
     }
 
-    static void ConstructArray(void* p, UPInt count)
+    static void ConstructArray(void* p, size_t count)
     {
-        UByte* pdata = (UByte*)p;
-        for (UPInt i=0; i< count; ++i, pdata += sizeof(T))
+        uint8_t* pdata = (uint8_t*)p;
+        for (size_t i=0; i< count; ++i, pdata += sizeof(T))
             Construct(pdata);
     }
 
-    static void ConstructArray(void* p, UPInt count, const T& source)
+    static void ConstructArray(void* p, size_t count, const T& source)
     {
-        UByte* pdata = (UByte*)p;
-        for (UPInt i=0; i< count; ++i, pdata += sizeof(T))
+        uint8_t* pdata = (uint8_t*)p;
+        for (size_t i=0; i< count; ++i, pdata += sizeof(T))
             Construct(pdata, source);
     }
 
-    static void ConstructArray(void* p, UPInt count, const T* psource)
+    static void ConstructArray(void* p, size_t count, const T* psource)
     {
-        UByte* pdata = (UByte*)p;
-        for (UPInt i=0; i< count; ++i, pdata += sizeof(T))
+        uint8_t* pdata = (uint8_t*)p;
+        for (size_t i=0; i< count; ++i, pdata += sizeof(T))
             Construct(pdata, *psource++);
     }
 
@@ -229,22 +229,22 @@ public:
         OVR_UNUSED(p); // Suppress silly MSVC warning
     }
 
-    static void DestructArray(T* p, UPInt count)
+    static void DestructArray(T* p, size_t count)
     {   
         p += count - 1;
-        for (UPInt i=0; i<count; ++i, --p)
+        for (size_t i=0; i<count; ++i, --p)
             p->~T();
     }
 
-    static void CopyArrayForward(T* dst, const T* src, UPInt count)
+    static void CopyArrayForward(T* dst, const T* src, size_t count)
     {
-        for(UPInt i = 0; i < count; ++i)
+        for(size_t i = 0; i < count; ++i)
             dst[i] = src[i];
     }
 
-    static void CopyArrayBackward(T* dst, const T* src, UPInt count)
+    static void CopyArrayBackward(T* dst, const T* src, size_t count)
     {
-        for(UPInt i = count; i; --i)
+        for(size_t i = count; i; --i)
             dst[i-1] = src[i-1];
     }
 

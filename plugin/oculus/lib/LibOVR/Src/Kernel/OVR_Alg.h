@@ -1,21 +1,21 @@
 /************************************************************************************
 
-PublicHeader:   OVR.h
+PublicHeader:   OVR_Kernel.h
 Filename    :   OVR_Alg.h
 Content     :   Simple general purpose algorithms: Sort, Binary Search, etc.
 Created     :   September 19, 2012
 Notes       : 
 
-Copyright   :   Copyright 2013 Oculus VR, Inc. All Rights reserved.
+Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 
-Licensed under the Oculus VR SDK License Version 2.0 (the "License"); 
-you may not use the Oculus VR SDK except in compliance with the License, 
+Licensed under the Oculus VR Rift SDK License Version 3.1 (the "License"); 
+you may not use the Oculus VR Rift SDK except in compliance with the License, 
 which is provided at the time of installation or download, or which 
 otherwise accompanies this software in either electronic or hard copy form.
 
 You may obtain a copy of the License at
 
-http://www.oculusvr.com/licenses/LICENSE-2.0 
+http://www.oculusvr.com/licenses/LICENSE-3.1 
 
 Unless required by applicable law or agreed to in writing, the Oculus VR SDK 
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -66,12 +66,12 @@ template <typename T> OVR_FORCE_INLINE T       Lerp(T a, T b, T f)
 // absolutelly the same as regular gmin/gmax.
 template <typename T>   OVR_FORCE_INLINE const T PMin(const T a, const T b)
 {
-    OVR_COMPILER_ASSERT(sizeof(T) == sizeof(UPInt));
+    OVR_COMPILER_ASSERT(sizeof(T) == sizeof(size_t));
     return (a < b) ? a : b;
 }
 template <typename T>   OVR_FORCE_INLINE const T PMax(const T a, const T b)
 {
-    OVR_COMPILER_ASSERT(sizeof(T) == sizeof(UPInt));
+    OVR_COMPILER_ASSERT(sizeof(T) == sizeof(size_t));
     return (b < a) ? a : b;
 }
 
@@ -99,7 +99,7 @@ template<class T> struct OperatorLess
 // The range is specified with start, end, where "end" is exclusive!
 // The comparison predicate must be specified.
 template<class Array, class Less> 
-void QuickSortSliced(Array& arr, UPInt start, UPInt end, Less less)
+void QuickSortSliced(Array& arr, size_t start, size_t end, Less less)
 {
     enum 
     {
@@ -108,15 +108,15 @@ void QuickSortSliced(Array& arr, UPInt start, UPInt end, Less less)
 
     if(end - start <  2) return;
 
-    SPInt  stack[80];
-    SPInt* top   = stack; 
-    SPInt  base  = (SPInt)start;
-    SPInt  limit = (SPInt)end;
+    intptr_t  stack[80];
+    intptr_t* top   = stack; 
+    intptr_t  base  = (intptr_t)start;
+    intptr_t  limit = (intptr_t)end;
 
     for(;;)
     {
-        SPInt len = limit - base;
-        SPInt i, j, pivot;
+        intptr_t len = limit - base;
+        intptr_t i, j, pivot;
 
         if(len > Threshold)
         {
@@ -201,7 +201,7 @@ void QuickSortSliced(Array& arr, UPInt start, UPInt end, Less less)
 // The range is specified with start, end, where "end" is exclusive!
 // The data type must have a defined "<" operator.
 template<class Array> 
-void QuickSortSliced(Array& arr, UPInt start, UPInt end)
+void QuickSortSliced(Array& arr, size_t start, size_t end)
 {
     typedef typename Array::ValueType ValueType;
     QuickSortSliced(arr, start, end, OperatorLess<ValueType>::Compare);
@@ -210,7 +210,7 @@ void QuickSortSliced(Array& arr, UPInt start, UPInt end)
 // Same as corresponding G_QuickSortSliced but with checking array limits to avoid
 // crash in the case of wrong comparator functor.
 template<class Array, class Less> 
-bool QuickSortSlicedSafe(Array& arr, UPInt start, UPInt end, Less less)
+bool QuickSortSlicedSafe(Array& arr, size_t start, size_t end, Less less)
 {
     enum 
     {
@@ -219,15 +219,15 @@ bool QuickSortSlicedSafe(Array& arr, UPInt start, UPInt end, Less less)
 
     if(end - start <  2) return true;
 
-    SPInt  stack[80];
-    SPInt* top   = stack; 
-    SPInt  base  = (SPInt)start;
-    SPInt  limit = (SPInt)end;
+    intptr_t  stack[80];
+    intptr_t* top   = stack; 
+    intptr_t  base  = (intptr_t)start;
+    intptr_t  limit = (intptr_t)end;
 
     for(;;)
     {
-        SPInt len = limit - base;
-        SPInt i, j, pivot;
+        intptr_t len = limit - base;
+        intptr_t i, j, pivot;
 
         if(len > Threshold)
         {
@@ -316,7 +316,7 @@ bool QuickSortSlicedSafe(Array& arr, UPInt start, UPInt end, Less less)
 }
 
 template<class Array> 
-bool QuickSortSlicedSafe(Array& arr, UPInt start, UPInt end)
+bool QuickSortSlicedSafe(Array& arr, size_t start, size_t end)
 {
     typedef typename Array::ValueType ValueType;
     return QuickSortSlicedSafe(arr, start, end, OperatorLess<ValueType>::Compare);
@@ -374,11 +374,11 @@ bool QuickSortSafe(Array& arr)
 // an array with all equal elements will remain "untouched", while 
 // Quick Sort will considerably shuffle the elements in this case.
 template<class Array, class Less> 
-void InsertionSortSliced(Array& arr, UPInt start, UPInt end, Less less)
+void InsertionSortSliced(Array& arr, size_t start, size_t end, Less less)
 {
-    UPInt j = start;
-    UPInt i = j + 1;
-    UPInt limit = end;
+    size_t j = start;
+    size_t i = j + 1;
+    size_t limit = end;
 
     for(; i < limit; j = i, i++)
     {
@@ -401,7 +401,7 @@ void InsertionSortSliced(Array& arr, UPInt start, UPInt end, Less less)
 // The range is specified with start, end, where "end" is exclusive!
 // The data type must have a defined "<" operator.
 template<class Array> 
-void InsertionSortSliced(Array& arr, UPInt start, UPInt end)
+void InsertionSortSliced(Array& arr, size_t start, size_t end)
 {
     typedef typename Array::ValueType ValueType;
     InsertionSortSliced(arr, start, end, OperatorLess<ValueType>::Compare);
@@ -433,18 +433,40 @@ void InsertionSort(Array& arr)
     InsertionSortSliced(arr, 0, arr.GetSize(), OperatorLess<ValueType>::Compare);
 }
 
+//-----------------------------------------------------------------------------------
+// ***** Median
+// Returns a median value of the input array.
+// Caveats: partially sorts the array, returns a reference to the array element
+// TBD: This needs to be optimized and generalized
+//
+template<class Array> 
+typename Array::ValueType& Median(Array& arr)
+{
+    size_t count = arr.GetSize();
+    size_t mid = (count - 1) / 2;
+    OVR_ASSERT(count > 0);
 
+	for (size_t j = 0; j <= mid; j++)
+    {
+		size_t min = j;
+		for (size_t k = j + 1; k < count; k++)
+            if (arr[k] < arr[min]) 
+                min = k;
+        Swap(arr[j], arr[min]);
+    }
+    return arr[mid];
+}
 
 //-----------------------------------------------------------------------------------
 // ***** LowerBoundSliced
 //
 template<class Array, class Value, class Less>
-UPInt LowerBoundSliced(const Array& arr, UPInt start, UPInt end, const Value& val, Less less)
+size_t LowerBoundSliced(const Array& arr, size_t start, size_t end, const Value& val, Less less)
 {
-    SPInt first = (SPInt)start;
-    SPInt len   = (SPInt)(end - start);
-    SPInt half;
-    SPInt middle;
+    intptr_t first = (intptr_t)start;
+    intptr_t len   = (intptr_t)(end - start);
+    intptr_t half;
+    intptr_t middle;
     
     while(len > 0) 
     {
@@ -460,7 +482,7 @@ UPInt LowerBoundSliced(const Array& arr, UPInt start, UPInt end, const Value& va
             len = half;
         }
     }
-    return (UPInt)first;
+    return (size_t)first;
 }
 
 
@@ -468,7 +490,7 @@ UPInt LowerBoundSliced(const Array& arr, UPInt start, UPInt end, const Value& va
 // ***** LowerBoundSliced
 //
 template<class Array, class Value>
-UPInt LowerBoundSliced(const Array& arr, UPInt start, UPInt end, const Value& val)
+size_t LowerBoundSliced(const Array& arr, size_t start, size_t end, const Value& val)
 {
     return LowerBoundSliced(arr, start, end, val, OperatorLess<Value>::Compare);
 }
@@ -477,7 +499,7 @@ UPInt LowerBoundSliced(const Array& arr, UPInt start, UPInt end, const Value& va
 // ***** LowerBoundSized
 //
 template<class Array, class Value>
-UPInt LowerBoundSized(const Array& arr, UPInt size, const Value& val)
+size_t LowerBoundSized(const Array& arr, size_t size, const Value& val)
 {
     return LowerBoundSliced(arr, 0, size, val, OperatorLess<Value>::Compare);
 }
@@ -486,7 +508,7 @@ UPInt LowerBoundSized(const Array& arr, UPInt size, const Value& val)
 // ***** LowerBound
 //
 template<class Array, class Value, class Less>
-UPInt LowerBound(const Array& arr, const Value& val, Less less)
+size_t LowerBound(const Array& arr, const Value& val, Less less)
 {
     return LowerBoundSliced(arr, 0, arr.GetSize(), val, less);
 }
@@ -496,7 +518,7 @@ UPInt LowerBound(const Array& arr, const Value& val, Less less)
 // ***** LowerBound
 //
 template<class Array, class Value>
-UPInt LowerBound(const Array& arr, const Value& val)
+size_t LowerBound(const Array& arr, const Value& val)
 {
     return LowerBoundSliced(arr, 0, arr.GetSize(), val, OperatorLess<Value>::Compare);
 }
@@ -507,12 +529,12 @@ UPInt LowerBound(const Array& arr, const Value& val)
 // ***** UpperBoundSliced
 //
 template<class Array, class Value, class Less>
-UPInt UpperBoundSliced(const Array& arr, UPInt start, UPInt end, const Value& val, Less less)
+size_t UpperBoundSliced(const Array& arr, size_t start, size_t end, const Value& val, Less less)
 {
-    SPInt first = (SPInt)start;
-    SPInt len   = (SPInt)(end - start);
-    SPInt half;
-    SPInt middle;
+    intptr_t first = (intptr_t)start;
+    intptr_t len   = (intptr_t)(end - start);
+    intptr_t half;
+    intptr_t middle;
     
     while(len > 0) 
     {
@@ -528,7 +550,7 @@ UPInt UpperBoundSliced(const Array& arr, UPInt start, UPInt end, const Value& va
             len   = len - half - 1;
         }
     }
-    return (UPInt)first;
+    return (size_t)first;
 }
 
 
@@ -536,7 +558,7 @@ UPInt UpperBoundSliced(const Array& arr, UPInt start, UPInt end, const Value& va
 // ***** UpperBoundSliced
 //
 template<class Array, class Value>
-UPInt UpperBoundSliced(const Array& arr, UPInt start, UPInt end, const Value& val)
+size_t UpperBoundSliced(const Array& arr, size_t start, size_t end, const Value& val)
 {
     return UpperBoundSliced(arr, start, end, val, OperatorLess<Value>::Compare);
 }
@@ -546,7 +568,7 @@ UPInt UpperBoundSliced(const Array& arr, UPInt start, UPInt end, const Value& va
 // ***** UpperBoundSized
 //
 template<class Array, class Value>
-UPInt UpperBoundSized(const Array& arr, UPInt size, const Value& val)
+size_t UpperBoundSized(const Array& arr, size_t size, const Value& val)
 {
     return UpperBoundSliced(arr, 0, size, val, OperatorLess<Value>::Compare);
 }
@@ -556,7 +578,7 @@ UPInt UpperBoundSized(const Array& arr, UPInt size, const Value& val)
 // ***** UpperBound
 //
 template<class Array, class Value, class Less>
-UPInt UpperBound(const Array& arr, const Value& val, Less less)
+size_t UpperBound(const Array& arr, const Value& val, Less less)
 {
     return UpperBoundSliced(arr, 0, arr.GetSize(), val, less);
 }
@@ -566,7 +588,7 @@ UPInt UpperBound(const Array& arr, const Value& val, Less less)
 // ***** UpperBound
 //
 template<class Array, class Value>
-UPInt UpperBound(const Array& arr, const Value& val)
+size_t UpperBound(const Array& arr, const Value& val)
 {
     return UpperBoundSliced(arr, 0, arr.GetSize(), val, OperatorLess<Value>::Compare);
 }
@@ -577,8 +599,8 @@ UPInt UpperBound(const Array& arr, const Value& val)
 //
 template<class Array> void ReverseArray(Array& arr)
 {
-    SPInt from = 0;
-    SPInt to   = arr.GetSize() - 1;
+    intptr_t from = 0;
+    intptr_t to   = arr.GetSize() - 1;
     while(from < to)
     {
         Swap(arr[from], arr[to]);
@@ -593,7 +615,7 @@ template<class Array> void ReverseArray(Array& arr)
 template<class CDst, class CSrc> 
 void AppendArray(CDst& dst, const CSrc& src)
 {
-    UPInt i;
+    size_t i;
     for(i = 0; i < src.GetSize(); i++) 
         dst.PushBack(src[i]);
 }
@@ -608,13 +630,14 @@ template<class T> class ArrayAdaptor
 public:
     typedef T ValueType;
     ArrayAdaptor() : Data(0), Size(0) {}
-    ArrayAdaptor(T* ptr, UPInt size) : Data(ptr), Size(size) {}
-    UPInt GetSize() const { return Size; }
-    const T& operator [] (UPInt i) const { return Data[i]; }
-          T& operator [] (UPInt i)       { return Data[i]; }
+    ArrayAdaptor(T* ptr, size_t size) : Data(ptr), Size(size) {}
+    size_t GetSize() const { return Size; }
+	int GetSizeI() const { return (int)GetSize(); }
+    const T& operator [] (size_t i) const { return Data[i]; }
+          T& operator [] (size_t i)       { return Data[i]; }
 private:
     T*      Data;
-    UPInt   Size;
+    size_t  Size;
 };
 
 
@@ -628,36 +651,37 @@ template<class T> class ConstArrayAdaptor
 public:
     typedef T ValueType;
     ConstArrayAdaptor() : Data(0), Size(0) {}
-    ConstArrayAdaptor(const T* ptr, UPInt size) : Data(ptr), Size(size) {}
-    UPInt GetSize() const { return Size; }
-    const T& operator [] (UPInt i) const { return Data[i]; }
+    ConstArrayAdaptor(const T* ptr, size_t size) : Data(ptr), Size(size) {}
+    size_t GetSize() const { return Size; }
+	int GetSizeI() const { return (int)GetSize(); }
+	const T& operator [] (size_t i) const { return Data[i]; }
 private:
     const T* Data;
-    UPInt    Size;
+    size_t   Size;
 };
 
 
 
 //-----------------------------------------------------------------------------------
-extern const UByte UpperBitTable[256];
-extern const UByte LowerBitTable[256];
+extern const uint8_t UpperBitTable[256];
+extern const uint8_t LowerBitTable[256];
 
 
 
 //-----------------------------------------------------------------------------------
-inline UByte UpperBit(UPInt val)
+inline uint8_t UpperBit(size_t val)
 {
 #ifndef OVR_64BIT_POINTERS
 
     if (val & 0xFFFF0000)
     {
-        return static_cast<UByte>((val & 0xFF000000) ? 
+        return (val & 0xFF000000) ? 
             UpperBitTable[(val >> 24)       ] + 24: 
-            UpperBitTable[(val >> 16) & 0xFF] + 16);
+            UpperBitTable[(val >> 16) & 0xFF] + 16;
     }
-    return static_cast<UByte>((val & 0xFF00) ?
+    return (val & 0xFF00) ?
         UpperBitTable[(val >> 8) & 0xFF] + 8:
-        UpperBitTable[(val     ) & 0xFF]);
+        UpperBitTable[(val     ) & 0xFF];
 
 #else
 
@@ -690,19 +714,19 @@ inline UByte UpperBit(UPInt val)
 }
 
 //-----------------------------------------------------------------------------------
-inline UByte LowerBit(UPInt val)
+inline uint8_t LowerBit(size_t val)
 {
 #ifndef OVR_64BIT_POINTERS
 
     if (val & 0xFFFF)
     {
-        return static_cast<UByte>( (val & 0xFF) ?
+        return (val & 0xFF) ?
             LowerBitTable[ val & 0xFF]:
-            LowerBitTable[(val >> 8) & 0xFF] + 8 );
+            LowerBitTable[(val >> 8) & 0xFF] + 8;
     }
-    return static_cast<UByte>( (val & 0xFF0000) ?
+    return (val & 0xFF0000) ?
             LowerBitTable[(val >> 16) & 0xFF] + 16:
-            LowerBitTable[(val >> 24) & 0xFF] + 24 );
+            LowerBitTable[(val >> 24) & 0xFF] + 24;
 
 #else
 
@@ -743,18 +767,18 @@ class MemUtil
 public:
                                     
     // Memory compare
-    static int      Cmp  (const void* p1, const void* p2, UPInt byteCount)      { return memcmp(p1, p2, byteCount); }
-    static int      Cmp16(const void* p1, const void* p2, UPInt int16Count);
-    static int      Cmp32(const void* p1, const void* p2, UPInt int32Count);
-    static int      Cmp64(const void* p1, const void* p2, UPInt int64Count); 
+    static int      Cmp  (const void* p1, const void* p2, size_t byteCount)      { return memcmp(p1, p2, byteCount); }
+    static int      Cmp16(const void* p1, const void* p2, size_t int16Count);
+    static int      Cmp32(const void* p1, const void* p2, size_t int32Count);
+    static int      Cmp64(const void* p1, const void* p2, size_t int64Count); 
 };
 
 // ** Inline Implementation
 
-inline int MemUtil::Cmp16(const void* p1, const void* p2, UPInt int16Count)
+inline int MemUtil::Cmp16(const void* p1, const void* p2, size_t int16Count)
 {
-    SInt16*  pa  = (SInt16*)p1; 
-    SInt16*  pb  = (SInt16*)p2;
+    int16_t*  pa  = (int16_t*)p1; 
+    int16_t*  pb  = (int16_t*)p2;
     unsigned ic  = 0;
     if (int16Count == 0)
         return 0;
@@ -763,10 +787,10 @@ inline int MemUtil::Cmp16(const void* p1, const void* p2, UPInt int16Count)
             return 0;
     return pa[ic] > pb[ic] ? 1 : -1;
 }
-inline int MemUtil::Cmp32(const void* p1, const void* p2, UPInt int32Count)
+inline int MemUtil::Cmp32(const void* p1, const void* p2, size_t int32Count)
 {
-    SInt32*  pa  = (SInt32*)p1;
-    SInt32*  pb  = (SInt32*)p2;
+    int32_t*  pa  = (int32_t*)p1;
+    int32_t*  pb  = (int32_t*)p2;
     unsigned ic  = 0;
     if (int32Count == 0)
         return 0;
@@ -775,10 +799,10 @@ inline int MemUtil::Cmp32(const void* p1, const void* p2, UPInt int32Count)
             return 0;
     return pa[ic] > pb[ic] ? 1 : -1;
 }
-inline int MemUtil::Cmp64(const void* p1, const void* p2, UPInt int64Count)
+inline int MemUtil::Cmp64(const void* p1, const void* p2, size_t int64Count)
 {
-    SInt64*  pa  = (SInt64*)p1;
-    SInt64*  pb  = (SInt64*)p2;
+    int64_t*  pa  = (int64_t*)p1;
+    int64_t*  pb  = (int64_t*)p2;
     unsigned ic  = 0;
     if (int64Count == 0)
         return 0;
@@ -800,8 +824,8 @@ namespace ByteUtil {
     // Swap the byte order of a byte array
     inline void     SwapOrder(void* pv, int size)
     {
-        UByte*  pb = (UByte*)pv;
-        UByte   temp;
+        uint8_t*  pb = (uint8_t*)pv;
+        uint8_t temp;
         for (int i = 0; i < size>>1; i++)
         { 
             temp            = pb[size-1-i];
@@ -811,29 +835,29 @@ namespace ByteUtil {
     }
 
     // Swap the byte order of primitive types
-    inline UByte    SwapOrder(UByte v)      { return v; }
-    inline SByte    SwapOrder(SByte v)      { return v; }
-    inline UInt16   SwapOrder(UInt16 v)     { return static_cast<UInt16>( UInt16(v>>8)|UInt16(v<<8) ); }
-    inline SInt16   SwapOrder(SInt16 v)     { return SInt16((UInt16(v)>>8)|(v<<8)); }
-    inline UInt32   SwapOrder(UInt32 v)     { return (v>>24)|((v&0x00FF0000)>>8)|((v&0x0000FF00)<<8)|(v<<24); }
-    inline SInt32   SwapOrder(SInt32 p)     { return (SInt32)SwapOrder(UInt32(p)); }
-    inline UInt64   SwapOrder(UInt64 v)
+    inline uint8_t  SwapOrder(uint8_t v)    { return v; }
+    inline int8_t   SwapOrder(int8_t v)     { return v; }
+    inline uint16_t SwapOrder(uint16_t v)   { return uint16_t(v>>8)|uint16_t(v<<8); }
+    inline int16_t  SwapOrder(int16_t v)    { return int16_t((uint16_t(v)>>8)|(v<<8)); }
+    inline uint32_t SwapOrder(uint32_t v)   { return (v>>24)|((v&0x00FF0000)>>8)|((v&0x0000FF00)<<8)|(v<<24); }
+    inline int32_t  SwapOrder(int32_t p)    { return (int32_t)SwapOrder(uint32_t(p)); }
+    inline uint64_t SwapOrder(uint64_t v)
     { 
         return   (v>>56) |
-                 ((v&UInt64(0x00FF000000000000))>>40) |
-                 ((v&UInt64(0x0000FF0000000000))>>24) |
-                 ((v&UInt64(0x000000FF00000000))>>8)  |
-                 ((v&UInt64(0x00000000FF000000))<<8)  |
-                 ((v&UInt64(0x0000000000FF0000))<<24) |
-                 ((v&UInt64(0x000000000000FF00))<<40) |
+                 ((v&uint64_t(0x00FF000000000000ULL))>>40) |
+                 ((v&uint64_t(0x0000FF0000000000ULL))>>24) |
+                 ((v&uint64_t(0x000000FF00000000ULL))>>8)  |
+                 ((v&uint64_t(0x00000000FF000000ULL))<<8)  |
+                 ((v&uint64_t(0x0000000000FF0000ULL))<<24) |
+                 ((v&uint64_t(0x000000000000FF00ULL))<<40) |
                  (v<<56); 
     }
-    inline SInt64   SwapOrder(SInt64 v)     { return (SInt64)SwapOrder(UInt64(v)); }
+    inline int64_t  SwapOrder(int64_t v)     { return (int64_t)SwapOrder(uint64_t(v)); }
     inline float    SwapOrder(float p)      
     { 
         union {
             float p;
-            UInt32 v;
+            uint32_t v;
         } u;
         u.p = p;
         u.v = SwapOrder(u.v);
@@ -844,7 +868,7 @@ namespace ByteUtil {
     { 
         union {
             double p;
-            UInt64 v;
+            uint64_t v;
         } u;
         u.p = p;
         u.v = SwapOrder(u.v);
@@ -855,99 +879,99 @@ namespace ByteUtil {
 
 #if (OVR_BYTE_ORDER == OVR_LITTLE_ENDIAN)
     // Little Endian to System (LE)
-    inline UByte    LEToSystem(UByte  v)    { return v; }
-    inline SByte    LEToSystem(SByte  v)    { return v; }
-    inline UInt16   LEToSystem(UInt16 v)    { return v; }
-    inline SInt16   LEToSystem(SInt16 v)    { return v; }
-    inline UInt32   LEToSystem(UInt32 v)    { return v; }
-    inline SInt32   LEToSystem(SInt32 v)    { return v; }
-    inline UInt64   LEToSystem(UInt64 v)    { return v; }
-    inline SInt64   LEToSystem(SInt64 v)    { return v; }
+    inline uint8_t  LEToSystem(uint8_t v)   { return v; }
+    inline int8_t   LEToSystem(int8_t v)    { return v; }
+    inline uint16_t LEToSystem(uint16_t v)  { return v; }
+    inline int16_t  LEToSystem(int16_t v)   { return v; }
+    inline uint32_t LEToSystem(uint32_t v)  { return v; }
+    inline int32_t  LEToSystem(int32_t v)   { return v; }
+    inline uint64_t LEToSystem(uint64_t v)  { return v; }
+    inline int64_t  LEToSystem(int64_t v)    { return v; }
     inline float    LEToSystem(float  v)    { return v; }
     inline double   LEToSystem(double v)    { return v; }
 
     // Big Endian to System (LE)
-    inline UByte    BEToSystem(UByte  v)    { return SwapOrder(v); }
-    inline SByte    BEToSystem(SByte  v)    { return SwapOrder(v); }
-    inline UInt16   BEToSystem(UInt16 v)    { return SwapOrder(v); }
-    inline SInt16   BEToSystem(SInt16 v)    { return SwapOrder(v); }
-    inline UInt32   BEToSystem(UInt32 v)    { return SwapOrder(v); }
-    inline SInt32   BEToSystem(SInt32 v)    { return SwapOrder(v); }
-    inline UInt64   BEToSystem(UInt64 v)    { return SwapOrder(v); }
-    inline SInt64   BEToSystem(SInt64 v)    { return SwapOrder(v); }
+    inline uint8_t  BEToSystem(uint8_t v)   { return SwapOrder(v); }
+    inline int8_t   BEToSystem(int8_t v)    { return SwapOrder(v); }
+    inline uint16_t BEToSystem(uint16_t v)  { return SwapOrder(v); }
+    inline int16_t  BEToSystem(int16_t v)   { return SwapOrder(v); }
+    inline uint32_t BEToSystem(uint32_t v)  { return SwapOrder(v); }
+    inline int32_t  BEToSystem(int32_t v)   { return SwapOrder(v); }
+    inline uint64_t BEToSystem(uint64_t v)  { return SwapOrder(v); }
+    inline int64_t  BEToSystem(int64_t v)    { return SwapOrder(v); }
     inline float    BEToSystem(float  v)    { return SwapOrder(v); }
     inline double   BEToSystem(double v)    { return SwapOrder(v); }
 
     // System (LE) to Little Endian
-    inline UByte    SystemToLE(UByte  v)    { return v; }
-    inline SByte    SystemToLE(SByte  v)    { return v; }
-    inline UInt16   SystemToLE(UInt16 v)    { return v; }
-    inline SInt16   SystemToLE(SInt16 v)    { return v; }
-    inline UInt32   SystemToLE(UInt32 v)    { return v; }
-    inline SInt32   SystemToLE(SInt32 v)    { return v; }
-    inline UInt64   SystemToLE(UInt64 v)    { return v; }
-    inline SInt64   SystemToLE(SInt64 v)    { return v; }
+    inline uint8_t  SystemToLE(uint8_t v)   { return v; }
+    inline int8_t   SystemToLE(int8_t v)    { return v; }
+    inline uint16_t SystemToLE(uint16_t v)  { return v; }
+    inline int16_t  SystemToLE(int16_t v)   { return v; }
+    inline uint32_t SystemToLE(uint32_t v)  { return v; }
+    inline int32_t  SystemToLE(int32_t v)   { return v; }
+    inline uint64_t SystemToLE(uint64_t v)  { return v; }
+    inline int64_t  SystemToLE(int64_t v)    { return v; }
     inline float    SystemToLE(float  v)    { return v; }
     inline double   SystemToLE(double v)    { return v; }   
 
     // System (LE) to Big Endian
-    inline UByte    SystemToBE(UByte  v)    { return SwapOrder(v); }
-    inline SByte    SystemToBE(SByte  v)    { return SwapOrder(v); }
-    inline UInt16   SystemToBE(UInt16 v)    { return SwapOrder(v); }
-    inline SInt16   SystemToBE(SInt16 v)    { return SwapOrder(v); }
-    inline UInt32   SystemToBE(UInt32 v)    { return SwapOrder(v); }
-    inline SInt32   SystemToBE(SInt32 v)    { return SwapOrder(v); }
-    inline UInt64   SystemToBE(UInt64 v)    { return SwapOrder(v); }
-    inline SInt64   SystemToBE(SInt64 v)    { return SwapOrder(v); }
+    inline uint8_t  SystemToBE(uint8_t v)   { return SwapOrder(v); }
+    inline int8_t   SystemToBE(int8_t v)    { return SwapOrder(v); }
+    inline uint16_t SystemToBE(uint16_t v)  { return SwapOrder(v); }
+    inline int16_t  SystemToBE(int16_t v)   { return SwapOrder(v); }
+    inline uint32_t SystemToBE(uint32_t v)  { return SwapOrder(v); }
+    inline int32_t  SystemToBE(int32_t v)   { return SwapOrder(v); }
+    inline uint64_t SystemToBE(uint64_t v)  { return SwapOrder(v); }
+    inline int64_t  SystemToBE(int64_t v)    { return SwapOrder(v); }
     inline float    SystemToBE(float  v)    { return SwapOrder(v); }
     inline double   SystemToBE(double v)    { return SwapOrder(v); }
 
 #elif (OVR_BYTE_ORDER == OVR_BIG_ENDIAN)
     // Little Endian to System (BE)
-    inline UByte    LEToSystem(UByte  v)    { return SwapOrder(v); }
-    inline SByte    LEToSystem(SByte  v)    { return SwapOrder(v); }
-    inline UInt16   LEToSystem(UInt16 v)    { return SwapOrder(v); }
-    inline SInt16   LEToSystem(SInt16 v)    { return SwapOrder(v); }
-    inline UInt32   LEToSystem(UInt32 v)    { return SwapOrder(v); }
-    inline SInt32   LEToSystem(SInt32 v)    { return SwapOrder(v); }
-    inline UInt64   LEToSystem(UInt64 v)    { return SwapOrder(v); }
-    inline SInt64   LEToSystem(SInt64 v)    { return SwapOrder(v); }
+    inline uint8_t  LEToSystem(uint8_t  v)  { return SwapOrder(v); }
+    inline int8_t   LEToSystem(int8_t v)    { return SwapOrder(v); }
+    inline uint16_t LEToSystem(uint16_t v)  { return SwapOrder(v); }
+    inline int16_t  LEToSystem(int16_t v)   { return SwapOrder(v); }
+    inline uint32_t LEToSystem(uint32_t v)  { return SwapOrder(v); }
+    inline int32_t  LEToSystem(int32_t v)   { return SwapOrder(v); }
+    inline uint64_t LEToSystem(uint64_t v)  { return SwapOrder(v); }
+    inline int64_t  LEToSystem(int64_t v)    { return SwapOrder(v); }
     inline float    LEToSystem(float  v)    { return SwapOrder(v); }
     inline double   LEToSystem(double v)    { return SwapOrder(v); }
 
     // Big Endian to System (BE)
-    inline UByte    BEToSystem(UByte  v)    { return v; }
-    inline SByte    BEToSystem(SByte  v)    { return v; }
-    inline UInt16   BEToSystem(UInt16 v)    { return v; }
-    inline SInt16   BEToSystem(SInt16 v)    { return v; }
-    inline UInt32   BEToSystem(UInt32 v)    { return v; }
-    inline SInt32   BEToSystem(SInt32 v)    { return v; }
-    inline UInt64   BEToSystem(UInt64 v)    { return v; }
-    inline SInt64   BEToSystem(SInt64 v)    { return v; }
+    inline uint8_t  BEToSystem(uint8_t v)   { return v; }
+    inline int8_t   BEToSystem(int8_t v)    { return v; }
+    inline uint16_t BEToSystem(uint16_t v)  { return v; }
+    inline int16_t  BEToSystem(int16_t v)   { return v; }
+    inline uint32_t BEToSystem(uint32_t v)  { return v; }
+    inline int32_t  BEToSystem(int32_t v)   { return v; }
+    inline uint64_t BEToSystem(uint64_t v)  { return v; }
+    inline int64_t  BEToSystem(int64_t v)    { return v; }
     inline float    BEToSystem(float  v)    { return v; }
     inline double   BEToSystem(double v)    { return v; }
 
     // System (BE) to Little Endian
-    inline UByte    SystemToLE(UByte  v)    { return SwapOrder(v); }
-    inline SByte    SystemToLE(SByte  v)    { return SwapOrder(v); }
-    inline UInt16   SystemToLE(UInt16 v)    { return SwapOrder(v); }
-    inline SInt16   SystemToLE(SInt16 v)    { return SwapOrder(v); }
-    inline UInt32   SystemToLE(UInt32 v)    { return SwapOrder(v); }
-    inline SInt32   SystemToLE(SInt32 v)    { return SwapOrder(v); }
-    inline UInt64   SystemToLE(UInt64 v)    { return SwapOrder(v); }
-    inline SInt64   SystemToLE(SInt64 v)    { return SwapOrder(v); }
+    inline uint8_t  SystemToLE(uint8_t v)   { return SwapOrder(v); }
+    inline int8_t   SystemToLE(int8_t v)    { return SwapOrder(v); }
+    inline uint16_t SystemToLE(uint16_t v)  { return SwapOrder(v); }
+    inline int16_t  SystemToLE(int16_t v)   { return SwapOrder(v); }
+    inline uint32_t SystemToLE(uint32_t v)  { return SwapOrder(v); }
+    inline int32_t  SystemToLE(int32_t v)   { return SwapOrder(v); }
+    inline uint64_t SystemToLE(uint64_t v)  { return SwapOrder(v); }
+    inline int64_t  SystemToLE(int64_t v)    { return SwapOrder(v); }
     inline float    SystemToLE(float  v)    { return SwapOrder(v); }
     inline double   SystemToLE(double v)    { return SwapOrder(v); }
 
     // System (BE) to Big Endian
-    inline UByte    SystemToBE(UByte  v)    { return v; }
-    inline SByte    SystemToBE(SByte  v)    { return v; }
-    inline UInt16   SystemToBE(UInt16 v)    { return v; }
-    inline SInt16   SystemToBE(SInt16 v)    { return v; }
-    inline UInt32   SystemToBE(UInt32 v)    { return v; }
-    inline SInt32   SystemToBE(SInt32 v)    { return v; }
-    inline UInt64   SystemToBE(UInt64 v)    { return v; }
-    inline SInt64   SystemToBE(SInt64 v)    { return v; }
+    inline uint8_t  SystemToBE(uint8_t v)   { return v; }
+    inline int8_t   SystemToBE(int8_t v)    { return v; }
+    inline uint16_t SystemToBE(uint16_t v)  { return v; }
+    inline int16_t  SystemToBE(int16_t v)   { return v; }
+    inline uint32_t SystemToBE(uint32_t v)  { return v; }
+    inline int32_t  SystemToBE(int32_t v)   { return v; }
+    inline uint64_t SystemToBE(uint64_t v)  { return v; }
+    inline int64_t  SystemToBE(int64_t v)    { return v; }
     inline float    SystemToBE(float  v)    { return v; }
     inline double   SystemToBE(double v)    { return v; }
 
@@ -957,6 +981,80 @@ namespace ByteUtil {
 
 } // namespace ByteUtil
 
+
+
+// Used primarily for hardware interfacing such as sensor reports, firmware, etc.
+// Reported data is all little-endian.
+inline uint16_t DecodeUInt16(const uint8_t* buffer)
+{
+    return ByteUtil::LEToSystem ( *(const uint16_t*)buffer );
+}
+
+inline int16_t DecodeSInt16(const uint8_t* buffer)
+{
+    return ByteUtil::LEToSystem ( *(const int16_t*)buffer );
+}
+
+inline uint32_t DecodeUInt32(const uint8_t* buffer)
+{    
+    return ByteUtil::LEToSystem ( *(const uint32_t*)buffer );
+}
+
+inline int32_t DecodeSInt32(const uint8_t* buffer)
+{    
+    return ByteUtil::LEToSystem ( *(const int32_t*)buffer );
+}
+
+inline float DecodeFloat(const uint8_t* buffer)
+{
+    union {
+        uint32_t U;
+        float  F;
+    };
+
+    U = DecodeUInt32(buffer);
+    return F;
+}
+
+inline void EncodeUInt16(uint8_t* buffer, uint16_t val)
+{
+    *(uint16_t*)buffer = ByteUtil::SystemToLE ( val );
+}
+
+inline void EncodeSInt16(uint8_t* buffer, int16_t val)
+{
+    *(int16_t*)buffer = ByteUtil::SystemToLE ( val );
+}
+
+inline void EncodeUInt32(uint8_t* buffer, uint32_t val)
+{
+    *(uint32_t*)buffer = ByteUtil::SystemToLE ( val );
+}
+
+inline void EncodeSInt32(uint8_t* buffer, int32_t val)
+{
+    *(int32_t*)buffer = ByteUtil::SystemToLE ( val );
+}
+
+inline void EncodeFloat(uint8_t* buffer, float val)
+{
+    union {
+        uint32_t U;
+        float  F;
+    };
+
+    F = val;
+    EncodeUInt32(buffer, U);
+}
+
+// Converts an 8-bit binary-coded decimal
+inline int8_t DecodeBCD(uint8_t byte)
+{
+    uint8_t digit1 = (byte >> 4) & 0x0f;
+    uint8_t digit2 = byte & 0x0f;
+    int decimal = digit1 * 10 + digit2;   // maximum value = 99
+    return (int8_t)decimal;
+}
 
 
 }} // OVR::Alg

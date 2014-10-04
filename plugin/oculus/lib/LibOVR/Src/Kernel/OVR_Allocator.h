@@ -1,21 +1,21 @@
 /************************************************************************************
 
-PublicHeader:   OVR.h
+PublicHeader:   OVR_Kernel.h
 Filename    :   OVR_Allocator.h
 Content     :   Installable memory allocator
 Created     :   September 19, 2012
 Notes       : 
 
-Copyright   :   Copyright 2013 Oculus VR, Inc. All Rights reserved.
+Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 
-Licensed under the Oculus VR SDK License Version 2.0 (the "License"); 
-you may not use the Oculus VR SDK except in compliance with the License, 
+Licensed under the Oculus VR Rift SDK License Version 3.1 (the "License"); 
+you may not use the Oculus VR Rift SDK except in compliance with the License, 
 which is provided at the time of installation or download, or which 
 otherwise accompanies this software in either electronic or hard copy form.
 
 You may obtain a copy of the License at
 
-http://www.oculusvr.com/licenses/LICENSE-2.0 
+http://www.oculusvr.com/licenses/LICENSE-3.1 
 
 Unless required by applicable law or agreed to in writing, the Oculus VR SDK 
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -56,7 +56,7 @@ limitations under the License.
 #      include <new>
 #   else
     // Useful on MSVC
-    OVR_FORCE_INLINE void* operator new     (OVR::UPInt n, void *ptr) { OVR_UNUSED(n); return ptr; }
+    OVR_FORCE_INLINE void* operator new     (size_t n, void *ptr) { OVR_UNUSED(n); return ptr; }
     OVR_FORCE_INLINE void  operator delete  (void *, void *)     { }
 #   endif
 
@@ -71,9 +71,9 @@ limitations under the License.
 // class member operator new.
 
 #define OVR_MEMORY_REDEFINE_NEW_IMPL(class_name, check_delete)                          \
-    void*   operator new(UPInt sz)                                                      \
+    void*   operator new(size_t sz)                                                      \
     { void *p = OVR_ALLOC_DEBUG(sz, __FILE__, __LINE__); return p; }                                              \
-    void*   operator new(UPInt sz, const char* file, int line)                          \
+    void*   operator new(size_t sz, const char* file, int line)                          \
     { void* p = OVR_ALLOC_DEBUG(sz, file, line); OVR_UNUSED2(file, line); return p; }   \
     void    operator delete(void *p)                                                    \
     { check_delete(class_name, p); OVR_FREE(p); }                                       \
@@ -81,7 +81,7 @@ limitations under the License.
     { check_delete(class_name, p); OVR_FREE(p); }                          
 
 #define OVR_MEMORY_DEFINE_PLACEMENT_NEW                                                 \
-    void*   operator new        (UPInt n, void *ptr)    { OVR_UNUSED(n); return ptr; }  \
+    void*   operator new        (size_t n, void *ptr)    { OVR_UNUSED(n); return ptr; }  \
     void    operator delete     (void *ptr, void *ptr2) { OVR_UNUSED2(ptr,ptr2); }
 
 
@@ -104,7 +104,7 @@ namespace OVR {
 template <class T>
 OVR_FORCE_INLINE T*  Construct(void *p)
 {
-    return ::new(p) T;
+    return ::new(p) T();
 }
 
 template <class T>
@@ -127,20 +127,20 @@ OVR_FORCE_INLINE T*  ConstructAlt(void *p, const S1& src1, const S2& src2)
 }
 
 template <class T>
-OVR_FORCE_INLINE void ConstructArray(void *p, UPInt count)
+OVR_FORCE_INLINE void ConstructArray(void *p, size_t count)
 {
-    UByte *pdata = (UByte*)p;
-    for (UPInt i=0; i< count; ++i, pdata += sizeof(T))
+    uint8_t *pdata = (uint8_t*)p;
+    for (size_t i=0; i< count; ++i, pdata += sizeof(T))
     {
         Construct<T>(pdata);
     }
 }
 
 template <class T>
-OVR_FORCE_INLINE void ConstructArray(void *p, UPInt count, const T& source)
+OVR_FORCE_INLINE void ConstructArray(void *p, size_t count, const T& source)
 {
-    UByte *pdata = (UByte*)p;
-    for (UPInt i=0; i< count; ++i, pdata += sizeof(T))
+    uint8_t *pdata = (uint8_t*)p;
+    for (size_t i=0; i< count; ++i, pdata += sizeof(T))
     {
         Construct<T>(pdata, source);
     }
@@ -154,9 +154,9 @@ OVR_FORCE_INLINE void Destruct(T *pobj)
 }
 
 template <class T>
-OVR_FORCE_INLINE void DestructArray(T *pobj, UPInt count)
+OVR_FORCE_INLINE void DestructArray(T *pobj, size_t count)
 {   
-    for (UPInt i=0; i<count; ++i, ++pobj)
+    for (size_t i=0; i<count; ++i, ++pobj)
         pobj->~T();
 }
 
@@ -184,9 +184,9 @@ public:
     // Allocate memory of specified size with default alignment.
     // Alloc of size==0 will allocate a tiny block & return a valid pointer;
     // this makes it suitable for new operator.
-    virtual void*   Alloc(UPInt size) = 0;
+    virtual void*   Alloc(size_t size) = 0;
     // Same as Alloc, but provides an option of passing debug data.
-    virtual void*   AllocDebug(UPInt size, const char* file, unsigned line)
+    virtual void*   AllocDebug(size_t size, const char* file, unsigned line)
     { OVR_UNUSED2(file, line); return Alloc(size); }
 
     // Reallocate memory block to a new size, copying data if necessary. Returns the pointer to
@@ -195,7 +195,7 @@ public:
     // Realloc to decrease size will never fail.
     // Realloc of pointer == 0 is equivalent to Alloc
     // Realloc to size == 0, shrinks to the minimal size, pointer remains valid and requires Free().
-    virtual void*   Realloc(void* p, UPInt newSize) = 0;
+    virtual void*   Realloc(void* p, size_t newSize) = 0;
 
     // Frees memory allocated by Alloc/Realloc.
     // Free of null pointer is valid and will do nothing.
@@ -207,7 +207,7 @@ public:
     // Allocate memory of specified alignment.
     // Memory allocated with AllocAligned MUST be freed with FreeAligned.
     // Default implementation will delegate to Alloc/Free after doing rounding.
-    virtual void*   AllocAligned(UPInt size, UPInt align);    
+    virtual void*   AllocAligned(size_t size, size_t align);    
     // Frees memory allocated with AllocAligned.
     virtual void    FreeAligned(void* p);
     
@@ -250,7 +250,7 @@ class Allocator_SingletonSupport : public Allocator
 {
     struct AllocContainer
     {        
-        UPInt Data[(sizeof(D) + sizeof(UPInt)-1) / sizeof(UPInt)];
+        size_t Data[(sizeof(D) + sizeof(size_t)-1) / sizeof(size_t)];
         bool  Initialized;
         AllocContainer() : Initialized(0) { }
     };
@@ -295,9 +295,9 @@ protected:
 class DefaultAllocator : public Allocator_SingletonSupport<DefaultAllocator>
 {
 public:
-    virtual void*   Alloc(UPInt size);
-    virtual void*   AllocDebug(UPInt size, const char* file, unsigned line);
-    virtual void*   Realloc(void* p, UPInt newSize);
+    virtual void*   Alloc(size_t size);
+    virtual void*   AllocDebug(size_t size, const char* file, unsigned line);
+    virtual void*   Realloc(void* p, size_t newSize);
     virtual void    Free(void *p);
 };
 

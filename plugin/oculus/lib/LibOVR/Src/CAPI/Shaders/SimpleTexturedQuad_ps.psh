@@ -1,0 +1,16 @@
+float4 Color;
+
+SamplerState LinearSampler : register(s0);
+Texture2D Texture : register(t0);
+
+struct Values
+{
+   float4 Position : SV_Position;
+   float4 Color    : COLOR0;
+   float2 TexCoord : TEXCOORD0;
+};
+
+float4 main(in Values inputValues) : SV_Target
+{
+    return Color * inputValues.Color * Texture.Sample(LinearSampler, inputValues.TexCoord);
+}

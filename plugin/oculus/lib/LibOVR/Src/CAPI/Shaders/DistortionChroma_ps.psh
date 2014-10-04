@@ -1,0 +1,77 @@
+Texture2D Texture : register(t0);
+Texture2D LastTexture : register(t1);
+SamplerState Linear : register(s0);
+
+float2 OverdriveScales;
+float AaDerivativeMult;
+
+// Fast approximate gamma to linear conversion when averaging colors
+float3 ToLinear(float3 inColor) { return inColor * inColor; }
+float3 ToGamma(float3 inColor)	{ return sqrt(inColor); }
+
+float3 ApplyHqAa(float3 inColor, float2 oTexCoord0, float2 oTexCoord1, float2 oTexCoord2)
+{
+	float2 uvDeriv = float2(ddx(oTexCoord1.x), ddy(oTexCoord1.y)) * AaDerivativeMult;
+		
+	float ResultR = Texture.SampleLevel(Linear, oTexCoord0 + float2(-uvDeriv.x, 0), 0.0).r;
+	float ResultG = Texture.SampleLevel(Linear, oTexCoord1 + float2(-uvDeriv.x, 0), 0.0).g;
+	float ResultB = Texture.SampleLevel(Linear, oTexCoord2 + float2(-uvDeriv.x, 0), 0.0).b;
+	float3 newColor0 = ToLinear(float3(ResultR, ResultG, ResultB));
+	
+	ResultR = Texture.SampleLevel(Linear, oTexCoord0 + float2(uvDeriv.x, 0), 0.0).r;
+	ResultG = Texture.SampleLevel(Linear, oTexCoord1 + float2(uvDeriv.x, 0), 0.0).g;
+	ResultB = Texture.SampleLevel(Linear, oTexCoord2 + float2(uvDeriv.x, 0), 0.0).b;
+	float3 newColor1 = ToLinear(float3(ResultR, ResultG, ResultB));
+
+	ResultR = Texture.SampleLevel(Linear, oTexCoord0 + float2(0, uvDeriv.y), 0.0).r;
+	ResultG = Texture.SampleLevel(Linear, oTexCoord1 + float2(0, uvDeriv.y), 0.0).g;
+	ResultB = Texture.SampleLevel(Linear, oTexCoord2 + float2(0, uvDeriv.y), 0.0).b;
+	float3 newColor2 = ToLinear(float3(ResultR, ResultG, ResultB));
+
+	ResultR = Texture.SampleLevel(Linear, oTexCoord0 + float2(0, -uvDeriv.y), 0.0).r;
+	ResultG = Texture.SampleLevel(Linear, oTexCoord1 + float2(0, -uvDeriv.y), 0.0).g;
+	ResultB = Texture.SampleLevel(Linear, oTexCoord2 + float2(0, -uvDeriv.y), 0.0).b;
+	float3 newColor3 = ToLinear(float3(ResultR, ResultG, ResultB));
+
+	float3 outColor = ToLinear(inColor) + newColor0 + newColor1 + newColor2 + newColor3;
+	outColor = ToGamma(outColor * 0.2);
+	return outColor;
+}
+
+void   main(in float4 oPosition  : SV_Position,
+            in float  oColor     : COLOR,
+            in float2 oTexCoord0 : TEXCOORD0,
+            in float2 oTexCoord1 : TEXCOORD1,
+            in float2 oTexCoord2 : TEXCOORD2,
+			out float4 outColor0 : SV_Target0,
+			out float4 outColor1 : SV_Target1)
+{
+	float ResultR = Texture.SampleLevel(Linear, oTexCoord0, 0.0).r;
+	float ResultG = Texture.SampleLevel(Linear, oTexCoord1, 0.0).g;
+	float ResultB = Texture.SampleLevel(Linear, oTexCoord2, 0.0).b;
+	float3 newColor = float3(ResultR, ResultG, ResultB);
+
+	// High quality anti-aliasing in distortion
+	if(AaDerivativeMult > 0)
+	{
+		newColor = ApplyHqAa(newColor, oTexCoord0, oTexCoord1, oTexCoord2);
+	}
+
+	newColor = newColor * oColor.xxx;
+	outColor0 = float4(newColor, 1.0);
+	outColor1 = outColor0;
+	
+	// pixel luminance overdrive
+	if(OverdriveScales.x > 0)
+	{
+		float3 oldColor = LastTexture.Load(int3(oPosition.xy, 0)).rgb;
+		
+		float3 adjustedScales;
+		adjustedScales.x = newColor.x > oldColor.x ? OverdriveScales.x : OverdriveScales.y;
+		adjustedScales.y = newColor.y > oldColor.y ? OverdriveScales.x : OverdriveScales.y;
+		adjustedScales.z = newColor.z > oldColor.z ? OverdriveScales.x : OverdriveScales.y;
+		
+		float3 overdriveColor = saturate(newColor + (newColor - oldColor) * adjustedScales);
+		outColor1 = float4(overdriveColor, 1.0);
+	}
+}

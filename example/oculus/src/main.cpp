@@ -93,10 +93,12 @@ main(int argc, char** argv)
         auto root = scene::Node::create("root")
             ->addComponent(sceneManager);
 
-        auto camera = scene::Node::create("camera")
-            ->addComponent(Renderer::create(0x7f7f7fff))
-            ->addComponent(Transform::create())
-            ->addComponent(OculusVRCamera::create(canvas->aspectRatio(), 0.1f, 100.0f));
+		auto camera = scene::Node::create("camera")
+			->addComponent(Renderer::create(0x7f7f7fff))
+			->addComponent(Transform::create())
+			->addComponent(OculusVRCamera::create(canvas->aspectRatio(), 0.1f, 100.0f))
+			//->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
+			;
 
         spheres = createObjectGroup(NUM_SPHERES, false, SPHERES_DIST, SPHERES_PRIORITY, sceneManager->assets(), spheresAnimData);
         quads = createObjectGroup(NUM_QUADS, true, QUADS_DIST, QUADS_PRIORITY, sceneManager->assets(), quadsAnimData);

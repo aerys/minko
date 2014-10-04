@@ -190,9 +190,9 @@ OculusVRCamera::targetComponentRemovedHandler(Node::Ptr, Node::Ptr, AbstractComp
 void
 OculusVRCamera::resetOVRDevice()
 {
-    _ovrHMDDevice                    = nullptr;
-    _ovrSensorDevice                = nullptr;
-    _ovrSensorFusion                = nullptr;
+    _ovrHMDDevice = nullptr;
+    _ovrSensorDevice = nullptr;
+    _ovrSensorFusion = nullptr;
 }
 
 
@@ -205,7 +205,7 @@ OculusVRCamera::initializeOVRDevice()
     if (deviceManager == nullptr)
         return;
 
-    _ovrHMDDevice                    = std::shared_ptr<OVR::HMDDevice>(deviceManager->EnumerateDevices<OVR::HMDDevice>().CreateDevice());
+    _ovrHMDDevice = std::shared_ptr<OVR::HMDDevice>(deviceManager->EnumerateDevices<OVR::HMDDevice>().CreateDevice());
     if (_ovrHMDDevice == nullptr)
         return;
 
