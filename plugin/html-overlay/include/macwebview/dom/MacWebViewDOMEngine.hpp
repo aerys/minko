@@ -61,7 +61,7 @@ namespace macwebview
 			initialize(minko::AbstractCanvas::Ptr, minko::component::SceneManager::Ptr);
 			
 			void
-			enterFrame();
+			enterFrame(float);
 
 			minko::dom::AbstractDOM::Ptr
 			load(std::string uri);
@@ -118,6 +118,20 @@ namespace macwebview
             static
             std::function<void(std::string&, std::string&)>
             handleJavascriptMessageWrapper;
+
+            inline
+            void
+            updateNextFrame()
+            {
+                _updateNextFrame = true;
+            }
+            
+            inline
+            void
+            pollRate(int rate)
+            {
+                _pollRate = rate;
+            }
             
 		private:
 
@@ -163,6 +177,8 @@ namespace macwebview
                 return _touches;
             }
 #endif
+
+        private:
             
 			static
 			int _domUid;
@@ -201,6 +217,10 @@ namespace macwebview
             bool _waitingForLoad;
             std::string _uriToLoad;
             bool _isReady;
+
+            float _lastUpdateTime;
+            int _pollRate;
+            bool _updateNextFrame;
 		};
 	}
 }

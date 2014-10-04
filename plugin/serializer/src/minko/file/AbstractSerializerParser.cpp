@@ -128,25 +128,32 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&                asset
         auto fileOptions = Options::create(options);
         fileOptions->loadAsynchronously(false);
 
+        auto fileSuccessfullyLoaded = true;
         auto errorSlot = protocol->error()->connect([&](AbstractProtocol::Ptr)
         {
             switch (asset.a0)
             {
             case serialize::AssetType::GEOMETRY_ASSET:
-                throw ParserError("MissingGeometryDependency", "Missing geometry dependency: '" + assetCompletePath + "'");
+                _error->execute(shared_from_this(), Error("MissingGeometryDependency", "Missing geometry dependency: '" + assetCompletePath + "'"));
+                break;
 
             case serialize::AssetType::MATERIAL_ASSET:
-                throw ParserError("MissingMaterialDependency", "Missing material dependency: '" + assetCompletePath + "'");
+                _error->execute(shared_from_this(), Error("MissingMaterialDependency", "Missing material dependency: '" + assetCompletePath + "'"));
+                break;
 
             case serialize::AssetType::TEXTURE_ASSET:
-                throw ParserError("MissingTextureDependency", "Missing texture dependency: '" + assetCompletePath + "'");
+                _error->execute(shared_from_this(), Error("MissingTextureDependency", "Missing texture dependency: '" + assetCompletePath + "'"));
+                break;
 
             case serialize::AssetType::EFFECT_ASSET:
-                throw ParserError("MissingEffectDependency", "Missing effect dependency: '" + assetCompletePath + "'");
+                _error->execute(shared_from_this(), Error("MissingEffectDependency", "Missing effect dependency: '" + assetCompletePath + "'"));
+                break;
 
             default:
                 break;
             }
+            
+            fileSuccessfullyLoaded = false;
         });
 
         auto completeSlot = protocol->complete()->connect([&](AbstractProtocol::Ptr p)
@@ -155,6 +162,9 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&                asset
         });
 
         protocol->load(assetCompletePath, fileOptions);
+        
+        if (!fileSuccessfullyLoaded)
+            return;
     }
     else
         data.assign(asset.a2.begin(), asset.a2.end());

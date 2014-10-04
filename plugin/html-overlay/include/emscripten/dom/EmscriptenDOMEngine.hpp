@@ -73,6 +73,20 @@ namespace emscripten
 			bool
 			visible();
 
+            inline
+            void
+            pollRate(int rate)
+            {
+                //Not implemented yet
+            }
+
+            inline
+            void
+            updateNextFrame()
+            {
+                //Not implemented yet
+            }
+
 		private:
 
 			void

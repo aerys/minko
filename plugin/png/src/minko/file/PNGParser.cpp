@@ -46,11 +46,10 @@ PNGParser::parse(const std::string&                 filename,
     {
         const char* text = lodepng_error_text(error);
 
-#ifdef DEBUG
-        std::cout << "Failed to decode PNG: " << text << std::endl;
-#endif // DEBUG
-
-        throw std::invalid_argument("file '" + filename + "' loading error (" + text + ")");
+        _error->execute(shared_from_this(), Error("file '" + filename + "' loading error (" + text + ")"));
+        _complete->execute(shared_from_this());
+        
+        return;
     }
 
     render::AbstractTexture::Ptr texture = nullptr;
