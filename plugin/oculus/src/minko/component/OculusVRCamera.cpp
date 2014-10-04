@@ -18,8 +18,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/component/OculusVRCamera.hpp"
+#include "minko/MinkoOculus.hpp"
 
-#include <OVR.h>
+#include "OVR_CAPI.h"
+#include "Kernel/OVR_Math.h"
 
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
@@ -49,24 +51,17 @@ OculusVRCamera::OculusVRCamera(float aspectRatio, float zNear, float zFar) :
     _aspectRatio(aspectRatio),
     _zNear(zNear),
     _zFar(zFar),
-    _ovrSystem(new OVR::System()),
-    _ovrHMDDevice(nullptr),
-    _ovrSensorDevice(nullptr),
-    _ovrSensorFusion(nullptr),
-    _targetTransform(nullptr),
     _eyePosition(Vector3::create(0.0f, 0.0f, 0.0f)),
     _eyeOrientation(Matrix4x4::create()),
     _sceneManager(nullptr),
-    _root(nullptr),
     _leftCamera(nullptr),
+    _leftRenderer(nullptr),
     _rightCamera(nullptr),
-    _renderer(nullptr),
+    _rightRenderer(nullptr),
     _targetAddedSlot(nullptr),
     _targetRemovedSlot(nullptr),
     _addedSlot(nullptr),
     _removedSlot(nullptr),
-    _targetComponentAddedHandler(nullptr),
-    _targetComponentRemovedHandler(nullptr),
     _renderEndSlot(nullptr)
 {
 
@@ -76,9 +71,9 @@ OculusVRCamera::~OculusVRCamera()
 {
     resetOVRDevice();
 
-    _ovrSystem = nullptr;
+    ovrHmd_Destroy(_hmd);
+    ovr_Shutdown();
 }
-
 
 void
 OculusVRCamera::initialize()
@@ -107,152 +102,216 @@ OculusVRCamera::targetAddedHandler(AbsCmpPtr component, NodePtr target)
         throw std::logic_error("The OculusVRCamera component cannot have more than 1 target.");
 
     _addedSlot = target->added()->connect(std::bind(
-        &OculusVRCamera::addedHandler,
-        std::static_pointer_cast<OculusVRCamera>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3
+        &OculusVRCamera::findSceneManager,
+        std::static_pointer_cast<OculusVRCamera>(shared_from_this())
     ));
 
     _removedSlot = target->removed()->connect(std::bind(
-        &OculusVRCamera::removedHandler,
-        std::static_pointer_cast<OculusVRCamera>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3
+        &OculusVRCamera::findSceneManager,
+        std::static_pointer_cast<OculusVRCamera>(shared_from_this())
     ));
 
-    _targetComponentAddedHandler = target->componentAdded()->connect(std::bind(
-        &OculusVRCamera::targetComponentAddedHandler,
-        std::static_pointer_cast<OculusVRCamera>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3
-    ));
+    initializeCameras();
 
-    _targetComponentRemovedHandler = target->componentRemoved()->connect(std::bind(
-        &OculusVRCamera::targetComponentRemovedHandler,
-        std::static_pointer_cast<OculusVRCamera>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3
-    ));
-
-    _targetTransform = target->hasComponent<Transform>()
-        ? target->component<Transform>()
-        : nullptr;
-
-    addedHandler(target->root(), target, target->parent());
-
+    findSceneManager();
 }
 
 void
 OculusVRCamera::targetRemovedHandler(AbsCmpPtr component, NodePtr target)
 {
-    _addedSlot                        = nullptr;
-    _removedSlot                    = nullptr;
-    _targetComponentAddedHandler    = nullptr;
-    _targetComponentRemovedHandler    = nullptr;
-
-    removedHandler(target->root(), target, target->parent());
-}
-
-void
-OculusVRCamera::addedHandler(NodePtr node, NodePtr target, NodePtr parent)
-{
     findSceneManager();
-}
-
-void
-OculusVRCamera::removedHandler(NodePtr node, NodePtr target, NodePtr parent)
-{
-    findSceneManager();
-}
-
-void
-OculusVRCamera::targetComponentAddedHandler(Node::Ptr, Node::Ptr, AbstractComponent::Ptr component)
-{
-    auto transform = std::dynamic_pointer_cast<Transform>(component);
-
-    if (transform)
-        _targetTransform = transform;
-}
-
-void
-OculusVRCamera::targetComponentRemovedHandler(Node::Ptr, Node::Ptr, AbstractComponent::Ptr component)
-{
-    auto transform = std::dynamic_pointer_cast<Transform>(component);
-
-    if (transform)
-        _targetTransform = nullptr;
 }
 
 void
 OculusVRCamera::resetOVRDevice()
 {
-    _ovrHMDDevice = nullptr;
-    _ovrSensorDevice = nullptr;
-    _ovrSensorFusion = nullptr;
+    //_ovrHMDDevice = nullptr;
+    //_ovrSensorDevice = nullptr;
+    //_ovrSensorFusion = nullptr;
 }
-
 
 void
 OculusVRCamera::initializeOVRDevice()
 {
+    ovr_Initialize();
+
     resetOVRDevice();
 
-    OVR::Ptr<OVR::DeviceManager>    deviceManager    = *OVR::DeviceManager::Create();
-    if (deviceManager == nullptr)
-        return;
+    _hmd = ovrHmd_Create(0);
+    if (!_hmd)
+        throw;
 
-    _ovrHMDDevice = std::shared_ptr<OVR::HMDDevice>(deviceManager->EnumerateDevices<OVR::HMDDevice>().CreateDevice());
-    if (_ovrHMDDevice == nullptr)
-        return;
+    OVR::Sizei recommenedTex0Size = ovrHmd_GetFovTextureSize(_hmd, ovrEye_Left, _hmd->DefaultEyeFov[0], 1.0f);
+    OVR::Sizei recommenedTex1Size = ovrHmd_GetFovTextureSize(_hmd, ovrEye_Right, _hmd->DefaultEyeFov[1], 1.0f);
+    OVR::Sizei renderTargetSize;
+    renderTargetSize.w = recommenedTex0Size.w + recommenedTex1Size.w;
+    renderTargetSize.h = std::max(recommenedTex0Size.h, recommenedTex1Size.h);
 
-    _ovrSensorFusion                = std::shared_ptr<OVR::SensorFusion>(new OVR::SensorFusion());
-    _ovrSensorDevice                = std::shared_ptr<OVR::SensorDevice>(_ovrHMDDevice->GetSensor());
+    // enforce a power of 2 size because that's what minko expects
+    renderTargetSize.w = math::clp2(renderTargetSize.w);
+    renderTargetSize.h = math::clp2(renderTargetSize.h);
 
-    if (_ovrSensorFusion == nullptr || _ovrSensorDevice == nullptr)
-    {
-        _ovrSensorFusion            = nullptr;
-        _ovrSensorDevice            = nullptr;
-    }
+    renderTargetSize.w = std::min(renderTargetSize.w, MINKO_PLUGIN_OCULUS_MAX_TARGET_SIZE);
+    renderTargetSize.h = std::min(renderTargetSize.h, MINKO_PLUGIN_OCULUS_MAX_TARGET_SIZE);
 
-    _ovrSensorFusion->AttachToSensor(_ovrSensorDevice.get());
-    _ovrSensorFusion->SetPredictionEnabled(true);
+    _renderTargetWidth = renderTargetSize.w;
+    _renderTargetHeight = renderTargetSize.h;
+
+    // compute each viewport pos and size
+    ovrRecti eyeRenderViewport[2];
+    ovrFovPort eyeFov[2] = { _hmd->DefaultEyeFov[0], _hmd->DefaultEyeFov[1] };
+
+    eyeRenderViewport[0].Pos = OVR::Vector2i(0, 0);
+    eyeRenderViewport[0].Size = OVR::Sizei(renderTargetSize.w / 2, renderTargetSize.h);
+    eyeRenderViewport[1].Pos = OVR::Vector2i((renderTargetSize.w + 1) / 2, 0);
+    eyeRenderViewport[1].Size = eyeRenderViewport[0].Size;
+
+    // create 1 renderer/eye and init. their respective viewport
+    _leftRenderer = Renderer::create();
+    _leftRenderer->viewport(
+        eyeRenderViewport[0].Pos.x,
+        eyeRenderViewport[0].Pos.y,
+        eyeRenderViewport[0].Size.w,
+        eyeRenderViewport[0].Size.h
+    );
+
+    _rightRenderer = Renderer::create();
+    _rightRenderer->viewport(
+        eyeRenderViewport[1].Pos.x,
+        eyeRenderViewport[1].Pos.y,
+        eyeRenderViewport[1].Size.w,
+        eyeRenderViewport[1].Size.h
+    );
+    _rightRenderer->clearBeforeRender(false);
+
+    ovrHmd_SetEnabledCaps(_hmd, ovrHmdCap_LowPersistence | ovrHmdCap_DynamicPrediction);
+
+    // Start the sensor which informs of the Rift's pose and motion
+    ovrHmd_ConfigureTracking(
+        _hmd,
+        ovrTrackingCap_Orientation |
+        ovrTrackingCap_MagYawCorrection |
+        ovrTrackingCap_Position,
+        0
+    );
+
+    // FIXME: on Windows, render directly into the HMD (window ?= SDL window)
+    // ovrHmd_AttachToWindow(HMD, window, NULL, NULL);
 }
 
 void
-OculusVRCamera::getHMDInfo(HMDInfo& hmdInfo) const
+OculusVRCamera::initializeCameras()
 {
-    if (_ovrHMDDevice)
+    auto aspectRatio = (float)_renderTargetWidth / (float)_renderTargetHeight;
+
+    _leftCamera = PerspectiveCamera::create(
+        aspectRatio,
+        atan(_hmd->DefaultEyeFov[0].LeftTan + _hmd->DefaultEyeFov[0].RightTan),
+        _zNear,
+        _zFar
+    );
+    auto leftCameraNode = scene::Node::create("oculusLeftEye")
+        ->addComponent(Transform::create())
+        ->addComponent(_leftCamera)
+        ->addComponent(_leftRenderer);
+    targets()[0]->addChild(leftCameraNode);
+
+    _rightCamera = PerspectiveCamera::create(
+        aspectRatio,
+        atan(_hmd->DefaultEyeFov[1].LeftTan + _hmd->DefaultEyeFov[1].RightTan),
+        _zNear,
+        _zFar
+    );
+    auto rightCameraNode = scene::Node::create("oculusRightEye")
+        ->addComponent(Transform::create())
+        ->addComponent(_rightCamera)
+        ->addComponent(_rightRenderer);
+    targets()[0]->addChild(rightCameraNode);
+}
+
+void
+OculusVRCamera::initializeDistortionGeometry(std::shared_ptr<render::AbstractContext> context)
+{
+    for (int eyeNum = 0; eyeNum < 2; eyeNum++)
+    {
+        auto geom = geometry::Geometry::create();
+        
+        // Allocate mesh vertices, registering with renderer using the OVR vertex format.
+        ovrDistortionMesh meshData;
+        ovrHmd_CreateDistortionMesh(
+            _hmd,
+            (ovrEyeType)eyeNum,
+            _hmd->DefaultEyeFov[eyeNum],
+            ovrDistortionCap_Chromatic | ovrDistortionCap_TimeWarp,
+            &meshData
+        );
+
+        auto vb = render::VertexBuffer::create(
+            context,
+            (float*)meshData.pVertexData,
+            (sizeof(ovrDistortionVertex) / sizeof(float))
+            * meshData.VertexCount
+        );
+
+        // struct ovrDistortionVertex {
+        //     ovrVector2f ScreenPosNDC;    // [-1,+1],[-1,+1] over the entire framebuffer.
+        //     float       TimeWarpFactor;  // Lerp factor between time-warp matrices. Can be encoded in Pos.z.
+        //     float       VignetteFactor;  // Vignette fade factor. Can be encoded in Pos.w.
+        //     ovrVector2f TanEyeAnglesR;
+        //     ovrVector2f TanEyeAnglesG;
+        //     ovrVector2f TanEyeAnglesB;
+        // }
+
+        vb->addAttribute("screenPosNDC", 2);
+        vb->addAttribute("timeWarpFactor", 1);
+        vb->addAttribute("vignetteFactor", 1);
+        vb->addAttribute("tanEyeAnglesR", 2);
+        vb->addAttribute("tanEyeAnglesG", 2);
+        vb->addAttribute("tanEyeAnglesB", 2);
+        
+        geom->addVertexBuffer(vb);
+
+        auto ib = render::IndexBuffer::create(
+            context,
+            meshData.pIndexData,
+            meshData.pIndexData + meshData.IndexCount * sizeof(unsigned short)
+        );
+
+        geom->indices(ib);
+    }
+}
+
+void
+OculusVRCamera::getHMDInfo(HMDInfo& _hmdInfo) const
+{
+    /*if (_ovrHMDDevice)
     {
         OVR::HMDInfo ovrHMDInfo;
 
         _ovrHMDDevice->GetDeviceInfo(&ovrHMDInfo);
 
-        hmdInfo.hResolution                = (float)ovrHMDInfo.HResolution;
-        hmdInfo.vResolution                = (float)ovrHMDInfo.VResolution;
-        hmdInfo.hScreenSize                = ovrHMDInfo.HScreenSize;
-        hmdInfo.vScreenSize                = ovrHMDInfo.VScreenSize;
-        hmdInfo.vScreenCenter            = ovrHMDInfo.VScreenCenter;
-        hmdInfo.interpupillaryDistance    = ovrHMDInfo.InterpupillaryDistance;
-        hmdInfo.lensSeparationDistance    = ovrHMDInfo.LensSeparationDistance;
-        hmdInfo.eyeToScreenDistance        = ovrHMDInfo.EyeToScreenDistance;
-        hmdInfo.distortionK                = Vector4::create(ovrHMDInfo.DistortionK[0], ovrHMDInfo.DistortionK[1], ovrHMDInfo.DistortionK[2], ovrHMDInfo.DistortionK[3]);
+        _hmdInfo.hResolution                = (float)ovrHMDInfo.HResolution;
+        _hmdInfo.vResolution                = (float)ovrHMDInfo.VResolution;
+        _hmdInfo.hScreenSize                = ovrHMDInfo.HScreenSize;
+        _hmdInfo.vScreenSize                = ovrHMDInfo.VScreenSize;
+        _hmdInfo.vScreenCenter            = ovrHMDInfo.VScreenCenter;
+        _hmdInfo.interpupillaryDistance    = ovrHMDInfo.InterpupillaryDistance;
+        _hmdInfo.lensSeparationDistance    = ovrHMDInfo.LensSeparationDistance;
+        _hmdInfo.eyeToScreenDistance        = ovrHMDInfo.EyeToScreenDistance;
+        _hmdInfo.distortionK                = Vector4::create(ovrHMDInfo.DistortionK[0], ovrHMDInfo.DistortionK[1], ovrHMDInfo.DistortionK[2], ovrHMDInfo.DistortionK[3]);
     }
     else
     {
-        hmdInfo.hResolution                = 1280.0f;
-        hmdInfo.vResolution                = 800.0f;
-        hmdInfo.hScreenSize                = 0.14976f;
-        hmdInfo.vScreenSize                = hmdInfo.hScreenSize / (1280.0f / 800.0f);
-        hmdInfo.vScreenCenter            = 0.5f * hmdInfo.vScreenSize;
-        hmdInfo.interpupillaryDistance    = 0.064f;
-        hmdInfo.lensSeparationDistance    = 0.0635f;
-        hmdInfo.eyeToScreenDistance        = 0.041f;
-        hmdInfo.distortionK                = Vector4::create(1.0f, 0.22f, 0.24f, 0.0f);
-    }
+        _hmdInfo.hResolution                = 1280.0f;
+        _hmdInfo.vResolution                = 800.0f;
+        _hmdInfo.hScreenSize                = 0.14976f;
+        _hmdInfo.vScreenSize                = _hmdInfo.hScreenSize / (1280.0f / 800.0f);
+        _hmdInfo.vScreenCenter            = 0.5f * _hmdInfo.vScreenSize;
+        _hmdInfo.interpupillaryDistance    = 0.064f;
+        _hmdInfo.lensSeparationDistance    = 0.0635f;
+        _hmdInfo.eyeToScreenDistance        = 0.041f;
+        _hmdInfo.distortionK                = Vector4::create(1.0f, 0.22f, 0.24f, 0.0f);
+    }*/
 }
 
 void
@@ -279,149 +338,15 @@ OculusVRCamera::setSceneManager(SceneManager::Ptr sceneManager)
     if (_sceneManager == sceneManager)
         return;
 
-    if (sceneManager == nullptr)
-    {
-        _sceneManager    = nullptr;
-        _renderer        = nullptr;
-        _leftCamera        = nullptr;
-        _rightCamera    = nullptr;
+    auto context = sceneManager->assets()->context();
 
-        if (_root)
-            targets().front()->removeChild(_root);
+    _renderTarget = render::Texture::create(context, _renderTargetWidth, _renderTargetHeight);
+    /*_leftRenderer->target(_renderTarget);
+    _rightRenderer->target(_renderTarget);*/
 
-        _root            = nullptr;
-        _renderEndSlot    = nullptr;
+    initializeDistortionGeometry(context);
 
-        return;
-    }
-
-    _sceneManager    = sceneManager;
-    auto context    = _sceneManager->assets()->context();
-
-    HMDInfo hmdInfo;
-    getHMDInfo(hmdInfo);
-
-    // ffxa
-    auto    pixelOffset                    = Vector2::create(1.0f / TARGET_SIZE, 1.0f / TARGET_SIZE);
-
-    // distortion scale
-    const auto distortionLensShift        = 1.0f - 2.0f * hmdInfo.lensSeparationDistance / hmdInfo.hScreenSize;
-    const auto fitRadius                = abs(- 1.0f - distortionLensShift);
-    const auto distortionScale            = distort(fitRadius, hmdInfo.distortionK) / fitRadius;
-
-    // projection matrix
-    const auto screenAspectRatio        = (hmdInfo.hResolution * 0.5f) / hmdInfo.vResolution;
-    const auto screenFOV                = 2.0f * atanf(distortionScale * (hmdInfo.vScreenSize * 0.5f) / hmdInfo.eyeToScreenDistance);
-
-    const auto viewCenter                = hmdInfo.hScreenSize * 0.25f;
-    const auto eyeProjectionShift        = viewCenter - hmdInfo.lensSeparationDistance * 0.5f;
-    const auto projectionCenterOffset    = 4.0f * eyeProjectionShift / hmdInfo.hScreenSize; // in clip coordinates
-
-    // view transform translation in world units
-    const auto halfIPD                    = 0.5f * hmdInfo.interpupillaryDistance * WORLD_UNIT;
-
-    // left eye
-    render::AbstractTexture::Ptr    leftEyeTexture        = render::Texture::create(context, TARGET_SIZE, TARGET_SIZE, false, true);
-    auto                            leftEye                = scene::Node::create("oculusvr.leftEye");
-    auto                            leftRenderer        = Renderer::create();
-    auto                            leftPostProjection    = Matrix4x4::create()->appendTranslation(+ projectionCenterOffset, 0.0f, 0.0f);
-
-    _leftCamera = PerspectiveCamera::create(screenAspectRatio, screenFOV, _zNear, _zFar, leftPostProjection);
-
-    leftEyeTexture->upload();
-    leftRenderer->target(leftEyeTexture);
-    leftEye->addComponent(leftRenderer);
-    leftEye->addComponent(_leftCamera);
-    leftEye->addComponent(Transform::create(
-        Matrix4x4::create()->appendTranslation(- halfIPD, 0.0f, 0.0f) // view transform
-    ));
-
-    // right eye
-    render::AbstractTexture::Ptr    rightEyeTexture        = render::Texture::create(context, TARGET_SIZE, TARGET_SIZE, false, true);
-    auto                            rightEye            = scene::Node::create("oculusvr.rightEye");
-    auto                            rightRenderer        = Renderer::create();
-    auto                            rightPostProjection    = Matrix4x4::create()->appendTranslation(- projectionCenterOffset, 0.0f, 0.0f);
-
-    _rightCamera = PerspectiveCamera::create(screenAspectRatio, screenFOV, _zNear, _zFar, rightPostProjection);
-
-    rightEyeTexture->upload();
-    rightRenderer->target(rightEyeTexture);
-    rightEye->addComponent(rightRenderer);
-    rightEye->addComponent(_rightCamera);
-    rightEye->addComponent(Transform::create(
-        Matrix4x4::create()->appendTranslation(+ halfIPD, 0.0f, 0.0f) // view transform
-    ));
-
-    _root = scene::Node::create("oculusvr");
-    _root->addComponent(Transform::create());
-    _root->addChild(leftEye)->addChild(rightEye);
-
-    targets().front()->addChild(_root);
-
-    // post processing effect
-    const auto clipWidth        = 0.5f;
-    const auto clipHeight        = 1.0f;
-
-    auto leftScreenCorner        = Vector2::create(0.0f, 0.0f);
-    auto leftScreenCenter        = leftScreenCorner + Vector2::create(clipWidth * 0.5f, clipHeight * 0.5f);
-    auto leftLensCenter            = leftScreenCorner + Vector2::create(
-        (clipWidth + distortionLensShift * 0.5f) * 0.5f,
-        clipHeight * 0.5f
-    );
-
-    auto rightScreenCorner        = Vector2::create(0.5f, 0.0f);
-    auto rightScreenCenter        = rightScreenCorner + Vector2::create(clipWidth * 0.5f, clipHeight * 0.5f);
-    auto rightLensCenter        = rightScreenCorner + Vector2::create(
-        (clipWidth - distortionLensShift * 0.5f) * 0.5f,
-        clipHeight * 0.5f
-    );
-
-    auto scalePriorDistortion    = Vector2::create(2.0f / clipWidth, (2.0f / clipHeight) / screenAspectRatio);
-    auto scaleAfterDistortion    = Vector2::create((clipWidth * 0.5f) / distortionScale, ((clipHeight * 0.5f) * screenAspectRatio / distortionScale));
-
-#ifdef DEBUG_OCULUS
-    std::cout << "- distortion lens shift\t= " << distortionLensShift << std::endl;
-    std::cout << "- distortion scale\t= " << distortionScale << std::endl;
-    std::cout << "- radial distortion\t= " << hmdInfo.distortionK->toString() << std::endl;
-    std::cout << "- left lens center\t= " << leftLensCenter->toString() << "\n- left screen center\t= " << leftScreenCenter->toString() << "\n- left screen corner\t= " << leftScreenCorner->toString() << std::endl;
-    std::cout << "- right lens center\t= " << rightLensCenter->toString() << "\n- right screen center\t= " << rightScreenCenter->toString() << "\n- right screen corner\t= " << rightScreenCorner->toString() << std::endl;
-    std::cout << "- scale prior distortion\t= " << scalePriorDistortion->toString() << "\n- scale after distortion\t= " << scaleAfterDistortion->toString() << std::endl;
-#endif // DEBUG_OCULUS
-
-    _renderer = Renderer::create();
-
-    auto ppFx = _sceneManager->assets()->effect("effect/OculusVR/OculusVR.effect");
-
-    if (!ppFx)
-        throw std::logic_error("OculusVR.effect has not been loaded.");
-
-    auto ppScene = scene::Node::create()
-        ->addComponent(_renderer)
-        ->addComponent(Surface::create(
-            geometry::QuadGeometry::create(_sceneManager->assets()->context()),
-			material::Material::create("oculusvr")
-                ->set("distortionK",            hmdInfo.distortionK)
-                ->set("pixelOffset",            pixelOffset)
-                ->set("scalePriorDistortion",    scalePriorDistortion)
-                ->set("scaleAfterDistortion",    scaleAfterDistortion)
-                ->set("leftEyeTexture",            leftEyeTexture)
-                ->set("leftLensCenter",            leftLensCenter)
-                ->set("leftScreenCorner",        leftScreenCorner)
-                ->set("leftScreenCenter",        leftScreenCenter)
-                ->set("rightEyeTexture",        rightEyeTexture)
-                ->set("rightLensCenter",        rightLensCenter)
-                ->set("rightScreenCorner",        rightScreenCorner)
-                ->set("rightScreenCenter",        rightScreenCenter),
-            ppFx
-        ));
-
-    _renderEndSlot = sceneManager->renderingEnd()->connect(std::bind(
-        &OculusVRCamera::renderEndHandler,
-        std::static_pointer_cast<OculusVRCamera>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3
-    ));
+    // FIXME
 }
 
 void
@@ -429,9 +354,10 @@ OculusVRCamera::renderEndHandler(std::shared_ptr<SceneManager>    sceneManager,
                                  uint                            frameId,
                                  render::AbstractTexture::Ptr    renderTarget)
 {
-    _renderer->render(sceneManager->assets()->context());
-
     updateCameraOrientation();
+
+    /*_leftRenderer->render(sceneManager->assets()->context());
+    _rightRenderer->render(sceneManager->assets()->context());*/
 }
 
 /*static*/
@@ -453,19 +379,21 @@ OculusVRCamera::distort(float r, Vector4::Ptr distortionK)
 bool
 OculusVRCamera::HMDDeviceDetected() const
 {
-    return _ovrHMDDevice != nullptr;
+    //return _ovrHMDDevice != nullptr;
+    return false;
 }
 
 bool
 OculusVRCamera::sensorDeviceDetected() const
 {
-    return _ovrSensorDevice != nullptr;
+    //return _ovrSensorDevice != nullptr;
+    return false;
 }
 
 void
 OculusVRCamera::updateCameraOrientation()
 {
-    if (_ovrSensorFusion == nullptr || _targetTransform == nullptr)
+    /*if (_ovrSensorFusion == nullptr || _targetTransform == nullptr)
         return;
 
     const OVR::Quatf&    measurement    = _ovrSensorFusion->GetPredictedOrientation();
@@ -479,12 +407,12 @@ OculusVRCamera::updateCameraOrientation()
         ->lock()
         ->copyFrom(_eyeOrientation)
         ->appendTranslation(_eyePosition)
-        ->unlock();
+        ->unlock();*/
 }
 
 void
 OculusVRCamera::resetHeadTracking()
 {
-    if (_ovrSensorFusion)
-        _ovrSensorFusion->Reset();
+    /*if (_ovrSensorFusion)
+        _ovrSensorFusion->Reset();*/
 }

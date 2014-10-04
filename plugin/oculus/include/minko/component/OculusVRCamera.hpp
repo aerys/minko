@@ -19,18 +19,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/Common.hpp"
+#include "minko/Minko.hpp"
 
 #include "minko/Signal.hpp"
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
 
-namespace OVR
-{
-    class System;
-    class HMDDevice;
-    class SensorDevice;
-    class SensorFusion;
+extern "C" {
+    struct ovrHmdDesc_;
+    typedef const ovrHmdDesc_* ovrHmd;
 }
 
 namespace minko
@@ -70,37 +67,33 @@ namespace minko
             float                                               _aspectRatio;
             float                                               _zNear;
             float                                               _zFar;
-            HMDInfo                                             _hmdInfo;
 
-            std::shared_ptr<OVR::System>                        _ovrSystem;
-            std::shared_ptr<OVR::HMDDevice>                     _ovrHMDDevice;
-            std::shared_ptr<OVR::SensorDevice>                  _ovrSensorDevice;
-            std::shared_ptr<OVR::SensorFusion>                  _ovrSensorFusion;
+            ovrHmd                                              _hmd;
 
-            std::shared_ptr<Transform>                          _targetTransform;
             std::shared_ptr<math::Vector3>                      _eyePosition;
             std::shared_ptr<math::Matrix4x4>                    _eyeOrientation;
 
             SceneMgrPtr                                         _sceneManager;
-            NodePtr                                             _root;
+            uint                                                _renderTargetWidth;
+            uint                                                _renderTargetHeight;
+            std::shared_ptr<render::Texture>                    _renderTarget;
             std::shared_ptr<PerspectiveCamera>                  _leftCamera;
+            std::shared_ptr<Renderer>                           _leftRenderer;
             std::shared_ptr<PerspectiveCamera>                  _rightCamera;
-            std::shared_ptr<Renderer>                           _renderer;
+            std::shared_ptr<Renderer>                           _rightRenderer;
 
             Signal<AbsCmpPtr, NodePtr>::Slot                    _targetAddedSlot;
             Signal<AbsCmpPtr, NodePtr>::Slot                    _targetRemovedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot             _addedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot             _removedSlot;
-            Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot           _targetComponentAddedHandler;
-            Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot           _targetComponentRemovedHandler;
             Signal<SceneMgrPtr, uint, AbsTexturePtr>::Slot      _renderEndSlot;
 
         public:
             inline static
             Ptr
             create(float aspectRatio,
-                   float zNear            = 0.1f,
-                   float zFar            = 1000.0f)
+                   float zNear  = 0.1f,
+                   float zFar   = 1000.0f)
             {
                 auto ptr = std::shared_ptr<OculusVRCamera>(new OculusVRCamera(aspectRatio, zNear, zFar));
 
@@ -155,6 +148,12 @@ namespace minko
             initialize();
 
             void
+            initializeCameras();
+
+            void
+            initializeDistortionGeometry(std::shared_ptr<render::AbstractContext> context);
+
+            void
             updateCameraOrientation();
 
             void
@@ -164,19 +163,7 @@ namespace minko
             targetRemovedHandler(AbsCmpPtr component, NodePtr target);
 
             void
-            addedHandler(NodePtr, NodePtr, NodePtr);
-
-            void
-            removedHandler(NodePtr, NodePtr, NodePtr);
-
-            void
             renderEndHandler(SceneMgrPtr sceneManager, uint frameId, AbsTexturePtr    renderTarget);
-
-            void
-            targetComponentAddedHandler(NodePtr, NodePtr, AbsCmpPtr);
-
-            void
-            targetComponentRemovedHandler(NodePtr, NodePtr, AbsCmpPtr);
 
             void
             findSceneManager();

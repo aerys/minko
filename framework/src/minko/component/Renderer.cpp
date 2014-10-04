@@ -54,6 +54,7 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
     _surfaceDrawCalls(),
     _surfaceTechniqueChangedSlot(),
     _effect(effect),
+    _clearBeforeRender(true),
     _priority(priority),
     _targetDataFilters(),
     _rendererDataFilters(),
@@ -82,6 +83,7 @@ Renderer::Renderer(const Renderer& renderer, const CloneOption& option) :
 	_surfaceDrawCalls(),
 	_surfaceTechniqueChangedSlot(),
 	_effect(nullptr),
+    _clearBeforeRender(true),
 	_priority(renderer._priority),
 	_targetDataFilters(),
 	_rendererDataFilters(),
@@ -319,31 +321,33 @@ Renderer::render(render::AbstractContext::Ptr    context,
     if (_renderTarget)
         renderTarget = _renderTarget;
 
-     bool bCustomViewport = false;
+    bool bCustomViewport = false;
 
-     if (_scissorBox.width >= 0 && _scissorBox.height >= 0)
+    if (_scissorBox.width >= 0 && _scissorBox.height >= 0)
          context->setScissorTest(true, _scissorBox);
-     else
-         context->setScissorTest(false, _scissorBox);
+    else
+        context->setScissorTest(false, _scissorBox);
 
-     if (_viewportBox.width >= 0 && _viewportBox.height >= 0)
-     {
-         bCustomViewport = true;
-         context->configureViewport(_viewportBox.x, _viewportBox.y, _viewportBox.width, _viewportBox.height);
-     }
-     else
-         context->configureViewport(0, 0, context->viewportWidth(), context->viewportHeight());
+    if (_viewportBox.width >= 0 && _viewportBox.height >= 0)
+    {
+        bCustomViewport = true;
+        context->configureViewport(_viewportBox.x, _viewportBox.y, _viewportBox.width, _viewportBox.height);
+    }
+    else
+        context->configureViewport(0, 0, context->viewportWidth(), context->viewportHeight());
+    
+    if (renderTarget)
+        context->setRenderToTexture(renderTarget->id(), true);
+    else
+       context->setRenderToBackBuffer();
 
-     if (renderTarget)
-         context->setRenderToTexture(renderTarget->id(), true);
-     else
-        context->setRenderToBackBuffer();
-    context->clear(
-        ((_backgroundColor >> 24) & 0xff) / 255.f,
-        ((_backgroundColor >> 16) & 0xff) / 255.f,
-        ((_backgroundColor >> 8) & 0xff) / 255.f,
-        (_backgroundColor & 0xff) / 255.f
-    );
+    if (_clearBeforeRender)
+       context->clear(
+           ((_backgroundColor >> 24) & 0xff) / 255.f,
+           ((_backgroundColor >> 16) & 0xff) / 255.f,
+           ((_backgroundColor >> 8) & 0xff) / 255.f,
+           (_backgroundColor & 0xff) / 255.f
+       );
 
     for (auto& drawCall : _drawCalls)
         if ((drawCall->layouts() & layoutMask()) != 0)
