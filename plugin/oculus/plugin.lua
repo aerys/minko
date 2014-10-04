@@ -47,7 +47,7 @@ function minko.plugin.oculus:enable()
 	}
 
 	configuration { "windows32 or windows64" }
-		links { "winmm", "setupapi" }
+		links { "winmm", "setupapi", "ws2_32" }
 
 	configuration { "linux32 or linux64" }
 		links { "udev", "Xinerama", "X11", "pthread" }
