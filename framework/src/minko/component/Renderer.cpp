@@ -321,25 +321,23 @@ Renderer::render(render::AbstractContext::Ptr    context,
     if (_renderTarget)
         renderTarget = _renderTarget;
 
-    bool bCustomViewport = false;
+    bool customViewport = false;
 
     if (_scissorBox.width >= 0 && _scissorBox.height >= 0)
          context->setScissorTest(true, _scissorBox);
     else
         context->setScissorTest(false, _scissorBox);
 
-    if (_viewportBox.width >= 0 && _viewportBox.height >= 0)
-    {
-        bCustomViewport = true;
-        context->configureViewport(_viewportBox.x, _viewportBox.y, _viewportBox.width, _viewportBox.height);
-    }
-    else
-        context->configureViewport(0, 0, context->viewportWidth(), context->viewportHeight());
-    
     if (renderTarget)
         context->setRenderToTexture(renderTarget->id(), true);
     else
        context->setRenderToBackBuffer();
+
+    if (_viewportBox.width >= 0 && _viewportBox.height >= 0)
+    {
+        customViewport = true;
+        context->configureViewport(_viewportBox.x, _viewportBox.y, _viewportBox.width, _viewportBox.height);
+    }
 
     if (_clearBeforeRender)
        context->clear(
@@ -353,7 +351,7 @@ Renderer::render(render::AbstractContext::Ptr    context,
         if ((drawCall->layouts() & layoutMask()) != 0)
             drawCall->render(context, renderTarget);
 
-    if (bCustomViewport)
+    if (customViewport)
         context->setScissorTest(false, _viewportBox);
 
     _beforePresent->execute(std::static_pointer_cast<Renderer>(shared_from_this()));
