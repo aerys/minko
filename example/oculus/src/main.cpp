@@ -64,6 +64,8 @@ main(int argc, char** argv)
     auto sceneManager = SceneManager::create(canvas->context());
     auto loader = sceneManager->assets()->loader();
 
+    canvas->desiredFramerate(120);
+
     // setup assets
     loader->options()
         ->resizeSmoothly(true)
