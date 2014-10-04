@@ -59,6 +59,7 @@ namespace minko
             typedef std::shared_ptr<AbstractComponent>			AbsCmpPtr;
             typedef std::shared_ptr<SceneManager>				SceneMgrPtr;
             typedef std::shared_ptr<render::AbstractTexture>    AbsTexturePtr;
+            typedef math::Vector2::Ptr                          Vector2Ptr;
 
         private:
             static const float									WORLD_UNIT;
@@ -81,6 +82,9 @@ namespace minko
             std::shared_ptr<Renderer>                           _leftRenderer;
             std::shared_ptr<scene::Node>                        _rightCameraNode;
             std::shared_ptr<Renderer>                           _rightRenderer;
+            
+            scene::Node::Ptr                                    _ppScene;
+            Renderer::Ptr                                       _ppRenderer;
 
             Signal<AbsCmpPtr, NodePtr>::Slot                    _targetAddedSlot;
             Signal<AbsCmpPtr, NodePtr>::Slot                    _targetRemovedSlot;
@@ -88,14 +92,19 @@ namespace minko
             Signal<NodePtr, NodePtr, NodePtr>::Slot             _removedSlot;
             Signal<SceneMgrPtr, uint, AbsTexturePtr>::Slot      _renderEndSlot;
 
+            std::array<std::pair<Vector2Ptr, Vector2Ptr>, 2>    _uvScaleOffset;
+
         public:
             inline static
             Ptr
-            create(float aspectRatio,
+            create(int viewportWidth,
+                   int viewportHeight,
                    float zNear  = 0.1f,
                    float zFar   = 1000.0f)
             {
-                auto ptr = std::shared_ptr<OculusVRCamera>(new OculusVRCamera(aspectRatio, zNear, zFar));
+                auto ptr = std::shared_ptr<OculusVRCamera>(new OculusVRCamera(
+                    viewportWidth, viewportHeight, zNear, zFar
+                ));
 
                 ptr->initialize();
 
@@ -124,6 +133,9 @@ namespace minko
             }
 
             void
+            updateViewport(int viewportWidth, int viewportHeight);
+
+            void
             resetHeadTracking();
 
             bool
@@ -136,7 +148,7 @@ namespace minko
             ~OculusVRCamera(); // temporary solution
 
         private:
-            OculusVRCamera(float aspectRatio, float zNear, float zFar);
+            OculusVRCamera(int viewportWidth, int viewportHeight, float zNear, float zFar);
 
             void
             resetOVRDevice();
@@ -150,8 +162,11 @@ namespace minko
             void
             initializeCameras();
 
+            std::array<std::shared_ptr<geometry::Geometry>, 2>
+            createDistortionGeometry(std::shared_ptr<render::AbstractContext> context);
+
             void
-            initializeDistortionGeometry(std::shared_ptr<render::AbstractContext> context);
+            initializePostProcessingRenderer();
 
             void
             updateCameraOrientation();

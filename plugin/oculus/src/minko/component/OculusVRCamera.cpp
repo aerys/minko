@@ -40,6 +40,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/Matrix4x4.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/material/Material.hpp"
+#include "minko/file/Loader.hpp"
 
 using namespace minko;
 using namespace minko::scene;
@@ -49,8 +50,8 @@ using namespace minko::math;
 /*static*/ const float                    OculusVRCamera::WORLD_UNIT    = 1.0f;
 /*static*/ const unsigned int            OculusVRCamera::TARGET_SIZE    = 1024;
 
-OculusVRCamera::OculusVRCamera(float aspectRatio, float zNear, float zFar) :
-    _aspectRatio(aspectRatio),
+OculusVRCamera::OculusVRCamera(int viewportWidth, int viewportHeight, float zNear, float zFar) :
+    _aspectRatio((float)viewportWidth / (float)viewportHeight),
     _zNear(zNear),
     _zFar(zFar),
     _eyePosition(Vector3::create(0.0f, 0.0f, 0.0f)),
@@ -60,13 +61,19 @@ OculusVRCamera::OculusVRCamera(float aspectRatio, float zNear, float zFar) :
     _leftRenderer(nullptr),
     _rightCameraNode(nullptr),
     _rightRenderer(nullptr),
+    _ppRenderer(Renderer::create()),
     _targetAddedSlot(nullptr),
     _targetRemovedSlot(nullptr),
     _addedSlot(nullptr),
     _removedSlot(nullptr),
     _renderEndSlot(nullptr)
 {
+    _uvScaleOffset[0].first = math::Vector2::create();
+    _uvScaleOffset[0].second = math::Vector2::create();
+    _uvScaleOffset[1].first = math::Vector2::create();
+    _uvScaleOffset[1].second = math::Vector2::create();
 
+    updateViewport(viewportWidth, viewportHeight);
 }
 
 OculusVRCamera::~OculusVRCamera()
@@ -95,6 +102,18 @@ OculusVRCamera::initialize()
     ));
 
     initializeOVRDevice();
+}
+
+void
+OculusVRCamera::updateViewport(int viewportWidth, int viewportHeight)
+{
+    _aspectRatio = (float)viewportWidth / (float)viewportHeight;
+    _ppRenderer->viewport(0, 0, viewportWidth, viewportHeight);
+
+    if (_leftCameraNode)
+        _leftCameraNode->component<PerspectiveCamera>()->aspectRatio(_aspectRatio);
+    if (_rightCameraNode)
+        _rightCameraNode->component<PerspectiveCamera>()->aspectRatio(_aspectRatio);
 }
 
 void
@@ -197,6 +216,21 @@ OculusVRCamera::initializeOVRDevice()
         0
     );
 
+    for (auto eyeNum = 0u; eyeNum < 2; ++eyeNum)
+    {
+        ovrVector2f uvScaleOffset[2];
+
+        ovrHmd_GetRenderScaleAndOffset(
+            _hmd->DefaultEyeFov[eyeNum],
+            renderTargetSize,
+            eyeRenderViewport[eyeNum],
+            uvScaleOffset
+        );
+
+        _uvScaleOffset[eyeNum].first->setTo(uvScaleOffset[0].x, uvScaleOffset[0].y);
+        _uvScaleOffset[eyeNum].second->setTo(uvScaleOffset[1].x, uvScaleOffset[1].y);
+    }
+
     // FIXME: on Windows, render directly into the HMD (window ?= SDL window)
     // ovrHmd_AttachToWindow(HMD, window, NULL, NULL);
 }
@@ -231,13 +265,14 @@ OculusVRCamera::initializeCameras()
     targets()[0]->addChild(_rightCameraNode);
 }
 
-void
-OculusVRCamera::initializeDistortionGeometry(std::shared_ptr<render::AbstractContext> context)
+std::array<std::shared_ptr<geometry::Geometry>, 2>
+OculusVRCamera::createDistortionGeometry(std::shared_ptr<render::AbstractContext> context)
 {
+    auto geometries = std::array<std::shared_ptr<geometry::Geometry>, 2>();
     for (int eyeNum = 0; eyeNum < 2; eyeNum++)
     {
         auto geom = geometry::Geometry::create();
-        
+
         // Allocate mesh vertices, registering with renderer using the OVR vertex format.
         ovrDistortionMesh meshData;
         ovrHmd_CreateDistortionMesh(
@@ -251,8 +286,7 @@ OculusVRCamera::initializeDistortionGeometry(std::shared_ptr<render::AbstractCon
         auto vb = render::VertexBuffer::create(
             context,
             (float*)meshData.pVertexData,
-            (sizeof(ovrDistortionVertex) / sizeof(float))
-            * meshData.VertexCount
+            (sizeof(ovrDistortionVertex) / sizeof(float)) * meshData.VertexCount
         );
 
         // struct ovrDistortionVertex {
@@ -270,17 +304,55 @@ OculusVRCamera::initializeDistortionGeometry(std::shared_ptr<render::AbstractCon
         vb->addAttribute("tanEyeAnglesR", 2);
         vb->addAttribute("tanEyeAnglesG", 2);
         vb->addAttribute("tanEyeAnglesB", 2);
-        
         geom->addVertexBuffer(vb);
 
         auto ib = render::IndexBuffer::create(
             context,
             meshData.pIndexData,
-            meshData.pIndexData + meshData.IndexCount * sizeof(unsigned short)
+            meshData.pIndexData + meshData.IndexCount
         );
 
         geom->indices(ib);
+
+        geometries[eyeNum] = geom;
     }
+
+    return geometries;
+}
+
+void
+OculusVRCamera::initializePostProcessingRenderer()
+{
+    auto geometries = createDistortionGeometry(_sceneManager->assets()->context());
+    auto loader = file::Loader::create(_sceneManager->assets()->loader());
+    
+    loader->queue("effect/OculusVR/OculusVR.effect");
+
+    auto complete = loader->complete()->connect([&](file::Loader::Ptr loader)
+    {
+        auto effect = _sceneManager->assets()->effect("effect/OculusVR/OculusVR.effect");
+
+        auto materialLeftEye = material::Material::create();
+        materialLeftEye->set("eyeToSourceUVScale", _uvScaleOffset[0].first);
+        materialLeftEye->set("eyeToSourceUVOffset", _uvScaleOffset[0].second);
+        materialLeftEye->set("eyeRotationStart", math::Matrix4x4::create());
+        materialLeftEye->set("eyeRotationEnd", math::Matrix4x4::create());
+        materialLeftEye->set("texture", _renderTarget);
+
+        auto materialRightEye = material::Material::create();
+        materialRightEye->set("eyeToSourceUVScale", _uvScaleOffset[1].first);
+        materialRightEye->set("eyeToSourceUVOffset", _uvScaleOffset[1].second);
+        materialRightEye->set("eyeRotationStart", math::Matrix4x4::create());
+        materialRightEye->set("eyeRotationEnd", math::Matrix4x4::create());
+        materialRightEye->set("texture", _renderTarget);
+
+        _ppScene = scene::Node::create()
+            ->addComponent(_ppRenderer)
+            ->addComponent(Surface::create(geometries[0], materialLeftEye, effect))
+            ->addComponent(Surface::create(geometries[1], materialRightEye, effect));
+    });
+
+    loader->load();
 }
 
 void
@@ -340,18 +412,24 @@ OculusVRCamera::setSceneManager(SceneManager::Ptr sceneManager)
     if (_sceneManager == sceneManager)
         return;
 
+    _sceneManager = sceneManager;
+
     auto context = sceneManager->assets()->context();
 
-    _renderTarget = render::Texture::create(context, _renderTargetWidth, _renderTargetHeight);
-    /*_leftRenderer->target(_renderTarget);
-    _rightRenderer->target(_renderTarget);*/
-
-    initializeDistortionGeometry(context);
+    _renderTarget = render::Texture::create(context, _renderTargetWidth, _renderTargetHeight, false, true);
+    _renderTarget->upload();
+    _leftRenderer->target(_renderTarget);
+    _rightRenderer->target(_renderTarget);
 
     _renderEndSlot = sceneManager->renderingEnd()->connect(std::bind(
-        &OculusVRCamera::updateCameraOrientation,
-        std::static_pointer_cast<OculusVRCamera>(shared_from_this())
+        &OculusVRCamera::renderEndHandler,
+        std::static_pointer_cast<OculusVRCamera>(shared_from_this()),
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3
     ));
+
+    initializePostProcessingRenderer();
 }
 
 void
@@ -361,8 +439,7 @@ OculusVRCamera::renderEndHandler(std::shared_ptr<SceneManager>    sceneManager,
 {
     updateCameraOrientation();
 
-    /*_leftRenderer->render(sceneManager->assets()->context());
-    _rightRenderer->render(sceneManager->assets()->context());*/
+    _ppRenderer->render(sceneManager->assets()->context());
 }
 
 bool
@@ -390,9 +467,9 @@ OculusVRCamera::updateCameraOrientation()
 
     HeadPos.y = ovrHmd_GetFloat(_hmd, OVR_KEY_EYE_HEIGHT, HeadPos.y);
 
-    for (int eyeIndex = 0; eyeIndex < ovrEye_Count; eyeIndex++)
+    for (int eyeNum = 0; eyeNum < 2; eyeNum++)
     {
-        ovrEyeType eye = _hmd->EyeRenderOrder[eyeIndex];
+        ovrEyeType eye = _hmd->EyeRenderOrder[eyeNum];
         eyeRenderPose[eye] = ovrHmd_GetEyePose(_hmd, eye);
 
         OVR::Matrix4f rollPitchYaw = OVR::Matrix4f::RotationY(BodyYaw);
@@ -403,26 +480,29 @@ OculusVRCamera::updateCameraOrientation()
         OVR::Matrix4f view = OVR::Matrix4f::LookAtRH(shiftedEyePos, shiftedEyePos + finalForward, finalUp);
         OVR::Vector3f viewAdjust = OVR::Util::Render::CalculateEyeVirtualCameraOffset(
             renderInfo,
-            eyeIndex == 0 ? OVR::StereoEye::StereoEye_Left : OVR::StereoEye::StereoEye_Right,
+            eyeNum == 0 ? OVR::StereoEye::StereoEye_Left : OVR::StereoEye::StereoEye_Right,
             false
         );
-
-        auto m = view.M;
-        auto cameraNode = eyeIndex == 0 ? _leftCameraNode : _rightCameraNode;
+        auto cameraNode = eyeNum == 0 ? _leftCameraNode : _rightCameraNode;
         auto matrix = cameraNode->component<Transform>()->matrix();
 
         matrix->lock();
-        matrix->initialize(
-            m[0][0], m[0][1], m[0][2], m[0][3],
-            m[1][0], m[1][1], m[1][2], m[1][3],
-            m[2][0], m[2][1], m[2][2], m[2][3],
-            m[3][0], m[3][1], m[3][2], m[3][3]
-        );
+        matrix->initialize((float*)view.M);
         matrix->appendTranslation(viewAdjust.x, viewAdjust.y, viewAdjust.z);
-        /*matrix->transpose();
-        matrix->invert();*/
+        //matrix->transpose();
+        matrix->invert();
         matrix->unlock();
 
+        // update time warp matrices
+        ovrMatrix4f twMatrices[2];
+        ovrHmd_GetEyeTimewarpMatrices(_hmd, (ovrEyeType)eyeNum, eyeRenderPose[eyeNum], twMatrices);
+
+        Matrix4x4::Ptr rotationStart = Matrix4x4::create()->initialize((float*)twMatrices[0].M);
+        Matrix4x4::Ptr rotationEnd = Matrix4x4::create()->initialize((float*)twMatrices[1].M);
+
+        _ppScene->component<Surface>(eyeNum)->material()
+            ->set("eyeRotationStart", rotationStart)
+            ->set("eyeRotationEnd", rotationEnd);
     }
 }
 
