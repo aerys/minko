@@ -109,11 +109,11 @@ OculusVRCamera::updateViewport(int viewportWidth, int viewportHeight)
 {
     _aspectRatio = (float)viewportWidth / (float)viewportHeight;
     _ppRenderer->viewport(0, 0, viewportWidth, viewportHeight);
-
-    if (_leftCameraNode)
+    
+    /*if (_leftCameraNode)
         _leftCameraNode->component<PerspectiveCamera>()->aspectRatio(_aspectRatio);
     if (_rightCameraNode)
-        _rightCameraNode->component<PerspectiveCamera>()->aspectRatio(_aspectRatio);
+        _rightCameraNode->component<PerspectiveCamera>()->aspectRatio(_aspectRatio);*/
 }
 
 void
@@ -161,6 +161,8 @@ OculusVRCamera::initializeOVRDevice()
     _hmd = ovrHmd_Create(0);
     if (!_hmd)
         throw;
+
+    ovrHmd_RecenterPose(_hmd);
 
     OVR::Sizei recommenedTex0Size = ovrHmd_GetFovTextureSize(_hmd, ovrEye_Left, _hmd->DefaultEyeFov[0], 1.0f);
     OVR::Sizei recommenedTex1Size = ovrHmd_GetFovTextureSize(_hmd, ovrEye_Right, _hmd->DefaultEyeFov[1], 1.0f);
@@ -429,6 +431,11 @@ OculusVRCamera::setSceneManager(SceneManager::Ptr sceneManager)
         std::placeholders::_3
     ));
 
+    _renderBeginSlot = sceneManager->renderingBegin()->connect(std::bind(
+        &OculusVRCamera::updateCameraOrientation,
+        std::static_pointer_cast<OculusVRCamera>(shared_from_this())
+    ), 1000.f);
+
     initializePostProcessingRenderer();
 }
 
@@ -437,7 +444,7 @@ OculusVRCamera::renderEndHandler(std::shared_ptr<SceneManager>    sceneManager,
                                  uint                            frameId,
                                  render::AbstractTexture::Ptr    renderTarget)
 {
-    updateCameraOrientation();
+    //updateCameraOrientation();
 
     _ppRenderer->render(sceneManager->assets()->context());
 }
@@ -460,8 +467,8 @@ void
 OculusVRCamera::updateCameraOrientation()
 {
     static ovrPosef eyeRenderPose[2];
-    static float BodyYaw(3.141592f);
-    static OVR::Vector3f HeadPos(0.0f, 1.6f, -5.0f);
+    static float BodyYaw(0.f);
+    static OVR::Vector3f HeadPos(0.0f, 0.f, 0.f);
     static auto state = (OVR::CAPI::HMDState*)(_hmd->Handle);
     static auto renderInfo = state->RenderState.RenderInfo;
 
@@ -488,9 +495,9 @@ OculusVRCamera::updateCameraOrientation()
 
         matrix->lock();
         matrix->initialize((float*)view.M);
-        matrix->appendTranslation(viewAdjust.x, viewAdjust.y, viewAdjust.z);
         //matrix->transpose();
         matrix->invert();
+        matrix->prependTranslation(viewAdjust.x, viewAdjust.y, viewAdjust.z);
         matrix->unlock();
 
         // update time warp matrices

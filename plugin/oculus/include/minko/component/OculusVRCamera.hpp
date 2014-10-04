@@ -90,6 +90,7 @@ namespace minko
             Signal<AbsCmpPtr, NodePtr>::Slot                    _targetRemovedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot             _addedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot             _removedSlot;
+            Signal<SceneMgrPtr, uint, AbsTexturePtr>::Slot      _renderBeginSlot;
             Signal<SceneMgrPtr, uint, AbsTexturePtr>::Slot      _renderEndSlot;
 
             std::array<std::pair<Vector2Ptr, Vector2Ptr>, 2>    _uvScaleOffset;
