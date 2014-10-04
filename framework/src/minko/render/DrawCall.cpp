@@ -655,22 +655,28 @@ DrawCall::bindStates()
 }
 
 void
-DrawCall::render(const AbstractContext::Ptr& context, AbstractTexture::Ptr renderTarget)
+DrawCall::render(const AbstractContext::Ptr&    context,
+                 AbstractTexture::Ptr           renderTarget,
+                 const render::ScissorBox&      viewport)
 {
     if (_target)
-        renderTarget = _target;
-
-    if (renderTarget)
     {
-        if (renderTarget->id() != context->renderTarget())
+        if (_target->id() != context->renderTarget())
         {
-            context->setRenderToTexture(renderTarget->id(), true);
-            if (_target)
-                context->clear();
+            context->setRenderToTexture(_target->id(), true);
+            context->clear();
         }
     }
     else
-        context->setRenderToBackBuffer();
+    {
+        if (renderTarget)
+            context->setRenderToTexture(renderTarget->id(), true);
+        else
+            context->setRenderToBackBuffer();
+
+        if (viewport.width >= 0 && viewport.height >= 0)
+            context->configureViewport(viewport.x, viewport.y, viewport.width, viewport.height);
+    }
 
     context->setProgram(_program->id());
 
