@@ -17,52 +17,52 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#if defined(EMSCRIPTEN)
 #pragma once
 
 #include "minko/Common.hpp"
-#include "AbstractDOMEvent.hpp"
+#include "minko/dom/AbstractDOMElement.hpp"
+#include "minko/dom/AbstractDOMEvent.hpp"
 
-namespace minko
+namespace emscripten
 {
-	namespace dom
-	{
-		class AbstractDOMMouseEvent : public virtual AbstractDOMEvent
-		{
-		public:
-			typedef std::shared_ptr<AbstractDOMMouseEvent> Ptr;
+    namespace dom
+    {
+        class EmscriptenDOMEvent : public virtual minko::dom::AbstractDOMEvent
+        {
+        public:
+            typedef std::shared_ptr<EmscriptenDOMEvent> Ptr;
 
-			virtual
-			int
-			clientX() = 0;
+        protected:
+            EmscriptenDOMEvent(std::string jsAccessor):
+                _jsAccessor(jsAccessor)
+            {
+            }
 
-			virtual
-			int
-			clientY() = 0;
+        public:
+            static
+            Ptr
+            create(std::string jsAccessor)
+            {
+                Ptr event(new EmscriptenDOMEvent(jsAccessor));
+                return event;
+            }
 
-			virtual
-			int
-			pageX() = 0;
+            void
+            preventDefault();
 
-			virtual
-			int
-			pageY() = 0;
+            void
+            stopPropagation();
 
+            std::string
+            type();
 
-			virtual
-			int
-			layerX() = 0;
+            minko::dom::AbstractDOMElement::Ptr
+            target();
 
-			virtual
-			int
-			layerY() = 0;
-
-			virtual
-			int
-			screenX() = 0;
-
-			virtual
-			int
-			screenY() = 0;
-		};
-	}
+        protected:
+            std::string _jsAccessor;
+        };
+    }
 }
+#endif

@@ -13,7 +13,7 @@
 	var m = {};
 
 	m.bridge = null;
-	m.loaded = -1;
+	m.loaded = 0;
 
 	//var iframeElement = document.getElementById('overlayiframe');
 	//m.iframeElement = iframeElement;
@@ -40,8 +40,6 @@
 
 	m.iframeLoadHandler = function(event)
 	{
-		console.log("loaded");
-
 		if(Minko.loaded == -1)
 			return;
 
@@ -142,4 +140,5 @@
 
 	    bridge.send({type: 'ready', value:'true'});
 	});
+	m.iframeLoadHandler();
 })();

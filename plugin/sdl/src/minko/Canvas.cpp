@@ -323,8 +323,10 @@ Canvas::step()
 #endif
 
     SDL_Event event;
-    
+
+#if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
     SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
+#endif // MINKO_PLATFORM != MINKO_PLATFORM_HTML5
 
     while (SDL_PollEvent(&event))
     {
@@ -335,13 +337,28 @@ Canvas::step()
             quit();
             break;
         }
-                
-        case (SDL_DROPFILE):
+#if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
+        case SDL_DROPFILE:
         {
             _fileDropped->execute(std::string(event.drop.file));
             break;
         }
+#endif // MINKO_PLATFORM != MINKO_PLATFORM_HTML5
+        case SDL_TEXTINPUT:
+        {
+            int i = 0;
 
+            while (event.text.text[i] != '\0' && event.text.text[i] != 0)
+            {
+                _keyboard->textInput()->execute(_keyboard, event.text.text[i++]);
+            }
+            break;
+        }
+        case SDL_TEXTEDITING:
+        {
+            //std::cout << "text editing" << std::endl;
+            break;
+        }
         case SDL_KEYDOWN:
         {
             _keyboard->keyDown()->execute(_keyboard);
@@ -355,9 +372,9 @@ Canvas::step()
                 if (!_keyboard->hasKeyDownSignal(code))
                     continue;
 
-                auto pair = _keyboard->keyToKeyCodeMap.find(code);
+                auto pair = input::KeyMap::keyToKeyCodeMap.find(code);
 
-                if (pair != _keyboard->keyToKeyCodeMap.end() && pair->second == keyCode)
+                if (pair != input::KeyMap::keyToKeyCodeMap.end() && pair->second == keyCode)
                     _keyboard->keyDown(code)->execute(_keyboard, i);
             }
             break;
@@ -376,9 +393,9 @@ Canvas::step()
                 if (!_keyboard->hasKeyUpSignal(code))
                     continue;
 
-                auto pair = _keyboard->keyToKeyCodeMap.find(code);
+                auto pair = input::KeyMap::keyToKeyCodeMap.find(code);
 
-                if (pair != _keyboard->keyToKeyCodeMap.end() && pair->second == keyCode)
+                if (pair != input::KeyMap::keyToKeyCodeMap.end() && pair->second == keyCode)
                     _keyboard->keyUp(code)->execute(_keyboard, i);
             }
 

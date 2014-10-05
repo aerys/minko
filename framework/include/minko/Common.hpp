@@ -359,6 +359,7 @@ namespace minko
     {
         class Mouse;
         class Keyboard;
+        class KeyMap;
         class Joystick;
         class Touch;
     }

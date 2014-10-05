@@ -23,48 +23,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/dom/AbstractDOMMouseEvent.hpp"
 #include "minko/dom/AbstractDOMElement.hpp"
+#include "chromium/dom/ChromiumDOMEvent.hpp"
 #include "include/cef_render_process_handler.h"
 
 namespace chromium
 {
 	namespace dom
 	{
-		class ChromiumDOMMouseEvent : public minko::dom::AbstractDOMMouseEvent,
-			public std::enable_shared_from_this<ChromiumDOMMouseEvent>
+        class ChromiumDOMMouseEvent :
+            public ChromiumDOMEvent,
+            public virtual minko::dom::AbstractDOMMouseEvent
 		{
 		public:
 			typedef std::shared_ptr<ChromiumDOMMouseEvent> Ptr;
+
 			~ChromiumDOMMouseEvent();
 
-		private:
+        private:
 			ChromiumDOMMouseEvent(CefRefPtr<CefV8Value>, CefRefPtr<CefV8Context>);
 			
 		public:
 			static
 			Ptr
 			create(CefRefPtr<CefV8Value>, CefRefPtr<CefV8Context>);
-
-			static
-			void
-			clearAll();
-
-			void
-			clear();
-
-			void
-			preventDefault();
-
-			void
-			stopPropagation();
-
-			std::string
-			accessor();
-
-			std::string
-			type();
-
-			minko::dom::AbstractDOMElement::Ptr
-			target();
 
 			int
 			clientX();
@@ -78,39 +59,17 @@ namespace chromium
 			int
 			pageY();
 
-
 			int
 			layerX();
 
 			int
 			layerY();
 
-
 			int
 			screenX();
 
 			int
 			screenY();
-
-		private:
-
-			CefRefPtr<CefV8Value>
-			getFunction(std::string name);
-
-			CefRefPtr<CefV8Value>
-			getProperty(std::string name);
-
-		private:
-			static
-			std::list<Ptr> _events;
-
-			std::atomic<bool> _blocker;
-
-			CefRefPtr<CefV8Context> _v8Context;
-
-			bool _cleared;
-
-			CefRefPtr<CefV8Value> _v8NodeObject;
 		};
 	}
 }

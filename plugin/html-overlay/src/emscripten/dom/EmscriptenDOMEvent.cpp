@@ -17,52 +17,44 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
-
 #include "minko/Common.hpp"
-#include "AbstractDOMEvent.hpp"
+#include "emscripten/dom/EmscriptenDOMEvent.hpp"
+#include "emscripten/dom/EmscriptenDOMElement.hpp"
+#include "emscripten/emscripten.h"
 
-namespace minko
+using namespace minko;
+using namespace minko::dom;
+using namespace emscripten;
+using namespace emscripten::dom;
+
+void
+EmscriptenDOMEvent::preventDefault()
 {
-	namespace dom
-	{
-		class AbstractDOMMouseEvent : public virtual AbstractDOMEvent
-		{
-		public:
-			typedef std::shared_ptr<AbstractDOMMouseEvent> Ptr;
+    std::cerr << "Warning : AbstractDOMEvent::preventDefault will have no effect" << std::endl;
+    std::string eval = _jsAccessor + ".preventDefault()";
+    emscripten_run_script(eval.c_str());
+}
 
-			virtual
-			int
-			clientX() = 0;
+void
+EmscriptenDOMEvent::stopPropagation()
+{
+    std::cerr << "Warning : AbstractDOMEvent::stopPropagation will have no effect" << std::endl;
+    std::string eval = _jsAccessor + ".stopPropagation()";
+    emscripten_run_script(eval.c_str());
+}
 
-			virtual
-			int
-			clientY() = 0;
+std::string
+EmscriptenDOMEvent::type()
+{
+    std::string eval = "(" + _jsAccessor + ".type)";
 
-			virtual
-			int
-			pageX() = 0;
+    char* result = emscripten_run_script_string(eval.c_str());
 
-			virtual
-			int
-			pageY() = 0;
+    return std::string(result);
+}
 
-
-			virtual
-			int
-			layerX() = 0;
-
-			virtual
-			int
-			layerY() = 0;
-
-			virtual
-			int
-			screenX() = 0;
-
-			virtual
-			int
-			screenY() = 0;
-		};
-	}
+minko::dom::AbstractDOMElement::Ptr
+EmscriptenDOMEvent::target()
+{
+    return EmscriptenDOMElement::getDOMElement(_jsAccessor + ".target");
 }
