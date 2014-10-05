@@ -46,7 +46,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "LWOFileData.h"
 #include "SceneCombiner.h"
-#include "Importer.h"
 
 namespace Assimp	{
 	namespace LWS	{
@@ -219,7 +218,7 @@ private:
 	void BuildGraph(aiNode* nd, 
 		LWS::NodeDesc& src, 
 		std::vector<AttachmentInfo>& attach,
-		Loader& batch,
+		BatchLoader& batch,
 		aiCamera**& camOut,
 		aiLight**& lightOut, 
 		std::vector<aiNodeAnim*>& animOut);

@@ -170,7 +170,7 @@ HTTPProtocol::load()
         //emscripten_async_wget_data(resolvedFilename().c_str(), loader.get(), &completeHandler, &errorHandler);
 
         //EMSCRIPTEN >= 1.13.1
-        emscripten_async_wget2_data(resolvedFilename().c_str(), "GET", "", loader.get(), 0, &completeHandler, &errorHandler, &progressHandler);
+        emscripten_async_wget2_data(resolvedFilename().c_str(), "GET", "", loader.get(), 0, &wget2CompleteHandler, &errorHandler, &progressHandler);
     }
     else
     {
@@ -258,22 +258,8 @@ HTTPProtocol::load()
 
 #if defined(EMSCRIPTEN)
 void
-HTTPProtocol::wget2CompleteHandler(void* arg, const char* file)
+HTTPProtocol::wget2CompleteHandler(void* arg, void* data, unsigned int * size)
 {
-    FILE* f = fopen(file, "rb");
-
-    if (f)
-    {
-        fseek(f, 0, SEEK_END);
-        int size = ftell(f);
-
-        fseek (f, 0, SEEK_SET);
-        char* data = new char[size];
-        fread(data, size, 1, f);
-        fclose(f);
-
-        completeHandler(arg, (void*)data, size);
-        delete data;
-    }
+    HTTPProtocol::completeHandler(arg, data, (unsigned int)(size));
 }
 #endif

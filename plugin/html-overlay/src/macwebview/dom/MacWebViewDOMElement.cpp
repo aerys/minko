@@ -466,9 +466,14 @@ MacWebViewDOMElement::update()
             _engine->eval(js);
 
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
+            auto type = _engine->eval(eventName + ".type");
 
             // It's a touch event ?
-            if (_engine->eval(eventName + ".type").find("touch") == 0)
+            if (type == "change")
+                _onchange->execute(MacWebViewDOMEvent::create(eventName, _engine));
+            else if (type == "input")
+                _oninput->execute(MacWebViewDOMEvent::create(eventName, _engine));
+            else if (type.find("touch") == 0)
             {
                 // Get number of finger
                 std::string js = eventName + ".changedTouches.length";
