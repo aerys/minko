@@ -27,7 +27,7 @@ namespace minko
     class Canvas;
 
     class SDLTouch :
-    public input::Touch
+        public input::Touch
     {
         friend class Canvas;
 

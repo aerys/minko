@@ -63,6 +63,7 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, boo
     _desiredFramerate(60.f),
     _enterFrame(Signal<Canvas::Ptr, float, float>::create()),
     _resized(Signal<AbstractCanvas::Ptr, uint, uint>::create()),
+    _fileDropped(Signal<const std::string&>::create()),
     _joystickAdded(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
     _joystickRemoved(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
     _touchZoom(Signal<std::shared_ptr<input::Touch>, float>::create()),
@@ -323,6 +324,10 @@ Canvas::step()
 
     SDL_Event event;
 
+#if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
+    SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
+#endif // MINKO_PLATFORM != MINKO_PLATFORM_HTML5
+
     while (SDL_PollEvent(&event))
     {
         switch (event.type)
@@ -332,6 +337,13 @@ Canvas::step()
             quit();
             break;
         }
+#if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
+        case SDL_DROPFILE:
+        {
+            _fileDropped->execute(std::string(event.drop.file));
+            break;
+        }
+#endif // MINKO_PLATFORM != MINKO_PLATFORM_HTML5
         case SDL_TEXTINPUT:
         {
             int i = 0;

@@ -36,6 +36,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	}
 
 	includedirs {
+		"lib/assimp",
 		"lib/assimp/code",
 		"lib/assimp/code/BoostWorkaround",
 		"lib/assimp/include",

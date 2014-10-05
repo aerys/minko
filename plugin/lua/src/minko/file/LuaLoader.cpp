@@ -28,7 +28,7 @@ LuaLoader::bind(LuaGlue& state)
     auto& batchLoader = state.Class<Loader>("Loader");
 
     MINKO_LUAGLUE_BIND_SIGNAL(state, Loader::Ptr);
-    MINKO_LUAGLUE_BIND_SIGNAL(state, Loader::Ptr, const ParserError&);
+    MINKO_LUAGLUE_BIND_SIGNAL(state, Loader::Ptr, const Error&);
     MINKO_LUAGLUE_BIND_SIGNAL(state, Loader::Ptr, float);
 
     batchLoader
