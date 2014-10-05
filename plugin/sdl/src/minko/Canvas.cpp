@@ -128,7 +128,7 @@ Canvas::initializeWindow()
 #if defined(MINKO_PLUGIN_OFFSCREEN)
     auto flags = 0;
 #else
-    auto flags = SDL_INIT_VIDEO | SDL_INIT_JOYSTICK;
+    auto flags = SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO;
 #endif
 
     if (SDL_Init(flags) < 0)
@@ -352,7 +352,7 @@ Canvas::step()
             _keyboard->keyDown()->execute(_keyboard);
 
             auto keyCode = static_cast<input::Keyboard::KeyCode>(event.key.keysym.sym);
-            
+
             for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
             {
                 auto code = static_cast<input::Keyboard::Key>(i);

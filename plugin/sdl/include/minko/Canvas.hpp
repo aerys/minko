@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <chrono>
 
 #include "minko/Common.hpp"
+#include "minko/SDLAudio.hpp"
 #include "minko/SDLKeyboard.hpp"
 #include "minko/SDLMouse.hpp"
 #include "minko/SDLJoystick.hpp"
