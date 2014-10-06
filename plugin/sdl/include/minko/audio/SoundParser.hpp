@@ -24,28 +24,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-    namespace file
+    namespace audio
     {
         class SoundParser :
-            public AbstractParser
+            public file::AbstractParser
         {
         public:
             typedef std::shared_ptr<SoundParser> Ptr;
 
         public:
-            inline static
+            static
             Ptr
-            create() = 0;
+            create()
             {
                 return std::shared_ptr<SoundParser>(new SoundParser());
             }
 
             void
-            parse(const std::string&                filename,
-                  const std::string&                resolvedFilename,
-                  std::shared_ptr<Options>          options,
-                  const std::vector<unsigned char>& data,
-                  std::shared_ptr<AssetLibrary>     AssetLibrary) = 0;
+            parse(const std::string&                    filename,
+                  const std::string&                    resolvedFilename,
+                  std::shared_ptr<file::Options>        options,
+                  const std::vector<unsigned char>&     data,
+                  std::shared_ptr<file::AssetLibrary>   assets);
+
+        private:
+            SoundParser();
+
+            void* _chunk;
         };
     }
 }

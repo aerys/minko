@@ -23,20 +23,40 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace audio
-	{
-		class SoundChannel
-		{
-		public:
-			Signal<SoundChannel::Ptr>
-			complete();
+    namespace audio
+    {
+        class Sound;
 
-			void
-			stop();
+        class SoundChannel
+        {
+        public:
+            typedef std::shared_ptr<SoundChannel>    Ptr;
 
-		private:
-			class SoundChannelImpl;
-			SoundChannelImpl* _impl;
-		};
-	}
+            friend class Sound;
+
+            Signal<Ptr>::Ptr
+            complete()
+            {
+                return _complete;
+            }
+
+            virtual
+            void
+            stop() = 0;
+
+            ~SoundChannel()
+            {
+            }
+
+        protected:
+            SoundChannel(std::shared_ptr<Sound> sound) :
+                _complete(Signal<Ptr>::create()),
+                _sound(sound)
+            {
+            }
+
+            Signal<Ptr>::Ptr _complete;
+            std::shared_ptr<Sound> _sound;
+        };
+    }
 }

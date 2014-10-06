@@ -143,13 +143,6 @@ namespace minko
             _defaultCanvas = value;
         }
 
-        std::shared_ptr<audio::Audio>
-        audio() const
-        {
-            // Override to implement.
-            return nullptr;
-        };
-
     protected:
         static
         std::unordered_map<std::string, WorkerHandler>        _workers;

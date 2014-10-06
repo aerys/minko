@@ -92,6 +92,7 @@ Canvas::initialize()
     initializeWindow();
     initializeContext();
     initializeInputs();
+    initializeAudio();
 
 #if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
     registerWorker<file::FileProtocolWorker>("file-protocol");
@@ -121,6 +122,12 @@ Canvas::initializeInputs()
             _joysticks[i] = SDLJoystick::create(shared_from_this(), SDL_JoystickInstanceID(joystick), joystick);
     }
 #endif
+}
+
+void
+Canvas::initializeAudio()
+{
+    _audio = SDLAudio::create(shared_from_this());
 }
 
 void

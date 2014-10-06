@@ -19,33 +19,36 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/Common.hpp"
-#include "minko/file/AbstractParser.hpp"
+#include "minko/audio/SoundChannel.hpp"
+
+#include "SDL_audio.h"
 
 namespace minko
 {
-    namespace file
+    namespace audio
     {
-        class SoundParser :
-            public AbstractParser
+        class SDLSound;
+
+        class SDLSoundChannel :
+            public SoundChannel
         {
         public:
-            typedef std::shared_ptr<SoundParser> Ptr;
-
-        public:
-            inline static
-            Ptr
-            create() = 0;
-            {
-                return std::shared_ptr<SoundParser>(new SoundParser());
-            }
+            friend class SDLSound;
 
             void
-            parse(const std::string&                filename,
-                  const std::string&                resolvedFilename,
-                  std::shared_ptr<Options>          options,
-                  const std::vector<unsigned char>& data,
-                  std::shared_ptr<AssetLibrary>     AssetLibrary) = 0;
+            stop();
+
+            ~SDLSoundChannel();
+
+        protected:
+            SDLSoundChannel(std::shared_ptr<Sound> sound);
+
+        private:
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+            int _channel;
+#else
+            SDL_AudioDeviceID _device;
+#endif
         };
     }
 }

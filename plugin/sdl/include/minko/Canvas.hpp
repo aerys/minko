@@ -80,6 +80,7 @@ namespace minko
         float                                                                   _framerate;
         float                                                                   _desiredFramerate;
 
+        std::shared_ptr<SDLAudio>                                               _audio;
         std::shared_ptr<SDLMouse>                                               _mouse;
         std::unordered_map<int, std::shared_ptr<SDLJoystick>>                   _joysticks;
         std::shared_ptr<SDLKeyboard>                                            _keyboard;
@@ -263,7 +264,7 @@ namespace minko
         {
             return _resized;
         }
-        
+
         inline
         Signal<const std::string&>::Ptr
         fileDropped()
@@ -354,6 +355,9 @@ namespace minko
 
         void
         initializeInputs();
+
+        void
+        initializeAudio();
 
         void
         initializeContext();

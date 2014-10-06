@@ -19,21 +19,32 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/audio/SoundChannel.hpp"
+#include "minko/Common.hpp"
 
 namespace minko
 {
-	namespace audio
-	{
-		class Sound
-		{
-		public:
-			SoundChannel::Ptr
-			play();
+    namespace audio
+    {
+        class SoundChannel;
 
-		private:
-			class SoundImpl;
-			SoundImpl* _impl;
-		};
-	}
+        class Sound
+        {
+        public:
+            typedef std::shared_ptr<Sound>        Ptr;
+
+            virtual
+            std::shared_ptr<SoundChannel>
+            play() = 0;
+
+            virtual
+            ~Sound()
+            {
+            }
+
+        protected:
+            Sound()
+            {
+            }
+        };
+    }
 }

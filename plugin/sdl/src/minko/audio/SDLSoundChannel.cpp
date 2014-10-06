@@ -17,23 +17,34 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "minko/audio/SDLSoundChannel.hpp"
 
-#include "minko/audio/SoundChannel.hpp"
+using namespace minko;
+using namespace minko::audio;
 
-namespace minko
+SDLSoundChannel::SDLSoundChannel(std::shared_ptr<Sound> sound) :
+    SoundChannel(sound),
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+    _channel(0)
+#else
+    _device(0)
+#endif
 {
-	namespace audio
-	{
-		class Sound
-		{
-		public:
-			SoundChannel::Ptr
-			play();
+}
 
-		private:
-			class SoundImpl;
-			SoundImpl* _impl;
-		};
-	}
+SDLSoundChannel::~SDLSoundChannel()
+{
+#if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
+    SDL_CloseAudioDevice(_device);
+#endif
+}
+
+void
+SDLSoundChannel::stop()
+{
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+    Mix_Pause(_channel);
+#else
+    SDL_PauseAudioDevice(_device, 1);
+#endif
 }

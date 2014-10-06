@@ -29,7 +29,7 @@ namespace minko
     {
         friend class Canvas;
 
-    public :
+    public:
         static
         std::shared_ptr<SDLAudio>
         create(std::shared_ptr<Canvas> canvas);
