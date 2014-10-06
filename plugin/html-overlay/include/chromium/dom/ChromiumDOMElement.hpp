@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/dom/AbstractDOMMouseEvent.hpp"
 #include "minko/dom/AbstractDOMTouchEvent.hpp"
 #include "minko/dom/AbstractDOMElement.hpp"
+#include "chromium/dom/ChromiumDOMObject.hpp"
 #include "chromium/dom/ChromiumDOMElementV8Handler.hpp"
 #include "include/cef_render_process_handler.h"
 
@@ -33,7 +34,8 @@ namespace chromium
 {
 	namespace dom
 	{
-		class ChromiumDOMElement : public minko::dom::AbstractDOMElement,
+		class ChromiumDOMElement : public virtual minko::dom::AbstractDOMElement,
+            public chromium::dom::ChromiumDOMObject,
 			public std::enable_shared_from_this<ChromiumDOMElement>
 		{
 		public:
@@ -218,25 +220,6 @@ namespace chromium
 
 		private:
 
-			CefRefPtr<CefV8Value>
-			getFunction(std::string name);
-            
-            template <typename T>
-            T
-            getProperty(std::string name);
-
-            template <typename T>
-            void
-            setProperty(std::string name, T);
-
-            template <typename T>
-			T
-			getV8Property(std::string name);
-
-            template <typename T>
-			void
-			setV8Property(std::string name, T);
-
 			void
 			addEventListener(std::string type);
 
@@ -247,9 +230,7 @@ namespace chromium
 
 			static
 			std::map<Ptr, CefRefPtr<CefV8Value>> _elementToV8Object;
-
-			std::atomic<bool>	_blocker;
-
+            
             std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>>      _onchange;
             std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>>      _oninput;
 
@@ -273,8 +254,6 @@ namespace chromium
 			bool _onmouseoutCallbackSet;
 
 			CefRefPtr<ChromiumDOMElementV8Handler> _v8Handler;
-			CefRefPtr<CefV8Value> _v8NodeObject;
-			CefRefPtr<CefV8Context> _v8Context;
 
 			static std::list<std::function<void()>>	_functionList;
 			static std::mutex _functionListMutex;

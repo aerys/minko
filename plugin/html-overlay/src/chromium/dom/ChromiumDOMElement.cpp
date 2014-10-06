@@ -50,11 +50,11 @@ ChromiumDOMElement::ChromiumDOMElement(CefRefPtr<CefV8Value> v8NodeObject, CefRe
     _onchangeCallbackSet(false),
     _oninputCallbackSet(false),
 	_cleared(false),
-	_v8Handler(),
-	_v8NodeObject(v8NodeObject),
-	_v8Context(v8Context),
-	_blocker(true)
+	_v8Handler()
 {
+    _blocker = true;
+    _v8NodeObject = v8NodeObject;
+    _v8Context = v8Context;
 }
 
 
@@ -174,144 +174,6 @@ ChromiumDOMElement::clearAll()
 
 	_v8NodeToElement.clear();
 	_elementToV8Object.clear();
-}
-
-CefRefPtr<CefV8Value>
-ChromiumDOMElement::getFunction(std::string name)
-{
-    CefRefPtr<CefV8Value> func = getV8Property<CefRefPtr<CefV8Value>>(name);
-
-	if (!func->IsFunction())
-		throw;
-
-	return func;
-}
-
-template<typename T>
-T
-ChromiumDOMElement::getProperty(std::string name)
-{
-    T result;
-
-    if (CefCurrentlyOn(TID_RENDERER))
-    {
-        _v8Context->Enter();
-        result = getV8Property<T>(name);
-        _v8Context->Exit();
-    }
-    else
-    {
-        CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-        _blocker.store(true);
-
-        auto fn = [&]()
-        {
-            result = getProperty<T>(name);
-            _blocker.store(false);
-        };
-
-        runner->PostTask(NewCefRunnableFunction(&fn));
-
-        while (_blocker.load());
-    }
-
-    return result;
-}
-
-template<typename T>
-void
-ChromiumDOMElement::setProperty(std::string name, T value)
-{
-    if (CefCurrentlyOn(TID_RENDERER))
-    {
-        _v8Context->Enter();
-        setV8Property<T>(name, value);
-        _v8Context->Exit();
-    }
-    else
-    {
-        CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-        _blocker.store(true);
-
-        auto fn = [&]()
-        {
-            setProperty<T>(name, value);
-            _blocker.store(false);
-        };
-
-        runner->PostTask(NewCefRunnableFunction(&fn));
-        while (_blocker.load());
-    }
-}
-
-template<>
-CefRefPtr<CefV8Value>
-ChromiumDOMElement::getV8Property(std::string name)
-{
-    return _v8NodeObject->GetValue(name);
-}
-
-template<>
-std::string
-ChromiumDOMElement::getV8Property(std::string name)
-{
-    return getV8Property<CefRefPtr<CefV8Value>>(name)->GetStringValue();
-}
-
-template<>
-bool
-ChromiumDOMElement::getV8Property(std::string name)
-{
-    return getV8Property<CefRefPtr<CefV8Value>>(name)->GetBoolValue();
-}
-
-template<>
-int
-ChromiumDOMElement::getV8Property(std::string name)
-{
-    return getV8Property<CefRefPtr<CefV8Value>>(name)->GetIntValue();
-}
-
-template<>
-std::vector<AbstractDOMElement::Ptr>
-ChromiumDOMElement::getV8Property(std::string name)
-{
-    return v8ElementArrayToList(getV8Property<CefRefPtr<CefV8Value>>(name), _v8Context);
-}
-
-template<>
-AbstractDOMElement::Ptr
-ChromiumDOMElement::getV8Property(std::string name)
-{
-    return getDOMElementFromV8Object(getV8Property<CefRefPtr<CefV8Value>>(name), _v8Context);
-}
-
-template<>
-void
-ChromiumDOMElement::setV8Property<CefRefPtr<CefV8Value>>(std::string name, CefRefPtr<CefV8Value> value)
-{
-    _v8NodeObject->SetValue(name, value, V8_PROPERTY_ATTRIBUTE_NONE);
-}
-
-template<>
-void
-ChromiumDOMElement::setV8Property<std::string>(std::string name, std::string value)
-{
-    setV8Property(name, CefV8Value::CreateString(value));
-}
-
-template<>
-void
-ChromiumDOMElement::setV8Property<bool>(std::string name, bool value)
-{
-    setV8Property(name, CefV8Value::CreateBool(value));
-}
-
-template<>
-void
-ChromiumDOMElement::setV8Property<int>(std::string name, int value)
-{
-    setV8Property(name, CefV8Value::CreateInt(value));
 }
 
 std::vector<AbstractDOMElement::Ptr>
