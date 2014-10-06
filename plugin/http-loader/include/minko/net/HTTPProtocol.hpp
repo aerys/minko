@@ -52,8 +52,10 @@ namespace minko
             static void
             completeHandler(void*, void*, unsigned int);
 
+#if defined(EMSCRIPTEN)
             static void
-            wget2CompleteHandler(void*, const char*);
+            wget2CompleteHandler(void*, void *, unsigned int*);
+#endif
 
             static void
             errorHandler(void*, int code = 0, const char* = "");

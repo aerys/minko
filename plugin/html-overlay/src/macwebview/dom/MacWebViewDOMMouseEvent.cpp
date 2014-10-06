@@ -19,6 +19,7 @@
 
 #include "minko/Common.hpp"
 #include "macwebview/dom/MacWebViewDOMMouseEvent.hpp"
+#include "macwebview/dom/MacWebViewDOMEngine.hpp"
 
 using namespace minko;
 using namespace minko::dom;
