@@ -41,16 +41,14 @@ end
 local NDK_HOME = ANDROID .. "/toolchains/default"
 local extension = ''
 
-if os.is("windows") then
---	NDK_HOME = os.capture('cygpath -u "' .. NDK_HOME .. '"')
-	NDK_HOME = path.translate(NDK_HOME, "\\")
-	extension = '.exe'
-end
-
 if not os.isfile(NDK_HOME) then
 	error(color.fg.red .. 'Installed NDK is not correctly installed: ' .. NDK_HOME .. color.reset)
 end
 
+if os.is("windows") then
+	NDK_HOME = os.capture('cygpath -u "' .. NDK_HOME .. '"')
+	extension = '.exe'
+end
 
 -- local matches = os.matchdirs(NDK_HOME .. "/*abi")
 
