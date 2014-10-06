@@ -39,15 +39,15 @@ end
 
 -- writing toolchain name in a fake symlink to avoid actual symlinks on Windows (requiring privileges)
 local NDK_HOME = ANDROID .. "/toolchains/default"
-local dirndk = ANDROID .. "/toolchains"
 local extension = ''
 
 if os.is("windows") then
-	NDK_HOME = os.capture('cygpath -u "' .. NDK_HOME .. '"')
+--	NDK_HOME = os.capture('cygpath -u "' .. NDK_HOME .. '"')
+	NDK_HOME = path.translate(NDK_HOME, "\\")
 	extension = '.exe'
 end
 
-if not os.isfile(dirndk .. '/default') then
+if not os.isfile(NDK_HOME) then
 	error(color.fg.red .. 'Installed NDK is not correctly installed: ' .. NDK_HOME .. color.reset)
 end
 
@@ -100,7 +100,7 @@ end
 
 if not os.isfile(file) then
 	error(color.fg.red ..'Cannot find GCC for Android. Make sure ANDROID contains NDK.' ..
-		' (Missing file: ' .. premake.tools.gcc.tools.android.cc .. ')' .. color.reset)
+		' (Missing file: ' .. file .. ')' .. color.reset)
 end
 
 if not os.capture("which ant") then
