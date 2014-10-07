@@ -56,6 +56,8 @@ namespace minko
 
             class DefaultValue
             {
+                friend class Binding;
+
             private:
                 Type _type;
                 Any _values;
@@ -140,15 +142,15 @@ namespace minko
                 return *_defaultValue;
             }
 
-            template <typename... T>
+            template <typename T>
             void
-            defaultValue(Type type, T... values)
+            defaultValue(Type type, const std::vector<T>& values)
             {
                 if (!_defaultValue)
                     _defaultValue = new DefaultValue();
 
                 _defaultValue->_type = type;    
-                _defaultValue->_values = std::vector<T>(values...);
+                _defaultValue->_values = values;
             }
 
             inline
