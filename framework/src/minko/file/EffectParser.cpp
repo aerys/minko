@@ -129,6 +129,30 @@ EffectParser::initializePriorityMap()
 	return m;
 }
 
+std::array<std::string, 14> EffectParser::_stateNames = EffectParser::initializeStateNames();
+std::array<std::string, 14>
+EffectParser::initializeStateNames()
+{
+    std::array<std::string, 14> names = {
+        "blendMode",
+        "colorMask",
+        "depthMask",
+        "depthFunc",
+        "triangleCulling",
+        "stencilFunc",
+        "stencilRef",
+        "stencilMask",
+        "stencilFailOp",
+        "stencilZFailOp",
+        "stencilZPassOp",
+        "scissorBox",
+        "priority",
+        "zSort"
+    };
+
+    return names;
+}
+
 std::string
 EffectParser::typeToString(DefaultValue::Type t)
 {
@@ -536,13 +560,248 @@ EffectParser::parseStates(const Json::Value& node, const Scope& scope, StateBloc
     {
         for (auto stateName : statesNode.getMemberNames())
         {
-            auto stateNode = statesNode[stateName];
-
-            parseBinding(stateNode, scope, states.bindings[stateName]);
-            // FIXME: parse default value
+            if (std::find(_stateNames.begin(), _stateNames.end(), stateName) == _stateNames.end())
+            {
+                // FIXME: log warning because the state name does not match any known state
+            }
+            else
+            {
+                parseBinding(statesNode[stateName], scope, states.bindings[stateName]);
+            }
         }
     }
     // FIXME: throw otherwise
+}
+
+void
+EffectParser::parseBlendMode(const Json::Value&				node,
+                             const Scope&                   scope,
+                             render::Blending::Source&		srcFactor,
+                             render::Blending::Destination&	dstFactor)
+{
+    auto blendModeNode = node.get("blendMode", 0);
+
+    if (blendModeNode.isArray())
+    {
+        auto blendSrcFactorString = "src_" + blendModeNode[0].asString();
+        if (_blendFactorMap.count(blendSrcFactorString))
+            srcFactor = static_cast<render::Blending::Source>(_blendFactorMap[blendSrcFactorString]);
+
+        auto blendDstFactorString = "dst_" + blendModeNode[1].asString();
+        if (_blendFactorMap.count(blendDstFactorString))
+            dstFactor = static_cast<render::Blending::Destination>(_blendFactorMap[blendDstFactorString]);
+    }
+    else if (blendModeNode.isString())
+    {
+        auto blendModeString = blendModeNode.asString();
+
+        if (_blendFactorMap.count(blendModeString))
+        {
+            auto blendMode = _blendFactorMap[blendModeString];
+
+            srcFactor = static_cast<render::Blending::Source>(blendMode & 0x00ff);
+            dstFactor = static_cast<render::Blending::Destination>(blendMode & 0xff00);
+        }
+    }
+}
+
+void
+EffectParser::parseZSort(const Json::Value&	node,
+                         const Scope&       scope,
+                         bool&              zSorted) const
+{
+    auto zsortedValue = node.get("zSort", 0);
+
+    if (zsortedValue.isBool())
+        zSorted = zsortedValue.asBool();
+}
+
+void
+EffectParser::parseColorMask(const Json::Value&	node,
+                             const Scope&       scope,
+                             bool&              colorMask) const
+{
+    auto colorMaskValue = node.get("colorMask", 0);
+
+    if (colorMaskValue.isBool())
+        colorMask = colorMaskValue.asBool();
+}
+
+void
+EffectParser::parseDepthTest(const Json::Value&	    node,
+                             const Scope&           scope,
+                             bool&                  depthMask,
+                             render::CompareMode&   depthFunc)
+{
+    auto depthTest = node.get("depthTest", 0);
+
+    if (depthTest.isObject())
+    {
+        auto depthMaskValue = depthTest.get("depthMask", 0);
+        auto depthFuncValue = depthTest.get("depthFunc", 0);
+
+        if (depthMaskValue.isBool())
+            depthMask = depthMaskValue.asBool();
+
+        if (depthFuncValue.isString())
+            depthFunc = _compareFuncMap[depthFuncValue.asString()];
+    }
+    else if (depthTest.isArray())
+    {
+        depthMask = depthTest[0].asBool();
+        depthFunc = _compareFuncMap[depthTest[1].asString()];
+    }
+    else
+    {
+        auto depthMaskValue = node.get("depthMask", 0);
+        auto depthFuncValue = node.get("depthFunc", 0);
+
+        if (depthMaskValue.isBool())
+            depthMask = depthMaskValue.asBool();
+        if (depthFuncValue.isString())
+            depthFunc = _compareFuncMap[depthFuncValue.asString()];
+    }
+}
+
+void
+EffectParser::parseTriangleCulling(const Json::Value&   node,
+                                   const Scope&         scope,
+                                   TriangleCulling&     triangleCulling)
+{
+    auto triangleCullingValue = node.get("triangleCulling", 0);
+
+    if (triangleCullingValue.isString())
+    {
+        auto triangleCullingString = triangleCullingValue.asString();
+
+        if (triangleCullingString == "back")
+            triangleCulling = TriangleCulling::BACK;
+        else if (triangleCullingString == "front")
+            triangleCulling = TriangleCulling::FRONT;
+        else if (triangleCullingString == "both")
+            triangleCulling = TriangleCulling::BOTH;
+        else if (triangleCullingString == "none")
+            triangleCulling = TriangleCulling::NONE;
+    }
+}
+
+float
+EffectParser::parsePriority(const Json::Value&	node,
+                            const Scope&        scope,
+                            float               defaultPriority)
+{
+    auto	priorityNode = node.get("priority", defaultPriority);
+    float	ret = defaultPriority;
+
+    if (!priorityNode.isNull())
+    {
+        if (priorityNode.isInt())
+            ret = (float)priorityNode.asInt();
+        else if (priorityNode.isDouble())
+            ret = (float)priorityNode.asDouble();
+        else if (priorityNode.isString())
+            ret = getPriorityValue(priorityNode.asString());
+        else if (priorityNode.isArray())
+        {
+            if (priorityNode[0].isString() && priorityNode[1].isDouble())
+                ret = getPriorityValue(priorityNode[0].asString()) + (float)priorityNode[1].asDouble();
+        }
+    }
+
+    return ret;
+}
+
+void
+EffectParser::parseStencilState(const Json::Value&  node,
+                                const Scope&        scope,
+								CompareMode&        stencilFunc,
+								int&                stencilRef,
+								uint&               stencilMask,
+								StencilOperation&   stencilFailOp,
+								StencilOperation&   stencilZFailOp,
+								StencilOperation&   stencilZPassOp)
+{
+	auto stencilTest	= node.get("stencilTest", 0);
+
+	if (stencilTest.isObject())
+	{
+        auto stencilFuncValue	= stencilTest.get("stencilFunc", 0);
+		auto stencilRefValue	= stencilTest.get("stencilRef", 0);
+		auto stencilMaskValue	= stencilTest.get("stencilMask", 0);
+		auto stencilOpsValue	= stencilTest.get("stencilOps", 0);
+
+		if (stencilFuncValue.isString())
+			stencilFunc	= _compareFuncMap[stencilFuncValue.asString()];
+		if (stencilRefValue.isInt())
+			stencilRef	= stencilRefValue.asInt();
+		if (stencilMaskValue.isUInt())
+			stencilMask	= stencilMaskValue.asUInt();
+		parseStencilOperations(stencilOpsValue, scope, stencilFailOp, stencilZFailOp, stencilZPassOp);
+	}
+    else if (stencilTest.isArray())
+    {
+		stencilFunc = _compareFuncMap[stencilTest[0].asString()];
+		stencilRef	= stencilTest[1].asInt();
+		stencilMask	= stencilTest[2].asUInt();
+		parseStencilOperations(stencilTest[3], scope, stencilFailOp, stencilZFailOp, stencilZPassOp);
+    }
+}
+
+void
+EffectParser::parseScissorTest(const Json::Value& node,
+                               const Scope&       scope,
+							   bool&			  scissorTest,
+							   ScissorBox&	      scissorBox)
+{
+	auto scissorTestNode		= node.get("scissorTest", 0);
+
+	if (!scissorTestNode.isNull() && scissorTestNode.isBool())
+		scissorTest = scissorTestNode.asBool();
+
+	auto scissorBoxNode			= node.get("scissorBox", 0);
+
+	if (!scissorBoxNode.isNull() && scissorBoxNode.isArray())
+	{
+		if (scissorBoxNode[0].isInt())
+			scissorBox.x		= scissorBoxNode[0].asInt();
+		if (scissorBoxNode[1].isInt())
+			scissorBox.y		= scissorBoxNode[1].asInt();
+		if (scissorBoxNode[2].isInt())
+			scissorBox.width	= scissorBoxNode[2].asInt();
+		if (scissorBoxNode[3].isInt())
+			scissorBox.height	= scissorBoxNode[3].asInt();
+	}
+}
+
+void
+EffectParser::parseStencilOperations(const Json::Value& node,
+                                     const Scope&       scope,
+									 StencilOperation& 	stencilFailOp,
+									 StencilOperation& 	stencilZFailOp,
+									 StencilOperation& 	stencilZPassOp)
+{
+	if (node.isArray())
+	{
+		if (node[0].isString())
+			stencilFailOp = _stencilOpMap[node[0].asString()];
+		if (node[1].isString())
+			stencilZFailOp = _stencilOpMap[node[1].asString()];
+		if (node[2].isString())
+			stencilZPassOp = _stencilOpMap[node[2].asString()];
+	}
+	else
+	{
+		auto failValue	= node.get("fail", 0);
+		auto zfailValue	= node.get("zfail", 0);
+		auto zpassValue	= node.get("zpass", 0);
+
+		if (failValue.isString())
+			stencilFailOp = _stencilOpMap[failValue.asString()];
+		if (zfailValue.isString())
+			stencilZFailOp = _stencilOpMap[zfailValue.asString()];
+		if (zpassValue.isString())
+			stencilZPassOp = _stencilOpMap[zpassValue.asString()];
+	}
 }
 
 void
@@ -816,25 +1075,6 @@ EffectParser::loadTexture(const std::string&	textureFilename,
 std::shared_ptr<render::States>
 EffectParser::createStates(const StateBlock& block)
 {
-    auto statePropertyNames = {
-        "blendMode",
-        "colorMask",
-        "depthMask",
-        "depthFunc",
-        "triangleCulling",
-        "stencilFunc",
-        "stencilRef",
-        "stencilMask",
-        "stencilFailOp",
-        "stencilZFailOp",
-        "stencilZPassOp",
-        "scissorBox",
-        "priority",
-        "zSort"
-    };
-
-    // blendMode
-
     return nullptr;
 }
 

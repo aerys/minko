@@ -57,7 +57,6 @@ namespace minko
             typedef std::unordered_map<std::string, Technique>              Techniques;
             typedef std::vector<PassPtr>                                    Passes;
             typedef std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>  LoaderCompleteSlotMap;
-            typedef Signal<LoaderPtr, const ParserError&>::Slot             LoaderErrorSlot;
             typedef std::unordered_map<LoaderPtr, LoaderErrorSlot>          LoaderErrorSlotMap;
 
             enum class GLSLBlockType
@@ -156,6 +155,7 @@ namespace minko
 			static std::unordered_map<std::string, render::CompareMode>			_compareFuncMap;
 			static std::unordered_map<std::string, render::StencilOperation>	_stencilOpMap;
 			static std::unordered_map<std::string, float>						_priorityMap;
+            static std::array<std::string, 14>                                  _stateNames;
 
 		private:
             std::string						_filename;
@@ -222,6 +222,10 @@ namespace minko
             initializePriorityMap();
 
             static
+            std::array<std::string, 14>
+            initializeStateNames();
+
+            static
             std::string
             typeToString(DefaultValue::Type t);
 
@@ -279,6 +283,61 @@ namespace minko
 
             void
             parseStates(const Json::Value& node, const Scope& scope, StateBlock& states);
+
+            void
+            parseBlendMode(const Json::Value&				node,
+                           const Scope&                     scope,
+                           render::Blending::Source&		srcFactor,
+                           render::Blending::Destination&	dstFactor);
+
+            void
+            parseZSort(const Json::Value&   node,
+                       const Scope&         scope,
+                       bool&                zSorted) const;
+
+            void
+            parseColorMask(const Json::Value&   node,
+                           const Scope&         scope,
+                           bool&                colorMask) const;
+
+            void
+            parseDepthTest(const Json::Value&	node,
+                           const Scope&         scope,
+                           bool&                depthMask,
+                           render::CompareMode& depthFunc);
+
+            void
+            parseTriangleCulling(const Json::Value&         node,
+                                 const Scope&               scope,
+                                 render::TriangleCulling&   triangleCulling);
+
+            float
+            parsePriority(const Json::Value&    node,
+                          const Scope&          scope,
+                          float                 defaultPriority);
+
+            void
+            parseStencilState(const Json::Value&        node,
+                              const Scope&              scope,
+                              render::CompareMode&      stencilFunc,
+                              int&                      stencilRef,
+                              uint&                     stencilMask,
+                              render::StencilOperation& stencilFailOp,
+                              render::StencilOperation& stencilZFailOp,
+                              render::StencilOperation& stencilZPassOp);
+
+            void
+            parseStencilOperations(const Json::Value&           node,
+                                   const Scope&                 scope,
+                                   render::StencilOperation&    stencilFailOp,
+                                   render::StencilOperation&    stencilZFailOp,
+                                   render::StencilOperation&    stencilZPassOp);
+
+            void
+            parseScissorTest(const Json::Value&    node,
+                             const Scope&          scope,
+                             bool&                 scissorTest,
+                             render::ScissorBox&   scissorBox);
 
             ShaderPtr
             parseShader(const Json::Value& node, const Scope& scope, render::Shader::Type type);
