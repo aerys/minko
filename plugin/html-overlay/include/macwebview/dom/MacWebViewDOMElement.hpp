@@ -40,7 +40,7 @@ namespace macwebview
 			typedef std::shared_ptr<MacWebViewDOMElement> Ptr;
 
 		private:
-			MacWebViewDOMElement(std::string jsAccessor);
+			MacWebViewDOMElement(const std::string& jsAccessor);
 
 		public:
 			~MacWebViewDOMElement()
@@ -49,26 +49,26 @@ namespace macwebview
 
 			static
 			Ptr
-			getDOMElement(std::string jsElement, std::shared_ptr<MacWebViewDOMEngine> engine);
+			getDOMElement(const std::string& jsElement, std::shared_ptr<MacWebViewDOMEngine> engine);
 
 			std::string
 			getJavascriptAccessor();
 
 			static
 			Ptr
-			create(std::string javascriptAccessor, std::shared_ptr<MacWebViewDOMEngine> engine);
+			create(const std::string& javascriptAccessor, std::shared_ptr<MacWebViewDOMEngine> engine);
 
 			std::string
 			id();
 
 			void
-			id(std::string);
+			id(const std::string&);
 
 			std::string
 			className();
 
 			void
-			className(std::string);
+			className(const std::string&);
 
 			std::string
 			tagName();
@@ -83,13 +83,13 @@ namespace macwebview
 			textContent();
 
 			void
-			textContent(std::string);
+			textContent(const std::string&);
 
 			std::string
 			innerHTML();
 
 			void
-			innerHTML(std::string);
+			innerHTML(const std::string&);
 
 			minko::dom::AbstractDOMElement::Ptr
 			appendChild(minko::dom::AbstractDOMElement::Ptr);
@@ -104,13 +104,13 @@ namespace macwebview
 			cloneNode(bool deep = true);
 
 			std::string
-			getAttribute(std::string name);
+			getAttribute(const std::string& name);
 
 			void
-			setAttribute(std::string name, std::string value);
+			setAttribute(const std::string& name, const std::string& value);
 
 			std::vector<minko::dom::AbstractDOMElement::Ptr>
-			getElementsByTagName(std::string tagName);
+			getElementsByTagName(const std::string& tagName);
 
 			std::string
 			value();
@@ -119,10 +119,10 @@ namespace macwebview
 			value(const std::string&);
 
 			std::string
-			style(std::string name);
+			style(const std::string& name);
 
 			void
-			style(std::string name, std::string value);
+			style(const std::string& name, const std::string& value);
 
             // Events
 			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
@@ -164,7 +164,7 @@ namespace macwebview
             update();
 		private:
 			void
-			addEventListener(std::string);
+			addEventListener(const std::string&);
 
             void
             initialize(std::shared_ptr<MacWebViewDOMEngine> engine);
