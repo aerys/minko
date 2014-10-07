@@ -25,6 +25,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "include/cef_runnable.h"
 #include "include/cef_task.h"
 
+namespace minko
+{
+    namespace dom
+    {
+        class AbstractDOMElement;
+    }
+}
+
 namespace chromium
 {
     namespace dom
@@ -108,6 +116,46 @@ namespace chromium
             CefRefPtr<CefV8Value> _v8NodeObject;
             CefRefPtr<CefV8Context> _v8Context;
         };
+
+        template<>
+        CefRefPtr<CefV8Value>
+        ChromiumDOMObject::getV8Property(std::string name);
+
+        template<>
+        std::string
+        ChromiumDOMObject::getV8Property(std::string name);
+
+        template<>
+        int
+        ChromiumDOMObject::getV8Property(std::string name);
+
+        template<>
+        bool
+        ChromiumDOMObject::getV8Property(std::string name);
+
+        template<>
+        std::vector<std::shared_ptr<minko::dom::AbstractDOMElement>>
+        ChromiumDOMObject::getV8Property(std::string name);
+
+        template<>
+        std::shared_ptr<minko::dom::AbstractDOMElement>
+        ChromiumDOMObject::getV8Property(std::string name);
+
+        template<>
+        void
+        ChromiumDOMObject::setV8Property<CefRefPtr<CefV8Value>>(std::string name, CefRefPtr<CefV8Value> value);
+
+        template<>
+        void
+        ChromiumDOMObject::setV8Property<std::string>(std::string name, std::string value);
+
+        template<>
+        void
+        ChromiumDOMObject::setV8Property<bool>(std::string name, bool value);
+
+        template<>
+        void
+        ChromiumDOMObject::setV8Property<int>(std::string name, int value);
     }
 }
 
