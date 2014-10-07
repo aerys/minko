@@ -90,16 +90,16 @@ namespace chromium
                 else
                 {
                     CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-                    //_blocker.store(true);
+                    _blocker.store(true);
 
-                    auto fn = [=]()
+                    auto fn = [&]()
                     {
                         setProperty<T>(name, value);
-                        //_blocker.store(false);
+                        _blocker.store(false);
                     };
 
                     runner->PostTask(NewCefRunnableFunction(&fn));
-                    //while (_blocker.load());
+                    while (_blocker.load());
                 }
             }
 
