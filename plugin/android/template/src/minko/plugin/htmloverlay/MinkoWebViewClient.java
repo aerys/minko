@@ -29,6 +29,12 @@ public class MinkoWebViewClient extends WebViewClient
 	}
 	
 	@Override
+    public void onScaleChanged(WebView view, float oldScale, float newScale)
+    {
+        view.zoomOut();
+    }
+	
+	@Override
     public void onPageFinished(WebView view, String url) 
 	{
         super.onPageFinished(view, url);

@@ -7,7 +7,11 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.graphics.Color;
 import android.view.View;
-
+import android.webkit.WebSettings;
+import android.view.Display;
+import android.view.WindowManager;
+import android.content.Context;
+import android.os.Build;
 import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
@@ -20,6 +24,7 @@ public class InitWebViewTask implements Runnable
 {
 	private Activity _sdlActivity;
 	private WebView _webView;
+	private WebViewJSInterface _jsInterface;
 	
 	// Native functions
 	public native void webViewInitialized();
@@ -37,7 +42,7 @@ public class InitWebViewTask implements Runnable
 		layout.setBackgroundColor(Color.RED);
 		
 		// Create the WebView from SDLActivity context
-		_webView = new WebView(SDLActivity.getContext());
+		_webView = new MinkoWebView(SDLActivity.getContext());
 		
 		// Enable the JS for the WebView
         _webView.getSettings().setJavaScriptEnabled(true);
@@ -61,8 +66,13 @@ public class InitWebViewTask implements Runnable
 		_webView.getSettings().setBuiltInZoomControls(true);
 		_webView.getSettings().setDisplayZoomControls(false);
 		
-		// Disable zoom when double tap <= only on simulator?
-		//_webView.getSettings().setUseWideViewPort(false);
+		// Disable zoom when double tap (only for API < 19)
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) 
+		{
+			_webView.getSettings().setUseWideViewPort(false);
+			defaultFixedViewport();
+			//forceFixedViewport();
+		}
 		
 		// Disable scroll bar
 		_webView.setVerticalScrollBarEnabled(false);
@@ -75,7 +85,14 @@ public class InitWebViewTask implements Runnable
         layout.addView(_webView);
 		
 		// Add a JavaScript interface
-		_webView.addJavascriptInterface(new WebViewJSInterface(), "MinkoNativeInterface");
+		_jsInterface = new WebViewJSInterface();		
+		_webView.addJavascriptInterface(_jsInterface, "MinkoNativeInterface");
+		
+		/*
+		// Increase WebView performances
+		_webView.getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
+        _webView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
+		*/
 		
 		d("MINKOJAVA", "WEBVIEW IS NOW INSTANCIATED: " + _webView);
 		webViewInitialized();
@@ -92,6 +109,13 @@ public class InitWebViewTask implements Runnable
 	
 	public String evalJS(String js)
 	{
+		
+		d("MINKOJAVATEST", "Try to evaluate JS: " + js);
+		/*String jsResult = _jsInterface.getJSValue(_webView, js);
+		d("MINKOJAVATEST", "Result: " + jsResult);
+		return jsResult;
+		*/
+		
 		//d("MINKOJAVA", "Try to evaluate JS: " + js);
 		
 		EvalJSCallable evalJSCallable = new EvalJSCallable(_webView, js);
@@ -136,4 +160,47 @@ public class InitWebViewTask implements Runnable
 		ChangeResolutionRunnable changeResolutionRunnable = new ChangeResolutionRunnable(_webView, width, height);
 		_sdlActivity.runOnUiThread(changeResolutionRunnable);
 	}
+	
+	private int getScale()
+    {
+        Display display = ((WindowManager) _sdlActivity.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+        int width = display.getWidth();
+        Double val = new Double(width) / 800d;
+        val = val * 100d;
+        return val.intValue();
+    }
+
+    private void forceFixedViewport()
+    {
+        WebSettings settings = _webView.getSettings();
+
+        settings.setLoadWithOverviewMode(false);
+        // Activating viewport on Android 2.x will deactivate stretching
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
+        {
+            // Set default zoom to unzoom, no setting this will sometimes trigger zoom 100% on some phone (like double tap)
+            // It seems to glitch on Android 2.x, a white screen will appear after enabling this option
+            //settings.setDefaultZoom(WebSettings.ZoomDensity.FAR);
+            // Force using viewport html statement, sadly it activates double tap to zoom
+            settings.setUseWideViewPort(true);
+        }
+        // Try not to use default zoom (useful ?)
+        settings.setSupportZoom(false);
+        settings.setBuiltInZoomControls(false);
+        // Set scale on devices that supports it
+        _webView.setPadding(0, 0, 0, 0);
+
+        //Enable DOM storage, and tell Android where to save the Database
+        //settings.setDatabasePath("/data/data/" + this.getPackageName() + "/databases/");
+
+        int percentScale = getScale();
+        _webView.setInitialScale(percentScale);
+    }
+
+    private void defaultFixedViewport()
+    {
+        WebSettings settings = _webView.getSettings();
+        settings.setUseWideViewPort(true);
+        settings.setLoadWithOverviewMode(true);
+    }
 }
