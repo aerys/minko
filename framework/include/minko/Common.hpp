@@ -401,28 +401,28 @@ namespace std
     std::string
     to_string(const minko::math::detail::tvec1<T, P>& v)
     {
-        return math::to_string(v);
+        return minko::math::to_string(v);
     }
 
     template<typename T, minko::math::precision P>
     std::string
     to_string(const minko::math::detail::tvec2<T, P>& v)
     {
-        return math::to_string(v);
+        return minko::math::to_string(v);
     }
 
     template<typename T, minko::math::precision P>
     std::string
     to_string(const minko::math::detail::tvec3<T, P>& v)
     {
-        return math::to_string(v);
+        return minko::math::to_string(v);
     }
 
     template<typename T, minko::math::precision P>
     std::string
     to_string(const minko::math::detail::tvec4<T, P>& v)
     {
-        return math::to_string(v);
+        return minko::math::to_string(v);
     }
 	
 #ifdef __ANDROID__
