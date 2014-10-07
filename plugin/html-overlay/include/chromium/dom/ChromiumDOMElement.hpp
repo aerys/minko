@@ -76,9 +76,9 @@ namespace chromium
 
             inline
             void
-            id(std::string newId)
+            id(const std::string& newId)
             {
-                setProperty<std::string>("id", newId);
+                setProperty<const std::string&>("id", newId);
             }
 
             inline
@@ -90,9 +90,9 @@ namespace chromium
 
             inline
             void
-            className(std::string newClass)
+            className(const std::string& newClass)
             {
-                setProperty<std::string>("className", newClass);
+                setProperty<const std::string&>("className", newClass);
             }
 
             inline
@@ -125,9 +125,9 @@ namespace chromium
 
             inline
             void
-            textContent(std::string content)
+            textContent(const std::string& content)
             {
-                setProperty<std::string>("textContent", content);
+                setProperty<const std::string&>("textContent", content);
             }
 
             inline
@@ -141,7 +141,7 @@ namespace chromium
             void
             value(const std::string& v)
             {
-                setProperty<std::string>("value", v);
+                setProperty<const std::string&>("value", v);
             }
 
             inline
@@ -153,9 +153,9 @@ namespace chromium
 
             inline
             void
-            innerHTML(std::string html)
+            innerHTML(const std::string& html)
             {
-                setProperty<std::string>("innerHTML", html);
+                setProperty<const std::string&>("innerHTML", html);
             }
 
 			AbstractDOMElement::Ptr
@@ -171,20 +171,20 @@ namespace chromium
 			cloneNode(bool deep);
 
 			std::string
-			getAttribute(std::string name);
+            getAttribute(const std::string& name);
 
 			void
-			setAttribute(std::string name, std::string value);
+            setAttribute(const std::string& name, const std::string& value);
 
 			std::vector<AbstractDOMElement::Ptr>
-			getElementsByTagName(std::string tagName);
+			getElementsByTagName(const std::string& tagName);
 
 
 			std::string
-			style(std::string name);
+			style(const std::string& name);
 
 			void
-			style(std::string name, std::string value);
+			style(const std::string& name, const std::string& value);
 
 			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr
 			onclick();

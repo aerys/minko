@@ -39,7 +39,7 @@ EmscriptenDOMElement::domElements;
 std::map<std::string,EmscriptenDOMElement::Ptr>
 EmscriptenDOMElement::_accessorToElement;
 
-EmscriptenDOMElement::EmscriptenDOMElement(std::string jsAccessor) :
+EmscriptenDOMElement::EmscriptenDOMElement(const std::string& jsAccessor) :
 	_jsAccessor(jsAccessor),
 	_onclick(Signal<AbstractDOMMouseEvent::Ptr>::create()),
 	_onmousedown(Signal<AbstractDOMMouseEvent::Ptr>::create()),
@@ -64,7 +64,7 @@ EmscriptenDOMElement::EmscriptenDOMElement(std::string jsAccessor) :
 
 
 EmscriptenDOMElement::Ptr
-EmscriptenDOMElement::getDOMElement(std::string jsElement)
+EmscriptenDOMElement::getDOMElement(const std::string& jsElement)
 {
 	std::string eval = "if (" + jsElement + ".minkoName) (" + jsElement + ".minkoName); else ('');";
 	std::string minkoName = std::string(emscripten_run_script_string(eval.c_str()));
@@ -88,7 +88,7 @@ EmscriptenDOMElement::getDOMElement(std::string jsElement)
 }
 
 EmscriptenDOMElement::Ptr
-EmscriptenDOMElement::create(std::string jsAccessor)
+EmscriptenDOMElement::create(const std::string& jsAccessor)
 {
 	EmscriptenDOMElement::Ptr element(new EmscriptenDOMElement(jsAccessor));
 	domElements.push_back(element);
@@ -111,7 +111,7 @@ EmscriptenDOMElement::id()
 }
 
 void
-EmscriptenDOMElement::id(std::string newId)
+EmscriptenDOMElement::id(const std::string& newId)
 {
 	std::string eval = _jsAccessor + ".id = '" + newId + "';";
 	emscripten_run_script(eval.c_str());
@@ -126,7 +126,7 @@ EmscriptenDOMElement::className()
 }
 
 void
-EmscriptenDOMElement::className(std::string newClassName)
+EmscriptenDOMElement::className(const std::string& newClassName)
 {
 	std::string eval = _jsAccessor + ".className = '" + newClassName + "';";
 	emscripten_run_script(eval.c_str());
@@ -164,7 +164,7 @@ EmscriptenDOMElement::textContent()
 }
 
 void
-EmscriptenDOMElement::textContent(std::string newTextContent)
+EmscriptenDOMElement::textContent(const std::string& newTextContent)
 {
 	std::string eval = _jsAccessor + ".textContent = '" + newTextContent + "';";
 	emscripten_run_script(eval.c_str());
@@ -194,7 +194,7 @@ EmscriptenDOMElement::innerHTML()
 }
 
 void
-EmscriptenDOMElement::innerHTML(std::string newInnerHTML)
+EmscriptenDOMElement::innerHTML(const std::string& newInnerHTML)
 {
 	std::string eval = _jsAccessor + ".innerHTML = '" + newInnerHTML + "';";
 	emscripten_run_script(eval.c_str());
@@ -241,7 +241,7 @@ EmscriptenDOMElement::cloneNode(bool deep)
 }
 
 std::string
-EmscriptenDOMElement::getAttribute(std::string name)
+EmscriptenDOMElement::getAttribute(const std::string& name)
 {
 	std::string eval = "(" + _jsAccessor + ".getAttribute('" + name + "'))";
 	char* result = emscripten_run_script_string(eval.c_str());
@@ -249,21 +249,21 @@ EmscriptenDOMElement::getAttribute(std::string name)
 }
 
 void
-EmscriptenDOMElement::setAttribute(std::string name, std::string value)
+EmscriptenDOMElement::setAttribute(const std::string& name, const std::string& value)
 {
 	std::string eval = _jsAccessor + ".setAttribute('" + name + "', '" + value + "');";
 	emscripten_run_script(eval.c_str());
 }
 
 std::vector<minko::dom::AbstractDOMElement::Ptr>
-EmscriptenDOMElement::getElementsByTagName(std::string tagName)
+EmscriptenDOMElement::getElementsByTagName(const std::string& tagName)
 {
 	return (EmscriptenDOM::getElementList(_jsAccessor + ".getElementsByTagName('" + tagName + "')"));
 }
 
 
 std::string
-EmscriptenDOMElement::style(std::string name)
+EmscriptenDOMElement::style(const std::string& name)
 {
 	std::string eval = "(" + _jsAccessor + ".style." + name + ")";
 	char* result = emscripten_run_script_string(eval.c_str());
@@ -271,14 +271,14 @@ EmscriptenDOMElement::style(std::string name)
 }
 
 void
-EmscriptenDOMElement::style(std::string name, std::string value)
+EmscriptenDOMElement::style(const std::string& name, const std::string& value)
 {
 	std::string eval = _jsAccessor + ".style." + name + " = '" + value + "';";
 	emscripten_run_script(eval.c_str());
 }
 
 void
-EmscriptenDOMElement::addEventListener(std::string type)
+EmscriptenDOMElement::addEventListener(const std::string& type)
 {
 	std::string eval = "Minko.addListener(" + _jsAccessor + ", '" + type + "');";
 

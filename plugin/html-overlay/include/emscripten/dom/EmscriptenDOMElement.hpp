@@ -39,7 +39,7 @@ namespace emscripten
 			typedef std::shared_ptr<EmscriptenDOMElement> Ptr;
 
 		private:
-			EmscriptenDOMElement(std::string jsAccessor);
+			EmscriptenDOMElement(const std::string& jsAccessor);
 
 		public:
 			~EmscriptenDOMElement()
@@ -48,20 +48,20 @@ namespace emscripten
 
 			static
 			Ptr
-			getDOMElement(std::string jsElement);
+			getDOMElement(const std::string& jsElement);
 
 			std::string
 			getJavascriptAccessor();
 
 			static
 			Ptr
-			create(std::string javascriptAccessor);
+			create(const std::string& javascriptAccessor);
 
 			std::string
 			id();
 
 			void
-			id(std::string);
+			id(const std::string&);
 
 			std::string
 			value();
@@ -73,7 +73,7 @@ namespace emscripten
 			className();
 
 			void
-			className(std::string);
+			className(const std::string&);
 
 			std::string
 			tagName();
@@ -88,13 +88,13 @@ namespace emscripten
 			textContent();
 
 			void
-			textContent(std::string);
+			textContent(const std::string&);
 
 			std::string
 			innerHTML();
 
 			void
-			innerHTML(std::string);
+			innerHTML(const std::string&);
 
 			minko::dom::AbstractDOMElement::Ptr
 			appendChild(minko::dom::AbstractDOMElement::Ptr);
@@ -109,19 +109,19 @@ namespace emscripten
 			cloneNode(bool deep = true);
 
 			std::string
-			getAttribute(std::string name);
+			getAttribute(const std::string& name);
 
 			void
-			setAttribute(std::string name, std::string value);
+			setAttribute(const std::string& name, const std::string& value);
 
 			std::vector<minko::dom::AbstractDOMElement::Ptr>
-			getElementsByTagName(std::string tagName);
+			getElementsByTagName(const std::string& tagName);
 
 			std::string
-			style(std::string name);
+			style(const std::string& name);
 
 			void
-			style(std::string name, std::string value);
+			style(const std::string& name, const std::string& value);
 
 			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
 			onclick();
@@ -152,7 +152,7 @@ namespace emscripten
 
 		private:
 			void
-			addEventListener(std::string);
+			addEventListener(const std::string&);
 
 		public:
 			static

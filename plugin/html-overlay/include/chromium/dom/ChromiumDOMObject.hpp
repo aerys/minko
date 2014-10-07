@@ -42,11 +42,11 @@ namespace chromium
         protected:
 
             CefRefPtr<CefV8Value>
-            getFunction(std::string name);
+            getFunction(const std::string& name);
 
             template <typename T>
             T
-            getProperty(std::string name)
+            getProperty(const std::string& name)
             {
 
                 T result;
@@ -78,7 +78,7 @@ namespace chromium
 
             template <typename T>
             void
-            setProperty(std::string name, T value)
+            setProperty(const std::string& name, T value)
             {
 
                 if (CefCurrentlyOn(TID_RENDERER))
@@ -90,26 +90,26 @@ namespace chromium
                 else
                 {
                     CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-                    _blocker.store(true);
+                    //_blocker.store(true);
 
-                    auto fn = [&]()
+                    auto fn = [=]()
                     {
                         setProperty<T>(name, value);
-                        _blocker.store(false);
+                        //_blocker.store(false);
                     };
 
                     runner->PostTask(NewCefRunnableFunction(&fn));
-                    while (_blocker.load());
+                    //while (_blocker.load());
                 }
             }
 
             template <typename T>
             T
-            getV8Property(std::string name);
+            getV8Property(const std::string& name);
 
             template <typename T>
             void
-            setV8Property(std::string name, T);
+            setV8Property(const std::string& name, T);
 
             std::atomic<bool> _blocker;
 
@@ -119,43 +119,43 @@ namespace chromium
 
         template<>
         CefRefPtr<CefV8Value>
-        ChromiumDOMObject::getV8Property(std::string name);
+        ChromiumDOMObject::getV8Property(const std::string& name);
 
         template<>
         std::string
-        ChromiumDOMObject::getV8Property(std::string name);
+        ChromiumDOMObject::getV8Property(const std::string& name);
 
         template<>
         int
-        ChromiumDOMObject::getV8Property(std::string name);
+        ChromiumDOMObject::getV8Property(const std::string& name);
 
         template<>
         bool
-        ChromiumDOMObject::getV8Property(std::string name);
+        ChromiumDOMObject::getV8Property(const std::string& name);
 
         template<>
         std::vector<std::shared_ptr<minko::dom::AbstractDOMElement>>
-        ChromiumDOMObject::getV8Property(std::string name);
+        ChromiumDOMObject::getV8Property(const std::string& name);
 
         template<>
         std::shared_ptr<minko::dom::AbstractDOMElement>
-        ChromiumDOMObject::getV8Property(std::string name);
+        ChromiumDOMObject::getV8Property(const std::string& name);
 
         template<>
         void
-        ChromiumDOMObject::setV8Property<CefRefPtr<CefV8Value>>(std::string name, CefRefPtr<CefV8Value> value);
+        ChromiumDOMObject::setV8Property<CefRefPtr<CefV8Value>>(const std::string& name, CefRefPtr<CefV8Value> value);
 
         template<>
         void
-        ChromiumDOMObject::setV8Property<std::string>(std::string name, std::string value);
+        ChromiumDOMObject::setV8Property<const std::string&>(const std::string& name, const std::string& value);
 
         template<>
         void
-        ChromiumDOMObject::setV8Property<bool>(std::string name, bool value);
+        ChromiumDOMObject::setV8Property<bool>(const std::string& name, bool value);
 
         template<>
         void
-        ChromiumDOMObject::setV8Property<int>(std::string name, int value);
+        ChromiumDOMObject::setV8Property<int>(const std::string& name, int value);
     }
 }
 

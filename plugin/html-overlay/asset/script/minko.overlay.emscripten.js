@@ -1,5 +1,6 @@
 if (!window.Minko)
 	window.Minko = {};
+
 Minko.loaded = -1;
 
 var canvasElement = document.getElementById('canvas');
@@ -118,6 +119,7 @@ Minko.iframeLoadHandler = function(event)
 		return;
 
 	Minko.loaded = 1;
+
 	if (!Minko.iframeElement.contentWindow.Minko)
 		Minko.iframeElement.contentWindow.Minko = {};
 
@@ -152,6 +154,8 @@ Minko.iframeLoadHandler = function(event)
 	Minko.iframeElement.contentWindow.addEventListener('keydown',			Minko.redispatchKeyboardEvent);
 	Minko.iframeElement.contentWindow.addEventListener('keyup',				Minko.redispatchKeyboardEvent);
 	Minko.iframeElement.contentWindow.addEventListener('keypress',			Minko.redispatchKeyboardEvent);
+
+	Minko.iframeElement.contentWindow.dispatchEvent(new Event('minkoReady'));
 }
 
 iframeElement.onload = Minko.iframeLoadHandler;

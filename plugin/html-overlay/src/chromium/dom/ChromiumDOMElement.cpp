@@ -350,7 +350,7 @@ ChromiumDOMElement::cloneNode(bool deep)
 }
 
 std::string
-ChromiumDOMElement::getAttribute(std::string name)
+ChromiumDOMElement::getAttribute(const std::string& name)
 {
 	std::string result;
 
@@ -387,7 +387,7 @@ ChromiumDOMElement::getAttribute(std::string name)
 }
 
 void
-ChromiumDOMElement::setAttribute(std::string name, std::string value)
+ChromiumDOMElement::setAttribute(const std::string& name, const std::string& value)
 {
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
@@ -421,7 +421,7 @@ ChromiumDOMElement::setAttribute(std::string name, std::string value)
 }
 
 std::vector<AbstractDOMElement::Ptr>
-ChromiumDOMElement::getElementsByTagName(std::string tagName)
+ChromiumDOMElement::getElementsByTagName(const std::string& tagName)
 {
 	std::vector<AbstractDOMElement::Ptr> list;
 
@@ -458,7 +458,7 @@ ChromiumDOMElement::getElementsByTagName(std::string tagName)
 }
 
 std::string
-ChromiumDOMElement::style(std::string name)
+ChromiumDOMElement::style(const std::string& name)
 {
 	std::string result;
 
@@ -492,7 +492,7 @@ ChromiumDOMElement::style(std::string name)
 }
 
 void
-ChromiumDOMElement::style(std::string name, std::string value)
+ChromiumDOMElement::style(const std::string& name, const std::string& value)
 {
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
