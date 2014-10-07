@@ -28,15 +28,15 @@ const unsigned int	DrawCall::MAX_NUM_TEXTURES		= 8;
 const unsigned int	DrawCall::MAX_NUM_VERTEXBUFFERS	= 8;
 
 const data::Container&
-DrawCall::getContainer(data::BindingSource source)
+DrawCall::getContainer(data::Binding::Source source)
 {
     switch (source)
     {
-        case data::BindingSource::ROOT:
+        case data::Binding::Source::ROOT:
             return _rootData;
-        case data::BindingSource::RENDERER:
+        case data::Binding::Source::RENDERER:
             return _rendererData;
-        case data::BindingSource::TARGET:
+        case data::Binding::Source::TARGET:
             return _targetData;
     }
 
@@ -76,13 +76,13 @@ DrawCall::bind(Program::Ptr             program,
             continue;
 
         const auto& binding = uniformBindings.at(input.name);
-        auto& container = getContainer(binding.source);
+        auto& container = getContainer(binding.source());
 
         bindUniform(
             program,
             input,
             container,
-            data::Container::getActualPropertyName(_variables, binding.propertyName)
+            data::Container::getActualPropertyName(_variables, binding.propertyName())
         );
     }
      
@@ -92,13 +92,13 @@ DrawCall::bind(Program::Ptr             program,
             continue;
 
         const auto& binding = attributeBindings.at(input.name);
-        auto& container = getContainer(binding.source);
+        auto& container = getContainer(binding.source());
 
         bindAttribute(
             program,
             input,
             container,
-            data::Container::getActualPropertyName(_variables, binding.propertyName)
+            data::Container::getActualPropertyName(_variables, binding.propertyName())
         );
     }
 }
@@ -219,6 +219,8 @@ DrawCall::bindStates(const data::BindingMap& stateBindings)
     _stencilZPassOp = bindState<StencilOperation>("stencilZPassOperation", stateBindings, &def->_stencilZPassOp);
     _scissorTest = bindState<bool>("scissorTest", stateBindings, &def->_scissorTest);
     _scissorBox = bindState<ScissorBox>("scissorBox", stateBindings, &def->_scissorBox);
+
+    // FIXME: bind the render target
 }
 
 void

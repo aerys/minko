@@ -54,7 +54,7 @@ namespace minko
             typedef data::Container                                                 Container;
             typedef std::shared_ptr<data::Collection>                               CollectionPtr;
             typedef std::shared_ptr<data::Provider>                                 ProviderPtr;
-			typedef Signal<Ptr, AbsFilterPtr, data::BindingSource, SurfacePtr>	    RendererFilterChangedSignal;
+			typedef Signal<Ptr, AbsFilterPtr, data::Binding::Source, SurfacePtr>	RendererFilterChangedSignal;
             typedef Signal<SurfacePtr>                                              SurfaceChangedSignal;
             typedef render::DrawCallPool::DrawCallIteratorPair                      DrawCallIteratorPair;
 
@@ -243,10 +243,10 @@ namespace minko
 			}
 
 			Ptr
-			addFilter(AbsFilterPtr, data::BindingSource);
+			addFilter(AbsFilterPtr, data::Binding::Source);
 
 			Ptr
-			removeFilter(AbsFilterPtr, data::BindingSource);
+			removeFilter(AbsFilterPtr, data::Binding::Source);
 
 			/*const std::set<AbsFilterPtr>&
 			filters(data::BindingSource source) const
@@ -351,7 +351,7 @@ namespace minko
 			}*/
 
 			void
-			filterChangedHandler(AbsFilterPtr, data::BindingSource, SurfacePtr);
+			filterChangedHandler(AbsFilterPtr, data::Binding::Source, SurfacePtr);
 		};
 	}
 }

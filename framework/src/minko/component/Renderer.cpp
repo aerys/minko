@@ -61,7 +61,7 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 	_rendererDataFilterChangedSlots(),
 	_rootDataFilterChangedSlots(),
 	_lightMaskFilter(data::LightMaskFilter::create()),*/
-	_filterChanged(Signal<Ptr, data::AbstractFilter::Ptr, data::BindingSource, SurfacePtr>::create())
+	_filterChanged(Signal<Ptr, data::AbstractFilter::Ptr, data::Binding::Source, SurfacePtr>::create())
 {
 	if (renderTarget)
 	{
@@ -69,7 +69,7 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 		_renderTarget = renderTarget;
 	}
 
-	//addFilter(_lightMaskFilter, data::BindingSource::ROOT);
+	//addFilter(_lightMaskFilter, data::Binding::Source::ROOT);
 }
 
 void
@@ -421,7 +421,7 @@ Renderer::sceneManagerRenderingBeginHandler(std::shared_ptr<SceneManager>	sceneM
 
 Renderer::Ptr
 Renderer::addFilter(data::AbstractFilter::Ptr	filter, 
-					data::BindingSource			source)
+					data::Binding::Source			source)
 {
     // FIXME
     /*
@@ -445,7 +445,7 @@ Renderer::addFilter(data::AbstractFilter::Ptr	filter,
 
 Renderer::Ptr
 Renderer::removeFilter(data::AbstractFilter::Ptr	filter, 
-					   data::BindingSource			source)
+					   data::Binding::Source			source)
 {
     // FIXME
 	/*if (filter)
@@ -479,7 +479,7 @@ Renderer::removeFilter(data::AbstractFilter::Ptr	filter,
 
 void
 Renderer::filterChangedHandler(data::AbstractFilter::Ptr	filter, 
-							   data::BindingSource			source,
+							   data::Binding::Source			source,
 							   SurfacePtr					surface)
 {
 	_filterChanged->execute(

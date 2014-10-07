@@ -67,6 +67,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "glm/gtx/transform.hpp"
 #include "glm/gtx/matrix_interpolation.hpp"
 #include "glm/gtx/color_space.hpp"
+#include "glm/gtx/string_cast.hpp"
 
 namespace minko
 {
@@ -211,15 +212,8 @@ namespace minko
 		class AbstractFilter;
         class Collection;
 
-		enum class BindingSource
-		{
-			TARGET,
-			RENDERER,
-			ROOT
-		};
-
-        struct Binding;
-        struct MacroBinding;
+        class Binding;
+        class MacroBinding;
 
         typedef std::unordered_map<std::string, Binding>        BindingMap;
         typedef std::unordered_map<std::string, MacroBinding>   MacroBindingMap;
@@ -403,27 +397,33 @@ namespace std
 		return str;
 	}
 
-	inline
-	std::string
-	to_string(const minko::math::vec2& v)
-	{
-		return "vec2(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ")";
-	}
+    template<typename T, minko::math::precision P>
+    std::string
+    to_string(const minko::math::detail::tvec1<T, P>& v)
+    {
+        return math::to_string(v);
+    }
 
-	inline
-	std::string
-	to_string(const minko::math::vec3& v)
-	{
-		return "vec3(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ", " + std::to_string(v.z) + ")";
-	}
+    template<typename T, minko::math::precision P>
+    std::string
+    to_string(const minko::math::detail::tvec2<T, P>& v)
+    {
+        return math::to_string(v);
+    }
 
-	inline
-	std::string
-	to_string(const minko::math::vec4& v)
-	{
-		return "vec4(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ", " + std::to_string(v.z) + ", "
-			+ std::to_string(v.w) + ")";
-	}
+    template<typename T, minko::math::precision P>
+    std::string
+    to_string(const minko::math::detail::tvec3<T, P>& v)
+    {
+        return math::to_string(v);
+    }
+
+    template<typename T, minko::math::precision P>
+    std::string
+    to_string(const minko::math::detail::tvec4<T, P>& v)
+    {
+        return math::to_string(v);
+    }
 	
 #ifdef __ANDROID__
 	template <typename T>

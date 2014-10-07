@@ -44,46 +44,112 @@ namespace minko
 		public:
 			typedef std::shared_ptr<EffectParser>	Ptr;
 
-		private:
-			enum class GLSLBlockType
-			{
-				TEXT,
-				FILE
-			};
+        private:
+            typedef std::shared_ptr<render::AbstractTexture>	            AbstractTexturePtr;
+            typedef std::shared_ptr<Loader>								    LoaderPtr;
+            typedef std::shared_ptr<render::Effect>						    EffectPtr;
+            typedef std::shared_ptr<render::Pass>						    PassPtr;
+            typedef std::shared_ptr<render::Shader>						    ShaderPtr;
+            typedef std::shared_ptr<file::Options>						    OptionsPtr;
+            typedef std::unordered_map<std::string, AbstractTexturePtr>     TexturePtrMap;
+            typedef Signal<LoaderPtr, const ParserError&>::Slot             LoaderErrorSlot;
+            typedef std::vector<PassPtr>                                    Technique;
+            typedef std::unordered_map<std::string, Technique>              Techniques;
+            typedef std::vector<PassPtr>                                    Passes;
+            typedef std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>  LoaderCompleteSlotMap;
+            typedef Signal<LoaderPtr, const ParserError&>::Slot             LoaderErrorSlot;
+            typedef std::unordered_map<LoaderPtr, LoaderErrorSlot>          LoaderErrorSlotMap;
 
-		private:
-			typedef std::shared_ptr<render::AbstractTexture>	AbstractTexturePtr;
+            enum class GLSLBlockType
+            {
+                TEXT,
+                FILE
+            };
 
-			union UniformNumericValue
-			{
-				int		intValue;
-				float	floatValue;
-			};
-			
-			struct UniformValue
-			{
-				std::vector<UniformNumericValue>	numericValue;
-				AbstractTexturePtr					textureValue;
-			};
+            typedef std::pair<GLSLBlockType, std::string>           GLSLBlock;
+            typedef std::forward_list<GLSLBlock> 			        GLSLBlockList;
+            typedef std::shared_ptr<GLSLBlockList>			        GLSLBlockListPtr;
+            typedef std::unordered_map<ShaderPtr, GLSLBlockListPtr> ShaderToGLSLBlocks;
 
-			enum class UniformType
-			{
-				UNSET,
-				INT,
-				FLOAT,
-				TEXTURE
-			};
+            struct DefaultValue
+            {
+                enum class Type
+                {
+                    NOT_SET,
+                    BOOL,
+                    INT,
+                    FLOAT,
+                    TEXTURE
+                };
 
-			typedef std::shared_ptr<Loader>										LoaderPtr;
-			typedef std::shared_ptr<render::Effect>								EffectPtr;
-			typedef std::shared_ptr<render::Pass>								PassPtr;
-			typedef std::shared_ptr<render::Shader>								ShaderPtr;
-			typedef std::unordered_map<std::string, AbstractTexturePtr>			TexturePtrMap;
-			typedef std::pair<UniformType, UniformValue>						UniformTypeAndValue;
-			typedef std::unordered_map<std::string, UniformTypeAndValue>		UniformValues;
-			typedef std::pair<GLSLBlockType, std::string> 						GLSLBlock;
-			typedef std::forward_list<GLSLBlock> 								GLSLBlockList;
-			typedef std::shared_ptr<GLSLBlockList>								GLSLBlockListPtr;
+                Type type;
+                std::vector<Any> values;
+
+                DefaultValue() :
+                    type(Type::NOT_SET)
+                {}
+            };
+
+            typedef std::unordered_map<std::string, DefaultValue>   DefaultValues;
+
+            template <typename T>
+            struct Block
+            {
+                T bindings;
+                std::unordered_map<std::string, DefaultValue> defaultValues;
+            };
+
+            typedef Block<data::BindingMap> AttributeBlock;
+            typedef Block<data::BindingMap> StateBlock;
+            typedef Block<data::MacroBindingMap> MacroBlock;
+
+            struct UniformBlock : public Block<data::BindingMap>
+            {
+                std::unordered_map<std::string, render::SamplerState> samplerStates;
+            };
+
+            struct Scope
+            {
+                const Scope* parent;
+                std::vector<const Scope*> children;
+                AttributeBlock attributes;
+                UniformBlock uniforms;
+                StateBlock states;
+                MacroBlock macros;
+                std::string defaultTechnique;
+                Passes passes;
+                Techniques techniques;
+
+                Scope() :
+                    parent(nullptr)
+                {}
+
+                Scope(const Scope& scope) :
+                    parent(scope.parent),
+                    children(),
+                    attributes(scope.attributes),
+                    uniforms(scope.uniforms),
+                    states(scope.states),
+                    macros(scope.macros),
+                    defaultTechnique(scope.defaultTechnique),
+                    passes(scope.passes),
+                    techniques(scope.techniques)
+                {}
+
+                Scope(const Scope& scope, Scope& parent) :
+                    parent(&parent),
+                    children(),
+                    attributes(scope.attributes),
+                    uniforms(scope.uniforms),
+                    states(scope.states),
+                    macros(scope.macros),
+                    defaultTechnique(scope.defaultTechnique),
+                    passes(scope.passes),
+                    techniques(scope.techniques)
+                {
+                    parent.children.push_back(this);
+                }
+            };
 
 		private:
 			static std::unordered_map<std::string, unsigned int>				_blendFactorMap;
@@ -92,36 +158,20 @@ namespace minko
 			static std::unordered_map<std::string, float>						_priorityMap;
 
 		private:
-            std::string															_filename;
-			std::string															_resolvedFilename;
-			std::shared_ptr<file::Options>										_options;
-			std::shared_ptr<render::Effect>										_effect;
-			std::string															_effectName;
-			
-			std::string															_defaultTechnique;
-			std::shared_ptr<render::States>										_defaultStates;
+            std::string						_filename;
+			std::string						_resolvedFilename;
+			std::shared_ptr<file::Options>	_options;
+			std::shared_ptr<render::Effect> _effect;
+			std::string						_effectName;
+			std::shared_ptr<AssetLibrary>	_assetLibrary;
 
-            data::BindingMap													_defaultAttributeBindings;
-			data::BindingMap													_defaultUniformBindings;
-			data::BindingMap													_defaultStateBindings;
-			data::MacroBindingMap                              					_defaultMacroBindings;
-			UniformValues														_defaultUniformValues;
+            Scope                           _globalScope;
+            ShaderToGLSLBlocks              _shaderToGLSL;
+			unsigned int					_numDependencies;
+			unsigned int					_numLoadedDependencies;
 
-
-			std::shared_ptr<AssetLibrary>										_assetLibrary;
-			unsigned int														_numDependencies;
-			unsigned int														_numLoadedDependencies;
-
-			std::unordered_map<ShaderPtr, GLSLBlockListPtr>						_glslBlocks;
-
-			std::vector<PassPtr>												_globalPasses;
-			std::unordered_map<std::string, AbstractTexturePtr>					_globalTargets;
-			std::unordered_map<std::string, TexturePtrMap>						_techniqueTargets;
-			std::unordered_map<std::string, std::vector<PassPtr>>				_techniquePasses;
-			std::unordered_map<std::string, std::string>						_techniqueFallback;
-			
-			std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>				_loaderCompleteSlots;
-			std::unordered_map<LoaderPtr, Signal<LoaderPtr, const ParserError&>::Slot>				_loaderErrorSlots;
+            LoaderCompleteSlotMap           _loaderCompleteSlots;
+            LoaderErrorSlotMap              _loaderErrorSlots;
 
 		public:
 			inline static
@@ -155,192 +205,115 @@ namespace minko
 		private:
 			EffectParser();
 
-			std::shared_ptr<render::States>
-			parseRenderStates(const Json::Value&						root,
-							  std::shared_ptr<render::AbstractContext>	context,
-							  TexturePtrMap&							targets,
-							  std::shared_ptr<render::States>			defaultStates,
-							  float										priorityOffset);
+            static
+            std::unordered_map<std::string, unsigned int>
+            initializeBlendFactorMap();
 
-			void
-			parseDefaultValues(const Json::Value& root);
+            static
+            std::unordered_map<std::string, render::CompareMode>
+            initializeCompareFuncMap();
 
-			void
-			parsePasses(const Json::Value& 							root,
-						const std::string& 							resolvedFilename,
-						std::shared_ptr<file::Options> 				options,
-						std::shared_ptr<render::AbstractContext>	context,
-						std::vector<PassPtr>&						passes,
-						TexturePtrMap&								targets,
-						data::BindingMap&							defaultAttributeBindings,
-						data::BindingMap&							defaultUniformBindings,
-						data::BindingMap&							defaultStateBindings,
-						data::MacroBindingMap&						defaultMacroBindings,
-						std::shared_ptr<render::States>				defaultStates,
-						UniformValues&								defaultUniformDefaultValues);
+            static
+            std::unordered_map<std::string, render::StencilOperation>
+            initializeStencilOperationMap();
 
-			void
-			setUniformDefaultValueOnPass(PassPtr					pass,
-										 const std::string&			name,
-										 UniformType				type,
-										 UniformValue&				value);
+            static
+            std::unordered_map<std::string, float>
+            initializePriorityMap();
 
-			std::shared_ptr<render::Shader>
-			parseShader(const Json::Value& 				shaderNode,
-						const std::string&				resolvedFilename,
-						std::shared_ptr<file::Options>  options,
-						render::Shader::Type 			type);
+            static
+            std::string
+            typeToString(DefaultValue::Type t);
 
-			void
-			parseGLSL(std::string 						glsl,
-					  std::shared_ptr<file::Options>	options,
-					  GLSLBlockListPtr 					blocks,
-	 				  GLSLBlockList::iterator 			fileBlock);
+            float
+            getPriorityValue(const std::string& name);
 
-			void
-			loadGLSLDependencies(GLSLBlockListPtr				blocks,
-								 std::shared_ptr<file::Options> options);
+            void
+            parseGlobalScope(const Json::Value& node, Scope& scope);
 
-			void
-			glslIncludeCompleteHandler(LoaderPtr 			    loader,
-									   GLSLBlockListPtr 		blocks,
-                                       GLSLBlockList::iterator 	fileBlock,
+            bool
+            parseConfiguration(const Json::Value& node);
+
+            void
+            parseTechniques(const Json::Value& node, Scope& scope, Techniques& techniques);
+
+            void
+            parsePass(const Json::Value& node, Scope& scope, std::vector<PassPtr>& passes);
+
+            void
+            parsePasses(const Json::Value& node, Scope& scope, std::vector<PassPtr>& passes);
+
+            void
+            parseDefaultValue(const Json::Value& node, const Scope& scope, DefaultValue& value);
+
+            void
+            parseDefaultValue(const Json::Value&    node,
+                              const Scope&          scope,
+                              DefaultValue&         value,
+                              DefaultValue::Type    expectedType);
+
+            void
+            parseDefaultValue(const Json::Value&    node,
+                              const Scope&          scope,
+                              DefaultValue&         value,
+                              DefaultValue::Type    expectedType,
+                              uint                  expectedSize);
+
+            void
+            parseBinding(const Json::Value& node, const Scope& scope, data::Binding& binding);
+
+            void
+            parseMacroBinding(const Json::Value& node, const Scope& scope, data::MacroBinding& binding);
+
+            void
+            parseMacroBindings(const Json::Value& node, const Scope& scope, data::MacroBindingMap& bindings);
+
+            void
+            parseAttributes(const Json::Value&node, const Scope& scope, AttributeBlock& attributes);
+
+            void
+            parseUniforms(const Json::Value& node, const Scope& scope, UniformBlock& uniforms);
+
+            void
+            parseMacros(const Json::Value& node, const Scope& scope, MacroBlock& macros);
+
+            void
+            parseStates(const Json::Value& node, const Scope& scope, StateBlock& states);
+
+            ShaderPtr
+            parseShader(const Json::Value& node, const Scope& scope, render::Shader::Type type);
+
+            void
+            parseGLSL(const std::string&        glsl,
+                      OptionsPtr         		options,
+                      GLSLBlockListPtr		    blocks,
+                      GLSLBlockList::iterator	insertIt);
+
+            void
+            loadGLSLDependencies(GLSLBlockListPtr blocks, OptionsPtr options);
+
+            void
+            dependencyErrorHandler(std::shared_ptr<Loader>  loader,
+                                   const ParserError&       error,
+                                   const std::string&       filename);
+
+            void
+            glslIncludeCompleteHandler(LoaderPtr 			    loader,
+                                       GLSLBlockListPtr 		blocks,
+                                       GLSLBlockList::iterator 	blockIt,
                                        const std::string&       filename);
 
-			void
-			parseBindingNameAndSource(const Json::Value&	contextNode, 
-									  data::Binding&        binding);
-
-			void
-			parseBindings(const Json::Value&		contextNode,
-						  data::BindingMap&			attributeBindings,
-						  data::BindingMap&			uniformBindings,
-						  data::BindingMap&			stateBindings,
-						  data::MacroBindingMap&	macroBindings,
-						  UniformValues&			uniformDefaultValues);
-
-			void
-			parseMacroBindings(const Json::Value&		contextNode,
-							   data::MacroBindingMap&	macroBindings);
-
-			void
-			parseUniformBindings(const Json::Value&		contextNode,
-							 	 data::BindingMap&		uniformBindings,
-								 UniformValues&			uniformDefaultValues);
-
-			void
-			parseUniformDefaultValues(const Json::Value&	contextNode,
-									  UniformTypeAndValue&	uniformTypeAndValue);
-
-			void
-			loadTexture(const std::string&				textureFilename,
-						UniformTypeAndValue&			uniformTypeAndValue,
-						std::shared_ptr<file::Options>	options);
-
-			float
-			parsePriority(const Json::Value&, float defaultPriority);
-
-			void
-			parseBlendMode(const Json::Value&				contextNode,
-						   render::Blending::Source&		srcFactor,
-						   render::Blending::Destination&	dstFactor);
-
-			void
-			parseZSort(const Json::Value&	contextNode,
-					   bool& zSorted) const;
-
-			void
-			parseColorMask(const Json::Value&	contextNode,
-						   bool& colorMask) const;
-
-			void
-			parseDepthTest(const Json::Value&	contextNode,
-						   bool&				depthMask,
-						   render::CompareMode&	depthFunc);
+            std::string
+            concatenateGLSLBlocks(GLSLBlockListPtr blocks);
 
             void
-            parseTriangleCulling(const Json::Value&         contextNode,
-                                 render::TriangleCulling&   triangleCulling);
+            loadTexture(const std::string& textureFilename, DefaultValue& value);
+
+            std::shared_ptr<render::States>
+            createStates(const StateBlock& block);
 
             void
-            parseSamplerStates(const Json::Value&                                       contextNode,
-                               std::unordered_map<std::string, render::SamplerState>&   samplerStates);
-
-			void
-			parseStencilState(const Json::Value&, 
-							  render::CompareMode& stencilFunc, 
-							  int& stencilRef, 
-							  uint& stencilMask, 
-							  render::StencilOperation& stencilFailOp,
-							  render::StencilOperation& stencilZFailOp,
-							  render::StencilOperation& stencilZPassOp) const;
-
-			void
-			parseStencilOperations(const Json::Value&, 
-								   render::StencilOperation& stencilFailOp,
-								   render::StencilOperation& stencilZFailOp,
-								   render::StencilOperation& stencilZPassOp) const;
-
-			void
-			parseScissorTest(const Json::Value&,
-							 bool&					scissorTest,
-							 render::ScissorBox&	scissorBox) const;
-
-            AbstractTexturePtr
-            parseTarget(const Json::Value&                          contextNode,
-                        std::shared_ptr<render::AbstractContext>    context,
-                        TexturePtrMap&								targets);
-
-			void
-			parseTechniques(const Json::Value&							root,
-							const std::string&							filename,
-							std::shared_ptr<file::Options>				options,
-							std::shared_ptr<render::AbstractContext>	context);
-
-			bool
-			parseConfiguration(const Json::Value&	root);
-
-			void
-			dependencyCompleteHandler(LoaderPtr loader);
-
-
-			void
-            dependencyErrorHandler(LoaderPtr loader, const ParserError& error, const std::string& filename);
-
-			void
-            textureErrorHandler(LoaderPtr loader);
-
-			std::string
-			concatenateIncludes(std::vector<LoaderPtr>& store);
-
-			static
-			std::unordered_map<std::string, unsigned int>
-			initializeBlendFactorMap();
-
-			std::string
-			concatenateGLSLBlocks(GLSLBlockListPtr blocks);
-
-			static
-			std::unordered_map<std::string, render::CompareMode>
-			initializeCompareFuncMap();
-
-			static
-			std::unordered_map<std::string, render::StencilOperation>
-			initializeStencilOperationMap();
-
-			static
-			std::unordered_map<std::string, float>
-			initializePriorityMap();
-
-			static
-			float
-			priority(const std::string&);
-
-            void
-            definePlatform();
-
-			void
-			finalize();
+            finalize();
 		};
 	}
 }

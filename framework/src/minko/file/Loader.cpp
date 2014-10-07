@@ -189,7 +189,10 @@ Loader::processData(const std::string&                      filename,
                 _error->execute(shared_from_this(), parserError);
 #ifdef DEBUG
             else
+            {
+                std::cerr << parserError.what() << std::endl;
                 throw parserError;
+            }
 #endif // defined(DEBUG)
         }
     }

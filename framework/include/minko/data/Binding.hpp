@@ -20,31 +20,142 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/Any.hpp"
 
 namespace minko
 {
     namespace data
     {
-        struct Binding
+        class Binding
         {
-            std::string     propertyName;
-            BindingSource   source;
+        public:
+            enum class Source
+            {
+                TARGET,
+                RENDERER,
+                ROOT
+            };
 
+            enum class Type
+            {
+                UNSET,
+                INT,
+                INT2,
+                INT3,
+                INT4,
+                FLOAT,
+                FLOAT2,
+                FLOAT3,
+                FLOAT4,
+                BOOL,
+                BOOL2,
+                BOOL3,
+                BOOL4,
+                TEXTURE
+            };
+
+            class DefaultValue
+            {
+            private:
+                Type _type;
+                Any _values;
+
+            public:
+                inline
+                Type
+                type() const
+                {
+                    return _type;
+                }
+
+                template<typename T>
+                const std::vector<T>&
+                values() const
+                {
+                    return *Any::cast<std::vector<T>>(&_values);
+                }
+            };
+
+        private:
+            std::string     _propertyName;
+            Source          _source;
+            DefaultValue*   _defaultValue;
+
+        public:
             Binding() :
-                propertyName(),
-                source(BindingSource::TARGET)
+                _propertyName(),
+                _source(Source::TARGET),
+                _defaultValue(nullptr)
             {}
 
-            Binding(const std::string& propertyName, BindingSource source) :
-                propertyName(propertyName),
-                source(source)
+            Binding(const std::string& propertyName, Source source) :
+                _propertyName(propertyName),
+                _source(source),
+                _defaultValue(nullptr)
             {}
+
+            ~Binding()
+            {
+                if (_defaultValue)
+                    delete _defaultValue;
+            }
+
+            inline
+            const std::string&
+            propertyName() const
+            {
+                return _propertyName;
+            }
+            inline
+            void
+            propertyName(const std::string& p)
+            {
+                _propertyName = p;
+            }
+
+            inline
+            const Source&
+            source() const
+            {
+                return _source;
+            }
+            inline
+            void
+            source(Source s)
+            {
+                _source = s;
+            }
+
+            inline
+            bool
+            hasDefautValue() const
+            {
+                return _defaultValue != nullptr;
+            }
+
+            inline
+            const DefaultValue&
+            defaultValue() const
+            {
+                return *_defaultValue;
+            }
+
+            template <typename... T>
+            void
+            defaultValue(Type type, T... values)
+            {
+                if (!_defaultValue)
+                    _defaultValue = new DefaultValue();
+
+                _defaultValue->_type = type;    
+                _defaultValue->_values = std::vector<T>(values...);
+            }
 
             inline
             bool
             operator==(const Binding& rhs) const
             {
-                return propertyName == rhs.propertyName && source == rhs.source;
+                return _propertyName == rhs._propertyName && _source == rhs._source;
             }
         };
     }
@@ -59,8 +170,8 @@ namespace std
         size_t
         operator()(const minko::data::Binding& binding) const
         {
-            auto h1 = std::hash<minko::uint>()((minko::uint)binding.source);
-            auto h2 = std::hash<std::string>()(binding.propertyName);
+            auto h1 = std::hash<minko::uint>()((minko::uint)binding.source());
+            auto h2 = std::hash<std::string>()(binding.propertyName());
 
             return h1 ^ (h2 << 1);
         }

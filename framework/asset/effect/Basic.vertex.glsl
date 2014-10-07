@@ -4,7 +4,7 @@
 	precision mediump float;
 #endif
 
-#pragma include("Skinning.function.glsl")
+#pragma include "Skinning.function.glsl"
 
 attribute vec3 aPosition;
 attribute vec2 aUV;
@@ -35,18 +35,18 @@ void main(void)
 
 	#ifdef DIFFUSE_CUBEMAP
 		vertexUVW = aPosition;
-	#endif 
+	#endif
 
 	vec4 pos = vec4(aPosition, 1.0);
 
 	#ifdef NUM_BONES
 		pos = skinning_moveVertex(pos);
 	#endif
-	
+
 	#ifdef MODEL_TO_WORLD
 		pos = uModelToWorldMatrix * pos;
 	#endif
-	
+
 	gl_Position = uWorldToScreenMatrix * pos;
 }
 

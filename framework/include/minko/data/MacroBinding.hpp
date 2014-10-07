@@ -26,64 +26,70 @@ namespace minko
 {
     namespace data
     {
-        struct MacroBinding : public Binding
+        class MacroBinding : public Binding
         {
-            enum class State
-            {
-                UNDEFINED,
-                DEFINED,
-                DEFINED_INTEGER_VALUE
-            };
+        private:
+            Type    _type;
+            int     _minValue;
+            int     _maxValue;
 
-            union Value
-            {
-                int value;
-                bool defined;
-            };
-
-            State   defaultState;
-            Value   defaultValue;
-            bool    isInteger;
-            int     minValue;
-            int     maxValue;
-
+        public:
             MacroBinding(const std::string& propertyName,
-                         BindingSource      source,
-                         State              defaultState,
-                         Value              defaultValue,
-                         bool               isInteger   = false,
-                         int                min         = -std::numeric_limits<int>::max(),
-                         int                max         = std::numeric_limits<int>::max()) :
+                         Source             source,
+                         Type               type,
+                         int                min = -std::numeric_limits<int>::max(),
+                         int                max = std::numeric_limits<int>::max()) :
                 Binding(propertyName, source),
-                defaultState(defaultState),
-                defaultValue(defaultValue),
-                isInteger(isInteger),
-                minValue(min),
-                maxValue(max)
+                _type(type),
+                _minValue(min),
+                _maxValue(max)
             {}
 
             MacroBinding() :
                 Binding(),
-                defaultState(State::UNDEFINED),
-                defaultValue(),
-                isInteger(false),
-                minValue(-std::numeric_limits<int>::max()),
-                maxValue(std::numeric_limits<int>::max())
+                _type(Type::UNSET),
+                _minValue(-std::numeric_limits<int>::max()),
+                _maxValue(std::numeric_limits<int>::max())
             {}
+
+            inline
+            Type
+            type() const
+            {
+                return _type;
+            }
+            inline
+            void
+            type(Type t)
+            {
+                _type = t;
+            }
+
+            inline
+            int
+            minValue() const
+            {
+                return _minValue;
+            }
+            inline
+            void
+            minValue(int v)
+            {
+                _minValue = v;
+            }
+            
+            inline
+            int
+            maxValue() const
+            {
+                return _maxValue;
+            }
+            inline
+            void
+            maxValue(int v)
+            {
+                _maxValue = v;
+            }
         };
     }
 }
-
-//namespace std
-//{
-//    template<>
-//    struct hash<minko::data::MacroBinding>
-//    {
-//        inline
-//        size_t
-//        operator()(const minko::data::MacroBinding& binding) const
-//        {
-//            return hash<minko::data::Binding>()(binding);
-//        }
-//    };
-//}

@@ -1,22 +1,26 @@
-// basic effect
 {
     "name"  	: "basic",
-    	
-    "attributeBindings" : {
-        "aPosition"             : "geometry[${geometryUuid}].position",
-        "aUV"                   : "geometry[${geometryUuid}].uv",
-		"boneIdsA"				: "geometry[${geometryUuid}].boneIdsA",
-		"boneIdsB"				: "geometry[${geometryUuid}].boneIdsB",		
-		"boneWeightsA"			: "geometry[${geometryUuid}].boneWeightsA",
-		"boneWeightsB"			: "geometry[${geometryUuid}].boneWeightsB"
+
+    "attributes" : {
+        "aPosition"       : "geometry[${geometryUuid}].position",
+        "aUV"             : "geometry[${geometryUuid}].uv",
+		"boneIdsA"		  : "geometry[${geometryUuid}].boneIdsA",
+		"boneIdsB"		  : "geometry[${geometryUuid}].boneIdsB",
+		"boneWeightsA"    : "geometry[${geometryUuid}].boneWeightsA",
+		"boneWeightsB"    : "geometry[${geometryUuid}].boneWeightsB"
     },
-    
-    "uniformBindings"   : {
+
+    "uniforms"   : {
         "uModelToWorldMatrix"   : "modelToWorldMatrix",
         "uUVOffset"             : "material[${materialUuid}].uvOffset",
         "uUVScale"              : "material[${materialUuid}].uvScale",
         "diffuseColor"          : "material[${materialUuid}].diffuseColor",
-        "diffuseMap"            : "material[${materialUuid}].diffuseMap",
+        "diffuseMap"            : {
+            "binding"       : "material[${materialUuid}].diffuseMap",
+            "wrapMode"      : "repeat",
+            "textureFilter" : "linear",
+            "mipFilter"     : "linear"
+        },
 		"alphaMap"				: "material[${materialUuid}].alphaMap",
 		"alphaThreshold"		: "material[${materialUuid}].alphaThreshold",
         "diffuseCubeMap"        : "material[${materialUuid}].diffuseCubeMap",
@@ -26,90 +30,54 @@
 		"fogEnd"				: "material[${materialUuid}].fogEnd",
 		"boneMatrices"			: "geometry[${geometryUuid}].boneMatrices",
 		"numBones"				: "geometry[${geometryUuid}].numBones",
-        "uWorldToScreenMatrix"  : { "property" : "worldToScreenMatrix", "source" : "renderer" }
-    },
-    
-    "macroBindings" : {
-        "MODEL_TO_WORLD"        : "modelToWorldMatrix",
-        "HAS_NORMAL"            : "geometry[${geometryUuid}].normal",
-        "NUM_BONES"             : "geometry[${geometryUuid}].numBones",
-        "DIFFUSE_MAP"           : "material[${materialUuid}].diffuseMap",
-        "DIFFUSE_CUBEMAP"       : "material[${materialUuid}].diffuseCubeMap",
-		"ALPHA_MAP"				: "material[${materialUuid}].alphaMap",
-		"ALPHA_THRESHOLD"		: "material[${materialUuid}].alphaThreshold",
-        "FOG_ENABLED"			: "material[${materialUuid}].fogEnabled",
-		"FOG_LIN"				: "material[${materialUuid}].fogLinear",
-		"FOG_EXP"				: "material[${materialUuid}].fogExponential",
-		"FOG_EXP2"				: "material[${materialUuid}].fogExponential2",
-        "UV_OFFSET"             : "material[${materialUuid}].uvOffset",
-        "UV_SCALE"              : "material[${materialUuid}].uvScale"
+        "uWorldToScreenMatrix"  : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } }
     },
 
-    "stateBindings" : {
-        "blendMode"             : "material[${materialUuid}].blendMode",
-        "colorMask"             : "material[${materialUuid}].colorMask",
-        "depthMask"             : "material[${materialUuid}].depthMask",
-        "depthFunc"             : "material[${materialUuid}].depthFunc",
-        "triangleCulling"       : "material[${materialUuid}].triangleCulling",
-        "stencilFunc"           : "material[${materialUuid}].stencilFunc",
-        "stencilRef"            : "material[${materialUuid}].stencilRef",
-        "stencilMask"           : "material[${materialUuid}].stencilMask",
-        "stencilFailOp"         : "material[${materialUuid}].stencilFailOp",
-        "stencilZFailOp"        : "material[${materialUuid}].stencilZFailOp",
-        "stencilZPassOp"        : "material[${materialUuid}].stencilZPassOp",
-        "priority"              : "material[${materialUuid}].priority",
-        "zSort"                 : "material[${materialUuid}].zSort",
-        "scissorBox.x"          : { "property" : "scissorBox.x", "source" : "renderer" },
-        "scissorBox.y"          : { "property" : "scissorBox.y", "source" : "renderer" },
-        "scissorBox.width"      : { "property" : "scissorBox.width", "source" : "renderer" },
-        "scissorBox.height"     : { "property" : "scissorBox.height", "source" : "renderer" },
-        "layouts"               : "node.layouts"
+    "macros" : {
+        "MODEL_TO_WORLD"  : "modelToWorldMatrix",
+        "HAS_NORMAL"      : "geometry[${geometryUuid}].normal",
+        "NUM_BONES"       : "geometry[${geometryUuid}].numBones",
+        "DIFFUSE_MAP"     : "material[${materialUuid}].diffuseMap",
+        "DIFFUSE_CUBEMAP" : "material[${materialUuid}].diffuseCubeMap",
+		"ALPHA_MAP"		  : "material[${materialUuid}].alphaMap",
+		"ALPHA_THRESHOLD" : "material[${materialUuid}].alphaThreshold",
+        "FOG_ENABLED"     : "material[${materialUuid}].fogEnabled",
+		"FOG_LIN"         : "material[${materialUuid}].fogLinear",
+		"FOG_EXP"         : "material[${materialUuid}].fogExponential",
+		"FOG_EXP2"        : "material[${materialUuid}].fogExponential2",
+        "UV_OFFSET"       : "material[${materialUuid}].uvOffset",
+        "UV_SCALE"        : "material[${materialUuid}].uvScale"
     },
-    
-    "colorMask"         : true,
-    "depthTest"         : [true, "less_equal"],
-    "triangleCulling"   : "back",
-	"stencilTest"		: ["always", 0, 1, ["keep", "keep", "keep"]],
-    "scissorTest"		: false,
-	"scissorBox"		: [0, 0, -1, -1],
-	
-    "samplerStates" : {
-        "diffuseMap"    : { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
-    },
-    
+
     "defaultTechnique"  : "opaque",
 
 	"techniques" : [
-    {
-        "name"      : "opaque",
-
-
-        "blendMode" : ["one", "zero"],
-        "priority"  : "opaque",
-        "zSort"     : "false",
-
-		"passes"    : [
         {
-			"vertexShader"   : "#pragma include('Basic.vertex.glsl')",
-			"fragmentShader" : "#pragma include('Basic.fragment.glsl')"
-		}
-        ]
-	},
+            "name" : "opaque",
 
-    {
-        "name"      : "transparent",
+            "states" : {
+                "blendMode" : ["one", "zero"],
+                "priority"  : "opaque"
+            },
 
-
-        "blendMode" : "alpha",
-        "priority"  : "transparent",
-        "zSort"     : "true",
-
-        "passes"    : [
+    		"passes"    : [{
+    			"vertexShader"      : "#pragma include \"Basic.vertex.glsl\"",
+                "fragmentShader"    : "#pragma include \"Basic.fragment.glsl\""
+    		}]
+    	},
         {
-            "vertexShader"      : "#pragma include('Basic.vertex.glsl')",
-            "fragmentShader"    : "#pragma include('Basic.fragment.glsl')"
+            "name" : "transparent",
+
+            "states" : {
+                "blendMode" : "alpha",
+                "priority" : "transparent",
+                "zSort" : "true"
+            },
+
+            "passes" : [{
+                "vertexShader"      : "#pragma include \"Basic.vertex.glsl\"",
+                "fragmentShader"    : "#pragma include \"Basic.fragment.glsl\""
+            }]
         }
-        ] 
-    }
     ]
 }

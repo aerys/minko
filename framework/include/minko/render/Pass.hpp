@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -56,7 +56,6 @@ namespace minko
 			data::BindingMap		_stateBindings;
 			data::MacroBindingMap	_macroBindings;
             StatesPtr				_states;
-			std::string				_fallback;
             SignatureToProgramMap	_signatureToProgram;
 
 			OnProgramFunctionList	_uniformFunctions;
@@ -78,8 +77,7 @@ namespace minko
 				   const data::BindingMap&			uniformBindings,
 				   const data::BindingMap&			stateBindings,
 				   const data::MacroBindingMap&		macroBindings,
-                   StatesPtr         				states,
-				   const std::string&				fallback)
+                   StatesPtr         				states)
 			{
 				return std::shared_ptr<Pass>(new Pass(
 					name,
@@ -88,8 +86,7 @@ namespace minko
 					uniformBindings,
 					stateBindings,
 					macroBindings,
-                    states,
-					fallback
+                    states
 				));
 			}
 
@@ -104,8 +101,7 @@ namespace minko
 					pass->_uniformBindings,
 					pass->_stateBindings,
 					pass->_macroBindings,
-					deepCopy ? States::create(pass->_states) : pass->_states,
-					pass->_fallback
+					deepCopy ? States::create(pass->_states) : pass->_states
 				);
 
                 for (auto& signatureProgram : pass->_signatureToProgram)
@@ -174,13 +170,6 @@ namespace minko
 				return _states;
 			}
 
-			inline
-			const std::string&
-			fallback()
-			{
-				return _fallback;
-			}
-
             std::pair<std::shared_ptr<Program>, const ProgramSignature*>
             selectProgram(const std::unordered_map<std::string, std::string>&   translatedPropertyNames,
 						  const data::Container&	                            targetData,
@@ -241,8 +230,7 @@ namespace minko
 				 const data::BindingMap&			uniformBindings,
 				 const data::BindingMap&			stateBindings,
 				 const data::MacroBindingMap&		macroBindings,
-                 std::shared_ptr<States>            states,
-				 const std::string&					fallback);
+                 std::shared_ptr<States>            states);
 
 			template <typename... T>
 			static

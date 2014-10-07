@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -32,10 +32,10 @@ namespace minko
             typedef int MaskType;
 
 		private:
-			uint				                    _mask;
-            std::vector<int>	                    _values;
-            std::vector<data::MacroBinding::State>  _states;
-            std::vector<std::string>                _macros;
+			uint				                _mask;
+            std::vector<Any>	                _values;
+            std::vector<data::Binding::Type>    _types;
+            std::vector<std::string>            _macros;
 
 		public:
 			ProgramSignature(const data::MacroBindingMap&                           macroBindings,
@@ -49,43 +49,24 @@ namespace minko
             ~ProgramSignature()
             {
                 _values.clear();
-                _states.clear();
+                _types.clear();
                 _macros.clear();
             }
 			
 			bool 
 			operator==(const ProgramSignature&) const;
 
-			inline
-			uint
-			mask() const
-			{
-				return _mask;
-			}
-
-			inline
-			const std::vector<int>&
-			values() const
-			{
-				return _values;
-			}
-
-            inline
-			const std::vector<data::MacroBinding::State>&
-			states() const
-			{
-				return _states;
-			}
-
-            inline
-            const std::vector<std::string>&
-            macros() const
-            {
-                return _macros;
-            }
-
             void
             updateProgram(Program& program) const;
+
+        private:
+            Any
+            getValueFromContainer(const data::MacroBinding& binding,
+                                  const data::Container&    container,
+                                  const std::string&        propertyName);
+
+            Any
+            getDefaultValue(const data::MacroBinding& binding);
 		};
 	}
 }

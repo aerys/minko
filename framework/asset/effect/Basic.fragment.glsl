@@ -4,7 +4,7 @@
 	precision mediump float;
 #endif
 
-#pragma include("Fog.function.glsl")
+#pragma include "Fog.function.glsl"
 
 uniform vec4        diffuseColor;
 uniform sampler2D   diffuseMap;
@@ -20,13 +20,13 @@ varying vec3 vVertexUVW;
 void main(void)
 {
 	vec4 diffuse = diffuseColor;
-	
+
 	#if defined(DIFFUSE_CUBEMAP)
 		diffuse	= textureCube(diffuseCubeMap, vVertexUVW);
 	#elif defined(DIFFUSE_MAP)
 		diffuse = texture2D(diffuseMap, vVertexUV);
 	#endif
-	
+
 	#ifdef ALPHA_MAP
 		diffuse.a = texture2D(alphaMap, vVertexUV).r;
 	#endif // ALPHA_MAP
@@ -35,11 +35,11 @@ void main(void)
 		if (diffuse.a < alphaThreshold)
 			discard;
 	#endif // ALPHA_THRESHOLD
-	
+
 	#ifdef FOG_ENABLED
 		diffuse = fog_sampleFog(diffuse, gl_FragCoord);
 	#endif // FOG_ENABLED
-	
+
 	gl_FragColor = diffuse;
 }
 

@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Pass.hpp"
 #include "minko/render/DrawCall.hpp"
 #include "minko/render/States.hpp"
+#include "minko/data/Binding.hpp"
 
 namespace minko
 {
@@ -213,7 +214,7 @@ namespace minko
             bindStates(const data::BindingMap& stateBindings);
 			
             const data::Container&
-            getContainer(data::BindingSource source);
+            getContainer(data::Binding::Source source);
 
             template <typename T>
             T*
@@ -225,10 +226,10 @@ namespace minko
                     return defaultValue;
 
                 const auto& binding = stateBindings.at(stateName);
-                auto& container = getContainer(binding.source);
+                auto& container = getContainer(binding.source());
 
                 return container.getUnsafePointer<T>(
-                    data::Container::getActualPropertyName(_variables, binding.propertyName)
+                    data::Container::getActualPropertyName(_variables, binding.propertyName())
                 );
             }
 		};
