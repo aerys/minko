@@ -104,7 +104,7 @@ namespace minko
 				);
 
 				if (vertexBufferIt == _vertexBuffers.end())
-					throw std::invalid_argument("vertexAttributeName = " + vertexAttributeName);
+                    return nullptr;
 
 				return *vertexBufferIt;
 			}
