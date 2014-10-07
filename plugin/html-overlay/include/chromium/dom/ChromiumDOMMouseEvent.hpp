@@ -20,6 +20,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #if defined(CHROMIUM)
 #pragma once
 
+#if MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
+#pragma warning(push)
+#pragma warning(disable:4250)
+#endif
+
 #include "minko/Common.hpp"
 #include "minko/dom/AbstractDOMMouseEvent.hpp"
 #include "minko/dom/AbstractDOMElement.hpp"
@@ -106,4 +111,9 @@ namespace chromium
 		};
 	}
 }
+
+#if MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
+#pragma warning(pop)
+#endif
+
 #endif
