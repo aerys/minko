@@ -78,20 +78,24 @@ namespace chromium
 
 			std::string
 			tagName();
-
-
+            
 			AbstractDOMElement::Ptr
 			parentNode();
 
 			std::vector<AbstractDOMElement::Ptr>
 			childNodes();
-
-			
+            			
 			std::string
 			textContent();
 
 			void
 			textContent(std::string content);
+
+            std::string
+            value();
+
+            void
+            value(const std::string& value);
 
 			std::string
 			innerHTML();
@@ -104,8 +108,7 @@ namespace chromium
 
 			AbstractDOMElement::Ptr
 			removeChild(AbstractDOMElement::Ptr);
-
-
+            
 			AbstractDOMElement::Ptr
 			insertBefore(AbstractDOMElement::Ptr, AbstractDOMElement::Ptr);
 
@@ -146,6 +149,12 @@ namespace chromium
 			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr
 			onmouseover();
 
+            minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr
+            onchange();
+
+            minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr
+            oninput();
+
 			static
 			void
 			addFunction(std::function<void()>);
@@ -178,6 +187,9 @@ namespace chromium
 
 			std::atomic<bool>	_blocker;
 
+            std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>>      _onchange;
+            std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>>      _oninput;
+
 			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onclick;
 			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onmousedown;
 			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onmousemove;
@@ -185,6 +197,9 @@ namespace chromium
 			
 			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onmouseover;
 			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onmouseout;
+
+            bool _onchangeCallbackSet;
+            bool _oninputCallbackSet;
 
 			bool _onclickCallbackSet;
 			bool _onmousedownCallbackSet;

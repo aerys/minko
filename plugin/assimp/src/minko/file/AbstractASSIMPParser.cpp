@@ -174,7 +174,7 @@ AbstractASSIMPParser::parse(const std::string&                    filename,
     );
 
     if (!scene)
-        throw ParserError(_importer->GetErrorString());
+        _error->execute(shared_from_this(), Error(_importer->GetErrorString()));
 
 #ifdef DEBUG
     std::cout << "AbstractASSIMPParser: scene parsed" << std::endl;
@@ -664,14 +664,17 @@ AbstractASSIMPParser::loadTexture(const std::string&    textureFilename,
         scene
     ));
 
-    _loaderErrorSlots[loader] = loader->error()->connect([=](Loader::Ptr loader, const ParserError& error)
+    _loaderErrorSlots[loader] = loader->error()->connect([=](Loader::Ptr textureLoader, const Error& error)
     {
         ++_numLoadedDependencies;
 #ifdef DEBUG
         std::cerr << "AbstractASSIMPParser: unable to find texture with filename '" << textureFilename << "'" << std::endl;
 #endif // DEBUG
-
-        throw ParserError("MissingTextureDependency", "Missing texture dependency: '" + textureFilename + "'");
+        
+        _error->execute(shared_from_this(), Error("MissingTextureDependency", "Missing texture dependency: '" + textureFilename + "'"));
+        
+        if (_numDependencies == _numLoadedDependencies)
+            allDependenciesLoaded(scene);
     });
 
     loader->queue(textureFilename, options)->load();
@@ -1443,7 +1446,7 @@ AbstractASSIMPParser::chooseEffectByShadingMode(const aiMaterial* aiMat) const
     if (effect == nullptr && aiMat)
     {
         int shadingMode;
-        unsigned int max;
+        unsigned int max = 1;
         if (aiMat->Get(AI_MATKEY_SHADING_MODEL, &shadingMode, &max) == AI_SUCCESS)
         {
             switch(static_cast<aiShadingMode>(shadingMode))

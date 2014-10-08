@@ -95,6 +95,8 @@ solution "minko"
 			minko.project.library "all"
 				objdir "/tmp/minko/obj"
 
+				links { "minko-framework" }
+
 				local plugins = os.matchdirs('plugin/*')
 
 				for i, basedir in ipairs(plugins) do

@@ -39,19 +39,17 @@ minko.plugin["html-overlay"].enable = function()
 		buildoptions { "-x objective-c++" }
 		prelinkcommands {
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/asset"),
-			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/WebViewJavascriptBridge/WebViewJavascriptBridge.js.txt")
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/WebViewJavascriptBridge/WebViewJavascriptBridge.js.txt"),
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/WebViewJavascriptBridge/MinkoOverlay.js.txt"),
 		}
 
-	configuration { "android" }
-		prelinkcommands {
-			minko.action.copy(minko.plugin.path("html-overlay") .. "/asset")
-		}
 
 	configuration { "osx64" }
 		buildoptions { "-x objective-c++" }
 		prelinkcommands {
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/asset"),
-			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/WebViewJavascriptBridge/WebViewJavascriptBridge.js.txt")
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/WebViewJavascriptBridge/WebViewJavascriptBridge.js.txt"),
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/WebViewJavascriptBridge/MinkoOverlay.js.txt"),
 		}
 		links { "WebKit.framework" }
 

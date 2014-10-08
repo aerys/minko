@@ -32,9 +32,9 @@
 
 set -e
 
-EMSCRIPTEN_VERSION="1.21.0"
+EMSCRIPTEN_VERSION="1.22.0"
 
-EMSDK_WIKI="=http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html"
+EMSDK_WIKI="http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html"
 EMSDK_URL="https://s3.amazonaws.com/mozilla-games/emscripten/releases"
 EMSDK_ARCHIVE="emsdk-${EMSCRIPTEN_VERSION}-portable-64bit.zip"
 EMSDK_SDK="sdk-${EMSCRIPTEN_VERSION}-64bit"
@@ -62,18 +62,17 @@ if [[ -n "${REPLY}" ]]; then
 	EMSDK_PATH=${REPLY}
 fi
 
-read -p "Installing the Emscripten SDK ${EMSCRIPTEN_VERSION} to ${EMSDK_PATH}. Press any key to continue... " -r -n 1
-echo
-
-EMSCRIPTEN=${EMSDK_PATH}/emscripten/${EMSCRIPTEN_VERSION}
-
-mkdir -p "${EMSDK_PATH}"
-
-if [[ -n "$(ls -A ${EMSDK_PATH})" ]]; then
+if [[ ! -d "${EMSDK_PATH}" || ! -z "$(ls -A ${EMSDK_PATH})" ]]; then
 	echo "${EMSDK_PATH} is not empty or readable."
 	exit 1
 fi
 
+read -p "Installing the Emscripten SDK ${EMSCRIPTEN_VERSION} to ${EMSDK_PATH}. Press any key to continue... " -r -n 1
+echo
+
+export EMSCRIPTEN=${EMSDK_PATH}/emscripten/${EMSCRIPTEN_VERSION}
+
+mkdir -p "${EMSDK_PATH}"
 curl -fSL "${EMSDK_URL}/${EMSDK_ARCHIVE}" -o "/tmp/${EMSDK_ARCHIVE}"
 unzip -q -d "${EMSDK_PATH}" "/tmp/${EMSDK_ARCHIVE}"
 python "${EMSDK_PATH}/emsdk" update
@@ -81,16 +80,20 @@ python "${EMSDK_PATH}/emsdk" install "${EMSDK_SDK}"
 python "${EMSDK_PATH}/emsdk" activate "${EMSDK_SDK}"
 echo
 
-read -p "The installer will now add the EMSCRIPTEN environment variable to ~/.profile. Proceed? [y/n] " -r
+read -p "The installer will now add the EMSCRIPTEN environment variable to ~/.profile. Proceed? [Y/n] " -r
 echo
 
-if [ "${REPLY}" == "y" ]; then
+if [ "${REPLY}" != "n" ]; then
 	echo export EMSCRIPTEN=${EMSCRIPTEN} >> ~/.profile
 else
 	echo "Ok. Please set the EMSCRIPTEN environment variable to ${EMSCRIPTEN}."
 	echo "You will need to run something like:"
 	echo
 	echo "    echo export EMSCRIPTEN=${EMSCRIPTEN} >> ~/.profile"
+	echo
+	echo "You can also add Emscripten to your PATH by initializing the SDK in your .bashrc/.zshrc:"
+	echo
+	echo "    test -x \${EMSCRIPTEN}/emsdk_env.sh && source \${EMSCRIPTEN}/emsdk_env.sh > /dev/null"
 	echo
 fi
 
