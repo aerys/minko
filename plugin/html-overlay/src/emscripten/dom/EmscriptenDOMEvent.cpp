@@ -17,64 +17,44 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#if defined(EMSCRIPTEN)
-#pragma once
-
 #include "minko/Common.hpp"
 #include "emscripten/dom/EmscriptenDOMEvent.hpp"
-#include "minko/dom/AbstractDOMMouseEvent.hpp"
+#include "emscripten/dom/EmscriptenDOMElement.hpp"
+#include "emscripten/emscripten.h"
 
-namespace emscripten
+using namespace minko;
+using namespace minko::dom;
+using namespace emscripten;
+using namespace emscripten::dom;
+
+void
+EmscriptenDOMEvent::preventDefault()
 {
-	namespace dom
-	{
-		class EmscriptenDOMMouseEvent :
-			public virtual minko::dom::AbstractDOMMouseEvent,
-			public EmscriptenDOMEvent
-		{
-		public:
-			typedef std::shared_ptr<EmscriptenDOMMouseEvent> Ptr;
-
-		private:
-			EmscriptenDOMMouseEvent(const std::string& jsAccessor):
-				EmscriptenDOMEvent(jsAccessor)
-			{
-			}
-
-		public:
-
-			static
-			Ptr
-			create(const std::string& jsAccessor)
-			{
-				Ptr event(new EmscriptenDOMMouseEvent(jsAccessor));
-				return event;
-			}
-
-			int
-			clientX();
-
-			int
-			clientY();
-
-			int
-			pageX();
-
-			int
-			pageY();
-
-			int
-			layerX();
-
-			int
-			layerY();
-
-			int
-			screenX();
-
-			int
-			screenY();
-		};
-	}
+    std::cerr << "Warning : AbstractDOMEvent::preventDefault will have no effect" << std::endl;
+    std::string eval = _jsAccessor + ".preventDefault()";
+    emscripten_run_script(eval.c_str());
 }
-#endif
+
+void
+EmscriptenDOMEvent::stopPropagation()
+{
+    std::cerr << "Warning : AbstractDOMEvent::stopPropagation will have no effect" << std::endl;
+    std::string eval = _jsAccessor + ".stopPropagation()";
+    emscripten_run_script(eval.c_str());
+}
+
+std::string
+EmscriptenDOMEvent::type()
+{
+    std::string eval = "(" + _jsAccessor + ".type)";
+
+    char* result = emscripten_run_script_string(eval.c_str());
+
+    return std::string(result);
+}
+
+minko::dom::AbstractDOMElement::Ptr
+EmscriptenDOMEvent::target()
+{
+    return EmscriptenDOMElement::getDOMElement(_jsAccessor + ".target");
+}

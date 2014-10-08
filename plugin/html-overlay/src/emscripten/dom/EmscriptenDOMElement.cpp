@@ -393,22 +393,26 @@ EmscriptenDOMElement::update()
 		eval =  eventName + " = " + _jsAccessor + ".minkoEvents[" + std::to_string(i) + "];";
 		emscripten_run_script(eval.c_str());
 
-		EmscriptenDOMMouseEvent::Ptr event = EmscriptenDOMMouseEvent::create(eventName);
+		EmscriptenDOMEvent::Ptr event = EmscriptenDOMEvent::create(eventName);
 
 		std::string type = event->type();
 
-		if (type == "click")
-			_onclick->execute(event);
+		if (type == "change")
+			_onchange->execute(event);
+		else if (type == "input")
+			_oninput->execute(event);
+		else if (type == "click")
+			_onclick->execute(EmscriptenDOMMouseEvent::create(eventName));
 		else if (type == "mousedown")
-			_onmousedown->execute(event);
+			_onmousedown->execute(EmscriptenDOMMouseEvent::create(eventName));
 		else if (type == "mouseup")
-			_onmouseup->execute(event);
+			_onmouseup->execute(EmscriptenDOMMouseEvent::create(eventName));
 		else if (type == "mousemove")
-			_onmousemove->execute(event);
+			_onmousemove->execute(EmscriptenDOMMouseEvent::create(eventName));
 		else if (type == "mouseover")
-			_onmouseover->execute(event);
+			_onmouseover->execute(EmscriptenDOMMouseEvent::create(eventName));
 		else if (type == "mouseout")
-			_onmouseout->execute(event);
+			_onmouseout->execute(EmscriptenDOMMouseEvent::create(eventName));
 	}
 
 	eval = "Minko.clearEvents(" + _jsAccessor + ");";

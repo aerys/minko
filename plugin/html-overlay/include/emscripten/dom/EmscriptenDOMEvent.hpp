@@ -21,60 +21,48 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "emscripten/dom/EmscriptenDOMEvent.hpp"
-#include "minko/dom/AbstractDOMMouseEvent.hpp"
+#include "minko/dom/AbstractDOMElement.hpp"
+#include "minko/dom/AbstractDOMEvent.hpp"
 
 namespace emscripten
 {
-	namespace dom
-	{
-		class EmscriptenDOMMouseEvent :
-			public virtual minko::dom::AbstractDOMMouseEvent,
-			public EmscriptenDOMEvent
-		{
-		public:
-			typedef std::shared_ptr<EmscriptenDOMMouseEvent> Ptr;
+    namespace dom
+    {
+        class EmscriptenDOMEvent : public virtual minko::dom::AbstractDOMEvent
+        {
+        public:
+            typedef std::shared_ptr<EmscriptenDOMEvent> Ptr;
 
-		private:
-			EmscriptenDOMMouseEvent(const std::string& jsAccessor):
-				EmscriptenDOMEvent(jsAccessor)
-			{
-			}
+        protected:
+            EmscriptenDOMEvent(std::string jsAccessor):
+                _jsAccessor(jsAccessor)
+            {
+            }
 
-		public:
+        public:
+            static
+            Ptr
+            create(std::string jsAccessor)
+            {
+                Ptr event(new EmscriptenDOMEvent(jsAccessor));
+                return event;
+            }
 
-			static
-			Ptr
-			create(const std::string& jsAccessor)
-			{
-				Ptr event(new EmscriptenDOMMouseEvent(jsAccessor));
-				return event;
-			}
+            void
+            preventDefault();
 
-			int
-			clientX();
+            void
+            stopPropagation();
 
-			int
-			clientY();
+            std::string
+            type();
 
-			int
-			pageX();
+            minko::dom::AbstractDOMElement::Ptr
+            target();
 
-			int
-			pageY();
-
-			int
-			layerX();
-
-			int
-			layerY();
-
-			int
-			screenX();
-
-			int
-			screenY();
-		};
-	}
+        protected:
+            std::string _jsAccessor;
+        };
+    }
 }
 #endif
