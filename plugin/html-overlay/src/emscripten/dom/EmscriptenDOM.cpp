@@ -166,9 +166,9 @@ EmscriptenDOM::initialized(bool v)
 	if (!_initialized && v)
 	{
 		std::string eval = "";
-		eval += _jsAccessor + ".window		= Minko.iframeElement.contentWindow;\n";
-		eval += _jsAccessor + ".document	= Minko.iframeElement.contentDocument;\n";
-		eval += _jsAccessor + ".body		= Minko.iframeElement.contentDocument.body;\n";
+		eval += _jsAccessor + ".window		= Minko.window;\n";
+		eval += _jsAccessor + ".document	= Minko.document;\n";
+		eval += _jsAccessor + ".body		= Minko.document.body;\n";
 		emscripten_run_script(eval.c_str());
 
 		_document	= EmscriptenDOMElement::create(_jsAccessor + ".document");
