@@ -417,7 +417,7 @@ DrawCall::render(AbstractContext::Ptr context, AbstractTexture::Ptr renderTarget
         context->setTextureAt(s.position, *s.resourceId, s.location);
 
     for (const auto& a : _attributes)
-        context->setVertexBufferAt(a.position, *a.resourceId, a.size, *a.stride, a.offset);
+        context->setVertexBufferAt(a.location, *a.resourceId, a.size, *a.stride, a.offset);
 
     context->drawTriangles(*_indexBuffer, *_numIndices / 3);
 }
