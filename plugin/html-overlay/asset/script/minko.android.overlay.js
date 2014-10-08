@@ -31,13 +31,7 @@
 		}
 		return result;
 	};
-
-	document.body.oncontextmenu = function(event)
-	{ 
-		event.preventDefault(); 
-		return false;
-	};
-
+	
 	m.addListener = function(accessor, type)
 	{
 		if(!accessor.minkoEvents)
@@ -45,22 +39,12 @@
 		
 		accessor.addEventListener(type, function(event)
 		{
-			// If it's a MouseEvent, we propagate the event only for left click
-			if ((event.button != undefined && event.button == 0) || event.button == undefined)
-			{
-				accessor.minkoEvents.push(event);
-				
-				//var eventIndex = accessor.minkoEvents.length - 1;
-				//console.log("GET AN EVENT FROM JS: " + type + "(event index: " + eventIndex + ")");
-			}
-		});
-	};
-	
-	m.changeViewportWidth = function(width)
-	{
-		var metaElement = document.getElementById("metaViewport");
+			var eventIndex = accessor.minkoEvents.length - 1;
+			console.log("GET AN EVENT FROM JS: " + type + "(event index: " + eventIndex + ")");
 
-		metaElement.setAttribute("content", "width=" + width);
+			if (type != "touchmove" || type == "touchmove" && accessor.minkoEvents.length < 10)
+				accessor.minkoEvents.push(event);
+		});
 	};
 
 	m.getEventsCount = function(accessor)
