@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "android/dom/AndroidWebViewDOMTouchEvent.hpp"
 
 #include <android/log.h>
-#define LOG_TAG "MINKOTEST"
+#define LOG_TAG "MINKOELEMENT"
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
@@ -53,12 +53,16 @@ AndroidWebViewDOMElement::AndroidWebViewDOMElement(std::string jsAccessor) :
 	_onmouseup(Signal<AbstractDOMMouseEvent::Ptr>::create()),
     _onmouseout(Signal<AbstractDOMMouseEvent::Ptr>::create()),
     _onmouseover(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+    _oninput(Signal<AbstractDOMEvent::Ptr>::create()),
+    _onchange(Signal<AbstractDOMEvent::Ptr>::create()),
     _onclickSet(false),
     _onmousedownSet(false),
     _onmousemoveSet(false),
     _onmouseupSet(false),
     _onmouseoverSet(false),
     _onmouseoutSet(false),
+    _oninputSet(false),
+    _onchangeSet(false),
     _ontouchdown(Signal<AbstractDOMTouchEvent::Ptr>::create()),
     _ontouchup(Signal<AbstractDOMTouchEvent::Ptr>::create()),
     _ontouchmotion(Signal<AbstractDOMTouchEvent::Ptr>::create()),
@@ -274,6 +278,22 @@ AndroidWebViewDOMElement::getElementsByTagName(std::string tagName)
 	return (_engine->currentDOM()->getElementList(_jsAccessor + ".getElementsByTagName('" + tagName + "')"));
 }
 
+void
+AndroidWebViewDOMElement::value(const std::string& newValue)
+{
+    std::string js = _jsAccessor + ".value = '" + newValue + "';";
+    _engine->eval(js);
+}
+
+std::string
+AndroidWebViewDOMElement::value()
+{
+    std::string js = "(" + _jsAccessor + ".value)";
+    std::string result = _engine->eval(js);
+
+    return result;
+}
+
 std::string
 AndroidWebViewDOMElement::style(std::string name)
 {
@@ -299,6 +319,30 @@ AndroidWebViewDOMElement::addEventListener(std::string type)
 }
 
 // Events
+
+Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+AndroidWebViewDOMElement::onchange()
+{
+    if (!_onchangeSet)
+    {
+        addEventListener("change");
+        _onchangeSet = true;
+    }
+
+    return _onchange;
+}
+
+Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+AndroidWebViewDOMElement::oninput()
+{
+    if (!_oninputSet)
+    {
+        addEventListener("input");
+        _oninputSet = true;
+    }
+
+    return _oninput;
+}
 
 Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 AndroidWebViewDOMElement::onclick()
@@ -416,35 +460,55 @@ AndroidWebViewDOMElement::update()
     if (_engine->isReady())
     {
         
-        std::string js = "(Minko.getEventsCount(" + _jsAccessor + "));";
+        std::string js = "Minko.getEventsCount(" + _jsAccessor + ")";
         int l = atoi(_engine->eval(js).c_str());
+
+        LOGI(js.c_str());
+        LOGI(std::to_string(l).c_str());
+
+        if (l > 0)
+        {
+            LOGI("Event number: ");
+            LOGI(std::to_string(l).c_str());
+        }
 
         for(int i = 0; i < l; ++i)
         {
             std::string eventName = "Minko.event" + std::to_string(_elementUid++);
             js =  eventName + " = " + _jsAccessor + ".minkoEvents[" + std::to_string(i) + "];";
             _engine->eval(js);
-                       
+            
+            LOGI("Iteration #:");
+            LOGI(std::to_string(i).c_str());
+            LOGI(std::to_string(js).c_str());
+
             // It's a touch event ?
             if (_engine->eval(eventName + ".type").find("touch") == 0)
             {
                 // Get number of finger
                 std::string js = eventName + ".changedTouches.length";
                 int touchNumber = atoi(_engine->eval(js).c_str());
-                
+  
+                LOGI("Touch number: ");
+                LOGI(std::to_string(touchNumber).c_str());
+
                 for (auto i = 0; i < touchNumber; i++)
                 {
-                       
                     // Get the finger id (note: JS events can send identifier > INT_MAX, that's why there is a modulo)
                     js = "((" + eventName + ".changedTouches[" + std::to_string(i) + "].identifier));";
 
                     int fingerId = atoi(_engine->eval(js).c_str());
+                    LOGI("Finger id: ");
+                    LOGI(std::to_string(fingerId).c_str());
 
                     // Create the touch event
                     AndroidWebViewDOMTouchEvent::Ptr event = AndroidWebViewDOMTouchEvent::create(eventName, fingerId, i, _engine);
                     
                     std::string type = event->type();
                     
+                    LOGI("Event: ");
+                    LOGI(type.c_str());
+
                     if (type == "touchstart")
                     {
                         _ontouchdown->execute(event);
@@ -457,7 +521,20 @@ AndroidWebViewDOMElement::update()
                             
                             _onmousedown->execute(event);
                         }
+
                     }
+                    /*
+                    else if (type == "touchmove")
+                    {
+                        _ontouchmotion->execute(event);
+                        
+                        // If it's the first finger
+                        if (fingerId == _engine->firstFingerId())
+                        {
+                            _onmousemove->execute(event);
+                        }
+                    }
+                    */
                     else if (type == "touchend")
                     {
                         _ontouchup->execute(event);
@@ -471,21 +548,12 @@ AndroidWebViewDOMElement::update()
                             _onmouseup->execute(event);
                         }
                     }
-                    else if (type == "touchmove")
-                    {
-                        _ontouchmotion->execute(event);
-                        
-                        // If it's the first finger
-                        if (fingerId == _engine->firstFingerId())
-                        {
-                            _onmousemove->execute(event);
-                        }
-                    }
+                    
                 }
             }
         }
 
-        js = "(Minko.clearEvents(" + _jsAccessor + "));";
+        js = "Minko.clearEvents(" + _jsAccessor + ")";
         _engine->eval(js);
     }
 }

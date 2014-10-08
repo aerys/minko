@@ -126,7 +126,7 @@ AndroidWebViewDOMEngine::AndroidWebViewDOMEngine() :
     onWebViewInitializedSlot = onWebViewInitialized->connect([&]()
     {
         _webViewInitialized = true;
-        //updateWebViewResolution(_canvas->width(), _canvas->height());
+        updateWebViewResolution(_canvas->width(), _canvas->height());
         LOGI("WEBVIEW INITIALIZED (FROM C++)");
     });
 
@@ -243,6 +243,7 @@ AndroidWebViewDOMEngine::enterFrame(float time)
 
     	if (_currentDOM->initialized() && _isReady)
     	{
+            /*
             std::string jsEval = "(Minko.messagesToSend.length);";
             std::string evalResult = eval(jsEval);
             int l = atoi(evalResult.c_str());
@@ -265,6 +266,7 @@ AndroidWebViewDOMEngine::enterFrame(float time)
                 jsEval = "Minko.messagesToSend = [];";
     			eval(jsEval);
     		}
+            */
     	}
 
         _updateNextFrame = false;
@@ -416,25 +418,25 @@ AndroidWebViewDOMEngine::registerDomEvents()
     
     ontouchdownSlot = std::static_pointer_cast<AndroidWebViewDOMElement>(_currentDOM->document())->ontouchdown()->connect([&](AbstractDOMTouchEvent::Ptr event)
     {
-            int fingerId = event->fingerId();
-            float x = event->clientX();
-            float y = event->clientY();
-            
-            SDL_Event sdlEvent;
-            sdlEvent.type = SDL_FINGERDOWN;
-            sdlEvent.tfinger.fingerId = fingerId;
-            sdlEvent.tfinger.x =  x / _canvas->width();
-            sdlEvent.tfinger.y = y / _canvas->height();
+        int fingerId = event->fingerId();
+        float x = event->clientX();
+        float y = event->clientY();
+        
+        SDL_Event sdlEvent;
+        sdlEvent.type = SDL_FINGERDOWN;
+        sdlEvent.tfinger.fingerId = fingerId;
+        sdlEvent.tfinger.x =  x / _canvas->width();
+        sdlEvent.tfinger.y = y / _canvas->height();
 
-            SDL_PushEvent(&sdlEvent);
-            
-            // Create a new touch object and keep it with a list
-            auto touch = minko::SDLTouch::create(std::static_pointer_cast<Canvas>(_canvas));
-            touch->fingerId(fingerId);
-            touch->x(x);
-            touch->y(y);
+        SDL_PushEvent(&sdlEvent);
+        
+        // Create a new touch object and keep it with a list
+        auto touch = minko::SDLTouch::create(std::static_pointer_cast<Canvas>(_canvas));
+        touch->fingerId(fingerId);
+        touch->x(x);
+        touch->y(y);
 
-            _touches.insert(std::pair<int, std::shared_ptr<minko::SDLTouch>>(fingerId, touch));
+        _touches.insert(std::pair<int, std::shared_ptr<minko::SDLTouch>>(fingerId, touch));
     });
     
     ontouchupSlot = std::static_pointer_cast<AndroidWebViewDOMElement>(_currentDOM->document())->ontouchup()->connect([&](AbstractDOMTouchEvent::Ptr event)
@@ -460,25 +462,25 @@ AndroidWebViewDOMEngine::registerDomEvents()
     
     ontouchmotionSlot = std::static_pointer_cast<AndroidWebViewDOMElement>(_currentDOM->document())->ontouchmotion()->connect([&](AbstractDOMTouchEvent::Ptr event)
     {
-            int fingerId = event->fingerId();
-            float oldX = _touches.at(fingerId)->minko::input::Touch::x();
-            float oldY = _touches.at(fingerId)->minko::input::Touch::y();
-            float x = event->clientX();
-            float y = event->clientY();
-            
-            SDL_Event sdlEvent;
-            sdlEvent.type = SDL_FINGERMOTION;
-            sdlEvent.tfinger.fingerId = fingerId;
-            sdlEvent.tfinger.x = x / _canvas->width();
-            sdlEvent.tfinger.y = y / _canvas->height();
-            sdlEvent.tfinger.dx = (x - oldX) / _canvas->width();
-            sdlEvent.tfinger.dy = (y - oldY) / _canvas->height();
+        int fingerId = event->fingerId();
+        float oldX = _touches.at(fingerId)->minko::input::Touch::x();
+        float oldY = _touches.at(fingerId)->minko::input::Touch::y();
+        float x = event->clientX();
+        float y = event->clientY();
         
-            SDL_PushEvent(&sdlEvent);
-            
-            // Store finger information
-            _touches.at(fingerId)->x(x);
-            _touches.at(fingerId)->y(y);
+        SDL_Event sdlEvent;
+        sdlEvent.type = SDL_FINGERMOTION;
+        sdlEvent.tfinger.fingerId = fingerId;
+        sdlEvent.tfinger.x = x / _canvas->width();
+        sdlEvent.tfinger.y = y / _canvas->height();
+        sdlEvent.tfinger.dx = (x - oldX) / _canvas->width();
+        sdlEvent.tfinger.dy = (y - oldY) / _canvas->height();
+    
+        SDL_PushEvent(&sdlEvent);
+        
+        // Store finger information
+        _touches.at(fingerId)->x(x);
+        _touches.at(fingerId)->y(y);
     });
 }
 
@@ -500,8 +502,11 @@ AndroidWebViewDOMEngine::eval(std::string data)
     // Get the evalJS instance
     jstring js = env->NewStringUTF(data.c_str());
 
+    /*
     LOGI("EVAL JS: ");
     LOGI(data.c_str());
+    */
+
     jstring evalJSResult = (jstring)env->CallObjectMethod(_initWebViewTask, _evalJSMethod, js);
 
     const char* evalJSResultString = env->GetStringUTFChars(evalJSResult, JNI_FALSE);
@@ -512,9 +517,11 @@ AndroidWebViewDOMEngine::eval(std::string data)
     env->ReleaseStringUTFChars(evalJSResult, evalJSResultString);
     env->DeleteLocalRef(js);
     env->DeleteLocalRef(evalJSResult);
-    
+
+    /*
     LOGI("EVAL FINAL VALUE: ");
     LOGI(result.c_str());
-    
+    */
+
     return result;
 }

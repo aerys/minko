@@ -34,9 +34,8 @@ namespace android
 {
 	namespace dom
 	{
-		class AndroidWebViewDOMEngine : 
-            public minko::dom::AbstractDOMEngine,
-            public std::enable_shared_from_this<AndroidWebViewDOMEngine>
+		class AndroidWebViewDOMEngine : public minko::dom::AbstractDOMEngine,
+                                        public std::enable_shared_from_this<AndroidWebViewDOMEngine>
 		{
 		public:
 			typedef std::shared_ptr<AndroidWebViewDOMEngine> Ptr;
@@ -96,6 +95,20 @@ namespace android
             isReady()
             {
                 return _isReady;
+            }
+
+            inline
+            void
+            updateNextFrame()
+            {
+                _updateNextFrame = true;
+            }
+            
+            inline
+            void
+            pollRate(int rate)
+            {
+                _pollRate = rate;
             }
             
 		private:

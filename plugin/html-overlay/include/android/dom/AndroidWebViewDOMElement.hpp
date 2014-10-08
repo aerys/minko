@@ -110,6 +110,11 @@ namespace android
 			std::vector<minko::dom::AbstractDOMElement::Ptr>
 			getElementsByTagName(std::string tagName);
 
+			std::string
+			value();
+
+			void
+			value(const std::string&);
 
 			std::string
 			style(std::string name);
@@ -144,6 +149,12 @@ namespace android
             
             minko::Signal<std::shared_ptr<minko::dom::AbstractDOMTouchEvent>>::Ptr
             ontouchmotion();
+
+            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
+            onchange();
+
+            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
+            oninput();
             
             void
             update();
@@ -176,6 +187,9 @@ namespace android
             
             minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmouseout;
             minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmouseover;
+
+			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _oninput;
+			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onchange;
             
             bool _onclickSet;
             bool _onmousedownSet;
@@ -192,6 +206,9 @@ namespace android
             bool _ontouchdownSet;
             bool _ontouchupSet;
             bool _ontouchmotionSet;
+
+            bool _oninputSet;
+            bool _onchangeSet;
             
             std::shared_ptr<AndroidWebViewDOMEngine> _engine;
 		};
