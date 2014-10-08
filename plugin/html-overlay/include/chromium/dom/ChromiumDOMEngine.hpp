@@ -111,7 +111,21 @@ namespace chromium
 			visible(bool);
 
 			bool
-			visible();
+            visible();
+
+            inline
+            void
+            pollRate(int rate)
+            {
+                //Not Applicable
+            }
+
+            inline
+            void
+            updateNextFrame()
+            {
+                //Not Applicable
+            }
 			
 		private:
 

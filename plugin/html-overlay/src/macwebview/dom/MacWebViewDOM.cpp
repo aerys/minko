@@ -145,7 +145,7 @@ MacWebViewDOM::fileName()
 std::string
 MacWebViewDOM::fullUrl()
 {
-	std::string eval = "(Minko.iframeElement.src)";
+	std::string eval = "(document.location.href)";
     
     std::string result = runScriptString(eval);
     
@@ -166,9 +166,9 @@ MacWebViewDOM::initialized(bool v)
         runScript(_jsAccessor + " = {};");
         
 		std::string eval = "";
-		eval += _jsAccessor + ".window		= Minko.iframeElement.contentWindow;\n";
-		eval += _jsAccessor + ".document	= Minko.iframeElement.contentDocument;\n";
-		eval += _jsAccessor + ".body		= Minko.iframeElement.contentDocument.body;\n";
+		eval += _jsAccessor + ".window		= window;\n";
+		eval += _jsAccessor + ".document	= document;\n";
+		eval += _jsAccessor + ".body		= document.body;\n";
 		
         runScript(eval);
 
