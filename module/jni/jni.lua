@@ -14,12 +14,17 @@ local fileconfig = premake.fileconfig
 api.addAllowed("system", { "android" })
 api.addAllowed("architecture", { "armv5te" })
 
+if _ACTION ~= "gmake" then
+	return
+end
+
 local ANDROID
 local TOOLCHAIN = "arm-linux-androideabi"
 
 -- If we try to build Android on Windows without Cygwin
 if os.is("windows") and os.getenv('OSTYPE') == nil then
-	error(color.fg.red .. 'To build on Windows, you have to use Cygwin. Please check that you export OSTYPE environment variable.')
+	error(color.fg.red .. 'To build for Android on Windows, you have to use Cygwin. ' .. 
+		'Please check that you exported OSTYPE environment variable.' .. color.reset)
 end
 
 if os.getenv('ANDROID_HOME') then
@@ -30,7 +35,7 @@ end
 
 if not os.isfile(ANDROID .. "/tools/android") and not os.isfile(ANDROID .. "/tools/android.bat") then
 	error(color.fg.red .. 'Cannot find SDK tools for Android. Make sure ANDROID points to a correct Android SDK directory.' .. 
-		'(Missing file: \'' .. ANDROID .. '/tools/android\' or \'' .. ANDROID .. '/tools/android.bat\')' .. color.reset)
+		' (Missing file: \'' .. ANDROID .. '/tools/android\' or \'' .. ANDROID .. '/tools/android.bat\')' .. color.reset)
 end
 
 if not os.isdir(ANDROID .. "/toolchains") then
@@ -87,7 +92,7 @@ if os.is('windows') then
 end
 
 if not os.isfile(file) then
-	error(color.fg.red ..'Cannot find GCC for Android. Make sure ANDROID contains NDK.' ..
+	error(color.fg.red ..'Cannot find GCC for Android. Make sure ANDROID_HOME contains NDK.' ..
 		' (Missing file: ' .. file .. ')' .. color.reset)
 end
 
