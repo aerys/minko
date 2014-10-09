@@ -188,6 +188,18 @@ namespace minko
                 return _providers;
             }
 
+            inline
+            const std::vector<std::string>
+            properties() const
+            {
+                std::vector<std::string> properties;
+
+                for (auto& kv : _propertyNameToProvider)
+                    properties.push_back(kv.first);
+
+                return properties;
+            }
+
             Ptr
             filter(const std::set<AbsFilterPtr>&, Ptr = nullptr) const;
 
