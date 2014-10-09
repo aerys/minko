@@ -19,10 +19,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Minko.hpp"
 #include "minko/MinkoSDL.hpp"
+#include "minko/audio/PositionalSound.hpp"
 
 using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
+using namespace minko::animation;
 
 int
 main(int argc, char** argv)
@@ -38,8 +40,8 @@ main(int argc, char** argv)
         ->registerParser<audio::SoundParser>("mp3");
 
     sceneManager->assets()->loader()
-        ->queue("effect/Basic.effect")
-        ->queue("audio/loop.mp3");
+        ->queue("effect/Basic.effect");
+        ->queue("audio/breakbeat.mp3");
 
     auto root = scene::Node::create("root")
         ->addComponent(sceneManager);
@@ -56,6 +58,16 @@ main(int argc, char** argv)
 
     root->addChild(camera);
 
+    std::vector<uint> timetable = { 0, 2000, 4000 };
+
+    std::vector<Matrix4x4::Ptr> matrices = {
+        Matrix4x4::create()->appendTranslation(-5),
+        Matrix4x4::create()->appendTranslation(+5),
+        Matrix4x4::create()->appendTranslation(-5),
+    };
+
+    auto timeline = Matrix4x4Timeline::create("transform.matrix", 4000, timetable, matrices, true);
+
     auto _ = sceneManager->assets()->loader()->complete()->connect([ = ](file::Loader::Ptr loader)
     {
         mesh->addComponent(Surface::create(
@@ -64,8 +76,10 @@ main(int argc, char** argv)
             sceneManager->assets()->effect("effect/Basic.effect")
         ));
 
-        audio::Sound sound = sceneManager->assets()->sound("audio/loop.mp3");
-        audio::SoundChannel channel = sound->play();
+        mesh->addComponent(Animation::create({ timeline })->play());
+
+        audio::Sound::Ptr sound = sceneManager->assets()->sound("audio/breakbeat.mp3");
+        audio::SoundChannel::Ptr channel = sound->play(std::numeric_limits<int>::max());
         mesh->addComponent(audio::PositionalSound::create(channel));
 
         root->addChild(mesh);
@@ -78,6 +92,7 @@ main(int argc, char** argv)
 
     auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
     {
+        std::cout << mesh->component<Transform>()->matrix()->translation()->x() << std::endl;
         mesh->component<Transform>()->matrix()->appendRotationY(0.001f * deltaTime);
 
         sceneManager->nextFrame(time, deltaTime);
