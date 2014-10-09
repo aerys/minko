@@ -170,7 +170,16 @@ HTTPProtocol::load()
         //emscripten_async_wget_data(resolvedFilename().c_str(), loader.get(), &completeHandler, &errorHandler);
 
         //EMSCRIPTEN >= 1.13.1
-        emscripten_async_wget2_data(resolvedFilename().c_str(), "GET", "", loader.get(), 0, &completeHandler, &errorHandler, &progressHandler);
+        emscripten_async_wget2_data(
+            resolvedFilename().c_str(),
+            "GET",
+            "",
+            loader.get(),
+            0,
+            &wget2CompleteHandler,
+            &wget2ErrorHandler,
+            &wget2ProgressHandler
+        );
     }
     else
     {
@@ -258,22 +267,20 @@ HTTPProtocol::load()
 
 #if defined(EMSCRIPTEN)
 void
-HTTPProtocol::wget2CompleteHandler(void* arg, const char* file)
+HTTPProtocol::wget2CompleteHandler(unsigned int id, void* arg, void* data, unsigned int size)
 {
-    FILE* f = fopen(file, "rb");
+    HTTPProtocol::completeHandler(arg, data, size);
+}
 
-    if (f)
-    {
-        fseek(f, 0, SEEK_END);
-        int size = ftell(f);
+void
+HTTPProtocol::wget2ErrorHandler(unsigned int id, void* arg, int code, const char* message)
+{
+    HTTPProtocol::errorHandler(arg, code, message);
+}
 
-        fseek (f, 0, SEEK_SET);
-        char* data = new char[size];
-        fread(data, size, 1, f);
-        fclose(f);
-
-        completeHandler(arg, (void*)data, size);
-        delete data;
-    }
+void
+HTTPProtocol::wget2ProgressHandler(unsigned int id, void* arg, int loadedBytes, int totalBytes)
+{
+    HTTPProtocol::progressHandler(arg, loadedBytes, totalBytes);
 }
 #endif

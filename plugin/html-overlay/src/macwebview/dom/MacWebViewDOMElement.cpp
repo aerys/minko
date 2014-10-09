@@ -316,6 +316,30 @@ MacWebViewDOMElement::addEventListener(const std::string& type)
 
 // Events
 
+Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+MacWebViewDOMElement::onchange()
+{
+    if (!_onchangeSet)
+    {
+        addEventListener("change");
+        _onchangeSet = true;
+    }
+
+    return _onchange;
+}
+
+Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
+MacWebViewDOMElement::oninput()
+{
+    if (!_oninputSet)
+    {
+        addEventListener("input");
+        _oninputSet = true;
+    }
+
+    return _oninput;
+}
+
 Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 MacWebViewDOMElement::onclick()
 {
@@ -377,7 +401,6 @@ MacWebViewDOMElement::onmouseout()
     return _onmouseout;
 }
 
-
 Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 MacWebViewDOMElement::onmouseover()
 {
@@ -413,30 +436,6 @@ MacWebViewDOMElement::ontouchup()
     }
 
     return _ontouchup;
-}
-
-Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
-MacWebViewDOMElement::onchange()
-{
-    if (!_onchangeSet)
-    {
-        addEventListener("change");
-        _onchangeSet = true;
-    }
-
-    return _onchange;
-}
-
-Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
-MacWebViewDOMElement::oninput()
-{
-    if (!_oninputSet)
-    {
-        addEventListener("input");
-        _oninputSet = true;
-    }
-
-    return _oninput;
 }
 
 Signal<std::shared_ptr<AbstractDOMTouchEvent>>::Ptr

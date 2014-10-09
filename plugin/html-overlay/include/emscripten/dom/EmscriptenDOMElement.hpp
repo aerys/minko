@@ -90,6 +90,12 @@ namespace emscripten
 			void
 			textContent(const std::string&);
 
+            std::string
+            value();
+
+            void
+            value(const std::string& value);
+
 			std::string
 			innerHTML();
 
@@ -168,13 +174,13 @@ namespace emscripten
 
 			std::string _jsAccessor;
 
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onclick;
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmousedown;
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmousemove;
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmouseup;
+			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr  _onclick;
+			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr  _onmousedown;
+			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr  _onmousemove;
+			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr  _onmouseup;
 
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmouseover;
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmouseout;
+			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr  _onmouseover;
+			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr  _onmouseout;
 
 			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _oninput;
 			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onchange;

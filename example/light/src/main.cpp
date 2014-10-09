@@ -28,6 +28,7 @@ using namespace minko::math;
 scene::Node::Ptr camera = nullptr;
 
 Signal<input::Keyboard::Ptr>::Slot keyDown;
+Signal<input::Touch::Ptr, float, float>::Slot touchDown;
 
 scene::Node::Ptr
 createPointLight(Vector3::Ptr color, Vector3::Ptr position, file::AssetLibrary::Ptr assets)
@@ -50,6 +51,56 @@ createPointLight(Vector3::Ptr color, Vector3::Ptr position, file::AssetLibrary::
     pointLight->component<PointLight>()->layoutMask(lightId % 2 == 0 ? 1<<2 : 1);
 
     return pointLight;
+}
+
+void
+addLight(SceneManager::Ptr sceneManager, scene::Node::Ptr lights)
+{
+    const auto MAX_NUM_LIGHTS = 40;
+    
+    if (lights->children().size() == MAX_NUM_LIGHTS)
+    {
+        std::cout << "cannot add more lights" << std::endl;
+        return;
+    }
+    
+    auto r = rand() / (float)RAND_MAX;
+    auto theta = 2.0f * float(M_PI) *  r;
+    auto color = Color::hslaToRgba(r, 1.f, .5f);
+    auto pos = Vector3::create(
+                               cosf(theta) * 5.f + rand() / (float(RAND_MAX) * 3.f),
+                               2.5f + rand() / float(RAND_MAX),
+                               sinf(theta) * 5.f + rand() / (float(RAND_MAX) * 3.f)
+                               );
+    
+    lights->addChild(createPointLight(color, pos, sceneManager->assets()));
+    
+    std::cout << lights->children().size() << " lights" << std::endl;
+}
+
+void
+removeLight(scene::Node::Ptr lights)
+{
+    if (lights->children().size() == 0)
+        return;
+    
+    lights->removeChild(lights->children().back());
+    std::cout << lights->children().size() << " lights" << std::endl;
+}
+
+void toggleNormalMap(file::AssetLibrary::Ptr assets, scene::Node::Ptr sphere)
+{
+    auto data = sphere->component<Surface>()->material();
+    bool hasNormalMap = data->hasProperty("normalMap");
+    
+    std::cout << "mesh does" << (!hasNormalMap ? " not " : " ")
+    << "have a normal map:\t" << (hasNormalMap ? "remove" : "add")
+    << " it" << std::endl;
+    
+    if (hasNormalMap)
+        data->unset("normalMap");
+    else
+        data->set("normalMap", assets->texture("texture/normalmap-cells.png"));
 }
 
 int
@@ -129,73 +180,31 @@ main(int argc, char** argv)
         {
             if (k->keyIsDown(input::Keyboard::A))
             {
-                const auto MAX_NUM_LIGHTS = 40;
-
-                if (lights->children().size() == MAX_NUM_LIGHTS)
-                {
-                    std::cout << "cannot add more lights" << std::endl;
-                    return;
-                }
-
-                auto r = rand() / (float)RAND_MAX;
-                auto theta = 2.0f * float(M_PI) *  r;
-                auto color = Color::hslaToRgba(r, 1.f, .5f);
-                auto pos = Vector3::create(
-                    cosf(theta) * 5.f + rand() / (float(RAND_MAX) * 3.f),
-                    2.5f + rand() / float(RAND_MAX),
-                    sinf(theta) * 5.f + rand() / (float(RAND_MAX) * 3.f)
-                );
-
-                lights->addChild(createPointLight(color, pos, sceneManager->assets()));
-
-                std::cout << lights->children().size() << " lights" << std::endl;
+                addLight(sceneManager, lights);
             }
 
             if (k->keyIsDown(input::Keyboard::R))
             {
-                if (lights->children().size() == 0)
-                    return;
-
-                lights->removeChild(lights->children().back());
-                std::cout << lights->children().size() << " lights" << std::endl;
+                removeLight(lights);
             }
-
-            if (k->keyIsDown(input::Keyboard::S))
-            {
-                auto sphereLayout = sphere->layouts();
-                sphere->layouts(sphereLayout == 1 ? 1 << 2 | 1 : 1);
-            }
-
-            if (k->keyIsDown(input::Keyboard::D))
-            {
-                auto light = lights->children()[0];
-
-                auto mask = light->component<PointLight>()->layoutMask();
-
-                light->component<PointLight>()->layoutMask(mask == 1 ? 1 << 2 : 1);
-            }
-
-            if (k->keyIsDown(input::Keyboard::SPACE))
-            {
-                auto data = sphere->component<Surface>()->material();
-                bool hasNormalMap = data->hasProperty("normalMap");
-
-                std::cout << "mesh does" << (!hasNormalMap ? " not " : " ")
-                    << "have a normal map:\t" << (hasNormalMap ? "remove" : "add")
-                    << " it" << std::endl;
-
-                if (hasNormalMap)
-                    data->unset("normalMap");
-                else
-                    data->set("normalMap", assets->texture("texture/normalmap-cells.png"));
-            }
-
-            if (k->keyIsDown(input::Keyboard::UP))
-                camera->component<Transform>()->matrix()->prependTranslation(0.f, 0.f, -1.f);
-
-            if (k->keyIsDown(input::Keyboard::DOWN))
-                camera->component<Transform>()->matrix()->prependTranslation(0.f, 0.f, 1.f);
         });
+        
+        // handle touch signals
+        touchDown = canvas->touch()->touchDown()->connect([=](input::Touch::Ptr t, float x, float y)
+        {
+            // top left corner
+            if (x > 0 && x < 0.25 && y > 0 && y < 0.25)
+                addLight(sceneManager, lights);
+            
+            // top right corner
+            if (x > 0.75 && x < 1 && y > 0 && y < 0.25)
+                removeLight(lights);
+            
+            // bottom left corner
+            if (x > 0 && x < 0.25 && y > 0.75 && y < 1)
+                toggleNormalMap(assets, sphere);
+        });
+        
     });
 
     // camera init

@@ -20,11 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-
-
 #include "minko/file/AbstractParser.hpp"
-#include "minko/render/AbstractContext.hpp"
-
 
 namespace minko
 {
@@ -48,8 +44,8 @@ namespace minko
             parse(const std::string&                filename,
                   const std::string&                resolvedFilename,
                   std::shared_ptr<Options>          options,
-                  const std::vector<unsigned char>&    data,
-                  std::shared_ptr<AssetLibrary>    AssetLibrary);
+                  const std::vector<unsigned char>& data,
+                  std::shared_ptr<AssetLibrary>     AssetLibrary);
 
         private:
             JPEGParser()

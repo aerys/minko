@@ -88,6 +88,8 @@ namespace minko
         // Events
         Signal<Ptr, float, float>::Ptr                                          _enterFrame;
         Signal<AbstractCanvas::Ptr, uint, uint>::Ptr                            _resized;
+        // File dropped
+        Signal<const std::string&>::Ptr                                         _fileDropped;
         // Joystick events
         Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr      _joystickAdded;
         Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr      _joystickRemoved;
@@ -259,6 +261,13 @@ namespace minko
         resized()
         {
             return _resized;
+        }
+        
+        inline
+        Signal<const std::string&>::Ptr
+        fileDropped()
+        {
+            return _fileDropped;
         }
 
         inline
