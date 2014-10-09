@@ -36,6 +36,11 @@ Minko.loadedHandler = function(event)
 	{
 		Minko.window = event.currentTarget.contentWindow;
 		Minko.document = event.currentTarget.contentDocument;
+
+		Minko.document.addEventListener('touchmove', function(event)
+		{
+			event.preventDefault();
+		});
 	}
 	else
 	{
@@ -133,6 +138,10 @@ Minko.createIframe = function() //EMSCRIPTEN
 	iframe.style.position = 'relative';
 	canvas.parentNode.style.position = 'relative';
 
+	iframe.style.overflowX = 'hidden';
+	iframe.style.overflowY = 'hidden';
+	iframe.style.overflow = 'hidden';
+
 	canvas.style.position = 'absolute';
 	canvas.style.left = '0';
 	canvas.style.right = '0';
@@ -226,6 +235,32 @@ Minko.redispatchMouseEvent = function(event) //EMSCRIPTEN
 	Minko.canvas.dispatchEvent(eventCopy);
 }
 
+Minko.redispatchTouchEvent = function(event) //EMSCRIPTEN
+{
+	var eventCopy = document.createEvent('TouchEvent');
+
+	eventCopy.initEvent(event.type, event.bubbles, event.cancelable);
+
+	var copiedProperties = ['type', 'bubbles', 'cancelable', 'view', 'touches', 'targetTouches', 'changedTouches'];
+
+	for(var k in copiedProperties)
+		eventCopy[copiedProperties[k]] = event[copiedProperties[k]];
+
+	var pageX = 1 + Minko.getOffsetLeft(Minko.iframe) + (event.pageX || event.layerX);
+	var pageY = 1 + Minko.getOffsetTop(Minko.iframe) + (event.pageY || event.layerY);
+
+	var screenX = pageX - document.body.scrollLeft;
+	var screenY = pageY - document.body.scrollTop;
+
+	eventCopy.pageX = pageX;
+	eventCopy.pageY = pageY;
+
+	eventCopy.screenX = screenX;
+	eventCopy.screenY = screenY;
+
+	document.dispatchEvent(eventCopy);
+}
+
 Minko.bindRedispatchEvents = function() //EMSCRIPTEN
 {
 	var a = ['mousemove', 'mouseup', 'mousedown', 'click', 'mousewheel', 'DOMMouseScroll'];
@@ -237,6 +272,11 @@ Minko.bindRedispatchEvents = function() //EMSCRIPTEN
 
 	for(var k in a)
 		Minko.window.addEventListener(a[k], Minko.redispatchKeyboardEvent);
+
+	a = ['touchstart', 'touchend', 'touchmove', 'touchcancel']
+
+	for(var k in a)
+		Minko.window.addEventListener(a[k], Minko.redispatchTouchEvent);
 }
 
 /*

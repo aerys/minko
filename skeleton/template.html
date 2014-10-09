@@ -3,6 +3,8 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5, user-scalable=no"/>
+    <meta name="viewport" content="target-densitydpi=device-dpi, user-scalable=0" />
     <title>Powered by Minko</title>
     <style>
 		body, html {
@@ -12,6 +14,11 @@
 			color: white;
 			font-family: "Century Gothic","Apple Gothic",AppleGothic,"URW Gothic L","Avant Garde",Futura,sans-serif;
 			overflow: hidden;
+			overflow-x: hidden;
+			overflow-y: hidden;
+            -ms-touch-action: none; 
+            -ms-scroll-chaining: none;
+            -ms-overflow-style: none;
 		}
 		a { color: white; text-decoration: none; }
 		.center { margin-left: auto; margin-right: auto; display: block; }
@@ -144,6 +151,11 @@
 	  window.onresize = function(event)
 	  {
 		resizeCanvas();
+	  }
+
+	  document.ontouchmove = function(event)
+	  {
+	  	event.preventDefault();
 	  }
     </script>
     {{{ SCRIPT }}}
