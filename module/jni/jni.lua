@@ -18,8 +18,8 @@ local ANDROID
 local TOOLCHAIN = "arm-linux-androideabi"
 
 -- If we try to build Android on Windows without Cygwin
-if os.is("windows")  and os.getenv('OSTYPE') == nil then
-	return
+if os.is("windows") and os.getenv('OSTYPE') == nil then
+	error(color.fg.red .. 'To build on Windows, you have to use Cygwin. Please check that you export OSTYPE environment variable.')
 end
 
 if os.getenv('ANDROID_HOME') then
@@ -45,27 +45,17 @@ if not os.isfile(NDK_HOME) then
 	error(color.fg.red .. 'Installed NDK is not correctly installed: ' .. NDK_HOME .. color.reset)
 end
 
+local pathgpp = MINKO_HOME .. '/tool/lin/script/g++.sh';
+
 if os.is("windows") then
 	NDK_HOME = os.capture('cygpath -u "' .. NDK_HOME .. '"')
+	pathgpp = os.capture('cygpath -u "' .. pathgpp .. '"')
 	extension = '.exe'
 end
 
--- local matches = os.matchdirs(NDK_HOME .. "/*abi")
-
--- local TOOLCHAIN
-
--- for i, basedir in ipairs(matches) do
--- 	TOOLCHAIN = path.getbasename(basedir)
--- 	break
--- end
-
--- if not TOOLCHAIN then
--- 	error(color.fg.red .. 'Installed NDK is not correctly installed: ' .. NDK_HOME .. color.reset)
--- end
-
 table.inject(premake.tools.gcc, 'tools.android', {
 	cc			= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-gcc' .. extension,
-	cxx			= MINKO_HOME .. '/tool/lin/script/g++.sh ' .. NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-g++' .. extension,
+	cxx			= pathgpp .. ' ' .. NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-g++' .. extension,
 	ar			= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-ar' .. extension,
 	ld			= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-ld' .. extension,
 	ranlib		= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-ranlib' .. extension,
