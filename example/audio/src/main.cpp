@@ -39,9 +39,14 @@ main(int argc, char** argv)
         ->generateMipmaps(true)
         ->registerParser<audio::SoundParser>("mp3");
 
+    auto errorHandle = sceneManager->assets()->loader()->error()->connect([=](file::Loader::Ptr loader, const file::Error& error)
+    {
+        LOG_ERROR(error.what());
+    });
+
     sceneManager->assets()->loader()
+        ->queue("audio/breakbeat.mp3")
         ->queue("effect/Basic.effect");
-        ->queue("audio/breakbeat.mp3");
 
     auto root = scene::Node::create("root")
         ->addComponent(sceneManager);
@@ -80,9 +85,11 @@ main(int argc, char** argv)
 
         audio::Sound::Ptr sound = sceneManager->assets()->sound("audio/breakbeat.mp3");
         audio::SoundChannel::Ptr channel = sound->play(std::numeric_limits<int>::max());
-        mesh->addComponent(audio::PositionalSound::create(channel));
 
         root->addChild(mesh);
+
+        auto script = audio::PositionalSound::create(channel);
+        mesh->addComponent(script);
     });
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
@@ -92,7 +99,6 @@ main(int argc, char** argv)
 
     auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
     {
-        std::cout << mesh->component<Transform>()->matrix()->translation()->x() << std::endl;
         mesh->component<Transform>()->matrix()->appendRotationY(0.001f * deltaTime);
 
         sceneManager->nextFrame(time, deltaTime);

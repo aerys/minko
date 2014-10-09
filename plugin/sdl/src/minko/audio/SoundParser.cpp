@@ -44,13 +44,13 @@ SoundParser::parse(const std::string&                   filename,
 
     if (!sound->_chunk)
     {
-        std::cerr << "SoundParser::parse: Could not open file: " << filename << " (" << SDL_GetError() << ")" << std::endl;
+        error()->execute(shared_from_this(), file::Error(SDL_GetError()));
         return;
     }
 #else
     if (!SDL_LoadWAV_RW(ops, 0, &sound->_spec, &sound->_buffer, &sound->_length))
     {
-        std::cerr << "SoundParser::parse: Could not open file: " << filename << " (" << SDL_GetError() << ")" << std::endl;
+        error()->execute(shared_from_this(), file::Error(SDL_GetError()));
         return;
     }
 #endif

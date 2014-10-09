@@ -68,16 +68,18 @@ namespace minko
                 auto left  = (angle + 1) / 2;
                 auto right = (1 - angle) / 2;
 
-                LOG_INFO("volume: " << volume << ", left: " << left << ", right: " << right);
+                // LOG_INFO("volume: " << volume << ", left: " << left << ", right: " << right);
 
                 // Update the sound transforms.
                 SoundTransform::Ptr transform = _channel->transform();
 
                 if (!transform)
-                    transform = SoundTransform::create(volume);
+                    transform = SoundTransform::create();
 
+                transform->volume(volume);
                 transform->left(left);
                 transform->right(right);
+
                 _channel->transform(transform);
             }
 
@@ -99,7 +101,11 @@ namespace minko
             Ptr
             create(std::shared_ptr<SoundChannel> channel)
             {
-                return Ptr(new PositionalSound(channel));
+                auto p = Ptr(new PositionalSound(channel));
+
+                p->initialize();
+
+                return p;
             }
 
             virtual
@@ -131,8 +137,6 @@ namespace minko
                     auto renderer = node->component<component::Renderer>();
                     return !!camera && !!renderer && renderer->enabled();
                 });
-
-                LOG_INFO("found " << activeCameraNode->size() << " active cameras");
 
                 return activeCameraNode->size() > 0 ? activeCameraNode->nodes()[0] : nullptr;
             }
