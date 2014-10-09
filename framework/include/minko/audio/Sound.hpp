@@ -34,7 +34,7 @@ namespace minko
 
             virtual
             std::shared_ptr<SoundChannel>
-            play() = 0;
+            play(int count = 1) = 0;
 
             virtual
             ~Sound()

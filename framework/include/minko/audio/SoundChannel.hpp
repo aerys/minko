@@ -26,8 +26,10 @@ namespace minko
     namespace audio
     {
         class Sound;
+        class SoundTransform;
 
-        class SoundChannel
+        class SoundChannel :
+            public std::enable_shared_from_this<SoundChannel>
         {
         public:
             typedef std::shared_ptr<SoundChannel>    Ptr;
@@ -38,6 +40,28 @@ namespace minko
             complete()
             {
                 return _complete;
+            }
+
+            std::shared_ptr<Sound>
+            sound() const
+            {
+                return _sound;
+            }
+
+            virtual
+            Ptr
+            transform(std::shared_ptr<SoundTransform> value)
+            {
+                _transform = value;
+
+                return shared_from_this();
+            }
+
+            virtual
+            std::shared_ptr<SoundTransform>
+            transform() const
+            {
+                return _transform;
             }
 
             virtual
@@ -51,12 +75,14 @@ namespace minko
         protected:
             SoundChannel(std::shared_ptr<Sound> sound) :
                 _complete(Signal<Ptr>::create()),
-                _sound(sound)
+                _sound(sound),
+                _transform(nullptr)
             {
             }
 
             Signal<Ptr>::Ptr _complete;
             std::shared_ptr<Sound> _sound;
+            std::shared_ptr<SoundTransform> _transform;
         };
     }
 }

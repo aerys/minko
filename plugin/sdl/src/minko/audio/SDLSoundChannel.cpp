@@ -18,6 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/audio/SDLSoundChannel.hpp"
+#include "minko/audio/SoundTransform.hpp"
 
 using namespace minko;
 using namespace minko::audio;
@@ -34,7 +35,9 @@ SDLSoundChannel::SDLSoundChannel(std::shared_ptr<Sound> sound) :
 
 SDLSoundChannel::~SDLSoundChannel()
 {
-#if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+    Mix_HaltChannel(_channel);
+#else
     SDL_CloseAudioDevice(_device);
 #endif
 }
@@ -47,4 +50,25 @@ SDLSoundChannel::stop()
 #else
     SDL_PauseAudioDevice(_device, 1);
 #endif
+}
+
+SoundChannel::Ptr
+SDLSoundChannel::transform(SoundTransform::Ptr value)
+{
+    if (!!value)
+    {
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+        Mix_SetPanning(_channel, value->left() * value->volume() * 255, value->right() * value->volume() * 255);
+#else
+        // Nothing. Done during SDLSound::fillBuffer callback.
+#endif
+    }
+
+    return SoundChannel::transform(value);
+}
+
+SoundTransform::Ptr
+SDLSoundChannel::transform() const
+{
+    return SoundChannel::transform();
 }

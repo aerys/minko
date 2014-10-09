@@ -20,6 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Canvas.hpp"
 #include "minko/SDLAudio.hpp"
 
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+# include "SDL_mixer.h"
+#endif
+
 using namespace minko;
 
 SDLAudio::SDLAudio(std::shared_ptr<Canvas> canvas)

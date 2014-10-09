@@ -23,6 +23,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "SDL_audio.h"
 
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+# include "SDL_mixer.h"
+#endif
+
 namespace minko
 {
     namespace audio
@@ -38,7 +42,7 @@ namespace minko
             friend class SoundParser;
 
             std::shared_ptr<SoundChannel>
-            play();
+            play(int count = 1);
 
             ~SDLSound();
 

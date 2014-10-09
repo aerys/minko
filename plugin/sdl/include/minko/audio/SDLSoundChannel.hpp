@@ -23,6 +23,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "SDL_audio.h"
 
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+# include "SDL_mixer.h"
+#endif
+
 namespace minko
 {
     namespace audio
@@ -37,6 +41,12 @@ namespace minko
 
             void
             stop();
+
+            Ptr
+            transform(std::shared_ptr<SoundTransform> value) override;
+
+            std::shared_ptr<SoundTransform>
+            transform() const override;
 
             ~SDLSoundChannel();
 

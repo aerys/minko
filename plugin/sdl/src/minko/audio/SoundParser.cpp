@@ -58,4 +58,6 @@ SoundParser::parse(const std::string&                   filename,
     SDL_FreeRW(ops);
 
     assets->sound(filename, sound);
+
+    complete()->execute(shared_from_this());
 }
