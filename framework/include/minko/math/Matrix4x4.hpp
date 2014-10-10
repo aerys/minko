@@ -91,7 +91,7 @@ namespace minko
             initialize(std::vector<float> m);
 
             Ptr
-            Matrix4x4::initialize(float* m);
+            initialize(float* m);
 
             Ptr
             initialize(Quaternion::Ptr, Vector3::Ptr);
