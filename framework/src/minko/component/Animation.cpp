@@ -27,66 +27,66 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::animation;
 
-Animation::Animation(const std::vector<AbstractTimeline::Ptr>& timelines, 
-					 bool isLooping):
-	AbstractAnimation(isLooping),
-	_timelines(timelines),
-	_master(nullptr)
+Animation::Animation(const std::vector<AbstractTimeline::Ptr>& timelines,
+                     bool isLooping):
+    AbstractAnimation(isLooping),
+    _timelines(timelines),
+    _master(nullptr)
 {
 }
 
 Animation::Animation(const Animation& anim, const CloneOption& option) :
-	AbstractAnimation(anim),
-	_timelines(anim._timelines.size()),
-	_master(nullptr)
+    AbstractAnimation(anim),
+    _timelines(anim._timelines.size()),
+    _master(nullptr)
 {
-	for (int i = 0; i < anim._timelines.size(); i++)
-	{
-		auto var = anim._timelines[i]->clone();
-		_timelines[i] = var;
-	}
+    for (int i = 0; i < anim._timelines.size(); i++)
+    {
+        auto var = anim._timelines[i]->clone();
+        _timelines[i] = var;
+    }
 }
 
 AbstractComponent::Ptr
 Animation::clone(const CloneOption& option)
 {
-	auto anim = std::shared_ptr<Animation>(new Animation(*this, option));
+    auto anim = std::shared_ptr<Animation>(new Animation(*this, option));
 
-	anim->initialize();
+    anim->initialize();
 
-	return anim;
+    return anim;
 }
 
 void
 Animation::initialize()
 {
-	AbstractAnimation::initialize();
+    AbstractAnimation::initialize();
 
-	_maxTime = 0;
-	for (auto& timeline : _timelines)
-		_maxTime = std::max(_maxTime, timeline->duration());
+    _maxTime = 0;
+    for (auto& timeline : _timelines)
+        _maxTime = std::max(_maxTime, timeline->duration());
 
-	setPlaybackWindow(0, _maxTime)->seek(0);
+    setPlaybackWindow(0, _maxTime)->seek(0);
 }
 
 void
 Animation::update()
 {
-	for (auto& target : targets())
-	{
-		auto container = target->data();
+    for (auto& target : targets())
+    {
+        auto container = target->data();
 
-		for (auto& timeline : _timelines)
-		{
-			const uint currentTime = _currentTime % (timeline->duration() + 1); // Warning: bounds !
+        for (auto& timeline : _timelines)
+        {
+            const uint currentTime = _currentTime % (timeline->duration() + 1); // Warning: bounds !
 
-			timeline->update(currentTime, target->data());
-		}
-	}
+            timeline->update(currentTime, target->data());
+        }
+    }
 }
 
 void
 Animation::rebindDependencies(std::map<AbstractComponent::Ptr, AbstractComponent::Ptr>& componentsMap, std::map<NodePtr, NodePtr>& nodeMap, CloneOption option)
 {
-	//Implement when animation clones are tested (without skinning)
+    //Implement when animation clones are tested (without skinning)
 }

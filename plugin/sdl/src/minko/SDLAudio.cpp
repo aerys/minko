@@ -17,13 +17,25 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
-
 #include "minko/Canvas.hpp"
-#include "minko/audio/SDLSound.hpp"
-#include "minko/audio/SDLSoundChannel.hpp"
-#include "minko/audio/SoundParser.hpp"
+#include "minko/SDLAudio.hpp"
 
-#ifdef __ANDROID__
-# include "minko/MinkoAndroid.hpp"
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+# include "SDL_mixer.h"
 #endif
+
+using namespace minko;
+
+SDLAudio::SDLAudio(std::shared_ptr<Canvas> canvas)
+{
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+    Mix_Init(MIX_INIT_OGG | MIX_INIT_MP3);
+    Mix_OpenAudio(0, 0, 0, 0);
+#endif
+}
+
+std::shared_ptr<SDLAudio>
+SDLAudio::create(std::shared_ptr<Canvas> canvas)
+{
+    return std::shared_ptr<SDLAudio>(new SDLAudio(canvas));
+}

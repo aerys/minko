@@ -83,7 +83,7 @@ namespace minko
 
             Ptr
             initialize(float m00, float m01, float m02, float m03,
-                          float m10, float m11, float m12, float m13,
+                       float m10, float m11, float m12, float m13,
                        float m20, float m21, float m22, float m23,
                        float m30, float m31, float m32, float m33);
 
@@ -209,17 +209,17 @@ namespace minko
 
             void
             decompose(Vector3Ptr    translation,
-                      QuaternionPtr    rotation,
+                      QuaternionPtr rotation,
                       Vector3Ptr    scaling) const;
 
             Ptr
             recompose(Vector3Ptr    translation,
-                      QuaternionPtr    rotation,
+                      QuaternionPtr rotation,
                       Vector3Ptr    scaling);
 
             Ptr
-            interpolateTo(Ptr    target,
-                          float    ratio);
+            interpolateTo(Ptr       target,
+                          float     ratio);
 
             Ptr
             invert();
@@ -313,7 +313,7 @@ namespace minko
              * xaxis = normal(cross(Up, zaxis))<br />
              * yaxis = cross(zaxis, xaxis)<br />
              * <br />
-             * [      xaxis.x          yaxis.x            zaxis.x           0 ]<br />
+             * [      xaxis.x          yaxis.x            zaxis.x        0 ]<br />
              * [      xaxis.y          yaxis.y            zaxis.y        0 ]<br />
              * [      xaxis.z          yaxis.z            zaxis.z        0 ]<br />
              * [ -dot(xaxis, eye)  -dot(yaxis, eye)  -dot(zaxis, eye)    1 ]<br />
@@ -398,9 +398,9 @@ namespace minko
             inline
             Ptr
             prepend(float m00, float m01, float m02, float m03,
-                       float m10, float m11, float m12, float m13,
-                       float m20, float m21, float m22, float m23,
-                       float m30, float m31, float m32, float m33);
+                    float m10, float m11, float m12, float m13,
+                    float m20, float m21, float m22, float m23,
+                    float m30, float m31, float m32, float m33);
         };
     }
 }

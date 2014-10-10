@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <chrono>
 
 #include "minko/Common.hpp"
+#include "minko/SDLAudio.hpp"
 #include "minko/SDLKeyboard.hpp"
 #include "minko/SDLMouse.hpp"
 #include "minko/SDLJoystick.hpp"
@@ -79,6 +80,7 @@ namespace minko
         float                                                                   _framerate;
         float                                                                   _desiredFramerate;
 
+        std::shared_ptr<SDLAudio>                                               _audio;
         std::shared_ptr<SDLMouse>                                               _mouse;
         std::unordered_map<int, std::shared_ptr<SDLJoystick>>                   _joysticks;
         std::shared_ptr<SDLKeyboard>                                            _keyboard;
@@ -262,7 +264,7 @@ namespace minko
         {
             return _resized;
         }
-        
+
         inline
         Signal<const std::string&>::Ptr
         fileDropped()
@@ -353,6 +355,9 @@ namespace minko
 
         void
         initializeInputs();
+
+        void
+        initializeAudio();
 
         void
         initializeContext();

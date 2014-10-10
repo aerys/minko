@@ -20,10 +20,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Canvas.hpp"
-#include "minko/audio/SDLSound.hpp"
-#include "minko/audio/SDLSoundChannel.hpp"
-#include "minko/audio/SoundParser.hpp"
 
-#ifdef __ANDROID__
-# include "minko/MinkoAndroid.hpp"
-#endif
+namespace minko
+{
+    class Canvas;
+
+    class SDLAudio
+    {
+        friend class Canvas;
+
+    public:
+        static
+        std::shared_ptr<SDLAudio>
+        create(std::shared_ptr<Canvas> canvas);
+
+    private:
+        SDLAudio(std::shared_ptr<Canvas> canvas);
+    };
+}

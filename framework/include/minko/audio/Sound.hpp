@@ -19,11 +19,32 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/Canvas.hpp"
-#include "minko/audio/SDLSound.hpp"
-#include "minko/audio/SDLSoundChannel.hpp"
-#include "minko/audio/SoundParser.hpp"
+#include "minko/Common.hpp"
 
-#ifdef __ANDROID__
-# include "minko/MinkoAndroid.hpp"
-#endif
+namespace minko
+{
+    namespace audio
+    {
+        class SoundChannel;
+
+        class Sound
+        {
+        public:
+            typedef std::shared_ptr<Sound>        Ptr;
+
+            virtual
+            std::shared_ptr<SoundChannel>
+            play(int count = 1) = 0;
+
+            virtual
+            ~Sound()
+            {
+            }
+
+        protected:
+            Sound()
+            {
+            }
+        };
+    }
+}

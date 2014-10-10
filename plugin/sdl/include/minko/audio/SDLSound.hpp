@@ -19,11 +19,47 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/Canvas.hpp"
-#include "minko/audio/SDLSound.hpp"
-#include "minko/audio/SDLSoundChannel.hpp"
-#include "minko/audio/SoundParser.hpp"
+#include "minko/audio/Sound.hpp"
 
-#ifdef __ANDROID__
-# include "minko/MinkoAndroid.hpp"
+#include "SDL_audio.h"
+
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+# include "SDL_mixer.h"
 #endif
+
+namespace minko
+{
+    namespace audio
+    {
+        class SoundParser;
+        class SoundChannel;
+
+        class SDLSound :
+            public Sound,
+            public std::enable_shared_from_this<Sound>
+        {
+        public:
+            friend class SoundParser;
+
+            std::shared_ptr<SoundChannel>
+            play(int count = 1);
+
+            ~SDLSound();
+
+        protected:
+            SDLSound();
+
+            static void
+            fillBuffer(void* that, unsigned char* stream, int length);
+
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+            Mix_Chunk* _chunk;
+#else
+            SDL_AudioSpec _spec;
+            uint _length;
+            unsigned char* _buffer;
+            int _pos;
+#endif
+        };
+    }
+}

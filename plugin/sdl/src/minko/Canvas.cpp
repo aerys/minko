@@ -92,6 +92,7 @@ Canvas::initialize()
     initializeWindow();
     initializeContext();
     initializeInputs();
+    initializeAudio();
 
 #if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
     registerWorker<file::FileProtocolWorker>("file-protocol");
@@ -124,12 +125,18 @@ Canvas::initializeInputs()
 }
 
 void
+Canvas::initializeAudio()
+{
+    _audio = SDLAudio::create(shared_from_this());
+}
+
+void
 Canvas::initializeWindow()
 {
 #if defined(MINKO_PLUGIN_OFFSCREEN)
     auto flags = 0;
 #else
-    auto flags = SDL_INIT_VIDEO | SDL_INIT_JOYSTICK;
+    auto flags = SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO;
 #endif
 
     if (SDL_Init(flags) < 0)
