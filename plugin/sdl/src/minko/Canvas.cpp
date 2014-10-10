@@ -476,8 +476,7 @@ Canvas::step()
             break;
         }
 
-#if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
-            // Touch events
+        // Touch events
         case SDL_FINGERDOWN:
         {
 #if defined(DEBUG)
@@ -627,7 +626,6 @@ Canvas::step()
 
             break;
         }
-#endif
         case SDL_JOYAXISMOTION:
         {
             _joysticks[event.jaxis.which]->joystickAxisMotion()->execute(
