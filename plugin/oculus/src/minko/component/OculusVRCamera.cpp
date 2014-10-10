@@ -18,16 +18,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/component/OculusVRCamera.hpp"
-#include "minko/MinkoOculus.hpp"
-
-#include "OVR_CAPI.h"
-#include "CAPI/CAPI_HMDState.h"
-#include "OVR_Stereo.h"
-#include "Kernel/OVR_Math.h"
-
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
 #include "minko/component/AbstractComponent.hpp"
+#include "minko/render/AbstractContext.hpp"
 #include "minko/component/SceneManager.hpp"
 #include "minko/component/Renderer.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
@@ -42,13 +36,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/material/Material.hpp"
 #include "minko/file/Loader.hpp"
 
+#include "minko/oculus/NativeOculus.hpp"
+//#include "minko/oculus/WebVROculus.hpp"
+
 using namespace minko;
 using namespace minko::scene;
 using namespace minko::component;
 using namespace minko::math;
-
-/*static*/ const float                    OculusVRCamera::WORLD_UNIT    = 1.0f;
-/*static*/ const unsigned int            OculusVRCamera::TARGET_SIZE    = 1024;
+using namespace minko::oculus;
 
 OculusVRCamera::OculusVRCamera(int viewportWidth, int viewportHeight, float zNear, float zFar) :
     _aspectRatio((float)viewportWidth / (float)viewportHeight),
@@ -66,7 +61,8 @@ OculusVRCamera::OculusVRCamera(int viewportWidth, int viewportHeight, float zNea
     _targetRemovedSlot(nullptr),
     _addedSlot(nullptr),
     _removedSlot(nullptr),
-    _renderEndSlot(nullptr)
+    _renderEndSlot(nullptr),
+    _oculusImpl(nullptr)
 {
     _uvScaleOffset[0].first = math::Vector2::create();
     _uvScaleOffset[0].second = math::Vector2::create();
@@ -80,13 +76,18 @@ OculusVRCamera::~OculusVRCamera()
 {
     resetOVRDevice();
 
-    ovrHmd_Destroy(_hmd);
-    ovr_Shutdown();
+    _oculusImpl->destroy();
 }
 
 void
 OculusVRCamera::initialize()
 {
+#ifdef EMSCRIPTEN
+    //_oculusImpl = WebVROculus::create();
+#else
+    _oculusImpl = NativeOculus::create();
+#endif
+
     _targetAddedSlot = targetAdded()->connect(std::bind(
         &OculusVRCamera::targetAddedHandler,
         std::static_pointer_cast<OculusVRCamera>(shared_from_this()),
@@ -154,87 +155,22 @@ OculusVRCamera::resetOVRDevice()
 void
 OculusVRCamera::initializeOVRDevice()
 {
-    ovr_Initialize();
-
-    resetOVRDevice();
-
-    _hmd = ovrHmd_Create(0);
-    if (!_hmd)
-        throw;
-
-    ovrHmd_RecenterPose(_hmd);
-
-    OVR::Sizei recommenedTex0Size = ovrHmd_GetFovTextureSize(_hmd, ovrEye_Left, _hmd->DefaultEyeFov[0], 1.0f);
-    OVR::Sizei recommenedTex1Size = ovrHmd_GetFovTextureSize(_hmd, ovrEye_Right, _hmd->DefaultEyeFov[1], 1.0f);
-    OVR::Sizei renderTargetSize;
-    renderTargetSize.w = recommenedTex0Size.w + recommenedTex1Size.w;
-    renderTargetSize.h = std::max(recommenedTex0Size.h, recommenedTex1Size.h);
-
-    // enforce a power of 2 size because that's what minko expects
-    renderTargetSize.w = math::clp2(renderTargetSize.w);
-    renderTargetSize.h = math::clp2(renderTargetSize.h);
-
-    renderTargetSize.w = std::min(renderTargetSize.w, MINKO_PLUGIN_OCULUS_MAX_TARGET_SIZE);
-    renderTargetSize.h = std::min(renderTargetSize.h, MINKO_PLUGIN_OCULUS_MAX_TARGET_SIZE);
-
-    _renderTargetWidth = renderTargetSize.w;
-    _renderTargetHeight = renderTargetSize.h;
-
-    // compute each viewport pos and size
-    ovrRecti eyeRenderViewport[2];
-    ovrFovPort eyeFov[2] = { _hmd->DefaultEyeFov[0], _hmd->DefaultEyeFov[1] };
-
-    eyeRenderViewport[0].Pos = OVR::Vector2i(0, 0);
-    eyeRenderViewport[0].Size = OVR::Sizei(renderTargetSize.w / 2, renderTargetSize.h);
-    eyeRenderViewport[1].Pos = OVR::Vector2i((renderTargetSize.w + 1) / 2, 0);
-    eyeRenderViewport[1].Size = eyeRenderViewport[0].Size;
-
-    // create 1 renderer/eye and init. their respective viewport
+    // Create renderer for each eye
     _leftRenderer = Renderer::create();
-    _leftRenderer->viewport(
-        eyeRenderViewport[0].Pos.x,
-        eyeRenderViewport[0].Pos.y,
-        eyeRenderViewport[0].Size.w,
-        eyeRenderViewport[0].Size.h
-    );
-
     _rightRenderer = Renderer::create();
-    _rightRenderer->viewport(
-        eyeRenderViewport[1].Pos.x,
-        eyeRenderViewport[1].Pos.y,
-        eyeRenderViewport[1].Size.w,
-        eyeRenderViewport[1].Size.h
-    );
     _rightRenderer->clearBeforeRender(false);
 
-    ovrHmd_SetEnabledCaps(_hmd, ovrHmdCap_LowPersistence | ovrHmdCap_DynamicPrediction);
-
-    // Start the sensor which informs of the Rift's pose and motion
-    ovrHmd_ConfigureTracking(
-        _hmd,
-        ovrTrackingCap_Orientation |
-        ovrTrackingCap_MagYawCorrection |
-        ovrTrackingCap_Position,
-        0
+    _oculusImpl->initializeOVRDevice(
+        _leftRenderer, 
+        _rightRenderer, 
+        _renderTargetWidth, 
+        _renderTargetHeight, 
+        _uvScaleOffset
     );
 
-    for (auto eyeNum = 0u; eyeNum < 2; ++eyeNum)
-    {
-        ovrVector2f uvScaleOffset[2];
-
-        ovrHmd_GetRenderScaleAndOffset(
-            _hmd->DefaultEyeFov[eyeNum],
-            renderTargetSize,
-            eyeRenderViewport[eyeNum],
-            uvScaleOffset
-        );
-
-        _uvScaleOffset[eyeNum].first->setTo(uvScaleOffset[0].x, uvScaleOffset[0].y);
-        _uvScaleOffset[eyeNum].second->setTo(uvScaleOffset[1].x, uvScaleOffset[1].y);
-    }
-
-    // FIXME: on Windows, render directly into the HMD (window ?= SDL window)
-    // ovrHmd_AttachToWindow(HMD, window, NULL, NULL);
+    // Store default eye FOV
+    _defaultLeftEyeFov = _oculusImpl->getDefaultLeftEyeFov();
+    _defaultRightEyeFov = _oculusImpl->getDefaultRightEyeFov();
 }
 
 void
@@ -244,7 +180,7 @@ OculusVRCamera::initializeCameras()
 
     auto leftCamera = PerspectiveCamera::create(
         aspectRatio,
-        atan(_hmd->DefaultEyeFov[0].LeftTan + _hmd->DefaultEyeFov[0].RightTan),
+        atan(_defaultLeftEyeFov.LeftTan + _defaultLeftEyeFov.RightTan),
         _zNear,
         _zFar
     );
@@ -256,7 +192,7 @@ OculusVRCamera::initializeCameras()
 
     auto rightCamera = PerspectiveCamera::create(
         aspectRatio,
-        atan(_hmd->DefaultEyeFov[1].LeftTan + _hmd->DefaultEyeFov[1].RightTan),
+        atan(_defaultRightEyeFov.LeftTan + _defaultRightEyeFov.RightTan),
         _zNear,
         _zFar
     );
@@ -270,56 +206,7 @@ OculusVRCamera::initializeCameras()
 std::array<std::shared_ptr<geometry::Geometry>, 2>
 OculusVRCamera::createDistortionGeometry(std::shared_ptr<render::AbstractContext> context)
 {
-    auto geometries = std::array<std::shared_ptr<geometry::Geometry>, 2>();
-    for (int eyeNum = 0; eyeNum < 2; eyeNum++)
-    {
-        auto geom = geometry::Geometry::create();
-
-        // Allocate mesh vertices, registering with renderer using the OVR vertex format.
-        ovrDistortionMesh meshData;
-        ovrHmd_CreateDistortionMesh(
-            _hmd,
-            (ovrEyeType)eyeNum,
-            _hmd->DefaultEyeFov[eyeNum],
-            ovrDistortionCap_Chromatic | ovrDistortionCap_TimeWarp,
-            &meshData
-        );
-
-        auto vb = render::VertexBuffer::create(
-            context,
-            (float*)meshData.pVertexData,
-            (sizeof(ovrDistortionVertex) / sizeof(float)) * meshData.VertexCount
-        );
-
-        // struct ovrDistortionVertex {
-        //     ovrVector2f ScreenPosNDC;    // [-1,+1],[-1,+1] over the entire framebuffer.
-        //     float       TimeWarpFactor;  // Lerp factor between time-warp matrices. Can be encoded in Pos.z.
-        //     float       VignetteFactor;  // Vignette fade factor. Can be encoded in Pos.w.
-        //     ovrVector2f TanEyeAnglesR;
-        //     ovrVector2f TanEyeAnglesG;
-        //     ovrVector2f TanEyeAnglesB;
-        // }
-
-        vb->addAttribute("screenPosNDC", 2);
-        vb->addAttribute("timeWarpFactor", 1);
-        vb->addAttribute("vignetteFactor", 1);
-        vb->addAttribute("tanEyeAnglesR", 2);
-        vb->addAttribute("tanEyeAnglesG", 2);
-        vb->addAttribute("tanEyeAnglesB", 2);
-        geom->addVertexBuffer(vb);
-
-        auto ib = render::IndexBuffer::create(
-            context,
-            meshData.pIndexData,
-            meshData.pIndexData + meshData.IndexCount
-        );
-
-        geom->indices(ib);
-
-        geometries[eyeNum] = geom;
-    }
-
-    return geometries;
+    return _oculusImpl->createDistortionGeometry(context);
 }
 
 void
@@ -355,39 +242,6 @@ OculusVRCamera::initializePostProcessingRenderer()
     });
 
     loader->load();
-}
-
-void
-OculusVRCamera::getHMDInfo(HMDInfo& _hmdInfo) const
-{
-    /*if (_ovrHMDDevice)
-    {
-        OVR::HMDInfo ovrHMDInfo;
-
-        _ovrHMDDevice->GetDeviceInfo(&ovrHMDInfo);
-
-        _hmdInfo.hResolution                = (float)ovrHMDInfo.HResolution;
-        _hmdInfo.vResolution                = (float)ovrHMDInfo.VResolution;
-        _hmdInfo.hScreenSize                = ovrHMDInfo.HScreenSize;
-        _hmdInfo.vScreenSize                = ovrHMDInfo.VScreenSize;
-        _hmdInfo.vScreenCenter            = ovrHMDInfo.VScreenCenter;
-        _hmdInfo.interpupillaryDistance    = ovrHMDInfo.InterpupillaryDistance;
-        _hmdInfo.lensSeparationDistance    = ovrHMDInfo.LensSeparationDistance;
-        _hmdInfo.eyeToScreenDistance        = ovrHMDInfo.EyeToScreenDistance;
-        _hmdInfo.distortionK                = Vector4::create(ovrHMDInfo.DistortionK[0], ovrHMDInfo.DistortionK[1], ovrHMDInfo.DistortionK[2], ovrHMDInfo.DistortionK[3]);
-    }
-    else
-    {
-        _hmdInfo.hResolution                = 1280.0f;
-        _hmdInfo.vResolution                = 800.0f;
-        _hmdInfo.hScreenSize                = 0.14976f;
-        _hmdInfo.vScreenSize                = _hmdInfo.hScreenSize / (1280.0f / 800.0f);
-        _hmdInfo.vScreenCenter            = 0.5f * _hmdInfo.vScreenSize;
-        _hmdInfo.interpupillaryDistance    = 0.064f;
-        _hmdInfo.lensSeparationDistance    = 0.0635f;
-        _hmdInfo.eyeToScreenDistance        = 0.041f;
-        _hmdInfo.distortionK                = Vector4::create(1.0f, 0.22f, 0.24f, 0.0f);
-    }*/
 }
 
 void
@@ -440,82 +294,20 @@ OculusVRCamera::setSceneManager(SceneManager::Ptr sceneManager)
 }
 
 void
-OculusVRCamera::renderEndHandler(std::shared_ptr<SceneManager>    sceneManager,
+OculusVRCamera::renderEndHandler(std::shared_ptr<SceneManager>   sceneManager,
                                  uint                            frameId,
                                  render::AbstractTexture::Ptr    renderTarget)
 {
-    //updateCameraOrientation();
-
     _ppRenderer->render(sceneManager->assets()->context());
-}
-
-bool
-OculusVRCamera::HMDDeviceDetected() const
-{
-    //return _ovrHMDDevice != nullptr;
-    return false;
-}
-
-bool
-OculusVRCamera::sensorDeviceDetected() const
-{
-    //return _ovrSensorDevice != nullptr;
-    return false;
 }
 
 void
 OculusVRCamera::updateCameraOrientation()
 {
-    static ovrPosef eyeRenderPose[2];
-    static float BodyYaw(0.f);
-    static OVR::Vector3f HeadPos(0.0f, 0.f, 0.f);
-    static auto state = (OVR::CAPI::HMDState*)(_hmd->Handle);
-    static auto renderInfo = state->RenderState.RenderInfo;
+    std::array<Matrix4x4::Ptr, 2> viewMatrixes = {
+        _leftCameraNode->component<Transform>()->matrix(),
+        _rightCameraNode->component<Transform>()->matrix()
+    };
 
-    HeadPos.y = ovrHmd_GetFloat(_hmd, OVR_KEY_EYE_HEIGHT, HeadPos.y);
-
-    for (int eyeNum = 0; eyeNum < 2; eyeNum++)
-    {
-        ovrEyeType eye = _hmd->EyeRenderOrder[eyeNum];
-        eyeRenderPose[eye] = ovrHmd_GetEyePose(_hmd, eye);
-
-        OVR::Matrix4f rollPitchYaw = OVR::Matrix4f::RotationY(BodyYaw);
-        OVR::Matrix4f finalRollPitchYaw = rollPitchYaw * OVR::Matrix4f(eyeRenderPose[eye].Orientation);
-        OVR::Vector3f finalUp = finalRollPitchYaw.Transform(OVR::Vector3f(0, 1, 0));
-        OVR::Vector3f finalForward = finalRollPitchYaw.Transform(OVR::Vector3f(0, 0, -1));
-        OVR::Vector3f shiftedEyePos = HeadPos + rollPitchYaw.Transform(eyeRenderPose[eye].Position);
-        OVR::Matrix4f view = OVR::Matrix4f::LookAtRH(shiftedEyePos, shiftedEyePos + finalForward, finalUp);
-        OVR::Vector3f viewAdjust = OVR::Util::Render::CalculateEyeVirtualCameraOffset(
-            renderInfo,
-            eyeNum == 0 ? OVR::StereoEye::StereoEye_Left : OVR::StereoEye::StereoEye_Right,
-            false
-        );
-        auto cameraNode = eyeNum == 0 ? _leftCameraNode : _rightCameraNode;
-        auto matrix = cameraNode->component<Transform>()->matrix();
-
-        matrix->lock();
-        matrix->initialize((float*)view.M);
-        //matrix->transpose();
-        matrix->invert();
-        matrix->prependTranslation(viewAdjust.x, viewAdjust.y, viewAdjust.z);
-        matrix->unlock();
-
-        // update time warp matrices
-        ovrMatrix4f twMatrices[2];
-        ovrHmd_GetEyeTimewarpMatrices(_hmd, (ovrEyeType)eyeNum, eyeRenderPose[eyeNum], twMatrices);
-
-        Matrix4x4::Ptr rotationStart = Matrix4x4::create()->initialize((float*)twMatrices[0].M);
-        Matrix4x4::Ptr rotationEnd = Matrix4x4::create()->initialize((float*)twMatrices[1].M);
-
-        _ppScene->component<Surface>(eyeNum)->material()
-            ->set("eyeRotationStart", rotationStart)
-            ->set("eyeRotationEnd", rotationEnd);
-    }
-}
-
-void
-OculusVRCamera::resetHeadTracking()
-{
-    /*if (_ovrSensorFusion)
-        _ovrSensorFusion->Reset();*/
+    _oculusImpl->updateCameraOrientation(viewMatrixes, _ppScene);
 }
