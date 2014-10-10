@@ -95,6 +95,9 @@ AbstractScript::addedOrRemovedHandler(scene::Node::Ptr node, scene::Node::Ptr ta
 void
 AbstractScript::targetRemovedHandler(AbstractComponent::Ptr cmp, scene::Node::Ptr target)
 {
+    _started[target] = false;
+    stop(target);
+    
     _componentAddedSlot     = nullptr;
     _componentRemovedSlot   = nullptr;
     _frameBeginSlot         = nullptr;
