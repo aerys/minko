@@ -235,48 +235,76 @@ Minko.redispatchMouseEvent = function(event) //EMSCRIPTEN
 	Minko.canvas.dispatchEvent(eventCopy);
 }
 
+Minko.copyTouchList = function(touches)
+{
+	var result = [];
+	var properties = ['identifier'];
+
+    for (var i = 0; i < touches.length; ++i)
+    {
+    	var touch = touches[i];
+
+    	var copiedTouch = {};
+    	for(var j = 0; j < properties.length; ++j)
+    	{
+    		var p = properties[j];
+    		copiedTouch[p] = touch[p];
+    	}
+
+		var pageX = 1 + Minko.getOffsetLeft(Minko.iframe) + (touch.pageX || touch.layerX);
+		var pageY = 1 + Minko.getOffsetTop(Minko.iframe) + (touch.pageY || touch.layerY);
+
+		var screenX = pageX - document.body.scrollLeft;
+		var screenY = pageY - document.body.scrollTop;
+
+		copiedTouch.pageX = pageX;
+		copiedTouch.pageY = pageY;
+		copiedTouch.screenX = screenX;
+		copiedTouch.screenY = screenY;
+
+    	result.push(copiedTouch);
+    }
+
+    return result;
+}
+
 Minko.redispatchTouchEvent = function(event) //EMSCRIPTEN
 {
-	var eventCopy = document.createEvent('TouchEvent');
+	var eventCopy = document.createEvent('Event');
 
 	eventCopy.initEvent(event.type, event.bubbles, event.cancelable);
 
-	var copiedProperties = ['type', 'bubbles', 'cancelable', 'view', 'touches', 'targetTouches', 'changedTouches'];
+	var copiedProperties = ['type', 'bubbles', 'cancelable', 'view'];
 
 	for(var k in copiedProperties)
 		eventCopy[copiedProperties[k]] = event[copiedProperties[k]];
 
-	var pageX = 1 + Minko.getOffsetLeft(Minko.iframe) + (event.pageX || event.layerX);
-	var pageY = 1 + Minko.getOffsetTop(Minko.iframe) + (event.pageY || event.layerY);
+	eventCopy.touches = Minko.copyTouchList(event.touches);
+	eventCopy.targetTouches = Minko.copyTouchList(event.targetTouches);
+	eventCopy.changedTouches = Minko.copyTouchList(event.changedTouches);
 
-	var screenX = pageX - document.body.scrollLeft;
-	var screenY = pageY - document.body.scrollTop;
-
-	eventCopy.pageX = pageX;
-	eventCopy.pageY = pageY;
-
-	eventCopy.screenX = screenX;
-	eventCopy.screenY = screenY;
-
-	document.dispatchEvent(eventCopy);
+	Minko.canvas.dispatchEvent(eventCopy);
 }
 
 Minko.bindRedispatchEvents = function() //EMSCRIPTEN
 {
-	var a = ['mousemove', 'mouseup', 'mousedown', 'click', 'mousewheel', 'DOMMouseScroll'];
+	if (!('ontouchstart' in window))
+	{
+		var a = ['mousemove', 'mouseup', 'mousedown', 'click', 'mousewheel', 'DOMMouseScroll'];
+
+		for(var k in a)
+			Minko.window.addEventListener(a[k], Minko.redispatchMouseEvent);
+	}
+	
+	a = ['touchstart', 'touchend', 'touchmove', 'touchcancel']
 
 	for(var k in a)
-		Minko.window.addEventListener(a[k], Minko.redispatchMouseEvent);
+		Minko.window.addEventListener(a[k], Minko.redispatchTouchEvent);
 
 	a = ['keydown', 'keyup', 'keypress'];
 
 	for(var k in a)
 		Minko.window.addEventListener(a[k], Minko.redispatchKeyboardEvent);
-
-	a = ['touchstart', 'touchend', 'touchmove', 'touchcancel']
-
-	for(var k in a)
-		Minko.window.addEventListener(a[k], Minko.redispatchTouchEvent);
 }
 
 /*

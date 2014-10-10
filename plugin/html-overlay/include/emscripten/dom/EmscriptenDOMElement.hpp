@@ -90,12 +90,6 @@ namespace emscripten
 			void
 			textContent(const std::string&);
 
-            std::string
-            value();
-
-            void
-            value(const std::string& value);
-
 			std::string
 			innerHTML();
 
