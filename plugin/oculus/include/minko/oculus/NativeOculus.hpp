@@ -36,7 +36,7 @@ namespace minko
         class NativeOculus : public OculusImpl
         {
         private:
-            ovrHmd                                              _hmd;
+            static ovrHmd                                       _hmd;
             std::shared_ptr<scene::Node>                        _ppScene;
             std::shared_ptr<component::Renderer>                _ppRenderer;
             uint                                                _renderTargetWidth;
@@ -88,32 +88,35 @@ namespace minko
             getDefaultRightEyeFov();
 
             void
-                updateCameraOrientation(std::shared_ptr<scene::Node> target);
+            updateCameraOrientation(std::shared_ptr<scene::Node> target);
 
             void
-                updateViewport(int viewportWidth, int viewportHeight);
+            updateViewport(int viewportWidth, int viewportHeight);
 
             inline
-                float
-                aspectRatio() const
+            float
+            aspectRatio() const
             {
                 return _aspectRatio;
             }
 
             inline
-                float
-                zNear() const
+            float
+            zNear() const
             {
                 return _zNear;
             }
 
             inline
-                float
-                zFar() const
+            float
+            zFar() const
             {
                 return _zFar;
             }
 
+            static
+            bool
+            detected();
 
             inline static
             Ptr

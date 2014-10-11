@@ -45,6 +45,9 @@ using namespace minko::oculus;
 using namespace minko::render;
 using namespace minko::file;
 
+ovrHmd
+NativeOculus::_hmd = nullptr;
+
 NativeOculus::NativeOculus(int viewportWidth, int viewportHeight, float zNear, float zFar) :
     _ppRenderer(Renderer::create()),
     _zNear(zNear),
@@ -79,6 +82,17 @@ NativeOculus::initialize(std::shared_ptr<component::SceneManager> sceneManager)
     initializePostProcessingRenderer();
 }
 
+bool
+NativeOculus::detected()
+{
+    if (_hmd)
+        return true;
+
+    _hmd = ovrHmd_Create(0);
+
+    return _hmd != nullptr;
+}
+
 void
 NativeOculus::initializeOVRDevice()
 {
@@ -91,8 +105,9 @@ NativeOculus::initializeOVRDevice()
     ovr_Initialize();
 
     _hmd = ovrHmd_Create(0);
+
     if (!_hmd)
-        throw;
+        return;
 
     ovrHmd_RecenterPose(_hmd);
 

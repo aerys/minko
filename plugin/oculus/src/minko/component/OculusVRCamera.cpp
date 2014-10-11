@@ -71,6 +71,16 @@ OculusVRCamera::updateViewport(int viewportWidth, int viewportHeight)
     _oculusImpl->updateViewport(viewportWidth, viewportHeight);
 }
 
+bool
+OculusVRCamera::detected()
+{
+#ifdef EMSCRIPTEN
+    return WebVROculus::detected();
+#else
+    return NativeOculus::detected();
+#endif
+}
+
 void
 OculusVRCamera::initialize(int viewportWidth, int viewportHeight, float zNear, float zFar)
 {
@@ -79,6 +89,9 @@ OculusVRCamera::initialize(int viewportWidth, int viewportHeight, float zNear, f
 #else
     _oculusImpl = NativeOculus::create(viewportWidth, viewportHeight, zNear, zFar);
 #endif
+
+    if (!detected())
+        return;
 
     updateViewport(viewportWidth, viewportHeight);
 

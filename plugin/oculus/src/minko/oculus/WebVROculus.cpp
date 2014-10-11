@@ -158,6 +158,12 @@ WebVROculus::initialize(std::shared_ptr<component::SceneManager> sceneManager)
     //_assetLibrary = assetLibrary;
 }
 
+bool
+WebVROculus::detected() const
+{
+    return true;
+}
+
 std::array<std::shared_ptr<geometry::Geometry>, 2>
 WebVROculus::createDistortionGeometry(std::shared_ptr<render::AbstractContext> context)
 {

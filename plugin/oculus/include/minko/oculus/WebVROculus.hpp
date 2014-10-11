@@ -74,6 +74,9 @@ namespace minko
             void
                 updateViewport(int viewportWidth, int viewportHeight);
 
+            bool
+            detected() const;
+
             inline static
                 Ptr
                 create(int viewportWidth, int viewportHeight, float zNear, float zFar)

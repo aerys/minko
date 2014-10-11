@@ -70,6 +70,9 @@ namespace minko
                     viewportWidth, viewportHeight, zNear, zFar
                 ));
 
+                if (!ptr)
+                    return nullptr;
+
                 ptr->initialize(viewportWidth, viewportHeight, zNear, zFar);
 
                 return ptr;
@@ -77,6 +80,10 @@ namespace minko
 
             void
             updateViewport(int viewportWidth, int viewportHeight);
+
+            static
+            bool
+            detected();
 
         public:
             ~OculusVRCamera(); // temporary solution
