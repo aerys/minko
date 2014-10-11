@@ -88,6 +88,8 @@ NativeOculus::detected()
     if (_hmd)
         return true;
 
+     ovr_Initialize();
+
     _hmd = ovrHmd_Create(0);
 
     return _hmd != nullptr;
