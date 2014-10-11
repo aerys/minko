@@ -36,51 +36,51 @@ namespace minko
             std::shared_ptr<component::Renderer>    _leftRenderer;
             std::shared_ptr<component::Renderer>    _rightRenderer;
 
-            uint                                                _renderTargetWidth;
-            uint                                                _renderTargetHeight;
+            uint                                    _renderTargetWidth;
+            uint                                    _renderTargetHeight;
 
-            std::shared_ptr<scene::Node>                        _leftCameraNode;
-            std::shared_ptr<scene::Node>                        _rightCameraNode;
-            float                                               _aspectRatio;
-            float                                               _zNear;
-            float                                               _zFar;
-            bool                                        _initialized;
+            std::shared_ptr<scene::Node>            _leftCameraNode;
+            std::shared_ptr<scene::Node>            _rightCameraNode;
+            float                                   _aspectRatio;
+            float                                   _zNear;
+            float                                   _zFar;
+            bool                                    _initialized;
         public:
 
             void
-                initialize(std::shared_ptr<component::SceneManager> sceneManager);
+            initialize(std::shared_ptr<component::SceneManager> sceneManager);
 
             void
-                initializeOVRDevice();
+            initializeOVRDevice();
 
             void
-                initializeCameras(std::shared_ptr<scene::Node> target);
+            initializeCameras(std::shared_ptr<scene::Node> target);
 
             void
-                destroy();
+            destroy();
 
             std::array<std::shared_ptr<geometry::Geometry>, 2>
-                createDistortionGeometry(std::shared_ptr<render::AbstractContext> context);
+            createDistortionGeometry(std::shared_ptr<render::AbstractContext> context);
 
             EyeFOV
-                getDefaultLeftEyeFov();
+            getDefaultLeftEyeFov();
 
             EyeFOV
-                getDefaultRightEyeFov();
+            getDefaultRightEyeFov();
 
             void
-                updateCameraOrientation(std::shared_ptr<scene::Node> target);
+            updateCameraOrientation(std::shared_ptr<scene::Node> target);
 
             void
-                updateViewport(int viewportWidth, int viewportHeight);
+            updateViewport(int viewportWidth, int viewportHeight);
 
             static
             bool
             detected();
 
             inline static
-                Ptr
-                create(int viewportWidth, int viewportHeight, float zNear, float zFar)
+            Ptr
+            create(int viewportWidth, int viewportHeight, float zNear, float zFar)
             {
                 auto ptr = std::shared_ptr<WebVROculus>(new WebVROculus(viewportWidth, viewportHeight, zNear, zFar));
 
