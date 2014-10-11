@@ -115,7 +115,7 @@ WebVROculus::initializeCameras(scene::Node::Ptr target)
     auto leftCamera = PerspectiveCamera::create(
         _aspectRatio,
         //0.78f,
-        1.1356254f,
+        1.91f,
         _zNear,
         _zFar
     );
@@ -129,7 +129,7 @@ WebVROculus::initializeCameras(scene::Node::Ptr target)
     auto rightCamera = PerspectiveCamera::create(
         _aspectRatio,
         //0.78f,
-        1.1356254f,
+        1.91f,
         _zNear,
         _zFar
     );
