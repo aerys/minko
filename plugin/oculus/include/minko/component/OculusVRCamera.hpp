@@ -43,33 +43,16 @@ namespace minko
             typedef math::Vector2::Ptr                          Vector2Ptr;
 
         private:
-            float                                               _aspectRatio;
-            float                                               _zNear;
-            float                                               _zFar;
-
             std::shared_ptr<math::Vector3>                      _eyePosition;
             std::shared_ptr<math::Matrix4x4>                    _eyeOrientation;
 
             SceneMgrPtr                                         _sceneManager;
-            uint                                                _renderTargetWidth;
-            uint                                                _renderTargetHeight;
-            std::shared_ptr<render::Texture>                    _renderTarget;
-            std::shared_ptr<scene::Node>                        _leftCameraNode;
-            std::shared_ptr<Renderer>                           _leftRenderer;
-            std::shared_ptr<scene::Node>                        _rightCameraNode;
-            std::shared_ptr<Renderer>                           _rightRenderer;
-            
-            scene::Node::Ptr                                    _ppScene;
-            Renderer::Ptr                                       _ppRenderer;
 
             Signal<AbsCmpPtr, NodePtr>::Slot                    _targetAddedSlot;
             Signal<AbsCmpPtr, NodePtr>::Slot                    _targetRemovedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot             _addedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot             _removedSlot;
             Signal<SceneMgrPtr, uint, AbsTexturePtr>::Slot      _renderBeginSlot;
-            Signal<SceneMgrPtr, uint, AbsTexturePtr>::Slot      _renderEndSlot;
-
-            std::array<std::pair<Vector2Ptr, Vector2Ptr>, 2>    _uvScaleOffset;
 
             std::shared_ptr<oculus::OculusImpl>                 _oculusImpl;
             oculus::EyeFOV                                      _defaultLeftEyeFov;
@@ -87,30 +70,9 @@ namespace minko
                     viewportWidth, viewportHeight, zNear, zFar
                 ));
 
-                ptr->initialize();
+                ptr->initialize(viewportWidth, viewportHeight, zNear, zFar);
 
                 return ptr;
-            }
-
-            inline
-            float
-            aspectRatio() const
-            {
-                return _aspectRatio;
-            }
-
-            inline
-            float
-            zNear() const
-            {
-                return _zNear;
-            }
-
-            inline
-            float
-            zFar() const
-            {
-                return _zFar;
             }
 
             void
@@ -129,16 +91,11 @@ namespace minko
             initializeOVRDevice();
 
             void
-            initialize();
+            initialize(int viewportWidth, int viewportHeight, float zNear, float zFar);
 
-            void
-            initializeCameras();
-
+            public:
             std::array<std::shared_ptr<geometry::Geometry>, 2>
             createDistortionGeometry(std::shared_ptr<render::AbstractContext> context);
-
-            void
-            initializePostProcessingRenderer();
 
             void
             updateCameraOrientation();
@@ -148,9 +105,6 @@ namespace minko
 
             void
             targetRemovedHandler(AbsCmpPtr component, NodePtr target);
-
-            void
-            renderEndHandler(SceneMgrPtr sceneManager, uint frameId, AbsTexturePtr renderTarget);
 
             void
             findSceneManager();

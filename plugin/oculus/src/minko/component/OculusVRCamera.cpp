@@ -37,39 +37,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Loader.hpp"
 
 #include "minko/oculus/NativeOculus.hpp"
-//#include "minko/oculus/WebVROculus.hpp"
+#include "minko/oculus/WebVROculus.hpp"
 
 using namespace minko;
 using namespace minko::scene;
 using namespace minko::component;
 using namespace minko::math;
 using namespace minko::oculus;
+using namespace minko::render;
 
 OculusVRCamera::OculusVRCamera(int viewportWidth, int viewportHeight, float zNear, float zFar) :
-    _aspectRatio((float)viewportWidth / (float)viewportHeight),
-    _zNear(zNear),
-    _zFar(zFar),
     _eyePosition(Vector3::create(0.0f, 0.0f, 0.0f)),
     _eyeOrientation(Matrix4x4::create()),
     _sceneManager(nullptr),
-    _leftCameraNode(nullptr),
-    _leftRenderer(nullptr),
-    _rightCameraNode(nullptr),
-    _rightRenderer(nullptr),
-    _ppRenderer(Renderer::create()),
     _targetAddedSlot(nullptr),
     _targetRemovedSlot(nullptr),
     _addedSlot(nullptr),
     _removedSlot(nullptr),
-    _renderEndSlot(nullptr),
     _oculusImpl(nullptr)
 {
-    _uvScaleOffset[0].first = math::Vector2::create();
-    _uvScaleOffset[0].second = math::Vector2::create();
-    _uvScaleOffset[1].first = math::Vector2::create();
-    _uvScaleOffset[1].second = math::Vector2::create();
-
-    updateViewport(viewportWidth, viewportHeight);
 }
 
 OculusVRCamera::~OculusVRCamera()
@@ -80,13 +66,24 @@ OculusVRCamera::~OculusVRCamera()
 }
 
 void
-OculusVRCamera::initialize()
+OculusVRCamera::updateViewport(int viewportWidth, int viewportHeight)
+{
+#ifndef EMSCRIPTEN
+    if (_oculusImpl != nullptr)
+        std::static_pointer_cast<NativeOculus>(_oculusImpl)->updateViewport(viewportWidth, viewportHeight);
+#endif
+}
+
+void
+OculusVRCamera::initialize(int viewportWidth, int viewportHeight, float zNear, float zFar)
 {
 #ifdef EMSCRIPTEN
-    //_oculusImpl = WebVROculus::create();
+    _oculusImpl = WebVROculus::create(viewportWidth, viewportHeight, zFar, zNear);
 #else
-    _oculusImpl = NativeOculus::create();
+    _oculusImpl = NativeOculus::create(viewportWidth, viewportHeight, zFar, zNear);
 #endif
+
+    updateViewport(viewportWidth, viewportHeight);
 
     _targetAddedSlot = targetAdded()->connect(std::bind(
         &OculusVRCamera::targetAddedHandler,
@@ -106,18 +103,6 @@ OculusVRCamera::initialize()
 }
 
 void
-OculusVRCamera::updateViewport(int viewportWidth, int viewportHeight)
-{
-    _aspectRatio = (float)viewportWidth / (float)viewportHeight;
-    _ppRenderer->viewport(0, 0, viewportWidth, viewportHeight);
-    
-    /*if (_leftCameraNode)
-        _leftCameraNode->component<PerspectiveCamera>()->aspectRatio(_aspectRatio);
-    if (_rightCameraNode)
-        _rightCameraNode->component<PerspectiveCamera>()->aspectRatio(_aspectRatio);*/
-}
-
-void
 OculusVRCamera::targetAddedHandler(AbsCmpPtr component, NodePtr target)
 {
     if (targets().size() > 1)
@@ -133,7 +118,7 @@ OculusVRCamera::targetAddedHandler(AbsCmpPtr component, NodePtr target)
         std::static_pointer_cast<OculusVRCamera>(shared_from_this())
     ));
 
-    initializeCameras();
+    _oculusImpl->initializeCameras(target);
 
     findSceneManager();
 }
@@ -155,93 +140,17 @@ OculusVRCamera::resetOVRDevice()
 void
 OculusVRCamera::initializeOVRDevice()
 {
-    // Create renderer for each eye
-    _leftRenderer = Renderer::create();
-    _rightRenderer = Renderer::create();
-    _rightRenderer->clearBeforeRender(false);
-
-    _oculusImpl->initializeOVRDevice(
-        _leftRenderer, 
-        _rightRenderer, 
-        _renderTargetWidth, 
-        _renderTargetHeight, 
-        _uvScaleOffset
-    );
+    _oculusImpl->initializeOVRDevice();
 
     // Store default eye FOV
     _defaultLeftEyeFov = _oculusImpl->getDefaultLeftEyeFov();
     _defaultRightEyeFov = _oculusImpl->getDefaultRightEyeFov();
 }
 
-void
-OculusVRCamera::initializeCameras()
-{
-    auto aspectRatio = (float)_renderTargetWidth / (float)_renderTargetHeight;
-
-    auto leftCamera = PerspectiveCamera::create(
-        aspectRatio,
-        atan(_defaultLeftEyeFov.LeftTan + _defaultLeftEyeFov.RightTan),
-        _zNear,
-        _zFar
-    );
-    _leftCameraNode = scene::Node::create("oculusLeftEye")
-        ->addComponent(Transform::create())
-        ->addComponent(leftCamera)
-        ->addComponent(_leftRenderer);
-    targets()[0]->addChild(_leftCameraNode);
-
-    auto rightCamera = PerspectiveCamera::create(
-        aspectRatio,
-        atan(_defaultRightEyeFov.LeftTan + _defaultRightEyeFov.RightTan),
-        _zNear,
-        _zFar
-    );
-    _rightCameraNode = scene::Node::create("oculusRightEye")
-        ->addComponent(Transform::create())
-        ->addComponent(rightCamera)
-        ->addComponent(_rightRenderer);
-    targets()[0]->addChild(_rightCameraNode);
-}
-
 std::array<std::shared_ptr<geometry::Geometry>, 2>
-OculusVRCamera::createDistortionGeometry(std::shared_ptr<render::AbstractContext> context)
+OculusVRCamera::createDistortionGeometry(AbstractContext::Ptr context)
 {
     return _oculusImpl->createDistortionGeometry(context);
-}
-
-void
-OculusVRCamera::initializePostProcessingRenderer()
-{
-    auto geometries = createDistortionGeometry(_sceneManager->assets()->context());
-    auto loader = file::Loader::create(_sceneManager->assets()->loader());
-    
-    loader->queue("effect/OculusVR/OculusVR.effect");
-
-    auto complete = loader->complete()->connect([&](file::Loader::Ptr loader)
-    {
-        auto effect = _sceneManager->assets()->effect("effect/OculusVR/OculusVR.effect");
-
-        auto materialLeftEye = material::Material::create();
-        materialLeftEye->set("eyeToSourceUVScale", _uvScaleOffset[0].first);
-        materialLeftEye->set("eyeToSourceUVOffset", _uvScaleOffset[0].second);
-        materialLeftEye->set("eyeRotationStart", math::Matrix4x4::create());
-        materialLeftEye->set("eyeRotationEnd", math::Matrix4x4::create());
-        materialLeftEye->set("texture", _renderTarget);
-
-        auto materialRightEye = material::Material::create();
-        materialRightEye->set("eyeToSourceUVScale", _uvScaleOffset[1].first);
-        materialRightEye->set("eyeToSourceUVOffset", _uvScaleOffset[1].second);
-        materialRightEye->set("eyeRotationStart", math::Matrix4x4::create());
-        materialRightEye->set("eyeRotationEnd", math::Matrix4x4::create());
-        materialRightEye->set("texture", _renderTarget);
-
-        _ppScene = scene::Node::create()
-            ->addComponent(_ppRenderer)
-            ->addComponent(Surface::create(geometries[0], materialLeftEye, effect))
-            ->addComponent(Surface::create(geometries[1], materialRightEye, effect));
-    });
-
-    loader->load();
 }
 
 void
@@ -272,42 +181,16 @@ OculusVRCamera::setSceneManager(SceneManager::Ptr sceneManager)
 
     auto context = sceneManager->assets()->context();
 
-    _renderTarget = render::Texture::create(context, _renderTargetWidth, _renderTargetHeight, false, true);
-    _renderTarget->upload();
-    _leftRenderer->target(_renderTarget);
-    _rightRenderer->target(_renderTarget);
-
-    _renderEndSlot = sceneManager->renderingEnd()->connect(std::bind(
-        &OculusVRCamera::renderEndHandler,
-        std::static_pointer_cast<OculusVRCamera>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3
-    ));
-
     _renderBeginSlot = sceneManager->renderingBegin()->connect(std::bind(
         &OculusVRCamera::updateCameraOrientation,
         std::static_pointer_cast<OculusVRCamera>(shared_from_this())
     ), 1000.f);
 
-    initializePostProcessingRenderer();
-}
-
-void
-OculusVRCamera::renderEndHandler(std::shared_ptr<SceneManager>   sceneManager,
-                                 uint                            frameId,
-                                 render::AbstractTexture::Ptr    renderTarget)
-{
-    _ppRenderer->render(sceneManager->assets()->context());
+    _oculusImpl->initialize(_sceneManager);
 }
 
 void
 OculusVRCamera::updateCameraOrientation()
 {
-    std::array<Matrix4x4::Ptr, 2> viewMatrixes = {
-        _leftCameraNode->component<Transform>()->matrix(),
-        _rightCameraNode->component<Transform>()->matrix()
-    };
-
-    _oculusImpl->updateCameraOrientation(viewMatrixes, _ppScene);
+    _oculusImpl->updateCameraOrientation();
 }

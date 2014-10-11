@@ -34,7 +34,7 @@ minko.plugin.oculus = {}
 
 function minko.plugin.oculus:enable()
 
-	configuration { "windows32 or windows64 or linux32 or linux64 or osx64" }
+	configuration { "windows32 or windows64 or linux32 or linux64 or osx64 or html5" }
 		defines { "MINKO_PLUGIN_OCULUS" }
 		minko.plugin.links { "oculus" }
 

@@ -26,7 +26,8 @@ namespace minko
 {
     namespace oculus
     {
-        class OculusImpl
+        class OculusImpl : 
+            public std::enable_shared_from_this<OculusImpl>
         {
         protected:
             typedef std::shared_ptr<math::Vector2> Vector2Ptr;
@@ -34,13 +35,15 @@ namespace minko
         public:
             virtual
             void
-            initializeOVRDevice(
-                std::shared_ptr<component::Renderer> leftRenderer,
-                std::shared_ptr<component::Renderer> rightRenderer,
-                uint& renderTargetWidth,
-                uint& renderTargetHeight,
-                std::array<std::pair<Vector2Ptr, Vector2Ptr>, 2>& uvScaleOffset
-            ) = 0;
+            initialize(std::shared_ptr<component::SceneManager> sceneManager) = 0;
+
+            virtual
+            void
+            initializeOVRDevice() = 0;
+
+            virtual
+            void
+                initializeCameras(std::shared_ptr<scene::Node> target) = 0;
 
             virtual
             void
@@ -60,10 +63,7 @@ namespace minko
 
             virtual
             void
-            updateCameraOrientation(
-                std::array<std::shared_ptr<math::Matrix4x4>, 2> viewMatrixes,
-                std::shared_ptr<scene::Node> ppScene
-            ) = 0;
+            updateCameraOrientation() = 0;
         };
     }
 }

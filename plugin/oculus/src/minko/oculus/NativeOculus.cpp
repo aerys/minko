@@ -26,26 +26,68 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Renderer.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/Surface.hpp"
+#include "minko/render/AbstractContext.hpp"
 #include "minko/material/Material.hpp"
 #include "minko/geometry/QuadGeometry.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/render/IndexBuffer.hpp"
+#include "minko/file/AssetLibrary.hpp"
 #include "minko/math/Matrix4x4.hpp"
+#include "minko/render/Texture.hpp"
+#include "minko/component/PerspectiveCamera.hpp"
+#include "minko/component/SceneManager.hpp"
 
 using namespace minko;
 using namespace minko::scene;
 using namespace minko::component;
 using namespace minko::math;
 using namespace minko::oculus;
+using namespace minko::render;
+using namespace minko::file;
+
+NativeOculus::NativeOculus(int viewportWidth, int viewportHeight, float zNear, float zFar) :
+    _ppRenderer(Renderer::create()),
+    _zNear(zNear),
+    _zFar(zFar),
+    _aspectRatio((float)viewportWidth / (float)viewportHeight),
+    _leftRenderer(nullptr),
+    _rightRenderer(nullptr),
+    _renderEndSlot(nullptr),
+    _leftCameraNode(nullptr),
+    _rightCameraNode(nullptr)
+{
+    _uvScaleOffset[0].first = math::Vector2::create();
+    _uvScaleOffset[0].second = math::Vector2::create();
+    _uvScaleOffset[1].first = math::Vector2::create();
+    _uvScaleOffset[1].second = math::Vector2::create();
+}
 
 void
-NativeOculus::initializeOVRDevice(
-    Renderer::Ptr leftRenderer, 
-    Renderer::Ptr rightRenderer,
-    uint& renderTargetWidth,
-    uint& renderTargetHeight,
-    std::array<std::pair<Vector2Ptr, Vector2Ptr>, 2>& uvScaleOffset)
+NativeOculus::initialize(std::shared_ptr<component::SceneManager> sceneManager)
 {
+    _sceneManager = sceneManager;
+
+    _renderEndSlot = sceneManager->renderingEnd()->connect(std::bind(
+        &NativeOculus::renderEndHandler,
+        std::static_pointer_cast<NativeOculus>(shared_from_this()),
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3
+        )
+    );
+
+    initializePostProcessingRenderer();
+}
+
+void
+NativeOculus::initializeOVRDevice()
+{
+    _leftRenderer = Renderer::create();
+    _rightRenderer = Renderer::create();
+
+    // Create renderer for each eye
+    _rightRenderer->clearBeforeRender(false);
+
     ovr_Initialize();
 
     _hmd = ovrHmd_Create(0);
@@ -67,8 +109,8 @@ NativeOculus::initializeOVRDevice(
     renderTargetSize.w = std::min(renderTargetSize.w, MINKO_PLUGIN_OCULUS_MAX_TARGET_SIZE);
     renderTargetSize.h = std::min(renderTargetSize.h, MINKO_PLUGIN_OCULUS_MAX_TARGET_SIZE);
 
-    renderTargetWidth = renderTargetSize.w;
-    renderTargetHeight = renderTargetSize.h;
+    _renderTargetWidth = renderTargetSize.w;
+    _renderTargetHeight = renderTargetSize.h;
 
     // compute each viewport pos and size
     ovrRecti eyeRenderViewport[2];
@@ -84,7 +126,7 @@ NativeOculus::initializeOVRDevice(
 
     // create 1 renderer/eye and init. their respective viewport
     
-    leftRenderer->viewport(
+    _leftRenderer->viewport(
         eyeRenderViewport[0].Pos.x,
         eyeRenderViewport[0].Pos.y,
         eyeRenderViewport[0].Size.w,
@@ -92,7 +134,7 @@ NativeOculus::initializeOVRDevice(
     );
 
    
-    rightRenderer->viewport(
+    _rightRenderer->viewport(
         eyeRenderViewport[1].Pos.x,
         eyeRenderViewport[1].Pos.y,
         eyeRenderViewport[1].Size.w,
@@ -121,12 +163,84 @@ NativeOculus::initializeOVRDevice(
             ovrUVScaleOffset
         );
 
-        uvScaleOffset[eyeNum].first->setTo(ovrUVScaleOffset[0].x, ovrUVScaleOffset[0].y);
-        uvScaleOffset[eyeNum].second->setTo(ovrUVScaleOffset[1].x, ovrUVScaleOffset[1].y);
+        _uvScaleOffset[eyeNum].first->setTo(ovrUVScaleOffset[0].x, ovrUVScaleOffset[0].y);
+        _uvScaleOffset[eyeNum].second->setTo(ovrUVScaleOffset[1].x, ovrUVScaleOffset[1].y);
     }
 
     // FIXME: on Windows, render directly into the HMD (window ?= SDL window)
-    // ovrHmd_AttachToWindow(HMD, window, NULL, NULL);
+    //ovrHmd_AttachToWindow(_hmd, window, NULL, NULL);
+}
+
+void
+NativeOculus::initializeCameras(scene::Node::Ptr target)
+{
+    auto aspectRatio = (float)_renderTargetWidth / (float)_renderTargetHeight;
+
+    auto leftCamera = PerspectiveCamera::create(
+        aspectRatio,
+        atan(_hmd->DefaultEyeFov[0].LeftTan + _hmd->DefaultEyeFov[0].RightTan),
+        _zNear,
+        _zFar
+        );
+    _leftCameraNode = scene::Node::create("oculusLeftEye")
+        ->addComponent(Transform::create())
+        ->addComponent(leftCamera)
+        ->addComponent(_leftRenderer);
+    target->addChild(_leftCameraNode);
+
+    auto rightCamera = PerspectiveCamera::create(
+        aspectRatio,
+        atan(_hmd->DefaultEyeFov[1].LeftTan + _hmd->DefaultEyeFov[1].RightTan),
+        _zNear,
+        _zFar
+        );
+    _rightCameraNode = scene::Node::create("oculusRightEye")
+        ->addComponent(Transform::create())
+        ->addComponent(rightCamera)
+        ->addComponent(_rightRenderer);
+    target->addChild(_rightCameraNode);
+}
+
+void
+NativeOculus::initializePostProcessingRenderer()
+{
+    auto context = _sceneManager->assets()->context();
+
+    _renderTarget = render::Texture::create(context, _renderTargetWidth, _renderTargetHeight, false, true);
+    _renderTarget->upload();
+    _leftRenderer->target(_renderTarget);
+    _rightRenderer->target(_renderTarget);
+
+    auto geometries = createDistortionGeometry(context);
+    auto loader = file::Loader::create(_sceneManager->assets()->loader());
+
+    loader->queue("effect/OculusVR/OculusVR.effect");
+
+    auto complete = loader->complete()->connect([&](file::Loader::Ptr loader)
+    {
+        auto effect = _sceneManager->assets()->effect("effect/OculusVR/OculusVR.effect");
+
+        auto materialLeftEye = material::Material::create();
+        materialLeftEye->set("eyeToSourceUVScale", _uvScaleOffset[0].first);
+        materialLeftEye->set("eyeToSourceUVOffset", _uvScaleOffset[0].second);
+        materialLeftEye->set("eyeRotationStart", math::Matrix4x4::create());
+        materialLeftEye->set("eyeRotationEnd", math::Matrix4x4::create());
+        materialLeftEye->set("texture", _renderTarget);
+
+        auto materialRightEye = material::Material::create();
+        materialRightEye->set("eyeToSourceUVScale", _uvScaleOffset[1].first);
+        materialRightEye->set("eyeToSourceUVOffset", _uvScaleOffset[1].second);
+        materialRightEye->set("eyeRotationStart", math::Matrix4x4::create());
+        materialRightEye->set("eyeRotationEnd", math::Matrix4x4::create());
+        materialRightEye->set("texture", _renderTarget);
+
+        _ppScene = scene::Node::create()
+            ->addComponent(_ppRenderer)
+            ->addComponent(Surface::create(geometries[0], materialLeftEye, effect))
+            ->addComponent(Surface::create(geometries[1], materialRightEye, effect));
+    });
+
+    loader->load();
 }
 
 void
@@ -134,6 +248,18 @@ NativeOculus::destroy()
 {
     ovrHmd_Destroy(_hmd);
     ovr_Shutdown();
+}
+
+void
+NativeOculus::updateViewport(int viewportWidth, int viewportHeight)
+{
+    _aspectRatio = (float)viewportWidth / (float)viewportHeight;
+    _ppRenderer->viewport(0, 0, viewportWidth, viewportHeight);
+
+    /*if (_leftCameraNode)
+    _leftCameraNode->component<PerspectiveCamera>()->aspectRatio(_aspectRatio);
+    if (_rightCameraNode)
+    _rightCameraNode->component<PerspectiveCamera>()->aspectRatio(_aspectRatio);*/
 }
 
 std::array<std::shared_ptr<geometry::Geometry>, 2>
@@ -219,12 +345,10 @@ NativeOculus::getDefaultRightEyeFov()
 }
 
 void
-NativeOculus::updateCameraOrientation(
-    std::array<Matrix4x4::Ptr, 2> viewMatrixes, 
-    scene::Node::Ptr ppScene)
+NativeOculus::updateCameraOrientation()
 {
     static ovrPosef eyeRenderPose[2];
-    static float BodyYaw(0.f);
+    const static float BodyYaw(0.f);
     static OVR::Vector3f HeadPos(0.0f, 0.f, 0.f);
     static auto state = (OVR::CAPI::HMDState*)(_hmd->Handle);
     static auto renderInfo = state->RenderState.RenderInfo;
@@ -248,7 +372,8 @@ NativeOculus::updateCameraOrientation(
             false
         );
 
-        auto matrix = viewMatrixes[eyeNum];
+        auto cameraNode = eyeNum == 0 ? _leftCameraNode : _rightCameraNode;
+        auto matrix = cameraNode->component<Transform>()->matrix();
 
         matrix->lock();
         matrix->initialize((float*)view.M);
@@ -264,8 +389,17 @@ NativeOculus::updateCameraOrientation(
         Matrix4x4::Ptr rotationStart = Matrix4x4::create()->initialize((float*)twMatrices[0].M);
         Matrix4x4::Ptr rotationEnd = Matrix4x4::create()->initialize((float*)twMatrices[1].M);
 
-        ppScene->component<Surface>(eyeNum)->material()
+        _ppScene->component<Surface>(eyeNum)->material()
             ->set("eyeRotationStart", rotationStart)
             ->set("eyeRotationEnd", rotationEnd);
     }
+}
+
+void
+NativeOculus::renderEndHandler(
+    std::shared_ptr<SceneManager>  sceneManager,
+    uint                           frameId,
+    render::AbstractTexture::Ptr   renderTarget)
+{
+    _ppRenderer->render(sceneManager->assets()->context());
 }

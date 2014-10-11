@@ -110,6 +110,7 @@ main(int argc, char** argv)
                 material::BasicMaterial::create()
                     ->diffuseCubeMap(sceneManager->assets()->cubeTexture(CUBE_TEXTURE))
                     ->triangleCulling(render::TriangleCulling::FRONT),
+                    //->diffuseColor(0xffffffff),
                 sceneManager->assets()->effect("basic")
             ));
 

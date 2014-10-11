@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "OculusImpl.hpp"
+#include "minko/Signal.hpp"
 
 extern "C" 
 {
@@ -35,32 +36,44 @@ namespace minko
         class NativeOculus : public OculusImpl
         {
         private:
-            struct HMDInfo
-            {
-                float hResolution;
-                float vResolution;
-                float hScreenSize;
-                float vScreenSize;
-                float vScreenCenter;
-                float interpupillaryDistance;
-                float lensSeparationDistance;
-                float eyeToScreenDistance;
-                std::shared_ptr<math::Vector4> distortionK;
-            };
+            ovrHmd                                              _hmd;
+            std::shared_ptr<scene::Node>                        _ppScene;
+            std::shared_ptr<component::Renderer>                _ppRenderer;
+            uint                                                _renderTargetWidth;
+            uint                                                _renderTargetHeight;
+            std::shared_ptr<render::Texture>                    _renderTarget;
+            std::array<std::pair<Vector2Ptr, Vector2Ptr>, 2>    _uvScaleOffset;
+            float                                               _aspectRatio;
+            std::shared_ptr<component::Renderer>                _leftRenderer;
+            std::shared_ptr<component::Renderer>                _rightRenderer;
+            std::shared_ptr<scene::Node>                        _leftCameraNode;
+            std::shared_ptr<scene::Node>                        _rightCameraNode;
+            Signal<std::shared_ptr<component::SceneManager>, uint, std::shared_ptr<render::AbstractTexture>>::Slot      _renderEndSlot;
+            std::shared_ptr<component::SceneManager>            _sceneManager;
+            float                                               _zNear;
+            float                                               _zFar;
 
-            ovrHmd  _hmd;
+            void
+            initializePostProcessingRenderer();
+
+            void
+            renderEndHandler(
+                std::shared_ptr<component::SceneManager> sceneManager, 
+                uint frameId, 
+                std::shared_ptr<render::AbstractTexture> renderTarget
+            );
 
         public:
             typedef std::shared_ptr<NativeOculus> Ptr;
 
             void
-            initializeOVRDevice(
-                std::shared_ptr<component::Renderer> leftRenderer,
-                std::shared_ptr<component::Renderer> rightRenderer,
-                uint& renderTargetWidth,
-                uint& renderTargetHeight,
-                std::array<std::pair<Vector2Ptr, Vector2Ptr>, 2>& uvScaleOffset
-            );
+                initialize(std::shared_ptr<component::SceneManager> sceneManager);
+
+            void
+                initializeCameras(std::shared_ptr<scene::Node> target);
+
+            void
+            initializeOVRDevice();
 
             void
             destroy();
@@ -75,20 +88,45 @@ namespace minko
             getDefaultRightEyeFov();
 
             void
-            updateCameraOrientation(
-                std::array<std::shared_ptr<math::Matrix4x4>, 2> viewMatrixes,
-                std::shared_ptr<scene::Node> ppScene
-            );
+            updateCameraOrientation();
+
+            // TODO move it to OculusImpl interface
+            void
+                updateViewport(int viewportWidth, int viewportHeight);
+
+            inline
+                float
+                aspectRatio() const
+            {
+                return _aspectRatio;
+            }
+
+            inline
+                float
+                zNear() const
+            {
+                return _zNear;
+            }
+
+            inline
+                float
+                zFar() const
+            {
+                return _zFar;
+            }
+
 
             inline static
             Ptr
-            create()
+            create(int viewportWidth, int viewportHeight, float zNear, float zFar)
             {
-                auto ptr = std::shared_ptr<NativeOculus>(new NativeOculus());
+                auto ptr = std::shared_ptr<NativeOculus>(new NativeOculus(viewportWidth, viewportHeight, zNear, zFar));
 
                 return ptr;
             }
 
+        private:
+            NativeOculus(int viewportWidth, int viewportHeight, float zNear, float zFar);
         };
     }
 }
