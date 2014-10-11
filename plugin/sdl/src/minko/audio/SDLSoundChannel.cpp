@@ -45,7 +45,7 @@ SDLSoundChannel::transform(SoundTransform::Ptr value)
 {
     if (!!value)
     {
-        Mix_SetPanning(_channel, value->left() * value->volume() * 255, value->right() * value->volume() * 255);
+        Mix_SetPanning(_channel, uint(value->left() * value->volume() * 255), uint(value->right() * value->volume() * 255));
     }
 
     return SoundChannel::transform(value);
