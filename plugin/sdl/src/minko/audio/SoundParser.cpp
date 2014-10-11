@@ -39,7 +39,6 @@ SoundParser::parse(const std::string&                   filename,
 
     SDL_RWops* ops = SDL_RWFromConstMem(&*data.begin(), data.size());
 
-#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
     sound->_chunk = Mix_LoadWAV_RW(ops, 0);
 
     if (!sound->_chunk)
@@ -47,13 +46,6 @@ SoundParser::parse(const std::string&                   filename,
         error()->execute(shared_from_this(), file::Error(SDL_GetError()));
         return;
     }
-#else
-    if (!SDL_LoadWAV_RW(ops, 0, &sound->_spec, &sound->_buffer, &sound->_length))
-    {
-        error()->execute(shared_from_this(), file::Error(SDL_GetError()));
-        return;
-    }
-#endif
 
     SDL_FreeRW(ops);
 

@@ -26,21 +26,12 @@ using namespace minko;
 using namespace minko::audio;
 
 SDLSound::SDLSound() :
-#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
     _chunk(nullptr)
-#else
-    _buffer(nullptr),
-    _length(0),
-    _pos(0)
-#endif
 {
 }
 
 SDLSound::~SDLSound()
 {
-#if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
-    SDL_FreeWAV(_buffer);
-#endif
 }
 
 std::shared_ptr<SoundChannel>
@@ -48,7 +39,6 @@ SDLSound::play(int count)
 {
     auto channel = std::shared_ptr<SDLSoundChannel>(new SDLSoundChannel(shared_from_this()));
 
-#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
     channel->_channel = Mix_PlayChannel(-1, _chunk, -1);
 
     if (channel->_channel < 0)
@@ -56,51 +46,6 @@ SDLSound::play(int count)
         LOG_ERROR("Fail playing sound: " << Mix_GetError());
         return nullptr;
     }
-#else
-    SDL_AudioSpec want;
-    SDL_AudioSpec have;
-
-    SDL_zero(want);
-    SDL_zero(have);
-    want.freq = 48000;
-    want.format = AUDIO_F32;
-    want.channels = 2;
-    want.samples = 4096;
-    want.userdata = channel.get();
-    want.callback = &SDLSound::fillBuffer;
-
-    channel->_device = SDL_OpenAudioDevice(nullptr, 0, &want, &have, SDL_AUDIO_ALLOW_FORMAT_CHANGE);
-
-    if (!channel->_device)
-    {
-        std::cerr << "Sound::play(): failed to open audio (" << SDL_GetError() << std::endl;
-        return nullptr;
-    }
-
-    SDL_PauseAudioDevice(channel->_device, 0);
-#endif
 
     return channel;
-}
-
-void
-SDLSound::fillBuffer(void* that, unsigned char* stream, int length)
-{
-#if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
-    SDLSoundChannel* channel = static_cast<SDLSoundChannel*>(that);
-    SDLSound* sound = static_cast<SDLSound*>(channel->sound().get());
-    std::memset(stream, 0, length);
-    std::memcpy(stream, sound->_buffer + sound->_pos, std::min(length, int(sound->_length - sound->_pos)));
-
-    SoundTransform::Ptr transform = channel->transform();
-
-    if (!!transform)
-        for (int i = 0; i < length; ++i)
-        {
-            if (i % 2 == 0)
-                stream[i] *= transform->left() * transform->volume();
-            else
-                stream[i] *= transform->right() * transform->volume();
-        }
-#endif
 }

@@ -25,31 +25,19 @@ using namespace minko::audio;
 
 SDLSoundChannel::SDLSoundChannel(std::shared_ptr<Sound> sound) :
     SoundChannel(sound),
-#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
     _channel(0)
-#else
-    _device(0)
-#endif
 {
 }
 
 SDLSoundChannel::~SDLSoundChannel()
 {
-#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
     Mix_HaltChannel(_channel);
-#else
-    SDL_CloseAudioDevice(_device);
-#endif
 }
 
 void
 SDLSoundChannel::stop()
 {
-#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
     Mix_Pause(_channel);
-#else
-    SDL_PauseAudioDevice(_device, 1);
-#endif
 }
 
 SoundChannel::Ptr
@@ -57,11 +45,7 @@ SDLSoundChannel::transform(SoundTransform::Ptr value)
 {
     if (!!value)
     {
-#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
         Mix_SetPanning(_channel, value->left() * value->volume() * 255, value->right() * value->volume() * 255);
-#else
-        // Nothing. Done during SDLSound::fillBuffer callback.
-#endif
     }
 
     return SoundChannel::transform(value);

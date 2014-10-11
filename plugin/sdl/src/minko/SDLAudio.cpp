@@ -18,20 +18,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Canvas.hpp"
+#include "minko/log/Logger.hpp"
 #include "minko/SDLAudio.hpp"
 
-#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
-# include "SDL_mixer.h"
-#endif
+#include "SDL_mixer.h"
 
 using namespace minko;
 
 SDLAudio::SDLAudio(std::shared_ptr<Canvas> canvas)
 {
-#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
-    Mix_Init(MIX_INIT_OGG | MIX_INIT_MP3);
-    Mix_OpenAudio(0, 0, 0, 0);
-#endif
+    auto flags = MIX_INIT_OGG;
+    int result = 0;
+
+    if (flags != (result = Mix_Init(flags)))
+    {
+        LOG_ERROR("Could not initialize mixer: " << result << " (" << Mix_GetError());
+    }
+    else
+    {
+        Mix_OpenAudio(22050, AUDIO_S16SYS, 2, 0);
+    }
 }
 
 std::shared_ptr<SDLAudio>

@@ -22,10 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/audio/SoundChannel.hpp"
 
 #include "SDL_audio.h"
-
-#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
-# include "SDL_mixer.h"
-#endif
+#include "SDL_mixer.h"
 
 namespace minko
 {
@@ -54,11 +51,7 @@ namespace minko
             SDLSoundChannel(std::shared_ptr<Sound> sound);
 
         private:
-#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
             int _channel;
-#else
-            SDL_AudioDeviceID _device;
-#endif
         };
     }
 }

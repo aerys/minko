@@ -22,10 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/audio/Sound.hpp"
 
 #include "SDL_audio.h"
-
-#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
-# include "SDL_mixer.h"
-#endif
+#include "SDL_mixer.h"
 
 namespace minko
 {
@@ -49,17 +46,7 @@ namespace minko
         protected:
             SDLSound();
 
-            static void
-            fillBuffer(void* that, unsigned char* stream, int length);
-
-#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
             Mix_Chunk* _chunk;
-#else
-            SDL_AudioSpec _spec;
-            uint _length;
-            unsigned char* _buffer;
-            int _pos;
-#endif
         };
     }
 }
