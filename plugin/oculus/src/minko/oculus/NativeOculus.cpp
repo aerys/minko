@@ -345,7 +345,7 @@ NativeOculus::getDefaultRightEyeFov()
 }
 
 void
-NativeOculus::updateCameraOrientation()
+NativeOculus::updateCameraOrientation(std::shared_ptr<scene::Node> target)
 {
     static ovrPosef eyeRenderPose[2];
     const static float BodyYaw(0.f);

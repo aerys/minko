@@ -63,7 +63,11 @@ namespace minko
 
             virtual
             void
-            updateCameraOrientation() = 0;
+                updateViewport(int viewportWidth, int viewportHeight) = 0;
+
+            virtual
+            void
+            updateCameraOrientation(std::shared_ptr<scene::Node> target) = 0;
         };
     }
 }

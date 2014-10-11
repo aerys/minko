@@ -60,6 +60,12 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"lib/LibOVR/Src/Kernel/OVR_ThreadsWinAPI.cpp"
 		}
 		
+	configuration { "not html5" }
+		excludes {
+			"include/minko/oculus/WebVROculus.hpp",
+			"src/minko/oculus/WebVROculus.cpp",
+		}
+		
 	configuration { "html5" }
 		excludes {
 			"include/minko/oculus/NativeOculus.hpp",

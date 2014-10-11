@@ -44,7 +44,7 @@ namespace minko
             float                                               _aspectRatio;
             float                                               _zNear;
             float                                               _zFar;
-
+            bool                                        _initialized;
         public:
 
             void
@@ -69,7 +69,10 @@ namespace minko
                 getDefaultRightEyeFov();
 
             void
-                updateCameraOrientation();
+                updateCameraOrientation(std::shared_ptr<scene::Node> target);
+
+            void
+                updateViewport(int viewportWidth, int viewportHeight);
 
             inline static
                 Ptr

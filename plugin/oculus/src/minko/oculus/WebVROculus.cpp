@@ -47,13 +47,16 @@ _zFar(zFar),
 _leftRenderer(nullptr),
 _rightRenderer(nullptr),
 _leftCameraNode(nullptr),
-_rightCameraNode(nullptr)
+_rightCameraNode(nullptr),
+_initialized(false)
 {
 }
 
 void
 WebVROculus::initializeOVRDevice()
 {
+    std::cout << "Try to initialize" << std::endl;
+
     _leftRenderer = Renderer::create();
     _rightRenderer = Renderer::create();
 
@@ -77,29 +80,24 @@ WebVROculus::initializeOVRDevice()
 
     std::string eval = "";
 
-    eval += "function vrDeviceCallback(vrdevs) { alert('Callback!');                             \n";
+    eval += "function vrDeviceCallback(vrdevs) {                             \n";
     eval += "    for (var i = 0; i < vrdevs.length; ++i) {                   \n";
     eval += "        if (vrdevs[i] instanceof HMDVRDevice) {                 \n";
-    eval += "            alert('Set vrHMD');vrHMD = vrdevs[i];alert(vrHMD);                                  \n";
+    eval += "            vrHMD = vrdevs[i];                                  \n";
     eval += "            break;                                              \n";
     eval += "        }                                                       \n";
     eval += "    }                                                           \n";
     eval += "    for (var i = 0; i < vrdevs.length; ++i) {                   \n";
     eval += "        if (vrdevs[i] instanceof PositionSensorVRDevice &&      \n";
     eval += "            vrdevs[i].hardwareUnitId == vrHMD.hardwareUnitId) { \n";
-    eval += "            vrHMDSensor = vrdevs[i];                            \n";
+    eval += "            window.vrHMDSensor = vrdevs[i];                            \n";
     eval += "            break;                                              \n";
     eval += "        }                                                       \n";
     eval += "    }                                                           \n";
     eval += "}                                                               \n";
     eval += "                                                                \n";
-    eval += "    if (navigator.getVRDevices) {                               \n";
-    eval += "        navigator.getVRDevices().then(vrDeviceCallback);        \n";
-    eval += "    } else if (navigator.mozGetVRDevices) {                     \n";
-    eval += "        navigator.mozGetVRDevices(vrDeviceCallback);            \n";
-    eval += "    }                                                           \n";
-    eval += "                                                                \n";
     eval += "window.addEventListener(\"keydown\", function(e) {              \n";
+    eval += "    if (e.keyCode == 70) {                                      \n";
     eval += "        var renderCanvas = document.getElementById('canvas');   \n";
     eval += "        if (renderCanvas.mozRequestFullScreen) {                \n";
     eval += "            renderCanvas.mozRequestFullScreen({                 \n";
@@ -110,9 +108,21 @@ WebVROculus::initializeOVRDevice()
     eval += "                vrDisplay: vrHMD,                               \n";
     eval += "            });                                                 \n";
     eval += "        }                                                       \n";
+    eval += "    }                                                           \n";
     eval += "}, false);                                                      \n";
+    eval += "                                                                \n";
+    eval += "    if (navigator.getVRDevices) {                               \n";
+    eval += "        navigator.getVRDevices().then(vrDeviceCallback);        \n";
+    eval += "    } else if (navigator.mozGetVRDevices) {                     \n";
+    eval += "        navigator.mozGetVRDevices(vrDeviceCallback);            \n";
+    eval += "    }                                                           \n";
+
 
     emscripten_run_script(eval.c_str());
+
+    _initialized = true;
+
+    std::cout << "Initialized" << std::endl;
 }
 
 void
@@ -209,6 +219,58 @@ WebVROculus::getDefaultRightEyeFov()
 }
 
 void
-WebVROculus::updateCameraOrientation()
+WebVROculus::updateCameraOrientation(scene::Node::Ptr target)
 {
+    auto checkVrHDM = std::string("window.vrHMDSensor != null ? 1 : 0;");
+    auto result = emscripten_run_script_int(checkVrHDM.c_str());
+
+    if (result == 0)
+    {
+        std::cout << "RETURN !!" << std::endl;
+        return;
+    }
+
+    std::string eval = "window.vrHMDSensor.getState().orientation.x + ' ' + window.vrHMDSensor.getState().orientation.y + ' ' + window.vrHMDSensor.getState().orientation.z + ' ' + window.vrHMDSensor.getState().orientation.w;\n";
+    auto s = std::string(emscripten_run_script_string(eval.c_str()));
+
+    std::cout << s << std::endl;
+
+    std::string delimiter = std::string(" ");
+    size_t pos = 0;
+    int counter = 0;
+    float value;
+    std::array<float, 4> floats;
+
+    std::stringstream ss(s);
+
+    ss >> floats[0];
+    ss >> floats[1];
+    ss >> floats[2];
+    ss >> floats[3];
+
+    auto quaternion = Quaternion::create(
+        floats[0],
+        floats[1],
+        floats[2],
+        floats[3]
+    );
+
+    std::cout << quaternion->toString() << std::endl;
+
+    auto matrix = quaternion->toMatrix();
+
+    target->component<Transform>()->matrix()->copyFrom(matrix);
+}
+
+void
+WebVROculus::updateViewport(int viewportWidth, int viewportHeight)
+{
+    _aspectRatio = (float)viewportWidth / (float)viewportHeight;
+    
+    /*
+    if (_leftCameraNode)
+        _leftCameraNode->component<PerspectiveCamera>()->aspectRatio(_aspectRatio);
+    if (_rightCameraNode)
+        _rightCameraNode->component<PerspectiveCamera>()->aspectRatio(_aspectRatio);
+    */
 }

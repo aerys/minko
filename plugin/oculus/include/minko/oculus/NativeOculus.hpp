@@ -88,9 +88,8 @@ namespace minko
             getDefaultRightEyeFov();
 
             void
-            updateCameraOrientation();
+                updateCameraOrientation(std::shared_ptr<scene::Node> target);
 
-            // TODO move it to OculusImpl interface
             void
                 updateViewport(int viewportWidth, int viewportHeight);
 

@@ -68,19 +68,16 @@ OculusVRCamera::~OculusVRCamera()
 void
 OculusVRCamera::updateViewport(int viewportWidth, int viewportHeight)
 {
-#ifndef EMSCRIPTEN
-    if (_oculusImpl != nullptr)
-        std::static_pointer_cast<NativeOculus>(_oculusImpl)->updateViewport(viewportWidth, viewportHeight);
-#endif
+    _oculusImpl->updateViewport(viewportWidth, viewportHeight);
 }
 
 void
 OculusVRCamera::initialize(int viewportWidth, int viewportHeight, float zNear, float zFar)
 {
 #ifdef EMSCRIPTEN
-    _oculusImpl = WebVROculus::create(viewportWidth, viewportHeight, zFar, zNear);
+    _oculusImpl = WebVROculus::create(viewportWidth, viewportHeight, zNear, zFar);
 #else
-    _oculusImpl = NativeOculus::create(viewportWidth, viewportHeight, zFar, zNear);
+    _oculusImpl = NativeOculus::create(viewportWidth, viewportHeight, zNear, zFar);
 #endif
 
     updateViewport(viewportWidth, viewportHeight);
@@ -192,5 +189,5 @@ OculusVRCamera::setSceneManager(SceneManager::Ptr sceneManager)
 void
 OculusVRCamera::updateCameraOrientation()
 {
-    _oculusImpl->updateCameraOrientation();
+    _oculusImpl->updateCameraOrientation(getTarget(0));
 }
