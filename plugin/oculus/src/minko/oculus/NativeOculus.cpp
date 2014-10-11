@@ -181,11 +181,13 @@ NativeOculus::initializeCameras(scene::Node::Ptr target)
         atan(_hmd->DefaultEyeFov[0].LeftTan + _hmd->DefaultEyeFov[0].RightTan),
         _zNear,
         _zFar
-        );
+    );
+
     _leftCameraNode = scene::Node::create("oculusLeftEye")
         ->addComponent(Transform::create())
         ->addComponent(leftCamera)
         ->addComponent(_leftRenderer);
+
     target->addChild(_leftCameraNode);
 
     auto rightCamera = PerspectiveCamera::create(
@@ -194,10 +196,12 @@ NativeOculus::initializeCameras(scene::Node::Ptr target)
         _zNear,
         _zFar
         );
+
     _rightCameraNode = scene::Node::create("oculusRightEye")
         ->addComponent(Transform::create())
         ->addComponent(rightCamera)
         ->addComponent(_rightRenderer);
+
     target->addChild(_rightCameraNode);
 }
 

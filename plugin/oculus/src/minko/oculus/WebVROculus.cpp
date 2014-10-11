@@ -257,7 +257,7 @@ WebVROculus::updateCameraOrientation(scene::Node::Ptr target)
 void
 WebVROculus::updateViewport(int viewportWidth, int viewportHeight)
 {
-    _aspectRatio = (float)viewportWidth / (float)viewportHeight;
+    _aspectRatio = ((float)viewportWidth / 2.f) / (float)viewportHeight;
     
     /*
     if (_leftCameraNode)
