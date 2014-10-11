@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::audio;
 
-std::map<uint, SDLSoundChannel::Ptr>
+std::map<uint, std::shared_ptr<SDLSoundChannel>>
 SDLSoundChannel::_activeChannels;
 
 SDLSoundChannel::SDLSoundChannel(std::shared_ptr<Sound> sound) :
@@ -34,19 +34,23 @@ SDLSoundChannel::SDLSoundChannel(std::shared_ptr<Sound> sound) :
 
 SDLSoundChannel::~SDLSoundChannel()
 {
-    Mix_HaltChannel(_channel);
+    stop();
 }
 
 void
 SDLSoundChannel::stop()
 {
-    Mix_Pause(_channel);
+    if (_channel >= 0)
+    {
+        Mix_HaltChannel(_channel);
+        _channel = -1;
+    }
 }
 
 SoundChannel::Ptr
 SDLSoundChannel::transform(SoundTransform::Ptr value)
 {
-    if (!!value)
+    if (!!value && _channel >= 0)
     {
         Mix_SetPanning(_channel, uint(value->left() * value->volume() * 255), uint(value->right() * value->volume() * 255));
     }
@@ -66,9 +70,11 @@ SDLSoundChannel::channelComplete(int c)
     if (_activeChannels.size() <= uint(c))
         return;
 
-    auto channel = _activeChannels[c];
+    std::shared_ptr<SDLSoundChannel> channel = _activeChannels[c];
 
     channel->complete()->execute(channel);
 
     _activeChannels.erase(c);
+
+    channel->_channel = -1;
 }

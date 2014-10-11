@@ -74,6 +74,12 @@ PositionalSound::update(scene::Node::Ptr target)
     _channel->transform(transform);
 }
 
+void
+PositionalSound::stop(scene::Node::Ptr target)
+{
+    _channel->stop();
+}
+
 scene::Node::Ptr
 PositionalSound::getActiveCameraNode(scene::Node::Ptr target)
 {

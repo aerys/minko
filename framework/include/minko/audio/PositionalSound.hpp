@@ -37,6 +37,9 @@ namespace minko
             void
             update(std::shared_ptr<scene::Node> target) override;
 
+            void
+            stop(std::shared_ptr<scene::Node> target) override;
+
             std::function<float (float)>
             audibilityCurve() const
             {

@@ -55,8 +55,9 @@ namespace minko
             int _channel;
 
             static
-            std::map<uint, SDLSoundChannel::Ptr> _activeChannels;
+            std::map<uint, std::shared_ptr<SDLSoundChannel>> _activeChannels;
 
+        public: // FIXME: Should be private.
             static
             void
             channelComplete(int channel);
