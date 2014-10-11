@@ -183,16 +183,15 @@ WebVROculus::updateCameraOrientation(scene::Node::Ptr target)
 
     //std::cout << s << std::endl;
 
-    std::array<float, 4> floats;
-    std::stringstream ss(s);
+    std::array<float, 4> orientation;
+    std::stringstream ssOrientation(s);
 
-    ss >> floats[0];
-    ss >> floats[1];
-    ss >> floats[2];
-    ss >> floats[3];
+    ssOrientation >> orientation[0];
+    ssOrientation >> orientation[1];
+    ssOrientation >> orientation[2];
+    ssOrientation >> orientation[3];
 
-    auto quaternion = Quaternion::create(floats[0], floats[1], floats[2], floats[3]);
-
+    auto quaternion = Quaternion::create(orientation[0], orientation[1], orientation[2], orientation[3]);
 
     //std::cout << quaternion->toString() << std::endl;
 
@@ -203,18 +202,18 @@ WebVROculus::updateCameraOrientation(scene::Node::Ptr target)
     eval = "window.vrHMDSensor.getState().position.x + ' ' + window.vrHMDSensor.getState().position.y + ' ' + window.vrHMDSensor.getState().position.z;\n";
     s = std::string(emscripten_run_script_string(eval.c_str()));
 
-    target->component<Transform>()->matrix()->appendTranslation(1.f, 0.f, 0.f);
+    std::array<float, 3> position;
+    std::stringstream ssPosition(s);
+
+    ssPosition >> position[0];
+    ssPosition >> position[1];
+    ssPosition >> position[2];
+
+    target->component<Transform>()->matrix()->appendTranslation(position[0], position[1], position[2]);
 }
 
 void
 WebVROculus::updateViewport(int viewportWidth, int viewportHeight)
 {
     _aspectRatio = ((float)viewportWidth / 2.f) / (float)viewportHeight;
-    
-    /*
-    if (_leftCameraNode)
-        _leftCameraNode->component<PerspectiveCamera>()->aspectRatio(_aspectRatio);
-    if (_rightCameraNode)
-        _rightCameraNode->component<PerspectiveCamera>()->aspectRatio(_aspectRatio);
-    */
 }
