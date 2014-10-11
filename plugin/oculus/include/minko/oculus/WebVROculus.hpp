@@ -74,8 +74,9 @@ namespace minko
             void
                 updateViewport(int viewportWidth, int viewportHeight);
 
+            static
             bool
-            detected() const;
+            detected();
 
             inline static
                 Ptr
