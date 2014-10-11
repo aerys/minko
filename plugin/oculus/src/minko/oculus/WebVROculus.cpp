@@ -159,7 +159,7 @@ WebVROculus::initialize(std::shared_ptr<component::SceneManager> sceneManager)
 }
 
 bool
-WebVROculus::detected() const
+WebVROculus::detected()
 {
     return true;
 }
