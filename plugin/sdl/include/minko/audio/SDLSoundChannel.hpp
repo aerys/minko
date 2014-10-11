@@ -35,6 +35,7 @@ namespace minko
         {
         public:
             friend class SDLSound;
+            friend class SDLAudio;
 
             void
             stop();
@@ -52,6 +53,13 @@ namespace minko
 
         private:
             int _channel;
+
+            static
+            std::map<uint, SDLSoundChannel::Ptr> _activeChannels;
+
+            static
+            void
+            channelComplete(int channel);
         };
     }
 }

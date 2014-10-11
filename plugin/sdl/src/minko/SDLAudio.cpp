@@ -20,10 +20,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Canvas.hpp"
 #include "minko/log/Logger.hpp"
 #include "minko/SDLAudio.hpp"
+#include "minko/audio/SDLSoundChannel.hpp"
 
 #include "SDL_mixer.h"
 
 using namespace minko;
+using namespace minko::audio;
 
 SDLAudio::SDLAudio(std::shared_ptr<Canvas> canvas)
 {
@@ -37,6 +39,7 @@ SDLAudio::SDLAudio(std::shared_ptr<Canvas> canvas)
     else
     {
         Mix_OpenAudio(22050, AUDIO_S16SYS, 2, 0);
+        Mix_ChannelFinished(&SDLSoundChannel::channelComplete);
     }
 }
 

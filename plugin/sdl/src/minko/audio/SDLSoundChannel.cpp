@@ -23,6 +23,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::audio;
 
+std::map<uint, SDLSoundChannel::Ptr>
+SDLSoundChannel::_activeChannels;
+
 SDLSoundChannel::SDLSoundChannel(std::shared_ptr<Sound> sound) :
     SoundChannel(sound),
     _channel(0)
@@ -55,4 +58,17 @@ SoundTransform::Ptr
 SDLSoundChannel::transform() const
 {
     return SoundChannel::transform();
+}
+
+void
+SDLSoundChannel::channelComplete(int c)
+{
+    if (_activeChannels.size() <= uint(c))
+        return;
+
+    auto channel = _activeChannels[c];
+
+    channel->complete()->execute(channel);
+
+    _activeChannels.erase(c);
 }
