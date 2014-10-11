@@ -63,20 +63,8 @@ WebVROculus::initializeOVRDevice()
     // Create renderer for each eye
     _rightRenderer->clearBeforeRender(false);
 
-    _leftRenderer->viewport(
-        0,
-        0,
-        960,
-        1080
-        );
-
-
-    _rightRenderer->viewport(
-        960,
-        0,
-        960,
-        1080
-        );
+    _leftRenderer->viewport(0, 0, 960, 1080);
+    _rightRenderer->viewport(960, 0, 960, 1080);
 
     std::string eval = "";
 
@@ -128,13 +116,16 @@ WebVROculus::initializeOVRDevice()
 void
 WebVROculus::initializeCameras(scene::Node::Ptr target)
 {
+    std::cout << "Aspect ratio: " << _aspectRatio << std::endl;
+
     auto leftCamera = PerspectiveCamera::create(
         _aspectRatio,
-        0.78f,
-        // atan(_hmd->DefaultEyeFov[0].LeftTan + _hmd->DefaultEyeFov[0].RightTan),
+        //0.78f,
+        1.1356254f,
         _zNear,
         _zFar
-        );
+    );
+
     _leftCameraNode = scene::Node::create("oculusLeftEye")
         ->addComponent(Transform::create())
         ->addComponent(leftCamera)
@@ -143,11 +134,12 @@ WebVROculus::initializeCameras(scene::Node::Ptr target)
 
     auto rightCamera = PerspectiveCamera::create(
         _aspectRatio,
-        0.78f,
-        //atan(_hmd->DefaultEyeFov[1].LeftTan + _hmd->DefaultEyeFov[1].RightTan),
+        //0.78f,
+        1.1356254f,
         _zNear,
         _zFar
-        );
+    );
+
     _rightCameraNode = scene::Node::create("oculusRightEye")
         ->addComponent(Transform::create())
         ->addComponent(rightCamera)
@@ -233,7 +225,7 @@ WebVROculus::updateCameraOrientation(scene::Node::Ptr target)
     std::string eval = "window.vrHMDSensor.getState().orientation.x + ' ' + window.vrHMDSensor.getState().orientation.y + ' ' + window.vrHMDSensor.getState().orientation.z + ' ' + window.vrHMDSensor.getState().orientation.w;\n";
     auto s = std::string(emscripten_run_script_string(eval.c_str()));
 
-    std::cout << s << std::endl;
+    //std::cout << s << std::endl;
 
     std::string delimiter = std::string(" ");
     size_t pos = 0;
@@ -255,7 +247,7 @@ WebVROculus::updateCameraOrientation(scene::Node::Ptr target)
         floats[3]
     );
 
-    std::cout << quaternion->toString() << std::endl;
+    //std::cout << quaternion->toString() << std::endl;
 
     auto matrix = quaternion->toMatrix();
 
