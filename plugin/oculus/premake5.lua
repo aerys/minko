@@ -6,7 +6,9 @@ end
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
-	removeplatforms { "html5", "ios", "android" }
+	minko.plugin.enable("serializer")
+	
+	removeplatforms { "ios", "android" }
 
 	files {
 		"**.hpp",
@@ -56,4 +58,17 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"lib/LibOVR/Src/OVR_Win32_*",
 			"lib/LibOVR/Src/OVR_Linux_*",
 			"lib/LibOVR/Src/Kernel/OVR_ThreadsWinAPI.cpp"
+		}
+		
+	configuration { "not html5" }
+		excludes {
+			"include/minko/oculus/WebVROculus.hpp",
+			"src/minko/oculus/WebVROculus.cpp",
+		}
+		
+	configuration { "html5" }
+		excludes {
+			"include/minko/oculus/NativeOculus.hpp",
+			"src/minko/oculus/NativeOculus.cpp",
+			"lib/LibOVR/**"
 		}

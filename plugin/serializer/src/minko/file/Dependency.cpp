@@ -259,7 +259,17 @@ Dependency::serializeGeometry(std::shared_ptr<Dependency>                depende
     {
         assetType = serialize::AssetType::GEOMETRY_ASSET;
 
-        auto filename = assetLibrary->geometryName(geometry) + ".geometry";
+        static auto geometryNameId = 0;
+        auto filename = std::string();
+
+        try
+        {
+            filename = assetLibrary->geometryName(geometry) + ".geometry";
+        }
+        catch (const std::exception& exception)
+        {
+            filename = "geometry" + std::to_string(geometryNameId++) + ".geometry";
+        }
 
         auto completeFilename = writerOptions->outputAssetUriFunction()(filename);
 
@@ -362,7 +372,17 @@ Dependency::serializeMaterial(std::shared_ptr<Dependency>            dependency,
         assetType = serialize::AssetType::MATERIAL_ASSET;
         materialWriter->parentDependencies(nullptr);
 
-        auto materialName = assetLibrary->materialName(material);
+        static auto materialNameId = 0;
+        auto materialName = std::string();
+
+        try
+        {
+            materialName = assetLibrary->materialName(material) + ".material";
+        }
+        catch (const std::exception& exception)
+        {
+            materialName = "default" + std::to_string(materialNameId++) + ".material";
+        }
 
         auto materialNameExtensionLocation = materialName.find_last_of(".");
         auto materialNameExtension = std::string { };

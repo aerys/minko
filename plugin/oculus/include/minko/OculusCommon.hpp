@@ -19,4 +19,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/component/OculusVRCamera.hpp"
+#ifndef MINKO_PLUGIN_OCULUS_MAX_TARGET_SIZE
+#define MINKO_PLUGIN_OCULUS_MAX_TARGET_SIZE 2048
+#endif
+
+namespace minko
+{
+    namespace oculus
+    {
+        // Struct from OVR
+        struct EyeFOV
+        {
+            /// The tangent of the angle between the viewing vector and the top edge of the field of view.
+            float UpTan;
+            /// The tangent of the angle between the viewing vector and the bottom edge of the field of view.
+            float DownTan;
+            /// The tangent of the angle between the viewing vector and the left edge of the field of view.
+            float LeftTan;
+            /// The tangent of the angle between the viewing vector and the right edge of the field of view.
+            float RightTan;
+        };
+
+        class OculusImpl;
+    }
+}
+

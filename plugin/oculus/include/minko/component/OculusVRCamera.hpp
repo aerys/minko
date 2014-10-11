@@ -20,15 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Minko.hpp"
-
+#include "minko/OculusCommon.hpp"
 #include "minko/Signal.hpp"
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
-
-extern "C" {
-    struct ovrHmdDesc_;
-    typedef const ovrHmdDesc_* ovrHmd;
-}
 
 namespace minko
 {
@@ -38,21 +33,7 @@ namespace minko
             public AbstractComponent
         {
         public:
-            typedef std::shared_ptr<OculusVRCamera>    Ptr;
-
-        private:
-            struct HMDInfo
-            {
-                float hResolution;
-                float vResolution;
-                float hScreenSize;
-                float vScreenSize;
-                float vScreenCenter;
-                float interpupillaryDistance;
-                float lensSeparationDistance;
-                float eyeToScreenDistance;
-                std::shared_ptr<math::Vector4> distortionK;
-            };
+            typedef std::shared_ptr<OculusVRCamera> Ptr;
 
         private:
             typedef std::shared_ptr<scene::Node>				NodePtr;
@@ -62,38 +43,20 @@ namespace minko
             typedef math::Vector2::Ptr                          Vector2Ptr;
 
         private:
-            static const float									WORLD_UNIT;
-            static const unsigned int							TARGET_SIZE;
-
-            float                                               _aspectRatio;
-            float                                               _zNear;
-            float                                               _zFar;
-
-            ovrHmd                                              _hmd;
-
             std::shared_ptr<math::Vector3>                      _eyePosition;
             std::shared_ptr<math::Matrix4x4>                    _eyeOrientation;
 
             SceneMgrPtr                                         _sceneManager;
-            uint                                                _renderTargetWidth;
-            uint                                                _renderTargetHeight;
-            std::shared_ptr<render::Texture>                    _renderTarget;
-            std::shared_ptr<scene::Node>                        _leftCameraNode;
-            std::shared_ptr<Renderer>                           _leftRenderer;
-            std::shared_ptr<scene::Node>                        _rightCameraNode;
-            std::shared_ptr<Renderer>                           _rightRenderer;
-            
-            scene::Node::Ptr                                    _ppScene;
-            Renderer::Ptr                                       _ppRenderer;
 
             Signal<AbsCmpPtr, NodePtr>::Slot                    _targetAddedSlot;
             Signal<AbsCmpPtr, NodePtr>::Slot                    _targetRemovedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot             _addedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot             _removedSlot;
             Signal<SceneMgrPtr, uint, AbsTexturePtr>::Slot      _renderBeginSlot;
-            Signal<SceneMgrPtr, uint, AbsTexturePtr>::Slot      _renderEndSlot;
 
-            std::array<std::pair<Vector2Ptr, Vector2Ptr>, 2>    _uvScaleOffset;
+            std::shared_ptr<oculus::OculusImpl>                 _oculusImpl;
+            oculus::EyeFOV                                      _defaultLeftEyeFov;
+            oculus::EyeFOV                                      _defaultRightEyeFov;
 
         public:
             inline static
@@ -107,43 +70,13 @@ namespace minko
                     viewportWidth, viewportHeight, zNear, zFar
                 ));
 
-                ptr->initialize();
+                ptr->initialize(viewportWidth, viewportHeight, zNear, zFar);
 
                 return ptr;
             }
 
-            inline
-            float
-            aspectRatio() const
-            {
-                return _aspectRatio;
-            }
-
-            inline
-            float
-            zNear() const
-            {
-                return _zNear;
-            }
-
-            inline
-            float
-            zFar() const
-            {
-                return _zFar;
-            }
-
             void
             updateViewport(int viewportWidth, int viewportHeight);
-
-            void
-            resetHeadTracking();
-
-            bool
-            HMDDeviceDetected() const;
-
-            bool
-            sensorDeviceDetected() const;
 
         public:
             ~OculusVRCamera(); // temporary solution
@@ -158,16 +91,11 @@ namespace minko
             initializeOVRDevice();
 
             void
-            initialize();
+            initialize(int viewportWidth, int viewportHeight, float zNear, float zFar);
 
-            void
-            initializeCameras();
-
+            public:
             std::array<std::shared_ptr<geometry::Geometry>, 2>
             createDistortionGeometry(std::shared_ptr<render::AbstractContext> context);
-
-            void
-            initializePostProcessingRenderer();
 
             void
             updateCameraOrientation();
@@ -179,16 +107,10 @@ namespace minko
             targetRemovedHandler(AbsCmpPtr component, NodePtr target);
 
             void
-            renderEndHandler(SceneMgrPtr sceneManager, uint frameId, AbsTexturePtr    renderTarget);
-
-            void
             findSceneManager();
 
             void
             setSceneManager(SceneMgrPtr);
-
-            void
-            getHMDInfo(HMDInfo&) const;
         };
     }
 }
