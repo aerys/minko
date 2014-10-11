@@ -82,7 +82,7 @@ MaterialParser::parse(const std::string&                filename,
     std::vector<ComplexProperty> complexProperties    = serializedMaterial.a0;
     std::vector<BasicProperty>     basicProperties    = serializedMaterial.a1;
 
-    MaterialPtr material = material::Material::create();
+	MaterialPtr material = options->material() ? material::Material::create(options->material()) : material::Material::create();
 
     material->set("diffuseColor", math::Vector4::create(1.0, 1.0, 1.0, 1.0));
 
