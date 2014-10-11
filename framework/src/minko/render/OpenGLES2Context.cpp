@@ -1305,19 +1305,19 @@ OpenGLES2Context::setUniform(const uint& location, const uint& size, bool transp
 
         for (uint i = 0; i < size; ++i)
         {
-            const float*    matrix    = values        + (i << 4);
-            float*            tmatrix    = transposed    + (i << 4);
+            const float* matrix = values + (i << 4);
+            float* tmatrix = transposed + (i << 4);
 
-            tmatrix[0]    = matrix[0];
-            tmatrix[1]    = matrix[4];
-            tmatrix[2]    = matrix[8];
-            tmatrix[3]    = matrix[12];
-            tmatrix[4]    = matrix[1];
-            tmatrix[5]    = matrix[5];
-            tmatrix[6]    = matrix[9];
-            tmatrix[7]    = matrix[13];
-            tmatrix[8]    = matrix[2];
-            tmatrix[9]    = matrix[6];
+            tmatrix[0]  = matrix[0];
+            tmatrix[1]  = matrix[4];
+            tmatrix[2]  = matrix[8];
+            tmatrix[3]  = matrix[12];
+            tmatrix[4]  = matrix[1];
+            tmatrix[5]  = matrix[5];
+            tmatrix[6]  = matrix[9];
+            tmatrix[7]  = matrix[13];
+            tmatrix[8]  = matrix[2];
+            tmatrix[9]  = matrix[6];
             tmatrix[10] = matrix[10];
             tmatrix[11] = matrix[14];
             tmatrix[12] = matrix[3];
