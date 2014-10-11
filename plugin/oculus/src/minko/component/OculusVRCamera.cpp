@@ -47,8 +47,6 @@ using namespace minko::oculus;
 using namespace minko::render;
 
 OculusVRCamera::OculusVRCamera(int viewportWidth, int viewportHeight, float zNear, float zFar) :
-    _eyePosition(Vector3::create(0.0f, 0.0f, 0.0f)),
-    _eyeOrientation(Matrix4x4::create()),
     _sceneManager(nullptr),
     _targetAddedSlot(nullptr),
     _targetRemovedSlot(nullptr),
@@ -60,8 +58,6 @@ OculusVRCamera::OculusVRCamera(int viewportWidth, int viewportHeight, float zNea
 
 OculusVRCamera::~OculusVRCamera()
 {
-    resetOVRDevice();
-
     _oculusImpl->destroy();
 }
 
@@ -140,27 +136,9 @@ OculusVRCamera::targetRemovedHandler(AbsCmpPtr component, NodePtr target)
 }
 
 void
-OculusVRCamera::resetOVRDevice()
-{
-    //_ovrHMDDevice = nullptr;
-    //_ovrSensorDevice = nullptr;
-    //_ovrSensorFusion = nullptr;
-}
-
-void
 OculusVRCamera::initializeOVRDevice()
 {
     _oculusImpl->initializeOVRDevice();
-
-    // Store default eye FOV
-    _defaultLeftEyeFov = _oculusImpl->getDefaultLeftEyeFov();
-    _defaultRightEyeFov = _oculusImpl->getDefaultRightEyeFov();
-}
-
-std::array<std::shared_ptr<geometry::Geometry>, 2>
-OculusVRCamera::createDistortionGeometry(AbstractContext::Ptr context)
-{
-    return _oculusImpl->createDistortionGeometry(context);
 }
 
 void

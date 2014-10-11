@@ -55,8 +55,6 @@ _initialized(false)
 void
 WebVROculus::initializeOVRDevice()
 {
-    std::cout << "Try to initialize" << std::endl;
-
     _leftRenderer = Renderer::create();
     _rightRenderer = Renderer::create();
 
@@ -78,7 +76,7 @@ WebVROculus::initializeOVRDevice()
     eval += "    for (var i = 0; i < vrdevs.length; ++i) {                   \n";
     eval += "        if (vrdevs[i] instanceof PositionSensorVRDevice &&      \n";
     eval += "            vrdevs[i].hardwareUnitId == vrHMD.hardwareUnitId) { \n";
-    eval += "            window.vrHMDSensor = vrdevs[i];                            \n";
+    eval += "            window.vrHMDSensor = vrdevs[i];                     \n";
     eval += "            break;                                              \n";
     eval += "        }                                                       \n";
     eval += "    }                                                           \n";
@@ -99,18 +97,14 @@ WebVROculus::initializeOVRDevice()
     eval += "    }                                                           \n";
     eval += "}, false);                                                      \n";
     eval += "                                                                \n";
-    eval += "    if (navigator.getVRDevices) {                               \n";
-    eval += "        navigator.getVRDevices().then(vrDeviceCallback);        \n";
-    eval += "    } else if (navigator.mozGetVRDevices) {                     \n";
-    eval += "        navigator.mozGetVRDevices(vrDeviceCallback);            \n";
-    eval += "    }                                                           \n";
+    eval += "if (navigator.getVRDevices) {                                   \n";
+    eval += "    navigator.getVRDevices().then(vrDeviceCallback);            \n";
+    eval += "} else if (navigator.mozGetVRDevices) {                         \n";
+    eval += "    navigator.mozGetVRDevices(vrDeviceCallback);                \n";
+    eval += "}                                                               \n";
 
 
     emscripten_run_script(eval.c_str());
-
-    _initialized = true;
-
-    std::cout << "Initialized" << std::endl;
 }
 
 void
@@ -155,77 +149,33 @@ WebVROculus::destroy()
 void
 WebVROculus::initialize(std::shared_ptr<component::SceneManager> sceneManager)
 {
-    //_assetLibrary = assetLibrary;
 }
 
 bool
 WebVROculus::detected()
 {
-    return true;
-}
+    /* Doesn't work, these variables always contain something even without the Oculus plugged in
+    auto eval = std::string("navigator.getVRDevices != undefined || navigator.mozGetVRDevices != undefined");
+    bool result = emscripten_run_script_int(eval.c_str());
 
-std::array<std::shared_ptr<geometry::Geometry>, 2>
-WebVROculus::createDistortionGeometry(std::shared_ptr<render::AbstractContext> context)
-{
-    auto geometries = std::array<std::shared_ptr<geometry::Geometry>, 2>();
-
-    /*
-    auto options = Options::create()
-        ->registerParser<SceneParser>("scene");
-
-    auto loader = Loader::create(options)
-        ->queue("model/vrGeometry.scene");
-
-    loader->load();
-
-    auto symbol = _assetLibrary->symbol("model/vrGeometry.scene");
-
-    auto leftEyeGeometry = symbol->children().at(0)->component<Surface>()->geometry();
-    auto rightEyeGeometry = symbol->children().at(1)->component<Surface>()->geometry();
-
-    geometries[0] = leftEyeGeometry;
-    geometries[1] = rightEyeGeometry;
+    return result;
     */
 
-    return geometries;
-}
-
-EyeFOV
-WebVROculus::getDefaultLeftEyeFov()
-{
-    EyeFOV leftEyeFov;
-
-    leftEyeFov.DownTan = 0.f;
-    leftEyeFov.LeftTan = 0.f;
-    leftEyeFov.RightTan = 0.f;
-    leftEyeFov.UpTan = 0.f;
-
-    return leftEyeFov;
-}
-
-EyeFOV
-WebVROculus::getDefaultRightEyeFov()
-{
-    EyeFOV rightEyeFov;
-
-    rightEyeFov.DownTan = 0.f;
-    rightEyeFov.LeftTan = 0.f;
-    rightEyeFov.RightTan = 0.f;
-    rightEyeFov.UpTan = 0.f;
-
-    return rightEyeFov;
+    return true;
 }
 
 void
 WebVROculus::updateCameraOrientation(scene::Node::Ptr target)
 {
-    auto checkVrHDM = std::string("window.vrHMDSensor != null ? 1 : 0;");
-    auto result = emscripten_run_script_int(checkVrHDM.c_str());
-
-    if (result == 0)
+    if (!_initialized)
     {
-        std::cout << "RETURN !!" << std::endl;
-        return;
+        auto checkVrHDM = std::string("window.vrHMDSensor != null ? 1 : 0;");
+        auto result = emscripten_run_script_int(checkVrHDM.c_str());
+
+        if (result == 0)
+            return;
+        else
+            _initialized = true;
     }
 
     std::string eval = "window.vrHMDSensor.getState().orientation.x + ' ' + window.vrHMDSensor.getState().orientation.y + ' ' + window.vrHMDSensor.getState().orientation.z + ' ' + window.vrHMDSensor.getState().orientation.w;\n";
@@ -233,12 +183,7 @@ WebVROculus::updateCameraOrientation(scene::Node::Ptr target)
 
     //std::cout << s << std::endl;
 
-    std::string delimiter = std::string(" ");
-    size_t pos = 0;
-    int counter = 0;
-    float value;
     std::array<float, 4> floats;
-
     std::stringstream ss(s);
 
     ss >> floats[0];
@@ -246,18 +191,19 @@ WebVROculus::updateCameraOrientation(scene::Node::Ptr target)
     ss >> floats[2];
     ss >> floats[3];
 
-    auto quaternion = Quaternion::create(
-        floats[0],
-        floats[1],
-        floats[2],
-        floats[3]
-    );
+    auto quaternion = Quaternion::create(floats[0], floats[1], floats[2], floats[3]);
+
 
     //std::cout << quaternion->toString() << std::endl;
 
     auto matrix = quaternion->toMatrix();
-
     target->component<Transform>()->matrix()->copyFrom(matrix);
+
+    // Get position tracking
+    eval = "window.vrHMDSensor.getState().position.x + ' ' + window.vrHMDSensor.getState().position.y + ' ' + window.vrHMDSensor.getState().position.z;\n";
+    s = std::string(emscripten_run_script_string(eval.c_str()));
+
+    target->component<Transform>()->matrix()->appendTranslation(1.f, 0.f, 0.f);
 }
 
 void

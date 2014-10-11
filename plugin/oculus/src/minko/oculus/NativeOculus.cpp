@@ -339,32 +339,6 @@ NativeOculus::createDistortionGeometry(std::shared_ptr<render::AbstractContext> 
     return geometries;
 }
 
-EyeFOV
-NativeOculus::getDefaultLeftEyeFov()
-{
-    EyeFOV leftEyeFov;
-
-    leftEyeFov.DownTan = _hmd->DefaultEyeFov[0].DownTan;
-    leftEyeFov.LeftTan = _hmd->DefaultEyeFov[0].LeftTan;
-    leftEyeFov.RightTan = _hmd->DefaultEyeFov[0].RightTan;
-    leftEyeFov.UpTan = _hmd->DefaultEyeFov[0].UpTan;
-
-    return leftEyeFov;
-}
-
-EyeFOV
-NativeOculus::getDefaultRightEyeFov()
-{
-    EyeFOV rightEyeFov;
-
-    rightEyeFov.DownTan = _hmd->DefaultEyeFov[1].DownTan;
-    rightEyeFov.LeftTan = _hmd->DefaultEyeFov[1].LeftTan;
-    rightEyeFov.RightTan = _hmd->DefaultEyeFov[1].RightTan;
-    rightEyeFov.UpTan = _hmd->DefaultEyeFov[1].UpTan;
-
-    return rightEyeFov;
-}
-
 void
 NativeOculus::updateCameraOrientation(std::shared_ptr<scene::Node> target)
 {

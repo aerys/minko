@@ -43,27 +43,15 @@ namespace minko
 
             virtual
             void
-                initializeCameras(std::shared_ptr<scene::Node> target) = 0;
+            initializeCameras(std::shared_ptr<scene::Node> target) = 0;
 
             virtual
             void
             destroy() = 0;
 
             virtual
-            std::array<std::shared_ptr<geometry::Geometry>, 2>
-            createDistortionGeometry(std::shared_ptr<render::AbstractContext> context) = 0;
-
-            virtual
-            EyeFOV
-            getDefaultLeftEyeFov() = 0;
-
-            virtual
-            EyeFOV
-            getDefaultRightEyeFov() = 0;
-
-            virtual
             void
-                updateViewport(int viewportWidth, int viewportHeight) = 0;
+            updateViewport(int viewportWidth, int viewportHeight) = 0;
 
             virtual
             void

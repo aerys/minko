@@ -81,12 +81,6 @@ namespace minko
             std::array<std::shared_ptr<geometry::Geometry>, 2>
             createDistortionGeometry(std::shared_ptr<render::AbstractContext> context);
 
-            EyeFOV
-            getDefaultLeftEyeFov();
-
-            EyeFOV
-            getDefaultRightEyeFov();
-
             void
             updateCameraOrientation(std::shared_ptr<scene::Node> target);
 

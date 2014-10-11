@@ -43,9 +43,6 @@ namespace minko
             typedef math::Vector2::Ptr                          Vector2Ptr;
 
         private:
-            std::shared_ptr<math::Vector3>                      _eyePosition;
-            std::shared_ptr<math::Matrix4x4>                    _eyeOrientation;
-
             SceneMgrPtr                                         _sceneManager;
 
             Signal<AbsCmpPtr, NodePtr>::Slot                    _targetAddedSlot;
@@ -55,8 +52,6 @@ namespace minko
             Signal<SceneMgrPtr, uint, AbsTexturePtr>::Slot      _renderBeginSlot;
 
             std::shared_ptr<oculus::OculusImpl>                 _oculusImpl;
-            oculus::EyeFOV                                      _defaultLeftEyeFov;
-            oculus::EyeFOV                                      _defaultRightEyeFov;
 
         public:
             inline static
@@ -92,17 +87,10 @@ namespace minko
             OculusVRCamera(int viewportWidth, int viewportHeight, float zNear, float zFar);
 
             void
-            resetOVRDevice();
-
-            void
             initializeOVRDevice();
 
             void
             initialize(int viewportWidth, int viewportHeight, float zNear, float zFar);
-
-            public:
-            std::array<std::shared_ptr<geometry::Geometry>, 2>
-            createDistortionGeometry(std::shared_ptr<render::AbstractContext> context);
 
             void
             updateCameraOrientation();
