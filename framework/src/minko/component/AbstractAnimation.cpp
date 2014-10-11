@@ -198,7 +198,7 @@ AbstractAnimation::findSceneManager()
 void
 AbstractAnimation::setSceneManager(SceneManager::Ptr sceneManager)
 {
-	if (sceneManager)
+	if (sceneManager && sceneManager != _sceneManager)
 	{
 		_frameBeginSlot = sceneManager->frameBegin()->connect(std::bind(
 			&AbstractAnimation::frameBeginHandler, 
@@ -211,7 +211,7 @@ AbstractAnimation::setSceneManager(SceneManager::Ptr sceneManager)
 		if (_sceneManager == nullptr)
 			_previousGlobalTime = _timeFunction(uint(sceneManager->time()));
 	}
-	else if (_frameBeginSlot)
+	else if (_frameBeginSlot && sceneManager == nullptr)
 	{
 		stop();
 		_frameBeginSlot = nullptr;
