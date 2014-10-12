@@ -37,9 +37,12 @@ SDLSound::~SDLSound()
 std::shared_ptr<SoundChannel>
 SDLSound::play(int count)
 {
+    if (count < 0)
+        throw std::invalid_argument("count cannot be less than zero");
+
     auto channel = std::shared_ptr<SDLSoundChannel>(new SDLSoundChannel(shared_from_this()));
 
-    channel->_channel = Mix_PlayChannel(-1, _chunk, -1);
+    channel->channel(Mix_PlayChannel(-1, _chunk, count == 0 ? -1 : count ));
 
     if (channel->_channel < 0)
     {
