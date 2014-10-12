@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::audio;
+using namespace minko::math;
 
 void
 PositionalSound::update(scene::Node::Ptr target)
@@ -37,21 +38,21 @@ PositionalSound::update(scene::Node::Ptr target)
     // To compute the 3D volume, we need:
     // - the camera position in world space
     auto camera = getActiveCameraNode(target);
-    auto cameraPos = camera->component<component::Transform>()->matrix()->translation();
+    auto cameraPos = camera->component<component::Transform>()->modelToWorld(Vector3::zero());
     // - the target in world space
-    auto targetPos = target->component<component::Transform>()->matrix()->translation();
-    auto direction = cameraPos->subtract(targetPos);
+    auto targetPos = target->component<component::Transform>()->modelToWorld(Vector3::zero());
+    auto direction = targetPos->subtract(cameraPos);
     // - the distance betwen the camera and the target
     auto distance = direction->length();
     // - the direction the camera is looking to
-    auto front = camera->component<component::Transform>()->modelToWorld(math::Vector3::up());
+    auto front = camera->component<component::Transform>()->modelToWorld(Vector3::up());
 
     // Normalize vectors to use the dot product operation.
     front->normalize();
     direction->normalize();
 
     // We need a vector to orient the angle so it can be signed.
-    auto orientation = math::Vector3::create(math::Vector3::up())->cross(front);
+    auto orientation = Vector3::create(Vector3::up())->cross(front);
     // Now we can get a signed scaled angle between [-1 ; 1] with a dot product.
     auto angle = orientation->dot(direction);
 
@@ -61,8 +62,6 @@ PositionalSound::update(scene::Node::Ptr target)
     // Simply adjust left/right volumes based on the angle.
     auto left = (angle + 1) / 2;
     auto right = (1 - angle) / 2;
-
-    // LOG_INFO("volume: " << volume << ", left: " << left << ", right: " << right);
 
     // Update the sound transforms.
     SoundTransform::Ptr transform = _channel->transform();
