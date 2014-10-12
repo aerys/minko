@@ -40,6 +40,7 @@ SDLAudio::SDLAudio(std::shared_ptr<Canvas> canvas)
     {
         Mix_OpenAudio(22050, AUDIO_S16SYS, 2, 0);
         Mix_ChannelFinished(&SDLSoundChannel::channelComplete);
+        Mix_AllocateChannels(32);
     }
 }
 
