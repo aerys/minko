@@ -284,6 +284,8 @@ AbstractAnimation::addLabel(const std::string& name, uint time)
 	_labelNameToIndex[name] = _labels.size();
 	_labels.push_back(Label(name, time));
 
+    updateNextLabelIds(_currentTime);
+
 	return std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this());
 }
 
