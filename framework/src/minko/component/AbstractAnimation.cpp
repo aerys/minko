@@ -414,7 +414,7 @@ AbstractAnimation::updateNextLabelIds(uint time)
 		if (!isInPlaybackWindow(labelTime))
 			continue;
 
-		if (!_isReversed && time <= labelTime)
+		if (!_isReversed && time < labelTime)
 		{
 			if (labelTime < nextLabelTime)
 			{
@@ -426,7 +426,7 @@ AbstractAnimation::updateNextLabelIds(uint time)
 			else if (labelTime == nextLabelTime)
 				_nextLabelIds.push_back(labelId);
 		}
-		else if (_isReversed && labelTime <= time)
+		else if (_isReversed && labelTime < time)
 		{
 			if (nextLabelTime < labelTime)
 			{
@@ -504,7 +504,9 @@ AbstractAnimation::checkLabelHit(uint previousTime, uint newTime)
 
 	if (trigger)
 	{
-		for (auto labelId : _nextLabelIds)
+        auto nextLabelIds = _nextLabelIds;
+
+		for (auto labelId : nextLabelIds)
 		{
 			const auto& label = _labels[labelId];
 
