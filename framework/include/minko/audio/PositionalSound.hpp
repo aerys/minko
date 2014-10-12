@@ -56,9 +56,10 @@ namespace minko
             inline
             static
             Ptr
-            create(std::shared_ptr<SoundChannel> channel)
+            create(std::shared_ptr<SoundChannel> channel,
+                   std::shared_ptr<scene::Node> camera)
             {
-                auto p = Ptr(new PositionalSound(channel));
+                auto p = Ptr(new PositionalSound(channel, camera));
 
                 p->initialize();
 
@@ -71,8 +72,10 @@ namespace minko
             }
 
         protected:
-            PositionalSound(std::shared_ptr<SoundChannel> channel) :
+            PositionalSound(std::shared_ptr<SoundChannel> channel,
+                            std::shared_ptr<scene::Node> camera) :
                 _channel(channel),
+                _camera(camera),
                 _audibilityCurve(&PositionalSound::defaultAudibilityCurve)
             {
             }
@@ -85,10 +88,8 @@ namespace minko
                 return float(10.f / (4.f * M_PI * distance));
             }
 
-            std::shared_ptr<scene::Node>
-            getActiveCameraNode(std::shared_ptr<scene::Node> target);
-
             std::shared_ptr<SoundChannel>   _channel;
+            std::shared_ptr<scene::Node>    _camera;
             std::function<float (float)>    _audibilityCurve;
         };
     }

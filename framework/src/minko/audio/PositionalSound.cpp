@@ -35,24 +35,27 @@ PositionalSound::update(scene::Node::Ptr target)
     if (!_channel->playing())
         return;
 
+    static Vector3::ConstPtr zero = Vector3::zero();
+    static Vector3::ConstPtr up = Vector3::up();
+    static Vector3::Ptr tmp = Vector3::create();
+
     // To compute the 3D volume, we need:
     // - the camera position in world space
-    auto camera = getActiveCameraNode(target);
-    auto cameraPos = camera->component<component::Transform>()->modelToWorld(Vector3::zero());
+    auto cameraPos = _camera->component<component::Transform>()->modelToWorld(zero);
     // - the target in world space
-    auto targetPos = target->component<component::Transform>()->modelToWorld(Vector3::zero());
+    auto targetPos = target->component<component::Transform>()->modelToWorld(zero);
     auto direction = cameraPos->subtract(targetPos);
     // - the distance betwen the camera and the target
     auto distance = direction->length();
     // - the direction the camera is looking to
-    auto front = camera->component<component::Transform>()->modelToWorld(Vector3::up());
+    auto front = _camera->component<component::Transform>()->modelToWorld(Vector3::up());
 
     // Normalize vectors to use the dot product operation.
     front->normalize();
     direction->normalize();
 
     // We need a vector to orient the angle so it can be signed.
-    auto orientation = Vector3::create(Vector3::up())->cross(front);
+    auto orientation = tmp->copyFrom(up)->cross(front);
     // Now we can get a signed scaled angle between [-1 ; 1] with a dot product.
     auto angle = orientation->dot(direction);
 
@@ -80,17 +83,4 @@ void
 PositionalSound::stop(scene::Node::Ptr target)
 {
     _channel->stop();
-}
-
-scene::Node::Ptr
-PositionalSound::getActiveCameraNode(scene::Node::Ptr target)
-{
-    auto activeCameraNode = scene::NodeSet::create(target->root())->descendants(true)->where([](scene::Node::Ptr node)
-    {
-        auto camera = node->component<component::PerspectiveCamera>();
-        auto renderer = node->component<component::Renderer>();
-        return !!camera && !!renderer && renderer->enabled();
-    });
-
-    return activeCameraNode->size() > 0 ? activeCameraNode->nodes()[0] : nullptr;
 }
