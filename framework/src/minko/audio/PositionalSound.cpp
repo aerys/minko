@@ -41,7 +41,7 @@ PositionalSound::update(scene::Node::Ptr target)
     auto cameraPos = camera->component<component::Transform>()->modelToWorld(Vector3::zero());
     // - the target in world space
     auto targetPos = target->component<component::Transform>()->modelToWorld(Vector3::zero());
-    auto direction = targetPos->subtract(cameraPos);
+    auto direction = cameraPos->subtract(targetPos);
     // - the distance betwen the camera and the target
     auto distance = direction->length();
     // - the direction the camera is looking to
