@@ -43,7 +43,6 @@ SDLSoundChannel::stop()
     if (_channel >= 0)
     {
         Mix_HaltChannel(_channel);
-        _channel = -1;
     }
 }
 
@@ -65,16 +64,27 @@ SDLSoundChannel::transform() const
 }
 
 void
+SDLSoundChannel::channel(int c)
+{
+    _channel = c;
+    _activeChannels[c] = std::static_pointer_cast<SDLSoundChannel>(shared_from_this());
+}
+
+void
 SDLSoundChannel::channelComplete(int c)
 {
     if (_activeChannels.size() <= uint(c))
         return;
 
     std::shared_ptr<SDLSoundChannel> channel = _activeChannels[c];
+    _activeChannels.erase(c);
+    channel->_channel = -1;
 
     channel->complete()->execute(channel);
+}
 
-    _activeChannels.erase(c);
-
-    channel->_channel = -1;
+bool
+SDLSoundChannel::playing() const
+{
+    return _channel != -1;
 }

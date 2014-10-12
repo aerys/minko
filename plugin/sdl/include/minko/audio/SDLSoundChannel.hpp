@@ -38,7 +38,10 @@ namespace minko
             friend class SDLAudio;
 
             void
-            stop();
+            stop() override;
+
+            bool
+            playing() const override;
 
             Ptr
             transform(std::shared_ptr<SoundTransform> value) override;
@@ -50,6 +53,10 @@ namespace minko
 
         protected:
             SDLSoundChannel(std::shared_ptr<Sound> sound);
+
+        private:
+            void
+            channel(int c);
 
         private:
             int _channel;

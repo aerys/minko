@@ -68,6 +68,10 @@ namespace minko
             void
             stop() = 0;
 
+            virtual
+            bool
+            playing() const = 0;
+
             ~SoundChannel()
             {
             }

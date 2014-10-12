@@ -31,6 +31,9 @@ using namespace minko::audio;
 void
 PositionalSound::update(scene::Node::Ptr target)
 {
+    if (!_channel->playing())
+        return;
+
     // To compute the 3D volume, we need:
     // - the camera position in world space
     auto camera = getActiveCameraNode(target);
