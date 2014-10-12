@@ -34,6 +34,8 @@ namespace minko
         std::shared_ptr<SDLAudio>
         create(std::shared_ptr<Canvas> canvas);
 
+        ~SDLAudio();
+
     private:
         SDLAudio(std::shared_ptr<Canvas> canvas);
     };

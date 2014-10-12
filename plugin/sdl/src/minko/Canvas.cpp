@@ -776,6 +776,7 @@ void
 Canvas::quit()
 {
     _active = false;
+    _audio = nullptr;
 }
 
 Canvas::WorkerPtr
