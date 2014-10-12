@@ -739,20 +739,19 @@ Canvas::step()
     auto absoluteTime = std::chrono::high_resolution_clock::now();
     _relativeTime   = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - _startTime).count(); // in milliseconds
     _frameDuration  = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - _previousTime).count(); // in milliseconds
+    _framerate = 1000.f / _frameDuration;
 
     _enterFrame->execute(that, _relativeTime, _frameDuration);
     _previousTime = absoluteTime;
 
     _backend->swapBuffers(that);
 
-    // framerate in seconds
-    _framerate = 1000.f / _frameDuration;
+    auto curFrameDuration  = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - _previousTime).count(); // in milliseconds
+    auto remainingTime = (1000.f / _desiredFramerate) - curFrameDuration;
 
-    if (_framerate > _desiredFramerate)
+    if (remainingTime > 0)
     {
-        _backend->wait(that, (1000.f / _desiredFramerate) - _frameDuration);
-
-        _framerate = _desiredFramerate;
+        _backend->wait(that, remainingTime);
     }
 }
 
