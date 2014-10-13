@@ -99,7 +99,7 @@ WebVROculus::initializeOVRDevice()
     eval += "                                                                \n";
     eval += "if (navigator.getVRDevices) {                                   \n";
     eval += "    navigator.getVRDevices().then(vrDeviceCallback);            \n";
-    eval += "} else if (navigator.mozGetVRDevices) {                         \n";
+    eval += "} else if (navigator.getVRDevices) {                         \n";
     eval += "    navigator.mozGetVRDevices(vrDeviceCallback);                \n";
     eval += "}                                                               \n";
 
@@ -154,14 +154,10 @@ WebVROculus::initialize(std::shared_ptr<component::SceneManager> sceneManager)
 bool
 WebVROculus::detected()
 {
-    /* Doesn't work, these variables always contain something even without the Oculus plugged in
-    auto eval = std::string("navigator.getVRDevices != undefined || navigator.mozGetVRDevices != undefined");
-    bool result = emscripten_run_script_int(eval.c_str());
+    auto eval = std::string("if (navigator.getVRDevices != undefined || navigator.mozGetVRDevices != undefined) (1); else (0);");
+    bool result = emscripten_run_script_int(eval.c_str()) != 0;
 
     return result;
-    */
-
-    return true;
 }
 
 void
