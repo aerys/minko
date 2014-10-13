@@ -34,6 +34,10 @@ minko.project.library = function(name)
 		buildoptions {
 			"-g4"					-- for source maps
 		}
+	configuration { "html5", "release" }
+		buildoptions {
+			"-O3"					-- for source maps
+		}
 
 	configuration { }
 end
@@ -193,14 +197,17 @@ minko.project.application = function(name)
 	if premake.tools.gcc.tools.emscripten then
 	configuration { "html5", "release" }
 		local emcc = premake.tools.gcc.tools.emscripten.cc
-		local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O2'
+		local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O3'
+
+		linkoptions('--llvm-lto 1')
 
 		-- enable the closure compiler
 		cmd = cmd .. ' --closure 1 -s CLOSURE_ANNOTATIONS=1'
 		-- treat undefined symbol warnings as errors
 		cmd = cmd .. ' -s ERROR_ON_UNDEFINED_SYMBOLS=1'
-		-- disable exception catching
-		cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=0'
+        -- disable exception catching
+		--cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=1'
+
 		--[[
 			optimize (very) long functions by breaking them into smaller ones
 
@@ -341,7 +348,7 @@ minko.project.worker = function(name)
 		local emcc = premake.tools.gcc.tools.emscripten.cc
 
 		postbuildcommands {
-			emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.js -O2 --closure 1 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 -s EXPORTED_FUNCTIONS="[\'minkoWorkerEntryPoint\']" || ' .. minko.action.fail()
+			emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.js -O3 --closure 1 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 -s EXPORTED_FUNCTIONS="[\'minkoWorkerEntryPoint\']" || ' .. minko.action.fail()
 		}
 	end
 	
