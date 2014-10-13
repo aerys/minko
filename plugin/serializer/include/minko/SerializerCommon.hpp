@@ -7,9 +7,9 @@
 
 #define MINKO_SCENE_HEADER_SIZE        30;
 
-#define MINKO_SCENE_VERSION_HI        0
-#define MINKO_SCENE_VERSION_LO        2
-#define MINKO_SCENE_VERSION_BUILD    2
+#define MINKO_SCENE_VERSION_HI          0
+#define MINKO_SCENE_VERSION_LO          2
+#define MINKO_SCENE_VERSION_BUILD       3
 
 namespace minko
 {
