@@ -170,7 +170,16 @@ HTTPProtocol::load()
         //emscripten_async_wget_data(resolvedFilename().c_str(), loader.get(), &completeHandler, &errorHandler);
 
         //EMSCRIPTEN >= 1.13.1
-        emscripten_async_wget2_data(resolvedFilename().c_str(), "GET", "", loader.get(), 0, &wget2CompleteHandler, &errorHandler, &progressHandler);
+        emscripten_async_wget2_data(
+            resolvedFilename().c_str(),
+            "GET",
+            "",
+            loader.get(),
+            0,
+            &wget2CompleteHandler,
+            &wget2ErrorHandler,
+            &wget2ProgressHandler
+        );
     }
     else
     {
@@ -258,8 +267,20 @@ HTTPProtocol::load()
 
 #if defined(EMSCRIPTEN)
 void
-HTTPProtocol::wget2CompleteHandler(void* arg, void* data, unsigned int * size)
+HTTPProtocol::wget2CompleteHandler(unsigned int id, void* arg, void* data, unsigned int size)
 {
-    HTTPProtocol::completeHandler(arg, data, (unsigned int)(size));
+    HTTPProtocol::completeHandler(arg, data, size);
+}
+
+void
+HTTPProtocol::wget2ErrorHandler(unsigned int id, void* arg, int code, const char* message)
+{
+    HTTPProtocol::errorHandler(arg, code, message);
+}
+
+void
+HTTPProtocol::wget2ProgressHandler(unsigned int id, void* arg, int loadedBytes, int totalBytes)
+{
+    HTTPProtocol::progressHandler(arg, loadedBytes, totalBytes);
 }
 #endif
