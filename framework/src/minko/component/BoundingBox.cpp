@@ -161,14 +161,14 @@ BoundingBox::updateWorldSpaceBox()
 
 	_invalidWorldSpaceBox = false;
 
-	if (!target()->data().hasProperty("transform.modelToWorldMatrix"))
+	if (!target()->data().hasProperty("modelToWorldMatrix"))
 	{
 		_worldSpaceBox->topRight(_box->topRight());
 		_worldSpaceBox->bottomLeft(_box->bottomLeft());
 	}
 	else
 	{
-		auto t = target()->data().get<math::mat4>("transform.modelToWorldMatrix");
+		auto t = target()->data().get<math::mat4>("modelToWorldMatrix");
 		auto vertices = _box->getVertices();
 		auto numVertices = vertices.size();
 
