@@ -108,9 +108,6 @@ solution "minko"
 
 	-- example
 	if not _OPTIONS['no-example'] then
-		-- To remove
-		include 'example/test'
-		
 		include 'example/clone'
 		include 'example/assimp'
 		include 'example/cube'
