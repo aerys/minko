@@ -20,15 +20,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 -- fx plugin
 minko.plugin.fx = {}
 
-function minko.plugin.fx:enable()
+minko.plugin.fx.enable = function()
 	defines { "MINKO_PLUGIN_FX" }
 	
-	minko.plugin.links { "fx" }
-	includedirs { minko.plugin.path("fx") .. "/include" }
-	
-	prelinkcommands {
-		minko.action.copy(minko.plugin.path("fx") .. "/asset"),
-	}
+	configuration { "ConsoleApp or WindowedApp" }
+		minko.plugin.links { "fx" }
+		includedirs { minko.plugin.path("fx") .. "/include" }
+		
+		prelinkcommands {
+			minko.action.copy(minko.plugin.path("fx") .. "/asset"),
+		}
 end
 
 newoption {

@@ -20,13 +20,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 -- lua plugin
 minko.plugin.lua = {}
 
-function minko.plugin.lua:enable()
+minko.plugin.lua.enable = function()
 	defines {
 		"MINKO_PLUGIN_LUA",
 		"LUA_USE_POSIX"
 	}
-
-	minko.plugin.links { "lua" }
 
 	includedirs {
 		minko.plugin.path("lua") .. "/include",
@@ -34,12 +32,15 @@ function minko.plugin.lua:enable()
 		minko.plugin.path("lua") .. "/lib/LuaGlue/include",
 	}
 
-	prelinkcommands {
-		minko.action.copy(minko.plugin.path("lua") .. "/asset"),
-	}
+	configuration { "ConsoleApp or WindowedApp" }
+		minko.plugin.links { "lua" }
+
+		prelinkcommands {
+			minko.action.copy(minko.plugin.path("lua") .. "/asset"),
+		}
 end
 
-function minko.plugin.lua:dist(pluginDistDir)
+minko.plugin.lua.dist = function(pluginDistDir)
 	os.mkdir(pluginDistDir .. '/lib/lua/include')
 	minko.os.copyfiles(
 		minko.plugin.path("lua") .. "/lib/lua/include",

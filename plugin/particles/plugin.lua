@@ -20,20 +20,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 -- particles plugin
 minko.plugin.particles = {}
 
-function minko.plugin.particles:enable()
+minko.plugin.particles.enable = function()
 	defines { "MINKO_PLUGIN_PARTICLES" }
 
-	minko.plugin.links { "particles" }
+	configuration { "ConsoleApp or WindowedApp" }
+		minko.plugin.links { "particles" }
 
-	minko.plugin.enable("serializer")
-	
-	includedirs {
-		minko.plugin.path("particles") .. "/include"
-	}
-	
-	prelinkcommands {
-		minko.action.copy(minko.plugin.path("particles") .. "/asset"),
-	}
+		minko.plugin.enable("serializer")
+		
+		includedirs {
+			minko.plugin.path("particles") .. "/include"
+		}
+		
+		prelinkcommands {
+			minko.action.copy(minko.plugin.path("particles") .. "/asset"),
+		}
 end
 
 newoption {

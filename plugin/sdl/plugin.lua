@@ -30,27 +30,27 @@ function minko.plugin.sdl:enable()
 		minko.plugin.path("sdl") .. "/lib/sdl/include",
 	}
 
-	configuration { "windows32" }
+	configuration { "windows32", "ConsoleApp or WindowedApp" }
 		links { "SDL2", "SDL2main" }
 		libdirs { minko.plugin.path("sdl") .. "/lib/sdl/lib/windows32" }
 		prelinkcommands {
 			minko.action.copy(minko.plugin.path("sdl") .. "/lib/sdl/lib/windows32/*.dll")
 		}
 
-	configuration { "windows64" }
+	configuration { "windows64", "ConsoleApp or WindowedApp" }
 		links { "SDL2", "SDL2main" }
 		libdirs { minko.plugin.path("sdl") .. "/lib/sdl/lib/windows64" }
 		prelinkcommands {
 			minko.action.copy(minko.plugin.path("sdl") .. "/lib/sdl/lib/windows64/*.dll")
 		}
 
-	configuration { "linux32" }
+	configuration { "linux32", "ConsoleApp or WindowedApp" }
 		links { "SDL2" }
 
-	configuration { "linux64" }
+	configuration { "linux64", "ConsoleApp or WindowedApp" }
 		links { "SDL2" }
 
-	configuration { "osx64" }
+	configuration { "osx64", "ConsoleApp or WindowedApp" }
 		links {
 			"SDL2",
 			-- "CoreFoundation.framework",
@@ -62,7 +62,7 @@ function minko.plugin.sdl:enable()
 		}
 		libdirs { minko.plugin.path("sdl") .. "/lib/sdl/lib/osx64" }
 
-	configuration { "ios" }
+	configuration { "ios", "ConsoleApp or WindowedApp" }
 		links {
 			"SDL2",
 			"CoreAudio.framework",
@@ -70,17 +70,17 @@ function minko.plugin.sdl:enable()
 		}
 		libdirs { minko.plugin.path("sdl") .. "/lib/sdl/lib/ios" }
 
-	configuration { "html5" }
+	configuration { "html5", "ConsoleApp or WindowedApp" }
 		removeincludedirs { minko.plugin.path("sdl") .. "/lib/sdl/include" }
 		includedirs { "SDL" }
 		minko.plugin.enable { "webgl" }
 
-	configuration { "android" }
+	configuration { "android", "ConsoleApp or WindowedApp" }
 		links { "SDL2" }
 		libdirs { minko.plugin.path("sdl") .. "/lib/sdl/lib/android" }
 		minko.plugin.enable { "android" }
 
-	configuration { "offscreen" }
+	configuration { "offscreen", "ConsoleApp or WindowedApp" }
 		minko.plugin.enable { "offscreen" }
 
 end
