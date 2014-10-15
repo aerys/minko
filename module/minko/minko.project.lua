@@ -325,8 +325,18 @@ minko.project.application = function(name)
 			minko.action.copy("asset")
 		}
 
-        configuration { "with-offscreen" }
-                minko.plugin.enable { "offscreen" }
+	configuration { "android", "debug" }
+		libdirs {
+			minko.sdk.path("/framework/bin/android/debug")
+		}
+
+	configuration { "android", "release" }
+		libdirs {
+			minko.sdk.path("/framework/bin/android/release")
+		}
+
+    configuration { "with-offscreen" }
+            minko.plugin.enable { "offscreen" }
 
 	configuration { }
 
