@@ -254,7 +254,7 @@ ComponentSerializer::serializeBoundingBox(NodePtr 			    node,
 					 				      DependencyPtr 	    dependencies)
 {
     auto                boundingBox = std::static_pointer_cast<component::BoundingBox>(component);
-	math::Box::Ptr 		box 		= node->component<component::BoundingBox>()->box();
+	math::Box::Ptr 		box 		= node->component<component::BoundingBox>()->modelSpaceBox();
 	const math::vec3&	topRight 	= box->topRight();
     const math::vec3& 	bottomLeft  = box->bottomLeft();
 

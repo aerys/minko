@@ -114,6 +114,16 @@ namespace minko
 				return _worldSpaceBox;
 			}
 
+			inline
+			std::shared_ptr<math::Box>
+			modelSpaceBox()
+			{
+				if (_invalidBox)
+					update();
+
+				return _box;
+			}
+
 			void
 			update();
 
