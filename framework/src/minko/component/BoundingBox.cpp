@@ -173,7 +173,7 @@ BoundingBox::updateWorldSpaceBox()
 		auto numVertices = vertices.size();
 
 		for (uint i = 0; i < numVertices; ++i)
-			vertices[i] = (math::vec4(vertices[i], 1.f) * t).xyz();
+			vertices[i] = (t * math::vec4(vertices[i], 1.f)).xyz();
 
 		auto max = math::vec3(
 			-std::numeric_limits<float>::max(),
