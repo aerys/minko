@@ -261,6 +261,8 @@ Minko.copyTouchList = function(touches)
 		copiedTouch.pageY = pageY;
 		copiedTouch.screenX = screenX;
 		copiedTouch.screenY = screenY;
+		copiedTouch.clientX = screenX;
+		copiedTouch.clientY = screenY;
 
     	result.push(copiedTouch);
     }
@@ -295,7 +297,7 @@ Minko.bindRedispatchEvents = function() //EMSCRIPTEN
 		for(var k in a)
 			Minko.window.addEventListener(a[k], Minko.redispatchMouseEvent);
 	}
-	
+
 	a = ['touchstart', 'touchend', 'touchmove', 'touchcancel']
 
 	for(var k in a)
