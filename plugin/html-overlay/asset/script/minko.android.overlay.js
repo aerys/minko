@@ -39,11 +39,39 @@
 		
 		accessor.addEventListener(type, function(event)
 		{
-			var eventIndex = accessor.minkoEvents.length - 1;
-			console.log("GET AN EVENT FROM JS: " + type + "(event index: " + eventIndex + ")");
+			//var eventIndex = accessor.minkoEvents.length - 1;
+			//console.log("GET AN EVENT FROM JS: " + type + "(event index: " + eventIndex + ")");
 
+			/*
 			if (type != "touchmove" || type == "touchmove" && accessor.minkoEvents.length < 10)
 				accessor.minkoEvents.push(event);
+			*/
+			console.log('JS Event: ' + type + ' (' + event.currentTarget.minkoName + ')');
+			
+			eventData = {};
+			eventData.type = type;
+			eventData.clientX = event.clientX;
+			eventData.clientY = event.clientY;
+			eventData.pageX = event.pageX;
+			eventData.pageY = event.pageY;
+			eventData.layerX = event.layerX;
+			eventData.layerY = event.layerY;
+			eventData.screenX = event.screenX;
+			eventData.screenY = event.screenY;
+			
+			if (type.indexOf("touch") != -1)
+			{
+				eventData.changedTouches = [];
+				for (var i = 0; i < event.changedTouches.length; i++)
+				{
+					eventData.changedTouches[i] = {};
+					eventData.changedTouches[i].clientX = event.changedTouches[i].clientX;
+					eventData.changedTouches[i].clientY = event.changedTouches[i].clientY;
+					eventData.changedTouches[i].identifier = event.changedTouches[i].identifier;
+				}
+			}
+			
+			MinkoNativeInterface.onmessage(event.currentTarget.minkoName, JSON.stringify(eventData));
 		});
 	};
 

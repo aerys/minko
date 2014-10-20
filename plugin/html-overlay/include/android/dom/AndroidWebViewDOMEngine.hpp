@@ -154,6 +154,9 @@ namespace android
 			static
 			int _domUid;
 
+            static 
+            std::multimap<std::string, minko::dom::JSEventData> events;
+
         private:
 
 			AndroidWebViewDOM::Ptr _currentDOM;

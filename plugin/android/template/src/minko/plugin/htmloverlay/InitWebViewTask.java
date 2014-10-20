@@ -39,7 +39,7 @@ public class InitWebViewTask implements Runnable
     public void run() 
 	{
 		ViewGroup layout = SDLActivity.getLayout();
-		layout.setBackgroundColor(Color.RED);
+		//layout.setBackgroundColor(Color.RED);
 		
 		// Create the WebView from SDLActivity context
 		_webView = new MinkoWebView(SDLActivity.getContext());
@@ -88,11 +88,9 @@ public class InitWebViewTask implements Runnable
 		_jsInterface = new WebViewJSInterface();		
 		_webView.addJavascriptInterface(_jsInterface, "MinkoNativeInterface");
 		
-		/*
 		// Increase WebView performances
 		_webView.getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
         _webView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
-		*/
 		
 		d("MINKOJAVA", "WEBVIEW IS NOW INSTANCIATED: " + _webView);
 		webViewInitialized();

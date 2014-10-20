@@ -123,37 +123,37 @@ namespace android
 			style(std::string name, std::string value);
 
             // Events
-			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
+			minko::Signal<minko::dom::JSEventData>::Ptr
 			onclick();
 
-			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
+			minko::Signal<minko::dom::JSEventData>::Ptr
 			onmousedown();
 
-			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
+			minko::Signal<minko::dom::JSEventData>::Ptr
 			onmousemove();
 
-			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
+			minko::Signal<minko::dom::JSEventData>::Ptr
 			onmouseup();
 
-			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
+			minko::Signal<minko::dom::JSEventData>::Ptr
 			onmouseout();
 
-			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
+			minko::Signal<minko::dom::JSEventData>::Ptr
 			onmouseover();
 
-            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMTouchEvent>>::Ptr
+            minko::Signal<minko::dom::JSEventData, int>::Ptr
             ontouchdown();
             
-            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMTouchEvent>>::Ptr
+            minko::Signal<minko::dom::JSEventData, int>::Ptr
             ontouchup();
             
-            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMTouchEvent>>::Ptr
+            minko::Signal<minko::dom::JSEventData, int>::Ptr
             ontouchmotion();
 
-            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
+            minko::Signal<minko::dom::JSEventData>::Ptr
             onchange();
 
-            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
+            minko::Signal<minko::dom::JSEventData>::Ptr
             oninput();
             
             void
@@ -180,16 +180,16 @@ namespace android
 			std::string _jsAccessor;
 
             // Events
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onclick;
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmousedown;
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmousemove;
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmouseup;
+			minko::Signal<minko::dom::JSEventData>::Ptr _onclick;
+			minko::Signal<minko::dom::JSEventData>::Ptr _onmousedown;
+			minko::Signal<minko::dom::JSEventData>::Ptr _onmousemove;
+			minko::Signal<minko::dom::JSEventData>::Ptr _onmouseup;
             
-            minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmouseout;
-            minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmouseover;
+            minko::Signal<minko::dom::JSEventData>::Ptr _onmouseout;
+            minko::Signal<minko::dom::JSEventData>::Ptr _onmouseover;
 
-			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _oninput;
-			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onchange;
+			minko::Signal<minko::dom::JSEventData>::Ptr _oninput;
+			minko::Signal<minko::dom::JSEventData>::Ptr _onchange;
             
             bool _onclickSet;
             bool _onmousedownSet;
@@ -199,9 +199,9 @@ namespace android
             bool _onmouseoverSet;
             bool _onmouseoutSet;
             
-            minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Ptr _ontouchdown;
-            minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Ptr _ontouchup;
-            minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Ptr _ontouchmotion;
+            minko::Signal<minko::dom::JSEventData, int>::Ptr _ontouchdown;
+            minko::Signal<minko::dom::JSEventData, int>::Ptr _ontouchup;
+            minko::Signal<minko::dom::JSEventData, int>::Ptr _ontouchmotion;
             
             bool _ontouchdownSet;
             bool _ontouchupSet;

@@ -11,13 +11,14 @@ public class WebViewJSInterface
 	public static String Result = "[UNKNOWN]";
 
 	// Native functions
-	public native void minkoNativeOnMessage(String message);
-	public native void minkoNativeOnJSResult(String jsResult);
+	public native void minkoNativeOnMessage(String accessor, String message);
+	//public native void minkoNativeOnJSResult(String jsResult);
 	
 	@JavascriptInterface
-	public void onmessage(String message)
+	public void onmessage(String accessor, String message)
 	{
-		minkoNativeOnMessage(message);
+		d("MINKOJAVA", message);
+		minkoNativeOnMessage(accessor, message);
 	}
 	
 	@JavascriptInterface

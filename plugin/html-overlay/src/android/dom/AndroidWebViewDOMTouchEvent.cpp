@@ -66,12 +66,6 @@ AndroidWebViewDOMTouchEvent::type()
 	return std::string(result);
 }
 
-minko::dom::AbstractDOMElement::Ptr
-AndroidWebViewDOMTouchEvent::target()
-{
-	return AndroidWebViewDOMElement::getDOMElement(_jsAccessor + ".target", _engine);
-}
-
 int
 AndroidWebViewDOMTouchEvent::clientX()
 {

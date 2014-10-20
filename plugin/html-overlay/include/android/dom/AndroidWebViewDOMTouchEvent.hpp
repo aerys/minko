@@ -78,7 +78,6 @@ namespace android
 			int
 			pageY();
 
-
 			int
 			layerX();
 

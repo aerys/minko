@@ -26,6 +26,7 @@ namespace minko
 {
 	namespace dom
 	{
+		struct JSEventData;
 		class AbstractDOMEvent;
         class AbstractDOMMouseEvent;
         class AbstractDOMTouchEvent;
@@ -129,35 +130,35 @@ namespace minko
 			style(std::string name, std::string value) = 0;
 
 			virtual
-			Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
+			Signal<JSEventData>::Ptr
 			onclick() = 0;
 
 			virtual
-			Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
+			Signal<JSEventData>::Ptr
 			onmousedown() = 0;
 
 			virtual
-			Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
+			Signal<JSEventData>::Ptr
 			onmousemove() = 0;
 
 			virtual
-			Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
+			Signal<JSEventData>::Ptr
 			onmouseup() = 0;
 
 			virtual
-			Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
+			Signal<JSEventData>::Ptr
 			onmouseout() = 0;
 
 			virtual
-			Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
+			Signal<JSEventData>::Ptr
 			onmouseover() = 0;
 
             virtual
-            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
+            Signal<JSEventData>::Ptr
             onchange() = 0;
 
             virtual
-            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
+            Signal<JSEventData>::Ptr
             oninput() = 0;
 
 		private:
