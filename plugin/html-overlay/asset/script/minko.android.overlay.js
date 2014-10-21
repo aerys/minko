@@ -48,6 +48,10 @@
 			*/
 			console.log('JS Event: ' + type + ' (' + event.currentTarget.minkoName + ')');
 			
+			// Workaround for API 19 to properly fire touchmove
+			if (type == "touchstart" || type == "touchend")
+				event.preventDefault();
+			
 			eventData = {};
 			eventData.type = type;
 			eventData.clientX = event.clientX;
@@ -71,7 +75,10 @@
 				}
 			}
 			
-			MinkoNativeInterface.onmessage(event.currentTarget.minkoName, JSON.stringify(eventData));
+			var jsonStringify = JSON.stringify(eventData);
+			console.log(jsonStringify);
+			
+			MinkoNativeInterface.onEvent(event.currentTarget.minkoName, jsonStringify);
 		});
 	};
 
@@ -91,6 +98,7 @@
 
 	window.Minko = m;
 	
+	/*
 	if (!window.Minko.onmessage)
 	{
 		window.Minko.onmessage = function(message)
@@ -99,10 +107,12 @@
 		}
 	}
 	window.Minko.messagesToSend = [];
-
+	*/
+	
 	window.Minko.sendMessage = function(message)
 	{
-		window.Minko.messagesToSend.push(message);
+		console.log("Send message: " + message);
+		MinkoNativeInterface.onMessage(message);
 	}
 	
 	console.log("Finished to inject JS into web page.");

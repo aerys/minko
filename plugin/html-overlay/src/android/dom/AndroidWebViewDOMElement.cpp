@@ -481,6 +481,20 @@ AndroidWebViewDOMElement::update()
                     _onchange->execute(jsEventData);
                 else if (type == "input")
                     _oninput->execute(jsEventData);
+                /*
+                else if (type == "click")
+                    _onclick->execute(jsEventData);
+                else if (type == "mousedown")
+                    _onmousedown->execute(jsEventData);
+                else if (type == "mouseup")
+                    _onmouseup->execute(jsEventData);
+                else if (type == "mousemove")
+                    _onmousemove->execute(jsEventData);
+                else if (type == "mouseover")
+                    _onmouseover->execute(jsEventData);
+                else if (type == "mouseout")
+                    _onmouseout->execute(jsEventData);
+                */
                 else if (type.find("touch") == 0)
                 {
                     // Get number of finger
@@ -494,12 +508,14 @@ AndroidWebViewDOMElement::update()
                         {
                             LOGI("TOUCHSTART");
                             _ontouchdown->execute(jsEventData, i);
-
                             // If it's the first finger
                             if (_engine->touchNumber() == 1)
                             {
                                 // Set the first finger id
                                 _engine->firstFingerId(fingerId);
+
+                            	jsEventData.clientX = jsEventData.changedTouches[i].clientX;
+                            	jsEventData.clientY = jsEventData.changedTouches[i].clientY;
 
                                 _onmousedown->execute(jsEventData);
                             }
@@ -508,11 +524,13 @@ AndroidWebViewDOMElement::update()
                         {
                             LOGI("TOUCHEND");
                             _ontouchup->execute(jsEventData, i);
-
                             // If it's the first finger
                             if (fingerId == _engine->firstFingerId())
                             {
                                 _engine->firstFingerId(-1);
+
+                            	jsEventData.clientX = jsEventData.changedTouches[i].clientX;
+                            	jsEventData.clientY = jsEventData.changedTouches[i].clientY;
 
                                 _onclick->execute(jsEventData);
                                 _onmouseup->execute(jsEventData);
@@ -522,28 +540,17 @@ AndroidWebViewDOMElement::update()
                         {
                             LOGI("TOUCHMOVE");
                             _ontouchmotion->execute(jsEventData, i);
-
                             // If it's the first finger
                             if (fingerId == _engine->firstFingerId())
                             {
+                            	jsEventData.clientX = jsEventData.changedTouches[i].clientX;
+                            	jsEventData.clientY = jsEventData.changedTouches[i].clientY;
+                            	
                                 _onmousemove->execute(jsEventData);
                             }
                         }
                     }
                 }
-
-/*                if (type == "click")
-                    _onclick->execute(jsEventData);
-                else if (type == "mousedown")
-                    _onmousedown->execute(jsEventData);
-                else if (type == "mouseup")
-                    _onmouseup->execute(jsEventData);
-                else if (type == "mousemove")
-                    _onmousemove->execute(jsEventData);
-                else if (type == "mouseover")
-                    _onmouseover->execute(jsEventData);
-                else if (type == "mouseout")
-                    _onmouseout->execute(jsEventData);*/
 
 
                 AndroidWebViewDOMEngine::events.erase(it);

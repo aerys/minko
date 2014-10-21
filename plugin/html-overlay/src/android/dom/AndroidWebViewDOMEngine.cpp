@@ -52,6 +52,9 @@ AndroidWebViewDOMEngine::_domUid = 0;
 static Signal<>::Ptr onWebViewInitialized = Signal<>::create();
 static Signal<>::Ptr onWebViewPageLoaded = Signal<>::create();
 
+// JS messages
+std::vector<std::string> AndroidWebViewDOMEngine::messages;
+
 // JS events
 std::multimap<std::string, minko::dom::JSEventData> AndroidWebViewDOMEngine::events;
 
@@ -83,25 +86,40 @@ void Java_minko_plugin_htmloverlay_MinkoWebViewClient_webViewPageLoaded(JNIEnv* 
     onWebViewPageLoaded->execute();
 }
 
-void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnMessage(JNIEnv* env, jobject obj, jstring accessor, jstring message)
+void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnMessage(JNIEnv* env, jobject obj, jstring message)
 {
     LOGI("RECEIVED A MESSAGE FROM JS: ");
  
-    const char *nativeAccessor = env->GetStringUTFChars(accessor, 0);
     const char *nativeMessage = env->GetStringUTFChars(message, 0);
 
     // Don't forget to release jstring!
-    env->ReleaseStringUTFChars(accessor, 0);
     env->ReleaseStringUTFChars(message, 0);
 
     LOGI("Native onMessage");
-    LOGI(nativeAccessor);
     LOGI(nativeMessage);
+
+    AndroidWebViewDOMEngine::messages.push_back(std::string(nativeMessage));
+}
+
+void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent(JNIEnv* env, jobject obj, jstring accessor, jstring eventData)
+{
+    LOGI("RECEIVED AN EVENT FROM JS: ");
+ 
+    const char *nativeAccessor = env->GetStringUTFChars(accessor, 0);
+    const char *nativeEvent = env->GetStringUTFChars(eventData, 0);
+
+    // Don't forget to release jstring!
+    env->ReleaseStringUTFChars(accessor, 0);
+    env->ReleaseStringUTFChars(eventData, 0);
+
+    LOGI("Native onEvent");
+    LOGI(nativeAccessor);
+    LOGI(nativeEvent);
 
     Json::Value root;
     Json::Reader reader;
 
-    if (!reader.parse(nativeMessage, root, false))
+    if (!reader.parse(nativeEvent, root, false))
         LOGI(reader.getFormattedErrorMessages().c_str());
 
     // Store values of this JS event
@@ -118,6 +136,7 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnMessage(JNIEn
     jsEventData.screenY = root.get("screenY", 0).asInt();
 
     LOGI(jsEventData.type.c_str());
+
     /*
     LOGI(std::to_string(jsEventData.clientX).c_str());
     LOGI(std::to_string(jsEventData.clientY).c_str());
@@ -307,30 +326,23 @@ AndroidWebViewDOMEngine::enterFrame(float time)
 
     	if (_currentDOM->initialized() && _isReady)
     	{
-            /*
-            std::string jsEval = "(Minko.messagesToSend.length);";
-            std::string evalResult = eval(jsEval);
-            int l = atoi(evalResult.c_str());
+            auto l = AndroidWebViewDOMEngine::messages.size();
 
-    		if (l > 0)
-    		{
-                std::cout << "Messages found!" << std::endl;
-    			for(int i = 0; i < l; ++i)
-    			{
-                    jsEval = "(Minko.messagesToSend[" + std::to_string(i) + "])";
+            if (l > 0)
+            {
+                LOGI("Message found!");
+                for(int i = 0; i < l; ++i)
+                {
+                    auto message = AndroidWebViewDOMEngine::messages[i];
+                    LOGI(std::string("Message: " + message).c_str());
                     
-    				std::string message = eval(jsEval);
-                    
-                    std::cout << "Message: " << message << std::endl;
-                    
-    				_currentDOM->onmessage()->execute(_currentDOM, message);
-    				_onmessage->execute(_currentDOM, message);
-    			}
+                    _currentDOM->onmessage()->execute(_currentDOM, message);
+                    _onmessage->execute(_currentDOM, message);
+                }
 
-                jsEval = "Minko.messagesToSend = [];";
-    			eval(jsEval);
-    		}
-            */
+                // Don't forget to remove the message from the list
+                AndroidWebViewDOMEngine::messages.clear();
+            }
     	}
 
         _updateNextFrame = false;
@@ -452,6 +464,8 @@ AndroidWebViewDOMEngine::registerDomEvents()
         _canvas->mouse()->x(x);
         _canvas->mouse()->y(y);
         
+        LOGI(std::string("Mouse down (" + std::to_string(x) + ", " + std::to_string(y) + ")").c_str());
+
         _canvas->mouse()->leftButtonDown()->execute(_canvas->mouse());
     });
 
@@ -477,20 +491,30 @@ AndroidWebViewDOMEngine::registerDomEvents()
         auto oldX = _canvas->mouse()->x();
         auto oldY = _canvas->mouse()->y();
         
+        LOGI(std::string("Mouse move (" + std::to_string(x) + ", " + std::to_string(y) + "|" + std::to_string(oldX) + ", " + std::to_string(oldY) + ")").c_str());
+
+
         _canvas->mouse()->move()->execute(_canvas->mouse(), x - oldX, y - oldY);
     });
     
     ontouchdownSlot = std::static_pointer_cast<AndroidWebViewDOMElement>(_currentDOM->document())->ontouchdown()->connect([&](JSEventData event, int touchId)
     {
         int fingerId = event.changedTouches[touchId].identifier;
-        float x = event.clientX;
-        float y = event.clientY;
-        
+        float x = event.changedTouches[touchId].clientX;
+        float y = event.changedTouches[touchId].clientY;
+
+        LOGI("OnTouchDownSlot:");
+        LOGI("X:");
+        LOGI(std::to_string(x).c_str());
+        LOGI("Y:");
+        LOGI(std::to_string(y).c_str());
         SDL_Event sdlEvent;
         sdlEvent.type = SDL_FINGERDOWN;
         sdlEvent.tfinger.fingerId = fingerId;
         sdlEvent.tfinger.x =  x / _canvas->width();
         sdlEvent.tfinger.y = y / _canvas->height();
+
+        LOGI("SDL push event (touch down).");
 
         SDL_PushEvent(&sdlEvent);
         
@@ -506,8 +530,8 @@ AndroidWebViewDOMEngine::registerDomEvents()
     ontouchupSlot = std::static_pointer_cast<AndroidWebViewDOMElement>(_currentDOM->document())->ontouchup()->connect([&](JSEventData event, int touchId)
     {
         int fingerId = event.changedTouches[touchId].identifier;
-        float x = event.clientX;
-        float y = event.clientY;
+        float x = event.changedTouches[touchId].clientX;
+        float y = event.changedTouches[touchId].clientY;
         
         SDL_Event sdlEvent;
         sdlEvent.type = SDL_FINGERUP;
@@ -529,8 +553,8 @@ AndroidWebViewDOMEngine::registerDomEvents()
         int fingerId = event.changedTouches[touchId].identifier;
         float oldX = _touches.at(fingerId)->minko::input::Touch::x();
         float oldY = _touches.at(fingerId)->minko::input::Touch::y();
-        float x = event.clientX;
-        float y = event.clientY;
+        float x = event.changedTouches[touchId].clientX;
+        float y = event.changedTouches[touchId].clientY;
         
         SDL_Event sdlEvent;
         sdlEvent.type = SDL_FINGERMOTION;

@@ -54,7 +54,7 @@ public class InitWebViewTask implements Runnable
 		_webView.setWebViewClient(new MinkoWebViewClient());
 		
         // Transparent background
-        _webView.setBackgroundColor(0xaaff0000);
+        _webView.setBackgroundColor(0x00ff0000);
         _webView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
 
 		// Scale to fit the page

@@ -155,6 +155,9 @@ namespace android
 			int _domUid;
 
             static 
+            std::vector<std::string> messages;
+
+            static 
             std::multimap<std::string, minko::dom::JSEventData> events;
 
         private:
