@@ -27,18 +27,19 @@ namespace minko
 	{
 		enum ComponentId
 		{
-			TRANSFORM			= 100,
-			PROJECTION_CAMERA	= 101,
-			AMBIENT_LIGHT		= 102,
-			DIRECTIONAL_LIGHT	= 103,
-			POINT_LIGHT			= 104,
-			SPOT_LIGHT			= 105,
-			SURFACE				= 106,
-			RENDERER			= 107,
-			BOUNDINGBOX			= 108,
-			ANIMATION			= 109,
-			SKINNING			= 110,
-            PARTICLES           = 60
+			TRANSFORM			    = 100,
+			PROJECTION_CAMERA	    = 101,
+			AMBIENT_LIGHT		    = 102,
+			DIRECTIONAL_LIGHT	    = 103,
+			POINT_LIGHT			    = 104,
+			SPOT_LIGHT			    = 105,
+			SURFACE				    = 106,
+			RENDERER			    = 107,
+			BOUNDINGBOX			    = 108,
+			ANIMATION			    = 109,
+			SKINNING			    = 110,
+            PARTICLES               = 60,
+            COMPONENT_ID_EXTENSION  = 111
 		};
 
 		enum MinkoTypes
