@@ -52,7 +52,7 @@ SDLAudio::create(std::shared_ptr<Canvas> canvas)
 
 SDLAudio::~SDLAudio()
 {
-    Mix_CloseAudio();
     Mix_ChannelFinished(nullptr);
     Mix_AllocateChannels(0);
+    Mix_CloseAudio();
 }
