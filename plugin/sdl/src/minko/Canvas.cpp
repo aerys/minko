@@ -405,6 +405,7 @@ Canvas::step()
                 if (_keyboard->_keyboardState[i] && _keyboard->hasKeyUpSignal(code))
                     _keyboard->keyUp(code)->execute(_keyboard, i);
             }
+            break;
         }
 
         case SDL_MOUSEMOTION:
