@@ -32,20 +32,27 @@
 		return result;
 	};
 	
+	m.touchstartEventFlags = [];
+	
 	m.addListener = function(accessor, type)
 	{
-		if(!accessor.minkoEvents)
-			accessor.minkoEvents = [];
-		
+		if (type == "touchstart")
+			m.touchstartEventFlags[accessor] = false;
+			
 		accessor.addEventListener(type, function(event)
 		{
-			//var eventIndex = accessor.minkoEvents.length - 1;
-			//console.log("GET AN EVENT FROM JS: " + type + "(event index: " + eventIndex + ")");
-
-			/*
-			if (type != "touchmove" || type == "touchmove" && accessor.minkoEvents.length < 10)
-				accessor.minkoEvents.push(event);
-			*/
+			// Work around for touchstart event that is fired twice
+			if (type == "touchstart") 
+			{
+				if (!m.touchstartEventFlags[accessor])
+				{
+					m.touchstartEventFlags[accessor] = true;
+					setTimeout(function(){ m.touchstartEventFlags[accessor] = false; }, 100);
+				}
+				else
+					return;
+			}
+				
 			console.log('JS Event: ' + type + ' (' + event.currentTarget.minkoName + ')');
 			
 			// Workaround for API 19 to properly fire touchmove
@@ -82,38 +89,13 @@
 		});
 	};
 
-	m.getEventsCount = function(accessor)
-	{
-		if(accessor && accessor.minkoEvents)
-			return accessor.minkoEvents.length;
-		else
-			return 0;
-	};
-
-	m.clearEvents = function(accessor)
-	{
-		if(accessor)
-			accessor.minkoEvents = [];
-	};
-
-	window.Minko = m;
-	
-	/*
-	if (!window.Minko.onmessage)
-	{
-		window.Minko.onmessage = function(message)
-		{
-			console.log('MINKO: ' + message);
-		}
-	}
-	window.Minko.messagesToSend = [];
-	*/
-	
-	window.Minko.sendMessage = function(message)
+	m.sendMessage = function(message)
 	{
 		console.log("Send message: " + message);
 		MinkoNativeInterface.onMessage(message);
 	}
+	
+	window.Minko = m;
 	
 	console.log("Finished to inject JS into web page.");
 })();
