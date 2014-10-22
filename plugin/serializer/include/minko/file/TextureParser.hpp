@@ -79,17 +79,18 @@ namespace minko
 
             static
             bool
-            parseRGBATexture(const std::string& fileName,
-                             OptionsPtr options,
-                             const std::vector<unsigned char>& data,
-                             AssetLibraryPtr assetLibrary);
+            parseRGBATexture(const std::string&                 fileName,
+                             OptionsPtr                         options,
+                             const std::vector<unsigned char>&  data,
+                             AssetLibraryPtr                    assetLibrary);
 
             static
             bool
-            parseRGBDXT1Texture(const std::string& fileName,
-                                OptionsPtr options,
-                                const std::vector<unsigned char>& data,
-                                AssetLibraryPtr assetLibrary);
+            parsePVRTexture(render::TextureFormat               format,
+                            const std::string&                  fileName,
+                            OptionsPtr                          options,
+                            const std::vector<unsigned char>&   data,
+                            AssetLibraryPtr                     assetLibrary);
         };
     }
 }

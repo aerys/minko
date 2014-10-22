@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/PNGParser.hpp"
+#include "minko/file/PVRParser.hpp"
 #include "minko/file/TextureParser.hpp"
 #include "minko/file/TextureWriter.hpp"
 #include "minko/render/AbstractContext.hpp"
@@ -37,7 +38,7 @@ std::unordered_map<render::TextureFormat, TextureParser::FormatParserFunction> T
 {
     { TextureFormat::RGB, std::bind(parseRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
     { TextureFormat::RGBA, std::bind(parseRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
-    { TextureFormat::RGB_DXT1, std::bind(parseRGBDXT1Texture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) }
+    { TextureFormat::RGB_DXT1, std::bind(parsePVRTexture, TextureFormat::RGB_DXT1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) }
 };
 
 TextureParser::TextureParser() :
@@ -159,19 +160,20 @@ TextureParser::parseRGBATexture(const std::string& fileName,
 }
 
 bool
-TextureParser::parseRGBDXT1Texture(const std::string& fileName,
-                                   Options::Ptr options,
-                                   const std::vector<unsigned char>& data,
-                                   AssetLibrary::Ptr assetLibrary)
+TextureParser::parsePVRTexture(TextureFormat                        format,
+                               const std::string&                   fileName,
+                               Options::Ptr                         options,
+                               const std::vector<unsigned char>&    data,
+                               AssetLibrary::Ptr                    assetLibrary)
 {
     msgpack::unpacked unpacked;
     msgpack::unpack(&unpacked, reinterpret_cast<const char*>(data.data()), data.size());
 
     auto deserializedTexture = unpacked.get().as<std::vector<unsigned char>>();
 
-    auto parser = DDSParser::create();
+    auto parser = PVRParser::create();
 
-    parser->targetTextureFormat(TextureFormat::RGB_DXT1);
+    parser->targetTextureFormat(format);
 
     parser->parse(fileName, fileName, options, deserializedTexture, assetLibrary);
 

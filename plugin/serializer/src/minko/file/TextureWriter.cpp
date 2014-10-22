@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/DDSImage.hpp"
 #include "minko/file/Dependency.hpp"
 #include "minko/file/PNGWriter.hpp"
+#include "minko/file/PVRWriter.hpp"
 #include "minko/file/WriterOptions.hpp"
 #include "minko/log/Logger.hpp"
 #include "minko/Types.hpp"
@@ -41,8 +42,8 @@ std::unordered_map<TextureFormat, TextureWriter::FormatWriterFunction> TextureWr
 {
     { TextureFormat::RGB, std::bind(writeRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
     { TextureFormat::RGBA, std::bind(writeRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
-    { TextureFormat::RGB_DXT1, std::bind(writeRGBDXT1Texture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
-    { TextureFormat::RGBA_PVRTC1, std::bind(writeRGBAPVRTC1Texture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) }
+    { TextureFormat::RGB_DXT1, std::bind(writePVRTexture, TextureFormat::RGB_DXT1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
+    { TextureFormat::RGBA_PVRTC1, std::bind(writePVRTexture, TextureFormat::RGBA_PVRTC1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) }
 };
 
 TextureWriter::TextureWriter() :
@@ -126,86 +127,18 @@ TextureWriter::writeRGBATexture(AbstractTexture::Ptr abstractTexture,
     return true;
 }
 
-static
 bool
-pvrWrite(AbstractTexture::Ptr abstractTexture,
-         TextureFormat textureFormat,
-         WriterOptions::Ptr writerOptions,
-         std::vector<unsigned char>& dst)
+TextureWriter::writePVRTexture(TextureFormat        textureFormat,
+                               AbstractTexture::Ptr abstractTexture,
+                               WriterOptions::Ptr   writerOptions,
+                               std::stringstream&   blob)
 {
-    static const auto textureFormatToPvrTextureFomat = std::unordered_map<TextureFormat, EPVRTPixelFormat>
-    {
-        { TextureFormat::RGB_DXT1, ePVRTPF_DXT1 },
-        { TextureFormat::RGBA_DXT3, ePVRTPF_DXT3 },
-        { TextureFormat::RGBA_DXT5, ePVRTPF_DXT5 },
+    auto out = std::vector<unsigned char>();
 
-        { TextureFormat::RGB_PVRTC1, ePVRTPF_PVRTCI_4bpp_RGB },
-        { TextureFormat::RGBA_PVRTC1, ePVRTPF_PVRTCI_4bpp_RGBA },
-        { TextureFormat::RGB_PVRTC2, ePVRTPF_PVRTCII_4bpp },
-        { TextureFormat::RGBA_PVRTC2, ePVRTPF_PVRTCII_4bpp }
-    };
-
-    auto texture = std::static_pointer_cast<Texture>(abstractTexture);
-
-    pvrtexture::CPVRTextureHeader pvrHeader(pvrtexture::PVRStandard8PixelType.PixelTypeID,
-                                            texture->height(),
-                                            texture->width(),
-                                            1u,
-                                            1u,
-                                            1u,
-                                            1u,
-                                            ePVRTCSpacesRGB);
-
-    pvrtexture::CPVRTexture pvrTexture(pvrHeader, texture->data().data());
-
-    if (!pvrtexture::Transcode(pvrTexture,
-                               textureFormatToPvrTextureFomat.at(textureFormat),
-                               ePVRTVarTypeUnsignedByteNorm,
-                               ePVRTCSpacesRGB))
-    {
-        LOG_ERROR("PVR: failed to transcode texture");
-
-        return false;
-    }
-
-    auto rawTextureData = reinterpret_cast<const unsigned char*>(pvrTexture.getDataPtr());
-
-    dst.assign(rawTextureData, rawTextureData + pvrTexture.getDataSize());
-
-    return true;
-}
-
-bool
-TextureWriter::writeRGBDXT1Texture(AbstractTexture::Ptr abstractTexture,
-                                   WriterOptions::Ptr writerOptions,
-                                   std::stringstream& blob)
-{
-    auto textureData = std::vector<unsigned char>();
-
-    if (!pvrWrite(abstractTexture, TextureFormat::RGB_DXT1, writerOptions, textureData))
+    if (!PVRWriter::write(abstractTexture, writerOptions, textureFormat, out))
         return false;
 
-    auto ddsImage = DDSImage();
-
-    auto ddsOutputStream = std::stringstream();
-
-    ddsImage.save(ddsOutputStream, abstractTexture, TextureFormat::RGB_DXT1, textureData);
-
-    auto& ddsData = ddsOutputStream.str();
-
-    msgpack::pack(blob, std::vector<unsigned char>(ddsData.begin(), ddsData.end()));
+    msgpack::pack(blob, out);
 
     return true;
-}
-
-bool
-TextureWriter::writeRGBAPVRTC1Texture(AbstractTexture::Ptr abstractTexture,
-                                      WriterOptions::Ptr writerOptions,
-                                      std::stringstream& blob)
-{
-    // TODO
-    // try using PVR texture container
-    // see how to directly write PVR container to stream
-
-    return false;
 }

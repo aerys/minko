@@ -81,20 +81,15 @@ namespace minko
             static
             bool
             writeRGBATexture(AbstractTexturePtr abstractTexture,
-                             WriterOptionsPtr writerOptions,
+                             WriterOptionsPtr   writerOptions,
                              std::stringstream& blob);
 
             static
             bool
-            writeRGBDXT1Texture(AbstractTexturePtr abstractTexture,
-                                WriterOptionsPtr writerOptions,
-                                std::stringstream& blob);
-
-            static
-            bool
-            writeRGBAPVRTC1Texture(AbstractTexturePtr abstractTexture,
-                                   WriterOptionsPtr writerOptions,
-                                   std::stringstream& blob);
+            writePVRTexture(render::TextureFormat   textureFormat,
+                            AbstractTexturePtr      abstractTexture,
+                            WriterOptionsPtr        writerOptions,
+                            std::stringstream&      blob);
         };
     }
 }
