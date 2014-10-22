@@ -336,20 +336,20 @@ namespace minko
         class EffectParser;
         class AssetLibrary;
 
-        class ParserError : public std::runtime_error
+        class Error : public std::runtime_error
         {
         private:
             std::string _type;
 
         public:
             explicit
-            ParserError(const std::string& message) :
+            Error(const std::string& message) :
                 std::runtime_error(message),
                 _type()
             {
             }
 
-            ParserError(const std::string& type, const std::string& message) :
+            Error(const std::string& type, const std::string& message) :
                 std::runtime_error(message),
                 _type(type)
             {
@@ -375,6 +375,7 @@ namespace minko
     {
         class Mouse;
         class Keyboard;
+        class KeyMap;
         class Joystick;
         class Touch;
     }

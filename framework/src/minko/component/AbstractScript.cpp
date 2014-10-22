@@ -95,10 +95,19 @@ AbstractScript::addedOrRemovedHandler(scene::Node::Ptr node, scene::Node::Ptr ta
 void
 AbstractScript::targetRemovedHandler(AbstractComponent::Ptr cmp, scene::Node::Ptr target)
 {
+    _started[target] = false;
+    stop(target);
+    
     _componentAddedSlot     = nullptr;
     _componentRemovedSlot   = nullptr;
     _frameBeginSlot         = nullptr;
     _frameEndSlot           = nullptr;
+
+    if (running(target))
+    {
+        _started[target] = false;
+        stop(target);
+    }
 }
 
 void
@@ -130,6 +139,9 @@ AbstractScript::componentRemovedHandler(scene::Node::Ptr        node,
 void
 AbstractScript::frameBeginHandler(SceneManager::Ptr sceneManager, float time, float deltaTime)
 {
+    _time = time;
+    _deltaTime = deltaTime;
+
     for (auto& target : targets())
     {
         if (!_started[target] && ready(target))
@@ -142,7 +154,10 @@ AbstractScript::frameBeginHandler(SceneManager::Ptr sceneManager, float time, fl
         if (running(target))
             update(target);
         else
+        {
             _started[target] = false;
+            stop(target);
+        }
     }
 }
 

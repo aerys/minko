@@ -26,11 +26,13 @@ else
 end
 
 if not os.isfile(ANDROID .. "/tools/android") then
-	error(color.fg.red .. 'Cannot find SDK tools for Android. Make sure ANDROID points to a correct Android SDK directory.' .. color.reset)
+	print(color.fg.yellow .. 'Cannot find SDK tools for Android. Make sure ANDROID points to a correct Android SDK directory.' .. color.reset)
+	do return end
 end
 
 if not os.isdir(ANDROID .. "/toolchains") then
-	error(color.fg.red .. 'Cannot find NDK tools for Android. Please install NDK in "' .. ANDROID .. '/toolchains" and run `install_jni.sh` or `install_jni.bat`.' .. color.reset)
+	print(color.fg.yellow .. 'Cannot find NDK tools for Android. Please install NDK in "' .. ANDROID .. '/toolchains" and run `install_jni.sh` or `install_jni.bat`.' .. color.reset)
+	do return end
 end
 
 -- writing toolchain name in a fake symlink to avoid actual symlinks on Windows (requiring privileges)

@@ -110,21 +110,25 @@ MasterAnimation::targetAddedHandler(AbstractComponent::Ptr cmp,
 
 	_target = node;
 
-	if (node->hasComponent<Skinning>())
-	{
+	
 		initAnimations();
-	}
+	
 }
 
 void
 MasterAnimation::initAnimations()
 {
-	auto descendants = NodeSet::create(_target)->descendants(true);
+	auto descendants = NodeSet::create(_target->parent())->descendants(true);
 	for (auto descendant : descendants->nodes())
 	{
 		if (descendant->hasComponent<Skinning>())
 		{
 			_animations.push_back(descendant->component<Skinning>());
+		}
+
+		if (descendant->hasComponent<Animation>())
+		{
+			_animations.push_back(descendant->component<Animation>());
 		}
 	}
 

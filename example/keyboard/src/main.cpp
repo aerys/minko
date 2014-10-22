@@ -149,8 +149,8 @@ main(int argc, char** argv)
         if (k->keyIsDown(input::Keyboard::INSERT))
             std::cout << "[Key]Key INSERT down !" << std::endl;
 
-        if (k->keyIsDown(input::Keyboard::DELETE))
-            std::cout << "[Key]Key DELETE down !" << std::endl;
+        if (k->keyIsDown(input::Keyboard::DEL))
+            std::cout << "[Key]Key DEL down !" << std::endl;
 
         if (k->keyIsDown(input::Keyboard::_0))
             std::cout << "[Key]Key _0 down !" << std::endl;

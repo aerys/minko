@@ -33,13 +33,21 @@ namespace minko
             typedef std::shared_ptr<AbstractParser>     Ptr;
 
             std::shared_ptr<Signal<Ptr>>                _complete;
-
+            std::shared_ptr<Signal<Ptr, const Error&>>  _error;
+            
         public:
             inline
             std::shared_ptr<Signal<Ptr>>
             complete()
             {
                 return _complete;
+            }
+            
+            inline
+            std::shared_ptr<Signal<Ptr, const Error&>>
+            error()
+            {
+                return _error;
             }
 
             virtual
@@ -52,7 +60,8 @@ namespace minko
 
         protected:
             AbstractParser() :
-                _complete(Signal<Ptr>::create())
+                _complete(Signal<Ptr>::create()),
+                _error(Signal<Ptr, const Error&>::create())
             {
 
             }

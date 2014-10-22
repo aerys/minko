@@ -14,7 +14,7 @@ following conditions are met:
   following disclaimer.
 
 * Redistributions in binary form must reproduce the above
-  copyright notice, this list of conditions and the
+  copyright notice, this list of conditions and the*
   following disclaimer in the documentation and/or other
   materials provided with the distribution.
 
@@ -176,6 +176,9 @@ const Object* LazyObject::Get(bool dieOnError)
 		else if (!strncmp(obtype,"Texture",length)) {
 			object.reset(new Texture(id,element,doc,name));
 		}
+		else if (!strncmp(obtype,"LayeredTexture",length)) {
+			object.reset(new LayeredTexture(id,element,doc,name));
+		}
 		else if (!strncmp(obtype,"AnimationStack",length)) {
 			object.reset(new AnimationStack(id,element,name,doc));
 		}
@@ -250,8 +253,8 @@ Document::Document(const Parser& parser, const ImportSettings& settings)
 : settings(settings)
 , parser(parser)
 {
-	// cannot use array default initialization syntax because vc8 fails on it
-	for (unsigned int i = 0; i < 7; ++i) {
+	// Cannot use array default initialization syntax because vc8 fails on it
+	for (unsigned int i = 0; i < sizeof(creationTimeStamp) / sizeof(creationTimeStamp[0]); ++i) {
 		creationTimeStamp[i] = 0;
 	}
 
@@ -260,7 +263,7 @@ Document::Document(const Parser& parser, const ImportSettings& settings)
 
 	ReadGlobalSettings();
 
-	// this order is important, connections need parsed objects to check
+	// This order is important, connections need parsed objects to check
 	// whether connections are ok or not. Objects may not be evaluated yet,
 	// though, since this may require valid connections.
 	ReadObjects();
@@ -274,13 +277,18 @@ Document::~Document()
 	BOOST_FOREACH(ObjectMap::value_type& v, objects) {
 		delete v.second;
 	}
+
+	BOOST_FOREACH(ConnectionMap::value_type& v, src_connections) {
+		delete v.second;
+	}
+	// |dest_connections| contain the same Connection objects as the |src_connections|
 }
 
 
 // ------------------------------------------------------------------------------------------------
 void Document::ReadHeader()
 {
-	// read ID objects from "Objects" section
+	// Read ID objects from "Objects" section
 	const Scope& sc = parser.GetRootScope();
 	const Element* const ehead = sc["FBXHeaderExtension"];
 	if(!ehead || !ehead->Compound()) {
@@ -290,7 +298,7 @@ void Document::ReadHeader()
 	const Scope& shead = *ehead->Compound();
 	fbxVersion = ParseTokenAsInt(GetRequiredToken(GetRequiredElement(shead,"FBXVersion",ehead),0));
 
-	// while we maye have some success with newer files, we don't support
+	// While we maye have some success with newer files, we don't support
 	// the older 6.n fbx format
 	if(fbxVersion < 7100) {
 		DOMError("unsupported, old format version, supported are only FBX 2011, FBX 2012 and FBX 2013");
