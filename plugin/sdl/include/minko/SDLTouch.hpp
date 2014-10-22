@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Canvas.hpp"
 #include "minko/input/Touch.hpp"
+#include "minko/math/Vector2.hpp"
 
 namespace minko
 {
@@ -35,35 +36,46 @@ namespace minko
         static
         std::shared_ptr<SDLTouch>
         create(std::shared_ptr<Canvas> canvas);
-
-        void
-        fingerId(int fingerId)
+        
+        inline
+        void addTouch(int identifier, float x, float y)
         {
-            _fingerId = fingerId;
+            if (_touches.find(identifier) != _touches.end())
+            {
+                updateTouch(identifier, x, y);
+            }
+            else
+            {
+                _identifiers.push_back(identifier);
+                _touches[identifier] = math::Vector2::create(x, y);
+            }
         }
 
-        void
-        x(float x)
+        inline
+        void updateTouch(int identifier, float x, float y)
         {
-            _x = float(x);
+            if (_touches.find(identifier) == _touches.end())
+            {
+                addTouch(identifier, x, y);
+            }
+            else
+            {
+                _touches[identifier]->x(x);
+                _touches[identifier]->y(y);
+            }
         }
 
-        void
-        y(float y)
+        inline
+        void removeTouch(int identifier)
         {
-            _y = float(y);
-        }
+            if (_touches.find(identifier) != _touches.end())
+            {
+                _touches.erase(identifier);
+                auto it = std::find(_identifiers.begin(), _identifiers.end(), identifier);
 
-        void
-        dx(float dx)
-        {
-            _dx = float(dx);
-        }
-
-        void
-        dy(float dy)
-        {
-            _dy = float(dy);
+                if (it != _identifiers.end())
+                    _identifiers.erase(it);
+            }
         }
 
     private:
