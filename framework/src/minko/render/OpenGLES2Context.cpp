@@ -1735,17 +1735,21 @@ OpenGLES2Context::availableTextureFormats(std::unordered_map<TextureFormat, unsi
             break;
 # endif
 #elif MINKO_PLATFORM == MINKO_PLATFORM_IOS
-        case COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
+        case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
             formats.insert(std::make_pair(TextureFormat::RGB_PVRTC1, COMPRESSED_RGB_PVRTC_2BPPV1_IMG));
             break;
-        case COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
+        case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
             formats.insert(std::make_pair(TextureFormat::RGBA_PVRTC1, COMPRESSED_RGBA_PVRTC_2BPPV1_IMG));
             break;
-        case COMPRESSED_RGB_PVRTC_2BPPV2_IMG:
+        case GL_COMPRESSED_RGB_PVRTC_2BPPV2_IMG:
             formats.insert(std::make_pair(TextureFormat::RGB_PVRTC2, COMPRESSED_RGB_PVRTC_2BPPV2_IMG));
             break;
-        case COMPRESSED_RGBA_PVRTC_2BPPV2_IMG:
+        case GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG:
             formats.insert(std::make_pair(TextureFormat::RGBA_PVRTC2, COMPRESSED_RGBA_PVRTC_2BPPV2_IMG));
+            break;
+#elif MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+        case GL_OES_compressed_ETC1_RGB8_texture:
+            formats.insert(std::make_paie(TextureFormat::RGB_ETC1, GL_OES_compressed_ETC1_RGB8_texture));
             break;
 #endif
         default:

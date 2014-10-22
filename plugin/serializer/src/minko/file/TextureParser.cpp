@@ -37,7 +37,11 @@ std::unordered_map<render::TextureFormat, TextureParser::FormatParserFunction> T
 {
     { TextureFormat::RGB, std::bind(parseRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
     { TextureFormat::RGBA, std::bind(parseRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
-    { TextureFormat::RGB_DXT1, std::bind(parsePVRTexture, TextureFormat::RGB_DXT1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) }
+    { TextureFormat::RGB_DXT1, std::bind(parsePVRTexture, TextureFormat::RGB_DXT1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
+    { TextureFormat::RGBA_DXT3, std::bind(parsePVRTexture, TextureFormat::RGBA_DXT3, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
+    { TextureFormat::RGBA_DXT5, std::bind(parsePVRTexture, TextureFormat::RGBA_DXT5, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
+    { TextureFormat::RGB_ETC1, std::bind(parsePVRTexture, TextureFormat::RGB_ETC1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
+    { TextureFormat::RGBA_PVRTC1, std::bind(parsePVRTexture, TextureFormat::RGBA_PVRTC1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) }
 };
 
 TextureParser::TextureParser() :

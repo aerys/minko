@@ -117,7 +117,6 @@ namespace minko
             RGBA_DXT5,
 
             RGB_ETC1,
-            RGB_ETC2,
 
             RGB_PVRTC1,
             RGBA_PVRTC1,
@@ -125,7 +124,11 @@ namespace minko
             RGBA_PVRTC2,
 
             RGBA_ATITC1,
-            RGBA_ATITC2
+            RGBA_ATITC2,
+
+            // supported from OES 3.0
+            RGB_ETC2,
+            RGBA_ETC2
         };
 
         class AbstractTexture;
