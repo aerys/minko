@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/PNGParser.hpp"
-#include "minko/file/PVRParser.hpp"
+#include "minko/file/TextureContainer.hpp"
 #include "minko/file/TextureParser.hpp"
 #include "minko/file/TextureWriter.hpp"
 #include "minko/render/AbstractContext.hpp"
@@ -37,11 +37,11 @@ std::unordered_map<render::TextureFormat, TextureParser::FormatParserFunction> T
 {
     { TextureFormat::RGB, std::bind(parseRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
     { TextureFormat::RGBA, std::bind(parseRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
-    { TextureFormat::RGB_DXT1, std::bind(parsePVRTexture, TextureFormat::RGB_DXT1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
-    { TextureFormat::RGBA_DXT3, std::bind(parsePVRTexture, TextureFormat::RGBA_DXT3, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
-    { TextureFormat::RGBA_DXT5, std::bind(parsePVRTexture, TextureFormat::RGBA_DXT5, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
-    { TextureFormat::RGB_ETC1, std::bind(parsePVRTexture, TextureFormat::RGB_ETC1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
-    { TextureFormat::RGBA_PVRTC1, std::bind(parsePVRTexture, TextureFormat::RGBA_PVRTC1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) }
+    { TextureFormat::RGB_DXT1, std::bind(parseCompressedTexture, TextureFormat::RGB_DXT1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
+    { TextureFormat::RGBA_DXT3, std::bind(parseCompressedTexture, TextureFormat::RGBA_DXT3, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
+    { TextureFormat::RGBA_DXT5, std::bind(parseCompressedTexture, TextureFormat::RGBA_DXT5, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
+    { TextureFormat::RGB_ETC1, std::bind(parseCompressedTexture, TextureFormat::RGB_ETC1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
+    { TextureFormat::RGBA_PVRTC1, std::bind(parseCompressedTexture, TextureFormat::RGBA_PVRTC1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) }
 };
 
 TextureParser::TextureParser() :
@@ -163,22 +163,70 @@ TextureParser::parseRGBATexture(const std::string& fileName,
 }
 
 bool
-TextureParser::parsePVRTexture(TextureFormat                        format,
-                               const std::string&                   fileName,
-                               Options::Ptr                         options,
-                               const std::vector<unsigned char>&    data,
-                               AssetLibrary::Ptr                    assetLibrary)
+TextureParser::parseCompressedTexture(TextureFormat                        format,
+                                      const std::string&                   fileName,
+                                      Options::Ptr                         options,
+                                      const std::vector<unsigned char>&    data,
+                                      AssetLibrary::Ptr                    assetLibrary)
 {
     msgpack::unpacked unpacked;
     msgpack::unpack(&unpacked, reinterpret_cast<const char*>(data.data()), data.size());
 
     auto deserializedTexture = unpacked.get().as<std::vector<unsigned char>>();
 
-    auto parser = PVRParser::create();
+    auto width = 0u;
+    auto height = 0u;
+    auto size = 0u;
 
-    parser->targetTextureFormat(format);
+    auto textureType = TextureType();
+    auto textureFormat = TextureFormat();
 
-    parser->parse(fileName, fileName, options, deserializedTexture, assetLibrary);
+    auto textureData = std::vector<unsigned char>();
+
+    if (!TextureContainer::load(
+        deserializedTexture,
+        textureData,
+        width,
+        height,
+        size,
+        textureType,
+        textureFormat))
+    {
+        return false;
+    }
+
+    if (textureFormat != format)
+    {
+        return false;
+    }
+
+    switch (textureType)
+    {
+    case TextureType::Texture2D:
+    {
+        auto texture = render::Texture::create(
+            options->context(),
+            width,
+            height,
+            options->generateMipmaps()
+            );
+
+        texture->data(textureData.data(), format);
+        texture->upload();
+
+        assetLibrary->texture(fileName, texture);
+
+        break;
+    }
+    case TextureType::CubeTexture:
+
+        // TODO fixme
+
+        return false;
+
+    default:
+        break;
+    }
 
     return true;
 }

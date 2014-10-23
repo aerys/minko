@@ -86,11 +86,11 @@ namespace minko
 
             static
             bool
-            parsePVRTexture(render::TextureFormat               format,
-                            const std::string&                  fileName,
-                            OptionsPtr                          options,
-                            const std::vector<unsigned char>&   data,
-                            AssetLibraryPtr                     assetLibrary);
+            parseCompressedTexture(render::TextureFormat               format,
+                                   const std::string&                  fileName,
+                                   OptionsPtr                          options,
+                                   const std::vector<unsigned char>&   data,
+                                   AssetLibraryPtr                     assetLibrary);
         };
     }
 }
