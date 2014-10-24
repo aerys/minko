@@ -44,17 +44,17 @@ namespace minko
                 MINKO_LUAGLUE_BIND_SIGNAL(state, input::Touch::Ptr, float, float);
 
                 inputTouch
-                    .property("x",                  &Touch::x)
-                    .property("y",                  &input::Touch::y)
-                    .property("dx",                 &input::Touch::dx)
-                    .property("dy",                 &input::Touch::dy)
-                    .property("touchDown",         &Touch::touchDown)
-                    .property("touchUp",           &input::Touch::touchUp)
-                    .property("touchMotion",       &input::Touch::touchMotion)
+                    .property("touches",            &input::Touch::touchMove)
+                    .property("numTouches",         &input::Touch::numTouches)
+                    .property("touchDown",          &input::Touch::touchDown)
+                    .property("touchUp",            &input::Touch::touchUp)
+                    .property("touchMove",          &input::Touch::touchMove)
                     .property("swipeLeft",          &input::Touch::swipeLeft)
                     .property("swipeRight",         &input::Touch::swipeRight)
                     .property("swipeUp",            &input::Touch::swipeUp)
                     .property("swipeDown",          &input::Touch::swipeDown)
+                    .property("pinchZoom",          &input::Touch::pinchZoom)
+                    .method("touch",                &input::Touch::touch)
                 ;
             }
         };

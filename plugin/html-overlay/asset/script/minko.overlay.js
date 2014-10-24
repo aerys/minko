@@ -240,6 +240,16 @@ Minko.redispatchMouseEvent = function(event) //EMSCRIPTEN
 	Minko.canvas.dispatchEvent(eventCopy);
 }
 
+Minko.identifiers = [];
+Minko.nextId = 1;
+
+Minko.getTouchId = function(identifier)
+{
+    if (!Minko.identifiers[identifier])
+        Minko.identifiers[identifier] = Minko.nextId++;
+    return Minko.identifiers[identifier];
+}
+
 Minko.copyTouchList = function(touches)
 {
 	var result = [];
@@ -250,12 +260,9 @@ Minko.copyTouchList = function(touches)
     	var touch = touches[i];
 
     	var copiedTouch = {};
-    	for(var j = 0; j < properties.length; ++j)
-    	{
-    		var p = properties[j];
-    		copiedTouch[p] = touch[p];
-    	}
 
+    	copiedTouch.identifier = Minko.getTouchId(touch.identifier);
+        
 		var pageX = 1 + Minko.getOffsetLeft(Minko.iframe) + (touch.pageX || touch.layerX);
 		var pageY = 1 + Minko.getOffsetTop(Minko.iframe) + (touch.pageY || touch.layerY);
 
@@ -266,6 +273,8 @@ Minko.copyTouchList = function(touches)
 		copiedTouch.pageY = pageY;
 		copiedTouch.screenX = screenX;
 		copiedTouch.screenY = screenY;
+		copiedTouch.clientX = screenX;
+		copiedTouch.clientY = screenY;
 
     	result.push(copiedTouch);
     }
@@ -300,7 +309,7 @@ Minko.bindRedispatchEvents = function() //EMSCRIPTEN
 		for(var k in a)
 			Minko.window.addEventListener(a[k], Minko.redispatchMouseEvent);
 	}
-	
+
 	a = ['touchstart', 'touchend', 'touchmove', 'touchcancel']
 
 	for(var k in a)

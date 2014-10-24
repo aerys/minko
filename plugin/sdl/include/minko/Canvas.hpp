@@ -82,8 +82,7 @@ namespace minko
         std::shared_ptr<SDLMouse>                                               _mouse;
         std::unordered_map<int, std::shared_ptr<SDLJoystick>>                   _joysticks;
         std::shared_ptr<SDLKeyboard>                                            _keyboard;
-        std::shared_ptr<SDLTouch>                                               _touch;     // store any finger activity
-        std::vector<std::shared_ptr<SDLTouch>>                                  _touches;   // keep finger order
+        std::shared_ptr<SDLTouch>                                               _touch;
 
         // Events
         Signal<Ptr, float, float>::Ptr                                          _enterFrame;
@@ -93,8 +92,6 @@ namespace minko
         // Joystick events
         Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr      _joystickAdded;
         Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr      _joystickRemoved;
-        // Finger events
-        Signal<std::shared_ptr<input::Touch>, float>::Ptr                       _touchZoom;
 
         std::list<std::shared_ptr<async::Worker>>                               _activeWorkers;
         std::list<Any>                                                          _workerCompleteSlots;
@@ -197,28 +194,6 @@ namespace minko
         touch()
         {
             return _touch;
-        }
-
-        inline
-        std::shared_ptr<input::Touch>
-        touch(uint id)
-        {
-            return id < _touches.size() ? _touches[id] : nullptr;
-        }
-
-        // Multi touch events
-        inline
-        Signal<std::shared_ptr<input::Touch>, float>::Ptr
-        touchZoom()
-        {
-            return _touchZoom;
-        }
-
-        inline
-        uint
-        numTouches()
-        {
-            return _touches.size();
         }
 
         inline

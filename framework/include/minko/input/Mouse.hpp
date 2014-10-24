@@ -37,8 +37,8 @@ namespace minko
         protected:
             std::shared_ptr<AbstractCanvas> _canvas;
 
-            uint                            _x;
-            uint                            _y;
+            int                             _x;
+            int                             _y;
 
             bool                            _leftButtonIsDown;
             bool                            _rightButtonIsDown;
@@ -63,14 +63,14 @@ namespace minko
             }
 
             inline
-            uint
+            int
             x() const
             {
                 return _x;
             }
 
             inline
-            uint
+            int
             y() const
             {
                 return _y;
@@ -78,14 +78,14 @@ namespace minko
 
             inline
             void
-            x(uint x)
+            x(int x)
             {
                 _x = x;
             }
 
             inline
             void
-            y(uint y)
+            y(int y)
             {
                 _y = y;
             }
