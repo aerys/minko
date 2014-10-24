@@ -78,13 +78,14 @@ APKProtocol::load()
     {
         resolvedFilename(realFilename);
 
-        unsigned int size = file->size(file);
+        auto offset = options->seekingOffset();
+        auto size = options->seekedLength() > 0 ? options->seekedLength() : file->size(file);
 
         _progress->execute(shared_from_this(), 0.0);
 
         data().resize(size);
 
-        file->seek(file, RW_SEEK_SET, 0);
+        file->seek(file, offset, RW_SEEK_SET);
         file->read(file, (char*) &data()[0], size, 1);
         file->close(file);
 
