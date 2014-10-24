@@ -49,7 +49,6 @@ PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
 
         { TextureFormat::RGB_PVRTC1, ePVRTPF_PVRTCI_4bpp_RGB },
         { TextureFormat::RGBA_PVRTC1, ePVRTPF_PVRTCI_4bpp_RGBA },
-        { TextureFormat::RGB_PVRTC2, ePVRTPF_PVRTCII_4bpp },
         { TextureFormat::RGBA_PVRTC2, ePVRTPF_PVRTCII_4bpp }
     };
 

@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/TextureContainer.hpp"
 #include "minko/file/TextureParser.hpp"
 #include "minko/file/TextureWriter.hpp"
+#include "minko/log/Logger.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/OpenGLES2Context.hpp"
 #include "minko/render/Texture.hpp"

@@ -120,7 +120,6 @@ namespace minko
 
             RGB_PVRTC1,
             RGBA_PVRTC1,
-            RGB_PVRTC2,
             RGBA_PVRTC2,
 
             RGBA_ATITC1,
