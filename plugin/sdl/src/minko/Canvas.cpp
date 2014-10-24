@@ -336,8 +336,6 @@ Canvas::step()
 #if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
         case SDL_DROPFILE:
         {
-        	LOGI("SDL_DROPFILE");
-        	LOGI(std::string(event.drop.file).c_str());
             _fileDropped->execute(std::string(event.drop.file));
             break;
         }
@@ -475,8 +473,7 @@ Canvas::step()
             break;
         }
 
-#if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
-            // Touch events
+        // Touch events
         case SDL_FINGERDOWN:
         {
 #if defined(DEBUG)
@@ -622,7 +619,6 @@ Canvas::step()
 
             break;
         }
-#endif
         case SDL_JOYAXISMOTION:
         {
             _joysticks[event.jaxis.which]->joystickAxisMotion()->execute(

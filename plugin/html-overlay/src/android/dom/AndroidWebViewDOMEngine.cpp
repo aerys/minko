@@ -157,17 +157,25 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent(JNIEnv*
         for (auto touch : touches)
         {
             JSTouchEventData touchEventData;
+            LOGI("ClientX");
             touchEventData.clientX = touch.get("clientX", 0).asInt();
+            LOGI("ClientY");
             touchEventData.clientY = touch.get("clientY", 0).asInt();
+            LOGI("Identifier");
             touchEventData.identifier = touch.get("identifier", 0).asInt();
-
+            LOGI("push_back_begin");
             changedTouches.push_back(touchEventData);
+            LOGI("push_back_end");
         }
     }
 
+    LOGI("Affect changedTouches");
     jsEventData.changedTouches = changedTouches;
-
-    AndroidWebViewDOMEngine::events.insert(std::make_pair(std::string(nativeAccessor), jsEventData));
+    LOGI("Make pair");
+    auto pair = std::make_pair(std::string(nativeAccessor), jsEventData);
+    LOGI("Insert");
+    AndroidWebViewDOMEngine::events.insert(pair);
+    LOGI("After insertion");
 }
 
 void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnJSResult(JNIEnv* env, jobject obj, jstring jsResult)
@@ -503,18 +511,11 @@ AndroidWebViewDOMEngine::registerDomEvents()
         float x = event.changedTouches[touchId].clientX;
         float y = event.changedTouches[touchId].clientY;
 
-        LOGI("OnTouchDownSlot:");
-        LOGI("X:");
-        LOGI(std::to_string(x).c_str());
-        LOGI("Y:");
-        LOGI(std::to_string(y).c_str());
         SDL_Event sdlEvent;
         sdlEvent.type = SDL_FINGERDOWN;
         sdlEvent.tfinger.fingerId = fingerId;
         sdlEvent.tfinger.x =  x / _canvas->width();
         sdlEvent.tfinger.y = y / _canvas->height();
-
-        LOGI("SDL push event (touch down).");
 
         SDL_PushEvent(&sdlEvent);
         
@@ -551,10 +552,17 @@ AndroidWebViewDOMEngine::registerDomEvents()
     ontouchmotionSlot = std::static_pointer_cast<AndroidWebViewDOMElement>(_currentDOM->document())->ontouchmotion()->connect([&](JSEventData event, int touchId)
     {
         int fingerId = event.changedTouches[touchId].identifier;
-        float oldX = _touches.at(fingerId)->minko::input::Touch::x();
-        float oldY = _touches.at(fingerId)->minko::input::Touch::y();
         float x = event.changedTouches[touchId].clientX;
         float y = event.changedTouches[touchId].clientY;
+        
+        if (fingerId >= _touches.size())
+        {
+            LOGI(std::string("FingerId: " + std::to_string(fingerId)).c_str());
+            return;
+        }
+
+        float oldX = _touches.at(fingerId)->minko::input::Touch::x();
+        float oldY = _touches.at(fingerId)->minko::input::Touch::y();
         
         SDL_Event sdlEvent;
         sdlEvent.type = SDL_FINGERMOTION;

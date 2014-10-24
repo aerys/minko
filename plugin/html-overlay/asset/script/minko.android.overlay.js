@@ -11,26 +11,6 @@
 	console.log("Minko init");
 
 	var m = {};
-
-	m.getOffsetTop = function(element)
-	{
-		var result = 0;
-		while(element){
-			result += element.offsetTop;
-			element = element.offsetParent;
-		}
-		return result;
-	};
-
-	m.getOffsetLeft = function(element)
-	{
-		var result = 0;
-		while(element){
-			result += element.offsetLeft;
-			element = element.offsetParent;
-		}
-		return result;
-	};
 	
 	m.touchstartEventFlags = [];
 	
@@ -52,7 +32,7 @@
 				else
 					return;
 			}
-				
+			
 			console.log('JS Event: ' + type + ' (' + event.currentTarget.minkoName + ')');
 			
 			// Workaround for API 19 to properly fire touchmove

@@ -38,7 +38,7 @@ namespace android
 			typedef std::shared_ptr<AndroidWebViewDOMElement> Ptr;
 
 		private:
-			AndroidWebViewDOMElement(std::string jsAccessor);
+			AndroidWebViewDOMElement(const std::string& jsAccessor);
 
 		public:
 			~AndroidWebViewDOMElement()
@@ -47,26 +47,26 @@ namespace android
 
 			static
 			Ptr
-			getDOMElement(std::string jsElement, std::shared_ptr<AndroidWebViewDOMEngine> engine);
+			getDOMElement(const std::string& jsElement, std::shared_ptr<AndroidWebViewDOMEngine> engine);
 
 			std::string
 			getJavascriptAccessor();
 
 			static
 			Ptr
-			create(std::string javascriptAccessor, std::shared_ptr<AndroidWebViewDOMEngine> engine);
+			create(const std::string& javascriptAccessor, std::shared_ptr<AndroidWebViewDOMEngine> engine);
 
 			std::string
 			id();
 
 			void
-			id(std::string);
+			id(const std::string&);
 
 			std::string
 			className();
 
 			void
-			className(std::string);
+			className(const std::string&);
 
 			std::string
 			tagName();
@@ -81,13 +81,13 @@ namespace android
 			textContent();
 
 			void
-			textContent(std::string);
+			textContent(const std::string&);
 
 			std::string
 			innerHTML();
 
 			void
-			innerHTML(std::string);
+			innerHTML(const std::string&);
 
 			minko::dom::AbstractDOMElement::Ptr
 			appendChild(minko::dom::AbstractDOMElement::Ptr);
@@ -102,13 +102,13 @@ namespace android
 			cloneNode(bool deep = true);
 
 			std::string
-			getAttribute(std::string name);
+			getAttribute(const std::string& name);
 
 			void
-			setAttribute(std::string name, std::string value);
+			setAttribute(const std::string& name, const std::string& value);
 
 			std::vector<minko::dom::AbstractDOMElement::Ptr>
-			getElementsByTagName(std::string tagName);
+			getElementsByTagName(const std::string& tagName);
 
 			std::string
 			value();
@@ -117,10 +117,10 @@ namespace android
 			value(const std::string&);
 
 			std::string
-			style(std::string name);
+			style(const std::string& name);
 
 			void
-			style(std::string name, std::string value);
+			style(const std::string& name, const std::string& value);
 
             // Events
 			minko::Signal<minko::dom::JSEventData>::Ptr
@@ -160,7 +160,7 @@ namespace android
             update();
 		private:
 			void
-			addEventListener(std::string);
+			addEventListener(const std::string&);
             
             void
             initialize(std::shared_ptr<AndroidWebViewDOMEngine> engine);

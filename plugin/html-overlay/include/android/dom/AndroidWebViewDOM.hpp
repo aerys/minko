@@ -39,30 +39,30 @@ namespace android
 			typedef std::shared_ptr<AndroidWebViewDOM> Ptr;
 
 		private:
-			AndroidWebViewDOM(std::string);
+			AndroidWebViewDOM(const std::string&);
 
 		public:
 			static
 			Ptr
-			create(std::string, std::shared_ptr<AndroidWebViewDOMEngine> engine);
+			create(const std::string&, std::shared_ptr<AndroidWebViewDOMEngine> engine);
 
 			void
-			sendMessage(std::string, bool async);
+			sendMessage(const std::string&, bool async);
 
 			void
-			eval(std::string, bool async);
+			eval(const std::string&, bool async);
 
 			minko::dom::AbstractDOMElement::Ptr
-			createElement(std::string);
+			createElement(const std::string&);
 
 			minko::dom::AbstractDOMElement::Ptr
-			getElementById(std::string);
+			getElementById(const std::string&);
 
 			std::vector<minko::dom::AbstractDOMElement::Ptr>
-			getElementsByClassName(std::string);
+			getElementsByClassName(const std::string&);
 
 			std::vector<minko::dom::AbstractDOMElement::Ptr>
-			getElementsByTagName(std::string);
+			getElementsByTagName(const std::string&);
 
 			minko::dom::AbstractDOMElement::Ptr
 			document();
@@ -92,16 +92,16 @@ namespace android
 			initialized(bool);
 
 			std::vector<minko::dom::AbstractDOMElement::Ptr>
-			getElementList(std::string);
+			getElementList(const std::string&);
             
             void
-            runScript(std::string script);
+            runScript(const std::string& script);
             
             std::string
-            runScriptString(std::string script);
+            runScriptString(const std::string& script);
             
             int
-            runScriptInt(std::string script);
+            runScriptInt(const std::string& script);
 
 		private:
 			bool _initialized;

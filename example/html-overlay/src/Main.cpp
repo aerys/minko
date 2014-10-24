@@ -52,9 +52,7 @@ main(int argc, char** argv)
 
     auto canvas = Canvas::create("Minko Example - Overlay");
 
-    auto sceneManager = SceneManager::create(canvas->context());
-
-    overlay->initialize(canvas, sceneManager);
+    auto sceneManager = SceneManager::create(canvas);
 
     // setup assets
     sceneManager->assets()->loader()->options()
@@ -62,8 +60,7 @@ main(int argc, char** argv)
         ->generateMipmaps(true);
 
     sceneManager->assets()->loader()
-        ->queue("effect/Basic.effect")
-        ->queue("effect/Overlay.effect");
+        ->queue("effect/Basic.effect");
 
     sceneManager->assets()->context()->errorsEnabled(true);
 
@@ -71,7 +68,8 @@ main(int argc, char** argv)
     sceneManager->assets()->geometry("cubeGeometry", cubeGeometry);
 
     auto root = scene::Node::create("root")
-        ->addComponent(sceneManager);
+        ->addComponent(sceneManager)
+        ->addComponent(overlay);
 
     auto mesh = scene::Node::create("mesh")
         ->addComponent(Transform::create());
@@ -95,15 +93,11 @@ main(int argc, char** argv)
 
     auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
     {
-        root->addComponent(overlay);
-
         mesh->addComponent(Surface::create(
             sceneManager->assets()->geometry("cubeGeometry"),
             material,
             sceneManager->assets()->effect("effect/Basic.effect")
         ));
-
-        overlay->load("html/interface.html");
     });
 
     onloadSlot = overlay->onload()->connect([=](minko::dom::AbstractDOM::Ptr dom, std::string page)
@@ -123,6 +117,8 @@ main(int argc, char** argv)
             blueScoreElement = gameInterfaceDom->getElementById("teamScoreBlue");
         }
     });
+
+    overlay->load("html/interface.html");
 
     auto rightButtonDown = canvas->mouse()->rightButtonDown()->connect([&](input::Mouse::Ptr m)
     {
@@ -144,8 +140,6 @@ main(int argc, char** argv)
 
     sceneManager->assets()->loader()->load();
     canvas->run();
-
-    overlay->clear();
 
     return 0;
 }

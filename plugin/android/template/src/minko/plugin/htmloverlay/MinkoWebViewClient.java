@@ -41,7 +41,10 @@ public class MinkoWebViewClient extends WebViewClient
 
 		d("MINKOJAVA", "TRY TO INJECT JS INTO THE PAGE LOADED ! (url: " + url + ")");
 		
-        injectScriptFile(view, "script/minko.android.overlay.js");
+        injectScriptFile(view, "script/minko.overlay.js");
+		
+		String evalString = "javascript: Minko.init('androidWebView');";
+		view.loadUrl(evalString);
 
         // Test if the script was loaded
         //view.loadUrl("javascript:window.Minko.testFunction('COUCOU');");

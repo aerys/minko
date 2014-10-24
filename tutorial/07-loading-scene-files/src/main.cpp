@@ -32,7 +32,7 @@ std::string SCENE_FILENAME = "model/myScene/myScene.scene";
 int main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Tutorial - Loading .scene files", WINDOW_WIDTH, WINDOW_HEIGHT);
-    auto sceneManager = SceneManager::create(canvas->context());
+    auto sceneManager = SceneManager::create(canvas);
 
     sceneManager->assets()->loader()->options()->registerParser<minko::file::SceneParser>("scene");
     sceneManager->assets()->loader()->queue("effect/Phong.effect");

@@ -50,7 +50,7 @@ int
 main(int argc, char** argv)
 {
     auto canvas            = Canvas::create("Minko Example - Scene files");
-    auto sceneManager      = SceneManager::create(canvas->context());
+    auto sceneManager      = SceneManager::create(canvas);
     auto defaultLoader     = sceneManager->assets()->loader();
     auto fxLoader          = file::Loader::create(defaultLoader);
 

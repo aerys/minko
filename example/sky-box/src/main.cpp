@@ -37,7 +37,7 @@ int
 main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Example - Skybox");
-    auto sceneManager = SceneManager::create(canvas->context());
+    auto sceneManager = SceneManager::create(canvas);
 
     // setup assets
     auto loader = sceneManager->assets()->loader();

@@ -31,7 +31,7 @@ int
 main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Tutorial - Working with spot lights", WINDOW_WIDTH, WINDOW_HEIGHT);
-    auto sceneManager = component::SceneManager::create(canvas->context());
+    auto sceneManager = component::SceneManager::create(canvas);
 
     // setup assets
     sceneManager->assets()->loader()->options()->generateMipmaps(true);

@@ -55,18 +55,22 @@ EmscriptenDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
 	_canvas = canvas;
 	_sceneManager = sceneManager;
 
-	loadScript("script/minko.emscripten.overlay.js");
+
+	loadScript("script/minko.overlay.js");
+
+	std::string eval = "Minko.init('emscripten');";
+	emscripten_run_script(eval.c_str());
 
 	visible(_visible);
 
 	_canvasResizedSlot = _canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
-		std::string eval = "";
+		std::string ev = "";
 
-		eval += "Minko.iframeElement.style.width = '" + std::to_string(w) + "px';\n";
-		eval += "Minko.iframeElement.style.height = '" + std::to_string(h) + "px';\n";
+		ev += "Minko.iframe.style.width = '" + std::to_string(w) + "px';\n";
+		ev += "Minko.iframe.style.height = '" + std::to_string(h) + "px';\n";
 
-		emscripten_run_script(eval.c_str());
+		emscripten_run_script(ev.c_str());
 	});
 
 	_enterFrameSlot = _sceneManager->frameBegin()->connect([&](std::shared_ptr<component::SceneManager>, float, float)
@@ -139,14 +143,14 @@ EmscriptenDOMEngine::enterFrame()
 
 	if (_currentDOM->initialized())
 	{
-		std::string eval = "(Minko.iframeElement.contentWindow.Minko.messagesToSend.length);";
+		std::string eval = "(Minko.messagesToSend.length);";
 		int l = emscripten_run_script_int(eval.c_str());
 
 		if (l > 0)
 		{
 			for(int i = 0; i < l; ++i)
 			{
-				std::string eval = "(Minko.iframeElement.contentWindow.Minko.messagesToSend[" + std::to_string(i) + "])";
+				std::string eval = "(Minko.messagesToSend[" + std::to_string(i) + "])";
 				char* charMessage = emscripten_run_script_string(eval.c_str());
 
 				std::string message(charMessage);
@@ -155,7 +159,7 @@ EmscriptenDOMEngine::enterFrame()
 				_onmessage->execute(_currentDOM, message);
 			}
 
-			std::string eval = "Minko.iframeElement.contentWindow.Minko.messagesToSend = [];";
+			std::string eval = "Minko.messagesToSend = [];";
 			emscripten_run_script(eval.c_str());
 		}
 	}
@@ -179,8 +183,7 @@ EmscriptenDOMEngine::load(std::string uri)
 
 	std::string eval = "";
 
-	eval += "Minko.loaded = 0;\n";
-	eval += "Minko.iframeElement.src = '" + uri + "';\n";
+	eval += "Minko.loadUrlEmscripten('" + uri + "')\n";
 
 	emscripten_run_script(eval.c_str());
 
@@ -194,8 +197,8 @@ EmscriptenDOMEngine::clear()
 {
 	std::string eval = "";
 
-	eval += "var iframeParent = Minko.iframeElement.parentNode;\n";
-	eval += "iframeParent.removeChild(Minko.iframeElement);";
+	eval += "var iframeParent = Minko.iframe.parentNode;\n";
+	eval += "iframeParent.removeChild(Minko.iframe);";
 
 	emscripten_run_script(eval.c_str());
 }
@@ -224,7 +227,7 @@ EmscriptenDOMEngine::visible(bool value)
 		if (!value)
 			visibility = "hidden";
 
-		eval += "Minko.iframeElement.style.visibility = '" + visibility + "';\n";
+		eval += "Minko.iframe.style.visibility = '" + visibility + "';\n";
 
 		emscripten_run_script(eval.c_str());
 	}

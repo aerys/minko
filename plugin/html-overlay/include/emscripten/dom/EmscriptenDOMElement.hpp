@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
 #include "minko/dom/AbstractDOMElement.hpp"
+#include "minko/dom/AbstractDOMEvent.hpp"
 #include "minko/dom/AbstractDOMMouseEvent.hpp"
 #include "minko/dom/AbstractDOMTouchEvent.hpp"
 
@@ -38,7 +39,7 @@ namespace emscripten
 			typedef std::shared_ptr<EmscriptenDOMElement> Ptr;
 
 		private:
-			EmscriptenDOMElement(std::string jsAccessor);
+			EmscriptenDOMElement(const std::string& jsAccessor);
 
 		public:
 			~EmscriptenDOMElement()
@@ -47,26 +48,32 @@ namespace emscripten
 
 			static
 			Ptr
-			getDOMElement(std::string jsElement);
+			getDOMElement(const std::string& jsElement);
 
 			std::string
 			getJavascriptAccessor();
 
 			static
 			Ptr
-			create(std::string javascriptAccessor);
+			create(const std::string& javascriptAccessor);
 
 			std::string
 			id();
 
 			void
-			id(std::string);
+			id(const std::string&);
+
+			std::string
+			value();
+
+			void
+			value(const std::string& value);
 
 			std::string
 			className();
 
 			void
-			className(std::string);
+			className(const std::string&);
 
 			std::string
 			tagName();
@@ -81,19 +88,13 @@ namespace emscripten
 			textContent();
 
 			void
-			textContent(std::string);
-
-            std::string
-            value();
-
-            void
-            value(const std::string& value);
+			textContent(const std::string&);
 
 			std::string
 			innerHTML();
 
 			void
-			innerHTML(std::string);
+			innerHTML(const std::string&);
 
 			minko::dom::AbstractDOMElement::Ptr
 			appendChild(minko::dom::AbstractDOMElement::Ptr);
@@ -108,19 +109,19 @@ namespace emscripten
 			cloneNode(bool deep = true);
 
 			std::string
-			getAttribute(std::string name);
+			getAttribute(const std::string& name);
 
 			void
-			setAttribute(std::string name, std::string value);
+			setAttribute(const std::string& name, const std::string& value);
 
 			std::vector<minko::dom::AbstractDOMElement::Ptr>
-			getElementsByTagName(std::string tagName);
+			getElementsByTagName(const std::string& tagName);
 
 			std::string
-			style(std::string name);
+			style(const std::string& name);
 
 			void
-			style(std::string name, std::string value);
+			style(const std::string& name, const std::string& value);
 
 			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
 			onclick();
@@ -140,18 +141,18 @@ namespace emscripten
 			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
 			onmouseover();
 
-            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
-            onchange();
+			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
+			onchange();
 
-            minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr
-            oninput();
+			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
+			oninput();
 
 			void
 			update();
 
 		private:
 			void
-			addEventListener(std::string);
+			addEventListener(const std::string&);
 
 		public:
 			static
@@ -167,9 +168,6 @@ namespace emscripten
 
 			std::string _jsAccessor;
 
-            minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr       _onchange;
-            minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr       _oninput;
-
 			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr  _onclick;
 			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr  _onmousedown;
 			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr  _onmousemove;
@@ -178,8 +176,8 @@ namespace emscripten
 			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr  _onmouseover;
 			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr  _onmouseout;
 
-            bool _onchangeSet;
-            bool _oninputSet;
+			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _oninput;
+			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onchange;
 
 			bool _onclickSet;
 			bool _onmousedownSet;
@@ -188,6 +186,9 @@ namespace emscripten
 
 			bool _onmouseoverSet;
 			bool _onmouseoutSet;
+
+			bool _onchangeSet;
+			bool _oninputSet;
 		};
 	}
 }

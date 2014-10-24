@@ -36,7 +36,7 @@ MacWebViewDOM::MacWebViewDOM(std::string jsAccessor) :
 }
 
 MacWebViewDOM::Ptr
-MacWebViewDOM::create(std::string jsAccessor, std::shared_ptr<MacWebViewDOMEngine> engine)
+MacWebViewDOM::create(const std::string& jsAccessor, std::shared_ptr<MacWebViewDOMEngine> engine)
 {
 	Ptr dom(new MacWebViewDOM(jsAccessor));
     dom->_engine = engine;
@@ -58,7 +58,7 @@ std::string replaceAll(std::string str, const std::string& from, const std::stri
 }
 
 void
-MacWebViewDOM::sendMessage(std::string message, bool async)
+MacWebViewDOM::sendMessage(const std::string& message, bool async)
 {
     message = replaceAll(message, "\\", "\\\\");
     message = replaceAll(message, "'", "\\'");
@@ -69,14 +69,14 @@ MacWebViewDOM::sendMessage(std::string message, bool async)
 }
 
 void
-MacWebViewDOM::eval(std::string message, bool async)
+MacWebViewDOM::eval(const std::string& message, bool async)
 {
     std::string ev = _jsAccessor + ".window.eval('" + message + "')";
     _engine->eval(ev);
 }
 
 std::vector<AbstractDOMElement::Ptr>
-MacWebViewDOM::getElementList(std::string expression)
+MacWebViewDOM::getElementList(const std::string& expression)
 {
     std::vector<minko::dom::AbstractDOMElement::Ptr> l;
     
@@ -94,7 +94,7 @@ MacWebViewDOM::getElementList(std::string expression)
 }
 
 AbstractDOMElement::Ptr
-MacWebViewDOM::createElement(std::string element)
+MacWebViewDOM::createElement(const std::string& element)
 {
 	std::string eval = "Minko.tmpElement = " + _jsAccessor + ".document.createElement('" + element + "');";
 
@@ -104,7 +104,7 @@ MacWebViewDOM::createElement(std::string element)
 }
 
 AbstractDOMElement::Ptr
-MacWebViewDOM::getElementById(std::string id)
+MacWebViewDOM::getElementById(const std::string& id)
 {
 	std::string eval = "Minko.tmpElement = " + _jsAccessor + ".document.getElementById('" + id + "');";
 
@@ -114,13 +114,13 @@ MacWebViewDOM::getElementById(std::string id)
 }
 
 std::vector<AbstractDOMElement::Ptr>
-MacWebViewDOM::getElementsByClassName(std::string className)
+MacWebViewDOM::getElementsByClassName(const std::string& className)
 {
 	return getElementList(_jsAccessor + ".document.getElementsByClassName('" + className + "')");
 }
 
 std::vector<AbstractDOMElement::Ptr>
-MacWebViewDOM::getElementsByTagName(std::string tagName)
+MacWebViewDOM::getElementsByTagName(const std::string& tagName)
 {
 	return getElementList(_jsAccessor + ".document.getElementsByTagName('" + tagName + "')");
 }
@@ -202,19 +202,19 @@ MacWebViewDOM::initialized()
 }
 
 void
-MacWebViewDOM::runScript(std::string script)
+MacWebViewDOM::runScript(const std::string& script)
 {
     _engine->eval(script);
 }
 
 std::string
-MacWebViewDOM::runScriptString(std::string script)
+MacWebViewDOM::runScriptString(const std::string& script)
 {
     return _engine->eval(script);
 }
 
 int
-MacWebViewDOM::runScriptInt(std::string script)
+MacWebViewDOM::runScriptInt(const std::string& script)
 {
     return atoi(_engine->eval(script).c_str());
 }

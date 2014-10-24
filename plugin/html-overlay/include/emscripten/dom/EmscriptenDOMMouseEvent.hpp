@@ -36,7 +36,7 @@ namespace emscripten
 			typedef std::shared_ptr<EmscriptenDOMMouseEvent> Ptr;
 
 		private:
-			EmscriptenDOMMouseEvent(std::string jsAccessor):
+			EmscriptenDOMMouseEvent(const std::string& jsAccessor):
 				EmscriptenDOMEvent(jsAccessor)
 			{
 			}
@@ -45,7 +45,7 @@ namespace emscripten
 
 			static
 			Ptr
-			create(std::string jsAccessor)
+			create(const std::string& jsAccessor)
 			{
 				Ptr event(new EmscriptenDOMMouseEvent(jsAccessor));
 				return event;

@@ -45,7 +45,7 @@ AndroidWebViewDOMElement::domElements;
 std::map<std::string,AndroidWebViewDOMElement::Ptr>
 AndroidWebViewDOMElement::_accessorToElement;
 
-AndroidWebViewDOMElement::AndroidWebViewDOMElement(std::string jsAccessor) :
+AndroidWebViewDOMElement::AndroidWebViewDOMElement(const std::string& jsAccessor) :
 	_jsAccessor(jsAccessor),
 	_onclick(Signal<minko::dom::JSEventData>::create()),
 	_onmousedown(Signal<minko::dom::JSEventData>::create()),
@@ -87,7 +87,7 @@ AndroidWebViewDOMElement::initialize(std::shared_ptr<AndroidWebViewDOMEngine> en
 
 
 AndroidWebViewDOMElement::Ptr
-AndroidWebViewDOMElement::getDOMElement(std::string jsElement, std::shared_ptr<AndroidWebViewDOMEngine> engine)
+AndroidWebViewDOMElement::getDOMElement(const std::string& jsElement, std::shared_ptr<AndroidWebViewDOMEngine> engine)
 {
 	std::string js = "if (" + jsElement + ".minkoName) (" + jsElement + ".minkoName); else ('');";
 	std::string minkoName = std::string(engine->eval(js.c_str()));
@@ -111,7 +111,7 @@ AndroidWebViewDOMElement::getDOMElement(std::string jsElement, std::shared_ptr<A
 }
 
 AndroidWebViewDOMElement::Ptr
-AndroidWebViewDOMElement::create(std::string jsAccessor, std::shared_ptr<AndroidWebViewDOMEngine> engine)
+AndroidWebViewDOMElement::create(const std::string& jsAccessor, std::shared_ptr<AndroidWebViewDOMEngine> engine)
 {
 	AndroidWebViewDOMElement::Ptr element(new AndroidWebViewDOMElement(jsAccessor));
     element->initialize(engine);
@@ -138,7 +138,7 @@ AndroidWebViewDOMElement::id()
 }
 
 void
-AndroidWebViewDOMElement::id(std::string newId)
+AndroidWebViewDOMElement::id(const std::string& newId)
 {
 	std::string js = _jsAccessor + ".id = '" + newId + "';";
 	_engine->eval(js);
@@ -154,7 +154,7 @@ AndroidWebViewDOMElement::className()
 }
 
 void
-AndroidWebViewDOMElement::className(std::string newClassName)
+AndroidWebViewDOMElement::className(const std::string& newClassName)
 {
 	std::string js = _jsAccessor + ".className = '" + newClassName + "';";
 	_engine->eval(js);
@@ -194,7 +194,7 @@ AndroidWebViewDOMElement::textContent()
 }
 
 void
-AndroidWebViewDOMElement::textContent(std::string newTextContent)
+AndroidWebViewDOMElement::textContent(const std::string& newTextContent)
 {
 	std::string js = _jsAccessor + ".textContent = '" + newTextContent + "';";
 	_engine->eval(js);
@@ -210,7 +210,7 @@ AndroidWebViewDOMElement::innerHTML()
 }
 
 void
-AndroidWebViewDOMElement::innerHTML(std::string newInnerHTML)
+AndroidWebViewDOMElement::innerHTML(const std::string& newInnerHTML)
 {
 	std::string js = _jsAccessor + ".innerHTML = '" + newInnerHTML + "';";
 	_engine->eval(js);
@@ -257,7 +257,7 @@ AndroidWebViewDOMElement::cloneNode(bool deep)
 }
 
 std::string
-AndroidWebViewDOMElement::getAttribute(std::string name)
+AndroidWebViewDOMElement::getAttribute(const std::string& name)
 {
 	std::string js = "(" + _jsAccessor + ".getAttribute('" + name + "'))";
 	std::string result = _engine->eval(js);
@@ -266,14 +266,14 @@ AndroidWebViewDOMElement::getAttribute(std::string name)
 }
 
 void
-AndroidWebViewDOMElement::setAttribute(std::string name, std::string value)
+AndroidWebViewDOMElement::setAttribute(const std::string& name, const std::string& value)
 {
 	std::string js = _jsAccessor + ".setAttribute('" + name + "', '" + value + "');";
 	_engine->eval(js);
 }
 
 std::vector<minko::dom::AbstractDOMElement::Ptr>
-AndroidWebViewDOMElement::getElementsByTagName(std::string tagName)
+AndroidWebViewDOMElement::getElementsByTagName(const std::string& tagName)
 {
 	return (_engine->currentDOM()->getElementList(_jsAccessor + ".getElementsByTagName('" + tagName + "')"));
 }
@@ -295,7 +295,7 @@ AndroidWebViewDOMElement::value()
 }
 
 std::string
-AndroidWebViewDOMElement::style(std::string name)
+AndroidWebViewDOMElement::style(const std::string& name)
 {
 	std::string js = "(" + _jsAccessor + ".style." + name + ")";
 	std::string result = _engine->eval(js);
@@ -304,14 +304,14 @@ AndroidWebViewDOMElement::style(std::string name)
 }
 
 void
-AndroidWebViewDOMElement::style(std::string name, std::string value)
+AndroidWebViewDOMElement::style(const std::string& name, const std::string& value)
 {
 	std::string js = _jsAccessor + ".style." + name + " = '" + value + "';";
 	_engine->eval(js);
 }
 
 void
-AndroidWebViewDOMElement::addEventListener(std::string type)
+AndroidWebViewDOMElement::addEventListener(const std::string& type)
 {
 	std::string js = "Minko.addListener(" + _jsAccessor + ", '" + type + "');";
 
@@ -471,6 +471,7 @@ AndroidWebViewDOMElement::update()
             {
                 auto jsEventData = it->second;
                 auto type = jsEventData.type;
+
                 /*
                 LOGI("TYPE:");
                 LOGI(type.c_str());
@@ -497,12 +498,18 @@ AndroidWebViewDOMElement::update()
                 */
                 else if (type.find("touch") == 0)
                 {
+                	LOGI("TOUCHEVENT");
+
                     // Get number of finger
                     int touchNumber = jsEventData.changedTouches.size();
+
+                    LOGI(std::string("TOUCHNUMBER: " + touchNumber).c_str());
 
                     for (auto i = 0; i < touchNumber; i++)
                     {
                         int fingerId = jsEventData.changedTouches[i].identifier;
+
+                        LOGI(std::string("FINGERID: " + std::to_string(fingerId)).c_str());
 
                         if (type == "touchstart")
                         {
@@ -551,7 +558,6 @@ AndroidWebViewDOMElement::update()
                         }
                     }
                 }
-
 
                 AndroidWebViewDOMEngine::events.erase(it);
                 it = AndroidWebViewDOMEngine::events.find(_jsAccessor);

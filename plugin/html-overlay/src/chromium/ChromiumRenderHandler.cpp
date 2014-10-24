@@ -203,7 +203,7 @@ ChromiumRenderHandler::drawPopup()
 
 	int popupYMax = _popupY + _popupH;
 
-	for (uint y = _popupY; y < popupYMax && y < _lastH; ++y)
+	for (int y = _popupY; y < popupYMax && y < _lastH; ++y)
 	{
 		if (y > _popupY)
 			charBuffer += _popupW * sizeof(int);
@@ -218,11 +218,11 @@ ChromiumRenderHandler::drawPopup()
 void
 ChromiumRenderHandler::drawRect(unsigned char* source, int x, int y, int w, int h)
 {
-	uint yMax = y + h;
+	int yMax = y + h;
 
 	source += ((y * _lastW) + x) * sizeof(int);
 
-	for (uint currentY = y; currentY < yMax && currentY < _lastH; ++currentY)
+	for (int currentY = y; currentY < yMax && currentY < _lastH; ++currentY)
 	{
 		memcpy(&(renderTexture->data())[((currentY * _texW) + x) * sizeof(int)], source, w * sizeof(int));
 

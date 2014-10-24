@@ -26,7 +26,7 @@ using namespace minko::dom;
 using namespace android;
 using namespace android::dom;
 
-AndroidWebViewDOM::AndroidWebViewDOM(std::string jsAccessor) :
+AndroidWebViewDOM::AndroidWebViewDOM(const std::string& jsAccessor) :
 	_initialized(false),
 	_onload(Signal<AbstractDOM::Ptr, std::string>::create()),
 	_onmessage(Signal<AbstractDOM::Ptr, std::string>::create()),
@@ -36,7 +36,7 @@ AndroidWebViewDOM::AndroidWebViewDOM(std::string jsAccessor) :
 }
 
 AndroidWebViewDOM::Ptr
-AndroidWebViewDOM::create(std::string jsAccessor, std::shared_ptr<AndroidWebViewDOMEngine> engine)
+AndroidWebViewDOM::create(const std::string& jsAccessor, std::shared_ptr<AndroidWebViewDOMEngine> engine)
 {
 	Ptr dom(new AndroidWebViewDOM(jsAccessor));
     dom->_engine = engine;
@@ -45,7 +45,7 @@ AndroidWebViewDOM::create(std::string jsAccessor, std::shared_ptr<AndroidWebView
 }
 
 void
-AndroidWebViewDOM::sendMessage(std::string message, bool async)
+AndroidWebViewDOM::sendMessage(const std::string& message, bool async)
 {
 	std::string eval = _jsAccessor + ".window.Minko.sendMessage('" + message + "');";
 
@@ -53,23 +53,23 @@ AndroidWebViewDOM::sendMessage(std::string message, bool async)
 }
 
 void
-AndroidWebViewDOM::eval(std::string message, bool async)
+AndroidWebViewDOM::eval(const std::string& message, bool async)
 {
     std::string ev = _jsAccessor + ".window.eval('" + message + "')";
     _engine->eval(ev);
 }
 
 std::vector<AbstractDOMElement::Ptr>
-AndroidWebViewDOM::getElementList(std::string expression)
+AndroidWebViewDOM::getElementList(const std::string& expression)
 {
     std::vector<minko::dom::AbstractDOMElement::Ptr> l;
     
-    expression = "Minko.tmpElements = " + expression;
+    auto expr = "Minko.tmpElements = " + expression;
     
-    runScript(expression);
+    runScript(expr);
     
-    expression = "(Minko.tmpElements.length)";
-    int numElements = runScriptInt(expression.c_str());
+    expr = "(Minko.tmpElements.length)";
+    int numElements = runScriptInt(expr.c_str());
     
     for(int i = 0; i < numElements; ++i)
         l.push_back(AndroidWebViewDOMElement::getDOMElement("Minko.tmpElements[" + std::to_string(i) + "]", _engine));
@@ -78,7 +78,7 @@ AndroidWebViewDOM::getElementList(std::string expression)
 }
 
 AbstractDOMElement::Ptr
-AndroidWebViewDOM::createElement(std::string element)
+AndroidWebViewDOM::createElement(const std::string& element)
 {
 	std::string eval = "Minko.tmpElement = " + _jsAccessor + ".document.createElement('" + element + "');";
 
@@ -88,7 +88,7 @@ AndroidWebViewDOM::createElement(std::string element)
 }
 
 AbstractDOMElement::Ptr
-AndroidWebViewDOM::getElementById(std::string id)
+AndroidWebViewDOM::getElementById(const std::string& id)
 {
 	std::string eval = "Minko.tmpElement = " + _jsAccessor + ".document.getElementById('" + id + "');";
 
@@ -98,13 +98,13 @@ AndroidWebViewDOM::getElementById(std::string id)
 }
 
 std::vector<AbstractDOMElement::Ptr>
-AndroidWebViewDOM::getElementsByClassName(std::string className)
+AndroidWebViewDOM::getElementsByClassName(const std::string& className)
 {
 	return getElementList(_jsAccessor + ".document.getElementsByClassName('" + className + "')");
 }
 
 std::vector<AbstractDOMElement::Ptr>
-AndroidWebViewDOM::getElementsByTagName(std::string tagName)
+AndroidWebViewDOM::getElementsByTagName(const std::string& tagName)
 {
 	return getElementList(_jsAccessor + ".document.getElementsByTagName('" + tagName + "')");
 }
@@ -166,9 +166,9 @@ AndroidWebViewDOM::initialized(bool v)
         runScript(_jsAccessor + " = {};");
 
 		std::string eval = "";
-		eval += _jsAccessor + ".window = window;";
-		eval += _jsAccessor + ".document = document;";
-		eval += _jsAccessor + ".body= document.body;";
+		eval += _jsAccessor + ".window = Minko.window;";
+		eval += _jsAccessor + ".document = Minko.document;";
+		eval += _jsAccessor + ".body= Minko.document.body;";
 		
         runScript(eval);
 
@@ -186,19 +186,19 @@ AndroidWebViewDOM::initialized()
 }
 
 void
-AndroidWebViewDOM::runScript(std::string script)
+AndroidWebViewDOM::runScript(const std::string& script)
 {
     _engine->eval(script);
 }
 
 std::string
-AndroidWebViewDOM::runScriptString(std::string script)
+AndroidWebViewDOM::runScriptString(const std::string& script)
 {
     return _engine->eval(script);
 }
 
 int
-AndroidWebViewDOM::runScriptInt(std::string script)
+AndroidWebViewDOM::runScriptInt(const std::string& script)
 {
     return atoi(_engine->eval(script).c_str());
 }

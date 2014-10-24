@@ -30,7 +30,7 @@ int
 main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Example - Lua Scripts");
-    auto sceneManager = SceneManager::create(canvas->context());
+    auto sceneManager = SceneManager::create(canvas);
     auto root = scene::Node::create("root")
         ->addComponent(sceneManager)
         ->addComponent(MouseManager::create(canvas->mouse()));

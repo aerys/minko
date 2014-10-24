@@ -41,7 +41,7 @@ ChromiumApp::initialize(std::shared_ptr<AbstractCanvas> canvas, std::shared_ptr<
 	_context = context;
 	_impl = impl;
 	_impl->renderHandler = new ChromiumRenderHandler(_canvas, _context);
-	_impl->renderProcessHandler = new ChromiumRenderProcessHandler(_impl);
+    _impl->renderProcessHandler = new ChromiumRenderProcessHandler(_impl);
 
 	return _impl->renderHandler->renderTexture;
 }

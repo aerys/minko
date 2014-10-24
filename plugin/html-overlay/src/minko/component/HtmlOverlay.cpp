@@ -16,6 +16,9 @@
 
 #include "minko/component/HtmlOverlay.hpp"
 #include "minko/scene/Node.hpp"
+#include "minko/data/Container.hpp"
+#include "minko/math/Vector4.hpp"
+
 
 using namespace minko;
 using namespace minko::component;
@@ -69,11 +72,8 @@ HtmlOverlay::~HtmlOverlay()
 }
 
 void
-HtmlOverlay::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sceneManager)
+HtmlOverlay::initialize()
 {
-	_canvas = canvas;
-	_sceneManager = sceneManager;
-
 	_targetAddedSlot = targetAdded()->connect(std::bind(
 		&HtmlOverlay::targetAddedHandler,
 		std::static_pointer_cast<HtmlOverlay>(shared_from_this()),
@@ -86,12 +86,19 @@ HtmlOverlay::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sceneManag
 		std::static_pointer_cast<HtmlOverlay>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2
-		));
+	));
 }
 
 void
 HtmlOverlay::targetAddedHandler(AbstractComponent::Ptr ctrl, scene::Node::Ptr target)
 {
+    if (target->root() != nullptr && target->root()->hasComponent<SceneManager>())
+        _sceneManager = target->root()->component<SceneManager>();
+    else
+        throw std::logic_error("root node should have a SceneManager");
+
+    _canvas = _sceneManager->canvas();
+
 #if defined(__APPLE__)
 # include "TargetConditionals.h"
     MacWebViewDOMEngine::Ptr engine = std::dynamic_pointer_cast<MacWebViewDOMEngine>(_domEngine);
