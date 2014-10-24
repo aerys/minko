@@ -30,10 +30,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/log/Logger.hpp"
 #include "minko/Types.hpp"
 
-#include "PVRTextureDefines.h"
-#include "PVRTexture.h"
-#include "PVRTextureUtilities.h"
-
 using namespace minko;
 using namespace minko::file;
 using namespace minko::render;
@@ -138,6 +134,8 @@ TextureWriter::writeCompressedTexture(TextureFormat        textureFormat,
 {
     auto out = std::vector<unsigned char>();
 
+    // TODO
+    // make AbstractTextureTranscoder
     if (!PVRTranscoder::transcode(abstractTexture, writerOptions, textureFormat, out))
         return false;
 

@@ -17,8 +17,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"include",
 		"src",
 		"lib/msgpack-c/include",
-		"lib/msgpack-c/src",
-		"lib/PVRTexTool/Include"
+		"lib/msgpack-c/src"
 	}
 
 	configuration { "windows" }
@@ -47,4 +46,14 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		}
 		defines {
 			"__STDC_FORMAT_MACROS"
+		}
+
+	configuration { "android" or "ios" or "html5" }
+		defines {
+			"MINKO_NO_PVRTEXTOOL"
+		}
+
+	configuration { "windows" or "linux" or "osx" }
+		includedirs {
+			"lib/PVRTexTool/Include"
 		}

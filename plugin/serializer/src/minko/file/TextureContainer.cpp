@@ -127,7 +127,7 @@ TextureContainer::save(AbstractTexture::Ptr                 texture,
         return false;
     }
 
-    auto outStream = std::ostringstream();
+    std::ostringstream outStream;
 
     outStream.write(reinterpret_cast<const char*>(&header), headerSize);
     outStream.write(reinterpret_cast<const char*>(in.data()), size);
