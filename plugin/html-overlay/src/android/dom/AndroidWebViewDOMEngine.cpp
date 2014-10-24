@@ -30,6 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <android/log.h>
 
 #include "minko/dom/AbstractDOMTouchEvent.hpp"
+#include "minko/input/Touch.hpp"
 
 #include "android/dom/AndroidWebViewDOMEngine.hpp"
 #include "android/dom/AndroidWebViewDOMMouseEvent.hpp"
@@ -461,6 +462,21 @@ AndroidWebViewDOMEngine::visible(bool value)
 	_visible = value;
 }
 
+int
+AndroidWebViewDOMEngine::firstFingerId()
+{
+    if (_canvas->touch()->identifiers().size())
+        return _canvas->touch()->identifiers()[0];
+    else
+        return -1;
+}
+
+int
+AndroidWebViewDOMEngine::numTouches()
+{
+    return _canvas->touch()->numTouches();
+}
+
 void
 AndroidWebViewDOMEngine::registerDomEvents()
 {
@@ -519,13 +535,13 @@ AndroidWebViewDOMEngine::registerDomEvents()
 
         SDL_PushEvent(&sdlEvent);
         
-        // Create a new touch object and keep it with a list
-        auto touch = minko::SDLTouch::create(std::static_pointer_cast<Canvas>(_canvas));
-        touch->fingerId(fingerId);
-        touch->x(x);
-        touch->y(y);
+        // // Create a new touch object and keep it with a list
+        // auto touch = minko::SDLTouch::create(std::static_pointer_cast<Canvas>(_canvas));
+        // touch->fingerId(fingerId);
+        // touch->x(x);
+        // touch->y(y);
 
-        _touches.insert(std::pair<int, std::shared_ptr<minko::SDLTouch>>(fingerId, touch));
+        // _touches.insert(std::pair<int, std::shared_ptr<minko::SDLTouch>>(fingerId, touch));
     });
     
     ontouchupSlot = std::static_pointer_cast<AndroidWebViewDOMElement>(_currentDOM->document())->ontouchup()->connect([&](JSEventData event, int touchId)
@@ -543,10 +559,10 @@ AndroidWebViewDOMEngine::registerDomEvents()
         SDL_PushEvent(&sdlEvent);
         
         // We check that the finger is into the list before removing it
-        if (_touches.find(fingerId) != _touches.end())
-        {
-            _touches.erase(fingerId);
-        }
+        // if (_touches.find(fingerId) != _touches.end())
+        // {
+        //     _touches.erase(fingerId);
+        // }
     });
     
     ontouchmotionSlot = std::static_pointer_cast<AndroidWebViewDOMElement>(_currentDOM->document())->ontouchmotion()->connect([&](JSEventData event, int touchId)
@@ -555,14 +571,14 @@ AndroidWebViewDOMEngine::registerDomEvents()
         float x = event.changedTouches[touchId].clientX;
         float y = event.changedTouches[touchId].clientY;
         
-        if (fingerId >= _touches.size())
-        {
-            LOGI(std::string("FingerId: " + std::to_string(fingerId)).c_str());
-            return;
-        }
+        // if (fingerId >= numTouches())
+        // {
+        //     LOGI(std::string("FingerId: " + std::to_string(fingerId)).c_str());
+        //     return;
+        // }
 
-        float oldX = _touches.at(fingerId)->minko::input::Touch::x();
-        float oldY = _touches.at(fingerId)->minko::input::Touch::y();
+        float oldX = _canvas->touch()->touch(fingerId)->x();
+        float oldY = _canvas->touch()->touch(fingerId)->y();
         
         SDL_Event sdlEvent;
         sdlEvent.type = SDL_FINGERMOTION;
@@ -575,8 +591,8 @@ AndroidWebViewDOMEngine::registerDomEvents()
         SDL_PushEvent(&sdlEvent);
         
         // Store finger information
-        _touches.at(fingerId)->x(x);
-        _touches.at(fingerId)->y(y);
+        // _touches.at(fingerId)->x(x);
+        // _touches.at(fingerId)->y(y);
     });
 }
 

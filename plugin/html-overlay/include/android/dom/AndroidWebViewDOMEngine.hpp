@@ -25,11 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "AndroidWebViewDOM.hpp"
 #include <jni.h>
 
-namespace minko
-{
-    class SDLTouch;
-}
-
 namespace android
 {
 	namespace dom
@@ -123,33 +118,11 @@ namespace android
             updateWebViewResolution(int width, int height);
             
         public:
-            inline
-            void
-            firstFingerId(int id)
-            {
-                _firstFingerId = id;
-            }
-            
-            inline
             int
-            firstFingerId()
-            {
-                return _firstFingerId;
-            }
+            firstFingerId();
             
-            inline
-            unsigned long
-            touchNumber()
-            {
-                return _touches.size();
-            }
-            
-            inline
-            std::map<int, std::shared_ptr<minko::SDLTouch>>
-            touches()
-            {
-                return _touches;
-            }
+            int
+            numTouches();
             
 			static
 			int _domUid;
@@ -174,10 +147,6 @@ namespace android
 			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onmessage;
 
             bool _visible;
-
-            // Fingers
-            std::map<int, std::shared_ptr<minko::SDLTouch>> _touches;
-            int _firstFingerId;
 
             bool _waitingForLoad;
             std::string _uriToLoad;

@@ -516,11 +516,8 @@ AndroidWebViewDOMElement::update()
                             LOGI("TOUCHSTART");
                             _ontouchdown->execute(jsEventData, i);
                             // If it's the first finger
-                            if (_engine->touchNumber() == 1)
+                            if (_engine->numTouches() == 0)
                             {
-                                // Set the first finger id
-                                _engine->firstFingerId(fingerId);
-
                             	jsEventData.clientX = jsEventData.changedTouches[i].clientX;
                             	jsEventData.clientY = jsEventData.changedTouches[i].clientY;
 
@@ -534,8 +531,6 @@ AndroidWebViewDOMElement::update()
                             // If it's the first finger
                             if (fingerId == _engine->firstFingerId())
                             {
-                                _engine->firstFingerId(-1);
-
                             	jsEventData.clientX = jsEventData.changedTouches[i].clientX;
                             	jsEventData.clientY = jsEventData.changedTouches[i].clientY;
 
