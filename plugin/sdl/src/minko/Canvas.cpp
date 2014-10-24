@@ -561,8 +561,8 @@ Canvas::step()
                     auto dX2 = x - touch2->x();
                     auto dY2 = y - touch2->y();
                     
-                    auto dist1 = std::sqrtf(std::powf(dX1, 2) + std::powf(dY1, 2));
-                    auto dist2 = std::sqrtf(std::powf(dX2, 2) + std::powf(dY2, 2));
+                    auto dist1 = std::sqrt(std::pow(dX1, 2) + std::pow(dY1, 2));
+                    auto dist2 = std::sqrt(std::pow(dX2, 2) + std::pow(dY2, 2));
                     
                     auto deltaDist = dist2 - dist1;
 
