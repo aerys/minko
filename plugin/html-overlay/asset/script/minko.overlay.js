@@ -86,8 +86,10 @@ Minko.loadedHandler = function(event)
 
 	Minko.bindJsErrors();
 
-	Minko.window.dispatchEvent(new Event('minkoReady'));
-
+	var ev = document.createEvent("Event");
+	ev.initEvent("minkoReady", true, true);
+	Minko.window.dispatchEvent(ev);
+	
 	console.log("Loadedhandler end");
 }
 
