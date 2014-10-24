@@ -83,10 +83,6 @@ Canvas::initialize()
     {
         return file::APKProtocol::create();
     });
-
-    log::Logger::defaultLogger(
-        log::Logger::create(log::Logger::Level::Debug, log::AndroidLogSink::create())
-    );
 #endif
 
     initializeWindow();
@@ -340,6 +336,8 @@ Canvas::step()
 #if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
         case SDL_DROPFILE:
         {
+        	LOGI("SDL_DROPFILE");
+        	LOGI(std::string(event.drop.file).c_str());
             _fileDropped->execute(std::string(event.drop.file));
             break;
         }
@@ -438,6 +436,7 @@ Canvas::step()
             switch (event.button.button)
             {
             case SDL_BUTTON_LEFT:
+            	LOG_DEBUG("Mouse left button down (" + std::to_string(_mouse->x()) + ", " + std::to_string(_mouse->y()) + ")");
                 _mouse->leftButtonDown()->execute(_mouse);
                 break;
             case SDL_BUTTON_RIGHT:
@@ -481,7 +480,7 @@ Canvas::step()
         case SDL_FINGERDOWN:
         {
 #if defined(DEBUG)
-            //std::cout << "Finger down! (x: " << event.tfinger.x << ", y: " << event.tfinger.y << ")" << std::endl;
+            LOG_DEBUG("Finger down! (x: " + std::to_string(event.tfinger.x) + ", y: " + std::to_string(event.tfinger.y) + ")");
 #endif // DEBUG
             _touch->fingerId(event.tfinger.fingerId);
             _touch->x(uint(event.tfinger.x));
@@ -506,7 +505,7 @@ Canvas::step()
         case SDL_FINGERUP:
         {
 #if defined(DEBUG)
-            //std::cout << "Finger up! (x: " << event.tfinger.x << ", y: " << event.tfinger.y << ")" << std::endl;
+            LOG_DEBUG("Finger up! (x: " + std::to_string(event.tfinger.x) + ", y: " + std::to_string(event.tfinger.y) + ")");
 #endif // DEBUG
             _touch->x(uint(event.tfinger.x));
             _touch->y(uint(event.tfinger.y));
@@ -535,14 +534,10 @@ Canvas::step()
         case SDL_FINGERMOTION:
         {
 #if defined(DEBUG)
-            /*
-            std::cout << "Finger motion! "
-            << "("
-            << "x: " << event.tfinger.x << ", y: " << event.tfinger.y
-            << "|"
-            << "dx: " << event.tfinger.dx << ", dy: " << event.tfinger.dy
-            << ")" << std::endl;
-            */
+            LOG_DEBUG("Finger motion! " +
+            std::string("(x: ") + std::to_string(event.tfinger.x) + ", y: " + std::to_string(event.tfinger.y)
+            + "|dx: " + std::to_string(event.tfinger.dx) + ", dy: " + std::to_string(event.tfinger.dy)
+            + ")");
 #endif // DEBUG
             _touch->x(uint(event.tfinger.x));
             _touch->y(uint(event.tfinger.y));

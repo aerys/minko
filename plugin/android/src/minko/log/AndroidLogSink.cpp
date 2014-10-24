@@ -17,38 +17,22 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/log/Logger.hpp"
-#include "minko/log/ConsoleSink.hpp"
+#include "minko/log/AndroidLogSink.hpp"
 
 using namespace minko;
 using namespace minko::log;
 
-int gDefaultLogInitializing = []()
+int gAndroidLogInitializing = []()
 {
-	Logger::initializing()->connect([](Logger::Ptr)
-	{
-		// Nothing.
-	}, 1);
+	__android_log_print(ANDROID_LOG_INFO, "MINKOLOG", "gAndroidLogInitializing!");
+    Logger::initializing()->connect([](Logger::Ptr)
+    {
+    	__android_log_print(ANDROID_LOG_INFO, "MINKOLOG", "Initializing (gAndroidLogInitializing)!");
+    	
+        log::Logger::defaultLogger(
+            log::Logger::create(log::Logger::Level::Debug, log::AndroidLogSink::create())
+        );
+    }, 1000);
 
-	return 0;
+    return 0;
 }();
-
-Logger::Ptr
-Logger::_default = Logger::create(Logger::Level::Debug, ConsoleSink::create());
-
-void
-Logger::operator()(const std::string&	message,
-                   Level 				level,
-                   const char*          function,
-                   const char*          file,
-                   int                  line)
-{
-    if (static_cast<int>(level) < static_cast<int>(_level))
-        return;
-
-    std::ostringstream os;
-
-    os << file << ":" << line << "\t" << function << "(): " << message;
-
-    _sink->write(os.str(), level);
-}
