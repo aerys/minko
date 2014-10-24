@@ -54,13 +54,13 @@ namespace minko
 
 #if defined(EMSCRIPTEN)
             static void
-            wget2CompleteHandler(unsigned int, void*, void *, unsigned int);
+            wget2CompleteHandler(void*, void *, unsigned int*);
 
             static void
-            wget2ErrorHandler(unsigned int, void*, int, const char*);
+            wget2ErrorHandler(void*, int, const char*);
 
             static void
-            wget2ProgressHandler(unsigned int, void*, int, int);
+            wget2ProgressHandler(void*, int, int);
 #endif
 
             static void
