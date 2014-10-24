@@ -45,16 +45,19 @@ AndroidWebViewDOMElement::domElements;
 std::map<std::string,AndroidWebViewDOMElement::Ptr>
 AndroidWebViewDOMElement::_accessorToElement;
 
+std::mutex
+AndroidWebViewDOMElement::_accessorToElementMutex;
+
 AndroidWebViewDOMElement::AndroidWebViewDOMElement(const std::string& jsAccessor) :
 	_jsAccessor(jsAccessor),
-	_onclick(Signal<minko::dom::JSEventData>::create()),
-	_onmousedown(Signal<minko::dom::JSEventData>::create()),
-	_onmousemove(Signal<minko::dom::JSEventData>::create()),
-	_onmouseup(Signal<minko::dom::JSEventData>::create()),
-    _onmouseout(Signal<minko::dom::JSEventData>::create()),
-    _onmouseover(Signal<minko::dom::JSEventData>::create()),
-    _oninput(Signal<minko::dom::JSEventData>::create()),
-    _onchange(Signal<minko::dom::JSEventData>::create()),
+    _onclick(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+    _onmousedown(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+    _onmousemove(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+    _onmouseup(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+    _onmouseout(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+    _onmouseover(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+    _oninput(Signal<AbstractDOMEvent::Ptr>::create()),
+    _onchange(Signal<AbstractDOMEvent::Ptr>::create()),
     _onclickSet(false),
     _onmousedownSet(false),
     _onmousemoveSet(false),
@@ -63,12 +66,12 @@ AndroidWebViewDOMElement::AndroidWebViewDOMElement(const std::string& jsAccessor
     _onmouseoutSet(false),
     _oninputSet(false),
     _onchangeSet(false),
-    _ontouchdown(Signal<minko::dom::JSEventData, int>::create()),
-    _ontouchup(Signal<minko::dom::JSEventData, int>::create()),
-    _ontouchmotion(Signal<minko::dom::JSEventData, int>::create()),
-    _ontouchdownSet(false),
-    _ontouchupSet(false),
-    _ontouchmotionSet(false),
+    _ontouchstart(Signal<AbstractDOMTouchEvent::Ptr>::create()),
+    _ontouchend(Signal<AbstractDOMTouchEvent::Ptr>::create()),
+    _ontouchmove(Signal<AbstractDOMTouchEvent::Ptr>::create()),
+    _ontouchstartSet(false),
+    _ontouchendSet(false),
+    _ontouchmoveSet(false),
     _engine(nullptr)
 {
 }
@@ -78,9 +81,6 @@ AndroidWebViewDOMElement::initialize(std::shared_ptr<AndroidWebViewDOMEngine> en
 {
     _engine = engine;
     
-    LOGI("Initialize: ");
-    LOGI(_jsAccessor.c_str());
-
     std::string jsEval = _jsAccessor + ".minkoName = '" + _jsAccessor + "';";
     _engine->eval(jsEval);
 }
@@ -89,6 +89,17 @@ AndroidWebViewDOMElement::initialize(std::shared_ptr<AndroidWebViewDOMEngine> en
 AndroidWebViewDOMElement::Ptr
 AndroidWebViewDOMElement::getDOMElement(const std::string& jsElement, std::shared_ptr<AndroidWebViewDOMEngine> engine)
 {
+    _accessorToElementMutex.lock();
+
+    auto i = _accessorToElement.find(jsElement);
+
+    if (i != _accessorToElement.end())
+    {
+        _accessorToElementMutex.unlock();
+
+        return i->second;
+    }
+
 	std::string js = "if (" + jsElement + ".minkoName) (" + jsElement + ".minkoName); else ('');";
 	std::string minkoName = std::string(engine->eval(js.c_str()));
 
@@ -99,13 +110,8 @@ AndroidWebViewDOMElement::getDOMElement(const std::string& jsElement, std::share
 		js = minkoName + " = " + jsElement;
 		engine->eval(js);
 	}
-	else
-	{
-		auto i = _accessorToElement.find(minkoName);
 
-		if (i != _accessorToElement.end())
-			return i->second;
-	}
+    _accessorToElementMutex.unlock();
 
 	return create(minkoName, engine);
 }
@@ -113,11 +119,15 @@ AndroidWebViewDOMElement::getDOMElement(const std::string& jsElement, std::share
 AndroidWebViewDOMElement::Ptr
 AndroidWebViewDOMElement::create(const std::string& jsAccessor, std::shared_ptr<AndroidWebViewDOMEngine> engine)
 {
+    _accessorToElementMutex.lock();
+
 	AndroidWebViewDOMElement::Ptr element(new AndroidWebViewDOMElement(jsAccessor));
     element->initialize(engine);
     
     domElements.push_back(element);
 	_accessorToElement[jsAccessor] = element;
+
+    _accessorToElementMutex.unlock();
     
 	return element;
 }
@@ -320,7 +330,7 @@ AndroidWebViewDOMElement::addEventListener(const std::string& type)
 
 // Events
 
-Signal<minko::dom::JSEventData>::Ptr
+Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
 AndroidWebViewDOMElement::onchange()
 {
     if (!_onchangeSet)
@@ -332,7 +342,7 @@ AndroidWebViewDOMElement::onchange()
     return _onchange;
 }
 
-Signal<minko::dom::JSEventData>::Ptr
+Signal<std::shared_ptr<AbstractDOMEvent>>::Ptr
 AndroidWebViewDOMElement::oninput()
 {
     if (!_oninputSet)
@@ -344,31 +354,31 @@ AndroidWebViewDOMElement::oninput()
     return _oninput;
 }
 
-Signal<minko::dom::JSEventData>::Ptr
+Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 AndroidWebViewDOMElement::onclick()
 {
-	if (!_onclickSet)
-	{
-		addEventListener("click");
-		_onclickSet = true;
-	}
+    if (!_onclickSet)
+    {
+        addEventListener("click");
+        _onclickSet = true;
+    }
 
-	return _onclick;
+    return _onclick;
 }
 
-Signal<minko::dom::JSEventData>::Ptr
+Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 AndroidWebViewDOMElement::onmousedown()
 {
-	if (!_onmousedownSet)
-	{
-		addEventListener("mousedown");
-		_onmousedownSet = true;
-	}
+    if (!_onmousedownSet)
+    {
+        addEventListener("mousedown");
+        _onmousedownSet = true;
+    }
 
-	return _onmousedown;
+    return _onmousedown;
 }
 
-Signal<minko::dom::JSEventData>::Ptr
+Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 AndroidWebViewDOMElement::onmouseup()
 {
     if (!_onmouseupSet)
@@ -376,24 +386,24 @@ AndroidWebViewDOMElement::onmouseup()
         addEventListener("mouseup");
         _onmouseupSet = true;
     }
-    
+
     return _onmouseup;
 }
 
 
-Signal<minko::dom::JSEventData>::Ptr
+Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 AndroidWebViewDOMElement::onmousemove()
 {
-	if (!_onmousemoveSet)
-	{
-		addEventListener("mousemove");
-		_onmousemoveSet = true;
-	}
-	
-	return _onmousemove;
+    if (!_onmousemoveSet)
+    {
+        addEventListener("mousemove");
+        _onmousemoveSet = true;
+    }
+
+    return _onmousemove;
 }
 
-Signal<minko::dom::JSEventData>::Ptr
+Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 AndroidWebViewDOMElement::onmouseout()
 {
     if (!_onmouseoutSet)
@@ -401,163 +411,59 @@ AndroidWebViewDOMElement::onmouseout()
         addEventListener("mouseout");
         _onmouseoutSet = true;
     }
-    
+
     return _onmouseout;
 }
 
-
-Signal<minko::dom::JSEventData>::Ptr
+Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 AndroidWebViewDOMElement::onmouseover()
 {
-	if (!_onmouseoverSet)
-	{
-		addEventListener("mouseover");
-		_onmouseoverSet = true;
-	}
+    if (!_onmouseoverSet)
+    {
+        addEventListener("mouseover");
+        _onmouseoverSet = true;
+    }
 
-	return _onmouseover;
+    return _onmouseover;
 }
 
-Signal<minko::dom::JSEventData, int>::Ptr
-AndroidWebViewDOMElement::ontouchdown()
+Signal<std::shared_ptr<AbstractDOMTouchEvent>>::Ptr
+AndroidWebViewDOMElement::ontouchstart()
 {
-    if (!_ontouchdownSet)
+    if (!_ontouchstartSet)
     {
         addEventListener("touchstart");
-        _ontouchdownSet = true;
+        _ontouchstartSet = true;
     }
-    
-    return _ontouchdown;
+
+    return _ontouchstart;
 }
 
-Signal<minko::dom::JSEventData, int>::Ptr
-AndroidWebViewDOMElement::ontouchup()
+Signal<std::shared_ptr<AbstractDOMTouchEvent>>::Ptr
+AndroidWebViewDOMElement::ontouchend()
 {
-    if (!_ontouchupSet)
+    if (!_ontouchendSet)
     {
         addEventListener("touchend");
-        _ontouchupSet = true;
+        _ontouchendSet = true;
     }
-    
-    return _ontouchup;
+
+    return _ontouchend;
 }
 
-Signal<minko::dom::JSEventData, int>::Ptr
-AndroidWebViewDOMElement::ontouchmotion()
+Signal<std::shared_ptr<AbstractDOMTouchEvent>>::Ptr
+AndroidWebViewDOMElement::ontouchmove()
 {
-    if (!_ontouchmotionSet)
+    if (!_ontouchmoveSet)
     {
         addEventListener("touchmove");
-        _ontouchmotionSet = true;
+        _ontouchmoveSet = true;
     }
-    
-    return _ontouchmotion;
+
+    return _ontouchmove;
 }
 
 void
 AndroidWebViewDOMElement::update()
 {
-    if (_engine->isReady())
-    {
-        auto eventNumber = AndroidWebViewDOMEngine::events.size();
-
-        if (eventNumber > 0)
-        {
-
-            int counter = 0;
-            // We consume only the events that concern this DOM element 
-            auto it = AndroidWebViewDOMEngine::events.find(_jsAccessor);
-            while (it != AndroidWebViewDOMEngine::events.end())
-            {
-                auto jsEventData = it->second;
-                auto type = jsEventData.type;
-
-                /*
-                LOGI("TYPE:");
-                LOGI(type.c_str());
-                */
-
-                // It's a touch event ?
-                if (type == "change")
-                    _onchange->execute(jsEventData);
-                else if (type == "input")
-                    _oninput->execute(jsEventData);
-                /*
-                else if (type == "click")
-                    _onclick->execute(jsEventData);
-                else if (type == "mousedown")
-                    _onmousedown->execute(jsEventData);
-                else if (type == "mouseup")
-                    _onmouseup->execute(jsEventData);
-                else if (type == "mousemove")
-                    _onmousemove->execute(jsEventData);
-                else if (type == "mouseover")
-                    _onmouseover->execute(jsEventData);
-                else if (type == "mouseout")
-                    _onmouseout->execute(jsEventData);
-                */
-                else if (type.find("touch") == 0)
-                {
-                	LOGI("TOUCHEVENT");
-
-                    // Get number of finger
-                    int touchNumber = jsEventData.changedTouches.size();
-
-                    LOGI(std::string("TOUCHNUMBER: " + touchNumber).c_str());
-
-                    for (auto i = 0; i < touchNumber; i++)
-                    {
-                        int fingerId = jsEventData.changedTouches[i].identifier;
-
-                        LOGI(std::string("FINGERID: " + std::to_string(fingerId)).c_str());
-
-                        if (type == "touchstart")
-                        {
-                            LOGI("TOUCHSTART");
-                            _ontouchdown->execute(jsEventData, i);
-                            // If it's the first finger
-                            if (_engine->numTouches() == 0)
-                            {
-                            	jsEventData.clientX = jsEventData.changedTouches[i].clientX;
-                            	jsEventData.clientY = jsEventData.changedTouches[i].clientY;
-
-                                _onmousedown->execute(jsEventData);
-                            }
-                        }
-                        else if (type == "touchend")
-                        {
-                            LOGI("TOUCHEND");
-                            _ontouchup->execute(jsEventData, i);
-                            // If it's the first finger
-                            if (fingerId == _engine->firstFingerId())
-                            {
-                            	jsEventData.clientX = jsEventData.changedTouches[i].clientX;
-                            	jsEventData.clientY = jsEventData.changedTouches[i].clientY;
-
-                                _onclick->execute(jsEventData);
-                                _onmouseup->execute(jsEventData);
-                            }
-                        }
-                        else if (type == "touchmove")
-                        {
-                            LOGI("TOUCHMOVE");
-                            _ontouchmotion->execute(jsEventData, i);
-                            // If it's the first finger
-                            if (fingerId == _engine->firstFingerId())
-                            {
-                            	jsEventData.clientX = jsEventData.changedTouches[i].clientX;
-                            	jsEventData.clientY = jsEventData.changedTouches[i].clientY;
-                            	
-                                _onmousemove->execute(jsEventData);
-                            }
-                        }
-                    }
-                }
-
-                AndroidWebViewDOMEngine::events.erase(it);
-                it = AndroidWebViewDOMEngine::events.find(_jsAccessor);
-                counter++;
-            }
-        }
-    }
 }

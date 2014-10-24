@@ -46,7 +46,7 @@ namespace android
 
 			void
 			initialize(minko::AbstractCanvas::Ptr, minko::component::SceneManager::Ptr);
-			
+
 			void
 			enterFrame(float);
 
@@ -71,7 +71,7 @@ namespace android
 
 			void
 			visible(bool);
-            
+
             bool
             visible();
 
@@ -81,10 +81,10 @@ namespace android
             {
                 return _currentDOM;
             }
-            
+
             std::string
 			eval(std::string);
-            
+
             inline
             bool
             isReady()
@@ -98,32 +98,29 @@ namespace android
             {
                 _updateNextFrame = true;
             }
-            
+
             inline
             void
             pollRate(int rate)
             {
                 _pollRate = rate;
             }
-            
+
 		private:
 
 			void
 			createNewDom();
-            
+
             void
             registerDomEvents();
-            
+
             void
             updateWebViewResolution(int width, int height);
-            
+
+            void
+            updateEvents();
+
         public:
-            int
-            firstFingerId();
-            
-            int
-            numTouches();
-            
 			static
 			int _domUid;
 
@@ -131,9 +128,39 @@ namespace android
             std::vector<std::string> messages;
 
             static 
-            std::multimap<std::string, minko::dom::JSEventData> events;
+            std::vector<minko::dom::AbstractDOMEvent::Ptr> events;
 
+            // WebView Signals
+            static minko::Signal<>::Ptr onWebViewInitialized;
+            static minko::Signal<>::Ptr onWebViewPageLoaded;
+
+            static
+            std::mutex eventMutex;
+
+            static
+            std::mutex messageMutex;
+
+            static
+            Ptr currentEngine;
+
+            static
+            int numTouches;
+
+            static
+            int firstTouchId;
         private:
+
+            // WebView Slots
+            minko::Signal<>::Slot _onWebViewInitializedSlot;
+            minko::Signal<>::Slot _onWebViewPageLoadedSlot;
+
+            // Inputs Slots
+            minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot _onmousemoveSlot;
+            minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot _onmousedownSlot;
+            minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot _onmouseupSlot;
+            minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot _ontouchstartSlot;
+            minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot _ontouchendSlot;
+            minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot _ontouchmoveSlot;
 
 			AndroidWebViewDOM::Ptr _currentDOM;
 

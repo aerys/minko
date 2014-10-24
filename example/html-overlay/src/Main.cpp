@@ -27,7 +27,7 @@ using namespace minko::math;
 
 Signal<minko::dom::AbstractDOM::Ptr, std::string>::Slot onloadSlot;
 
-Signal<minko::dom::JSEventData>::Slot onclickSlot;
+Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot onclickSlot;
 
 dom::AbstractDOM::Ptr gameInterfaceDom;
 dom::AbstractDOMElement::Ptr redScoreElement;
@@ -107,7 +107,7 @@ main(int argc, char** argv)
 
         if (dom->fileName() == "interface.html")
         {
-            onclickSlot = dom->document()->onclick()->connect([=](dom::JSEventData event)
+            onclickSlot = dom->document()->onclick()->connect([=](dom::AbstractDOMMouseEvent::Ptr event)
             {
                 dom->sendMessage("hello");
             });
@@ -124,7 +124,6 @@ main(int argc, char** argv)
     {
         updateRedScore();
     });
-
 
     auto leftButtonDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr m)
     {

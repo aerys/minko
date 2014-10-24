@@ -17,52 +17,35 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
-
 #include "minko/Common.hpp"
-#include "minko/dom/AbstractDOMElement.hpp"
-#include "minko/dom/AbstractDOMTouchEvent.hpp"
-#include "android/dom/AndroidWebViewDOMMouseEvent.hpp"
+#include "android/dom/AndroidWebViewDOMEvent.hpp"
+#include "android/dom/AndroidWebViewDOMElement.hpp"
 
-namespace android
+using namespace minko;
+using namespace minko::dom;
+using namespace android;
+using namespace android::dom;
+
+void
+AndroidWebViewDOMEvent::preventDefault()
 {
-	namespace dom
-	{
-        class AndroidWebViewDOMEngine;
+    std::cerr << "Warning : AbstractDOMEvent::preventDefault will have no effect" << std::endl;
+}
 
-		class AndroidWebViewDOMTouchEvent : 
-			public virtual minko::dom::AbstractDOMTouchEvent,
-			public AndroidWebViewDOMMouseEvent
-		{
-		public:
-			typedef std::shared_ptr<AndroidWebViewDOMTouchEvent> Ptr;
+void
+AndroidWebViewDOMEvent::stopPropagation()
+{
+    std::cerr << "Warning : AbstractDOMEvent::stopPropagation will have no effect" << std::endl;
+}
 
-		private:
-			AndroidWebViewDOMTouchEvent(const std::string& type, minko::dom::AbstractDOMElement::Ptr target) :
-				AndroidWebViewDOMMouseEvent(type, target),
-				_touchId(-1)
-			{
-			}
+std::string
+AndroidWebViewDOMEvent::type()
+{
+    return _type;
+}
 
-		public:
-
-			static
-			Ptr
-			create(const std::string& type, minko::dom::AbstractDOMElement::Ptr target)
-			{
-				Ptr event(new AndroidWebViewDOMTouchEvent(type, target));
-
-				return event;
-			}
-
-            int
-            touchId();
-
-            void
-            touchId(int value);
-
-		private:
-            int _touchId;
-		};
-	}
+minko::dom::AbstractDOMElement::Ptr
+AndroidWebViewDOMEvent::target()
+{
+    return _target;
 }

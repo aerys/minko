@@ -21,48 +21,47 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/dom/AbstractDOMElement.hpp"
-#include "minko/dom/AbstractDOMTouchEvent.hpp"
-#include "android/dom/AndroidWebViewDOMMouseEvent.hpp"
+#include "minko/dom/AbstractDOMEvent.hpp"
 
 namespace android
 {
-	namespace dom
-	{
-        class AndroidWebViewDOMEngine;
+    namespace dom
+    {
+        class AndroidWebViewDOMEvent : public virtual minko::dom::AbstractDOMEvent
+        {
+        public:
+            typedef std::shared_ptr<AndroidWebViewDOMEvent> Ptr;
 
-		class AndroidWebViewDOMTouchEvent : 
-			public virtual minko::dom::AbstractDOMTouchEvent,
-			public AndroidWebViewDOMMouseEvent
-		{
-		public:
-			typedef std::shared_ptr<AndroidWebViewDOMTouchEvent> Ptr;
+        protected:
+            AndroidWebViewDOMEvent(const std::string& type, minko::dom::AbstractDOMElement::Ptr target) :
+                _type(type),
+                _target(target)
+            {
+            }
 
-		private:
-			AndroidWebViewDOMTouchEvent(const std::string& type, minko::dom::AbstractDOMElement::Ptr target) :
-				AndroidWebViewDOMMouseEvent(type, target),
-				_touchId(-1)
-			{
-			}
+        public:
+            static
+            Ptr
+            create(const std::string& type, minko::dom::AbstractDOMElement::Ptr target)
+            {
+                Ptr event(new AndroidWebViewDOMEvent(type, target));
+                return event;
+            }
 
-		public:
+            std::string
+            type();
 
-			static
-			Ptr
-			create(const std::string& type, minko::dom::AbstractDOMElement::Ptr target)
-			{
-				Ptr event(new AndroidWebViewDOMTouchEvent(type, target));
-
-				return event;
-			}
-
-            int
-            touchId();
+            minko::dom::AbstractDOMElement::Ptr
+            target();
 
             void
-            touchId(int value);
+            preventDefault();
 
-		private:
-            int _touchId;
-		};
-	}
+            void
+            stopPropagation();
+        private:
+            std::string _type;
+            minko::dom::AbstractDOMElement::Ptr _target;
+        };
+    }
 }

@@ -34,6 +34,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "android/dom/AndroidWebViewDOMEngine.hpp"
 #include "android/dom/AndroidWebViewDOMMouseEvent.hpp"
+#include "android/dom/AndroidWebViewDOMTouchEvent.hpp"
 
 #define LOG_TAG "MINKOCPP"
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
@@ -46,30 +47,21 @@ using namespace minko::dom;
 using namespace android;
 using namespace android::dom;
 
-int
-AndroidWebViewDOMEngine::_domUid = 0;
+int AndroidWebViewDOMEngine::_domUid = 0;
 
-// WebView Signals
-static Signal<>::Ptr onWebViewInitialized = Signal<>::create();
-static Signal<>::Ptr onWebViewPageLoaded = Signal<>::create();
-
-// JS messages
 std::vector<std::string> AndroidWebViewDOMEngine::messages;
+std::vector<minko::dom::AbstractDOMEvent::Ptr> AndroidWebViewDOMEngine::events;
 
-// JS events
-std::multimap<std::string, minko::dom::JSEventData> AndroidWebViewDOMEngine::events;
+Signal<>::Ptr AndroidWebViewDOMEngine::onWebViewInitialized = Signal<>::create();
+Signal<>::Ptr AndroidWebViewDOMEngine::onWebViewPageLoaded = Signal<>::create();
 
-// WebView Slots
-Signal<>::Slot onWebViewInitializedSlot;
-Signal<>::Slot onWebViewPageLoadedSlot;
+std::mutex AndroidWebViewDOMEngine::eventMutex;
+std::mutex AndroidWebViewDOMEngine::messageMutex;
 
-// Inputs Slots
-Signal<minko::dom::JSEventData>::Slot onmousemoveSlot;
-Signal<minko::dom::JSEventData>::Slot onmousedownSlot;
-Signal<minko::dom::JSEventData>::Slot onmouseupSlot;
-Signal<minko::dom::JSEventData, int>::Slot ontouchdownSlot;
-Signal<minko::dom::JSEventData, int>::Slot ontouchupSlot;
-Signal<minko::dom::JSEventData, int>::Slot ontouchmotionSlot;
+AndroidWebViewDOMEngine::Ptr AndroidWebViewDOMEngine::currentEngine;
+
+int AndroidWebViewDOMEngine::numTouches = 0;
+int AndroidWebViewDOMEngine::firstTouchId = -1;
 
 #ifdef __cplusplus
 extern "C" {
@@ -79,12 +71,12 @@ extern "C" {
 
 void Java_minko_plugin_htmloverlay_InitWebViewTask_webViewInitialized(JNIEnv* env, jobject obj)
 {
-    onWebViewInitialized->execute();
+    AndroidWebViewDOMEngine::onWebViewInitialized->execute();
 }
 
 void Java_minko_plugin_htmloverlay_MinkoWebViewClient_webViewPageLoaded(JNIEnv* env, jobject obj)
 {
-    onWebViewPageLoaded->execute();
+    AndroidWebViewDOMEngine::onWebViewPageLoaded->execute();
 }
 
 void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnMessage(JNIEnv* env, jobject obj, jstring message)
@@ -99,14 +91,17 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnMessage(JNIEn
     LOGI("Native onMessage");
     LOGI(nativeMessage);
 
+    AndroidWebViewDOMEngine::messageMutex.lock();
     AndroidWebViewDOMEngine::messages.push_back(std::string(nativeMessage));
+    AndroidWebViewDOMEngine::messageMutex.unlock();
 }
 
 void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent(JNIEnv* env, jobject obj, jstring accessor, jstring eventData)
 {
+    AndroidWebViewDOMEngine::eventMutex.lock();
     LOGI("RECEIVED AN EVENT FROM JS: ");
  
-    const char *nativeAccessor = env->GetStringUTFChars(accessor, 0);
+    auto nativeAccessor = std::string(env->GetStringUTFChars(accessor, 0));
     const char *nativeEvent = env->GetStringUTFChars(eventData, 0);
 
     // Don't forget to release jstring!
@@ -114,7 +109,7 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent(JNIEnv*
     env->ReleaseStringUTFChars(eventData, 0);
 
     LOGI("Native onEvent");
-    LOGI(nativeAccessor);
+    LOGI(nativeAccessor.c_str());
     LOGI(nativeEvent);
 
     Json::Value root;
@@ -123,74 +118,111 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent(JNIEnv*
     if (!reader.parse(nativeEvent, root, false))
         LOGI(reader.getFormattedErrorMessages().c_str());
 
-    // Store values of this JS event
-    JSEventData jsEventData;
+    auto type = root.get("type", "unknown").asString();
+    auto target = AndroidWebViewDOMElement::getDOMElement(nativeAccessor, AndroidWebViewDOMEngine::currentEngine);
 
-    jsEventData.type = root.get("type", "unknown").asString();
-    jsEventData.clientX = root.get("clientX", 0).asInt();
-    jsEventData.clientY = root.get("clientY", 0).asInt();
-    jsEventData.pageX = root.get("pageX", 0).asInt();
-    jsEventData.pageY = root.get("pageY", 0).asInt();
-    jsEventData.layerX = root.get("layerX", 0).asInt();
-    jsEventData.layerY = root.get("layerY", 0).asInt();
-    jsEventData.screenX = root.get("screenX", 0).asInt();
-    jsEventData.screenY = root.get("screenY", 0).asInt();
-
-    LOGI(jsEventData.type.c_str());
-
-    /*
-    LOGI(std::to_string(jsEventData.clientX).c_str());
-    LOGI(std::to_string(jsEventData.clientY).c_str());
-    LOGI(std::to_string(jsEventData.pageX).c_str());
-    LOGI(std::to_string(jsEventData.pageY).c_str());
-    LOGI(std::to_string(jsEventData.layerX).c_str());
-    LOGI(std::to_string(jsEventData.layerY).c_str());
-    LOGI(std::to_string(jsEventData.screenX).c_str());
-    LOGI(std::to_string(jsEventData.screenY).c_str());
-    */
-
-    // Parse touches
-    auto changedTouches = std::vector<JSTouchEventData>();
-    auto touches = root.get("changedTouches", 0);
-
-    if (touches.isArray())
+    if (type == "input" || type == "change")
     {
-        for (auto touch : touches)
+        auto event = AndroidWebViewDOMEvent::create(type, target);
+        AndroidWebViewDOMEngine::events.push_back(event);
+    }
+    else if (type.substr(0, 5) == "mouse" || type == "click")
+    {
+        auto mouseEvent = AndroidWebViewDOMMouseEvent::create(type, target);
+
+        mouseEvent->clientX(root.get("clientX", 0).asInt());
+        mouseEvent->clientY(root.get("clientY", 0).asInt());
+        mouseEvent->pageX(root.get("pageX", 0).asInt());
+        mouseEvent->pageY(root.get("pageY", 0).asInt());
+        mouseEvent->layerX(root.get("layerX", 0).asInt());
+        mouseEvent->layerY(root.get("layerY", 0).asInt());
+        mouseEvent->screenX(root.get("screenX", 0).asInt());
+        mouseEvent->screenY(root.get("screenY", 0).asInt());
+
+        AndroidWebViewDOMEngine::events.push_back(mouseEvent);
+    }
+    else if (type.substr(0, 5) == "touch")
+    {
+        // Parse touches
+        auto touches = root.get("changedTouches", 0);
+
+        if (touches.isArray())
         {
-            JSTouchEventData touchEventData;
-            LOGI("ClientX");
-            touchEventData.clientX = touch.get("clientX", 0).asInt();
-            LOGI("ClientY");
-            touchEventData.clientY = touch.get("clientY", 0).asInt();
-            LOGI("Identifier");
-            touchEventData.identifier = touch.get("identifier", 0).asInt();
-            LOGI("push_back_begin");
-            changedTouches.push_back(touchEventData);
-            LOGI("push_back_end");
+            for (auto touch : touches)
+            {
+                auto touchEvent = AndroidWebViewDOMTouchEvent::create(type, target);
+
+                touchEvent->clientX(touch.get("clientX", 0).asInt());
+                touchEvent->clientY(touch.get("clientY", 0).asInt());
+                touchEvent->touchId(touch.get("identifier", 0).asInt());
+
+                AndroidWebViewDOMEngine::events.push_back(touchEvent);
+
+                if (type == "touchstart")
+                {
+                    AndroidWebViewDOMEngine::numTouches++;
+                    if (AndroidWebViewDOMEngine::numTouches == 1)
+                    {
+                        AndroidWebViewDOMEngine::firstTouchId = touchEvent->touchId();
+                        auto mouseEvent = AndroidWebViewDOMMouseEvent::create("mousedown", target);
+
+                        mouseEvent->clientX(touchEvent->clientX());
+                        mouseEvent->clientY(touchEvent->clientY());
+                        mouseEvent->pageX(root.get("pageX", 0).asInt());
+                        mouseEvent->pageY(root.get("pageY", 0).asInt());
+                        mouseEvent->layerX(root.get("layerX", 0).asInt());
+                        mouseEvent->layerY(root.get("layerY", 0).asInt());
+                        mouseEvent->screenX(root.get("screenX", 0).asInt());
+                        mouseEvent->screenY(root.get("screenY", 0).asInt());
+
+                        AndroidWebViewDOMEngine::events.push_back(mouseEvent);
+                    }
+                }
+                else if (type == "touchend")
+                {
+                    AndroidWebViewDOMEngine::numTouches--;
+
+                    if (AndroidWebViewDOMEngine::numTouches == 0)
+                    {
+                        AndroidWebViewDOMEngine::firstTouchId = -1;
+
+                        auto mouseEvent = AndroidWebViewDOMMouseEvent::create("mouseup", target);
+
+                        mouseEvent->clientX(touchEvent->clientX());
+                        mouseEvent->clientY(touchEvent->clientY());;
+                        mouseEvent->pageX(root.get("pageX", 0).asInt());
+                        mouseEvent->pageY(root.get("pageY", 0).asInt());
+                        mouseEvent->layerX(root.get("layerX", 0).asInt());
+                        mouseEvent->layerY(root.get("layerY", 0).asInt());
+                        mouseEvent->screenX(root.get("screenX", 0).asInt());
+                        mouseEvent->screenY(root.get("screenY", 0).asInt());
+
+                        AndroidWebViewDOMEngine::events.push_back(mouseEvent);
+                    }
+                }
+                else if (type == "touchmove")
+                {
+                    if (AndroidWebViewDOMEngine::firstTouchId == touchEvent->touchId())
+                    {
+                        auto mouseEvent = AndroidWebViewDOMMouseEvent::create("mousemove", target);
+
+                        mouseEvent->clientX(touchEvent->clientX());
+                        mouseEvent->clientY(touchEvent->clientY());
+                        mouseEvent->pageX(root.get("pageX", 0).asInt());
+                        mouseEvent->pageY(root.get("pageY", 0).asInt());
+                        mouseEvent->layerX(root.get("layerX", 0).asInt());
+                        mouseEvent->layerY(root.get("layerY", 0).asInt());
+                        mouseEvent->screenX(root.get("screenX", 0).asInt());
+                        mouseEvent->screenY(root.get("screenY", 0).asInt());
+
+                        AndroidWebViewDOMEngine::events.push_back(mouseEvent);
+                    }
+                }
+            }
         }
     }
-
-    LOGI("Affect changedTouches");
-    jsEventData.changedTouches = changedTouches;
-    LOGI("Make pair");
-    auto pair = std::make_pair(std::string(nativeAccessor), jsEventData);
-    LOGI("Insert");
-    AndroidWebViewDOMEngine::events.insert(pair);
-    LOGI("After insertion");
-}
-
-void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnJSResult(JNIEnv* env, jobject obj, jstring jsResult)
-{
-    /*
-    const char *nativeString = env->GetStringUTFChars(jsResult, 0);
-
-    env->ReleaseStringUTFChars(jsResult, 0);
-
-    jsGlobalResult = std::string(nativeString);
     
-    LOGI("RECEIVED A JS RESULT: ");
-    LOGI(nativeString);
-    */
+    AndroidWebViewDOMEngine::eventMutex.unlock();
 }
 
 /* Ends C function definitions when using C++ */
@@ -215,14 +247,14 @@ AndroidWebViewDOMEngine::AndroidWebViewDOMEngine() :
     _changeResolutionMethod(nullptr),
     _loadUrlMethod(nullptr)
 {
-    onWebViewInitializedSlot = onWebViewInitialized->connect([&]()
+    _onWebViewInitializedSlot = onWebViewInitialized->connect([&]()
     {
         _webViewInitialized = true;
         updateWebViewResolution(_canvas->width(), _canvas->height());
         LOGI("WEBVIEW INITIALIZED (FROM C++)");
     });
 
-    onWebViewPageLoadedSlot = onWebViewPageLoaded->connect([&]()
+    _onWebViewPageLoadedSlot = onWebViewPageLoaded->connect([&]()
     {
         _webViewPageLoaded = true;
         LOGI("WEBVIEW HAS FINISHED TO LOAD THE PAGE (FROM C++)");
@@ -326,36 +358,83 @@ AndroidWebViewDOMEngine::enterFrame(float time)
         _isReady = true;
     }
 
-    if (_pollRate == -1 || _updateNextFrame || (_pollRate != 0 && (time - _lastUpdateTime) > (1000.0 / (float)(_pollRate))))
+    updateEvents();
+
+    if (_currentDOM->initialized() && _isReady)
     {
-        for(auto element : AndroidWebViewDOMElement::domElements)
+        messageMutex.lock();
+
+        auto l = AndroidWebViewDOMEngine::messages.size();
+
+        if (l > 0)
         {
-            element->update();
+            LOGI("Message found!");
+            for(int i = 0; i < l; ++i)
+            {
+                auto message = AndroidWebViewDOMEngine::messages[i];
+                LOGI(std::string("Message: " + message).c_str());
+                
+                _currentDOM->onmessage()->execute(_currentDOM, message);
+                _onmessage->execute(_currentDOM, message);
+            }
+
+            // Don't forget to remove the message from the list
+            AndroidWebViewDOMEngine::messages.clear();
+            AndroidWebViewDOMEngine::messages.shrink_to_fit();
         }
 
-    	if (_currentDOM->initialized() && _isReady)
-    	{
-            auto l = AndroidWebViewDOMEngine::messages.size();
+        messageMutex.unlock();
+    }
 
-            if (l > 0)
-            {
-                LOGI("Message found!");
-                for(int i = 0; i < l; ++i)
-                {
-                    auto message = AndroidWebViewDOMEngine::messages[i];
-                    LOGI(std::string("Message: " + message).c_str());
-                    
-                    _currentDOM->onmessage()->execute(_currentDOM, message);
-                    _onmessage->execute(_currentDOM, message);
-                }
 
-                // Don't forget to remove the message from the list
-                AndroidWebViewDOMEngine::messages.clear();
-            }
-    	}
-
+    if (_pollRate == -1 || _updateNextFrame || (_pollRate != 0 && (time - _lastUpdateTime) > (1000.0 / (float)(_pollRate))))
+    {
         _updateNextFrame = false;
         _lastUpdateTime = time;
+    }
+}
+
+void
+AndroidWebViewDOMEngine::updateEvents()
+{
+    if (_isReady)
+    {
+        eventMutex.lock();
+        
+        for (int i = 0; i < events.size(); ++i)
+        {
+            auto event = events[i];
+            auto type = event->type();
+            auto target = event->target();
+
+            if (type == "change")
+                target->onchange()->execute(event);
+            else if (type == "input")
+                target->oninput()->execute(event);
+            else if (type == "click")
+                target->onclick()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
+            else if (type == "mousedown")
+                target->onmousedown()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
+            else if (type == "mouseup")
+                target->onmouseup()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
+            else if (type == "mousemove")
+                target->onmousemove()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
+            else if (type == "mouseover")
+                target->onmouseover()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
+            else if (type == "mouseout")
+                target->onmouseout()->execute(std::dynamic_pointer_cast<AbstractDOMMouseEvent>(event));
+            else if (type == "touchstart")
+                target->ontouchstart()->execute(std::dynamic_pointer_cast<AbstractDOMTouchEvent>(event));
+            else if (type == "touchend")
+                target->ontouchend()->execute(std::dynamic_pointer_cast<AbstractDOMTouchEvent>(event));
+            else if (type == "touchmove")
+                target->ontouchmove()->execute(std::dynamic_pointer_cast<AbstractDOMTouchEvent>(event));
+        }
+        
+        events.clear();
+        events.shrink_to_fit();
+
+        eventMutex.unlock();
     }
 }
 
@@ -363,6 +442,9 @@ AndroidWebViewDOMEngine::Ptr
 AndroidWebViewDOMEngine::create()
 {
 	AndroidWebViewDOMEngine::Ptr engine(new AndroidWebViewDOMEngine);
+
+    currentEngine = engine;
+
 	return engine;
 }
 
@@ -462,28 +544,13 @@ AndroidWebViewDOMEngine::visible(bool value)
 	_visible = value;
 }
 
-int
-AndroidWebViewDOMEngine::firstFingerId()
-{
-    if (_canvas->touch()->identifiers().size())
-        return _canvas->touch()->identifiers()[0];
-    else
-        return -1;
-}
-
-int
-AndroidWebViewDOMEngine::numTouches()
-{
-    return _canvas->touch()->numTouches();
-}
-
 void
 AndroidWebViewDOMEngine::registerDomEvents()
 {
-    onmousedownSlot = _currentDOM->document()->onmousedown()->connect([&](JSEventData event)
+    _onmousedownSlot = _currentDOM->document()->onmousedown()->connect([&](AbstractDOMMouseEvent::Ptr event)
     {
-        int x = event.clientX;
-        int y = event.clientY;
+        int x = event->clientX();
+        int y = event->clientY();
         
         _canvas->mouse()->x(x);
         _canvas->mouse()->y(y);
@@ -493,10 +560,10 @@ AndroidWebViewDOMEngine::registerDomEvents()
         _canvas->mouse()->leftButtonDown()->execute(_canvas->mouse());
     });
 
-    onmouseupSlot = _currentDOM->document()->onmouseup()->connect([&](JSEventData event)
+    _onmouseupSlot = _currentDOM->document()->onmouseup()->connect([&](AbstractDOMMouseEvent::Ptr event)
     {
-        int x = event.clientX;
-        int y = event.clientY;
+        int x = event->clientX();
+        int y = event->clientY();
         
         _canvas->mouse()->x(x);
         _canvas->mouse()->y(y);
@@ -504,95 +571,82 @@ AndroidWebViewDOMEngine::registerDomEvents()
         _canvas->mouse()->leftButtonUp()->execute(_canvas->mouse());
     });
 
-    onmousemoveSlot = _currentDOM->document()->onmousemove()->connect([&](JSEventData event)
+    _onmousemoveSlot = _currentDOM->document()->onmousemove()->connect([&](AbstractDOMMouseEvent::Ptr event)
     {
-        int x = event.clientX;
-        int y = event.clientY;
-        
-        _canvas->mouse()->x(x);
-        _canvas->mouse()->y(y);
+        int x = event->clientX();
+        int y = event->clientY();
         
         auto oldX = _canvas->mouse()->x();
         auto oldY = _canvas->mouse()->y();
+
+        _canvas->mouse()->x(x);
+        _canvas->mouse()->y(y);
         
         LOGI(std::string("Mouse move (" + std::to_string(x) + ", " + std::to_string(y) + "|" + std::to_string(oldX) + ", " + std::to_string(oldY) + ")").c_str());
-
 
         _canvas->mouse()->move()->execute(_canvas->mouse(), x - oldX, y - oldY);
     });
     
-    ontouchdownSlot = std::static_pointer_cast<AndroidWebViewDOMElement>(_currentDOM->document())->ontouchdown()->connect([&](JSEventData event, int touchId)
+    _ontouchstartSlot = std::static_pointer_cast<AndroidWebViewDOMElement>(_currentDOM->document())->ontouchstart()->connect([&](AbstractDOMTouchEvent::Ptr event)
     {
-        int fingerId = event.changedTouches[touchId].identifier;
-        float x = event.changedTouches[touchId].clientX;
-        float y = event.changedTouches[touchId].clientY;
+        int touchId = event->touchId();
+        float x = event->clientX();
+        float y = event->clientY();
 
         SDL_Event sdlEvent;
         sdlEvent.type = SDL_FINGERDOWN;
-        sdlEvent.tfinger.fingerId = fingerId;
+        sdlEvent.tfinger.fingerId = touchId;
         sdlEvent.tfinger.x =  x / _canvas->width();
         sdlEvent.tfinger.y = y / _canvas->height();
 
         SDL_PushEvent(&sdlEvent);
-        
-        // // Create a new touch object and keep it with a list
-        // auto touch = minko::SDLTouch::create(std::static_pointer_cast<Canvas>(_canvas));
-        // touch->fingerId(fingerId);
-        // touch->x(x);
-        // touch->y(y);
 
-        // _touches.insert(std::pair<int, std::shared_ptr<minko::SDLTouch>>(fingerId, touch));
+        LOGI(std::string("Touch start (" + std::to_string(x) + ", " + std::to_string(y) + ")").c_str());
     });
     
-    ontouchupSlot = std::static_pointer_cast<AndroidWebViewDOMElement>(_currentDOM->document())->ontouchup()->connect([&](JSEventData event, int touchId)
+    _ontouchendSlot = std::static_pointer_cast<AndroidWebViewDOMElement>(_currentDOM->document())->ontouchend()->connect([&](AbstractDOMTouchEvent::Ptr event)
     {
-        int fingerId = event.changedTouches[touchId].identifier;
-        float x = event.changedTouches[touchId].clientX;
-        float y = event.changedTouches[touchId].clientY;
+        int touchId = event->touchId();
+        float x = event->clientX();
+        float y = event->clientY();
         
         SDL_Event sdlEvent;
         sdlEvent.type = SDL_FINGERUP;
-        sdlEvent.tfinger.fingerId = fingerId;
+        sdlEvent.tfinger.fingerId = touchId;
         sdlEvent.tfinger.x = x / _canvas->width();
         sdlEvent.tfinger.y = y / _canvas->height();
 
         SDL_PushEvent(&sdlEvent);
-        
-        // We check that the finger is into the list before removing it
-        // if (_touches.find(fingerId) != _touches.end())
-        // {
-        //     _touches.erase(fingerId);
-        // }
+
+        LOGI(std::string("Touch end (" + std::to_string(x) + ", " + std::to_string(y) + ")").c_str());
     });
     
-    ontouchmotionSlot = std::static_pointer_cast<AndroidWebViewDOMElement>(_currentDOM->document())->ontouchmotion()->connect([&](JSEventData event, int touchId)
+    _ontouchmoveSlot = std::static_pointer_cast<AndroidWebViewDOMElement>(_currentDOM->document())->ontouchmove()->connect([&](AbstractDOMTouchEvent::Ptr event)
     {
-        int fingerId = event.changedTouches[touchId].identifier;
-        float x = event.changedTouches[touchId].clientX;
-        float y = event.changedTouches[touchId].clientY;
-        
-        // if (fingerId >= numTouches())
-        // {
-        //     LOGI(std::string("FingerId: " + std::to_string(fingerId)).c_str());
-        //     return;
-        // }
+        int touchId = event->touchId();
 
-        float oldX = _canvas->touch()->touch(fingerId)->x();
-        float oldY = _canvas->touch()->touch(fingerId)->y();
+        auto identifiers = _canvas->touch()->identifiers();
+
+        if(std::find(identifiers.begin(), identifiers.end(), touchId) == identifiers.end())
+            return;
+
+        float x = event->clientX();
+        float y = event->clientY();
         
+        float oldX = _canvas->touch()->touch(touchId)->x();
+        float oldY = _canvas->touch()->touch(touchId)->y();
+
         SDL_Event sdlEvent;
         sdlEvent.type = SDL_FINGERMOTION;
-        sdlEvent.tfinger.fingerId = fingerId;
+        sdlEvent.tfinger.fingerId = touchId;
         sdlEvent.tfinger.x = x / _canvas->width();
         sdlEvent.tfinger.y = y / _canvas->height();
         sdlEvent.tfinger.dx = (x - oldX) / _canvas->width();
         sdlEvent.tfinger.dy = (y - oldY) / _canvas->height();
     
         SDL_PushEvent(&sdlEvent);
-        
-        // Store finger information
-        // _touches.at(fingerId)->x(x);
-        // _touches.at(fingerId)->y(y);
+
+        LOGI(std::string("Touch move (" + std::to_string(x) + ", " + std::to_string(y) + "|" + std::to_string(oldX) + ", " + std::to_string(oldY) + ")").c_str());
     });
 }
 
@@ -614,11 +668,6 @@ AndroidWebViewDOMEngine::eval(std::string data)
     // Get the evalJS instance
     jstring js = env->NewStringUTF(data.c_str());
 
-    /*
-    LOGI("EVAL JS: ");
-    LOGI(data.c_str());
-    */
-
     jstring evalJSResult = (jstring)env->CallObjectMethod(_initWebViewTask, _evalJSMethod, js);
 
     const char* evalJSResultString = env->GetStringUTFChars(evalJSResult, JNI_FALSE);
@@ -629,11 +678,6 @@ AndroidWebViewDOMEngine::eval(std::string data)
     env->ReleaseStringUTFChars(evalJSResult, evalJSResultString);
     env->DeleteLocalRef(js);
     env->DeleteLocalRef(evalJSResult);
-
-    /*
-    LOGI("EVAL FINAL VALUE: ");
-    LOGI(result.c_str());
-    */
 
     return result;
 }

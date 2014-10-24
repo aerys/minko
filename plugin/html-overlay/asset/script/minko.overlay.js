@@ -23,7 +23,6 @@ Minko.bindJsErrors = function()
 
 Minko.loadedHandler = function(event)
 {
-	console.log("Loadedhandler begin");
 	if(Minko.loaded == -1)
 		return;
 
@@ -89,8 +88,6 @@ Minko.loadedHandler = function(event)
 	var ev = document.createEvent("Event");
 	ev.initEvent("minkoReady", true, true);
 	Minko.window.dispatchEvent(ev);
-	
-	console.log("Loadedhandler end");
 }
 
 
@@ -343,61 +340,64 @@ Minko.connectWebViewJavascriptBridge = function(callback) // iOS / OSX
 ** Android
 */
 
-Minko.touchstartEventFlags = [];
+Minko.touchIds = [];
+
+Minko.androidEventHandler = function(event)
+{	
+	console.log('JS Event: ' + event.type + ' (' + event.currentTarget.minkoName + ')');
+	
+	// Workaround for API 19 to properly fire touchmove
+	if (event.type == "touchstart" || event.type == "touchend")
+		event.preventDefault();
+	
+	eventData = {};
+	eventData.type = event.type;
+	eventData.clientX = event.clientX;
+	eventData.clientY = event.clientY;
+	eventData.pageX = event.pageX;
+	eventData.pageY = event.pageY;
+	eventData.layerX = event.layerX;
+	eventData.layerY = event.layerY;
+	eventData.screenX = event.screenX;
+	eventData.screenY = event.screenY;
+	
+	if (event.type.indexOf("touch") != -1)
+	{
+		eventData.changedTouches = [];
+		for (var i = 0; i < event.changedTouches.length; i++)
+		{
+			var identifier = event.changedTouches[i].identifier;
+			
+			if (event.type == 'touchstart')
+			{
+				if (Minko.touchIds.indexOf(identifier) != -1)
+					continue;
+				Minko.touchIds.push(identifier);
+			}
+			else if (event.type == 'touchend')
+			{
+				if (Minko.touchIds.indexOf(identifier) != -1)
+					Minko.touchIds.splice(Minko.touchIds.indexOf(identifier), 1);
+				else
+					continue;
+			}
+			
+			eventData.changedTouches[i] = {};
+			eventData.changedTouches[i].clientX = event.changedTouches[i].clientX;
+			eventData.changedTouches[i].clientY = event.changedTouches[i].clientY;
+			eventData.changedTouches[i].identifier = event.changedTouches[i].identifier;
+		}
+	}
+	
+	var jsonStringify = JSON.stringify(eventData);
+	console.log(jsonStringify);
+	
+	MinkoNativeInterface.onEvent(event.currentTarget.minkoName, jsonStringify);
+}
 
 Minko.addListenerAndroid = function(accessor, type)
 {
-	if (type == "touchstart")
-		Minko.touchstartEventFlags[accessor] = false;
-		
-	accessor.addEventListener(type, function(event)
-	{
-		// Work around for touchstart event that is fired twice
-		if (type == "touchstart") 
-		{
-			if (!Minko.touchstartEventFlags[accessor])
-			{
-				Minko.touchstartEventFlags[accessor] = true;
-				setTimeout(function(){ Minko.touchstartEventFlags[accessor] = false; }, 100);
-			}
-			else
-				return;
-		}
-		
-		console.log('JS Event: ' + type + ' (' + event.currentTarget.minkoName + ')');
-		
-		// Workaround for API 19 to properly fire touchmove
-		if (type == "touchstart" || type == "touchend")
-			event.preventDefault();
-		
-		eventData = {};
-		eventData.type = type;
-		eventData.clientX = event.clientX;
-		eventData.clientY = event.clientY;
-		eventData.pageX = event.pageX;
-		eventData.pageY = event.pageY;
-		eventData.layerX = event.layerX;
-		eventData.layerY = event.layerY;
-		eventData.screenX = event.screenX;
-		eventData.screenY = event.screenY;
-		
-		if (type.indexOf("touch") != -1)
-		{
-			eventData.changedTouches = [];
-			for (var i = 0; i < event.changedTouches.length; i++)
-			{
-				eventData.changedTouches[i] = {};
-				eventData.changedTouches[i].clientX = event.changedTouches[i].clientX;
-				eventData.changedTouches[i].clientY = event.changedTouches[i].clientY;
-				eventData.changedTouches[i].identifier = event.changedTouches[i].identifier;
-			}
-		}
-		
-		var jsonStringify = JSON.stringify(eventData);
-		console.log(jsonStringify);
-		
-		MinkoNativeInterface.onEvent(event.currentTarget.minkoName, jsonStringify);
-	});
+	accessor.addEventListener(type, Minko.androidEventHandler);
 };
 
 Minko.init = function(platform)

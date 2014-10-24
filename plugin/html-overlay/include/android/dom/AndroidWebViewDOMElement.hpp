@@ -123,37 +123,37 @@ namespace android
 			style(const std::string& name, const std::string& value);
 
             // Events
-			minko::Signal<minko::dom::JSEventData>::Ptr
+            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
 			onclick();
 
-			minko::Signal<minko::dom::JSEventData>::Ptr
+			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
 			onmousedown();
 
-			minko::Signal<minko::dom::JSEventData>::Ptr
+			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
 			onmousemove();
 
-			minko::Signal<minko::dom::JSEventData>::Ptr
+			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
 			onmouseup();
 
-			minko::Signal<minko::dom::JSEventData>::Ptr
+			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
 			onmouseout();
 
-			minko::Signal<minko::dom::JSEventData>::Ptr
+			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
 			onmouseover();
 
-            minko::Signal<minko::dom::JSEventData, int>::Ptr
-            ontouchdown();
-            
-            minko::Signal<minko::dom::JSEventData, int>::Ptr
-            ontouchup();
-            
-            minko::Signal<minko::dom::JSEventData, int>::Ptr
-            ontouchmotion();
+            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMTouchEvent>>::Ptr
+            ontouchstart();
 
-            minko::Signal<minko::dom::JSEventData>::Ptr
+            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMTouchEvent>>::Ptr
+            ontouchend();
+
+            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMTouchEvent>>::Ptr
+            ontouchmove();
+
+            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
             onchange();
 
-            minko::Signal<minko::dom::JSEventData>::Ptr
+            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
             oninput();
             
             void
@@ -177,19 +177,22 @@ namespace android
 			static
 			std::map<std::string,Ptr> _accessorToElement;
 
+			static
+			std::mutex _accessorToElementMutex;
+
 			std::string _jsAccessor;
 
             // Events
-			minko::Signal<minko::dom::JSEventData>::Ptr _onclick;
-			minko::Signal<minko::dom::JSEventData>::Ptr _onmousedown;
-			minko::Signal<minko::dom::JSEventData>::Ptr _onmousemove;
-			minko::Signal<minko::dom::JSEventData>::Ptr _onmouseup;
-            
-            minko::Signal<minko::dom::JSEventData>::Ptr _onmouseout;
-            minko::Signal<minko::dom::JSEventData>::Ptr _onmouseover;
+			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onclick;
+			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmousedown;
+			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmousemove;
+			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmouseup;
 
-			minko::Signal<minko::dom::JSEventData>::Ptr _oninput;
-			minko::Signal<minko::dom::JSEventData>::Ptr _onchange;
+            minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmouseout;
+            minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr _onmouseover;
+
+            minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _oninput;
+            minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onchange;
             
             bool _onclickSet;
             bool _onmousedownSet;
@@ -199,13 +202,13 @@ namespace android
             bool _onmouseoverSet;
             bool _onmouseoutSet;
             
-            minko::Signal<minko::dom::JSEventData, int>::Ptr _ontouchdown;
-            minko::Signal<minko::dom::JSEventData, int>::Ptr _ontouchup;
-            minko::Signal<minko::dom::JSEventData, int>::Ptr _ontouchmotion;
+            minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Ptr _ontouchstart;
+            minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Ptr _ontouchend;
+            minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Ptr _ontouchmove;
             
-            bool _ontouchdownSet;
-            bool _ontouchupSet;
-            bool _ontouchmotionSet;
+            bool _ontouchstartSet;
+            bool _ontouchendSet;
+            bool _ontouchmoveSet;
 
             bool _oninputSet;
             bool _onchangeSet;

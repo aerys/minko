@@ -26,27 +26,6 @@ namespace minko
 {
 	namespace dom
 	{
-        struct JSTouchEventData
-        {
-            int clientX;
-            int clientY;
-            long long int identifier;
-        };
-
-        struct JSEventData
-        {
-            std::string type;
-            int clientX;
-            int clientY;
-            int pageX;
-            int pageY;
-            int screenX;
-            int screenY;
-            int layerX;
-            int layerY;
-            std::vector<JSTouchEventData> changedTouches;
-        };
-		
 		class AbstractDOMEngine
 		{
 		public:
@@ -56,7 +35,7 @@ namespace minko
 			~AbstractDOMEngine()
 			{
 			}
-
+ 
 			virtual
 			AbstractDOM::Ptr
 			load(std::string uri) = 0;
