@@ -176,9 +176,9 @@ HTTPProtocol::load()
             "",
             loader.get(),
             0,
-            &wget2CompleteHandler,
-            &wget2ErrorHandler,
-            &wget2ProgressHandler
+			&wget2CompleteHandler,
+			&wget2ErrorHandler,
+			&wget2ProgressHandler
         );
     }
     else
@@ -267,19 +267,19 @@ HTTPProtocol::load()
 
 #if defined(EMSCRIPTEN)
 void
-HTTPProtocol::wget2CompleteHandler(unsigned int id, void* arg, void* data, unsigned int size)
+HTTPProtocol::wget2CompleteHandler(void* arg, void* data, unsigned int* size)
 {
-    HTTPProtocol::completeHandler(arg, data, size);
+    HTTPProtocol::completeHandler(arg, data, *size);
 }
 
 void
-HTTPProtocol::wget2ErrorHandler(unsigned int id, void* arg, int code, const char* message)
+HTTPProtocol::wget2ErrorHandler(void* arg, int code, const char* message)
 {
     HTTPProtocol::errorHandler(arg, code, message);
 }
 
 void
-HTTPProtocol::wget2ProgressHandler(unsigned int id, void* arg, int loadedBytes, int totalBytes)
+HTTPProtocol::wget2ProgressHandler(void* arg, int loadedBytes, int totalBytes)
 {
     HTTPProtocol::progressHandler(arg, loadedBytes, totalBytes);
 }
