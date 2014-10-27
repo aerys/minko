@@ -17,64 +17,50 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#if defined(EMSCRIPTEN)
+#if defined(CHROMIUM)
 #pragma once
 
-#include "minko/Common.hpp"
-#include "emscripten/dom/EmscriptenDOMEvent.hpp"
-#include "minko/dom/AbstractDOMMouseEvent.hpp"
+#if MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
+#pragma warning(push)
+#pragma warning(disable:4250)
+#endif
 
-namespace emscripten
+#include "minko/Common.hpp"
+#include "minko/dom/AbstractDOMTouchEvent.hpp"
+#include "minko/dom/AbstractDOMElement.hpp"
+#include "chromium/dom/ChromiumDOMMouseEvent.hpp"
+#include "chromium/dom/ChromiumDOMObject.hpp"
+#include "include/cef_render_process_handler.h"
+
+namespace chromium
 {
 	namespace dom
 	{
-		class EmscriptenDOMMouseEvent :
-			public virtual minko::dom::AbstractDOMMouseEvent,
-			public EmscriptenDOMEvent
+        class ChromiumDOMTouchEvent :
+            public ChromiumDOMMouseEvent,
+            public virtual minko::dom::AbstractDOMTouchEvent
 		{
 		public:
-			typedef std::shared_ptr<EmscriptenDOMMouseEvent> Ptr;
+			typedef std::shared_ptr<ChromiumDOMTouchEvent> Ptr;
 
-		protected:
-			EmscriptenDOMMouseEvent(const std::string& jsAccessor):
-				EmscriptenDOMEvent(jsAccessor)
-			{
-			}
+			~ChromiumDOMTouchEvent();
 
+        protected:
+			ChromiumDOMTouchEvent(CefRefPtr<CefV8Value>, CefRefPtr<CefV8Context>);
+			
 		public:
-
 			static
 			Ptr
-			create(const std::string& jsAccessor)
-			{
-				Ptr event(new EmscriptenDOMMouseEvent(jsAccessor));
-				return event;
-			}
+			create(CefRefPtr<CefV8Value>, CefRefPtr<CefV8Context>);
 
-			int
-			clientX();
-
-			int
-			clientY();
-
-			int
-			pageX();
-
-			int
-			pageY();
-
-			int
-			layerX();
-
-			int
-			layerY();
-
-			int
-			screenX();
-
-			int
-			screenY();
+            int
+            identifier();
 		};
 	}
 }
+
+#if MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
+#pragma warning(pop)
+#endif
+
 #endif

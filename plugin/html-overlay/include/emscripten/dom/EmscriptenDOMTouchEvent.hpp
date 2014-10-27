@@ -21,23 +21,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "emscripten/dom/EmscriptenDOMEvent.hpp"
-#include "minko/dom/AbstractDOMMouseEvent.hpp"
+#include "emscripten/dom/EmscriptenDOMMouseEvent.hpp"
+#include "minko/dom/AbstractDOMTouchEvent.hpp"
 
 namespace emscripten
 {
 	namespace dom
 	{
-		class EmscriptenDOMMouseEvent :
-			public virtual minko::dom::AbstractDOMMouseEvent,
-			public EmscriptenDOMEvent
+		class EmscriptenDOMTouchEvent :
+			public virtual minko::dom::AbstractDOMTouchEvent,
+			public EmscriptenDOMMouseEvent
 		{
 		public:
-			typedef std::shared_ptr<EmscriptenDOMMouseEvent> Ptr;
+			typedef std::shared_ptr<EmscriptenDOMTouchEvent> Ptr;
 
-		protected:
-			EmscriptenDOMMouseEvent(const std::string& jsAccessor):
-				EmscriptenDOMEvent(jsAccessor)
+		private:
+			EmscriptenDOMTouchEvent(const std::string& jsAccessor):
+				EmscriptenDOMMouseEvent(jsAccessor)
 			{
 			}
 
@@ -47,7 +47,7 @@ namespace emscripten
 			Ptr
 			create(const std::string& jsAccessor)
 			{
-				Ptr event(new EmscriptenDOMMouseEvent(jsAccessor));
+				Ptr event(new EmscriptenDOMTouchEvent(jsAccessor));
 				return event;
 			}
 
@@ -74,6 +74,9 @@ namespace emscripten
 
 			int
 			screenY();
+
+			int
+			identifier();
 		};
 	}
 }

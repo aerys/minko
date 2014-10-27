@@ -17,64 +17,42 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#if defined(EMSCRIPTEN)
-#pragma once
+#if defined(CHROMIUM)
 
-#include "minko/Common.hpp"
-#include "emscripten/dom/EmscriptenDOMEvent.hpp"
-#include "minko/dom/AbstractDOMMouseEvent.hpp"
+#include "chromium/dom/ChromiumDOMTouchEvent.hpp"
+#include "minko/dom/AbstractDOMTouchEvent.hpp"
+#include "include/cef_runnable.h"
+#include "include/cef_task.h"
 
-namespace emscripten
+using namespace chromium;
+using namespace chromium::dom;
+using namespace minko;
+using namespace minko::dom;
+
+ChromiumDOMTouchEvent::ChromiumDOMTouchEvent(CefRefPtr<CefV8Value> v8NodeObject, CefRefPtr<CefV8Context> v8Context)
+    : ChromiumDOMMouseEvent(v8NodeObject, v8Context)
 {
-	namespace dom
-	{
-		class EmscriptenDOMMouseEvent :
-			public virtual minko::dom::AbstractDOMMouseEvent,
-			public EmscriptenDOMEvent
-		{
-		public:
-			typedef std::shared_ptr<EmscriptenDOMMouseEvent> Ptr;
-
-		protected:
-			EmscriptenDOMMouseEvent(const std::string& jsAccessor):
-				EmscriptenDOMEvent(jsAccessor)
-			{
-			}
-
-		public:
-
-			static
-			Ptr
-			create(const std::string& jsAccessor)
-			{
-				Ptr event(new EmscriptenDOMMouseEvent(jsAccessor));
-				return event;
-			}
-
-			int
-			clientX();
-
-			int
-			clientY();
-
-			int
-			pageX();
-
-			int
-			pageY();
-
-			int
-			layerX();
-
-			int
-			layerY();
-
-			int
-			screenX();
-
-			int
-			screenY();
-		};
-	}
+	if (!v8NodeObject->IsObject())
+		throw;
 }
+
+ChromiumDOMTouchEvent::~ChromiumDOMTouchEvent()
+{
+    clear();
+}
+
+ChromiumDOMTouchEvent::Ptr
+ChromiumDOMTouchEvent::create(CefRefPtr<CefV8Value> v8NodeObject, CefRefPtr<CefV8Context> v8Context)
+{
+	ChromiumDOMTouchEvent::Ptr event(new ChromiumDOMTouchEvent(v8NodeObject, v8Context));
+	_events.push_back(event);
+	return event;
+}
+
+int
+ChromiumDOMTouchEvent::identifier()
+{
+    return 0;
+}
+
 #endif

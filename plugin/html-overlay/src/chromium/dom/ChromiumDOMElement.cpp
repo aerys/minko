@@ -655,6 +655,45 @@ ChromiumDOMElement::oninput()
     return _oninput;
 }
 
+Signal<AbstractDOMTouchEvent::Ptr>::Ptr
+ChromiumDOMElement::ontouchstart()
+{
+    if (!_ontouchstartCallbackSet)
+    {
+        _ontouchstart = Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::create();
+        addEventListener("touchstart");
+        _ontouchstartCallbackSet = true;
+    }
+
+    return _ontouchstart;
+}
+
+Signal<AbstractDOMTouchEvent::Ptr>::Ptr
+ChromiumDOMElement::ontouchend()
+{
+    if (!_ontouchendCallbackSet)
+    {
+        _ontouchend = Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::create();
+        addEventListener("touchend");
+        _ontouchendCallbackSet = true;
+    }
+
+    return _ontouchend;
+}
+
+Signal<AbstractDOMTouchEvent::Ptr>::Ptr
+ChromiumDOMElement::ontouchmove()
+{
+    if (!_ontouchstartCallbackSet)
+    {
+        _ontouchmove = Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::create();
+        addEventListener("touchmove");
+        _ontouchmoveCallbackSet = true;
+    }
+
+    return _ontouchmove;
+}
+
 void
 ChromiumDOMElement::update()
 {
