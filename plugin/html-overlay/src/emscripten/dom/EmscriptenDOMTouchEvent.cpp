@@ -1,4 +1,4 @@
-/*
+ /*
 Copyright (c) 2013 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -17,64 +17,65 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#if defined(EMSCRIPTEN)
-#pragma once
-
 #include "minko/Common.hpp"
-#include "emscripten/dom/EmscriptenDOMEvent.hpp"
-#include "minko/dom/AbstractDOMMouseEvent.hpp"
+#include "emscripten/dom/EmscriptenDOMTouchEvent.hpp"
+#include "emscripten/emscripten.h"
 
-namespace emscripten
+using namespace minko;
+using namespace minko::dom;
+using namespace emscripten;
+using namespace emscripten::dom;
+
+int
+EmscriptenDOMTouchEvent::clientX()
 {
-	namespace dom
-	{
-		class EmscriptenDOMMouseEvent :
-			public virtual minko::dom::AbstractDOMMouseEvent,
-			public EmscriptenDOMEvent
-		{
-		public:
-			typedef std::shared_ptr<EmscriptenDOMMouseEvent> Ptr;
-
-		protected:
-			EmscriptenDOMMouseEvent(const std::string& jsAccessor):
-				EmscriptenDOMEvent(jsAccessor)
-			{
-			}
-
-		public:
-
-			static
-			Ptr
-			create(const std::string& jsAccessor)
-			{
-				Ptr event(new EmscriptenDOMMouseEvent(jsAccessor));
-				return event;
-			}
-
-			int
-			clientX();
-
-			int
-			clientY();
-
-			int
-			pageX();
-
-			int
-			pageY();
-
-			int
-			layerX();
-
-			int
-			layerY();
-
-			int
-			screenX();
-
-			int
-			screenY();
-		};
-	}
+	return getProperty("changedTouches[0].clientX");
 }
-#endif
+
+int
+EmscriptenDOMTouchEvent::clientY()
+{
+	return getProperty("changedTouches[0].clientY");
+}
+
+int
+EmscriptenDOMTouchEvent::pageX()
+{
+	return getProperty("changedTouches[0].pageX");
+}
+
+int
+EmscriptenDOMTouchEvent::pageY()
+{
+	return getProperty("changedTouches[0].pageY");
+}
+
+int
+EmscriptenDOMTouchEvent::layerX()
+{
+	return getProperty("changedTouches[0].layerX");
+}
+
+int
+EmscriptenDOMTouchEvent::layerY()
+{
+	return getProperty("changedTouches[0].layerY");
+}
+
+int
+EmscriptenDOMTouchEvent::screenX()
+{
+	return getProperty("changedTouches[0].screenX");
+}
+
+int
+EmscriptenDOMTouchEvent::screenY()
+{
+	return getProperty("changedTouches[0].screenY");
+}
+
+int
+EmscriptenDOMTouchEvent::identifier()
+{
+	return getProperty("changedTouches[0].identifier");
+}

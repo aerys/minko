@@ -45,7 +45,7 @@ namespace chromium
 
 			~ChromiumDOMMouseEvent();
 
-        private:
+        protected:
 			ChromiumDOMMouseEvent(CefRefPtr<CefV8Value>, CefRefPtr<CefV8Context>);
 			
 		public:

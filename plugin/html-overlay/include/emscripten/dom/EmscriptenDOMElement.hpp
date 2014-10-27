@@ -39,6 +39,11 @@ namespace emscripten
 			typedef std::shared_ptr<EmscriptenDOMElement> Ptr;
 
 		private:
+            
+            typedef std::shared_ptr<minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>>       DOMEventSignal;
+            typedef std::shared_ptr<minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>>  DOMMouseEventSignal;
+            typedef std::shared_ptr<minko::Signal<std::shared_ptr<minko::dom::AbstractDOMTouchEvent>>>  DOMTouchEventSignal;
+            
 			EmscriptenDOMElement(const std::string& jsAccessor);
 
 		public:
@@ -123,29 +128,38 @@ namespace emscripten
 			void
 			style(const std::string& name, const std::string& value);
 
-			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
+			DOMMouseEventSignal
 			onclick();
 
-			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
+			DOMMouseEventSignal
 			onmousedown();
 
-			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
+			DOMMouseEventSignal
 			onmousemove();
 
-			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
+			DOMMouseEventSignal
 			onmouseup();
 
-			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
+			DOMMouseEventSignal
 			onmouseout();
 
-			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
+			DOMMouseEventSignal
 			onmouseover();
 
-			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
-			onchange();
+            DOMEventSignal
+            onchange();
 
-			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
-			oninput();
+            DOMEventSignal
+            oninput();
+
+            DOMTouchEventSignal
+            ontouchstart();
+
+            DOMTouchEventSignal
+            ontouchend();
+
+            DOMTouchEventSignal
+            ontouchmove();
 
 			void
 			update();
@@ -168,16 +182,20 @@ namespace emscripten
 
 			std::string _jsAccessor;
 
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr  _onclick;
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr  _onmousedown;
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr  _onmousemove;
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr  _onmouseup;
+            DOMEventSignal       _onchange;
+            DOMEventSignal       _oninput;
 
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr  _onmouseover;
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr  _onmouseout;
-
-			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _oninput;
-			minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onchange;
+			DOMMouseEventSignal  _onclick;
+			DOMMouseEventSignal  _onmousedown;
+			DOMMouseEventSignal  _onmousemove;
+			DOMMouseEventSignal  _onmouseup;
+			
+			DOMMouseEventSignal  _onmouseover;
+			DOMMouseEventSignal  _onmouseout;
+            
+            DOMTouchEventSignal  _ontouchstart;
+            DOMTouchEventSignal  _ontouchend;
+            DOMTouchEventSignal  _ontouchmove;
 
 			bool _onclickSet;
 			bool _onmousedownSet;
@@ -189,6 +207,10 @@ namespace emscripten
 
 			bool _onchangeSet;
 			bool _oninputSet;
+
+			bool _ontouchstartSet;
+			bool _ontouchendSet;
+			bool _ontouchmoveSet;
 		};
 	}
 }

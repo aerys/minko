@@ -33,7 +33,7 @@ namespace minko
             
             virtual
             int
-            touchId() = 0;
+            identifier() = 0;
 		};
 	}
 }

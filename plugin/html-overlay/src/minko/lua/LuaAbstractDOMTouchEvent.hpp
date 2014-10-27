@@ -44,7 +44,8 @@ namespace minko
                 bind(LuaGlue& state)
                 {
                     state.Class<dom::AbstractDOMTouchEvent>("AbstractDOMTouchEvent")
-                        .property("touchId", &dom::AbstractDOMTouchEvent::touchId);
+                        .property("identifier", &dom::AbstractDOMTouchEvent::identifier);
+
                 }
                 
             };

@@ -44,6 +44,10 @@ namespace chromium
 
 		private:
 			ChromiumDOMElement(CefRefPtr<CefV8Value>, CefRefPtr<CefV8Context>);
+            
+            typedef std::shared_ptr<minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>>       DOMEventSignal;
+            typedef std::shared_ptr<minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>>  DOMMouseEventSignal;
+            typedef std::shared_ptr<minko::Signal<std::shared_ptr<minko::dom::AbstractDOMTouchEvent>>>  DOMTouchEventSignal;
 			
 		public:
 
@@ -186,29 +190,38 @@ namespace chromium
 			void
 			style(const std::string& name, const std::string& value);
 
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr
+			DOMMouseEventSignal
 			onclick();
 
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr
+			DOMMouseEventSignal
 			onmousedown();
 
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr
+			DOMMouseEventSignal
 			onmousemove();
 
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr
+			DOMMouseEventSignal
 			onmouseup();
 
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr
+			DOMMouseEventSignal
 			onmouseout();
 
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr
+			DOMMouseEventSignal
 			onmouseover();
 
-            minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr
+            DOMEventSignal
             onchange();
 
-            minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr
+            DOMEventSignal
             oninput();
+
+            DOMTouchEventSignal
+            ontouchstart();
+
+            DOMTouchEventSignal
+            ontouchend();
+
+            DOMTouchEventSignal
+            ontouchmove();
 
 			static
 			void
@@ -231,16 +244,20 @@ namespace chromium
 			static
 			std::map<Ptr, CefRefPtr<CefV8Value>> _elementToV8Object;
             
-            std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>>      _onchange;
-            std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>>      _oninput;
+            DOMEventSignal       _onchange;
+            DOMEventSignal       _oninput;
 
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onclick;
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onmousedown;
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onmousemove;
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onmouseup;
+			DOMMouseEventSignal  _onclick;
+			DOMMouseEventSignal  _onmousedown;
+			DOMMouseEventSignal  _onmousemove;
+			DOMMouseEventSignal  _onmouseup;
 			
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onmouseover;
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onmouseout;
+			DOMMouseEventSignal  _onmouseover;
+			DOMMouseEventSignal  _onmouseout;
+            
+            DOMTouchEventSignal  _ontouchstart;
+            DOMTouchEventSignal  _ontouchend;
+            DOMTouchEventSignal  _ontouchmove;
 
             bool _onchangeCallbackSet;
             bool _oninputCallbackSet;
@@ -252,6 +269,10 @@ namespace chromium
 
 			bool _onmouseoverCallbackSet;
 			bool _onmouseoutCallbackSet;
+
+			bool _ontouchstartCallbackSet;
+			bool _ontouchendCallbackSet;
+			bool _ontouchmoveCallbackSet;
 
 			CefRefPtr<ChromiumDOMElementV8Handler> _v8Handler;
 

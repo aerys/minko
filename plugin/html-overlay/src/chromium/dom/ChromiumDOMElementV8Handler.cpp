@@ -20,7 +20,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #if defined(CHROMIUM)
 #include "chromium/dom/ChromiumDOMElementV8Handler.hpp"
 #include "chromium/dom/ChromiumDOMElement.hpp"
-#include "chromium/dom/ChromiumDOMElement.hpp"
 
 using namespace chromium::dom;
 using namespace minko::dom;
@@ -46,29 +45,49 @@ ChromiumDOMElementV8Handler::Execute(const CefString& name, CefRefPtr<CefV8Value
                 _element->onchange()->execute(ChromiumDOMEvent::create(event, CefV8Context::GetCurrentContext()));
             else if (type == "input" && _element->oninput()->numCallbacks() > 0)
                 _element->oninput()->execute(ChromiumDOMEvent::create(event, CefV8Context::GetCurrentContext()));
-            else
+            else if (type.substr(0, 5) == "touch")
             {
-                minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr signal;
+                minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Ptr touchSignal;
 
-			    if (type == "click" && _element->onclick()->numCallbacks() > 0)
-				    signal = _element->onclick();
-			    else if (type == "mousedown" && _element->onmousedown()->numCallbacks() > 0)
-				    signal = _element->onmousedown();
-			    else if (type == "mousemove" && _element->onmousemove()->numCallbacks() > 0)
-				    signal = _element->onmousemove();
-			    else if (type == "mouseup" && _element->onmouseup()->numCallbacks() > 0)
-				    signal = _element->onmouseup();
-			    else if (type == "mouseover" && _element->onmouseover()->numCallbacks() > 0)
-				    signal = _element->onmouseover();
-			    else if (type == "mouseout" && _element->onmouseout()->numCallbacks() > 0)
-				    signal = _element->onmouseout();
+                if (type == "touchstart" && _element->ontouchstart()->numCallbacks() > 0)
+				    touchSignal = _element->ontouchstart();
+			    else if (type == "touchend" && _element->ontouchend()->numCallbacks() > 0)
+				    touchSignal = _element->ontouchend();
+			    else if (type == "touchmove" && _element->ontouchmove()->numCallbacks() > 0)
+				    touchSignal = _element->ontouchmove();
             
-			    if (signal != nullptr)
+			    if (touchSignal != nullptr)
 			    {
-				    ChromiumDOMMouseEvent::Ptr domEvent = ChromiumDOMMouseEvent::create(event, CefV8Context::GetCurrentContext());
+				    ChromiumDOMTouchEvent::Ptr domTouchEvent = ChromiumDOMTouchEvent::create(event, CefV8Context::GetCurrentContext());
 				    _element->addFunction([=]()
 				    {
-					    signal->execute(domEvent);
+					    touchSignal->execute(domTouchEvent);
+				    });
+			    }
+            }
+            else
+            {
+                minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr mouseSignal;
+
+			    if (type == "click" && _element->onclick()->numCallbacks() > 0)
+				    mouseSignal = _element->onclick();
+			    else if (type == "mousedown" && _element->onmousedown()->numCallbacks() > 0)
+				    mouseSignal = _element->onmousedown();
+			    else if (type == "mousemove" && _element->onmousemove()->numCallbacks() > 0)
+				    mouseSignal = _element->onmousemove();
+			    else if (type == "mouseup" && _element->onmouseup()->numCallbacks() > 0)
+				    mouseSignal = _element->onmouseup();
+			    else if (type == "mouseover" && _element->onmouseover()->numCallbacks() > 0)
+				    mouseSignal = _element->onmouseover();
+			    else if (type == "mouseout" && _element->onmouseout()->numCallbacks() > 0)
+				    mouseSignal = _element->onmouseout();
+            
+			    if (mouseSignal != nullptr)
+			    {
+				    ChromiumDOMMouseEvent::Ptr domMouseEvent = ChromiumDOMMouseEvent::create(event, CefV8Context::GetCurrentContext());
+				    _element->addFunction([=]()
+				    {
+					    mouseSignal->execute(domMouseEvent);
 				    });
 			    }
             }

@@ -172,6 +172,18 @@ namespace minko
             minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
             oninput() = 0;
 
+            virtual
+            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMTouchEvent>>::Ptr
+            ontouchstart() = 0;
+
+            virtual
+            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMTouchEvent>>::Ptr
+            ontouchend() = 0;
+
+            virtual
+            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMTouchEvent>>::Ptr
+            ontouchmove() = 0;
+
 		private:
 
 		};
