@@ -432,5 +432,11 @@ Minko.init = function(platform)
 		console.log("Init android!");
 		Minko.loadedHandler();
 		Minko.addListener = Minko.addListenerAndroid;
+		
+		Minko.sendMessage = function(message)
+		{
+			console.log("Send message: " + message);
+			MinkoNativeInterface.onMessage(message);
+		}
 	}
 }
