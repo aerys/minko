@@ -17,9 +17,10 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/render/Texture.hpp"
-
+#include "minko/log/Logger.hpp"
 #include "minko/render/AbstractContext.hpp"
+#include "minko/render/Texture.hpp"
+#include "minko/render/TextureFormatInfo.hpp"
 
 using namespace minko;
 using namespace minko::render;
@@ -63,7 +64,7 @@ Texture::data(unsigned char*    data,
 
     assert(math::isp2(_widthGPU) && math::isp2(_heightGPU));
 
-    if (!isCompressed())
+    if (!TextureFormatInfo::isCompressed(_format))
     {
         const auto size = _width * _height * sizeof(int);
 
@@ -88,25 +89,7 @@ Texture::data(unsigned char*    data,
     }
     else
     {
-        // TODO FIX ME
-        // make format info aggregation
-
-        auto bitCountPerTexel = 0;
-
-        switch (_format)
-        {
-        case TextureFormat::RGB_DXT1:
-            bitCountPerTexel = 4;
-            break;
-        case TextureFormat::RGBA_DXT3:
-        case TextureFormat::RGBA_DXT5:
-            bitCountPerTexel = 8;
-            break;
-        default:
-            break;
-        }
-
-        const auto size = _width * _height * bitCountPerTexel / 8;
+        const auto size = _width * _height * TextureFormatInfo::numBitsPerPixel(_format) / 8;
         _data.resize(size);
 
         std::memcpy(_data.data(), data, size);
@@ -127,7 +110,7 @@ Texture::upload()
 
     if (!_data.empty())
     {
-        if (isCompressed())
+        if (TextureFormatInfo::isCompressed(_format))
         {
             _context->uploadCompressedTexture2dData(_id, _format, _widthGPU, _heightGPU, _data.size(), 0, _data.data());
         }

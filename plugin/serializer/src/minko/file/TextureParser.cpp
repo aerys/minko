@@ -209,8 +209,8 @@ TextureParser::parseCompressedTexture(TextureFormat                        forma
             options->context(),
             width,
             height,
-            options->generateMipmaps()
-            );
+            false
+        );
 
         texture->data(textureData.data(), format);
         texture->upload();

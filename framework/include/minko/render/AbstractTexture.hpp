@@ -132,9 +132,6 @@ namespace minko
 
             uint
             getMipmapHeight(uint level) const;
-
-            bool
-            isCompressed() const;
         };
     }
 }

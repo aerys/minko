@@ -28,6 +28,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include "PVRTextureUtilities.h"
 #endif
 
+#ifdef DEBUG
+# define MINKO_DEBUG_WRITE_PVR_TEXTURE_TO_DISK
+#endif
+
 using namespace minko;
 using namespace minko::file;
 using namespace minko::render;
@@ -97,6 +101,16 @@ PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
     const auto data = reinterpret_cast<const unsigned char*>(pvrTexture->getDataPtr());
 
     out.assign(data, data + size);
+
+#ifdef MINKO_DEBUG_WRITE_PVR_TEXTURE_TO_DISK
+    static auto pvrTextureId = 0;
+
+    auto debugOutputFileName = std::string("debug_") + std::to_string((int) outFormat) + "_" + std::to_string(pvrTextureId++);
+
+    debugOutputFileName = options->outputAssetUriFunction()(debugOutputFileName);
+
+    pvrTexture->saveFile(debugOutputFileName.c_str());
+#endif
 
     return true;
 #else
