@@ -17,30 +17,41 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "minko/render/OpenGLES2Context.hpp"
 #include "minko/render/TextureFormatInfo.hpp"
 
 using namespace minko;
 using namespace minko::render;
 
-std::map<TextureFormat, TextureFormatInfo::Format> TextureFormatInfo::_formats =
+std::map<TextureFormat, TextureFormatInfo::Entry> TextureFormatInfo::_formats =
 {
-    { TextureFormat::RGB,               { false,    24 } },
-    { TextureFormat::RGBA,              { false,    32 } },
+    { TextureFormat::RGB,               { false,    24, false } },
+    { TextureFormat::RGBA,              { false,    32, true } },
         
-    { TextureFormat::RGB_DXT1,          { true,     4 } },
-    { TextureFormat::RGBA_DXT3,         { true,     8 } },
-    { TextureFormat::RGBA_DXT5,         { true,     8 } },
-        
-    { TextureFormat::RGB_ETC1,          { true,     4 } },
+    { TextureFormat::RGB_DXT1,          { true,     4,  false } },
+    { TextureFormat::RGBA_DXT3,         { true,     8,  true } },
+    { TextureFormat::RGBA_DXT5,         { true,     8,  true } },
 
-    { TextureFormat::RGB_PVRTC1_2BPP,   { true,     2 } },
-    { TextureFormat::RGB_PVRTC1_4BPP,   { true,     4 } },
-    { TextureFormat::RGBA_PVRTC1_2BPP,  { true,     2 } },
-    { TextureFormat::RGBA_PVRTC1_4BPP,  { true,     4 } },
+    { TextureFormat::RGB_ETC1,          { true,     4,  false } },
 
-    { TextureFormat::RGBA_PVRTC2_2BPP,  { true,     2 } },
-    { TextureFormat::RGBA_PVRTC2_4BPP,  { true,     4 } }
+    { TextureFormat::RGB_PVRTC1_2BPP,   { true,     2,  false } },
+    { TextureFormat::RGB_PVRTC1_4BPP,   { true,     4,  false } },
+    { TextureFormat::RGBA_PVRTC1_2BPP,  { true,     2,  true } },
+    { TextureFormat::RGBA_PVRTC1_4BPP,  { true,     4,  true } },
+
+    { TextureFormat::RGBA_PVRTC2_2BPP,  { true,     2,  true } },
+    { TextureFormat::RGBA_PVRTC2_4BPP,  { true,     4,  true } }
 };
+
+bool
+TextureFormatInfo::isSupported(TextureFormat format)
+{
+    auto availableFormats = std::unordered_map<TextureFormat, unsigned int>();
+
+    OpenGLES2Context::availableTextureFormats(availableFormats);
+
+    return availableFormats.find(format) != availableFormats.end();
+}
 
 bool
 TextureFormatInfo::isCompressed(TextureFormat format)
@@ -52,4 +63,10 @@ int
 TextureFormatInfo::numBitsPerPixel(TextureFormat format)
 {
     return _formats.at(format)._numBitsPerPixel;
+}
+
+bool
+TextureFormatInfo::hasAlphaChannel(TextureFormat format)
+{
+    return _formats.at(format)._hasAlphaChannel;
 }

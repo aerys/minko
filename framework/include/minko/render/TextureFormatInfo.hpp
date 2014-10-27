@@ -28,17 +28,23 @@ namespace minko
         class TextureFormatInfo
         {
         private:
-            struct Format
+            struct Entry
             {
                 bool    _isCompressed;
 
                 int     _numBitsPerPixel;
+
+                bool    _hasAlphaChannel;
             };
 
         private:
-            static std::map<TextureFormat, Format> _formats;
+            static std::map<TextureFormat, Entry> _formats;
 
         public:
+            static
+            bool
+            isSupported(TextureFormat format);
+
             static
             bool
             isCompressed(TextureFormat format);
@@ -46,6 +52,10 @@ namespace minko
             static
             int
             numBitsPerPixel(TextureFormat format);
+
+            static
+            bool
+            hasAlphaChannel(TextureFormat format);
         };
     }
 }
