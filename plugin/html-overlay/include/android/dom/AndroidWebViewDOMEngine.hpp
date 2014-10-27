@@ -147,7 +147,7 @@ namespace android
             int numTouches;
 
             static
-            int firstTouchId;
+            int firstIdentifier;
         private:
 
             // WebView Slots

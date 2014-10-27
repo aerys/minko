@@ -40,7 +40,7 @@ namespace android
 		private:
 			AndroidWebViewDOMTouchEvent(const std::string& type, minko::dom::AbstractDOMElement::Ptr target) :
 				AndroidWebViewDOMMouseEvent(type, target),
-				_touchId(-1)
+				_identifier(-1)
 			{
 			}
 
@@ -56,13 +56,13 @@ namespace android
 			}
 
             int
-            touchId();
+            identifier();
 
             void
-            touchId(int value);
+            identifier(int value);
 
 		private:
-            int _touchId;
+            int _identifier;
 		};
 	}
 }

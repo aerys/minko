@@ -61,7 +61,7 @@ std::mutex AndroidWebViewDOMEngine::messageMutex;
 AndroidWebViewDOMEngine::Ptr AndroidWebViewDOMEngine::currentEngine;
 
 int AndroidWebViewDOMEngine::numTouches = 0;
-int AndroidWebViewDOMEngine::firstTouchId = -1;
+int AndroidWebViewDOMEngine::firstIdentifier = -1;
 
 #ifdef __cplusplus
 extern "C" {
@@ -155,7 +155,7 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent(JNIEnv*
 
                 touchEvent->clientX(touch.get("clientX", 0).asInt());
                 touchEvent->clientY(touch.get("clientY", 0).asInt());
-                touchEvent->touchId(touch.get("identifier", 0).asInt());
+                touchEvent->identifier(touch.get("identifier", 0).asInt());
 
                 AndroidWebViewDOMEngine::events.push_back(touchEvent);
 
@@ -176,7 +176,7 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent(JNIEnv*
                     AndroidWebViewDOMEngine::numTouches++;
                     if (AndroidWebViewDOMEngine::numTouches == 1)
                     {
-                        AndroidWebViewDOMEngine::firstTouchId = touchEvent->touchId();
+                        AndroidWebViewDOMEngine::firstIdentifier = touchEvent->identifier();
 
                         AndroidWebViewDOMEngine::events.push_back(mouseEvent);
                     }
@@ -187,7 +187,7 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent(JNIEnv*
 
                     if (AndroidWebViewDOMEngine::numTouches == 0)
                     {
-                        AndroidWebViewDOMEngine::firstTouchId = -1;
+                        AndroidWebViewDOMEngine::firstIdentifier = -1;
 
                         mouseEvent->type("mouseup");
 
@@ -200,7 +200,7 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent(JNIEnv*
                 }
                 else if (type == "touchmove")
                 {
-                    if (AndroidWebViewDOMEngine::firstTouchId == touchEvent->touchId())
+                    if (AndroidWebViewDOMEngine::firstIdentifier == touchEvent->identifier())
                     {
                         mouseEvent->type("mousemove");
 
@@ -578,13 +578,13 @@ AndroidWebViewDOMEngine::registerDomEvents()
     
     _ontouchstartSlot = std::static_pointer_cast<AndroidWebViewDOMElement>(_currentDOM->document())->ontouchstart()->connect([&](AbstractDOMTouchEvent::Ptr event)
     {
-        int touchId = event->touchId();
+        int identifier = event->identifier();
         float x = event->clientX();
         float y = event->clientY();
 
         SDL_Event sdlEvent;
         sdlEvent.type = SDL_FINGERDOWN;
-        sdlEvent.tfinger.fingerId = touchId;
+        sdlEvent.tfinger.fingerId = identifier;
         sdlEvent.tfinger.x =  x / _canvas->width();
         sdlEvent.tfinger.y = y / _canvas->height();
 
@@ -595,13 +595,13 @@ AndroidWebViewDOMEngine::registerDomEvents()
     
     _ontouchendSlot = std::static_pointer_cast<AndroidWebViewDOMElement>(_currentDOM->document())->ontouchend()->connect([&](AbstractDOMTouchEvent::Ptr event)
     {
-        int touchId = event->touchId();
+        int identifier = event->identifier();
         float x = event->clientX();
         float y = event->clientY();
         
         SDL_Event sdlEvent;
         sdlEvent.type = SDL_FINGERUP;
-        sdlEvent.tfinger.fingerId = touchId;
+        sdlEvent.tfinger.fingerId = identifier;
         sdlEvent.tfinger.x = x / _canvas->width();
         sdlEvent.tfinger.y = y / _canvas->height();
 
@@ -612,22 +612,21 @@ AndroidWebViewDOMEngine::registerDomEvents()
     
     _ontouchmoveSlot = std::static_pointer_cast<AndroidWebViewDOMElement>(_currentDOM->document())->ontouchmove()->connect([&](AbstractDOMTouchEvent::Ptr event)
     {
-        int touchId = event->touchId();
-
+        int identifier = event->identifier();
         auto identifiers = _canvas->touch()->identifiers();
 
-        if(std::find(identifiers.begin(), identifiers.end(), touchId) == identifiers.end())
+        if(std::find(identifiers.begin(), identifiers.end(), identifier) == identifiers.end())
             return;
 
         float x = event->clientX();
         float y = event->clientY();
         
-        float oldX = _canvas->touch()->touch(touchId)->x();
-        float oldY = _canvas->touch()->touch(touchId)->y();
+        float oldX = _canvas->touch()->touch(identifier)->x();
+        float oldY = _canvas->touch()->touch(identifier)->y();
 
         SDL_Event sdlEvent;
         sdlEvent.type = SDL_FINGERMOTION;
-        sdlEvent.tfinger.fingerId = touchId;
+        sdlEvent.tfinger.fingerId = identifier;
         sdlEvent.tfinger.x = x / _canvas->width();
         sdlEvent.tfinger.y = y / _canvas->height();
         sdlEvent.tfinger.dx = (x - oldX) / _canvas->width();

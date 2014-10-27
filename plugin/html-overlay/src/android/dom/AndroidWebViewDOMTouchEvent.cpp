@@ -28,13 +28,13 @@ using namespace android;
 using namespace android::dom;
 
 int
-AndroidWebViewDOMTouchEvent::touchId()
+AndroidWebViewDOMTouchEvent::identifier()
 {
-    return _touchId;
+    return _identifier;
 }
 
 void
-AndroidWebViewDOMTouchEvent::touchId(int value)
+AndroidWebViewDOMTouchEvent::identifier(int value)
 {
-    _touchId = value;
+    _identifier = value;
 }
