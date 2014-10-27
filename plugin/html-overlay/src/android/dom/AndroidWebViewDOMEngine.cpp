@@ -27,7 +27,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "json/json.h"
 
 #include "SDL.h"
-#include <android/log.h>
 
 #include "minko/dom/AbstractDOMTouchEvent.hpp"
 #include "minko/input/Touch.hpp"
@@ -36,6 +35,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "android/dom/AndroidWebViewDOMMouseEvent.hpp"
 #include "android/dom/AndroidWebViewDOMTouchEvent.hpp"
 
+#include <android/log.h>
 #define LOG_TAG "MINKOCPP"
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
@@ -150,6 +150,7 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent(JNIEnv*
         {
             for (auto touch : touches)
             {
+                // Touch event
                 auto touchEvent = AndroidWebViewDOMTouchEvent::create(type, target);
 
                 touchEvent->clientX(touch.get("clientX", 0).asInt());
@@ -158,22 +159,24 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent(JNIEnv*
 
                 AndroidWebViewDOMEngine::events.push_back(touchEvent);
 
+                // Mouse event
+                auto mouseEvent = AndroidWebViewDOMMouseEvent::create("mousedown", target);
+
+                mouseEvent->clientX(touchEvent->clientX());
+                mouseEvent->clientY(touchEvent->clientY());
+                mouseEvent->pageX(root.get("pageX", 0).asInt());
+                mouseEvent->pageY(root.get("pageY", 0).asInt());
+                mouseEvent->layerX(root.get("layerX", 0).asInt());
+                mouseEvent->layerY(root.get("layerY", 0).asInt());
+                mouseEvent->screenX(root.get("screenX", 0).asInt());
+                mouseEvent->screenY(root.get("screenY", 0).asInt());
+
                 if (type == "touchstart")
                 {
                     AndroidWebViewDOMEngine::numTouches++;
                     if (AndroidWebViewDOMEngine::numTouches == 1)
                     {
                         AndroidWebViewDOMEngine::firstTouchId = touchEvent->touchId();
-                        auto mouseEvent = AndroidWebViewDOMMouseEvent::create("mousedown", target);
-
-                        mouseEvent->clientX(touchEvent->clientX());
-                        mouseEvent->clientY(touchEvent->clientY());
-                        mouseEvent->pageX(root.get("pageX", 0).asInt());
-                        mouseEvent->pageY(root.get("pageY", 0).asInt());
-                        mouseEvent->layerX(root.get("layerX", 0).asInt());
-                        mouseEvent->layerY(root.get("layerY", 0).asInt());
-                        mouseEvent->screenX(root.get("screenX", 0).asInt());
-                        mouseEvent->screenY(root.get("screenY", 0).asInt());
 
                         AndroidWebViewDOMEngine::events.push_back(mouseEvent);
                     }
@@ -186,34 +189,20 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent(JNIEnv*
                     {
                         AndroidWebViewDOMEngine::firstTouchId = -1;
 
-                        auto mouseEvent = AndroidWebViewDOMMouseEvent::create("mouseup", target);
+                        mouseEvent->type("mouseup");
 
-                        mouseEvent->clientX(touchEvent->clientX());
-                        mouseEvent->clientY(touchEvent->clientY());;
-                        mouseEvent->pageX(root.get("pageX", 0).asInt());
-                        mouseEvent->pageY(root.get("pageY", 0).asInt());
-                        mouseEvent->layerX(root.get("layerX", 0).asInt());
-                        mouseEvent->layerY(root.get("layerY", 0).asInt());
-                        mouseEvent->screenX(root.get("screenX", 0).asInt());
-                        mouseEvent->screenY(root.get("screenY", 0).asInt());
+                        auto mouseClickEvent = AndroidWebViewDOMMouseEvent::create(mouseEvent);
+                        mouseClickEvent->type("click");
 
                         AndroidWebViewDOMEngine::events.push_back(mouseEvent);
+                        AndroidWebViewDOMEngine::events.push_back(mouseClickEvent);
                     }
                 }
                 else if (type == "touchmove")
                 {
                     if (AndroidWebViewDOMEngine::firstTouchId == touchEvent->touchId())
                     {
-                        auto mouseEvent = AndroidWebViewDOMMouseEvent::create("mousemove", target);
-
-                        mouseEvent->clientX(touchEvent->clientX());
-                        mouseEvent->clientY(touchEvent->clientY());
-                        mouseEvent->pageX(root.get("pageX", 0).asInt());
-                        mouseEvent->pageY(root.get("pageY", 0).asInt());
-                        mouseEvent->layerX(root.get("layerX", 0).asInt());
-                        mouseEvent->layerY(root.get("layerY", 0).asInt());
-                        mouseEvent->screenX(root.get("screenX", 0).asInt());
-                        mouseEvent->screenY(root.get("screenY", 0).asInt());
+                        mouseEvent->type("mousemove");
 
                         AndroidWebViewDOMEngine::events.push_back(mouseEvent);
                     }

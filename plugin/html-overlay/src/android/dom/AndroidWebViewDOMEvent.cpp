@@ -49,3 +49,9 @@ AndroidWebViewDOMEvent::target()
 {
     return _target;
 }
+
+void
+AndroidWebViewDOMEvent::type(const std::string& value)
+{
+	_type = value;
+}

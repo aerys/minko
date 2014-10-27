@@ -56,6 +56,19 @@ namespace android
 			{
 			}
 
+			AndroidWebViewDOMMouseEvent(AndroidWebViewDOMMouseEvent::Ptr event):
+				AndroidWebViewDOMEvent(event->type(), event->target()),
+				_clientX(event->clientX()),
+				_clientY(event->clientY()),
+				_pageX(event->pageX()),
+				_pageY(event->pageY()),
+				_layerX(event->layerX()),
+				_layerY(event->layerY()),
+				_screenX(event->screenX()),
+				_screenY(event->screenY())
+			{
+			}
+
 		public:
 
 			static
@@ -63,6 +76,14 @@ namespace android
 			create(const std::string& type, std::shared_ptr<minko::dom::AbstractDOMElement> target)
 			{
 				Ptr event(new AndroidWebViewDOMMouseEvent(type, target));
+				return event;
+			}
+
+			static
+			Ptr
+			create(AndroidWebViewDOMMouseEvent::Ptr mouseEvent)
+			{
+				Ptr event(new AndroidWebViewDOMMouseEvent(mouseEvent));
 				return event;
 			}
 

@@ -54,6 +54,9 @@ namespace android
             minko::dom::AbstractDOMElement::Ptr
             target();
 
+            void 
+            type(const std::string&);
+
             void
             preventDefault();
 
