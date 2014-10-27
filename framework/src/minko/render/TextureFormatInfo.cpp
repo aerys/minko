@@ -24,14 +24,22 @@ using namespace minko::render;
 
 std::map<TextureFormat, TextureFormatInfo::Format> TextureFormatInfo::_formats =
 {
-    { TextureFormat::RGB,       { false,    24 } },
-    { TextureFormat::RGBA,      { false,    32 } },
+    { TextureFormat::RGB,               { false,    24 } },
+    { TextureFormat::RGBA,              { false,    32 } },
+        
+    { TextureFormat::RGB_DXT1,          { true,     4 } },
+    { TextureFormat::RGBA_DXT3,         { true,     8 } },
+    { TextureFormat::RGBA_DXT5,         { true,     8 } },
+        
+    { TextureFormat::RGB_ETC1,          { true,     4 } },
 
-    { TextureFormat::RGB_DXT1,  { true,     4 } },
-    { TextureFormat::RGBA_DXT3, { true,     8 } },
-    { TextureFormat::RGBA_DXT5, { true,     8 } },
+    { TextureFormat::RGB_PVRTC1_2BPP,   { true,     2 } },
+    { TextureFormat::RGB_PVRTC1_4BPP,   { true,     4 } },
+    { TextureFormat::RGBA_PVRTC1_2BPP,  { true,     2 } },
+    { TextureFormat::RGBA_PVRTC1_4BPP,  { true,     4 } },
 
-    { TextureFormat::RGB_ETC1,  { true,     4 } }
+    { TextureFormat::RGBA_PVRTC2_2BPP,  { true,     2 } },
+    { TextureFormat::RGBA_PVRTC2_4BPP,  { true,     4 } }
 };
 
 bool

@@ -118,9 +118,13 @@ namespace minko
 
             RGB_ETC1,
 
-            RGB_PVRTC1,
-            RGBA_PVRTC1,
-            RGBA_PVRTC2,
+            RGB_PVRTC1_2BPP,
+            RGB_PVRTC1_4BPP,
+            RGBA_PVRTC1_2BPP,
+            RGBA_PVRTC1_4BPP,
+
+            RGBA_PVRTC2_2BPP,
+            RGBA_PVRTC2_4BPP,
 
             RGBA_ATITC1,
             RGBA_ATITC2,

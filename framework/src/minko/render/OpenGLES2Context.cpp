@@ -1731,16 +1731,25 @@ OpenGLES2Context::availableTextureFormats(std::unordered_map<TextureFormat, unsi
 
 #ifdef GL_IMG_texture_compression_pvrtc
         case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
-            formats.insert(std::make_pair(TextureFormat::RGB_PVRTC1, GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG));
+            formats.insert(std::make_pair(TextureFormat::RGB_PVRTC1_2BPP, GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG));
+            break;
+        case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
+            formats.insert(std::make_pair(TextureFormat::RGB_PVRTC1_4BPP, GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG));
             break;
         case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
-            formats.insert(std::make_pair(TextureFormat::RGBA_PVRTC1, GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG));
+            formats.insert(std::make_pair(TextureFormat::RGBA_PVRTC1_2BPP, GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG));
+            break;
+        case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
+            formats.insert(std::make_pair(TextureFormat::RGBA_PVRTC1_4BPP, GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG));
             break;
 #endif
 
 #ifdef GL_IMG_texture_compression_pvrtc2
         case GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG:
-            formats.insert(std::make_pair(TextureFormat::RGBA_PVRTC2, COMPRESSED_RGBA_PVRTC_2BPPV2_IMG));
+            formats.insert(std::make_pair(TextureFormat::RGBA_PVRTC2_2BPP, COMPRESSED_RGBA_PVRTC_2BPPV2_IMG));
+            break;
+        case GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG:
+            formats.insert(std::make_pair(TextureFormat::RGBA_PVRTC2_4BPP, COMPRESSED_RGBA_PVRTC_4BPPV2_IMG));
             break;
 #endif
 

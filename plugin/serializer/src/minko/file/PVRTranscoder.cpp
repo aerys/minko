@@ -51,12 +51,15 @@ PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
 
         { TextureFormat::RGB_ETC1, ePVRTPF_ETC1 },
 
-        { TextureFormat::RGB_PVRTC1, ePVRTPF_PVRTCI_4bpp_RGB },
-        { TextureFormat::RGBA_PVRTC1, ePVRTPF_PVRTCI_4bpp_RGBA },
-        { TextureFormat::RGBA_PVRTC2, ePVRTPF_PVRTCII_4bpp }
+        { TextureFormat::RGB_PVRTC1_2BPP, ePVRTPF_PVRTCI_2bpp_RGB },
+        { TextureFormat::RGB_PVRTC1_4BPP, ePVRTPF_PVRTCI_4bpp_RGB },
+        { TextureFormat::RGBA_PVRTC1_2BPP, ePVRTPF_PVRTCI_2bpp_RGBA },
+        { TextureFormat::RGBA_PVRTC1_4BPP, ePVRTPF_PVRTCI_4bpp_RGBA },
+        { TextureFormat::RGBA_PVRTC2_2BPP, ePVRTPF_PVRTCII_2bpp },
+        { TextureFormat::RGBA_PVRTC2_4BPP, ePVRTPF_PVRTCII_4bpp }
     };
 
-    std::shared_ptr<pvrtexture::CPVRTexture> pvrTexture;
+    auto pvrTexture = std::unique_ptr<pvrtexture::CPVRTexture>();
 
     switch (texture->type())
     {
@@ -75,7 +78,7 @@ PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
             ePVRTCSpacesRGB
         );
 
-        pvrTexture = std::make_shared<pvrtexture::CPVRTexture>(pvrHeader, texture2d->data().data());
+        pvrTexture = std::make_unique<pvrtexture::CPVRTexture>(pvrHeader, texture2d->data().data());
 
         if (!pvrtexture::Transcode(
             *pvrTexture,

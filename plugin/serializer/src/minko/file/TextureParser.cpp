@@ -38,17 +38,25 @@ std::unordered_map<render::TextureFormat, TextureParser::FormatParserFunction> T
 {
     { TextureFormat::RGB, std::bind(parseRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
     { TextureFormat::RGBA, std::bind(parseRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
+
     { TextureFormat::RGB_DXT1, std::bind(parseCompressedTexture, TextureFormat::RGB_DXT1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
     { TextureFormat::RGBA_DXT3, std::bind(parseCompressedTexture, TextureFormat::RGBA_DXT3, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
     { TextureFormat::RGBA_DXT5, std::bind(parseCompressedTexture, TextureFormat::RGBA_DXT5, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
+
     { TextureFormat::RGB_ETC1, std::bind(parseCompressedTexture, TextureFormat::RGB_ETC1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
-    { TextureFormat::RGBA_PVRTC1, std::bind(parseCompressedTexture, TextureFormat::RGBA_PVRTC1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) }
+
+    { TextureFormat::RGB_PVRTC1_2BPP, std::bind(parseCompressedTexture, TextureFormat::RGB_PVRTC1_2BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
+    { TextureFormat::RGB_PVRTC1_4BPP, std::bind(parseCompressedTexture, TextureFormat::RGB_PVRTC1_4BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
+    { TextureFormat::RGBA_PVRTC1_2BPP, std::bind(parseCompressedTexture, TextureFormat::RGBA_PVRTC1_2BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
+    { TextureFormat::RGBA_PVRTC1_4BPP, std::bind(parseCompressedTexture, TextureFormat::RGBA_PVRTC1_4BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
+
+    { TextureFormat::RGBA_PVRTC2_2BPP, std::bind(parseCompressedTexture, TextureFormat::RGBA_PVRTC2_2BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
+    { TextureFormat::RGBA_PVRTC2_4BPP, std::bind(parseCompressedTexture, TextureFormat::RGBA_PVRTC2_4BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) }
 };
 
 TextureParser::TextureParser() :
     AbstractSerializerParser()
 {
-
 }
 
 void
@@ -134,10 +142,10 @@ TextureParser::parse(const std::string&                filename,
 }
 
 bool
-TextureParser::parseRGBATexture(const std::string& fileName,
-                                Options::Ptr options,
-                                const std::vector<unsigned char>& data,
-                                AssetLibrary::Ptr assetLibrary)
+TextureParser::parseRGBATexture(const std::string&                  fileName,
+                                Options::Ptr                        options,
+                                const std::vector<unsigned char>&   data,
+                                AssetLibrary::Ptr                   assetLibrary)
 {
     msgpack::unpacked unpacked;
     msgpack::unpack(&unpacked, reinterpret_cast<const char*>(data.data()), data.size());
@@ -198,6 +206,14 @@ TextureParser::parseCompressedTexture(TextureFormat                        forma
 
     if (textureFormat != format)
     {
+        LOG_ERROR(
+            "Texture format mismatched: "
+            << static_cast<int>(textureFormat)
+            << " expected  vs "
+            << static_cast<int>(format)
+            << " found"
+        );
+
         return false;
     }
 
