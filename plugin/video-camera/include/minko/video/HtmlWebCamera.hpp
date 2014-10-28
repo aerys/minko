@@ -27,32 +27,29 @@ namespace minko
 {
     namespace video
     {
-        class AndroidVideoCamera :
+        class HtmlWebCamera :
             public AbstractVideoCamera
         {
         public:
-            typedef std::shared_ptr<AndroidVideoCamera> Ptr;
+            typedef std::shared_ptr<HtmlWebCamera> Ptr;
 
         private:
-            typedef std::shared_ptr<component::SceneManager> SceneManagerPtr;
-
-            struct JniImpl;
-
-        private:
-
-            FrameSignal::Ptr _frameReceived;
-
-            std::shared_ptr<JniImpl> _jniImpl;
+            FrameSignal::Ptr    _frameReceived;
+            int                 _frameId;
+            static bool         _js_script_loaded;
+            int                 _cameraBufferSize;
+            int                 _cameraWidth;
+            int                 _cameraHeight;
 
         public:
-            ~AndroidVideoCamera() = default;
+            ~HtmlWebCamera() = default;
 
             inline
             static
             Ptr
             create()
             {
-                auto instance = Ptr(new AndroidVideoCamera());
+                auto instance = Ptr(new HtmlWebCamera());
 
                 instance->initialize();
 
@@ -76,13 +73,21 @@ namespace minko
             stop();
 
         private:
-            AndroidVideoCamera();
+            HtmlWebCamera();
 
             void
             initialize();
 
             void
             requestFrame();
+
+            static
+            void
+            js_load_success();
+
+            static
+            void
+            js_load_error();
         };
     }
 }

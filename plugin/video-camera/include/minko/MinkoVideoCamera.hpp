@@ -24,3 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #ifdef MINKO_PLUGIN_ANDROID
 # include "minko/video/AndroidVideoCamera.hpp"
 #endif // MINKO_PLUGIN_ANDROID
+#if defined(EMSCRIPTEN)
+# include "minko/video/HtmlWebCamera.hpp"
+#endif

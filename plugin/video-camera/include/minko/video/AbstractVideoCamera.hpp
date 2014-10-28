@@ -48,10 +48,6 @@ namespace minko
 
             virtual
             Ptr
-            desiredFrameRate(unsigned int frameRate) = 0;
-
-            virtual
-            Ptr
             desiredSize(unsigned int width, unsigned int height) = 0;
 
             virtual
@@ -65,6 +61,10 @@ namespace minko
             virtual
             void
             stop() = 0;
+
+            virtual
+            void
+            requestFrame() = 0;
         };
     }
 }

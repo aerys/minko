@@ -97,11 +97,8 @@ decodeYUVFrame(const unsigned char* frame,
     }  
 }
 
-const unsigned int AndroidVideoCamera::_defaultDesiredFrameRate = 30;
-
 AndroidVideoCamera::AndroidVideoCamera() :
-    _frameReceived(FrameSignal::create()),
-    _desiredFrameRate(_defaultDesiredFrameRate)
+    _frameReceived(FrameSignal::create())
 {
 }
 
@@ -118,22 +115,7 @@ AndroidVideoCamera::initialize()
 	_jniImpl->_videoCameraStopMethodID = jniEnv->GetStaticMethodID(_jniImpl->_videoCameraClass, "stop", "()V");
 	_jniImpl->_videoCameraDesiredSizeMethodID = jniEnv->GetStaticMethodID(_jniImpl->_videoCameraClass, "desiredSize", "(II)V");
     _jniImpl->_videoCameraRetrieveFrameMethodID = jniEnv->GetStaticMethodID(_jniImpl->_videoCameraClass, "retrieveFrame", "([I)[B");
-
-    _frameBeginSlot = _sceneManager->frameBegin()->connect(std::bind(
-        &AndroidVideoCamera::frameBeginHandler,
-        std::static_pointer_cast<AndroidVideoCamera>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3
-    ));
-
-    _frameEndSlot = _sceneManager->frameEnd()->connect(std::bind(
-        &AndroidVideoCamera::frameEndHandler,
-        std::static_pointer_cast<AndroidVideoCamera>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3
-    ));
+    
 }
 
 AbstractVideoCamera::Ptr
@@ -155,30 +137,7 @@ AndroidVideoCamera::stop()
 }
 
 void
-AndroidVideoCamera::frameBeginHandler(SceneManager::Ptr sceneManager, float time, float deltaTime)
-{
-    static auto elapsedTime = 0.0f;
-
-    elapsedTime += deltaTime / 1000.0f;
-
-    const auto videoFrameTime = 1.0f / static_cast<float>(_desiredFrameRate);
-
-    if (elapsedTime >= videoFrameTime)
-    {
-        if (retrieveFrame())
-        {
-            elapsedTime = 0.0f;
-        }
-    }
-}
-
-void
-AndroidVideoCamera::frameEndHandler(SceneManager::Ptr sceneManager, float time, float deltaTime)
-{
-}
-
-bool
-AndroidVideoCamera::retrieveFrame()
+AndroidVideoCamera::requestFrame()
 {
     static const auto frameMetaDataSize = 3;
 
@@ -192,12 +151,8 @@ AndroidVideoCamera::retrieveFrame()
         jniFrameMetaData
     ));
 
-    auto frameWasRetrieved = false;
-
     if (jniFrameData)
     {
-        frameWasRetrieved = true;
-
         auto frameMetaData = jniEnv->GetIntArrayElements(jniFrameMetaData, nullptr);
 
         auto width = frameMetaData[0];
@@ -251,6 +206,4 @@ AndroidVideoCamera::retrieveFrame()
     }
 
     jniEnv->DeleteLocalRef(jniFrameMetaData);
-
-    return frameWasRetrieved;
 }
