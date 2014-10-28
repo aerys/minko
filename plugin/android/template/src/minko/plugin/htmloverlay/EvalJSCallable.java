@@ -24,6 +24,8 @@ public class EvalJSCallable implements Callable<String>
 		d("MINKOJAVA", "EVAL JS CALLABLE");
 		d("MINKOJAVA", "Eval string: " + evalString);
 		*/
+		
+		
 		_webView.loadUrl(evalString);
 		
 		//_webView.loadUrl("javascript: eval(\"test[0]\");");
