@@ -115,7 +115,6 @@ Minko.clearEvents = function(accessor)
 		accessor.minkoEvents = [];
 };
 
-
 /*
 ** EMSCRIPTEN SPECIFIC CODE
 */
@@ -318,6 +317,21 @@ Minko.bindRedispatchEvents = function() //EMSCRIPTEN
 		Minko.window.addEventListener(a[k], Minko.redispatchKeyboardEvent);
 }
 
+Minko.changeViewportWidth = function(width)
+{
+	var metaElement = document.getElementById("metaViewport");
+
+	if (!metaElement)
+	{
+		metaElement = document.createElement("meta");
+		metaElement.id = "metaViewport";
+		metaElement.setAttribute("name", "viewport");
+		document.head.appendChild(metaElement);
+	}
+
+	metaElement.setAttribute("content", "width=" + width);
+};
+
 /*
 ** iOS/OSX
 */
@@ -408,7 +422,7 @@ Minko.init = function(platform)
 	{
 		Minko.createIframe();
 	}
-	else if (platform == "macWebView")
+	else if (platform == "apple")
 	{
 		Minko.connectWebViewJavascriptBridge(function(bridge) // iOS / OSX
 		{
@@ -418,9 +432,6 @@ Minko.init = function(platform)
 
 			bridge.init(function(message, responseCallback)
 			{
-				if (responseCallback)
-				{
-				}
 			});
 
 			bridge.send({type: 'ready', value:'true'});
