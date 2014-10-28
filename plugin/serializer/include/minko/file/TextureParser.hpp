@@ -46,6 +46,7 @@ namespace minko
             static std::unordered_map<render::TextureFormat, FormatParserFunction> _formatParserFunctions;
 
             unsigned int _textureHeaderSize;
+            bool _dataEmbed;
 
         public:
             inline
@@ -63,6 +64,15 @@ namespace minko
             textureHeaderSize(unsigned int value)
             {
                 _textureHeaderSize = value;
+
+                return std::static_pointer_cast<TextureParser>(shared_from_this());
+            }
+
+            inline
+            Ptr
+            dataEmbed(bool value)
+            {
+                _dataEmbed = value;
 
                 return std::static_pointer_cast<TextureParser>(shared_from_this());
             }

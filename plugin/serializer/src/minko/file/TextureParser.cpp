@@ -55,7 +55,9 @@ std::unordered_map<render::TextureFormat, TextureParser::FormatParserFunction> T
 };
 
 TextureParser::TextureParser() :
-    AbstractSerializerParser()
+    AbstractSerializerParser(),
+    _textureHeaderSize(0),
+    _dataEmbed(false)
 {
 }
 
@@ -113,30 +115,45 @@ TextureParser::parse(const std::string&                filename,
     auto offset = textureBlobOffset + desiredFormatInfo.a1;
     auto length = desiredFormatInfo.a2;
 
-    auto textureLoaderOptions = Options::create(options)
-        ->seekingOffset(offset)
-        ->seekedLength(length)
-        ->parserFunction([&](const std::string& extension) -> AbstractParser::Ptr
+    if (!_dataEmbed)
     {
-        return nullptr;
-    });
-    
-    auto textureLoader = Loader::create(textureLoaderOptions);
+        auto textureLoaderOptions = Options::create(options)
+            ->seekingOffset(offset)
+            ->seekedLength(length)
+            ->parserFunction([&](const std::string& extension) -> AbstractParser::Ptr
+        {
+            return nullptr;
+        });
 
-    auto textureLoaderCompleteSlot = textureLoader->complete()->connect([&](Loader::Ptr loader) -> void
+        auto textureLoader = Loader::create(textureLoaderOptions);
+
+        auto textureLoaderCompleteSlot = textureLoader->complete()->connect([&](Loader::Ptr loader) -> void
+        {
+            auto textureData = assetLibrary->blob(resolvedFilename);
+
+            if (!_formatParserFunctions.at(desiredFormat)(filename, textureLoaderOptions, textureData, assetLibrary))
+            {
+                // TODO
+                // handle parsing error
+            }
+        });
+
+        textureLoader
+            ->queue(resolvedFilename)
+            ->load();
+    }
+    else
     {
-        auto textureData = assetLibrary->blob(resolvedFilename);
+        const auto textureDataBegin = data.begin() + offset;
+        const auto textureDataEnd = textureDataBegin + length;
+        const auto textureData = std::vector<unsigned char>(textureDataBegin, textureDataEnd);
 
-        if (!_formatParserFunctions.at(desiredFormat)(resolvedFilename, textureLoaderOptions, textureData, assetLibrary))
+        if (!_formatParserFunctions.at(desiredFormat)(filename, options, textureData, assetLibrary))
         {
             // TODO
             // handle parsing error
         }
-    });
-
-    textureLoader
-        ->queue(resolvedFilename)
-        ->load();
+    }
 
     complete()->execute(shared_from_this());
 }

@@ -246,6 +246,11 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&                asset
 
         if (assetLibrary->texture(resolvedPath) == nullptr)
         {
+            const auto headerSize = static_cast<int>(metaByte);
+
+            _textureParser->textureHeaderSize(headerSize);
+            _textureParser->dataEmbed(true);
+
             _textureParser->parse(resolvedPath, assetCompletePath, options, data, assetLibrary);
 
             auto texture = assetLibrary->texture(resolvedPath);
@@ -352,6 +357,7 @@ AbstractSerializerParser::deserializeTexture(unsigned char      metaByte,
         auto textureParser = TextureParser::create();
 
         textureParser->textureHeaderSize(textureHeaderSize);
+        textureParser->dataEmbed(false);
 
         return textureParser;
     });
