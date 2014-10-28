@@ -18,3 +18,12 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"include",
 		"src"
 	}
+
+	configuration { "not android" }
+	    excludes {
+	        minko.plugin.path("video-camera") .. "/include/minko/video/AndroidVideoCamera.hpp",
+	        minko.plugin.path("video-camera") .. "/src/minko/video/AndroidVideoCamera.cpp",
+	        -- minko.plugin.path("video-camera") .. "/include/minko/video/HtmlWebCamera.hpp",
+	        -- minko.plugin.path("video-camera") .. "/src/minko/video/HtmlWebCamera.cpp"
+	    }
+
