@@ -138,6 +138,11 @@ namespace minko
                 return _pinchZoom;
             }
 
+            float
+            averageX();
+
+            float
+            averageY();
 
         protected:
             Touch(std::shared_ptr<AbstractCanvas> canvas);

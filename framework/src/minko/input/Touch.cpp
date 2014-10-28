@@ -35,3 +35,35 @@ Touch::Touch(std::shared_ptr<AbstractCanvas> canvas) :
     _swipeDown(Signal<Ptr>::create())
 {
 }
+
+float
+Touch::averageX()
+{
+    auto x = 0.f;
+    auto l = numTouches();
+
+    for (int i = 0; i < l; ++i)
+    {
+        x += _touches[_identifiers[i]]->x();
+    }
+
+    x /= l;
+
+    return x;
+}
+
+float
+Touch::averageY()
+{
+    auto y = 0.f;
+    auto l = numTouches();
+
+    for (int i = 0; i < l; ++i)
+    {
+        y += _touches[_identifiers[i]]->x();
+    }
+
+    y /= l;
+
+    return y;
+}
