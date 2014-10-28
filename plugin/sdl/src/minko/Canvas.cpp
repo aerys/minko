@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/Vector4.hpp"
 #include "minko/async/Worker.hpp"
 #include "minko/file/Options.hpp"
+#include "minko/log/Logger.hpp"
 #include "minko/SDLBackend.hpp"
 
 #if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
