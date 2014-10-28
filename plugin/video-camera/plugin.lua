@@ -20,14 +20,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 -- video-camera plugin
 minko.plugin["video-camera"] = {}
 
-minko.plugin["video-camera"].enable = function()
-
-    configuration { "android" }
-        minko.plugin.enable("android")
+minko.plugin["video-camera"].enable = function()   
 
 	minko.plugin.links { "video-camera" }
 	includedirs { minko.plugin.path("video-camera") .. "/include" }
 	defines { "MINKO_PLUGIN_VIDEO_CAMERA" }
+
+	configuration { "android" }
+        minko.plugin.enable("android")
 end
 
 newoption {
