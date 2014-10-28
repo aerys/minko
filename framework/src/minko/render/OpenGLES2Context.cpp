@@ -1756,6 +1756,7 @@ OpenGLES2Context::availableTextureFormats(std::unordered_map<TextureFormat, unsi
 #ifdef GL_OES_compressed_ETC1_RGB8_texture
         case GL_ETC1_RGB8_OES:
             formats.insert(std::make_pair(TextureFormat::RGB_ETC1, GL_ETC1_RGB8_OES));
+            formats.insert(std::make_pair(TextureFormat::RGBA_ETC1, GL_ETC1_RGB8_OES));
             break;
 #endif
 

@@ -117,6 +117,7 @@ namespace minko
             RGBA_DXT5,
 
             RGB_ETC1,
+            RGBA_ETC1,
 
             RGB_PVRTC1_2BPP,
             RGB_PVRTC1_4BPP,

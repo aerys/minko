@@ -30,11 +30,27 @@ namespace minko
         private:
             struct Entry
             {
-                bool    _isCompressed;
+                std::string _name;
 
-                int     _numBitsPerPixel;
+                bool        _isCompressed;
 
-                bool    _hasAlphaChannel;
+                int         _numBitsPerPixel;
+
+                bool        _hasAlphaChannel;
+                bool        _hasSeparateAlphaChannel;
+
+                Entry(const std::string&    name,
+                      bool                  isCompressed,
+                      int                   numBitsPerPixel,
+                      bool                  hasAlphaChannel,
+                      bool                  hasSeparateAlphaChannel) :
+                    _name(name),
+                    _isCompressed(isCompressed),
+                    _numBitsPerPixel(numBitsPerPixel),
+                    _hasAlphaChannel(hasAlphaChannel),
+                    _hasSeparateAlphaChannel(hasSeparateAlphaChannel)
+                {
+                }
             };
 
         private:
@@ -44,6 +60,10 @@ namespace minko
             static
             bool
             isSupported(TextureFormat format);
+
+            static
+            const std::string&
+            name(TextureFormat format);
 
             static
             bool
@@ -56,6 +76,10 @@ namespace minko
             static
             bool
             hasAlphaChannel(TextureFormat format);
+
+            static
+            bool
+            hasSeparateAlphaChannel(TextureFormat format);
         };
     }
 }

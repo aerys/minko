@@ -28,6 +28,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/OpenGLES2Context.hpp"
 #include "minko/render/Texture.hpp"
+#include "minko/render/TextureFormatInfo.hpp"
 
 using namespace minko;
 using namespace minko::file;
@@ -48,10 +49,7 @@ std::unordered_map<render::TextureFormat, TextureParser::FormatParserFunction> T
     { TextureFormat::RGB_PVRTC1_2BPP, std::bind(parseCompressedTexture, TextureFormat::RGB_PVRTC1_2BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
     { TextureFormat::RGB_PVRTC1_4BPP, std::bind(parseCompressedTexture, TextureFormat::RGB_PVRTC1_4BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
     { TextureFormat::RGBA_PVRTC1_2BPP, std::bind(parseCompressedTexture, TextureFormat::RGBA_PVRTC1_2BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
-    { TextureFormat::RGBA_PVRTC1_4BPP, std::bind(parseCompressedTexture, TextureFormat::RGBA_PVRTC1_4BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
-
-    { TextureFormat::RGBA_PVRTC2_2BPP, std::bind(parseCompressedTexture, TextureFormat::RGBA_PVRTC2_2BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
-    { TextureFormat::RGBA_PVRTC2_4BPP, std::bind(parseCompressedTexture, TextureFormat::RGBA_PVRTC2_4BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) }
+    { TextureFormat::RGBA_PVRTC1_4BPP, std::bind(parseCompressedTexture, TextureFormat::RGBA_PVRTC1_4BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) }
 };
 
 TextureParser::TextureParser() :
@@ -225,9 +223,9 @@ TextureParser::parseCompressedTexture(TextureFormat                        forma
     {
         LOG_ERROR(
             "Texture format mismatched: "
-            << static_cast<int>(textureFormat)
+            << TextureFormatInfo::name(textureFormat)
             << " expected  vs "
-            << static_cast<int>(format)
+            << TextureFormatInfo::name(format)
             << " found"
         );
 

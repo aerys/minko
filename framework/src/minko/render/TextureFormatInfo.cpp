@@ -25,22 +25,23 @@ using namespace minko::render;
 
 std::map<TextureFormat, TextureFormatInfo::Entry> TextureFormatInfo::_formats =
 {
-    { TextureFormat::RGB,               { false,    24, false } },
-    { TextureFormat::RGBA,              { false,    32, true } },
+    { TextureFormat::RGB,               Entry("RGB",                false,    24, false,  false) },
+    { TextureFormat::RGBA,              Entry("RGBA",               false,    32, true,   false) },
         
-    { TextureFormat::RGB_DXT1,          { true,     4,  false } },
-    { TextureFormat::RGBA_DXT3,         { true,     8,  true } },
-    { TextureFormat::RGBA_DXT5,         { true,     8,  true } },
+    { TextureFormat::RGB_DXT1,          Entry("RGB_DXT1",           true,     4,  false,  false) },
+    { TextureFormat::RGBA_DXT3,         Entry("RGBA_DXT3",          true,     8,  true,   false) },
+    { TextureFormat::RGBA_DXT5,         Entry("RGBA_DXT5",          true,     8,  true,   false) },
 
-    { TextureFormat::RGB_ETC1,          { true,     4,  false } },
+    { TextureFormat::RGB_ETC1,          Entry("RGB_ETC1",           true,     4,  false,  false) },
+    { TextureFormat::RGBA_ETC1,         Entry("RGBA_ETC1",          true,     4,  true,   true)  },
 
-    { TextureFormat::RGB_PVRTC1_2BPP,   { true,     2,  false } },
-    { TextureFormat::RGB_PVRTC1_4BPP,   { true,     4,  false } },
-    { TextureFormat::RGBA_PVRTC1_2BPP,  { true,     2,  true } },
-    { TextureFormat::RGBA_PVRTC1_4BPP,  { true,     4,  true } },
+    { TextureFormat::RGB_PVRTC1_2BPP,   Entry("RGB_PVRTC1_2BPP",    true,     2,  false,  false) },
+    { TextureFormat::RGB_PVRTC1_4BPP,   Entry("RGB_PVRTC1_4BPP",    true,     4,  false,  false) },
+    { TextureFormat::RGBA_PVRTC1_2BPP,  Entry("RGBA_PVRTC1_2BPP",   true,     2,  true,   false) },
+    { TextureFormat::RGBA_PVRTC1_4BPP,  Entry("RGBA_PVRTC1_4BPP",   true,     4,  true,   false) },
 
-    { TextureFormat::RGBA_PVRTC2_2BPP,  { true,     2,  true } },
-    { TextureFormat::RGBA_PVRTC2_4BPP,  { true,     4,  true } }
+    { TextureFormat::RGBA_PVRTC2_2BPP,  Entry("RGBA_PVRTC2_2BPP",   true,     2,  true,   false) },
+    { TextureFormat::RGBA_PVRTC2_4BPP,  Entry("RGBA_PVRTC2_4BPP",   true,     4,  true,   false) }
 };
 
 bool
@@ -51,6 +52,12 @@ TextureFormatInfo::isSupported(TextureFormat format)
     OpenGLES2Context::availableTextureFormats(availableFormats);
 
     return availableFormats.find(format) != availableFormats.end();
+}
+
+const std::string&
+TextureFormatInfo::name(TextureFormat format)
+{
+    return _formats.at(format)._name;
 }
 
 bool
@@ -69,4 +76,10 @@ bool
 TextureFormatInfo::hasAlphaChannel(TextureFormat format)
 {
     return _formats.at(format)._hasAlphaChannel;
+}
+
+bool
+TextureFormatInfo::hasSeparateAlphaChannel(TextureFormat format)
+{
+    return _formats.at(format)._hasSeparateAlphaChannel;
 }
