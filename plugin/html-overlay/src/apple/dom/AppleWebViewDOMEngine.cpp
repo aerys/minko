@@ -29,38 +29,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/dom/AbstractDOMTouchEvent.hpp"
 
-#include "macwebview/dom/MacWebViewDOMEngine.hpp"
-#include "macwebview/dom/MacWebViewDOMMouseEvent.hpp"
+#include "apple/dom/AppleWebViewDOMEngine.hpp"
+#include "apple/dom/AppleWebViewDOMMouseEvent.hpp"
 
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
 #elif TARGET_OS_MAC // OSX
-# include "macwebview/dom/OSXWebUIDelegate.h"
+# include "apple/dom/OSXWebUIDelegate.h"
 #endif
 
 using namespace minko;
 using namespace minko::component;
 using namespace minko::dom;
-using namespace macwebview;
-using namespace macwebview::dom;
+using namespace apple;
+using namespace apple::dom;
 
 int
-MacWebViewDOMEngine::_domUid = 0;
+AppleWebViewDOMEngine::_domUid = 0;
 
 std::function<void(std::string&, std::string&)>
-MacWebViewDOMEngine::handleJavascriptMessageWrapper;
+AppleWebViewDOMEngine::handleJavascriptMessageWrapper;
 
-// Slots
-Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot onmousemoveSlot;
-Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot onmousedownSlot;
-Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot onmouseupSlot;
-
-#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
-Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot ontouchdownSlot;
-Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot ontouchupSlot;
-Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot ontouchmotionSlot;
-#endif
-
-MacWebViewDOMEngine::MacWebViewDOMEngine() :
+AppleWebViewDOMEngine::AppleWebViewDOMEngine() :
 	_onload(Signal<AbstractDOM::Ptr, std::string>::create()),
 	_onmessage(Signal<AbstractDOM::Ptr, std::string>::create()),
 	_visible(true),
@@ -76,7 +65,7 @@ MacWebViewDOMEngine::MacWebViewDOMEngine() :
 }
 
 void
-MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sceneManager)
+AppleWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sceneManager)
 {
 	_canvas = canvas;
 	_sceneManager = sceneManager;
@@ -140,6 +129,7 @@ MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
             CGRect webViewFrame = _webView.frame;
             webViewFrame.size.width = w / 2;
             webViewFrame.size.height = h / 2;
+            
             _webView.frame = webViewFrame;
 
             _webViewWidth = w;
@@ -181,7 +171,7 @@ MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
 
         // Create a C++ handler to process the message received by the Javascript bridge
         handleJavascriptMessageWrapper = std::bind(
-                       &MacWebViewDOMEngine::handleJavascriptMessage,
+                       &AppleWebViewDOMEngine::handleJavascriptMessage,
                        this,
                        std::placeholders::_1,
                        std::placeholders::_2
@@ -208,7 +198,7 @@ MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
                         value = [val UTF8String];
                 }
 
-                MacWebViewDOMEngine::handleJavascriptMessageWrapper(type, value);
+                AppleWebViewDOMEngine::handleJavascriptMessageWrapper(type, value);
             }
             else if ([data isKindOfClass:[NSString class]])
             {
@@ -216,7 +206,7 @@ MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
                 std::string value([dataString UTF8String]);
                 std::string type = "log";
 
-                MacWebViewDOMEngine::handleJavascriptMessageWrapper(type, value);
+                AppleWebViewDOMEngine::handleJavascriptMessageWrapper(type, value);
             }
          }];
     }
@@ -230,21 +220,21 @@ MacWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
 }
 
 void
-MacWebViewDOMEngine::createNewDom()
+AppleWebViewDOMEngine::createNewDom()
 {
 	std::string domName = "Minko.dom" + std::to_string(_domUid++);
 
-	_currentDOM = MacWebViewDOM::create(domName, shared_from_this());
+	_currentDOM = AppleWebViewDOM::create(domName, shared_from_this());
 }
 
 minko::dom::AbstractDOM::Ptr
-MacWebViewDOMEngine::mainDOM()
+AppleWebViewDOMEngine::mainDOM()
 {
 	return _currentDOM;
 }
 
 void
-MacWebViewDOMEngine::enterFrame(float time)
+AppleWebViewDOMEngine::enterFrame(float time)
 {
     if (_waitingForLoad)
     {
@@ -286,7 +276,7 @@ MacWebViewDOMEngine::enterFrame(float time)
 
     if (_pollRate == -1 || _updateNextFrame || (_pollRate != 0 && (time - _lastUpdateTime) > (1000.0 / (float)(_pollRate))))
     {
-        for(auto element : MacWebViewDOMElement::domElements)
+        for(auto element : AppleWebViewDOMElement::domElements)
         {
             element->update();
         }
@@ -323,15 +313,15 @@ MacWebViewDOMEngine::enterFrame(float time)
 
 }
 
-MacWebViewDOMEngine::Ptr
-MacWebViewDOMEngine::create()
+AppleWebViewDOMEngine::Ptr
+AppleWebViewDOMEngine::create()
 {
-	MacWebViewDOMEngine::Ptr engine(new MacWebViewDOMEngine);
+	AppleWebViewDOMEngine::Ptr engine(new AppleWebViewDOMEngine);
 	return engine;
 }
 
 AbstractDOM::Ptr
-MacWebViewDOMEngine::load(std::string uri)
+AppleWebViewDOMEngine::load(std::string uri)
 {
     if (_currentDOM == nullptr || _currentDOM->initialized())
         createNewDom();
@@ -353,7 +343,7 @@ MacWebViewDOMEngine::load(std::string uri)
 #endif
     }
 
-    std::cout << "MacWebViewDOMEngine::load(): " << uri << std::endl;
+    std::cout << "AppleWebViewDOMEngine::load(): " << uri << std::endl;
 
     const char *cURI = uri.c_str();
     NSString *nsURI = [NSString stringWithCString:cURI encoding:[NSString defaultCStringEncoding]];
@@ -369,30 +359,30 @@ MacWebViewDOMEngine::load(std::string uri)
 }
 
 void
-MacWebViewDOMEngine::clear()
+AppleWebViewDOMEngine::clear()
 {
 }
 
 Signal<AbstractDOM::Ptr, std::string>::Ptr
-MacWebViewDOMEngine::onload()
+AppleWebViewDOMEngine::onload()
 {
 	return _onload;
 }
 
 Signal<AbstractDOM::Ptr, std::string>::Ptr
-MacWebViewDOMEngine::onmessage()
+AppleWebViewDOMEngine::onmessage()
 {
 	return _onmessage;
 }
 
 bool
-MacWebViewDOMEngine::visible()
+AppleWebViewDOMEngine::visible()
 {
     return _visible;
 }
 
 void
-MacWebViewDOMEngine::visible(bool value)
+AppleWebViewDOMEngine::visible(bool value)
 {
     if (_canvas != nullptr)
 	{
@@ -414,7 +404,7 @@ MacWebViewDOMEngine::visible(bool value)
 	_visible = value;
 }
 
-void MacWebViewDOMEngine::handleJavascriptMessage(std::string type, std::string value)
+void AppleWebViewDOMEngine::handleJavascriptMessage(std::string type, std::string value)
 {
     if (type == "ready")
     {
@@ -431,117 +421,103 @@ void MacWebViewDOMEngine::handleJavascriptMessage(std::string type, std::string 
 }
 
 void
-MacWebViewDOMEngine::registerDomEvents()
+AppleWebViewDOMEngine::registerDomEvents()
 {
-    onmousedownSlot = _currentDOM->document()->onmousedown()->connect([&](AbstractDOMMouseEvent::Ptr event)
+    _onmousedownSlot = _currentDOM->document()->onmousedown()->connect([&](AbstractDOMMouseEvent::Ptr event)
     {
         int x = event->clientX();
         int y = event->clientY();
-
+        
         _canvas->mouse()->x(x);
         _canvas->mouse()->y(y);
 
         _canvas->mouse()->leftButtonDown()->execute(_canvas->mouse());
     });
 
-    onmouseupSlot = _currentDOM->document()->onmouseup()->connect([&](AbstractDOMMouseEvent::Ptr event)
+    _onmouseupSlot = _currentDOM->document()->onmouseup()->connect([&](AbstractDOMMouseEvent::Ptr event)
     {
         int x = event->clientX();
         int y = event->clientY();
-
+        
         _canvas->mouse()->x(x);
         _canvas->mouse()->y(y);
-
+        
         _canvas->mouse()->leftButtonUp()->execute(_canvas->mouse());
     });
 
-    onmousemoveSlot = _currentDOM->document()->onmousemove()->connect([&](AbstractDOMMouseEvent::Ptr event)
+    _onmousemoveSlot = _currentDOM->document()->onmousemove()->connect([&](AbstractDOMMouseEvent::Ptr event)
     {
         int x = event->clientX();
         int y = event->clientY();
+        
+        auto oldX = _canvas->mouse()->x();
+        auto oldY = _canvas->mouse()->y();
 
         _canvas->mouse()->x(x);
         _canvas->mouse()->y(y);
 
-        auto oldX = _canvas->mouse()->x();
-        auto oldY = _canvas->mouse()->y();
-
-        _canvas->mouse()->move()->execute(_canvas->mouse(), event->clientX() - oldX, event->clientY() - oldY);
+        _canvas->mouse()->move()->execute(_canvas->mouse(), x - oldX, y - oldY);
     });
-
-#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
-    ontouchdownSlot = std::static_pointer_cast<MacWebViewDOMElement>(_currentDOM->document())->ontouchdown()->connect([&](AbstractDOMTouchEvent::Ptr event)
+    
+    _ontouchstartSlot = _currentDOM->document()->ontouchstart()->connect([&](AbstractDOMTouchEvent::Ptr event)
     {
-        int fingerId = event->fingerId();
+        int identifier = event->identifier();
         float x = event->clientX();
         float y = event->clientY();
 
         SDL_Event sdlEvent;
         sdlEvent.type = SDL_FINGERDOWN;
-        sdlEvent.tfinger.fingerId = fingerId;
+        sdlEvent.tfinger.fingerId = identifier;
         sdlEvent.tfinger.x =  x / _canvas->width();
         sdlEvent.tfinger.y = y / _canvas->height();
 
         SDL_PushEvent(&sdlEvent);
-
-        // Create a new touch object and keep it with a list
-        auto touch = minko::SDLTouch::create(std::static_pointer_cast<Canvas>(_canvas));
-        touch->fingerId(fingerId);
-        touch->x(x);
-        touch->y(y);
-
-        _touches.insert(std::pair<int, std::shared_ptr<minko::SDLTouch>>(fingerId, touch));
     });
-
-    ontouchupSlot = std::static_pointer_cast<MacWebViewDOMElement>(_currentDOM->document())->ontouchup()->connect([&](AbstractDOMTouchEvent::Ptr event)
+    
+    _ontouchendSlot = _currentDOM->document()->ontouchend()->connect([&](AbstractDOMTouchEvent::Ptr event)
     {
-        int fingerId = event->fingerId();
+        int identifier = event->identifier();
         float x = event->clientX();
         float y = event->clientY();
-
+        
         SDL_Event sdlEvent;
         sdlEvent.type = SDL_FINGERUP;
-        sdlEvent.tfinger.fingerId = fingerId;
+        sdlEvent.tfinger.fingerId = identifier;
         sdlEvent.tfinger.x = x / _canvas->width();
         sdlEvent.tfinger.y = y / _canvas->height();
 
         SDL_PushEvent(&sdlEvent);
-
-        // We check that the finger is into the list before removing it
-        if (_touches.find(fingerId) != _touches.end())
-        {
-            _touches.erase(fingerId);
-        }
     });
-
-    ontouchmotionSlot = std::static_pointer_cast<MacWebViewDOMElement>(_currentDOM->document())->ontouchmotion()->connect([&](AbstractDOMTouchEvent::Ptr event)
+    
+    _ontouchmoveSlot = _currentDOM->document()->ontouchmove()->connect([&](AbstractDOMTouchEvent::Ptr event)
     {
-        int fingerId = event->fingerId();
-        float oldX = _touches.at(fingerId)->minko::input::Touch::x();
-        float oldY = _touches.at(fingerId)->minko::input::Touch::y();
+        int identifier = event->identifier();
+        auto identifiers = _canvas->touch()->identifiers();
+
+        if (std::find(identifiers.begin(), identifiers.end(), identifier) == identifiers.end())
+            return;
+
         float x = event->clientX();
         float y = event->clientY();
+        
+        float oldX = _canvas->touch()->touch(identifier)->x();
+        float oldY = _canvas->touch()->touch(identifier)->y();
 
         SDL_Event sdlEvent;
         sdlEvent.type = SDL_FINGERMOTION;
-        sdlEvent.tfinger.fingerId = fingerId;
+        sdlEvent.tfinger.fingerId = identifier;
         sdlEvent.tfinger.x = x / _canvas->width();
         sdlEvent.tfinger.y = y / _canvas->height();
         sdlEvent.tfinger.dx = (x - oldX) / _canvas->width();
         sdlEvent.tfinger.dy = (y - oldY) / _canvas->height();
-
+    
         SDL_PushEvent(&sdlEvent);
-
-        // Store finger information
-        _touches.at(fingerId)->x(x);
-        _touches.at(fingerId)->y(y);
     });
-#endif
 }
 
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
 void
-MacWebViewDOMEngine::updateWebViewWidth()
+AppleWebViewDOMEngine::updateWebViewWidth()
 {
     std::string jsEval = "Minko.changeViewportWidth(" + std::to_string(_webViewWidth) + ");";
 
@@ -550,7 +526,7 @@ MacWebViewDOMEngine::updateWebViewWidth()
 #endif
 
 std::string
-MacWebViewDOMEngine::eval(std::string data)
+AppleWebViewDOMEngine::eval(std::string data)
 {
     const char *dataChar = data.c_str();
     NSString *nsString = [NSString stringWithCString:dataChar encoding:[NSString defaultCStringEncoding]];

@@ -1,11 +1,6 @@
 #if defined(__APPLE__)
 # include "TargetConditionals.h"
-# include "macwebview/dom/MacWebViewDOMEngine.hpp"
-//# if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
-//#  include "ioswebview/dom/IOSWebViewDOMEngine.hpp"
-//# elif TARGET_OS_MAC // OSX
-//#  include "osxwebview/dom/OSXWebViewDOMEngine.hpp"
-//# endif
+# include "apple/dom/AppleWebViewDOMEngine.hpp"
 #elif defined(__ANDROID__)
 # include "android/dom/AndroidWebViewDOMEngine.hpp"
 #elif defined(CHROMIUM)
@@ -25,15 +20,8 @@ using namespace minko::component;
 
 #if defined(__APPLE__)
 # include "TargetConditionals.h"
-using namespace macwebview;
-using namespace macwebview::dom;
-//# if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
-//using namespace ioswebview;
-//using namespace ioswebview::dom;
-//# elif TARGET_OS_MAC // OSX
-//using namespace osxwebview;
-//using namespace osxwebview::dom;
-//# endif
+using namespace apple;
+using namespace apple::dom;
 #elif defined(__ANDROID__)
 using namespace android;
 using namespace android::dom;
@@ -52,7 +40,7 @@ HtmlOverlay::HtmlOverlay(int argc, char** argv) :
 	_cleared(false)
 {
 #if defined(__APPLE__)
-    MacWebViewDOMEngine::Ptr engine = MacWebViewDOMEngine::create();
+    AppleWebViewDOMEngine::Ptr engine = AppleWebViewDOMEngine::create();
     _domEngine = engine;
 #elif defined(__ANDROID__)
     AndroidWebViewDOMEngine::Ptr engine = AndroidWebViewDOMEngine::create();
@@ -101,15 +89,8 @@ HtmlOverlay::targetAddedHandler(AbstractComponent::Ptr ctrl, scene::Node::Ptr ta
 
 #if defined(__APPLE__)
 # include "TargetConditionals.h"
-    MacWebViewDOMEngine::Ptr engine = std::dynamic_pointer_cast<MacWebViewDOMEngine>(_domEngine);
+    AppleWebViewDOMEngine::Ptr engine = std::dynamic_pointer_cast<AppleWebViewDOMEngine>(_domEngine);
     engine->initialize(_canvas, _sceneManager);
-//# if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
-//    IOSWebViewDOMEngine::Ptr engine = std::dynamic_pointer_cast<IOSWebViewDOMEngine>(_domEngine);
-//    engine->initialize(_canvas, _sceneManager);
-//# elif TARGET_OS_MAC // OSX
-//    OSXWebViewDOMEngine::Ptr engine = std::dynamic_pointer_cast<OSXWebViewDOMEngine>(_domEngine);
-//    engine->initialize(_canvas, _sceneManager);
-//# endif
 #elif defined(__ANDROID__)
     AndroidWebViewDOMEngine::Ptr engine = std::dynamic_pointer_cast<AndroidWebViewDOMEngine>(_domEngine);
     engine->initialize(_canvas, _sceneManager);

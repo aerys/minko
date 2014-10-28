@@ -18,15 +18,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Common.hpp"
-#include "macwebview/dom/MacWebViewDOM.hpp"
-#include "macwebview/dom/MacWebViewDOMEngine.hpp"
+#include "apple/dom/AppleWebViewDOM.hpp"
+#include "apple/dom/AppleWebViewDOMEngine.hpp"
 
 using namespace minko;
 using namespace minko::dom;
-using namespace macwebview;
-using namespace macwebview::dom;
+using namespace apple;
+using namespace apple::dom;
 
-MacWebViewDOM::MacWebViewDOM(std::string jsAccessor) :
+AppleWebViewDOM::AppleWebViewDOM(const std::string& jsAccessor) :
 	_initialized(false),
 	_onload(Signal<AbstractDOM::Ptr, std::string>::create()),
 	_onmessage(Signal<AbstractDOM::Ptr, std::string>::create()),
@@ -35,16 +35,17 @@ MacWebViewDOM::MacWebViewDOM(std::string jsAccessor) :
 {
 }
 
-MacWebViewDOM::Ptr
-MacWebViewDOM::create(const std::string& jsAccessor, std::shared_ptr<MacWebViewDOMEngine> engine)
+AppleWebViewDOM::Ptr
+AppleWebViewDOM::create(const std::string& jsAccessor, std::shared_ptr<AppleWebViewDOMEngine> engine)
 {
-	Ptr dom(new MacWebViewDOM(jsAccessor));
+	Ptr dom(new AppleWebViewDOM(jsAccessor));
     dom->_engine = engine;
     
 	return dom;
 }
 
-std::string replaceAll(std::string str, const std::string& from, const std::string& to)
+std::string
+replaceAll(std::string str, const std::string& from, const std::string& to)
 {
     size_t start_pos = 0;
     
@@ -58,99 +59,101 @@ std::string replaceAll(std::string str, const std::string& from, const std::stri
 }
 
 void
-MacWebViewDOM::sendMessage(const std::string& message, bool async)
+AppleWebViewDOM::sendMessage(const std::string& message, bool async)
 {
-    message = replaceAll(message, "\\", "\\\\");
-    message = replaceAll(message, "'", "\\'");
+	std::string m = message;
 
-	std::string eval = "if (" + _jsAccessor + ".window.Minko.onmessage) " + _jsAccessor + ".window.Minko.onmessage('" + message + "');";
+    m = replaceAll(m, "\\", "\\\\");
+    m = replaceAll(m, "'", "\\'");
+
+	std::string eval = "if (" + _jsAccessor + ".window.Minko.onmessage) " + _jsAccessor + ".window.Minko.onmessage('" + m + "');";
 
     runScript(eval);
 }
 
 void
-MacWebViewDOM::eval(const std::string& message, bool async)
+AppleWebViewDOM::eval(const std::string& message, bool async)
 {
     std::string ev = _jsAccessor + ".window.eval('" + message + "')";
     _engine->eval(ev);
 }
 
 std::vector<AbstractDOMElement::Ptr>
-MacWebViewDOM::getElementList(const std::string& expression)
+AppleWebViewDOM::getElementList(const std::string& expression)
 {
     std::vector<minko::dom::AbstractDOMElement::Ptr> l;
+    std::string e = "Minko.tmpElements = " + expression;
     
-    expression = "Minko.tmpElements = " + expression;
+    runScript(e);
     
-    runScript(expression);
-    
-    expression = "(Minko.tmpElements.length)";
-    int numElements = runScriptInt(expression.c_str());
+    e = "(Minko.tmpElements.length)";
+
+    int numElements = runScriptInt(e.c_str());
     
     for(int i = 0; i < numElements; ++i)
-        l.push_back(MacWebViewDOMElement::getDOMElement("Minko.tmpElements[" + std::to_string(i) + "]", _engine));
+        l.push_back(AppleWebViewDOMElement::getDOMElement("Minko.tmpElements[" + std::to_string(i) + "]", _engine));
     
     return l;
 }
 
 AbstractDOMElement::Ptr
-MacWebViewDOM::createElement(const std::string& element)
+AppleWebViewDOM::createElement(const std::string& element)
 {
 	std::string eval = "Minko.tmpElement = " + _jsAccessor + ".document.createElement('" + element + "');";
 
 	runScript(eval);
 
-	return MacWebViewDOMElement::getDOMElement("Minko.tmpElement", _engine);
+	return AppleWebViewDOMElement::getDOMElement("Minko.tmpElement", _engine);
 }
 
 AbstractDOMElement::Ptr
-MacWebViewDOM::getElementById(const std::string& id)
+AppleWebViewDOM::getElementById(const std::string& id)
 {
 	std::string eval = "Minko.tmpElement = " + _jsAccessor + ".document.getElementById('" + id + "');";
 
 	runScript(eval);
 
-	return MacWebViewDOMElement::getDOMElement("Minko.tmpElement", _engine);
+	return AppleWebViewDOMElement::getDOMElement("Minko.tmpElement", _engine);
 }
 
 std::vector<AbstractDOMElement::Ptr>
-MacWebViewDOM::getElementsByClassName(const std::string& className)
+AppleWebViewDOM::getElementsByClassName(const std::string& className)
 {
 	return getElementList(_jsAccessor + ".document.getElementsByClassName('" + className + "')");
 }
 
 std::vector<AbstractDOMElement::Ptr>
-MacWebViewDOM::getElementsByTagName(const std::string& tagName)
+AppleWebViewDOM::getElementsByTagName(const std::string& tagName)
 {
 	return getElementList(_jsAccessor + ".document.getElementsByTagName('" + tagName + "')");
 }
 
 AbstractDOMElement::Ptr
-MacWebViewDOM::document()
+AppleWebViewDOM::document()
 {
 	return _document;
 }
 
 AbstractDOMElement::Ptr
-MacWebViewDOM::body()
+AppleWebViewDOM::body()
 {
 	return _body;
 }
 
 Signal<AbstractDOM::Ptr, std::string>::Ptr
-MacWebViewDOM::onload()
+AppleWebViewDOM::onload()
 {
 	return _onload;
 }
 
 Signal<AbstractDOM::Ptr, std::string>::Ptr
-MacWebViewDOM::onmessage()
+AppleWebViewDOM::onmessage()
 {
 	return _onmessage;
 }
 
 std::string
-MacWebViewDOM::fileName()
+AppleWebViewDOM::fileName()
 {
 	std::string completeUrl = fullUrl();
 	int i = completeUrl.find_last_of('/');
@@ -159,7 +162,7 @@ MacWebViewDOM::fileName()
 }
 
 std::string
-MacWebViewDOM::fullUrl()
+AppleWebViewDOM::fullUrl()
 {
 	std::string eval = "(document.location.href)";
     
@@ -169,13 +172,13 @@ MacWebViewDOM::fullUrl()
 }
 
 bool
-MacWebViewDOM::isMain()
+AppleWebViewDOM::isMain()
 {
 	return true;
 }
 
 void
-MacWebViewDOM::initialized(bool v)
+AppleWebViewDOM::initialized(bool v)
 {
 	if (!_initialized && v)
 	{
@@ -188,33 +191,33 @@ MacWebViewDOM::initialized(bool v)
 		
         runScript(eval);
 
-		_document	= MacWebViewDOMElement::create(_jsAccessor + ".document", _engine);
-		_body		= MacWebViewDOMElement::create(_jsAccessor + ".body", _engine);
+		_document	= AppleWebViewDOMElement::create(_jsAccessor + ".document", _engine);
+		_body		= AppleWebViewDOMElement::create(_jsAccessor + ".body", _engine);
 	}
 
 	_initialized = v;
 }
 
 bool
-MacWebViewDOM::initialized()
+AppleWebViewDOM::initialized()
 {
 	return _initialized;
 }
 
 void
-MacWebViewDOM::runScript(const std::string& script)
+AppleWebViewDOM::runScript(const std::string& script)
 {
     _engine->eval(script);
 }
 
 std::string
-MacWebViewDOM::runScriptString(const std::string& script)
+AppleWebViewDOM::runScriptString(const std::string& script)
 {
     return _engine->eval(script);
 }
 
 int
-MacWebViewDOM::runScriptInt(const std::string& script)
+AppleWebViewDOM::runScriptInt(const std::string& script)
 {
     return atoi(_engine->eval(script).c_str());
 }

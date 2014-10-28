@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -17,27 +17,8 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#import "macwebview/dom/OSXWebUIDelegate.h"
-#import <WebKit/WebView.h>
+#import <WebKit/WebUIDelegate.h>
 
-@implementation OSXWebUIDelegate
-
-// To display Javascript alerts
-- (void)webView:(WebView *)sender runJavaScriptAlertPanelWithMessage:(NSString *)message initiatedByFrame:(WebFrame *)frame
-{
-    NSAlert *jsAlert = [[[NSAlert alloc] init] autorelease];
-    [jsAlert addButtonWithTitle:@"OK"];
-    [jsAlert setMessageText:@"Javascript"];
-    [jsAlert setInformativeText:message];
-    [jsAlert setAlertStyle:NSWarningAlertStyle];
-    
-    [jsAlert beginSheetModalForWindow: sender.window completionHandler: NULL];
-}
-
-// Disable right click
--(NSArray *)webView:(WebView *)sender contextMenuItemsForElement:(NSDictionary *)element defaultMenuItems:(NSArray *)defaultMenuItems
-{
-    return nil;
-}
+@interface OSXWebUIDelegate : NSObject
 
 @end

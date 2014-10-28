@@ -21,39 +21,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "TargetConditionals.h"
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
-# import "macwebview/dom/IOSWebView.h"
+# import "apple/dom/IOSWebView.h"
 #elif TARGET_OS_MAC // OSX
-# include "macwebview/dom/OSXWebView.h"
+# include "apple/dom/OSXWebView.h"
 #endif
 
 #include "minko/Common.hpp"
+#include "minko/input/Touch.hpp"
 #include "minko/dom/AbstractDOM.hpp"
 #include "minko/dom/AbstractDOMEngine.hpp"
-#include "MacWebViewDOM.hpp"
+
+#include "apple/dom/AppleWebViewDOM.hpp"
 
 #import "WebViewJavascriptBridge.h"
 
-namespace minko
-{
-    class SDLTouch;
-}
-
-namespace macwebview
+namespace apple
 {
 	namespace dom
 	{
-		class MacWebViewDOMEngine : public minko::dom::AbstractDOMEngine,
-                                    public std::enable_shared_from_this<MacWebViewDOMEngine>
+		class AppleWebViewDOMEngine :
+            public minko::dom::AbstractDOMEngine,
+            public std::enable_shared_from_this<AppleWebViewDOMEngine>
 		{
 		public:
-			typedef std::shared_ptr<MacWebViewDOMEngine> Ptr;
+			typedef std::shared_ptr<AppleWebViewDOMEngine> Ptr;
 
 		private:
-			MacWebViewDOMEngine();
+			AppleWebViewDOMEngine();
 
 		public:
 
-			~MacWebViewDOMEngine()
+			~AppleWebViewDOMEngine()
 			{
 			}
 
@@ -96,7 +94,7 @@ namespace macwebview
             }
             
             inline
-            MacWebViewDOM::Ptr
+            AppleWebViewDOM::Ptr
             currentDOM()
             {
                 return _currentDOM;
@@ -144,46 +142,32 @@ namespace macwebview
             void
             registerDomEvents();
             
-#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
             void
             updateWebViewWidth();
             
         public:
             inline
-            void
-            firstFingerId(int id)
+            int
+            firstTouchIdentifier()
             {
-                _firstFingerId = id;
+                if (numTouches())
+                    return _canvas->touch()->identifiers()[0];
+
+                return -1;
             }
             
             inline
             int
-            firstFingerId()
+            numTouches()
             {
-                return _firstFingerId;
+                return _canvas->touch()->numTouches();
             }
-            
-            inline
-            unsigned long
-            touchNumber()
-            {
-                return _touches.size();
-            }
-            
-            inline
-            std::map<int, std::shared_ptr<minko::SDLTouch>>
-            touches()
-            {
-                return _touches;
-            }
-#endif
 
         private:
-            
 			static
 			int _domUid;
 
-			MacWebViewDOM::Ptr _currentDOM;
+			AppleWebViewDOM::Ptr _currentDOM;
 
 			minko::AbstractCanvas::Ptr _canvas;
 			minko::component::SceneManager::Ptr _sceneManager;
@@ -194,22 +178,26 @@ namespace macwebview
 			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onload;
 			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onmessage;
 
+            minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot _onmousemoveSlot;
+            minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot _onmousedownSlot;
+            minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Slot _onmouseupSlot;
+
+            minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot _ontouchstartSlot;
+            minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot _ontouchendSlot;
+            minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot _ontouchmoveSlot;
+
 			bool _visible;
             
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
             // WebView
-            UIWindow *_window;
-            IOSWebView *_webView;
+            UIWindow* _window;
+            IOSWebView* _webView;
             uint _webViewWidth;
-            
-            // Fingers
-            std::map<int, std::shared_ptr<minko::SDLTouch>> _touches;
-            int _firstFingerId;
             
 #elif TARGET_OS_MAC // OSX
             // WebView
-            NSWindow *_window;
-            OSXWebView *_webView;
+            NSWindow* _window;
+            OSXWebView* _webView;
 #endif
             
             WebViewJavascriptBridge* _bridge;
