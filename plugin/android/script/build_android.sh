@@ -42,9 +42,6 @@ mv asset assets
 
 ant $CONFIG
 
-# Don't forget to uninstall the app to avoid INSTALL_PARSE_FAILED_INCONSISTENT_CERTIFICATES error
-$ANDROID/platform-tools/adb uninstall $PACKAGE
-
 if [ $CONFIG == "release" ]; then
 	if [ !-f "$ANDROID_KEYSTORE_PATH/.keystore" ]; then
 		echo "Can't find .keystore file at $ANDROID_KEYSTORE_PATH" 
@@ -59,6 +56,8 @@ if [ $CONFIG == "release" ]; then
 	# zipalign ensures that all uncompressed data starts with a particular byte alignment relative to the start of the file, 
 	# which reduces the amount of RAM consumed by an app.
 	#zipalign -v 4 bin/$APP_NAME-$CONFIG-unsigned.apk bin/$APP_NAME-$CONFIG.apk
+	# Don't forget to uninstall the app to avoid INSTALL_PARSE_FAILED_INCONSISTENT_CERTIFICATES error
+	$ANDROID/platform-tools/adb uninstall $PACKAGE
 fi
 
 $ANDROID/platform-tools/adb install -r bin/$APP_NAME-$CONFIG.apk
