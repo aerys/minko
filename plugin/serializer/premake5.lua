@@ -48,12 +48,12 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"__STDC_FORMAT_MACROS"
 		}
 
-	configuration { "android" or "ios" or "html5" }
+	configuration { "android or ios or html5" }
 		defines {
 			"MINKO_NO_PVRTEXTOOL"
 		}
 
-	configuration { "windows" or "linux" or "osx" }
+	configuration { "windows or linux or osx" }
 		includedirs {
 			"lib/PVRTexTool/Include"
 		}
