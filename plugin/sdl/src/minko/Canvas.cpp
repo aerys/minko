@@ -82,10 +82,6 @@ Canvas::initialize()
     {
         return file::APKProtocol::create();
     });
-
-    log::Logger::defaultLogger(
-        log::Logger::create(log::Logger::Level::Debug, log::AndroidLogSink::create())
-    );
 #endif
 
     initializeWindow();
@@ -437,6 +433,7 @@ Canvas::step()
             switch (event.button.button)
             {
             case SDL_BUTTON_LEFT:
+            	LOG_DEBUG("Mouse left button down (" + std::to_string(_mouse->x()) + ", " + std::to_string(_mouse->y()) + ")");
                 _mouse->leftButtonDown()->execute(_mouse);
                 break;
             case SDL_BUTTON_RIGHT:
@@ -564,8 +561,8 @@ Canvas::step()
                     auto dX2 = x - touch2->x();
                     auto dY2 = y - touch2->y();
                     
-                    auto dist1 = std::sqrtf(std::powf(dX1, 2) + std::powf(dY1, 2));
-                    auto dist2 = std::sqrtf(std::powf(dX2, 2) + std::powf(dY2, 2));
+                    auto dist1 = std::sqrt(std::pow(dX1, 2) + std::pow(dY1, 2));
+                    auto dist2 = std::sqrt(std::pow(dX2, 2) + std::pow(dY2, 2));
                     
                     auto deltaDist = dist2 - dist1;
 

@@ -128,7 +128,7 @@ namespace minko
 			void
             style(const std::string& name, const std::string& value) = 0;
 
-			virtual
+            virtual
 			Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 			onclick() = 0;
 

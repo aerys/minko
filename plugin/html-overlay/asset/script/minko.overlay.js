@@ -336,21 +336,69 @@ Minko.connectWebViewJavascriptBridge = function(callback) // iOS / OSX
     }
 }
 
-Minko.connectWebViewJavascriptBridge(function(bridge) // iOS / OSX
+/*
+** Android
+*/
+
+Minko.touchIds = [];
+
+Minko.androidEventHandler = function(event)
+{	
+	console.log('JS Event: ' + event.type + ' (' + event.currentTarget.minkoName + ')');
+	
+	// Workaround for API 19 to properly fire touchmove
+	if (event.type == "touchstart" || event.type == "touchend")
+		event.preventDefault();
+	
+	eventData = {};
+	eventData.type = event.type;
+	eventData.clientX = event.clientX;
+	eventData.clientY = event.clientY;
+	eventData.pageX = event.pageX;
+	eventData.pageY = event.pageY;
+	eventData.layerX = event.layerX;
+	eventData.layerY = event.layerY;
+	eventData.screenX = event.screenX;
+	eventData.screenY = event.screenY;
+	
+	if (event.type.indexOf("touch") != -1)
+	{
+		eventData.changedTouches = [];
+		for (var i = 0; i < event.changedTouches.length; i++)
+		{
+			var identifier = event.changedTouches[i].identifier;
+			
+			if (event.type == 'touchstart')
+			{
+				if (Minko.touchIds.indexOf(identifier) != -1)
+					continue;
+				Minko.touchIds.push(identifier);
+			}
+			else if (event.type == 'touchend')
+			{
+				if (Minko.touchIds.indexOf(identifier) != -1)
+					Minko.touchIds.splice(Minko.touchIds.indexOf(identifier), 1);
+				else
+					continue;
+			}
+			
+			eventData.changedTouches[i] = {};
+			eventData.changedTouches[i].clientX = event.changedTouches[i].clientX;
+			eventData.changedTouches[i].clientY = event.changedTouches[i].clientY;
+			eventData.changedTouches[i].identifier = event.changedTouches[i].identifier;
+		}
+	}
+	
+	var jsonStringify = JSON.stringify(eventData);
+	console.log(jsonStringify);
+	
+	MinkoNativeInterface.onEvent(event.currentTarget.minkoName, jsonStringify);
+}
+
+Minko.addListenerAndroid = function(accessor, type)
 {
-    Minko.bridge = bridge;
-
-    Minko.loadedHandler();
-
-    bridge.init(function(message, responseCallback)
-    {
-        if (responseCallback)
-        {
-        }
-    });
-
-    bridge.send({type: 'ready', value:'true'});
-});
+	accessor.addEventListener(type, Minko.androidEventHandler);
+};
 
 Minko.init = function(platform)
 {
@@ -362,6 +410,33 @@ Minko.init = function(platform)
 	}
 	else if (platform == "macWebView")
 	{
+		Minko.connectWebViewJavascriptBridge(function(bridge) // iOS / OSX
+		{
+			Minko.bridge = bridge;
+
+			Minko.loadedHandler();
+
+			bridge.init(function(message, responseCallback)
+			{
+				if (responseCallback)
+				{
+				}
+			});
+
+			bridge.send({type: 'ready', value:'true'});
+		});
+		
+	}
+	else if (platform == "androidWebView")
+	{
+		console.log("Init android!");
 		Minko.loadedHandler();
+		Minko.addListener = Minko.addListenerAndroid;
+		
+		Minko.sendMessage = function(message)
+		{
+			console.log("Send message: " + message);
+			MinkoNativeInterface.onMessage(message);
+		}
 	}
 }

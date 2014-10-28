@@ -1,6 +1,6 @@
 PROJECT_NAME = path.getname(os.getcwd())
 
-if not minko.platform.supports { "windows32", "windows64", "linux32", "linux64", "osx64", "html5", "ios" } then
+if not minko.platform.supports { "windows32", "windows64", "linux32", "linux64", "osx64", "html5", "ios", "android" } then
 	return
 end
 
@@ -153,4 +153,20 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		}
 		links {
 			"WebKit.framework"
+		}
+
+	-- Android webview
+	configuration { "android" }
+
+		files {
+			"include/android/**.hpp",
+			"src/android/**.cpp"
+		}
+
+		includedirs {
+			minko.sdk.path("/framework/lib/jsoncpp/src")
+		}
+
+		defines {
+			"JSON_IS_AMALGAMATION"
 		}

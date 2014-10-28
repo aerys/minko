@@ -109,7 +109,6 @@ solution "minko"
 	-- example
 	if not _OPTIONS['no-example'] then
 		include 'example/clone'
-		
 		include 'example/assimp'
 		include 'example/cube'
 		include 'example/devil'

@@ -6,6 +6,8 @@
 //# elif TARGET_OS_MAC // OSX
 //#  include "osxwebview/dom/OSXWebViewDOMEngine.hpp"
 //# endif
+#elif defined(__ANDROID__)
+# include "android/dom/AndroidWebViewDOMEngine.hpp"
 #elif defined(CHROMIUM)
 # include "chromium/dom/ChromiumDOMEngine.hpp"
 #elif defined(EMSCRIPTEN)
@@ -32,6 +34,9 @@ using namespace macwebview::dom;
 //using namespace osxwebview;
 //using namespace osxwebview::dom;
 //# endif
+#elif defined(__ANDROID__)
+using namespace android;
+using namespace android::dom;
 #elif defined(CHROMIUM)
 using namespace chromium;
 using namespace chromium::dom;
@@ -47,16 +52,11 @@ HtmlOverlay::HtmlOverlay(int argc, char** argv) :
 	_cleared(false)
 {
 #if defined(__APPLE__)
-# include "TargetConditionals.h"
     MacWebViewDOMEngine::Ptr engine = MacWebViewDOMEngine::create();
     _domEngine = engine;
-//# if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
-//    IOSWebViewDOMEngine::Ptr engine = IOSWebViewDOMEngine::create();
-//    _domEngine = engine;
-//# elif TARGET_OS_MAC // OSX
-//    OSXWebViewDOMEngine::Ptr engine = OSXWebViewDOMEngine::create();
-//    _domEngine = engine;
-//# endif
+#elif defined(__ANDROID__)
+    AndroidWebViewDOMEngine::Ptr engine = AndroidWebViewDOMEngine::create();
+    _domEngine = engine;
 #elif defined(CHROMIUM)
     ChromiumDOMEngine::Ptr engine = ChromiumDOMEngine::create(argc, argv);
     _domEngine = engine;
@@ -90,7 +90,7 @@ HtmlOverlay::initialize()
 }
 
 void
-HtmlOverlay::targetAddedHandler(AbstractComponent::Ptr	ctrl, scene::Node::Ptr		target)
+HtmlOverlay::targetAddedHandler(AbstractComponent::Ptr ctrl, scene::Node::Ptr target)
 {
     if (target->root() != nullptr && target->root()->hasComponent<SceneManager>())
         _sceneManager = target->root()->component<SceneManager>();
@@ -110,6 +110,9 @@ HtmlOverlay::targetAddedHandler(AbstractComponent::Ptr	ctrl, scene::Node::Ptr		t
 //    OSXWebViewDOMEngine::Ptr engine = std::dynamic_pointer_cast<OSXWebViewDOMEngine>(_domEngine);
 //    engine->initialize(_canvas, _sceneManager);
 //# endif
+#elif defined(__ANDROID__)
+    AndroidWebViewDOMEngine::Ptr engine = std::dynamic_pointer_cast<AndroidWebViewDOMEngine>(_domEngine);
+    engine->initialize(_canvas, _sceneManager);
 #elif defined(CHROMIUM)
     ChromiumDOMEngine::Ptr engine = std::dynamic_pointer_cast<ChromiumDOMEngine>(_domEngine);
     engine->initialize(_canvas, _sceneManager, target);
@@ -120,7 +123,7 @@ HtmlOverlay::targetAddedHandler(AbstractComponent::Ptr	ctrl, scene::Node::Ptr		t
 }
 
 void
-HtmlOverlay::targetRemovedHandler(AbstractComponent::Ptr	ctrl, scene::Node::Ptr		target)
+HtmlOverlay::targetRemovedHandler(AbstractComponent::Ptr ctrl, scene::Node::Ptr	target)
 {
 #if defined(CHROMIUM)
 	ChromiumDOMEngine::Ptr engine = std::dynamic_pointer_cast<ChromiumDOMEngine>(_domEngine);

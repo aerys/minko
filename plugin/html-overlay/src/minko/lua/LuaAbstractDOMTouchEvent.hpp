@@ -45,6 +45,7 @@ namespace minko
                 {
                     state.Class<dom::AbstractDOMTouchEvent>("AbstractDOMTouchEvent")
                         .property("identifier", &dom::AbstractDOMTouchEvent::identifier);
+
                 }
                 
             };

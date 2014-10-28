@@ -23,16 +23,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::log;
 
+int gDefaultLogInitializing = []()
+{
+	Logger::initializing()->connect([](Logger::Ptr)
+	{
+		// Nothing.
+	}, 1);
+
+	return 0;
+}();
 
 Logger::Ptr
 Logger::_default = Logger::create(Logger::Level::Debug, ConsoleSink::create());
 
 void
-Logger::operator()(const std::string&        message,
-                   Level                    level,
-                   const char*                function,
-                   const char*                file,
-                   int                        line)
+Logger::operator()(const std::string&	message,
+                   Level 				level,
+                   const char*          function,
+                   const char*          file,
+                   int                  line)
 {
     if (static_cast<int>(level) < static_cast<int>(_level))
         return;

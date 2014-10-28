@@ -60,6 +60,8 @@ MacWebViewDOMElement::MacWebViewDOMElement(const std::string& jsAccessor) :
     _onmouseupSet(false),
     _onmouseoverSet(false),
     _onmouseoutSet(false),
+    _oninputSet(false),
+    _onchangeSet(false),
 #if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
     _ontouchdown(Signal<AbstractDOMTouchEvent::Ptr>::create()),
     _ontouchup(Signal<AbstractDOMTouchEvent::Ptr>::create()),

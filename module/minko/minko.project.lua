@@ -313,7 +313,11 @@ minko.project.application = function(name)
 			"-shared",
 			"-pthread",
 			"-Wl,--no-undefined",
-			"-Wl,--undefined=Java_org_libsdl_app_SDLActivity_nativeInit"
+			"-Wl,--undefined=Java_org_libsdl_app_SDLActivity_nativeInit",
+			"-Wl,--undefined=Java_minko_plugin_htmloverlay_InitWebViewTask_webViewInitialized",
+			"-Wl,--undefined=Java_minko_plugin_htmloverlay_MinkoWebViewClient_webViewPageLoaded",
+			"-Wl,--undefined=Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnMessage",
+			"-Wl,--undefined=Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent"
 		}
 
 		prelinkcommands {
@@ -321,8 +325,18 @@ minko.project.application = function(name)
 			minko.action.copy("asset")
 		}
 
-        configuration { "with-offscreen" }
-                minko.plugin.enable { "offscreen" }
+	configuration { "android", "debug" }
+		libdirs {
+			minko.sdk.path("/framework/bin/android/debug")
+		}
+
+	configuration { "android", "release" }
+		libdirs {
+			minko.sdk.path("/framework/bin/android/release")
+		}
+
+    configuration { "with-offscreen" }
+            minko.plugin.enable { "offscreen" }
 
 	configuration { }
 

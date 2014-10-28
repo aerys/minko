@@ -35,7 +35,7 @@ namespace minko
 			~AbstractDOMEngine()
 			{
 			}
-
+ 
 			virtual
 			AbstractDOM::Ptr
 			load(std::string uri) = 0;

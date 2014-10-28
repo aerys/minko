@@ -47,7 +47,6 @@ namespace minko
 			int
 			pageY() = 0;
 
-
 			virtual
 			int
 			layerX() = 0;
