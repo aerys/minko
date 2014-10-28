@@ -19,7 +19,7 @@ TARGET_NAME=$(basename $TARGET)
 TARGET_DIR=$(dirname $TARGET)
 CONFIG=$(basename $TARGET_DIR)
 APP_NAME=$(sed -r 's/lib(.*).so/\1/;s/-/ /g;s/([A-Za-z])([A-Za-z]+)/\U\1\L\2/g;s/([0-9]+)//g;s/[^[:alpha:]]//g' <<< "${TARGET_NAME}")
-PACKAGE=$(sed -r 's/lib(.*).so/minko.\1/;s/-/\./g;s/\.([0-9]+)//g;s/(.*)/\L\1/' <<< "${TARGET_NAME}")
+PACKAGE=$(sed -r 's/lib(.*).so/com.\1/;s/-/\./g;s/\.([0-9]+)//g;s/(.*)/\L\1/' <<< "${TARGET_NAME}")
 
 pushd $TARGET_DIR > /dev/null
 
