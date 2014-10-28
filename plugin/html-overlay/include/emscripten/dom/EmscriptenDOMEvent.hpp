@@ -61,9 +61,8 @@ namespace emscripten
             target();
 
         protected:
-            
             int
-            getProperty(std::string path);
+            getProperty(const std::string& property);
 
             std::string _jsAccessor;
         };

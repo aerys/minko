@@ -171,9 +171,6 @@ namespace minko
             virtual
             minko::Signal<std::shared_ptr<minko::dom::AbstractDOMTouchEvent>>::Ptr
             ontouchmove() = 0;
-
-		private:
-
 		};
 	}
 }
