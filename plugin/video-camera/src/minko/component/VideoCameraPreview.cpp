@@ -174,5 +174,9 @@ VideoCameraPreview::updateVideoPreviewTarget(const std::vector<unsigned char>& d
         _videoPreviewTarget->data(const_cast<unsigned char*>(data.data()), TextureFormat::RGB, width, height);
         _videoPreviewTarget->upload();
         break;
+    case ImageFormatType::RGBA:
+        _videoPreviewTarget->data(const_cast<unsigned char*>(data.data()), TextureFormat::RGBA, width, height);
+        _videoPreviewTarget->upload();
+        break;
     }
 }
