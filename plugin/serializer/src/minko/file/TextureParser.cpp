@@ -222,6 +222,8 @@ TextureParser::parseCompressedTexture(TextureFormat                        forma
 
     auto textureData = unpacked.get().as<std::vector<unsigned char>>();
 
+    const auto hasMipmaps = options->generateMipmaps() && numMipmaps > 0;
+
     switch (type)
     {
     case TextureType::Texture2D:
@@ -230,11 +232,27 @@ TextureParser::parseCompressedTexture(TextureFormat                        forma
             options->context(),
             width,
             height,
-            false
+            hasMipmaps
         );
 
         texture->data(textureData.data(), format);
         texture->upload();
+
+        if (hasMipmaps)
+        {
+            auto mipLevelOffset = TextureFormatInfo::numBitsPerPixel(format) / 8 * width * height;
+
+            for (auto i = 1; i <= numMipmaps; ++i)
+            {
+                const auto mipLevelDimensionSize = width >> i;
+
+                const auto mipLevelData = textureData.data() + mipLevelOffset;
+
+                texture->uploadMipLevel(i, const_cast<unsigned char*>(mipLevelData));
+
+                mipLevelOffset += TextureFormatInfo::numBitsPerPixel(format) / 8 * mipLevelDimensionSize * mipLevelDimensionSize;
+            }
+        }
 
         assetLibrary->texture(fileName, texture);
 

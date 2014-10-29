@@ -112,7 +112,15 @@ Texture::upload()
     {
         if (TextureFormatInfo::isCompressed(_format))
         {
-            _context->uploadCompressedTexture2dData(_id, _format, _widthGPU, _heightGPU, _data.size(), 0, _data.data());
+            _context->uploadCompressedTexture2dData(
+                _id,
+                _format,
+                _widthGPU,
+                _heightGPU,
+                _data.size(),
+                0,
+                _data.data()
+            );
         }
         else
         {
@@ -132,15 +140,35 @@ Texture::upload()
 
 void
 Texture::uploadMipLevel(uint            level,
-                        unsigned char*    data)
+                        unsigned char*  data)
 {
-    _context->uploadTexture2dData(
-        _id,
-        getMipmapWidth(level),
-        getMipmapHeight(level),
-        level,
-        data
-    );
+    const auto width = getMipmapWidth(level);
+    const auto height = getMipmapHeight(level);
+
+    if (TextureFormatInfo::isCompressed(_format))
+    {
+        const auto size = TextureFormatInfo::numBitsPerPixel(_format) / 8 * width * height;
+
+        _context->uploadCompressedTexture2dData(
+            _id,
+            _format,
+            width,
+            height,
+            size,
+            level,
+            data
+        );
+    }
+    else
+    {
+        _context->uploadTexture2dData(
+            _id,
+            width,
+            height,
+            level,
+            data
+        );
+    }
 }
 
 void
