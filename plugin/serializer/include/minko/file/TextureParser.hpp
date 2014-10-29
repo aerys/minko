@@ -37,7 +37,11 @@ namespace minko
             typedef std::function<bool(const std::string&,
                                        OptionsPtr,
                                        const std::vector<unsigned char>&,
-                                       AssetLibraryPtr)> FormatParserFunction;
+                                       AssetLibraryPtr,
+                                       int,
+                                       int,
+                                       render::TextureType,
+                                       int)> FormatParserFunction;
 
         private:
             typedef std::shared_ptr<render::AbstractTexture> AbstractTexturePtr;
@@ -92,7 +96,11 @@ namespace minko
             parseRGBATexture(const std::string&                 fileName,
                              OptionsPtr                         options,
                              const std::vector<unsigned char>&  data,
-                             AssetLibraryPtr                    assetLibrary);
+                             AssetLibraryPtr                    assetLibrary,
+                             int                                width,
+                             int                                height,
+                             render::TextureType                type,
+                             int                                numMipmaps);
 
             static
             bool
@@ -100,7 +108,11 @@ namespace minko
                                    const std::string&                  fileName,
                                    OptionsPtr                          options,
                                    const std::vector<unsigned char>&   data,
-                                   AssetLibraryPtr                     assetLibrary);
+                                   AssetLibraryPtr                     assetLibrary,
+                                   int                                 width,
+                                   int                                 height,
+                                   render::TextureType                 type,
+                                   int                                 numMipmaps);
         };
     }
 }

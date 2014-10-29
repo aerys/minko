@@ -54,6 +54,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include <GLES2/gl2ext.h>
 #elif MINKO_PLATFORM == MINKO_PLATFORM_HTML5
 # include <GLES2/gl2.h>
+# include <GLES2/gl2ext.h>
 # include <EGL/egl.h>
 #endif
 

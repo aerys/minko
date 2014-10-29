@@ -25,7 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Dependency.hpp"
 #include "minko/file/PNGWriter.hpp"
 #include "minko/file/PVRTranscoder.hpp"
-#include "minko/file/TextureContainer.hpp"
 #include "minko/file/WriterOptions.hpp"
 #include "minko/log/Logger.hpp"
 #include "minko/Types.hpp"
@@ -67,12 +66,18 @@ TextureWriter::embed(AssetLibraryPtr     assetLibrary,
                      Dependency::Ptr     dependency,
                      WriterOptionsPtr    writerOptions)
 {
+    auto texture = _data;
+
     const auto& textureFormats = writerOptions->textureFormats();
 
     std::stringstream headerStream;
     std::stringstream blobStream;
 
-    auto headerData = std::vector<msgpack::type::tuple<int, int, int>>();
+    auto headerData = msgpack::type::tuple<
+        msgpack::type::tuple<int, int, unsigned char, unsigned char>,
+        std::vector<msgpack::type::tuple<int, int, int>>>();
+
+    auto formatHeaderData = std::vector<msgpack::type::tuple<int, int, int>>();
 
     for (auto textureFormat : textureFormats)
     {
@@ -86,11 +91,27 @@ TextureWriter::embed(AssetLibraryPtr     assetLibrary,
 
         auto length = blobStream.str().size() - offset;
 
-        headerData.push_back(msgpack::type::make_tuple<int, int, int>(
+        formatHeaderData.push_back(msgpack::type::make_tuple<int, int, int>(
             static_cast<int>(textureFormat),
             offset,
-            length));
+            length)
+        );
     }
+
+    const auto width = texture->width();
+    const auto height = texture->height();
+    const auto numFaces = static_cast<unsigned char>(texture->type() == TextureType::Texture2D ? 1 : 6);
+    const auto numMipmaps = static_cast<unsigned char>(writerOptions->generateMipmaps() ? math::getp2(texture->width()) : 0);
+
+    auto textureHeaderData = msgpack::type::make_tuple<int, int, unsigned char, unsigned char>(
+        width,
+        height,
+        numFaces,
+        numMipmaps
+    );
+
+    headerData.a0 = textureHeaderData;
+    headerData.a1 = formatHeaderData;
 
     msgpack::pack(headerStream, headerData);
 
@@ -148,18 +169,7 @@ TextureWriter::writeCompressedTexture(TextureFormat        textureFormat,
     if (!PVRTranscoder::transcode(abstractTexture, writerOptions, textureFormat, out))
         return false;
 
-    auto textureData = std::vector<unsigned char>();
-
-    if (!TextureContainer::save(
-        abstractTexture,
-        textureFormat,
-        out,
-        textureData))
-    {
-        return false;
-    }
-
-    msgpack::pack(blob, textureData);
+    msgpack::pack(blob, out);
 
     return true;
 }

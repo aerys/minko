@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/PNGParser.hpp"
-#include "minko/file/TextureContainer.hpp"
 #include "minko/file/TextureParser.hpp"
 #include "minko/file/TextureWriter.hpp"
 #include "minko/log/Logger.hpp"
@@ -37,19 +36,19 @@ using namespace minko::serialize;
 
 std::unordered_map<render::TextureFormat, TextureParser::FormatParserFunction> TextureParser::_formatParserFunctions =
 {
-    { TextureFormat::RGB, std::bind(parseRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
-    { TextureFormat::RGBA, std::bind(parseRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
+    { TextureFormat::RGB, std::bind(parseRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6, std::placeholders::_7, std::placeholders::_8) },
+    { TextureFormat::RGBA, std::bind(parseRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6, std::placeholders::_7, std::placeholders::_8) },
 
-    { TextureFormat::RGB_DXT1, std::bind(parseCompressedTexture, TextureFormat::RGB_DXT1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
-    { TextureFormat::RGBA_DXT3, std::bind(parseCompressedTexture, TextureFormat::RGBA_DXT3, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
-    { TextureFormat::RGBA_DXT5, std::bind(parseCompressedTexture, TextureFormat::RGBA_DXT5, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
+    { TextureFormat::RGB_DXT1, std::bind(parseCompressedTexture, TextureFormat::RGB_DXT1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6, std::placeholders::_7, std::placeholders::_8) },
+    { TextureFormat::RGBA_DXT3, std::bind(parseCompressedTexture, TextureFormat::RGBA_DXT3, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6, std::placeholders::_7, std::placeholders::_8) },
+    { TextureFormat::RGBA_DXT5, std::bind(parseCompressedTexture, TextureFormat::RGBA_DXT5, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6, std::placeholders::_7, std::placeholders::_8) },
 
-    { TextureFormat::RGB_ETC1, std::bind(parseCompressedTexture, TextureFormat::RGB_ETC1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
+    { TextureFormat::RGB_ETC1, std::bind(parseCompressedTexture, TextureFormat::RGB_ETC1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6, std::placeholders::_7, std::placeholders::_8) },
 
-    { TextureFormat::RGB_PVRTC1_2BPP, std::bind(parseCompressedTexture, TextureFormat::RGB_PVRTC1_2BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
-    { TextureFormat::RGB_PVRTC1_4BPP, std::bind(parseCompressedTexture, TextureFormat::RGB_PVRTC1_4BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
-    { TextureFormat::RGBA_PVRTC1_2BPP, std::bind(parseCompressedTexture, TextureFormat::RGBA_PVRTC1_2BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
-    { TextureFormat::RGBA_PVRTC1_4BPP, std::bind(parseCompressedTexture, TextureFormat::RGBA_PVRTC1_4BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) }
+    { TextureFormat::RGB_PVRTC1_2BPP, std::bind(parseCompressedTexture, TextureFormat::RGB_PVRTC1_2BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6, std::placeholders::_7, std::placeholders::_8) },
+    { TextureFormat::RGB_PVRTC1_4BPP, std::bind(parseCompressedTexture, TextureFormat::RGB_PVRTC1_4BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6, std::placeholders::_7, std::placeholders::_8) },
+    { TextureFormat::RGBA_PVRTC1_2BPP, std::bind(parseCompressedTexture, TextureFormat::RGBA_PVRTC1_2BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6, std::placeholders::_7, std::placeholders::_8) },
+    { TextureFormat::RGBA_PVRTC1_4BPP, std::bind(parseCompressedTexture, TextureFormat::RGBA_PVRTC1_4BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6, std::placeholders::_7, std::placeholders::_8) }
 };
 
 TextureParser::TextureParser() :
@@ -74,10 +73,25 @@ TextureParser::parse(const std::string&                filename,
     auto rawTextureHeaderData = std::vector<unsigned char>(data.begin() + textureHeaderOffset,
                                                            data.begin() + textureHeaderOffset + _textureHeaderSize);
 
+    auto headerData = msgpack::type::tuple<
+        msgpack::type::tuple<int, int, unsigned char, unsigned char>,
+        std::vector<msgpack::type::tuple<int, int, int>>>();
+
     msgpack::unpacked unpacked;
     msgpack::unpack(&unpacked, reinterpret_cast<const char*>(data.data() + textureHeaderOffset), _textureHeaderSize);
 
-    auto formats = unpacked.get().as<std::vector<msgpack::type::tuple<int, int, int>>>();
+    auto header = unpacked.get().as<msgpack::type::tuple<
+        msgpack::type::tuple<int, int, unsigned char, unsigned char>,
+        std::vector<msgpack::type::tuple<int, int, int>>>>();
+
+    const auto& textureHeader = header.a0;
+
+    const auto textureWidth = textureHeader.a0;
+    const auto textureHeight = textureHeader.a1;
+    const auto textureType = textureHeader.a2 == 1 ? TextureType::Texture2D : TextureType::CubeTexture;
+    const auto textureNumMipmaps = textureHeader.a3;
+
+    const auto& formats = header.a1;
 
     auto contextAvailableTextureFormats = std::unordered_map<TextureFormat, unsigned int>();
     OpenGLES2Context::availableTextureFormats(contextAvailableTextureFormats);
@@ -86,6 +100,8 @@ TextureParser::parse(const std::string&                filename,
 
     for (const auto& entry : contextAvailableTextureFormats)
     {
+        LOG_DEBUG("available texture format: " << TextureFormatInfo::name(entry.first));
+
         availableTextureFormats.insert(entry.first);
     }
 
@@ -129,7 +145,7 @@ TextureParser::parse(const std::string&                filename,
         {
             auto textureData = assetLibrary->blob(resolvedFilename);
 
-            if (!_formatParserFunctions.at(desiredFormat)(filename, textureLoaderOptions, textureData, assetLibrary))
+            if (!_formatParserFunctions.at(desiredFormat)(filename, textureLoaderOptions, textureData, assetLibrary, textureWidth, textureHeight, textureType, textureNumMipmaps))
             {
                 // TODO
                 // handle parsing error
@@ -146,7 +162,7 @@ TextureParser::parse(const std::string&                filename,
         const auto textureDataEnd = textureDataBegin + length;
         const auto textureData = std::vector<unsigned char>(textureDataBegin, textureDataEnd);
 
-        if (!_formatParserFunctions.at(desiredFormat)(filename, options, textureData, assetLibrary))
+        if (!_formatParserFunctions.at(desiredFormat)(filename, options, textureData, assetLibrary, textureWidth, textureHeight, textureType, textureNumMipmaps))
         {
             // TODO
             // handle parsing error
@@ -160,7 +176,11 @@ bool
 TextureParser::parseRGBATexture(const std::string&                  fileName,
                                 Options::Ptr                        options,
                                 const std::vector<unsigned char>&   data,
-                                AssetLibrary::Ptr                   assetLibrary)
+                                AssetLibrary::Ptr                   assetLibrary,
+                                int                                 width,
+                                int                                 height,
+                                render::TextureType                 type,
+                                int                                 numMipmaps)
 {
     msgpack::unpacked unpacked;
     msgpack::unpack(&unpacked, reinterpret_cast<const char*>(data.data()), data.size());
@@ -191,48 +211,18 @@ TextureParser::parseCompressedTexture(TextureFormat                        forma
                                       const std::string&                   fileName,
                                       Options::Ptr                         options,
                                       const std::vector<unsigned char>&    data,
-                                      AssetLibrary::Ptr                    assetLibrary)
+                                      AssetLibrary::Ptr                    assetLibrary,
+                                      int                                  width,
+                                      int                                  height,
+                                      render::TextureType                  type,
+                                      int                                  numMipmaps)
 {
     msgpack::unpacked unpacked;
     msgpack::unpack(&unpacked, reinterpret_cast<const char*>(data.data()), data.size());
 
-    auto deserializedTexture = unpacked.get().as<std::vector<unsigned char>>();
+    auto textureData = unpacked.get().as<std::vector<unsigned char>>();
 
-    auto width = 0u;
-    auto height = 0u;
-    auto size = 0u;
-
-    auto textureType = TextureType();
-    auto textureFormat = TextureFormat();
-
-    auto textureData = std::vector<unsigned char>();
-
-    if (!TextureContainer::load(
-        deserializedTexture,
-        textureData,
-        width,
-        height,
-        size,
-        textureType,
-        textureFormat))
-    {
-        return false;
-    }
-
-    if (textureFormat != format)
-    {
-        LOG_ERROR(
-            "Texture format mismatched: "
-            << TextureFormatInfo::name(textureFormat)
-            << " expected  vs "
-            << TextureFormatInfo::name(format)
-            << " found"
-        );
-
-        return false;
-    }
-
-    switch (textureType)
+    switch (type)
     {
     case TextureType::Texture2D:
     {
