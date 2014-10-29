@@ -62,7 +62,7 @@ main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Example - Oculus");
 
-    auto sceneManager = SceneManager::create(canvas->context());
+    auto sceneManager = SceneManager::create(canvas);
 
     auto loader = sceneManager->assets()->loader();
 

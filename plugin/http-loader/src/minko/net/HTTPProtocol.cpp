@@ -179,7 +179,7 @@ HTTPProtocol::load()
             &wget2CompleteHandler,
             &wget2ErrorHandler,
             &wget2ProgressHandler
-            );
+        );
     }
     else
     {

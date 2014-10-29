@@ -50,7 +50,7 @@ int
 main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Tutorial - Joystick");
-    auto sceneManager = SceneManager::create(canvas->context());
+    auto sceneManager = SceneManager::create(canvas);
     auto assets = sceneManager->assets();
 
     // setup assets

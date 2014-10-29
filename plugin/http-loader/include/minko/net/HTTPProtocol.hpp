@@ -67,9 +67,6 @@ namespace minko
             errorHandler(void*, int code = 0, const char* = "");
 
             static void
-            wget2ErrorHandler(void*, int);
-
-            static void
             progressHandler(void*, int, int);
 
         protected:

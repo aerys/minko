@@ -98,7 +98,7 @@ int
 main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Example - Stencil", 1280, 720, true);
-    auto sceneManager = SceneManager::create(OpenGLES2Context::create());
+    auto sceneManager = SceneManager::create(canvas);
 
     // setup assets
     sceneManager->assets()

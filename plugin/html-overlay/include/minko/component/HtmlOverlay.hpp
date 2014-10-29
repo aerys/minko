@@ -47,9 +47,6 @@ namespace minko
 
 		public:
 
-			void
-			initialize(AbstractCanvas::Ptr, SceneManager::Ptr);
-
 			static
 			Ptr
 			create(int argc, char** argv)
@@ -58,6 +55,8 @@ namespace minko
 					throw("Only one instance of HtmlOverlay is permitted");
 
 				Ptr overlay(new HtmlOverlay(argc, argv));
+
+                overlay->initialize();
 
 				_instance = overlay;
 
@@ -74,6 +73,9 @@ namespace minko
 			minko::dom::AbstractDOM::Ptr
 			load(std::string uri)
 			{
+                if (_domEngine == nullptr || numTargets() == 0)
+                    throw std::logic_error("HtmlOverlay component should be added to a node and initialized before HtmlOverlay::load is called");
+
 				return _domEngine->load(uri);
 			}
 
@@ -111,21 +113,10 @@ namespace minko
             bool
 			visible();
 
-            inline
-            void
-            pollRate(int rate)
-            {
-                _domEngine->pollRate(rate);
-            }
+        private:
 
-            inline
             void
-            updateNextFrame()
-            {
-                _domEngine->updateNextFrame();
-            }
-
-		private:
+            initialize();
 
 			minko::dom::AbstractDOMEngine::Ptr
 			domEngine()

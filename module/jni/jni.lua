@@ -20,13 +20,14 @@ local TOOLCHAIN = "arm-linux-androideabi"
 if os.getenv('ANDROID_HOME') then
 	ANDROID = os.getenv('ANDROID_HOME');
 else
-	print(color.fg.yellow .. 'You must define the environment variable ANDROID_HOME to be able to target Android.' .. color.reset)
+	print(color.fg.red .. 'You must define the environment variable ANDROID_HOME to be able to target Android.' .. color.reset)
 	do return end
 end
 
 if not os.isfile(ANDROID .. "/tools/android") and not os.isfile(ANDROID .. "/tools/android.bat") then
-	print(color.fg.yellow .. 'Cannot find SDK tools for Android. Make sure ANDROID points to a correct Android SDK directory.' .. color.reset)
-	do return end
+	print(color.fg.red .. 'Cannot find SDK tools for Android. Make sure ANDROID points to a correct Android SDK directory.' .. 
+		'(Missing file: \'' .. ANDROID .. '/tools/android\' or \'' .. ANDROID .. '/tools/android.bat\')' .. color.reset)
+    do return end
 end
 
 if not os.isdir(ANDROID .. "/toolchains") then

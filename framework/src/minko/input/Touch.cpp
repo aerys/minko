@@ -24,17 +24,46 @@ using namespace minko::input;
 
 Touch::Touch(std::shared_ptr<AbstractCanvas> canvas) :
     _canvas(canvas),
-    _fingerId(0),
-    _x(0.f),
-    _y(0.f),
-    _dx(0.f),
-    _dy(0.f),
-    _touchMotion(Signal<Ptr, float, float>::create()),
-    _touchDown(Signal<Ptr, float, float>::create()),
-    _touchUp(Signal<Ptr, float, float>::create()),
+    _touches(),
+    _touchMove(Signal<Ptr, int, float, float>::create()),
+    _touchDown(Signal<Ptr, int, float, float>::create()),
+    _touchUp(Signal<Ptr, int, float, float>::create()),
+    _pinchZoom(Signal<Ptr, float>::create()),
     _swipeLeft(Signal<Ptr>::create()),
     _swipeRight(Signal<Ptr>::create()),
     _swipeUp(Signal<Ptr>::create()),
     _swipeDown(Signal<Ptr>::create())
 {
+}
+
+float
+Touch::averageX()
+{
+    auto x = 0.f;
+    auto l = numTouches();
+
+    for (int i = 0; i < l; ++i)
+    {
+        x += _touches[_identifiers[i]]->x();
+    }
+
+    x /= l;
+
+    return x;
+}
+
+float
+Touch::averageY()
+{
+    auto y = 0.f;
+    auto l = numTouches();
+
+    for (int i = 0; i < l; ++i)
+    {
+        y += _touches[_identifiers[i]]->x();
+    }
+
+    y /= l;
+
+    return y;
 }

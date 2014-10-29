@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 #include "minko/AbstractCanvas.hpp"
 #include "minko/Any.hpp"
+#include "minko/math/Vector2.hpp"
 
 namespace minko
 {
@@ -32,80 +33,71 @@ namespace minko
         class Touch
         {
         public:
-            typedef std::shared_ptr<Touch>      Ptr;
+            typedef std::shared_ptr<Touch>          Ptr;
 
         protected:
-            std::shared_ptr<AbstractCanvas>     _canvas;
+            std::shared_ptr<AbstractCanvas>             _canvas;
+            
+            std::map<int, math::Vector2::Ptr>           _touches; // touchId to touch coordinates
 
-            int                                 _fingerId;
+            std::vector<int>                            _identifiers;
 
-            float                               _x;
-            float                               _y;
-            float                               _dx;
-            float                               _dy;
-
-            Signal<Ptr, float, float>::Ptr      _touchMotion; // dx, dy
-            Signal<Ptr, float, float>::Ptr      _touchDown; // x, y
-            Signal<Ptr, float, float>::Ptr      _touchUp; // x, y
+            Signal<Ptr, int, float, float>::Ptr         _touchMove; // touchId, dx, dy
+            Signal<Ptr, int, float, float>::Ptr         _touchDown; // touchId, x, y
+            Signal<Ptr, int, float, float>::Ptr         _touchUp; // touchId, x, y
 
             // Gestures
-            Signal<Ptr>::Ptr                    _swipeRight;
-            Signal<Ptr>::Ptr                    _swipeLeft;
-            Signal<Ptr>::Ptr                    _swipeUp;
-            Signal<Ptr>::Ptr                    _swipeDown;
+            Signal<Ptr>::Ptr                            _swipeRight;
+            Signal<Ptr>::Ptr                            _swipeLeft;
+            Signal<Ptr>::Ptr                            _swipeUp;
+            Signal<Ptr>::Ptr                            _swipeDown;
+            Signal<Ptr, float>::Ptr                     _pinchZoom;
 
         public:
             inline
+            std::map<int, minko::math::Vector2::Ptr>
+            touches()
+            {
+                return _touches;
+            }
+
+            inline
+            std::vector<int>
+            identifiers()
+            {
+                return _identifiers;
+            }
+
+            inline
             int
-            fingerId()
+            numTouches()
             {
-                return _fingerId;
+                return _touches.size();
             }
 
             inline
-            float
-            x()
+            minko::math::Vector2::Ptr
+            touch(int identifier)
             {
-                return _x;
+                return _touches[identifier];
             }
 
             inline
-            float
-            y()
+            Signal<Ptr, int, float, float>::Ptr
+            touchMove()
             {
-                return _y;
+                return _touchMove;
             }
 
             inline
-            float
-            dx()
-            {
-                return _dx;
-            }
-
-            inline
-            float
-            dy()
-            {
-                return _dy;
-            }
-
-            inline
-            Signal<Ptr, float, float>::Ptr
-            touchMotion()
-            {
-                return _touchMotion;
-            }
-
-            inline
-            Signal<Ptr, float, float>::Ptr
+            Signal<Ptr, int, float, float>::Ptr
             touchDown()
             {
                 return _touchDown;
             }
 
             inline
-            Signal<Ptr, float, float>::Ptr
+            Signal<Ptr, int, float, float>::Ptr
             touchUp()
             {
                 return _touchUp;
@@ -139,6 +131,18 @@ namespace minko
                 return _swipeDown;
             }
 
+            inline
+            Signal<Ptr, float>::Ptr
+            pinchZoom()
+            {
+                return _pinchZoom;
+            }
+
+            float
+            averageX();
+
+            float
+            averageY();
 
         protected:
             Touch(std::shared_ptr<AbstractCanvas> canvas);

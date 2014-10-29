@@ -24,14 +24,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/AbstractTexture.hpp"
 #include "minko/data/StructureProvider.hpp"
 #include "minko/data/Container.hpp"
+#include "minko/AbstractCanvas.hpp"
 
 using namespace minko;
 using namespace minko::component;
 
-SceneManager::SceneManager(const std::shared_ptr<render::AbstractContext>& context) :
+SceneManager::SceneManager(const std::shared_ptr<AbstractCanvas>& canvas) :
+    _canvas(canvas),
     _frameId(0),
     _time(0.f),
-    _assets(file::AssetLibrary::create(context)),
+    _assets(file::AssetLibrary::create(canvas->context())),
     _frameBegin(Signal<Ptr, float, float>::create()),
     _frameEnd(Signal<Ptr, float, float>::create()),
     _cullBegin(Signal<Ptr>::create()),

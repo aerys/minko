@@ -23,13 +23,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/dom/AbstractDOMMouseEvent.hpp"
 #include "minko/dom/AbstractDOMElement.hpp"
+#include "chromium/dom/ChromiumDOMObject.hpp"
 #include "include/cef_render_process_handler.h"
 
 namespace chromium
 {
     namespace dom
     {
-        class ChromiumDOMEvent : public virtual minko::dom::AbstractDOMEvent
+        class ChromiumDOMEvent : public virtual minko::dom::AbstractDOMEvent,
+            public chromium::dom::ChromiumDOMObject
         {
         public:
             typedef std::shared_ptr<ChromiumDOMEvent> Ptr;
@@ -70,22 +72,10 @@ namespace chromium
             
         protected:
 
-            CefRefPtr<CefV8Value>
-            getFunction(std::string name);
-
-            CefRefPtr<CefV8Value>
-            getProperty(std::string name);
-
-            std::atomic<bool> _blocker;
-
             static
             std::list<Ptr> _events;
 
-            CefRefPtr<CefV8Context> _v8Context;
-
             bool _cleared;
-
-            CefRefPtr<CefV8Value> _v8NodeObject;
         };
     }
 }
