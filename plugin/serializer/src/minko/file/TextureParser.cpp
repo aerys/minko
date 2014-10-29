@@ -240,7 +240,12 @@ TextureParser::parseCompressedTexture(TextureFormat                        forma
 
         if (hasMipmaps)
         {
-            auto mipLevelOffset = TextureFormatInfo::numBitsPerPixel(format) / 8 * width * height;
+            auto mipLevelOffset = std::max(
+                TextureFormatInfo::mipLevelMinSize(format),
+                static_cast<int>(
+                    TextureFormatInfo::numBitsPerPixel(format) / 8.0f * width * height
+                )
+            );
 
             for (auto i = 1; i <= numMipmaps; ++i)
             {
@@ -250,7 +255,12 @@ TextureParser::parseCompressedTexture(TextureFormat                        forma
 
                 texture->uploadMipLevel(i, const_cast<unsigned char*>(mipLevelData));
 
-                mipLevelOffset += TextureFormatInfo::numBitsPerPixel(format) / 8 * mipLevelDimensionSize * mipLevelDimensionSize;
+                mipLevelOffset += std::max(
+                    TextureFormatInfo::mipLevelMinSize(format),
+                    static_cast<int>(
+                        TextureFormatInfo::numBitsPerPixel(format) / 8.0f * mipLevelDimensionSize * mipLevelDimensionSize
+                    )
+                );
             }
         }
 

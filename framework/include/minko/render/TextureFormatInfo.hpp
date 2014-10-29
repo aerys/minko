@@ -36,17 +36,21 @@ namespace minko
 
                 int         _numBitsPerPixel;
 
+                int         _mipLevelMinSize;
+
                 bool        _hasAlphaChannel;
                 bool        _hasSeparateAlphaChannel;
 
                 Entry(const std::string&    name,
                       bool                  isCompressed,
                       int                   numBitsPerPixel,
+                      int                   mipLevelMinSize,
                       bool                  hasAlphaChannel,
                       bool                  hasSeparateAlphaChannel) :
                     _name(name),
                     _isCompressed(isCompressed),
                     _numBitsPerPixel(numBitsPerPixel),
+                    _mipLevelMinSize(mipLevelMinSize),
                     _hasAlphaChannel(hasAlphaChannel),
                     _hasSeparateAlphaChannel(hasSeparateAlphaChannel)
                 {
@@ -72,6 +76,10 @@ namespace minko
             static
             int
             numBitsPerPixel(TextureFormat format);
+
+            static
+            int
+            mipLevelMinSize(TextureFormat format);
 
             static
             bool

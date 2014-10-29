@@ -147,7 +147,10 @@ Texture::uploadMipLevel(uint            level,
 
     if (TextureFormatInfo::isCompressed(_format))
     {
-        const auto size = TextureFormatInfo::numBitsPerPixel(_format) / 8 * width * height;
+        const auto size = std::max(
+            TextureFormatInfo::mipLevelMinSize(_format),
+            static_cast<int>(TextureFormatInfo::numBitsPerPixel(_format) / 8.0f * width * height)
+        );
 
         _context->uploadCompressedTexture2dData(
             _id,
