@@ -69,12 +69,6 @@ namespace emscripten
 			id(const std::string&);
 
 			std::string
-			value();
-
-			void
-			value(const std::string& value);
-
-			std::string
 			className();
 
 			void
