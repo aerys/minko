@@ -23,8 +23,9 @@ local TOOLCHAIN = "arm-linux-androideabi"
 
 -- If we try to build Android on Windows without Cygwin
 if os.is("windows") and os.getenv('OSTYPE') == nil then
-	error(color.fg.red .. 'To build for Android on Windows, you have to use Cygwin. ' .. 
+	print(color.fg.red .. 'To build for Android on Windows, you have to use Cygwin. ' .. 
 		'Please check that you exported OSTYPE environment variable.' .. color.reset)
+	return
 end
 
 if os.getenv('ANDROID_HOME') then
