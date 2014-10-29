@@ -122,11 +122,11 @@ Texture::upload()
                 _heightGPU,
                 0,
                 &_data.front()
-                );
-        }
+            );
 
-        if (_mipMapping)
-            _context->generateMipmaps(_id);
+            if (_mipMapping)
+                _context->generateMipmaps(_id);
+        }
     }
 }
 

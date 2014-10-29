@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/PVRTranscoder.hpp"
 #include "minko/file/WriterOptions.hpp"
 #include "minko/log/Logger.hpp"
+#include "minko/render/MipFilter.hpp"
 #include "minko/render/Texture.hpp"
 
 #ifndef MINKO_NO_PVRTEXTOOL
@@ -28,8 +29,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include "PVRTextureUtilities.h"
 #endif
 
-#ifdef DEBUG
-# define MINKO_DEBUG_WRITE_PVR_TEXTURE_TO_DISK
+#ifndef MINKO_NO_PVRTEXTOOL
+# ifdef DEBUG
+#  define MINKO_DEBUG_WRITE_PVR_TEXTURE_TO_DISK
+# endif
 #endif
 
 using namespace minko;
@@ -79,6 +82,23 @@ PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
         );
 
         pvrTexture = std::make_unique<pvrtexture::CPVRTexture>(pvrHeader, texture2d->data().data());
+
+        if (options->generateMipmaps())
+        {
+            static const auto mipFilterToPvrMipFilter = std::unordered_map<MipFilter, pvrtexture::EResizeMode>
+            {
+                { MipFilter::NONE,      pvrtexture::eResizeNearest },
+                { MipFilter::NEAREST,   pvrtexture::eResizeNearest },
+                { MipFilter::LINEAR,    pvrtexture::eResizeLinear }
+            };
+
+            if (!pvrtexture::GenerateMIPMaps(
+                *pvrTexture,
+                mipFilterToPvrMipFilter.at(options->mipFilter())))
+            {
+                return false;
+            }
+        }
 
         if (!pvrtexture::Transcode(
             *pvrTexture,
