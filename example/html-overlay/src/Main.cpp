@@ -125,7 +125,6 @@ main(int argc, char** argv)
         updateRedScore();
     });
 
-
     auto leftButtonDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr m)
     {
         updateBlueScore();

@@ -46,14 +46,14 @@ elseif os.is('macosx') then
 	})
 elseif os.is('windows') then
 	table.inject(premake.tools.gcc, 'tools.emscripten', {
-		cc = '"' .. EMSCRIPTEN .. '\\emcc.bat"',
-		cxx = 'call "%MINKO_HOME%\\tool\\win\\script\\em++.bat"',
-		ar = '"' .. EMSCRIPTEN .. '\\emar.bat"'
+		cc = MINKO_HOME .. '/tool/lin/script/emcc.sh',
+		cxx = MINKO_HOME .. '/tool/lin/script/em++.sh',
+		ar = MINKO_HOME .. '/tool/lin/script/emar.sh'
 	})
 	table.inject(premake.tools.clang, 'tools.emscripten', {
-		cc = '"' .. EMSCRIPTEN .. '\\emcc.bat"',
-		cxx = 'call "%MINKO_HOME%\\tool\\win\\script\\em++.bat"',
-		ar = '"' .. EMSCRIPTEN .. '\\emar.bat"'
+		cc = MINKO_HOME .. '/tool/lin/script/emcc.sh',
+		cxx = MINKO_HOME .. '/tool/lin/script/em++.sh',
+		ar = MINKO_HOME .. '/tool/lin/script/emar.sh'
 	})
 end
 

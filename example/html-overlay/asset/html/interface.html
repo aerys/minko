@@ -13,26 +13,5 @@
 				<div class="gameTimeLeft" id="gameTimeLeftSec">0</div>
 			</div>
 		</div>
-		<script type="text/javascript">
-			function onMinkoReady()
-			{
-				Minko.onmessage = function(message)
-				{
-				    console.log(message);
-				}
-			};
-
-			if (window.Minko !== undefined)
-				onMinkoReady();
-			else
-			{
-				window.addEventListener("minkoReady", function()
-				{
-					onMinkoReady();
-				});
-			}
-
-
-		</script>
 	</body>
 </html>

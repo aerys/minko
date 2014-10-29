@@ -60,7 +60,7 @@ EmscriptenDOMEvent::target()
 }
 
 int
-EmscriptenDOMEvent::getProperty(std::string property)
+EmscriptenDOMEvent::getProperty(const std::string& property)
 {
     std::string eval = "(" + _jsAccessor + "." + property + ")";
     int result = emscripten_run_script_int(eval.c_str());

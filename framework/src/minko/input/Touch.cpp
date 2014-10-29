@@ -60,7 +60,7 @@ Touch::averageY()
 
     for (int i = 0; i < l; ++i)
     {
-        y += _touches[_identifiers[i]]->x();
+        y += _touches[_identifiers[i]]->y();
     }
 
     y /= l;

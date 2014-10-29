@@ -55,6 +55,7 @@ EmscriptenDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
 	_canvas = canvas;
 	_sceneManager = sceneManager;
 
+
 	loadScript("script/minko.overlay.js");
 
 	std::string eval = "Minko.init('emscripten');";
@@ -137,7 +138,7 @@ EmscriptenDOMEngine::enterFrame()
 
 	for(auto element : EmscriptenDOMElement::domElements)
 	{
-		element->update();
+		//element->update();
 	}
 
 	if (_currentDOM->initialized())
