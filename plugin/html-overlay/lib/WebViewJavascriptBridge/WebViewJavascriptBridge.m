@@ -262,9 +262,10 @@ static bool logging = false;
         NSString *js = [NSString stringWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:nil];
         [webView stringByEvaluatingJavaScriptFromString:js];
 
-        NSString *minkoFilePath = [bundle pathForResource:@"MinkoOverlay.js" ofType:@"txt"];
+        NSString *minkoFilePath = [bundle pathForResource:@"asset/script/minko.overlay" ofType:@"js"];
         NSString *minkoJs = [NSString stringWithContentsOfFile:minkoFilePath encoding:NSUTF8StringEncoding error:nil];
         [webView stringByEvaluatingJavaScriptFromString:minkoJs];
+        [webView stringByEvaluatingJavaScriptFromString:@"Minko.init('apple');"];
     }
     
     if (_startupMessageQueue) {
@@ -353,9 +354,10 @@ static bool logging = false;
         NSString *js = [NSString stringWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:nil];
         [webView stringByEvaluatingJavaScriptFromString:js];
 
-        NSString *minkoFilePath = [bundle pathForResource:@"MinkoOverlay.js" ofType:@"txt"];
+        NSString *minkoFilePath = [bundle pathForResource:@"asset/script/minko.overlay" ofType:@"js"];
         NSString *minkoJs = [NSString stringWithContentsOfFile:minkoFilePath encoding:NSUTF8StringEncoding error:nil];
         [webView stringByEvaluatingJavaScriptFromString:minkoJs];
+        [webView stringByEvaluatingJavaScriptFromString:@"Minko.init('apple');"];
     }
     
     if (_startupMessageQueue) {

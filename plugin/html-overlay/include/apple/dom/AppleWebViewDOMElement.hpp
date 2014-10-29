@@ -27,36 +27,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/dom/AbstractDOMMouseEvent.hpp"
 #include "minko/dom/AbstractDOMTouchEvent.hpp"
 
-namespace macwebview
+namespace apple
 {
 	namespace dom
 	{
-        class MacWebViewDOMEngine;
+        class AppleWebViewDOMEngine;
 
-		class MacWebViewDOMElement : public minko::dom::AbstractDOMElement,
-			public std::enable_shared_from_this<MacWebViewDOMElement>
+		class AppleWebViewDOMElement :
+			public minko::dom::AbstractDOMElement,
+			public std::enable_shared_from_this<AppleWebViewDOMElement>
 		{
 		public:
-			typedef std::shared_ptr<MacWebViewDOMElement> Ptr;
+			typedef std::shared_ptr<AppleWebViewDOMElement> Ptr;
 
 		private:
-			MacWebViewDOMElement(const std::string& jsAccessor);
+			AppleWebViewDOMElement(const std::string& jsAccessor);
 
 		public:
-			~MacWebViewDOMElement()
+			~AppleWebViewDOMElement()
 			{
 			};
 
 			static
 			Ptr
-			getDOMElement(const std::string& jsElement, std::shared_ptr<MacWebViewDOMEngine> engine);
+			getDOMElement(const std::string& jsElement, std::shared_ptr<AppleWebViewDOMEngine> engine);
 
 			std::string
 			getJavascriptAccessor();
 
 			static
 			Ptr
-			create(const std::string& javascriptAccessor, std::shared_ptr<MacWebViewDOMEngine> engine);
+			create(const std::string& javascriptAccessor, std::shared_ptr<AppleWebViewDOMEngine> engine);
 
 			std::string
 			id();
@@ -143,16 +144,14 @@ namespace macwebview
 			minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>::Ptr
 			onmouseover();
 
-#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
             minko::Signal<std::shared_ptr<minko::dom::AbstractDOMTouchEvent>>::Ptr
-            ontouchdown();
+            ontouchstart();
 
             minko::Signal<std::shared_ptr<minko::dom::AbstractDOMTouchEvent>>::Ptr
-            ontouchup();
+            ontouchend();
 
             minko::Signal<std::shared_ptr<minko::dom::AbstractDOMTouchEvent>>::Ptr
-            ontouchmotion();
-#endif
+            ontouchmove();
 
             minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
             onchange();
@@ -162,16 +161,17 @@ namespace macwebview
 
             void
             update();
+
 		private:
 			void
 			addEventListener(const std::string&);
 
             void
-            initialize(std::shared_ptr<MacWebViewDOMEngine> engine);
+            initialize(std::shared_ptr<AppleWebViewDOMEngine> engine);
 
 		public:
 			static
-			std::list<MacWebViewDOMElement::Ptr> domElements;
+			std::list<AppleWebViewDOMElement::Ptr> domElements;
 
 		private:
 			static
@@ -195,6 +195,10 @@ namespace macwebview
             minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _oninput;
             minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr _onchange;
 
+            minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Ptr _ontouchstart;
+            minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Ptr _ontouchend;
+            minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Ptr _ontouchmove;
+
             bool _onclickSet;
             bool _onmousedownSet;
             bool _onmousemoveSet;
@@ -206,17 +210,11 @@ namespace macwebview
             bool _oninputSet;
             bool _onchangeSet;
 
-#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
-            minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Ptr _ontouchdown;
-            minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Ptr _ontouchup;
-            minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Ptr _ontouchmotion;
+            bool _ontouchstartSet;
+            bool _ontouchendSet;
+            bool _ontouchmoveSet;
 
-            bool _ontouchdownSet;
-            bool _ontouchupSet;
-            bool _ontouchmotionSet;
-#endif
-
-            std::shared_ptr<MacWebViewDOMEngine> _engine;
+            std::shared_ptr<AppleWebViewDOMEngine> _engine;
 		};
 	}
 }

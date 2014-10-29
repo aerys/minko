@@ -18,17 +18,17 @@
  */
 
 #include "minko/Common.hpp"
-#include "macwebview/dom/MacWebViewDOMEvent.hpp"
-#include "macwebview/dom/MacWebViewDOMElement.hpp"
-#include "macwebview/dom/MacWebViewDOMEngine.hpp"
+#include "apple/dom/AppleWebViewDOMEvent.hpp"
+#include "apple/dom/AppleWebViewDOMElement.hpp"
+#include "apple/dom/AppleWebViewDOMEngine.hpp"
 
 using namespace minko;
 using namespace minko::dom;
-using namespace macwebview;
-using namespace macwebview::dom;
+using namespace apple;
+using namespace apple::dom;
 
 void
-MacWebViewDOMEvent::preventDefault()
+AppleWebViewDOMEvent::preventDefault()
 {
     std::cerr << "Warning : AbstractDOMEvent::preventDefault will have no effect" << std::endl;
     std::string js = _jsAccessor + ".preventDefault()";
@@ -37,7 +37,7 @@ MacWebViewDOMEvent::preventDefault()
 }
 
 void
-MacWebViewDOMEvent::stopPropagation()
+AppleWebViewDOMEvent::stopPropagation()
 {
     std::cerr << "Warning : AbstractDOMEvent::stopPropagation will have no effect" << std::endl;
     std::string js = _jsAccessor + ".stopPropagation()";
@@ -46,7 +46,7 @@ MacWebViewDOMEvent::stopPropagation()
 }
 
 std::string
-MacWebViewDOMEvent::type()
+AppleWebViewDOMEvent::type()
 {
     std::string js = "(" + _jsAccessor + ".type)";
     std::string result = _engine->eval(js);
@@ -55,7 +55,15 @@ MacWebViewDOMEvent::type()
 }
 
 minko::dom::AbstractDOMElement::Ptr
-MacWebViewDOMEvent::target()
+AppleWebViewDOMEvent::target()
 {
-    return MacWebViewDOMElement::getDOMElement(_jsAccessor + ".target", _engine);
+    return AppleWebViewDOMElement::getDOMElement(_jsAccessor + ".target", _engine);
+}
+
+int
+AppleWebViewDOMEvent::getProperty(const std::string& property)
+{
+    std::string eval = "(" + _jsAccessor + "." + property + ")";
+    int result = atoi(_engine->eval(eval).c_str());
+    return result;
 }

@@ -20,35 +20,35 @@
 #pragma once
 
 #include "minko/Common.hpp"
-#include "macwebview/dom/MacWebViewDOMEvent.hpp"
+#include "apple/dom/AppleWebViewDOMEvent.hpp"
 #include "minko/dom/AbstractDOMElement.hpp"
 #include "minko/dom/AbstractDOMMouseEvent.hpp"
 
-namespace macwebview
+namespace apple
 {
     namespace dom
     {
-        class MacWebViewDOMEngine;
+        class AppleWebViewDOMEngine;
 
-        class MacWebViewDOMMouseEvent :
+        class AppleWebViewDOMMouseEvent :
             public virtual minko::dom::AbstractDOMMouseEvent,
-            public macwebview::dom::MacWebViewDOMEvent
+            public apple::dom::AppleWebViewDOMEvent
         {
         public:
-            typedef std::shared_ptr<MacWebViewDOMMouseEvent> Ptr;
+            typedef std::shared_ptr<AppleWebViewDOMMouseEvent> Ptr;
 
-        private:
-            MacWebViewDOMMouseEvent(std::string jsAccessor) :
-                MacWebViewDOMEvent(jsAccessor)
+        protected:
+            AppleWebViewDOMMouseEvent(std::string jsAccessor) :
+                AppleWebViewDOMEvent(jsAccessor)
             {
             }
 
         public:
             static
             Ptr
-            create(std::string jsAccessor, std::shared_ptr<MacWebViewDOMEngine> engine)
+            create(std::string jsAccessor, std::shared_ptr<AppleWebViewDOMEngine> engine)
             {
-                Ptr event(new MacWebViewDOMMouseEvent(jsAccessor));
+                Ptr event(new AppleWebViewDOMMouseEvent(jsAccessor));
                 event->_engine = engine;
 
                 return event;

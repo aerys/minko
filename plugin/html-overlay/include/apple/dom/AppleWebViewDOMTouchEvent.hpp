@@ -20,38 +20,36 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "macwebview/dom/MacWebViewDOMEvent.hpp"
-#include "minko/dom/AbstractDOMElement.hpp"
+#include "apple/dom/AppleWebViewDOMMouseEvent.hpp"
 #include "minko/dom/AbstractDOMTouchEvent.hpp"
 
-namespace macwebview
+namespace apple
 {
     namespace dom
     {
-        class MacWebViewDOMEngine;
+        class AppleWebViewDOMEngine;
 
-        class MacWebViewDOMTouchEvent :
+        class AppleWebViewDOMTouchEvent :
             public virtual minko::dom::AbstractDOMTouchEvent,
-            public macwebview::dom::MacWebViewDOMEvent
+            public apple::dom::AppleWebViewDOMMouseEvent
 
         {
         public:
-            typedef std::shared_ptr<MacWebViewDOMTouchEvent> Ptr;
+            typedef std::shared_ptr<AppleWebViewDOMTouchEvent> Ptr;
 
-        private:
-            MacWebViewDOMTouchEvent(std::string jsAccessor, int fingerId, int index):
-                MacWebViewDOMEvent(jsAccessor),
-                _fingerId(fingerId),
-                _index(index)
+        protected:
+            AppleWebViewDOMTouchEvent(const std::string& jsAccessor, int changedTouchesIndex):
+                AppleWebViewDOMMouseEvent(jsAccessor),
+                _changedTouchesIndex(changedTouchesIndex)
             {
             }
 
         public:
             static
             Ptr
-            create(std::string jsAccessor, int fingerId, int index, std::shared_ptr<MacWebViewDOMEngine> engine)
+            create(const std::string& jsAccessor, int changedTouchesIndex, std::shared_ptr<AppleWebViewDOMEngine> engine)
             {
-                Ptr event(new MacWebViewDOMTouchEvent(jsAccessor, fingerId, index));
+                Ptr event(new AppleWebViewDOMTouchEvent(jsAccessor, changedTouchesIndex));
                 event->_engine = engine;
 
                 return event;
@@ -82,16 +80,10 @@ namespace macwebview
             screenY();
 
             int
-            fingerId();
-
-            std::string&
-            jsAccessor();
-
+            identifier();
+        
         private:
-            // The JS touch event property called "identifier" similar to SDL fingerId (a unique id)
-            int _fingerId;
-            // The index in the current changedTouches array
-            int _index;
+            int _changedTouchesIndex;
         };
     }
 }

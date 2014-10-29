@@ -18,16 +18,16 @@
  */
 
 #include "minko/Common.hpp"
-#include "macwebview/dom/MacWebViewDOMMouseEvent.hpp"
-#include "macwebview/dom/MacWebViewDOMEngine.hpp"
+#include "apple/dom/AppleWebViewDOMMouseEvent.hpp"
+#include "apple/dom/AppleWebViewDOMEngine.hpp"
 
 using namespace minko;
 using namespace minko::dom;
-using namespace macwebview;
-using namespace macwebview::dom;
+using namespace apple;
+using namespace apple::dom;
 
 int
-MacWebViewDOMMouseEvent::clientX()
+AppleWebViewDOMMouseEvent::clientX()
 {
     std::string js = "(" + _jsAccessor + ".clientX)";
     int result = atoi(_engine->eval(js).c_str());
@@ -36,7 +36,7 @@ MacWebViewDOMMouseEvent::clientX()
 }
 
 int
-MacWebViewDOMMouseEvent::clientY()
+AppleWebViewDOMMouseEvent::clientY()
 {
     std::string js = "(" + _jsAccessor + ".clientY)";
     int result = atoi(_engine->eval(js).c_str());
@@ -45,7 +45,7 @@ MacWebViewDOMMouseEvent::clientY()
 }
 
 int
-MacWebViewDOMMouseEvent::pageX()
+AppleWebViewDOMMouseEvent::pageX()
 {
     std::string js = "(" + _jsAccessor + ".pageX)";
     int result = atoi(_engine->eval(js).c_str());
@@ -54,7 +54,7 @@ MacWebViewDOMMouseEvent::pageX()
 }
 
 int
-MacWebViewDOMMouseEvent::pageY()
+AppleWebViewDOMMouseEvent::pageY()
 {
     std::string js = "(" + _jsAccessor + ".pageY)";
     int result = atoi(_engine->eval(js).c_str());
@@ -63,7 +63,7 @@ MacWebViewDOMMouseEvent::pageY()
 }
 
 int
-MacWebViewDOMMouseEvent::layerX()
+AppleWebViewDOMMouseEvent::layerX()
 {
     std::string js = "(" + _jsAccessor + ".layerX)";
     int result = atoi(_engine->eval(js).c_str());
@@ -72,7 +72,7 @@ MacWebViewDOMMouseEvent::layerX()
 }
 
 int
-MacWebViewDOMMouseEvent::layerY()
+AppleWebViewDOMMouseEvent::layerY()
 {
     std::string js = "(" + _jsAccessor + ".layerY)";
     int result = atoi(_engine->eval(js).c_str());
@@ -81,7 +81,7 @@ MacWebViewDOMMouseEvent::layerY()
 }
 
 int
-MacWebViewDOMMouseEvent::screenX()
+AppleWebViewDOMMouseEvent::screenX()
 {
     std::string js = "(" + _jsAccessor + ".screenX)";
     int result = atoi(_engine->eval(js).c_str());
@@ -90,7 +90,7 @@ MacWebViewDOMMouseEvent::screenX()
 }
 
 int
-MacWebViewDOMMouseEvent::screenY()
+AppleWebViewDOMMouseEvent::screenY()
 {
     std::string js = "(" + _jsAccessor + ".screenY)";
     int result = atoi(_engine->eval(js).c_str());

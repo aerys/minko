@@ -77,5 +77,5 @@ EmscriptenDOMTouchEvent::screenY()
 int
 EmscriptenDOMTouchEvent::identifier()
 {
-	return getProperty("changedTouches[0].identifier");
+	return getProperty("changedTouches[0].identifier % 2147483647");
 }

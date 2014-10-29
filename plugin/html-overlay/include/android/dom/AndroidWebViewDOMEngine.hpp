@@ -40,37 +40,37 @@ namespace android
 
 		public:
 
-			~AndroidWebViewDOMEngine()
-			{
-			}
+		~AndroidWebViewDOMEngine()
+		{
+		}
 
-			void
-			initialize(minko::AbstractCanvas::Ptr, minko::component::SceneManager::Ptr);
+		void
+		initialize(minko::AbstractCanvas::Ptr, minko::component::SceneManager::Ptr);
 
-			void
-			enterFrame(float);
+		void
+		enterFrame(float);
 
-			minko::dom::AbstractDOM::Ptr
-			load(std::string uri);
+		minko::dom::AbstractDOM::Ptr
+		load(std::string uri);
 
-			static
-			Ptr
-			create();
+		static
+		Ptr
+		create();
 
-			void
-			clear();
+		void
+		clear();
 
-			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr
-			onload();
+		minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr
+		onload();
 
-			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr
-			onmessage();
+		minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr
+		onmessage();
 
-			minko::dom::AbstractDOM::Ptr
-			mainDOM();
+		minko::dom::AbstractDOM::Ptr
+		mainDOM();
 
-			void
-			visible(bool);
+		void
+		visible(bool);
 
             bool
             visible();
@@ -83,7 +83,7 @@ namespace android
             }
 
             std::string
-			eval(std::string);
+		eval(std::string);
 
             inline
             bool
@@ -108,8 +108,8 @@ namespace android
 
 		private:
 
-			void
-			createNewDom();
+		void
+		createNewDom();
 
             void
             registerDomEvents();
@@ -121,8 +121,8 @@ namespace android
             updateEvents();
 
         public:
-			static
-			int _domUid;
+            static
+            int _domUid;
 
             static 
             std::vector<std::string> messages;

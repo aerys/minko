@@ -23,19 +23,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/dom/AbstractDOMElement.hpp"
 #include "minko/dom/AbstractDOMTouchEvent.hpp"
 
-namespace macwebview
+namespace apple
 {
     namespace dom
     {
-        class MacWebViewDOMEngine;
+        class AppleWebViewDOMEngine;
 
-        class MacWebViewDOMEvent : public virtual minko::dom::AbstractDOMEvent
+        class AppleWebViewDOMEvent : public virtual minko::dom::AbstractDOMEvent
         {
         public:
-            typedef std::shared_ptr<MacWebViewDOMEvent> Ptr;
+            typedef std::shared_ptr<AppleWebViewDOMEvent> Ptr;
 
         protected:
-            MacWebViewDOMEvent(std::string jsAccessor):
+            AppleWebViewDOMEvent(std::string jsAccessor):
                 _jsAccessor(jsAccessor)
             {
             }
@@ -43,9 +43,9 @@ namespace macwebview
         public:
             static
             Ptr
-            create(std::string jsAccessor, std::shared_ptr<MacWebViewDOMEngine> engine)
+            create(std::string jsAccessor, std::shared_ptr<AppleWebViewDOMEngine> engine)
             {
-                Ptr event(new MacWebViewDOMEvent(jsAccessor));
+                Ptr event(new AppleWebViewDOMEvent(jsAccessor));
                 event->_engine = engine;
 
                 return event;
@@ -64,8 +64,12 @@ namespace macwebview
             target();
 
         protected:
+            int
+            getProperty(const std::string& property);
+
+        protected:
             std::string _jsAccessor;
-            std::shared_ptr<MacWebViewDOMEngine> _engine;
+            std::shared_ptr<AppleWebViewDOMEngine> _engine;
         };
     }
 }
