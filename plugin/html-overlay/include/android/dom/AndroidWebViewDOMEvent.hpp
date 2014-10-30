@@ -57,11 +57,6 @@ namespace android
             void 
             type(const std::string&);
 
-            void
-            preventDefault();
-
-            void
-            stopPropagation();
         private:
             std::string _type;
             minko::dom::AbstractDOMElement::Ptr _target;

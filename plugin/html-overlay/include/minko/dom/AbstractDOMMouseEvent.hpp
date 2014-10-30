@@ -49,14 +49,6 @@ namespace minko
 
 			virtual
 			int
-			layerX() = 0;
-
-			virtual
-			int
-			layerY() = 0;
-
-			virtual
-			int
 			screenX() = 0;
 
 			virtual

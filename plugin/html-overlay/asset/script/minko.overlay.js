@@ -370,8 +370,6 @@ Minko.androidEventHandler = function(event)
 	eventData.clientY = event.clientY;
 	eventData.pageX = event.pageX;
 	eventData.pageY = event.pageY;
-	eventData.layerX = event.layerX;
-	eventData.layerY = event.layerY;
 	eventData.screenX = event.screenX;
 	eventData.screenY = event.screenY;
 	

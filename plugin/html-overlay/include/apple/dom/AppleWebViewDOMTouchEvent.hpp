@@ -68,12 +68,6 @@ namespace apple
             pageY();
 
             int
-            layerX();
-
-            int
-            layerY();
-
-            int
             screenX();
 
             int

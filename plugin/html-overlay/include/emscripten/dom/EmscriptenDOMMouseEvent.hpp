@@ -64,12 +64,6 @@ namespace emscripten
 			pageY();
 
 			int
-			layerX();
-
-			int
-			layerY();
-
-			int
 			screenX();
 
 			int

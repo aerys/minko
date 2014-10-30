@@ -51,18 +51,6 @@ EmscriptenDOMMouseEvent::pageY()
 }
 
 int
-EmscriptenDOMMouseEvent::layerX()
-{
-	return getProperty("layerX");
-}
-
-int
-EmscriptenDOMMouseEvent::layerY()
-{
-	return getProperty("layerY");
-}
-
-int
 EmscriptenDOMMouseEvent::screenX()
 {
 	return getProperty("screenX");

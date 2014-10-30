@@ -63,24 +63,6 @@ AppleWebViewDOMMouseEvent::pageY()
 }
 
 int
-AppleWebViewDOMMouseEvent::layerX()
-{
-    std::string js = "(" + _jsAccessor + ".layerX)";
-    int result = atoi(_engine->eval(js).c_str());
-
-    return result;
-}
-
-int
-AppleWebViewDOMMouseEvent::layerY()
-{
-    std::string js = "(" + _jsAccessor + ".layerY)";
-    int result = atoi(_engine->eval(js).c_str());
-
-    return result;
-}
-
-int
 AppleWebViewDOMMouseEvent::screenX()
 {
     std::string js = "(" + _jsAccessor + ".screenX)";

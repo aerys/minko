@@ -134,8 +134,6 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent(JNIEnv*
         mouseEvent->clientY(root.get("clientY", 0).asInt());
         mouseEvent->pageX(root.get("pageX", 0).asInt());
         mouseEvent->pageY(root.get("pageY", 0).asInt());
-        mouseEvent->layerX(root.get("layerX", 0).asInt());
-        mouseEvent->layerY(root.get("layerY", 0).asInt());
         mouseEvent->screenX(root.get("screenX", 0).asInt());
         mouseEvent->screenY(root.get("screenY", 0).asInt());
 
@@ -166,8 +164,6 @@ void Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent(JNIEnv*
                 mouseEvent->clientY(touchEvent->clientY());
                 mouseEvent->pageX(root.get("pageX", 0).asInt());
                 mouseEvent->pageY(root.get("pageY", 0).asInt());
-                mouseEvent->layerX(root.get("layerX", 0).asInt());
-                mouseEvent->layerY(root.get("layerY", 0).asInt());
                 mouseEvent->screenX(root.get("screenX", 0).asInt());
                 mouseEvent->screenY(root.get("screenY", 0).asInt());
 

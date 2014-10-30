@@ -73,60 +73,6 @@ ChromiumDOMEvent::clearAll()
     _events.clear();
 }
 
-void
-ChromiumDOMEvent::preventDefault()
-{
-    if (CefCurrentlyOn(TID_RENDERER))
-    {
-        _v8Context->Enter();
-        CefV8ValueList args;
-        getFunction("preventDefault")->ExecuteFunction(_v8NodeObject, args);
-        _v8Context->Exit();
-    }
-    else
-    {
-        CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-        _blocker.store(true);
-
-        auto fn = [&]()
-        {
-            preventDefault();
-            _blocker.store(false);
-        };
-
-        runner->PostTask(NewCefRunnableFunction(&fn));
-
-        while (_blocker.load());
-    }
-}
-
-void
-ChromiumDOMEvent::stopPropagation()
-{
-    if (CefCurrentlyOn(TID_RENDERER))
-    {
-        _v8Context->Enter();
-        CefV8ValueList args;
-        getFunction("stopPropagation")->ExecuteFunction(_v8NodeObject, args);
-        _v8Context->Exit();
-    }
-    else
-    {
-        CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-        _blocker.store(true);
-
-        auto fn = [&]()
-        {
-            stopPropagation();
-            _blocker.store(false);
-        };
-
-        runner->PostTask(NewCefRunnableFunction(&fn));
-
-        while (_blocker.load());
-    }
-}
-
 std::string
 ChromiumDOMEvent::accessor()
 {

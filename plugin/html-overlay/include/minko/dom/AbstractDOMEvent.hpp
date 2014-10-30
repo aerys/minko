@@ -30,14 +30,6 @@ namespace minko
 		{
 		public:
 			typedef std::shared_ptr<AbstractDOMEvent> Ptr;
-
-			virtual
-			void
-			preventDefault() = 0;
-
-			virtual
-			void
-			stopPropagation() = 0;
             
 			virtual
 			std::string

@@ -49,8 +49,6 @@ namespace android
 				_clientY(0),
 				_pageX(0),
 				_pageY(0),
-				_layerX(0),
-				_layerY(0),
 				_screenX(0),
 				_screenY(0)
 			{
@@ -62,8 +60,6 @@ namespace android
 				_clientY(event->clientY()),
 				_pageX(event->pageX()),
 				_pageY(event->pageY()),
-				_layerX(event->layerX()),
-				_layerY(event->layerY()),
 				_screenX(event->screenX()),
 				_screenY(event->screenY())
 			{
@@ -100,12 +96,6 @@ namespace android
 			pageY();
 
 			int
-			layerX();
-
-			int
-			layerY();
-
-			int
 			screenX();
 
 			int
@@ -124,12 +114,6 @@ namespace android
 			pageY(int);
 
 			void
-			layerX(int);
-
-			void
-			layerY(int);
-
-			void
 			screenX(int);
 
 			void
@@ -140,8 +124,6 @@ namespace android
 			int _clientY;
 			int _pageX;
 			int _pageY;
-			int _layerX;
-			int _layerY;
 			int _screenX;
 			int _screenY;
 		};
