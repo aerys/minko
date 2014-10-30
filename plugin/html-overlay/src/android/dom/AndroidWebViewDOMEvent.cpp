@@ -26,18 +26,6 @@ using namespace minko::dom;
 using namespace android;
 using namespace android::dom;
 
-void
-AndroidWebViewDOMEvent::preventDefault()
-{
-    std::cerr << "Warning : AbstractDOMEvent::preventDefault will have no effect" << std::endl;
-}
-
-void
-AndroidWebViewDOMEvent::stopPropagation()
-{
-    std::cerr << "Warning : AbstractDOMEvent::stopPropagation will have no effect" << std::endl;
-}
-
 std::string
 AndroidWebViewDOMEvent::type()
 {

@@ -36,8 +36,9 @@ namespace emscripten
 			typedef std::shared_ptr<EmscriptenDOMTouchEvent> Ptr;
 
 		private:
-			EmscriptenDOMTouchEvent(const std::string& jsAccessor):
-				EmscriptenDOMMouseEvent(jsAccessor)
+			EmscriptenDOMTouchEvent(const std::string& jsAccessor, int changedTouchesIndex):
+				EmscriptenDOMMouseEvent(jsAccessor), 
+				_changedTouchesIndex(changedTouchesIndex)
 			{
 			}
 
@@ -45,9 +46,9 @@ namespace emscripten
 
 			static
 			Ptr
-			create(const std::string& jsAccessor)
+			create(const std::string& jsAccessor, int changedTouchesIndex)
 			{
-				Ptr event(new EmscriptenDOMTouchEvent(jsAccessor));
+				Ptr event(new EmscriptenDOMTouchEvent(jsAccessor, changedTouchesIndex));
 				return event;
 			}
 
@@ -64,12 +65,6 @@ namespace emscripten
 			pageY();
 
 			int
-			layerX();
-
-			int
-			layerY();
-
-			int
 			screenX();
 
 			int
@@ -77,6 +72,9 @@ namespace emscripten
 
 			int
 			identifier();
+
+		private:
+			int _changedTouchesIndex;
 		};
 	}
 }

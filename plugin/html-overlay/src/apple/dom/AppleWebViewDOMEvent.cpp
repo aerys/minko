@@ -27,24 +27,6 @@ using namespace minko::dom;
 using namespace apple;
 using namespace apple::dom;
 
-void
-AppleWebViewDOMEvent::preventDefault()
-{
-    std::cerr << "Warning : AbstractDOMEvent::preventDefault will have no effect" << std::endl;
-    std::string js = _jsAccessor + ".preventDefault()";
-
-    _engine->eval(js);
-}
-
-void
-AppleWebViewDOMEvent::stopPropagation()
-{
-    std::cerr << "Warning : AbstractDOMEvent::stopPropagation will have no effect" << std::endl;
-    std::string js = _jsAccessor + ".stopPropagation()";
-
-    _engine->eval(js);
-}
-
 std::string
 AppleWebViewDOMEvent::type()
 {

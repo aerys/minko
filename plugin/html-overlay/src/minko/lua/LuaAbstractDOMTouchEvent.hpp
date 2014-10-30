@@ -32,7 +32,7 @@ namespace minko
         namespace overlay
         {
             class LuaAbstractDOMTouchEvent :
-            public LuaAbstractDOMMouseEvent
+                public LuaAbstractDOMMouseEvent
             {
                 
             private:

@@ -38,13 +38,13 @@ namespace minko
         protected:
             std::shared_ptr<AbstractCanvas>             _canvas;
             
-            std::map<int, math::Vector2::Ptr>           _touches; // touchId to touch coordinates
+            std::map<int, math::Vector2::Ptr>           _touches; // identifier to x/y
 
             std::vector<int>                            _identifiers;
 
-            Signal<Ptr, int, float, float>::Ptr         _touchMove; // touchId, dx, dy
-            Signal<Ptr, int, float, float>::Ptr         _touchDown; // touchId, x, y
-            Signal<Ptr, int, float, float>::Ptr         _touchUp; // touchId, x, y
+            Signal<Ptr, int, float, float>::Ptr         _touchMove;
+            Signal<Ptr, int, float, float>::Ptr         _touchDown;
+            Signal<Ptr, int, float, float>::Ptr         _touchUp;
 
             // Gestures
             Signal<Ptr>::Ptr                            _swipeRight;
@@ -72,7 +72,7 @@ namespace minko
             int
             numTouches()
             {
-                return _touches.size();
+                return _identifiers.size();
             }
 
             inline
