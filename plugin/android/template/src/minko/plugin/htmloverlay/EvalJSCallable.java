@@ -19,26 +19,18 @@ public class EvalJSCallable implements Callable<String>
 	@Override
     public String call() throws Exception 
 	{
-		String evalString = "javascript:MinkoNativeInterface.onNativeJSResult(eval(\"" + _js + "\"));";
-		/*
-		d("MINKOJAVA", "EVAL JS CALLABLE");
-		d("MINKOJAVA", "Eval string: " + evalString);
-		*/
-		
+		String evalString = "javascript:MinkoNativeInterface.onNativeJSResult(eval(\"" + _js + "\"));";		
 		
 		_webView.loadUrl(evalString);
-		
-		//_webView.loadUrl("javascript: eval(\"test[0]\");");
 		
 		long startTime = System.currentTimeMillis();
 		long elapsedTime = 0L;
 		
 		// We wait for the the result of JS eval
-		while(elapsedTime < 2000) // Timeout after X milliseconds
+		while(elapsedTime < 100) // Timeout after X milliseconds
 		{
 			if (WebViewJSInterface.ResultReady)
 			{
-				//d("MINKOJAVA", "RESULT IS READY: " + WebViewJSInterface.Result);
 				WebViewJSInterface.ResultReady = false;
 				
 				return WebViewJSInterface.Result;
@@ -47,6 +39,7 @@ public class EvalJSCallable implements Callable<String>
 			elapsedTime = (new Date()).getTime() - startTime;
 		}
 		
+		// The JS eval didn't return anything
 		return "null";
     }
 }
