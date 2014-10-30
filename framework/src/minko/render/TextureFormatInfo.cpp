@@ -35,13 +35,13 @@ std::map<TextureFormat, TextureFormatInfo::Entry> TextureFormatInfo::_formats =
     { TextureFormat::RGB_ETC1,          Entry("RGB_ETC1",           true,     4,    8,   false,  false) },
     { TextureFormat::RGBA_ETC1,         Entry("RGBA_ETC1",          true,     4,    8,   true,   true)  },
 
-    { TextureFormat::RGB_PVRTC1_2BPP,   Entry("RGB_PVRTC1_2BPP",    true,     2,    16,  false,  false) },
-    { TextureFormat::RGB_PVRTC1_4BPP,   Entry("RGB_PVRTC1_4BPP",    true,     4,    16,  false,  false) },
-    { TextureFormat::RGBA_PVRTC1_2BPP,  Entry("RGBA_PVRTC1_2BPP",   true,     2,    16,  true,   false) },
-    { TextureFormat::RGBA_PVRTC1_4BPP,  Entry("RGBA_PVRTC1_4BPP",   true,     4,    16,  true,   false) },
+    { TextureFormat::RGB_PVRTC1_2BPP,   Entry("RGB_PVRTC1_2BPP",    true,     2,    32,  false,  false) },
+    { TextureFormat::RGB_PVRTC1_4BPP,   Entry("RGB_PVRTC1_4BPP",    true,     4,    32,  false,  false) },
+    { TextureFormat::RGBA_PVRTC1_2BPP,  Entry("RGBA_PVRTC1_2BPP",   true,     2,    32,  true,   false) },
+    { TextureFormat::RGBA_PVRTC1_4BPP,  Entry("RGBA_PVRTC1_4BPP",   true,     4,    32,  true,   false) },
 
-    { TextureFormat::RGBA_PVRTC2_2BPP,  Entry("RGBA_PVRTC2_2BPP",   true,     2,    16,  true,   false) },
-    { TextureFormat::RGBA_PVRTC2_4BPP,  Entry("RGBA_PVRTC2_4BPP",   true,     4,    16,  true,   false) }
+    { TextureFormat::RGBA_PVRTC2_2BPP,  Entry("RGBA_PVRTC2_2BPP",   true,     2,    32,  true,   false) },
+    { TextureFormat::RGBA_PVRTC2_4BPP,  Entry("RGBA_PVRTC2_4BPP",   true,     4,    32,  true,   false) }
 };
 
 bool
