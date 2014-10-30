@@ -101,7 +101,7 @@ TextureWriter::embed(AssetLibraryPtr     assetLibrary,
     const auto width = texture->width();
     const auto height = texture->height();
     const auto numFaces = static_cast<unsigned char>(texture->type() == TextureType::Texture2D ? 1 : 6);
-    const auto numMipmaps = static_cast<unsigned char>(writerOptions->generateMipmaps() ? math::getp2(texture->width()) : 0);
+    const auto numMipmaps = static_cast<unsigned char>(writerOptions->generateMipmaps() ? math::getp2(texture->width()) + 1 : 0);
 
     auto textureHeaderData = msgpack::type::make_tuple<int, int, unsigned char, unsigned char>(
         width,

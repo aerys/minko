@@ -247,7 +247,7 @@ TextureParser::parseCompressedTexture(TextureFormat                        forma
                 )
             );
 
-            for (auto i = 1; i <= numMipmaps; ++i)
+            for (auto i = 1; i < numMipmaps; ++i)
             {
                 const auto mipLevelDimensionSize = width >> i;
 
