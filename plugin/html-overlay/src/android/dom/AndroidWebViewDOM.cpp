@@ -47,7 +47,7 @@ AndroidWebViewDOM::create(const std::string& jsAccessor, std::shared_ptr<Android
 void
 AndroidWebViewDOM::sendMessage(const std::string& message, bool async)
 {
-	std::string eval = _jsAccessor + ".window.Minko.sendMessage('" + message + "');";
+	std::string eval = _jsAccessor + ".window.Minko.onmessage('" + message + "');";
 
     runScript(eval);
 }
