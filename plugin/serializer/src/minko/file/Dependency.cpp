@@ -306,9 +306,13 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>                dependen
 
         auto completeFileName = writerOptions->outputAssetUriFunction()(fileName);
 
+        // TODO fixme
+        // differentiate asset location relatively to scene root from asset name
+        auto assetName = fileName.substr(fileName.find_last_of("/\\") + 1);
+
         writer->write(completeFileName, assetLibrary, options, writerOptions);
 
-        content = completeFileName;
+        content = assetName;
     }
 
     auto metaByte = static_cast<unsigned char>(writer->headerSize());
