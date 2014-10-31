@@ -29,12 +29,26 @@ namespace minko
         class PVRTranscoder
         {
         public:
+            struct Options
+            {
+                static const auto none              = 0;
+
+                static const auto fastCompression   = 1 << 0;
+
+                static const auto all               =
+                    fastCompression;
+
+                unsigned int _flags;
+            };
+
+        public:
             static
             bool
             transcode(std::shared_ptr<render::AbstractTexture>  texture,
-                      std::shared_ptr<WriterOptions>            options,
+                      std::shared_ptr<WriterOptions>            writerOptions,
                       render::TextureFormat                     outFormat,
-                      std::vector<unsigned char>&               out);
+                      std::vector<unsigned char>&               out,
+                      const Options&                            options);
         };
     }
 }

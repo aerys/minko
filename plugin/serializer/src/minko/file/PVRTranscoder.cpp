@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/log/Logger.hpp"
 #include "minko/render/MipFilter.hpp"
 #include "minko/render/Texture.hpp"
+#include "minko/render/TextureFormatInfo.hpp"
 
 #ifndef MINKO_NO_PVRTEXTOOL
 # include "PVRTextureDefines.h"
@@ -41,26 +42,32 @@ using namespace minko::render;
 
 bool
 PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
-                         std::shared_ptr<WriterOptions>            options,
+                         std::shared_ptr<WriterOptions>            writerOptions,
                          render::TextureFormat                     outFormat,
-                         std::vector<unsigned char>&               out)
+                         std::vector<unsigned char>&               out,
+                         const Options&                            options)
 {
 #ifndef MINKO_NO_PVRTEXTOOL
-    static const auto textureFormatToPvrTextureFomat = std::unordered_map<TextureFormat, EPVRTPixelFormat>
+    const auto textureFormatToPvrTextureFomat = std::unordered_map<TextureFormat, unsigned long long>
     {
-        { TextureFormat::RGB_DXT1, ePVRTPF_DXT1 },
-        { TextureFormat::RGBA_DXT3, ePVRTPF_DXT3 },
-        { TextureFormat::RGBA_DXT5, ePVRTPF_DXT5 },
+        { TextureFormat::RGB,               pvrtexture::PVRStandard8PixelType.PixelTypeID },
+        { TextureFormat::RGBA,              pvrtexture::PVRStandard8PixelType.PixelTypeID },
 
-        { TextureFormat::RGB_ETC1, ePVRTPF_ETC1 },
+        { TextureFormat::RGB_DXT1,          ePVRTPF_DXT1                                  },
+        { TextureFormat::RGBA_DXT3,         ePVRTPF_DXT3                                  },
+        { TextureFormat::RGBA_DXT5,         ePVRTPF_DXT5                                  },
 
-        { TextureFormat::RGB_PVRTC1_2BPP, ePVRTPF_PVRTCI_2bpp_RGB },
-        { TextureFormat::RGB_PVRTC1_4BPP, ePVRTPF_PVRTCI_4bpp_RGB },
-        { TextureFormat::RGBA_PVRTC1_2BPP, ePVRTPF_PVRTCI_2bpp_RGBA },
-        { TextureFormat::RGBA_PVRTC1_4BPP, ePVRTPF_PVRTCI_4bpp_RGBA },
-        { TextureFormat::RGBA_PVRTC2_2BPP, ePVRTPF_PVRTCII_2bpp },
-        { TextureFormat::RGBA_PVRTC2_4BPP, ePVRTPF_PVRTCII_4bpp }
+        { TextureFormat::RGB_ETC1,          ePVRTPF_ETC1                                  },
+
+        { TextureFormat::RGB_PVRTC1_2BPP,   ePVRTPF_PVRTCI_2bpp_RGB                       },
+        { TextureFormat::RGB_PVRTC1_4BPP,   ePVRTPF_PVRTCI_4bpp_RGB                       },
+        { TextureFormat::RGBA_PVRTC1_2BPP,  ePVRTPF_PVRTCI_2bpp_RGBA                      },
+        { TextureFormat::RGBA_PVRTC1_4BPP,  ePVRTPF_PVRTCI_4bpp_RGBA                      },
+        { TextureFormat::RGBA_PVRTC2_2BPP,  ePVRTPF_PVRTCII_2bpp                          },
+        { TextureFormat::RGBA_PVRTC2_4BPP,  ePVRTPF_PVRTCII_4bpp                          }
     };
+
+    const auto startTimeStamp = std::clock();
 
     auto pvrTexture = std::unique_ptr<pvrtexture::CPVRTexture>();
 
@@ -71,7 +78,7 @@ PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
         auto texture2d = std::static_pointer_cast<Texture>(texture);
 
         pvrtexture::CPVRTextureHeader pvrHeader(
-            pvrtexture::PVRStandard8PixelType.PixelTypeID,
+            textureFormatToPvrTextureFomat.at(texture->format()),
             texture->height(),
             texture->width(),
             1u,
@@ -83,7 +90,7 @@ PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
 
         pvrTexture = std::make_unique<pvrtexture::CPVRTexture>(pvrHeader, texture2d->data().data());
 
-        if (options->generateMipmaps())
+        if (writerOptions->generateMipmaps())
         {
             static const auto mipFilterToPvrMipFilter = std::unordered_map<MipFilter, pvrtexture::EResizeMode>
             {
@@ -94,9 +101,38 @@ PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
 
             if (!pvrtexture::GenerateMIPMaps(
                 *pvrTexture,
-                mipFilterToPvrMipFilter.at(options->mipFilter())))
+                mipFilterToPvrMipFilter.at(writerOptions->mipFilter())))
             {
                 return false;
+            }
+        }
+
+        auto compressorQuality = pvrtexture::ePVRTCNormal;
+
+        if (options._flags & Options::fastCompression)
+        {
+            switch (outFormat)
+            {
+            case TextureFormat::RGB_ETC1:
+                compressorQuality = pvrtexture::eETCFast;
+                break;
+
+            default:
+                compressorQuality = pvrtexture::ePVRTCFast;
+                break;
+            }
+        }
+        else
+        {
+            switch (outFormat)
+            {
+            case TextureFormat::RGB_ETC1:
+                compressorQuality = pvrtexture::eETCSlow;
+                break;
+
+            default:
+                compressorQuality = pvrtexture::ePVRTCNormal;
+                break;
             }
         }
 
@@ -104,7 +140,8 @@ PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
             *pvrTexture,
             textureFormatToPvrTextureFomat.at(outFormat),
             ePVRTVarTypeUnsignedByteNorm,
-            ePVRTCSpacesRGB))
+            ePVRTCSpacesRGB,
+            compressorQuality))
         {
             return false;
         }
@@ -125,12 +162,26 @@ PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
 
     out.assign(data, data + size);
 
+    const auto duration = (std::clock() - startTimeStamp) / static_cast<double>(CLOCKS_PER_SEC);
+
+    LOG_INFO("compressing texture: "
+        << texture->width()
+        << "x"
+        << texture->height()
+        << " from "
+        << TextureFormatInfo::name(texture->format())
+        << " to "
+        << TextureFormatInfo::name(outFormat)
+        << " with duration of "
+        << duration
+    );
+
 #ifdef MINKO_DEBUG_WRITE_PVR_TEXTURE_TO_DISK
     static auto pvrTextureId = 0;
 
-    auto debugOutputFileName = std::string("debug_") + std::to_string((int) outFormat) + "_" + std::to_string(pvrTextureId++);
+    auto debugOutputFileName = std::string("debug_") + TextureFormatInfo::name(outFormat) + "_" + std::to_string(pvrTextureId++);
 
-    debugOutputFileName = options->outputAssetUriFunction()(debugOutputFileName);
+    debugOutputFileName = writerOptions->outputAssetUriFunction()(debugOutputFileName);
 
     pvrTexture->saveFile(debugOutputFileName.c_str());
 #endif

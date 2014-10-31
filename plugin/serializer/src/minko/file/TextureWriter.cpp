@@ -166,7 +166,7 @@ TextureWriter::writeCompressedTexture(TextureFormat        textureFormat,
 
     // TODO
     // make AbstractTextureTranscoder
-    if (!PVRTranscoder::transcode(abstractTexture, writerOptions, textureFormat, out))
+    if (!PVRTranscoder::transcode(abstractTexture, writerOptions, textureFormat, out, { PVRTranscoder::Options::fastCompression }))
         return false;
 
     msgpack::pack(blob, out);
