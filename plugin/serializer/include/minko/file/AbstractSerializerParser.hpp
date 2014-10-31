@@ -109,9 +109,10 @@ namespace minko
             std::string
             extractFolderPath(const std::string& filepath);
 
-            void
+            bool
             readHeader(const std::string&                   filename,
-                       const std::vector<unsigned char>&    data);
+                       const std::vector<unsigned char>&    data,
+                       int                                  extension = 0x00);
 
             int
             readInt(const std::vector<unsigned char>& data, int offset)
