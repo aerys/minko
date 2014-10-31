@@ -1764,7 +1764,7 @@ OpenGLES2Context::availableTextureFormats(std::unordered_map<TextureFormat, unsi
 
 #ifdef GL_AMD_compressed_ATC_texture
         case GL_ATC_RGBA_EXPLICIT_ALPHA_AMD:
-            formats.insert(std::make_pair(TextureFormat::RGBA_ATITC1, GL_ATC_RGBA_EXPLICIT_ALPHA_AMD));
+            formats.insert(std::make_pair(TextureFormat::RGBA_ATITC, GL_ATC_RGBA_EXPLICIT_ALPHA_AMD));
             break;
 #endif
 

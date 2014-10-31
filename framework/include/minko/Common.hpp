@@ -127,8 +127,8 @@ namespace minko
             RGBA_PVRTC2_2BPP,
             RGBA_PVRTC2_4BPP,
 
-            RGBA_ATITC1,
-            RGBA_ATITC2,
+            RGB_ATITC,
+            RGBA_ATITC,
 
             // supported from OES 3.0
             RGB_ETC2,
