@@ -150,24 +150,24 @@ Options::initializeDefaultFunctions()
     _textureFormatFunction = [this](const std::unordered_set<render::TextureFormat>& availableTextureFormats)
                                 ->render::TextureFormat
     {
-        auto textureFormatIt = std::find_if(_desiredTextureFormats.begin(), _desiredTextureFormats.end(),
+        auto textureFormatIt = std::find_if(_textureFormats.begin(), _textureFormats.end(),
                             [&](render::TextureFormat textureFormat) -> bool
         {
             return availableTextureFormats.find(textureFormat) != availableTextureFormats.end();
         });
 
-        if (textureFormatIt != _desiredTextureFormats.end())
+        if (textureFormatIt != _textureFormats.end())
             return *textureFormatIt;
 
-        if (std::find(_desiredTextureFormats.begin(),
-                      _desiredTextureFormats.end(),
-                      render::TextureFormat::RGB) != _desiredTextureFormats.end() &&
+        if (std::find(_textureFormats.begin(),
+                      _textureFormats.end(),
+                      render::TextureFormat::RGB) != _textureFormats.end() &&
             availableTextureFormats.find(render::TextureFormat::RGBA) != availableTextureFormats.end())
             return render::TextureFormat::RGBA;
 
-        if (std::find(_desiredTextureFormats.begin(),
-                      _desiredTextureFormats.end(),
-                      render::TextureFormat::RGBA) != _desiredTextureFormats.end() &&
+        if (std::find(_textureFormats.begin(),
+                      _textureFormats.end(),
+                      render::TextureFormat::RGBA) != _textureFormats.end() &&
             availableTextureFormats.find(render::TextureFormat::RGB) != availableTextureFormats.end())
             return render::TextureFormat::RGB;
 

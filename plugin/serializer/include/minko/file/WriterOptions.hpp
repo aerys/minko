@@ -151,7 +151,7 @@ namespace minko
 
             inline
             Ptr
-            addTextureFormat(render::TextureFormat textureFormat)
+            registerTextureFormat(render::TextureFormat textureFormat)
             {
                 _textureFormats.push_back(textureFormat);
 

@@ -79,7 +79,7 @@ namespace minko
             component::SkinningMethod                            _skinningMethod;
             std::shared_ptr<render::Effect>                     _effect;
             MaterialPtr                                            _material;
-            std::list<render::TextureFormat>                    _desiredTextureFormats;
+            std::list<render::TextureFormat>                    _textureFormats;
             MaterialFunction                                    _materialFunction;
             GeometryFunction                                    _geometryFunction;
             ProtocolFunction                                    _protocolFunction;
@@ -140,7 +140,7 @@ namespace minko
                 opt->_skinningFramerate = options->_skinningFramerate;
                 opt->_skinningMethod = options->_skinningMethod;
                 opt->_effect = options->_effect;
-                opt->_desiredTextureFormats = options->_desiredTextureFormats;
+                opt->_textureFormats = options->_textureFormats;
                 opt->_materialFunction = options->_materialFunction;
                 opt->_geometryFunction = options->_geometryFunction;
                 opt->_protocolFunction = options->_protocolFunction;
@@ -398,9 +398,9 @@ namespace minko
 
             inline
             Ptr
-            addDesiredTextureFormat(render::TextureFormat textureFormat)
+            registerTextureFormat(render::TextureFormat textureFormat)
             {
-                _desiredTextureFormats.push_back(textureFormat);
+                _textureFormats.push_back(textureFormat);
 
                 return shared_from_this();
             }
