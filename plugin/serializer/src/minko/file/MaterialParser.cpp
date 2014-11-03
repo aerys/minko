@@ -61,10 +61,8 @@ MaterialParser::parse(const std::string&                filename,
                       const std::vector<unsigned char>&    data,
                       AssetLibraryPtr                    assetLibrary)
 {
-    readHeader(filename, data);
-
-    if (_magicNumber != 0x4D4B034D)
-        throw std::logic_error("Invalid material data");
+    if (!readHeader(filename, data, 0x4D))
+        return;
 
     msgpack::object        msgpackObject;
     msgpack::zone        mempool;

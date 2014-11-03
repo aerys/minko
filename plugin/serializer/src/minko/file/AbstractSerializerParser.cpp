@@ -89,7 +89,10 @@ AbstractSerializerParser::extractDependencies(AssetLibraryPtr                   
     for (int index = 0; index < nbDependencies; ++index)
     {
         if (offset >(dataOffset + dependenciesSize))
-            throw std::logic_error("Error while reading dependencies");
+        {
+            _error->execute(shared_from_this(), Error("DependencyParsingError", "Error while parsing dependencies"));
+            return;
+        }
 
         auto assetSize = readUInt(data, offset);
 
@@ -250,15 +253,19 @@ AbstractSerializerParser::extractFolderPath(const std::string& filepath)
     return filepath.substr(0, found);
 }
 
-void
+bool
 AbstractSerializerParser::readHeader(const std::string&                    filename,
-                                     const std::vector<unsigned char>&    data)
+                                     const std::vector<unsigned char>&     data,
+                                     int                                   extension)
 {
     _magicNumber = readInt(data, 0);
 
     //File should start with 0x4D4B03 (MK3). Last byte reserved for extensions (Material, Geometry...)
-    if ((_magicNumber & 0xFFFFFF00) != 0x4D4B0300)
-        throw std::logic_error("Invalid scene file: magic number mismatch");
+    if ((_magicNumber & 0xFFFFFF00) != MINKO_SCENE_MAGIC_NUMBER + (extension & 0xFF))
+    {
+        _error->execute(shared_from_this(), Error("InvalidFile", "Invalid scene file '" + filename + "': magic number mismatch"));
+        return false;
+    }
 
     _version = readInt(data, 4);
 
@@ -271,9 +278,12 @@ AbstractSerializerParser::readHeader(const std::string&                    filen
         auto fileVersion = std::to_string(_versionHi) + "." + std::to_string(_versionLow) + "." + std::to_string(_versionBuild);
         auto sceneVersion = std::to_string(MINKO_SCENE_VERSION_HI) + "." + std::to_string(MINKO_SCENE_VERSION_LO) + "." + std::to_string(MINKO_SCENE_VERSION_BUILD);
 
-        std::cerr << "File " + filename + " doesn't match serializer version (file has v" + fileVersion + " while current version is v" + sceneVersion + ")" << std::endl;
+        auto message = "File " + filename + " doesn't match serializer version (file has v" + fileVersion + " while current version is v" + sceneVersion + ")";
 
-        throw std::logic_error("Scene file version mismatch");
+        std::cerr << message << std::endl;
+        
+        _error->execute(shared_from_this(), Error("InvalidFile", message));
+        return false;
     }
 
     //Versions with the same HI and LOW value but different BUILD value should be compatible
@@ -292,4 +302,6 @@ AbstractSerializerParser::readHeader(const std::string&                    filen
 
     _dependenciesSize = readUInt(data, 14);
     _sceneDataSize = readUInt(data, 18);
+
+    return true;
 }

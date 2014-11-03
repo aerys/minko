@@ -129,7 +129,9 @@ SceneParser::parse(const std::string&                    filename,
 {
     _dependencies->options(options);
 
-    readHeader(filename, data);
+    if (!readHeader(filename, data))
+        return;
+
     std::string         folderPath = extractFolderPath(resolvedFilename);
 
     extractDependencies(assetLibrary, data, _headerSize, _dependenciesSize, options, folderPath);
