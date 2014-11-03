@@ -261,7 +261,7 @@ AbstractSerializerParser::readHeader(const std::string&                    filen
     _magicNumber = readInt(data, 0);
 
     //File should start with 0x4D4B03 (MK3). Last byte reserved for extensions (Material, Geometry...)
-    if ((_magicNumber & 0xFFFFFF00) != MINKO_SCENE_MAGIC_NUMBER + (extension & 0xFF))
+    if (_magicNumber != MINKO_SCENE_MAGIC_NUMBER + (extension & 0xFF))
     {
         _error->execute(shared_from_this(), Error("InvalidFile", "Invalid scene file '" + filename + "': magic number mismatch"));
         return false;
