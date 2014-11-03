@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Dependency.hpp"
 #include "minko/file/PNGWriter.hpp"
 #include "minko/file/PVRTranscoder.hpp"
+#include "minko/file/QTranscoder.hpp"
 #include "minko/file/WriterOptions.hpp"
 #include "minko/log/Logger.hpp"
 #include "minko/Types.hpp"
@@ -38,19 +39,22 @@ std::unordered_map<TextureFormat, TextureWriter::FormatWriterFunction> TextureWr
     { TextureFormat::RGB, std::bind(writeRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
     { TextureFormat::RGBA, std::bind(writeRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
 
-    { TextureFormat::RGB_DXT1, std::bind(writeCompressedTexture, TextureFormat::RGB_DXT1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
-    { TextureFormat::RGBA_DXT3, std::bind(writeCompressedTexture, TextureFormat::RGBA_DXT3, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
-    { TextureFormat::RGBA_DXT5, std::bind(writeCompressedTexture, TextureFormat::RGBA_DXT5, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
+    { TextureFormat::RGB_DXT1, std::bind(writePvrCompressedTexture, TextureFormat::RGB_DXT1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
+    { TextureFormat::RGBA_DXT3, std::bind(writePvrCompressedTexture, TextureFormat::RGBA_DXT3, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
+    { TextureFormat::RGBA_DXT5, std::bind(writePvrCompressedTexture, TextureFormat::RGBA_DXT5, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
 
-    { TextureFormat::RGB_ETC1, std::bind(writeCompressedTexture, TextureFormat::RGB_ETC1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
+    { TextureFormat::RGB_ETC1, std::bind(writePvrCompressedTexture, TextureFormat::RGB_ETC1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
 
-    { TextureFormat::RGB_PVRTC1_2BPP, std::bind(writeCompressedTexture, TextureFormat::RGB_PVRTC1_2BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
-    { TextureFormat::RGB_PVRTC1_4BPP, std::bind(writeCompressedTexture, TextureFormat::RGB_PVRTC1_4BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
-    { TextureFormat::RGBA_PVRTC1_2BPP, std::bind(writeCompressedTexture, TextureFormat::RGBA_PVRTC1_2BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
-    { TextureFormat::RGBA_PVRTC1_4BPP, std::bind(writeCompressedTexture, TextureFormat::RGBA_PVRTC1_4BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
+    { TextureFormat::RGB_PVRTC1_2BPP, std::bind(writePvrCompressedTexture, TextureFormat::RGB_PVRTC1_2BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
+    { TextureFormat::RGB_PVRTC1_4BPP, std::bind(writePvrCompressedTexture, TextureFormat::RGB_PVRTC1_4BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
+    { TextureFormat::RGBA_PVRTC1_2BPP, std::bind(writePvrCompressedTexture, TextureFormat::RGBA_PVRTC1_2BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
+    { TextureFormat::RGBA_PVRTC1_4BPP, std::bind(writePvrCompressedTexture, TextureFormat::RGBA_PVRTC1_4BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
 
-    { TextureFormat::RGBA_PVRTC2_2BPP, std::bind(writeCompressedTexture, TextureFormat::RGBA_PVRTC2_2BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
-    { TextureFormat::RGBA_PVRTC2_4BPP, std::bind(writeCompressedTexture, TextureFormat::RGBA_PVRTC2_4BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) }
+    { TextureFormat::RGBA_PVRTC2_2BPP, std::bind(writePvrCompressedTexture, TextureFormat::RGBA_PVRTC2_2BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
+    { TextureFormat::RGBA_PVRTC2_4BPP, std::bind(writePvrCompressedTexture, TextureFormat::RGBA_PVRTC2_4BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
+
+    { TextureFormat::RGB_ATITC, std::bind(writeQCompressedTexture, TextureFormat::RGB_ATITC, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
+    { TextureFormat::RGBA_ATITC, std::bind(writeQCompressedTexture, TextureFormat::RGBA_ATITC, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) }
 };
 
 TextureWriter::TextureWriter() :
@@ -157,16 +161,30 @@ TextureWriter::writeRGBATexture(AbstractTexture::Ptr abstractTexture,
 }
 
 bool
-TextureWriter::writeCompressedTexture(TextureFormat        textureFormat,
-                                      AbstractTexture::Ptr abstractTexture,
-                                      WriterOptions::Ptr   writerOptions,
-                                      std::stringstream&   blob)
+TextureWriter::writePvrCompressedTexture(TextureFormat        textureFormat,
+                                         AbstractTexture::Ptr abstractTexture,
+                                         WriterOptions::Ptr   writerOptions,
+                                         std::stringstream&   blob)
 {
     auto out = std::vector<unsigned char>();
 
-    // TODO
-    // make AbstractTextureTranscoder
     if (!PVRTranscoder::transcode(abstractTexture, writerOptions, textureFormat, out, { PVRTranscoder::Options::fastCompression }))
+        return false;
+
+    msgpack::pack(blob, out);
+
+    return true;
+}
+
+bool
+TextureWriter::writeQCompressedTexture(TextureFormat        textureFormat,
+                                       AbstractTexture::Ptr abstractTexture,
+                                       WriterOptions::Ptr   writerOptions,
+                                       std::stringstream&   blob)
+{
+    auto out = std::vector<unsigned char>();
+
+    if (!QTranscoder::transcode(abstractTexture, writerOptions, textureFormat, out))
         return false;
 
     msgpack::pack(blob, out);

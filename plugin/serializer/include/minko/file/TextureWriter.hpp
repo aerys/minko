@@ -86,10 +86,17 @@ namespace minko
 
             static
             bool
-            writeCompressedTexture(render::TextureFormat   textureFormat,
-                                   AbstractTexturePtr      abstractTexture,
-                                   WriterOptionsPtr        writerOptions,
-                                   std::stringstream&      blob);
+            writePvrCompressedTexture(render::TextureFormat   textureFormat,
+                                      AbstractTexturePtr      abstractTexture,
+                                      WriterOptionsPtr        writerOptions,
+                                      std::stringstream&      blob);
+
+            static
+            bool
+            writeQCompressedTexture(render::TextureFormat   textureFormat,
+                                    AbstractTexturePtr      abstractTexture,
+                                    WriterOptionsPtr        writerOptions,
+                                    std::stringstream&      blob);
         };
     }
 }

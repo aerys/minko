@@ -41,7 +41,10 @@ std::map<TextureFormat, TextureFormatInfo::Entry> TextureFormatInfo::_formats =
     { TextureFormat::RGBA_PVRTC1_4BPP,  Entry("RGBA_PVRTC1_4BPP",   true,     4,    32,  true,   false) },
 
     { TextureFormat::RGBA_PVRTC2_2BPP,  Entry("RGBA_PVRTC2_2BPP",   true,     2,    32,  true,   false) },
-    { TextureFormat::RGBA_PVRTC2_4BPP,  Entry("RGBA_PVRTC2_4BPP",   true,     4,    32,  true,   false) }
+    { TextureFormat::RGBA_PVRTC2_4BPP,  Entry("RGBA_PVRTC2_4BPP",   true,     4,    32,  true,   false) },
+
+    { TextureFormat::RGB_ATITC,         Entry("RGB_ATITC",          true,     8,    16,  false,  false) },
+    { TextureFormat::RGBA_ATITC,        Entry("RGBA_ATITC",         true,     8,    16,  true,   false) }
 };
 
 bool
