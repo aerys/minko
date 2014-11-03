@@ -75,7 +75,7 @@ function minko.plugin.sdl:enable()
 		includedirs { "SDL" }
 		minko.plugin.enable { "webgl" }
 
-	configuration { "android", "ConsoleApp or WindowedApp" }
+	configuration { "android", "SharedLib" }
 		links { "SDL2" }
 		libdirs { minko.plugin.path("sdl") .. "/lib/sdl/lib/android" }
 		includedirs { minko.plugin.path("sdl") .. "/lib/sdl/src/core/android" }

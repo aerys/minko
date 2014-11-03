@@ -23,7 +23,7 @@ minko.plugin.fx = {}
 minko.plugin.fx.enable = function()
 	defines { "MINKO_PLUGIN_FX" }
 	
-	configuration { "ConsoleApp or WindowedApp" }
+	configuration { "not StaticLib" }
 		minko.plugin.links { "fx" }
 		includedirs { minko.plugin.path("fx") .. "/include" }
 		

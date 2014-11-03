@@ -23,7 +23,7 @@ minko.plugin.particles = {}
 minko.plugin.particles.enable = function()
 	defines { "MINKO_PLUGIN_PARTICLES" }
 
-	configuration { "ConsoleApp or WindowedApp" }
+	configuration { "not StaticLib" }
 		minko.plugin.links { "particles" }
 
 		minko.plugin.enable("serializer")

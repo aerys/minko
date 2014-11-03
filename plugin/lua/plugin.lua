@@ -32,7 +32,7 @@ minko.plugin.lua.enable = function()
 		minko.plugin.path("lua") .. "/lib/LuaGlue/include",
 	}
 
-	configuration { "ConsoleApp or WindowedApp" }
+	configuration { "not StaticLib" }
 		minko.plugin.links { "lua" }
 
 		prelinkcommands {
