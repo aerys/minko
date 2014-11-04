@@ -490,4 +490,14 @@ namespace std
             return seed;
         }
     };
+
+    template<> struct hash<minko::render::TextureFormat>
+    {
+        inline
+        size_t
+        operator()(const minko::render::TextureFormat& x) const
+        {
+            return std::hash<unsigned int>()(static_cast<unsigned int>(x));
+        }
+    };
 }

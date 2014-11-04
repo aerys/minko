@@ -32,15 +32,15 @@ namespace minko
             std::cout << "FileProtocolWorker::run(): enter" << std::endl;
 //#endif // defined(DEBUG)
 
-            auto seekingOffset = (static_cast<int>(unsigned char(input[0])) << 24) +
-                                 (static_cast<int>(unsigned char(input[1])) << 16) +
-                                 (static_cast<int>(unsigned char(input[2])) << 8) + 
-                                 static_cast<int>(unsigned char(input[3]));
+            auto seekingOffset = (static_cast<int>(static_cast<unsigned char>((input[0]))) << 24) +
+                                 (static_cast<int>(static_cast<unsigned char>((input[1]))) << 16) +
+                                 (static_cast<int>(static_cast<unsigned char>((input[2]))) << 8) + 
+                                 static_cast<int>(static_cast<unsigned char>((input[3])));
 
-            auto seekedLength = (static_cast<int>(unsigned char(input[4])) << 24) +
-                                (static_cast<int>(unsigned char(input[5])) << 16) +
-                                (static_cast<int>(unsigned char(input[6])) << 8) +
-                                static_cast<int>(unsigned char(input[7]));
+            auto seekedLength = (static_cast<int>(static_cast<unsigned char>((input[4]))) << 24) +
+                                (static_cast<int>(static_cast<unsigned char>((input[5]))) << 16) +
+                                (static_cast<int>(static_cast<unsigned char>((input[6]))) << 8) +
+                                static_cast<int>(static_cast<unsigned char>((input[7])));
 
 			std::string filename(input.begin() + 8, input.end());
 

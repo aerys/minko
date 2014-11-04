@@ -37,6 +37,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #if MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
 # if defined(MINKO_PLUGIN_ANGLE)
 #  include "GLES2/gl2.h"
+#  include "GLES2/gl2ext.h"
 # else
 #  include "GL/glew.h"
 # endif
@@ -50,6 +51,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include <OpenGLES/ES2/gl.h>
 #elif MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
 # include <GLES2/gl2.h>
+# include <GLES2/gl2ext.h>
 #elif MINKO_PLATFORM == MINKO_PLATFORM_HTML5
 # include <GLES2/gl2.h>
 # include <EGL/egl.h>
@@ -1749,7 +1751,7 @@ OpenGLES2Context::availableTextureFormats(std::unordered_map<TextureFormat, unsi
             break;
 #elif MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
         case GL_OES_compressed_ETC1_RGB8_texture:
-            formats.insert(std::make_paie(TextureFormat::RGB_ETC1, GL_OES_compressed_ETC1_RGB8_texture));
+            formats.insert(std::make_pair(TextureFormat::RGB_ETC1, GL_OES_compressed_ETC1_RGB8_texture));
             break;
 #endif
         default:
