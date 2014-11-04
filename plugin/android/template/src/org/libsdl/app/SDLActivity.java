@@ -99,10 +99,10 @@ public class SDLActivity extends Activity {
 		// Get filename from "Open with" of another application
 		Intent intent = getIntent();
 
-		if (intent != null && intent.getData() != null)
+		if (intent != null && intent.getData() != null && intent.getData().getPath() != null)
 		{
 			String filename = intent.getData().getPath();
-			Log.v("SDL", "Get filename:" + filename);
+			Log.v("SDL", "Get filename: " + filename);
 			
 			SDLActivity.onNativeDropFile(filename);
 		}
