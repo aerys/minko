@@ -57,3 +57,13 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		includedirs {
 			"lib/PVRTexTool/Include"
 		}
+
+	configuration { "android or ios or html5 or osx or linux" }
+		defines {
+			"MINKO_NO_QCOMPRESS"
+		}
+
+	configuration { "windows" }
+		includedirs {
+			"lib/QCompress/Inc"
+		}
