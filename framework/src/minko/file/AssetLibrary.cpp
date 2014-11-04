@@ -60,7 +60,15 @@ AssetLibrary::geometry(const std::string& name)
 AssetLibrary::Ptr
 AssetLibrary::geometry(const std::string& name, std::shared_ptr<Geometry> geometry)
 {
-    _geometries[name] = geometry;
+    std::string tempname = name;
+    if (_geometries[tempname])
+    {
+        std::stringstream ss; 
+        ss << _geometries.size();
+        tempname = tempname + "_" + ss.str();
+    }
+
+    _geometries[tempname] = geometry;
 
     return std::enable_shared_from_this<AssetLibrary>::shared_from_this();
 }

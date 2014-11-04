@@ -314,10 +314,10 @@ AbstractASSIMPParser::getTransformFromAssimp(aiNode* ainode)
 Geometry::Ptr
 AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mesh, const std::string& meshName)
 {
-    auto existingGeometry = _assetLibrary->geometry(meshName);
+    /*auto existingGeometry = _assetLibrary->geometry(meshName);
 
     if (existingGeometry != nullptr)
-        return existingGeometry;
+        return existingGeometry;*/
 
     unsigned int vertexSize = 0;
 
