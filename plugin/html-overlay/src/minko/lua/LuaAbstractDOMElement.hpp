@@ -79,8 +79,13 @@ namespace minko
 						abstractDomElement.property("onmousedown", &dom::AbstractDOMElement::onmousedown);
 						abstractDomElement.property("onmousemove", &dom::AbstractDOMElement::onmousemove);
 						abstractDomElement.property("onmouseup", &dom::AbstractDOMElement::onmouseup);
+						
 						abstractDomElement.property("onmouseout", &dom::AbstractDOMElement::onmouseout);
 						abstractDomElement.property("onmouseover", &dom::AbstractDOMElement::onmouseover);
+
+						abstractDomElement.property("ontouchstart", &dom::AbstractDOMElement::onmouseover);
+						abstractDomElement.property("ontouchend", &dom::AbstractDOMElement::onmouseover);
+						abstractDomElement.property("ontouchmove", &dom::AbstractDOMElement::onmouseover);
 					}
 
 				static

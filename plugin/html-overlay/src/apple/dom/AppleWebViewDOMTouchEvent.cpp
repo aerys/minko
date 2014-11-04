@@ -51,18 +51,6 @@ AppleWebViewDOMTouchEvent::pageY()
 }
 
 int
-AppleWebViewDOMTouchEvent::layerX()
-{
-    return getProperty("changedTouches[" + std::to_string(_changedTouchesIndex) + "].layerX");
-}
-
-int
-AppleWebViewDOMTouchEvent::layerY()
-{
-    return getProperty("changedTouches[" + std::to_string(_changedTouchesIndex) + "].layerY");
-}
-
-int
 AppleWebViewDOMTouchEvent::screenX()
 {
     return getProperty("changedTouches[" + std::to_string(_changedTouchesIndex) + "].screenX");

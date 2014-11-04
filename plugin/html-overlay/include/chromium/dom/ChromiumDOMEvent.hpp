@@ -48,12 +48,6 @@ namespace chromium
                 return std::shared_ptr<ChromiumDOMEvent>(new ChromiumDOMEvent(value, context));
             }
 
-            void
-            preventDefault();
-
-            void
-            stopPropagation();
-
             std::string
             accessor();
 

@@ -51,18 +51,6 @@ AndroidWebViewDOMMouseEvent::pageY()
 }
 
 int
-AndroidWebViewDOMMouseEvent::layerX()
-{
-	return _layerX;
-}
-
-int
-AndroidWebViewDOMMouseEvent::layerY()
-{
-	return _layerY;
-}
-
-int
 AndroidWebViewDOMMouseEvent::screenX()
 {
 	return _screenX;
@@ -96,18 +84,6 @@ void
 AndroidWebViewDOMMouseEvent::pageY(int value)
 {
     _pageY = value;
-}
-
-void
-AndroidWebViewDOMMouseEvent::layerX(int value)
-{
-	_layerX = value;
-}
-
-void
-AndroidWebViewDOMMouseEvent::layerY(int value)
-{
-	_layerY = value;
 }
 
 void

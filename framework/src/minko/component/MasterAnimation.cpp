@@ -192,12 +192,20 @@ MasterAnimation::stop()
 }
 
 AbstractAnimation::Ptr
-MasterAnimation::seek(const std::string& labelName)
+MasterAnimation::seek(uint time)
 {
+    AbstractAnimation::seek(time);
+
 	for (auto& animation : _animations)
-		animation->seek(labelTime(labelName));
+		animation->seek(time);
 
 	return std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this());
+}
+
+AbstractAnimation::Ptr
+MasterAnimation::seek(const std::string& labelName)
+{
+    return seek(labelTime(labelName));
 }
 
 

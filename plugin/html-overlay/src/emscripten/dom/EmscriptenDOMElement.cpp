@@ -456,12 +456,23 @@ EmscriptenDOMElement::update()
 			_onmouseover->execute(EmscriptenDOMMouseEvent::create(eventName));
 		else if (type == "mouseout")
 			_onmouseout->execute(EmscriptenDOMMouseEvent::create(eventName));
-		else if (type == "touchstart")
-			_ontouchstart->execute(EmscriptenDOMTouchEvent::create(eventName));
-		else if (type == "touchsend")
-			_ontouchend->execute(EmscriptenDOMTouchEvent::create(eventName));
-		else if (type == "touchmove")
-			_ontouchmove->execute(EmscriptenDOMTouchEvent::create(eventName));
+		else if (type.substr(0, 5) == "touch")
+		{
+            std::string js = eventName + ".changedTouches.length";
+            int l = emscripten_run_script_int(js.c_str());
+
+            for (auto i = 0; i < l; i++)
+            {
+            	auto touchEvent = EmscriptenDOMTouchEvent::create(eventName, i);
+            	
+            	if (type == "touchstart")
+					_ontouchstart->execute(touchEvent);
+				else if (type == "touchend")
+					_ontouchend->execute(touchEvent);
+				else if (type == "touchmove")
+					_ontouchmove->execute(touchEvent); 
+            }
+        }
 	}
 
 	eval = "Minko.clearEvents(" + _jsAccessor + ");";

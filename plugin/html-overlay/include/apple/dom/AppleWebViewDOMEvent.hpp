@@ -51,12 +51,6 @@ namespace apple
                 return event;
             }
 
-            void
-            preventDefault();
-
-            void
-            stopPropagation();
-
             std::string
             type();
 

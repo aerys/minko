@@ -1,5 +1,5 @@
  /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2" + std::to_string(_changedTouchesIndex) + "13 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -29,53 +29,41 @@ using namespace emscripten::dom;
 int
 EmscriptenDOMTouchEvent::clientX()
 {
-	return getProperty("changedTouches[0].clientX");
+	return getProperty("changedTouches[" + std::to_string(_changedTouchesIndex) + "].clientX");
 }
 
 int
 EmscriptenDOMTouchEvent::clientY()
 {
-	return getProperty("changedTouches[0].clientY");
+	return getProperty("changedTouches[" + std::to_string(_changedTouchesIndex) + "].clientY");
 }
 
 int
 EmscriptenDOMTouchEvent::pageX()
 {
-	return getProperty("changedTouches[0].pageX");
+	return getProperty("changedTouches[" + std::to_string(_changedTouchesIndex) + "].pageX");
 }
 
 int
 EmscriptenDOMTouchEvent::pageY()
 {
-	return getProperty("changedTouches[0].pageY");
-}
-
-int
-EmscriptenDOMTouchEvent::layerX()
-{
-	return getProperty("changedTouches[0].layerX");
-}
-
-int
-EmscriptenDOMTouchEvent::layerY()
-{
-	return getProperty("changedTouches[0].layerY");
+	return getProperty("changedTouches[" + std::to_string(_changedTouchesIndex) + "].pageY");
 }
 
 int
 EmscriptenDOMTouchEvent::screenX()
 {
-	return getProperty("changedTouches[0].screenX");
+	return getProperty("changedTouches[" + std::to_string(_changedTouchesIndex) + "].screenX");
 }
 
 int
 EmscriptenDOMTouchEvent::screenY()
 {
-	return getProperty("changedTouches[0].screenY");
+	return getProperty("changedTouches[" + std::to_string(_changedTouchesIndex) + "].screenY");
 }
 
 int
 EmscriptenDOMTouchEvent::identifier()
 {
-	return getProperty("changedTouches[0].identifier % 2147483647");
+	return getProperty("changedTouches[" + std::to_string(_changedTouchesIndex) + "].identifier % 2147483647");
 }

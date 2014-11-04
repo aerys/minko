@@ -80,21 +80,7 @@ namespace chromium
             {
                 return getProperty<int>("pageY");
             }
-
-            inline
-			int
-            layerX()
-            {
-                return getProperty<int>("layerX");
-            }
-
-            inline
-			int
-			layerY()
-            {
-                return getProperty<int>("layerY");
-            }
-
+            
             inline
 			int
 			screenX()
