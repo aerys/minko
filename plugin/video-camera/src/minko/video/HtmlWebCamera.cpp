@@ -92,7 +92,6 @@ HtmlWebCamera::requestFrame()
     {
         if (_frameId == 0) //first frame
         {
-            LOG_ERROR("First frame!");
 #if defined(EMSCRIPTEN)
         std::string eval = "(minko_camera.width)";
         _cameraWidth = emscripten_run_script_int(eval.c_str());
@@ -101,7 +100,6 @@ HtmlWebCamera::requestFrame()
         eval = "(minko_camera.bufSize)";
         _cameraBufferSize = emscripten_run_script_int(eval.c_str());
 #endif
-            LOG_ERROR("First frame end!");
         }
         int tempFrameId = 0;
         unsigned char* cameraBuffer;
@@ -115,7 +113,6 @@ HtmlWebCamera::requestFrame()
 #endif
         if (tempFrameId != _frameId)
         {
-            LOG_ERROR("different frames");
             _frameId = tempFrameId;
 
             auto targetImageFormat = ImageFormatType::RGBA;
