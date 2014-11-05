@@ -4,13 +4,12 @@ set -x
 set -e
 
 ANDROID_KEYSTORE_PATH="${ANDROID_KEYSTORE_PATH}"
-ANDROID_KEYSTORE_USERNAME="${ANDROID_KEYSTORE_USERNAME}"
+ANDROID_KEYSTORE_ALIAS="${ANDROID_KEYSTORE_ALIAS}"
 ANDROID_KEYSTORE_PASSWORD="${ANDROID_KEYSTORE_PASSWORD}"
 
 if [ $OSTYPE == "cygwin" ]; then
 	MINKO_HOME=`cygpath -u "${MINKO_HOME}"`
 	ANDROID=`cygpath -u "${ANDROID_HOME}"`
-	ANDROID_KEYSTORE_PATH=`cygpath -u "${ANDROID_KEYSTORE_PATH}"`
 fi
 
 #RSYNC_OPTIONS="--ignore-existing"
@@ -43,13 +42,9 @@ mv asset assets
 ant $CONFIG
 
 if [ $CONFIG == "release" ]; then
-	if [ !-f "$ANDROID_KEYSTORE_PATH/.keystore" ]; then
-		echo "Can't find .keystore file at $ANDROID_KEYSTORE_PATH" 
-	fi
-
 	# Sign the app
-	jarsigner -tsa http://timestamp.digicert.com -storepass $ANDROID_KEYSTORE_PASSWORD -verbose -sigalg SHA1withRSA \
-	-digestalg SHA1 -signedjar bin/$APP_NAME-$CONFIG.apk bin/$APP_NAME-$CONFIG-unsigned.apk $ANDROID_KEYSTORE_USERNAME
+	jarsigner -tsa http://timestamp.digicert.com -keystore $ANDROID_KEYSTORE_PATH -storepass $ANDROID_KEYSTORE_PASSWORD -verbose \
+	-sigalg SHA1withRSA -digestalg SHA1 -signedjar bin/$APP_NAME-$CONFIG.apk bin/$APP_NAME-$CONFIG-unsigned.apk $ANDROID_KEYSTORE_ALIAS
 
 	# Verify that the app is properly signed
 	jarsigner -verify -verbose -certs bin/$APP_NAME-$CONFIG.apk
