@@ -51,7 +51,7 @@ namespace minko
             initialize(std::shared_ptr<component::SceneManager> sceneManager);
 
             void
-            initializeOVRDevice();
+            initializeOVRDevice(void* window = nullptr);
 
             void
             initializeCameras(std::shared_ptr<scene::Node> target);

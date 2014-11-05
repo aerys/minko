@@ -59,7 +59,8 @@ namespace minko
             create(int viewportWidth,
                    int viewportHeight,
                    float zNear  = 0.1f,
-                   float zFar   = 1000.0f)
+                   float zFar   = 1000.0f,
+                   void* window = nullptr)
             {
                 auto ptr = std::shared_ptr<OculusVRCamera>(new OculusVRCamera(
                     viewportWidth, viewportHeight, zNear, zFar
@@ -68,7 +69,7 @@ namespace minko
                 if (!ptr)
                     return nullptr;
 
-                ptr->initialize(viewportWidth, viewportHeight, zNear, zFar);
+                ptr->initialize(viewportWidth, viewportHeight, zNear, zFar, window);
 
                 return ptr;
             }
@@ -87,10 +88,10 @@ namespace minko
             OculusVRCamera(int viewportWidth, int viewportHeight, float zNear, float zFar);
 
             void
-            initializeOVRDevice();
+            initializeOVRDevice(void* window);
 
             void
-            initialize(int viewportWidth, int viewportHeight, float zNear, float zFar);
+            initialize(int viewportWidth, int viewportHeight, float zNear, float zFar, void* window);
 
             void
             updateCameraOrientation();

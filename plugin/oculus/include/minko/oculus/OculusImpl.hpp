@@ -39,7 +39,7 @@ namespace minko
 
             virtual
             void
-            initializeOVRDevice() = 0;
+            initializeOVRDevice(void* window) = 0;
 
             virtual
             void

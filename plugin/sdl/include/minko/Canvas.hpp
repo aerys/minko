@@ -156,6 +156,9 @@ namespace minko
             return _window;
         }
 
+        void*
+        systemWindow() const;
+
         int
         getJoystickAxis(input::Joystick::Ptr joystick, int axis);
 

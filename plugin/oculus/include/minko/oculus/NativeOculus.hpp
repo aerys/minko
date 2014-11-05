@@ -67,13 +67,13 @@ namespace minko
             typedef std::shared_ptr<NativeOculus> Ptr;
 
             void
-                initialize(std::shared_ptr<component::SceneManager> sceneManager);
+            initialize(std::shared_ptr<component::SceneManager> sceneManager);
 
             void
-                initializeCameras(std::shared_ptr<scene::Node> target);
+            initializeCameras(std::shared_ptr<scene::Node> target);
 
             void
-            initializeOVRDevice();
+            initializeOVRDevice(void* window = nullptr);
 
             void
             destroy();

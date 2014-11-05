@@ -187,6 +187,28 @@ Canvas::initializeWindow()
 #endif
 }
 
+void*
+Canvas::systemWindow() const
+{
+    SDL_Window* sdlWindow = _window;
+    SDL_SysWMinfo info;
+
+    SDL_VERSION(&info.version);
+
+    if (SDL_GetWindowWMInfo(sdlWindow, &info))
+    {
+#if MINKO_PLATFORM == MINKO_PLATFORM_IOS
+        return info.info.uikit.window;
+#elif MINKO_PLATFORM == MINKO_PLATFORM_OSX
+        return info.info.cocoa.window;
+#elif MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
+        return info.info.win.window;
+#endif
+    }
+
+    return nullptr;
+}
+
 void
 Canvas::initializeContext()
 {

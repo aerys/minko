@@ -53,7 +53,7 @@ _initialized(false)
 }
 
 void
-WebVROculus::initializeOVRDevice()
+WebVROculus::initializeOVRDevice(void* window)
 {
     _leftRenderer = Renderer::create();
     _rightRenderer = Renderer::create();

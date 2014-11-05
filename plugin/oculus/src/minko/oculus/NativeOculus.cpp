@@ -96,7 +96,7 @@ NativeOculus::detected()
 }
 
 void
-NativeOculus::initializeOVRDevice()
+NativeOculus::initializeOVRDevice(void* window)
 {
     _leftRenderer = Renderer::create();
     _rightRenderer = Renderer::create();
@@ -184,8 +184,9 @@ NativeOculus::initializeOVRDevice()
         _uvScaleOffset[eyeNum].second->setTo(ovrUVScaleOffset[1].x, ovrUVScaleOffset[1].y);
     }
 
-    // FIXME: on Windows, render directly into the HMD (window ?= SDL window)
-    //ovrHmd_AttachToWindow(_hmd, window, NULL, NULL);
+    // FIXME: Direct to HMD mode.
+    if (!!window)
+        ovrHmd_AttachToWindow(_hmd, window, NULL, NULL);
 }
 
 void

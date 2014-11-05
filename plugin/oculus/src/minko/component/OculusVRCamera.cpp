@@ -78,7 +78,7 @@ OculusVRCamera::detected()
 }
 
 void
-OculusVRCamera::initialize(int viewportWidth, int viewportHeight, float zNear, float zFar)
+OculusVRCamera::initialize(int viewportWidth, int viewportHeight, float zNear, float zFar, void* window)
 {
 #ifdef EMSCRIPTEN
     _oculusImpl = WebVROculus::create(viewportWidth, viewportHeight, zNear, zFar);
@@ -105,7 +105,7 @@ OculusVRCamera::initialize(int viewportWidth, int viewportHeight, float zNear, f
         std::placeholders::_2
     ));
 
-    initializeOVRDevice();
+    initializeOVRDevice(window);
 }
 
 void
@@ -136,9 +136,9 @@ OculusVRCamera::targetRemovedHandler(AbsCmpPtr component, NodePtr target)
 }
 
 void
-OculusVRCamera::initializeOVRDevice()
+OculusVRCamera::initializeOVRDevice(void* window)
 {
-    _oculusImpl->initializeOVRDevice();
+    _oculusImpl->initializeOVRDevice(window);
 }
 
 void
