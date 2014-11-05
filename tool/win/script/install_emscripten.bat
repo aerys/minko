@@ -20,7 +20,7 @@ if not defined EMSCRIPTEN (
 	exit /b 1
 )
 
-call "%EMSCRIPTEN%\..\..\emsdk_add_path.bat"
+call "%EMSCRIPTEN%\..\..\emsdk_env.bat"
 
 call emsdk list | findstr %EMSDK_MINGW% | findstr INSTALLED | findstr *
 
