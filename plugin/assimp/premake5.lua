@@ -74,7 +74,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			'"AI_SLM_DEFAULT_MAX_TRIANGLES=21845"'
 		}
 
-	configuration { "cc=clang" }
+	configuration { "cc=clang or xcode*" }
 		buildoptions {
 			"-Wno-unknown-warning-option",
 			"-Wno-deprecated-register"
