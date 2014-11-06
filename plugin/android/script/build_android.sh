@@ -17,7 +17,7 @@ TARGET=$1
 TARGET_NAME=$(basename $TARGET)
 TARGET_DIR=$(dirname $TARGET)
 CONFIG=$(basename $TARGET_DIR)
-APP_NAME=$(sed -r 's/lib(.*).so/\1/;s/-/ /g;s/([A-Za-z])([A-Za-z]+)/\U\1\L\2/g;s/([0-9]+)//g;s/[^[:alpha:]]//g' <<< "${TARGET_NAME}")
+APP_NAME=$(sed -r 's/lib(.*).so/\1/;s/-/ /g;s/([A-Za-z])([A-Za-z]+)/\U\1\L\2/g;s/([0-9]+)//g;s/[^[:alpha:]]\s//g' <<< "${TARGET_NAME}")
 PACKAGE=$(sed -r 's/lib(.*).so/com.\1/;s/-/\./g;s/\.([0-9]+)//g;s/(.*)/\L\1/' <<< "${TARGET_NAME}")
 
 pushd $TARGET_DIR > /dev/null
@@ -44,10 +44,10 @@ ant $CONFIG
 if [ $CONFIG == "release" ]; then
 	# Sign the app
 	jarsigner -tsa http://timestamp.digicert.com -keystore $ANDROID_KEYSTORE_PATH -storepass $ANDROID_KEYSTORE_PASSWORD -verbose \
-	-sigalg SHA1withRSA -digestalg SHA1 -signedjar bin/$APP_NAME-$CONFIG.apk bin/$APP_NAME-$CONFIG-unsigned.apk $ANDROID_KEYSTORE_ALIAS
+	-sigalg SHA1withRSA -digestalg SHA1 -signedjar "bin/$APP_NAME-$CONFIG.apk" "bin/$APP_NAME-$CONFIG-unsigned.apk" $ANDROID_KEYSTORE_ALIAS
 
 	# Verify that the app is properly signed
-	jarsigner -verify -verbose -certs bin/$APP_NAME-$CONFIG.apk
+	jarsigner -verify -verbose -certs "bin/$APP_NAME-$CONFIG.apk"
 	# zipalign ensures that all uncompressed data starts with a particular byte alignment relative to the start of the file, 
 	# which reduces the amount of RAM consumed by an app.
 	#zipalign -v 4 bin/$APP_NAME-$CONFIG-unsigned.apk bin/$APP_NAME-$CONFIG.apk
@@ -55,7 +55,7 @@ if [ $CONFIG == "release" ]; then
 	$ANDROID/platform-tools/adb uninstall $PACKAGE
 fi
 
-$ANDROID/platform-tools/adb install -r bin/$APP_NAME-$CONFIG.apk
+$ANDROID/platform-tools/adb install -r "bin/$APP_NAME-$CONFIG.apk"
 #adb devices | tail -n +2 | cut -sf 1 | xargs -I {} adb -s {} install -r $TARGET_NAME-$CONFIG.apk
 
 popd > /dev/null
