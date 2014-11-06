@@ -69,7 +69,9 @@ QTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
         qSrcTexture.nDataSize = texture2d->data().size();
         qSrcTexture.pData = texture2d->data().data();
 
-        if (writerOptions->generateMipmaps())
+        const auto generateMipmaps = writerOptions->generateMipmaps() && (texture2d->width() == texture2d->height());
+
+        if (generateMipmaps)
         {
             const auto numMipmaps = CountNumMipLevels(texture2d->width(), texture2d->height());
 

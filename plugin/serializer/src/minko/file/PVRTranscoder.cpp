@@ -90,7 +90,9 @@ PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
 
         pvrTexture = std::make_unique<pvrtexture::CPVRTexture>(pvrHeader, texture2d->data().data());
 
-        if (writerOptions->generateMipmaps())
+        const auto generateMipmaps = writerOptions->generateMipmaps() && (texture2d->width() == texture2d->height());
+
+        if (generateMipmaps)
         {
             static const auto mipFilterToPvrMipFilter = std::unordered_map<MipFilter, pvrtexture::EResizeMode>
             {
