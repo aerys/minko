@@ -150,30 +150,58 @@ Options::initializeDefaultFunctions()
     _textureFormatFunction = [this](const std::unordered_set<render::TextureFormat>& availableTextureFormats)
                                 ->render::TextureFormat
     {
-        auto textureFormatIt = std::find_if(_textureFormats.begin(), _textureFormats.end(),
+        static const auto defaultTextureFormats = std::list<render::TextureFormat>
+        {
+            render::TextureFormat::RGBA_PVRTC2_2BPP,
+            render::TextureFormat::RGBA_PVRTC2_4BPP,
+
+            render::TextureFormat::RGBA_PVRTC1_2BPP,
+            render::TextureFormat::RGBA_PVRTC1_4BPP,
+
+            render::TextureFormat::RGB_PVRTC1_2BPP,
+            render::TextureFormat::RGB_PVRTC1_4BPP,
+
+            render::TextureFormat::RGBA_DXT5,
+            render::TextureFormat::RGBA_DXT3,
+
+            render::TextureFormat::RGBA_ATITC,
+            render::TextureFormat::RGB_ATITC,
+
+            render::TextureFormat::RGBA_ETC1,
+            render::TextureFormat::RGB_ETC1,
+
+            render::TextureFormat::RGB_DXT1,
+
+            render::TextureFormat::RGBA,
+            render::TextureFormat::RGB
+        };
+
+        auto& textureFormats = _textureFormats.empty() ? defaultTextureFormats : _textureFormats;
+
+        auto textureFormatIt = std::find_if(textureFormats.begin(), textureFormats.end(),
                             [&](render::TextureFormat textureFormat) -> bool
         {
             return availableTextureFormats.find(textureFormat) != availableTextureFormats.end();
         });
 
-        if (textureFormatIt != _textureFormats.end())
+        if (textureFormatIt != textureFormats.end())
             return *textureFormatIt;
 
-        if (std::find(_textureFormats.begin(),
-                      _textureFormats.end(),
-                      render::TextureFormat::RGB) != _textureFormats.end() &&
+        if (std::find(textureFormats.begin(),
+                      textureFormats.end(),
+                      render::TextureFormat::RGB) != textureFormats.end() &&
             availableTextureFormats.find(render::TextureFormat::RGBA) != availableTextureFormats.end())
             return render::TextureFormat::RGBA;
 
-        if (std::find(_textureFormats.begin(),
-                      _textureFormats.end(),
-                      render::TextureFormat::RGBA) != _textureFormats.end() &&
+        if (std::find(textureFormats.begin(),
+                      textureFormats.end(),
+                      render::TextureFormat::RGBA) != textureFormats.end() &&
             availableTextureFormats.find(render::TextureFormat::RGB) != availableTextureFormats.end())
             return render::TextureFormat::RGB;
 
         static const auto errorMessage = "No desired texture format available";
 
-        LOG_DEBUG(errorMessage);
+        LOG_ERROR(errorMessage);
 
         throw std::runtime_error(errorMessage);
     };
