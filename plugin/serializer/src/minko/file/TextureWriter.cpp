@@ -61,7 +61,7 @@ TextureWriter::TextureWriter() :
     AbstractWriter<AbstractTexture::Ptr>(),
     _headerSize(0)
 {
-    _magicNumber = 0x0000004E | MINKO_SCENE_MAGIC_NUMBER;
+    _magicNumber = 0x00000054 | MINKO_SCENE_MAGIC_NUMBER;
 }
 
 std::string
