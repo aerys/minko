@@ -102,3 +102,7 @@ if _OPTIONS['no-glsl-struct'] then
 	print('GLSL structs support is disabled (--no-glsl-struct)')
 end
 
+newoption {
+	trigger	= 'with-writer',
+	description = 'Enable serializer.'
+}

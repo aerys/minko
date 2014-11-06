@@ -48,14 +48,22 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"__STDC_FORMAT_MACROS"
 		}
 
-	configuration { "android or ios or html5" }
-		defines {
-			"MINKO_NO_PVRTEXTOOL",
-			"MINKO_NO_QCOMPRESS"
-		}
+	if _OPTIONS['with-writer'] then
+		configuration { "android or ios or html5" }
+			defines {
+				"MINKO_NO_PVRTEXTOOL",
+				"MINKO_NO_QCOMPRESS"
+			}
 
-	configuration { "windows or linux or osx" }
-		includedirs {
-			"lib/PVRTexTool/Include",
-			"lib/QCompress/Inc"
-		}
+		configuration { "windows or linux or osx" }
+			includedirs {
+				"lib/PVRTexTool/Include",
+				"lib/QCompress/Inc"
+			}
+	else
+		configuration { }
+			defines {
+				"MINKO_NO_PVRTEXTOOL",
+				"MINKO_NO_QCOMPRESS"
+			}
+	end
