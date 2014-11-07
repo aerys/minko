@@ -43,9 +43,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # endif
 #elif MINKO_PLATFORM == MINKO_PLATFORM_OSX
 # include <OpenGL/gl.h>
+# include <OpenGL/glext.h>
 # include <GLUT/glut.h>
 #elif MINKO_PLATFORM == MINKO_PLATFORM_LINUX
 # include <GL/gl.h>
+# include <GL/glext.h>
 # include <GL/glu.h>
 #elif MINKO_PLATFORM == MINKO_PLATFORM_IOS
 # include <OpenGLES/ES2/gl.h>
