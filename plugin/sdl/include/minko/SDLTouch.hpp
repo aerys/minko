@@ -78,10 +78,94 @@ namespace minko
             }
         }
 
+        inline
+        void lastTouchDownX(float v)
+        {
+            _lastTouchDownX = v;
+        }
+
+        inline
+        void lastTouchDownY(float v)
+        {
+            _lastTouchDownY = v;
+        }
+
+        inline
+        void lastTapX(float v)
+        {
+            _lastTapX = v;
+        }
+
+        inline
+        void lastTapY(float v)
+        {
+            _lastTapY = v;
+        }
+
+        inline
+        void lastTapTime(float v)
+        {
+            _lastTapTime = v;
+        }
+
+        inline
+        void lastTouchDownTime(float v)
+        {
+            _lastTouchDownTime = v;
+        }
+
+        inline
+        float lastTouchDownX()
+        {
+            return _lastTouchDownX;
+        }
+
+        inline
+        float lastTouchDownY()
+        {
+            return _lastTouchDownY;
+        }
+
+        inline
+        float lastTouchDownTime()
+        {
+            return _lastTouchDownTime;
+        }
+
+        inline
+        float lastTapX()
+        {
+            return _lastTapX;
+        }
+
+        inline
+        float lastTapY()
+        {
+            return _lastTapY;
+        }
+
+        inline
+        float lastTapTime()
+        {
+            return _lastTapTime;
+        }
+
     private:
         SDLTouch(std::shared_ptr<Canvas> canvas);
 
+        static const float TAP_MOVE_THRESHOLD;
+        static const float TAP_DELAY_THRESHOLD;
+        static const float DOUBLE_TAP_DELAY_THRESHOLD;
+
+        float _lastTouchDownX;
+        float _lastTouchDownY;
+        float _lastTouchDownTime;
+
+        float _lastTapX;
+        float _lastTapY;
+        float _lastTapTime;
     public:
+
         static const float SWIPE_PRECISION;
     };
 }

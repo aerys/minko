@@ -434,7 +434,6 @@ Canvas::step()
             switch (event.button.button)
             {
             case SDL_BUTTON_LEFT:
-            	LOG_DEBUG("Mouse left button down (" + std::to_string(_mouse->x()) + ", " + std::to_string(_mouse->y()) + ")");
                 _mouse->leftButtonDown()->execute(_mouse);
                 break;
             case SDL_BUTTON_RIGHT:
@@ -475,7 +474,6 @@ Canvas::step()
         // Touch events
         case SDL_FINGERDOWN:
         {
-
             auto x = event.tfinger.x * _width;
             auto y = event.tfinger.y * _height;
             auto id = (int)(event.tfinger.fingerId);
@@ -487,6 +485,18 @@ Canvas::step()
                 x, 
                 y
             );
+
+            if (_touch->numTouches() == 1)
+            {
+                _touch->lastTouchDownTime(_relativeTime);
+                _touch->lastTouchDownX(x);
+                _touch->lastTouchDownY(y);
+            }
+            else
+            {
+                _touch->lastTouchDownTime(-1.f);
+                _touch->lastTapTime(-1.f);
+            }
 
             break;
         }
@@ -504,6 +514,41 @@ Canvas::step()
                 x, 
                 y
             );
+
+            if (_touch->numTouches() == 0 && _touch->lastTouchDownTime() != -1.0f )
+            {
+                auto dX = std::abs(x - _touch->lastTouchDownX());
+                auto dY = std::abs(y - _touch->lastTouchDownY());
+                auto dT = _relativeTime - _touch->lastTouchDownTime();
+
+                if (dT < SDLTouch::TAP_DELAY_THRESHOLD &&
+                    dX < SDLTouch::TAP_MOVE_THRESHOLD && 
+                    dY < SDLTouch::TAP_MOVE_THRESHOLD)
+                {
+                    _touch->tap()->execute(_touch, x, y);
+                    
+                    dX = std::abs(x - _touch->lastTapX()) * 0.75f;
+                    dY = std::abs(y - _touch->lastTapY()) * 0.75f;
+                    dT = _relativeTime - _touch->lastTapTime();
+                    
+                    if (_touch->lastTapTime() != -1.0f &&
+                        dT < SDLTouch::DOUBLE_TAP_DELAY_THRESHOLD &&
+                        dX < SDLTouch::TAP_MOVE_THRESHOLD &&
+                        dY < SDLTouch::TAP_MOVE_THRESHOLD)
+                    {
+                        _touch->doubleTap()->execute(_touch, x, y);
+                        _touch->lastTapTime(-1.0f);
+                    }
+                    else
+                    {
+                        _touch->lastTapTime(_relativeTime);
+                    }
+
+                    _touch->lastTapX(x);
+                    _touch->lastTapY(y);
+                }
+            }
+
             break;
         }
 

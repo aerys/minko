@@ -52,6 +52,8 @@ namespace minko
             Signal<Ptr>::Ptr                            _swipeUp;
             Signal<Ptr>::Ptr                            _swipeDown;
             Signal<Ptr, float>::Ptr                     _pinchZoom;
+            Signal<Ptr, float, float>::Ptr              _tap;
+            Signal<Ptr, float, float>::Ptr              _doubleTap;
 
         public:
             inline
@@ -136,6 +138,20 @@ namespace minko
             pinchZoom()
             {
                 return _pinchZoom;
+            }
+
+            inline
+            Signal<Ptr, float, float>::Ptr
+            tap()
+            {
+                return _tap;
+            }
+
+            inline
+            Signal<Ptr, float, float>::Ptr
+            doubleTap()
+            {
+                return _doubleTap;
             }
 
             float
