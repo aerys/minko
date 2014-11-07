@@ -134,30 +134,38 @@ TextureParser::parse(const std::string&                filename,
 
     if (!_dataEmbed)
     {
-        auto textureLoaderOptions = Options::create(options)
+        auto textureFileOptions = Options::create(options)
             ->seekingOffset(offset)
             ->seekedLength(length)
-            ->parserFunction([&](const std::string& extension) -> AbstractParser::Ptr
+            ->loadAsynchronously(false);
+
+        auto protocol = textureFileOptions->protocolFunction()(resolvedFilename);
+
+        auto errorSlot = protocol->error()->connect([&](AbstractProtocol::Ptr protocol)
         {
-            return nullptr;
+            _error->execute(
+                shared_from_this(),
+                Error("TextureLoadingError", std::string("Failed to load texture ") + protocol->file()->filename())
+            );
         });
 
-        auto textureLoader = Loader::create(textureLoaderOptions);
-
-        auto textureLoaderCompleteSlot = textureLoader->complete()->connect([&](Loader::Ptr loader) -> void
+        auto completeSlot = protocol->complete()->connect([&](AbstractProtocol::Ptr protocol)
         {
-            auto textureData = assetLibrary->blob(resolvedFilename);
+            const auto textureData = std::vector<unsigned char>(
+                protocol->file()->data().begin(),
+                protocol->file()->data().end()
+            );
 
-            if (!_formatParserFunctions.at(desiredFormat)(filename, textureLoaderOptions, textureData, assetLibrary, textureWidth, textureHeight, textureType, textureNumMipmaps))
+            if (!_formatParserFunctions.at(desiredFormat)(filename, textureFileOptions, textureData, assetLibrary, textureWidth, textureHeight, textureType, textureNumMipmaps))
             {
-                // TODO
-                // handle parsing error
+                _error->execute(
+                    shared_from_this(),
+                    Error("TextureParsingError", std::string("Failed to parse texture ") + filename)
+                );
             }
         });
 
-        textureLoader
-            ->queue(resolvedFilename)
-            ->load();
+        protocol->load(resolvedFilename, textureFileOptions);
     }
     else
     {
@@ -167,8 +175,10 @@ TextureParser::parse(const std::string&                filename,
 
         if (!_formatParserFunctions.at(desiredFormat)(filename, options, textureData, assetLibrary, textureWidth, textureHeight, textureType, textureNumMipmaps))
         {
-            // TODO
-            // handle parsing error
+            _error->execute(
+                shared_from_this(),
+                Error("TextureParsingError", std::string("Failed to parse texture ") + filename)
+            );
         }
     }
 
