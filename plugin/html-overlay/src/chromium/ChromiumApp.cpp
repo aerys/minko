@@ -93,7 +93,7 @@ ChromiumApp::bindControls()
 		}
 
 		_impl->browser->GetHost()->SendMouseMoveEvent(mouseEvent, false);
-	});
+	}, std::numeric_limits<float>::max());
 
 	_leftDownSlot = _canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr m)
 	{
@@ -107,7 +107,7 @@ ChromiumApp::bindControls()
 
         _impl->browser->GetHost()->SendMouseClickEvent(mouseEvent, CefBrowserHost::MouseButtonType::MBT_LEFT, false, 1);
         _impl->browser->GetHost()->SendFocusEvent(true);
-	});
+	}, std::numeric_limits<float>::max());
 
 	_leftUpSlot = _canvas->mouse()->leftButtonUp()->connect([&](input::Mouse::Ptr m)
 	{
@@ -120,7 +120,7 @@ ChromiumApp::bindControls()
 		}
 
 		_impl->browser->GetHost()->SendMouseClickEvent(mouseEvent, CefBrowserHost::MouseButtonType::MBT_LEFT, true, 1);
-	});
+	}, std::numeric_limits<float>::max());
 
 	_rightDownSlot = _canvas->mouse()->rightButtonDown()->connect([&](input::Mouse::Ptr m)
 	{
@@ -134,7 +134,7 @@ ChromiumApp::bindControls()
 
         _impl->browser->GetHost()->SendMouseClickEvent(mouseEvent, CefBrowserHost::MouseButtonType::MBT_RIGHT, false, 1);
         _impl->browser->GetHost()->SendFocusEvent(true);
-	});
+	}, std::numeric_limits<float>::max());
 
 	_rightUpSlot = _canvas->mouse()->rightButtonUp()->connect([&](input::Mouse::Ptr m)
 	{
@@ -147,7 +147,7 @@ ChromiumApp::bindControls()
 		}
 
         _impl->browser->GetHost()->SendMouseClickEvent(mouseEvent, CefBrowserHost::MouseButtonType::MBT_RIGHT, true, 1);
-	});
+	}, std::numeric_limits<float>::max());
 
 	_middleDownSlot = _canvas->mouse()->middleButtonDown()->connect([&](input::Mouse::Ptr m)
 	{
@@ -161,7 +161,7 @@ ChromiumApp::bindControls()
 
         _impl->browser->GetHost()->SendMouseClickEvent(mouseEvent, CefBrowserHost::MouseButtonType::MBT_MIDDLE, false, 1);
         _impl->browser->GetHost()->SendFocusEvent(true);
-	});
+	}, std::numeric_limits<float>::max());
 
 	_middleUpSlot = _canvas->mouse()->middleButtonUp()->connect([&](input::Mouse::Ptr m)
 	{
@@ -174,7 +174,7 @@ ChromiumApp::bindControls()
 		}
 
 		_impl->browser->GetHost()->SendMouseClickEvent(mouseEvent, CefBrowserHost::MouseButtonType::MBT_MIDDLE, true, 1);
-    });
+    }, std::numeric_limits<float>::max());
 
     _keyDownSlot = _canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr keyboard)
     {
@@ -211,7 +211,7 @@ ChromiumApp::bindControls()
                 }
             }
         }
-    });
+    }, std::numeric_limits<float>::max());
 
     _keyDownSlot = _canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr keyboard)
     {
@@ -257,7 +257,7 @@ ChromiumApp::bindControls()
                 }
             }
         }
-    });
+    }, std::numeric_limits<float>::max());
 
     _keyUpSlot = _canvas->keyboard()->keyUp()->connect([&](input::Keyboard::Ptr keyboard)
     {
@@ -294,7 +294,7 @@ ChromiumApp::bindControls()
                 }
             }
         }
-    });
+    }, std::numeric_limits<float>::max());
 
     _textInputSlot = _canvas->keyboard()->textInput()->connect([&](input::Keyboard::Ptr keyboard, char c)
     {
@@ -309,7 +309,7 @@ ChromiumApp::bindControls()
 
         _impl->browser->GetHost()->SendKeyEvent(keyEvent);
         _impl->browser->GetHost()->SendFocusEvent(true);
-    });
+    }, std::numeric_limits<float>::max());
 }
 
 CefRefPtr<CefRenderProcessHandler>
