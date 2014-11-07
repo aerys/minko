@@ -82,9 +82,9 @@ HtmlOverlay::targetAddedHandler(AbstractComponent::Ptr ctrl, scene::Node::Ptr ta
 {
     if (target->root() != nullptr && target->root()->hasComponent<SceneManager>())
         _sceneManager = target->root()->component<SceneManager>();
-    else
+    else if (_sceneManager == nullptr)
         throw std::logic_error("root node should have a SceneManager");
-
+    
     _canvas = _sceneManager->canvas();
 
 #if defined(__APPLE__)
