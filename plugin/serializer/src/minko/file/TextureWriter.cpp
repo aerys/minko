@@ -85,21 +85,23 @@ TextureWriter::embed(AssetLibraryPtr     assetLibrary,
 
     for (auto textureFormat : textureFormats)
     {
-        auto offset = blobStream.str().size();
+        const auto offset = blobStream.str().size();
 
         if (!_formatWriterFunctions.at(textureFormat)(_data, writerOptions, blobStream))
         {
             // TODO
             // handle error
         }
-
-        auto length = blobStream.str().size() - offset;
-
-        formatHeaderData.push_back(msgpack::type::make_tuple<int, int, int>(
-            static_cast<int>(textureFormat),
-            offset,
-            length)
-        );
+        else
+        {
+            auto length = blobStream.str().size() - offset;
+    
+            formatHeaderData.push_back(msgpack::type::make_tuple<int, int, int>(
+                static_cast<int>(textureFormat),
+                offset,
+                length)
+            );
+        }
     }
 
     const auto width = texture->width();

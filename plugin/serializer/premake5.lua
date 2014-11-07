@@ -48,7 +48,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"__STDC_FORMAT_MACROS"
 		}
 
-	if _OPTIONS['with-writer'] then
+	if _OPTIONS['with-texture-compressor'] then
 		configuration { "android or ios or html5" }
 			defines {
 				"MINKO_NO_PVRTEXTOOL",

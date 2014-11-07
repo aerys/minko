@@ -12,7 +12,7 @@ function minko.plugin.serializer:enable()
 	}
 	defines { "MINKO_PLUGIN_SERIALIZER" }
 
-	if _OPTIONS['with-writer'] then
+	if _OPTIONS['with-texture-compressor'] then
 		configuration { "windows32" }
 			links {
 				"PVRTexLib",
@@ -126,4 +126,9 @@ end
 newoption {
 	trigger		= "with-serializer",
 	description	= "Enable the Minko SERIALIZER plugin."
+}
+
+newoption {
+	trigger	= 'with-texture-compressor',
+	description = 'Enable the Minko SERIALIZER plugin to support texture compression.'
 }

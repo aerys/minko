@@ -101,8 +101,3 @@ if _OPTIONS['no-glsl-struct'] then
 	defines { 'MINKO_NO_GLSL_STRUCT' }
 	print('GLSL structs support is disabled (--no-glsl-struct)')
 end
-
-newoption {
-	trigger	= 'with-writer',
-	description = 'Enable serializer.'
-}
