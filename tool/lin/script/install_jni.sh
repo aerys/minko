@@ -36,6 +36,7 @@ ANDROID_SDK_VERSION="android-19"
 ANDROID_NDK_VERSION="android-ndk-r10"
 ANDROID_TOOLCHAIN="arm-linux-androideabi-4.8"
 ANDROID_SYSTEM=""
+ANDROID="${ANDROID_HOME}"
 
 if [ $OSTYPE == "cygwin" ]; then
 	ANDROID=`cygpath -u "${ANDROID_HOME}"`
