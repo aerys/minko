@@ -42,6 +42,8 @@ mv asset assets
 
 ant $CONFIG
 
+DEVICE_STATE=$($ANDROID/platform-tools/adb get-state | sed 's/\r$//')
+
 if [ $CONFIG == "release" ]; then
 	# Sign the app
 	jarsigner -tsa http://timestamp.digicert.com -keystore $ANDROID_KEYSTORE_PATH -storepass $ANDROID_KEYSTORE_PASSWORD -verbose \
@@ -53,10 +55,15 @@ if [ $CONFIG == "release" ]; then
 	# which reduces the amount of RAM consumed by an app.
 	#zipalign -v 4 bin/$APP_NAME-$CONFIG-unsigned.apk bin/$APP_NAME-$CONFIG.apk
 	# Don't forget to uninstall the app to avoid INSTALL_PARSE_FAILED_INCONSISTENT_CERTIFICATES error
-	$ANDROID/platform-tools/adb uninstall $PACKAGE
+	if [ $DEVICE_STATE == "device" ]; then
+		$ANDROID/platform-tools/adb uninstall $PACKAGE
+	fi
 fi
 
-$ANDROID/platform-tools/adb install -r "bin/$APP_NAME-$CONFIG.apk"
+if [ $DEVICE_STATE == "device" ]; then
+	$ANDROID/platform-tools/adb install -r "bin/$APP_NAME-$CONFIG.apk"
+fi
+
 #adb devices | tail -n +2 | cut -sf 1 | xargs -I {} adb -s {} install -r $TARGET_NAME-$CONFIG.apk
 
 popd > /dev/null
