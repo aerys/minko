@@ -90,6 +90,18 @@ PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
 
         pvrTexture = std::make_unique<pvrtexture::CPVRTexture>(pvrHeader, texture2d->data().data());
 
+        if (TextureFormatInfo::isCompressed(texture2d->format()))
+        {
+            if (!pvrtexture::Transcode(
+                *pvrTexture,
+                textureFormatToPvrTextureFomat.at(TextureFormat::RGBA),
+                ePVRTVarTypeUnsignedByteNorm,
+                ePVRTCSpacesRGB))
+            {
+                return false;
+            }
+        }
+
         const auto generateMipmaps = writerOptions->generateMipmaps() && (texture2d->width() == texture2d->height());
 
         if (generateMipmaps)

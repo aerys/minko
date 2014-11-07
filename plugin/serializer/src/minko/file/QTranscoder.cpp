@@ -62,12 +62,46 @@ QTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
     {
         auto texture2d = std::static_pointer_cast<Texture>(texture);
 
+        auto texture2dData = std::vector<unsigned char>(
+            texture2d->data().begin(),
+            texture2d->data().end()
+        );
+
         auto qSrcTexture = TQonvertImage();
         qSrcTexture.nWidth = texture2d->width();
         qSrcTexture.nHeight = texture2d->height();
         qSrcTexture.nFormat = textureFormatToQTextureFomat.at(texture2d->format());
-        qSrcTexture.nDataSize = texture2d->data().size();
-        qSrcTexture.pData = texture2d->data().data();
+        qSrcTexture.nDataSize = texture2dData.size();
+        qSrcTexture.pData = texture2dData.data();
+
+        if (TextureFormatInfo::isCompressed(texture2d->format()))
+        {
+            auto qDecompressedTexture = TQonvertImage();
+
+            if (!Decompress(
+                &qSrcTexture,
+                &qDecompressedTexture,
+                texture->width(),
+                texture->height()))
+            {
+                return false;
+            }
+
+            qSrcTexture.nFormat = qDecompressedTexture.nFormat;
+            qSrcTexture.nDataSize = qDecompressedTexture.nDataSize;
+
+            texture2dData.resize(qDecompressedTexture.nDataSize);
+
+            std::copy(
+                qDecompressedTexture.pData,
+                qDecompressedTexture.pData + qDecompressedTexture.nDataSize,
+                texture2dData.begin()
+            );
+
+            delete qDecompressedTexture.pData;
+
+            qSrcTexture.pData = texture2dData.data();
+        }
 
         const auto generateMipmaps = writerOptions->generateMipmaps() && (texture2d->width() == texture2d->height());
 
