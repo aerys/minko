@@ -91,7 +91,7 @@ public class InitWebViewTask implements Runnable
 		_webView.getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
         _webView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
 		
-		Log.i("MINKO_JAVA", "[InitWebViewTask] WebView is now instantiated: " + _webView + ".");
+		Log.i("minko-java", "[InitWebViewTask] WebView is now instantiated: " + _webView + ".");
 		webViewInitialized();
     }
 	
@@ -111,7 +111,7 @@ public class InitWebViewTask implements Runnable
 		}
 		catch (Exception e) 
 		{
-			Log.i("MINKO_JAVA", "[InitWebViewTask] Exception: " + e.toString());
+			Log.i("minko-java", "[InitWebViewTask] Exception: " + e.toString());
 			returnValue = e.getMessage();
 		}
 		
@@ -124,7 +124,7 @@ public class InitWebViewTask implements Runnable
 		LoadUrlRunnable loadUrlRunnable = new LoadUrlRunnable(_webView, url);
 		_sdlActivity.runOnUiThread(loadUrlRunnable);
 		
-		Log.i("MINKO_JAVA", "[InitWebViewTask] WebView has loaded an URL! (" + url + ")");
+		Log.i("minko-java", "[InitWebViewTask] WebView has loaded an URL! (" + url + ")");
 	}
 	
 	public void changeResolution(int width, int height)

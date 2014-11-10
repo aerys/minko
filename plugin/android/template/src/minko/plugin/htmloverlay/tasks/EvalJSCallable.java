@@ -39,7 +39,7 @@ public class EvalJSCallable implements Callable<String>
 			elapsedTime = (new Date()).getTime() - startTime;
 		}
 		
-		Log.e("MINKO_JAVA", "[EvalJSCallable] For some reason, the eval of the following javascript expression didn't retrieve a result in time: " + _js);
+		Log.e("minko-java", "[EvalJSCallable] For some reason, the eval of the following javascript expression didn't retrieve a result in time: " + _js);
 		
 		// The JS eval didn't return anything in time
 		return "null";

@@ -10,7 +10,7 @@ public class LoadUrlRunnable implements Runnable
 
     public LoadUrlRunnable(WebView webView, String url)
     {
-		Log.i("MINKO_JAVA", "[LoadUrlRunnable] Instantiate LoadUrlRunnable (webView: " + webView + ", URL: " + url + ").");
+		Log.i("minko-java", "[LoadUrlRunnable] Instantiate LoadUrlRunnable (webView: " + webView + ", URL: " + url + ").");
         _url = url;
         _webView = webView;
     }
@@ -18,7 +18,7 @@ public class LoadUrlRunnable implements Runnable
     @Override
     public void run()
 	{
-		Log.i("MINKO_JAVA", "[LoadUrlRunnable] Run LoadUrlRunnable (webView: " + _webView + ", URL: " + _url + ").");
+		Log.i("minko-java", "[LoadUrlRunnable] Run LoadUrlRunnable (webView: " + _webView + ", URL: " + _url + ").");
 		_webView.loadUrl(_url);
     }
 }

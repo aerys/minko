@@ -20,7 +20,7 @@ public class ChangeResolutionRunnable implements Runnable
     @Override
     public void run()
 	{
-		Log.i("MINKO_JAVA", "[ChangeResolutionRunnable] Change WebView resolution (width: " + _width + ", height: " + _height + ").");
+		Log.i("minko-java", "[ChangeResolutionRunnable] Change WebView resolution (width: " + _width + ", height: " + _height + ").");
 
 		ViewGroup.LayoutParams layoutParams = _webView.getLayoutParams();
 

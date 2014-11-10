@@ -16,21 +16,21 @@ public class WebViewJSInterface
 	@JavascriptInterface
 	public void onMessage(String message)
 	{
-		Log.i("MINKO_JAVA", "[WebViewJSInterface] onMessage: " + message);
+		Log.i("minko-java", "[WebViewJSInterface] onMessage: " + message);
 		minkoNativeOnMessage(message);
 	}
 	
 	@JavascriptInterface
 	public void onEvent(String accessor, String eventData)
 	{
-		Log.i("MINKO_JAVA", "[WebViewJSInterface] onEvent: " + eventData);
+		Log.i("minko-java", "[WebViewJSInterface] onEvent: " + eventData);
 		minkoNativeOnEvent(accessor, eventData);
 	}
 	
 	@JavascriptInterface
 	public void onNativeJSResult(String jsResult)
 	{
-		Log.i("MINKO_JAVA", "[WebViewJSInterface] onNativeJSResult: " + jsResult);
+		Log.i("minko-java", "[WebViewJSInterface] onNativeJSResult: " + jsResult);
 		
 		WebViewJSInterface.Result = jsResult;
 		WebViewJSInterface.ResultReady = true;

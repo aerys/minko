@@ -24,7 +24,7 @@ public class MinkoWebViewClient extends WebViewClient
 	@Override
 	public void onReceivedError (WebView view, int errorCode, String description, String failingUrl)
 	{
-		Log.i("MINKO_JAVA", "[MinkoWebViewClient] onReceivedError: " + description);
+		Log.i("minko-java", "[MinkoWebViewClient] onReceivedError: " + description);
 	}
 	
 	@Override
@@ -48,7 +48,7 @@ public class MinkoWebViewClient extends WebViewClient
 		// Call native function to inform C++ code that the page is loaded
 		webViewPageLoaded();
 		
-		Log.i("MINKO_JAVA", "[MinkoWebViewClient] Page has finished to load (url: " + url + ").");
+		Log.i("minko-java", "[MinkoWebViewClient] Page has finished to load (url: " + url + ").");
     }
 
     private void injectScriptFile(WebView view, String scriptFile) 
