@@ -28,7 +28,7 @@ using namespace minko::math;
 scene::Node::Ptr camera = nullptr;
 
 Signal<input::Keyboard::Ptr>::Slot keyDown;
-Signal<input::Touch::Ptr, float, float>::Slot touchDown;
+Signal<input::Touch::Ptr, int, float, float>::Slot touchDown;
 
 scene::Node::Ptr
 createPointLight(Vector3::Ptr color, Vector3::Ptr position, file::AssetLibrary::Ptr assets)
@@ -190,8 +190,11 @@ main(int argc, char** argv)
         });
         
         // handle touch signals
-        touchDown = canvas->touch()->touchDown()->connect([=](input::Touch::Ptr t, float x, float y)
+        touchDown = canvas->touch()->touchDown()->connect([=](input::Touch::Ptr t, int, float x, float y)
         {
+            x = x / canvas->width();
+            y = y / canvas->height();
+
             // top left corner
             if (x > 0 && x < 0.25 && y > 0 && y < 0.25)
                 addLight(sceneManager, lights);
