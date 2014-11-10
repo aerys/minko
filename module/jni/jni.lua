@@ -14,7 +14,7 @@ local fileconfig = premake.fileconfig
 api.addAllowed("system", { "android" })
 api.addAllowed("architecture", { "armv5te" })
 
-if _ACTION ~= "gmake" or premake.tools.gcc.tools.emscripten then
+if _ACTION ~= "gmake" then
 	return
 end
 
