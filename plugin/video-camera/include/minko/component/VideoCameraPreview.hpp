@@ -78,6 +78,20 @@ namespace minko
 				return instance;
 			}
 
+            inline
+            SurfacePtr 
+            getPreviewSurface() 
+            {
+                return _previewSurface;
+            }
+
+            inline
+            AbstractTexturePtr
+            getVideoPreviewTarget()
+            {
+                return _videoPreviewTarget;
+            }
+
 		private:
 			VideoCameraPreview();
 
