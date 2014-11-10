@@ -45,6 +45,7 @@ QTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
         { TextureFormat::RGBA,          Q_FORMAT_RGBA_8I        },
 
         { TextureFormat::RGB_DXT1,      Q_FORMAT_S3TC_DXT1_RGB  },
+        { TextureFormat::RGBA_DXT1,     Q_FORMAT_S3TC_DXT1_RGBA },
         { TextureFormat::RGBA_DXT3,     Q_FORMAT_S3TC_DXT3_RGBA },
         { TextureFormat::RGBA_DXT5,     Q_FORMAT_S3TC_DXT5_RGBA },
 

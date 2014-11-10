@@ -40,6 +40,7 @@ std::unordered_map<TextureFormat, TextureWriter::FormatWriterFunction> TextureWr
     { TextureFormat::RGBA, std::bind(writeRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
 
     { TextureFormat::RGB_DXT1, std::bind(writePvrCompressedTexture, TextureFormat::RGB_DXT1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
+    { TextureFormat::RGBA_DXT1, std::bind(writeQCompressedTexture, TextureFormat::RGBA_DXT1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
     { TextureFormat::RGBA_DXT3, std::bind(writePvrCompressedTexture, TextureFormat::RGBA_DXT3, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
     { TextureFormat::RGBA_DXT5, std::bind(writePvrCompressedTexture, TextureFormat::RGBA_DXT5, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
 

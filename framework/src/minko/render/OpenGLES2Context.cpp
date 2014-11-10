@@ -1722,6 +1722,9 @@ OpenGLES2Context::availableTextureFormats(std::unordered_map<TextureFormat, unsi
         case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
             formats.insert(std::make_pair(TextureFormat::RGB_DXT1, GL_COMPRESSED_RGB_S3TC_DXT1_EXT));
             break;
+        case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+            formats.insert(std::make_pair(TextureFormat::RGBA_DXT1, GL_COMPRESSED_RGBA_S3TC_DXT1_EXT));
+            break;
 #endif
 
 #ifdef GL_EXT_texture_compression_s3tc

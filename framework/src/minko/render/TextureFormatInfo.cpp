@@ -29,6 +29,7 @@ std::map<TextureFormat, TextureFormatInfo::Entry> TextureFormatInfo::_formats =
     { TextureFormat::RGBA,              Entry("RGBA",               false,    32,   16,  true,   false) },
 
     { TextureFormat::RGB_DXT1,          Entry("RGB_DXT1",           true,     4,    8,   false,  false) },
+    { TextureFormat::RGBA_DXT1,         Entry("RGBA_DXT1",          true,     4,    8,   true,   false) },
     { TextureFormat::RGBA_DXT3,         Entry("RGBA_DXT3",          true,     8,    16,  true,   false) },
     { TextureFormat::RGBA_DXT5,         Entry("RGBA_DXT5",          true,     8,    16,  true,   false) },
 

@@ -113,6 +113,7 @@ namespace minko
             RGBA,
 
             RGB_DXT1,
+            RGBA_DXT1,
             RGBA_DXT3,
             RGBA_DXT5,
 

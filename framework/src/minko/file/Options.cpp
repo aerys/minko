@@ -170,6 +170,7 @@ Options::initializeDefaultFunctions()
             render::TextureFormat::RGBA_ETC1,
             render::TextureFormat::RGB_ETC1,
 
+            render::TextureFormat::RGBA_DXT1,
             render::TextureFormat::RGB_DXT1,
 
             render::TextureFormat::RGBA,
