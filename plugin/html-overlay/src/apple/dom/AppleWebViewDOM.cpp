@@ -66,7 +66,7 @@ AppleWebViewDOM::sendMessage(const std::string& message, bool async)
     m = replaceAll(m, "\\", "\\\\");
     m = replaceAll(m, "'", "\\'");
 
-	std::string eval = "if (" + _jsAccessor + ".window.Minko.onmessage) " + _jsAccessor + ".window.Minko.onmessage('" + m + "');";
+	std::string eval = "if (" + _jsAccessor + ".window.Minko.dispatchMessage) " + _jsAccessor + ".window.Minko.dispatchMessage('" + m + "');";
 
     runScript(eval);
 }
