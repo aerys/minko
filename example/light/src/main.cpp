@@ -190,7 +190,7 @@ main(int argc, char** argv)
         });
         
         // handle touch signals
-        touchDown = canvas->touch()->touchDown()->connect([=](input::Touch::Ptr t, int fingerId, float x, float y)
+        touchDown = canvas->touch()->touchDown()->connect([=](input::Touch::Ptr t, int, float x, float y)
         {
             x = x / canvas->width();
             y = y / canvas->height();
