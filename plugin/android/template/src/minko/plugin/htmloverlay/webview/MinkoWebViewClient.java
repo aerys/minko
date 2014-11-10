@@ -6,8 +6,7 @@ import android.util.Base64;
 import java.io.IOException;
 import java.io.InputStream;
 import android.webkit.JsResult;
-
-import static android.util.Log.*;
+import android.util.Log;
 
 public class MinkoWebViewClient extends WebViewClient 
 {
@@ -25,7 +24,7 @@ public class MinkoWebViewClient extends WebViewClient
 	@Override
 	public void onReceivedError (WebView view, int errorCode, String description, String failingUrl)
 	{
-		d("MINKOCHROMECLIENT", "ERROR: " + description);
+		Log.i("MINKO_JAVA", "[MinkoWebViewClient] onReceivedError: " + description);
 	}
 	
 	@Override
@@ -39,17 +38,17 @@ public class MinkoWebViewClient extends WebViewClient
 	{
         super.onPageFinished(view, url);
 
-		d("MINKOJAVA", "TRY TO INJECT JS INTO THE PAGE LOADED ! (url: " + url + ")");
-		
+		// Inject JS Minko script into the webview
         injectScriptFile(view, "script/minko.overlay.js");
 		
+		// Load URL provided inside the webview
 		String evalString = "javascript: Minko.init('androidWebView');";
 		view.loadUrl(evalString);
-
-        // Test if the script was loaded
-        //view.loadUrl("javascript:window.Minko.testFunction('COUCOU');");
 		
+		// Call native function to inform C++ code that the page is loaded
 		webViewPageLoaded();
+		
+		Log.i("MINKO_JAVA", "[MinkoWebViewClient] Page has finished to load (url: " + url + ").");
     }
 
     private void injectScriptFile(WebView view, String scriptFile) 

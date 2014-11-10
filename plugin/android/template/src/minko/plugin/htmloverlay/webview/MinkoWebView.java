@@ -5,8 +5,6 @@ import android.webkit.WebViewClient;
 import android.view.MotionEvent;
 import android.content.Context;
 
-import static android.util.Log.*;
-
 public class MinkoWebView extends WebView
 {
 	private long lastEventTime = -1;
@@ -46,6 +44,7 @@ public class MinkoWebView extends WebView
 				
 				ev.setAction(MotionEvent.ACTION_UP);
 				lastEventTime = System.currentTimeMillis();
+				
 				return super.onTouchEvent(ev);
 			}
 		}

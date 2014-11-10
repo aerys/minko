@@ -1,8 +1,7 @@
 package minko.plugin.htmloverlay;
 
 import android.webkit.WebView;
-
-import static android.util.Log.*;
+import android.util.Log;
 
 public class LoadUrlRunnable implements Runnable 
 {
@@ -11,7 +10,7 @@ public class LoadUrlRunnable implements Runnable
 
     public LoadUrlRunnable(WebView webView, String url)
     {
-		d("MINKOJAVA", "INSTANCIATE LOADURLRUNNABLE WITH WEBVIEW: " + webView);
+		Log.i("MINKO_JAVA", "[LoadUrlRunnable] Instantiate LoadUrlRunnable (webView: " + webView + ", URL: " + url + ").");
         _url = url;
         _webView = webView;
     }
@@ -19,7 +18,7 @@ public class LoadUrlRunnable implements Runnable
     @Override
     public void run()
 	{
-		d("MINKOJAVA", "RUN WEBVIEW LOADURL (webView: " + _webView + ", url: " + _url + ")");
+		Log.i("MINKO_JAVA", "[LoadUrlRunnable] Run LoadUrlRunnable (webView: " + _webView + ", URL: " + _url + ").");
 		_webView.loadUrl(_url);
     }
 }

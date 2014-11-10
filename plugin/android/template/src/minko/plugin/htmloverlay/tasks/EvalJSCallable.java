@@ -3,7 +3,7 @@ package minko.plugin.htmloverlay;
 import android.webkit.WebView;
 import java.util.concurrent.Callable;
 import java.util.Date;
-import static android.util.Log.*;
+import android.util.Log;
 
 public class EvalJSCallable implements Callable<String>
 {
@@ -39,7 +39,9 @@ public class EvalJSCallable implements Callable<String>
 			elapsedTime = (new Date()).getTime() - startTime;
 		}
 		
-		// The JS eval didn't return anything
+		Log.e("MINKO_JAVA", "[EvalJSCallable] For some reason, the eval of the following javascript expression didn't retrieve a result in time: " + _js);
+		
+		// The JS eval didn't return anything in time
 		return "null";
     }
 }

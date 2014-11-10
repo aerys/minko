@@ -17,7 +17,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.lang.Exception;
 
-import static android.util.Log.*;
+import android.util.Log;
 import org.libsdl.app.*;
 
 public class InitWebViewTask implements Runnable 
@@ -71,7 +71,6 @@ public class InitWebViewTask implements Runnable
 		{
 			_webView.getSettings().setUseWideViewPort(false);
 			defaultFixedViewport();
-			//forceFixedViewport();
 		}
 		
 		// Disable scroll bar
@@ -92,68 +91,46 @@ public class InitWebViewTask implements Runnable
 		_webView.getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
         _webView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
 		
-		d("MINKOJAVA", "WEBVIEW IS NOW INSTANCIATED: " + _webView);
+		Log.i("MINKO_JAVA", "[InitWebViewTask] WebView is now instantiated: " + _webView + ".");
 		webViewInitialized();
     }
 	
-	/*
-	public WebView getWebView()
-	{
-		d("MINKOJAVA", "RETURN WEBVIEW: " + _webView);
-		
-		return _webView;
-	}
-	*/
-	
 	public String evalJS(String js)
 	{
-		
-		d("MINKOJAVATEST", "Try to evaluate JS: " + js);
-		/*String jsResult = _jsInterface.getJSValue(_webView, js);
-		d("MINKOJAVATEST", "Result: " + jsResult);
-		return jsResult;
-		*/
-		
-		//d("MINKOJAVA", "Try to evaluate JS: " + js);
-		
 		EvalJSCallable evalJSCallable = new EvalJSCallable(_webView, js);
 		FutureTask<String> task = new FutureTask<String>(evalJSCallable);
 
+		// Run the task to evaluate JS
         _sdlActivity.runOnUiThread(task);
 		
 		String returnValue = "";
+		
 		try 
 		{
 			returnValue = task.get();
 		}
 		catch (Exception e) 
 		{
-			d("MINKOJAVA", "Exception: " + e.toString());
+			Log.i("MINKO_JAVA", "[InitWebViewTask] Exception: " + e.toString());
 			returnValue = e.getMessage();
 		}
-		
-		//d("MINKOJAVA", "Return value of eval JS result: " + returnValue);
 		
 		return returnValue;
 	}
 	
 	public void loadUrl(String url)
 	{
-		d("MINKOJAVA", "TRY TO LOAD THIS URL: " + url);
-		d("MINKOJAVA", "WEBVIEW VALUE: " + _webView);
 		// It's an operation on the WebView, don't forget to perform it on UI thread!
 		LoadUrlRunnable loadUrlRunnable = new LoadUrlRunnable(_webView, url);
 		_sdlActivity.runOnUiThread(loadUrlRunnable);
 		
-		d("MINKOJAVA", "WEBVIEW HAS LOADED AN URL! (" + url + ")");
+		Log.i("MINKO_JAVA", "[InitWebViewTask] WebView has loaded an URL! (" + url + ")");
 	}
 	
 	public void changeResolution(int width, int height)
 	{
 		if (_webView == null)
 			return;
-			
-		d("MINKOJAVA", "Change the resolution with these values: " + width + ", " + height);
 
 		ChangeResolutionRunnable changeResolutionRunnable = new ChangeResolutionRunnable(_webView, width, height);
 		_sdlActivity.runOnUiThread(changeResolutionRunnable);
@@ -166,33 +143,6 @@ public class InitWebViewTask implements Runnable
         Double val = new Double(width) / 800d;
         val = val * 100d;
         return val.intValue();
-    }
-
-    private void forceFixedViewport()
-    {
-        WebSettings settings = _webView.getSettings();
-
-        settings.setLoadWithOverviewMode(false);
-        // Activating viewport on Android 2.x will deactivate stretching
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB)
-        {
-            // Set default zoom to unzoom, no setting this will sometimes trigger zoom 100% on some phone (like double tap)
-            // It seems to glitch on Android 2.x, a white screen will appear after enabling this option
-            //settings.setDefaultZoom(WebSettings.ZoomDensity.FAR);
-            // Force using viewport html statement, sadly it activates double tap to zoom
-            settings.setUseWideViewPort(true);
-        }
-        // Try not to use default zoom (useful ?)
-        settings.setSupportZoom(false);
-        settings.setBuiltInZoomControls(false);
-        // Set scale on devices that supports it
-        _webView.setPadding(0, 0, 0, 0);
-
-        //Enable DOM storage, and tell Android where to save the Database
-        //settings.setDatabasePath("/data/data/" + this.getPackageName() + "/databases/");
-
-        int percentScale = getScale();
-        _webView.setInitialScale(percentScale);
     }
 
     private void defaultFixedViewport()

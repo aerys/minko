@@ -2,8 +2,7 @@ package minko.plugin.htmloverlay;
 
 import android.webkit.WebView;
 import android.webkit.JavascriptInterface;
-
-import static android.util.Log.*;
+import android.util.Log;
 
 public class WebViewJSInterface
 {
@@ -17,20 +16,22 @@ public class WebViewJSInterface
 	@JavascriptInterface
 	public void onMessage(String message)
 	{
-		d("MINKOJAVA", "On message: " + message);
+		Log.i("MINKO_JAVA", "[WebViewJSInterface] onMessage: " + message);
 		minkoNativeOnMessage(message);
 	}
 	
 	@JavascriptInterface
 	public void onEvent(String accessor, String eventData)
 	{
-		d("MINKOJAVA", "On event: " + eventData);
+		Log.i("MINKO_JAVA", "[WebViewJSInterface] onEvent: " + eventData);
 		minkoNativeOnEvent(accessor, eventData);
 	}
 	
 	@JavascriptInterface
 	public void onNativeJSResult(String jsResult)
 	{
+		Log.i("MINKO_JAVA", "[WebViewJSInterface] onNativeJSResult: " + jsResult);
+		
 		WebViewJSInterface.Result = jsResult;
 		WebViewJSInterface.ResultReady = true;
 	}

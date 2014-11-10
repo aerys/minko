@@ -2,8 +2,7 @@ package minko.plugin.htmloverlay;
 
 import android.webkit.WebView;
 import android.view.ViewGroup;
-
-import static android.util.Log.*;
+import android.util.Log;
 
 public class ChangeResolutionRunnable implements Runnable 
 {
@@ -21,9 +20,8 @@ public class ChangeResolutionRunnable implements Runnable
     @Override
     public void run()
 	{
-		d("MINKOJAVA", "RUN WEBVIEW CHANGERESOLUTION (width: " + _width + ", height: " + _height + ")");
+		Log.i("MINKO_JAVA", "[ChangeResolutionRunnable] Change WebView resolution (width: " + _width + ", height: " + _height + ").");
 
-		//ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(_width, _height);
 		ViewGroup.LayoutParams layoutParams = _webView.getLayoutParams();
 
 		layoutParams.width = _width;
