@@ -15,7 +15,7 @@ api.addAllowed("system", { "android" })
 api.addAllowed("architecture", { "armv5te" })
 
 if _ACTION ~= "gmake" then
-	return
+	do return end
 end
 
 local ANDROID
@@ -23,15 +23,16 @@ local TOOLCHAIN = "arm-linux-androideabi"
 
 -- If we try to build Android on Windows without Cygwin
 if os.is("windows") and os.getenv('OSTYPE') == nil then
-	print(color.fg.red .. 'To build for Android on Windows, you have to use Cygwin. ' .. 
+	print(color.fg.yellow .. 'To build for Android on Windows, you have to use Cygwin. ' .. 
 		'Please check that you exported OSTYPE environment variable.' .. color.reset)
-	return
+	do return end
 end
 
 if os.getenv('ANDROID_HOME') then
 	ANDROID = os.getenv('ANDROID_HOME');
 else
-	error(color.fg.red .. 'You must define the environment variable ANDROID_HOME to be able to target Android.' .. color.reset)
+	print(color.fg.yellow .. 'You must define the environment variable ANDROID_HOME to be able to target Android.' .. color.reset)
+	do return end
 end
 
 if not os.isfile(ANDROID .. "/tools/android") and not os.isfile(ANDROID .. "/tools/android.bat") then
