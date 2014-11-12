@@ -25,7 +25,7 @@ TEST_F(TextureTest, Create)
 {
     try
     {
-        auto texture = render::Texture::create(MinkoTests::context(), 32, 32);
+        auto texture = render::Texture::create(MinkoTests::canvas()->context(), 32, 32);
     }
     catch (...)
     {
@@ -37,7 +37,7 @@ TEST_F(TextureTest, CreateRenderTarget)
 {
     try
     {
-        auto renderTarget = render::Texture::create(MinkoTests::context(), 32, 32, false, true);
+        auto renderTarget = render::Texture::create(MinkoTests::canvas()->context(), 32, 32, false, true);
     }
     catch (...)
     {
@@ -49,7 +49,7 @@ TEST_F(TextureTest, UploadRenderTarget)
 {
     try
     {
-        auto renderTarget = render::Texture::create(MinkoTests::context(), 32, 32, false, true);
+        auto renderTarget = render::Texture::create(MinkoTests::canvas()->context(), 32, 32, false, true);
         renderTarget->upload();
     }
     catch (...)

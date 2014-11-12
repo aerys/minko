@@ -37,7 +37,7 @@ TEST_F(SpotLightTest, Create)
 
 TEST_F(SpotLightTest, Clone)
 {
-	auto sceneManager = SceneManager::create(MinkoTests::context());
+	auto sceneManager = SceneManager::create(MinkoTests::canvas());
 	auto root = Node::create()->addComponent(sceneManager);
 	auto n1 = Node::create()
 		->addComponent(Transform::create(Matrix4x4::create()))
