@@ -96,6 +96,7 @@ ChromiumDOM::init(CefRefPtr<CefV8Context> context, CefRefPtr<CefFrame> frame)
 
 	addLoadEventListener();
 	addSendMessageFunction();
+    addDispatchMessageFunction();
 
 	_v8Context->Exit();
 	_init = true;
@@ -128,7 +129,7 @@ ChromiumDOM::sendMessage(const std::string& message, bool async)
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
 		_v8Context->Enter();
-		CefRefPtr<CefV8Value> func = _minkoObject->GetValue("onmessage");
+		CefRefPtr<CefV8Value> func = _minkoObject->GetValue("dispatchMessage");
 
 		if (func->IsFunction())
 		{
@@ -225,6 +226,44 @@ ChromiumDOM::addSendMessageFunction()
 			std::cout << "alert: " << message << std::endl;
 		}
 	});
+}
+
+void
+ChromiumDOM::addDispatchMessageFunction()
+{
+    std::string code = "";
+    code += "Minko.listeners = {};";
+    code += "Minko.addEventListener = function(type, callback)";
+    code += "{";
+    code += "   if (!(Minko.listeners[type]))";
+    code += "       Minko.listeners[type] = [];";
+
+    code += "   Minko.listeners[type].push(callback);";
+    code += "};";
+
+    code += "Minko.dispatchEvent = function(event)";
+    code += "{";
+    code += "   var callbacks = Minko.listeners[event.type];";
+
+    code += "   if (!callbacks)";
+    code += "       return;";
+
+    code += "   for(var i = 0; i < callbacks.length; ++i)";
+    code += "       callbacks[i](event);";
+    code += "};";
+
+    code += "Minko.dispatchMessage = function(message)";
+    code += "{";
+    code += "	var ev = document.createEvent(\"Event\");";
+    code += "	ev.initEvent(\"message\", true, true);";
+    code += "	ev.message = message;";
+    code += "	Minko.dispatchEvent(ev);";
+
+    code += "   if(Minko.onmessage)";
+    code += "	    Minko.onmessage(message);";
+    code += "};";
+    
+    eval(code);
 }
 
 void
