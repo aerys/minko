@@ -1,23 +1,22 @@
 package minko.plugin.htmloverlay;
 
 import android.app.Activity;
+import android.content.Context;
+import android.graphics.Color;
+import android.os.Build;
+import android.util.Log;
 import android.view.ViewGroup;
+import android.view.View;
+import android.view.Display;
+import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
-import android.graphics.Color;
-import android.view.View;
 import android.webkit.WebSettings;
-import android.view.Display;
-import android.view.WindowManager;
-import android.content.Context;
-import android.os.Build;
 import java.util.Vector;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.lang.Exception;
-
-import android.util.Log;
 import org.libsdl.app.*;
 
 public class InitWebViewTask implements Runnable 
@@ -134,6 +133,14 @@ public class InitWebViewTask implements Runnable
 
 		ChangeResolutionRunnable changeResolutionRunnable = new ChangeResolutionRunnable(_webView, width, height);
 		_sdlActivity.runOnUiThread(changeResolutionRunnable);
+	}
+	
+	public void hide(boolean value)
+	{
+		if (value)
+			_webView.setVisibility(View.VISIBLE);
+		else
+			_webView.setVisibility(View.GONE);
 	}
 	
 	private int getScale()
