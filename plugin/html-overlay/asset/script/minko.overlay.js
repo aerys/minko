@@ -90,7 +90,6 @@ Minko.loadedHandler = function(event)
 	Minko.window.dispatchEvent(ev);
 }
 
-
 Minko.addListener = function(accessor, type)
 {
 	if(!accessor.minkoEvents)
@@ -113,6 +112,37 @@ Minko.clearEvents = function(accessor)
 {
 	if(accessor)
 		accessor.minkoEvents = [];
+};
+
+Minko.listeners = {};
+
+Minko.addEventListener = function(type, callback)
+{
+   if (!(Minko.listeners[type]))
+       Minko.listeners[type] = [];
+
+   Minko.listeners[type].push(callback);
+};
+
+Minko.dispatchEvent = function(event)
+{
+   var callbacks = Minko.listeners[event.type];
+
+   if (!callbacks)
+       return;
+
+   for(var i = 0; i < callbacks.length; ++i)
+       callbacks[i](event);
+};
+
+Minko.dispatchMessage = function(message)
+{
+	var ev = document.createEvent("Event");
+	ev.initEvent("message", true, true);
+	ev.message = message;	
+	Minko.dispatchEvent(ev);
+	
+	Minko.onmessage(message);
 };
 
 /*

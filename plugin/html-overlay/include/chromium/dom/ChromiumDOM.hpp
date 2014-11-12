@@ -98,6 +98,9 @@ namespace chromium
 
 			void
 			addSendMessageFunction();
+
+            void
+            addDispatchMessageFunction();
 			
 			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr
 			onload()
@@ -118,7 +121,7 @@ namespace chromium
 			}
 
 			bool
-				isMain();
+			isMain();
 
 			std::string
 			fileName()
@@ -137,7 +140,6 @@ namespace chromium
 			update();
 
 		private:
-
 			std::atomic<bool>	_blocker;
 
 			CefRefPtr<CefV8Context> _v8Context;
