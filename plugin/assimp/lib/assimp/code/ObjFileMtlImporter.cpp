@@ -58,7 +58,11 @@ static const std::string EmmissiveTexture    = "map_emissive";
 static const std::string BumpTexture1        = "map_bump";
 static const std::string BumpTexture2        = "map_Bump";
 static const std::string BumpTexture3        = "bump";
-static const std::string NormalTexture       = "map_Kn";
+static const std::string NormalTexture1      = "map_Kn";
+static const std::string NormalTexture2      = "map_Normal";
+static const std::string NormalTexture3      = "map_normal";
+static const std::string NormalTexture4      = "map_bump";
+static const std::string NormalTexture5      = "map_Bump";
 static const std::string DisplacementTexture = "disp";
 static const std::string SpecularityTexture  = "map_ns";
 
@@ -317,7 +321,11 @@ void ObjFileMtlImporter::getTexture() {
 		// Bump texture 
 		out = & m_pModel->m_pCurrentMaterial->textureBump;
 		clampIndex = ObjFile::Material::TextureBumpType;
-	} else if (!ASSIMP_strincmp( pPtr,NormalTexture.c_str(), NormalTexture.size())) { 
+	} else if (!ASSIMP_strincmp( pPtr, NormalTexture1.c_str(), NormalTexture1.size() ) ||
+		       !ASSIMP_strincmp( pPtr, NormalTexture2.c_str(), NormalTexture2.size() ) ||
+		       !ASSIMP_strincmp( pPtr, NormalTexture3.c_str(), NormalTexture3.size() ) ||
+		       !ASSIMP_strincmp( pPtr, NormalTexture4.c_str(), NormalTexture4.size() ) ||
+		       !ASSIMP_strincmp( pPtr, NormalTexture5.c_str(), NormalTexture5.size() )) { 
 		// Normal map
 		out = & m_pModel->m_pCurrentMaterial->textureNormal;
 		clampIndex = ObjFile::Material::TextureNormalType;
