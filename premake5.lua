@@ -129,7 +129,7 @@ solution "minko"
 		include 'example/lua-scripts'
 		include 'example/multi-surfaces'
 		include 'example/oculus'
-		--include 'example/offscreen'
+		include 'example/offscreen'
 		include 'example/particles'
 		include 'example/physics'
 		include 'example/picking'
