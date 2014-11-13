@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <chrono>
 
 #include "minko/Common.hpp"
-#include "minko/SDLAudio.hpp"
 #include "minko/SDLKeyboard.hpp"
 #include "minko/SDLMouse.hpp"
 #include "minko/SDLJoystick.hpp"
@@ -41,6 +40,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 // main compilation-unit.
 #if MINKO_PLATFORM & (MINKO_PLATFORM_IOS | MINKO_PLATFORM_ANDROID)
 # include "SDL_main.h"
+#endif
+
+// Audio only works for HTML5, Windows and Android 
+#if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID)
+# include "minko/SDLAudio.hpp"
 #endif
 
 struct SDL_Window;
