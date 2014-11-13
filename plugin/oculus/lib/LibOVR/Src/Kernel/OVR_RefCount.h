@@ -6,16 +6,16 @@ Content     :   Reference counting implementation headers
 Created     :   September 19, 2012
 Notes       : 
 
-Copyright   :   Copyright 2013 Oculus VR, Inc. All Rights reserved.
+Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 
-Licensed under the Oculus VR SDK License Version 2.0 (the "License"); 
-you may not use the Oculus VR SDK except in compliance with the License, 
+Licensed under the Oculus VR Rift SDK License Version 3.1 (the "License"); 
+you may not use the Oculus VR Rift SDK except in compliance with the License, 
 which is provided at the time of installation or download, or which 
 otherwise accompanies this software in either electronic or hard copy form.
 
 You may obtain a copy of the License at
 
-http://www.oculusvr.com/licenses/LICENSE-2.0 
+http://www.oculusvr.com/licenses/LICENSE-3.1 
 
 Unless required by applicable law or agreed to in writing, the Oculus VR SDK 
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -62,7 +62,7 @@ class   RefCountNTSImpl;
 class RefCountImplCore
 {
 protected:
-    volatile int RefCount;
+   volatile int RefCount;
 
 public:
     // RefCountImpl constructor always initializes RefCount to 1 by default.
@@ -145,7 +145,7 @@ public:
 // RefCountVImpl provides Thread-Safe implementation of reference counting, plus,
 // virtual AddRef and Release.
 
-class RefCountVImpl : public RefCountImplCore
+class RefCountVImpl : virtual public RefCountImplCore
 {
 public:
     // Thread-Safe Ref-Count Implementation.
@@ -194,11 +194,42 @@ public:
     // Redefine all new & delete operators.
     OVR_MEMORY_REDEFINE_NEW_IMPL(Base, OVR_REFCOUNTALLOC_CHECK_DELETE)
 
+#undef OVR_REFCOUNTALLOC_CHECK_DELETE
+
 #ifdef OVR_DEFINE_NEW
 #define new OVR_DEFINE_NEW
 #endif
         // OVR_BUILD_DEFINE_NEW
         // DOM-IGNORE-END
+};
+
+
+template<class Base>
+class RefCountBaseStatVImpl : virtual public Base
+{
+public:
+	RefCountBaseStatVImpl() { }
+
+	// *** Override New and Delete
+
+	// DOM-IGNORE-BEGIN
+	// Undef new temporarily if it is being redefined
+#ifdef OVR_DEFINE_NEW
+#undef new
+#endif
+
+#define OVR_REFCOUNTALLOC_CHECK_DELETE(class_name, p)
+
+	// Redefine all new & delete operators.
+	OVR_MEMORY_REDEFINE_NEW_IMPL(Base, OVR_REFCOUNTALLOC_CHECK_DELETE)
+
+#undef OVR_REFCOUNTALLOC_CHECK_DELETE
+
+#ifdef OVR_DEFINE_NEW
+#define new OVR_DEFINE_NEW
+#endif
+		// OVR_BUILD_DEFINE_NEW
+		// DOM-IGNORE-END
 };
 
 
@@ -225,11 +256,11 @@ public:
 // RefCountBaseV is the same as RefCountBase but with virtual AddRef/Release
 
 template<class C>
-class RefCountBaseV : public RefCountBaseStatImpl<RefCountVImpl>
+class RefCountBaseV : virtual public RefCountBaseStatVImpl<RefCountVImpl>
 {
 public:    
     // Constructor.
-    OVR_FORCE_INLINE RefCountBaseV() : RefCountBaseStatImpl<RefCountVImpl>() { }    
+    OVR_FORCE_INLINE RefCountBaseV() : RefCountBaseStatVImpl<RefCountVImpl>() { }    
 };
 
 
@@ -382,6 +413,7 @@ public:
     template<class R>
     OVR_FORCE_INLINE const Ptr<C>& operator = (const Ptr<R> &src)
     {
+        // By design we don't check for src == pObject, as we don't expect that to be the case the large majority of the time.
         if (src) src->AddRef();
         if (pObject) pObject->Release();        
         pObject = src;

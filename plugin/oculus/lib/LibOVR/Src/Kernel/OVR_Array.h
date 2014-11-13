@@ -1,21 +1,21 @@
 /************************************************************************************
 
-PublicHeader:   OVR.h
+PublicHeader:   OVR_Kernel.h
 Filename    :   OVR_Array.h
 Content     :   Template implementation for Array
 Created     :   September 19, 2012
 Notes       : 
 
-Copyright   :   Copyright 2013 Oculus VR, Inc. All Rights reserved.
+Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 
-Licensed under the Oculus VR SDK License Version 2.0 (the "License"); 
-you may not use the Oculus VR SDK except in compliance with the License, 
+Licensed under the Oculus VR Rift SDK License Version 3.1 (the "License"); 
+you may not use the Oculus VR Rift SDK except in compliance with the License, 
 which is provided at the time of installation or download, or which 
 otherwise accompanies this software in either electronic or hard copy form.
 
 You may obtain a copy of the License at
 
-http://www.oculusvr.com/licenses/LICENSE-2.0 
+http://www.oculusvr.com/licenses/LICENSE-3.1 
 
 Unless required by applicable law or agreed to in writing, the Oculus VR SDK 
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -44,14 +44,14 @@ struct ArrayDefaultPolicy
     ArrayDefaultPolicy() : Capacity(0) {}
     ArrayDefaultPolicy(const ArrayDefaultPolicy&) : Capacity(0) {}
 
-    UPInt GetMinCapacity() const { return 0; }
-    UPInt GetGranularity() const { return 4; }
+    size_t GetMinCapacity() const { return 0; }
+    size_t GetGranularity() const { return 4; }
     bool  NeverShrinking() const { return 0; }
 
-    UPInt GetCapacity()    const      { return Capacity; }
-    void  SetCapacity(UPInt capacity) { Capacity = capacity; }
+    size_t GetCapacity()    const      { return Capacity; }
+    void  SetCapacity(size_t capacity) { Capacity = capacity; }
 private:
-    UPInt Capacity;
+    size_t Capacity;
 };
 
 
@@ -68,14 +68,14 @@ struct ArrayConstPolicy
     ArrayConstPolicy() : Capacity(0) {}
     ArrayConstPolicy(const SelfType&) : Capacity(0) {}
 
-    UPInt GetMinCapacity() const { return MinCapacity; }
-    UPInt GetGranularity() const { return Granularity; }
+    size_t GetMinCapacity() const { return MinCapacity; }
+    size_t GetGranularity() const { return Granularity; }
     bool  NeverShrinking() const { return NeverShrink; }
 
-    UPInt GetCapacity()    const      { return Capacity; }
-    void  SetCapacity(UPInt capacity) { Capacity = capacity; }
+    size_t GetCapacity()    const      { return Capacity; }
+    void  SetCapacity(size_t capacity) { Capacity = capacity; }
 private:
-    UPInt Capacity;
+    size_t Capacity;
 };
 
 //-----------------------------------------------------------------------------------
@@ -103,7 +103,7 @@ struct ArrayDataBase
         Allocator::Free(Data);
     }
 
-    UPInt GetCapacity() const 
+    size_t GetCapacity() const 
     { 
         return Policy.GetCapacity(); 
     }
@@ -117,7 +117,7 @@ struct ArrayDataBase
         Policy.SetCapacity(0);
     }
 
-    void Reserve(UPInt newCapacity)
+    void Reserve(size_t newCapacity)
     {
         if (Policy.NeverShrinking() && newCapacity < GetCapacity())
             return;
@@ -137,7 +137,7 @@ struct ArrayDataBase
         }
         else
         {
-            UPInt gran = Policy.GetGranularity();
+            size_t gran = Policy.GetGranularity();
             newCapacity = (newCapacity + gran - 1) / gran * gran;
             if (Data)
             {
@@ -148,7 +148,7 @@ struct ArrayDataBase
                 else
                 {
                     T* newData = (T*)Allocator::Alloc(sizeof(T) * newCapacity);
-                    UPInt i, s;
+                    size_t i, s;
                     s = (Size < newCapacity) ? Size : newCapacity;
                     for (i = 0; i < s; ++i)
                     {
@@ -176,9 +176,9 @@ struct ArrayDataBase
     // This version of Resize DOES NOT construct the elements.
     // It's done to optimize PushBack, which uses a copy constructor 
     // instead of the default constructor and assignment
-    void ResizeNoConstruct(UPInt newSize)
+    void ResizeNoConstruct(size_t newSize)
     {
-        UPInt oldSize = Size;
+        size_t oldSize = Size;
 
         if (newSize < oldSize)
         {
@@ -199,7 +199,7 @@ struct ArrayDataBase
     }
 
     ValueType*  Data;
-    UPInt       Size;
+    size_t      Size;
     SizePolicy  Policy;
 };
 
@@ -222,16 +222,16 @@ struct ArrayData : ArrayDataBase<T, Allocator, SizePolicy>
     ArrayData()
         : BaseType() { }
 
-    ArrayData(int size)
+    ArrayData(size_t size)
         : BaseType() { Resize(size); }
 
     ArrayData(const SelfType& a)
         : BaseType(a.Policy) { Append(a.Data, a.Size); }
 
 
-    void Resize(UPInt newSize)
+    void Resize(size_t newSize)
     {
-        UPInt oldSize = this->Size;
+        size_t oldSize = this->Size;
         BaseType::ResizeNoConstruct(newSize);
         if(newSize > oldSize)
             Allocator::ConstructArray(this->Data + oldSize, newSize - oldSize);
@@ -251,11 +251,11 @@ struct ArrayData : ArrayDataBase<T, Allocator, SizePolicy>
     }
 
     // Append the given data to the array.
-    void Append(const ValueType other[], UPInt count)
+    void Append(const ValueType other[], size_t count)
     {
         if (count)
         {
-            UPInt oldSize = this->Size;
+            size_t oldSize = this->Size;
             BaseType::ResizeNoConstruct(this->Size + count);
             Allocator::ConstructArray(this->Data + oldSize, count, other);
         }
@@ -281,16 +281,16 @@ struct ArrayDataCC : ArrayDataBase<T, Allocator, SizePolicy>
     ArrayDataCC(const ValueType& defval)
         : BaseType(), DefaultValue(defval) { }
 
-    ArrayDataCC(const ValueType& defval, int size)
+    ArrayDataCC(const ValueType& defval, size_t size)
         : BaseType(), DefaultValue(defval) { Resize(size); }
 
     ArrayDataCC(const SelfType& a)
         : BaseType(a.Policy), DefaultValue(a.DefaultValue) { Append(a.Data, a.Size); }
 
 
-    void Resize(UPInt newSize)
+    void Resize(size_t newSize)
     {
-        UPInt oldSize = this->Size;
+        size_t oldSize = this->Size;
         BaseType::ResizeNoConstruct(newSize);
         if(newSize > oldSize)
             Allocator::ConstructArray(this->Data + oldSize, newSize - oldSize, DefaultValue);
@@ -310,11 +310,11 @@ struct ArrayDataCC : ArrayDataBase<T, Allocator, SizePolicy>
     }
 
     // Append the given data to the array.
-    void Append(const ValueType other[], UPInt count)
+    void Append(const ValueType other[], size_t count)
     {
         if (count)
         {
-            UPInt oldSize = this->Size;
+            size_t oldSize = this->Size;
             BaseType::ResizeNoConstruct(this->Size + count);
             Allocator::ConstructArray(this->Data + oldSize, count, other);
         }
@@ -359,61 +359,62 @@ public:
 
     ArrayBase()
         : Data() {}
-    ArrayBase(int size)
+    ArrayBase(size_t size)
         : Data(size) {}
     ArrayBase(const SelfType& a)
         : Data(a.Data) {}
 
     ArrayBase(const ValueType& defval)
         : Data(defval) {}
-    ArrayBase(const ValueType& defval, int size)
+    ArrayBase(const ValueType& defval, size_t size)
         : Data(defval, size) {}
   
     SizePolicyType* GetSizePolicy() const                  { return Data.Policy; }
     void            SetSizePolicy(const SizePolicyType& p) { Data.Policy = p; }
 
     bool    NeverShrinking()const       { return Data.Policy.NeverShrinking(); }
-    UPInt   GetSize()       const       { return Data.Size;  }
-    bool    IsEmpty()       const       { return Data.Size == 0; }
-    UPInt   GetCapacity()   const       { return Data.GetCapacity(); }
-    UPInt   GetNumBytes()   const       { return Data.GetCapacity() * sizeof(ValueType); }
+	size_t  GetSize()       const       { return Data.Size; }
+	int     GetSizeI()      const       { return (int)Data.Size; }
+	bool    IsEmpty()       const       { return Data.Size == 0; }
+    size_t  GetCapacity()   const       { return Data.GetCapacity(); }
+    size_t  GetNumBytes()   const       { return Data.GetCapacity() * sizeof(ValueType); }
 
     void    ClearAndRelease()           { Data.ClearAndRelease(); }
     void    Clear()                     { Data.Resize(0); }
-    void    Resize(UPInt newSize)       { Data.Resize(newSize); }
+    void    Resize(size_t newSize)       { Data.Resize(newSize); }
 
     // Reserve can only increase the capacity
-    void    Reserve(UPInt newCapacity)  
+    void    Reserve(size_t newCapacity)  
     { 
         if (newCapacity > Data.GetCapacity())
             Data.Reserve(newCapacity); 
     }
 
     // Basic access.
-    ValueType& At(UPInt index)
+    ValueType& At(size_t index)
     {
         OVR_ASSERT(index < Data.Size);
         return Data.Data[index]; 
     }
-    const ValueType& At(UPInt index) const
+    const ValueType& At(size_t index) const
     {
         OVR_ASSERT(index < Data.Size);
         return Data.Data[index]; 
     }
 
-    ValueType ValueAt(UPInt index) const
+    ValueType ValueAt(size_t index) const
     {
         OVR_ASSERT(index < Data.Size);
         return Data.Data[index]; 
     }
 
     // Basic access.
-    ValueType& operator [] (UPInt index)
+    ValueType& operator [] (size_t index)
     {
         OVR_ASSERT(index < Data.Size);
         return Data.Data[index]; 
     }
-    const ValueType& operator [] (UPInt index) const
+    const ValueType& operator [] (size_t index) const
     {
         OVR_ASSERT(index < Data.Size);
         return Data.Data[index]; 
@@ -440,7 +441,7 @@ public:
     }
 
     // Remove the last element.
-    void    PopBack(UPInt count = 1)
+    void    PopBack(size_t count = 1)
     {
         OVR_ASSERT(Data.Size >= count);
         Data.Resize(Data.Size - count);
@@ -472,14 +473,14 @@ public:
     const SelfType& operator = (const SelfType& a)   
     {
         Resize(a.GetSize());
-        for (UPInt i = 0; i < Data.Size; i++) {
+        for (size_t i = 0; i < Data.Size; i++) {
             *(Data.Data + i) = a[i];
         }
         return *this;
     }
 
     // Removing multiple elements from the array.
-    void    RemoveMultipleAt(UPInt index, UPInt num)
+    void    RemoveMultipleAt(size_t index, size_t num)
     {
         OVR_ASSERT(index + num <= Data.Size);
         if (Data.Size == num)
@@ -499,7 +500,10 @@ public:
 
     // Removing an element from the array is an expensive operation!
     // It compacts only after removing the last element.
-    void    RemoveAt(UPInt index)
+    // If order of elements in the array is not important then use 
+    // RemoveAtUnordered, that could be much faster than the regular
+    // RemoveAt.
+    void    RemoveAt(size_t index)
     {
         OVR_ASSERT(index < Data.Size);
         if (Data.Size == 1)
@@ -517,8 +521,34 @@ public:
         }
     }
 
+    // Removes an element from the array without respecting of original order of 
+    // elements for better performance. Do not use on array where order of elements
+    // is important, otherwise use it instead of regular RemoveAt().
+    void    RemoveAtUnordered(size_t index)
+    {
+        OVR_ASSERT(index < Data.Size);
+        if (Data.Size == 1)
+        {
+            Clear();
+        }
+        else
+        {
+            // copy the last element into the 'index' position 
+            // and decrement the size (instead of moving all elements
+            // in [index + 1 .. size - 1] range).
+            const size_t lastElemIndex = Data.Size - 1;
+            if (index < lastElemIndex)
+            {
+                AllocatorType::Destruct(Data.Data + index);
+                AllocatorType::Construct(Data.Data + index, Data.Data[lastElemIndex]);
+            }
+            AllocatorType::Destruct(Data.Data + lastElemIndex);
+            --Data.Size;
+        }
+    }
+
     // Insert the given object at the given index shifting all the elements up.
-    void    InsertAt(UPInt index, const ValueType& val = ValueType())
+    void    InsertAt(size_t index, const ValueType& val = ValueType())
     {
         OVR_ASSERT(index <= Data.Size);
 
@@ -534,7 +564,7 @@ public:
     }
 
     // Insert the given object at the given index shifting all the elements up.
-    void    InsertMultipleAt(UPInt index, UPInt num, const ValueType& val = ValueType())
+    void    InsertMultipleAt(size_t index, size_t num, const ValueType& val = ValueType())
     {
         OVR_ASSERT(index <= Data.Size);
 
@@ -546,7 +576,7 @@ public:
                 Data.Data + index,
                 Data.Size - num - index);
         }
-        for (UPInt i = 0; i < num; ++i)
+        for (size_t i = 0; i < num; ++i)
             AllocatorType::Construct(Data.Data + index + i, val);
     }
 
@@ -557,7 +587,7 @@ public:
     }
 
     // Append the given data to the array.
-    void    Append(const ValueType other[], UPInt count)
+    void    Append(const ValueType other[], size_t count)
     {
         Data.Append(other, count);
     }
@@ -565,11 +595,11 @@ public:
     class Iterator
     {
         SelfType*       pArray;
-        SPInt           CurIndex;
+        intptr_t        CurIndex;
 
     public:
         Iterator() : pArray(0), CurIndex(-1) {}
-        Iterator(SelfType* parr, SPInt idx = 0) : pArray(parr), CurIndex(idx) {}
+        Iterator(SelfType* parr, intptr_t idx = 0) : pArray(parr), CurIndex(idx) {}
 
         bool operator==(const Iterator& it) const { return pArray == it.pArray && CurIndex == it.CurIndex; }
         bool operator!=(const Iterator& it) const { return pArray != it.pArray || CurIndex != it.CurIndex; }
@@ -578,7 +608,7 @@ public:
         {
             if (pArray)
             {
-                if (CurIndex < (SPInt)pArray->GetSize())
+                if (CurIndex < (intptr_t)pArray->GetSize())
                     ++CurIndex;
             }
             return *this;
@@ -612,7 +642,7 @@ public:
         {
             return Iterator(pArray, CurIndex - delta);
         }
-        SPInt operator-(const Iterator& right) const
+        intptr_t operator-(const Iterator& right) const
         {
             OVR_ASSERT(pArray == right.pArray);
             return CurIndex - right.CurIndex;
@@ -629,21 +659,21 @@ public:
                 pArray->RemoveAt(CurIndex);
         }
 
-        SPInt GetIndex() const { return CurIndex; }
+        intptr_t GetIndex() const { return CurIndex; }
     };
 
     Iterator Begin() { return Iterator(this); }
-    Iterator End()   { return Iterator(this, (SPInt)GetSize()); }
-    Iterator Last()  { return Iterator(this, (SPInt)GetSize() - 1); }
+    Iterator End()   { return Iterator(this, (intptr_t)GetSize()); }
+    Iterator Last()  { return Iterator(this, (intptr_t)GetSize() - 1); }
 
     class ConstIterator
     {
         const SelfType* pArray;
-        SPInt           CurIndex;
+        intptr_t        CurIndex;
 
     public:
         ConstIterator() : pArray(0), CurIndex(-1) {}
-        ConstIterator(const SelfType* parr, SPInt idx = 0) : pArray(parr), CurIndex(idx) {}
+        ConstIterator(const SelfType* parr, intptr_t idx = 0) : pArray(parr), CurIndex(idx) {}
 
         bool operator==(const ConstIterator& it) const { return pArray == it.pArray && CurIndex == it.CurIndex; }
         bool operator!=(const ConstIterator& it) const { return pArray != it.pArray || CurIndex != it.CurIndex; }
@@ -686,7 +716,7 @@ public:
         {
             return ConstIterator(pArray, CurIndex - delta);
         }
-        SPInt operator-(const ConstIterator& right) const
+        intptr_t operator-(const ConstIterator& right) const
         {
             OVR_ASSERT(pArray == right.pArray);
             return CurIndex - right.CurIndex;
@@ -697,11 +727,11 @@ public:
 
         bool IsFinished() const { return !pArray || CurIndex < 0 || CurIndex >= (int)pArray->GetSize(); }
 
-        SPInt GetIndex()  const { return CurIndex; }
+        intptr_t GetIndex()  const { return CurIndex; }
     };
     ConstIterator Begin() const { return ConstIterator(this); }
-    ConstIterator End() const   { return ConstIterator(this, (SPInt)GetSize()); }
-    ConstIterator Last() const  { return ConstIterator(this, (SPInt)GetSize() - 1); }
+    ConstIterator End() const   { return ConstIterator(this, (intptr_t)GetSize()); }
+    ConstIterator Last() const  { return ConstIterator(this, (intptr_t)GetSize() - 1); }
 
 protected:
     ArrayData   Data;
@@ -725,7 +755,7 @@ public:
     typedef ArrayBase<ArrayData<T, ContainerAllocator<T>, SizePolicy> > BaseType;
 
     Array() : BaseType() {}
-    Array(int size) : BaseType(size) {}
+    Array(size_t size) : BaseType(size) {}
     Array(const SizePolicyType& p) : BaseType() { SetSizePolicy(p); }
     Array(const SelfType& a) : BaseType(a) {}
     const SelfType& operator=(const SelfType& a) { BaseType::operator=(a); return *this; }
@@ -747,7 +777,7 @@ public:
     typedef ArrayBase<ArrayData<T, ContainerAllocator_POD<T>, SizePolicy> > BaseType;
 
     ArrayPOD() : BaseType() {}
-    ArrayPOD(int size) : BaseType(size) {}
+    ArrayPOD(size_t size) : BaseType(size) {}
     ArrayPOD(const SizePolicyType& p) : BaseType() { SetSizePolicy(p); }
     ArrayPOD(const SelfType& a) : BaseType(a) {}
     const SelfType& operator=(const SelfType& a) { BaseType::operator=(a); return *this; }
@@ -769,7 +799,7 @@ public:
     typedef ArrayBase<ArrayData<T, ContainerAllocator_CPP<T>, SizePolicy> > BaseType;
 
     ArrayCPP() : BaseType() {}
-    ArrayCPP(int size) : BaseType(size) {}
+    ArrayCPP(size_t size) : BaseType(size) {}
     ArrayCPP(const SizePolicyType& p) : BaseType() { SetSizePolicy(p); }
     ArrayCPP(const SelfType& a) : BaseType(a) {}
     const SelfType& operator=(const SelfType& a) { BaseType::operator=(a); return *this; }
@@ -793,7 +823,7 @@ public:
     typedef ArrayBase<ArrayDataCC<T, ContainerAllocator<T>, SizePolicy> >   BaseType;
 
     ArrayCC(const ValueType& defval) : BaseType(defval) {}
-    ArrayCC(const ValueType& defval, int size) : BaseType(defval, size) {}
+    ArrayCC(const ValueType& defval, size_t size) : BaseType(defval, size) {}
     ArrayCC(const ValueType& defval, const SizePolicyType& p) : BaseType(defval) { SetSizePolicy(p); }
     ArrayCC(const SelfType& a) : BaseType(a) {}
     const SelfType& operator=(const SelfType& a) { BaseType::operator=(a); return *this; }

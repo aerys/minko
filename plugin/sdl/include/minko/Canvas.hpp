@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <chrono>
 
 #include "minko/Common.hpp"
+#include "minko/SDLAudio.hpp"
 #include "minko/SDLKeyboard.hpp"
 #include "minko/SDLMouse.hpp"
 #include "minko/SDLJoystick.hpp"
@@ -54,6 +55,15 @@ namespace minko
     public:
         typedef std::shared_ptr<Canvas>    Ptr;
 
+        typedef enum
+        {
+            FULLSCREEN = (1u << 0),
+            RESIZABLE = (1u << 1),
+            HIDDEN = (1u << 2),
+            CHROMELESS = (1u << 3),
+            STENCIL = (1u << 4)
+        } Flags;
+
     private:
         typedef std::chrono::high_resolution_clock::time_point                  time_point;
         typedef std::shared_ptr<async::Worker>                                  WorkerPtr;
@@ -64,8 +74,7 @@ namespace minko
         uint                                                                    _width;
         uint                                                                    _height;
         std::shared_ptr<data::Provider>                                         _data;
-        bool                                                                    _useStencil;
-        bool                                                                    _chromeless;
+        int                                                                     _flags;
 
         bool                                                                    _active;
         render::AbstractContext::Ptr                                            _context;
@@ -79,6 +88,7 @@ namespace minko
         float                                                                   _framerate;
         float                                                                   _desiredFramerate;
 
+        std::shared_ptr<SDLAudio>                                               _audio;
         std::shared_ptr<SDLMouse>                                               _mouse;
         std::unordered_map<int, std::shared_ptr<SDLJoystick>>                   _joysticks;
         std::shared_ptr<SDLKeyboard>                                            _keyboard;
@@ -102,14 +112,9 @@ namespace minko
         create(const std::string&    name,
                const uint            width      = 1280,
                const uint            height     = 720,
-               bool                  useStencil = false,
-               bool                  chromeless = false)
+               int                   flags      = RESIZABLE)
         {
-            auto canvas = std::shared_ptr<Canvas>(new Canvas(name, width, height, useStencil, chromeless));
-
-#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
-            auto that = canvas->shared_from_this();
-#endif
+            auto canvas = std::shared_ptr<Canvas>(new Canvas(name, width, height, flags));
 
             canvas->initialize();
 
@@ -150,6 +155,9 @@ namespace minko
         {
             return _window;
         }
+
+        void*
+        systemWindow() const;
 
         int
         getJoystickAxis(input::Joystick::Ptr joystick, int axis);
@@ -237,7 +245,7 @@ namespace minko
         {
             return _resized;
         }
-        
+
         inline
         Signal<const std::string&>::Ptr
         fileDropped()
@@ -308,8 +316,7 @@ namespace minko
         Canvas(const std::string&   name,
                const uint           width,
                const uint           height,
-               bool                 useStencil = false,
-               bool                 chromeless = false);
+               int                  flags);
 
         void
         x(uint);

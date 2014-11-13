@@ -6,16 +6,16 @@ Content     :   File wrapper class implementation (Win32)
 Created     :   April 5, 1999
 Authors     :   Michael Antonov
 
-Copyright   :   Copyright 2013 Oculus VR, Inc. All Rights reserved.
+Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 
-Licensed under the Oculus VR SDK License Version 2.0 (the "License"); 
-you may not use the Oculus VR SDK except in compliance with the License, 
+Licensed under the Oculus VR Rift SDK License Version 3.1 (the "License"); 
+you may not use the Oculus VR Rift SDK except in compliance with the License, 
 which is provided at the time of installation or download, or which 
 otherwise accompanies this software in either electronic or hard copy form.
 
 You may obtain a copy of the License at
 
-http://www.oculusvr.com/licenses/LICENSE-2.0 
+http://www.oculusvr.com/licenses/LICENSE-3.1 
 
 Unless required by applicable law or agreed to in writing, the Oculus VR SDK 
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -46,7 +46,7 @@ namespace OVR {
 // Not supposed to be used
 BufferedFile::BufferedFile() : DelegatedFile(0)
 {
-    pBuffer     = (UByte*)OVR_ALLOC(FILEBUFFER_SIZE);
+    pBuffer     = (uint8_t*)OVR_ALLOC(FILEBUFFER_SIZE);
     BufferMode  = NoBuffer;
     FilePos     = 0;
     Pos         = 0;
@@ -56,7 +56,7 @@ BufferedFile::BufferedFile() : DelegatedFile(0)
 // Takes another file as source
 BufferedFile::BufferedFile(File *pfile) : DelegatedFile(pfile)
 {
-    pBuffer     = (UByte*)OVR_ALLOC(FILEBUFFER_SIZE);
+    pBuffer     = (uint8_t*)OVR_ALLOC(FILEBUFFER_SIZE);
     BufferMode  = NoBuffer;
     FilePos     = pfile->LTell();
     Pos         = 0;
@@ -177,12 +177,12 @@ int     BufferedFile::Tell()
     return pos;
 }
 
-SInt64  BufferedFile::LTell()
+int64_t BufferedFile::LTell()
 {
     if (BufferMode == ReadBuffer)
         return FilePos - DataSize + Pos;
 
-    SInt64 pos = pFile->LTell();
+    int64_t pos = pFile->LTell();
     if (pos!=-1)
     {
         OVR_ASSERT(BufferMode != ReadBuffer);
@@ -204,13 +204,13 @@ int     BufferedFile::GetLength()
     }
     return len;
 }
-SInt64  BufferedFile::LGetLength()
+int64_t BufferedFile::LGetLength()
 {
-    SInt64 len = pFile->LGetLength();
+    int64_t len = pFile->LGetLength();
     // If writing through buffer, file length may actually be bigger
     if ((len!=-1) && (BufferMode==WriteBuffer))
     {
-        SInt64 currPos = pFile->LTell() + Pos;
+        int64_t currPos = pFile->LTell() + Pos;
         if (currPos>len)
             len = currPos;
     }
@@ -225,7 +225,7 @@ bool    BufferedFile::Stat(FileStats *pfs)
     {
         if (BufferMode==WriteBuffer)
         {
-            SInt64 currPos = pFile->LTell() + Pos;
+            int64_t currPos = pFile->LTell() + Pos;
             if (currPos > pfs->Size)
             {
                 pfs->Size   = currPos;
@@ -239,7 +239,7 @@ bool    BufferedFile::Stat(FileStats *pfs)
 }
 */
 
-int     BufferedFile::Write(const UByte *psourceBuffer, int numBytes)
+int     BufferedFile::Write(const uint8_t *psourceBuffer, int numBytes)
 {
     if ( (BufferMode==WriteBuffer) || SetBufferMode(WriteBuffer))
     {
@@ -268,7 +268,7 @@ int     BufferedFile::Write(const UByte *psourceBuffer, int numBytes)
     return sz;
 }
 
-int     BufferedFile::Read(UByte *pdestBuffer, int numBytes)
+int     BufferedFile::Read(uint8_t *pdestBuffer, int numBytes)
 {
     if ( (BufferMode==ReadBuffer) || SetBufferMode(ReadBuffer))
     {
@@ -413,7 +413,7 @@ int     BufferedFile::Seek(int offset, int origin)
             // Lightweight buffer "Flush". We do this to avoid an extra seek
             // back operation which would take place if we called FlushBuffer directly.
             origin = Seek_Set;
-            OVR_ASSERT(((FilePos - DataSize + Pos) + (UInt64)offset) < ~(UInt64)0);
+            OVR_ASSERT(((FilePos - DataSize + Pos) + (uint64_t)offset) < ~(uint64_t)0);
             offset = (int)(FilePos - DataSize + Pos) + offset;
             Pos = DataSize = 0;
         }
@@ -421,7 +421,7 @@ int     BufferedFile::Seek(int offset, int origin)
         {
             if (((unsigned)offset - (FilePos-DataSize)) <= DataSize)
             {
-                OVR_ASSERT((FilePos-DataSize) < ~(UInt64)0);
+                OVR_ASSERT((FilePos-DataSize) < ~(uint64_t)0);
                 Pos = (unsigned)offset - (unsigned)(FilePos-DataSize);
                 return offset;
             }
@@ -461,7 +461,7 @@ int     BufferedFile::Seek(int offset, int origin)
     return int (FilePos);
 }
 
-SInt64  BufferedFile::LSeek(SInt64 offset, int origin)
+int64_t BufferedFile::LSeek(int64_t offset, int origin)
 {
     if (BufferMode == ReadBuffer)
     {
@@ -472,20 +472,20 @@ SInt64  BufferedFile::LSeek(SInt64 offset, int origin)
             if (((unsigned(offset) + Pos)) <= DataSize)
             {
                 Pos += (unsigned)offset;
-                return SInt64(FilePos - DataSize + Pos);
+                return int64_t(FilePos - DataSize + Pos);
             }
 
             // Lightweight buffer "Flush". We do this to avoid an extra seek
             // back operation which would take place if we called FlushBuffer directly.
             origin = Seek_Set;            
-            offset = (SInt64)(FilePos - DataSize + Pos) + offset;
+            offset = (int64_t)(FilePos - DataSize + Pos) + offset;
             Pos = DataSize = 0;
         }
         else if (origin == Seek_Set)
         {
-            if (((UInt64)offset - (FilePos-DataSize)) <= DataSize)
+            if (((uint64_t)offset - (FilePos-DataSize)) <= DataSize)
             {                
-                Pos = (unsigned)((UInt64)offset - (FilePos-DataSize));
+                Pos = (unsigned)((uint64_t)offset - (FilePos-DataSize));
                 return offset;
             }
             Pos = DataSize = 0;
@@ -508,7 +508,7 @@ SInt64  BufferedFile::LSeek(SInt64 offset, int origin)
         Pos += int (offset);
         return FilePos - DataSize + Pos;
     }
-    else if (origin == Seek_Set && offset >= SInt64(FilePos - DataSize) && offset < SInt64(FilePos))
+    else if (origin == Seek_Set && offset >= int64_t(FilePos - DataSize) && offset < int64_t(FilePos))
     {
         Pos = unsigned(offset - FilePos + DataSize);
         return FilePos - DataSize + Pos;
@@ -526,7 +526,7 @@ int     BufferedFile::CopyFromStream(File *pstream, int byteSize)
     // We can't rely on overridden Write()
     // because delegation doesn't override virtual pointers
     // So, just re-implement
-    UByte   buff[0x4000];
+    uint8_t*  buff = new uint8_t[0x4000];
     int     count = 0;
     int     szRequest, szRead, szWritten;
 
@@ -544,6 +544,9 @@ int     BufferedFile::CopyFromStream(File *pstream, int byteSize)
         if (szWritten < szRequest)
             break;
     }
+
+	delete[] buff;
+
     return count;
 }
 
@@ -571,8 +574,8 @@ bool    BufferedFile::Close()
 // Find trailing short filename in a path.
 const char* OVR_CDECL GetShortFilename(const char* purl)
 {    
-    UPInt len = OVR_strlen(purl);
-    for (UPInt i=len; i>0; i--) 
+    size_t len = OVR_strlen(purl);
+    for (size_t i=len; i>0; i--) 
         if (purl[i]=='\\' || purl[i]=='/')
             return purl+i+1;
     return purl;

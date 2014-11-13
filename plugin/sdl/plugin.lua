@@ -31,14 +31,14 @@ function minko.plugin.sdl:enable()
 	}
 
 	configuration { "windows32", "ConsoleApp or WindowedApp" }
-		links { "SDL2", "SDL2main" }
+		links { "SDL2", "SDL2main", "SDL2_mixer" }
 		libdirs { minko.plugin.path("sdl") .. "/lib/sdl/lib/windows32" }
 		prelinkcommands {
 			minko.action.copy(minko.plugin.path("sdl") .. "/lib/sdl/lib/windows32/*.dll")
 		}
 
 	configuration { "windows64", "ConsoleApp or WindowedApp" }
-		links { "SDL2", "SDL2main" }
+		links { "SDL2", "SDL2main", "SDL2_mixer" }
 		libdirs { minko.plugin.path("sdl") .. "/lib/sdl/lib/windows64" }
 		prelinkcommands {
 			minko.action.copy(minko.plugin.path("sdl") .. "/lib/sdl/lib/windows64/*.dll")

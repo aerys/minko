@@ -66,6 +66,8 @@ main(int argc, char** argv)
 
     auto loader = sceneManager->assets()->loader();
 
+    canvas->desiredFramerate(120);
+
     // setup assets
     loader->options()
         ->resizeSmoothly(true)
@@ -87,16 +89,16 @@ main(int argc, char** argv)
 
     Node::Ptr spheres;
     Node::Ptr quads;
+    Node::Ptr camera;
 
     auto _ = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
     {
         auto root = scene::Node::create("root")
             ->addComponent(sceneManager);
 
-        auto camera = scene::Node::create("camera")
-            ->addComponent(Renderer::create(0x7f7f7fff))
+        camera = scene::Node::create("camera")
             ->addComponent(Transform::create())
-            ->addComponent(OculusVRCamera::create(canvas->aspectRatio(), 0.1f, 100.0f));
+            ->addComponent(OculusVRCamera::create(canvas->width(), canvas->height(), 0.1f, 100.0f));
 
         spheres = createObjectGroup(NUM_SPHERES, false, SPHERES_DIST, SPHERES_PRIORITY, sceneManager->assets(), spheresAnimData);
         quads = createObjectGroup(NUM_QUADS, true, QUADS_DIST, QUADS_PRIORITY, sceneManager->assets(), quadsAnimData);
@@ -107,9 +109,10 @@ main(int argc, char** argv)
             ))
             ->addComponent(Surface::create(
                 sceneManager->assets()->geometry("cube"),
-                material::BasicMaterial::create()->diffuseCubeMap(
-                    sceneManager->assets()->cubeTexture(CUBE_TEXTURE)
-                )->set("triangleCulling", render::TriangleCulling::FRONT),
+                material::BasicMaterial::create()
+                    ->diffuseCubeMap(sceneManager->assets()->cubeTexture(CUBE_TEXTURE))
+                    ->triangleCulling(render::TriangleCulling::FRONT),
+                    //->diffuseColor(0xffffffff),
                 sceneManager->assets()->effect("basic")
             ));
 
@@ -119,12 +122,17 @@ main(int argc, char** argv)
         root->addChild(cube);
     });
 
+    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint width, uint height)
+    {
+        camera->component<OculusVRCamera>()->updateViewport(width, height);
+    });
+
     auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
     {
-        animateObjects(SPHERES_MOVE_AMPL, SPHERES_MOVE_SPEED, time, spheresAnimData);
+        //animateObjects(SPHERES_MOVE_AMPL, SPHERES_MOVE_SPEED, time, spheresAnimData);
         spheres->component<Transform>()->matrix()->appendRotationY(.001f);
 
-        animateObjects(QUADS_MOVE_AMPL, QUADS_MOVE_SPEED, time, quadsAnimData);
+        //animateObjects(QUADS_MOVE_AMPL, QUADS_MOVE_SPEED, time, quadsAnimData);
         quads->component<Transform>()->matrix()->appendRotationY(-.0005f);
 
         sceneManager->nextFrame(time, deltaTime);

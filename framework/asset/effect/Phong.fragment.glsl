@@ -92,6 +92,7 @@ void main(void)
 			AmbientLight currentAmbientLight = ambientLights[i];
 			ambientAccum += currentAmbientLight.color * currentAmbientLight.ambient;
 		}
+
 	#endif // NUM_AMBIENT_LIGHTS
 
 	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS || defined ENVIRONMENT_MAP_2D || defined ENVIRONMENT_CUBE_MAP

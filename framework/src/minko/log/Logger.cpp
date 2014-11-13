@@ -46,9 +46,12 @@ Logger::operator()(const std::string&	message,
     if (static_cast<int>(level) < static_cast<int>(_level))
         return;
 
+    std::string filename = std::string(file);
+    filename = filename.substr(filename.find_last_of("\\/") + 1);
+
     std::ostringstream os;
 
-    os << file << ":" << line << "\t" << function << "(): " << message;
+    os << filename << ":" << line << "\t" << function << "(): " << message;
 
     _sink->write(os.str(), level);
 }

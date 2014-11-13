@@ -70,6 +70,10 @@ namespace minko
             unsigned int                              _viewportY;
             unsigned int                              _viewportWidth;
             unsigned int                              _viewportHeight;
+            unsigned int                              _oldViewportX;
+            unsigned int                              _oldViewportY;
+            unsigned int                              _oldViewportWidth;
+            unsigned int                              _oldViewportHeight;
 
             unsigned int                              _currentTarget;
             int                                       _currentIndexBuffer;

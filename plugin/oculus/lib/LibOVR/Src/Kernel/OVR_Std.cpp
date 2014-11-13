@@ -5,16 +5,16 @@ Content     :   Standard C function implementation
 Created     :   September 19, 2012
 Notes       : 
 
-Copyright   :   Copyright 2013 Oculus VR, Inc. All Rights reserved.
+Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 
-Licensed under the Oculus VR SDK License Version 2.0 (the "License"); 
-you may not use the Oculus VR SDK except in compliance with the License, 
+Licensed under the Oculus VR Rift SDK License Version 3.1 (the "License"); 
+you may not use the Oculus VR Rift SDK except in compliance with the License, 
 which is provided at the time of installation or download, or which 
 otherwise accompanies this software in either electronic or hard copy form.
 
 You may obtain a copy of the License at
 
-http://www.oculusvr.com/licenses/LICENSE-2.0 
+http://www.oculusvr.com/licenses/LICENSE-3.1 
 
 Unless required by applicable law or agreed to in writing, the Oculus VR SDK 
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -49,7 +49,7 @@ int OVR_CDECL OVR_stricmp(const char* a, const char* b)
 #endif
 }
 
-int OVR_CDECL OVR_strnicmp(const char* a, const char* b, UPInt count)
+int OVR_CDECL OVR_strnicmp(const char* a, const char* b, size_t count)
 {
 #if defined(OVR_OS_WIN32)
 #if defined(OVR_CC_MSVC) && (OVR_CC_MSVC >= 1400)
@@ -63,7 +63,7 @@ int OVR_CDECL OVR_strnicmp(const char* a, const char* b, UPInt count)
 #endif
 }
 
-wchar_t* OVR_CDECL OVR_wcscpy(wchar_t* dest, UPInt destsize, const wchar_t* src)
+wchar_t* OVR_CDECL OVR_wcscpy(wchar_t* dest, size_t destsize, const wchar_t* src)
 {
 #if defined(OVR_MSVC_SAFESTRING)
     wcscpy_s(dest, destsize, src);
@@ -73,26 +73,26 @@ wchar_t* OVR_CDECL OVR_wcscpy(wchar_t* dest, UPInt destsize, const wchar_t* src)
     wcscpy(dest, src);
     return dest;
 #else
-    UPInt l = OVR_wcslen(src) + 1; // incl term null
+    size_t l = OVR_wcslen(src) + 1; // incl term null
     l = (l < destsize) ? l : destsize;
     memcpy(dest, src, l * sizeof(wchar_t));
     return dest;
 #endif
 }
 
-wchar_t* OVR_CDECL OVR_wcsncpy(wchar_t* dest, UPInt destsize, const wchar_t* src, UPInt count)
+wchar_t* OVR_CDECL OVR_wcsncpy(wchar_t* dest, size_t destsize, const wchar_t* src, size_t count)
 {
 #if defined(OVR_MSVC_SAFESTRING)
     wcsncpy_s(dest, destsize, src, count);
     return dest;
 #else
-    UPInt srclen = OVR_wcslen(src);
-    UPInt l = Alg::Min(srclen, count);
+    size_t srclen = OVR_wcslen(src);
+    size_t l = Alg::Min(srclen, count);
     l = (l < destsize) ? l : destsize;
     memcpy(dest, src, l * sizeof(wchar_t));
     if (count > srclen)
     {
-        UPInt remLen = Alg::Min(destsize - l, (count - srclen));
+        size_t remLen = Alg::Min(destsize - l, (count - srclen));
         memset(&dest[l], 0, sizeof(wchar_t)*remLen);
     }
     else if (l < destsize)
@@ -102,7 +102,7 @@ wchar_t* OVR_CDECL OVR_wcsncpy(wchar_t* dest, UPInt destsize, const wchar_t* src
 }
 
 
-wchar_t* OVR_CDECL OVR_wcscat(wchar_t* dest, UPInt destsize, const wchar_t* src)
+wchar_t* OVR_CDECL OVR_wcscat(wchar_t* dest, size_t destsize, const wchar_t* src)
 {
 #if defined(OVR_MSVC_SAFESTRING)
     wcscat_s(dest, destsize, src);
@@ -112,20 +112,20 @@ wchar_t* OVR_CDECL OVR_wcscat(wchar_t* dest, UPInt destsize, const wchar_t* src)
     wcscat(dest, src);
     return dest;
 #else
-    UPInt dstlen = OVR_wcslen(dest); // do not incl term null
-    UPInt srclen = OVR_wcslen(src) + 1; // incl term null
-    UPInt copylen = (dstlen + srclen < destsize) ? srclen : destsize - dstlen;
+    size_t dstlen = OVR_wcslen(dest); // do not incl term null
+    size_t srclen = OVR_wcslen(src) + 1; // incl term null
+    size_t copylen = (dstlen + srclen < destsize) ? srclen : destsize - dstlen;
     memcpy(dest + dstlen, src, copylen * sizeof(wchar_t));
     return dest;
 #endif
 }
 
-UPInt   OVR_CDECL OVR_wcslen(const wchar_t* str)
+size_t  OVR_CDECL OVR_wcslen(const wchar_t* str)
 {
 #if defined(OVR_OS_WIN32)
     return wcslen(str);
 #else
-    UPInt i = 0;
+    size_t i = 0;
     while(str[i] != '\0')
         ++i;
     return i;
@@ -254,7 +254,7 @@ double OVR_CDECL OVR_strtod(const char* string, char** tailptr)
 //            if (isNull(i)) Offsets[i] = 0;
 //            else
 //            if (isFull(i)) Offsets[i] = 1;
-//            else           Offsets[i] = UInt16(offsetCount++ * 16 + 256);
+//            else           Offsets[i] = uint16_t(offsetCount++ * 16 + 256);
 //        }
 //        for(i = 0; i < 16; ++i)
 //        {
@@ -280,7 +280,7 @@ double OVR_CDECL OVR_strtod(const char* string, char** tailptr)
 //private:
 //    bool isNull(unsigned n) const
 //    {
-//        const UInt16* p = Bits[n];
+//        const uint16_t* p = Bits[n];
 //        for(unsigned i = 0; i < 16; ++i)
 //            if (p[i] != 0) return false;
 //        return true;
@@ -288,18 +288,18 @@ double OVR_CDECL OVR_strtod(const char* string, char** tailptr)
 //
 //    bool isFull(unsigned n) const
 //    {
-//        const UInt16* p = Bits[n];
+//        const uint16_t* p = Bits[n];
 //        for(unsigned i = 0; i < 16; ++i)
 //            if (p[i] != 0xFFFF) return false;
 //        return true;
 //    }
 //
-//    UInt16 Offsets[256];
-//    UInt16 Bits[256][16];
+//    uint16_t Offsets[256];
+//    uint16_t Bits[256][16];
 //};
 
 
-const UInt16 UnicodeAlnumBits[] = {
+const uint16_t UnicodeAlnumBits[] = {
   256,    1,  272,  288,  304,  320,  336,  352,    0,  368,  384,  400,  416,  432,  448,  464,
   480,  496,  512,  528,  544,    1,  560,  576,  592,    0,    0,    0,    0,    0,  608,  624,
   640,  656,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -354,7 +354,7 @@ const UInt16 UnicodeAlnumBits[] = {
     0,    0,    0,    0,    0,    0,    0,65495,65535,65535,65535,65535,65535,65535,65535, 8191,
     0, 1023,65534, 2047,65534, 2047,65472,65534,65535,16383,65535,32767,64764, 7420,    0,    0};
 
-const UInt16 UnicodeAlphaBits[] = {
+const uint16_t UnicodeAlphaBits[] = {
   256,    1,  272,  288,  304,  320,  336,  352,    0,  368,  384,  400,  416,  432,  448,  464,
   480,  496,  512,  528,  544,    1,  560,  576,  592,    0,    0,    0,    0,    0,  608,  624,
   640,  656,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -409,7 +409,7 @@ const UInt16 UnicodeAlphaBits[] = {
     0,    0,    0,    0,    0,    0,    0,65495,65535,65535,65535,65535,65535,65535,65535, 8191,
     0,    0,65534, 2047,65534, 2047,65472,65534,65535,16383,65535,32767,64764, 7420,    0,    0};
 
-const UInt16 UnicodeDigitBits[] = {
+const uint16_t UnicodeDigitBits[] = {
   256,    0,    0,    0,    0,    0,  272,    0,    0,  288,  304,  320,  336,  352,  368,  384,
   400,    0,    0,  416,    0,    0,    0,  432,  448,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -441,7 +441,7 @@ const UInt16 UnicodeDigitBits[] = {
     0, 1023,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0, 1023,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0};
 
-const UInt16 UnicodeSpaceBits[] = {
+const uint16_t UnicodeSpaceBits[] = {
   256,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,  272,    0,    0,    0,    0,    0,    0,    0,    0,    0,
   288,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -463,7 +463,7 @@ const UInt16 UnicodeSpaceBits[] = {
  4095,    0,33536,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     1,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0};
 
-const UInt16 UnicodeXDigitBits[] = {
+const uint16_t UnicodeXDigitBits[] = {
   256,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -484,7 +484,7 @@ const UInt16 UnicodeXDigitBits[] = {
     0, 1023,  126,    0,  126,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0};
 
 // Uncomment if necessary
-//const UInt16 UnicodeCntrlBits[] = {
+//const uint16_t UnicodeCntrlBits[] = {
 //  256,    0,    0,    0,    0,    0,    0,  272,    0,    0,    0,    0,    0,    0,    0,    0,
 //    0,    0,    0,    0,    0,    0,    0,    0,  288,    0,    0,    0,    0,    0,    0,    0,
 //  304,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -508,7 +508,7 @@ const UInt16 UnicodeXDigitBits[] = {
 //    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,32768,
 //    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0, 3584};
 //
-//const UInt16 UnicodeGraphBits[] = {
+//const uint16_t UnicodeGraphBits[] = {
 //  256,    1,  272,  288,  304,  320,  336,  352,    0,  368,  384,  400,  416,  432,  448,  464,
 //  480,  496,  512,  528,  544,    1,  560,  576,  592,    0,    0,    0,    0,    0,  608,  624,
 //  640,  656,    0,  672,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -564,7 +564,7 @@ const UInt16 UnicodeXDigitBits[] = {
 //    0,    0,    0,65535,65055,65527, 3339,65495,65535,65535,65535,65535,65535,65535,65535, 8191,
 //63470,36863,65535,49151,65534,12287,65534,65534,65535,16383,65535,32767,64764, 7420,    0,    0};
 //
-//const UInt16 UnicodePrintBits[] = {
+//const uint16_t UnicodePrintBits[] = {
 //  256,    1,  272,  288,  304,  320,  336,  352,    0,  368,  384,  400,  416,  432,  448,  464,
 //  480,  496,  512,  528,  544,    1,  560,  576,  592,    0,    0,    0,    0,    0,  608,  624,
 //  640,  656,    0,  672,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -620,7 +620,7 @@ const UInt16 UnicodeXDigitBits[] = {
 //    0,    0,    0,65535,65055,65527, 3339,65495,65535,65535,65535,65535,65535,65535,65535,40959,
 //63470,36863,65535,49151,65534,12287,65534,65534,65535,16383,65535,32767,64764, 7420,    0,    0};
 //
-//const UInt16 UnicodePunctBits[] = {
+//const uint16_t UnicodePunctBits[] = {
 //  256,    0,    0,  272,    0,  288,  304,  320,    0,  336,    0,    0,    0,  352,  368,  384,
 //  400,    0,    0,  416,    0,    0,  432,  448,  464,    0,    0,    0,    0,    0,    0,    0,
 //  480,    0,    0,  496,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -658,7 +658,7 @@ const UInt16 UnicodeXDigitBits[] = {
 //    0,    0,    0,65535,65055,65527, 3339,    0,    0,    0,    0,    0,    0,    0,    0,    0,
 //63470,35840,    1,47104,    0,10240,   62,    0,    0,    0,    0,    0,    0,    0,    0,    0};
 //
-//const UInt16 UnicodeLowerBits[] = {
+//const uint16_t UnicodeLowerBits[] = {
 //  256,  272,  288,  304,  320,  336,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
 //    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,  352,  368,
 //  384,  400,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -688,7 +688,7 @@ const UInt16 UnicodeXDigitBits[] = {
 //  127,  248,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
 //    0,    0,    0,    0,65534, 2047,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0};
 //
-//const UInt16 UnicodeUpperBits[] = {
+//const uint16_t UnicodeUpperBits[] = {
 //  256,  272,  288,  304,  320,  336,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
 //  352,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,  368,  384,
 //    0,  400,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -734,7 +734,7 @@ const UInt16 UnicodeXDigitBits[] = {
 // they match AS3.
 
 
-static const UInt16 UnicodeToUpperBits[] = {
+static const uint16_t UnicodeToUpperBits[] = {
   256,  272,  288,  304,  320,  336,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,  352,  368,
     0,  384,    0,    0,  400,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -763,7 +763,7 @@ static const UInt16 UnicodeToUpperBits[] = {
     0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,65535, 1023,    0,
     0,    0,    0,    0,65534, 2047,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0};
 
-static const UInt16 UnicodeToLowerBits[] = {
+static const uint16_t UnicodeToLowerBits[] = {
   256,  272,  288,  304,  320,  336,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
   352,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,  368,  384,
     0,  400,    0,    0,  416,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -795,10 +795,10 @@ static const UInt16 UnicodeToLowerBits[] = {
 
 struct GUnicodePairType
 {
-    UInt16 Key, Value;
+    uint16_t Key, Value;
 };
 
-static inline bool CmpUnicodeKey(const GUnicodePairType& a, UInt16 key)
+static inline bool CmpUnicodeKey(const GUnicodePairType& a, uint16_t key)
 {
     return a.Key < key;
 }
@@ -1002,11 +1002,11 @@ int OVR_CDECL OVR_towupper(wchar_t charCode)
     {
         // To protect from memory overrun in case the character is not found
         // we use one extra fake element in the table {65536, 0}.
-        UPInt idx = Alg::LowerBoundSliced(
+        size_t idx = Alg::LowerBoundSliced(
             UnicodeToUpperTable,
             0,
             sizeof(UnicodeToUpperTable) / sizeof(UnicodeToUpperTable[0]) - 1,
-            (UInt16)charCode,
+            (uint16_t)charCode,
             CmpUnicodeKey);
         return UnicodeToUpperTable[idx].Value;
     }
@@ -1020,11 +1020,11 @@ int OVR_CDECL OVR_towlower(wchar_t charCode)
     {
         // To protect from memory overrun in case the character is not found
         // we use one extra fake element in the table {65536, 0}.
-        UPInt idx = Alg::LowerBoundSliced(
+        size_t idx = Alg::LowerBoundSliced(
             UnicodeToLowerTable,
             0,
             sizeof(UnicodeToLowerTable) / sizeof(UnicodeToLowerTable[0]) - 1,
-            (UInt16)charCode,
+            (uint16_t)charCode,
             CmpUnicodeKey);
         return UnicodeToLowerTable[idx].Value;
     }

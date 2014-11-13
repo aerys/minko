@@ -6,16 +6,16 @@ Content     :   File wrapper class implementation (Win32)
 Created     :   April 5, 1999
 Authors     :   Michael Antonov
 
-Copyright   :   Copyright 2013 Oculus VR, Inc. All Rights reserved.
+Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 
-Licensed under the Oculus VR SDK License Version 2.0 (the "License"); 
-you may not use the Oculus VR SDK except in compliance with the License, 
+Licensed under the Oculus VR Rift SDK License Version 3.1 (the "License"); 
+you may not use the Oculus VR Rift SDK except in compliance with the License, 
 which is provided at the time of installation or download, or which 
 otherwise accompanies this software in either electronic or hard copy form.
 
 You may obtain a copy of the License at
 
-http://www.oculusvr.com/licenses/LICENSE-2.0 
+http://www.oculusvr.com/licenses/LICENSE-3.1 
 
 Unless required by applicable law or agreed to in writing, the Oculus VR SDK 
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -60,7 +60,8 @@ static int SFerror ()
         return FileConstants::Error_IOError;
 };
 
-#ifdef OVR_OS_WIN32
+#if defined(OVR_OS_WIN32)
+#define WIN32_LEAN_AND_MEAN
 #include "windows.h"
 // A simple helper class to disable/enable system error mode, if necessary
 // Disabling happens conditionally only if a drive name is involved
@@ -89,7 +90,7 @@ public:
 class SysErrorModeDisabler
 {
 public:
-    SysErrorModeDisabler(const char* pfileName) { }
+    SysErrorModeDisabler(const char* pfileName) { OVR_UNUSED(pfileName); }
 };
 #endif // OVR_OS_WIN32
 
@@ -121,7 +122,7 @@ protected:
     int         LastOp;
 
 #ifdef OVR_FILE_VERIFY_SEEK_ERRORS
-    UByte*      pFileTestBuffer;
+    uint8_t*      pFileTestBuffer;
     unsigned    FileTestLength;
     unsigned    TestPos; // File pointer position during tests.
 #endif
@@ -157,21 +158,21 @@ public:
 
     // Return position / file size
     virtual int         Tell();
-    virtual SInt64      LTell();
+    virtual int64_t     LTell();
     virtual int         GetLength();
-    virtual SInt64      LGetLength();
+    virtual int64_t     LGetLength();
 
 //  virtual bool        Stat(FileStats *pfs);
     virtual int         GetErrorCode();
 
     // ** Stream implementation & I/O
-    virtual int         Write(const UByte *pbuffer, int numBytes);
-    virtual int         Read(UByte *pbuffer, int numBytes);
+    virtual int         Write(const uint8_t *pbuffer, int numBytes);
+    virtual int         Read(uint8_t *pbuffer, int numBytes);
     virtual int         SkipBytes(int numBytes);
     virtual int         BytesAvailable();
     virtual bool        Flush();
     virtual int         Seek(int offset, int origin);
-    virtual SInt64      LSeek(SInt64 offset, int origin);
+    virtual int64_t     LSeek(int64_t offset, int origin);
     
     virtual int         CopyFromStream(File *pStream, int byteSize);
     virtual bool        Close();    
@@ -218,7 +219,7 @@ void FILEFile::init()
     else if (OpenFlags & Open_Write)
         omode = "r+b";
 
-#ifdef OVR_OS_WIN32
+#if defined(OVR_OS_WIN32)
     SysErrorModeDisabler disabler(FileName.ToCStr());
 #endif
 
@@ -248,7 +249,7 @@ void FILEFile::init()
         fseek(fs, 0, SEEK_END);
         FileTestLength  = ftell(fs);
         fseek(fs, 0, SEEK_SET);
-        pFileTestBuffer = (UByte*)OVR_ALLOC(FileTestLength);
+        pFileTestBuffer = (uint8_t*)OVR_ALLOC(FileTestLength);
         if (pFileTestBuffer)
         {
             OVR_ASSERT(FileTestLength == (unsigned)Read(pFileTestBuffer, FileTestLength));
@@ -293,9 +294,9 @@ int     FILEFile::Tell()
     return pos;
 }
 
-SInt64  FILEFile::LTell()
+int64_t FILEFile::LTell()
 {
-    SInt64 pos = ftell(fs);
+    int64_t pos = ftell(fs);
     if (pos < 0)
         ErrorCode = SFerror();
     return pos;
@@ -313,13 +314,13 @@ int     FILEFile::GetLength()
     }
     return -1;
 }
-SInt64  FILEFile::LGetLength()
+int64_t FILEFile::LGetLength()
 {
-    SInt64 pos = LTell();
+    int64_t pos = LTell();
     if (pos >= 0)
     {
         LSeek (0, Seek_End);
-        SInt64 size = LTell();
+        int64_t size = LTell();
         LSeek (pos, Seek_Set);
         return size;
     }
@@ -332,7 +333,7 @@ int     FILEFile::GetErrorCode()
 }
 
 // ** Stream implementation & I/O
-int     FILEFile::Write(const UByte *pbuffer, int numBytes)
+int     FILEFile::Write(const uint8_t *pbuffer, int numBytes)
 {
     if (LastOp && LastOp != Open_Write)
         fflush(fs);
@@ -349,7 +350,7 @@ int     FILEFile::Write(const UByte *pbuffer, int numBytes)
     return written;
 }
 
-int     FILEFile::Read(UByte *pbuffer, int numBytes)
+int     FILEFile::Read(uint8_t *pbuffer, int numBytes)
 {
     if (LastOp && LastOp != Open_Read)
         fflush(fs);
@@ -362,7 +363,7 @@ int     FILEFile::Read(UByte *pbuffer, int numBytes)
     if (read > 0)
     {
         // Read-in data must match our pre-loaded buffer data!
-        UByte* pcompareBuffer = pFileTestBuffer + TestPos;
+        uint8_t* pcompareBuffer = pFileTestBuffer + TestPos;
         for (int i=0; i< read; i++)
         {
             OVR_ASSERT(pcompareBuffer[i] == pbuffer[i]);
@@ -380,8 +381,8 @@ int     FILEFile::Read(UByte *pbuffer, int numBytes)
 // Seeks ahead to skip bytes
 int     FILEFile::SkipBytes(int numBytes)
 {
-    SInt64 pos    = LTell();
-    SInt64 newPos = LSeek(numBytes, Seek_Cur);
+    int64_t pos    = LTell();
+    int64_t newPos = LSeek(numBytes, Seek_Cur);
 
     // Return -1 for major error
     if ((pos==-1) || (newPos==-1))
@@ -396,8 +397,8 @@ int     FILEFile::SkipBytes(int numBytes)
 // Return # of bytes till EOF
 int     FILEFile::BytesAvailable()
 {
-    SInt64 pos    = LTell();
-    SInt64 endPos = LGetLength();
+    int64_t pos    = LTell();
+    int64_t endPos = LGetLength();
 
     // Return -1 for major error
     if ((pos==-1) || (endPos==-1))
@@ -452,14 +453,14 @@ int     FILEFile::Seek(int offset, int origin)
     return (int)Tell();
 }
 
-SInt64  FILEFile::LSeek(SInt64 offset, int origin)
+int64_t FILEFile::LSeek(int64_t offset, int origin)
 {
     return Seek((int)offset,origin);
 }
 
 int FILEFile::CopyFromStream(File *pstream, int byteSize)
 {
-    UByte   buff[0x4000];
+    uint8_t*  buff = new uint8_t[0x4000];
     int     count = 0;
     int     szRequest, szRead, szWritten;
 
@@ -477,6 +478,9 @@ int FILEFile::CopyFromStream(File *pstream, int byteSize)
         if (szWritten < szRequest)
             break;
     }
+
+	delete[] buff;
+
     return count;
 }
 
@@ -561,9 +565,10 @@ bool    FILEFile::CloseCancel()
 }
 */
 
-File *FileFILEOpen(const String& path, int flags, int mode)
+Ptr<File> FileFILEOpen(const String& path, int flags, int mode)
 {
-    return new FILEFile(path, flags, mode);
+    Ptr<File> result = *new FILEFile(path, flags, mode);
+	return result;
 }
 
 // Helper function: obtain file information time.

@@ -7,16 +7,16 @@ Notes       :
 Notes       :   Much useful info at "UTF-8 and Unicode FAQ"
                 http://www.cl.cam.ac.uk/~mgk25/unicode.html
 
-Copyright   :   Copyright 2013 Oculus VR, Inc. All Rights reserved.
+Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 
-Licensed under the Oculus VR SDK License Version 2.0 (the "License"); 
-you may not use the Oculus VR SDK except in compliance with the License, 
+Licensed under the Oculus VR Rift SDK License Version 3.1 (the "License"); 
+you may not use the Oculus VR Rift SDK except in compliance with the License, 
 which is provided at the time of installation or download, or which 
 otherwise accompanies this software in either electronic or hard copy form.
 
 You may obtain a copy of the License at
 
-http://www.oculusvr.com/licenses/LICENSE-2.0 
+http://www.oculusvr.com/licenses/LICENSE-3.1 
 
 Unless required by applicable law or agreed to in writing, the Oculus VR SDK 
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,10 +30,10 @@ limitations under the License.
 
 namespace OVR { namespace UTF8Util {
 
-SPInt OVR_STDCALL GetLength(const char* buf, SPInt buflen)
+intptr_t OVR_STDCALL GetLength(const char* buf, intptr_t buflen)
 {
     const char* p = buf;
-    SPInt length = 0;
+    intptr_t length = 0;
 
     if (buflen != -1)
     {
@@ -53,10 +53,10 @@ SPInt OVR_STDCALL GetLength(const char* buf, SPInt buflen)
     return length;
 }
 
-UInt32 OVR_STDCALL GetCharAt(SPInt index, const char* putf8str, SPInt length)
+uint32_t OVR_STDCALL GetCharAt(intptr_t index, const char* putf8str, intptr_t length)
 {
     const char* buf = putf8str;
-    UInt32  c = 0;
+    uint32_t  c = 0;
 
     if (length != -1)
     {
@@ -87,7 +87,7 @@ UInt32 OVR_STDCALL GetCharAt(SPInt index, const char* putf8str, SPInt length)
     return c;
 }
 
-SPInt OVR_STDCALL GetByteIndex(SPInt index, const char *putf8str, SPInt length)
+intptr_t OVR_STDCALL GetByteIndex(intptr_t index, const char *putf8str, intptr_t length)
 {
     const char* buf = putf8str;
 
@@ -104,7 +104,7 @@ SPInt OVR_STDCALL GetByteIndex(SPInt index, const char *putf8str, SPInt length)
 
     while (index > 0) 
     {
-        UInt32 c = UTF8Util::DecodeNextChar_Advance0(&buf);
+        uint32_t c = UTF8Util::DecodeNextChar_Advance0(&buf);
         index--;
 
         if (c == 0)
@@ -114,7 +114,7 @@ SPInt OVR_STDCALL GetByteIndex(SPInt index, const char *putf8str, SPInt length)
     return buf-putf8str;
 }
 
-int OVR_STDCALL GetEncodeCharSize(UInt32 ucs_character)
+int OVR_STDCALL GetEncodeCharSize(uint32_t ucs_character)
 {
     if (ucs_character <= 0x7F)
         return 1;
@@ -132,9 +132,9 @@ int OVR_STDCALL GetEncodeCharSize(UInt32 ucs_character)
         return 0;
 }
 
-UInt32 OVR_STDCALL DecodeNextChar_Advance0(const char** putf8Buffer)
+uint32_t OVR_STDCALL DecodeNextChar_Advance0(const char** putf8Buffer)
 {
-    UInt32  uc;
+    uint32_t  uc;
     char    c;
     
     // Security considerations:
@@ -171,7 +171,7 @@ UInt32 OVR_STDCALL DecodeNextChar_Advance0(const char** putf8Buffer)
     if (c == 0)
         return 0;   // End of buffer.
     
-    if ((c & 0x80) == 0) return (UInt32) c; // Conventional 7-bit ASCII.
+    if ((c & 0x80) == 0) return (uint32_t) c; // Conventional 7-bit ASCII.
     
     // Multi-byte sequences.
     if ((c & 0xE0) == 0xC0)
@@ -236,7 +236,7 @@ UInt32 OVR_STDCALL DecodeNextChar_Advance0(const char** putf8Buffer)
 }
 
 
-void OVR_STDCALL EncodeChar(char* pbuffer, SPInt* pindex, UInt32 ucs_character)
+void OVR_STDCALL EncodeChar(char* pbuffer, intptr_t* pindex, uint32_t ucs_character)
 {
     if (ucs_character <= 0x7F)
     {
@@ -289,9 +289,9 @@ void OVR_STDCALL EncodeChar(char* pbuffer, SPInt* pindex, UInt32 ucs_character)
     }
 }
 
-SPInt OVR_STDCALL GetEncodeStringSize(const wchar_t* pchar, SPInt length)
+intptr_t OVR_STDCALL GetEncodeStringSize(const wchar_t* pchar, intptr_t length)
 {
-    SPInt len = 0;
+    intptr_t len = 0;
     if (length != -1)
         for (int i = 0; i < length; i++)
         {
@@ -307,9 +307,9 @@ SPInt OVR_STDCALL GetEncodeStringSize(const wchar_t* pchar, SPInt length)
     return len;
 }
 
-void OVR_STDCALL EncodeString(char *pbuff, const wchar_t* pchar, SPInt length)
+void OVR_STDCALL EncodeString(char *pbuff, const wchar_t* pchar, intptr_t length)
 {
-    SPInt ofs = 0;
+    intptr_t ofs = 0;
     if (length != -1)
     {
         for (int i = 0; i < length; i++)
@@ -329,14 +329,14 @@ void OVR_STDCALL EncodeString(char *pbuff, const wchar_t* pchar, SPInt length)
     pbuff[ofs] = 0;
 }
 
-UPInt OVR_STDCALL DecodeString(wchar_t *pbuff, const char* putf8str, SPInt bytesLen)
+size_t OVR_STDCALL DecodeString(wchar_t *pbuff, const char* putf8str, intptr_t bytesLen)
 {
     wchar_t *pbegin = pbuff;
     if (bytesLen == -1)
     {
         while (1)
         {
-            UInt32 ch = DecodeNextChar_Advance0(&putf8str);
+            uint32_t ch = DecodeNextChar_Advance0(&putf8str);
             if (ch == 0)
                 break;
             else if (ch >= 0xFFFF)
@@ -349,7 +349,7 @@ UPInt OVR_STDCALL DecodeString(wchar_t *pbuff, const char* putf8str, SPInt bytes
         const char* p = putf8str;
         while ((p - putf8str) < bytesLen)
         {
-            UInt32 ch = DecodeNextChar_Advance0(&p);
+            uint32_t ch = DecodeNextChar_Advance0(&p);
             if (ch >= 0xFFFF)
                 ch = 0xFFFD;
             *pbuff++ = wchar_t(ch);
@@ -384,12 +384,12 @@ UPInt OVR_STDCALL DecodeString(wchar_t *pbuff, const char* putf8str, SPInt bytes
 #include <stdio.h>
 
 
-bool    check_equal(const char* utf8_in, const UInt32* ucs_in)
+bool    check_equal(const char* utf8_in, const uint32_t* ucs_in)
 {
     for (;;)
     {
-        UInt32  next_ucs = *ucs_in++;
-        UInt32  next_ucs_from_utf8 = utf8::decode_next_unicode_character(&utf8_in);
+        uint32_t  next_ucs = *ucs_in++;
+        uint32_t  next_ucs_from_utf8 = utf8::decode_next_unicode_character(&utf8_in);
         if (next_ucs != next_ucs_from_utf8)
         {
             return false;
@@ -429,11 +429,11 @@ void    log_ascii(const char* line)
 }
 
 
-void    log_ucs(const UInt32* line)
+void    log_ucs(const uint32_t* line)
 {
     for (;;)
     {
-        UInt32  uc = *line++;
+        uint32_t  uc = *line++;
         if (uc == 0)
         {
             // End of line.
@@ -458,7 +458,7 @@ int main(int argc, const char* argv[])
 {
     {
         const char* test8 = "Ignacio Castaño";
-        const UInt32    test32[] =
+        const uint32_t  test32[] =
         {
             0x49, 0x67, 0x6E, 0x61, 0x63,
                 0x69, 0x6F, 0x20, 0x43, 0x61,
@@ -484,7 +484,7 @@ int main(int argc, const char* argv[])
             const int LINE_SIZE = 200;  // max line size
             char    line_buffer_utf8[LINE_SIZE];
             char    reencoded_utf8[6 * LINE_SIZE];
-            UInt32  line_buffer_ucs[LINE_SIZE];
+            uint32_t  line_buffer_ucs[LINE_SIZE];
             
             int byte_counter = 0;
             for (;;)
@@ -503,10 +503,10 @@ int main(int argc, const char* argv[])
                     
                     // Decode into UCS.
                     const char* p = line_buffer_utf8;
-                    UInt32* q = line_buffer_ucs;
+                    uint32_t* q = line_buffer_ucs;
                     for (;;)
                     {
-                        UInt32  uc = UTF8Util::DecodeNextChar(&p);
+                        uint32_t  uc = UTF8Util::DecodeNextChar(&p);
                         *q++ = uc;
                         
                         OVR_ASSERT(q < line_buffer_ucs + LINE_SIZE);
@@ -520,7 +520,7 @@ int main(int argc, const char* argv[])
                     int index = 0;
                     for (;;)
                     {
-                        UInt32  uc = *q++;
+                        uint32_t  uc = *q++;
                         OVR_ASSERT(index < LINE_SIZE * 6 - 6);
                         int last_index = index;
                         UTF8Util::EncodeChar(reencoded_utf8, &index, uc);

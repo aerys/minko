@@ -30,6 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #endif
 
 #include "SDL.h"
+#include "SDL_syswm.h"
 
 #if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
 # include "minko/MinkoWebGL.hpp"
@@ -52,10 +53,9 @@ using namespace minko;
 using namespace minko::math;
 using namespace minko::async;
 
-Canvas::Canvas(const std::string& name, const uint width, const uint height, bool useStencil, bool chromeless) :
+Canvas::Canvas(const std::string& name, const uint width, const uint height, int flags) :
     _name(name),
-    _useStencil(useStencil),
-    _chromeless(chromeless),
+    _flags(flags),
     _data(data::Provider::create()),
     _active(false),
     _previousTime(std::chrono::high_resolution_clock::now()),
@@ -121,16 +121,16 @@ Canvas::initializeInputs()
 void
 Canvas::initializeWindow()
 {
-#if defined(MINKO_PLUGIN_OFFSCREEN)
-    auto flags = 0;
-#else
-    auto flags = SDL_INIT_VIDEO | SDL_INIT_JOYSTICK;
+    int initFlags = 0;
+
+#if !defined(MINKO_PLUGIN_OFFSCREEN)
+    initFlags = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK;
 #endif
 
-    if (SDL_Init(flags) < 0)
+    if (SDL_Init(initFlags) < 0)
         throw std::runtime_error(SDL_GetError());
 
-    if (_useStencil)
+    if (_flags & STENCIL)
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
@@ -149,17 +149,26 @@ Canvas::initializeWindow()
 
     _window = nullptr;
 #else
-    auto sdlFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+    int windowFlags = SDL_WINDOW_OPENGL;
 
-    if (_chromeless)
-        sdlFlags |= SDL_WINDOW_BORDERLESS;
+    if (_flags & RESIZABLE)
+        windowFlags |= SDL_WINDOW_RESIZABLE;
+
+    if (_flags & CHROMELESS)
+        windowFlags |= SDL_WINDOW_BORDERLESS;
+
+    if (_flags & FULLSCREEN)
+        windowFlags |= SDL_WINDOW_FULLSCREEN;
+
+    if (_flags & HIDDEN)
+        windowFlags |= SDL_WINDOW_HIDDEN;
 
     _window = SDL_CreateWindow(
         _name.c_str(),
         SDL_WINDOWPOS_CENTERED, // SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_CENTERED, // SDL_WINDOWPOS_UNDEFINED,
         _width, _height,
-        sdlFlags
+        windowFlags
     );
 
     // Reset window size after window creation because certain platforms (iOS, Android)
@@ -172,7 +181,31 @@ Canvas::initializeWindow()
         width(w);
         height(h);
     }
+
+    _audio = SDLAudio::create(shared_from_this());
 #endif
+}
+
+void*
+Canvas::systemWindow() const
+{
+    SDL_Window* sdlWindow = _window;
+    SDL_SysWMinfo info;
+
+    SDL_VERSION(&info.version);
+
+    if (SDL_GetWindowWMInfo(sdlWindow, &info))
+    {
+#if MINKO_PLATFORM == MINKO_PLATFORM_IOS
+        return info.info.uikit.window;
+#elif MINKO_PLATFORM == MINKO_PLATFORM_OSX
+        return info.info.cocoa.window;
+#elif MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
+        return info.info.win.window;
+#endif
+    }
+
+    return nullptr;
 }
 
 void
@@ -762,6 +795,7 @@ void
 Canvas::quit()
 {
     _active = false;
+    _audio = nullptr;
 }
 
 Canvas::WorkerPtr

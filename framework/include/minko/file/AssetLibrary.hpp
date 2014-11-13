@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
 #include "minko/scene/Layout.hpp"
+#include "minko/audio/Sound.hpp"
 
 namespace minko
 {
@@ -49,6 +50,7 @@ namespace minko
             typedef std::shared_ptr<scene::Node>                            NodePtr;
             typedef std::shared_ptr<component::AbstractScript>              AbsScriptPtr;
             typedef std::shared_ptr<data::Provider>                         MaterialPtr;
+            typedef std::shared_ptr<audio::Sound>                           SoundPtr;
 
         private:
             AbsContextPtr                                                   _context;
@@ -63,6 +65,7 @@ namespace minko
             std::unordered_map<std::string, std::vector<unsigned char>>     _blobs;
             std::unordered_map<std::string, AbsScriptPtr>                   _scripts;
             std::unordered_map<std::string, Layouts>                        _layouts;
+            std::unordered_map<std::string, SoundPtr>                       _sounds;
 
             Signal<Ptr, std::shared_ptr<AbstractParser>>::Ptr               _parserError;
             Signal<Ptr>::Ptr                                                _ready;
@@ -192,6 +195,12 @@ namespace minko
 
             Ptr
             layout(const std::string& name, Layouts);
+
+            audio::Sound::Ptr
+            sound(const std::string& name);
+
+            AssetLibrary::Ptr
+            sound(const std::string& name, audio::Sound::Ptr sound);
 
         private:
             AssetLibrary(AbsContextPtr context);

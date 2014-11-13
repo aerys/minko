@@ -11,16 +11,16 @@ Notes       :   errno may not be preserved across use of GBaseFile member functi
             :   Directories cannot be deleted while files opened from them are in use
                 (For the GetFullName function)
 
-Copyright   :   Copyright 2013 Oculus VR, Inc. All Rights reserved.
+Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 
-Licensed under the Oculus VR SDK License Version 2.0 (the "License"); 
-you may not use the Oculus VR SDK except in compliance with the License, 
+Licensed under the Oculus VR Rift SDK License Version 3.1 (the "License"); 
+you may not use the Oculus VR Rift SDK except in compliance with the License, 
 which is provided at the time of installation or download, or which 
 otherwise accompanies this software in either electronic or hard copy form.
 
 You may obtain a copy of the License at
 
-http://www.oculusvr.com/licenses/LICENSE-2.0 
+http://www.oculusvr.com/licenses/LICENSE-3.1 
 
 Unless required by applicable law or agreed to in writing, the Oculus VR SDK 
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -48,9 +48,9 @@ class   SysFile;
 struct FileStat
 {
     // No change or create time because they are not available on most systems
-    SInt64  ModifyTime;
-    SInt64  AccessTime;
-    SInt64  FileSize;
+    int64_t ModifyTime;
+    int64_t AccessTime;
+    int64_t FileSize;
 
     bool operator== (const FileStat& stat) const
     {
@@ -86,7 +86,7 @@ public:
     OVR_FORCE_INLINE bool  Create(const String& path, int mode = Mode_ReadWrite)
     { return Open(path, Open_ReadWrite|Open_Create, mode); }
 
-    // Helper function: obtain file statistics information. In GFx, this is used to detect file changes.
+    // Helper function: obtain file statistics information. In OVR, this is used to detect file changes.
     // Return 0 if function failed, most likely because the file doesn't exist.
     static bool OVR_CDECL GetFileStat(FileStat* pfileStats, const String& path);
     

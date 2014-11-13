@@ -1305,19 +1305,19 @@ OpenGLES2Context::setUniform(const uint& location, const uint& size, bool transp
 
         for (uint i = 0; i < size; ++i)
         {
-            const float*    matrix    = values        + (i << 4);
-            float*            tmatrix    = transposed    + (i << 4);
+            const float* matrix = values + (i << 4);
+            float* tmatrix = transposed + (i << 4);
 
-            tmatrix[0]    = matrix[0];
-            tmatrix[1]    = matrix[4];
-            tmatrix[2]    = matrix[8];
-            tmatrix[3]    = matrix[12];
-            tmatrix[4]    = matrix[1];
-            tmatrix[5]    = matrix[5];
-            tmatrix[6]    = matrix[9];
-            tmatrix[7]    = matrix[13];
-            tmatrix[8]    = matrix[2];
-            tmatrix[9]    = matrix[6];
+            tmatrix[0]  = matrix[0];
+            tmatrix[1]  = matrix[4];
+            tmatrix[2]  = matrix[8];
+            tmatrix[3]  = matrix[12];
+            tmatrix[4]  = matrix[1];
+            tmatrix[5]  = matrix[5];
+            tmatrix[6]  = matrix[9];
+            tmatrix[7]  = matrix[13];
+            tmatrix[8]  = matrix[2];
+            tmatrix[9]  = matrix[6];
             tmatrix[10] = matrix[10];
             tmatrix[11] = matrix[14];
             tmatrix[12] = matrix[3];
@@ -1529,7 +1529,7 @@ OpenGLES2Context::setRenderToBackBuffer()
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
-    glViewport(_viewportX, _viewportY, _viewportWidth, _viewportHeight);
+    configureViewport(_oldViewportX, _oldViewportY, _oldViewportWidth, _oldViewportHeight);
 
     _currentTarget = 0;
 
@@ -1545,6 +1545,13 @@ OpenGLES2Context::setRenderToTexture(uint texture, bool enableDepthAndStencil)
     if (_frameBuffers.count(texture) == 0)
         throw std::logic_error("this texture cannot be used for RTT");
 
+    if (!_currentTarget)
+    {
+        _oldViewportX = _viewportX;
+        _oldViewportY = _viewportY;
+        _oldViewportWidth = _viewportWidth;
+        _oldViewportHeight = _viewportHeight;
+    }
     _currentTarget = texture;
 
     glBindFramebuffer(GL_FRAMEBUFFER, _frameBuffers[texture]);
@@ -1556,7 +1563,7 @@ OpenGLES2Context::setRenderToTexture(uint texture, bool enableDepthAndStencil)
 
     auto textureSize = _textureSizes[texture];
 
-    glViewport(0, 0, textureSize.first, textureSize.second);
+    configureViewport(0, 0, textureSize.first, textureSize.second);
 
     checkForErrors();
 }

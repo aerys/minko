@@ -76,8 +76,8 @@ namespace minko
                 return ctrl;
             }
 
-			AbstractComponent::Ptr
-			clone(const CloneOption& option);
+            AbstractComponent::Ptr
+            clone(const CloneOption& option);
 
             ~Transform() = default;
 
@@ -203,8 +203,8 @@ namespace minko
                     return ctrl;
                 }
 
-				AbstractComponent::Ptr
-				clone(const CloneOption& option);
+                AbstractComponent::Ptr
+                clone(const CloneOption& option);
 
                 void
                 forceUpdate(NodePtr node, bool updateTransformLists = false);

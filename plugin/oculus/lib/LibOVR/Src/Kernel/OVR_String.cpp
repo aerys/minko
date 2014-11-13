@@ -6,16 +6,16 @@ Content     :   String UTF8 string implementation with copy-on-write semantics
 Created     :   September 19, 2012
 Notes       : 
 
-Copyright   :   Copyright 2013 Oculus VR, Inc. All Rights reserved.
+Copyright   :   Copyright 2014 Oculus VR, Inc. All Rights reserved.
 
-Licensed under the Oculus VR SDK License Version 2.0 (the "License"); 
-you may not use the Oculus VR SDK except in compliance with the License, 
+Licensed under the Oculus VR Rift SDK License Version 3.1 (the "License"); 
+you may not use the Oculus VR Rift SDK except in compliance with the License, 
 which is provided at the time of installation or download, or which 
 otherwise accompanies this software in either electronic or hard copy form.
 
 You may obtain a copy of the License at
 
-http://www.oculusvr.com/licenses/LICENSE-2.0 
+http://www.oculusvr.com/licenses/LICENSE-3.1 
 
 Unless required by applicable law or agreed to in writing, the Oculus VR SDK 
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -36,7 +36,7 @@ limitations under the License.
 
 namespace OVR {
 
-#define String_LengthIsSize (UPInt(1) << String::Flag_LengthIsSizeShift)
+#define String_LengthIsSize (size_t(1) << String::Flag_LengthIsSizeShift)
 
 String::DataDesc String::NullData = {String_LengthIsSize, 1, {0} };
 
@@ -50,16 +50,16 @@ String::String()
 String::String(const char* pdata)
 {
     // Obtain length in bytes; it doesn't matter if _data is UTF8.
-    UPInt size = pdata ? OVR_strlen(pdata) : 0; 
+    size_t size = pdata ? OVR_strlen(pdata) : 0; 
     pData = AllocDataCopy1(size, 0, pdata, size);
 };
 
 String::String(const char* pdata1, const char* pdata2, const char* pdata3)
 {
     // Obtain length in bytes; it doesn't matter if _data is UTF8.
-    UPInt size1 = pdata1 ? OVR_strlen(pdata1) : 0; 
-    UPInt size2 = pdata2 ? OVR_strlen(pdata2) : 0; 
-    UPInt size3 = pdata3 ? OVR_strlen(pdata3) : 0; 
+    size_t size1 = pdata1 ? OVR_strlen(pdata1) : 0; 
+    size_t size2 = pdata2 ? OVR_strlen(pdata2) : 0; 
+    size_t size3 = pdata3 ? OVR_strlen(pdata3) : 0; 
 
     DataDesc *pdataDesc = AllocDataCopy2(size1 + size2 + size3, 0,
                                          pdata1, size1, pdata2, size2);
@@ -67,14 +67,14 @@ String::String(const char* pdata1, const char* pdata2, const char* pdata3)
     pData = pdataDesc;    
 }
 
-String::String(const char* pdata, UPInt size)
+String::String(const char* pdata, size_t size)
 {
     OVR_ASSERT((size == 0) || (pdata != 0));
     pData = AllocDataCopy1(size, 0, pdata, size);
 };
 
 
-String::String(const InitStruct& src, UPInt size)
+String::String(const InitStruct& src, size_t size)
 {
     pData = AllocData(size, 0);
     src.InitString(GetData()->Data, size);
@@ -101,7 +101,7 @@ String::String(const wchar_t* data)
 }
 
 
-String::DataDesc* String::AllocData(UPInt size, UPInt lengthIsSize)
+String::DataDesc* String::AllocData(size_t size, size_t lengthIsSize)
 {
     String::DataDesc* pdesc;
 
@@ -120,17 +120,17 @@ String::DataDesc* String::AllocData(UPInt size, UPInt lengthIsSize)
 }
 
 
-String::DataDesc* String::AllocDataCopy1(UPInt size, UPInt lengthIsSize,
-                                         const char* pdata, UPInt copySize)
+String::DataDesc* String::AllocDataCopy1(size_t size, size_t lengthIsSize,
+                                         const char* pdata, size_t copySize)
 {
     String::DataDesc* pdesc = AllocData(size, lengthIsSize);
     memcpy(pdesc->Data, pdata, copySize);
     return pdesc;
 }
 
-String::DataDesc* String::AllocDataCopy2(UPInt size, UPInt lengthIsSize,
-                                         const char* pdata1, UPInt copySize1,
-                                         const char* pdata2, UPInt copySize2)
+String::DataDesc* String::AllocDataCopy2(size_t size, size_t lengthIsSize,
+                                         const char* pdata1, size_t copySize1,
+                                         const char* pdata2, size_t copySize2)
 {
     String::DataDesc* pdesc = AllocData(size, lengthIsSize);
     memcpy(pdesc->Data, pdata1, copySize1);
@@ -139,16 +139,16 @@ String::DataDesc* String::AllocDataCopy2(UPInt size, UPInt lengthIsSize,
 }
 
 
-UPInt String::GetLength() const 
+size_t String::GetLength() const 
 {
     // Optimize length accesses for non-UTF8 character strings. 
     DataDesc* pdata = GetData();
-    UPInt     length, size = pdata->GetSize();
+    size_t    length, size = pdata->GetSize();
     
     if (pdata->LengthIsSize())
         return size;    
     
-    length = (UPInt)UTF8Util::GetLength(pdata->Data, (UPInt)size);
+    length = (size_t)UTF8Util::GetLength(pdata->Data, (size_t)size);
     
     if (length == size)
         pdata->Size |= String_LengthIsSize;
@@ -157,15 +157,15 @@ UPInt String::GetLength() const
 }
 
 
-//static UInt32 String_CharSearch(const char* buf, )
+//static uint32_t String_CharSearch(const char* buf, )
 
 
-UInt32 String::GetCharAt(UPInt index) const 
+uint32_t String::GetCharAt(size_t index) const 
 {  
-    SPInt       i = (SPInt) index;
+    intptr_t    i = (intptr_t) index;
     DataDesc*   pdata = GetData();
     const char* buf = pdata->Data;
-    UInt32      c;
+    uint32_t    c;
     
     if (pdata->LengthIsSize())
     {
@@ -178,13 +178,13 @@ UInt32 String::GetCharAt(UPInt index) const
     return c;
 }
 
-UInt32 String::GetFirstCharAt(UPInt index, const char** offset) const
+uint32_t String::GetFirstCharAt(size_t index, const char** offset) const
 {
     DataDesc*   pdata = GetData();
-    SPInt       i = (SPInt) index;
+    intptr_t    i = (intptr_t) index;
     const char* buf = pdata->Data;
     const char* end = buf + pdata->GetSize();
-    UInt32      c;
+    uint32_t    c;
 
     do 
     {
@@ -204,40 +204,40 @@ UInt32 String::GetFirstCharAt(UPInt index, const char** offset) const
     return c;
 }
 
-UInt32 String::GetNextChar(const char** offset) const
+uint32_t String::GetNextChar(const char** offset) const
 {
     return UTF8Util::DecodeNextChar(offset);
 }
 
 
 
-void String::AppendChar(UInt32 ch)
+void String::AppendChar(uint32_t ch)
 {
     DataDesc*   pdata = GetData();
-    UPInt       size = pdata->GetSize();
+    size_t      size = pdata->GetSize();
     char        buff[8];
-    SPInt       encodeSize = 0;
+    intptr_t    encodeSize = 0;
 
     // Converts ch into UTF8 string and fills it into buff.   
     UTF8Util::EncodeChar(buff, &encodeSize, ch);
     OVR_ASSERT(encodeSize >= 0);
 
-    SetData(AllocDataCopy2(size + (UPInt)encodeSize, 0,
-                           pdata->Data, size, buff, (UPInt)encodeSize));
+    SetData(AllocDataCopy2(size + (size_t)encodeSize, 0,
+                           pdata->Data, size, buff, (size_t)encodeSize));
     pdata->Release();
 }
 
 
-void String::AppendString(const wchar_t* pstr, SPInt len)
+void String::AppendString(const wchar_t* pstr, intptr_t len)
 {
     if (!pstr)
         return;
 
     DataDesc*   pdata = GetData();
-    UPInt       oldSize = pdata->GetSize();    
-    UPInt       encodeSize = (UPInt)UTF8Util::GetEncodeStringSize(pstr, len);
+    size_t      oldSize = pdata->GetSize();    
+    size_t      encodeSize = (size_t)UTF8Util::GetEncodeStringSize(pstr, len);
 
-    DataDesc*   pnewData = AllocDataCopy1(oldSize + (UPInt)encodeSize, 0,
+    DataDesc*   pnewData = AllocDataCopy1(oldSize + (size_t)encodeSize, 0,
                                           pdata->Data, oldSize);
     UTF8Util::EncodeString(pnewData->Data + oldSize,  pstr, len);
 
@@ -246,22 +246,22 @@ void String::AppendString(const wchar_t* pstr, SPInt len)
 }
 
 
-void String::AppendString(const char* putf8str, SPInt utf8StrSz)
+void String::AppendString(const char* putf8str, intptr_t utf8StrSz)
 {
     if (!putf8str || !utf8StrSz)
         return;
     if (utf8StrSz == -1)
-        utf8StrSz = (SPInt)OVR_strlen(putf8str);
+        utf8StrSz = (intptr_t)OVR_strlen(putf8str);
 
     DataDesc*   pdata = GetData();
-    UPInt       oldSize = pdata->GetSize();
+    size_t      oldSize = pdata->GetSize();
 
-    SetData(AllocDataCopy2(oldSize + (UPInt)utf8StrSz, 0,
-                           pdata->Data, oldSize, putf8str, (UPInt)utf8StrSz));
+    SetData(AllocDataCopy2(oldSize + (size_t)utf8StrSz, 0,
+                           pdata->Data, oldSize, putf8str, (size_t)utf8StrSz));
     pdata->Release();
 }
 
-void    String::AssignString(const InitStruct& src, UPInt size)
+void    String::AssignString(const InitStruct& src, size_t size)
 {
     DataDesc*   poldData = GetData();
     DataDesc*   pnewData = AllocData(size, 0);
@@ -270,7 +270,7 @@ void    String::AssignString(const InitStruct& src, UPInt size)
     poldData->Release();
 }
 
-void    String::AssignString(const char* putf8str, UPInt size)
+void    String::AssignString(const char* putf8str, size_t size)
 {
     DataDesc* poldData = GetData();
     SetData(AllocDataCopy1(size, 0, putf8str, size));
@@ -285,7 +285,7 @@ void    String::operator = (const char* pstr)
 void    String::operator = (const wchar_t* pwstr)
 {
     DataDesc*   poldData = GetData();
-    UPInt       size = pwstr ? (UPInt)UTF8Util::GetEncodeStringSize(pwstr) : 0;
+    size_t      size = pwstr ? (size_t)UTF8Util::GetEncodeStringSize(pwstr) : 0;
 
     DataDesc*   pnewData = AllocData(size, 0);
     UTF8Util::EncodeString(pnewData->Data, pwstr);
@@ -316,9 +316,9 @@ void    String::operator += (const String& src)
 {
     DataDesc   *pourData = GetData(),
                *psrcData = src.GetData();
-    UPInt       ourSize  = pourData->GetSize(),
+    size_t      ourSize  = pourData->GetSize(),
                 srcSize  = psrcData->GetSize();
-    UPInt       lflag    = pourData->GetLengthFlag() & psrcData->GetLengthFlag();
+    size_t      lflag    = pourData->GetLengthFlag() & psrcData->GetLengthFlag();
 
     SetData(AllocDataCopy2(ourSize + srcSize, lflag,
                            pourData->Data, ourSize, psrcData->Data, srcSize));
@@ -340,12 +340,12 @@ String   String::operator + (const String& src) const
     return tmp1;
 }
 
-void    String::Remove(UPInt posAt, SPInt removeLength)
+void    String::Remove(size_t posAt, intptr_t removeLength)
 {
     DataDesc*   pdata = GetData();
-    UPInt       oldSize = pdata->GetSize();    
+    size_t      oldSize = pdata->GetSize();    
     // Length indicates the number of characters to remove. 
-    UPInt       length = GetLength();
+    size_t      length = GetLength();
 
     // If index is past the string, nothing to remove.
     if (posAt >= length)
@@ -355,8 +355,8 @@ void    String::Remove(UPInt posAt, SPInt removeLength)
         removeLength = length - posAt;
 
     // Get the byte position of the UTF8 char at position posAt.
-    SPInt bytePos    = UTF8Util::GetByteIndex(posAt, pdata->Data, oldSize);
-    SPInt removeSize = UTF8Util::GetByteIndex(removeLength, pdata->Data + bytePos, oldSize-bytePos);
+    intptr_t bytePos    = UTF8Util::GetByteIndex(posAt, pdata->Data, oldSize);
+    intptr_t removeSize = UTF8Util::GetByteIndex(removeLength, pdata->Data + bytePos, oldSize-bytePos);
 
     SetData(AllocDataCopy2(oldSize - removeSize, pdata->GetLengthFlag(),
                            pdata->Data, bytePos,
@@ -365,9 +365,9 @@ void    String::Remove(UPInt posAt, SPInt removeLength)
 }
 
 
-String   String::Substring(UPInt start, UPInt end) const
+String   String::Substring(size_t start, size_t end) const
 {
-    UPInt length = GetLength();
+    size_t length = GetLength();
     if ((start >= length) || (start >= end))
         return String();   
 
@@ -378,9 +378,9 @@ String   String::Substring(UPInt start, UPInt end) const
         return String(pdata->Data + start, end - start);
     
     // Get position of starting character.
-    SPInt byteStart = UTF8Util::GetByteIndex(start, pdata->Data, pdata->GetSize());
-    SPInt byteSize  = UTF8Util::GetByteIndex(end - start, pdata->Data + byteStart, pdata->GetSize()-byteStart);
-    return String(pdata->Data + byteStart, (UPInt)byteSize);
+    intptr_t byteStart = UTF8Util::GetByteIndex(start, pdata->Data, pdata->GetSize());
+    intptr_t byteSize  = UTF8Util::GetByteIndex(end - start, pdata->Data + byteStart, pdata->GetSize()-byteStart);
+    return String(pdata->Data + byteStart, (size_t)byteSize);
 }
 
 void String::Clear()
@@ -393,11 +393,11 @@ void String::Clear()
 
 String   String::ToUpper() const 
 {       
-    UInt32      c;
+    uint32_t    c;
     const char* psource = GetData()->Data;
     const char* pend = psource + GetData()->GetSize();
     String      str;
-    SPInt       bufferOffset = 0;
+    intptr_t    bufferOffset = 0;
     char        buffer[512];
     
     while(psource < pend)
@@ -405,7 +405,7 @@ String   String::ToUpper() const
         do {            
             c = UTF8Util::DecodeNextChar_Advance0(&psource);
             UTF8Util::EncodeChar(buffer, &bufferOffset, OVR_towupper(wchar_t(c)));
-        } while ((psource < pend) && (bufferOffset < SPInt(sizeof(buffer)-8)));
+        } while ((psource < pend) && (bufferOffset < intptr_t(sizeof(buffer)-8)));
 
         // Append string a piece at a time.
         str.AppendString(buffer, bufferOffset);
@@ -417,11 +417,11 @@ String   String::ToUpper() const
 
 String   String::ToLower() const 
 {
-    UInt32      c;
+    uint32_t    c;
     const char* psource = GetData()->Data;
     const char* pend = psource + GetData()->GetSize();
     String      str;
-    SPInt       bufferOffset = 0;
+    intptr_t    bufferOffset = 0;
     char        buffer[512];
 
     while(psource < pend)
@@ -429,7 +429,7 @@ String   String::ToLower() const
         do {
             c = UTF8Util::DecodeNextChar_Advance0(&psource);
             UTF8Util::EncodeChar(buffer, &bufferOffset, OVR_towlower(wchar_t(c)));
-        } while ((psource < pend) && (bufferOffset < SPInt(sizeof(buffer)-8)));
+        } while ((psource < pend) && (bufferOffset < intptr_t(sizeof(buffer)-8)));
 
         // Append string a piece at a time.
         str.AppendString(buffer, bufferOffset);
@@ -441,13 +441,13 @@ String   String::ToLower() const
 
 
 
-String& String::Insert(const char* substr, UPInt posAt, SPInt strSize)
+String& String::Insert(const char* substr, size_t posAt, intptr_t strSize)
 {
     DataDesc* poldData   = GetData();
-    UPInt     oldSize    = poldData->GetSize();
-    UPInt     insertSize = (strSize < 0) ? OVR_strlen(substr) : (UPInt)strSize;    
-    UPInt     byteIndex  =  (poldData->LengthIsSize()) ?
-                            posAt : (UPInt)UTF8Util::GetByteIndex(posAt, poldData->Data, oldSize);
+    size_t    oldSize    = poldData->GetSize();
+    size_t    insertSize = (strSize < 0) ? OVR_strlen(substr) : (size_t)strSize;    
+    size_t    byteIndex  =  (poldData->LengthIsSize()) ?
+                            posAt : (size_t)UTF8Util::GetByteIndex(posAt, poldData->Data, oldSize);
 
     OVR_ASSERT(byteIndex <= oldSize);
     
@@ -461,27 +461,27 @@ String& String::Insert(const char* substr, UPInt posAt, SPInt strSize)
 }
 
 /*
-String& String::Insert(const UInt32* substr, UPInt posAt, SPInt len)
+String& String::Insert(const uint32_t* substr, size_t posAt, intptr_t len)
 {
-    for (SPInt i = 0; i < len; ++i)
+    for (intptr_t i = 0; i < len; ++i)
     {
-        UPInt charw = InsertCharAt(substr[i], posAt);
+        size_t charw = InsertCharAt(substr[i], posAt);
         posAt += charw;
     }
     return *this;
 }
 */
 
-UPInt String::InsertCharAt(UInt32 c, UPInt posAt)
+size_t String::InsertCharAt(uint32_t c, size_t posAt)
 {
-    char    buf[8];
-    SPInt   index = 0;
+    char      buf[8];
+    intptr_t  index = 0;
     UTF8Util::EncodeChar(buf, &index, c);
     OVR_ASSERT(index >= 0);
-    buf[(UPInt)index] = 0;
+    buf[(size_t)index] = 0;
 
     Insert(buf, posAt, index);
-    return (UPInt)index;
+    return (size_t)index;
 }
 
 
@@ -490,22 +490,22 @@ int String::CompareNoCase(const char* a, const char* b)
     return OVR_stricmp(a, b);
 }
 
-int String::CompareNoCase(const char* a, const char* b, SPInt len)
+int String::CompareNoCase(const char* a, const char* b, intptr_t len)
 {
     if (len)
     {
-        SPInt f,l;
-        SPInt slen = len;
+        intptr_t f,l;
+        intptr_t slen = len;
         const char *s = b;
         do {
-            f = (SPInt)OVR_tolower((int)(*(a++)));
-            l = (SPInt)OVR_tolower((int)(*(b++)));
+            f = (intptr_t)OVR_tolower((int)(*(a++)));
+            l = (intptr_t)OVR_tolower((int)(*(b++)));
         } while (--len && f && (f == l) && *b != 0);
 
         if (f == l && (len != 0 || *b != 0))
         {
-            f = (SPInt)slen;
-            l = (SPInt)OVR_strlen(s);
+            f = (intptr_t)slen;
+            l = (intptr_t)OVR_strlen(s);
             return int(f - l);
         }
 
@@ -518,10 +518,10 @@ int String::CompareNoCase(const char* a, const char* b, SPInt len)
 // ***** Implement hash static functions
 
 // Hash function
-UPInt String::BernsteinHashFunction(const void* pdataIn, UPInt size, UPInt seed)
+size_t String::BernsteinHashFunction(const void* pdataIn, size_t size, size_t seed)
 {
-    const UByte*    pdata   = (const UByte*) pdataIn;
-    UPInt           h       = seed;
+    const uint8_t*    pdata   = (const uint8_t*) pdataIn;
+    size_t          h       = seed;
     while (size > 0)
     {
         size--;
@@ -532,10 +532,10 @@ UPInt String::BernsteinHashFunction(const void* pdataIn, UPInt size, UPInt seed)
 }
 
 // Hash function, case-insensitive
-UPInt String::BernsteinHashFunctionCIS(const void* pdataIn, UPInt size, UPInt seed)
+size_t String::BernsteinHashFunctionCIS(const void* pdataIn, size_t size, size_t seed)
 {
-    const UByte*    pdata = (const UByte*) pdataIn;
-    UPInt           h = seed;
+    const uint8_t*    pdata = (const uint8_t*) pdataIn;
+    size_t          h = seed;
     while (size > 0)
     {
         size--;
@@ -560,7 +560,7 @@ StringBuffer::StringBuffer()
 {
 }
 
-StringBuffer::StringBuffer(UPInt growSize)
+StringBuffer::StringBuffer(size_t growSize)
     : pData(NULL), Size(0), BufferSize(0), GrowSize(OVR_SBUFF_DEFAULT_GROW_SIZE), LengthIsSize(false)
 {
     SetGrowSize(growSize);
@@ -569,10 +569,10 @@ StringBuffer::StringBuffer(UPInt growSize)
 StringBuffer::StringBuffer(const char* data)
     : pData(NULL), Size(0), BufferSize(0), GrowSize(OVR_SBUFF_DEFAULT_GROW_SIZE), LengthIsSize(false)
 {
-    *this = data;
+    AppendString(data);
 }
 
-StringBuffer::StringBuffer(const char* data, UPInt dataSize)
+StringBuffer::StringBuffer(const char* data, size_t dataSize)
     : pData(NULL), Size(0), BufferSize(0), GrowSize(OVR_SBUFF_DEFAULT_GROW_SIZE), LengthIsSize(false)
 {
     AppendString(data, dataSize);
@@ -585,10 +585,9 @@ StringBuffer::StringBuffer(const String& src)
 }
 
 StringBuffer::StringBuffer(const StringBuffer& src)
-    : pData(NULL), Size(0), BufferSize(src.GetGrowSize()), GrowSize(OVR_SBUFF_DEFAULT_GROW_SIZE), LengthIsSize(false)
+    : pData(NULL), Size(0), BufferSize(0), GrowSize(OVR_SBUFF_DEFAULT_GROW_SIZE), LengthIsSize(false)
 {
     AppendString(src.ToCStr(), src.GetSize());
-    LengthIsSize = src.LengthIsSize;
 }
 
 StringBuffer::StringBuffer(const wchar_t* data)
@@ -602,32 +601,32 @@ StringBuffer::~StringBuffer()
     if (pData)
         OVR_FREE(pData);
 }
-void StringBuffer::SetGrowSize(UPInt growSize) 
+void StringBuffer::SetGrowSize(size_t growSize) 
 { 
     if (growSize <= 16)
         GrowSize = 16;
     else
     {
-        UByte bits = Alg::UpperBit(UInt32(growSize-1));
-        UPInt size = 1<<bits;
+        uint8_t bits = Alg::UpperBit(uint32_t(growSize-1));
+		size_t size = (size_t)1 << bits;
         GrowSize = size == growSize ? growSize : size;
     }
 }
 
-UPInt StringBuffer::GetLength() const
+size_t StringBuffer::GetLength() const
 {
-    UPInt length, size = GetSize();
+    size_t length, size = GetSize();
     if (LengthIsSize)
         return size;
 
-    length = (UPInt)UTF8Util::GetLength(pData, (UPInt)GetSize());
+    length = (size_t)UTF8Util::GetLength(pData, (size_t)GetSize());
 
     if (length == GetSize())
         LengthIsSize = true;
     return length;
 }
 
-void    StringBuffer::Reserve(UPInt _size)
+void    StringBuffer::Reserve(size_t _size)
 {
     if (_size >= BufferSize) // >= because of trailing zero! (!AB)
     {
@@ -638,7 +637,7 @@ void    StringBuffer::Reserve(UPInt _size)
             pData = (char*)OVR_REALLOC(pData, BufferSize);
     }
 }
-void    StringBuffer::Resize(UPInt _size)
+void    StringBuffer::Resize(size_t _size)
 {
     Reserve(_size);
     LengthIsSize = false;
@@ -661,45 +660,45 @@ void StringBuffer::Clear()
     */
 }
 // Appends a character
-void     StringBuffer::AppendChar(UInt32 ch)
+void     StringBuffer::AppendChar(uint32_t ch)
 {
     char    buff[8];
-    UPInt   origSize = GetSize();
+    size_t  origSize = GetSize();
 
     // Converts ch into UTF8 string and fills it into buff. Also increments index according to the number of bytes
     // in the UTF8 string.
-    SPInt   srcSize = 0;
+    intptr_t   srcSize = 0;
     UTF8Util::EncodeChar(buff, &srcSize, ch);
     OVR_ASSERT(srcSize >= 0);
     
-    UPInt size = origSize + srcSize;
+    size_t size = origSize + srcSize;
     Resize(size);
     memcpy(pData + origSize, buff, srcSize);
 }
 
 // Append a string
-void     StringBuffer::AppendString(const wchar_t* pstr, SPInt len)
+void     StringBuffer::AppendString(const wchar_t* pstr, intptr_t len)
 {
     if (!pstr)
         return;
 
-    SPInt   srcSize     = UTF8Util::GetEncodeStringSize(pstr, len);
-    UPInt   origSize    = GetSize();
-    UPInt   size        = srcSize + origSize;
+    intptr_t srcSize  = UTF8Util::GetEncodeStringSize(pstr, len);
+    size_t   origSize = GetSize();
+    size_t   size     = srcSize + origSize;
 
     Resize(size);
     UTF8Util::EncodeString(pData + origSize,  pstr, len);
 }
 
-void      StringBuffer::AppendString(const char* putf8str, SPInt utf8StrSz)
+void      StringBuffer::AppendString(const char* putf8str, intptr_t utf8StrSz)
 {
     if (!putf8str || !utf8StrSz)
         return;
     if (utf8StrSz == -1)
-        utf8StrSz = (SPInt)OVR_strlen(putf8str);
+        utf8StrSz = (intptr_t)OVR_strlen(putf8str);
 
-    UPInt   origSize    = GetSize();
-    UPInt   size        = utf8StrSz + origSize;
+    size_t  origSize = GetSize();
+    size_t  size     = utf8StrSz + origSize;
 
     Resize(size);
     memcpy(pData + origSize, putf8str, utf8StrSz);
@@ -709,7 +708,7 @@ void      StringBuffer::AppendString(const char* putf8str, SPInt utf8StrSz)
 void      StringBuffer::operator = (const char* pstr)
 {
     pstr = pstr ? pstr : "";
-    UPInt size = OVR_strlen(pstr);
+    size_t size = OVR_strlen(pstr);
     Resize(size);
     memcpy(pData, pstr, size);
 }
@@ -717,7 +716,7 @@ void      StringBuffer::operator = (const char* pstr)
 void      StringBuffer::operator = (const wchar_t* pstr)
 {
     pstr = pstr ? pstr : L"";
-    UPInt size = (UPInt)UTF8Util::GetEncodeStringSize(pstr);
+    size_t size = (size_t)UTF8Util::GetEncodeStringSize(pstr);
     Resize(size);
     UTF8Util::EncodeString(pData, pstr);
 }
@@ -728,14 +727,20 @@ void      StringBuffer::operator = (const String& src)
     memcpy(pData, src.ToCStr(), src.GetSize());
 }
 
+void      StringBuffer::operator = (const StringBuffer& src)
+{
+	Clear();
+	AppendString(src.ToCStr(), src.GetSize());
+}
+
 
 // Inserts substr at posAt
-void      StringBuffer::Insert(const char* substr, UPInt posAt, SPInt len)
+void      StringBuffer::Insert(const char* substr, size_t posAt, intptr_t len)
 {
-    UPInt     oldSize    = Size;
-    UPInt     insertSize = (len < 0) ? OVR_strlen(substr) : (UPInt)len;    
-    UPInt     byteIndex  = LengthIsSize ? posAt : 
-                           (UPInt)UTF8Util::GetByteIndex(posAt, pData, (SPInt)Size);
+    size_t    oldSize    = Size;
+    size_t    insertSize = (len < 0) ? OVR_strlen(substr) : (size_t)len;    
+    size_t    byteIndex  = LengthIsSize ? posAt : 
+                           (size_t)UTF8Util::GetByteIndex(posAt, pData, (intptr_t)Size);
 
     OVR_ASSERT(byteIndex <= oldSize);
     Reserve(oldSize + insertSize);
@@ -748,16 +753,16 @@ void      StringBuffer::Insert(const char* substr, UPInt posAt, SPInt len)
 }
 
 // Inserts character at posAt
-UPInt     StringBuffer::InsertCharAt(UInt32 c, UPInt posAt)
+size_t    StringBuffer::InsertCharAt(uint32_t c, size_t posAt)
 {
     char    buf[8];
-    SPInt   len = 0;
+    intptr_t   len = 0;
     UTF8Util::EncodeChar(buf, &len, c);
     OVR_ASSERT(len >= 0);
-    buf[(UPInt)len] = 0;
+    buf[(size_t)len] = 0;
 
     Insert(buf, posAt, len);
-    return (UPInt)len;
+    return (size_t)len;
 }
 
 } // OVR
