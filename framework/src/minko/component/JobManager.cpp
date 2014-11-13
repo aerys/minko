@@ -26,10 +26,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 
-JobManager::Job::Job()
+JobManager::Job::Job() :
+    _jobManager(),
+    _running(false),
+    _oneStepPerFrame(false),
+    _priorityChanged(Signal<Job::Ptr, float>::create())
 {
-    _running = false;
-    _oneStepPerFrame = false;
 }
 
 JobManager::JobManager(unsigned int loadingFramerate):
@@ -39,21 +41,26 @@ JobManager::JobManager(unsigned int loadingFramerate):
 }
 
 JobManager::Ptr
-JobManager::pushJob(Job::Ptr Job)
+JobManager::pushJob(Job::Ptr job)
 {
-    float JobPriority    = Job->priority();
-    bool inserted        = false;
-    uint i                = 0;
+    _jobPriorityChangedSlots.insert(std::make_pair(
+        job,
+        job->priorityChanged()->connect([this](Job::Ptr job, float priority) -> void 
+        {
+            auto jobIt = std::find(_jobs.begin(), _jobs.end(), job);
 
-    for (; i < _jobs.size() && inserted; ++i)
-    {
-        if (_jobs[i]->priority() > JobPriority)
-            inserted = true;
-    }
+            if (jobIt != _jobs.end())
+            {
+                _jobs.erase(jobIt);
+            }
 
-    _jobs.insert(_jobs.begin() + i, Job);
+            insertJob(job);
+        }))
+    );
 
-    return std::dynamic_pointer_cast<JobManager>(shared_from_this());
+    insertJob(job);
+
+    return std::static_pointer_cast<JobManager>(shared_from_this());
 }
 
 void
@@ -65,17 +72,18 @@ JobManager::update(NodePtr target)
 void
 JobManager::end(NodePtr target)
 {
-    if (_jobs.size() == 0)
+    if (_jobs.empty())
         return;
 
-    float consumeTime    = (float(std::clock() - _frameStartTime) / CLOCKS_PER_SEC);
-    Job::Ptr currentJob    = nullptr;
+    auto consumeTime        = float(std::clock() - _frameStartTime) / CLOCKS_PER_SEC;
+    Job::Ptr currentJob     = nullptr;
 
     while (consumeTime < _frameTime)
     {
         if (currentJob == nullptr)
         {
             currentJob = _jobs.back();
+
             if (!currentJob->running())
             {
                 currentJob->_jobManager = std::dynamic_pointer_cast<JobManager>(shared_from_this());
@@ -92,8 +100,10 @@ JobManager::end(NodePtr target)
         {
             _jobs.pop_back();
             currentJob->afterLastStep();
+            _jobPriorityChangedSlots.erase(currentJob);
             currentJob = nullptr;
-            if (_jobs.size() == 0)
+
+            if (_jobs.empty())
                 return;
         }
         else
@@ -105,6 +115,21 @@ JobManager::end(NodePtr target)
                 consumeTime = _frameTime;
             }
         }
-
     }
+}
+
+void
+JobManager::insertJob(Job::Ptr job)
+{
+    auto jobPosition = std::lower_bound(
+        _jobs.begin(),
+        _jobs.end(),
+        job,
+        [&](Job::Ptr left, Job::Ptr right) -> bool
+        {
+            return left->priority() > right->priority();
+        }
+    );
+
+    _jobs.insert(jobPosition, job);
 }
