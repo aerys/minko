@@ -44,6 +44,7 @@ namespace minko
             serialize::ImageFormat              _imageFormat;
             std::list<render::TextureFormat>    _textureFormats;
 
+            bool                                _compressTexture;
             bool                                _generateMipmaps;
             render::MipFilter                   _mipFilter;
             bool                                _optimizeForNormalMapping;
@@ -71,6 +72,7 @@ namespace minko
                 instance->_outputAssetUriFunction = other->_outputAssetUriFunction;
                 instance->_imageFormat = other->_imageFormat;
                 instance->_textureFormats = other->_textureFormats;
+                instance->_compressTexture = other->_compressTexture;
                 instance->_generateMipmaps = other->_generateMipmaps;
                 instance->_mipFilter = other->_mipFilter;
                 instance->_optimizeForNormalMapping = other->_optimizeForNormalMapping;
@@ -154,6 +156,22 @@ namespace minko
             registerTextureFormat(render::TextureFormat textureFormat)
             {
                 _textureFormats.push_back(textureFormat);
+
+                return shared_from_this();
+            }
+
+            inline
+            bool
+            compressTexture() const
+            {
+                return _compressTexture;
+            }
+
+            inline
+            Ptr
+            compressTexture(bool value)
+            {
+                _compressTexture = value;
 
                 return shared_from_this();
             }
