@@ -31,6 +31,7 @@ WriterOptions::WriterOptions() :
     _outputAssetUriFunction([=](const std::string& str) -> std::string { return str; }),
     _imageFormat(ImageFormat::PNG),
     _textureFormats(),
+    _compressTexture(true),
     _generateMipmaps(false),
     _mipFilter(MipFilter::LINEAR),
     _optimizeForNormalMapping(false)

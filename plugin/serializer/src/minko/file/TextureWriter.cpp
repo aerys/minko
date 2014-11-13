@@ -86,6 +86,10 @@ TextureWriter::embed(AssetLibraryPtr     assetLibrary,
 
     for (auto textureFormat : textureFormats)
     {
+        if (TextureFormatInfo::isCompressed(textureFormat) &&
+            !writerOptions->compressTexture())
+            continue;
+
         const auto offset = blobStream.str().size();
 
         if (!_formatWriterFunctions.at(textureFormat)(_data, writerOptions, blobStream))
