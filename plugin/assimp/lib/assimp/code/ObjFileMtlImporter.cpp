@@ -63,6 +63,7 @@ static const std::string NormalTexture2      = "map_Normal";
 static const std::string NormalTexture3      = "map_normal";
 static const std::string NormalTexture4      = "map_bump";
 static const std::string NormalTexture5      = "map_Bump";
+static const std::string NormalTexture6      = "adobe_map_Normal";
 static const std::string DisplacementTexture = "disp";
 static const std::string SpecularityTexture  = "map_ns";
 
@@ -325,7 +326,8 @@ void ObjFileMtlImporter::getTexture() {
 		       !ASSIMP_strincmp( pPtr, NormalTexture2.c_str(), NormalTexture2.size() ) ||
 		       !ASSIMP_strincmp( pPtr, NormalTexture3.c_str(), NormalTexture3.size() ) ||
 		       !ASSIMP_strincmp( pPtr, NormalTexture4.c_str(), NormalTexture4.size() ) ||
-		       !ASSIMP_strincmp( pPtr, NormalTexture5.c_str(), NormalTexture5.size() )) { 
+		       !ASSIMP_strincmp( pPtr, NormalTexture5.c_str(), NormalTexture5.size() ) ||
+		       !ASSIMP_strincmp( pPtr, NormalTexture6.c_str(), NormalTexture6.size() )) { 
 		// Normal map
 		out = & m_pModel->m_pCurrentMaterial->textureNormal;
 		clampIndex = ObjFile::Material::TextureNormalType;
