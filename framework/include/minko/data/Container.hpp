@@ -72,7 +72,8 @@ namespace minko
                 auto providerAndToken = getProviderByPropertyName(propertyName);
                 auto provider = std::get<0>(providerAndToken);
 
-                assert(provider != nullptr);
+                if (provider == nullptr)
+                    throw;
 
 				return provider->propertyHasType<T>(std::get<1>(providerAndToken));
 			}
@@ -84,7 +85,8 @@ namespace minko
                 auto providerAndToken = getProviderByPropertyName(propertyName);
                 auto provider = std::get<0>(providerAndToken);
 
-                assert(provider != nullptr);
+                if (provider == nullptr)
+                    throw;
 
                 return provider->get<T>(std::get<1>(providerAndToken));
 			}
@@ -96,7 +98,8 @@ namespace minko
                 auto providerAndToken = getProviderByPropertyName(propertyName);
                 auto provider = std::get<0>(providerAndToken);
 
-                assert(provider != nullptr);
+                if (provider == nullptr)
+                    throw;
 
                 return provider->getPointer<T>(std::get<1>(providerAndToken));
             }
@@ -108,7 +111,8 @@ namespace minko
                 auto providerAndToken = getProviderByPropertyName(propertyName);
                 auto provider = std::get<0>(providerAndToken);
 
-                assert(provider != nullptr);
+                if (provider == nullptr)
+                    throw;
 
                 return provider->getUnsafePointer<T>(std::get<1>(providerAndToken));
             }
@@ -120,7 +124,8 @@ namespace minko
                 auto providerAndToken = getProviderByPropertyName(propertyName);
                 auto provider = std::get<0>(providerAndToken);
 
-                assert(provider != nullptr);
+                if (provider == nullptr)
+                    throw;
 
                 provider->set<T>(std::get<1>(providerAndToken), value);
 			}

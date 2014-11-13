@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -35,46 +35,6 @@ Provider::unset(const std::string& propertyName)
 	{
         _values.erase(propertyName);
 		_propertyRemoved.execute(shared_from_this(), propertyName);
-	}
-
-	return shared_from_this();
-}
-
-Provider::Ptr
-Provider::swap(const std::string& propertyName1, const std::string& propertyName2)
-{
-    auto hasProperty1 = hasProperty(propertyName1);
-    auto hasProperty2 = hasProperty(propertyName2);
-
-	if (!hasProperty1 && !hasProperty2)
-		throw;
-
-	if (!hasProperty1 || !hasProperty2)
-	{
-        auto source = hasProperty1 ? propertyName1 : propertyName2;
-        auto destination = hasProperty1 ? propertyName2 : propertyName1;
-
-        _values[destination] = _values[source];
-        _values.erase(source);
-
-		_propertyRemoved.execute(shared_from_this(), source);
-		_propertyAdded.execute(shared_from_this(), destination);
-        _propertyChanged.execute(shared_from_this(), destination);
-	}
-	else
-	{
-        auto value1 = _values[propertyName1];
-        auto value2 = _values[propertyName2];
-		bool changed = value1 != value2;
-
-        _values[propertyName1] = value2;
-        _values[propertyName2] = value1;
-
-		if (changed)
-		{
-            _propertyChanged.execute(shared_from_this(), propertyName1);
-            _propertyChanged.execute(shared_from_this(), propertyName2);
-		}
 	}
 
 	return shared_from_this();

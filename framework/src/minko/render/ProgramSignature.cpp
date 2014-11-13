@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Pass.hpp"
 #include "minko/data/Container.hpp"
 #include "minko/render/DrawCall.hpp"
+#include "minko/data/BindingMap.hpp"
 #include "minko/data/MacroBinding.hpp"
 
 using namespace minko;
@@ -41,17 +42,18 @@ ProgramSignature::ProgramSignature(const data::MacroBindingMap&                 
     _macros.reserve(maxNumMacros);
 
 	unsigned int macroId = 0;
-	for (const auto& macroNameAndBinding : macroBindings)
+	for (const auto& macroNameAndBinding : macroBindings.bindings)
     {
         const auto&	macroName = macroNameAndBinding.first;
         const auto&	macroBinding = macroNameAndBinding.second;
-        auto propertyName = Container::getActualPropertyName(variables, macroBinding.propertyName());
-        auto& container = macroBinding.source() == Binding::Source::TARGET
+        auto propertyName = Container::getActualPropertyName(variables, macroBinding.propertyName);
+        auto& container = macroBinding.source == Binding::Source::TARGET
             ? targetData
-            : (macroBinding.source() == Binding::Source::RENDERER ? rendererData : rootData);
+            : (macroBinding.source == Binding::Source::RENDERER ? rendererData : rootData);
         bool macroIsDefined = container.hasProperty(propertyName);
+        bool hasDefaultValue = macroBindings.defaultValues.hasProperty(propertyName);
 
-        if (macroIsDefined || macroBinding.hasDefautValue())
+        if (macroIsDefined || hasDefaultValue)
 		{
 			// WARNING: we do not support more than 32 macro bindings
             if (macroId == maxNumMacros)
@@ -60,12 +62,20 @@ ProgramSignature::ProgramSignature(const data::MacroBindingMap&                 
 			_mask |= 1 << macroId; // update program signature
 
             _macros.push_back(macroName);
-            _types.push_back(macroBinding.type());
-            if (macroBinding.type() != Binding::Type::UNSET)
+            _types.push_back(macroBinding.type);
+            if ((macroIsDefined || hasDefaultValue) && macroBinding.type != MacroBinding::Type::UNSET)
 			{
-                auto value = macroIsDefined
-                    ? getValueFromContainer(macroBinding, container, propertyName)
-                    : getDefaultValue(macroBinding);
+                if (!macroIsDefined && !hasDefaultValue)
+                    throw std::runtime_error(
+                        "Macro binding \"" + macroName
+                        + "\" expects a value, but the target property is undefined and no default value was provided."
+                    );
+
+                auto value = getValueFromContainer(
+                    macroBinding,
+                    macroIsDefined ? container : macroBindings.defaultValues,
+                    propertyName
+                );
 
 				// update program signature
 				_values.push_back(value); 
@@ -88,9 +98,68 @@ ProgramSignature::operator==(const ProgramSignature& x) const
 		return false;
 
     auto j = 0;
-	for (unsigned int i = 0; i < _types.size(); ++i)
-        if (_types[i] != x._types[i] || (_types[i] != Binding::Type::UNSET && _values[j] != x._values[j++]))
-			return false;
+    for (unsigned int i = 0; i < _types.size(); ++i)
+    {
+        if (_types[i] != x._types[i])
+            return false;
+        
+        if (_types[i] != MacroBinding::Type::UNSET)
+        {
+            switch (_types[i])
+            {
+            case MacroBinding::Type::BOOL:
+                if (Any::cast<bool>(_values[j]) != Any::cast<bool>(x._values[j]))
+                    return false;
+                break;
+            case MacroBinding::Type::BOOL2:
+                if (Any::cast<math::bvec2>(_values[j]) != Any::cast<math::bvec2>(x._values[j]))
+                    return false;
+                break;
+            case MacroBinding::Type::BOOL3:
+                if (Any::cast<math::bvec3>(_values[j]) != Any::cast<math::bvec3>(x._values[j]))
+                    return false;
+                break;
+            case MacroBinding::Type::BOOL4:
+                if (Any::cast<math::bvec4>(_values[j]) != Any::cast<math::bvec4>(x._values[j]))
+                    return false;
+                break;
+            case MacroBinding::Type::INT:
+                if (Any::cast<int>(_values[j]) != Any::cast<int>(x._values[j]))
+                    return false;
+                break;
+            case MacroBinding::Type::INT2:
+                if (Any::cast<math::ivec2>(_values[j]) != Any::cast<math::ivec2>(x._values[j]))
+                    return false;
+                break;
+            case MacroBinding::Type::INT3:
+                if (Any::cast<math::ivec3>(_values[j]) != Any::cast<math::ivec3>(x._values[j]))
+                    return false;
+                break;
+            case MacroBinding::Type::INT4:
+                if (Any::cast<math::ivec4>(_values[j]) != Any::cast<math::ivec4>(x._values[j]))
+                    return false;
+                break;
+            case MacroBinding::Type::FLOAT:
+                if (Any::cast<float>(_values[j]) != Any::cast<float>(x._values[j]))
+                    return false;
+                break;
+            case MacroBinding::Type::FLOAT2:
+                if (Any::cast<math::vec2>(_values[j]) != Any::cast<math::vec2>(x._values[j]))
+                    return false;
+                break;
+            case MacroBinding::Type::FLOAT3:
+                if (Any::cast<math::vec3>(_values[j]) != Any::cast<math::vec3>(x._values[j]))
+                    return false;
+                break;
+            case MacroBinding::Type::FLOAT4:
+                if (Any::cast<math::vec4>(_values[j]) != Any::cast<math::vec4>(x._values[j]))
+                    return false;
+                break;
+            }
+
+            ++j;
+        }
+    }
 
 	return true;
 }
@@ -106,43 +175,43 @@ ProgramSignature::updateProgram(Program& program) const
         {
             switch (_types[i])
             {
-                case Binding::Type::UNSET:
+                case MacroBinding::Type::UNSET:
                     program.define(_macros[i]);
                     break;
-                case Binding::Type::BOOL:
+                case MacroBinding::Type::BOOL:
                     program.define(_macros[i], Any::unsafe_cast<bool>(_values[valueIndex++]));
                     break;
-                case Binding::Type::BOOL2:
+                case MacroBinding::Type::BOOL2:
                     program.define(_macros[i], Any::unsafe_cast<math::bvec2>(_values[valueIndex++]));
                     break;
-                case Binding::Type::BOOL3:
+                case MacroBinding::Type::BOOL3:
                     program.define(_macros[i], Any::unsafe_cast<math::bvec3>(_values[valueIndex++]));
                     break;
-                case Binding::Type::BOOL4:
+                case MacroBinding::Type::BOOL4:
                     program.define(_macros[i], Any::unsafe_cast<math::bvec4>(_values[valueIndex++]));
                     break;
-                case Binding::Type::INT:
+                case MacroBinding::Type::INT:
                     program.define(_macros[i], Any::unsafe_cast<int>(_values[valueIndex++]));
                     break;
-                case Binding::Type::INT2:
+                case MacroBinding::Type::INT2:
                     program.define(_macros[i], Any::unsafe_cast<math::ivec2>(_values[valueIndex++]));
                     break;
-                case Binding::Type::INT3:
+                case MacroBinding::Type::INT3:
                     program.define(_macros[i], Any::unsafe_cast<math::ivec3>(_values[valueIndex++]));
                     break;
-                case Binding::Type::INT4:
+                case MacroBinding::Type::INT4:
                     program.define(_macros[i], Any::unsafe_cast<math::ivec4>(_values[valueIndex++]));
                     break;
-                case Binding::Type::FLOAT:
+                case MacroBinding::Type::FLOAT:
                     program.define(_macros[i], Any::unsafe_cast<float>(_values[valueIndex++]));
                     break;
-                case Binding::Type::FLOAT2:
+                case MacroBinding::Type::FLOAT2:
                     program.define(_macros[i], Any::unsafe_cast<math::vec2>(_values[valueIndex++]));
                     break;
-                case Binding::Type::FLOAT3:
+                case MacroBinding::Type::FLOAT3:
                     program.define(_macros[i], Any::unsafe_cast<math::vec3>(_values[valueIndex++]));
                     break;
-                case Binding::Type::FLOAT4:
+                case MacroBinding::Type::FLOAT4:
                     program.define(_macros[i], Any::unsafe_cast<math::vec4>(_values[valueIndex++]));
                     break;
             }
@@ -155,93 +224,47 @@ ProgramSignature::getValueFromContainer(const MacroBinding&     binding,
                                         const data::Container&  container,
                                         const std::string&      propertyName)
 {
-    switch (binding.type())
+    switch (binding.type)
     {
-    case Binding::Type::BOOL:
+    case MacroBinding::Type::BOOL:
         return container.get<bool>(propertyName);
         break;
-    case Binding::Type::BOOL2:
+    case MacroBinding::Type::BOOL2:
         return container.get<math::bvec2>(propertyName);
         break;
-    case Binding::Type::BOOL3:
+    case MacroBinding::Type::BOOL3:
         return container.get<math::bvec3>(propertyName);
         break;
-    case Binding::Type::BOOL4:
+    case MacroBinding::Type::BOOL4:
         return container.get<math::bvec4>(propertyName);
         break;
-    case Binding::Type::INT:
+    case MacroBinding::Type::INT:
         return std::max(
-            binding.minValue(),
-            std::min(binding.maxValue(), container.get<int>(propertyName))
+            binding.minValue,
+            std::min(binding.maxValue, container.get<int>(propertyName))
         );
         break;
-    case Binding::Type::INT2:
+    case MacroBinding::Type::INT2:
         return container.get<math::ivec2>(propertyName);
         break;
-    case Binding::Type::INT3:
+    case MacroBinding::Type::INT3:
         return container.get<math::ivec3>(propertyName);
         break;
-    case Binding::Type::INT4:
+    case MacroBinding::Type::INT4:
         return container.get<math::ivec4>(propertyName);
         break;
-    case Binding::Type::FLOAT:
+    case MacroBinding::Type::FLOAT:
         return container.get<float>(propertyName);
         break;
-    case Binding::Type::FLOAT2:
+    case MacroBinding::Type::FLOAT2:
         return container.get<math::vec2>(propertyName);
         break;
-    case Binding::Type::FLOAT3:
+    case MacroBinding::Type::FLOAT3:
         return container.get<math::vec3>(propertyName);
         break;
-    case Binding::Type::FLOAT4:
+    case MacroBinding::Type::FLOAT4:
         return container.get<math::vec4>(propertyName);
         break;
-    }
-
-    throw;
-}
-
-Any
-ProgramSignature::getDefaultValue(const MacroBinding& binding)
-{
-    switch (binding.type())
-    {
-        case Binding::Type::BOOL:
-            return binding.defaultValue().values<bool>()[0];
-            break;
-        case Binding::Type::BOOL2:
-            return math::make_vec2((bool*)&binding.defaultValue().values<bool>());
-            break;
-        case Binding::Type::BOOL3:
-            return math::make_vec3((bool*)&binding.defaultValue().values<bool>());
-            break;
-        case Binding::Type::BOOL4:
-            return math::make_vec4((bool*)&binding.defaultValue().values<bool>());
-            break;
-        case Binding::Type::INT:
-            return binding.defaultValue().values<int>()[0];
-            break;
-        case Binding::Type::INT2:
-            return math::make_vec2((int*)&binding.defaultValue().values<int>());
-            break;
-        case Binding::Type::INT3:
-            return math::make_vec3((int*)&binding.defaultValue().values<int>());
-            break;
-        case Binding::Type::INT4:
-            return math::make_vec4((int*)&binding.defaultValue().values<int>());
-            break;
-        case Binding::Type::FLOAT:
-            return binding.defaultValue().values<float>()[0];
-            break;
-        case Binding::Type::FLOAT2:
-            return math::make_vec2((float*)&binding.defaultValue().values<float>());
-            break;
-        case Binding::Type::FLOAT3:
-            return math::make_vec3((float*)&binding.defaultValue().values<float>());
-            break;
-        case Binding::Type::FLOAT4:
-            return math::make_vec4((float*)&binding.defaultValue().values<float>());
-            break;
     }
 
     throw;

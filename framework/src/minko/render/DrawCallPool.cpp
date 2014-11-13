@@ -79,18 +79,18 @@ DrawCallPool::watchProgramSignature(DrawCall*                       drawCall,
                                     data::Container&                rendererData,
                                     data::Container&                targetData)
 {
-    for (const auto& macroNameAndBinding : macroBindings)
+    for (const auto& macroNameAndBinding : macroBindings.bindings)
     {
         const auto& macroBinding = macroNameAndBinding.second;
-        auto& container = macroBinding.source() == data::Binding::Source::ROOT ? rootData
-            : macroBinding.source() == data::Binding::Source::RENDERER ? rendererData
+        auto& container = macroBinding.source == data::Binding::Source::ROOT ? rootData
+            : macroBinding.source == data::Binding::Source::RENDERER ? rendererData
             : targetData;
         auto bindingKey = MacroBindingKey(&macroBinding, &container);
         auto& drawCalls = _macroToDrawCalls[bindingKey];
 
         drawCalls.push_back(drawCall);
 
-        if (macroBinding.type() != data::Binding::Type::UNSET)
+        if (macroBinding.type != data::MacroBinding::Type::UNSET)
         {
             addMacroCallback(
                 { &container, &container.propertyChanged() },
@@ -100,7 +100,7 @@ DrawCallPool::watchProgramSignature(DrawCall*                       drawCall,
         }
         else
         {
-            auto propertyName = Container::getActualPropertyName(drawCall->variables(), macroBinding.propertyName());
+            auto propertyName = Container::getActualPropertyName(drawCall->variables(), macroBinding.propertyName);
             
             if (container.hasProperty(propertyName))
             {
@@ -185,11 +185,11 @@ DrawCallPool::unwatchProgramSignature(DrawCall*                       drawCall,
                                       data::Container&                rendererData,
                                       data::Container&                targetData)
 {
-    for (const auto& macroNameAndBinding : macroBindings)
+    for (const auto& macroNameAndBinding : macroBindings.bindings)
     {
         const auto& macroBinding = macroNameAndBinding.second;
-        auto& container = macroBinding.source() == data::Binding::Source::ROOT ? rootData
-            : macroBinding.source() == data::Binding::Source::RENDERER ? rendererData
+        auto& container = macroBinding.source == data::Binding::Source::ROOT ? rootData
+            : macroBinding.source == data::Binding::Source::RENDERER ? rendererData
             : targetData;
         auto bindingKey = MacroBindingKey(&macroBinding, &container);
         auto& drawCalls = _macroToDrawCalls.at(bindingKey);
@@ -199,11 +199,11 @@ DrawCallPool::unwatchProgramSignature(DrawCall*                       drawCall,
         if (drawCalls.size() == 0)
             _macroToDrawCalls.erase(bindingKey);
         
-        if (macroBinding.type() != data::Binding::Type::UNSET)
+        if (macroBinding.type != data::MacroBinding::Type::UNSET)
             removeMacroCallback({ &container, &container.propertyChanged() });
         else
         {
-            auto propertyName = Container::getActualPropertyName(drawCall->variables(), macroBinding.propertyName());
+            auto propertyName = Container::getActualPropertyName(drawCall->variables(), macroBinding.propertyName);
 
             if (container.hasProperty(propertyName))
                 removeMacroCallback({ &container, &container.propertyRemoved() });

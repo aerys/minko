@@ -26,70 +26,49 @@ namespace minko
 {
     namespace data
     {
-        class MacroBinding : public Binding
+        struct MacroBinding : public Binding
         {
-        private:
-            Type    _type;
-            int     _minValue;
-            int     _maxValue;
+            enum class Type
+            {
+                UNSET,
+                INT,
+                INT2,
+                INT3,
+                INT4,
+                FLOAT,
+                FLOAT2,
+                FLOAT3,
+                FLOAT4,
+                BOOL,
+                BOOL2,
+                BOOL3,
+                BOOL4
+            };
 
-        public:
+            Type    type;
+            int     minValue;
+            int     maxValue;
+
             MacroBinding(const std::string& propertyName,
                          Source             source,
                          Type               type,
                          int                min = -std::numeric_limits<int>::max(),
                          int                max = std::numeric_limits<int>::max()) :
                 Binding(propertyName, source),
-                _type(type),
-                _minValue(min),
-                _maxValue(max)
+                type(type),
+                minValue(min),
+                maxValue(max)
             {}
 
             MacroBinding() :
                 Binding(),
-                _type(Type::UNSET),
-                _minValue(-std::numeric_limits<int>::max()),
-                _maxValue(std::numeric_limits<int>::max())
+                type(Type::UNSET),
+                minValue(-std::numeric_limits<int>::max()),
+                maxValue(std::numeric_limits<int>::max())
             {}
 
-            inline
-            Type
-            type() const
-            {
-                return _type;
-            }
-            inline
-            void
-            type(Type t)
-            {
-                _type = t;
-            }
-
-            inline
-            int
-            minValue() const
-            {
-                return _minValue;
-            }
-            inline
-            void
-            minValue(int v)
-            {
-                _minValue = v;
-            }
-            
-            inline
-            int
-            maxValue() const
-            {
-                return _maxValue;
-            }
-            inline
-            void
-            maxValue(int v)
-            {
-                _maxValue = v;
-            }
+            ~MacroBinding()
+            {}
         };
     }
 }

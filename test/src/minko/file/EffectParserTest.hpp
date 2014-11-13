@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -17,20 +17,23 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/component/DirectionalLight.hpp"
+#pragma once
 
-using namespace minko;
-using namespace minko::component;
+#include "minko/Minko.hpp"
 
-DirectionalLight::DirectionalLight(float diffuse, float specular) :
-	AbstractDiscreteLight("directionalLight", diffuse, specular)
+#include "gtest/gtest.h"
+
+namespace minko
 {
-    updateModelToWorldMatrix(math::mat4(1.f));
-}
-
-void
-DirectionalLight::updateModelToWorldMatrix(const math::mat4& modelToWorld)
-{
-	_worldDirection = math::normalize(math::mat3x3(modelToWorld) * math::vec3(0.f, 0.f, -1.f));
-	data()->set("direction", _worldDirection);
+    namespace file
+    {
+        class EffectParserTest :
+            public ::testing::Test
+        {
+        public:
+            static
+            render::Effect::Ptr
+            loadEffect(const std::string& filename);
+        };
+    }
 }

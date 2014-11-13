@@ -28,10 +28,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Shader.hpp"
 #include "minko/scene/Layout.hpp"
 #include "minko/data/MacroBinding.hpp"
+#include "minko/data/BindingMap.hpp"
+#include "minko/data/Container.hpp"
 
-namespace Json
-{
-	class Value;
+namespace Json {
+    enum ValueType;
+    class Value;
 }
 
 namespace minko
@@ -70,32 +72,10 @@ namespace minko
             typedef std::shared_ptr<GLSLBlockList>			        GLSLBlockListPtr;
             typedef std::unordered_map<ShaderPtr, GLSLBlockListPtr> ShaderToGLSLBlocks;
 
-            struct DefaultValue
-            {
-                enum class Type
-                {
-                    NOT_SET,
-                    BOOL,
-                    INT,
-                    FLOAT,
-                    TEXTURE
-                };
-
-                Type type;
-                std::vector<Any> values;
-
-                DefaultValue() :
-                    type(Type::NOT_SET)
-                {}
-            };
-
-            typedef std::unordered_map<std::string, DefaultValue>   DefaultValues;
-
             template <typename T>
             struct Block
             {
                 T bindings;
-                std::unordered_map<std::string, DefaultValue> defaultValues;
             };
 
             typedef Block<data::BindingMap> AttributeBlock;
@@ -225,10 +205,6 @@ namespace minko
             std::array<std::string, 14>
             initializeStateNames();
 
-            static
-            std::string
-            typeToString(DefaultValue::Type t);
-
             float
             getPriorityValue(const std::string& name);
 
@@ -248,20 +224,33 @@ namespace minko
             parsePasses(const Json::Value& node, Scope& scope, std::vector<PassPtr>& passes);
 
             void
-            parseDefaultValue(const Json::Value& node, const Scope& scope, DefaultValue& value);
+            parseDefaultValue(const Json::Value& node, const Scope& scope);
+
 
             void
             parseDefaultValue(const Json::Value&    node,
                               const Scope&          scope,
-                              DefaultValue&         value,
-                              DefaultValue::Type    expectedType);
+                              const std::string&    valueName,
+                              Json::ValueType       expectedType,
+                              data::Provider::Ptr   defaultValues);
 
             void
             parseDefaultValue(const Json::Value&    node,
                               const Scope&          scope,
-                              DefaultValue&         value,
-                              DefaultValue::Type    expectedType,
-                              uint                  expectedSize);
+                              const std::string&    valueName,
+                              data::Provider::Ptr   defaultValues);
+
+            void
+            parseDefaultValueVector(const Json::Value&    defaultValueNode,
+                                    const Scope&          scope,
+                                    const std::string&    valueName,
+                                    data::Provider::Ptr   defaultValues);
+
+            void
+            parseDefaultValueObject(const Json::Value&    node,
+                                    const Scope&          scope,
+                                    const std::string&    valueName,
+                                    data::Provider::Ptr   defaultValues);
 
             void
             parseBinding(const Json::Value& node, const Scope& scope, data::Binding& binding);
@@ -366,7 +355,9 @@ namespace minko
             concatenateGLSLBlocks(GLSLBlockListPtr blocks);
 
             void
-            loadTexture(const std::string& textureFilename, DefaultValue& value);
+            loadTexture(const std::string&  textureFilename,
+                        const std::string&  uniformName,
+						data::Provider::Ptr     defaultValues);
 
             std::shared_ptr<render::States>
             createStates(const StateBlock& block);

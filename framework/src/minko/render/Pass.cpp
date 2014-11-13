@@ -60,7 +60,7 @@ Pass::selectProgram(const std::unordered_map<std::string, std::string>& vars,
 	Program::Ptr program = nullptr;
     ProgramSignature* signature = nullptr;
 
-	if (_macroBindings.size() == 0)
+	if (_macroBindings.bindings.size() == 0)
 		program = _programTemplate;
 	else
 	{

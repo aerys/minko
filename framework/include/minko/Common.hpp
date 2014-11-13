@@ -212,11 +212,10 @@ namespace minko
 		class AbstractFilter;
         class Collection;
 
-        class Binding;
-        class MacroBinding;
-
-        typedef std::unordered_map<std::string, Binding>        BindingMap;
-        typedef std::unordered_map<std::string, MacroBinding>   MacroBindingMap;
+        struct Binding;
+        struct MacroBinding;
+        //struct BindingMap;
+        //struct MacroBindingMap;
 
         template<typename T>
         using UniformArray = std::pair<uint, const T*>;

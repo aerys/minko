@@ -27,7 +27,7 @@ PointLight::PointLight(float diffuse,
 					   float attenuationConstant,
 					   float attenuationLinear,
 					   float attenuationQuadratic):
-	AbstractDiscreteLight("pointLights", diffuse, specular),
+	AbstractDiscreteLight("pointLight", diffuse, specular),
 	_attenuationCoeffs(math::vec3(attenuationConstant, attenuationLinear, attenuationQuadratic)),
 	_worldPosition(math::vec3(0.f))
 {

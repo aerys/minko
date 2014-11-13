@@ -153,31 +153,6 @@ TEST_F(ProviderTest, ValueChangedNot)
 	ASSERT_NE(v, 42);
 }
 
-TEST_F(ProviderTest, Swap)
-{
-	auto p = Provider::create();
-	auto vFoo = 0;
-	auto vBar = 0;
-
-	p->set("foo", 42);
-	p->set("bar", 24);
-
-	auto _ = p->propertyChanged().connect(
-		[&](Provider::Ptr provider, const std::string& propertyName)
-		{
-			if (provider == p && propertyName == "foo")
-				vFoo = p->get<int>("foo");
-			if (provider == p && propertyName == "bar")
-				vBar = p->get<int>("bar");
-		}
-	);
-
-	p->swap("foo", "bar");
-
-	ASSERT_EQ(vFoo, 24);
-	ASSERT_EQ(vBar, 42);
-}
-
 TEST_F(ProviderTest, IntegerPointerConsistency)
 {
     auto p = Provider::create();

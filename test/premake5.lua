@@ -6,7 +6,8 @@ minko.project.application "minko-tests"
 
 	files {
 		"src/**.hpp",
-		"src/**.cpp"
+		"src/**.cpp",
+		"asset/**"
 	}
 	includedirs { "src" }
 	defines { "MINKO_TEST" }
@@ -17,12 +18,12 @@ minko.project.application "minko-tests"
 
 	-- googletest framework
 	links { "googletest" }
-		
+
 	includedirs { "lib/googletest/include" }
 
 	if _OPTIONS['with-offscreen'] then
 		minko.plugin.enable("offscreen")
 	end
-	
+
 	configuration { "not windows" }
 		links { "pthread" }

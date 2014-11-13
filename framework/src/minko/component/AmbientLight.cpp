@@ -23,7 +23,7 @@ using namespace minko;
 using namespace minko::component;
 
 AmbientLight::AmbientLight(float ambient) :
-	AbstractLight("ambientLights"),
+	AbstractLight("ambientLight"),
 	_ambient(ambient)
 {
 	data()->set("ambient", ambient);

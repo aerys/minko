@@ -55,11 +55,6 @@
         {
             "name" : "opaque",
 
-            "states" : {
-                "blendMode" : ["one", "zero"],
-                "priority"  : "opaque"
-            },
-
     		"passes"    : [{
     			"vertexShader"      : "#pragma include \"Basic.vertex.glsl\"",
                 "fragmentShader"    : "#pragma include \"Basic.fragment.glsl\""
@@ -67,12 +62,6 @@
     	},
         {
             "name" : "transparent",
-
-            "states" : {
-                "blendMode" : "alpha",
-                "priority" : "transparent",
-                "zSort" : "true"
-            },
 
             "passes" : [{
                 "vertexShader"      : "#pragma include \"Basic.vertex.glsl\"",

@@ -39,6 +39,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/FileProtocol.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/AssetLibrary.hpp"
+#include "minko/data/Container.hpp"
+
 #include "json/json.h"
 
 using namespace minko;
@@ -151,21 +153,6 @@ EffectParser::initializeStateNames()
     };
 
     return names;
-}
-
-std::string
-EffectParser::typeToString(DefaultValue::Type t)
-{
-    if (t == DefaultValue::Type::BOOL)
-        return "bool";
-    if (t == DefaultValue::Type::INT)
-        return "integer";
-    if (t == DefaultValue::Type::FLOAT)
-        return "float";
-    if (t == DefaultValue::Type::TEXTURE)
-        return "texture";
-
-    throw;
 }
 
 float
@@ -289,16 +276,17 @@ EffectParser::parseTechniques(const Json::Value& node, Scope& scope, Techniques&
             if (!parseConfiguration(techniqueNode))
                 continue;
 
-            auto techniqueNameNode = techniqueNode.get("name", "technique" + std::to_string(techniques.size()));
-            auto techniqueName = techniqueNameNode.asString();
+            auto techniqueNameNode = techniqueNode.get("name", 0);
+            auto techniqueName = techniqueNameNode.isString()
+                ? techniqueNameNode.asString()
+                : firstTechnique ? "default" : "technique" + std::to_string(techniques.size());
 
             Scope techniqueScope(scope, scope);
 
-            parseAttributes(node, techniqueScope, techniqueScope.attributes);
-            parseUniforms(node, techniqueScope, techniqueScope.uniforms);
-            parseMacros(node, techniqueScope, techniqueScope.macros);
-            parseStates(node, techniqueScope, techniqueScope.states);
-            parsePasses(node, techniqueScope, techniqueScope.passes);
+            parseAttributes(techniqueNode, techniqueScope, techniqueScope.attributes);
+            parseUniforms(techniqueNode, techniqueScope, techniqueScope.uniforms);
+            parseMacros(techniqueNode, techniqueScope, techniqueScope.macros);
+            parseStates(techniqueNode, techniqueScope, techniqueScope.states);
             parsePasses(techniqueNode, techniqueScope, techniques[techniqueName]);
 
             if (firstTechnique)
@@ -394,105 +382,155 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
 }
 
 void
-EffectParser::parseDefaultValue(const Json::Value&    node,
-                                const Scope&          scope,
-                                DefaultValue&         value,
-                                DefaultValue::Type    expectedType,
-                                uint                  expectedSize)
+EffectParser::parseDefaultValue(const Json::Value&  node,
+                                const Scope&        scope,
+                                const std::string&  valueName,
+                                Json::ValueType     expectedType,
+                                data::Provider::Ptr defaultValues)
 {
-    if (node.isArray() && node.size() != expectedSize)
-        throw std::runtime_error(
-            "Unexpected default value size: expected " + std::to_string(expectedSize) + ", got "
-            + std::to_string(node.size())
-        );
-    
-    parseDefaultValue(node, scope, value, expectedType);
+    if (!node.isObject())
+        return ;
+
+    auto defaultValueNode = node.get("default", 0);
+
+    if (defaultValueNode.isObject()
+        && defaultValueNode[defaultValueNode.getMemberNames()[0]].type() != expectedType)
+        throw;
+    else if (defaultValueNode.isArray() && defaultValueNode[0].type() != expectedType)
+        throw;
+    else if (defaultValueNode.type() != expectedType)
+        throw;
+
+    parseDefaultValue(node, scope, valueName, defaultValues);
 }
 
 void
-EffectParser::parseDefaultValue(const Json::Value&    node,
-                                const Scope&          scope,
-                                DefaultValue&         value,
-                                DefaultValue::Type    expectedType)
+EffectParser::parseDefaultValue(const Json::Value&  node,
+                                const Scope&        scope,
+                                const std::string&  valueName,
+                                data::Provider::Ptr defaultValues)
 {
-    if (!node.isObject() || node.get("default", 0).empty())
+    if (!node.isObject())
+        return;
+
+    auto memberNames = node.getMemberNames();
+    if (std::find(memberNames.begin(), memberNames.end(), "default") == memberNames.end())
         return;
 
     auto defaultValueNode = node.get("default", 0);
-    auto testNode = defaultValueNode.isArray() ? defaultValueNode[0] : defaultValueNode;
 
-    if ((testNode.isBool() && expectedType != DefaultValue::Type::BOOL)
-        || (testNode.isInt() && expectedType != DefaultValue::Type::INT)
-        || (testNode.isDouble() && expectedType != DefaultValue::Type::FLOAT)
-        || (testNode.isString() && expectedType != DefaultValue::Type::TEXTURE))
-        throw std::runtime_error("Unexpected default value type.");
-
-    parseDefaultValue(node, scope, value);
-}
-
-void
-EffectParser::parseDefaultValue(const Json::Value& node, const Scope& scope, DefaultValue& value)
-{
-    if (!node.isObject() || node.get("default", 0).empty())
-        return;
-    auto defaultValueNode = node.get("default", 0);
-
-    // if the value is an array we will recursively call parseDefaultValue and push each of them
-    // in our DefaultValue data
-    if (defaultValueNode.isArray())
+    if (defaultValueNode.isObject())
+        parseDefaultValueObject(defaultValueNode, scope, valueName, defaultValues);
+    else if (defaultValueNode.isArray())
     {
-        for (auto valueNode : defaultValueNode)
-            parseDefaultValue(valueNode, scope, value);
-
-        return;
+        if (defaultValueNode.size() == 1 && defaultValueNode[0].isArray())
+            parseDefaultValueVector(defaultValueNode[0], scope, valueName, defaultValues);
+        else
+            throw; // FIXME: support array default values
     }
-
-    if (defaultValueNode.isBool())
-    {
-        if (value.values.size() != 0 && value.type != DefaultValue::Type::BOOL)
-            throw std::runtime_error(
-                "Inconsistent vector data: expected " + typeToString(value.type) + ", got "
-                + typeToString(DefaultValue::Type::BOOL) + "."
-            );
-
-        value.values.push_back(defaultValueNode.asBool());
-        value.type = DefaultValue::Type::BOOL;
-    }
+    else if (defaultValueNode.isBool())
+        defaultValues->set(valueName, defaultValueNode.asBool());
     else if (defaultValueNode.isInt())
-    {
-        if (value.values.size() != 0 && value.type != DefaultValue::Type::INT)
-            throw std::runtime_error(
-                "Inconsistent vector data: expected " + typeToString(value.type) + ", got "
-                + typeToString(DefaultValue::Type::INT) + "."
-            );
-
-        value.values.push_back(defaultValueNode.asInt());
-        value.type = DefaultValue::Type::INT;
-    }
+        defaultValues->set(valueName, defaultValueNode.asInt());
     else if (defaultValueNode.isDouble())
-    {
-        if (value.values.size() != 0 && value.type != DefaultValue::Type::FLOAT)
-            throw std::runtime_error(
-                "Inconsistent vector data: expected " + typeToString(value.type) + ", got "
-                + typeToString(DefaultValue::Type::FLOAT) + "."
-            );
-
-        value.values.push_back(defaultValueNode.asFloat());
-        value.type = DefaultValue::Type::FLOAT;
-
-    }
+        defaultValues->set(valueName, defaultValueNode.asFloat());
     else if (defaultValueNode.isString())
+        loadTexture(defaultValueNode.asString(), valueName, defaultValues);
+}
+
+void
+EffectParser::parseDefaultValueVector(const Json::Value&    defaultValueNode,
+                                      const Scope&          scope,
+                                      const std::string&    valueName,
+                                      data::Provider::Ptr   defaultValues)
+{
+    auto size = defaultValueNode.size();
+    auto type = defaultValueNode[0].type();
+
+    if (type == Json::ValueType::intValue)
     {
-        if (value.values.size() != 0 && value.type != DefaultValue::Type::TEXTURE)
-            throw std::runtime_error(
-                "Inconsistent vector data: expected " + typeToString(value.type) + ", got "
-                + typeToString(DefaultValue::Type::TEXTURE) + "."
-            );
+        std::vector<int> value(size);
+        for (auto i = 0u; i < size; ++i)
+            value[i] = defaultValueNode[i].asInt();
+        if (size == 2)
+            defaultValues->set(valueName, math::make_vec2<int>(&value[0]));
+        else if (size == 3)
+            defaultValues->set(valueName, math::make_vec3<int>(&value[0]));
+        else if (size == 4)
+            defaultValues->set(valueName, math::make_vec4<int>(&value[0]));
+    }
+    else if (type == Json::ValueType::realValue)
+    {
+        std::vector<float> value(size);
+        for (auto i = 0u; i < size; ++i)
+            value[i] = defaultValueNode[i].asFloat();
+        if (size == 2)
+            defaultValues->set(valueName, math::make_vec2<float>(&value[0]));
+        else if (size == 3)
+            defaultValues->set(valueName, math::make_vec3<float>(&value[0]));
+        else if (size == 4)
+            defaultValues->set(valueName, math::make_vec4<float>(&value[0]));
+    }
+    else if (type == Json::ValueType::booleanValue)
+    {
+        std::vector<bool> value(size);
+        for (auto i = 0u; i < size; ++i)
+            value[i] = defaultValueNode[i].asBool();
+        if (size == 2)
+            defaultValues->set(valueName, math::make_vec2<bool>((bool*)&value[0]));
+        else if (size == 3)
+            defaultValues->set(valueName, math::make_vec3<bool>((bool*)&value[0]));
+        else if (size == 4)
+            defaultValues->set(valueName, math::make_vec4<bool>((bool*)&value[0]));
+    }
+}
 
-        value.type = DefaultValue::Type::TEXTURE;
-        //value.values.push_back(node.asString());
+void
+EffectParser::parseDefaultValueObject(const Json::Value&    defaultValueNode,
+                                      const Scope&          scope,
+                                      const std::string&    valueName,
+                                      data::Provider::Ptr   defaultValues)
+{
+    auto memberNames = defaultValueNode.getMemberNames();
+    auto size = memberNames.size();
+    auto type = defaultValueNode[memberNames[0]].type();
+    std::vector<std::string> offsets = { "x", "y", "z", "w" };
 
-        loadTexture(defaultValueNode.asString(), value);
+    if (type == Json::ValueType::intValue)
+    {
+        std::vector<int> value(size);
+        for (auto i = 0u; i < size; ++i)
+            value[i] = defaultValueNode[offsets[i]].asInt();
+        if (size == 2)
+            defaultValues->set(valueName, math::make_vec2<int>(&value[0]));
+        else if (size == 3)
+            defaultValues->set(valueName, math::make_vec3<int>(&value[0]));
+        else if (size == 4)
+            defaultValues->set(valueName, math::make_vec4<int>(&value[0]));
+    }
+    else if (type == Json::ValueType::realValue)
+    {
+        std::vector<float> value(size);
+        for (auto i = 0u; i < size; ++i)
+            value[i] = defaultValueNode[offsets[i]].asFloat();
+        if (size == 2)
+            defaultValues->set(valueName, math::make_vec2<float>(&value[0]));
+        else if (size == 3)
+            defaultValues->set(valueName, math::make_vec3<float>(&value[0]));
+        else if (size == 4)
+            defaultValues->set(valueName, math::make_vec4<float>(&value[0]));
+    }
+    else if (type == Json::ValueType::booleanValue)
+    {
+        std::vector<bool> value(size);
+        for (auto i = 0u; i < size; ++i)
+            value[i] = defaultValueNode[offsets[i]].asBool();
+        if (size == 2)
+            defaultValues->set(valueName, math::make_vec2<bool>((bool*)&value[0]));
+        else if (size == 3)
+            defaultValues->set(valueName, math::make_vec3<bool>((bool*)&value[0]));
+        else if (size == 4)
+            defaultValues->set(valueName, math::make_vec4<bool>((bool*)&value[0]));
     }
 }
 
@@ -503,12 +541,22 @@ EffectParser::parseAttributes(const Json::Value& node, const Scope& scope, Attri
 
     if (attributesNode.isObject())
     {
+        auto defaultValuesProvider = data::Provider::create();
+
+        attributes.bindings.defaultValues.addProvider(defaultValuesProvider);
+
         for (auto attributeName : attributesNode.getMemberNames())
         {
             auto attributeNode = attributesNode[attributeName];
 
-            parseBinding(attributeNode, scope, attributes.bindings[attributeName]);
-            parseDefaultValue(attributeNode, scope, attributes.defaultValues[attributeName], DefaultValue::Type::FLOAT);
+            parseBinding(attributeNode, scope, attributes.bindings.bindings[attributeName]);
+            parseDefaultValue(
+                attributeNode,
+                scope,
+                attributeName,
+                Json::ValueType::realValue,
+                defaultValuesProvider
+            );
         }
     }
     // FIXME: throw otherwise
@@ -521,12 +569,16 @@ EffectParser::parseUniforms(const Json::Value& node, const Scope& scope, Uniform
 
     if (uniformsNode.isObject())
     {
+        auto defaultValuesProvider = data::Provider::create();
+
+        uniforms.bindings.defaultValues.addProvider(defaultValuesProvider);
+
         for (auto uniformName : uniformsNode.getMemberNames())
         {
             auto uniformNode = uniformsNode[uniformName];
 
-            parseBinding(uniformNode, scope, uniforms.bindings[uniformName]);
-            parseDefaultValue(uniformNode, scope, uniforms.defaultValues[uniformName]);
+            parseBinding(uniformNode, scope, uniforms.bindings.bindings[uniformName]);
+            parseDefaultValue(uniformNode, scope, uniformName, defaultValuesProvider);
         }
     }
     // FIXME: throw otherwise
@@ -539,13 +591,17 @@ EffectParser::parseMacros(const Json::Value& node, const Scope& scope, MacroBloc
 
     if (macrosNode.isObject())
     {
+        auto defaultValuesProvider = data::Provider::create();
+
+        macros.bindings.defaultValues.addProvider(defaultValuesProvider);
+
         for (auto macroName : macrosNode.getMemberNames())
         {
             auto macroNode = macrosNode[macroName];
 
-            parseBinding(macroNode, scope, macros.bindings[macroName]);
-            parseMacroBinding(macroNode, scope, macros.bindings[macroName]);
-            parseDefaultValue(macroNode, scope, macros.defaultValues[macroName]);
+            parseBinding(macroNode, scope, macros.bindings.bindings[macroName]);
+            parseMacroBinding(macroNode, scope, macros.bindings.bindings[macroName]);
+            parseDefaultValue(macroNode, scope, macroName, defaultValuesProvider);
         }
     }
     // FIXME: throw otherwise
@@ -558,15 +614,21 @@ EffectParser::parseStates(const Json::Value& node, const Scope& scope, StateBloc
 
     if (statesNode.isObject())
     {
+        auto defaultValuesProvider = data::Provider::create();
+
+        states.bindings.defaultValues.addProvider(defaultValuesProvider);
+
         for (auto stateName : statesNode.getMemberNames())
         {
             if (std::find(_stateNames.begin(), _stateNames.end(), stateName) == _stateNames.end())
             {
                 // FIXME: log warning because the state name does not match any known state
+                throw;
             }
             else
             {
-                parseBinding(statesNode[stateName], scope, states.bindings[stateName]);
+                parseBinding(statesNode[stateName], scope, states.bindings.bindings[stateName]);
+                parseDefaultValue(statesNode[stateName], scope, stateName, defaultValuesProvider);
             }
         }
     }
@@ -807,11 +869,11 @@ EffectParser::parseStencilOperations(const Json::Value& node,
 void
 EffectParser::parseBinding(const Json::Value& node, const Scope& scope, Binding& binding)
 {
-    binding.source(Binding::Source::TARGET);
+    binding.source = Binding::Source::TARGET;
 
     if (node.isString())
     {
-        binding.propertyName(node.asString());
+        binding.propertyName = node.asString();
     }
     else
     {
@@ -819,7 +881,7 @@ EffectParser::parseBinding(const Json::Value& node, const Scope& scope, Binding&
 
         if (bindingNode.isString())
         {
-            binding.propertyName(bindingNode.asString());
+            binding.propertyName = bindingNode.asString();
         }
         else if (bindingNode.isObject())
         {
@@ -827,7 +889,7 @@ EffectParser::parseBinding(const Json::Value& node, const Scope& scope, Binding&
             auto sourceNode = bindingNode.get("source", 0);
 
             if (propertyNode.isString())
-                binding.propertyName(propertyNode.asString());
+                binding.propertyName = propertyNode.asString();
             // FIXME: throw otherwise
 
             if (sourceNode.isString())
@@ -835,11 +897,11 @@ EffectParser::parseBinding(const Json::Value& node, const Scope& scope, Binding&
                 auto sourceStr = sourceNode.asString();
 
                 if (sourceStr == "target")
-                    binding.source(Binding::Source::TARGET);
+                    binding.source = Binding::Source::TARGET;
                 else if (sourceStr == "renderer")
-                    binding.source(Binding::Source::RENDERER);
+                    binding.source = Binding::Source::RENDERER;
                 else if (sourceStr == "root")
-                    binding.source(Binding::Source::ROOT);
+                    binding.source = Binding::Source::ROOT;
             }
             // FIXME: throw otherwise
         }
@@ -860,11 +922,11 @@ EffectParser::parseMacroBinding(const Json::Value& node, const Scope& scope, Mac
         auto typeStr = typeNode.asString();
 
         if (typeStr == "bool")
-            binding.type(data::Binding::Type::BOOL);
+            binding.type = data::MacroBinding::Type::BOOL;
         else if (typeStr == "int")
-            binding.type(data::Binding::Type::INT);
+            binding.type = data::MacroBinding::Type::INT;
         else if (typeStr == "float")
-            binding.type(data::Binding::Type::FLOAT);
+            binding.type = data::MacroBinding::Type::FLOAT;
 
         // FIXME: handle other Binding::Type values
     }
@@ -872,12 +934,12 @@ EffectParser::parseMacroBinding(const Json::Value& node, const Scope& scope, Mac
 
     auto minNode = node.get("min", "");
     if (minNode.isInt())
-        binding.minValue(minNode.asInt());
+        binding.minValue = minNode.asInt();
     // FIXME: throw otherwise
 
     auto maxNode = node.get("max", "");
     if (maxNode.isInt())
-        binding.maxValue(maxNode.asInt());
+        binding.maxValue = maxNode.asInt();
     // FIXME: throw otherwise
 }
 
@@ -981,13 +1043,10 @@ EffectParser::loadGLSLDependencies(GLSLBlockListPtr blocks, file::Options::Ptr o
                     block.second
                 ));
 
-                loader->queue(block.second);
+                loader->queue(block.second)->load();
             }
         }
     }
-
-    if (_numDependencies != _numLoadedDependencies)
-        loader->load();
 
     if (_numDependencies == _numLoadedDependencies && _effect)
         finalize();
@@ -1042,7 +1101,8 @@ EffectParser::glslIncludeCompleteHandler(LoaderPtr 			        loader,
 
 void
 EffectParser::loadTexture(const std::string&	textureFilename,
-						  DefaultValue&	        value)
+                          const std::string&    uniformName,
+						  data::Provider::Ptr   defaultValues)
 {
     auto loader = Loader::create(_options);
 
@@ -1053,6 +1113,7 @@ EffectParser::loadTexture(const std::string&	textureFilename,
         auto texture = _assetLibrary->texture(textureFilename);
 
         //value.textureValues.push_back(texture);
+        defaultValues->set(uniformName, texture->sampler());
 		texture->upload();
 
         ++_numLoadedDependencies;

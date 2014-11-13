@@ -72,33 +72,37 @@ DrawCall::bind(Program::Ptr             program,
 
     for (const auto& input : program->inputs().uniforms())
     {
-        if (uniformBindings.count(input.name) == 0)
+        auto& bindings = uniformBindings.bindings;
+
+        if (bindings.count(input.name) == 0)
             continue;
 
-        const auto& binding = uniformBindings.at(input.name);
-        auto& container = getContainer(binding.source());
+        const auto& binding = bindings.at(input.name);
+        auto& container = getContainer(binding.source);
 
         bindUniform(
             program,
             input,
             container,
-            data::Container::getActualPropertyName(_variables, binding.propertyName())
+            data::Container::getActualPropertyName(_variables, binding.propertyName)
         );
     }
      
     for (const auto& input : program->inputs().attributes())
     {
-        if (attributeBindings.count(input.name) == 0)
+        auto& bindings = attributeBindings.bindings;
+
+        if (bindings.count(input.name) == 0)
             continue;
 
-        const auto& binding = attributeBindings.at(input.name);
-        auto& container = getContainer(binding.source());
+        const auto& binding = bindings.at(input.name);
+        auto& container = getContainer(binding.source);
 
         bindAttribute(
             program,
             input,
             container,
-            data::Container::getActualPropertyName(_variables, binding.propertyName())
+            data::Container::getActualPropertyName(_variables, binding.propertyName)
         );
     }
 }

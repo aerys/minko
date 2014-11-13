@@ -26,9 +26,8 @@ namespace minko
 {
     namespace data
     {
-        class Binding
+        struct Binding
         {
-        public:
             enum class Source
             {
                 TARGET,
@@ -36,128 +35,28 @@ namespace minko
                 ROOT
             };
 
-            enum class Type
-            {
-                UNSET,
-                INT,
-                INT2,
-                INT3,
-                INT4,
-                FLOAT,
-                FLOAT2,
-                FLOAT3,
-                FLOAT4,
-                BOOL,
-                BOOL2,
-                BOOL3,
-                BOOL4,
-                TEXTURE
-            };
+            std::string propertyName;
+            Source      source;
 
-            class DefaultValue
-            {
-                friend class Binding;
-
-            private:
-                Type _type;
-                Any _values;
-
-            public:
-                inline
-                Type
-                type() const
-                {
-                    return _type;
-                }
-
-                template<typename T>
-                const std::vector<T>&
-                values() const
-                {
-                    return *Any::cast<std::vector<T>>(&_values);
-                }
-            };
-
-        private:
-            std::string     _propertyName;
-            Source          _source;
-            DefaultValue*   _defaultValue;
-
-        public:
             Binding() :
-                _propertyName(),
-                _source(Source::TARGET),
-                _defaultValue(nullptr)
+                propertyName(),
+                source(Source::TARGET)
             {}
 
             Binding(const std::string& propertyName, Source source) :
-                _propertyName(propertyName),
-                _source(source),
-                _defaultValue(nullptr)
+                propertyName(propertyName),
+                source(source)
             {}
 
             ~Binding()
             {
-                if (_defaultValue)
-                    delete _defaultValue;
-            }
-
-            inline
-            const std::string&
-            propertyName() const
-            {
-                return _propertyName;
-            }
-            inline
-            void
-            propertyName(const std::string& p)
-            {
-                _propertyName = p;
-            }
-
-            inline
-            const Source&
-            source() const
-            {
-                return _source;
-            }
-            inline
-            void
-            source(Source s)
-            {
-                _source = s;
-            }
-
-            inline
-            bool
-            hasDefautValue() const
-            {
-                return _defaultValue != nullptr;
-            }
-
-            inline
-            const DefaultValue&
-            defaultValue() const
-            {
-                return *_defaultValue;
-            }
-
-            template <typename T>
-            void
-            defaultValue(Type type, const std::vector<T>& values)
-            {
-                if (!_defaultValue)
-                    _defaultValue = new DefaultValue();
-
-                _defaultValue->_type = type;    
-                _defaultValue->_values = values;
             }
 
             inline
             bool
             operator==(const Binding& rhs) const
             {
-                return _propertyName == rhs._propertyName && _source == rhs._source;
+                return propertyName == rhs.propertyName && source == rhs.source;
             }
         };
     }
@@ -172,8 +71,8 @@ namespace std
         size_t
         operator()(const minko::data::Binding& binding) const
         {
-            auto h1 = std::hash<minko::uint>()((minko::uint)binding.source());
-            auto h2 = std::hash<std::string>()(binding.propertyName());
+            auto h1 = std::hash<minko::uint>()((minko::uint)binding.source);
+            auto h2 = std::hash<std::string>()(binding.propertyName);
 
             return h1 ^ (h2 << 1);
         }

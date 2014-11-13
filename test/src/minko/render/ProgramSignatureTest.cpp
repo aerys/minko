@@ -57,98 +57,90 @@ TEST_F(ProgramSignatureTest, TargetDefinedIntegerValue)
 {
     data::MacroBindingMap macroBindings;
 
-    macroBindings["FOO"] = {
+    macroBindings.bindings["FOO"] = {
         "foo",
-        data::BindingSource::TARGET,
-        data::MacroBinding::State::UNDEFINED,
-        data::MacroBinding::Value(),
-        true
+        data::Binding::Source::TARGET,
+        data::MacroBinding::Type::INT
     };
 
     ProgramSignature signature(macroBindings, _variables, _targetData, _rendererData, _rootData);
 
     ASSERT_EQ(signature.mask(), 0x00000001);
     ASSERT_EQ(signature.values().size(), 1);
-    ASSERT_EQ(signature.values()[0], 42);
-    ASSERT_EQ(signature.states().size(), 1);
-    ASSERT_EQ(signature.states()[0], data::MacroBinding::State::DEFINED_INTEGER_VALUE);
+    ASSERT_EQ(Any::cast<int>(signature.values()[0]), 42);
+    ASSERT_EQ(signature.types().size(), 1);
+    ASSERT_EQ(signature.types()[0], data::MacroBinding::Type::INT);
 }
 
 TEST_F(ProgramSignatureTest, TargetDefinedIntegerValueFromCollection)
 {
     data::MacroBindingMap macroBindings;
 
-    macroBindings["FOO"] = {
+    macroBindings.bindings["FOO"] = {
         "target[${targetId}].foo",
-        data::BindingSource::TARGET,
-        data::MacroBinding::State::UNDEFINED,
-        data::MacroBinding::Value(),
-        true
+        data::Binding::Source::TARGET,
+        data::MacroBinding::Type::INT
     };
 
     ProgramSignature signature(macroBindings, _variables, _targetData, _rendererData, _rootData);
 
     ASSERT_EQ(signature.mask(), 0x00000001);
     ASSERT_EQ(signature.values().size(), 1);
-    ASSERT_EQ(signature.values()[0], 4242);
-    ASSERT_EQ(signature.states().size(), 1);
-    ASSERT_EQ(signature.states()[0], data::MacroBinding::State::DEFINED_INTEGER_VALUE);
+    ASSERT_EQ(Any::cast<int>(signature.values()[0]), 4242);
+    ASSERT_EQ(signature.types().size(), 1);
+    ASSERT_EQ(signature.types()[0], data::MacroBinding::Type::INT);
 }
 
 TEST_F(ProgramSignatureTest, TargetDefined)
 {
     data::MacroBindingMap macroBindings;
 
-    macroBindings["BAR"] = {
+    macroBindings.bindings["BAR"] = {
         "bar",
-        data::BindingSource::TARGET,
-        data::MacroBinding::State::UNDEFINED,
-        data::MacroBinding::Value()
+        data::Binding::Source::TARGET,
+        data::MacroBinding::Type::UNSET
     };
 
     ProgramSignature signature(macroBindings, _variables, _targetData, _rendererData, _rootData);
 
     ASSERT_EQ(signature.mask(), 0x00000001);
     ASSERT_EQ(signature.values().size(), 0);
-    ASSERT_EQ(signature.states().size(), 1);
-    ASSERT_EQ(signature.states()[0], data::MacroBinding::State::DEFINED);
+    ASSERT_EQ(signature.types().size(), 1);
+    ASSERT_EQ(signature.types()[0], data::MacroBinding::Type::UNSET);
 }
 
 TEST_F(ProgramSignatureTest, TargetUndefined)
 {
     data::MacroBindingMap macroBindings;
 
-    macroBindings["BAR"] = {
+    macroBindings.bindings["BAR"] = {
         "fooBar",
-        data::BindingSource::TARGET,
-        data::MacroBinding::State::UNDEFINED,
-        data::MacroBinding::Value()
+        data::Binding::Source::TARGET,
+        data::MacroBinding::Type::UNSET
     };
 
     ProgramSignature signature(macroBindings, _variables, _targetData, _rendererData, _rootData);
 
     ASSERT_EQ(signature.mask(), 0x00000000);
     ASSERT_EQ(signature.values().size(), 0);
-    ASSERT_EQ(signature.states().size(), 0);
+    ASSERT_EQ(signature.types().size(), 0);
 }
 
 TEST_F(ProgramSignatureTest, RootDefinedIntegerValueFromCollection)
 {
     data::MacroBindingMap macroBindings;
 
-    macroBindings["FOO"] = {
+    macroBindings.bindings["FOO"] = {
         "root[${rootId}].foo",
-        data::BindingSource::ROOT,
-        data::MacroBinding::State::UNDEFINED,
-        data::MacroBinding::Value(),
-        true
+        data::Binding::Source::ROOT,
+        data::MacroBinding::Type::INT
     };
 
     ProgramSignature signature(macroBindings, _variables, _targetData, _rendererData, _rootData);
 
     ASSERT_EQ(signature.mask(), 0x00000001);
     ASSERT_EQ(signature.values().size(), 1);
-    ASSERT_EQ(signature.values()[0], 424242);
-    ASSERT_EQ(signature.states().size(), 1);
-    ASSERT_EQ(signature.states()[0], data::MacroBinding::State::DEFINED_INTEGER_VALUE);
+    ASSERT_EQ(Any::cast<int>(signature.values()[0]), 424242);
+    ASSERT_EQ(signature.types().size(), 1);
+    ASSERT_EQ(signature.types()[0], data::MacroBinding::Type::INT);
 }

@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/data/MacroBinding.hpp"
+#include "minko/data/BindingMap.hpp"
 
 namespace minko
 {
@@ -32,10 +33,10 @@ namespace minko
             typedef int MaskType;
 
 		private:
-			uint				                _mask;
-            std::vector<Any>	                _values;
-            std::vector<data::Binding::Type>    _types;
-            std::vector<std::string>            _macros;
+			uint				                    _mask;
+            std::vector<Any>	                    _values;
+            std::vector<data::MacroBinding::Type>   _types;
+            std::vector<std::string>                _macros;
 
 		public:
 			ProgramSignature(const data::MacroBindingMap&                           macroBindings,
@@ -59,14 +60,39 @@ namespace minko
             void
             updateProgram(Program& program) const;
 
+            inline
+			uint
+			mask() const
+			{
+				return _mask;
+			}
+
+			inline
+			const std::vector<Any>&
+			values() const
+			{
+				return _values;
+			}
+
+            inline
+            const std::vector<data::MacroBinding::Type>&
+            types()
+            {
+                return _types;
+            }
+
+            inline
+            const std::vector<std::string>&
+            macros() const
+            {
+                return _macros;
+            }
+
         private:
             Any
             getValueFromContainer(const data::MacroBinding& binding,
                                   const data::Container&    container,
                                   const std::string&        propertyName);
-
-            Any
-            getDefaultValue(const data::MacroBinding& binding);
 		};
 	}
 }

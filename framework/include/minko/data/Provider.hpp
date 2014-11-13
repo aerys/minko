@@ -185,10 +185,6 @@ namespace minko
             unset(const std::string& propertyName);
 
 			Ptr
-			swap(const std::string& propertyName1,
-                 const std::string& propertyName2);
-
-			Ptr
 			clone();
 
 			virtual

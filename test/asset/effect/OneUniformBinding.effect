@@ -1,0 +1,7 @@
+{
+    "uniforms" : {
+        "uDiffuseMap" : "material[${materialUuid}].diffuseMap"
+    },
+
+    "pass" : { "vertexShader" : "", "fragmentShader" : "" }
+}

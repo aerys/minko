@@ -29,7 +29,7 @@ SpotLight::SpotLight(float diffuse,
                      float attenuationConstant,
                      float attenuationLinear,
                      float attenuationQuadratic) :
-	AbstractDiscreteLight("spotLights", diffuse, specular)
+	AbstractDiscreteLight("spotLight", diffuse, specular)
 {
     updateModelToWorldMatrix(math::mat4(1.f));
     attenuationCoefficients(math::vec3(attenuationConstant, attenuationLinear, attenuationQuadratic));

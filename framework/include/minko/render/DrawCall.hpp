@@ -222,14 +222,16 @@ namespace minko
                       const data::BindingMap&   stateBindings,
                       T*                        defaultValue)
             {
-                if (stateBindings.count(stateName) == 0)
+                auto& bindings = stateBindings.bindings;
+
+                if (bindings.count(stateName) == 0)
                     return defaultValue;
 
-                const auto& binding = stateBindings.at(stateName);
-                auto& container = getContainer(binding.source());
+                const auto& binding = bindings.at(stateName);
+                auto& container = getContainer(binding.source);
 
                 return container.getUnsafePointer<T>(
-                    data::Container::getActualPropertyName(_variables, binding.propertyName())
+                    data::Container::getActualPropertyName(_variables, binding.propertyName)
                 );
             }
 		};
