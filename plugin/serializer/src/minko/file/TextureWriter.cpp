@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/AbstractTexture.hpp"
 #include "minko/render/Texture.hpp"
+#include "minko/render/TextureFormatInfo.hpp"
 #include "minko/file/AbstractWriter.hpp"
 #include "minko/file/Dependency.hpp"
 #include "minko/file/PNGWriter.hpp"
