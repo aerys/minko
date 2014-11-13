@@ -92,7 +92,10 @@ namespace minko
         float                                                                   _framerate;
         float                                                                   _desiredFramerate;
 
+#if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID)
         std::shared_ptr<SDLAudio>                                               _audio;
+#endif
+        
         std::shared_ptr<SDLMouse>                                               _mouse;
         std::unordered_map<int, std::shared_ptr<SDLJoystick>>                   _joysticks;
         std::shared_ptr<SDLKeyboard>                                            _keyboard;

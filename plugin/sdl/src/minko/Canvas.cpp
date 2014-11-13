@@ -182,7 +182,9 @@ Canvas::initializeWindow()
         height(h);
     }
 
+# if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID)
     _audio = SDLAudio::create(shared_from_this());
+# endif
 #endif
 }
 
@@ -795,7 +797,10 @@ void
 Canvas::quit()
 {
     _active = false;
+    
+#if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID)
     _audio = nullptr;
+#endif
 }
 
 Canvas::WorkerPtr
