@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Minko.hpp"
 #include "minko/MinkoSDL.hpp"
 #include "minko/audio/PositionalSound.hpp"
+#include "minko/log/Logger.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -31,13 +32,13 @@ main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Example - Audio");
 
-    auto sceneManager = SceneManager::create(canvas->context());
+    auto sceneManager = SceneManager::create(canvas);
 
     // setup assets
     sceneManager->assets()->loader()->options()
         ->resizeSmoothly(true)
         ->generateMipmaps(true)
-        ->registerParser<audio::SoundParser>("mp3");
+        ->registerParser<audio::SoundParser>("ogg");
 
     auto errorHandle = sceneManager->assets()->loader()->error()->connect([=](file::Loader::Ptr loader, const file::Error& error)
     {
@@ -45,7 +46,7 @@ main(int argc, char** argv)
     });
 
     sceneManager->assets()->loader()
-        ->queue("audio/breakbeat.mp3")
+        ->queue("audio/breakbeat.ogg")
         ->queue("effect/Basic.effect");
 
     auto root = scene::Node::create("root")
@@ -76,19 +77,20 @@ main(int argc, char** argv)
     auto _ = sceneManager->assets()->loader()->complete()->connect([ = ](file::Loader::Ptr loader)
     {
         mesh->addComponent(Surface::create(
-            geometry::CubeGeometry::create(sceneManager->assets()->context()),
-            material::BasicMaterial::create()->diffuseColor(0xffff00ff),
-            sceneManager->assets()->effect("effect/Basic.effect")
-        ));
+                geometry::CubeGeometry::create(sceneManager->assets()->context()),
+                material::BasicMaterial::create()->diffuseColor(0xffff00ff),
+                sceneManager->assets()->effect("effect/Basic.effect")
+            )
+        );
 
         mesh->addComponent(Animation::create({ timeline })->play());
 
-        audio::Sound::Ptr sound = sceneManager->assets()->sound("audio/breakbeat.mp3");
+        audio::Sound::Ptr sound = sceneManager->assets()->sound("audio/breakbeat.ogg");
         audio::SoundChannel::Ptr channel = sound->play(std::numeric_limits<int>::max());
 
         root->addChild(mesh);
-
-        auto script = audio::PositionalSound::create(channel);
+        
+        auto script = audio::PositionalSound::create(channel, camera);
         mesh->addComponent(script);
     });
 
