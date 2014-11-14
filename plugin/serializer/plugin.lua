@@ -129,6 +129,6 @@ newoption {
 }
 
 newoption {
-	trigger	= 'with-texture-compressor',
-	description = 'Enable the Minko SERIALIZER plugin to support texture compression.'
+	trigger	= "with-texture-compressor",
+	description = "Enable the Minko SERIALIZER plugin to support texture compression."
 }
