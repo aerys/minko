@@ -733,6 +733,12 @@ OpenGLES2Context::uploadCompressedCubeTextureData(uint                texture,
 }
 
 void
+OpenGLES2Context::activateMipMapping(uint texture)
+{
+    _textureHasMipmaps[texture] = true;
+}
+
+void
 OpenGLES2Context::deleteTexture(uint texture)
 {
     _textures.erase(std::find(_textures.begin(), _textures.end(), texture));

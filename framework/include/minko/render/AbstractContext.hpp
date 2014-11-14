@@ -132,10 +132,10 @@ namespace minko
 
             virtual
             uint
-            createTexture(TextureType    type,
+            createTexture(TextureType   type,
                           unsigned int  width,
                           unsigned int  height,
-                          bool            mipMapping,
+                          bool          mipMapping,
                           bool          optimizeForRenderToTexture = false) = 0;
 
             virtual
@@ -174,6 +174,10 @@ namespace minko
                                             unsigned int        height,
                                             unsigned int        mipLevel,
                                             void*               data) = 0;
+
+            virtual
+            void
+            activateMipMapping(uint texture) = 0;
 
             virtual
             void

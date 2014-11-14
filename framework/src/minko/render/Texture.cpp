@@ -89,7 +89,13 @@ Texture::data(unsigned char*    data,
     }
     else
     {
-        const auto size = _width * _height * TextureFormatInfo::numBitsPerPixel(_format) / 8;
+        const auto size = std::max(
+            TextureFormatInfo::mipLevelMinSize(format),
+            static_cast<int>(
+                TextureFormatInfo::numBitsPerPixel(format) / 8.0f * _width * _height
+            )
+        );
+
         _data.resize(size);
 
         std::memcpy(_data.data(), data, size);

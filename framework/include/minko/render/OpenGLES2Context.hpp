@@ -231,7 +231,6 @@ namespace minko
                                   unsigned int         mipLevel,
                                   void*                data);
 
-            virtual
             void
             uploadCompressedTexture2dData(uint          texture,
                                           TextureFormat format,
@@ -241,7 +240,6 @@ namespace minko
                                           unsigned int  mipLevel,
                                           void*         data);
 
-            virtual
             void
             uploadCompressedCubeTextureData(uint                texture,
                                             CubeTexture::Face   face,
@@ -250,6 +248,9 @@ namespace minko
                                             unsigned int        height,
                                             unsigned int        mipLevel,
                                             void*               data);
+
+            void
+            activateMipMapping(uint texture);
 
             void
             deleteTexture(uint texture);

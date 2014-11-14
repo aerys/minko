@@ -140,6 +140,17 @@ AbstractTexture::resizeData(unsigned int width,
 #endif // DEBUG_TEXTURE
 }
 
+void
+AbstractTexture::activateMipMapping()
+{
+    if (_mipMapping)
+        return;
+
+    _mipMapping = true;
+
+    _context->activateMipMapping(_id);
+}
+
 uint
 AbstractTexture::getMipmapWidth(uint level) const
 {

@@ -87,6 +87,9 @@ namespace minko
                 return _mipMapping;
             }
 
+            void
+            activateMipMapping();
+
             inline
             bool
             optimizeForRenderToTexture() const
