@@ -39,8 +39,8 @@ AndroidWebViewDOM::Ptr
 AndroidWebViewDOM::create(const std::string& jsAccessor, std::shared_ptr<AndroidWebViewDOMEngine> engine)
 {
 	Ptr dom(new AndroidWebViewDOM(jsAccessor));
-    dom->_engine = engine;
-    
+	dom->_engine = engine;
+
 	return dom;
 }
 
@@ -49,12 +49,12 @@ AndroidWebViewDOM::sendMessage(const std::string& message, bool async)
 {
 	auto m = message;
 
-    m = std::replaceAll(m, "\\", "\\\\");
-    m = std::replaceAll(m, "'", "\\'");
-    
-	std::string eval = _jsAccessor + ".window.Minko.onmessage('" + m + "');";
+	m = std::replaceAll(m, "\\", "\\\\");
+	m = std::replaceAll(m, "'", "\\'");
 
-    runScript(eval);
+	std::string eval = "if (" + _jsAccessor + ".window.Minko.dispatchMessage) " + _jsAccessor + ".window.Minko.dispatchMessage('" + m + "');";
+
+	runScript(eval);
 }
 
 void
