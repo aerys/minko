@@ -44,7 +44,11 @@ EmscriptenDOM::create(const std::string& jsAccessor)
 void
 EmscriptenDOM::sendMessage(const std::string& message, bool async)
 {
-	std::string eval = "if (" + _jsAccessor + " !== undefined && " + _jsAccessor + ".window !== undefined && " + _jsAccessor + ".window.Minko !== undefined) " + _jsAccessor + ".window.Minko.dispatchMessage('" + message + "');";
+	std::string s = message;
+	s = std::replaceAll(s, "\\", "\\\\");
+	s = std::replaceAll(s, "'", "\\'");
+
+	std::string eval = "if (" + _jsAccessor + " !== undefined && " + _jsAccessor + ".window !== undefined && " + _jsAccessor + ".window.Minko !== undefined) " + _jsAccessor + ".window.Minko.dispatchMessage('" + s + "');";
 	//if (!async)
 		emscripten_run_script(eval.c_str());
 	//else
@@ -52,10 +56,14 @@ EmscriptenDOM::sendMessage(const std::string& message, bool async)
 }
 
 void
-EmscriptenDOM::eval(const std::string& message, bool async)
+EmscriptenDOM::eval(const std::string& code, bool async)
 {
+	std::string s = code;
+	s = std::replaceAll(s, "\\", "\\\\");
+	s = std::replaceAll(s, "'", "\\'");
+
 	//if (!async)
-		std::string ev = _jsAccessor + ".window.eval('" + message + "')";
+		std::string ev = _jsAccessor + ".window.eval('" + s + "')";
 		emscripten_run_script(ev.c_str());
 	//else
 	//	emscripten_async_run_script(message.c_str(), 1);

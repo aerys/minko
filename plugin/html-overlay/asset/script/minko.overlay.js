@@ -148,7 +148,7 @@ Minko.dispatchMessage = function(message)
 /*
 ** EMSCRIPTEN SPECIFIC CODE
 */
-
+	
 Minko.createIframe = function() //EMSCRIPTEN
 {
 	Minko.loaded = -1;
