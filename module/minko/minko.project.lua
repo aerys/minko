@@ -105,7 +105,8 @@ minko.project.application = function(name)
 		links {
 			"minko-framework",
 			"GL",
-			"m"
+			"m",
+			"pthread"
 		}
 		prelinkcommands {
 			minko.action.copy(minko.sdk.path("/framework/asset")),
