@@ -139,6 +139,14 @@ namespace minko
                           bool          optimizeForRenderToTexture = false) = 0;
 
             virtual
+            uint
+            createCompressedTexture(TextureType     type,
+                                    TextureFormat   format,
+                                    unsigned int    width,
+                                    unsigned int    height,
+                                    bool            mipMapping) = 0;
+
+            virtual
             void
             uploadTexture2dData(uint            texture,
                                 unsigned int    width,
