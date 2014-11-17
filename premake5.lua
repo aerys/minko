@@ -92,7 +92,7 @@ solution "minko"
 
 		-- work around the inability of Xcode to build all projects if no dependency exists between them
 		if os.is("macosx")  and (_ACTION == "xcode-ios" or _ACTION == "xcode-osx") then
-			minko.project.library "all"
+			minko.project.application "all"
 				targetdir "/tmp/minko/bin"
 				objdir "/tmp/minko/obj"
 
