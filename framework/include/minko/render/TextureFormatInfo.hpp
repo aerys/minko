@@ -30,27 +30,33 @@ namespace minko
         private:
             struct Entry
             {
-                std::string _name;
+                std::string     _name;
 
-                bool        _isCompressed;
+                bool            _isCompressed;
 
-                int         _numBitsPerPixel;
+                unsigned int    _numBitsPerPixel;
 
-                int         _mipLevelMinSize;
+                unsigned int    _minimumSize;
+                unsigned int    _minimumWidth;
+                unsigned int    _minimumHeight;
 
-                bool        _hasAlphaChannel;
-                bool        _hasSeparateAlphaChannel;
+                bool            _hasAlphaChannel;
+                bool            _hasSeparateAlphaChannel;
 
                 Entry(const std::string&    name,
                       bool                  isCompressed,
-                      int                   numBitsPerPixel,
-                      int                   mipLevelMinSize,
+                      unsigned int          numBitsPerPixel,
+                      unsigned int          minimumSize,
+                      unsigned int          minimumWidth,
+                      unsigned int          minimumHeight,
                       bool                  hasAlphaChannel,
                       bool                  hasSeparateAlphaChannel) :
                     _name(name),
                     _isCompressed(isCompressed),
                     _numBitsPerPixel(numBitsPerPixel),
-                    _mipLevelMinSize(mipLevelMinSize),
+                    _minimumSize(minimumSize),
+                    _minimumWidth(minimumWidth),
+                    _minimumHeight(minimumHeight),
                     _hasAlphaChannel(hasAlphaChannel),
                     _hasSeparateAlphaChannel(hasSeparateAlphaChannel)
                 {
@@ -66,6 +72,10 @@ namespace minko
             isSupported(TextureFormat format);
 
             static
+            unsigned int
+            textureSize(TextureFormat format, unsigned int width, unsigned int height);
+
+            static
             const std::string&
             name(TextureFormat format);
 
@@ -74,12 +84,20 @@ namespace minko
             isCompressed(TextureFormat format);
 
             static
-            int
+            unsigned int
             numBitsPerPixel(TextureFormat format);
 
             static
-            int
-            mipLevelMinSize(TextureFormat format);
+            unsigned int
+            minimumSize(TextureFormat format);
+
+            static
+            unsigned int
+            minimumWidth(TextureFormat format);
+
+            static
+            unsigned int
+            minimumHeight(TextureFormat format);
 
             static
             bool

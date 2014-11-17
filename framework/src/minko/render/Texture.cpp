@@ -89,7 +89,8 @@ Texture::data(unsigned char*    data,
     }
     else
     {
-        const auto size = _width * _height * TextureFormatInfo::numBitsPerPixel(_format) / 8;
+        const auto size = TextureFormatInfo::textureSize(format, _width, _height);
+
         _data.resize(size);
 
         std::memcpy(_data.data(), data, size);
@@ -100,13 +101,28 @@ void
 Texture::upload()
 {
     if (_id == -1)
-        _id = _context->createTexture(
-            _type,
-            _widthGPU,
-            _heightGPU,
-            _mipMapping,
-            _optimizeForRenderToTexture
-        );
+    {
+        if (TextureFormatInfo::isCompressed(_format))
+        {
+            _id = _context->createCompressedTexture(
+                _type,
+                _format,
+                _widthGPU,
+                _heightGPU,
+                _mipMapping
+            );
+        }
+        else
+        {
+            _id = _context->createTexture(
+                _type,
+                _widthGPU,
+                _heightGPU,
+                _mipMapping,
+                _optimizeForRenderToTexture
+            );
+        }
+    }
 
     if (!_data.empty())
     {
@@ -147,10 +163,7 @@ Texture::uploadMipLevel(uint            level,
 
     if (TextureFormatInfo::isCompressed(_format))
     {
-        const auto size = std::max(
-            TextureFormatInfo::mipLevelMinSize(_format),
-            static_cast<int>(TextureFormatInfo::numBitsPerPixel(_format) / 8.0f * width * height)
-        );
+        const auto size = TextureFormatInfo::textureSize(_format, width, height);
 
         _context->uploadCompressedTexture2dData(
             _id,

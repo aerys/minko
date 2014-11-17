@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/WrapMode.hpp"
 #include "minko/render/TextureFilter.hpp"
 #include "minko/render/MipFilter.hpp"
+#include "minko/render/TextureFormatInfo.hpp"
 #include "minko/render/TriangleCulling.hpp"
 #include "minko/render/StencilOperation.hpp"
 #include "minko/math/Matrix4x4.hpp"
@@ -619,6 +620,67 @@ OpenGLES2Context::createTexture(TextureType    type,
 
     if (optimizeForRenderToTexture)
         createRTTBuffers(type, texture, width, height);
+
+    checkForErrors();
+
+    return texture;
+}
+
+uint
+OpenGLES2Context::createCompressedTexture(TextureType     type,
+                                          TextureFormat   format,
+                                          unsigned int    width,
+                                          unsigned int    height,
+                                          bool            mipMapping)
+{
+    uint texture;
+
+    // make sure width is a power of 2
+    if (!((width != 0) && !(width & (width - 1))))
+        throw std::invalid_argument("width");
+
+    // make sure height is a power of 2
+    if (!((height != 0) && !(height & (height - 1))))
+        throw std::invalid_argument("height");
+
+    // http://www.opengl.org/sdk/docs/man/xhtml/glGenTextures.xml
+    //
+    // void glGenTextures(GLsizei n, GLuint* textures)
+    // n Specifies the number of texture names to be generated.
+    // textures Specifies an array in which the generated texture names are stored.
+    //
+    // glGenTextures generate texture names
+    glGenTextures(1, &texture);
+
+    // http://www.opengl.org/sdk/docs/man/xhtml/glBindTexture.xml
+    //
+    // void glBindTexture(GLenum target, GLuint texture);
+    // target Specifies the target to which the texture is bound.
+    // texture Specifies the name of a texture.
+    //
+    // glBindTexture bind a named texture to a texturing target
+    const auto glTarget = type == TextureType::Texture2D
+        ? GL_TEXTURE_2D
+        : GL_TEXTURE_CUBE_MAP;
+
+    glBindTexture(glTarget, texture);
+
+    _currentBoundTexture = texture;
+
+    // default sampler states
+    glTexParameteri(glTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(glTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(glTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(glTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    _textures.push_back(texture);
+    _textureSizes[texture]            = std::make_pair(width, height);
+    _textureHasMipmaps[texture]        = mipMapping;
+    _textureTypes[texture]            = type;
+
+    _currentWrapMode[texture]        = WrapMode::CLAMP;
+    _currentTextureFilter[texture]    = TextureFilter::NEAREST;
+    _currentMipFilter[texture]        = MipFilter::NONE;
 
     checkForErrors();
 
