@@ -54,7 +54,7 @@ AndroidWebViewDOM::sendMessage(const std::string& message, bool async)
 
 	std::string eval = "if (" + _jsAccessor + ".window.Minko.dispatchMessage) " + _jsAccessor + ".window.Minko.dispatchMessage('" + m + "');";
 
-	runScript(eval);
+    runScript(eval);
 }
 
 void
