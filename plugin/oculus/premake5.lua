@@ -28,6 +28,10 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"lib/libovr/windows/src",
 			"lib/libovr/windows/include",
 		}
+		excludes {
+			"lib/libovr/windows/src/CAPI/D3D1X/CAPI_D3D1X_Util.*",
+			"lib/libovr/windows/src/CAPI/D3D1X/CAPI_D3D1X_DistortionRenderer.*"
+		}
 		defines {
 			"UNICODE",
 			"_UNICODE",
