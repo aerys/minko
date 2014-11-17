@@ -483,4 +483,26 @@ namespace std
         
         return str;
     }
+
+    inline
+    std::vector<std::string>
+    split(std::string str, std::string token)
+    {
+        std::vector<std::string> result;
+
+        auto i = str.find_first_of(token);
+
+        while (i != -1)
+        {
+            result.push_back(str.substr(0, i));
+
+            str = str.substr(i + 1);
+
+            i = str.find_first_of(token);
+        }
+
+        result.push_back(str);
+
+        return result;
+    }
 }
