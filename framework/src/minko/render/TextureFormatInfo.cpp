@@ -28,13 +28,16 @@ std::map<TextureFormat, TextureFormatInfo::Entry> TextureFormatInfo::_formats =
     { TextureFormat::RGB,               Entry("RGB",                false,    24,   16,  false,  false) },
     { TextureFormat::RGBA,              Entry("RGBA",               false,    32,   16,  true,   false) },
 
-    { TextureFormat::RGB_DXT1,          Entry("RGB_DXT1",           true,     4,    8,   false,  false) },
-    { TextureFormat::RGBA_DXT1,         Entry("RGBA_DXT1",          true,     4,    8,   true,   false) },
-    { TextureFormat::RGBA_DXT3,         Entry("RGBA_DXT3",          true,     8,    16,  true,   false) },
-    { TextureFormat::RGBA_DXT5,         Entry("RGBA_DXT5",          true,     8,    16,  true,   false) },
+    { TextureFormat::RGB,               Entry("RGB",                false,    24u,   24u, 1u,  1u,  false,  false) },
+    { TextureFormat::RGBA,              Entry("RGBA",               false,    32u,   32u, 1u,  1u,  true,   false) },
 
-    { TextureFormat::RGB_ETC1,          Entry("RGB_ETC1",           true,     4,    8,   false,  false) },
-    { TextureFormat::RGBA_ETC1,         Entry("RGBA_ETC1",          true,     4,    8,   true,   true)  },
+    { TextureFormat::RGB_DXT1,          Entry("RGB_DXT1",           true,     4u,    8u,  4u,  4u,  false,  false) },
+    { TextureFormat::RGBA_DXT1,         Entry("RGBA_DXT1",          true,     4u,    8u,  4u,  4u,  true,   false) },
+    { TextureFormat::RGBA_DXT3,         Entry("RGBA_DXT3",          true,     8u,    16u, 4u,  4u,  true,   false) },
+    { TextureFormat::RGBA_DXT5,         Entry("RGBA_DXT5",          true,     8u,    16u, 4u,  4u,  true,   false) },
+
+    { TextureFormat::RGB_ETC1,          Entry("RGB_ETC1",           true,     4u,    8u,  4u,  4u,  false,  false) },
+    { TextureFormat::RGBA_ETC1,         Entry("RGBA_ETC1",          true,     4u,    8u,  4u,  4u,  true,   true)  },
 
     { TextureFormat::RGB_PVRTC1_2BPP,   Entry("RGB_PVRTC1_2BPP",    true,     2,    32,  false,  false) },
     { TextureFormat::RGB_PVRTC1_4BPP,   Entry("RGB_PVRTC1_4BPP",    true,     4,    32,  false,  false) },
