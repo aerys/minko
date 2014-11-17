@@ -148,7 +148,7 @@ Minko.dispatchMessage = function(message)
 /*
 ** EMSCRIPTEN SPECIFIC CODE
 */
-
+	
 Minko.createIframe = function() //EMSCRIPTEN
 {
 	Minko.loaded = -1;
@@ -249,22 +249,26 @@ Minko.redispatchMouseEvent = function(event) //EMSCRIPTEN
 		pageX, pageY, screenX, screenY, 
 		event.ctrlKey, event.altKey, event.shiftKey, event.metaKey, event.button, event.relatedTarget);
 
-	if (event.type == 'mousewheel' || event.type == "DOMMouseScroll")
-	{
+	Minko.canvas.dispatchEvent(eventCopy);
+}
 
-		var copiedProperties = ['detail', 
+Minko.redispatchWheelEvent = function(event)
+{
+	var eventCopy = document.createEvent('Event');
+
+	eventCopy.initEvent(event.type, event.bubbles, event.cancelable);
+
+	var copiedProperties = ['detail', 
 		'wheelDelta', 'wheelDeltaX', 'wheelDeltaY', 'wheelDeltaZ', 
 		'delta', 'deltaMode', 'deltaX', 'deltaY', 'deltaZ', 
 		'which', 'key', 'detail', 'keyIdentifier'];
 
-		for(var k in copiedProperties)
-			eventCopy[copiedProperties[k]] = event[copiedProperties[k]];
-
-		event.preventDefault();
-	}
+	for(var k in copiedProperties)
+		eventCopy[copiedProperties[k]] = event[copiedProperties[k]];
 
 	Minko.canvas.dispatchEvent(eventCopy);
-}
+	event.preventDefault();
+};
 
 Minko.identifiers = [];
 Minko.nextId = 1;
@@ -330,11 +334,16 @@ Minko.bindRedispatchEvents = function() //EMSCRIPTEN
 {
 	if (!('ontouchstart' in window))
 	{
-		var a = ['mousemove', 'mouseup', 'mousedown', 'click', 'mousewheel', 'DOMMouseScroll'];
+		var a = ['mousemove', 'mouseup', 'mousedown', 'click'];
 
 		for(var k in a)
 			Minko.window.addEventListener(a[k], Minko.redispatchMouseEvent);
 	}
+
+	a = ['wheel', 'mousewheel', 'DOMMouseScroll'];
+
+	for(var k in a)
+		Minko.window.addEventListener(a[k], Minko.redispatchWheelEvent);
 
 	a = ['touchstart', 'touchend', 'touchmove', 'touchcancel']
 
