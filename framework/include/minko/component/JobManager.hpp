@@ -44,7 +44,7 @@ namespace minko
                 bool                            _running;
                 bool                            _oneStepPerFrame;
 
-                Signal<Job::Ptr, float>::Ptr    _priorityChanged;
+                Signal<float>::Ptr              _priorityChanged;
 
             public:
                 virtual
@@ -103,7 +103,7 @@ namespace minko
                 }
 
                 inline
-                Signal<Job::Ptr, float>::Ptr
+                Signal<float>::Ptr
                 priorityChanged() const
                 {
                     return _priorityChanged;
@@ -120,11 +120,11 @@ namespace minko
             typedef std::shared_ptr<scene::Node>    NodePtr;
 
         private:
-            unsigned int                                                _loadingFramerate;
-            float                                                       _frameTime;
-            std::list<Job::Ptr>                                         _jobs;
-            std::unordered_map<Job::Ptr, Signal<Job::Ptr, float>::Slot> _jobPriorityChangedSlots;
-            clock_t                                                     _frameStartTime;
+            unsigned int                                                    _loadingFramerate;
+            float                                                           _frameTime;
+            std::list<Job::Ptr>                                             _jobs;
+            std::unordered_map<Job::Ptr, Signal<float>::Slot>               _jobPriorityChangedSlots;
+            clock_t                                                         _frameStartTime;
 
         public:
             static

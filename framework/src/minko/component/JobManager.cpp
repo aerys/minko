@@ -30,7 +30,7 @@ JobManager::Job::Job() :
     _jobManager(),
     _running(false),
     _oneStepPerFrame(false),
-    _priorityChanged(Signal<Job::Ptr, float>::create())
+    _priorityChanged(Signal<float>::create())
 {
 }
 
@@ -45,7 +45,7 @@ JobManager::pushJob(Job::Ptr job)
 {
     _jobPriorityChangedSlots.insert(std::make_pair(
         job,
-        job->priorityChanged()->connect([this](Job::Ptr job, float priority) -> void 
+        job->priorityChanged()->connect([=](float priority) -> void 
         {
             auto jobIt = std::find(_jobs.begin(), _jobs.end(), job);
 
@@ -127,7 +127,7 @@ JobManager::insertJob(Job::Ptr job)
         job,
         [&](Job::Ptr left, Job::Ptr right) -> bool
         {
-            return left->priority() > right->priority();
+            return left->priority() < right->priority();
         }
     );
 
