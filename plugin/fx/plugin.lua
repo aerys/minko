@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 -- fx plugin
 minko.plugin.fx = {}
 
-minko.plugin.fx.enable = function()
+function minko.plugin.fx:enable()
 	defines { "MINKO_PLUGIN_FX" }
 	
 	configuration { "not StaticLib" }

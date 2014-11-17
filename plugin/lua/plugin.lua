@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 -- lua plugin
 minko.plugin.lua = {}
 
-minko.plugin.lua.enable = function()
+function minko.plugin.lua:enable()
 	defines {
 		"MINKO_PLUGIN_LUA",
 		"LUA_USE_POSIX"
@@ -40,7 +40,7 @@ minko.plugin.lua.enable = function()
 		}
 end
 
-minko.plugin.lua.dist = function(pluginDistDir)
+function minko.plugin.lua:dist(pluginDistDir)
 	os.mkdir(pluginDistDir .. '/lib/lua/include')
 	minko.os.copyfiles(
 		minko.plugin.path("lua") .. "/lib/lua/include",

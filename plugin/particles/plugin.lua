@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 -- particles plugin
 minko.plugin.particles = {}
 
-minko.plugin.particles.enable = function()
+function minko.plugin.particles:enable()
 	defines { "MINKO_PLUGIN_PARTICLES" }
 
 	configuration { "not StaticLib" }
