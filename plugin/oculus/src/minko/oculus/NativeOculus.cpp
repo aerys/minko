@@ -354,7 +354,7 @@ NativeOculus::updateCameraOrientation(std::shared_ptr<scene::Node> target)
     for (int eyeNum = 0; eyeNum < 2; eyeNum++)
     {
         ovrEyeType eye = _hmd->EyeRenderOrder[eyeNum];
-        eyeRenderPose[eye] = ovrHmd_GetEyePose(_hmd, eye);
+        eyeRenderPose[eye] = OVR::ovrHmd_GetEyePose(_hmd, eye);
 
         OVR::Matrix4f rollPitchYaw = OVR::Matrix4f::RotationY(BodyYaw);
         OVR::Matrix4f finalRollPitchYaw = rollPitchYaw * OVR::Matrix4f(eyeRenderPose[eye].Orientation);
