@@ -20,9 +20,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Canvas.hpp"
-#include "minko/audio/SDLSound.hpp"
-#include "minko/audio/SDLSoundChannel.hpp"
-#include "minko/audio/SoundParser.hpp"
+
+// Audio only works for HTML5, Windows and Android 
+#if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID)
+# include "minko/audio/SDLSound.hpp"
+# include "minko/audio/SDLSoundChannel.hpp"
+# include "minko/audio/SoundParser.hpp"
+#endif
 
 #ifdef __ANDROID__
 # include "minko/MinkoAndroid.hpp"
