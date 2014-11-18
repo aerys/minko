@@ -911,12 +911,15 @@ EffectParser::parseBinding(const Json::Value& node, const Scope& scope, Binding&
 void
 EffectParser::parseMacroBinding(const Json::Value& node, const Scope& scope, MacroBinding& binding)
 {
-    parseBinding(node, scope, binding);
-
     if (!node.isObject())
         return;
 
-    auto typeNode = node.get("type", 0);
+    auto bindingNode = node.get("binding", 0);
+
+    if (!bindingNode.isObject())
+        return;
+
+    auto typeNode = bindingNode.get("type", 0);
     if (typeNode.isString())
     {
         auto typeStr = typeNode.asString();
@@ -932,12 +935,12 @@ EffectParser::parseMacroBinding(const Json::Value& node, const Scope& scope, Mac
     }
     // FIXME: throw otherwise
 
-    auto minNode = node.get("min", "");
+    auto minNode = bindingNode.get("min", "");
     if (minNode.isInt())
         binding.minValue = minNode.asInt();
     // FIXME: throw otherwise
 
-    auto maxNode = node.get("max", "");
+    auto maxNode = bindingNode.get("max", "");
     if (maxNode.isInt())
         binding.maxValue = maxNode.asInt();
     // FIXME: throw otherwise
