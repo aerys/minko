@@ -48,7 +48,7 @@ PerspectiveCamera::PerspectiveCamera(float			      fov,
 	_postProjection(postPerspective)
 {
 	_data
-		->set("position",				_position)
+		->set("eyePosition",		    _position)
   		->set("viewMatrix",				_view)
   		->set("projectionMatrix",		_projection)
   		->set("worldToScreenMatrix",	_viewProjection);
@@ -86,10 +86,10 @@ PerspectiveCamera::updateMatrices(const math::mat4& modelToWorldMatrix)
 {
 	_position = (modelToWorldMatrix * math::vec4(0.f, 0.f, 0.f, 1.f)).xyz();
     _view = math::inverse(modelToWorldMatrix);
-    
+
 	_data
-		->set("position",	_position)
-  		->set("viewMatrix", _view);
+		->set("eyePosition",	_position)
+  		->set("viewMatrix",     _view);
 
 	updateProjection(_fov, _aspectRatio, _zNear, _zFar);
 }

@@ -30,7 +30,7 @@
 		"shininess"				: "material[${materialUuid}].shininess",
 		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
 		"worldToScreenMatrix"	: { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
-		"cameraPosition"		: { "binding" : { "property" : "cameraPosition", "source" : "renderer" } },
+		"cameraPosition"		: { "binding" : { "property" : "eyePosition", "source" : "renderer" } },
 		"boneMatrices"			: "geometry[${geometryUuid}].boneMatrices",
 		"numBones"				: "geometry[${geometryUuid}].numBones",
 		"ambientLights"			: { "binding" : { "property" : "ambientLights", "source" : "root" } },
@@ -56,7 +56,7 @@
 		"SHININESS"				: "material[${materialUuid}].shininess",
 		"MODEL_TO_WORLD"		: "modelToWorldMatrix",
 		"NUM_BONES"				: "geometry[${geometryUuid}].numBones",
-		"NUM_AMBIENT_LIGHTS"	: { "binding" : { "property" : "ambientLights.length", "source" : "root" } },
+		"NUM_AMBIENT_LIGHTS"	: { "binding" : { "property" : "ambientLight.length", "source" : "root", "type" : "int" } },
 		"FOG_LIN"				: "material[${materialUuid}].fogLinear",
 		"FOG_EXP"				: "material[${materialUuid}].fogExponential",
 		"FOG_EXP2"				: "material[${materialUuid}].fogExponential2"
