@@ -27,7 +27,7 @@ limitations under the License.
 #include "OVR_Linux_SDKWindow.h"
 #include "../Kernel/OVR_Log.h"
 #include "../Kernel/OVR_Log.h"
-#include "../../../3rdParty/EDID/edid.h"
+#include "../EDID/edid.h"
 
 namespace OVR {
 

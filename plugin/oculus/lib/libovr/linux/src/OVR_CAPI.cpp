@@ -30,7 +30,7 @@ limitations under the License.
 #include "Kernel/OVR_System.h"
 #include "OVR_Stereo.h"
 #include "OVR_Profile.h"
-#include "../Include/OVR_Version.h"
+#include "OVR_Version.h"
 
 #include "CAPI/CAPI_HMDState.h"
 #include "CAPI/CAPI_FrameTimeManager.h"
