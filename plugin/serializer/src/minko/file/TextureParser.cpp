@@ -69,7 +69,7 @@ TextureParser::parse(const std::string&                filename,
                      const std::vector<unsigned char>& data,
                      std::shared_ptr<AssetLibrary>     assetLibrary)
 {
-    readHeader(filename, data);
+    readHeader(filename, data, 0x00000054);
 
     auto textureHeaderOffset = _headerSize + _dependenciesSize;
     auto textureBlobOffset = textureHeaderOffset + _textureHeaderSize;

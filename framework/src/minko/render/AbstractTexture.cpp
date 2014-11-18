@@ -35,6 +35,7 @@ AbstractTexture::AbstractTexture(TextureType            type,
                                 const std::string&        filename) :
     AbstractResource(context),
     _type(type),
+    _format(TextureFormat::RGBA),
     _width(width),
     _height(height),
     _widthGPU(std::min(math::clp2(width), MAX_SIZE)),
