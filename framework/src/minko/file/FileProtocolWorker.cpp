@@ -28,10 +28,6 @@ namespace minko
     {
         MINKO_DEFINE_WORKER(FileProtocolWorker,
         {
-//#ifdef DEBUG
-            std::cout << "FileProtocolWorker::run(): enter" << std::endl;
-//#endif // defined(DEBUG)
-
             auto seekingOffset = (static_cast<int>(static_cast<unsigned char>((input[0]))) << 24) +
                                  (static_cast<int>(static_cast<unsigned char>((input[1]))) << 16) +
                                  (static_cast<int>(static_cast<unsigned char>((input[2]))) << 8) + 
@@ -65,10 +61,6 @@ namespace minko
 
                 chunkSize *= 1024;
 
-//#ifdef DEBUG
-                std::cout << "FileProtocolWorker::run(): file is open, chunksize " + std::to_string(chunkSize) << std::endl;
-//#endif // defined(DEBUG)
-
 				file.seekg(seekingOffset, std::ios::beg);
 
                 uint offset = 0;
@@ -98,10 +90,6 @@ namespace minko
             {
                 post(Message{ "error" });
             }
-
-//#ifdef DEBUG
-            std::cout << "FileProtocolWorker::run(): exit" << std::endl;
-//#endif // defined(DEBUG)
         });
     }
 }
