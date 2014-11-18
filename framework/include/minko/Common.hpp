@@ -486,7 +486,7 @@ namespace std
 
     inline
     std::vector<std::string>
-    split(std::string str, std::string token)
+    stringSplit(std::string str, std::string token)
     {
         std::vector<std::string> result;
 
@@ -503,6 +503,24 @@ namespace std
 
         result.push_back(str);
 
+        return result;
+    }
+    
+
+    inline
+    std::string
+    stringJoin(std::vector<std::string> strings, std::string delimiter)
+    {
+        std::string result;
+
+        for (size_t i = 0; i < strings.size(); ++i)
+        {
+            if (i != 0)
+                result += delimiter;
+
+            result += strings[i];
+        }
+        
         return result;
     }
 }
