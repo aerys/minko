@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "chromium/dom/ChromiumDOMMouseEvent.hpp"
 #include "minko/dom/AbstractDOMMouseEvent.hpp"
 #include "chromium/dom/ChromiumDOMElement.hpp"
+#include "chromium/dom/ChromiumDOMObject.hpp"
 #include "include/cef_runnable.h"
 #include "include/cef_task.h"
 
@@ -35,13 +36,15 @@ ChromiumDOMEvent::_events;
 
 ChromiumDOMEvent::ChromiumDOMEvent(CefRefPtr<CefV8Value> v8NodeObject, CefRefPtr<CefV8Context> v8Context) :
 _cleared(false),
-_v8Context(v8Context),
-_blocker(false)
+ChromiumDOMObject()
 {
     if (!v8NodeObject->IsObject())
         throw;
 
+    _blocker = false;
+
     _v8NodeObject = v8NodeObject;
+    _v8Context = v8Context;
 }
 
 ChromiumDOMEvent::~ChromiumDOMEvent()
@@ -70,82 +73,6 @@ ChromiumDOMEvent::clearAll()
     _events.clear();
 }
 
-CefRefPtr<CefV8Value>
-ChromiumDOMEvent::getFunction(std::string name)
-{
-    CefRefPtr<CefV8Value> func = _v8NodeObject->GetValue(name);
-
-    if (!func->IsFunction())
-        func = nullptr;
-
-    return func;
-}
-
-CefRefPtr<CefV8Value>
-ChromiumDOMEvent::getProperty(std::string name)
-{
-    CefRefPtr<CefV8Value> prop = _v8NodeObject->GetValue(name);
-
-    if (prop->IsFunction())
-        prop = nullptr;
-
-    return prop;
-}
-
-void
-ChromiumDOMEvent::preventDefault()
-{
-    if (CefCurrentlyOn(TID_RENDERER))
-    {
-        _v8Context->Enter();
-        CefV8ValueList args;
-        getFunction("preventDefault")->ExecuteFunction(_v8NodeObject, args);
-        _v8Context->Exit();
-    }
-    else
-    {
-        CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-        _blocker.store(true);
-
-        auto fn = [&]()
-        {
-            preventDefault();
-            _blocker.store(false);
-        };
-
-        runner->PostTask(NewCefRunnableFunction(&fn));
-
-        while (_blocker.load());
-    }
-}
-
-void
-ChromiumDOMEvent::stopPropagation()
-{
-    if (CefCurrentlyOn(TID_RENDERER))
-    {
-        _v8Context->Enter();
-        CefV8ValueList args;
-        getFunction("stopPropagation")->ExecuteFunction(_v8NodeObject, args);
-        _v8Context->Exit();
-    }
-    else
-    {
-        CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-        _blocker.store(true);
-
-        auto fn = [&]()
-        {
-            stopPropagation();
-            _blocker.store(false);
-        };
-
-        runner->PostTask(NewCefRunnableFunction(&fn));
-
-        while (_blocker.load());
-    }
-}
-
 std::string
 ChromiumDOMEvent::accessor()
 {
@@ -155,60 +82,12 @@ ChromiumDOMEvent::accessor()
 std::string
 ChromiumDOMEvent::type()
 {
-    std::string result;
-
-    if (CefCurrentlyOn(TID_RENDERER))
-    {
-        _v8Context->Enter();
-        result = getProperty("type")->GetStringValue();
-        _v8Context->Exit();
-    }
-    else
-    {
-        CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-        _blocker.store(true);
-
-        auto fn = [&]()
-        {
-            result = type();
-            _blocker.store(false);
-        };
-
-        runner->PostTask(NewCefRunnableFunction(&fn));
-
-        while (_blocker.load());
-    }
-
-    return result;
+    return getProperty<std::string>("type");
 }
 
 AbstractDOMElement::Ptr
 ChromiumDOMEvent::target()
 {
-    AbstractDOMElement::Ptr result;
-
-    if (CefCurrentlyOn(TID_RENDERER))
-    {
-        _v8Context->Enter();
-        result = ChromiumDOMElement::getDOMElementFromV8Object(getProperty("target"), _v8Context);
-        _v8Context->Exit();
-    }
-    else
-    {
-        CefRefPtr<CefTaskRunner> runner = CefTaskRunner::GetForThread(TID_RENDERER);
-        _blocker.store(true);
-
-        auto fn = [&]()
-        {
-            result = target();
-            _blocker.store(false);
-        };
-
-        runner->PostTask(NewCefRunnableFunction(&fn));
-
-        while (_blocker.load());
-    }
-
-    return result;
+    return getProperty<AbstractDOMElement::Ptr>("target");
 }
 #endif

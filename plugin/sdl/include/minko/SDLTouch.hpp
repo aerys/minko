@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Canvas.hpp"
 #include "minko/input/Touch.hpp"
+#include "minko/math/Vector2.hpp"
 
 namespace minko
 {
@@ -35,41 +36,136 @@ namespace minko
         static
         std::shared_ptr<SDLTouch>
         create(std::shared_ptr<Canvas> canvas);
-
-        void
-        fingerId(int fingerId)
+        
+        inline
+        void addTouch(int identifier, float x, float y)
         {
-            _fingerId = fingerId;
+            if (_touches.find(identifier) != _touches.end())
+            {
+                updateTouch(identifier, x, y);
+            }
+            else
+            {
+                _identifiers.push_back(identifier);
+                _touches[identifier] = math::Vector2::create(x, y);
+            }
         }
 
-        void
-        x(float x)
+        inline
+        void updateTouch(int identifier, float x, float y)
         {
-            _x = float(x);
+            if (_touches.find(identifier) == _touches.end())
+            {
+                addTouch(identifier, x, y);
+            }
+            else
+            {
+                _touches[identifier]->x(x);
+                _touches[identifier]->y(y);
+            }
         }
 
-        void
-        y(float y)
+        inline
+        void removeTouch(int identifier)
         {
-            _y = float(y);
+            if (_touches.find(identifier) != _touches.end())
+            {
+                _touches.erase(identifier);
+                auto it = std::find(_identifiers.begin(), _identifiers.end(), identifier);
+
+                if (it != _identifiers.end())
+                    _identifiers.erase(it);
+            }
         }
 
-        void
-        dx(float dx)
+        inline
+        void lastTouchDownX(float v)
         {
-            _dx = float(dx);
+            _lastTouchDownX = v;
         }
 
-        void
-        dy(float dy)
+        inline
+        void lastTouchDownY(float v)
         {
-            _dy = float(dy);
+            _lastTouchDownY = v;
+        }
+
+        inline
+        void lastTapX(float v)
+        {
+            _lastTapX = v;
+        }
+
+        inline
+        void lastTapY(float v)
+        {
+            _lastTapY = v;
+        }
+
+        inline
+        void lastTapTime(float v)
+        {
+            _lastTapTime = v;
+        }
+
+        inline
+        void lastTouchDownTime(float v)
+        {
+            _lastTouchDownTime = v;
+        }
+
+        inline
+        float lastTouchDownX()
+        {
+            return _lastTouchDownX;
+        }
+
+        inline
+        float lastTouchDownY()
+        {
+            return _lastTouchDownY;
+        }
+
+        inline
+        float lastTouchDownTime()
+        {
+            return _lastTouchDownTime;
+        }
+
+        inline
+        float lastTapX()
+        {
+            return _lastTapX;
+        }
+
+        inline
+        float lastTapY()
+        {
+            return _lastTapY;
+        }
+
+        inline
+        float lastTapTime()
+        {
+            return _lastTapTime;
         }
 
     private:
         SDLTouch(std::shared_ptr<Canvas> canvas);
 
+        static const float TAP_MOVE_THRESHOLD;
+        static const float TAP_DELAY_THRESHOLD;
+        static const float DOUBLE_TAP_DELAY_THRESHOLD;
+
+        float _lastTouchDownX;
+        float _lastTouchDownY;
+        float _lastTouchDownTime;
+
+        float _lastTapX;
+        float _lastTapY;
+        float _lastTapTime;
     public:
+
         static const float SWIPE_PRECISION;
     };
 }

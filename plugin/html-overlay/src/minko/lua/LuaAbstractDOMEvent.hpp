@@ -44,9 +44,7 @@ namespace minko
 				{
 						state.Class<dom::AbstractDOMEvent>("AbstractDOMEvent")
 							.property("type", &dom::AbstractDOMEvent::type)
-							.property("target", &dom::AbstractDOMEvent::target)
-							.method("preventDefault", &dom::AbstractDOMEvent::preventDefault)
-							.method("stopPropagation", &dom::AbstractDOMEvent::stopPropagation);
+							.property("target", &dom::AbstractDOMEvent::target);
 					}
 
 			};

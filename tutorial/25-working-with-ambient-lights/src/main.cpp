@@ -32,7 +32,7 @@ int
 main(int argc, char** argv)
 {
 	auto canvas = Canvas::create("Minko Tutorial - Working with ambient lights", WINDOW_WIDTH, WINDOW_HEIGHT);
-	auto sceneManager = component::SceneManager::create(canvas->context());
+	auto sceneManager = component::SceneManager::create(canvas);
  
 	sceneManager->assets()->loader()
 		->queue("effect/Phong.effect")

@@ -80,17 +80,17 @@ namespace chromium
 		drawRect(unsigned char* source, int x, int y, int w, int h);
 
 	private:
-		uint _lastW;
-		uint _lastH;
-		uint _texW;
-		uint _texH;
+		int _lastW;
+		int _lastH;
+		int _texW;
+		int _texH;
 
 		uint _popupShown;
 		uint _popupUpdated;
-		uint _popupX;
-		uint _popupY;
-		uint _popupW;
-		uint _popupH;
+		int _popupX;
+		int _popupY;
+		int _popupW;
+		int _popupH;
 
 		std::shared_ptr<AbstractCanvas> _canvas;
 		std::shared_ptr<render::AbstractContext> _context;

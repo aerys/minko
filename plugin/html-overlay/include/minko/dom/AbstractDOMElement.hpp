@@ -46,7 +46,7 @@ namespace minko
 
 			virtual
 			void
-			id(std::string) = 0;
+            id(const std::string&) = 0;
 
 			virtual
 			std::string
@@ -54,7 +54,7 @@ namespace minko
 
 			virtual
 			void
-			className(std::string) = 0;
+            className(const std::string&) = 0;
 
 			virtual
 			std::string
@@ -82,7 +82,7 @@ namespace minko
 
 			virtual
 			void
-			textContent(std::string) = 0;
+            textContent(const std::string&) = 0;
 
 			virtual
 			std::string
@@ -90,7 +90,7 @@ namespace minko
 
 			virtual
 			void
-			innerHTML(std::string) = 0;
+            innerHTML(const std::string&) = 0;
 
 			virtual
 			Ptr
@@ -107,28 +107,28 @@ namespace minko
 			virtual
 			Ptr
 			cloneNode(bool deep = true) = 0;
-
+            
 			virtual
 			std::string
-			getAttribute(std::string name) = 0;
+			getAttribute(const std::string& name) = 0;
 
 			virtual
 			void
-			setAttribute(std::string name, std::string value) = 0;
+            setAttribute(const std::string& name, const std::string& value) = 0;
 
 			virtual
 			std::vector<Ptr>
-			getElementsByTagName(std::string tagName) = 0;
+            getElementsByTagName(const std::string& tagName) = 0;
 
 			virtual
 			std::string
-			style(std::string name) = 0;
+            style(const std::string& name) = 0;
 
 			virtual
 			void
-			style(std::string name, std::string value) = 0;
+            style(const std::string& name, const std::string& value) = 0;
 
-			virtual
+            virtual
 			Signal<std::shared_ptr<AbstractDOMMouseEvent>>::Ptr
 			onclick() = 0;
 
@@ -160,8 +160,17 @@ namespace minko
             minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>::Ptr
             oninput() = 0;
 
-		private:
+            virtual
+            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMTouchEvent>>::Ptr
+            ontouchstart() = 0;
 
+            virtual
+            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMTouchEvent>>::Ptr
+            ontouchend() = 0;
+
+            virtual
+            minko::Signal<std::shared_ptr<minko::dom::AbstractDOMTouchEvent>>::Ptr
+            ontouchmove() = 0;
 		};
 	}
 }

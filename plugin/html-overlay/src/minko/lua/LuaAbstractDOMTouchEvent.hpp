@@ -32,7 +32,7 @@ namespace minko
         namespace overlay
         {
             class LuaAbstractDOMTouchEvent :
-            public LuaAbstractDOMMouseEvent
+                public LuaAbstractDOMMouseEvent
             {
                 
             private:
@@ -44,8 +44,8 @@ namespace minko
                 bind(LuaGlue& state)
                 {
                     state.Class<dom::AbstractDOMTouchEvent>("AbstractDOMTouchEvent")
-                        .property("fingerId", &dom::AbstractDOMTouchEvent::fingerId)
-                        .property("jsAccessor", &dom::AbstractDOMTouchEvent::jsAccessor);
+                        .property("identifier", &dom::AbstractDOMTouchEvent::identifier);
+
                 }
                 
             };

@@ -38,7 +38,7 @@ main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Example - Multi Surface");
 
-    auto sceneManager = SceneManager::create(canvas->context());
+    auto sceneManager = SceneManager::create(canvas);
 
     // setup assets
     sceneManager->assets()->loader()->options()

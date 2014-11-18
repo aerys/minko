@@ -45,6 +45,10 @@ minko.plugin["html-overlay"].enable = function()
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/WebViewJavascriptBridge/MinkoOverlay.js.txt"),
 		}
 
+	configuration { "android" }
+		prelinkcommands {
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/asset")
+		}
 
 	configuration { "osx64", "ConsoleApp or WindowedApp" }
 		links { "WebKit.framework" }

@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/Vector4.hpp"
 #include "minko/async/Worker.hpp"
 #include "minko/file/Options.hpp"
+#include "minko/log/Logger.hpp"
 #include "minko/SDLBackend.hpp"
 
 #if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
@@ -66,11 +67,11 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, boo
     _fileDropped(Signal<const std::string&>::create()),
     _joystickAdded(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
     _joystickRemoved(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
-    _touchZoom(Signal<std::shared_ptr<input::Touch>, float>::create()),
     _width(width),
     _height(height),
     _x(0),
-    _y(0)
+    _y(0),
+    _onWindow(false)
 {
     _data->set<math::Vector4::Ptr>("canvas.viewport", Vector4::create(0.0f, 0.0f, (float) width, (float) height));
 }
@@ -83,10 +84,6 @@ Canvas::initialize()
     {
         return file::APKProtocol::create();
     });
-
-    log::Logger::defaultLogger(
-        log::Logger::create(log::Logger::Level::Debug, log::AndroidLogSink::create())
-    );
 #endif
 
     initializeWindow();
@@ -108,7 +105,6 @@ Canvas::initializeInputs()
     _mouse = SDLMouse::create(shared_from_this());
     _keyboard = SDLKeyboard::create();
     _touch = SDLTouch::create(shared_from_this());
-    _touches = std::vector<std::shared_ptr<SDLTouch>>();
 
 #if (MINKO_PLATFORM & (MINKO_PLATFORM_LINUX | MINKO_PLATFORM_OSX | MINKO_PLATFORM_WINDOWS))
     for (int i = 0; i < SDL_NumJoysticks(); ++i)
@@ -328,6 +324,8 @@ Canvas::step()
     SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 #endif // MINKO_PLATFORM != MINKO_PLATFORM_HTML5
 
+    auto enteredOrLeftThisFrame = false;
+
     while (SDL_PollEvent(&event))
     {
         switch (event.type)
@@ -405,6 +403,7 @@ Canvas::step()
                 if (_keyboard->_keyboardState[i] && _keyboard->hasKeyUpSignal(code))
                     _keyboard->keyUp(code)->execute(_keyboard, i);
             }
+            break;
         }
 
         case SDL_MOUSEMOTION:
@@ -435,6 +434,9 @@ Canvas::step()
 
         case SDL_MOUSEBUTTONDOWN:
         {
+            if (enteredOrLeftThisFrame)
+                break;
+
             switch (event.button.button)
             {
             case SDL_BUTTON_LEFT:
@@ -472,162 +474,159 @@ Canvas::step()
         case SDL_MOUSEWHEEL:
         {
             _mouse->wheel()->execute(_mouse, event.wheel.x, event.wheel.y);
-            //_mouseWheel->execute(that, event.wheel.x, event.wheel.y);
             break;
         }
 
-#if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
-            // Touch events
+        // Touch events
         case SDL_FINGERDOWN:
         {
-#if defined(DEBUG)
-            //std::cout << "Finger down! (x: " << event.tfinger.x << ", y: " << event.tfinger.y << ")" << std::endl;
-#endif // DEBUG
-            _touch->fingerId(event.tfinger.fingerId);
-            _touch->x(uint(event.tfinger.x));
-            _touch->y(uint(event.tfinger.y));
+            auto x = event.tfinger.x * _width;
+            auto y = event.tfinger.y * _height;
+            auto id = (int)(event.tfinger.fingerId);
 
-            _touch->touchDown()->execute(_touch, event.tfinger.x, event.tfinger.y);
+            _touch->addTouch(id, x, y);
+            _touch->touchDown()->execute(
+                _touch, 
+                id, 
+                x, 
+                y
+            );
 
-            // Create a new touch
-            auto touch = SDLTouch::create(that);
+            if (_touch->numTouches() == 1)
+            {
+                _touch->lastTouchDownTime(_relativeTime);
+                _touch->lastTouchDownX(x);
+                _touch->lastTouchDownY(y);
+            }
+            else
+            {
+                _touch->lastTouchDownTime(-1.f);
+                _touch->lastTapTime(-1.f);
+            }
 
-            touch->fingerId(event.tfinger.fingerId);
-            touch->x(event.tfinger.x);
-            touch->y(event.tfinger.y);
-
-            touch->touchDown()->execute(touch, event.tfinger.x, event.tfinger.y);
-
-            // Add the touch to the touch list
-            _touches.push_back(touch);
             break;
         }
 
         case SDL_FINGERUP:
         {
-#if defined(DEBUG)
-            //std::cout << "Finger up! (x: " << event.tfinger.x << ", y: " << event.tfinger.y << ")" << std::endl;
-#endif // DEBUG
-            _touch->x(uint(event.tfinger.x));
-            _touch->y(uint(event.tfinger.y));
+            auto x = event.tfinger.x * _width;
+            auto y = event.tfinger.y * _height;
+            auto id = (int)(event.tfinger.fingerId);
 
-            _touch->touchUp()->execute(_touch, event.tfinger.x, event.tfinger.y);
+            _touch->removeTouch(id);
+            _touch->touchUp()->execute(
+                _touch, 
+                id, 
+                x, 
+                y
+            );
 
-            // Get the real touch up
-            auto fingerUp = std::find_if(_touches.begin(), _touches.end(), [&] (SDLTouch::Ptr f) { return f->Touch::fingerId() == event.tfinger.fingerId; } );
-
-            // If this touch exists
-            if (fingerUp != _touches.end())
+            if (_touch->numTouches() == 0 && _touch->lastTouchDownTime() != -1.0f )
             {
-                auto touch = *fingerUp;
+                auto dX = std::abs(x - _touch->lastTouchDownX());
+                auto dY = std::abs(y - _touch->lastTouchDownY());
+                auto dT = _relativeTime - _touch->lastTouchDownTime();
 
-                touch->x(event.tfinger.x);
-                touch->y(event.tfinger.y);
+                if (dT < SDLTouch::TAP_DELAY_THRESHOLD &&
+                    dX < SDLTouch::TAP_MOVE_THRESHOLD && 
+                    dY < SDLTouch::TAP_MOVE_THRESHOLD)
+                {
+                    _touch->tap()->execute(_touch, x, y);
+                    
+                    dX = std::abs(x - _touch->lastTapX()) * 0.75f;
+                    dY = std::abs(y - _touch->lastTapY()) * 0.75f;
+                    dT = _relativeTime - _touch->lastTapTime();
+                    
+                    if (_touch->lastTapTime() != -1.0f &&
+                        dT < SDLTouch::DOUBLE_TAP_DELAY_THRESHOLD &&
+                        dX < SDLTouch::TAP_MOVE_THRESHOLD &&
+                        dY < SDLTouch::TAP_MOVE_THRESHOLD)
+                    {
+                        _touch->doubleTap()->execute(_touch, x, y);
+                        _touch->lastTapTime(-1.0f);
+                    }
+                    else
+                    {
+                        _touch->lastTapTime(_relativeTime);
+                    }
 
-                touch->touchUp()->execute(touch, event.tfinger.x, event.tfinger.y);
-
-                // Remove it from the list
-                _touches.erase(fingerUp);
+                    _touch->lastTapX(x);
+                    _touch->lastTapY(y);
+                }
             }
+
             break;
         }
 
         case SDL_FINGERMOTION:
         {
-#if defined(DEBUG)
-            /*
-            std::cout << "Finger motion! "
-            << "("
-            << "x: " << event.tfinger.x << ", y: " << event.tfinger.y
-            << "|"
-            << "dx: " << event.tfinger.dx << ", dy: " << event.tfinger.dy
-            << ")" << std::endl;
-            */
-#endif // DEBUG
-            _touch->x(uint(event.tfinger.x));
-            _touch->y(uint(event.tfinger.y));
-            _touch->dx(uint(event.tfinger.dx));
-            _touch->dy(uint(event.tfinger.dy));
-
-            _touch->touchMotion()->execute(_touch, event.tfinger.dx, event.tfinger.dy);
-
-            // Get the real touch in motion
-            auto fingerMotion = std::find_if(_touches.begin(), _touches.end(), [&] (SDLTouch::Ptr f) { return f->Touch::fingerId() == event.tfinger.fingerId; } );
-
-            if (fingerMotion != _touches.end())
+            auto id = (int)(event.tfinger.fingerId);
+            auto x = event.tfinger.x * _width;
+            auto y = event.tfinger.y * _height;
+            auto dx = event.tfinger.dx * _width;
+            auto dy = event.tfinger.dy * _height;
+            
+            _touch->updateTouch(id, x, y);
+            _touch->touchMove()->execute(
+                _touch, 
+                id,
+                dx,
+                dy
+            );
+            
+            // Gestures
+            if (event.tfinger.dx > SDLTouch::SWIPE_PRECISION)
             {
-                auto touch = *fingerMotion;
+                _touch->swipeRight()->execute(_touch);
+            }
 
-                // Store event data
-                touch->x(event.tfinger.x);
-                touch->y(event.tfinger.y);
-                touch->dx(event.tfinger.dx);
-                touch->dy(event.tfinger.dy);
+            if (-event.tfinger.dx > SDLTouch::SWIPE_PRECISION)
+            {
+                _touch->swipeLeft()->execute(_touch);
+            }
 
-                touch->touchMotion()->execute(touch, event.tfinger.dx, event.tfinger.dy);
+            if (event.tfinger.dy > SDLTouch::SWIPE_PRECISION)
+            {
+                _touch->swipeDown()->execute(_touch);
+            }
 
-                // Gestures
-                if (event.tfinger.dx > SDLTouch::SWIPE_PRECISION)
+            if (-event.tfinger.dy > SDLTouch::SWIPE_PRECISION)
+            {
+                _touch->swipeUp()->execute(_touch);
+            }
+
+            if (_touch->numTouches() == 2)
+            {
+                Vector2::Ptr touch2 = nullptr;
+
+                for (auto i = 0; i < _touch->identifiers().size(); ++i)
                 {
-# if defined(DEBUG)
-                std::cout << "Swipe right! (" << event.tfinger.dx << ")" << std::endl;
-#endif // DEBUG
-                    _touch->swipeRight()->execute(_touch);
-                    touch->swipeRight()->execute(touch);
+                    if (_touch->identifiers()[i] != id)
+                        touch2 = _touch->touch(_touch->identifiers()[i]);
                 }
-
-                if (-event.tfinger.dx > SDLTouch::SWIPE_PRECISION)
+                
+                if (touch2 != nullptr)
                 {
+                    auto dX1 = (x - dx) - touch2->x();
+                    auto dY1 = (y - dy) - touch2->y();
 
-# if defined(DEBUG)
-                    std::cout << "Swipe left! (" << event.tfinger.dx << ")" << std::endl;
-#endif // DEBUG
-                    _touch->swipeLeft()->execute(_touch);
-                    touch->swipeLeft()->execute(touch);
-                }
+                    auto dX2 = x - touch2->x();
+                    auto dY2 = y - touch2->y();
+                    
+                    auto dist1 = std::sqrt(std::pow(dX1, 2) + std::pow(dY1, 2));
+                    auto dist2 = std::sqrt(std::pow(dX2, 2) + std::pow(dY2, 2));
+                    
+                    auto deltaDist = dist2 - dist1;
 
-                if (event.tfinger.dy > SDLTouch::SWIPE_PRECISION)
-                {
-
-# if defined(DEBUG)
-                    std::cout << "Swipe down! (" << event.tfinger.dy << ")" << std::endl;
-#endif // DEBUG
-                    _touch->swipeDown()->execute(_touch);
-                    touch->swipeDown()->execute(touch);
-                }
-
-                if (-event.tfinger.dy > SDLTouch::SWIPE_PRECISION)
-                {
-#if defined(DEBUG)
-                std::cout << "Swipe up! (" << event.tfinger.dy << ")" << std::endl;
-#endif // DEBUG
-                    _touch->swipeUp()->execute(_touch);
-                    touch->swipeUp()->execute(touch);
-                }
-
-                // If it's the second touch
-                if (_touches.size() > 1 && _touches.at(1)->Touch::fingerId() == event.tfinger.fingerId)
-                {
-                    // Get the first touch
-                    auto firstFinger = _touches[0];
-
-                    // Compute distance between first touch and second touch
-                    auto distance = sqrt(pow(event.tfinger.x - firstFinger->Touch::x(), 2) + pow(event.tfinger.y - firstFinger->Touch::y(), 2));
-                    auto deltaDistance = sqrt(
-                                              pow((event.tfinger.x + event.tfinger.dx) - firstFinger->Touch::x(), 2) +
-                                              pow((event.tfinger.y + event.tfinger.dy) - firstFinger->Touch::y(), 2));
-
-                    if (deltaDistance != distance)
+                    if (deltaDist != 0.f)
                     {
-                        //std::cout << "[Canvas] Zoom value: " << distance - deltaDistance << "(dx: " << event.tfinger.dx << ", dy: " << event.tfinger.dy << ")" << std::endl;
-                        touchZoom()->execute(touch, distance - deltaDistance);
+                        _touch->pinchZoom()->execute(_touch, deltaDist / (float)(width()));
                     }
                 }
             }
 
             break;
         }
-#endif
         case SDL_JOYAXISMOTION:
         {
             _joysticks[event.jaxis.which]->joystickAxisMotion()->execute(
@@ -711,11 +710,24 @@ Canvas::step()
             switch (event.window.event)
             {
                 case SDL_WINDOWEVENT_RESIZED:
+                    if (width() == event.window.data1 && height() == event.window.data2)
+                        break;
+
                     width(event.window.data1);
                     height(event.window.data2);
 
                     _context->configureViewport(x(), y(), width(), height());
                     _resized->execute(that, width(), height());
+                    break;
+
+                case SDL_WINDOWEVENT_ENTER:
+                    _onWindow = true;
+                    enteredOrLeftThisFrame = true;
+                    break;
+
+                case SDL_WINDOWEVENT_LEAVE:
+                    _onWindow = false;
+                    enteredOrLeftThisFrame = true;
                     break;
 
                 default:

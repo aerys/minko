@@ -110,10 +110,8 @@ GeometryParser::parse(const std::string&                filename,
                       const std::vector<unsigned char>&    data,
                       std::shared_ptr<AssetLibrary>        assetLibrary)
 {
-    readHeader(filename, data);
-
-    if (_magicNumber != 0x4D4B0347)
-        throw std::logic_error("Invalid geometry data");
+    if (!readHeader(filename, data, 0x47))
+        return;
 
     msgpack::object            msgpackObject;
     msgpack::zone            mempool;

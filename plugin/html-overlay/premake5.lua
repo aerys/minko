@@ -1,6 +1,6 @@
 PROJECT_NAME = path.getname(os.getcwd())
 
-if not minko.platform.supports { "windows32", "windows64", "linux32", "linux64", "osx64", "html5", "ios" } then
+if not minko.platform.supports { "windows32", "windows64", "linux32", "linux64", "osx64", "html5", "ios", "android" } then
 	return
 end
 
@@ -122,8 +122,8 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		includedirs { "lib/WebViewJavascriptBridge" }
 		buildoptions { "-x objective-c++" }
 		files {
-			"include/macwebview/**.hpp",
-			"src/macwebview/**.cpp",
+			"include/apple/**.hpp",
+			"src/apple/**.cpp",
 			"lib/WebViewJavascriptBridge/*.h",
 			"lib/WebViewJavascriptBridge/*.m"
 		}
@@ -131,26 +131,34 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	-- iOS webview
 	configuration { "ios" }
 		files {
-			"include/macwebview/dom/IOSWebView.h",
-			"src/macwebview/dom/IOSWebView.m"
-		}
-		excludes {
-			"include/macwebview/dom/MacWebViewDOMMouseEvent.hpp",
-			"src/macwebview/dom/MacWebViewDOMMouseEvent.cpp"
+			"include/apple/dom/IOSWebView.h",
+			"src/apple/dom/IOSWebView.m"
 		}
 
 	-- OSX webview
 	configuration { "osx64" }
 		files {
-			"include/macwebview/dom/OSXWebView.h",
-			"include/macwebview/dom/OSXWebUIDelegate.h",
-			"src/macwebview/dom/OSXWebView.m",
-			"src/macwebview/dom/OSXWebUIDelegate.m"
-		}
-		excludes {
-			"include/macwebview/dom/MacWebViewDOMTouchEvent.hpp",
-			"src/macwebview/dom/MacWebViewDOMTouchEvent.cpp"
+			"include/apple/dom/OSXWebView.h",
+			"include/apple/dom/OSXWebUIDelegate.h",
+			"src/apple/dom/OSXWebView.m",
+			"src/apple/dom/OSXWebUIDelegate.m"
 		}
 		links {
 			"WebKit.framework"
+		}
+
+	-- Android webview
+	configuration { "android" }
+
+		files {
+			"include/android/**.hpp",
+			"src/android/**.cpp"
+		}
+
+		includedirs {
+			minko.sdk.path("/framework/lib/jsoncpp/src")
+		}
+
+		defines {
+			"JSON_IS_AMALGAMATION"
 		}

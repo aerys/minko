@@ -1,0 +1,65 @@
+{
+	"name" : "HTML overlay",
+	"attributeBindings" : {
+		"position"	: "geometry[${geometryId}].position",
+		"uv"		: "geometry[${geometryId}].uv"
+	},
+
+	"uniformBindings" : {
+		"overlaySampler"			: "material[${materialId}].diffuseMap",
+		"overlayRatio"				: "material[${materialId}].overlayRatio"
+	},
+
+	"samplerStates" : {
+		"overlaySampler"	: { "textureFilter" : "linear" }
+	},
+	
+	"blendMode" : "alpha",
+	"priority"	: ["last", -999999999.0],
+
+	"depthTest"			: [false, "always"],
+	"triangleCulling"	: "none",
+
+	"passes" : [{
+		
+		"vertexShader" : "
+			#ifdef GL_ES
+				precision mediump float;
+			#endif
+
+			attribute vec3 position;
+			attribute vec2 uv;
+
+			varying vec2 vertTexcoord;
+			
+			void main(void)
+			{
+				vertTexcoord = uv.xy;
+			
+				gl_Position = vec4(position, 1) * vec4(1., -1., 1., .5);
+			}
+		",
+
+		"fragmentShader" : "
+			#ifdef GL_ES
+			precision mediump float;
+			precision mediump int;
+			#endif
+
+			uniform sampler2D overlaySampler;
+
+			varying vec2 vertTexcoord;
+			uniform vec2 overlayRatio;
+
+			void main()
+			{
+				vec2 overlayUv = vec2(vertTexcoord.x, 1.0 - vertTexcoord.y) * overlayRatio.xy;
+				vec4 overlayColor = texture2D(overlaySampler, overlayUv);
+
+				overlayColor = vec4(overlayColor.z, overlayColor.y, overlayColor.x, overlayColor.w);
+
+				gl_FragColor = overlayColor;
+			}
+		"
+	}]
+}

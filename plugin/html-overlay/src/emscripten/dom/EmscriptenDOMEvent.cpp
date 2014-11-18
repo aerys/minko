@@ -27,22 +27,6 @@ using namespace minko::dom;
 using namespace emscripten;
 using namespace emscripten::dom;
 
-void
-EmscriptenDOMEvent::preventDefault()
-{
-    std::cerr << "Warning : AbstractDOMEvent::preventDefault will have no effect" << std::endl;
-    std::string eval = _jsAccessor + ".preventDefault()";
-    emscripten_run_script(eval.c_str());
-}
-
-void
-EmscriptenDOMEvent::stopPropagation()
-{
-    std::cerr << "Warning : AbstractDOMEvent::stopPropagation will have no effect" << std::endl;
-    std::string eval = _jsAccessor + ".stopPropagation()";
-    emscripten_run_script(eval.c_str());
-}
-
 std::string
 EmscriptenDOMEvent::type()
 {
@@ -57,4 +41,12 @@ minko::dom::AbstractDOMElement::Ptr
 EmscriptenDOMEvent::target()
 {
     return EmscriptenDOMElement::getDOMElement(_jsAccessor + ".target");
+}
+
+int
+EmscriptenDOMEvent::getProperty(const std::string& property)
+{
+    std::string eval = "(" + _jsAccessor + "." + property + ")";
+    int result = emscripten_run_script_int(eval.c_str());
+    return result;
 }

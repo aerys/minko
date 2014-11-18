@@ -37,30 +37,30 @@ namespace emscripten
 			typedef std::shared_ptr<EmscriptenDOM> Ptr;
 
 		private:
-			EmscriptenDOM(std::string);
+			EmscriptenDOM(const std::string&);
 
 		public:
 			static
 			Ptr
-			create(std::string);
+			create(const std::string&);
 
 			void
-			sendMessage(std::string, bool async);
+			sendMessage(const std::string&, bool async);
 
 			void
-			eval(std::string, bool async);
+			eval(const std::string&, bool async);
 
 			minko::dom::AbstractDOMElement::Ptr
-			createElement(std::string);
+			createElement(const std::string&);
 
 			minko::dom::AbstractDOMElement::Ptr
-			getElementById(std::string);
+			getElementById(const std::string&);
 
 			std::vector<minko::dom::AbstractDOMElement::Ptr>
-			getElementsByClassName(std::string);
+			getElementsByClassName(const std::string&);
 
 			std::vector<minko::dom::AbstractDOMElement::Ptr>
-			getElementsByTagName(std::string);
+			getElementsByTagName(const std::string&);
 
 			minko::dom::AbstractDOMElement::Ptr
 			document();
@@ -91,7 +91,7 @@ namespace emscripten
 
 			static
 			std::vector<minko::dom::AbstractDOMElement::Ptr>
-			getElementList(std::string);
+			getElementList(const std::string&);
 
 		private:
 			bool _initialized;

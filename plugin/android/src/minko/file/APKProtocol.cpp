@@ -37,46 +37,35 @@ APKProtocol::load()
     auto filename = _file->filename();
     auto options = _options;
 
-    std::string cleanFilename = "";
+    auto protocolPrefixPosition = filename.find("://");
 
-    for(uint i = 0; i < filename.length(); ++i)
+    if (protocolPrefixPosition != std::string::npos)
     {
-        if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
-        {
-            cleanFilename = "";
-            i += 2;
-            continue;
-        }
-
-        cleanFilename += filename.at(i);
+        filename = filename.substr(protocolPrefixPosition + 3);
     }
-
-    cleanFilename = File::canonizeFilename(cleanFilename);
 
     _options = options;
 
-    auto realFilename = options->uriFunction()(File::sanitizeFilename(cleanFilename));
+    auto resolvedFilename = options->uriFunction()(File::sanitizeFilename(filename));
 
-    SDL_RWops* file = SDL_RWFromFile(cleanFilename.c_str(), "rb");
+    SDL_RWops* file = SDL_RWFromFile(resolvedFilename.c_str(), "rb");
 
     if (!file)
         for (auto path : _options->includePaths())
         {
-            auto testFilename = options->uriFunction()(File::sanitizeFilename(path + '/' + cleanFilename));
+            resolvedFilename = options->uriFunction()(File::sanitizeFilename(path + '/' + filename));
 
-            file = SDL_RWFromFile(testFilename.c_str(), "rb");
+            file = SDL_RWFromFile(std::string(resolvedFilename).c_str(), "rb");
+
             if (file)
-            {
-                realFilename = testFilename;
                 break;
-            }
         }
 
     auto loader = shared_from_this();
 
     if (file)
     {
-        resolvedFilename(realFilename);
+        this->resolvedFilename(resolvedFilename);
 
         auto offset = options->seekingOffset();
         auto size = options->seekedLength() > 0 ? options->seekedLength() : file->size(file);
