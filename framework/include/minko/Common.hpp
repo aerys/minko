@@ -484,4 +484,44 @@ namespace std
         
         return str;
     }
+
+    inline
+    std::vector<std::string>
+    stringSplit(std::string str, std::string token)
+    {
+        std::vector<std::string> result;
+
+        auto i = str.find_first_of(token);
+
+        while (i != -1)
+        {
+            result.push_back(str.substr(0, i));
+
+            str = str.substr(i + 1);
+
+            i = str.find_first_of(token);
+        }
+
+        result.push_back(str);
+
+        return result;
+    }
+    
+
+    inline
+    std::string
+    stringJoin(std::vector<std::string> strings, std::string delimiter)
+    {
+        std::string result;
+
+        for (size_t i = 0; i < strings.size(); ++i)
+        {
+            if (i != 0)
+                result += delimiter;
+
+            result += strings[i];
+        }
+        
+        return result;
+    }
 }

@@ -70,7 +70,8 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, boo
     _width(width),
     _height(height),
     _x(0),
-    _y(0)
+    _y(0),
+    _onWindow(false)
 {
     _data->set<math::Vector4::Ptr>("canvas.viewport", Vector4::create(0.0f, 0.0f, (float) width, (float) height));
 }
@@ -323,6 +324,8 @@ Canvas::step()
     SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 #endif // MINKO_PLATFORM != MINKO_PLATFORM_HTML5
 
+    auto enteredOrLeftThisFrame = false;
+
     while (SDL_PollEvent(&event))
     {
         switch (event.type)
@@ -431,6 +434,9 @@ Canvas::step()
 
         case SDL_MOUSEBUTTONDOWN:
         {
+            if (enteredOrLeftThisFrame)
+                break;
+
             switch (event.button.button)
             {
             case SDL_BUTTON_LEFT:
@@ -704,11 +710,24 @@ Canvas::step()
             switch (event.window.event)
             {
                 case SDL_WINDOWEVENT_RESIZED:
+                    if (width() == event.window.data1 && height() == event.window.data2)
+                        break;
+
                     width(event.window.data1);
                     height(event.window.data2);
 
                     _context->configureViewport(x(), y(), width(), height());
                     _resized->execute(that, width(), height());
+                    break;
+
+                case SDL_WINDOWEVENT_ENTER:
+                    _onWindow = true;
+                    enteredOrLeftThisFrame = true;
+                    break;
+
+                case SDL_WINDOWEVENT_LEAVE:
+                    _onWindow = false;
+                    enteredOrLeftThisFrame = true;
                     break;
 
                 default:
