@@ -73,19 +73,28 @@ DrawCall::bind(Program::Ptr             program,
     for (const auto& input : program->inputs().uniforms())
     {
         auto& bindings = uniformBindings.bindings;
+        bool isArray = false;
+        std::string bindingName = input.name;
+        auto pos = bindingName.find_first_of('[');
 
-        if (bindings.count(input.name) == 0)
+        if (pos != std::string::npos)
+        {
+            bindingName = bindingName.substr(0, pos);
+            isArray = true;
+        }
+
+        if (bindings.count(bindingName) == 0)
             continue;
 
-        const auto& binding = bindings.at(input.name);
+        const auto& binding = bindings.at(bindingName);
         auto& container = getContainer(binding.source);
+        auto propertyName = data::Container::getActualPropertyName(_variables, binding.propertyName);
 
-        bindUniform(
-            program,
-            input,
-            container,
-            data::Container::getActualPropertyName(_variables, binding.propertyName)
-        );
+        // FIXME: handle per-fields bindings instead of using the raw uniform suffix
+        if (isArray)
+            propertyName += input.name.substr(pos);
+
+        bindUniform(program, input, container, propertyName);
     }
      
     for (const auto& input : program->inputs().attributes())
