@@ -113,6 +113,8 @@ namespace minko
         std::list<std::shared_ptr<async::Worker>>                               _activeWorkers;
         std::list<Any>                                                          _workerCompleteSlots;
 
+        bool                                                                    _onWindow;
+
     public:
         static inline
         Ptr
