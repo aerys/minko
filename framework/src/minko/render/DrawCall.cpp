@@ -90,6 +90,12 @@ DrawCall::bind(Program::Ptr             program,
         auto& container = getContainer(binding.source);
         auto propertyName = data::Container::getActualPropertyName(_variables, binding.propertyName);
 
+        // FIXME: handle uniforms with struct types
+
+        // FIXME: we assume the uniform is an array of struct or the code to be irrelevantly slow here
+        // uniform arrays of non-struct types should be detected and handled as such using a single call
+        // to the context providing the direct pointer to the contiguous stored data
+
         // FIXME: handle per-fields bindings instead of using the raw uniform suffix
         if (isArray)
             propertyName += input.name.substr(pos);
