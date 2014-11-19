@@ -49,6 +49,7 @@ function minko.plugin.serializer:enable()
 		configuration { "linux32" }
 			links {
 				"PVRTexLib",
+				"TextureConverter",
 				"QCompressLib"
 			}
 
@@ -64,18 +65,36 @@ function minko.plugin.serializer:enable()
 
 		configuration { "linux64" }
 			links {
-				"PVRTexLib",
-				"QCompressLib"
+				"PVRTexLib"
 			}
 
 			libdirs {
-				minko.plugin.path("serializer") .. "/lib/PVRTexTool/Linux_x86_64/Dynamic",
-				minko.plugin.path("serializer") .. "/lib/QCompress/Lib/ubuntu/x64"
+				minko.plugin.path("serializer") .. "/lib/PVRTexTool/Linux_x86_64/Dynamic"
 			}
 
 			prelinkcommands {
-				minko.action.copy(minko.plugin.path("serializer") .. "/lib/PVRTexTool/Linux_x86_64/Dynamic/*.so"),
-				minko.action.copy(minko.plugin.path("serializer") .. "/lib/QCompress/Lib/ubuntu/x64/*.so")
+				minko.action.copy(minko.plugin.path("serializer") .. "/lib/PVRTexTool/Linux_x86_64/Dynamic/*.so")
+			}
+
+		configuration { "linux32", "debug" }
+			linkoptions {
+				"-Wl,-rpath=bin/linux32/debug"
+			}
+
+		configuration { "linux32", "release" }
+			linkoptions {
+				"-Wl,-rpath=bin/linux32/release"
+			}
+
+		configuration { "linux64", "debug" }
+			linkoptions {
+				"-Wl,-rpath=bin/linux64/debug"
+			}
+
+
+		configuration { "linux64", "release" }
+			linkoptions {
+				"-Wl,-rpath=bin/linux64/release"
 			}
 
 		configuration { "osx32" }

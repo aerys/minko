@@ -88,7 +88,7 @@ PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
             ePVRTCSpacesRGB
         );
 
-        pvrTexture = std::make_unique<pvrtexture::CPVRTexture>(pvrHeader, texture2d->data().data());
+        pvrTexture = std::unique_ptr<pvrtexture::CPVRTexture>(new pvrtexture::CPVRTexture(pvrHeader, texture2d->data().data()));
 
         if (TextureFormatInfo::isCompressed(texture2d->format()))
         {
@@ -106,7 +106,7 @@ PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
 
         if (generateMipmaps)
         {
-            static const auto mipFilterToPvrMipFilter = std::unordered_map<MipFilter, pvrtexture::EResizeMode>
+            static const auto mipFilterToPvrMipFilter = std::map<MipFilter, pvrtexture::EResizeMode>
             {
                 { MipFilter::NONE,      pvrtexture::eResizeNearest },
                 { MipFilter::NEAREST,   pvrtexture::eResizeNearest },
