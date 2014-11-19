@@ -139,8 +139,7 @@ AbstractASSIMPParser::parse(const std::string&                    filename,
 
     if (pos > 0)
     {
-        options->includePaths().clear();
-        options->includePaths().push_back(resolvedFilename.substr(0, pos));
+        options->includePaths().push_front(resolvedFilename.substr(0, pos));
     }
 
     _filename        = filename;
