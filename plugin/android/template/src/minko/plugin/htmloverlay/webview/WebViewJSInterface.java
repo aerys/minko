@@ -28,9 +28,10 @@ public class WebViewJSInterface
 	}
 	
 	@JavascriptInterface
-	public void onNativeJSResult(String jsResult)
+	public void onNativeJSResult(String js, String jsResult)
 	{
-		Log.i("minko-java", "[WebViewJSInterface] onNativeJSResult: " + jsResult);
+		Log.d("minko-java", "[WebViewJSInterface] onNativeJSResult: Get result of: \"" + js + "\"");
+		Log.d("minko-java", "[WebViewJSInterface] onNativeJSResult: Result: \"" + jsResult + "\"");
 		
 		WebViewJSInterface.Result = jsResult;
 		WebViewJSInterface.ResultReady = true;

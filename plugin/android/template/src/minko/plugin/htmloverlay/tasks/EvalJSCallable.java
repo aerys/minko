@@ -19,7 +19,7 @@ public class EvalJSCallable implements Callable<String>
 	@Override
     public String call() throws Exception 
 	{
-		String evalString = "javascript:MinkoNativeInterface.onNativeJSResult(eval(\"" + _js + "\"));";		
+		String evalString = "javascript:MinkoNativeInterface.onNativeJSResult(\"" + _js + "\", eval(\"" + _js + "\"));";		
 		
 		_webView.loadUrl(evalString);
 		
