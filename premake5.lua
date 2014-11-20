@@ -9,6 +9,11 @@ newoption {
 }
 
 newoption {
+	trigger	= 'no-framework',
+	description = 'Disable plugins.'
+}
+
+newoption {
 	trigger	= 'no-plugin',
 	description = 'Disable plugins.'
 }
@@ -31,8 +36,11 @@ solution "minko"
 	-- buildable SDK
 	MINKO_SDK_DIST = false
 
-	include 'framework'
-
+	-- framework
+	if not _OPTIONS['no-framework'] then
+		include 'framework'
+	end
+		
 	-- tutorial
 	if not _OPTIONS['no-tutorial'] then
 		include 'tutorial/01-hello-cube'
