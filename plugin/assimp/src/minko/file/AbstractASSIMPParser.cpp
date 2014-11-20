@@ -149,7 +149,15 @@ AbstractASSIMPParser::parse(const std::string&                    filename,
     //fixme : find a way to handle loading dependencies asynchronously
     auto ioHandlerOptions = Options::create(options);
     ioHandlerOptions->loadAsynchronously(false);
-    _importer->SetIOHandler(new IOHandler(ioHandlerOptions, _assetLibrary));
+
+    auto ioHandler = new IOHandler(ioHandlerOptions, _assetLibrary);
+
+    ioHandler->errorFunction([this](IOHandler& self, const Error& error) -> void
+    {
+        this->error()->execute(shared_from_this(), error);
+    });
+
+    _importer->SetIOHandler(ioHandler);
 
 #ifdef DEBUG
     std::cout << "AbstractASSIMPParser: preparing to parse" << std::endl;
