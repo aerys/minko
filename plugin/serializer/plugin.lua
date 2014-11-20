@@ -76,26 +76,10 @@ function minko.plugin.serializer:enable()
 				minko.action.copy(minko.plugin.path("serializer") .. "/lib/PVRTexTool/Linux_x86_64/Dynamic/*.so")
 			}
 
-		configuration { "linux32", "debug" }
+		configuration { "linux" }
 			linkoptions {
-				"-Wl,-rpath=bin/linux32/debug"
-			}
-
-		configuration { "linux32", "release" }
-			linkoptions {
-				"-Wl,-rpath=bin/linux32/release"
-			}
-
-		configuration { "linux64", "debug" }
-			linkoptions {
-				"-Wl,-rpath=bin/linux64/debug"
-			}
-
-
-		configuration { "linux64", "release" }
-			linkoptions {
-				"-Wl,-rpath=bin/linux64/release"
-			}
+				"-Wl,-rpath=."
+			}			
 
 		configuration { "osx32" }
 			links {
