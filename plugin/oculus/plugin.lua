@@ -50,7 +50,7 @@ function minko.plugin.oculus:enable()
 		links { "winmm", "setupapi", "ws2_32" }
 
 	configuration { "linux32 or linux64" }
-		links { "udev", "Xinerama", "X11", "pthread" }
+		links { "udev", "Xinerama", "X11", "pthread", "rt", "Xrandr" }
 end
 
 newoption {
