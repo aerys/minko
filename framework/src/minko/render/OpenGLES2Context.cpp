@@ -415,7 +415,7 @@ OpenGLES2Context::setVertexBufferAt(const uint	position,
 	if (currentVertexBuffer == vertexBuffer
 		&& _currentVertexSize[position] == size
 		&& _currentVertexStride[position] == stride
-		&& _currentVertexOffset[position] == position)
+		&& _currentVertexOffset[position] == offset)
 		return ;
 
 	_currentVertexBuffer[position] = vertexBuffer;
@@ -1314,8 +1314,7 @@ OpenGLES2Context::readPixels(unsigned int x, unsigned int y, unsigned int width,
 }
 
 void
-OpenGLES2Context::setScissorTest(bool						scissorTest,
-								 const render::ScissorBox&	scissorBox)
+OpenGLES2Context::setScissorTest(bool scissorTest, const math::ivec4& scissorBox)
 {
 	if (scissorTest)
 	{
@@ -1326,7 +1325,7 @@ OpenGLES2Context::setScissorTest(bool						scissorTest,
 		uint	width = 0;
 		uint	height = 0;
 
-		if (scissorBox.width < 0 || scissorBox.height < 0)
+		if (scissorBox.z < 0 || scissorBox.w < 0)
 		{
 			x		= _viewportX;
 			y		= _viewportY;
@@ -1337,8 +1336,8 @@ OpenGLES2Context::setScissorTest(bool						scissorTest,
 		{
 			x		= scissorBox.x;
 			y		= scissorBox.y;
-			width	= scissorBox.width;
-			height	= scissorBox.height;
+			width	= scissorBox.z;
+			height	= scissorBox.w;
 		}
 
 		glScissor(x, y, width, height);

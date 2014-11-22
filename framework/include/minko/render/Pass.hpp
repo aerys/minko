@@ -43,7 +43,6 @@ namespace minko
  			typedef std::shared_ptr<Program>							ProgramPtr;
 			typedef std::shared_ptr<VertexBuffer>						VertexBufferPtr;
             typedef std::unordered_map<std::string, SamplerState>		SamplerStatesMap;
-			typedef std::shared_ptr<States>								StatesPtr;
             typedef std::unordered_map<ProgramSignature*, ProgramPtr>	SignatureToProgramMap;
 			typedef std::list<std::function<void(ProgramPtr)>>			OnProgramFunctionList;	
 			typedef std::unordered_map<std::string, data::MacroBinding> MacroBindingsMap;
@@ -55,7 +54,7 @@ namespace minko
 			data::BindingMap		_uniformBindings;
 			data::BindingMap		_stateBindings;
 			data::MacroBindingMap	_macroBindings;
-            StatesPtr				_states;
+            States				    _states;
             SignatureToProgramMap	_signatureToProgram;
 
 			OnProgramFunctionList	_uniformFunctions;
@@ -77,7 +76,7 @@ namespace minko
 				   const data::BindingMap&			uniformBindings,
 				   const data::BindingMap&			stateBindings,
 				   const data::MacroBindingMap&		macroBindings,
-                   StatesPtr         				states)
+                   const States&       				states)
 			{
 				return std::shared_ptr<Pass>(new Pass(
 					name,
@@ -101,7 +100,7 @@ namespace minko
 					pass->_uniformBindings,
 					pass->_stateBindings,
 					pass->_macroBindings,
-					deepCopy ? States::create(pass->_states) : pass->_states
+					deepCopy ? States(pass->_states) : pass->_states
 				);
 
                 for (auto& signatureProgram : pass->_signatureToProgram)
@@ -164,8 +163,8 @@ namespace minko
 			}
 
 			inline
-			StatesPtr
-			states() const
+			States&
+			states()
 			{
 				return _states;
 			}
@@ -230,7 +229,7 @@ namespace minko
 				 const data::BindingMap&			uniformBindings,
 				 const data::BindingMap&			stateBindings,
 				 const data::MacroBindingMap&		macroBindings,
-                 std::shared_ptr<States>            states);
+                 const States&                      states);
 
 			template <typename... T>
 			static

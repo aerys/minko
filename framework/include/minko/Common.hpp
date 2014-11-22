@@ -144,17 +144,6 @@ namespace minko
 		class CubeTexture;
         struct TextureSampler;
 
-		struct ScissorBox
-		{
-			int	x, y;
-			int	width, height;
-
-			inline
-			ScissorBox(): x(0), y(0), width(-1), height(-1)
-			{
-			}
-		};
-
         enum class FogType
         {
             None,

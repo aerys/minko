@@ -36,7 +36,7 @@ Pass::Pass(const std::string&		name,
 		   const BindingMap&		uniformBindings,
 		   const BindingMap&		stateBindings,
 		   const MacroBindingMap&	macroBindings,
-           std::shared_ptr<States>  states) :
+           const States&            states) :
 	_name(name),
 	_programTemplate(program),
 	_attributeBindings(attributeBindings),

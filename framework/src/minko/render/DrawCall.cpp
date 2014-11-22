@@ -220,9 +220,11 @@ DrawCall::bindUniform(Program::Ptr            program,
 void
 DrawCall::bindStates(const data::BindingMap& stateBindings)
 {
-    States::Ptr def = _pass->states();
+    const States& s = _pass->states();
 
-    _priority = bindState<float>("priority", stateBindings, &def->_priority);
+
+
+    /*_priority = bindState<float>("priority", stateBindings, &def->_priority);
     _zsorted = bindState<bool>("zSort", stateBindings, &def->_zsorted);
     _blendingSourceFactor = bindState<Blending::Source>("blendingSourceFactor", stateBindings, &def->_blendingSourceFactor);
     _blendingDestinationFactor = bindState<Blending::Destination>("blendingDestinationFactor", stateBindings, &def->_blendingDestinationFactor);
@@ -237,7 +239,7 @@ DrawCall::bindStates(const data::BindingMap& stateBindings)
     _stencilZFailOp = bindState<StencilOperation>("stencilZFailOperation", stateBindings, &def->_stencilZFailOp);
     _stencilZPassOp = bindState<StencilOperation>("stencilZPassOperation", stateBindings, &def->_stencilZPassOp);
     _scissorTest = bindState<bool>("scissorTest", stateBindings, &def->_scissorTest);
-    _scissorBox = bindState<ScissorBox>("scissorBox", stateBindings, &def->_scissorBox);
+    _scissorBox = bindState<ScissorBox>("scissorBox", stateBindings, &def->_scissorBox);*/
 
     // FIXME: bind the render target
 }
@@ -294,12 +296,18 @@ DrawCall::render(AbstractContext::Ptr context, AbstractTexture::Ptr renderTarget
     }
     */
 
-    context->setColorMask(*_colorMask);
+    /*context->setColorMask(*_colorMask);
     context->setBlendMode(*_blendingSourceFactor, *_blendingDestinationFactor);
     context->setDepthTest(*_depthMask, *_depthFunc);
     context->setStencilTest(*_stencilFunction, *_stencilReference, *_stencilMask, *_stencilFailOp, *_stencilZFailOp, *_stencilZPassOp);
     context->setScissorTest(*_scissorTest, *_scissorBox);
-    context->setTriangleCulling(*_triangleCulling);
+    context->setTriangleCulling(*_triangleCulling);*/
+
+    /*context->setColorMask(true);
+    context->setBlendMode(Blending::Mode::DEFAULT);
+    context->setDepthTest(true, CompareMode::LESS);
+    context->setScissorTest(false, math::vec4(0.f));
+    context->setTriangleCulling(TriangleCulling::NONE);*/
 
     for (const auto& s : _samplers)
         context->setTextureAt(s.position, *s.resourceId, s.location);

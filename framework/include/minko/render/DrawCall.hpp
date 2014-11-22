@@ -111,7 +111,7 @@ namespace minko
             StencilOperation*			        _stencilZFailOp;
             StencilOperation*			        _stencilZPassOp;
             bool*						        _scissorTest;
-            ScissorBox*					        _scissorBox;
+            math::vec4*					        _scissorBox;
             /*SamplerStates               _samplerStates;
             AbstractTexturePtr		    _target;*/
 

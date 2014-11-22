@@ -59,8 +59,8 @@ Picking::Picking(SceneManagerPtr	sceneManager,
 	_mouseOver(Signal<NodePtr>::create()),
 	_addPickingLayout(addPickingLayout)
 {
-	_renderer	= Renderer::create(0xFFFF00FF, nullptr, sceneManager->assets()->effect("effect/Picking.effect"), 1000.f, "Picking Renderer");
-	_renderer->scissor(0, 0, 1, 1);
+	_renderer = Renderer::create(0xFFFF00FF, nullptr, sceneManager->assets()->effect("effect/Picking.effect"), 1000.f, "Picking Renderer");
+	_renderer->scissorBox(0, 0, 1, 1);
 	_renderer->layoutMask(scene::Layout::Group::PICKING);
 }
 
@@ -75,27 +75,31 @@ Picking::initialize()
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
-		));
+    ));
 
 	_mouseLeftDownSlot = _mouse->leftButtonDown()->connect(std::bind(
 		&Picking::mouseLeftDownHandler,
 		std::static_pointer_cast<Picking>(shared_from_this()),
-		std::placeholders::_1));
+		std::placeholders::_1
+    ));
 
 	_mouseRightDownSlot = _mouse->rightButtonDown()->connect(std::bind(
 		&Picking::mouseRightDownHandler,
 		std::static_pointer_cast<Picking>(shared_from_this()),
-		std::placeholders::_1));
+		std::placeholders::_1
+    ));
 
 	_mouseLeftClickSlot = _mouse->leftButtonUp()->connect(std::bind(
 		&Picking::mouseLeftClickHandler,
 		std::static_pointer_cast<Picking>(shared_from_this()),
-		std::placeholders::_1));
+		std::placeholders::_1
+    ));
 
 	_mouseRightClickSlot = _mouse->rightButtonUp()->connect(std::bind(
 		&Picking::mouseRightClickHandler,
 		std::static_pointer_cast<Picking>(shared_from_this()),
-		std::placeholders::_1));
+		std::placeholders::_1
+    ));
 }
 
 void
@@ -157,12 +161,14 @@ Picking::addedHandler(NodePtr target, NodePtr child, NodePtr parent)
 		_renderingBeginSlot = _renderer->renderingBegin()->connect(std::bind(
 			&Picking::renderingBegin,
 			std::static_pointer_cast<Picking>(shared_from_this()),
-			std::placeholders::_1));
+			std::placeholders::_1
+        ));
 
 		_renderingEndSlot = _renderer->beforePresent()->connect(std::bind(
 			&Picking::renderingEnd,
 			std::static_pointer_cast<Picking>(shared_from_this()),
-			std::placeholders::_1));
+			std::placeholders::_1
+        ));
 	
 		_componentAddedSlot = child->componentAdded().connect(std::bind(
 			&Picking::componentAddedHandler,

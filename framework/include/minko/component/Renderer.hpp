@@ -62,8 +62,8 @@ namespace minko
 			std::string													    _name;
 
 			unsigned int												    _backgroundColor;
-            render::ScissorBox											    _viewportBox;
-			render::ScissorBox											    _scissorBox;
+            math::ivec4      											    _viewportBox;
+			math::ivec4      											    _scissorBox;
 			std::shared_ptr<SceneManager>								    _sceneManager;
 			Signal<Ptr>::Ptr											    _renderingBegin;
 			Signal<Ptr>::Ptr											    _renderingEnd;
@@ -174,19 +174,19 @@ namespace minko
             inline 
 			void viewport(const int x, const int y, const int w, const int h)
             {
-				_viewportBox.x			= x;
-				_viewportBox.y			= y;
-				_viewportBox.width		= w;
-				_viewportBox.height		= h;
+				_viewportBox.x = x;
+				_viewportBox.y = y;
+				_viewportBox.z = w;
+				_viewportBox.w = h;
             }
 
 			inline
-			void scissor(const int x, const int y, const int w, const int h)
+			void scissorBox(const int x, const int y, const int w, const int h)
 			{
-				_scissorBox.x		= x;
-				_scissorBox.y		= y;
-				_scissorBox.width	= w;
-				_scissorBox.height	= h;
+				_scissorBox.x = x;
+				_scissorBox.y = y;
+				_scissorBox.z = w;
+				_scissorBox.w = h;
 			}
 
 			inline

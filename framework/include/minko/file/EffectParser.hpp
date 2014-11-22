@@ -32,7 +32,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Container.hpp"
 
 namespace Json {
-    enum ValueType;
     class Value;
 }
 
@@ -227,12 +226,12 @@ namespace minko
             parseDefaultValue(const Json::Value& node, const Scope& scope);
 
 
-            void
+            /*void
             parseDefaultValue(const Json::Value&    node,
                               const Scope&          scope,
                               const std::string&    valueName,
                               Json::ValueType       expectedType,
-                              data::Provider::Ptr   defaultValues);
+                              data::Provider::Ptr   defaultValues);*/
 
             void
             parseDefaultValue(const Json::Value&    node,
@@ -326,7 +325,7 @@ namespace minko
             parseScissorTest(const Json::Value&    node,
                              const Scope&          scope,
                              bool&                 scissorTest,
-                             render::ScissorBox&   scissorBox);
+                             math::ivec4&          scissorBox);
 
             ShaderPtr
             parseShader(const Json::Value& node, const Scope& scope, render::Shader::Type type);

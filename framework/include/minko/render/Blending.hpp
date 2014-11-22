@@ -54,9 +54,10 @@ namespace minko
 
             enum class Mode
             {
-                DEFAULT     = (uint)Source::ONE | (uint)Destination::ZERO,
+                OPAQUE      = (uint)Source::ONE | (uint)Destination::ZERO,
                 ALPHA       = (uint)Source::SRC_ALPHA | (uint)Destination::ONE_MINUS_SRC_ALPHA,
-                ADDITIVE    = (uint)Source::ONE | (uint)Destination::ONE
+                ADDITIVE    = (uint)Source::ONE | (uint)Destination::ONE,
+                DEFAULT     = OPAQUE
             };
         };
 

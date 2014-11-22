@@ -376,33 +376,33 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
             passScope.uniforms.bindings,
             passScope.states.bindings,
             passScope.macros.bindings,
-            States::create()
+            States() // FIXME
         ));
     }
 }
 
-void
-EffectParser::parseDefaultValue(const Json::Value&  node,
-                                const Scope&        scope,
-                                const std::string&  valueName,
-                                Json::ValueType     expectedType,
-                                data::Provider::Ptr defaultValues)
-{
-    if (!node.isObject())
-        return ;
-
-    auto defaultValueNode = node.get("default", 0);
-
-    if (defaultValueNode.isObject()
-        && defaultValueNode[defaultValueNode.getMemberNames()[0]].type() != expectedType)
-        throw;
-    else if (defaultValueNode.isArray() && defaultValueNode[0].type() != expectedType)
-        throw;
-    else if (defaultValueNode.type() != expectedType)
-        throw;
-
-    parseDefaultValue(node, scope, valueName, defaultValues);
-}
+//void
+//EffectParser::parseDefaultValue(const Json::Value&  node,
+//                                const Scope&        scope,
+//                                const std::string&  valueName,
+//                                Json::ValueType     expectedType,
+//                                data::Provider::Ptr defaultValues)
+//{
+//    if (!node.isObject())
+//        return ;
+//
+//    auto defaultValueNode = node.get("default", 0);
+//
+//    if (defaultValueNode.isObject()
+//        && defaultValueNode[defaultValueNode.getMemberNames()[0]].type() != expectedType)
+//        throw;
+//    else if (defaultValueNode.isArray() && defaultValueNode[0].type() != expectedType)
+//        throw;
+//    else if (defaultValueNode.type() != expectedType)
+//        throw;
+//
+//    parseDefaultValue(node, scope, valueName, defaultValues);
+//}
 
 void
 EffectParser::parseDefaultValue(const Json::Value&  node,
@@ -476,12 +476,16 @@ EffectParser::parseDefaultValueVector(const Json::Value&    defaultValueNode,
         std::vector<bool> value(size);
         for (auto i = 0u; i < size; ++i)
             value[i] = defaultValueNode[i].asBool();
+
+        // std::vector<bool> is not an actual vector of bool:
+        // https://stackoverflow.com/questions/6485496/how-to-get-stdvector-pointer-to-the-raw-data
+        // thus we cannot use &value[0] to get a bool* to use with math::make_vec
         if (size == 2)
-            defaultValues->set(valueName, math::make_vec2<bool>((bool*)&value[0]));
+            defaultValues->set(valueName, math::bvec2(value[0], value[1]));
         else if (size == 3)
-            defaultValues->set(valueName, math::make_vec3<bool>((bool*)&value[0]));
+            defaultValues->set(valueName, math::bvec3(value[0], value[1], value[2]));
         else if (size == 4)
-            defaultValues->set(valueName, math::make_vec4<bool>((bool*)&value[0]));
+            defaultValues->set(valueName, math::bvec4(value[0], value[1], value[2], value[3]));
     }
 }
 
@@ -525,12 +529,16 @@ EffectParser::parseDefaultValueObject(const Json::Value&    defaultValueNode,
         std::vector<bool> value(size);
         for (auto i = 0u; i < size; ++i)
             value[i] = defaultValueNode[offsets[i]].asBool();
+
+        // std::vector<bool> is not an actual vector of bool:
+        // https://stackoverflow.com/questions/6485496/how-to-get-stdvector-pointer-to-the-raw-data
+        // thus we cannot use &value[0] to get a bool* to use with math::make_vec
         if (size == 2)
-            defaultValues->set(valueName, math::make_vec2<bool>((bool*)&value[0]));
+            defaultValues->set(valueName, math::bvec2(value[0], value[1]));
         else if (size == 3)
-            defaultValues->set(valueName, math::make_vec3<bool>((bool*)&value[0]));
+            defaultValues->set(valueName, math::bvec3(value[0], value[1], value[2]));
         else if (size == 4)
-            defaultValues->set(valueName, math::make_vec4<bool>((bool*)&value[0]));
+            defaultValues->set(valueName, math::bvec4(value[0], value[1], value[2], value[3]));
     }
 }
 
@@ -554,7 +562,7 @@ EffectParser::parseAttributes(const Json::Value& node, const Scope& scope, Attri
                 attributeNode,
                 scope,
                 attributeName,
-                Json::ValueType::realValue,
+                //Json::ValueType::realValue,
                 defaultValuesProvider
             );
         }
@@ -813,25 +821,25 @@ void
 EffectParser::parseScissorTest(const Json::Value& node,
                                const Scope&       scope,
 							   bool&			  scissorTest,
-							   ScissorBox&	      scissorBox)
+							   math::ivec4&	      scissorBox)
 {
-	auto scissorTestNode		= node.get("scissorTest", 0);
+	auto scissorTestNode = node.get("scissorTest", 0);
 
 	if (!scissorTestNode.isNull() && scissorTestNode.isBool())
 		scissorTest = scissorTestNode.asBool();
 
-	auto scissorBoxNode			= node.get("scissorBox", 0);
+	auto scissorBoxNode	= node.get("scissorBox", 0);
 
 	if (!scissorBoxNode.isNull() && scissorBoxNode.isArray())
 	{
 		if (scissorBoxNode[0].isInt())
-			scissorBox.x		= scissorBoxNode[0].asInt();
+			scissorBox.x = scissorBoxNode[0].asInt();
 		if (scissorBoxNode[1].isInt())
-			scissorBox.y		= scissorBoxNode[1].asInt();
+			scissorBox.y = scissorBoxNode[1].asInt();
 		if (scissorBoxNode[2].isInt())
-			scissorBox.width	= scissorBoxNode[2].asInt();
+			scissorBox.z = scissorBoxNode[2].asInt();
 		if (scissorBoxNode[3].isInt())
-			scissorBox.height	= scissorBoxNode[3].asInt();
+			scissorBox.w = scissorBoxNode[3].asInt();
 	}
 }
 
