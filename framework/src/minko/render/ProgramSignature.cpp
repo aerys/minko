@@ -147,6 +147,8 @@ ProgramSignature::operator==(const ProgramSignature& x) const
                 if (Any::cast<math::vec4>(_values[j]) != Any::cast<math::vec4>(x._values[j]))
                     return false;
                 break;
+            case MacroBinding::Type::UNSET:
+                throw;
             }
 
             ++j;
@@ -260,6 +262,8 @@ ProgramSignature::getValueFromContainer(const MacroBinding&     binding,
     case MacroBinding::Type::FLOAT4:
         return container.get<math::vec4>(propertyName);
         break;
+    case MacroBinding::Type::UNSET:
+        throw;
     }
 
     throw;
