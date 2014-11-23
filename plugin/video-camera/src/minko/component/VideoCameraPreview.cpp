@@ -126,13 +126,11 @@ VideoCameraPreview::frameEndHandler(SceneManager::Ptr sceneManager, float time, 
 }
 
 void
-VideoCameraPreview::frameReceivedHandler(
-    AbstractVideoCamera::Ptr videoCamera,
-    const std::vector<unsigned char>& data,
-    int width,
-    int height,
-    ImageFormatType format
-)
+VideoCameraPreview::frameReceivedHandler(AbstractVideoCamera::Ptr           videoCamera,
+                                         const std::vector<unsigned char>&  data,
+                                         int                                width,
+                                         int                                height,
+                                         ImageFormatType                    format)
 {
     if (_videoPreviewTarget == nullptr ||
         width != _videoPreviewTarget->width() ||
@@ -163,7 +161,10 @@ VideoCameraPreview::initializeVideoPreviewTarget(int width, int height, ImageFor
 }
 
 void
-VideoCameraPreview::updateVideoPreviewTarget(const std::vector<unsigned char>& data, int width, int height, ImageFormatType format)
+VideoCameraPreview::updateVideoPreviewTarget(const std::vector<unsigned char>&  data,
+                                             int                                width,
+                                             int                                height,
+                                             ImageFormatType                    format)
 {
     // TODO
     // setup specific (hardware) conversion for formats such as YUV
