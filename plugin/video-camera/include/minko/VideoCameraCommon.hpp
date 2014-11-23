@@ -25,7 +25,6 @@ namespace minko
 {
     namespace component
     {
-        class ArTracker;
         class VideoCameraPreview;
     }
 
