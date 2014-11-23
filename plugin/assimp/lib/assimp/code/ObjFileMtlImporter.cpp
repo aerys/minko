@@ -55,8 +55,8 @@ static const std::string AmbientTexture      = "map_ka";
 static const std::string SpecularTexture     = "map_ks";
 static const std::string OpacityTexture      = "map_d";
 static const std::string EmmissiveTexture    = "map_emissive";
-static const std::string BumpTexture1        = "map_bump";
-static const std::string BumpTexture2        = "map_Bump";
+static const std::string BumpTexture1        = "map_bump_old";
+static const std::string BumpTexture2        = "map_Bump_old";
 static const std::string BumpTexture3        = "bump";
 static const std::string NormalTexture1      = "map_Kn";
 static const std::string NormalTexture2      = "map_Normal";
@@ -65,7 +65,7 @@ static const std::string NormalTexture4      = "map_bump";
 static const std::string NormalTexture5      = "map_Bump";
 static const std::string NormalTexture6      = "adobe_map_Normal";
 static const std::string DisplacementTexture = "disp";
-static const std::string SpecularityTexture  = "map_ns";
+static const std::string SpecularityTexture  = "map_ns"; 
 
 // texture option specific token
 static const std::string BlendUOption		= "-blendu";
