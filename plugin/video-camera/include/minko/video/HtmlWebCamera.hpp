@@ -27,11 +27,11 @@ namespace minko
 {
     namespace video
     {
-        class HtmlWebCamera :
+        class HTML5VideoCamera :
             public AbstractVideoCamera
         {
         public:
-            typedef std::shared_ptr<HtmlWebCamera> Ptr;
+            typedef std::shared_ptr<HTML5VideoCamera> Ptr;
 
         private:
             FrameSignal::Ptr    _frameReceived;
@@ -42,14 +42,14 @@ namespace minko
             int                 _cameraHeight;
 
         public:
-            ~HtmlWebCamera() = default;
+            ~HTML5VideoCamera() = default;
 
             inline
             static
             Ptr
             create()
             {
-                auto instance = Ptr(new HtmlWebCamera());
+                auto instance = Ptr(new HTML5VideoCamera());
 
                 instance->initialize();
 
@@ -73,7 +73,7 @@ namespace minko
             stop();
 
         private:
-            HtmlWebCamera();
+            HTML5VideoCamera();
 
             void
             initialize();

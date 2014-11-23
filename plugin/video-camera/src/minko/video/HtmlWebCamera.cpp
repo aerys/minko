@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/SceneManager.hpp"
 #include "minko/log/Logger.hpp"
-#include "minko/video/HtmlWebCamera.hpp"
+#include "minko/video/HTML5VideoCamera.hpp"
 #include "minko/video/ImageFormat.hpp"
 
 #include "SDL.h"
@@ -34,10 +34,10 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::video;
 
-bool HtmlWebCamera::_js_script_loaded(false);
+bool HTML5VideoCamera::_js_script_loaded(false);
 
 
-HtmlWebCamera::HtmlWebCamera() :
+HTML5VideoCamera::HTML5VideoCamera() :
     _frameReceived(FrameSignal::create()),
     _frameId(0)
 {
@@ -45,20 +45,20 @@ HtmlWebCamera::HtmlWebCamera() :
 
 
 void
-HtmlWebCamera::js_load_success()
+HTML5VideoCamera::js_load_success()
 {
     _js_script_loaded = true;
 }
 
 void
-HtmlWebCamera::js_load_error()
+HTML5VideoCamera::js_load_error()
 {
-    throw file::Error("A JS script contains errors (HtmlWebCamera)");
+    throw file::Error("A JS script contains errors (HTML5VideoCamera)");
 }
 
 
 void
-HtmlWebCamera::initialize()
+HTML5VideoCamera::initialize()
 {
 #if defined(EMSCRIPTEN)
     emscripten_async_load_script("asset/script/minko.camera.js", 
@@ -69,23 +69,23 @@ HtmlWebCamera::initialize()
 }
 
 AbstractVideoCamera::Ptr
-HtmlWebCamera::desiredSize(unsigned int width, unsigned int height)
+HTML5VideoCamera::desiredSize(unsigned int width, unsigned int height)
 {
     return shared_from_this();
 }
 
 void
-HtmlWebCamera::start()
+HTML5VideoCamera::start()
 {
 }
 
 void
-HtmlWebCamera::stop()
+HTML5VideoCamera::stop()
 {
 }
 
 void 
-HtmlWebCamera::requestFrame()
+HTML5VideoCamera::requestFrame()
 {
     //Call Js method
     if (_js_script_loaded)
