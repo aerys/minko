@@ -157,7 +157,10 @@ VideoCameraPreview::initializeVideoPreviewTarget(int width, int height, ImageFor
     updateVideoPreviewTarget(data, width, height, format);
 
     if (_previewSurface != nullptr)
+    {
         _previewSurface->effect()->setUniform("uDiffuseMap", _videoPreviewTarget);
+        _previewSurface->effect()->setUniform("cameraRatio", float(width) / float(height));
+    }
 }
 
 void
