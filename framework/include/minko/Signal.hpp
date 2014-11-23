@@ -26,18 +26,20 @@ namespace minko
 	template <typename... A>
 	class Signal
 	{
+	public:
+		typedef std::function<void(A...)>	    Callback;
+		typedef std::shared_ptr<Signal<A...>>   Ptr;
+
 	private:
 		template <typename... B>
 		class SignalSlot;
 
-        typedef std::weak_ptr<SignalSlot<A...>>                     SlotWeakPtr;
-		typedef std::function<void(A...)>							CallbackFunction;
-        typedef std::tuple<float, CallbackFunction, SlotWeakPtr>	Callback;
-        typedef std::list<Callback>                                 CallbackCollection;
-		typedef typename CallbackCollection::iterator			    CallbackIterator;
+        typedef std::weak_ptr<SignalSlot<A...>>             SlotWeakPtr;
+        typedef std::tuple<float, Callback, SlotWeakPtr>	CallbackRecord;
+        typedef std::list<CallbackRecord>                   CallbackCollection;
+		typedef typename CallbackCollection::iterator		CallbackIterator;
 
-	public:
-		typedef std::shared_ptr<Signal<A...>>		Ptr;
+    public:
 		typedef std::shared_ptr<SignalSlot<A...>>   Slot;
 
 	private:
@@ -75,11 +77,11 @@ namespace minko
 		}
 
 		Slot
-		connect(CallbackFunction callback, float priority = 0)
+		connect(Callback callback, float priority = 0)
 		{
 			auto connection = std::make_shared<SignalSlot<A...>>(this);
 			
-			_callbacks.push_back(Callback(priority, callback, connection));
+            _callbacks.push_back(CallbackRecord(priority, callback, connection));
             connection->_it = std::prev(_callbacks.end());
 				
 			if (_callbacks.size() >= 2)
@@ -88,7 +90,7 @@ namespace minko
 
                 if (priority > std::get<0>(*prec))
                 {
-                    _callbacks.sort([](const Callback& callback1, const Callback& callback2)
+                    _callbacks.sort([](const CallbackRecord& callback1, const CallbackRecord& callback2)
                     {
                         return std::get<0>(callback1) > std::get<0>(callback2);
                     });
@@ -108,7 +110,7 @@ namespace minko
 
         inline
         Slot
-        operator+=(CallbackFunction callback)
+        operator+=(Callback callback)
         {
             return connect(callback);
         }
