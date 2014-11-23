@@ -558,6 +558,12 @@ EffectParser::parseAttributes(const Json::Value& node, const Scope& scope, Attri
             auto attributeNode = attributesNode[attributeName];
 
             parseBinding(attributeNode, scope, attributes.bindings.bindings[attributeName]);
+
+            /*if (!attributeNode.get("default", 0).empty())
+                throw ParserError("Default values are not yet supported for attributes.");*/
+
+            // FIXME: support default values for vertex attributes
+            /*
             parseDefaultValue(
                 attributeNode,
                 scope,
@@ -565,6 +571,7 @@ EffectParser::parseAttributes(const Json::Value& node, const Scope& scope, Attri
                 //Json::ValueType::realValue,
                 defaultValuesProvider
             );
+            */
         }
     }
     // FIXME: throw otherwise
