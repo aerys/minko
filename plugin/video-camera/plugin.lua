@@ -28,6 +28,11 @@ minko.plugin["video-camera"].enable = function()
 
 	configuration { "android" }
         minko.plugin.enable("android")
+
+	configuration { "html5" }
+		prelinkcommands {
+			minko.action.copy(minko.plugin.path("video-camera") .. "/asset")
+		}
 end
 
 newoption {

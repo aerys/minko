@@ -61,10 +61,10 @@ void
 HtmlWebCamera::initialize()
 {
 #if defined(EMSCRIPTEN)
-    emscripten_async_load_script("asset/script/minko_camera.js", 
+    emscripten_async_load_script("asset/script/minko.camera.js", 
         js_load_success,
         js_load_error
-        );
+    );
 #endif
 }
 
