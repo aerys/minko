@@ -77,6 +77,12 @@ VideoCameraPreview::initialize()
         std::placeholders::_2,
         std::placeholders::_3
     ));
+
+    _previewSurface = Surface::create(
+        QuadGeometry::create(_context, 1, 1, 1, 1),
+        material::BasicMaterial::create(),
+        _sceneManager->assets()->effect("effect/Basic.effect")
+    );
 }
 
 void
@@ -92,12 +98,6 @@ VideoCameraPreview::targetAddedHandler(AbstractComponent::Ptr component, scene::
             std::placeholders::_4,
             std::placeholders::_5
     ));
-
-    _previewSurface = Surface::create(
-        QuadGeometry::create(_context, 1, 1, 1, 1),
-            material::BasicMaterial::create(),
-            _sceneManager->assets()->effect("effect/Basic.effect")
-    );
 
     if (_videoPreviewTarget != nullptr)
         _previewSurface->effect()->setUniform("uDiffuseMap", _videoPreviewTarget);
