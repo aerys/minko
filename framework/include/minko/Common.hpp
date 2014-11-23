@@ -79,15 +79,6 @@ namespace minko
 	class Signal;
 	class Color;
 	class AbstractCanvas;
-
-    template <class T>
-    inline
-    void
-    hash_combine(std::size_t & seed, const T & v)
-    {
-        std::hash<T> hasher;
-        seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    }
     
 	namespace render
 	{
@@ -359,69 +350,4 @@ namespace minko
 	}
 }
 
-namespace std
-{
-    template<>
-	struct hash<minko::math::mat4>
-	{
-		inline
-		size_t
-		operator()(const minko::math::mat4& matrix) const
-		{
-			return (size_t)minko::math::value_ptr(matrix);
-		}
-	};
-
-	inline
-	std::string
-	to_string(const minko::math::mat4& matrix)
-	{
-		std::string str = "mat4(";
-		auto ptr = minko::math::value_ptr(matrix);
-		for (auto i = 0; i < 15; ++i)
-			str += to_string(ptr[i]) + ", ";
-		str += to_string(ptr[15]) + ")";
-
-		return str;
-	}
-
-    template<typename T, minko::math::precision P>
-    std::string
-    to_string(const minko::math::detail::tvec1<T, P>& v)
-    {
-        return minko::math::to_string(v);
-    }
-
-    template<typename T, minko::math::precision P>
-    std::string
-    to_string(const minko::math::detail::tvec2<T, P>& v)
-    {
-        return minko::math::to_string(v);
-    }
-
-    template<typename T, minko::math::precision P>
-    std::string
-    to_string(const minko::math::detail::tvec3<T, P>& v)
-    {
-        return minko::math::to_string(v);
-    }
-
-    template<typename T, minko::math::precision P>
-    std::string
-    to_string(const minko::math::detail::tvec4<T, P>& v)
-    {
-        return minko::math::to_string(v);
-    }
-	
-#ifdef __ANDROID__
-	template <typename T>
-	inline
-	string
-	to_string(T v)
-	{
-		ostringstream oss;
-		oss << v;
-		return oss.str();
-	}
-#endif
-}
+#include "minko/std.hpp"
