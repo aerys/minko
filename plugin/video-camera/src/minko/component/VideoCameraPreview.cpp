@@ -96,7 +96,7 @@ VideoCameraPreview::targetAddedHandler(AbstractComponent::Ptr component, scene::
     _previewSurface = Surface::create(
         QuadGeometry::create(_context, 1, 1, 1, 1),
             material::BasicMaterial::create(),
-            _sceneManager->assets()->effect("effect/Background.effect")
+            _sceneManager->assets()->effect("effect/Basic.effect")
     );
 
     if (_videoPreviewTarget != nullptr)
