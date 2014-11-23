@@ -20,10 +20,4 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/component/VideoCameraPreview.hpp"
-#include "minko/video/AbstractVideoCamera.hpp"
-#ifdef MINKO_PLUGIN_ANDROID
-# include "minko/video/AndroidVideoCamera.hpp"
-#endif // MINKO_PLUGIN_ANDROID
-#if defined(EMSCRIPTEN)
-# include "minko/video/HtmlWebCamera.hpp"
-#endif
+#include "minko/video/VideoCamera.hpp"

@@ -30,13 +30,10 @@ namespace minko
 
     namespace video
     {
-    	enum class ImageFormatType;
+        enum class ImageFormatType;
         class ImageFormat;
 
-    	class AbstractVideoCamera;
-
-#ifdef MINKO_PLUGIN_ANDROID
-    	class AndroidVideoCamera;
-#endif // MINKO_PLUGIN_ANDROID
+        class AbstractVideoCamera;
+        class VideoCamera;
     }
 }

@@ -20,10 +20,13 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	}
 
 	configuration { "not android" }
-	    excludes {
-	        minko.plugin.path("video-camera") .. "/include/minko/video/AndroidVideoCamera.hpp",
-	        minko.plugin.path("video-camera") .. "/src/minko/video/AndroidVideoCamera.cpp",
-	        -- minko.plugin.path("video-camera") .. "/include/minko/video/HtmlWebCamera.hpp",
-	        -- minko.plugin.path("video-camera") .. "/src/minko/video/HtmlWebCamera.cpp"
-	    }
+		excludes {
+			minko.plugin.path("video-camera") .. "/include/minko/video/AndroidVideoCamera.hpp",
+			minko.plugin.path("video-camera") .. "/src/minko/video/AndroidVideoCamera.cpp"
+		}
 
+	configuration { "not html5" }
+		excludes {
+			minko.plugin.path("video-camera") .. "/include/minko/video/HTML5VideoCamera.hpp",
+			minko.plugin.path("video-camera") .. "/src/minko/video/HTML5VideoCamera.cpp"
+		}

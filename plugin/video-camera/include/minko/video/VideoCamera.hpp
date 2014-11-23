@@ -19,69 +19,44 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/Any.hpp"
-#include "minko/Common.hpp"
 #include "minko/video/AbstractVideoCamera.hpp"
+
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+# include "minko/video/AndroidVideoCamera.hpp"
+#endif
+
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+# include "minko/video/HTML5VideoCamera.hpp"
+#endif
 
 namespace minko
 {
     namespace video
     {
-        class AndroidVideoCamera :
-            public AbstractVideoCamera
+        class VideoCamera
         {
         public:
-            typedef std::shared_ptr<AndroidVideoCamera> Ptr;
-
-        private:
-            typedef std::shared_ptr<component::SceneManager> SceneManagerPtr;
-
-            struct JniImpl;
-
-        private:
-            FrameSignal::Ptr _frameReceived;
-
-            std::shared_ptr<JniImpl> _jniImpl;
+            typedef std::shared_ptr<AbstractVideoCamera> Ptr;
 
         public:
-            ~AndroidVideoCamera() = default;
+            ~VideoCamera();
 
             inline
             static
             Ptr
             create()
             {
-                auto instance = Ptr(new AndroidVideoCamera());
-
-                instance->initialize();
-
-                return instance;
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+                return AndroidVideoCamera::create();
+#elif MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+                return HTML5VideoCamera::create();
+#else
+                return nullptr;
+#endif
             }
-
-            AbstractVideoCamera::Ptr
-            desiredSize(unsigned int width, unsigned int height);
-
-            inline
-            FrameSignal::Ptr
-            frameReceived()
-            {
-                return _frameReceived;
-            }
-
-            void
-            start();
-
-            void
-            stop();
 
         private:
-            AndroidVideoCamera();
-
-            void
-            initialize();
-
-            void
-            requestFrame();
+            VideoCamera();
         };
     }
 }
