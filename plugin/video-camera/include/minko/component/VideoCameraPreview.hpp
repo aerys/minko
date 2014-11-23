@@ -80,14 +80,14 @@ namespace minko
 
             inline
             SurfacePtr 
-            getPreviewSurface() 
+            previewSurface() 
             {
                 return _previewSurface;
             }
 
             inline
             AbstractTexturePtr
-            getVideoPreviewTarget()
+            videoPreviewTarget()
             {
                 return _videoPreviewTarget;
             }
