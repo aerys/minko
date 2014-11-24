@@ -27,7 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/TriangleCulling.hpp"
 #include "minko/render/StencilOperation.hpp"
 #include "minko/math/Matrix4x4.hpp"
-#include "minko/log/Logger.hpp"
+#include "minko/log/Logger.hpp" 
 
 #include <iomanip>
 
@@ -40,7 +40,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #  include "GLES2/gl2.h"
 #  include "GLES2/gl2ext.h"
 # else
-#  include "GL/glew.h"
+//#  include "GL/glew.h"
+#  include <windows.h>
+#  include <GL/gl.h>
+#  include <GL/glu.h>
+#  include <GL/glext.h>
 # endif
 #elif MINKO_PLATFORM == MINKO_PLATFORM_OSX
 # include <OpenGL/gl.h>
@@ -162,7 +166,7 @@ OpenGLES2Context::OpenGLES2Context() :
     _currentStencilZPassOp(StencilOperation::UNSET)
 {
 #if (MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS) && !defined(MINKO_PLUGIN_ANGLE)
-    glewInit();
+    //glewInit();
 #endif
 
 #if !defined(MINKO_NO_STENCIL)

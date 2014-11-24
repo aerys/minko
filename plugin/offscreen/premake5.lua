@@ -2,9 +2,9 @@
 -- Since this plugin is only supported on Linux, we must not define it
 -- if the host platform is not Linux.
 
-if not minko.platform.supports { "linux32", "linux64" } then
-	return
-end
+-- if not minko.platform.supports { "linux32", "linux64" } then
+-- 	return
+-- end
 
 PROJECT_NAME = path.getname(os.getcwd())
 
@@ -19,8 +19,20 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"src/**.cpp"
 	}
 
-	includedirs {
-		"include",
-		minko.plugin.path("sdl") .. "/include",
-		"lib/osmesa/include"
-	}
+	
+
+	configuration {"linux32 or linux64"}
+		includedirs {
+			"include",
+			minko.plugin.path("sdl") .. "/include",
+			"lib/osmesa/linux/include"
+		}
+
+	configuration {"windows32 or windows64"}
+		includedirs {
+			"include",
+			minko.plugin.path("sdl") .. "/include",
+			"lib/osmesa/windows/include",
+			"lib/opengl/include/GL"
+		}
+

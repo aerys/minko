@@ -155,6 +155,7 @@ Canvas::initializeWindow()
     if (_chromeless)
         sdlFlags |= SDL_WINDOW_BORDERLESS;
 
+# if !defined(MINKO_PLUGIN_OFFSCREEN)
     _window = SDL_CreateWindow(
         _name.c_str(),
         SDL_WINDOWPOS_CENTERED, // SDL_WINDOWPOS_UNDEFINED,
@@ -173,6 +174,7 @@ Canvas::initializeWindow()
         width(w);
         height(h);
     }
+# endif
 #endif
 }
 
@@ -181,7 +183,7 @@ Canvas::initializeContext()
 {
 #if (MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS) && defined(MINKO_PLUGIN_ANGLE)
     _backend = SDLAngleBackend::create();
-#elif (MINKO_PLATFORM == MINKO_PLATFORM_LINUX) && defined(MINKO_PLUGIN_OFFSCREEN)
+#elif (defined(MINKO_PLUGIN_OFFSCREEN))
     _backend = SDLOffscreenBackend::create();
 #elif MINKO_PLATFORM == MINKO_PLATFORM_HTML5
     _backend = SDLWebGLBackend::create();

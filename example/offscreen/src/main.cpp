@@ -14,7 +14,7 @@ int main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Example - Offscreen", 1280, 720, true);
 
-    auto sceneManager   = SceneManager::create(canvas->context());
+    auto sceneManager   = SceneManager::create(canvas);
     auto assets         = sceneManager->assets();
     auto mesh           = scene::Node::create("mesh");
 
@@ -36,6 +36,8 @@ int main(int argc, char** argv)
         auto camera = scene::Node::create("camera");
 
         root->addComponent(sceneManager);
+
+        root->addComponent(AmbientLight::create());
 
         // setup camera
         camera->addComponent(Renderer::create(0x7F7F7FFF));
@@ -73,6 +75,7 @@ int main(int argc, char** argv)
             lastTime = time;
             canvas->context()->readPixels(&*buffer->begin());
             writer->write("screenshot.png", *buffer, canvas->width(), canvas->height());
+            canvas->quit();
         }
 
         sceneManager->nextFrame(time, deltaTime);
