@@ -73,6 +73,19 @@ solution "minko"
 		include 'tutorial/28-working-with-spot-lights'
 		include 'tutorial/29-hello-falling-cube'
 		include 'tutorial/30-applying-anti-aliasing-effect'
+
+		if os.is("macosx")  and (_ACTION == "xcode-ios" or _ACTION == "xcode-osx") then
+			minko.project.library "all-tutorials"
+				targetdir "/tmp/minko/bin"
+				objdir "/tmp/minko/obj"
+
+				local tutorials = os.matchdirs('tutorial/*')
+
+				for i, basedir in ipairs(tutorials) do
+					local tutorialName = path.getbasename(basedir)
+					links { "minko-tutorial-" .. tutorialName }
+				end
+		end
 	end
 
 	-- plugin
@@ -100,7 +113,7 @@ solution "minko"
 
 		-- work around the inability of Xcode to build all projects if no dependency exists between them
 		if os.is("macosx")  and (_ACTION == "xcode-ios" or _ACTION == "xcode-osx") then
-			minko.project.library "all"
+			minko.project.library "all-plugins"
 				targetdir "/tmp/minko/bin"
 				objdir "/tmp/minko/obj"
 
@@ -110,7 +123,7 @@ solution "minko"
 
 				for i, basedir in ipairs(plugins) do
 					local pluginName = path.getbasename(basedir)
-					minko.plugin.enable(pluginName)
+					links { "minko-plugin-" .. pluginName }
 				end
 		end
 	end
@@ -148,6 +161,19 @@ solution "minko"
 		include 'example/stencil'
 		include 'example/visibility'
 		include 'example/water'
+
+		if os.is("macosx")  and (_ACTION == "xcode-ios" or _ACTION == "xcode-osx") then
+			minko.project.library "all-examples"
+				targetdir "/tmp/minko/bin"
+				objdir "/tmp/minko/obj"
+
+				local examples = os.matchdirs('example/*')
+
+				for i, basedir in ipairs(examples) do
+					local exampleName = path.getbasename(basedir)
+					links { "minko-example-" .. exampleName }
+				end
+		end
 	end
 
 	-- test
