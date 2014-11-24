@@ -44,27 +44,13 @@ AppleWebViewDOM::create(const std::string& jsAccessor, std::shared_ptr<AppleWebV
 	return dom;
 }
 
-std::string
-replaceAll(std::string str, const std::string& from, const std::string& to)
-{
-    size_t start_pos = 0;
-    
-    while((start_pos = str.find(from, start_pos)) != std::string::npos)
-    {
-        str.replace(start_pos, from.length(), to);
-        start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
-    }
-    
-    return str;
-}
-
 void
 AppleWebViewDOM::sendMessage(const std::string& message, bool async)
 {
 	std::string m = message;
 
-    m = replaceAll(m, "\\", "\\\\");
-    m = replaceAll(m, "'", "\\'");
+    m = std::replaceAll(m, "\\", "\\\\");
+    m = std::replaceAll(m, "'", "\\'");
 
 	std::string eval = "if (" + _jsAccessor + ".window.Minko.dispatchMessage) " + _jsAccessor + ".window.Minko.dispatchMessage('" + m + "');";
 

@@ -455,10 +455,7 @@ namespace std
         return oss.str();
     }
 #endif
-}
 
-namespace std
-{
     template<> struct hash<minko::data::ContainerAndName>
     {
         inline
@@ -472,4 +469,59 @@ namespace std
             return seed;
         }
     };
+
+    inline
+    std::string
+    replaceAll(std::string str, const std::string& from, const std::string& to)
+    {
+        size_t start_pos = 0;
+        
+        while((start_pos = str.find(from, start_pos)) != std::string::npos)
+        {
+            str.replace(start_pos, from.length(), to);
+            start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
+        }
+        
+        return str;
+    }
+
+    inline
+    std::vector<std::string>
+    stringSplit(std::string str, std::string token)
+    {
+        std::vector<std::string> result;
+
+        auto i = str.find_first_of(token);
+
+        while (i != -1)
+        {
+            result.push_back(str.substr(0, i));
+
+            str = str.substr(i + 1);
+
+            i = str.find_first_of(token);
+        }
+
+        result.push_back(str);
+
+        return result;
+    }
+    
+
+    inline
+    std::string
+    stringJoin(std::vector<std::string> strings, std::string delimiter)
+    {
+        std::string result;
+
+        for (size_t i = 0; i < strings.size(); ++i)
+        {
+            if (i != 0)
+                result += delimiter;
+
+            result += strings[i];
+        }
+        
+        return result;
+    }
 }
