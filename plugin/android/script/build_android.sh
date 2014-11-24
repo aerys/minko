@@ -47,13 +47,13 @@ DEVICE_STATE=$($ANDROID/platform-tools/adb get-state | sed 's/\r$//')
 if [ $CONFIG == "release" ]; then
 	# Sign the app
 	jarsigner -tsa http://timestamp.digicert.com -keystore $ANDROID_KEYSTORE_PATH -storepass $ANDROID_KEYSTORE_PASSWORD -verbose \
-	-sigalg SHA1withRSA -digestalg SHA1 -signedjar "bin/$APP_NAME-$CONFIG.apk" "bin/$APP_NAME-$CONFIG-unsigned.apk" $ANDROID_KEYSTORE_ALIAS
+	-sigalg SHA1withRSA -digestalg SHA1 "bin/$APP_NAME-$CONFIG-unsigned.apk" $ANDROID_KEYSTORE_ALIAS
 
 	# Verify that the app is properly signed
-	jarsigner -verify -verbose -certs "bin/$APP_NAME-$CONFIG.apk"
+	jarsigner -verify -verbose -certs "bin/$APP_NAME-$CONFIG-unsigned.apk"
 	# zipalign ensures that all uncompressed data starts with a particular byte alignment relative to the start of the file, 
 	# which reduces the amount of RAM consumed by an app.
-	#zipalign -v 4 bin/$APP_NAME-$CONFIG-unsigned.apk bin/$APP_NAME-$CONFIG.apk
+	zipalign -v 4 "bin/$APP_NAME-$CONFIG-unsigned.apk" "bin/$APP_NAME-$CONFIG.apk"
 	# Don't forget to uninstall the app to avoid INSTALL_PARSE_FAILED_INCONSISTENT_CERTIFICATES error
 	if [ $DEVICE_STATE == "device" ]; then
 		$ANDROID/platform-tools/adb uninstall $PACKAGE
