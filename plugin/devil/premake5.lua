@@ -1,10 +1,12 @@
 PROJECT_NAME = path.getname(os.getcwd())
 
-if not minko.platform.supports { "windows32", "windows64", "linux32", "linux64", "osx64", "html5", "ios", "android" } then
+if not minko.platform.supports { "windows32", "windows64", "linux32", "linux64", "osx64", "html5" } then
 	return
 end
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
+
+	removeplatforms { "android", "ios" }
 
 	minko.plugin.enable("zlib")
 
