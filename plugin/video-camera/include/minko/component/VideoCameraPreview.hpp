@@ -91,6 +91,8 @@ namespace minko
             {
                 return _videoPreviewTarget;
             }
+            void
+            forceBackgroundUpdate();
 
 		private:
 			VideoCameraPreview();

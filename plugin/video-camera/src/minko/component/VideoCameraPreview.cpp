@@ -145,6 +145,15 @@ VideoCameraPreview::frameReceivedHandler(AbstractVideoCamera::Ptr           vide
 }
 
 void
+VideoCameraPreview::forceBackgroundUpdate()
+{
+    if (_previewSurface != nullptr && _videoPreviewTarget != nullptr)
+    {
+        _previewSurface->effect()->setUniform("uDiffuseMap", _videoPreviewTarget);
+    }
+}
+
+void
 VideoCameraPreview::initializeVideoPreviewTarget(int width, int height, ImageFormatType format)
 {
     if (_videoPreviewTarget != nullptr)
