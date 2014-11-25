@@ -51,17 +51,23 @@ if [ $CONFIG == "release" ]; then
 
 	# Verify that the app is properly signed
 	jarsigner -verify -verbose -certs "bin/$APP_NAME-$CONFIG-unsigned.apk"
+	
 	# zipalign ensures that all uncompressed data starts with a particular byte alignment relative to the start of the file, 
 	# which reduces the amount of RAM consumed by an app.
 	$ANDROID/tools/zipalign -v 4 "bin/$APP_NAME-$CONFIG-unsigned.apk" "bin/$APP_NAME-$CONFIG.apk"
+	
 	# Don't forget to uninstall the app to avoid INSTALL_PARSE_FAILED_INCONSISTENT_CERTIFICATES error
 	if [ $DEVICE_STATE == "device" ]; then
 		$ANDROID/platform-tools/adb uninstall $PACKAGE
 	fi
 fi
 
+# we move the final binary release into a unique folder
+mkdir -p "bin/artifacts"
+mv "bin/$APP_NAME-$CONFIG.apk" "bin/artifacts/$APP_NAME-$CONFIG.apk"
+
 if [ $DEVICE_STATE == "device" ]; then
-	$ANDROID/platform-tools/adb install -r "bin/$APP_NAME-$CONFIG.apk"
+	$ANDROID/platform-tools/adb install -r "bin/artifacts/$APP_NAME-$CONFIG.apk"
 fi
 
 #adb devices | tail -n +2 | cut -sf 1 | xargs -I {} adb -s {} install -r $TARGET_NAME-$CONFIG.apk

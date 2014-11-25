@@ -28,6 +28,26 @@ newoption {
 	description = 'Output folder for the redistributable SDK built with the \'dist\' action.'
 }
 
+newoption {
+	trigger = 'platform',
+	description = 'Platform for which we want to regroup the binaries with \'regroup\' action.'
+}
+
+newoption {
+	trigger = 'config',
+	description = 'Config for which we want to regroup the binaries with \'regroup\' action.'
+}
+
+newoption {
+	trigger = 'type',
+	description = 'Type of project we want to regroup the binaries with \'regroup\' action (among: example, tutorial, plugin).'
+}
+
+newoption {
+	trigger = 'regroup-dir',
+	description = 'Output folder where we want to regroup the binaries with \'regroup\' action.'
+}
+
 solution "minko"
 	MINKO_HOME = path.getabsolute(os.getcwd())
 
@@ -287,5 +307,64 @@ newaction {
 	description		= "Remove generated files.",
 	execute			= function()
 		minko.action.clean()
+	end
+}
+
+newaction {
+	trigger			= "regroup",
+	description		= "Regroup all binaries into a single folder",
+	execute			= function()
+
+		function Set (list)
+		  local set = {}
+		  for _, l in ipairs(list) do set[l] = true end
+		  return set
+		end
+
+		local availablePlatforms = Set { "windows32", "windows64", "linux32", "linux64", "osx64", "html5", "android", "ios" }
+		local availableConfig = Set { "debug", "release"}
+		local availableType = Set { "example", "tutorial", "plugin" }
+
+		if _OPTIONS['platform'] and availablePlatforms[_OPTIONS['platform']] and
+		   _OPTIONS['type'] and availableType[_OPTIONS['type']] and
+		   _OPTIONS['config'] and availableConfig[_OPTIONS['config']] and
+		   _OPTIONS['regroup-dir'] then
+
+			local platform = _OPTIONS['platform']
+			local projectType = _OPTIONS['type']
+			local config = _OPTIONS['config']
+			local outputDir = _OPTIONS['regroup-dir']
+			
+			local completeOutputDir = outputDir .. '/' .. platform .. '/' .. config .. '/' .. projectType
+			os.mkdir(completeOutputDir)
+
+			local dirs = os.matchdirs(projectType .. '/*')
+
+			for i, basedir in ipairs(dirs) do
+
+			    local dirName = path.getbasename(basedir)
+				local sourceDir = projectType .. '/' .. dirName .. '/bin/' .. platform .. '/' .. config
+				if os.isdir(sourceDir) then
+					print(dirName)
+					
+					os.mkdir(completeOutputDir .. '/' .. dirName)
+
+					if platform == 'android' then
+						if os.isdir(sourceDir .. '/bin/artifacts') then
+							minko.os.copyfiles(sourceDir .. '/bin/artifacts', completeOutputDir .. '/' .. dirName)
+						end
+					else
+						minko.os.copyfiles(sourceDir, completeOutputDir .. '/' .. dirName)
+					end
+				end
+			end
+		else
+			print "Error: Some arguments are missing or are not correct. Please follow the usage."
+			print "Usage: regroup --platform=$1 --config=$2 --type=$3 --regroup-dir=$4"
+			print " \$1: the platform (windows32, windows64, linux32, linux64, osx64, html5, android or ios)"
+			print " \$2: the configuration (debug or release)"
+			print " \$3: the type of projects you want to pack (example, tutorial or plugin)"
+			print " \$4: the output directory where you want to copy all files"
+		end
 	end
 }
