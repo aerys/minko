@@ -12,17 +12,20 @@
                  android:hardwareAccelerated="true" >
         <activity android:name="MinkoActivity"
                   android:label="@string/app_name"
-                  android:configChanges="keyboardHidden|orientation"
-				  android:launchMode="singleTask"
-                  >
-            <intent-filter>
+                  android:configChanges="orientation|screenSize|keyboardHidden"
+				  android:launchMode="singleTask">
+			
+			<!-- We can open the app without any file -->
+			<intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+				
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
+			
 			<!-- Intent-filter for Intents that contain the file suffix. -->
 			<intent-filter>
 				<action android:name="android.intent.action.VIEW" />
+				
 				<category android:name="android.intent.category.BROWSABLE" />
 				<category android:name="android.intent.category.DEFAULT" />
 
@@ -31,20 +34,52 @@
 				<data android:host="*" />
 				<data android:scheme="file" />
 					
-				<data android:pathPattern=".*\\.scene" />
-				<data android:pathPattern=".*\\.dae" />
-				<data android:pathPattern=".*\\.DAE" />
-				<data android:pathPattern=".*\\.fbx" />
-				<data android:pathPattern=".*\\.FBX" />
-				<data android:pathPattern=".*\\.obj" />
-				<data android:pathPattern=".*\\.OBJ" />
-				<data android:pathPattern=".*\\.stl" />
-				<data android:pathPattern=".*\\.STL" />
+				<!--  Extensions  -->
+				<data android:pathPattern=".*\\.scene"/>
+				<data android:pathPattern=".*\\.SCENE"/>
+				<data android:pathPattern=".*\\.dae"/>
+				<data android:pathPattern=".*\\.DAE"/>
+				<data android:pathPattern=".*\\.fbx"/>
+				<data android:pathPattern=".*\\.FBX"/>
+				<data android:pathPattern=".*\\.stl"/>
+				<data android:pathPattern=".*\\.STL"/>
+				<data android:pathPattern=".*\\.obj"/>
+				<data android:pathPattern=".*\\.OBJ"/>
+			</intent-filter>
+			
+			<!-- Without using mimeType -->
+			<intent-filter>
+				<action android:name="android.intent.action.VIEW"/>
+				
+				<category android:name="android.intent.category.DEFAULT"/>
+				<category android:name="android.intent.category.BROWSABLE"/>
+				
+				<data android:scheme=""/>
+				<data android:scheme="file"/>
+				<data android:scheme="ftp"/>
+				<data android:scheme="content"/>
+				<data android:scheme="http"/>
+				<data android:scheme="https"/>
+				
+				<data android:host="*"/>
+				
+				<!--  Extensions  -->
+				<data android:pathPattern=".*\\.scene"/>
+				<data android:pathPattern=".*\\.SCENE"/>
+				<data android:pathPattern=".*\\.dae"/>
+				<data android:pathPattern=".*\\.DAE"/>
+				<data android:pathPattern=".*\\.fbx"/>
+				<data android:pathPattern=".*\\.FBX"/>
+				<data android:pathPattern=".*\\.stl"/>
+				<data android:pathPattern=".*\\.STL"/>
+				<data android:pathPattern=".*\\.obj"/>
+				<data android:pathPattern=".*\\.OBJ"/>
 			</intent-filter>
 
 			<!-- Intent-filter for Intents that contain a MIME type -->
 			<intent-filter>
 				<action android:name="android.intent.action.VIEW" />
+				
 				<category android:name="android.intent.category.BROWSABLE" />
 				<category android:name="android.intent.category.DEFAULT" />
 
@@ -54,7 +89,6 @@
 				<data android:mimeType="application/fbx" />
 				<data android:mimeType="application/obj" />
 				<data android:mimeType="application/stl" />
-
 
 				<!-- Gmail sometimes uses some strange mimeTypes when opening attachments -->
 				<data
