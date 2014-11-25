@@ -53,7 +53,7 @@ if [ $CONFIG == "release" ]; then
 	jarsigner -verify -verbose -certs "bin/$APP_NAME-$CONFIG-unsigned.apk"
 	# zipalign ensures that all uncompressed data starts with a particular byte alignment relative to the start of the file, 
 	# which reduces the amount of RAM consumed by an app.
-	zipalign -v 4 "bin/$APP_NAME-$CONFIG-unsigned.apk" "bin/$APP_NAME-$CONFIG.apk"
+	$ANDROID/tools/zipalign -v 4 "bin/$APP_NAME-$CONFIG-unsigned.apk" "bin/$APP_NAME-$CONFIG.apk"
 	# Don't forget to uninstall the app to avoid INSTALL_PARSE_FAILED_INCONSISTENT_CERTIFICATES error
 	if [ $DEVICE_STATE == "device" ]; then
 		$ANDROID/platform-tools/adb uninstall $PACKAGE
