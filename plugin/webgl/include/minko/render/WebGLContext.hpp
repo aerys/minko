@@ -45,26 +45,10 @@ namespace minko
             WebGLContext();
 
             void
-            setShaderSource(const unsigned int shader,
-                            const std::string& source);
-
-            void
-            fillUniformInputs(const unsigned int                program,
-                              std::vector<std::string>&            names,
-                              std::vector<ProgramInputs::Type>&    types,
-                              std::vector<unsigned int>&        locations);
-
-            void
-            fillAttributeInputs(const unsigned int                    program,
-                                std::vector<std::string>&            names,
-                                std::vector<ProgramInputs::Type>&    types,
-                                std::vector<unsigned int>&            locations);
-
-            void
             setUniform(const unsigned int&    location,
                        const unsigned int&    size,
-                       bool            transpose,
-                       const float*    values);
+                       bool                   transpose,
+                       const float*           values);
         };
     }
 }

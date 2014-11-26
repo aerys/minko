@@ -6,6 +6,8 @@ PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.application("minko-example-" .. PROJECT_NAME)
 
+	removeplatforms { "ios", "android" }
+
 	files {
 		"src/**.hpp",
 		"src/**.cpp",

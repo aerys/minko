@@ -64,7 +64,6 @@ namespace minko
 			bool
 			visible() = 0;
 
-
             virtual
             void
             updateNextFrame() = 0;

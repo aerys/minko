@@ -207,7 +207,6 @@ main(int argc, char** argv)
             if (x > 0 && x < 0.25 && y > 0.75 && y < 1)
                 toggleNormalMap(assets, sphere);
         });
-        
     });
 
     // camera init

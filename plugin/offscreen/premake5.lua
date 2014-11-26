@@ -9,6 +9,8 @@ end
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
+	
+	removeplatforms { "android", "ios", "html5" }
 
 	files {
 		"lib/**.hpp",
