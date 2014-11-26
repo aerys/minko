@@ -1,7 +1,7 @@
 #!/bin/bash
 
-set -x
-set -e
+# we save the project's current directory location
+CWD=`pwd`
 
 ANDROID_KEYSTORE_PATH="${ANDROID_KEYSTORE_PATH}"
 ANDROID_KEYSTORE_ALIAS="${ANDROID_KEYSTORE_ALIAS}"
@@ -25,6 +25,7 @@ pushd $TARGET_DIR > /dev/null
 
 rm -rf src
 rsync -vr "${MINKO_HOME}/plugin/android/template/" .
+rsync -vr "$CWD/android/" .
 mkdir -p src/${PACKAGE//.//}
 mv src/MinkoActivity.java src/${PACKAGE//.//}
 
