@@ -18,83 +18,8 @@
 			<!-- We can open the app without any file -->
 			<intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-				
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-			
-			<!-- Intent-filter for Intents that contain the file suffix. -->
-			<intent-filter>
-				<action android:name="android.intent.action.VIEW" />
-				
-				<category android:name="android.intent.category.BROWSABLE" />
-				<category android:name="android.intent.category.DEFAULT" />
-
-				<!--  For a path to be meaningful, both a scheme and an authority must be specified. -->
-				<data android:mimeType="*/*" />
-				<data android:host="*" />
-				<data android:scheme="file" />
-					
-				<!--  Extensions  -->
-				<data android:pathPattern=".*\\.scene"/>
-				<data android:pathPattern=".*\\.SCENE"/>
-				<data android:pathPattern=".*\\.dae"/>
-				<data android:pathPattern=".*\\.DAE"/>
-				<data android:pathPattern=".*\\.fbx"/>
-				<data android:pathPattern=".*\\.FBX"/>
-				<data android:pathPattern=".*\\.stl"/>
-				<data android:pathPattern=".*\\.STL"/>
-				<data android:pathPattern=".*\\.obj"/>
-				<data android:pathPattern=".*\\.OBJ"/>
-			</intent-filter>
-			
-			<!-- Without using mimeType -->
-			<intent-filter>
-				<action android:name="android.intent.action.VIEW"/>
-				
-				<category android:name="android.intent.category.DEFAULT"/>
-				<category android:name="android.intent.category.BROWSABLE"/>
-				
-				<data android:scheme=""/>
-				<data android:scheme="file"/>
-				<data android:scheme="ftp"/>
-				<data android:scheme="content"/>
-				<data android:scheme="http"/>
-				<data android:scheme="https"/>
-				
-				<data android:host="*"/>
-				
-				<!--  Extensions  -->
-				<data android:pathPattern=".*\\.scene"/>
-				<data android:pathPattern=".*\\.SCENE"/>
-				<data android:pathPattern=".*\\.dae"/>
-				<data android:pathPattern=".*\\.DAE"/>
-				<data android:pathPattern=".*\\.fbx"/>
-				<data android:pathPattern=".*\\.FBX"/>
-				<data android:pathPattern=".*\\.stl"/>
-				<data android:pathPattern=".*\\.STL"/>
-				<data android:pathPattern=".*\\.obj"/>
-				<data android:pathPattern=".*\\.OBJ"/>
-			</intent-filter>
-
-			<!-- Intent-filter for Intents that contain a MIME type -->
-			<intent-filter>
-				<action android:name="android.intent.action.VIEW" />
-				
-				<category android:name="android.intent.category.BROWSABLE" />
-				<category android:name="android.intent.category.DEFAULT" />
-
-				<!-- Some apps (e.g. some versions of Gmail) use the file suffix as the mimeType! -->
-				<data android:mimeType="application/scene" />
-				<data android:mimeType="application/dae" />
-				<data android:mimeType="application/fbx" />
-				<data android:mimeType="application/obj" />
-				<data android:mimeType="application/stl" />
-
-				<!-- Gmail sometimes uses some strange mimeTypes when opening attachments -->
-				<data
-					android:host="gmail-ls"
-					android:mimeType="application/octet-stream" />
-			</intent-filter>
         </activity>
     </application>
 
@@ -107,9 +32,4 @@
 	
     <!-- OpenGL ES 2.0 -->
     <uses-feature android:glEsVersion="0x00020000" />
-
-    <!-- Allow writing to external storage -->
-	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.INTERNET" />
 </manifest>
