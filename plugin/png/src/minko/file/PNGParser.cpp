@@ -63,6 +63,7 @@ PNGParser::parse(const std::string&                 filename,
             options->generateMipmaps(),
             false,
             options->resizeSmoothly(),
+            render::TextureFormat::RGBA,
             filename
         );
 
@@ -78,6 +79,7 @@ PNGParser::parse(const std::string&                 filename,
             options->generateMipmaps(),
             false,
             options->resizeSmoothly(),
+            render::TextureFormat::RGBA,
             filename
         );
 

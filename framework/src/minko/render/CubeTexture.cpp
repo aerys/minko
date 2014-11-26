@@ -27,11 +27,22 @@ using namespace minko::render;
 CubeTexture::CubeTexture(AbstractContext::Ptr    context,
                          unsigned int            width,
                          unsigned int            height,
+                         TextureFormat           format,
                          bool                    mipMapping,
                          bool                    optimizeForRenderToTexture,
                          bool                    resizeSmoothly,
-                         const std::string&        filename) :
-    AbstractTexture(TextureType::CubeTexture, context, width, height, mipMapping, optimizeForRenderToTexture, resizeSmoothly, filename),
+                         const std::string&      filename) :
+    AbstractTexture(
+        TextureType::CubeTexture,
+        context,
+        width,
+        height,
+        format,
+        mipMapping,
+        optimizeForRenderToTexture,
+        resizeSmoothly,
+        filename
+    ),
     _data(std::vector<std::vector<unsigned char>>(6))
 {
     // keep only the GPU relevant size of each face
@@ -41,7 +52,6 @@ CubeTexture::CubeTexture(AbstractContext::Ptr    context,
 
 void
 CubeTexture::data(unsigned char*    data,
-                  TextureFormat        format,
                   int                ,
                   int                )
 {
@@ -77,13 +87,13 @@ CubeTexture::data(unsigned char*    data,
             {
                 unsigned int xy = x + _width * y;
 
-                if (format == TextureFormat::RGBA)
+                if (_format == TextureFormat::RGBA)
                 {
                     xy <<= 2;
                     for (unsigned int k = 0; k < 4; ++k)
                         rgba[idx++] = data[xy++];
                 }
-                else if (format == TextureFormat::RGB)
+                else if (_format == TextureFormat::RGB)
                 {
                     xy *= 3;
                     for (unsigned int k = 0; k < 3; ++k)

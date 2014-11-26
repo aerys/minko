@@ -249,7 +249,7 @@ TextureParser::parseCompressedTexture(TextureFormat                        forma
             hasMipmaps
         );
 
-        texture->data(textureData.data(), format);
+        texture->data(textureData.data());
         texture->upload();
 
         if (hasMipmaps)

@@ -40,7 +40,7 @@ namespace minko
             static const uint MAX_SIZE;
 
         protected:
-            const TextureType    _type;
+            const TextureType   _type;
             TextureFormat       _format;
             unsigned int        _width;
             unsigned int        _height;
@@ -49,7 +49,7 @@ namespace minko
             bool                _mipMapping;
             bool                _resizeSmoothly;
             bool                _optimizeForRenderToTexture;
-            std::string            _filename;
+            std::string         _filename;
 
         public:
             inline
@@ -99,24 +99,24 @@ namespace minko
 
             virtual
             void
-            data(unsigned char*     data,
-                 TextureFormat    format        = TextureFormat::RGBA,
+            data(unsigned char* data,
                  int            widthGPU    = -1,
-                 int            heightGPU    = -1) = 0;
+                 int            heightGPU   = -1) = 0;
 
             virtual
             void
             disposeData() = 0;
 
         protected:
-            AbstractTexture(TextureType            type,
-                            AbstractContextPtr    context,
+            AbstractTexture(TextureType         type,
+                            AbstractContextPtr  context,
                             unsigned int        width,
                             unsigned int        height,
+                            TextureFormat       format,
                             bool                mipMapping,
                             bool                optimizeForRenderToTexture,
                             bool                resizeSmoothly,
-                            const std::string&    filename);
+                            const std::string&  filename);
 
             ~AbstractTexture() = default;
 
