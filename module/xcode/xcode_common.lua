@@ -1020,8 +1020,10 @@
 		-- printSetting(bs, 4,"PRODUCT_NAME", cfg.buildtarget.basename, true)
 		xcode.PrintBuildSetting(4, 'PRODUCT_NAME = "' .. cfg.buildtarget.basename .. '";', cfg)
 
-		xcode.PrintBuildSetting(4, 'TARGETED_DEVICE_FAMILY = "1,2";', cfg)
-						
+		if cfg.platform == "ios" then
+			xcode.PrintBuildSetting(4, 'TARGETED_DEVICE_FAMILY = "1,2";', cfg)
+		end
+
 		_p(3,'};')
 		_p(3,'name = "%s";', cfgname)
 		_p(2,'};')
