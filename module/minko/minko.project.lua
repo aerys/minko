@@ -59,7 +59,8 @@ minko.project.application = function(name)
 		}
 		prelinkcommands {
 			minko.action.copy(minko.sdk.path("/framework/asset")),
-			minko.action.copy(minko.sdk.path("/framework/lib/glew/lib/windows32/*.dll"))
+			minko.action.copy(minko.sdk.path("/framework/lib/glew/lib/windows32/*.dll")),
+			minko.action.copy(minko.sdk.path("/framework/lib/msvcr/lib/windows32/*.dll"))
 		}
 
 	configuration { "windows32", "debug" }
@@ -84,7 +85,8 @@ minko.project.application = function(name)
 		}
 		prelinkcommands {
 			minko.action.copy(minko.sdk.path("/framework/asset")),
-			minko.action.copy(minko.sdk.path("/framework/lib/glew/lib/windows64/*.dll"))
+			minko.action.copy(minko.sdk.path("/framework/lib/glew/lib/windows64/*.dll")),
+			minko.action.copy(minko.sdk.path("/framework/lib/msvcr/lib/windows64/*.dll"))
 		}
 
 	configuration { "windows64", "debug" }
