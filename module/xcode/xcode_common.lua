@@ -992,6 +992,7 @@
 			"INFOPLIST_FILE",
 			"INSTALL_PATH",
 			"PRODUCT_NAME",
+			"TARGETED_DEVICE_FAMILY"
 		}
 		
 		local additionalSettings = {
@@ -1018,6 +1019,8 @@
 		xcode.PrintBuildSetting(4, 'INSTALL_PATH = ' .. installpaths[cfg.kind] .. ';', cfg)
 		-- printSetting(bs, 4,"PRODUCT_NAME", cfg.buildtarget.basename, true)
 		xcode.PrintBuildSetting(4, 'PRODUCT_NAME = "' .. cfg.buildtarget.basename .. '";', cfg)
+
+		xcode.PrintBuildSetting(4, 'TARGETED_DEVICE_FAMILY = "1,2";', cfg)
 						
 		_p(3,'};')
 		_p(3,'name = "%s";', cfgname)
