@@ -1767,6 +1767,19 @@ OpenGLES2Context::generateMipmaps(uint texture)
     checkForErrors();
 }
 
+bool
+OpenGLES2Context::supportsExtension(const std::string& extensionNameString)
+{
+    const auto availableExtensionRawStrings = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
+
+    if (availableExtensionRawStrings == nullptr)
+        return false;
+
+    const auto availableExtensionStrings = std::string(availableExtensionRawStrings);
+
+    return availableExtensionStrings.find(extensionNameString) != std::string::npos;
+}
+
 void
 OpenGLES2Context::availableTextureFormats(std::unordered_map<TextureFormat, unsigned int>& formats)
 {

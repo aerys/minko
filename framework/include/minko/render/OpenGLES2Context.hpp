@@ -410,6 +410,9 @@ namespace minko
             void
             generateMipmaps(unsigned int texture);
 
+            bool
+            supportsExtension(const std::string& extensionNameString);
+
         protected:
             OpenGLES2Context();
 
