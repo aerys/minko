@@ -28,23 +28,31 @@ using namespace minko::render;
 Texture::Texture(AbstractContext::Ptr    context,
                  uint                    width,
                  uint                    height,
+                 TextureFormat           format,
                  bool                    mipMapping,
                  bool                    optimizeForRenderToTexture,
                  bool                    resizeSmoothly,
-                 const std::string&        filename) :
-    AbstractTexture(TextureType::Texture2D, context, width, height, mipMapping, optimizeForRenderToTexture, resizeSmoothly, filename),
+                 const std::string&      filename) :
+    AbstractTexture(
+        TextureType::Texture2D,
+        context,
+        width,
+        height,
+        format,
+        mipMapping,
+        optimizeForRenderToTexture,
+        resizeSmoothly,
+        filename
+    ),
     _data()
 {
 }
 
 void
 Texture::data(unsigned char*    data,
-              TextureFormat     format,
               int               widthGPU,
               int               heightGPU)
 {
-    _format = format;
-
     if (widthGPU >= 0)
     {
         if (widthGPU > (int)MAX_SIZE)
@@ -70,11 +78,11 @@ Texture::data(unsigned char*    data,
 
         std::vector<unsigned char> rgba(size, 0);
 
-        if (format == TextureFormat::RGBA)
+        if (_format == TextureFormat::RGBA)
         {
             std::memcpy(&rgba[0], data, size);
         }
-        else if (format == TextureFormat::RGB)
+        else if (_format == TextureFormat::RGB)
         {
             for (unsigned int i = 0, j = 0; j < size; i += 3, j += 4)
             {
@@ -89,7 +97,7 @@ Texture::data(unsigned char*    data,
     }
     else
     {
-        const auto size = TextureFormatInfo::textureSize(format, _width, _height);
+        const auto size = TextureFormatInfo::textureSize(_format, _width, _height);
 
         _data.resize(size);
 
