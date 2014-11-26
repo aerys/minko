@@ -8,6 +8,12 @@ ANDROID_KEYSTORE_ALIAS="${ANDROID_KEYSTORE_ALIAS}"
 ANDROID_KEYSTORE_PASSWORD="${ANDROID_KEYSTORE_PASSWORD}"
 ANDROID="${ANDROID_HOME}"
 
+VERSION_CODE="1"
+
+if ! [ -z "${BUILD_NUMBER}" ]; then
+	VERSION_CODE="${BUILD_NUMBER}"
+fi
+
 if [ $OSTYPE == "cygwin" ]; then
 	MINKO_HOME=`cygpath -u "${MINKO_HOME}"`
 	ANDROID=`cygpath -u "${ANDROID_HOME}"`
@@ -31,6 +37,9 @@ mv src/MinkoActivity.java src/${PACKAGE//.//}
 
 sed -i "s/{{APP_NAME}}/${APP_NAME}/" res/values/strings.xml build.xml
 sed -i "s/{{PACKAGE}}/${PACKAGE}/" AndroidManifest.xml src/${PACKAGE//.//}/MinkoActivity.java
+
+# Update version info
+sed -i "s/{{VERSION_CODE}}/$VERSION_CODE/" AndroidManifest.xml
 
 mkdir -p libs/armeabi-v7a/
 # mkdir -p libs/x86/
