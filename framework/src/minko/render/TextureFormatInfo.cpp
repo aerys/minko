@@ -51,9 +51,7 @@ std::map<TextureFormat, TextureFormatInfo::Entry> TextureFormatInfo::_formats =
 bool
 TextureFormatInfo::isSupported(TextureFormat format)
 {
-    auto availableFormats = std::unordered_map<TextureFormat, unsigned int>();
-
-    OpenGLES2Context::availableTextureFormats(availableFormats);
+    const auto& availableFormats = OpenGLES2Context::availableTextureFormats();
 
     return availableFormats.find(format) != availableFormats.end();
 }

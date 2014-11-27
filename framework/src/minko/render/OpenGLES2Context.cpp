@@ -128,6 +128,8 @@ OpenGLES2Context::initializeStencilOperationsMap()
     return m;
 }
 
+std::unordered_map<TextureFormat, unsigned int> OpenGLES2Context::_availableTextureFormats;
+
 OpenGLES2Context::OpenGLES2Context() :
     _errorsEnabled(false),
     _textures(),
@@ -770,9 +772,7 @@ OpenGLES2Context::uploadCompressedTexture2dData(uint          texture,
 {
     assert(getTextureType(texture) == TextureType::Texture2D);
 
-    auto formats = std::unordered_map<TextureFormat, unsigned int>();
-
-    availableTextureFormats(formats);
+    const auto& formats = availableTextureFormats();
 
     glBindTexture(GL_TEXTURE_2D, texture);
     glCompressedTexImage2D(GL_TEXTURE_2D, mipLevel, formats.at(format), width, height, 0, size, data);
@@ -1780,9 +1780,14 @@ OpenGLES2Context::supportsExtension(const std::string& extensionNameString)
     return availableExtensionStrings.find(extensionNameString) != std::string::npos;
 }
 
-void
-OpenGLES2Context::availableTextureFormats(std::unordered_map<TextureFormat, unsigned int>& formats)
+const std::unordered_map<TextureFormat, unsigned int>&
+OpenGLES2Context::availableTextureFormats()
 {
+    if (!_availableTextureFormats.empty())
+        return _availableTextureFormats;
+
+    auto& formats = _availableTextureFormats;
+
     formats.insert(std::make_pair(TextureFormat::RGB, GL_RGB));
     formats.insert(std::make_pair(TextureFormat::RGBA, GL_RGBA));
 
@@ -1861,4 +1866,6 @@ OpenGLES2Context::availableTextureFormats(std::unordered_map<TextureFormat, unsi
             break;
         }
     }
+
+    return formats;
 }
