@@ -3,5 +3,5 @@
         "uDiffuseMap" : "material[${materialUuid}].diffuseMap"
     },
 
-    "pass" : { "vertexShader" : "", "fragmentShader" : "" }
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
 }

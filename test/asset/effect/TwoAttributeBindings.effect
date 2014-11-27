@@ -4,5 +4,5 @@
         "aUv" : "geometry[${geometryUuid}].uv"
     },
 
-    "pass" : { "vertexShader" : "", "fragmentShader" : "" }
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
 }
