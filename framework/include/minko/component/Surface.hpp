@@ -34,15 +34,14 @@ namespace minko
 			friend render::DrawCallPool;
 
 		public:
-			typedef std::shared_ptr<Surface>										Ptr;
-			typedef Signal<Ptr, const std::string&, bool>							TechniqueChangedSignal;	
-			typedef Signal<Ptr, std::shared_ptr<component::Renderer>, bool>			VisibilityChangedSignal;
+			typedef std::shared_ptr<Surface>								Ptr;
+			typedef Signal<Ptr, const std::string&, bool>					TechniqueChangedSignal;	
+			typedef Signal<Ptr, std::shared_ptr<component::Renderer>, bool> VisibilityChangedSignal;
 
 		private:
-			typedef std::shared_ptr<scene::Node>									NodePtr;
-			typedef std::shared_ptr<render::Effect>									EffectPtr;
-			typedef const std::string&												StringRef;
-			typedef Signal<std::shared_ptr<data::Provider>, uint>::Slot				ArrayIndexChangedSlot;
+			typedef std::shared_ptr<scene::Node>    NodePtr;
+			typedef std::shared_ptr<render::Effect>	EffectPtr;
+			typedef const std::string&				StringRef;
 
         public:
             static const std::string SURFACE_COLLECTION_NAME;
