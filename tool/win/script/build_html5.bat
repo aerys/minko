@@ -12,5 +12,5 @@ if not defined MINKO_HOME (
 call "%MINKO_HOME%\tool\win\script\install_emscripten.bat"
 
 tool\win\bin\premake5.exe --no-test gmake
-mingw32-make SHELL=cmd.exe config=html5_release verbose=1
+mingw32-make SHELL=cmd.exe config=html5_release verbose=1 -j4
 pause
