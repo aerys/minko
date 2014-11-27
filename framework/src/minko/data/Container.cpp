@@ -63,28 +63,25 @@ Container::removeCollection(std::shared_ptr<Collection> collection)
 }
 
 void
-Container::providerPropertyChangedHandler(Provider::Ptr         provider,
-                                          Collection::Ptr       collection,
-                                          const std::string&    propertyName)
+Container::executePropertySignal(Provider::Ptr                                        provider,
+                                 Collection::Ptr                                      collection,
+                                 const std::string&                                   propertyName,
+                                 const PropertyChangedSignal&                         anyChangedSignal,
+                                 const std::map<std::string, PropertyChangedSignal>&  propertyNameToSignal)
 {
-
-    // provider is in a collection
-    _propertyChanged.execute(*this, provider, propertyName);
+    anyChangedSignal.execute(*this, provider, propertyName);
     if (collection)
     {
         auto formattedPropertyName = formatPropertyName(collection, provider, propertyName, true);
-        if (_propertyNameToChangedSignal.count(formattedPropertyName) != 0)
-            propertyChanged(formattedPropertyName).execute(*this, provider, propertyName);
+        if (propertyNameToSignal.count(formattedPropertyName) != 0)
+            propertyNameToSignal.at(formattedPropertyName).execute(*this, provider, propertyName);
 
         formattedPropertyName = formatPropertyName(collection, provider, propertyName);
-        if (_propertyNameToChangedSignal.count(formattedPropertyName) != 0)
-            propertyChanged(formattedPropertyName).execute(*this, provider, propertyName);
+        if (propertyNameToSignal.count(formattedPropertyName) != 0)
+            propertyNameToSignal.at(formattedPropertyName).execute(*this, provider, propertyName);
     }
-    else
-    {
-        if (_propertyNameToChangedSignal.count(propertyName) != 0)
-            propertyChanged(propertyName).execute(*this, provider, propertyName);
-    }
+    else if (propertyNameToSignal.count(propertyName) != 0)
+        propertyNameToSignal.at(propertyName).execute(*this, provider, propertyName);
 }
 
 void
@@ -92,8 +89,8 @@ Container::providerPropertyAddedHandler(Provider::Ptr       provider,
                                         Collection::Ptr     collection,
                                         const std::string& 	propertyName)
 {
-    _propertyAdded.execute(*this, provider, propertyName);
-    providerPropertyChangedHandler(provider, collection, propertyName);
+    executePropertySignal(provider, collection, propertyName, _propertyAdded, _propertyNameToAddedSignal);
+    executePropertySignal(provider, collection, propertyName, _propertyChanged, _propertyNameToChangedSignal);
 }
 
 
@@ -102,16 +99,27 @@ Container::providerPropertyRemovedHandler(Provider::Ptr         provider,
                                           Collection::Ptr       collection,
                                           const std::string&	propertyName)
 {
-    providerPropertyChangedHandler(provider, collection, propertyName);
-
-    _propertyRemoved.execute(*this, provider, propertyName);
+    executePropertySignal(provider, collection, propertyName, _propertyChanged, _propertyNameToChangedSignal);
+    executePropertySignal(provider, collection, propertyName, _propertyRemoved, _propertyNameToRemovedSignal);
 
     auto formattedName = formatPropertyName(collection, provider, propertyName);
+    if (_propertyNameToAddedSignal.count(formattedName)
+        && _propertyNameToAddedSignal[formattedName].numCallbacks() == 0)
+        _propertyNameToAddedSignal.erase(formattedName);
+    if (_propertyNameToRemovedSignal.count(formattedName)
+        && _propertyNameToRemovedSignal[formattedName].numCallbacks() == 0)
+        _propertyNameToRemovedSignal.erase(formattedName);
     if (_propertyNameToChangedSignal.count(formattedName)
         && _propertyNameToChangedSignal[formattedName].numCallbacks() == 0)
         _propertyNameToChangedSignal.erase(formattedName);
 
     formattedName = formatPropertyName(collection, provider, propertyName, true);
+    if (_propertyNameToAddedSignal.count(formattedName)
+        && _propertyNameToAddedSignal[formattedName].numCallbacks() == 0)
+        _propertyNameToAddedSignal.erase(formattedName);
+    if (_propertyNameToRemovedSignal.count(formattedName)
+        && _propertyNameToRemovedSignal[formattedName].numCallbacks() == 0)
+        _propertyNameToRemovedSignal.erase(formattedName);
     if (_propertyNameToChangedSignal.count(formattedName)
         && _propertyNameToChangedSignal[formattedName].numCallbacks() == 0)
         _propertyNameToChangedSignal.erase(formattedName);
@@ -189,11 +197,13 @@ Container::doAddProvider(ProviderPtr provider, CollectionPtr collection)
     )));
 
     _propertySlots[provider].push_back(provider->propertyChanged().connect(std::bind(
-        &Container::providerPropertyChangedHandler,
+        &Container::executePropertySignal,
         this,
         provider,
         collection,
-        std::placeholders::_2
+        std::placeholders::_2,
+        std::ref(_propertyChanged),
+        std::ref(_propertyNameToChangedSignal)
     )));
 
     for (auto property : provider->values())
@@ -263,7 +273,7 @@ Container::doRemoveProvider(ProviderPtr provider, CollectionPtr collection)
             const auto& provider = collection->items()[i];
 
             for (const auto& property : provider->values())
-                providerPropertyChangedHandler(provider, collection, property.first);
+                executePropertySignal(provider, collection, property.first, _propertyChanged, _propertyNameToChangedSignal);
         }
     }
 

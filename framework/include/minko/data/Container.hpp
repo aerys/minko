@@ -52,6 +52,8 @@ namespace minko
 			PropertyChangedSignal     								_propertyRemoved;
             PropertyChangedSignal                                   _propertyChanged;
             std::map<std::string, PropertyChangedSignal>            _propertyNameToChangedSignal;
+            std::map<std::string, PropertyChangedSignal>            _propertyNameToAddedSignal;
+            std::map<std::string, PropertyChangedSignal>            _propertyNameToRemovedSignal;
 
             std::map<ProviderPtr, ProviderChangedSignalSlotList>	_propertySlots;
             std::map<CollectionPtr, CollectionChangedSignalSlot>    _collectionItemAddedSlots;
@@ -153,6 +155,20 @@ namespace minko
 
             inline
             PropertyChangedSignal&
+            propertyAdded(const std::string& propertyName)
+            {
+                return _propertyNameToAddedSignal[propertyName];
+            }
+
+            inline
+            PropertyChangedSignal&
+            propertyRemoved(const std::string& propertyName)
+            {
+                return _propertyNameToRemovedSignal[propertyName];
+            }
+
+            inline
+            PropertyChangedSignal&
             propertyChanged(const std::string& propertyName)
             {
                 return _propertyNameToChangedSignal[propertyName];
@@ -213,6 +229,20 @@ namespace minko
 
             inline
             bool
+            hasPropertyAddedSignal(const std::string& propertyName) const
+            {
+                return _propertyNameToAddedSignal.count(propertyName) != 0;
+            }
+
+            inline
+            bool
+            hasPropertyRemovedSignal(const std::string& propertyName) const
+            {
+                return _propertyNameToRemovedSignal.count(propertyName) != 0;
+            }
+
+            inline
+            bool
             hasPropertyChangedSignal(const std::string& propertyName) const
             {
                 return _propertyNameToChangedSignal.count(propertyName) != 0;
@@ -234,11 +264,6 @@ namespace minko
 
 			void
 			providerPropertyRemovedHandler(ProviderPtr          provider,
-                                           CollectionPtr        collection,
-                                           const std::string&   propertyName);
-
-            void
-            providerPropertyChangedHandler(ProviderPtr          provider,
                                            CollectionPtr        collection,
                                            const std::string&   propertyName);
 
@@ -267,6 +292,13 @@ namespace minko
 
             void
             updateCollectionLength(CollectionPtr collection);
+
+            void
+            executePropertySignal(ProviderPtr                                          provider,
+                                  CollectionPtr                                        collection,
+                                  const std::string&                                   propertyName,
+                                  const PropertyChangedSignal&                         anyChangedSignal,
+                                  const std::map<std::string, PropertyChangedSignal>&  propertyNameToSignal);
 		};
 	}
 }
