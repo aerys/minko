@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/data/Container.hpp"
+#include "minko/data/Store.hpp"
 
 #include "minko/data/Provider.hpp"
 #include "minko/data/Collection.hpp"
@@ -26,21 +26,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::data;
 
-Container::Container() :
+Store::Store() :
     _lengthProvider(nullptr)
 {
 }
 
 void
-Container::addCollection(std::shared_ptr<Collection> collection)
+Store::addCollection(std::shared_ptr<Collection> collection)
 {
     _collections.push_back(collection);
 
     _collectionItemAddedSlots[collection] = collection->itemAdded() += std::bind(
-        &Container::doAddProvider, this, std::placeholders::_2, collection
+        &Store::doAddProvider, this, std::placeholders::_2, collection
     );
     _collectionItemRemovedSlots[collection] = collection->itemRemoved() += std::bind(
-        &Container::doRemoveProvider, this, std::placeholders::_2, collection
+        &Store::doRemoveProvider, this, std::placeholders::_2, collection
     );
 
     if (collection->items().size() != 0)
@@ -51,7 +51,7 @@ Container::addCollection(std::shared_ptr<Collection> collection)
 }
 
 void
-Container::removeCollection(std::shared_ptr<Collection> collection)
+Store::removeCollection(std::shared_ptr<Collection> collection)
 {
     _collections.remove(collection);
 
@@ -63,7 +63,7 @@ Container::removeCollection(std::shared_ptr<Collection> collection)
 }
 
 void
-Container::executePropertySignal(Provider::Ptr                                        provider,
+Store::executePropertySignal(Provider::Ptr                                        provider,
                                  Collection::Ptr                                      collection,
                                  const std::string&                                   propertyName,
                                  const PropertyChangedSignal&                         anyChangedSignal,
@@ -85,7 +85,7 @@ Container::executePropertySignal(Provider::Ptr                                  
 }
 
 void
-Container::providerPropertyAddedHandler(Provider::Ptr       provider,
+Store::providerPropertyAddedHandler(Provider::Ptr       provider,
                                         Collection::Ptr     collection,
                                         const std::string& 	propertyName)
 {
@@ -95,7 +95,7 @@ Container::providerPropertyAddedHandler(Provider::Ptr       provider,
 
 
 void
-Container::providerPropertyRemovedHandler(Provider::Ptr         provider,
+Store::providerPropertyRemovedHandler(Provider::Ptr         provider,
                                           Collection::Ptr       collection,
                                           const std::string&	propertyName)
 {
@@ -126,7 +126,7 @@ Container::providerPropertyRemovedHandler(Provider::Ptr         provider,
 }
 
 std::pair<Provider::Ptr, std::string>
-Container::getProviderByPropertyName(const std::string& propertyName) const
+Store::getProviderByPropertyName(const std::string& propertyName) const
 {
     auto pos = propertyName.find_first_of("[");
 
@@ -176,12 +176,12 @@ Container::getProviderByPropertyName(const std::string& propertyName) const
 }
 
 void
-Container::doAddProvider(ProviderPtr provider, CollectionPtr collection)
+Store::doAddProvider(ProviderPtr provider, CollectionPtr collection)
 {
     _providers.push_back(provider);
 
     _propertySlots[provider].push_back(provider->propertyAdded().connect(std::bind(
-        &Container::providerPropertyAddedHandler,
+        &Store::providerPropertyAddedHandler,
         this,
         provider,
         collection,
@@ -189,7 +189,7 @@ Container::doAddProvider(ProviderPtr provider, CollectionPtr collection)
     )));
 
     _propertySlots[provider].push_back(provider->propertyRemoved().connect(std::bind(
-        &Container::providerPropertyRemovedHandler,
+        &Store::providerPropertyRemovedHandler,
         this,
         provider,
         collection,
@@ -197,7 +197,7 @@ Container::doAddProvider(ProviderPtr provider, CollectionPtr collection)
     )));
 
     _propertySlots[provider].push_back(provider->propertyChanged().connect(std::bind(
-        &Container::executePropertySignal,
+        &Store::executePropertySignal,
         this,
         provider,
         collection,
@@ -214,7 +214,7 @@ Container::doAddProvider(ProviderPtr provider, CollectionPtr collection)
 }
 
 void
-Container::updateCollectionLength(data::Collection::Ptr collection)
+Store::updateCollectionLength(data::Collection::Ptr collection)
 {
     if (_lengthProvider == nullptr)
     {
@@ -226,7 +226,7 @@ Container::updateCollectionLength(data::Collection::Ptr collection)
 }
 
 void
-Container::doRemoveProvider(ProviderPtr provider, CollectionPtr collection)
+Store::doRemoveProvider(ProviderPtr provider, CollectionPtr collection)
 {
     assert(std::find(_providers.begin(), _providers.end(), provider) != _providers.end());
 
@@ -280,7 +280,7 @@ Container::doRemoveProvider(ProviderPtr provider, CollectionPtr collection)
 }
 
 std::string
-Container::formatPropertyName(Collection::Ptr       collection,
+Store::formatPropertyName(Collection::Ptr       collection,
                               Provider::Ptr         provider,
                               const std::string&    propertyName,
                               bool                  useUuid)
@@ -297,7 +297,7 @@ Container::formatPropertyName(Collection::Ptr       collection,
 }
 
 std::string
-Container::formatPropertyName(Collection::Ptr collection, const std::string& index, const std::string& propertyName)
+Store::formatPropertyName(Collection::Ptr collection, const std::string& index, const std::string& propertyName)
 {
     if (collection == nullptr)
         return propertyName;
@@ -306,7 +306,7 @@ Container::formatPropertyName(Collection::Ptr collection, const std::string& ind
 }
 
 void
-Container::addProviderToCollection(std::shared_ptr<data::Provider> provider,
+Store::addProviderToCollection(std::shared_ptr<data::Provider> provider,
                                    const std::string&              collectionName)
 {
     auto collectionIt = std::find_if(_collections.begin(), _collections.end(), [&](data::Collection::Ptr c)
@@ -333,7 +333,7 @@ Container::addProviderToCollection(std::shared_ptr<data::Provider> provider,
 }
 
 void
-Container::removeProviderFromCollection(std::shared_ptr<data::Provider> provider,
+Store::removeProviderFromCollection(std::shared_ptr<data::Provider> provider,
                                         const std::string&              collectionName)
 {
     auto collectionIt = std::find_if(_collections.begin(), _collections.end(), [&](data::Collection::Ptr c)
@@ -349,7 +349,7 @@ Container::removeProviderFromCollection(std::shared_ptr<data::Provider> provider
 
 
 const std::string
-Container::getActualPropertyName(const std::unordered_map<std::string, std::string>&    vars,
+Store::getActualPropertyName(const std::unordered_map<std::string, std::string>&    vars,
                                  const std::string&                                     propertyName)
 {
     for (const auto& variableName : vars)

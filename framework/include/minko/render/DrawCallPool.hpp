@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/render/DrawCall.hpp"
-#include "minko/data/Container.hpp"
+#include "minko/data/Store.hpp"
 
 namespace minko
 {
@@ -34,21 +34,21 @@ namespace minko
 			public std::enable_shared_from_this<DrawCallPool>
 		{
         private:
-            typedef std::list<DrawCall*>::iterator                                                  DrawCallIterator;
-            typedef data::Container::PropertyChangedSignal                                          PropertyChanged;
-            typedef std::pair<PropertyChanged::Slot, uint>                                          ChangedSlot;
-            typedef std::list<DrawCall*>                                                            DrawCallList;
-            typedef data::Container                                                                 Container;
-            typedef std::shared_ptr<data::Collection>                                               CollectionPtr;
-            typedef std::shared_ptr<data::Provider>                                                 ProviderPtr;
-            typedef data::MacroBinding                                                              MacroBinding;
-            typedef std::pair<const MacroBinding*, const Container*>                                MacroBindingKey;
-            typedef PropertyChanged::Callback                                                       MacroCallback;
+            typedef std::list<DrawCall*>::iterator                                              DrawCallIterator;
+            typedef data::Store::PropertyChangedSignal                                          PropertyChanged;
+            typedef std::pair<PropertyChanged::Slot, uint>                                      ChangedSlot;
+            typedef std::list<DrawCall*>                                                        DrawCallList;
+            typedef data::Store                                                                 Store;
+            typedef std::shared_ptr<data::Collection>                                           CollectionPtr;
+            typedef std::shared_ptr<data::Provider>                                             ProviderPtr;
+            typedef data::MacroBinding                                                          MacroBinding;
+            typedef std::pair<const MacroBinding*, const Store*>                                MacroBindingKey;
+            typedef PropertyChanged::Callback                                                   MacroCallback;
 
-            typedef std::pair_hash<const MacroBinding*, const Container*>                           BindingHash;
-            typedef std::pair_eq<const MacroBinding*, const Container*>                             BindingEq;
-            typedef std::unordered_map<MacroBindingKey, DrawCallList, BindingHash, BindingEq>       MacroToDrawCallsMap;
-            typedef std::unordered_map<PropertyChanged*, ChangedSlot>                               MacroToChangedSlotMap;
+            typedef std::pair_hash<const MacroBinding*, const Store*>                           BindingHash;
+            typedef std::pair_eq<const MacroBinding*, const Store*>                             BindingEq;
+            typedef std::unordered_map<MacroBindingKey, DrawCallList, BindingHash, BindingEq>   MacroToDrawCallsMap;
+            typedef std::unordered_map<PropertyChanged*, ChangedSlot>                           MacroToChangedSlotMap;
 
         public:
             typedef std::pair<DrawCallIterator, DrawCallIterator>   DrawCallIteratorPair;
@@ -76,9 +76,9 @@ namespace minko
             addDrawCalls(std::shared_ptr<Effect>                                effect,
                          const std::unordered_map<std::string, std::string>&    variables,
                          const std::string&                                     techniqueName,
-                         data::Container&                                       rootData,
-                         data::Container&                                       rendererData,
-                         data::Container&                                       targetData);
+                         data::Store&                                           rootData,
+                         data::Store&                                           rendererData,
+                         data::Store&                                           targetData);
 
             void
             removeDrawCalls(const DrawCallIteratorPair& iterators);
@@ -94,23 +94,23 @@ namespace minko
             void
             watchProgramSignature(DrawCall*                     drawCall,
                                   const data::MacroBindingMap&  macroBindings,
-                                  data::Container&              rootData,
-                                  data::Container&              rendererData,
-                                  data::Container&              targetData);
+                                  data::Store&                  rootData,
+                                  data::Store&                  rendererData,
+                                  data::Store&                  targetData);
 
             void
-            unwatchProgramSignature(DrawCall*                     drawCall,
-                                    const data::MacroBindingMap&  macroBindings,
-                                    data::Container&              rootData,
-                                    data::Container&              rendererData,
-                                    data::Container&              targetData);
+            unwatchProgramSignature(DrawCall*                       drawCall,
+                                    const data::MacroBindingMap&    macroBindings,
+                                    data::Store&                    rootData,
+                                    data::Store&                    rendererData,
+                                    data::Store&                    targetData);
 
             void
-            macroPropertyAddedHandler(data::Container&            container,
-                                      const std::list<DrawCall*>& drawCalls);
+            macroPropertyAddedHandler(data::Store&                  store,
+                                      const std::list<DrawCall*>&   drawCalls);
 
             void
-            macroPropertyRemovedHandler(data::Container&            container,
+            macroPropertyRemovedHandler(data::Store&                store,
                                         const std::list<DrawCall*>& drawCalls);
 
             void
@@ -121,7 +121,7 @@ namespace minko
             
             void
             addMacroCallback(PropertyChanged&       key,
-                             data::Container&       container,
+                             data::Store&           store,
                              const MacroCallback&   callback);
 
             void

@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/Pass.hpp"
 
-#include "minko/data/Container.hpp"
+#include "minko/data/Store.hpp"
 #include "minko/render/Program.hpp"
 #include "minko/render/Shader.hpp"
 #include "minko/render/DrawCall.hpp"
@@ -53,9 +53,9 @@ Pass::Pass(const std::string&		name,
 
 std::pair<std::shared_ptr<Program>, const ProgramSignature*>
 Pass::selectProgram(const std::unordered_map<std::string, std::string>& vars,
-					const Container&			                        targetData,
-					const Container&			                        rendererData,
-					const Container&			                        rootData)
+					const Store&			                        targetData,
+					const Store&			                        rendererData,
+					const Store&			                        rootData)
 {
 	Program::Ptr program = nullptr;
     ProgramSignature* signature = nullptr;

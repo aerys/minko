@@ -76,7 +76,7 @@ PerspectiveCamera::targetRemoved(NodePtr target)
 }
 
 void
-PerspectiveCamera::localToWorldChangedHandler(data::Container& data)
+PerspectiveCamera::localToWorldChangedHandler(data::Store& data)
 {
     updateMatrices(data.get<math::mat4>("modelToWorldMatrix"));
 }

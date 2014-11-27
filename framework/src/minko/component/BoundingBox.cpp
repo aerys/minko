@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Transform.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/geometry/Geometry.hpp"
-#include "minko/data/Container.hpp"
+#include "minko/data/Store.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -53,7 +53,7 @@ void
 BoundingBox::targetAdded(scene::Node::Ptr target)
 {
 	_modelToWorldChangedSlot = target->data().propertyChanged("modelToWorldMatrix").connect(
-		[&](data::Container& data, data::Provider::Ptr provider, const std::string& propertyName)
+		[&](data::Store& data, data::Provider::Ptr provider, const std::string& propertyName)
 		{
 			_invalidWorldSpaceBox = true;
 		}

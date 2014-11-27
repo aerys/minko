@@ -39,24 +39,23 @@ namespace minko
 		private:
 			typedef std::shared_ptr<scene::Node>		NodePtr;
 			typedef std::shared_ptr<AbstractComponent>	AbsCmpPtr;
-			typedef std::shared_ptr<data::Container>	ContainerPtr;
             typedef std::shared_ptr<data::Provider>	    ProviderPtr;
             typedef const std::string&                  String;
 
 		private:
-			const bool										    _fixed;
+			const bool										_fixed;
 
-			std::shared_ptr<math::Box>						    _box;
-			std::shared_ptr<math::Box>						    _worldSpaceBox;
+			std::shared_ptr<math::Box>						_box;
+			std::shared_ptr<math::Box>						_worldSpaceBox;
 
-			bool											    _invalidBox;
-			bool											    _invalidWorldSpaceBox;
+			bool											_invalidBox;
+			bool											_invalidWorldSpaceBox;
 
-			Signal<AbsCmpPtr, NodePtr>::Slot				    _targetAddedSlot;
-			Signal<AbsCmpPtr, NodePtr>::Slot				    _targetRemovedSlot;
-			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot		    _componentAddedSlot;
-			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot		    _componentRemovedSlot;
-			Signal<data::Container&, ProviderPtr, String>::Slot	_modelToWorldChangedSlot;
+			Signal<AbsCmpPtr, NodePtr>::Slot				_targetAddedSlot;
+			Signal<AbsCmpPtr, NodePtr>::Slot				_targetRemovedSlot;
+			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot		_componentAddedSlot;
+			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot	    _componentRemovedSlot;
+			Signal<data::Store&, ProviderPtr, String>::Slot	_modelToWorldChangedSlot;
 
 		public:
 			inline static

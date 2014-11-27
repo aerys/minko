@@ -40,9 +40,6 @@ namespace minko
 
 		private:
 			typedef std::shared_ptr<scene::Node>									NodePtr;
-			typedef std::shared_ptr<data::Container>								ContainerPtr;
-			typedef Signal<ContainerPtr, const std::string&>						PropertyChangedSignal;
-			typedef PropertyChangedSignal::Slot										PropertyChangedSlot;
 			typedef std::shared_ptr<render::Effect>									EffectPtr;
 			typedef const std::string&												StringRef;
 			typedef Signal<std::shared_ptr<data::Provider>, uint>::Slot				ArrayIndexChangedSlot;

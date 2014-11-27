@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/ProgramSignature.hpp"
 
 #include "minko/render/Pass.hpp"
-#include "minko/data/Container.hpp"
+#include "minko/data/Store.hpp"
 #include "minko/render/DrawCall.hpp"
 #include "minko/data/BindingMap.hpp"
 #include "minko/data/MacroBinding.hpp"
@@ -31,9 +31,9 @@ using namespace minko::data;
 
 ProgramSignature::ProgramSignature(const data::MacroBindingMap&                         macroBindings,
                                    const std::unordered_map<std::string, std::string>&  variables,
-                                   const Container&			                            targetData,
-                                   const Container&			                            rendererData,
-                                   const Container&			                            rootData) :
+                                   const Store&			                            targetData,
+                                   const Store&			                            rendererData,
+                                   const Store&			                            rootData) :
     _mask(0)
 {
     const uint maxNumMacros = sizeof(MaskType) * 8;
@@ -46,11 +46,11 @@ ProgramSignature::ProgramSignature(const data::MacroBindingMap&                 
     {
         const auto&	macroName = macroNameAndBinding.first;
         const auto&	macroBinding = macroNameAndBinding.second;
-        auto propertyName = Container::getActualPropertyName(variables, macroBinding.propertyName);
-        auto& container = macroBinding.source == Binding::Source::TARGET
+        auto propertyName = Store::getActualPropertyName(variables, macroBinding.propertyName);
+        auto& store = macroBinding.source == Binding::Source::TARGET
             ? targetData
             : (macroBinding.source == Binding::Source::RENDERER ? rendererData : rootData);
-        bool macroIsDefined = container.hasProperty(propertyName);
+        bool macroIsDefined = store.hasProperty(propertyName);
         bool hasDefaultValue = macroBindings.defaultValues.hasProperty(propertyName);
 
         if (macroIsDefined || hasDefaultValue)
@@ -66,9 +66,9 @@ ProgramSignature::ProgramSignature(const data::MacroBindingMap&                 
             if (macroBinding.type != MacroBinding::Type::UNSET)
 			{
 				// update program signature
-                _values.push_back(getValueFromContainer(
+                _values.push_back(getValueFromStore(
                     macroBinding,
-                    macroIsDefined ? container : macroBindings.defaultValues,
+                    macroIsDefined ? store : macroBindings.defaultValues,
                     propertyName
                 ));
 			}
@@ -217,50 +217,50 @@ ProgramSignature::updateProgram(Program& program) const
 }
 
 Any
-ProgramSignature::getValueFromContainer(const MacroBinding&     binding,
-                                        const data::Container&  container,
+ProgramSignature::getValueFromStore(const MacroBinding&     binding,
+                                        const data::Store&  store,
                                         const std::string&      propertyName)
 {
     switch (binding.type)
     {
     case MacroBinding::Type::BOOL:
-        return container.get<bool>(propertyName);
+        return store.get<bool>(propertyName);
         break;
     case MacroBinding::Type::BOOL2:
-        return container.get<math::bvec2>(propertyName);
+        return store.get<math::bvec2>(propertyName);
         break;
     case MacroBinding::Type::BOOL3:
-        return container.get<math::bvec3>(propertyName);
+        return store.get<math::bvec3>(propertyName);
         break;
     case MacroBinding::Type::BOOL4:
-        return container.get<math::bvec4>(propertyName);
+        return store.get<math::bvec4>(propertyName);
         break;
     case MacroBinding::Type::INT:
         return std::max(
             binding.minValue,
-            std::min(binding.maxValue, container.get<int>(propertyName))
+            std::min(binding.maxValue, store.get<int>(propertyName))
         );
         break;
     case MacroBinding::Type::INT2:
-        return container.get<math::ivec2>(propertyName);
+        return store.get<math::ivec2>(propertyName);
         break;
     case MacroBinding::Type::INT3:
-        return container.get<math::ivec3>(propertyName);
+        return store.get<math::ivec3>(propertyName);
         break;
     case MacroBinding::Type::INT4:
-        return container.get<math::ivec4>(propertyName);
+        return store.get<math::ivec4>(propertyName);
         break;
     case MacroBinding::Type::FLOAT:
-        return container.get<float>(propertyName);
+        return store.get<float>(propertyName);
         break;
     case MacroBinding::Type::FLOAT2:
-        return container.get<math::vec2>(propertyName);
+        return store.get<math::vec2>(propertyName);
         break;
     case MacroBinding::Type::FLOAT3:
-        return container.get<math::vec3>(propertyName);
+        return store.get<math::vec3>(propertyName);
         break;
     case MacroBinding::Type::FLOAT4:
-        return container.get<math::vec4>(propertyName);
+        return store.get<math::vec4>(propertyName);
         break;
     case MacroBinding::Type::UNSET:
         throw;

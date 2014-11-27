@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Signal.hpp"
 #include "minko/scene/Layout.hpp"
-#include "minko/data/Container.hpp"
+#include "minko/data/Store.hpp"
 
 namespace minko
 {
@@ -43,7 +43,7 @@ namespace minko
 			std::vector<Ptr>					_children;
 			std::weak_ptr<Node> 				_root;
             std::weak_ptr<Node>					_parent;
-			data::Container                     _container;
+			data::Store                     _container;
 			std::list<AbsCtrlPtr>				_components;
 
 			Signal<Ptr, Ptr, Ptr>				_added;
@@ -164,7 +164,7 @@ namespace minko
 			}
 
 			inline
-			data::Container&
+			data::Store&
 			data()
 			{
 				return _container;

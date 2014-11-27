@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/Signal.hpp"
-#include "minko/data/Container.hpp"
+#include "minko/data/Store.hpp"
 #include "minko/render/Pass.hpp"
 #include "minko/render/DrawCall.hpp"
 #include "minko/render/States.hpp"
@@ -77,12 +77,12 @@ namespace minko
 			typedef std::shared_ptr<AbstractTexture>	            AbsTexturePtr;
 			typedef std::shared_ptr<Program>			            ProgramPtr;
             typedef std::unordered_map<std::string, std::string>    StringMap;
-            typedef data::Container::PropertyChangedSignal::Slot    ChangedSlot;
+            typedef data::Store::PropertyChangedSignal::Slot    ChangedSlot;
 
 		private:
-            data::Container&                    _rootData;
-            data::Container&                    _rendererData;
-            data::Container&                    _targetData;
+            data::Store&                        _rootData;
+            data::Store&                        _rendererData;
+            data::Store&                        _targetData;
             StringMap                           _variables;
 
 			std::shared_ptr<render::Pass>		_pass;
@@ -115,14 +115,14 @@ namespace minko
             /*SamplerStates               _samplerStates;
             AbstractTexturePtr		    _target;*/
 
-            std::map<const data::Binding*, ChangedSlot>    _containerPropAddedOrRemovedSlot;
+            std::map<const data::Binding*, ChangedSlot>    _propAddedOrRemovedSlot;
 
 		public:
             DrawCall(std::shared_ptr<render::Pass>  pass,
                      const StringMap&               variables,
-                     data::Container&               rootData,
-                     data::Container&               rendererData,
-                     data::Container&               targetData) :
+                     data::Store&                   rootData,
+                     data::Store&                   rendererData,
+                     data::Store&                   targetData) :
                 _pass(pass),
                 _variables(variables),
                 _rootData(rootData),
@@ -163,21 +163,21 @@ namespace minko
             }
 
             inline
-            const data::Container&
+            const data::Store&
             rootData() const
             {
                 return _rootData;
             }
 
             inline
-            const data::Container&
+            const data::Store&
             rendererData() const
             {
                 return _rendererData;
             }
 
             inline
-            const data::Container&
+            const data::Store&
             targetData() const
             {
                 return _targetData;
@@ -202,38 +202,38 @@ namespace minko
             void
             bindUniform(std::shared_ptr<Program>    program,
                         ConstUniformInputRef        input,
-                        const data::Container&      container,
+                        const data::Store&          store,
                         const std::string&          propertyName);
 
             void
-            bindAttribute(std::shared_ptr<Program>    program,
-                          ConstAttrInputRef           input,
-						  const data::Container&      container,
-						  const std::string&          propertyName);
+            bindAttribute(std::shared_ptr<Program>  program,
+                          ConstAttrInputRef         input,
+						  const data::Store&        store,
+						  const std::string&        propertyName);
 
 			void
 			bindIndexBuffer(const std::unordered_map<std::string, std::string>& variables,
-                            const data::Container&                              targetData);
+                            const data::Store&                                  targetData);
 
 			void
             bindStates(const data::BindingMap& stateBindings);
 			
-            data::Container&
-            getContainer(data::Binding::Source source);
+            data::Store&
+            getStore(data::Binding::Source source);
 
             void
-            uniformBindingPropertyAdded(const data::Binding&                  binding,
-                                        Program::Ptr                          program,
-                                        data::Container&                      container,
-                                        const data::Container&                defaultValues,
-                                        const ProgramInputs::UniformInput&    input,
-                                        const std::string&                    propertyName);
+            uniformBindingPropertyAdded(const data::Binding&                binding,
+                                        Program::Ptr                        program,
+                                        data::Store&                        store,
+                                        const data::Store&                  defaultValues,
+                                        const ProgramInputs::UniformInput&  input,
+                                        const std::string&                  propertyName);
 
             void
             uniformBindingPropertyRemoved(const data::Binding&                  binding,
                                           Program::Ptr                          program,
-                                          data::Container&                      container,
-                                          const data::Container&                defaultValues,
+                                          data::Store&                          store,
+                                          const data::Store&                    defaultValues,
                                           const ProgramInputs::UniformInput&    input,
                                           const std::string&                    propertyName);
 
@@ -249,10 +249,10 @@ namespace minko
                     return defaultValue;
 
                 const auto& binding = bindings.at(stateName);
-                auto& container = getContainer(binding.source);
+                auto& store = getStore(binding.source);
 
-                return container.getUnsafePointer<T>(
-                    data::Container::getActualPropertyName(_variables, binding.propertyName)
+                return store.getUnsafePointer<T>(
+                    data::Store::getActualPropertyName(_variables, binding.propertyName)
                 );
             }
 

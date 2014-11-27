@@ -26,7 +26,7 @@ namespace minko
 {
 	namespace data
 	{
-		class Container
+		class Store
 		{
 
 		private:
@@ -41,7 +41,7 @@ namespace minko
             typedef Signal<Collection&, ProviderPtr>::Slot              CollectionChangedSignalSlot;
 
         public:
-            typedef Signal<Container&, ProviderPtr, const std::string&>	PropertyChangedSignal;
+            typedef Signal<Store&, ProviderPtr, const std::string&>	PropertyChangedSignal;
 
         private:
 			std::list<ProviderPtr>									_providers;
@@ -60,9 +60,9 @@ namespace minko
             std::map<CollectionPtr, CollectionChangedSignalSlot>    _collectionItemRemovedSlots;
 
 		public:
-            Container();
+            Store();
 
-            ~Container()
+            ~Store()
             {
 
             }

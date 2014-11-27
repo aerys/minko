@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/animation/Matrix4x4Timeline.hpp"
 
-#include "minko/data/Container.hpp"
+#include "minko/data/Store.hpp"
 #include "timeline_lookup.hpp"
 
 using namespace minko;
@@ -70,7 +70,7 @@ Matrix4x4Timeline::initializeMatrixTimetable(const std::vector<uint>& 			timetab
 
 void
 Matrix4x4Timeline::update(uint time, 
-						  data::Container& data, 
+						  data::Store& data, 
 						  bool /*skipPropertyNameFormatting*/)
 {
 	if (_isLocked || _duration == 0 || _matrices.empty())

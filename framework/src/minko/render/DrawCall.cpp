@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/DrawCall.hpp"
 
-#include "minko/data/Container.hpp"
+#include "minko/data/Store.hpp"
 
 using namespace minko;
 using namespace minko::render;
@@ -27,8 +27,8 @@ using namespace minko::render;
 const unsigned int	DrawCall::MAX_NUM_TEXTURES		= 8;
 const unsigned int	DrawCall::MAX_NUM_VERTEXBUFFERS	= 8;
 
-data::Container&
-DrawCall::getContainer(data::Binding::Source source)
+data::Store&
+DrawCall::getStore(data::Binding::Source source)
 {
     switch (source)
     {
@@ -79,10 +79,10 @@ DrawCall::bind(Program::Ptr       program,
             continue;
 
         const auto& binding = bindings.at(input.name);
-        auto& container = getContainer(binding.source);
-        auto propertyName = data::Container::getActualPropertyName(_variables, binding.propertyName);
+        auto& store = getStore(binding.source);
+        auto propertyName = data::Store::getActualPropertyName(_variables, binding.propertyName);
 
-        if (!container.hasProperty(propertyName))
+        if (!store.hasProperty(propertyName))
         {
             if (!attributeBindings.defaultValues.hasProperty(input.name))
                 throw std::runtime_error(
@@ -93,7 +93,7 @@ DrawCall::bind(Program::Ptr       program,
             bindAttribute(program, input, attributeBindings.defaultValues, input.name);
         }
         else
-            bindAttribute(program, input, container, propertyName);
+            bindAttribute(program, input, store, propertyName);
     }
 }
 
@@ -117,8 +117,8 @@ DrawCall::bindUniforms(Program::Ptr program, data::BindingMap& uniformBindings)
             continue;
 
         const auto& binding = bindings.at(bindingName);
-        auto& container = getContainer(binding.source);
-        auto propertyName = data::Container::getActualPropertyName(_variables, binding.propertyName);
+        auto& store = getStore(binding.source);
+        auto propertyName = data::Store::getActualPropertyName(_variables, binding.propertyName);
 
         // FIXME: handle uniforms with struct types
 
@@ -130,7 +130,7 @@ DrawCall::bindUniforms(Program::Ptr program, data::BindingMap& uniformBindings)
         if (isArray)
             propertyName += input.name.substr(pos);
 
-        if (!container.hasProperty(propertyName))
+        if (!store.hasProperty(propertyName))
         {
             if (!uniformBindings.defaultValues.hasProperty(input.name))
                 throw std::runtime_error(
@@ -141,12 +141,12 @@ DrawCall::bindUniforms(Program::Ptr program, data::BindingMap& uniformBindings)
             bindUniform(program, input, uniformBindings.defaultValues, input.name);
 
             // FIXME: keep a direct pointer to the uniform data pointer instead of eventually search for it
-            _containerPropAddedOrRemovedSlot[&binding] = container.propertyAdded(input.name).connect(std::bind(
+            _propAddedOrRemovedSlot[&binding] = store.propertyAdded(input.name).connect(std::bind(
                 &DrawCall::uniformBindingPropertyAdded,
                 this,
                 std::ref(binding),
                 program,
-                std::ref(container),
+                std::ref(store),
                 std::ref(uniformBindings.defaultValues),
                 std::ref(input),
                 propertyName
@@ -154,19 +154,19 @@ DrawCall::bindUniforms(Program::Ptr program, data::BindingMap& uniformBindings)
         }
         else
         {
-            bindUniform(program, input, container, propertyName);
+            bindUniform(program, input, store, propertyName);
 
             // if there is a default value
             if (uniformBindings.defaultValues.hasProperty(input.name))
             {
                 // we listen to the "propertyRemoved" signal in order to make sure the uniform data
                 // points to the default value data
-                _containerPropAddedOrRemovedSlot[&binding] = container.propertyRemoved(propertyName).connect(std::bind(
+                _propAddedOrRemovedSlot[&binding] = store.propertyRemoved(propertyName).connect(std::bind(
                     &DrawCall::uniformBindingPropertyRemoved,
                     this,
                     std::ref(binding),
                     program,
-                    std::ref(container),
+                    std::ref(store),
                     std::ref(uniformBindings.defaultValues),
                     std::ref(input),
                     propertyName
@@ -179,19 +179,19 @@ DrawCall::bindUniforms(Program::Ptr program, data::BindingMap& uniformBindings)
 void
 DrawCall::uniformBindingPropertyAdded(const data::Binding&                  binding,
                                       Program::Ptr                          program,
-                                      data::Container&                      container,
-                                      const data::Container&                defaultValues,
+                                      data::Store&                      store,
+                                      const data::Store&                defaultValues,
                                       const ProgramInputs::UniformInput&    input,
                                       const std::string&                    propertyName)
 {
-    _containerPropAddedOrRemovedSlot.erase(&binding);
-    bindUniform(program, input, container, propertyName);
-    _containerPropAddedOrRemovedSlot[&binding] = container.propertyRemoved(propertyName).connect(std::bind(
+    _propAddedOrRemovedSlot.erase(&binding);
+    bindUniform(program, input, store, propertyName);
+    _propAddedOrRemovedSlot[&binding] = store.propertyRemoved(propertyName).connect(std::bind(
         &DrawCall::uniformBindingPropertyAdded,
         this,
         std::ref(binding),
         program,
-        std::ref(container),
+        std::ref(store),
         std::ref(defaultValues),
         std::ref(input),
         propertyName
@@ -201,8 +201,8 @@ DrawCall::uniformBindingPropertyAdded(const data::Binding&                  bind
 void
 DrawCall::uniformBindingPropertyRemoved(const data::Binding&                  binding,
                                         Program::Ptr                          program,
-                                        data::Container&                      container,
-                                        const data::Container&                defaultValues,
+                                        data::Store&                      store,
+                                        const data::Store&                defaultValues,
                                         const ProgramInputs::UniformInput&    input,
                                         const std::string&                    propertyName)
 {
@@ -212,14 +212,14 @@ DrawCall::uniformBindingPropertyRemoved(const data::Binding&                  bi
         + "\" property but it's not defined and no default value was provided."
     );
 
-    _containerPropAddedOrRemovedSlot.erase(&binding);
+    _propAddedOrRemovedSlot.erase(&binding);
     bindUniform(program, input, defaultValues, input.name);
-    _containerPropAddedOrRemovedSlot[&binding] = container.propertyAdded(propertyName).connect(std::bind(
+    _propAddedOrRemovedSlot[&binding] = store.propertyAdded(propertyName).connect(std::bind(
         &DrawCall::uniformBindingPropertyAdded,
         this,
         std::ref(binding),
         program,
-        std::ref(container),
+        std::ref(store),
         std::ref(defaultValues),
         std::ref(input),
         propertyName
@@ -228,26 +228,26 @@ DrawCall::uniformBindingPropertyRemoved(const data::Binding&                  bi
 
 void
 DrawCall::bindIndexBuffer(const std::unordered_map<std::string, std::string>&   variables,
-                          const data::Container&                                targetData)
+                          const data::Store&                                targetData)
 {
     _indexBuffer = const_cast<int*>(targetData.getPointer<int>(
-        data::Container::getActualPropertyName(variables, "geometry[${geometryUuid}].indices")
+        data::Store::getActualPropertyName(variables, "geometry[${geometryUuid}].indices")
     ));
     _firstIndex = const_cast<uint*>(targetData.getPointer<uint>(
-        data::Container::getActualPropertyName(variables, "geometry[${geometryUuid}].firstIndex")
+        data::Store::getActualPropertyName(variables, "geometry[${geometryUuid}].firstIndex")
     ));
     _numIndices = const_cast<uint*>(targetData.getPointer<uint>(
-        data::Container::getActualPropertyName(variables, "geometry[${geometryUuid}].numIndices")
+        data::Store::getActualPropertyName(variables, "geometry[${geometryUuid}].numIndices")
     ));
 }
 
 void
 DrawCall::bindAttribute(Program::Ptr            program,
                         ConstAttrInputRef       input,
-                        const data::Container&  container,
+                        const data::Store&  store,
                         const std::string&      propertyName)
 {
-    const auto& attr = container.getPointer<VertexAttribute>(propertyName);
+    const auto& attr = store.getPointer<VertexAttribute>(propertyName);
 
     _attributes.push_back({
         program->setAttributeNames().size() + _attributes.size(),
@@ -262,54 +262,54 @@ DrawCall::bindAttribute(Program::Ptr            program,
 void
 DrawCall::bindUniform(Program::Ptr            program,
                       ConstUniformInputRef    input,
-                      const data::Container&  container,
+                      const data::Store&  store,
                       const std::string&      propertyName)
 {
     switch (input.type)
     {
         case ProgramInputs::Type::int1:
-            setUniformValue(_uniformInt, input.location, 1, container.getPointer<int>(propertyName));
+            setUniformValue(_uniformInt, input.location, 1, store.getPointer<int>(propertyName));
             break;
         case ProgramInputs::Type::int2:
-            setUniformValue(_uniformInt, input.location, 2, math::value_ptr(container.get<math::ivec2>(propertyName)));
+            setUniformValue(_uniformInt, input.location, 2, math::value_ptr(store.get<math::ivec2>(propertyName)));
             break;
         case ProgramInputs::Type::int3:
-            setUniformValue(_uniformInt, input.location, 3, math::value_ptr(container.get<math::ivec3>(propertyName)));
+            setUniformValue(_uniformInt, input.location, 3, math::value_ptr(store.get<math::ivec3>(propertyName)));
             break;
         case ProgramInputs::Type::int4:
-            setUniformValue(_uniformInt, input.location, 4, math::value_ptr(container.get<math::ivec4>(propertyName)));
+            setUniformValue(_uniformInt, input.location, 4, math::value_ptr(store.get<math::ivec4>(propertyName)));
             break;
         case ProgramInputs::Type::float1:
-            setUniformValue(_uniformFloat, input.location, 1, container.getPointer<float>(propertyName));
+            setUniformValue(_uniformFloat, input.location, 1, store.getPointer<float>(propertyName));
             break;
         case ProgramInputs::Type::float2:
-            setUniformValue(_uniformFloat, input.location, 2, math::value_ptr(container.get<math::vec2>(propertyName)));
+            setUniformValue(_uniformFloat, input.location, 2, math::value_ptr(store.get<math::vec2>(propertyName)));
             break;
         case ProgramInputs::Type::float3:
-            setUniformValue(_uniformFloat, input.location, 3, math::value_ptr(container.get<math::vec3>(propertyName)));
+            setUniformValue(_uniformFloat, input.location, 3, math::value_ptr(store.get<math::vec3>(propertyName)));
             break;
         case ProgramInputs::Type::float4:
-            setUniformValue(_uniformFloat, input.location, 4, math::value_ptr(container.get<math::vec4>(propertyName)));
+            setUniformValue(_uniformFloat, input.location, 4, math::value_ptr(store.get<math::vec4>(propertyName)));
             break;
         case ProgramInputs::Type::float16:
-            setUniformValue(_uniformFloat, input.location, 16, math::value_ptr(container.get<math::mat4>(propertyName)));
+            setUniformValue(_uniformFloat, input.location, 16, math::value_ptr(store.get<math::mat4>(propertyName)));
             break;
         case ProgramInputs::Type::bool1:
-            setUniformValue(_uniformBool, input.location, 1, container.getPointer<bool>(propertyName));
+            setUniformValue(_uniformBool, input.location, 1, store.getPointer<bool>(propertyName));
             break;
         case ProgramInputs::Type::bool2:
-            setUniformValue(_uniformBool, input.location, 2, math::value_ptr(container.get<math::bvec2>(propertyName)));
+            setUniformValue(_uniformBool, input.location, 2, math::value_ptr(store.get<math::bvec2>(propertyName)));
             break;
         case ProgramInputs::Type::bool3:
-            setUniformValue(_uniformBool, input.location, 3, math::value_ptr(container.get<math::bvec3>(propertyName)));
+            setUniformValue(_uniformBool, input.location, 3, math::value_ptr(store.get<math::bvec3>(propertyName)));
             break;
         case ProgramInputs::Type::bool4:
-            setUniformValue(_uniformBool, input.location, 4, math::value_ptr(container.get<math::bvec4>(propertyName)));
+            setUniformValue(_uniformBool, input.location, 4, math::value_ptr(store.get<math::bvec4>(propertyName)));
             break;
         case ProgramInputs::Type::sampler2d:
             _samplers.push_back({
                 program->setTextureNames().size() + _samplers.size(),
-                container.getPointer<TextureSampler>(propertyName)->id,
+                store.getPointer<TextureSampler>(propertyName)->id,
                 input.location
             });
             break;

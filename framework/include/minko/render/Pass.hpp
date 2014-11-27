@@ -171,9 +171,9 @@ namespace minko
 
             std::pair<std::shared_ptr<Program>, const ProgramSignature*>
             selectProgram(const std::unordered_map<std::string, std::string>&   translatedPropertyNames,
-						  const data::Container&	                            targetData,
-						  const data::Container&	                            rendererData,
-                          const data::Container&	                            rootData);
+						  const data::Store&	                            targetData,
+						  const data::Store&	                            rendererData,
+                          const data::Store&	                            rootData);
 			
 			template <typename... T>
 			void

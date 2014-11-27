@@ -51,7 +51,7 @@ namespace minko
 			typedef std::shared_ptr<data::AbstractFilter>				            AbsFilterPtr;
 			typedef Signal<SurfacePtr, const std::string&, bool>::Slot	            SurfaceTechniqueChangedSlot;
 			typedef Signal<AbsFilterPtr, SurfacePtr>::Slot				            FilterChangedSlot;
-            typedef data::Container                                                 Container;
+            typedef data::Store                                                 Store;
             typedef std::shared_ptr<data::Collection>                               CollectionPtr;
             typedef std::shared_ptr<data::Provider>                                 ProviderPtr;
 			typedef Signal<Ptr, AbsFilterPtr, data::Binding::Source, SurfacePtr>	RendererFilterChangedSignal;

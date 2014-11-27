@@ -30,7 +30,7 @@ namespace minko
     {
         class Collection
         {
-            friend class Container;
+            friend class Store;
 
         public:
             typedef std::shared_ptr<Collection>     Ptr;

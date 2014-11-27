@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
-#include "minko/data/Container.hpp"
+#include "minko/data/Store.hpp"
 #include "minko/component/SceneManager.hpp"
 
 using namespace minko;
@@ -355,7 +355,7 @@ Transform::RootTransform::updateTransforms()
             // Because we use an unsafe pointer that gives us a direct access to the
             // data provider internal value for "modelToWorldMatrix", we have to trigger
             // the "property changed" signal manually.
-            // This technique completely bypasses the container property name resolving
+            // This technique completely bypasses the storeproperty name resolving
             // mechanism and is a lot faster.
             if (*_modelToWorld[nodeId] != modelToWorldMatrix)
             {

@@ -30,16 +30,14 @@ namespace minko
 			public std::enable_shared_from_this<AbstractFilter>
 		{
 		public:
-			typedef std::shared_ptr<AbstractFilter>							Ptr;
+			typedef std::shared_ptr<AbstractFilter> Ptr;
 
 		private:
-			typedef std::shared_ptr<component::Surface>						        SurfacePtr;
-			typedef std::shared_ptr<component::AbstractComponent>			        AbsCmpPtr;
-			typedef std::shared_ptr<scene::Node>							        NodePtr;
-			typedef std::shared_ptr<Provider>								        ProviderPtr;
-			typedef std::shared_ptr<Container>								        ContainerPtr;
-			typedef std::shared_ptr<Signal<Ptr, SurfacePtr>>				        FilterSignalPtr;
-			typedef Signal<ContainerPtr, const std::string&, const std::string&>    ContainerPropertyChangedSignal;
+			typedef std::shared_ptr<component::Surface>				SurfacePtr;
+			typedef std::shared_ptr<component::AbstractComponent>   AbsCmpPtr;
+			typedef std::shared_ptr<scene::Node>					NodePtr;
+			typedef std::shared_ptr<Provider>						ProviderPtr;
+			typedef std::shared_ptr<Signal<Ptr, SurfacePtr>>		FilterSignalPtr;
 
 		private:
 			SurfacePtr												_currentSurface;
@@ -49,8 +47,6 @@ namespace minko
 			FilterSignalPtr											_changed;
 
 			std::list<std::string>									_watchedProperties;
-
-			std::unordered_map<NodePtr, std::list<ContainerPropertyChangedSignal::Slot>> _surfaceTargetPropertyChangedSlots;
 
 		public:
 			AbstractFilter():

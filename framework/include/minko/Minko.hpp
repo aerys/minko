@@ -40,7 +40,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
 #include "minko/data/Provider.hpp"
-#include "minko/data/Container.hpp"
+#include "minko/data/Store.hpp"
 #include "minko/data/AbstractFilter.hpp"
 #include "minko/data/MacroBinding.hpp"
 #include "minko/component/AbstractComponent.hpp"

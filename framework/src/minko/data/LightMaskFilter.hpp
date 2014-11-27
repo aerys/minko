@@ -40,7 +40,7 @@ namespace minko
 			typedef std::shared_ptr<component::AbstractLight>	AbsLightPtr;
             typedef const std::string&                          StringRef;
 
-            typedef Signal<Container&, ProviderPtr, StringRef>	ContainerPropertyChangedSignal;
+            typedef Signal<Store&, ProviderPtr, StringRef>	StorePropertyChangedSignal;
             typedef Signal<ProviderPtr, StringRef>              ProviderPropertyChangedSignal;
 
 		private:
@@ -50,7 +50,7 @@ namespace minko
 			NodePtr												_root;
 			std::unordered_map<ProviderPtr, AbsLightPtr>		_providerToLight;
 
-			std::list<ContainerPropertyChangedSignal::Slot>		_rootPropertyChangedSlots;
+			std::list<StorePropertyChangedSignal::Slot>		_rootPropertyChangedSlots;
 
 			std::list<ProviderPropertyChangedSignal::Slot>		_layoutMaskChangedSlots;
 

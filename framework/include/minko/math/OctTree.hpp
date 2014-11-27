@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/data/Container.hpp"
+#include "minko/data/Store.hpp"
 #include "minko/Signal.hpp"
 
 namespace minko
@@ -36,7 +36,7 @@ namespace minko
 		
 		private:
 			typedef std::shared_ptr<scene::Node> NodePtr;
-			typedef std::unordered_map<NodePtr, data::Container::PropertyChangedSignal::Slot> PropertyChangedSlotMap;
+			typedef std::unordered_map<NodePtr, data::Store::PropertyChangedSignal::Slot> PropertyChangedSlotMap;
 
 		private:
 			static const uint _k = 2;

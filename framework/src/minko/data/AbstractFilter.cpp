@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/scene/Node.hpp"
 #include "minko/component/Surface.hpp"
-#include "minko/data/Container.hpp"
+#include "minko/data/Store.hpp"
 
 using namespace minko;
 using namespace minko::data;
@@ -47,7 +47,7 @@ AbstractFilter::currentSurface(component::Surface::Ptr value)
 			for (auto propertyName : _watchedProperties)
 			{
 				_surfaceTargetPropertyChangedSlots[target].push_back(target->data()->propertyChanged(propertyName)->connect(
-					[=](Container::Ptr, const std::string&, const std::string&)
+					[=](Store::Ptr, const std::string&, const std::string&)
 					{
 						changed()->execute(shared_from_this(), value);
 					}
@@ -65,7 +65,7 @@ AbstractFilter::watchProperty(const std::string propertyName)
 {
 	_watchedProperties.push_back(propertyName);
 
-	_surfaceTargetPropertyChangedSlots.clear();
+	//_surfaceTargetPropertyChangedSlots.clear();
 
 	changed()->execute(shared_from_this(), nullptr);
 }
@@ -79,7 +79,7 @@ AbstractFilter::unwatchProperty(const std::string propertyName)
 		std::invalid_argument("This property is not watching currently.");
 
 	_watchedProperties.remove(propertyName);
-	_surfaceTargetPropertyChangedSlots.clear();
+	//_surfaceTargetPropertyChangedSlots.clear();
 
 	changed()->execute(shared_from_this(), nullptr);
 }

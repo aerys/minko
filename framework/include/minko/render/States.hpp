@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/CompareMode.hpp"
 #include "minko/render/StencilOperation.hpp"
 #include "minko/scene/Layout.hpp"
-#include "minko/data/Container.hpp"
+#include "minko/data/Store.hpp"
 #include "minko/data/Provider.hpp"
 
 namespace minko
@@ -79,7 +79,7 @@ namespace minko
 
         private:
             std::shared_ptr<data::Provider> _data;
-            data::Container                 _container;
+            data::Store                 _container;
 
 		public:
             States(float					priority            = DEFAULT_PRIORITY,

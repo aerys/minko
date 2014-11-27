@@ -41,9 +41,9 @@ namespace minko
 		public:
 			ProgramSignature(const data::MacroBindingMap&                           macroBindings,
                              const std::unordered_map<std::string, std::string>&    variables,
-						     const data::Container&                                 targetData,
-                             const data::Container&		                            rendererData,
-                             const data::Container&                                 rootData);
+						     const data::Store&                                     targetData,
+                             const data::Store&		                                rendererData,
+                             const data::Store&                                     rootData);
 
             ProgramSignature(const ProgramSignature& signature);
 
@@ -90,9 +90,9 @@ namespace minko
 
         private:
             Any
-            getValueFromContainer(const data::MacroBinding& binding,
-                                  const data::Container&    container,
-                                  const std::string&        propertyName);
+            getValueFromStore(const data::MacroBinding& binding,
+                              const data::Store&        store,
+                              const std::string&        propertyName);
 		};
 	}
 }

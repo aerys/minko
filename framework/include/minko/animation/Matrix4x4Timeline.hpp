@@ -62,7 +62,7 @@ namespace minko
 			}
 
 			void
-			update(uint time, data::Container& data, bool skipPropertyNameFormatting = true);
+			update(uint time, data::Store& data, bool skipPropertyNameFormatting = true);
 
             math::mat4
             interpolate(uint time) const;

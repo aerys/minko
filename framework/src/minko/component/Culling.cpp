@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/Culling.hpp"
 #include "minko/scene/Node.hpp"
-#include "minko/data/Container.hpp"
+#include "minko/data/Store.hpp"
 #include "minko/math/Frustum.hpp"
 #include "minko/scene/NodeSet.hpp"
 #include "minko/math/OctTree.hpp"
@@ -127,7 +127,7 @@ Culling::layoutChangedHandler(NodePtr node, NodePtr target)
 }
 
 void
-Culling::worldToScreenChangedHandler(data::Container&       data,
+Culling::worldToScreenChangedHandler(data::Store&       data,
                                      const std::string&     propertyName)
 {
 	_frustum->updateFromMatrix(data.get<math::mat4>(propertyName));

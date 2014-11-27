@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/data/Provider.hpp"
-#include "minko/data/Container.hpp"
+#include "minko/data/Store.hpp"
 #include "minko/Signal.hpp"
 
 namespace minko
@@ -56,7 +56,7 @@ namespace minko
 
 			Signal<AbsCtrlPtr, NodePtr>::Slot				_targetAddedSlot;
 			Signal<AbsCtrlPtr, NodePtr>::Slot				_targetRemovedSlot;
-			data::Container::PropertyChangedSignal::Slot	_modelToWorldChangedSlot;
+			data::Store::PropertyChangedSignal::Slot	_modelToWorldChangedSlot;
 
 		public:
 			inline static
@@ -200,7 +200,7 @@ namespace minko
 							  const math::mat4&	postPerspective);
 
 			void
-			localToWorldChangedHandler(data::Container& data);
+			localToWorldChangedHandler(data::Store& data);
 
             void
             updateMatrices(const math::mat4& modelToWorldMatrix);

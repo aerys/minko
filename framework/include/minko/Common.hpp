@@ -188,7 +188,7 @@ namespace minko
 	namespace data
 	{
 		class Provider;
-		class Container;
+		class Store;
 		class AbstractFilter;
         class Collection;
 

@@ -32,12 +32,11 @@ namespace minko
 			public AbstractLight
 		{
         private:
-            typedef std::shared_ptr<data::Container>    ContainerPtr;
             typedef std::shared_ptr<data::Provider>     ProviderPtr;
             typedef const std::string&                  String;
 
 		private:
-			Signal<data::Container&, ProviderPtr, String>::Slot	_modelToWorldChangedSlot;
+			Signal<data::Store&, ProviderPtr, String>::Slot	_modelToWorldChangedSlot;
 
 		public:
 			inline
@@ -86,7 +85,7 @@ namespace minko
             targetRemoved(std::shared_ptr<scene::Node> target);
 
             void
-            modelToWorldMatrixChangedHandler(data::Container& 	container,
+            modelToWorldMatrixChangedHandler(data::Store& 	container,
             								 const std::string& propertyName);
 
             virtual

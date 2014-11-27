@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/data/Binding.hpp"
 #include "minko/data/MacroBinding.hpp"
-#include "minko/data/Container.hpp"
+#include "minko/data/Store.hpp"
 
 namespace minko
 {
@@ -31,7 +31,7 @@ namespace minko
         struct BindingMapBase
         {
             std::map<std::string, T> bindings;
-            data::Container defaultValues;
+            data::Store defaultValues;
         };
 
         typedef BindingMapBase<data::Binding>       BindingMap;

@@ -29,7 +29,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Layout.hpp"
 #include "minko/data/MacroBinding.hpp"
 #include "minko/data/BindingMap.hpp"
-#include "minko/data/Container.hpp"
+#include "minko/data/Store.hpp"
 
 namespace Json {
     class Value;
