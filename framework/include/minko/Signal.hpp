@@ -101,7 +101,7 @@ namespace minko
 		}
 
 		void
-		execute(A... arguments)
+		execute(A... arguments) const
 		{
             auto callbacks = _callbacks;
 			for (auto& callback : callbacks)
