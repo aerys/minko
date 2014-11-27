@@ -32,8 +32,7 @@ namespace minko
 {
 	namespace render
 	{
-		class DrawCall :
-            public std::enable_shared_from_this<DrawCall>
+		class DrawCall
 		{
         public:
             static const unsigned int	MAX_NUM_TEXTURES;
@@ -78,11 +77,12 @@ namespace minko
 			typedef std::shared_ptr<AbstractTexture>	            AbsTexturePtr;
 			typedef std::shared_ptr<Program>			            ProgramPtr;
             typedef std::unordered_map<std::string, std::string>    StringMap;
+            typedef data::Container::PropertyChangedSignal::Slot    ChangedSlot;
 
 		private:
-            const data::Container&              _rootData;
-            const data::Container&              _rendererData;
-            const data::Container&              _targetData;
+            data::Container&                    _rootData;
+            data::Container&                    _rendererData;
+            data::Container&                    _targetData;
             StringMap                           _variables;
 
 			std::shared_ptr<render::Pass>		_pass;
@@ -115,12 +115,14 @@ namespace minko
             /*SamplerStates               _samplerStates;
             AbstractTexturePtr		    _target;*/
 
+            std::map<const data::Binding*, ChangedSlot>    _containerPropAddedOrRemovedSlot;
+
 		public:
             DrawCall(std::shared_ptr<render::Pass>  pass,
                      const StringMap&               variables,
-                     const data::Container&         rootData,
-                     const data::Container&         rendererData,
-                     const data::Container&         targetData) :
+                     data::Container&               rootData,
+                     data::Container&               rendererData,
+                     data::Container&               targetData) :
                 _pass(pass),
                 _variables(variables),
                 _rootData(rootData),
@@ -186,13 +188,16 @@ namespace minko
 
             void
             bind(std::shared_ptr<Program>   program,
-                 const data::BindingMap&    attributeBindings,
-                 const data::BindingMap&    uniformBindings,
-                 const data::BindingMap&    stateBindings);
+                 data::BindingMap&          attributeBindings,
+                 data::BindingMap&          uniformBindings,
+                 data::BindingMap&          stateBindings);
 
 		private:
             void
             reset();
+
+            void
+            bindUniforms(std::shared_ptr<Program> program, data::BindingMap& uniformBindings);
 
             void
             bindUniform(std::shared_ptr<Program>    program,
@@ -213,8 +218,24 @@ namespace minko
 			void
             bindStates(const data::BindingMap& stateBindings);
 			
-            const data::Container&
+            data::Container&
             getContainer(data::Binding::Source source);
+
+            void
+            uniformBindingPropertyAdded(const data::Binding&                  binding,
+                                        Program::Ptr                          program,
+                                        data::Container&                      container,
+                                        const data::Container&                defaultValues,
+                                        const ProgramInputs::UniformInput&    input,
+                                        const std::string&                    propertyName);
+
+            void
+            uniformBindingPropertyRemoved(const data::Binding&                  binding,
+                                          Program::Ptr                          program,
+                                          data::Container&                      container,
+                                          const data::Container&                defaultValues,
+                                          const ProgramInputs::UniformInput&    input,
+                                          const std::string&                    propertyName);
 
             template <typename T>
             T*
@@ -233,6 +254,21 @@ namespace minko
                 return container.getUnsafePointer<T>(
                     data::Container::getActualPropertyName(_variables, binding.propertyName)
                 );
+            }
+
+            template <typename T>
+            void
+            setUniformValue(std::vector<UniformValue<T>>& uniforms, int location, uint size, const T* data)
+            {
+                auto it = std::find_if(uniforms.begin(), uniforms.end(), [&](UniformValue<T>& u)
+                {
+                    return u.location == location;
+                });
+
+                if (it == uniforms.end())
+                    uniforms.push_back({ location, size, data });
+                else
+                    it->data = data;
             }
 		};
 	}

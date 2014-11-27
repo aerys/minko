@@ -27,7 +27,7 @@ using namespace minko::render;
 const unsigned int	DrawCall::MAX_NUM_TEXTURES		= 8;
 const unsigned int	DrawCall::MAX_NUM_VERTEXBUFFERS	= 8;
 
-const data::Container&
+data::Container&
 DrawCall::getContainer(data::Binding::Source source)
 {
     switch (source)
@@ -58,10 +58,10 @@ DrawCall::reset()
 }
 
 void
-DrawCall::bind(Program::Ptr             program,
-               const data::BindingMap&  attributeBindings,
-               const data::BindingMap&  uniformBindings,
-               const data::BindingMap&  stateBindings)
+DrawCall::bind(Program::Ptr       program,
+               data::BindingMap&  attributeBindings,
+               data::BindingMap&  uniformBindings,
+               data::BindingMap&  stateBindings)
 {
     reset();
 
@@ -69,7 +69,37 @@ DrawCall::bind(Program::Ptr             program,
 
     bindIndexBuffer(_variables, _targetData);
     bindStates(stateBindings);
+    bindUniforms(program, uniformBindings);
+     
+    for (const auto& input : program->inputs().attributes())
+    {
+        auto& bindings = attributeBindings.bindings;
 
+        if (bindings.count(input.name) == 0)
+            continue;
+
+        const auto& binding = bindings.at(input.name);
+        auto& container = getContainer(binding.source);
+        auto propertyName = data::Container::getActualPropertyName(_variables, binding.propertyName);
+
+        if (!container.hasProperty(propertyName))
+        {
+            if (!attributeBindings.defaultValues.hasProperty(input.name))
+                throw std::runtime_error(
+                    "The attribute \"" + input.name + "\" is bound to the \"" + propertyName
+                    + "\" property but it's not defined and no default value was provided."
+                );
+
+            bindAttribute(program, input, attributeBindings.defaultValues, input.name);
+        }
+        else
+            bindAttribute(program, input, container, propertyName);
+    }
+}
+
+void
+DrawCall::bindUniforms(Program::Ptr program, data::BindingMap& uniformBindings)
+{
     for (const auto& input : program->inputs().uniforms())
     {
         auto& bindings = uniformBindings.bindings;
@@ -100,26 +130,100 @@ DrawCall::bind(Program::Ptr             program,
         if (isArray)
             propertyName += input.name.substr(pos);
 
-        bindUniform(program, input, container, propertyName);
+        if (!container.hasProperty(propertyName))
+        {
+            if (!uniformBindings.defaultValues.hasProperty(input.name))
+                throw std::runtime_error(
+                    "The uniform \"" + input.name + "\" is bound to the \"" + propertyName
+                    + "\" property but it's not defined and no default value was provided."
+                );
+
+            bindUniform(program, input, uniformBindings.defaultValues, input.name);
+
+            // FIXME: keep a direct pointer to the uniform data pointer instead of eventually search for it
+            _containerPropAddedOrRemovedSlot[&binding] = container.propertyAdded(input.name).connect(std::bind(
+                &DrawCall::uniformBindingPropertyAdded,
+                this,
+                std::ref(binding),
+                program,
+                std::ref(container),
+                std::ref(uniformBindings.defaultValues),
+                std::ref(input),
+                propertyName
+            ));
+        }
+        else
+        {
+            bindUniform(program, input, container, propertyName);
+
+            // if there is a default value
+            if (uniformBindings.defaultValues.hasProperty(input.name))
+            {
+                // we listen to the "propertyRemoved" signal in order to make sure the uniform data
+                // points to the default value data
+                _containerPropAddedOrRemovedSlot[&binding] = container.propertyRemoved(propertyName).connect(std::bind(
+                    &DrawCall::uniformBindingPropertyRemoved,
+                    this,
+                    std::ref(binding),
+                    program,
+                    std::ref(container),
+                    std::ref(uniformBindings.defaultValues),
+                    std::ref(input),
+                    propertyName
+                ));
+            }
+        }
     }
-     
-    for (const auto& input : program->inputs().attributes())
-    {
-        auto& bindings = attributeBindings.bindings;
+}
 
-        if (bindings.count(input.name) == 0)
-            continue;
+void
+DrawCall::uniformBindingPropertyAdded(const data::Binding&                  binding,
+                                      Program::Ptr                          program,
+                                      data::Container&                      container,
+                                      const data::Container&                defaultValues,
+                                      const ProgramInputs::UniformInput&    input,
+                                      const std::string&                    propertyName)
+{
+    _containerPropAddedOrRemovedSlot.erase(&binding);
+    bindUniform(program, input, container, propertyName);
+    _containerPropAddedOrRemovedSlot[&binding] = container.propertyRemoved(propertyName).connect(std::bind(
+        &DrawCall::uniformBindingPropertyAdded,
+        this,
+        std::ref(binding),
+        program,
+        std::ref(container),
+        std::ref(defaultValues),
+        std::ref(input),
+        propertyName
+    ));
+}
 
-        const auto& binding = bindings.at(input.name);
-        auto& container = getContainer(binding.source);
+void
+DrawCall::uniformBindingPropertyRemoved(const data::Binding&                  binding,
+                                        Program::Ptr                          program,
+                                        data::Container&                      container,
+                                        const data::Container&                defaultValues,
+                                        const ProgramInputs::UniformInput&    input,
+                                        const std::string&                    propertyName)
+{
+    if (!defaultValues.hasProperty(input.name))
+        throw std::runtime_error(
+        "The uniform \"" + input.name + "\" is bound to the \"" + propertyName
+        + "\" property but it's not defined and no default value was provided."
+    );
 
-        bindAttribute(
-            program,
-            input,
-            container,
-            data::Container::getActualPropertyName(_variables, binding.propertyName)
-        );
-    }
+    _containerPropAddedOrRemovedSlot.erase(&binding);
+    bindUniform(program, input, defaultValues, input.name);
+    _containerPropAddedOrRemovedSlot[&binding] = container.propertyAdded(propertyName).connect(std::bind(
+        &DrawCall::uniformBindingPropertyAdded,
+        this,
+        std::ref(binding),
+        program,
+        std::ref(container),
+        std::ref(defaultValues),
+        std::ref(input),
+        propertyName
+    ));
 }
 
 void
@@ -164,43 +268,43 @@ DrawCall::bindUniform(Program::Ptr            program,
     switch (input.type)
     {
         case ProgramInputs::Type::int1:
-            _uniformInt.push_back({ input.location, 1, container.getPointer<int>(propertyName) });
+            setUniformValue(_uniformInt, input.location, 1, container.getPointer<int>(propertyName));
             break;
         case ProgramInputs::Type::int2:
-            _uniformInt.push_back({ input.location, 2, math::value_ptr(container.get<math::ivec2>(propertyName)) });
+            setUniformValue(_uniformInt, input.location, 2, math::value_ptr(container.get<math::ivec2>(propertyName)));
             break;
         case ProgramInputs::Type::int3:
-            _uniformInt.push_back({ input.location, 3, math::value_ptr(container.get<math::ivec3>(propertyName)) });
+            setUniformValue(_uniformInt, input.location, 3, math::value_ptr(container.get<math::ivec3>(propertyName)));
             break;
         case ProgramInputs::Type::int4:
-            _uniformInt.push_back({ input.location, 4, math::value_ptr(container.get<math::ivec4>(propertyName)) });
+            setUniformValue(_uniformInt, input.location, 4, math::value_ptr(container.get<math::ivec4>(propertyName)));
             break;
         case ProgramInputs::Type::float1:
-            _uniformFloat.push_back({ input.location, 1, container.getPointer<float>(propertyName) });
+            setUniformValue(_uniformFloat, input.location, 1, container.getPointer<float>(propertyName));
             break;
         case ProgramInputs::Type::float2:
-            _uniformFloat.push_back({ input.location, 2, math::value_ptr(container.get<math::vec2>(propertyName)) });
+            setUniformValue(_uniformFloat, input.location, 2, math::value_ptr(container.get<math::vec2>(propertyName)));
             break;
         case ProgramInputs::Type::float3:
-            _uniformFloat.push_back({ input.location, 3, math::value_ptr(container.get<math::vec3>(propertyName)) });
+            setUniformValue(_uniformFloat, input.location, 3, math::value_ptr(container.get<math::vec3>(propertyName)));
             break;
         case ProgramInputs::Type::float4:
-            _uniformFloat.push_back({ input.location, 4, math::value_ptr(container.get<math::vec4>(propertyName)) });
+            setUniformValue(_uniformFloat, input.location, 4, math::value_ptr(container.get<math::vec4>(propertyName)));
             break;
         case ProgramInputs::Type::float16:
-            _uniformFloat.push_back({ input.location, 16, math::value_ptr(container.get<math::mat4>(propertyName)) });
+            setUniformValue(_uniformFloat, input.location, 16, math::value_ptr(container.get<math::mat4>(propertyName)));
             break;
         case ProgramInputs::Type::bool1:
-            _uniformBool.push_back({ input.location, 1, container.getPointer<bool>(propertyName) });
+            setUniformValue(_uniformBool, input.location, 1, container.getPointer<bool>(propertyName));
             break;
         case ProgramInputs::Type::bool2:
-            _uniformBool.push_back({ input.location, 2, math::value_ptr(container.get<math::bvec2>(propertyName)) });
+            setUniformValue(_uniformBool, input.location, 2, math::value_ptr(container.get<math::bvec2>(propertyName)));
             break;
         case ProgramInputs::Type::bool3:
-            _uniformBool.push_back({ input.location, 3, math::value_ptr(container.get<math::bvec3>(propertyName)) });
+            setUniformValue(_uniformBool, input.location, 3, math::value_ptr(container.get<math::bvec3>(propertyName)));
             break;
         case ProgramInputs::Type::bool4:
-            _uniformBool.push_back({ input.location, 4, math::value_ptr(container.get<math::bvec4>(propertyName)) });
+            setUniformValue(_uniformBool, input.location, 4, math::value_ptr(container.get<math::bvec4>(propertyName)));
             break;
         case ProgramInputs::Type::sampler2d:
             _samplers.push_back({
