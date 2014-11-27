@@ -97,13 +97,16 @@ States::States(float					priority,
                AbsTexturePtr		    target) :
     _data(data::Provider::create())
 {
+    _container.addProvider(_data);
+    resetDefaultValues();
 
+    // FIXME: set the state values
 }
 
 States::States(const States& states) :
     _data(data::Provider::create(states._data))
 {
-    resetDefaultValues();
+    _container.addProvider(_data);
 }
 
 void
