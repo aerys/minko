@@ -48,6 +48,9 @@ namespace minko
             static CompareFuncsMap                    _compareFuncs;
             static StencilOperationMap                _stencilOps;
 
+            static std::unordered_map<TextureFormat,
+                                      unsigned int>   _availableTextureFormats;
+
             bool                                      _errorsEnabled;
 
             std::list<uint>                           _textures;
@@ -110,8 +113,8 @@ namespace minko
             }
 
             static
-            void
-            availableTextureFormats(std::unordered_map<TextureFormat, unsigned int>& formats);
+            const std::unordered_map<TextureFormat, unsigned int>&
+            availableTextureFormats();
 
             inline
             bool

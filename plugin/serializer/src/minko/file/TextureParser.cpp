@@ -97,8 +97,7 @@ TextureParser::parse(const std::string&                filename,
 
     const auto& formats = header.a1;
 
-    auto contextAvailableTextureFormats = std::unordered_map<TextureFormat, unsigned int>();
-    OpenGLES2Context::availableTextureFormats(contextAvailableTextureFormats);
+    const auto& contextAvailableTextureFormats = OpenGLES2Context::availableTextureFormats();
 
     auto availableTextureFormats = std::unordered_multiset<TextureFormat>(contextAvailableTextureFormats.size());
 
