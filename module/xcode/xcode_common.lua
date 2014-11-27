@@ -940,9 +940,11 @@
 		xcode.PrintUserSettings(4, cfg)
 		xcode.PrintBuildSetting(4, 'ALWAYS_SEARCH_USER_PATHS = NO;', cfg)
 		
-		if not cfg.flags.Symbols then
+		if premake.config.isDebugBuild(cfg) then
 			-- printSetting(bs, 4,"DEBUG_INFORMATION_FORMAT", "dwarf-with-dsym", true)
 			xcode.PrintBuildSetting(4, 'DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";', cfg)
+		else
+			xcode.PrintBuildSetting(4, 'DEBUG_INFORMATION_FORMAT = "dwarf";', cfg)
 		end
 		
 		if cfg.kind ~= "StaticLib" and cfg.buildtarget.prefix ~= "" then
