@@ -34,9 +34,10 @@ rsync -vr "${MINKO_HOME}/plugin/android/template/" .
 rsync -vr "$CWD/android/" .
 mkdir -p src/${PACKAGE//.//}
 mv src/MinkoActivity.java src/${PACKAGE//.//}
+mv src/*.java src/${PACKAGE//.//}
 
 sed -i "s/{{APP_NAME}}/${APP_NAME}/" res/values/strings.xml build.xml
-sed -i "s/{{PACKAGE}}/${PACKAGE}/" AndroidManifest.xml src/${PACKAGE//.//}/MinkoActivity.java
+sed -i "s/{{PACKAGE}}/${PACKAGE}/" AndroidManifest.xml src/${PACKAGE//.//}/*.java
 
 # Update version info
 sed -i "s/{{VERSION_CODE}}/$VERSION_CODE/" AndroidManifest.xml
