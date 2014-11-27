@@ -33,8 +33,8 @@ namespace minko
         {
         public:
             typedef std::shared_ptr<AbstractSerializerParser>                Ptr;
-            typedef msgpack::type::tuple<unsigned int, short, std::string>   SerializedAsset;
-            typedef std::shared_ptr<file::AssetLibrary>                      AssetLibraryPtr;
+            typedef msgpack::type::tuple<unsigned int, short, std::string>    SerializedAsset;
+            typedef std::shared_ptr<file::AssetLibrary>                        AssetLibraryPtr;
 
         private:
             typedef std::shared_ptr<component::JobManager::Job>                                                JobPtr;
@@ -45,16 +45,17 @@ namespace minko
             DependencyPtr                        _dependencies;
             std::shared_ptr<GeometryParser>        _geometryParser;
             std::shared_ptr<MaterialParser>        _materialParser;
+            std::shared_ptr<TextureParser>      _textureParser;
 
-            std::string                                               _lastParsedAssetName;
+            std::string                                                _lastParsedAssetName;
             std::list<std::shared_ptr<component::JobManager::Job>>    _jobList;
 
-            int                                                       _magicNumber;
+            int                                                        _magicNumber;
 
-            unsigned int                                              _fileSize;
-            short                                                     _headerSize;
-            unsigned int                                              _dependenciesSize;
-            unsigned int                                              _sceneDataSize;
+            unsigned int                                            _fileSize;
+            short                                                    _headerSize;
+            unsigned int                                            _dependenciesSize;
+            unsigned int                                            _sceneDataSize;
 
             int                                                        _version;
             int                                                        _versionHi;
@@ -74,8 +75,8 @@ namespace minko
             parse(const std::string&                filename,
                   const std::string&                resolvedFilename,
                   std::shared_ptr<Options>          options,
-                  const std::vector<unsigned char>& data,
-                  AssetLibraryPtr                   assetLibrary);
+                  const std::vector<unsigned char>&    data,
+                  AssetLibraryPtr                    assetLibrary);
 
             static
             void
@@ -83,9 +84,9 @@ namespace minko
 
         protected:
             void
-            extractDependencies(AssetLibraryPtr                         assetLibrary,
-                                  const std::vector<unsigned char>&     data,
-                                short                                   dataOffset,
+            extractDependencies(AssetLibraryPtr                            assetLibrary,
+                                  const std::vector<unsigned char>&        data,
+                                short                                    dataOffset,
                                 unsigned int                            dependenciesSize,
                                 std::shared_ptr<Options>                options,
                                 std::string&                            assetFilePath);
@@ -103,8 +104,8 @@ namespace minko
             void
             deserializeAsset(SerializedAsset&                    asset,
                               AssetLibraryPtr                    assetLibrary,
-                              std::shared_ptr<Options>           options,
-                              std::string&                       assetFilePath);
+                              std::shared_ptr<Options>            options,
+                              std::string&                        assetFilePath);
 
             std::string
             extractFolderPath(const std::string& filepath);
@@ -131,6 +132,15 @@ namespace minko
             {
                 return (short)(data[offset] << 8 | data[offset + 1]);
             }
+
+            static
+            void
+            deserializeTexture(unsigned char metaByte,
+                               AssetLibraryPtr assetLibrary,
+                               std::string& assetCompletePath,
+                               DependencyPtr dependency,
+                               short assetId,
+                               std::list<JobPtr>& jobs);
         };
     }
 }

@@ -117,22 +117,43 @@ FileProtocol::load()
                 }
             }));
 
-            std::vector<char> input(resolvedFilename().begin(), resolvedFilename().end());
+            auto offset = options->seekingOffset();
+            auto length = options->seekedLength();
+
+            std::vector<char> offsetByteArray(4);
+            offsetByteArray[0] = (offset & 0xff000000) >> 24;
+            offsetByteArray[1] = (offset & 0x00ff0000) >> 16;
+            offsetByteArray[2] = (offset & 0x0000ff00) >> 8;
+            offsetByteArray[3] = (offset & 0x000000ff);
+
+            std::vector<char> lengthByteArray(4);
+            lengthByteArray[0] = (length & 0xff000000) >> 24;
+            lengthByteArray[1] = (length & 0x00ff0000) >> 16;
+            lengthByteArray[2] = (length & 0x0000ff00) >> 8;
+            lengthByteArray[3] = (length & 0x000000ff);
+
+            std::vector<char> input;
+            
+            input.insert(input.end(), offsetByteArray.begin(), offsetByteArray.end());
+            input.insert(input.end(), lengthByteArray.begin(), lengthByteArray.end());
+            input.insert(input.end(), resolvedFilename().begin(), resolvedFilename().end());
 
             worker->start(input);
         }
         else
         {
-            unsigned int size = (unsigned int)file.tellg();
+            auto offset = options->seekingOffset();
+
+			auto length = options->seekedLength() > 0 ? options->seekedLength() : (unsigned int)file.tellg();
 
             // FIXME: use fixed size buffers and call _progress accordingly
 
             _progress->execute(shared_from_this(), 0.0);
 
-            data().resize(size);
+			data().resize(length);
 
-            file.seekg(0, std::ios::beg);
-            file.read((char*)&data()[0], size);
+			file.seekg(offset, std::ios::beg);
+			file.read((char*)&data()[0], length);
             file.close();
 
             _progress->execute(loader, 1.0);

@@ -17,23 +17,38 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/file/WriterOptions.hpp"
-#include "minko/render/MipFilter.hpp"
+#pragma once
 
-using namespace minko;
-using namespace minko::file;
-using namespace minko::render;
-using namespace minko::serialize;
+#include "minko/Common.hpp"
+#include "minko/SerializerCommon.hpp"
 
-WriterOptions::WriterOptions() :
-    _embedAll(false),
-    _addBoundingBoxes(false),
-    _outputAssetUriFunction([=](const std::string& str) -> std::string { return str; }),
-    _imageFormat(ImageFormat::PNG),
-    _textureFormats(),
-    _compressTexture(true),
-    _generateMipmaps(false),
-    _mipFilter(MipFilter::LINEAR),
-    _optimizeForNormalMapping(false)
+namespace minko
 {
+    namespace file
+    {
+        class PVRTranscoder
+        {
+        public:
+            struct Options
+            {
+                static const auto none              = 0;
+
+                static const auto fastCompression   = 1 << 0;
+
+                static const auto all               =
+                    fastCompression;
+
+                unsigned int _flags;
+            };
+
+        public:
+            static
+            bool
+            transcode(std::shared_ptr<render::AbstractTexture>  texture,
+                      std::shared_ptr<WriterOptions>            writerOptions,
+                      render::TextureFormat                     outFormat,
+                      std::vector<unsigned char>&               out,
+                      const Options&                            options);
+        };
+    }
 }

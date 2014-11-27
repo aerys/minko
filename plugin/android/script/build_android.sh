@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -x
+set -e
+
 # we save the project's current directory location
 CWD=`pwd`
 

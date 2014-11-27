@@ -319,7 +319,7 @@ minko.project.application = function(name)
 			"stdc++",
 			-- "gnustl_static",
 		}
-
+		
 		targetprefix "lib"
 		targetextension ".so"
 		linkoptions {
@@ -351,6 +351,16 @@ minko.project.application = function(name)
 
     configuration { "with-offscreen" }
             minko.plugin.enable { "offscreen" }
+
+    configuration { "android", "debug" }
+    	libdirs {
+			minko.sdk.path("/framework/bin/android/debug")
+		}
+
+	configuration { "android", "release" }
+    	libdirs {
+			minko.sdk.path("/framework/bin/android/release")
+		}
 
 	configuration { }
 

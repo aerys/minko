@@ -65,11 +65,13 @@ namespace minko
 			TEXTURE_ASSET               = 2,
             EMBED_TEXTURE_ASSET         = 120,
 			EFFECT_ASSET                = 3,
-			EMBED_EFFECT_ASSET          = 13
+			EMBED_EFFECT_ASSET          = 13,
+            TEXTURE_PACK_ASSET          = 4,
+            EMBED_TEXTURE_PACK_ASSET    = 14
 		};
 
-        enum class ImageFormat
-        {
+       enum class ImageFormat
+       {
             SOURCE  = 1,
             PNG     = 2,
             JPEG    = 3,
@@ -106,16 +108,16 @@ namespace minko
         {
             auto imageFormatToExtensionPairIt = std::find_if(
                 imageFormatToExtensionMap.begin(),
-                imageFormatToExtensionMap.end(),
-                [=](const std::pair<ImageFormat, std::string>& imageFormatToExtensionPair)
-                {
-                    return imageFormatToExtensionPair.second == extension;
-                });
+                                              imageFormatToExtensionMap.end(),
+            [=](const std::pair<ImageFormat, std::string>& imageFormatToExtensionPair)
+            {
+                return imageFormatToExtensionPair.second == extension;
+            });
 
             if (imageFormatToExtensionPairIt == imageFormatToExtensionMap.end())
                 return ImageFormat::SOURCE;
 
             return imageFormatToExtensionPairIt->first;
         }
-	}
+    }
 }

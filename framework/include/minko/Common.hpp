@@ -110,8 +110,32 @@ namespace minko
         enum class TextureFormat
         {
             RGB,
-            RGBA
+            RGBA,
+
+            RGB_DXT1,
+            RGBA_DXT1,
+            RGBA_DXT3,
+            RGBA_DXT5,
+
+            RGB_ETC1,
+            RGBA_ETC1,
+
+            RGB_PVRTC1_2BPP,
+            RGB_PVRTC1_4BPP,
+            RGBA_PVRTC1_2BPP,
+            RGBA_PVRTC1_4BPP,
+
+            RGBA_PVRTC2_2BPP,
+            RGBA_PVRTC2_4BPP,
+
+            RGB_ATITC,
+            RGBA_ATITC,
+
+            // supported from OES 3.0
+            RGB_ETC2,
+            RGBA_ETC2
         };
+
         class AbstractTexture;
         class Texture;
         class CubeTexture;
@@ -466,6 +490,16 @@ namespace std
             hash_combine<std::string>(seed, x.second);
 
             return seed;
+        }
+    };
+
+    template<> struct hash<minko::render::TextureFormat>
+    {
+        inline
+        size_t
+        operator()(const minko::render::TextureFormat& x) const
+        {
+            return std::hash<unsigned int>()(static_cast<unsigned int>(x));
         }
     };
 

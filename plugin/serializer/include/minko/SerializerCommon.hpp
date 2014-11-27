@@ -42,6 +42,8 @@ namespace minko
         class MaterialParser;
         class MaterialWriter;
         class Dependency;
+        class TextureParser;
+        class TextureWriter;
         class WriterOptions;
     }
 
