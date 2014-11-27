@@ -34,9 +34,12 @@ pushd $TARGET_DIR > /dev/null
 
 rm -rf src
 rsync -vr "${MINKO_HOME}/plugin/android/template/" .
-rsync -vr "$CWD/android/" .
+
+if [ -d "$CWD/android/" ]; then
+	rsync -vr "$CWD/android/" .
+fi
+
 mkdir -p src/${PACKAGE//.//}
-mv src/MinkoActivity.java src/${PACKAGE//.//}
 mv src/*.java src/${PACKAGE//.//}
 
 sed -i "s/{{APP_NAME}}/${APP_NAME}/" res/values/strings.xml build.xml
