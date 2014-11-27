@@ -27,7 +27,7 @@ namespace minko
 {
 	namespace data
 	{
-		class ContainerTest :
+		class StoreTest :
 			public ::testing::Test
 		{
 		};

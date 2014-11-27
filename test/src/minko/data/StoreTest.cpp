@@ -17,13 +17,13 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "ContainerTest.hpp"
+#include "StoreTest.hpp"
 
 using namespace minko::data;
 
-TEST_F(ContainerTest, AddProvider)
+TEST_F(StoreTest, AddProvider)
 {
-	Container c;
+	Store c;
 	auto p = Provider::create();
 
 	p->set("foo", 42);
@@ -35,9 +35,9 @@ TEST_F(ContainerTest, AddProvider)
 	ASSERT_EQ(c.get<int>("foo"), 42);
 }
 
-TEST_F(ContainerTest, RemoveProvider)
+TEST_F(StoreTest, RemoveProvider)
 {
-	Container c;
+	Store c;
 	auto p = Provider::create();
 
 	p->set("foo", 42);
@@ -49,16 +49,16 @@ TEST_F(ContainerTest, RemoveProvider)
 	ASSERT_FALSE(c.hasProperty("foo"));
 }
 
-TEST_F(ContainerTest, PropertyAdded)
+TEST_F(StoreTest, PropertyAdded)
 {
-	Container c;
+	Store c;
 	auto p = Provider::create();
 	int v = 0;
 
 	p->set("foo", 42);
 
 	auto _ = c.propertyAdded().connect(
-		[&](Container& container, Provider::Ptr provider, const std::string& propertyName)
+		[&](Store& container, Provider::Ptr provider, const std::string& propertyName)
 		{
 			if (propertyName == "foo")
 				v = container.get<int>("foo");
@@ -70,16 +70,16 @@ TEST_F(ContainerTest, PropertyAdded)
 	ASSERT_EQ(v, 42);
 }
 
-TEST_F(ContainerTest, PropertyRemoved)
+TEST_F(StoreTest, PropertyRemoved)
 {
-	Container c;
+	Store c;
 	auto p = Provider::create();
 	int v = 0;
 
 	p->set("foo", 42);
 
 	auto _ = c.propertyAdded().connect(
-        [&](Container& container, Provider::Ptr provider, const std::string& propertyName)
+        [&](Store& container, Provider::Ptr provider, const std::string& propertyName)
 		{
 			if (propertyName == "foo")
 				v = 42;
@@ -92,16 +92,16 @@ TEST_F(ContainerTest, PropertyRemoved)
 	ASSERT_EQ(v, 42);
 }
 
-TEST_F(ContainerTest, propertyChangedWhenAdded)
+TEST_F(StoreTest, propertyChangedWhenAdded)
 {
-	Container c;
+	Store c;
 	auto p = Provider::create();
 	int v = 0;
 
 	p->set("foo", 42);
 
 	auto _ = c.propertyChanged("foo").connect(
-        [&](Container& container, Provider::Ptr provider, const std::string& propertyName)
+        [&](Store& container, Provider::Ptr provider, const std::string& propertyName)
 		{
 			if (propertyName == "foo")
 				v = container.get<int>("foo");
@@ -113,16 +113,16 @@ TEST_F(ContainerTest, propertyChangedWhenAdded)
 	ASSERT_EQ(v, 42);
 }
 
-TEST_F(ContainerTest, propertyChangedWhenAddedOnProvider)
+TEST_F(StoreTest, propertyChangedWhenAddedOnProvider)
 {
-	Container c;
+	Store c;
 	auto p = Provider::create();
 	int v = 0;
 
 	c.addProvider(p);
 
 	auto _ = c.propertyChanged("foo").connect(
-        [&](Container& container, Provider::Ptr provider, const std::string& propertyName)
+        [&](Store& container, Provider::Ptr provider, const std::string& propertyName)
 		{
 			if (propertyName == "foo")
 				v = container.get<int>("foo");
@@ -134,9 +134,9 @@ TEST_F(ContainerTest, propertyChangedWhenAddedOnProvider)
 	ASSERT_EQ(v, 42);
 }
 
-TEST_F(ContainerTest, propertyChangedWhenSetOnProvider)
+TEST_F(StoreTest, propertyChangedWhenSetOnProvider)
 {
-	Container c;
+	Store c;
 	auto p = Provider::create();
 	int v = 0;
 
@@ -144,7 +144,7 @@ TEST_F(ContainerTest, propertyChangedWhenSetOnProvider)
 	p->set("foo", 23);
 
 	auto _ = c.propertyChanged("foo").connect(
-        [&](Container& container, Provider::Ptr provider, const std::string& propertyName)
+        [&](Store& container, Provider::Ptr provider, const std::string& propertyName)
 		{
 			if (propertyName == "foo")
 				v = container.get<int>("foo");
@@ -156,9 +156,9 @@ TEST_F(ContainerTest, propertyChangedWhenSetOnProvider)
 	ASSERT_EQ(v, 42);
 }
 
-TEST_F(ContainerTest, propertyChangedNot)
+TEST_F(StoreTest, propertyChangedNot)
 {
-	Container c;
+	Store c;
 	auto p = Provider::create();
 	int v = 0;
 
@@ -166,7 +166,7 @@ TEST_F(ContainerTest, propertyChangedNot)
 	p->set("foo", 42);
 
 	auto _ = c.propertyChanged("foo").connect(
-        [&](Container& container, Provider::Ptr provider, const std::string& propertyName)
+        [&](Store& container, Provider::Ptr provider, const std::string& propertyName)
 		{
 			if (propertyName == "foo")
 				v = container.get<int>("foo");
@@ -178,9 +178,9 @@ TEST_F(ContainerTest, propertyChangedNot)
 	ASSERT_NE(v, 42);
 }
 
-TEST_F(ContainerTest, addCollection)
+TEST_F(StoreTest, addCollection)
 {
-    Container c;
+    Store c;
     auto p = Provider::create();
     auto cc = Collection::create("test");
 
@@ -190,9 +190,9 @@ TEST_F(ContainerTest, addCollection)
     ASSERT_NE(std::find(c.collections().begin(), c.collections().end(), cc), c.collections().end());
 }
 
-TEST_F(ContainerTest, addProviderToCollection)
+TEST_F(StoreTest, addProviderToCollection)
 {
-    Container c;
+    Store c;
     auto p = Provider::create();
     auto cc = Collection::create("test");
 
@@ -205,9 +205,9 @@ TEST_F(ContainerTest, addProviderToCollection)
     ASSERT_EQ(c.get<unsigned int>("test[0].foo"), 42);
 }
 
-TEST_F(ContainerTest, removeCollection)
+TEST_F(StoreTest, removeCollection)
 {
-    Container c;
+    Store c;
     auto p = Provider::create();
     auto cc = Collection::create("test");
     auto collectionRemoved = false;
@@ -223,9 +223,9 @@ TEST_F(ContainerTest, removeCollection)
     ASSERT_FALSE(c.hasProperty("test[0].foo"));
 }
 
-TEST_F(ContainerTest, removeProviderFromCollection)
+TEST_F(StoreTest, removeProviderFromCollection)
 {
-    Container c;
+    Store c;
     auto p = Provider::create();
     auto cc = Collection::create("test");
 
@@ -239,9 +239,9 @@ TEST_F(ContainerTest, removeProviderFromCollection)
     ASSERT_EQ(c.get<unsigned int>("test.length"), 0u);
 }
 
-TEST_F(ContainerTest, getCollectionNth)
+TEST_F(StoreTest, getCollectionNth)
 {
-    Container c;
+    Store c;
     auto p0 = Provider::create();
     auto p1 = Provider::create();
     auto p2 = Provider::create();
@@ -264,9 +264,9 @@ TEST_F(ContainerTest, getCollectionNth)
     ASSERT_EQ(c.get<int>("test[2].foo"), 424242);
 }
 
-TEST_F(ContainerTest, collectionPropertyAdded)
+TEST_F(StoreTest, collectionPropertyAdded)
 {
-    Container c;
+    Store c;
     auto p = Provider::create();
     auto cc = Collection::create("test");
     auto propertyAdded = false;
@@ -275,7 +275,7 @@ TEST_F(ContainerTest, collectionPropertyAdded)
     c.addCollection(cc);
 
     auto _ = c.propertyAdded().connect(
-        [&](Container& container, Provider::Ptr provider, const std::string& propertyName)
+        [&](Store& container, Provider::Ptr provider, const std::string& propertyName)
         {
             propertyAdded = propertyName == "foo" && provider->get<int>(propertyName) == 42;
         }
@@ -286,9 +286,9 @@ TEST_F(ContainerTest, collectionPropertyAdded)
     ASSERT_TRUE(propertyAdded);
 }
 
-TEST_F(ContainerTest, collectionPropertyChanged)
+TEST_F(StoreTest, collectionPropertyChanged)
 {
-    Container c;
+    Store c;
     auto p = Provider::create();
     auto cc = Collection::create("test");
     auto propertyChanged = false;
@@ -298,7 +298,7 @@ TEST_F(ContainerTest, collectionPropertyChanged)
     p->set("foo", 42);
 
     auto _ = c.propertyChanged("test[0].foo").connect(
-        [&](Container& container, Provider::Ptr provider, const std::string& propertyName)
+        [&](Store& container, Provider::Ptr provider, const std::string& propertyName)
         {
           propertyChanged = propertyName == "foo" && provider->get<int>(propertyName) == 4242;
         }
@@ -309,9 +309,9 @@ TEST_F(ContainerTest, collectionPropertyChanged)
     ASSERT_TRUE(propertyChanged);
 }
 
-TEST_F(ContainerTest, collectionPropertyChangedNot)
+TEST_F(StoreTest, collectionPropertyChangedNot)
 {
-    Container c;
+    Store c;
     auto p = Provider::create();
     auto cc = Collection::create("test");
     auto propertyChanged = false;
@@ -321,7 +321,7 @@ TEST_F(ContainerTest, collectionPropertyChangedNot)
     p->set("foo", 42);
 
     auto _ = c.propertyChanged("test[0].foo").connect(
-        [&](Container& container, Provider::Ptr provider, const std::string& propertyName)
+        [&](Store& container, Provider::Ptr provider, const std::string& propertyName)
         {
             propertyChanged = propertyName == "foo" && provider->get<int>(propertyName) == 42;
         }
@@ -332,9 +332,9 @@ TEST_F(ContainerTest, collectionPropertyChangedNot)
     ASSERT_FALSE(propertyChanged);
 }
 
-TEST_F(ContainerTest, collectionPropertyRemoved)
+TEST_F(StoreTest, collectionPropertyRemoved)
 {
-    Container c;
+    Store c;
     auto p = Provider::create();
     auto cc = Collection::create("test");
     auto propertyRemoved = false;
@@ -344,7 +344,7 @@ TEST_F(ContainerTest, collectionPropertyRemoved)
     c.addCollection(cc);
 
     auto _ = c.propertyRemoved().connect(
-        [&](Container& container, Provider::Ptr provider, const std::string& propertyName)
+        [&](Store& container, Provider::Ptr provider, const std::string& propertyName)
         {
             propertyRemoved = propertyName == "foo";
         }
@@ -355,9 +355,9 @@ TEST_F(ContainerTest, collectionPropertyRemoved)
     ASSERT_TRUE(propertyRemoved);
 }
 
-TEST_F(ContainerTest, collectionNthPropertyChanged)
+TEST_F(StoreTest, collectionNthPropertyChanged)
 {
-    Container c;
+    Store c;
     auto p0 = Provider::create();
     auto p1 = Provider::create();
     auto cc = Collection::create("test");
@@ -369,7 +369,7 @@ TEST_F(ContainerTest, collectionNthPropertyChanged)
     c.addCollection(cc);
 
     auto _ = c.propertyChanged("test[1].foo").connect(
-        [&](Container& container, Provider::Ptr provider, const std::string& propertyName)
+        [&](Store& container, Provider::Ptr provider, const std::string& propertyName)
         {
             propertyChanged = propertyName == "foo" && provider->get<int>(propertyName) == 42;
         }
@@ -380,9 +380,9 @@ TEST_F(ContainerTest, collectionNthPropertyChanged)
     ASSERT_TRUE(propertyChanged);
 }
 
-TEST_F(ContainerTest, collectionPropertyPointerConsistency)
+TEST_F(StoreTest, collectionPropertyPointerConsistency)
 {
-    Container c;
+    Store c;
     auto p0 = Provider::create();
     auto p1 = Provider::create();
     auto cc = Collection::create("test");

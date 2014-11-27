@@ -31,9 +31,9 @@ namespace minko
         class ProgramSignatureTest : public ::testing::Test
         {
         protected:
-            data::Container                                 _targetData;
-            data::Container                                 _rendererData;
-            data::Container                                 _rootData;
+            data::Store                                     _targetData;
+            data::Store                                     _rendererData;
+            data::Store                                     _rootData;
             data::Provider::Ptr                             _targetProvider;
             data::Provider::Ptr                             _rendererProvider;
             data::Provider::Ptr                             _rootProvider;

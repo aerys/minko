@@ -36,12 +36,12 @@ Store::addCollection(std::shared_ptr<Collection> collection)
 {
     _collections.push_back(collection);
 
-    _collectionItemAddedSlots[collection] = collection->itemAdded() += std::bind(
+    _collectionItemAddedSlots[collection] = collection->itemAdded().connect(std::bind(
         &Store::doAddProvider, this, std::placeholders::_2, collection
-    );
-    _collectionItemRemovedSlots[collection] = collection->itemRemoved() += std::bind(
+    ));
+    _collectionItemRemovedSlots[collection] = collection->itemRemoved().connect(std::bind(
         &Store::doRemoveProvider, this, std::placeholders::_2, collection
-    );
+    ));
 
     if (collection->items().size() != 0)
         for (auto provider : collection->items())
@@ -281,9 +281,9 @@ Store::doRemoveProvider(ProviderPtr provider, CollectionPtr collection)
 
 std::string
 Store::formatPropertyName(Collection::Ptr       collection,
-                              Provider::Ptr         provider,
-                              const std::string&    propertyName,
-                              bool                  useUuid)
+                          Provider::Ptr         provider,
+                          const std::string&    propertyName,
+                          bool                  useUuid)
 {
     if (collection == nullptr)
         return propertyName;
@@ -307,7 +307,7 @@ Store::formatPropertyName(Collection::Ptr collection, const std::string& index, 
 
 void
 Store::addProviderToCollection(std::shared_ptr<data::Provider> provider,
-                                   const std::string&              collectionName)
+                               const std::string&              collectionName)
 {
     auto collectionIt = std::find_if(_collections.begin(), _collections.end(), [&](data::Collection::Ptr c)
     {
