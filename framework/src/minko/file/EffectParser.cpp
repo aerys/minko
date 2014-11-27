@@ -629,23 +629,42 @@ EffectParser::parseStates(const Json::Value& node, const Scope& scope, StateBloc
 
     if (statesNode.isObject())
     {
+        for (auto stateName : statesNode.getMemberNames())
+        {
+            if (std::find(_stateNames.begin(), _stateNames.end(), stateName) == _stateNames.end())
+                throw; // FIXME: log warning because the state name does not match any known state
+            parseBinding(statesNode[stateName], scope, states.bindings.bindings[stateName]);
+        }
+
         auto defaultValuesProvider = data::Provider::create();
 
         states.bindings.defaultValues.addProvider(defaultValuesProvider);
 
-        for (auto stateName : statesNode.getMemberNames())
-        {
-            if (std::find(_stateNames.begin(), _stateNames.end(), stateName) == _stateNames.end())
-            {
-                // FIXME: log warning because the state name does not match any known state
-                throw;
-            }
-            else
-            {
-                parseBinding(statesNode[stateName], scope, states.bindings.bindings[stateName]);
-                parseDefaultValue(statesNode[stateName], scope, stateName, defaultValuesProvider);
-            }
-        }
+        bool zSorted = false;
+        render::Blending::Source blendSrcFactor = Blending::Source::ONE;
+        render::Blending::Destination blendDstFactor = Blending::Destination::ZERO;
+        bool colorMask = true;
+        bool depthMask = true;
+        CompareMode depthFunc = CompareMode::LESS;
+        TriangleCulling triangleCulling = TriangleCulling::BACK;
+        CompareMode stencilFunc = CompareMode::UNSET;
+        int stencilRef = 1;
+        uint stencilMask = 0xffffffff;
+        StencilOperation stencilFailOp = StencilOperation::UNSET;
+        StencilOperation stencilZFailOp = StencilOperation::UNSET;
+        StencilOperation stencilZPassOp = StencilOperation::UNSET;
+        bool scissorTest = false;
+        math::ivec4 scissorBox = math::ivec4(0, 0, -1, -1);
+
+        parseZSort(statesNode, scope, zSorted);
+        parseBlendMode(statesNode, scope, blendSrcFactor, blendDstFactor);
+        parseColorMask(statesNode, scope, colorMask);
+        parseDepthTest(statesNode, scope, depthMask, depthFunc);
+        parseTriangleCulling(statesNode, scope, triangleCulling);
+        //parseSamplerStates(statesNode, samplerStates); // FIXME
+        parseStencilState(statesNode, scope, stencilFunc, stencilRef, stencilMask, stencilFailOp, stencilZFailOp, stencilZPassOp);
+        parseScissorTest(statesNode, scope, scissorTest, scissorBox);
+        //target = parseTarget(statesNode, context, targets); // FIXME
     }
     // FIXME: throw otherwise
 }
