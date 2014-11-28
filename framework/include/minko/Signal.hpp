@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2013 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,228 +23,139 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-    template <typename... A>
-    class Signal :
-        public std::enable_shared_from_this<Signal<A...>>
-    {
-    private:
-        typedef std::function<void(A...)>                                        CallbackFunction;
-        typedef std::pair<float, CallbackFunction>                                Callback;
-        typedef typename std::list<Callback>::iterator                            CallbackIterator;
-        typedef typename std::list<std::pair<float, unsigned int>>::iterator    SlotIterator;
+	template <typename... A>
+	class Signal
+	{
+	public:
+		typedef std::function<void(A...)>	    Callback;
+		typedef std::shared_ptr<Signal<A...>>   Ptr;
 
-        template <typename... B>
-        class SignalSlot;
+	private:
+		template <typename... B>
+		class SignalSlot;
 
-    public:
-        typedef std::shared_ptr<Signal<A...>>            Ptr;
-        typedef std::shared_ptr<SignalSlot<A...>>        Slot;
-
-    private:
-        std::list<Callback>                                        _callbacks;
-        std::list<std::pair<float, unsigned int>>                _slotIds;
-        unsigned int                                             _nextSlotId;
-
-        bool                                                    _locked;
-        std::list<std::pair<Callback, uint>>                    _toAdd;
-        std::list<std::pair<CallbackIterator, SlotIterator>>    _toRemove;
-        std::list<unsigned int>                                    _toRemoveSlotId;
-        bool                                                    _signalListDirty;
-
-    private:
-        Signal() :
-            std::enable_shared_from_this<Signal<A...>>(),
-            _nextSlotId(0),
-            _locked(false),
-            _signalListDirty(false)
-        {
-        }
-
-        void
-        removeConnectionById(const unsigned int connectionId)
-        {
-            auto connectionIdIt = _slotIds.begin();
-            auto callbackIt     = _callbacks.begin();
-
-            while ((*connectionIdIt).second != connectionId)
-            {
-                connectionIdIt++;
-                callbackIt++;
-            }
-
-            removeConnectionByIterator(connectionIdIt, callbackIt);
-        }
-
-        void
-        removeConnectionByIterator(SlotIterator         connectionIdIt,
-                                   CallbackIterator     callbackIt)
-        {
-            if (_locked)
-            {
-                auto addIt = std::find_if(_toAdd.begin(), _toAdd.end(), [&](std::pair<Callback, unsigned int>& add)
-                {
-                    return add.second == (*connectionIdIt).second;
-                });
-
-                if (addIt != _toAdd.end())
-                    _toAdd.erase(addIt);
-                else
-                {
-                    _toRemove.push_back(std::pair<CallbackIterator, SlotIterator>(callbackIt, connectionIdIt));
-                    _toRemoveSlotId.push_back(connectionIdIt->second);
-                }
-            }
-            else
-            {
-                _callbacks.erase(callbackIt);
-                _slotIds.erase(connectionIdIt);
-            }
-        }
+        typedef std::weak_ptr<SignalSlot<A...>>             SlotWeakPtr;
+        typedef std::tuple<float, Callback, SlotWeakPtr>	CallbackRecord;
+        typedef std::list<CallbackRecord>                   CallbackCollection;
+		typedef typename CallbackCollection::iterator		CallbackIterator;
 
     public:
-        static
-        Ptr
-        create()
+		typedef std::shared_ptr<SignalSlot<A...>>   Slot;
+
+	private:
+        CallbackCollection _callbacks;
+
+	public:
+        Signal()
         {
-            return std::shared_ptr<Signal<A...>>(new Signal<A...>());
+        }
+
+        ~Signal()
+        {
+            for (const auto& callback : _callbacks)
+            {
+                auto slot = std::get<2>(callback).lock();
+
+                if (slot)
+                    slot->_signal = nullptr;
+            }
         }
 
         inline
-        uint
-        numCallbacks() const
-        {
-            return _callbacks.size();
-        }
+		static
+		Ptr
+		create()
+		{
+			return std::make_shared<Signal<A...>>();
+		}
 
-        void
-        sortSignals()
-        {
-            _callbacks.sort([&](const Callback& callback1, const Callback& callback2) -> bool
-            {
-                return callback1.first > callback2.first;
-            });
+		inline
+		uint
+		numCallbacks() const
+		{
+			return _callbacks.size();
+		}
 
-            _slotIds.sort([&](const std::pair<float, unsigned int>& slot1, const std::pair<float, unsigned int>& slot2) -> bool
-            {
-                return slot1.first > slot2.first;
-            });
-        }
+		Slot
+		connect(Callback callback, float priority = 0)
+		{
+			auto connection = std::make_shared<SignalSlot<A...>>(this);
+			
+            _callbacks.push_back(CallbackRecord(priority, callback, connection));
+            connection->_it = std::prev(_callbacks.end());
+				
+			if (_callbacks.size() >= 2)
+			{
+				auto prec = std::prev(_callbacks.end(), 2);
 
+                if (priority > std::get<0>(*prec))
+                {
+                    _callbacks.sort([](const CallbackRecord& callback1, const CallbackRecord& callback2)
+                    {
+                        return std::get<0>(callback1) > std::get<0>(callback2);
+                    });
+                }
+			}
+
+			return connection;
+		}
+
+		void
+		execute(A... arguments) const
+		{
+            auto callbacks = _callbacks;
+			for (auto& callback : callbacks)
+				std::get<1>(callback)(arguments...);
+		}
+
+        inline
         Slot
-        connect(CallbackFunction callback, float priority = 0)
+        operator+=(Callback callback)
         {
-            auto connection = SignalSlot<A...>::create(Signal<A...>::shared_from_this(), _nextSlotId++);
-
-            if (_locked)
-                _toAdd.push_back(std::pair<Callback, unsigned int>(std::pair<float, CallbackFunction>(priority, callback), connection->_id));
-            else
-            {
-
-                _callbacks.push_back(std::pair<float, CallbackFunction>(priority, callback));
-                _slotIds.push_back(std::pair<float, unsigned int>(priority, connection->_id));
-
-                if (_callbacks.size() >= 2)
-                {
-                    auto prec = std::prev(_callbacks.end(), 2);
-
-                    if (priority > prec->first)
-                        sortSignals();
-                }
-            }
-
-            return connection;
+            return connect(callback);
         }
 
-        void
-        execute(A... arguments)
-        {
+	private:
+		template <typename... T>
+		class SignalSlot :
+			public std::enable_shared_from_this<SignalSlot<T...>>
+		{
+			friend class Signal<T...>;
 
-            _locked = true;
-            for (auto& callback : _callbacks)
-                callback.second(arguments...);
-            _locked = false;
+		public:
+			typedef std::shared_ptr<SignalSlot<T...>>	Ptr;
 
-            for (auto& callbackIt : _toRemove)
-            {
-                _callbacks.erase(callbackIt.first);
-                _slotIds.erase(callbackIt.second);
-            }
+		private:
+			Signal<T...>* 	  _signal;
+            CallbackIterator  _it;
 
-            for (auto& callbackAndConnectionId : _toAdd)
-            {
+		public:
+			const Signal<T...>&
+			signal()
+			{
+				return *_signal;
+			}
 
-                _callbacks.push_back(callbackAndConnectionId.first);
-                _slotIds.push_back(std::pair<float, unsigned int>(callbackAndConnectionId.first.first, callbackAndConnectionId.second));
-
-                if (_callbacks.size() >= 2)
+			void
+			disconnect()
+			{
+                if (_signal)
                 {
-                    auto prec = std::prev(_callbacks.end(), 2);
-
-                    if (callbackAndConnectionId.first.first > prec->first)
-                        _signalListDirty = true;
-                }
-            }
-
-            if (_signalListDirty)
-            {
-                _signalListDirty = false;
-                sortSignals();
-            }
-
-            _toAdd.clear();
-            _toRemove.clear();
-        }
-
-    private:
-        template <typename... T>
-        class SignalSlot :
-            public std::enable_shared_from_this<SignalSlot<T...>>
-        {
-            friend class Signal<T...>;
-
-        public:
-            typedef std::shared_ptr<SignalSlot<T...>>    Ptr;
-
-        public:
-            std::shared_ptr<Signal<T...>>
-            signal()
-            {
-                return _signal;
-            }
-
-            void
-            disconnect()
-            {
-                if (_signal != nullptr)
-                {
-                    _signal->removeConnectionById(_id);
+                    _signal->_callbacks.erase(_it);
                     _signal = nullptr;
                 }
-            }
+			}
 
-            ~SignalSlot()
-            {
-                disconnect();
-            }
+			~SignalSlot()
+			{
+				disconnect();
+			}
 
-        private:
-            std::shared_ptr<Signal<T...>>    _signal;
-            const unsigned int                _id;
+			SignalSlot(Signal<T...>* signal) :
+				_signal(signal)
+			{
+			}
+		};
 
-        private:
-            inline static
-            Ptr
-            create(std::shared_ptr<Signal<T...>> signal, const unsigned int id)
-            {
-                return std::shared_ptr<SignalSlot<T...>>(new SignalSlot(signal, id));
-            }
-
-            SignalSlot(std::shared_ptr<Signal<T...>> signal, const unsigned int id) :
-                _signal(signal),
-                _id(id)
-            {
-            }
-        };
-
-    };
+	};
 }
