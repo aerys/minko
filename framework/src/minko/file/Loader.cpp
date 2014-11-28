@@ -106,6 +106,9 @@ Loader::protocolErrorHandler(std::shared_ptr<AbstractProtocol> protocol)
 
     auto error = Error("ProtocolError", "Protocol error: " + protocol->file()->filename());
 
+    _protocolSlots.clear();
+    _protocolProgressSlots.clear();
+
     if (_error->numCallbacks() != 0)
         _error->execute(shared_from_this(), error);
     else
@@ -146,6 +149,8 @@ Loader::protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol)
     _loading.erase(std::find(_loading.begin(), _loading.end(), filename));
     //_filenameToProtocol.erase(protocol->filename());
     _filenameToOptions.erase(filename);
+    _protocolSlots.clear();
+    _protocolProgressSlots.clear();
     
     _numFilesToParse++;
 
@@ -224,7 +229,7 @@ Loader::parserErrorHandler(AbstractParser::Ptr parser, const Error& error)
         _error->execute(shared_from_this(), error);
     else
     {
-        LOG_DEBUG(error.type() << ": " << error.what());
+        LOG_ERROR(error.type() << ": " << error.what());
         
         throw error;
     }
