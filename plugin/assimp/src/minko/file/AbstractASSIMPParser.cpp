@@ -117,6 +117,7 @@ AbstractASSIMPParser::AbstractASSIMPParser() :
 
 AbstractASSIMPParser::~AbstractASSIMPParser()
 {
+    delete _importer;
 }
 
 void
@@ -130,7 +131,6 @@ AbstractASSIMPParser::parse(const std::string&                    filename,
     std::cout << "AbstractASSIMPParser::parse()" << std::endl;
 #endif // DEBUG
 
-    resetParser();
     initImporter();
 
     int pos = resolvedFilename.find_last_of("\\/");
@@ -239,7 +239,6 @@ AbstractASSIMPParser::allDependenciesLoaded(const aiScene* scene)
     if (_numDependencies == _numLoadedDependencies)
         finalize();
 
-    disposeNodeMaps();
 }
 
 void
@@ -691,26 +690,6 @@ AbstractASSIMPParser::textureCompleteHandler(file::Loader::Ptr loader, const aiS
 
     if (_numDependencies == _numLoadedDependencies)
         allDependenciesLoaded(scene);
-}
-
-void
-AbstractASSIMPParser::resetParser()
-{
-    _numDependencies        = 0;
-    _numLoadedDependencies    = 0;
-    _filename.clear();
-    _symbol    = nullptr;
-
-    disposeNodeMaps();
-}
-void
-AbstractASSIMPParser::disposeNodeMaps()
-{
-    _aiNodeToNode.clear();
-    _aiMeshToNode.clear();
-    _nameToNode.clear();
-    _nameToAnimMatrices.clear();
-    _alreadyAnimatedNodes.clear();
 }
 
 unsigned int
