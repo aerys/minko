@@ -684,6 +684,48 @@ OpenGLES2Context::createCompressedTexture(TextureType     type,
     _currentTextureFilter[texture]    = TextureFilter::NEAREST;
     _currentMipFilter[texture]        = MipFilter::NONE;
 
+    const auto oglFormat = availableTextureFormats().at(format);
+
+    if (mipMapping)
+    {
+        uint level = 0;
+        uint h = height;
+        uint w = width;
+
+        for (uint size = width > height ? width : height;
+             size > 0;
+             size = size >> 1, w = w >> 1, h = h >> 1)
+        {
+             if (type == TextureType::Texture2D)
+                glTexImage2D(GL_TEXTURE_2D, level, oglFormat, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            else
+            {
+                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, level, oglFormat, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+                glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, level, oglFormat, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, level, oglFormat, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+                glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, level, oglFormat, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, level, oglFormat, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+                glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, level, oglFormat, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            }
+
+            ++level;
+        }
+    }
+    else
+    {
+        if (type == TextureType::Texture2D)
+            glTexImage2D(GL_TEXTURE_2D, 0, oglFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+        else
+        {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, oglFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, oglFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, oglFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, oglFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, oglFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, oglFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+        }
+    }
+
     checkForErrors();
 
     return texture;
@@ -775,7 +817,7 @@ OpenGLES2Context::uploadCompressedTexture2dData(uint          texture,
     const auto& formats = availableTextureFormats();
 
     glBindTexture(GL_TEXTURE_2D, texture);
-    glCompressedTexImage2D(GL_TEXTURE_2D, mipLevel, formats.at(format), width, height, 0, size, data);
+    glCompressedTexSubImage2D(GL_TEXTURE_2D, mipLevel, 0, 0, width, height, formats.at(format), size, data);
 
     _currentBoundTexture = texture;
 
