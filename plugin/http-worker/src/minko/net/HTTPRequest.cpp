@@ -62,28 +62,43 @@ HTTPRequest::run()
     //curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
 
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+	
 
-    std::cout << "HTTPRequest::run(): before curl perform" << std::endl;
-
-    CURLcode res = curl_easy_perform(curl);
-
-    std::cout << "HTTPRequest::run(): after curl perform" << std::endl;
+	try
+	{
+		CURLcode res = curl_easy_perform(curl);
 
     curl_easy_cleanup(curl);
 
-    if (res != CURLE_OK)
-    {
-        std::cout << "HTTPRequest::run(): curl error" << std::endl;
+		if (res != CURLE_OK)
+		{
+			//std::cout << "HTTPRequest::run(): curl error" << std::endl;
 
-        error()->execute(res);
-    }
-    else
-    {
-        std::cout << "HTTPRequest::run(): curl success" << std::endl;
+			error()->execute(res);
+		}
+		else
+		{
+			//std::cout << "HTTPRequest::run(): curl success" << std::endl;
+            auto str = std::string(_output.begin(), _output.end());
 
-        progress()->execute(1.0f);
-        complete()->execute(_output);
-    }
+            if (str.find("No resource found") != std::string::npos || str.find("404 Not Found") != std::string::npos)
+            {
+			    error()->execute(res);
+            }
+            else
+            {
+			    progress()->execute(1.0f);
+			    complete()->execute(_output);
+            }
+		}
+	}
+	catch (std::logic_error &e)
+	{
+		std::cerr << "ERROR IN CURL PERFORM" << std::endl;
+		return;
+	}
+
+        
 }
 
 size_t

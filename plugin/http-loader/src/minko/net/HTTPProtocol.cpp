@@ -93,11 +93,13 @@ HTTPProtocol::completeHandler(void* arg, void* data, unsigned int size)
     loader->data().assign(static_cast<unsigned char*>(data), static_cast<unsigned char*>(data) + size);
 
     loader->_progress->execute(loader, 1.0);
+
+    std::cout << "HTTPProtocol::completeHandler() filename = " << loader->file()->filename() << std::endl;
+   //  HTTPProtocol::_runningLoaders.remove(loader);
     std::cout << "HTTPProtocol::completeHandler(): call execute" << std::endl;
     loader->_complete->execute(loader);
 
     std::cout << "HTTPProtocol::completeHandler(): remove loader" << std::endl;
-    // HTTPProtocol::_runningLoaders.remove(loader);
     std::cout << "HTTPProtocol::completeHandler(): complete" << std::endl;
 }
 
@@ -116,15 +118,16 @@ HTTPProtocol::errorHandler(void* arg, int code, const char * message)
         std::cerr << "HTTPProtocol::errorHandler(): cannot find loader" << std::endl;
         return;
     }
-
+    std::cout << "HTTPProtocol::errorHandler() message = " << message << std::endl;
     std::cout << "HTTPProtocol::errorHandler(): found loader" << std::endl;
     std::shared_ptr<HTTPProtocol> loader = *iterator;
 
     std::cout << "HTTPProtocol::errorHandler(): call execute" << std::endl;
+    // HTTPProtocol::_runningLoaders.remove(loader);
+    std::cout << "HTTPProtocol::errorHandler() filename = " << loader->file()->filename() << std::endl;
     loader->_error->execute(loader);
 
-    std::cout << "HTTPProtocol::completeHandler(): remove loader" << std::endl;
-    // HTTPProtocol::_runningLoaders.remove(loader);
+    std::cout << "HTTPProtocol::errorHandler(): remove loader" << std::endl;
     std::cout << "HTTPProtocol::errorHandler(): complete" << std::endl;
 }
 
@@ -252,15 +255,27 @@ HTTPProtocol::load()
     {
         HTTPRequest request(resolvedFilename());
 
-        request.progress()->connect([&](float p){
+        auto requestIsSuccessfull = true;
+
+        auto requestErrorSlot = request.error()->connect([&](int error)
+        {
+            requestIsSuccessfull = false;
+
+            this->error()->execute(shared_from_this());
+        });
+
+        auto requestProgressSlot = request.progress()->connect([&](float p){
             progressHandler(loader.get(), int(p * 100.f), 100);
         });
 
         request.run();
 
-        std::vector<char>& output = request.output();
+        if (requestIsSuccessfull)
+        {
+            std::vector<char>& output = request.output();
 
-        completeHandler(loader.get(), &*output.begin(), output.size());
+            completeHandler(loader.get(), &*output.begin(), output.size());
+        }
     }
 #endif
 }
