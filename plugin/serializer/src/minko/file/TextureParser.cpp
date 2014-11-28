@@ -274,6 +274,9 @@ TextureParser::parseCompressedTexture(TextureFormat                        forma
 
         assetLibrary->texture(fileName, texture);
 
+        if (options->disposeTextureAfterLoading())
+            texture->disposeData();
+
         break;
     }
     case TextureType::CubeTexture:
