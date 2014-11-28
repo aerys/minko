@@ -108,6 +108,7 @@ FileProtocol::load()
                 else if (message.type == "progress")
                 {
                     float ratio = *reinterpret_cast<float*>(&*message.data.begin());
+
                     _progress->execute(loader, ratio);
                 }
                 else if (message.type == "error")
