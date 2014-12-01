@@ -1,6 +1,3 @@
-#extension GL_OES_standard_derivatives : enable
-#extension GL_EXT_shader_texture_lod : enable
-
 #if __VERSION__ > 120 || defined(GL_OES_standard_derivatives)
 
 float texturelod_mipmapLevel(vec2 uv, vec2 texSize)
