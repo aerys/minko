@@ -109,7 +109,11 @@ void main(void)
 
 	#ifdef NUM_AMBIENT_LIGHTS
 		for (int i = 0; i < NUM_AMBIENT_LIGHTS; ++i)
-			ambientAccum += ambientLights[i].color * ambientLights[i].ambient;
+		{
+			AmbientLight currentAmbientLight = ambientLights[i];
+			ambientAccum += currentAmbientLight.color * currentAmbientLight.ambient;
+		}
+
 	#endif // NUM_AMBIENT_LIGHTS
 
 	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS || defined ENVIRONMENT_MAP_2D || defined ENVIRONMENT_CUBE_MAP
@@ -149,10 +153,11 @@ void main(void)
 		//---------------------------
 		for (int i = 0; i < NUM_DIRECTIONAL_LIGHTS; ++i)
 		{
-			lightColor = directionalLights[i].color;
-			lightDiffuseCoeff = directionalLights[i].diffuse;
-			lightSpecularCoeff = directionalLights[i].specular;
-			lightDirection = directionalLights[i].direction;
+			DirectionalLight currentDirectionalLight = directionalLights[i];
+			lightColor = currentDirectionalLight.color;
+			lightDiffuseCoeff = currentDirectionalLight.diffuse;
+			lightSpecularCoeff = currentDirectionalLight.specular;
+			lightDirection = currentDirectionalLight.direction;
 
 			lightDirection = normalize(-lightDirection);
 
@@ -173,11 +178,12 @@ void main(void)
 		//---------------------
 		for (int i = 0; i < NUM_POINT_LIGHTS; ++i)
 		{
-			lightColor = pointLights[i].color;
-			lightDiffuseCoeff = pointLights[i].diffuse;
-			lightSpecularCoeff = pointLights[i].specular;
-			lightAttenuationCoeffs = pointLights[i].attenuationCoeffs;
-			lightPosition = pointLights[i].position;
+			PointLight currentPointLight = pointLights[i];
+			lightColor = currentPointLight.color;
+			lightDiffuseCoeff = currentPointLight.diffuse;
+			lightSpecularCoeff = currentPointLight.specular;
+			lightAttenuationCoeffs = currentPointLight.attenuationCoeffs;
+			lightPosition = currentPointLight.position;
 
 			lightDirection = lightPosition - vertexPosition;
 			float distanceToLight = length(lightDirection);

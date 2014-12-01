@@ -84,12 +84,12 @@ namespace minko
 
             unsigned char                                       _lastColor[4];
             SurfacePtr                                          _lastPickedSurface;
-            SurfacePtr                                          _lastRightDownPickedSurface;
-            SurfacePtr                                          _lastLeftDownPickedSurface;
 
             Signal<MousePtr, int, int>::Slot                    _mouseMoveSlot;
             Signal<MousePtr>::Slot                              _mouseRightDownSlot;
             Signal<MousePtr>::Slot                              _mouseLeftDownSlot;
+            Signal<MousePtr>::Slot                              _mouseRightUpSlot;
+            Signal<MousePtr>::Slot                              _mouseLeftUpSlot;
             Signal<MousePtr>::Slot                              _mouseRightClickSlot;
             Signal<MousePtr>::Slot                              _mouseLeftClickSlot;
 
@@ -98,6 +98,8 @@ namespace minko
             bool                                                _executeLeftClickHandler;
             bool                                                _executeRightDownHandler;
             bool                                                _executeLeftDownHandler;
+            bool                                                _executeRightUpHandler;
+            bool                                                _executeLeftUpHandler;
 
             bool                                                _addPickingLayout;
 
@@ -240,6 +242,12 @@ namespace minko
 
             void
             mouseLeftClickHandler(MousePtr mouse);
+
+            void
+            mouseRightUpHandler(MousePtr mouse);
+
+            void
+            mouseLeftUpHandler(MousePtr mouse);
 
             void
             updateDescendants(NodePtr target);

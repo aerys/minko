@@ -23,12 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "apple/dom/AppleWebViewDOMElement.hpp"
 #include "apple/dom/AppleWebViewDOMEngine.hpp"
 #include "apple/dom/AppleWebViewDOM.hpp"
-
-#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
-# include "apple/dom/AppleWebViewDOMTouchEvent.hpp"
-#elif TARGET_OS_MAC // OSX
-# include "apple/dom/AppleWebViewDOMMouseEvent.hpp"
-#endif
+#include "apple/dom/AppleWebViewDOMTouchEvent.hpp"
+#include "apple/dom/AppleWebViewDOMMouseEvent.hpp"
 
 using namespace minko;
 using namespace minko::dom;

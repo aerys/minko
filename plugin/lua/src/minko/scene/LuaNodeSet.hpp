@@ -97,9 +97,8 @@ namespace minko
             unsigned int
             sizeWrapper(NodeSet::Ptr nodeSet)
             {
-                return nodeSet->nodes().size();
+                return nodeSet->size();
             }
         };
     }
 }
-

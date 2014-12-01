@@ -245,7 +245,11 @@ TextureParser::parseCompressedTexture(TextureFormat                        forma
             options->context(),
             width,
             height,
-            hasMipmaps
+            hasMipmaps,
+            false,
+            false,
+            format,
+            fileName
         );
 
         texture->data(textureData.data());
@@ -269,6 +273,9 @@ TextureParser::parseCompressedTexture(TextureFormat                        forma
         }
 
         assetLibrary->texture(fileName, texture);
+
+        if (options->disposeTextureAfterLoading())
+            texture->disposeData();
 
         break;
     }

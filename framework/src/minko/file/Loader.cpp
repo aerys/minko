@@ -124,11 +124,10 @@ Loader::protocolProgressHandler(std::shared_ptr<AbstractProtocol> protocol, floa
     float newTotalProgress = 0.f;
 
     for (auto protocolAndProgress : _protocolToProgress)
-    {
         newTotalProgress += protocolAndProgress.second / _numFiles;
-    }
-
-    newTotalProgress /= 100.f;
+    
+    if (newTotalProgress > 1.0f)
+        newTotalProgress = 1.0f;
 
     _progress->execute(
         std::dynamic_pointer_cast<Loader>(shared_from_this()),

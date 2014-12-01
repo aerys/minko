@@ -25,12 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "android/dom/AndroidWebViewDOM.hpp"
 #include "android/dom/AndroidWebViewDOMTouchEvent.hpp"
 
-#include <android/log.h>
-#define LOG_TAG "MINKOELEMENT"
-#define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
-#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
-#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
-
 using namespace minko;
 using namespace minko::dom;
 using namespace android;

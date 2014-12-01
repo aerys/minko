@@ -82,12 +82,12 @@ File::getBinaryDirectory()
     auto pos = path.find_last_of("/");
     return path.substr(0, pos);
     */
-#ifdef DEBUG
+# ifdef DEBUG
     return "bin/html5/debug";
-#else //RELEASE
+# else //RELEASE
     return "bin/html5/release";
-#endif
-#elif defined(LINUX) || defined(__unix__) // Linux
+# endif
+#elif MINKO_PLATFORM == MINKO_PLATFORM_LINUX // Linux
     char buffer[PATH_MAX];
     size_t l = readlink("/proc/self/exe", buffer, PATH_MAX);
     auto path = sanitizeFilename(std::string((char*)buffer, l));

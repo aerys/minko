@@ -123,7 +123,7 @@ SDLJoystick::isButtonDown(Button button)
     button = buttonIterator == NativeToHtmlMap.end() ? Button::Nothing : buttonIterator->second;
 #endif
 
-    return SDL_JoystickGetButton(_joystick, buttonId(button));
+    return SDL_JoystickGetButton(_joystick, buttonId(button)) != 0;
 }
 
 std::string

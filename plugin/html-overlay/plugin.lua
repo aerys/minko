@@ -45,7 +45,7 @@ minko.plugin["html-overlay"].enable = function()
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/WebViewJavascriptBridge/MinkoOverlay.js.txt"),
 		}
 
-	configuration { "android" }
+	configuration { "android", "SharedLib" }
 		prelinkcommands {
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/asset")
 		}

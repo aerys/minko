@@ -91,13 +91,23 @@ Picking::initialize()
         std::static_pointer_cast<Picking>(shared_from_this()),
         std::placeholders::_1));
 
-    _mouseLeftClickSlot = _mouse->leftButtonUp()->connect(std::bind(
+    _mouseLeftClickSlot = _mouse->leftButtonClick()->connect(std::bind(
         &Picking::mouseLeftClickHandler,
         std::static_pointer_cast<Picking>(shared_from_this()),
         std::placeholders::_1));
 
-    _mouseRightClickSlot = _mouse->rightButtonUp()->connect(std::bind(
+    _mouseRightClickSlot = _mouse->rightButtonClick()->connect(std::bind(
         &Picking::mouseRightClickHandler,
+        std::static_pointer_cast<Picking>(shared_from_this()),
+        std::placeholders::_1));
+
+    _mouseLeftUpSlot = _mouse->leftButtonUp()->connect(std::bind(
+        &Picking::mouseLeftUpHandler,
+        std::static_pointer_cast<Picking>(shared_from_this()),
+        std::placeholders::_1));
+
+    _mouseRightUpSlot = _mouse->rightButtonUp()->connect(std::bind(
+        &Picking::mouseRightUpHandler,
         std::static_pointer_cast<Picking>(shared_from_this()),
         std::placeholders::_1));
 
@@ -385,31 +395,31 @@ Picking::renderingEnd(RendererPtr renderer)
     if (_executeRightDownHandler && _lastPickedSurface)
     {
         _mouseRightDown->execute(_lastPickedSurface->targets()[0]);
-
-        _lastRightDownPickedSurface = _lastPickedSurface;
     }
 
     if (_executeLeftDownHandler && _lastPickedSurface)
     {
         _mouseLeftDown->execute(_lastPickedSurface->targets()[0]);
-
-        _lastLeftDownPickedSurface = _lastPickedSurface;
     }
 
-    if (_executeRightClickHandler && _lastPickedSurface && _lastPickedSurface == _lastRightDownPickedSurface)
+    if (_executeRightClickHandler && _lastPickedSurface)
     {
         _mouseRightClick->execute(_lastPickedSurface->targets()[0]);
-        _mouseRightUp->execute(_lastPickedSurface->targets()[0]);
-
-        _lastRightDownPickedSurface = nullptr;
     }
 
-    if (_executeLeftClickHandler && _lastPickedSurface && _lastPickedSurface == _lastLeftDownPickedSurface)
+    if (_executeLeftClickHandler && _lastPickedSurface)
     {
-        _mouseLeftClick->execute(_lastLeftDownPickedSurface->targets()[0]);
-        _mouseLeftUp->execute(_lastLeftDownPickedSurface->targets()[0]);
+        _mouseLeftClick->execute(_lastPickedSurface->targets()[0]);
+    }
 
-        _lastLeftDownPickedSurface = nullptr;
+    if (_executeRightUpHandler && _lastPickedSurface)
+    {
+        _mouseRightUp->execute(_lastPickedSurface->targets()[0]);
+    }
+
+    if (_executeLeftUpHandler && _lastPickedSurface)
+    {
+        _mouseLeftUp->execute(_lastPickedSurface->targets()[0]);
     }
 
     if (!(_mouseOver->numCallbacks() > 0 || _mouseOut->numCallbacks() > 0))
@@ -420,6 +430,8 @@ Picking::renderingEnd(RendererPtr renderer)
     _executeLeftDownHandler = false;
     _executeRightClickHandler = false;
     _executeLeftClickHandler = false;
+    _executeRightUpHandler = false;
+    _executeLeftUpHandler = false;
 }
 
 void
@@ -433,9 +445,29 @@ Picking::mouseMoveHandler(MousePtr mouse, int dx, int dy)
 }
 
 void
+Picking::mouseRightUpHandler(MousePtr mouse)
+{
+    if (_mouseRightUp->numCallbacks() > 0)
+    {
+        _executeRightUpHandler = true;
+        _renderer->enabled(true);
+    }
+}
+
+void
+Picking::mouseLeftUpHandler(MousePtr mouse)
+{
+    if (_mouseLeftUp->numCallbacks() > 0)
+    {
+        _executeLeftUpHandler = true;
+        _renderer->enabled(true);
+    }
+}
+
+void
 Picking::mouseRightClickHandler(MousePtr mouse)
 {
-    if (_mouseRightClick->numCallbacks() > 0 || _mouseRightUp->numCallbacks() > 0)
+    if (_mouseRightClick->numCallbacks() > 0)
     {
         _executeRightClickHandler = true;
         _renderer->enabled(true);
@@ -445,7 +477,7 @@ Picking::mouseRightClickHandler(MousePtr mouse)
 void
 Picking::mouseLeftClickHandler(MousePtr mouse)
 {
-    if (_mouseLeftClick->numCallbacks() > 0 || _mouseLeftUp->numCallbacks() > 0)
+    if (_mouseLeftClick->numCallbacks() > 0)
     {
         _executeLeftClickHandler = true;
         _renderer->enabled(true);

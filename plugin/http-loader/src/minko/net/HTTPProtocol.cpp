@@ -47,10 +47,10 @@ HTTPProtocol::HTTPProtocol()
 void
 HTTPProtocol::progressHandler(void* arg, int loadedBytes, int totalBytes)
 {
-    int progress = 0;
+    float progress = 0.0;
 
     if (totalBytes != 0)
-        progress = (int)(100.f * ((float)loadedBytes / (float)totalBytes));
+        progress = (float)(loadedBytes) / (float)(totalBytes);
 
     auto iterator = std::find_if(HTTPProtocol::_runningLoaders.begin(),
                                  HTTPProtocol::_runningLoaders.end(),
@@ -66,7 +66,7 @@ HTTPProtocol::progressHandler(void* arg, int loadedBytes, int totalBytes)
 
     std::shared_ptr<HTTPProtocol> loader = *iterator;
 
-    loader->_progress->execute(loader, float(progress));
+    loader->_progress->execute(loader, progress);
 }
 
 void

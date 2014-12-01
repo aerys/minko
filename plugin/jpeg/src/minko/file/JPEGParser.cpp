@@ -89,6 +89,8 @@ JPEGParser::parse(const std::string&                filename,
 
     texture->data(bmpData);
     texture->upload();
+    if (options->disposeTextureAfterLoading())
+        texture->disposeData();
 
     free(bmpData);
 

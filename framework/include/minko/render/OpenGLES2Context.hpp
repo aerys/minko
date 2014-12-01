@@ -53,39 +53,43 @@ namespace minko
 
             bool                                      _errorsEnabled;
 
-            std::list<uint>                            _textures;
-            std::unordered_map<uint, TextureSize>    _textureSizes;
-            std::unordered_map<uint, bool>          _textureHasMipmaps;
-            std::unordered_map<uint, TextureType>   _textureTypes;
+            std::list<uint>                           _textures;
+            std::unordered_map<uint, TextureSize>     _textureSizes;
+            std::unordered_map<uint, bool>            _textureHasMipmaps;
+            std::unordered_map<uint, TextureType>     _textureTypes;
 
-            std::string                             _driverInfo;
+            std::string                               _driverInfo;
 
-            std::list<unsigned int>                    _vertexBuffers;
-            std::list<unsigned int>                    _indexBuffers;
-            std::list<unsigned int>                 _programs;
-            std::list<unsigned int>                 _vertexShaders;
-            std::list<unsigned int>                 _fragmentShaders;
+            std::list<unsigned int>                   _vertexBuffers;
+            std::list<unsigned int>                   _indexBuffers;
+            std::list<unsigned int>                   _programs;
+            std::list<unsigned int>                   _vertexShaders;
+            std::list<unsigned int>                   _fragmentShaders;
 
-            TextureToBufferMap                      _frameBuffers;
-            TextureToBufferMap                      _renderBuffers;
+            TextureToBufferMap                        _frameBuffers;
+            TextureToBufferMap                        _renderBuffers;
 
-            unsigned int                            _viewportX;
-            unsigned int                            _viewportY;
-            unsigned int                            _viewportWidth;
-            unsigned int                            _viewportHeight;
+            unsigned int                              _viewportX;
+            unsigned int                              _viewportY;
+            unsigned int                              _viewportWidth;
+            unsigned int                              _viewportHeight;
+            unsigned int                              _oldViewportX;
+            unsigned int                              _oldViewportY;
+            unsigned int                              _oldViewportWidth;
+            unsigned int                              _oldViewportHeight;
 
-            unsigned int                            _currentTarget;
-            int                                        _currentIndexBuffer;
-            std::vector<int>                        _currentVertexBuffer;
-            std::vector<int>                        _currentVertexSize;
-            std::vector<int>                        _currentVertexStride;
-            std::vector<int>                        _currentVertexOffset;
-            uint                                    _currentBoundTexture;
-            std::vector<int>                        _currentTexture;
-            std::unordered_map<uint, WrapMode>      _currentWrapMode;
-            std::unordered_map<uint, TextureFilter> _currentTextureFilter;
-            std::unordered_map<uint, MipFilter>     _currentMipFilter;
-            int                                        _currentProgram;
+            unsigned int                              _currentTarget;
+            int                                       _currentIndexBuffer;
+            std::vector<int>                          _currentVertexBuffer;
+            std::vector<int>                          _currentVertexSize;
+            std::vector<int>                          _currentVertexStride;
+            std::vector<int>                          _currentVertexOffset;
+            uint                                      _currentBoundTexture;
+            std::vector<int>                          _currentTexture;
+            std::unordered_map<uint, WrapMode>        _currentWrapMode;
+            std::unordered_map<uint, TextureFilter>   _currentTextureFilter;
+            std::unordered_map<uint, MipFilter>       _currentMipFilter;
+            int                                       _currentProgram;
             Blending::Mode                            _currentBlendMode;
             bool                                    _currentColorMask;
             bool                                    _currentDepthMask;

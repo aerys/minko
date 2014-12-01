@@ -14,7 +14,7 @@ int main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Example - Offscreen", 1280, 720, true);
 
-    auto sceneManager   = SceneManager::create(canvas->context());
+    auto sceneManager   = SceneManager::create(canvas);
     auto assets         = sceneManager->assets();
     auto mesh           = scene::Node::create("mesh");
 

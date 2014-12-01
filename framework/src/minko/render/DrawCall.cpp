@@ -334,13 +334,13 @@ DrawCall::bindVertexAttribute(const std::string&    inputName,
                 throw std::logic_error("missing required vertex attribute: " + attributeName);
 #endif
 
-            auto attribute    = vertexBuffer->attribute(attributeName);
+            auto attribute = vertexBuffer->attribute(attributeName);
 
-            _vertexBufferIds        [vertexBufferIndex]    = vertexBuffer->id();
-            _vertexBufferLocations    [vertexBufferIndex]    = location;
-            _vertexAttributeSizes    [vertexBufferIndex]    = std::get<1>(*attribute);
-            _vertexSizes            [vertexBufferIndex]    = vertexBuffer->vertexSize();
-            _vertexAttributeOffsets    [vertexBufferIndex]    = std::get<2>(*attribute);
+            _vertexBufferIds[vertexBufferIndex] = vertexBuffer->id();
+            _vertexBufferLocations[vertexBufferIndex] = location;
+            _vertexAttributeSizes[vertexBufferIndex] = std::get<1>(*attribute);
+            _vertexSizes[vertexBufferIndex] = vertexBuffer->vertexSize();
+            _vertexAttributeOffsets[vertexBufferIndex] = std::get<2>(*attribute);
         }
 
 
@@ -655,22 +655,28 @@ DrawCall::bindStates()
 }
 
 void
-DrawCall::render(const AbstractContext::Ptr& context, AbstractTexture::Ptr renderTarget)
+DrawCall::render(const AbstractContext::Ptr&    context,
+                 AbstractTexture::Ptr           renderTarget,
+                 const render::ScissorBox&      viewport)
 {
     if (_target)
-        renderTarget = _target;
-
-    if (renderTarget)
     {
-        if (renderTarget->id() != context->renderTarget())
+        if (_target->id() != context->renderTarget())
         {
-            context->setRenderToTexture(renderTarget->id(), true);
-            if (_target)
-                context->clear();
+            context->setRenderToTexture(_target->id(), true);
+            context->clear();
         }
     }
     else
-        context->setRenderToBackBuffer();
+    {
+        if (renderTarget)
+            context->setRenderToTexture(renderTarget->id(), true);
+        else
+            context->setRenderToBackBuffer();
+
+        if (viewport.width >= 0 && viewport.height >= 0)
+            context->configureViewport(viewport.x, viewport.y, viewport.width, viewport.height);
+    }
 
     context->setProgram(_program->id());
 

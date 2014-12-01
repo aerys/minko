@@ -141,6 +141,7 @@ namespace minko
                 opt->_skinningMethod = options->_skinningMethod;
                 opt->_effect = options->_effect;
                 opt->_textureFormats = options->_textureFormats;
+				opt->_material = options->_material;
                 opt->_materialFunction = options->_materialFunction;
                 opt->_geometryFunction = options->_geometryFunction;
                 opt->_protocolFunction = options->_protocolFunction;
