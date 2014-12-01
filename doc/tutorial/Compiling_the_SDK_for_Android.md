@@ -20,7 +20,7 @@ Once you have downloaded the installer, run it. Choose **Install from Internet**
 
 By default, only the base packages are installed. We, however, need the development packages. Rather than picking the packages we think we need, and then struggling with missing dependencies and other typical Unix nightmares, I suggest that we install the entire **Devel** branch. Click (once) on the word **Default** next to the root Devel node and wait few seconds while the setup hangs.
 
-![](../../doc/images/Cygwin_setup_packages.jpg "../../doc/images/Cygwin_setup_packages.jpg")
+![](../../doc/image/Cygwin_setup_packages.jpg "../../doc/image/Cygwin_setup_packages.jpg")
 
 When it is back, you will see that **Default** changes to **Install** for the **Devel** node. Install and wait. This may take a while.
 
