@@ -609,6 +609,8 @@ Canvas::step()
                 }
             }
 
+            _touch->lastTouchDownTime(-1.0f);
+
             break;
         }
 
@@ -619,6 +621,9 @@ Canvas::step()
             auto y = event.tfinger.y * _height;
             auto dx = event.tfinger.dx * _width;
             auto dy = event.tfinger.dy * _height;
+
+            if (std::abs(_touch->lastTouchDownX() - x) > SDLTouch::TAP_MOVE_THRESHOLD || std::abs(_touch->lastTouchDownY() - y) > SDLTouch::TAP_MOVE_THRESHOLD)
+                _touch->lastTouchDownTime(-1.0f);
             
             _touch->updateTouch(id, x, y);
             _touch->touchMove()->execute(
@@ -795,6 +800,12 @@ Canvas::step()
         default:
             break;
         }
+    }
+
+    if (_touch->numTouches() && _touch->lastTouchDownTime() != -1.0f && (_relativeTime - _touch->lastTouchDownTime()) > SDLTouch::LONG_HOLD_DELAY_THRESHOLD)
+    {
+        _touch->longHold()->execute(_touch, _touch->averageX(), _touch->averageY());
+        _touch->lastTouchDownTime(-1.0f);
     }
 
 #if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
