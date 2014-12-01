@@ -86,6 +86,25 @@ Canvas::initialize()
     });
 #endif
 
+#if MINKO_PLATFORM == MINKO_PLATFORM_IOS
+    NSString *docsDir;
+    NSArray *dirPaths;
+    NSURL * finalURL;
+    dirPaths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    docsDir = [dirPaths objectAtIndex:0];    
+    
+    finalURL = [NSURL fileURLWithPath:docsDir];
+
+    assert([[NSFileManager defaultManager] fileExistsAtPath: [finalURL path]]);
+    
+    NSError *error = nil;
+    BOOL success = [finalURL setResourceValue: [NSNumber numberWithBool: YES]
+                                  forKey: NSURLIsExcludedFromBackupKey error: &error];
+    if(!success){
+        NSLog(@"Error excluding %@ from backup %@", [finalURL lastPathComponent], error);
+    }
+#endif
+
     initializeWindow();
     initializeContext();
     initializeInputs();

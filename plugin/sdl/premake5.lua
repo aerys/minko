@@ -30,6 +30,9 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		includedirs { "SDL" }
 		minko.plugin.enable { "webgl" }
 
+	configuration { "ios" }
+		buildoptions { "-x objective-c++" }
+
 	configuration { "with-offscreen" }
 		minko.plugin.enable { "offscreen" }
 
