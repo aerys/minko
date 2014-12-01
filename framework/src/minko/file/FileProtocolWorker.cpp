@@ -77,7 +77,11 @@ namespace minko
 
                     file.read(&*output.begin() + offset, readSize);
 
-					post(Message { "progress" }.set(float(offset + readSize) / float(length)));
+                    auto progress = float(offset + readSize) / float(size);
+
+                    progress *= 100.0;
+
+                    post(Message { "progress" }.set(progress));
 
                     offset = nextOffset;
                 }
