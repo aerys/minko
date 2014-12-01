@@ -16,6 +16,8 @@
         "uvOffset"              : { "property" : "material[${materialId}].uvOffset", "default" : [0.0, 0.0] },
         "diffuseColor"          : "material[${materialId}].diffuseColor",
         "diffuseMap"            : "material[${materialId}].diffuseMap",
+        "diffuseMapMaxAvailableLod" : "material[${materialId}].diffuseMap.maxAvailableLod",
+        "diffuseMapSize"        : "material[${materialId}].diffuseMap.size",
 		"alphaMap"				: "material[${materialId}].alphaMap",
 		"alphaThreshold"		: "material[${materialId}].alphaThreshold",
         "diffuseCubeMap"        : "material[${materialId}].diffuseCubeMap",
@@ -31,6 +33,7 @@
     
     "macroBindings" : {
         "DIFFUSE_MAP"           : "material[${materialId}].diffuseMap",
+        "DIFFUSE_MAP_LOD"       : "material[${materialId}].diffuseMap.size",
         "DIFFUSE_CUBEMAP"       : "material[${materialId}].diffuseCubeMap",
 		"ALPHA_MAP"				: "material[${materialId}].alphaMap",
 		"ALPHA_THRESHOLD"		: "material[${materialId}].alphaThreshold",
