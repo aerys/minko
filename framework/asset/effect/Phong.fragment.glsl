@@ -74,7 +74,7 @@ void main(void)
 
 	#ifdef DIFFUSE_MAP
 		#ifdef DIFFUSE_MAP_LOD
-			diffuse = texturelod_texture2D(diffuseMap, vertexUV, diffuseMapSize, 0, diffuseMapMaxAvailableLod, diffuseColor);
+			diffuse = texturelod_texture2D(diffuseMap, vertexUV, diffuseMapSize, 0.0, diffuseMapMaxAvailableLod, diffuseColor);
 		#else
 			diffuse = texture2D(diffuseMap, vertexUV);
 		#endif
@@ -93,7 +93,7 @@ void main(void)
 
 		#ifdef SPECULAR_MAP
 			#ifdef SPECULAR_MAP_LOD
-				specular = texturelod_texture2D(specularMap, vertexUV, specularMapSize, 0, specularMapMaxAvailableLod, specularColor);
+				specular = texturelod_texture2D(specularMap, vertexUV, specularMapSize, 0.0, specularMapMaxAvailableLod, specularColor);
 			#else
 				specular = texture2D(specularMap, vertexUV);
 			#endif
@@ -141,7 +141,7 @@ void main(void)
 
 			// bring normal from tangent-space normal to world-space
 			#ifdef NORMAL_MAP_LOD
-				vec4 normalColor = texturelod_texture2D(normalMap, vertexUV, normalMapSize, 0, normalMapMaxAvailableLod, vec4(0.0));
+				vec4 normalColor = texturelod_texture2D(normalMap, vertexUV, normalMapSize, 0.0, normalMapMaxAvailableLod, vec4(0.0));
 			#else
 				vec4 normalColor = texture2D(normalMap, vertexUV);
 			#endif
