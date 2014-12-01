@@ -77,7 +77,7 @@ namespace minko
 
                     file.read(&*output.begin() + offset, readSize);
 
-                    auto progress = float(offset + readSize) / float(size);
+                    auto progress = float(offset + readSize) / float(length);
 
                     progress *= 100.0;
 
