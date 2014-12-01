@@ -84,6 +84,8 @@ function initialize() {
     invisibleCanvas.width = webcamDimensions.width;
     invisibleCanvas.height = webcamDimensions.height;
     context = invisibleCanvas.getContext('2d');
+    context.translate(invisibleCanvas.height * (video.width/video.height),0);
+    context.scale(-1,1);
     var img_size = invisibleCanvas.width * invisibleCanvas.height * 4;
     minko_camera.webcamBuffer = Module._malloc(img_size);
     minko_camera.bufSize = img_size;
