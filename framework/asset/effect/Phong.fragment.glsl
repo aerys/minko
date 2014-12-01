@@ -4,6 +4,8 @@
 	precision mediump float;
 #endif
 
+#pragma include("TextureLod.extension.glsl")
+
 #pragma include("Phong.function.glsl")
 #pragma include("Envmap.function.glsl")
 #pragma include("Fog.function.glsl")

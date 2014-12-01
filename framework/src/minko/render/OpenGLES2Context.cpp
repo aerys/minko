@@ -1075,15 +1075,52 @@ OpenGLES2Context::setProgram(const uint program)
     checkForErrors();
 }
 
+static
+std::string
+glslVersionString()
+{
+    auto fullVersion = std::string(reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION)));
+
+    if (fullVersion.empty())
+        return "";
+
+    auto glslVersion = std::string();
+
+    const auto minorVersionSeparatorPosition = fullVersion.find_first_of(".");
+
+    if (minorVersionSeparatorPosition == std::string::npos)
+        return std::string(0, fullVersion.find_first_of(" "));
+
+    glslVersion += std::string(fullVersion.begin(), fullVersion.begin() + minorVersionSeparatorPosition);
+
+    const auto minorVersionPosition = minorVersionSeparatorPosition + 1;
+    const auto buildVersionSeparatorPosition = fullVersion.find_first_of(". ", minorVersionPosition);
+
+    if (buildVersionSeparatorPosition == std::string::npos)
+        return glslVersion + "00";
+
+    glslVersion += std::string(
+        fullVersion.begin() + minorVersionPosition,
+        fullVersion.begin() + buildVersionSeparatorPosition
+    );
+
+    return glslVersion;
+}
+
 void
 OpenGLES2Context::setShaderSource(const uint shader,
                                   const std::string& source)
 {
+    // TODO fixme
+    // temporary allowing version > 120
+    // implement new *Context to properly handle it
+
 #ifdef GL_ES_VERSION_2_0
     std::string src = "#version 100\n" + source;
 #else
-    std::string src = "#version 120\n" + source;
+    std::string src = std::string("#version ") + glslVersionString() + std::string("\n") + source;
 #endif // GL_ES_VERSION_2_0
+
     const char* sourceString = src.c_str();
 
     glShaderSource(shader, 1, &sourceString, 0);
