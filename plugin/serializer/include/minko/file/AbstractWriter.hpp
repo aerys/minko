@@ -96,7 +96,14 @@ namespace minko
             }
 
             inline
-            T
+            const T&
+            data() const
+            {
+                return _data;
+            }
+
+            inline
+            T&
             data()
             {
                 return _data;
@@ -115,7 +122,7 @@ namespace minko
             {
                 _preprocessors.push_back(preprocessor);
 
-                return shared_from_this();
+                return this->shared_from_this();
             }
 
             inline
@@ -124,7 +131,7 @@ namespace minko
             {
                 _preprocessors.remove(preprocessor);
 
-                return shared_from_this();
+                return this->shared_from_this();
             }
 
             inline
