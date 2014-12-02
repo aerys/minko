@@ -146,7 +146,7 @@ SceneWriter::embed(AssetLibraryPtr                      assetLibrary,
 	{
 		std::shared_ptr<scene::Node>	currentNode = queue.front();
 
-		nodePack.push_back(writeNode(currentNode, serializedControllerList, controllerMap, assetLibrary, dependency));
+		nodePack.push_back(writeNode(currentNode, serializedControllerList, controllerMap, assetLibrary, dependency, writerOptions));
 
 		for (uint i = 0; i < currentNode->children().size(); ++i)
 			queue.push(currentNode->children()[i]);
@@ -165,8 +165,16 @@ SceneWriter::writeNode(std::shared_ptr<scene::Node>		node,
 					  std::vector<std::string>&			serializedControllerList,
 					  std::map<AbstractComponentPtr, int>&	controllerMap,
 					  AssetLibraryPtr					assetLibrary,
-					  DependencyPtr						dependency)
+					  DependencyPtr						dependency,
+					  WriterOptions::Ptr 				writerOptions)
 {
+	if (writerOptions->addBoundingBoxes() &&
+		node->hasComponent<component::Surface>() &&
+	 	!node->hasComponent<component::BoundingBox>())
+	{
+			node->addComponent(component::BoundingBox::create());
+	}
+
  	std::vector<uint>	componentsId;
 	int					componentIndex = 0;
 	AbstractComponentPtr		currentComponent = node->component<component::AbstractComponent>(0);

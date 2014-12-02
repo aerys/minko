@@ -78,7 +78,8 @@ namespace minko
 					  std::vector<std::string>&				serializedControllerList,
 					  std::map<AbstractComponentPtr, int>&	controllerMap,
 					  AssetLibraryPtr						assetLibrary,
-					  DependencyPtr							dependency);
+					  DependencyPtr							dependency,
+					  std::shared_ptr<WriterOptions> 		writerOptions);
 
 		private :
 			inline
