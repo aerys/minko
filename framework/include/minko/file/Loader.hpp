@@ -40,6 +40,8 @@ namespace minko
             typedef std::unordered_map<std::shared_ptr<AbstractProtocol>, float>            ProtocolToProgress;
             typedef std::vector<Signal<std::shared_ptr<AbstractProtocol>>::Slot>            ProtocolSlots;
             typedef std::vector<Signal<std::shared_ptr<AbstractProtocol>, float>::Slot>     ProtocolProgressSlots;
+            typedef std::unordered_map<std::shared_ptr<AbstractParser>, float>              ParserToProgress;
+            typedef std::unordered_map<AbsParserPtr, Signal<AbsParserPtr, float>::Slot>     ParserProgressSlots;
             typedef std::unordered_map<AbsParserPtr, Signal<AbsParserPtr>::Slot>            ParserCompleteSlots;
             
             typedef std::unordered_map<AbsParserPtr, Signal<AbsParserPtr, const Error&>::Slot>            ParserErrorSlots;
@@ -53,15 +55,18 @@ namespace minko
             FilenameToFile                                      _files;
 
             std::shared_ptr<Signal<Ptr, float>>                 _progress;
+            std::shared_ptr<Signal<Ptr, float>>                 _parsingProgress;
             std::shared_ptr<Signal<Ptr>>                        _complete;
             std::shared_ptr<Signal<Ptr, const Error&>>          _error;
 
             ProtocolSlots                                       _protocolSlots;
             ProtocolProgressSlots                               _protocolProgressSlots;
+            ParserProgressSlots                                 _parserProgressSlots;
             ParserCompleteSlots                                 _parserCompleteSlots;
             ParserErrorSlots                                    _parserErrorSlots;
 
             ProtocolToProgress                                  _protocolToProgress;
+            ParserToProgress                                    _parserToProgress;
 
             int                                                 _numFiles;
         
@@ -127,6 +132,13 @@ namespace minko
             }
 
             inline
+            std::shared_ptr<Signal<Ptr, float>>
+            parsingProgress()
+            {
+                return _parsingProgress;
+            }
+
+            inline
             std::shared_ptr<Signal<Ptr, const Error&>>
             error()
             {
@@ -172,7 +184,6 @@ namespace minko
             void
             protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol);
             
-
             void
             protocolProgressHandler(std::shared_ptr<AbstractProtocol> protocol, float);
 
@@ -184,6 +195,9 @@ namespace minko
                         const std::string&                 resolvedFilename,
                         std::shared_ptr<Options>           options,
                         const std::vector<unsigned char>&  data);
+
+            void
+            parserProgressHandler(std::shared_ptr<AbstractParser> parser, float);
 
             void
             parserCompleteHandler(std::shared_ptr<AbstractParser> parser);

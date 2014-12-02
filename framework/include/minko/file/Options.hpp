@@ -57,6 +57,8 @@ namespace minko
             typedef std::function<render::TextureFormat(const std::unordered_set<render::TextureFormat>&)>
                                                                                         TextureFormatFunction;
 
+            typedef std::function<void()>                                               ProgressFunction;
+
         private:
             std::shared_ptr<render::AbstractContext>            _context;
             std::shared_ptr<AssetLibrary>                       _assets;
@@ -88,6 +90,7 @@ namespace minko
             NodeFunction                                        _nodeFunction;
             EffectFunction                                        _effectFunction;
             TextureFormatFunction                               _textureFormatFunction;
+            ProgressFunction                                     _progressFunction;
 
             int                                                 _seekingOffset;
             int                                                 _seekedLength;
@@ -530,6 +533,22 @@ namespace minko
             textureFormatFunction(const TextureFormatFunction& func)
             {
                 _textureFormatFunction = func;
+
+                return shared_from_this();
+            }
+
+            inline
+            const ProgressFunction&
+            progressFunction() const
+            {
+                return _progressFunction;
+            }
+
+            inline
+            Ptr
+            progressFunction(const ProgressFunction& func)
+            {
+                _progressFunction = func;
 
                 return shared_from_this();
             }

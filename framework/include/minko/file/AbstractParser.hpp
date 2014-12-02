@@ -32,10 +32,19 @@ namespace minko
         public:
             typedef std::shared_ptr<AbstractParser>     Ptr;
 
+            std::shared_ptr<Signal<Ptr, float>>         _progress;
             std::shared_ptr<Signal<Ptr>>                _complete;
             std::shared_ptr<Signal<Ptr, const Error&>>  _error;
             
         public:
+
+            inline
+            std::shared_ptr<Signal<Ptr, float>>
+            progress()
+            {
+                return _progress;
+            }
+
             inline
             std::shared_ptr<Signal<Ptr>>
             complete()
@@ -60,6 +69,7 @@ namespace minko
 
         protected:
             AbstractParser() :
+                _progress(Signal<Ptr, float>::create()),
                 _complete(Signal<Ptr>::create()),
                 _error(Signal<Ptr, const Error&>::create())
             {

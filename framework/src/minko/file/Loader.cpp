@@ -32,6 +32,7 @@ Loader::Loader() :
     _options(Options::create()),
     _complete(Signal<Loader::Ptr>::create()),
     _progress(Signal<Loader::Ptr, float>::create()),
+    _parsingProgress(Signal<Loader::Ptr, float>::create()),
     _error(Signal<Loader::Ptr, const Error&>::create()),
     _numFilesToParse(0)
 {
@@ -181,6 +182,13 @@ Loader::processData(const std::string&                      filename,
 
     if (parser)
     {
+        _parserProgressSlots[parser] = parser->progress()->connect(std::bind(
+            &Loader::parserProgressHandler,
+            shared_from_this(),
+            std::placeholders::_1,
+            std::placeholders::_2
+        ));
+
         _parserCompleteSlots[parser] = parser->complete()->connect(std::bind(
             &Loader::parserCompleteHandler,
             shared_from_this(),
@@ -208,10 +216,31 @@ Loader::processData(const std::string&                      filename,
 }
 
 void
+Loader::parserProgressHandler(AbstractParser::Ptr parser, float progress)
+{
+    _parserToProgress[parser] = progress;
+
+    float newTotalProgress = 0.f;
+
+    for (auto parserAndProgress : _parserToProgress)
+        newTotalProgress += parserAndProgress.second / _numFiles;
+
+    if (newTotalProgress > 1.0f)
+        newTotalProgress = 1.0f;
+
+    _parsingProgress->execute(
+        std::dynamic_pointer_cast<Loader>(shared_from_this()), 
+        newTotalProgress
+    );
+}
+
+void
 Loader::parserCompleteHandler(AbstractParser::Ptr parser)
 {
     --_numFilesToParse;
     _parserCompleteSlots.erase(parser);
+
+    _parserToProgress[parser] = 1.f;
 
     finalize();
 }
