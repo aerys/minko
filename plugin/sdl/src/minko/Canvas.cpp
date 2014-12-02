@@ -87,21 +87,25 @@ Canvas::initialize()
 #endif
 
 #if MINKO_PLATFORM == MINKO_PLATFORM_IOS
-    NSString *docsDir;
-    NSArray *dirPaths;
-    NSURL * finalURL;
-    dirPaths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    docsDir = [dirPaths objectAtIndex:0];    
+    // Exclude Library and Document folders from iCloud backup system
+    NSString* appLibraryFolder = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString* appDocumentFolder = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSArray* backupFolders = [NSArray arrayWithObjects: appLibraryFolder, appDocumentFolder, nil];
     
-    finalURL = [NSURL fileURLWithPath:docsDir];
-
-    assert([[NSFileManager defaultManager] fileExistsAtPath: [finalURL path]]);
-    
-    NSError *error = nil;
-    BOOL success = [finalURL setResourceValue: [NSNumber numberWithBool: YES]
-                                  forKey: NSURLIsExcludedFromBackupKey error: &error];
-    if(!success){
-        NSLog(@"Error excluding %@ from backup %@", [finalURL lastPathComponent], error);
+    NSURL * url;
+    for (NSString* folder in backupFolders)
+    {
+        url = [NSURL fileURLWithPath:folder];
+        
+        assert([[NSFileManager defaultManager] fileExistsAtPath: [url path]]);
+        
+        NSLog(@"Final URL: %@", url);
+        
+        NSError *error = nil;
+        BOOL success = [url setResourceValue: [NSNumber numberWithBool: YES]
+                            forKey: NSURLIsExcludedFromBackupKey error: &error];
+        if(!success)
+            NSLog(@"Error excluding %@ from backup %@", [url lastPathComponent], error);
     }
 #endif
 
