@@ -117,11 +117,14 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 
 	asset.a0 = asset.a0 & 0x00FF;
 
-	if (asset.a0 < 10 && _assetTypeToFunction.find(asset.a0) == _assetTypeToFunction.end()) // external
-	{
+    if (asset.a0 < 10)
+    {
 		assetCompletePath += asset.a2;
 		resolvedPath = asset.a2;
+    }
 
+	if (asset.a0 < 10 && _assetTypeToFunction.find(asset.a0) == _assetTypeToFunction.end()) // external
+	{
 		auto protocolFunction = options->protocolFunction();
 		auto protocol = protocolFunction(assetCompletePath);
 
