@@ -73,8 +73,6 @@ Skinning::Skinning(const Skin::Ptr						skin,
 void
 Skinning::initialize()
 {
-	MasterAnimation::initialize();
-
 	if (_skin == nullptr)
 		throw std::invalid_argument("skin");
 

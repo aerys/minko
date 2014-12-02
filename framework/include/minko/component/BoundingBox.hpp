@@ -64,8 +64,6 @@ namespace minko
 			{
 				auto bb = std::shared_ptr<BoundingBox>(new BoundingBox());
 
-				bb->initialize();
-
 				return bb;
 			}
 
@@ -95,8 +93,6 @@ namespace minko
 			create(const math::vec3& topRight, const math::vec3& bottomLeft)
 			{
 				auto bb = std::shared_ptr<BoundingBox>(new BoundingBox(topRight, bottomLeft));
-
-				bb->initialize();
 
 				return bb;
 			}
@@ -132,9 +128,6 @@ namespace minko
 			BoundingBox(const math::vec3& topRight, const math::vec3& bottomLeft);
 
 			BoundingBox();
-
-			void
-			initialize();
 
 			void
 			updateWorldSpaceBox();

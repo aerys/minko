@@ -101,6 +101,13 @@ namespace minko
 				_name = value;
 			}
 
+            inline
+            std::shared_ptr<data::Provider>
+            data() const
+            {
+                return _provider;
+            }
+
 			inline
 			std::shared_ptr<geometry::Geometry>
 			geometry() const
@@ -110,6 +117,12 @@ namespace minko
 
             void
             geometry(std::shared_ptr<geometry::Geometry> geometry);
+
+            void
+            firstIndex(unsigned short index);
+
+            void
+            numIndices(unsigned short numIndices);
 
 			inline
 			std::shared_ptr<material::Material>

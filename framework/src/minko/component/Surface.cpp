@@ -104,6 +104,18 @@ Surface::geometry(geometry::Geometry::Ptr geometry)
 }
 
 void
+Surface::firstIndex(unsigned short index)
+{
+    // TODO
+}
+
+void
+Surface::numIndices(unsigned short numIndices)
+{
+    // TODO
+}
+
+void
 Surface::material(material::Material::Ptr material)
 {
     if (material == _material)

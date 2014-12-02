@@ -72,9 +72,6 @@ namespace minko
 			MasterAnimation(const std::vector<AnimationPtr>&, bool isLooping);
 
 			void
-			initialize();
-
-			void
 			update();
 		};
 	}
