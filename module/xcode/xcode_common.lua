@@ -939,6 +939,9 @@
 
 		xcode.PrintUserSettings(4, cfg)
 		xcode.PrintBuildSetting(4, 'ALWAYS_SEARCH_USER_PATHS = NO;', cfg)
+
+		xcode.PrintBuildSetting(4, 'ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;', cfg)
+		xcode.PrintBuildSetting(4, 'ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;', cfg)
 		
 		if premake.config.isDebugBuild(cfg) then
 			-- printSetting(bs, 4,"DEBUG_INFORMATION_FORMAT", "dwarf-with-dsym", true)
@@ -985,6 +988,8 @@
 		}
 		
 		local builtInSettings = {
+			"ASSETCATALOG_COMPILER_APPICON_NAME",
+			"ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME",
 			"ALWAYS_SEARCH_USER_PATHS",
 			"DEBUG_INFORMATION_FORMAT",
 			"EXECUTABLE_PREFIX",
