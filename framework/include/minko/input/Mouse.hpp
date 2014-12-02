@@ -63,14 +63,14 @@ namespace minko
 			}
 
 			inline
-			uint
+			unsigned int
 			x() const
 			{
 				return _x;
 			}
 
 			inline
-			uint
+			unsigned int
 			y() const
 			{
 				return _y;
@@ -78,18 +78,18 @@ namespace minko
 
             inline
 			void
-			x(uint x)
+			x(unsigned int x)
 			{
 				_x = x;
 			}
-            
+
 			inline
 			void
-			y(uint y)
+			y(unsigned int y)
 			{
 				_y = y;
 			}
-            
+
 			inline
 			bool
 			leftButtonIsDown() const
