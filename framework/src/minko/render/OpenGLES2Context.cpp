@@ -1598,7 +1598,6 @@ OpenGLES2Context::generateMipmaps(uint texture)
 	checkForErrors();
 }
 
-<<<<<<< HEAD
 void
 OpenGLES2Context::setUniformFloat(uint location, uint count, const float* v)
 {

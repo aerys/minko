@@ -150,7 +150,7 @@ namespace minko
 			updateWorldSpaceBox();
             
             void
-            computeBox(const std::vector<std::shared_ptr<component::Surface>>& surfaces, math::Vector3::Ptr min, math::Vector3::Ptr max);
+            computeBox(const std::vector<std::shared_ptr<component::Surface>>& surfaces, math::vec3& min, math::vec3& max);
 		};
 	}
 }

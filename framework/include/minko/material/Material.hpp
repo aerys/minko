@@ -53,13 +53,6 @@ namespace minko
 
 			inline static
 			Ptr
-			create(const std::string& name)
-			{
-				return std::shared_ptr<Material>(new Material(name));
-			}
-
-			inline static
-			Ptr
 			create(Ptr source)
 			{
 				auto mat = create();

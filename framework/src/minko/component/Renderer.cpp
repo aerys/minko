@@ -71,6 +71,8 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 	}
 }
 
+// TODO #Clone
+/*
 Renderer::Renderer(const Renderer& renderer, const CloneOption& option) :
 	_backgroundColor(renderer._backgroundColor),
 	_viewportBox(),
@@ -107,6 +109,7 @@ Renderer::clone(const CloneOption& option)
 
 	return renderer;
 }
+*/
 
 void
 Renderer::targetAdded(std::shared_ptr<Node> target)
@@ -360,7 +363,10 @@ Renderer::render(render::AbstractContext::Ptr	context,
     
 	_renderingBegin->execute(std::static_pointer_cast<Renderer>(shared_from_this()));
 
-    auto rt = _renderTarget ? _renderTarget : renderTarget;
+	if (_renderTarget)
+		renderTarget = _renderTarget;
+        
+    bool bCustomViewport = false;
 
 	if (_scissorBox.z >= 0 && _scissorBox.w >= 0)
 		context->setScissorTest(true, _scissorBox);
@@ -374,25 +380,23 @@ Renderer::render(render::AbstractContext::Ptr	context,
 	}
 	else
 		context->configureViewport(0, 0, context->viewportWidth(), context->viewportHeight());
-
-    if (rt)
-        context->setRenderToTexture(rt->id(), true);
-    else
-       context->setRenderToBackBuffer();
 	
-    if (_clearBeforeRender)
-    	context->clear(
-	    	((_backgroundColor >> 24) & 0xff) / 255.f,
-	    	((_backgroundColor >> 16) & 0xff) / 255.f,
-	    	((_backgroundColor >> 8) & 0xff) / 255.f,
-	    	(_backgroundColor & 0xff) / 255.f
-    	);
+	if (renderTarget)
+		context->setRenderToTexture(renderTarget->id(), true);
+	else
+    	context->setRenderToBackBuffer();
+    context->clear(
+	    ((_backgroundColor >> 24) & 0xff) / 255.f,
+	    ((_backgroundColor >> 16) & 0xff) / 255.f,
+	    ((_backgroundColor >> 8) & 0xff) / 255.f,
+	    (_backgroundColor & 0xff) / 255.f
+    );
 
     _drawCallPool.update();
     for (const auto& drawCall : _drawCallPool.drawCalls())
         // FIXME: render the draw call only if it's the right layout
 	    //if ((drawCall->layouts() & layoutMask()) != 0)
-		    drawCall->render(context, rt);
+		    drawCall->render(context, renderTarget);
 
     if (bCustomViewport)
         context->setScissorTest(false, _viewportBox);

@@ -56,7 +56,7 @@ namespace minko
 
 			Signal<AbsCtrlPtr, NodePtr>::Slot				_targetAddedSlot;
 			Signal<AbsCtrlPtr, NodePtr>::Slot				_targetRemovedSlot;
-			data::Store::PropertyChangedSignal::Slot	_modelToWorldChangedSlot;
+			data::Store::PropertyChangedSignal::Slot	    _modelToWorldChangedSlot;
 
 		public:
 			inline static
@@ -72,8 +72,11 @@ namespace minko
                 ));
 			}
 
+            // TODO #Clone
+            /*
             AbstractComponent::Ptr
             clone(const CloneOption& option);
+			*/
 
 			inline
 			float
@@ -201,7 +204,6 @@ namespace minko
 							  float				zNear,
 							  float				zFar,
 							  const math::mat4&	postPerspective);
-                              std::shared_ptr<math::Matrix4x4>     postPerspective = nullptr);
 
             PerspectiveCamera(const PerspectiveCamera& camera, const CloneOption& option);
 

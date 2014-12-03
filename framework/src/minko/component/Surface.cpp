@@ -64,6 +64,8 @@ Surface::Surface(std::string		name,
 		throw std::logic_error("Effect does not provide a '" + _technique + "' technique.");
 }
 
+// TODO #Clone
+/*
 Surface::Surface(const Surface& surface, const CloneOption& option) :
 	AbstractComponent(surface, option),
 	_name(surface._name),
@@ -95,6 +97,7 @@ Surface::clone(const CloneOption& option)
 
 	return surface;
 }
+*/
 
 void
 Surface::targetAdded(scene::Node::Ptr target)

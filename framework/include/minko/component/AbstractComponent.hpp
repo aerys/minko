@@ -50,10 +50,7 @@ namespace minko
 			}
 
 			AbstractComponent(const AbstractComponent& abstractComponent, const CloneOption& option) :
-				_targets(),
 				_layoutMask(abstractComponent._layoutMask),
-				_targetAdded(Signal<Ptr, std::shared_ptr<scene::Node>>::create()),
-				_targetRemoved(Signal<Ptr, std::shared_ptr<scene::Node>>::create()),
 				_layoutMaskChanged(Signal<Ptr>::create())
 			{
 			}

@@ -49,7 +49,7 @@ namespace minko
 				   const std::vector<unsigned short>&	vertexIds, 
 				   const std::vector<float>&			vertexWeights)
 			{
-				return std::shared_ptr<Bone>(new Bone(offsetMatrix, vertexIds, vertexWeights));
+				return std::shared_ptr<Bone>(new Bone(node, offsetMatrix, vertexIds, vertexWeights));
 			}
 
 			inline

@@ -61,8 +61,6 @@ namespace minko
             {
                 auto p = Ptr(new PositionalSound(channel, camera));
 
-                p->initialize();
-
                 return p;
             }
 

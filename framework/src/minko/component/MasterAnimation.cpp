@@ -67,24 +67,23 @@ MasterAnimation::clone(const CloneOption& option)
 void
 MasterAnimation::targetAdded(Node::Ptr target)
 {
-	_addedSlot = target->added()->connect(std::bind(
+	_addedSlot = target->added().connect(std::bind(
 		&MasterAnimation::addedHandler,
 		std::dynamic_pointer_cast<MasterAnimation>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
-		));
+	));
 
-	_removedSlot = target->removed()->connect(std::bind(
+	_removedSlot = target->removed().connect(std::bind(
 		&MasterAnimation::removedHandler,
 		std::dynamic_pointer_cast<MasterAnimation>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
-		));
+	));
 
 	_target = target;
-
 	
 	initAnimations();
 }

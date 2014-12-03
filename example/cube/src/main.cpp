@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2013 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -26,12 +26,30 @@ using namespace minko::component;
 
 const std::string TEXTURE_FILENAME = "texture/box.png";
 
-int
-main(int argc, char** argv)
+void
+createRandomCube(scene::Node::Ptr root, geometry::Geometry::Ptr geom, render::Effect::Ptr effect)
 {
-	auto canvas = Canvas::create("Minko Example - Cube", 800, 600);
+    auto node = scene::Node::create();
+    auto r = math::sphericalRand(1.f);
+    auto material = material::BasicMaterial::create();
 
+    material->diffuseColor(math::vec4((r + 1.f) * .5f, 1.f));
+
+    node->addComponent(Transform::create(
+        math::translate(r * 50.f) * math::scale(math::vec3(.2f))
+    ));
+    node->addComponent(Surface::create(geom, material, effect));
+
+    root->addChild(node);
+}
+
+int main(int argc, char** argv)
+{
+    auto canvas = Canvas::create("Minko Example - Cube", 800, 600);
     auto sceneManager = SceneManager::create(canvas);
+    auto root = scene::Node::create("root")->addComponent(sceneManager);
+
+    //sceneManager->assets()->context()->errorsEnabled(true);
 
 	// setup assets
 	sceneManager->assets()->loader()->options()
@@ -54,8 +72,7 @@ main(int argc, char** argv)
 		->addComponent(Transform::create(
 			math::inverse(math::lookAt(math::vec3(0.f, 0.f, 150.f), math::vec3(0.f), math::vec3(0.f, 1.f, 0.f)))
 		))
-		->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
-
+		->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
 	root->addChild(camera);
 
     auto meshes = scene::Node::create();
@@ -87,9 +104,6 @@ main(int argc, char** argv)
                     createRandomCube(
                         meshes,
                         sceneManager->assets()->geometry("cube"),
-			material::BasicMaterial::create()->diffuseMap(
-			sceneManager->assets()->texture(TEXTURE_FILENAME)
-			),
                         sceneManager->assets()->effect("effect/Basic.effect")
                     );
             }

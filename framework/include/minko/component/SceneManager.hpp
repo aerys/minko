@@ -65,8 +65,6 @@ namespace minko
 		    {
                 auto sm = std::shared_ptr<SceneManager>(new SceneManager(canvas));
 
-                sm->initialize();
-
                 return sm;
 		    }
 

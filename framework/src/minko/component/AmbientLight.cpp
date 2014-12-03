@@ -41,7 +41,5 @@ AmbientLight::clone(const CloneOption& option)
 {
 	auto al = std::shared_ptr<AmbientLight>(new AmbientLight(*this, option));
 
-	al->initialize();
-
 	return al;
 }

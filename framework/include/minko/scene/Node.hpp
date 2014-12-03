@@ -44,13 +44,13 @@ namespace minko
 			std::weak_ptr<Node> 				_root;
             std::weak_ptr<Node>					_parent;
 			data::Store                     _container;
-			std::list<AbsCtrlPtr>				_components;
+			std::list<AbsCmpPtr>				_components;
 
 			Signal<Ptr, Ptr, Ptr>				_added;
 			Signal<Ptr, Ptr, Ptr>				_removed;
 			Signal<Ptr, Ptr>					_layoutsChanged;
-			Signal<Ptr, Ptr, AbsCtrlPtr>		_componentAdded;
-			Signal<Ptr, Ptr, AbsCtrlPtr>		_componentRemoved;
+			Signal<Ptr, Ptr, AbsCmpPtr>		_componentAdded;
+			Signal<Ptr, Ptr, AbsCmpPtr>		_componentRemoved;
 
 			std::string							_uuid;
 
@@ -204,14 +204,14 @@ namespace minko
 			}
 
 			inline
-			Signal<Ptr, Ptr, AbsCtrlPtr>&
+			Signal<Ptr, Ptr, AbsCmpPtr>&
 			componentAdded()
 			{
 				return _componentAdded;
 			}
 
 			inline
-			Signal<Ptr, Ptr, AbsCtrlPtr>&
+			Signal<Ptr, Ptr, AbsCmpPtr>&
 			componentRemoved()
 			{
 				return _componentRemoved;
@@ -246,7 +246,7 @@ namespace minko
 				return component<T>() != nullptr;
 			}
 
-            const std::list<AbsCtrlPtr>
+            const std::list<AbsCmpPtr>
             components()
             {
                 return _components;

@@ -155,6 +155,12 @@ void
 MaterialParser::deserializeBasicProperty(MaterialPtr		material,
 										 BasicProperty		serializedProperty)
 {
-	std::vector<float> serializedPropertyValue = deserialize::TypeDeserializer::deserializeVector<float>(serializedProperty.a1);
-	material->data()->set<float>(serializedProperty.a0, serializedPropertyValue[0]);
+    std::vector<float> serializedPropertyValue = deserialize::TypeDeserializer::deserializeVector<float>(serializedProperty.a1);
+
+	// TODO remove basic and complex property types and always specify property content type
+
+    if (serializedProperty.a0 == "zSort")
+        material->data()->set<bool>("zSort", serializedPropertyValue[0]);
+    else
+	    material->data()->set<float>(serializedProperty.a0, serializedPropertyValue[0]);
 }

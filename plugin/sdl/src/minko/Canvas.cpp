@@ -669,22 +669,22 @@ Canvas::step()
                 }
                 
             if (_touch->numTouches() == 2)
-                {
-                Vector2::Ptr touch2 = nullptr;
+            {
+                const math::vec2* touch2 = nullptr;
                     
                 for (auto i = 0; i < _touch->identifiers().size(); ++i)
                 {
                     if (_touch->identifiers()[i] != id)
-                        touch2 = _touch->touch(_touch->identifiers()[i]);
+                        touch2 = &_touch->touch(_touch->identifiers()[i]);
                 }
                     
                 if (touch2 != nullptr)
-                    {
-                    auto dX1 = (x - dx) - touch2->x();
-                    auto dY1 = (y - dy) - touch2->y();
+                {
+                    auto dX1 = (x - dx) - touch2->x;
+                    auto dY1 = (y - dy) - touch2->y;
 
-                    auto dX2 = x - touch2->x();
-                    auto dY2 = y - touch2->y();
+                    auto dX2 = x - touch2->x;
+                    auto dY2 = y - touch2->y;
                     
                     auto dist1 = std::sqrt(std::pow(dX1, 2) + std::pow(dY1, 2));
                     auto dist2 = std::sqrt(std::pow(dX2, 2) + std::pow(dY2, 2));

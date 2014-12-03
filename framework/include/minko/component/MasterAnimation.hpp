@@ -52,8 +52,6 @@ namespace minko
 			{
 				Ptr ptr(new MasterAnimation(isLooping));
 
-				ptr->initialize();
-
 				return ptr;
 			}
 

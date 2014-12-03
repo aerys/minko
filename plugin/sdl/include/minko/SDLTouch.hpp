@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Canvas.hpp"
 #include "minko/input/Touch.hpp"
-#include "minko/math/Vector2.hpp"
 
 namespace minko
 {
@@ -47,7 +46,7 @@ namespace minko
             else
             {
                 _identifiers.push_back(identifier);
-                _touches[identifier] = math::Vector2::create(x, y);
+                _touches[identifier] = math::vec2(x, y);
             }
         }
 
@@ -60,8 +59,8 @@ namespace minko
             }
             else
             {
-                _touches[identifier]->x(x);
-                _touches[identifier]->y(y);
+                _touches[identifier].x = x;
+                _touches[identifier].y = y;
             }
         }
 

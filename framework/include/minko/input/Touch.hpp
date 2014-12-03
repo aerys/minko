@@ -24,7 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 #include "minko/AbstractCanvas.hpp"
 #include "minko/Any.hpp"
-#include "minko/math/Vector2.hpp"
 
 namespace minko
 {
@@ -38,7 +37,7 @@ namespace minko
         protected:
             std::shared_ptr<AbstractCanvas>             _canvas;
             
-            std::map<int, math::Vector2::Ptr>           _touches; // identifier to x/y
+            std::map<int, math::vec2>                   _touches; // identifier to x/y
 
             std::vector<int>                            _identifiers;
 
@@ -58,7 +57,7 @@ namespace minko
 
         public:
             inline
-            std::map<int, minko::math::Vector2::Ptr>
+            std::map<int, math::vec2>
             touches()
             {
                 return _touches;
@@ -79,7 +78,7 @@ namespace minko
             }
 
             inline
-            minko::math::Vector2::Ptr
+            math::vec2
             touch(int identifier)
             {
                 return _touches[identifier];

@@ -26,7 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/audio/SoundChannel.hpp"
 #include "minko/audio/SoundTransform.hpp"
 #include "minko/audio/Sound.hpp"
-#include "minko/Color.hpp"
 #include "minko/CloneOption.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/OpenGLES2Context.hpp"

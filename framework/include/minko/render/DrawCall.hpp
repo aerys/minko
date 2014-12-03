@@ -185,8 +185,7 @@ namespace minko
 
 			void
 			render(std::shared_ptr<AbstractContext>  context,
-                   AbsTexturePtr                     renderTarget,
-                   const render::ScissorBox&         viewport) const;
+                   AbsTexturePtr                     renderTarget) const;
 
             void
             bind(std::shared_ptr<Program>   program,

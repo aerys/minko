@@ -38,20 +38,15 @@ PointLight::PointLight(float diffuse,
 
 PointLight::PointLight(const PointLight& pointLight, const CloneOption& option) :
 	AbstractDiscreteLight("pointLights", pointLight.diffuse(), pointLight.specular()),
-	_attenuationCoeffs(Vector3::create(pointLight._attenuationCoeffs->x(), pointLight._attenuationCoeffs->y(), pointLight._attenuationCoeffs->z())),
-	_worldPosition(Vector3::create(pointLight.data()->get<Vector3::Ptr>("position")))
+	_attenuationCoeffs(pointLight.attenuationCoefficients())
 {
-	data()
-		->set("attenuationCoeffs", _attenuationCoeffs)
-		->set("position", _worldPosition);
+    updateModelToWorldMatrix(math::mat4(1.f));
 }
 
 AbstractComponent::Ptr
 PointLight::clone(const CloneOption& option)
 {
 	auto light = std::shared_ptr<PointLight>(new PointLight(*this, option));
-
-	light->AbstractDiscreteLight::initialize();
 
 	return light;
 }

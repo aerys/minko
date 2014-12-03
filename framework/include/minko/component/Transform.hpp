@@ -51,13 +51,6 @@ namespace minko
 			Signal<NodePtr, NodePtr, NodePtr>::Slot 		_removedSlot;
 
 		public:
-            ~Transform()
-            {
-                _data = nullptr;
-                _addedSlot = nullptr;
-                _removedSlot = nullptr;
-            }
-
 			inline static
 			Ptr
 			create()

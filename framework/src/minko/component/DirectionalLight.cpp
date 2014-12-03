@@ -29,18 +29,15 @@ DirectionalLight::DirectionalLight(float diffuse, float specular) :
 }
 
 DirectionalLight::DirectionalLight(const DirectionalLight& directionalLight, const CloneOption& option) :
-AbstractDiscreteLight("directionalLights", directionalLight.diffuse(), directionalLight.specular()),
-	_worldDirection(Vector3::create(directionalLight.data()->get<Vector3::Ptr>("direction")))
+AbstractDiscreteLight("directionalLights", directionalLight.diffuse(), directionalLight.specular())
 {
-	data()->set("direction", _worldDirection);
+    updateModelToWorldMatrix(math::mat4(1.f));
 }
 
 AbstractComponent::Ptr
 DirectionalLight::clone(const CloneOption& option)
 {
 	auto light = std::shared_ptr<DirectionalLight>(new DirectionalLight(*this, option));
-
-	light->initialize();
 
 	return light;
 }

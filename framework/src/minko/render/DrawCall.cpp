@@ -349,9 +349,8 @@ DrawCall::bindStates(const data::BindingMap& stateBindings)
 }
 
 void
-DrawCall::render(AbstractContext::Ptr    		context,
-                 AbstractTexture::Ptr           renderTarget,
-                 const render::ScissorBox&      viewport) const
+DrawCall::render(AbstractContext::Ptr   context,
+                 AbstractTexture::Ptr   renderTarget) const
 {
     context->setProgram(_program->id());
 
@@ -360,11 +359,6 @@ DrawCall::render(AbstractContext::Ptr    		context,
         context->setRenderToTexture(_states->target()->id(), true);
     else if (renderTarget)
         context->setRenderToTexture(renderTarget->id(), true);*/
-
-    // FIXME: set viewport according to in arg if not render target is bound
-    //   if (viewport.width >= 0 && viewport.height >= 0)
-    //   context->configureViewport(viewport.x, viewport.y, viewport.width, viewport.height);
-
 
     for (const auto& u : _uniformFloat)
     {

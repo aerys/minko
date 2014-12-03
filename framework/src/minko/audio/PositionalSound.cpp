@@ -35,29 +35,30 @@ PositionalSound::update(scene::Node::Ptr target)
     if (!_channel->playing())
         return;
 
-    static Vector3::ConstPtr zero = Vector3::zero();
-    static Vector3::ConstPtr up = Vector3::up();
-    static Vector3::Ptr tmp = Vector3::create();
+    static const auto zero = math::vec3(0.f);
+    static const auto up = math::vec3(0.f, 1.f, 0.f);
+    static auto tmp = math::vec3();
 
     // To compute the 3D volume, we need:
     // - the camera position in world space
-    auto cameraPos = _camera->component<component::Transform>()->modelToWorld(zero);
+    auto cameraPos = math::vec3((_camera->component<component::Transform>()->modelToWorldMatrix() * math::vec4(0.f)).xyz);
     // - the target in world space
-    auto targetPos = target->component<component::Transform>()->modelToWorld(zero);
-    auto direction = cameraPos->subtract(targetPos);
+    auto targetPos = math::vec3((target->component<component::Transform>()->modelToWorldMatrix() * math::vec4(0.f)).xyz);
+    auto direction = cameraPos - targetPos;
     // - the distance betwen the camera and the target
-    auto distance = direction->length();
+    auto distance = math::length(direction);
     // - the direction the camera is looking to
-    auto front = _camera->component<component::Transform>()->modelToWorld(Vector3::up());
+    auto front = math::vec3((_camera->component<component::Transform>()->modelToWorldMatrix() * math::vec4(up, 1.f)).xyz);
 
     // Normalize vectors to use the dot product operation.
-    front->normalize();
-    direction->normalize();
+    math::normalize(front);
+    math::normalize(direction);
 
     // We need a vector to orient the angle so it can be signed.
-    auto orientation = tmp->copyFrom(up)->cross(front);
+    tmp = up;
+    auto orientation = math::cross(tmp, front);
     // Now we can get a signed scaled angle between [-1 ; 1] with a dot product.
-    auto angle = orientation->dot(direction);
+    auto angle = math::dot(orientation, direction);
 
     // The volume is computed based on the distance.
     auto volume = _audibilityCurve(distance);

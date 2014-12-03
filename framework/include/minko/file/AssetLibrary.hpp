@@ -50,8 +50,7 @@ namespace minko
 			typedef std::shared_ptr<scene::Node>				NodePtr;
             typedef std::shared_ptr<component::AbstractScript>  AbsScriptPtr;
 			typedef std::shared_ptr<material::Material>		    MaterialPtr;
-            typedef std::shared_ptr<data::Provider>                         MaterialPtr;
-            typedef std::shared_ptr<audio::Sound>                           SoundPtr;
+            typedef std::shared_ptr<audio::Sound>               SoundPtr;
 
 		private:
 			AbsContextPtr												   _context;

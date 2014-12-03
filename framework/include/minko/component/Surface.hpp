@@ -83,9 +83,12 @@ namespace minko
                 return std::shared_ptr<Surface>(new Surface(name, geometry, material, effect, technique));
 			}
 
+            // TODO #Clone
+            /*
 			AbstractComponent::Ptr
 			clone(const CloneOption& option);
-
+            */
+            
 			~Surface()
 			{
 			}

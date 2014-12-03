@@ -125,8 +125,11 @@ namespace minko
 				return ctrl;
 			}
 
+            // TODO #Clone
+            /*
 			AbstractComponent::Ptr
 			clone(const CloneOption& option);
+			*/
 
 			~Renderer()
 			{

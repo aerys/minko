@@ -88,13 +88,9 @@ namespace minko
 			NodeFunction								        _nodeFunction;
 			EffectFunction								        _effectFunction;
             TextureFormatFunction                               _textureFormatFunction;
-
             int                                                 _seekingOffset;
             int                                                 _seekedLength;
 
-            int                                                 _seekingOffset;
-            int                                                 _seekedLength;
-			
 			static ProtocolFunction								_defaultProtocolFunction;
 		
 		public:

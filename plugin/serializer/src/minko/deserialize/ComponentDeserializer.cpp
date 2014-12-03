@@ -344,9 +344,9 @@ ComponentDeserializer::deserializeSkinning(std::string&		serializedAnimation,
 
 		if (!nodeSet->nodes().empty())
 		{
-
-			bones.push_back(geometry::Bone::create(offsetMatrix, vertexShortIds, boneWeight));
-			boneNodes.push_back(nodeSet->nodes()[0]);
+            auto node = nodeSet->nodes()[0];
+			bones.push_back(geometry::Bone::create(node, offsetMatrix, vertexShortIds, boneWeight));
+			boneNodes.push_back(node);
 		}
 	}
 

@@ -66,8 +66,6 @@ BoundingBox::clone(const CloneOption& option)
 {
 	Ptr bbox(new BoundingBox(*this, option));
 
-	bbox->initialize();
-
 	return bbox;
 }
 
@@ -104,7 +102,7 @@ BoundingBox::targetRemoved(scene::Node::Ptr target)
 }
 
 void
-BoundingBox::computeBox(const std::vector<component::Surface::Ptr>& surfaces, math::Vector3::Ptr min, math::Vector3::Ptr max)
+BoundingBox::computeBox(const std::vector<component::Surface::Ptr>& surfaces, math::vec3& min, math::vec3& max)
 {
     for (auto& surface : surfaces)
     {

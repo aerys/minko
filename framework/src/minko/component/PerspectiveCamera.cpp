@@ -54,6 +54,8 @@ PerspectiveCamera::PerspectiveCamera(float			      fov,
   		->set("worldToScreenMatrix",	_viewProjection);
 }
 
+// TODO #Clone
+/*
 PerspectiveCamera::PerspectiveCamera(const PerspectiveCamera& camera, const CloneOption& option) :
 	_data(camera._data->clone()),
 	_fov(camera._fov),
@@ -75,6 +77,7 @@ PerspectiveCamera::clone(const CloneOption& option)
 
 	return ctrl;
 }
+*/
 
 void
 PerspectiveCamera::targetAdded(NodePtr target)

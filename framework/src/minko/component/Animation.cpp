@@ -58,8 +58,6 @@ Animation::clone(const CloneOption& option)
 {
     auto anim = std::shared_ptr<Animation>(new Animation(*this, option));
 
-    anim->initialize();
-
     return anim;
 }
 
@@ -67,10 +65,11 @@ void
 Animation::update()
 {
 	for (auto& timeline : _timelines)
+    {
         {
             const uint currentTime = _currentTime % (timeline->duration() + 1); // Warning: bounds!
 
-            timeline->update(currentTime, target->data());
+            timeline->update(currentTime, target()->data());
         }
     }
 }
