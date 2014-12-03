@@ -132,7 +132,7 @@ int main(int argc, char** argv) {
 
    auto canvas = Canvas::create("My title", 800, 600);
 
-   auto sceneManager = SceneManager::create(canvas->context());
+   auto sceneManager = SceneManager::create(canvas);
 
    // setup assets
    sceneManager->assets()->defaultOptions()->resizeSmoothly(true);

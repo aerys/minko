@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
 
    auto canvas = Canvas::create("", 800, 600);
 
-   auto sceneManager = SceneManager::create(canvas->context());
+   auto sceneManager = SceneManager::create(canvas);
 
    // add the png parser to load textures
    // add the Phong effect
@@ -177,7 +177,7 @@ int main(int argc, char** argv) {
 
    auto canvas = Canvas::create("Minko Tutorial - Working with the PhongMaterial", 800, 600);
 
-   auto sceneManager = SceneManager::create(canvas->context());
+   auto sceneManager = SceneManager::create(canvas);
 
    // add the png parser to load textures
    // add the Phong effect

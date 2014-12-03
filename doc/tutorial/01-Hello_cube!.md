@@ -45,7 +45,7 @@ All the assets are loaded to and from an `AssetLibrary`. You can create an `Asse
 The following piece of code will create a `SceneManager` and use it's `SceneManager::assets()` property to load the `Basic.effect` from the filesystem:
 
 ```cpp
-auto sceneManager = component::SceneManager::create(canvas->context());
+auto sceneManager = component::SceneManager::create(canvas);
 
 sceneManager->assets()->queue("effect/Basic.effect"); auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader) {
 
@@ -231,7 +231,7 @@ int
 main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Tutorial - Hello cube!", WINDOW_WIDTH, WINDOW_HEIGHT);
-    auto sceneManager = component::SceneManager::create(canvas->context());
+    auto sceneManager = component::SceneManager::create(canvas);
 
     sceneManager->assets()->queue("effect/Basic.effect");
     auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)

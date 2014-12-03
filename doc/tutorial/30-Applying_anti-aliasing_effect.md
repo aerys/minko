@@ -18,7 +18,7 @@ Step 1: Load the anti-aliasing effect
 The next step is to load the effect that we want to use. For us, it's the FXAA one:
 
 ```cpp
-auto sceneManager = SceneManager::create(canvas->context());
+auto sceneManager = SceneManager::create(canvas);
 
 sceneManager->assets()->queue("effect/FXAA/FXAA.effect"); 
 ```
@@ -148,7 +148,7 @@ const uint WINDOW_HEIGHT = 600;
 int main(int argc, char** argv) {
 
    auto canvas = Canvas::create("Minko Tutorial - Applying anti-aliasing effect", WINDOW_WIDTH, WINDOW_HEIGHT);
-   auto sceneManager = SceneManager::create(canvas->context());
+   auto sceneManager = SceneManager::create(canvas);
 
    sceneManager->assets()
        ->queue("effect/Basic.effect")

@@ -116,16 +116,18 @@ Final code
 ```cpp
 #include "minko/Minko.hpp" 
 #include "minko/MinkoSDL.hpp"
-using namespace minko; 
+
+using namespace minko; 
 using namespace minko::math; 
 using namespace minko::component;
-const uint WINDOW_WIDTH = 800; 
+
+const uint WINDOW_WIDTH = 800; 
 const uint WINDOW_HEIGHT = 600;
 
 int main(int argc, char** argv) {
 
    auto canvas = Canvas::create("Tutorial - Rotating the camera around an object with the mouse", WINDOW_WIDTH, WINDOW_HEIGHT);
-   auto sceneManager = component::SceneManager::create(canvas->context());
+   auto sceneManager = component::SceneManager::create(canvas);
 
    // We replace the basic effect by the Phong effect to have light effects
    sceneManager->assets()->queue("effect/Phong.effect");

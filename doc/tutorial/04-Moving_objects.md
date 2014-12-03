@@ -74,16 +74,18 @@ Final code
 ```cpp
 #include "minko/Minko.hpp" 
 #include "minko/MinkoSDL.hpp"
-using namespace minko; 
+
+using namespace minko; 
 using namespace minko::math; 
 using namespace minko::component;
-const uint WINDOW_WIDTH = 800; 
+
+const uint WINDOW_WIDTH = 800; 
 const uint WINDOW_HEIGHT = 600;
 
 int main(int argc, char** argv) {
 
    auto canvas = Canvas::create("Tutorial - Moving objets", WINDOW_WIDTH, WINDOW_HEIGHT);
-   auto sceneManager = component::SceneManager::create(canvas->context());
+   auto sceneManager = component::SceneManager::create(canvas);
 
    sceneManager->assets()->queue("effect/Basic.effect");
    auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)                    

@@ -167,7 +167,7 @@ const uint WINDOW_HEIGHT = 600;
 int main(int argc, char** argv) {
 
  auto canvas = Canvas::create("Minko Tutorial - Binding the model to world transform", WINDOW_WIDTH, WINDOW_HEIGHT);
- auto sceneManager = component::SceneManager::create(canvas->context());
+ auto sceneManager = component::SceneManager::create(canvas);
  sceneManager->assets()->queue("effect/MyCustomEffect.effect");
  auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
  {

@@ -38,7 +38,7 @@ using namespace minko::math;
 int main(int argc, char** argv) {
 
    auto canvas = Canvas::create("", 800, 600);
-   auto sceneManager = SceneManager::create(canvas->context());
+   auto sceneManager = SceneManager::create(canvas);
    // add the png parser to load textures
    // add the Phong effect
    sceneManager->assets()
@@ -142,7 +142,7 @@ using namespace minko::math;
 int main(int argc, char** argv) {
 
    auto canvas = Canvas::create("Minko Tutorial - Working with environment maps", 800, 600);
-   auto sceneManager = SceneManager::create(canvas->context());
+   auto sceneManager = SceneManager::create(canvas);
    // add the png parser to load textures
    // add the Phong effect
    sceneManager->assets()
