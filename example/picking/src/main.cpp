@@ -101,7 +101,7 @@ main(int argc, char** argv)
             ->addChild(sphere)
             ->addChild(teapot);
 
-        root->addComponent(Picking::create(sceneManager, canvas, camera, false));
+        root->addComponent(Picking::create(camera, false, true));
 
         pickingMouseClick = root->component<Picking>()->mouseClick()->connect([&](scene::Node::Ptr node)
         {

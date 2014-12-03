@@ -543,6 +543,10 @@ Canvas::step()
             auto id = (int)(event.tfinger.fingerId);
 
             _touch->addTouch(id, x, y);
+            
+            _mouse->x((int)_touch->averageX());
+            _mouse->y((int)_touch->averageY());
+
             _touch->touchDown()->execute(
                 _touch, 
                 id, 
@@ -570,8 +574,12 @@ Canvas::step()
             auto x = event.tfinger.x * _width;
             auto y = event.tfinger.y * _height;
             auto id = (int)(event.tfinger.fingerId);
+            
+            _mouse->x((int)_touch->averageX());
+            _mouse->y((int)_touch->averageY());
 
             _touch->removeTouch(id);
+
             _touch->touchUp()->execute(
                 _touch, 
                 id, 
@@ -630,6 +638,10 @@ Canvas::step()
                 _touch->lastTouchDownTime(-1.0f);
             
             _touch->updateTouch(id, x, y);
+            
+            _mouse->x((int)_touch->averageX());
+            _mouse->y((int)_touch->averageY());
+
             _touch->touchMove()->execute(
                 _touch, 
                 id,

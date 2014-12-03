@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/input/Mouse.hpp"
+#include "minko/input/Touch.hpp"
 #include "minko/math/Matrix4x4.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/math/Vector4.hpp"
@@ -41,16 +42,14 @@ using namespace minko;
 using namespace component;
 
 
-Picking::Picking(SceneManagerPtr    sceneManager,
-                 AbstractCanvasPtr    canvas,
-                 NodePtr            camera,
-                 bool                addPickingLayout) :
-    _mouse(canvas->mouse()),
-    _camera(camera),
+Picking::Picking() :
+    _sceneManager(nullptr),
+    _context(nullptr),
+    _mouse(nullptr),
+    _touch(nullptr),
+    _camera(nullptr),
     _pickingId(0),
-    _context(sceneManager->assets()->context()),
     _pickingProjection(math::Matrix4x4::create()),
-    _sceneManager(sceneManager),
     _pickingProvider(data::StructureProvider::create("picking")),
     _mouseMove(Signal<NodePtr>::create()),
     _mouseLeftClick(Signal<NodePtr>::create()),
@@ -61,25 +60,53 @@ Picking::Picking(SceneManagerPtr    sceneManager,
     _mouseRightUp(Signal<NodePtr>::create()),
     _mouseOut(Signal<NodePtr>::create()),
     _mouseOver(Signal<NodePtr>::create()),
-    _addPickingLayout(addPickingLayout)
+    _touchDown(Signal<NodePtr>::create()),
+    _touchMove(Signal<NodePtr>::create()),
+    _touchUp(Signal<NodePtr>::create()),
+    _tap(Signal<NodePtr>::create()),
+    _doubleTap(Signal<NodePtr>::create()),
+    _longHold(Signal<NodePtr>::create()),
+    _addPickingLayout(true),
+    _emulateMouseWithTouch(true)
 {
-    _renderer    = Renderer::create(0xFFFF00FF, nullptr, sceneManager->assets()->effect("effect/Picking.effect"), 1000.f, "Picking Renderer");
-    _renderer->scissor(0, 0, 1, 1);
-    _renderer->layoutMask(scene::Layout::Group::PICKING);
 }
 
 void
-Picking::initialize()
+Picking::initialize(NodePtr             camera,
+                    bool                addPickingLayout, 
+                    bool                emulateMouseWithTouch)
 {
+    _camera = camera;
+    _emulateMouseWithTouch = emulateMouseWithTouch;
+    _addPickingLayout = addPickingLayout;
+
     _pickingProvider->set("projection", _pickingProjection);
 
+    _targetAddedSlot = targetAdded()->connect(std::bind(
+        &Picking::targetAddedHandler,
+        std::static_pointer_cast<Picking>(shared_from_this()),
+        std::placeholders::_1,
+        std::placeholders::_2
+    ));
+
+    _targetRemovedSlot = targetRemoved()->connect(std::bind(
+        &Picking::targetRemovedHandler,
+        std::static_pointer_cast<Picking>(shared_from_this()),
+        std::placeholders::_1,
+        std::placeholders::_2
+    ));
+}
+
+void
+Picking::bindSignals()
+{
     _mouseMoveSlot = _mouse->move()->connect(std::bind(
         &Picking::mouseMoveHandler,
         std::static_pointer_cast<Picking>(shared_from_this()),
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3
-        ));
+    ));
 
     _mouseLeftDownSlot = _mouse->leftButtonDown()->connect(std::bind(
         &Picking::mouseLeftDownHandler,
@@ -110,28 +137,86 @@ Picking::initialize()
         &Picking::mouseRightUpHandler,
         std::static_pointer_cast<Picking>(shared_from_this()),
         std::placeholders::_1));
-
-    _targetAddedSlot = targetAdded()->connect(std::bind(
-        &Picking::targetAddedHandler,
+    
+    _touchDownSlot = _touch->touchDown()->connect(std::bind(
+        &Picking::touchDownHandler,
         std::static_pointer_cast<Picking>(shared_from_this()),
         std::placeholders::_1,
-        std::placeholders::_2
-    ));
-
-    _targetRemovedSlot = targetRemoved()->connect(std::bind(
-        &Picking::targetRemovedHandler,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
+    
+    _touchUpSlot = _touch->touchUp()->connect(std::bind(
+        &Picking::touchUpHandler,
         std::static_pointer_cast<Picking>(shared_from_this()),
         std::placeholders::_1,
-        std::placeholders::_2
-    ));
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
+    
+    _touchMoveSlot = _touch->touchMove()->connect(std::bind(
+        &Picking::touchMoveHandler,
+        std::static_pointer_cast<Picking>(shared_from_this()),
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
+    
+    _touchTapSlot = _touch->tap()->connect(std::bind(
+        &Picking::touchTapHandler,
+        std::static_pointer_cast<Picking>(shared_from_this()),
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3));
+    
+    _touchDoubleTapSlot = _touch->doubleTap()->connect(std::bind(
+        &Picking::touchDoubleTapHandler,
+        std::static_pointer_cast<Picking>(shared_from_this()),
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3));
+    
+    _touchLongHoldSlot = _touch->longHold()->connect(std::bind(
+        &Picking::touchLongHoldHandler,
+        std::static_pointer_cast<Picking>(shared_from_this()),
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3));
+
+        _executeMoveHandler = false;
+        _executeRightClickHandler = false;
+        _executeLeftClickHandler = false;
+        _executeRightDownHandler = false;
+        _executeLeftDownHandler = false;
+        _executeRightUpHandler = false;
+        _executeLeftUpHandler = false;
+        _executeTouchDownHandler = false;
+        _executeTouchUpHandler = false;
+        _executeTouchMoveHandler = false;
+        _executeTapHandler = false;
+        _executeDoubleTapHandler = false;
+        _executeLongHoldHandler = false;
 }
 
 void
 Picking::targetAddedHandler(AbsCtrlPtr ctrl, NodePtr target)
 {
-    if (target->components<Picking>().size() > 1)
-        throw std::logic_error("There cannot be two Picking on the same node.");
+    if (numTargets() > 1)
+        throw std::logic_error("The Picking component cannot be added to two targets");
 
+    _sceneManager = target->root()->component<SceneManager>();
+    auto canvas = _sceneManager->canvas();
+    
+    _mouse = canvas->mouse();
+    _touch = canvas->touch();
+    _context = canvas->context();
+
+    bindSignals();
+    
+    _renderer = Renderer::create(0xFFFF00FF, nullptr, _sceneManager->assets()->effect("effect/Picking.effect"), 1000.f, "Picking Renderer");
+    _renderer->scissor(0, 0, 1, 1);
+    _renderer->layoutMask(scene::Layout::Group::PICKING);
+    
     updateDescendants(target);
 
     _addedSlot = target->added()->connect(std::bind(
@@ -166,6 +251,9 @@ Picking::targetAddedHandler(AbsCtrlPtr ctrl, NodePtr target)
 void
 Picking::targetRemovedHandler(AbsCtrlPtr ctrl, NodePtr target)
 {
+    _renderer = nullptr;
+    _sceneManager = nullptr;
+
     _addedSlot = nullptr;
     _removedSlot = nullptr;
 
@@ -422,6 +510,36 @@ Picking::renderingEnd(RendererPtr renderer)
         _mouseLeftUp->execute(_lastPickedSurface->targets()[0]);
     }
 
+    if (_executeTouchDownHandler && _lastPickedSurface)
+    {
+        _touchDown->execute(_lastPickedSurface->targets()[0]);
+    }
+
+    if (_executeTouchUpHandler && _lastPickedSurface)
+    {
+        _touchUp->execute(_lastPickedSurface->targets()[0]);
+    }
+
+    if (_executeTouchMoveHandler && _lastPickedSurface)
+    {
+        _touchMove->execute(_lastPickedSurface->targets()[0]);
+    }
+
+    if (_executeTapHandler && _lastPickedSurface)
+    {
+        _tap->execute(_lastPickedSurface->targets()[0]);
+    }
+
+    if (_executeDoubleTapHandler && _lastPickedSurface)
+    {
+        _doubleTap->execute(_lastPickedSurface->targets()[0]);
+    }
+
+    if (_executeLongHoldHandler && _lastPickedSurface)
+    {
+        _longHold->execute(_lastPickedSurface->targets()[0]);
+    }
+
     if (!(_mouseOver->numCallbacks() > 0 || _mouseOut->numCallbacks() > 0))
         _renderer->enabled(false);
 
@@ -488,7 +606,7 @@ void
 Picking::mouseRightDownHandler(MousePtr mouse)
 {
 
-    if (_mouseRightClick->numCallbacks() > 0 || _mouseRightDown->numCallbacks() > 0)
+    if (_mouseRightDown->numCallbacks() > 0)
     {
         _executeRightDownHandler = true;
         _renderer->enabled(true);
@@ -498,9 +616,94 @@ Picking::mouseRightDownHandler(MousePtr mouse)
 void
 Picking::mouseLeftDownHandler(MousePtr mouse)
 {
-    if (_mouseLeftClick->numCallbacks() > 0 || _mouseLeftDown->numCallbacks() > 0)
+    if (_mouseLeftDown->numCallbacks() > 0)
     {
         _executeLeftDownHandler = true;
+        _renderer->enabled(true);
+    }
+}
+
+void
+Picking::touchDownHandler(TouchPtr touch, int identifier, float x, float y)
+{
+    if (_touchDown->numCallbacks() > 0)
+    {
+        _executeTouchDownHandler = true;
+        _renderer->enabled(true);
+    }
+    if (_emulateMouseWithTouch && _touch->numTouches() == 1 && _mouseLeftDown->numCallbacks() > 0)
+    {
+        _executeLeftDownHandler = true;
+        _renderer->enabled(true);
+    }
+}
+
+void
+Picking::touchUpHandler(TouchPtr touch, int identifier, float x, float y)
+{
+    if (_touchUp->numCallbacks() > 0)
+    {
+        _executeTouchUpHandler = true;
+        _renderer->enabled(true);
+    }
+    if (_emulateMouseWithTouch && _touch->numTouches() == 1 && _mouseLeftUp->numCallbacks() > 0)
+    {
+        _executeLeftUpHandler = true;
+        _renderer->enabled(true);
+    }
+}
+
+void
+Picking::touchMoveHandler(TouchPtr touch, int identifier, float x, float y)
+{
+    if (_touchMove->numCallbacks() > 0)
+    {
+        _executeTouchMoveHandler = true;
+        _renderer->enabled(true);
+    }
+    if (_emulateMouseWithTouch && _touch->numTouches() == 1 && _mouseMove->numCallbacks() > 0)
+    {
+        _executeMoveHandler = true;
+        _renderer->enabled(true);
+    }
+}
+
+void
+Picking::touchTapHandler(TouchPtr touch, float x, float y)
+{
+    if (_tap->numCallbacks() > 0)
+    {
+        _executeTapHandler = true;
+        _renderer->enabled(true);
+    }
+    if (_emulateMouseWithTouch && _mouseLeftClick->numCallbacks() > 0)
+    {
+        _executeLeftClickHandler = true;
+        _renderer->enabled(true);
+    }
+}
+
+void
+Picking::touchDoubleTapHandler(TouchPtr touch, float x, float y)
+{
+    if (_doubleTap->numCallbacks() > 0)
+    {
+        _executeDoubleTapHandler = true;
+        _renderer->enabled(true);
+    }
+}
+
+void
+Picking::touchLongHoldHandler(TouchPtr touch, float x, float y)
+{
+    if (_doubleTap->numCallbacks() > 0)
+    {
+        _executeDoubleTapHandler = true;
+        _renderer->enabled(true);
+    }
+    if (_emulateMouseWithTouch && _mouseRightClick->numCallbacks() > 0)
+    {
+        _executeRightClickHandler = true;
         _renderer->enabled(true);
     }
 }
