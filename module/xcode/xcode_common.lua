@@ -161,6 +161,7 @@
 			[".s"]         = "sourcecode.asm",
 			[".bmp"]       = "image.bmp",
 			[".wav"]       = "audio.wav",
+			[".xcassets"]  = "folder.assetcatalog",
 			
 		}
 		return types[path.getextension(node.path)] or "text"
@@ -999,7 +1000,8 @@
 			"INFOPLIST_FILE",
 			"INSTALL_PATH",
 			"PRODUCT_NAME",
-			"TARGETED_DEVICE_FAMILY"
+			"TARGETED_DEVICE_FAMILY",
+			"CODE_SIGN_IDENTITY"
 		}
 		
 		local additionalSettings = {
@@ -1030,6 +1032,8 @@
 		if cfg.platform == "ios" then
 			xcode.PrintBuildSetting(4, 'TARGETED_DEVICE_FAMILY = "1,2";', cfg)
 		end
+
+		xcode.PrintBuildSetting(4, 'CODE_SIGN_IDENTITY = "iPhone Developer";', cfg)
 
 		_p(3,'};')
 		_p(3,'name = "%s";', cfgname)
