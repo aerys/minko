@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -69,6 +69,7 @@ namespace minko
 			Signal<Ptr>::Ptr											    _renderingEnd;
 			Signal<Ptr>::Ptr											    _beforePresent;
 			AbsTexturePtr												    _renderTarget;
+            bool                                                                _clearBeforeRender;
 
 			std::set<std::shared_ptr<Surface>>							    _toCollect;
 			EffectPtr													    _effect;
@@ -124,6 +125,9 @@ namespace minko
 				return ctrl;
 			}
 
+			AbstractComponent::Ptr
+			clone(const CloneOption& option);
+
 			~Renderer()
 			{
 			}
@@ -170,6 +174,19 @@ namespace minko
 				return _name;
 			}
 
+			float
+			priority()
+			{
+				return _priority;
+			}
+
+			inline
+			void
+			priority(const float priority)
+			{
+				_priority = priority;
+			}
+
 
             inline 
 			void viewport(const int x, const int y, const int w, const int h)
@@ -205,6 +222,20 @@ namespace minko
 
 			inline
 			bool
+            clearBeforeRender()
+            {
+                return _clearBeforeRender;
+            }
+
+            inline
+            void
+            clearBeforeRender(bool value)
+            {
+                _clearBeforeRender = value;
+            }
+
+            inline
+            bool
 			enabled()
 			{
 				return _enabled;
@@ -270,6 +301,8 @@ namespace minko
 			}*/
 
         protected:
+			Renderer(const Renderer& renderer, const CloneOption& option);
+
 			void
 			targetAdded(NodePtr target);
 

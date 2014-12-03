@@ -42,6 +42,12 @@ Transform::Transform() :
     _modelToWorld = _data->getUnsafePointer<math::mat4>("modelToWorldMatrix");
 }
 
+AbstractComponent::Ptr
+Transform::clone(const CloneOption& option)
+{
+	return Transform::create(this->matrix());
+}
+
 void
 Transform::targetAdded(scene::Node::Ptr	target)
 {
@@ -80,6 +86,13 @@ Transform::targetRemoved(scene::Node::Ptr target)
 
 	_addedSlot = nullptr;
 	_removedSlot = nullptr;
+}
+
+AbstractComponent::Ptr
+Transform::RootTransform::clone(const CloneOption& option)
+{
+	Transform::RootTransform::Ptr origin = std::static_pointer_cast<Transform::RootTransform>(shared_from_this());
+	return Transform::RootTransform::create();
 }
 
 void

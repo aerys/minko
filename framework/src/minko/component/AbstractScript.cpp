@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -77,10 +77,19 @@ AbstractScript::addedOrRemovedHandler(scene::Node::Ptr node, scene::Node::Ptr ta
 void
 AbstractScript::targetRemoved(scene::Node::Ptr target)
 {
+    _started[target] = false;
+    stop(target);
+    
 	_componentAddedSlot     = nullptr;
 	_componentRemovedSlot   = nullptr;
     _frameBeginSlot         = nullptr;
 	_frameEndSlot           = nullptr;
+
+    if (running(target))
+    {
+        _started[target] = false;
+        stop(target);
+    }
 }
 
 void
@@ -114,6 +123,9 @@ AbstractScript::frameBeginHandler(SceneManager::Ptr sceneManager, float time, fl
 {
     auto target = this->target();
 
+    _time = time;
+    _deltaTime = deltaTime;
+
     if (!_started[target] && ready(target))
 	{
         _started[target] = true;
@@ -124,7 +136,10 @@ AbstractScript::frameBeginHandler(SceneManager::Ptr sceneManager, float time, fl
     if (running(target))
         update(target);
 	else
+    {
 		_started[target] = false;
+            stop(target);
+    }
 }
 
 void

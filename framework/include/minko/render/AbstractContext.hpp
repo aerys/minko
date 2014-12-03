@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -139,6 +139,14 @@ namespace minko
                           bool          optimizeForRenderToTexture = false) = 0;
 
 			virtual
+            uint
+            createCompressedTexture(TextureType     type,
+                                    TextureFormat   format,
+                                    unsigned int    width,
+                                    unsigned int    height,
+                                    bool            mipMapping) = 0;
+
+            virtual
 			void
 			uploadTexture2dData(uint			texture,
 							    unsigned int 	width,
@@ -157,6 +165,30 @@ namespace minko
 
 			virtual
 			void
+            uploadCompressedTexture2dData(uint          texture,
+                                          TextureFormat format,
+                                          unsigned int  width,
+                                          unsigned int  height,
+                                          unsigned int  size,
+                                          unsigned int  mipLevel,
+                                          void*         data) = 0;
+
+            virtual
+            void
+            uploadCompressedCubeTextureData(uint                texture,
+                                            CubeTexture::Face   face,
+                                            TextureFormat       format,
+                                            unsigned int        width,
+                                            unsigned int        height,
+                                            unsigned int        mipLevel,
+                                            void*               data) = 0;
+
+            virtual
+            void
+            activateMipMapping(uint texture) = 0;
+
+            virtual
+            void
 			deleteTexture(uint	texture) = 0;
 
 			virtual

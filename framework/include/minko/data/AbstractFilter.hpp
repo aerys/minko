@@ -58,9 +58,7 @@ namespace minko
 			}
 
 			virtual
-			~AbstractFilter()
-			{
-			}
+            ~AbstractFilter() = default;
 
 			void
 			watchProperty(const std::string value);
@@ -109,7 +107,6 @@ namespace minko
 			forgetCurrentSurface()
 			{
 				_currentSurface						= nullptr;
-
 				_currentSurfaceRemovedSlot			= nullptr;
 				_currentSurfaceTargetRemovedSlot	= nullptr;
 			}

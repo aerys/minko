@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -37,22 +37,35 @@ namespace minko
 		protected:
 			std::shared_ptr<AbstractCanvas>	_canvas;
 
-			uint							_x;
-			uint							_y;
+            int                             _x;
+            int                             _y;
 
 			bool							_leftButtonIsDown;
 			bool							_rightButtonIsDown;
+            bool                            _middleButtonIsDown;
 
 			Signal<Ptr, int, int>::Ptr		_mouseMove;
 			Signal<Ptr, int, int>::Ptr		_mouseWheel;
 			Signal<Ptr>::Ptr				_mouseLeftButtonDown;
 			Signal<Ptr>::Ptr				_mouseLeftButtonUp;
+            Signal<Ptr>::Ptr                _mouseLeftClick;
 			Signal<Ptr>::Ptr				_mouseRightButtonDown;
 			Signal<Ptr>::Ptr				_mouseRightButtonUp;
+            Signal<Ptr>::Ptr                _mouseRightClick;
 			Signal<Ptr>::Ptr				_mouseMiddleButtonDown;
 			Signal<Ptr>::Ptr				_mouseMiddleButtonUp;
+            Signal<Ptr>::Ptr                _mouseMiddleClick;
 
 			std::list<Any>					_slots;
+
+            int                             _lastMouseLeftDownX;
+            int                             _lastMouseLeftDownY;
+
+            int                             _lastMouseRightDownX;
+            int                             _lastMouseRightDownY;
+
+            int                             _lastMouseMiddleDownX;
+            int                             _lastMouseMiddleDownY;
 
 		public:
 			inline static
@@ -63,14 +76,14 @@ namespace minko
 			}
 
 			inline
-			unsigned int
+            int
 			x() const
 			{
 				return _x;
 			}
 
 			inline
-			unsigned int
+            int
 			y() const
 			{
 				return _y;
@@ -78,14 +91,14 @@ namespace minko
 
             inline
 			void
-			x(unsigned int x)
+            x(int x)
 			{
 				_x = x;
 			}
 
 			inline
 			void
-			y(unsigned int y)
+            y(int y)
 			{
 				_y = y;
 			}
@@ -105,6 +118,13 @@ namespace minko
 			}
 
 			inline
+            bool
+            middleButtonIsDown() const
+            {
+                return _middleButtonIsDown;
+            }
+
+            inline
 			float
 			normalizedX() const
 			{
@@ -148,6 +168,13 @@ namespace minko
 
 			inline
 			std::shared_ptr<Signal<Ptr>>
+            leftButtonClick()
+            {
+                return _mouseLeftClick;
+            }
+
+            inline
+            std::shared_ptr<Signal<Ptr>>
 			rightButtonDown()
 			{
 				return _mouseRightButtonDown;
@@ -162,6 +189,13 @@ namespace minko
 
 			inline
 			std::shared_ptr<Signal<Ptr>>
+            rightButtonClick()
+            {
+                return _mouseRightClick;
+            }
+
+            inline
+            std::shared_ptr<Signal<Ptr>>
 			middleButtonDown()
 			{
 				return _mouseMiddleButtonDown;
@@ -174,12 +208,22 @@ namespace minko
 				return _mouseMiddleButtonUp;
 			}
 
+            inline
+            std::shared_ptr<Signal<Ptr>>
+            middleButtonClick()
+            {
+                return _mouseMiddleClick;
+            }
+
 			virtual
 			~Mouse()
 			{
 			}
 
 		protected:
+
+            static const int CLICK_MOVE_THRESHOLD;
+
 			Mouse(std::shared_ptr<AbstractCanvas> canvas);
 		};
 	}

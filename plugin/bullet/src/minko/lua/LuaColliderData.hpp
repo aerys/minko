@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -26,46 +26,46 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace component
-	{
-		namespace bullet
-		{
-			class LuaColliderData :
-				public LuaWrapper
-			{
-			private:
-				typedef std::shared_ptr<math::Vector3> Vector3Ptr;
-			public:
+    namespace component
+    {
+        namespace bullet
+        {
+            class LuaColliderData :
+                public LuaWrapper
+            {
+            private:
+                typedef std::shared_ptr<math::Vector3> Vector3Ptr;
+            public:
 
-				static
-				void
-				bind(LuaGlue& state)
-				{
-					auto& colliderData = state.Class<ColliderData>("ColliderData")
-						.method("getRestitution", &ColliderData::restitution)
-						.method("getFriction", &ColliderData::friction)
-						.method("getMass", &ColliderData::mass);
-						/*.property("collisionStated", &ColliderData::collisionStarted);
-					MINKO_LUAGLUE_BIND_SIGNAL(state, ColliderData::Ptr, ColliderData::Ptr);
-						.method("getMass",				&ColliderData::mass)
-						.method("getInertia",			&ColliderData::inertia)
-						.method("getIsStatic",			&ColliderData::isStatic)
-						.method("setRestitution",		static_cast<void (ColliderData::*)(float)>(&ColliderData::restitution))
-						.method("setFriction",			static_cast<void (ColliderData::*)(float)>(&ColliderData::friction))
-						.method("setRollingFriction",	static_cast<void (ColliderData::*)(float)>(&ColliderData::rollingFriction))
-						
-						.method("getRollingFriction",	static_cast<float (ColliderData::*)(void) const>(&ColliderData::rollingFriction))
-						*/
-						//.property("triggeredCollision", &ColliderData::triggerCollisions, &ColliderData::triggerCollisions)
-						
+                static
+                void
+                bind(LuaGlue& state)
+                {
+                    auto& colliderData = state.Class<ColliderData>("ColliderData")
+                        .method("getRestitution", &ColliderData::restitution)
+                        .method("getFriction", &ColliderData::friction)
+                        .method("getMass", &ColliderData::mass);
+                        /*.property("collisionStated", &ColliderData::collisionStarted);
+                    MINKO_LUAGLUE_BIND_SIGNAL(state, ColliderData::Ptr, ColliderData::Ptr);
+                        .method("getMass",                &ColliderData::mass)
+                        .method("getInertia",            &ColliderData::inertia)
+                        .method("getIsStatic",            &ColliderData::isStatic)
+                        .method("setRestitution",        static_cast<void (ColliderData::*)(float)>(&ColliderData::restitution))
+                        .method("setFriction",            static_cast<void (ColliderData::*)(float)>(&ColliderData::friction))
+                        .method("setRollingFriction",    static_cast<void (ColliderData::*)(float)>(&ColliderData::rollingFriction))
 
-					//MINKO_LUAGLUE_BIND_SIGNAL(state, ColliderData::Ptr, ColliderData::Ptr);
-					//colliderData.property("collisionStarted", &ColliderData::collisionStarted);
-					/*collideData.method("collisionEnded", &ColliderData::collisionEnded);
-					*/
-				}
+                        .method("getRollingFriction",    static_cast<float (ColliderData::*)(void) const>(&ColliderData::rollingFriction))
+                        */
+                        //.property("triggeredCollision", &ColliderData::triggerCollisions, &ColliderData::triggerCollisions)
 
-			};
-		}
-	}
+
+                    //MINKO_LUAGLUE_BIND_SIGNAL(state, ColliderData::Ptr, ColliderData::Ptr);
+                    //colliderData.property("collisionStarted", &ColliderData::collisionStarted);
+                    /*collideData.method("collisionEnded", &ColliderData::collisionEnded);
+                    */
+                }
+
+            };
+        }
+    }
 }

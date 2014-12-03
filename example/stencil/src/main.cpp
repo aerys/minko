@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -33,163 +33,164 @@ using namespace minko::render;
 Vector4::Ptr
 generateColor()
 {
-	return Color::hslaToRgba(rand() / (float)RAND_MAX, 0.75f, 0.5f);
+    return Color::hslaToRgba(rand() / float(RAND_MAX), 0.75f, 0.5f);
 }
 
 uint
 generateHexColor()
 {
-	Vector4::Ptr color = generateColor();
+    Vector4::Ptr color = generateColor();
 
-	const unsigned char r = (unsigned char)floorf(255.0f*color->x());
-	const unsigned char g = (unsigned char)floorf(255.0f*color->y());
-	const unsigned char b = (unsigned char)floorf(255.0f*color->z());
-	const unsigned char a = (unsigned char)floorf(255.0f*color->w());
+    const unsigned char r = static_cast<unsigned char>(floorf(255.0f * color->x()));
+    const unsigned char g = static_cast<unsigned char>(floorf(255.0f * color->y()));
+    const unsigned char b = static_cast<unsigned char>(floorf(255.0f * color->z()));
+    const unsigned char a = static_cast<unsigned char>(floorf(255.0f * color->w()));
 
-	return ((r << 24) | (g << 16) | (b << 8) | a);
+    return ((r << 24) | (g << 16) | (b << 8) | a);
 }
 
 void
 generateStars(unsigned int numStars,
-			  file::AssetLibrary::Ptr assets,
-			  std::vector<Node::Ptr>& starNodes)
+              file::AssetLibrary::Ptr assets,
+              std::vector<Node::Ptr>& starNodes)
 {
-	if (assets == nullptr)
-		throw std::invalid_argument("assets");
+    if (assets == nullptr)
+        throw std::invalid_argument("assets");
 
-	starNodes.clear();
-	starNodes.resize(numStars, nullptr);
+    starNodes.clear();
+    starNodes.resize(numStars, nullptr);
 
-	for (unsigned int i = 0; i < numStars; ++i)
-	{
-		starNodes[i] = Node::create("star_" + std::to_string(i))
-			->addComponent(Transform::create())
-			->addComponent(Surface::create(
-				assets->geometry("smallStar"),
-				Material::create()
-					->set("diffuseColor",	generateColor())
-					->set("colorMask",		true)
-					->set("depthMask",		false)
-					->set("depthFunc",		CompareMode::ALWAYS)
-					->set("stencilFunc",	CompareMode::EQUAL)
-					->set("stencilRef",		1)
-					->set("stencilMask",	(unsigned int)0xff)
-					->set("stencilFailOp",	StencilOperation::KEEP),
-				assets->effect("basic")
-			));
+    for (unsigned int i = 0; i < numStars; ++i)
+    {
+        starNodes[i] = Node::create("star_" + std::to_string(i))
+            ->addComponent(Transform::create())
+            ->addComponent(Surface::create(
+                assets->geometry("smallStar"),
+                Material::create()
+                    ->set("diffuseColor",  generateColor())
+                    ->set("colorMask",     true)
+                    ->set("depthMask",     false)
+                    ->set("depthFunc",     CompareMode::ALWAYS)
+                    ->set("stencilFunc",   CompareMode::EQUAL)
+                    ->set("stencilRef",    1)
+                    ->set("stencilMask",   uint(0xff))
+                    ->set("stencilFailOp", StencilOperation::KEEP),
+                assets->effect("basic")
+            ));
 
-		const float minX	= -1.0f;
-		const float rangeX	= 1.0f - minX;
-		const float minY	= -1.0f;
-		const float rangeY	= 1.0f - minY;
+        const float minX    = -1.0f;
+        const float rangeX    = 1.0f - minX;
+        const float minY    = -1.0f;
+        const float rangeY    = 1.0f - minY;
 
-		starNodes[i]->component<Transform>()->matrix()
-			->appendScale(0.25f, 0.25f, 0.25f)
-			->appendRotationZ(2.0f * float(M_PI) * (rand() / (float)RAND_MAX))
-			->appendTranslation(
-				minX + (rand() / (float)RAND_MAX)*rangeX,
-				minY + (rand() / (float)RAND_MAX)*rangeY,
-				0.0f
-			);
-	}
+        starNodes[i]->component<Transform>()->matrix()
+            ->appendScale(0.25f, 0.25f, 0.25f)
+            ->appendRotationZ(2.0f * float(M_PI) * (rand() / float(RAND_MAX)))
+            ->appendTranslation(
+                minX + (rand() / float(RAND_MAX)) * rangeX,
+                minY + (rand() / float(RAND_MAX)) * rangeY,
+                0.0f
+            );
+    }
 }
 
 int
 main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Example - Stencil", 800, 600, true);
-	auto sceneManager = SceneManager::create(OpenGLES2Context::create());
+    auto canvas = Canvas::create("Minko Example - Stencil", 1280, 720, true);
+    auto sceneManager = SceneManager::create(canvas);
 
-	// setup assets
-	sceneManager->assets()
-		->geometry("bigStar",	StarGeometry::create(sceneManager->assets()->context(), 5, 0.5f, 0.325f))
-		->geometry("smallStar",	StarGeometry::create(sceneManager->assets()->context(), 5, 0.5f, 0.25f))
-                ->geometry("quad",		QuadGeometry::create(sceneManager->assets()->context()));
-        sceneManager->assets()->loader()->queue("effect/Basic.effect");
+    // setup assets
+    sceneManager->assets()
+        ->geometry("bigStar",      StarGeometry::create(sceneManager->assets()->context(), 5, 0.5f, 0.325f))
+        ->geometry("smallStar",    StarGeometry::create(sceneManager->assets()->context(), 5, 0.5f, 0.25f))
+        ->geometry("quad",         QuadGeometry::create(sceneManager->assets()->context()));
 
-	clock_t					startTime = clock();
-	unsigned int			numSmallStars	= 30;
-	std::vector<Node::Ptr>	smallStars;
+    sceneManager->assets()->loader()
+        ->queue("effect/Basic.effect");
 
-	auto root = Node::create("root")
-		->addComponent(sceneManager);
+    unsigned int               numSmallStars    = 30;
+    std::vector<Node::Ptr>     smallStars;
 
-	auto camera	= Node::create("camera")
-		->addComponent(Renderer::create(generateHexColor()))
-		->addComponent(PerspectiveCamera::create(800.0f / 600.0f, float(M_PI) * 0.25f, 0.1f, 1000.0f))
-		->addComponent(Transform::create());
-	camera->component<Transform>()->matrix()
-		->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f));
+    auto root = Node::create("root")
+        ->addComponent(sceneManager);
 
-	auto bigStarNode = Node::create("bigStarNode")
-			->addComponent(Transform::create());
+    auto camera = Node::create("camera")
+        ->addComponent(Renderer::create(generateHexColor()))
+        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()))
+        ->addComponent(Transform::create());
 
-	auto quadNode = Node::create("quadNode")
-			->addComponent(Transform::create());
+    camera->component<Transform>()->matrix()
+        ->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f));
 
-	root->addChild(camera);
+    auto bigStarNode = Node::create("bigStarNode")
+        ->addComponent(Transform::create());
 
-	auto _ = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
-	{
-		bigStarNode
-			->addComponent(Surface::create(
-				sceneManager->assets()->geometry("bigStar"),
-				Material::create()
-					->set("diffuseColor",		Vector4::create(1.0f, 1.0f, 1.0f, 1.0f))
-					->set("depthMask",			false)
-					->set("depthFunc",			CompareMode::ALWAYS)
-					->set("colorMask",			false)
-					->set("stencilFunc",		CompareMode::NEVER)
-					->set("stencilRef",			1)
-					->set("stencilMask",		(unsigned int)0xff)
-					->set("stencilFailOp",		StencilOperation::REPLACE)
-					->set("triangleCulling",	TriangleCulling::BACK),
-				sceneManager->assets()->effect("basic")
-			));
-		bigStarNode->component<Transform>()->matrix()->appendScale(2.5f, 2.5f, 2.5f);
+    auto quadNode = Node::create("quadNode")
+        ->addComponent(Transform::create());
 
-		quadNode
-			->addComponent(Surface::create(
-				sceneManager->assets()->geometry("quad"),
-				Material::create()
-					->set("diffuseColor",		generateColor())
-					->set("depthMask",			false)
-					->set("depthFunc",			CompareMode::ALWAYS)
-					->set("colorMask",			true)
-					->set("stencilFunc",		CompareMode::EQUAL)
-					->set("stencilRef",			1)
-					->set("stencilMask",		(unsigned int)0xff)
-					->set("stencilFailOp",		StencilOperation::KEEP)
-					->set("triangleCulling",	TriangleCulling::BACK),
-				sceneManager->assets()->effect("basic")
-			));
-		quadNode->component<Transform>()->matrix()
-			->appendScale(4.0f, 4.0f, 4.0f);
+    root->addChild(camera);
 
-		generateStars(numSmallStars, sceneManager->assets(), smallStars);
+    auto _ = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
+    {
+        bigStarNode
+            ->addComponent(Surface::create(
+                sceneManager->assets()->geometry("bigStar"),
+                Material::create()
+                    ->set("diffuseColor",       Vector4::create(1.0f, 1.0f, 1.0f, 1.0f))
+                    ->set("depthMask",          false)
+                    ->set("depthFunc",          CompareMode::ALWAYS)
+                    ->set("colorMask",          false)
+                    ->set("stencilFunc",        CompareMode::NEVER)
+                    ->set("stencilRef",         1)
+                    ->set("stencilMask",        uint(0xff))
+                    ->set("stencilFailOp",      StencilOperation::REPLACE)
+                    ->set("triangleCulling",    TriangleCulling::BACK),
+                sceneManager->assets()->effect("basic")
+            ));
 
-		// stencil writting pass
-		root->addChild(bigStarNode);
-		// stencil fetching pass
-		root->addChild(quadNode);
-		for (auto& star : smallStars)
-			root->addChild(star);
-	});
+        bigStarNode->component<Transform>()->matrix()->appendScale(2.5f, 2.5f, 2.5f);
 
+        quadNode
+            ->addComponent(Surface::create(
+                sceneManager->assets()->geometry("quad"),
+                Material::create()
+                    ->set("diffuseColor",       generateColor())
+                    ->set("depthMask",          false)
+                    ->set("depthFunc",          CompareMode::ALWAYS)
+                    ->set("colorMask",          true)
+                    ->set("stencilFunc",        CompareMode::EQUAL)
+                    ->set("stencilRef",         1)
+                    ->set("stencilMask",        uint(0xff))
+                    ->set("stencilFailOp",      StencilOperation::KEEP)
+                    ->set("triangleCulling",    TriangleCulling::BACK),
+                sceneManager->assets()->effect("basic")
+            ));
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
-	{
-		bigStarNode->component<Transform>()->matrix()->appendRotationZ(.001f);
-		for (auto& star : smallStars)
-			star->component<Transform>()->matrix()
-			->prependRotationZ(-0.025f);
+        quadNode->component<Transform>()->matrix()
+            ->appendScale(4.0f, 4.0f, 4.0f);
 
-		sceneManager->nextFrame(time, deltaTime);
-	});
+        generateStars(numSmallStars, sceneManager->assets(), smallStars);
 
-	sceneManager->assets()->loader()->load();
+        // stencil writting pass
+        root->addChild(bigStarNode);
+        // stencil fetching pass
+        root->addChild(quadNode);
 
-	canvas->run();
+        for (auto& star : smallStars)
+            root->addChild(star);
+    });
 
-	return 0;
+    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    {
+        bigStarNode->component<Transform>()->matrix()->appendRotationZ(.001f);
+
+        for (auto& star : smallStars)
+            star->component<Transform>()->matrix()->prependRotationZ(-0.025f);
+
+        sceneManager->nextFrame(time, deltaTime);
+    });
+
+    sceneManager->assets()->loader()->load();
+    canvas->run();
 }

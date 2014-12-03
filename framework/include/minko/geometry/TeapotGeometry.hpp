@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,49 +25,49 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace geometry
-	{
-		class TeapotGeometry :
-			public Geometry
-		{
-		public:
-			typedef std::shared_ptr<TeapotGeometry>	Ptr;
+    namespace geometry
+    {
+        class TeapotGeometry :
+            public Geometry
+        {
+        public:
+            typedef std::shared_ptr<TeapotGeometry>    Ptr;
 
-		public:
-			inline static
-			Ptr
-			create(std::shared_ptr<render::AbstractContext> context, uint divs = 10)
-			{
-				auto tp = std::shared_ptr<TeapotGeometry>(new TeapotGeometry());
+        public:
+            inline static
+            Ptr
+            create(std::shared_ptr<render::AbstractContext> context, uint divs = 10)
+            {
+                auto tp = std::shared_ptr<TeapotGeometry>(new TeapotGeometry());
 
-				tp->initialize(context, divs);
+                tp->initialize(context, divs);
 
-				return tp;
-			}
+                return tp;
+            }
 
-		private:
-			static const uint	_patches[32][16];
-			static const float	_points[306][3];
+        private:
+            static const uint     _patches[32][16];
+            static const float    _points[306][3];
 
-		private:
-			TeapotGeometry();
+        private:
+            TeapotGeometry();
 
-			void
-			initialize(std::shared_ptr<render::AbstractContext> context, const uint divs);
+            void
+            initialize(std::shared_ptr<render::AbstractContext> context, const uint divs);
 
-			void
-			genPatchVertices(std::vector<std::vector<float>>& patch, const uint divs, std::vector<float>& vertices);
+            void
+            genPatchVertices(std::vector<std::vector<float>>& patch, const uint divs, std::vector<float>& vertices);
 
-			void
-			genPatchIndices(const uint offset, const uint divs, std::vector<unsigned short>& indices);
+            void
+            genPatchIndices(const uint offset, const uint divs, std::vector<unsigned short>& indices);
 
-			void
-			bernstein(float					u,
-					  std::vector<float>&	p0,
-					  std::vector<float>&	p1,
-					  std::vector<float>&	p2,
-					  std::vector<float>&	p3,
-					  std::vector<float>&	out);
-		};
-	}
+            void
+            bernstein(float                  u,
+                      std::vector<float>&    p0,
+                      std::vector<float>&    p1,
+                      std::vector<float>&    p2,
+                      std::vector<float>&    p3,
+                      std::vector<float>&    out);
+        };
+    }
 }

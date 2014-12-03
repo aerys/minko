@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -33,120 +33,122 @@ Surface::Ptr surface1;
 Surface::Ptr surface2;
 Surface::Ptr surface3;
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Example - Multi Surface", 800, 600);
+    auto canvas = Canvas::create("Minko Example - Multi Surface");
 
-	auto sceneManager = SceneManager::create(canvas->context());
+    auto sceneManager = SceneManager::create(canvas);
 
-	// setup assets
-	sceneManager->assets()->loader()->options()->resizeSmoothly(true);
-	sceneManager->assets()->loader()->options()->generateMipmaps(true);
-	sceneManager->assets()->loader()->options()
-                ->registerParser<file::PNGParser>("png");
+    // setup assets
+    sceneManager->assets()->loader()->options()
+        ->resizeSmoothly(true)
+        ->generateMipmaps(true)
+        ->registerParser<file::PNGParser>("png");
 
-        sceneManager->assets()->loader()->queue("effect/Basic.effect");
+    sceneManager->assets()->loader()
+        ->queue("effect/Basic.effect");
 
+    std::cout << "Press [Q] to add/remove the first surface." << std::endl;
+    std::cout << "Press [W] to add/remove the second surface." << std::endl;
+    std::cout << "Press [E] to add/remove the third surface." << std::endl;
 
-	std::cout << "Press [Q] to add/remove the first surface." << std::endl;
-	std::cout << "Press [W] to add/remove the second surface." << std::endl;
-	std::cout << "Press [E] to add/remove the third surface." << std::endl;
+    auto root = scene::Node::create("root")
+        ->addComponent(sceneManager);
 
-	auto root = scene::Node::create("root")
-		->addComponent(sceneManager);
+    auto camera = scene::Node::create("camera")
+        ->addComponent(Renderer::create(0x00000000))
+        ->addComponent(Transform::create(
+            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 5.f))
+        ))
+        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
 
-	auto camera = scene::Node::create("camera")
-		->addComponent(Renderer::create(0x00000000))
-		->addComponent(Transform::create(
-		Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 5.f))
-		))
-		->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
-	root->addChild(camera);
+    root->addChild(camera);
 
-	auto cubeGeometry = geometry::CubeGeometry::create(sceneManager->assets()->context());
-	auto cubeGeometryUp = geometry::CubeGeometryUp::create(sceneManager->assets()->context());
-	auto cubeGeometryDown = geometry::CubeGeometryDown::create(sceneManager->assets()->context());
-	auto redMaterial = material::BasicMaterial::create()->diffuseColor(math::Vector4::create(1.f));
-	auto greenMaterial = material::BasicMaterial::create()->diffuseColor(math::Vector4::create(0.f, 1.f));
-	auto blueMaterial = material::BasicMaterial::create()->diffuseColor(math::Vector4::create(0.f, 0.f, 1.f));
+    auto cubeGeometry = geometry::CubeGeometry::create(sceneManager->assets()->context());
+    auto cubeGeometryUp = geometry::CubeGeometryUp::create(sceneManager->assets()->context());
+    auto cubeGeometryDown = geometry::CubeGeometryDown::create(sceneManager->assets()->context());
+    auto redMaterial = material::BasicMaterial::create()->diffuseColor(math::Vector4::create(1.f));
+    auto greenMaterial = material::BasicMaterial::create()->diffuseColor(math::Vector4::create(0.f, 1.f));
+    auto blueMaterial = material::BasicMaterial::create()->diffuseColor(math::Vector4::create(0.f, 0.f, 1.f));
 
-	sceneManager->assets()->geometry("cubeGeometry", cubeGeometry)
-		->geometry("cubeGeometryDown", cubeGeometryDown)
-		->geometry("cubeGeometryUp", cubeGeometryUp)
-		->material("redMaterial", redMaterial)
-		->material("greenMaterial", greenMaterial)
-		->material("blueMaterial", blueMaterial);
+    sceneManager->assets()->geometry("cubeGeometry", cubeGeometry)
+        ->geometry("cubeGeometryDown", cubeGeometryDown)
+        ->geometry("cubeGeometryUp", cubeGeometryUp)
+        ->material("redMaterial", redMaterial)
+        ->material("greenMaterial", greenMaterial)
+        ->material("blueMaterial", blueMaterial);
 
-	auto mesh = scene::Node::create("mesh")
-		->addComponent(Transform::create());
+    auto mesh = scene::Node::create("mesh")
+        ->addComponent(Transform::create());
 
-	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
-	{
-		surface1 = Surface::create(
-			sceneManager->assets()->geometry("cubeGeometryDown"),
-			sceneManager->assets()->material("redMaterial"),
-			sceneManager->assets()->effect("effect/Basic.effect")
-			);
+    auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
+    {
+        surface1 = Surface::create(
+            sceneManager->assets()->geometry("cubeGeometryDown"),
+            sceneManager->assets()->material("redMaterial"),
+            sceneManager->assets()->effect("effect/Basic.effect")
+        );
 
-		surface2 = Surface::create(
-			sceneManager->assets()->geometry("cubeGeometry"),
-			sceneManager->assets()->material("blueMaterial"),
-			sceneManager->assets()->effect("effect/Basic.effect")
-			);
+        surface2 = Surface::create(
+            sceneManager->assets()->geometry("cubeGeometry"),
+            sceneManager->assets()->material("blueMaterial"),
+            sceneManager->assets()->effect("effect/Basic.effect")
+        );
 
-		surface3 = Surface::create(
-			sceneManager->assets()->geometry("cubeGeometryUp"),
-			sceneManager->assets()->material("greenMaterial"),
-			sceneManager->assets()->effect("effect/Basic.effect")
-			);
+        surface3 = Surface::create(
+            sceneManager->assets()->geometry("cubeGeometryUp"),
+            sceneManager->assets()->material("greenMaterial"),
+            sceneManager->assets()->effect("effect/Basic.effect")
+        );
 
-		mesh->addComponent(surface1)
-			->addComponent(surface2)
-			->addComponent(surface3);
+        mesh->addComponent(surface1)
+            ->addComponent(surface2)
+            ->addComponent(surface3);
 
-		root->addChild(mesh);
+        root->addChild(mesh);
 
-		keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
-		{
-			if (k->keyIsDown(input::Keyboard::Q))
-			{
-				if (mesh->hasComponent(surface1))
-					mesh->removeComponent(surface1);
-				else
-					mesh->addComponent(surface1);
-			}
-			if (k->keyIsDown(input::Keyboard::W))
-			{
-				if (mesh->hasComponent(surface2))
-					mesh->removeComponent(surface2);
-				else
-					mesh->addComponent(surface2);
-			}
-			if (k->keyIsDown(input::Keyboard::E))
-			{
-				if (mesh->hasComponent(surface3))
-					mesh->removeComponent(surface3);
-				else
-					mesh->addComponent(surface3);
-			}
-		});
-	});
+        keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
+        {
+            if (k->keyIsDown(input::Keyboard::Q))
+            {
+                if (mesh->hasComponent(surface1))
+                    mesh->removeComponent(surface1);
+                else
+                    mesh->addComponent(surface1);
+            }
 
-	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
-	{
-		camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
-	});
+            if (k->keyIsDown(input::Keyboard::W))
+            {
+                if (mesh->hasComponent(surface2))
+                    mesh->removeComponent(surface2);
+                else
+                    mesh->addComponent(surface2);
+            }
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
-	{
-		//spotLight->component<Transform>()->matrix()->appendRotationY(0.01f);
-		sceneManager->nextFrame(time, deltaTime);
-	});
+            if (k->keyIsDown(input::Keyboard::E))
+            {
+                if (mesh->hasComponent(surface3))
+                    mesh->removeComponent(surface3);
+                else
+                    mesh->addComponent(surface3);
+            }
+        });
+    });
 
-	sceneManager->assets()->loader()->load();
-	canvas->run();
+    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+    {
+        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+    });
 
-	return 0;
+    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    {
+        //spotLight->component<Transform>()->matrix()->appendRotationY(0.01f);
+        sceneManager->nextFrame(time, deltaTime);
+    });
+
+    sceneManager->assets()->loader()->load();
+    canvas->run();
 }
 
 

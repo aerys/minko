@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -27,23 +27,23 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-const uint			WINDOW_WIDTH	= 800;
-const uint			WINDOW_HEIGHT	= 600;
-const std::string	MODEL_FILENAME	= "pirate.dae";
+const uint            WINDOW_WIDTH    = 800;
+const uint            WINDOW_HEIGHT    = 600;
+const std::string    MODEL_FILENAME    = "pirate.dae";
 
-const std::string	LABEL_RUN_START		= "run_start";
-const std::string	LABEL_RUN_STOP		= "run_stop";
-const std::string	LABEL_IDLE			= "idle";
-const std::string	LABEL_WALK_START	= "walk_start";
-const std::string	LABEL_WALK_STOP		= "walk_stop";
-const std::string	LABEL_PUNCH_START	= "punch_start";
-const std::string	LABEL_PUNCH_HIT		= "punch_hit";
-const std::string	LABEL_PUNCH_STOP	= "punch_stop";
-const std::string	LABEL_KICK_START	= "kick_start";
-const std::string	LABEL_KICK_HIT		= "kick_hit";
-const std::string	LABEL_KICK_STOP		= "kick_stop";
-const std::string	LABEL_STUN_START	= "stun_start";
-const std::string	LABEL_STUN_STOP		= "stun_stop";
+const std::string    LABEL_RUN_START        = "run_start";
+const std::string    LABEL_RUN_STOP        = "run_stop";
+const std::string    LABEL_IDLE            = "idle";
+const std::string    LABEL_WALK_START    = "walk_start";
+const std::string    LABEL_WALK_STOP        = "walk_stop";
+const std::string    LABEL_PUNCH_START    = "punch_start";
+const std::string    LABEL_PUNCH_HIT        = "punch_hit";
+const std::string    LABEL_PUNCH_STOP    = "punch_stop";
+const std::string    LABEL_KICK_START    = "kick_start";
+const std::string    LABEL_KICK_HIT        = "kick_hit";
+const std::string    LABEL_KICK_STOP        = "kick_stop";
+const std::string    LABEL_STUN_START    = "stun_start";
+const std::string    LABEL_STUN_STOP        = "stun_stop";
 
 AbstractAnimation::Ptr
 run(AbstractAnimation::Ptr anim);
@@ -77,312 +77,316 @@ Signal<AbstractAnimation::Ptr, std::string, uint>::Slot labelHit;
 int
 main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Example - Assimp", WINDOW_WIDTH, WINDOW_HEIGHT);
-	auto sceneManager = SceneManager::create(canvas->context());
-	auto defaultOptions = sceneManager->assets()->loader()->options();
+    auto canvas = Canvas::create("Minko Example - Assimp", WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto sceneManager = SceneManager::create(canvas);
+    auto defaultOptions = sceneManager->assets()->loader()->options();
 
-	// setup assets
-	defaultOptions
-		->generateMipmaps(true)
-		->skinningFramerate(60)
-		->skinningMethod(SkinningMethod::HARDWARE)		
-		->startAnimation(true)
-		->registerParser<file::OBJParser>("obj")
-		->registerParser<file::ColladaParser>("dae")
-		->registerParser<file::PNGParser>("png")
+    // setup assets
+    defaultOptions
+        ->generateMipmaps(true)
+        ->skinningFramerate(60)
+        ->skinningMethod(SkinningMethod::HARDWARE)
+        ->startAnimation(true)
+        ->registerParser<file::OBJParser>("obj")
+        ->registerParser<file::ColladaParser>("dae")
+        ->registerParser<file::PNGParser>("png")
         ->registerParser<file::JPEGParser>("jpg");
 
     auto fxLoader = file::Loader::create(sceneManager->assets()->loader())
-    	->queue("effect/Basic.effect")
-	    ->queue("effect/Phong.effect");
+        ->queue("effect/Basic.effect")
+        ->queue("effect/Phong.effect");
 
-	auto fxComplete = fxLoader->complete()->connect([&](file::Loader::Ptr l)
-	{
-	    sceneManager->assets()->loader()->queue(MODEL_FILENAME);
-		sceneManager->assets()->loader()->load();
-	});
+    auto fxComplete = fxLoader->complete()->connect([&](file::Loader::Ptr l)
+    {
+        sceneManager->assets()->loader()->queue(MODEL_FILENAME);
+        sceneManager->assets()->loader()->load();
+    });
 
-	bool beIdle = true;
-	bool doPunch = false;
-	bool doKick = false;
-	bool doWalk = false;
-	bool doRun = false;
-	bool beStun = false;
-	bool reverseAnim = false;
-	uint speedId = 0;
+    bool beIdle = true;
+    bool doPunch = false;
+    bool doKick = false;
+    bool doWalk = false;
+    bool doRun = false;
+    bool beStun = false;
+    bool reverseAnim = false;
+    uint speedId = 0;
 
-	auto root = scene::Node::create("root")
-		->addComponent(sceneManager);
+    auto root = scene::Node::create("root")
+        ->addComponent(sceneManager);
 
-	auto camera = scene::Node::create("camera")
-		->addComponent(Renderer::create(0x7f7f7fff))
-		->addComponent(Transform::create(
-			Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.75f, 0.f), Vector3::create(0.25f, 0.75f, 2.5f))
-		))
-		->addComponent(PerspectiveCamera::create(
-			(float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f)
-		);
-	root->addChild(camera);
+    auto camera = scene::Node::create("camera")
+        ->addComponent(Renderer::create(0x7f7f7fff))
+        ->addComponent(Transform::create(
+            Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.75f, 0.f), Vector3::create(0.25f, 0.75f, 2.5f))
+        ))
+        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio())
+        );
+    root->addChild(camera);
 
-	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
-	{
+    auto _ = sceneManager->assets()->loader()->complete()->connect([ = ](file::Loader::Ptr loader)
+    {
         auto model = sceneManager->assets()->symbol(MODEL_FILENAME);
 
-		auto surfaceNodeSet = scene::NodeSet::create(model)
-			->descendants(true)
-			->where([](scene::Node::Ptr n)
-		{
-			return n->hasComponent<Surface>();
-		});
+        auto surfaceNodeSet = scene::NodeSet::create(model)
+            ->descendants(true)
+            ->where([](scene::Node::Ptr n)
+        {
+            return n->hasComponent<Surface>();
+        });
 
         root->addComponent(AmbientLight::create())
-            ->addComponent(DirectionalLight::create())
-            ->addChild(model);
+        ->addComponent(DirectionalLight::create())
+        ->addChild(model);
 
-		auto skinnedNodes = scene::NodeSet::create(model)
-			->descendants(true)
-			->where([](scene::Node::Ptr n){ return n->hasComponent<Skinning>(); });
+        auto skinnedNodes = scene::NodeSet::create(model)
+            ->descendants(true)
+            ->where([](scene::Node::Ptr n)
+        {
+			return n->hasComponent<MasterAnimation>();
+        });
 
-		auto skinnedNode = !skinnedNodes->nodes().empty()
-			? skinnedNodes->nodes().front()
-			: nullptr;
+        auto skinnedNode = !skinnedNodes->nodes().empty()
+                           ? skinnedNodes->nodes().front()
+                           : nullptr;
 
-		anim = skinnedNode->component<Skinning>()
-			->addLabel(LABEL_RUN_START,		0)
-			->addLabel(LABEL_RUN_STOP,		800)
-			->addLabel(LABEL_IDLE,			900)
-			->addLabel(LABEL_WALK_START,	1400)
-			->addLabel(LABEL_WALK_STOP,		2300)
-			->addLabel(LABEL_PUNCH_START,	2333)
-			->addLabel(LABEL_PUNCH_HIT,		2600)
-			->addLabel(LABEL_PUNCH_STOP,	3000)
-			->addLabel(LABEL_KICK_START,	3033)
-			->addLabel(LABEL_KICK_HIT,		3316)
-			->addLabel(LABEL_KICK_STOP,		3600)
-			->addLabel(LABEL_STUN_START,	3633)
-			->addLabel(LABEL_STUN_STOP,		5033);
+		anim = skinnedNode->component<MasterAnimation>()
+            ->addLabel(LABEL_RUN_START,        0)
+            ->addLabel(LABEL_RUN_STOP,        800)
+            ->addLabel(LABEL_IDLE,            900)
+            ->addLabel(LABEL_WALK_START,    1400)
+            ->addLabel(LABEL_WALK_STOP,        2300)
+            ->addLabel(LABEL_PUNCH_START,    2333)
+            ->addLabel(LABEL_PUNCH_HIT,        2600)
+            ->addLabel(LABEL_PUNCH_STOP,    3000)
+            ->addLabel(LABEL_KICK_START,    3033)
+            ->addLabel(LABEL_KICK_HIT,        3316)
+            ->addLabel(LABEL_KICK_STOP,        3600)
+            ->addLabel(LABEL_STUN_START,    3633)
+            ->addLabel(LABEL_STUN_STOP,        5033);
 
-		started		= anim->started()->connect([](AbstractAnimation::Ptr){ std::cout << "\nanimation started" << std::endl; });
-		stopped		= anim->stopped()->connect([](AbstractAnimation::Ptr){ std::cout << "animation stopped" << std::endl; });
-		looped		= anim->looped()->connect([](AbstractAnimation::Ptr){ std::cout << "\nanimation looped" << std::endl; });
-		labelHit	= anim->labelHit()->connect([](AbstractAnimation::Ptr, std::string name, uint time){ std::cout << "label '" << name << "'\thit at t = " << time << std::endl; });
+        started     = anim->started()->connect([](AbstractAnimation::Ptr) { std::cout << "\nanimation started" << std::endl; });
+        stopped     = anim->stopped()->connect([](AbstractAnimation::Ptr) { std::cout << "animation stopped" << std::endl; });
+        looped      = anim->looped()->connect([](AbstractAnimation::Ptr) { std::cout << "\nanimation looped" << std::endl; });
+        labelHit    = anim->labelHit()->connect([](AbstractAnimation::Ptr, std::string name, uint time) { std::cout << "label '" << name << "'\thit at t = " << time << std::endl; });
 
-		printAnimationInfo(anim);
-		idle(anim);
-	});
+        printAnimationInfo(anim);
+        idle(anim);
+    });
 
-	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
-	{
-		camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
-	});
+    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+    {
+        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+    });
 
-	// currently, keyUp events seem not to be fired at the individual key level
-	auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
-	{
-		if (!anim)
-			return;
+    // currently, keyUp events seem not to be fired at the individual key level
+    auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
+    {
+        if (!anim)
+            return;
 
-		if (k->keyIsDown(input::Keyboard::UP))
-		{
-			beIdle = doPunch = doKick = doWalk = beStun = reverseAnim = false;
-			speedId = 0;
-			doRun = true;
-		}
-		else if (k->keyIsDown(input::Keyboard::DOWN))
-		{
-			beIdle = doPunch = doRun = doKick = beStun = reverseAnim = false;
-			speedId = 0;
-			doWalk = true;
-		}
-		else if (k->keyIsDown(input::Keyboard::LEFT))
-		{
-			beIdle = doRun = doKick = doWalk = beStun = reverseAnim = false;
-			speedId = 0;
-			doPunch = true;
-		}
-		else if (k->keyIsDown(input::Keyboard::RIGHT))
-		{
-			beIdle = doPunch = doRun = doWalk = beStun = reverseAnim = false;
-			speedId = 0;
-			doKick = true;
-		}
-		else if (k->keyIsDown(input::Keyboard::SPACE))
-		{
-			beIdle = doPunch = doRun = doKick = doWalk = reverseAnim = false;
-			speedId = 0;
-			beStun = true;
-		}
-		else if (k->keyIsDown(input::Keyboard::END))
-		{
-			doPunch = doRun = doKick = doWalk = beStun = reverseAnim = false;
-			speedId = 0;
-			beIdle = true;
-		}
-		else if (k->keyIsDown(input::Keyboard::_1))
-		{
-			doPunch = doRun = doKick = doWalk = beStun = beIdle = reverseAnim = false;
-			speedId = 1;
-		}
-		else if (k->keyIsDown(input::Keyboard::_2))
-		{
-			doPunch = doRun = doKick = doWalk = beStun = beIdle = reverseAnim = false;
-			speedId = 2;
-		}
-		else if (k->keyIsDown(input::Keyboard::_3))
-		{
-			doPunch = doRun = doKick = doWalk = beStun = beIdle = reverseAnim = false;
-			speedId = 3;
-		}
-		else if (k->keyIsDown(input::Keyboard::R))
-		{
-			doPunch = doRun = doKick = doWalk = beStun = beIdle = false;
-			reverseAnim = true;
-			speedId = 0;
-		}
-	});
+        if (k->keyIsDown(input::Keyboard::UP))
+        {
+            beIdle = doPunch = doKick = doWalk = beStun = reverseAnim = false;
+            speedId = 0;
+            doRun = true;
+        }
+        else if (k->keyIsDown(input::Keyboard::DOWN))
+        {
+            beIdle = doPunch = doRun = doKick = beStun = reverseAnim = false;
+            speedId = 0;
+            doWalk = true;
+        }
+        else if (k->keyIsDown(input::Keyboard::LEFT))
+        {
+            beIdle = doRun = doKick = doWalk = beStun = reverseAnim = false;
+            speedId = 0;
+            doPunch = true;
+        }
+        else if (k->keyIsDown(input::Keyboard::RIGHT))
+        {
+            beIdle = doPunch = doRun = doWalk = beStun = reverseAnim = false;
+            speedId = 0;
+            doKick = true;
+        }
+        else if (k->keyIsDown(input::Keyboard::SPACE))
+        {
+            beIdle = doPunch = doRun = doKick = doWalk = reverseAnim = false;
+            speedId = 0;
+            beStun = true;
+        }
+        else if (k->keyIsDown(input::Keyboard::END))
+        {
+            doPunch = doRun = doKick = doWalk = beStun = reverseAnim = false;
+            speedId = 0;
+            beIdle = true;
+        }
+        else if (k->keyIsDown(input::Keyboard::_1))
+        {
+            doPunch = doRun = doKick = doWalk = beStun = beIdle = reverseAnim = false;
+            speedId = 1;
+        }
+        else if (k->keyIsDown(input::Keyboard::_2))
+        {
+            doPunch = doRun = doKick = doWalk = beStun = beIdle = reverseAnim = false;
+            speedId = 2;
+        }
+        else if (k->keyIsDown(input::Keyboard::_3))
+        {
+            doPunch = doRun = doKick = doWalk = beStun = beIdle = reverseAnim = false;
+            speedId = 3;
+        }
+        else if (k->keyIsDown(input::Keyboard::R))
+        {
+            doPunch = doRun = doKick = doWalk = beStun = beIdle = false;
+            reverseAnim = true;
+            speedId = 0;
+        }
+    });
 
-	auto keyUp = canvas->keyboard()->keyUp()->connect([&](input::Keyboard::Ptr k)
-	{
-		if (!anim)
-			return;
+    auto keyUp = canvas->keyboard()->keyUp()->connect([&](input::Keyboard::Ptr k)
+    {
+        if (!anim)
+            return;
 
-		if (doWalk)
-			walk(anim);
-		else if (doRun)
-			run(anim);
-		else if (doKick)
-			kick(anim);
-		else if (doPunch)
-			punch(anim);
-		else if (beIdle)
-			idle(anim);
-		else if (beStun)
-			stun(anim);
-		else if (reverseAnim)
-		{
-			anim->isReversed(!anim->isReversed());
-			std::cout << "animation is " << (!anim->isReversed() ? "not " : "") << "reversed" << std::endl;
-		}
-		else if (speedId > 0)
-		{
-			if (speedId == 1)
-			{
-				anim->timeFunction([](uint t){ return t / 2; });
-				std::cout << "animation's speed is decreased" << std::endl;
-			}
-			else if (speedId == 2)
-			{
-				anim->timeFunction([](uint t){ return t; });
-				std::cout << "animation is back to normal speed" << std::endl;
-			}
-			else if (speedId == 3)
-			{
-				anim->timeFunction([](uint t){ return t * 2; });
-				std::cout << "animation's speed is increased" << std::endl;
-			}
-			speedId = 0;
-		}
-	});
+        if (doWalk)
+            walk(anim);
+        else if (doRun)
+            run(anim);
+        else if (doKick)
+            kick(anim);
+        else if (doPunch)
+            punch(anim);
+        else if (beIdle)
+            idle(anim);
+        else if (beStun)
+            stun(anim);
+        else if (reverseAnim)
+        {
+            anim->isReversed(!anim->isReversed());
+            std::cout << "animation is " << (!anim->isReversed() ? "not " : "") << "reversed" << std::endl;
+        }
+        else if (speedId > 0)
+        {
+            if (speedId == 1)
+            {
+                anim->timeFunction([](uint t) { return t / 2; });
+                std::cout << "animation's speed is decreased" << std::endl;
+            }
+            else if (speedId == 2)
+            {
+                anim->timeFunction([](uint t) { return t; });
+                std::cout << "animation is back to normal speed" << std::endl;
+            }
+            else if (speedId == 3)
+            {
+                anim->timeFunction([](uint t) { return t * 2; });
+                std::cout << "animation's speed is increased" << std::endl;
+            }
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
-	{
-		sceneManager->nextFrame(time, deltaTime);
-	});
+            speedId = 0;
+        }
+    });
 
-	fxLoader->load();
-	canvas->run();
+    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    {
+        sceneManager->nextFrame(time, deltaTime);
+    });
 
-	return 0;
+    fxLoader->load();
+    canvas->run();
+
+    return 0;
 }
 
 
 AbstractAnimation::Ptr
 run(AbstractAnimation::Ptr anim)
 {
-	if (!anim)
-		return nullptr;
+    if (!anim)
+        return nullptr;
 
-	anim->isLooping(true);
+    anim->isLooping(true);
 
-	return anim->setPlaybackWindow(LABEL_RUN_START, LABEL_RUN_STOP)->play();
+    return anim->setPlaybackWindow(LABEL_RUN_START, LABEL_RUN_STOP)->play();
 }
 
 AbstractAnimation::Ptr
 walk(AbstractAnimation::Ptr anim)
 {
-	if (!anim)
-		return nullptr;
+    if (!anim)
+        return nullptr;
 
-	anim->isLooping(true);
+    anim->isLooping(true);
 
-	return anim
-		->setPlaybackWindow(LABEL_WALK_START, LABEL_WALK_STOP)
-		->play();
+    return anim
+        ->setPlaybackWindow(LABEL_WALK_START, LABEL_WALK_STOP)
+        ->play();
 }
 
 AbstractAnimation::Ptr
 kick(AbstractAnimation::Ptr anim)
 {
-	if (!anim)
-		return nullptr;
+    if (!anim)
+        return nullptr;
 
-	anim->isLooping(false);
+    anim->isLooping(false);
 
-	return anim
-		->setPlaybackWindow(LABEL_KICK_START, LABEL_KICK_STOP, true)
-		->play();
+    return anim
+        ->setPlaybackWindow(LABEL_KICK_START, LABEL_KICK_STOP, true)
+        ->play();
 }
 
 AbstractAnimation::Ptr
 punch(AbstractAnimation::Ptr anim)
 {
-	if (!anim)
-		return nullptr;
+    if (!anim)
+        return nullptr;
 
-	anim->isLooping(false);
+    anim->isLooping(false);
 
-	return anim
-		->setPlaybackWindow(LABEL_PUNCH_START, LABEL_PUNCH_STOP, true)
-		->play();
+    return anim
+        ->setPlaybackWindow(LABEL_PUNCH_START, LABEL_PUNCH_STOP, true)
+        ->play();
 }
 
 AbstractAnimation::Ptr
 idle(AbstractAnimation::Ptr anim)
 {
-	if (!anim)
-		return nullptr;
+    if (!anim)
+        return nullptr;
 
-	anim->isLooping(false);
+    anim->isLooping(false);
 
-	return anim
-		->resetPlaybackWindow()
-		->seek(LABEL_IDLE)
-		->stop();
+    return anim
+        ->resetPlaybackWindow()
+        ->seek(LABEL_IDLE)
+        ->stop();
 }
 
 AbstractAnimation::Ptr
 stun(AbstractAnimation::Ptr anim)
 {
-	if (!anim)
-		return nullptr;
+    if (!anim)
+        return nullptr;
 
-	anim->isLooping(true);
+    anim->isLooping(true);
 
-	return anim
-		->setPlaybackWindow(LABEL_STUN_START, LABEL_STUN_STOP)
-		->play();
+    return anim
+        ->setPlaybackWindow(LABEL_STUN_START, LABEL_STUN_STOP)
+        ->play();
 }
 
 void
 printAnimationInfo(AbstractAnimation::Ptr anim)
 {
-	if (anim == nullptr)
-		return;
+    if (anim == nullptr)
+        return;
 
-	std::cout << "Animation labels\n--------------" << std::endl;
-	for (uint labelId = 0; labelId < anim->numLabels(); ++labelId)
-		std::cout << "\t'" << anim->labelName(labelId) << "'\tat t = " << anim->labelTime(labelId) << std::endl;
+    std::cout << "Animation labels\n--------------" << std::endl;
 
-	std::cout << "Animation controls\n--------------\n\t[up]\trun\n\t[down]\twalk\n\t[left]\tpunch\n\t[right]\tkick\n\t[space]\tstun\n\t[end]\tidle" << std::endl;
-	std::cout << "\t[r]\treverse animation\n\t[1]\tlow speed\n\t[2]\tnormal speed\n\t[3]\thigh speed\n" << std::endl;
+    for (uint labelId = 0; labelId < anim->numLabels(); ++labelId)
+        std::cout << "\t'" << anim->labelName(labelId) << "'\tat t = " << anim->labelTime(labelId) << std::endl;
+
+    std::cout << "Animation controls\n--------------\n\t[up]\trun\n\t[down]\twalk\n\t[left]\tpunch\n\t[right]\tkick\n\t[space]\tstun\n\t[end]\tidle" << std::endl;
+    std::cout << "\t[r]\treverse animation\n\t[1]\tlow speed\n\t[2]\tnormal speed\n\t[3]\thigh speed\n" << std::endl;
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -66,7 +66,7 @@ namespace minko
 				   const unsigned int						offset = 0)
 			{
 				return std::shared_ptr<VertexBuffer>(new VertexBuffer(
-					context, data, offset, size
+                    context, data, size, offset
 				));
 			}
 
@@ -81,7 +81,9 @@ namespace minko
 
 			inline static
 			Ptr
-			create(std::shared_ptr<render::AbstractContext>	context, float* begin, float* end)
+            create(std::shared_ptr<render::AbstractContext>   context,
+                   float*                                     begin,
+                   float*                                     end)
 			{
 				return std::shared_ptr<VertexBuffer>(new VertexBuffer(
 					context,

@@ -32,10 +32,10 @@ using namespace minko::deserialize;
 
 TEST_F(GeometrySerializerTest, CubeGeometrySerialization)
 {
-	auto cubeGeometry		= geometry::CubeGeometry::create(MinkoTests::context());
-	auto assetLibrary		= file::AssetLibrary::create(MinkoTests::context());
+	auto cubeGeometry		= geometry::CubeGeometry::create(MinkoTests::canvas()->context());
+    auto assetLibrary       = file::AssetLibrary::create(MinkoTests::canvas()->context());
 	auto geometryWriter		= file::GeometryWriter::create();
-	auto outputAssetLibrary = file::AssetLibrary::create(MinkoTests::context());
+    auto outputAssetLibrary = file::AssetLibrary::create(MinkoTests::canvas()->context());
 	auto geometryParser		= file::GeometryParser::create();
 
 	std::string	filename = "asset.tmp";
@@ -45,7 +45,7 @@ TEST_F(GeometrySerializerTest, CubeGeometrySerialization)
 	geometryWriter->write(
         filename,
         assetLibrary,
-        file::Options::create(MinkoTests::context()),
+        file::Options::create(MinkoTests::canvas()->context()),
         file::WriterOptions::create()
     );
 
@@ -59,7 +59,7 @@ TEST_F(GeometrySerializerTest, CubeGeometrySerialization)
 	file.read((char*)&data[0], size);
 	file.close();
 
-	geometryParser->parse(filename, filename, file::Options::create(MinkoTests::context()), data, outputAssetLibrary);
+	geometryParser->parse(filename, filename, file::Options::create(MinkoTests::canvas()->context()), data, outputAssetLibrary);
 
 	ASSERT_TRUE(outputAssetLibrary->geometry("cube") != nullptr);
 	ASSERT_TRUE(cubeGeometry->equals(outputAssetLibrary->geometry("cube")));
@@ -67,10 +67,10 @@ TEST_F(GeometrySerializerTest, CubeGeometrySerialization)
 
 TEST_F(GeometrySerializerTest, SphereGeometrySerialization)
 {
-	auto sphereGeometry		= geometry::SphereGeometry::create(MinkoTests::context(), 20, 20);
-	auto assetLibrary		= file::AssetLibrary::create(MinkoTests::context());
+    auto sphereGeometry = geometry::SphereGeometry::create(MinkoTests::canvas()->context(), 20, 20);
+    auto assetLibrary       = file::AssetLibrary::create(MinkoTests::canvas()->context());
 	auto geometryWriter		= file::GeometryWriter::create();
-	auto outputAssetLibrary = file::AssetLibrary::create(MinkoTests::context());
+    auto outputAssetLibrary = file::AssetLibrary::create(MinkoTests::canvas()->context());
 	auto geometryParser		= file::GeometryParser::create();
 	std::string	filename	= "asset.tmp";
 
@@ -78,7 +78,7 @@ TEST_F(GeometrySerializerTest, SphereGeometrySerialization)
 	geometryWriter->data(sphereGeometry);
 	geometryWriter->write(filename,
                           assetLibrary,
-                          file::Options::create(MinkoTests::context()),
+                          file::Options::create(MinkoTests::canvas()->context()),
                           file::WriterOptions::create());
 
 	std::vector<unsigned char>  data;
@@ -91,7 +91,7 @@ TEST_F(GeometrySerializerTest, SphereGeometrySerialization)
 	file.read((char*)&data[0], size);
 	file.close();
 
-	geometryParser->parse(filename, filename, file::Options::create(MinkoTests::context()), data, outputAssetLibrary);
+	geometryParser->parse(filename, filename, file::Options::create(MinkoTests::canvas()->context()), data, outputAssetLibrary);
 
 	ASSERT_TRUE(outputAssetLibrary->geometry("Sphere") != nullptr);
 	ASSERT_TRUE(sphereGeometry->equals(outputAssetLibrary->geometry("Sphere")));

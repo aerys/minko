@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -78,6 +78,7 @@ namespace minko
 	template<typename... A>
 	class Signal;
 	class Color;
+	enum class CloneOption;
 	class AbstractCanvas;
     
 	namespace render
@@ -127,7 +128,30 @@ namespace minko
 		enum class TextureFormat
 		{
 			RGB,
-			RGBA
+            RGBA,
+
+            RGB_DXT1,
+            RGBA_DXT1,
+            RGBA_DXT3,
+            RGBA_DXT5,
+
+            RGB_ETC1,
+            RGBA_ETC1,
+
+            RGB_PVRTC1_2BPP,
+            RGB_PVRTC1_4BPP,
+            RGBA_PVRTC1_2BPP,
+            RGBA_PVRTC1_4BPP,
+
+            RGBA_PVRTC2_2BPP,
+            RGBA_PVRTC2_4BPP,
+
+            RGB_ATITC,
+            RGBA_ATITC,
+
+            // supported from OES 3.0
+            RGB_ETC2,
+            RGBA_ETC2
 		};
 
 		class AbstractTexture;
@@ -301,20 +325,20 @@ namespace minko
 		class EffectParser;
         class AssetLibrary;
 
-        class ParserError : public std::runtime_error
+        class Error : public std::runtime_error
         {
         private:
             std::string _type;
 
         public:
             explicit
-            ParserError(const std::string& message) :
+            Error(const std::string& message) :
                 std::runtime_error(message),
                 _type()
             {
             }
 
-            ParserError(const std::string& type, const std::string& message) :
+            Error(const std::string& type, const std::string& message) :
                 std::runtime_error(message),
                 _type(type)
             {
@@ -340,6 +364,7 @@ namespace minko
 	{
 		class Mouse;
         class Keyboard;
+        class KeyMap;
 		class Joystick;
         class Touch;
 	}
@@ -348,6 +373,12 @@ namespace minko
 	{
 		class Worker;
 	}
+
+    namespace log
+    {
+        class Logger;
+        class ConsoleSink;
+    }
 }
 
 #include "minko/std.hpp"

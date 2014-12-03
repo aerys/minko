@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -26,51 +26,46 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::math;
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Example - Lua Scripts", 800, 600);
-	auto sceneManager = SceneManager::create(canvas->context());
-	auto root = scene::Node::create("root")
-		->addComponent(sceneManager)
-		->addComponent(MouseManager::create(canvas->mouse()));
+    auto canvas = Canvas::create("Minko Example - Lua Scripts");
+    auto sceneManager = SceneManager::create(canvas);
+    auto root = scene::Node::create("root")
+        ->addComponent(sceneManager)
+        ->addComponent(MouseManager::create(canvas->mouse()));
 
     auto loader = sceneManager->assets()->loader();
     loader->options()
         ->generateMipmaps(true)
-		->registerParser<file::PNGParser>("png")
+        ->registerParser<file::PNGParser>("png")
         ->registerParser<file::LuaScriptParser>("lua");
 
-	// init. lua
-	LuaContext::initialize(argc, argv, root, canvas);
-	root->addComponent(LuaScriptManager::create());
+    // init. lua
+    LuaContext::initialize(argc, argv, root, canvas);
+    root->addComponent(LuaScriptManager::create());
 
-	// setup assets
+    // setup assets
     loader->queue("script/main.lua");
 
-	Signal<Canvas::Ptr, float, float>::Slot nextFrame;
-    Signal<file::Loader::Ptr>::Slot loaded = loader->complete()->connect(
-		[&](file::Loader::Ptr assets)
-		{
-			loaded = nullptr;
+    Signal<Canvas::Ptr, float, float>::Slot nextFrame;
+    Signal<file::Loader::Ptr>::Slot loaded = loader->complete()->connect([&](file::Loader::Ptr assets)
+    {
+        loaded = nullptr;
 
-			nextFrame = canvas->enterFrame()->connect([&](Canvas::Ptr, float, float)
-			{
-				nextFrame = nullptr;
-				root->addComponent(sceneManager->assets()->script("script/main.lua"));
-			});
-		}
-	);
+        nextFrame = canvas->enterFrame()->connect([&](Canvas::Ptr, float, float)
+        {
+            nextFrame = nullptr;
+            root->addComponent(sceneManager->assets()->script("script/main.lua"));
+        });
+    });
 
     loader->load();
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
-	{
-		sceneManager->nextFrame(time, deltaTime);
-	});
+    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    {
+        sceneManager->nextFrame(time, deltaTime);
+    });
 
-	canvas->run();
-
-	return 0;
+    canvas->run();
 }
-
-

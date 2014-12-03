@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -19,18 +19,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/file/SceneParser.hpp"
-#include "minko/scene/Node.hpp"
-#include "msgpack.hpp"
+#include "minko/file/Options.hpp"
+#include "minko/file/Dependency.hpp"
+#include "minko/file/TextureParser.hpp"
 #include "minko/Types.hpp"
-#include <stack>
 #include "minko/component/Transform.hpp"
 #include "minko/component/JobManager.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/BoundingBox.hpp"
+#include "minko/component/MasterAnimation.hpp"
+#include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
-#include "minko/file/Options.hpp"
-#include "minko/file/Dependency.hpp"
-#include "minko/scene/NodeSet.hpp"
+
+#include "msgpack.hpp"
+
+#include <stack>
 
 using namespace minko;
 using namespace minko::file;
@@ -42,6 +45,7 @@ SceneParser::SceneParser()
 {
 	_geometryParser = file::GeometryParser::create();
 	_materialParser = file::MaterialParser::create();
+    _textureParser = file::TextureParser::create();
 
 	registerComponent(serialize::PROJECTION_CAMERA,
 		std::bind(&deserialize::ComponentDeserializer::deserializeProjectionCamera,
@@ -126,7 +130,9 @@ SceneParser::parse(const std::string&					filename,
 {
 	_dependencies->options(options);
 	
-	readHeader(filename, data);
+    if (!readHeader(filename, data))
+        return;
+
 	std::string 		folderPath = extractFolderPath(resolvedFilename);
 
 	extractDependencies(assetLibrary, data, _headerSize, _dependenciesSize, options, folderPath);
@@ -244,7 +250,10 @@ SceneParser::parseNode(std::vector<SerializedNode>&			nodePack,
 		std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[serialize::SKINNING](componentPack[componentIndex2], assetLibrary, _dependencies);
 
 		for (scene::Node::Ptr node : componentIdToNodes[componentIndex2])
+		{
 			node->addComponent(newComponent);
+			node->addComponent(component::MasterAnimation::create());
+		}
 	}
     
 	if (isSkinningFree)

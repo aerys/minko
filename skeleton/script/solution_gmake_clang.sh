@@ -3,7 +3,7 @@
 DIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 OS_TYPE=`uname -s`
 
-pushd ${DIR}/..
+pushd ${DIR}/.. > /dev/null
 case ${OS_TYPE} in
 	"Linux")
 		${MINKO_HOME}/tool/lin/script/premake5.sh --cc=clang gmake
@@ -12,4 +12,4 @@ case ${OS_TYPE} in
 		${MINKO_HOME}/tool/lin/script/premake5.sh --cc=clang gmake
 		;;
 esac
-popd
+popd > /dev/null

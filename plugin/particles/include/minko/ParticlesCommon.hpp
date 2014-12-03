@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,87 +23,87 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace component
-	{
-		class ParticleSystem;
-	}
+    namespace component
+    {
+        class ParticleSystem;
+    }
 
     namespace data
     {
         class ParticlesProvider;
     }
 
-	namespace geometry
-	{
-		class ParticlesGeometry;
-	}
-	namespace render
-	{
-		class ParticleVertexBuffer;
-		class ParticleIndexBuffer;
-	}
+    namespace geometry
+    {
+        class ParticlesGeometry;
+    }
+    namespace render
+    {
+        class ParticleVertexBuffer;
+        class ParticleIndexBuffer;
+    }
 
-	namespace particle
-	{
-		struct ParticleData;
-		enum class StartDirection;
+    namespace particle
+    {
+        struct ParticleData;
+        enum class StartDirection;
 
-		namespace modifier
-		{
-			class IParticleModifier;
+        namespace modifier
+        {
+            class IParticleModifier;
 
-			class IParticleInitializer;
-			class StartVelocity;
-			class StartForce;
-			class StartColor;
-			class StartSize;
-			class StartRotation;
-			class StartAngularVelocity;
-			class StartSprite;
+            class IParticleInitializer;
+            class StartVelocity;
+            class StartForce;
+            class StartColor;
+            class StartSize;
+            class StartRotation;
+            class StartAngularVelocity;
+            class StartSprite;
 
-			class IParticleUpdater;
-			class VelocityOverTime;
-			class ForceOverTime;
-			class ColorOverTime;
-			class SizeOverTime;
-			class ColorBySpeed;
-			class SizeBySpeed;
-		}
+            class IParticleUpdater;
+            class VelocityOverTime;
+            class ForceOverTime;
+            class ColorOverTime;
+            class SizeOverTime;
+            class ColorBySpeed;
+            class SizeBySpeed;
+        }
 
-		namespace sampler
-		{
-			template<class T>
-			class Sampler;
+        namespace sampler
+        {
+            template<class T>
+            class Sampler;
 
-			template<class T>
-			class Constant;
-			template<class T>
-			class RandomValue;
-			template<class T>
-			class LinearlyInterpolatedValue;
-		}
+            template<class T>
+            class Constant;
+            template<class T>
+            class RandomValue;
+            template<class T>
+            class LinearlyInterpolatedValue;
+        }
 
-		namespace shape
-		{
-			class EmitterShape;
-			class Box;
-			class Cone;
-			class Cylinder;
-			class Sphere;
-			class Point;
-		}
+        namespace shape
+        {
+            class EmitterShape;
+            class Box;
+            class Cone;
+            class Cylinder;
+            class Sphere;
+            class Point;
+        }
 
-		namespace tools
-		{
-			enum class VertexComponentFlags;
+        namespace tools
+        {
+            enum class VertexComponentFlags;
 
-			template<class T>
-			class Vector3;
+            template<class T>
+            class Vector3;
 
-			template <class T>
-			class Modifier1;
-			template <class T>
-			class Modifier3;
-		}
-	}
+            template <class T>
+            class Modifier1;
+            template <class T>
+            class Modifier3;
+        }
+    }
 }

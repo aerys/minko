@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -29,6 +29,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Store.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/component/Renderer.hpp"
+#include "minko/CloneOption.hpp"
+#include "minko/material/Material.hpp"
 
 using namespace minko;
 using namespace minko::scene;
@@ -60,6 +62,38 @@ Surface::Surface(std::string		name,
 		throw std::invalid_argument("effect");
 	if (!_effect->hasTechnique(_technique))
 		throw std::logic_error("Effect does not provide a '" + _technique + "' technique.");
+}
+
+Surface::Surface(const Surface& surface, const CloneOption& option) :
+	AbstractComponent(surface, option),
+	_name(surface._name),
+	_geometry(surface._geometry), //needed for skinning: option == CloneOption::SHALLOW ? surface._geometry : surface._geometry->clone()
+	_material(option == CloneOption::SHALLOW ? surface._material : std::static_pointer_cast<Material>(surface._material->clone())),
+	_effect(surface._effect),
+	_technique(surface._technique),
+	_visible(surface._visible),
+	_rendererToVisibility(surface._rendererToVisibility),
+	_rendererToComputedVisibility(surface._rendererToComputedVisibility),
+	_techniqueChanged(TechniqueChangedSignal::create()),
+	_visibilityChanged(VisibilityChangedSignal::create()),
+	_computedVisibilityChanged(VisibilityChangedSignal::create()),
+	_targetAddedSlot(nullptr),
+	_targetRemovedSlot(nullptr),
+	_addedSlot(nullptr),
+	_removedSlot(nullptr)
+{
+	if (_effect == nullptr)
+		throw std::invalid_argument("effect");
+	if (!_effect->hasTechnique(_technique))
+		throw std::logic_error("Effect does not provide a '" + _technique + "' technique.");
+}
+
+AbstractComponent::Ptr
+Surface::clone(const CloneOption& option)
+{
+	Ptr surface(new Surface(*this, option));
+
+	return surface;
 }
 
 void

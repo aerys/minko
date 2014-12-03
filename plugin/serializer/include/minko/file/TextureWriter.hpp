@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -22,55 +22,82 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/Types.hpp"
 #include "minko/SerializerCommon.hpp"
+#include "minko/file/AbstractWriter.hpp"
 
 namespace minko
 {
-	namespace file
-	{
-		class TextureWriter
-		{
-		public:
-			typedef std::shared_ptr<TextureWriter>										Ptr;
+    namespace file
+    {
+        class TextureWriter :
+            public AbstractWriter<std::shared_ptr<render::AbstractTexture>>
+        {
+        public:
+            typedef std::shared_ptr<TextureWriter>                                      Ptr;
 
-		private:
-			typedef std::shared_ptr<AssetLibrary>					AssetLibraryPtr;
-			typedef std::shared_ptr<Options>							OptionsPtr;
-			typedef std::shared_ptr<WriterOptions>					    WriterOptionsPtr;
-
-            typedef std::shared_ptr<render::Texture>                    TexturePtr;
+            typedef std::function<bool(std::shared_ptr<render::AbstractTexture>,
+                                       std::shared_ptr<WriterOptions>,
+                                       std::stringstream& blob)>                        FormatWriterFunction;
 
         private:
-            serialize::ImageFormat _imageFormat;
-            TexturePtr _data;
+            typedef std::shared_ptr<AssetLibrary>       AssetLibraryPtr;
+            typedef std::shared_ptr<Options>            OptionsPtr;
+            typedef std::shared_ptr<Dependency>         DependencyPtr;
+            typedef std::shared_ptr<WriterOptions>      WriterOptionsPtr;
+            typedef std::shared_ptr<render::AbstractTexture>    AbstractTexturePtr;
+            typedef std::shared_ptr<render::Texture>    TexturePtr;
 
-		public:
-			inline static
-			Ptr
-			create()
-			{
-				return std::shared_ptr<TextureWriter>(new TextureWriter());
-			}
+        private:
+            static std::unordered_map<render::TextureFormat, FormatWriterFunction> _formatWriterFunctions;
 
-            void
-            data(TexturePtr data);
+            int _headerSize;
 
-            void
-            imageFormat(serialize::ImageFormat imageFormat);
+        public:
+            ~TextureWriter() = default;
 
-            void
-            writeRawTexture(std::string&        filename,
-                            AssetLibraryPtr     assetLibrary,
-                            OptionsPtr		    options,
-                            WriterOptionsPtr    writerOptions);
+            inline static
+            Ptr
+            create()
+            {
+                return std::shared_ptr<TextureWriter>(new TextureWriter());
+            }
 
-			std::string
-			embedTexture(AssetLibraryPtr    assetLibrary,
-                         OptionsPtr         options,
-                         WriterOptionsPtr   writerOptions);
+            inline
+            int
+            headerSize() const
+            {
+                return _headerSize;
+            }
 
-		protected:
-			TextureWriter();
-		};
-	}
+            std::string
+            embed(AssetLibraryPtr   assetLibrary,
+                  OptionsPtr        options,
+                  DependencyPtr     dependency,
+                  WriterOptionsPtr  writerOptions);
+
+        protected:
+            TextureWriter();
+
+        private:
+            static
+            bool
+            writeRGBATexture(AbstractTexturePtr abstractTexture,
+                             WriterOptionsPtr   writerOptions,
+                             std::stringstream& blob);
+
+            static
+            bool
+            writePvrCompressedTexture(render::TextureFormat   textureFormat,
+                                      AbstractTexturePtr      abstractTexture,
+                                      WriterOptionsPtr        writerOptions,
+                                      std::stringstream&      blob);
+
+            static
+            bool
+            writeQCompressedTexture(render::TextureFormat   textureFormat,
+                                    AbstractTexturePtr      abstractTexture,
+                                    WriterOptionsPtr        writerOptions,
+                                    std::stringstream&      blob);
+        };
+    }
 }
 

@@ -19,19 +19,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "AmbientLightTest.hpp"
 
+#include "minko/MinkoTests.hpp"
+
+using namespace minko;
+using namespace minko::component;
+using namespace minko::math;
+using namespace minko::scene;
+
 using namespace minko;
 using namespace minko::component;
 
 TEST_F(AmbientLightTest, Create)
 {
-    try
-    {
-        auto al = AmbientLight::create();
-    }
-    catch (...)
-    {
-        ASSERT_TRUE(false);
-    }
+	auto root = Node::create();
+	auto n1 = Node::create()->addComponent(AmbientLight::create(10.f));
+	
+	ASSERT_TRUE(n1->hasComponent<AmbientLight>());
+	ASSERT_TRUE(n1->component<AmbientLight>()->ambient() == 10.0f);
 }
 
 TEST_F(AmbientLightTest, AddLight)
@@ -197,4 +201,28 @@ TEST_F(AmbientLightTest, RemoveLastLight)
     ASSERT_TRUE(root->data().hasProperty("ambientLight[1].ambient"));
     ASSERT_EQ(root->data().get<math::vec3>("ambientLight[1].color"), math::vec3(0.f, 1.f, 0.f));
     ASSERT_EQ(root->data().get<float>("ambientLight[1].ambient"), .2f);
+}
+
+TEST_F(AmbientLightTest, Clone)
+{
+	auto sceneManager = SceneManager::create(MinkoTests::canvas());
+	auto root = Node::create()->addComponent(sceneManager);
+	auto n1 = Node::create()
+		->addComponent(Transform::create(Matrix4x4::create()))
+		->addComponent(AmbientLight::create(10.f));
+	
+
+	auto n2 = n1->clone(CloneOption::DEEP);
+	n2->component<AmbientLight>()->ambient(.1f);
+	
+	
+	root->addChild(n1);
+	root->addChild(n2);
+
+	sceneManager->nextFrame(0.0f, 0.0f);
+
+	ASSERT_TRUE(n1->hasComponent<AmbientLight>());
+	ASSERT_TRUE(n1->component<AmbientLight>()->ambient() == 10.0f);
+	ASSERT_TRUE(n2->hasComponent<AmbientLight>());
+	ASSERT_TRUE(n2->component<AmbientLight>()->ambient() == 0.1f);
 }

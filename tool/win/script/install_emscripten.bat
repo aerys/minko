@@ -1,7 +1,7 @@
 echo off
 @setlocal enabledelayedexpansion
 
-set EMSDK_WIKI=https://github.com/kripken/emscripten/wiki/Emscripten-SDK#wiki-downloads
+set EMSDK_WIKI=http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html
 
 if "%PROCESSOR_ARCHITECTURE%" == "AMD64" (
 	set EMSDK_MINGW=mingw-4.6.2-32bit
@@ -20,7 +20,7 @@ if not defined EMSCRIPTEN (
 	exit /b 1
 )
 
-call "%EMSCRIPTEN%\..\..\emsdk_add_path.bat"
+call "%EMSCRIPTEN%\..\..\emsdk_env.bat"
 
 call emsdk list | findstr %EMSDK_MINGW% | findstr INSTALLED | findstr *
 

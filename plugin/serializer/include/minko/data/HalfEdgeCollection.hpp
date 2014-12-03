@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -26,65 +26,64 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace data
-	{
-		struct pair_hash
-		{
-			long 
-			operator()(const std::pair<unsigned short, unsigned short> pair) const 
-			{ 
-				return pair.first * 10000 + pair.second;
-			}
+    namespace data
+    {
+        struct pair_hash
+        {
+            long
+            operator()(const std::pair<unsigned short, unsigned short> pair) const
+            {
+                return pair.first * 10000 + pair.second;
+            }
 
-		};
+        };
 
-		struct pair_comparer
-		{
-			bool 
-			operator()(const std::pair<unsigned short, unsigned short> left, 
-					   const std::pair<unsigned short, unsigned short> right) const
-			{
-				return (left.first == right.first) && (left.second == right.second);
-			}
-		};
+        struct pair_comparer
+        {
+            bool
+            operator()(const std::pair<unsigned short, unsigned short> left,
+                       const std::pair<unsigned short, unsigned short> right) const
+            {
+                return (left.first == right.first) && (left.second == right.second);
+            }
+        };
 
-		class HalfEdgeCollection 
-		{
-		private:
-			typedef std::shared_ptr<minko::render::IndexBuffer>							IndexStreamPtr;
-			typedef std::pair<unsigned short, unsigned short>								PairOfShort;
-			typedef std::shared_ptr<HalfEdge>												HalfEdgePtr;
-			typedef std::unordered_map<PairOfShort, HalfEdgePtr, pair_hash, pair_comparer>	HalfEdgeMap;
-			typedef std::list<HalfEdgePtr>													HalfEdgeList;
+        class HalfEdgeCollection
+        {
+        private:
+            typedef std::shared_ptr<minko::render::IndexBuffer>                              IndexStreamPtr;
+            typedef std::pair<unsigned short, unsigned short>                                PairOfShort;
+            typedef std::shared_ptr<HalfEdge>                                                HalfEdgePtr;
+            typedef std::unordered_map<PairOfShort, HalfEdgePtr, pair_hash, pair_comparer>   HalfEdgeMap;
+            typedef std::list<HalfEdgePtr>                                                   HalfEdgeList;
 
-		private :
-			IndexStreamPtr				_indexStream;
-			std::list<HalfEdgeList>		_subMeshesList;
+        private:
+            IndexStreamPtr                 _indexStream;
+            std::list<HalfEdgeList>        _subMeshesList;
 
-		public:
+        public:
+            inline static
+            std::shared_ptr<HalfEdgeCollection>
+            create(std::shared_ptr<minko::render::IndexBuffer> indexStream)
+            {
+                return std::shared_ptr<HalfEdgeCollection>(new HalfEdgeCollection(indexStream));
+            }
 
-			inline static
-			std::shared_ptr<HalfEdgeCollection> 
-			create(std::shared_ptr<minko::render::IndexBuffer> indexStream)
-			{
-				return std::shared_ptr<HalfEdgeCollection>(new HalfEdgeCollection(indexStream));
-			}
+            inline
+            std::list<HalfEdgeList>
+            subMeshesList() const
+            {
+                return _subMeshesList;
+            };
 
-			inline 
-			std::list<HalfEdgeList> 
-			subMeshesList() const
-			{
-				return _subMeshesList;
-			};
+        private:
+            HalfEdgeCollection (std::shared_ptr<minko::render::IndexBuffer> indexStream);
 
-		private:
-			HalfEdgeCollection (std::shared_ptr<minko::render::IndexBuffer> indexStream);
+            void
+            initialize();
 
-			void 
-			initialize();
-
-			void 
-			computeList(HalfEdgeMap unmarked);
-		};
-	}
+            void
+            computeList(HalfEdgeMap unmarked);
+        };
+    }
 }

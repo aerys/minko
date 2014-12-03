@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,8 +23,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/WrapMode.hpp"
 #include "minko/render/TextureFilter.hpp"
 #include "minko/render/MipFilter.hpp"
+#include "minko/render/TextureFormatInfo.hpp"
 #include "minko/render/TriangleCulling.hpp"
 #include "minko/render/StencilOperation.hpp"
+#include "minko/log/Logger.hpp"
 
 #include <iomanip>
 
@@ -32,24 +34,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # define GL_GLEXT_PROTOTYPES
 #endif
 
-#if MINKO_PLATFORM & MINKO_PLATFORM_WINDOWS
-# if MINKO_ANGLE
+#if MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
+# if defined(MINKO_PLUGIN_ANGLE)
 #  include "GLES2/gl2.h"
+#  include "GLES2/gl2ext.h"
 # else
 #  include "GL/glew.h"
 # endif
-#elif MINKO_PLATFORM & MINKO_PLATFORM_OSX
+#elif MINKO_PLATFORM == MINKO_PLATFORM_OSX
 # include <OpenGL/gl.h>
+# include <OpenGL/glext.h>
 # include <GLUT/glut.h>
-#elif MINKO_PLATFORM & MINKO_PLATFORM_LINUX
+#elif MINKO_PLATFORM == MINKO_PLATFORM_LINUX
 # include <GL/gl.h>
+# include <GL/glext.h>
 # include <GL/glu.h>
-#elif MINKO_PLATFORM & MINKO_PLATFORM_IOS
+#elif MINKO_PLATFORM == MINKO_PLATFORM_IOS
 # include <OpenGLES/ES2/gl.h>
-#elif MINKO_PLATFORM & MINKO_PLATFORM_ANDROID
+# include <OpenGLES/ES2/glext.h>
+#elif MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
 # include <GLES2/gl2.h>
-#elif MINKO_PLATFORM & MINKO_PLATFORM_HTML5
+# include <GLES2/gl2ext.h>
+#elif MINKO_PLATFORM == MINKO_PLATFORM_HTML5
 # include <GLES2/gl2.h>
+# include <GLES2/gl2ext.h>
 # include <EGL/egl.h>
 #endif
 
@@ -119,6 +127,8 @@ OpenGLES2Context::initializeStencilOperationsMap()
 	return m;
 }
 
+std::unordered_map<TextureFormat, unsigned int> OpenGLES2Context::_availableTextureFormats;
+
 OpenGLES2Context::OpenGLES2Context() :
 	_errorsEnabled(false),
 	_textures(),
@@ -152,14 +162,15 @@ OpenGLES2Context::OpenGLES2Context() :
 	_currentStencilZFailOp(StencilOperation::UNSET),
 	_currentStencilZPassOp(StencilOperation::UNSET)
 {
-#if defined _WIN32 && !defined MINKO_ANGLE
+#if (MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS) && !defined(MINKO_PLUGIN_ANGLE)
 	glewInit();
 #endif
 
-	glEnable(GL_DEPTH_TEST);
-#ifndef MINKO_NO_STENCIL
+#if !defined(MINKO_NO_STENCIL)
 	glEnable(GL_STENCIL_TEST);
 #endif
+
+    glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
@@ -616,6 +627,67 @@ OpenGLES2Context::createTexture(TextureType	type,
 	return texture;
 }
 
+uint
+OpenGLES2Context::createCompressedTexture(TextureType     type,
+                                          TextureFormat   format,
+                                          unsigned int    width,
+                                          unsigned int    height,
+                                          bool            mipMapping)
+{
+    uint texture;
+
+    // make sure width is a power of 2
+    if (!((width != 0) && !(width & (width - 1))))
+        throw std::invalid_argument("width");
+
+    // make sure height is a power of 2
+    if (!((height != 0) && !(height & (height - 1))))
+        throw std::invalid_argument("height");
+
+    // http://www.opengl.org/sdk/docs/man/xhtml/glGenTextures.xml
+    //
+    // void glGenTextures(GLsizei n, GLuint* textures)
+    // n Specifies the number of texture names to be generated.
+    // textures Specifies an array in which the generated texture names are stored.
+    //
+    // glGenTextures generate texture names
+    glGenTextures(1, &texture);
+
+    // http://www.opengl.org/sdk/docs/man/xhtml/glBindTexture.xml
+    //
+    // void glBindTexture(GLenum target, GLuint texture);
+    // target Specifies the target to which the texture is bound.
+    // texture Specifies the name of a texture.
+    //
+    // glBindTexture bind a named texture to a texturing target
+    const auto glTarget = type == TextureType::Texture2D
+        ? GL_TEXTURE_2D
+        : GL_TEXTURE_CUBE_MAP;
+
+    glBindTexture(glTarget, texture);
+
+    _currentBoundTexture = texture;
+
+    // default sampler states
+    glTexParameteri(glTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(glTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(glTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(glTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    _textures.push_back(texture);
+    _textureSizes[texture]            = std::make_pair(width, height);
+    _textureHasMipmaps[texture]        = mipMapping;
+    _textureTypes[texture]            = type;
+
+    _currentWrapMode[texture]        = WrapMode::CLAMP;
+    _currentTextureFilter[texture]    = TextureFilter::NEAREST;
+    _currentMipFilter[texture]        = MipFilter::NONE;
+
+    checkForErrors();
+
+    return texture;
+}
+
 TextureType
 OpenGLES2Context::getTextureType(uint textureId) const
 {
@@ -686,6 +758,45 @@ OpenGLES2Context::uploadCubeTextureData(uint				texture,
 	_currentBoundTexture = texture;
 
 	checkForErrors();
+}
+
+void
+OpenGLES2Context::uploadCompressedTexture2dData(uint          texture,
+                                                TextureFormat format,
+                                                unsigned int  width,
+                                                unsigned int  height,
+                                                unsigned int  size,
+                                                unsigned int  mipLevel,
+                                                void*         data)
+{
+    assert(getTextureType(texture) == TextureType::Texture2D);
+
+    const auto& formats = availableTextureFormats();
+
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glCompressedTexImage2D(GL_TEXTURE_2D, mipLevel, formats.at(format), width, height, 0, size, data);
+
+    _currentBoundTexture = texture;
+
+    checkForErrors();
+}
+
+void
+OpenGLES2Context::uploadCompressedCubeTextureData(uint                texture,
+                                                  CubeTexture::Face   face,
+                                                  TextureFormat       format,
+                                                  unsigned int        width,
+                                                  unsigned int        height,
+                                                  unsigned int        mipLevel,
+                                                  void*               data)
+{
+    // TODO
+}
+
+void
+OpenGLES2Context::activateMipMapping(uint texture)
+{
+    _textureHasMipmaps[texture] = true;
 }
 
 void
@@ -895,16 +1006,13 @@ OpenGLES2Context::compileShader(const uint shader)
 
 	if (!errors.empty())
 	{
-		std::stringstream	stream;
-		stream << "glShaderSource_" << shader << ".txt";
+        std::string    source;
+        getShaderSource(shader, source);
 
-		const std::string&	filename	= stream.str();
+        LOG_DEBUG("Shader source (glShaderSource_" << shader << "):\n" << source);
+        LOG_DEBUG("Shader errors (glShaderSource_" << shader << "):\n" << errors);
 
-		saveShaderSourceToFile(filename, shader);
-
-		std::cerr << "\nERRORS\n------\n" << errors << std::endl;
-		std::cerr << "\nerrorneous shader source saved to \'" << filename << "\'" << std::endl;
-		throw;
+        throw std::runtime_error("Shader compilation failed. Enable debug logs to display errors.");
 	}
 #endif
 
@@ -938,45 +1046,6 @@ OpenGLES2Context::setShaderSource(const uint shader,
 	glShaderSource(shader, 1, &sourceString, 0);
 
 	checkForErrors();
-}
-
-void
-OpenGLES2Context::saveShaderSourceToFile(const std::string& filename, uint shader)
-{
-	std::string	source;
-	getShaderSource(shader, source);
-
-#ifndef MINKO_GLSL_OPTIMIZER
-	std::cout << "\nSHADER SOURCE\n-------------" << std::endl;
-	unsigned int i		= 0;
-	unsigned int line	= 1;
-	while(i < source.size())
-	{
-		std::string lineString;
-		while(i < source.size() && source[i] != '\n')
-			lineString.push_back(source[i++]);
-		++i;
-
-#ifndef EMSCRIPTEN
-		std::cerr
-#else
-		std::cout
-#endif // EMSCRIPTEN
-			<< "(" << std::setfill('0') << std::setw(4) << line << ") " << lineString << std::endl;
-
-		++line;
-	}
-#endif //MINKO_GLSL_OPTIMIZER
-
-#ifndef EMSCRIPTEN
-	std::ofstream	file;
-
-	file.open(filename.c_str());
-	if (!file.is_open())
-		return;
-	file << source;
-	file.close();
-#endif // EMSCRIPTEN
 }
 
 void
@@ -1393,7 +1462,7 @@ OpenGLES2Context::setRenderToBackBuffer()
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glBindRenderbuffer(GL_RENDERBUFFER, 0);
-	glViewport(_viewportX, _viewportY, _viewportWidth, _viewportHeight);
+    configureViewport(_oldViewportX, _oldViewportY, _oldViewportWidth, _oldViewportHeight);
 
 	_currentTarget = 0;
 
@@ -1409,6 +1478,13 @@ OpenGLES2Context::setRenderToTexture(uint texture, bool enableDepthAndStencil)
 	if (_frameBuffers.count(texture) == 0)
 		throw std::logic_error("this texture cannot be used for RTT");
 
+    if (!_currentTarget)
+    {
+        _oldViewportX = _viewportX;
+        _oldViewportY = _viewportY;
+        _oldViewportWidth = _viewportWidth;
+        _oldViewportHeight = _viewportHeight;
+    }
 	_currentTarget = texture;
 
 	glBindFramebuffer(GL_FRAMEBUFFER, _frameBuffers[texture]);
@@ -1420,7 +1496,7 @@ OpenGLES2Context::setRenderToTexture(uint texture, bool enableDepthAndStencil)
 
 	auto textureSize = _textureSizes[texture];
 
-	glViewport(0, 0, textureSize.first, textureSize.second);
+    configureViewport(0, 0, textureSize.first, textureSize.second);
 
 	checkForErrors();
 }
@@ -1522,6 +1598,7 @@ OpenGLES2Context::generateMipmaps(uint texture)
 	checkForErrors();
 }
 
+<<<<<<< HEAD
 void
 OpenGLES2Context::setUniformFloat(uint location, uint count, const float* v)
 {
@@ -1574,4 +1651,107 @@ void
 OpenGLES2Context::setUniformInt4(uint location, uint count, const int* v)
 {
     glUniform4iv(location, count, v);
+}
+
+bool
+OpenGLES2Context::supportsExtension(const std::string& extensionNameString)
+{
+    const auto availableExtensionRawStrings = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
+
+    if (availableExtensionRawStrings == nullptr)
+        return false;
+
+    const auto availableExtensionStrings = std::string(availableExtensionRawStrings);
+
+    return availableExtensionStrings.find(extensionNameString) != std::string::npos;
+}
+
+const std::unordered_map<TextureFormat, unsigned int>&
+OpenGLES2Context::availableTextureFormats()
+{
+    if (!_availableTextureFormats.empty())
+        return _availableTextureFormats;
+
+    auto& formats = _availableTextureFormats;
+
+    formats.insert(std::make_pair(TextureFormat::RGB, GL_RGB));
+    formats.insert(std::make_pair(TextureFormat::RGBA, GL_RGBA));
+
+    auto formatCount = GLint();
+    auto rawFormats = std::vector<GLenum>();
+
+    glGetIntegerv(GL_NUM_COMPRESSED_TEXTURE_FORMATS, &formatCount);
+
+    rawFormats.resize(formatCount);
+
+    glGetIntegerv(GL_COMPRESSED_TEXTURE_FORMATS, reinterpret_cast<GLint*>(rawFormats.data()));
+
+    for (auto rawFormat : rawFormats)
+    {
+        switch (rawFormat)
+        {
+#ifdef GL_EXT_texture_compression_dxt1
+        case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+            formats.insert(std::make_pair(TextureFormat::RGB_DXT1, GL_COMPRESSED_RGB_S3TC_DXT1_EXT));
+            break;
+        case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+            formats.insert(std::make_pair(TextureFormat::RGBA_DXT1, GL_COMPRESSED_RGBA_S3TC_DXT1_EXT));
+            break;
+#endif
+
+#ifdef GL_EXT_texture_compression_s3tc
+        case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+            formats.insert(std::make_pair(TextureFormat::RGBA_DXT3, GL_COMPRESSED_RGBA_S3TC_DXT3_EXT));
+            break;
+        case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+            formats.insert(std::make_pair(TextureFormat::RGBA_DXT5, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT));
+            break;
+#endif
+
+#ifdef GL_IMG_texture_compression_pvrtc
+        case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
+            formats.insert(std::make_pair(TextureFormat::RGB_PVRTC1_2BPP, GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG));
+            break;
+        case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
+            formats.insert(std::make_pair(TextureFormat::RGB_PVRTC1_4BPP, GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG));
+            break;
+        case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
+            formats.insert(std::make_pair(TextureFormat::RGBA_PVRTC1_2BPP, GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG));
+            break;
+        case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
+            formats.insert(std::make_pair(TextureFormat::RGBA_PVRTC1_4BPP, GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG));
+            break;
+#endif
+
+#ifdef GL_IMG_texture_compression_pvrtc2
+        case GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG:
+            formats.insert(std::make_pair(TextureFormat::RGBA_PVRTC2_2BPP, COMPRESSED_RGBA_PVRTC_2BPPV2_IMG));
+            break;
+        case GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG:
+            formats.insert(std::make_pair(TextureFormat::RGBA_PVRTC2_4BPP, COMPRESSED_RGBA_PVRTC_4BPPV2_IMG));
+            break;
+#endif
+
+#ifdef GL_OES_compressed_ETC1_RGB8_texture
+        case GL_ETC1_RGB8_OES:
+            formats.insert(std::make_pair(TextureFormat::RGB_ETC1, GL_ETC1_RGB8_OES));
+            formats.insert(std::make_pair(TextureFormat::RGBA_ETC1, GL_ETC1_RGB8_OES));
+            break;
+#endif
+
+#ifdef GL_AMD_compressed_ATC_texture
+        case GL_ATC_RGB_AMD:
+            formats.insert(std::make_pair(TextureFormat::RGB_ATITC, GL_ATC_RGB_AMD));
+            break;
+        case GL_ATC_RGBA_EXPLICIT_ALPHA_AMD:
+            formats.insert(std::make_pair(TextureFormat::RGBA_ATITC, GL_ATC_RGBA_EXPLICIT_ALPHA_AMD));
+            break;
+#endif
+
+        default:
+            break;
+        }
+    }
+
+    return formats;
 }

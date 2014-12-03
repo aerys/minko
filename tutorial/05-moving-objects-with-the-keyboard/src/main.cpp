@@ -31,7 +31,7 @@ int
 main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Tutorial - Moving objects with the keyboard", WINDOW_WIDTH, WINDOW_HEIGHT);
-    auto sceneManager = component::SceneManager::create(canvas->context());
+    auto sceneManager = component::SceneManager::create(canvas);
 
     sceneManager->assets()->loader()->queue("effect/Basic.effect");
     auto complete = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)

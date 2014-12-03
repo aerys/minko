@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -24,46 +24,46 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace geometry
-	{
-		class ParticlesGeometry :
-			public Geometry
-		{
-		public:
-			typedef std::shared_ptr<ParticlesGeometry>				Ptr;
+    namespace geometry
+    {
+        class ParticlesGeometry :
+            public Geometry
+        {
+        public:
+            typedef std::shared_ptr<ParticlesGeometry>                Ptr;
 
-			typedef std::shared_ptr<render::ParticleVertexBuffer>	VertexBufferPtr;
-			typedef std::shared_ptr<render::ParticleIndexBuffer>	IndexBufferPtr;
-		
-		private:
-			VertexBufferPtr	_particleVertices;
-			IndexBufferPtr	_particleIndices;
+            typedef std::shared_ptr<render::ParticleVertexBuffer>    VertexBufferPtr;
+            typedef std::shared_ptr<render::ParticleIndexBuffer>    IndexBufferPtr;
 
-		public:
-			inline static
-			Ptr
-			create(std::shared_ptr<render::AbstractContext> context)
-			{
-				auto geom = std::shared_ptr<ParticlesGeometry>(new ParticlesGeometry());
+        private:
+            VertexBufferPtr    _particleVertices;
+            IndexBufferPtr    _particleIndices;
 
-				geom->initialize(context);
+        public:
+            inline static
+            Ptr
+            create(std::shared_ptr<render::AbstractContext> context)
+            {
+                auto geom = std::shared_ptr<ParticlesGeometry>(new ParticlesGeometry());
 
-				return geom;
-			};
+                geom->initialize(context);
 
-			void
-			initStreams(unsigned int maxParticles);
+                return geom;
+            };
 
-			inline
-			VertexBufferPtr
-			particleVertices() const
-			{
-				return _particleVertices;
-			}
+            void
+            initStreams(unsigned int maxParticles);
 
-		protected:
-			void
-			initialize(std::shared_ptr<render::AbstractContext> context);
-		};
-	}
+            inline
+            VertexBufferPtr
+            particleVertices() const
+            {
+                return _particleVertices;
+            }
+
+        protected:
+            void
+            initialize(std::shared_ptr<render::AbstractContext> context);
+        };
+    }
 }

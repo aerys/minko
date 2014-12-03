@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,43 +25,43 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace particle
-	{
-		namespace modifier
-		{
-			class StartForce: 
-                public IParticleInitializer, 
+    namespace particle
+    {
+        namespace modifier
+        {
+            class StartForce:
+                public IParticleInitializer,
                 public Modifier3<float>
-			{
-			public:
-				typedef std::shared_ptr<StartForce>	                Ptr;
+            {
+            public:
+                typedef std::shared_ptr<StartForce>                    Ptr;
 
             private:
                 typedef std::shared_ptr<sampler::Sampler<float>>    SamplerPtr;
 
-			public:
-				static
-				Ptr
-				create(SamplerPtr fx,
-					   SamplerPtr fy,
-					   SamplerPtr fz)
-				{
-					Ptr modifier = std::shared_ptr<StartForce>(new StartForce(fx, fy, fz));
+            public:
+                static
+                Ptr
+                create(SamplerPtr fx,
+                       SamplerPtr fy,
+                       SamplerPtr fz)
+                {
+                    Ptr modifier = std::shared_ptr<StartForce>(new StartForce(fx, fy, fz));
 
-					return modifier;
-				};
+                    return modifier;
+                };
 
-				void
-				initialize(ParticleData&, float) const;
+                void
+                initialize(ParticleData&, float) const;
 
-				unsigned int
-				getNeededComponents() const;
-			
-			protected:
-				StartForce(SamplerPtr,
-						   SamplerPtr,
-						   SamplerPtr);
-			};
-		}
-	}
+                unsigned int
+                getNeededComponents() const;
+
+            protected:
+                StartForce(SamplerPtr,
+                           SamplerPtr,
+                           SamplerPtr);
+            };
+        }
+    }
 }

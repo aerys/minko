@@ -26,48 +26,48 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace Leap
 {
-	class KeyTapGesture;
+    class KeyTapGesture;
 }
 
 namespace minko
 {
-	namespace input
-	{
-		namespace leap
-		{
-			class KeyTapGesture : public Gesture
-			{
-				friend class Gesture; // Only a Gesture can instanciate a KeyTapGesture
+    namespace input
+    {
+        namespace leap
+        {
+            class KeyTapGesture : public Gesture
+            {
+                friend class Gesture; // Only a Gesture can instanciate a KeyTapGesture
 
-			public:
-				typedef std::shared_ptr<KeyTapGesture>	Ptr;
+            public:
+                typedef std::shared_ptr<KeyTapGesture>    Ptr;
 
-			private:
-				typedef std::shared_ptr<math::Vector3>	Vector3Ptr;
+            private:
+                typedef std::shared_ptr<math::Vector3>    Vector3Ptr;
 
-			private:
-				std::shared_ptr<Leap::KeyTapGesture>	_leapKeyTap;
+            private:
+                std::shared_ptr<Leap::KeyTapGesture>    _leapKeyTap;
 
-			public:
-				
-				Vector3Ptr
-				direction(Vector3Ptr output = nullptr) const;
+            public:
 
-				Vector3Ptr
-				position(Vector3Ptr output = nullptr) const;
+                Vector3Ptr
+                direction(Vector3Ptr output = nullptr) const;
 
-				float
-				progress() const;
+                Vector3Ptr
+                position(Vector3Ptr output = nullptr) const;
 
-				uint32_t
-				pointableID() const;
+                float
+                progress() const;
 
-			private:
-				KeyTapGesture(); // no implementation
+                uint32_t
+                pointableID() const;
 
-				explicit
-				KeyTapGesture(const Gesture&);
-			};
-		}
-	}
+            private:
+                KeyTapGesture(); // no implementation
+
+                explicit
+                KeyTapGesture(const Gesture&);
+            };
+        }
+    }
 }

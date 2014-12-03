@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -28,27 +28,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace component
-	{
-		class LuaPerspectiveCamera :
-			public LuaWrapper
-		{
-		public:
-			static
-			void
-			bind(LuaGlue& state)
-			{
-				state.Class<PerspectiveCamera>("PerspectiveCamera")
-		            .method("create",					static_cast<PerspectiveCamera::Ptr (*)(float, float, float, float)>(&PerspectiveCamera::create))
-					.method("createWithPostProjection", static_cast<PerspectiveCamera::Ptr(*)(float, float, float, float, math::Matrix4x4::Ptr)>(&PerspectiveCamera::create))
-					.method("updateProjection",			&PerspectiveCamera::updateProjection)
-					.method("unproject",				&PerspectiveCamera::unproject)
-					.method("project",					&PerspectiveCamera::project)
-		            .property("fieldOfView",			&PerspectiveCamera::fieldOfView, &PerspectiveCamera::fieldOfView)
-		            .property("aspectRatio",			&PerspectiveCamera::aspectRatio, &PerspectiveCamera::aspectRatio)
-		            .property("zNear",					&PerspectiveCamera::zNear, &PerspectiveCamera::zNear)
-		            .property("zFar",					&PerspectiveCamera::zFar, &PerspectiveCamera::zFar);
-			}
-		};
-	}
+    namespace component
+    {
+        class LuaPerspectiveCamera :
+            public LuaWrapper
+        {
+        public:
+            static
+            void
+            bind(LuaGlue& state)
+            {
+                state.Class<PerspectiveCamera>("PerspectiveCamera")
+                    .method("create",                    static_cast<PerspectiveCamera::Ptr (*)(float, float, float, float)>(&PerspectiveCamera::create))
+                    .method("createWithPostProjection", static_cast<PerspectiveCamera::Ptr(*)(float, float, float, float, math::Matrix4x4::Ptr)>(&PerspectiveCamera::create))
+                    .method("updateProjection",            &PerspectiveCamera::updateProjection)
+                    .method("unproject",                &PerspectiveCamera::unproject)
+                    .method("project",                    &PerspectiveCamera::project)
+                    .property("fieldOfView",            &PerspectiveCamera::fieldOfView, &PerspectiveCamera::fieldOfView)
+                    .property("aspectRatio",            &PerspectiveCamera::aspectRatio, &PerspectiveCamera::aspectRatio)
+                    .property("zNear",                    &PerspectiveCamera::zNear, &PerspectiveCamera::zNear)
+                    .property("zFar",                    &PerspectiveCamera::zFar, &PerspectiveCamera::zFar);
+            }
+        };
+    }
 }

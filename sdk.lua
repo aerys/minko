@@ -57,6 +57,7 @@ configuration { "linux64" }
 
 configuration { "osx64" }
 	system "macosx"
+	toolset "clang"
 
 configuration { "html5" }
 	system "emscripten"
@@ -100,4 +101,3 @@ if _OPTIONS['no-glsl-struct'] then
 	defines { 'MINKO_NO_GLSL_STRUCT' }
 	print('GLSL structs support is disabled (--no-glsl-struct)')
 end
-

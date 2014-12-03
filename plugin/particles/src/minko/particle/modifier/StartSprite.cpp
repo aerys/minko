@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -32,7 +32,7 @@ using namespace minko::particle::modifier;
 StartSprite::StartSprite(SamplerPtr     spriteIndex,
                          unsigned int   numCols,
                          unsigned int   numRows):
-    IParticleInitializer(), 
+    IParticleInitializer(),
     Modifier1<float> (spriteIndex),
     _numCols(numCols),
     _numRows(numRows)
@@ -41,16 +41,16 @@ StartSprite::StartSprite(SamplerPtr     spriteIndex,
 }
 
 void
-StartSprite::initialize(ParticleData& 	particle,
-	    			    float			time) const
+StartSprite::initialize(ParticleData&     particle,
+                        float            time) const
 {
-	particle.spriteIndex = _x->value();
+    particle.spriteIndex = _x->value();
 }
 
 unsigned int
 StartSprite::getNeededComponents() const
 {
-	return VertexComponentFlags::SPRITE_INDEX;
+    return VertexComponentFlags::SPRITE_INDEX;
 }
 
 
@@ -59,7 +59,7 @@ StartSprite::setProperties(data::ParticlesProvider::Ptr provider) const
 {
     provider->spritesheetSize(_numRows, _numCols);
 }
-				
+
 void
 StartSprite::unsetProperties(data::ParticlesProvider::Ptr provider) const
 {

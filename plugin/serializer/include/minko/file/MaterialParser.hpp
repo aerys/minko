@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -31,8 +31,9 @@ namespace minko
 			public AbstractSerializerParser
 		{
 		private:
-			typedef msgpack::type::tuple<uint, std::string>						ComplexPropertyValue;
 			typedef std::shared_ptr<MaterialParser>								Ptr;
+
+            typedef msgpack::type::tuple<uint, std::string>                     ComplexPropertyValue;
 			typedef msgpack::type::tuple<std::string, std::string>				BasicProperty;
 			typedef msgpack::type::tuple<std::string, ComplexPropertyValue>		ComplexProperty;
 			typedef std::shared_ptr<material::Material>							MaterialPtr;

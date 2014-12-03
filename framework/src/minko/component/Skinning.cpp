@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -18,6 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/component/Skinning.hpp"
+#include "minko/component/AbstractComponent.hpp"
 
 #include <minko/scene/Node.hpp>
 #include <minko/scene/NodeSet.hpp>
@@ -28,6 +29,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <minko/render/AbstractContext.hpp>
 #include <minko/component/Surface.hpp>
 #include <minko/component/SceneManager.hpp>
+#include <minko/component/MasterAnimation.hpp>
 #include <minko/component/Animation.hpp>
 #include <minko/component/Transform.hpp>
 
@@ -52,11 +54,10 @@ using namespace minko::render;
 Skinning::Skinning(const Skin::Ptr						skin, 
 				   SkinningMethod						method,
 				   AbstractContext::Ptr					context,
-				   const std::vector<Animation::Ptr>&	animations,
 				   Node::Ptr							skeletonRoot,
 				   bool									moveTargetBelowRoot,
 				   bool									isLooping):
-	MasterAnimation(animations, isLooping),
+	AbstractAnimation(isLooping),
 	_skin(skin),
 	_context(context),
 	_method(method),
@@ -68,6 +69,39 @@ Skinning::Skinning(const Skin::Ptr						skin,
 	_targetInputNormals(),
 	_targetAddedSlot(nullptr)
 {
+}
+
+Skinning::Skinning(const Skinning& skinning, const CloneOption& option) :
+	AbstractAnimation(skinning, option),
+	_skin(),
+	_context(skinning._context),
+	_method(skinning._method),
+	_skeletonRoot(skinning._skeletonRoot),
+	_moveTargetBelowRoot(skinning._moveTargetBelowRoot),
+	_boneVertexBuffer(nullptr),
+	_targetGeometry(),
+	_targetInputPositions(),
+	_targetInputNormals(),
+	_targetAddedSlot(nullptr)
+{	
+	_skin = skinning._skin->clone();
+
+	auto targetGeometry = skinning._targetGeometry;	
+
+	for (auto it = targetGeometry.begin(); it != targetGeometry.end(); ++it)
+	{
+		_targetGeometry[it->first] = it->second->clone();
+	}
+}
+
+AbstractComponent::Ptr
+Skinning::clone(const CloneOption& option)
+{
+	auto skin = std::shared_ptr<Skinning>(new Skinning(*this, option));
+
+	skin->initialize();	
+
+	return skin;
 }
 
 void
@@ -127,7 +161,15 @@ Skinning::addedHandler(Node::Ptr node, Node::Ptr target, Node::Ptr parent)
 			if (_method != SkinningMethod::SOFTWARE)
 			{
 				geometry->addVertexBuffer(_boneVertexBuffer);
-			
+
+				// TODO fixme
+				// replace UniformArray use
+
+				// previous implementation:
+				//   UniformArrayPtr<float>    uniformArray(new UniformArray<float>(0, nullptr));
+                //   geometry->data()->set<UniformArrayPtr<float>>(PNAME_BONE_MATRICES,    uniformArray);
+				//   geometry->data()->set<int>(PNAME_NUM_BONES, _skin->numBones());
+
                 geometry->data()->set(PNAME_BONE_MATRICES, std::vector<float>());
 				geometry->data()->set(PNAME_NUM_BONES, 0);
 			}
@@ -208,8 +250,6 @@ Skinning::createVertexBufferForBones() const
 void
 Skinning::update()
 {
-	MasterAnimation::update();
-
 	const uint frameId = _skin->getFrameId(_currentTime);
 
 	updateFrame(frameId, target());
@@ -349,4 +389,21 @@ Skinning::targetAdded(Node::Ptr target)
 
 	if (target->hasComponent<Transform>())
 		target->component<Transform>()->matrix(math::mat4(1.f));
+
+	if (target->hasComponent<MasterAnimation>())
+	{
+		auto masterAnimation = target->component<MasterAnimation>();
+		masterAnimation->initAnimations();
+	}
+}
+
+void
+Skinning::rebindDependencies(std::map<AbstractComponent::Ptr, AbstractComponent::Ptr>& componentsMap, std::map<NodePtr, NodePtr>& nodeMap, CloneOption option)
+{
+	_skeletonRoot = nodeMap[_skeletonRoot];
+
+	auto oldSurface = _targetGeometry.begin()->first->component<Surface>();
+	auto oldGeometry = oldSurface->geometry();
+
+	std::dynamic_pointer_cast<Surface>(componentsMap[oldSurface])->geometry(oldGeometry->clone());
 }

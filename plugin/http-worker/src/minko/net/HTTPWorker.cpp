@@ -25,30 +25,30 @@ using namespace minko::net;
 
 namespace minko
 {
-	namespace net
-	{
-		MINKO_DEFINE_WORKER(HTTPWorker, {
-			std::string url(input.begin(), input.end());
+    namespace net
+    {
+        MINKO_DEFINE_WORKER(HTTPWorker, {
+            std::string url(input.begin(), input.end());
 
-			HTTPRequest request(url);
+            HTTPRequest request(url);
 
-			auto _0 = request.progress()->connect([&](float p) {
-				Message message { "progress" };
-				message.set(p);
-				post(message);
-			});
+            auto _0 = request.progress()->connect([&](float p) {
+                Message message { "progress" };
+                message.set(p);
+                post(message);
+            });
 
-			auto _1 = request.error()->connect([&](int e) {
-				post(Message { "error" });
-			});
+            auto _1 = request.error()->connect([&](int e) {
+                post(Message { "error" });
+            });
 
-			auto _2 = request.complete()->connect([&](const std::vector<char>& output) {
-				Message message { "complete" };
-				message.set(output);
-				post(message);
-			});
+            auto _2 = request.complete()->connect([&](const std::vector<char>& output) {
+                Message message { "complete" };
+                message.set(output);
+                post(message);
+            });
 
-			request.run();
-		});
-	}
+            request.run();
+        });
+    }
 }

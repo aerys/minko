@@ -36,6 +36,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	}
 
 	includedirs {
+		"lib/assimp",
 		"lib/assimp/code",
 		"lib/assimp/code/BoostWorkaround",
 		"lib/assimp/include",
@@ -73,7 +74,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			'"AI_SLM_DEFAULT_MAX_TRIANGLES=21845"'
 		}
 
-	configuration { "cc=clang" }
+	configuration { "cc=clang or xcode*" }
 		buildoptions {
 			"-Wno-unknown-warning-option",
 			"-Wno-deprecated-register"
@@ -89,4 +90,9 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"-Wno-attributes",
 			"-Wimplicit-function-declaration",
 			"-Wparentheses-equality"
+		}
+
+	configuration { "android" }
+		buildoptions {
+			"-Wno-attributes"
 		}

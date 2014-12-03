@@ -26,51 +26,51 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace Leap
 {
-	class CircleGesture;
+    class CircleGesture;
 }
 
 namespace minko
 {
-	namespace input
-	{
-		namespace leap
-		{
-			class CircleGesture : public Gesture
-			{
-				friend class Gesture; // Only a Gesture can instanciate a CircleGesture
+    namespace input
+    {
+        namespace leap
+        {
+            class CircleGesture : public Gesture
+            {
+                friend class Gesture; // Only a Gesture can instanciate a CircleGesture
 
-			public:
-				typedef std::shared_ptr<CircleGesture>	Ptr;
+            public:
+                typedef std::shared_ptr<CircleGesture>    Ptr;
 
-			private:
-				typedef std::shared_ptr<math::Vector3>	Vector3Ptr;
+            private:
+                typedef std::shared_ptr<math::Vector3>    Vector3Ptr;
 
-			private:
-				std::shared_ptr<Leap::CircleGesture>	_leapCircle;
+            private:
+                std::shared_ptr<Leap::CircleGesture>    _leapCircle;
 
-			public:
-				
-				Vector3Ptr
-				center(Vector3Ptr output = nullptr) const;
-				
-				Vector3Ptr
-				normal(Vector3Ptr output = nullptr) const;
+            public:
 
-				float
-				progress() const;
+                Vector3Ptr
+                center(Vector3Ptr output = nullptr) const;
 
-				float
-				radius() const;
+                Vector3Ptr
+                normal(Vector3Ptr output = nullptr) const;
 
-				uint32_t
-				pointableID() const;
+                float
+                progress() const;
 
-			private:
-				CircleGesture(); // no implementation
+                float
+                radius() const;
 
-				explicit
-				CircleGesture(const Gesture&);
-			};
-		}
-	}
+                uint32_t
+                pointableID() const;
+
+            private:
+                CircleGesture(); // no implementation
+
+                explicit
+                CircleGesture(const Gesture&);
+            };
+        }
+    }
 }

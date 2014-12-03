@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -52,6 +52,28 @@ PerspectiveCamera::PerspectiveCamera(float			      fov,
   		->set("viewMatrix",				_view)
   		->set("projectionMatrix",		_projection)
   		->set("worldToScreenMatrix",	_viewProjection);
+}
+
+PerspectiveCamera::PerspectiveCamera(const PerspectiveCamera& camera, const CloneOption& option) :
+	_data(camera._data->clone()),
+	_fov(camera._fov),
+	_aspectRatio(camera._aspectRatio),
+	_zNear(camera._zNear),
+	_zFar(camera._zFar),
+	_view(Matrix4x4::create()),
+	_projection(Matrix4x4::create()->perspective(camera._fov, camera._aspectRatio, camera._zNear, camera._zFar)),
+	_viewProjection(Matrix4x4::create()->copyFrom(_projection)),
+	_position(Vector3::create()),
+	_postProjection(camera._postProjection)
+{
+}
+
+AbstractComponent::Ptr
+PerspectiveCamera::clone(const CloneOption& option)
+{
+	auto ctrl = std::shared_ptr<PerspectiveCamera>(new PerspectiveCamera(*this, option));
+
+	return ctrl;
 }
 
 void

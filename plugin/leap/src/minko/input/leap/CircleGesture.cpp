@@ -25,45 +25,45 @@ using namespace minko::input;
 using namespace minko::input::leap;
 
 CircleGesture::CircleGesture(const Gesture& gesture):
-	Gesture(gesture),
-	_leapCircle(nullptr)
+    Gesture(gesture),
+    _leapCircle(nullptr)
 {
-	if (_leapGesture->type() != Leap::Gesture::Type::TYPE_CIRCLE)
-		throw std::logic_error("Provided Gesture is not a Circle Gesture.");
+    if (_leapGesture->type() != Leap::Gesture::Type::TYPE_CIRCLE)
+        throw std::logic_error("Provided Gesture is not a Circle Gesture.");
 
-	Leap::CircleGesture leapCircle	= *_leapGesture;
-	_leapCircle						= std::make_shared<Leap::CircleGesture>(leapCircle);
+    Leap::CircleGesture leapCircle    = *_leapGesture;
+    _leapCircle                        = std::make_shared<Leap::CircleGesture>(leapCircle);
 
-	if (_leapCircle == nullptr)
-		throw std::invalid_argument("gesture");
+    if (_leapCircle == nullptr)
+        throw std::invalid_argument("gesture");
 }
 
 math::Vector3::Ptr
 CircleGesture::center(math::Vector3::Ptr output) const
 {
-	return convert(_leapCircle->center(), output);
+    return convert(_leapCircle->center(), output);
 }
 
 math::Vector3::Ptr
 CircleGesture::normal(math::Vector3::Ptr output) const
 {
-	return convert(_leapCircle->normal(), output);
+    return convert(_leapCircle->normal(), output);
 }
 
 float
 CircleGesture::progress() const
 {
-	return _leapCircle->progress();
+    return _leapCircle->progress();
 }
 
 float
 CircleGesture::radius() const
 {
-	return _leapCircle->radius();
+    return _leapCircle->radius();
 }
 
 uint32_t
 CircleGesture::pointableID() const
 {
-	return _leapCircle->pointable().id();
+    return _leapCircle->pointable().id();
 }

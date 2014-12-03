@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -45,6 +45,7 @@ namespace minko
 
 		public:
 			typedef std::shared_ptr<Options>											Ptr;
+
 			typedef std::function<MaterialPtr(const std::string&, MaterialPtr)>			MaterialFunction;
 			typedef std::function<GeomPtr(const std::string&, GeomPtr)> 				GeometryFunction;
 			typedef std::function<AbsProtocolPtr(const std::string&)>	                ProtocolFunction;
@@ -52,6 +53,9 @@ namespace minko
 			typedef std::function<const std::string(const std::string&)>				UriFunction;
 			typedef std::function<NodePtr(NodePtr)>										NodeFunction;
 			typedef std::function<EffectPtr(EffectPtr)>									EffectFunction;
+
+            typedef std::function<render::TextureFormat(const std::unordered_set<render::TextureFormat>&)>
+                                                                                        TextureFormatFunction;
 
 		private:
 			std::shared_ptr<render::AbstractContext>	        _context;
@@ -75,6 +79,7 @@ namespace minko
 			component::SkinningMethod					        _skinningMethod;
 			std::shared_ptr<render::Effect>                     _effect;
 			MaterialPtr									        _material;
+            std::list<render::TextureFormat>                    _textureFormats;
 			MaterialFunction							        _materialFunction;
 			GeometryFunction							        _geometryFunction;
 			ProtocolFunction								    _protocolFunction;
@@ -82,6 +87,10 @@ namespace minko
 			UriFunction									        _uriFunction;
 			NodeFunction								        _nodeFunction;
 			EffectFunction								        _effectFunction;
+            TextureFormatFunction                               _textureFormatFunction;
+
+            int                                                 _seekingOffset;
+            int                                                 _seekedLength;
 
             int                                                 _seekingOffset;
             int                                                 _seekedLength;
@@ -134,6 +143,7 @@ namespace minko
 				opt->_skinningFramerate = options->_skinningFramerate;
 				opt->_skinningMethod = options->_skinningMethod;
 				opt->_effect = options->_effect;
+                opt->_textureFormats = options->_textureFormats;
                 opt->_material = options->_material;
 				opt->_materialFunction = options->_materialFunction;
 				opt->_geometryFunction = options->_geometryFunction;
@@ -141,6 +151,7 @@ namespace minko
                 opt->_parserFunction = options->_parserFunction;
 				opt->_uriFunction = options->_uriFunction;
 				opt->_nodeFunction = options->_nodeFunction;
+                opt->_textureFormatFunction = options->_textureFormatFunction;
 				opt->_loadAsynchronously = options->_loadAsynchronously;
                 opt->_seekingOffset = options->_seekingOffset;
                 opt->_seekedLength = options->_seekedLength;
@@ -390,6 +401,15 @@ namespace minko
 			}
 
 			inline
+            Ptr
+            registerTextureFormat(render::TextureFormat textureFormat)
+            {
+                _textureFormats.push_back(textureFormat);
+
+                return shared_from_this();
+            }
+
+            inline
 			const ProtocolFunction&
 			protocolFunction() const
 			{
@@ -500,6 +520,22 @@ namespace minko
 
 				return shared_from_this();
 			}
+
+            inline
+            const TextureFormatFunction&
+            textureFormatFunction() const
+            {
+                return _textureFormatFunction;
+            }
+
+            inline
+            Ptr
+            textureFormatFunction(const TextureFormatFunction& func)
+            {
+                _textureFormatFunction = func;
+
+                return shared_from_this();
+            }
 
             inline
             int

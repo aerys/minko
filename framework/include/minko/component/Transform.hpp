@@ -76,6 +76,11 @@ namespace minko
 				return ctrl;
 			}
 
+            AbstractComponent::Ptr
+            clone(const CloneOption& option);
+
+            ~Transform() = default;
+
 			inline
 			const math::mat4&
 			matrix()
@@ -153,6 +158,8 @@ namespace minko
 			private:
 				typedef std::shared_ptr<SceneManager>				SceneMgrPtr;
 				typedef std::shared_ptr<Renderer>					RendererCtrlPtr;
+                typedef std::shared_ptr<render::AbstractTexture>    AbsTexPtr;
+                typedef std::shared_ptr<SceneManager>               SceneMgrPtr;
 				typedef Signal<RendererCtrlPtr>::Slot 				EnterFrameCallback;
 				typedef std::shared_ptr<render::AbstractTexture> 	AbsTexturePtr;
 				typedef Signal<SceneMgrPtr, uint, AbsTexturePtr> 	RenderingBeginSignal;
@@ -166,6 +173,9 @@ namespace minko
 				{
                     return std::shared_ptr<RootTransform>(new RootTransform());
 				}
+
+                AbstractComponent::Ptr
+                clone(const CloneOption& option);
 
 				void
 				forceUpdate(NodePtr node, bool updateTransformLists = false);
@@ -198,7 +208,7 @@ namespace minko
 				bool							_invalidLists;
 
 				std::list<Any>					_targetSlots;
-				RenderingBeginSlot				_renderingBeginSlot;
+                Signal<SceneMgrPtr, uint, AbsTexPtr>::Slot      _renderingBeginSlot;
 
                 std::list<NodePtr>              _toAdd;
                 std::list<NodePtr>              _toRemove;
@@ -233,7 +243,10 @@ namespace minko
 				updateTransformPath(const std::vector<unsigned int>& path);
 
 				void
-				renderingBeginHandler(SceneMgrPtr sceneManager, uint frameId, AbsTexturePtr target);
+                renderingBeginHandler(std::shared_ptr<SceneManager>             sceneManager,
+                                      uint                                      frameId,
+                                      std::shared_ptr<render::AbstractTexture>  abstractTexture);
+
 
 				void
 				sortNodes();

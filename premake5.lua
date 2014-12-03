@@ -9,6 +9,11 @@ newoption {
 }
 
 newoption {
+	trigger	= 'no-framework',
+	description = 'Disable plugins.'
+}
+
+newoption {
 	trigger	= 'no-plugin',
 	description = 'Disable plugins.'
 }
@@ -23,6 +28,26 @@ newoption {
 	description = 'Output folder for the redistributable SDK built with the \'dist\' action.'
 }
 
+newoption {
+	trigger = 'platform',
+	description = 'Platform for which we want to regroup the binaries with \'regroup\' action.'
+}
+
+newoption {
+	trigger = 'config',
+	description = 'Config for which we want to regroup the binaries with \'regroup\' action.'
+}
+
+newoption {
+	trigger = 'type',
+	description = 'Type of project we want to regroup the binaries with \'regroup\' action (among: example, tutorial, plugin).'
+}
+
+newoption {
+	trigger = 'regroup-dir',
+	description = 'Output folder where we want to regroup the binaries with \'regroup\' action.'
+}
+
 solution "minko"
 	MINKO_HOME = path.getabsolute(os.getcwd())
 
@@ -31,40 +56,56 @@ solution "minko"
 	-- buildable SDK
 	MINKO_SDK_DIST = false
 
+	-- framework
+	if not _OPTIONS['no-framework'] then
 	include 'framework'
+	end
 
 	-- tutorial
 	if not _OPTIONS['no-tutorial'] then
-		--include 'tutorial/01-hello-cube'
-		--include 'tutorial/02-handle-canvas-resizing'
-		--include 'tutorial/03-rotating-the-camera-around-an-object-with-the-mouse'
-		--include 'tutorial/04-moving-objects'
-		--include 'tutorial/05-moving-objects-with-the-keyboard'
-		--include 'tutorial/06-load-3d-files'
-		--include 'tutorial/07-loading-scene-files'
-		--include 'tutorial/08-my-first-script'
-		--include 'tutorial/09-scripting-mouse-inputs'
-		--include 'tutorial/10-working-with-the-basic-material'
-		--include 'tutorial/11-working-with-the-phong-material'
-		--include 'tutorial/12-working-with-normal-maps'
-		--include 'tutorial/13-working-with-environment-maps'
-		--include 'tutorial/14-working-with-specular-maps'
-		--include 'tutorial/15-loading-and-using-textures'
-		--include 'tutorial/16-loading-effects'
-		--include 'tutorial/17-creating-a-custom-effect'
-		--include 'tutorial/18-creating-custom-materials'
-		--include 'tutorial/19-binding-the-model-to-world-transform'
-		--include 'tutorial/20-binding-the-camera'
-		--include 'tutorial/21-authoring-uber-shaders'
-		--include 'tutorial/22-creating-a-simple-post-processing-effect'
-		--include 'tutorial/23-using-external-glsl-code-in-effect-files'
-		--include 'tutorial/24-working-with-custom-vertex-attributes'
-		--include 'tutorial/25-working-with-ambient-lights'
-		--include 'tutorial/26-working-with-directional-lights'
-		--include 'tutorial/27-working-with-point-lights'
-		--include 'tutorial/28-working-with-spot-lights'
-		--include 'tutorial/29-hello-falling-cube'
-		--include 'tutorial/30-applying-anti-aliasing-effect'
+		include 'tutorial/01-hello-cube'
+		include 'tutorial/02-handle-canvas-resizing'
+		include 'tutorial/03-rotating-the-camera-around-an-object-with-the-mouse'
+		include 'tutorial/04-moving-objects'
+		include 'tutorial/05-moving-objects-with-the-keyboard'
+		include 'tutorial/06-load-3d-files'
+		include 'tutorial/07-loading-scene-files'
+		include 'tutorial/08-my-first-script'
+		include 'tutorial/09-scripting-mouse-inputs'
+		include 'tutorial/10-working-with-the-basic-material'
+		include 'tutorial/11-working-with-the-phong-material'
+		include 'tutorial/12-working-with-normal-maps'
+		include 'tutorial/13-working-with-environment-maps'
+		include 'tutorial/14-working-with-specular-maps'
+		include 'tutorial/15-loading-and-using-textures'
+		include 'tutorial/16-loading-effects'
+		include 'tutorial/17-creating-a-custom-effect'
+		include 'tutorial/18-creating-custom-materials'
+		include 'tutorial/19-binding-the-model-to-world-transform'
+		include 'tutorial/20-binding-the-camera'
+		include 'tutorial/21-authoring-uber-shaders'
+		include 'tutorial/22-creating-a-simple-post-processing-effect'
+		include 'tutorial/23-using-external-glsl-code-in-effect-files'
+		include 'tutorial/24-working-with-custom-vertex-attributes'
+		include 'tutorial/25-working-with-ambient-lights'
+		include 'tutorial/26-working-with-directional-lights'
+		include 'tutorial/27-working-with-point-lights'
+		include 'tutorial/28-working-with-spot-lights'
+		include 'tutorial/29-hello-falling-cube'
+		include 'tutorial/30-applying-anti-aliasing-effect'
+
+		if os.is("macosx")  and (_ACTION == "xcode-ios" or _ACTION == "xcode-osx") then
+			minko.project.library "all-tutorials"
+				targetdir "/tmp/minko/bin"
+				objdir "/tmp/minko/obj"
+
+				local tutorials = os.matchdirs('tutorial/*')
+
+				for i, basedir in ipairs(tutorials) do
+					local tutorialName = path.getbasename(basedir)
+					links { "minko-tutorial-" .. tutorialName }
+				end
+		end
 	end
 
 	-- plugin
@@ -92,48 +133,67 @@ solution "minko"
 
 		-- work around the inability of Xcode to build all projects if no dependency exists between them
 		if os.is("macosx")  and (_ACTION == "xcode-ios" or _ACTION == "xcode-osx") then
-			minko.project.application "all"
+			minko.project.library "sdk"
+				targetdir "/tmp/minko/bin"
+				objdir "/tmp/minko/obj"
+
+				links { "minko-framework" }
+
 				local plugins = os.matchdirs('plugin/*')
 
 				for i, basedir in ipairs(plugins) do
 					local pluginName = path.getbasename(basedir)
-					minko.plugin.enable(pluginName)
+					links { "minko-plugin-" .. pluginName }
 				end
 		end
 	end
 
 	-- example
 	if not _OPTIONS['no-example'] then
-		--include 'example/assimp'
+		include 'example/assimp'
+		include 'example/audio'
+		include 'example/clone'
 		include 'example/cube'
-		--include 'example/devil'
-		--include 'example/effect-config'
-		--include 'example/fog'
-		--include 'example/frustum'
-		--include 'example/jobs'
-		--include 'example/joystick'
-		--include 'example/leap-motion'
-		--include 'example/light'
-		--include 'example/line-geometry'
-		--include 'example/lua-scripts'
-		--include 'example/offscreen'
-		--include 'example/particles'
-		--include 'example/picking'
-		--include 'example/raycasting'
-		--include 'example/reflection'
-		--include 'example/serializer'
-		--include 'example/sky-box'
-		--include 'example/stencil'
-		--include 'example/visibility'
-		--include 'example/multi-surfaces'
-		--include 'example/physics'
-		--include 'example/oculus'
-		--include 'example/http'
-		--include 'example/html-overlay'
-		--include 'example/flares'
-		--include 'example/keyboard'
-		--include 'example/hologram'
-		--include 'example/water'
+		include 'example/devil'
+		include 'example/effect-config'
+		include 'example/flares'
+		include 'example/fog'
+		include 'example/frustum'
+		include 'example/hologram'
+		include 'example/html-overlay'
+		include 'example/http'
+		include 'example/jobs'
+		include 'example/joystick'
+		include 'example/keyboard'
+		include 'example/leap-motion'
+		include 'example/light'
+		include 'example/line-geometry'
+		include 'example/lua-scripts'
+		include 'example/multi-surfaces'
+		include 'example/oculus'
+		include 'example/offscreen'
+		include 'example/particles'
+		include 'example/physics'
+		include 'example/picking'
+		include 'example/raycasting'
+		include 'example/serializer'
+		include 'example/sky-box'
+		include 'example/stencil'
+		include 'example/visibility'
+		include 'example/water'
+
+		if os.is("macosx")  and (_ACTION == "xcode-ios" or _ACTION == "xcode-osx") then
+			minko.project.library "all-examples"
+				targetdir "/tmp/minko/bin"
+				objdir "/tmp/minko/obj"
+
+				local examples = os.matchdirs('example/*')
+
+				for i, basedir in ipairs(examples) do
+					local exampleName = path.getbasename(basedir)
+					links { "minko-example-" .. exampleName }
+				end
+		end
 	end
 
 	-- test
@@ -247,5 +307,64 @@ newaction {
 	description		= "Remove generated files.",
 	execute			= function()
 		minko.action.clean()
+	end
+}
+
+newaction {
+	trigger			= "regroup",
+	description		= "Regroup all binaries into a single folder",
+	execute			= function()
+
+		function Set (list)
+		  local set = {}
+		  for _, l in ipairs(list) do set[l] = true end
+		  return set
+		end
+
+		local availablePlatforms = Set { "windows32", "windows64", "linux32", "linux64", "osx64", "html5", "android", "ios" }
+		local availableConfig = Set { "debug", "release"}
+		local availableType = Set { "example", "tutorial", "plugin" }
+
+		if _OPTIONS['platform'] and availablePlatforms[_OPTIONS['platform']] and
+		   _OPTIONS['type'] and availableType[_OPTIONS['type']] and
+		   _OPTIONS['config'] and availableConfig[_OPTIONS['config']] and
+		   _OPTIONS['regroup-dir'] then
+
+			local platform = _OPTIONS['platform']
+			local projectType = _OPTIONS['type']
+			local config = _OPTIONS['config']
+			local outputDir = _OPTIONS['regroup-dir']
+			
+			local completeOutputDir = outputDir .. '/' .. platform .. '/' .. config .. '/' .. projectType
+			os.mkdir(completeOutputDir)
+
+			local dirs = os.matchdirs(projectType .. '/*')
+
+			for i, basedir in ipairs(dirs) do
+
+			    local dirName = path.getbasename(basedir)
+				local sourceDir = projectType .. '/' .. dirName .. '/bin/' .. platform .. '/' .. config
+				if os.isdir(sourceDir) then
+					print(dirName)
+					
+					os.mkdir(completeOutputDir .. '/' .. dirName)
+
+					if platform == 'android' then
+						if os.isdir(sourceDir .. '/bin/artifacts') then
+							minko.os.copyfiles(sourceDir .. '/bin/artifacts', completeOutputDir .. '/' .. dirName)
+						end
+					else
+						minko.os.copyfiles(sourceDir, completeOutputDir .. '/' .. dirName)
+					end
+				end
+			end
+		else
+			print "Error: Some arguments are missing or are not correct. Please follow the usage."
+			print "Usage: regroup --platform=$1 --config=$2 --type=$3 --regroup-dir=$4"
+			print " \$1: the platform (windows32, windows64, linux32, linux64, osx64, html5, android or ios)"
+			print " \$2: the configuration (debug or release)"
+			print " \$3: the type of projects you want to pack (example, tutorial or plugin)"
+			print " \$4: the output directory where you want to copy all files"
+		end
 	end
 }

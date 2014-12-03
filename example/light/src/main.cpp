@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,273 +23,264 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::component;
-
-#define WINDOW_WIDTH  	800
-#define WINDOW_HEIGHT 	600
+using namespace minko::math;
 
 scene::Node::Ptr camera = nullptr;
 
 Signal<input::Keyboard::Ptr>::Slot keyDown;
+Signal<input::Touch::Ptr, int, float, float>::Slot touchDown;
 
 scene::Node::Ptr
-createPointLight(math::vec3 color, math::vec3 position, file::AssetLibrary::Ptr assets)
+createPointLight(Vector3::Ptr color, Vector3::Ptr position, file::AssetLibrary::Ptr assets)
 {
-	static int lightId = 0;
+    static int lightId = 0;
 
-	auto pointLight = scene::Node::create("pointLight")
-		->addComponent(PointLight::create(.3f))
-		->addComponent(Transform::create(math::translate(math::mat4(1.f), position)))
-		->addComponent(Surface::create(
-			assets->geometry("quad"),
-			material::Material::create()
-				->set("diffuseMap",		assets->texture("texture/sprite-pointlight.png"))
-				->set("diffuseTint",	math::vec4(color, 1.f)),
-			assets->effect("effect/Sprite.effect")
-		));
+    auto pointLight = scene::Node::create("pointLight_" + std::to_string(lightId++))
+        ->addComponent(PointLight::create(10.f))
+        ->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(position)))
+        ->addComponent(Surface::create(
+            assets->geometry("quad"),
+            material::Material::create()
+                ->set("diffuseMap",        assets->texture("texture/sprite-pointlight.png"))
+                ->set("diffuseTint",    Vector4::create(color->x(), color->y(), color->z(), 1.f)),
+            assets->effect("effect/Sprite.effect")
+        ));
 
-	pointLight->component<PointLight>()->color(color);
-	pointLight->component<PointLight>()->diffuse(.1f);
-	pointLight->component<PointLight>()->layoutMask(lightId % 2 == 0 ? 1<<2 : 1);
+    pointLight->component<PointLight>()->color(color);
+    pointLight->component<PointLight>()->diffuse(.1f);
+    pointLight->component<PointLight>()->layoutMask(lightId % 2 == 0 ? 1<<2 : 1);
 
-	return pointLight;
+    return pointLight;
 }
 
-int main(int argc, char** argv)
+void
+addLight(SceneManager::Ptr sceneManager, scene::Node::Ptr lights)
 {
-	auto canvas = Canvas::create("Minko Example - Light", WINDOW_WIDTH, WINDOW_HEIGHT);
+    const auto MAX_NUM_LIGHTS = 40;
+    
+    if (lights->children().size() == MAX_NUM_LIGHTS)
+    {
+        std::cout << "cannot add more lights" << std::endl;
+        return;
+    }
+    
+    auto r = rand() / (float)RAND_MAX;
+    auto theta = 2.0f * float(M_PI) *  r;
+    auto color = Color::hslaToRgba(r, 1.f, .5f);
+    auto pos = Vector3::create(
+                               cosf(theta) * 5.f + rand() / (float(RAND_MAX) * 3.f),
+                               2.5f + rand() / float(RAND_MAX),
+                               sinf(theta) * 5.f + rand() / (float(RAND_MAX) * 3.f)
+                               );
+    
+    lights->addChild(createPointLight(color, pos, sceneManager->assets()));
+    
+    std::cout << lights->children().size() << " lights" << std::endl;
+}
 
-	canvas->context()->errorsEnabled(true);
+void
+removeLight(scene::Node::Ptr lights)
+{
+    if (lights->children().size() == 0)
+        return;
+    
+    lights->removeChild(lights->children().back());
+    std::cout << lights->children().size() << " lights" << std::endl;
+}
 
-	auto sceneManager		= SceneManager::create(canvas->context());
-	auto root				= scene::Node::create("root")->addComponent(sceneManager);
-	auto assets				= sceneManager->assets();
-	auto lights 			= scene::Node::create("lights");
-	auto sphereGeometry		= geometry::SphereGeometry::create(assets->context(), 32, 32, true);
+void toggleNormalMap(file::AssetLibrary::Ptr assets, scene::Node::Ptr sphere)
+{
+    auto data = sphere->component<Surface>()->material();
+    bool hasNormalMap = data->hasProperty("normalMap");
+    
+    std::cout << "mesh does" << (!hasNormalMap ? " not " : " ")
+    << "have a normal map:\t" << (hasNormalMap ? "remove" : "add")
+    << " it" << std::endl;
+    
+    if (hasNormalMap)
+        data->unset("normalMap");
+    else
+        data->set("normalMap", assets->texture("texture/normalmap-cells.png"));
+}
 
-	std::cout << "Press [SPACE]\tto toogle normal mapping\nPress [A]\tto add random light\nPress [R]\tto remove random light" << std::endl;
+int
+main(int argc, char** argv)
+{
+    auto canvas = Canvas::create("Minko Example - Light");
 
-	sphereGeometry->computeTangentSpace(false);
+    canvas->context()->errorsEnabled(true);
 
-	// setup assets
-	assets
-		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
-		->geometry("quad", geometry::QuadGeometry::create(sceneManager->assets()->context()))
-		->geometry("sphere", sphereGeometry);
+    auto sceneManager        = SceneManager::create(canvas);
+    auto root                = scene::Node::create("root")->addComponent(sceneManager);
+    auto assets                = sceneManager->assets();
+    auto sphereMaterial        = material::PhongMaterial::create()
+        ->shininess(16.f)
+        ->specularColor(Vector4::create(1.0f, 1.0f, 1.0f, 1.0f))
+        ->diffuseColor(Vector4::create(1.f, 1.f, 1.f, 1.f));
 
-	assets->loader()->options()
-		->generateMipmaps(true)
-		->registerParser<file::PNGParser>("png");
+    auto lights                = scene::Node::create("lights");
 
-	assets->loader()
-		->queue("texture/normalmap-cells.png")
-		->queue("texture/sprite-pointlight.png")
-		->queue("effect/VertexNormal.effect")
-		->queue("effect/Basic.effect")
-		->queue("effect/Sprite.effect")
-		->queue("effect/Phong.effect");
+    std::cout << "Press [SPACE]\tto toogle normal mapping\nPress [A]\tto add random light\nPress [R]\tto remove random light" << std::endl;
 
-	auto _ = assets->loader()->complete()->connect([=](file::Loader::Ptr loader)
-	{
-		// ground
-		auto ground = scene::Node::create("ground")
-			->layouts(1 << 2 | 1)
-			->addComponent(Surface::create(
-				sceneManager->assets()->geometry("quad"),
-				material::Material::create()
-					->set("diffuseColor", math::vec4(1.f)),
-				sceneManager->assets()->effect("effect/Phong.effect")
-			))
-			->addComponent(Transform::create(
-				math::rotate(math::scale(math::mat4(1.f), math::vec3(300.f)), -1.57f, math::vec3(1.f, 0.f, 0.f))
-			));
-		root->addChild(ground);
+    // setup assets
+    assets
+        ->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
+        ->geometry("quad", geometry::QuadGeometry::create(sceneManager->assets()->context()))
+        ->geometry("sphere", geometry::SphereGeometry::create(assets->context(), 32, 32, true)->computeTangentSpace(false));
 
-		// sphere
-		auto sphere = scene::Node::create("sphere")
+    assets->loader()->options()
+        ->generateMipmaps(true)
+        ->registerParser<file::PNGParser>("png");
+
+    assets->loader()
+        ->queue("texture/normalmap-cells.png")
+        ->queue("texture/sprite-pointlight.png")
+        ->queue("effect/Basic.effect")
+        ->queue("effect/Sprite.effect")
+        ->queue("effect/Phong.effect");
+
+    auto _ = assets->loader()->complete()->connect([=](file::Loader::Ptr loader)
+    {
+        // ground
+        auto ground = scene::Node::create("ground")
             ->layouts(1 << 2 | 1)
-			->addComponent(Surface::create(
-				assets->geometry("sphere"),
-                material::PhongMaterial::create()
-                    ->shininess(16.f)
-                    ->specularColor({ 1.0f, 1.0f, 1.0f, 1.0f })
-                    ->diffuseColor({ 1.f, 1.f, 1.f, 1.f }),
-				assets->effect("effect/Phong.effect")
-			))
-			->addComponent(Transform::create(
-                math::translate(math::scale(math::mat4(1.f), math::vec3(4.f)), math::vec3(0.f, 1.f, 0.f))
-			));
-		root->addChild(sphere);
+            ->addComponent(Surface::create(
+                assets->geometry("quad"),
+                material::Material::create()
+                    ->set("diffuseColor",    Vector4::create(1.f, 1.f, 1.f, 1.f)),
+                assets->effect("phong")
+            ))
+            ->addComponent(Transform::create(Matrix4x4::create()->appendScale(50.f)->appendRotationX(-1.57f)));
 
-		// spotLight
-		auto spotLight = scene::Node::create("spotLight")
-			->addComponent(SpotLight::create(.2f, .6f))
-            ->addComponent(Transform::create(math::inverse(math::lookAt(
-				math::vec3(20.f, 30.f, 20.f),
-				math::vec3(0.f),
-				math::vec3(0.f, 1.f, 0.f)
-			))));
-		root->addChild(spotLight);
+        // sphere
+        auto sphere = scene::Node::create("sphere")
+            ->addComponent(Surface::create(
+                assets->geometry("sphere"),
+                sphereMaterial,
+                assets->effect("phong")
+            ))
+            ->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(0.f, 2.f, 0.f)->prependScale(3.f)));
 
-		lights->addComponent(Transform::create());
-		root->addChild(lights);
+        // spotLight
+        auto spotLight = scene::Node::create("spotLight")
+            ->addComponent(SpotLight::create(.15f, .4f))
+            ->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(15.f, 20.f, 0.f))));
 
-		// handle keyboard signals
-		keyDown = canvas->keyboard()->keyDown()->connect([=](input::Keyboard::Ptr k)
-		{
-			if (k->keyIsDown(input::Keyboard::A))
-			{
-				const auto MAX_NUM_LIGHTS = 400;
+        spotLight->component<SpotLight>()->diffuse(.4f);
 
-				if (lights->children().size() == MAX_NUM_LIGHTS)
-				{
-					std::cout << "cannot add more lights" << std::endl;
-					return;
-				}
+        lights->addComponent(Transform::create());
 
-				auto r = rand() / (float)RAND_MAX;
-				auto theta = 2.0f * (float)PI *  r;
-				auto color = math::rgbColor(math::vec3((theta / ((float)PI * 2.f)) * 360.f, 1.f, .5f));
-				auto pos = math::vec3(
-					cosf(theta) * 5.f + rand() / ((float)RAND_MAX * 3.f),
-					2.5f + rand() / (float)RAND_MAX,
-					sinf(theta) * 5.f + rand() / ((float)RAND_MAX * 3.f)
-				);
+        root->addChild(ground);
+        root->addChild(sphere);
+        root->addChild(spotLight);
+        root->addChild(lights);
 
-				lights->addChild(createPointLight(color, pos, sceneManager->assets()));
+        // handle keyboard signals
+        keyDown = canvas->keyboard()->keyDown()->connect([=](input::Keyboard::Ptr k)
+        {
+            if (k->keyIsDown(input::Keyboard::A))
+            {
+                addLight(sceneManager, lights);
+            }
 
-				std::cout << lights->children().size() << " lights" << std::endl;
-			}
-			if (k->keyIsDown(input::Keyboard::R))
-			{
-				if (lights->children().size() == 0)
-					return;
+            if (k->keyIsDown(input::Keyboard::R))
+            {
+                removeLight(lights);
+            }
+        });
+        
+        // handle touch signals
+        touchDown = canvas->touch()->touchDown()->connect([=](input::Touch::Ptr t, int, float x, float y)
+        {
+            x = x / canvas->width();
+            y = y / canvas->height();
 
-				lights->removeChild(lights->children().back());
-				std::cout << lights->children().size() << " lights" << std::endl;
-			}
+            // top left corner
+            if (x > 0 && x < 0.25 && y > 0 && y < 0.25)
+                addLight(sceneManager, lights);
+            
+            // top right corner
+            if (x > 0.75 && x < 1 && y > 0 && y < 0.25)
+                removeLight(lights);
+            
+            // bottom left corner
+            if (x > 0 && x < 0.25 && y > 0.75 && y < 1)
+                toggleNormalMap(assets, sphere);
+        });
+    });
 
-			if (k->keyIsDown(input::Keyboard::S))
-			{
-				auto sphereLayout = sphere->layouts();
-				sphere->layouts(sphereLayout == 1 ? 1 << 2 | 1 : 1);
-			}
+    // camera init
+    camera = scene::Node::create("camera")
+        ->addComponent(Renderer::create())
+        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()))
+        ->addComponent(Transform::create(
+            Matrix4x4::create()->lookAt(Vector3::create(0.f, 2.f), Vector3::create(10.f, 10.f, 10.f))
+        ));
+    root->addChild(camera);
 
-			if (k->keyIsDown(input::Keyboard::D))
-			{
-				auto light = lights->children()[0];
-				auto mask = light->component<PointLight>()->layoutMask();
+    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int w, unsigned int h)
+    {
+        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+    });
 
-				light->component<PointLight>()->layoutMask(mask == 1 ? 1 << 2 : 1);
-			}
+    auto yaw        = 0.f;
+    auto pitch      = float(M_PI) * .5f;
+    auto minPitch   = 0.f + 1e-5;
+    auto maxPitch   = float(M_PI) - 1e-5;
+    auto lookAt     = Vector3::create(0.f, 2.f, 0.f);
+    auto distance   = 20.f;
 
-			if (k->keyIsDown(input::Keyboard::SPACE))
-			{
-				auto data = sphere->component<Surface>()->material();
-				bool hasNormalMap = data->hasProperty("normalMap");
+    // handle mouse signals
+    auto mouseWheel = canvas->mouse()->wheel()->connect([&](input::Mouse::Ptr m, int h, int v)
+    {
+        distance += float(v) / 10.f;
+    });
 
-				std::cout << "mesh does" << (!hasNormalMap ? " not " : " ")
-					<< "have a normal map:\t" << (hasNormalMap ? "remove" : "add")
-					<< " it" << std::endl;
+    Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
+    auto cameraRotationXSpeed = 0.f;
+    auto cameraRotationYSpeed = 0.f;
 
-				if (hasNormalMap)
-					data->unset("normalMap");
-				else
-					data->set("normalMap", assets->texture("texture/normalmap-cells.png"));
-			}
-			if (k->keyIsDown(input::Keyboard::UP))
-				camera->component<Transform>()->matrix(math::translate(
-					camera->component<Transform>()->matrix(),
-					math::vec3(0.f, 0.f, -1.f)
-				));
-			if (k->keyIsDown(input::Keyboard::DOWN))
-				camera->component<Transform>()->matrix(math::translate(
-					camera->component<Transform>()->matrix(),
-					math::vec3(0.f, 0.f, 1.f)
-				));
-		});
-	});
+    auto mouseDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr m)
+    {
+        mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr, int dx, int dy)
+        {
+            cameraRotationYSpeed = float(dx) * .01f;
+            cameraRotationXSpeed = float(dy) * -.01f;
+        });
+    });
 
-	// camera init
-	camera = scene::Node::create("camera")
-		->addComponent(Renderer::create())
-		->addComponent(PerspectiveCamera::create((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT))
-		->addComponent(Transform::create(math::inverse(math::lookAt(
-			math::vec3(10.f),
-			math::vec3(0.f, 2.f, 0.f),
-			math::vec3(0.f, 1.f, 0.f)
-		))));
-	root->addChild(camera);
+    auto mouseUp = canvas->mouse()->leftButtonUp()->connect([&](input::Mouse::Ptr m)
+    {
+        mouseMove = nullptr;
+    });
 
-	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int width, unsigned int height)
-	{
-		camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
-	});
+    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    {
+        yaw += cameraRotationYSpeed;
+        cameraRotationYSpeed *= 0.9f;
 
-	auto yaw = 0.f;
-	auto pitch = (float)PI * .5f;
-	auto minPitch = 0.f + 1e-5;
-	auto maxPitch = (float)PI * .5f;//(float)PI - 1e-5;
-	auto lookAt = math::vec3(0.f, 2.f, 0.f);
-	auto distance = 20.f;
+        pitch += cameraRotationXSpeed;
+        cameraRotationXSpeed *= 0.9f;
 
-	// handle mouse signals
-	auto mouseWheel = canvas->mouse()->wheel()->connect([&](input::Mouse::Ptr m, int h, int v)
-	{
-		distance += (float)v / 10.f;
-	});
+        if (pitch > maxPitch)
+            pitch = maxPitch;
+        else if (pitch < minPitch)
+            pitch = minPitch;
 
-	Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
-	auto cameraRotationXSpeed = 0.f;
-	auto cameraRotationYSpeed = 0.f;
+        camera->component<Transform>()->matrix()->lookAt(
+            lookAt,
+            Vector3::create(
+                lookAt->x() + distance * std::cos(yaw) * std::sin(pitch),
+                lookAt->y() + distance * std::cos(pitch),
+                lookAt->z() + distance * std::sin(yaw) * std::sin(pitch)
+            )
+        );
 
-	auto mouseDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr m)
-	{
-		mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr, int dx, int dy)
-		{
-			cameraRotationYSpeed = (float)dx * .01f;
-			cameraRotationXSpeed = (float)dy * -.01f;
-		});
-	});
+        lights->component<Transform>()->matrix()->appendRotationY(.005f);
 
-	auto mouseUp = canvas->mouse()->leftButtonUp()->connect([&](input::Mouse::Ptr m)
-	{
-		mouseMove = nullptr;
-	});
+        sceneManager->nextFrame(time, deltaTime);
+    });
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
-	{
-		yaw += cameraRotationYSpeed;
-		cameraRotationYSpeed *= 0.9f;
-
-		pitch += cameraRotationXSpeed;
-		cameraRotationXSpeed *= 0.9f;
-		if (pitch > maxPitch)
-			pitch = maxPitch;
-		else if (pitch < minPitch)
-			pitch = minPitch;
-
-		camera->component<Transform>()->matrix(math::inverse(math::lookAt(
-            math::vec3(
-				lookAt.x + distance * cosf(yaw) * sinf(pitch),
-				lookAt.y + distance * cosf(pitch),
-				lookAt.z + distance * sinf(yaw) * sinf(pitch)
-			),
-			lookAt,
-			math::vec3(0.f, 1.f, 0.f)
-		)));
-
-		//std::cout << std::to_string(camera->component<Transform>()->modelToWorldMatrix()) << std::endl;
-
-		/*
-		lights->component<Transform>()->matrix(
-			math::rotate(lights->component<Transform>()->matrix(), .005f, math::vec3(0.f, 1.f, 0.f))
-		);
-		*/
-
-		sceneManager->nextFrame(time, deltaTime);
-	});
-
-	assets->loader()->load();
-
-	canvas->run();
+    assets->loader()->load();
+    canvas->run();
 }

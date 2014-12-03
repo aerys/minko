@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -27,18 +27,18 @@ using namespace minko::render;
 void
 Shader::dispose()
 {
-	if (_type == Type::VERTEX_SHADER)
-		_context->deleteVertexShader(_id);
-	else if (_type == Type::FRAGMENT_SHADER)
-		_context->deleteFragmentShader(_id);
+    if (_type == Type::VERTEX_SHADER)
+        _context->deleteVertexShader(_id);
+    else if (_type == Type::FRAGMENT_SHADER)
+        _context->deleteFragmentShader(_id);
 
-	_id = -1;
+    _id = -1;
 }
 
 void
 Shader::upload()
 {
-	_id = _type == Type::VERTEX_SHADER ? _context->createVertexShader() : _context->createFragmentShader();
-	_context->setShaderSource(_id, _source);
+    _id = _type == Type::VERTEX_SHADER ? _context->createVertexShader() : _context->createFragmentShader();
+    _context->setShaderSource(_id, _source);
     _context->compileShader(_id);
 }

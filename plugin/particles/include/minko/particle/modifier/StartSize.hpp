@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,39 +25,39 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace particle
-	{
-		namespace modifier
-		{
-			class StartSize : 
-                public IParticleInitializer, 
+    namespace particle
+    {
+        namespace modifier
+        {
+            class StartSize :
+                public IParticleInitializer,
                 public Modifier1<float>
-			{
-			public:
-				typedef std::shared_ptr<StartSize>	                Ptr;
+            {
+            public:
+                typedef std::shared_ptr<StartSize>                    Ptr;
 
             private:
                 typedef std::shared_ptr<sampler::Sampler<float>>    SamplerPtr;
 
-			public:
-				static
-				Ptr
-				create(SamplerPtr x)
-				{
-					Ptr ptr = std::shared_ptr<StartSize>(new StartSize(x));
+            public:
+                static
+                Ptr
+                create(SamplerPtr x)
+                {
+                    Ptr ptr = std::shared_ptr<StartSize>(new StartSize(x));
 
-					return ptr;
-				};
+                    return ptr;
+                };
 
-				void
-				initialize(ParticleData&, float) const;
+                void
+                initialize(ParticleData&, float) const;
 
-				unsigned int
-				getNeededComponents() const;
-			
-			protected:
-				StartSize(SamplerPtr size);
-			};
-		}
-	}
+                unsigned int
+                getNeededComponents() const;
+
+            protected:
+                StartSize(SamplerPtr size);
+            };
+        }
+    }
 }

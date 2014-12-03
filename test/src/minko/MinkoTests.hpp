@@ -26,21 +26,21 @@ namespace minko
 	class MinkoTests
 	{
 	public:
-		static
-		render::AbstractContext::Ptr
-		context()
-		{
-			return _context;
-		}
+        static
+        AbstractCanvas::Ptr
+        canvas()
+        {
+            return _canvas;
+        }
 
-		static
-		void
-		context(render::AbstractContext::Ptr context)
-		{
-			_context = context;
-		}
+        static
+        void
+        canvas(AbstractCanvas::Ptr canvas)
+        {
+            _canvas = canvas;
+        }
 
 	private:
-		static render::AbstractContext::Ptr _context;
+        static AbstractCanvas::Ptr _canvas;
 	};
 }

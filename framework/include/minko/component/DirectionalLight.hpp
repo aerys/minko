@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -44,6 +44,9 @@ namespace minko
                 return std::shared_ptr<DirectionalLight>(new DirectionalLight(diffuse, specular));
 		    }
 
+			AbstractComponent::Ptr
+			clone(const CloneOption& option);
+
 		    ~DirectionalLight()
 		    {
 		    }
@@ -53,7 +56,10 @@ namespace minko
             updateModelToWorldMatrix(const math::mat4& modelToWorld);
 
 	    private:
-		    DirectionalLight(float diffuse, float specular);
+            DirectionalLight(float diffuse,
+                             float specular);
+
+			DirectionalLight(const DirectionalLight& directionalLight, const CloneOption& option);
 	    };
     }
 }

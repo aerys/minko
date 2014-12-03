@@ -141,8 +141,8 @@ class MemoryIOSystem : public IOSystem
 {
 public:
 	/** Constructor. */
-	MemoryIOSystem(const uint8_t* buff, size_t len, IOSystem* other)
-		: buffer(buff), length(len), other(other) {
+        MemoryIOSystem (const uint8_t* buff, size_t len, IOSystem* other) 
+		: buffer (buff), length (len), other (other) {
 	}
 
 	/** Destructor. */
@@ -152,28 +152,24 @@ public:
 	// -------------------------------------------------------------------
 	/** Tests for the existence of a file at the given path. */
 	bool Exists( const char* pFile) const {
-		if (!strncmp(pFile, AI_MEMORYIO_MAGIC_FILENAME, AI_MEMORYIO_MAGIC_FILENAME_LENGTH))
-			return true;
-		
+	        if (!strncmp(pFile,AI_MEMORYIO_MAGIC_FILENAME,AI_MEMORYIO_MAGIC_FILENAME_LENGTH))
+		        return true;
 		if (other) return other->Exists(pFile);
-
 		return false;
 	}
 
 	// -------------------------------------------------------------------
 	/** Returns the directory separator. */
 	char getOsSeparator() const {
-		if (other) return other->getOsSeparator();
-
+	        if (other) return other->getOsSeparator();
 		return '/'; // why not? it doesn't care
 	}
 
 	// -------------------------------------------------------------------
 	/** Open a new file with a given path. */
-	IOStream* Open(const char* pFile, const char* pMode = "rb") {
+	IOStream* Open( const char* pFile, const char* pMode = "rb") {
 		if (strncmp(pFile,AI_MEMORYIO_MAGIC_FILENAME,AI_MEMORYIO_MAGIC_FILENAME_LENGTH)) {
-			if (other) return other->Open(pFile, pMode);
-
+		        if (other) return other->Open(pFile,pMode);
 			return NULL;
 		}
 		return new MemoryIOStream(buffer,length);
@@ -181,15 +177,14 @@ public:
 
 	// -------------------------------------------------------------------
 	/** Closes the given file and releases all resources associated with it. */
-	void Close(IOStream* pFile) {
-		if (other) other->Close(pFile);
+	void Close( IOStream* pFile) {
+	        if (other) other->Close(pFile);
 	}
 
 	// -------------------------------------------------------------------
 	/** Compare two paths */
-	bool ComparePaths(const char* one, const char* second) const {
-		if (other) return other->ComparePaths(one, second);
-
+	bool ComparePaths (const char* one, const char* second) const {
+	        if (other) return other->ComparePaths(one,second);
 		return false;
 	}
 

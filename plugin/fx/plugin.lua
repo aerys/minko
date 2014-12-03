@@ -23,12 +23,13 @@ minko.plugin.fx = {}
 function minko.plugin.fx:enable()
 	defines { "MINKO_PLUGIN_FX" }
 	
-	minko.plugin.links { "fx" }
-	includedirs { minko.plugin.path("fx") .. "/include" }
-	
-	prelinkcommands {
-		minko.action.copy(minko.plugin.path("fx") .. "/asset"),
-	}
+	configuration { "not StaticLib" }
+		minko.plugin.links { "fx" }
+		includedirs { minko.plugin.path("fx") .. "/include" }
+		
+		prelinkcommands {
+			minko.action.copy(minko.plugin.path("fx") .. "/asset"),
+		}
 end
 
 newoption {

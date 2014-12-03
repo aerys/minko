@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -35,6 +35,34 @@ SpotLight::SpotLight(float diffuse,
     attenuationCoefficients(math::vec3(attenuationConstant, attenuationLinear, attenuationQuadratic));
 	innerConeAngle(innerAngleRadians);
 	outerConeAngle(outerAngleRadians);
+}
+
+SpotLight::SpotLight(const SpotLight& spotlight, const CloneOption& option) :
+	AbstractDiscreteLight("spotLights", spotlight.diffuse(), spotlight.specular()),
+	_attenuationCoeffs(Vector3::create(spotlight._attenuationCoeffs->x(), spotlight._attenuationCoeffs->y(), spotlight._attenuationCoeffs->z())),
+	_worldPosition(Vector3::create(spotlight.data()->get<Vector3::Ptr>("position"))),
+	_worldDirection(Vector3::create(spotlight.data()->get<Vector3::Ptr>("direction"))),
+	_cosInnerConeAngle(spotlight.cosInnerConeAngle()),
+	_cosOuterConeAngle(spotlight.cosOuterConeAngle())
+{
+
+	data()->set("attenuationCoeffs", _attenuationCoeffs);
+	data()->set("position", _worldPosition);
+	data()->set("direction", _worldDirection);
+
+	data()->set<float>("cosInnerConeAngle", _cosInnerConeAngle);
+	data()->set<float>("cosOuterConeAngle", _cosOuterConeAngle);
+
+}
+
+AbstractComponent::Ptr
+SpotLight::clone(const CloneOption& option)
+{
+	auto light = std::shared_ptr<SpotLight>(new SpotLight(*this, option));
+
+	light->AbstractDiscreteLight::initialize();
+
+	return light;
 }
 
 void

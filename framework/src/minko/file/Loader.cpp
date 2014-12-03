@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,6 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Options.hpp"
 #include "minko/file/AssetLibrary.hpp"
 
+#include "minko/log/Logger.hpp"
+
 using namespace minko;
 using namespace minko::file;
 
@@ -30,7 +32,8 @@ Loader::Loader() :
     _options(Options::create()),
     _complete(Signal<Loader::Ptr>::create()),
     _progress(Signal<Loader::Ptr, float>::create()),
-    _error(Signal<Loader::Ptr, const ParserError&>::create())
+    _error(Signal<Loader::Ptr, const Error&>::create()),
+    _numFilesToParse(0)
 {
 }
 
@@ -99,16 +102,18 @@ Loader::load()
 void
 Loader::protocolErrorHandler(std::shared_ptr<AbstractProtocol> protocol)
 {
-#ifdef DEBUG
-    std::cerr << "error: Loader::protocolErrorHandler(): " << protocol->file()->filename() << std::endl;
-#endif // defined(DEBUG)
+    LOG_ERROR(protocol->file()->filename());
 
-    auto error = ParserError("ProtocolError", "Protocol error: " + protocol->file()->filename());
+    auto error = Error("ProtocolError", "Protocol error: " + protocol->file()->filename());
 
     if (_error->numCallbacks() != 0)
         _error->execute(shared_from_this(), error);
     else
+    {
+        LOG_DEBUG(error.type() << ": " << error.what());
+        
         throw error;
+    }
 }
 
 void
@@ -119,11 +124,10 @@ Loader::protocolProgressHandler(std::shared_ptr<AbstractProtocol> protocol, floa
 	float newTotalProgress = 0.f;
 
 	for (auto protocolAndProgress : _protocolToProgress)
-	{
 		newTotalProgress += protocolAndProgress.second / _numFiles;
-	}
 
-	newTotalProgress /= 100.f;
+    if (newTotalProgress > 1.0f)
+        newTotalProgress = 1.0f;
 
 	_progress->execute(
 		std::dynamic_pointer_cast<Loader>(shared_from_this()),
@@ -142,11 +146,11 @@ Loader::protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol)
     //_filenameToProtocol.erase(protocol->filename());
     _filenameToOptions.erase(filename);
 
-#ifdef DEBUG
-    std::cerr << "Loader: file '" << protocol->file()->filename() << "' loaded, "
+    _numFilesToParse++;
+
+    LOG_DEBUG("file '" << protocol->file()->filename() << "' loaded, "
         << _loading.size() << " file(s) still loading, "
-        << _filesQueue.size() << " file(s) in the queue" << std::endl;
-#endif // defined(DEBUG)
+        << _filesQueue.size() << " file(s) in the queue");
 
     auto parsed = processData(
         filename,
@@ -156,7 +160,11 @@ Loader::protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol)
     );
 
     if (!parsed)
+    {
+        --_numFilesToParse;
+        
         finalize();
+    }
 }
 
 bool
@@ -173,35 +181,26 @@ Loader::processData(const std::string&                      filename,
 
     if (parser)
     {
-        _parserSlots[parser] = parser->complete()->connect(std::bind(
+        _parserCompleteSlots[parser] = parser->complete()->connect(std::bind(
             &Loader::parserCompleteHandler,
             shared_from_this(),
             std::placeholders::_1
         ));
 
-        try
-        {
-            parser->parse(filename, resolvedFilename, options, data, options->assetLibrary());
-        }
-        catch (const ParserError& parserError)
-        {
-            if (_error->numCallbacks() != 0)
-                _error->execute(shared_from_this(), parserError);
-#ifdef DEBUG
-            else
-            {
-                std::cerr << parserError.what() << std::endl;
-                throw parserError;
-            }
-#endif // defined(DEBUG)
-        }
+        _parserErrorSlots[parser] = parser->error()->connect(std::bind(
+                                                                       &Loader::parserErrorHandler,
+                                                                       shared_from_this(),
+                                                                       std::placeholders::_1,
+                                                                       std::placeholders::_2
+                                                                       ));
+
+        parser->parse(filename, resolvedFilename, options, data, options->assetLibrary());
     }
     else
     {
-#ifdef DEBUG
         if (extension != "glsl")
-            std::cerr << "Loader::processData(): no parser found for extension '" << extension << "'" << std::endl;
-#endif // defined(DEBUG)
+            LOG_DEBUG("no parser found for extension '" << extension << "'");
+
         options->assetLibrary()->blob(filename, data);
     }
 
@@ -211,17 +210,32 @@ Loader::processData(const std::string&                      filename,
 void
 Loader::parserCompleteHandler(AbstractParser::Ptr parser)
 {
-    _parserSlots.erase(parser);
+    --_numFilesToParse;
+    _parserCompleteSlots.erase(parser);
 
     finalize();
 }
 
 void
+Loader::parserErrorHandler(AbstractParser::Ptr parser, const Error& error)
+{
+    if (_error->numCallbacks() != 0)
+        _error->execute(shared_from_this(), error);
+    else
+    {
+        LOG_DEBUG(error.type() << ": " << error.what());
+        
+        throw error;
+    }
+}
+
+void
 Loader::finalize()
 {
-    if (_loading.size() == 0 && _filesQueue.size() == 0 && _parserSlots.size() == 0)
+    if (_loading.size() == 0 && _filesQueue.size() == 0 && _numFilesToParse == 0)
     {
         _protocolSlots.clear();
+        _parserErrorSlots.clear();
         _filenameToOptions.clear();
 
         _complete->execute(shared_from_this());

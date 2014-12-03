@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -36,6 +36,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/SceneManager.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/Skinning.hpp"
+#include "minko/component/MasterAnimation.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
 #include "minko/component/AbstractAnimation.hpp"
 #include "minko/component/Animation.hpp"
@@ -138,8 +139,7 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 
 	if (pos > 0)
 	{
-		options->includePaths().clear();
-		options->includePaths().push_back(resolvedFilename.substr(0, pos));
+        options->includePaths().push_front(resolvedFilename.substr(0, pos));
 	}
 
     _filename		= filename;
@@ -149,7 +149,15 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 	//fixme : find a way to handle loading dependencies asynchronously
 	auto ioHandlerOptions = Options::create(options);
 	ioHandlerOptions->loadAsynchronously(false);
-	_importer->SetIOHandler(new IOHandler(ioHandlerOptions, _assetLibrary));
+
+    auto ioHandler = new IOHandler(ioHandlerOptions, _assetLibrary);
+
+    ioHandler->errorFunction([this](IOHandler& self, const Error& error) -> void
+    {
+        this->error()->execute(shared_from_this(), error);
+    });
+
+    _importer->SetIOHandler(ioHandler);
 
 #ifdef DEBUG
 	std::cout << "AbstractASSIMPParser: preparing to parse" << std::endl;
@@ -173,7 +181,7 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 	);
 
 	if (!scene)
-		throw ParserError(_importer->GetErrorString());
+        _error->execute(shared_from_this(), Error(_importer->GetErrorString()));
 
 #ifdef DEBUG
 	std::cout << "AbstractASSIMPParser: scene parsed" << std::endl;
@@ -671,14 +679,17 @@ AbstractASSIMPParser::loadTexture(const std::string&	textureFilename,
         scene
 	));
 
-    _loaderErrorSlots[loader] = loader->error()->connect([=](Loader::Ptr loader, const ParserError& error)
+    _loaderErrorSlots[loader] = loader->error()->connect([=](Loader::Ptr textureLoader, const Error& error)
 	{
 		++_numLoadedDependencies;
 #ifdef DEBUG
         std::cerr << "AbstractASSIMPParser: unable to find texture with filename '" << textureFilename << "'" << std::endl;
 #endif // DEBUG
 
-        throw ParserError("MissingTextureDependency", "Missing texture dependency: '" + textureFilename + "'");
+        _error->execute(shared_from_this(), Error("MissingTextureDependency", "Missing texture dependency: '" + textureFilename + "'"));
+        
+        if (_numDependencies == _numLoadedDependencies)
+            allDependenciesLoaded(scene);
 	});
 
 	loader->queue(textureFilename, options)->load();
@@ -803,19 +814,24 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
 	auto	boneTransforms		= std::vector<std::vector<float>>(numBones, std::vector<float>(numFrames * 16, 0.0f));
 	auto	modelToRootMatrices	= std::vector<Matrix4x4::Ptr>(numFrames);
 
+	std::vector<scene::Node::Ptr> boneNodes;
+
 	for (auto& m : modelToRootMatrices)
 		m = Matrix4x4::create();
 
 	for (uint boneId = 0; boneId < numBones; ++boneId)
 	{
+		
 		const auto bone = createBone(aimesh->mBones[boneId]);
+		const auto boneName = std::string(aimesh->mBones[boneId]->mName.data);
+		auto node = _nameToNode.find(boneName)->second;
+		boneNodes.push_back(node);
 		if (!bone)
 			return;
 
-		const auto boneNode			= bone->node();
 		const auto boneOffsetMatrix	= bone->offsetMatrix();
 
-		precomputeModelToRootMatrices(bone->node(), skeletonRoot, modelToRootMatrices);
+		precomputeModelToRootMatrices(node, skeletonRoot, modelToRootMatrices);
 		skin->bone(boneId, bone);
 
 		for (uint frameId = 0; frameId < numFrames; ++frameId)
@@ -832,7 +848,7 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
 
 	for (uint boneId = 0; boneId < numBones; ++boneId)
 	{
-		auto childrenWithSurface = NodeSet::create(skin->bone(boneId)->node())
+		auto childrenWithSurface = NodeSet::create(boneNodes[boneId])
 		->descendants(true)
 		->where([](Node::Ptr n)
 		{
@@ -872,12 +888,13 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
 
 	// add skinning component to mesh
 	meshNode->addComponent(Skinning::create(
-		skin->reorganizeByVertices()->transposeMatrices()->disposeBones(),
+		skin->reorganizeByVertices()->transposeMatrices(),
 		_options->skinningMethod(),
 		_assetLibrary->context(),
-		slaveAnimations,
 		skeletonRoot
 	));
+
+	meshNode->addComponent(MasterAnimation::create());
 
 	auto irrelevantTransforms = NodeSet::create(skeletonRoot)
 		->descendants(false)
@@ -1037,7 +1054,6 @@ AbstractASSIMPParser::createBone(const aiBone* aibone) const
 	if (aibone == nullptr || _nameToNode.count(boneName) == 0)
 		return nullptr;
 
-	auto node			= _nameToNode.find(boneName)->second;
 	auto offsetMatrix	= convert(aibone->mOffsetMatrix);
 
 	std::vector<unsigned short> boneVertexIds		(aibone->mNumWeights, 0);
@@ -1049,7 +1065,7 @@ AbstractASSIMPParser::createBone(const aiBone* aibone) const
 		boneVertexWeights[i]	= aibone->mWeights[i].mWeight;
 	}
 
-	return Bone::create(node, offsetMatrix, boneVertexIds, boneVertexWeights);
+	return Bone::create(offsetMatrix, boneVertexIds, boneVertexWeights);
 }
 
 void
@@ -1447,7 +1463,7 @@ AbstractASSIMPParser::chooseEffectByShadingMode(const aiMaterial* aiMat) const
 	if (effect == nullptr && aiMat)
 	{
 		int shadingMode;
-		unsigned int max;
+        unsigned int max = 1;
 		if (aiMat->Get(AI_MATKEY_SHADING_MODEL, &shadingMode, &max) == AI_SUCCESS)
 		{
 			switch(static_cast<aiShadingMode>(shadingMode))

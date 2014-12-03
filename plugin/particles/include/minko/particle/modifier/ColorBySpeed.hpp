@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -27,14 +27,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace particle
-	{
-		namespace modifier
-		{
-			class ColorBySpeed : 
+    namespace particle
+    {
+        namespace modifier
+        {
+            class ColorBySpeed :
                 public IParticleUpdater,
                 public Modifier1<math::Vector3>
-			{
+            {
             public:
                 typedef std::shared_ptr<ColorBySpeed>                                       Ptr;
 
@@ -45,7 +45,7 @@ namespace minko
             private:
                 static const std::string PROPERTY_NAMES[2];
 
-			public:
+            public:
                 inline static
                 Ptr
                 create(LinearSampler sampler)
@@ -56,11 +56,11 @@ namespace minko
                 }
 
 
-				void
-				update(std::vector<ParticleData>&, float) const;
+                void
+                update(std::vector<ParticleData>&, float) const;
 
-				unsigned int
-				getNeededComponents() const;
+                unsigned int
+                getNeededComponents() const;
 
                 void
                 setProperties(ParticlesProviderPtr) const;
@@ -70,7 +70,7 @@ namespace minko
 
             private:
                 ColorBySpeed(LinearSampler);
-			};
-		}
-	}
+            };
+        }
+    }
 }

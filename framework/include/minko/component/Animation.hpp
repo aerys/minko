@@ -26,7 +26,7 @@ namespace minko
 {
 	namespace component
 	{
-		class Animation: public AbstractAnimation
+        class Animation : public AbstractAnimation
 		{
 			friend class MasterAnimation;
 
@@ -36,9 +36,11 @@ namespace minko
 		private:
 			typedef std::shared_ptr<animation::AbstractTimeline>	AbsTimelinePtr;
 			typedef std::shared_ptr<MasterAnimation>				MasterAnimationPtr;
+            typedef std::shared_ptr<scene::Node>                    NodePtr;
+            typedef std::shared_ptr<AbstractComponent>                AbsCmpPtr;
 
 		private:
-			const std::vector<AbsTimelinePtr>						_timelines;
+            std::vector<AbsTimelinePtr>                                _timelines;
 			MasterAnimationPtr										_master;
 
 		public:
@@ -50,6 +52,12 @@ namespace minko
 
 				return ptr;
 			}
+
+            AbstractComponent::Ptr
+            clone(const CloneOption& option);
+
+            void
+            rebindDependencies(std::map<AbsCmpPtr, AbsCmpPtr>& componentsMap, std::map<NodePtr, NodePtr>& nodeMap, CloneOption option);
 
 			inline
 			uint
@@ -75,29 +83,30 @@ namespace minko
 		private:
 			Animation(const std::vector<AbsTimelinePtr>&, bool isLooping);
 
-			/*virtual*/
+            Animation(const Animation& anim,const CloneOption& option);
+
 			void
 			update();
 
-			/*virtual*/
+
 			void
-			frameBeginHandler(std::shared_ptr<SceneManager> manager, float time, float deltaTime)
+            frameBeginHandler(std::shared_ptr<SceneManager> manager, float time, float deltaTime) override
 			{
 				if (_master == nullptr)
 					AbstractAnimation::frameBeginHandler(manager, time, deltaTime);
 			}
 
-			inline /*virtual*/
+            inline
 			void
-			updateNextLabelIds(uint time)
+            updateNextLabelIds(uint time) override
 			{
 				if (_master == nullptr)
 					AbstractAnimation::updateNextLabelIds(time);
 			}
 
-			inline /*virtual*/
+            inline
 			void 
-			checkLabelHit(uint previousTime, uint newTime)
+            checkLabelHit(uint previousTime, uint newTime) override
 			{
 				if (_master == nullptr)
 					AbstractAnimation::checkLabelHit(previousTime, newTime);

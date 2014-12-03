@@ -26,9 +26,3 @@ SDLMouse::SDLMouse(std::shared_ptr<Canvas> canvas) :
     input::Mouse(canvas)
 {
 }
-
-std::shared_ptr<SDLMouse>
-SDLMouse::create(std::shared_ptr<Canvas> canvas)
-{
-    return std::shared_ptr<SDLMouse>(new SDLMouse(canvas));
-}

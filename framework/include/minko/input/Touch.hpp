@@ -24,124 +24,152 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 #include "minko/AbstractCanvas.hpp"
 #include "minko/Any.hpp"
+#include "minko/math/Vector2.hpp"
 
 namespace minko
 {
-	namespace input
-	{
-		class Touch
-		{
-		public:
-			typedef std::shared_ptr<Touch> Ptr;
+    namespace input
+    {
+        class Touch
+        {
+        public:
+            typedef std::shared_ptr<Touch>          Ptr;
 
-		protected:
-			std::shared_ptr<AbstractCanvas> _canvas;
+        protected:
+            std::shared_ptr<AbstractCanvas>             _canvas;
             
-            int                                  _fingerId;
-            
-            float                                _x;
-			float                                _y;
-            float                                _dx;
-			float                                _dy;
-            
-			Signal<Ptr, float, float>::Ptr		_touchMotion; // dx, dy
-			Signal<Ptr, float, float>::Ptr		_touchDown; // x, y
-			Signal<Ptr, float, float>::Ptr		_touchUp; // x, y
-            
+            std::map<int, math::Vector2::Ptr>           _touches; // identifier to x/y
+
+            std::vector<int>                            _identifiers;
+
+            Signal<Ptr, int, float, float>::Ptr         _touchMove;
+            Signal<Ptr, int, float, float>::Ptr         _touchDown;
+            Signal<Ptr, int, float, float>::Ptr         _touchUp;
+
             // Gestures
-            Signal<Ptr>::Ptr                    _swipeRight;
-            Signal<Ptr>::Ptr                    _swipeLeft;
-            Signal<Ptr>::Ptr                    _swipeUp;
-            Signal<Ptr>::Ptr                    _swipeDown;
+            Signal<Ptr>::Ptr                            _swipeRight;
+            Signal<Ptr>::Ptr                            _swipeLeft;
+            Signal<Ptr>::Ptr                            _swipeUp;
+            Signal<Ptr>::Ptr                            _swipeDown;
+            Signal<Ptr, float>::Ptr                     _pinchZoom;
+            Signal<Ptr, float, float>::Ptr              _tap;
+            Signal<Ptr, float, float>::Ptr              _doubleTap;
+            Signal<Ptr, float, float>::Ptr              _longHold;
 
-		public:
+        public:
+            inline
+            std::map<int, minko::math::Vector2::Ptr>
+            touches()
+            {
+                return _touches;
+            }
+
+            inline
+            std::vector<int>
+            identifiers()
+            {
+                return _identifiers;
+            }
+
             inline
             int
-            fingerId()
+            numTouches()
             {
-                return _fingerId;
+                return _identifiers.size();
             }
-            
+
             inline
-			float
-			x()
-			{
-				return _x;
-			}
-            
-			inline
-			float
-			y()
-			{
-				return _y;
-			}
-            
+            minko::math::Vector2::Ptr
+            touch(int identifier)
+            {
+                return _touches[identifier];
+            }
+
             inline
-			float
-			dx()
-			{
-				return _dx;
-			}
-            
-			inline
-			float
-			dy()
-			{
-				return _dy;
-			}
+            Signal<Ptr, int, float, float>::Ptr
+            touchMove()
+            {
+                return _touchMove;
+            }
 
-			inline
-			Signal<Ptr, float, float>::Ptr
-			touchMotion()
-			{
-				return _touchMotion;
-			}
+            inline
+            Signal<Ptr, int, float, float>::Ptr
+            touchDown()
+            {
+                return _touchDown;
+            }
 
-			inline
-			Signal<Ptr, float, float>::Ptr
-			touchDown()
-			{
-				return _touchDown;
-			}
+            inline
+            Signal<Ptr, int, float, float>::Ptr
+            touchUp()
+            {
+                return _touchUp;
+            }
 
-			inline
-			Signal<Ptr, float, float>::Ptr
-			touchUp()
-			{
-				return _touchUp;
-			}
-            
             inline
             Signal<Ptr>::Ptr
             swipeLeft()
             {
                 return _swipeLeft;
             }
-            
+
             inline
             Signal<Ptr>::Ptr
             swipeRight()
             {
                 return _swipeRight;
             }
-            
+
             inline
             Signal<Ptr>::Ptr
             swipeUp()
             {
                 return _swipeUp;
             }
-            
+
             inline
             Signal<Ptr>::Ptr
             swipeDown()
             {
                 return _swipeDown;
             }
-            
 
-		protected:
-			Touch(std::shared_ptr<AbstractCanvas> canvas);
-		};
-	}
+            inline
+            Signal<Ptr, float>::Ptr
+            pinchZoom()
+            {
+                return _pinchZoom;
+            }
+
+            inline
+            Signal<Ptr, float, float>::Ptr
+            tap()
+            {
+                return _tap;
+            }
+
+            inline
+            Signal<Ptr, float, float>::Ptr
+            doubleTap()
+            {
+                return _doubleTap;
+            }
+
+            inline
+            Signal<Ptr, float, float>::Ptr
+            longHold()
+            {
+                return _longHold;
+            }
+
+            float
+            averageX();
+
+            float
+            averageY();
+
+        protected:
+            Touch(std::shared_ptr<AbstractCanvas> canvas);
+        };
+    }
 }

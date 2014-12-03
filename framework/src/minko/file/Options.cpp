@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/material/Material.hpp"
 #include "minko/file/AbstractProtocol.hpp"
 #include "minko/file/AssetLibrary.hpp"
+#include "minko/log/Logger.hpp"
 
 #ifdef __APPLE__
 # include "CoreFoundation/CoreFoundation.h"
@@ -144,6 +145,66 @@ Options::initializeDefaultFunctions()
     _effectFunction = [](EffectPtr effect) -> EffectPtr
     {
         return effect;
+    };
+
+    _textureFormatFunction = [this](const std::unordered_set<render::TextureFormat>& availableTextureFormats)
+                                ->render::TextureFormat
+    {
+        static const auto defaultTextureFormats = std::list<render::TextureFormat>
+        {
+            render::TextureFormat::RGBA_PVRTC2_2BPP,
+            render::TextureFormat::RGBA_PVRTC2_4BPP,
+
+            render::TextureFormat::RGBA_PVRTC1_2BPP,
+            render::TextureFormat::RGBA_PVRTC1_4BPP,
+
+            render::TextureFormat::RGB_PVRTC1_2BPP,
+            render::TextureFormat::RGB_PVRTC1_4BPP,
+
+            render::TextureFormat::RGBA_DXT5,
+            render::TextureFormat::RGBA_DXT3,
+
+            render::TextureFormat::RGBA_ATITC,
+            render::TextureFormat::RGB_ATITC,
+
+            render::TextureFormat::RGBA_ETC1,
+            render::TextureFormat::RGB_ETC1,
+
+            render::TextureFormat::RGBA_DXT1,
+            render::TextureFormat::RGB_DXT1,
+
+            render::TextureFormat::RGBA,
+            render::TextureFormat::RGB
+        };
+
+        auto& textureFormats = _textureFormats.empty() ? defaultTextureFormats : _textureFormats;
+
+        auto textureFormatIt = std::find_if(textureFormats.begin(), textureFormats.end(),
+                            [&](render::TextureFormat textureFormat) -> bool
+        {
+            return availableTextureFormats.find(textureFormat) != availableTextureFormats.end();
+        });
+
+        if (textureFormatIt != textureFormats.end())
+            return *textureFormatIt;
+
+        if (std::find(textureFormats.begin(),
+                      textureFormats.end(),
+                      render::TextureFormat::RGB) != textureFormats.end() &&
+            availableTextureFormats.find(render::TextureFormat::RGBA) != availableTextureFormats.end())
+            return render::TextureFormat::RGBA;
+
+        if (std::find(textureFormats.begin(),
+                      textureFormats.end(),
+                      render::TextureFormat::RGBA) != textureFormats.end() &&
+            availableTextureFormats.find(render::TextureFormat::RGB) != availableTextureFormats.end())
+            return render::TextureFormat::RGB;
+
+        static const auto errorMessage = "No desired texture format available";
+
+        LOG_ERROR(errorMessage);
+
+        throw std::runtime_error(errorMessage);
     };
 
 	if (!_defaultProtocolFunction)

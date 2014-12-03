@@ -40,6 +40,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Options.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/data/Store.hpp"
+#include "minko/log/Logger.hpp"
 
 #include "json/json.h"
 
@@ -183,7 +184,7 @@ EffectParser::parse(const std::string&				    filename,
 	Json::Reader reader;
 
 	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1], root, false))
-		throw file::ParserError(resolvedFilename + ": " + reader.getFormattedErrorMessages());
+		_error->execute(shared_from_this(), file::Error(resolvedFilename + ": " + reader.getFormattedErrorMessages()));
     
     int pos	= resolvedFilename.find_last_of("/\\");
 

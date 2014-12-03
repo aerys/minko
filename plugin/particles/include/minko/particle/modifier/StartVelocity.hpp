@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,43 +25,43 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace particle
-	{
-		namespace modifier
-		{
-			class StartVelocity: 
-                public IParticleInitializer, 
+    namespace particle
+    {
+        namespace modifier
+        {
+            class StartVelocity:
+                public IParticleInitializer,
                 public Modifier3<float>
-			{
-			public:
-				typedef std::shared_ptr<StartVelocity>	            Ptr;
+            {
+            public:
+                typedef std::shared_ptr<StartVelocity>                Ptr;
 
             private:
                 typedef std::shared_ptr<sampler::Sampler<float>>    SamplerPtr;
 
-			public:
-				static
-				Ptr
-				create(SamplerPtr vx,
-					   SamplerPtr vy,
-					   SamplerPtr vz)
-				{
-					Ptr modifier = std::shared_ptr<StartVelocity>(new StartVelocity(vx, vy, vz));
+            public:
+                static
+                Ptr
+                create(SamplerPtr vx,
+                       SamplerPtr vy,
+                       SamplerPtr vz)
+                {
+                    Ptr modifier = std::shared_ptr<StartVelocity>(new StartVelocity(vx, vy, vz));
 
-					return modifier;
-				};
+                    return modifier;
+                };
 
-				void 
+                void
                 initialize(ParticleData&, float) const;
 
-				unsigned int 
+                unsigned int
                 getNeededComponents() const;
-			
-			protected:
-				StartVelocity(SamplerPtr vx,
-							  SamplerPtr vy,
-							  SamplerPtr vz);
-			};
-		}
-	}
+
+            protected:
+                StartVelocity(SamplerPtr vx,
+                              SamplerPtr vy,
+                              SamplerPtr vz);
+            };
+        }
+    }
 }

@@ -75,23 +75,23 @@ function main:update(node)
 
 	self.cube:getTransform().matrix:prependRotationY(0.01)
 
-	if keyboard:keyIsDown(Key.CONTROL) then
+	if keyboard:keyIsDown(Keyboard.CONTROL) then
 		speed = 0.5
 	end
-	if keyboard:keyIsDown(Key.SHIFT) then
+	if keyboard:keyIsDown(Keyboard.SHIFT) then
 		speed = 5
 	end
 
-	if keyboard:keyIsDown(Key.RIGHT) then
+	if keyboard:keyIsDown(Keyboard.RIGHT) then
 		self.cube:getTransform().matrix:appendTranslation(0.01 * speed, 0, 0)
 	end
-	if keyboard:keyIsDown(Key.LEFT) then
+	if keyboard:keyIsDown(Keyboard.LEFT) then
 		self.cube:getTransform().matrix:appendTranslation(-0.01 * speed, 0, 0)
 	end
-	if keyboard:keyIsDown(Key.UP) then
+	if keyboard:keyIsDown(Keyboard.UP) then
 		self.cube:getTransform().matrix:appendTranslation(0, 0, -0.01 * speed)
 	end
-	if keyboard:keyIsDown(Key.DOWN) then
+	if keyboard:keyIsDown(Keyboard.DOWN) then
 		self.cube:getTransform().matrix:appendTranslation(0, 0, 0.01 * speed)
 	end
 end

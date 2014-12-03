@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -24,52 +24,52 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace particle
-	{
-		namespace shape
-		{
-			class Sphere : public EmitterShape
-			{
-			public:
-				typedef std::shared_ptr<Sphere>	Ptr;
-				
-			private:
-				float _radius;
-				float _innerRadius;
+    namespace particle
+    {
+        namespace shape
+        {
+            class Sphere : public EmitterShape
+            {
+            public:
+                typedef std::shared_ptr<Sphere>    Ptr;
 
-			public:
-				static
-				Ptr
-				create(float	radius,
-					  float 	innerRadius = 0)
-				{
-					Ptr sphere	= std::shared_ptr<Sphere> (new Sphere (radius, innerRadius));
+            private:
+                float _radius;
+                float _innerRadius;
 
-					return sphere;
-				};
+            public:
+                static
+                Ptr
+                create(float    radius,
+                      float     innerRadius = 0)
+                {
+                    Ptr sphere    = std::shared_ptr<Sphere> (new Sphere (radius, innerRadius));
 
-				inline
-				void
-				setRadius(float value)
-				{
-					_radius = value;
-				};
-				
-				inline
-				void
-				setInnerRadius(float value)
-				{
-					_innerRadius = value;
-				};
+                    return sphere;
+                };
 
-				virtual
-				void
-				initPosition(ParticleData& particle) const;
+                inline
+                void
+                setRadius(float value)
+                {
+                    _radius = value;
+                };
 
-			protected:
-				Sphere(float	radius,
-	  				   float 	innerRadius = 0);
-			};
-		}
-	}
+                inline
+                void
+                setInnerRadius(float value)
+                {
+                    _innerRadius = value;
+                };
+
+                virtual
+                void
+                initPosition(ParticleData& particle) const;
+
+            protected:
+                Sphere(float    radius,
+                         float     innerRadius = 0);
+            };
+        }
+    }
 }

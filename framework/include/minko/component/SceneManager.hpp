@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -56,16 +56,29 @@ namespace minko
             Signal<AbstractComponent::Ptr, NodePtr>::Slot   _targetRemovedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot         _addedSlot;
 
+            std::shared_ptr<AbstractCanvas>                     _canvas;
+
 	    public:
 		    inline static
 		    Ptr
-		    create(const std::shared_ptr<render::AbstractContext>& context)
+            create(const std::shared_ptr<AbstractCanvas>& canvas)
 		    {
-                return std::shared_ptr<SceneManager>(new SceneManager(context));
+                auto sm = std::shared_ptr<SceneManager>(new SceneManager(canvas));
+
+                sm->initialize();
+
+                return sm;
 		    }
 
             ~SceneManager()
             {
+            }
+
+            inline
+            std::shared_ptr<AbstractCanvas>
+            canvas()
+            {
+                return _canvas;
             }
 
             inline
@@ -142,7 +155,7 @@ namespace minko
             targetRemoved(NodePtr target);
 
 	    private:
-		    SceneManager(const std::shared_ptr<render::AbstractContext>& context);
+            SceneManager(const std::shared_ptr<AbstractCanvas>& canvas);
 
             void
             addedHandler(NodePtr node, NodePtr target, NodePtr ancestor);

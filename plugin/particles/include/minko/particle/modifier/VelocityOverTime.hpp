@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,43 +25,43 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace particle
-	{
-		namespace modifier
-		{
-			class VelocityOverTime : 
-                public IParticleUpdater, 
+    namespace particle
+    {
+        namespace modifier
+        {
+            class VelocityOverTime :
+                public IParticleUpdater,
                 public Modifier3<float>
-			{
-			public:
-				typedef std::shared_ptr<VelocityOverTime>	        Ptr;
+            {
+            public:
+                typedef std::shared_ptr<VelocityOverTime>            Ptr;
 
             private:
                 typedef std::shared_ptr<sampler::Sampler<float>>    SamplerPtr;
 
-			public:
-				inline static
-				Ptr
-				create(SamplerPtr vx,
-					   SamplerPtr vy,
-					   SamplerPtr vz)
-				{
-					Ptr modifier = std::shared_ptr<VelocityOverTime>(new VelocityOverTime(vx, vy, vz));
+            public:
+                inline static
+                Ptr
+                create(SamplerPtr vx,
+                       SamplerPtr vy,
+                       SamplerPtr vz)
+                {
+                    Ptr modifier = std::shared_ptr<VelocityOverTime>(new VelocityOverTime(vx, vy, vz));
 
-					return modifier;
-				};
+                    return modifier;
+                };
 
-				void
-				update(std::vector<ParticleData>&, float timeStep) const;
+                void
+                update(std::vector<ParticleData>&, float timeStep) const;
 
-				unsigned int
-				getNeededComponents() const;
+                unsigned int
+                getNeededComponents() const;
 
-			protected:
-				VelocityOverTime(SamplerPtr vx,
-								 SamplerPtr vy,
-								 SamplerPtr vz);
-			};
-		}
-	}
+            protected:
+                VelocityOverTime(SamplerPtr vx,
+                                 SamplerPtr vy,
+                                 SamplerPtr vz);
+            };
+        }
+    }
 }

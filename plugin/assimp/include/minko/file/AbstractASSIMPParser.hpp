@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -75,7 +75,7 @@ namespace minko
 			typedef std::vector<Matrix4x4Ptr>						            Matrices4x4;
 
 			typedef Signal<LoaderPtr>::Slot		                                LoaderCompleteSignalSlot;
-			typedef Signal<LoaderPtr, const file::ParserError&>::Slot		    LoaderErrorSignalSlot;
+            typedef Signal<LoaderPtr, const file::Error&>::Slot            LoaderErrorSignalSlot;
 
 			typedef std::unordered_map<LoaderPtr, LoaderCompleteSignalSlot>	    LoaderToCompleteSlotMap;
 			typedef std::unordered_map<LoaderPtr, LoaderErrorSignalSlot>	    LoaderToErrorSlotMap;

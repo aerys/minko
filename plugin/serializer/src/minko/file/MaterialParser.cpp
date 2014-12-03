@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -56,10 +56,8 @@ MaterialParser::parse(const std::string&				filename,
 					  const std::vector<unsigned char>&	data,
 					  AssetLibraryPtr					assetLibrary)
 {
-	readHeader(filename, data);
-	
-	if (_magicNumber != 0x4D4B034D)
-		throw std::logic_error("Invalid material data");
+    if (!readHeader(filename, data, 0x4D))
+        return;
 
 	msgpack::object		msgpackObject;
 	msgpack::zone		mempool;
@@ -77,7 +75,7 @@ MaterialParser::parse(const std::string&				filename,
 	std::vector<ComplexProperty> complexProperties	= serializedMaterial.a0;
 	std::vector<BasicProperty>	 basicProperties	= serializedMaterial.a1;
 
-	MaterialPtr material = material::Material::create();
+	MaterialPtr material = options->material() ? material::Material::create(options->material()) : material::Material::create();
 
 	for (auto serializedComplexProperty : complexProperties)
 		deserializeComplexProperty(material, serializedComplexProperty);
@@ -87,8 +85,14 @@ MaterialParser::parse(const std::string&				filename,
 
 	material = options->materialFunction()(material->name(), material);
 
-	assetLibrary->material(filename, material);
-	_lastParsedAssetName = filename;
+    static auto nameId = 0;
+    auto uniqueName = filename;
+
+    while (assetLibrary->material(uniqueName) != nullptr)
+        uniqueName = "material" + std::to_string(nameId++);
+
+    assetLibrary->material(uniqueName, material);
+    _lastParsedAssetName = uniqueName;
 }
 
 void

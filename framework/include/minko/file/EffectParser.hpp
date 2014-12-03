@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -53,7 +53,7 @@ namespace minko
             typedef std::shared_ptr<render::Shader>						    ShaderPtr;
             typedef std::shared_ptr<file::Options>						    OptionsPtr;
             typedef std::unordered_map<std::string, AbstractTexturePtr>     TexturePtrMap;
-            typedef Signal<LoaderPtr, const ParserError&>::Slot             LoaderErrorSlot;
+            typedef Signal<LoaderPtr, const Error&>::Slot             LoaderErrorSlot;
             typedef std::vector<PassPtr>                                    Technique;
             typedef std::unordered_map<std::string, Technique>              Techniques;
             typedef std::vector<PassPtr>                                    Passes;
@@ -341,7 +341,7 @@ namespace minko
 
             void
             dependencyErrorHandler(std::shared_ptr<Loader>  loader,
-                                   const ParserError&       error,
+                                   const Error&       		error,
                                    const std::string&       filename);
 
             void

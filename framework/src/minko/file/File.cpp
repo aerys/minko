@@ -36,21 +36,21 @@ std::string
 File::getCurrentWorkingDirectory()
 {
 #if defined(_MSC_VER) // WINDOWS
-	TCHAR buffer[MAX_PATH];
+    TCHAR buffer[MAX_PATH];
 
-	GetCurrentDirectory(MAX_PATH, buffer);
+    GetCurrentDirectory(MAX_PATH, buffer);
 
-	return sanitizeFilename(std::string((char*)buffer));
+    return sanitizeFilename(std::string((char*)buffer));
 #elif defined(TARGET_IPHONE_SIMULATOR) or defined(TARGET_OS_IPHONE) // iOS
-	return getBinaryDirectory();
+    return getBinaryDirectory();
 #elif defined(EMSCRIPTEN) // HTML5
-	return getBinaryDirectory();
+    return getBinaryDirectory();
 #elif defined(LINUX) || defined(__unix__) // Linux
     char temp[PATH_MAX];
 
     return sanitizeFilename((getcwd(temp, PATH_MAX) ? std::string(temp) : std::string("")));
 #else
-	return ".";
+    return ".";
 #endif
 }
 
@@ -58,60 +58,106 @@ std::string
 File::getBinaryDirectory()
 {
 #if defined(_MSC_VER) // WINDOWS
-	TCHAR buffer[MAX_PATH];
+    TCHAR buffer[MAX_PATH];
 
-	GetModuleFileName(NULL, buffer, MAX_PATH);
+    GetModuleFileName(NULL, buffer, MAX_PATH);
 
-	auto path = sanitizeFilename(std::string((char*)buffer));
-	auto pos = path.find_last_of("/");
+    auto path = sanitizeFilename(std::string((char*)buffer));
+    auto pos = path.find_last_of("/");
 
-	return path.substr(0, pos);
+    return path.substr(0, pos);
 #elif defined(TARGET_IPHONE_SIMULATOR) or defined(TARGET_OS_IPHONE) // iOS
-	CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(CFBundleGetMainBundle());
-	char path[PATH_MAX];
-	if (!CFURLGetFileSystemRepresentation(resourcesURL, true, (UInt8*)path, PATH_MAX))
-		throw std::runtime_error("cannot find .app path");
-	CFRelease(resourcesURL);
+    CFURLRef resourcesURL = CFBundleCopyResourcesDirectoryURL(CFBundleGetMainBundle());
+    char path[PATH_MAX];
+    if (!CFURLGetFileSystemRepresentation(resourcesURL, true, (UInt8*)path, PATH_MAX))
+        throw std::runtime_error("cannot find .app path");
+    CFRelease(resourcesURL);
 
-	return sanitizeFilename(path);
+    return sanitizeFilename(path);
 #elif defined(EMSCRIPTEN) // HTML5
-	/*
-	std::string eval = "(document.location.href)";
-	char* buffer = emscripten_run_script_string(eval.c_str());
-	auto path = sanitizeFilename(std::string(buffer));
-	auto pos = path.find_last_of("/");
-	return path.substr(0, pos);
-	*/
-#ifdef DEBUG
-	return "bin/html5/debug";
-#else //RELEASE
-	return "bin/html5/release";
-#endif
-#elif defined(LINUX) || defined(__unix__) // Linux
+    /*
+    std::string eval = "(document.location.href)";
+    char* buffer = emscripten_run_script_string(eval.c_str());
+    auto path = sanitizeFilename(std::string(buffer));
+    auto pos = path.find_last_of("/");
+    return path.substr(0, pos);
+    */
+# ifdef DEBUG
+    return "bin/html5/debug";
+# else //RELEASE
+    return "bin/html5/release";
+# endif
+#elif MINKO_PLATFORM == MINKO_PLATFORM_LINUX // Linux
     char buffer[PATH_MAX];
     size_t l = readlink("/proc/self/exe", buffer, PATH_MAX);
-	auto path = sanitizeFilename(std::string((char*)buffer, l));
-	auto pos = path.find_last_of("/");
+    auto path = sanitizeFilename(std::string((char*)buffer, l));
+    auto pos = path.find_last_of("/");
 
-	return path.substr(0, pos);
+    return path.substr(0, pos);
 #else
-	return ".";
+    return ".";
 #endif
 }
 
 std::string
 File::sanitizeFilename(const std::string& filename)
 {
-	auto f = filename;
-	auto a = '\\';
+    auto f = filename;
+    auto a = '\\';
 
-	for (auto pos = f.find_first_of(a);
-		pos != std::string::npos;
-		pos = f.find_first_of(a))
-	{
-		f = f.replace(pos, 1, 1, '/');
-	}
+    for (auto pos = f.find_first_of(a);
+        pos != std::string::npos;
+        pos = f.find_first_of(a))
+    {
+        f = f.replace(pos, 1, 1, '/');
+    }
 
-	return f;
+    return f;
 }
 
+std::string
+File::canonizeFilename(const std::string& filename)
+{
+    // Split input string on '/'
+    std::vector<std::string> segments;
+    std::stringstream ss(filename);
+    std::string item;
+
+    while (std::getline(ss, item, '/'))
+        segments.push_back(item);
+
+    // Moving path into a stack (but using deque for later iterative access).
+    std::deque<std::string> path;
+
+    for (auto current : segments)
+    {
+        if (current.empty() || current == ".")
+            continue;
+
+        if (current != "..")
+            path.push_back(current);
+        else if (path.size() > 0 && path.back() != "..")
+            path.pop_back();
+        else
+            path.push_back(current);
+    }
+
+    // Keep leading '/' if absolute and reset stream.
+    ss.str(filename.size() && filename.at(0) == '/' ? "/" : "");
+    ss.clear();
+
+    // Recompose path.
+    std::copy(path.begin(), path.end(), std::ostream_iterator<std::string>(ss, "/"));
+
+    std::string output = ss.str();
+
+    // Remove trailing '/' inserted by ostream_iterator.
+    if (path.size())
+        output.erase(output.size() - 1);
+
+    // Relative to nothing means relative to current directory.
+    if (output.size() == 0)
+        output = ".";
+
+    return output;
+}

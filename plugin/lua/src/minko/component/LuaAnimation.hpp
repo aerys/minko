@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -29,43 +29,43 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace component
-	{
-		class LuaAnimation :
-			public LuaWrapper
-		{
-		public:
-			static
-			void
-			bind(LuaGlue& state)
-			{
-				state.Class<Animation>("Animation")
-					.property("loopStartTime",  static_cast<uint (Animation::*)() const>(&Animation::loopStartTime))
-					.property("loopEndTime",	static_cast<uint (Animation::*)() const>(&Animation::loopEndTime))
-					.property("isPlaying",		static_cast<bool (Animation::*)() const>(&Animation::isPlaying))
-					.property("isLooping",		static_cast<bool (Animation::*)() const>(&Animation::isLooping))
-					.property("maxTime",		static_cast<uint(Animation::*)() const>(&Animation::maxTime))
-					.method("hasLabel",			static_cast<bool (Animation::*)(const std::string&) const>(&Animation::hasLabel))
-					.method("play",				static_cast<AbstractAnimation::Ptr (Animation::*)()>(&Animation::play))
-					.method("stop",				static_cast<AbstractAnimation::Ptr (Animation::*)()>(&Animation::stop))
-					.method("currentTime",		static_cast<uint (Animation::*)() const>(&Animation::currentTime))
-					.methodWrapper("seekTime",	&LuaAnimation::seekTimeWrapper)
-					.methodWrapper("seekLabel",	&LuaAnimation::seekLabelWrapper);
-			}
+    namespace component
+    {
+        class LuaAnimation :
+            public LuaWrapper
+        {
+        public:
+            static
+            void
+            bind(LuaGlue& state)
+            {
+                state.Class<Animation>("Animation")
+                    .property("loopStartTime",  static_cast<uint (Animation::*)() const>(&Animation::loopStartTime))
+                    .property("loopEndTime",    static_cast<uint (Animation::*)() const>(&Animation::loopEndTime))
+                    .property("isPlaying",        static_cast<bool (Animation::*)() const>(&Animation::isPlaying))
+                    .property("isLooping",        static_cast<bool (Animation::*)() const>(&Animation::isLooping))
+                    .property("maxTime",        static_cast<uint(Animation::*)() const>(&Animation::maxTime))
+                    .method("hasLabel",            static_cast<bool (Animation::*)(const std::string&) const>(&Animation::hasLabel))
+                    .method("play",                static_cast<AbstractAnimation::Ptr (Animation::*)()>(&Animation::play))
+                    .method("stop",                static_cast<AbstractAnimation::Ptr (Animation::*)()>(&Animation::stop))
+                    .method("currentTime",        static_cast<uint (Animation::*)() const>(&Animation::currentTime))
+                    .methodWrapper("seekTime",    &LuaAnimation::seekTimeWrapper)
+                    .methodWrapper("seekLabel",    &LuaAnimation::seekLabelWrapper);
+            }
 
-			static
-			void
-			seekTimeWrapper(Animation::Ptr animation, uint time)
-			{
-				animation->seek(time);
-			}
+            static
+            void
+            seekTimeWrapper(Animation::Ptr animation, uint time)
+            {
+                animation->seek(time);
+            }
 
-			static
-			void
-			seekLabelWrapper(Animation::Ptr animation, std::string label)
-			{
-				animation->seek(label);
-			}
-		};
-	}
+            static
+            void
+            seekLabelWrapper(Animation::Ptr animation, std::string label)
+            {
+                animation->seek(label);
+            }
+        };
+    }
 }

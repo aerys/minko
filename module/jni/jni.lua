@@ -11,61 +11,95 @@ local project = premake.project
 local config = premake.config
 local fileconfig = premake.fileconfig
 
-api.addAllowed('system', { 'android' })
+api.addAllowed("system", { "android" })
 api.addAllowed("architecture", { "armv5te" })
 
-ANDROID_HOME = os.getenv('ANDROID_HOME')
+if _ACTION ~= "gmake" then
+	do return end
+end
 
-if ANDROID_HOME then
-	if not os.isfile(ANDROID_HOME .. "/tools/android") then
-		error(color.fg.red ..'Cannot find SDK tools for Android. Make sure ANDROID_HOME points to a correct Android SDK directory.' .. color.reset)
-	end
+local ANDROID
+local TOOLCHAIN = "arm-linux-androideabi"
 
-	NDK_HOME = os.getenv('NDK_HOME')
+-- If we try to build Android on Windows without Cygwin
+if os.is("windows") and os.getenv('OSTYPE') == nil then
+	print(color.fg.yellow .. 'To build for Android on Windows, you have to use Cygwin. ' .. 
+		'Please check that you exported OSTYPE environment variable.' .. color.reset)
+	do return end
+end
 
-	local TOOLCHAIN = "arm-linux-androideabi"
-	-- local TOOLCHAIN = "i686-linux-android"
-
-	if NDK_HOME then
-		table.inject(premake.tools.gcc, 'tools.android', {
-			cc			= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-gcc',
-			cxx			= MINKO_HOME .. '/tool/lin/script/g++.sh ' .. NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-g++',
-			ar			= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-ar',
-			ld			= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-ld',
-			ranlib		= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-ranlib',
-			strip		= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-strip',
-		})
-
-		table.inject(premake.tools.gcc, 'cppflags.system.android', {
-			"-MMD", "-MP",
-			-- "--sysroot=" .. NDK_HOME .. "/sysroot",
-			-- "-I" .. NDK_HOME .. "/sources/cxx-stl/gnu-libstdc++/4.8/include/",
-			-- "-I" .. NDK_HOME .. "/sources/cxx-stl/gnu-libstdc++/4.8/libs/armeabi-v7a/include",
-			-- "-L" .. NDK_HOME .. "/sources/cxx-stl/gnu-libstdc++/4.8/libs/armeabi-v7a/"
-		})
-
-		table.inject(premake.tools.gcc, 'cxxflags.system.android', {
-			"-std=c++11"
-		})
-
-		table.inject(premake.tools.gcc, 'ldflags.system.android', {
-			-- "--sysroot=" .. NDK_HOME .. "/platforms/android-9/arch-arm",
-			"-Wl,--fix-cortex-a8",
-			-- "-L" .. NDK_HOME .. "/sources/cxx-stl/gnu-libstdc++/4.8/libs/armeabi-v7a/"
-		})
-
-		if not os.isfile(premake.tools.gcc.tools.android.cc) then
-			error(color.fg.red ..'Cannot find GCC for Android. Make sure NDK_HOME points to a correct Android NDK directory.' .. color.reset)
-		end
-	else
-		print(color.fg.yellow .. 'You must define the environment variable NDK_HOME to be able to target Android.' .. color.reset)
-	end
-
-	if not os.capture("which ant") then
-		error(color.fg.red ..'Cannot find Ant. Make sure "ant" is available in your path.' .. color.reset)
-	end
+if os.getenv('ANDROID_HOME') then
+	ANDROID = os.getenv('ANDROID_HOME');
 else
 	print(color.fg.yellow .. 'You must define the environment variable ANDROID_HOME to be able to target Android.' .. color.reset)
+	do return end
+end
+
+if not os.isfile(ANDROID .. "/tools/android") and not os.isfile(ANDROID .. "/tools/android.bat") then
+	error(color.fg.red .. 'Cannot find SDK tools for Android. Make sure ANDROID points to a correct Android SDK directory.' .. 
+		' (Missing file: \'' .. ANDROID .. '/tools/android\' or \'' .. ANDROID .. '/tools/android.bat\')' .. color.reset)
+end
+
+if not os.isdir(ANDROID .. "/toolchains") then
+	error(color.fg.red .. 'Cannot find NDK tools for Android. Please install NDK in "' .. ANDROID .. '/toolchains" and run `install_jni.sh` or `install_jni.bat`.' .. color.reset)
+end
+
+-- writing toolchain name in a fake symlink to avoid actual symlinks on Windows (requiring privileges)
+local NDK_HOME = ANDROID .. "/toolchains/default"
+local extension = ''
+
+if (os.is("linux") and not os.isdir(NDK_HOME)) or (os.is("windows") and not os.isfile(NDK_HOME)) then
+	error(color.fg.red .. 'Installed NDK is not correctly installed: ' .. NDK_HOME .. color.reset)
+end
+
+local pathgpp = MINKO_HOME .. '/tool/lin/script/g++.sh';
+
+if os.is("windows") then
+	NDK_HOME = os.capture('cygpath -u "' .. NDK_HOME .. '"')
+	pathgpp = os.capture('cygpath -u "' .. pathgpp .. '"')
+	extension = '.exe'
+end
+
+table.inject(premake.tools.gcc, 'tools.android', {
+	cc			= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-gcc' .. extension,
+	cxx			= pathgpp .. ' ' .. NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-g++' .. extension,
+	ar			= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-ar' .. extension,
+	ld			= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-ld' .. extension,
+	ranlib		= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-ranlib' .. extension,
+	strip		= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-strip' .. extension,
+})
+
+table.inject(premake.tools.gcc, 'cppflags.system.android', {
+	"-MMD", "-MP",
+	-- "--sysroot=" .. NDK_HOME .. "/sysroot",
+	-- "-I" .. NDK_HOME .. "/sources/cxx-stl/gnu-libstdc++/4.8/include/",
+	-- "-I" .. NDK_HOME .. "/sources/cxx-stl/gnu-libstdc++/4.8/libs/armeabi-v7a/include",
+	-- "-L" .. NDK_HOME .. "/sources/cxx-stl/gnu-libstdc++/4.8/libs/armeabi-v7a/"
+})
+
+table.inject(premake.tools.gcc, 'cxxflags.system.android', {
+	"-std=c++11"
+})
+
+table.inject(premake.tools.gcc, 'ldflags.system.android', {
+	-- "--sysroot=" .. NDK_HOME .. "/platforms/android-9/arch-arm",
+	"-Wl,--fix-cortex-a8",
+	-- "-L" .. NDK_HOME .. "/sources/cxx-stl/gnu-libstdc++/4.8/libs/armeabi-v7a/"
+})
+
+local file = premake.tools.gcc.tools.android.cc
+
+if os.is('windows') then
+	file = os.capture('cygpath -aw "' .. file .. '"')
+end
+
+if not os.isfile(file) then
+	error(color.fg.red ..'Cannot find GCC for Android. Make sure ANDROID_HOME contains NDK.' ..
+		' (Missing file: ' .. file .. ')' .. color.reset)
+end
+
+if not os.capture("which ant") then
+	error(color.fg.red ..'Cannot find Ant. Make sure "ant" is available in your path.' .. color.reset)
 end
 
 -- -- Specify android ABIs

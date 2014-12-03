@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 
 #include "minko/component/AbstractAnimation.hpp"
+#include "minko/component/AbstractRebindableComponent.hpp"
 
 namespace minko
 {
@@ -36,16 +37,40 @@ namespace minko
 
 		private:
 			typedef std::shared_ptr<Animation>			AnimationPtr;
+			typedef std::shared_ptr<AbstractAnimation>		AbstractAnimationPtr;
+			typedef std::shared_ptr<scene::Node>			NodePtr;
+			typedef std::shared_ptr<AbstractComponent>		AbsCmpPtr;
 
 		private:
-			std::vector<AnimationPtr>					_animations;
+			std::vector<AbstractAnimationPtr>				_animations;
 
 		public:
+
+			inline static
+			Ptr
+			create(bool isLooping = true)
+			{
+				Ptr ptr(new MasterAnimation(isLooping));
+
+				ptr->initialize();
+
+				return ptr;
+			}
+
 			AbstractAnimation::Ptr
 			play();
 
 			AbstractAnimation::Ptr
 			stop();
+
+            AbstractAnimationPtr
+            seek(uint time);
+
+			AbstractAnimation::Ptr
+			seek(const std::string& labelName);
+
+			AbsCmpPtr
+			clone(const CloneOption& option);
 
 			AbstractAnimation::Ptr
 			addLabel(const std::string& name, uint time);
@@ -68,8 +93,30 @@ namespace minko
 			AbstractAnimation::Ptr
 			resetPlaybackWindow();
 
+			void
+			initAnimations();
+
+			void
+			rebindDependencies(std::map<AbsCmpPtr, AbsCmpPtr>& componentsMap, std::map<NodePtr, NodePtr>& nodeMap, CloneOption option);
+
 		protected:
-			MasterAnimation(const std::vector<AnimationPtr>&, bool isLooping);
+			MasterAnimation(bool isLooping);
+
+			MasterAnimation(const MasterAnimation& masterAnim, const CloneOption& option);
+
+			void
+			targetAdded(NodePtr target);
+
+			void
+			targetRemoved(NodePtr target);
+
+			virtual
+			void
+			addedHandler(NodePtr node, NodePtr target, NodePtr parent);
+
+			virtual
+			void
+			removedHandler(NodePtr node, NodePtr target, NodePtr parent);
 
 			void
 			update();

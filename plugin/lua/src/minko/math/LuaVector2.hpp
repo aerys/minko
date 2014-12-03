@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -27,25 +27,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace math
-	{
-		class LuaVector2 :
-			public LuaWrapper
-		{
-		public:
-			static
-			void
-			bind(LuaGlue& state)
-			{
-				state.Class<Vector2>("Vector2")
-		            .method("create",   static_cast<Vector2::Ptr (*)(float, float)>(&Vector2::create))
-		            .method("toString", &Vector2::toString)
-		            .method("setTo",	&Vector2::setTo)
-		            .method("scaleBy",	&Vector2::scaleBy)
-		            .method("copyFrom",	static_cast<Vector2::Ptr (Vector2::*)(Vector2::Ptr)>(&Vector2::copyFrom))
-		            .property("x",      static_cast<float (Vector2::*)(void)>(&Vector2::x), static_cast<void (Vector2::*)(float)>(&Vector2::x))
-		            .property("y",      static_cast<float (Vector2::*)(void)>(&Vector2::y), static_cast<void (Vector2::*)(float)>(&Vector2::y));
-			}
-		};
-	}
+    namespace math
+    {
+        class LuaVector2 :
+            public LuaWrapper
+        {
+        public:
+            static
+            void
+            bind(LuaGlue& state)
+            {
+                state.Class<Vector2>("Vector2")
+                    .method("create",   static_cast<Vector2::Ptr (*)(float, float)>(&Vector2::create))
+                    .method("toString", &Vector2::toString)
+                    .method("setTo",    &Vector2::setTo)
+                    .method("scaleBy",    &Vector2::scaleBy)
+                    .method("copyFrom",    static_cast<Vector2::Ptr (Vector2::*)(Vector2::Ptr)>(&Vector2::copyFrom))
+                    .property("x",      static_cast<float (Vector2::*)(void)>(&Vector2::x), static_cast<void (Vector2::*)(float)>(&Vector2::x))
+                    .property("y",      static_cast<float (Vector2::*)(void)>(&Vector2::y), static_cast<void (Vector2::*)(float)>(&Vector2::y));
+            }
+        };
+    }
 }

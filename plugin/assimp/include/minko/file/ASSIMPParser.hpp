@@ -29,7 +29,7 @@ namespace minko
          * Used when all parsers are needed.
          * ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION flag must not be set.
          */
-	class ASSIMPParser : public AbstractASSIMPParser
+    class ASSIMPParser : public AbstractASSIMPParser
         {
         public:
 

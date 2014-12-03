@@ -25,39 +25,39 @@ using namespace minko::input;
 using namespace minko::input::leap;
 
 KeyTapGesture::KeyTapGesture(const Gesture& gesture):
-	Gesture(gesture),
-	_leapKeyTap(nullptr)
+    Gesture(gesture),
+    _leapKeyTap(nullptr)
 {
-	if (_leapGesture->type() != Leap::Gesture::Type::TYPE_KEY_TAP)
-		throw std::logic_error("Provided Gesture is not a KeyType Gesture.");
+    if (_leapGesture->type() != Leap::Gesture::Type::TYPE_KEY_TAP)
+        throw std::logic_error("Provided Gesture is not a KeyType Gesture.");
 
-	Leap::KeyTapGesture leapKeyTap	= *_leapGesture;
-	_leapKeyTap						= std::make_shared<Leap::KeyTapGesture>(leapKeyTap);
+    Leap::KeyTapGesture leapKeyTap    = *_leapGesture;
+    _leapKeyTap                        = std::make_shared<Leap::KeyTapGesture>(leapKeyTap);
 
-	if (_leapKeyTap == nullptr)
-		throw std::invalid_argument("gesture");
+    if (_leapKeyTap == nullptr)
+        throw std::invalid_argument("gesture");
 }
 
 math::Vector3::Ptr
 KeyTapGesture::direction(math::Vector3::Ptr output) const
 {
-	return convert(_leapKeyTap->direction(), output);
+    return convert(_leapKeyTap->direction(), output);
 }
 
 math::Vector3::Ptr
 KeyTapGesture::position(math::Vector3::Ptr output) const
 {
-	return convert(_leapKeyTap->position(), output);
+    return convert(_leapKeyTap->position(), output);
 }
 
 float
 KeyTapGesture::progress() const
 {
-	return _leapKeyTap->progress();
+    return _leapKeyTap->progress();
 }
 
 uint32_t
 KeyTapGesture::pointableID() const
 {
-	return _leapKeyTap->pointable().id();
+    return _leapKeyTap->pointable().id();
 }

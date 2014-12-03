@@ -26,17 +26,18 @@ function minko.plugin.lua:enable()
 		"LUA_USE_POSIX"
 	}
 
-	minko.plugin.links { "lua" }
-
 	includedirs {
 		minko.plugin.path("lua") .. "/include",
 		minko.plugin.path("lua") .. "/lib/lua/include",
 		minko.plugin.path("lua") .. "/lib/LuaGlue/include",
 	}
 
-	prelinkcommands {
-		minko.action.copy(minko.plugin.path("lua") .. "/asset"),
-	}
+	configuration { "not StaticLib" }
+		minko.plugin.links { "lua" }
+
+		prelinkcommands {
+			minko.action.copy(minko.plugin.path("lua") .. "/asset"),
+		}
 end
 
 function minko.plugin.lua:dist(pluginDistDir)

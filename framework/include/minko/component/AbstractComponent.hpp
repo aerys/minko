@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -42,19 +42,37 @@ namespace minko
 			Layouts							_layoutMask;
 			std::shared_ptr<Signal<Ptr>>	_layoutMaskChanged;
 
-		public:
+        protected:
 			AbstractComponent(Layouts layoutMask = scene::Layout::Mask::EVERYTHING) :
 				_layoutMask(layoutMask),
 				_layoutMaskChanged(Signal<Ptr>::create())
 			{
 			}
 
+			AbstractComponent(const AbstractComponent& abstractComponent, const CloneOption& option) :
+				_targets(),
+				_layoutMask(abstractComponent._layoutMask),
+				_targetAdded(Signal<Ptr, std::shared_ptr<scene::Node>>::create()),
+				_targetRemoved(Signal<Ptr, std::shared_ptr<scene::Node>>::create()),
+				_layoutMaskChanged(Signal<Ptr>::create())
+			{
+			}
+
+        public:
             virtual
             ~AbstractComponent()
             {
                 _target = nullptr;
                 _layoutMaskChanged = nullptr;
             }
+
+			virtual
+			AbstractComponent::Ptr
+			clone(const CloneOption& option)
+			{
+				throw std::logic_error("Missing clone function for a component.");
+				return shared_from_this();
+			}
 
 			inline
 			std::shared_ptr<scene::Node>

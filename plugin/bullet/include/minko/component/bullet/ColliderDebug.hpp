@@ -46,7 +46,7 @@ namespace minko
 
 			private:
 				AssetLibraryPtr										_assets;
-				NodePtr												_node;
+				SurfacePtr											_surface;
 
 				Signal<ColliderPtr, Matrix4x4Ptr>::Slot				_physicsTransformChangedSlot;
 
@@ -66,6 +66,9 @@ namespace minko
 
 					return ptr;
 				}
+
+				AbstractComponent::Ptr
+				clone(const CloneOption& option);
 
 			private:
 				ColliderDebug(AssetLibraryPtr);

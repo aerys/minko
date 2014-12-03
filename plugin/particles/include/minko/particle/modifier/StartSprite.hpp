@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,16 +25,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace particle
-	{
-		namespace modifier
-		{
-			class StartSprite : 
-                public IParticleInitializer, 
+    namespace particle
+    {
+        namespace modifier
+        {
+            class StartSprite :
+                public IParticleInitializer,
                 public Modifier1<float>
-			{
-			public:
-				typedef std::shared_ptr<StartSprite>                Ptr;
+            {
+            public:
+                typedef std::shared_ptr<StartSprite>                Ptr;
 
             private:
                 typedef std::shared_ptr<sampler::Sampler<float>>    SamplerPtr;
@@ -46,35 +46,35 @@ namespace minko
                 unsigned int    _numRows;
                 AbsTexturePtr   _spritesheet;
 
-			public:
-				static
-				Ptr
-				create(SamplerPtr       spriteIndex,
+            public:
+                static
+                Ptr
+                create(SamplerPtr       spriteIndex,
                        unsigned int     numCols,
                        unsigned int     numRows)
-				{
-					Ptr ptr = std::shared_ptr<StartSprite>(new StartSprite(spriteIndex, numCols, numRows));
+                {
+                    Ptr ptr = std::shared_ptr<StartSprite>(new StartSprite(spriteIndex, numCols, numRows));
 
-					return ptr;
-				};
+                    return ptr;
+                };
 
-				void
-				initialize(ParticleData&, float time) const;
+                void
+                initialize(ParticleData&, float time) const;
 
-				unsigned int
-				getNeededComponents() const;
+                unsigned int
+                getNeededComponents() const;
 
-				void
-				setProperties(ParticlesProviderPtr) const;
-				
-				void
-				unsetProperties(ParticlesProviderPtr) const;
-			
-			protected:
-				StartSprite(SamplerPtr      spriteIndex,
+                void
+                setProperties(ParticlesProviderPtr) const;
+
+                void
+                unsetProperties(ParticlesProviderPtr) const;
+
+            protected:
+                StartSprite(SamplerPtr      spriteIndex,
                             unsigned int    numCols,
                             unsigned int    numRows);
-			};
-		}
-	}
+            };
+        }
+    }
 }

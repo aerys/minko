@@ -11,7 +11,7 @@
 		{
 			"name" : "downsample and threshold",
 			"uniformBindings" : {
-				"uInputTex"		: "backbuffer",
+				"uInputTex"		: "material[${materialId}].backbuffer",
 				"uScale"		: [ 100.0, 100.0, 100.0, 1.0 ],
 				"uBias"			: [ -0.99, -0.99, -0.99, 0.0 ]
 			},
@@ -83,7 +83,7 @@
 		{
 			"name" : "lens compositing",
 			"uniformBindings" : {
-				"uBackbuffer"		: "backbuffer",
+				"uBackbuffer"		: "material[${materialId}].backbuffer",
 				"uFeatures"			: "lensflare_features",
 				"uArtefactsScale"	: { "property" : "artefactsScale", "default" : 1.0 },
 				"uDirt"				: { "default" : "lens-dirt.png" },

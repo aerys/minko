@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,129 +25,117 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	class AbstractCanvas
-	{
-	public:
-		typedef std::shared_ptr<AbstractCanvas>						Ptr;
-		typedef std::function<std::shared_ptr<async::Worker> ()>	WorkerHandler;
+    class AbstractCanvas
+    {
+    public:
+        typedef std::shared_ptr<AbstractCanvas>                     Ptr;
+        typedef std::function<std::shared_ptr<async::Worker> ()>    WorkerHandler;
 
-	public:
-		virtual
-		uint
-		x() = 0;
+    public:
+        virtual
+        uint
+        x() = 0;
 
-		virtual
-		uint
-		y() = 0;
+        virtual
+        uint
+        y() = 0;
 
-		virtual
-		uint
-		width() = 0;
+        virtual
+        uint
+        width() = 0;
 
-		virtual
-		uint
-		height() = 0;
+        virtual
+        uint
+        height() = 0;
 
-		virtual
-		std::shared_ptr<render::AbstractContext>
-		context() = 0;
+        virtual
+        std::shared_ptr<render::AbstractContext>
+        context() = 0;
 
-		virtual
-		std::shared_ptr<input::Mouse>
-		mouse() = 0;
+        virtual
+        std::shared_ptr<input::Mouse>
+        mouse() = 0;
 
         virtual
         std::shared_ptr<input::Keyboard>
         keyboard() = 0;
-        
+
         virtual
         std::shared_ptr<input::Touch>
         touch() = 0;
+
+        virtual
+        std::shared_ptr<input::Joystick>
+        joystick(uint id) = 0;
+
+        virtual
+        uint
+        numJoysticks() = 0;
+
+        virtual
+        Signal<Ptr, uint, uint>::Ptr
+        resized() = 0;
         
         virtual
-			std::shared_ptr<input::Touch>
-        touch(uint id) = 0;
-
-		virtual
-		std::shared_ptr<input::Joystick>
-		joystick(uint id) = 0;
-
-		virtual
-		uint
-		numJoysticks() = 0;
+        Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr
+        joystickAdded() = 0;
 
         virtual
-		Signal<Ptr, uint, uint>::Ptr
-		resized() = 0;
+        Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr
+        joystickRemoved() = 0;
 
         virtual
-		uint
-		numTouches() = 0;
-        
+        int
+        getJoystickAxis(std::shared_ptr<input::Joystick> joystick, int axis) = 0;
+
         virtual
-		Signal<std::shared_ptr<input::Touch>, float>::Ptr
-		touchZoom() = 0;
-        
-		virtual
-		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr
-		joystickAdded() = 0;
+        std::shared_ptr<async::Worker>
+        getWorker(const std::string& name) = 0;
 
-		virtual
-		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr
-		joystickRemoved() = 0;
+        // Current frame execution time in milliseconds.
+        virtual
+        float
+        frameDuration() const = 0;
 
-		virtual
-		int
-		getJoystickAxis(std::shared_ptr<input::Joystick> joystick, int axis) = 0;
+        // Time in milliseconds since application started.
+        virtual
+        float
+        relativeTime() const = 0;
 
-		virtual
-		std::shared_ptr<async::Worker>
-		getWorker(const std::string& name) = 0;
+        virtual
+        bool
+        isWorkerRegistered(const std::string& name) = 0;
 
-		// Current frame execution time in milliseconds.
-		virtual
-		float
-		frameDuration() const = 0;
+        template <typename T>
+        void
+        registerWorker(const std::string& name)
+        {
+            std::string key(name);
 
-		// Time in milliseconds since application started.
-		virtual
-		float
-		relativeTime() const = 0;
+            std::transform(key.begin(), key.end(), key.begin(), ::tolower);
 
-		virtual
-		bool
-		isWorkerRegistered(const std::string& name) = 0;
+            _workers[key] = std::bind(T::create, key);
+        }
 
-		template <typename T>
-		void
-		registerWorker(const std::string& name)
-		{
-			std::string key(name);
+        static
+        std::shared_ptr<AbstractCanvas>
+        defaultCanvas()
+        {
+            return _defaultCanvas;
+        }
 
-			std::transform(key.begin(), key.end(), key.begin(), ::tolower);
+        static
+        void
+        defaultCanvas(std::shared_ptr<AbstractCanvas> value)
+        {
+            _defaultCanvas = value;
+        }
 
-			_workers[key] = std::bind(T::create, key);
-		}
+    protected:
+        static
+        std::unordered_map<std::string, WorkerHandler>        _workers;
 
-		static
-		std::shared_ptr<AbstractCanvas>
-		defaultCanvas()
-		{
-			return _defaultCanvas;
-		}
-
-		static
-		void
-		defaultCanvas(std::shared_ptr<AbstractCanvas> value)
-		{
-			_defaultCanvas = value;
-		}
-
-	protected:
-		static
-		std::unordered_map<std::string, WorkerHandler>		_workers;
-		
-		static
-		std::shared_ptr<AbstractCanvas>						_defaultCanvas;
-	};
+        static
+        std::shared_ptr<AbstractCanvas>                       _defaultCanvas;
+    };
 }

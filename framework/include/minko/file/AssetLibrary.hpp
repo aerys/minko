@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/EffectParser.hpp"
 #include "minko/scene/Layout.hpp"
+#include "minko/audio/Sound.hpp"
 
 namespace minko
 {
@@ -49,6 +50,8 @@ namespace minko
 			typedef std::shared_ptr<scene::Node>				NodePtr;
             typedef std::shared_ptr<component::AbstractScript>  AbsScriptPtr;
 			typedef std::shared_ptr<material::Material>		    MaterialPtr;
+            typedef std::shared_ptr<data::Provider>                         MaterialPtr;
+            typedef std::shared_ptr<audio::Sound>                           SoundPtr;
 
 		private:
 			AbsContextPtr												   _context;
@@ -63,6 +66,7 @@ namespace minko
 			std::unordered_map<std::string, std::vector<unsigned char>>	   _blobs;
             std::unordered_map<std::string, AbsScriptPtr>                  _scripts;
             std::unordered_map<std::string, Layouts>					   _layouts;
+            std::unordered_map<std::string, SoundPtr>                       _sounds;
 
             Signal<Ptr, std::shared_ptr<AbstractParser>>::Ptr              _parserError;
             Signal<Ptr>::Ptr                                               _ready;
@@ -84,6 +88,13 @@ namespace minko
 			numMaterials()
 			{
 				return _materials.size();
+			}
+
+			inline
+			uint
+			numEffects()
+			{
+				return _effects.size();
 			}
 
 			inline
@@ -188,6 +199,12 @@ namespace minko
 
 			Ptr
 			layout(const std::string& name, Layouts);
+
+            audio::Sound::Ptr
+            sound(const std::string& name);
+
+            AssetLibrary::Ptr
+            sound(const std::string& name, audio::Sound::Ptr sound);
 
 		private:
 			AssetLibrary(AbsContextPtr context);

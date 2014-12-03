@@ -53,6 +53,7 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 	_beforePresent(Signal<Ptr>::create()),
 	//_surfaceTechniqueChangedSlot(),
 	_effect(effect),
+    _clearBeforeRender(true),
 	_priority(priority),
 	/*_targetDataFilters(),
 	_rendererDataFilters(),
@@ -68,8 +69,43 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 		renderTarget->upload();
 		_renderTarget = renderTarget;
 	}
+}
 
-	//addFilter(_lightMaskFilter, data::Binding::Source::ROOT);
+Renderer::Renderer(const Renderer& renderer, const CloneOption& option) :
+	_backgroundColor(renderer._backgroundColor),
+	_viewportBox(),
+	_scissorBox(),
+	_enabled(renderer._enabled),
+	_renderingBegin(Signal<Ptr>::create()),
+	_renderingEnd(Signal<Ptr>::create()),
+	_beforePresent(Signal<Ptr>::create()),
+	_surfaceDrawCalls(),
+	_surfaceTechniqueChangedSlot(),
+	_effect(nullptr),
+    _clearBeforeRender(true),
+	_priority(renderer._priority),
+	_targetDataFilters(),
+	_rendererDataFilters(),
+	_rootDataFilters(),
+	_targetDataFilterChangedSlots(),
+	_rendererDataFilterChangedSlots(),
+	_rootDataFilterChangedSlots(),
+	_lightMaskFilter(data::LightMaskFilter::create()),
+	_filterChanged(Signal<Ptr, data::AbstractFilter::Ptr, data::BindingSource, SurfacePtr>::create())
+{
+	if (renderer._renderTarget)
+	{
+		renderer._renderTarget->upload();
+		_renderTarget = renderer._renderTarget;
+	}
+}
+
+AbstractComponent::Ptr
+Renderer::clone(const CloneOption& option)
+{
+	auto renderer = std::shared_ptr<Renderer>(new Renderer(*this, option));
+
+	return renderer;
 }
 
 void
@@ -324,10 +360,7 @@ Renderer::render(render::AbstractContext::Ptr	context,
     
 	_renderingBegin->execute(std::static_pointer_cast<Renderer>(shared_from_this()));
 
-	if (_renderTarget)
-		renderTarget = _renderTarget;
-        
-    bool bCustomViewport = false;
+    auto rt = _renderTarget ? _renderTarget : renderTarget;
 
 	if (_scissorBox.z >= 0 && _scissorBox.w >= 0)
 		context->setScissorTest(true, _scissorBox);
@@ -341,23 +374,25 @@ Renderer::render(render::AbstractContext::Ptr	context,
 	}
 	else
 		context->configureViewport(0, 0, context->viewportWidth(), context->viewportHeight());
+
+    if (rt)
+        context->setRenderToTexture(rt->id(), true);
+    else
+       context->setRenderToBackBuffer();
 	
-	if (renderTarget)
-		context->setRenderToTexture(renderTarget->id(), true);
-	else
-    	context->setRenderToBackBuffer();
-    context->clear(
-	    ((_backgroundColor >> 24) & 0xff) / 255.f,
-	    ((_backgroundColor >> 16) & 0xff) / 255.f,
-	    ((_backgroundColor >> 8) & 0xff) / 255.f,
-	    (_backgroundColor & 0xff) / 255.f
-    );
+    if (_clearBeforeRender)
+    	context->clear(
+	    	((_backgroundColor >> 24) & 0xff) / 255.f,
+	    	((_backgroundColor >> 16) & 0xff) / 255.f,
+	    	((_backgroundColor >> 8) & 0xff) / 255.f,
+	    	(_backgroundColor & 0xff) / 255.f
+    	);
 
     _drawCallPool.update();
     for (const auto& drawCall : _drawCallPool.drawCalls())
         // FIXME: render the draw call only if it's the right layout
 	    //if ((drawCall->layouts() & layoutMask()) != 0)
-		    drawCall->render(context, renderTarget);
+		    drawCall->render(context, rt);
 
     if (bCustomViewport)
         context->setScissorTest(false, _viewportBox);

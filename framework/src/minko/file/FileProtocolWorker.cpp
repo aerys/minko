@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -28,10 +28,6 @@ namespace minko
 	{
 		MINKO_DEFINE_WORKER(FileProtocolWorker,
 		{
-//#ifdef DEBUG
-			std::cout << "FileProtocolWorker::run(): enter" << std::endl;
-//#endif // defined(DEBUG)
-
             auto seekingOffset = (static_cast<int>(static_cast<unsigned char>(input[0])) << 24) +
                                  (static_cast<int>(static_cast<unsigned char>(input[1])) << 16) +
                                  (static_cast<int>(static_cast<unsigned char>(input[2])) << 8) +
@@ -65,10 +61,6 @@ namespace minko
 
 				chunkSize *= 1024;
 
-//#ifdef DEBUG
-				std::cout << "FileProtocolWorker::run(): file is open, chunksize " + std::to_string(chunkSize) << std::endl;
-//#endif // defined(DEBUG)
-
 				file.seekg(seekingOffset, std::ios::beg);
 
 				uint offset = 0;
@@ -85,7 +77,11 @@ namespace minko
 
 					file.read(&*output.begin() + offset, readSize);
 
-					post(Message { "progress" }.set(float(offset + readSize) / float(length)));
+                    auto progress = float(offset + readSize) / float(length);
+
+                    progress *= 100.0;
+
+                    post(Message { "progress" }.set(progress));
 
 					offset = nextOffset;
 				}
@@ -98,10 +94,6 @@ namespace minko
 			{
 				post(Message{ "error" });
 			}
-
-//#ifdef DEBUG
-			std::cout << "FileProtocolWorker::run(): exit" << std::endl;
-//#endif // defined(DEBUG)
 		});
 	}
 }

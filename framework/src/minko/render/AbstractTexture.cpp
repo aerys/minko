@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -29,6 +29,7 @@ AbstractTexture::AbstractTexture(TextureType			type,
 								AbstractContext::Ptr	context,
 								unsigned int			width,
 								unsigned int			height,
+                                TextureFormat           format,
 								bool					mipMapping,
 								bool					optimizeForRenderToTexture,
                                 bool					resizeSmoothly,
@@ -36,6 +37,7 @@ AbstractTexture::AbstractTexture(TextureType			type,
 	AbstractResource(context),
     _sampler(uuid(), &_id),
 	_type(type),
+    _format(format),
 	_width(width),
 	_height(height),
 	_widthGPU(std::min(math::clp2(width), MAX_SIZE)),
@@ -139,6 +141,17 @@ AbstractTexture::resizeData(unsigned int width,
 #ifdef DEBUG_TEXTURE
 	assert(newData.size() == newWidth * newHeight * sizeof(int));
 #endif // DEBUG_TEXTURE
+}
+
+void
+AbstractTexture::activateMipMapping()
+{
+    if (_mipMapping)
+        return;
+
+    _mipMapping = true;
+
+    _context->activateMipMapping(_id);
 }
 
 uint

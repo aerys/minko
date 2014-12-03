@@ -40,7 +40,7 @@ TEST_F(GeometryTest, AddVertexBuffer)
 {
 	auto g = Geometry::create();
 	float vertices[9] = {0.f, .5f, 0.f, .5f, -.5f, .0f, -.5f, -.5f, 0.f};
-	auto vb = render::VertexBuffer::create(MinkoTests::context(), std::begin(vertices), std::end(vertices));
+	auto vb = render::VertexBuffer::create(MinkoTests::canvas()->context(), std::begin(vertices), std::end(vertices));
 
 	vb->addAttribute("position", 3);
 
@@ -53,7 +53,7 @@ TEST_F(GeometryTest, RemoveVertexBuffer)
 {
 	auto g = Geometry::create();
 	float vertices[9] = {0.f, .5f, 0.f, .5f, -.5f, .0f, -.5f, -.5f, 0.f};
-	auto vb = render::VertexBuffer::create(MinkoTests::context(), std::begin(vertices), std::end(vertices));
+	auto vb = render::VertexBuffer::create(MinkoTests::canvas()->context(), std::begin(vertices), std::end(vertices));
 
 	vb->addAttribute("position", 3);
 
@@ -67,7 +67,7 @@ TEST_F(GeometryTest, RemoveVertexBufferByAttributeName)
 {
 	auto g = Geometry::create();
 	float vertices[9] = {0.f, .5f, 0.f, .5f, -.5f, .0f, -.5f, -.5f, 0.f};
-	auto vb = render::VertexBuffer::create(MinkoTests::context(), std::begin(vertices), std::end(vertices));
+	auto vb = render::VertexBuffer::create(MinkoTests::canvas()->context(), std::begin(vertices), std::end(vertices));
 
 	vb->addAttribute("position", 3);
 
@@ -81,7 +81,7 @@ TEST_F(GeometryTest, HasVertexBuffer)
 {
 	auto g = Geometry::create();
 	float vertices[9] = {0.f, .5f, 0.f, .5f, -.5f, .0f, -.5f, -.5f, 0.f};
-	auto vb = render::VertexBuffer::create(MinkoTests::context(), std::begin(vertices), std::end(vertices));
+	auto vb = render::VertexBuffer::create(MinkoTests::canvas()->context(), std::begin(vertices), std::end(vertices));
 
 	vb->addAttribute("position", 3);
 
@@ -94,7 +94,7 @@ TEST_F(GeometryTest, HasVertexAttribute)
 {
 	auto g = Geometry::create();
 	float vertices[9] = {0.f, .5f, 0.f, .5f, -.5f, .0f, -.5f, -.5f, 0.f};
-	auto vb = render::VertexBuffer::create(MinkoTests::context(), std::begin(vertices), std::end(vertices));
+	auto vb = render::VertexBuffer::create(MinkoTests::canvas()->context(), std::begin(vertices), std::end(vertices));
 
 	vb->addAttribute("position", 3);
 
@@ -107,7 +107,7 @@ TEST_F(GeometryTest, VertexBufferAddedInData)
 {
 	auto g = Geometry::create();
 	float vertices[9] = {0.f, .5f, 0.f, .5f, -.5f, .0f, -.5f, -.5f, 0.f};
-	auto vb = render::VertexBuffer::create(MinkoTests::context(), std::begin(vertices), std::end(vertices));
+	auto vb = render::VertexBuffer::create(MinkoTests::canvas()->context(), std::begin(vertices), std::end(vertices));
 
 	vb->addAttribute("position", 3);
 
@@ -121,7 +121,7 @@ TEST_F(GeometryTest, VertexBufferRemovedFromData)
 {
 	auto g = Geometry::create();
 	float vertices[9] = {0.f, .5f, 0.f, .5f, -.5f, .0f, -.5f, -.5f, 0.f};
-	auto vb = render::VertexBuffer::create(MinkoTests::context(), std::begin(vertices), std::end(vertices));
+	auto vb = render::VertexBuffer::create(MinkoTests::canvas()->context(), std::begin(vertices), std::end(vertices));
 
 	vb->addAttribute("position", 3);
 

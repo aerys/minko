@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -30,6 +30,8 @@ namespace minko
 {
 	namespace component
 	{
+        class Surface;
+        
 		class BoundingBox :
 			public AbstractComponent
 		{
@@ -97,6 +99,9 @@ namespace minko
 				return bb;
 			}
 
+			AbstractComponent::Ptr
+			clone(const CloneOption& option);
+
 			inline
 			std::shared_ptr<math::AbstractShape>
 			shape()
@@ -139,8 +144,13 @@ namespace minko
 
 			BoundingBox();
 
+			BoundingBox(const BoundingBox& bbox, const CloneOption& option);
+
 			void
 			updateWorldSpaceBox();
+            
+            void
+            computeBox(const std::vector<std::shared_ptr<component::Surface>>& surfaces, math::Vector3::Ptr min, math::Vector3::Ptr max);
 		};
 	}
 }

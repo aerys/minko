@@ -38,6 +38,23 @@ Matrix4x4Timeline::Matrix4x4Timeline(const std::string& 				propertyName,
 	initializeMatrixTimetable(timetable, matrices);
 }
 
+Matrix4x4Timeline::Matrix4x4Timeline(const Matrix4x4Timeline& matrix) :
+    AbstractTimeline(matrix._propertyName, matrix._duration),
+    _matrices(matrix._matrices.size()),
+    _interpolate(matrix._interpolate)
+{
+    for (uint keyId = 0; keyId < matrix._matrices.size(); ++keyId)
+    {
+        _matrices[keyId] = matrix._matrices[keyId];
+    }
+}
+
+AbstractTimeline::Ptr
+Matrix4x4Timeline::clone()
+{
+    return Matrix4x4Timeline::create(*this);
+}
+
 void
 Matrix4x4Timeline::initializeMatrixTimetable(const std::vector<uint>& 			timetable,
 											 const std::vector<math::mat4>& 	matrices)
@@ -53,6 +70,7 @@ Matrix4x4Timeline::initializeMatrixTimetable(const std::vector<uint>& 			timetab
 
 	_matrices.clear();
 	_matrices.resize(numKeys);
+
 	for (uint keyId = 0; keyId < numKeys; ++keyId)
 	{
 		_matrices[keyId].first	= timetable[keyId];

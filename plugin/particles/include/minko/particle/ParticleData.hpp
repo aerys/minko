@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,74 +23,74 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace particle
-	{
-		struct ParticleData
-		{
-			//bool	alive;
+    namespace particle
+    {
+        struct ParticleData
+        {
+            //bool    alive;
 
-			float	x;
-			float	y;
-			float	z;
+            float    x;
+            float    y;
+            float    z;
 
-			float	oldx;
-			float	oldy;
-			float	oldz;
+            float    oldx;
+            float    oldy;
+            float    oldz;
 
-			float	startvx;
-			float	startvy;
-			float	startvz;
+            float    startvx;
+            float    startvy;
+            float    startvz;
 
-			float	startfx;
-			float	startfy;
-			float	startfz;
+            float    startfx;
+            float    startfy;
+            float    startfz;
 
-			float	r;
-			float	g;
-			float	b;
+            float    r;
+            float    g;
+            float    b;
 
-			float	size;
+            float    size;
 
-			float	rotation;
-			float	startAngularVelocity;
+            float    rotation;
+            float    startAngularVelocity;
 
-			float 	lifetime;
-			float	timeLived;
+            float     lifetime;
+            float    timeLived;
 
-			float	spriteIndex;
+            float    spriteIndex;
 
-			inline bool alive() const
-			{
-				return timeLived < lifetime;
-			}
+            inline bool alive() const
+            {
+                return timeLived < lifetime;
+            }
 
-			inline void kill()
-			{
-				timeLived = lifetime;
-			}
+            inline void kill()
+            {
+                timeLived = lifetime;
+            }
 
-			ParticleData() : 
-				//alive (false),
-				x (0),
-				y (0),
-				z (0),
-				startvx (0),
-				startvy (0),
-				startvz (0),
-				startfx (0),
-				startfy (0),
-				startfz (0),
-				r (1),
-				g (1),
-				b (1),
-				size (1),
-				rotation (0),
-				lifetime (0),
-				timeLived (0),
-				spriteIndex (0) 
-			{
+            ParticleData() :
+                //alive (false),
+                x (0),
+                y (0),
+                z (0),
+                startvx (0),
+                startvy (0),
+                startvz (0),
+                startfx (0),
+                startfy (0),
+                startfz (0),
+                r (1),
+                g (1),
+                b (1),
+                size (1),
+                rotation (0),
+                lifetime (0),
+                timeLived (0),
+                spriteIndex (0)
+            {
 
-			};
-		};
-	}
+            };
+        };
+    }
 }

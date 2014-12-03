@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -27,26 +27,26 @@ using namespace minko;
 using namespace minko::particle;
 using namespace minko::particle::modifier;
 
-StartColor::StartColor(SamplerPtr color): 
+StartColor::StartColor(SamplerPtr color):
     IParticleInitializer(),
     Modifier1<math::Vector3> (color)
 {
 }
 
 void
-StartColor::initialize(ParticleData& 	particle,
-	    			   float			time) const
+StartColor::initialize(ParticleData&     particle,
+                       float            time) const
 {
-	static auto c = math::Vector3::create();
-	_x->set(*c);
+    static auto c = math::Vector3::create();
+    _x->set(*c);
 
-	particle.r = c->x();
-	particle.g = c->y();
-	particle.b = c->z();
+    particle.r = c->x();
+    particle.g = c->y();
+    particle.b = c->z();
 }
 
 unsigned int
 StartColor::getNeededComponents() const
 {
-	return VertexComponentFlags::COLOR;
+    return VertexComponentFlags::COLOR;
 }

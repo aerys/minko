@@ -1,5 +1,5 @@
 {
-	"name"				: "normal",
+	"name"				: "uv",
 
 	"attributeBindings"	: {
 		"position"				: "geometry[${geometryId}].position",
@@ -57,7 +57,11 @@
 		"vertexShader"	: "
 
 			#ifdef GL_ES
+			# ifdef MINKO_PLATFORM_IOS
+				precision highp float;
+			# else
 				precision mediump float;
+			# endif
 			#endif
 
 			uniform mat4 modelToWorldMatrix;

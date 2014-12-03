@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -31,23 +31,22 @@ namespace minko
 		class JobManager :
 			public AbstractScript
 		{
-
 		public:
-			
 			class Job
 			{
-			public :
+            public:
 				typedef std::shared_ptr<Job> Ptr;
 
 				friend JobManager;
 
-			protected :
+            protected:
 				std::shared_ptr<JobManager>		_jobManager;
 				bool							_running;
 				bool							_oneStepPerFrame;
 				
-			public:
+                Signal<float>::Ptr              _priorityChanged;
 
+            public:
 				virtual
 				bool
 				complete() = 0;
@@ -102,7 +101,15 @@ namespace minko
 				{
 					return _jobManager;
 				}
-			protected :
+
+                inline
+                Signal<float>::Ptr
+                priorityChanged() const
+                {
+                    return _priorityChanged;
+                }
+
+            protected:
 				Job();
 			};
 
@@ -115,7 +122,8 @@ namespace minko
 		private:
 			unsigned int			_loadingFramerate;
 			float					_frameTime;
-			std::vector<Job::Ptr>	_jobs;
+            std::list<Job::Ptr>                                             _jobs;
+            std::unordered_map<Job::Ptr, Signal<float>::Slot>               _jobPriorityChangedSlots;
 			clock_t					_frameStartTime;
 
 		public:
@@ -127,7 +135,7 @@ namespace minko
 			};
 
 			Ptr
-			pushJob(Job::Ptr task);
+            pushJob(Job::Ptr job);
 
 			void
 			update(NodePtr target);
@@ -137,6 +145,9 @@ namespace minko
 
 		private:
 			JobManager(unsigned int loadingFramerate);
+
+            void
+            insertJob(Job::Ptr job);
 		};
 	}
 }

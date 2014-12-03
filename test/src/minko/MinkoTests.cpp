@@ -21,4 +21,4 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 
-render::AbstractContext::Ptr minko::MinkoTests::_context = nullptr;
+AbstractCanvas::Ptr minko::MinkoTests::_canvas = nullptr;

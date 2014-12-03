@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -30,65 +30,69 @@ using namespace minko;
 using namespace minko::file;
 
 void
-JPEGParser::parse(const std::string&				filename,
-				  const std::string&                resolvedFilename,
+JPEGParser::parse(const std::string&                filename,
+                  const std::string&                resolvedFilename,
                   std::shared_ptr<Options>          options,
-				  const std::vector<unsigned char>&	data,
-				  std::shared_ptr<AssetLibrary>		assetLibrary)
+                  const std::vector<unsigned char>&    data,
+                  std::shared_ptr<AssetLibrary>        assetLibrary)
 {
-	int width;
-	int height;
-	int comps;
+    int width;
+    int height;
+    int comps;
 
-	// Loads a JPEG image from a memory buffer.
-	// req_comps can be 1 (grayscale), 3 (RGB), or 4 (RGBA).
-	// On return, width/height will be set to the image's dimensions, and actual_comps will be set 
-	// to either 1 (grayscale) or 3 (RGB).
-	auto bmpData = jpgd::decompress_jpeg_image_from_memory(
-		(const unsigned char*)&data[0], data.size(), &width, &height, &comps, 3
-	);
+    // Loads a JPEG image from a memory buffer.
+    // req_comps can be 1 (grayscale), 3 (RGB), or 4 (RGBA).
+    // On return, width/height will be set to the image's dimensions, and actual_comps will be set
+    // to either 1 (grayscale) or 3 (RGB).
+    auto bmpData = jpgd::decompress_jpeg_image_from_memory(
+        (const unsigned char*)&data[0], data.size(), &width, &height, &comps, 3
+    );
 
-	auto format = render::TextureFormat::RGBA;
-	if (comps == 3 || comps == 1)
-		format	= render::TextureFormat::RGB;
+    auto format = render::TextureFormat::RGBA;
+    if (comps == 3 || comps == 1)
+        format    = render::TextureFormat::RGB;
 
-	render::AbstractTexture::Ptr texture = nullptr;
+    render::AbstractTexture::Ptr texture = nullptr;
 
-	if (!options->isCubeTexture())
-	{
-		auto texture2d = render::Texture::create(
-			options->context(), 
-			width, 
-			height, 
-			options->generateMipmaps(), 
-			false, 
-			options->resizeSmoothly(), 
-			filename
-		);
+    if (!options->isCubeTexture())
+    {
+        auto texture2d = render::Texture::create(
+            options->context(),
+            width,
+            height,
+            options->generateMipmaps(),
+            false,
+            options->resizeSmoothly(),
+            format,
+            filename
+        );
 
-		texture = texture2d;
-		assetLibrary->texture(filename, texture2d);
-	}
-	else
-	{
-		auto cubeTexture = render::CubeTexture::create(
-			options->context(), 
-			width, 
-			height, 
-			options->generateMipmaps(), 
-			false, 
-			options->resizeSmoothly(), 
-			filename
-		);
+        texture = texture2d;
+        assetLibrary->texture(filename, texture2d);
+    }
+    else
+    {
+        auto cubeTexture = render::CubeTexture::create(
+            options->context(),
+            width,
+            height,
+            options->generateMipmaps(),
+            false,
+            options->resizeSmoothly(),
+            format,
+            filename
+        );
 
-		texture = cubeTexture;
-		assetLibrary->cubeTexture(filename, cubeTexture);		
-	}
+        texture = cubeTexture;
+        assetLibrary->cubeTexture(filename, cubeTexture);
+    }
 
-	texture->data(bmpData, format);
-	texture->upload();
+    texture->data(bmpData);
+    texture->upload();
+    if (options->disposeTextureAfterLoading())
+        texture->disposeData();
 
-	free(bmpData);
+    free(bmpData);
 
-	complete()->execute(shared_from_this());
+    complete()->execute(shared_from_this());
 }

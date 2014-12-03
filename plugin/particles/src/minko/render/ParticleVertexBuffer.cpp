@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -26,41 +26,41 @@ using namespace minko::render;
 
 
 ParticleVertexBuffer::ParticleVertexBuffer(std::shared_ptr<AbstractContext> context) :
-	VertexBuffer(context)
+    VertexBuffer(context)
 {
 }
 
 void
 ParticleVertexBuffer::initialize()
 {
-	addAttribute("offset",      2, 0);
-	addAttribute("position",    3, 2);
+    addAttribute("offset",      2, 0);
+    addAttribute("position",    3, 2);
 }
 
-// void 
+// void
 // ParticleVertexBuffer::update(unsigned int nParticles, unsigned int vertexSize)
-// {	
-// 	unsigned int size = nParticles * vertexSize * 4;
-	
-// 	_context->uploadVertexBufferData(_id, 0, size, &data()[0]);
+// {
+//     unsigned int size = nParticles * vertexSize * 4;
+
+//     _context->uploadVertexBufferData(_id, 0, size, &data()[0]);
 // }
 
-void 
+void
 ParticleVertexBuffer::resize(unsigned int nParticles, unsigned int vertexSize)
-{	
-	std::vector<float>& vertexData  = data();
-	unsigned int        oldSize     = vertexData.size();
-	unsigned int        size        = (nParticles * vertexSize) << 2;
+{
+    std::vector<float>& vertexData  = data();
+    unsigned int        oldSize     = vertexData.size();
+    unsigned int        size        = (nParticles * vertexSize) << 2;
 
-	if (oldSize != size)
+    if (oldSize != size)
         dispose();
 
-	vertexData.resize(size);
+    vertexData.resize(size);
 
     float*          ptr = &vertexData[0];
     unsigned int    idx = 0;
-	for (unsigned int i = 0; i < nParticles; ++i)
-	{
+    for (unsigned int i = 0; i < nParticles; ++i)
+    {
         ptr[idx]       = -0.5f;
         ptr[idx + 1]   = -0.5f;
         idx += vertexSize;
@@ -76,7 +76,7 @@ ParticleVertexBuffer::resize(unsigned int nParticles, unsigned int vertexSize)
         ptr[idx]       =  0.5f;
         ptr[idx + 1]   =  0.5f;
         idx += vertexSize;
-	}
+    }
 
-	upload();
+    upload();
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -49,7 +49,7 @@ namespace minko
 				   const std::vector<unsigned short>&	vertexIds, 
 				   const std::vector<float>&			vertexWeights)
 			{
-				return std::shared_ptr<Bone>(new Bone(node, offsetMatrix, vertexIds, vertexWeights));
+				return std::shared_ptr<Bone>(new Bone(offsetMatrix, vertexIds, vertexWeights));
 			}
 
 			inline

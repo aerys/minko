@@ -34,60 +34,56 @@ APKProtocol::APKProtocol()
 void
 APKProtocol::load()
 {
-	auto filename = _file->filename();
-	auto options = _options;
+    auto filename = _file->filename();
+    auto options = _options;
 
-	std::string cleanFilename = "";
+    auto protocolPrefixPosition = filename.find("://");
 
-	for(uint i = 0; i < filename.length(); ++i)
-	{
-		if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
-		{
-			cleanFilename = "";
-			i += 2;
-			continue;
-		}
+    if (protocolPrefixPosition != std::string::npos)
+    {
+        filename = filename.substr(protocolPrefixPosition + 3);
+    }
 
-		cleanFilename += filename.at(i);
-	}
+    _options = options;
 
-	_options = options;
+    auto resolvedFilename = options->uriFunction()(File::sanitizeFilename(filename));
 
-	auto realFilename = options->uriFunction()(File::sanitizeFilename(cleanFilename));
+    SDL_RWops* file = SDL_RWFromFile(resolvedFilename.c_str(), "rb");
 
-	SDL_RWops* file = SDL_RWFromFile(cleanFilename.c_str(), "rb");
+    if (!file)
+        for (auto path : _options->includePaths())
+        {
+            resolvedFilename = options->uriFunction()(File::sanitizeFilename(path + '/' + filename));
 
-	if (!file)
-		for (auto path : _options->includePaths())
-		{
-			auto testFilename = options->uriFunction()(File::sanitizeFilename(path + '/' + cleanFilename));
+            file = SDL_RWFromFile(std::string(resolvedFilename).c_str(), "rb");
 
-			file = SDL_RWFromFile(testFilename.c_str(), "rb");
-			if (file)
-			{
-				realFilename = testFilename;
-				break;
-			}
-		}
+            if (file)
+                break;
+        }
 
     auto loader = shared_from_this();
 
-	if (file)
-	{
-		unsigned int size = file->size(file);
+    if (file)
+    {
+        this->resolvedFilename(resolvedFilename);
 
-		_progress->execute(shared_from_this(), 0.0);
+        auto offset = options->seekingOffset();
+        auto size = options->seekedLength() > 0 ? options->seekedLength() : file->size(file);
 
-		data().resize(size);
+        _progress->execute(shared_from_this(), 0.0);
 
-		file->seek(file, RW_SEEK_SET, 0);
-		file->read(file, (char*) &data()[0], size, 1);
-		file->close(file);
+        data().resize(size);
 
-		_progress->execute(loader, 1.0);
+        file->seek(file, offset, RW_SEEK_SET);
+        file->read(file, (char*) &data()[0], size, 1);
+        file->close(file);
 
-		_complete->execute(shared_from_this());
-	}
-	else
-		_error->execute(shared_from_this());
+        _progress->execute(loader, 1.0);
+
+        _complete->execute(shared_from_this());
+    }
+    else
+    {
+        _error->execute(shared_from_this());
+    }
 }
