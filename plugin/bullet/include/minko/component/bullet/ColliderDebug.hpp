@@ -47,6 +47,7 @@ namespace minko
 			private:
 				AssetLibraryPtr										_assets;
 				SurfacePtr											_surface;
+                NodePtr                                             _node;
 
 				Signal<ColliderPtr, Matrix4x4Ptr>::Slot				_physicsTransformChangedSlot;
 
