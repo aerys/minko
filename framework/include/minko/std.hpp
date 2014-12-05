@@ -134,8 +134,8 @@ namespace std
     };
 
     inline
-        std::string
-        replaceAll(std::string str, const std::string& from, const std::string& to)
+    std::string
+    replaceAll(std::string str, const std::string& from, const std::string& to)
     {
         size_t start_pos = 0;
 
@@ -149,8 +149,8 @@ namespace std
     }
 
     inline
-        std::vector<std::string>
-        stringSplit(std::string str, std::string token)
+    std::vector<std::string>
+    stringSplit(std::string str, std::string token)
     {
         std::vector<std::string> result;
 
@@ -172,8 +172,8 @@ namespace std
 
 
     inline
-        std::string
-        stringJoin(std::vector<std::string> strings, std::string delimiter)
+    std::string
+    stringJoin(std::vector<std::string> strings, std::string delimiter)
     {
         std::string result;
 
