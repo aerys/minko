@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::file;
+using namespace minko::render;
 
 std::map<const std::type_info*, std::function<std::tuple<uint, std::string>(Any)>> MaterialWriter::_typeToWriteFunction;
 
@@ -81,7 +82,7 @@ MaterialWriter::embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 			continue;
 		else if (serializeMaterialValue<math::mat4>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
 			continue;
-		else if (serializeMaterialValue<TexturePtr>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
+		else if (serializeMaterialValue<TextureSampler>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
 			continue;
 		else
 			std::cerr << propertyName << " can't be serialized : missing technique" << std::endl << std::endl;

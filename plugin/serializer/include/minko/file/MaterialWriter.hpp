@@ -68,7 +68,7 @@ namespace minko
 			MaterialWriter();
 
 			template <typename T>
-			typename std::enable_if<std::is_base_of<TexturePtr, T>::value, bool>::type
+			typename std::enable_if<std::is_base_of<render::TextureSampler, T>::value, bool>::type
 			serializeMaterialValue(material::Material::Ptr										material,
 								   std::string&													propertyName,
 								   file::AssetLibrary::Ptr										assets,
@@ -76,7 +76,7 @@ namespace minko
 								   std::vector<BasicPropertyTuple>								*basicTypeSeriliazedProperties,
 								   Dependency::Ptr												dependency)
 			{
-				if (material->data()->propertyHasType<TexturePtr>(propertyName))
+				if (material->data()->propertyHasType<render::TextureSampler>(propertyName))
 				{
 					std::tuple<uint, std::string> serializedTexture = serialize::TypeSerializer::serializeTexture(Any(dependency->registerDependency(
                         assets->getTextureByUuid(material->data()->get<render::TextureSampler>(propertyName).uuid)
@@ -93,7 +93,7 @@ namespace minko
 			}
 
 			template <typename T>
-			typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_base_of<TexturePtr, T>::value, bool>::type
+			typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_base_of<render::TextureSampler, T>::value, bool>::type
 			serializeMaterialValue(material::Material::Ptr										material,
 								   	std::string&												propertyName,
 								   	file::AssetLibrary::Ptr										assets,

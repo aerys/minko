@@ -141,7 +141,7 @@ MaterialParser::deserializeComplexProperty(MaterialPtr			material,
 	else if (type == TEXTURE)
 		material->data()->set(
 			serializedProperty.a0,
-            _dependencies->getTextureReference(Any::cast<uint>(TypeDeserializer::deserializeTextureId(serializedPropertyTuple)))->id()
+            _dependencies->getTextureReference(Any::cast<uint>(TypeDeserializer::deserializeTextureId(serializedPropertyTuple)))->sampler()
         );
 	else if (type == ENVMAPTYPE)
 	{
