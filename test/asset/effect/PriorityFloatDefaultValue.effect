@@ -1,0 +1,7 @@
+{
+    "states" : {
+        "priority" : 42.0
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}
