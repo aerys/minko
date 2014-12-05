@@ -56,6 +56,7 @@ namespace minko
 
     private:
         typedef std::chrono::high_resolution_clock::time_point                  time_point;
+        typedef std::shared_ptr<scene::Node>                                    NodePtr;
         typedef std::shared_ptr<async::Worker>                                  WorkerPtr;
 
         std::string                                                             _name;
@@ -87,6 +88,7 @@ namespace minko
         // Events
         Signal<Ptr, float, float>::Ptr                                          _enterFrame;
         Signal<AbstractCanvas::Ptr, uint, uint>::Ptr                            _resized;
+        Signal<AbstractCanvas::Ptr, uint, uint>::Slot                           _resizedSlot;
         // File dropped
         Signal<const std::string&>::Ptr                                         _fileDropped;
         // Joystick events
@@ -97,6 +99,7 @@ namespace minko
         std::list<Any>                                                          _workerCompleteSlots;
 
         bool                                                                    _onWindow;
+        NodePtr                                                                 _camera;
 
     public:
         static inline
@@ -127,6 +130,9 @@ namespace minko
         {
             return _name;
         }
+
+        NodePtr
+        createScene();
 
         uint
         x();

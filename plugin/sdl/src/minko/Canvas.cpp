@@ -24,6 +24,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Options.hpp"
 #include "minko/log/Logger.hpp"
 #include "minko/SDLBackend.hpp"
+#include "minko/scene/Node.hpp"
+#include "minko/component/SceneManager.hpp"
+#include "minko/component/Renderer.hpp"
+#include "minko/component/Transform.hpp"
+#include "minko/component/PerspectiveCamera.hpp"
+#include "minko/math/Matrix4x4.hpp"
 
 #if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
 # include "minko/file/FileProtocolWorker.hpp"
@@ -49,6 +55,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #endif
 
 using namespace minko;
+using namespace minko::component;
+using namespace minko::scene;
 using namespace minko::math;
 using namespace minko::async;
 
@@ -199,6 +207,30 @@ Canvas::initializeContext()
 
     if (!_context)
         throw std::runtime_error("Could not create context");
+}
+
+Canvas::NodePtr  
+Canvas::createScene()
+{
+    auto sceneManager = SceneManager::create(shared_from_this());
+    auto root = Node::create("root")
+        ->addComponent(sceneManager);
+
+    _camera = Node::create("camera")
+		->addComponent(Renderer::create(0x7f7f7fff))
+		->addComponent(Transform::create(
+		    Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+		))
+		->addComponent(PerspectiveCamera::create(shared_from_this()->aspectRatio()));
+
+    root->addChild(_camera);
+
+    _resizedSlot = _resized->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+	{
+		_camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+	});
+
+    return root;
 }
 
 uint

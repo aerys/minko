@@ -32,7 +32,11 @@ main(int argc, char** argv)
 {
 	auto canvas = Canvas::create("Minko Example - Cube", 800, 600);
 
-    auto sceneManager = SceneManager::create(canvas);
+    auto root = canvas->createScene();
+
+    //auto sceneManager = SceneManager::create(canvas);
+
+    auto sceneManager = root->component<SceneManager>();
 
 	// setup assets
 	sceneManager->assets()->loader()->options()
@@ -46,20 +50,17 @@ main(int argc, char** argv)
 
 	sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
 
-	auto root = scene::Node::create("root")
-		->addComponent(sceneManager);
-
 	auto mesh = scene::Node::create("mesh")
 		->addComponent(Transform::create());
 
-	auto camera = scene::Node::create("camera")
-		->addComponent(Renderer::create(0x7f7f7fff))
-		->addComponent(Transform::create(
-		Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
-		))
-		->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
+    auto camerasNodeSet = scene::NodeSet::create(root)
+            ->descendants(true)
+            ->where([](scene::Node::Ptr n)
+    {
+        return n->hasComponent<PerspectiveCamera>();
+    });
 
-	root->addChild(camera);
+	auto camera = camerasNodeSet->nodes()[0];
 
 	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
