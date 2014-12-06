@@ -80,12 +80,16 @@ namespace minko
             typedef data::Store::PropertyChangedSignal::Slot    ChangedSlot;
 
 		private:
+
             data::Store&                        _rootData;
             data::Store&                        _rendererData;
             data::Store&                        _targetData;
             StringMap                           _variables;
 
-			std::shared_ptr<render::Pass>		_pass;
+            data::MacroBindingMap*              _macroBindings;
+            data::BindingMap*                   _attributeBindings;
+            data::BindingMap*                   _uniformBindings;
+            data::BindingMap*                   _stateBindings;
 			std::shared_ptr<Program>			_program;
             int*								_indexBuffer;
             uint*                               _firstIndex;
@@ -118,34 +122,48 @@ namespace minko
             std::map<const data::Binding*, ChangedSlot>    _propAddedOrRemovedSlot;
 
 		public:
-            DrawCall(std::shared_ptr<render::Pass>  pass,
-                     const StringMap&               variables,
-                     data::Store&                   rootData,
-                     data::Store&                   rendererData,
-                     data::Store&                   targetData) :
-                _pass(pass),
+            DrawCall(const StringMap&   variables,
+                     data::Store&       rootData,
+                     data::Store&       rendererData,
+                     data::Store&       targetData) :
+                _program(nullptr),
+                _macroBindings(nullptr),
+                _attributeBindings(nullptr),
+                _uniformBindings(nullptr),
+                _stateBindings(nullptr),
                 _variables(variables),
                 _rootData(rootData),
                 _rendererData(rendererData),
                 _targetData(targetData)
             {
-
             }
 
-            DrawCall(const DrawCall& drawCall) :
-                _pass(drawCall._pass),
-                _variables(drawCall._variables),
-                _rootData(drawCall._rootData),
-                _rendererData(drawCall._rendererData),
-                _targetData(drawCall._targetData)
-            {
-            }
-            
             inline
-            std::shared_ptr<Pass>
-            pass() const
+            const data::MacroBindingMap*
+            macroBindings()
             {
-                return _pass;
+                return _macroBindings;
+            }
+
+            inline
+            const data::BindingMap*
+            attributeBindings()
+            {
+                return _attributeBindings;
+            }
+
+            inline
+            const data::BindingMap*
+            uniformBindings()
+            {
+                return _uniformBindings;
+            }
+
+            inline
+            const data::BindingMap*
+            stateBindings()
+            {
+                return _stateBindings;
             }
 
             inline
@@ -183,14 +201,15 @@ namespace minko
                 return _targetData;
             }
 
-			void
-			render(std::shared_ptr<AbstractContext> context, AbsTexturePtr renderTarget) const;
-
             void
             bind(std::shared_ptr<Program>   program,
+                 data::MacroBindingMap&     macroBindings,
                  data::BindingMap&          attributeBindings,
                  data::BindingMap&          uniformBindings,
                  data::BindingMap&          stateBindings);
+
+			void
+			render(std::shared_ptr<AbstractContext> context, AbsTexturePtr renderTarget) const;
 
 		private:
             void

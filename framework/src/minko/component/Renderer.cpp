@@ -291,10 +291,10 @@ Renderer::surfaceGeometryOrMaterialChangedHandler(Surface::Ptr surface)
     // it's way simpler than just updating what has changed.
 
     std::unordered_map<std::string, std::string> variables;
-    //variables["surfaceUuid"] = surface->uuid();
+    variables["surfaceUuid"] = surface->uuid();
     variables["geometryUuid"] = surface->geometry()->uuid();
     variables["materialUuid"] = surface->material()->uuid();
-    //variables["effectUuid"] = surface->effect()->uuid();
+    variables["effectUuid"] = surface->effect()->uuid();
 
     _drawCallPool.invalidateDrawCalls(_surfaceToDrawCallIterator[surface], variables);
     //removeSurface(surface);

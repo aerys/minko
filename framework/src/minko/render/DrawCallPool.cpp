@@ -26,15 +26,15 @@ std::pair<std::list<DrawCall*>::iterator, std::list<DrawCall*>::iterator>
 DrawCallPool::addDrawCalls(std::shared_ptr<Effect>                              effect,
                            const std::unordered_map<std::string, std::string>&  variables,
                            const std::string&                                   techniqueName,
-                           data::Store&                                     rootData,
-                           data::Store&                                     rendererData,
-                           data::Store&                                     targetData)
+                           data::Store&                                         rootData,
+                           data::Store&                                         rendererData,
+                           data::Store&                                         targetData)
 {
     const auto& technique = effect->technique(techniqueName);
     
     for (const auto& pass : technique)
     {
-        auto* drawCall = new DrawCall(pass, variables, rootData, rendererData, targetData);
+        auto* drawCall = new DrawCall(variables, rootData, rendererData, targetData);
 
         initializeDrawCall(drawCall);
 
@@ -59,7 +59,7 @@ DrawCallPool::removeDrawCalls(const DrawCallIteratorPair& iterators)
         // FIXME: avoid const_cast
         unwatchProgramSignature(
             drawCall,
-            drawCall->pass()->macroBindings(),
+            *drawCall->macroBindings(),
             const_cast<data::Store&>(drawCall->rootData()),
             const_cast<data::Store&>(drawCall->rendererData()),
             const_cast<data::Store&>(drawCall->targetData())
@@ -75,9 +75,9 @@ DrawCallPool::removeDrawCalls(const DrawCallIteratorPair& iterators)
 void
 DrawCallPool::watchProgramSignature(DrawCall*                       drawCall,
                                     const data::MacroBindingMap&    macroBindings,
-                                    data::Store&                rootData,
-                                    data::Store&                rendererData,
-                                    data::Store&                targetData)
+                                    data::Store&                    rootData,
+                                    data::Store&                    rendererData,
+                                    data::Store&                    targetData)
 {
     for (const auto& macroNameAndBinding : macroBindings.bindings)
     {
@@ -179,11 +179,11 @@ DrawCallPool::macroPropertyRemovedHandler(data::Store&                  store,
 }
 
 void
-DrawCallPool::unwatchProgramSignature(DrawCall*                       drawCall,
-                                      const data::MacroBindingMap&    macroBindings,
-                                      data::Store&                rootData,
-                                      data::Store&                rendererData,
-                                      data::Store&                targetData)
+DrawCallPool::unwatchProgramSignature(DrawCall*                     drawCall,
+                                      const data::MacroBindingMap&  macroBindings,
+                                      data::Store&                  rootData,
+                                      data::Store&                  rendererData,
+                                      data::Store&                  targetData)
 {
     for (const auto& macroNameAndBinding : macroBindings.bindings)
     {
@@ -226,16 +226,17 @@ DrawCallPool::initializeDrawCall(DrawCall* drawCall)
 
     drawCall->bind(
         programAndSignature.first,
-        const_cast<data::BindingMap&>(pass->attributeBindings()),
-        const_cast<data::BindingMap&>(pass->uniformBindings()),
-        const_cast<data::BindingMap&>(pass->stateBindings())
+        pass->macroBindings(),
+        pass->attributeBindings(),
+        pass->uniformBindings(),
+        pass->stateBindings()
     );
 
     // FIXME: avoid const_cast
     if (programAndSignature.second != nullptr)
         watchProgramSignature(
             drawCall,
-            pass->macroBindings(),
+            *drawCall->macroBindings(),
             const_cast<data::Store&>(drawCall->rootData()),
             const_cast<data::Store&>(drawCall->rendererData()),
             const_cast<data::Store&>(drawCall->targetData())

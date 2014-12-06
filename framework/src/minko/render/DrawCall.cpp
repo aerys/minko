@@ -58,14 +58,19 @@ DrawCall::reset()
 }
 
 void
-DrawCall::bind(Program::Ptr       program,
-               data::BindingMap&  attributeBindings,
-               data::BindingMap&  uniformBindings,
-               data::BindingMap&  stateBindings)
+DrawCall::bind(std::shared_ptr<Program>   program,
+               data::MacroBindingMap&     macroBindings,
+               data::BindingMap&          attributeBindings,
+               data::BindingMap&          uniformBindings,
+               data::BindingMap&          stateBindings)
 {
     reset();
 
     _program = program;
+    _macroBindings = &macroBindings;
+    _attributeBindings = &attributeBindings;
+    _uniformBindings = &uniformBindings;
+    _stateBindings = &stateBindings;
 
     bindIndexBuffer(_variables, _targetData);
     bindStates(stateBindings);
@@ -156,22 +161,18 @@ DrawCall::bindUniforms(Program::Ptr program, data::BindingMap& uniformBindings)
         {
             bindUniform(program, input, store, propertyName);
 
-            // if there is a default value
-            if (uniformBindings.defaultValues.hasProperty(input.name))
-            {
-                // we listen to the "propertyRemoved" signal in order to make sure the uniform data
-                // points to the default value data
-                _propAddedOrRemovedSlot[&binding] = store.propertyRemoved(propertyName).connect(std::bind(
-                    &DrawCall::uniformBindingPropertyRemoved,
-                    this,
-                    std::ref(binding),
-                    program,
-                    std::ref(store),
-                    std::ref(uniformBindings.defaultValues),
-                    std::ref(input),
-                    propertyName
-                ));
-            }
+            // we listen to the "propertyRemoved" signal in order to make sure the uniform data
+            // points to the default value data
+            _propAddedOrRemovedSlot[&binding] = store.propertyRemoved(propertyName).connect(std::bind(
+                &DrawCall::uniformBindingPropertyRemoved,
+                this,
+                std::ref(binding),
+                program,
+                std::ref(store),
+                std::ref(uniformBindings.defaultValues),
+                std::ref(input),
+                propertyName
+            ));
         }
     }
 }
@@ -179,8 +180,8 @@ DrawCall::bindUniforms(Program::Ptr program, data::BindingMap& uniformBindings)
 void
 DrawCall::uniformBindingPropertyAdded(const data::Binding&                  binding,
                                       Program::Ptr                          program,
-                                      data::Store&                      store,
-                                      const data::Store&                defaultValues,
+                                      data::Store&                          store,
+                                      const data::Store&                    defaultValues,
                                       const ProgramInputs::UniformInput&    input,
                                       const std::string&                    propertyName)
 {
@@ -199,12 +200,12 @@ DrawCall::uniformBindingPropertyAdded(const data::Binding&                  bind
 }
 
 void
-DrawCall::uniformBindingPropertyRemoved(const data::Binding&                  binding,
-                                        Program::Ptr                          program,
-                                        data::Store&                      store,
-                                        const data::Store&                defaultValues,
-                                        const ProgramInputs::UniformInput&    input,
-                                        const std::string&                    propertyName)
+DrawCall::uniformBindingPropertyRemoved(const data::Binding&                binding,
+                                        Program::Ptr                        program,
+                                        data::Store&                        store,
+                                        const data::Store&                  defaultValues,
+                                        const ProgramInputs::UniformInput&  input,
+                                        const std::string&                  propertyName)
 {
     if (!defaultValues.hasProperty(input.name))
         throw std::runtime_error(
