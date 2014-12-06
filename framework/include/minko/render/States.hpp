@@ -166,7 +166,7 @@ namespace minko
 
             inline
             CompareMode
-            depthFunc() const
+            depthFunction() const
             {
                 return _data->get<CompareMode>(PROPERTY_DEPTH_FUNCTION);
             }
@@ -208,14 +208,14 @@ namespace minko
 
 			inline
 			StencilOperation
-			stencilDepthFailOperation() const
+			stencilZFailOperation() const
 			{
                 return _data->get<StencilOperation>(PROPERTY_STENCIL_ZFAIL_OP);
 			}
 
 			inline
 			StencilOperation
-			stencilDepthPassOperation() const
+			stencilZPassOperation() const
 			{
                 return _data->get<StencilOperation>(PROPERTY_STENCIL_ZPASS_OP);
 			}
