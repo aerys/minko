@@ -71,7 +71,7 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, int
     _height(height),
     _x(0),
     _y(0),
-    _onWindow(false),
+    _onWindow(false)
 {
     _data->set<math::Vector4::Ptr>("canvas.viewport", Vector4::create(0.0f, 0.0f, (float) width, (float) height));
 }
