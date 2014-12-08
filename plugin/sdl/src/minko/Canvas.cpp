@@ -71,7 +71,7 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, int
     _height(height),
     _x(0),
     _y(0),
-    _onWindow(false)
+    _onWindow(false),
 {
     _data->set<math::Vector4::Ptr>("canvas.viewport", Vector4::create(0.0f, 0.0f, (float) width, (float) height));
 }
@@ -384,6 +384,8 @@ Canvas::step()
 
     auto enteredOrLeftThisFrame = false;
 
+    auto gotTextInput = false;
+
     while (SDL_PollEvent(&event))
     {
         switch (event.type)
@@ -402,17 +404,23 @@ Canvas::step()
 #endif // MINKO_PLATFORM != MINKO_PLATFORM_HTML5
         case SDL_TEXTINPUT:
         {
-            int i = 0;
+            if (gotTextInput)
+                break;
 
+            gotTextInput = true;
+            int i = 0;
+            
             while (event.text.text[i] != '\0' && event.text.text[i] != 0)
             {
+                std::cout << "SDL_TEXTINPUT " << event.text.text[i] << std::endl;
                 _keyboard->textInput()->execute(_keyboard, event.text.text[i++]);
             }
+
             break;
         }
         case SDL_TEXTEDITING:
         {
-            //std::cout << "text editing" << std::endl;
+            std::cout << "text editing" << std::endl;
             break;
         }
         case SDL_KEYDOWN:
