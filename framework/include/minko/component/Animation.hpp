@@ -50,6 +50,8 @@ namespace minko
 			{
 				Ptr ptr = std::shared_ptr<Animation>(new Animation(timelines, isLooping));
 
+                ptr->initialize();
+
 				return ptr;
 			}
 
@@ -79,6 +81,10 @@ namespace minko
             {
                 return _timelines;
             }
+
+        protected:
+            void
+            initialize();
 
 		private:
 			Animation(const std::vector<AbsTimelinePtr>&, bool isLooping);
