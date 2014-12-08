@@ -40,7 +40,7 @@ namespace minko
 			~HtmlOverlay();
 
 		private:
-			typedef std::shared_ptr<scene::Node>							NodePtr;
+			typedef std::shared_ptr<scene::Node> NodePtr;
 
 
 			HtmlOverlay(int argc, char** argv);
@@ -55,8 +55,6 @@ namespace minko
 					throw("Only one instance of HtmlOverlay is permitted");
 
 				Ptr overlay(new HtmlOverlay(argc, argv));
-
-                overlay->initialize();
 
 				_instance = overlay;
 
@@ -73,7 +71,7 @@ namespace minko
 			minko::dom::AbstractDOM::Ptr
 			load(std::string uri)
 			{
-                if (_domEngine == nullptr || numTargets() == 0)
+                if (_domEngine == nullptr || target() == nullptr)
                     throw std::logic_error("HtmlOverlay component should be added to a node and initialized before HtmlOverlay::load is called");
 
 				return _domEngine->load(uri);
@@ -115,9 +113,6 @@ namespace minko
 
         private:
 
-            void
-            initialize();
-
 			minko::dom::AbstractDOMEngine::Ptr
 			domEngine()
 			{
@@ -125,27 +120,27 @@ namespace minko
 			}
 
 			void
-			targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
+			targetAdded(NodePtr target);
 
 			void
-			targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
+			targetRemoved(NodePtr target);
 
 			void
 			removedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
 			
 		private:
-			static HtmlOverlay::Ptr													_instance;
+			static HtmlOverlay::Ptr						    _instance;
 
-			AbstractCanvas::Ptr														_canvas; 
-			SceneManager::Ptr														_sceneManager;
+			AbstractCanvas::Ptr							    _canvas; 
+			SceneManager::Ptr							    _sceneManager;
 
-			Signal<AbstractComponent::Ptr, NodePtr>::Slot							_targetAddedSlot;
-			Signal<AbstractComponent::Ptr, NodePtr>::Slot							_targetRemovedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot									_removedSlot;
+			Signal<AbstractComponent::Ptr, NodePtr>::Slot   _targetAddedSlot;
+			Signal<AbstractComponent::Ptr, NodePtr>::Slot   _targetRemovedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot		    _removedSlot;
 
-			dom::AbstractDOMEngine::Ptr												_domEngine;
+			dom::AbstractDOMEngine::Ptr					    _domEngine;
 
-			bool																	_cleared;
+			bool										    _cleared;
 		};
 	}
 }
