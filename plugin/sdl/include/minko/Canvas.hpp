@@ -95,6 +95,9 @@ namespace minko
         Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr      _joystickAdded;
         Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr      _joystickRemoved;
 
+        Signal<AbstractCanvas::Ptr>::Ptr                                        _suspended;
+        Signal<AbstractCanvas::Ptr>::Ptr                                        _resumed;
+
         std::list<std::shared_ptr<async::Worker>>                               _activeWorkers;
         std::list<Any>                                                          _workerCompleteSlots;
 
@@ -252,6 +255,20 @@ namespace minko
         {
             return _fileDropped;
         }
+
+        inline
+        Signal<AbstractCanvas::Ptr>::Ptr
+        suspended()
+        {
+            return _suspended;
+        }
+
+        inline
+        Signal<AbstractCanvas::Ptr>::Ptr
+        resumed()
+        {
+            return _resumed;
+        }        
 
         inline
         minko::render::AbstractContext::Ptr

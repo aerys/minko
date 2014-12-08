@@ -75,6 +75,8 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, boo
     _fileDropped(Signal<const std::string&>::create()),
     _joystickAdded(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
     _joystickRemoved(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
+    _suspended(Signal<AbstractCanvas::Ptr>::create()),
+    _resumed(Signal<AbstractCanvas::Ptr>::create()),
     _width(width),
     _height(height),
     _x(0),
@@ -769,6 +771,14 @@ Canvas::step()
             break;
         }
 #endif // MINKO_PLATFORM_HTML5
+
+        case SDL_APP_DIDENTERBACKGROUND:
+            suspended()->execute(shared_from_this());
+            break;
+
+        case SDL_APP_DIDENTERFOREGROUND:
+            resumed()->execute(shared_from_this());
+            break;
 
         default:
             break;
