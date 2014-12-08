@@ -45,7 +45,7 @@ namespace minko
             static const std::string                    PROPERTY_BLENDING_DESTINATION;
             static const std::string                    PROPERTY_COLOR_MASK;
             static const std::string                    PROPERTY_DEPTH_MASK;
-            static const std::string                    PROPERTY_DEPTH_FUNC;
+            static const std::string                    PROPERTY_DEPTH_FUNCTION;
             static const std::string                    PROPERTY_TRIANGLE_CULLING;
             static const std::string                    PROPERTY_STENCIL_FUNCTION;
             static const std::string                    PROPERTY_STENCIL_REFERENCE;
@@ -65,7 +65,7 @@ namespace minko
             static const Blending::Destination	        DEFAULT_BLENDING_DESTINATION;
             static const bool					        DEFAULT_COLOR_MASK;
             static const bool					        DEFAULT_DEPTH_MASK;
-            static const CompareMode		            DEFAULT_DEPTH_FUNC;
+            static const CompareMode		            DEFAULT_DEPTH_FUNCTION;
             static const TriangleCulling                DEFAULT_TRIANGLE_CULLING;
             static const CompareMode			        DEFAULT_STENCIL_FUNCTION;
             static const int					        DEFAULT_STENCIL_REFERENCE;
@@ -79,7 +79,6 @@ namespace minko
 
         private:
             std::shared_ptr<data::Provider> _data;
-            data::Store                 _container;
 
 		public:
             States(float					priority            = DEFAULT_PRIORITY,
@@ -88,7 +87,7 @@ namespace minko
                    Blending::Destination	blendingDestination = DEFAULT_BLENDING_DESTINATION,
                    bool						colorMask           = DEFAULT_COLOR_MASK,
                    bool						depthMask           = DEFAULT_DEPTH_MASK,
-                   CompareMode				depthFunc           = DEFAULT_DEPTH_FUNC,
+                   CompareMode				depthFunc           = DEFAULT_DEPTH_FUNCTION,
                    TriangleCulling          triangleCulling     = DEFAULT_TRIANGLE_CULLING,
                    CompareMode				stencilFunction     = DEFAULT_STENCIL_FUNCTION,
                    int						stencilRef          = DEFAULT_STENCIL_REFERENCE,
@@ -101,6 +100,8 @@ namespace minko
                    AbsTexturePtr		    target              = DEFAULT_TARGET);
 
             States(const States& states);
+
+            States(std::shared_ptr<data::Provider> data);
 
             void
             resetDefaultValues();
@@ -167,7 +168,7 @@ namespace minko
             CompareMode
             depthFunc() const
             {
-                return _data->get<CompareMode>(PROPERTY_DEPTH_FUNC);
+                return _data->get<CompareMode>(PROPERTY_DEPTH_FUNCTION);
             }
 
             inline

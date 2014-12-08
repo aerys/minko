@@ -73,3 +73,11 @@ TEST_F(EffectParserTest, OneUniformBinding)
     ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().bindings.at("uDiffuseMap").propertyName, "material[${materialUuid}].diffuseMap");
     ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().bindings.at("uDiffuseMap").source, data::Binding::Source::TARGET);
 }
+
+TEST_F(EffectParserTest, PriorityFloatDefaultValue)
+{
+    auto fx = loadEffect("effect/PriorityFloatDefaultValue.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().priority(), 42.f);
+}

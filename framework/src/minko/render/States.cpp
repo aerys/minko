@@ -28,7 +28,7 @@ const std::string           States::PROPERTY_BLENDING_SOURCE        = "blendingS
 const std::string           States::PROPERTY_BLENDING_DESTINATION   = "blendingDestination";
 const std::string           States::PROPERTY_COLOR_MASK             = "colorMask";
 const std::string           States::PROPERTY_DEPTH_MASK             = "depthMask";
-const std::string           States::PROPERTY_DEPTH_FUNC             = "depthFunction";
+const std::string           States::PROPERTY_DEPTH_FUNCTION         = "depthFunction";
 const std::string           States::PROPERTY_TRIANGLE_CULLING       = "triangleCulling";
 const std::string           States::PROPERTY_STENCIL_FUNCTION       = "stencilFunction";
 const std::string           States::PROPERTY_STENCIL_REFERENCE      = "stencilReference";
@@ -46,7 +46,7 @@ const Blending::Source		States::DEFAULT_BLENDING_SOURCE         = Blending::Sour
 const Blending::Destination States::DEFAULT_BLENDING_DESTINATION    = Blending::Destination::ZERO;
 const bool					States::DEFAULT_COLOR_MASK              = true;
 const bool					States::DEFAULT_DEPTH_MASK              = true;
-const CompareMode		    States::DEFAULT_DEPTH_FUNC              = CompareMode::LESS;
+const CompareMode		    States::DEFAULT_DEPTH_FUNCTION          = CompareMode::LESS;
 const TriangleCulling       States::DEFAULT_TRIANGLE_CULLING        = TriangleCulling::BACK;
 const CompareMode			States::DEFAULT_STENCIL_FUNCTION        = CompareMode::ALWAYS;
 const int					States::DEFAULT_STENCIL_REFERENCE       = 0;
@@ -65,7 +65,7 @@ const std::array<std::string, 17> States::PROPERTY_NAMES = {
     PROPERTY_BLENDING_DESTINATION,
     PROPERTY_COLOR_MASK,
     PROPERTY_DEPTH_MASK,
-    PROPERTY_DEPTH_FUNC,
+    PROPERTY_DEPTH_FUNCTION,
     PROPERTY_TRIANGLE_CULLING,
     PROPERTY_STENCIL_FUNCTION,
     PROPERTY_STENCIL_REFERENCE,
@@ -97,16 +97,18 @@ States::States(float					priority,
                AbsTexturePtr		    target) :
     _data(data::Provider::create())
 {
-    _container.addProvider(_data);
     resetDefaultValues();
 
     // FIXME: set the state values
 }
 
+States::States(std::shared_ptr<data::Provider> data) :
+    _data(data)
+{}
+
 States::States(const States& states) :
     _data(data::Provider::create(states._data))
 {
-    _container.addProvider(_data);
 }
 
 void

@@ -48,7 +48,11 @@ namespace minko
 			Ptr
 			create(const std::string& name = "material")
 			{
-				return std::shared_ptr<Material>(new Material(name));
+                auto instance = Ptr(new Material(name));
+
+                instance->initialize();
+
+                return instance;
 			}
 
 			inline static
@@ -89,6 +93,12 @@ namespace minko
             {
                 _provider->set("name", name);
                 _provider->set("uuid", _provider->uuid());
+            }
+
+            virtual
+            void
+            initialize()
+            {
             }
 		};
 	}

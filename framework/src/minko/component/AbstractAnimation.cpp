@@ -108,6 +108,11 @@ AbstractAnimation::AbstractAnimation(const AbstractAnimation& absAnimation, cons
 }
 
 void
+AbstractAnimation::initialize()
+{
+}
+
+void
 AbstractAnimation::targetAdded(Node::Ptr node)
 {
 	_addedSlot = node->added().connect(std::bind(

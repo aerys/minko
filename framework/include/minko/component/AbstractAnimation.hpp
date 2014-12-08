@@ -290,6 +290,10 @@ namespace minko
 				_frameBeginSlot		= nullptr;
 			}
 
+			virtual
+			void
+			initialize();
+
 			void
 			targetAdded(NodePtr node);
 
