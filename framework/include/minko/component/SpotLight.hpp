@@ -58,7 +58,6 @@ namespace minko
 			AbstractComponent::Ptr
 			clone(const CloneOption& option);
 
-            inline
             float
             innerConeAngle() const;
 
