@@ -412,7 +412,6 @@ Canvas::step()
             
             while (event.text.text[i] != '\0' && event.text.text[i] != 0)
             {
-                std::cout << "SDL_TEXTINPUT " << event.text.text[i] << std::endl;
                 _keyboard->textInput()->execute(_keyboard, event.text.text[i++]);
             }
 
@@ -420,7 +419,7 @@ Canvas::step()
         }
         case SDL_TEXTEDITING:
         {
-            std::cout << "text editing" << std::endl;
+            //std::cout << "text editing" << std::endl;
             break;
         }
         case SDL_KEYDOWN:
