@@ -75,8 +75,6 @@ namespace minko
             {
                 auto s = std::shared_ptr<LuaScript>(new LuaScript(name, script));
 
-                s->initialize();
-
                 return s;
             }
 

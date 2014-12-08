@@ -70,7 +70,10 @@ namespace chromium
 		Signal<std::shared_ptr<input::Mouse>>::Slot _rightDownSlot;
 		Signal<std::shared_ptr<input::Mouse>>::Slot _rightUpSlot;
 		Signal<std::shared_ptr<input::Mouse>>::Slot _middleDownSlot;
-		Signal<std::shared_ptr<input::Mouse>>::Slot _middleUpSlot;
+        Signal<std::shared_ptr<input::Mouse>>::Slot _middleUpSlot;
+        Signal<std::shared_ptr<input::Keyboard>>::Slot  _keyDownSlot;
+        Signal<std::shared_ptr<input::Keyboard>>::Slot  _keyUpSlot;
+        Signal<std::shared_ptr<input::Keyboard>, char>::Slot  _textInputSlot;
 
 		bool _enableInput;
 
@@ -78,6 +81,7 @@ namespace chromium
 		std::shared_ptr<render::AbstractContext> _context;
 		ChromiumPimpl* _impl;
 		Signal<std::shared_ptr<AbstractCanvas>, uint, uint>::Slot _canvasResizedSlot;
+        std::map<uint, bool> _keyIsDown;
 
 		IMPLEMENT_REFCOUNTING(ChromiumApp);
 	};

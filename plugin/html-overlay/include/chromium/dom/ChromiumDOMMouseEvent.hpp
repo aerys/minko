@@ -20,23 +20,32 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #if defined(CHROMIUM)
 #pragma once
 
+#if MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
+#pragma warning(push)
+#pragma warning(disable:4250)
+#endif
+
 #include "minko/Common.hpp"
 #include "minko/dom/AbstractDOMMouseEvent.hpp"
 #include "minko/dom/AbstractDOMElement.hpp"
+#include "chromium/dom/ChromiumDOMEvent.hpp"
+#include "chromium/dom/ChromiumDOMObject.hpp"
 #include "include/cef_render_process_handler.h"
 
 namespace chromium
 {
 	namespace dom
 	{
-		class ChromiumDOMMouseEvent : public minko::dom::AbstractDOMMouseEvent,
-			public std::enable_shared_from_this<ChromiumDOMMouseEvent>
+        class ChromiumDOMMouseEvent :
+            public ChromiumDOMEvent,
+            public virtual minko::dom::AbstractDOMMouseEvent
 		{
 		public:
 			typedef std::shared_ptr<ChromiumDOMMouseEvent> Ptr;
+
 			~ChromiumDOMMouseEvent();
 
-		private:
+        protected:
 			ChromiumDOMMouseEvent(CefRefPtr<CefV8Value>, CefRefPtr<CefV8Context>);
 			
 		public:
@@ -44,74 +53,53 @@ namespace chromium
 			Ptr
 			create(CefRefPtr<CefV8Value>, CefRefPtr<CefV8Context>);
 
-			static
-			void
-			clearAll();
-
-			void
-			clear();
-
-			void
-			preventDefault();
-
-			void
-			stopPropagation();
-
-			std::string
-			accessor();
-
-			std::string
-			type();
-
-			minko::dom::AbstractDOMElement::Ptr
-			target();
-
+            inline
 			int
-			clientX();
+            clientX()
+            {
+                return getProperty<int>("clientX");
+            }
 
+            inline
 			int
-			clientY();
+			clientY()
+            {
+                return getProperty<int>("clientY");
+            }
 
+            inline
 			int
-			pageX();
+			pageX()
+            {
+                return getProperty<int>("pageX");
+            }
 
+            inline
+            int
+            pageY()
+            {
+                return getProperty<int>("pageY");
+            }
+            
+            inline
 			int
-			pageY();
+			screenX()
+            {
+                return getProperty<int>("screenX");
+            }
 
-
+            inline
 			int
-			layerX();
-
-			int
-			layerY();
-
-
-			int
-			screenX();
-
-			int
-			screenY();
-
-		private:
-
-			CefRefPtr<CefV8Value>
-			getFunction(std::string name);
-
-			CefRefPtr<CefV8Value>
-			getProperty(std::string name);
-
-		private:
-			static
-			std::list<Ptr> _events;
-
-			std::atomic<bool> _blocker;
-
-			CefRefPtr<CefV8Context> _v8Context;
-
-			bool _cleared;
-
-			CefRefPtr<CefV8Value> _v8NodeObject;
+            screenY()
+            {
+                return getProperty<int>("screenY");
+            }
 		};
 	}
 }
+
+#if MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
+#pragma warning(pop)
+#endif
+
 #endif
