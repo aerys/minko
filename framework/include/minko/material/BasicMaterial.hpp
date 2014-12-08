@@ -51,7 +51,11 @@ namespace minko
 			Ptr
 			create()
 			{
-                return std::shared_ptr<BasicMaterial>(new BasicMaterial());
+				auto instance = Ptr(new BasicMaterial());
+
+				instance->initialize();
+
+				return instance;
 			}
 
 			BasicMaterial&
@@ -206,6 +210,9 @@ namespace minko
 
 		protected:
 			BasicMaterial();
+
+            void
+            initialize();
 		};
 	}
 }

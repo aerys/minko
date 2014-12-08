@@ -32,7 +32,12 @@ using namespace minko::render;
 BasicMaterial::BasicMaterial():
 	Material("BasicMaterial")
 {
-	//diffuseColor(0xffffffff);
+}
+
+void
+BasicMaterial::initialize()
+{
+	diffuseColor(0xffffffff);
 }
 
 BasicMaterial&
