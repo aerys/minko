@@ -17,13 +17,11 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "AmbientLightTest.hpp"
-
 #include "minko/MinkoTests.hpp"
+#include "AmbientLightTest.hpp"
 
 using namespace minko;
 using namespace minko::component;
-using namespace minko::math;
 using namespace minko::scene;
 
 using namespace minko;
@@ -208,13 +206,11 @@ TEST_F(AmbientLightTest, Clone)
 	auto sceneManager = SceneManager::create(MinkoTests::canvas());
 	auto root = Node::create()->addComponent(sceneManager);
 	auto n1 = Node::create()
-		->addComponent(Transform::create(Matrix4x4::create()))
+		->addComponent(Transform::create(math::mat4()))
 		->addComponent(AmbientLight::create(10.f));
 	
-
-	auto n2 = n1->clone(CloneOption::DEEP);
-	n2->component<AmbientLight>()->ambient(.1f);
-	
+    auto n2 = n1->clone(CloneOption::DEEP);
+    n2->component<AmbientLight>()->ambient(.1f);
 	
 	root->addChild(n1);
 	root->addChild(n2);

@@ -131,7 +131,7 @@ TEST_F(NodeTest, ComponentAdded)
 {
     auto node = Node::create();
     auto componentAdded = false;
-    auto comp = component::SceneManager::create(MinkoTests::context());
+    auto comp = component::SceneManager::create(MinkoTests::canvas());
     auto _ = node->componentAdded().connect([&](Node::Ptr n, Node::Ptr t, component::AbstractComponent::Ptr c)
     {
         componentAdded = node == n && node == t && c == comp;
@@ -148,7 +148,7 @@ TEST_F(NodeTest, ComponentRemoved)
 {
     auto node = Node::create();
     auto componentRemoved = false;
-    auto comp = component::SceneManager::create(MinkoTests::context());
+    auto comp = component::SceneManager::create(MinkoTests::canvas());
     auto _ = node->componentAdded().connect([&](Node::Ptr n, Node::Ptr t, component::AbstractComponent::Ptr c)
     {
         componentRemoved = node == n && node == t && c == comp;

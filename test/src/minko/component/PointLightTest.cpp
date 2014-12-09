@@ -18,12 +18,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "PointLightTest.hpp"
-
 #include "minko/MinkoTests.hpp"
 
 using namespace minko;
 using namespace minko::component;
-using namespace minko::math;
 using namespace minko::scene;
 
 TEST_F(PointLightTest, Create)
@@ -251,7 +249,7 @@ TEST_F(PointLightTest, Clone)
 	auto sceneManager = SceneManager::create(MinkoTests::canvas());
 	auto root = Node::create()->addComponent(sceneManager);
 	auto n1 = Node::create()
-		->addComponent(Transform::create(Matrix4x4::create()))
+		->addComponent(Transform::create(math::mat4()))
 		->addComponent(PointLight::create(10.f));
 	
 
@@ -271,18 +269,18 @@ TEST_F(PointLightTest, Clone)
 
 	PointLight::Ptr l1 = n1->component<PointLight>();
 	PointLight::Ptr l2 = n2->component<PointLight>();	
-	ASSERT_TRUE(l1->attenuationCoefficients()->equals(l2->attenuationCoefficients()));
+	ASSERT_TRUE(l1->attenuationCoefficients() == l2->attenuationCoefficients());
 
-	Vector3::Ptr newCoeffs = Vector3::create(1.5, 1, 1.5);
+	auto newCoeffs = math::vec3(1.5, 1, 1.5);
 
 	l2->attenuationCoefficients(newCoeffs);
-	ASSERT_TRUE(l2->attenuationCoefficients()->equals(newCoeffs));
-	ASSERT_FALSE(l1->attenuationCoefficients()->equals(l2->attenuationCoefficients()));
+	ASSERT_TRUE(l2->attenuationCoefficients() == newCoeffs);
+	ASSERT_FALSE(l1->attenuationCoefficients() == l2->attenuationCoefficients());
 
-	ASSERT_TRUE(l1->position()->equals(l2->position()));
+	ASSERT_TRUE(l1->position() == l2->position());
 
-	n2->component<Transform>()->matrix()->prependTranslation(Vector3::create(-5., 0, 2));
+    n2->component<Transform>()->matrix(math::translate(math::vec3(-5., 0, 2)) * n2->component<Transform>()->matrix());
 	sceneManager->nextFrame(0.0f, 0.0f);
 
-	ASSERT_FALSE(l1->position()->equals(l2->position()));	
+	ASSERT_FALSE(l1->position() == l2->position());	
 }

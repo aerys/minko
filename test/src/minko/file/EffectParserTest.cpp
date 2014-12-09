@@ -28,7 +28,7 @@ using namespace minko::file;
 Effect::Ptr
 EffectParserTest::loadEffect(const std::string& filename)
 {   
-    auto lib = AssetLibrary::create(MinkoTests::context());
+    auto lib = AssetLibrary::create(MinkoTests::canvas()->context());
 
     lib->loader()->queue(filename);
     lib->loader()->load();
