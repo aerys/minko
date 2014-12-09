@@ -1274,14 +1274,15 @@ AbstractASSIMPParser::convert(const aiQuaternion& quaternion)
 math::mat4
 AbstractASSIMPParser::convert(const aiMatrix4x4& matrix)
 {
-    // TODO #glm mat4 may have to be transposed
+    // Assimp aiMatrix4x4 are row-major meanwhile
+    // glm mat4 are column-major (so are OpenGL matrices)
 
     return math::mat4(
-		matrix.a1, matrix.a2, matrix.a3, matrix.a4,
-        matrix.b1, matrix.b2, matrix.b3, matrix.b4,
-        matrix.c1, matrix.c2, matrix.c3, matrix.c4,
-        matrix.d1, matrix.d2, matrix.d3, matrix.d4
-	);
+        matrix.a1, matrix.b1, matrix.c1, matrix.d1,
+        matrix.a2, matrix.b2, matrix.c2, matrix.d2,
+        matrix.a3, matrix.b3, matrix.c3, matrix.d3,
+        matrix.a4, matrix.b4, matrix.c4, matrix.d4
+    );
 }
 
 /*static*/
@@ -1386,7 +1387,7 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 			render::AbstractTexture::Ptr texture = _assetLibrary->texture(std::string(path.data));
 
 			if (texture)
-				material->data()->set(textureName, texture->id());
+				material->data()->set(textureName, texture->sampler());
 		}
 	}
 
