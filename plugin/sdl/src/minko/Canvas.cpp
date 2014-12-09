@@ -772,6 +772,7 @@ Canvas::step()
         }
 #endif // MINKO_PLATFORM_HTML5
 
+#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
         case SDL_APP_DIDENTERBACKGROUND:
             suspended()->execute(shared_from_this());
             break;
@@ -779,6 +780,7 @@ Canvas::step()
         case SDL_APP_DIDENTERFOREGROUND:
             resumed()->execute(shared_from_this());
             break;
+#endif // MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
 
         default:
             break;
