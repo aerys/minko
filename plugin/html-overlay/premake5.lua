@@ -7,7 +7,7 @@ end
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	minko.plugin.enable("sdl")
-	minko.plugin.enable("lua")
+	--minko.plugin.enable("lua")
 
 	files {
 		"lib/cef3/include/**.hpp",
@@ -19,6 +19,11 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"src/minko/**.hpp"
 	}
 
+	excludes {
+		"include/minko/lua/**",
+		"src/minko/lua/**"
+	}
+	
 	includedirs { "include" }
 
 	-- Chromium Embedded Framework CPP wrapper (windows, linux)
