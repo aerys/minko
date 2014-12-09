@@ -1,0 +1,7 @@
+{
+    "states" : {
+        "depthMask": false
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

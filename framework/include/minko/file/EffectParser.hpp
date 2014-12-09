@@ -53,7 +53,7 @@ namespace minko
             typedef std::shared_ptr<render::Shader>						    ShaderPtr;
             typedef std::shared_ptr<file::Options>						    OptionsPtr;
             typedef std::unordered_map<std::string, AbstractTexturePtr>     TexturePtrMap;
-            typedef Signal<LoaderPtr, const Error&>::Slot             LoaderErrorSlot;
+            typedef Signal<LoaderPtr, const Error&>::Slot                   LoaderErrorSlot;
             typedef std::vector<PassPtr>                                    Technique;
             typedef std::unordered_map<std::string, Technique>              Techniques;
             typedef std::vector<PassPtr>                                    Passes;
@@ -134,7 +134,7 @@ namespace minko
 			static std::unordered_map<std::string, render::CompareMode>			_compareFuncMap;
 			static std::unordered_map<std::string, render::StencilOperation>	_stencilOpMap;
 			static std::unordered_map<std::string, float>						_priorityMap;
-            static std::array<std::string, 14>                                  _stateNames;
+            static std::array<std::string, 18>                                  _stateNames;
 
 		private:
             std::string						_filename;
@@ -201,7 +201,7 @@ namespace minko
             initializePriorityMap();
 
             static
-            std::array<std::string, 14>
+            std::array<std::string, 18>
             initializeStateNames();
 
             float
@@ -289,10 +289,14 @@ namespace minko
                            bool&                colorMask) const;
 
             void
-            parseDepthTest(const Json::Value&	node,
+            parseDepthMask(const Json::Value&	node,
                            const Scope&         scope,
-                           bool&                depthMask,
-                           render::CompareMode& depthFunc);
+                           bool&                depthMask);
+
+            void
+            parseDepthFunction(const Json::Value&	node,
+                               const Scope&         scope,
+                               render::CompareMode& depthFunction);
 
             void
             parseTriangleCulling(const Json::Value&         node,
