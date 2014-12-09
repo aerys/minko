@@ -683,6 +683,48 @@ OpenGLES2Context::createCompressedTexture(TextureType     type,
     _currentTextureFilter[texture]    = TextureFilter::NEAREST;
     _currentMipFilter[texture]        = MipFilter::NONE;
 
+    const auto oglFormat = availableTextureFormats().at(format);
+
+    if (mipMapping)
+    {
+        uint level = 0;
+        uint h = height;
+        uint w = width;
+
+        for (uint size = width > height ? width : height;
+             size > 0;
+             size = size >> 1, w = w >> 1, h = h >> 1)
+        {
+             if (type == TextureType::Texture2D)
+                glTexImage2D(GL_TEXTURE_2D, level, oglFormat, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            else
+            {
+                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, level, oglFormat, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+                glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, level, oglFormat, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, level, oglFormat, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+                glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, level, oglFormat, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, level, oglFormat, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+                glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, level, oglFormat, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            }
+
+            ++level;
+        }
+    }
+    else
+    {
+        if (type == TextureType::Texture2D)
+            glTexImage2D(GL_TEXTURE_2D, 0, oglFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+        else
+        {
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, oglFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, oglFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, oglFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, oglFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, oglFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, oglFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+        }
+    }
+
     checkForErrors();
 
     return texture;
@@ -774,7 +816,7 @@ OpenGLES2Context::uploadCompressedTexture2dData(uint          texture,
     const auto& formats = availableTextureFormats();
 
     glBindTexture(GL_TEXTURE_2D, texture);
-    glCompressedTexImage2D(GL_TEXTURE_2D, mipLevel, formats.at(format), width, height, 0, size, data);
+    glCompressedTexSubImage2D(GL_TEXTURE_2D, mipLevel, 0, 0, width, height, formats.at(format), size, data);
 
     _currentBoundTexture = texture;
 
@@ -1032,16 +1074,53 @@ OpenGLES2Context::setProgram(const uint program)
 	checkForErrors();
 }
 
+static
+std::string
+glslVersionString()
+{
+    auto fullVersion = std::string(reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION)));
+
+    if (fullVersion.empty())
+        return "";
+
+    auto glslVersion = std::string();
+
+    const auto minorVersionSeparatorPosition = fullVersion.find_first_of(".");
+
+    if (minorVersionSeparatorPosition == std::string::npos)
+        return std::string(0, fullVersion.find_first_of(" "));
+
+    glslVersion += std::string(fullVersion.begin(), fullVersion.begin() + minorVersionSeparatorPosition);
+
+    const auto minorVersionPosition = minorVersionSeparatorPosition + 1;
+    const auto buildVersionSeparatorPosition = fullVersion.find_first_of(". ", minorVersionPosition);
+
+    if (buildVersionSeparatorPosition == std::string::npos)
+        return glslVersion + "00";
+
+    glslVersion += std::string(
+        fullVersion.begin() + minorVersionPosition,
+        fullVersion.begin() + buildVersionSeparatorPosition
+    );
+
+    return glslVersion;
+}
+
 void
 OpenGLES2Context::setShaderSource(const uint shader,
 								  const std::string& source)
 {
+    // TODO fixme
+    // temporary allowing version > 120
+    // implement new *Context to properly handle it
+
 #ifdef GL_ES_VERSION_2_0
 	std::string src = "#version 100\n" + source;
 #else
-	std::string src = "#version 120\n" + source;
+    std::string src = std::string("#version ") + glslVersionString() + std::string("\n") + source;
 #endif // GL_ES_VERSION_2_0
-	const char* sourceString = src.c_str();
+
+    const char* sourceString = src.c_str();
 
 	glShaderSource(shader, 1, &sourceString, 0);
 

@@ -4,7 +4,10 @@
 	precision mediump float;
 #endif
 
-#pragma include "Fog.function.glsl"
+#pragma include "TextureLod.extension.glsl"
+
+#pragma include "Fog.function.glsl")
+#pragma include "TextureLod.function.glsl"
 
 uniform vec4        diffuseColor;
 uniform sampler2D   diffuseMap;
@@ -13,6 +16,10 @@ uniform samplerCube	diffuseCubeMap;
 // alpha
 uniform sampler2D 	alphaMap;
 uniform float 		alphaThreshold;
+
+// texture lod
+uniform float 		diffuseMapMaxAvailableLod;
+uniform vec2 		diffuseMapSize;
 
 varying vec2 vVertexUV;
 varying vec3 vVertexUVW;
@@ -24,7 +31,11 @@ void main(void)
 	#if defined(DIFFUSE_CUBEMAP)
 		diffuse	= textureCube(diffuseCubeMap, vVertexUVW);
 	#elif defined(DIFFUSE_MAP)
-		diffuse = texture2D(diffuseMap, vVertexUV);
+		#ifdef DIFFUSE_MAP_LOD
+			diffuse = texturelod_texture2D(diffuseMap, vVertexUV, diffuseMapSize, 0.0, diffuseMapMaxAvailableLod, diffuseColor);
+		#else
+			diffuse = texture2D(diffuseMap, vVertexUV);
+		#endif
 	#endif
 
 	#ifdef ALPHA_MAP
