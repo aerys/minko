@@ -477,7 +477,7 @@ AbstractASSIMPParser::createCameras(const aiScene* scene)
 				aiCamera->mClipPlaneFar
 			))
 			->addComponent(Transform::create(
-                math::lookAt(position, target, up)
+                math::inverse(math::lookAt(position, target, up))
 			));
 
 		scene::Node::Ptr parentNode = !cameraName.empty()
@@ -1148,8 +1148,6 @@ AbstractASSIMPParser::sample(const aiNodeAnim*				nodeAnimation,
 		// sample scaling from keys
 		scaling = sample(nodeAnimation->mScalingKeys, scalingKeyTimeFactors, time);
 
-        // TODO #glm mat4 may have to be transposed
-
 		// recompose the interpolated matrix at the specified frame
         matrices[frameId] = math::mat4(
 				scaling.x * rotationMatrix[0][0], scaling.y * rotationMatrix[0][1], scaling.z * rotationMatrix[0][2],  position.x,
@@ -1298,8 +1296,6 @@ AbstractASSIMPParser::convert(const aiVector3D&		scaling,
 
     rotationMatrix              = math::mat4_cast(convert(quaternion));
 	const auto& rotationData	= rotationMatrix;
-
-    // TODO #glm mat4 may have to be transposed
 
     return math::mat4(
 		scaling.x * rotationData[0][0], scaling.y * rotationData[0][1], scaling.z * rotationData[0][2],  translation.x,
