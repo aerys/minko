@@ -72,6 +72,13 @@ namespace minko
 			Ptr
 			attenuationCoefficients(const math::vec3& coef);
 
+            inline
+            math::vec3
+            position() const
+            {
+                return data()->get<math::vec3>("position");
+            }
+
 		protected:
 			void
             updateModelToWorldMatrix(const math::mat4& modelToWorld);
