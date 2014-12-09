@@ -74,6 +74,32 @@ TEST_F(EffectParserTest, OneUniformBinding)
     ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().bindings.at("uDiffuseMap").source, data::Binding::Source::TARGET);
 }
 
+TEST_F(EffectParserTest, StatesDefaultValues)
+{
+    auto fx = loadEffect("effect/StatesDefaultValues.effect");
+    auto& states = fx->techniques().at("default")[0]->states();
+
+    ASSERT_EQ(states.priority(), States::DEFAULT_PRIORITY);
+    ASSERT_EQ(states.zSorted(), States::DEFAULT_ZSORTED);
+    ASSERT_EQ(states.blendingSourceFactor(), States::DEFAULT_BLENDING_SOURCE);
+    ASSERT_EQ(states.blendingDestinationFactor(), States::DEFAULT_BLENDING_DESTINATION);
+    ASSERT_EQ(states.colorMask(), States::DEFAULT_COLOR_MASK);
+    ASSERT_EQ(states.depthMask(), States::DEFAULT_DEPTH_MASK);
+    ASSERT_EQ(states.depthFunction(), States::DEFAULT_DEPTH_FUNCTION);
+    ASSERT_EQ(states.triangleCulling(), States::DEFAULT_TRIANGLE_CULLING);
+    ASSERT_EQ(states.stencilFunction(), States::DEFAULT_STENCIL_FUNCTION);
+    ASSERT_EQ(states.stencilReference(), States::DEFAULT_STENCIL_REFERENCE);
+    ASSERT_EQ(states.stencilMask(), States::DEFAULT_STENCIL_MASK);
+    ASSERT_EQ(states.stencilFailOperation(), States::DEFAULT_STENCIL_FAIL_OP);
+    ASSERT_EQ(states.stencilZFailOperation(), States::DEFAULT_STENCIL_ZFAIL_OP);
+    ASSERT_EQ(states.stencilZPassOperation(), States::DEFAULT_STENCIL_ZPASS_OP);
+    ASSERT_EQ(states.scissorTest(), States::DEFAULT_SCISSOR_TEST);
+    ASSERT_EQ(states.scissorBox(), States::DEFAULT_SCISSOR_BOX);
+
+    // FIXME : test render target value
+    // FIXME : test render states values
+}
+
 TEST_F(EffectParserTest, PriorityFloatDefaultValue)
 {
     auto fx = loadEffect("effect/PriorityFloatDefaultValue.effect");

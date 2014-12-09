@@ -41,14 +41,14 @@ PositionalSound::update(scene::Node::Ptr target)
 
     // To compute the 3D volume, we need:
     // - the camera position in world space
-    auto cameraPos = math::vec3((_camera->component<component::Transform>()->modelToWorldMatrix() * math::vec4(0.f)).xyz);
+    auto cameraPos = math::vec3((_camera->component<component::Transform>()->modelToWorldMatrix() * math::vec4()));
     // - the target in world space
-    auto targetPos = math::vec3((target->component<component::Transform>()->modelToWorldMatrix() * math::vec4(0.f)).xyz);
+    auto targetPos = math::vec3((target->component<component::Transform>()->modelToWorldMatrix() * math::vec4()));
     auto direction = cameraPos - targetPos;
     // - the distance betwen the camera and the target
     auto distance = math::length(direction);
     // - the direction the camera is looking to
-    auto front = math::vec3((_camera->component<component::Transform>()->modelToWorldMatrix() * math::vec4(up, 1.f)).xyz);
+    auto front = math::vec3((_camera->component<component::Transform>()->modelToWorldMatrix() * math::vec4(up, 1.f)));
 
     // Normalize vectors to use the dot product operation.
     math::normalize(front);

@@ -19,7 +19,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "emscripten/dom/EmscriptenDOMMouseEvent.hpp"
-#include "emscripten/dom/EmscriptenDOMElement.hpp"
 #include "emscripten/emscripten.h"
 
 using namespace minko;
@@ -27,98 +26,38 @@ using namespace minko::dom;
 using namespace emscripten;
 using namespace emscripten::dom;
 
-void
-EmscriptenDOMMouseEvent::preventDefault()
-{
-	std::cerr << "Warning : AbstractDOMEvent::preventDefault will have no effect" << std::endl;
-	std::string eval = _jsAccessor + ".preventDefault()";
-	emscripten_run_script(eval.c_str());
-}
-
-void
-EmscriptenDOMMouseEvent::stopPropagation()
-{
-	std::cerr << "Warning : AbstractDOMEvent::stopPropagation will have no effect" << std::endl;
-	std::string eval = _jsAccessor + ".stopPropagation()";
-	emscripten_run_script(eval.c_str());
-}
-
-std::string
-EmscriptenDOMMouseEvent::type()
-{
-	std::string eval = "(" + _jsAccessor + ".type)";
-
-	char* result = emscripten_run_script_string(eval.c_str());
-
-	return std::string(result);
-}
-
-minko::dom::AbstractDOMElement::Ptr
-EmscriptenDOMMouseEvent::target()
-{
-	return EmscriptenDOMElement::getDOMElement(_jsAccessor + ".target");
-}
-
 int
 EmscriptenDOMMouseEvent::clientX()
 {
-	std::string eval = "(" + _jsAccessor + ".clientX)";
-	int result = emscripten_run_script_int(eval.c_str());
-	return result;
+	return getProperty("clientX");
 }
 
 int
 EmscriptenDOMMouseEvent::clientY()
 {
-	std::string eval = "(" + _jsAccessor + ".clientY)";
-	int result = emscripten_run_script_int(eval.c_str());
-	return result;
+	return getProperty("clientY");
 }
 
 int
 EmscriptenDOMMouseEvent::pageX()
 {
-	std::string eval = "(" + _jsAccessor + ".pageX)";
-	int result = emscripten_run_script_int(eval.c_str());
-	return result;
+	return getProperty("pageX");
 }
 
 int
 EmscriptenDOMMouseEvent::pageY()
 {
-	std::string eval = "(" + _jsAccessor + ".pageY)";
-	int result = emscripten_run_script_int(eval.c_str());
-	return result;
-}
-
-int
-EmscriptenDOMMouseEvent::layerX()
-{
-	std::string eval = "(" + _jsAccessor + ".layerX)";
-	int result = emscripten_run_script_int(eval.c_str());
-	return result;
-}
-
-int
-EmscriptenDOMMouseEvent::layerY()
-{
-	std::string eval = "(" + _jsAccessor + ".layerY)";
-	int result = emscripten_run_script_int(eval.c_str());
-	return result;
+	return getProperty("pageY");
 }
 
 int
 EmscriptenDOMMouseEvent::screenX()
 {
-	std::string eval = "(" + _jsAccessor + ".screenX)";
-	int result = emscripten_run_script_int(eval.c_str());
-	return result;
+	return getProperty("screenX");
 }
 
 int
 EmscriptenDOMMouseEvent::screenY()
 {
-	std::string eval = "(" + _jsAccessor + ".screenY)";
-	int result = emscripten_run_script_int(eval.c_str());
-	return result;
+	return getProperty("screenY");
 }

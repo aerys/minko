@@ -96,6 +96,7 @@ ChromiumDOM::init(CefRefPtr<CefV8Context> context, CefRefPtr<CefFrame> frame)
 
 	addLoadEventListener();
 	addSendMessageFunction();
+    addDispatchMessageFunction();
 
 	_v8Context->Exit();
 	_init = true;
@@ -122,13 +123,13 @@ ChromiumDOM::body()
 }
 
 void
-ChromiumDOM::sendMessage(std::string message, bool async)
+ChromiumDOM::sendMessage(const std::string& message, bool async)
 {
 	ChromiumDOMElement::Ptr element;
 	if (CefCurrentlyOn(TID_RENDERER))
 	{
 		_v8Context->Enter();
-		CefRefPtr<CefV8Value> func = _minkoObject->GetValue("onmessage");
+		CefRefPtr<CefV8Value> func = _minkoObject->GetValue("dispatchMessage");
 
 		if (func->IsFunction())
 		{
@@ -160,7 +161,7 @@ ChromiumDOM::sendMessage(std::string message, bool async)
 }
 
 void
-ChromiumDOM::eval(std::string message, bool async)
+ChromiumDOM::eval(const std::string& message, bool async)
 {
 	ChromiumDOMElement::Ptr element;
 	if (CefCurrentlyOn(TID_RENDERER))
@@ -202,6 +203,9 @@ ChromiumDOM::addSendMessageFunction()
 	// [javascript] Minko.sendMessage('message');
 	CefRefPtr<CefV8Value> sendMessageFunction = CefV8Value::CreateFunction(sendMessageFunctionName, _v8Handler.get());
 	_minkoObject->SetValue(sendMessageFunctionName, sendMessageFunction, V8_PROPERTY_ATTRIBUTE_NONE);
+
+	CefRefPtr<CefV8Value> alertFunction = CefV8Value::CreateFunction("alert", _v8Handler.get());
+	window()->SetValue("alert", alertFunction, V8_PROPERTY_ATTRIBUTE_NONE);
 	
 	_onmessageSlot = _v8Handler->received()->connect([=](std::string functionName, CefV8ValueList arguments)
 	{
@@ -214,7 +218,52 @@ ChromiumDOM::addSendMessageFunction()
 			_receivedMessages.push_back(message);
 			_receivedMessagesMutex.unlock();
 		}
+		else if (functionName == "alert")
+		{
+			CefRefPtr<CefV8Value> messageV8Value = arguments[0];
+			std::string message = messageV8Value->GetStringValue();
+
+			std::cout << "alert: " << message << std::endl;
+		}
 	});
+}
+
+void
+ChromiumDOM::addDispatchMessageFunction()
+{
+    std::string code = "";
+    code += "Minko.listeners = {};";
+    code += "Minko.addEventListener = function(type, callback)";
+    code += "{";
+    code += "   if (!(Minko.listeners[type]))";
+    code += "       Minko.listeners[type] = [];";
+
+    code += "   Minko.listeners[type].push(callback);";
+    code += "};";
+
+    code += "Minko.dispatchEvent = function(event)";
+    code += "{";
+    code += "   var callbacks = Minko.listeners[event.type];";
+
+    code += "   if (!callbacks)";
+    code += "       return;";
+
+    code += "   for(var i = 0; i < callbacks.length; ++i)";
+    code += "       callbacks[i](event);";
+    code += "};";
+
+    code += "Minko.dispatchMessage = function(message)";
+    code += "{";
+    code += "	var ev = document.createEvent(\"Event\");";
+    code += "	ev.initEvent(\"message\", true, true);";
+    code += "	ev.message = message;";
+    code += "	Minko.dispatchEvent(ev);";
+
+    code += "   if(Minko.onmessage)";
+    code += "	    Minko.onmessage(message);";
+    code += "};";
+    
+    eval(code);
 }
 
 void
@@ -273,7 +322,7 @@ ChromiumDOM::update()
 }
 
 AbstractDOMElement::Ptr
-ChromiumDOM::createElement(std::string tag)
+ChromiumDOM::createElement(const std::string& tag)
 {
 	ChromiumDOMElement::Ptr element;
 	if (CefCurrentlyOn(TID_RENDERER))
@@ -308,7 +357,7 @@ ChromiumDOM::createElement(std::string tag)
 }
 
 AbstractDOMElement::Ptr
-ChromiumDOM::getElementById(std::string id)
+ChromiumDOM::getElementById(const std::string& id)
 {
 	ChromiumDOMElement::Ptr element;
 	if (CefCurrentlyOn(TID_RENDERER))
@@ -343,7 +392,7 @@ ChromiumDOM::getElementById(std::string id)
 }
 
 std::vector<AbstractDOMElement::Ptr>
-ChromiumDOM::getElementsByClassName(std::string className)
+ChromiumDOM::getElementsByClassName(const std::string& className)
 {
 	std::vector<AbstractDOMElement::Ptr> list;
 
@@ -378,7 +427,7 @@ ChromiumDOM::getElementsByClassName(std::string className)
 }
 
 std::vector<AbstractDOMElement::Ptr>
-ChromiumDOM::getElementsByTagName(std::string tagName)
+ChromiumDOM::getElementsByTagName(const std::string& tagName)
 {
 	std::vector<AbstractDOMElement::Ptr> list;
 

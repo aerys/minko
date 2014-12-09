@@ -97,6 +97,8 @@ static bool logging = false;
     _responseCallbacks = nil;
     _messageHandlers = nil;
     _messageHandler = nil;
+    
+    [super dealloc];
 }
 
 - (void)_sendData:(id)data responseCallback:(WVJBResponseCallback)responseCallback handlerName:(NSString*)handlerName {
@@ -259,6 +261,11 @@ static bool logging = false;
         NSString *filePath = [bundle pathForResource:@"WebViewJavascriptBridge.js" ofType:@"txt"];
         NSString *js = [NSString stringWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:nil];
         [webView stringByEvaluatingJavaScriptFromString:js];
+
+        NSString *minkoFilePath = [bundle pathForResource:@"asset/script/minko.overlay" ofType:@"js"];
+        NSString *minkoJs = [NSString stringWithContentsOfFile:minkoFilePath encoding:NSUTF8StringEncoding error:nil];
+        [webView stringByEvaluatingJavaScriptFromString:minkoJs];
+        [webView stringByEvaluatingJavaScriptFromString:@"Minko.init('apple');"];
     }
     
     if (_startupMessageQueue) {
@@ -319,7 +326,6 @@ static bool logging = false;
 }
 
 
-
 /* Platform specific internals: iOS
  **********************************/
 #elif defined WVJB_PLATFORM_IOS
@@ -347,6 +353,11 @@ static bool logging = false;
         NSString *filePath = [bundle pathForResource:@"WebViewJavascriptBridge.js" ofType:@"txt"];
         NSString *js = [NSString stringWithContentsOfFile:filePath encoding:NSUTF8StringEncoding error:nil];
         [webView stringByEvaluatingJavaScriptFromString:js];
+
+        NSString *minkoFilePath = [bundle pathForResource:@"asset/script/minko.overlay" ofType:@"js"];
+        NSString *minkoJs = [NSString stringWithContentsOfFile:minkoFilePath encoding:NSUTF8StringEncoding error:nil];
+        [webView stringByEvaluatingJavaScriptFromString:minkoJs];
+        [webView stringByEvaluatingJavaScriptFromString:@"Minko.init('apple');"];
     }
     
     if (_startupMessageQueue) {

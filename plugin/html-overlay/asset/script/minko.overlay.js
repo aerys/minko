@@ -124,6 +124,17 @@ Minko.addEventListener = function(type, callback)
    Minko.listeners[type].push(callback);
 };
 
+Minko.removeEventListener = function(type, callback)
+{
+   if (!(Minko.listeners[type]))
+       Minko.listeners[type] = [];
+
+	var index = Minko.listeners[type].indexOf(callback);
+	
+	if (index != -1)
+		Minko.listeners[type].splice(index, 1);
+};
+
 Minko.dispatchEvent = function(event)
 {
    var callbacks = Minko.listeners[event.type];

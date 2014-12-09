@@ -152,7 +152,6 @@ namespace minko
 				typedef std::shared_ptr<SceneManager>				SceneMgrPtr;
 				typedef std::shared_ptr<Renderer>					RendererCtrlPtr;
                 typedef std::shared_ptr<render::AbstractTexture>    AbsTexPtr;
-                typedef std::shared_ptr<SceneManager>               SceneMgrPtr;
 				typedef Signal<RendererCtrlPtr>::Slot 				EnterFrameCallback;
 				typedef std::shared_ptr<render::AbstractTexture> 	AbsTexturePtr;
 				typedef Signal<SceneMgrPtr, uint, AbsTexturePtr> 	RenderingBeginSignal;

@@ -26,18 +26,14 @@ namespace minko
 {
 	namespace dom
 	{
-		class AbstractDOMTouchEvent : public AbstractDOMMouseEvent
+		class AbstractDOMTouchEvent : public virtual AbstractDOMMouseEvent
 		{
 		public:
 			typedef std::shared_ptr<AbstractDOMTouchEvent> Ptr;
             
             virtual
             int
-            fingerId() = 0;
-            
-            virtual
-            std::string&
-            jsAccessor() = 0;
+            identifier() = 0;
 		};
 	}
 }

@@ -26,7 +26,7 @@ using namespace minko::dom;
 using namespace emscripten;
 using namespace emscripten::dom;
 
-EmscriptenDOM::EmscriptenDOM(std::string jsAccessor) :
+EmscriptenDOM::EmscriptenDOM(const std::string& jsAccessor) :
 	_initialized(false),
 	_onload(Signal<AbstractDOM::Ptr, std::string>::create()),
 	_onmessage(Signal<AbstractDOM::Ptr, std::string>::create()),
@@ -35,16 +35,20 @@ EmscriptenDOM::EmscriptenDOM(std::string jsAccessor) :
 }
 
 EmscriptenDOM::Ptr
-EmscriptenDOM::create(std::string jsAccessor)
+EmscriptenDOM::create(const std::string& jsAccessor)
 {
 	EmscriptenDOM::Ptr dom(new EmscriptenDOM(jsAccessor));
 	return dom;
 }
 
 void
-EmscriptenDOM::sendMessage(std::string message, bool async)
+EmscriptenDOM::sendMessage(const std::string& message, bool async)
 {
-	std::string eval = "if (" + _jsAccessor + " !== undefined && " + _jsAccessor + ".window !== undefined && " + _jsAccessor + ".window.Minko !== undefined && " + _jsAccessor + ".window.Minko.onmessage !== undefined) " + _jsAccessor + ".window.Minko.onmessage('" + message + "');";
+	std::string s = message;
+	s = std::replaceAll(s, "\\", "\\\\");
+	s = std::replaceAll(s, "'", "\\'");
+
+	std::string eval = "if (" + _jsAccessor + " !== undefined && " + _jsAccessor + ".window !== undefined && " + _jsAccessor + ".window.Minko !== undefined) " + _jsAccessor + ".window.Minko.dispatchMessage('" + s + "');";
 	//if (!async)
 		emscripten_run_script(eval.c_str());
 	//else
@@ -52,26 +56,30 @@ EmscriptenDOM::sendMessage(std::string message, bool async)
 }
 
 void
-EmscriptenDOM::eval(std::string message, bool async)
+EmscriptenDOM::eval(const std::string& code, bool async)
 {
+	std::string s = code;
+	s = std::replaceAll(s, "\\", "\\\\");
+	s = std::replaceAll(s, "'", "\\'");
+
 	//if (!async)
-		std::string ev = _jsAccessor + ".window.eval('" + message + "')";
+		std::string ev = _jsAccessor + ".window.eval('" + s + "')";
 		emscripten_run_script(ev.c_str());
 	//else
 	//	emscripten_async_run_script(message.c_str(), 1);
 }
 
 std::vector<AbstractDOMElement::Ptr>
-EmscriptenDOM::getElementList(std::string expression)
+EmscriptenDOM::getElementList(const std::string& expression)
 {
 	std::vector<minko::dom::AbstractDOMElement::Ptr> l;
 
-	expression = "Minko.tmpElements = " + expression;
+	std::string e = "Minko.tmpElements = " + expression;
 
-	emscripten_run_script(expression.c_str());
+	emscripten_run_script(e.c_str());
 
-	expression = "(Minko.tmpElements.length)";
-	int numElements = emscripten_run_script_int(expression.c_str());
+	e = "(Minko.tmpElements.length)";
+	int numElements = emscripten_run_script_int(e.c_str());
 
 	for(int i = 0; i < numElements; ++i)
 		l.push_back(EmscriptenDOMElement::getDOMElement("Minko.tmpElements[" + std::to_string(i) + "]"));
@@ -80,7 +88,7 @@ EmscriptenDOM::getElementList(std::string expression)
 }
 
 AbstractDOMElement::Ptr
-EmscriptenDOM::createElement(std::string element)
+EmscriptenDOM::createElement(const std::string& element)
 {
 	std::string eval = "Minko.tmpElement = " + _jsAccessor + ".document.createElement('" + element + "');";
 
@@ -90,7 +98,7 @@ EmscriptenDOM::createElement(std::string element)
 }
 
 AbstractDOMElement::Ptr
-EmscriptenDOM::getElementById(std::string id)
+EmscriptenDOM::getElementById(const std::string& id)
 {
 	std::string eval = "Minko.tmpElement = " + _jsAccessor + ".document.getElementById('" + id + "');";
 
@@ -100,13 +108,13 @@ EmscriptenDOM::getElementById(std::string id)
 }
 
 std::vector<AbstractDOMElement::Ptr>
-EmscriptenDOM::getElementsByClassName(std::string className)
+EmscriptenDOM::getElementsByClassName(const std::string& className)
 {
 	return getElementList(_jsAccessor + ".document.getElementsByClassName('" + className + "')");
 }
 
 std::vector<AbstractDOMElement::Ptr>
-EmscriptenDOM::getElementsByTagName(std::string tagName)
+EmscriptenDOM::getElementsByTagName(const std::string& tagName)
 {
 	return getElementList(_jsAccessor + ".document.getElementsByTagName('" + tagName + "')");
 }
@@ -166,9 +174,9 @@ EmscriptenDOM::initialized(bool v)
 	if (!_initialized && v)
 	{
 		std::string eval = "";
-		eval += _jsAccessor + ".window		= Minko.iframeElement.contentWindow;\n";
-		eval += _jsAccessor + ".document	= Minko.iframeElement.contentDocument;\n";
-		eval += _jsAccessor + ".body		= Minko.iframeElement.contentDocument.body;\n";
+		eval += _jsAccessor + ".window		= Minko.window;\n";
+		eval += _jsAccessor + ".document	= Minko.document;\n";
+		eval += _jsAccessor + ".body		= Minko.document.body;\n";
 		emscripten_run_script(eval.c_str());
 
 		_document	= EmscriptenDOMElement::create(_jsAccessor + ".document");

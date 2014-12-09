@@ -67,22 +67,22 @@ namespace chromium
 			init(CefRefPtr<CefV8Context>, CefRefPtr<CefFrame>);
 
 			void
-			sendMessage(std::string, bool async = true);
+			sendMessage(const std::string&, bool async = true);
 
 			void
-			eval(std::string, bool async = true);
+			eval(const std::string&, bool async = true);
 
 			minko::dom::AbstractDOMElement::Ptr
-			createElement(std::string);
+			createElement(const std::string&);
 
 			minko::dom::AbstractDOMElement::Ptr
-			getElementById(std::string);
+			getElementById(const std::string&);
 
 			std::vector<minko::dom::AbstractDOMElement::Ptr>
-			getElementsByClassName(std::string);
+			getElementsByClassName(const std::string&);
 
 			std::vector<minko::dom::AbstractDOMElement::Ptr>
-			getElementsByTagName(std::string);
+			getElementsByTagName(const std::string&);
 
 			minko::dom::AbstractDOMElement::Ptr
 			document();
@@ -98,6 +98,9 @@ namespace chromium
 
 			void
 			addSendMessageFunction();
+
+            void
+            addDispatchMessageFunction();
 			
 			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr
 			onload()
@@ -118,7 +121,7 @@ namespace chromium
 			}
 
 			bool
-				isMain();
+			isMain();
 
 			std::string
 			fileName()
@@ -137,7 +140,6 @@ namespace chromium
 			update();
 
 		private:
-
 			std::atomic<bool>	_blocker;
 
 			CefRefPtr<CefV8Context> _v8Context;

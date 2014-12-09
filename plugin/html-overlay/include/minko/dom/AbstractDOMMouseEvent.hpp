@@ -26,7 +26,7 @@ namespace minko
 {
 	namespace dom
 	{
-		class AbstractDOMMouseEvent : public AbstractDOMEvent
+		class AbstractDOMMouseEvent : public virtual AbstractDOMEvent
 		{
 		public:
 			typedef std::shared_ptr<AbstractDOMMouseEvent> Ptr;
@@ -46,15 +46,6 @@ namespace minko
 			virtual
 			int
 			pageY() = 0;
-
-
-			virtual
-			int
-			layerX() = 0;
-
-			virtual
-			int
-			layerY() = 0;
 
 			virtual
 			int
