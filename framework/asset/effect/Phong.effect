@@ -34,7 +34,7 @@
 		"environmentCubemap"	: "material[${materialUuid}].environmentCubemap",
 		"environmentAlpha"		: "material[${materialUuid}].environmentAlpha",
 		"shininess"				: "material[${materialUuid}].shininess",
-		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
+		"modelToWorldMatrix"	: "modelToWorldMatrix",
 		"worldToScreenMatrix"	: { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
 		"cameraPosition"		: { "binding" : { "property" : "eyePosition", "source" : "renderer" } },
 		"boneMatrices"			: "geometry[${geometryUuid}].boneMatrices",
