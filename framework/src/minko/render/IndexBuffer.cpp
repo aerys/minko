@@ -39,12 +39,12 @@ IndexBuffer::upload(uint	offset,
     	_id = _context->createIndexBuffer(_data.size());
 
 	const auto oldNumIndices	= _numIndices;
-	_numIndices					= _data.size();
+	_numIndices					= count > 0 ? count : _data.size();
 
 	_context->uploaderIndexBufferData(
 		_id,
 		offset,
-		count > 0 ? count : _numIndices,
+        _numIndices,
 		&_data[offset]
 	);
 
