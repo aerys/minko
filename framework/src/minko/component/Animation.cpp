@@ -33,12 +33,6 @@ Animation::Animation(const std::vector<AbstractTimeline::Ptr>& timelines,
 	_timelines(timelines),
 	_master(nullptr)
 {
-	_maxTime = 0;
-
-	for (auto& timeline : _timelines)
-		_maxTime = std::max(_maxTime, timeline->duration());
-
-	setPlaybackWindow(0, _maxTime)->seek(0);
 }
 
 Animation::Animation(const Animation& anim, const CloneOption& option) :
@@ -58,7 +52,22 @@ Animation::clone(const CloneOption& option)
 {
     auto anim = std::shared_ptr<Animation>(new Animation(*this, option));
 
+    anim->initialize();
+
     return anim;
+}
+
+void
+Animation::initialize()
+{
+    AbstractAnimation::initialize();
+
+	_maxTime = 0;
+
+	for (auto& timeline : _timelines)
+		_maxTime = std::max(_maxTime, timeline->duration());
+
+	setPlaybackWindow(0, _maxTime)->seek(0);
 }
 
 void

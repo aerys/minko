@@ -107,6 +107,8 @@ Skinning::clone(const CloneOption& option)
 void
 Skinning::initialize()
 {
+	AbstractAnimation::initialize();
+
 	if (_skin == nullptr)
 		throw std::invalid_argument("skin");
 

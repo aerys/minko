@@ -38,7 +38,11 @@ namespace minko
 			Ptr
 			create()
 			{
-                return std::shared_ptr<PhongMaterial>(new PhongMaterial());
+                auto instance = Ptr(new PhongMaterial());
+
+                instance->initialize();
+
+                return instance;
 			}
 
 			Ptr
@@ -97,6 +101,10 @@ namespace minko
 
 			float
 			alphaThreshold() const;
+
+        protected:
+            void
+            initialize();
 
 		private:
 			PhongMaterial();

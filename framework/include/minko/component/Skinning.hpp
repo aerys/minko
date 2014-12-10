@@ -109,6 +109,9 @@ namespace minko
 
         protected:
             void
+            initialize();
+
+            void
             targetAdded(NodePtr target);
 
 		private:
@@ -121,9 +124,6 @@ namespace minko
 
 			Skinning(const Skinning&     skinning,
 	                 const CloneOption&  option);
-
-			void
-			initialize();
 
 			void
 			addedHandler(NodePtr, NodePtr, NodePtr);

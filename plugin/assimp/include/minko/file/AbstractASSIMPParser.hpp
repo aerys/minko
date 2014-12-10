@@ -65,17 +65,11 @@ namespace minko
 			typedef std::shared_ptr<geometry::Geometry>				            GeometryPtr;
 			typedef std::shared_ptr<geometry::Bone>					            BonePtr;
 			typedef std::shared_ptr<geometry::Skin>					            SkinPtr;
-			typedef std::shared_ptr<math::Vector3>					            Vector3Ptr;
-			typedef std::shared_ptr<math::Vector4>					            Vector4Ptr;
-			typedef std::shared_ptr<math::Quaternion>				            QuaternionPtr;
-			typedef std::shared_ptr<math::Matrix4x4>				            Matrix4x4Ptr;
 			typedef std::shared_ptr<material::Material>				            MaterialPtr;
 			typedef std::shared_ptr<render::Effect>					            EffectPtr;
 
-			typedef std::vector<Matrix4x4Ptr>						            Matrices4x4;
-
 			typedef Signal<LoaderPtr>::Slot		                                LoaderCompleteSignalSlot;
-            typedef Signal<LoaderPtr, const file::Error&>::Slot            LoaderErrorSignalSlot;
+            typedef Signal<LoaderPtr, const file::Error&>::Slot                 LoaderErrorSignalSlot;
 
 			typedef std::unordered_map<LoaderPtr, LoaderCompleteSignalSlot>	    LoaderToCompleteSlotMap;
 			typedef std::unordered_map<LoaderPtr, LoaderErrorSignalSlot>	    LoaderToErrorSlotMap;
@@ -96,7 +90,9 @@ namespace minko
 			std::unordered_map<const aiNode*, NodePtr>				_aiNodeToNode;
 			std::unordered_map<const aiMesh*, NodePtr>				_aiMeshToNode;
 			std::unordered_map<std::string, NodePtr>				_nameToNode;
-			std::unordered_map<std::string, Matrices4x4>			_nameToAnimMatrices;
+			std::unordered_map<
+                std::string,
+                std::vector<math::mat4>>			                _nameToAnimMatrices;
 			std::set<NodePtr>										_alreadyAnimatedNodes;
 
 			LoaderToCompleteSlotMap									_loaderCompleteSlots;
@@ -196,7 +192,7 @@ namespace minko
 			getSkinNumFrames(const aiMesh*) const;
 
 			void
-			precomputeModelToRootMatrices(NodePtr node, NodePtr root, std::vector<Matrix4x4Ptr>&) const;
+			precomputeModelToRootMatrices(NodePtr node, NodePtr root, std::vector<math::mat4>&) const;
 
 			void
 			sampleAnimations(const aiScene*);
@@ -205,24 +201,24 @@ namespace minko
 			sampleAnimation(const aiAnimation*);
 
 			static
-			Vector3Ptr
-			sample(const aiVectorKey*, const std::vector<float>&, float, Vector3Ptr output = nullptr);
+			math::vec3
+			sample(const aiVectorKey*, const std::vector<float>&, float);
 
 			static
-			QuaternionPtr
-			sample(const aiQuatKey*, const std::vector<float>&, float, QuaternionPtr output = nullptr);
+            math::quat
+			sample(const aiQuatKey*, const std::vector<float>&, float);
 
 			static
 			void
-			sample(const aiNodeAnim*, const std::vector<float>&, std::vector<Matrix4x4Ptr>&);
+			sample(const aiNodeAnim*, const std::vector<float>&, std::vector<math::mat4>&);
 
 			static
-			Matrix4x4Ptr
-			convert(const aiVector3t<float>&, const aiQuaterniont<float>&, const aiVector3t<float>&, Matrix4x4Ptr output = nullptr);
+			math::mat4
+			convert(const aiVector3t<float>&, const aiQuaterniont<float>&, const aiVector3t<float>&);
 
 			static
-			QuaternionPtr
-			convert(const aiQuaterniont<float>&, QuaternionPtr output = nullptr);
+			math::quat
+			convert(const aiQuaterniont<float>&);
 
 			template<class AiKey>
 			static
@@ -235,8 +231,8 @@ namespace minko
 			getIndexForTime(unsigned int, const AiKey*, double);
 
 			static
-			Matrix4x4Ptr
-			convert(const aiMatrix4x4t<float>&, Matrix4x4Ptr output = nullptr);
+			math::mat4
+			convert(const aiMatrix4x4t<float>&);
 
 			MaterialPtr
 			createMaterial(const aiMaterial*);
@@ -259,8 +255,8 @@ namespace minko
 			float
 			setScalarProperty(MaterialPtr, const std::string& propertyName, const aiMaterial*, const char*, unsigned int, unsigned int, float);
 
-			Vector4Ptr
-			setColorProperty(MaterialPtr, const std::string& propertyName, const aiMaterial*, const char*, unsigned int, unsigned int, Vector4Ptr);
+			math::vec4
+			setColorProperty(MaterialPtr, const std::string& propertyName, const aiMaterial*, const char*, unsigned int, unsigned int, const math::vec4& defaultValue = math::vec4(0.f, 0.f, 0.f, 1.f));
 
 			void
 			disposeNodeMaps();
