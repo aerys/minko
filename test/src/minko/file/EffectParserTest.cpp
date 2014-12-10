@@ -28,7 +28,7 @@ using namespace minko::file;
 Effect::Ptr
 EffectParserTest::loadEffect(const std::string& filename)
 {   
-    auto lib = AssetLibrary::create(MinkoTests::context());
+    auto lib = AssetLibrary::create(MinkoTests::canvas()->context());
 
     lib->loader()->queue(filename);
     lib->loader()->load();
@@ -100,10 +100,196 @@ TEST_F(EffectParserTest, StatesDefaultValues)
     // FIXME : test render states values
 }
 
+/** Priority **/
+
 TEST_F(EffectParserTest, PriorityFloatDefaultValue)
 {
     auto fx = loadEffect("effect/PriorityFloatDefaultValue.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().priority(), 42.f);
+}
+
+TEST_F(EffectParserTest, PriorityFloatArrayValue)
+{
+    auto fx = loadEffect("effect/PriorityFloatArrayValue.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().priority(), 2042.f);
+}
+
+/** Depth mask **/
+
+TEST_F(EffectParserTest, StatesDepthMask)
+{
+    auto fx = loadEffect("effect/StatesDepthMask.effect");
+
+    auto value = fx->techniques().at("default")[0]->states().depthMask();
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().depthMask(), false);
+}
+
+/** Depth function **/
+
+TEST_F(EffectParserTest, StatesDepthFunctionAlways)
+{
+    auto fx = loadEffect("effect/StatesDepthFunctionAlways.effect");
+
+    auto value = fx->techniques().at("default")[0]->states().depthFunction();
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().depthFunction(), CompareMode::ALWAYS);
+}
+
+TEST_F(EffectParserTest, StatesDepthFunctionEqual)
+{
+    auto fx = loadEffect("effect/StatesDepthFunctionEqual.effect");
+
+    auto value = fx->techniques().at("default")[0]->states().depthFunction();
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().depthFunction(), CompareMode::EQUAL);
+}
+
+TEST_F(EffectParserTest, StatesDepthFunctionGreater)
+{
+    auto fx = loadEffect("effect/StatesDepthFunctionGreater.effect");
+
+    auto value = fx->techniques().at("default")[0]->states().depthFunction();
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().depthFunction(), CompareMode::GREATER);
+}
+
+TEST_F(EffectParserTest, StatesDepthFunctionGreaterEqual)
+{
+    auto fx = loadEffect("effect/StatesDepthFunctionGreaterEqual.effect");
+
+    auto value = fx->techniques().at("default")[0]->states().depthFunction();
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().depthFunction(), CompareMode::GREATER_EQUAL);
+}
+
+TEST_F(EffectParserTest, StatesDepthFunctionLess)
+{
+    auto fx = loadEffect("effect/StatesDepthFunctionLess.effect");
+
+    auto value = fx->techniques().at("default")[0]->states().depthFunction();
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().depthFunction(), CompareMode::LESS);
+}
+
+TEST_F(EffectParserTest, StatesDepthFunctionLessEqual)
+{
+    auto fx = loadEffect("effect/StatesDepthFunctionLessEqual.effect");
+
+    auto value = fx->techniques().at("default")[0]->states().depthFunction();
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().depthFunction(), CompareMode::LESS_EQUAL);
+}
+
+TEST_F(EffectParserTest, StatesDepthFunctionNever)
+{
+    auto fx = loadEffect("effect/StatesDepthFunctionNever.effect");
+
+    auto value = fx->techniques().at("default")[0]->states().depthFunction();
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().depthFunction(), CompareMode::NEVER);
+}
+
+TEST_F(EffectParserTest, StatesDepthFunctionNotEqual)
+{
+    auto fx = loadEffect("effect/StatesDepthFunctionNotEqual.effect");
+
+    auto value = fx->techniques().at("default")[0]->states().depthFunction();
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().depthFunction(), CompareMode::NOT_EQUAL);
+}
+
+TEST_F(EffectParserTest, StatesDepthFunctionUnset)
+{
+    auto fx = loadEffect("effect/StatesDepthFunctionUnset.effect");
+
+    auto value = fx->techniques().at("default")[0]->states().depthFunction();
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().depthFunction(), CompareMode::UNSET);
+}
+
+/** Triangle Culling **/
+
+TEST_F(EffectParserTest, StatesTriangleCullingBack)
+{
+    auto fx = loadEffect("effect/StatesTriangleCullingBack.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().triangleCulling(), TriangleCulling::BACK);
+}
+
+TEST_F(EffectParserTest, StatesTriangleCullingBoth)
+{
+    auto fx = loadEffect("effect/StatesTriangleCullingBoth.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().triangleCulling(), TriangleCulling::BOTH);
+}
+
+TEST_F(EffectParserTest, StatesTriangleCullingFront)
+{
+    auto fx = loadEffect("effect/StatesTriangleCullingFront.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().triangleCulling(), TriangleCulling::FRONT);
+}
+
+TEST_F(EffectParserTest, StatesTriangleCullingNone)
+{
+    auto fx = loadEffect("effect/StatesTriangleCullingNone.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().triangleCulling(), TriangleCulling::NONE);
+}
+
+/** Blend mode **/
+
+TEST_F(EffectParserTest, StatesBlendModeDefault)
+{
+    auto fx = loadEffect("effect/StatesBlendModeDefault.effect");
+
+    auto source = fx->techniques().at("default")[0]->states().blendingSourceFactor();
+    auto destination = fx->techniques().at("default")[0]->states().blendingDestinationFactor();
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::ONE);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestinationFactor(), Blending::Destination::ZERO);
+}
+
+TEST_F(EffectParserTest, StatesBlendModeAdditive)
+{
+    auto fx = loadEffect("effect/StatesBlendModeAdditive.effect");
+
+    auto source = fx->techniques().at("default")[0]->states().blendingSourceFactor();
+    auto destination = fx->techniques().at("default")[0]->states().blendingDestinationFactor();
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::SRC_COLOR);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestinationFactor(), Blending::Destination::DST_COLOR);
+}
+
+TEST_F(EffectParserTest, StatesBlendModeAlpha)
+{
+    auto fx = loadEffect("effect/StatesBlendModeAlpha.effect");
+
+    auto source = fx->techniques().at("default")[0]->states().blendingSourceFactor();
+    auto destination = fx->techniques().at("default")[0]->states().blendingDestinationFactor();
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::SRC_ALPHA);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestinationFactor(), Blending::Destination::ONE_MINUS_SRC_ALPHA);
 }

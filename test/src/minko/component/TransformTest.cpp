@@ -342,8 +342,7 @@ TEST_F(TransformTest, Clone)
 	auto sceneManager = SceneManager::create(MinkoTests::canvas());
 	auto root = Node::create()->addComponent(sceneManager);
 	auto n1 = Node::create()
-		->addComponent(Transform::create(Matrix4x4::create()));
-
+		->addComponent(Transform::create(math::mat4()));
 
 	auto n2 = n1->clone(CloneOption::DEEP);
 
@@ -352,10 +351,10 @@ TEST_F(TransformTest, Clone)
 
 	sceneManager->nextFrame(0.0f, 0.0f);
 
-	ASSERT_TRUE(n2->component<Transform>()->matrix()->equals(n1->component<Transform>()->matrix()));
+	ASSERT_TRUE(n2->component<Transform>()->matrix() == n1->component<Transform>()->matrix());
 
-	n2->component<Transform>()->matrix()->prependTranslation(Vector3::create(-5., 0, 2));
+    n2->component<Transform>()->matrix(math::translate(math::vec3(-5., 0, 2)) * n2->component<Transform>()->matrix());
 	sceneManager->nextFrame(0.0f, 0.0f);
 
-	ASSERT_FALSE(n2->component<Transform>()->matrix()->equals(n1->component<Transform>()->matrix()));
+	ASSERT_FALSE(n2->component<Transform>()->matrix() == n1->component<Transform>()->matrix());
 }

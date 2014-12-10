@@ -93,7 +93,8 @@ EffectParser::initializeCompareFuncMap()
 	m["less"]			= render::CompareMode::LESS;
 	m["less_equal"]		= render::CompareMode::LESS_EQUAL;
 	m["never"]			= render::CompareMode::NEVER;
-	m["not_equal"]		= render::CompareMode::NOT_EQUAL;
+    m["not_equal"]      = render::CompareMode::NOT_EQUAL;
+    m["unset"]          = render::CompareMode::UNSET;
 
 	return m;
 }
@@ -132,26 +133,14 @@ EffectParser::initializePriorityMap()
 	return m;
 }
 
-std::array<std::string, 14> EffectParser::_stateNames = EffectParser::initializeStateNames();
-std::array<std::string, 14>
+std::array<std::string, 18> EffectParser::_stateNames;
+std::array<std::string, 18>
 EffectParser::initializeStateNames()
 {
-    std::array<std::string, 14> names = {
-        "blendMode",
-        "colorMask",
-        "depthMask",
-        "depthFunc",
-        "triangleCulling",
-        "stencilFunc",
-        "stencilRef",
-        "stencilMask",
-        "stencilFailOp",
-        "stencilZFailOp",
-        "stencilZPassOp",
-        "scissorBox",
-        "priority",
-        "zSort"
-    };
+    std::array<std::string, 18> names;
+
+    std::copy(std::begin(States::PROPERTY_NAMES), std::end(States::PROPERTY_NAMES), std::begin(names));
+    names[17] = "blendMode";
 
     return names;
 }
@@ -171,6 +160,7 @@ EffectParser::EffectParser() :
 	_numDependencies(0),
 	_numLoadedDependencies(0)
 {
+    EffectParser::_stateNames = EffectParser::initializeStateNames();
 }
 
 void
@@ -668,10 +658,11 @@ EffectParser::parseStates(const Json::Value& node, const Scope& scope, StateBloc
 
         // parse & set depth mask/func default values
         bool depthMask = render::States::DEFAULT_DEPTH_MASK;
-        CompareMode depthFunc = render::States::DEFAULT_DEPTH_FUNCTION;
-        parseDepthTest(statesNode, scope, depthMask, depthFunc);
+        parseDepthMask(statesNode, scope, depthMask);
+        CompareMode depthFunction = render::States::DEFAULT_DEPTH_FUNCTION;
+        parseDepthFunction(statesNode, scope, depthFunction);
         defaultValuesProvider->set(render::States::PROPERTY_DEPTH_MASK, depthMask);
-        defaultValuesProvider->set(render::States::PROPERTY_DEPTH_FUNCTION, depthFunc);
+        defaultValuesProvider->set(render::States::PROPERTY_DEPTH_FUNCTION, depthFunction);
 
         // parse & set triangle culling default value
         TriangleCulling triangleCulling = render::States::DEFAULT_TRIANGLE_CULLING;
@@ -762,39 +753,25 @@ EffectParser::parseColorMask(const Json::Value&	node,
 }
 
 void
-EffectParser::parseDepthTest(const Json::Value&	    node,
+EffectParser::parseDepthMask(const Json::Value&	    node,
                              const Scope&           scope,
-                             bool&                  depthMask,
-                             render::CompareMode&   depthFunc)
+                             bool&                  depthMask)
 {
-    auto depthTest = node.get("depthTest", 0);
+    auto depthMaskValue = node.get("depthMask", 0);
 
-    if (depthTest.isObject())
-    {
-        auto depthMaskValue = depthTest.get("depthMask", 0);
-        auto depthFuncValue = depthTest.get("depthFunc", 0);
+    if (depthMaskValue.isBool())
+        depthMask = depthMaskValue.asBool();
+}
 
-        if (depthMaskValue.isBool())
-            depthMask = depthMaskValue.asBool();
+void
+EffectParser::parseDepthFunction(const Json::Value&	node,
+                   const Scope&         scope,
+                   render::CompareMode& depthFunction)
+{
+    auto depthFunctionValue = node.get("depthFunction", 0);
 
-        if (depthFuncValue.isString())
-            depthFunc = _compareFuncMap[depthFuncValue.asString()];
-    }
-    else if (depthTest.isArray())
-    {
-        depthMask = depthTest[0].asBool();
-        depthFunc = _compareFuncMap[depthTest[1].asString()];
-    }
-    else
-    {
-        auto depthMaskValue = node.get("depthMask", 0);
-        auto depthFuncValue = node.get("depthFunc", 0);
-
-        if (depthMaskValue.isBool())
-            depthMask = depthMaskValue.asBool();
-        if (depthFuncValue.isString())
-            depthFunc = _compareFuncMap[depthFuncValue.asString()];
-    }
+    if (depthFunctionValue.isString())
+        depthFunction = _compareFuncMap[depthFunctionValue.asString()];
 }
 
 void

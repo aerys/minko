@@ -23,14 +23,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::component;
-using namespace minko::math;
 using namespace minko::scene;
 
 TEST_F(SpotLightTest, Create)
 {
 	auto root = Node::create();
-	auto n1 = Node::create()->addComponent(SpotLight::create(float(M_PI) * 0.25f, -1.0f, 10.f));
+    auto n1 = Node::create()->addComponent(SpotLight::create(10.f, -1.0f, float(M_PI) * 0.25f));
 	
+    auto diffuse = n1->component<SpotLight>()->diffuse();
+
 	ASSERT_TRUE(n1->hasComponent<SpotLight>());
 	ASSERT_TRUE(n1->component<SpotLight>()->diffuse() == 10.0f);
 }
@@ -403,8 +404,8 @@ TEST_F(SpotLightTest, Clone)
 	auto sceneManager = SceneManager::create(MinkoTests::canvas());
 	auto root = Node::create()->addComponent(sceneManager);
 	auto n1 = Node::create()
-		->addComponent(Transform::create(Matrix4x4::create()))
-		->addComponent(SpotLight::create(float(M_PI) * 0.25f, -1.0f, 10.f));
+		->addComponent(Transform::create(math::mat4()))
+        ->addComponent(SpotLight::create(10.f, - 1.0f, float(M_PI) * 0.25f));
 
 	auto n2 = n1->clone(CloneOption::DEEP);
 	n2->component<SpotLight>()->diffuse(.1f);
@@ -421,18 +422,18 @@ TEST_F(SpotLightTest, Clone)
 
 	SpotLight::Ptr l1 = n1->component<SpotLight>();
 	SpotLight::Ptr l2 = n2->component<SpotLight>();
-	ASSERT_TRUE(l1->attenuationCoefficients()->equals(l2->attenuationCoefficients()));
+	ASSERT_TRUE(l1->attenuationCoefficients() == l2->attenuationCoefficients());
 
-	Vector3::Ptr newCoeffs = Vector3::create(1.5, 1, 1.5);
-
+	auto newCoeffs = math::vec3(1.5, 1, 1.5);
+    
 	l2->attenuationCoefficients(newCoeffs);
-	ASSERT_TRUE(l2->attenuationCoefficients()->equals(newCoeffs));
-	ASSERT_FALSE(l1->attenuationCoefficients()->equals(l2->attenuationCoefficients()));
+	ASSERT_TRUE(l2->attenuationCoefficients() == newCoeffs);
+	ASSERT_FALSE(l1->attenuationCoefficients() == l2->attenuationCoefficients());
 
-	ASSERT_TRUE(l1->position()->equals(l2->position()));
+	ASSERT_TRUE(l1->position() == l2->position());
 
-	n2->component<Transform>()->matrix()->prependTranslation(Vector3::create(-5., 0, 2));
+    n2->component<Transform>()->matrix(math::translate(math::vec3(-5., 0, 2)) * n2->component<Transform>()->matrix());
 	sceneManager->nextFrame(0.0f, 0.0f);
 
-	ASSERT_FALSE(l1->position()->equals(l2->position()));	
+	ASSERT_FALSE(l1->position() == l2->position());	
 }

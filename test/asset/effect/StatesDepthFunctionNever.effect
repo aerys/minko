@@ -1,0 +1,7 @@
+{
+    "states" : {
+        "depthFunction": "never"
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

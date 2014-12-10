@@ -1,0 +1,7 @@
+{
+    "states" : {
+        "triangleCulling": "none"
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

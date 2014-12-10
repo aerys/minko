@@ -32,6 +32,7 @@ SpotLight::SpotLight(float diffuse,
 	AbstractDiscreteLight("spotLight", diffuse, specular)
 {
     updateModelToWorldMatrix(math::mat4(1.f));
+
     attenuationCoefficients(math::vec3(attenuationConstant, attenuationLinear, attenuationQuadratic));
 	innerConeAngle(innerAngleRadians);
 	outerConeAngle(outerAngleRadians);
@@ -42,7 +43,9 @@ SpotLight::SpotLight(const SpotLight& spotlight, const CloneOption& option) :
 {
     updateModelToWorldMatrix(math::mat4(1.f));
 
-	data()->set("attenuationCoeffs", spotlight.attenuationCoefficients());
+    auto test = spotlight.attenuationCoefficients();
+
+	data()->set("attenuationCoefficients", spotlight.attenuationCoefficients());
 	data()->set("cosInnerConeAngle", spotlight.innerConeAngle());
 	data()->set("cosOuterConeAngle", spotlight.outerConeAngle());
 }
@@ -112,7 +115,7 @@ SpotLight::attenuationCoefficients(float constant, float linear, float quadratic
 SpotLight&
 SpotLight::attenuationCoefficients(const math::vec3& value)
 {
-	data()->set("attenuationCoeffs", value);
+	data()->set("attenuationCoefficients", value);
 
 	return *this;
 }

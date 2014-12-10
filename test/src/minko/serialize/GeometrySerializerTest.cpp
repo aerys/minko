@@ -74,7 +74,7 @@ TEST_F(GeometrySerializerTest, SphereGeometrySerialization)
 	auto geometryParser		= file::GeometryParser::create();
 	std::string	filename	= "asset.tmp";
 
-	assetLibrary->geometry("Sphere", sphereGeometry);
+	assetLibrary->geometry("sphere", sphereGeometry);
 	geometryWriter->data(sphereGeometry);
 	geometryWriter->write(filename,
                           assetLibrary,
@@ -93,6 +93,6 @@ TEST_F(GeometrySerializerTest, SphereGeometrySerialization)
 
 	geometryParser->parse(filename, filename, file::Options::create(MinkoTests::canvas()->context()), data, outputAssetLibrary);
 
-	ASSERT_TRUE(outputAssetLibrary->geometry("Sphere") != nullptr);
-	ASSERT_TRUE(sphereGeometry->equals(outputAssetLibrary->geometry("Sphere")));
+	ASSERT_TRUE(outputAssetLibrary->geometry("sphere") != nullptr);
+	ASSERT_TRUE(sphereGeometry->equals(outputAssetLibrary->geometry("sphere")));
 }
