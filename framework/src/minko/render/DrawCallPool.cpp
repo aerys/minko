@@ -224,13 +224,7 @@ DrawCallPool::initializeDrawCall(DrawCall* drawCall)
     if (programAndSignature.first == drawCall->program())
         return;
 
-    drawCall->bind(
-        programAndSignature.first,
-        pass->macroBindings(),
-        pass->attributeBindings(),
-        pass->uniformBindings(),
-        pass->stateBindings()
-    );
+    drawCall->bind(programAndSignature.first);
 
     // FIXME: avoid const_cast
     if (programAndSignature.second != nullptr)

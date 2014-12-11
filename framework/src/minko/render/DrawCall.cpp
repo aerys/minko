@@ -27,6 +27,26 @@ using namespace minko::render;
 const unsigned int	DrawCall::MAX_NUM_TEXTURES		= 8;
 const unsigned int	DrawCall::MAX_NUM_VERTEXBUFFERS	= 8;
 
+DrawCall::DrawCall(const StringMap&       variables,
+                   data::Store&           rootData,
+                   data::Store&           rendererData,
+                   data::Store&           targetData,
+                   data::MacroBindingMap& macroBindings,
+                   data::BindingMap&      attributeBindings,
+                   data::BindingMap&      uniformBindings,
+                   data::BindingMap&      stateBindings) :
+    _program(nullptr),
+    _macroBindings(macroBindings),
+    _attributeBindings(attributeBindings),
+    _uniformBindings(uniformBindings),
+    _stateBindings(stateBindings),
+    _variables(variables),
+    _rootData(rootData),
+    _rendererData(rendererData),
+    _targetData(targetData)
+{
+}
+
 data::Store&
 DrawCall::getStore(data::Binding::Source source)
 {
@@ -58,27 +78,24 @@ DrawCall::reset()
 }
 
 void
-DrawCall::bind(std::shared_ptr<Program>   program,
-               data::MacroBindingMap&     macroBindings,
-               data::BindingMap&          attributeBindings,
-               data::BindingMap&          uniformBindings,
-               data::BindingMap&          stateBindings)
+DrawCall::bind(std::shared_ptr<Program> program)
 {
     reset();
 
     _program = program;
-    _macroBindings = &macroBindings;
-    _attributeBindings = &attributeBindings;
-    _uniformBindings = &uniformBindings;
-    _stateBindings = &stateBindings;
 
     bindIndexBuffer(_variables, _targetData);
-    bindStates(stateBindings);
-    bindUniforms(program, uniformBindings);
-     
-    for (const auto& input : program->inputs().attributes())
+    bindStates(_stateBindings);
+    bindUniforms(program, _uniformBindings);
+    bindAttributes();
+}
+
+void
+DrawCall::bindAttributes()
+{
+    for (const auto& input : _program->inputs().attributes())
     {
-        auto& bindings = attributeBindings.bindings;
+        auto& bindings = _attributeBindings.bindings;
 
         if (bindings.count(input.name) == 0)
             continue;
@@ -89,13 +106,13 @@ DrawCall::bind(std::shared_ptr<Program>   program,
 
         if (!store.hasProperty(propertyName))
         {
-            if (!attributeBindings.defaultValues.hasProperty(input.name))
+            if (!_attributeBindings.defaultValues.hasProperty(input.name))
                 throw std::runtime_error(
                     "The attribute \"" + input.name + "\" is bound to the \"" + propertyName
                     + "\" property but it's not defined and no default value was provided."
                 );
 
-            bindAttribute(program, input, attributeBindings.defaultValues, input.name);
+            bindAttribute(program, input, _attributeBindings.defaultValues, input.name);
         }
         else
             bindAttribute(program, input, store, propertyName);
@@ -229,7 +246,7 @@ DrawCall::uniformBindingPropertyRemoved(const data::Binding&                bind
 
 void
 DrawCall::bindIndexBuffer(const std::unordered_map<std::string, std::string>&   variables,
-                          const data::Store&                                targetData)
+                          const data::Store&                                    targetData)
 {
     _indexBuffer = const_cast<int*>(targetData.getPointer<int>(
         data::Store::getActualPropertyName(variables, "geometry[${geometryUuid}].indices")
@@ -245,7 +262,7 @@ DrawCall::bindIndexBuffer(const std::unordered_map<std::string, std::string>&   
 void
 DrawCall::bindAttribute(Program::Ptr            program,
                         ConstAttrInputRef       input,
-                        const data::Store&  store,
+                        const data::Store&      store,
                         const std::string&      propertyName)
 {
     const auto& attr = store.getPointer<VertexAttribute>(propertyName);
@@ -261,10 +278,10 @@ DrawCall::bindAttribute(Program::Ptr            program,
 }
 
 void
-DrawCall::bindUniform(Program::Ptr            program,
-                      ConstUniformInputRef    input,
-                      const data::Store&  store,
-                      const std::string&      propertyName)
+DrawCall::bindUniform(Program::Ptr          program,
+                      ConstUniformInputRef  input,
+                      const data::Store&    store,
+                      const std::string&    propertyName)
 {
     switch (input.type)
     {

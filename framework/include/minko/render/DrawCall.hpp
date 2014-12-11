@@ -86,10 +86,10 @@ namespace minko
             data::Store&                        _targetData;
             StringMap                           _variables;
 
-            data::MacroBindingMap*              _macroBindings;
-            data::BindingMap*                   _attributeBindings;
-            data::BindingMap*                   _uniformBindings;
-            data::BindingMap*                   _stateBindings;
+            data::MacroBindingMap&              _macroBindings;
+            data::BindingMap&                   _attributeBindings;
+            data::BindingMap&                   _uniformBindings;
+            data::BindingMap&                   _stateBindings;
 			std::shared_ptr<Program>			_program;
             int*								_indexBuffer;
             uint*                               _firstIndex;
@@ -122,45 +122,38 @@ namespace minko
             std::map<const data::Binding*, ChangedSlot>    _propAddedOrRemovedSlot;
 
 		public:
-            DrawCall(const StringMap&   variables,
-                     data::Store&       rootData,
-                     data::Store&       rendererData,
-                     data::Store&       targetData) :
-                _program(nullptr),
-                _macroBindings(nullptr),
-                _attributeBindings(nullptr),
-                _uniformBindings(nullptr),
-                _stateBindings(nullptr),
-                _variables(variables),
-                _rootData(rootData),
-                _rendererData(rendererData),
-                _targetData(targetData)
-            {
-            }
+            DrawCall(const StringMap&       variables,
+                     data::Store&           rootData,
+                     data::Store&           rendererData,
+                     data::Store&           targetData,
+                     data::MacroBindingMap& macroBindings,
+                     data::BindingMap&      attributeBindings,
+                     data::BindingMap&      uniformBindings,
+                     data::BindingMap&      stateBindings);
 
             inline
-            const data::MacroBindingMap*
+            const data::MacroBindingMap&
             macroBindings()
             {
                 return _macroBindings;
             }
 
             inline
-            const data::BindingMap*
+            const data::BindingMap&
             attributeBindings()
             {
                 return _attributeBindings;
             }
 
             inline
-            const data::BindingMap*
+            const data::BindingMap&
             uniformBindings()
             {
                 return _uniformBindings;
             }
 
             inline
-            const data::BindingMap*
+            const data::BindingMap&
             stateBindings()
             {
                 return _stateBindings;
@@ -202,11 +195,7 @@ namespace minko
             }
 
             void
-            bind(std::shared_ptr<Program>   program,
-                 data::MacroBindingMap&     macroBindings,
-                 data::BindingMap&          attributeBindings,
-                 data::BindingMap&          uniformBindings,
-                 data::BindingMap&          stateBindings);
+            bind(std::shared_ptr<Program> program);
 
 			void
 			render(std::shared_ptr<AbstractContext> context, AbsTexturePtr renderTarget) const;
@@ -223,6 +212,9 @@ namespace minko
                         ConstUniformInputRef        input,
                         const data::Store&          store,
                         const std::string&          propertyName);
+
+            void
+            bindAttributes();
 
             void
             bindAttribute(std::shared_ptr<Program>  program,
