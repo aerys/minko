@@ -34,7 +34,16 @@ DrawCallPool::addDrawCalls(std::shared_ptr<Effect>                              
     
     for (const auto& pass : technique)
     {
-        auto* drawCall = new DrawCall(variables, rootData, rendererData, targetData);
+        auto* drawCall = new DrawCall(
+            variables,
+            rootData,
+            rendererData,
+            targetData,
+            pass->macroBindings(),
+            pass->attributeBindings(),
+            pass->uniformBindings(),
+            pass->stateBindings()
+        );
 
         initializeDrawCall(drawCall);
 
