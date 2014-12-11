@@ -1203,7 +1203,7 @@ AbstractASSIMPParser::sample(const aiQuatKey*			keys,
 	const aiQuaternion&	value0	= keys[id].mValue;
 
 	if (id == numKeys - 1)
-		output = math::quat(value0.x, value0.y, value0.z, value0.w);
+		output = math::quat(value0.w, value0.x, value0.y, value0.z);
 	else
 	{
 		const float			w1		= (time - (float)keys[id].mTime) * keyTimeFactors[id];
@@ -1265,7 +1265,7 @@ AbstractASSIMPParser::getIndexForTime(unsigned int	numKeys,
 math::quat
 AbstractASSIMPParser::convert(const aiQuaternion& quaternion)
 {
-	return math::quat(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+	return math::quat(quaternion.w, quaternion.x, quaternion.y, quaternion.z);
 }
 
 /*static*/
