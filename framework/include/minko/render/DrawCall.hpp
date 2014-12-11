@@ -115,7 +115,7 @@ namespace minko
             StencilOperation*			        _stencilZFailOp;
             StencilOperation*			        _stencilZPassOp;
             bool*						        _scissorTest;
-            math::vec4*					        _scissorBox;
+            math::ivec4*					    _scissorBox;
             /*SamplerStates               _samplerStates;
             AbstractTexturePtr		    _target;*/
 
@@ -259,13 +259,12 @@ namespace minko
             template <typename T>
             T*
             bindState(const std::string         stateName,
-                      const data::BindingMap&   stateBindings,
-                      T*                        defaultValue)
+                      const data::BindingMap&   stateBindings)
             {
                 auto& bindings = stateBindings.bindings;
 
                 if (bindings.count(stateName) == 0)
-                    return defaultValue;
+                    return stateBindings.defaultValues.getUnsafePointer<T>(stateName);
 
                 const auto& binding = bindings.at(stateName);
                 auto& store = getStore(binding.source);
