@@ -695,16 +695,19 @@ OpenGLES2Context::createCompressedTexture(TextureType     type,
              size > 0;
              size = size >> 1, w = w >> 1, h = h >> 1)
         {
-             if (type == TextureType::Texture2D)
-                glTexImage2D(GL_TEXTURE_2D, level, oglFormat, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+        	const auto dataSize = TextureFormatInfo::textureSize(format, w, h);
+        	const auto data = std::vector<unsigned char>(dataSize, 0);
+
+         	if (type == TextureType::Texture2D)
+         		glCompressedTexImage2D(GL_TEXTURE_2D, level, oglFormat, w, h, 0, dataSize, data.data());
             else
             {
-                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, level, oglFormat, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-                glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, level, oglFormat, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, level, oglFormat, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-                glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, level, oglFormat, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, level, oglFormat, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-                glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, level, oglFormat, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+         		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, level, oglFormat, w, h, 0, dataSize, data.data());
+         		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, level, oglFormat, w, h, 0, dataSize, data.data());
+         		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, level, oglFormat, w, h, 0, dataSize, data.data());
+         		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, level, oglFormat, w, h, 0, dataSize, data.data());
+         		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, level, oglFormat, w, h, 0, dataSize, data.data());
+         		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, level, oglFormat, w, h, 0, dataSize, data.data());
             }
 
             ++level;
@@ -712,16 +715,19 @@ OpenGLES2Context::createCompressedTexture(TextureType     type,
     }
     else
     {
+        const auto dataSize = TextureFormatInfo::textureSize(format, width, height);
+    	const auto data = std::vector<unsigned char>(dataSize, 0);
+
         if (type == TextureType::Texture2D)
-            glTexImage2D(GL_TEXTURE_2D, 0, oglFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+     		glCompressedTexImage2D(GL_TEXTURE_2D, 0, oglFormat, width, height, 0, dataSize, data.data());
         else
         {
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, oglFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, oglFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, oglFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, oglFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, oglFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, oglFormat, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+     		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, oglFormat, width, height, 0, dataSize, data.data());
+     		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, oglFormat, width, height, 0, dataSize, data.data());
+     		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, oglFormat, width, height, 0, dataSize, data.data());
+     		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, oglFormat, width, height, 0, dataSize, data.data());
+     		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, oglFormat, width, height, 0, dataSize, data.data());
+     		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, oglFormat, width, height, 0, dataSize, data.data());
         }
     }
 
