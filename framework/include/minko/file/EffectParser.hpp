@@ -90,10 +90,10 @@ namespace minko
             {
                 const Scope* parent;
                 std::vector<const Scope*> children;
-                AttributeBlock attributes;
-                UniformBlock uniforms;
-                StateBlock states;
-                MacroBlock macros;
+                AttributeBlock attributeBlock;
+                UniformBlock uniformBlock;
+                StateBlock stateBlock;
+                MacroBlock macroBlock;
                 std::string defaultTechnique;
                 Passes passes;
                 Techniques techniques;
@@ -105,10 +105,10 @@ namespace minko
                 Scope(const Scope& scope) :
                     parent(scope.parent),
                     children(),
-                    attributes(scope.attributes),
-                    uniforms(scope.uniforms),
-                    states(scope.states),
-                    macros(scope.macros),
+                    attributeBlock(scope.attributeBlock),
+                    uniformBlock(scope.uniformBlock),
+                    stateBlock(scope.stateBlock),
+                    macroBlock(scope.macroBlock),
                     defaultTechnique(scope.defaultTechnique),
                     passes(scope.passes),
                     techniques(scope.techniques)
@@ -117,10 +117,10 @@ namespace minko
                 Scope(const Scope& scope, Scope& parent) :
                     parent(&parent),
                     children(),
-                    attributes(scope.attributes),
-                    uniforms(scope.uniforms),
-                    states(scope.states),
-                    macros(scope.macros),
+                    attributeBlock(scope.attributeBlock),
+                    uniformBlock(scope.uniformBlock),
+                    stateBlock(scope.stateBlock),
+                    macroBlock(scope.macroBlock),
                     defaultTechnique(scope.defaultTechnique),
                     passes(scope.passes),
                     techniques(scope.techniques)

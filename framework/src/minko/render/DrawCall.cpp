@@ -324,26 +324,22 @@ DrawCall::bindUniform(Program::Ptr            program,
 void
 DrawCall::bindStates(const data::BindingMap& stateBindings)
 {
-    const States& s = _pass->states();
-
-
-
-    /*_priority = bindState<float>("priority", stateBindings, &def->_priority);
-    _zsorted = bindState<bool>("zSort", stateBindings, &def->_zsorted);
-    _blendingSourceFactor = bindState<Blending::Source>("blendingSourceFactor", stateBindings, &def->_blendingSourceFactor);
-    _blendingDestinationFactor = bindState<Blending::Destination>("blendingDestinationFactor", stateBindings, &def->_blendingDestinationFactor);
-    _colorMask = bindState<bool>("colorMask", stateBindings, &def->_colorMask);
-    _depthMask = bindState<bool>("depthMask", stateBindings, &def->_depthMask);
-    _depthFunc = bindState<CompareMode>("depthFunction", stateBindings, &def->_depthFunc);
-    _triangleCulling = bindState<TriangleCulling>("triangleCulling", stateBindings, &def->_triangleCulling);
-    _stencilFunction = bindState<CompareMode>("stencilFunction", stateBindings, &def->_stencilFunction);
-    _stencilReference = bindState<int>("stencilReference", stateBindings, &def->_stencilReference);
-    _stencilMask = bindState<uint>("stencilMask", stateBindings, &def->_stencilMask);
-    _stencilFailOp = bindState<StencilOperation>("stencilFailOperation", stateBindings, &def->_stencilFailOp);
-    _stencilZFailOp = bindState<StencilOperation>("stencilZFailOperation", stateBindings, &def->_stencilZFailOp);
-    _stencilZPassOp = bindState<StencilOperation>("stencilZPassOperation", stateBindings, &def->_stencilZPassOp);
-    _scissorTest = bindState<bool>("scissorTest", stateBindings, &def->_scissorTest);
-    _scissorBox = bindState<ScissorBox>("scissorBox", stateBindings, &def->_scissorBox);*/
+    _priority = bindState<float>(States::PROPERTY_PRIORITY, stateBindings);
+    _zsorted = bindState<bool>(States::PROPERTY_ZSORTED, stateBindings);
+    _blendingSourceFactor = bindState<Blending::Source>(States::PROPERTY_BLENDING_SOURCE, stateBindings);
+    _blendingDestinationFactor = bindState<Blending::Destination>(States::PROPERTY_BLENDING_DESTINATION, stateBindings);
+    _colorMask = bindState<bool>(States::PROPERTY_COLOR_MASK, stateBindings);
+    _depthMask = bindState<bool>(States::PROPERTY_DEPTH_MASK, stateBindings);
+    _depthFunc = bindState<CompareMode>(States::PROPERTY_DEPTH_FUNCTION, stateBindings);
+    _triangleCulling = bindState<TriangleCulling>(States::PROPERTY_TRIANGLE_CULLING, stateBindings);
+    _stencilFunction = bindState<CompareMode>(States::PROPERTY_STENCIL_FUNCTION, stateBindings);
+    _stencilReference = bindState<int>(States::PROPERTY_STENCIL_REFERENCE, stateBindings);
+    _stencilMask = bindState<uint>(States::PROPERTY_STENCIL_MASK, stateBindings);
+    _stencilFailOp = bindState<StencilOperation>(States::PROPERTY_STENCIL_FAIL_OP, stateBindings);
+    _stencilZFailOp = bindState<StencilOperation>(States::PROPERTY_STENCIL_ZFAIL_OP, stateBindings);
+    _stencilZPassOp = bindState<StencilOperation>(States::PROPERTY_STENCIL_ZPASS_OP, stateBindings);
+    _scissorTest = bindState<bool>(States::PROPERTY_SCISSOR_TEST, stateBindings);
+    _scissorBox = bindState<math::ivec4>(States::PROPERTY_SCISSOR_BOX, stateBindings);
 
     // FIXME: bind the render target
 }
@@ -401,12 +397,12 @@ DrawCall::render(AbstractContext::Ptr   context,
     }
     */
 
-    /*context->setColorMask(*_colorMask);
+    context->setColorMask(*_colorMask);
     context->setBlendMode(*_blendingSourceFactor, *_blendingDestinationFactor);
     context->setDepthTest(*_depthMask, *_depthFunc);
     context->setStencilTest(*_stencilFunction, *_stencilReference, *_stencilMask, *_stencilFailOp, *_stencilZFailOp, *_stencilZPassOp);
     context->setScissorTest(*_scissorTest, *_scissorBox);
-    context->setTriangleCulling(*_triangleCulling);*/
+    context->setTriangleCulling(*_triangleCulling);
 
     /*context->setColorMask(true);
     context->setBlendMode(Blending::Mode::DEFAULT);
