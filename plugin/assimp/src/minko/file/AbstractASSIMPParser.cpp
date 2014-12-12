@@ -1031,9 +1031,9 @@ AbstractASSIMPParser::precomputeModelToRootMatrices(Node::Ptr			node,
 			const auto matrix		= std::get<2>(trfInfo);
 
 			if (animMatrices)
-                modelToRoot = modelToRoot * (*animMatrices)[std::min (int(frameId), int(animMatrices->size() - 1))];
+                modelToRoot = (*animMatrices)[std::min (int(frameId), int(animMatrices->size() - 1))] * modelToRoot;
 			else if (matrix)
-				modelToRoot = modelToRoot * *matrix;
+				modelToRoot = *matrix * modelToRoot;
 		}
 	}
 }
