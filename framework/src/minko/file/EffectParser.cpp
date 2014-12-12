@@ -94,8 +94,7 @@ EffectParser::initializeCompareFuncMap()
 	m["less_equal"]		= render::CompareMode::LESS_EQUAL;
 	m["never"]			= render::CompareMode::NEVER;
     m["not_equal"]      = render::CompareMode::NOT_EQUAL;
-    m["unset"]          = render::CompareMode::UNSET;
-
+    
 	return m;
 }
 
@@ -201,10 +200,10 @@ EffectParser::parse(const std::string&				    filename,
 void
 EffectParser::parseGlobalScope(const Json::Value& node, Scope& scope)
 {
-    parseAttributes(node, scope, scope.attributes);
-    parseUniforms(node, scope, scope.uniforms);
-    parseMacros(node, scope, scope.macros);
-    parseStates(node, scope, scope.states);
+    parseAttributes(node, scope, scope.attributeBlock);
+    parseUniforms(node, scope, scope.uniformBlock);
+    parseMacros(node, scope, scope.macroBlock);
+    parseStates(node, scope, scope.stateBlock);
     parsePasses(node, scope, scope.passes);
     parseTechniques(node, scope, scope.techniques);
 }
@@ -274,10 +273,10 @@ EffectParser::parseTechniques(const Json::Value& node, Scope& scope, Techniques&
 
             Scope techniqueScope(scope, scope);
 
-            parseAttributes(techniqueNode, techniqueScope, techniqueScope.attributes);
-            parseUniforms(techniqueNode, techniqueScope, techniqueScope.uniforms);
-            parseMacros(techniqueNode, techniqueScope, techniqueScope.macros);
-            parseStates(techniqueNode, techniqueScope, techniqueScope.states);
+            parseAttributes(techniqueNode, techniqueScope, techniqueScope.attributeBlock);
+            parseUniforms(techniqueNode, techniqueScope, techniqueScope.uniformBlock);
+            parseMacros(techniqueNode, techniqueScope, techniqueScope.macroBlock);
+            parseStates(techniqueNode, techniqueScope, techniqueScope.stateBlock);
             parsePasses(techniqueNode, techniqueScope, techniques[techniqueName]);
 
             if (firstTechnique)
@@ -341,15 +340,15 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
     }
     else
     {
-        // If the pass is an actual pass object, we parse all its data, create the correspondin
+        // If the pass is an actual pass object, we parse all its data, create the corresponding
         // Pass object and add it to the vector.
 
         Scope passScope(scope, scope);
 
-        parseAttributes(node, passScope, passScope.attributes);
-        parseUniforms(node, passScope, passScope.uniforms);
-        parseMacros(node, passScope, passScope.macros);
-        parseStates(node, passScope, passScope.states);
+        parseAttributes(node, passScope, passScope.attributeBlock);
+        parseUniforms(node, passScope, passScope.uniformBlock);
+        parseMacros(node, passScope, passScope.macroBlock);
+        parseStates(node, passScope, passScope.stateBlock);
 
         auto passName = "pass" + std::to_string(scope.passes.size());
         auto nameNode = node.get("name", 0);
@@ -359,17 +358,17 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
 
         auto vertexShader = parseShader(node.get("vertexShader", 0), passScope, Shader::Type::VERTEX_SHADER);
         auto fragmentShader = parseShader(node.get("fragmentShader", 0), passScope, Shader::Type::FRAGMENT_SHADER);
-        auto states = passScope.states.bindings.defaultValues.providers().size() != 0
-            ? States(passScope.states.bindings.defaultValues.providers().front())
+        auto states = passScope.stateBlock.bindings.defaultValues.providers().size() != 0
+            ? States(passScope.stateBlock.bindings.defaultValues.providers().front())
             : States();
 
         passes.push_back(Pass::create(
             passName,
             Program::create(_options->context(), vertexShader, fragmentShader),
-            passScope.attributes.bindings,
-            passScope.uniforms.bindings,
-            passScope.states.bindings,
-            passScope.macros.bindings,
+            passScope.attributeBlock.bindings,
+            passScope.uniformBlock.bindings,
+            passScope.stateBlock.bindings,
+            passScope.macroBlock.bindings,
             states
         ));
     }
