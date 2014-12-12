@@ -30,6 +30,7 @@ using namespace minko;
 using namespace minko::serialize;
 using namespace minko::deserialize;
 
+/*
 TEST_F(GeometrySerializerTest, CubeGeometrySerialization)
 {
 	auto cubeGeometry		= geometry::CubeGeometry::create(MinkoTests::canvas()->context());
@@ -96,3 +97,4 @@ TEST_F(GeometrySerializerTest, SphereGeometrySerialization)
 	ASSERT_TRUE(outputAssetLibrary->geometry("sphere") != nullptr);
 	ASSERT_TRUE(sphereGeometry->equals(outputAssetLibrary->geometry("sphere")));
 }
+*/
