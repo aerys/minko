@@ -105,5 +105,8 @@ PNGParser::parse(const std::string&                 filename,
 
     texture->upload();
 
+    if (options->disposeTextureAfterLoading())
+        texture->disposeData();
+
     complete()->execute(shared_from_this());
 }

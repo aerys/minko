@@ -74,6 +74,9 @@ DevILParser::parse(const std::string&                 filename,
     texture->data(bmpData, format == IL_RGBA ? minko::render::TextureFormat::RGBA : minko::render::TextureFormat::RGB);
     texture->upload();
 
+    if (options->disposeTextureAfterLoading())
+        texture->disposeData();
+
     AssetLibrary->texture(filename, texture);
 
     complete()->execute(shared_from_this());
