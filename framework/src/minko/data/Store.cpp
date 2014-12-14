@@ -350,7 +350,7 @@ Store::removeProviderFromCollection(std::shared_ptr<data::Provider> provider,
 
 const std::string
 Store::getActualPropertyName(const std::unordered_map<std::string, std::string>&    vars,
-                                 const std::string&                                     propertyName)
+                             const std::string&                                     propertyName)
 {
     for (const auto& variableName : vars)
     {

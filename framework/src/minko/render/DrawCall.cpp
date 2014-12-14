@@ -27,19 +27,12 @@ using namespace minko::render;
 const unsigned int	DrawCall::MAX_NUM_TEXTURES		= 8;
 const unsigned int	DrawCall::MAX_NUM_VERTEXBUFFERS	= 8;
 
-DrawCall::DrawCall(const StringMap&       variables,
+DrawCall::DrawCall(std::shared_ptr<Pass>  pass,
+                   const StringMap&       variables,
                    data::Store&           rootData,
                    data::Store&           rendererData,
-                   data::Store&           targetData,
-                   data::MacroBindingMap& macroBindings,
-                   data::BindingMap&      attributeBindings,
-                   data::BindingMap&      uniformBindings,
-                   data::BindingMap&      stateBindings) :
-    _program(nullptr),
-    _macroBindings(macroBindings),
-    _attributeBindings(attributeBindings),
-    _uniformBindings(uniformBindings),
-    _stateBindings(stateBindings),
+                   data::Store&           targetData) :
+    _pass(pass),
     _variables(variables),
     _rootData(rootData),
     _rendererData(rendererData),
@@ -84,18 +77,20 @@ DrawCall::bind(std::shared_ptr<Program> program)
 
     _program = program;
 
-    bindIndexBuffer(_variables, _targetData);
-    bindStates(_stateBindings);
-    bindUniforms(program, _uniformBindings);
+    bindIndexBuffer();
+    bindStates();
+    bindUniforms();
     bindAttributes();
 }
 
 void
 DrawCall::bindAttributes()
 {
+    const auto& attributeBindings = _pass->attributeBindings();
+
     for (const auto& input : _program->inputs().attributes())
     {
-        auto& bindings = _attributeBindings.bindings;
+        auto& bindings = attributeBindings.bindings;
 
         if (bindings.count(input.name) == 0)
             continue;
@@ -106,23 +101,25 @@ DrawCall::bindAttributes()
 
         if (!store.hasProperty(propertyName))
         {
-            if (!_attributeBindings.defaultValues.hasProperty(input.name))
+            if (!attributeBindings.defaultValues.hasProperty(input.name))
                 throw std::runtime_error(
                     "The attribute \"" + input.name + "\" is bound to the \"" + propertyName
                     + "\" property but it's not defined and no default value was provided."
                 );
 
-            bindAttribute(program, input, _attributeBindings.defaultValues, input.name);
+            bindAttribute(input, attributeBindings.defaultValues, input.name);
         }
         else
-            bindAttribute(program, input, store, propertyName);
+            bindAttribute(input, store, propertyName);
     }
 }
 
 void
-DrawCall::bindUniforms(Program::Ptr program, data::BindingMap& uniformBindings)
+DrawCall::bindUniforms()
 {
-    for (const auto& input : program->inputs().uniforms())
+    const auto& uniformBindings = _pass->uniformBindings();
+
+    for (const auto& input : _program->inputs().uniforms())
     {
         auto& bindings = uniformBindings.bindings;
         bool isArray = false;
@@ -160,14 +157,13 @@ DrawCall::bindUniforms(Program::Ptr program, data::BindingMap& uniformBindings)
                     + "\" property but it's not defined and no default value was provided."
                 );
 
-            bindUniform(program, input, uniformBindings.defaultValues, input.name);
+            bindUniform(input, uniformBindings.defaultValues, input.name);
 
             // FIXME: keep a direct pointer to the uniform data pointer instead of eventually search for it
             _propAddedOrRemovedSlot[&binding] = store.propertyAdded(input.name).connect(std::bind(
                 &DrawCall::uniformBindingPropertyAdded,
                 this,
                 std::ref(binding),
-                program,
                 std::ref(store),
                 std::ref(uniformBindings.defaultValues),
                 std::ref(input),
@@ -176,7 +172,7 @@ DrawCall::bindUniforms(Program::Ptr program, data::BindingMap& uniformBindings)
         }
         else
         {
-            bindUniform(program, input, store, propertyName);
+            bindUniform(input, store, propertyName);
 
             // we listen to the "propertyRemoved" signal in order to make sure the uniform data
             // points to the default value data
@@ -184,7 +180,6 @@ DrawCall::bindUniforms(Program::Ptr program, data::BindingMap& uniformBindings)
                 &DrawCall::uniformBindingPropertyRemoved,
                 this,
                 std::ref(binding),
-                program,
                 std::ref(store),
                 std::ref(uniformBindings.defaultValues),
                 std::ref(input),
@@ -196,19 +191,17 @@ DrawCall::bindUniforms(Program::Ptr program, data::BindingMap& uniformBindings)
 
 void
 DrawCall::uniformBindingPropertyAdded(const data::Binding&                  binding,
-                                      Program::Ptr                          program,
                                       data::Store&                          store,
                                       const data::Store&                    defaultValues,
                                       const ProgramInputs::UniformInput&    input,
                                       const std::string&                    propertyName)
 {
     _propAddedOrRemovedSlot.erase(&binding);
-    bindUniform(program, input, store, propertyName);
+    bindUniform(input, store, propertyName);
     _propAddedOrRemovedSlot[&binding] = store.propertyRemoved(propertyName).connect(std::bind(
         &DrawCall::uniformBindingPropertyAdded,
         this,
         std::ref(binding),
-        program,
         std::ref(store),
         std::ref(defaultValues),
         std::ref(input),
@@ -218,7 +211,6 @@ DrawCall::uniformBindingPropertyAdded(const data::Binding&                  bind
 
 void
 DrawCall::uniformBindingPropertyRemoved(const data::Binding&                binding,
-                                        Program::Ptr                        program,
                                         data::Store&                        store,
                                         const data::Store&                  defaultValues,
                                         const ProgramInputs::UniformInput&  input,
@@ -231,12 +223,11 @@ DrawCall::uniformBindingPropertyRemoved(const data::Binding&                bind
     );
 
     _propAddedOrRemovedSlot.erase(&binding);
-    bindUniform(program, input, defaultValues, input.name);
+    bindUniform(input, defaultValues, input.name);
     _propAddedOrRemovedSlot[&binding] = store.propertyAdded(propertyName).connect(std::bind(
         &DrawCall::uniformBindingPropertyAdded,
         this,
         std::ref(binding),
-        program,
         std::ref(store),
         std::ref(defaultValues),
         std::ref(input),
@@ -245,30 +236,28 @@ DrawCall::uniformBindingPropertyRemoved(const data::Binding&                bind
 }
 
 void
-DrawCall::bindIndexBuffer(const std::unordered_map<std::string, std::string>&   variables,
-                          const data::Store&                                    targetData)
+DrawCall::bindIndexBuffer()
 {
-    _indexBuffer = const_cast<int*>(targetData.getPointer<int>(
-        data::Store::getActualPropertyName(variables, "geometry[${geometryUuid}].indices")
+    _indexBuffer = const_cast<int*>(_targetData.getPointer<int>(
+        data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].indices")
     ));
-    _firstIndex = const_cast<uint*>(targetData.getPointer<uint>(
-        data::Store::getActualPropertyName(variables, "geometry[${geometryUuid}].firstIndex")
+    _firstIndex = const_cast<uint*>(_targetData.getPointer<uint>(
+        data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].firstIndex")
     ));
-    _numIndices = const_cast<uint*>(targetData.getPointer<uint>(
-        data::Store::getActualPropertyName(variables, "geometry[${geometryUuid}].numIndices")
+    _numIndices = const_cast<uint*>(_targetData.getPointer<uint>(
+        data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].numIndices")
     ));
 }
 
 void
-DrawCall::bindAttribute(Program::Ptr            program,
-                        ConstAttrInputRef       input,
+DrawCall::bindAttribute(ConstAttrInputRef       input,
                         const data::Store&      store,
                         const std::string&      propertyName)
 {
     const auto& attr = store.getPointer<VertexAttribute>(propertyName);
 
     _attributes.push_back({
-        program->setAttributeNames().size() + _attributes.size(),
+        _program->setAttributeNames().size() + _attributes.size(),
         input.location,
         attr->resourceId,
         attr->size,
@@ -278,8 +267,7 @@ DrawCall::bindAttribute(Program::Ptr            program,
 }
 
 void
-DrawCall::bindUniform(Program::Ptr          program,
-                      ConstUniformInputRef  input,
+DrawCall::bindUniform(ConstUniformInputRef  input,
                       const data::Store&    store,
                       const std::string&    propertyName)
 {
@@ -326,7 +314,7 @@ DrawCall::bindUniform(Program::Ptr          program,
             break;
         case ProgramInputs::Type::sampler2d:
             _samplers.push_back({
-                program->setTextureNames().size() + _samplers.size(),
+                _program->setTextureNames().size() + _samplers.size(),
                 store.getPointer<TextureSampler>(propertyName)->id,
                 input.location
             });
@@ -340,8 +328,10 @@ DrawCall::bindUniform(Program::Ptr          program,
 }
 
 void
-DrawCall::bindStates(const data::BindingMap& stateBindings)
+DrawCall::bindStates()
 {
+    const auto& stateBindings = _pass->stateBindings();
+
     _priority = bindState<float>(States::PROPERTY_PRIORITY, stateBindings);
     _zsorted = bindState<bool>(States::PROPERTY_ZSORTED, stateBindings);
     _blendingSourceFactor = bindState<Blending::Source>(States::PROPERTY_BLENDING_SOURCE, stateBindings);
@@ -420,12 +410,6 @@ DrawCall::render(AbstractContext::Ptr context, AbstractTexture::Ptr renderTarget
     context->setStencilTest(*_stencilFunction, *_stencilReference, *_stencilMask, *_stencilFailOp, *_stencilZFailOp, *_stencilZPassOp);
     context->setScissorTest(*_scissorTest, *_scissorBox);
     context->setTriangleCulling(*_triangleCulling);
-
-    /*context->setColorMask(true);
-    context->setBlendMode(Blending::Mode::DEFAULT);
-    context->setDepthTest(true, CompareMode::LESS);
-    context->setScissorTest(false, math::vec4(0.f));
-    context->setTriangleCulling(TriangleCulling::NONE);*/
 
     for (const auto& s : _samplers)
         context->setTextureAt(s.position, *s.resourceId, s.location);

@@ -77,19 +77,15 @@ namespace minko
 			typedef std::shared_ptr<AbstractTexture>	            AbsTexturePtr;
 			typedef std::shared_ptr<Program>			            ProgramPtr;
             typedef std::unordered_map<std::string, std::string>    StringMap;
-            typedef data::Store::PropertyChangedSignal::Slot    ChangedSlot;
+            typedef data::Store::PropertyChangedSignal::Slot        ChangedSlot;
 
 		private:
-
+            std::shared_ptr<Pass>               _pass;
             data::Store&                        _rootData;
             data::Store&                        _rendererData;
             data::Store&                        _targetData;
             StringMap                           _variables;
 
-            data::MacroBindingMap&              _macroBindings;
-            data::BindingMap&                   _attributeBindings;
-            data::BindingMap&                   _uniformBindings;
-            data::BindingMap&                   _stateBindings;
 			std::shared_ptr<Program>			_program;
             int*								_indexBuffer;
             uint*                               _firstIndex;
@@ -122,41 +118,17 @@ namespace minko
             std::map<const data::Binding*, ChangedSlot>    _propAddedOrRemovedSlot;
 
 		public:
-            DrawCall(const StringMap&       variables,
+            DrawCall(std::shared_ptr<Pass>  pass,
+                     const StringMap&       variables,
                      data::Store&           rootData,
                      data::Store&           rendererData,
-                     data::Store&           targetData,
-                     data::MacroBindingMap& macroBindings,
-                     data::BindingMap&      attributeBindings,
-                     data::BindingMap&      uniformBindings,
-                     data::BindingMap&      stateBindings);
-
+                     data::Store&           targetData);
+            
             inline
-            const data::MacroBindingMap&
-            macroBindings()
+            std::shared_ptr<Pass>
+            pass()
             {
-                return _macroBindings;
-            }
-
-            inline
-            const data::BindingMap&
-            attributeBindings()
-            {
-                return _attributeBindings;
-            }
-
-            inline
-            const data::BindingMap&
-            uniformBindings()
-            {
-                return _uniformBindings;
-            }
-
-            inline
-            const data::BindingMap&
-            stateBindings()
-            {
-                return _stateBindings;
+                return _pass;
             }
 
             inline
@@ -174,22 +146,29 @@ namespace minko
             }
 
             inline
-            const data::Store&
-            rootData() const
+            const StringMap&
+            variables() const
+            {
+                return _variables;
+            }
+
+            inline
+            data::Store&
+            rootData()
             {
                 return _rootData;
             }
 
             inline
-            const data::Store&
-            rendererData() const
+            data::Store&
+            rendererData()
             {
                 return _rendererData;
             }
 
             inline
-            const data::Store&
-            targetData() const
+            data::Store&
+            targetData()
             {
                 return _targetData;
             }
@@ -205,36 +184,32 @@ namespace minko
             reset();
 
             void
-            bindUniforms(std::shared_ptr<Program> program, data::BindingMap& uniformBindings);
+            bindUniforms();
 
             void
-            bindUniform(std::shared_ptr<Program>    program,
-                        ConstUniformInputRef        input,
-                        const data::Store&          store,
-                        const std::string&          propertyName);
+            bindUniform(ConstUniformInputRef    input,
+                        const data::Store&      store,
+                        const std::string&      propertyName);
 
             void
             bindAttributes();
 
             void
-            bindAttribute(std::shared_ptr<Program>  program,
-                          ConstAttrInputRef         input,
-						  const data::Store&        store,
-						  const std::string&        propertyName);
+            bindAttribute(ConstAttrInputRef     input,
+						  const data::Store&    store,
+						  const std::string&    propertyName);
 
 			void
-			bindIndexBuffer(const std::unordered_map<std::string, std::string>& variables,
-                            const data::Store&                                  targetData);
+			bindIndexBuffer();
 
 			void
-            bindStates(const data::BindingMap& stateBindings);
+            bindStates();
 			
             data::Store&
             getStore(data::Binding::Source source);
 
             void
             uniformBindingPropertyAdded(const data::Binding&                binding,
-                                        Program::Ptr                        program,
                                         data::Store&                        store,
                                         const data::Store&                  defaultValues,
                                         const ProgramInputs::UniformInput&  input,
@@ -242,7 +217,6 @@ namespace minko
 
             void
             uniformBindingPropertyRemoved(const data::Binding&                  binding,
-                                          Program::Ptr                          program,
                                           data::Store&                          store,
                                           const data::Store&                    defaultValues,
                                           const ProgramInputs::UniformInput&    input,
