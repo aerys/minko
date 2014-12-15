@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/SerializerCommon.hpp"
-#include "msgpack.hpp"
+#include "minko/deserialize/Unpacker.hpp"
 
 namespace minko
 {
@@ -28,7 +28,6 @@ namespace minko
     {
         class ComponentDeserializer
         {
-
         private:
             typedef std::shared_ptr<math::Matrix4x4>                Matrix4x4Ptr;
             typedef std::shared_ptr<file::Dependency>               DependencyPtr;

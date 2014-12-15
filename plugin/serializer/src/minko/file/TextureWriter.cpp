@@ -101,7 +101,7 @@ TextureWriter::embed(AssetLibraryPtr     assetLibrary,
         else
         {
             auto length = blobStream.str().size() - offset;
-    
+
             formatHeaderData.push_back(msgpack::type::make_tuple<int, int, int>(
                 static_cast<int>(textureFormat),
                 offset,
@@ -115,15 +115,15 @@ TextureWriter::embed(AssetLibraryPtr     assetLibrary,
     const auto numFaces = static_cast<unsigned char>(texture->type() == TextureType::Texture2D ? 1 : 6);
     const auto numMipmaps = static_cast<unsigned char>(writerOptions->generateMipmaps() && texture->width() == texture->height() ? math::getp2(texture->width()) + 1 : 0);
 
-    auto textureHeaderData = msgpack::type::make_tuple<int, int, unsigned char, unsigned char>(
+    msgpack::type::tuple<int, int, unsigned char, unsigned char> textureHeaderData(
         width,
         height,
         numFaces,
         numMipmaps
     );
 
-    headerData.a0 = textureHeaderData;
-    headerData.a1 = formatHeaderData;
+    headerData.get<0>() = textureHeaderData;
+    headerData.get<1>() = formatHeaderData;
 
     msgpack::pack(headerStream, headerData);
 

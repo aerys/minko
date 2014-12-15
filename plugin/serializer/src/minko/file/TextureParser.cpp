@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/TextureParser.hpp"
 #include "minko/file/TextureWriter.hpp"
 #include "minko/log/Logger.hpp"
+#include "minko/deserialize/Unpacker.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/OpenGLES2Context.hpp"
 #include "minko/render/Texture.hpp"
@@ -33,6 +34,7 @@ using namespace minko;
 using namespace minko::file;
 using namespace minko::render;
 using namespace minko::serialize;
+using namespace minko::deserialize;
 
 std::unordered_map<render::TextureFormat, TextureParser::FormatParserFunction> TextureParser::_formatParserFunctions =
 {
@@ -74,28 +76,22 @@ TextureParser::parse(const std::string&                filename,
     auto textureHeaderOffset = _headerSize + _dependenciesSize;
     auto textureBlobOffset = textureHeaderOffset + _textureHeaderSize;
 
-    auto rawTextureHeaderData = std::vector<unsigned char>(data.begin() + textureHeaderOffset,
-                                                           data.begin() + textureHeaderOffset + _textureHeaderSize);
-
-    auto headerData = msgpack::type::tuple<
+    typedef msgpack::type::tuple<
         msgpack::type::tuple<int, int, unsigned char, unsigned char>,
-        std::vector<msgpack::type::tuple<int, int, int>>>();
+        std::vector<msgpack::type::tuple<int, int, int>>>
+    HeaderType;
 
-    msgpack::unpacked unpacked;
-    msgpack::unpack(&unpacked, reinterpret_cast<const char*>(data.data() + textureHeaderOffset), _textureHeaderSize);
+    HeaderType header;
+    unpack(header, data, _textureHeaderSize, textureHeaderOffset);
 
-    auto header = unpacked.get().as<msgpack::type::tuple<
-        msgpack::type::tuple<int, int, unsigned char, unsigned char>,
-        std::vector<msgpack::type::tuple<int, int, int>>>>();
+    const auto& textureHeader = header.get<0>();
 
-    const auto& textureHeader = header.a0;
+    const auto textureWidth = textureHeader.get<0>();
+    const auto textureHeight = textureHeader.get<1>();
+    const auto textureType = textureHeader.get<2>() == 1 ? TextureType::Texture2D : TextureType::CubeTexture;
+    const auto textureNumMipmaps = textureHeader.get<3>();
 
-    const auto textureWidth = textureHeader.a0;
-    const auto textureHeight = textureHeader.a1;
-    const auto textureType = textureHeader.a2 == 1 ? TextureType::Texture2D : TextureType::CubeTexture;
-    const auto textureNumMipmaps = textureHeader.a3;
-
-    const auto& formats = header.a1;
+    const auto& formats = header.get<1>();
 
     const auto& contextAvailableTextureFormats = OpenGLES2Context::availableTextureFormats();
 
@@ -110,7 +106,7 @@ TextureParser::parse(const std::string&                filename,
 
     for (const auto& entry : formats)
     {
-        availableTextureFormats.insert(static_cast<TextureFormat>(entry.a0));
+        availableTextureFormats.insert(static_cast<TextureFormat>(entry.get<0>()));
     }
 
     auto filteredAvailableTextureFormats = std::unordered_set<TextureFormat>(availableTextureFormats.size());
@@ -126,11 +122,11 @@ TextureParser::parse(const std::string&                filename,
     auto desiredFormatInfo = *std::find_if(formats.begin(), formats.end(),
                                            [&](const msgpack::type::tuple<int, int, int>& entry) -> bool
     {
-        return static_cast<TextureFormat>(entry.a0) == desiredFormat;
+        return static_cast<TextureFormat>(entry.get<0>()) == desiredFormat;
     });
 
-    auto offset = textureBlobOffset + desiredFormatInfo.a1;
-    auto length = desiredFormatInfo.a2;
+    auto offset = textureBlobOffset + desiredFormatInfo.get<1>();
+    auto length = desiredFormatInfo.get<2>();
 
     if (!_dataEmbed)
     {
@@ -195,12 +191,10 @@ TextureParser::parseRGBATexture(const std::string&                  fileName,
                                 render::TextureType                 type,
                                 int                                 numMipmaps)
 {
-    msgpack::unpacked unpacked;
-    msgpack::unpack(&unpacked, reinterpret_cast<const char*>(data.data()), data.size());
+    msgpack::type::tuple<int, std::vector<unsigned char>> deserializedTexture;
+    unpack(deserializedTexture, data, data.size());
 
-    auto deserializedTexture = unpacked.get().as<msgpack::type::tuple<int, std::vector<unsigned char>>>();
-
-    auto imageFormat = static_cast<ImageFormat>(deserializedTexture.a0);
+    auto imageFormat = static_cast<ImageFormat>(deserializedTexture.get<0>());
 
     auto parser = AbstractParser::Ptr();
 
@@ -214,7 +208,7 @@ TextureParser::parseRGBATexture(const std::string&                  fileName,
         return false;
     }
 
-    parser->parse(fileName, fileName, options, deserializedTexture.a1, assetLibrary);
+    parser->parse(fileName, fileName, options, deserializedTexture.get<1>(), assetLibrary);
 
     return true;
 }
@@ -230,10 +224,8 @@ TextureParser::parseCompressedTexture(TextureFormat                        forma
                                       render::TextureType                  type,
                                       int                                  numMipmaps)
 {
-    msgpack::unpacked unpacked;
-    msgpack::unpack(&unpacked, reinterpret_cast<const char*>(data.data()), data.size());
-
-    auto textureData = unpacked.get().as<std::vector<unsigned char>>();
+    std::vector<unsigned char> textureData;
+    unpack(textureData, data, data.size());
 
     const auto hasMipmaps = options->generateMipmaps() && numMipmaps > 0;
 

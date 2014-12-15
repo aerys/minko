@@ -47,7 +47,7 @@ TypeDeserializer::deserializeVector4(std::tuple<uint, std::string&>& serializedV
     {
         if (std::get<0>(serializedVector) & (1u << serializedIndex++))
             read(stream, defaultValues[i]);
-            //defaultValues[i] = serializedVector.a1[serializedIndex++];
+            //defaultValues[i] = serializedVector.get<1>()[serializedIndex++];
     }
 
     return Any(math::Vector4::create(defaultValues[0], defaultValues[1], defaultValues[2], defaultValues[3]));
@@ -60,14 +60,14 @@ TypeDeserializer::deserializeVector3(std::tuple<uint, std::string&>& serializedV
     uint                serializedIndex = 0;
     std::stringstream    stream;
 
-    stream << std::get<1>(serializedVector);//&*serializedVector.a1.begin(), serializedVector.a1.size());
+    stream << std::get<1>(serializedVector);//&*serializedVector.get<1>().begin(), serializedVector.get<1>().size());
 
 
     for (unsigned int i = 0; i < 3; ++i)
     {
         if (std::get<0>(serializedVector) & (1u << serializedIndex++))
             read(stream, defaultValues[i]);
-//            defaultValues[i] = serializedVector.a1[serializedIndex++];
+//            defaultValues[i] = serializedVector.get<1>()[serializedIndex++];
     }
 
     return Any(math::Vector3::create(defaultValues[0], defaultValues[1], defaultValues[2]));
@@ -80,13 +80,13 @@ TypeDeserializer::deserializeVector2(std::tuple<uint, std::string&>& serializedV
     uint                serializedIndex = 0;
     std::stringstream    stream;
 
-    stream << std::get<1>(serializedVector);//(&*serializedVector.a1.begin(), serializedVector.a1.size());
+    stream << std::get<1>(serializedVector);//(&*serializedVector.get<1>().begin(), serializedVector.get<1>().size());
 
     for (unsigned int i = 0; i < 2; ++i)
     {
         if (std::get<0>(serializedVector) & (1u << serializedIndex++))
             read(stream, defaultValues[i]);
-            //defaultValues[i] = serializedVector.a1[serializedIndex++];
+            //defaultValues[i] = serializedVector.get<1>()[serializedIndex++];
     }
 
     return Any(math::Vector2::create(defaultValues[0], defaultValues[1]));
@@ -99,19 +99,17 @@ TypeDeserializer::deserializeMatrix4x4(std::tuple<uint, std::string&>& serialize
     std::stringstream    stream;
 
     stream << std::get<1>(serializeMatrix);
-    //(&*serializeMatrix.a1.begin(), serializeMatrix.a1.size());
+    //(&*serializeMatrix.get<1>().begin(), serializeMatrix.get<1>().size());
     matrixValues[0] = 1;
     matrixValues[5] = 1;
     matrixValues[10] = 1;
     matrixValues[15] = 1;
 
-    unsigned int serializedIndex = 0;
-
     for (unsigned int i = 0; i < 16; ++i)
     {
         if (std::get<0>(serializeMatrix) & (1u << i))
             read<float>(stream, matrixValues[i]);
-            //matrixValues[i] = serializeMatrix.a1[serializedIndex++];
+            //matrixValues[i] = serializeMatrix.get<1>()[serializedIndex++];
     }
 
     return Any(math::Matrix4x4::create()->initialize(matrixValues));
