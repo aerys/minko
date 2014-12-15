@@ -107,11 +107,19 @@ namespace minko
             resetDefaultValues();
 
             inline
+            std::shared_ptr<data::Provider>
+            data()
+            {
+                return _data;
+            }
+
+            inline
             float
             priority() const
             {
                 return _data->get<float>(PROPERTY_PRIORITY);
             }
+
             inline
             States&
             priority(float priority)
@@ -127,6 +135,7 @@ namespace minko
 			{
 				return _data->get<bool>(PROPERTY_ZSORTED);
 			}
+
             inline
             States&
             zSorted(bool zSorted)
@@ -144,10 +153,28 @@ namespace minko
             }
 
             inline
+            States&
+            blendingSourceFactor(Blending::Source value)
+            {
+                _data->set(PROPERTY_BLENDING_SOURCE, value);
+
+                return *this;
+            }
+
+            inline
             Blending::Destination
             blendingDestinationFactor() const
             {
                 return _data->get<Blending::Destination>(PROPERTY_BLENDING_DESTINATION);
+            }
+
+            inline
+            States&
+            blendingDestinationFactor(Blending::Destination value)
+            {
+                _data->set(PROPERTY_BLENDING_DESTINATION, value);
+
+                return *this;
             }
 
 			inline
@@ -158,10 +185,28 @@ namespace minko
 			}
 
             inline
+            States&
+            colorMask(bool value)
+            {
+                _data->set(PROPERTY_COLOR_MASK, value);
+
+                return *this;
+            }
+
+            inline
             bool
             depthMask() const
             {
                 return _data->get<bool>(PROPERTY_DEPTH_MASK);
+            }
+
+            inline
+            States&
+            depthMask(bool value)
+            {
+                _data->set(PROPERTY_DEPTH_MASK, value);
+
+                return *this;
             }
 
             inline
@@ -172,10 +217,28 @@ namespace minko
             }
 
             inline
+            States&
+            depthFunction(CompareMode value)
+            {
+                _data->set(PROPERTY_DEPTH_FUNCTION, value);
+
+                return *this;
+            }
+
+            inline
             TriangleCulling
             triangleCulling() const
             {
                 return _data->get<TriangleCulling>(PROPERTY_TRIANGLE_CULLING);
+            }
+
+            inline
+            States&
+            triangleCulling(TriangleCulling value)
+            {
+                _data->set(PROPERTY_TRIANGLE_CULLING, value);
+
+                return *this;
             }
 
 			inline
@@ -185,12 +248,30 @@ namespace minko
                 return _data->get<CompareMode>(PROPERTY_STENCIL_FUNCTION);
 			}
 
+            inline
+            States&
+            stencilFunction(CompareMode value)
+            {
+                _data->set(PROPERTY_STENCIL_FUNCTION, value);
+
+                return *this;
+            }
+
 			inline
 			int
 			stencilReference() const
 			{
 				return _data->get<int>(PROPERTY_STENCIL_REFERENCE);
 			}
+
+            inline
+            States&
+            stencilReference(int value)
+            {
+                _data->set(PROPERTY_STENCIL_REFERENCE, value);
+
+                return *this;
+            }
 
 			inline
 			uint
@@ -199,12 +280,30 @@ namespace minko
 				return _data->get<uint>(PROPERTY_STENCIL_MASK);
 			}
 
+            inline
+            States&
+            stencilMask(uint value)
+            {
+                _data->set(PROPERTY_STENCIL_MASK, value);
+
+                return *this;
+            }
+
 			inline
 			StencilOperation
 			stencilFailOperation() const
 			{
                 return _data->get<StencilOperation>(PROPERTY_STENCIL_FAIL_OP);
 			}
+
+            inline
+            States&
+            stencilFailOperation(StencilOperation value)
+            {
+                _data->set(PROPERTY_STENCIL_FAIL_OP, value);
+
+                return *this;
+            }
 
 			inline
 			StencilOperation
@@ -213,12 +312,30 @@ namespace minko
                 return _data->get<StencilOperation>(PROPERTY_STENCIL_ZFAIL_OP);
 			}
 
+            inline
+            States&
+            stencilZFailOperation(StencilOperation value)
+            {
+                _data->set(PROPERTY_STENCIL_ZFAIL_OP, value);
+
+                return *this;
+            }
+
 			inline
 			StencilOperation
 			stencilZPassOperation() const
 			{
                 return _data->get<StencilOperation>(PROPERTY_STENCIL_ZPASS_OP);
 			}
+
+            inline
+            States&
+            stencilZPassOperation(StencilOperation value)
+            {
+                _data->set(PROPERTY_STENCIL_ZPASS_OP, value);
+
+                return *this;
+            }
 
 			inline
 			bool
@@ -227,12 +344,30 @@ namespace minko
                 return _data->get<bool>(PROPERTY_SCISSOR_TEST);
 			}
 
+            inline
+            States&
+            scissorTest(bool value)
+            {
+                _data->set(PROPERTY_SCISSOR_TEST, value);
+
+                return *this;
+            }
+
 			inline
 			math::ivec4
 			scissorBox() const
 			{
                 return _data->get<math::ivec4>(PROPERTY_SCISSOR_BOX);
 			}
+
+            inline
+            States&
+            scissorBox(math::ivec4 value)
+            {
+                _data->set(PROPERTY_SCISSOR_BOX, value);
+
+                return *this;
+            }
 
             /*inline
             AbstractTexturePtr

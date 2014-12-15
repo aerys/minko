@@ -132,17 +132,9 @@ EffectParser::initializePriorityMap()
 	return m;
 }
 
-std::array<std::string, 18> EffectParser::_stateNames;
-std::array<std::string, 18>
-EffectParser::initializeStateNames()
-{
-    std::array<std::string, 18> names;
-
-    std::copy(std::begin(States::PROPERTY_NAMES), std::end(States::PROPERTY_NAMES), std::begin(names));
-    names[17] = "blendMode";
-
-    return names;
-}
+std::array<std::string, 1> EffectParser::_extraStateNames = {
+    "blendMode"
+};
 
 float
 EffectParser::getPriorityValue(const std::string& name)
@@ -159,7 +151,6 @@ EffectParser::EffectParser() :
 	_numDependencies(0),
 	_numLoadedDependencies(0)
 {
-    EffectParser::_stateNames = EffectParser::initializeStateNames();
 }
 
 void
@@ -358,18 +349,15 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
 
         auto vertexShader = parseShader(node.get("vertexShader", 0), passScope, Shader::Type::VERTEX_SHADER);
         auto fragmentShader = parseShader(node.get("fragmentShader", 0), passScope, Shader::Type::FRAGMENT_SHADER);
-        auto states = passScope.stateBlock.bindings.defaultValues.providers().size() != 0
-            ? States(passScope.stateBlock.bindings.defaultValues.providers().front())
-            : States();
 
         passes.push_back(Pass::create(
             passName,
             Program::create(_options->context(), vertexShader, fragmentShader),
-            passScope.attributeBlock.bindings,
-            passScope.uniformBlock.bindings,
-            passScope.stateBlock.bindings,
-            passScope.macroBlock.bindings,
-            states
+            passScope.attributeBlock.bindingMap,
+            passScope.uniformBlock.bindingMap,
+            passScope.stateBlock.bindingMap,
+            passScope.macroBlock.bindingMap,
+            passScope.stateBlock.states
         ));
     }
 }
@@ -544,13 +532,13 @@ EffectParser::parseAttributes(const Json::Value& node, const Scope& scope, Attri
     {
         auto defaultValuesProvider = data::Provider::create();
 
-        attributes.bindings.defaultValues.addProvider(defaultValuesProvider);
+        attributes.bindingMap.defaultValues.addProvider(defaultValuesProvider);
 
         for (auto attributeName : attributesNode.getMemberNames())
         {
             auto attributeNode = attributesNode[attributeName];
 
-            parseBinding(attributeNode, scope, attributes.bindings.bindings[attributeName]);
+            parseBinding(attributeNode, scope, attributes.bindingMap.bindings[attributeName]);
 
             /*if (!attributeNode.get("default", 0).empty())
                 throw ParserError("Default values are not yet supported for attributes.");*/
@@ -579,13 +567,13 @@ EffectParser::parseUniforms(const Json::Value& node, const Scope& scope, Uniform
     {
         auto defaultValuesProvider = data::Provider::create();
 
-        uniforms.bindings.defaultValues.addProvider(defaultValuesProvider);
+        uniforms.bindingMap.defaultValues.addProvider(defaultValuesProvider);
 
         for (auto uniformName : uniformsNode.getMemberNames())
         {
             auto uniformNode = uniformsNode[uniformName];
 
-            parseBinding(uniformNode, scope, uniforms.bindings.bindings[uniformName]);
+            parseBinding(uniformNode, scope, uniforms.bindingMap.bindings[uniformName]);
             parseDefaultValue(uniformNode, scope, uniformName, defaultValuesProvider);
         }
     }
@@ -601,14 +589,14 @@ EffectParser::parseMacros(const Json::Value& node, const Scope& scope, MacroBloc
     {
         auto defaultValuesProvider = data::Provider::create();
 
-        macros.bindings.defaultValues.addProvider(defaultValuesProvider);
+        macros.bindingMap.defaultValues.addProvider(defaultValuesProvider);
 
         for (auto macroName : macrosNode.getMemberNames())
         {
             auto macroNode = macrosNode[macroName];
 
-            parseBinding(macroNode, scope, macros.bindings.bindings[macroName]);
-            parseMacroBinding(macroNode, scope, macros.bindings.bindings[macroName]);
+            parseBinding(macroNode, scope, macros.bindingMap.bindings[macroName]);
+            parseMacroBinding(macroNode, scope, macros.bindingMap.bindings[macroName]);
             parseDefaultValue(macroNode, scope, macroName, defaultValuesProvider);
         }
     }
@@ -616,7 +604,7 @@ EffectParser::parseMacros(const Json::Value& node, const Scope& scope, MacroBloc
 }
 
 void
-EffectParser::parseStates(const Json::Value& node, const Scope& scope, StateBlock& states)
+EffectParser::parseStates(const Json::Value& node, const Scope& scope, StateBlock& stateBlock)
 {
     auto statesNode = node.get("states", 0);
 
@@ -624,49 +612,46 @@ EffectParser::parseStates(const Json::Value& node, const Scope& scope, StateBloc
     {
         for (auto stateName : statesNode.getMemberNames())
         {
-            if (std::find(_stateNames.begin(), _stateNames.end(), stateName) == _stateNames.end())
+            if (std::find(States::PROPERTY_NAMES.begin(), States::PROPERTY_NAMES.end(), stateName) == States::PROPERTY_NAMES.end() &&
+                std::find(_extraStateNames.begin(), _extraStateNames.end(), stateName) == _extraStateNames.end())
                 throw; // FIXME: log warning because the state name does not match any known state
 
-            //parseBinding(statesNode[stateName], scope, states.bindings.bindings[stateName]);
+            //parseBinding(statesNode[stateName], scope, states.bindingMap.bindings[stateName]);
         }
-
-        auto defaultValuesProvider = data::Provider::create();
-
-        states.bindings.defaultValues.addProvider(defaultValuesProvider);
 
         // parse & set priority default value
         float priority = parsePriority(statesNode, scope, render::States::DEFAULT_PRIORITY);
-        defaultValuesProvider->set(render::States::PROPERTY_PRIORITY, priority);
+        stateBlock.states.priority(priority);
 
         // parse & set z-sorted default value
         bool zSorted = render::States::DEFAULT_ZSORTED;
         parseZSort(statesNode, scope, zSorted);
-        defaultValuesProvider->set(render::States::PROPERTY_ZSORTED, zSorted);
+        stateBlock.states.zSorted(zSorted);
 
         // parse & set blending factors default values
         render::Blending::Source blendSrcFactor = render::States::DEFAULT_BLENDING_SOURCE;
         render::Blending::Destination blendDstFactor = render::States::DEFAULT_BLENDING_DESTINATION;
         parseBlendMode(statesNode, scope, blendSrcFactor, blendDstFactor);
-        defaultValuesProvider->set(render::States::PROPERTY_BLENDING_SOURCE, blendSrcFactor);
-        defaultValuesProvider->set(render::States::PROPERTY_BLENDING_DESTINATION, blendDstFactor);
+        stateBlock.states.blendingSourceFactor(blendSrcFactor);
+        stateBlock.states.blendingDestinationFactor(blendDstFactor);
 
         // parse & set color mask default value
         bool colorMask = render::States::DEFAULT_COLOR_MASK;
         parseColorMask(statesNode, scope, colorMask);
-        defaultValuesProvider->set(render::States::PROPERTY_COLOR_MASK, colorMask);
+        stateBlock.states.colorMask(colorMask);
 
         // parse & set depth mask/func default values
         bool depthMask = render::States::DEFAULT_DEPTH_MASK;
         parseDepthMask(statesNode, scope, depthMask);
         CompareMode depthFunction = render::States::DEFAULT_DEPTH_FUNCTION;
         parseDepthFunction(statesNode, scope, depthFunction);
-        defaultValuesProvider->set(render::States::PROPERTY_DEPTH_MASK, depthMask);
-        defaultValuesProvider->set(render::States::PROPERTY_DEPTH_FUNCTION, depthFunction);
+        stateBlock.states.depthMask(depthMask);
+        stateBlock.states.depthFunction(depthFunction);
 
         // parse & set triangle culling default value
         TriangleCulling triangleCulling = render::States::DEFAULT_TRIANGLE_CULLING;
         parseTriangleCulling(statesNode, scope, triangleCulling);
-        defaultValuesProvider->set(render::States::PROPERTY_TRIANGLE_CULLING, triangleCulling);
+        stateBlock.states.triangleCulling(triangleCulling);
 
         // parse & set stencil default values
         CompareMode stencilFunc = render::States::DEFAULT_STENCIL_FUNCTION;
@@ -676,19 +661,19 @@ EffectParser::parseStates(const Json::Value& node, const Scope& scope, StateBloc
         StencilOperation stencilZFailOp = render::States::DEFAULT_STENCIL_ZFAIL_OP;
         StencilOperation stencilZPassOp = render::States::DEFAULT_STENCIL_ZPASS_OP;
         parseStencilState(statesNode, scope, stencilFunc, stencilRef, stencilMask, stencilFailOp, stencilZFailOp, stencilZPassOp);
-        defaultValuesProvider->set(render::States::PROPERTY_STENCIL_FUNCTION, stencilFunc);
-        defaultValuesProvider->set(render::States::PROPERTY_STENCIL_REFERENCE, stencilRef);
-        defaultValuesProvider->set(render::States::PROPERTY_STENCIL_MASK, stencilMask);
-        defaultValuesProvider->set(render::States::PROPERTY_STENCIL_FAIL_OP, stencilFailOp);
-        defaultValuesProvider->set(render::States::PROPERTY_STENCIL_ZFAIL_OP, stencilZFailOp);
-        defaultValuesProvider->set(render::States::PROPERTY_STENCIL_ZPASS_OP, stencilZPassOp);
+        stateBlock.states.stencilFunction(stencilFunc);
+        stateBlock.states.stencilReference(stencilRef);
+        stateBlock.states.stencilMask(stencilMask);
+        stateBlock.states.stencilFailOperation(stencilFailOp);
+        stateBlock.states.stencilZFailOperation(stencilZFailOp);
+        stateBlock.states.stencilZPassOperation(stencilZPassOp);
 
         // parse & set scissor test/box default values
         bool scissorTest = render::States::DEFAULT_SCISSOR_TEST;
         math::ivec4 scissorBox = render::States::DEFAULT_SCISSOR_BOX;
         parseScissorTest(statesNode, scope, scissorTest, scissorBox);
-        defaultValuesProvider->set(render::States::PROPERTY_SCISSOR_TEST, scissorTest);
-        defaultValuesProvider->set(render::States::PROPERTY_SCISSOR_BOX, scissorBox);
+        stateBlock.states.scissorTest(scissorTest);
+        stateBlock.states.scissorBox(scissorBox);
 
         // FIXME: handle sampler states & render target
         //parseSamplerStates(statesNode, samplerStates); // FIXME
