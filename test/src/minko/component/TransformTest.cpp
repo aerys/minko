@@ -284,7 +284,7 @@ TEST_F(TransformTest, NodeHierarchyTransformIssueWithoutBlockingNode)
 		p2->addChild(p1);
 			p1->addChild(n3);
 			p1->addChild(n4);
-		//p2->addChild(n5);
+		p2->addChild(n5);
 
 	root->addChild(p3);
 		p3->addChild(n1);
