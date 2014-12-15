@@ -51,11 +51,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/math/Vector3.hpp"
 #include "minko/math/Vector4.hpp"
 #include "minko/material/Material.hpp"
+#include "minko/deserialize/TypeDeserializer.hpp"
+#include "minko/deserialize/Unpacker.hpp"
 
 using namespace minko;
 using namespace minko::extension;
 using namespace minko::file;
 using namespace minko::particle;
+using namespace minko::deserialize;
 
 void
 ParticlesExtension::bind()
@@ -70,29 +73,25 @@ ParticlesExtension::bind()
 
 /*static*/
 component::AbstractComponent::Ptr
-ParticlesExtension::deserializeParticles(std::string&       serialized, 
-                                         AssetLibrary::Ptr  assets, 
+ParticlesExtension::deserializeParticles(std::string&       serialized,
+                                         AssetLibrary::Ptr  assets,
                                          Dependency::Ptr    dependencies)
 {
-    typedef msgpack::type::tuple<unsigned short, float, uint, bool, bool, bool, uint, IdAndString, IdAndString, IdAndString, std::vector<IdAndString>>  SerializedParticles;
-
-    msgpack::zone   mempool;
-    msgpack::object deserialized;
-    msgpack::unpack(serialized.data(), serialized.size() - 1, NULL, &mempool, &deserialized);
-
+    typedef msgpack::type::tuple<unsigned short, std::string, uint, bool, bool, bool, uint, IdAndString, IdAndString, IdAndString, std::vector<IdAndString>>  SerializedParticles;
     SerializedParticles dst;
-    deserialized.convert(&dst);
 
-    const unsigned short    matId           = dst.a0;
-    const float             rate            = dst.a1;
-    const auto              startDirection  = particle::StartDirection(dst.a2);
-    const bool              emit            = dst.a3;
-    const bool              inWorldSpace    = dst.a4;
-    const bool              zSorted         = dst.a5;
-    const uint              countLimit      = dst.a6;
-    auto                    lifetime        = deserializeFloatSampler(serialize::SamplerId(dst.a7.a0), dst.a7.a1);
-    auto                    shape           = deserializeEmitterShape(serialize::EmitterShapeId(dst.a8.a0), dst.a8.a1);
-    auto                    startVelocity   = deserializeFloatSampler(serialize::SamplerId(dst.a9.a0), dst.a9.a1);
+    unpack(dst, serialized.data(), serialized.size() - 1);
+
+    const unsigned short    matId           = dst.get<0>();
+    const float             rate            = deserialize::TypeDeserializer::deserializeFloat(dst.get<1>());
+    const auto              startDirection  = particle::StartDirection(dst.get<2>());
+    const bool              emit            = dst.get<3>();
+    const bool              inWorldSpace    = dst.get<4>();
+    const bool              zSorted         = dst.get<5>();
+    const uint              countLimit      = dst.get<6>();
+    auto                    lifetime        = deserializeFloatSampler(serialize::SamplerId(dst.get<7>().get<0>()), dst.get<7>().get<1>());
+    auto                    shape           = deserializeEmitterShape(serialize::EmitterShapeId(dst.get<8>().get<0>()), dst.get<8>().get<1>());
+    auto                    startVelocity   = deserializeFloatSampler(serialize::SamplerId(dst.get<9>().get<0>()), dst.get<9>().get<1>());
 
     auto particles = component::ParticleSystem::create(
         assets,
@@ -103,16 +102,16 @@ ParticlesExtension::deserializeParticles(std::string&       serialized,
         startVelocity
     );
     particles->emitting(emit);
-	
-    for (auto& modifier : dst.a10)
+
+    for (auto& modifier : dst.get<10>())
     {
         auto mod = deserializeParticleModifier(
-            serialize::ModifierId(modifier.a0), 
-            modifier.a1
+            serialize::ModifierId(modifier.get<0>()),
+            modifier.get<1>()
         );
-        
+
         if (mod)
-             particles->add(mod);   
+             particles->add(mod);
     }
 
     // retrieve the diffuse color and diffuse texture from associated material if any
@@ -148,7 +147,7 @@ ParticlesExtension::deserializeParticles(std::string&       serialized,
 
 /*static*/
 modifier::IParticleModifier::Ptr
-ParticlesExtension::deserializeParticleModifier(serialize::ModifierId           id, 
+ParticlesExtension::deserializeParticleModifier(serialize::ModifierId           id,
                                                 const std::string&              serialized)
 {
     switch (id)
@@ -189,14 +188,10 @@ ParticlesExtension::deserializeParticleModifier(serialize::ModifierId           
 modifier::IParticleModifier::Ptr
 ParticlesExtension::deserializeStartColorInitializer(const std::string& serialized)
 {
-    msgpack::zone   mempool;
-    msgpack::object deserialized;
-    msgpack::unpack(serialized.data(), serialized.size(), NULL, &mempool, &deserialized);
-
     msgpack::type::tuple<IdAndString> dst;
-    deserialized.convert(&dst);
+    unpack(dst, serialized.data(), serialized.size() - 1);
 
-    auto color = deserializeColorSampler(serialize::SamplerId(dst.a0.a0), dst.a0.a1);
+    auto color = deserializeColorSampler(serialize::SamplerId(dst.get<0>().get<0>()), dst.get<0>().get<1>());
     return modifier::StartColor::create(color);
 }
 
@@ -204,16 +199,12 @@ ParticlesExtension::deserializeStartColorInitializer(const std::string& serializ
 modifier::IParticleModifier::Ptr
 ParticlesExtension::deserializeStartForceInitializer(const std::string& serialized)
 {
-    msgpack::zone   mempool;
-    msgpack::object deserialized;
-    msgpack::unpack(serialized.data(), serialized.size(), NULL, &mempool, &deserialized);
-
     msgpack::type::tuple<IdAndString, IdAndString, IdAndString> dst;
-    deserialized.convert(&dst);
+    unpack(dst, serialized.data(), serialized.size() - 1);
 
-    auto fx = deserializeFloatSampler(serialize::SamplerId(dst.a0.a0), dst.a0.a1);
-    auto fy = deserializeFloatSampler(serialize::SamplerId(dst.a1.a0), dst.a1.a1);
-    auto fz = deserializeFloatSampler(serialize::SamplerId(dst.a2.a0), dst.a2.a1);
+    auto fx = deserializeFloatSampler(serialize::SamplerId(dst.get<0>().get<0>()), dst.get<0>().get<1>());
+    auto fy = deserializeFloatSampler(serialize::SamplerId(dst.get<1>().get<0>()), dst.get<1>().get<1>());
+    auto fz = deserializeFloatSampler(serialize::SamplerId(dst.get<2>().get<0>()), dst.get<2>().get<1>());
     return modifier::StartForce::create(fx, fy, fz);
 
 }
@@ -222,14 +213,10 @@ ParticlesExtension::deserializeStartForceInitializer(const std::string& serializ
 modifier::IParticleModifier::Ptr
 ParticlesExtension::deserializeStartRotationInitializer(const std::string& serialized)
 {
-    msgpack::zone   mempool;
-    msgpack::object deserialized;
-    msgpack::unpack(serialized.data(), serialized.size(), NULL, &mempool, &deserialized);
-
     msgpack::type::tuple<IdAndString> dst;
-    deserialized.convert(&dst);
+    unpack(dst, serialized.data(), serialized.size() - 1);
 
-    auto rotation = deserializeFloatSampler(serialize::SamplerId(dst.a0.a0), dst.a0.a1);
+    auto rotation = deserializeFloatSampler(serialize::SamplerId(dst.get<0>().get<0>()), dst.get<0>().get<1>());
     return modifier::StartRotation::create(rotation);
 }
 
@@ -237,46 +224,34 @@ ParticlesExtension::deserializeStartRotationInitializer(const std::string& seria
 modifier::IParticleModifier::Ptr
 ParticlesExtension::deserializeStartSizeInitializer(const std::string& serialized)
 {
-    msgpack::zone   mempool;
-    msgpack::object deserialized;
-    msgpack::unpack(serialized.data(), serialized.size(), NULL, &mempool, &deserialized);
-
     msgpack::type::tuple<IdAndString> dst;
-    deserialized.convert(&dst);
+    unpack(dst, serialized.data(), serialized.size() - 1);
 
-    auto size = deserializeFloatSampler(serialize::SamplerId(dst.a0.a0), dst.a0.a1);
+    auto size = deserializeFloatSampler(serialize::SamplerId(dst.get<0>().get<0>()), dst.get<0>().get<1>());
     return modifier::StartSize::create(size);
 }
 
 /*static*/
 modifier::IParticleModifier::Ptr
-ParticlesExtension::deserializeStartSpriteInitializer(const std::string&            serialized)
+ParticlesExtension::deserializeStartSpriteInitializer(const std::string& serialized)
 {
-    msgpack::zone   mempool;
-    msgpack::object deserialized;
-    msgpack::unpack(serialized.data(), serialized.size(), NULL, &mempool, &deserialized);
-
     msgpack::type::tuple<uint, uint, IdAndString> dst;
-    deserialized.convert(&dst);
+    unpack(dst, serialized.data(), serialized.size() - 1);
 
-    auto sprite = deserializeFloatSampler(serialize::SamplerId(dst.a2.a0), dst.a2.a1);
-    return modifier::StartSprite::create(sprite, dst.a0, dst.a1);
+    auto sprite = deserializeFloatSampler(serialize::SamplerId(dst.get<2>().get<0>()), dst.get<2>().get<1>());
+    return modifier::StartSprite::create(sprite, dst.get<0>(), dst.get<1>());
 }
 
 /*static*/
 modifier::IParticleModifier::Ptr
 ParticlesExtension::deserializeStartVelocityInitializer(const std::string& serialized)
 {
-    msgpack::zone   mempool;
-    msgpack::object deserialized;
-    msgpack::unpack(serialized.data(), serialized.size(), NULL, &mempool, &deserialized);
-
     msgpack::type::tuple<IdAndString, IdAndString, IdAndString> dst;
-    deserialized.convert(&dst);
+    unpack(dst, serialized.data(), serialized.size() - 1);
 
-    auto vx = deserializeFloatSampler(serialize::SamplerId(dst.a0.a0), dst.a0.a1);
-    auto vy = deserializeFloatSampler(serialize::SamplerId(dst.a1.a0), dst.a1.a1);
-    auto vz = deserializeFloatSampler(serialize::SamplerId(dst.a2.a0), dst.a2.a1);
+    auto vx = deserializeFloatSampler(serialize::SamplerId(dst.get<0>().get<0>()), dst.get<0>().get<1>());
+    auto vy = deserializeFloatSampler(serialize::SamplerId(dst.get<1>().get<0>()), dst.get<1>().get<1>());
+    auto vz = deserializeFloatSampler(serialize::SamplerId(dst.get<2>().get<0>()), dst.get<2>().get<1>());
     return modifier::StartVelocity::create(vx, vy, vz);
 }
 
@@ -284,14 +259,10 @@ ParticlesExtension::deserializeStartVelocityInitializer(const std::string& seria
 modifier::IParticleModifier::Ptr
 ParticlesExtension::deserializeStartAngularVelocityInitializer(const std::string& serialized)
 {
-    msgpack::zone   mempool;
-    msgpack::object deserialized;
-    msgpack::unpack(serialized.data(), serialized.size(), NULL, &mempool, &deserialized);
-
     msgpack::type::tuple<IdAndString> dst;
-    deserialized.convert(&dst);
+    unpack(dst, serialized.data(), serialized.size() - 1);
 
-    auto angVelocity = deserializeFloatSampler(serialize::SamplerId(dst.a0.a0), dst.a0.a1);
+    auto angVelocity = deserializeFloatSampler(serialize::SamplerId(dst.get<0>().get<0>()), dst.get<0>().get<1>());
     return modifier::StartAngularVelocity::create(angVelocity);
 }
 
@@ -299,14 +270,10 @@ ParticlesExtension::deserializeStartAngularVelocityInitializer(const std::string
 modifier::IParticleModifier::Ptr
 ParticlesExtension::deserializeColorBySpeedUpdater(const std::string& serialized)
 {
-    msgpack::zone   mempool;
-    msgpack::object deserialized;
-    msgpack::unpack(serialized.data(), serialized.size(), NULL, &mempool, &deserialized);
-
     msgpack::type::tuple<IdAndString> dst;
-    deserialized.convert(&dst);
+    unpack(dst, serialized.data(), serialized.size() - 1);
 
-    auto color          = deserializeColorSampler(serialize::SamplerId(dst.a0.a0), dst.a0.a1);
+    auto color          = deserializeColorSampler(serialize::SamplerId(dst.get<0>().get<0>()), dst.get<0>().get<1>());
     auto linearColor    = std::dynamic_pointer_cast<sampler::LinearlyInterpolatedValue<math::Vector3>>(color);
     if (linearColor == nullptr)
         throw std::logic_error("Failed to initialize color-by-speed modifier.");
@@ -318,14 +285,10 @@ ParticlesExtension::deserializeColorBySpeedUpdater(const std::string& serialized
 modifier::IParticleModifier::Ptr
 ParticlesExtension::deserializeColorOverTimeUpdater(const std::string& serialized)
 {
-    msgpack::zone   mempool;
-    msgpack::object deserialized;
-    msgpack::unpack(serialized.data(), serialized.size(), NULL, &mempool, &deserialized);
-
     msgpack::type::tuple<IdAndString> dst;
-    deserialized.convert(&dst);
+    unpack(dst, serialized.data(), serialized.size() - 1);
 
-    auto color          = deserializeColorSampler(serialize::SamplerId(dst.a0.a0), dst.a0.a1);
+    auto color          = deserializeColorSampler(serialize::SamplerId(dst.get<0>().get<0>()), dst.get<0>().get<1>());
     auto linearColor    = std::dynamic_pointer_cast<sampler::LinearlyInterpolatedValue<math::Vector3>>(color);
     if (linearColor == nullptr)
         throw std::logic_error("Failed to initialize color-over-time modifier.");
@@ -337,16 +300,12 @@ ParticlesExtension::deserializeColorOverTimeUpdater(const std::string& serialize
 modifier::IParticleModifier::Ptr
 ParticlesExtension::deserializeForceOverTimeUpdater(const std::string& serialized)
 {
-    msgpack::zone   mempool;
-    msgpack::object deserialized;
-    msgpack::unpack(serialized.data(), serialized.size(), NULL, &mempool, &deserialized);
-
     msgpack::type::tuple<IdAndString, IdAndString, IdAndString> dst;
-    deserialized.convert(&dst);
+    unpack(dst, serialized.data(), serialized.size() - 1);
 
-    auto fx = deserializeFloatSampler(serialize::SamplerId(dst.a0.a0), dst.a0.a1);
-    auto fy = deserializeFloatSampler(serialize::SamplerId(dst.a1.a0), dst.a1.a1);
-    auto fz = deserializeFloatSampler(serialize::SamplerId(dst.a2.a0), dst.a2.a1);
+    auto fx = deserializeFloatSampler(serialize::SamplerId(dst.get<0>().get<0>()), dst.get<0>().get<1>());
+    auto fy = deserializeFloatSampler(serialize::SamplerId(dst.get<1>().get<0>()), dst.get<1>().get<1>());
+    auto fz = deserializeFloatSampler(serialize::SamplerId(dst.get<2>().get<0>()), dst.get<2>().get<1>());
     return modifier::ForceOverTime::create(fx, fy, fz);
 }
 
@@ -354,14 +313,10 @@ ParticlesExtension::deserializeForceOverTimeUpdater(const std::string& serialize
 modifier::IParticleModifier::Ptr
 ParticlesExtension::deserializeSizeBySpeedUpdater(const std::string& serialized)
 {
-    msgpack::zone   mempool;
-    msgpack::object deserialized;
-    msgpack::unpack(serialized.data(), serialized.size(), NULL, &mempool, &deserialized);
-
     msgpack::type::tuple<IdAndString> dst;
-    deserialized.convert(&dst);
+    unpack(dst, serialized.data(), serialized.size() - 1);
 
-    auto size           = deserializeFloatSampler(serialize::SamplerId(dst.a0.a0), dst.a0.a1);
+    auto size           = deserializeFloatSampler(serialize::SamplerId(dst.get<0>().get<0>()), dst.get<0>().get<1>());
     auto linearSize     = std::dynamic_pointer_cast<sampler::LinearlyInterpolatedValue<float>>(size);
     if (linearSize == nullptr)
         throw std::logic_error("Failed to initialize size-by-speed modifier.");
@@ -373,14 +328,10 @@ ParticlesExtension::deserializeSizeBySpeedUpdater(const std::string& serialized)
 modifier::IParticleModifier::Ptr
 ParticlesExtension::deserializeSizeOverTimeUpdater(const std::string& serialized)
 {
-    msgpack::zone   mempool;
-    msgpack::object deserialized;
-    msgpack::unpack(serialized.data(), serialized.size(), NULL, &mempool, &deserialized);
-
     msgpack::type::tuple<IdAndString> dst;
-    deserialized.convert(&dst);
+    unpack(dst, serialized.data(), serialized.size() - 1);
 
-    auto size           = deserializeFloatSampler(serialize::SamplerId(dst.a0.a0), dst.a0.a1);
+    auto size           = deserializeFloatSampler(serialize::SamplerId(dst.get<0>().get<0>()), dst.get<0>().get<1>());
     auto linearSize     = std::dynamic_pointer_cast<sampler::LinearlyInterpolatedValue<float>>(size);
     if (linearSize == nullptr)
         throw std::logic_error("Failed to initialize size-over-time modifier.");
@@ -392,16 +343,12 @@ ParticlesExtension::deserializeSizeOverTimeUpdater(const std::string& serialized
 modifier::IParticleModifier::Ptr
 ParticlesExtension::deserializeVelocityOverTimeUpdater(const std::string& serialized)
 {
-    msgpack::zone   mempool;
-    msgpack::object deserialized;
-    msgpack::unpack(serialized.data(), serialized.size(), NULL, &mempool, &deserialized);
-
     msgpack::type::tuple<IdAndString, IdAndString, IdAndString> dst;
-    deserialized.convert(&dst);
+    unpack(dst, serialized.data(), serialized.size() - 1);
 
-    auto vx = deserializeFloatSampler(serialize::SamplerId(dst.a0.a0), dst.a0.a1);
-    auto vy = deserializeFloatSampler(serialize::SamplerId(dst.a1.a0), dst.a1.a1);
-    auto vz = deserializeFloatSampler(serialize::SamplerId(dst.a2.a0), dst.a2.a1);
+    auto vx = deserializeFloatSampler(serialize::SamplerId(dst.get<0>().get<0>()), dst.get<0>().get<1>());
+    auto vy = deserializeFloatSampler(serialize::SamplerId(dst.get<1>().get<0>()), dst.get<1>().get<1>());
+    auto vz = deserializeFloatSampler(serialize::SamplerId(dst.get<2>().get<0>()), dst.get<2>().get<1>());
     return modifier::VelocityOverTime::create(vx, vy, vz);
 }
 
@@ -410,7 +357,7 @@ ParticlesExtension::deserializeVelocityOverTimeUpdater(const std::string& serial
 //---------------
 /*static*/
 shape::EmitterShape::Ptr
-ParticlesExtension::deserializeEmitterShape(serialize::EmitterShapeId   id, 
+ParticlesExtension::deserializeEmitterShape(serialize::EmitterShapeId   id,
                                             const std::string&          serialized)
 {
     switch (id)
@@ -436,28 +383,29 @@ ParticlesExtension::deserializeEmitterShape(serialize::EmitterShapeId   id,
 shape::EmitterShape::Ptr
 ParticlesExtension::deserializeConeShape(const std::string& serialized)
 {
-    msgpack::zone   mempool;
-    msgpack::object deserialized;
-    msgpack::unpack(serialized.data(), serialized.size(), NULL, &mempool, &deserialized);
+    msgpack::type::tuple<std::string, std::string, std::string, std::string> dst;
+    unpack(dst, serialized.data(), serialized.size() - 1);
 
-    msgpack::type::tuple<float, float, float, float> dst;
-    deserialized.convert(&dst);
+    auto a0 = deserialize::TypeDeserializer::deserializeFloat(dst.get<0>());
+    auto a1 = deserialize::TypeDeserializer::deserializeFloat(dst.get<1>());
+    auto a2 = deserialize::TypeDeserializer::deserializeFloat(dst.get<2>());
+    auto a3 = deserialize::TypeDeserializer::deserializeFloat(dst.get<3>());
 
-    return shape::Cone::create(dst.a0, dst.a1, dst.a2, dst.a3);
+    return shape::Cone::create(a0, a1, a2, a3);
 }
 
 /*static*/
 shape::EmitterShape::Ptr
 ParticlesExtension::deserializeCylinderShape(const std::string& serialized)
 {
-    msgpack::zone   mempool;
-    msgpack::object deserialized;
-    msgpack::unpack(serialized.data(), serialized.size(), NULL, &mempool, &deserialized);
+    msgpack::type::tuple<std::string, std::string, std::string> dst;
+    unpack(dst, serialized.data(), serialized.size() - 1);
 
-    msgpack::type::tuple<float, float, float> dst;
-    deserialized.convert(&dst);
+    auto a0 = deserialize::TypeDeserializer::deserializeFloat(dst.get<0>());
+    auto a1 = deserialize::TypeDeserializer::deserializeFloat(dst.get<1>());
+    auto a2 = deserialize::TypeDeserializer::deserializeFloat(dst.get<2>());
 
-    return shape::Cylinder::create(dst.a0, dst.a1, dst.a2);
+    return shape::Cylinder::create(a0, a1, a2);
 }
 
 /*static*/
@@ -471,28 +419,27 @@ ParticlesExtension::deserializePointShape(const std::string& serialized)
 shape::EmitterShape::Ptr
 ParticlesExtension::deserializeSphereShape(const std::string& serialized)
 {
-    msgpack::zone   mempool;
-    msgpack::object deserialized;
-    msgpack::unpack(serialized.data(), serialized.size(), NULL, &mempool, &deserialized);
+    msgpack::type::tuple<std::string, std::string> dst;
+    unpack(dst, serialized.data(), serialized.size() - 1);
 
-    msgpack::type::tuple<float, float> dst;
-    deserialized.convert(&dst);
+    auto a0 = deserialize::TypeDeserializer::deserializeFloat(dst.get<0>());
+    auto a1 = deserialize::TypeDeserializer::deserializeFloat(dst.get<1>());
 
-    return shape::Sphere::create(dst.a0, dst.a1);
+    return shape::Sphere::create(a0, a1);
 }
 
 /*static*/
 shape::EmitterShape::Ptr
 ParticlesExtension::deserializeBoxShape(const std::string& serialized)
 {
-    msgpack::zone   mempool;
-    msgpack::object deserialized;
-    msgpack::unpack(serialized.data(), serialized.size(), NULL, &mempool, &deserialized);
+    msgpack::type::tuple<std::string, std::string, std::string, uint> dst;
+    unpack(dst, serialized.data(), serialized.size() - 1);
 
-    msgpack::type::tuple<float, float, float, uint> dst;
-    deserialized.convert(&dst);
+    auto a0 = deserialize::TypeDeserializer::deserializeFloat(dst.get<0>());
+    auto a1 = deserialize::TypeDeserializer::deserializeFloat(dst.get<1>());
+    auto a2 = deserialize::TypeDeserializer::deserializeFloat(dst.get<1>());
 
-    return shape::Box::create(dst.a0, dst.a1, dst.a2, dst.a3 != 0);
+    return shape::Box::create(a0, a1, a2, dst.get<3>() != 0);
 }
 
 
@@ -502,7 +449,7 @@ ParticlesExtension::deserializeBoxShape(const std::string& serialized)
 
 /*static*/
 sampler::Sampler<float>::Ptr
-ParticlesExtension::deserializeFloatSampler(serialize::SamplerId   id, 
+ParticlesExtension::deserializeFloatSampler(serialize::SamplerId   id,
                                             const std::string&     serialized)
 {
     switch (id)
@@ -522,8 +469,8 @@ ParticlesExtension::deserializeFloatSampler(serialize::SamplerId   id,
 
 /*static*/
 sampler::Sampler<math::Vector3>::Ptr
-ParticlesExtension::deserializeColorSampler(serialize::SamplerId   id, 
-                                             const std::string&     serialized)
+ParticlesExtension::deserializeColorSampler(serialize::SamplerId   id,
+                                            const std::string&     serialized)
 {
     switch (id)
     {
@@ -545,56 +492,54 @@ ParticlesExtension::deserializeColorSampler(serialize::SamplerId   id,
 sampler::Sampler<float>::Ptr
 ParticlesExtension::deserializeConstantNumberSampler(const std::string& serialized)
 {
-    msgpack::zone   mempool;
-    msgpack::object deserialized;
-    msgpack::unpack(serialized.data(), serialized.size(), NULL, &mempool, &deserialized);
+    msgpack::type::tuple<std::string> dst;
+    unpack(dst, serialized.data(), serialized.size() - 1);
 
-    msgpack::type::tuple<float> dst;
-    deserialized.convert(&dst);
+    auto a0 = deserialize::TypeDeserializer::deserializeFloat(dst.get<0>());
 
-    return sampler::Constant<float>::create(dst.a0);
+    return sampler::Constant<float>::create(a0);
 }
 
 /*static*/
 sampler::Sampler<float>::Ptr
 ParticlesExtension::deserializeLinearNumberSampler(const std::string& serialized)
 {
-    msgpack::zone   mempool;
-    msgpack::object deserialized;
-    msgpack::unpack(serialized.data(), serialized.size(), NULL, &mempool, &deserialized);
+    msgpack::type::tuple<std::string, std::string, std::string, std::string> dst;
+    unpack(dst, serialized.data(), serialized.size() - 1);
 
-    msgpack::type::tuple<float, float, float, float> dst;
-    deserialized.convert(&dst);
+    auto a0 = deserialize::TypeDeserializer::deserializeFloat(dst.get<0>());
+    auto a1 = deserialize::TypeDeserializer::deserializeFloat(dst.get<1>());
+    auto a2 = deserialize::TypeDeserializer::deserializeFloat(dst.get<2>());
+    auto a3 = deserialize::TypeDeserializer::deserializeFloat(dst.get<3>());
 
-    return sampler::LinearlyInterpolatedValue<float>::create(dst.a0, dst.a1, dst.a2, dst.a3);
+    return sampler::LinearlyInterpolatedValue<float>::create(a0, a1, a2, a3);
 }
 
 /*static*/
 sampler::Sampler<float>::Ptr
 ParticlesExtension::deserializeRandomNumberSampler(const std::string& serialized)
 {
-    msgpack::zone   mempool;
-    msgpack::object deserialized;
-    msgpack::unpack(serialized.data(), serialized.size(), NULL, &mempool, &deserialized);
+    msgpack::type::tuple<std::string, std::string> dst;
+    unpack(dst, serialized.data(), serialized.size() - 1);
 
-    msgpack::type::tuple<float, float> dst;
-    deserialized.convert(&dst);
+    auto a0 = deserialize::TypeDeserializer::deserializeFloat(dst.get<0>());
+    auto a1 = deserialize::TypeDeserializer::deserializeFloat(dst.get<1>());
 
-    return sampler::RandomValue<float>::create(dst.a0, dst.a1);
+    return sampler::RandomValue<float>::create(a0, a1);
 }
 
 /*static*/
 sampler::Sampler<math::Vector3>::Ptr
 ParticlesExtension::deserializeConstantColorSampler(const std::string& serialized)
 {
-    msgpack::zone   mempool;
-    msgpack::object deserialized;
-    msgpack::unpack(serialized.data(), serialized.size(), NULL, &mempool, &deserialized);
+    msgpack::type::tuple<std::string, std::string, std::string> dst;
+    unpack(dst, serialized.data(), serialized.size() - 1);
 
-    msgpack::type::tuple<float, float, float> dst;
-    deserialized.convert(&dst);
+    auto a0 = deserialize::TypeDeserializer::deserializeFloat(dst.get<0>());
+    auto a1 = deserialize::TypeDeserializer::deserializeFloat(dst.get<1>());
+    auto a2 = deserialize::TypeDeserializer::deserializeFloat(dst.get<2>());
 
-    auto color = math::Vector3::create(dst.a0, dst.a1, dst.a2);
+    auto color = math::Vector3::create(a0, a1, a2);
     return sampler::Constant<math::Vector3>::create(*color);
 }
 
@@ -602,30 +547,38 @@ ParticlesExtension::deserializeConstantColorSampler(const std::string& serialize
 sampler::Sampler<math::Vector3>::Ptr
 ParticlesExtension::deserializeLinearColorSampler(const std::string& serialized)
 {
-    msgpack::zone   mempool;
-    msgpack::object deserialized;
-    msgpack::unpack(serialized.data(), serialized.size(), NULL, &mempool, &deserialized);
+    msgpack::type::tuple<std::string, std::string, std::string, std::string, std::string, std::string, std::string, std::string> dst;
+    unpack(dst, serialized.data(), serialized.size() - 1);
 
-    msgpack::type::tuple<float, float, float, float, float, float, float, float> dst;
-    deserialized.convert(&dst);
+    auto a0 = deserialize::TypeDeserializer::deserializeFloat(dst.get<0>());
+    auto a1 = deserialize::TypeDeserializer::deserializeFloat(dst.get<1>());
+    auto a2 = deserialize::TypeDeserializer::deserializeFloat(dst.get<2>());
+    auto a3 = deserialize::TypeDeserializer::deserializeFloat(dst.get<3>());
+    auto a4 = deserialize::TypeDeserializer::deserializeFloat(dst.get<4>());
+    auto a5 = deserialize::TypeDeserializer::deserializeFloat(dst.get<5>());
+    auto a6 = deserialize::TypeDeserializer::deserializeFloat(dst.get<6>());
+    auto a7 = deserialize::TypeDeserializer::deserializeFloat(dst.get<7>());
 
-    auto startColor = math::Vector3::create(dst.a0, dst.a1, dst.a2);
-    auto endColor   = math::Vector3::create(dst.a3, dst.a4, dst.a5);
-    return sampler::LinearlyInterpolatedValue<math::Vector3>::create(*startColor, *endColor, dst.a6, dst.a7);
+    auto startColor = math::Vector3::create(a0, a1, a2);
+    auto endColor   = math::Vector3::create(a3, a4, a5);
+    return sampler::LinearlyInterpolatedValue<math::Vector3>::create(*startColor, *endColor, a6, a7);
 }
 
 /*static*/
 sampler::Sampler<math::Vector3>::Ptr
 ParticlesExtension::deserializeRandomColorSampler(const std::string& serialized)
 {
-    msgpack::zone   mempool;
-    msgpack::object deserialized;
-    msgpack::unpack(serialized.data(), serialized.size(), NULL, &mempool, &deserialized);
+    msgpack::type::tuple<std::string, std::string, std::string, std::string, std::string, std::string> dst;
+    unpack(dst, serialized.data(), serialized.size() - 1);
 
-    msgpack::type::tuple<float, float, float, float, float, float> dst;
-    deserialized.convert(&dst);
+    auto a0 = deserialize::TypeDeserializer::deserializeFloat(dst.get<0>());
+    auto a1 = deserialize::TypeDeserializer::deserializeFloat(dst.get<1>());
+    auto a2 = deserialize::TypeDeserializer::deserializeFloat(dst.get<2>());
+    auto a3 = deserialize::TypeDeserializer::deserializeFloat(dst.get<3>());
+    auto a4 = deserialize::TypeDeserializer::deserializeFloat(dst.get<4>());
+    auto a5 = deserialize::TypeDeserializer::deserializeFloat(dst.get<5>());
 
-    auto minColor = math::Vector3::create(dst.a0, dst.a1, dst.a2);
-    auto maxColor = math::Vector3::create(dst.a3, dst.a4, dst.a5);
+    auto minColor = math::Vector3::create(a0, a1, a2);
+    auto maxColor = math::Vector3::create(a3, a4, a5);
     return sampler::RandomValue<math::Vector3>::create(*minColor, *maxColor);
 }

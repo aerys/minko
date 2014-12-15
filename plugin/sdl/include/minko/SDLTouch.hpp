@@ -156,6 +156,7 @@ namespace minko
         static const float TAP_MOVE_THRESHOLD;
         static const float TAP_DELAY_THRESHOLD;
         static const float DOUBLE_TAP_DELAY_THRESHOLD;
+        static const float LONG_HOLD_DELAY_THRESHOLD;
 
         float _lastTouchDownX;
         float _lastTouchDownY;

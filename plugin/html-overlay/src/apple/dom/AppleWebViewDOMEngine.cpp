@@ -351,7 +351,11 @@ AppleWebViewDOMEngine::load(std::string uri)
     NSURL *url = [NSURL URLWithString:nsURI];
     NSURLRequest *request = [NSURLRequest requestWithURL:url];
 
+#if TARGET_IPHONE_SIMULATOR || TARGET_OS_IPHONE // iOS
     [_webView loadRequest:request];
+#elif TARGET_OS_MAC // OSX
+    [[_webView mainFrame] loadRequest:request];
+#endif
 
     _waitingForLoad = true;
 

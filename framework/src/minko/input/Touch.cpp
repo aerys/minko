@@ -34,7 +34,8 @@ Touch::Touch(std::shared_ptr<AbstractCanvas> canvas) :
     _swipeUp(Signal<Ptr>::create()),
     _swipeDown(Signal<Ptr>::create()),
     _tap(Signal<Ptr, float, float>::create()),
-    _doubleTap(Signal<Ptr, float, float>::create())
+    _doubleTap(Signal<Ptr, float, float>::create()),
+    _longHold(Signal<Ptr, float, float>::create())
 {
 }
 

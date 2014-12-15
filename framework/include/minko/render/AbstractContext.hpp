@@ -77,12 +77,12 @@ namespace minko
             virtual
             void
             clear(float red             = 0.f,
-                  float green           = 0.f,
+                  float green            = 0.f,
                   float blue            = 0.f,
-                  float alpha           = 0.f,
-                  float depth           = 1.f,
-                  unsigned int stencil  = 0,
-                  unsigned int mask     = 0xffffffff) = 0;
+                  float alpha            = 0.f,
+                  float depth            = 1.f,
+                  unsigned int stencil    = 0,
+                  unsigned int mask        = 0xffffffff) = 0;
 
             virtual
             void
@@ -109,7 +109,7 @@ namespace minko
             uploadVertexBufferData(const uint     vertexBuffer,
                                    const uint     offset,
                                    const uint     size,
-                                   void*          data) = 0;
+                                   void*                 data) = 0;
 
             virtual
             void
@@ -124,7 +124,7 @@ namespace minko
             uploaderIndexBufferData(const uint     indexBuffer,
                                     const uint     offset,
                                     const uint     size,
-                                    void*          data) = 0;
+                                    void*                data) = 0;
 
             virtual
             void
@@ -145,12 +145,20 @@ namespace minko
                                    unsigned int height) = 0;
 
             virtual
+            uint
+            createCompressedTexture(TextureType     type,
+                                    TextureFormat   format,
+                                    unsigned int    width,
+                                    unsigned int    height,
+                                    bool            mipMapping) = 0;
+
+            virtual
             void
-            uploadTexture2dData(uint             texture,
-                                unsigned int     width,
-                                unsigned int     height,
-                                unsigned int     mipLevel,
-                                void*            data) = 0;
+            uploadTexture2dData(uint            texture,
+                                unsigned int    width,
+                                unsigned int    height,
+                                unsigned int    mipLevel,
+                                void*           data) = 0;
 
             virtual
             void
@@ -163,17 +171,41 @@ namespace minko
 
             virtual
             void
-            deleteTexture(uint  texture) = 0;
+            uploadCompressedTexture2dData(uint          texture,
+                                          TextureFormat format,
+                                          unsigned int  width,
+                                          unsigned int  height,
+                                          unsigned int  size,
+                                          unsigned int  mipLevel,
+                                          void*         data) = 0;
 
             virtual
             void
-            setTextureAt(uint   position,
-                         int    texture     = 0,
+            uploadCompressedCubeTextureData(uint                texture,
+                                            CubeTexture::Face   face,
+                                            TextureFormat       format,
+                                            unsigned int        width,
+                                            unsigned int        height,
+                                            unsigned int        mipLevel,
+                                            void*               data) = 0;
+
+            virtual
+            void
+            activateMipMapping(uint texture) = 0;
+
+            virtual
+            void
+            deleteTexture(uint    texture) = 0;
+
+            virtual
+            void
+            setTextureAt(uint    position,
+                         int    texture        = 0,
                          int    location    = -1) = 0;
 
             virtual
             void
-            setSamplerStateAt(uint          position,
+            setSamplerStateAt(uint            position,
                               WrapMode      wrapping,
                               TextureFilter filtering,
                               MipFilter     mipFiltering) = 0;
@@ -311,8 +343,8 @@ namespace minko
 
             virtual
             void
-            setStencilTest(CompareMode         stencilFunc,
-                           int                 stencilRef,
+            setStencilTest(CompareMode        stencilFunc,
+                           int                stencilRef,
                            uint                stencilMask,
                            StencilOperation    stencilFailOp,
                            StencilOperation    stencilZFailOp,
@@ -320,7 +352,7 @@ namespace minko
 
             virtual
             void
-            setScissorTest(bool scissorTest, const render::ScissorBox&) = 0;
+            setScissorTest(bool    scissorTest, const render::ScissorBox&) = 0;
 
             virtual
             void

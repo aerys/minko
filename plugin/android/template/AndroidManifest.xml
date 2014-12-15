@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="{{PACKAGE}}"
-      android:versionCode="1"
+      android:versionCode="{{VERSION_CODE}}"
       android:versionName="1.0"
       android:installLocation="auto">
 
@@ -12,43 +12,24 @@
                  android:hardwareAccelerated="true" >
         <activity android:name="MinkoActivity"
                   android:label="@string/app_name"
-                  android:configChanges="keyboardHidden|orientation"
-                  >
-            <intent-filter>
+                  android:configChanges="orientation|screenSize|keyboardHidden"
+				  android:launchMode="singleTask">
+			
+			<!-- We can open the app without any file -->
+			<intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-			 <intent-filter>
-				<action android:name="android.intent.action.VIEW" />
-				<category android:name="android.intent.category.DEFAULT" />
-				<data android:scheme="file" />
-				<data android:host="*" />
-				<data android:pathPattern=".*\\.scene" />
-				<data android:pathPattern=".*\\.dae" />
-				<data android:pathPattern=".*\\.DAE" />
-				<data android:pathPattern=".*\\.fbx" />
-				<data android:pathPattern=".*\\.FBX" />
-				<data android:pathPattern=".*\\.obj" />
-				<data android:pathPattern=".*\\.OBJ" />
-				<data android:pathPattern=".*\\.stl" />
-				<data android:pathPattern=".*\\.STL" />
-				<!-- Remove the following line to open scene files from "Explorateur de fichier", but it won't work with Dropbox anymore -->
-				<data android:mimeType="*/*" /> 
-			 </intent-filter>
         </activity>
     </application>
 
-    <!-- Android 2.3.3 -->
-    <!-- <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="12" /> -->
-	<uses-sdk android:minSdkVersion="4"/>
+    <!-- API 11 => Android 3.0.x | API 14 => Android 4.0, 4.0.1, 4.0.2 -->
+	<uses-sdk android:minSdkVersion="11" android:targetSdkVersion="14" />
+	
+	<!-- Support of common tablet screen sizes -->
+	<supports-screens android:largeScreens="true"
+					  android:xlargeScreens="true" />
 	
     <!-- OpenGL ES 2.0 -->
     <uses-feature android:glEsVersion="0x00020000" />
-    <uses-feature android:name="android.hardware.camera" />
-    <uses-feature android:name="android.hardware.camera.autofocus" />
-
-    <!-- Allow writing to external storage -->
-	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.INTERNET" />
 </manifest>

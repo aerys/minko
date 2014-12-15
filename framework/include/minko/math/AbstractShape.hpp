@@ -25,6 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # undef FAR
 #endif
 
+#ifdef NEAR // The macro is defined by guiddef.h
+# undef NEAR
+#endif
+
 namespace minko
 {
     namespace math

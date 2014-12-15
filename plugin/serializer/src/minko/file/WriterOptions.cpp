@@ -18,14 +18,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/file/WriterOptions.hpp"
+#include "minko/render/MipFilter.hpp"
 
 using namespace minko;
 using namespace minko::file;
+using namespace minko::render;
+using namespace minko::serialize;
 
 WriterOptions::WriterOptions() :
     _embedAll(false),
     _addBoundingBoxes(false),
     _outputAssetUriFunction([=](const std::string& str) -> std::string { return str; }),
-    _imageFormat(serialize::ImageFormat::SOURCE)
+    _imageFormat(ImageFormat::PNG),
+    _textureFormats(),
+    _compressTexture(true),
+    _generateMipmaps(false),
+    _mipFilter(MipFilter::LINEAR),
+    _optimizeForNormalMapping(false)
 {
 }

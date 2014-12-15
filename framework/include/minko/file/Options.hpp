@@ -32,35 +32,39 @@ namespace minko
             public std::enable_shared_from_this<Options>
         {
         private:
-            typedef std::shared_ptr<AbstractProtocol>                                   AbsProtocolPtr;
-            typedef std::shared_ptr<data::Provider>                                     ProviderPtr;
-            typedef std::shared_ptr<material::Material>                                 MaterialPtr;
-            typedef std::shared_ptr<geometry::Geometry>                                 GeomPtr;
+            typedef std::shared_ptr<AbstractProtocol>                                    AbsProtocolPtr;
+            typedef std::shared_ptr<data::Provider>                                        ProviderPtr;
+            typedef std::shared_ptr<material::Material>                                    MaterialPtr;
+            typedef std::shared_ptr<geometry::Geometry>                                    GeomPtr;
             typedef std::shared_ptr<scene::Node>                                        NodePtr;
-            typedef std::shared_ptr<render::Effect>                                     EffectPtr;
+            typedef std::shared_ptr<render::Effect>                                        EffectPtr;
             typedef std::shared_ptr<Loader>                                             LoaderPtr;
             typedef std::shared_ptr<AbstractParser>                                     AbsParserPtr;
             typedef std::function<AbsParserPtr(void)>                                   ParserHandler;
-            typedef std::function<AbsProtocolPtr(void)>                                 ProtocolHandler;
+            typedef std::function<AbsProtocolPtr(void)>                                    ProtocolHandler;
 
         public:
             typedef std::shared_ptr<Options>                                            Ptr;
 
-            typedef std::function<MaterialPtr(const std::string&, MaterialPtr)>         MaterialFunction;
+            typedef std::function<MaterialPtr(const std::string&, MaterialPtr)>            MaterialFunction;
             typedef std::function<GeomPtr(const std::string&, GeomPtr)>                 GeometryFunction;
-            typedef std::function<AbsProtocolPtr(const std::string&)>                   ProtocolFunction;
+            typedef std::function<AbsProtocolPtr(const std::string&)>                    ProtocolFunction;
+            typedef std::function<AbsParserPtr(const std::string&)>                     ParserFunction;
             typedef std::function<const std::string(const std::string&)>                UriFunction;
-            typedef std::function<NodePtr(NodePtr)>                                     NodeFunction;
-            typedef std::function<EffectPtr(EffectPtr)>                                 EffectFunction;
+            typedef std::function<NodePtr(NodePtr)>                                        NodeFunction;
+            typedef std::function<EffectPtr(EffectPtr)>                                    EffectFunction;
+
+            typedef std::function<render::TextureFormat(const std::unordered_set<render::TextureFormat>&)>
+                                                                                        TextureFormatFunction;
 
         private:
             std::shared_ptr<render::AbstractContext>            _context;
             std::shared_ptr<AssetLibrary>                       _assets;
-            std::list<std::string>                              _includePaths;
-            std::list<std::string>                              _platforms;
-            std::list<std::string>                              _userFlags;
+            std::list<std::string>                                _includePaths;
+            std::list<std::string>                                _platforms;
+            std::list<std::string>                                _userFlags;
 
-            std::unordered_map<std::string, ParserHandler>      _parsers;
+            std::unordered_map<std::string, ParserHandler>        _parsers;
             std::unordered_map<std::string, ProtocolHandler>    _protocols;
 
             bool                                                _generateMipMaps;
@@ -73,17 +77,23 @@ namespace minko
             bool                                                _disposeVertexBufferAfterLoading;
             bool                                                _disposeTextureAfterLoading;
             unsigned int                                        _skinningFramerate;
-            component::SkinningMethod                           _skinningMethod;
+            component::SkinningMethod                            _skinningMethod;
             std::shared_ptr<render::Effect>                     _effect;
-            MaterialPtr                                         _material;
+            MaterialPtr                                            _material;
+            std::list<render::TextureFormat>                    _textureFormats;
             MaterialFunction                                    _materialFunction;
             GeometryFunction                                    _geometryFunction;
             ProtocolFunction                                    _protocolFunction;
-            UriFunction                                         _uriFunction;
+            ParserFunction                                      _parserFunction;
+            UriFunction                                            _uriFunction;
             NodeFunction                                        _nodeFunction;
-            EffectFunction                                      _effectFunction;
+            EffectFunction                                        _effectFunction;
+            TextureFormatFunction                               _textureFormatFunction;
 
-            static ProtocolFunction                             _defaultProtocolFunction;
+            int                                                 _seekingOffset;
+            int                                                 _seekedLength;
+			
+            static ProtocolFunction                                _defaultProtocolFunction;
 
         public:
             inline static
@@ -132,12 +142,18 @@ namespace minko
                 opt->_skinningFramerate = options->_skinningFramerate;
                 opt->_skinningMethod = options->_skinningMethod;
                 opt->_effect = options->_effect;
+                opt->_textureFormats = options->_textureFormats;
+				opt->_material = options->_material;
                 opt->_materialFunction = options->_materialFunction;
                 opt->_geometryFunction = options->_geometryFunction;
                 opt->_protocolFunction = options->_protocolFunction;
+                opt->_parserFunction = options->_parserFunction;
                 opt->_uriFunction = options->_uriFunction;
                 opt->_nodeFunction = options->_nodeFunction;
+                opt->_textureFormatFunction = options->_textureFormatFunction;
                 opt->_loadAsynchronously = options->_loadAsynchronously;
+                opt->_seekingOffset = options->_seekingOffset;
+                opt->_seekedLength = options->_seekedLength;
 
                 return opt;
             }
@@ -400,6 +416,15 @@ namespace minko
             }
 
             inline
+            Ptr
+            registerTextureFormat(render::TextureFormat textureFormat)
+            {
+                _textureFormats.push_back(textureFormat);
+
+                return shared_from_this();
+            }
+
+            inline
             const ProtocolFunction&
             protocolFunction() const
             {
@@ -416,6 +441,22 @@ namespace minko
             }
 
             inline
+			const ParserFunction&
+			parserFunction() const
+			{
+				return _parserFunction;
+			}
+
+			inline
+			Ptr
+			parserFunction(const ParserFunction& func)
+			{
+				_parserFunction = func;
+
+				return shared_from_this();
+			}
+
+			inline
             const MaterialFunction&
             materialFunction() const
             {
@@ -494,6 +535,54 @@ namespace minko
 
                 return shared_from_this();
             }
+
+            inline
+            const TextureFormatFunction&
+            textureFormatFunction() const
+            {
+                return _textureFormatFunction;
+            }
+
+            inline
+            Ptr
+            textureFormatFunction(const TextureFormatFunction& func)
+            {
+                _textureFormatFunction = func;
+
+                return shared_from_this();
+            }
+
+            inline
+            int
+			seekingOffset() const
+			{
+				return _seekingOffset;
+			}
+
+			inline
+			Ptr
+			seekingOffset(int value)
+			{
+				_seekingOffset = value;
+
+				return shared_from_this();
+			}
+
+            inline
+			int
+			seekedLength() const
+			{
+				return _seekedLength;
+			}
+
+			inline
+			Ptr
+			seekedLength(int value)
+			{
+				_seekedLength = value;
+
+				return shared_from_this();
+			}
 
             template <typename T>
             typename std::enable_if<std::is_base_of<file::AbstractParser, T>::value, Ptr>::type

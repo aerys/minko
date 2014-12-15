@@ -54,6 +54,7 @@ namespace minko
             Signal<Ptr, float>::Ptr                     _pinchZoom;
             Signal<Ptr, float, float>::Ptr              _tap;
             Signal<Ptr, float, float>::Ptr              _doubleTap;
+            Signal<Ptr, float, float>::Ptr              _longHold;
 
         public:
             inline
@@ -152,6 +153,13 @@ namespace minko
             doubleTap()
             {
                 return _doubleTap;
+            }
+
+            inline
+            Signal<Ptr, float, float>::Ptr
+            longHold()
+            {
+                return _longHold;
             }
 
             float

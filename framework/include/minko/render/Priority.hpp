@@ -21,6 +21,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
+#ifdef OPAQUE
+# undef OPAQUE
+#endif
+
+#ifdef TRANSPARENT
+# undef TRANSPARENT
+#endif
+
 namespace minko
 {
     namespace render

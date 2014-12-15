@@ -324,3 +324,17 @@ AssetLibrary::layout(const std::string& name, Layouts mask)
 
     return std::enable_shared_from_this<AssetLibrary>::shared_from_this();
 }
+
+audio::Sound::Ptr
+AssetLibrary::sound(const std::string& name)
+{
+    return _sounds[name];
+}
+
+AssetLibrary::Ptr
+AssetLibrary::sound(const std::string& name, audio::Sound::Ptr sound)
+{
+    _sounds[name] = sound;
+
+    return std::enable_shared_from_this<AssetLibrary>::shared_from_this();
+}

@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/SceneParser.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/Dependency.hpp"
+#include "minko/file/TextureParser.hpp"
 #include "minko/Types.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/JobManager.hpp"
@@ -29,22 +30,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/MasterAnimation.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
-
-#include "msgpack.hpp"
+#include "minko/deserialize/Unpacker.hpp"
 
 #include <stack>
 
 using namespace minko;
 using namespace minko::file;
 using namespace minko::math;
+using namespace minko::deserialize;
 
 std::unordered_map<int8_t, SceneParser::ComponentReadFunction> SceneParser::_componentIdToReadFunction;
-
 
 SceneParser::SceneParser()
 {
     _geometryParser = file::GeometryParser::create();
     _materialParser = file::MaterialParser::create();
+    _textureParser = file::TextureParser::create();
 
     registerComponent(serialize::PROJECTION_CAMERA,
         std::bind(&deserialize::ComponentDeserializer::deserializeProjectionCamera,
@@ -121,33 +122,26 @@ SceneParser::registerComponent(int8_t                    componentId,
 }
 
 void
-SceneParser::parse(const std::string&                    filename,
-                   const std::string&                    resolvedFilename,
-                   std::shared_ptr<Options>                options,
+SceneParser::parse(const std::string&                   filename,
+                   const std::string&                   resolvedFilename,
+                   std::shared_ptr<Options>             options,
                    const std::vector<unsigned char>&    data,
-                   AssetLibraryPtr                        assetLibrary)
+                   AssetLibraryPtr                      assetLibrary)
 {
     _dependencies->options(options);
 
     if (!readHeader(filename, data))
         return;
 
-    std::string         folderPath = extractFolderPath(resolvedFilename);
+    std::string folderPath = extractFolderPath(resolvedFilename);
+
+    msgpack::type::tuple<std::vector<std::string>, std::vector<SerializedNode>> dst;
 
     extractDependencies(assetLibrary, data, _headerSize, _dependenciesSize, options, folderPath);
 
-    msgpack::object        deserialized;
-    msgpack::zone        mempool;
-    msgpack::unpack((char*)&data[_headerSize + _dependenciesSize], _sceneDataSize, NULL, &mempool, &deserialized);
+    unpack(dst, data, _sceneDataSize, _headerSize + _dependenciesSize);
 
-    msgpack::type::tuple<std::vector<std::string>, std::vector<SerializedNode>> dst;
-    deserialized.convert(&dst);
-
-    std::vector<unsigned char>* d = (std::vector<unsigned char>*)&data;
-    d->clear();
-    d->shrink_to_fit();
-
-    assetLibrary->symbol(filename, parseNode(dst.a1, dst.a0, assetLibrary, options));
+    assetLibrary->symbol(filename, parseNode(dst.get<1>(), dst.get<0>(), assetLibrary, options));
 
     if (_jobList.size() > 0)
     {
@@ -176,13 +170,13 @@ SceneParser::parseNode(std::vector<SerializedNode>&            nodePack,
     for (uint i = 0; i < nodePack.size(); ++i)
     {
         scene::Node::Ptr    newNode            = scene::Node::create();
-        uint                layouts            = nodePack[i].a1;
-        uint                numChildren        = nodePack[i].a2;
-        std::vector<uint>    componentsId    = nodePack[i].a3;
-        std::string            uuid            = nodePack[i].a4;
+        uint                layouts            = nodePack[i].get<1>();
+        uint                numChildren        = nodePack[i].get<2>();
+        std::vector<uint>    componentsId    = nodePack[i].get<3>();
+        std::string            uuid            = nodePack[i].get<4>();
 
         newNode->layouts(layouts);
-        newNode->name(nodePack[i].a0);
+        newNode->name(nodePack[i].get<0>());
         newNode->uuid(uuid);
 
         for (uint componentId : componentsId)

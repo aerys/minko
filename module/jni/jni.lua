@@ -49,7 +49,7 @@ local NDK_HOME = ANDROID .. "/toolchains/default"
 local LOCAL_MINKO_HOME = MINKO_HOME
 local extension = ''
 
-if not os.isfile(NDK_HOME) then
+if (os.is("linux") and not os.isdir(NDK_HOME)) or (os.is("windows") and not os.isfile(NDK_HOME)) then
 	error(color.fg.red .. 'Installed NDK is not correctly installed: ' .. NDK_HOME .. color.reset)
 end
 

@@ -29,15 +29,15 @@ using namespace minko::render;
 RectangleTexture::RectangleTexture(AbstractContext::Ptr    context,
                                    uint                    width,
                                    uint                    height,
+                                   TextureFormat           format,
                                    const std::string&      filename) :
-    AbstractTexture(TextureType::Texture2D, context, width, height, false, false, false, filename),
+    AbstractTexture(TextureType::Texture2D, context, width, height, format, false, false, false, filename),
     _data()
 {
 }
 
 void
 RectangleTexture::data(unsigned char*    data,
-                       TextureFormat     format,
                        int               widthGPU,
                        int               heightGPU)
 {
@@ -62,11 +62,11 @@ RectangleTexture::data(unsigned char*    data,
 
     _data.resize(size);
 
-    if (format == TextureFormat::RGBA)
+    if (_format == TextureFormat::RGBA)
     {
         std::memcpy(&_data[0], data, size);
     }
-    else if (format == TextureFormat::RGB)
+    else if (_format == TextureFormat::RGB)
     {
         for (unsigned int i = 0, j = 0; j < size; i += 3, j += 4)
         {

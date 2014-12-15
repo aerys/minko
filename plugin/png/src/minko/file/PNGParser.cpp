@@ -64,6 +64,7 @@ PNGParser::parse(const std::string&                 filename,
             options->generateMipmaps(),
             false,
             options->resizeSmoothly(),
+            render::TextureFormat::RGBA,
             filename
         );
 
@@ -76,13 +77,14 @@ PNGParser::parse(const std::string&                 filename,
             options->context(),
             width,
             height,
+            render::TextureFormat::RGBA,
             filename
         );
 
         texture = rectangleTexture;
         assetLibrary->rectangleTexture(filename, rectangleTexture);
 
-        texture->data(&*out.begin(), render::TextureFormat::RGB, width, height);
+        texture->data(&*out.begin(), width, height);
     }
     else
     {
@@ -93,6 +95,7 @@ PNGParser::parse(const std::string&                 filename,
             options->generateMipmaps(),
             false,
             options->resizeSmoothly(),
+            render::TextureFormat::RGBA,
             filename
         );
 
@@ -104,6 +107,9 @@ PNGParser::parse(const std::string&                 filename,
         texture->data(&*out.begin());
 
     texture->upload();
+    
+    if (options->disposeTextureAfterLoading())
+        texture->disposeData();
 
     complete()->execute(shared_from_this());
 }

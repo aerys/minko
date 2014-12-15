@@ -141,7 +141,7 @@ class MemoryIOSystem : public IOSystem
 {
 public:
 	/** Constructor. */
-    MemoryIOSystem (const uint8_t* buff, size_t len, IOSystem* other) 
+        MemoryIOSystem (const uint8_t* buff, size_t len, IOSystem* other) 
 		: buffer (buff), length (len), other (other) {
 	}
 
@@ -152,7 +152,7 @@ public:
 	// -------------------------------------------------------------------
 	/** Tests for the existence of a file at the given path. */
 	bool Exists( const char* pFile) const {
-		if (!strncmp(pFile,AI_MEMORYIO_MAGIC_FILENAME,AI_MEMORYIO_MAGIC_FILENAME_LENGTH))
+	        if (!strncmp(pFile,AI_MEMORYIO_MAGIC_FILENAME,AI_MEMORYIO_MAGIC_FILENAME_LENGTH))
 		        return true;
 		if (other) return other->Exists(pFile);
 		return false;
@@ -161,16 +161,16 @@ public:
 	// -------------------------------------------------------------------
 	/** Returns the directory separator. */
 	char getOsSeparator() const {
-        if (other) return other->getOsSeparator();
-		    return '/'; // why not? it doesn't care
+	        if (other) return other->getOsSeparator();
+		return '/'; // why not? it doesn't care
 	}
 
 	// -------------------------------------------------------------------
 	/** Open a new file with a given path. */
 	IOStream* Open( const char* pFile, const char* pMode = "rb") {
- 		if (strncmp(pFile,AI_MEMORYIO_MAGIC_FILENAME,AI_MEMORYIO_MAGIC_FILENAME_LENGTH)) {
+		if (strncmp(pFile,AI_MEMORYIO_MAGIC_FILENAME,AI_MEMORYIO_MAGIC_FILENAME_LENGTH)) {
 		        if (other) return other->Open(pFile,pMode);
- 			return NULL;
+			return NULL;
 		}
 		return new MemoryIOStream(buffer,length);
 	}
@@ -191,7 +191,7 @@ public:
 private:
 	const uint8_t* buffer;
 	size_t length;
-    IOSystem* other;
+	IOSystem* other;
 };
 } // end namespace Assimp
 

@@ -30,34 +30,35 @@ minko.plugin["html-overlay"].enable = function()
 	minko.plugin.enable("sdl")
 	minko.plugin.enable("lua")
 
-	configuration { "html5" }
+	configuration { "html5", "ConsoleApp or WindowedApp" }
 		prelinkcommands {
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/asset")
 		}
 
-	configuration { "ios" }
+	configuration { "ios or osx64" }
 		buildoptions { "-x objective-c++" }
+
+	configuration { "ios", "ConsoleApp or WindowedApp" }
 		prelinkcommands {
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/asset"),
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/WebViewJavascriptBridge/WebViewJavascriptBridge.js.txt"),
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/WebViewJavascriptBridge/MinkoOverlay.js.txt"),
 		}
 
-	configuration { "android" }
+	configuration { "android", "SharedLib" }
 		prelinkcommands {
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/asset")
 		}
 
-	configuration { "osx64" }
-		buildoptions { "-x objective-c++" }
-		prelinkcommands {
-			minko.action.copy(minko.plugin.path("html-overlay") .. "/asset"),
-			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/WebViewJavascriptBridge/WebViewJavascriptBridge.js.txt"),
-			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/WebViewJavascriptBridge/MinkoOverlay.js.txt"),
-		}
+	configuration { "osx64", "ConsoleApp or WindowedApp" }
 		links { "WebKit.framework" }
+		prelinkcommands {
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/asset"),
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/WebViewJavascriptBridge/WebViewJavascriptBridge.js.txt"),
+			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/WebViewJavascriptBridge/MinkoOverlay.js.txt"),
+		}
 
-	configuration { "windows32 or windows64" }
+	configuration { "windows32 or windows64", "ConsoleApp or WindowedApp" }
 		links { "libcef" }
 		prelinkcommands {
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/asset"),
@@ -65,16 +66,18 @@ minko.plugin["html-overlay"].enable = function()
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/win/dll/*.dll")
 		}
 
-	configuration { "windows32 or windows64", "debug"}
+	configuration { "windows32 or windows64", "debug", "ConsoleApp or WindowedApp"}
 		libdirs { minko.plugin.path("html-overlay") .. "/lib/win/debug" }
 
-	configuration { "windows32 or windows64", "release"}
+	configuration { "windows32 or windows64", "release", "ConsoleApp or WindowedApp"}
 		libdirs { minko.plugin.path("html-overlay") .. "/lib/win/release" }
 
 	configuration { "linux32 or linux64"}
 		buildoptions {
 			"-pthread"
 		}
+
+	configuration { "linux32 or linux64", "ConsoleApp or WindowedApp" }
 		linkoptions {
 			"-Wl,-rpath,."
 		}
@@ -85,14 +88,16 @@ minko.plugin["html-overlay"].enable = function()
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/resource/cef.pak"),
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/resource/devtools_resources.pak")
 		}
-	configuration { "linux32" }
+
+	configuration { "linux32", "ConsoleApp or WindowedApp" }
 		libdirs { minko.plugin.path("html-overlay") .. "/lib/linux32/" }
 		prelinkcommands {
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/linux32/libcef.so"),
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/linux32/libffmpegsumo.so"),
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/linux32/chrome-sandbox")
 		}
-	configuration { "linux64" }
+
+	configuration { "linux64", "ConsoleApp or WindowedApp" }
 		libdirs { minko.plugin.path("html-overlay") .. "/lib/linux64/" }
 		prelinkcommands {
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/linux64/libcef.so"),

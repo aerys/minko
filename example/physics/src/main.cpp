@@ -46,10 +46,18 @@ const auto             MAX_DROP_POS        = Vector3::create( GROUND_WIDTH * 0.5
 const unsigned int     MAX_NUM_OBJECTS     = 32;
 
 Signal<input::Keyboard::Ptr>::Slot keyDown;
+Signal<input::Touch::Ptr, int, float, float>::Slot touchDown;
+
 uint numObjects = 0;
 
 Node::Ptr
 createPhysicsObject(unsigned int id, file::AssetLibrary::Ptr, bool isCube);
+
+void
+addPhysicObject(Node::Ptr root, file::AssetLibrary::Ptr assets);
+
+void
+bouncePhysicObjects(Node::Ptr root);
 
 int
 main(int argc, char** argv)
@@ -161,37 +169,22 @@ main(int argc, char** argv)
         keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
         {
             if (k->keyIsDown(input::Keyboard::SPACE))
-            {
-                if (numObjects < MAX_NUM_OBJECTS)
-                {
-                    auto physicsObject = createPhysicsObject(numObjects, sceneManager->assets(), rand() / (float)RAND_MAX > 0.5f);
-                    root->addChild(physicsObject);
-                    ++numObjects;
-
-                    std::cout << "object #" << numObjects << " dropped" << std::endl;
-                }
-                else
-                    std::cout << "You threw away all your possible objects. Try again!" << std::endl;
-            }
+                addPhysicObject(root, sceneManager->assets());
             else if (k->keyIsDown(input::Keyboard::I))
-            {
-                auto physicsObjects = NodeSet::create(root)
-                    ->descendants(true)
-                    ->where([](Node::Ptr n)
-                    {
-                        return n->hasComponent<component::bullet::Collider>()
-                            && n->component<component::Transform>()->modelToWorldMatrix()->translation()->length() < 10.0f // still close to the origin
-                            && n->name().find("physicsObject") != std::string::npos;
-                    });
+                bouncePhysicObjects(root);
+        });
 
-                if (!physicsObjects->nodes().empty())
-                {
-                    auto randomId        = rand() % physicsObjects->nodes().size();
-                    auto randomCollider    = physicsObjects->nodes()[randomId]->component<component::bullet::Collider>();
+        touchDown = canvas->touch()->touchDown()->connect([=](input::Touch::Ptr t, int fingerId, float x, float y)
+        {
+            x = x / canvas->width();
+            y = y / canvas->height();
 
-                    randomCollider->applyImpulse(Vector3::create(0.0f, IMPULSE_STRENGTH * randomCollider->colliderData()->mass(), 0.0));
-                }
-            }
+            // top left corner
+            if (x > 0 && x < 0.25 && y > 0 && y < 0.25)
+                addPhysicObject(root, sceneManager->assets());
+            // top right corner
+            if (x > 0.75 && x < 1 && y > 0 && y < 0.25)
+                bouncePhysicObjects(root);
         });
     });
 
@@ -266,4 +259,40 @@ createPhysicsObject(unsigned int id, file::AssetLibrary::Ptr assets, bool isCube
         ->addComponent(bullet::ColliderDebug::create(assets))
 #endif // DISPLAY_COLLIDERS
         ;
+}
+
+void
+addPhysicObject(Node::Ptr root, file::AssetLibrary::Ptr assets)
+{
+    if (numObjects < MAX_NUM_OBJECTS)
+    {
+        auto physicsObject = createPhysicsObject(numObjects, assets, rand() / (float)RAND_MAX > 0.5f);
+        root->addChild(physicsObject);
+        ++numObjects;
+
+        std::cout << "object #" << numObjects << " dropped" << std::endl;
+    }
+    else
+        std::cout << "You threw away all your possible objects. Try again!" << std::endl;
+}
+
+void
+bouncePhysicObjects(Node::Ptr root)
+{
+    auto physicsObjects = NodeSet::create(root)
+        ->descendants(true)
+        ->where([](Node::Ptr n)
+    {
+        return n->hasComponent<component::bullet::Collider>()
+            && n->component<component::Transform>()->modelToWorldMatrix()->translation()->length() < 10.0f // still close to the origin
+            && n->name().find("physicsObject") != std::string::npos;
+    });
+
+    if (!physicsObjects->nodes().empty())
+    {
+        auto randomId = rand() % physicsObjects->nodes().size();
+        auto randomCollider = physicsObjects->nodes()[randomId]->component<component::bullet::Collider>();
+
+        randomCollider->applyImpulse(Vector3::create(0.0f, IMPULSE_STRENGTH * randomCollider->colliderData()->mass(), 0.0));
+    }
 }

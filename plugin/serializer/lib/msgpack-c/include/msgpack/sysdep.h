@@ -15,8 +15,8 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-#ifndef MSGPACK_SYSDEP_H__
-#define MSGPACK_SYSDEP_H__
+#ifndef MSGPACK_SYSDEP_H
+#define MSGPACK_SYSDEP_H
 
 #include <stdlib.h>
 #include <stddef.h>
@@ -36,13 +36,25 @@ typedef unsigned __int64 uint64_t;
 #include <stdbool.h>
 #endif
 
+#if defined(_MSC_VER)
+#define MSGPACK_DLLEXPORT __declspec(dllexport)
+#else  /* _MSC_VER */
+#define MSGPACK_DLLEXPORT
+#endif /* _MSC_VER */
+
 #ifdef _WIN32
 #define _msgpack_atomic_counter_header <windows.h>
 typedef long _msgpack_atomic_counter_t;
 #define _msgpack_sync_decr_and_fetch(ptr) InterlockedDecrement(ptr)
 #define _msgpack_sync_incr_and_fetch(ptr) InterlockedIncrement(ptr)
 #elif defined(__GNUC__) && ((__GNUC__*10 + __GNUC_MINOR__) < 41)
+
+#if defined(__cplusplus)
+#define _msgpack_atomic_counter_header "gcc_atomic.hpp"
+#else
 #define _msgpack_atomic_counter_header "gcc_atomic.h"
+#endif
+
 #else
 typedef unsigned int _msgpack_atomic_counter_t;
 #define _msgpack_sync_decr_and_fetch(ptr) __sync_sub_and_fetch(ptr, 1)
@@ -62,7 +74,12 @@ typedef unsigned int _msgpack_atomic_counter_t;
 #endif
 
 #else
+
 #include <arpa/inet.h>  /* __BYTE_ORDER */
+#  if !defined(__APPLE__)
+#    include <byteswap.h>
+#  endif
+
 #endif
 
 #if !defined(__LITTLE_ENDIAN__) && !defined(__BIG_ENDIAN__)
@@ -126,53 +143,27 @@ typedef unsigned int _msgpack_atomic_counter_t;
       ((((uint64_t)x) >> 56)                         ) )
 #endif
 
-#define _msgpack_load16(cast, from) ((cast)( \
-        (((uint16_t)((uint8_t*)(from))[0]) << 8) | \
-        (((uint16_t)((uint8_t*)(from))[1])     ) ))
-
-#define _msgpack_load32(cast, from) ((cast)( \
-        (((uint32_t)((uint8_t*)(from))[0]) << 24) | \
-        (((uint32_t)((uint8_t*)(from))[1]) << 16) | \
-        (((uint32_t)((uint8_t*)(from))[2]) <<  8) | \
-        (((uint32_t)((uint8_t*)(from))[3])      ) ))
-
-#define _msgpack_load64(cast, from) ((cast)( \
-        (((uint64_t)((uint8_t*)(from))[0]) << 56) | \
-        (((uint64_t)((uint8_t*)(from))[1]) << 48) | \
-        (((uint64_t)((uint8_t*)(from))[2]) << 40) | \
-        (((uint64_t)((uint8_t*)(from))[3]) << 32) | \
-        (((uint64_t)((uint8_t*)(from))[4]) << 24) | \
-        (((uint64_t)((uint8_t*)(from))[5]) << 16) | \
-        (((uint64_t)((uint8_t*)(from))[6]) << 8)  | \
-        (((uint64_t)((uint8_t*)(from))[7])     )  ))
-
-#else
+#else  /* __LITTLE_ENDIAN__ */
 
 #define _msgpack_be16(x) (x)
 #define _msgpack_be32(x) (x)
 #define _msgpack_be64(x) (x)
 
-#define _msgpack_load16(cast, from) ((cast)( \
-        (((uint16_t)((uint8_t*)from)[0]) << 8) | \
-        (((uint16_t)((uint8_t*)from)[1])     ) ))
-
-#define _msgpack_load32(cast, from) ((cast)( \
-        (((uint32_t)((uint8_t*)from)[0]) << 24) | \
-        (((uint32_t)((uint8_t*)from)[1]) << 16) | \
-        (((uint32_t)((uint8_t*)from)[2]) <<  8) | \
-        (((uint32_t)((uint8_t*)from)[3])      ) ))
-
-#define _msgpack_load64(cast, from) ((cast)( \
-        (((uint64_t)((uint8_t*)from)[0]) << 56) | \
-        (((uint64_t)((uint8_t*)from)[1]) << 48) | \
-        (((uint64_t)((uint8_t*)from)[2]) << 40) | \
-        (((uint64_t)((uint8_t*)from)[3]) << 32) | \
-        (((uint64_t)((uint8_t*)from)[4]) << 24) | \
-        (((uint64_t)((uint8_t*)from)[5]) << 16) | \
-        (((uint64_t)((uint8_t*)from)[6]) << 8)  | \
-        (((uint64_t)((uint8_t*)from)[7])     )  ))
 #endif
 
+#define _msgpack_load16(cast, from, to) do {       \
+        memcpy((cast*)(to), (from), sizeof(cast)); \
+        *(to) = _msgpack_be16(*(to));              \
+    } while (0);
+
+#define _msgpack_load32(cast, from, to) do {       \
+        memcpy((cast*)(to), (from), sizeof(cast)); \
+        *(to) = _msgpack_be32(*(to));              \
+    } while (0);
+#define _msgpack_load64(cast, from, to) do {       \
+        memcpy((cast*)(to), (from), sizeof(cast)); \
+        *(to) = _msgpack_be64(*(to));              \
+    } while (0);
 
 #define _msgpack_store16(to, num) \
     do { uint16_t val = _msgpack_be16(num); memcpy(to, &val, 2); } while(0)
@@ -191,5 +182,17 @@ typedef unsigned int _msgpack_atomic_counter_t;
 */
 
 
-#endif /* msgpack/sysdep.h */
+#if !defined(__cplusplus) && defined(_MSC_VER)
+#if !defined(FALSE)
+#define FALSE (0)
+#endif
+#if !defined(TRUE)
+#define TRUE (!FALSE)
+#endif
+#define bool int
+#define true TRUE
+#define false FALSE
+#define inline __inline
+#endif
 
+#endif /* msgpack/sysdep.h */

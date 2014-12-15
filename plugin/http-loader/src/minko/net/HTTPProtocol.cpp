@@ -47,12 +47,11 @@ HTTPProtocol::HTTPProtocol()
 void
 HTTPProtocol::progressHandler(void* arg, int loadedBytes, int totalBytes)
 {
-    int progress = 0;
+    float progress = 0.0;
 
     if (totalBytes != 0)
-        progress = (int)(100.f * ((float)loadedBytes / (float)totalBytes));
+        progress = (float)(loadedBytes) / (float)(totalBytes);
 
-    std::cout << "HTTPProtocol::progressHandler(): " << progress << std::endl;
     auto iterator = std::find_if(HTTPProtocol::_runningLoaders.begin(),
                                  HTTPProtocol::_runningLoaders.end(),
                                  [=](std::shared_ptr<HTTPProtocol> loader) -> bool {
@@ -64,16 +63,15 @@ HTTPProtocol::progressHandler(void* arg, int loadedBytes, int totalBytes)
         std::cerr << "HTTPProtocol::progressHandler(): cannot find loader" << std::endl;
         return;
     }
-    std::cout << "HTTPProtocol::progressHandler(): found loader " << format("%d", progress) << "%"  << std::endl;
+
     std::shared_ptr<HTTPProtocol> loader = *iterator;
 
-    loader->_progress->execute(loader, float(progress));
+    loader->_progress->execute(loader, progress);
 }
 
 void
 HTTPProtocol::completeHandler(void* arg, void* data, unsigned int size)
 {
-    std::cout << "HTTPProtocol::completeHandler(): size: " << size << std::endl;
     auto iterator = std::find_if(HTTPProtocol::_runningLoaders.begin(),
                                  HTTPProtocol::_runningLoaders.end(),
                                  [=](std::shared_ptr<HTTPProtocol> loader) -> bool {
@@ -86,27 +84,19 @@ HTTPProtocol::completeHandler(void* arg, void* data, unsigned int size)
         return;
     }
 
-    std::cout << "HTTPProtocol::completeHandler(): found loader" << std::endl;
     std::shared_ptr<HTTPProtocol> loader = *iterator;
 
-    std::cout << "HTTPProtocol::completeHandler(): set data" << std::endl;
     loader->data().assign(static_cast<unsigned char*>(data), static_cast<unsigned char*>(data) + size);
 
     loader->_progress->execute(loader, 1.0);
-
-    std::cout << "HTTPProtocol::completeHandler() filename = " << loader->file()->filename() << std::endl;
-   //  HTTPProtocol::_runningLoaders.remove(loader);
-    std::cout << "HTTPProtocol::completeHandler(): call execute" << std::endl;
     loader->_complete->execute(loader);
 
-    std::cout << "HTTPProtocol::completeHandler(): remove loader" << std::endl;
-    std::cout << "HTTPProtocol::completeHandler(): complete" << std::endl;
+    // HTTPProtocol::_runningLoaders.remove(loader);
 }
 
 void
 HTTPProtocol::errorHandler(void* arg, int code, const char * message)
 {
-    std::cout << "HTTPProtocol::errorHandler(): " << std::endl;
     auto iterator = std::find_if(HTTPProtocol::_runningLoaders.begin(),
                                  HTTPProtocol::_runningLoaders.end(),
                                  [=](std::shared_ptr<HTTPProtocol> loader) -> bool {
@@ -118,24 +108,17 @@ HTTPProtocol::errorHandler(void* arg, int code, const char * message)
         std::cerr << "HTTPProtocol::errorHandler(): cannot find loader" << std::endl;
         return;
     }
-    std::cout << "HTTPProtocol::errorHandler() message = " << message << std::endl;
-    std::cout << "HTTPProtocol::errorHandler(): found loader" << std::endl;
+
     std::shared_ptr<HTTPProtocol> loader = *iterator;
 
-    std::cout << "HTTPProtocol::errorHandler(): call execute" << std::endl;
-    // HTTPProtocol::_runningLoaders.remove(loader);
-    std::cout << "HTTPProtocol::errorHandler() filename = " << loader->file()->filename() << std::endl;
     loader->_error->execute(loader);
 
-    std::cout << "HTTPProtocol::errorHandler(): remove loader" << std::endl;
-    std::cout << "HTTPProtocol::errorHandler(): complete" << std::endl;
+    // HTTPProtocol::_runningLoaders.remove(loader);
 }
 
 void
 HTTPProtocol::load()
 {
-    std::cout << "HTTPProtocol::load(): " << _file->filename() << std::endl;
-
     resolvedFilename(_file->filename());
 
     std::cout << resolvedFilename() << std::endl;
@@ -167,16 +150,28 @@ HTTPProtocol::load()
 #if defined(EMSCRIPTEN)
     if (options()->loadAsynchronously())
     {
-        std::cout << "HTTPProtocol::load(): " << "call emscripten_async_wget_data " << std::endl;
-
         //EMSCRIPTEN < 1.13.1
         //emscripten_async_wget_data(resolvedFilename().c_str(), loader.get(), &completeHandler, &errorHandler);
 
         //EMSCRIPTEN >= 1.13.1
+        auto additionalHeader = std::string();
+
+        auto seekingOffset = _options->seekingOffset();
+        auto seekedLength = _options->seekedLength();
+
+        if (seekingOffset >= 0 && seekedLength > 0)
+        {
+            auto rangeMin = std::to_string(seekingOffset);
+            auto rangeMax = std::to_string(seekingOffset + seekedLength - 1);
+
+            additionalHeader = std::string("{ \"Range\" : \"bytes=") + rangeMin + "-" + rangeMax + "\" }";
+        }
+
         emscripten_async_wget2_data(
             resolvedFilename().c_str(),
             "GET",
             "",
+            additionalHeader.c_str(),
             loader.get(),
             0,
             &wget2CompleteHandler,
@@ -193,9 +188,20 @@ HTTPProtocol::load()
 
         eval += "xhr.overrideMimeType('text/plain; charset=x-user-defined');\n";
 
+        auto seekingOffset = _options->seekingOffset();
+        auto seekedLength = _options->seekedLength();
+
+        if (seekingOffset >= 0 && seekedLength > 0)
+        {
+            auto rangeMin = std::to_string(seekingOffset);
+            auto rangeMax = std::to_string(seekingOffset + seekedLength - 1);
+
+            eval += "xhr.setRequestHeader('Range', 'bytes=" + rangeMin + "-" + rangeMax + "');\n";
+        }
+
         eval += "xhr.send(null);\n";
 
-        eval += "if (xhr.status == 200)\n";
+        eval += "if (xhr.status == 200 || xhr.status == 206)\n";
         eval += "{\n";
         eval += "    var array = new Uint8Array(xhr.responseText.length);";
 

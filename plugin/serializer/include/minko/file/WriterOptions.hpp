@@ -36,21 +36,48 @@ namespace minko
             typedef std::shared_ptr<WriterOptions>                              Ptr;
 
         private:
-            bool                    _embedAll;
-            bool                    _addBoundingBoxes;
+            bool                                _embedAll;
+            bool                                _addBoundingBoxes;
 
-            UriFunction             _outputAssetUriFunction;
+            UriFunction                         _outputAssetUriFunction;
 
-            serialize::ImageFormat  _imageFormat;
+            serialize::ImageFormat              _imageFormat;
+            std::list<render::TextureFormat>    _textureFormats;
+
+            bool                                _compressTexture;
+            bool                                _generateMipmaps;
+            render::MipFilter                   _mipFilter;
+            bool                                _optimizeForNormalMapping;
 
         public:
-            inline static
+            inline
+            static
             Ptr
             create()
             {
                 auto writerOptions = Ptr(new WriterOptions());
 
                 return writerOptions;
+            }
+
+            inline
+            static
+            Ptr
+            create(WriterOptions::Ptr other)
+            {
+                auto instance = WriterOptions::create();
+
+                instance->_embedAll = other->_embedAll;
+                instance->_addBoundingBoxes = other->_addBoundingBoxes;
+                instance->_outputAssetUriFunction = other->_outputAssetUriFunction;
+                instance->_imageFormat = other->_imageFormat;
+                instance->_textureFormats = other->_textureFormats;
+                instance->_compressTexture = other->_compressTexture;
+                instance->_generateMipmaps = other->_generateMipmaps;
+                instance->_mipFilter = other->_mipFilter;
+                instance->_optimizeForNormalMapping = other->_optimizeForNormalMapping;
+
+                return instance;
             }
 
             inline
@@ -113,6 +140,86 @@ namespace minko
             imageFormat(serialize::ImageFormat value)
             {
                 _imageFormat = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            const std::list<render::TextureFormat>&
+            textureFormats() const
+            {
+                return _textureFormats;
+            }
+
+            inline
+            Ptr
+            registerTextureFormat(render::TextureFormat textureFormat)
+            {
+                _textureFormats.push_back(textureFormat);
+
+                return shared_from_this();
+            }
+
+            inline
+            bool
+            compressTexture() const
+            {
+                return _compressTexture;
+            }
+
+            inline
+            Ptr
+            compressTexture(bool value)
+            {
+                _compressTexture = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            bool
+            generateMipmaps() const
+            {
+                return _generateMipmaps;
+            }
+
+            inline
+            Ptr
+            generateMipmaps(bool value)
+            {
+                _generateMipmaps = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            render::MipFilter
+            mipFilter() const
+            {
+                return _mipFilter;
+            }
+
+            inline
+            Ptr
+            mipFilter(render::MipFilter value)
+            {
+                _mipFilter = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            bool
+            optimizeForNormalMapping() const
+            {
+                return _optimizeForNormalMapping;
+            }
+
+            inline
+            Ptr
+            optimizeForNormalMapping(bool value)
+            {
+                _optimizeForNormalMapping = value;
 
                 return shared_from_this();
             }

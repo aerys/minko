@@ -81,6 +81,13 @@ namespace minko
                 return _nodes;
             }
 
+            inline
+            int
+            size() const
+            {
+                return _nodes.size();
+            }
+
             Ptr
             descendants(bool andSelf = false, bool depthFirst = true, Ptr result = nullptr);
 

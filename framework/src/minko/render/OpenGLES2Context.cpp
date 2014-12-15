@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/WrapMode.hpp"
 #include "minko/render/TextureFilter.hpp"
 #include "minko/render/MipFilter.hpp"
+#include "minko/render/TextureFormatInfo.hpp"
 #include "minko/render/TriangleCulling.hpp"
 #include "minko/render/StencilOperation.hpp"
 #include "minko/math/Matrix4x4.hpp"
@@ -37,21 +38,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #if MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
 # if defined(MINKO_PLUGIN_ANGLE)
 #  include "GLES2/gl2.h"
+#  include "GLES2/gl2ext.h"
 # else
 #  include "GL/glew.h"
 # endif
 #elif MINKO_PLATFORM == MINKO_PLATFORM_OSX
 # include <OpenGL/gl.h>
+# include <OpenGL/glext.h>
 # include <GLUT/glut.h>
 #elif MINKO_PLATFORM == MINKO_PLATFORM_LINUX
 # include <GL/gl.h>
+# include <GL/glext.h>
 # include <GL/glu.h>
 #elif MINKO_PLATFORM == MINKO_PLATFORM_IOS
 # include <OpenGLES/ES2/gl.h>
+# include <OpenGLES/ES2/glext.h>
 #elif MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
 # include <GLES2/gl2.h>
+# include <GLES2/gl2ext.h>
 #elif MINKO_PLATFORM == MINKO_PLATFORM_HTML5
 # include <GLES2/gl2.h>
+# include <GLES2/gl2ext.h>
 # include <EGL/egl.h>
 #endif
 
@@ -91,12 +98,12 @@ OpenGLES2Context::initializeDepthFuncsMap()
 {
     CompareFuncsMap m;
 
-    m[CompareMode::ALWAYS]           = GL_ALWAYS;
+    m[CompareMode::ALWAYS]            = GL_ALWAYS;
     m[CompareMode::EQUAL]            = GL_EQUAL;
-    m[CompareMode::GREATER]          = GL_GREATER;
+    m[CompareMode::GREATER]            = GL_GREATER;
     m[CompareMode::GREATER_EQUAL]    = GL_GEQUAL;
-    m[CompareMode::LESS]             = GL_LESS;
-    m[CompareMode::LESS_EQUAL]       = GL_LEQUAL;
+    m[CompareMode::LESS]            = GL_LESS;
+    m[CompareMode::LESS_EQUAL]        = GL_LEQUAL;
     m[CompareMode::NEVER]            = GL_NEVER;
     m[CompareMode::NOT_EQUAL]        = GL_NOTEQUAL;
 
@@ -111,15 +118,17 @@ OpenGLES2Context::initializeStencilOperationsMap()
 
     m[StencilOperation::KEEP]        = GL_KEEP;
     m[StencilOperation::ZERO]        = GL_ZERO;
-    m[StencilOperation::REPLACE]     = GL_REPLACE;
+    m[StencilOperation::REPLACE]    = GL_REPLACE;
     m[StencilOperation::INCR]        = GL_INCR;
-    m[StencilOperation::INCR_WRAP]   = GL_INCR_WRAP;
+    m[StencilOperation::INCR_WRAP]    = GL_INCR_WRAP;
     m[StencilOperation::DECR]        = GL_DECR;
-    m[StencilOperation::DECR_WRAP]   = GL_DECR_WRAP;
-    m[StencilOperation::INVERT]      = GL_INVERT;
+    m[StencilOperation::DECR_WRAP]    = GL_DECR_WRAP;
+    m[StencilOperation::INVERT]        = GL_INVERT;
 
     return m;
 }
+
+std::unordered_map<TextureFormat, unsigned int> OpenGLES2Context::_availableTextureFormats;
 
 OpenGLES2Context::OpenGLES2Context() :
     _errorsEnabled(false),
@@ -645,6 +654,67 @@ OpenGLES2Context::createTexture(TextureType     type,
     return texture;
 }
 
+uint
+OpenGLES2Context::createCompressedTexture(TextureType     type,
+                                          TextureFormat   format,
+                                          unsigned int    width,
+                                          unsigned int    height,
+                                          bool            mipMapping)
+{
+    uint texture;
+
+    // make sure width is a power of 2
+    if (!((width != 0) && !(width & (width - 1))))
+        throw std::invalid_argument("width");
+
+    // make sure height is a power of 2
+    if (!((height != 0) && !(height & (height - 1))))
+        throw std::invalid_argument("height");
+
+    // http://www.opengl.org/sdk/docs/man/xhtml/glGenTextures.xml
+    //
+    // void glGenTextures(GLsizei n, GLuint* textures)
+    // n Specifies the number of texture names to be generated.
+    // textures Specifies an array in which the generated texture names are stored.
+    //
+    // glGenTextures generate texture names
+    glGenTextures(1, &texture);
+
+    // http://www.opengl.org/sdk/docs/man/xhtml/glBindTexture.xml
+    //
+    // void glBindTexture(GLenum target, GLuint texture);
+    // target Specifies the target to which the texture is bound.
+    // texture Specifies the name of a texture.
+    //
+    // glBindTexture bind a named texture to a texturing target
+    const auto glTarget = type == TextureType::Texture2D
+        ? GL_TEXTURE_2D
+        : GL_TEXTURE_CUBE_MAP;
+
+    glBindTexture(glTarget, texture);
+
+    _currentBoundTexture = texture;
+
+    // default sampler states
+    glTexParameteri(glTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(glTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(glTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(glTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    _textures.push_back(texture);
+    _textureSizes[texture]            = std::make_pair(width, height);
+    _textureHasMipmaps[texture]        = mipMapping;
+    _textureTypes[texture]            = type;
+
+    _currentWrapMode[texture]        = WrapMode::CLAMP;
+    _currentTextureFilter[texture]    = TextureFilter::NEAREST;
+    _currentMipFilter[texture]        = MipFilter::NONE;
+
+    checkForErrors();
+
+    return texture;
+}
+
 TextureType
 OpenGLES2Context::getTextureType(uint textureId) const
 {
@@ -715,6 +785,45 @@ OpenGLES2Context::uploadCubeTextureData(uint                texture,
     _currentBoundTexture = texture;
 
     checkForErrors();
+}
+
+void
+OpenGLES2Context::uploadCompressedTexture2dData(uint          texture,
+                                                TextureFormat format,
+                                                unsigned int  width,
+                                                unsigned int  height,
+                                                unsigned int  size,
+                                                unsigned int  mipLevel,
+                                                void*         data)
+{
+    assert(getTextureType(texture) == TextureType::Texture2D);
+
+    const auto& formats = availableTextureFormats();
+
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glCompressedTexImage2D(GL_TEXTURE_2D, mipLevel, formats.at(format), width, height, 0, size, data);
+
+    _currentBoundTexture = texture;
+
+    checkForErrors();
+}
+
+void
+OpenGLES2Context::uploadCompressedCubeTextureData(uint                texture,
+                                                  CubeTexture::Face   face,
+                                                  TextureFormat       format,
+                                                  unsigned int        width,
+                                                  unsigned int        height,
+                                                  unsigned int        mipLevel,
+                                                  void*               data)
+{
+    // TODO
+}
+
+void
+OpenGLES2Context::activateMipMapping(uint texture)
+{
+    _textureHasMipmaps[texture] = true;
 }
 
 void
@@ -1331,19 +1440,19 @@ OpenGLES2Context::setUniform(const uint& location, const uint& size, bool transp
 
         for (uint i = 0; i < size; ++i)
         {
-            const float*    matrix    = values        + (i << 4);
-            float*            tmatrix    = transposed    + (i << 4);
+            const float* matrix = values + (i << 4);
+            float* tmatrix = transposed + (i << 4);
 
-            tmatrix[0]    = matrix[0];
-            tmatrix[1]    = matrix[4];
-            tmatrix[2]    = matrix[8];
-            tmatrix[3]    = matrix[12];
-            tmatrix[4]    = matrix[1];
-            tmatrix[5]    = matrix[5];
-            tmatrix[6]    = matrix[9];
-            tmatrix[7]    = matrix[13];
-            tmatrix[8]    = matrix[2];
-            tmatrix[9]    = matrix[6];
+            tmatrix[0]  = matrix[0];
+            tmatrix[1]  = matrix[4];
+            tmatrix[2]  = matrix[8];
+            tmatrix[3]  = matrix[12];
+            tmatrix[4]  = matrix[1];
+            tmatrix[5]  = matrix[5];
+            tmatrix[6]  = matrix[9];
+            tmatrix[7]  = matrix[13];
+            tmatrix[8]  = matrix[2];
+            tmatrix[9]  = matrix[6];
             tmatrix[10] = matrix[10];
             tmatrix[11] = matrix[14];
             tmatrix[12] = matrix[3];
@@ -1555,7 +1664,7 @@ OpenGLES2Context::setRenderToBackBuffer()
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
-    glViewport(_viewportX, _viewportY, _viewportWidth, _viewportHeight);
+    configureViewport(_oldViewportX, _oldViewportY, _oldViewportWidth, _oldViewportHeight);
 
     _currentTarget = 0;
 
@@ -1571,6 +1680,13 @@ OpenGLES2Context::setRenderToTexture(uint texture, bool enableDepthAndStencil)
     if (_frameBuffers.count(texture) == 0)
         throw std::logic_error("this texture cannot be used for RTT");
 
+    if (!_currentTarget)
+    {
+        _oldViewportX = _viewportX;
+        _oldViewportY = _viewportY;
+        _oldViewportWidth = _viewportWidth;
+        _oldViewportHeight = _viewportHeight;
+    }
     _currentTarget = texture;
 
     glBindFramebuffer(GL_FRAMEBUFFER, _frameBuffers[texture]);
@@ -1582,7 +1698,7 @@ OpenGLES2Context::setRenderToTexture(uint texture, bool enableDepthAndStencil)
 
     auto textureSize = _textureSizes[texture];
 
-    glViewport(0, 0, textureSize.first, textureSize.second);
+    configureViewport(0, 0, textureSize.first, textureSize.second);
 
     checkForErrors();
 }
@@ -1682,4 +1798,107 @@ OpenGLES2Context::generateMipmaps(uint texture)
     _currentBoundTexture = texture;
 
     checkForErrors();
+}
+
+bool
+OpenGLES2Context::supportsExtension(const std::string& extensionNameString)
+{
+    const auto availableExtensionRawStrings = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));
+
+    if (availableExtensionRawStrings == nullptr)
+        return false;
+
+    const auto availableExtensionStrings = std::string(availableExtensionRawStrings);
+
+    return availableExtensionStrings.find(extensionNameString) != std::string::npos;
+}
+
+const std::unordered_map<TextureFormat, unsigned int>&
+OpenGLES2Context::availableTextureFormats()
+{
+    if (!_availableTextureFormats.empty())
+        return _availableTextureFormats;
+
+    auto& formats = _availableTextureFormats;
+
+    formats.insert(std::make_pair(TextureFormat::RGB, GL_RGB));
+    formats.insert(std::make_pair(TextureFormat::RGBA, GL_RGBA));
+
+    auto formatCount = GLint();
+    auto rawFormats = std::vector<GLenum>();
+
+    glGetIntegerv(GL_NUM_COMPRESSED_TEXTURE_FORMATS, &formatCount);
+
+    rawFormats.resize(formatCount);
+
+    glGetIntegerv(GL_COMPRESSED_TEXTURE_FORMATS, reinterpret_cast<GLint*>(rawFormats.data()));
+
+    for (auto rawFormat : rawFormats)
+    {
+        switch (rawFormat)
+        {
+#ifdef GL_EXT_texture_compression_dxt1
+        case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+            formats.insert(std::make_pair(TextureFormat::RGB_DXT1, GL_COMPRESSED_RGB_S3TC_DXT1_EXT));
+            break;
+        case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+            formats.insert(std::make_pair(TextureFormat::RGBA_DXT1, GL_COMPRESSED_RGBA_S3TC_DXT1_EXT));
+            break;
+#endif
+
+#ifdef GL_EXT_texture_compression_s3tc
+        case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+            formats.insert(std::make_pair(TextureFormat::RGBA_DXT3, GL_COMPRESSED_RGBA_S3TC_DXT3_EXT));
+            break;
+        case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+            formats.insert(std::make_pair(TextureFormat::RGBA_DXT5, GL_COMPRESSED_RGBA_S3TC_DXT5_EXT));
+            break;
+#endif
+
+#ifdef GL_IMG_texture_compression_pvrtc
+        case GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG:
+            formats.insert(std::make_pair(TextureFormat::RGB_PVRTC1_2BPP, GL_COMPRESSED_RGB_PVRTC_2BPPV1_IMG));
+            break;
+        case GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG:
+            formats.insert(std::make_pair(TextureFormat::RGB_PVRTC1_4BPP, GL_COMPRESSED_RGB_PVRTC_4BPPV1_IMG));
+            break;
+        case GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG:
+            formats.insert(std::make_pair(TextureFormat::RGBA_PVRTC1_2BPP, GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG));
+            break;
+        case GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG:
+            formats.insert(std::make_pair(TextureFormat::RGBA_PVRTC1_4BPP, GL_COMPRESSED_RGBA_PVRTC_4BPPV1_IMG));
+            break;
+#endif
+
+#ifdef GL_IMG_texture_compression_pvrtc2
+        case GL_COMPRESSED_RGBA_PVRTC_2BPPV2_IMG:
+            formats.insert(std::make_pair(TextureFormat::RGBA_PVRTC2_2BPP, COMPRESSED_RGBA_PVRTC_2BPPV2_IMG));
+            break;
+        case GL_COMPRESSED_RGBA_PVRTC_4BPPV2_IMG:
+            formats.insert(std::make_pair(TextureFormat::RGBA_PVRTC2_4BPP, COMPRESSED_RGBA_PVRTC_4BPPV2_IMG));
+            break;
+#endif
+
+#ifdef GL_OES_compressed_ETC1_RGB8_texture
+        case GL_ETC1_RGB8_OES:
+            formats.insert(std::make_pair(TextureFormat::RGB_ETC1, GL_ETC1_RGB8_OES));
+            formats.insert(std::make_pair(TextureFormat::RGBA_ETC1, GL_ETC1_RGB8_OES));
+            break;
+#endif
+
+#ifdef GL_AMD_compressed_ATC_texture
+        case GL_ATC_RGB_AMD:
+            formats.insert(std::make_pair(TextureFormat::RGB_ATITC, GL_ATC_RGB_AMD));
+            break;
+        case GL_ATC_RGBA_EXPLICIT_ALPHA_AMD:
+            formats.insert(std::make_pair(TextureFormat::RGBA_ATITC, GL_ATC_RGBA_EXPLICIT_ALPHA_AMD));
+            break;
+#endif
+
+        default:
+            break;
+        }
+    }
+
+    return formats;
 }

@@ -45,6 +45,7 @@ namespace minko
             create(AbstractContextPtr    context,
                    unsigned int          width,
                    unsigned int          height,
+                   TextureFormat         format,
                    const std::string&    filename = "")
             {
                 return std::shared_ptr<RectangleTexture>(
@@ -52,6 +53,7 @@ namespace minko
                         context,
                         width,
                         height,
+                        format,
                         filename
                     )
                 );
@@ -71,7 +73,6 @@ namespace minko
 
             void
             data(unsigned char* data,
-                 TextureFormat  format      = TextureFormat::RGBA,
                  int            widthGPU    = -1,
                  int            heightGPU   = -1);
 
@@ -93,6 +94,7 @@ namespace minko
             RectangleTexture(AbstractContextPtr  context,
                              unsigned int        width,
                              unsigned int        height,
+                             TextureFormat       format,
                              const std::string&  filename);
         };
     }

@@ -21,8 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/SerializerCommon.hpp"
 #include "minko/file/AbstractParser.hpp"
-#include "msgpack.hpp"
 #include "minko/component/JobManager.hpp"
+#include "minko/deserialize/Unpacker.hpp"
 
 namespace minko
 {
@@ -32,37 +32,43 @@ namespace minko
             public AbstractParser
         {
         public:
-            typedef std::shared_ptr<AbstractSerializerParser>                Ptr;
-            typedef msgpack::type::tuple<unsigned int, short, std::string>   SerializedAsset;
-            typedef std::shared_ptr<file::AssetLibrary>                      AssetLibraryPtr;
+            typedef std::shared_ptr<AbstractSerializerParser>               Ptr;
+            typedef msgpack::type::tuple<unsigned int, short, std::string>  SerializedAsset;
+            typedef std::shared_ptr<file::AssetLibrary>                     AssetLibraryPtr;
 
         private:
-            typedef std::shared_ptr<component::JobManager::Job>                                                JobPtr;
-            typedef std::shared_ptr<Dependency>                                                                DependencyPtr;
-            typedef std::function<void(unsigned char, AssetLibraryPtr, std::string&, DependencyPtr, short, std::list<JobPtr>&)>    AssetDeserializeFunction;
+            typedef std::shared_ptr<component::JobManager::Job>             JobPtr;
+            typedef std::shared_ptr<Dependency>                             DependencyPtr;
+            typedef std::function<void (unsigned char,
+                                        AssetLibraryPtr,
+                                        std::string&,
+                                        DependencyPtr,
+                                        short,
+                                        std::list<JobPtr>&)>                AssetDeserializeFunction;
 
         protected:
-            DependencyPtr                        _dependencies;
-            std::shared_ptr<GeometryParser>        _geometryParser;
-            std::shared_ptr<MaterialParser>        _materialParser;
+            DependencyPtr                       _dependencies;
+            std::shared_ptr<GeometryParser>     _geometryParser;
+            std::shared_ptr<MaterialParser>     _materialParser;
+            std::shared_ptr<TextureParser>      _textureParser;
 
-            std::string                                               _lastParsedAssetName;
-            std::list<std::shared_ptr<component::JobManager::Job>>    _jobList;
+            std::string                                                 _lastParsedAssetName;
+            std::list<std::shared_ptr<component::JobManager::Job>>      _jobList;
 
-            int                                                       _magicNumber;
+            int                                                         _magicNumber;
 
-            unsigned int                                              _fileSize;
-            short                                                     _headerSize;
-            unsigned int                                              _dependenciesSize;
-            unsigned int                                              _sceneDataSize;
+            unsigned int                                                _fileSize;
+            short                                                       _headerSize;
+            unsigned int                                                _dependenciesSize;
+            unsigned int                                                _sceneDataSize;
 
-            int                                                        _version;
-            int                                                        _versionHi;
-            int                                                        _versionLow;
-            int                                                        _versionBuild;
+            int                                                         _version;
+            int                                                         _versionHi;
+            int                                                         _versionLow;
+            int                                                         _versionBuild;
 
         private:
-            static std::unordered_map<uint, AssetDeserializeFunction> _assetTypeToFunction;
+            static std::unordered_map<uint, AssetDeserializeFunction>   _assetTypeToFunction;
 
         public:
             inline static
@@ -84,7 +90,7 @@ namespace minko
         protected:
             void
             extractDependencies(AssetLibraryPtr                         assetLibrary,
-                                  const std::vector<unsigned char>&     data,
+                                const std::vector<unsigned char>&       data,
                                 short                                   dataOffset,
                                 unsigned int                            dependenciesSize,
                                 std::shared_ptr<Options>                options,
@@ -92,7 +98,7 @@ namespace minko
 
             inline
             void
-            dependecy(std::shared_ptr<Dependency> dependecies)
+            dependency(std::shared_ptr<Dependency> dependecies)
             {
                 _dependencies = dependecies;
             }
@@ -101,18 +107,18 @@ namespace minko
             AbstractSerializerParser();
 
             void
-            deserializeAsset(SerializedAsset&                    asset,
-                              AssetLibraryPtr                    assetLibrary,
-                              std::shared_ptr<Options>           options,
-                              std::string&                       assetFilePath);
+            deserializeAsset(SerializedAsset&                           asset,
+                              AssetLibraryPtr                           assetLibrary,
+                              std::shared_ptr<Options>                  options,
+                              std::string&                              assetFilePath);
 
             std::string
             extractFolderPath(const std::string& filepath);
 
             bool
-            readHeader(const std::string&                   filename,
-                       const std::vector<unsigned char>&    data,
-                       int                                  extension = 0x00);
+            readHeader(const std::string&                               filename,
+                       const std::vector<unsigned char>&                data,
+                       int                                              extension = 0x00);
 
             int
             readInt(const std::vector<unsigned char>& data, int offset)
@@ -131,6 +137,15 @@ namespace minko
             {
                 return (short)(data[offset] << 8 | data[offset + 1]);
             }
+
+            static
+            void
+            deserializeTexture(unsigned char                            metaByte,
+                               AssetLibraryPtr                          assetLibrary,
+                               std::string&                             assetCompletePath,
+                               DependencyPtr                            dependency,
+                               short                                    assetId,
+                               std::list<JobPtr>&                       jobs);
         };
     }
 }

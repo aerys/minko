@@ -29,8 +29,9 @@ namespace android
 {
 	namespace dom
 	{
-		class AndroidWebViewDOMEngine : public minko::dom::AbstractDOMEngine,
-                                        public std::enable_shared_from_this<AndroidWebViewDOMEngine>
+		class AndroidWebViewDOMEngine : 
+                  public minko::dom::AbstractDOMEngine,
+                  public std::enable_shared_from_this<AndroidWebViewDOMEngine>
 		{
 		public:
 			typedef std::shared_ptr<AndroidWebViewDOMEngine> Ptr;
@@ -83,7 +84,7 @@ namespace android
             }
 
             std::string
-		eval(std::string);
+		eval(const std::string&);
 
             inline
             bool
@@ -162,16 +163,16 @@ namespace android
             minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot _ontouchendSlot;
             minko::Signal<minko::dom::AbstractDOMTouchEvent::Ptr>::Slot _ontouchmoveSlot;
 
-			AndroidWebViewDOM::Ptr _currentDOM;
+		AndroidWebViewDOM::Ptr _currentDOM;
 
-			minko::AbstractCanvas::Ptr _canvas;
-			minko::component::SceneManager::Ptr _sceneManager;
+		minko::AbstractCanvas::Ptr _canvas;
+		minko::component::SceneManager::Ptr _sceneManager;
 
-			minko::Signal<minko::AbstractCanvas::Ptr, minko::uint, minko::uint>::Slot _canvasResizedSlot;
-			minko::Signal<minko::component::SceneManager::Ptr, float, float>::Slot _enterFrameSlot;
+		minko::Signal<minko::AbstractCanvas::Ptr, minko::uint, minko::uint>::Slot _canvasResizedSlot;
+		minko::Signal<minko::component::SceneManager::Ptr, float, float>::Slot _enterFrameSlot;
 
-			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onload;
-			minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onmessage;
+		minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onload;
+		minko::Signal<minko::dom::AbstractDOM::Ptr, std::string>::Ptr _onmessage;
 
             bool _visible;
 
@@ -193,8 +194,9 @@ namespace android
 
             // Java Method IDs
             jmethodID _evalJSMethod = nullptr;
-            jmethodID _changeResolutionMethod = nullptr;
             jmethodID _loadUrlMethod = nullptr;
+            jmethodID _changeResolutionMethod = nullptr;
+            jmethodID _hideMethod = nullptr;
 		};
 	}
 }

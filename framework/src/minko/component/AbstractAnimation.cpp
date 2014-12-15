@@ -198,7 +198,7 @@ AbstractAnimation::findSceneManager()
 void
 AbstractAnimation::setSceneManager(SceneManager::Ptr sceneManager)
 {
-	if (sceneManager)
+	if (sceneManager && sceneManager != _sceneManager)
 	{
 		_frameBeginSlot = sceneManager->frameBegin()->connect(std::bind(
 			&AbstractAnimation::frameBeginHandler, 
@@ -211,7 +211,7 @@ AbstractAnimation::setSceneManager(SceneManager::Ptr sceneManager)
 		if (_sceneManager == nullptr)
 			_previousGlobalTime = _timeFunction(uint(sceneManager->time()));
 	}
-	else if (_frameBeginSlot)
+	else if (_frameBeginSlot && sceneManager == nullptr)
 	{
 		stop();
 		_frameBeginSlot = nullptr;
@@ -283,6 +283,8 @@ AbstractAnimation::addLabel(const std::string& name, uint time)
 
 	_labelNameToIndex[name] = _labels.size();
 	_labels.push_back(Label(name, time));
+
+    updateNextLabelIds(_currentTime);
 
 	return std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this());
 }
@@ -412,7 +414,7 @@ AbstractAnimation::updateNextLabelIds(uint time)
 		if (!isInPlaybackWindow(labelTime))
 			continue;
 
-		if (!_isReversed && time <= labelTime)
+		if (!_isReversed && time < labelTime)
 		{
 			if (labelTime < nextLabelTime)
 			{
@@ -424,7 +426,7 @@ AbstractAnimation::updateNextLabelIds(uint time)
 			else if (labelTime == nextLabelTime)
 				_nextLabelIds.push_back(labelId);
 		}
-		else if (_isReversed && labelTime <= time)
+		else if (_isReversed && labelTime < time)
 		{
 			if (nextLabelTime < labelTime)
 			{
@@ -502,7 +504,9 @@ AbstractAnimation::checkLabelHit(uint previousTime, uint newTime)
 
 	if (trigger)
 	{
-		for (auto labelId : _nextLabelIds)
+        auto nextLabelIds = _nextLabelIds;
+
+		for (auto labelId : nextLabelIds)
 		{
 			const auto& label = _labels[labelId];
 

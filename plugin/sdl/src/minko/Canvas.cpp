@@ -36,6 +36,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #endif
 
 #include "SDL.h"
+#include "SDL_syswm.h"
 
 #if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
 # include "minko/MinkoWebGL.hpp"
@@ -60,10 +61,9 @@ using namespace minko::scene;
 using namespace minko::math;
 using namespace minko::async;
 
-Canvas::Canvas(const std::string& name, const uint width, const uint height, bool useStencil, bool chromeless) :
+Canvas::Canvas(const std::string& name, const uint width, const uint height, int flags) :
     _name(name),
-    _useStencil(useStencil),
-    _chromeless(chromeless),
+    _flags(flags),
     _data(data::Provider::create()),
     _active(false),
     _previousTime(std::chrono::high_resolution_clock::now()),
@@ -94,6 +94,29 @@ Canvas::initialize()
     {
         return file::APKProtocol::create();
     });
+#endif
+
+#if MINKO_PLATFORM == MINKO_PLATFORM_IOS
+    // Exclude Library and Document folders from iCloud backup system
+    NSString* appLibraryFolder = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString* appDocumentFolder = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSArray* backupFolders = [NSArray arrayWithObjects: appLibraryFolder, appDocumentFolder, nil];
+    
+    NSURL * url;
+    for (NSString* folder in backupFolders)
+    {
+        url = [NSURL fileURLWithPath:folder];
+        
+        assert([[NSFileManager defaultManager] fileExistsAtPath: [url path]]);
+        
+        NSLog(@"Final URL: %@", url);
+        
+        NSError *error = nil;
+        BOOL success = [url setResourceValue: [NSNumber numberWithBool: YES]
+                            forKey: NSURLIsExcludedFromBackupKey error: &error];
+        if(!success)
+            NSLog(@"Error excluding %@ from backup %@", [url lastPathComponent], error);
+    }
 #endif
 
     initializeWindow();
@@ -132,16 +155,16 @@ Canvas::initializeInputs()
 void
 Canvas::initializeWindow()
 {
-#if defined(MINKO_PLUGIN_OFFSCREEN)
-    auto flags = 0;
-#else
-    auto flags = SDL_INIT_VIDEO | SDL_INIT_JOYSTICK;
+    int initFlags = 0;
+
+#if !defined(MINKO_PLUGIN_OFFSCREEN)
+    initFlags = SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_JOYSTICK;
 #endif
 
-    if (SDL_Init(flags) < 0)
+    if (SDL_Init(initFlags) < 0)
         throw std::runtime_error(SDL_GetError());
 
-    if (_useStencil)
+    if (_flags & STENCIL)
         SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
@@ -160,17 +183,26 @@ Canvas::initializeWindow()
 
     _window = nullptr;
 #else
-    auto sdlFlags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+    int windowFlags = SDL_WINDOW_OPENGL;
 
-    if (_chromeless)
-        sdlFlags |= SDL_WINDOW_BORDERLESS;
+    if (_flags & RESIZABLE)
+        windowFlags |= SDL_WINDOW_RESIZABLE;
+
+    if (_flags & CHROMELESS)
+        windowFlags |= SDL_WINDOW_BORDERLESS;
+
+    if (_flags & FULLSCREEN)
+        windowFlags |= SDL_WINDOW_FULLSCREEN;
+
+    if (_flags & HIDDEN)
+        windowFlags |= SDL_WINDOW_HIDDEN;
 
     _window = SDL_CreateWindow(
         _name.c_str(),
         SDL_WINDOWPOS_CENTERED, // SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_CENTERED, // SDL_WINDOWPOS_UNDEFINED,
         _width, _height,
-        sdlFlags
+        windowFlags
     );
 
     // Reset window size after window creation because certain platforms (iOS, Android)
@@ -183,7 +215,33 @@ Canvas::initializeWindow()
         width(w);
         height(h);
     }
+
+# if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID)
+    _audio = SDLAudio::create(shared_from_this());
+# endif
 #endif
+}
+
+void*
+Canvas::systemWindow() const
+{
+    SDL_Window* sdlWindow = _window;
+    SDL_SysWMinfo info;
+
+    SDL_VERSION(&info.version);
+
+    if (SDL_GetWindowWMInfo(sdlWindow, &info))
+    {
+#if MINKO_PLATFORM == MINKO_PLATFORM_IOS
+        return info.info.uikit.window;
+#elif MINKO_PLATFORM == MINKO_PLATFORM_OSX
+        return info.info.cocoa.window;
+#elif MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
+        return info.info.win.window;
+#endif
+    }
+
+    return nullptr;
 }
 
 void
@@ -360,6 +418,8 @@ Canvas::step()
 
     auto enteredOrLeftThisFrame = false;
 
+    auto gotTextInput = false;
+
     while (SDL_PollEvent(&event))
     {
         switch (event.type)
@@ -378,12 +438,17 @@ Canvas::step()
 #endif // MINKO_PLATFORM != MINKO_PLATFORM_HTML5
         case SDL_TEXTINPUT:
         {
-            int i = 0;
+            if (gotTextInput)
+                break;
 
+            gotTextInput = true;
+            int i = 0;
+            
             while (event.text.text[i] != '\0' && event.text.text[i] != 0)
             {
                 _keyboard->textInput()->execute(_keyboard, event.text.text[i++]);
             }
+
             break;
         }
         case SDL_TEXTEDITING:
@@ -519,6 +584,10 @@ Canvas::step()
             auto id = (int)(event.tfinger.fingerId);
 
             _touch->addTouch(id, x, y);
+            
+            _mouse->x((int)_touch->averageX());
+            _mouse->y((int)_touch->averageY());
+
             _touch->touchDown()->execute(
                 _touch, 
                 id, 
@@ -546,8 +615,12 @@ Canvas::step()
             auto x = event.tfinger.x * _width;
             auto y = event.tfinger.y * _height;
             auto id = (int)(event.tfinger.fingerId);
+            
+            _mouse->x((int)_touch->averageX());
+            _mouse->y((int)_touch->averageY());
 
             _touch->removeTouch(id);
+
             _touch->touchUp()->execute(
                 _touch, 
                 id, 
@@ -589,6 +662,8 @@ Canvas::step()
                 }
             }
 
+            _touch->lastTouchDownTime(-1.0f);
+
             break;
         }
 
@@ -599,8 +674,15 @@ Canvas::step()
             auto y = event.tfinger.y * _height;
             auto dx = event.tfinger.dx * _width;
             auto dy = event.tfinger.dy * _height;
+
+            if (std::abs(_touch->lastTouchDownX() - x) > SDLTouch::TAP_MOVE_THRESHOLD || std::abs(_touch->lastTouchDownY() - y) > SDLTouch::TAP_MOVE_THRESHOLD)
+                _touch->lastTouchDownTime(-1.0f);
             
             _touch->updateTouch(id, x, y);
+            
+            _mouse->x((int)_touch->averageX());
+            _mouse->y((int)_touch->averageY());
+
             _touch->touchMove()->execute(
                 _touch, 
                 id,
@@ -787,6 +869,12 @@ Canvas::step()
         }
     }
 
+    if (_touch->numTouches() && _touch->lastTouchDownTime() != -1.0f && (_relativeTime - _touch->lastTouchDownTime()) > SDLTouch::LONG_HOLD_DELAY_THRESHOLD)
+    {
+        _touch->longHold()->execute(_touch, _touch->averageX(), _touch->averageY());
+        _touch->lastTouchDownTime(-1.0f);
+    }
+
 #if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
     for (auto worker : _activeWorkers)
         worker->poll();
@@ -825,6 +913,10 @@ void
 Canvas::quit()
 {
     _active = false;
+    
+#if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID)
+    _audio = nullptr;
+#endif
 }
 
 Canvas::WorkerPtr

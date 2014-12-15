@@ -69,7 +69,7 @@ namespace minko
                    const unsigned int                        offset = 0)
             {
                 return std::shared_ptr<VertexBuffer>(new VertexBuffer(
-                    context, data, offset, size
+                    context, data, size, offset
                 ));
             }
 
