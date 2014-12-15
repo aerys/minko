@@ -30,6 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/MacroBinding.hpp"
 #include "minko/data/BindingMap.hpp"
 #include "minko/data/Store.hpp"
+#include "minko/render/States.hpp"
 
 namespace Json {
     class Value;
@@ -74,11 +75,20 @@ namespace minko
             template <typename T>
             struct Block
             {
-                T bindings;
+                T bindingMap;
+            };
+
+            struct StateBlock : public Block<data::BindingMap>
+            {
+                render::States states;
+                
+                StateBlock()
+                {
+                    bindingMap.defaultValues.addProvider(states.data());
+                }
             };
 
             typedef Block<data::BindingMap> AttributeBlock;
-            typedef Block<data::BindingMap> StateBlock;
             typedef Block<data::MacroBindingMap> MacroBlock;
 
             struct UniformBlock : public Block<data::BindingMap>
@@ -134,7 +144,7 @@ namespace minko
 			static std::unordered_map<std::string, render::CompareMode>			_compareFuncMap;
 			static std::unordered_map<std::string, render::StencilOperation>	_stencilOpMap;
 			static std::unordered_map<std::string, float>						_priorityMap;
-            static std::array<std::string, 18>                                  _stateNames;
+            static std::array<std::string, 1>                                  _extraStateNames;
 
 		private:
             std::string						_filename;
@@ -199,10 +209,6 @@ namespace minko
             static
             std::unordered_map<std::string, float>
             initializePriorityMap();
-
-            static
-            std::array<std::string, 18>
-            initializeStateNames();
 
             float
             getPriorityValue(const std::string& name);
