@@ -15,22 +15,26 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-#ifndef MSGPACK_VERSION_H__
-#define MSGPACK_VERSION_H__
+#ifndef MSGPACK_VERSION_H
+#define MSGPACK_VERSION_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-
+MSGPACK_DLLEXPORT
 const char* msgpack_version(void);
+MSGPACK_DLLEXPORT
 int msgpack_version_major(void);
+MSGPACK_DLLEXPORT
 int msgpack_version_minor(void);
 
-#define MSGPACK_VERSION "0.5.7"
-#define MSGPACK_VERSION_MAJOR 0
-#define MSGPACK_VERSION_MINOR 5
+#include "version_master.h"
 
+#define MSGPACK_STR(v) #v
+#define MSGPACK_VERSION_I(maj, min, rev) MSGPACK_STR(maj) "." MSGPACK_STR(min) "." MSGPACK_STR(rev)
+
+#define MSGPACK_VERSION MSGPACK_VERSION_I(MSGPACK_VERSION_MAJOR, MSGPACK_VERSION_MINOR, MSGPACK_VERSION_REVISION)
 
 #ifdef __cplusplus
 }
