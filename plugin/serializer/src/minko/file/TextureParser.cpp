@@ -230,10 +230,7 @@ TextureParser::parseCompressedTexture(TextureFormat                        forma
                                       render::TextureType                  type,
                                       int                                  numMipmaps)
 {
-    msgpack::unpacked unpacked;
-    msgpack::unpack(&unpacked, reinterpret_cast<const char*>(data.data()), data.size());
-
-    auto textureData = unpacked.get().as<std::vector<unsigned char>>();
+    const auto& textureData = data;
 
     const auto hasMipmaps = options->generateMipmaps() && numMipmaps > 0;
 
@@ -252,7 +249,7 @@ TextureParser::parseCompressedTexture(TextureFormat                        forma
             fileName
         );
 
-        texture->data(textureData.data());
+        texture->data(const_cast<unsigned char*>(textureData.data()));
         texture->upload();
 
         if (hasMipmaps)

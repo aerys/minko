@@ -179,7 +179,7 @@ TextureWriter::writePvrCompressedTexture(TextureFormat        textureFormat,
     if (!PVRTranscoder::transcode(abstractTexture, writerOptions, textureFormat, out, { PVRTranscoder::Options::fastCompression }))
         return false;
 
-    msgpack::pack(blob, out);
+    blob.write(reinterpret_cast<const char*>(out.data()), out.size());
 
     return true;
 }
@@ -195,7 +195,7 @@ TextureWriter::writeQCompressedTexture(TextureFormat        textureFormat,
     if (!QTranscoder::transcode(abstractTexture, writerOptions, textureFormat, out))
         return false;
 
-    msgpack::pack(blob, out);
+    blob.write(reinterpret_cast<const char*>(out.data()), out.size());
 
     return true;
 }
