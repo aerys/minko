@@ -108,6 +108,8 @@ Texture::data(unsigned char*    data,
 void
 Texture::upload()
 {
+    LOG_INFO("uploading texture " << TextureFormatInfo::name(_format));
+
     if (_id == -1)
     {
         if (TextureFormatInfo::isCompressed(_format))

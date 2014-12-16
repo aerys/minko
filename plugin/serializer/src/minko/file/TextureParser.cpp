@@ -99,13 +99,13 @@ TextureParser::parse(const std::string&                filename,
 
     for (const auto& entry : contextAvailableTextureFormats)
     {
-        LOG_DEBUG("available texture format: " << TextureFormatInfo::name(entry.first));
-
+        LOG_DEBUG("platform-supported texture format: " << TextureFormatInfo::name(entry.first));
         availableTextureFormats.insert(entry.first);
     }
 
     for (const auto& entry : formats)
     {
+        LOG_DEBUG("embedded texture format: " << TextureFormatInfo::name(static_cast<TextureFormat>(entry.get<0>())));
         availableTextureFormats.insert(static_cast<TextureFormat>(entry.get<0>()));
     }
 
