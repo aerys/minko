@@ -18,6 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/deserialize/ComponentDeserializer.hpp"
+#include "minko/file/AbstractSerializerParser.hpp"
 #include "minko/component/BoundingBox.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
@@ -48,7 +49,8 @@ using namespace minko;
 using namespace minko::deserialize;
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeTransform(std::string&						serializedTransformData,
+ComponentDeserializer::deserializeTransform(file::SceneVersion                        sceneVersion,
+                                            std::string&						serializedTransformData,
 											std::shared_ptr<file::AssetLibrary>	assetLibrary,
 											std::shared_ptr<file::Dependency>	dependencies)
 {
@@ -58,16 +60,23 @@ ComponentDeserializer::deserializeTransform(std::string&						serializedTransfor
 
 	msgpack::unpack(serializedTransformData.data(), serializedTransformData.size() - 1, NULL, &mempool, &deserialized);
 	deserialized.convert(&dst);
-
+    
 	std::tuple<uint, std::string&> serializedMatrixTuple(dst.a0, dst.a1);
 
 	auto transformMatrix = Any::cast<math::mat4>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
-
+    
+    // For Scene file of version 0.2.3 or less we need to transpose transform matrixes
+    if (sceneVersion.version <= 514)
+    {
+        transformMatrix = math::transpose(transformMatrix);
+    }
+    
 	return component::Transform::create(transformMatrix);
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeProjectionCamera(std::string&							serializedCameraData,
+ComponentDeserializer::deserializeProjectionCamera(file::SceneVersion                         sceneVersion,
+                                                   std::string&							serializedCameraData,
 												   std::shared_ptr<file::AssetLibrary>	assetLibrary,
 												   std::shared_ptr<file::Dependency>	dependencies)
 {
@@ -88,7 +97,8 @@ ComponentDeserializer::deserializeProjectionCamera(std::string&							serialized
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeAmbientLight(std::string&							serializedAmbientLight,
+ComponentDeserializer::deserializeAmbientLight(file::SceneVersion                         sceneVersion,
+                                               std::string&							serializedAmbientLight,
 											   std::shared_ptr<file::AssetLibrary>	assetLibrary,
 											   std::shared_ptr<file::Dependency>	dependencies)
 {
@@ -113,7 +123,8 @@ ComponentDeserializer::deserializeAmbientLight(std::string&							serializedAmbi
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeDirectionalLight(std::string&							serializedDirectionalLight,
+ComponentDeserializer::deserializeDirectionalLight(file::SceneVersion                         sceneVersion,
+                                                   std::string&							serializedDirectionalLight,
 												   std::shared_ptr<file::AssetLibrary>	assetLibrary,
 												   std::shared_ptr<file::Dependency>	dependencies)
 {
@@ -139,7 +150,8 @@ ComponentDeserializer::deserializeDirectionalLight(std::string&							serialized
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializePointLight(std::string&							serializedPointLight,
+ComponentDeserializer::deserializePointLight(file::SceneVersion                           sceneVersion,
+                                             std::string&							serializedPointLight,
 											 std::shared_ptr<file::AssetLibrary>	assetLibrary,
 											 std::shared_ptr<file::Dependency>		dependencies)
 {
@@ -166,7 +178,8 @@ ComponentDeserializer::deserializePointLight(std::string&							serializedPointL
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeSpotLight(std::string&						serializedSpotLight,
+ComponentDeserializer::deserializeSpotLight(file::SceneVersion                        sceneVersion,
+                                            std::string&						serializedSpotLight,
 										    std::shared_ptr<file::AssetLibrary>	assetLibrary,
 											std::shared_ptr<file::Dependency>	dependencies)
 {
@@ -195,7 +208,8 @@ ComponentDeserializer::deserializeSpotLight(std::string&						serializedSpotLigh
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeSurface(std::string&							serializedSurface,
+ComponentDeserializer::deserializeSurface(file::SceneVersion                          sceneVersion,
+                                          std::string&							serializedSurface,
 										  std::shared_ptr<file::AssetLibrary>	assetLibrary,
 										  std::shared_ptr<file::Dependency>		dependencies)
 {
@@ -254,7 +268,8 @@ ComponentDeserializer::deserializeSurface(std::string&							serializedSurface,
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeRenderer(std::string&							serializedRenderer,
+ComponentDeserializer::deserializeRenderer(file::SceneVersion                         sceneVersion,
+                                           std::string&							serializedRenderer,
 										   std::shared_ptr<file::AssetLibrary>	assetLibrary,
 										   std::shared_ptr<file::Dependency>	dependencies)
 {
@@ -273,9 +288,10 @@ ComponentDeserializer::deserializeRenderer(std::string&							serializedRenderer
 
 
 ComponentDeserializer::AbsComponentPtr
-ComponentDeserializer::deserializeAnimation(std::string&		serializedAnimation,
-											AssetLibraryPtr		assetLibrary,
-											DependencyPtr		dependencies)
+ComponentDeserializer::deserializeAnimation(file::SceneVersion    sceneVersion,
+                                            std::string&	serializedAnimation,
+											AssetLibraryPtr	assetLibrary,
+											DependencyPtr	dependencies)
 {
 	std::vector<animation::AbstractTimeline::Ptr>									timelines;
 	msgpack::zone																	mempool;
@@ -304,7 +320,8 @@ ComponentDeserializer::deserializeAnimation(std::string&		serializedAnimation,
 }
 
 ComponentDeserializer::AbsComponentPtr
-ComponentDeserializer::deserializeSkinning(std::string&		serializedAnimation,
+ComponentDeserializer::deserializeSkinning(file::SceneVersion     sceneVersion, 
+                                           std::string&		serializedAnimation,
 										   AssetLibraryPtr	assetLibrary,
 										   DependencyPtr	dependencies)
 {
@@ -360,8 +377,9 @@ ComponentDeserializer::deserializeSkinning(std::string&		serializedAnimation,
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeBoundingBox(std::string&							serializedBoundingBox,
-                                              std::shared_ptr<file::AssetLibrary>	assetLibrary,
+ComponentDeserializer::deserializeBoundingBox(file::SceneVersion                          sceneVersion,
+                                              std::string&							serializedBoundingBox,
+                                              std::shared_ptr<file::AssetLibrary>   assetLibrary,
                                               std::shared_ptr<file::Dependency>     dependencies)
 {
     msgpack::zone mempool;

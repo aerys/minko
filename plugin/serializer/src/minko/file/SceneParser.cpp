@@ -49,69 +49,80 @@ SceneParser::SceneParser()
 
 	registerComponent(serialize::PROJECTION_CAMERA,
 		std::bind(&deserialize::ComponentDeserializer::deserializeProjectionCamera,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
 
 	registerComponent(serialize::TRANSFORM,
 		std::bind(&deserialize::ComponentDeserializer::deserializeTransform,
 		std::placeholders::_1,
 		std::placeholders::_2,
-		std::placeholders::_3));
+        std::placeholders::_3,
+		std::placeholders::_4));
 
 	registerComponent(serialize::AMBIENT_LIGHT,
 		std::bind(&deserialize::ComponentDeserializer::deserializeAmbientLight,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
 
 	registerComponent(serialize::DIRECTIONAL_LIGHT,
 		std::bind(&deserialize::ComponentDeserializer::deserializeDirectionalLight,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
 
 	registerComponent(serialize::SPOT_LIGHT,
 		std::bind(&deserialize::ComponentDeserializer::deserializeSpotLight,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
 
 	registerComponent(serialize::POINT_LIGHT,
 		std::bind(&deserialize::ComponentDeserializer::deserializePointLight,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
 
 	registerComponent(serialize::SURFACE,
 		std::bind(&deserialize::ComponentDeserializer::deserializeSurface,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
 
 	registerComponent(serialize::RENDERER,
 		std::bind(&deserialize::ComponentDeserializer::deserializeRenderer,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
 
 	registerComponent(serialize::ANIMATION,
 		std::bind(&deserialize::ComponentDeserializer::deserializeAnimation,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
 
 	registerComponent(serialize::SKINNING,
 		std::bind(&deserialize::ComponentDeserializer::deserializeSkinning,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
 
 	registerComponent(serialize::BOUNDINGBOX,
 		std::bind(&deserialize::ComponentDeserializer::deserializeBoundingBox,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
 }
 
 void
@@ -234,7 +245,7 @@ SceneParser::parseNode(std::vector<SerializedNode>&			nodePack,
 		{
 			if (_componentIdToReadFunction.find(dst) != _componentIdToReadFunction.end())
 			{
-				std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[dst](componentPack[componentIndex], assetLibrary, _dependencies);
+                std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[dst](_version, componentPack[componentIndex], assetLibrary, _dependencies);
 
 				for (scene::Node::Ptr node : componentIdToNodes[componentIndex])
 					node->addComponent(newComponent);
@@ -247,7 +258,7 @@ SceneParser::parseNode(std::vector<SerializedNode>&			nodePack,
 	for (auto componentIndex2 : markedComponent)
 	{
 		isSkinningFree = false;
-		std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[serialize::SKINNING](componentPack[componentIndex2], assetLibrary, _dependencies);
+        std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[serialize::SKINNING](_version, componentPack[componentIndex2], assetLibrary, _dependencies);
 
 		for (scene::Node::Ptr node : componentIdToNodes[componentIndex2])
 		{

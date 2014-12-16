@@ -28,6 +28,14 @@ namespace minko
 {
     namespace file
     {
+        struct SceneVersion
+        {
+            int version;
+            int major;
+            int minor;
+            int patch;
+        };
+
         class AbstractSerializerParser:
             public AbstractParser
         {
@@ -57,19 +65,12 @@ namespace minko
             unsigned int                                            _dependenciesSize;
             unsigned int                                            _sceneDataSize;
 
-            int                                                        _version;
-            int                                                        _versionHi;
-            int                                                        _versionLow;
-            int                                                        _versionBuild;
+            SceneVersion                                            _version;
 
         private:
             static std::unordered_map<uint, AssetDeserializeFunction> _assetTypeToFunction;
 
         public:
-            inline static
-            Ptr
-            create();
-
             virtual
             void
             parse(const std::string&                filename,

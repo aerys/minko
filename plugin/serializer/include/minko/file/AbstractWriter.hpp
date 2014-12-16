@@ -239,7 +239,7 @@ namespace minko
 				writeInt(header, _magicNumber, 0);
 
 				//VERSION
-				auto version = ((MINKO_SCENE_VERSION_HI & 0xFF) << 24) | ((MINKO_SCENE_VERSION_LO << 8) & 0xFFFF) | (MINKO_SCENE_VERSION_BUILD & 0xFF);
+				auto version = ((MINKO_SCENE_VERSION_MAJOR & 0xFF) << 24) | ((MINKO_SCENE_VERSION_MINOR << 8) & 0xFFFF) | (MINKO_SCENE_VERSION_PATCH & 0xFF);
 				writeInt(header, version, 4);
 
 				auto fileSize = headerSize + dependenciesSize + dataSize;

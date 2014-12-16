@@ -40,6 +40,7 @@ namespace minko
             typedef std::function<
                 std::shared_ptr<component::AbstractComponent>
                 (
+                    SceneVersion,
                     std::string&,
                     std::shared_ptr<file::AssetLibrary>,
                     std::shared_ptr<file::Dependency>
