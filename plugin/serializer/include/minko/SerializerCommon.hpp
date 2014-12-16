@@ -5,11 +5,11 @@
 
 #define MINKO_SCENE_MAGIC_NUMBER    0x4D4B0300 // MK30 last byte reserved for extensions (material, geometry...)
 
-#define MINKO_SCENE_HEADER_SIZE        30
+#define MINKO_SCENE_HEADER_SIZE     30
 
-#define MINKO_SCENE_VERSION_HI		0
-#define MINKO_SCENE_VERSION_LO		2
-#define MINKO_SCENE_VERSION_BUILD       3
+#define MINKO_SCENE_VERSION_MAJOR   0
+#define MINKO_SCENE_VERSION_MINOR	3
+#define MINKO_SCENE_VERSION_PATCH   0
 
 namespace minko
 {
