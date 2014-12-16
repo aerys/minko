@@ -171,7 +171,7 @@ HTTPProtocol::load()
             resolvedFilename().c_str(),
             "GET",
             "",
-            additionalHeader.c_str(),
+            //additionalHeader.c_str(),
             loader.get(),
             0,
             &wget2CompleteHandler,
