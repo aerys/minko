@@ -69,7 +69,7 @@ namespace minko
             int                                                 _numFilesToParse;
 
         public:
-            virtual ~Loader();
+            virtual ~Loader() = default;
 
             inline static
             Ptr

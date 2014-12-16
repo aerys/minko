@@ -39,8 +39,6 @@ namespace minko
             std::string                         _resolvedFilename;
 
         public:
-            virtual ~File();
-
             inline static
             Ptr
             create()
@@ -86,7 +84,7 @@ namespace minko
             canonizeFilename(const std::string& filename);
 
         private:
-            File();
+            File() = default;
         };
     }
 }
