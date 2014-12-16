@@ -51,6 +51,12 @@ AssetLibrary::AssetLibrary(std::shared_ptr<AbstractContext> context) :
 {
 }
 
+void
+AssetLibrary::disposeLoader()
+{
+    _loader = nullptr;
+}
+
 AssetLibrary::GeometryPtr
 AssetLibrary::geometry(const std::string& name)
 {

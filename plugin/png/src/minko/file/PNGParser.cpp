@@ -111,5 +111,8 @@ PNGParser::parse(const std::string&                 filename,
     if (options->disposeTextureAfterLoading())
         texture->disposeData();
 
+    if (options->disposeTextureAfterLoading())
+        texture->disposeData();
+
     complete()->execute(shared_from_this());
 }

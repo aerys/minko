@@ -94,5 +94,8 @@ JPEGParser::parse(const std::string&                filename,
 
     free(bmpData);
 
+    if (options->disposeTextureAfterLoading())
+        texture->disposeData();
+
     complete()->execute(shared_from_this());
 }
