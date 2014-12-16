@@ -76,19 +76,19 @@ BoundingBox::clone(const CloneOption& option)
 void
 BoundingBox::initialize()
 {
-    _targetAddedSlot = targetAdded()->connect([&](AbstractComponent::Ptr cmp, scene::Node::Ptr target)
+    _targetAddedSlot = targetAdded()->connect([=](AbstractComponent::Ptr cmp, scene::Node::Ptr target)
     {
         if (targets().size() > 1)
             throw std::logic_error("The same BoundingBox cannot have 2 different targets");
 
         _modelToWorldChangedSlot = target->data()->propertyValueChanged("transform.modelToWorldMatrix")->connect(
-            [&](data::Container::Ptr data, const std::string& propertyName)
+            [=](data::Container::Ptr data, const std::string& propertyName)
             {
                 _invalidWorldSpaceBox = true;
             }
         );
 
-        auto componentAddedOrRemovedCallback = [&](scene::Node::Ptr node, scene::Node::Ptr target, AbstractComponent::Ptr cmp)
+        auto componentAddedOrRemovedCallback = [=](scene::Node::Ptr node, scene::Node::Ptr target, AbstractComponent::Ptr cmp)
         {
             if (std::dynamic_pointer_cast<Surface>(cmp))
             {
