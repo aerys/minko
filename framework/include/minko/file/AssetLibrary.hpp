@@ -116,6 +116,9 @@ namespace minko
                 return _loader;
             }
 
+            void
+            disposeLoader();
+
             GeometryPtr
             geometry(const std::string& name);
 
