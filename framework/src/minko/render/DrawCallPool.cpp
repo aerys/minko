@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::render;
 
-std::pair<std::list<DrawCall*>::iterator, std::list<DrawCall*>::iterator>
+DrawCallPool::DrawCallIteratorPair
 DrawCallPool::addDrawCalls(Effect::Ptr                                          effect,
                            const std::unordered_map<std::string, std::string>&  variables,
                            const std::string&                                   techniqueName,
@@ -34,23 +34,11 @@ DrawCallPool::addDrawCalls(Effect::Ptr                                          
     
     for (const auto& pass : technique)
     {
-        auto* drawCall = new DrawCall(
-            pass,
-            variables,
-            rootData,
-            rendererData,
-            targetData
-        );
-
-        initializeDrawCall(*drawCall);
-
-        _drawCalls.push_back(drawCall);
+        _drawCalls.emplace_back(pass, variables, rootData, rendererData, targetData);
+        initializeDrawCall(_drawCalls.back());
     }
 
-    return std::pair<std::list<DrawCall*>::iterator, std::list<DrawCall*>::iterator>(
-        std::prev(_drawCalls.end(), technique.size()),
-        std::prev(_drawCalls.end())
-    );
+    return DrawCallIteratorPair(std::prev(_drawCalls.end(), technique.size()), std::prev(_drawCalls.end()));
 }
 
 void
@@ -60,19 +48,18 @@ DrawCallPool::removeDrawCalls(const DrawCallIteratorPair& iterators)
 
     for (auto it = iterators.first; it != end; ++it)
     {
-        DrawCall* drawCall = *it;
+        DrawCall& drawCall = *it;
 
         // FIXME: avoid const_cast
         unwatchProgramSignature(
-            *drawCall,
-            drawCall->pass()->macroBindings(),
-            drawCall->rootData(),
-            drawCall->rendererData(),
-            drawCall->targetData()
+            drawCall,
+            drawCall.pass()->macroBindings(),
+            drawCall.rootData(),
+            drawCall.rendererData(),
+            drawCall.targetData()
         );
 
-        _invalidDrawCalls.erase(drawCall);
-        delete drawCall;
+        _invalidDrawCalls.erase(&drawCall);
     }
 
     _drawCalls.erase(iterators.first, end);
@@ -266,10 +253,10 @@ DrawCallPool::invalidateDrawCalls(const DrawCallIteratorPair&                   
 
     for (auto it = iterators.first; it != end; ++it)
     {
-        auto drawCallPtr = *it;
+        auto& drawCall = *it;
 
-        _invalidDrawCalls.insert(drawCallPtr);
-        drawCallPtr->variables().clear();
-        drawCallPtr->variables().insert(variables.begin(), variables.end());
+        _invalidDrawCalls.insert(&drawCall);
+        drawCall.variables().clear();
+        drawCall.variables().insert(variables.begin(), variables.end());
     }
 }

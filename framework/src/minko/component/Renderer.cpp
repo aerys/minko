@@ -357,7 +357,7 @@ Renderer::render(render::AbstractContext::Ptr	context,
     for (const auto& drawCall : _drawCallPool.drawCalls())
         // FIXME: render the draw call only if it's the right layout
 	    //if ((drawCall->layouts() & layoutMask()) != 0)
-		    drawCall->render(context, renderTarget);
+		    drawCall.render(context, renderTarget);
 
     if (bCustomViewport)
         context->setScissorTest(false, _viewportBox);
