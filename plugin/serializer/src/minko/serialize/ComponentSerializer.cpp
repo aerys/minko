@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2013 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -42,14 +42,15 @@ using namespace minko::serialize;
 
 
 std::string
-ComponentSerializer::serializeTransform(NodePtr            node,
-                                        DependencyPtr    dependencies)
+ComponentSerializer::serializeTransform(NodePtr                 node,
+                                        AbstractComponentPtr    component,
+                                        DependencyPtr           dependencies)
 {
-    int8_t                                        type        = serialize::TRANSFORM;
-    std::shared_ptr<component::Transform>        transform    = node->component<component::Transform>();
-    std::stringstream                            buffer;
-    std::tuple<uint, std::string>                serialized    = serialize::TypeSerializer::serializeMatrix4x4(transform->matrix());
-    msgpack::type::tuple<uint, std::string>        src(std::get<0>(serialized), std::get<1>(serialized));
+    int8_t                                      type        = serialize::TRANSFORM;
+    auto                                        transform   = std::static_pointer_cast<component::Transform>(component);
+    std::stringstream                           buffer;
+    std::tuple<uint, std::string>               serialized  = serialize::TypeSerializer::serializeMatrix4x4(transform->matrix());
+    msgpack::type::tuple<uint, std::string>     src(std::get<0>(serialized), std::get<1>(serialized));
 
     msgpack::pack(buffer, src);
     msgpack::pack(buffer, type);
@@ -58,13 +59,14 @@ ComponentSerializer::serializeTransform(NodePtr            node,
 }
 
 std::string
-ComponentSerializer::serializePerspectiveCamera(NodePtr            node,
-                                                DependencyPtr    dependencies)
+ComponentSerializer::serializePerspectiveCamera(NodePtr                 node,
+                                                AbstractComponentPtr    component,
+                                                DependencyPtr           dependencies)
 {
-    int8_t                                            type = serialize::PROJECTION_CAMERA;
-    std::shared_ptr<component::PerspectiveCamera>    perspectiveCamera = node->component<component::PerspectiveCamera>();
-    std::stringstream                                buffer;
-    std::vector<float>                                data;
+    int8_t              type = serialize::PROJECTION_CAMERA;
+    auto                perspectiveCamera = std::static_pointer_cast<component::PerspectiveCamera>(component);
+    std::stringstream   buffer;
+    std::vector<float>  data;
 
     data.push_back(perspectiveCamera->aspectRatio());
     data.push_back(perspectiveCamera->fieldOfView());
@@ -81,13 +83,14 @@ ComponentSerializer::serializePerspectiveCamera(NodePtr            node,
 
 
 std::string
-ComponentSerializer::serializeAmbientLight(NodePtr            node,
-                                           DependencyPtr    dependencies)
+ComponentSerializer::serializeAmbientLight(NodePtr              node,
+                                           AbstractComponentPtr component,
+                                           DependencyPtr        dependencies)
 {
-    int8_t                                        type        = serialize::AMBIENT_LIGHT;
-    std::shared_ptr<component::AmbientLight>    ambient        = node->component<component::AmbientLight>();
-    std::stringstream                            buffer;
-    std::vector<float>                            data;
+    int8_t              type        = serialize::AMBIENT_LIGHT;
+    auto                ambient     = std::static_pointer_cast<component::AmbientLight>(component);
+    std::stringstream   buffer;
+    std::vector<float>  data;
 
     data.push_back(ambient->ambient());
     data.push_back(ambient->color()->x());
@@ -103,13 +106,14 @@ ComponentSerializer::serializeAmbientLight(NodePtr            node,
 }
 
 std::string
-ComponentSerializer::serializeDirectionalLight(NodePtr            node,
-                                               DependencyPtr    dependencies)
+ComponentSerializer::serializeDirectionalLight(NodePtr              node,
+                                               AbstractComponentPtr component,
+                                               DependencyPtr        dependencies)
 {
-    int8_t                                            type        = serialize::DIRECTIONAL_LIGHT;
-    std::shared_ptr<component::DirectionalLight>    directional    = node->component<component::DirectionalLight>();
-    std::stringstream                                buffer;
-    std::vector<float>                                data;
+    int8_t                                          type        = serialize::DIRECTIONAL_LIGHT;
+    auto    directional = std::static_pointer_cast<component::DirectionalLight>(component);
+    std::stringstream                               buffer;
+    std::vector<float>                              data;
 
     data.push_back(directional->diffuse());
     data.push_back(directional->specular());
@@ -127,13 +131,14 @@ ComponentSerializer::serializeDirectionalLight(NodePtr            node,
 
 
 std::string
-ComponentSerializer::serializePointLight(NodePtr        node,
-                                         DependencyPtr    dependencies)
+ComponentSerializer::serializePointLight(NodePtr                node,
+                                         AbstractComponentPtr   component,
+                                         DependencyPtr          dependencies)
 {
-    int8_t                                    type    = serialize::POINT_LIGHT;
-    std::shared_ptr<component::PointLight>    point    = node->component<component::PointLight>();
-    std::stringstream                        buffer;
-    std::vector<float>                        data;
+    int8_t              type    = serialize::POINT_LIGHT;
+    auto                point   = std::static_pointer_cast<component::PointLight>(component);
+    std::stringstream   buffer;
+    std::vector<float>  data;
 
     data.push_back(point->diffuse());
     data.push_back(point->specular());
@@ -153,13 +158,14 @@ ComponentSerializer::serializePointLight(NodePtr        node,
 }
 
 std::string
-ComponentSerializer::serializeSpotLight(NodePtr            node,
-                                        DependencyPtr    dependencies)
+ComponentSerializer::serializeSpotLight(NodePtr                 node,
+                                        AbstractComponentPtr    component,
+                                        DependencyPtr           dependencies)
 {
-    int8_t                                    type    = serialize::SPOT_LIGHT;
-    std::shared_ptr<component::SpotLight>    spot    = node->component<component::SpotLight>();
-    std::stringstream                        buffer;
-    std::vector<float>                        data;
+    int8_t              type    = serialize::SPOT_LIGHT;
+    auto                spot    = std::static_pointer_cast<component::SpotLight>(component);
+    std::stringstream   buffer;
+    std::vector<float>  data;
 
     data.push_back(spot->diffuse());
     data.push_back(spot->specular());
@@ -181,16 +187,19 @@ ComponentSerializer::serializeSpotLight(NodePtr            node,
 }
 
 std::string
-ComponentSerializer::serializeSurface(NodePtr        node,
-                                      DependencyPtr dependencies)
+ComponentSerializer::serializeSurface(NodePtr               node,
+                                      AbstractComponentPtr  component,
+                                      DependencyPtr         dependencies)
 {
-    int8_t                                    type    = serialize::SURFACE;
-    std::shared_ptr<component::Surface>        surface    = node->component<component::Surface>();
-    std::stringstream                        buffer;
+    int8_t              type    = serialize::SURFACE;
+    auto                surface = std::static_pointer_cast<component::Surface>(component);
+    std::stringstream   buffer;
 
     uint materialId = dependencies->registerDependency(surface->material());
     uint geometryId = dependencies->registerDependency(surface->geometry());
-    uint effectId    = dependencies->registerDependency(surface->effect());
+    uint effectId   = dependencies->registerDependency(surface->effect());
+
+    std::cout << materialId << " " << geometryId << " " << effectId << std::endl;
 
     msgpack::type::tuple<unsigned short, unsigned short, unsigned short, std::string> src(
         geometryId,
@@ -225,12 +234,13 @@ ComponentSerializer::getSurfaceExtension(NodePtr node, SurfacePtr surface)
 }
 
 std::string
-ComponentSerializer::serializeRenderer(NodePtr            node,
-                                       DependencyPtr    dependencies)
+ComponentSerializer::serializeRenderer(NodePtr              node,
+                                       AbstractComponentPtr component,
+                                       DependencyPtr        dependencies)
 {
-    int8_t                                    type        = serialize::RENDERER;
-    std::shared_ptr<component::Renderer>    renderer    = node->component<component::Renderer>();
-    std::stringstream                        buffer;
+    int8_t              type        = serialize::RENDERER;
+    auto                renderer    = std::static_pointer_cast<component::Renderer>(component);
+    std::stringstream   buffer;
 
     msgpack::type::tuple<unsigned int> src(renderer->backgroundColor());
 
@@ -242,15 +252,17 @@ ComponentSerializer::serializeRenderer(NodePtr            node,
 
 
 std::string
-ComponentSerializer::serializeBoundingBox(NodePtr             node,
-                                           DependencyPtr     dependencies)
+ComponentSerializer::serializeBoundingBox(NodePtr               node,
+                                          AbstractComponentPtr  component,
+                                          DependencyPtr         dependencies)
 {
-    math::Box::Ptr         box         = node->component<component::BoundingBox>()->box();
-    math::Vector3::Ptr     topRight     = box->topRight();
-    math::Vector3::Ptr     bottomLeft     = box->bottomLeft();
-    int8_t                 type         = serialize::BOUNDINGBOX;
-    std::stringstream    buffer;
-    std::vector<float>    data;
+    auto                boundingBox = std::static_pointer_cast<component::BoundingBox>(component);
+    math::Box::Ptr      box         = boundingBox->box();
+    math::Vector3::Ptr  topRight    = box->topRight();
+    math::Vector3::Ptr  bottomLeft  = box->bottomLeft();
+    int8_t              type        = serialize::BOUNDINGBOX;
+    std::stringstream   buffer;
+    std::vector<float>  data;
 
     float centerX = (topRight->x() + bottomLeft->x()) / 2.0f;
     float centerY = (topRight->y() + bottomLeft->y()) / 2.0f;
