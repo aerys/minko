@@ -306,6 +306,10 @@ void main(void)
 		vec3 lightAttenuationCoeffs = vec3(1.0, 0.0, 0.0);
 		float lightCosInnerAng = 0.0;
 		float lightCosOuterAng = 0.0;
+        float lightCosInnerConeAngle = 0.0;
+        float lightCosOuterConeAngle = 0.0;
+        float distanceToLight = 0.0;
+        float cosSpot = 0.0;
 
 		#if defined(NORMAL_MAP)
 			// warning: the normal vector must be normalized at this point!
@@ -750,15 +754,15 @@ void main(void)
 				lightColor = spot0_color;
 				lightCosOuterConeAngle = spot0_cosOuterConeAngle;
 				lightAttenuationCoeffs = spot0_attenuationCoeffs;
-				lightSpecular = spot0_specular;
+				lightSpecularCoeff = spot0_specular;
 
 				lightDirection = lightPosition - vertexPosition;
-				float distanceToLight = length(lightDirection);
+				distanceToLight = length(lightDirection);
 				lightDirection /= distanceToLight;
 
 				lightSpotDirection = lightDirection;
 				lightSpotDirection = normalize(lightSpotDirection);
-				float cosSpot = dot(-lightDirection, lightSpotDirection);
+				cosSpot = dot(-lightDirection, lightSpotDirection);
 
 				if (lightCosOuterConeAngle < cosSpot)
 				{
@@ -773,13 +777,13 @@ void main(void)
 
 					diffuseAccum += phong_diffuseReflection(normalVector, lightDirection)
 						* lightColor
-						* lightDiffuse * attenuation * cutoff;
+						* lightDiffuseCoeff * attenuation * cutoff;
 
 					#if defined(SHININESS)
 						specularAccum += phong_specularReflection(normalVector, lightDirection, eyeVector, shininessCoeff)
 							* phong_fresnel(specular.rgb, lightDirection, eyeVector)
 							* lightColor
-							* (lightSpecular * attenuation * cutoff);
+							* (lightSpecularCoeff * attenuation * cutoff);
 					#endif // SHININESS
 				}
 			#endif
@@ -793,15 +797,15 @@ void main(void)
 				lightColor = spot1_color;
 				lightCosOuterConeAngle = spot1_cosOuterConeAngle;
 				lightAttenuationCoeffs = spot1_attenuationCoeffs;
-				lightSpecular = spot1_specular;
+				lightSpecularCoeff = spot1_specular;
 
 				lightDirection = lightPosition - vertexPosition;
-				float distanceToLight = length(lightDirection);
+				distanceToLight = length(lightDirection);
 				lightDirection /= distanceToLight;
 
 				lightSpotDirection = lightDirection;
 				lightSpotDirection = normalize(lightSpotDirection);
-				float cosSpot = dot(-lightDirection, lightSpotDirection);
+				cosSpot = dot(-lightDirection, lightSpotDirection);
 
 				if (lightCosOuterConeAngle < cosSpot)
 				{
@@ -816,13 +820,13 @@ void main(void)
 
 					diffuseAccum += phong_diffuseReflection(normalVector, lightDirection)
 						* lightColor
-						* lightDiffuse * attenuation * cutoff;
+						* lightDiffuseCoeff * attenuation * cutoff;
 
 					#if defined(SHININESS)
 						specularAccum += phong_specularReflection(normalVector, lightDirection, eyeVector, shininessCoeff)
 							* phong_fresnel(specular.rgb, lightDirection, eyeVector)
 							* lightColor
-							* (lightSpecular * attenuation * cutoff);
+							* (lightSpecularCoeff * attenuation * cutoff);
 					#endif // SHININESS
 				}
 			#endif
@@ -836,15 +840,15 @@ void main(void)
 				lightColor = spot2_color;
 				lightCosOuterConeAngle = spot2_cosOuterConeAngle;
 				lightAttenuationCoeffs = spot2_attenuationCoeffs;
-				lightSpecular = spot2_specular;
+				lightSpecularCoeff = spot2_specular;
 
 				lightDirection = lightPosition - vertexPosition;
-				float distanceToLight = length(lightDirection);
+				distanceToLight = length(lightDirection);
 				lightDirection /= distanceToLight;
 
 				lightSpotDirection = lightDirection;
 				lightSpotDirection = normalize(lightSpotDirection);
-				float cosSpot = dot(-lightDirection, lightSpotDirection);
+				cosSpot = dot(-lightDirection, lightSpotDirection);
 
 				if (lightCosOuterConeAngle < cosSpot)
 				{
@@ -859,13 +863,13 @@ void main(void)
 
 					diffuseAccum += phong_diffuseReflection(normalVector, lightDirection)
 						* lightColor
-						* lightDiffuse * attenuation * cutoff;
+						* lightDiffuseCoeff * attenuation * cutoff;
 
 					#if defined(SHININESS)
 						specularAccum += phong_specularReflection(normalVector, lightDirection, eyeVector, shininessCoeff)
 							* phong_fresnel(specular.rgb, lightDirection, eyeVector)
 							* lightColor
-							* (lightSpecular * attenuation * cutoff);
+							* (lightSpecularCoeff * attenuation * cutoff);
 					#endif // SHININESS
 				}
 			#endif
@@ -879,15 +883,15 @@ void main(void)
 				lightColor = spot3_color;
 				lightCosOuterConeAngle = spot3_cosOuterConeAngle;
 				lightAttenuationCoeffs = spot3_attenuationCoeffs;
-				lightSpecular = spot3_specular;
+				lightSpecularCoeff = spot3_specular;
 
 				lightDirection = lightPosition - vertexPosition;
-				float distanceToLight = length(lightDirection);
+				distanceToLight = length(lightDirection);
 				lightDirection /= distanceToLight;
 
 				lightSpotDirection = lightDirection;
 				lightSpotDirection = normalize(lightSpotDirection);
-				float cosSpot = dot(-lightDirection, lightSpotDirection);
+				cosSpot = dot(-lightDirection, lightSpotDirection);
 
 				if (lightCosOuterConeAngle < cosSpot)
 				{
@@ -902,13 +906,13 @@ void main(void)
 
 					diffuseAccum += phong_diffuseReflection(normalVector, lightDirection)
 						* lightColor
-						* lightDiffuse * attenuation * cutoff;
+						* lightDiffuseCoeff * attenuation * cutoff;
 
 					#if defined(SHININESS)
 						specularAccum += phong_specularReflection(normalVector, lightDirection, eyeVector, shininessCoeff)
 							* phong_fresnel(specular.rgb, lightDirection, eyeVector)
 							* lightColor
-							* (lightSpecular * attenuation * cutoff);
+							* (lightSpecularCoeff * attenuation * cutoff);
 					#endif // SHININESS
 				}
 			#endif
@@ -922,15 +926,15 @@ void main(void)
 				lightColor = spot4_color;
 				lightCosOuterConeAngle = spot4_cosOuterConeAngle;
 				lightAttenuationCoeffs = spot4_attenuationCoeffs;
-				lightSpecular = spot4_specular;
+				lightSpecularCoeff = spot4_specular;
 
 				lightDirection = lightPosition - vertexPosition;
-				float distanceToLight = length(lightDirection);
+				distanceToLight = length(lightDirection);
 				lightDirection /= distanceToLight;
 
 				lightSpotDirection = lightDirection;
 				lightSpotDirection = normalize(lightSpotDirection);
-				float cosSpot = dot(-lightDirection, lightSpotDirection);
+				cosSpot = dot(-lightDirection, lightSpotDirection);
 
 				if (lightCosOuterConeAngle < cosSpot)
 				{
@@ -945,13 +949,13 @@ void main(void)
 
 					diffuseAccum += phong_diffuseReflection(normalVector, lightDirection)
 						* lightColor
-						* lightDiffuse * attenuation * cutoff;
+						* lightDiffuseCoeff * attenuation * cutoff;
 
 					#if defined(SHININESS)
 						specularAccum += phong_specularReflection(normalVector, lightDirection, eyeVector, shininessCoeff)
 							* phong_fresnel(specular.rgb, lightDirection, eyeVector)
 							* lightColor
-							* (lightSpecular * attenuation * cutoff);
+							* (lightSpecularCoeff * attenuation * cutoff);
 					#endif // SHININESS
 				}
 			#endif
@@ -965,15 +969,15 @@ void main(void)
 				lightColor = spot5_color;
 				lightCosOuterConeAngle = spot5_cosOuterConeAngle;
 				lightAttenuationCoeffs = spot5_attenuationCoeffs;
-				lightSpecular = spot5_specular;
+				lightSpecularCoeff = spot5_specular;
 
 				lightDirection = lightPosition - vertexPosition;
-				float distanceToLight = length(lightDirection);
+				distanceToLight = length(lightDirection);
 				lightDirection /= distanceToLight;
 
 				lightSpotDirection = lightDirection;
 				lightSpotDirection = normalize(lightSpotDirection);
-				float cosSpot = dot(-lightDirection, lightSpotDirection);
+				cosSpot = dot(-lightDirection, lightSpotDirection);
 
 				if (lightCosOuterConeAngle < cosSpot)
 				{
@@ -988,13 +992,13 @@ void main(void)
 
 					diffuseAccum += phong_diffuseReflection(normalVector, lightDirection)
 						* lightColor
-						* lightDiffuse * attenuation * cutoff;
+						* lightDiffuseCoeff * attenuation * cutoff;
 
 					#if defined(SHININESS)
 						specularAccum += phong_specularReflection(normalVector, lightDirection, eyeVector, shininessCoeff)
 							* phong_fresnel(specular.rgb, lightDirection, eyeVector)
 							* lightColor
-							* (lightSpecular * attenuation * cutoff);
+							* (lightSpecularCoeff * attenuation * cutoff);
 					#endif // SHININESS
 				}
 			#endif
@@ -1008,15 +1012,15 @@ void main(void)
 				lightColor = spot6_color;
 				lightCosOuterConeAngle = spot6_cosOuterConeAngle;
 				lightAttenuationCoeffs = spot6_attenuationCoeffs;
-				lightSpecular = spot6_specular;
+				lightSpecularCoeff = spot6_specular;
 
 				lightDirection = lightPosition - vertexPosition;
-				float distanceToLight = length(lightDirection);
+				distanceToLight = length(lightDirection);
 				lightDirection /= distanceToLight;
 
 				lightSpotDirection = lightDirection;
 				lightSpotDirection = normalize(lightSpotDirection);
-				float cosSpot = dot(-lightDirection, lightSpotDirection);
+				cosSpot = dot(-lightDirection, lightSpotDirection);
 
 				if (lightCosOuterConeAngle < cosSpot)
 				{
@@ -1031,13 +1035,13 @@ void main(void)
 
 					diffuseAccum += phong_diffuseReflection(normalVector, lightDirection)
 						* lightColor
-						* lightDiffuse * attenuation * cutoff;
+						* lightDiffuseCoeff * attenuation * cutoff;
 
 					#if defined(SHININESS)
 						specularAccum += phong_specularReflection(normalVector, lightDirection, eyeVector, shininessCoeff)
 							* phong_fresnel(specular.rgb, lightDirection, eyeVector)
 							* lightColor
-							* (lightSpecular * attenuation * cutoff);
+							* (lightSpecularCoeff * attenuation * cutoff);
 					#endif // SHININESS
 				}
 			#endif
@@ -1051,15 +1055,15 @@ void main(void)
 				lightColor = spot7_color;
 				lightCosOuterConeAngle = spot7_cosOuterConeAngle;
 				lightAttenuationCoeffs = spot7_attenuationCoeffs;
-				lightSpecular = spot7_specular;
+				lightSpecularCoeff = spot7_specular;
 
 				lightDirection = lightPosition - vertexPosition;
-				float distanceToLight = length(lightDirection);
+				distanceToLight = length(lightDirection);
 				lightDirection /= distanceToLight;
 
 				lightSpotDirection = lightDirection;
 				lightSpotDirection = normalize(lightSpotDirection);
-				float cosSpot = dot(-lightDirection, lightSpotDirection);
+				cosSpot = dot(-lightDirection, lightSpotDirection);
 
 				if (lightCosOuterConeAngle < cosSpot)
 				{
@@ -1074,13 +1078,13 @@ void main(void)
 
 					diffuseAccum += phong_diffuseReflection(normalVector, lightDirection)
 						* lightColor
-						* lightDiffuse * attenuation * cutoff;
+						* lightDiffuseCoeff * attenuation * cutoff;
 
 					#if defined(SHININESS)
 						specularAccum += phong_specularReflection(normalVector, lightDirection, eyeVector, shininessCoeff)
 							* phong_fresnel(specular.rgb, lightDirection, eyeVector)
 							* lightColor
-							* (lightSpecular * attenuation * cutoff);
+							* (lightSpecularCoeff * attenuation * cutoff);
 					#endif // SHININESS
 				}
 			#endif
