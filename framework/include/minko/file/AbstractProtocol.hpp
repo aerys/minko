@@ -43,6 +43,8 @@ namespace minko
             std::shared_ptr<Signal<Ptr>>                _error;
 
         public:
+            virtual ~AbstractProtocol();
+
             static Ptr
             create();
 
