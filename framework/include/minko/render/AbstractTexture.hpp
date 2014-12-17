@@ -105,6 +105,10 @@ namespace minko
 
             virtual
             void
+            resize(int width, int height, bool resizeSmoothly) = 0;
+
+            virtual
+            void
             disposeData() = 0;
 
         protected:

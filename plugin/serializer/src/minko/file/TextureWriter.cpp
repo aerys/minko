@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/TextureWriter.hpp"
 
 #include "minko/render/AbstractTexture.hpp"
+#include "minko/render/CubeTexture.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/render/TextureFormatInfo.hpp"
 #include "minko/file/AbstractWriter.hpp"
@@ -74,6 +75,40 @@ TextureWriter::embed(AssetLibraryPtr     assetLibrary,
 {
     auto texture = _data;
 
+    const auto generateMipmaps = writerOptions->generateMipmaps();
+
+    if (generateMipmaps)
+    {
+        const auto width = texture->width();
+        const auto height = texture->height();
+
+        if (width != height)
+        {
+            const auto dimensionSize = std::max(width, height);
+
+            const auto newWidth = dimensionSize;
+            const auto newHeight = dimensionSize;
+
+            switch (texture->type())
+            {
+            case TextureType::Texture2D:
+            {
+                auto texture2d = std::static_pointer_cast<Texture>(texture);
+
+                texture->resize(newWidth, newHeight, true);
+
+                break;
+            }
+            case TextureType::CubeTexture:
+            {
+                // TODO
+
+                break;
+            }
+            }
+        }
+    }
+
     const auto& textureFormats = writerOptions->textureFormats();
 
     std::stringstream headerStream;
@@ -112,8 +147,9 @@ TextureWriter::embed(AssetLibraryPtr     assetLibrary,
 
     const auto width = texture->width();
     const auto height = texture->height();
-    const auto numFaces = static_cast<unsigned char>(texture->type() == TextureType::Texture2D ? 1 : 6);
-    const auto numMipmaps = static_cast<unsigned char>(writerOptions->generateMipmaps() && texture->width() == texture->height() ? math::getp2(texture->width()) + 1 : 0);
+
+    const auto numFaces = static_cast<unsigned char>((texture->type() == TextureType::Texture2D ? 1 : 6));
+    const auto numMipmaps = static_cast<unsigned char>((generateMipmaps ? math::getp2(width) + 1 : 0));
 
     msgpack::type::tuple<int, int, unsigned char, unsigned char> textureHeaderData(
         width,
