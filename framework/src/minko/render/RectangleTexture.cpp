@@ -79,6 +79,23 @@ RectangleTexture::data(unsigned char*    data,
 }
 
 void
+RectangleTexture::resize(int width, int height, bool resizeSmoothly)
+{
+    const auto previousWidth = this->width();
+    const auto previousHeight = this->height();
+
+    auto previousData = _data;
+
+    resizeData(previousWidth, previousHeight, previousData, width, height, resizeSmoothly, _data);
+
+    _width = width;
+    _widthGPU = width;
+
+    _height = height;
+    _heightGPU = height;
+}
+
+void
 RectangleTexture::upload()
 {
     if (_id == -1)
