@@ -249,8 +249,15 @@ TextureParser::parseCompressedTexture(TextureFormat                        forma
             fileName
         );
 
-        texture->data(const_cast<unsigned char*>(textureData.data()));
+        const auto storeTextureData = !options->disposeTextureAfterLoading();
+
+        if (storeTextureData)
+            texture->data(const_cast<unsigned char*>(textureData.data()));
+
         texture->upload();
+
+        if (!storeTextureData)
+            texture->uploadMipLevel(0, const_cast<unsigned char*>(textureData.data()));
 
         if (hasMipmaps)
         {
