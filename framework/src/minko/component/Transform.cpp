@@ -88,6 +88,18 @@ Transform::targetRemoved(scene::Node::Ptr target)
 	_removedSlot = nullptr;
 }
 
+Transform::RootTransform::NodeTransformCacheEntry::NodeTransformCacheEntry() :
+    _node(nullptr),
+    _matrix(nullptr),
+    _modelToWorldMatrix(nullptr),
+    _parentId(-1),
+    _firstChildId(-1),
+    _numChildren(0),
+    _dirty(true),
+    _provider(nullptr)
+{
+}
+
 AbstractComponent::Ptr
 Transform::RootTransform::clone(const CloneOption& option)
 {
@@ -261,29 +273,85 @@ Transform::RootTransform::updateTransformsList()
     _toAdd.clear();
     _toRemove.clear();
 
-    _matrix.resize(_nodes.size());
-    _modelToWorld.resize(_nodes.size());
-    _numChildren.resize(_nodes.size(), -1);
-    _parentId.resize(_nodes.size(), -1);
-    _providers.resize(_nodes.size(), nullptr);
-    _dirty.clear();
-    _dirty.resize(_nodes.size(), true);
-
-    _firstChildId.clear();
-    _firstChildId.resize(_nodes.size(), -1);
+    _nodeTransformCache.clear();
+    _nodeTransformCache.resize(_nodes.size(), NodeTransformCacheEntry());
 
     sortNodes();
 
     auto nodeId = 0;
+    auto ancestor = scene::Node::Ptr();
+    auto ancestorId = -1;
+    auto firstSiblingId = -1;
+    auto numSiblings = 0;
+
     for (const auto& node : _nodes)
 	{
+        auto previousAncestor = ancestor;
+
+        ancestor = node->parent();
+
+        while (ancestor != nullptr && !ancestor->hasComponent<Transform>())
+            ancestor = ancestor->parent();
+
+        if (ancestor == nullptr)
+        {
+            numSiblings = 0;
+        }
+        else if (ancestor != previousAncestor)
+        {
+            if (previousAncestor == nullptr)
+            {
+                ancestorId = 0;
+
+                firstSiblingId = nodeId;
+                ++numSiblings;
+            }
+            else
+            {
+                const auto previousAncestorId = _nodeToId.at(previousAncestor);
+
+                auto& previousAncestorCacheEntry = _nodeTransformCache.at(previousAncestorId);
+
+                previousAncestorCacheEntry._firstChildId = firstSiblingId;
+                previousAncestorCacheEntry._numChildren = numSiblings;
+
+                firstSiblingId = nodeId;
+                numSiblings = 1;
+
+                previousAncestor = ancestor;
+
+                ancestorId = _nodeToId.at(ancestor);
+            }
+        }
+        else
+        {
+            ++numSiblings;
+        }
+
 		_nodeToId[node] = nodeId;
-        _matrix[nodeId] = node->data().getPointer<math::mat4>("matrix");
-		_modelToWorld[nodeId] = node->data().getUnsafePointer<math::mat4>("modelToWorldMatrix");
-        _providers[nodeId] = node->component<Transform>()->_data;
+
+        auto& nodeCacheEntry = _nodeTransformCache.at(nodeId);
+
+        nodeCacheEntry._node = node;
+
+        nodeCacheEntry._parentId = ancestorId;
+
+        nodeCacheEntry._matrix = node->data().getPointer<math::mat4>("matrix");
+		nodeCacheEntry._modelToWorldMatrix = node->data().getUnsafePointer<math::mat4>("modelToWorldMatrix");
+        nodeCacheEntry._provider = node->component<Transform>()->_data;
 
         ++nodeId;
 	}
+
+    if (ancestor != nullptr)
+    {
+        ancestorId = _nodeToId.at(ancestor);
+
+        auto& ancestorCacheEntry = _nodeTransformCache.at(ancestorId);
+
+        ancestorCacheEntry._firstChildId = firstSiblingId;
+        ancestorCacheEntry._numChildren = numSiblings;
+    }
 
 	_invalidLists = false;
 }
@@ -291,68 +359,19 @@ Transform::RootTransform::updateTransformsList()
 void
 Transform::RootTransform::sortNodes()
 {
-    auto nodeIt = _nodes.begin();
+    // TODO fixme
+    // avoid using NodeSet
+    // instead, sort _nodes in place on a first pass
+    // then update _nodeTransformCache entries on a second pass
 
-	// assumes 'nodes' is the result of a breadth-first search from the nodes
-    for (uint nodeId = 0; nodeId < _nodes.size(); ++nodeId)
-	{
-		auto node = *nodeIt;
-        auto ancestor = node->parent();
+    auto sortedNodeSet = scene::NodeSet::create(_nodes.front()->root())
+        ->descendants(true, false)
+        ->where([this](scene::Node::Ptr descendant) -> bool
+    {
+        return descendant->hasComponent<Transform>();
+    });
 
-        while (ancestor != nullptr && !ancestor->hasComponent<Transform>())
-            ancestor = ancestor->parent();
-
-        if (!ancestor)
-        {
-            _parentId[nodeId] = -1;
-            ++nodeIt;
-            continue;
-        }
-
-        // find ancestor's actual it and index
-        auto ancestorId = 0u;
-        for (const auto& node : _nodes)
-        {
-            if (node == ancestor)
-                break;
-
-            ++ancestorId;            
-        }
-        auto ancestorIt = std::next(_nodes.begin(), ancestorId);
-
-        if (_firstChildId[ancestorId] == -1)
-        {
-            if (ancestorId > nodeId)
-            {
-                _nodes.erase(ancestorIt);
-                _nodes.insert(nodeIt, ancestor);
-                _parentId[nodeId + 1] = nodeId;
-                _numChildren[nodeId] = 1;
-                _firstChildId[nodeId] = nodeId + 1;
-                ++nodeId;
-            }
-            else
-            {
-                _parentId[nodeId] = ancestorId;
-                _firstChildId[ancestorId] = nodeId;
-                _numChildren[ancestorId] = 1;
-            }
-
-            ++nodeIt;
-        }
-        else
-		{
-            auto removeIt = nodeIt;
-
-            ++nodeIt;
-            _parentId[nodeId] = ancestorId;
-            _numChildren[nodeId] = 0;
-            _firstChildId[nodeId] = -1;
-            _nodes.erase(removeIt);
-            _nodes.insert(std::next(ancestorIt, _numChildren[ancestorId]), node);
-            ++_numChildren[ancestorId];
-		}
-	}
+    _nodes.assign(sortedNodeSet->nodes().begin(), sortedNodeSet->nodes().end());
 }
 
 void
@@ -363,27 +382,33 @@ Transform::RootTransform::updateTransforms()
 
     for (const auto& node : _nodes)
 	{
-		if (_dirty[nodeId])
+        auto& nodeCacheEntry = _nodeTransformCache.at(nodeId);
+
+		if (nodeCacheEntry._dirty)
 		{
-			auto parentId = _parentId[nodeId];
+			auto parentId = nodeCacheEntry._parentId;
 
 			if (parentId < 0)
-				modelToWorldMatrix = *_matrix[nodeId];
-			else
-				modelToWorldMatrix = *_modelToWorld[parentId] * *_matrix[nodeId];
+				modelToWorldMatrix = *nodeCacheEntry._matrix;
+            else
+            {
+                const auto& parentCacheEntry = _nodeTransformCache.at(parentId);
+
+                modelToWorldMatrix = *parentCacheEntry._modelToWorldMatrix * *nodeCacheEntry._matrix;
+            }
 
             // Because we use an unsafe pointer that gives us a direct access to the
             // data provider internal value for "modelToWorldMatrix", we have to trigger
             // the "property changed" signal manually.
             // This technique completely bypasses the storeproperty name resolving
             // mechanism and is a lot faster.
-            if (*_modelToWorld[nodeId] != modelToWorldMatrix)
+            if (*nodeCacheEntry._modelToWorldMatrix != modelToWorldMatrix)
             {
                 auto& nodeData = node->data();
-                auto provider = _providers[nodeId];
+                auto provider = nodeCacheEntry._provider;
 
                 // manually update the data provider internal mat4 object
-                *_modelToWorld[nodeId] = modelToWorldMatrix;
+                *nodeCacheEntry._modelToWorldMatrix = modelToWorldMatrix;
 
                 // execute the "property changed" signal(s) manually
                 nodeData.propertyChanged().execute(nodeData, provider, "modelToWorldMatrix");
@@ -394,19 +419,19 @@ Transform::RootTransform::updateTransforms()
                         "modelToWorldMatrix"
                     );
 
-			    auto firstChildId = _firstChildId[nodeId];
+			    auto numChildren = nodeCacheEntry._numChildren;
+			    auto firstChildId = nodeCacheEntry._firstChildId;
+			    auto lastChildId = firstChildId + numChildren;
 
-                if (firstChildId != -1)
+                for (auto childId = firstChildId; childId < lastChildId; ++childId)
                 {
-                    auto numChildren = _numChildren[nodeId];
-                    auto lastChildId = firstChildId + numChildren;
+                    auto& childCacheEntry = _nodeTransformCache.at(childId);
 
-                    for (auto childId = firstChildId; childId < lastChildId; ++childId)
-                        _dirty[childId] = true;
+                    childCacheEntry._dirty = true;
                 }
             }
 
-	       	_dirty[nodeId] = false;
+	       	nodeCacheEntry._dirty = false;
 		}
 
         ++nodeId;
