@@ -119,3 +119,16 @@ HTTPRequest::curlProgressHandler(void* arg, double total, double current, double
 
     return 0;
 }
+
+bool
+HTTPRequest::fileExists(const std::string& filename)
+{
+    auto curl = curl_easy_init();
+
+    curl_easy_setopt(curl, CURLOPT_URL, filename);
+    curl_easy_setopt(curl, CURLOPT_NOBODY, 1L);
+
+    auto status = curl_easy_perform(curl);
+
+    return status == CURLE_OK;
+}

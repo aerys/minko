@@ -178,7 +178,7 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&                asset
             data.assign(p->file()->data().begin(), p->file()->data().end());
         });
 
-        protocol->load(assetCompletePath, fileOptions);
+        protocol->load(resolvedPath, assetCompletePath, fileOptions);
         
         if (!fileSuccessfullyLoaded)
             return;

@@ -65,6 +65,10 @@ namespace minko
                 int
                 curlProgressHandler(void* arg, double total, double current, double, double);
 
+            static
+            bool
+            fileExists(const std::string& filename);
+
         private:
             std::string _url;
             std::vector<char> _output;

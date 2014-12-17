@@ -52,7 +52,6 @@ Loader::queue(const std::string& filename, std::shared_ptr<Options> options)
     return std::dynamic_pointer_cast<Loader>(shared_from_this());
 }
 
-
 void
 Loader::load()
 {
@@ -70,31 +69,66 @@ Loader::load()
         for (auto& filename : queue)
         {
             auto options = _filenameToOptions[filename];
-            auto protocol =  options->protocolFunction()(filename);
 
-            _files[filename] = protocol->file();
+            const auto& includePaths = options->includePaths();
 
-            _filesQueue.erase(std::find(_filesQueue.begin(), _filesQueue.end(), filename));
-            _loading.push_back(filename);
+            auto loadFile = false;
 
-            _protocolSlots.push_back(protocol->error()->connect(std::bind(
-                &Loader::protocolErrorHandler,
-                shared_from_this(),
-                std::placeholders::_1
+            auto resolvedFilename = options->uriFunction()(File::sanitizeFilename(filename));
+
+            auto protocol = options->protocolFunction()(resolvedFilename);
+
+            if (includePaths.empty() || protocol->fileExists(resolvedFilename))
+            {
+                loadFile = true;
+            }
+            else
+            {
+                for (const auto& includePath : includePaths)
+                {
+                    resolvedFilename = options->uriFunction()(File::sanitizeFilename(includePath + '/' + filename));
+    
+                    protocol = options->protocolFunction()(resolvedFilename);
+    
+                    if (protocol->fileExists(resolvedFilename))
+                    {
+                        loadFile = true;
+    
+                        break;
+                    }
+                }
+            }
+
+            if (loadFile)
+            {    
+                _files[filename] = protocol->file();
+    
+                _filesQueue.erase(std::find(_filesQueue.begin(), _filesQueue.end(), filename));
+                _loading.push_back(filename);
+    
+                _protocolSlots.push_back(protocol->error()->connect(std::bind(
+                    &Loader::protocolErrorHandler,
+                    shared_from_this(),
+                    std::placeholders::_1
+                    )));
+                _protocolSlots.push_back(protocol->complete()->connect(std::bind(
+                    &Loader::protocolCompleteHandler,
+                    shared_from_this(),
+                    std::placeholders::_1
                 )));
-            _protocolSlots.push_back(protocol->complete()->connect(std::bind(
-                &Loader::protocolCompleteHandler,
-                shared_from_this(),
-                std::placeholders::_1
-            )));
-            _protocolProgressSlots.push_back(protocol->progress()->connect(std::bind(
-                &Loader::protocolProgressHandler,
-                shared_from_this(),
-                std::placeholders::_1,
-                std::placeholders::_2
-            )));
-
-            protocol->load(filename, options);
+                _protocolProgressSlots.push_back(protocol->progress()->connect(std::bind(
+                    &Loader::protocolProgressHandler,
+                    shared_from_this(),
+                    std::placeholders::_1,
+                    std::placeholders::_2
+                )));
+    
+                protocol->load(filename, resolvedFilename, options);
+            }
+            else
+            {
+                errorThrown(Error("ProtocolError", std::string("File does not exist: ") + filename));
+            }
         }
     }
 }
@@ -102,18 +136,9 @@ Loader::load()
 void
 Loader::protocolErrorHandler(std::shared_ptr<AbstractProtocol> protocol)
 {
-    LOG_ERROR(protocol->file()->filename());
-
     auto error = Error("ProtocolError", "Protocol error: " + protocol->file()->filename());
 
-    if (_error->numCallbacks() != 0)
-        _error->execute(shared_from_this(), error);
-    else
-    {
-        LOG_DEBUG(error.type() << ": " << error.what());
-        
-        throw error;
-    }
+    errorThrown(error);
 }
 
 void
@@ -219,14 +244,7 @@ Loader::parserCompleteHandler(AbstractParser::Ptr parser)
 void
 Loader::parserErrorHandler(AbstractParser::Ptr parser, const Error& error)
 {
-    if (_error->numCallbacks() != 0)
-        _error->execute(shared_from_this(), error);
-    else
-    {
-        LOG_DEBUG(error.type() << ": " << error.what());
-        
-        throw error;
-    }
+    errorThrown(error);
 }
 
 void
@@ -239,5 +257,18 @@ Loader::finalize()
         _filenameToOptions.clear();
 
         _complete->execute(shared_from_this());
+    }
+}
+
+void
+Loader::errorThrown(const Error& error)
+{
+    if (_error->numCallbacks() > 0)
+        _error->execute(shared_from_this(), error);
+    else
+    {
+        LOG_DEBUG(error.type() << ": " << error.what());
+        
+        throw error;
     }
 }

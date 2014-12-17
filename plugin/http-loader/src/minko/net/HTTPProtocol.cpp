@@ -119,21 +119,6 @@ HTTPProtocol::errorHandler(void* arg, int code, const char * message)
 void
 HTTPProtocol::load()
 {
-    resolvedFilename(_file->filename());
-
-    std::cout << resolvedFilename() << std::endl;
-
-    if (_options->includePaths().size() != 0)
-    {
-        if (resolvedFilename().substr(0, 7) != "http://" && resolvedFilename().substr(0, 8) != "https://")
-        {
-            for (auto path : _options->includePaths())
-            {
-                resolvedFilename(path + '/' + resolvedFilename());
-                break;
-            }
-        }
-    }
     std::cout << resolvedFilename() << std::endl;
 
     _options->protocolFunction([](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
@@ -271,6 +256,28 @@ HTTPProtocol::load()
 
         completeHandler(loader.get(), &*output.begin(), output.size());
     }
+#endif
+}
+
+bool
+HTTPProtocol::fileExists(const std::string& filename)
+{
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+    auto evalString = std::string();
+
+    evalString += "var xhr = new XMLHttpRequest();\n";
+
+    evalString += "xhr.open('HEAD', '" + filename + "', false);\n";
+
+    evalString += "xhr.send(null);\n";
+
+    evalString += "(xhr.status);";
+
+    auto status = emscripten_run_script_int(evalString.c_str());
+
+    return status != 404;
+#else
+    return HTTPRequest::fileExists(filename);
 #endif
 }
 
