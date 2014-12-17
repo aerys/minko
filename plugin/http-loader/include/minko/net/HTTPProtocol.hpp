@@ -36,7 +36,7 @@ namespace minko
             typedef std::shared_ptr<HTTPProtocol>    Ptr;
 
         public:
-            virtual ~HTTPProtocol();
+            virtual ~HTTPProtocol() = default;
 
             inline static
             Ptr
