@@ -79,23 +79,65 @@ EmscriptenDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
 	});
 }
 
+struct LoadScriptParser :
+	public file::AbstractParser
+{
+	typedef std::shared_ptr<LoadScriptParser> Ptr;
+
+	inline
+	static
+	Ptr
+	create()
+	{
+		return Ptr(new LoadScriptParser());
+	}
+
+	inline
+	void
+	parse(const std::string&                   	filename,
+          const std::string&                   	resolvedFilename,
+          file::Options::Ptr	   				options,
+          const std::vector<unsigned char>&    	data,
+          file::AssetLibrary::Ptr  				assetLibrary)
+	{
+		parsedData = &data;
+	}
+
+	const std::vector<unsigned char>* parsedData;
+};
+
 void
 EmscriptenDOMEngine::loadScript(std::string filename)
 {
+	auto parser = LoadScriptParser::create();
+
     auto options = file::Options::create(_sceneManager->assets()->loader()->options());
-    options->loadAsynchronously(false);
 
-    file::AbstractProtocol::Ptr loader = file::FileProtocol::create();
+    options
+    	->loadAsynchronously(false)
+    	->parserFunction([=](const std::string& filename) -> file::AbstractParser::Ptr
+		{
+			return parser;
+		});
 
-    auto loaderComplete = loader->complete()->connect([](std::shared_ptr<file::AbstractProtocol> loader)
+    auto loader = file::Loader::create();
+
+    loader->options(options);
+
+    auto loaderComplete = loader->complete()->connect([=](file::Loader::Ptr)
     {
     	std::string eval;
-    	eval.assign(loader->file()->data().begin(), loader->file()->data().end());
+
+    	const auto data = parser->parsedData;
+
+    	eval.assign(data->begin(), data->end());
 
 		emscripten_run_script(eval.c_str());
     });
 
-	loader->load(filename, options);
+	loader
+		->queue(filename)
+		->load();
 }
 
 void

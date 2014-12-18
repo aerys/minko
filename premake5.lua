@@ -115,7 +115,7 @@ solution "minko"
 		include 'plugin/angle'
 		include 'plugin/zlib'
 		include 'plugin/assimp'
-		--include 'plugin/devil'
+		include 'plugin/devil'
 		include 'plugin/bullet'
 		include 'plugin/fx'
 		include 'plugin/html-overlay'
@@ -124,12 +124,15 @@ solution "minko"
 		include 'plugin/jpeg'
 		include 'plugin/leap'
 		include 'plugin/oculus'
-		include 'plugin/offscreen'
 		include 'plugin/particles'
 		include 'plugin/png'
 		include 'plugin/sdl'
 		include 'plugin/serializer'
 		include 'plugin/webgl'
+
+		if _OPTIONS['with-offscreen'] then
+			include 'plugin/offscreen'
+		end
 
 		-- work around the inability of Xcode to build all projects if no dependency exists between them
 		if os.is("macosx")  and (_ACTION == "xcode-ios" or _ACTION == "xcode-osx") then
@@ -171,7 +174,6 @@ solution "minko"
 		include 'example/lua-scripts'
 		include 'example/multi-surfaces'
 		include 'example/oculus'
-		include 'example/offscreen'
 		include 'example/particles'
 		include 'example/physics'
 		include 'example/picking'
@@ -181,6 +183,10 @@ solution "minko"
 		include 'example/stencil'
 		include 'example/visibility'
 		include 'example/water'
+
+		if _OPTIONS['with-offscreen'] then
+			include 'example/offscreen'
+		end
 
 		if os.is("macosx")  and (_ACTION == "xcode-ios" or _ACTION == "xcode-osx") then
 			minko.project.library "all-examples"
