@@ -173,11 +173,23 @@ namespace minko
                 return _targetData;
             }
 
+            inline
+            const std::vector<UniformValue<float>>&
+            boundFloatUniforms()
+            {
+                return _uniformFloat;
+            }
+
             void
             bind(std::shared_ptr<Program> program);
 
 			void
 			render(std::shared_ptr<AbstractContext> context, AbsTexturePtr renderTarget) const;
+
+            bool
+            bindUniform(ConstUniformInputRef                        input,
+                        const std::map<std::string, data::Binding>& uniformBindings,
+                        const data::Store&                          defaultValues);
 
 		private:
             void
@@ -185,11 +197,6 @@ namespace minko
 
             void
             bindUniforms();
-
-            void
-            bindUniform(ConstUniformInputRef    input,
-                        const data::Store&      store,
-                        const std::string&      propertyName);
 
             void
             bindAttributes();
@@ -221,6 +228,12 @@ namespace minko
                                           const data::Store&                    defaultValues,
                                           const ProgramInputs::UniformInput&    input,
                                           const std::string&                    propertyName);
+
+            bool
+            resolveBinding(const ProgramInputs::AbstractInput&          input,
+                           const std::map<std::string, data::Binding>&  bindings,
+                           std::string&                                 propertyName,
+                           data::Store&                                 store);
 
             template <typename T>
             T*

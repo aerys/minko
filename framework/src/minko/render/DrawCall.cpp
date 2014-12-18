@@ -24,8 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::render;
 
-const unsigned int	DrawCall::MAX_NUM_TEXTURES		= 8;
-const unsigned int	DrawCall::MAX_NUM_VERTEXBUFFERS	= 8;
+const unsigned int	DrawCall::MAX_NUM_TEXTURES		            = 8;
+const unsigned int	DrawCall::MAX_NUM_VERTEXBUFFERS	            = 8;
 
 DrawCall::DrawCall(std::shared_ptr<Pass>  pass,
                    const StringMap&       variables,
@@ -121,46 +121,13 @@ DrawCall::bindUniforms()
 
     for (const auto& input : _program->inputs().uniforms())
     {
-        auto& bindings = uniformBindings.bindings;
-        bool isArray = false;
-        std::string bindingName = input.name;
-        auto pos = bindingName.find_first_of('[');
+        bindUniform(input, uniformBindings.bindings, uniformBindings.defaultValues);
 
-        if (pos != std::string::npos)
+        ///if (!store.hasProperty(propertyName))
         {
-            bindingName = bindingName.substr(0, pos);
-            isArray = true;
-        }
-
-        if (bindings.count(bindingName) == 0)
-            continue;
-
-        const auto& binding = bindings.at(bindingName);
-        auto& store = getStore(binding.source);
-        auto propertyName = data::Store::getActualPropertyName(_variables, binding.propertyName);
-
-        // FIXME: handle uniforms with struct types
-
-        // FIXME: we assume the uniform is an array of struct or the code to be irrelevantly slow here
-        // uniform arrays of non-struct types should be detected and handled as such using a single call
-        // to the context providing the direct pointer to the contiguous stored data
-
-        // FIXME: handle per-fields bindings instead of using the raw uniform suffix
-        if (isArray)
-            propertyName += input.name.substr(pos);
-
-        if (!store.hasProperty(propertyName))
-        {
-            if (!uniformBindings.defaultValues.hasProperty(input.name))
-                throw std::runtime_error(
-                    "The uniform \"" + input.name + "\" is bound to the \"" + propertyName
-                    + "\" property but it's not defined and no default value was provided."
-                );
-
-            bindUniform(input, uniformBindings.defaultValues, input.name);
-
             // FIXME: keep a direct pointer to the uniform data pointer instead of eventually search for it
-            _propAddedOrRemovedSlot[&binding] = store.propertyAdded(input.name).connect(std::bind(
+            // FIXME: do this in DrawCallPool
+            /*_propAddedOrRemovedSlot[&binding] = store.propertyAdded(input.name).connect(std::bind(
                 &DrawCall::uniformBindingPropertyAdded,
                 this,
                 std::ref(binding),
@@ -168,15 +135,16 @@ DrawCall::bindUniforms()
                 std::ref(uniformBindings.defaultValues),
                 std::ref(input),
                 propertyName
-            ));
+            ));*/
         }
-        else
+        //else
         {
-            bindUniform(input, store, propertyName);
+            //bindUniform(input, store, uniformBindings.defaultValues, propertyName);
 
             // we listen to the "propertyRemoved" signal in order to make sure the uniform data
             // points to the default value data
-            _propAddedOrRemovedSlot[&binding] = store.propertyRemoved(propertyName).connect(std::bind(
+            // FIXME: do this in DrawCallPool
+            /*_propAddedOrRemovedSlot[&binding] = store.propertyRemoved(propertyName).connect(std::bind(
                 &DrawCall::uniformBindingPropertyRemoved,
                 this,
                 std::ref(binding),
@@ -184,7 +152,7 @@ DrawCall::bindUniforms()
                 std::ref(uniformBindings.defaultValues),
                 std::ref(input),
                 propertyName
-            ));
+            ));*/
         }
     }
 }
@@ -197,7 +165,7 @@ DrawCall::uniformBindingPropertyAdded(const data::Binding&                  bind
                                       const std::string&                    propertyName)
 {
     _propAddedOrRemovedSlot.erase(&binding);
-    bindUniform(input, store, propertyName);
+    /*bindUniform(input, defaultValues, propertyName);
     _propAddedOrRemovedSlot[&binding] = store.propertyRemoved(propertyName).connect(std::bind(
         &DrawCall::uniformBindingPropertyAdded,
         this,
@@ -206,7 +174,7 @@ DrawCall::uniformBindingPropertyAdded(const data::Binding&                  bind
         std::ref(defaultValues),
         std::ref(input),
         propertyName
-    ));
+    ));*/
 }
 
 void
@@ -216,14 +184,8 @@ DrawCall::uniformBindingPropertyRemoved(const data::Binding&                bind
                                         const ProgramInputs::UniformInput&  input,
                                         const std::string&                  propertyName)
 {
-    if (!defaultValues.hasProperty(input.name))
-        throw std::runtime_error(
-        "The uniform \"" + input.name + "\" is bound to the \"" + propertyName
-        + "\" property but it's not defined and no default value was provided."
-    );
-
     _propAddedOrRemovedSlot.erase(&binding);
-    bindUniform(input, defaultValues, input.name);
+    /*bindUniform(input, defaultValues, input.name);
     _propAddedOrRemovedSlot[&binding] = store.propertyAdded(propertyName).connect(std::bind(
         &DrawCall::uniformBindingPropertyAdded,
         this,
@@ -232,7 +194,7 @@ DrawCall::uniformBindingPropertyRemoved(const data::Binding&                bind
         std::ref(defaultValues),
         std::ref(input),
         propertyName
-    ));
+    ));*/
 }
 
 void
@@ -266,11 +228,28 @@ DrawCall::bindAttribute(ConstAttrInputRef       input,
     });
 }
 
-void
-DrawCall::bindUniform(ConstUniformInputRef  input,
-                      const data::Store&    store,
-                      const std::string&    propertyName)
+bool
+DrawCall::bindUniform(ConstUniformInputRef                          input,
+                      const std::map<std::string, data::Binding>&   uniformBindings,
+                      const data::Store&                            defaultValues)
 {
+    data::Store store;
+    std::string propertyName;
+    bool hasBinding = resolveBinding(input, uniformBindings, propertyName, store);
+
+    if (!hasBinding || !store.hasProperty(propertyName))
+    {
+        if (!defaultValues.hasProperty(propertyName))
+        {
+            throw std::runtime_error(
+                "The uniform \"" + input.name + "\" is bound to the \"" + propertyName
+                + "\" property but it's not defined and no default value was provided."
+            );
+        }
+
+        store = defaultValues;
+    }
+
     switch (input.type)
     {
         case ProgramInputs::Type::int1:
@@ -325,6 +304,8 @@ DrawCall::bindUniform(ConstUniformInputRef  input,
             throw std::runtime_error("unsupported program input type: " + ProgramInputs::typeToString(input.type));
             break;
     }
+
+    return hasBinding;
 }
 
 void
@@ -418,4 +399,41 @@ DrawCall::render(AbstractContext::Ptr context, AbstractTexture::Ptr renderTarget
         context->setVertexBufferAt(a.position, *a.resourceId, a.size, *a.stride, a.offset);
 
     context->drawTriangles(*_indexBuffer, *_numIndices / 3);
+}
+
+bool
+DrawCall::resolveBinding(const ProgramInputs::AbstractInput&            input,
+                         const std::map<std::string, data::Binding>&    bindings,
+                         std::string&                                   propertyName,
+                         data::Store&                                   store)
+{
+    bool isArray = false;
+    std::string bindingName = input.name;
+    auto pos = bindingName.find_first_of('[');
+
+    if (pos != std::string::npos)
+    {
+        bindingName = bindingName.substr(0, pos);
+        isArray = true;
+    }
+
+    if (bindings.count(bindingName) == 0)
+        return false;
+
+    const auto& binding = bindings.at(bindingName);
+    
+    store = getStore(binding.source);
+    propertyName = data::Store::getActualPropertyName(_variables, binding.propertyName);
+
+    // FIXME: handle uniforms with struct types
+
+    // FIXME: we assume the uniform is an array of struct or the code to be irrelevantly slow here
+    // uniform arrays of non-struct types should be detected and handled as such using a single call
+    // to the context providing the direct pointer to the contiguous stored data
+
+    // FIXME: handle per-fields bindings instead of using the raw uniform suffix
+    if (isArray)
+        propertyName += input.name.substr(pos);
+
+    return true;
 }
