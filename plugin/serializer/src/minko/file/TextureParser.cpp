@@ -139,6 +139,9 @@ TextureParser::parse(const std::string&                filename,
             ->seekedLength(length)
             ->loadAsynchronously(false);
 
+        // TODO fixme
+        // use Loader API instead of Protocol API
+
         auto protocol = textureFileOptions->protocolFunction()(resolvedFilename);
 
         auto errorSlot = protocol->error()->connect([&](AbstractProtocol::Ptr protocol)
@@ -165,7 +168,7 @@ TextureParser::parse(const std::string&                filename,
             }
         });
 
-        protocol->load(resolvedFilename, textureFileOptions);
+        protocol->load(filename, resolvedFilename, textureFileOptions);
     }
     else
     {
