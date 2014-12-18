@@ -187,6 +187,7 @@ Canvas::initializeWindow()
     if (_flags & HIDDEN)
         windowFlags |= SDL_WINDOW_HIDDEN;
 
+# if !defined(MINKO_PLUGIN_OFFSCREEN)
     _window = SDL_CreateWindow(
         _name.c_str(),
         SDL_WINDOWPOS_CENTERED, // SDL_WINDOWPOS_UNDEFINED,
@@ -205,6 +206,7 @@ Canvas::initializeWindow()
         width(w);
         height(h);
     }
+# endif
 
 # if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID)
     _audio = SDLAudio::create(shared_from_this());
@@ -239,7 +241,7 @@ Canvas::initializeContext()
 {
 #if (MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS) && defined(MINKO_PLUGIN_ANGLE)
     _backend = SDLAngleBackend::create();
-#elif (MINKO_PLATFORM == MINKO_PLATFORM_LINUX) && defined(MINKO_PLUGIN_OFFSCREEN)
+#elif (defined(MINKO_PLUGIN_OFFSCREEN))
     _backend = SDLOffscreenBackend::create();
 #elif MINKO_PLATFORM == MINKO_PLATFORM_HTML5
     _backend = SDLWebGLBackend::create();
