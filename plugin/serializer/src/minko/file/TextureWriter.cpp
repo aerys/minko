@@ -84,7 +84,8 @@ TextureWriter::embed(AssetLibraryPtr     assetLibrary,
 
         if (width != height)
         {
-            const auto dimensionSize = std::max(width, height);
+            // TODO add writerOptions field to either perform upscale or downscale
+            const auto dimensionSize = std::min(width, height);
 
             const auto newWidth = dimensionSize;
             const auto newHeight = dimensionSize;

@@ -51,7 +51,7 @@ namespace minko
             inline
             static
             Ptr
-            create(Options::Ptr copy)
+            create(file::Options::Ptr copy)
             {
                 auto instance = Ptr(new HTTPOptions(*copy));
 
@@ -93,7 +93,7 @@ namespace minko
             }
 
         protected:
-            HTTPOptions(const Options& copy);
+            HTTPOptions(const file::Options& copy);
 
         private:
             HTTPOptions();
