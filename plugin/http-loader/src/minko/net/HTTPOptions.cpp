@@ -17,7 +17,20 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
-
 #include "minko/net/HTTPOptions.hpp"
-#include "minko/net/HTTPProtocol.hpp"
+
+using namespace minko;
+using namespace minko::file;
+using namespace minko::net;
+
+HTTPOptions::HTTPOptions() :
+    Options()
+{
+}
+
+HTTPOptions::HTTPOptions(const HTTPOptions& copy) :
+    Options(copy),
+    _username(copy._username),
+    _password(copy._password)
+{
+}

@@ -17,12 +17,12 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/net/HTTPProtocol.hpp"
-
-#include "minko/async/Worker.hpp"
-#include "minko/net/HTTPRequest.hpp"
-#include "minko/file/Options.hpp"
 #include "minko/Signal.hpp"
+#include "minko/async/Worker.hpp"
+#include "minko/file/Options.hpp"
+#include "minko/net/HTTPOptions.hpp"
+#include "minko/net/HTTPProtocol.hpp"
+#include "minko/net/HTTPRequest.hpp"
 #include "minko/AbstractCanvas.hpp"
 
 #if defined(EMSCRIPTEN)
@@ -244,7 +244,18 @@ HTTPProtocol::load()
     }
     else
     {
-        HTTPRequest request(resolvedFilename());
+        auto username = std::string();
+        auto password = std::string();
+
+        auto httpOptions = std::dynamic_pointer_cast<HTTPOptions>(_options);
+
+        if (httpOptions != nullptr)
+        {
+            username = httpOptions->username();
+            password = httpOptions->password();
+        }
+
+        HTTPRequest request(resolvedFilename(), username, password);
 
         request.progress()->connect([&](float p){
             progressHandler(loader.get(), int(p * 100.f), 100);

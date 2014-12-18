@@ -24,11 +24,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::net;
 
-HTTPRequest::HTTPRequest(std::string url) :
+HTTPRequest::HTTPRequest(const std::string& url,
+                         const std::string& username,
+                         const std::string& password) :
     _url(url),
     _progress(Signal<float>::create()),
     _error(Signal<int>::create()),
-    _complete(Signal<const std::vector<char>&>::create())
+    _complete(Signal<const std::vector<char>&>::create()),
+    _username(username),
+    _password(password)
 {
 }
 
@@ -60,6 +64,15 @@ HTTPRequest::run()
 
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
     //curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
+
+    if (!_username.empty())
+    {
+        curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+
+        const auto authenticationString = _username + ":" + _password;
+
+        curl_easy_setopt(curl, CURLOPT_USERPWD, authenticationString.c_str());
+    }
 
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 

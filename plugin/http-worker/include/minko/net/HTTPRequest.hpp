@@ -28,7 +28,9 @@ namespace minko
         class HTTPRequest
         {
         public:
-            HTTPRequest(std::string url);
+            HTTPRequest(const std::string& url,
+                        const std::string& username = "",
+                        const std::string& password = "");
 
             void
                 run();
@@ -75,6 +77,9 @@ namespace minko
             Signal<float>::Ptr _progress;
             Signal<int>::Ptr _error;
             Signal<const std::vector<char>&>::Ptr _complete;
+            
+            std::string _username;
+            std::string _password;
         };
     }
 }

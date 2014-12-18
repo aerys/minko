@@ -65,6 +65,46 @@ Options::Options() :
     initializeUserFlags();
 }
 
+Options::Options(const Options& copy) :
+    _context(copy._context),
+    _assets(copy._assets),
+    _parsers(copy._parsers),
+    _protocols(copy._protocols),
+    _includePaths(copy._includePaths),
+    _generateMipMaps(copy._generateMipMaps),
+    _resizeSmoothly(copy._resizeSmoothly),
+    _isCubeTexture(copy._isCubeTexture),
+    _startAnimation(copy._startAnimation),
+    _disposeIndexBufferAfterLoading(copy._disposeIndexBufferAfterLoading),
+    _disposeVertexBufferAfterLoading(copy._disposeVertexBufferAfterLoading),
+    _disposeTextureAfterLoading(copy._disposeTextureAfterLoading),
+    _skinningFramerate(copy._skinningFramerate),
+    _skinningMethod(copy._skinningMethod),
+    _effect(copy._effect),
+    _textureFormats(copy._textureFormats),
+    _material(copy._material),
+    _materialFunction(copy._materialFunction),
+    _geometryFunction(copy._geometryFunction),
+    _protocolFunction(copy._protocolFunction),
+    _parserFunction(copy._parserFunction),
+    _uriFunction(copy._uriFunction),
+    _nodeFunction(copy._nodeFunction),
+    _textureFormatFunction(copy._textureFormatFunction),
+    _loadAsynchronously(copy._loadAsynchronously),
+    _seekingOffset(copy._seekingOffset),
+    _seekedLength(copy._seekedLength)
+{
+}
+
+void
+Options::initialize()
+{
+    initializeDefaultFunctions();
+    
+    registerParser<file::EffectParser>("effect");
+    registerProtocol<FileProtocol>("file");
+}
+
 void
 Options::initializePlatforms()
 {
