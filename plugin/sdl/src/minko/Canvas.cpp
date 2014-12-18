@@ -208,7 +208,7 @@ Canvas::initializeWindow()
     }
 # endif
 
-# if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID)
+# if (MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID)) && !defined(MINKO_PLUGIN_OFFSCREEN)
     _audio = SDLAudio::create(shared_from_this());
 # endif
 #endif

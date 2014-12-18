@@ -40,11 +40,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #  include "GLES2/gl2.h"
 #  include "GLES2/gl2ext.h"
 # else
-//#  include "GL/glew.h"
-#  include <windows.h>
-#  include <GL/gl.h>
-#  include <GL/glu.h>
-#  include <GL/glext.h>
+#  if !defined(MINKO_PLUGIN_OFFSCREEN) // temporary
+#   include "GL/glew.h"
+#  else
+#   include <windows.h>
+#   include <GL/gl.h>
+#   include <GL/glu.h>
+#   include <GL/glext.h>
+#  endif
 # endif
 #elif MINKO_PLATFORM == MINKO_PLATFORM_OSX
 # include <OpenGL/gl.h>
@@ -167,8 +170,8 @@ OpenGLES2Context::OpenGLES2Context() :
     _currentStencilZFailOp(StencilOperation::UNSET),
     _currentStencilZPassOp(StencilOperation::UNSET)
 {
-#if (MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS) && !defined(MINKO_PLUGIN_ANGLE)
-    //glewInit();
+#if (MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS) && !defined(MINKO_PLUGIN_ANGLE) && !defined(MINKO_PLUGIN_OFFSCREEN)
+    glewInit();
 #endif
 
 #if !defined(MINKO_NO_STENCIL)
