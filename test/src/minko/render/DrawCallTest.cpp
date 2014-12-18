@@ -51,8 +51,9 @@ TEST_F(DrawCallTest, OneFloatUniformBindingFromRootData)
 
     ASSERT_EQ(drawCall.boundFloatUniforms().size(), 0);
 
-    drawCall.bindUniform(input, bindings, defaultValues);
+    bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues);
 
+    ASSERT_TRUE(uniformIsBound);
     ASSERT_EQ(drawCall.boundFloatUniforms().size(), 1);
     ASSERT_EQ(drawCall.boundFloatUniforms()[0].data, rootData.getUnsafePointer<float>("foo"));
     ASSERT_EQ(drawCall.boundFloatUniforms()[0].location, 23);
@@ -77,8 +78,9 @@ TEST_F(DrawCallTest, OneFloatUniformWithVariableBindingFromRootData)
 
     ASSERT_EQ(drawCall.boundFloatUniforms().size(), 0);
 
-    drawCall.bindUniform(input, bindings, defaultValues);
+    bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues);
 
+    ASSERT_TRUE(uniformIsBound);
     ASSERT_EQ(drawCall.boundFloatUniforms().size(), 1);
     ASSERT_EQ(drawCall.boundFloatUniforms()[0].data, p->getUnsafePointer<float>("foo"));
     ASSERT_EQ(drawCall.boundFloatUniforms()[0].location, 23);
