@@ -51,6 +51,30 @@ Reflection::Reflection(
     _renderTarget = render::Texture::create(_assets->context(), clp2(_width), clp2(_height), false, true);
 }
 
+Reflection::Reflection(const Reflection& reflection, const CloneOption& option) : 
+	_assets(reflection._assets),
+	_width(reflection._width),
+	_height(reflection._height),
+	_clearColor(reflection._clearColor),
+	_rootAdded(Signal<AbsCmpPtr, std::shared_ptr<scene::Node>>::create()),
+	_clipPlane(),
+	_activeCamera(reflection._activeCamera),
+	_enabled(reflection._enabled),
+	_reflectedViewMatrix(Matrix4x4::create())
+{
+	_renderTarget = render::Texture::create(_assets->context(), clp2(_width), clp2(_height), false, true);
+}
+
+AbstractComponent::Ptr
+Reflection::clone(const CloneOption& option)
+{
+	auto reflection = std::shared_ptr<Reflection>(new Reflection(*this, option));
+
+	reflection->initialize();
+
+	return reflection;
+}
+
 void
 Reflection::initialize()
 {

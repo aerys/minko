@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -41,6 +41,7 @@ namespace minko
 
 		public:
 			typedef std::shared_ptr<MaterialWriter>						Ptr;
+
 			typedef std::shared_ptr<render::AbstractTexture>			TexturePtr;
 			typedef msgpack::type::tuple<uint, std::string>				TupleIntString;
 			typedef msgpack::type::tuple<std::string, TupleIntString>	ComplexPropertyTuple;
@@ -67,7 +68,7 @@ namespace minko
 			MaterialWriter();
 
 			template <typename T>
-			typename std::enable_if<std::is_base_of<TexturePtr, T>::value, bool>::type
+			typename std::enable_if<std::is_base_of<render::TextureSampler, T>::value, bool>::type
 			serializeMaterialValue(material::Material::Ptr										material,
 								   std::string&													propertyName,
 								   file::AssetLibrary::Ptr										assets,
@@ -75,7 +76,7 @@ namespace minko
 								   std::vector<BasicPropertyTuple>								*basicTypeSeriliazedProperties,
 								   Dependency::Ptr												dependency)
 			{
-				if (material->data()->propertyHasType<TexturePtr>(propertyName))
+				if (material->data()->propertyHasType<render::TextureSampler>(propertyName))
 				{
 					std::tuple<uint, std::string> serializedTexture = serialize::TypeSerializer::serializeTexture(Any(dependency->registerDependency(
                         assets->getTextureByUuid(material->data()->get<render::TextureSampler>(propertyName).uuid)
@@ -87,11 +88,12 @@ namespace minko
 
 					return true;
 				}
+
 				return false;
 			}
 
 			template <typename T>
-			typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_base_of<TexturePtr, T>::value, bool>::type
+			typename std::enable_if<!std::is_arithmetic<T>::value && !std::is_base_of<render::TextureSampler, T>::value, bool>::type
 			serializeMaterialValue(material::Material::Ptr										material,
 								   	std::string&												propertyName,
 								   	file::AssetLibrary::Ptr										assets,
@@ -108,6 +110,7 @@ namespace minko
 
 					ComplexPropertyTuple serializedProperty(propertyName, serializedMsgMaterialValue);
 					complexSerializedProperties->push_back(serializedProperty);
+
 					return true;
 				}
 

@@ -34,11 +34,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/input/Touch.hpp"
 #include "minko/async/Worker.hpp"
 
+#include "minko/SDLBackend.hpp"
+
 // Note: cannot be added to the .cpp because this must be compiled within the
 // main compilation-unit.
-#include "SDL_platform.h"
-#if defined(MINKO_PLATFORM_IOS) || defined(MINKO_PLATFORM_ANDROID)
+#if MINKO_PLATFORM & (MINKO_PLATFORM_IOS | MINKO_PLATFORM_ANDROID)
 # include "SDL_main.h"
+#endif
+
+// Audio only works for HTML5, Windows and Android 
+#if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID)
+# include "minko/SDLAudio.hpp"
 #endif
 
 struct SDL_Window;
@@ -46,97 +52,111 @@ struct SDL_Surface;
 
 namespace minko
 {
-	class Canvas :
-		public AbstractCanvas,
-		public std::enable_shared_from_this<Canvas>
-	{
-	public:
-		typedef std::shared_ptr<Canvas>	Ptr;
+    class Canvas :
+        public AbstractCanvas,
+        public std::enable_shared_from_this<Canvas>
+    {
+    public:
+        typedef std::shared_ptr<Canvas>    Ptr;
 
-	private:
-        typedef std::chrono::high_resolution_clock::time_point	time_point;
-		typedef std::shared_ptr<async::Worker>			        WorkerPtr;
+        typedef enum
+        {
+            FULLSCREEN = (1u << 0),
+            RESIZABLE = (1u << 1),
+            HIDDEN = (1u << 2),
+            CHROMELESS = (1u << 3),
+            STENCIL = (1u << 4)
+        } Flags;
 
-		std::string										_name;
-		uint											_x;
-		uint											_y;
-		uint											_width;
-		uint											_height;
-		std::shared_ptr<data::Provider>					_data;
-		bool											_useStencil;
-		bool											_chromeless;
+    private:
+        typedef std::chrono::high_resolution_clock::time_point                  time_point;
+        typedef std::shared_ptr<async::Worker>                                  WorkerPtr;
 
-		bool											_active;
-		render::AbstractContext::Ptr					_context;
-		SDL_Surface*											_screen;
-		SDL_Window*												_window;
-		float													_relativeTime;
-		float													_frameDuration;
-        time_point                                              _previousTime;
-        time_point                                              _startTime;
-		float													_framerate;
-		float													_desiredFramerate;
+        std::string                                                             _name;
+        uint                                                                    _x;
+        uint                                                                    _y;
+        uint                                                                    _width;
+        uint                                                                    _height;
+        std::shared_ptr<data::Provider>                                         _data;
+        int                                                                     _flags;
 
-		std::shared_ptr<SDLMouse>								_mouse;
-		std::unordered_map<int, std::shared_ptr<SDLJoystick>>	_joysticks;
-        std::shared_ptr<SDLKeyboard>    						_keyboard;
-        std::shared_ptr<SDLTouch>                              _touch; // To store any finger activity
-		std::vector<std::shared_ptr<SDLTouch>>                 _touches; // To keep finger order
+        bool                                                                    _active;
+        render::AbstractContext::Ptr                                            _context;
+        std::shared_ptr<SDLBackend>                                             _backend;
+        SDL_Surface*                                                            _screen;
+        SDL_Window*                                                             _window;
+        float                                                                   _relativeTime;
+        float                                                                   _frameDuration;
+        time_point                                                              _previousTime;
+        time_point                                                              _startTime;
+        float                                                                   _framerate;
+        float                                                                   _desiredFramerate;
+
+#if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID)
+        std::shared_ptr<SDLAudio>                                               _audio;
+#endif
+        
+        std::shared_ptr<SDLMouse>                                               _mouse;
+        std::unordered_map<int, std::shared_ptr<SDLJoystick>>                   _joysticks;
+        std::shared_ptr<SDLKeyboard>                                            _keyboard;
+        std::shared_ptr<SDLTouch>                                               _touch;
 
         // Events
-		Signal<Ptr, float, float>::Ptr											_enterFrame;
-		Signal<AbstractCanvas::Ptr, uint, uint>::Ptr							_resized;
-		// Joystick events
-        Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr		_joystickAdded;
-		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr		_joystickRemoved;
-		// Finger events
-        Signal<std::shared_ptr<input::Touch>, float>::Ptr						_touchZoom;
+        Signal<Ptr, float, float>::Ptr                                          _enterFrame;
+        Signal<AbstractCanvas::Ptr, uint, uint>::Ptr                            _resized;
+        // File dropped
+        Signal<const std::string&>::Ptr                                         _fileDropped;
+        // Joystick events
+        Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr      _joystickAdded;
+        Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr      _joystickRemoved;
 
-        std::list<std::shared_ptr<async::Worker>>								_activeWorkers;
-		std::list<Any>															_workerCompleteSlots;
+        std::list<std::shared_ptr<async::Worker>>                               _activeWorkers;
+        std::list<Any>                                                          _workerCompleteSlots;
 
+        bool                                                                    _onWindow;
 
-	public:
-		static inline
-		Ptr
-		create(const std::string&	name,
-			   const uint			width,
-			   const uint			height,
-			   bool					useStencil = false,
-			   bool					chromeless = false)
-		{
-			auto canvas = std::shared_ptr<Canvas>(new Canvas(name, width, height, useStencil, chromeless));
+    public:
+        static inline
+        Ptr
+        create(const std::string&    name,
+               const uint            width      = 1280,
+               const uint            height     = 720,
+               int                   flags      = RESIZABLE)
+        {
+            auto canvas = std::shared_ptr<Canvas>(new Canvas(name, width, height, flags));
 
-#if defined(__ANDROID__)
-			auto that = canvas->shared_from_this();
-#endif
+            canvas->initialize();
 
-			canvas->initialize();
+            if (_defaultCanvas == nullptr)
+                _defaultCanvas = canvas;
 
-			if (_defaultCanvas == nullptr)
-				_defaultCanvas = canvas;
+            return canvas;
+        }
 
-			return canvas;
-		}
+        inline
+        const std::string&
+        name() const
+        {
+            return _name;
+        }
 
-		inline
-		const std::string&
-		name() const
-		{
-			return _name;
-		}
+        uint
+        x();
 
-		uint
-		x();
+        uint
+        y();
 
-		uint
-		y();
+        uint
+        width();
 
-		uint
-		width();
+        uint
+        height();
 
-		uint
-		height();
+        float
+        aspectRatio()
+        {
+            return float(width()) / float(height());
+        }
 
         inline
         SDL_Window*
@@ -145,43 +165,46 @@ namespace minko
             return _window;
         }
 
-		int
-		getJoystickAxis(input::Joystick::Ptr joystick, int axis);
+        void*
+        systemWindow() const;
 
-		inline
-		std::shared_ptr<data::Provider>
-		data() const
-		{
-			return _data;
-		}
+        int
+        getJoystickAxis(input::Joystick::Ptr joystick, int axis);
 
-		inline
-		bool
-		active() const
-		{
-			return _active;
-		}
+        inline
+        std::shared_ptr<data::Provider>
+        data() const
+        {
+            return _data;
+        }
 
-		inline
-		Signal<Ptr, float, float>::Ptr
-		enterFrame() const
-		{
-			return _enterFrame;
-		}
+        inline
+        bool
+        active() const
+        {
+            return _active;
+        }
 
-		inline
-		std::shared_ptr<input::Mouse>
-		mouse()
-		{
-			return _mouse;
-		}
+        inline
+        Signal<Ptr, float, float>::Ptr
+        enterFrame() const
+        {
+            return _enterFrame;
+        }
 
-		inline
-		std::shared_ptr<input::Keyboard>
-		keyboard()
-		{
-			return _keyboard;
-		}
+        inline
+        std::shared_ptr<input::Mouse>
+        mouse()
+        {
+            return _mouse;
+        }
+
+        inline
+        std::shared_ptr<input::Keyboard>
+        keyboard()
+        {
+            return _keyboard;
+        }
 
         inline
         std::shared_ptr<input::Touch>
@@ -191,33 +214,11 @@ namespace minko
         }
 
         inline
-		std::shared_ptr<input::Touch>
-		touch(uint id)
-		{
-            return id < _touches.size() ? _touches[id] : nullptr;
-		}
-
-        // Multi touch events
-        inline
-        Signal<std::shared_ptr<input::Touch>, float>::Ptr
-        touchZoom()
+        std::shared_ptr<input::Joystick>
+        joystick(uint id)
         {
-            return _touchZoom;
+            return id < numJoysticks() ? _joysticks[id] : nullptr;
         }
-
-        inline
-		uint
-		numTouches()
-		{
-			return _touches.size();
-		}
-
-		inline
-		std::shared_ptr<input::Joystick>
-		joystick(uint id)
-		{
-			return id < numJoysticks() ? _joysticks[id] : nullptr;
-		}
 
         inline
         std::unordered_map<int, std::shared_ptr<SDLJoystick>>
@@ -226,136 +227,132 @@ namespace minko
             return _joysticks;
         }
 
-		inline
-		uint
-		numJoysticks()
-		{
-			return _joysticks.size();
-		}
+        inline
+        uint
+        numJoysticks()
+        {
+            return _joysticks.size();
+        }
 
-		inline
-		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr
-		joystickAdded()
-		{
-			return _joystickAdded;
-		}
+        inline
+        Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr
+        joystickAdded()
+        {
+            return _joystickAdded;
+        }
 
-		inline
-		Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr
-		joystickRemoved()
-		{
-			return _joystickRemoved;
-		}
+        inline
+        Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr
+        joystickRemoved()
+        {
+            return _joystickRemoved;
+        }
 
-		inline
-		Signal<AbstractCanvas::Ptr, uint, uint>::Ptr
-		resized()
-		{
-			return _resized;
-		}
+        inline
+        Signal<AbstractCanvas::Ptr, uint, uint>::Ptr
+        resized()
+        {
+            return _resized;
+        }
 
-		inline
-		minko::render::AbstractContext::Ptr
-		context()
-		{
-			return _context;
-		}
+        inline
+        Signal<const std::string&>::Ptr
+        fileDropped()
+        {
+            return _fileDropped;
+        }
 
-		inline
-		float
-		framerate()
-		{
-			return _framerate;
-		}
+        inline
+        minko::render::AbstractContext::Ptr
+        context()
+        {
+            return _context;
+        }
 
-		inline
-		float
-		desiredFramerate()
-		{
-			return _desiredFramerate;
-		}
+        inline
+        float
+        framerate()
+        {
+            return _framerate;
+        }
 
-		inline
-		void
-		desiredFramerate(float desiredFramerate)
-		{
-			_desiredFramerate = desiredFramerate;
-		}
+        inline
+        float
+        desiredFramerate()
+        {
+            return _desiredFramerate;
+        }
 
-		// Current frame execution time in milliseconds.
-		inline
-		float
-		frameDuration() const
-		{
-			return _frameDuration;
-		}
+        inline
+        void
+        desiredFramerate(float desiredFramerate)
+        {
+            _desiredFramerate = desiredFramerate;
+        }
 
-		// Time in milliseconds since application started.
-		inline
-		float
-		relativeTime() const
-		{
-			return _relativeTime;
-		}
+        // Current frame execution time in milliseconds.
+        inline
+        float
+        frameDuration() const
+        {
+            return _frameDuration;
+        }
 
-		WorkerPtr
-		getWorker(const std::string& name);
+        // Time in milliseconds since application started.
+        inline
+        float
+        relativeTime() const
+        {
+            return _relativeTime;
+        }
 
-		bool
-		isWorkerRegistered(const std::string& name)
-		{
-			if (_workers.count(name))
-				return true;
-			else
-				return false;
-		};
+        WorkerPtr
+        getWorker(const std::string& name);
 
-		void
-		run();
+        bool
+        isWorkerRegistered(const std::string& name)
+        {
+            return _workers.count(name) != 0;
+        };
 
-		void
-		quit();
+        void
+        run();
 
-	private:
-		Canvas(const std::string&	name,
-			   const uint			width,
-			   const uint			height,
-			   bool					useStencil = false,
-			   bool					chromeless = false);
+        void
+        quit();
 
-		void
-		x(uint);
+    private:
+        Canvas(const std::string&   name,
+               const uint           width,
+               const uint           height,
+               int                  flags);
 
-		void
-		y(uint);
+        void
+        x(uint);
 
-		void
-		width(uint);
+        void
+        y(uint);
 
-		void
-		height(uint);
+        void
+        width(uint);
 
-#if defined(_WIN32)
-		bool
-		consoleHandlerRoutine(DWORD);
-#endif
+        void
+        height(uint);
 
-		void
-		initialize();
+        void
+        initialize();
 
-		void
-		initializeInputs();
+        void
+        initializeInputs();
 
-		void
-		initializeContext(const std::string& windowTitle, unsigned int width, unsigned int height, bool useStencil);
+        void
+        initializeContext();
 
-#ifdef MINKO_ANGLE
-		ESContext*
-		initContext(SDL_Window* window, unsigned int width, unsigned int height);
-#endif
+        void
+        initializeWindow();
 
-	public:
-		void
-		step();
-	};
+    public:
+        void
+        step();
+    };
 }

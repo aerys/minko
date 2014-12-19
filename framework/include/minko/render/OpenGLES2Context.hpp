@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -48,6 +48,9 @@ namespace minko
 			static CompareFuncsMap					_compareFuncs;
 			static StencilOperationMap				_stencilOps;
 
+            static std::unordered_map<TextureFormat,
+                                      unsigned int>   _availableTextureFormats;
+
 			bool									_errorsEnabled;
 
 			std::list<uint>							_textures;
@@ -70,6 +73,10 @@ namespace minko
 			unsigned int			                _viewportY;
 			unsigned int			                _viewportWidth;
 			unsigned int			                _viewportHeight;
+            unsigned int                              _oldViewportX;
+            unsigned int                              _oldViewportY;
+            unsigned int                              _oldViewportWidth;
+            unsigned int                              _oldViewportHeight;
 
             unsigned int                            _currentTarget;
 			int						                _currentIndexBuffer;
@@ -104,6 +111,10 @@ namespace minko
 			{
 				return std::shared_ptr<OpenGLES2Context>(new OpenGLES2Context());
 			}
+
+            static
+            const std::unordered_map<TextureFormat, unsigned int>&
+            availableTextureFormats();
 
 			inline
 			bool
@@ -212,6 +223,14 @@ namespace minko
 						  bool		    mipMapping,
                           bool          optimizeForRenderToTexture = false);
 
+            uint
+            createCompressedTexture(TextureType     type,
+                                    TextureFormat   format,
+                                    unsigned int    width,
+                                    unsigned int    height,
+                                    bool            mipMapping);
+
+
 			void
 			uploadTexture2dData(uint			texture,
 							    unsigned int 	width,
@@ -228,6 +247,27 @@ namespace minko
 							      void*				data);
 
 			void
+            uploadCompressedTexture2dData(uint          texture,
+                                          TextureFormat format,
+                                          unsigned int  width,
+                                          unsigned int  height,
+                                          unsigned int  size,
+                                          unsigned int  mipLevel,
+                                          void*         data);
+
+            void
+            uploadCompressedCubeTextureData(uint                texture,
+                                            CubeTexture::Face   face,
+                                            TextureFormat       format,
+                                            unsigned int        width,
+                                            unsigned int        height,
+                                            unsigned int        mipLevel,
+                                            void*               data);
+
+            void
+            activateMipMapping(uint texture);
+
+            void
 			deleteTexture(uint texture);
 
 			void
@@ -325,6 +365,9 @@ namespace minko
             void
             generateMipmaps(unsigned int texture);
 
+            bool
+            supportsExtension(const std::string& extensionNameString);
+
 		protected:
 			OpenGLES2Context();
 
@@ -359,10 +402,8 @@ namespace minko
 							 unsigned int   height);
 
 			void
-			getShaderSource(unsigned int shader, std::string&);
-
-			void
-			saveShaderSourceToFile(const std::string& filename, unsigned int shader);
+            getShaderSource(unsigned int    shader,
+                            std::string&    output);
 
             inline
             void

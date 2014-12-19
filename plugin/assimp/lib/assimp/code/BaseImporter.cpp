@@ -380,6 +380,43 @@ void BaseImporter::ConvertToUTF8(std::vector<char>& data)
 }
 
 // ------------------------------------------------------------------------------------------------
+// Convert to UTF8 data to ISO-8859-1
+void BaseImporter::ConvertUTF8toISO8859_1(std::string& data)
+{
+	unsigned int size = data.size();
+	unsigned int i = 0, j = 0;
+
+	while(i < size) {
+		if((unsigned char) data[i] < 0x80) {
+			data[j] = data[i];
+		} else if(i < size - 1) {
+			if((unsigned char) data[i] == 0xC2) {
+				data[j] = data[++i];
+			} else if((unsigned char) data[i] == 0xC3) {
+				data[j] = ((unsigned char) data[++i] + 0x40);
+			} else {
+				std::stringstream stream;
+
+				stream << "UTF8 code " << std::hex << data[i] << data[i + 1] << " can not be converted into ISA-8859-1.";
+
+				DefaultLogger::get()->error(stream.str());
+
+				data[j++] = data[i++];
+				data[j] = data[i];
+			}
+		} else {
+			DefaultLogger::get()->error("UTF8 code but only one character remaining");
+
+			data[j] = data[i];
+		}
+
+		i++; j++;
+	}
+
+	data.resize(j);
+}
+
+// ------------------------------------------------------------------------------------------------
 void BaseImporter::TextFileToBuffer(IOStream* stream,
 	std::vector<char>& data)
 {
@@ -408,7 +445,7 @@ namespace Assimp
 	// Represents an import request
 	struct LoadRequest
 	{
-		LoadRequest(const std::string& _file, unsigned int _flags,const Loader::PropertyMap* _map, unsigned int _id)
+		LoadRequest(const std::string& _file, unsigned int _flags,const BatchLoader::PropertyMap* _map, unsigned int _id)
 			: file(_file), flags(_flags), refCnt(1),scene(NULL), loaded(false), id(_id)
 		{
 			if (_map)
@@ -420,7 +457,7 @@ namespace Assimp
 		unsigned int refCnt;
 		aiScene* scene;
 		bool loaded;
-		Loader::PropertyMap map;
+		BatchLoader::PropertyMap map;
 		unsigned int id;
 
 		bool operator== (const std::string& f) {
@@ -430,7 +467,7 @@ namespace Assimp
 }
 
 // ------------------------------------------------------------------------------------------------
-// Loader::pimpl data structure
+// BatchLoader::pimpl data structure
 struct Assimp::BatchData
 {
 	BatchData()
@@ -454,7 +491,7 @@ struct Assimp::BatchData
 };
 
 // ------------------------------------------------------------------------------------------------
-Loader::Loader(IOSystem* pIO)
+BatchLoader::BatchLoader(IOSystem* pIO)
 {
 	ai_assert(NULL != pIO);
 
@@ -466,7 +503,7 @@ Loader::Loader(IOSystem* pIO)
 }
 
 // ------------------------------------------------------------------------------------------------
-Loader::~Loader()
+BatchLoader::~BatchLoader()
 {
 	// delete all scenes wthat have not been polled by the user
 	for (std::list<LoadRequest>::iterator it = data->requests.begin();it != data->requests.end(); ++it)	{
@@ -480,7 +517,7 @@ Loader::~Loader()
 
 
 // ------------------------------------------------------------------------------------------------
-unsigned int Loader::AddLoadRequest	(const std::string& file,
+unsigned int BatchLoader::AddLoadRequest	(const std::string& file,
 	unsigned int steps /*= 0*/, const PropertyMap* map /*= NULL*/)
 {
 	ai_assert(!file.empty());
@@ -510,7 +547,7 @@ unsigned int Loader::AddLoadRequest	(const std::string& file,
 }
 
 // ------------------------------------------------------------------------------------------------
-aiScene* Loader::GetImport		(unsigned int which)
+aiScene* BatchLoader::GetImport		(unsigned int which)
 {
 	for (std::list<LoadRequest>::iterator it = data->requests.begin();it != data->requests.end(); ++it)	{
 
@@ -527,13 +564,13 @@ aiScene* Loader::GetImport		(unsigned int which)
 }
 
 // ------------------------------------------------------------------------------------------------
-void Loader::LoadAll()
+void BatchLoader::LoadAll()
 {
 	// no threaded implementation for the moment
 	for (std::list<LoadRequest>::iterator it = data->requests.begin();it != data->requests.end(); ++it)	{
 		// force validation in debug builds
 		unsigned int pp = (*it).flags;
-#ifdef _DEBUG
+#ifdef ASSIMP_BUILD_DEBUG
 		pp |= aiProcess_ValidateDataStructure;
 #endif
 		// setup config properties if necessary
@@ -541,6 +578,7 @@ void Loader::LoadAll()
 		pimpl->mFloatProperties  = (*it).map.floats;
 		pimpl->mIntProperties    = (*it).map.ints;
 		pimpl->mStringProperties = (*it).map.strings;
+		pimpl->mMatrixProperties = (*it).map.matrices;
 
 		if (!DefaultLogger::isNullLogger())
 		{

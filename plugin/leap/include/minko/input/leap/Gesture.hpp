@@ -24,89 +24,89 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace Leap
 {
-	class Gesture;
+    class Gesture;
 }
 
 namespace minko
 {
-	namespace input
-	{
-		namespace leap
-		{
-			class SwipeGesture;
-			class CircleGesture;
-			class ScreenTapGesture;
-			class KeyTapGesture;
+    namespace input
+    {
+        namespace leap
+        {
+            class SwipeGesture;
+            class CircleGesture;
+            class ScreenTapGesture;
+            class KeyTapGesture;
 
-			class Gesture : public std::enable_shared_from_this<Gesture>
-			{
-				friend class Frame; // Only a Frame can instanciate a Gesture
+            class Gesture : public std::enable_shared_from_this<Gesture>
+            {
+                friend class Frame; // Only a Frame can instanciate a Gesture
 
-			public:
-				enum class State
-				{
-					Invalid		= -1,
-					Start		= 1,
-					Update		= 2,
-					Stop		= 3
-				};
+            public:
+                enum class State
+                {
+                    Invalid        = -1,
+                    Start        = 1,
+                    Update        = 2,
+                    Stop        = 3
+                };
 
-				enum class Type
-				{
-					Invalid		= -1, 
-					Swipe		= 1, 
-					Circle		= 4, 
-					ScreenTap	= 5, 
-					KeyTap		= 6
-				};
+                enum class Type
+                {
+                    Invalid        = -1,
+                    Swipe        = 1,
+                    Circle        = 4,
+                    ScreenTap    = 5,
+                    KeyTap        = 6
+                };
 
-			public:	
-				typedef std::shared_ptr<Gesture>	Ptr;
+            public:
+                typedef std::shared_ptr<Gesture>    Ptr;
 
-			protected:
-				std::shared_ptr<Leap::Gesture>		_leapGesture;
+            protected:
+                std::shared_ptr<Leap::Gesture>        _leapGesture;
 
-			public:
-				
-				int32_t
-				id() const;
+            public:
 
-				bool
-				isValid() const;
+                int32_t
+                id() const;
 
-				int64_t
-				durationMicroseconds() const; 
+                bool
+                isValid() const;
 
-				State
-				state() const;
+                int64_t
+                durationMicroseconds() const;
 
-				Type
-				type() const;
+                State
+                state() const;
 
-				void
-				handIDs(std::unordered_set<int32_t>&) const;
+                Type
+                type() const;
 
-				void
-				pointablesIDs(std::unordered_set<int32_t>&) const;
+                void
+                handIDs(std::unordered_set<int32_t>&) const;
 
-				std::shared_ptr<SwipeGesture>
-				toSwipeGesture() const;
+                void
+                pointablesIDs(std::unordered_set<int32_t>&) const;
 
-				std::shared_ptr<CircleGesture>
-				toCircleGesture() const;
+                std::shared_ptr<SwipeGesture>
+                toSwipeGesture() const;
 
-				std::shared_ptr<ScreenTapGesture>
-				toScreenTapGesture() const;
+                std::shared_ptr<CircleGesture>
+                toCircleGesture() const;
 
-				std::shared_ptr<KeyTapGesture>
-				toKeyTapGesture() const;
+                std::shared_ptr<ScreenTapGesture>
+                toScreenTapGesture() const;
 
-			protected:
-				Gesture(); // no implementation!
+                std::shared_ptr<KeyTapGesture>
+                toKeyTapGesture() const;
 
-				explicit
-				Gesture(const Leap::Gesture&);
-			};
-		}
-	}
+            protected:
+                Gesture(); // no implementation!
+
+                explicit
+                Gesture(const Leap::Gesture&);
+            };
+        }
+    }
 }

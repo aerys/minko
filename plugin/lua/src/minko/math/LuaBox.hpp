@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -28,27 +28,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace math
-	{
-		class LuaBox :
-			public LuaWrapper
-		{
-		public:
-			static
-			void
-			bind(LuaGlue& state)
-			{
-				state.Class<Box>("Box")
-		            .method("create",       static_cast<Box::Ptr (*)(Vector3::Ptr, Vector3::Ptr)>(&Box::create))
-		            //.method("merge",        static_cast<Box::Ptr (*)(Box::Ptr, Box::Ptr, Box::Ptr)>(&Box::merge))
-		            .method("merge",		static_cast<Box::Ptr (Box::*)(Box::Ptr)>(&Box::merge))
-		            .method("copyFrom",     &Box::copyFrom)
-		            .property("width",      &Box::width)
-		            .property("height",     &Box::height)
-		            .property("depth",      &Box::depth)
-		            .property("topRight",   &Box::topRight)
-		            .property("bottomLeft", &Box::bottomLeft);
-			}
-		};
-	}
+    namespace math
+    {
+        class LuaBox :
+            public LuaWrapper
+        {
+        public:
+            static
+            void
+            bind(LuaGlue& state)
+            {
+                state.Class<Box>("Box")
+                    .method("create",       static_cast<Box::Ptr (*)(Vector3::Ptr, Vector3::Ptr)>(&Box::create))
+                    //.method("merge",        static_cast<Box::Ptr (*)(Box::Ptr, Box::Ptr, Box::Ptr)>(&Box::merge))
+                    .method("merge",        static_cast<Box::Ptr (Box::*)(Box::Ptr)>(&Box::merge))
+                    .method("copyFrom",     &Box::copyFrom)
+                    .property("width",      &Box::width)
+                    .property("height",     &Box::height)
+                    .property("depth",      &Box::depth)
+                    .property("topRight",   &Box::topRight)
+                    .property("bottomLeft", &Box::bottomLeft);
+            }
+        };
+    }
 }

@@ -46,7 +46,7 @@ createRandomCube(scene::Node::Ptr root, geometry::Geometry::Ptr geom, render::Ef
 int main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Example - Cube", 800, 600);
-    auto sceneManager = SceneManager::create(canvas->context());
+    auto sceneManager = SceneManager::create(canvas);
     auto root = scene::Node::create("root")->addComponent(sceneManager);
 
     //sceneManager->assets()->context()->errorsEnabled(true);

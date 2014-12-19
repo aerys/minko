@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -35,30 +35,30 @@ std::shared_ptr<AbstractCanvas> LuaContext::_canvas = nullptr;
 void
 LuaContext::initialize(int argc, char** argv, std::shared_ptr<scene::Node> root, std::shared_ptr<AbstractCanvas> canvas)
 {
-	_argc = argc;
-	_argv = argv;
-	_root = root;
-	_canvas = canvas;
+    _argc = argc;
+    _argv = argv;
+    _root = root;
+    _canvas = canvas;
 }
 
 std::shared_ptr<AbstractCanvas>
 LuaContext::getCanvas()
 {
-	return _canvas;
+    return _canvas;
 }
 
 std::shared_ptr<component::SceneManager>
 LuaContext::getSceneManager()
 {
-	return _root->component<component::SceneManager>();
+    return _root->component<component::SceneManager>();
 }
 
 bool
 LuaContext::getOption(const std::string& optionName)
 {
-	for (auto i = 0; i < _argc; ++i)
-		if (optionName == std::string(_argv[i]))
-			return true;
+    for (auto i = 0; i < _argc; ++i)
+        if (optionName == std::string(_argv[i]))
+            return true;
 
-	return false;
+    return false;
 }

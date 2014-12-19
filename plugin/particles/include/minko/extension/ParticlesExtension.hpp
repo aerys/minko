@@ -73,23 +73,23 @@ namespace minko
             EmitterShapePtr
             deserializeEmitterShape(serialize::EmitterShapeId, const std::string&);
 
-            static 
+            static
             EmitterShapePtr
             deserializeConeShape(const std::string&);
 
-            static 
+            static
             EmitterShapePtr
             deserializeCylinderShape(const std::string&);
 
-            static 
+            static
             EmitterShapePtr
             deserializePointShape(const std::string&);
 
-            static 
+            static
             EmitterShapePtr
             deserializeSphereShape(const std::string&);
 
-            static 
+            static
             EmitterShapePtr
             deserializeBoxShape(const std::string&);
 

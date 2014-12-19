@@ -54,10 +54,15 @@ static const std::string DiffuseTexture      = "map_kd";
 static const std::string AmbientTexture      = "map_ka";
 static const std::string SpecularTexture     = "map_ks";
 static const std::string OpacityTexture      = "map_d";
+static const std::string EmmissiveTexture    = "map_emissive";
 static const std::string BumpTexture1        = "map_bump";
 static const std::string BumpTexture2        = "map_Bump";
 static const std::string BumpTexture3        = "bump";
-static const std::string NormalTexture       = "map_Kn";
+static const std::string NormalTexture1      = "map_Kn";
+static const std::string NormalTexture2      = "map_Normal";
+static const std::string NormalTexture3      = "map_normal";
+static const std::string NormalTexture4      = "map_bump";
+static const std::string NormalTexture5      = "map_Bump";
 static const std::string DisplacementTexture = "disp";
 static const std::string SpecularityTexture  = "map_ns";
 
@@ -128,6 +133,7 @@ void ObjFileMtlImporter::load()
 	{
 		switch (*m_DataIt)
 		{
+		case 'k':
 		case 'K':
 			{
 				++m_DataIt;
@@ -145,6 +151,11 @@ void ObjFileMtlImporter::load()
 				{
 					++m_DataIt;
 					getColorRGBA( &m_pModel->m_pCurrentMaterial->specular );
+				}
+				else if (*m_DataIt == 'e')
+				{
+					++m_DataIt;
+					getColorRGBA( &m_pModel->m_pCurrentMaterial->emissive );
 				}
 				m_DataIt = skipLine<DataArrayIt>( m_DataIt, m_DataItEnd, m_uiLine );
 			}
@@ -216,15 +227,17 @@ void ObjFileMtlImporter::getColorRGBA( aiColor3D *pColor )
 {
 	ai_assert( NULL != pColor );
 	
-	float r, g, b;
+	float r( 0.0f ), g( 0.0f ), b( 0.0f );
 	m_DataIt = getFloat<DataArrayIt>( m_DataIt, m_DataItEnd, r );
 	pColor->r = r;
 	
-	m_DataIt = getFloat<DataArrayIt>( m_DataIt, m_DataItEnd, g );
-	pColor->g = g;
-
-	m_DataIt = getFloat<DataArrayIt>( m_DataIt, m_DataItEnd, b );
-	pColor->b = b;
+    // we have to check if color is default 0 with only one token
+    if( !isNewLine( *m_DataIt ) ) {
+        m_DataIt = getFloat<DataArrayIt>( m_DataIt, m_DataItEnd, g );
+        m_DataIt = getFloat<DataArrayIt>( m_DataIt, m_DataItEnd, b );
+    }
+    pColor->g = g;
+    pColor->b = b;
 }
 
 // -------------------------------------------------------------------
@@ -298,11 +311,7 @@ void ObjFileMtlImporter::getTexture() {
 		// Opacity texture
 		out = & m_pModel->m_pCurrentMaterial->textureOpacity;
 		clampIndex = ObjFile::Material::TextureOpacityType;
-	} else if (!ASSIMP_strincmp( pPtr,"map_ka",6)) {
-		// Ambient texture
-		out = & m_pModel->m_pCurrentMaterial->textureAmbient;
-		clampIndex = ObjFile::Material::TextureAmbientType;
-	} else if (!ASSIMP_strincmp(&(*m_DataIt),"map_emissive",6)) {
+	} else if (!ASSIMP_strincmp( pPtr, EmmissiveTexture.c_str(), EmmissiveTexture.size())) {
 		// Emissive texture
 		out = & m_pModel->m_pCurrentMaterial->textureEmissive;
 		clampIndex = ObjFile::Material::TextureEmissiveType;
@@ -312,7 +321,11 @@ void ObjFileMtlImporter::getTexture() {
 		// Bump texture 
 		out = & m_pModel->m_pCurrentMaterial->textureBump;
 		clampIndex = ObjFile::Material::TextureBumpType;
-	} else if (!ASSIMP_strincmp( pPtr,NormalTexture.c_str(), NormalTexture.size())) { 
+	} else if (!ASSIMP_strincmp( pPtr, NormalTexture1.c_str(), NormalTexture1.size() ) ||
+		       !ASSIMP_strincmp( pPtr, NormalTexture2.c_str(), NormalTexture2.size() ) ||
+		       !ASSIMP_strincmp( pPtr, NormalTexture3.c_str(), NormalTexture3.size() ) ||
+		       !ASSIMP_strincmp( pPtr, NormalTexture4.c_str(), NormalTexture4.size() ) ||
+		       !ASSIMP_strincmp( pPtr, NormalTexture5.c_str(), NormalTexture5.size() )) { 
 		// Normal map
 		out = & m_pModel->m_pCurrentMaterial->textureNormal;
 		clampIndex = ObjFile::Material::TextureNormalType;

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -26,6 +26,20 @@ DirectionalLight::DirectionalLight(float diffuse, float specular) :
 	AbstractDiscreteLight("directionalLight", diffuse, specular)
 {
     updateModelToWorldMatrix(math::mat4(1.f));
+}
+
+DirectionalLight::DirectionalLight(const DirectionalLight& directionalLight, const CloneOption& option) :
+AbstractDiscreteLight("directionalLights", directionalLight.diffuse(), directionalLight.specular())
+{
+    updateModelToWorldMatrix(math::mat4(1.f));
+}
+
+AbstractComponent::Ptr
+DirectionalLight::clone(const CloneOption& option)
+{
+	auto light = std::shared_ptr<DirectionalLight>(new DirectionalLight(*this, option));
+
+	return light;
 }
 
 void

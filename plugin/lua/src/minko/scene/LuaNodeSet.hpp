@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -27,17 +27,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace scene
-	{
-		class LuaNodeSet
-		{
-		public:
-			static
-			void
-			bind(LuaGlue& state)
-			{
-			    state.Class<scene::NodeSet>("NodeSet")
-			        .method("create", 		        static_cast<scene::NodeSet::Ptr (*)(std::shared_ptr<scene::Node>)>(&scene::NodeSet::create))
+    namespace scene
+    {
+        class LuaNodeSet
+        {
+        public:
+            static
+            void
+            bind(LuaGlue& state)
+            {
+                state.Class<scene::NodeSet>("NodeSet")
+                    .method("create",                 static_cast<scene::NodeSet::Ptr (*)(std::shared_ptr<scene::Node>)>(&scene::NodeSet::create))
                     .methodWrapper("descendants",   &LuaNodeSet::descendantsWrapper)
                     .methodWrapper("ancestors",     &LuaNodeSet::ancestorsWrapper)
                     .methodWrapper("children",      &LuaNodeSet::childrenWrapper)
@@ -45,61 +45,60 @@ namespace minko
                     .methodWrapper("where",         &LuaNodeSet::whereWrapper)
                     .methodWrapper("get",           &LuaNodeSet::getWrapper)
                     .methodWrapper("size",          &LuaNodeSet::sizeWrapper);
-			}
+            }
 
-			static
-			NodeSet::Ptr
-			descendantsWrapper(NodeSet::Ptr nodeSet, bool andSelf)
-			{
-				return nodeSet->descendants(andSelf);
-			}
+            static
+            NodeSet::Ptr
+            descendantsWrapper(NodeSet::Ptr nodeSet, bool andSelf)
+            {
+                return nodeSet->descendants(andSelf);
+            }
 
-			static
-			NodeSet::Ptr
-			childrenWrapper(NodeSet::Ptr nodeSet, bool andSelf)
-			{
-				return nodeSet->children(andSelf);
-			}
+            static
+            NodeSet::Ptr
+            childrenWrapper(NodeSet::Ptr nodeSet, bool andSelf)
+            {
+                return nodeSet->children(andSelf);
+            }
 
-			static
-			NodeSet::Ptr
-			ancestorsWrapper(NodeSet::Ptr nodeSet, bool andSelf)
-			{
-				return nodeSet->ancestors(andSelf);
-			}
+            static
+            NodeSet::Ptr
+            ancestorsWrapper(NodeSet::Ptr nodeSet, bool andSelf)
+            {
+                return nodeSet->ancestors(andSelf);
+            }
 
-			static
-			NodeSet::Ptr
-			rootsWrapper(NodeSet::Ptr nodeSet)
-			{
-				return nodeSet->roots();
-			}
+            static
+            NodeSet::Ptr
+            rootsWrapper(NodeSet::Ptr nodeSet)
+            {
+                return nodeSet->roots();
+            }
 
-			static
-			NodeSet::Ptr
-			whereWrapper(NodeSet::Ptr nodeSet, std::shared_ptr<LuaGlueFunctionRef> p)
-			{
-				return nodeSet->where(std::bind(
-					&LuaGlueFunctionRef::invoke<bool, std::shared_ptr<Node>>,
-					p,
-					std::placeholders::_1
-				));
-			}
+            static
+            NodeSet::Ptr
+            whereWrapper(NodeSet::Ptr nodeSet, std::shared_ptr<LuaGlueFunctionRef> p)
+            {
+                return nodeSet->where(std::bind(
+                    &LuaGlueFunctionRef::invoke<bool, std::shared_ptr<Node>>,
+                    p,
+                    std::placeholders::_1
+                ));
+            }
 
-			static
-			std::shared_ptr<Node>
-			getWrapper(NodeSet::Ptr nodeSet, int index)
-			{
-				return nodeSet->nodes().at(index - 1);
-			}
+            static
+            std::shared_ptr<Node>
+            getWrapper(NodeSet::Ptr nodeSet, int index)
+            {
+                return nodeSet->nodes().at(index - 1);
+            }
 
-			static
-			unsigned int
-			sizeWrapper(NodeSet::Ptr nodeSet)
-			{
-				return nodeSet->nodes().size();
-			}
-		};
-	}
+            static
+            unsigned int
+            sizeWrapper(NodeSet::Ptr nodeSet)
+            {
+                return nodeSet->size();
+            }
+        };
+    }
 }
-

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -18,8 +18,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/scene/Node.hpp"
+#include "minko/Common.hpp"
+#include "minko/CloneOption.hpp"
 
 #include "minko/component/AbstractComponent.hpp"
+#include "minko/component/AbstractRebindableComponent.hpp"
 #include "minko/scene/NodeSet.hpp"
 #include "minko/data/Store.hpp"
 #include "minko/Uuid.hpp"
@@ -39,6 +42,86 @@ Node::layouts() const
 {
     // FIXME
 	return 0;
+}
+
+Node::Ptr
+Node::clone(const CloneOption& option)
+{
+	auto clone = cloneNode();
+	
+	std::map<Node::Ptr, Node::Ptr>		nodeMap;		// map linking nodes to their clone
+	std::map<AbsCmpPtr, AbsCmpPtr>	componentsMap;	// map linking components to their clone
+	
+	listItems(clone, nodeMap, componentsMap);
+	
+	rebindComponentsDependencies(componentsMap, nodeMap, option);
+
+	for (auto itn = nodeMap.begin(); itn != nodeMap.end(); itn++)
+	{
+		auto node = itn->first;
+
+		auto originComponents = node->components<AbstractComponent>();
+
+		for (auto itc = componentsMap.begin(); itc != componentsMap.end(); itc++)
+		{
+			auto component = itc->first;
+
+			// if the current node has a particular component, we clone it
+			if (std::find(originComponents.begin(), originComponents.end(), component) != originComponents.end())
+			{
+				nodeMap[node]->addComponent(componentsMap[component]);
+			}			
+		}	
+	}
+
+	return nodeMap[shared_from_this()];
+}
+
+Node::Ptr
+Node::cloneNode()
+{	
+	Node::Ptr clone = Node::create();
+
+	clone->_name = shared_from_this()->name() + "_clone";
+
+	for (auto child : children())
+		clone->addChild(child->cloneNode());
+
+	return clone;
+}
+
+void
+Node::listItems(Node::Ptr clonedRoot, std::map<Node::Ptr, Node::Ptr>& nodeMap, std::map<AbsCmpPtr, AbsCmpPtr>& components)
+{
+	for (auto component : _components)
+	{
+		components[component] = component->clone(CloneOption::DEEP);
+	}	
+
+	nodeMap[shared_from_this()] = clonedRoot;
+
+	for (int childId = 0; childId < children().size(); childId++)
+	{
+		auto child = children().at(childId);
+		auto clonedChild = clonedRoot->children().at(childId);
+
+		child->listItems(clonedChild, nodeMap, components);
+	}	
+}
+
+void 
+Node::rebindComponentsDependencies(std::map<AbsCmpPtr, AbsCmpPtr>& componentsMap, std::map<Node::Ptr, Node::Ptr> nodeMap, CloneOption option)
+{
+	for (auto itc = componentsMap.begin(); itc != componentsMap.end(); itc++)
+	{
+		auto comp = itc->first;
+		auto compClone = std::dynamic_pointer_cast<AbstractRebindableComponent>(itc->second);
+		
+		if (compClone != nullptr)
+		{
+			compClone->rebindDependencies(componentsMap, nodeMap, option);
+		}
+	}
 }
 
 Node::Ptr
@@ -163,9 +246,7 @@ Node::removeComponent(std::shared_ptr<AbstractComponent> component)
 	if (!component)
 		throw std::invalid_argument("component");
 
-	std::list<AbstractComponent::Ptr>::iterator it = std::find(
-		_components.begin(), _components.end(), component
-	);
+	auto it = std::find(_components.begin(), _components.end(), component);
 
 	if (it == _components.end())
 		throw std::invalid_argument("component");

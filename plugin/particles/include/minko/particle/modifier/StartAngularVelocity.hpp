@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,39 +25,39 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace particle
-	{
-		namespace modifier
-		{
-			class StartAngularVelocity: 
-                public IParticleInitializer, 
+    namespace particle
+    {
+        namespace modifier
+        {
+            class StartAngularVelocity:
+                public IParticleInitializer,
                 public Modifier1<float>
-			{
-			public:
-				typedef std::shared_ptr<StartAngularVelocity>	    Ptr;
+            {
+            public:
+                typedef std::shared_ptr<StartAngularVelocity>        Ptr;
 
             private:
-                typedef std::shared_ptr<sampler::Sampler<float>>   SamplerPtr; 
+                typedef std::shared_ptr<sampler::Sampler<float>>   SamplerPtr;
 
-			public:
-				static
-				Ptr
-				create(SamplerPtr w)
-				{
-					Ptr ptr = std::shared_ptr<StartAngularVelocity>(new StartAngularVelocity(w));
+            public:
+                static
+                Ptr
+                create(SamplerPtr w)
+                {
+                    Ptr ptr = std::shared_ptr<StartAngularVelocity>(new StartAngularVelocity(w));
 
-					return ptr;
-				};
+                    return ptr;
+                };
 
-				void
-				initialize(ParticleData&, float time) const;
+                void
+                initialize(ParticleData&, float time) const;
 
-				unsigned int
-				getNeededComponents() const;
-			
-			protected:
-				StartAngularVelocity(SamplerPtr);
-			};
-		}
-	}
+                unsigned int
+                getNeededComponents() const;
+
+            protected:
+                StartAngularVelocity(SamplerPtr);
+            };
+        }
+    }
 }

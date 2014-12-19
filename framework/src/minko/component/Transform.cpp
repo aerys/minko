@@ -42,6 +42,12 @@ Transform::Transform() :
     _modelToWorld = _data->getUnsafePointer<math::mat4>("modelToWorldMatrix");
 }
 
+AbstractComponent::Ptr
+Transform::clone(const CloneOption& option)
+{
+	return Transform::create(this->matrix());
+}
+
 void
 Transform::targetAdded(scene::Node::Ptr	target)
 {
@@ -80,6 +86,13 @@ Transform::targetRemoved(scene::Node::Ptr target)
 
 	_addedSlot = nullptr;
 	_removedSlot = nullptr;
+}
+
+AbstractComponent::Ptr
+Transform::RootTransform::clone(const CloneOption& option)
+{
+	Transform::RootTransform::Ptr origin = std::static_pointer_cast<Transform::RootTransform>(shared_from_this());
+	return Transform::RootTransform::create();
 }
 
 void
@@ -231,13 +244,20 @@ Transform::RootTransform::removedHandler(scene::Node::Ptr node,
 void
 Transform::RootTransform::updateTransformsList()
 {
+    if (_toAdd.empty() && _toRemove.empty())
+        return;
+
     for (const auto& toRemove : _toRemove)
         _nodeToId.erase(toRemove);
+
     _nodes.clear();
+
     for (const auto& nodeAndId : _nodeToId)
         _nodes.push_back(nodeAndId.first);
+
     for (const auto& node : _toAdd)
         _nodes.push_back(node);
+
     _toAdd.clear();
     _toRemove.clear();
 
@@ -374,12 +394,16 @@ Transform::RootTransform::updateTransforms()
                         "modelToWorldMatrix"
                     );
 
-			    auto numChildren = _numChildren[nodeId];
 			    auto firstChildId = _firstChildId[nodeId];
-			    auto lastChildId = firstChildId + numChildren;
 
-			    for (auto childId = firstChildId; childId < lastChildId; ++childId)
-				    _dirty[childId] = true;
+                if (firstChildId != -1)
+                {
+                    auto numChildren = _numChildren[nodeId];
+                    auto lastChildId = firstChildId + numChildren;
+
+                    for (auto childId = firstChildId; childId < lastChildId; ++childId)
+                        _dirty[childId] = true;
+                }
             }
 
 	       	_dirty[nodeId] = false;

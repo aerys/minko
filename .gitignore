@@ -27,3 +27,4 @@ remove.me
 dist
 packages
 .DS_Store
+bin/

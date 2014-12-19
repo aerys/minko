@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,38 +25,38 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace render
-	{
-		class ParticleIndexBuffer :
-			public IndexBuffer
-		{
-		public:
-			typedef std::shared_ptr<ParticleIndexBuffer>	Ptr;
-			
-		private:
-			std::vector<unsigned short> _padding;
+    namespace render
+    {
+        class ParticleIndexBuffer :
+            public IndexBuffer
+        {
+        public:
+            typedef std::shared_ptr<ParticleIndexBuffer>    Ptr;
 
-		public:
-			inline static
-			Ptr
-			create(std::shared_ptr<render::AbstractContext> context)
-			{
-				return std::shared_ptr<ParticleIndexBuffer>(new ParticleIndexBuffer(context));
-			}
-			
-			
-			// void
-			// update(unsigned int nParticles);
+        private:
+            std::vector<unsigned short> _padding;
 
-			void
-			resize(unsigned int nParticles);
+        public:
+            inline static
+            Ptr
+            create(std::shared_ptr<render::AbstractContext> context)
+            {
+                return std::shared_ptr<ParticleIndexBuffer>(new ParticleIndexBuffer(context));
+            }
 
-		private:
-			ParticleIndexBuffer(std::shared_ptr<render::AbstractContext>	context) :
-				IndexBuffer(context, std::vector<unsigned short> (6)),
-				_padding (6, 0)
-			{
-			}
-		};
-	}
+
+            // void
+            // update(unsigned int nParticles);
+
+            void
+            resize(unsigned int nParticles);
+
+        private:
+            ParticleIndexBuffer(std::shared_ptr<render::AbstractContext>    context) :
+                IndexBuffer(context, std::vector<unsigned short> (6)),
+                _padding (6, 0)
+            {
+            }
+        };
+    }
 };

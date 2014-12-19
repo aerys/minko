@@ -27,70 +27,70 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace async
-	{
-		class Worker :
-			public std::enable_shared_from_this<Worker>
-		{
-		public:
-			typedef std::shared_ptr<Worker>											Ptr;
-			typedef std::function<void (Worker::Ptr, const std::vector<char>&)>		EntryPoint;
+    namespace async
+    {
+        class Worker :
+            public std::enable_shared_from_this<Worker>
+        {
+        public:
+            typedef std::shared_ptr<Worker>                                            Ptr;
+            typedef std::function<void (Worker::Ptr, const std::vector<char>&)>        EntryPoint;
 
-			struct Message
-			{
-				std::string type;
-				std::vector<char> data;
+            struct Message
+            {
+                std::string type;
+                std::vector<char> data;
 
-				template<typename T>
-				Message&
-				set(T value)
-				{
-					data.resize(sizeof(T));
-					T* dest = reinterpret_cast<T*>(&*data.begin());
-					*dest = value;
-					return *this;
-				}
+                template<typename T>
+                Message&
+                set(T value)
+                {
+                    data.resize(sizeof(T));
+                    T* dest = reinterpret_cast<T*>(&*data.begin());
+                    *dest = value;
+                    return *this;
+                }
 
-				Message&
-				set(const std::vector<char>& value)
-				{
-					data = value;
-					return *this;
-				}
-			};
+                Message&
+                set(const std::vector<char>& value)
+                {
+                    data = value;
+                    return *this;
+                }
+            };
 
-		public:
-			// Starts the worker.
-			void
-			start(const std::vector<char>& input);
+        public:
+            // Starts the worker.
+            void
+            start(const std::vector<char>& input);
 
-			// Must be called. Register on this signal to get updates from the worker.
-			Signal<Ptr, Message>::Ptr
-			message();
+            // Must be called. Register on this signal to get updates from the worker.
+            Signal<Ptr, Message>::Ptr
+            message();
 
-			// Can be called from the worker code to send data back to the application.
-			void
-			post(Message message);
+            // Can be called from the worker code to send data back to the application.
+            void
+            post(Message message);
 
-		public: // For compilation purposes. Anything below must not be called manually.
+        public: // For compilation purposes. Anything below must not be called manually.
 
-			// Automatically overloaded when calling MINKO_DEFINE_WORKER.
-			virtual
-			void
-			run(const std::vector<char>& input) = 0;
+            // Automatically overloaded when calling MINKO_DEFINE_WORKER.
+            virtual
+            void
+            run(const std::vector<char>& input) = 0;
 
-			// Automated by the canvas.
-			void
-			poll();
+            // Automated by the canvas.
+            void
+            poll();
 
-			~Worker();
+            ~Worker();
 
-		protected:
-			Worker(const std::string& name);
+        protected:
+            Worker(const std::string& name);
 
-		private:
-			class WorkerImpl;
-			std::unique_ptr<WorkerImpl> _impl;
-		};
-	}
+        private:
+            class WorkerImpl;
+            std::unique_ptr<WorkerImpl> _impl;
+        };
+    }
 }

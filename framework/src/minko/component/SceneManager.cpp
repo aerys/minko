@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -24,14 +24,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/AbstractTexture.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/data/Store.hpp"
+#include "minko/AbstractCanvas.hpp"
 
 using namespace minko;
 using namespace minko::component;
 
-SceneManager::SceneManager(const std::shared_ptr<render::AbstractContext>& context) :
+SceneManager::SceneManager(const std::shared_ptr<AbstractCanvas>& canvas) :
+    _canvas(canvas),
     _frameId(0),
 	_time(0.f),
-	_assets(file::AssetLibrary::create(context)),
+    _assets(file::AssetLibrary::create(canvas->context())),
     _frameBegin(Signal<Ptr, float, float>::create()),
     _frameEnd(Signal<Ptr, float, float>::create()),
 	_cullBegin(Signal<Ptr>::create()),

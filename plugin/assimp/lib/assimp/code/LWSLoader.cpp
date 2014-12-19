@@ -323,7 +323,7 @@ void LWSImporter::SetupNodeName(aiNode* nd, LWS::NodeDesc& src)
 // ------------------------------------------------------------------------------------------------
 // Recursively build the scenegraph
 void LWSImporter::BuildGraph(aiNode* nd, LWS::NodeDesc& src, std::vector<AttachmentInfo>& attach,
-	Loader& batch,
+	BatchLoader& batch,
 	aiCamera**& camOut,
 	aiLight**& lightOut, 
 	std::vector<aiNodeAnim*>& animOut)
@@ -517,7 +517,7 @@ void LWSImporter::InternReadFile( const std::string& pFile, aiScene* pScene,
 	root.Parse(dummy);
 
 	// Construct a Batchimporter to read more files recursively
-	Loader batch(pIOHandler);
+	BatchLoader batch(pIOHandler);
 //	batch.SetBasePath(pFile);
 
 	// Construct an array to receive the flat output graph
@@ -572,7 +572,7 @@ void LWSImporter::InternReadFile( const std::string& pFile, aiScene* pScene,
 			const int layer = strtoul10(c,&c);
 
 			// setup the layer to be loaded
-			Loader::PropertyMap props;
+			BatchLoader::PropertyMap props;
 			SetGenericProperty(props.ints,AI_CONFIG_IMPORT_LWO_ONE_LAYER_ONLY,layer);
 
 			// add node to list

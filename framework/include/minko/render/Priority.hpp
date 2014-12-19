@@ -25,15 +25,15 @@ namespace minko
 {
     namespace render
     {
-		// The higher the priority, the earlier the drawcall is rendered.
-		class Priority
-		{
-		public:
-			static const float FIRST;
-			static const float BACKGROUND;
-			static const float OPAQUE;
-			static const float TRANSPARENT;
-			static const float LAST;
-		};
+        // The higher the priority, the earlier the drawcall is rendered.
+        class Priority
+        {
+        public:
+            static const float FIRST;
+            static const float BACKGROUND;
+            static const float OPAQUE;
+            static const float TRANSPARENT;
+            static const float LAST;
+        };
     }
 }

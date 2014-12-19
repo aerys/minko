@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -26,116 +26,116 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace component
-	{
-		namespace bullet
-		{
-			class ColliderData: public std::enable_shared_from_this<ColliderData>
-			{
-			public:
-				typedef std::shared_ptr<ColliderData> Ptr;
+    namespace component
+    {
+        namespace bullet
+        {
+            class ColliderData: public std::enable_shared_from_this<ColliderData>
+            {
+            public:
+                typedef std::shared_ptr<ColliderData> Ptr;
 
                 typedef std::shared_ptr<scene::Node>            NodePtr;
-				typedef std::shared_ptr<AbstractPhysicsShape>	AbsShapePtr;
-				typedef std::shared_ptr<math::Matrix4x4>		Matrix4x4Ptr;
-				typedef std::shared_ptr<math::Quaternion>		QuaternionPtr;
-				typedef std::shared_ptr<math::Vector3>			Vector3Ptr;
+                typedef std::shared_ptr<AbstractPhysicsShape>    AbsShapePtr;
+                typedef std::shared_ptr<math::Matrix4x4>        Matrix4x4Ptr;
+                typedef std::shared_ptr<math::Quaternion>        QuaternionPtr;
+                typedef std::shared_ptr<math::Vector3>            Vector3Ptr;
 
-			private:
-				const float										_mass;
-				AbsShapePtr										_shape;
-				Vector3Ptr										_inertia;
-				float											_restitution;       // from bullet: best simulation results using zero restitution. 
-				float											_friction;          // from bullet: best simulation results when friction is non-zero 
-				float											_rollingFriction;
+            private:
+                const float                                        _mass;
+                AbsShapePtr                                        _shape;
+                Vector3Ptr                                        _inertia;
+                float                                            _restitution;       // from bullet: best simulation results using zero restitution.
+                float                                            _friction;          // from bullet: best simulation results when friction is non-zero
+                float                                            _rollingFriction;
 
-			public:
-				inline static
-				Ptr
-				create(float		mass, 
-					   AbsShapePtr	shape, 
-					   float		restitution		= 0.0f,
-					   float		friction		= 0.5f,
-					   float		rollingFriction	= 0.0f,
-					   Vector3Ptr	inertia			= nullptr)
-				{
-					return std::shared_ptr<ColliderData>(new ColliderData(
-						mass, 
-						shape, 
-						restitution,
-						friction,
-						rollingFriction,
-						inertia
-					));
-				}
+            public:
+                inline static
+                Ptr
+                create(float        mass,
+                       AbsShapePtr    shape,
+                       float        restitution        = 0.0f,
+                       float        friction        = 0.5f,
+                       float        rollingFriction    = 0.0f,
+                       Vector3Ptr    inertia            = nullptr)
+                {
+                    return std::shared_ptr<ColliderData>(new ColliderData(
+                        mass,
+                        shape,
+                        restitution,
+                        friction,
+                        rollingFriction,
+                        inertia
+                    ));
+                }
 
-				inline
-				AbsShapePtr
-				shape() const
-				{
-					return _shape;
-				}
+                inline
+                AbsShapePtr
+                shape() const
+                {
+                    return _shape;
+                }
 
-				inline
-				float
-				mass() const
-				{
-					return _mass;
-				}
+                inline
+                float
+                mass() const
+                {
+                    return _mass;
+                }
 
-				inline
-				bool
-				isStatic() const
-				{
-					return _mass < 1e-6f;
-				}
+                inline
+                bool
+                isStatic() const
+                {
+                    return _mass < 1e-6f;
+                }
 
-				inline
-				Vector3Ptr
-				inertia() const
-				{
-					return _inertia;
-				}
-				
-				inline
-				float
-				restitution() const
-				{
-					return _restitution;
-				}
+                inline
+                Vector3Ptr
+                inertia() const
+                {
+                    return _inertia;
+                }
 
-				inline
-				float
-				friction() const 
-				{
-					return _friction;
-				}
+                inline
+                float
+                restitution() const
+                {
+                    return _restitution;
+                }
 
-				inline
-				float 
-				rollingFriction() const
-				{
-					return _rollingFriction;
-				}
+                inline
+                float
+                friction() const
+                {
+                    return _friction;
+                }
 
-			private:
-				inline
-				ColliderData(float			mass,
-							 AbsShapePtr	shape,
-							 float			restitution,
-							 float			friction,
-							 float			rollingFriction,
-						     Vector3Ptr		inertia):
-					_mass(mass),
-					_shape(shape),
-					_inertia(inertia),
-					_restitution(restitution),
-					_friction(friction),
-					_rollingFriction(rollingFriction)
-				{
-				
-				}
-			};
-		}
-	}
+                inline
+                float
+                rollingFriction() const
+                {
+                    return _rollingFriction;
+                }
+
+            private:
+                inline
+                ColliderData(float            mass,
+                             AbsShapePtr    shape,
+                             float            restitution,
+                             float            friction,
+                             float            rollingFriction,
+                             Vector3Ptr        inertia):
+                    _mass(mass),
+                    _shape(shape),
+                    _inertia(inertia),
+                    _restitution(restitution),
+                    _friction(friction),
+                    _rollingFriction(rollingFriction)
+                {
+
+                }
+            };
+        }
+    }
 }

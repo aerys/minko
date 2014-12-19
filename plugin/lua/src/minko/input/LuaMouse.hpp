@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -27,32 +27,32 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace input
-	{
-		class LuaMouse :
-			public LuaWrapper
-		{
-		public:
-			static
-			void
-			bind(LuaGlue& state)
-			{
-			    auto& input_mouse = state.Class<input::Mouse>("Mouse")
-			        .property("x",                  &input::Mouse::x)
-			        .property("y",                  &input::Mouse::y)
-			        .property("leftButtonIsDown",   &input::Mouse::leftButtonIsDown)
-			        .property("rightButtonIsDown",  &input::Mouse::rightButtonIsDown);
+    namespace input
+    {
+        class LuaMouse :
+            public LuaWrapper
+        {
+        public:
+            static
+            void
+            bind(LuaGlue& state)
+            {
+                auto& input_mouse = state.Class<input::Mouse>("Mouse")
+                    .property("x",                  &input::Mouse::x)
+                    .property("y",                  &input::Mouse::y)
+                    .property("leftButtonIsDown",   &input::Mouse::leftButtonIsDown)
+                    .property("rightButtonIsDown",  &input::Mouse::rightButtonIsDown);
 
-			    MINKO_LUAGLUE_BIND_SIGNAL(state, input::Mouse::Ptr);
-			    MINKO_LUAGLUE_BIND_SIGNAL(state, input::Mouse::Ptr, int, int);
+                MINKO_LUAGLUE_BIND_SIGNAL(state, input::Mouse::Ptr);
+                MINKO_LUAGLUE_BIND_SIGNAL(state, input::Mouse::Ptr, int, int);
 
-			    input_mouse
-			        .property("leftButtonDown",     &input::Mouse::leftButtonDown)
+                input_mouse
+                    .property("leftButtonDown",     &input::Mouse::leftButtonDown)
                     .property("leftButtonUp",       &input::Mouse::leftButtonUp)
-			        .property("rightButtonDown",    &input::Mouse::rightButtonDown)
-			        .property("move",               &input::Mouse::move)
-			        .property("wheel",				&input::Mouse::wheel);
-			}
-		};
-	}
+                    .property("rightButtonDown",    &input::Mouse::rightButtonDown)
+                    .property("move",               &input::Mouse::move)
+                    .property("wheel",                &input::Mouse::wheel);
+            }
+        };
+    }
 }

@@ -6,47 +6,64 @@ end
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
-	removeplatforms { "html5", "ios", "android" }
+	removeplatforms { "ios", "android" }
 
 	files {
-		"**.hpp",
-		"**.h",
-		"**.cpp",
-		"**.c",
+		"src/**.hpp",
+		"src/**.cpp",
 		"include/**.hpp",
-		"lib/LibOVR/Src/**"
+        "asset/**"
 	}
 	includedirs {
 		"include",
 		"src",
-		"lib/LibOVR/Include",
-		"lib/LibOVR/Src"
+		"lib/opengl/include",
 	}
 
-	excludes { "lib/LibOVR/Include/OVRVersion.h" }
-
 	configuration { "windows32 or windows64" }
-		excludes {
-			"lib/LibOVR/Src/OVR_Linux_*",
-			"lib/LibOVR/Src/OVR_OSX_*",
-			"lib/LibOVR/Src/Kernel/OVR_ThreadsPthread.cpp"
+		files {
+			"lib/libovr/windows/**.cpp"
 		}
-		defines { "UNICODE", "_UNICODE" } -- should also undefine _MCBS
+		includedirs {
+			"lib/libovr/windows/src",
+			"lib/libovr/windows/include",
+		}
+		excludes {
+			"lib/libovr/windows/src/CAPI/D3D1X/CAPI_D3D1X_Util.*",
+			"lib/libovr/windows/src/CAPI/D3D1X/CAPI_D3D1X_DistortionRenderer.*"
+		}
+		defines {
+			"UNICODE",
+			"_UNICODE",
+			"WIN32"
+		}
 
 	configuration { "linux32 or linux64" }
-		includedirs {
-			"lib/lin/Xinerama/include",
-			"lib/lin/libudev/include"
+		files {
+			"lib/libovr/linux/**.cpp"
 		}
-		excludes {
-			"lib/LibOVR/Src/OVR_Win32_*",
-			"lib/LibOVR/Src/OVR_OSX_*",
-			"lib/LibOVR/Src/Kernel/OVR_ThreadsWinAPI.cpp"
+		includedirs {
+			"lib/libovr/linux/src",
+			"lib/libovr/linux/include"
 		}
 
 	configuration { "osx64" }
+		files {
+			"lib/libovr/osx/**.cpp"
+		}
+		includedirs {
+			"lib/libovr/osx/src",
+			"lib/libovr/osx/include",
+		}
+
+	configuration { "not html5" }
 		excludes {
-			"lib/LibOVR/Src/OVR_Win32_*",
-			"lib/LibOVR/Src/OVR_Linux_*",
-			"lib/LibOVR/Src/Kernel/OVR_ThreadsWinAPI.cpp"
+			"include/minko/oculus/WebVROculus.hpp",
+			"src/minko/oculus/WebVROculus.cpp",
+		}
+
+	configuration { "html5" }
+		excludes {
+			"include/minko/oculus/NativeOculus.hpp",
+			"src/minko/oculus/NativeOculus.cpp",
 		}

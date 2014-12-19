@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -24,19 +24,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace particle
-	{
-		namespace tools
-		{
-			inline
-			float
-			rand01()
-			{
-				static std::default_random_engine				generator((unsigned int)std::chrono::system_clock::now().time_since_epoch().count());
-				static std::uniform_real_distribution<float>	distribution (0.0f, 1.0f);
-			
-				return distribution(generator);
-			}
-		}
-	}
+    namespace particle
+    {
+        namespace tools
+        {
+            inline
+            float
+            rand01()
+            {
+                static std::default_random_engine                generator((unsigned int)std::chrono::system_clock::now().time_since_epoch().count());
+                static std::uniform_real_distribution<float>    distribution (0.0f, 1.0f);
+
+                return distribution(generator);
+            }
+        }
+    }
 }

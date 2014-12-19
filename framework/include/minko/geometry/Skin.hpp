@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -58,6 +58,9 @@ namespace minko
 				return std::shared_ptr<Skin>(new Skin(numBones, duration, numFrames));
 			}
 
+			Ptr
+			clone();
+
 			inline
 			unsigned int
 			numBones() const
@@ -77,6 +80,13 @@ namespace minko
 			bones()
 			{
 				return _bones;
+			}
+
+			inline
+			void
+			bones(std::vector<BonePtr> bones)
+			{
+				_bones = bones;
 			}
 
 			inline
@@ -108,6 +118,20 @@ namespace minko
 			numFrames() const
 			{
 				return _boneMatricesPerFrame.size();
+			}
+
+			inline
+			void
+			setBoneMatricesPerFrame(std::vector<std::vector<float>> boneMatricesPerFrame)
+			{
+				_boneMatricesPerFrame = boneMatricesPerFrame;
+			}
+
+			inline
+			std::vector<std::vector<float>>
+			getBoneMatricesPerFrame()
+			{
+				return _boneMatricesPerFrame;
 			}
 
 			inline
@@ -158,6 +182,8 @@ namespace minko
 
 		private:
 			Skin(unsigned int numBones, unsigned int duration, unsigned int numFrames);
+
+			Skin(const Skin& skin);
 
 			unsigned short
 			lastVertexId() const;

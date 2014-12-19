@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -32,20 +32,20 @@ IndexBuffer::upload(uint	offset,
 {
 	if (_data.empty())
 		return;
-	
+
 	assert(count <= (int)_data.size());
 
 	if (_id == -1)
     	_id = _context->createIndexBuffer(_data.size());
 
 	const auto oldNumIndices	= _numIndices;
-	_numIndices					= count >= 0 ? count : _data.size();
+	_numIndices					= count > 0 ? count : _data.size();
 
 	_context->uploaderIndexBufferData(
 		_id,
 		offset,
-		_numIndices,
-		&_data[0]
+        _numIndices,
+		&_data[offset]
 	);
 
 	if (_numIndices != oldNumIndices)

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -55,9 +55,10 @@ namespace minko
                 ));;
 			}
 	
-			~PointLight()
-		    {
-		    }
+            ~PointLight() = default;
+
+			AbstractComponent::Ptr
+			clone(const CloneOption& option);
 
 			bool
 			attenuationEnabled() const;
@@ -71,6 +72,13 @@ namespace minko
 			Ptr
 			attenuationCoefficients(const math::vec3& coef);
 
+            inline
+            math::vec3
+            position() const
+            {
+                return data()->get<math::vec3>("position");
+            }
+
 		protected:
 			void
             updateModelToWorldMatrix(const math::mat4& modelToWorld);
@@ -81,6 +89,8 @@ namespace minko
 					   float attenuationConstant,
 					   float attenuationLinear,
 					   float attenuationQuadratic);
+
+			PointLight(const PointLight& pointLight, const CloneOption& option);
 		};
 	}
 }

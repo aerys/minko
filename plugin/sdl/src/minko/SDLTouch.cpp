@@ -24,13 +24,24 @@ using namespace minko;
 
 const float SDLTouch::SWIPE_PRECISION = 0.05f;
 
+const float SDLTouch::TAP_MOVE_THRESHOLD = 10.f;
+const float SDLTouch::TAP_DELAY_THRESHOLD = 300.f;
+const float SDLTouch::DOUBLE_TAP_DELAY_THRESHOLD = 400.f;
+const float SDLTouch::LONG_HOLD_DELAY_THRESHOLD = 1000.f;
+
 SDLTouch::SDLTouch(std::shared_ptr<Canvas> canvas) :
-    input::Touch(canvas)
+    input::Touch(canvas),
+    _lastTouchDownTime(-1.f),
+    _lastTapTime(-1.f),
+    _lastTouchDownX(0.f),
+    _lastTouchDownY(0.f),
+    _lastTapX(0.f),
+    _lastTapY(0.f)
 {
 }
 
 std::shared_ptr<SDLTouch>
 SDLTouch::create(std::shared_ptr<Canvas> canvas)
 {
-	return std::shared_ptr<SDLTouch>(new SDLTouch(canvas));
+    return std::shared_ptr<SDLTouch>(new SDLTouch(canvas));
 }

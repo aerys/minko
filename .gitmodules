@@ -1,3 +1,0 @@
-[submodule "plugin/html-overlay"]
-	path = plugin/html-overlay
-	url = git@aerys.in:aerys/minko-plugin-html-overlay

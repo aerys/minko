@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -27,28 +27,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace input
-	{
-		class LuaJoystick :
-			public LuaWrapper
-		{
-		public:
-			static
-			void
-			bind(LuaGlue& state)
-			{
-				auto& inputJoystick = state.Class<Joystick>("Joystick");
+    namespace input
+    {
+        class LuaJoystick :
+            public LuaWrapper
+        {
+        public:
+            static
+            void
+            bind(LuaGlue& state)
+            {
+                auto& inputJoystick = state.Class<Joystick>("Joystick");
 
-				MINKO_LUAGLUE_BIND_SIGNAL(state, Joystick::Ptr, int, int, int);
-				MINKO_LUAGLUE_BIND_SIGNAL(state, Joystick::Ptr, int, int);
+                MINKO_LUAGLUE_BIND_SIGNAL(state, Joystick::Ptr, int, int, int);
+                MINKO_LUAGLUE_BIND_SIGNAL(state, Joystick::Ptr, int, int);
 
-				inputJoystick
-					.property("joystickId", 		&Joystick::joystickId)
-					.property("joystickAxisMotion", &Joystick::joystickAxisMotion)
-					.property("joystickHatMotion",	&Joystick::joystickHatMotion)
-					.property("joystickButtonDown", &Joystick::joystickButtonDown)
-					.property("joystickButtonUp",	&Joystick::joystickButtonUp);
-			}
-		};
-	}
+                inputJoystick
+                    .property("joystickId",         &Joystick::joystickId)
+                    .property("joystickAxisMotion", &Joystick::joystickAxisMotion)
+                    .property("joystickHatMotion",    &Joystick::joystickHatMotion)
+                    .property("joystickButtonDown", &Joystick::joystickButtonDown)
+                    .property("joystickButtonUp",    &Joystick::joystickButtonUp);
+            }
+        };
+    }
 }

@@ -33,14 +33,13 @@ minko.project.library = function(name)
 			"/wd4503"				-- remove warnings about too long type names
 		}
 
-	configuration { "html5" }
-		if EMSCRIPTEN then
-			includedirs { EMSCRIPTEN .. "/system/include" }
-		end
-
 	configuration { "html5", "debug" }
 		buildoptions {
-			"-g4"
+			"-O2 --llvm-opts 0 --js-opts 0 -g4" -- for source maps
+		}
+	configuration { "html5", "release" }
+		buildoptions {
+			"-O3 --llvm-lto 1"
 		}
 
 	configuration { }
@@ -52,9 +51,9 @@ minko.project.application = function(name)
 
 	kind "ConsoleApp"
 
-	--defines {
-	--	"MINKO_APPLICATION_NAME=" .. name
-	--}
+	-- defines {
+	-- 	"MINKO_APPLICATION_NAME=" .. name
+	-- }
 
 	configuration { "windows32" }
 		libdirs {
@@ -164,9 +163,9 @@ minko.project.application = function(name)
 			"OpenGL.framework",
 			"IOKit.framework"
 		}
-		linkoptions {
-			"-Wl,-rpath,."
-		}
+		-- linkoptions {
+		-- 	"-Wl,-rpath,."
+		-- }
 		prelinkcommands {
 			minko.action.copy(minko.sdk.path("/framework/asset")),
 		}
@@ -198,16 +197,22 @@ minko.project.application = function(name)
 			minko.action.copy("asset"),
 		}
 
+	if premake.tools.gcc.tools.emscripten then
 	configuration { "html5", "release" }
 		local emcc = premake.tools.gcc.tools.emscripten.cc
-		local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O3 --llvm-lto 1'
+		local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O3 ' .. buildoptions()[1]
+
+		linkoptions {
+			"--llvm-lto 1"
+		}
 
 		-- enable the closure compiler
 		cmd = cmd .. ' --closure 1 -s CLOSURE_ANNOTATIONS=1'
 		-- treat undefined symbol warnings as errors
 		cmd = cmd .. ' -s ERROR_ON_UNDEFINED_SYMBOLS=1'
 		-- disable exception catching
-		--cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=0'
+		--cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=1'
+
 		--[[
 			optimize (very) long functions by breaking them into smaller ones
 
@@ -225,13 +230,11 @@ minko.project.application = function(name)
 		else
 			cmd = cmd .. ' --shell-file "' .. minko.sdk.path('/skeleton/template.html') .. '"'
 		end
-		-- includ the app's 'asset' directory into the file system
+		-- include the app's 'asset' directory into the file system
 		cmd = cmd .. ' --preload-file ${TARGETDIR}/asset'
 
 		postbuildcommands {
-			cmd .. ' || ' .. minko.action.fail(),
-			-- fix the "invalid increment operand" syntax error caused by ++0 in the output file
-			--'python "' .. minko.sdk.path('/module/emscripten/fix_invalid_increment_operand.py') .. '"  ${TARGETDIR}/' .. name .. '.js'
+			cmd .. ' || ' .. minko.action.fail()
 		}
 
 		libdirs {
@@ -240,27 +243,35 @@ minko.project.application = function(name)
 
 	configuration { "html5", "debug" }
 		local emcc = premake.tools.gcc.tools.emscripten.cc
-		local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O2 --js-opts 0 -g4 -s ASM_JS=0 -s DISABLE_EXCEPTION_CATCHING=0 -s ERROR_ON_UNDEFINED_SYMBOLS=1 --memory-init-file 1 --preload-file ${TARGETDIR}/asset'
+		local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html ' .. buildoptions()[1]
 
+		linkoptions {
+			"--llvm-lto 0"
+		}
+
+		-- treat undefined symbol warnings as errors
+		-- cmd = cmd .. ' -s ERROR_ON_UNDEFINED_SYMBOLS=1'
+		-- disable exception catching
+		cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=0'
+		-- use a separate *.mem file to initialize the app memory
+		cmd = cmd .. ' --memory-init-file 1'
+		-- set the app (or the sdk) template.html
 		if os.isfile('template.html') then
 			cmd = cmd .. ' --shell-file "${CURDIR}/template.html"'
 		else
 			cmd = cmd .. ' --shell-file "' .. minko.sdk.path('/skeleton/template.html') .. '"'
 		end
-
-		buildoptions {
-			"-g4" -- allow source maps in final .js
-		}
+		-- include the app's 'asset' directory into the file system
+		cmd = cmd .. ' --preload-file ${TARGETDIR}/asset'
 
 		postbuildcommands {
-			cmd .. ' || ' .. minko.action.fail(),
-			-- fix the "invalid increment operand" syntax error caused by ++0 in the output file
-			--'python "' .. minko.sdk.path('/module/emscripten/fix_invalid_increment_operand.py') .. '"  ${TARGETDIR}/' .. name .. '.js'
+			cmd .. ' || ' .. minko.action.fail()
 		}
 
 		libdirs {
 			minko.sdk.path("/framework/bin/html5/debug")
 		}
+	end
 
 	configuration { "ios" }
 
@@ -283,6 +294,16 @@ minko.project.application = function(name)
 		prelinkcommands {
 			minko.action.copy(minko.sdk.path("/framework/asset")),
 			minko.action.copy("asset")
+		}
+
+	configuration { "ios", "debug" }
+		libdirs {
+			minko.sdk.path("/framework/bin/ios/debug")
+		}
+
+	configuration { "ios", "release" }
+		libdirs {
+			minko.sdk.path("/framework/bin/ios/release")
 		}
 
 	configuration { "android" }
@@ -309,7 +330,11 @@ minko.project.application = function(name)
 			"-shared",
 			"-pthread",
 			"-Wl,--no-undefined",
-			"-Wl,--undefined=Java_org_libsdl_app_SDLActivity_nativeInit"
+			"-Wl,--undefined=Java_org_libsdl_app_SDLActivity_nativeInit",
+			"-Wl,--undefined=Java_minko_plugin_htmloverlay_InitWebViewTask_webViewInitialized",
+			"-Wl,--undefined=Java_minko_plugin_htmloverlay_MinkoWebViewClient_webViewPageLoaded",
+			"-Wl,--undefined=Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnMessage",
+			"-Wl,--undefined=Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent"
 		}
 
 		prelinkcommands {
@@ -317,19 +342,27 @@ minko.project.application = function(name)
 			minko.action.copy("asset")
 		}
 
-		-- activity "MinkoTest"
-		-- baseactivity "Activity"
-		-- packagename "app"
-		-- basepackagename "io.minko"
-
-	configuration { "ios", "debug" }
+	configuration { "android", "debug" }
 		libdirs {
-			minko.sdk.path("/framework/bin/ios/debug")
+			minko.sdk.path("/framework/bin/android/debug")
 		}
 
-	configuration { "ios", "release" }
+	configuration { "android", "release" }
 		libdirs {
-			minko.sdk.path("/framework/bin/ios/release")
+			minko.sdk.path("/framework/bin/android/release")
+		}
+
+    configuration { "with-offscreen" }
+            minko.plugin.enable { "offscreen" }
+
+    configuration { "android", "debug" }
+		libdirs {
+			minko.sdk.path("/framework/bin/android/debug")
+		}
+
+	configuration { "android", "release" }
+    	libdirs {
+			minko.sdk.path("/framework/bin/android/release")
 		}
 
 	configuration { }
@@ -344,12 +377,14 @@ minko.project.worker = function(name)
 
 	removelinks { "minko-framework" }
 
+	if premake.tools.gcc.tools.emscripten then
 	configuration { "html5" }
 		local emcc = premake.tools.gcc.tools.emscripten.cc
 
 		postbuildcommands {
-			emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.js -O2 --closure 1 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 -s EXPORTED_FUNCTIONS="[\'minkoWorkerEntryPoint\']" || ' .. minko.action.fail()
+			emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.js -O3 --closure 1 -s DISABLE_EXCEPTION_CATCHING=0 -s TOTAL_MEMORY=268435456 -s EXPORTED_FUNCTIONS="[\'minkoWorkerEntryPoint\']" || ' .. minko.action.fail()
 		}
+	end
 
 	configuration { }
 end

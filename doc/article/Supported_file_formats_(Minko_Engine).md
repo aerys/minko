@@ -1,0 +1,84 @@
+3D file formats
+---------------
+
+-   3DS
+-   BLEND (Blender 3D)
+-   DAE/Collada
+-   FBX
+-   IFC-STEP
+-   ASE
+-   DXF
+-   HMP
+-   MD2
+-   MD3
+-   MD5
+-   MDC
+-   MDL
+-   NFF
+-   PLY
+-   STL
+-   X
+-   OBJ
+-   SMD
+-   LWO
+-   LXO
+-   LWS
+-   TER
+-   AC3D
+-   MS3D
+-   COB
+-   Q3BSP
+-   XGL
+-   CSM
+-   BVH
+-   B3D
+-   NDO
+-   Ogre XML
+-   Q3D
+
+2D file formats
+---------------
+
+-   Windows Bitmap - .bmp
+-   Dr. Halo - .cut
+-   Multi-PCX - .dcx
+-   Dicom - .dicom, .dcm
+-   DirectDraw Surface - .dds
+-   OpenEXR - .exr
+-   Flexible Image Transport System - .fits, .fit
+-   Heavy Metal: FAKK 2 - .ftx
+-   Radiance High Dynamic - .hdr
+-   Macintosh icon - .icns
+-   Windows icon/cursor - .ico, .cur
+-   Interchange File Format - .iff
+-   Infinity Ward Image - .iwi
+-   Graphics Interchange Format - .gif
+-   Jpeg - .jpg, .jpe, .jpeg
+-   Jpeg 2000 - .jp2
+-   Interlaced Bitmap - .lbm
+-   Homeworld texture - .lif
+-   Half-Life Model - .mdl
+-   MPEG-1 Audio Layer 3 - .mp3
+-   Palette - .pal
+-   Kodak PhotoCD - .pcd
+-   ZSoft PCX - .pcx
+-   Softimage PIC - .pic
+-   Portable Network Graphics - .png
+-   Portable Anymap - .pbm, .pgm, .pnm, .pnm
+-   Alias | Wavefront - .pix
+-   Adobe PhotoShop - .psd
+-   PaintShop Pro - .psp
+-   Pixar - .pxr
+-   Raw data - .raw
+-   Homeworld 2 Texture - .rot
+-   Silicon Graphics - .sgi, .bw, .rgb, .rgba
+-   Creative Assembly Texture - .texture
+-   Truevision Targa - .tga
+-   Tagged Image File Format - .tif
+-   Gamecube Texture - .tpl
+-   Unreal Texture - .utx
+-   Quake 2 Texture - .wal
+-   Valve Texture Format - .vtf
+-   HD Photo - .wdp, .hdp
+-   X Pixel Map - .xpm
+-   Doom graphics

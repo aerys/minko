@@ -53,6 +53,7 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 	_beforePresent(Signal<Ptr>::create()),
 	//_surfaceTechniqueChangedSlot(),
 	_effect(effect),
+    _clearBeforeRender(true),
 	_priority(priority),
 	/*_targetDataFilters(),
 	_rendererDataFilters(),
@@ -68,9 +69,47 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 		renderTarget->upload();
 		_renderTarget = renderTarget;
 	}
-
-	//addFilter(_lightMaskFilter, data::Binding::Source::ROOT);
 }
+
+// TODO #Clone
+/*
+Renderer::Renderer(const Renderer& renderer, const CloneOption& option) :
+	_backgroundColor(renderer._backgroundColor),
+	_viewportBox(),
+	_scissorBox(),
+	_enabled(renderer._enabled),
+	_renderingBegin(Signal<Ptr>::create()),
+	_renderingEnd(Signal<Ptr>::create()),
+	_beforePresent(Signal<Ptr>::create()),
+	_surfaceDrawCalls(),
+	_surfaceTechniqueChangedSlot(),
+	_effect(nullptr),
+    _clearBeforeRender(true),
+	_priority(renderer._priority),
+	_targetDataFilters(),
+	_rendererDataFilters(),
+	_rootDataFilters(),
+	_targetDataFilterChangedSlots(),
+	_rendererDataFilterChangedSlots(),
+	_rootDataFilterChangedSlots(),
+	_lightMaskFilter(data::LightMaskFilter::create()),
+	_filterChanged(Signal<Ptr, data::AbstractFilter::Ptr, data::BindingSource, SurfacePtr>::create())
+{
+	if (renderer._renderTarget)
+	{
+		renderer._renderTarget->upload();
+		_renderTarget = renderer._renderTarget;
+	}
+}
+
+AbstractComponent::Ptr
+Renderer::clone(const CloneOption& option)
+{
+	auto renderer = std::shared_ptr<Renderer>(new Renderer(*this, option));
+
+	return renderer;
+}
+*/
 
 void
 Renderer::targetAdded(std::shared_ptr<Node> target)

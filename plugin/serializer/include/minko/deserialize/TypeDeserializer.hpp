@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,70 +23,75 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace deserialize
-	{
-		class TypeDeserializer
-		{
-		private:
-			
-			template <typename T, typename ST = T>
-			static void
-			read(std::stringstream& stream, T& value)
-			{
-				stream.read(reinterpret_cast<char*>(&value), sizeof (ST));
-			}
+    namespace deserialize
+    {
+        class TypeDeserializer
+        {
+        private:
 
-		public :
+            template <typename T, typename ST = T>
+            static void
+            read(std::stringstream& stream, T& value)
+            {
+                stream.read(reinterpret_cast<char*>(&value), sizeof (ST));
+            }
 
-			template <typename T, typename ST = T>
-			static
-			std::vector<T>
-			deserializeVector(std::string& serializedValue)
-			{
-				std::stringstream	stream;
-				std::vector<T>		result(serializedValue.size() / sizeof(ST));
-				uint				i = 0;
+        public:
+            static
+            float
+            deserializeFloat(std::string& serializedValue)
+            {
+                return deserializeVector<float>(serializedValue)[0];
+            }
 
-				stream << serializedValue;
+            template <typename T, typename ST = T>
+            static
+            std::vector<T>
+            deserializeVector(std::string& serializedValue)
+            {
+                std::stringstream   stream;
+                std::vector<T>      result(serializedValue.size() / sizeof(ST));
+                uint                i = 0;
 
-				while (i < result.size())
-					read<T, ST>(stream, result[i++]);
+                stream << serializedValue;
 
-				return result;
-			}
+                while (i < result.size())
+                    read<T, ST>(stream, result[i++]);
 
-			static
-			Any
-			deserializeVector4(std::tuple<uint, std::string&>& serializedVector);
-		
-			static
-			Any
-			deserializeVector3(std::tuple<uint, std::string&>& serializedVector);
-			
-			static
-			Any
-			deserializeVector2(std::tuple<uint, std::string&>& serializedVector);
+                return result;
+            }
 
-			static
-			Any
-			deserializeMatrix4x4(std::tuple<uint, std::string&>& serializedMatrix);
+            static
+            Any
+            deserializeVector4(std::tuple<uint, std::string&>& serializedVector);
 
-			static
-			Any
-			deserializeBlending(std::tuple<uint, std::string&>& seriliazedBlending);
+            static
+            Any
+            deserializeVector3(std::tuple<uint, std::string&>& serializedVector);
 
-			static
-			Any
-			deserializeTriangleCulling(std::tuple<uint, std::string&>& seriliazedTriangleCulling);
+            static
+            Any
+            deserializeVector2(std::tuple<uint, std::string&>& serializedVector);
 
-			static
-			Any
-			deserializeTextureId(std::tuple<uint, std::string&>& seriliazedTextureId);
+            static
+            Any
+            deserializeMatrix4x4(std::tuple<uint, std::string&>& serializedMatrix);
 
-			static
-			Any
-			deserializeEnvironmentMap2dType(std::tuple<uint, std::string&>&);
+            static
+            Any
+            deserializeBlending(std::tuple<uint, std::string&>& seriliazedBlending);
 
-		};
-	}
+            static
+            Any
+            deserializeTriangleCulling(std::tuple<uint, std::string&>& seriliazedTriangleCulling);
+
+            static
+            Any
+            deserializeTextureId(std::tuple<uint, std::string&>& seriliazedTextureId);
+
+            static
+            Any
+            deserializeEnvironmentMap2dType(std::tuple<uint, std::string&>&);
+        };
+    }
 }

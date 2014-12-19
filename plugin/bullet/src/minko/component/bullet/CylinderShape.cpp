@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -30,49 +30,49 @@ using namespace minko::geometry;
 LineGeometry::Ptr
 bullet::CylinderShape::getGeometry(render::AbstractContext::Ptr context) const
 {
-	static const unsigned int	numSteps	= 36;
-	static const float			angStep		= 2.0f * float(M_PI) / float(numSteps); 
-	static const float			cAngStep	= cosf(angStep);
-	static const float			sAngStep	= sinf(angStep);
-	
-	const auto halfExtentX = _halfExtentX * localScaling()->x();
-	const auto halfExtentY = _halfExtentY * localScaling()->y();
-	const auto halfExtentZ = _halfExtentZ * localScaling()->z();
+    static const unsigned int    numSteps    = 36;
+    static const float            angStep        = 2.0f * float(M_PI) / float(numSteps);
+    static const float            cAngStep    = cosf(angStep);
+    static const float            sAngStep    = sinf(angStep);
 
-	auto lines = LineGeometry::create(context)
+    const auto halfExtentX = _halfExtentX * localScaling()->x();
+    const auto halfExtentY = _halfExtentY * localScaling()->y();
+    const auto halfExtentZ = _halfExtentZ * localScaling()->z();
 
-		->moveTo(-halfExtentX, -halfExtentY, 0.0f)
-		->lineTo(-halfExtentX,  halfExtentY, 0.0f)
-	
-		->moveTo(halfExtentX, -halfExtentY, 0.0f)
-		->lineTo(halfExtentX,  halfExtentY, 0.0f)
+    auto lines = LineGeometry::create(context)
 
-		->moveTo(0.0f, -halfExtentY, -halfExtentZ)
-		->lineTo(0.0f,  halfExtentY, -halfExtentZ)
+        ->moveTo(-halfExtentX, -halfExtentY, 0.0f)
+        ->lineTo(-halfExtentX,  halfExtentY, 0.0f)
 
-		->moveTo(0.0f, -halfExtentY, halfExtentZ)
-		->lineTo(0.0f,  halfExtentY, halfExtentZ);
+        ->moveTo(halfExtentX, -halfExtentY, 0.0f)
+        ->lineTo(halfExtentX,  halfExtentY, 0.0f)
 
-	for (unsigned int j = 0; j < 2; ++j)
-	{
-		const float y = (j & 0x1) == 0 ? -halfExtentY : halfExtentY;
+        ->moveTo(0.0f, -halfExtentY, -halfExtentZ)
+        ->lineTo(0.0f,  halfExtentY, -halfExtentZ)
 
-		float cAng = 1.0f;
-		float sAng = 0.0f;
+        ->moveTo(0.0f, -halfExtentY, halfExtentZ)
+        ->lineTo(0.0f,  halfExtentY, halfExtentZ);
 
-		lines->moveTo(halfExtentX * cAng, y, halfExtentZ * sAng);
+    for (unsigned int j = 0; j < 2; ++j)
+    {
+        const float y = (j & 0x1) == 0 ? -halfExtentY : halfExtentY;
 
-		for (unsigned int i = 0; i < numSteps; ++i)
-		{
-			float c	= cAng * cAngStep - sAng * sAngStep;
-			float s	= cAng * sAngStep + sAng * cAngStep;
-			
-			cAng	= c;
-			sAng	= s;
-	
-			lines->lineTo(halfExtentX * cAng, y, halfExtentZ * sAng);
-		}
-	}
+        float cAng = 1.0f;
+        float sAng = 0.0f;
 
-	return lines;
+        lines->moveTo(halfExtentX * cAng, y, halfExtentZ * sAng);
+
+        for (unsigned int i = 0; i < numSteps; ++i)
+        {
+            float c    = cAng * cAngStep - sAng * sAngStep;
+            float s    = cAng * sAngStep + sAng * cAngStep;
+
+            cAng    = c;
+            sAng    = s;
+
+            lines->lineTo(halfExtentX * cAng, y, halfExtentZ * sAng);
+        }
+    }
+
+    return lines;
 }

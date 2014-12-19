@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace render
+    namespace render
     {
         class Blending
         {
@@ -54,10 +54,9 @@ namespace minko
 
             enum class Mode
             {
-                OPAQUE      = (uint)Source::ONE | (uint)Destination::ZERO,
+                DEFAULT     = (uint)Source::ONE | (uint)Destination::ZERO,
                 ALPHA       = (uint)Source::SRC_ALPHA | (uint)Destination::ONE_MINUS_SRC_ALPHA,
-                ADDITIVE    = (uint)Source::ONE | (uint)Destination::ONE,
-                DEFAULT     = OPAQUE
+                ADDITIVE    = (uint)Source::ONE | (uint)Destination::ONE
             };
         };
 

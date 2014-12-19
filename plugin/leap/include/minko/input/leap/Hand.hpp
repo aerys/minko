@@ -41,51 +41,51 @@ namespace Leap
 
 namespace minko
 {
-	namespace input
-	{
-		namespace leap
-		{
-			class Hand : public std::enable_shared_from_this<Hand>
-			{
-				friend class Frame; // Only a Frame can instanciate a Hand
+    namespace input
+    {
+        namespace leap
+        {
+            class Hand : public std::enable_shared_from_this<Hand>
+            {
+                friend class Frame; // Only a Frame can instanciate a Hand
 
-			public:	
-				typedef std::shared_ptr<Hand>			        Ptr;
+            public:
+                typedef std::shared_ptr<Hand>                    Ptr;
 
                 typedef std::shared_ptr<Frame>                  FramePtr;
                 typedef std::shared_ptr<Finger>                 FingerPtr;
                 typedef std::vector<FingerPtr>                  FingerList;
 
-				typedef std::shared_ptr<math::Vector3>	        Vector3Ptr;
+                typedef std::shared_ptr<math::Vector3>            Vector3Ptr;
                 typedef std::shared_ptr<math::Matrix4x4>        Matrix4x4Ptr;
 
             private:
-				std::shared_ptr<Leap::Hand>				_leapHand;
+                std::shared_ptr<Leap::Hand>                _leapHand;
 
-			public:
-				int32_t
-				id() const;
+            public:
+                int32_t
+                id() const;
 
-				bool
-				isValid() const;
+                bool
+                isValid() const;
 
                 bool
                 isRight() const;
 
-				uint64_t
-				frameID() const;
+                uint64_t
+                frameID() const;
 
-				Vector3Ptr
-				palmPosition(Vector3Ptr output = nullptr) const;
+                Vector3Ptr
+                palmPosition(Vector3Ptr output = nullptr) const;
 
                 Vector3Ptr
                 direction(Vector3Ptr output = nullptr) const;
 
-				Vector3Ptr
-				palmNormal(Vector3Ptr output = nullptr) const;
+                Vector3Ptr
+                palmNormal(Vector3Ptr output = nullptr) const;
 
-				Vector3Ptr
-				palmVelocity(Vector3Ptr output = nullptr) const;
+                Vector3Ptr
+                palmVelocity(Vector3Ptr output = nullptr) const;
 
                 float
                 palmWidth() const;
@@ -104,20 +104,20 @@ namespace minko
 
                 float
                 confidence() const;
-				
-				// (In)Equality tests
-				bool
-				operator!=(const Hand&) const;
 
-				bool
-				operator==(const Hand&) const;
+                // (In)Equality tests
+                bool
+                operator!=(const Hand&) const;
 
-			private:
-				Hand(); // no implementation!
-				
-				explicit
-				Hand(const Leap::Hand&);
-			};
-		}
-	}
+                bool
+                operator==(const Hand&) const;
+
+            private:
+                Hand(); // no implementation!
+
+                explicit
+                Hand(const Leap::Hand&);
+            };
+        }
+    }
 }

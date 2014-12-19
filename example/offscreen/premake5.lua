@@ -6,6 +6,8 @@ PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.application("minko-example-" .. PROJECT_NAME)
 
+	removeplatforms { "ios", "android" }
+
 	files {
 		"src/**.hpp",
 		"src/**.cpp",
@@ -14,5 +16,6 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 
 	includedirs { "src" }
 
-	minko.plugin.enable("png");
-	minko.plugin.enable("offscreen");
+	minko.plugin.enable("sdl")
+	minko.plugin.enable("png")
+	minko.plugin.enable("offscreen")

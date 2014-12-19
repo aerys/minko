@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -27,56 +27,56 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace input
-	{
-		class LuaKeyboard :
-			public LuaWrapper
-		{
-		public:
-			static
-			void
-			bind(LuaGlue& state)
-			{
-				auto& input_key = state.Enum<Keyboard::Key>("Key");
-			    for (int key = 0; key < (int) Keyboard::NUM_KEYS; ++key)
-			    {
-			        auto& keyName = Keyboard::getKeyName(static_cast<Keyboard::Key>(key));
+    namespace input
+    {
+        class LuaKeyboard :
+            public LuaWrapper
+        {
+        public:
+            static
+            void
+            bind(LuaGlue& state)
+            {
+                auto& input_keyboard = state.Class<Keyboard>("Keyboard");
 
-			        if (keyName.size())
-                        input_key.constant(keyName, key);
-			    }
+                for (int key = 0; key < (int) Keyboard::NUM_KEYS; ++key)
+                {
+                    auto& keyName = Keyboard::getKeyName(static_cast<Keyboard::Key>(key));
 
-				auto& input_keyboard = state.Class<Keyboard>("Keyboard");
-			    MINKO_LUAGLUE_BIND_SIGNAL(state, Keyboard::Ptr, uint);
-			    MINKO_LUAGLUE_BIND_SIGNAL(state, Keyboard::Ptr);
-			    input_keyboard
-			        .methodWrapper("keyDown",   &LuaKeyboard::keyboardKeyDownWrapper)
+                    if (keyName.size())
+                        input_keyboard.constant(keyName, key);
+                }
+
+                MINKO_LUAGLUE_BIND_SIGNAL(state, Keyboard::Ptr, uint);
+                MINKO_LUAGLUE_BIND_SIGNAL(state, Keyboard::Ptr);
+                input_keyboard
+                    .methodWrapper("keyDown",   &LuaKeyboard::keyboardKeyDownWrapper)
                     .methodWrapper("keyUp",     &LuaKeyboard::keyboardKeyUpWrapper)
-			        .methodWrapper("keyIsDown", &LuaKeyboard::keyboardKeyIsDownWrapper)
-			        .property("anyKeyDown",	    &Keyboard::keyDown)
-			        .property("anyKeyUp",       &Keyboard::keyUp);
-			}
+                    .methodWrapper("keyIsDown", &LuaKeyboard::keyboardKeyIsDownWrapper)
+                    .property("anyKeyDown",        &Keyboard::keyDown)
+                    .property("anyKeyUp",       &Keyboard::keyUp);
+            }
 
-			static
-			Signal<Keyboard::Ptr, uint>::Ptr
-			keyboardKeyDownWrapper(Keyboard::Ptr k, uint key)
-			{
-				return k->keyDown(static_cast<Keyboard::Key>(key));
-			}
+            static
+            Signal<Keyboard::Ptr, uint>::Ptr
+            keyboardKeyDownWrapper(Keyboard::Ptr k, uint key)
+            {
+                return k->keyDown(static_cast<Keyboard::Key>(key));
+            }
 
-			static
-			Signal<Keyboard::Ptr, uint>::Ptr
-			keyboardKeyUpWrapper(Keyboard::Ptr k, uint key)
-			{
-				return k->keyUp(static_cast<Keyboard::Key>(key));
-			}
+            static
+            Signal<Keyboard::Ptr, uint>::Ptr
+            keyboardKeyUpWrapper(Keyboard::Ptr k, uint key)
+            {
+                return k->keyUp(static_cast<Keyboard::Key>(key));
+            }
 
-			static
-			bool
-			keyboardKeyIsDownWrapper(Keyboard::Ptr k, uint s)
-			{
-				return k->keyIsDown(static_cast<Keyboard::Key>(s));
-			}
-		};
-	}
+            static
+            bool
+            keyboardKeyIsDownWrapper(Keyboard::Ptr k, uint s)
+            {
+                return k->keyIsDown(static_cast<Keyboard::Key>(s));
+            }
+        };
+    }
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,33 +25,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace extension
-	{
-		class PhysicsExtension :
-			public AbstractExtension
-		{
-		public:
-			typedef std::shared_ptr<PhysicsExtension> Ptr;
+    namespace extension
+    {
+        class PhysicsExtension :
+            public AbstractExtension
+        {
+        public:
+            typedef std::shared_ptr<PhysicsExtension> Ptr;
 
-		public:
-			void
-			bind();
+        public:
+            void
+            bind();
 
-			static
-			inline
-			Ptr
-			initialize()
-			{
-				Ptr extention(new PhysicsExtension());
+            static
+            inline
+            Ptr
+            initialize()
+            {
+                Ptr extention(new PhysicsExtension());
 
-				return extention;
-			}
+                return extention;
+            }
 
-			static
-			std::shared_ptr<component::AbstractComponent>
-			deserializePhysics(std::string&								serializedAnimation,
-							   std::shared_ptr<file::AssetLibrary>		assetLibrary,
-							   std::shared_ptr<file::Dependency>		dependencies);
-		};
-	}
+            static
+            std::shared_ptr<component::AbstractComponent>
+            deserializePhysics(std::string&                                serializedAnimation,
+                               std::shared_ptr<file::AssetLibrary>        assetLibrary,
+                               std::shared_ptr<file::Dependency>        dependencies);
+        };
+    }
 }

@@ -161,57 +161,59 @@ ProgramSignature::operator==(const ProgramSignature& x) const
 void
 ProgramSignature::updateProgram(Program& program) const
 {
+    auto typeIndex  = 0;
+    auto macroIndex = 0;
     auto valueIndex = 0;
-    auto i = 0;
 
     for (auto j = 0; j < 32; ++j)
     {
         if ((_mask & (1 << j)) != 0)
         {
-            switch (_types[i])
+            switch (_types[typeIndex])
             {
                 case MacroBinding::Type::UNSET:
-                    program.define(_macros[i]);
+                    program.define(_macros[macroIndex]);
                     break;
                 case MacroBinding::Type::BOOL:
-                    program.define(_macros[i], Any::unsafe_cast<bool>(_values[i]));
+                    program.define(_macros[macroIndex], Any::unsafe_cast<bool>(_values[valueIndex++]));
                     break;
                 case MacroBinding::Type::BOOL2:
-                    program.define(_macros[i], Any::unsafe_cast<math::bvec2>(_values[i]));
+                    program.define(_macros[macroIndex], Any::unsafe_cast<math::bvec2>(_values[valueIndex++]));
                     break;
                 case MacroBinding::Type::BOOL3:
-                    program.define(_macros[i], Any::unsafe_cast<math::bvec3>(_values[i]));
+                    program.define(_macros[macroIndex], Any::unsafe_cast<math::bvec3>(_values[valueIndex++]));
                     break;
                 case MacroBinding::Type::BOOL4:
-                    program.define(_macros[i], Any::unsafe_cast<math::bvec4>(_values[i]));
+                    program.define(_macros[macroIndex], Any::unsafe_cast<math::bvec4>(_values[valueIndex++]));
                     break;
                 case MacroBinding::Type::INT:
-                    program.define(_macros[i], Any::unsafe_cast<int>(_values[i]));
+                    program.define(_macros[macroIndex], Any::unsafe_cast<int>(_values[valueIndex++]));
                     break;
                 case MacroBinding::Type::INT2:
-                    program.define(_macros[i], Any::unsafe_cast<math::ivec2>(_values[i]));
+                    program.define(_macros[macroIndex], Any::unsafe_cast<math::ivec2>(_values[valueIndex++]));
                     break;
                 case MacroBinding::Type::INT3:
-                    program.define(_macros[i], Any::unsafe_cast<math::ivec3>(_values[i]));
+                    program.define(_macros[macroIndex], Any::unsafe_cast<math::ivec3>(_values[valueIndex++]));
                     break;
                 case MacroBinding::Type::INT4:
-                    program.define(_macros[i], Any::unsafe_cast<math::ivec4>(_values[i]));
+                    program.define(_macros[macroIndex], Any::unsafe_cast<math::ivec4>(_values[valueIndex++]));
                     break;
                 case MacroBinding::Type::FLOAT:
-                    program.define(_macros[i], Any::unsafe_cast<float>(_values[i]));
+                    program.define(_macros[macroIndex], Any::unsafe_cast<float>(_values[valueIndex++]));
                     break;
                 case MacroBinding::Type::FLOAT2:
-                    program.define(_macros[i], Any::unsafe_cast<math::vec2>(_values[i]));
+                    program.define(_macros[macroIndex], Any::unsafe_cast<math::vec2>(_values[valueIndex++]));
                     break;
                 case MacroBinding::Type::FLOAT3:
-                    program.define(_macros[i], Any::unsafe_cast<math::vec3>(_values[i]));
+                    program.define(_macros[macroIndex], Any::unsafe_cast<math::vec3>(_values[valueIndex++]));
                     break;
                 case MacroBinding::Type::FLOAT4:
-                    program.define(_macros[i], Any::unsafe_cast<math::vec4>(_values[i]));
+                    program.define(_macros[macroIndex], Any::unsafe_cast<math::vec4>(_values[valueIndex++]));
                     break;
             }
 
-            ++i;
+            ++typeIndex;
+            ++macroIndex;
         }
     }
 }

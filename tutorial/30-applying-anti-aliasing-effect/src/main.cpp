@@ -31,7 +31,7 @@ int
 main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Tutorial - Applying antialiasing effect", WINDOW_WIDTH, WINDOW_HEIGHT);
-    auto sceneManager = SceneManager::create(canvas->context());
+    auto sceneManager = SceneManager::create(canvas);
 
 	sceneManager->assets()->loader()
         ->queue("effect/Basic.effect")

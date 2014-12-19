@@ -69,10 +69,6 @@ minko.plugin["http-worker"].enable = function (self)
 	configuration { "osx64", "release" }
 		libdirs { minko.plugin.path("zlib") .. "/bin/osx64/release" }
 
-	configuration { "android" }
-		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/android/release" }
-		links { "curl" }
-
 	configuration { "ios" }
 		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/ios/release" }
 		links { "curl", "minko-plugin-zlib", "Security.framework" }
@@ -82,6 +78,16 @@ minko.plugin["http-worker"].enable = function (self)
 
 	configuration { "ios", "release" }
 		libdirs { minko.plugin.path("zlib") .. "/bin/ios/release" }
+
+	configuration { "android" }
+		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/android/release" }
+		links { "curl", "minko-plugin-zlib" }
+		
+	configuration { "android", "debug" }
+		libdirs { minko.plugin.path("zlib") .. "/bin/android/debug" }
+
+	configuration { "android", "release" }
+		libdirs { minko.plugin.path("zlib") .. "/bin/android/release" }
 end
 
 --function minko.worker.http:dist(workerDistDir)

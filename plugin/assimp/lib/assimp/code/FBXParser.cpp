@@ -93,7 +93,7 @@ namespace {
 	}
 
 	// ------------------------------------------------------------------------------------------------
-	void ParseWarning(const std::string& message, const Element* element = NULL)
+/*	void ParseWarning(const std::string& message, const Element* element = NULL)
 	{
 		if(element) {
 			ParseWarning(message,element->KeyToken());
@@ -103,7 +103,7 @@ namespace {
 			DefaultLogger::get()->warn("FBX-Parser: " + message);
 		}
 	}
-
+*/
 	// ------------------------------------------------------------------------------------------------
 	void ParseError(const std::string& message, TokenPtr token)
 	{
@@ -113,6 +113,18 @@ namespace {
 		ParseError(message);
 	}
 
+	// Initially, we did reinterpret_cast, breaking strict aliasing rules.
+	// This actually caused trouble on Android, so let's be safe this time.
+	// https://github.com/assimp/assimp/issues/24
+	template <typename T>
+	T SafeParse(const char* data, const char* end) {
+		// Actual size validation happens during Tokenization so
+		// this is valid as an assertion.
+		ai_assert(static_cast<size_t>(end - data) >= sizeof(T));
+		T result = static_cast<T>(0);
+		::memcpy(&result, data, sizeof(T));
+		return result;
+	}
 }
 
 namespace Assimp {
@@ -275,9 +287,7 @@ uint64_t ParseTokenAsID(const Token& t, const char*& err_out)
 			return 0L;
 		}
 
-		ai_assert(t.end() - data == 9);
-
-		BE_NCONST uint64_t id = *reinterpret_cast<const uint64_t*>(data+1);
+		BE_NCONST uint64_t id = SafeParse<uint64_t>(data+1, t.end());
 		AI_SWAP8(id);
 		return id;
 	}
@@ -316,8 +326,7 @@ size_t ParseTokenAsDim(const Token& t, const char*& err_out)
 			return 0;
 		}
 
-		ai_assert(t.end() - data == 9);
-		BE_NCONST uint64_t id = *reinterpret_cast<const uint64_t*>(data+1);
+		BE_NCONST uint64_t id = SafeParse<uint64_t>(data+1, t.end());
 		AI_SWAP8(id);
 		return static_cast<size_t>(id);
 	}
@@ -364,14 +373,10 @@ float ParseTokenAsFloat(const Token& t, const char*& err_out)
 		}
 
 		if (data[0] == 'F') {
-			ai_assert(t.end() - data == 5);
-			// no byte swapping needed for ieee floats
-			return *reinterpret_cast<const float*>(data+1);
+			return SafeParse<float>(data+1, t.end());
 		}
 		else {
-			ai_assert(t.end() - data == 9);
-			// no byte swapping needed for ieee floats
-			return static_cast<float>(*reinterpret_cast<const double*>(data+1));
+			return SafeParse<double>(data+1, t.end());
 		}
 	}
 
@@ -406,8 +411,7 @@ int ParseTokenAsInt(const Token& t, const char*& err_out)
 			return 0;
 		}
 
-		ai_assert(t.end() - data == 5);
-		BE_NCONST int32_t ival = *reinterpret_cast<const int32_t*>(data+1);
+		BE_NCONST int32_t ival = SafeParse<int32_t>(data+1, t.end());
 		AI_SWAP4(ival);
 		return static_cast<int>(ival);
 	}
@@ -443,10 +447,8 @@ std::string ParseTokenAsString(const Token& t, const char*& err_out)
 			return "";
 		}
 
-		ai_assert(t.end() - data >= 5);
-
 		// read string length
-		BE_NCONST int32_t len = *reinterpret_cast<const int32_t*>(data+1);
+		BE_NCONST int32_t len = SafeParse<int32_t>(data+1, t.end());
 		AI_SWAP4(len);
 
 		ai_assert(t.end() - data == 5 + len);
@@ -484,7 +486,7 @@ void ReadBinaryDataArrayHead(const char*& data, const char* end, char& type, uin
 	type = *data;
 
 	// read number of elements
-	BE_NCONST uint32_t len = *reinterpret_cast<const uint32_t*>(data+1);
+	BE_NCONST uint32_t len = SafeParse<uint32_t>(data+1, end);
 	AI_SWAP4(len);
 
 	count = len;
@@ -496,16 +498,14 @@ void ReadBinaryDataArrayHead(const char*& data, const char* end, char& type, uin
 // read binary data array, assume cursor points to the 'compression mode' field (i.e. behind the header)
 void ReadBinaryDataArray(char type, uint32_t count, const char*& data, const char* end, 
 	std::vector<char>& buff, 
-	const Element& el)
+	const Element& /*el*/)
 {
-	ai_assert(static_cast<size_t>(end-data) >= 4); // runtime check for this happens at tokenization stage
-
-	BE_NCONST uint32_t encmode = *reinterpret_cast<const uint32_t*>(data);
+	BE_NCONST uint32_t encmode = SafeParse<uint32_t>(data, end);
 	AI_SWAP4(encmode);
 	data += 4;
 
 	// next comes the compressed length
-	BE_NCONST uint32_t comp_len = *reinterpret_cast<const uint32_t*>(data);
+	BE_NCONST uint32_t comp_len = SafeParse<uint32_t>(data, end);
 	AI_SWAP4(comp_len);
 	data += 4;
 
@@ -565,7 +565,7 @@ void ReadBinaryDataArray(char type, uint32_t count, const char*& data, const cha
 		// terminate zlib
 		inflateEnd(&zstream);
 	}
-#ifdef _DEBUG
+#ifdef ASSIMP_BUILD_DEBUG
 	else {
 		// runtime check for this happens at tokenization stage
 		ai_assert(false);

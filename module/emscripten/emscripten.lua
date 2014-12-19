@@ -11,13 +11,15 @@ local fileconfig = premake.fileconfig
 
 api.addAllowed("system", { "emscripten" })
 
+local EMSCRIPTEN
+
 if os.getenv('EMSCRIPTEN') then
 	EMSCRIPTEN = os.getenv('EMSCRIPTEN');
 elseif os.getenv('EMSCRIPTEN_HOME') then
 	EMSCRIPTEN = os.getenv('EMSCRIPTEN_HOME');
 else
 	print(color.fg.yellow .. 'You must define the environment variable EMSCRIPTEN to be able to target HTML5.' .. color.reset)
-	EMSCRIPTEN = ''
+	do return end
 end
 
 if os.is('linux') then

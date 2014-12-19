@@ -26,62 +26,62 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace component
-	{
-		class Water :
-			public AbstractComponent
-		{
-		public:
-			typedef std::shared_ptr<Water>	Ptr;
+    namespace component
+    {
+        class Water :
+            public AbstractComponent
+        {
+        public:
+            typedef std::shared_ptr<Water>    Ptr;
 
-		private:
-			typedef std::shared_ptr<scene::Node>		        NodePtr;
-			typedef std::shared_ptr<AbstractComponent>	        AbsCmpPtr;
-			typedef std::shared_ptr<data::StructureProvider>	ContainerPtr;
+        private:
+            typedef std::shared_ptr<scene::Node>                NodePtr;
+            typedef std::shared_ptr<AbstractComponent>            AbsCmpPtr;
+            typedef std::shared_ptr<data::StructureProvider>    ContainerPtr;
 
-		private:
-			Signal<AbsCmpPtr, NodePtr>::Ptr				       _rootAdded;
+        private:
+            Signal<AbsCmpPtr, NodePtr>::Ptr                       _rootAdded;
 
-			Signal<AbsCmpPtr, NodePtr>::Slot										_targetAddedSlot;
-			Signal<AbsCmpPtr, NodePtr>::Slot										_targetRemovedSlot;
-			Signal<AbsCmpPtr, NodePtr>::Slot										_rootAddedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot									_addedToSceneSlot;
-			Signal<std::shared_ptr<component::SceneManager>, float, float>::Slot    _frameBeginSlot;
-			std::shared_ptr<data::Provider>											_provider;
-			std::shared_ptr<material::WaterMaterial>								_waterMaterial;
+            Signal<AbsCmpPtr, NodePtr>::Slot                                        _targetAddedSlot;
+            Signal<AbsCmpPtr, NodePtr>::Slot                                        _targetRemovedSlot;
+            Signal<AbsCmpPtr, NodePtr>::Slot                                        _rootAddedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot                                    _addedToSceneSlot;
+            Signal<std::shared_ptr<component::SceneManager>, float, float>::Slot    _frameBeginSlot;
+            std::shared_ptr<data::Provider>                                            _provider;
+            std::shared_ptr<material::WaterMaterial>                                _waterMaterial;
 
-			float _cycle;
-		public:
-			inline static
-			Ptr
-			create(float cycle, std::shared_ptr<material::WaterMaterial> mat)
-			{
-				auto water = std::shared_ptr<Water>(new Water(cycle, mat));
+            float _cycle;
+        public:
+            inline static
+            Ptr
+            create(float cycle, std::shared_ptr<material::WaterMaterial> mat)
+            {
+                auto water = std::shared_ptr<Water>(new Water(cycle, mat));
 
-				water->initialize();
+                water->initialize();
 
-				return water;
-			}
+                return water;
+            }
 
-			inline
-			Signal<AbsCmpPtr, std::shared_ptr<scene::Node>>::Ptr
-			rootAdded() const
-			{
-				return _rootAdded;
-			}
+            inline
+            Signal<AbsCmpPtr, std::shared_ptr<scene::Node>>::Ptr
+            rootAdded() const
+            {
+                return _rootAdded;
+            }
 
-		private:
+        private:
 
-			Water(float cycle, std::shared_ptr<material::WaterMaterial> mat);
+            Water(float cycle, std::shared_ptr<material::WaterMaterial> mat);
 
-			void
-			initialize();
+            void
+            initialize();
 
-			void
-			targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
+            void
+            targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
 
-			void
-			targetAddedToScene(NodePtr node, NodePtr target, NodePtr ancestor);
-		};
-	}
+            void
+            targetAddedToScene(NodePtr node, NodePtr target, NodePtr ancestor);
+        };
+    }
 }

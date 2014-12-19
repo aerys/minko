@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -36,6 +36,23 @@ Geometry::Geometry(const std::string& name) :
 {
     _data->set("name", name);
     _data->set("uuid", _data->uuid());
+}
+
+Geometry::Geometry(const Geometry& geometry) :
+	_data(geometry._data->clone()),
+	_vertexSize(geometry._vertexSize),
+	_numVertices(geometry._numVertices),
+	_vertexBuffers(geometry._vertexBuffers),
+	_indexBuffer(geometry._indexBuffer)
+{
+}
+
+std::shared_ptr<Geometry>
+Geometry::clone()
+{
+	Ptr geometry(new Geometry(*this));	
+
+	return geometry;
 }
 
 void

@@ -36,7 +36,7 @@ int
 main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Tutorial - Load 3D files", WINDOW_WIDTH, WINDOW_HEIGHT);
-    auto sceneManager = SceneManager::create(canvas->context());
+    auto sceneManager = SceneManager::create(canvas);
 
     // setup assets
 	sceneManager->assets()->loader()->options()

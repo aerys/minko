@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -34,29 +34,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace file
-	{
-		class LuaAssetLibrary : public LuaWrapper
-		{
-		public:
-			static
-			void
-			bind(LuaGlue& state)
-			{
-				auto& assetLibrary = state.Class<AssetLibrary>("AssetLibrary")
-			        .method("geometry",     static_cast<geometry::Geometry::Ptr (AssetLibrary::*)(const std::string&)>(&AssetLibrary::geometry))
-			        .method("effect",       static_cast<render::Effect::Ptr (AssetLibrary::*)(const std::string&)>(&AssetLibrary::effect))
-			        .method("texture",		static_cast<render::Texture::Ptr (AssetLibrary::*)(const std::string&) const>(&AssetLibrary::texture))
-			        .method("cubeTexture",	static_cast<render::CubeTexture::Ptr (AssetLibrary::*)(const std::string&) const>(&AssetLibrary::cubeTexture))
-			        .method("script",       static_cast<component::AbstractScript::Ptr (AssetLibrary::*)(const std::string&)>(&AssetLibrary::script))
-					.method("symbol",		static_cast<scene::Node::Ptr (AssetLibrary::*)(const std::string&)>(&AssetLibrary::symbol))
-					.property("context",    &AssetLibrary::context)
+    namespace file
+    {
+        class LuaAssetLibrary : public LuaWrapper
+        {
+        public:
+            static
+            void
+            bind(LuaGlue& state)
+            {
+                auto& assetLibrary = state.Class<AssetLibrary>("AssetLibrary")
+                    .method("geometry",     static_cast<geometry::Geometry::Ptr (AssetLibrary::*)(const std::string&)>(&AssetLibrary::geometry))
+                    .method("effect",       static_cast<render::Effect::Ptr (AssetLibrary::*)(const std::string&)>(&AssetLibrary::effect))
+                    .method("texture",        static_cast<render::Texture::Ptr (AssetLibrary::*)(const std::string&) const>(&AssetLibrary::texture))
+                    .method("cubeTexture",    static_cast<render::CubeTexture::Ptr (AssetLibrary::*)(const std::string&) const>(&AssetLibrary::cubeTexture))
+                    .method("script",       static_cast<component::AbstractScript::Ptr (AssetLibrary::*)(const std::string&)>(&AssetLibrary::script))
+                    .method("symbol",        static_cast<scene::Node::Ptr (AssetLibrary::*)(const std::string&)>(&AssetLibrary::symbol))
+                    .property("context",    &AssetLibrary::context)
                     .property("loader",     &AssetLibrary::loader);
 
-			    //MINKO_LUAGLUE_BIND_SIGNAL(state, AssetLibrary::Ptr);
+                //MINKO_LUAGLUE_BIND_SIGNAL(state, AssetLibrary::Ptr);
 
-			    //assetLibrary.property("complete", &AssetLibrary::complete);
-			}
-		};
-	}
+                //assetLibrary.property("complete", &AssetLibrary::complete);
+            }
+        };
+    }
 }

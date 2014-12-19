@@ -7,8 +7,8 @@ Copyright (c) 2006-2012, assimp team
 
 All rights reserved.
 
-Redistribution and use of this software in source and binary forms,
-with or without modification, are permitted provided that the following
+Redistribution and use of this software in source and binary forms, 
+with or without modification, are permitted provided that the following 
 conditions are met:
 
 * Redistributions of source code must retain the above
@@ -25,16 +25,16 @@ conditions are met:
   derived from this software without specific prior
   written permission of the assimp team.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
 LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT 
 OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
 LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY 
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT 
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE 
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ---------------------------------------------------------------------------
 */
@@ -140,7 +140,7 @@ corresponding preprocessor flag to selectively disable formats.
 #	include "LWSLoader.h"
 #endif
 #ifndef ASSIMP_BUILD_NO_OGRE_IMPORTER
-#	include "OgreImporter.hpp"
+#	include "OgreImporter.h"
 #endif
 #ifndef ASSIMP_BUILD_NO_MS3D_IMPORTER
 #	include "MS3DLoader.h"
@@ -162,10 +162,13 @@ corresponding preprocessor flag to selectively disable formats.
 #endif
 #ifndef ASSIMP_BUILD_NO_XGL_IMPORTER
 #   include "XGLLoader.h"
-#endif
+#endif 
 #ifndef ASSIMP_BUILD_NO_FBX_IMPORTER
 #   include "FBXImporter.h"
-#endif
+#endif 
+#ifndef ASSIMP_BUILD_NO_ASSBIN_IMPORTER
+#   include "AssbinLoader.h"
+#endif 
 
 namespace Assimp {
 
@@ -175,12 +178,11 @@ void GetImporterInstanceList(std::vector< BaseImporter* >& out)
 	// ----------------------------------------------------------------------------
 	// Add an instance of each worker class here
 	// (register_new_importers_here)
-    // Fix: effective unless ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION flag is set
 	// ----------------------------------------------------------------------------
 	out.reserve(64);
-
+    
 #if (!defined ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION)
-
+    
 #if (!defined ASSIMP_BUILD_NO_X_IMPORTER)
 	out.push_back( new XFileImporter());
 #endif
@@ -295,8 +297,11 @@ void GetImporterInstanceList(std::vector< BaseImporter* >& out)
 #if ( !defined ASSIMP_BUILD_NO_FBX_IMPORTER )
 	out.push_back( new FBXImporter() );
 #endif
+#if ( !defined ASSIMP_BUILD_NO_ASSBIN_IMPORTER )
+	out.push_back( new AssbinImporter() );
+#endif
 
-#endif // ! ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION
+#endif
 }
 
 }

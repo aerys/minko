@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -24,181 +24,181 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace material
-	{
-		class WaterMaterial :
-			public BasicMaterial
-		{
-		public:
-			typedef std::shared_ptr<WaterMaterial> Ptr;
+    namespace material
+    {
+        class WaterMaterial :
+            public BasicMaterial
+        {
+        public:
+            typedef std::shared_ptr<WaterMaterial> Ptr;
 
-		private:
-			uint				_numWaves;
-			std::vector<float>	_amplitudes;
-			std::vector<float>	_waveLength;
-			std::vector<float>	_origins;
-			std::vector<float>	_speeds;
-			std::vector<float>	_sharpness;
-			std::vector<float>	_waveType;
+        private:
+            uint                _numWaves;
+            std::vector<float>    _amplitudes;
+            std::vector<float>    _waveLength;
+            std::vector<float>    _origins;
+            std::vector<float>    _speeds;
+            std::vector<float>    _sharpness;
+            std::vector<float>    _waveType;
 
-		public:
-			inline static
-			Ptr
-			create(uint numWaves)
-			{
-				Ptr ptr = std::shared_ptr<WaterMaterial>(new WaterMaterial(numWaves));
+        public:
+            inline static
+            Ptr
+            create(uint numWaves)
+            {
+                Ptr ptr = std::shared_ptr<WaterMaterial>(new WaterMaterial(numWaves));
 
-				ptr->initialize();
+                ptr->initialize();
 
-				return ptr;
-			}
+                return ptr;
+            }
 
-			Ptr
-			setDirection(int waveId, std::shared_ptr<math::Vector2> direction);
+            Ptr
+            setDirection(int waveId, std::shared_ptr<math::Vector2> direction);
 
-			Ptr
-			setCenter(int waveId, std::shared_ptr<math::Vector2> origin);
+            Ptr
+            setCenter(int waveId, std::shared_ptr<math::Vector2> origin);
 
-			Ptr
-			setAmplitude(int waveId, float amplitude);
+            Ptr
+            setAmplitude(int waveId, float amplitude);
 
-			Ptr
-			setWaveLenght(int waveId, float waveLenght);
+            Ptr
+            setWaveLenght(int waveId, float waveLenght);
 
-			Ptr
-			setSharpness(int waveId, float sharpness);
+            Ptr
+            setSharpness(int waveId, float sharpness);
 
-			Ptr
-			setSpeed(int waveId, float speed);
+            Ptr
+            setSpeed(int waveId, float speed);
 
-			Ptr
-			specularColor(Vector4Ptr);
+            Ptr
+            specularColor(Vector4Ptr);
 
-			Ptr
-			specularColor(uint);
+            Ptr
+            specularColor(uint);
 
-			Vector4Ptr
-			specularColor() const;
+            Vector4Ptr
+            specularColor() const;
 
-			Ptr
-			shininess(float);
+            Ptr
+            shininess(float);
 
-			float
-			shininess() const;
+            float
+            shininess() const;
 
-			Ptr
-			fresnelMultiplier(float);
+            Ptr
+            fresnelMultiplier(float);
 
-			float
-			fresnelMultiplier() const;
+            float
+            fresnelMultiplier() const;
 
-			Ptr
-			normalMultiplier(float);
+            Ptr
+            normalMultiplier(float);
 
-			float
-			normalMultiplier() const;
+            float
+            normalMultiplier() const;
 
-			Ptr
-			fresnelPow(float);
+            Ptr
+            fresnelPow(float);
 
-			float
-			fresnelPow() const;
+            float
+            fresnelPow() const;
 
-			Ptr
-			normalMap(AbsTexturePtr);
+            Ptr
+            normalMap(AbsTexturePtr);
 
-			TexturePtr
-			normalMap() const;
+            TexturePtr
+            normalMap() const;
 
-			Ptr
-			normalMapSpeed(float s);
+            Ptr
+            normalMapSpeed(float s);
 
-			float
-			normalMapSpeed() const;
+            float
+            normalMapSpeed() const;
 
-			Ptr
-			normalMapScale(float);
+            Ptr
+            normalMapScale(float);
 
-			float
-			normalMapScale() const;
+            float
+            normalMapScale() const;
 
-			Ptr
-			dudvMap(AbsTexturePtr);
+            Ptr
+            dudvMap(AbsTexturePtr);
 
-			TexturePtr
-			dudvMap() const;
+            TexturePtr
+            dudvMap() const;
 
-			Ptr
-			dudvFactor(float);
+            Ptr
+            dudvFactor(float);
 
-			float
-			dudvFactor() const;
+            float
+            dudvFactor() const;
 
-			Ptr
-			dudvSpeed(float);
+            Ptr
+            dudvSpeed(float);
 
-			float
-			dudvSpeed() const;
+            float
+            dudvSpeed() const;
 
-			Ptr
-			depthMap(AbsTexturePtr);
+            Ptr
+            depthMap(AbsTexturePtr);
 
-			TexturePtr
-			depthMap() const;
+            TexturePtr
+            depthMap() const;
 
-			Ptr
-			reflectionMap(AbsTexturePtr);
+            Ptr
+            reflectionMap(AbsTexturePtr);
 
-			TexturePtr
-			reflectionMap() const;
+            TexturePtr
+            reflectionMap() const;
 
-			Ptr
-			flowMap(AbsTexturePtr);
+            Ptr
+            flowMap(AbsTexturePtr);
 
-			TexturePtr
-			flowMap() const;
+            TexturePtr
+            flowMap() const;
 
-			Ptr
-			flowMapScale(float);
+            Ptr
+            flowMapScale(float);
 
-			float
-			flowMapScale() const;
+            float
+            flowMapScale() const;
 
-			Ptr
-			flowMapCycle(float);
+            Ptr
+            flowMapCycle(float);
 
-			float
-			flowMapCycle() const;
+            float
+            flowMapCycle() const;
 
-			Ptr
-			flowMapOffset1(float);
+            Ptr
+            flowMapOffset1(float);
 
-			float
-			flowMapOffset1() const;
+            float
+            flowMapOffset1() const;
 
-			Ptr
-			flowMapOffset2(float);
+            Ptr
+            flowMapOffset2(float);
 
-			float
-			flowMapOffset2() const;
+            float
+            flowMapOffset2() const;
 
-			Ptr
-			noiseMap(AbsTexturePtr);
+            Ptr
+            noiseMap(AbsTexturePtr);
 
-			TexturePtr
-			noiseMap() const;
+            TexturePtr
+            noiseMap() const;
 
-			Ptr
-			reflectivity(float);
+            Ptr
+            reflectivity(float);
 
-			float
-			reflectivity() const;
+            float
+            reflectivity() const;
 
-		private:
-			WaterMaterial(uint numWaves);
+        private:
+            WaterMaterial(uint numWaves);
 
-			void
-			initialize();
-		};
-	}
+            void
+            initialize();
+        };
+    }
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/SerializerCommon.hpp"
 #include "minko/Types.hpp"
 
 namespace minko
@@ -29,11 +30,11 @@ namespace minko
         class WriterOptions:
             public std::enable_shared_from_this<WriterOptions>
         {
-        private:
-            typedef std::function<const std::string(const std::string&)>        UriFunction;
-
         public:
             typedef std::shared_ptr<WriterOptions>                              Ptr;
+
+        private:
+            typedef std::function<const std::string(const std::string&)>        UriFunction;
 
         private:
             bool                    _embedAll;
@@ -42,9 +43,16 @@ namespace minko
             UriFunction             _outputAssetUriFunction;
 
             serialize::ImageFormat  _imageFormat;
+            std::list<render::TextureFormat>    _textureFormats;
+
+            bool                                _compressTexture;
+            bool                                _generateMipmaps;
+            render::MipFilter                   _mipFilter;
+            bool                                _optimizeForNormalMapping;
 
         public:
-            inline static
+            inline
+            static
 			Ptr
 			create()
 			{
@@ -52,6 +60,26 @@ namespace minko
 
                 return writerOptions;
 			}
+
+            inline
+            static
+            Ptr
+            create(WriterOptions::Ptr other)
+            {
+                auto instance = WriterOptions::create();
+
+                instance->_embedAll = other->_embedAll;
+                instance->_addBoundingBoxes = other->_addBoundingBoxes;
+                instance->_outputAssetUriFunction = other->_outputAssetUriFunction;
+                instance->_imageFormat = other->_imageFormat;
+                instance->_textureFormats = other->_textureFormats;
+                instance->_compressTexture = other->_compressTexture;
+                instance->_generateMipmaps = other->_generateMipmaps;
+                instance->_mipFilter = other->_mipFilter;
+                instance->_optimizeForNormalMapping = other->_optimizeForNormalMapping;
+
+                return instance;
+            }
 
             inline
 			bool
@@ -116,6 +144,86 @@ namespace minko
 
 				return shared_from_this();
 			}
+
+            inline
+            const std::list<render::TextureFormat>&
+            textureFormats() const
+            {
+                return _textureFormats;
+            }
+
+            inline
+            Ptr
+            registerTextureFormat(render::TextureFormat textureFormat)
+            {
+                _textureFormats.push_back(textureFormat);
+
+                return shared_from_this();
+            }
+
+            inline
+            bool
+            compressTexture() const
+            {
+                return _compressTexture;
+            }
+
+            inline
+            Ptr
+            compressTexture(bool value)
+            {
+                _compressTexture = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            bool
+            generateMipmaps() const
+            {
+                return _generateMipmaps;
+            }
+
+            inline
+            Ptr
+            generateMipmaps(bool value)
+            {
+                _generateMipmaps = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            render::MipFilter
+            mipFilter() const
+            {
+                return _mipFilter;
+            }
+
+            inline
+            Ptr
+            mipFilter(render::MipFilter value)
+            {
+                _mipFilter = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            bool
+            optimizeForNormalMapping() const
+            {
+                return _optimizeForNormalMapping;
+            }
+
+            inline
+            Ptr
+            optimizeForNormalMapping(bool value)
+            {
+                _optimizeForNormalMapping = value;
+
+                return shared_from_this();
+            }
 
         private:
             WriterOptions();

@@ -184,7 +184,8 @@ namespace minko
             bind(std::shared_ptr<Program> program);
 
 			void
-			render(std::shared_ptr<AbstractContext> context, AbsTexturePtr renderTarget) const;
+			render(std::shared_ptr<AbstractContext>  context,
+                   AbsTexturePtr                     renderTarget) const;
 
             bool
             bindUniform(ConstUniformInputRef                        input,

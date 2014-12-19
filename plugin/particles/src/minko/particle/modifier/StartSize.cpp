@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -26,22 +26,22 @@ using namespace minko;
 using namespace minko::particle;
 using namespace minko::particle::modifier;
 
-StartSize::StartSize(SamplerPtr size): 
+StartSize::StartSize(SamplerPtr size):
     IParticleInitializer(),
     Modifier1<float> (size)
 {
 }
 
 void
-StartSize::initialize(ParticleData& 	particle,
-	    			  float				time) const
+StartSize::initialize(ParticleData&     particle,
+                      float                time) const
 {
-	particle.size = _x->value();
+    particle.size = _x->value();
 }
 
 
 unsigned int
 StartSize::getNeededComponents() const
 {
-	return VertexComponentFlags::SIZE;
+    return VertexComponentFlags::SIZE;
 }

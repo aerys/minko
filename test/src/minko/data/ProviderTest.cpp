@@ -178,7 +178,7 @@ TEST_F(ProviderTest, IntegerPointerConsistency2)
 TEST_F(ProviderTest, TextureSamplerPointerConsistency)
 {
     auto p = Provider::create();
-    auto t1 = render::Texture::create(MinkoTests::context(), 2, 2);
+    auto t1 = render::Texture::create(MinkoTests::canvas()->context(), 2, 2);
 
     p->set("texture", t1->sampler());
 
@@ -188,8 +188,8 @@ TEST_F(ProviderTest, TextureSamplerPointerConsistency)
 TEST_F(ProviderTest, TextureSamplerPointerConsistency2)
 {
     auto p = Provider::create();
-    auto t1 = render::Texture::create(MinkoTests::context(), 2, 2);
-    auto t2 = render::Texture::create(MinkoTests::context(), 4, 4);
+    auto t1 = render::Texture::create(MinkoTests::canvas()->context(), 2, 2);
+    auto t2 = render::Texture::create(MinkoTests::canvas()->context(), 4, 4);
 
     p->set("texture", t1->sampler());
     auto ptr1 = p->getPointer<render::TextureSampler>("texture");
@@ -203,7 +203,7 @@ TEST_F(ProviderTest, TextureSamplerPointerConsistency2)
 TEST_F(ProviderTest, VertexAttributePointerConsistency)
 {
     auto p = Provider::create();
-    auto g = geometry::CubeGeometry::create(MinkoTests::context());
+    auto g = geometry::CubeGeometry::create(MinkoTests::canvas()->context());
     const auto& a1 = g->getVertexAttribute("position");
 
     p->set("position", g->getVertexAttribute("position"));
@@ -214,8 +214,8 @@ TEST_F(ProviderTest, VertexAttributePointerConsistency)
 TEST_F(ProviderTest, VertexAttributePointerConsistency2)
 {
     auto p = Provider::create();
-    auto cube = geometry::CubeGeometry::create(MinkoTests::context());
-    auto sphere = geometry::SphereGeometry::create(MinkoTests::context());
+    auto cube = geometry::CubeGeometry::create(MinkoTests::canvas()->context());
+    auto sphere = geometry::SphereGeometry::create(MinkoTests::canvas()->context());
 
     p->set("position", cube->getVertexAttribute("position"));
     auto ptr1 = p->getPointer<render::VertexAttribute>("position");

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -36,58 +36,62 @@ PNGParser::parse(const std::string&                 filename,
                  const std::vector<unsigned char>&  data,
                  std::shared_ptr<AssetLibrary>      assetLibrary)
 {
-	std::vector<unsigned char> out;
-	unsigned int width;
-	unsigned int height;
+    std::vector<unsigned char> out;
+    unsigned int width;
+    unsigned int height;
 
-	unsigned error = lodepng::decode(out, width, height, &*data.begin(), data.size());
+    unsigned error = lodepng::decode(out, width, height, &*data.begin(), data.size());
 
-	if (error)
-	{
-		const char* text = lodepng_error_text(error);
+    if (error)
+    {
+        const char* text = lodepng_error_text(error);
 
-#ifdef DEBUG
-        std::cout << "Failed to decode PNG: " << text << std::endl;
-#endif // DEBUG
+        _error->execute(shared_from_this(), Error("file '" + filename + "' loading error (" + text + ")"));
+        _complete->execute(shared_from_this());
+        
+        return;
+    }
 
-		throw std::invalid_argument("file '" + filename + "' loading error (" + text + ")");
-	}
+    render::AbstractTexture::Ptr texture = nullptr;
 
-	render::AbstractTexture::Ptr texture = nullptr;
+    if (!options->isCubeTexture())
+    {
+        auto texture2d = render::Texture::create(
+            options->context(),
+            width,
+            height,
+            options->generateMipmaps(),
+            false,
+            options->resizeSmoothly(),
+            render::TextureFormat::RGBA,
+            filename
+        );
 
-	if (!options->isCubeTexture())
-	{
-		auto texture2d = render::Texture::create(
-			options->context(), 
-			width, 
-			height, 
-			options->generateMipmaps(), 
-			false, 
-			options->resizeSmoothly(), 
-			filename
-		);
-		
-		texture = texture2d;
-		assetLibrary->texture(filename, texture2d);
-	}
-	else
-	{
-		auto cubeTexture = render::CubeTexture::create(
-			options->context(), 
-			width, 
-			height, 
-			options->generateMipmaps(), 
-			false, 
-			options->resizeSmoothly(), 
-			filename
-		);
-		
-		texture = cubeTexture;
-		assetLibrary->cubeTexture(filename, cubeTexture);
-	}
+        texture = texture2d;
+        assetLibrary->texture(filename, texture2d);
+    }
+    else
+    {
+        auto cubeTexture = render::CubeTexture::create(
+            options->context(),
+            width,
+            height,
+            options->generateMipmaps(),
+            false,
+            options->resizeSmoothly(),
+            render::TextureFormat::RGBA,
+            filename
+        );
 
-	texture->data(&*out.begin());
-	texture->upload();
+        texture = cubeTexture;
+        assetLibrary->cubeTexture(filename, cubeTexture);
+    }
 
-	complete()->execute(shared_from_this());
+    texture->data(&*out.begin());
+    texture->upload();
+    
+    if (options->disposeTextureAfterLoading())
+        texture->disposeData();
+
+    complete()->execute(shared_from_this());
 }

@@ -27,7 +27,11 @@
 		    "vertexShader" : "
 		
 			    #ifdef GL_ES
+			# ifdef MINKO_PLATFORM_IOS
+				precision highp float;
+			# else
 				    precision mediump float;
+			# endif
 			    #endif
 
 			    uniform mat4 modelToWorldMatrix;
@@ -43,7 +47,7 @@
 			    void main(void)
 			    {
 				    vec4 pos    = vec4(position, 1.0);
-				    vec4 n 		= vec4(normal, 0.0); 
+				vec4 n 		= normalize(vec4(normal, 0.0)); 
 
 				
 				    #ifdef NUM_BONES
@@ -51,7 +55,7 @@
 					    n 		= skinning_moveVertex(n);
 				    #endif // NUM_BONES
 				
-				    worldNormal	= n.xyz;
+				worldNormal	= normalize(n.xyz);
 
 				    #ifdef MODEL_TO_WORLD
 					    pos 		= modelToWorldMatrix * pos;

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -29,91 +29,91 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace file
-	{
-		class GeometryWriter :
-			public AbstractWriter<std::shared_ptr<geometry::Geometry>>
-		{
-		public:
-			typedef std::shared_ptr<GeometryWriter> Ptr;
-			typedef std::function<std::string(std::shared_ptr<render::IndexBuffer>)>	IndexBufferWriteFunc;
-			typedef std::function<std::string(std::shared_ptr<render::VertexBuffer>)>	VertexBufferWriteFunc;
-			typedef std::function<bool(std::shared_ptr<geometry::Geometry>)>			GeometryTestFunc;
+    namespace file
+    {
+        class GeometryWriter :
+            public AbstractWriter<std::shared_ptr<geometry::Geometry>>
+        {
+        public:
+            typedef std::shared_ptr<GeometryWriter>                                     Ptr;
+            typedef std::function<std::string(std::shared_ptr<render::IndexBuffer>)>    IndexBufferWriteFunc;
+            typedef std::function<std::string(std::shared_ptr<render::VertexBuffer>)>   VertexBufferWriteFunc;
+            typedef std::function<bool(std::shared_ptr<geometry::Geometry>)>            GeometryTestFunc;
 
-		private:
-			typedef std::shared_ptr<file::WriterOptions>																		WriterOptionsPtr;
-			
-		private :
-			static std::unordered_map<uint, IndexBufferWriteFunc>		indexBufferWriterFunctions;
-			static std::unordered_map<uint, VertexBufferWriteFunc>		vertexBufferWriterFunctions;
+        private:
+            typedef std::shared_ptr<file::WriterOptions>                                                                        WriterOptionsPtr;
 
-			static std::unordered_map<uint, GeometryTestFunc>			indexBufferTestFunctions;
-			static std::unordered_map<uint, GeometryTestFunc>			vertexBufferTestFunctions;
+        private :
+            static std::unordered_map<uint, IndexBufferWriteFunc>        indexBufferWriterFunctions;
+            static std::unordered_map<uint, VertexBufferWriteFunc>       vertexBufferWriterFunctions;
 
-		public:
-			inline static
-			Ptr
-			create()
-			{
-				return std::shared_ptr<GeometryWriter>(new GeometryWriter());
-			}
+            static std::unordered_map<uint, GeometryTestFunc>            indexBufferTestFunctions;
+            static std::unordered_map<uint, GeometryTestFunc>            vertexBufferTestFunctions;
 
-			std::string
-			embed(std::shared_ptr<AssetLibrary>		assetLibrary,
-				  std::shared_ptr<Options>			options,
-				  Dependency::Ptr					dependency,
-				  WriterOptionsPtr					writerOptions);
+        public:
+            inline static
+            Ptr
+            create()
+            {
+                return std::shared_ptr<GeometryWriter>(new GeometryWriter());
+            }
 
-			inline
-			static
-			void
-			registerIndexBufferWriterFunction(IndexBufferWriteFunc f, GeometryTestFunc testFunc, uint functionId)
-			{
-				indexBufferWriterFunctions[functionId]	= f;
-				indexBufferTestFunctions[functionId]	= testFunc;
-			}
+            std::string
+            embed(std::shared_ptr<AssetLibrary>       assetLibrary,
+                  std::shared_ptr<Options>            options,
+                  Dependency::Ptr                     dependency,
+                  WriterOptionsPtr                    writerOptions);
 
-			inline
-			static
-			void
-			registerVertexBufferWriterFunction(VertexBufferWriteFunc f, GeometryTestFunc testFunc, uint functionId)
-			{
-				vertexBufferWriterFunctions[functionId] = f;
-				vertexBufferTestFunctions[functionId]	= testFunc;
-			}
+            inline
+            static
+            void
+            registerIndexBufferWriterFunction(IndexBufferWriteFunc f, GeometryTestFunc testFunc, uint functionId)
+            {
+                indexBufferWriterFunctions[functionId] = f;
+                indexBufferTestFunctions[functionId] = testFunc;
+            }
 
-			static
-			std::string
-			serializeIndexStream(std::shared_ptr<render::IndexBuffer> indexBuffer);
+            inline
+            static
+            void
+            registerVertexBufferWriterFunction(VertexBufferWriteFunc f, GeometryTestFunc testFunc, uint functionId)
+            {
+                vertexBufferWriterFunctions[functionId] = f;
+                vertexBufferTestFunctions[functionId] = testFunc;
+            }
 
-			static
-			bool
-			indexBufferFitCharCompression(std::shared_ptr<geometry::Geometry> geometry);
+            static
+            std::string
+            serializeIndexStream(std::shared_ptr<render::IndexBuffer> indexBuffer);
 
-		private:
+            static
+            bool
+            indexBufferFitCharCompression(std::shared_ptr<geometry::Geometry> geometry);
 
-			void
-			initialize();
+        private:
 
-			unsigned char
-			computeMetaByte(std::shared_ptr<geometry::Geometry> geometry,
-							uint&								indexBufferFunctionId,
-							uint&								vertexBufferFunctionId,
-							WriterOptionsPtr					writerOptions);
+            void
+            initialize();
+
+            unsigned char
+            computeMetaByte(std::shared_ptr<geometry::Geometry> geometry,
+                            uint&                               indexBufferFunctionId,
+                            uint&                               vertexBufferFunctionId,
+                            WriterOptionsPtr                    writerOptions);
 
 
-			static
-			std::string
-			serializeIndexStreamChar(std::shared_ptr<render::IndexBuffer> indexBuffer);
+            static
+            std::string
+            serializeIndexStreamChar(std::shared_ptr<render::IndexBuffer> indexBuffer);
 
-			static
-			std::string
-			serializeVertexStream(std::shared_ptr<render::VertexBuffer> vertexBuffer);
+            static
+            std::string
+            serializeVertexStream(std::shared_ptr<render::VertexBuffer> vertexBuffer);
 
-			GeometryWriter()
-			{
-				initialize();
-			}
-		};
-	}
+            GeometryWriter()
+            {
+                initialize();
+            }
+        };
+    }
 }

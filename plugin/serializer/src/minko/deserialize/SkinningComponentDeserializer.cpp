@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -45,12 +45,13 @@ Skinning::Ptr
 SkinningComponentDeserializer::computeSkinning(file::Options::Ptr						options,
                                                render::AbstractContext::Ptr             context,
 											   const std::vector<geometry::Bone::Ptr>&	bones, 
+											   const std::vector<scene::Node::Ptr>&		boneNodes,
 											   Node::Ptr								skeletonRoot)
 {
 	unsigned int	framerate	= options->skinningFramerate();
 	SkinningMethod	method		= options->skinningMethod();
 
-	if (!haveBonesCommonRoot(bones, skeletonRoot))
+	if (!haveBonesCommonRoot(bones, boneNodes, skeletonRoot))
 		throw std::logic_error("Sone bones are not connected to the specified skeleton root.");
 
     std::cout 
@@ -67,6 +68,7 @@ SkinningComponentDeserializer::computeSkinning(file::Options::Ptr						options,
 
     const unsigned int duration = collectAnimations(
         bones, 
+		boneNodes,
         skeletonRoot, 
         nodeToTimelines
     );
@@ -91,7 +93,7 @@ SkinningComponentDeserializer::computeSkinning(file::Options::Ptr						options,
 			m = bones[boneId]->offsetMatrix();
 
         precomputeModelToRootMatrices(
-            bones[boneId]->node(),
+			boneNodes[boneId],
             skeletonRoot,
             nodeToFrameMatrices,
             matrices
@@ -109,6 +111,7 @@ SkinningComponentDeserializer::computeSkinning(file::Options::Ptr						options,
 		numFrames, 
 		skeletonRoot, 
 		bones, 
+		boneNodes,
 		nodeToFrameMatrices,
 		slaveAnimations
 	);
@@ -119,10 +122,9 @@ SkinningComponentDeserializer::computeSkinning(file::Options::Ptr						options,
 	//clean(skeletonRoot);
 
 	return Skinning::create(
-        skin->reorganizeByVertices()->transposeMatrices()->disposeBones(),
+        skin->reorganizeByVertices()->transposeMatrices(),
         options->skinningMethod(),
         context,
-        slaveAnimations,
 		skeletonRoot,
 		true
     );
@@ -134,6 +136,7 @@ SkinningComponentDeserializer::computeSurfaceAnimations(unsigned int				duration
 														unsigned int				numFrames, 
 														Node::Ptr					skeletonRoot, 
 														const std::vector<BonePtr>&	bones,
+														const std::vector<scene::Node::Ptr>&		boneNodes,
 														const NodeMatrices&			nodeToFrameMatrices,
 														std::vector<AnimationPtr>&	slaveAnimations)
 {
@@ -143,9 +146,9 @@ SkinningComponentDeserializer::computeSurfaceAnimations(unsigned int				duration
 
 	std::set<Node::Ptr>	slaves;
 
-	for (auto& b : bones)
+	for (unsigned int boneId = 0; boneId < bones.size(); ++boneId)
 	{
-		auto childrenWithSurface = NodeSet::create(b->node())
+		auto childrenWithSurface = NodeSet::create(boneNodes[boneId])
 			->descendants(true)
 			->where([](Node::Ptr n)
 			{ 
@@ -291,15 +294,16 @@ SkinningComponentDeserializer::sampleAnimations(file::Options::Ptr						options,
 /*static*/
 unsigned int
 SkinningComponentDeserializer::collectAnimations(const std::vector<geometry::Bone::Ptr>&	bones, 
+												 const std::vector<scene::Node::Ptr>&		boneNodes,
 												 Node::Ptr									skeletonRoot,
 												 NodeTransformTimeline&						nodeToTimelines)
 {
 	unsigned int duration = 0;
 	nodeToTimelines.clear();
 
-	for (auto& bone : bones)
+	for (unsigned int boneId = 0; boneId < bones.size(); ++boneId)
 	{
-		auto currentNode = bone->node();
+		auto currentNode = boneNodes[boneId];
 		do
 		{
 			if (!currentNode)
@@ -332,6 +336,7 @@ SkinningComponentDeserializer::collectAnimations(const std::vector<geometry::Bon
 /*static*/
 bool
 SkinningComponentDeserializer::haveBonesCommonRoot(const std::vector<geometry::Bone::Ptr>&	bones, 
+												   const std::vector<scene::Node::Ptr>&		boneNodes,
 												   Node::Ptr								skeletonRoot)
 {
 	if (bones.empty())

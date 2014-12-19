@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -34,92 +34,92 @@ struct lua_State;
 
 namespace minko
 {
-	namespace component
-	{
-		class LuaScriptManager :
-			public AbstractScript
-		{
-			friend class LuaScript;
+    namespace component
+    {
+        class LuaScriptManager :
+            public AbstractScript
+        {
+            friend class LuaScript;
 
-		public:
-			typedef std::shared_ptr<LuaScriptManager> 				Ptr;
+        public:
+            typedef std::shared_ptr<LuaScriptManager>                 Ptr;
 
-		private:
-			typedef std::shared_ptr<file::Loader>					LoaderPtr;
-			typedef std::chrono::high_resolution_clock::time_point	time_point;
+        private:
+            typedef std::shared_ptr<file::Loader>                    LoaderPtr;
+            typedef std::chrono::high_resolution_clock::time_point    time_point;
 
-		private:
-			bool						_ready;
+        private:
+            bool                        _ready;
 
-			LuaGlue						_state;
-			time_point					_previousTime;
+            LuaGlue                        _state;
+            time_point                    _previousTime;
 
-            Signal<LoaderPtr>::Slot	    _dependencySlot;
+            Signal<LoaderPtr>::Slot        _dependencySlot;
 
-		public:
-			inline static
-			Ptr
-			create()
-			{
-				auto sm = std::shared_ptr<LuaScriptManager>(new LuaScriptManager());
+        public:
+            inline static
+            Ptr
+            create()
+            {
+                auto sm = std::shared_ptr<LuaScriptManager>(new LuaScriptManager());
 
-				sm->initialize();
+                sm->initialize();
 
-				return sm;
-			}
+                return sm;
+            }
 
-			inline static
-			Ptr
-			create(std::vector<std::function<void(LuaGlue&)>> bindingsFunctions)
-			{
-				auto sm = std::shared_ptr<LuaScriptManager>(new LuaScriptManager());
+            inline static
+            Ptr
+            create(std::vector<std::function<void(LuaGlue&)>> bindingsFunctions)
+            {
+                auto sm = std::shared_ptr<LuaScriptManager>(new LuaScriptManager());
 
-				sm->initialize(bindingsFunctions);
-				
-				return sm;
-			}
+                sm->initialize(bindingsFunctions);
 
-			inline
-			bool
-			ready(std::shared_ptr<scene::Node> node)
-			{
-				return _ready;
-			}
+                return sm;
+            }
 
-			void
-			update(std::shared_ptr<scene::Node> target);
+            inline
+            bool
+            ready(std::shared_ptr<scene::Node> node)
+            {
+                return _ready;
+            }
 
-			inline
-			LuaGlue*
-			state()
-			{
-				return &_state;
-			}
+            void
+            update(std::shared_ptr<scene::Node> target);
 
-		private:
-			LuaScriptManager() :
-				_ready(false)
-			{
+            inline
+            LuaGlue*
+            state()
+            {
+                return &_state;
+            }
 
-			}
+        private:
+            LuaScriptManager() :
+                _ready(false)
+            {
 
-			void
-			targetAddedHandler(AbstractComponent::Ptr cmp, std::shared_ptr<scene::Node> target);
+            }
 
-			void
-			initialize();
+            void
+            targetAddedHandler(AbstractComponent::Ptr cmp, std::shared_ptr<scene::Node> target);
 
-			void
-			initialize(std::vector<std::function<void(LuaGlue&)>> bindingsFunctions);
+            void
+            initialize();
 
-			void
-			initializeBindings();
+            void
+            initialize(std::vector<std::function<void(LuaGlue&)>> bindingsFunctions);
 
-			void
-			loadStandardLibrary();
+            void
+            initializeBindings();
 
-			void
-			dependencyLoadedHandler(LoaderPtr loader);
-		};
-	}
+            void
+            loadStandardLibrary();
+
+            void
+            dependencyLoadedHandler(LoaderPtr loader);
+        };
+    }
 }

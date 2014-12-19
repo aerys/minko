@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -40,84 +40,84 @@ using namespace minko::extension;
 void
 PhysicsExtension::bind()
 {
-	file::SceneParser::registerComponent(50, std::bind(&PhysicsExtension::deserializePhysics,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+    file::SceneParser::registerComponent(50, std::bind(&PhysicsExtension::deserializePhysics,
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3));
 }
 
 std::shared_ptr<component::AbstractComponent>
-PhysicsExtension::deserializePhysics(std::string&							serializedCollider,
-									 std::shared_ptr<file::AssetLibrary>	assetLibrary,
-									 std::shared_ptr<file::Dependency>		dependencies)
+PhysicsExtension::deserializePhysics(std::string&                            serializedCollider,
+                                     std::shared_ptr<file::AssetLibrary>    assetLibrary,
+                                     std::shared_ptr<file::Dependency>        dependencies)
 {
-	component::bullet::AbstractPhysicsShape::Ptr	deserializedShape;
-	msgpack::zone									mempool;
-	msgpack::object									deserialized;
-	// shape type, shape data, delta transform, <density, friction, restit>, dynamic, trigger, filterGroup, filterMask
-	msgpack::type::tuple<int, std::string, msgpack::type::tuple<uint, std::string>, std::string, bool, bool, uint, uint> dst;
+    component::bullet::AbstractPhysicsShape::Ptr    deserializedShape;
+    msgpack::zone                                    mempool;
+    msgpack::object                                    deserialized;
+    // shape type, shape data, delta transform, <density, friction, restit>, dynamic, trigger, filterGroup, filterMask
+    msgpack::type::tuple<int, std::string, msgpack::type::tuple<uint, std::string>, std::string, bool, bool, uint, uint> dst;
 
-	auto result = msgpack::unpack(serializedCollider.data(), serializedCollider.size() - 1, nullptr, &mempool, &deserialized);
-	deserialized.convert(&dst);
+    auto result = msgpack::unpack(serializedCollider.data(), serializedCollider.size() - 1, nullptr, &mempool, &deserialized);
+    deserialized.convert(&dst);
 
-	std::vector<float> shapeData = deserialize::TypeDeserializer::deserializeVector<float>(dst.a1);
-	std::vector<float> physicsData = deserialize::TypeDeserializer::deserializeVector<float>(dst.a3);
+    std::vector<float> shapeData = deserialize::TypeDeserializer::deserializeVector<float>(dst.a1);
+    std::vector<float> physicsData = deserialize::TypeDeserializer::deserializeVector<float>(dst.a3);
 
-	uint shapeType = dst.a0;
+    uint shapeType = dst.a0;
 
-	if (shapeType == 1) // Ball
-		deserializedShape = component::bullet::SphereShape::create(
-			shapeData[0]
-		);
-	else if (shapeType == 2) // Box
-		deserializedShape = component::bullet::BoxShape::create(
-			shapeData[0],
-			shapeData[1],
-			shapeData[2]
-		);
-	else if (shapeType == 3) // Cylinder
-		deserializedShape = component::bullet::CylinderShape::create(
-			shapeData[1],
-			0.5f * shapeData[0],
-			shapeData[1]
-		);
-	else if (shapeType == 4) // Cone
-		deserializedShape = component::bullet::ConeShape::create(
-			shapeData[1],
-			shapeData[0]
-		);
+    if (shapeType == 1) // Ball
+        deserializedShape = component::bullet::SphereShape::create(
+            shapeData[0]
+        );
+    else if (shapeType == 2) // Box
+        deserializedShape = component::bullet::BoxShape::create(
+            shapeData[0],
+            shapeData[1],
+            shapeData[2]
+        );
+    else if (shapeType == 3) // Cylinder
+        deserializedShape = component::bullet::CylinderShape::create(
+            shapeData[1],
+            0.5f * shapeData[0],
+            shapeData[1]
+        );
+    else if (shapeType == 4) // Cone
+        deserializedShape = component::bullet::ConeShape::create(
+            shapeData[1],
+            shapeData[0]
+        );
 
-	std::tuple<uint, std::string&> serializedMatrixTuple(dst.a2.a0, dst.a2.a1);
+    std::tuple<uint, std::string&> serializedMatrixTuple(dst.a2.a0, dst.a2.a1);
 
-	auto deltaMatrix = Any::cast<math::Matrix4x4::Ptr>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
+    auto deltaMatrix = Any::cast<math::Matrix4x4::Ptr>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
 
-	if (!deltaMatrix->equals(math::Matrix4x4::create()))
-		deserializedShape->initialize(deltaMatrix, math::Matrix4x4::create());
+    if (!deltaMatrix->equals(math::Matrix4x4::create()))
+        deserializedShape->initialize(deltaMatrix, math::Matrix4x4::create());
 
-	const auto	density		= physicsData[0];
-	const auto	friction	= physicsData[1];
-	const auto	restitution	= physicsData[2];
+    const auto    density        = physicsData[0];
+    const auto    friction    = physicsData[1];
+    const auto    restitution    = physicsData[2];
 
-	auto mass = density * deserializedShape->volume();
+    auto mass = density * deserializedShape->volume();
 
-	if (dst.a4 == false)
-		mass = 0.0f;
+    if (dst.a4 == false)
+        mass = 0.0f;
 
     const short filterGroup = short(dst.a6 & ((1<<16) - 1)); // overriden by node's layouts
-	const auto	filterMask = Layouts(dst.a7);
+    const auto    filterMask = Layouts(dst.a7);
 
-	auto data = component::bullet::ColliderData::create(
-		mass,
-		deserializedShape,
-		restitution,
-		friction
-		);
+    auto data = component::bullet::ColliderData::create(
+        mass,
+        deserializedShape,
+        restitution,
+        friction
+        );
 
-	auto collider = component::bullet::Collider::create(data)
-		//->collisionGroup(filterGroup) // information stored in node layouts 
-		->triggerCollisions(dst.a7 != 0);
+    auto collider = component::bullet::Collider::create(data)
+        //->collisionGroup(filterGroup) // information stored in node layouts
+        ->triggerCollisions(dst.a7 != 0);
 
-	collider->layoutMask(filterMask);
+    collider->layoutMask(filterMask);
 
-	return collider;
+    return collider;
 }

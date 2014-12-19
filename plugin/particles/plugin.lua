@@ -21,19 +21,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 minko.plugin.particles = {}
 
 function minko.plugin.particles:enable()
-	defines { "MINKO_PLUGIN_PARTICES" }
+	defines { "MINKO_PLUGIN_PARTICLES" }
 
-	minko.plugin.links { "particles" }
+	configuration { "not StaticLib" }
+		minko.plugin.links { "particles" }
 
-	minko.plugin.enable("serializer")
-	
-	includedirs {
-		minko.plugin.path("particles") .. "/include"
-	}
-	
-	prelinkcommands {
-		minko.action.copy(minko.plugin.path("particles") .. "/asset"),
-	}
+		minko.plugin.enable("serializer")
+		
+		includedirs {
+			minko.plugin.path("particles") .. "/include"
+		}
+		
+		prelinkcommands {
+			minko.action.copy(minko.plugin.path("particles") .. "/asset"),
+		}
 end
 
 newoption {

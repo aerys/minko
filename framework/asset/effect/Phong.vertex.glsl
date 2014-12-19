@@ -1,7 +1,11 @@
 #ifdef VERTEX_SHADER
 
 #ifdef GL_ES
+# ifdef MINKO_PLATFORM_IOS
+	precision highp float;
+# else
 	precision mediump float;
+# endif
 #endif
 
 #pragma include "Skinning.function.glsl"
@@ -40,7 +44,6 @@ void main(void)
 	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS || defined ENVIRONMENT_MAP_2D || defined ENVIRONMENT_CUBE_MAP
 	
 		vertexPosition	= worldPosition.xyz;
-		
 		vertexNormal	= normal;		
 
 		#ifdef NUM_BONES

@@ -6,7 +6,7 @@
 	},
 
 	"uniformBindings" : {
-		"textureSampler"	: "backbuffer",
+		"textureSampler"	: "material[${materialId}].backbuffer",
 		"texcoordOffset"	: "invBackbufferSize"
 	},
 

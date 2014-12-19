@@ -27,18 +27,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace component
-	{
-		class LuaLuaScript :
-			public LuaWrapper
-		{
-		public:
-			static
-			void
-			bind(LuaGlue& state)
-			{
-				state.Class<LuaScript>("LuaScript");
-			}
-		};
-	}
+    namespace component
+    {
+        class LuaLuaScript :
+            public LuaWrapper
+        {
+        public:
+            static
+            void
+            bind(LuaGlue& state)
+            {
+                state.Class<LuaScript>("LuaScript");
+            }
+        };
+    }
 }

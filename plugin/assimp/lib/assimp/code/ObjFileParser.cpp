@@ -108,19 +108,14 @@ void ObjFileParser::parseFile()
 		case 'v': // Parse a vertex texture coordinate
 			{
 				++m_DataIt;
-				if (*m_DataIt == ' ' || *m_DataIt == '\t')
-				{
-					// Read in vertex definition
+				if (*m_DataIt == ' ' || *m_DataIt == '\t') {
+					// read in vertex definition
 					getVector3(m_pModel->m_Vertices);
-				}
-				else if (*m_DataIt == 't')
-				{
-					// Read in texture coordinate (2D)
-					++m_DataIt;
-					getVector2(m_pModel->m_TextureCoord);
-				}
-				else if (*m_DataIt == 'n')
-				{
+				} else if (*m_DataIt == 't') {
+					// read in texture coordinate ( 2D or 3D )
+                                        ++m_DataIt;
+                                        getVector( m_pModel->m_TextureCoord );
+				} else if (*m_DataIt == 'n') {
 					// Read in normal vector definition
 					++m_DataIt;
 					getVector3( m_pModel->m_Normals );
@@ -236,9 +231,43 @@ void ObjFileParser::copyNextLine(char *pBuffer, size_t length)
 }
 
 // -------------------------------------------------------------------
+void ObjFileParser::getVector( std::vector<aiVector3D> &point3d_array ) {
+    size_t numComponents( 0 );
+    const char* tmp( &m_DataIt[0] );
+    while( !IsLineEnd( *tmp ) ) {
+        if ( !SkipSpaces( &tmp ) ) {
+            break;
+        }
+        SkipToken( tmp );
+        ++numComponents;
+    }
+    float x, y, z;
+    if( 2 == numComponents ) {
+        copyNextWord( m_buffer, BUFFERSIZE );
+        x = ( float ) fast_atof( m_buffer );
+
+        copyNextWord( m_buffer, BUFFERSIZE );
+        y = ( float ) fast_atof( m_buffer );
+        z = 0.0;
+    } else if( 3 == numComponents ) {
+        copyNextWord( m_buffer, BUFFERSIZE );
+        x = ( float ) fast_atof( m_buffer );
+
+        copyNextWord( m_buffer, BUFFERSIZE );
+        y = ( float ) fast_atof( m_buffer );
+
+        copyNextWord( m_buffer, BUFFERSIZE );
+        z = ( float ) fast_atof( m_buffer );
+    } else {
+        ai_assert( !"Invalid number of components" );
+    }
+    point3d_array.push_back( aiVector3D( x, y, z ) );
+    m_DataIt = skipLine<DataArrayIt>( m_DataIt, m_DataItEnd, m_uiLine );
+}
+
+// -------------------------------------------------------------------
 //	Get values for a new 3D vector instance
-void ObjFileParser::getVector3(std::vector<aiVector3D> &point3d_array)
-{
+void ObjFileParser::getVector3(std::vector<aiVector3D> &point3d_array) {
 	float x, y, z;
 	copyNextWord(m_buffer, BUFFERSIZE);
 	x = (float) fast_atof(m_buffer);	
@@ -246,18 +275,16 @@ void ObjFileParser::getVector3(std::vector<aiVector3D> &point3d_array)
 	copyNextWord(m_buffer, BUFFERSIZE);
 	y = (float) fast_atof(m_buffer);
 
-	copyNextWord(m_buffer, BUFFERSIZE);
-	z = (float) fast_atof(m_buffer);
+    copyNextWord( m_buffer, BUFFERSIZE );
+    z = ( float ) fast_atof( m_buffer );
 
 	point3d_array.push_back( aiVector3D( x, y, z ) );
-	//skipLine();
 	m_DataIt = skipLine<DataArrayIt>( m_DataIt, m_DataItEnd, m_uiLine );
 }
 
 // -------------------------------------------------------------------
 //	Get values for a new 2D vector instance
-void ObjFileParser::getVector2( std::vector<aiVector2D> &point2d_array )
-{
+void ObjFileParser::getVector2( std::vector<aiVector2D> &point2d_array ) {
 	float x, y;
 	copyNextWord(m_buffer, BUFFERSIZE);
 	x = (float) fast_atof(m_buffer);	
@@ -524,13 +551,15 @@ void ObjFileParser::getNewMaterial()
 {
 	m_DataIt = getNextToken<DataArrayIt>(m_DataIt, m_DataItEnd);
 	m_DataIt = getNextWord<DataArrayIt>(m_DataIt, m_DataItEnd);
-	if ( m_DataIt == m_DataItEnd )
-		return;
+    if( m_DataIt == m_DataItEnd ) {
+        return;
+    }
 
 	char *pStart = &(*m_DataIt);
 	std::string strMat( pStart, *m_DataIt );
-	while ( m_DataIt != m_DataItEnd && isSeparator( *m_DataIt ) )
-		m_DataIt++;
+    while( m_DataIt != m_DataItEnd && isSeparator( *m_DataIt ) ) {
+        ++m_DataIt;
+    }
 	std::map<std::string, ObjFile::Material*>::iterator it = m_pModel->m_MaterialMap.find( strMat );
 	if ( it == m_pModel->m_MaterialMap.end() )
 	{
@@ -555,8 +584,9 @@ void ObjFileParser::getNewMaterial()
 int ObjFileParser::getMaterialIndex( const std::string &strMaterialName )
 {
 	int mat_index = -1;
-	if ( strMaterialName.empty() )
-		return mat_index;
+    if( strMaterialName.empty() ) {
+        return mat_index;
+    }
 	for (size_t index = 0; index < m_pModel->m_MaterialLib.size(); ++index)
 	{
 		if ( strMaterialName == m_pModel->m_MaterialLib[ index ])
@@ -575,8 +605,9 @@ void ObjFileParser::getGroupName()
 	std::string strGroupName;
    
 	m_DataIt = getName<DataArrayIt>(m_DataIt, m_DataItEnd, strGroupName);
-	if ( isEndOfBuffer( m_DataIt, m_DataItEnd ) )
-		return;
+    if( isEndOfBuffer( m_DataIt, m_DataItEnd ) ) {
+        return;
+    }
 
 	// Change active group, if necessary
 	if ( m_pModel->m_strActiveGroup != strGroupName )
@@ -627,11 +658,13 @@ void ObjFileParser::getGroupNumberAndResolution()
 void ObjFileParser::getObjectName()
 {
 	m_DataIt = getNextToken<DataArrayIt>(m_DataIt, m_DataItEnd);
-	if (m_DataIt == m_DataItEnd)
-		return;
+    if( m_DataIt == m_DataItEnd ) {
+        return;
+    }
 	char *pStart = &(*m_DataIt);
-	while ( m_DataIt != m_DataItEnd && !isSeparator( *m_DataIt ) )
-		++m_DataIt;
+    while( m_DataIt != m_DataItEnd && !isSeparator( *m_DataIt ) ) {
+        ++m_DataIt;
+    }
 
 	std::string strObjectName(pStart, &(*m_DataIt));
 	if (!strObjectName.empty()) 
@@ -652,8 +685,9 @@ void ObjFileParser::getObjectName()
 		}
 
 		// Allocate a new object, if current one was not found before
-		if ( NULL == m_pModel->m_pCurrent )
-			createObject(strObjectName);
+        if( NULL == m_pModel->m_pCurrent ) {
+            createObject( strObjectName );
+        }
 	}
 	m_DataIt = skipLine<DataArrayIt>( m_DataIt, m_DataItEnd, m_uiLine );
 }
@@ -668,7 +702,6 @@ void ObjFileParser::createObject(const std::string &strObjectName)
 	m_pModel->m_pCurrent->m_strObjName = strObjectName;
 	m_pModel->m_Objects.push_back( m_pModel->m_pCurrent );
 	
-
 	createMesh();
 
 	if( m_pModel->m_pCurrentMaterial )

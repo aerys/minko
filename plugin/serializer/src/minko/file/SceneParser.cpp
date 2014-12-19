@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -19,18 +19,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/file/SceneParser.hpp"
-#include "minko/scene/Node.hpp"
-#include "msgpack.hpp"
+#include "minko/file/Options.hpp"
+#include "minko/file/Dependency.hpp"
+#include "minko/file/TextureParser.hpp"
 #include "minko/Types.hpp"
-#include <stack>
 #include "minko/component/Transform.hpp"
 #include "minko/component/JobManager.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/BoundingBox.hpp"
+#include "minko/component/MasterAnimation.hpp"
+#include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
-#include "minko/file/Options.hpp"
-#include "minko/file/Dependency.hpp"
-#include "minko/scene/NodeSet.hpp"
+
+#include "msgpack.hpp"
+
+#include <stack>
 
 using namespace minko;
 using namespace minko::file;
@@ -42,72 +45,84 @@ SceneParser::SceneParser()
 {
 	_geometryParser = file::GeometryParser::create();
 	_materialParser = file::MaterialParser::create();
+    _textureParser = file::TextureParser::create();
 
 	registerComponent(serialize::PROJECTION_CAMERA,
 		std::bind(&deserialize::ComponentDeserializer::deserializeProjectionCamera,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
 
 	registerComponent(serialize::TRANSFORM,
 		std::bind(&deserialize::ComponentDeserializer::deserializeTransform,
 		std::placeholders::_1,
 		std::placeholders::_2,
-		std::placeholders::_3));
+        std::placeholders::_3,
+		std::placeholders::_4));
 
 	registerComponent(serialize::AMBIENT_LIGHT,
 		std::bind(&deserialize::ComponentDeserializer::deserializeAmbientLight,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
 
 	registerComponent(serialize::DIRECTIONAL_LIGHT,
 		std::bind(&deserialize::ComponentDeserializer::deserializeDirectionalLight,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
 
 	registerComponent(serialize::SPOT_LIGHT,
 		std::bind(&deserialize::ComponentDeserializer::deserializeSpotLight,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
 
 	registerComponent(serialize::POINT_LIGHT,
 		std::bind(&deserialize::ComponentDeserializer::deserializePointLight,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
 
 	registerComponent(serialize::SURFACE,
 		std::bind(&deserialize::ComponentDeserializer::deserializeSurface,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
 
 	registerComponent(serialize::RENDERER,
 		std::bind(&deserialize::ComponentDeserializer::deserializeRenderer,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
 
 	registerComponent(serialize::ANIMATION,
 		std::bind(&deserialize::ComponentDeserializer::deserializeAnimation,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
 
 	registerComponent(serialize::SKINNING,
 		std::bind(&deserialize::ComponentDeserializer::deserializeSkinning,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
 
 	registerComponent(serialize::BOUNDINGBOX,
 		std::bind(&deserialize::ComponentDeserializer::deserializeBoundingBox,
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3));
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
 }
 
 void
@@ -126,7 +141,9 @@ SceneParser::parse(const std::string&					filename,
 {
 	_dependencies->options(options);
 	
-	readHeader(filename, data);
+    if (!readHeader(filename, data))
+        return;
+
 	std::string 		folderPath = extractFolderPath(resolvedFilename);
 
 	extractDependencies(assetLibrary, data, _headerSize, _dependenciesSize, options, folderPath);
@@ -228,7 +245,7 @@ SceneParser::parseNode(std::vector<SerializedNode>&			nodePack,
 		{
 			if (_componentIdToReadFunction.find(dst) != _componentIdToReadFunction.end())
 			{
-				std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[dst](componentPack[componentIndex], assetLibrary, _dependencies);
+                std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[dst](_version, componentPack[componentIndex], assetLibrary, _dependencies);
 
 				for (scene::Node::Ptr node : componentIdToNodes[componentIndex])
 					node->addComponent(newComponent);
@@ -241,15 +258,18 @@ SceneParser::parseNode(std::vector<SerializedNode>&			nodePack,
 	for (auto componentIndex2 : markedComponent)
 	{
 		isSkinningFree = false;
-		std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[serialize::SKINNING](componentPack[componentIndex2], assetLibrary, _dependencies);
+        std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[serialize::SKINNING](_version, componentPack[componentIndex2], assetLibrary, _dependencies);
 
 		for (scene::Node::Ptr node : componentIdToNodes[componentIndex2])
+		{
 			node->addComponent(newComponent);
+			node->addComponent(component::MasterAnimation::create());
+		}
 	}
     
 	if (isSkinningFree)
 	{
-		auto nodeSet = scene::NodeSet::create(root)->descendants(true)->where([](scene::Node::Ptr n){ return n->components<component::Surface>().size() != 0; });
+        auto nodeSet = scene::NodeSet::create(root)->descendants(true)->where([](scene::Node::Ptr n){ return !n->components<component::Surface>().empty() && n->components<component::BoundingBox>().empty(); });
     
 		for (auto n : nodeSet->nodes())
 		{

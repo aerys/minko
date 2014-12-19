@@ -15,7 +15,12 @@ minko.action.fail = function()
 end
 
 minko.action.copy = function(sourcePath)
-	if os.is('windows') then
+	local cygwinEnv = false
+	if string.startswith(os.getenv('OSTYPE'), 'CYGWIN') then
+		cygwinEnv = true
+	end
+
+	if os.is('windows') and not cygwinEnv then
 		sourcePath = path.translate(sourcePath)
 
 		local targetDir = string.startswith(_ACTION, "gmake") and '$(subst /,\\,$(TARGETDIR))' or '$(TargetDir)'
@@ -41,6 +46,10 @@ minko.action.copy = function(sourcePath)
 		return existenceTest .. 'cp -R ' .. sourcePath .. ' "' .. targetDir .. '" || :'
 	else
 		local targetDir = '${TARGETDIR}'
+		if cygwinEnv then
+			sourcePath = os.capture('cygpath -u "' .. sourcePath .. '"')
+			targetDir = os.capture('cygpath -u "' .. targetDir .. '"')
+		end
 
 		local existenceTest = string.find(sourcePath, '*') and '' or ('test -e ' .. sourcePath .. ' && ')
 
@@ -49,7 +58,12 @@ minko.action.copy = function(sourcePath)
 end
 
 minko.action.link = function(sourcePath)
-	if os.is('windows') then
+	local cygwinEnv = false
+	if string.startswith(os.getenv('OSTYPE'), 'CYGWIN') then
+		cygwinEnv = true
+	end
+
+	if os.is('windows') and not cygwinEnv then
 		-- fixme: not needed yet
 	elseif os.is("macosx") then
 		local targetDir = '${TARGETDIR}'
@@ -65,6 +79,10 @@ minko.action.link = function(sourcePath)
 		return existenceTest .. 'ln -s -f ' .. sourcePath .. ' "' .. targetDir .. '" || :'
 	else
 		local targetDir = '${TARGETDIR}'
+		if cygwinEnv then
+			sourcePath = os.capture('cygpath -u "' .. sourcePath .. '"')
+			targetDir = os.capture('cygpath -u "' .. targetDir .. '"')
+		end
 
 		local existenceTest = string.find(sourcePath, '*') and '' or ('test -e ' .. sourcePath .. ' && ')
 

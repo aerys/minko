@@ -9,6 +9,8 @@ end
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
+	
+	removeplatforms { "android", "ios", "html5" }
 
 	files {
 		"lib/**.hpp",
@@ -21,5 +23,6 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	includedirs {
 		"include",
+		minko.plugin.path("sdl") .. "/include",
 		"lib/osmesa/include"
 	}

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -28,431 +28,431 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace component
-	{
-		class ParticleSystem :
-			public AbstractComponent
-		{
-		public:
-			typedef std::shared_ptr<ParticleSystem>	Ptr;
+    namespace component
+    {
+        class ParticleSystem :
+            public AbstractComponent
+        {
+        public:
+            typedef std::shared_ptr<ParticleSystem>    Ptr;
 
-		private:
-			typedef std::shared_ptr<render::AbstractContext>					AbstractContextPtr;
-			typedef std::shared_ptr<file::AssetLibrary>							AssetLibraryPtr;
+        private:
+            typedef std::shared_ptr<render::AbstractContext>                    AbstractContextPtr;
+            typedef std::shared_ptr<file::AssetLibrary>                            AssetLibraryPtr;
 
-			typedef std::shared_ptr<Transform>									TransformPtr;
+            typedef std::shared_ptr<Transform>                                    TransformPtr;
 
-			typedef std::shared_ptr<scene::NodeSet>								NodeSetPtr;
-			typedef std::shared_ptr<scene::Node>								NodePtr;
-			typedef std::shared_ptr<AbstractComponent>							AbsCompPtr;
-			typedef std::shared_ptr<Renderer>									RendererPtr;
+            typedef std::shared_ptr<scene::NodeSet>                                NodeSetPtr;
+            typedef std::shared_ptr<scene::Node>                                NodePtr;
+            typedef std::shared_ptr<AbstractComponent>                            AbsCompPtr;
+            typedef std::shared_ptr<Renderer>                                    RendererPtr;
 
-			typedef std::shared_ptr<Surface>									SurfacePtr;
-			typedef std::shared_ptr<geometry::ParticlesGeometry>				GeometryPtr;
-			typedef std::shared_ptr<data::ParticlesProvider>					ParticlesProviderPtr;
-			typedef std::shared_ptr<render::Effect>								EffectPtr;
+            typedef std::shared_ptr<Surface>                                    SurfacePtr;
+            typedef std::shared_ptr<geometry::ParticlesGeometry>                GeometryPtr;
+            typedef std::shared_ptr<data::ParticlesProvider>                    ParticlesProviderPtr;
+            typedef std::shared_ptr<render::Effect>                                EffectPtr;
 
-			typedef std::shared_ptr<particle::shape::EmitterShape>				ShapePtr;
-			typedef std::shared_ptr<particle::sampler::Sampler<float> >			FloatSamplerPtr;
-			typedef std::shared_ptr<particle::modifier::IParticleInitializer>	IInitializerPtr;
-			typedef std::shared_ptr<particle::modifier::IParticleUpdater>		IUpdaterPtr;
-			typedef std::shared_ptr<particle::modifier::IParticleModifier>		ModifierPtr;
+            typedef std::shared_ptr<particle::shape::EmitterShape>                ShapePtr;
+            typedef std::shared_ptr<particle::sampler::Sampler<float> >            FloatSamplerPtr;
+            typedef std::shared_ptr<particle::modifier::IParticleInitializer>    IInitializerPtr;
+            typedef std::shared_ptr<particle::modifier::IParticleUpdater>        IUpdaterPtr;
+            typedef std::shared_ptr<particle::modifier::IParticleModifier>        ModifierPtr;
 
-		private:
-			class ParticleDistanceToCameraComparison
-			{
-			public:
-				component::ParticleSystem*	system;
+        private:
+            class ParticleDistanceToCameraComparison
+            {
+            public:
+                component::ParticleSystem*    system;
 
-				inline
-				bool
-				operator() (unsigned int p1Index, unsigned int p2Index)
-				{
-					return system->getParticleSquaredDistanceToCamera(p1Index)
-						 > system->getParticleSquaredDistanceToCamera(p2Index);
-				};
-			};
+                inline
+                bool
+                operator() (unsigned int p1Index, unsigned int p2Index)
+                {
+                    return system->getParticleSquaredDistanceToCamera(p1Index)
+                         > system->getParticleSquaredDistanceToCamera(p2Index);
+                };
+            };
 
-		private:
-			static const unsigned int 								    COUNT_LIMIT;
+        private:
+            static const unsigned int                                     COUNT_LIMIT;
 
-			GeometryPtr									                _geometry;
-			ParticlesProviderPtr						                _material;
-			EffectPtr									                _effect;
-			SurfacePtr									                _surface;
+            GeometryPtr                                                    _geometry;
+            ParticlesProviderPtr                                        _material;
+            EffectPtr                                                    _effect;
+            SurfacePtr                                                    _surface;
 
-			TransformPtr								                _toWorld;
+            TransformPtr                                                _toWorld;
 
-			unsigned int												_countLimit;
-			unsigned int								                _maxCount;
-			//unsigned int								                _liveCount;
-			unsigned int								                _previousLiveCount;
-			std::vector<IInitializerPtr> 				                _initializers;
-			std::vector<IUpdaterPtr> 					                _updaters;
-			std::vector<particle::ParticleData>			                _particles;
-			std::vector<unsigned int>					                _particleOrder;
-			std::vector<float>							                _particleDistanceToCamera;
+            unsigned int                                                _countLimit;
+            unsigned int                                                _maxCount;
+            //unsigned int                                                _liveCount;
+            unsigned int                                                _previousLiveCount;
+            std::vector<IInitializerPtr>                                 _initializers;
+            std::vector<IUpdaterPtr>                                     _updaters;
+            std::vector<particle::ParticleData>                            _particles;
+            std::vector<unsigned int>                                    _particleOrder;
+            std::vector<float>                                            _particleDistanceToCamera;
 
-			bool										                _isInWorldSpace;
-			float 										                _localToWorld[16];
-			bool										                _isZSorted;
-			float 										                _cameraCoords[3];
-			ParticleDistanceToCameraComparison			                _comparisonObject;
-			bool										                _useOldPosition;
+            bool                                                        _isInWorldSpace;
+            float                                                         _localToWorld[16];
+            bool                                                        _isZSorted;
+            float                                                         _cameraCoords[3];
+            ParticleDistanceToCameraComparison                            _comparisonObject;
+            bool                                                        _useOldPosition;
 
-			float										                _rate;
-			FloatSamplerPtr								                _lifetime;
-			ShapePtr									                _shape;
-			particle::StartDirection					                _emissionDirection;
-			FloatSamplerPtr 							                _emissionVelocity;
+            float                                                        _rate;
+            FloatSamplerPtr                                                _lifetime;
+            ShapePtr                                                    _shape;
+            particle::StartDirection                                    _emissionDirection;
+            FloatSamplerPtr                                             _emissionVelocity;
 
-			float										                _createTimer;
+            float                                                        _createTimer;
 
-			int											                _format;
+            int                                                            _format;
 
-			float										                _updateStep;
-			bool										                _playing;
-			bool										                _emitting;
-			float										                _time;
+            float                                                        _updateStep;
+            bool                                                        _playing;
+            bool                                                        _emitting;
+            float                                                        _time;
 
-			Signal<std::shared_ptr<SceneManager>, float, float>::Slot	_frameBeginSlot;
-			Signal<AbsCompPtr, NodePtr>::Slot			                _targetAddedSlot;
-			Signal<AbsCompPtr, NodePtr>::Slot			                _targetRemovedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot		                _addedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot		                _removedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot		                _rootDescendantAddedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot		                _rootDescendantRemovedSlot;
-			Signal<NodePtr, NodePtr, AbsCompPtr>::Slot	                _componentAddedSlot;
-			Signal<NodePtr, NodePtr, AbsCompPtr>::Slot	                _componentRemovedSlot;
+            Signal<std::shared_ptr<SceneManager>, float, float>::Slot    _frameBeginSlot;
+            Signal<AbsCompPtr, NodePtr>::Slot                            _targetAddedSlot;
+            Signal<AbsCompPtr, NodePtr>::Slot                            _targetRemovedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot                        _addedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot                        _removedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot                        _rootDescendantAddedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot                        _rootDescendantRemovedSlot;
+            Signal<NodePtr, NodePtr, AbsCompPtr>::Slot                    _componentAddedSlot;
+            Signal<NodePtr, NodePtr, AbsCompPtr>::Slot                    _componentRemovedSlot;
 
-		public:
-			static
-			Ptr
-			create(AssetLibraryPtr			assets,
-				   float					rate,
-				   FloatSamplerPtr			lifetime,
-				   ShapePtr					shape,
-				   particle::StartDirection	emissionDirection,
-				   FloatSamplerPtr 			emissionVelocity)
-			{
-				Ptr ptr = std::shared_ptr<ParticleSystem> (new ParticleSystem(
-					assets,
-					rate,
-					lifetime,
-					shape,
-					emissionDirection,
-					emissionVelocity
-				));
+        public:
+            static
+            Ptr
+            create(AssetLibraryPtr            assets,
+                   float                    rate,
+                   FloatSamplerPtr            lifetime,
+                   ShapePtr                    shape,
+                   particle::StartDirection    emissionDirection,
+                   FloatSamplerPtr             emissionVelocity)
+            {
+                Ptr ptr = std::shared_ptr<ParticleSystem> (new ParticleSystem(
+                    assets,
+                    rate,
+                    lifetime,
+                    shape,
+                    emissionDirection,
+                    emissionVelocity
+                ));
 
-				ptr->initialize();
+                ptr->initialize();
 
-				return ptr;
-			};
+                return ptr;
+            };
 
-			inline
-			ParticlesProviderPtr
-			material() const
-			{
-				return _material;
-			}
+            inline
+            ParticlesProviderPtr
+            material() const
+            {
+                return _material;
+            }
 
-			inline
-			Ptr
-			rate(float value)
-			{
-				_rate =  1.0f / value;
+            inline
+            Ptr
+            rate(float value)
+            {
+                _rate =  1.0f / value;
 
-				updateMaxParticlesCount();
-
-                return std::static_pointer_cast<ParticleSystem>(shared_from_this());
-			}
-
-			inline
-			Ptr
-			lifetime(FloatSamplerPtr value)
-			{
-				_lifetime = value;
-
-				updateMaxParticlesCount();
+                updateMaxParticlesCount();
 
                 return std::static_pointer_cast<ParticleSystem>(shared_from_this());
-			}
+            }
 
-			inline
-			Ptr
-			shape(ShapePtr value)
-			{
-				_shape = value;
+            inline
+            Ptr
+            lifetime(FloatSamplerPtr value)
+            {
+                _lifetime = value;
 
-                return std::static_pointer_cast<ParticleSystem>(shared_from_this());
-			}
-
-			inline
-			Ptr
-			emissionDirection(particle::StartDirection value)
-			{
-				_emissionDirection = value;
+                updateMaxParticlesCount();
 
                 return std::static_pointer_cast<ParticleSystem>(shared_from_this());
-			}
+            }
 
-			inline
-			Ptr
-			emissionVelocity(FloatSamplerPtr value)
-			{
-				_emissionVelocity = value;
+            inline
+            Ptr
+            shape(ShapePtr value)
+            {
+                _shape = value;
 
                 return std::static_pointer_cast<ParticleSystem>(shared_from_this());
-			}
+            }
 
-			inline
-			void
-			updateRate(unsigned int updatesPerSecond)
-			{
-				_updateStep = 1.0f / (float)updatesPerSecond;
-			}
+            inline
+            Ptr
+            emissionDirection(particle::StartDirection value)
+            {
+                _emissionDirection = value;
 
-			inline
-			Ptr
-			playing(bool value)
-			{
+                return std::static_pointer_cast<ParticleSystem>(shared_from_this());
+            }
+
+            inline
+            Ptr
+            emissionVelocity(FloatSamplerPtr value)
+            {
+                _emissionVelocity = value;
+
+                return std::static_pointer_cast<ParticleSystem>(shared_from_this());
+            }
+
+            inline
+            void
+            updateRate(unsigned int updatesPerSecond)
+            {
+                _updateStep = 1.0f / (float)updatesPerSecond;
+            }
+
+            inline
+            Ptr
+            playing(bool value)
+            {
                 _playing = value;
 
                 return std::static_pointer_cast<ParticleSystem>(shared_from_this());
-			}
+            }
 
-			inline
-			Ptr
-			emitting(bool value)
-			{
-				_emitting = value;
-
-                return std::static_pointer_cast<ParticleSystem>(shared_from_this());
-			}
-
-			inline
-			bool
-			emitting() const
-			{
-				return _emitting;
-			}
-
-			inline
-			Ptr
-			play()
-			{
-				if (_playing)
-					return std::static_pointer_cast<ParticleSystem>(shared_from_this());
-
-				reset();
-
-				return playing(true);
-			}
-
-			inline
-			Ptr
-			stop()
-			{
-				if (!_playing)
-					return std::static_pointer_cast<ParticleSystem>(shared_from_this());
-
-				reset();
-				playing(false);
-				updateVertexBuffer();
+            inline
+            Ptr
+            emitting(bool value)
+            {
+                _emitting = value;
 
                 return std::static_pointer_cast<ParticleSystem>(shared_from_this());
-			}
+            }
 
-			inline
-			Ptr
-			pause()
-			{
-				return playing(false);
-			}
+            inline
+            bool
+            emitting() const
+            {
+                return _emitting;
+            }
 
-			inline
-			Ptr
-			resume()
-			{
-				return playing(true);
-			}
+            inline
+            Ptr
+            play()
+            {
+                if (_playing)
+                    return std::static_pointer_cast<ParticleSystem>(shared_from_this());
 
-		public:
-			void
-			updateSystem(float	timeStep,
-					     bool	emit);
+                reset();
 
-			void
-			fastForward(float           time,
-						unsigned int    updatesPerSecond = 0);
+                return playing(true);
+            }
 
-			void
-			reset();
+            inline
+            Ptr
+            stop()
+            {
+                if (!_playing)
+                    return std::static_pointer_cast<ParticleSystem>(shared_from_this());
 
-		public:
-			Ptr
-			add(ModifierPtr);
+                reset();
+                playing(false);
+                updateVertexBuffer();
 
-			Ptr
-			remove(ModifierPtr);
+                return std::static_pointer_cast<ParticleSystem>(shared_from_this());
+            }
 
-			bool
-			has(ModifierPtr) const;
+            inline
+            Ptr
+            pause()
+            {
+                return playing(false);
+            }
 
-		public:
+            inline
+            Ptr
+            resume()
+            {
+                return playing(true);
+            }
+
+        public:
+            void
+            updateSystem(float    timeStep,
+                         bool    emit);
+
+            void
+            fastForward(float           time,
+                        unsigned int    updatesPerSecond = 0);
+
+            void
+            reset();
+
+        public:
+            Ptr
+            add(ModifierPtr);
+
+            Ptr
+            remove(ModifierPtr);
+
+            bool
+            has(ModifierPtr) const;
+
+        public:
             Ptr
             isInWorldSpace(bool);
 
-			inline
-			bool
-			isInWorldSpace() const
-			{
-				return _isInWorldSpace;
-			}
+            inline
+            bool
+            isInWorldSpace() const
+            {
+                return _isInWorldSpace;
+            }
 
-			Ptr
-			isZSorted(bool);
+            Ptr
+            isZSorted(bool);
 
-			Ptr
-			useOldPosition(bool);
+            Ptr
+            useOldPosition(bool);
 
         /**
-			inline
-			void
-			isInWorldSpace(bool value)
-			{
-				if (_isInWorldSpace == value)
-					return;
+            inline
+            void
+            isInWorldSpace(bool value)
+            {
+                if (_isInWorldSpace == value)
+                    return;
 
-				_isInWorldSpace = value;
+                _isInWorldSpace = value;
 
-				if (_isInWorldSpace)
-					_material->set("particles.worldspace",	true);
-				else
-					_material->unset("particles.worldspace");
-			};
+                if (_isInWorldSpace)
+                    _material->set("particles.worldspace",    true);
+                else
+                    _material->unset("particles.worldspace");
+            };
             **/
 
-			inline
-			float*
-			localToWorld() 
-			{
-				return _localToWorld;
-			}
+            inline
+            float*
+            localToWorld()
+            {
+                return _localToWorld;
+            }
 
 
-			inline
-			float*
-			cameraPos()
-			{
-				return _cameraCoords;
-			};
+            inline
+            float*
+            cameraPos()
+            {
+                return _cameraCoords;
+            };
 
 
 
-			inline
-			float
-			getParticleSquaredDistanceToCamera(unsigned int particleIndex)
-			{
-				return _particleDistanceToCamera[particleIndex];
-			};
+            inline
+            float
+            getParticleSquaredDistanceToCamera(unsigned int particleIndex)
+            {
+                return _particleDistanceToCamera[particleIndex];
+            };
 
-			void
-			updateParticleDistancesToCamera();
+            void
+            updateParticleDistancesToCamera();
 
-		public:
-			inline
-			unsigned int
-			maxParticlesCount() const
-			{
-				return _maxCount;
-			};
+        public:
+            inline
+            unsigned int
+            maxParticlesCount() const
+            {
+                return _maxCount;
+            };
 
-			void
-			updateMaxParticlesCount();
+            void
+            updateMaxParticlesCount();
 
-			inline
-			void
-			countLimit(unsigned int value)
-			{
-				if (value > COUNT_LIMIT)
-					throw std::length_error("A particle system can have a maximum of " + std::to_string(COUNT_LIMIT) + " particles.");
+            inline
+            void
+            countLimit(unsigned int value)
+            {
+                if (value > COUNT_LIMIT)
+                    throw std::length_error("A particle system can have a maximum of " + std::to_string(COUNT_LIMIT) + " particles.");
 
-				_countLimit = value;
+                _countLimit = value;
 
-				updateMaxParticlesCount();
-			};
+                updateMaxParticlesCount();
+            };
 
-			inline
-			std::vector<particle::ParticleData>&
-			getParticles()
-			{
-				return _particles;
-			};
+            inline
+            std::vector<particle::ParticleData>&
+            getParticles()
+            {
+                return _particles;
+            };
 
-			void
-			createParticle(unsigned int 						particleIndex,
-						   const particle::shape::EmitterShape&	emitter,
-						   float								timeLived);
+            void
+            createParticle(unsigned int                         particleIndex,
+                           const particle::shape::EmitterShape&    emitter,
+                           float                                timeLived);
 
-			//void
-			//killParticle(unsigned int							particleIndex);
+            //void
+            //killParticle(unsigned int                            particleIndex);
 
-		public:
-			inline
-			unsigned int
-			formatFlags() const
-			{
-				return _format;
-			};
+        public:
+            inline
+            unsigned int
+            formatFlags() const
+            {
+                return _format;
+            };
 
-			unsigned int
-			updateVertexFormat();
+            unsigned int
+            updateVertexFormat();
 
-		private:
-			void
-			resizeParticlesVector();
+        private:
+            void
+            resizeParticlesVector();
 
-			void
-			addComponents(unsigned int components, bool blockVSInit = false);
+            void
+            addComponents(unsigned int components, bool blockVSInit = false);
 
-			inline
-			void
-			setInVertexBuffer(float* ptr, unsigned int offset, float value)
-			{
+            inline
+            void
+            setInVertexBuffer(float* ptr, unsigned int offset, float value)
+            {
                 unsigned int idx = offset;
                 for (unsigned int i = 0; i < 4; ++i)
                 {
                     ptr[idx] = value;
                     idx += _geometry->vertexSize();
                 }
-			};
+            };
 
-			void
-			updateVertexBuffer();
+            void
+            updateVertexBuffer();
 
-		protected:
-			ParticleSystem(AssetLibraryPtr,
-						   float					rate,
-						   FloatSamplerPtr			lifetime,
-						   ShapePtr,
-						   particle::StartDirection	emissionDirection,
-						   FloatSamplerPtr 			emissionVelocity);
+        protected:
+            ParticleSystem(AssetLibraryPtr,
+                           float                    rate,
+                           FloatSamplerPtr            lifetime,
+                           ShapePtr,
+                           particle::StartDirection    emissionDirection,
+                           FloatSamplerPtr             emissionVelocity);
 
-			void
-			initialize();
+            void
+            initialize();
 
-			void
-			targetAddedHandler(AbsCompPtr ctrl, NodePtr target);
+            void
+            targetAddedHandler(AbsCompPtr ctrl, NodePtr target);
 
-			void
-			targetRemovedHandler(AbsCompPtr ctrl, NodePtr target);
+            void
+            targetRemovedHandler(AbsCompPtr ctrl, NodePtr target);
 
-			void
-			findSceneManager();
+            void
+            findSceneManager();
 
-			void
-			frameBeginHandler(std::shared_ptr<SceneManager>, float, float);
-		};
-	}
+            void
+            frameBeginHandler(std::shared_ptr<SceneManager>, float, float);
+        };
+    }
 }

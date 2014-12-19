@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -24,106 +24,106 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace component
-	{
-		namespace bullet
-		{
-			class CylinderShape:
-				public AbstractPhysicsShape
-			{
-			public:
-				typedef std::shared_ptr<CylinderShape>				Ptr;
+    namespace component
+    {
+        namespace bullet
+        {
+            class CylinderShape:
+                public AbstractPhysicsShape
+            {
+            public:
+                typedef std::shared_ptr<CylinderShape>                Ptr;
 
-			private:
-				typedef std::shared_ptr<geometry::LineGeometry>		LineGeometryPtr;
-				typedef std::shared_ptr<render::AbstractContext>	AbsContextPtr;
+            private:
+                typedef std::shared_ptr<geometry::LineGeometry>        LineGeometryPtr;
+                typedef std::shared_ptr<render::AbstractContext>    AbsContextPtr;
 
-			private:
-				float												_halfExtentX;
-				float												_halfExtentY;
-				float												_halfExtentZ;
+            private:
+                float                                                _halfExtentX;
+                float                                                _halfExtentY;
+                float                                                _halfExtentZ;
 
-			public:
-				inline static
-					Ptr
-					create(float halfExtentX, float halfExtentY, float halfExtentZ)
-				{
-					return std::shared_ptr<CylinderShape>(new CylinderShape(halfExtentX, halfExtentY, halfExtentZ));
-				}
+            public:
+                inline static
+                    Ptr
+                    create(float halfExtentX, float halfExtentY, float halfExtentZ)
+                {
+                    return std::shared_ptr<CylinderShape>(new CylinderShape(halfExtentX, halfExtentY, halfExtentZ));
+                }
 
-				inline 
-				float 
-				halfExtentX() const
-				{
-					return _halfExtentX;
-				}
+                inline
+                float
+                halfExtentX() const
+                {
+                    return _halfExtentX;
+                }
 
-				inline
-				void
-				halfExtentX(float halfExtentX)
-				{
-					const bool needsUpdate	= fabsf(halfExtentX - _halfExtentX) > 1e-6f;
-					_halfExtentX	= halfExtentX;
-					if (needsUpdate)
-						shapeChanged()->execute(shared_from_this());
-				}
+                inline
+                void
+                halfExtentX(float halfExtentX)
+                {
+                    const bool needsUpdate    = fabsf(halfExtentX - _halfExtentX) > 1e-6f;
+                    _halfExtentX    = halfExtentX;
+                    if (needsUpdate)
+                        shapeChanged()->execute(shared_from_this());
+                }
 
-				inline 
-				float 
-				halfExtentY() const
-				{
-					return _halfExtentY;
-				}
+                inline
+                float
+                halfExtentY() const
+                {
+                    return _halfExtentY;
+                }
 
-				inline
-				void
-				halfExtentY(float halfExtentY)
-				{
-					const bool needsUpdate	= fabsf(halfExtentY - _halfExtentY) > 1e-6f;
-					_halfExtentY	= halfExtentY;
-					if (needsUpdate)
-						shapeChanged()->execute(shared_from_this());
-				}
+                inline
+                void
+                halfExtentY(float halfExtentY)
+                {
+                    const bool needsUpdate    = fabsf(halfExtentY - _halfExtentY) > 1e-6f;
+                    _halfExtentY    = halfExtentY;
+                    if (needsUpdate)
+                        shapeChanged()->execute(shared_from_this());
+                }
 
-				inline 
-				float 
-				halfExtentZ() const
-				{
-					return _halfExtentZ;
-				}
+                inline
+                float
+                halfExtentZ() const
+                {
+                    return _halfExtentZ;
+                }
 
-				inline
-				void
-				halfExtentZ(float halfExtentZ)
-				{
-					const bool needsUpdate	= fabsf(halfExtentZ - _halfExtentZ) > 1e-6f;
-					_halfExtentZ	= halfExtentZ;
-					if (needsUpdate)
-						shapeChanged()->execute(shared_from_this());
-				}
+                inline
+                void
+                halfExtentZ(float halfExtentZ)
+                {
+                    const bool needsUpdate    = fabsf(halfExtentZ - _halfExtentZ) > 1e-6f;
+                    _halfExtentZ    = halfExtentZ;
+                    if (needsUpdate)
+                        shapeChanged()->execute(shared_from_this());
+                }
 
-				inline
-				float
-				volume() const
-				{
-					const float volume	= float(M_PI) * (_halfExtentX + _margin) * (_halfExtentZ + _margin) // elliptical basis area approx
-						* (_halfExtentY + _margin);
+                inline
+                float
+                volume() const
+                {
+                    const float volume    = float(M_PI) * (_halfExtentX + _margin) * (_halfExtentZ + _margin) // elliptical basis area approx
+                        * (_halfExtentY + _margin);
 
-					return volume * _volumeScaling;
-				}
+                    return volume * _volumeScaling;
+                }
 
-				LineGeometryPtr
-				getGeometry(AbsContextPtr) const;
+                LineGeometryPtr
+                getGeometry(AbsContextPtr) const;
 
-			private:
-				CylinderShape(float halfExtentX, float halfExtentY, float halfExtentZ):
-					AbstractPhysicsShape(CYLINDER),
-					_halfExtentX(halfExtentX),
-					_halfExtentY(halfExtentY),
-					_halfExtentZ(halfExtentZ)
-				{
-				}
-			};
-		}
-	}
+            private:
+                CylinderShape(float halfExtentX, float halfExtentY, float halfExtentZ):
+                    AbstractPhysicsShape(CYLINDER),
+                    _halfExtentX(halfExtentX),
+                    _halfExtentY(halfExtentY),
+                    _halfExtentZ(halfExtentZ)
+                {
+                }
+            };
+        }
+    }
 }

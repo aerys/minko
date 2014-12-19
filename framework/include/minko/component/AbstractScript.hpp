@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -40,6 +40,8 @@ namespace minko
 
 		private:
 			std::unordered_map<NodePtr, bool>				                _started;
+            float                                                           _time;
+            float                                                           _deltaTime;
 
 			Signal<AbsCmpPtr, NodePtr>::Slot				                _targetAddedSlot;
 			Signal<AbsCmpPtr, NodePtr>::Slot				                _targetRemovedSlot;
@@ -51,6 +53,20 @@ namespace minko
 			Signal<std::shared_ptr<SceneManager>, float, float>::Slot		_frameEndSlot;
 
 		protected:
+            inline
+            float
+            time()
+            {
+                return _time;
+            }
+
+            inline
+            float
+            deltaTime()
+            {
+                return _deltaTime;
+            }
+
 			virtual
 			void
 			start(NodePtr target)

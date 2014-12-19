@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -28,8 +28,8 @@ using namespace minko::particle::sampler;
 using namespace minko::particle::modifier;
 
 StartForce::StartForce(Sampler<float>::Ptr fx,
-					   Sampler<float>::Ptr fy,
-					   Sampler<float>::Ptr fz): 
+                       Sampler<float>::Ptr fy,
+                       Sampler<float>::Ptr fz):
     IParticleInitializer(),
     Modifier3<float> (fx, fy, fz)
 {
@@ -37,21 +37,21 @@ StartForce::StartForce(Sampler<float>::Ptr fx,
 
 void
 StartForce::initialize(ParticleData&    particle,
-	    			   float            time) const
+                       float            time) const
 {
-	particle.startfx    = _x->value();
-	particle.startfy    = _y->value();
-	particle.startfz    = _z->value();
+    particle.startfx    = _x->value();
+    particle.startfy    = _y->value();
+    particle.startfz    = _z->value();
 
     const float tt      = time * time;
 
-	particle.x          += particle.startfx * tt;
-	particle.y          += particle.startfy * tt;
-	particle.z          += particle.startfz * tt;
+    particle.x          += particle.startfx * tt;
+    particle.y          += particle.startfy * tt;
+    particle.z          += particle.startfz * tt;
 }
 
 unsigned int
 StartForce::getNeededComponents() const
 {
-	return VertexComponentFlags::DEFAULT;
+    return VertexComponentFlags::DEFAULT;
 }

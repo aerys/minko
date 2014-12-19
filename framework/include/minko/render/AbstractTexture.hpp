@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -43,6 +43,7 @@ namespace minko
 		protected:
 			const TextureType	_type;
             TextureSampler      _sampler;
+            TextureFormat       _format;
 			unsigned int		_width;		
 			unsigned int		_height;	
 			unsigned int		_widthGPU;	// always power of 2
@@ -68,6 +69,13 @@ namespace minko
 			}
 
 			inline
+            TextureFormat
+            format() const
+            {
+                return _format;
+            }
+
+            inline
 			uint
 			width() const
 			{
@@ -88,6 +96,9 @@ namespace minko
                 return _mipMapping;
             }
 
+            void
+            activateMipMapping();
+
 			inline
 			bool
 			optimizeForRenderToTexture() const
@@ -97,15 +108,9 @@ namespace minko
 
 			virtual
 			void
-			data(unsigned char*, 
-				 TextureFormat	format		= TextureFormat::RGBA,
+            data(unsigned char* data,
 				 int			widthGPU	= -1,
 				 int			heightGPU	= -1) = 0;
-
-			//virtual
-			//void
-			//uploadMipLevel(uint	level,
-			//			   unsigned char*) = 0;
 
 			virtual
 			void
@@ -116,14 +121,13 @@ namespace minko
 							AbstractContextPtr	context,
 							unsigned int		width,
 							unsigned int		height,
+                            TextureFormat       format,
 							bool                mipMapping,
 							bool				optimizeForRenderToTexture,
 							bool				resizeSmoothly,
 							const std::string&	filename);
 
-			~AbstractTexture()
-			{
-			}
+            ~AbstractTexture() = default;
 
 			static
 			void

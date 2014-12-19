@@ -39,6 +39,14 @@ namespace minko
 			bool		_isLocked;
 
 		public:
+			virtual
+			AbstractTimeline::Ptr
+			clone()
+			{
+				throw std::logic_error("Missing clone function for a component.");
+				return nullptr;
+			}
+
 			inline
 			const std::string&
 			propertyName() const

@@ -1,0 +1,7 @@
+{
+    "states" : {
+        "zSorted" : { "binding" : "material[${materialUuid}].zSorted" }
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

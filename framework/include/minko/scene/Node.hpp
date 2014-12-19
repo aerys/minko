@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -36,7 +36,7 @@ namespace minko
 			typedef std::shared_ptr<Node>							Ptr;
 
 		private:
-			typedef std::shared_ptr<component::AbstractComponent>	AbsCtrlPtr;
+			typedef std::shared_ptr<component::AbstractComponent>	AbsCmpPtr;
 
 		private:
 			std::string 						_name;
@@ -44,13 +44,13 @@ namespace minko
 			std::weak_ptr<Node> 				_root;
             std::weak_ptr<Node>					_parent;
 			data::Store                     _container;
-			std::list<AbsCtrlPtr>				_components;
+			std::list<AbsCmpPtr>				_components;
 
 			Signal<Ptr, Ptr, Ptr>				_added;
 			Signal<Ptr, Ptr, Ptr>				_removed;
 			Signal<Ptr, Ptr>					_layoutsChanged;
-			Signal<Ptr, Ptr, AbsCtrlPtr>		_componentAdded;
-			Signal<Ptr, Ptr, AbsCtrlPtr>		_componentRemoved;
+			Signal<Ptr, Ptr, AbsCmpPtr>		_componentAdded;
+			Signal<Ptr, Ptr, AbsCmpPtr>		_componentRemoved;
 
 			std::string							_uuid;
 
@@ -107,6 +107,18 @@ namespace minko
 
 				return node;
 			}
+
+			Ptr
+			clone(const CloneOption& option);
+
+			Ptr
+			cloneNode();
+
+			void
+			listItems(Node::Ptr clonedRoot, std::map<Node::Ptr, Node::Ptr>& nodeMap, std::map<AbsCmpPtr, AbsCmpPtr>& components);
+
+			void
+			rebindComponentsDependencies(std::map<AbsCmpPtr, AbsCmpPtr>& componentsMap, std::map<Node::Ptr, Node::Ptr> nodeMap, CloneOption option);
 
 			inline
 			const std::string&
@@ -192,14 +204,14 @@ namespace minko
 			}
 
 			inline
-			Signal<Ptr, Ptr, AbsCtrlPtr>&
+			Signal<Ptr, Ptr, AbsCmpPtr>&
 			componentAdded()
 			{
 				return _componentAdded;
 			}
 
 			inline
-			Signal<Ptr, Ptr, AbsCtrlPtr>&
+			Signal<Ptr, Ptr, AbsCmpPtr>&
 			componentRemoved()
 			{
 				return _componentRemoved;
@@ -218,13 +230,13 @@ namespace minko
 			contains(Ptr Node);
 
 			Ptr
-			addComponent(AbsCtrlPtr component);
+			addComponent(AbsCmpPtr component);
 
 			Ptr
-			removeComponent(AbsCtrlPtr component);
+			removeComponent(AbsCmpPtr component);
 
 			bool
-			hasComponent(AbsCtrlPtr component);
+			hasComponent(AbsCmpPtr component);
 
 			template <typename T>
 			inline
@@ -234,7 +246,7 @@ namespace minko
 				return component<T>() != nullptr;
 			}
 
-            const std::list<AbsCtrlPtr>
+            const std::list<AbsCmpPtr>
             components()
             {
                 return _components;

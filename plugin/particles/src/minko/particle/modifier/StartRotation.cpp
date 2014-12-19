@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -26,22 +26,22 @@ using namespace minko;
 using namespace minko::particle;
 using namespace minko::particle::modifier;
 
-StartRotation::StartRotation(SamplerPtr angle): 
+StartRotation::StartRotation(SamplerPtr angle):
     IParticleInitializer(),
     Modifier1<float> (angle)
 {
 }
 
 void
-StartRotation::initialize(ParticleData& 	particle,
-	    			 	  float				time) const
+StartRotation::initialize(ParticleData&     particle,
+                           float                time) const
 {
-	particle.rotation = _x->value();
+    particle.rotation = _x->value();
 }
 
 
 unsigned int
 StartRotation::getNeededComponents() const
 {
-	return VertexComponentFlags::ROTATION;
+    return VertexComponentFlags::ROTATION;
 }

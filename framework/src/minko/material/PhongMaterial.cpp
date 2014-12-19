@@ -29,8 +29,18 @@ using namespace minko::render;
 PhongMaterial::PhongMaterial():
 	BasicMaterial()
 {
-	specularColor(0xffffffff);
-	shininess(8.0f);
+}
+
+void
+PhongMaterial::initialize()
+{
+    BasicMaterial::initialize();
+
+    specularColor(0xffffffff);
+    shininess(64.0f);
+    environmentAlpha(1.0f);
+
+    data()->set("environmentMap2dType", int(EnvironmentMap2dType::Unset));
 }
 
 PhongMaterial::Ptr

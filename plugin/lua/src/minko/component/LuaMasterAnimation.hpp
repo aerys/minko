@@ -89,7 +89,7 @@ namespace minko
 			void
 			seekTimeWrapper(MasterAnimation::Ptr animation, uint time)
 			{
-				animation->seek(time);
+				animation->AbstractAnimation::seek(time);
 			}
 
 			static

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,74 +23,74 @@ using namespace minko;
 using namespace minko::data;
 
 HalfEdge::HalfEdge(unsigned int startNodeId,
-				   unsigned int endNodeId,
-				   unsigned int edgeId) :
-	_startNodeId(startNodeId),
-	_endNodeId(endNodeId),
-	_edgeId(edgeId),
-	_marked(false),
-	_adjacent(nullptr),
-	_next(nullptr),
-	_prec(nullptr)
+                   unsigned int endNodeId,
+                   unsigned int edgeId) :
+    _startNodeId(startNodeId),
+    _endNodeId(endNodeId),
+    _edgeId(edgeId),
+    _marked(false),
+    _adjacent(nullptr),
+    _next(nullptr),
+    _prec(nullptr)
 {
 }
 
 bool
 HalfEdge::indiceInEdge(unsigned int indice)
 {
-	return indice == _startNodeId || indice == _endNodeId;
+    return indice == _startNodeId || indice == _endNodeId;
 }
 
 bool
 HalfEdge::indiceInFace(unsigned int indice)
 {
-	return indice == _face[0]->startNodeId() || indice == _face[1]->startNodeId() || indice == _face[2]->startNodeId();
+    return indice == _face[0]->startNodeId() || indice == _face[1]->startNodeId() || indice == _face[2]->startNodeId();
 }
 
 unsigned int
 HalfEdge::getThirdVertex()
 {
-	for (int i = 0; i < 3; i++)
-	{
-		if (_face[i]->startNodeId() != _startNodeId && _face[i]->startNodeId() != _endNodeId)
-			return _face[i]->startNodeId();
-	}
+    for (int i = 0; i < 3; i++)
+    {
+        if (_face[i]->startNodeId() != _startNodeId && _face[i]->startNodeId() != _endNodeId)
+            return _face[i]->startNodeId();
+    }
 
-	return 0;
+    return 0;
 }
 
-void 
+void
 HalfEdge::setFace(HalfEdgePtr he1,
-				  HalfEdgePtr he2,
-				  HalfEdgePtr he3)
+                  HalfEdgePtr he2,
+                  HalfEdgePtr he3)
 {
-	_face.push_back(he1);
-	_face.push_back(he2);
-	_face.push_back(he3);
+    _face.push_back(he1);
+    _face.push_back(he2);
+    _face.push_back(he3);
 }
 
 namespace minko
 {
-	namespace data
-	{
-		std::ostream &operator<<(std::ostream &flux, const HalfEdge& halfEdge)
-		{
+    namespace data
+    {
+        std::ostream &operator<<(std::ostream &flux, const HalfEdge& halfEdge)
+        {
 
-			flux << "HalfEdge " << halfEdge.edgeId() << " : " << halfEdge.startNodeId() << " - " << halfEdge.endNodeId() << std::endl;
-			flux << "  triangle : " << halfEdge.face()[0]->startNodeId() << ", " << halfEdge.face()[1]->startNodeId() << ", " << halfEdge.face()[2]->startNodeId() << std::endl;
-			flux <<	"  next     : " << halfEdge.next()->startNodeId() << " - " << halfEdge.next()->endNodeId() << std::endl;
-			flux <<	"  prec     : " << halfEdge.prec()->startNodeId() << " - " << halfEdge.prec()->endNodeId() << std::endl;
-			if (halfEdge.adjacent() != nullptr)
-				flux << "  adjacent : " << halfEdge.adjacent()->startNodeId() << " - " << halfEdge.adjacent()->endNodeId() << std::endl;
+            flux << "HalfEdge " << halfEdge.edgeId() << " : " << halfEdge.startNodeId() << " - " << halfEdge.endNodeId() << std::endl;
+            flux << "  triangle : " << halfEdge.face()[0]->startNodeId() << ", " << halfEdge.face()[1]->startNodeId() << ", " << halfEdge.face()[2]->startNodeId() << std::endl;
+            flux <<    "  next     : " << halfEdge.next()->startNodeId() << " - " << halfEdge.next()->endNodeId() << std::endl;
+            flux <<    "  prec     : " << halfEdge.prec()->startNodeId() << " - " << halfEdge.prec()->endNodeId() << std::endl;
+            if (halfEdge.adjacent() != nullptr)
+                flux << "  adjacent : " << halfEdge.adjacent()->startNodeId() << " - " << halfEdge.adjacent()->endNodeId() << std::endl;
 
-			return flux;
-		}
+            return flux;
+        }
 
-		std::ostream &operator<<(std::ostream &flux, std::shared_ptr<HalfEdge> halfEdge)
-		{
-			const HalfEdge& he = *halfEdge;
+        std::ostream &operator<<(std::ostream &flux, std::shared_ptr<HalfEdge> halfEdge)
+        {
+            const HalfEdge& he = *halfEdge;
 
-			return flux << he;
-		}
-	}
+            return flux << he;
+        }
+    }
 }

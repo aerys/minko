@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -27,8 +27,8 @@ using namespace minko::particle;
 using namespace minko::particle::modifier;
 
 VelocityOverTime::VelocityOverTime(SamplerPtr vx,
-			     				   SamplerPtr vy,
-			     				   SamplerPtr vz): 
+                                    SamplerPtr vy,
+                                    SamplerPtr vz):
     IParticleUpdater(),
     Modifier3<float> (vx, vy, vz)
 {
@@ -37,11 +37,11 @@ VelocityOverTime::VelocityOverTime(SamplerPtr vx,
 
 void
 VelocityOverTime::update(std::vector<ParticleData>& particles,
-		 		   		 float                      timeStep) const
+                             float                      timeStep) const
 {
-	for (auto& particle : particles)
-    	if (particle.alive())
-	    	{
+    for (auto& particle : particles)
+        if (particle.alive())
+            {
                 const float t = particle.lifetime > 0.0f
                     ? particle.timeLived / particle.lifetime
                     : 0.0f;
@@ -50,16 +50,16 @@ VelocityOverTime::update(std::vector<ParticleData>& particles,
                 const float dy = _y->value(t) * timeStep;
                 const float dz = _z->value(t) * timeStep;
 
-		    	particle.x += dx;
-			    particle.y += dy;
-			    particle.z += dz;
-		    }
+                particle.x += dx;
+                particle.y += dy;
+                particle.z += dz;
+            }
 }
 
 
 unsigned int
 VelocityOverTime::getNeededComponents() const
 {
-	return VertexComponentFlags::DEFAULT;
+    return VertexComponentFlags::DEFAULT;
 }
 

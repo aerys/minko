@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,38 +23,38 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace component
-	{
-		namespace bullet
-		{
-			class LinearIdAllocator
-			{
-			public:
-				typedef std::shared_ptr<LinearIdAllocator> Ptr;
-		
-			private:
-				std::vector<uint>	_uids;
-				std::vector<uint>	_uidToIndex;
-				uint				_numUsedUids;
-				const uint			_MAX_UID;
+    namespace component
+    {
+        namespace bullet
+        {
+            class LinearIdAllocator
+            {
+            public:
+                typedef std::shared_ptr<LinearIdAllocator> Ptr;
 
-			public:
-				inline static
-				Ptr
-				create(uint maxUid = 2048)
-				{
-					return std::shared_ptr<LinearIdAllocator>(new LinearIdAllocator(maxUid));
-				}
+            private:
+                std::vector<uint>    _uids;
+                std::vector<uint>    _uidToIndex;
+                uint                _numUsedUids;
+                const uint            _MAX_UID;
 
-				uint
-				allocate();
+            public:
+                inline static
+                Ptr
+                create(uint maxUid = 2048)
+                {
+                    return std::shared_ptr<LinearIdAllocator>(new LinearIdAllocator(maxUid));
+                }
 
-				void
-				free(uint uid);
+                uint
+                allocate();
 
-			private:
-				LinearIdAllocator(uint maxUid);
-			};
-		}
-	}
+                void
+                free(uint uid);
+
+            private:
+                LinearIdAllocator(uint maxUid);
+            };
+        }
+    }
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -36,155 +36,163 @@ DevILParser::parse(const std::string&                 filename,
                  const std::vector<unsigned char>&  data,
                  std::shared_ptr<AssetLibrary>      AssetLibrary)
 {
-	// DevIL reference : http://www-f9.ijs.si/~matevz/docs/DevIL/apireference.html
+    // DevIL reference : http://www-f9.ijs.si/~matevz/docs/DevIL/apireference.html
 
-	ILuint devilID;
-	
-	ilInit();
-	iluInit();
+    ILuint devilID;
 
-	ilGenImages(1, &devilID);
-	ilBindImage(devilID);
+    ilInit();
+    iluInit();
 
-	ilLoadL(IL_TYPE_UNKNOWN, &data[0], data.size());
-	checkError();
-	
-	int format = ilGetInteger(IL_IMAGE_FORMAT);
+    ilGenImages(1, &devilID);
+    ilBindImage(devilID);
 
-	if (format == IL_BGR || format == IL_BGRA)
-	{
-		iluSwapColours();
-		checkError();
-		format = ilGetInteger(IL_IMAGE_FORMAT);
-	}
+    ilLoadL(IL_TYPE_UNKNOWN, &data[0], data.size());
+    checkError();
 
-	if (ilGetInteger(IL_IMAGE_ORIGIN) == IL_ORIGIN_LOWER_LEFT)
-	{
-		iluFlipImage();
-		checkError();
-	}
+    int format = ilGetInteger(IL_IMAGE_FORMAT);
 
-	computeDimensions();
+    if (format == IL_BGR || format == IL_BGRA)
+    {
+        iluSwapColours();
+        checkError();
+        format = ilGetInteger(IL_IMAGE_FORMAT);
+    }
 
-	auto bmpData = ilGetData();
-	checkError();
+    if (ilGetInteger(IL_IMAGE_ORIGIN) == IL_ORIGIN_LOWER_LEFT)
+    {
+        iluFlipImage();
+        checkError();
+    }
 
-	auto texture = render::Texture::create(options->context(), ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT), options->generateMipmaps());
+    computeDimensions();
 
-	texture->data(bmpData, format == IL_RGBA ? minko::render::TextureFormat::RGBA : minko::render::TextureFormat::RGB);
-	texture->upload();
+    auto bmpData = ilGetData();
+    checkError();
 
-	AssetLibrary->texture(filename, texture);
-		
-	complete()->execute(shared_from_this());
+    auto texture = render::Texture::create(
+        options->context(),
+        ilGetInteger(IL_IMAGE_WIDTH),
+        ilGetInteger(IL_IMAGE_HEIGHT),
+        options->generateMipmaps(),
+        false,
+        true,
+        format == IL_RGBA ? minko::render::TextureFormat::RGBA : minko::render::TextureFormat::RGB
+    );
 
-	ilShutDown();
+    texture->data(bmpData);
+    texture->upload();
+
+    AssetLibrary->texture(filename, texture);
+
+    complete()->execute(shared_from_this());
+
+    ilShutDown();
 }
 
 void
 DevILParser::computeDimensions()
 {
-	uint width = (uint)ilGetInteger(IL_IMAGE_WIDTH);
-	uint height = (uint)ilGetInteger(IL_IMAGE_HEIGHT);
+    uint width = (uint)ilGetInteger(IL_IMAGE_WIDTH);
+    uint height = (uint)ilGetInteger(IL_IMAGE_HEIGHT);
 
-	uint wPow = (uint)std::ceil(std::log(double(width)) / std::log(double(2u)));
-	uint hPow = (uint)std::ceil(std::log(double(height)) / std::log(double(2u)));
+    uint wPow = (uint)std::ceil(std::log(double(width)) / std::log(double(2u)));
+    uint hPow = (uint)std::ceil(std::log(double(height)) / std::log(double(2u)));
 
-	uint w = (uint)std::pow(2.f, wPow);
-	uint h = (uint)std::pow(2.f, hPow);
+    uint w = (uint)std::pow(2.f, wPow);
+    uint h = (uint)std::pow(2.f, hPow);
 
-	if (w > width)
-		wPow--;
+    if (w > width)
+        wPow--;
 
-	if (h > height)
-		hPow--;
+    if (h > height)
+        hPow--;
 
-	int maxPow = std::max(wPow, hPow);
+    int maxPow = std::max(wPow, hPow);
 
-	if (maxPow < 1)
-		maxPow = 1;
+    if (maxPow < 1)
+        maxPow = 1;
 
-	w = (uint)std::pow(2.f, maxPow);
+    w = (uint)std::pow(2.f, maxPow);
 
-	if (w > render::AbstractTexture::MAX_SIZE)
-		w = render::AbstractTexture::MAX_SIZE;
+    if (w > render::AbstractTexture::MAX_SIZE)
+        w = render::AbstractTexture::MAX_SIZE;
 
-	h = w;
+    h = w;
 
-	if (w != width || h != height)
-	{
-		iluImageParameter(ILU_FILTER, ILU_BILINEAR);
-		iluScale(w, h, ilGetInteger(IL_IMAGE_DEPTH));
-		checkError();
-	}
+    if (w != width || h != height)
+    {
+        iluImageParameter(ILU_FILTER, ILU_BILINEAR);
+        iluScale(w, h, ilGetInteger(IL_IMAGE_DEPTH));
+        checkError();
+    }
 }
 
 
 void
 DevILParser::checkError()
 {
-	ILuint error = ilGetError();
+    ILuint error = ilGetError();
 
-	if (error != IL_NO_ERROR)
-		throw std::runtime_error(std::string("DevILParser::parse"));
+    if (error != IL_NO_ERROR)
+        throw std::runtime_error(std::string("DevILParser::parse"));
 }
 
 std::vector<std::string>
 DevILParser::getSupportedFileExensions()
 {
-	std::vector<std::string> result;
+    std::vector<std::string> result;
 
-	result.push_back("bmp");
-	result.push_back("cut");
-	result.push_back("dcx");
-	result.push_back("dicom");
-	result.push_back("dcm");
-	result.push_back("dds");
-	result.push_back("fits");
-	result.push_back("fit");
-	result.push_back("ftx");
-	result.push_back("hdr");
-	result.push_back("icns");
-	result.push_back("ico");
-	result.push_back("cur");
-	result.push_back("iff");
-	result.push_back("iwi");
-	result.push_back("gif");
-	result.push_back("jpg");
-	result.push_back("jpe");
-	result.push_back("jpeg");
-	result.push_back("jp2");
-	result.push_back("lbm");
-	result.push_back("lif");
-	result.push_back("mdl");
-	result.push_back("mp3");
-	result.push_back("pal");
-	result.push_back("pcd");
-	result.push_back("pcx");
-	result.push_back("pic");
-	result.push_back("png");
-	result.push_back("pbm");
-	result.push_back("pgm");
-	result.push_back("pnm");
-	result.push_back("pix");
-	result.push_back("psd");
-	result.push_back("psp");
-	result.push_back("pxr");
-	result.push_back("raw");
-	result.push_back("rot");
-	result.push_back("sgi");
-	result.push_back("bw");
-	result.push_back("rgb");
-	result.push_back("rgba");
-	result.push_back("texture");
-	result.push_back("tga");
-	result.push_back("tif");
-	result.push_back("tpl");
-	result.push_back("utx");
-	result.push_back("wal");
-	result.push_back("vtf");
-	result.push_back("hdp");
-	result.push_back("xpm");
+    result.push_back("bmp");
+    result.push_back("cut");
+    result.push_back("dcx");
+    result.push_back("dicom");
+    result.push_back("dcm");
+    result.push_back("dds");
+    result.push_back("fits");
+    result.push_back("fit");
+    result.push_back("ftx");
+    result.push_back("hdr");
+    result.push_back("icns");
+    result.push_back("ico");
+    result.push_back("cur");
+    result.push_back("iff");
+    result.push_back("iwi");
+    result.push_back("gif");
+    result.push_back("jpg");
+    result.push_back("jpe");
+    result.push_back("jpeg");
+    result.push_back("jp2");
+    result.push_back("lbm");
+    result.push_back("lif");
+    result.push_back("mdl");
+    result.push_back("mp3");
+    result.push_back("pal");
+    result.push_back("pcd");
+    result.push_back("pcx");
+    result.push_back("pic");
+    result.push_back("png");
+    result.push_back("pbm");
+    result.push_back("pgm");
+    result.push_back("pnm");
+    result.push_back("pix");
+    result.push_back("psd");
+    result.push_back("psp");
+    result.push_back("pxr");
+    result.push_back("raw");
+    result.push_back("rot");
+    result.push_back("sgi");
+    result.push_back("bw");
+    result.push_back("rgb");
+    result.push_back("rgba");
+    result.push_back("texture");
+    result.push_back("tga");
+    result.push_back("tif");
+    result.push_back("tpl");
+    result.push_back("utx");
+    result.push_back("wal");
+    result.push_back("vtf");
+    result.push_back("hdp");
+    result.push_back("xpm");
 
-	return result;
+    return result;
 }

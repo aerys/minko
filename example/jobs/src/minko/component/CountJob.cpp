@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,32 +25,32 @@ using namespace minko::component;
 void
 CountJob::beforeFirstStep()
 {
-	_i = 0;
-	std::cout << "Init count Job" << std::endl;
+    _i = 0;
+    std::cout << "Init count Job" << std::endl;
 }
 
 float
 CountJob::priority()
 {
-	return 1.f;
+    return 1.f;
 }
 
 void
 CountJob::step()
 {
-	std::cout << _i << std::endl;
-	_i++;
+    std::cout << _i << std::endl;
+    _i++;
 }
 
 void
 CountJob::afterLastStep()
 {
-	std::cout << "Count Job done" << std::endl;
-	std::cout << std::endl;
+    std::cout << "Count Job done" << std::endl;
+    std::cout << std::endl;
 }
 
 bool
 CountJob::complete()
 {
-	return _i == 100;
+    return _i == 100;
 }

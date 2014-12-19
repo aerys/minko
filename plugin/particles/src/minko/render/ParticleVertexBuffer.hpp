@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,50 +25,50 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace render
-	{
-		class ParticleVertexBuffer :
-			public VertexBuffer
-		{
-		public:
-			typedef std::shared_ptr<ParticleVertexBuffer>	Ptr;
+    namespace render
+    {
+        class ParticleVertexBuffer :
+            public VertexBuffer
+        {
+        public:
+            typedef std::shared_ptr<ParticleVertexBuffer>    Ptr;
 
-		public:
-			inline static
-			Ptr
-			create(std::shared_ptr<render::AbstractContext> context)
-			{
-				auto vb = std::shared_ptr<ParticleVertexBuffer>(new ParticleVertexBuffer(context));
+        public:
+            inline static
+            Ptr
+            create(std::shared_ptr<render::AbstractContext> context)
+            {
+                auto vb = std::shared_ptr<ParticleVertexBuffer>(new ParticleVertexBuffer(context));
 
-				vb->initialize();
+                vb->initialize();
 
-				return vb;
-			}
+                return vb;
+            }
 
-			void
-			initialize();
-			
-			// void
-			// update(unsigned int	nParticles, unsigned int vertexSize);
+            void
+            initialize();
 
-			void
-			resize(unsigned int nParticles, unsigned int vertexSize);
+            // void
+            // update(unsigned int    nParticles, unsigned int vertexSize);
 
-			void
-			resetAttributes()
-			{
-				/*
-				attributes().resize(0);
-				vertexSize(0);
-				
-				addAttribute("offset", 2, 0);
-				addAttribute("position", 3, 2);
-				*/
-			};
+            void
+            resize(unsigned int nParticles, unsigned int vertexSize);
 
-		private:
-			ParticleVertexBuffer(std::shared_ptr<AbstractContext> context);
-		};
+            void
+            resetAttributes()
+            {
+                /*
+                attributes().resize(0);
+                vertexSize(0);
 
-	}
+                addAttribute("offset", 2, 0);
+                addAttribute("position", 3, 2);
+                */
+            };
+
+        private:
+            ParticleVertexBuffer(std::shared_ptr<AbstractContext> context);
+        };
+
+    }
 }

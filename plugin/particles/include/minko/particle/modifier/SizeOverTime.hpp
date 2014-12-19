@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,16 +25,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace particle
-	{
-		namespace modifier
-		{
-			class SizeOverTime: 
+    namespace particle
+    {
+        namespace modifier
+        {
+            class SizeOverTime:
                 public IParticleUpdater,
                 public Modifier1<float>
-			{
-			public:
-				typedef std::shared_ptr<SizeOverTime>	                            Ptr;
+            {
+            public:
+                typedef std::shared_ptr<SizeOverTime>                                Ptr;
 
             private:
                 typedef std::shared_ptr<sampler::LinearlyInterpolatedValue<float>>  LinearSamplerPtr;
@@ -43,21 +43,21 @@ namespace minko
             private:
                 static const std::string    PROPERTY_NAME;
 
-			public:
-				static
-				Ptr
-				create(LinearSamplerPtr sampler)
-				{
-					Ptr ptr = std::shared_ptr<SizeOverTime>(new SizeOverTime(sampler));
+            public:
+                static
+                Ptr
+                create(LinearSamplerPtr sampler)
+                {
+                    Ptr ptr = std::shared_ptr<SizeOverTime>(new SizeOverTime(sampler));
 
-					return ptr;
-				};
+                    return ptr;
+                };
 
-				void
-				update(std::vector<ParticleData>&, float) const;
+                void
+                update(std::vector<ParticleData>&, float) const;
 
-				unsigned int
-				getNeededComponents() const;
+                unsigned int
+                getNeededComponents() const;
 
                 void
                 setProperties(ParticlesProviderPtr) const;
@@ -65,9 +65,9 @@ namespace minko
                 void
                 unsetProperties(ParticlesProviderPtr) const;
 
-			protected:
-				SizeOverTime(LinearSamplerPtr);
-			};
-		}
-	}
+            protected:
+                SizeOverTime(LinearSamplerPtr);
+            };
+        }
+    }
 }

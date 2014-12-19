@@ -3,44 +3,31 @@
 	"name" : "oculusvr",
 	
 	"attributeBindings" : {
-		"aPosition"		: "geometry[${geometryId}].position",
-		"aUv"			: "geometry[${geometryId}].uv"
+        "aPosition"             : "geometry[${geometryId}].screenPosNDC",
+        "aTimewarpLerpFactor"   : "geometry[${geometryId}].timeWarpFactor",
+        "aVignette"             : "geometry[${geometryId}].vignetteFactor",
+        "aTexCoord0"            : "geometry[${geometryId}].tanEyeAnglesR",
+        "aTexCoord1"            : "geometry[${geometryId}].tanEyeAnglesG",
+        "aTexCoord2"            : "geometry[${geometryId}].tanEyeAnglesB"
+	},
+	
+	"uniformBindings" : {
+        "uEyeToSourceUVScale"   : "material[${materialId}].eyeToSourceUVScale",
+        "uEyeToSourceUVOffset"  : "material[${materialId}].eyeToSourceUVOffset",
+        "uEyeRotationStart"     : "material[${materialId}].eyeRotationStart",
+        "uEyeRotationEnd"       : "material[${materialId}].eyeRotationEnd",
+        "uTexture"              : "material[${materialId}].texture"
 	},
 	
 	"triangleCulling" : "none",
 	"depthTest" : [ false, "less_equal" ],
 	"samplerStates" : {
-		"uTex"	: { "textureFilter" : "linear" }
-	},
-	
-	"uniformBindings" : {
-		"uDistortionK"			: "oculusvr.distortionK",
-		"uScalePriorDistortion"	: "oculusvr.scalePriorDistortion",
-		"uScaleAfterDistortion"	: "oculusvr.scaleAfterDistortion",
-		"uPixelOffset"			: "oculusvr.pixelOffset"
+		"uTexture"	: { "textureFilter" : "linear" }
 	},
 	
 	"passes" : [
 		{
-			"name" : "oculus vr left",
-			"uniformBindings" : {
-				"uTex"					: "oculusvr.leftEyeTexture",
-				"uLensCenter"			: "oculusvr.leftLensCenter",
-				"uScreenCenter"			: "oculusvr.leftScreenCenter",
-				"uScreenCorner"			: "oculusvr.leftScreenCorner"
-			},	
-			"vertexShader" : "#pragma include('OculusVR.vertex.glsl')",
-			"fragmentShader" : "#pragma include('OculusVR.fragment.glsl')"
-		},
-		{
-			"name" : "oculus vr right",
-			"blendMode" : "additive",
-			"uniformBindings" : {
-				"uTex"					: "oculusvr.rightEyeTexture",
-				"uLensCenter"			: "oculusvr.rightLensCenter",
-				"uScreenCenter"			: "oculusvr.rightScreenCenter",
-				"uScreenCorner"			: "oculusvr.rightScreenCorner"
-			},
+			"name" : "oculus left",
 			"vertexShader" : "#pragma include('OculusVR.vertex.glsl')",
 			"fragmentShader" : "#pragma include('OculusVR.fragment.glsl')"
 		}

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -27,8 +27,8 @@ using namespace minko::particle;
 using namespace minko::particle::modifier;
 
 ForceOverTime::ForceOverTime(SamplerPtr fx,
-			     			 SamplerPtr fy,
-			     			 SamplerPtr fz): 
+                              SamplerPtr fy,
+                              SamplerPtr fz):
     IParticleUpdater(),
     Modifier3<float> (fx, fy, fz)
 {
@@ -36,28 +36,28 @@ ForceOverTime::ForceOverTime(SamplerPtr fx,
 }
 
 void
-ForceOverTime::update(std::vector<ParticleData>& 	particles,
-		 		   	  float							timeStep) const
+ForceOverTime::update(std::vector<ParticleData>&     particles,
+                          float                            timeStep) const
 {
-	float sqTime = timeStep * timeStep;
+    float sqTime = timeStep * timeStep;
 
-	for (auto& particle : particles)
+    for (auto& particle : particles)
         if (particle.alive())
-		    {
-                const float t = particle.lifetime > 0.0f 
+            {
+                const float t = particle.lifetime > 0.0f
                     ? particle.timeLived / particle.lifetime
                     : 0.0f;
 
-			    particle.x += _x->value(t) * sqTime;
-			    particle.y += _y->value(t) * sqTime;
-			    particle.z += _z->value(t) * sqTime;
-		    }
+                particle.x += _x->value(t) * sqTime;
+                particle.y += _y->value(t) * sqTime;
+                particle.z += _z->value(t) * sqTime;
+            }
 }
 
 
 unsigned int
 ForceOverTime::getNeededComponents() const
 {
-	return VertexComponentFlags::DEFAULT;
+    return VertexComponentFlags::DEFAULT;
 }
 

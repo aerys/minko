@@ -32,7 +32,7 @@ int
 main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Tutorial - My first script", WINDOW_WIDTH, WINDOW_HEIGHT);
-    auto sceneManager = component::SceneManager::create(canvas->context());
+    auto sceneManager = component::SceneManager::create(canvas);
     auto root = scene::Node::create("root")->addComponent(sceneManager);
 
     // initialization of Lua context

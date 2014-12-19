@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -19,178 +19,95 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/Common.hpp"
-
+#include "minko/Minko.hpp"
+#include "minko/OculusCommon.hpp"
 #include "minko/Signal.hpp"
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
 
-namespace OVR
-{
-	class System;
-	class HMDDevice;
-	class SensorDevice;
-	class SensorFusion;
-}
-
 namespace minko
 {
-	namespace component
-	{
-		class OculusVRCamera :
-			public AbstractComponent
-		{
-		public:
-			typedef std::shared_ptr<OculusVRCamera>	Ptr;
+    namespace component
+    {
+        class OculusVRCamera :
+            public AbstractComponent
+        {
+        public:
+            typedef std::shared_ptr<OculusVRCamera> Ptr;
 
-		private:
-			struct HMDInfo
-			{
-				float hResolution;
-				float vResolution;
-				float hScreenSize;
-				float vScreenSize;
-				float vScreenCenter;
-				float interpupillaryDistance;
-				float lensSeparationDistance;
-				float eyeToScreenDistance;
-				std::shared_ptr<math::Vector4> distortionK;
-			};
+        private:
+            typedef std::shared_ptr<scene::Node>				NodePtr;
+            typedef std::shared_ptr<AbstractComponent>			AbsCmpPtr;
+            typedef std::shared_ptr<SceneManager>				SceneMgrPtr;
+            typedef std::shared_ptr<render::AbstractTexture>    AbsTexturePtr;
+            typedef math::Vector2::Ptr                          Vector2Ptr;
 
-		private:
-			typedef std::shared_ptr<scene::Node>				NodePtr;
-			typedef std::shared_ptr<AbstractComponent>			AbsCmpPtr;
-			typedef std::shared_ptr<SceneManager>				SceneMgrPtr;
-			typedef std::shared_ptr<render::AbstractTexture>	AbsTexturePtr;
+        private:
+            SceneMgrPtr                                         _sceneManager;
 
-		private:
-			static const float									WORLD_UNIT;
-			static const unsigned int							TARGET_SIZE;
+            Signal<AbsCmpPtr, NodePtr>::Slot                    _targetAddedSlot;
+            Signal<AbsCmpPtr, NodePtr>::Slot                    _targetRemovedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot             _addedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot             _removedSlot;
+            Signal<SceneMgrPtr, uint, AbsTexturePtr>::Slot      _renderBeginSlot;
 
-			float												_aspectRatio;
-			float												_zNear;
-			float												_zFar;
-			HMDInfo												_hmdInfo;
+            std::shared_ptr<oculus::OculusImpl>                 _oculusImpl;
 
-			std::shared_ptr<OVR::System>						_ovrSystem;
-			std::shared_ptr<OVR::HMDDevice>						_ovrHMDDevice;
-			std::shared_ptr<OVR::SensorDevice>					_ovrSensorDevice;
-			std::shared_ptr<OVR::SensorFusion>					_ovrSensorFusion;
+        public:
+            inline static
+            Ptr
+            create(int viewportWidth,
+                   int viewportHeight,
+                   float zNear  = 0.1f,
+                   float zFar   = 1000.0f,
+                   void* window = nullptr)
+            {
+                auto ptr = std::shared_ptr<OculusVRCamera>(new OculusVRCamera(
+                    viewportWidth, viewportHeight, zNear, zFar
+                ));
 
-			std::shared_ptr<Transform>							_targetTransform;
-			std::shared_ptr<math::Vector3>						_eyePosition;
-			std::shared_ptr<math::Matrix4x4>					_eyeOrientation;
+                if (!ptr)
+                    return nullptr;
 
-			SceneMgrPtr											_sceneManager;
-			NodePtr												_root;
-			std::shared_ptr<PerspectiveCamera>					_leftCamera;
-			std::shared_ptr<PerspectiveCamera>					_rightCamera;
-			std::shared_ptr<Renderer>							_renderer;
+                ptr->initialize(viewportWidth, viewportHeight, zNear, zFar, window);
 
-			Signal<AbsCmpPtr, NodePtr>::Slot					_targetAddedSlot;
-			Signal<AbsCmpPtr, NodePtr>::Slot					_targetRemovedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot				_addedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot				_removedSlot;
-			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot			_targetComponentAddedHandler;
-			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot			_targetComponentRemovedHandler;
-			Signal<SceneMgrPtr, uint, AbsTexturePtr>::Slot		_renderEndSlot;
+                return ptr;
+            }
 
-		public:
-			inline static
-			Ptr
-			create(float aspectRatio,
-				   float zNear			= 0.1f,
-				   float zFar			= 1000.0f)
-			{
-				auto ptr = std::shared_ptr<OculusVRCamera>(new OculusVRCamera(aspectRatio, zNear, zFar));
+            void
+            updateViewport(int viewportWidth, int viewportHeight);
 
-				ptr->initialize();
+            static
+            bool
+            detected();
 
-				return ptr;
-			}
+        public:
+            ~OculusVRCamera(); // temporary solution
 
-			inline
-			float
-			aspectRatio() const
-			{
-				return _aspectRatio;
-			}
+        private:
+            OculusVRCamera(int viewportWidth, int viewportHeight, float zNear, float zFar);
 
-			inline
-			float
-			zNear() const
-			{
-				return _zNear;
-			}
+            void
+            initializeOVRDevice(void* window);
 
-			inline
-			float
-			zFar() const
-			{
-				return _zFar;
-			}
+            void
+            initialize(int viewportWidth, int viewportHeight, float zNear, float zFar, void* window);
 
-			void
-			resetHeadTracking();
+            void
+            updateCameraOrientation();
 
-			bool
-			HMDDeviceDetected() const;
+            void
+            targetAddedHandler(AbsCmpPtr component, NodePtr target);
 
-			bool
-			sensorDeviceDetected() const;
+            void
+            targetRemovedHandler(AbsCmpPtr component, NodePtr target);
 
-		public:
-			~OculusVRCamera(); // temporary solution
+            void
+            findSceneManager();
 
-		private:
-			OculusVRCamera(float aspectRatio, float zNear, float zFar);
-
-			void
-			resetOVRDevice();
-
-			void
-			initializeOVRDevice();
-
-			void
-			initialize();
-
-			void
-			updateCameraOrientation();
-
-			void
-			targetAddedHandler(AbsCmpPtr component, NodePtr target);
-
-			void
-			targetRemovedHandler(AbsCmpPtr component, NodePtr target);
-
-			void
-			addedHandler(NodePtr, NodePtr, NodePtr);
-
-			void
-			removedHandler(NodePtr, NodePtr, NodePtr);
-
-			void
-			renderEndHandler(SceneMgrPtr sceneManager, uint frameId, AbsTexturePtr	renderTarget);
-
-			void
-			targetComponentAddedHandler(NodePtr, NodePtr, AbsCmpPtr);
-
-			void
-			targetComponentRemovedHandler(NodePtr, NodePtr, AbsCmpPtr);
-
-			void
-			findSceneManager();
-
-			void
-			setSceneManager(SceneMgrPtr);
-
-			void
-			getHMDInfo(HMDInfo&) const;
-
-			static
-			float
-			distort(float, std::shared_ptr<math::Vector4>);
-		};
-	}
+            void
+            setSceneManager(SceneMgrPtr);
+        };
+    }
 }
 

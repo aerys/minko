@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -32,9 +32,30 @@ SpotLight::SpotLight(float diffuse,
 	AbstractDiscreteLight("spotLight", diffuse, specular)
 {
     updateModelToWorldMatrix(math::mat4(1.f));
+
     attenuationCoefficients(math::vec3(attenuationConstant, attenuationLinear, attenuationQuadratic));
 	innerConeAngle(innerAngleRadians);
 	outerConeAngle(outerAngleRadians);
+}
+
+SpotLight::SpotLight(const SpotLight& spotlight, const CloneOption& option) :
+	AbstractDiscreteLight("spotLights", spotlight.diffuse(), spotlight.specular())
+{
+    updateModelToWorldMatrix(math::mat4(1.f));
+
+    auto test = spotlight.attenuationCoefficients();
+
+	data()->set("attenuationCoefficients", spotlight.attenuationCoefficients());
+	data()->set("cosInnerConeAngle", spotlight.innerConeAngle());
+	data()->set("cosOuterConeAngle", spotlight.outerConeAngle());
+}
+
+AbstractComponent::Ptr
+SpotLight::clone(const CloneOption& option)
+{
+	auto light = std::shared_ptr<SpotLight>(new SpotLight(*this, option));
+
+	return light;
 }
 
 void
@@ -94,7 +115,7 @@ SpotLight::attenuationCoefficients(float constant, float linear, float quadratic
 SpotLight&
 SpotLight::attenuationCoefficients(const math::vec3& value)
 {
-	data()->set("attenuationCoeffs", value);
+	data()->set("attenuationCoefficients", value);
 
 	return *this;
 }

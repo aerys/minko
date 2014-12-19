@@ -939,10 +939,15 @@
 
 		xcode.PrintUserSettings(4, cfg)
 		xcode.PrintBuildSetting(4, 'ALWAYS_SEARCH_USER_PATHS = NO;', cfg)
+
+		xcode.PrintBuildSetting(4, 'ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;', cfg)
+		xcode.PrintBuildSetting(4, 'ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;', cfg)
 		
-		if not cfg.flags.Symbols then
+		if premake.config.isDebugBuild(cfg) then
 			-- printSetting(bs, 4,"DEBUG_INFORMATION_FORMAT", "dwarf-with-dsym", true)
 			xcode.PrintBuildSetting(4, 'DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";', cfg)
+		else
+			xcode.PrintBuildSetting(4, 'DEBUG_INFORMATION_FORMAT = "dwarf";', cfg)
 		end
 		
 		if cfg.kind ~= "StaticLib" and cfg.buildtarget.prefix ~= "" then
@@ -983,6 +988,8 @@
 		}
 		
 		local builtInSettings = {
+			"ASSETCATALOG_COMPILER_APPICON_NAME",
+			"ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME",
 			"ALWAYS_SEARCH_USER_PATHS",
 			"DEBUG_INFORMATION_FORMAT",
 			"EXECUTABLE_PREFIX",
@@ -992,6 +999,7 @@
 			"INFOPLIST_FILE",
 			"INSTALL_PATH",
 			"PRODUCT_NAME",
+			"TARGETED_DEVICE_FAMILY"
 		}
 		
 		local additionalSettings = {
@@ -1018,7 +1026,11 @@
 		xcode.PrintBuildSetting(4, 'INSTALL_PATH = ' .. installpaths[cfg.kind] .. ';', cfg)
 		-- printSetting(bs, 4,"PRODUCT_NAME", cfg.buildtarget.basename, true)
 		xcode.PrintBuildSetting(4, 'PRODUCT_NAME = "' .. cfg.buildtarget.basename .. '";', cfg)
-						
+
+		if cfg.platform == "ios" then
+			xcode.PrintBuildSetting(4, 'TARGETED_DEVICE_FAMILY = "1,2";', cfg)
+		end
+
 		_p(3,'};')
 		_p(3,'name = "%s";', cfgname)
 		_p(2,'};')

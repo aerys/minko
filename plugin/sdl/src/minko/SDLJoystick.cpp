@@ -20,19 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Canvas.hpp"
 #include "minko/SDLJoystick.hpp"
 
-#if defined(EMSCRIPTEN)
-# include "minko/MinkoWebGL.hpp"
-# include "SDL/SDL.h"
-# include "emscripten/emscripten.h"
-#elif defined(MINKO_ANGLE)
-# include "SDL2/SDL.h"
-# include "SDL2/SDL_syswm.h"
-# include <EGL/egl.h>
-# include <GLES2/gl2.h>
-# include <GLES2/gl2ext.h>
-#else
-# include "SDL.h"
-#endif
+#include "SDL.h"
 
 using namespace minko;
 
@@ -111,11 +99,11 @@ SDLJoystick::button(int platformSpecificButtonId)
 {
     Button button = static_cast<SDLJoystick::Button>(platformSpecificButtonId);
 
-#if defined(EMSCRIPTEN)
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
     // Conversion from HTML5 buttons.
     auto buttonIterator = HtmlToNativeMap.find(button);
     button = buttonIterator == HtmlToNativeMap.end() ? Button::Nothing : buttonIterator->second;
-#endif // EMSCRIPTEN
+#endif
 
     return button;
 }
@@ -129,13 +117,13 @@ SDLJoystick::buttonId(Button button)
 bool
 SDLJoystick::isButtonDown(Button button)
 {
-#if defined(EMSCRIPTEN)
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
     // Conversion to HTML5 buttons.
     auto buttonIterator = NativeToHtmlMap.find(button);
     button = buttonIterator == NativeToHtmlMap.end() ? Button::Nothing : buttonIterator->second;
-#endif // EMSCRIPTEN
+#endif
 
-    return SDL_JoystickGetButton(_joystick, buttonId(button));
+    return SDL_JoystickGetButton(_joystick, buttonId(button)) != 0;
 }
 
 std::string

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -30,46 +30,46 @@ using namespace minko::geometry;
 LineGeometry::Ptr
 bullet::ConeShape::getGeometry(render::AbstractContext::Ptr context) const
 {
-	static const unsigned int	numSteps	= 36;
-	static const float			angStep		= 2.0f * float(M_PI) / float(numSteps); 
-	static const float			cAngStep	= cosf(angStep);
-	static const float			sAngStep	= sinf(angStep);
+    static const unsigned int    numSteps    = 36;
+    static const float            angStep        = 2.0f * float(M_PI) / float(numSteps);
+    static const float            cAngStep    = cosf(angStep);
+    static const float            sAngStep    = sinf(angStep);
 
-	const auto radiusX = _radius * localScaling()->x();
-	const auto heightY = _height * localScaling()->y();
-	const auto radiusZ = _radius * localScaling()->z();
+    const auto radiusX = _radius * localScaling()->x();
+    const auto heightY = _height * localScaling()->y();
+    const auto radiusZ = _radius * localScaling()->z();
 
-	const float upperY	= 0.5f * heightY;
-	const float lowerY	= -0.5f * heightY;
-	auto lines			= LineGeometry::create(context)
+    const float upperY    = 0.5f * heightY;
+    const float lowerY    = -0.5f * heightY;
+    auto lines            = LineGeometry::create(context)
 
-		->moveTo(0.0f,		upperY,	0.0f)
-		->lineTo(-radiusX,	lowerY,	0.0f)
+        ->moveTo(0.0f,        upperY,    0.0f)
+        ->lineTo(-radiusX,    lowerY,    0.0f)
 
-		->moveTo(0.0f,		upperY,	0.0f)
-		->lineTo(radiusX,	lowerY,	0.0f)
+        ->moveTo(0.0f,        upperY,    0.0f)
+        ->lineTo(radiusX,    lowerY,    0.0f)
 
-		->moveTo(0.0f,		upperY,	0.0f)
-		->lineTo(0.0f,		lowerY,	-radiusZ)
+        ->moveTo(0.0f,        upperY,    0.0f)
+        ->lineTo(0.0f,        lowerY,    -radiusZ)
 
-		->moveTo(0.0f,		upperY,	0.0f)
-		->lineTo(0.0f,		lowerY,	radiusZ);
+        ->moveTo(0.0f,        upperY,    0.0f)
+        ->lineTo(0.0f,        lowerY,    radiusZ);
 
-	float cAng = 1.0f;
-	float sAng = 0.0f;
+    float cAng = 1.0f;
+    float sAng = 0.0f;
 
-	lines->moveTo(_radius * cAng, lowerY, _radius * sAng);
+    lines->moveTo(_radius * cAng, lowerY, _radius * sAng);
 
-	for (unsigned int i = 0; i < numSteps; ++i)
-	{
-		float c	= cAng * cAngStep - sAng * sAngStep;
-		float s	= cAng * sAngStep + sAng * cAngStep;
-		
-		cAng	= c;
-		sAng	= s;
+    for (unsigned int i = 0; i < numSteps; ++i)
+    {
+        float c    = cAng * cAngStep - sAng * sAngStep;
+        float s    = cAng * sAngStep + sAng * cAngStep;
 
-		lines->lineTo(radiusX * cAng, lowerY, radiusZ * sAng);
-	}
+        cAng    = c;
+        sAng    = s;
 
-	return lines;
+        lines->lineTo(radiusX * cAng, lowerY, radiusZ * sAng);
+    }
+
+    return lines;
 }

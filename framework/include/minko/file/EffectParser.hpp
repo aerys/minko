@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -30,6 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/MacroBinding.hpp"
 #include "minko/data/BindingMap.hpp"
 #include "minko/data/Store.hpp"
+#include "minko/render/States.hpp"
 
 namespace Json {
     class Value;
@@ -53,7 +54,7 @@ namespace minko
             typedef std::shared_ptr<render::Shader>						    ShaderPtr;
             typedef std::shared_ptr<file::Options>						    OptionsPtr;
             typedef std::unordered_map<std::string, AbstractTexturePtr>     TexturePtrMap;
-            typedef Signal<LoaderPtr, const ParserError&>::Slot             LoaderErrorSlot;
+            typedef Signal<LoaderPtr, const Error&>::Slot                   LoaderErrorSlot;
             typedef std::vector<PassPtr>                                    Technique;
             typedef std::unordered_map<std::string, Technique>              Techniques;
             typedef std::vector<PassPtr>                                    Passes;
@@ -74,11 +75,20 @@ namespace minko
             template <typename T>
             struct Block
             {
-                T bindings;
+                T bindingMap;
+            };
+
+            struct StateBlock : public Block<data::BindingMap>
+            {
+                render::States states;
+                
+                StateBlock()
+                {
+                    bindingMap.defaultValues.addProvider(states.data());
+                }
             };
 
             typedef Block<data::BindingMap> AttributeBlock;
-            typedef Block<data::BindingMap> StateBlock;
             typedef Block<data::MacroBindingMap> MacroBlock;
 
             struct UniformBlock : public Block<data::BindingMap>
@@ -90,10 +100,10 @@ namespace minko
             {
                 const Scope* parent;
                 std::vector<const Scope*> children;
-                AttributeBlock attributes;
-                UniformBlock uniforms;
-                StateBlock states;
-                MacroBlock macros;
+                AttributeBlock attributeBlock;
+                UniformBlock uniformBlock;
+                StateBlock stateBlock;
+                MacroBlock macroBlock;
                 std::string defaultTechnique;
                 Passes passes;
                 Techniques techniques;
@@ -105,10 +115,10 @@ namespace minko
                 Scope(const Scope& scope) :
                     parent(scope.parent),
                     children(),
-                    attributes(scope.attributes),
-                    uniforms(scope.uniforms),
-                    states(scope.states),
-                    macros(scope.macros),
+                    attributeBlock(scope.attributeBlock),
+                    uniformBlock(scope.uniformBlock),
+                    stateBlock(scope.stateBlock),
+                    macroBlock(scope.macroBlock),
                     defaultTechnique(scope.defaultTechnique),
                     passes(scope.passes),
                     techniques(scope.techniques)
@@ -117,10 +127,10 @@ namespace minko
                 Scope(const Scope& scope, Scope& parent) :
                     parent(&parent),
                     children(),
-                    attributes(scope.attributes),
-                    uniforms(scope.uniforms),
-                    states(scope.states),
-                    macros(scope.macros),
+                    attributeBlock(scope.attributeBlock),
+                    uniformBlock(scope.uniformBlock),
+                    stateBlock(scope.stateBlock),
+                    macroBlock(scope.macroBlock),
                     defaultTechnique(scope.defaultTechnique),
                     passes(scope.passes),
                     techniques(scope.techniques)
@@ -134,7 +144,7 @@ namespace minko
 			static std::unordered_map<std::string, render::CompareMode>			_compareFuncMap;
 			static std::unordered_map<std::string, render::StencilOperation>	_stencilOpMap;
 			static std::unordered_map<std::string, float>						_priorityMap;
-            static std::array<std::string, 14>                                  _stateNames;
+            static std::array<std::string, 1>                                  _extraStateNames;
 
 		private:
             std::string						_filename;
@@ -199,10 +209,6 @@ namespace minko
             static
             std::unordered_map<std::string, float>
             initializePriorityMap();
-
-            static
-            std::array<std::string, 14>
-            initializeStateNames();
 
             float
             getPriorityValue(const std::string& name);
@@ -289,10 +295,14 @@ namespace minko
                            bool&                colorMask) const;
 
             void
-            parseDepthTest(const Json::Value&	node,
+            parseDepthMask(const Json::Value&	node,
                            const Scope&         scope,
-                           bool&                depthMask,
-                           render::CompareMode& depthFunc);
+                           bool&                depthMask);
+
+            void
+            parseDepthFunction(const Json::Value&	node,
+                               const Scope&         scope,
+                               render::CompareMode& depthFunction);
 
             void
             parseTriangleCulling(const Json::Value&         node,
@@ -341,7 +351,7 @@ namespace minko
 
             void
             dependencyErrorHandler(std::shared_ptr<Loader>  loader,
-                                   const ParserError&       error,
+                                   const Error&       		error,
                                    const std::string&       filename);
 
             void

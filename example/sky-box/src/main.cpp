@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -26,27 +26,28 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::scene;
 
-const std::string	CUBE_TEXTURE	= "texture/cubemap_sea.jpeg";
+const std::string      CUBE_TEXTURE    = "texture/cubemap_sea.jpg";
 const unsigned int	NUM_OBJECTS		= 15;
 
 Node::Ptr
 createTransparentObject(float, float rotationY, file::AssetLibrary::Ptr);
 
-int main(int argc, char** argv)
+int
+main(int argc, char** argv)
 {
-	auto canvas = Canvas::create("Minko Example - Sky Box", 800, 600);
-	auto sceneManager = SceneManager::create(canvas->context());
+    auto canvas = Canvas::create("Minko Example - Skybox");
+    auto sceneManager = SceneManager::create(canvas);
 
 	// setup assets
     auto loader = sceneManager->assets()->loader();
-	loader->options()->resizeSmoothly(true);
-	loader->options()->generateMipmaps(true);
+
 	loader->options()
+        ->resizeSmoothly(true)
+        ->generateMipmaps(true)
 		->registerParser<file::PNGParser>("png")
-		->registerParser<file::JPEGParser>("jpg")
-        ->registerParser<file::JPEGParser>("jpeg");
-	
-	sceneManager->assets()->loader()
+        ->registerParser<file::JPEGParser>("jpg");
+
+    loader
         ->queue(CUBE_TEXTURE, file::Options::create(loader->options())->isCubeTexture(true))
 		->queue("effect/Basic.effect");
 
@@ -60,9 +61,9 @@ int main(int argc, char** argv)
 	auto camera = scene::Node::create("camera")
 		->addComponent(Renderer::create(0x7f7f7fff))
 		->addComponent(Transform::create(
-			math::inverse(math::lookAt(math::vec3(0.f, 0.f, 3.f), math::vec3(0.f), math::vec3(0.f, 1.f, 0.f))
-		)))
-		->addComponent(PerspectiveCamera::create(800.f / 600.f, (float)PI * 0.25f, .1f, 1000.f));
+            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+        ))
+        ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
 
 	auto sky = scene::Node::create("sky")
 		->addComponent(Transform::create(
@@ -79,14 +80,15 @@ int main(int argc, char** argv)
 		sky->addComponent(Surface::create(
 				sceneManager->assets()->geometry("cube"),
 				material::BasicMaterial::create()
-					->diffuseCubeMap(sceneManager->assets()->texture(CUBE_TEXTURE))
+                    ->diffuseCubeMap(sceneManager->assets()->cubeTexture(CUBE_TEXTURE))
 					->triangleCulling(render::TriangleCulling::FRONT),
 				sceneManager->assets()->effect("effect/Basic.effect")
 			));
 
 		assert(NUM_OBJECTS > 0);
-		const float scale = 1.25f * (float) PI / (float)NUM_OBJECTS;
-		const float	dAngle = 2.0f * (float) PI / (float)NUM_OBJECTS;
+
+        const float scale = 1.25f * float(M_PI) / float(NUM_OBJECTS);
+        const float dAngle = 2.0f * float(M_PI) / float(NUM_OBJECTS);
 
 		for (unsigned int objId = 0; objId < NUM_OBJECTS; ++objId)
             objects->addChild(createTransparentObject(scale, objId * dAngle, sceneManager->assets()));
@@ -113,11 +115,8 @@ int main(int argc, char** argv)
 		sceneManager->nextFrame(time, deltaTime);
 	});
 
-	sceneManager->assets()->loader()->load();
-
+    loader->load();
 	canvas->run();
-
-	return 0;
 }
 
 Node::Ptr

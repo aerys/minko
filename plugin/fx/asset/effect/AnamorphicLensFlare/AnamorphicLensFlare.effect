@@ -97,7 +97,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 		{
 			"name" : "threshold",
 			"uniformBindings" : {
-				"uInputTex"		: "backbuffer",
+				"uInputTex"		: "material[${materialId}].backbuffer",
 				"uScale"		: { "property" : "thresholdScale", "default" : [ 200.0, 200.0, 200.0, 1.0 ] },
 				"uBias"			: { "property" : "thresholdBias", "default" : [-0.99, -0.99, -0.99, 0.0 ] }
 			},
@@ -137,7 +137,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 		{
 			"name" : "compositing",
 			"uniformBindings" : {
-				"uBackbuffer"	: "backbuffer",
+				"uBackbuffer"	: "material[${materialId}].backbuffer",
 				"uFlares"		: "blur input 1"
 			},
 			"samplerStates" : {

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -52,7 +52,7 @@ SceneWriter::SceneWriter()
 		&typeid(component::PerspectiveCamera),
 		std::bind(
 			&serialize::ComponentSerializer::serializePerspectiveCamera,
-			std::placeholders::_1, std::placeholders::_2
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
 		)
 	);
 
@@ -60,7 +60,7 @@ SceneWriter::SceneWriter()
 		&typeid(component::Transform),
 		std::bind(
 			&serialize::ComponentSerializer::serializeTransform,
-			std::placeholders::_1, std::placeholders::_2
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
 		)
 	);
 
@@ -68,7 +68,7 @@ SceneWriter::SceneWriter()
 		&typeid(component::AmbientLight),
 		std::bind(
 			&serialize::ComponentSerializer::serializeAmbientLight,
-			std::placeholders::_1, std::placeholders::_2
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
 		)
 	);
 
@@ -76,7 +76,7 @@ SceneWriter::SceneWriter()
 		&typeid(component::DirectionalLight),
 		std::bind(
 			&serialize::ComponentSerializer::serializeDirectionalLight,
-			std::placeholders::_1, std::placeholders::_2
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
 		)
 	);
 
@@ -84,7 +84,7 @@ SceneWriter::SceneWriter()
 		&typeid(component::SpotLight),
 		std::bind(
 			&serialize::ComponentSerializer::serializeSpotLight,
-			std::placeholders::_1, std::placeholders::_2
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
 		)
 	);
 
@@ -92,7 +92,7 @@ SceneWriter::SceneWriter()
 		&typeid(component::PointLight),
 		std::bind(
 			&serialize::ComponentSerializer::serializePointLight,
-			std::placeholders::_1, std::placeholders::_2
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
 		)
 	);
 
@@ -100,7 +100,7 @@ SceneWriter::SceneWriter()
 		&typeid(component::Surface),
 		std::bind(
 			&serialize::ComponentSerializer::serializeSurface,
-			std::placeholders::_1, std::placeholders::_2
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
 		)
 	);
 
@@ -108,7 +108,7 @@ SceneWriter::SceneWriter()
 		&typeid(component::Renderer),
 		std::bind(
 			&serialize::ComponentSerializer::serializeRenderer,
-			std::placeholders::_1, std::placeholders::_2
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
 		)
 	);
 
@@ -116,7 +116,7 @@ SceneWriter::SceneWriter()
 		&typeid(component::BoundingBox),
 		std::bind(
 			&serialize::ComponentSerializer::serializeBoundingBox,
-			std::placeholders::_1, std::placeholders::_2
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
 		)
 	);
 }
@@ -138,7 +138,7 @@ SceneWriter::embed(AssetLibraryPtr                      assetLibrary,
 	std::queue<std::shared_ptr<scene::Node>>		queue;
 	std::vector<SerializedNode>						nodePack;
 	std::vector<std::string>						serializedControllerList;
-	std::map<AbsComponentPtr, int>					controllerMap;
+	std::map<AbstractComponentPtr, int>				controllerMap;
 	
 	queue.push(data());
 
@@ -146,7 +146,7 @@ SceneWriter::embed(AssetLibraryPtr                      assetLibrary,
 	{
 		std::shared_ptr<scene::Node>	currentNode = queue.front();
 
-		nodePack.push_back(writeNode(currentNode, serializedControllerList, controllerMap, assetLibrary, dependency));
+		nodePack.push_back(writeNode(currentNode, serializedControllerList, controllerMap, assetLibrary, dependency, writerOptions));
 
 		for (uint i = 0; i < currentNode->children().size(); ++i)
 			queue.push(currentNode->children()[i]);
@@ -163,13 +163,21 @@ SceneWriter::embed(AssetLibraryPtr                      assetLibrary,
 SceneWriter::SerializedNode
 SceneWriter::writeNode(std::shared_ptr<scene::Node>		node,
 					  std::vector<std::string>&			serializedControllerList,
-					  std::map<AbsComponentPtr, int>&	controllerMap,
+					  std::map<AbstractComponentPtr, int>&	controllerMap,
 					  AssetLibraryPtr					assetLibrary,
-					  DependencyPtr						dependency)
+					  DependencyPtr						dependency,
+					  WriterOptions::Ptr 				writerOptions)
 {
-	std::vector<uint>	componentsId;
+	if (writerOptions->addBoundingBoxes() &&
+		node->hasComponent<component::Surface>() &&
+	 	!node->hasComponent<component::BoundingBox>())
+	{
+			node->addComponent(component::BoundingBox::create());
+	}
+
+ 	std::vector<uint>	componentsId;
 	int					componentIndex = 0;
-	AbsComponentPtr		currentComponent = node->component<component::AbstractComponent>(0);
+	AbstractComponentPtr		currentComponent = node->component<component::AbstractComponent>(0);
 
 	while (currentComponent != nullptr)
 	{
@@ -184,7 +192,7 @@ SceneWriter::writeNode(std::shared_ptr<scene::Node>		node,
 			if (_componentIdToWriteFunction.find(currentComponentType) != _componentIdToWriteFunction.end())
 			{
 				index = serializedControllerList.size();
-				serializedControllerList.push_back(_componentIdToWriteFunction[currentComponentType](node, dependency));
+				serializedControllerList.push_back(_componentIdToWriteFunction[currentComponentType](node, currentComponent, dependency));
 			}
 		}
 

@@ -29,22 +29,22 @@ using namespace minko::math;
 
 
 Hand::Hand(const Leap::Hand& leapHand):
-	_leapHand(std::make_shared<Leap::Hand>(leapHand))
+    _leapHand(std::make_shared<Leap::Hand>(leapHand))
 {
-	if (_leapHand == nullptr)
-		throw std::invalid_argument("leapHand");
+    if (_leapHand == nullptr)
+        throw std::invalid_argument("leapHand");
 }
 
 int32_t
 Hand::id() const
 {
-	return _leapHand->id();
+    return _leapHand->id();
 }
 
 bool
 Hand::isValid() const
 {
-	return _leapHand->isValid();
+    return _leapHand->isValid();
 }
 
 bool
@@ -56,13 +56,13 @@ Hand::isRight() const
 uint64_t
 Hand::frameID() const
 {
-	return _leapHand->frame().id();
+    return _leapHand->frame().id();
 }
 
 math::Vector3::Ptr
 Hand::palmPosition(math::Vector3::Ptr output) const
 {
-	return convert(_leapHand->palmPosition(), output);
+    return convert(_leapHand->palmPosition(), output);
 }
 
 math::Vector3::Ptr
@@ -74,13 +74,13 @@ Hand::direction(math::Vector3::Ptr output) const
 math::Vector3::Ptr
 Hand::palmNormal(math::Vector3::Ptr output) const
 {
-	return convert(_leapHand->palmNormal(), output);
+    return convert(_leapHand->palmNormal(), output);
 }
 
 math::Vector3::Ptr
 Hand::palmVelocity(math::Vector3::Ptr output) const
 {
-	return convert(_leapHand->palmVelocity(), output);
+    return convert(_leapHand->palmVelocity(), output);
 }
 
 float
@@ -131,11 +131,11 @@ Hand::confidence() const
 bool
 Hand::operator!=(const Hand& other) const
 {
-	return _leapHand->operator!=(*other._leapHand);
+    return _leapHand->operator!=(*other._leapHand);
 }
 
 bool
 Hand::operator==(const Hand& other) const
 {
-	return _leapHand->operator==(*other._leapHand);
+    return _leapHand->operator==(*other._leapHand);
 }

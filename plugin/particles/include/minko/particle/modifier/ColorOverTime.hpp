@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -26,16 +26,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace particle
-	{
-		namespace modifier
-		{
-			class ColorOverTime : 
+    namespace particle
+    {
+        namespace modifier
+        {
+            class ColorOverTime :
                 public IParticleUpdater,
                 public Modifier1<math::Vector3>
-			{
-			public:
-				typedef std::shared_ptr<ColorOverTime>	                                    Ptr;
+            {
+            public:
+                typedef std::shared_ptr<ColorOverTime>                                        Ptr;
 
             private:
                 typedef std::shared_ptr<sampler::LinearlyInterpolatedValue<math::Vector3>>  LinearSamplerPtr;
@@ -44,21 +44,21 @@ namespace minko
             private:
                 static const std::string PROPERTY_NAMES[2];
 
-			public:
-				static
-				Ptr
-				create(LinearSamplerPtr sampler)
-				{
-					Ptr ptr = std::shared_ptr<ColorOverTime>(new ColorOverTime(sampler));
+            public:
+                static
+                Ptr
+                create(LinearSamplerPtr sampler)
+                {
+                    Ptr ptr = std::shared_ptr<ColorOverTime>(new ColorOverTime(sampler));
 
-					return ptr;
-				};
+                    return ptr;
+                };
 
-				void
-				update(std::vector<ParticleData>&, float timeStep) const;
+                void
+                update(std::vector<ParticleData>&, float timeStep) const;
 
-				unsigned int
-				getNeededComponents() const;
+                unsigned int
+                getNeededComponents() const;
 
                 void
                 setProperties(ParticlesProviderPtr) const;
@@ -66,9 +66,9 @@ namespace minko
                 void
                 unsetProperties(ParticlesProviderPtr) const;
 
-			protected:
-				ColorOverTime(LinearSamplerPtr);
-			};
-		}
-	}
+            protected:
+                ColorOverTime(LinearSamplerPtr);
+            };
+        }
+    }
 }

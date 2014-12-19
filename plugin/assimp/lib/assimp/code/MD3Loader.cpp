@@ -555,11 +555,11 @@ bool MD3Importer::ReadMultipartFile()
 		DefaultLogger::get()->info("Multi part MD3 player model: lower, upper and head parts are joined");
 
 		// ensure we won't try to load ourselves recursively
-		Loader::PropertyMap props;
+		BatchLoader::PropertyMap props;
 		SetGenericProperty( props.ints, AI_CONFIG_IMPORT_MD3_HANDLE_MULTIPART, 0, NULL);
 
 		// now read these three files
-		Loader batch(mIOHandler);
+		BatchLoader batch(mIOHandler);
 		const unsigned int _lower = batch.AddLoadRequest(lower,0,&props);
 		const unsigned int _upper = batch.AddLoadRequest(upper,0,&props);
 		const unsigned int _head  = batch.AddLoadRequest(head,0,&props);

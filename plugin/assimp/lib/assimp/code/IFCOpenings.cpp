@@ -259,7 +259,7 @@ BoundingBox GetBoundingBox(const ClipperLib::Polygon& poly)
 
 // ------------------------------------------------------------------------------------------------
 void InsertWindowContours(const ContourVector& contours,
-	const std::vector<TempOpening>& openings,
+	const std::vector<TempOpening>& /*openings*/,
 	TempMesh& curmesh)
 {
 	// fix windows - we need to insert the real, polygonal shapes into the quadratic holes that we have now
@@ -1063,7 +1063,7 @@ IfcMatrix4 ProjectOntoPlane(std::vector<IfcVector2>& out_contour, const TempMesh
 	if(!ok) {
 		return IfcMatrix4();
 	}
-#ifdef _DEBUG
+#ifdef ASSIMP_BUILD_DEBUG
 	const IfcFloat det = m.Determinant();
 	ai_assert(fabs(det-1) < 1e-5);
 #endif
@@ -1119,7 +1119,7 @@ IfcMatrix4 ProjectOntoPlane(std::vector<IfcVector2>& out_contour, const TempMesh
 	m = mult * m;
 
 	// debug code to verify correctness
-#ifdef _DEBUG
+#ifdef ASSIMP_BUILD_DEBUG
 	std::vector<IfcVector2> out_contour2;
 	BOOST_FOREACH(const IfcVector3& x, in_verts) {
 		const IfcVector3& vv = m * x;

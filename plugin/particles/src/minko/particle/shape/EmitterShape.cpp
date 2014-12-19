@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -27,14 +27,14 @@ using namespace minko::particle::shape;
 void
 EmitterShape::initPositionAndDirection(ParticleData& particle) const
 {
-	initPosition(particle);
-	initDirection(particle);
+    initPosition(particle);
+    initDirection(particle);
 }
 
 void
 EmitterShape::initDirection(ParticleData& particle) const
 {
-	particle.startvx 	= particle.x;
-	particle.startvy 	= particle.y;
-	particle.startvz 	= particle.z;
+    particle.startvx     = particle.x;
+    particle.startvy     = particle.y;
+    particle.startvz     = particle.z;
 }

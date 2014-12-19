@@ -25,45 +25,45 @@ using namespace minko::input;
 using namespace minko::input::leap;
 
 SwipeGesture::SwipeGesture(const Gesture& gesture):
-	Gesture(gesture),
-	_leapSwipe(nullptr)
+    Gesture(gesture),
+    _leapSwipe(nullptr)
 {
-	if (_leapGesture->type() != Leap::Gesture::Type::TYPE_SWIPE)
-		throw std::logic_error("Provided Gesture is not a Swipe Gesture.");
+    if (_leapGesture->type() != Leap::Gesture::Type::TYPE_SWIPE)
+        throw std::logic_error("Provided Gesture is not a Swipe Gesture.");
 
-	Leap::SwipeGesture leapSwipe	= *_leapGesture;
-	_leapSwipe						= std::make_shared<Leap::SwipeGesture>(leapSwipe);
+    Leap::SwipeGesture leapSwipe    = *_leapGesture;
+    _leapSwipe                        = std::make_shared<Leap::SwipeGesture>(leapSwipe);
 
-	if (_leapSwipe == nullptr)
-		throw std::invalid_argument("gesture");
+    if (_leapSwipe == nullptr)
+        throw std::invalid_argument("gesture");
 }
 
 math::Vector3::Ptr
 SwipeGesture::direction(math::Vector3::Ptr output) const
 {
-	return convert(_leapSwipe->direction(), output);
+    return convert(_leapSwipe->direction(), output);
 }
 
 math::Vector3::Ptr
 SwipeGesture::position(math::Vector3::Ptr output) const
 {
-	return convert(_leapSwipe->position(), output);
+    return convert(_leapSwipe->position(), output);
 }
 
 math::Vector3::Ptr
 SwipeGesture::startPosition(math::Vector3::Ptr output) const
 {
-	return convert(_leapSwipe->startPosition(), output);	
+    return convert(_leapSwipe->startPosition(), output);
 }
 
 float
 SwipeGesture::speed() const
 {
-	return _leapSwipe->speed();
+    return _leapSwipe->speed();
 }
 
 uint32_t
 SwipeGesture::pointableID() const
 {
-	return _leapSwipe->pointable().id();
+    return _leapSwipe->pointable().id();
 }

@@ -27,7 +27,7 @@ using namespace minko::component;
 void
 SurfaceTest::SetUp()
 {
-    _sceneManager = SceneManager::create(MinkoTests::context());
+    _sceneManager = SceneManager::create(MinkoTests::canvas());
     
     auto loader = _sceneManager->assets()->loader();
     loader->options()->loadAsynchronously(false);
@@ -44,9 +44,9 @@ SurfaceTest::SetUp()
     blueMaterial->diffuseColor(math::vec4(0.f, 0.f, 1.f, 1.f));
 
     _sceneManager->assets()
-        ->geometry("cube", geometry::CubeGeometry::create(MinkoTests::context()))
-        ->geometry("sphere", geometry::SphereGeometry::create(MinkoTests::context()))
-        ->geometry("quad", geometry::QuadGeometry::create(MinkoTests::context()))
+        ->geometry("cube", geometry::CubeGeometry::create(MinkoTests::canvas()->context()))
+        ->geometry("sphere", geometry::SphereGeometry::create(MinkoTests::canvas()->context()))
+        ->geometry("quad", geometry::QuadGeometry::create(MinkoTests::canvas()->context()))
         ->material("red", redMaterial)
         ->material("green", greenMaterial)
         ->material("blue", blueMaterial);

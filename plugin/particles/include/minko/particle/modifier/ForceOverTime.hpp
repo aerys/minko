@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -25,43 +25,43 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace particle
-	{
-		namespace modifier
-		{
-			class ForceOverTime : 
-                public IParticleUpdater, 
+    namespace particle
+    {
+        namespace modifier
+        {
+            class ForceOverTime :
+                public IParticleUpdater,
                 public Modifier3<float>
-			{
-			public:
-				typedef std::shared_ptr<ForceOverTime>	            Ptr;
+            {
+            public:
+                typedef std::shared_ptr<ForceOverTime>                Ptr;
 
             private:
                 typedef std::shared_ptr<sampler::Sampler<float>>    SamplerPtr;
 
-			public:
-				static
-				Ptr
-				create(SamplerPtr fx,
-					   SamplerPtr fy,
-					   SamplerPtr fz)
-				{
-					Ptr ptr = std::shared_ptr<ForceOverTime>(new ForceOverTime(fx, fy, fz));
+            public:
+                static
+                Ptr
+                create(SamplerPtr fx,
+                       SamplerPtr fy,
+                       SamplerPtr fz)
+                {
+                    Ptr ptr = std::shared_ptr<ForceOverTime>(new ForceOverTime(fx, fy, fz));
 
-					return ptr;
-				};
+                    return ptr;
+                };
 
-				void
-				update(std::vector<ParticleData>&, float) const;
+                void
+                update(std::vector<ParticleData>&, float) const;
 
-				unsigned int
-				getNeededComponents() const;
+                unsigned int
+                getNeededComponents() const;
 
-			protected:
-				ForceOverTime(SamplerPtr fx,
-							  SamplerPtr fy,
-							  SamplerPtr fz);
-			};
-		}
-	}
+            protected:
+                ForceOverTime(SamplerPtr fx,
+                              SamplerPtr fy,
+                              SamplerPtr fz);
+            };
+        }
+    }
 }

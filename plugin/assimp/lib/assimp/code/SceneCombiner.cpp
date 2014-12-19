@@ -38,6 +38,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ----------------------------------------------------------------------
 */
 
+// TODO: refactor entire file to get rid of the "flat-copy" first approach
+// to copying structures. This easily breaks in the most unintuitive way
+// possible as new fields are added to assimp structures.
 
 // ----------------------------------------------------------------------------
 /** @file Implements Assimp::SceneCombiner. This is a smart utility
@@ -881,6 +884,59 @@ void SceneCombiner::MergeMeshes(aiMesh** _out,unsigned int /*flags*/,
 }
 
 // ------------------------------------------------------------------------------------------------
+void SceneCombiner::MergeMaterials(aiMaterial** dest,
+		std::vector<aiMaterial*>::const_iterator begin,
+		std::vector<aiMaterial*>::const_iterator end)
+{
+	ai_assert(NULL != dest);
+
+	if (begin == end)	{
+		*dest = NULL; // no materials ...
+		return;
+	}
+
+	// Allocate the output material
+	aiMaterial* out = *dest = new aiMaterial();
+
+	// Get the maximal number of properties
+	unsigned int size = 0;
+	for (std::vector<aiMaterial*>::const_iterator it = begin; it != end; ++it) {
+		size += (*it)->mNumProperties;
+	}
+
+	out->Clear();
+	delete[] out->mProperties;
+
+	out->mNumAllocated = size;
+	out->mNumProperties = 0;
+	out->mProperties = new aiMaterialProperty*[out->mNumAllocated];
+
+	for (std::vector<aiMaterial*>::const_iterator it = begin; it != end; ++it) {
+		for(unsigned int i = 0; i < (*it)->mNumProperties; ++i) {
+			aiMaterialProperty* sprop = (*it)->mProperties[i];
+
+			// Test if we already have a matching property 
+			const aiMaterialProperty* prop_exist;
+			if(aiGetMaterialProperty(out, sprop->mKey.C_Str(), sprop->mType, sprop->mIndex, &prop_exist) != AI_SUCCESS) {
+				// If not, we add it to the new material
+				aiMaterialProperty* prop = out->mProperties[out->mNumProperties] = new aiMaterialProperty();
+
+				prop->mDataLength = sprop->mDataLength;
+				prop->mData = new char[prop->mDataLength];
+				::memcpy(prop->mData, sprop->mData, prop->mDataLength);
+
+				prop->mIndex    = sprop->mIndex;
+				prop->mSemantic = sprop->mSemantic;
+				prop->mKey      = sprop->mKey;
+				prop->mType		= sprop->mType;
+
+				out->mNumProperties++;
+			}
+		}
+	}
+}
+
+// ------------------------------------------------------------------------------------------------
 template <typename Type>
 inline void CopyPtrArray (Type**& dest, const Type* const * src, unsigned int num)
 {
@@ -1012,6 +1068,10 @@ void SceneCombiner::Copy (aiMaterial** _dest, const aiMaterial* src)
 	ai_assert(NULL != _dest && NULL != src);
 
 	aiMaterial* dest = (aiMaterial*) ( *_dest = new aiMaterial() );
+
+	dest->Clear();
+	delete[] dest->mProperties;
+
 	dest->mNumAllocated  =  src->mNumAllocated;
 	dest->mNumProperties =  src->mNumProperties;
 	dest->mProperties    =  new aiMaterialProperty* [dest->mNumAllocated];
@@ -1137,10 +1197,53 @@ void SceneCombiner::Copy     (aiNode** _dest, const aiNode* src)
 	// get a flat copy
 	::memcpy(dest,src,sizeof(aiNode));
 
+	if (src->mMetaData) {
+		Copy(&dest->mMetaData, src->mMetaData);
+	}
+
 	// and reallocate all arrays
 	GetArrayCopy( dest->mMeshes, dest->mNumMeshes );
 	CopyPtrArray( dest->mChildren, src->mChildren,dest->mNumChildren);
 }
 
+// ------------------------------------------------------------------------------------------------
+void SceneCombiner::Copy (aiMetadata** _dest, const aiMetadata* src)
+{
+	ai_assert(NULL != _dest && NULL != src);
+
+	aiMetadata* dest = *_dest = new aiMetadata();
+	dest->mNumProperties = src->mNumProperties;
+	dest->mKeys = new aiString[src->mNumProperties];
+	std::copy(src->mKeys, src->mKeys + src->mNumProperties, dest->mKeys);
+
+	dest->mValues = new aiMetadataEntry[src->mNumProperties];
+	for (unsigned int i = 0; i < src->mNumProperties; ++i) {
+		aiMetadataEntry& in = src->mValues[i];
+		aiMetadataEntry& out = dest->mValues[i];
+		out.mType = in.mType;
+		switch (dest->mValues[i].mType) {
+		case AI_BOOL:
+			out.mData = new bool(*static_cast<bool*>(in.mData));
+			break;
+		case AI_INT:
+			out.mData = new int(*static_cast<int*>(in.mData));
+			break;
+		case AI_UINT64:
+			out.mData = new uint64_t(*static_cast<uint64_t*>(in.mData));
+			break;
+		case AI_FLOAT:
+			out.mData = new float(*static_cast<float*>(in.mData));
+			break;
+		case AI_AISTRING:
+			out.mData = new aiString(*static_cast<aiString*>(in.mData));
+			break;
+		case AI_AIVECTOR3D:
+			out.mData = new aiVector3D(*static_cast<aiVector3D*>(in.mData));
+			break;
+		default:
+			ai_assert(false);
+		}
+	}
+}
 
 }

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -30,17 +30,17 @@ using namespace minko::component;
 std::vector<std::function<void(LuaGlue&)>>
 BulletLuaBindingsCollection::getBulletBindings()
 {
-	std::vector<std::function<void(LuaGlue&)>> bindings;
+    std::vector<std::function<void(LuaGlue&)>> bindings;
 
-	return BulletLuaBindingsCollection::getBulletBindings(bindings);
+    return BulletLuaBindingsCollection::getBulletBindings(bindings);
 }
 
 std::vector<std::function<void(LuaGlue&)>>
 BulletLuaBindingsCollection::getBulletBindings(std::vector<std::function<void(LuaGlue&)>> bindings)
 {
-	bindings.push_back(&bullet::LuaColliderData::bind);
-	bindings.push_back(&bullet::LuaCollider::bind);
-	bindings.push_back(&bullet::LuaColliderDebug::bind);
-	bindings.push_back(&bullet::LuaPhysicsWorld::bind);
-	return bindings;
+    bindings.push_back(&bullet::LuaColliderData::bind);
+    bindings.push_back(&bullet::LuaCollider::bind);
+    bindings.push_back(&bullet::LuaColliderDebug::bind);
+    bindings.push_back(&bullet::LuaPhysicsWorld::bind);
+    return bindings;
 }

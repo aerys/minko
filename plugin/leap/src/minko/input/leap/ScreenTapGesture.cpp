@@ -25,39 +25,39 @@ using namespace minko::input;
 using namespace minko::input::leap;
 
 ScreenTapGesture::ScreenTapGesture(const Gesture& gesture):
-	Gesture(gesture),
-	_leapScreenTap(nullptr)
+    Gesture(gesture),
+    _leapScreenTap(nullptr)
 {
-	if (_leapGesture->type() != Leap::Gesture::Type::TYPE_SCREEN_TAP)
-		throw std::logic_error("Provided Gesture is not a ScreenTap Gesture.");
+    if (_leapGesture->type() != Leap::Gesture::Type::TYPE_SCREEN_TAP)
+        throw std::logic_error("Provided Gesture is not a ScreenTap Gesture.");
 
-	Leap::ScreenTapGesture leapScreenTap	= *_leapGesture;
-	_leapScreenTap							= std::make_shared<Leap::ScreenTapGesture>(leapScreenTap);
+    Leap::ScreenTapGesture leapScreenTap    = *_leapGesture;
+    _leapScreenTap                            = std::make_shared<Leap::ScreenTapGesture>(leapScreenTap);
 
-	if (_leapScreenTap == nullptr)
-		throw std::invalid_argument("gesture");
+    if (_leapScreenTap == nullptr)
+        throw std::invalid_argument("gesture");
 }
 
 math::Vector3::Ptr
 ScreenTapGesture::direction(math::Vector3::Ptr output) const
 {
-	return convert(_leapScreenTap->direction(), output);
+    return convert(_leapScreenTap->direction(), output);
 }
 
 math::Vector3::Ptr
 ScreenTapGesture::position(math::Vector3::Ptr output) const
 {
-	return convert(_leapScreenTap->position(), output);
+    return convert(_leapScreenTap->position(), output);
 }
 
 float
 ScreenTapGesture::progress() const
 {
-	return _leapScreenTap->progress();
+    return _leapScreenTap->progress();
 }
 
 uint32_t
 ScreenTapGesture::pointableID() const
 {
-	return _leapScreenTap->pointable().id();
+    return _leapScreenTap->pointable().id();
 }

@@ -29,130 +29,130 @@ using namespace minko::input::leap;
 class Controller::LeapToMinkoDispatcher: public Leap::Listener
 {
 private:
-	Controller::Ptr	_controller;
+    Controller::Ptr    _controller;
 
 public:
-	LeapToMinkoDispatcher(Controller::Ptr controller): 
-		Leap::Listener(),
-		_controller(controller)
-	{
-		if (_controller == nullptr)
-			throw std::invalid_argument("controller");
-	}
+    LeapToMinkoDispatcher(Controller::Ptr controller):
+        Leap::Listener(),
+        _controller(controller)
+    {
+        if (_controller == nullptr)
+            throw std::invalid_argument("controller");
+    }
 
-	virtual
-	void
-	onInit(const Leap::Controller&)
-	{
-		_controller->initialized()->execute(_controller);
-	}
+    virtual
+    void
+    onInit(const Leap::Controller&)
+    {
+        _controller->initialized()->execute(_controller);
+    }
 
-	virtual 
-	void 
-	onConnect(const Leap::Controller&)
-	{
-		_controller->connected()->execute(_controller);	
-	}
+    virtual
+    void
+    onConnect(const Leap::Controller&)
+    {
+        _controller->connected()->execute(_controller);
+    }
 
-	virtual 
-	void 
-	onFrame(const Leap::Controller&)
-	{
-		_controller->enterFrame()->execute(_controller);
-	}
+    virtual
+    void
+    onFrame(const Leap::Controller&)
+    {
+        _controller->enterFrame()->execute(_controller);
+    }
 
-	virtual 
-	void 
-	onFocusGained(const Leap::Controller&)
-	{
-		_controller->gainedFocus()->execute(_controller);
-	}
+    virtual
+    void
+    onFocusGained(const Leap::Controller&)
+    {
+        _controller->gainedFocus()->execute(_controller);
+    }
 
-	virtual 
-	void 
-	onFocusLost(const Leap::Controller&)
-	{
-		_controller->lostFocus()->execute(_controller);
-	}
+    virtual
+    void
+    onFocusLost(const Leap::Controller&)
+    {
+        _controller->lostFocus()->execute(_controller);
+    }
 
-	/*
-	virtual
-	void
-	onOmit(const Leap::Controller&)
-	{
-		_controller->omit()->execute(_controller);
-	}
-	*/
+    /*
+    virtual
+    void
+    onOmit(const Leap::Controller&)
+    {
+        _controller->omit()->execute(_controller);
+    }
+    */
 
-	virtual 
-	void 
-	onDisconnect(const Leap::Controller&)
-	{
-		_controller->disconnected()->execute(_controller);
-	}
+    virtual
+    void
+    onDisconnect(const Leap::Controller&)
+    {
+        _controller->disconnected()->execute(_controller);
+    }
 
-	virtual 
-	void 
-	onExit(const Leap::Controller&)
-	{
-		_controller->exit()->execute(_controller);
-	}
+    virtual
+    void
+    onExit(const Leap::Controller&)
+    {
+        _controller->exit()->execute(_controller);
+    }
 };
 
 
 
 Controller::Controller(AbstractCanvas::Ptr canvas):
-	_canvas(canvas),
-	_leapController(new Leap::Controller()),
-	_initialized	(Signal<Controller::Ptr>::create()),
-	_connected		(Signal<Controller::Ptr>::create()),
-	_enterFrame		(Signal<Controller::Ptr>::create()),
-	_gainedFocus	(Signal<Controller::Ptr>::create()),
-	_lostFocus		(Signal<Controller::Ptr>::create()),
-	_omit			(Signal<Controller::Ptr>::create()),
-	_disconnected	(Signal<Controller::Ptr>::create()),
-	_exit			(Signal<Controller::Ptr>::create()),
-	_leapListener(nullptr)
+    _canvas(canvas),
+    _leapController(new Leap::Controller()),
+    _initialized    (Signal<Controller::Ptr>::create()),
+    _connected        (Signal<Controller::Ptr>::create()),
+    _enterFrame        (Signal<Controller::Ptr>::create()),
+    _gainedFocus    (Signal<Controller::Ptr>::create()),
+    _lostFocus        (Signal<Controller::Ptr>::create()),
+    _omit            (Signal<Controller::Ptr>::create()),
+    _disconnected    (Signal<Controller::Ptr>::create()),
+    _exit            (Signal<Controller::Ptr>::create()),
+    _leapListener(nullptr)
 {
-	if (_canvas == nullptr)
-		throw std::invalid_argument("_canvas");
+    if (_canvas == nullptr)
+        throw std::invalid_argument("_canvas");
 }
 
 void
 Controller::initialize()
 {
-	_leapListener = std::shared_ptr<LeapToMinkoDispatcher>(new LeapToMinkoDispatcher(shared_from_this()));
+    _leapListener = std::shared_ptr<LeapToMinkoDispatcher>(new LeapToMinkoDispatcher(shared_from_this()));
 }
 
 void
 Controller::start()
 {
-	_leapController->addListener(*_leapListener);
+    _leapController->addListener(*_leapListener);
 }
 
 void
 Controller::enableGesture(Gesture::Type value, bool enable) const
 {
-	auto type = convert(value);
-	
-	if (type != Leap::Gesture::Type::TYPE_INVALID)
-		_leapController->enableGesture(type);
+    auto type = convert(value);
+
+    if (type != Leap::Gesture::Type::TYPE_INVALID)
+        _leapController->enableGesture(type);
 }
 
 bool
 Controller::isGestureEnabled(Gesture::Type value) const
 {
-	auto type = convert(value);
+    auto type = convert(value);
 
-	return type != Leap::Gesture::Type::TYPE_INVALID
-	? _leapController->isGestureEnabled(type)
-	: false;
+    return type != Leap::Gesture::Type::TYPE_INVALID
+    ? _leapController->isGestureEnabled(type)
+    : false;
 }
 
 std::shared_ptr<Frame>
 Controller::frame(int history) const
 {
-	return std::shared_ptr<Frame>(new Frame(_leapController->frame(history)));
+    return std::shared_ptr<Frame>(new Frame(_leapController->frame(history)));
 }
 
 

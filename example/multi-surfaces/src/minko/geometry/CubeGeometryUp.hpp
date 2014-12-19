@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -26,28 +26,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace geometry
-	{
-		class CubeGeometryUp :
-			public Geometry
-		{
-		public:
-			typedef std::shared_ptr<Geometry> Ptr;
+    namespace geometry
+    {
+        class CubeGeometryUp :
+            public Geometry
+        {
+        public:
+            typedef std::shared_ptr<Geometry> Ptr;
 
-			static
-			Ptr
-			create(std::shared_ptr<render::AbstractContext> context)
-			{
-				auto geom = std::shared_ptr<CubeGeometryUp>(new CubeGeometryUp());
+            static
+            Ptr
+            create(std::shared_ptr<render::AbstractContext> context)
+            {
+                auto geom = std::shared_ptr<CubeGeometryUp>(new CubeGeometryUp());
 
-				geom->initialize(context);
+                geom->initialize(context);
 
-				return geom;
-			}
+                return geom;
+            }
 
-		protected:
-			void
-			initialize(std::shared_ptr<render::AbstractContext> context);
-		};			
-	}
+        protected:
+            void
+            initialize(std::shared_ptr<render::AbstractContext> context);
+        };
+    }
 }

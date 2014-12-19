@@ -151,7 +151,7 @@ Store::getProviderByPropertyName(const std::string& propertyName) const
                 }
                 else // fetch provider by index
                 {
-                    uint index = std::stoi(indexStr);
+                    uint index = std::atoi(indexStr.c_str());
 
                     if (index < collection->items().size())
                     {

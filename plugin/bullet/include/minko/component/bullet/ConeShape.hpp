@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -24,87 +24,87 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace component
-	{
-		namespace bullet
-		{
-			class ConeShape:
-				public AbstractPhysicsShape
-			{
-			public:
-				typedef std::shared_ptr<ConeShape>					Ptr;
+    namespace component
+    {
+        namespace bullet
+        {
+            class ConeShape:
+                public AbstractPhysicsShape
+            {
+            public:
+                typedef std::shared_ptr<ConeShape>                    Ptr;
 
-			private:
-				typedef std::shared_ptr<geometry::LineGeometry>		LineGeometryPtr;
-				typedef std::shared_ptr<render::AbstractContext>	AbsContextPtr;
+            private:
+                typedef std::shared_ptr<geometry::LineGeometry>        LineGeometryPtr;
+                typedef std::shared_ptr<render::AbstractContext>    AbsContextPtr;
 
-			private:
-				float												_radius;
-				float												_height;
+            private:
+                float                                                _radius;
+                float                                                _height;
 
-			public:
-				inline static
-				Ptr
-				create(float radius, float height)
-				{
-					return std::shared_ptr<ConeShape>(new ConeShape(radius, height));
-				}
+            public:
+                inline static
+                Ptr
+                create(float radius, float height)
+                {
+                    return std::shared_ptr<ConeShape>(new ConeShape(radius, height));
+                }
 
-				inline
-				float
-				radius() const
-				{
-					return _radius;
-				}
+                inline
+                float
+                radius() const
+                {
+                    return _radius;
+                }
 
-				inline
-				void
-				radius(float radius)
-				{
-					const bool needsUpdate	= fabsf(radius - _radius) > 1e-6f;
-					_radius	= radius;
-					if (needsUpdate)
-						shapeChanged()->execute(shared_from_this());
-				}
+                inline
+                void
+                radius(float radius)
+                {
+                    const bool needsUpdate    = fabsf(radius - _radius) > 1e-6f;
+                    _radius    = radius;
+                    if (needsUpdate)
+                        shapeChanged()->execute(shared_from_this());
+                }
 
-				inline
-				float
-				height() const
-				{
-					return _height;
-				}
+                inline
+                float
+                height() const
+                {
+                    return _height;
+                }
 
-				inline
-				void
-				height(float height)
-				{
-					const bool needsUpdate	= fabsf(height - _height) > 1e-6f;
-					_height	= height;
-					if (needsUpdate)
-						shapeChanged()->execute(shared_from_this());
-				}
+                inline
+                void
+                height(float height)
+                {
+                    const bool needsUpdate    = fabsf(height - _height) > 1e-6f;
+                    _height    = height;
+                    if (needsUpdate)
+                        shapeChanged()->execute(shared_from_this());
+                }
 
-				inline
-				float
-				volume() const
-				{
-					const float radius	= _radius + _margin; 
-					const float volume	= (float(M_PI) / 3.0f) * radius * radius * (_height + _margin);
+                inline
+                float
+                volume() const
+                {
+                    const float radius    = _radius + _margin;
+                    const float volume    = (float(M_PI) / 3.0f) * radius * radius * (_height + _margin);
 
-					return volume * _volumeScaling;
-				}
+                    return volume * _volumeScaling;
+                }
 
-				LineGeometryPtr
-				getGeometry(AbsContextPtr) const;
+                LineGeometryPtr
+                getGeometry(AbsContextPtr) const;
 
-			private:
-				ConeShape(float radius, float height):
-					AbstractPhysicsShape(CONE),
-					_radius(radius),
-					_height(height)
-				{
-				}
-			};
-		}
-	}
+            private:
+                ConeShape(float radius, float height):
+                    AbstractPhysicsShape(CONE),
+                    _radius(radius),
+                    _height(height)
+                {
+                }
+            };
+        }
+    }
 }

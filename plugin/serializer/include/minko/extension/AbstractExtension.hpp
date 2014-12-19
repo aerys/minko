@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -23,30 +23,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace extension
-	{
-		class AbstractExtension
-		{
-		public:
-			typedef std::shared_ptr<AbstractExtension> Ptr;
+    namespace extension
+    {
+        class AbstractExtension
+        {
+        public:
+            typedef std::shared_ptr<AbstractExtension> Ptr;
 
-		public:
-			virtual
-			void
-			bind() = 0;
-		};
+        public:
+            virtual
+            void
+            bind() = 0;
+        };
 
-		class SerializerExtension
-		{
-		public:
-			template <typename T>
-			typename std::enable_if<std::is_base_of<extension::AbstractExtension, T>::value, void>::type
-			static
-			activeExtension()
-			{
-				std::shared_ptr<T> extension = T::initialize();
-				extension->bind();
-			}
-		};
-	}
+        class SerializerExtension
+        {
+        public:
+            template <typename T>
+            typename std::enable_if<std::is_base_of<extension::AbstractExtension, T>::value, void>::type
+            static
+            activeExtension()
+            {
+                std::shared_ptr<T> extension = T::initialize();
+                extension->bind();
+            }
+        };
+    }
 }

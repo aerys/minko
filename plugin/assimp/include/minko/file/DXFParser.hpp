@@ -31,7 +31,7 @@ namespace minko
     namespace file
     {
         template <>
-	class AnyASSIMPParser<Assimp::DXFImporter> : public AbstractASSIMPParser
+    class AnyASSIMPParser<Assimp::DXFImporter> : public AbstractASSIMPParser
         {
         public:
 

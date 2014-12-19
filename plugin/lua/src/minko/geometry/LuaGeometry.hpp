@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -31,35 +31,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace geometry
-	{
-		class LuaGeometry
-		{
-		public:
-			static
-			void
-			bind(LuaGlue& state)
-			{
-				state
-					.Class<Geometry>("Geometry")
-						.method("create",		&Geometry::create)
-			        .end()
-			        .Class<CubeGeometry>("CubeGeometry")
-			            .method("create", 		&CubeGeometry::create)
-			        .end()
-			        .Class<SphereGeometry>("SphereGeometry")
-			            .method("create", 		&SphereGeometry::create)
-			        .end()
-			        .Class<QuadGeometry>("QuadGeometry")
-			            .method("create", 		&QuadGeometry::create)
-			        .end()
-			        .Class<LineGeometry>("LineGeometry")
-			        	.method("create", 		&LineGeometry::create)
-			        	.method("moveTo",		static_cast<LineGeometry::Ptr (LineGeometry::*)(float, float, float)>(&LineGeometry::moveTo))
-			        	.method("lineTo",		static_cast<LineGeometry::Ptr (LineGeometry::*)(float, float, float, uint)>(&LineGeometry::lineTo))
-			        	.property("numLines",	&LineGeometry::numLines)
-			        .end();
-			}
-		};
-	}
+    namespace geometry
+    {
+        class LuaGeometry
+        {
+        public:
+            static
+            void
+            bind(LuaGlue& state)
+            {
+                state
+                    .Class<Geometry>("Geometry")
+                        .method("create",        &Geometry::create)
+                    .end()
+                    .Class<CubeGeometry>("CubeGeometry")
+                        .method("create",         &CubeGeometry::create)
+                    .end()
+                    .Class<SphereGeometry>("SphereGeometry")
+                        .method("create",         &SphereGeometry::create)
+                    .end()
+                    .Class<QuadGeometry>("QuadGeometry")
+                        .method("create",         &QuadGeometry::create)
+                    .end()
+                    .Class<LineGeometry>("LineGeometry")
+                        .method("create",         &LineGeometry::create)
+                        .method("moveTo",        static_cast<LineGeometry::Ptr (LineGeometry::*)(float, float, float)>(&LineGeometry::moveTo))
+                        .method("lineTo",        static_cast<LineGeometry::Ptr (LineGeometry::*)(float, float, float, uint)>(&LineGeometry::lineTo))
+                        .property("numLines",    &LineGeometry::numLines)
+                    .end();
+            }
+        };
+    }
 }

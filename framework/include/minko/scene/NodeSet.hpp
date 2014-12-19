@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -85,6 +85,13 @@ namespace minko
 			{
 				return _nodes;
 			}
+
+            inline
+            int
+            size() const
+            {
+                return _nodes.size();
+            }
 
 			Ptr
 			descendants(bool andSelf = false, bool depthFirst = true, Ptr result = nullptr);

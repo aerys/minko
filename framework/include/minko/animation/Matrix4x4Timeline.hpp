@@ -61,6 +61,18 @@ namespace minko
 				return ptr;
 			}
 
+			inline static
+			Ptr
+			create(const Matrix4x4Timeline&	timeline)
+			{
+				Ptr ptr = std::shared_ptr<Matrix4x4Timeline>(new Matrix4x4Timeline(timeline));
+
+				return ptr;
+			}
+
+			AbstractTimeline::Ptr
+			clone();
+
 			void
 			update(uint time, data::Store& data, bool skipPropertyNameFormatting = true);
 
@@ -73,6 +85,8 @@ namespace minko
 							  const std::vector<uint>&,
 							  const std::vector<math::mat4>&,
 							  bool);
+
+			Matrix4x4Timeline(const Matrix4x4Timeline& matrix);
 
 			void
 			initializeMatrixTimetable(const std::vector<uint>&,

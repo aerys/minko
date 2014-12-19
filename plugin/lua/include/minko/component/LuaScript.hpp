@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -75,17 +75,15 @@ namespace minko
             {
                 auto s = std::shared_ptr<LuaScript>(new LuaScript(name, script));
 
-                s->initialize();
-
                 return s;
             }
 
         protected:
-			void
-			start(NodePtr target) override;
+            void
+            start(NodePtr target) override;
 
-			void
-			update(NodePtr target) override;
+            void
+            update(NodePtr target) override;
 
             void
             stop(NodePtr target) override;
@@ -93,7 +91,7 @@ namespace minko
             bool
             ready(NodePtr target) override;
 
-		private:
+        private:
             LuaScript(const std::string& name, const std::string& script);
 
             static

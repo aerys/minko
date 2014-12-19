@@ -23,11 +23,11 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::animation;
 
-AbstractTimeline::AbstractTimeline(const std::string& propertyName, 
-								   uint duration):
-	_propertyName(propertyName),
-	_duration(duration),
-	_isLocked(false)
+AbstractTimeline::AbstractTimeline(const std::string& propertyName,
+                                   uint duration):
+    _propertyName(propertyName),
+    _duration(duration),
+    _isLocked(false)
 {
 
 }

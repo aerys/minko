@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -27,18 +27,19 @@ namespace minko
 	{
 		enum ComponentId
 		{
-			TRANSFORM			= 100,
-			PROJECTION_CAMERA	= 101,
-			AMBIENT_LIGHT		= 102,
-			DIRECTIONAL_LIGHT	= 103,
-			POINT_LIGHT			= 104,
-			SPOT_LIGHT			= 105,
-			SURFACE				= 106,
-			RENDERER			= 107,
-			BOUNDINGBOX			= 108,
-			ANIMATION			= 109,
-			SKINNING			= 110,
-            PARTICLES           = 60
+			TRANSFORM			    = 100,
+			PROJECTION_CAMERA	    = 101,
+			AMBIENT_LIGHT		    = 102,
+			DIRECTIONAL_LIGHT	    = 103,
+			POINT_LIGHT			    = 104,
+			SPOT_LIGHT			    = 105,
+			SURFACE				    = 106,
+			RENDERER			    = 107,
+			BOUNDINGBOX			    = 108,
+			ANIMATION			    = 109,
+			SKINNING			    = 110,
+            PARTICLES               = 60,
+            COMPONENT_ID_EXTENSION  = 111
 		};
 
 		enum MinkoTypes
@@ -65,7 +66,9 @@ namespace minko
 			TEXTURE_ASSET               = 2,
             EMBED_TEXTURE_ASSET         = 120,
 			EFFECT_ASSET                = 3,
-			EMBED_EFFECT_ASSET          = 13
+			EMBED_EFFECT_ASSET          = 13,
+            TEXTURE_PACK_ASSET          = 4,
+            EMBED_TEXTURE_PACK_ASSET    = 14
 		};
 
         enum class ImageFormat
@@ -73,7 +76,7 @@ namespace minko
             SOURCE  = 1,
             PNG     = 2,
             JPEG    = 3,
-            TGA     = 4,
+            TGA     = 4
         };
 
         namespace
@@ -82,7 +85,7 @@ namespace minko
             {
                 { ImageFormat::PNG, "png" },
                 { ImageFormat::JPEG, "jpg" },
-                { ImageFormat::TGA, "tga" },
+                { ImageFormat::TGA, "tga" }
             };
 
             static const auto defaultImageFormat = ImageFormat::PNG;
@@ -104,7 +107,8 @@ namespace minko
         ImageFormat
         imageFormatFromExtension(const std::string& extension)
         {
-            auto imageFormatToExtensionPairIt = std::find_if(imageFormatToExtensionMap.begin(),
+            auto imageFormatToExtensionPairIt = std::find_if(
+                imageFormatToExtensionMap.begin(),
                                               imageFormatToExtensionMap.end(),
             [=](const std::pair<ImageFormat, std::string>& imageFormatToExtensionPair)
             {
