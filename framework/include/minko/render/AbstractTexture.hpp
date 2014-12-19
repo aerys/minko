@@ -81,6 +81,20 @@ namespace minko
             }
 
             inline
+            uint
+            originalWidth() const
+            {
+                return _width;
+            }
+
+            inline
+            uint
+            originalHeight() const
+            {
+                return _height;
+            }
+
+            inline
             bool
             mipMapping() const
             {
