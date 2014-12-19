@@ -31,6 +31,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Dependency.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/render/Priority.hpp"
+#include "minko/render/States.hpp"
 
 using namespace minko;
 using namespace minko::file;
@@ -125,24 +126,34 @@ MaterialParser::deserializeComplexProperty(MaterialPtr			material,
         );
 	else if (type == BLENDING)
 	{
-		material->data()->set<render::Blending::Mode>(
-			serializedProperty.a0, 
-			Any::cast<render::Blending::Mode>(TypeDeserializer::deserializeBlending(serializedPropertyTuple)));
-		
-		if (material->data()->get<render::Blending::Mode>("blendMode") != render::Blending::Mode::DEFAULT)
+        auto blendingMode = Any::cast<render::Blending::Mode>(TypeDeserializer::deserializeBlending(serializedPropertyTuple));
+        auto srcBlendingMode = static_cast<render::Blending::Source>(static_cast<uint>(blendingMode) & 0x00ff);
+        auto dstBlendingMode = static_cast<render::Blending::Destination>(static_cast<uint>(blendingMode) & 0xff00);
 
-		material->data()->set("priority", render::Priority::TRANSPARENT);
-		material->data()->set("zSort", true);
+        material->data()->set<render::Blending::Mode>("blendingMode", blendingMode);
+        material->data()->set<render::Blending::Source>(render::States::PROPERTY_BLENDING_SOURCE, srcBlendingMode);
+        material->data()->set<render::Blending::Destination>(render::States::PROPERTY_BLENDING_DESTINATION, dstBlendingMode);
+
+        if (!(blendingMode & render::Blending::Destination::ZERO))
+        {
+            material->data()->set("priority", render::Priority::TRANSPARENT);
+            material->data()->set("zSorted", true);
+        }
 	}
-	else if (type == TRIANGLECULLING)
-		material->data()->set<render::TriangleCulling>(
-			serializedProperty.a0, 
-			Any::cast<render::TriangleCulling>(TypeDeserializer::deserializeTriangleCulling(serializedPropertyTuple)));
-	else if (type == TEXTURE)
-		material->data()->set(
-			serializedProperty.a0,
+    else if (type == TRIANGLECULLING)
+    {
+        material->data()->set<render::TriangleCulling>(
+            serializedProperty.a0,
+            Any::cast<render::TriangleCulling>(TypeDeserializer::deserializeTriangleCulling(serializedPropertyTuple))
+        );
+    }
+    else if (type == TEXTURE)
+    {
+        material->data()->set(
+            serializedProperty.a0,
             _dependencies->getTextureReference(Any::cast<uint>(TypeDeserializer::deserializeTextureId(serializedPropertyTuple)))->sampler()
         );
+    }
 	else if (type == ENVMAPTYPE)
 	{
 		auto envMapType = Any::cast<render::EnvironmentMap2dType>(TypeDeserializer::deserializeEnvironmentMap2dType(serializedPropertyTuple));
@@ -160,7 +171,7 @@ MaterialParser::deserializeBasicProperty(MaterialPtr		material,
 	// TODO remove basic and complex property types and always specify property content type
 
     if (serializedProperty.a0 == "zSort")
-        material->data()->set<bool>("zSort", serializedPropertyValue[0]);
+        material->data()->set<bool>("zSorted", serializedPropertyValue[0]);
     else
 	    material->data()->set<float>(serializedProperty.a0, serializedPropertyValue[0]);
 }

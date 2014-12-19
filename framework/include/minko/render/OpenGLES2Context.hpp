@@ -90,7 +90,7 @@ namespace minko
             std::unordered_map<uint, TextureFilter> _currentTextureFilter;
             std::unordered_map<uint, MipFilter>     _currentMipFilter;
 			int						                _currentProgram;
-			Blending::Mode			                _currentBlendMode;
+			Blending::Mode			                _currentBlendingMode;
 			bool									_currentColorMask;
 			bool					                _currentDepthMask;
 			CompareMode				                _currentDepthFunc;
@@ -325,10 +325,10 @@ namespace minko
 			getProgramInfoLogs(const uint program);
 
             void
-            setBlendMode(Blending::Source source, Blending::Destination destination);
+            setBlendingMode(Blending::Source source, Blending::Destination destination);
 
             void
-            setBlendMode(Blending::Mode blendMode);
+            setBlendingMode(Blending::Mode blendingMode);
 
 			void
 			setDepthTest(bool depthMask, CompareMode depthFunc);

@@ -18,6 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/render/DrawCallPool.hpp"
+#include "minko/render/DrawCallZSorter.hpp"
 
 using namespace minko;
 using namespace minko::render;
@@ -75,14 +76,14 @@ DrawCallPool::removeDrawCalls(const DrawCallIteratorPair& iterators)
 void
 DrawCallPool::watchProgramSignature(DrawCall*                       drawCall,
                                     const data::MacroBindingMap&    macroBindings,
-                                    data::Store&                rootData,
-                                    data::Store&                rendererData,
-                                    data::Store&                targetData)
+                                    data::Store&                    rootData,
+                                    data::Store&                    rendererData,
+                                    data::Store&                    targetData)
 {
     for (const auto& macroNameAndBinding : macroBindings.bindings)
     {
         const auto& macroBinding = macroNameAndBinding.second;
-        auto& store= macroBinding.source == data::Binding::Source::ROOT ? rootData
+        auto& store = macroBinding.source == data::Binding::Source::ROOT ? rootData
             : macroBinding.source == data::Binding::Source::RENDERER ? rendererData
             : targetData;
         auto bindingKey = MacroBindingKey(&macroBinding, &store);
@@ -124,9 +125,9 @@ DrawCallPool::watchProgramSignature(DrawCall*                       drawCall,
 }
 
 void
-DrawCallPool::addMacroCallback(PropertyChanged&         key,
-                               data::Store&             store,
-                               const MacroCallback&     callback)
+DrawCallPool::addMacroCallback(PropertyChanged&     key,
+                               data::Store&         store,
+                               const MacroCallback& callback)
 {
     if (_macroChangedSlot.count(&key) == 0)
         _macroChangedSlot.emplace(&key, ChangedSlot(key.connect(callback), 1));
@@ -179,16 +180,16 @@ DrawCallPool::macroPropertyRemovedHandler(data::Store&                  store,
 }
 
 void
-DrawCallPool::unwatchProgramSignature(DrawCall*                       drawCall,
-                                      const data::MacroBindingMap&    macroBindings,
-                                      data::Store&                rootData,
-                                      data::Store&                rendererData,
-                                      data::Store&                targetData)
+DrawCallPool::unwatchProgramSignature(DrawCall*                     drawCall,
+                                      const data::MacroBindingMap&  macroBindings,
+                                      data::Store&                  rootData,
+                                      data::Store&                  rendererData,
+                                      data::Store&                  targetData)
 {
     for (const auto& macroNameAndBinding : macroBindings.bindings)
     {
         const auto& macroBinding = macroNameAndBinding.second;
-        auto& store= macroBinding.source == data::Binding::Source::ROOT ? rootData
+        auto& store = macroBinding.source == data::Binding::Source::ROOT ? rootData
             : macroBinding.source == data::Binding::Source::RENDERER ? rendererData
             : targetData;
         auto bindingKey = MacroBindingKey(&macroBinding, &store);
@@ -240,6 +241,8 @@ DrawCallPool::initializeDrawCall(DrawCall* drawCall)
             const_cast<data::Store&>(drawCall->rendererData()),
             const_cast<data::Store&>(drawCall->targetData())
         );
+
+    drawCall->initialize();
 }
 
 void
@@ -250,11 +253,50 @@ DrawCallPool::update()
 
     _invalidDrawCalls.clear();
 
-    // FIXME: sort draw calls back-to-front and according to their priority
-    /* _drawCalls.sort([](const DrawCall& a, const DrawCall& b)
+    _drawCalls.sort(
+        std::bind(
+            &DrawCallPool::compareDrawCalls,
+            this,
+            std::placeholders::_1,
+            std::placeholders::_2
+        )
+    );
+}
+
+bool
+DrawCallPool::compareDrawCalls(DrawCall* a, DrawCall* b)
+{
+    // FIXME: Sort according to render targets
+
+    const float aPriority = a->priority();
+    const float bPriority = b->priority();
+    const bool arePrioritiesEqual = fabsf(aPriority - bPriority) < 1e-3f;
+
+    if (!arePrioritiesEqual)
+        return aPriority > bPriority;
+
+    if (a->zSorted() || b->zSorted())
     {
-        return a.priority > b.priority;
-    );*/
+        auto aPosition = getDrawcallEyePosition(a);
+        auto bPosition = getDrawcallEyePosition(b);
+
+        return aPosition.z > bPosition.z;
+    }
+    /*
+    else
+    {
+        // FIXME
+        // ordered by target texture id, if any
+        //return a->target() && (!b->target() || (a->target()->id() > b->target()->id()));
+
+        return false;
+    }*/
+}
+
+math::vec3
+DrawCallPool::getDrawcallEyePosition(DrawCall* drawcall)
+{
+    return drawcall->getEyeSpacePosition();
 }
 
 void

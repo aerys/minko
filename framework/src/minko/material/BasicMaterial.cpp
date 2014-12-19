@@ -29,6 +29,8 @@ using namespace minko;
 using namespace minko::material;
 using namespace minko::render;
 
+/*static*/ const std::shared_ptr<render::States> BasicMaterial::_defaultStates;
+
 BasicMaterial::BasicMaterial():
 	Material("BasicMaterial")
 {
@@ -230,22 +232,23 @@ BasicMaterial::fogType() const
 
     return render::FogType::None;
 }
-//
-//BasicMaterial&
-//BasicMaterial::blendingMode(Blending::Source src, Blending::Destination dst)
-//{
-//	data()->set<Blending::Mode>("blendMode", src | dst);
-//
-//	return *this;
-//}
-//
-//BasicMaterial&
-//BasicMaterial::blendingMode(Blending::Mode value)
-//{
-//	data()->set("blendMode", value);
-//
-//	return *this;
-//}
+
+BasicMaterial&
+BasicMaterial::blendingMode(Blending::Source src, Blending::Destination dst)
+{
+	data()->set<Blending::Mode>("blendingMode", src | dst);
+
+	return *this;
+}
+
+BasicMaterial&
+BasicMaterial::blendingMode(Blending::Mode value)
+{
+	data()->set("blendingMode", value);
+
+	return *this;
+}
+
 //
 //Blending::Source
 //BasicMaterial::blendingSourceFactor() const
@@ -310,23 +313,23 @@ BasicMaterial::fogType() const
 //		? data()->get<CompareMode>("depthFunc")
 //		: _defaultStates->depthFunc();
 //}
-//
-//BasicMaterial&
-//BasicMaterial::triangleCulling(TriangleCulling value)
-//{
-//	data()->set("triangleCulling", value);
-//
-//	return *this;
-//}
-//
-//TriangleCulling
-//BasicMaterial::triangleCulling() const
-//{
-//	return data()->hasProperty("triangleCulling")
-//		? data()->get<TriangleCulling>("triangleCulling")
-//		: _defaultStates->triangleCulling();
-//}
-//
+
+BasicMaterial&
+BasicMaterial::triangleCulling(TriangleCulling value)
+{
+	data()->set("triangleCulling", value);
+
+	return *this;
+}
+
+TriangleCulling
+BasicMaterial::triangleCulling() const
+{
+	return data()->hasProperty("triangleCulling")
+		? data()->get<TriangleCulling>("triangleCulling")
+		: _defaultStates->triangleCulling();
+}
+
 //BasicMaterial&
 //BasicMaterial::stencilFunction(CompareMode value)
 //{
@@ -422,35 +425,36 @@ BasicMaterial::fogType() const
 //		? data()->get<StencilOperation>("stencilZPassOp")
 //		: _defaultStates->stencilDepthPassOperation();
 //}
-//
-//BasicMaterial&
-//BasicMaterial::priority(float value)
-//{
-//	data()->set("priority", value);
-//
-//	return *this;
-//}
-//
-//float 
-//BasicMaterial::priority() const
-//{
-//	return data()->hasProperty("priority")
-//		? data()->get<float>("priority")
-//		: _defaultStates->priority();
-//}
-//
-//BasicMaterial&
-//BasicMaterial::zSorted(bool value)
-//{
-//	data()->set("zSort", value);
-//
-//	return *this;
-//}
-//
-//bool
-//BasicMaterial::zSorted() const
-//{
-//	return data()->hasProperty("zSort")
-//		? data()->get<bool>("zSort")
-//		: _defaultStates->zSorted();
-//}
+
+BasicMaterial&
+BasicMaterial::priority(float value)
+{
+	data()->set("priority", value);
+
+	return *this;
+}
+
+
+float 
+BasicMaterial::priority() const
+{
+	return data()->hasProperty("priority")
+		? data()->get<float>("priority")
+		: _defaultStates->priority();
+}
+
+BasicMaterial&
+BasicMaterial::zSorted(bool value)
+{
+	data()->set("zSorted", value);
+
+	return *this;
+}
+
+bool
+BasicMaterial::zSorted() const
+{
+	return data()->hasProperty("zSorted")
+		? data()->get<bool>("zSorted")
+		: _defaultStates->zSorted();
+}

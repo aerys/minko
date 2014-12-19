@@ -27,12 +27,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/DrawCall.hpp"
 #include "minko/render/States.hpp"
 #include "minko/data/Binding.hpp"
+#include "minko/render/Priority.hpp"
 
 namespace minko
 {
 	namespace render
 	{
-		class DrawCall
+        class DrawCallZSorter;
+
+        class DrawCall
 		{
         public:
             static const unsigned int	MAX_NUM_TEXTURES;
@@ -97,7 +100,7 @@ namespace minko
             std::vector<AttributeValue>         _attributes;
 
             float*				                _priority;
-            bool*						        _zsorted;
+            bool*						        _zSorted;
             Blending::Source*		            _blendingSourceFactor;
             Blending::Destination*	            _blendingDestinationFactor;
             bool*						        _colorMask;
@@ -117,6 +120,8 @@ namespace minko
 
             std::map<const data::Binding*, ChangedSlot>    _propAddedOrRemovedSlot;
 
+            std::shared_ptr<DrawCallZSorter>                _zSorter;
+            Signal<DrawCall*>::Ptr                          _zSortNeeded;
 		public:
             DrawCall(std::shared_ptr<render::Pass>  pass,
                      const StringMap&               variables,
@@ -127,7 +132,9 @@ namespace minko
                 _variables(variables),
                 _rootData(rootData),
                 _rendererData(rendererData),
-                _targetData(targetData)
+                _targetData(targetData),
+                _zSorter(nullptr),
+                _zSortNeeded(Signal<DrawCall*>::create())
             {
 
             }
@@ -137,9 +144,14 @@ namespace minko
                 _variables(drawCall._variables),
                 _rootData(drawCall._rootData),
                 _rendererData(drawCall._rendererData),
-                _targetData(drawCall._targetData)
+                _targetData(drawCall._targetData),
+                _zSorter(drawCall._zSorter),
+                _zSortNeeded(drawCall._zSortNeeded)
             {
             }
+
+            void
+            initialize();
             
             inline
             std::shared_ptr<Pass>
@@ -183,6 +195,13 @@ namespace minko
                 return _targetData;
             }
 
+            inline
+            std::shared_ptr<DrawCallZSorter>
+            zSorter() const
+            {
+                return _zSorter;
+            }
+
 			void
 			render(std::shared_ptr<AbstractContext>  context,
                    AbsTexturePtr                     renderTarget) const;
@@ -193,7 +212,32 @@ namespace minko
                  data::BindingMap&          uniformBindings,
                  data::BindingMap&          stateBindings);
 
+            math::vec3
+            getEyeSpacePosition();
+
+            inline
+            float
+            priority() const
+            {
+                return *_priority;
+            }
+
+            inline
+            bool
+            zSorted() const
+            {
+                return *_zSorted;
+            }
+
+            inline
+            Signal<DrawCall*>::Ptr
+            zSortNeeded() const
+            {
+                return _zSortNeeded;
+            }
+
 		private:
+
             void
             reset();
 
@@ -251,9 +295,14 @@ namespace minko
                 const auto& binding = bindings.at(stateName);
                 auto& store = getStore(binding.source);
 
-                return store.getUnsafePointer<T>(
+                auto unsafePointer = store.getUnsafePointer<T>(
                     data::Store::getActualPropertyName(_variables, binding.propertyName)
                 );
+
+                if (unsafePointer == nullptr)
+                    return stateBindings.defaultValues.getUnsafePointer<T>(stateName);
+
+                return unsafePointer;
             }
 
             template <typename T>

@@ -253,11 +253,11 @@ namespace minko
 
             virtual
             void
-            setBlendMode(Blending::Source source, Blending::Destination destination) = 0;
+            setBlendingMode(Blending::Source source, Blending::Destination destination) = 0;
 
             virtual
             void
-            setBlendMode(Blending::Mode blendMode) = 0;
+            setBlendingMode(Blending::Mode blendMode) = 0;
 
 			virtual
 			void

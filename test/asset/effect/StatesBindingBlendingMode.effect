@@ -1,6 +1,6 @@
 {
     "states" : {
-        "blendMode" : { "binding" : "material[${materialUuid}].blendMode" }
+        "blendingMode" : { "binding" : "material[${materialUuid}].blendingMode" }
     },
 
     "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
