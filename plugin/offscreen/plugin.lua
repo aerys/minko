@@ -21,6 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 minko.plugin.offscreen = {}
 
 function minko.plugin.offscreen:enable()
+
+	if _OPTIONS['with-offscreen'] then
+
 	defines { "MINKO_PLUGIN_OFFSCREEN" }
 
 	minko.plugin.links { "offscreen" }
@@ -46,7 +49,8 @@ function minko.plugin.offscreen:enable()
 		prelinkcommands {
 			minko.action.copy(minko.plugin.path("offscreen") .. "/lib/osmesa/windows/lib/*.dll")
 		}
-
+		
+	end
 	
 end
 
