@@ -237,6 +237,8 @@ BasicMaterial&
 BasicMaterial::blendingMode(Blending::Source src, Blending::Destination dst)
 {
 	data()->set<Blending::Mode>("blendingMode", src | dst);
+    data()->set<render::Blending::Source>(render::States::PROPERTY_BLENDING_SOURCE, src);
+    data()->set<render::Blending::Destination>(render::States::PROPERTY_BLENDING_DESTINATION, dst);
 
 	return *this;
 }
@@ -244,7 +246,12 @@ BasicMaterial::blendingMode(Blending::Source src, Blending::Destination dst)
 BasicMaterial&
 BasicMaterial::blendingMode(Blending::Mode value)
 {
-	data()->set("blendingMode", value);
+    auto srcBlendingMode = static_cast<render::Blending::Source>(static_cast<uint>(value) & 0x00ff);
+    auto dstBlendingMode = static_cast<render::Blending::Destination>(static_cast<uint>(value) & 0xff00);
+
+    data()->set<render::Blending::Mode>("blendingMode", value);
+    data()->set<render::Blending::Source>(render::States::PROPERTY_BLENDING_SOURCE, srcBlendingMode);
+    data()->set<render::Blending::Destination>(render::States::PROPERTY_BLENDING_DESTINATION, dstBlendingMode);
 
 	return *this;
 }
