@@ -180,6 +180,20 @@ namespace minko
                 return _uniformFloat;
             }
 
+            inline
+            const std::vector<UniformValue<int>>&
+            boundIntUniforms()
+            {
+                return _uniformInt;
+            }
+
+            inline
+            const std::vector<UniformValue<bool>>&
+            boundBoolUniforms()
+            {
+                return _uniformBool;
+            }
+
             void
             bind(std::shared_ptr<Program> program);
 
