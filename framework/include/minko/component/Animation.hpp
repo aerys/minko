@@ -31,17 +31,16 @@ namespace minko
             friend class MasterAnimation;
 
         public:
-            typedef std::shared_ptr<Animation>                        Ptr;
+            typedef std::shared_ptr<Animation>                      Ptr;
 
         private:
             typedef std::shared_ptr<animation::AbstractTimeline>    AbsTimelinePtr;
             typedef std::shared_ptr<MasterAnimation>                MasterAnimationPtr;
             typedef std::shared_ptr<scene::Node>                    NodePtr;
-            typedef std::shared_ptr<AbstractComponent>                AbsCmpPtr;
+            typedef std::shared_ptr<AbstractComponent>              AbsCmpPtr;
 
         private:
-            std::vector<AbsTimelinePtr>                                _timelines;
-            MasterAnimationPtr                                        _master;
+            std::vector<AbsTimelinePtr>                             _timelines;
 
         public:
             inline static
@@ -96,24 +95,21 @@ namespace minko
             void
             frameBeginHandler(std::shared_ptr<SceneManager> manager, float time, float deltaTime) override
             {
-                if (_master == nullptr)
-                    AbstractAnimation::frameBeginHandler(manager, time, deltaTime);
+                AbstractAnimation::frameBeginHandler(manager, time, deltaTime);
             }
 
             inline
             void
             updateNextLabelIds(uint time) override
             {
-                if (_master == nullptr)
-                    AbstractAnimation::updateNextLabelIds(time);
+                AbstractAnimation::updateNextLabelIds(time);
             }
 
             inline
             void
             checkLabelHit(uint previousTime, uint newTime) override
             {
-                if (_master == nullptr)
-                    AbstractAnimation::checkLabelHit(previousTime, newTime);
+                AbstractAnimation::checkLabelHit(previousTime, newTime);
             }
         };
     }

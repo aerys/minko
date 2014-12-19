@@ -30,15 +30,13 @@ using namespace minko::animation;
 Animation::Animation(const std::vector<AbstractTimeline::Ptr>& timelines,
                      bool isLooping):
     AbstractAnimation(isLooping),
-    _timelines(timelines),
-    _master(nullptr)
+    _timelines(timelines)
 {
 }
 
 Animation::Animation(const Animation& anim, const CloneOption& option) :
     AbstractAnimation(anim),
-    _timelines(anim._timelines.size()),
-    _master(nullptr)
+    _timelines(anim._timelines.size())
 {
     for (std::size_t i = 0; i < anim._timelines.size(); i++)
     {
