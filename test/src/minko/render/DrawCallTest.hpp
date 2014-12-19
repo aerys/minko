@@ -37,7 +37,9 @@ namespace minko
 
             template<typename T, typename U>
             void
-            testMultipleUniformsFromRootData(ProgramInputs::Type inputType, std::function<T()> valueFunc)
+            testMultipleUniformsFromRootData(ProgramInputs::Type    inputType,
+                                             uint                   inputSize,
+                                             std::function<T()>     valueFunc)
             {
                 data::Store rootData;
                 data::Store rendererData;
@@ -45,7 +47,7 @@ namespace minko
                 data::Store defaultValues;
 
                 auto p = data::Provider::create();
-                auto numProperties = rand() % 32;
+                auto numProperties = 1 + std::abs(rand() % 32);
                 std::map<std::string, data::Binding> bindings;
                 std::vector<ProgramInputs::UniformInput> inputs;
 
@@ -57,7 +59,7 @@ namespace minko
                     {
                         p->set<T>(propertyName, valueFunc());
                         bindings["u" + propertyName] = { propertyName, data::Binding::Source::ROOT };
-                        inputs.emplace_back("u" + propertyName, rand(), inputType);
+                        inputs.emplace_back("u" + propertyName, 1 + std::abs(rand()), inputType);
                     }
                 }
                 rootData.addProvider(p);
@@ -65,20 +67,59 @@ namespace minko
                 DrawCall drawCall(nullptr, {}, rootData, rendererData, targetData);
 
                 bool uniformIsBound = true;
-
                 for (auto& input : inputs)
                     uniformIsBound = uniformIsBound && drawCall.bindUniform(input, bindings, defaultValues);
-
                 ASSERT_TRUE(uniformIsBound);
-                ASSERT_EQ(drawCall.boundBoolUniforms().size(), 0);
-                ASSERT_EQ(drawCall.boundIntUniforms().size(), 0);
-                ASSERT_EQ(drawCall.boundFloatUniforms().size(), numProperties);
+
+                const auto& uniforms = getBoundUniforms<U>(drawCall);
+                ASSERT_EQ(uniforms.size(), numProperties);
                 for (auto i = 0; i < numProperties; ++i)
-                {
-                    ASSERT_EQ(drawCall.boundFloatUniforms()[i].data, rootData.getUnsafePointer<U>(bindings[inputs[i].name].propertyName));
-                    ASSERT_EQ(drawCall.boundFloatUniforms()[i].location, inputs[i].location);
-                    ASSERT_EQ(drawCall.boundFloatUniforms()[i].size, 1);
-                }
+                    assertBoundUniform<U>(uniforms, i, inputSize, bindings[inputs[i].name], inputs[i], rootData);
+            }
+
+            template<typename T>
+            std::vector<render::DrawCall::UniformValue<T>>
+            getBoundUniforms(const render::DrawCall& drawCall);
+
+            template<>
+            inline
+            std::vector<render::DrawCall::UniformValue<float>>
+            getBoundUniforms<float>(const render::DrawCall& drawCall)
+            {
+                return drawCall.boundFloatUniforms();
+            }
+
+            template<>
+            inline
+            std::vector<render::DrawCall::UniformValue<int>>
+            getBoundUniforms<int>(const render::DrawCall& drawCall)
+            {
+                return drawCall.boundIntUniforms();
+            }
+
+            template<>
+            inline
+            std::vector<render::DrawCall::UniformValue<bool>>
+            getBoundUniforms<bool>(const render::DrawCall& drawCall)
+            {
+                return drawCall.boundBoolUniforms();
+            }
+
+            template<typename T>
+            void
+            assertBoundUniform(const std::vector<DrawCall::UniformValue<T>>&    boundUniforms,
+                               uint                                             index,
+                               uint                                             inputSize,
+                               const data::Binding&                             binding,
+                               const ProgramInputs::UniformInput&               input,
+                               const data::Store&                               store)
+            {
+                ASSERT_EQ(
+                    boundUniforms[index].data,
+                    store.getUnsafePointer<T>(binding.propertyName)
+                );
+                ASSERT_EQ(boundUniforms[index].location, input.location);
+                ASSERT_EQ(boundUniforms[index].size, inputSize);
             }
         };
     }

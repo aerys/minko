@@ -76,6 +76,7 @@ TEST_F(DrawCallTest, MultipleFloatUniformBindingsFromRootData)
 {
     testMultipleUniformsFromRootData<float, float>(
         ProgramInputs::Type::float1,
+        1,
         []() { return (float)rand(); }
     );
 }
@@ -84,6 +85,7 @@ TEST_F(DrawCallTest, MultipleFloat2UniformBindingsFromRootData)
 {
     testMultipleUniformsFromRootData<math::vec2, float>(
         ProgramInputs::Type::float2,
+        2,
         []() { return math::diskRand(100.f); }
     );
 }
@@ -92,6 +94,7 @@ TEST_F(DrawCallTest, MultipleFloat3UniformBindingsFromRootData)
 {
     testMultipleUniformsFromRootData<math::vec3, float>(
         ProgramInputs::Type::float3,
+        3,
         []() { return math::sphericalRand(-100.f); }
     );
 }
@@ -100,6 +103,7 @@ TEST_F(DrawCallTest, MultipleFloat4UniformBindingsFromRootData)
 {
     testMultipleUniformsFromRootData<math::vec4, float>(
         ProgramInputs::Type::float4,
+        4,
         []()
         {
             return math::vec4(
@@ -166,6 +170,42 @@ TEST_F(DrawCallTest, OneIntUniformBindingFromRootData)
     ASSERT_EQ(drawCall.boundIntUniforms()[0].size, 1);
 }
 
+TEST_F(DrawCallTest, MultipleIntUniformBindingsFromRootData)
+{
+    testMultipleUniformsFromRootData<int, int>(
+        ProgramInputs::Type::int1,
+        1,
+        []() { return rand(); }
+    );
+}
+
+TEST_F(DrawCallTest, MultipleInt2UniformBindingsFromRootData)
+{
+    testMultipleUniformsFromRootData<math::ivec2, int>(
+        ProgramInputs::Type::int2,
+        2,
+        []() { return math::ivec2(rand(), rand()); }
+    );
+}
+
+TEST_F(DrawCallTest, MultipleInt3UniformBindingsFromRootData)
+{
+    testMultipleUniformsFromRootData<math::ivec3, int>(
+        ProgramInputs::Type::int3,
+        3,
+        []() { return math::ivec3(rand(), rand(), rand()); }
+    );
+}
+
+TEST_F(DrawCallTest, MultipleInt4UniformBindingsFromRootData)
+{
+    testMultipleUniformsFromRootData<math::ivec4, int>(
+        ProgramInputs::Type::int4,
+        4,
+        []() { return math::ivec4(rand(), rand(), rand(), rand()); }
+    );
+}
+
 TEST_F(DrawCallTest, OneIntUniformWithVariableBindingFromRootData)
 {
     data::Store rootData;
@@ -218,6 +258,42 @@ TEST_F(DrawCallTest, OneBoolUniformBindingFromRootData)
     ASSERT_EQ(drawCall.boundBoolUniforms()[0].data, rootData.getUnsafePointer<bool>("foo"));
     ASSERT_EQ(drawCall.boundBoolUniforms()[0].location, 23);
     ASSERT_EQ(drawCall.boundBoolUniforms()[0].size, 1);
+}
+
+TEST_F(DrawCallTest, MultipleBoolUniformBindingsFromRootData)
+{
+    testMultipleUniformsFromRootData<bool, bool>(
+        ProgramInputs::Type::bool1,
+        1,
+        []() { return rand() % 2 == 0; }
+    );
+}
+
+TEST_F(DrawCallTest, MultipleBool2UniformBindingsFromRootData)
+{
+    testMultipleUniformsFromRootData<math::bvec2, bool>(
+        ProgramInputs::Type::bool2,
+        2,
+        []() { return math::bvec2(rand() % 2 == 0, rand() % 2 == 0); }
+    );
+}
+
+TEST_F(DrawCallTest, MultipleBool3UniformBindingsFromRootData)
+{
+    testMultipleUniformsFromRootData<math::bvec3, bool>(
+        ProgramInputs::Type::bool3,
+        3,
+        []() { return math::bvec3(rand() % 2 == 0, rand() % 2 == 0, rand() % 2 == 0); }
+    );
+}
+
+TEST_F(DrawCallTest, MultipleBool4UniformBindingsFromRootData)
+{
+    testMultipleUniformsFromRootData<math::bvec4, bool>(
+        ProgramInputs::Type::bool4,
+        4,
+        []() { return math::bvec4(rand() % 2 == 0, rand() % 2 == 0, rand() % 2 == 0, rand() % 2 == 0); }
+    );
 }
 
 TEST_F(DrawCallTest, OneBoolUniformWithVariableBindingFromRootData)

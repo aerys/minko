@@ -38,10 +38,6 @@ namespace minko
             static const unsigned int	MAX_NUM_TEXTURES;
             static const unsigned int   MAX_NUM_VERTEXBUFFERS;
 
-		private:
-            typedef const ProgramInputs::UniformInput&      ConstUniformInputRef;
-            typedef const ProgramInputs::AttributeInput&    ConstAttrInputRef;
-
             template <typename T>
             struct UniformValue
             {
@@ -49,6 +45,10 @@ namespace minko
                 const uint size;
                 const T* data;
             };
+
+		private:
+            typedef const ProgramInputs::UniformInput&      ConstUniformInputRef;
+            typedef const ProgramInputs::AttributeInput&    ConstAttrInputRef;
 
             struct SamplerValue
             {
@@ -175,21 +175,21 @@ namespace minko
 
             inline
             const std::vector<UniformValue<float>>&
-            boundFloatUniforms()
+            boundFloatUniforms() const
             {
                 return _uniformFloat;
             }
 
             inline
             const std::vector<UniformValue<int>>&
-            boundIntUniforms()
+            boundIntUniforms() const
             {
                 return _uniformInt;
             }
 
             inline
             const std::vector<UniformValue<bool>>&
-            boundBoolUniforms()
+            boundBoolUniforms() const
             {
                 return _uniformBool;
             }
