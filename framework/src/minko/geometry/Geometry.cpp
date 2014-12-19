@@ -282,6 +282,50 @@ Geometry::computeTangentSpace(bool doNormals)
 	return shared_from_this();
 }
 
+Geometry::Ptr
+Geometry::computeCenterPosition()
+{
+    const unsigned int numVertices = this->numVertices();
+
+    if (numVertices == 0)
+        return shared_from_this();
+
+    auto xyzBuffer = vertexBuffer("position");
+    if (!xyzBuffer)
+        return shared_from_this();
+
+    const auto& xyzAttr = xyzBuffer->attribute("position");
+    const unsigned int xyzOffset = xyzAttr.offset;
+    const unsigned int xyzSize = std::max(0u, std::min(3u, xyzAttr.size));
+    const std::vector<float>& xyzData = xyzBuffer->data();
+
+    float minXYZ[3] = { FLT_MAX, FLT_MAX, FLT_MAX };
+    float maxXYZ[3] = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
+
+    unsigned int vertexIndex = xyzOffset;
+    while (vertexIndex < xyzData.size())
+    {
+        for (unsigned int k = 0; k < xyzSize; ++k)
+        {
+            const float vk = xyzData[vertexIndex + k];
+
+            minXYZ[k] = std::min(minXYZ[k], vk);
+            maxXYZ[k] = std::max(maxXYZ[k], vk);
+        }
+
+        vertexIndex += xyzBuffer->vertexSize();
+    }
+
+    auto minPosition = math::vec3(minXYZ[0], minXYZ[1], minXYZ[2]);
+    auto maxPosition = math::vec3(maxXYZ[0], maxXYZ[1], maxXYZ[2]);
+
+    auto centerPosition = (minPosition + maxPosition) * .5f;
+
+    _data->set("centerPosition", centerPosition);
+
+    return shared_from_this();
+}
+
 void
 Geometry::vertexSizeChanged(VertexBuffer::Ptr vertexBuffer, int offset)
 {

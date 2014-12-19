@@ -233,12 +233,11 @@ DrawCallZSorter::getEyeSpacePosition() const
     if (_drawcall->targetData().hasProperty("centerPosition"))
         localPos = _drawcall->targetData().get<math::vec3>("centerPosition");
     
-    // equivalent? => modelView->copyFrom(_modelToWorldMatrix.second);
-    modelView = _modelToWorldMatrix.second;
+    if (_drawcall->targetData().hasProperty("modelToWorldMatrix"))
+        modelView = _drawcall->targetData().get<math::mat4>("modelToWorldMatrix");
 
-    // equivalent? => modelView->append(_worldToScreenMatrix.second);
-    modelView = _worldToScreenMatrix.second * modelView;
+    if (_drawcall->rendererData().hasProperty("worldToScreenMatrix"))
+        modelView = _drawcall->rendererData().get<math::mat4>("worldToScreenMatrix") * modelView;
 
-    // equivalent? => modelView->transform(localPos, output);
     return math::vec3(modelView * math::vec4(localPos, 1));
 }

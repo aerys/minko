@@ -118,9 +118,6 @@ VertexBuffer::addAttribute(const std::string& 	name,
 	_attributes.push_back({ &_id, &_vertexSize, name, size, offset });
 
 	vertexSize(_vertexSize + size);
-
-	if (name == ATTRNAME_POSITION)
-		invalidatePositionBounds();
 }
 
 bool
@@ -147,9 +144,6 @@ VertexBuffer::removeAttribute(const std::string& attributeName)
 
 	vertexSize(_vertexSize - it->size);
     _attributes.erase(it);
-
-	if (attributeName == ATTRNAME_POSITION)
-		invalidatePositionBounds();
 }
 
 const VertexAttribute&
@@ -173,74 +167,4 @@ VertexBuffer::vertexSize(unsigned int value)
 
 	_vertexSize = value;
 	_vertexSizeChanged->execute(shared_from_this(), offset);
-}
-
-
-const math::vec3&
-VertexBuffer::minPosition()
-{
-	if (!_validMinMax)
-		updatePositionBounds();
-
-	return _minPosition;
-}
-
-const math::vec3&
-VertexBuffer::maxPosition()
-{
-	if (!_validMinMax)
-		updatePositionBounds();
-
-	return _maxPosition;
-}
-
-void
-VertexBuffer::invalidatePositionBounds()
-{
-	_validMinMax = false;
-}
-
-void
-VertexBuffer::updatePositionBounds()
-{
-	invalidatePositionBounds();
-
-	if (!hasAttribute(ATTRNAME_POSITION) || numVertices() == 0)
-	{
-		_minPosition = math::vec3(0.f);
-		_maxPosition = math::vec3(0.f);
-		
-		return;
-	}
-
-	const auto&			xyzAttr = attribute(ATTRNAME_POSITION);
-	const unsigned int	size	= std::max(0u, std::min(3u, xyzAttr.size));
-	const unsigned int	offset	= xyzAttr.offset;
-
-	float minXYZ[3] = {FLT_MAX, FLT_MAX, FLT_MAX};
-	float maxXYZ[3] = {-FLT_MAX, -FLT_MAX, -FLT_MAX};
-
-	unsigned int		vidx	= offset;
-	while (vidx < _data.size())
-	{
-		for (unsigned int k = 0; k < size; ++k)
-		{
-			const float vk = _data[vidx + k];
-
-			minXYZ[k] = std::min(minXYZ[k], vk);
-			maxXYZ[k] = std::max(maxXYZ[k], vk);
-		}
-
-		vidx += _vertexSize;
-	}
-
-	_minPosition = math::vec3(minXYZ[0], minXYZ[1], minXYZ[2]);
-	_maxPosition = math::vec3(maxXYZ[0], maxXYZ[1], maxXYZ[2]);
-	_validMinMax = true;
-}
-
-math::vec3
-VertexBuffer::centerPosition()
-{
-	return (_minPosition + _maxPosition) * .5f;
 }
