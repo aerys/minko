@@ -167,6 +167,8 @@ VideoCameraPreview::initializeVideoPreviewTarget(int width, int height, ImageFor
     case ImageFormatType::RGBA:
         _videoPreviewTarget = RectangleTexture::create(_context, width, height, render::TextureFormat::RGBA);
         break;
+    default:
+        break;
     }
 
     auto data = std::vector<unsigned char>(width * height * 4, 0);
@@ -189,5 +191,9 @@ VideoCameraPreview::updateVideoPreviewTarget(const std::vector<unsigned char>&  
     // TODO
     // setup specific (hardware) conversion for formats such as YUV
 
-    _videoPreviewTarget->data(const_cast<unsigned char*>(data.data()), width, height);
+    if (_videoPreviewTarget != nullptr)
+    {
+        _videoPreviewTarget->data(const_cast<unsigned char*>(data.data()), width, height);
+        _videoPreviewTarget->upload();
+    }
 }
