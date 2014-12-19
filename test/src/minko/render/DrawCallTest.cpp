@@ -24,6 +24,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::render;
 
+std::string
+DrawCallTest::randomString(uint len)
+{
+    static const char alphanum[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    std::string s;
+
+    for (uint i = 0; i < len; ++i)
+        s += alphanum[rand() % (sizeof(alphanum) - 1)];
+
+    return s;
+}
+
 TEST_F(DrawCallTest, Constructor)
 {
     data::Store rootData;
@@ -49,15 +61,55 @@ TEST_F(DrawCallTest, OneFloatUniformBindingFromRootData)
     DrawCall drawCall(nullptr, {}, rootData, rendererData, targetData);
     ProgramInputs::UniformInput input = { "uFoo", 23, ProgramInputs::Type::float1 };
 
-    ASSERT_EQ(drawCall.boundFloatUniforms().size(), 0);
-
     bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues);
 
     ASSERT_TRUE(uniformIsBound);
+    ASSERT_EQ(drawCall.boundBoolUniforms().size(), 0);
+    ASSERT_EQ(drawCall.boundIntUniforms().size(), 0);
     ASSERT_EQ(drawCall.boundFloatUniforms().size(), 1);
     ASSERT_EQ(drawCall.boundFloatUniforms()[0].data, rootData.getUnsafePointer<float>("foo"));
     ASSERT_EQ(drawCall.boundFloatUniforms()[0].location, 23);
     ASSERT_EQ(drawCall.boundFloatUniforms()[0].size, 1);
+}
+
+TEST_F(DrawCallTest, MultipleFloatUniformBindingsFromRootData)
+{
+    testMultipleUniformsFromRootData<float, float>(
+        ProgramInputs::Type::float1,
+        []() { return (float)rand(); }
+    );
+}
+
+TEST_F(DrawCallTest, MultipleFloat2UniformBindingsFromRootData)
+{
+    testMultipleUniformsFromRootData<math::vec2, float>(
+        ProgramInputs::Type::float2,
+        []() { return math::diskRand(100.f); }
+    );
+}
+
+TEST_F(DrawCallTest, MultipleFloat3UniformBindingsFromRootData)
+{
+    testMultipleUniformsFromRootData<math::vec3, float>(
+        ProgramInputs::Type::float3,
+        []() { return math::sphericalRand(-100.f); }
+    );
+}
+
+TEST_F(DrawCallTest, MultipleFloat4UniformBindingsFromRootData)
+{
+    testMultipleUniformsFromRootData<math::vec4, float>(
+        ProgramInputs::Type::float4,
+        []()
+        {
+            return math::vec4(
+                math::linearRand(-100.f, 100.f),
+                math::linearRand(-100.f, 100.f),
+                math::linearRand(-100.f, 100.f),
+                math::linearRand(-100.f, 100.f)
+            );
+        }
+    );
 }
 
 TEST_F(DrawCallTest, OneFloatUniformWithVariableBindingFromRootData)
@@ -76,13 +128,121 @@ TEST_F(DrawCallTest, OneFloatUniformWithVariableBindingFromRootData)
     DrawCall drawCall(nullptr, {{ "bar", "0" }}, rootData, rendererData, targetData);
     ProgramInputs::UniformInput input = { "uFoo", 23, ProgramInputs::Type::float1 };
 
-    ASSERT_EQ(drawCall.boundFloatUniforms().size(), 0);
-
     bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues);
 
     ASSERT_TRUE(uniformIsBound);
+    ASSERT_EQ(drawCall.boundBoolUniforms().size(), 0);
+    ASSERT_EQ(drawCall.boundIntUniforms().size(), 0);
     ASSERT_EQ(drawCall.boundFloatUniforms().size(), 1);
     ASSERT_EQ(drawCall.boundFloatUniforms()[0].data, p->getUnsafePointer<float>("foo"));
     ASSERT_EQ(drawCall.boundFloatUniforms()[0].location, 23);
     ASSERT_EQ(drawCall.boundFloatUniforms()[0].size, 1);
+}
+
+TEST_F(DrawCallTest, OneIntUniformBindingFromRootData)
+{
+    data::Store rootData;
+    data::Store rendererData;
+    data::Store targetData;
+    data::Store defaultValues;
+
+    auto p = data::Provider::create();
+
+    p->set<int>("foo", 42);
+    rootData.addProvider(p);
+
+    std::map<std::string, data::Binding> bindings = { { "uFoo", { "foo", data::Binding::Source::ROOT } } };
+    DrawCall drawCall(nullptr, {}, rootData, rendererData, targetData);
+    ProgramInputs::UniformInput input = { "uFoo", 23, ProgramInputs::Type::int1 };
+
+    bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues);
+
+    ASSERT_TRUE(uniformIsBound);
+    ASSERT_EQ(drawCall.boundBoolUniforms().size(), 0);
+    ASSERT_EQ(drawCall.boundIntUniforms().size(), 1);
+    ASSERT_EQ(drawCall.boundFloatUniforms().size(), 0);
+    ASSERT_EQ(drawCall.boundIntUniforms()[0].data, rootData.getUnsafePointer<int>("foo"));
+    ASSERT_EQ(drawCall.boundIntUniforms()[0].location, 23);
+    ASSERT_EQ(drawCall.boundIntUniforms()[0].size, 1);
+}
+
+TEST_F(DrawCallTest, OneIntUniformWithVariableBindingFromRootData)
+{
+    data::Store rootData;
+    data::Store rendererData;
+    data::Store targetData;
+    data::Store defaultValues;
+
+    auto p = data::Provider::create();
+
+    p->set<int>("foo", 42);
+    rootData.addProvider(p, "foos");
+
+    std::map<std::string, data::Binding> bindings = { { "uFoo", { "foos[${bar}].foo", data::Binding::Source::ROOT } } };
+    DrawCall drawCall(nullptr, { { "bar", "0" } }, rootData, rendererData, targetData);
+    ProgramInputs::UniformInput input = { "uFoo", 23, ProgramInputs::Type::int1 };
+
+    bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues);
+
+    ASSERT_TRUE(uniformIsBound);
+    ASSERT_EQ(drawCall.boundBoolUniforms().size(), 0);
+    ASSERT_EQ(drawCall.boundIntUniforms().size(), 1);
+    ASSERT_EQ(drawCall.boundFloatUniforms().size(), 0);
+    ASSERT_EQ(drawCall.boundIntUniforms()[0].data, p->getUnsafePointer<int>("foo"));
+    ASSERT_EQ(drawCall.boundIntUniforms()[0].location, 23);
+    ASSERT_EQ(drawCall.boundIntUniforms()[0].size, 1);
+}
+
+TEST_F(DrawCallTest, OneBoolUniformBindingFromRootData)
+{
+    data::Store rootData;
+    data::Store rendererData;
+    data::Store targetData;
+    data::Store defaultValues;
+
+    auto p = data::Provider::create();
+
+    p->set<bool>("foo", true);
+    rootData.addProvider(p);
+
+    std::map<std::string, data::Binding> bindings = { { "uFoo", { "foo", data::Binding::Source::ROOT } } };
+    DrawCall drawCall(nullptr, {}, rootData, rendererData, targetData);
+    ProgramInputs::UniformInput input = { "uFoo", 23, ProgramInputs::Type::bool1 };
+
+    bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues);
+
+    ASSERT_TRUE(uniformIsBound);
+    ASSERT_EQ(drawCall.boundBoolUniforms().size(), 1);
+    ASSERT_EQ(drawCall.boundIntUniforms().size(), 0);
+    ASSERT_EQ(drawCall.boundFloatUniforms().size(), 0);
+    ASSERT_EQ(drawCall.boundBoolUniforms()[0].data, rootData.getUnsafePointer<bool>("foo"));
+    ASSERT_EQ(drawCall.boundBoolUniforms()[0].location, 23);
+    ASSERT_EQ(drawCall.boundBoolUniforms()[0].size, 1);
+}
+
+TEST_F(DrawCallTest, OneBoolUniformWithVariableBindingFromRootData)
+{
+    data::Store rootData;
+    data::Store rendererData;
+    data::Store targetData;
+    data::Store defaultValues;
+
+    auto p = data::Provider::create();
+
+    p->set<bool>("foo", true);
+    rootData.addProvider(p, "foos");
+
+    std::map<std::string, data::Binding> bindings = { { "uFoo", { "foos[${bar}].foo", data::Binding::Source::ROOT } } };
+    DrawCall drawCall(nullptr, { { "bar", "0" } }, rootData, rendererData, targetData);
+    ProgramInputs::UniformInput input = { "uFoo", 23, ProgramInputs::Type::bool1 };
+
+    bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues);
+
+    ASSERT_TRUE(uniformIsBound);
+    ASSERT_EQ(drawCall.boundBoolUniforms().size(), 1);
+    ASSERT_EQ(drawCall.boundIntUniforms().size(), 0);
+    ASSERT_EQ(drawCall.boundFloatUniforms().size(), 0);
+    ASSERT_EQ(drawCall.boundBoolUniforms()[0].data, p->getUnsafePointer<bool>("foo"));
+    ASSERT_EQ(drawCall.boundBoolUniforms()[0].location, 23);
+    ASSERT_EQ(drawCall.boundBoolUniforms()[0].size, 1);
 }

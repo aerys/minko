@@ -30,7 +30,56 @@ namespace minko
     {
         class DrawCallTest : public ::testing::Test
         {
-        
+        protected:
+            static
+            std::string
+            randomString(uint len);
+
+            template<typename T, typename U>
+            void
+            testMultipleUniformsFromRootData(ProgramInputs::Type inputType, std::function<T()> valueFunc)
+            {
+                data::Store rootData;
+                data::Store rendererData;
+                data::Store targetData;
+                data::Store defaultValues;
+
+                auto p = data::Provider::create();
+                auto numProperties = rand() % 32;
+                std::map<std::string, data::Binding> bindings;
+                std::vector<ProgramInputs::UniformInput> inputs;
+
+                for (auto i = 0; i < numProperties; ++i)
+                {
+                    auto propertyName = randomString(10);
+
+                    if (!p->hasProperty(propertyName))
+                    {
+                        p->set<T>(propertyName, valueFunc());
+                        bindings["u" + propertyName] = { propertyName, data::Binding::Source::ROOT };
+                        inputs.emplace_back("u" + propertyName, rand(), inputType);
+                    }
+                }
+                rootData.addProvider(p);
+
+                DrawCall drawCall(nullptr, {}, rootData, rendererData, targetData);
+
+                bool uniformIsBound = true;
+
+                for (auto& input : inputs)
+                    uniformIsBound = uniformIsBound && drawCall.bindUniform(input, bindings, defaultValues);
+
+                ASSERT_TRUE(uniformIsBound);
+                ASSERT_EQ(drawCall.boundBoolUniforms().size(), 0);
+                ASSERT_EQ(drawCall.boundIntUniforms().size(), 0);
+                ASSERT_EQ(drawCall.boundFloatUniforms().size(), numProperties);
+                for (auto i = 0; i < numProperties; ++i)
+                {
+                    ASSERT_EQ(drawCall.boundFloatUniforms()[i].data, rootData.getUnsafePointer<U>(bindings[inputs[i].name].propertyName));
+                    ASSERT_EQ(drawCall.boundFloatUniforms()[i].location, inputs[i].location);
+                    ASSERT_EQ(drawCall.boundFloatUniforms()[i].size, 1);
+                }
+            }
         };
     }
 }
