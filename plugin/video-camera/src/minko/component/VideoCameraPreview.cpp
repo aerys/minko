@@ -100,7 +100,7 @@ VideoCameraPreview::targetAddedHandler(AbstractComponent::Ptr component, scene::
     ));
 
     if (_videoPreviewTarget != nullptr)
-        _previewSurface->effect()->setUniform("uDiffuseMap", _videoPreviewTarget);
+        _previewSurface->material()->set("diffuseMap", _videoPreviewTarget);
 
     target->addComponent(_previewSurface);
 }
@@ -139,18 +139,14 @@ VideoCameraPreview::frameReceivedHandler(AbstractVideoCamera::Ptr           vide
         initializeVideoPreviewTarget(width, height, format);
     }
     else
-    {
         updateVideoPreviewTarget(data, width, height, format);
-    }
 }
 
 void
 VideoCameraPreview::forceBackgroundUpdate()
 {
     if (_previewSurface != nullptr && _videoPreviewTarget != nullptr)
-    {
-        _previewSurface->effect()->setUniform("uDiffuseMap", _videoPreviewTarget);
-    }
+        _previewSurface->material()->set("diffuseMap", _videoPreviewTarget);
 }
 
 void
@@ -177,8 +173,8 @@ VideoCameraPreview::initializeVideoPreviewTarget(int width, int height, ImageFor
 
     if (_previewSurface != nullptr)
     {
-        _previewSurface->effect()->setUniform("uDiffuseMap", _videoPreviewTarget);
-        _previewSurface->effect()->setUniform("cameraRatio", float(width) / float(height));
+        _previewSurface->material()->set("diffuseMap", _videoPreviewTarget);
+        _previewSurface->material()->set("cameraRatio", float(width) / float(height));
     }
 }
 
