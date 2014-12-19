@@ -70,6 +70,7 @@ namespace std
 		}
 	};
 
+    /*
 	inline
 	std::string
 	to_string(const minko::math::mat4& matrix)
@@ -82,6 +83,7 @@ namespace std
 
 		return str;
 	}
+    */
 
     template<typename T, minko::math::precision P>
     std::string
