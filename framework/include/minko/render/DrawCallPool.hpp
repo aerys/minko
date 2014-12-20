@@ -90,13 +90,13 @@ namespace minko
             void
             update();
 
+        private:
             bool
-            compareDrawCalls(DrawCall* a, DrawCall* b);
+            compareDrawCalls(DrawCall& a, DrawCall& b);
 
             math::vec3
-            getDrawcallEyePosition(DrawCall* drawcall);
+            getDrawcallEyePosition(DrawCall& drawcall);
 
-        private:
             void
             watchProgramSignature(DrawCall&                     drawCall,
                                   const data::MacroBindingMap&  macroBindings,
