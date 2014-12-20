@@ -82,7 +82,7 @@ DrawCall::bind(std::shared_ptr<Program> program)
 
     bindIndexBuffer();
     bindStates();
-    bindUniforms();
+    //bindUniforms();
     bindAttributes();
 }
 
@@ -117,132 +117,18 @@ DrawCall::bindAttributes()
     }
 }
 
-void
-DrawCall::bindUniforms()
-{
-    const auto& uniformBindings = _pass->uniformBindings();
-
-    for (const auto& input : _program->inputs().uniforms())
-    {
-        bindUniform(input, uniformBindings.bindings, uniformBindings.defaultValues);
-
-        ///if (!store.hasProperty(propertyName))
-        {
-            // FIXME: keep a direct pointer to the uniform data pointer instead of eventually search for it
-            // FIXME: do this in DrawCallPool
-            /*_propAddedOrRemovedSlot[&binding] = store.propertyAdded(input.name).connect(std::bind(
-                &DrawCall::uniformBindingPropertyAdded,
-                this,
-                std::ref(binding),
-                std::ref(store),
-                std::ref(uniformBindings.defaultValues),
-                std::ref(input),
-                propertyName
-            ));*/
-        }
-        //else
-        {
-            //bindUniform(input, store, uniformBindings.defaultValues, propertyName);
-
-            // we listen to the "propertyRemoved" signal in order to make sure the uniform data
-            // points to the default value data
-            // FIXME: do this in DrawCallPool
-            /*_propAddedOrRemovedSlot[&binding] = store.propertyRemoved(propertyName).connect(std::bind(
-                &DrawCall::uniformBindingPropertyRemoved,
-                this,
-                std::ref(binding),
-                std::ref(store),
-                std::ref(uniformBindings.defaultValues),
-                std::ref(input),
-                propertyName
-            ));*/
-        }
-    }
-}
-
-void
-DrawCall::uniformBindingPropertyAdded(const data::Binding&                  binding,
-                                      data::Store&                          store,
-                                      const data::Store&                    defaultValues,
-                                      const ProgramInputs::UniformInput&    input,
-                                      const std::string&                    propertyName)
-{
-    _propAddedOrRemovedSlot.erase(&binding);
-    /*bindUniform(input, defaultValues, propertyName);
-    _propAddedOrRemovedSlot[&binding] = store.propertyRemoved(propertyName).connect(std::bind(
-        &DrawCall::uniformBindingPropertyAdded,
-        this,
-        std::ref(binding),
-        std::ref(store),
-        std::ref(defaultValues),
-        std::ref(input),
-        propertyName
-    ));*/
-}
-
-void
-DrawCall::uniformBindingPropertyRemoved(const data::Binding&                binding,
-                                        data::Store&                        store,
-                                        const data::Store&                  defaultValues,
-                                        const ProgramInputs::UniformInput&  input,
-                                        const std::string&                  propertyName)
-{
-    _propAddedOrRemovedSlot.erase(&binding);
-    /*bindUniform(input, defaultValues, input.name);
-    _propAddedOrRemovedSlot[&binding] = store.propertyAdded(propertyName).connect(std::bind(
-        &DrawCall::uniformBindingPropertyAdded,
-        this,
-        std::ref(binding),
-        std::ref(store),
-        std::ref(defaultValues),
-        std::ref(input),
-        propertyName
-    ));*/
-}
-
-void
-DrawCall::bindIndexBuffer()
-{
-    _indexBuffer = const_cast<int*>(_targetData.getPointer<int>(
-        data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].indices")
-    ));
-    _firstIndex = const_cast<uint*>(_targetData.getPointer<uint>(
-        data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].firstIndex")
-    ));
-    _numIndices = const_cast<uint*>(_targetData.getPointer<uint>(
-        data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].numIndices")
-    ));
-}
-
-void
-DrawCall::bindAttribute(ConstAttrInputRef       input,
-                        const data::Store&      store,
-                        const std::string&      propertyName)
-{
-    const auto& attr = store.getPointer<VertexAttribute>(propertyName);
-
-    _attributes.push_back({
-        _program->setAttributeNames().size() + _attributes.size(),
-        input.location,
-        attr->resourceId,
-        attr->size,
-        attr->vertexSize,
-        attr->offset
-    });
-}
-
-bool
+data::ResolvedBinding*
 DrawCall::bindUniform(ConstUniformInputRef                          input,
                       const std::map<std::string, data::Binding>&   uniformBindings,
                       const data::Store&                            defaultValues)
 {
-    data::Store store;
-    std::string propertyName;
-    bool hasBinding = resolveBinding(input, uniformBindings, propertyName, store);
+    data::ResolvedBinding* binding = resolveBinding(input, uniformBindings);
+    std::string propertyName = binding->propertyName;
+    data::Store& store = binding->store;
 
-    if (!hasBinding || !store.hasProperty(propertyName))
+    if ((binding == nullptr) || !store.hasProperty(propertyName))
     {
-        if (!defaultValues.hasProperty(propertyName))
+        if (!defaultValues.hasProperty(input.name))
         {
             throw std::runtime_error(
                 "The uniform \"" + input.name + "\" is bound to the \"" + propertyName
@@ -250,6 +136,7 @@ DrawCall::bindUniform(ConstUniformInputRef                          input,
             );
         }
 
+        propertyName = input.name;
         store = defaultValues;
     }
 
@@ -308,7 +195,39 @@ DrawCall::bindUniform(ConstUniformInputRef                          input,
             break;
     }
 
-    return hasBinding;
+    return binding;
+}
+
+
+void
+DrawCall::bindIndexBuffer()
+{
+    _indexBuffer = const_cast<int*>(_targetData.getPointer<int>(
+        data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].indices")
+    ));
+    _firstIndex = const_cast<uint*>(_targetData.getPointer<uint>(
+        data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].firstIndex")
+    ));
+    _numIndices = const_cast<uint*>(_targetData.getPointer<uint>(
+        data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].numIndices")
+    ));
+}
+
+void
+DrawCall::bindAttribute(ConstAttrInputRef       input,
+                        const data::Store&      store,
+                        const std::string&      propertyName)
+{
+    const auto& attr = store.getPointer<VertexAttribute>(propertyName);
+
+    _attributes.push_back({
+        _program->setAttributeNames().size() + _attributes.size(),
+        input.location,
+        attr->resourceId,
+        attr->size,
+        attr->vertexSize,
+        attr->offset
+    });
 }
 
 void
@@ -410,11 +329,9 @@ DrawCall::render(AbstractContext::Ptr context, AbstractTexture::Ptr renderTarget
     context->drawTriangles(*_indexBuffer, *_numIndices / 3);
 }
 
-bool
+data::ResolvedBinding*
 DrawCall::resolveBinding(const ProgramInputs::AbstractInput&            input,
-                         const std::map<std::string, data::Binding>&    bindings,
-                         std::string&                                   propertyName,
-                         data::Store&                                   store)
+                         const std::map<std::string, data::Binding>&    bindings)
 {
     bool isArray = false;
     std::string bindingName = input.name;
@@ -427,12 +344,12 @@ DrawCall::resolveBinding(const ProgramInputs::AbstractInput&            input,
     }
 
     if (bindings.count(bindingName) == 0)
-        return false;
+        return nullptr;
 
     const auto& binding = bindings.at(bindingName);
     
-    store = getStore(binding.source);
-    propertyName = data::Store::getActualPropertyName(_variables, binding.propertyName);
+    auto& store = getStore(binding.source);
+    auto propertyName = data::Store::getActualPropertyName(_variables, binding.propertyName);
 
     // FIXME: handle uniforms with struct types
 
@@ -444,7 +361,7 @@ DrawCall::resolveBinding(const ProgramInputs::AbstractInput&            input,
     if (isArray)
         propertyName += input.name.substr(pos);
 
-    return true;
+    return new data::ResolvedBinding(binding, propertyName, store);
 }
 
 math::vec3

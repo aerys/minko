@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "DrawCallTest.hpp"
 
 #include "minko/data/Provider.hpp"
+#include "minko/data/ResolvedBinding.hpp"
 
 using namespace minko;
 using namespace minko::render;
@@ -61,7 +62,7 @@ TEST_F(DrawCallTest, OneFloatUniformBindingFromRootData)
     DrawCall drawCall(nullptr, {}, rootData, rendererData, targetData);
     ProgramInputs::UniformInput input = { "uFoo", 23, ProgramInputs::Type::float1 };
 
-    bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues);
+    bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues) != nullptr;
 
     ASSERT_TRUE(uniformIsBound);
     ASSERT_EQ(drawCall.boundBoolUniforms().size(), 0);
@@ -132,7 +133,7 @@ TEST_F(DrawCallTest, OneFloatUniformWithVariableBindingFromRootData)
     DrawCall drawCall(nullptr, {{ "bar", "0" }}, rootData, rendererData, targetData);
     ProgramInputs::UniformInput input = { "uFoo", 23, ProgramInputs::Type::float1 };
 
-    bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues);
+    bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues) != nullptr;
 
     ASSERT_TRUE(uniformIsBound);
     ASSERT_EQ(drawCall.boundBoolUniforms().size(), 0);
@@ -159,7 +160,7 @@ TEST_F(DrawCallTest, OneIntUniformBindingFromRootData)
     DrawCall drawCall(nullptr, {}, rootData, rendererData, targetData);
     ProgramInputs::UniformInput input = { "uFoo", 23, ProgramInputs::Type::int1 };
 
-    bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues);
+    bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues) != nullptr;
 
     ASSERT_TRUE(uniformIsBound);
     ASSERT_EQ(drawCall.boundBoolUniforms().size(), 0);
@@ -222,7 +223,7 @@ TEST_F(DrawCallTest, OneIntUniformWithVariableBindingFromRootData)
     DrawCall drawCall(nullptr, { { "bar", "0" } }, rootData, rendererData, targetData);
     ProgramInputs::UniformInput input = { "uFoo", 23, ProgramInputs::Type::int1 };
 
-    bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues);
+    bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues) != nullptr;
 
     ASSERT_TRUE(uniformIsBound);
     ASSERT_EQ(drawCall.boundBoolUniforms().size(), 0);
@@ -249,7 +250,7 @@ TEST_F(DrawCallTest, OneBoolUniformBindingFromRootData)
     DrawCall drawCall(nullptr, {}, rootData, rendererData, targetData);
     ProgramInputs::UniformInput input = { "uFoo", 23, ProgramInputs::Type::bool1 };
 
-    bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues);
+    bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues) != nullptr;
 
     ASSERT_TRUE(uniformIsBound);
     ASSERT_EQ(drawCall.boundBoolUniforms().size(), 1);
@@ -312,7 +313,7 @@ TEST_F(DrawCallTest, OneBoolUniformWithVariableBindingFromRootData)
     DrawCall drawCall(nullptr, { { "bar", "0" } }, rootData, rendererData, targetData);
     ProgramInputs::UniformInput input = { "uFoo", 23, ProgramInputs::Type::bool1 };
 
-    bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues);
+    bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues) != nullptr;
 
     ASSERT_TRUE(uniformIsBound);
     ASSERT_EQ(drawCall.boundBoolUniforms().size(), 1);

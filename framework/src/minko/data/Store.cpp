@@ -27,7 +27,18 @@ using namespace minko;
 using namespace minko::data;
 
 Store::Store() :
-    _lengthProvider(nullptr)
+    _providers(),
+    _collections(),
+    _lengthProvider(nullptr),
+    _propertyAdded(),
+    _propertyRemoved(),
+    _propertyChanged(),
+    _propertyNameToChangedSignal(),
+    _propertyNameToAddedSignal(),
+    _propertyNameToRemovedSignal(),
+    _propertySlots(),
+    _collectionItemAddedSlots(),
+    _collectionItemRemovedSlots()
 {
 }
 

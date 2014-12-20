@@ -72,7 +72,7 @@ namespace minko
                 ASSERT_TRUE(uniformIsBound);
 
                 const auto& uniforms = getBoundUniforms<U>(drawCall);
-                ASSERT_EQ(uniforms.size(), numProperties);
+                ASSERT_EQ(uniforms.size(), inputs.size());
                 for (auto i = 0; i < numProperties; ++i)
                     assertBoundUniform<U>(uniforms, i, inputSize, bindings[inputs[i].name], inputs[i], rootData);
             }

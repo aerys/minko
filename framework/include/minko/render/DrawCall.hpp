@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/DrawCall.hpp"
 #include "minko/render/States.hpp"
 #include "minko/data/Binding.hpp"
+#include "minko/data/ResolvedBinding.hpp"
 #include "minko/render/Priority.hpp"
 
 namespace minko
@@ -199,26 +200,11 @@ namespace minko
                 return _uniformBool;
             }
 
-            void
-            bind(std::shared_ptr<Program> program);
-
             std::shared_ptr<DrawCallZSorter>
             zSorter() const
             {
                 return _zSorter;
             }
-
-			void
-			render(std::shared_ptr<AbstractContext>  context,
-                   AbsTexturePtr                     renderTarget) const;
-
-            bool
-            bindUniform(ConstUniformInputRef                        input,
-                        const std::map<std::string, data::Binding>& uniformBindings,
-                        const data::Store&                          defaultValues);
-
-            math::vec3
-            getEyeSpacePosition();
 
             inline
             float
@@ -241,13 +227,25 @@ namespace minko
                 return _zSortNeeded;
             }
 
+            void
+            bind(std::shared_ptr<Program> program);
+
+			void
+			render(std::shared_ptr<AbstractContext>  context,
+                   AbsTexturePtr                     renderTarget) const;
+
+            data::ResolvedBinding*
+            bindUniform(const ProgramInputs::UniformInput&          input,
+                        const std::map<std::string, data::Binding>& uniformBindings,
+                        const data::Store&                          defaultValues);
+
+            math::vec3
+            getEyeSpacePosition();
+
 		private:
 
             void
             reset();
-
-            void
-            bindUniforms();
 
             void
             bindAttributes();
@@ -266,25 +264,9 @@ namespace minko
             data::Store&
             getStore(data::Binding::Source source);
 
-            void
-            uniformBindingPropertyAdded(const data::Binding&                binding,
-                                        data::Store&                        store,
-                                        const data::Store&                  defaultValues,
-                                        const ProgramInputs::UniformInput&  input,
-                                        const std::string&                  propertyName);
-
-            void
-            uniformBindingPropertyRemoved(const data::Binding&                  binding,
-                                          data::Store&                          store,
-                                          const data::Store&                    defaultValues,
-                                          const ProgramInputs::UniformInput&    input,
-                                          const std::string&                    propertyName);
-
-            bool
+            data::ResolvedBinding*
             resolveBinding(const ProgramInputs::AbstractInput&          input,
-                           const std::map<std::string, data::Binding>&  bindings,
-                           std::string&                                 propertyName,
-                           data::Store&                                 store);
+                           const std::map<std::string, data::Binding>&  bindings);
 
             template <typename T>
             T*

@@ -25,20 +25,9 @@ using namespace minko;
 using namespace minko::render;
 using namespace minko::file;
 
-Effect::Ptr
-EffectParserTest::loadEffect(const std::string& filename)
-{   
-    auto lib = AssetLibrary::create(MinkoTests::canvas()->context());
-
-    lib->loader()->queue(filename);
-    lib->loader()->load();
-
-    return lib->effect(filename);
-}
-
 TEST_F(EffectParserTest, OneAttributeBinding)
 {
-    auto fx = loadEffect("effect/OneAttributeBinding.effect");
+    auto fx = MinkoTests::loadEffect("effect/OneAttributeBinding.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -50,7 +39,7 @@ TEST_F(EffectParserTest, OneAttributeBinding)
 
 TEST_F(EffectParserTest, TwoAttributeBindings)
 {
-    auto fx = loadEffect("effect/TwoAttributeBindings.effect");
+    auto fx = MinkoTests::loadEffect("effect/TwoAttributeBindings.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -64,7 +53,7 @@ TEST_F(EffectParserTest, TwoAttributeBindings)
 
 TEST_F(EffectParserTest, OneUniformBinding)
 {
-    auto fx = loadEffect("effect/OneUniformBinding.effect");
+    auto fx = MinkoTests::loadEffect("effect/OneUniformBinding.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -80,7 +69,7 @@ TEST_F(EffectParserTest, OneUniformBinding)
 
 TEST_F(EffectParserTest, StatesDefaultValues)
 {
-    auto fx = loadEffect("effect/StatesDefaultValues.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesDefaultValues.effect");
     auto& states = fx->techniques().at("default")[0]->states();
 
     ASSERT_EQ(states.priority(), States::DEFAULT_PRIORITY);
@@ -108,7 +97,7 @@ TEST_F(EffectParserTest, StatesDefaultValues)
 
 TEST_F(EffectParserTest, PriorityFloatDefaultValue)
 {
-    auto fx = loadEffect("effect/PriorityFloatDefaultValue.effect");
+    auto fx = MinkoTests::loadEffect("effect/PriorityFloatDefaultValue.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().priority(), 42.f);
@@ -116,7 +105,7 @@ TEST_F(EffectParserTest, PriorityFloatDefaultValue)
 
 TEST_F(EffectParserTest, PriorityFloatArrayValue)
 {
-    auto fx = loadEffect("effect/PriorityFloatArrayValue.effect");
+    auto fx = MinkoTests::loadEffect("effect/PriorityFloatArrayValue.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().priority(), 2042.f);
@@ -126,7 +115,7 @@ TEST_F(EffectParserTest, PriorityFloatArrayValue)
 
 TEST_F(EffectParserTest, StatesDepthMask)
 {
-    auto fx = loadEffect("effect/StatesDepthMask.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesDepthMask.effect");
 
     auto value = fx->techniques().at("default")[0]->states().depthMask();
 
@@ -138,7 +127,7 @@ TEST_F(EffectParserTest, StatesDepthMask)
 
 TEST_F(EffectParserTest, StatesDepthFunctionAlways)
 {
-    auto fx = loadEffect("effect/StatesDepthFunctionAlways.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesDepthFunctionAlways.effect");
 
     auto value = fx->techniques().at("default")[0]->states().depthFunction();
 
@@ -148,7 +137,7 @@ TEST_F(EffectParserTest, StatesDepthFunctionAlways)
 
 TEST_F(EffectParserTest, StatesDepthFunctionEqual)
 {
-    auto fx = loadEffect("effect/StatesDepthFunctionEqual.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesDepthFunctionEqual.effect");
 
     auto value = fx->techniques().at("default")[0]->states().depthFunction();
 
@@ -158,7 +147,7 @@ TEST_F(EffectParserTest, StatesDepthFunctionEqual)
 
 TEST_F(EffectParserTest, StatesDepthFunctionGreater)
 {
-    auto fx = loadEffect("effect/StatesDepthFunctionGreater.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesDepthFunctionGreater.effect");
 
     auto value = fx->techniques().at("default")[0]->states().depthFunction();
 
@@ -168,7 +157,7 @@ TEST_F(EffectParserTest, StatesDepthFunctionGreater)
 
 TEST_F(EffectParserTest, StatesDepthFunctionGreaterEqual)
 {
-    auto fx = loadEffect("effect/StatesDepthFunctionGreaterEqual.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesDepthFunctionGreaterEqual.effect");
 
     auto value = fx->techniques().at("default")[0]->states().depthFunction();
 
@@ -178,7 +167,7 @@ TEST_F(EffectParserTest, StatesDepthFunctionGreaterEqual)
 
 TEST_F(EffectParserTest, StatesDepthFunctionLess)
 {
-    auto fx = loadEffect("effect/StatesDepthFunctionLess.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesDepthFunctionLess.effect");
 
     auto value = fx->techniques().at("default")[0]->states().depthFunction();
 
@@ -188,7 +177,7 @@ TEST_F(EffectParserTest, StatesDepthFunctionLess)
 
 TEST_F(EffectParserTest, StatesDepthFunctionLessEqual)
 {
-    auto fx = loadEffect("effect/StatesDepthFunctionLessEqual.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesDepthFunctionLessEqual.effect");
 
     auto value = fx->techniques().at("default")[0]->states().depthFunction();
 
@@ -198,7 +187,7 @@ TEST_F(EffectParserTest, StatesDepthFunctionLessEqual)
 
 TEST_F(EffectParserTest, StatesDepthFunctionNever)
 {
-    auto fx = loadEffect("effect/StatesDepthFunctionNever.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesDepthFunctionNever.effect");
 
     auto value = fx->techniques().at("default")[0]->states().depthFunction();
 
@@ -208,7 +197,7 @@ TEST_F(EffectParserTest, StatesDepthFunctionNever)
 
 TEST_F(EffectParserTest, StatesDepthFunctionNotEqual)
 {
-    auto fx = loadEffect("effect/StatesDepthFunctionNotEqual.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesDepthFunctionNotEqual.effect");
 
     auto value = fx->techniques().at("default")[0]->states().depthFunction();
 
@@ -220,7 +209,7 @@ TEST_F(EffectParserTest, StatesDepthFunctionNotEqual)
 
 TEST_F(EffectParserTest, StatesTriangleCullingBack)
 {
-    auto fx = loadEffect("effect/StatesTriangleCullingBack.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesTriangleCullingBack.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().triangleCulling(), TriangleCulling::BACK);
@@ -228,7 +217,7 @@ TEST_F(EffectParserTest, StatesTriangleCullingBack)
 
 TEST_F(EffectParserTest, StatesTriangleCullingBoth)
 {
-    auto fx = loadEffect("effect/StatesTriangleCullingBoth.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesTriangleCullingBoth.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().triangleCulling(), TriangleCulling::BOTH);
@@ -236,7 +225,7 @@ TEST_F(EffectParserTest, StatesTriangleCullingBoth)
 
 TEST_F(EffectParserTest, StatesTriangleCullingFront)
 {
-    auto fx = loadEffect("effect/StatesTriangleCullingFront.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesTriangleCullingFront.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().triangleCulling(), TriangleCulling::FRONT);
@@ -244,7 +233,7 @@ TEST_F(EffectParserTest, StatesTriangleCullingFront)
 
 TEST_F(EffectParserTest, StatesTriangleCullingNone)
 {
-    auto fx = loadEffect("effect/StatesTriangleCullingNone.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesTriangleCullingNone.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().triangleCulling(), TriangleCulling::NONE);
@@ -254,7 +243,7 @@ TEST_F(EffectParserTest, StatesTriangleCullingNone)
 
 TEST_F(EffectParserTest, StatesBlendingModeDefault)
 {
-    auto fx = loadEffect("effect/StatesBlendingModeDefault.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesBlendingModeDefault.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::ONE);
@@ -263,7 +252,7 @@ TEST_F(EffectParserTest, StatesBlendingModeDefault)
 
 TEST_F(EffectParserTest, StatesBlendingModeAdditive)
 {
-    auto fx = loadEffect("effect/StatesBlendingModeAdditive.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesBlendingModeAdditive.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::ONE);
@@ -272,7 +261,7 @@ TEST_F(EffectParserTest, StatesBlendingModeAdditive)
 
 TEST_F(EffectParserTest, StatesBlendingModeAlpha)
 {
-    auto fx = loadEffect("effect/StatesBlendingModeAlpha.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesBlendingModeAlpha.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::SRC_ALPHA);
@@ -283,7 +272,7 @@ TEST_F(EffectParserTest, StatesBlendingModeAlpha)
 
 TEST_F(EffectParserTest, StatesBindingPriority)
 {
-    auto fx = loadEffect("effect/StatesBindingPriority.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesBindingPriority.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -295,7 +284,7 @@ TEST_F(EffectParserTest, StatesBindingPriority)
 
 TEST_F(EffectParserTest, StatesBindingZSorted)
 {
-    auto fx = loadEffect("effect/StatesBindingZSorted.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesBindingZSorted.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -307,7 +296,7 @@ TEST_F(EffectParserTest, StatesBindingZSorted)
 
 TEST_F(EffectParserTest, StatesBindingBlendingMode)
 {
-    auto fx = loadEffect("effect/StatesBindingBlendingMode.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesBindingBlendingMode.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -319,7 +308,7 @@ TEST_F(EffectParserTest, StatesBindingBlendingMode)
 
 TEST_F(EffectParserTest, StatesBindingBlendingSource)
 {
-    auto fx = loadEffect("effect/StatesBindingBlendingSource.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesBindingBlendingSource.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -331,7 +320,7 @@ TEST_F(EffectParserTest, StatesBindingBlendingSource)
 
 TEST_F(EffectParserTest, StatesBindingBlendingDestination)
 {
-    auto fx = loadEffect("effect/StatesBindingBlendingDestination.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesBindingBlendingDestination.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -343,7 +332,7 @@ TEST_F(EffectParserTest, StatesBindingBlendingDestination)
 
 TEST_F(EffectParserTest, StatesBindingColorMask)
 {
-    auto fx = loadEffect("effect/StatesBindingColorMask.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesBindingColorMask.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -355,7 +344,7 @@ TEST_F(EffectParserTest, StatesBindingColorMask)
 
 TEST_F(EffectParserTest, StatesBindingDepthMask)
 {
-    auto fx = loadEffect("effect/StatesBindingDepthMask.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesBindingDepthMask.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -367,7 +356,7 @@ TEST_F(EffectParserTest, StatesBindingDepthMask)
 
 TEST_F(EffectParserTest, StatesBindingDepthFunction)
 {
-    auto fx = loadEffect("effect/StatesBindingDepthFunction.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesBindingDepthFunction.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -379,7 +368,7 @@ TEST_F(EffectParserTest, StatesBindingDepthFunction)
 
 TEST_F(EffectParserTest, StatesBindingTriangleCulling)
 {
-    auto fx = loadEffect("effect/StatesBindingTriangleCulling.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesBindingTriangleCulling.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -391,7 +380,7 @@ TEST_F(EffectParserTest, StatesBindingTriangleCulling)
 
 TEST_F(EffectParserTest, StatesBindingStencilFunction)
 {
-    auto fx = loadEffect("effect/StatesBindingStencilFunction.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesBindingStencilFunction.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -403,7 +392,7 @@ TEST_F(EffectParserTest, StatesBindingStencilFunction)
 
 TEST_F(EffectParserTest, StatesBindingStencilReference)
 {
-    auto fx = loadEffect("effect/StatesBindingStencilReference.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesBindingStencilReference.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -415,7 +404,7 @@ TEST_F(EffectParserTest, StatesBindingStencilReference)
 
 TEST_F(EffectParserTest, StatesBindingStencilMask)
 {
-    auto fx = loadEffect("effect/StatesBindingStencilMask.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesBindingStencilMask.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -427,7 +416,7 @@ TEST_F(EffectParserTest, StatesBindingStencilMask)
 
 TEST_F(EffectParserTest, StatesBindingStencilFailOperation)
 {
-    auto fx = loadEffect("effect/StatesBindingStencilFailOperation.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesBindingStencilFailOperation.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -439,7 +428,7 @@ TEST_F(EffectParserTest, StatesBindingStencilFailOperation)
 
 TEST_F(EffectParserTest, StatesBindingStencilZFailOperation)
 {
-    auto fx = loadEffect("effect/StatesBindingStencilZFailOperation.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesBindingStencilZFailOperation.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -451,7 +440,7 @@ TEST_F(EffectParserTest, StatesBindingStencilZFailOperation)
 
 TEST_F(EffectParserTest, StatesBindingStencilZPassOperation)
 {
-    auto fx = loadEffect("effect/StatesBindingStencilZPassOperation.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesBindingStencilZPassOperation.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -463,7 +452,7 @@ TEST_F(EffectParserTest, StatesBindingStencilZPassOperation)
 
 TEST_F(EffectParserTest, StatesBindingScissorTest)
 {
-    auto fx = loadEffect("effect/StatesBindingScissorTest.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesBindingScissorTest.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -475,7 +464,7 @@ TEST_F(EffectParserTest, StatesBindingScissorTest)
 
 TEST_F(EffectParserTest, StatesBindingScissorBox)
 {
-    auto fx = loadEffect("effect/StatesBindingScissorBox.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesBindingScissorBox.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -487,7 +476,7 @@ TEST_F(EffectParserTest, StatesBindingScissorBox)
 
 TEST_F(EffectParserTest, StatesBindingTarget)
 {
-    auto fx = loadEffect("effect/StatesBindingTarget.effect");
+    auto fx = MinkoTests::loadEffect("effect/StatesBindingTarget.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
