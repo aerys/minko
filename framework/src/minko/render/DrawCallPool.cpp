@@ -18,6 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/render/DrawCallPool.hpp"
+#include "minko/render/DrawCallZSorter.hpp"
 
 using namespace minko;
 using namespace minko::render;
@@ -117,9 +118,9 @@ DrawCallPool::watchProgramSignature(DrawCall&                       drawCall,
 }
 
 void
-DrawCallPool::addMacroCallback(PropertyChanged&         key,
-                               data::Store&             store,
-                               const MacroCallback&     callback)
+DrawCallPool::addMacroCallback(PropertyChanged&     key,
+                               data::Store&         store,
+                               const MacroCallback& callback)
 {
     if (_macroChangedSlot.count(&key) == 0)
         _macroChangedSlot.emplace(&key, ChangedSlot(key.connect(callback), 1));
@@ -238,11 +239,50 @@ DrawCallPool::update()
 
     _invalidDrawCalls.clear();
 
-    // FIXME: sort draw calls back-to-front and according to their priority
-    /* _drawCalls.sort([](const DrawCall& a, const DrawCall& b)
+    _drawCalls.sort(
+        std::bind(
+            &DrawCallPool::compareDrawCalls,
+            this,
+            std::placeholders::_1,
+            std::placeholders::_2
+        )
+    );
+}
+
+bool
+DrawCallPool::compareDrawCalls(DrawCall& a, DrawCall& b)
+{
+    // FIXME: Sort according to render targets
+
+    const float aPriority = a.priority();
+    const float bPriority = b.priority();
+    const bool arePrioritiesEqual = fabsf(aPriority - bPriority) < 1e-3f;
+
+    if (!arePrioritiesEqual)
+        return aPriority > bPriority;
+
+    if (a.zSorted() || b.zSorted())
     {
-        return a.priority > b.priority;
-    );*/
+        auto aPosition = getDrawcallEyePosition(a);
+        auto bPosition = getDrawcallEyePosition(b);
+
+        return aPosition.z > bPosition.z;
+    }
+    /*
+    else
+    {
+        // FIXME
+        // ordered by target texture id, if any
+        //return a->target() && (!b->target() || (a->target()->id() > b->target()->id()));
+
+        return false;
+    }*/
+}
+
+math::vec3
+DrawCallPool::getDrawcallEyePosition(DrawCall& drawcall)
+{
+    return drawcall.getEyeSpacePosition();
 }
 
 void

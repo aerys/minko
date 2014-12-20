@@ -49,12 +49,19 @@
         "UV_SCALE"        : "material[${materialUuid}].uvScale"
     },
 
+	"states" : {
+		"blendingSource"		: { "binding" : "material[${materialUuid}].blendingSource" },
+		"blendingDestination"	: { "binding" : "material[${materialUuid}].blendingDestination" },
+        "triangleCulling"       : { "binding" : "material[${materialUuid}].triangleCulling" },
+        "zSorted"               : { "binding" : "material[${materialUuid}].zSorted" }
+    },
+	
     "defaultTechnique"  : "opaque",
 
 	"techniques" : [
         {
             "name" : "opaque",
-
+			
     		"passes"    : [{
     			"vertexShader"      : "#pragma include \"Basic.vertex.glsl\"",
                 "fragmentShader"    : "#pragma include \"Basic.fragment.glsl\""
@@ -63,6 +70,12 @@
         {
             "name" : "transparent",
 
+			"states" : {
+				"blendingMode" 	: "alpha",
+				"priority"  	: "transparent",
+				"zSorted"   	: true
+			},
+			
             "passes" : [{
                 "vertexShader"      : "#pragma include \"Basic.vertex.glsl\"",
                 "fragmentShader"    : "#pragma include \"Basic.fragment.glsl\""

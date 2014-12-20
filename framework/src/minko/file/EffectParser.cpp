@@ -133,7 +133,7 @@ EffectParser::initializePriorityMap()
 }
 
 std::array<std::string, 1> EffectParser::_extraStateNames = {
-    "blendMode"
+    "blendingMode"
 };
 
 float
@@ -616,7 +616,10 @@ EffectParser::parseStates(const Json::Value& node, const Scope& scope, StateBloc
                 std::find(_extraStateNames.begin(), _extraStateNames.end(), stateName) == _extraStateNames.end())
                 throw; // FIXME: log warning because the state name does not match any known state
 
-            //parseBinding(statesNode[stateName], scope, states.bindingMap.bindings[stateName]);
+            if (statesNode[stateName].isObject())
+            {
+                parseBinding(statesNode[stateName], scope, stateBlock.bindingMap.bindings[stateName]);
+            }
         }
 
         // parse & set priority default value
@@ -631,7 +634,7 @@ EffectParser::parseStates(const Json::Value& node, const Scope& scope, StateBloc
         // parse & set blending factors default values
         render::Blending::Source blendSrcFactor = render::States::DEFAULT_BLENDING_SOURCE;
         render::Blending::Destination blendDstFactor = render::States::DEFAULT_BLENDING_DESTINATION;
-        parseBlendMode(statesNode, scope, blendSrcFactor, blendDstFactor);
+        parseBlendingMode(statesNode, scope, blendSrcFactor, blendDstFactor);
         stateBlock.states.blendingSourceFactor(blendSrcFactor);
         stateBlock.states.blendingDestinationFactor(blendDstFactor);
 
@@ -676,53 +679,83 @@ EffectParser::parseStates(const Json::Value& node, const Scope& scope, StateBloc
         stateBlock.states.scissorBox(scissorBox);
 
         // FIXME: handle sampler states & render target
-        //parseSamplerStates(statesNode, samplerStates); // FIXME
+        //parseSamplerStates(statesNode, scope, samplerStates);
         //target = parseTarget(statesNode, context, targets); // FIXME
     }
     // FIXME: throw otherwise
 }
 
 void
-EffectParser::parseBlendMode(const Json::Value&				node,
-                             const Scope&                   scope,
-                             render::Blending::Source&		srcFactor,
-                             render::Blending::Destination&	dstFactor)
+EffectParser::parseBlendingMode(const Json::Value&				node,
+                                const Scope&                   scope,
+                                render::Blending::Source&		srcFactor,
+                                render::Blending::Destination&	dstFactor)
 {
-    auto blendModeNode = node.get("blendMode", 0);
+    auto blendingModeNode = node.get(_extraStateNames[0], 0);
 
-    if (blendModeNode.isArray())
+    if (blendingModeNode.isArray())
     {
-        auto blendSrcFactorString = "src_" + blendModeNode[0].asString();
+        auto blendSrcFactorString = "src_" + blendingModeNode[0].asString();
         if (_blendFactorMap.count(blendSrcFactorString))
             srcFactor = static_cast<render::Blending::Source>(_blendFactorMap[blendSrcFactorString]);
 
-        auto blendDstFactorString = "dst_" + blendModeNode[1].asString();
+        auto blendDstFactorString = "dst_" + blendingModeNode[1].asString();
         if (_blendFactorMap.count(blendDstFactorString))
             dstFactor = static_cast<render::Blending::Destination>(_blendFactorMap[blendDstFactorString]);
     }
-    else if (blendModeNode.isString())
+    else if (blendingModeNode.isString())
     {
-        auto blendModeString = blendModeNode.asString();
+        auto blendingModeString = blendingModeNode.asString();
 
-        if (_blendFactorMap.count(blendModeString))
+        if (_blendFactorMap.count(blendingModeString))
         {
-            auto blendMode = _blendFactorMap[blendModeString];
+            auto blendingMode = _blendFactorMap[blendingModeString];
 
-            srcFactor = static_cast<render::Blending::Source>(blendMode & 0x00ff);
-            dstFactor = static_cast<render::Blending::Destination>(blendMode & 0xff00);
+            srcFactor = static_cast<render::Blending::Source>(blendingMode & 0x00ff);
+            dstFactor = static_cast<render::Blending::Destination>(blendingMode & 0xff00);
         }
+    }
+}
+
+void
+EffectParser::parseBlendingSource(const Json::Value&        node,
+                                  const Scope&              scope,
+                                  render::Blending::Source&	srcFactor)
+{
+    auto blendingSourceNode = node.get(States::PROPERTY_BLENDING_SOURCE, 0);
+
+    if (blendingSourceNode.isString())
+    {
+        auto blendingSourceString = _blendFactorMap[blendingSourceNode.asString()];
+        
+        srcFactor = static_cast<render::Blending::Source>(blendingSourceString);
+    }
+}
+
+void
+EffectParser::parseBlendingSource(const Json::Value&             node,
+                                  const Scope&                   scope,
+                                  render::Blending::Destination& destFactor)
+{
+    auto blendingDestinationNode = node.get(States::PROPERTY_BLENDING_DESTINATION, 0);
+
+    if (blendingDestinationNode.isString())
+    {
+        auto blendingDestination = _blendFactorMap[blendingDestinationNode.asString()];
+
+        destFactor = static_cast<render::Blending::Destination>(blendingDestination);
     }
 }
 
 void
 EffectParser::parseZSort(const Json::Value&	node,
                          const Scope&       scope,
-                         bool&              zSorted) const
+                         bool&              zSorted)
 {
-    auto zsortedValue = node.get("zSort", 0);
+    auto zSortedValue = node.get(States::PROPERTY_ZSORTED, 0);
 
-    if (zsortedValue.isBool())
-        zSorted = zsortedValue.asBool();
+    if (zSortedValue.isBool())
+        zSorted = zSortedValue.asBool();
 }
 
 void
@@ -741,7 +774,7 @@ EffectParser::parseDepthMask(const Json::Value&	    node,
                              const Scope&           scope,
                              bool&                  depthMask)
 {
-    auto depthMaskValue = node.get("depthMask", 0);
+    auto depthMaskValue = node.get(States::PROPERTY_DEPTH_MASK, 0);
 
     if (depthMaskValue.isBool())
         depthMask = depthMaskValue.asBool();
@@ -752,7 +785,7 @@ EffectParser::parseDepthFunction(const Json::Value&	node,
                    const Scope&         scope,
                    render::CompareMode& depthFunction)
 {
-    auto depthFunctionValue = node.get("depthFunction", 0);
+    auto depthFunctionValue = node.get(States::PROPERTY_DEPTH_FUNCTION, 0);
 
     if (depthFunctionValue.isString())
         depthFunction = _compareFuncMap[depthFunctionValue.asString()];
@@ -763,7 +796,7 @@ EffectParser::parseTriangleCulling(const Json::Value&   node,
                                    const Scope&         scope,
                                    TriangleCulling&     triangleCulling)
 {
-    auto triangleCullingValue = node.get("triangleCulling", 0);
+    auto triangleCullingValue = node.get(States::PROPERTY_TRIANGLE_CULLING, 0);
 
     if (triangleCullingValue.isString())
     {
@@ -785,7 +818,7 @@ EffectParser::parsePriority(const Json::Value&	node,
                             const Scope&        scope,
                             float               defaultPriority)
 {
-    auto	priorityNode = node.get("priority", defaultPriority);
+    auto	priorityNode = node.get(States::PROPERTY_PRIORITY, defaultPriority);
     float	ret = defaultPriority;
 
     if (!priorityNode.isNull())
@@ -816,14 +849,14 @@ EffectParser::parseStencilState(const Json::Value&  node,
 								StencilOperation&   stencilZFailOp,
 								StencilOperation&   stencilZPassOp)
 {
-	auto stencilTest	= node.get("stencilTest", 0);
+	auto stencilTest = node.get("stencilTest", 0);
 
 	if (stencilTest.isObject())
 	{
-        auto stencilFuncValue	= stencilTest.get("stencilFunc", 0);
-		auto stencilRefValue	= stencilTest.get("stencilRef", 0);
-		auto stencilMaskValue	= stencilTest.get("stencilMask", 0);
-		auto stencilOpsValue	= stencilTest.get("stencilOps", 0);
+        auto stencilFuncValue = stencilTest.get(States::PROPERTY_STENCIL_FUNCTION, 0);
+        auto stencilRefValue = stencilTest.get(States::PROPERTY_STENCIL_REFERENCE, 0);
+        auto stencilMaskValue = stencilTest.get(States::PROPERTY_STENCIL_MASK, 0);
+		auto stencilOpsValue = stencilTest.get("stencilOps", 0);
 
 		if (stencilFuncValue.isString())
 			stencilFunc	= _compareFuncMap[stencilFuncValue.asString()];
@@ -831,6 +864,7 @@ EffectParser::parseStencilState(const Json::Value&  node,
 			stencilRef	= stencilRefValue.asInt();
 		if (stencilMaskValue.isUInt())
 			stencilMask	= stencilMaskValue.asUInt();
+
 		parseStencilOperations(stencilOpsValue, scope, stencilFailOp, stencilZFailOp, stencilZPassOp);
 	}
     else if (stencilTest.isArray())
@@ -838,6 +872,7 @@ EffectParser::parseStencilState(const Json::Value&  node,
 		stencilFunc = _compareFuncMap[stencilTest[0].asString()];
 		stencilRef	= stencilTest[1].asInt();
 		stencilMask	= stencilTest[2].asUInt();
+
 		parseStencilOperations(stencilTest[3], scope, stencilFailOp, stencilZFailOp, stencilZPassOp);
     }
 }
@@ -848,7 +883,7 @@ EffectParser::parseScissorTest(const Json::Value& node,
 							   bool&			  scissorTest,
 							   math::ivec4&	      scissorBox)
 {
-	auto scissorTestNode = node.get("scissorTest", 0);
+	auto scissorTestNode = node.get(States::PROPERTY_SCISSOR_TEST, 0);
 
 	if (!scissorTestNode.isNull() && scissorTestNode.isBool())
 		scissorTest = scissorTestNode.asBool();
@@ -897,6 +932,39 @@ EffectParser::parseStencilOperations(const Json::Value& node,
 		if (zpassValue.isString())
 			stencilZPassOp = _stencilOpMap[zpassValue.asString()];
 	}
+}
+
+void
+EffectParser::parseSamplerStates(const Json::Value& node,
+                                 const Scope&       scope,
+                                 SamplerStates&     samplerStates)
+{
+    auto samplerStatesValue = node.get("samplerStates", 0);
+
+    if (samplerStatesValue.isObject())
+        for (auto propertyName : samplerStatesValue.getMemberNames())
+        {
+            auto samplerStateValue = samplerStatesValue.get(propertyName, 0);
+
+            if (samplerStateValue.isObject())
+            {
+                /*
+                auto wrapModeStr = samplerStateValue.get("wrapMode", "clamp").asString();
+                auto textureFilterStr = samplerStateValue.get("textureFilter", "nearest").asString();
+                auto mipFilterStr = samplerStateValue.get("mipFilter", "none").asString();
+
+                auto wrapMode = wrapModeStr == "repeat" ? WrapMode::REPEAT : WrapMode::CLAMP;
+                auto textureFilter = textureFilterStr == "linear"
+                    ? TextureFilter::LINEAR
+                    : TextureFilter::NEAREST;
+                auto mipFilter = mipFilterStr == "linear"
+                    ? MipFilter::LINEAR
+                    : (mipFilterStr == "nearest" ? MipFilter::NEAREST : MipFilter::NONE);
+
+                samplerStates[propertyName] = SamplerState(wrapMode, textureFilter, mipFilter);
+                */
+            }
+        }
 }
 
 void

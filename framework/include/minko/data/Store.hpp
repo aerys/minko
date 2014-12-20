@@ -114,7 +114,10 @@ namespace minko
                 auto provider = std::get<0>(providerAndToken);
 
                 if (provider == nullptr)
-                    throw;
+                {
+                    return nullptr;
+                    //throw;
+                }
 
                 return provider->getUnsafePointer<T>(std::get<1>(providerAndToken));
             }

@@ -1,6 +1,6 @@
 {
     "states" : {
-        "blendMode": "alpha"
+        "blendingMode": "additive"
     },
 
     "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]

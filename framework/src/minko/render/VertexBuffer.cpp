@@ -191,7 +191,7 @@ VertexBuffer::maxPosition()
 	if (!_validMinMax)
 		updatePositionBounds();
 
-	return _maxPosition;;
+	return _maxPosition;
 }
 
 void

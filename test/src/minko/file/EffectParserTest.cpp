@@ -252,27 +252,27 @@ TEST_F(EffectParserTest, StatesTriangleCullingNone)
 
 /** Blend mode **/
 
-TEST_F(EffectParserTest, StatesBlendModeDefault)
+TEST_F(EffectParserTest, StatesBlendingModeDefault)
 {
-    auto fx = loadEffect("effect/StatesBlendModeDefault.effect");
+    auto fx = loadEffect("effect/StatesBlendingModeDefault.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::ONE);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestinationFactor(), Blending::Destination::ZERO);
 }
 
-TEST_F(EffectParserTest, StatesBlendModeAdditive)
+TEST_F(EffectParserTest, StatesBlendingModeAdditive)
 {
-    auto fx = loadEffect("effect/StatesBlendModeAdditive.effect");
+    auto fx = loadEffect("effect/StatesBlendingModeAdditive.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::ONE);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestinationFactor(), Blending::Destination::ONE);
 }
 
-TEST_F(EffectParserTest, StatesBlendModeAlpha)
+TEST_F(EffectParserTest, StatesBlendingModeAlpha)
 {
-    auto fx = loadEffect("effect/StatesBlendModeAlpha.effect");
+    auto fx = loadEffect("effect/StatesBlendingModeAlpha.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::SRC_ALPHA);
@@ -305,16 +305,40 @@ TEST_F(EffectParserTest, StatesBindingZSorted)
     ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("zSorted").source, data::Binding::Source::TARGET);
 }
 
-TEST_F(EffectParserTest, StatesBindingBlendMode)
+TEST_F(EffectParserTest, StatesBindingBlendingMode)
 {
-    auto fx = loadEffect("effect/StatesBindingBlendMode.effect");
+    auto fx = loadEffect("effect/StatesBindingBlendingMode.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
     ASSERT_EQ(fx->techniques().at("default").size(), 1);
     ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.size(), 1);
-    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("blendMode").propertyName, "material[${materialUuid}].blendMode");
-    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("blendMode").source, data::Binding::Source::TARGET);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("blendingMode").propertyName, "material[${materialUuid}].blendingMode");
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("blendingMode").source, data::Binding::Source::TARGET);
+}
+
+TEST_F(EffectParserTest, StatesBindingBlendingSource)
+{
+    auto fx = loadEffect("effect/StatesBindingBlendingSource.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("blendingSource").propertyName, "material[${materialUuid}].blendingSource");
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("blendingSource").source, data::Binding::Source::TARGET);
+}
+
+TEST_F(EffectParserTest, StatesBindingBlendingDestination)
+{
+    auto fx = loadEffect("effect/StatesBindingBlendingDestination.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("blendingDestination").propertyName, "material[${materialUuid}].blendingDestination");
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("blendingDestination").source, data::Binding::Source::TARGET);
 }
 
 TEST_F(EffectParserTest, StatesBindingColorMask)

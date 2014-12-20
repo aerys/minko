@@ -151,7 +151,7 @@ OpenGLES2Context::OpenGLES2Context() :
 	_currentWrapMode(),
 	_currentTextureFilter(),
 	_currentMipFilter(),
-	_currentBlendMode(Blending::Mode::DEFAULT),
+	_currentBlendingMode(Blending::Mode::DEFAULT),
 	_currentColorMask(true),
 	_currentDepthMask(true),
 	_currentDepthFunc(CompareMode::UNSET),
@@ -1277,11 +1277,11 @@ OpenGLES2Context::getProgramInfoLogs(const uint program)
 }
 
 void
-OpenGLES2Context::setBlendMode(Blending::Source source, Blending::Destination destination)
+OpenGLES2Context::setBlendingMode(Blending::Source source, Blending::Destination destination)
 {
-	if ((static_cast<uint>(source) | static_cast<uint>(destination)) != static_cast<uint>(_currentBlendMode))
+	if ((static_cast<uint>(source) | static_cast<uint>(destination)) != static_cast<uint>(_currentBlendingMode))
 	{
-		_currentBlendMode = (Blending::Mode)((uint)source | (uint)destination);
+        _currentBlendingMode = (Blending::Mode)((uint)source | (uint)destination);
 
 		glBlendFunc(
 			_blendingFactors[static_cast<uint>(source) & 0x00ff],
@@ -1293,15 +1293,15 @@ OpenGLES2Context::setBlendMode(Blending::Source source, Blending::Destination de
 }
 
 void
-OpenGLES2Context::setBlendMode(Blending::Mode blendMode)
+OpenGLES2Context::setBlendingMode(Blending::Mode blendingMode)
 {
-	if (blendMode != _currentBlendMode)
+    if (blendingMode != _currentBlendingMode)
 	{
-		_currentBlendMode = blendMode;
+        _currentBlendingMode = blendingMode;
 
 		glBlendFunc(
-			_blendingFactors[static_cast<uint>(blendMode) & 0x00ff],
-			_blendingFactors[static_cast<uint>(blendMode) & 0xff00]
+            _blendingFactors[static_cast<uint>(blendingMode) & 0x00ff],
+            _blendingFactors[static_cast<uint>(blendingMode) & 0xff00]
 		);
 	}
 
