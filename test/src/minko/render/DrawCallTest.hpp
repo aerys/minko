@@ -30,6 +30,10 @@ namespace minko
     {
         class DrawCallTest : public ::testing::Test
         {
+        private:
+            template<typename T>
+            using BoundUniformVectorGetter = std::function<const std::vector<DrawCall::UniformValue<T>>(DrawCall&)>;
+
         protected:
             static
             std::string
@@ -37,9 +41,10 @@ namespace minko
 
             template<typename T, typename U>
             void
-            testMultipleUniformsFromRootData(ProgramInputs::Type    inputType,
-                                             uint                   inputSize,
-                                             std::function<T()>     valueFunc)
+            testMultipleUniformsFromRootData(ProgramInputs::Type            inputType,
+                                             uint                           inputSize,
+                                             std::function<T()>             valueFunc,
+                                             BoundUniformVectorGetter<U>    uniformsFunc)
             {
                 data::Store rootData;
                 data::Store rendererData;
@@ -71,38 +76,10 @@ namespace minko
                     uniformIsBound = uniformIsBound && drawCall.bindUniform(input, bindings, defaultValues);
                 ASSERT_TRUE(uniformIsBound);
 
-                const auto& uniforms = getBoundUniforms<U>(drawCall);
+                const auto& uniforms = uniformsFunc(drawCall);
                 ASSERT_EQ(uniforms.size(), inputs.size());
                 for (auto i = 0; i < numProperties; ++i)
                     assertBoundUniform<U>(uniforms, i, inputSize, bindings[inputs[i].name], inputs[i], rootData);
-            }
-
-            template<typename T>
-            std::vector<render::DrawCall::UniformValue<T>>
-            getBoundUniforms(const render::DrawCall& drawCall);
-
-            template<>
-            inline
-            std::vector<render::DrawCall::UniformValue<float>>
-            getBoundUniforms<float>(const render::DrawCall& drawCall)
-            {
-                return drawCall.boundFloatUniforms();
-            }
-
-            template<>
-            inline
-            std::vector<render::DrawCall::UniformValue<int>>
-            getBoundUniforms<int>(const render::DrawCall& drawCall)
-            {
-                return drawCall.boundIntUniforms();
-            }
-
-            template<>
-            inline
-            std::vector<render::DrawCall::UniformValue<bool>>
-            getBoundUniforms<bool>(const render::DrawCall& drawCall)
-            {
-                return drawCall.boundBoolUniforms();
             }
 
             template<typename T>

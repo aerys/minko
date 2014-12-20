@@ -247,16 +247,16 @@ namespace minko
                               data::Provider::Ptr   defaultValues);
 
             void
-            parseDefaultValueVector(const Json::Value&    defaultValueNode,
-                                    const Scope&          scope,
-                                    const std::string&    valueName,
-                                    data::Provider::Ptr   defaultValues);
+            parseDefaultValueVectorArray(const Json::Value&    defaultValueNode,
+                                         const Scope&          scope,
+                                         const std::string&    valueName,
+                                         data::Provider::Ptr   defaultValues);
 
             void
-            parseDefaultValueObject(const Json::Value&    node,
-                                    const Scope&          scope,
-                                    const std::string&    valueName,
-                                    data::Provider::Ptr   defaultValues);
+            parseDefaultValueVectorObject(const Json::Value&    node,
+                                          const Scope&          scope,
+                                          const std::string&    valueName,
+                                          data::Provider::Ptr   defaultValues);
 
             void
             parseBinding(const Json::Value& node, const Scope& scope, data::Binding& binding);

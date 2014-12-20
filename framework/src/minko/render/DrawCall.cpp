@@ -142,6 +142,18 @@ DrawCall::bindUniform(ConstUniformInputRef                          input,
 
     switch (input.type)
     {
+        case ProgramInputs::Type::bool1:
+            setUniformValue(_uniformBool, input.location, 1, store.getPointer<int>(propertyName));
+            break;
+        case ProgramInputs::Type::bool2:
+            setUniformValue(_uniformBool, input.location, 2, math::value_ptr(store.get<math::ivec2>(propertyName)));
+            break;
+        case ProgramInputs::Type::bool3:
+            setUniformValue(_uniformBool, input.location, 3, math::value_ptr(store.get<math::ivec3>(propertyName)));
+            break;
+        case ProgramInputs::Type::bool4:
+            setUniformValue(_uniformBool, input.location, 4, math::value_ptr(store.get<math::ivec4>(propertyName)));
+            break;
         case ProgramInputs::Type::int1:
             setUniformValue(_uniformInt, input.location, 1, store.getPointer<int>(propertyName));
             break;
@@ -168,18 +180,6 @@ DrawCall::bindUniform(ConstUniformInputRef                          input,
             break;
         case ProgramInputs::Type::float16:
             setUniformValue(_uniformFloat, input.location, 16, math::value_ptr(store.get<math::mat4>(propertyName)));
-            break;
-        case ProgramInputs::Type::bool1:
-            setUniformValue(_uniformBool, input.location, 1, store.getPointer<bool>(propertyName));
-            break;
-        case ProgramInputs::Type::bool2:
-            setUniformValue(_uniformBool, input.location, 2, math::value_ptr(store.get<math::bvec2>(propertyName)));
-            break;
-        case ProgramInputs::Type::bool3:
-            setUniformValue(_uniformBool, input.location, 3, math::value_ptr(store.get<math::bvec3>(propertyName)));
-            break;
-        case ProgramInputs::Type::bool4:
-            setUniformValue(_uniformBool, input.location, 4, math::value_ptr(store.get<math::bvec4>(propertyName)));
             break;
         case ProgramInputs::Type::sampler2d:
             _samplers.push_back({
@@ -266,18 +266,16 @@ DrawCall::render(AbstractContext::Ptr context, AbstractTexture::Ptr renderTarget
     else if (renderTarget)
         context->setRenderToTexture(renderTarget->id(), true);*/
 
-    for (const auto& u : _uniformFloat)
+    for (const auto& u : _uniformBool)
     {
         if (u.size == 1)
-            context->setUniformFloat(u.location, 1, u.data);
+            context->setUniformInt(u.location, 1, u.data);
         else if (u.size == 2)
-            context->setUniformFloat2(u.location, 1, u.data);
+            context->setUniformInt2(u.location, 1, u.data);
         else if (u.size == 3)
-            context->setUniformFloat3(u.location, 1, u.data);
+            context->setUniformInt3(u.location, 1, u.data);
         else if (u.size == 4)
-            context->setUniformFloat4(u.location, 1, u.data);
-        else if (u.size == 16)
-            context->setUniformMatrix4x4(u.location, 1, u.data);
+            context->setUniformInt4(u.location, 1, u.data);
     }
 
     for (const auto& u : _uniformInt)
@@ -292,20 +290,19 @@ DrawCall::render(AbstractContext::Ptr context, AbstractTexture::Ptr renderTarget
             context->setUniformInt4(u.location, 1, u.data);
     }
 
-    // FIXME: handle bool uniforms
-    /*
-    for (const auto& u : _uniformBool)
+    for (const auto& u : _uniformFloat)
     {
         if (u.size == 1)
-            context->setUniformBool(u.location, 1, u.data);
+            context->setUniformFloat(u.location, 1, u.data);
         else if (u.size == 2)
-            context->setUniformBool2(u.location, 1, u.data);
+            context->setUniformFloat2(u.location, 1, u.data);
         else if (u.size == 3)
-            context->setUniformBool3(u.location, 1, u.data);
+            context->setUniformFloat3(u.location, 1, u.data);
         else if (u.size == 4)
-            context->setUniformBool4(u.location, 1, u.data);
+            context->setUniformFloat4(u.location, 1, u.data);
+        else if (u.size == 16)
+            context->setUniformMatrix4x4(u.location, 1, u.data);
     }
-    */
 
     for (const auto& s : _samplers)
         context->setTextureAt(s.position, *s.resourceId, s.location);

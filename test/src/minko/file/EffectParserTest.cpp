@@ -485,3 +485,15 @@ TEST_F(EffectParserTest, StatesBindingTarget)
     ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("target").propertyName, "material[${materialUuid}].target");
     ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("target").source, data::Binding::Source::TARGET);
 }
+
+TEST_F(EffectParserTest, BoolDefaultValue)
+{
+    auto fx = MinkoTests::loadEffect("effect/BoolDefaultValue.effect");
+
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().defaultValues.get<int>("testBool1Uniform"), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().defaultValues.get<math::ivec2>("testBool2Uniform"), math::ivec2(1, 0));
+    ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().defaultValues.get<math::ivec3>("testBool3Uniform"), math::ivec3(1, 0, 1));
+    ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().defaultValues.get<math::ivec4>("testBool4Uniform"), math::ivec4(1, 0, 1, 0));
+}

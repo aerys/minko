@@ -96,7 +96,7 @@ namespace minko
             uint*								_numIndices;
             std::vector<UniformValue<int>>      _uniformInt;
             std::vector<UniformValue<float>>    _uniformFloat;
-            std::vector<UniformValue<bool>>     _uniformBool;
+            std::vector<UniformValue<int>>      _uniformBool;
             std::vector<SamplerValue>           _samplers;
             std::vector<AttributeValue>         _attributes;
 
@@ -180,10 +180,10 @@ namespace minko
             }
 
             inline
-            const std::vector<UniformValue<float>>&
-            boundFloatUniforms() const
+            const std::vector<UniformValue<int>>&
+            boundBoolUniforms() const
             {
-                return _uniformFloat;
+                return _uniformBool;
             }
 
             inline
@@ -194,10 +194,10 @@ namespace minko
             }
 
             inline
-            const std::vector<UniformValue<bool>>&
-            boundBoolUniforms() const
+            const std::vector<UniformValue<float>>&
+            boundFloatUniforms() const
             {
-                return _uniformBool;
+                return _uniformFloat;
             }
 
             std::shared_ptr<DrawCallZSorter>
