@@ -19,7 +19,8 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	includedirs {
 		"include",
-		"lib/sdl/include"
+		"lib/sdl/include",
+		"src"
 	}
 
 	configuration { "android" }
@@ -28,7 +29,6 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	configuration { "html5" }
 		removeincludedirs { "lib/sdl/include" }
 		includedirs { "SDL" }
-		minko.plugin.enable { "webgl" }
 
 	configuration { "ios" }
 		buildoptions { "-x objective-c++" }
@@ -36,7 +36,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	configuration { "with-offscreen" }
 		minko.plugin.enable { "offscreen" }
 
-	-- Audio only works for HTML5, Windows and Android 
+	-- Audio only works for HTML5, Windows and Android
 	configuration { "linux32 or linux64 or osx64 or ios" }
 		excludes {
 			"include/SDLAudio.hpp",

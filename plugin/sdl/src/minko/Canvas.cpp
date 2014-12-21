@@ -32,7 +32,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "SDL_syswm.h"
 
 #if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
-# include "minko/MinkoWebGL.hpp"
+# include "minko/SDLWebGLBackend.hpp"
 #elif MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
 # include "minko/MinkoAndroid.hpp"
 #elif MINKO_PLATFORM == MINKO_PLATFORM_IOS
@@ -247,11 +247,7 @@ Canvas::initializeContext()
 
     _backend->initialize(shared_from_this());
 
-#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
-    _context = minko::render::WebGLContext::create();
-#else
     _context = minko::render::OpenGLES2Context::create();
-#endif
 
     if (!_context)
         throw std::runtime_error("Could not create context");
