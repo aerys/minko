@@ -31,7 +31,6 @@ minko.project.library "minko-framework"
 	-- glm
     files {
         "lib/glm/**.hpp",
-		"lib/glm/**.cpp",
 		"lib/glm/**.inl"
     }
 	includedirs {
