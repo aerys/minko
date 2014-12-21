@@ -28,6 +28,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include "CoreFoundation/CoreFoundation.h"
 #endif
 
+#if MINKO_PLATFORM & MINKO_PLATFORM_HTML5
+# include "emscripten.h"
+#endif
+
 using namespace minko;
 using namespace minko::file;
 
@@ -80,6 +84,32 @@ Options::initializePlatforms()
     _platforms.push_back("android");
 #elif MINKO_PLATFORM & MINKO_PLATFORM_HTML5
     _platforms.push_back("html5");
+    if (testUserAgentPlatform("Windows"))
+        _platforms.push_back("windows");
+    if (testUserAgentPlatform("Macintosh"))
+    {
+        _platforms.push_back("osx");
+        if (testUserAgentPlatform("Safari"))
+            _platforms.push_back("safari");
+    }
+    if (testUserAgentPlatform("Linux"))
+        _platforms.push_back("linux");
+    if (testUserAgentPlatform("iPad"))
+        _platforms.push_back("ios");
+    if (testUserAgentPlatform("iPhone"))
+        _platforms.push_back("ios");
+    if (testUserAgentPlatform("iPod"))
+        _platforms.push_back("ios");
+    if (testUserAgentPlatform("Android"))
+        _platforms.push_back("android");
+    if (testUserAgentPlatform("Firefox"))
+        _platforms.push_back("firefox");
+    if (testUserAgentPlatform("Chrome"))
+        _platforms.push_back("chrome");
+    if (testUserAgentPlatform("Opera"))
+        _platforms.push_back("opera");
+    if (testUserAgentPlatform("MSIE") || testUserAgentPlatform("Trident"))
+        _platforms.push_back("msie");
 #endif
 }
 
@@ -243,3 +273,13 @@ Options::initializeDefaultFunctions()
 	};
 
 }
+
+#if MINKO_PLATFORM & MINKO_PLATFORM_HTML5
+bool
+Options::testUserAgentPlatform(const std::string& platform)
+{
+    std::string script = "navigator.userAgent.indexOf(\"" + platform + "\") < 0 ? 0 : 1";
+
+    return emscripten_run_script_int(script.c_str()) == 1;
+}
+#endif
