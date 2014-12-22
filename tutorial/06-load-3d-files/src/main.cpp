@@ -24,7 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::component;
-using namespace minko::math;
 
 const uint WINDOW_WIDTH = 800;
 const uint WINDOW_HEIGHT = 600;
@@ -62,7 +61,7 @@ main(int argc, char** argv)
         auto camera = scene::Node::create("camera")
             ->addComponent(Renderer::create(0x7f7f7fff))
             ->addComponent(Transform::create(
-            Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.f, 0.f), Vector3::create(0.f, 0.f, 5.f))
+            math::inverse(math::lookAt(math::vec3(0.f, 0.f, 5.f), math::vec3(), math::vec3(0, 1, 0)))
             ))
             ->addComponent(PerspectiveCamera::create(
             (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f)
@@ -73,11 +72,11 @@ main(int argc, char** argv)
 		auto daeModel = sceneManager->assets()->symbol(DAE_MODEL_FILENAME);
 
         // change scale for the obj file
-        objModel->component<Transform>()->matrix()->appendScale(0.01f);
+        objModel->component<Transform>()->matrix(objModel->component<Transform>()->matrix() * math::scale(math::vec3(0.01f)));
 
         // change position
-        objModel->component<Transform>()->matrix()->translation(-1.f, -1.f, 0.f);
-        daeModel->component<Transform>()->matrix()->translation(1.f, -1.f, 0.f);
+        objModel->component<Transform>()->matrix(objModel->component<Transform>()->matrix() * math::translate(math::vec3(-1.f, -1.f, 0.f)));
+        daeModel->component<Transform>()->matrix(objModel->component<Transform>()->matrix() * math::translate(math::vec3(1.f, -1.f, 0.f)));
 
         // add to the scene
         root->addChild(objModel);
