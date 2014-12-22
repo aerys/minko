@@ -16,6 +16,9 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"src/**.cpp",
 		"src/**.hpp"
 	}
+	excludes {
+		"src/minko/SDLWebGLBackend.cpp"
+	}
 
 	includedirs {
 		"include",
@@ -29,6 +32,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	configuration { "html5" }
 		removeincludedirs { "lib/sdl/include" }
 		includedirs { "SDL" }
+		files { "src/minko/SDLWebGLBackend.cpp" }
 
 	configuration { "ios" }
 		buildoptions { "-x objective-c++" }
