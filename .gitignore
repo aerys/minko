@@ -22,6 +22,7 @@ Makefile
 *.vsglog
 *.cache
 *.vspx
+*.rsp
 doc/html
 remove.me
 dist
