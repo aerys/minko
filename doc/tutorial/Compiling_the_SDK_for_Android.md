@@ -99,7 +99,7 @@ Then, you have to define 3 new environment variables:
 
 Last step for build in release for Android is to make sure that you have a binary called **zipalign** in your `${ANDROID}/tools` directory. If not, take it from `${ANDROID}/build-tools/[LAST API VERSION]`.
 
-For further information, please follow the official [Android documentation](http://developer.android.com/tools/publishing/app-signing.html).
+For further information, please follow the official [Android documentation](http://developer.android.com/tools/publishing/app-signing.html#signing-manually).
 
 
 Step 5: Compile the SDK
