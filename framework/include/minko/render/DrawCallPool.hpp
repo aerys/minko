@@ -48,7 +48,7 @@ namespace minko
             typedef std::pair_hash<const MacroBinding*, const Store*>                                   BindingHash;
             typedef std::pair_eq<const MacroBinding*, const Store*>                                     BindingEq;
             typedef std::unordered_map<MacroBindingKey, DrawCallPtrList, BindingHash, BindingEq>        MacroToDrawCallsMap;
-            typedef std::unordered_map<PropertyChanged*, ChangedSlot>                                   MacroToChangedSlotMap;
+            typedef std::unordered_map<MacroBindingKey, ChangedSlot, BindingHash, BindingEq>            MacroToChangedSlotMap;
 
             typedef std::pair_hash<const data::Binding*, const DrawCall*>                               DrawCallHash;
             typedef std::pair_eq<const data::Binding*, const DrawCall*>                                 DrawCallEq;
@@ -121,11 +121,13 @@ namespace minko
                                     data::Store&                    targetData);
 
             void
-            macroPropertyAddedHandler(data::Store&                  store,
+            macroPropertyAddedHandler(const data::MacroBinding&   macroBinding,
+                                      data::Store&                  store,
                                       const std::list<DrawCall*>&   drawCalls);
 
             void
-            macroPropertyRemovedHandler(data::Store&                store,
+            macroPropertyRemovedHandler(const data::MacroBinding&   macroBinding,
+                                        data::Store&                store,
                                         const std::list<DrawCall*>& drawCalls);
 
             void
@@ -135,12 +137,15 @@ namespace minko
             initializeDrawCall(DrawCall& drawCall);
             
             void
-            addUniqueStoreCallback(PropertyChanged&           key,
-                                   data::Store&               store,
-                                   const PropertyCallback&    callback);
+            addMacroCallback(const MacroBindingKey&     key,
+                             PropertyChanged&           signal,
+                             const PropertyCallback&    callback);
 
             void
-            removeUniqueStoreCallback(PropertyChanged& key);
+            removeMacroCallback(const MacroBindingKey& key);
+
+            bool
+            hasMacroCallback(const MacroBindingKey& key);
 
             void
             uniformBindingPropertyAddedHandler(DrawCall&                          drawCall,
