@@ -58,6 +58,8 @@ LineGeometry::initialize(AbstractContext::Ptr context)
 
 	addVertexBuffer(_vertexBuffer);
 	indices(_indexBuffer);
+
+    computeCenterPosition();
 }
 
 math::vec3
