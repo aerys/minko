@@ -18,10 +18,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Canvas.hpp"
+
 #include "minko/data/Provider.hpp"
 #include "minko/async/Worker.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/log/Logger.hpp"
+#include "minko/SDLBackend.hpp"
+#include "minko/input/SDLKeyboard.hpp"
+#include "minko/input/SDLMouse.hpp"
+#include "minko/input/SDLJoystick.hpp"
+#include "minko/input/SDLTouch.hpp"
 #include "minko/SDLBackend.hpp"
 
 #if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
@@ -42,6 +48,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include "minko/MinkoAngle.hpp"
 #elif defined(MINKO_PLUGIN_OFFSCREEN)
 # include "minko/MinkoOffscreen.hpp"
+#endif
+
+// Audio only works for HTML5, Windows and Android 
+#if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID)
+# include "minko/audio/SDLAudio.hpp"
 #endif
 
 #if MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
@@ -123,9 +134,9 @@ Canvas::initialize()
 void
 Canvas::initializeInputs()
 {
-    _mouse = SDLMouse::create(shared_from_this());
-    _keyboard = SDLKeyboard::create();
-    _touch = SDLTouch::create(shared_from_this());
+    _mouse = input::SDLMouse::create(shared_from_this());
+    _keyboard = input::SDLKeyboard::create();
+    _touch = input::SDLTouch::create(shared_from_this());
 
 #if (MINKO_PLATFORM & (MINKO_PLATFORM_LINUX | MINKO_PLATFORM_OSX | MINKO_PLATFORM_WINDOWS))
     for (int i = 0; i < SDL_NumJoysticks(); ++i)
@@ -135,7 +146,7 @@ Canvas::initializeInputs()
         if (!joystick)
             continue;
         else
-            _joysticks[i] = SDLJoystick::create(shared_from_this(), SDL_JoystickInstanceID(joystick), joystick);
+            _joysticks[i] = input::SDLJoystick::create(shared_from_this(), SDL_JoystickInstanceID(joystick), joystick);
     }
 #endif
 }
@@ -205,7 +216,7 @@ Canvas::initializeWindow()
     }
 
 # if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID)
-    _audio = SDLAudio::create(shared_from_this());
+    _audio = audio::SDLAudio::create(shared_from_this());
 # endif
 #endif
 }
@@ -341,7 +352,7 @@ Canvas::step()
             {
                 if (_joysticks.find(i) == _joysticks.end())
                 {
-                    auto sdlJoystick = SDLJoystick::create(that, i, joystick);
+                    auto sdlJoystick = input::SDLJoystick::create(that, i, joystick);
                     _joysticks[i] = sdlJoystick;
                 }
 
@@ -591,9 +602,9 @@ Canvas::step()
                 auto dY = std::abs(y - _touch->lastTouchDownY());
                 auto dT = _relativeTime - _touch->lastTouchDownTime();
             
-                if (dT < SDLTouch::TAP_DELAY_THRESHOLD &&
-                    dX < SDLTouch::TAP_MOVE_THRESHOLD && 
-                    dY < SDLTouch::TAP_MOVE_THRESHOLD)
+                if (dT < input::SDLTouch::TAP_DELAY_THRESHOLD &&
+                    dX < input::SDLTouch::TAP_MOVE_THRESHOLD &&
+                    dY < input::SDLTouch::TAP_MOVE_THRESHOLD)
                 {
                     _touch->tap()->execute(_touch, x, y);
                 
@@ -602,17 +613,17 @@ Canvas::step()
                     dT = _relativeTime - _touch->lastTapTime();
             
                     if (_touch->lastTapTime() != -1.0f &&
-                        dT < SDLTouch::DOUBLE_TAP_DELAY_THRESHOLD &&
-                        dX < SDLTouch::TAP_MOVE_THRESHOLD &&
-                        dY < SDLTouch::TAP_MOVE_THRESHOLD)
+                        dT < input::SDLTouch::DOUBLE_TAP_DELAY_THRESHOLD &&
+                        dX < input::SDLTouch::TAP_MOVE_THRESHOLD &&
+                        dY < input::SDLTouch::TAP_MOVE_THRESHOLD)
                     {
                         _touch->doubleTap()->execute(_touch, x, y);
                         _touch->lastTapTime(-1.0f);
-            }
+                    }
                     else
                     {
                         _touch->lastTapTime(_relativeTime);
-        }
+                    }
 
                     _touch->lastTapX(x);
                     _touch->lastTapY(y);
@@ -632,7 +643,7 @@ Canvas::step()
             auto dx = event.tfinger.dx * _width;
             auto dy = event.tfinger.dy * _height;
 
-            if (std::abs(_touch->lastTouchDownX() - x) > SDLTouch::TAP_MOVE_THRESHOLD || std::abs(_touch->lastTouchDownY() - y) > SDLTouch::TAP_MOVE_THRESHOLD)
+            if (std::abs(_touch->lastTouchDownX() - x) > input::SDLTouch::TAP_MOVE_THRESHOLD || std::abs(_touch->lastTouchDownY() - y) > input::SDLTouch::TAP_MOVE_THRESHOLD)
                 _touch->lastTouchDownTime(-1.0f);
             
             _touch->updateTouch(id, x, y);
@@ -644,22 +655,22 @@ Canvas::step()
             );
                 
                 // Gestures
-				if (event.tfinger.dx > SDLTouch::SWIPE_PRECISION)
+				if (event.tfinger.dx > input::SDLTouch::SWIPE_PRECISION)
                 {
                     _touch->swipeRight()->execute(_touch);
                 }
                 
-				if (-event.tfinger.dx > SDLTouch::SWIPE_PRECISION)
+                if (-event.tfinger.dx > input::SDLTouch::SWIPE_PRECISION)
                 {
                     _touch->swipeLeft()->execute(_touch);
                 }
                 
-				if (event.tfinger.dy > SDLTouch::SWIPE_PRECISION)
+                if (event.tfinger.dy > input::SDLTouch::SWIPE_PRECISION)
                 {
                     _touch->swipeDown()->execute(_touch);
                 }
                 
-                if (-event.tfinger.dy > SDLTouch::SWIPE_PRECISION)
+                if (-event.tfinger.dy > input::SDLTouch::SWIPE_PRECISION)
                 {
                     _touch->swipeUp()->execute(_touch);
                 }
@@ -669,7 +680,7 @@ Canvas::step()
                 math::vec2 touch2;
                 auto hasTouch2 = false;
 
-                for (auto i = 0; i < _touch->identifiers().size(); ++i)
+                for (auto i = 0u; i < _touch->identifiers().size(); ++i)
                 {
                     if (_touch->identifiers()[i] != id)
                     {
@@ -718,20 +729,20 @@ Canvas::step()
 
         case SDL_JOYBUTTONDOWN:
         {
-            SDLJoystick::Button button = SDLJoystick::button(event.jbutton.button);
+            input::SDLJoystick::Button button = input::SDLJoystick::button(event.jbutton.button);
 
             _joysticks[event.jbutton.which]->joystickButtonDown()->execute(
-                _joysticks[event.jbutton.which], event.jbutton.which, SDLJoystick::buttonId(button)
+                _joysticks[event.jbutton.which], event.jbutton.which, input::SDLJoystick::buttonId(button)
             );
             break;
         }
 
         case SDL_JOYBUTTONUP:
         {
-            SDLJoystick::Button button = SDLJoystick::button(event.jbutton.button);
+            input::SDLJoystick::Button button = input::SDLJoystick::button(event.jbutton.button);
 
             _joysticks[event.jbutton.which]->joystickButtonUp()->execute(
-                _joysticks[event.jbutton.which], event.jbutton.which, SDLJoystick::buttonId(button)
+                _joysticks[event.jbutton.which], event.jbutton.which, input::SDLJoystick::buttonId(button)
             );
             break;
         }
@@ -745,7 +756,7 @@ Canvas::step()
 
             if (_joysticks.find(instance_id) == _joysticks.end())
             {
-                auto sdlJoystick = SDLJoystick::create(that, instance_id, joystick);
+                auto sdlJoystick = input::SDLJoystick::create(that, instance_id, joystick);
                 _joysticks[instance_id] = sdlJoystick;
             }
 
@@ -816,7 +827,7 @@ Canvas::step()
         }
     }
 
-    if (_touch->numTouches() && _touch->lastTouchDownTime() != -1.0f && (_relativeTime - _touch->lastTouchDownTime()) > SDLTouch::LONG_HOLD_DELAY_THRESHOLD)
+    if (_touch->numTouches() && _touch->lastTouchDownTime() != -1.0f && (_relativeTime - _touch->lastTouchDownTime()) > input::SDLTouch::LONG_HOLD_DELAY_THRESHOLD)
     {
         _touch->longHold()->execute(_touch, _touch->averageX(), _touch->averageY());
         _touch->lastTouchDownTime(-1.0f);
@@ -841,7 +852,7 @@ Canvas::step()
 
     if (_framerate > _desiredFramerate)
     {
-        _backend->wait(that, (1000.f / _desiredFramerate) - _frameDuration);
+        _backend->wait(that, static_cast<uint>((1000.f / _desiredFramerate) - _frameDuration));
 
         _framerate = _desiredFramerate;
     }

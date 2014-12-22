@@ -17,10 +17,12 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "minko/input/SDLTouch.hpp"
+
 #include "minko/Canvas.hpp"
-#include "minko/SDLTouch.hpp"
 
 using namespace minko;
+using namespace minko::input;
 
 const float SDLTouch::SWIPE_PRECISION = 0.05f;
 
@@ -30,7 +32,7 @@ const float SDLTouch::DOUBLE_TAP_DELAY_THRESHOLD = 400.f;
 const float SDLTouch::LONG_HOLD_DELAY_THRESHOLD = 1000.f;
 
 SDLTouch::SDLTouch(std::shared_ptr<Canvas> canvas) :
-    input::Touch(canvas),
+    Touch(canvas),
     _lastTouchDownTime(-1.f),
     _lastTapTime(-1.f),
     _lastTouchDownX(0.f),

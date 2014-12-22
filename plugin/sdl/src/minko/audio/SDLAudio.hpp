@@ -19,26 +19,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/input/Mouse.hpp"
+#include "minko/Common.hpp"
 
 namespace minko
 {
     class Canvas;
 
-    class SDLMouse :
-        public input::Mouse
+    namespace audio
     {
-        friend class Canvas;
-
-    public:
-        static
-        std::shared_ptr<SDLMouse>
-        create(std::shared_ptr<Canvas> canvas)
+        class SDLAudio
         {
-            return std::shared_ptr<SDLMouse>(new SDLMouse(canvas));
-        }
+            friend class Canvas;
 
-    private:
-        SDLMouse(std::shared_ptr<Canvas> canvas);
-    };
+        public:
+            static
+            std::shared_ptr<SDLAudio>
+            create(std::shared_ptr<Canvas> canvas);
+
+            ~SDLAudio();
+
+        private:
+            SDLAudio(std::shared_ptr<Canvas> canvas);
+        };
+    }
 }

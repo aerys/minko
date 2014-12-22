@@ -17,26 +17,42 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "SDLAudio.hpp"
 
-#include "minko/Canvas.hpp"
+#include "minko/log/Logger.hpp"
+#include "minko/audio/SDLSoundChannel.hpp"
 
-namespace minko
+#include "SDL_mixer.h"
+
+using namespace minko;
+using namespace minko::audio;
+
+SDLAudio::SDLAudio(std::shared_ptr<Canvas> canvas)
 {
-    class Canvas;
+    auto flags = MIX_INIT_OGG;
+    int result = 0;
 
-    class SDLAudio
+    if (flags != (result = Mix_Init(flags)))
     {
-        friend class Canvas;
+        LOG_ERROR("Could not initialize mixer: " << result << " (" << Mix_GetError());
+    }
+    else
+    {
+        Mix_OpenAudio(22050, AUDIO_S16SYS, 2, 0);
+        Mix_ChannelFinished(&SDLSoundChannel::channelComplete);
+        Mix_AllocateChannels(32);
+    }
+}
 
-    public:
-        static
-        std::shared_ptr<SDLAudio>
-        create(std::shared_ptr<Canvas> canvas);
+std::shared_ptr<SDLAudio>
+SDLAudio::create(std::shared_ptr<Canvas> canvas)
+{
+    return std::shared_ptr<SDLAudio>(new SDLAudio(canvas));
+}
 
-        ~SDLAudio();
-
-    private:
-        SDLAudio(std::shared_ptr<Canvas> canvas);
-    };
+SDLAudio::~SDLAudio()
+{
+    Mix_ChannelFinished(nullptr);
+    Mix_AllocateChannels(0);
+    Mix_CloseAudio();
 }

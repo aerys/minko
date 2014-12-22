@@ -17,12 +17,14 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "minko/input/SDLJoystick.hpp"
+
 #include "minko/Canvas.hpp"
-#include "minko/SDLJoystick.hpp"
 
 #include "SDL.h"
 
 using namespace minko;
+using namespace minko::input;
 
 const std::map<SDLJoystick::Button, SDLJoystick::Button> SDLJoystick::NativeToHtmlMap =
 {
