@@ -39,20 +39,20 @@ namespace minko
 			typedef std::shared_ptr<component::AbstractComponent>	AbsCmpPtr;
 
 		private:
-			std::string 						_name;
-			std::vector<Ptr>					_children;
-			std::weak_ptr<Node> 				_root;
-            std::weak_ptr<Node>					_parent;
+			std::string 					_name;
+			std::vector<Ptr>				_children;
+			std::weak_ptr<Node> 			_root;
+            std::weak_ptr<Node>				_parent;
 			data::Store                     _container;
-			std::list<AbsCmpPtr>				_components;
+			std::list<AbsCmpPtr>			_components;
 
-			Signal<Ptr, Ptr, Ptr>				_added;
-			Signal<Ptr, Ptr, Ptr>				_removed;
-			Signal<Ptr, Ptr>					_layoutsChanged;
+			Signal<Ptr, Ptr, Ptr>			_added;
+			Signal<Ptr, Ptr, Ptr>			_removed;
+			Signal<Ptr, Ptr>				_layoutsChanged;
 			Signal<Ptr, Ptr, AbsCmpPtr>		_componentAdded;
 			Signal<Ptr, Ptr, AbsCmpPtr>		_componentRemoved;
 
-			std::string							_uuid;
+			std::string						_uuid;
 
 		public:
             ~Node()
@@ -115,10 +115,14 @@ namespace minko
 			cloneNode();
 
 			void
-			listItems(Node::Ptr clonedRoot, std::map<Node::Ptr, Node::Ptr>& nodeMap, std::map<AbsCmpPtr, AbsCmpPtr>& components);
+			listItems(Node::Ptr                         clonedRoot,
+                      std::map<Node::Ptr, Node::Ptr>&   nodeMap,
+                      std::map<AbsCmpPtr, AbsCmpPtr>&   components);
 
 			void
-			rebindComponentsDependencies(std::map<AbsCmpPtr, AbsCmpPtr>& componentsMap, std::map<Node::Ptr, Node::Ptr> nodeMap, CloneOption option);
+			rebindComponentsDependencies(std::map<AbsCmpPtr, AbsCmpPtr>& componentsMap,
+                                          std::map<Node::Ptr, Node::Ptr> nodeMap,
+                                          CloneOption                    option);
 
 			inline
 			const std::string&
