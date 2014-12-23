@@ -53,7 +53,8 @@
 		"blendingSource"		: { "binding" : "material[${materialUuid}].blendingSource" },
 		"blendingDestination"	: { "binding" : "material[${materialUuid}].blendingDestination" },
         "triangleCulling"       : { "binding" : "material[${materialUuid}].triangleCulling" },
-        "zSorted"               : { "binding" : "material[${materialUuid}].zSorted" }
+        "zSorted"               : { "binding" : "material[${materialUuid}].zSorted" },
+        "priority"              : { "binding" : "material[${materialUuid}].priority" }
     },
 	
     "defaultTechnique"  : "opaque",

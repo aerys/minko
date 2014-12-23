@@ -317,7 +317,7 @@ DrawCallPool::compareDrawCalls(DrawCall& a, DrawCall& b)
         return aPosition.z > bPosition.z;
     }
 
-    return aPriority > bPriority;
+    return aPriority < bPriority;
 }
 
 math::vec3
