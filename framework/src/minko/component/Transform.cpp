@@ -301,7 +301,7 @@ Transform::RootTransform::updateTransformsList()
         {
             if (previousAncestor == nullptr)
             {
-                ancestorId = 0;
+                ancestorId = _nodeToId.at(ancestor);
 
                 firstSiblingId = nodeId;
                 ++numSiblings;
@@ -420,14 +420,18 @@ Transform::RootTransform::updateTransforms()
                     );
 
 			    auto numChildren = nodeCacheEntry._numChildren;
-			    auto firstChildId = nodeCacheEntry._firstChildId;
-			    auto lastChildId = firstChildId + numChildren;
 
-                for (auto childId = firstChildId; childId < lastChildId; ++childId)
+                if (numChildren > 0)
                 {
-                    auto& childCacheEntry = _nodeTransformCache.at(childId);
+                    auto firstChildId = nodeCacheEntry._firstChildId;
+                    auto lastChildId = firstChildId + numChildren;
 
-                    childCacheEntry._dirty = true;
+                    for (auto childId = firstChildId; childId < lastChildId; ++childId)
+                    {
+                        auto& childCacheEntry = _nodeTransformCache.at(childId);
+
+                        childCacheEntry._dirty = true;
+                    }
                 }
             }
 
