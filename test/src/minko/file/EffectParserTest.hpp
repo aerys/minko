@@ -30,10 +30,6 @@ namespace minko
         class EffectParserTest :
             public ::testing::Test
         {
-        public:
-            static
-            render::Effect::Ptr
-            loadEffect(const std::string& filename);
         };
     }
 }

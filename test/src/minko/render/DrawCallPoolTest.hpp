@@ -19,41 +19,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/Common.hpp"
+#include "minko/Minko.hpp"
+#include "minko/MinkoTests.hpp"
 
-#include "minko/render/OpenGLES2Context.hpp"
+#include "gtest/gtest.h"
 
 namespace minko
 {
-	namespace render
-	{
-		class WebGLContext :
-			public OpenGLES2Context
-		{
-		public:
-			typedef std::shared_ptr<WebGLContext> Ptr;
-
-		public:
-			static
-			Ptr
-			create()
-			{
-				return std::shared_ptr<WebGLContext>(new WebGLContext());
-			}
-
-		protected:
-			WebGLContext();
-			
-			void
-			setShaderSource(const unsigned int shader,
-							const std::string& source);
-
-            std::vector<ProgramInputs::UniformInput>
-            getUniformInputs(const uint program);
-
-            std::vector<ProgramInputs::AttributeInput>
-            getAttributeInputs(const uint program);
-
-		};
-	}
+    namespace render
+    {
+        class DrawCallPoolTest : public ::testing::Test
+        {
+            
+        };
+    }
 }

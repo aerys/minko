@@ -401,16 +401,16 @@ EffectParser::parseDefaultValue(const Json::Value&  node,
     auto defaultValueNode = node.get("default", 0);
 
     if (defaultValueNode.isObject())
-        parseDefaultValueObject(defaultValueNode, scope, valueName, defaultValues);
+        parseDefaultValueVectorObject(defaultValueNode, scope, valueName, defaultValues);
     else if (defaultValueNode.isArray())
     {
         if (defaultValueNode.size() == 1 && defaultValueNode[0].isArray())
-            parseDefaultValueVector(defaultValueNode[0], scope, valueName, defaultValues);
+            parseDefaultValueVectorArray(defaultValueNode[0], scope, valueName, defaultValues);
         else
             throw; // FIXME: support array default values
     }
     else if (defaultValueNode.isBool())
-        defaultValues->set(valueName, defaultValueNode.asBool());
+        defaultValues->set(valueName, defaultValueNode.asBool() ? 1 : 0);
     else if (defaultValueNode.isInt())
         defaultValues->set(valueName, defaultValueNode.asInt());
     else if (defaultValueNode.isDouble())
@@ -420,10 +420,10 @@ EffectParser::parseDefaultValue(const Json::Value&  node,
 }
 
 void
-EffectParser::parseDefaultValueVector(const Json::Value&    defaultValueNode,
-                                      const Scope&          scope,
-                                      const std::string&    valueName,
-                                      data::Provider::Ptr   defaultValues)
+EffectParser::parseDefaultValueVectorArray(const Json::Value&    defaultValueNode,
+                                           const Scope&          scope,
+                                           const std::string&    valueName,
+                                           data::Provider::Ptr   defaultValues)
 {
     auto size = defaultValueNode.size();
     auto type = defaultValueNode[0].type();
@@ -454,27 +454,26 @@ EffectParser::parseDefaultValueVector(const Json::Value&    defaultValueNode,
     }
     else if (type == Json::ValueType::booleanValue)
     {
-        std::vector<bool> value(size);
+        // GLSL bool uniforms are set using integers, thus even if the default value is written
+        // using boolean values, we store it as integers
+        // https://www.opengl.org/sdk/docs/man/html/glUniform.xhtml
+        std::vector<int> value(size);
         for (auto i = 0u; i < size; ++i)
-            value[i] = defaultValueNode[i].asBool();
-
-        // std::vector<bool> is not an actual vector of bool:
-        // https://stackoverflow.com/questions/6485496/how-to-get-stdvector-pointer-to-the-raw-data
-        // thus we cannot use &value[0] to get a bool* to use with math::make_vec
+            value[i] = defaultValueNode[i].asBool() ? 1 : 0;
         if (size == 2)
-            defaultValues->set(valueName, math::bvec2(value[0], value[1]));
+            defaultValues->set(valueName, math::make_vec2<int>(&value[0]));
         else if (size == 3)
-            defaultValues->set(valueName, math::bvec3(value[0], value[1], value[2]));
+            defaultValues->set(valueName, math::make_vec3<int>(&value[0]));
         else if (size == 4)
-            defaultValues->set(valueName, math::bvec4(value[0], value[1], value[2], value[3]));
+            defaultValues->set(valueName, math::make_vec4<int>(&value[0]));
     }
 }
 
 void
-EffectParser::parseDefaultValueObject(const Json::Value&    defaultValueNode,
-                                      const Scope&          scope,
-                                      const std::string&    valueName,
-                                      data::Provider::Ptr   defaultValues)
+EffectParser::parseDefaultValueVectorObject(const Json::Value&    defaultValueNode,
+                                            const Scope&          scope,
+                                            const std::string&    valueName,
+                                            data::Provider::Ptr   defaultValues)
 {
     auto memberNames = defaultValueNode.getMemberNames();
     auto size = memberNames.size();
@@ -507,19 +506,18 @@ EffectParser::parseDefaultValueObject(const Json::Value&    defaultValueNode,
     }
     else if (type == Json::ValueType::booleanValue)
     {
-        std::vector<bool> value(size);
+        // GLSL bool uniforms are set using integers, thus even if the default value is written
+        // using boolean values, we store it as integers
+        // https://www.opengl.org/sdk/docs/man/html/glUniform.xhtml
+        std::vector<int> value(size);
         for (auto i = 0u; i < size; ++i)
-            value[i] = defaultValueNode[offsets[i]].asBool();
-
-        // std::vector<bool> is not an actual vector of bool:
-        // https://stackoverflow.com/questions/6485496/how-to-get-stdvector-pointer-to-the-raw-data
-        // thus we cannot use &value[0] to get a bool* to use with math::make_vec
+            value[i] = defaultValueNode[offsets[i]].asBool() ? 1 : 0;
         if (size == 2)
-            defaultValues->set(valueName, math::bvec2(value[0], value[1]));
+            defaultValues->set(valueName, math::make_vec2<int>(&value[0]));
         else if (size == 3)
-            defaultValues->set(valueName, math::bvec3(value[0], value[1], value[2]));
+            defaultValues->set(valueName, math::make_vec3<int>(&value[0]));
         else if (size == 4)
-            defaultValues->set(valueName, math::bvec4(value[0], value[1], value[2], value[3]));
+            defaultValues->set(valueName, math::make_vec4<int>(&value[0]));
     }
 }
 

@@ -135,29 +135,29 @@ namespace minko
 			}
 
 			inline
-			const data::BindingMap&
-			attributeBindings() const
+			data::BindingMap&
+			attributeBindings()
 			{
 				return _attributeBindings;
 			}
 
 			inline
-			const data::BindingMap&
-			uniformBindings() const
+			data::BindingMap&
+			uniformBindings()
 			{
 				return _uniformBindings;
 			}
 
 			inline
-			const data::BindingMap&
-			stateBindings() const
+			data::BindingMap&
+			stateBindings()
 			{
 				return _stateBindings;
 			}
 
 			inline
-			const data::MacroBindingMap&
-			macroBindings() const
+			data::MacroBindingMap&
+			macroBindings()
 			{
 				return _macroBindings;
 			}

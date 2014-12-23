@@ -184,7 +184,6 @@ minko.project.application = function(name)
 		}
 
 	configuration { "html5" }
-		minko.plugin.enable("webgl")
 
 		links {
 			"minko-framework",

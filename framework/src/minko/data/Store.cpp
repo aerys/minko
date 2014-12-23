@@ -27,7 +27,18 @@ using namespace minko;
 using namespace minko::data;
 
 Store::Store() :
-    _lengthProvider(nullptr)
+    _providers(),
+    _collections(),
+    _lengthProvider(nullptr),
+    _propertyAdded(),
+    _propertyRemoved(),
+    _propertyChanged(),
+    _propertyNameToChangedSignal(),
+    _propertyNameToAddedSignal(),
+    _propertyNameToRemovedSignal(),
+    _propertySlots(),
+    _collectionItemAddedSlots(),
+    _collectionItemRemovedSlots()
 {
 }
 
@@ -350,7 +361,7 @@ Store::removeProviderFromCollection(std::shared_ptr<data::Provider> provider,
 
 const std::string
 Store::getActualPropertyName(const std::unordered_map<std::string, std::string>&    vars,
-                                 const std::string&                                     propertyName)
+                             const std::string&                                     propertyName)
 {
     for (const auto& variableName : vars)
     {

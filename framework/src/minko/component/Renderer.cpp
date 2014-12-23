@@ -330,10 +330,10 @@ Renderer::surfaceGeometryOrMaterialChangedHandler(Surface::Ptr surface)
     // it's way simpler than just updating what has changed.
 
     std::unordered_map<std::string, std::string> variables;
-    //variables["surfaceUuid"] = surface->uuid();
+    variables["surfaceUuid"] = surface->uuid();
     variables["geometryUuid"] = surface->geometry()->uuid();
     variables["materialUuid"] = surface->material()->uuid();
-    //variables["effectUuid"] = surface->effect()->uuid();
+    variables["effectUuid"] = surface->effect()->uuid();
 
     _drawCallPool.invalidateDrawCalls(_surfaceToDrawCallIterator[surface], variables);
     //removeSurface(surface);
@@ -396,7 +396,7 @@ Renderer::render(render::AbstractContext::Ptr	context,
     for (const auto& drawCall : _drawCallPool.drawCalls())
         // FIXME: render the draw call only if it's the right layout
 	    //if ((drawCall->layouts() & layoutMask()) != 0)
-		    drawCall->render(context, renderTarget);
+		    drawCall.render(context, renderTarget);
 
     if (bCustomViewport)
         context->setScissorTest(false, _viewportBox);

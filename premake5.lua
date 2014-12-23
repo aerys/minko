@@ -119,8 +119,8 @@ solution "minko"
 		--include 'plugin/bullet'
 		--include 'plugin/fx'
 		include 'plugin/html-overlay'
-		include 'plugin/http-loader'
-		include 'plugin/http-worker'
+		--include 'plugin/http-loader'
+		--include 'plugin/http-worker'
 		include 'plugin/jpeg'
 		--include 'plugin/leap'
 		--include 'plugin/oculus'
@@ -129,7 +129,6 @@ solution "minko"
 		include 'plugin/png'
 		include 'plugin/sdl'
 		include 'plugin/serializer'
-		include 'plugin/webgl'
 
 		-- work around the inability of Xcode to build all projects if no dependency exists between them
 		if os.is("macosx")  and (_ACTION == "xcode-ios" or _ACTION == "xcode-osx") then
@@ -150,7 +149,7 @@ solution "minko"
 
 	-- example
 	if not _OPTIONS['no-example'] then
-		include 'example/assimp'
+		--include 'example/assimp'
 		-- include 'example/audio'
 		include 'example/blending'
 		-- include 'example/clone'
@@ -161,7 +160,7 @@ solution "minko"
 		-- include 'example/fog'
 		-- include 'example/frustum'
 		-- include 'example/hologram'
-		include 'example/html-overlay'
+		-- include 'example/html-overlay'
 		-- include 'example/http'
 		-- include 'example/jobs'
 		-- include 'example/joystick'
@@ -335,7 +334,7 @@ newaction {
 			local projectType = _OPTIONS['type']
 			local config = _OPTIONS['config']
 			local outputDir = _OPTIONS['regroup-dir']
-			
+
 			local completeOutputDir = outputDir .. '/' .. platform .. '/' .. config .. '/' .. projectType
 			os.mkdir(completeOutputDir)
 
@@ -347,7 +346,7 @@ newaction {
 				local sourceDir = projectType .. '/' .. dirName .. '/bin/' .. platform .. '/' .. config
 				if os.isdir(sourceDir) then
 					print(dirName)
-					
+
 					os.mkdir(completeOutputDir .. '/' .. dirName)
 
 					if platform == 'android' then

@@ -22,3 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 
 AbstractCanvas::Ptr minko::MinkoTests::_canvas = nullptr;
+
+render::Effect::Ptr
+MinkoTests::loadEffect(const std::string& filename)
+{
+    auto lib = file::AssetLibrary::create(MinkoTests::canvas()->context());
+
+    lib->loader()->queue(filename);
+    lib->loader()->load();
+
+    return lib->effect(filename);
+}

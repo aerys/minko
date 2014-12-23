@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/DrawCall.hpp"
 #include "minko/render/States.hpp"
 #include "minko/data/Binding.hpp"
+#include "minko/data/ResolvedBinding.hpp"
 #include "minko/render/Priority.hpp"
 
 namespace minko
@@ -41,10 +42,6 @@ namespace minko
             static const unsigned int	MAX_NUM_TEXTURES;
             static const unsigned int   MAX_NUM_VERTEXBUFFERS;
 
-		private:
-            typedef const ProgramInputs::UniformInput&      ConstUniformInputRef;
-            typedef const ProgramInputs::AttributeInput&    ConstAttrInputRef;
-
             template <typename T>
             struct UniformValue
             {
@@ -52,6 +49,10 @@ namespace minko
                 const uint size;
                 const T* data;
             };
+
+		private:
+            typedef const ProgramInputs::UniformInput&      ConstUniformInputRef;
+            typedef const ProgramInputs::AttributeInput&    ConstAttrInputRef;
 
             struct SamplerValue
             {
@@ -80,22 +81,22 @@ namespace minko
 			typedef std::shared_ptr<AbstractTexture>	            AbsTexturePtr;
 			typedef std::shared_ptr<Program>			            ProgramPtr;
             typedef std::unordered_map<std::string, std::string>    StringMap;
-            typedef data::Store::PropertyChangedSignal::Slot    ChangedSlot;
+            typedef data::Store::PropertyChangedSignal::Slot        ChangedSlot;
 
 		private:
+            std::shared_ptr<Pass>               _pass;
             data::Store&                        _rootData;
             data::Store&                        _rendererData;
             data::Store&                        _targetData;
             StringMap                           _variables;
 
-			std::shared_ptr<render::Pass>		_pass;
 			std::shared_ptr<Program>			_program;
             int*								_indexBuffer;
             uint*                               _firstIndex;
             uint*								_numIndices;
             std::vector<UniformValue<int>>      _uniformInt;
             std::vector<UniformValue<float>>    _uniformFloat;
-            std::vector<UniformValue<bool>>     _uniformBool;
+            std::vector<UniformValue<int>>      _uniformBool;
             std::vector<SamplerValue>           _samplers;
             std::vector<AttributeValue>         _attributes;
 
@@ -123,39 +124,15 @@ namespace minko
             std::shared_ptr<DrawCallZSorter>                _zSorter;
             Signal<DrawCall*>::Ptr                          _zSortNeeded;
 		public:
-            DrawCall(std::shared_ptr<render::Pass>  pass,
-                     const StringMap&               variables,
-                     data::Store&                   rootData,
-                     data::Store&                   rendererData,
-                     data::Store&                   targetData) :
-                _pass(pass),
-                _variables(variables),
-                _rootData(rootData),
-                _rendererData(rendererData),
-                _targetData(targetData),
-                _zSorter(nullptr),
-                _zSortNeeded(Signal<DrawCall*>::create())
-            {
-
-            }
-
-            DrawCall(const DrawCall& drawCall) :
-                _pass(drawCall._pass),
-                _variables(drawCall._variables),
-                _rootData(drawCall._rootData),
-                _rendererData(drawCall._rendererData),
-                _targetData(drawCall._targetData),
-                _zSorter(drawCall._zSorter),
-                _zSortNeeded(drawCall._zSortNeeded)
-            {
-            }
-
-            void
-            initialize();
+            DrawCall(std::shared_ptr<Pass>  pass,
+                     const StringMap&       variables,
+                     data::Store&           rootData,
+                     data::Store&           rendererData,
+                     data::Store&           targetData);
             
             inline
             std::shared_ptr<Pass>
-            pass() const
+            pass()
             {
                 return _pass;
             }
@@ -175,45 +152,59 @@ namespace minko
             }
 
             inline
-            const data::Store&
-            rootData() const
+            const StringMap&
+            variables() const
+            {
+                return _variables;
+            }
+
+            inline
+            data::Store&
+            rootData()
             {
                 return _rootData;
             }
 
             inline
-            const data::Store&
-            rendererData() const
+            data::Store&
+            rendererData()
             {
                 return _rendererData;
             }
 
             inline
-            const data::Store&
-            targetData() const
+            data::Store&
+            targetData()
             {
                 return _targetData;
             }
 
             inline
+            const std::vector<UniformValue<int>>&
+            boundBoolUniforms() const
+            {
+                return _uniformBool;
+            }
+
+            inline
+            const std::vector<UniformValue<int>>&
+            boundIntUniforms() const
+            {
+                return _uniformInt;
+            }
+
+            inline
+            const std::vector<UniformValue<float>>&
+            boundFloatUniforms() const
+            {
+                return _uniformFloat;
+            }
+
             std::shared_ptr<DrawCallZSorter>
             zSorter() const
             {
                 return _zSorter;
             }
-
-			void
-			render(std::shared_ptr<AbstractContext>  context,
-                   AbsTexturePtr                     renderTarget) const;
-
-            void
-            bind(std::shared_ptr<Program>   program,
-                 data::BindingMap&          attributeBindings,
-                 data::BindingMap&          uniformBindings,
-                 data::BindingMap&          stateBindings);
-
-            math::vec3
-            getEyeSpacePosition();
 
             inline
             float
@@ -236,51 +227,46 @@ namespace minko
                 return _zSortNeeded;
             }
 
+            void
+            bind(std::shared_ptr<Program> program);
+
+			void
+			render(std::shared_ptr<AbstractContext>  context,
+                   AbsTexturePtr                     renderTarget) const;
+
+            data::ResolvedBinding*
+            bindUniform(const ProgramInputs::UniformInput&          input,
+                        const std::map<std::string, data::Binding>& uniformBindings,
+                        const data::Store&                          defaultValues);
+
+            math::vec3
+            getEyeSpacePosition();
+
 		private:
 
             void
             reset();
 
             void
-            bindUniforms(std::shared_ptr<Program> program, data::BindingMap& uniformBindings);
+            bindAttributes();
 
             void
-            bindUniform(std::shared_ptr<Program>    program,
-                        ConstUniformInputRef        input,
-                        const data::Store&          store,
-                        const std::string&          propertyName);
-
-            void
-            bindAttribute(std::shared_ptr<Program>  program,
-                          ConstAttrInputRef         input,
-						  const data::Store&        store,
-						  const std::string&        propertyName);
+            bindAttribute(ConstAttrInputRef     input,
+						  const data::Store&    store,
+						  const std::string&    propertyName);
 
 			void
-			bindIndexBuffer(const std::unordered_map<std::string, std::string>& variables,
-                            const data::Store&                                  targetData);
+			bindIndexBuffer();
 
 			void
-            bindStates(const data::BindingMap& stateBindings);
+            bindStates();
 			
             data::Store&
             getStore(data::Binding::Source source);
 
-            void
-            uniformBindingPropertyAdded(const data::Binding&                binding,
-                                        Program::Ptr                        program,
-                                        data::Store&                        store,
-                                        const data::Store&                  defaultValues,
-                                        const ProgramInputs::UniformInput&  input,
-                                        const std::string&                  propertyName);
-
-            void
-            uniformBindingPropertyRemoved(const data::Binding&                  binding,
-                                          Program::Ptr                          program,
-                                          data::Store&                          store,
-                                          const data::Store&                    defaultValues,
-                                          const ProgramInputs::UniformInput&    input,
-                                          const std::string&                    propertyName);
+            data::ResolvedBinding*
+            resolveBinding(const ProgramInputs::AbstractInput&          input,
+                           const std::map<std::string, data::Binding>&  bindings);
 
             template <typename T>
             T*

@@ -49,17 +49,37 @@ namespace minko
 				samplerCube
 			};
 
-            struct UniformInput
+            struct AbstractInput
             {
                 std::string name;
-                Type type;
                 int location;
+
+                virtual
+                ~AbstractInput()
+                {}
+
+            protected:
+                AbstractInput(const std::string& name, int location) :
+                    name(name),
+                    location(location)
+                {}
             };
 
-            struct AttributeInput
+            struct UniformInput : public AbstractInput
             {
-                std::string name;
-                int location;
+                Type type;
+
+                UniformInput(const std::string& name, int location, Type type) :
+                    AbstractInput(name, location),
+                    type(type)
+                {}
+            };
+
+            struct AttributeInput : public AbstractInput
+            {
+                AttributeInput(const std::string& name, int location) :
+                    AbstractInput(name, location)
+                {}
             };
 
 		public:

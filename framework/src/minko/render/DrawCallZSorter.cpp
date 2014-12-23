@@ -56,8 +56,7 @@ DrawCallZSorter::DrawCallZSorter(DrawCall* drawcall):
     _modelToWorldMatrix(),
     _worldToScreenMatrix()
 {
-    if (_drawcall == nullptr)
-        throw std::invalid_argument("drawcall");
+    
 }
 
 void
@@ -65,69 +64,13 @@ DrawCallZSorter::initialize(data::Store& targetData,
                             data::Store& rendererData,
                             data::Store& rootData)
 {
-    clear();
     
-    // format raw property name to fit with the current
-    for (auto& prop : _rawProperties)
-        _properties[data::Store::getActualPropertyName(_drawcall->variables(), prop.first)] = prop.second;
-
-    _vertexPositions.first = data::Store::getActualPropertyName(_drawcall->variables(), "geometry[${geometryUuid}].position");
-    _modelToWorldMatrix.first = data::Store::getActualPropertyName(_drawcall->variables(), "transform.modelToWorldMatrix");
-    _worldToScreenMatrix.first = data::Store::getActualPropertyName(_drawcall->variables(), "camera.worldToScreenMatrix");
-    
-    _targetPropAddedSlot = targetData.propertyAdded().connect(std::bind(
-        &DrawCallZSorter::propertyAddedHandler,
-        shared_from_this(),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3
-    ));
-
-    _rendererPropAddedSlot = rendererData.propertyAdded().connect(std::bind(
-        &DrawCallZSorter::propertyAddedHandler,
-        shared_from_this(),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3
-    ));
-
-    _targetPropRemovedSlot = targetData.propertyRemoved().connect(std::bind(
-        &DrawCallZSorter::propertyRemovedHandler,
-        shared_from_this(),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3
-    ));
-
-    _rendererPropRemovedSlot = rendererData.propertyRemoved().connect(std::bind(
-        &DrawCallZSorter::propertyRemovedHandler,
-        shared_from_this(),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3
-    ));
-
-    _propChangedSlots.clear();
-
-    for (auto& prop : _properties)
-    {
-        auto source = prop.second.source;
-        auto store = source == data::Binding::Source::RENDERER ? rendererData : targetData;
-        if (store.hasProperty(prop.first))
-            propertyAddedHandler(store, nullptr, prop.first);
-    }
 }
 
 void
 DrawCallZSorter::clear()
 {
-    _targetPropAddedSlot = nullptr;
-    _targetPropRemovedSlot = nullptr;
-    _rendererPropAddedSlot = nullptr;
-    _rendererPropRemovedSlot = nullptr;
-    _propChangedSlots.clear();
-    _matrixChangedSlots.clear();
-    _properties.clear();
+    
 }
 
 void
@@ -135,32 +78,7 @@ DrawCallZSorter::propertyAddedHandler(data::Store& store,
                                       std::shared_ptr<data::Provider>, 
                                       const std::string& propertyName)
 {
-    const auto foundPropIt = _properties.find(propertyName);
-
-    if (foundPropIt == _properties.end())
-        return;
-
-    recordIfPositionalMembers(store, propertyName, true, false);
-
-    if (_propChangedSlots.find(propertyName) == _propChangedSlots.end())
-    {
-        _propChangedSlots[propertyName] = store.propertyChanged(propertyName).connect(std::bind(
-            &DrawCallZSorter::requestZSort,
-            shared_from_this()
-        ));
-
-        if (store.hasProperty(propertyName) && foundPropIt->second.isMatrix)
-        {
-            _matrixChangedSlots[propertyName] = store.propertyChanged(propertyName).connect(
-                std::bind(
-                    &DrawCallZSorter::requestZSort,
-                    shared_from_this()
-                )
-            );
-        }
-    }
-
-    requestZSort();
+    
 }
 
 void
@@ -168,27 +86,13 @@ DrawCallZSorter::propertyRemovedHandler(data::Store& store,
                                         std::shared_ptr<data::Provider>,
                                         const std::string& propertyName)
 {
-    if (_properties.find(propertyName) == _properties.end())
-        return;
-
-    recordIfPositionalMembers(store, propertyName, false, true);
-
-    if (_propChangedSlots.find(propertyName) != _propChangedSlots.end())
-    {
-        _propChangedSlots.erase(propertyName);
-
-        if (_matrixChangedSlots.find(propertyName) != _matrixChangedSlots.end())
-            _matrixChangedSlots.erase(propertyName);
-    }
- 
-    requestZSort();
+   
 }
 
 void
 DrawCallZSorter::requestZSort()
 {
-    if (_drawcall->zSorted())
-        _drawcall->zSortNeeded()->execute(_drawcall); // temporary ugly solution
+    
 }
 
 void

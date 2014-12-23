@@ -1190,7 +1190,7 @@ OpenGLES2Context::getUniformInputs(const uint program)
 		int					location	= glGetUniformLocation(program, &name[0]);
 
         if (location >= 0 && inputType != ProgramInputs::Type::unknown)
-            inputs.push_back({ std::string(&name[0], nameLength), inputType, location });
+            inputs.emplace_back(std::string(&name[0], nameLength), location, inputType);
 	}
 
     return inputs;
@@ -1222,7 +1222,7 @@ OpenGLES2Context::getAttributeInputs(const uint program)
 		int location = glGetAttribLocation(program, &name[0]);
 
         if (location >= 0)
-            inputs.push_back({ std::string(&name[0], nameLength), location });
+            inputs.emplace_back(std::string(&name[0], nameLength), location);
 	}
 
     return inputs;
