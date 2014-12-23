@@ -272,25 +272,18 @@ DrawCallPool::compareDrawCalls(DrawCall* a, DrawCall* b)
     const float bPriority = b->priority();
     const bool arePrioritiesEqual = fabsf(aPriority - bPriority) < 1e-3f;
 
-    if (!arePrioritiesEqual)
-        return aPriority > bPriority;
+    /*if (!arePrioritiesEqual)
+        return aPriority > bPriority;*/
 
-    if (a->zSorted() || b->zSorted())
+    if (arePrioritiesEqual && (a->zSorted() || b->zSorted()))
     {
         auto aPosition = getDrawcallEyePosition(a);
         auto bPosition = getDrawcallEyePosition(b);
 
         return aPosition.z > bPosition.z;
     }
-    /*
-    else
-    {
-        // FIXME
-        // ordered by target texture id, if any
-        //return a->target() && (!b->target() || (a->target()->id() > b->target()->id()));
 
-        return false;
-    }*/
+    return aPriority > bPriority;
 }
 
 math::vec3
