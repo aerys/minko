@@ -97,14 +97,14 @@ namespace minko
             }
 
             inline
-            Items::const_iterator
+            Items::iterator
             begin()
             {
                 return _items.begin();
             }
 
             inline
-            Items::const_iterator
+            Items::iterator
             end()
             {
                 return _items.end();
@@ -112,7 +112,7 @@ namespace minko
 
             inline
             Collection&
-            insert(Items::const_iterator position, ProviderPtr provider)
+            insert(Items::iterator position, ProviderPtr provider)
             {
                 _items.insert(position, provider);
                 _itemAdded.execute(*this, provider);
@@ -122,7 +122,7 @@ namespace minko
 
             inline
             Collection&
-            erase(Items::const_iterator position)
+            erase(Items::iterator position)
             {
                 auto provider = *position;
 

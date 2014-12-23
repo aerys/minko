@@ -1,0 +1,7 @@
+{
+    "states" : {
+        "blendingSource" : { "binding" : "material[${materialUuid}].blendingSource" }
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

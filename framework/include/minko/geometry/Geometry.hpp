@@ -172,6 +172,9 @@ namespace minko
 			Ptr
 			computeTangentSpace(bool computeNormals);
 
+            Ptr
+            computeCenterPosition();
+
 			void
 			removeDuplicatedVertices();
 

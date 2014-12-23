@@ -38,7 +38,7 @@ void main(void)
 	#endif
 
 	#ifdef DIFFUSE_CUBEMAP
-		vertexUVW = aPosition;
+		vVertexUVW = aPosition;
 	#endif
 
 	vec4 pos = vec4(aPosition, 1.0);

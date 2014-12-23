@@ -1,6 +1,6 @@
 {
     "states" : {
-        "blendMode": "alpha"
+        "stencilZPassOperation" : { "binding" : "material[${materialUuid}].stencilZPassOperation" }
     },
 
     "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]

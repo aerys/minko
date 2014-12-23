@@ -30,8 +30,7 @@ namespace minko
 {
 	namespace render
 	{
-		class DrawCallPool :
-			public std::enable_shared_from_this<DrawCallPool>
+		class DrawCallPool
 		{
         private:
             typedef std::list<DrawCall*>::iterator                                              DrawCallIterator;
@@ -89,6 +88,12 @@ namespace minko
 
             void
             update();
+
+            bool
+            compareDrawCalls(DrawCall* a, DrawCall* b);
+
+            math::vec3
+            getDrawcallEyePosition(DrawCall* drawcall);
 
         private:
             void

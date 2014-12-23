@@ -60,6 +60,7 @@ namespace minko
             typedef std::vector<PassPtr>                                    Passes;
             typedef std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>  LoaderCompleteSlotMap;
             typedef std::unordered_map<LoaderPtr, LoaderErrorSlot>          LoaderErrorSlotMap;
+            typedef std::unordered_map<std::string, render::SamplerState>   SamplerStates;
 
             enum class GLSLBlockType
             {
@@ -143,8 +144,8 @@ namespace minko
 			static std::unordered_map<std::string, unsigned int>				_blendFactorMap;
 			static std::unordered_map<std::string, render::CompareMode>			_compareFuncMap;
 			static std::unordered_map<std::string, render::StencilOperation>	_stencilOpMap;
-			static std::unordered_map<std::string, float>						_priorityMap;
-            static std::array<std::string, 1>                                  _extraStateNames;
+			static std::unordered_map<std::string, float>					    _priorityMap;
+            static std::array<std::string, 1>                                   _extraStateNames;
 
 		private:
             std::string						_filename;
@@ -279,15 +280,25 @@ namespace minko
             parseStates(const Json::Value& node, const Scope& scope, StateBlock& states);
 
             void
-            parseBlendMode(const Json::Value&				node,
-                           const Scope&                     scope,
-                           render::Blending::Source&		srcFactor,
-                           render::Blending::Destination&	dstFactor);
+            parseBlendingMode(const Json::Value&				node,
+                              const Scope&                      scope,
+                              render::Blending::Source&		    srcFactor,
+                              render::Blending::Destination&	dstFactor);
+
+            void
+            parseBlendingSource(const Json::Value&        node,
+                                              const Scope&              scope,
+                                              render::Blending::Source&	srcFactor);
+
+            void
+            parseBlendingSource(const Json::Value&             node,
+                                              const Scope&                   scope,
+                                              render::Blending::Destination& destFactor);
 
             void
             parseZSort(const Json::Value&   node,
                        const Scope&         scope,
-                       bool&                zSorted) const;
+                       bool&                zSorted);
 
             void
             parseColorMask(const Json::Value&   node,
@@ -336,6 +347,11 @@ namespace minko
                              const Scope&          scope,
                              bool&                 scissorTest,
                              math::ivec4&          scissorBox);
+
+            void
+            parseSamplerStates(const Json::Value& node,
+                               const Scope&       scope,
+                               SamplerStates&     samplerStates);
 
             ShaderPtr
             parseShader(const Json::Value& node, const Scope& scope, render::Shader::Type type);

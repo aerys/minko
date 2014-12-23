@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/render/DrawCall.hpp"
-
+#include "minko/render/DrawCallZSorter.hpp"
 #include "minko/data/Store.hpp"
 
 using namespace minko;
@@ -41,6 +41,14 @@ DrawCall::getStore(data::Binding::Source source)
     }
 
     throw;
+}
+
+void
+DrawCall::initialize()
+{
+    _zSorter = DrawCallZSorter::create(this);
+
+    _zSorter->initialize(_targetData, _rendererData, _rootData);
 }
 
 void
@@ -325,7 +333,7 @@ void
 DrawCall::bindStates(const data::BindingMap& stateBindings)
 {
     _priority = bindState<float>(States::PROPERTY_PRIORITY, stateBindings);
-    _zsorted = bindState<bool>(States::PROPERTY_ZSORTED, stateBindings);
+    _zSorted = bindState<bool>(States::PROPERTY_ZSORTED, stateBindings);
     _blendingSourceFactor = bindState<Blending::Source>(States::PROPERTY_BLENDING_SOURCE, stateBindings);
     _blendingDestinationFactor = bindState<Blending::Destination>(States::PROPERTY_BLENDING_DESTINATION, stateBindings);
     _colorMask = bindState<bool>(States::PROPERTY_COLOR_MASK, stateBindings);
@@ -397,24 +405,27 @@ DrawCall::render(AbstractContext::Ptr   context,
     }
     */
 
-    context->setColorMask(*_colorMask);
-    context->setBlendMode(*_blendingSourceFactor, *_blendingDestinationFactor);
-    context->setDepthTest(*_depthMask, *_depthFunc);
-    context->setStencilTest(*_stencilFunction, *_stencilReference, *_stencilMask, *_stencilFailOp, *_stencilZFailOp, *_stencilZPassOp);
-    context->setScissorTest(*_scissorTest, *_scissorBox);
-    context->setTriangleCulling(*_triangleCulling);
-
-    /*context->setColorMask(true);
-    context->setBlendMode(Blending::Mode::DEFAULT);
-    context->setDepthTest(true, CompareMode::LESS);
-    context->setScissorTest(false, math::vec4(0.f));
-    context->setTriangleCulling(TriangleCulling::NONE);*/
-
     for (const auto& s : _samplers)
         context->setTextureAt(s.position, *s.resourceId, s.location);
 
     for (const auto& a : _attributes)
         context->setVertexBufferAt(a.location, *a.resourceId, a.size, *a.stride, a.offset);
 
+    context->setColorMask(*_colorMask);
+    context->setBlendingMode(*_blendingSourceFactor, *_blendingDestinationFactor);
+    context->setDepthTest(*_depthMask, *_depthFunc);
+    context->setStencilTest(*_stencilFunction, *_stencilReference, *_stencilMask, *_stencilFailOp, *_stencilZFailOp, *_stencilZPassOp);
+    context->setScissorTest(*_scissorTest, *_scissorBox);
+    context->setTriangleCulling(*_triangleCulling);
+
     context->drawTriangles(*_indexBuffer, *_numIndices / 3);
+}
+
+
+math::vec3
+DrawCall::getEyeSpacePosition()
+{
+    auto eyePosition = _zSorter->getEyeSpacePosition();
+
+    return eyePosition;
 }

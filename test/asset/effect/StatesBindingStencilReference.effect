@@ -1,6 +1,6 @@
 {
     "states" : {
-        "blendMode": "additive"
+        "stencilReference" : { "binding" : "material[${materialUuid}].stencilReference" }
     },
 
     "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]

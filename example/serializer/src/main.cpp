@@ -52,6 +52,7 @@ main(int argc, char** argv)
         ->registerParser<file::JPEGParser>("jpg")
         ->registerParser<file::OBJParser>("obj")
         ->registerParser<file::ColladaParser>("dae")
+        ->registerParser<file::FBXParser>("FBX")
         ->registerParser<file::SceneParser>("scene");
 
     auto fxComplete = fxLoader->complete()->connect([&](file::Loader::Ptr loader)

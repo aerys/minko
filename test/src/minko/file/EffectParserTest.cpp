@@ -252,29 +252,247 @@ TEST_F(EffectParserTest, StatesTriangleCullingNone)
 
 /** Blend mode **/
 
-TEST_F(EffectParserTest, StatesBlendModeDefault)
+TEST_F(EffectParserTest, StatesBlendingModeDefault)
 {
-    auto fx = loadEffect("effect/StatesBlendModeDefault.effect");
+    auto fx = loadEffect("effect/StatesBlendingModeDefault.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::ONE);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestinationFactor(), Blending::Destination::ZERO);
 }
 
-TEST_F(EffectParserTest, StatesBlendModeAdditive)
+TEST_F(EffectParserTest, StatesBlendingModeAdditive)
 {
-    auto fx = loadEffect("effect/StatesBlendModeAdditive.effect");
+    auto fx = loadEffect("effect/StatesBlendingModeAdditive.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::ONE);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestinationFactor(), Blending::Destination::ONE);
 }
 
-TEST_F(EffectParserTest, StatesBlendModeAlpha)
+TEST_F(EffectParserTest, StatesBlendingModeAlpha)
 {
-    auto fx = loadEffect("effect/StatesBlendModeAlpha.effect");
+    auto fx = loadEffect("effect/StatesBlendingModeAlpha.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::SRC_ALPHA);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestinationFactor(), Blending::Destination::ONE_MINUS_SRC_ALPHA);
+}
+
+/*** States bindings ***/
+
+TEST_F(EffectParserTest, StatesBindingPriority)
+{
+    auto fx = loadEffect("effect/StatesBindingPriority.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("priority").propertyName, "material[${materialUuid}].priority");
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("priority").source, data::Binding::Source::TARGET);
+}
+
+TEST_F(EffectParserTest, StatesBindingZSorted)
+{
+    auto fx = loadEffect("effect/StatesBindingZSorted.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("zSorted").propertyName, "material[${materialUuid}].zSorted");
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("zSorted").source, data::Binding::Source::TARGET);
+}
+
+TEST_F(EffectParserTest, StatesBindingBlendingMode)
+{
+    auto fx = loadEffect("effect/StatesBindingBlendingMode.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("blendingMode").propertyName, "material[${materialUuid}].blendingMode");
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("blendingMode").source, data::Binding::Source::TARGET);
+}
+
+TEST_F(EffectParserTest, StatesBindingBlendingSource)
+{
+    auto fx = loadEffect("effect/StatesBindingBlendingSource.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("blendingSource").propertyName, "material[${materialUuid}].blendingSource");
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("blendingSource").source, data::Binding::Source::TARGET);
+}
+
+TEST_F(EffectParserTest, StatesBindingBlendingDestination)
+{
+    auto fx = loadEffect("effect/StatesBindingBlendingDestination.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("blendingDestination").propertyName, "material[${materialUuid}].blendingDestination");
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("blendingDestination").source, data::Binding::Source::TARGET);
+}
+
+TEST_F(EffectParserTest, StatesBindingColorMask)
+{
+    auto fx = loadEffect("effect/StatesBindingColorMask.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("colorMask").propertyName, "material[${materialUuid}].colorMask");
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("colorMask").source, data::Binding::Source::TARGET);
+}
+
+TEST_F(EffectParserTest, StatesBindingDepthMask)
+{
+    auto fx = loadEffect("effect/StatesBindingDepthMask.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("depthMask").propertyName, "material[${materialUuid}].depthMask");
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("depthMask").source, data::Binding::Source::TARGET);
+}
+
+TEST_F(EffectParserTest, StatesBindingDepthFunction)
+{
+    auto fx = loadEffect("effect/StatesBindingDepthFunction.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("depthFunction").propertyName, "material[${materialUuid}].depthFunction");
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("depthFunction").source, data::Binding::Source::TARGET);
+}
+
+TEST_F(EffectParserTest, StatesBindingTriangleCulling)
+{
+    auto fx = loadEffect("effect/StatesBindingTriangleCulling.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("triangleCulling").propertyName, "material[${materialUuid}].triangleCulling");
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("triangleCulling").source, data::Binding::Source::TARGET);
+}
+
+TEST_F(EffectParserTest, StatesBindingStencilFunction)
+{
+    auto fx = loadEffect("effect/StatesBindingStencilFunction.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("stencilFunction").propertyName, "material[${materialUuid}].stencilFunction");
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("stencilFunction").source, data::Binding::Source::TARGET);
+}
+
+TEST_F(EffectParserTest, StatesBindingStencilReference)
+{
+    auto fx = loadEffect("effect/StatesBindingStencilReference.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("stencilReference").propertyName, "material[${materialUuid}].stencilReference");
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("stencilReference").source, data::Binding::Source::TARGET);
+}
+
+TEST_F(EffectParserTest, StatesBindingStencilMask)
+{
+    auto fx = loadEffect("effect/StatesBindingStencilMask.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("stencilMask").propertyName, "material[${materialUuid}].stencilMask");
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("stencilMask").source, data::Binding::Source::TARGET);
+}
+
+TEST_F(EffectParserTest, StatesBindingStencilFailOperation)
+{
+    auto fx = loadEffect("effect/StatesBindingStencilFailOperation.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("stencilFailOperation").propertyName, "material[${materialUuid}].stencilFailOperation");
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("stencilFailOperation").source, data::Binding::Source::TARGET);
+}
+
+TEST_F(EffectParserTest, StatesBindingStencilZFailOperation)
+{
+    auto fx = loadEffect("effect/StatesBindingStencilZFailOperation.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("stencilZFailOperation").propertyName, "material[${materialUuid}].stencilZFailOperation");
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("stencilZFailOperation").source, data::Binding::Source::TARGET);
+}
+
+TEST_F(EffectParserTest, StatesBindingStencilZPassOperation)
+{
+    auto fx = loadEffect("effect/StatesBindingStencilZPassOperation.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("stencilZPassOperation").propertyName, "material[${materialUuid}].stencilZPassOperation");
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("stencilZPassOperation").source, data::Binding::Source::TARGET);
+}
+
+TEST_F(EffectParserTest, StatesBindingScissorTest)
+{
+    auto fx = loadEffect("effect/StatesBindingScissorTest.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("scissorTest").propertyName, "material[${materialUuid}].scissorTest");
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("scissorTest").source, data::Binding::Source::TARGET);
+}
+
+TEST_F(EffectParserTest, StatesBindingScissorBox)
+{
+    auto fx = loadEffect("effect/StatesBindingScissorBox.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("scissorBox").propertyName, "material[${materialUuid}].scissorBox");
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("scissorBox").source, data::Binding::Source::TARGET);
+}
+
+TEST_F(EffectParserTest, StatesBindingTarget)
+{
+    auto fx = loadEffect("effect/StatesBindingTarget.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("target").propertyName, "material[${materialUuid}].target");
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings.at("target").source, data::Binding::Source::TARGET);
 }

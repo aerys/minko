@@ -16,7 +16,7 @@
 	},
 
 	"states" : {
-		"blendMode" 		: "alpha",
+		"blendingMode" 		: "alpha",
 		"priority"			: ["last", -999999999.0],
 		"depthMask"			: false,
 		"depthFunction"		: "always",

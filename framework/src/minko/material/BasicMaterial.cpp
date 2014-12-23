@@ -29,6 +29,8 @@ using namespace minko;
 using namespace minko::material;
 using namespace minko::render;
 
+/*static*/ const std::shared_ptr<render::States> BasicMaterial::_defaultStates;
+
 BasicMaterial::BasicMaterial():
 	Material("BasicMaterial")
 {
@@ -230,22 +232,30 @@ BasicMaterial::fogType() const
 
     return render::FogType::None;
 }
-//
-//BasicMaterial&
-//BasicMaterial::blendingMode(Blending::Source src, Blending::Destination dst)
-//{
-//	data()->set<Blending::Mode>("blendMode", src | dst);
-//
-//	return *this;
-//}
-//
-//BasicMaterial&
-//BasicMaterial::blendingMode(Blending::Mode value)
-//{
-//	data()->set("blendMode", value);
-//
-//	return *this;
-//}
+
+BasicMaterial&
+BasicMaterial::blendingMode(Blending::Source src, Blending::Destination dst)
+{
+	data()->set<Blending::Mode>("blendingMode", src | dst);
+    data()->set<render::Blending::Source>(render::States::PROPERTY_BLENDING_SOURCE, src);
+    data()->set<render::Blending::Destination>(render::States::PROPERTY_BLENDING_DESTINATION, dst);
+
+	return *this;
+}
+
+BasicMaterial&
+BasicMaterial::blendingMode(Blending::Mode value)
+{
+    auto srcBlendingMode = static_cast<render::Blending::Source>(static_cast<uint>(value) & 0x00ff);
+    auto dstBlendingMode = static_cast<render::Blending::Destination>(static_cast<uint>(value) & 0xff00);
+
+    data()->set<render::Blending::Mode>("blendingMode", value);
+    data()->set<render::Blending::Source>(render::States::PROPERTY_BLENDING_SOURCE, srcBlendingMode);
+    data()->set<render::Blending::Destination>(render::States::PROPERTY_BLENDING_DESTINATION, dstBlendingMode);
+
+	return *this;
+}
+
 //
 //Blending::Source
 //BasicMaterial::blendingSourceFactor() const
@@ -310,23 +320,23 @@ BasicMaterial::fogType() const
 //		? data()->get<CompareMode>("depthFunc")
 //		: _defaultStates->depthFunc();
 //}
-//
-//BasicMaterial&
-//BasicMaterial::triangleCulling(TriangleCulling value)
-//{
-//	data()->set("triangleCulling", value);
-//
-//	return *this;
-//}
-//
-//TriangleCulling
-//BasicMaterial::triangleCulling() const
-//{
-//	return data()->hasProperty("triangleCulling")
-//		? data()->get<TriangleCulling>("triangleCulling")
-//		: _defaultStates->triangleCulling();
-//}
-//
+
+BasicMaterial&
+BasicMaterial::triangleCulling(TriangleCulling value)
+{
+	data()->set("triangleCulling", value);
+
+	return *this;
+}
+
+TriangleCulling
+BasicMaterial::triangleCulling() const
+{
+	return data()->hasProperty("triangleCulling")
+		? data()->get<TriangleCulling>("triangleCulling")
+		: _defaultStates->triangleCulling();
+}
+
 //BasicMaterial&
 //BasicMaterial::stencilFunction(CompareMode value)
 //{
@@ -422,35 +432,36 @@ BasicMaterial::fogType() const
 //		? data()->get<StencilOperation>("stencilZPassOp")
 //		: _defaultStates->stencilDepthPassOperation();
 //}
-//
-//BasicMaterial&
-//BasicMaterial::priority(float value)
-//{
-//	data()->set("priority", value);
-//
-//	return *this;
-//}
-//
-//float 
-//BasicMaterial::priority() const
-//{
-//	return data()->hasProperty("priority")
-//		? data()->get<float>("priority")
-//		: _defaultStates->priority();
-//}
-//
-//BasicMaterial&
-//BasicMaterial::zSorted(bool value)
-//{
-//	data()->set("zSort", value);
-//
-//	return *this;
-//}
-//
-//bool
-//BasicMaterial::zSorted() const
-//{
-//	return data()->hasProperty("zSort")
-//		? data()->get<bool>("zSort")
-//		: _defaultStates->zSorted();
-//}
+
+BasicMaterial&
+BasicMaterial::priority(float value)
+{
+	data()->set("priority", value);
+
+	return *this;
+}
+
+
+float 
+BasicMaterial::priority() const
+{
+	return data()->hasProperty("priority")
+		? data()->get<float>("priority")
+		: _defaultStates->priority();
+}
+
+BasicMaterial&
+BasicMaterial::zSorted(bool value)
+{
+	data()->set("zSorted", value);
+
+	return *this;
+}
+
+bool
+BasicMaterial::zSorted() const
+{
+	return data()->hasProperty("zSorted")
+		? data()->get<bool>("zSorted")
+		: _defaultStates->zSorted();
+}
