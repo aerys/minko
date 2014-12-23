@@ -53,22 +53,22 @@ namespace minko
             typedef std::shared_ptr<audio::Sound>               SoundPtr;
 
 		private:
-			AbsContextPtr												   _context;
-            std::shared_ptr<Loader>                                        _loader;
+			AbsContextPtr												    _context;
+            std::shared_ptr<Loader>                                         _loader;
 
-			std::unordered_map<std::string, MaterialPtr>				   _materials;
-			std::unordered_map<std::string, GeometryPtr>				   _geometries;
-			std::unordered_map<std::string, EffectPtr>					   _effects;
-			std::unordered_map<std::string, TexturePtr>				   	   _textures;
-			std::unordered_map<std::string, CubeTexturePtr>				   _cubeTextures;
-			std::unordered_map<std::string, NodePtr>					   _symbols;
-			std::unordered_map<std::string, std::vector<unsigned char>>	   _blobs;
-            std::unordered_map<std::string, AbsScriptPtr>                  _scripts;
-            std::unordered_map<std::string, Layouts>					   _layouts;
+			std::unordered_map<std::string, MaterialPtr>				    _materials;
+			std::unordered_map<std::string, GeometryPtr>				    _geometries;
+			std::unordered_map<std::string, EffectPtr>					    _effects;
+			std::unordered_map<std::string, TexturePtr>				   	    _textures;
+			std::unordered_map<std::string, CubeTexturePtr>				    _cubeTextures;
+			std::unordered_map<std::string, NodePtr>					    _symbols;
+			std::unordered_map<std::string, std::vector<unsigned char>>	    _blobs;
+            std::unordered_map<std::string, AbsScriptPtr>                   _scripts;
+            std::unordered_map<std::string, scene::Layout>				    _layouts;
             std::unordered_map<std::string, SoundPtr>                       _sounds;
 
-            Signal<Ptr, std::shared_ptr<AbstractParser>>::Ptr              _parserError;
-            Signal<Ptr>::Ptr                                               _ready;
+            Signal<Ptr, std::shared_ptr<AbstractParser>>::Ptr               _parserError;
+            Signal<Ptr>::Ptr                                                _ready;
 
 		public:
 			static
@@ -193,11 +193,11 @@ namespace minko
 			const std::string&
 			scriptName(AbsScriptPtr script);
 
-			Layouts
+            scene::Layout
 			layout(const std::string& name);
 
 			Ptr
-			layout(const std::string& name, Layouts);
+			layout(const std::string& name, scene::Layout);
 
             audio::Sound::Ptr
             sound(const std::string& name);

@@ -39,11 +39,11 @@ namespace minko
 
 		private:
 			std::shared_ptr<scene::Node>    _target;
-			Layouts							_layoutMask;
+            scene::Layout				    _layoutMask;
 			std::shared_ptr<Signal<Ptr>>	_layoutMaskChanged;
 
         protected:
-			AbstractComponent(Layouts layoutMask = scene::Layout::Mask::EVERYTHING) :
+            AbstractComponent(scene::Layout layoutMask = scene::LayoutMask::EVERYTHING) :
 				_layoutMask(layoutMask),
 				_layoutMaskChanged(Signal<Ptr>::create())
 			{
@@ -79,7 +79,7 @@ namespace minko
 			}
 
 			virtual
-			Layouts
+			scene::Layout
 			layoutMask() const
 			{
 				return _layoutMask;
@@ -87,7 +87,7 @@ namespace minko
 
 			virtual
 			void
-			layoutMask(Layouts value)
+            layoutMask(scene::Layout value)
 			{
 				if (_layoutMask != value)
 				{

@@ -22,15 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::scene;
 
-/*static*/ const Layouts Layout::Group::DEFAULT                        = 1 << 0;
-///*static*/ const Layouts Layout::Group::STATIC                        = 1 << 1;
-/*static*/ const Layouts Layout::Group::IGNORE_RAYCASTING    = 1 << 16;
-/*static*/ const Layouts Layout::Group::CULLING                = 1 << 17;
-/*static*/ const Layouts Layout::Group::PICKING                = 1 << 18;
-/*static*/ const Layouts Layout::Group::REFLECTION            = 1 << 19;
+const Layout BuiltinLayout::DEFAULT             = 1 << 0;
+const Layout BuiltinLayout::DEBUG               = 1 << 1;
+const Layout BuiltinLayout::STATIC              = 1 << 2;
+const Layout BuiltinLayout::IGNORE_RAYCASTING   = 1 << 3;
+const Layout BuiltinLayout::_RESERVED_2         = 1 << 4;
+const Layout BuiltinLayout::_RESERVED_3         = 1 << 5;
+const Layout BuiltinLayout::_RESERVED_4         = 1 << 6;
+const Layout BuiltinLayout::_RESERVED_5         = 1 << 7;
 
-/*static*/ const Layouts Layout::Mask::NOTHING                        = 0;
-/*static*/ const Layouts Layout::Mask::EVERYTHING                    = -1;
-/*static*/ const Layouts Layout::Mask::COLLISIONS_DYNAMIC_DEFAULT    = EVERYTHING;
-///*static*/ const Layouts Layout::Mask::COLLISIONS_STATIC_DEFAULT    = EVERYTHING ^ Group::STATIC;
-/*static*/ const Layouts Layout::Mask::RAYCASTING_DEFAULT            = EVERYTHING ^ Group::IGNORE_RAYCASTING;
+const Layout LayoutMask::NOTHING                = 0;
+const Layout LayoutMask::EVERYTHING             = 0xffffffff;

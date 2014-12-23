@@ -368,7 +368,7 @@ Dependency::serializeMaterial(std::shared_ptr<Dependency>			dependency,
         {
             materialName = assetLibrary->materialName(material) + ".material";
         }
-        catch (const std::exception& exception)
+        catch (std::exception exception)
         {
             materialName = "default" + std::to_string(materialNameId++) + ".material";
         }

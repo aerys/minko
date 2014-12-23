@@ -99,8 +99,8 @@ LightMaskFilter::operator()(Provider::Ptr data)
 	if (foundLightIt == _providerToLight.end())
 		return true; // the specified provider does not belong to a light
 
-	auto	surfaceLayouts	= currentSurface()->target()->layouts();
-	Layouts	lightMask		= foundLightIt->second->layoutMask();
+	auto	surfaceLayouts	= currentSurface()->target()->layout();
+	Layout	lightMask		= foundLightIt->second->layoutMask();
 
 	return (surfaceLayouts & lightMask) != 0;
 }

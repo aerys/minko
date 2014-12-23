@@ -45,10 +45,11 @@ namespace minko
             std::weak_ptr<Node>				_parent;
 			data::Store                     _container;
 			std::list<AbsCmpPtr>			_components;
+            Layout                          _layout;
 
 			Signal<Ptr, Ptr, Ptr>			_added;
 			Signal<Ptr, Ptr, Ptr>			_removed;
-			Signal<Ptr, Ptr>				_layoutsChanged;
+			Signal<Ptr, Ptr>				_layoutChanged;
 			Signal<Ptr, Ptr, AbsCmpPtr>		_componentAdded;
 			Signal<Ptr, Ptr, AbsCmpPtr>		_componentRemoved;
 
@@ -152,11 +153,15 @@ namespace minko
 				_name = name;
 			}
 
-			Layouts
-			layouts() const;
+            inline
+			Layout
+			layout() const
+            {
+                return _layout;
+            }
 			
 			Ptr
-			layouts(Layouts);
+			layout(Layout layout);
 
 			inline
 			Ptr
@@ -202,9 +207,9 @@ namespace minko
 
 			inline
 			Signal<Ptr, Ptr>&
-			layoutsChanged()
+			layoutChanged()
 			{
-				return _layoutsChanged;
+				return _layoutChanged;
 			}
 
 			inline

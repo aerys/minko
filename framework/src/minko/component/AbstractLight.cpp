@@ -33,7 +33,7 @@ AbstractLight::AbstractLight(const std::string& collectionName) :
 }
 
 void
-AbstractLight::layoutMask(Layouts value)
+AbstractLight::layoutMask(scene::Layout value)
 {
 	data()->set("layoutMask", value);
 	AbstractComponent::layoutMask(value);

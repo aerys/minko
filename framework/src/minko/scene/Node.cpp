@@ -37,19 +37,12 @@ Node::Node() :
 {
 }
 
-Layouts
-Node::layouts() const
-{
-    // FIXME
-	return 0;
-}
-
 Node::Ptr
 Node::clone(const CloneOption& option)
 {
 	auto clone = cloneNode();
 	
-	std::map<Node::Ptr, Node::Ptr>		nodeMap;		// map linking nodes to their clone
+	std::map<Node::Ptr, Node::Ptr>	nodeMap;		// map linking nodes to their clone
 	std::map<AbsCmpPtr, AbsCmpPtr>	componentsMap;	// map linking components to their clone
 	
 	listItems(clone, nodeMap, componentsMap);
@@ -125,22 +118,21 @@ Node::rebindComponentsDependencies(std::map<AbsCmpPtr, AbsCmpPtr>& componentsMap
 }
 
 Node::Ptr
-Node::layouts(Layouts value)
+Node::layout(Layout layout)
 {
-	if (value != layouts())
+    if (layout != _layout)
 	{
-        // FIXME
-		//_data->set<Layouts>("layouts", value);
+        _layout = layout;
 
 		// bubble down
         auto descendants = NodeSet::create(shared_from_this())->descendants(true);
 		for (auto descendant : descendants->nodes())
-			descendant->_layoutsChanged.execute(descendant, shared_from_this());
+			descendant->_layoutChanged.execute(descendant, shared_from_this());
 
 		// bubble up
 		auto ancestors = NodeSet::create(shared_from_this())->ancestors();
 		for (auto ancestor : ancestors->nodes())
-			ancestor->_layoutsChanged.execute(ancestor, shared_from_this());
+			ancestor->_layoutChanged.execute(ancestor, shared_from_this());
 	}
 
 	return shared_from_this();

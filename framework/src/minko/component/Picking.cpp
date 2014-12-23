@@ -61,7 +61,7 @@ Picking::Picking(SceneManagerPtr	sceneManager,
 {
 	_renderer = Renderer::create(0xFFFF00FF, nullptr, sceneManager->assets()->effect("effect/Picking.effect"), 1000.f, "Picking Renderer");
 	_renderer->scissorBox(0, 0, 1, 1);
-	_renderer->layoutMask(scene::Layout::Group::PICKING);
+	_renderer->layoutMask();
 }
 
 void
@@ -228,8 +228,8 @@ Picking::componentRemovedHandler(NodePtr							target,
 	if (surfaceCtrl)
 		removeSurface(surfaceCtrl, node);
 
-	if (!node->hasComponent<Surface>() && _addPickingLayout)
-		node->layouts(node->layouts() & ~scene::Layout::Group::PICKING);
+	/*if (!node->hasComponent<Surface>() && _addPickingLayout)
+		node->layout(node->layout() & ~scene::Layout::Group::PICKING);*/
 }
 
 void
@@ -258,8 +258,8 @@ Picking::addSurface(SurfacePtr surface)
 			target()->data().addProvider(_surfaceToProvider[surface]);
 		}
 
-		if (_addPickingLayout)
-			target()->layouts(target()->layouts() | scene::Layout::Group::PICKING);
+		/*if (_addPickingLayout)
+			target()->layouts(target()->layouts() | scene::Layout::Group::PICKING);*/
 	}
 }
 
@@ -329,7 +329,7 @@ Picking::removeSurfacesForNode(NodePtr node)
 
 	for (auto surfaceNode : surfaces->nodes())
 	{
-		surfaceNode->layouts(surfaceNode->layouts() & ~scene::Layout::Group::PICKING);
+		//surfaceNode->layouts(surfaceNode->layouts() & ~scene::Layout::Group::PICKING);
 
 		for (auto surface : surfaceNode->components<Surface>())
 			removeSurface(surface, surfaceNode);
