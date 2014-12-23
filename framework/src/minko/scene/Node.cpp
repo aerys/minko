@@ -100,7 +100,7 @@ Node::listItems(Node::Ptr clonedRoot, std::map<Node::Ptr, Node::Ptr>& nodeMap, s
 
 	nodeMap[shared_from_this()] = clonedRoot;
 
-	for (int childId = 0; childId < children().size(); childId++)
+	for (uint childId = 0; childId < children().size(); childId++)
 	{
 		auto child = children().at(childId);
 		auto clonedChild = clonedRoot->children().at(childId);
