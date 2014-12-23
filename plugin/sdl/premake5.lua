@@ -35,12 +35,18 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	configuration { "with-offscreen" }
 		minko.plugin.enable { "offscreen" }
+		
+	configuration { "not html5" }
+		excludes {
+			"src/minko/SDLWebGLBackend.cpp",
+			"src/minko/SDLWebGLBackend.hpp"
+		}
 
 	-- Audio only works for HTML5, Windows and Android
 	configuration { "linux32 or linux64 or osx64 or ios" }
 		excludes {
-			"include/SDLAudio.hpp",
-			"include/audio/**.hpp",
-			"src/SDLAudio.cpp",
-			"src/audio/**.cpp",
+			"include/minko/SDLAudio.hpp",
+			"include/minko/audio/**.hpp",
+			"src/minko/SDLAudio.cpp",
+			"src/minko/audio/**.cpp",
 		}
