@@ -359,7 +359,7 @@ TEST_F(TransformTest, Clone)
 	ASSERT_FALSE(n2->component<Transform>()->matrix() == n1->component<Transform>()->matrix());
 }
 
-TEST_F(TransformTest, TransformTranspositionIssue)
+TEST_F(TransformTest, WrongModelToWorldIssue)
 {
     auto sceneManager = SceneManager::create(MinkoTests::canvas());
 
@@ -377,15 +377,16 @@ TEST_F(TransformTest, TransformTranspositionIssue)
             )
         );
 
-    root->addChild(n1);
-
     auto n2 = Node::create("n2")->addComponent(Transform::create());
     auto n21 = Node::create("n21")->addComponent(Transform::create());
 
-    n2->addChild(n21);
+    root->addChild(n1);
     root->addChild(n2);
+    n2->addChild(n21);
 
-    ASSERT_EQ(math::vec3(n1->component<Transform>()->modelToWorldMatrix() * math::vec4(math::vec3(), 1)), math::vec3(42.f, 42.f, 42.f));
+    sceneManager->nextFrame(0.0f, 0.0f);
+
+    ASSERT_EQ(math::vec3(n1->component<Transform>()->matrix() * math::vec4(math::vec3(), 1)), math::vec3(42.f, 42.f, 42.f));
     ASSERT_EQ(n2->component<Transform>()->modelToWorldMatrix(), math::mat4());
     ASSERT_EQ(n21->component<Transform>()->modelToWorldMatrix(), math::mat4());
 }
