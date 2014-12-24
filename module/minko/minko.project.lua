@@ -197,79 +197,79 @@ minko.project.application = function(name)
 		}
 
 	if premake.tools.gcc.tools.emscripten then
-	configuration { "html5", "release" }
-		local emcc = premake.tools.gcc.tools.emscripten.cc
-		local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O3 ' .. buildoptions()[1]
+		configuration { "html5", "release" }
+			local emcc = premake.tools.gcc.tools.emscripten.cc
+			local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O3 ' .. buildoptions()[1]
 
-		linkoptions {
-			"--llvm-lto 1"
-		}
+			linkoptions {
+				"--llvm-lto 1"
+			}
 
-		-- enable the closure compiler
-		cmd = cmd .. ' --closure 1 -s CLOSURE_ANNOTATIONS=1'
-		-- treat undefined symbol warnings as errors
-		cmd = cmd .. ' -s ERROR_ON_UNDEFINED_SYMBOLS=1'
-		-- disable exception catching
-		--cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=1'
+			-- enable the closure compiler
+			cmd = cmd .. ' --closure 1 -s CLOSURE_ANNOTATIONS=1'
+			-- treat undefined symbol warnings as errors
+			cmd = cmd .. ' -s ERROR_ON_UNDEFINED_SYMBOLS=1'
+			-- disable exception catching
+			--cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=1'
 
-		--[[
-			optimize (very) long functions by breaking them into smaller ones
+			--[[
+				optimize (very) long functions by breaking them into smaller ones
 
-			from emscripten's settings.js:
-			"OUTLINING_LIMIT: break up functions into smaller ones, to avoid the downsides of very
-            large functions (JS engines often compile them very slowly, compile them with lower optimizations,
-			or do not optimize them at all)"
-		]]--
-		cmd = cmd .. ' -s OUTLINING_LIMIT=20000'
-		-- use a separate *.mem file to initialize the app memory
-		cmd = cmd .. ' --memory-init-file 1'
-		-- set the app (or the sdk) template.html
-		if os.isfile('template.html') then
-			cmd = cmd .. ' --shell-file "${CURDIR}/template.html"'
-		else
-			cmd = cmd .. ' --shell-file "' .. minko.sdk.path('/skeleton/template.html') .. '"'
-		end
-		-- include the app's 'asset' directory into the file system
-		cmd = cmd .. ' --preload-file ${TARGETDIR}/asset'
+				from emscripten's settings.js:
+				"OUTLINING_LIMIT: break up functions into smaller ones, to avoid the downsides of very
+	            large functions (JS engines often compile them very slowly, compile them with lower optimizations,
+				or do not optimize them at all)"
+			]]--
+			cmd = cmd .. ' -s OUTLINING_LIMIT=20000'
+			-- use a separate *.mem file to initialize the app memory
+			cmd = cmd .. ' --memory-init-file 1'
+			-- set the app (or the sdk) template.html
+			if os.isfile('template.html') then
+				cmd = cmd .. ' --shell-file "${CURDIR}/template.html"'
+			else
+				cmd = cmd .. ' --shell-file "' .. minko.sdk.path('/skeleton/template.html') .. '"'
+			end
+			-- include the app's 'asset' directory into the file system
+			cmd = cmd .. ' --preload-file ${TARGETDIR}/asset'
 
-		postbuildcommands {
-			cmd .. ' || ' .. minko.action.fail()
-		}
+			postbuildcommands {
+				cmd .. ' || ' .. minko.action.fail()
+			}
 
-		libdirs {
-			minko.sdk.path("/framework/bin/html5/release")
-		}
+			libdirs {
+				minko.sdk.path("/framework/bin/html5/release")
+			}
 
-	configuration { "html5", "debug" }
-		local emcc = premake.tools.gcc.tools.emscripten.cc
-		local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html ' .. buildoptions()[1]
+		configuration { "html5", "debug" }
+			local emcc = premake.tools.gcc.tools.emscripten.cc
+			local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html ' .. buildoptions()[1]
 
-		linkoptions {
-			"--llvm-lto 0"
-		}
+			linkoptions {
+				"--llvm-lto 0"
+			}
 
-		-- treat undefined symbol warnings as errors
-		-- cmd = cmd .. ' -s ERROR_ON_UNDEFINED_SYMBOLS=1'
-		-- disable exception catching
-		cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=0'
-		-- use a separate *.mem file to initialize the app memory
-		cmd = cmd .. ' --memory-init-file 1'
-		-- set the app (or the sdk) template.html
-		if os.isfile('template.html') then
-			cmd = cmd .. ' --shell-file "${CURDIR}/template.html"'
-		else
-			cmd = cmd .. ' --shell-file "' .. minko.sdk.path('/skeleton/template.html') .. '"'
-		end
-		-- include the app's 'asset' directory into the file system
-		cmd = cmd .. ' --preload-file ${TARGETDIR}/asset'
+			-- treat undefined symbol warnings as errors
+			-- cmd = cmd .. ' -s ERROR_ON_UNDEFINED_SYMBOLS=1'
+			-- disable exception catching
+			cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=0'
+			-- use a separate *.mem file to initialize the app memory
+			cmd = cmd .. ' --memory-init-file 1'
+			-- set the app (or the sdk) template.html
+			if os.isfile('template.html') then
+				cmd = cmd .. ' --shell-file "${CURDIR}/template.html"'
+			else
+				cmd = cmd .. ' --shell-file "' .. minko.sdk.path('/skeleton/template.html') .. '"'
+			end
+			-- include the app's 'asset' directory into the file system
+			cmd = cmd .. ' --preload-file ${TARGETDIR}/asset'
 
-		postbuildcommands {
-			cmd .. ' || ' .. minko.action.fail()
-		}
+			postbuildcommands {
+				cmd .. ' || ' .. minko.action.fail()
+			}
 
-		libdirs {
-			minko.sdk.path("/framework/bin/html5/debug")
-		}
+			libdirs {
+				minko.sdk.path("/framework/bin/html5/debug")
+			}
 	end
 
 	configuration { "ios" }

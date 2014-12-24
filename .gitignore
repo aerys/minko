@@ -28,4 +28,7 @@ remove.me
 dist
 packages
 .DS_Store
-bin/
+framework/bin
+plugin/*/bin
+example/*/bin
+test/*/bin

@@ -50,7 +50,7 @@ newoption {
 
 solution "minko"
 	MINKO_HOME = path.getabsolute(os.getcwd())
-
+	
 	dofile('sdk.lua')
 
 	-- buildable SDK
@@ -58,7 +58,7 @@ solution "minko"
 
 	-- framework
 	if not _OPTIONS['no-framework'] then
-	include 'framework'
+		include 'framework'
 	end
 
 	-- tutorial
