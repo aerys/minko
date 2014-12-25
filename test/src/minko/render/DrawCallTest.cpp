@@ -335,3 +335,46 @@ TEST_F(DrawCallTest, OneBoolUniformWithVariableBindingFromRootData)
     ASSERT_EQ(drawCall.boundBoolUniforms()[0].location, 23);
     ASSERT_EQ(drawCall.boundBoolUniforms()[0].size, 1);
 }
+
+TEST_F(DrawCallTest, RenderTargetFromDefaultValues)
+{
+    data::Store rootData;
+    data::Store rendererData;
+    data::Store targetData;
+    data::Store defaultValues;
+
+    auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
+    auto p = data::Provider::create();
+
+    p->set(States::PROPERTY_TARGET, texture->sampler());
+    defaultValues.addProvider(p);
+
+    DrawCall drawCall(nullptr, {}, rootData, rendererData, targetData);
+
+    drawCall.bindStates({}, defaultValues);
+
+    ASSERT_NE(drawCall.target(), States::DEFAULT_TARGET);
+    ASSERT_EQ(drawCall.target(), texture->sampler());
+}
+
+TEST_F(DrawCallTest, RenderTargetBindingFromTargetData)
+{
+    data::Store rootData;
+    data::Store rendererData;
+    data::Store targetData;
+    data::Store defaultValues;
+
+    auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
+    auto p = data::Provider::create();
+
+    p->set("renderTargetTest", texture->sampler());
+    targetData.addProvider(p);
+
+    std::map<std::string, data::Binding> bindings = { { "target", { "renderTargetTest", data::Binding::Source::TARGET } } };
+    DrawCall drawCall(nullptr, {}, rootData, rendererData, targetData);
+
+    drawCall.bindStates(bindings, defaultValues);
+
+    ASSERT_NE(drawCall.target(), States::DEFAULT_TARGET);
+    ASSERT_EQ(drawCall.target(), texture->sampler());
+}
