@@ -268,6 +268,18 @@ TEST_F(EffectParserTest, StatesBlendingModeAlpha)
     ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestinationFactor(), Blending::Destination::ONE_MINUS_SRC_ALPHA);
 }
 
+TEST_F(EffectParserTest, StatesTarget)
+{
+    auto assets = file::AssetLibrary::create(MinkoTests::canvas()->context());
+    auto fx = MinkoTests::loadEffect("effect/StatesTarget.effect", assets);
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_NE(fx->techniques().at("default")[0]->states().target(), States::DEFAULT_TARGET);
+    ASSERT_NE(assets->texture("test-render-target"), nullptr);
+    ASSERT_EQ(assets->texture("test-render-target")->width(), 1024);
+    ASSERT_EQ(assets->texture("test-render-target")->height(), 1024);
+}
+
 /*** States bindings ***/
 
 TEST_F(EffectParserTest, StatesBindingPriority)
@@ -496,4 +508,26 @@ TEST_F(EffectParserTest, BoolDefaultValue)
     ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().defaultValues.get<math::ivec2>("testBool2Uniform"), math::ivec2(1, 0));
     ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().defaultValues.get<math::ivec3>("testBool3Uniform"), math::ivec3(1, 0, 1));
     ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().defaultValues.get<math::ivec4>("testBool4Uniform"), math::ivec4(1, 0, 1, 0));
+}
+
+TEST_F(EffectParserTest, Float4DefaultValue)
+{
+    auto fx = MinkoTests::loadEffect("effect/Float4DefaultValue.effect");
+
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().defaultValues.get<math::vec4>("testFloat4Uniform"), math::vec4(1.f));    
+}
+
+TEST_F(EffectParserTest, OneUniformBindingAndDefault)
+{
+    auto fx = MinkoTests::loadEffect("effect/OneUniformBindingAndDefault.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().bindings.size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().bindings.at("uDiffuseColor").propertyName, "diffuseColor");
+    ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().bindings.at("uDiffuseColor").source, data::Binding::Source::TARGET);
+    ASSERT_TRUE(fx->techniques().at("default")[0]->uniformBindings().defaultValues.hasProperty("uDiffuseColor"));
 }
