@@ -82,7 +82,7 @@ namespace minko
             struct StateBlock : public Block<data::BindingMap>
             {
                 render::States states;
-                
+
                 StateBlock()
                 {
                     bindingMap.defaultValues.addProvider(states.data());
@@ -258,7 +258,7 @@ namespace minko
                                           const std::string&    valueName,
                                           data::Provider::Ptr   defaultValues);
 
-            void
+            bool
             parseBinding(const Json::Value& node, const Scope& scope, data::Binding& binding);
 
             void
@@ -324,6 +324,10 @@ namespace minko
             parsePriority(const Json::Value&    node,
                           const Scope&          scope,
                           float                 defaultPriority);
+
+            void
+            parseTarget(const Json::Value&  node,
+                        const Scope&        scope);
 
             void
             parseStencilState(const Json::Value&        node,
