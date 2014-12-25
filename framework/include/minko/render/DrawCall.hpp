@@ -116,8 +116,8 @@ namespace minko
             StencilOperation*			        _stencilZPassOp;
             bool*						        _scissorTest;
             math::ivec4*					    _scissorBox;
-            /*SamplerStates               _samplerStates;
-            AbstractTexturePtr		    _target;*/
+			TextureSampler*						_target;
+            /*SamplerStates               		_samplerStates;*/
 
             std::map<const data::Binding*, ChangedSlot>    _propAddedOrRemovedSlot;
 
@@ -129,7 +129,7 @@ namespace minko
                      data::Store&           rootData,
                      data::Store&           rendererData,
                      data::Store&           targetData);
-            
+
             inline
             std::shared_ptr<Pass>
             pass()
@@ -260,13 +260,18 @@ namespace minko
 
 			void
             bindStates();
-			
+
             data::Store&
             getStore(data::Binding::Source source);
 
             data::ResolvedBinding*
             resolveBinding(const ProgramInputs::AbstractInput&          input,
                            const std::map<std::string, data::Binding>&  bindings);
+
+			void
+			setUniformValueFromStore(const ProgramInputs::UniformInput&   input,
+									 const std::string&                   propertyName,
+									 const data::Store&                   store);
 
             template <typename T>
             T*

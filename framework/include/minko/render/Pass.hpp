@@ -44,7 +44,8 @@ namespace minko
 			typedef std::shared_ptr<VertexBuffer>						VertexBufferPtr;
             typedef std::unordered_map<std::string, SamplerState>		SamplerStatesMap;
             typedef std::unordered_map<ProgramSignature*, ProgramPtr>	SignatureToProgramMap;
-			typedef std::list<std::function<void(ProgramPtr)>>			OnProgramFunctionList;	
+			typedef std::function<void(ProgramPtr)>						ProgramFunc;
+			typedef std::map<std::string, ProgramFunc>					ProgramFuncMap;
 			typedef std::unordered_map<std::string, data::MacroBinding> MacroBindingsMap;
 
 		private:
@@ -57,9 +58,9 @@ namespace minko
             States				    _states;
             SignatureToProgramMap	_signatureToProgram;
 
-			OnProgramFunctionList	_uniformFunctions;
-			OnProgramFunctionList	_attributeFunctions;
-            OnProgramFunctionList   _macroFunctions;
+			ProgramFuncMap			_uniformFunctions;
+			ProgramFuncMap			_attributeFunctions;
+			ProgramFuncMap   		_macroFunctions;
 
 		public:
             ~Pass()
@@ -67,7 +68,7 @@ namespace minko
                 for (auto& signatureAndProgram : _signatureToProgram)
                     delete signatureAndProgram.first;
             }
-            
+
 			inline static
 			Ptr
 			create(const std::string&				name,
@@ -108,13 +109,16 @@ namespace minko
 
 				p->_uniformFunctions = pass->_uniformFunctions;
 				p->_attributeFunctions = pass->_attributeFunctions;
-	
+				p->_macroFunctions = pass->_macroFunctions;
+
 				if (pass->_programTemplate->isReady())
 				{
-					for (auto& f : p->_uniformFunctions)
-						f(pass->_programTemplate);
-					for (auto& f : p->_attributeFunctions)
-						f(pass->_programTemplate);
+					for (auto& nameAndFunc : p->_uniformFunctions)
+						nameAndFunc.second(pass->_programTemplate);
+					for (auto& nameAndFunc : p->_attributeFunctions)
+						nameAndFunc.second(pass->_programTemplate);
+					for (auto& nameAndFunc : p->_macroFunctions)
+						nameAndFunc.second(pass->_programTemplate);
 				}
 
 				return p;
@@ -171,17 +175,17 @@ namespace minko
 
             std::pair<std::shared_ptr<Program>, const ProgramSignature*>
             selectProgram(const std::unordered_map<std::string, std::string>&   translatedPropertyNames,
-						  const data::Store&	                            targetData,
-						  const data::Store&	                            rendererData,
-                          const data::Store&	                            rootData);
-			
+						  const data::Store&	                            	targetData,
+						  const data::Store&	                            	rendererData,
+                          const data::Store&	                            	rootData);
+
 			template <typename... T>
 			void
 			setUniform(const std::string& name, const T&... values)
 			{
-				_uniformFunctions.push_back(std::bind(
+				_uniformFunctions[name] = std::bind(
 					&Pass::setUniformOnProgram<T...>, std::placeholders::_1, name, values...
-				));
+				);
 
 				if (_programTemplate->isReady())
 					_programTemplate->setUniform(name, values...);
@@ -193,9 +197,9 @@ namespace minko
 			void
             setAttribute(const std::string& name, const VertexAttribute& attribute)
 			{
-				_attributeFunctions.push_back(std::bind(
+				_attributeFunctions[name] = std::bind(
 					&Pass::setVertexAttributeOnProgram, std::placeholders::_1, name, attribute
-				));
+				);
 
 				if (_programTemplate->isReady())
 					_programTemplate->setAttribute(name, attribute);
@@ -207,7 +211,7 @@ namespace minko
 			void
 			define(const std::string& macroName)
 			{
-                _macroFunctions.push_back(std::bind(&Pass::defineOnProgram, std::placeholders::_1, macroName));
+                _macroFunctions[macroName] = std::bind(&Pass::defineOnProgram, std::placeholders::_1, macroName);
                 _programTemplate->define(macroName);
 			}
 
@@ -216,9 +220,9 @@ namespace minko
 			void
 			define(const std::string& macroName, T macroValue)
 			{
-                _macroFunctions.push_back(std::bind(
+                _macroFunctions[macroName] = std::bind(
                     &Pass::defineOnProgramWithValue<T>, std::placeholders::_1, macroName, macroValue
-                ));
+                );
                 _programTemplate->define(macroName, macroValue);
 			}
 

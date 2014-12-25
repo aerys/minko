@@ -104,12 +104,12 @@ Pass::finalizeProgram(Program::Ptr program)
 	{
 		program->upload();
 
-		for (auto& func : _uniformFunctions)
-			func(program);
-		for (auto& func : _attributeFunctions)
-			func(program);
-        for (auto& func : _macroFunctions)
-            func(program);
+		for (auto& nameAndFunc : _uniformFunctions)
+			nameAndFunc.second(program);
+		for (auto& nameAndFunc : _attributeFunctions)
+			nameAndFunc.second(program);
+        for (auto& nameAndFunc : _macroFunctions)
+			nameAndFunc.second(program);
 	}
 
 	return program;

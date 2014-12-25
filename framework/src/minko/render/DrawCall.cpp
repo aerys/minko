@@ -38,7 +38,8 @@ DrawCall::DrawCall(std::shared_ptr<Pass>  pass,
     _rendererData(rendererData),
     _targetData(targetData),
     _zSorter(DrawCallZSorter::create(this)),
-    _zSortNeeded(Signal<DrawCall*>::create())
+    _zSortNeeded(Signal<DrawCall*>::create()),
+    _target(nullptr)
 {
     _zSorter->initialize(_targetData, _rendererData, _rootData);
 }
@@ -123,23 +124,46 @@ DrawCall::bindUniform(ConstUniformInputRef                          input,
                       const data::Store&                            defaultValues)
 {
     data::ResolvedBinding* binding = resolveBinding(input, uniformBindings);
-    std::string propertyName = binding->propertyName;
-    data::Store& store = binding->store;
 
-    if ((binding == nullptr) || !store.hasProperty(propertyName))
+    if (binding == nullptr)
     {
         if (!defaultValues.hasProperty(input.name))
         {
+            auto it = std::find(_program->setUniformNames().begin(), _program->setUniformNames().end(), input.name);
+
+            if (it == _program->setUniformNames().end())
+            {
+                throw std::runtime_error(
+                    "Program \"" + _program->name() + "\": the uniform \"" + input.name
+                    + "\" is not bound, has not been set and no default value was provided."
+                );
+            }
+        }
+
+        setUniformValueFromStore(input, input.name, defaultValues);
+    }
+    else
+    {
+        if (!binding->store.hasProperty(binding->propertyName))
+        {
             throw std::runtime_error(
-                "The uniform \"" + input.name + "\" is bound to the \"" + propertyName
+                "Program \"" + _program->name() + "\": the uniform \""
+                + input.name + "\" is bound to the \"" + binding->propertyName
                 + "\" property but it's not defined and no default value was provided."
             );
         }
 
-        propertyName = input.name;
-        store = defaultValues;
+        setUniformValueFromStore(input, binding->propertyName, binding->store);
     }
 
+    return binding;
+}
+
+void
+DrawCall::setUniformValueFromStore(const ProgramInputs::UniformInput&   input,
+                                   const std::string&                   propertyName,
+                                   const data::Store&                   store)
+{
     switch (input.type)
     {
         case ProgramInputs::Type::bool1:
@@ -187,17 +211,14 @@ DrawCall::bindUniform(ConstUniformInputRef                          input,
                 store.getPointer<TextureSampler>(propertyName)->id,
                 input.location
             });
-            break;
+        break;
         case ProgramInputs::Type::float9:
         case ProgramInputs::Type::unknown:
         case ProgramInputs::Type::samplerCube:
             throw std::runtime_error("unsupported program input type: " + ProgramInputs::typeToString(input.type));
-            break;
+        break;
     }
-
-    return binding;
 }
-
 
 void
 DrawCall::bindIndexBuffer()
@@ -251,8 +272,7 @@ DrawCall::bindStates()
     _stencilZPassOp = bindState<StencilOperation>(States::PROPERTY_STENCIL_ZPASS_OP, stateBindings);
     _scissorTest = bindState<bool>(States::PROPERTY_SCISSOR_TEST, stateBindings);
     _scissorBox = bindState<math::ivec4>(States::PROPERTY_SCISSOR_BOX, stateBindings);
-
-    // FIXME: bind the render target
+    _target = bindState<TextureSampler>(States::PROPERTY_TARGET, stateBindings);
 }
 
 void
@@ -260,11 +280,10 @@ DrawCall::render(AbstractContext::Ptr context, AbstractTexture::Ptr renderTarget
 {
     context->setProgram(_program->id());
 
-    // FIXME: handle RTT
-    /*if (_states->target())
-        context->setRenderToTexture(_states->target()->id(), true);
-    else if (renderTarget)
-        context->setRenderToTexture(renderTarget->id(), true);*/
+    if (_target && _target->id != nullptr)
+        context->setRenderToTexture(*_target->id, true);
+    else
+        context->setRenderToBackBuffer();
 
     for (const auto& u : _uniformBool)
     {
@@ -344,7 +363,7 @@ DrawCall::resolveBinding(const ProgramInputs::AbstractInput&            input,
         return nullptr;
 
     const auto& binding = bindings.at(bindingName);
-    
+
     auto& store = getStore(binding.source);
     auto propertyName = data::Store::getActualPropertyName(_variables, binding.propertyName);
 
