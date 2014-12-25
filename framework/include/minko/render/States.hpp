@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/TriangleCulling.hpp"
 #include "minko/render/CompareMode.hpp"
 #include "minko/render/StencilOperation.hpp"
+#include "minko/render/TextureSampler.hpp"
 #include "minko/scene/Layout.hpp"
 #include "minko/data/Store.hpp"
 #include "minko/data/Provider.hpp"
@@ -75,7 +76,7 @@ namespace minko
             static const StencilOperation		        DEFAULT_STENCIL_ZPASS_OP;
             static const bool					        DEFAULT_SCISSOR_TEST;
             static const math::ivec4 			        DEFAULT_SCISSOR_BOX;
-            static const AbsTexturePtr                  DEFAULT_TARGET;
+            static const TextureSampler                 DEFAULT_TARGET;
 
         private:
             std::shared_ptr<data::Provider> _data;
@@ -97,7 +98,7 @@ namespace minko
                    StencilOperation			stencilZPassOp      = DEFAULT_STENCIL_ZPASS_OP,
                    bool						scissorTest         = DEFAULT_SCISSOR_TEST,
                    const math::ivec4&		scissorBox          = DEFAULT_SCISSOR_BOX,
-                   AbsTexturePtr		    target              = DEFAULT_TARGET);
+                   TextureSampler		    target              = DEFAULT_TARGET);
 
             States(const States& states);
 
@@ -369,12 +370,19 @@ namespace minko
                 return *this;
             }
 
-            /*inline
-            AbstractTexturePtr
+            inline
+            const TextureSampler&
             target() const
             {
-                return _data->get<>(PROPERTY_TARGET);
-            }*/
+                return _data->get<TextureSampler>(PROPERTY_TARGET);
+            }
+
+            inline
+            States&
+            target(TextureSampler& target)
+            {
+                _data->set(PROPERTY_TARGET, target);
+            }
         };
 	}
 }
