@@ -24,6 +24,7 @@ Makefile
 *.vspx
 *.rsp
 .clang_complete
+.atom-build.json
 doc/html
 remove.me
 dist
