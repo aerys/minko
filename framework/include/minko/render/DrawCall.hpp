@@ -275,7 +275,7 @@ namespace minko
 
             template <typename T>
             T*
-            bindState(const std::string         stateName,
+            bindState(const std::string&        stateName,
                       const data::BindingMap&   stateBindings)
             {
                 auto& bindings = stateBindings.bindings;
@@ -285,7 +285,6 @@ namespace minko
 
                 const auto& binding = bindings.at(stateName);
                 auto& store = getStore(binding.source);
-
                 auto unsafePointer = store.getUnsafePointer<T>(
                     data::Store::getActualPropertyName(_variables, binding.propertyName)
                 );

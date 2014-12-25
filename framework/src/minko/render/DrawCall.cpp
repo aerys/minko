@@ -146,14 +146,19 @@ DrawCall::bindUniform(ConstUniformInputRef                          input,
     {
         if (!binding->store.hasProperty(binding->propertyName))
         {
-            throw std::runtime_error(
-                "Program \"" + _program->name() + "\": the uniform \""
-                + input.name + "\" is bound to the \"" + binding->propertyName
-                + "\" property but it's not defined and no default value was provided."
-            );
+            if (!defaultValues.hasProperty(input.name))
+            {
+                throw std::runtime_error(
+                    "Program \"" + _program->name() + "\": the uniform \""
+                    + input.name + "\" is bound to the \"" + binding->propertyName
+                    + "\" property but it's not defined and no default value was provided."
+                );
+            }
+            else
+                setUniformValueFromStore(input, input.name, defaultValues);
         }
-
-        setUniformValueFromStore(input, binding->propertyName, binding->store);
+        else
+            setUniformValueFromStore(input, binding->propertyName, binding->store);
     }
 
     return binding;
@@ -280,8 +285,12 @@ DrawCall::render(AbstractContext::Ptr context, AbstractTexture::Ptr renderTarget
 {
     context->setProgram(_program->id());
 
+    std::cout << _program->name() << ", " <<  _target->id << std::endl;
     if (_target && _target->id != nullptr)
+    {
+        std::cout << "render to texture " << *_target->id << std::endl;
         context->setRenderToTexture(*_target->id, true);
+    }
     else
         context->setRenderToBackBuffer();
 
