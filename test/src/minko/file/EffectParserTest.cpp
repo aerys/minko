@@ -275,6 +275,7 @@ TEST_F(EffectParserTest, StatesTarget)
 
     ASSERT_NE(fx, nullptr);
     ASSERT_NE(fx->techniques().at("default")[0]->states().target(), States::DEFAULT_TARGET);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().target(), assets->texture("test-render-target")->sampler());
     ASSERT_NE(assets->texture("test-render-target"), nullptr);
     ASSERT_EQ(assets->texture("test-render-target")->width(), 1024);
     ASSERT_EQ(assets->texture("test-render-target")->height(), 1024);
@@ -516,7 +517,7 @@ TEST_F(EffectParserTest, Float4DefaultValue)
 
     ASSERT_EQ(fx->techniques().size(), 1);
     ASSERT_EQ(fx->techniques().at("default").size(), 1);
-    ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().defaultValues.get<math::vec4>("testFloat4Uniform"), math::vec4(1.f));    
+    ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().defaultValues.get<math::vec4>("testFloat4Uniform"), math::vec4(1.f));
 }
 
 TEST_F(EffectParserTest, OneUniformBindingAndDefault)
