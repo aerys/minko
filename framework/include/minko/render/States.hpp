@@ -379,7 +379,7 @@ namespace minko
 
             inline
             States&
-            target(TextureSampler& target)
+            target(const TextureSampler& target)
             {
                 _data->set(PROPERTY_TARGET, target);
             }
