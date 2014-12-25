@@ -340,7 +340,7 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
         parseMacros(node, passScope, passScope.macroBlock);
         parseStates(node, passScope, passScope.stateBlock);
 
-        auto passName = "pass" + std::to_string(scope.passes.size());
+        auto passName = _effectName + "-pass" + std::to_string(scope.passes.size());
         auto nameNode = node.get("name", 0);
         if (nameNode.isString())
             passName = nameNode.asString();
@@ -687,14 +687,16 @@ EffectParser::parseStates(const Json::Value& node, const Scope& scope, StateBloc
         stateBlock.states.scissorTest(scissorTest);
         stateBlock.states.scissorBox(scissorBox);
 
-		parseTarget(statesNode, scope);
+		auto target = parseTarget(statesNode, scope);
+		if (target)
+			stateBlock.states.target(target->sampler());
     }
     // FIXME: throw otherwise
 }
 
 void
 EffectParser::parseBlendingMode(const Json::Value&				node,
-                                const Scope&                   scope,
+                                const Scope&                    scope,
                                 render::Blending::Source&		srcFactor,
                                 render::Blending::Destination&	dstFactor)
 {
@@ -846,62 +848,74 @@ EffectParser::parsePriority(const Json::Value&	node,
     return ret;
 }
 
-void
+AbstractTexture::Ptr
 EffectParser::parseTarget(const Json::Value& node, const Scope& scope)
 {
 	auto targetNode = node.get(States::PROPERTY_TARGET, 0);
 	AbstractTexture::Ptr target = nullptr;
 	std::string	targetName;
 
-	if (!targetNode.isNull())
+	if (targetNode.isObject())
 	{
-		if (targetNode.isObject())
+		auto nameValue  = targetNode.get("name", 0);
+
+		if (nameValue.isString())
+			targetName = nameValue.asString();
+
+		if (!targetNode.isMember("size") && !(targetNode.isMember("width") && targetNode.isMember("height")))
+			return nullptr;
+
+		auto width = 0;
+		auto height = 0;
+
+		if (targetNode.isMember("size"))
+			width = height = targetNode.get("size", 0).asUInt();
+		else
 		{
-			auto nameValue  = targetNode.get("name", 0);
-
-			if (nameValue.isString())
-				targetName = nameValue.asString();
-
-			auto sizeValue  = targetNode.get("size", 0);
-			auto width      = 0;
-			auto height     = 0;
-
-			if (sizeValue.asUInt() != 0)
-				width = height = sizeValue.asUInt();
-			else
+			if (!targetNode.isMember("width") || !targetNode.isMember("height"))
 			{
-				width = targetNode.get("width", 0).asUInt();
-				height = targetNode.get("height", 0).asUInt();
+				_error->execute(
+					shared_from_this(),
+					file::Error(
+						_resolvedFilename
+						+ ": render target definition requires both \"width\" and \"height\" properties."
+					)
+				);
 			}
 
-			const bool isCubeTexture = targetNode.get("isCube", 0).isBool()
-				? targetNode.get("isCube", 0).asBool()
-				: false;
-
-			if (!isCubeTexture)
-			{
-				target = Texture::create(_options->context(), width, height, false, true);
-
-				if (targetName.length())
-					_assetLibrary->texture(targetName, std::static_pointer_cast<render::Texture>(target));
-			}
-			else
-			{
-				target = CubeTexture::create(_options->context(), width, height, false, true);
-
-				if (targetName.length())
-					_assetLibrary->cubeTexture(targetName, std::static_pointer_cast<render::CubeTexture>(target));
-			}
-
-			target->upload();
-
+			width = targetNode.get("width", 0).asUInt();
+			height = targetNode.get("height", 0).asUInt();
 		}
-		else if (targetNode.isString())
+
+		const bool isCubeTexture = targetNode.get("isCube", 0).isBool()
+			? targetNode.get("isCube", 0).asBool()
+			: false;
+
+		if (isCubeTexture)
 		{
-			targetName = targetNode.asString();
-			target = _assetLibrary->texture(targetName);
+			target = CubeTexture::create(_options->context(), width, height, false, true);
+
+			if (targetName.length())
+				_assetLibrary->cubeTexture(targetName, std::static_pointer_cast<render::CubeTexture>(target));
 		}
+		else
+		{
+			target = Texture::create(_options->context(), width, height, false, true);
+
+			if (targetName.length())
+				_assetLibrary->texture(targetName, std::static_pointer_cast<render::Texture>(target));
+		}
+
+		target->upload();
+
 	}
+	else if (targetNode.isString())
+	{
+		targetName = targetNode.asString();
+		target = _assetLibrary->texture(targetName);
+	}
+
+	return target;
 }
 
 void

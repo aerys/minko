@@ -291,7 +291,7 @@ namespace minko
                                               render::Blending::Source&	srcFactor);
 
             void
-            parseBlendingSource(const Json::Value&             node,
+            parseBlendingSource(const Json::Value&                           node,
                                               const Scope&                   scope,
                                               render::Blending::Destination& destFactor);
 
@@ -325,7 +325,7 @@ namespace minko
                           const Scope&          scope,
                           float                 defaultPriority);
 
-            void
+            std::shared_ptr<render::AbstractTexture>
             parseTarget(const Json::Value&  node,
                         const Scope&        scope);
 
