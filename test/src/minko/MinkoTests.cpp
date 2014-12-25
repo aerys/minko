@@ -24,9 +24,9 @@ using namespace minko;
 AbstractCanvas::Ptr minko::MinkoTests::_canvas = nullptr;
 
 render::Effect::Ptr
-MinkoTests::loadEffect(const std::string& filename)
+MinkoTests::loadEffect(const std::string& filename, file::AssetLibrary::Ptr assets)
 {
-    auto lib = file::AssetLibrary::create(MinkoTests::canvas()->context());
+    auto lib = assets ? assets : file::AssetLibrary::create(MinkoTests::canvas()->context());
 
     lib->loader()->queue(filename);
     lib->loader()->load();
