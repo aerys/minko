@@ -82,7 +82,7 @@ DrawCall::bind(std::shared_ptr<Program> program)
     _program = program;
 
     bindIndexBuffer();
-    bindStates();
+    // bindStates();
     //bindUniforms();
     bindAttributes();
 }
@@ -257,27 +257,26 @@ DrawCall::bindAttribute(ConstAttrInputRef       input,
 }
 
 void
-DrawCall::bindStates()
+DrawCall::bindStates(const std::map<std::string, data::Binding>&    stateBindings,
+                     const data::Store&                             defaultValues)
 {
-    const auto& stateBindings = _pass->stateBindings();
-
-    _priority = bindState<float>(States::PROPERTY_PRIORITY, stateBindings);
-    _zSorted = bindState<bool>(States::PROPERTY_ZSORTED, stateBindings);
-    _blendingSourceFactor = bindState<Blending::Source>(States::PROPERTY_BLENDING_SOURCE, stateBindings);
-    _blendingDestinationFactor = bindState<Blending::Destination>(States::PROPERTY_BLENDING_DESTINATION, stateBindings);
-    _colorMask = bindState<bool>(States::PROPERTY_COLOR_MASK, stateBindings);
-    _depthMask = bindState<bool>(States::PROPERTY_DEPTH_MASK, stateBindings);
-    _depthFunc = bindState<CompareMode>(States::PROPERTY_DEPTH_FUNCTION, stateBindings);
-    _triangleCulling = bindState<TriangleCulling>(States::PROPERTY_TRIANGLE_CULLING, stateBindings);
-    _stencilFunction = bindState<CompareMode>(States::PROPERTY_STENCIL_FUNCTION, stateBindings);
-    _stencilReference = bindState<int>(States::PROPERTY_STENCIL_REFERENCE, stateBindings);
-    _stencilMask = bindState<uint>(States::PROPERTY_STENCIL_MASK, stateBindings);
-    _stencilFailOp = bindState<StencilOperation>(States::PROPERTY_STENCIL_FAIL_OP, stateBindings);
-    _stencilZFailOp = bindState<StencilOperation>(States::PROPERTY_STENCIL_ZFAIL_OP, stateBindings);
-    _stencilZPassOp = bindState<StencilOperation>(States::PROPERTY_STENCIL_ZPASS_OP, stateBindings);
-    _scissorTest = bindState<bool>(States::PROPERTY_SCISSOR_TEST, stateBindings);
-    _scissorBox = bindState<math::ivec4>(States::PROPERTY_SCISSOR_BOX, stateBindings);
-    _target = bindState<TextureSampler>(States::PROPERTY_TARGET, stateBindings);
+    _priority = bindState<float>(States::PROPERTY_PRIORITY, stateBindings, defaultValues);
+    _zSorted = bindState<bool>(States::PROPERTY_ZSORTED, stateBindings, defaultValues);
+    _blendingSourceFactor = bindState<Blending::Source>(States::PROPERTY_BLENDING_SOURCE, stateBindings, defaultValues);
+    _blendingDestinationFactor = bindState<Blending::Destination>(States::PROPERTY_BLENDING_DESTINATION, stateBindings, defaultValues);
+    _colorMask = bindState<bool>(States::PROPERTY_COLOR_MASK, stateBindings, defaultValues);
+    _depthMask = bindState<bool>(States::PROPERTY_DEPTH_MASK, stateBindings, defaultValues);
+    _depthFunc = bindState<CompareMode>(States::PROPERTY_DEPTH_FUNCTION, stateBindings, defaultValues);
+    _triangleCulling = bindState<TriangleCulling>(States::PROPERTY_TRIANGLE_CULLING, stateBindings, defaultValues);
+    _stencilFunction = bindState<CompareMode>(States::PROPERTY_STENCIL_FUNCTION, stateBindings, defaultValues);
+    _stencilReference = bindState<int>(States::PROPERTY_STENCIL_REFERENCE, stateBindings, defaultValues);
+    _stencilMask = bindState<uint>(States::PROPERTY_STENCIL_MASK, stateBindings, defaultValues);
+    _stencilFailOp = bindState<StencilOperation>(States::PROPERTY_STENCIL_FAIL_OP, stateBindings, defaultValues);
+    _stencilZFailOp = bindState<StencilOperation>(States::PROPERTY_STENCIL_ZFAIL_OP, stateBindings, defaultValues);
+    _stencilZPassOp = bindState<StencilOperation>(States::PROPERTY_STENCIL_ZPASS_OP, stateBindings, defaultValues);
+    _scissorTest = bindState<bool>(States::PROPERTY_SCISSOR_TEST, stateBindings, defaultValues);
+    _scissorBox = bindState<math::ivec4>(States::PROPERTY_SCISSOR_BOX, stateBindings, defaultValues);
+    _target = bindState<TextureSampler>(States::PROPERTY_TARGET, stateBindings, defaultValues);
 }
 
 void

@@ -227,6 +227,13 @@ namespace minko
                 return _zSortNeeded;
             }
 
+			inline
+			const TextureSampler&
+			target()
+			{
+				return *_target;
+			}
+
             void
             bind(std::shared_ptr<Program> program);
 
@@ -238,6 +245,10 @@ namespace minko
             bindUniform(const ProgramInputs::UniformInput&          input,
                         const std::map<std::string, data::Binding>& uniformBindings,
                         const data::Store&                          defaultValues);
+
+			void
+            bindStates(const std::map<std::string, data::Binding>&	stateBindings,
+					   const data::Store&							defaultValues);
 
             math::vec3
             getEyeSpacePosition();
@@ -258,9 +269,6 @@ namespace minko
 			void
 			bindIndexBuffer();
 
-			void
-            bindStates();
-
             data::Store&
             getStore(data::Binding::Source source);
 
@@ -275,13 +283,13 @@ namespace minko
 
             template <typename T>
             T*
-            bindState(const std::string&        stateName,
-                      const data::BindingMap&   stateBindings)
+            bindState(const std::string&        					stateName,
+					  const std::map<std::string, data::Binding>&   bindings,
+					  const data::Store&                            defaultValues)
             {
-                auto& bindings = stateBindings.bindings;
-
+				// FIXME: handle errors like in bindUniform()
                 if (bindings.count(stateName) == 0)
-                    return stateBindings.defaultValues.getUnsafePointer<T>(stateName);
+                    return defaultValues.getUnsafePointer<T>(stateName);
 
                 const auto& binding = bindings.at(stateName);
                 auto& store = getStore(binding.source);
@@ -290,7 +298,7 @@ namespace minko
                 );
 
                 if (unsafePointer == nullptr)
-                    return stateBindings.defaultValues.getUnsafePointer<T>(stateName);
+                    return defaultValues.getUnsafePointer<T>(stateName);
 
                 return unsafePointer;
             }
