@@ -8,22 +8,38 @@ clang_complete.generate = function(prj)
     local marked = {}
     local f = io.open(clang_complete, "w")
 
+    if os.is64bit() then
+        f:write("-m64\n")
+    end
+
     for cfg in premake.project.eachconfig(prj) do
-        for _, includedir in ipairs(cfg.includedirs) do
-            if not marked[includedir] then
-                f:write("-I" .. includedir .. "\n")
-                marked[includedir] = includedir
+        if table.contains(cfg.terms, "release") then
+            for _, includedir in ipairs(cfg.includedirs) do
+                if not marked[includedir] then
+                    f:write("-I" .. includedir .. "\n")
+                    marked[includedir] = includedir
+                end
             end
-        end
 
-        for _, buildoption in ipairs(cfg.buildoptions) do
-            f:write(buildoption .. "\n")
-        end
+            for _, buildoption in ipairs(cfg.buildoptions) do
+                if not marked[buildoption] then
+                    f:write(buildoption .. "\n")
+                    marked[buildoption] = buildoption
+                end
+            end
 
-        for _, define in ipairs(cfg.defines) do
-            if not marked[define] then
-                f:write("-D" .. define .. "\n")
-                marked[define] = define
+            for _, buildoption in ipairs(premake.tools.gcc.cxxflags.system[os.get()]) do
+                if not marked[buildoption] then
+                    f:write(buildoption .. "\n")
+                    marked[buildoption] = buildoption
+                end
+            end
+
+            for _, define in ipairs(cfg.defines) do
+                if not marked[define] then
+                    f:write("-D" .. define .. "\n")
+                    marked[define] = define
+                end
             end
         end
     end
