@@ -28,7 +28,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/input/SDLMouse.hpp"
 #include "minko/input/SDLJoystick.hpp"
 #include "minko/input/SDLTouch.hpp"
-#include "minko/SDLBackend.hpp"
 
 #if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
 # include "minko/file/FileProtocolWorker.hpp"
