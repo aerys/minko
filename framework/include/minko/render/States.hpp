@@ -102,8 +102,6 @@ namespace minko
 
             States(const States& states);
 
-            States(std::shared_ptr<data::Provider> data);
-
             void
             resetDefaultValues();
 
@@ -382,6 +380,8 @@ namespace minko
             target(const TextureSampler& target)
             {
                 _data->set(PROPERTY_TARGET, target);
+
+                return *this;
             }
         };
 	}

@@ -19,6 +19,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/States.hpp"
 
+#include "minko/render/Priority.hpp"
+
 using namespace minko;
 using namespace minko::render;
 
@@ -40,7 +42,7 @@ const std::string           States::PROPERTY_SCISSOR_TEST           = "scissorTe
 const std::string           States::PROPERTY_SCISSOR_BOX            = "scissorBox";
 const std::string           States::PROPERTY_TARGET                 = "target";
 
-const float				    States::DEFAULT_PRIORITY                = 0.f;
+const float				    States::DEFAULT_PRIORITY                = Priority::OPAQUE;
 const bool					States::DEFAULT_ZSORTED                 = false;
 const Blending::Source		States::DEFAULT_BLENDING_SOURCE         = Blending::Source::ONE;
 const Blending::Destination States::DEFAULT_BLENDING_DESTINATION    = Blending::Destination::ZERO;
@@ -117,10 +119,6 @@ States::States(float					priority,
     this->scissorBox(scissorBox);
     this->target(target);
 }
-
-States::States(std::shared_ptr<data::Provider> data) :
-    _data(data)
-{}
 
 States::States(const States& states) :
     _data(data::Provider::create(states._data))
