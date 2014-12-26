@@ -273,7 +273,7 @@ namespace minko
             getStore(data::Binding::Source source);
 
             data::ResolvedBinding*
-            resolveBinding(const ProgramInputs::AbstractInput&          input,
+            resolveBinding(const std::string&          					inputName,
                            const std::map<std::string, data::Binding>&  bindings);
 
 			void
@@ -288,6 +288,7 @@ namespace minko
 					  const data::Store&                            defaultValues)
             {
 				// FIXME: handle errors like in bindUniform()
+				// FIXME: call resolveBinding
                 if (bindings.count(stateName) == 0)
                     return defaultValues.getUnsafePointer<T>(stateName);
 

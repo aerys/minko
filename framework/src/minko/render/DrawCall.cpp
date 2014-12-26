@@ -123,7 +123,7 @@ DrawCall::bindUniform(ConstUniformInputRef                          input,
                       const std::map<std::string, data::Binding>&   uniformBindings,
                       const data::Store&                            defaultValues)
 {
-    data::ResolvedBinding* binding = resolveBinding(input, uniformBindings);
+    data::ResolvedBinding* binding = resolveBinding(input.name, uniformBindings);
 
     if (binding == nullptr)
     {
@@ -212,7 +212,7 @@ DrawCall::setUniformValueFromStore(const ProgramInputs::UniformInput&   input,
             break;
         case ProgramInputs::Type::sampler2d:
             _samplers.push_back({
-                _program->setTextureNames().size() + _samplers.size(),
+                static_cast<uint>(_program->setTextureNames().size() + _samplers.size()),
                 store.getPointer<TextureSampler>(propertyName)->id,
                 input.location
             });
@@ -247,7 +247,7 @@ DrawCall::bindAttribute(ConstAttrInputRef       input,
     const auto& attr = store.getPointer<VertexAttribute>(propertyName);
 
     _attributes.push_back({
-        _program->setAttributeNames().size() + _attributes.size(),
+        static_cast<uint>(_program->setAttributeNames().size() + _attributes.size()),
         input.location,
         attr->resourceId,
         attr->size,
@@ -284,11 +284,10 @@ DrawCall::render(AbstractContext::Ptr context, AbstractTexture::Ptr renderTarget
 {
     context->setProgram(_program->id());
 
-    std::cout << _program->name() << ", " <<  _target->id << std::endl;
     if (_target && _target->id != nullptr)
     {
-        std::cout << "render to texture " << *_target->id << std::endl;
         context->setRenderToTexture(*_target->id, true);
+        context->clear();
     }
     else
         context->setRenderToBackBuffer();
@@ -354,11 +353,11 @@ DrawCall::render(AbstractContext::Ptr context, AbstractTexture::Ptr renderTarget
 }
 
 data::ResolvedBinding*
-DrawCall::resolveBinding(const ProgramInputs::AbstractInput&            input,
+DrawCall::resolveBinding(const std::string&                             inputName,
                          const std::map<std::string, data::Binding>&    bindings)
 {
     bool isArray = false;
-    std::string bindingName = input.name;
+    std::string bindingName = inputName;
     auto pos = bindingName.find_first_of('[');
 
     if (pos != std::string::npos)
@@ -383,7 +382,7 @@ DrawCall::resolveBinding(const ProgramInputs::AbstractInput&            input,
 
     // FIXME: handle per-fields bindings instead of using the raw uniform suffix
     if (isArray)
-        propertyName += input.name.substr(pos);
+        propertyName += inputName.substr(pos);
 
     return new data::ResolvedBinding(binding, propertyName, store);
 }
