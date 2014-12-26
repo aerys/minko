@@ -275,10 +275,15 @@ TEST_F(EffectParserTest, StatesTarget)
 
     ASSERT_NE(fx, nullptr);
     ASSERT_NE(fx->techniques().at("default")[0]->states().target(), States::DEFAULT_TARGET);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().target(), assets->texture("test-render-target")->sampler());
-    ASSERT_NE(assets->texture("test-render-target"), nullptr);
-    ASSERT_EQ(assets->texture("test-render-target")->width(), 1024);
-    ASSERT_EQ(assets->texture("test-render-target")->height(), 1024);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().target(), assets->texture("test-render-target0")->sampler());
+    ASSERT_NE(assets->texture("test-render-target0"), nullptr);
+    ASSERT_EQ(assets->texture("test-render-target0")->width(), 1024);
+    ASSERT_EQ(assets->texture("test-render-target0")->height(), 1024);
+    ASSERT_NE(fx->techniques().at("default")[1]->states().target(), States::DEFAULT_TARGET);
+    ASSERT_EQ(fx->techniques().at("default")[1]->states().target(), assets->texture("test-render-target1")->sampler());
+    ASSERT_NE(assets->texture("test-render-target1"), nullptr);
+    ASSERT_EQ(assets->texture("test-render-target1")->width(), 2048);
+    ASSERT_EQ(assets->texture("test-render-target1")->height(), 1024);
 }
 
 /*** States bindings ***/
@@ -531,4 +536,198 @@ TEST_F(EffectParserTest, OneUniformBindingAndDefault)
     ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().bindings.at("uDiffuseColor").propertyName, "diffuseColor");
     ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().bindings.at("uDiffuseColor").source, data::Binding::Source::TARGET);
     ASSERT_TRUE(fx->techniques().at("default")[0]->uniformBindings().defaultValues.hasProperty("uDiffuseColor"));
+}
+
+TEST_F(EffectParserTest, MultiplePassesHaveDifferentStateData)
+{
+    auto fx = MinkoTests::loadEffect("effect/MultiplePasses.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 3);
+    ASSERT_NE(
+        &fx->techniques().at("default")[0]->stateBindings().bindings,
+        &fx->techniques().at("default")[1]->stateBindings().bindings
+    );
+    ASSERT_NE(
+        &fx->techniques().at("default")[0]->stateBindings().defaultValues,
+        &fx->techniques().at("default")[1]->stateBindings().defaultValues
+    );
+    ASSERT_NE(
+        &fx->techniques().at("default")[0]->stateBindings().defaultValues.providers().front(),
+        &fx->techniques().at("default")[1]->stateBindings().defaultValues.providers().front()
+    );
+    ASSERT_NE(
+        &fx->techniques().at("default")[0]->stateBindings().bindings,
+        &fx->techniques().at("default")[2]->stateBindings().bindings
+    );
+    ASSERT_NE(
+        &fx->techniques().at("default")[0]->stateBindings().defaultValues,
+        &fx->techniques().at("default")[2]->stateBindings().defaultValues
+    );
+    ASSERT_NE(
+        &fx->techniques().at("default")[0]->stateBindings().defaultValues.providers().front(),
+        &fx->techniques().at("default")[2]->stateBindings().defaultValues.providers().front()
+    );
+    ASSERT_NE(
+        &fx->techniques().at("default")[1]->stateBindings().bindings,
+        &fx->techniques().at("default")[2]->stateBindings().bindings
+    );
+    ASSERT_NE(
+        &fx->techniques().at("default")[1]->stateBindings().defaultValues,
+        &fx->techniques().at("default")[2]->stateBindings().defaultValues
+    );
+    ASSERT_NE(
+        &fx->techniques().at("default")[1]->stateBindings().defaultValues.providers().front(),
+        &fx->techniques().at("default")[2]->stateBindings().defaultValues.providers().front()
+    );
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().defaultValues.providers().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[1]->stateBindings().defaultValues.providers().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[2]->stateBindings().defaultValues.providers().size(), 1);
+}
+
+TEST_F(EffectParserTest, MultiplePassesHaveDifferentUniformData)
+{
+    auto fx = MinkoTests::loadEffect("effect/MultiplePasses.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 3);
+    ASSERT_NE(
+        &fx->techniques().at("default")[0]->uniformBindings().bindings,
+        &fx->techniques().at("default")[1]->uniformBindings().bindings
+    );
+    ASSERT_NE(
+        &fx->techniques().at("default")[0]->uniformBindings().defaultValues,
+        &fx->techniques().at("default")[1]->uniformBindings().defaultValues
+    );
+    ASSERT_NE(
+        fx->techniques().at("default")[0]->uniformBindings().defaultValues.providers().front(),
+        fx->techniques().at("default")[1]->uniformBindings().defaultValues.providers().front()
+    );
+    ASSERT_NE(
+        &fx->techniques().at("default")[0]->uniformBindings().bindings,
+        &fx->techniques().at("default")[2]->uniformBindings().bindings
+    );
+    ASSERT_NE(
+        &fx->techniques().at("default")[0]->uniformBindings().defaultValues,
+        &fx->techniques().at("default")[2]->uniformBindings().defaultValues
+    );
+    ASSERT_NE(
+        fx->techniques().at("default")[0]->uniformBindings().defaultValues.providers().front(),
+        fx->techniques().at("default")[2]->uniformBindings().defaultValues.providers().front()
+    );
+    ASSERT_NE(
+        &fx->techniques().at("default")[1]->uniformBindings().bindings,
+        &fx->techniques().at("default")[2]->uniformBindings().bindings
+    );
+    ASSERT_NE(
+        &fx->techniques().at("default")[1]->uniformBindings().defaultValues,
+        &fx->techniques().at("default")[2]->uniformBindings().defaultValues
+    );
+    ASSERT_NE(
+        fx->techniques().at("default")[1]->uniformBindings().defaultValues.providers().front(),
+        fx->techniques().at("default")[2]->uniformBindings().defaultValues.providers().front()
+    );
+
+    ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().defaultValues.providers().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[1]->uniformBindings().defaultValues.providers().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[2]->uniformBindings().defaultValues.providers().size(), 1);
+}
+
+TEST_F(EffectParserTest, MultiplePassesHaveDifferentMacroData)
+{
+    auto fx = MinkoTests::loadEffect("effect/MultiplePasses.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 3);
+    ASSERT_NE(
+        &fx->techniques().at("default")[0]->macroBindings().bindings,
+        &fx->techniques().at("default")[1]->macroBindings().bindings
+    );
+    ASSERT_NE(
+        &fx->techniques().at("default")[0]->macroBindings().defaultValues,
+        &fx->techniques().at("default")[1]->macroBindings().defaultValues
+    );
+    ASSERT_NE(
+        fx->techniques().at("default")[0]->macroBindings().defaultValues.providers().front(),
+        fx->techniques().at("default")[1]->macroBindings().defaultValues.providers().front()
+    );
+    ASSERT_NE(
+        &fx->techniques().at("default")[0]->macroBindings().bindings,
+        &fx->techniques().at("default")[2]->macroBindings().bindings
+    );
+    ASSERT_NE(
+        &fx->techniques().at("default")[0]->macroBindings().defaultValues,
+        &fx->techniques().at("default")[2]->macroBindings().defaultValues
+    );
+    ASSERT_NE(
+        fx->techniques().at("default")[0]->macroBindings().defaultValues.providers().front(),
+        fx->techniques().at("default")[2]->macroBindings().defaultValues.providers().front()
+    );
+    ASSERT_NE(
+        &fx->techniques().at("default")[1]->macroBindings().bindings,
+        &fx->techniques().at("default")[2]->macroBindings().bindings
+    );
+    ASSERT_NE(
+        &fx->techniques().at("default")[1]->macroBindings().defaultValues,
+        &fx->techniques().at("default")[2]->macroBindings().defaultValues
+    );
+    ASSERT_NE(
+        fx->techniques().at("default")[1]->macroBindings().defaultValues.providers().front(),
+        fx->techniques().at("default")[2]->macroBindings().defaultValues.providers().front()
+    );
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.providers().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[1]->macroBindings().defaultValues.providers().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[2]->macroBindings().defaultValues.providers().size(), 1);
+}
+
+TEST_F(EffectParserTest, MultiplePassesHaveDifferentAttributeData)
+{
+    auto fx = MinkoTests::loadEffect("effect/MultiplePasses.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 3);
+    ASSERT_NE(
+        &fx->techniques().at("default")[0]->attributeBindings().bindings,
+        &fx->techniques().at("default")[1]->attributeBindings().bindings
+    );
+    ASSERT_NE(
+        &fx->techniques().at("default")[0]->attributeBindings().defaultValues,
+        &fx->techniques().at("default")[1]->attributeBindings().defaultValues
+    );
+    ASSERT_NE(
+        fx->techniques().at("default")[0]->attributeBindings().defaultValues.providers().front(),
+        fx->techniques().at("default")[1]->attributeBindings().defaultValues.providers().front()
+    );
+    ASSERT_NE(
+        &fx->techniques().at("default")[0]->attributeBindings().bindings,
+        &fx->techniques().at("default")[2]->attributeBindings().bindings
+    );
+    ASSERT_NE(
+        &fx->techniques().at("default")[0]->attributeBindings().defaultValues,
+        &fx->techniques().at("default")[2]->attributeBindings().defaultValues
+    );
+    ASSERT_NE(
+        fx->techniques().at("default")[0]->attributeBindings().defaultValues.providers().front(),
+        fx->techniques().at("default")[2]->attributeBindings().defaultValues.providers().front()
+    );
+    ASSERT_NE(
+        &fx->techniques().at("default")[1]->attributeBindings().bindings,
+        &fx->techniques().at("default")[2]->attributeBindings().bindings
+    );
+    ASSERT_NE(
+        &fx->techniques().at("default")[1]->attributeBindings().defaultValues,
+        &fx->techniques().at("default")[2]->attributeBindings().defaultValues
+    );
+    ASSERT_NE(
+        fx->techniques().at("default")[1]->attributeBindings().defaultValues.providers().front(),
+        fx->techniques().at("default")[2]->attributeBindings().defaultValues.providers().front()
+    );
+    ASSERT_EQ(fx->techniques().at("default")[0]->attributeBindings().defaultValues.providers().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[1]->attributeBindings().defaultValues.providers().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default")[2]->attributeBindings().defaultValues.providers().size(), 1);
+
 }
