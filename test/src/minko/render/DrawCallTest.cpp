@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/data/Provider.hpp"
 #include "minko/data/ResolvedBinding.hpp"
+#include "minko/render/States.hpp"
 
 using namespace minko;
 using namespace minko::render;
@@ -336,18 +337,36 @@ TEST_F(DrawCallTest, OneBoolUniformWithVariableBindingFromRootData)
     ASSERT_EQ(drawCall.boundBoolUniforms()[0].size, 1);
 }
 
+TEST_F(DrawCallTest, RenderTargetDefaultValue)
+{
+    data::Store rootData;
+    data::Store rendererData;
+    data::Store targetData;
+    data::Store defaultValues;
+    States states;
+
+    defaultValues.addProvider(states.data());
+
+    DrawCall drawCall(nullptr, {}, rootData, rendererData, targetData);
+
+    drawCall.bindStates({}, defaultValues);
+
+    ASSERT_EQ(drawCall.target(), States::DEFAULT_TARGET);
+}
+
 TEST_F(DrawCallTest, RenderTargetFromDefaultValues)
 {
     data::Store rootData;
     data::Store rendererData;
     data::Store targetData;
     data::Store defaultValues;
+    States states;
 
     auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
-    auto p = data::Provider::create();
 
-    p->set(States::PROPERTY_TARGET, texture->sampler());
-    defaultValues.addProvider(p);
+    texture->upload();
+    states.target(texture->sampler());
+    defaultValues.addProvider(states.data());
 
     DrawCall drawCall(nullptr, {}, rootData, rendererData, targetData);
 
@@ -355,6 +374,7 @@ TEST_F(DrawCallTest, RenderTargetFromDefaultValues)
 
     ASSERT_NE(drawCall.target(), States::DEFAULT_TARGET);
     ASSERT_EQ(drawCall.target(), texture->sampler());
+    ASSERT_GT(*drawCall.target().id, 0);
 }
 
 TEST_F(DrawCallTest, RenderTargetBindingFromTargetData)
@@ -367,6 +387,7 @@ TEST_F(DrawCallTest, RenderTargetBindingFromTargetData)
     auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
     auto p = data::Provider::create();
 
+    texture->upload();
     p->set("renderTargetTest", texture->sampler());
     targetData.addProvider(p);
 
@@ -377,4 +398,5 @@ TEST_F(DrawCallTest, RenderTargetBindingFromTargetData)
 
     ASSERT_NE(drawCall.target(), States::DEFAULT_TARGET);
     ASSERT_EQ(drawCall.target(), texture->sampler());
+    ASSERT_GT(*drawCall.target().id, 0);
 }
