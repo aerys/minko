@@ -564,9 +564,15 @@ EffectParser::parseUniforms(const Json::Value& node, const Scope& scope, Uniform
 
     if (uniformsNode.isObject())
     {
-        auto defaultValuesProvider = data::Provider::create();
+        data::Provider::Ptr defaultValuesProvider;
 
-        uniforms.bindingMap.defaultValues.addProvider(defaultValuesProvider);
+		if (uniforms.bindingMap.defaultValues.providers().size() != 0)
+			defaultValuesProvider = uniforms.bindingMap.defaultValues.providers().front();
+		else
+		{
+			defaultValuesProvider = data::Provider::create();
+        	uniforms.bindingMap.defaultValues.addProvider(defaultValuesProvider);
+		}
 
         for (auto uniformName : uniformsNode.getMemberNames())
         {
@@ -857,7 +863,7 @@ EffectParser::parseTarget(const Json::Value& node, const Scope& scope)
 
 	if (targetNode.isObject())
 	{
-		auto nameValue  = targetNode.get("name", 0);
+		auto nameValue = targetNode.get("name", 0);
 
 		if (nameValue.isString())
 			targetName = nameValue.asString();
@@ -907,7 +913,6 @@ EffectParser::parseTarget(const Json::Value& node, const Scope& scope)
 		}
 
 		target->upload();
-
 	}
 	else if (targetNode.isString())
 	{
