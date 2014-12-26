@@ -44,7 +44,7 @@ DrawCallPool::addDrawCalls(Effect::Ptr                                          
                            data::Store&                                         targetData)
 {
     const auto& technique = effect->technique(techniqueName);
-    
+
     for (const auto& pass : technique)
     {
         _drawCalls.emplace_back(pass, variables, rootData, rendererData, targetData);
@@ -110,7 +110,7 @@ DrawCallPool::watchProgramSignature(DrawCall&                       drawCall,
         else
         {
             auto propertyName = Store::getActualPropertyName(drawCall.variables(), macroBinding.propertyName);
-            
+
             if (store.hasProperty(propertyName))
             {
                 addMacroCallback(
@@ -199,7 +199,7 @@ DrawCallPool::macroPropertyAddedHandler(const data::MacroBinding&   macroBinding
 }
 
 void
-DrawCallPool::macroPropertyRemovedHandler(const data::MacroBinding&     macroBinding, 
+DrawCallPool::macroPropertyRemovedHandler(const data::MacroBinding&     macroBinding,
                                           data::Store&                  store,
                                           const std::list<DrawCall*>&   drawCalls)
 {
@@ -241,7 +241,7 @@ DrawCallPool::unwatchProgramSignature(DrawCall&                     drawCall,
 
         if (drawCalls.size() == 0)
             _macroToDrawCalls.erase(bindingKey);
-        
+
         removeMacroCallback(bindingKey);
     }
 }
@@ -262,6 +262,7 @@ DrawCallPool::initializeDrawCall(DrawCall& drawCall)
 
     // bind uniforms
     bindUniforms(pass->uniformBindings(), program, drawCall);
+    drawCall.bindStates(pass->stateBindings().bindings, pass->stateBindings().defaultValues);
 
     // FIXME: avoid const_cast
     if (programAndSignature.second != nullptr)
@@ -289,7 +290,7 @@ DrawCallPool::uniformBindingPropertyAddedHandler(DrawCall&                      
     data::ResolvedBinding* resolvedBinding = drawCall.bindUniform(
         input, uniformBindingMap.bindings, uniformBindingMap.defaultValues
     );
-    
+
     if (resolvedBinding != nullptr)
     {
         auto& propertyName = resolvedBinding->propertyName;
