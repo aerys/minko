@@ -56,7 +56,7 @@ Store::Store(const Store& store, bool deepCopy) :
     if (deepCopy)
     {
         std::list<data::Provider::Ptr> added;
-        
+
         for (auto collection : store._collections)
         {
             added.insert(added.end(), collection->items().begin(), collection->items().end());
@@ -113,10 +113,10 @@ Store::removeCollection(std::shared_ptr<Collection> collection)
 
 void
 Store::executePropertySignal(Provider::Ptr                                        provider,
-                                 Collection::Ptr                                      collection,
-                                 const std::string&                                   propertyName,
-                                 const PropertyChangedSignal&                         anyChangedSignal,
-                                 const std::map<std::string, PropertyChangedSignal>&  propertyNameToSignal)
+                             Collection::Ptr                                      collection,
+                             const std::string&                                   propertyName,
+                             const PropertyChangedSignal&                         anyChangedSignal,
+                             const std::map<std::string, PropertyChangedSignal>&  propertyNameToSignal)
 {
     anyChangedSignal.execute(*this, provider, propertyName);
     if (collection)
@@ -383,7 +383,7 @@ Store::addProviderToCollection(std::shared_ptr<data::Provider> provider,
 
 void
 Store::removeProviderFromCollection(std::shared_ptr<data::Provider> provider,
-                                        const std::string&              collectionName)
+                                    const std::string&              collectionName)
 {
     auto collectionIt = std::find_if(_collections.begin(), _collections.end(), [&](data::Collection::Ptr c)
     {
