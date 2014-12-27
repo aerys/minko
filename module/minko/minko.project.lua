@@ -112,7 +112,8 @@ minko.project.application = function(name)
 		links {
 			"minko-framework",
 			"GL",
-			"m"
+			"m",
+			"pthread"
 		}
 		prelinkcommands {
 			minko.action.copy(minko.sdk.path("/framework/asset")),
@@ -121,6 +122,9 @@ minko.project.application = function(name)
 	configuration { "linux64", "debug" }
 		libdirs {
 			minko.sdk.path("/framework/bin/linux64/debug")
+		}
+		prelinkcommands {
+			minko.action.copy("asset"),
 		}
 
 	configuration { "linux64", "release" }
@@ -136,7 +140,8 @@ minko.project.application = function(name)
 		links {
 			"minko-framework",
 			"GL",
-			"m"
+			"m",
+			"pthread"
 		}
 		prelinkcommands {
 			minko.action.copy(minko.sdk.path("/framework/asset")),
@@ -145,6 +150,9 @@ minko.project.application = function(name)
 	configuration { "linux32", "debug" }
 		libdirs {
 			minko.sdk.path("/framework/bin/linux32/debug")
+		}
+		prelinkcommands {
+			minko.action.copy("asset"),
 		}
 
 	configuration { "linux32", "release" }
