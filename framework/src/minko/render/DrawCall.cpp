@@ -280,17 +280,30 @@ DrawCall::bindStates(const std::map<std::string, data::Binding>&    stateBinding
 }
 
 void
-DrawCall::render(AbstractContext::Ptr context, AbstractTexture::Ptr renderTarget) const
+DrawCall::render(AbstractContext::Ptr   context,
+                 AbstractTexture::Ptr   renderTarget,
+                 const math::ivec4&     viewport) const
 {
     context->setProgram(_program->id());
 
-    if (_target && _target->id != nullptr)
+    if (_target && _target->id)
     {
-        context->setRenderToTexture(*_target->id, true);
-        context->clear();
+        if (*_target->id != context->renderTarget())
+        {
+            context->setRenderToTexture(*_target->id, true);
+            context->clear();
+        }
     }
     else
-        context->setRenderToBackBuffer();
+    {
+        if (renderTarget)
+            context->setRenderToTexture(renderTarget->id(), true);
+        else
+            context->setRenderToBackBuffer();
+
+        if (viewport.z >= 0 && viewport.w >= 0)
+            context->configureViewport(viewport.x, viewport.y, viewport.z, viewport.w);
+    }
 
     for (const auto& u : _uniformBool)
     {

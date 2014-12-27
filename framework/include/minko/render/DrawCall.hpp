@@ -239,7 +239,8 @@ namespace minko
 
 			void
 			render(std::shared_ptr<AbstractContext>  context,
-                   AbsTexturePtr                     renderTarget) const;
+                   AbsTexturePtr                     renderTarget,
+				   const math::ivec4&				 viewport) const;
 
             data::ResolvedBinding*
             bindUniform(const ProgramInputs::UniformInput&          input,
