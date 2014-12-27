@@ -284,9 +284,10 @@ Renderer::addSurface(Surface::Ptr surface)
     variables["effectUuid"] = effectUuid;
 
     _surfaceToDrawCallIterator[surface] = _drawCallPool.addDrawCalls(
+		&surface->layoutMask(),
         _effect ? _effect : surface->effect(),
-        variables,
         surface->technique(),
+        variables,
         surface->target()->root()->data(),
         target()->data(),
         surface->target()->data()
@@ -384,8 +385,7 @@ Renderer::render(render::AbstractContext::Ptr	context,
 
     _drawCallPool.update();
     for (const auto& drawCall : _drawCallPool.drawCalls())
-        // FIXME: render the draw call only if it's the right layout
-	    //if ((drawCall->layouts() & layoutMask()) != 0)
+	    if ((drawCall.layout() & layoutMask()) != 0)
 		    drawCall.render(context, rt, _viewportBox);
 
     _beforePresent->execute(std::static_pointer_cast<Renderer>(shared_from_this()));
