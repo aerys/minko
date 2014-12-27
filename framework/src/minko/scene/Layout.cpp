@@ -23,13 +23,13 @@ using namespace minko;
 using namespace minko::scene;
 
 const Layout BuiltinLayout::DEFAULT             = 1 << 0;
-const Layout BuiltinLayout::DEBUG               = 1 << 1;
+const Layout BuiltinLayout::DEBUG_ONLY          = 1 << 1;
 const Layout BuiltinLayout::STATIC              = 1 << 2;
 const Layout BuiltinLayout::IGNORE_RAYCASTING   = 1 << 3;
-const Layout BuiltinLayout::_RESERVED_2         = 1 << 4;
-const Layout BuiltinLayout::_RESERVED_3         = 1 << 5;
-const Layout BuiltinLayout::_RESERVED_4         = 1 << 6;
-const Layout BuiltinLayout::_RESERVED_5         = 1 << 7;
+const Layout BuiltinLayout::IGNORE_CULLING      = 1 << 4;
+const Layout BuiltinLayout::_RESERVED_1         = 1 << 5;
+const Layout BuiltinLayout::_RESERVED_2         = 1 << 6;
+const Layout BuiltinLayout::_RESERVED_3         = 1 << 7;
 
 const Layout LayoutMask::NOTHING                = 0;
 const Layout LayoutMask::EVERYTHING             = 0xffffffff;

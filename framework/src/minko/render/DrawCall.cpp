@@ -27,11 +27,13 @@ using namespace minko::render;
 const unsigned int	DrawCall::MAX_NUM_TEXTURES		            = 8;
 const unsigned int	DrawCall::MAX_NUM_VERTEXBUFFERS	            = 8;
 
-DrawCall::DrawCall(std::shared_ptr<Pass>  pass,
+DrawCall::DrawCall(const scene::Layout*   layout,
+                   std::shared_ptr<Pass>  pass,
                    const StringMap&       variables,
                    data::Store&           rootData,
                    data::Store&           rendererData,
                    data::Store&           targetData) :
+    _layout(layout),
     _pass(pass),
     _variables(variables),
     _rootData(rootData),

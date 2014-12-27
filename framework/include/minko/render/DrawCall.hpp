@@ -84,6 +84,7 @@ namespace minko
             typedef data::Store::PropertyChangedSignal::Slot        ChangedSlot;
 
 		private:
+			const scene::Layout*				_layout;
             std::shared_ptr<Pass>               _pass;
             data::Store&                        _rootData;
             data::Store&                        _rendererData;
@@ -124,11 +125,19 @@ namespace minko
             std::shared_ptr<DrawCallZSorter>                _zSorter;
             Signal<DrawCall*>::Ptr                          _zSortNeeded;
 		public:
-            DrawCall(std::shared_ptr<Pass>  pass,
+            DrawCall(const scene::Layout*	layout,
+					 std::shared_ptr<Pass>  pass,
                      const StringMap&       variables,
                      data::Store&           rootData,
                      data::Store&           rendererData,
                      data::Store&           targetData);
+
+			inline
+			const scene::Layout
+			layout() const
+			{
+				return *_layout;
+			}
 
             inline
             std::shared_ptr<Pass>

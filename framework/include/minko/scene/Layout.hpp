@@ -30,13 +30,13 @@ namespace minko
         struct BuiltinLayout
         {
             static const Layout DEFAULT;
-            static const Layout DEBUG;
+            static const Layout DEBUG_ONLY;
             static const Layout STATIC;
             static const Layout IGNORE_RAYCASTING;
             static const Layout IGNORE_CULLING;
+            static const Layout _RESERVED_1;
+            static const Layout _RESERVED_2;
             static const Layout _RESERVED_3;
-            static const Layout _RESERVED_4;
-            static const Layout _RESERVED_5;
         };
 
         struct LayoutMask

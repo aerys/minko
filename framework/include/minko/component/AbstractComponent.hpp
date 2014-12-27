@@ -79,7 +79,7 @@ namespace minko
 			}
 
 			virtual
-			scene::Layout
+			const scene::Layout&
 			layoutMask() const
 			{
 				return _layoutMask;
@@ -87,7 +87,7 @@ namespace minko
 
 			virtual
 			void
-            layoutMask(scene::Layout value)
+            layoutMask(const scene::Layout value)
 			{
 				if (_layoutMask != value)
 				{

@@ -77,11 +77,12 @@ namespace minko
             {
                 return _drawCalls;
             }
-			
+
             DrawCallIteratorPair
-            addDrawCalls(std::shared_ptr<Effect>                                effect,
-                         const std::unordered_map<std::string, std::string>&    variables,
+            addDrawCalls(const scene::Layout*                                   layout,
+						 std::shared_ptr<Effect>                                effect,
                          const std::string&                                     techniqueName,
+                         const std::unordered_map<std::string, std::string>&    variables,
                          data::Store&                                           rootData,
                          data::Store&                                           rendererData,
                          data::Store&                                           targetData);
@@ -135,7 +136,7 @@ namespace minko
 
             void
             initializeDrawCall(DrawCall& drawCall);
-            
+
             void
             addMacroCallback(const MacroBindingKey&     key,
                              PropertyChanged&           signal,

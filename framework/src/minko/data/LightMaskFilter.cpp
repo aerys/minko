@@ -57,9 +57,9 @@ LightMaskFilter::root(Node::Ptr root)
 		{
 			auto slot = _root->data().propertyChanged(n).connect(
                 [=](Store&, data::Provider::Ptr, const std::string&)
-                { 
-				    lightsChangedHandler(); 
-			    }, 
+                {
+				    lightsChangedHandler();
+			    },
 			    10.f
             );
 
@@ -83,8 +83,8 @@ LightMaskFilter::reset()
 bool
 LightMaskFilter::operator()(Provider::Ptr data)
 {
-	if (_root == nullptr 
-		|| currentSurface() == nullptr 
+	if (_root == nullptr
+		|| currentSurface() == nullptr
 		|| currentSurface()->target()->root() != _root)
 		return false;
 
@@ -99,8 +99,8 @@ LightMaskFilter::operator()(Provider::Ptr data)
 	if (foundLightIt == _providerToLight.end())
 		return true; // the specified provider does not belong to a light
 
-	auto	surfaceLayouts	= currentSurface()->target()->layout();
-	Layout	lightMask		= foundLightIt->second->layoutMask();
+	auto surfaceLayouts	= currentSurface()->target()->layout();
+	const Layout lightMask = foundLightIt->second->layoutMask();
 
 	return (surfaceLayouts & lightMask) != 0;
 }

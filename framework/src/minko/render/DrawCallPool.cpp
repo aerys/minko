@@ -36,9 +36,10 @@ DrawCallPool::DrawCallPool() :
 }
 
 DrawCallPool::DrawCallIteratorPair
-DrawCallPool::addDrawCalls(Effect::Ptr                                          effect,
-                           const std::unordered_map<std::string, std::string>&  variables,
+DrawCallPool::addDrawCalls(const scene::Layout*                                 layout,
+                           Effect::Ptr                                          effect,
                            const std::string&                                   techniqueName,
+                           const std::unordered_map<std::string, std::string>&  variables,
                            data::Store&                                         rootData,
                            data::Store&                                         rendererData,
                            data::Store&                                         targetData)
@@ -47,7 +48,7 @@ DrawCallPool::addDrawCalls(Effect::Ptr                                          
 
     for (const auto& pass : technique)
     {
-        _drawCalls.emplace_back(pass, variables, rootData, rendererData, targetData);
+        _drawCalls.emplace_back(layout, pass, variables, rootData, rendererData, targetData);
         initializeDrawCall(_drawCalls.back());
     }
 
