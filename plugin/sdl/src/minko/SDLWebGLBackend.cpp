@@ -29,6 +29,10 @@ using namespace minko;
 
 Canvas::Ptr currentCanvas;
 
+SDLWebGLBackend::SDLWebGLBackend()
+{
+}
+
 void
 emscriptenMainLoop()
 {

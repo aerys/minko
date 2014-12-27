@@ -225,3 +225,15 @@ TEST_F(ProviderTest, VertexAttributePointerConsistency2)
 
     ASSERT_EQ(ptr1, ptr2);
 }
+
+TEST_F(ProviderTest, CreateByCopy)
+{
+	auto p1 = Provider::create();
+
+	p1->set("test", 42.f);
+
+	auto p2 = Provider::create(p1);
+
+	ASSERT_EQ(p1->get<float>("test"), p2->get<float>("test"));
+	ASSERT_NE(p1->getUnsafePointer<float>("test"), p2->getUnsafePointer<float>("test"));
+}

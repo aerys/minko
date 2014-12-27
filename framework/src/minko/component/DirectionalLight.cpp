@@ -29,7 +29,7 @@ DirectionalLight::DirectionalLight(float diffuse, float specular) :
 }
 
 DirectionalLight::DirectionalLight(const DirectionalLight& directionalLight, const CloneOption& option) :
-AbstractDiscreteLight("directionalLights", directionalLight.diffuse(), directionalLight.specular())
+	AbstractDiscreteLight("directionalLight", directionalLight.diffuse(), directionalLight.specular())
 {
     updateModelToWorldMatrix(math::mat4(1.f));
 }

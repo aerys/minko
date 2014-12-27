@@ -94,7 +94,7 @@ EffectParser::initializeCompareFuncMap()
 	m["less_equal"]		= render::CompareMode::LESS_EQUAL;
 	m["never"]			= render::CompareMode::NEVER;
     m["not_equal"]      = render::CompareMode::NOT_EQUAL;
-    
+
 	return m;
 }
 
@@ -165,11 +165,10 @@ EffectParser::parse(const std::string&				    filename,
 
 	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1], root, false))
 		_error->execute(shared_from_this(), file::Error(resolvedFilename + ": " + reader.getFormattedErrorMessages()));
-    
-    int pos	= resolvedFilename.find_last_of("/\\");
 
 	_options = file::Options::create(options);
 
+    int pos	= resolvedFilename.find_last_of("/\\");
     if (pos != std::string::npos)
     {
         _options->includePaths().clear();
@@ -341,7 +340,7 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
         parseMacros(node, passScope, passScope.macroBlock);
         parseStates(node, passScope, passScope.stateBlock);
 
-        auto passName = "pass" + std::to_string(scope.passes.size());
+        auto passName = _effectName + "-pass" + std::to_string(scope.passes.size());
         auto nameNode = node.get("name", 0);
         if (nameNode.isString())
             passName = nameNode.asString();
@@ -352,7 +351,7 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
 
         passes.push_back(Pass::create(
             passName,
-            Program::create(_options->context(), vertexShader, fragmentShader),
+            Program::create(passName, _options->context(), vertexShader, fragmentShader),
             passScope.attributeBlock.bindingMap,
             passScope.uniformBlock.bindingMap,
             passScope.stateBlock.bindingMap,
@@ -536,7 +535,9 @@ EffectParser::parseAttributes(const Json::Value& node, const Scope& scope, Attri
         {
             auto attributeNode = attributesNode[attributeName];
 
-            parseBinding(attributeNode, scope, attributes.bindingMap.bindings[attributeName]);
+			data::Binding binding;
+            if (parseBinding(attributeNode, scope, binding))
+				attributes.bindingMap.bindings[attributeName] = binding;
 
             /*if (!attributeNode.get("default", 0).empty())
                 throw ParserError("Default values are not yet supported for attributes.");*/
@@ -563,15 +564,24 @@ EffectParser::parseUniforms(const Json::Value& node, const Scope& scope, Uniform
 
     if (uniformsNode.isObject())
     {
-        auto defaultValuesProvider = data::Provider::create();
+        data::Provider::Ptr defaultValuesProvider;
 
-        uniforms.bindingMap.defaultValues.addProvider(defaultValuesProvider);
+		if (uniforms.bindingMap.defaultValues.providers().size() != 0)
+			defaultValuesProvider = uniforms.bindingMap.defaultValues.providers().front();
+		else
+		{
+			defaultValuesProvider = data::Provider::create();
+        	uniforms.bindingMap.defaultValues.addProvider(defaultValuesProvider);
+		}
 
         for (auto uniformName : uniformsNode.getMemberNames())
         {
             auto uniformNode = uniformsNode[uniformName];
 
-            parseBinding(uniformNode, scope, uniforms.bindingMap.bindings[uniformName]);
+			data::Binding binding;
+            if (parseBinding(uniformNode, scope, binding))
+				uniforms.bindingMap.bindings[uniformName] = binding;
+
             parseDefaultValue(uniformNode, scope, uniformName, defaultValuesProvider);
         }
     }
@@ -593,8 +603,13 @@ EffectParser::parseMacros(const Json::Value& node, const Scope& scope, MacroBloc
         {
             auto macroNode = macrosNode[macroName];
 
-            parseBinding(macroNode, scope, macros.bindingMap.bindings[macroName]);
-            parseMacroBinding(macroNode, scope, macros.bindingMap.bindings[macroName]);
+			data::MacroBinding binding;
+			if (parseBinding(macroNode, scope, binding))
+			{
+            	parseMacroBinding(macroNode, scope, binding);
+				macros.bindingMap.bindings[macroName] = binding;
+			}
+
             parseDefaultValue(macroNode, scope, macroName, defaultValuesProvider);
         }
     }
@@ -616,7 +631,9 @@ EffectParser::parseStates(const Json::Value& node, const Scope& scope, StateBloc
 
             if (statesNode[stateName].isObject())
             {
-                parseBinding(statesNode[stateName], scope, stateBlock.bindingMap.bindings[stateName]);
+				data::Binding binding;
+                if (parseBinding(statesNode[stateName], scope, binding))
+					stateBlock.bindingMap.bindings[stateName] = binding;
             }
         }
 
@@ -676,16 +693,16 @@ EffectParser::parseStates(const Json::Value& node, const Scope& scope, StateBloc
         stateBlock.states.scissorTest(scissorTest);
         stateBlock.states.scissorBox(scissorBox);
 
-        // FIXME: handle sampler states & render target
-        //parseSamplerStates(statesNode, scope, samplerStates);
-        //target = parseTarget(statesNode, context, targets); // FIXME
+		auto target = parseTarget(statesNode, scope);
+		if (target)
+			stateBlock.states.target(target->sampler());
     }
     // FIXME: throw otherwise
 }
 
 void
 EffectParser::parseBlendingMode(const Json::Value&				node,
-                                const Scope&                   scope,
+                                const Scope&                    scope,
                                 render::Blending::Source&		srcFactor,
                                 render::Blending::Destination&	dstFactor)
 {
@@ -725,7 +742,7 @@ EffectParser::parseBlendingSource(const Json::Value&        node,
     if (blendingSourceNode.isString())
     {
         auto blendingSourceString = _blendFactorMap[blendingSourceNode.asString()];
-        
+
         srcFactor = static_cast<render::Blending::Source>(blendingSourceString);
     }
 }
@@ -835,6 +852,75 @@ EffectParser::parsePriority(const Json::Value&	node,
     }
 
     return ret;
+}
+
+AbstractTexture::Ptr
+EffectParser::parseTarget(const Json::Value& node, const Scope& scope)
+{
+	auto targetNode = node.get(States::PROPERTY_TARGET, 0);
+	AbstractTexture::Ptr target = nullptr;
+	std::string	targetName;
+
+	if (targetNode.isObject())
+	{
+		auto nameValue = targetNode.get("name", 0);
+
+		if (nameValue.isString())
+			targetName = nameValue.asString();
+
+		if (!targetNode.isMember("size") && !(targetNode.isMember("width") && targetNode.isMember("height")))
+			return nullptr;
+
+		auto width = 0;
+		auto height = 0;
+
+		if (targetNode.isMember("size"))
+			width = height = targetNode.get("size", 0).asUInt();
+		else
+		{
+			if (!targetNode.isMember("width") || !targetNode.isMember("height"))
+			{
+				_error->execute(
+					shared_from_this(),
+					file::Error(
+						_resolvedFilename
+						+ ": render target definition requires both \"width\" and \"height\" properties."
+					)
+				);
+			}
+
+			width = targetNode.get("width", 0).asUInt();
+			height = targetNode.get("height", 0).asUInt();
+		}
+
+		const bool isCubeTexture = targetNode.get("isCube", 0).isBool()
+			? targetNode.get("isCube", 0).asBool()
+			: false;
+
+		if (isCubeTexture)
+		{
+			target = CubeTexture::create(_options->context(), width, height, false, true);
+
+			if (targetName.length())
+				_assetLibrary->cubeTexture(targetName, std::static_pointer_cast<render::CubeTexture>(target));
+		}
+		else
+		{
+			target = Texture::create(_options->context(), width, height, false, true);
+
+			if (targetName.length())
+				_assetLibrary->texture(targetName, std::static_pointer_cast<render::Texture>(target));
+		}
+
+		target->upload();
+	}
+	else if (targetNode.isString())
+	{
+		targetName = targetNode.asString();
+		target = _assetLibrary->texture(targetName);
+	}
+
+	return target;
 }
 
 void
@@ -965,7 +1051,7 @@ EffectParser::parseSamplerStates(const Json::Value& node,
         }
 }
 
-void
+bool
 EffectParser::parseBinding(const Json::Value& node, const Scope& scope, Binding& binding)
 {
     binding.source = Binding::Source::TARGET;
@@ -973,6 +1059,8 @@ EffectParser::parseBinding(const Json::Value& node, const Scope& scope, Binding&
     if (node.isString())
     {
         binding.propertyName = node.asString();
+
+		return true;
     }
     else
     {
@@ -981,6 +1069,8 @@ EffectParser::parseBinding(const Json::Value& node, const Scope& scope, Binding&
         if (bindingNode.isString())
         {
             binding.propertyName = bindingNode.asString();
+
+			return true;
         }
         else if (bindingNode.isObject())
         {
@@ -1003,8 +1093,12 @@ EffectParser::parseBinding(const Json::Value& node, const Scope& scope, Binding&
                     binding.source = Binding::Source::ROOT;
             }
             // FIXME: throw otherwise
+
+			return true;
         }
     }
+
+	return false;
 }
 
 void

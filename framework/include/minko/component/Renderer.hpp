@@ -111,10 +111,10 @@ namespace minko
 
 			inline static
 			Ptr
-			create(uint					backgroundColor, 
-				   AbsTexturePtr		renderTarget = nullptr,
+			create(uint					backgroundColor,
+				   AbsTexturePtr		renderTarget 	= nullptr,
 				   EffectPtr			effect			= nullptr,
-				   float				priority		= 0.f, 
+				   float				priority		= 0.f,
 				   std::string			name			= "")
 			{
 				auto ctrl = std::shared_ptr<Renderer>(new Renderer(renderTarget, effect, priority));
@@ -191,7 +191,7 @@ namespace minko
 			}
 
 
-            inline 
+            inline
 			void viewport(const int x, const int y, const int w, const int h)
             {
 				_viewportBox.x = x;
@@ -285,7 +285,7 @@ namespace minko
 			/*const std::set<AbsFilterPtr>&
 			filters(data::BindingSource source) const
 			{
-				return 
+				return
 				source == data::BindingSource::TARGET
 				? _targetDataFilters
 				: source == data::BindingSource::RENDERER

@@ -38,7 +38,8 @@ DrawCall::DrawCall(std::shared_ptr<Pass>  pass,
     _rendererData(rendererData),
     _targetData(targetData),
     _zSorter(DrawCallZSorter::create(this)),
-    _zSortNeeded(Signal<DrawCall*>::create())
+    _zSortNeeded(Signal<DrawCall*>::create()),
+    _target(nullptr)
 {
     _zSorter->initialize(_targetData, _rendererData, _rootData);
 }
@@ -81,7 +82,7 @@ DrawCall::bind(std::shared_ptr<Program> program)
     _program = program;
 
     bindIndexBuffer();
-    bindStates();
+    // bindStates();
     //bindUniforms();
     bindAttributes();
 }
@@ -122,24 +123,52 @@ DrawCall::bindUniform(ConstUniformInputRef                          input,
                       const std::map<std::string, data::Binding>&   uniformBindings,
                       const data::Store&                            defaultValues)
 {
-    data::ResolvedBinding* binding = resolveBinding(input, uniformBindings);
-    std::string propertyName = binding->propertyName;
-    data::Store& store = binding->store;
+    data::ResolvedBinding* binding = resolveBinding(input.name, uniformBindings);
 
-    if ((binding == nullptr) || !store.hasProperty(propertyName))
+    if (binding == nullptr)
     {
         if (!defaultValues.hasProperty(input.name))
         {
-            throw std::runtime_error(
-                "The uniform \"" + input.name + "\" is bound to the \"" + propertyName
-                + "\" property but it's not defined and no default value was provided."
-            );
+            auto it = std::find(_program->setUniformNames().begin(), _program->setUniformNames().end(), input.name);
+
+            if (it == _program->setUniformNames().end())
+            {
+                throw std::runtime_error(
+                    "Program \"" + _program->name() + "\": the uniform \"" + input.name
+                    + "\" is not bound, has not been set and no default value was provided."
+                );
+            }
         }
 
-        propertyName = input.name;
-        store = defaultValues;
+        setUniformValueFromStore(input, input.name, defaultValues);
+    }
+    else
+    {
+        if (!binding->store.hasProperty(binding->propertyName))
+        {
+            if (!defaultValues.hasProperty(input.name))
+            {
+                throw std::runtime_error(
+                    "Program \"" + _program->name() + "\": the uniform \""
+                    + input.name + "\" is bound to the \"" + binding->propertyName
+                    + "\" property but it's not defined and no default value was provided."
+                );
+            }
+            else
+                setUniformValueFromStore(input, input.name, defaultValues);
+        }
+        else
+            setUniformValueFromStore(input, binding->propertyName, binding->store);
     }
 
+    return binding;
+}
+
+void
+DrawCall::setUniformValueFromStore(const ProgramInputs::UniformInput&   input,
+                                   const std::string&                   propertyName,
+                                   const data::Store&                   store)
+{
     switch (input.type)
     {
         case ProgramInputs::Type::bool1:
@@ -183,21 +212,18 @@ DrawCall::bindUniform(ConstUniformInputRef                          input,
             break;
         case ProgramInputs::Type::sampler2d:
             _samplers.push_back({
-                _program->setTextureNames().size() + _samplers.size(),
+                static_cast<uint>(_program->setTextureNames().size() + _samplers.size()),
                 store.getPointer<TextureSampler>(propertyName)->id,
                 input.location
             });
-            break;
+        break;
         case ProgramInputs::Type::float9:
         case ProgramInputs::Type::unknown:
         case ProgramInputs::Type::samplerCube:
             throw std::runtime_error("unsupported program input type: " + ProgramInputs::typeToString(input.type));
-            break;
+        break;
     }
-
-    return binding;
 }
-
 
 void
 DrawCall::bindIndexBuffer()
@@ -221,7 +247,7 @@ DrawCall::bindAttribute(ConstAttrInputRef       input,
     const auto& attr = store.getPointer<VertexAttribute>(propertyName);
 
     _attributes.push_back({
-        _program->setAttributeNames().size() + _attributes.size(),
+        static_cast<uint>(_program->setAttributeNames().size() + _attributes.size()),
         input.location,
         attr->resourceId,
         attr->size,
@@ -231,40 +257,53 @@ DrawCall::bindAttribute(ConstAttrInputRef       input,
 }
 
 void
-DrawCall::bindStates()
+DrawCall::bindStates(const std::map<std::string, data::Binding>&    stateBindings,
+                     const data::Store&                             defaultValues)
 {
-    const auto& stateBindings = _pass->stateBindings();
-
-    _priority = bindState<float>(States::PROPERTY_PRIORITY, stateBindings);
-    _zSorted = bindState<bool>(States::PROPERTY_ZSORTED, stateBindings);
-    _blendingSourceFactor = bindState<Blending::Source>(States::PROPERTY_BLENDING_SOURCE, stateBindings);
-    _blendingDestinationFactor = bindState<Blending::Destination>(States::PROPERTY_BLENDING_DESTINATION, stateBindings);
-    _colorMask = bindState<bool>(States::PROPERTY_COLOR_MASK, stateBindings);
-    _depthMask = bindState<bool>(States::PROPERTY_DEPTH_MASK, stateBindings);
-    _depthFunc = bindState<CompareMode>(States::PROPERTY_DEPTH_FUNCTION, stateBindings);
-    _triangleCulling = bindState<TriangleCulling>(States::PROPERTY_TRIANGLE_CULLING, stateBindings);
-    _stencilFunction = bindState<CompareMode>(States::PROPERTY_STENCIL_FUNCTION, stateBindings);
-    _stencilReference = bindState<int>(States::PROPERTY_STENCIL_REFERENCE, stateBindings);
-    _stencilMask = bindState<uint>(States::PROPERTY_STENCIL_MASK, stateBindings);
-    _stencilFailOp = bindState<StencilOperation>(States::PROPERTY_STENCIL_FAIL_OP, stateBindings);
-    _stencilZFailOp = bindState<StencilOperation>(States::PROPERTY_STENCIL_ZFAIL_OP, stateBindings);
-    _stencilZPassOp = bindState<StencilOperation>(States::PROPERTY_STENCIL_ZPASS_OP, stateBindings);
-    _scissorTest = bindState<bool>(States::PROPERTY_SCISSOR_TEST, stateBindings);
-    _scissorBox = bindState<math::ivec4>(States::PROPERTY_SCISSOR_BOX, stateBindings);
-
-    // FIXME: bind the render target
+    _priority = bindState<float>(States::PROPERTY_PRIORITY, stateBindings, defaultValues);
+    _zSorted = bindState<bool>(States::PROPERTY_ZSORTED, stateBindings, defaultValues);
+    _blendingSourceFactor = bindState<Blending::Source>(States::PROPERTY_BLENDING_SOURCE, stateBindings, defaultValues);
+    _blendingDestinationFactor = bindState<Blending::Destination>(States::PROPERTY_BLENDING_DESTINATION, stateBindings, defaultValues);
+    _colorMask = bindState<bool>(States::PROPERTY_COLOR_MASK, stateBindings, defaultValues);
+    _depthMask = bindState<bool>(States::PROPERTY_DEPTH_MASK, stateBindings, defaultValues);
+    _depthFunc = bindState<CompareMode>(States::PROPERTY_DEPTH_FUNCTION, stateBindings, defaultValues);
+    _triangleCulling = bindState<TriangleCulling>(States::PROPERTY_TRIANGLE_CULLING, stateBindings, defaultValues);
+    _stencilFunction = bindState<CompareMode>(States::PROPERTY_STENCIL_FUNCTION, stateBindings, defaultValues);
+    _stencilReference = bindState<int>(States::PROPERTY_STENCIL_REFERENCE, stateBindings, defaultValues);
+    _stencilMask = bindState<uint>(States::PROPERTY_STENCIL_MASK, stateBindings, defaultValues);
+    _stencilFailOp = bindState<StencilOperation>(States::PROPERTY_STENCIL_FAIL_OP, stateBindings, defaultValues);
+    _stencilZFailOp = bindState<StencilOperation>(States::PROPERTY_STENCIL_ZFAIL_OP, stateBindings, defaultValues);
+    _stencilZPassOp = bindState<StencilOperation>(States::PROPERTY_STENCIL_ZPASS_OP, stateBindings, defaultValues);
+    _scissorTest = bindState<bool>(States::PROPERTY_SCISSOR_TEST, stateBindings, defaultValues);
+    _scissorBox = bindState<math::ivec4>(States::PROPERTY_SCISSOR_BOX, stateBindings, defaultValues);
+    _target = bindState<TextureSampler>(States::PROPERTY_TARGET, stateBindings, defaultValues);
 }
 
 void
-DrawCall::render(AbstractContext::Ptr context, AbstractTexture::Ptr renderTarget) const
+DrawCall::render(AbstractContext::Ptr   context,
+                 AbstractTexture::Ptr   renderTarget,
+                 const math::ivec4&     viewport) const
 {
     context->setProgram(_program->id());
 
-    // FIXME: handle RTT
-    /*if (_states->target())
-        context->setRenderToTexture(_states->target()->id(), true);
-    else if (renderTarget)
-        context->setRenderToTexture(renderTarget->id(), true);*/
+    if (_target && _target->id)
+    {
+        if (*_target->id != context->renderTarget())
+        {
+            context->setRenderToTexture(*_target->id, true);
+            context->clear();
+        }
+    }
+    else
+    {
+        if (renderTarget)
+            context->setRenderToTexture(renderTarget->id(), true);
+        else
+            context->setRenderToBackBuffer();
+
+        if (viewport.z >= 0 && viewport.w >= 0)
+            context->configureViewport(viewport.x, viewport.y, viewport.z, viewport.w);
+    }
 
     for (const auto& u : _uniformBool)
     {
@@ -327,11 +366,11 @@ DrawCall::render(AbstractContext::Ptr context, AbstractTexture::Ptr renderTarget
 }
 
 data::ResolvedBinding*
-DrawCall::resolveBinding(const ProgramInputs::AbstractInput&            input,
+DrawCall::resolveBinding(const std::string&                             inputName,
                          const std::map<std::string, data::Binding>&    bindings)
 {
     bool isArray = false;
-    std::string bindingName = input.name;
+    std::string bindingName = inputName;
     auto pos = bindingName.find_first_of('[');
 
     if (pos != std::string::npos)
@@ -344,7 +383,7 @@ DrawCall::resolveBinding(const ProgramInputs::AbstractInput&            input,
         return nullptr;
 
     const auto& binding = bindings.at(bindingName);
-    
+
     auto& store = getStore(binding.source);
     auto propertyName = data::Store::getActualPropertyName(_variables, binding.propertyName);
 
@@ -356,7 +395,7 @@ DrawCall::resolveBinding(const ProgramInputs::AbstractInput&            input,
 
     // FIXME: handle per-fields bindings instead of using the raw uniform suffix
     if (isArray)
-        propertyName += input.name.substr(pos);
+        propertyName += inputName.substr(pos);
 
     return new data::ResolvedBinding(binding, propertyName, store);
 }

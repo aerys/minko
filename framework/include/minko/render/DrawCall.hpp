@@ -116,8 +116,8 @@ namespace minko
             StencilOperation*			        _stencilZPassOp;
             bool*						        _scissorTest;
             math::ivec4*					    _scissorBox;
-            /*SamplerStates               _samplerStates;
-            AbstractTexturePtr		    _target;*/
+			TextureSampler*						_target;
+            /*SamplerStates               		_samplerStates;*/
 
             std::map<const data::Binding*, ChangedSlot>    _propAddedOrRemovedSlot;
 
@@ -129,7 +129,7 @@ namespace minko
                      data::Store&           rootData,
                      data::Store&           rendererData,
                      data::Store&           targetData);
-            
+
             inline
             std::shared_ptr<Pass>
             pass()
@@ -227,17 +227,29 @@ namespace minko
                 return _zSortNeeded;
             }
 
+			inline
+			const TextureSampler&
+			target()
+			{
+				return *_target;
+			}
+
             void
             bind(std::shared_ptr<Program> program);
 
 			void
 			render(std::shared_ptr<AbstractContext>  context,
-                   AbsTexturePtr                     renderTarget) const;
+                   AbsTexturePtr                     renderTarget,
+				   const math::ivec4&				 viewport) const;
 
             data::ResolvedBinding*
             bindUniform(const ProgramInputs::UniformInput&          input,
                         const std::map<std::string, data::Binding>& uniformBindings,
                         const data::Store&                          defaultValues);
+
+			void
+            bindStates(const std::map<std::string, data::Binding>&	stateBindings,
+					   const data::Store&							defaultValues);
 
             math::vec3
             getEyeSpacePosition();
@@ -258,35 +270,37 @@ namespace minko
 			void
 			bindIndexBuffer();
 
-			void
-            bindStates();
-			
             data::Store&
             getStore(data::Binding::Source source);
 
             data::ResolvedBinding*
-            resolveBinding(const ProgramInputs::AbstractInput&          input,
+            resolveBinding(const std::string&          					inputName,
                            const std::map<std::string, data::Binding>&  bindings);
+
+			void
+			setUniformValueFromStore(const ProgramInputs::UniformInput&   input,
+									 const std::string&                   propertyName,
+									 const data::Store&                   store);
 
             template <typename T>
             T*
-            bindState(const std::string         stateName,
-                      const data::BindingMap&   stateBindings)
+            bindState(const std::string&        					stateName,
+					  const std::map<std::string, data::Binding>&   bindings,
+					  const data::Store&                            defaultValues)
             {
-                auto& bindings = stateBindings.bindings;
-
+				// FIXME: handle errors like in bindUniform()
+				// FIXME: call resolveBinding
                 if (bindings.count(stateName) == 0)
-                    return stateBindings.defaultValues.getUnsafePointer<T>(stateName);
+                    return defaultValues.getUnsafePointer<T>(stateName);
 
                 const auto& binding = bindings.at(stateName);
                 auto& store = getStore(binding.source);
-
                 auto unsafePointer = store.getUnsafePointer<T>(
                     data::Store::getActualPropertyName(_variables, binding.propertyName)
                 );
 
                 if (unsafePointer == nullptr)
-                    return stateBindings.defaultValues.getUnsafePointer<T>(stateName);
+                    return defaultValues.getUnsafePointer<T>(stateName);
 
                 return unsafePointer;
             }

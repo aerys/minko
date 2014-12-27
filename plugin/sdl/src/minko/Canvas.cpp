@@ -28,7 +28,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/input/SDLMouse.hpp"
 #include "minko/input/SDLJoystick.hpp"
 #include "minko/input/SDLTouch.hpp"
-#include "minko/SDLBackend.hpp"
 
 #if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
 # include "minko/file/FileProtocolWorker.hpp"
@@ -50,7 +49,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include "minko/MinkoOffscreen.hpp"
 #endif
 
-// Audio only works for HTML5, Windows and Android 
+// Audio only works for HTML5, Windows and Android
 #if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID)
 # include "minko/audio/SDLAudio.hpp"
 #endif
@@ -82,7 +81,7 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, int
     _y(0),
     _onWindow(false)
 {
-    _data->set("canvas.viewport", math::vec4(0.f, 0.f, (float)width, (float)height));
+    _data->set("viewport", math::vec4(0.f, 0.f, (float)width, (float)height));
 }
 
 void
@@ -100,16 +99,16 @@ Canvas::initialize()
     NSString* appLibraryFolder = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     NSString* appDocumentFolder = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     NSArray* backupFolders = [NSArray arrayWithObjects: appLibraryFolder, appDocumentFolder, nil];
-    
+
     NSURL * url;
     for (NSString* folder in backupFolders)
     {
         url = [NSURL fileURLWithPath:folder];
-        
+
         assert([[NSFileManager defaultManager] fileExistsAtPath: [url path]]);
-        
+
         NSLog(@"Final URL: %@", url);
-        
+
         NSError *error = nil;
         BOOL success = [url setResourceValue: [NSNumber numberWithBool: YES]
                             forKey: NSURLIsExcludedFromBackupKey error: &error];
@@ -168,18 +167,18 @@ Canvas::initializeWindow()
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    
+
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 8);
     SDL_GL_SetAttribute(SDL_GL_BUFFER_SIZE, 32);
-    
+
 #if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
     SDL_WM_SetCaption(_name.c_str(), nullptr);
 
     SDL_SetVideoMode(_width, _height, 0, SDL_OPENGL | SDL_WINDOW_RESIZABLE);
-    
+
     _window = nullptr;
 #else
     int windowFlags = SDL_WINDOW_OPENGL;
@@ -267,72 +266,76 @@ Canvas::initializeContext()
 uint
 Canvas::x()
 {
-    return (uint) _data->get<math::vec4>("canvas.viewport").x;
+    return _x;
 }
 
 uint
 Canvas::y()
 {
-    return (uint) _data->get<math::vec4>("canvas.viewport").y;
+    return _y;
 }
 
 uint
 Canvas::width()
 {
-    return (uint) _data->get<math::vec4>("canvas.viewport").z;
+    return _width;
 }
 
 uint
 Canvas::height()
 {
-    return (uint) _data->get<math::vec4>("canvas.viewport").w;
+    return _height;
 }
 
 void
 Canvas::x(uint value)
 {
-    auto viewport = _data->get<math::vec4>("canvas.viewport");
-
-    if (value != viewport.x)
+    if (value != _x)
     {
+        auto viewport = _data->get<math::vec4>("viewport");
+
+        _x = value;
         viewport.x = (float)value;
-        _data->set<math::vec4>("canvas.viewport", viewport);
+        _data->set<math::vec4>("viewport", viewport);
     }
 }
 
 void
 Canvas::y(uint value)
 {
-    auto viewport = _data->get<math::vec4>("canvas.viewport");
-
-    if (value != viewport.y)
+    if (value != _y)
     {
+        auto viewport = _data->get<math::vec4>("viewport");
+
+        _y = value;
         viewport.y = (float)value;
-        _data->set<math::vec4>("canvas.viewport", viewport);
+        _data->set<math::vec4>("viewport", viewport);
     }
 }
 
 void
 Canvas::width(uint value)
 {
-    auto viewport = _data->get<math::vec4>("canvas.viewport");
-
-    if (value != viewport.z)
+    if (value != _width)
     {
+        auto viewport = _data->get<math::vec4>("viewport");
+
+        _width = value;
         viewport.z = (float)value;
-        _data->set<math::vec4>("canvas.viewport", viewport);
+        _data->set<math::vec4>("viewport", viewport);
     }
 }
 
 void
 Canvas::height(uint value)
 {
-    auto viewport = _data->get<math::vec4>("canvas.viewport");
-
-    if (value != viewport.w)
+    if (value != _height)
     {
+        auto viewport = _data->get<math::vec4>("viewport");
+
+        _height = value;
         viewport.w = (float)value;
-        _data->set<math::vec4>("canvas.viewport", viewport);
+        _data->set<math::vec4>("viewport", viewport);
     }
 }
 
@@ -558,15 +561,15 @@ Canvas::step()
             auto x = event.tfinger.x * _width;
             auto y = event.tfinger.y * _height;
             auto id = (int)(event.tfinger.fingerId);
-            
+
             _touch->addTouch(id, x, y);
             _touch->touchDown()->execute(
-                _touch, 
-                id, 
-                x, 
+                _touch,
+                id,
+                x,
                 y
             );
-            
+
             if (_touch->numTouches() == 1)
             {
                 _touch->lastTouchDownTime(_relativeTime);
@@ -578,7 +581,7 @@ Canvas::step()
                 _touch->lastTouchDownTime(-1.f);
                 _touch->lastTapTime(-1.f);
             }
-            
+
             break;
         }
 
@@ -587,31 +590,31 @@ Canvas::step()
             auto x = event.tfinger.x * _width;
             auto y = event.tfinger.y * _height;
             auto id = (int)(event.tfinger.fingerId);
-            
+
             _touch->removeTouch(id);
             _touch->touchUp()->execute(
-                _touch, 
-                id, 
-                x, 
+                _touch,
+                id,
+                x,
                 y
             );
-            
+
             if (_touch->numTouches() == 0 && _touch->lastTouchDownTime() != -1.0f )
             {
                 auto dX = std::abs(x - _touch->lastTouchDownX());
                 auto dY = std::abs(y - _touch->lastTouchDownY());
                 auto dT = _relativeTime - _touch->lastTouchDownTime();
-            
+
                 if (dT < input::SDLTouch::TAP_DELAY_THRESHOLD &&
                     dX < input::SDLTouch::TAP_MOVE_THRESHOLD &&
                     dY < input::SDLTouch::TAP_MOVE_THRESHOLD)
                 {
                     _touch->tap()->execute(_touch, x, y);
-                
+
                     dX = std::abs(x - _touch->lastTapX()) * 0.75f;
                     dY = std::abs(y - _touch->lastTapY()) * 0.75f;
                     dT = _relativeTime - _touch->lastTapTime();
-            
+
                     if (_touch->lastTapTime() != -1.0f &&
                         dT < input::SDLTouch::DOUBLE_TAP_DELAY_THRESHOLD &&
                         dX < input::SDLTouch::TAP_MOVE_THRESHOLD &&
@@ -631,10 +634,10 @@ Canvas::step()
             }
 
             _touch->lastTouchDownTime(-1.0f);
-            
+
             break;
         }
-            
+
         case SDL_FINGERMOTION:
             {
             auto id = (int)(event.tfinger.fingerId);
@@ -645,36 +648,36 @@ Canvas::step()
 
             if (std::abs(_touch->lastTouchDownX() - x) > input::SDLTouch::TAP_MOVE_THRESHOLD || std::abs(_touch->lastTouchDownY() - y) > input::SDLTouch::TAP_MOVE_THRESHOLD)
                 _touch->lastTouchDownTime(-1.0f);
-            
+
             _touch->updateTouch(id, x, y);
             _touch->touchMove()->execute(
-                _touch, 
+                _touch,
                 id,
                 dx,
                 dy
             );
-                
+
                 // Gestures
 				if (event.tfinger.dx > input::SDLTouch::SWIPE_PRECISION)
                 {
                     _touch->swipeRight()->execute(_touch);
                 }
-                
+
                 if (-event.tfinger.dx > input::SDLTouch::SWIPE_PRECISION)
                 {
                     _touch->swipeLeft()->execute(_touch);
                 }
-                
+
                 if (event.tfinger.dy > input::SDLTouch::SWIPE_PRECISION)
                 {
                     _touch->swipeDown()->execute(_touch);
                 }
-                
+
                 if (-event.tfinger.dy > input::SDLTouch::SWIPE_PRECISION)
                 {
                     _touch->swipeUp()->execute(_touch);
                 }
-                
+
             if (_touch->numTouches() == 2)
             {
                 math::vec2 touch2;
@@ -688,7 +691,7 @@ Canvas::step()
                         touch2 = _touch->touch(_touch->identifiers()[i]);
                     }
                 }
-                    
+
                 if (hasTouch2)
                 {
                     auto dX1 = (x - dx) - touch2.x;
@@ -696,10 +699,10 @@ Canvas::step()
 
                     auto dX2 = x - touch2.x;
                     auto dY2 = y - touch2.y;
-                    
+
                     auto dist1 = std::sqrt(std::pow(dX1, 2) + std::pow(dY1, 2));
                     auto dist2 = std::sqrt(std::pow(dX2, 2) + std::pow(dY2, 2));
-                    
+
                     auto deltaDist = dist2 - dist1;
 
                     if (deltaDist != 0.f)
@@ -871,7 +874,7 @@ void
 Canvas::quit()
 {
     _active = false;
-    
+
 #if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID)
     _audio = nullptr;
 #endif

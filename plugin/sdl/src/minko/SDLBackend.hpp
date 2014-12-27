@@ -28,9 +28,13 @@ namespace minko
     class SDLBackend
     {
     public:
-        typedef std::shared_ptr<SDLBackend>        Ptr;
+        typedef std::shared_ptr<SDLBackend> Ptr;
 
     public:
+        virtual
+        ~SDLBackend()
+        {}
+
         static
         std::shared_ptr<SDLBackend>
         create()
@@ -38,19 +42,23 @@ namespace minko
             return std::shared_ptr<SDLBackend>(new SDLBackend());
         }
 
-        virtual void
+        virtual
+        void
         initialize(std::shared_ptr<Canvas> canvas);
 
-        virtual void
+        virtual
+        void
         swapBuffers(std::shared_ptr<Canvas> canvas);
 
-        virtual void
+        virtual
+        void
         run(std::shared_ptr<Canvas> canvas);
 
-        virtual void
+        virtual
+        void
         wait(std::shared_ptr<Canvas> canvas, uint ms);
 
-    protected:
-        SDLBackend() = default;
+    private:
+        SDLBackend();
     };
 }

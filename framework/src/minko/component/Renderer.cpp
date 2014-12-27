@@ -55,6 +55,7 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 	_effect(effect),
     _clearBeforeRender(true),
 	_priority(priority),
+	_renderTarget(renderTarget),
 	/*_targetDataFilters(),
 	_rendererDataFilters(),
 	_rootDataFilters(),
@@ -64,11 +65,6 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 	_lightMaskFilter(data::LightMaskFilter::create()),*/
 	_filterChanged(Signal<Ptr, data::AbstractFilter::Ptr, data::Binding::Source, SurfacePtr>::create())
 {
-	if (renderTarget)
-	{
-		renderTarget->upload();
-		_renderTarget = renderTarget;
-	}
 }
 
 // TODO #Clone
@@ -250,7 +246,7 @@ Renderer::componentAddedHandler(std::shared_ptr<Node>				node,
 {
 	auto surfaceCtrl = std::dynamic_pointer_cast<Surface>(ctrl);
 	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
-	
+
 	if (surfaceCtrl)
         _toCollect.insert(surfaceCtrl);
 	else if (sceneManager)
@@ -288,7 +284,7 @@ Renderer::addSurface(Surface::Ptr surface)
     variables["effectUuid"] = effectUuid;
 
     _surfaceToDrawCallIterator[surface] = _drawCallPool.addDrawCalls(
-        surface->effect(),
+        _effect ? _effect : surface->effect(),
         variables,
         surface->technique(),
         surface->target()->root()->data(),
@@ -348,7 +344,7 @@ Renderer::surfaceEffectChangedHandler(SurfacePtr surface)
 }
 
 void
-Renderer::render(render::AbstractContext::Ptr	context, 
+Renderer::render(render::AbstractContext::Ptr	context,
 				 render::AbstractTexture::Ptr	renderTarget)
 {
     if (!_enabled)
@@ -360,46 +356,37 @@ Renderer::render(render::AbstractContext::Ptr	context,
     for (auto& surface : _toCollect)
         addSurface(surface);
     _toCollect.clear();
-    
+
 	_renderingBegin->execute(std::static_pointer_cast<Renderer>(shared_from_this()));
 
-	if (_renderTarget)
-		renderTarget = _renderTarget;
-        
-    bool bCustomViewport = false;
+	auto rt = _renderTarget ? _renderTarget : renderTarget;
 
 	if (_scissorBox.z >= 0 && _scissorBox.w >= 0)
 		context->setScissorTest(true, _scissorBox);
 	else
 		context->setScissorTest(false, _scissorBox);
-	 
-    if (_viewportBox.z >= 0 && _viewportBox.w >= 0)
-    {
-        bCustomViewport = true;
-        context->configureViewport(_viewportBox.x, _viewportBox.y, _viewportBox.z, _viewportBox.w);
-	}
+
+	if (rt)
+		context->setRenderToTexture(rt->id(), true);
 	else
-		context->configureViewport(0, 0, context->viewportWidth(), context->viewportHeight());
-	
-	if (renderTarget)
-		context->setRenderToTexture(renderTarget->id(), true);
-	else
-    	context->setRenderToBackBuffer();
-    context->clear(
-	    ((_backgroundColor >> 24) & 0xff) / 255.f,
-	    ((_backgroundColor >> 16) & 0xff) / 255.f,
-	    ((_backgroundColor >> 8) & 0xff) / 255.f,
-	    (_backgroundColor & 0xff) / 255.f
-    );
+		context->setRenderToBackBuffer();
+
+	if (_viewportBox.z >= 0 && _viewportBox.w >= 0)
+		context->configureViewport(_viewportBox.x, _viewportBox.y, _viewportBox.z, _viewportBox.w);
+
+	if (_clearBeforeRender)
+		context->clear(
+			((_backgroundColor >> 24) & 0xff) / 255.f,
+			((_backgroundColor >> 16) & 0xff) / 255.f,
+			((_backgroundColor >> 8) & 0xff) / 255.f,
+			(_backgroundColor & 0xff) / 255.f
+		);
 
     _drawCallPool.update();
     for (const auto& drawCall : _drawCallPool.drawCalls())
         // FIXME: render the draw call only if it's the right layout
 	    //if ((drawCall->layouts() & layoutMask()) != 0)
-		    drawCall.render(context, renderTarget);
-
-    if (bCustomViewport)
-        context->setScissorTest(false, _viewportBox);
+		    drawCall.render(context, rt, _viewportBox);
 
     _beforePresent->execute(std::static_pointer_cast<Renderer>(shared_from_this()));
 
@@ -421,7 +408,7 @@ Renderer::findSceneManager()
 	if (roots->nodes().size() > 1)
 		throw std::logic_error("Renderer cannot be in two separate scenes.");
 	else if (roots->nodes().size() == 1)
-		setSceneManager(roots->nodes()[0]->component<SceneManager>());		
+		setSceneManager(roots->nodes()[0]->component<SceneManager>());
 	else
 		setSceneManager(nullptr);
 }
@@ -459,7 +446,7 @@ Renderer::sceneManagerRenderingBeginHandler(std::shared_ptr<SceneManager>	sceneM
 }
 
 Renderer::Ptr
-Renderer::addFilter(data::AbstractFilter::Ptr	filter, 
+Renderer::addFilter(data::AbstractFilter::Ptr	filter,
 					data::Binding::Source			source)
 {
     // FIXME
@@ -483,7 +470,7 @@ Renderer::addFilter(data::AbstractFilter::Ptr	filter,
 }
 
 Renderer::Ptr
-Renderer::removeFilter(data::AbstractFilter::Ptr	filter, 
+Renderer::removeFilter(data::AbstractFilter::Ptr	filter,
 					   data::Binding::Source			source)
 {
     // FIXME
@@ -517,7 +504,7 @@ Renderer::removeFilter(data::AbstractFilter::Ptr	filter,
 //}
 
 void
-Renderer::filterChangedHandler(data::AbstractFilter::Ptr	filter, 
+Renderer::filterChangedHandler(data::AbstractFilter::Ptr	filter,
 							   data::Binding::Source			source,
 							   SurfacePtr					surface)
 {

@@ -42,7 +42,7 @@ namespace minko
 
         static
         render::Effect::Ptr
-        loadEffect(const std::string& filename);
+        loadEffect(const std::string& filename, file::AssetLibrary::Ptr assets = nullptr);
 
 	private:
         static AbstractCanvas::Ptr _canvas;

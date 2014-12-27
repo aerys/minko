@@ -19,6 +19,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/States.hpp"
 
+#include "minko/render/Priority.hpp"
+
 using namespace minko;
 using namespace minko::render;
 
@@ -40,7 +42,7 @@ const std::string           States::PROPERTY_SCISSOR_TEST           = "scissorTe
 const std::string           States::PROPERTY_SCISSOR_BOX            = "scissorBox";
 const std::string           States::PROPERTY_TARGET                 = "target";
 
-const float				    States::DEFAULT_PRIORITY                = 0.f;
+const float				    States::DEFAULT_PRIORITY                = Priority::OPAQUE;
 const bool					States::DEFAULT_ZSORTED                 = false;
 const Blending::Source		States::DEFAULT_BLENDING_SOURCE         = Blending::Source::ONE;
 const Blending::Destination States::DEFAULT_BLENDING_DESTINATION    = Blending::Destination::ZERO;
@@ -56,7 +58,7 @@ const StencilOperation		States::DEFAULT_STENCIL_ZFAIL_OP        = StencilOperati
 const StencilOperation		States::DEFAULT_STENCIL_ZPASS_OP        = StencilOperation::KEEP;
 const bool					States::DEFAULT_SCISSOR_TEST            = false;
 const math::ivec4			States::DEFAULT_SCISSOR_BOX             = math::ivec4();
-const States::AbsTexturePtr States::DEFAULT_TARGET                  = nullptr;
+const TextureSampler        States::DEFAULT_TARGET                  = TextureSampler("", nullptr);
 
 const std::array<std::string, 17> States::PROPERTY_NAMES = {
     PROPERTY_PRIORITY,
@@ -94,17 +96,29 @@ States::States(float					priority,
                StencilOperation			stencilZPassOp,
                bool						scissorTest,
                const math::ivec4&		scissorBox,
-               AbsTexturePtr		    target) :
+               TextureSampler		    target) :
     _data(data::Provider::create())
 {
     resetDefaultValues();
 
-    // FIXME: set the state values
+    this->priority(priority);
+    this->zSorted(zSorted);
+    this->blendingSourceFactor(blendingSourceFactor);
+    this->blendingDestinationFactor(blendingDestinationFactor);
+    this->colorMask(colorMask);
+    this->depthMask(depthMask);
+    this->depthFunction(depthFunction);
+    this->triangleCulling(triangleCulling);
+    this->stencilFunction(stencilFunction);
+    this->stencilReference(stencilRef);
+    this->stencilMask(stencilMask);
+    this->stencilFailOperation(stencilFailOp);
+    this->stencilZFailOperation(stencilZFailOp);
+    this->stencilZPassOperation(stencilZPassOp);
+    this->scissorTest(scissorTest);
+    this->scissorBox(scissorBox);
+    this->target(target);
 }
-
-States::States(std::shared_ptr<data::Provider> data) :
-    _data(data)
-{}
 
 States::States(const States& states) :
     _data(data::Provider::create(states._data))
@@ -130,5 +144,5 @@ States::resetDefaultValues()
     _data->set(PROPERTY_STENCIL_ZPASS_OP, DEFAULT_STENCIL_ZPASS_OP);
     _data->set(PROPERTY_SCISSOR_TEST, DEFAULT_SCISSOR_TEST);
     _data->set(PROPERTY_SCISSOR_BOX, DEFAULT_SCISSOR_BOX);
-    _data->unset(PROPERTY_TARGET);
+    _data->set(PROPERTY_TARGET, DEFAULT_TARGET);
 }
