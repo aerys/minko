@@ -35,7 +35,7 @@ namespace minko
 
 		public:
 			typedef std::shared_ptr<Surface>								Ptr;
-			typedef Signal<Ptr, const std::string&, bool>					TechniqueChangedSignal;	
+			typedef Signal<Ptr, const std::string&, bool>					TechniqueChangedSignal;
 			typedef Signal<Ptr, std::shared_ptr<component::Renderer>, bool> VisibilityChangedSignal;
 
 		private:
@@ -88,7 +88,7 @@ namespace minko
 			AbstractComponent::Ptr
 			clone(const CloneOption& option);
             */
-            
+
 			~Surface()
 			{
 			}
