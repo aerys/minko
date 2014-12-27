@@ -6,33 +6,33 @@
 
 #pragma include "Fog.function.glsl"
 
-uniform vec4        diffuseColor;
-uniform sampler2D   diffuseMap;
-uniform samplerCube	diffuseCubeMap;
+uniform vec4 uDiffuseColor;
+uniform sampler2D uDiffuseMap;
+uniform samplerCube	uDiffuseCubeMap;
 
 // alpha
-uniform sampler2D 	alphaMap;
-uniform float 		alphaThreshold;
+uniform sampler2D uAlphaMap;
+uniform float uAlphaThreshold;
 
 varying vec2 vVertexUV;
 varying vec3 vVertexUVW;
 
 void main(void)
 {
-	vec4 diffuse = diffuseColor;
+	vec4 diffuse = uDiffuseColor;
 
 	#if defined(DIFFUSE_CUBEMAP)
-		diffuse	= textureCube(diffuseCubeMap, vVertexUVW);
+		diffuse	= textureCube(uDiffuseCubeMap, vVertexUVW);
 	#elif defined(DIFFUSE_MAP)
-		diffuse = texture2D(diffuseMap, vVertexUV);
+		diffuse = texture2D(uDiffuseMap, vVertexUV);
 	#endif
 
 	#ifdef ALPHA_MAP
-		diffuse.a = texture2D(alphaMap, vVertexUV).r;
+		diffuse.a = texture2D(uAlphaMap, vVertexUV).r;
 	#endif // ALPHA_MAP
 
 	#ifdef ALPHA_THRESHOLD
-		if (diffuse.a < alphaThreshold)
+		if (diffuse.a < uAlphaThreshold)
 			discard;
 	#endif // ALPHA_THRESHOLD
 

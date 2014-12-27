@@ -4,79 +4,86 @@
 	precision mediump float;
 #endif
 
-#pragma include "Phong.function.glsl"
-#pragma include "Envmap.function.glsl"
+#pragma include "../Envmap.function.glsl"
 
+#pragma include "pack.function.glsl"
+
+#pragma include "Phong.function.glsl"
 #pragma include "Phong.struct.glsl"
 
 #ifdef NUM_AMBIENT_LIGHTS
-	uniform AmbientLight ambientLights[NUM_AMBIENT_LIGHTS];
+	uniform AmbientLight uAmbientLights[NUM_AMBIENT_LIGHTS];
 #endif // NUM_AMBIENT_LIGHTS
 
 #ifdef NUM_DIRECTIONAL_LIGHTS
-	uniform DirectionalLight directionalLights[NUM_DIRECTIONAL_LIGHTS];
+	uniform DirectionalLight uDirectionalLights[NUM_DIRECTIONAL_LIGHTS];
 #endif // NUM_DIRECTIONAL_LIGHTS
 
 #ifdef NUM_POINT_LIGHTS
-	uniform PointLight pointLights[NUM_POINT_LIGHTS];
+	uniform PointLight uPointLights[NUM_POINT_LIGHTS];
 #endif // NUM_POINT_LIGHTS
 
 #ifdef NUM_SPOT_LIGHTS
-	uniform SpotLight spotLights[NUM_SPOT_LIGHTS];
+	uniform SpotLight uSpotLights[NUM_SPOT_LIGHTS];
 #endif // NUM_SPOT_LIGHTS
 
 // diffuse
-uniform vec4 		diffuseColor;
-uniform sampler2D 	diffuseMap;
+uniform vec4 		uDiffuseColor;
+uniform sampler2D 	uDiffuseMap;
 
 // alpha
-uniform sampler2D 	alphaMap;
-uniform float 		alphaThreshold;
+uniform sampler2D 	uAlphaMap;
+uniform float 		uAlphaThreshold;
 
 // phong
-uniform vec4 		specularColor;
-uniform sampler2D 	normalMap;
-uniform sampler2D 	specularMap;
-uniform float 		shininess;
-uniform vec3 		cameraPosition;
+uniform vec4 		uSpecularColor;
+uniform sampler2D 	uNormalMap;
+uniform sampler2D 	uSpecularMap;
+uniform float 		uShininess;
+uniform vec3 		uCameraPosition;
 
 // env. mapping
-uniform float 		environmentAlpha;
+uniform float 		uEnvironmentAlpha;
+
+uniform sampler2D	uShadowMap;
+uniform float		uLightZNear;
+uniform float		uLightZFar;
 
 varying vec3 		vertexPosition;
 varying vec2 		vertexUV;
 varying vec3 		vertexNormal;
 varying vec3 		vertexTangent;
+varying vec3 		vertexLightPosition;
 
 void main(void)
 {
-	vec4 	diffuse 		= diffuseColor;
-	vec4 	specular 		= specularColor;
+	vec4 	diffuse 		= uDiffuseColor;
+	vec4 	specular 		= uSpecularColor;
 	float	shininessCoeff 	= 1.0;
 
 	#ifdef SHININESS
-		shininessCoeff = max(1.0, shininess);
+		shininessCoeff = max(1.0, uShininess);
 	#endif // SHININESS
 
 	#ifdef DIFFUSE_MAP
-		diffuse 	= texture2D(diffuseMap, vertexUV);
+		diffuse 	= texture2D(uDiffuseMap, vertexUV);
 	#endif // DIFFUSE_MAP
 
 	#ifdef ALPHA_MAP
-		diffuse.a 	= texture2D(alphaMap, vertexUV).r;
+		diffuse.a 	= texture2D(uAlphaMap, vertexUV).r;
 	#endif // ALPHA_MAP
 
 	#ifdef ALPHA_THRESHOLD
-		if (diffuse.a < alphaThreshold)
+		if (diffuse.a < uAlphaThreshold)
 			discard;
 	#endif // ALPHA_THRESHOLD
 
 	#if defined(SHININESS) || ( (defined(ENVIRONMENT_MAP_2D) || defined(ENVIRONMENT_CUBE_MAP)) && !defined(ENVIRONMENT_ALPHA) )
 
 		#ifdef SPECULAR_MAP
-			specular = texture2D(specularMap, vertexUV);
+			specular = texture2D(uSpecularMap, vertexUV);
 		#elif defined NORMAL_MAP
-			specular.a = texture2D(normalMap, vertexUV).a; // ???
+			specular.a = texture2D(uNormalMap, vertexUV).a; // ???
 		#endif // SPECULAR_MAP
 
 	#endif
@@ -87,16 +94,12 @@ void main(void)
 
 	#ifdef NUM_AMBIENT_LIGHTS
 		for (int i = 0; i < NUM_AMBIENT_LIGHTS; ++i)
-		{
-			AmbientLight currentAmbientLight = ambientLights[i];
-			ambientAccum += currentAmbientLight.color * currentAmbientLight.ambient;
-		}
-
+			ambientAccum += uAmbientLights[i].color * uAmbientLights[i].ambient;
 	#endif // NUM_AMBIENT_LIGHTS
 
 	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS || defined ENVIRONMENT_MAP_2D || defined ENVIRONMENT_CUBE_MAP
 
-		vec3	eyeVector		= normalize(cameraPosition - vertexPosition); // always in world-space
+		vec3	eyeVector		= normalize(uCameraPosition - vertexPosition); // always in world-space
 		vec3	normalVector	= normalize(vertexNormal); // always in world-space
 
 	#endif // NUM_DIRECTIONAL_LIGHTS || NUM_POINT_LIGHTS || NUM_SPOT_LIGHTS || ENVIRONMENT_MAP_2D || ENVIRONMENT_CUBE_MAP
@@ -123,102 +126,97 @@ void main(void)
 
 		#ifdef NUM_DIRECTIONAL_LIGHTS
 		//---------------------------
-		for (int i = 0; i < NUM_DIRECTIONAL_LIGHTS; ++i)
-		{
-			DirectionalLight currentDirectionalLight = directionalLights[i];
-			lightColor = currentDirectionalLight.color;
-			lightDiffuseCoeff = currentDirectionalLight.diffuse;
-			lightSpecularCoeff = currentDirectionalLight.specular;
-			lightDirection = currentDirectionalLight.direction;
+			for (int i = 0; i < NUM_DIRECTIONAL_LIGHTS; ++i)
+			{
+				DirectionalLight currentDirectionalLight = uDirectionalLights[i];
+				lightDirection	= normalize(-currentDirectionalLight.direction);
 
-			lightDirection	= normalize(-lightDirection);
+				diffuseAccum += phong_diffuseReflection(normalVector, lightDirection)
+					* currentDirectionalLight.color
+					* currentDirectionalLight.diffuse;
 
-			diffuseAccum += phong_diffuseReflection(normalVector, lightDirection)
-				* lightColor
-				* lightDiffuseCoeff;
-
-			#if defined(SHININESS)
-				specularAccum += phong_specularReflection(normalVector, lightDirection, eyeVector, shininessCoeff)
-					* phong_fresnel(specular.rgb, lightDirection, eyeVector)
-					* lightColor
-					* lightSpecularCoeff;
-			#endif // SHININESS
-		}
+				#if defined(SHININESS)
+					specularAccum += phong_specularReflection(normalVector, lightDirection, eyeVector, shininessCoeff)
+						* phong_fresnel(specular.rgb, lightDirection, eyeVector)
+						* currentDirectionalLight.color
+						* currentDirectionalLight.specular;
+				#endif // SHININESS
+			}
 		#endif // NUM_DIRECTIONAL_LIGHTS
 
 		#ifdef NUM_POINT_LIGHTS
 		//---------------------
-		for (int i = 0; i < NUM_POINT_LIGHTS; ++i)
-		{
-			PointLight currentPointLight = pointLights[i];
-			lightColor = currentPointLight.color;
-			lightDiffuseCoeff = currentPointLight.diffuse;
-			lightSpecularCoeff = currentPointLight.specular;
-			lightAttenuationCoeffs = currentPointLight.attenuationCoeffs;
-			lightPosition = currentPointLight.position;
+			for (int i = 0; i < NUM_POINT_LIGHTS; ++i)
+			{
+				PointLight currentPointLight = uPointLights[i];
+				lightColor = currentPointLight.color;
+				lightDiffuseCoeff = currentPointLight.diffuse;
+				lightSpecularCoeff = currentPointLight.specular;
+				lightAttenuationCoeffs = currentPointLight.attenuationCoeffs;
+				lightPosition = currentPointLight.position;
 
-			lightDirection			= lightPosition - vertexPosition;
-			float distanceToLight 	= length(lightDirection);
-			lightDirection 			/= distanceToLight;
+				lightDirection			= lightPosition - vertexPosition;
+				float distanceToLight 	= length(lightDirection);
+				lightDirection 			/= distanceToLight;
 
-			vec3	distVec 	= vec3(1.0, distanceToLight, distanceToLight * distanceToLight);
-			float 	attenuation = any(lessThan(lightAttenuationCoeffs, vec3(0.0)))
-				? 1.0
-				: max(0.0, 1.0 - distanceToLight / dot(lightAttenuationCoeffs, distVec));
+				vec3	distVec 	= vec3(1.0, distanceToLight, distanceToLight * distanceToLight);
+				float 	attenuation = any(lessThan(lightAttenuationCoeffs, vec3(0.0)))
+					? 1.0
+					: max(0.0, 1.0 - distanceToLight / dot(lightAttenuationCoeffs, distVec));
 
-			diffuseAccum += phong_diffuseReflection(normalVector, lightDirection)
-				* lightColor
-				* (lightDiffuseCoeff * attenuation);
-
-			#if defined(SHININESS)
-				specularAccum += phong_specularReflection(normalVector, lightDirection, eyeVector, shininessCoeff)
-					* phong_fresnel(specular.rgb, lightDirection, eyeVector)
+				diffuseAccum += phong_diffuseReflection(normalVector, lightDirection)
 					* lightColor
-					* (lightSpecularCoeff * attenuation);
-			#endif // SHININESS
-		}
+					* (lightDiffuseCoeff * attenuation);
+
+				#if defined(SHININESS)
+					specularAccum += phong_specularReflection(normalVector, lightDirection, eyeVector, shininessCoeff)
+						* phong_fresnel(specular.rgb, lightDirection, eyeVector)
+						* lightColor
+						* (lightSpecularCoeff * attenuation);
+				#endif // SHININESS
+			}
 		#endif // NUM_POINT_LIGHTS
 
 		#ifdef NUM_SPOT_LIGHTS
 		//--------------------
-		for (int i = 0; i < NUM_SPOT_LIGHTS; ++i)
-		{
-			SpotLight light = spotLights[i];
-
-			lightDirection = light.position - vertexPosition;
-			float distanceToLight	= length(lightDirection);
-			lightDirection			/= distanceToLight;
-
-				lightSpotDirection = light.direction;
-			lightSpotDirection	= normalize(lightSpotDirection);
-				float cosSpot = dot(-lightDirection, lightSpotDirection);
-
-				//gl_FragColor = vec4(abs(light.direction), 1.);
-				//return ;
-
-				if (light.cosOuterConeAngle < cosSpot)
+			for (int i = 0; i < NUM_SPOT_LIGHTS; ++i)
 			{
-				vec3	distVec 	= vec3(1.0, distanceToLight, distanceToLight * distanceToLight);
-					float attenuation = any(lessThan(light.attenuationCoeffs, vec3(0.0)))
-					? 1.0
-						: max(0.0, 1.0 - distanceToLight / dot(light.attenuationCoeffs, distVec));
+				SpotLight light = uSpotLights[i];
 
-					float cutoff = cosSpot < light.cosInnerConeAngle && light.cosOuterConeAngle < light.cosInnerConeAngle
-						? (cosSpot - light.cosOuterConeAngle) / (light.cosInnerConeAngle - light.cosOuterConeAngle)
-					: 1.0;
+				lightDirection = light.position - vertexPosition;
+				float distanceToLight	= length(lightDirection);
+				lightDirection			/= distanceToLight;
 
-					diffuseAccum += phong_diffuseReflection(normalVector, lightDirection)
-						* light.color
-						* light.diffuse * attenuation * cutoff;
+					lightSpotDirection = light.direction;
+				lightSpotDirection	= normalize(lightSpotDirection);
+					float cosSpot = dot(-lightDirection, lightSpotDirection);
 
-				#ifdef SHININESS
-						specularAccum += phong_specularReflection(normalVector, lightDirection, eyeVector, shininessCoeff)
-						* phong_fresnel(specular.rgb, lightDirection, eyeVector)
+					//gl_FragColor = vec4(abs(light.direction), 1.);
+					//return ;
+
+					if (light.cosOuterConeAngle < cosSpot)
+				{
+					vec3	distVec 	= vec3(1.0, distanceToLight, distanceToLight * distanceToLight);
+						float attenuation = any(lessThan(light.attenuationCoeffs, vec3(0.0)))
+						? 1.0
+							: max(0.0, 1.0 - distanceToLight / dot(light.attenuationCoeffs, distVec));
+
+						float cutoff = cosSpot < light.cosInnerConeAngle && light.cosOuterConeAngle < light.cosInnerConeAngle
+							? (cosSpot - light.cosOuterConeAngle) / (light.cosInnerConeAngle - light.cosOuterConeAngle)
+						: 1.0;
+
+						diffuseAccum += phong_diffuseReflection(normalVector, lightDirection)
 							* light.color
-							* (light.specular * attenuation * cutoff);
-				#endif // SHININESS
+							* light.diffuse * attenuation * cutoff;
+
+					#ifdef SHININESS
+							specularAccum += phong_specularReflection(normalVector, lightDirection, eyeVector, shininessCoeff)
+							* phong_fresnel(specular.rgb, lightDirection, eyeVector)
+								* light.color
+								* (light.specular * attenuation * cutoff);
+					#endif // SHININESS
+				}
 			}
-		}
 		#endif // NUM_SPOT_LIGHTS
 
 	#endif // defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
@@ -228,7 +226,7 @@ void main(void)
 		float	reflectivity	= specular.a;
 
 		#ifdef ENVIRONMENT_ALPHA
-			reflectivity	= environmentAlpha;
+			reflectivity	= uEnvironmentAlpha;
 		#endif // ENVIRONMENT_ALPHA
 
 		diffuse.rgb = mix(diffuse.rgb, envmapColor.rgb, reflectivity);
