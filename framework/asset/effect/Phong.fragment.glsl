@@ -67,53 +67,53 @@ uniform vec3 uCameraPosition;
 uniform float uEnvironmentAlpha;
 
 // directional lights
-uniform vec3 directionalLight0_direction;
-uniform vec3 directionalLight0_color;
-uniform float directionalLight0_diffuse;
-uniform float directionalLight0_specular;
-uniform sampler2D directionalLight0_shadowMap;
-uniform float directionalLight0_shadowMapSize;
-uniform float directionalLight0_shadowSpread;
-uniform float directionalLight0_shadowBias;
-uniform float directionalLight0_zNear;
-uniform float directionalLight0_zFar;
-uniform mat4 directionalLight0_viewProjection;
+uniform vec3 uDirectionalLight0_direction;
+uniform vec3 uDirectionalLight0_color;
+uniform float uDirectionalLight0_diffuse;
+uniform float uDirectionalLight0_specular;
+uniform sampler2D uDirectionalLight0_shadowMap;
+uniform float uDirectionalLight0_shadowMapSize;
+uniform float uDirectionalLight0_shadowSpread;
+uniform float uDirectionalLight0_shadowBias;
+uniform float uDirectionalLight0_zNear;
+uniform float uDirectionalLight0_zFar;
+uniform mat4 uDirectionalLight0_viewProjection;
 
-uniform vec3 directionalLight1_direction;
-uniform vec3 directionalLight1_color;
-uniform float directionalLight1_diffuse;
-uniform float directionalLight1_specular;
-uniform sampler2D directionalLight1_shadowMap;
-uniform float directionalLight1_shadowMapSize;
-uniform float directionalLight1_shadowSpread;
-uniform float directionalLight1_shadowBias;
-uniform float directionalLight1_zNear;
-uniform float directionalLight1_zFar;
-uniform mat4 directionalLight1_viewProjection;
+uniform vec3 uDirectionalLight1_direction;
+uniform vec3 uDirectionalLight1_color;
+uniform float uDirectionalLight1_diffuse;
+uniform float uDirectionalLight1_specular;
+uniform sampler2D uDirectionalLight1_shadowMap;
+uniform float uDirectionalLight1_shadowMapSize;
+uniform float uDirectionalLight1_shadowSpread;
+uniform float uDirectionalLight1_shadowBias;
+uniform float uDirectionalLight1_zNear;
+uniform float uDirectionalLight1_zFar;
+uniform mat4 uDirectionalLight1_viewProjection;
 
-uniform vec3 directionalLight2_direction;
-uniform vec3 directionalLight2_color;
-uniform float directionalLight2_diffuse;
-uniform float directionalLight2_specular;
-uniform sampler2D directionalLight2_shadowMap;
-uniform float directionalLight2_shadowMapSize;
-uniform float directionalLight2_shadowSpread;
-uniform float directionalLight2_shadowBias;
-uniform float directionalLight2_zNear;
-uniform float directionalLight2_zFar;
-uniform mat4 directionalLight2_viewProjection;
+uniform vec3 uDirectionalLight2_direction;
+uniform vec3 uDirectionalLight2_color;
+uniform float uDirectionalLight2_diffuse;
+uniform float uDirectionalLight2_specular;
+uniform sampler2D uDirectionalLight2_shadowMap;
+uniform float uDirectionalLight2_shadowMapSize;
+uniform float uDirectionalLight2_shadowSpread;
+uniform float uDirectionalLight2_shadowBias;
+uniform float uDirectionalLight2_zNear;
+uniform float uDirectionalLight2_zFar;
+uniform mat4 uDirectionalLight2_viewProjection;
 
-uniform vec3 directionalLight3_direction;
-uniform vec3 directionalLight3_color;
-uniform float directionalLight3_diffuse;
-uniform float directionalLight3_specular;
-uniform sampler2D directionalLight3_shadowMap;
-uniform float directionalLight3_shadowMapSize;
-uniform float directionalLight3_shadowSpread;
-uniform float directionalLight3_shadowBias;
-uniform float directionalLight3_zNear;
-uniform float directionalLight3_zFar;
-uniform mat4 directionalLight3_viewProjection;
+uniform vec3 uDirectionalLight3_direction;
+uniform vec3 uDirectionalLight3_color;
+uniform float uDirectionalLight3_diffuse;
+uniform float uDirectionalLight3_specular;
+uniform sampler2D uDirectionalLight3_shadowMap;
+uniform float uDirectionalLight3_shadowMapSize;
+uniform float uDirectionalLight3_shadowSpread;
+uniform float uDirectionalLight3_shadowBias;
+uniform float uDirectionalLight3_zNear;
+uniform float uDirectionalLight3_zFar;
+uniform mat4 uDirectionalLight3_viewProjection;
 // ! directional lights
 
 varying vec3 vertexPosition;
@@ -234,30 +234,30 @@ void main(void)
 		#if NUM_DIRECTIONAL_LIGHTS > 0
 			shadow = 1.0;
 			#ifdef DIRECTIONAL_0_SHADOW_MAP
-				shadow = getShadow(directionalLight0_shadowMap, directionalLight0_viewProjection, directionalLight0_shadowMapSize, directionalLight0_zNear, directionalLight0_zFar, directionalLight0_shadowBias);
+				shadow = getShadow(uDirectionalLight0_shadowMap, uDirectionalLight0_viewProjection, uDirectionalLight0_shadowMapSize, uDirectionalLight0_zNear, uDirectionalLight0_zFar, uDirectionalLight0_shadowBias);
 			#endif
-			directionalLight(directionalLight0_direction, directionalLight0_color, directionalLight0_diffuse, directionalLight0_specular, shadow);
+			directionalLight(uDirectionalLight0_direction, uDirectionalLight0_color, uDirectionalLight0_diffuse, uDirectionalLight0_specular, shadow);
 		#endif // NUM_DIRECTIONAL_LIGHTS > 0
 		#if NUM_DIRECTIONAL_LIGHTS > 1
 			shadow = 1.0;
 			#ifdef DIRECTIONAL_1_SHADOW_MAP
-				shadow = getShadow(directionalLight1_shadowMap, directionalLight1_viewProjection, directionalLight1_shadowMapSize, directionalLight1_zNear, directionalLight1_zFar, directionalLight1_shadowBias);
+				shadow = getShadow(uDirectionalLight1_shadowMap, uDirectionalLight1_viewProjection, uDirectionalLight1_shadowMapSize, uDirectionalLight1_zNear, uDirectionalLight1_zFar, uDirectionalLight1_shadowBias);
 			#endif
-			directionalLight(directionalLight1_direction, directionalLight1_color, directionalLight1_diffuse, directionalLight1_specular, shadow);
+			directionalLight(uDirectionalLight1_direction, uDirectionalLight1_color, uDirectionalLight1_diffuse, uDirectionalLight1_specular, shadow);
 		#endif // NUM_DIRECTIONAL_LIGHTS > 1
 		#if NUM_DIRECTIONAL_LIGHTS > 2
 			shadow = 1.0;
 			#ifdef DIRECTIONAL_2_SHADOW_MAP
-				shadow = getShadow(directionalLight2_shadowMap, directionalLight2_viewProjection, directionalLight2_shadowMapSize, directionalLight2_zNear, directionalLight2_zFar, directionalLight2_shadowBias);
+				shadow = getShadow(uDirectionalLight2_shadowMap, uDirectionalLight2_viewProjection, uDirectionalLight2_shadowMapSize, uDirectionalLight2_zNear, uDirectionalLight2_zFar, uDirectionalLight2_shadowBias);
 			#endif
-			directionalLight(directionalLight2_direction, directionalLight2_color, directionalLight2_diffuse, directionalLight2_specular, shadow);
+			directionalLight(uDirectionalLight2_direction, uDirectionalLight2_color, uDirectionalLight2_diffuse, uDirectionalLight2_specular, shadow);
 		#endif // NUM_DIRECTIONAL_LIGHTS > 2
 		#if NUM_DIRECTIONAL_LIGHTS > 3
 			shadow = 1.0;
 			#ifdef DIRECTIONAL_3_SHADOW_MAP
-				shadow = getShadow(directionalLight3_shadowMap, directionalLight3_viewProjection, directionalLight3_shadowMapSize, directionalLight3_zNear, directionalLight3_zFar, directionalLight3_shadowBias);
+				shadow = getShadow(uDirectionalLight3_shadowMap, uDirectionalLight3_viewProjection, uDirectionalLight3_shadowMapSize, uDirectionalLight3_zNear, uDirectionalLight3_zFar, uDirectionalLight3_shadowBias);
 			#endif
-			directionalLight(directionalLight3_direction, directionalLight3_color, directionalLight3_diffuse, directionalLight3_specular, shadow);
+			directionalLight(uDirectionalLight3_direction, uDirectionalLight3_color, uDirectionalLight3_diffuse, uDirectionalLight3_specular, shadow);
 		#endif // NUM_DIRECTIONAL_LIGHTS > 1
 
 
