@@ -8,8 +8,7 @@
 # endif
 #endif
 
-#pragma include "../Skinning.function.glsl"
-#pragma include "pack.function.glsl"
+#pragma include "Skinning.function.glsl"
 
 attribute 	vec3 	aPosition;
 attribute 	vec2 	aUV;
@@ -30,15 +29,15 @@ uniform 	vec2 	uUVOffset;
 uniform 	mat4 	uLightWorldToScreenMatrix;
 
 varying 	vec3 	vertexPosition;
+varying 	vec4 	vertexScreenPosition;
 varying 	vec2 	vertexUV;
 varying 	vec3 	vertexNormal;
 varying 	vec3 	vertexTangent;
-varying 	vec3 	vertexLightPosition;
 
 void main(void)
 {
 	#if defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP
-		vertexUV = uUVScale * uv + uUVOffset;
+		vertexUV = uUVScale * aUV + uUVOffset;
 	#endif // defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP
 
 	vec4 worldPosition = vec4(aPosition, 1.0);
@@ -73,13 +72,13 @@ void main(void)
 			vertexTangent = normalize(vertexTangent);
 		#endif // NORMAL_MAP
 
-		#ifdef SHADOW_MAP
-			vertexLightPosition = vec3(uLightWorldToScreenMatrix * worldPosition);
-		#endif
-
 	#endif // NUM_DIRECTIONAL_LIGHTS || NUM_POINT_LIGHTS || NUM_SPOT_LIGHTS || ENVIRONMENT_MAP_2D || ENVIRONMENT_CUBE_MAP
 
-	gl_Position =  uWorldToScreenMatrix * worldPosition;
+	vec4 screenPosition = uWorldToScreenMatrix * worldPosition;
+
+	vertexScreenPosition = screenPosition;
+
+	gl_Position = screenPosition;
 }
 
 #endif // VERTEX_SHADER

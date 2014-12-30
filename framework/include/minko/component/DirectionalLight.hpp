@@ -34,7 +34,12 @@ namespace minko
 		    typedef std::shared_ptr<DirectionalLight> Ptr;
 
 		private:
-			math::vec3	_worldDirection;
+			math::vec3                         _worldDirection;
+            bool                               _shadowMappingEnabled;
+            std::shared_ptr<render::Texture>   _shadowMap;
+            std::shared_ptr<Renderer>          _renderer;
+            math::mat4                         _view;
+            math::mat4                         _projection;
 
 	    public:
 		    inline static
@@ -51,15 +56,51 @@ namespace minko
 		    {
 		    }
 
+            inline
+            void
+            shadowProjection(const minko::math::mat4& projection)
+            {
+                _projection = projection;
+                updateWorldToScreenMatrix();
+            }
+
+            inline
+            std::shared_ptr<render::Texture>
+            shadowMap()
+            {
+                return _shadowMap;
+            }
+
+            inline
+            void
+            shadowSpread(float spread)
+            {
+                data()->set("shadowSpread", spread);
+            }
+
+            void
+            computeShadowProjection(const math::mat4& viewProjection);
+
 		protected:
 			void
             updateModelToWorldMatrix(const math::mat4& modelToWorld);
 
+            void
+            updateRoot(std::shared_ptr<scene::Node> root);
+
+            void
+            targetRemoved(std::shared_ptr<scene::Node> target);
+
 	    private:
-            DirectionalLight(float diffuse,
-                             float specular);
+            DirectionalLight(float diffuse, float specular);
 
 			DirectionalLight(const DirectionalLight& directionalLight, const CloneOption& option);
+
+            void
+            initializeShadowMapping(std::shared_ptr<file::AssetLibrary> assets);
+
+            void
+            updateWorldToScreenMatrix();
 	    };
     }
 }

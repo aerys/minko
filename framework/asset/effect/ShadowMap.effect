@@ -1,0 +1,92 @@
+{
+    "name" : "shadow-mapping",
+
+    "techniques" : [{ "passes" : [
+        {
+            "name" : "shadow-mapping-pass",
+
+            "attributes" : {
+                "aPosition"		: "geometry[${geometryUuid}].position",
+                "boneIdsA"		: "geometry[${geometryUuid}].boneIdsA",
+                "boneIdsB"		: "geometry[${geometryUuid}].boneIdsB",
+                "boneWeightsA"	: "geometry[${geometryUuid}].boneWeightsA",
+                "boneWeightsB"	: "geometry[${geometryUuid}].boneWeightsB"
+            },
+
+            "uniforms" : {
+                "uModelToWorldMatrix"	: "modelToWorldMatrix",
+                "uWorldToScreenMatrix"  : { "binding" : { "property" : "directionalLight[${lightUuid}].viewProjection", "source" : "root" } },
+                "uZNear"                : { "binding" : { "property" : "directionalLight[${lightUuid}].zNear", "source" : "root" } },
+                "uZFar"                 : { "binding" : { "property" : "directionalLight[${lightUuid}].zFar", "source" : "root" } }
+            },
+
+            "macros" : {
+                "MODEL_TO_WORLD"    : "modelToWorldMatrix",
+                "NUM_BONES"			: "geometry[${geometryUuid}].numBones"
+            },
+
+            "states" : {
+                "target" : "vsm-depth-texture",
+                "priority" : 1.0
+            },
+
+            "vertexShader" : "#pragma include \"ShadowMap.glsl\"",
+            "fragmentShader" : "#pragma include \"ShadowMap.glsl\""
+        },
+
+        {
+            "name" : "shadow-mapping-boxblur",
+            "postProcessing" : true,
+
+            "attributes" : {
+                "aPosition" : { "binding" : { "property" : "postProcessingPosition", "source" : "renderer" } },
+                "aUV" : { "binding" : { "property" : "postProcessingUV", "source" : "renderer" } }
+            },
+
+            "uniforms" : {
+                "uTexture" : { "binding" : { "property" : "effect[${effectUuid}].vsm-depth-texture", "source" : "renderer" } },
+                "uTextureSize" : { "binding" : { "property" : "directionalLight[${lightUuid}].shadowMapSize", "source" : "root" } },
+                "uSpread" : { "binding" : { "property" : "directionalLight[${lightUuid}].shadowSpread", "source" : "root" } }
+            },
+
+            "states" : {
+                "priority" : 0.0
+            },
+
+            "vertexShader" : "
+                attribute vec2 aPosition;
+                attribute vec2 aUV;
+
+                varying vec2 vUV;
+
+                void main()
+                {
+                    gl_Position = vec4(aPosition, 0, 1);
+
+                    vUV = aUV;
+                }
+            ",
+
+            "fragmentShader" : "
+                uniform sampler2D uTexture;
+                uniform float uTextureSize;
+                uniform float uSpread;
+
+                varying vec2 vUV;
+
+                #pragma include \"Pack.function.glsl\"
+
+                void main()
+                {
+                    float c = 0.0;
+
+                    for (int x = -1; x <= 1; ++x)
+                        for (int y = -1; y <= 1; ++y)
+                            c += unpackFloat8bitRGBA(texture2D(uTexture, vUV + (vec2(x, y) * uSpread) / uTextureSize));
+
+                    gl_FragColor = packFloat8bitRGBA(c / 9.0);
+                }
+            "
+        }
+    ]}]
+}
