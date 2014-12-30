@@ -1,8 +1,9 @@
 minko.project.library "minko-framework"
 
 	-- fixme remove dependency with offscreen plugin
-	configuration { "with-offscreen" }
+	if _OPTIONS['with-offscreen'] then
 		minko.plugin.enable("offscreen")
+	end
 
 	configuration { }
 

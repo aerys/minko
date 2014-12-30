@@ -349,8 +349,9 @@ minko.project.application = function(name)
 			minko.sdk.path("/framework/bin/android/release")
 		}
 
-    configuration { "with-offscreen" }
-            minko.plugin.enable { "offscreen" }
+	if _OPTIONS['with-offscreen'] then
+        minko.plugin.enable { "offscreen" }
+    end
 
     configuration { "android", "debug" }
     	libdirs {

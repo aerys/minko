@@ -18,11 +18,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 ]]--
 
 -- offscreen plugin
-minko.plugin.offscreen = {}
+minko.plugin.offscreen = { }
 
 function minko.plugin.offscreen:enable()
-
-	if _OPTIONS['with-offscreen'] then
 
 	defines { "MINKO_PLUGIN_OFFSCREEN" }
 
@@ -34,7 +32,6 @@ function minko.plugin.offscreen:enable()
 		"OpenGL32",
 		"glew32"
 	}
-
 
 	includedirs {
 		minko.plugin.path("offscreen") .. "/include",
@@ -49,9 +46,6 @@ function minko.plugin.offscreen:enable()
 		prelinkcommands {
 			minko.action.copy(minko.plugin.path("offscreen") .. "/lib/osmesa/windows/lib/*.dll")
 		}
-		
-	end
-	
 end
 
 newoption {
