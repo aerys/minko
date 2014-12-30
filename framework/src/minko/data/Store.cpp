@@ -406,8 +406,9 @@ Store::getActualPropertyName(const std::unordered_map<std::string, std::string>&
         auto pos = propertyName.find("${" + variableName.first + "}");
 
         if (pos != std::string::npos)
-            return propertyName.substr(0, pos) + variableName.second
-                + propertyName.substr(pos + variableName.first.size() + 3);
+            return propertyName.substr(0, pos) + variableName.second + propertyName.substr(pos + variableName.first.size() + 3);
+        else if ((pos = propertyName.find("$" + variableName.first)) != std::string::npos)
+            return propertyName.substr(0, pos) + variableName.second + propertyName.substr(pos + variableName.first.size() + 1);
     }
 
     return propertyName;
