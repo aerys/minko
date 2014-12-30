@@ -323,7 +323,7 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
 
         passes.push_back(Pass::create(
             passName,
-			node.get("postProcessing", false).asBool(),
+			node.get("isPostProcessing", false).asBool(),
             Program::create(passName, _options->context(), vertexShader, fragmentShader),
             passScope.attributeBlock.bindingMap,
             passScope.uniformBlock.bindingMap,
