@@ -23,6 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Store.hpp"
 #include "minko/log/Logger.hpp"
 
+#include <regex>
+
 using namespace minko;
 using namespace minko::render;
 
@@ -408,13 +410,33 @@ DrawCall::resolveBinding(const std::string&                             inputNam
         isArray = true;
     }
 
-    if (bindings.count(bindingName) == 0)
-        return nullptr;
+    const data::Binding* binding = nullptr;
+    std::string bindingPropertyName;
+    if (bindings.count(bindingName) != 0)
+    {
+        binding = &bindings.at(bindingName);
+        bindingPropertyName = binding->propertyName;
+    }
+    else
+    {
+        for (const auto& inputNameAndBinding : bindings)
+        {
+            std::regex r(inputNameAndBinding.first);
 
-    const auto& binding = bindings.at(bindingName);
+            if (std::regex_match(inputName, r))
+            {
+                bindingPropertyName = std::regex_replace(inputName, r, inputNameAndBinding.second.propertyName);
+                binding = &inputNameAndBinding.second;
+                break;
+            }
+        }
 
-    auto& store = getStore(binding.source);
-    auto propertyName = data::Store::getActualPropertyName(_variables, binding.propertyName);
+        if (!binding)
+            return nullptr;
+    }
+
+    auto& store = getStore(binding->source);
+    auto propertyName = data::Store::getActualPropertyName(_variables, bindingPropertyName);
 
     // FIXME: handle uniforms with struct types
 
@@ -426,7 +448,7 @@ DrawCall::resolveBinding(const std::string&                             inputNam
     if (isArray)
         propertyName += inputName.substr(pos);
 
-    return new data::ResolvedBinding(binding, propertyName, store);
+    return new data::ResolvedBinding(*binding, propertyName, store);
 }
 
 math::vec3
