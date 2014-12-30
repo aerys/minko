@@ -28,8 +28,6 @@ using namespace minko::render;
 Effect::Effect(const std::string& name) :
     _data(data::Provider::create())
 {
-    _data->set("name", name);
-    _data->set("uuid", _data->uuid());
 }
 
 void
