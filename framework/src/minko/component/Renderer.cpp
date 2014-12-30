@@ -56,6 +56,7 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
     _clearBeforeRender(true),
 	_priority(priority),
 	_renderTarget(renderTarget),
+	_postProcessingGeom(nullptr),
 	/*_targetDataFilters(),
 	_rendererDataFilters(),
 	_rootDataFilters(),
@@ -108,11 +109,40 @@ Renderer::clone(const CloneOption& option)
 */
 
 void
+Renderer::initializePostProcessingGeometry()
+{
+	auto context = _sceneManager->assets()->context();
+	auto vb = render::VertexBuffer::create(context, {
+		-1.f, 	1.f, 	0.f,	1.f,
+		-1.f, 	-1.f, 	0.f, 	0.f,
+		1.f, 	1.f, 	1.f, 	1.f,
+		1.f, 	1.f, 	1.f, 	1.f,
+		-1.f, 	-1.f, 	0.f, 	0.f,
+		1.f, 	-1.f, 	1.f, 	0.f,
+	});
+	vb->addAttribute("position", 2);
+	vb->addAttribute("uv", 2, 2);
+
+	auto p = data::Provider::create();
+	p->set("postProcessingPosition", vb->attribute("position"));
+	p->set("postProcessingUV", vb->attribute("uv"));
+
+	_postProcessingGeom = geometry::Geometry::create();
+	_postProcessingGeom->addVertexBuffer(vb);
+	// _postProcessingGeom->indices(render::IndexBuffer::create(context, { 0, 2, 1, 1, 2, 3 }));
+
+	target()->data().addProvider(p);
+}
+
+void
 Renderer::targetAdded(std::shared_ptr<Node> target)
 {
     // Comment due to reflection component
 	//if (target->components<Renderer>().size() > 1)
 	//	throw std::logic_error("There cannot be two Renderer on the same node.");
+
+	if (_effect)
+		target->data().addProvider(_effect->data(), Surface::EFFECT_COLLECTION_NAME);
 
 	_addedSlot = target->added().connect(std::bind(
 		&Renderer::addedHandler,
@@ -136,6 +166,9 @@ Renderer::targetAdded(std::shared_ptr<Node> target)
 void
 Renderer::targetRemoved(std::shared_ptr<Node> target)
 {
+	if (_effect)
+		target->data().removeProvider(_effect->data(), Surface::EFFECT_COLLECTION_NAME);
+
 	_addedSlot = nullptr;
 	_removedSlot = nullptr;
 
@@ -270,18 +303,14 @@ Renderer::componentRemovedHandler(std::shared_ptr<Node>					node,
 void
 Renderer::addSurface(Surface::Ptr surface)
 {
-    std::unordered_map<std::string, std::string> variables;
+    std::unordered_map<std::string, std::string> variables = _variables;
 
     auto& c = surface->target()->data();
-    auto surfaceUuid = surface->uuid();
-    auto geometryUuid = surface->geometry()->uuid();
-    auto materialUuid = surface->material()->uuid();
-    auto effectUuid = surface->effect()->uuid();
 
-    variables["surfaceUuid"] = surfaceUuid;
-    variables["geometryUuid"] = geometryUuid;
-    variables["materialUuid"] = materialUuid;
-    variables["effectUuid"] = effectUuid;
+    variables["surfaceUuid"] = surface->uuid();
+    variables["geometryUuid"] = surface->geometry()->uuid();
+    variables["materialUuid"] = surface->material()->uuid();
+    variables["effectUuid"] = _effect ? _effect->uuid() : surface->effect()->uuid();
 
     _surfaceToDrawCallIterator[surface] = _drawCallPool.addDrawCalls(
 		&surface->layoutMask(),
@@ -326,11 +355,11 @@ Renderer::surfaceGeometryOrMaterialChangedHandler(Surface::Ptr surface)
     // we completely remove the surface and re-add it again because
     // it's way simpler than just updating what has changed.
 
-    std::unordered_map<std::string, std::string> variables;
+    std::unordered_map<std::string, std::string> variables = _variables;
     variables["surfaceUuid"] = surface->uuid();
     variables["geometryUuid"] = surface->geometry()->uuid();
     variables["materialUuid"] = surface->material()->uuid();
-    variables["effectUuid"] = surface->effect()->uuid();
+    variables["effectUuid"] = _effect ? _effect->uuid() : surface->effect()->uuid();
 
     _drawCallPool.invalidateDrawCalls(_surfaceToDrawCallIterator[surface], variables);
     //removeSurface(surface);
@@ -386,7 +415,9 @@ Renderer::render(render::AbstractContext::Ptr	context,
     _drawCallPool.update();
     for (const auto& drawCall : _drawCallPool.drawCalls())
 	    if ((drawCall.layout() & layoutMask()) != 0)
-		    drawCall.render(context, rt, _viewportBox);
+		    drawCall.render(context, rt, _viewportBox, _backgroundColor);
+
+	context->setRenderToBackBuffer();
 
     _beforePresent->execute(std::static_pointer_cast<Renderer>(shared_from_this()));
 
@@ -428,11 +459,19 @@ Renderer::setSceneManager(std::shared_ptr<SceneManager> sceneManager)
 				std::placeholders::_2,
 				std::placeholders::_3
 			), _priority);
+
+			initializePostProcessingGeometry();
 		}
 		else
 		{
 			_sceneManager = nullptr;
 			_renderingBeginSlot = nullptr;
+
+			if (_postProcessingGeom)
+			{
+				target()->data().removeProvider(_postProcessingGeom->data(), Surface::GEOMETRY_COLLECTION_NAME);
+				_postProcessingGeom = nullptr;
+			}
 		}
 	}
 }

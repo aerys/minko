@@ -51,7 +51,7 @@ namespace minko
 			typedef std::shared_ptr<data::AbstractFilter>				            AbsFilterPtr;
 			typedef Signal<SurfacePtr, const std::string&, bool>::Slot	            SurfaceTechniqueChangedSlot;
 			typedef Signal<AbsFilterPtr, SurfacePtr>::Slot				            FilterChangedSlot;
-            typedef data::Store                                                 Store;
+            typedef data::Store                                                 	Store;
             typedef std::shared_ptr<data::Collection>                               CollectionPtr;
             typedef std::shared_ptr<data::Provider>                                 ProviderPtr;
 			typedef Signal<Ptr, AbsFilterPtr, data::Binding::Source, SurfacePtr>	RendererFilterChangedSignal;
@@ -69,12 +69,14 @@ namespace minko
 			Signal<Ptr>::Ptr											    _renderingEnd;
 			Signal<Ptr>::Ptr											    _beforePresent;
 			AbsTexturePtr												    _renderTarget;
-            bool                                                                _clearBeforeRender;
+            bool                                                            _clearBeforeRender;
+			std::unordered_map<std::string, std::string>					_variables;
 
 			std::set<std::shared_ptr<Surface>>							    _toCollect;
 			EffectPtr													    _effect;
 			float														    _priority;
 			bool														    _enabled;
+			std::shared_ptr<geometry::Geometry>								_postProcessingGeom;
 
 			Signal<AbsCmpPtr, NodePtr>::Slot							    _targetAddedSlot;
 			Signal<AbsCmpPtr, NodePtr>::Slot							    _targetRemovedSlot;
@@ -190,7 +192,6 @@ namespace minko
 				_priority = priority;
 			}
 
-
             inline
 			void viewport(const int x, const int y, const int w, const int h)
             {
@@ -229,6 +230,13 @@ namespace minko
             {
                 return _clearBeforeRender;
             }
+
+			inline
+			std::unordered_map<std::string, std::string>&
+			effectVariables()
+			{
+				return _variables;
+			}
 
             inline
             void
@@ -313,9 +321,12 @@ namespace minko
 			targetRemoved(NodePtr target);
 
 		private:
-			Renderer(AbsTexturePtr		renderTarget = nullptr,
+			Renderer(AbsTexturePtr		renderTarget 	= nullptr,
 					 EffectPtr			effect			= nullptr,
 					 float				priority		= 0.f);
+
+			void
+			initializePostProcessingGeometry();
 
 			void
 			addedHandler(NodePtr node, NodePtr target, NodePtr parent);
