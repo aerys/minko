@@ -388,7 +388,7 @@ DrawCall::render(AbstractContext::Ptr   context,
     context->setScissorTest(*_scissorTest, *_scissorBox);
     context->setTriangleCulling(*_triangleCulling);
 
-    if (_pass->postProcessing())
+    if (_pass->isPostProcessing())
         context->drawTriangles(0, 2);
     else
         context->drawTriangles(*_indexBuffer, *_firstIndex, *_numIndices / 3);

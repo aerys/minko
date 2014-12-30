@@ -266,7 +266,7 @@ DrawCallPool::initializeDrawCall(DrawCall& drawCall)
     // bind uniforms
     bindUniforms(pass->uniformBindings(), program, drawCall);
     drawCall.bindStates(pass->stateBindings().bindings, pass->stateBindings().defaultValues);
-    if (!pass->postProcessing())
+    if (!pass->isPostProcessing())
         drawCall.bindIndexBuffer();
 
     // FIXME: avoid const_cast
