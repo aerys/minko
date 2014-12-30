@@ -27,7 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 namespace minko
 {
 	namespace data
-	{			
+	{
 		class Provider :
 			public std::enable_shared_from_this<Provider>,
             public Uuid::enable_uuid
@@ -66,7 +66,7 @@ namespace minko
 			create()
 			{
 				Ptr provider = std::shared_ptr<Provider>(new Provider());
-				
+
 				return provider;
 			}
 
@@ -78,7 +78,7 @@ namespace minko
 			}
 
 			inline
-			bool 
+			bool
             hasProperty(const std::string& propertyName) const
             {
                 return _values.count(propertyName) != 0;
@@ -145,7 +145,8 @@ namespace minko
                     T* ptr = Any::cast<T>(&_values[propertyName]);
                     auto changed = !(*ptr == value);
 
-                    *ptr = value;
+                    // *ptr = value;
+					memcpy(ptr, &value, sizeof(T));
                     if (changed)
                         _propertyChanged.execute(shared_from_this(), propertyName);
                 }
@@ -179,7 +180,7 @@ namespace minko
 				{
 					return false;
 				}
-				
+
 				return true;
 			}
 
