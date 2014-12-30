@@ -69,7 +69,6 @@ namespace minko
 
             struct AttributeValue
             {
-                const uint position;
                 const int location;
                 const int* resourceId;
                 const uint size;
@@ -249,7 +248,8 @@ namespace minko
 			void
 			render(std::shared_ptr<AbstractContext>  context,
                    AbsTexturePtr                     renderTarget,
-				   const math::ivec4&				 viewport) const;
+				   const math::ivec4&				 viewport,
+				   uint 							 clearColor) const;
 
             data::ResolvedBinding*
             bindUniform(const ProgramInputs::UniformInput&          input,
@@ -259,6 +259,9 @@ namespace minko
 			void
             bindStates(const std::map<std::string, data::Binding>&	stateBindings,
 					   const data::Store&							defaultValues);
+
+			void
+			bindIndexBuffer();
 
             math::vec3
             getEyeSpacePosition();
@@ -275,9 +278,6 @@ namespace minko
             bindAttribute(ConstAttrInputRef     input,
 						  const data::Store&    store,
 						  const std::string&    propertyName);
-
-			void
-			bindIndexBuffer();
 
             data::Store&
             getStore(data::Binding::Source source);

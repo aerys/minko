@@ -171,6 +171,7 @@ namespace minko
             ShaderToGLSLBlocks              _shaderToGLSL;
 			unsigned int					_numDependencies;
 			unsigned int					_numLoadedDependencies;
+            std::shared_ptr<data::Provider> _effectData;
 
             LoaderCompleteSlotMap           _loaderCompleteSlots;
             LoaderErrorSlotMap              _loaderErrorSlots;
@@ -206,22 +207,6 @@ namespace minko
 
 		private:
 			EffectParser();
-
-            static
-            std::unordered_map<std::string, unsigned int>
-            initializeBlendFactorMap();
-
-            static
-            std::unordered_map<std::string, render::CompareMode>
-            initializeCompareFuncMap();
-
-            static
-            std::unordered_map<std::string, render::StencilOperation>
-            initializeStencilOperationMap();
-
-            static
-            std::unordered_map<std::string, float>
-            initializePriorityMap();
 
             float
             getPriorityValue(const std::string& name);

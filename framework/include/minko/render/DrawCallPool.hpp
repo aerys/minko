@@ -132,7 +132,7 @@ namespace minko
                                         const std::list<DrawCall*>& drawCalls);
 
             void
-            macroPropertyChangedHandler(const std::list<DrawCall*>& drawCalls);
+            macroPropertyChangedHandler(const data::MacroBinding& macroBinding, const std::list<DrawCall*>& drawCalls);
 
             void
             initializeDrawCall(DrawCall& drawCall);

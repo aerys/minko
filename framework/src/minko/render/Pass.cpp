@@ -31,6 +31,7 @@ using namespace minko::render;
 using namespace minko::data;
 
 Pass::Pass(const std::string&		name,
+		   bool						isPostProcessing,
 		   Program::Ptr				program,
 		   const BindingMap&		attributeBindings,
 		   const BindingMap&		uniformBindings,
@@ -38,6 +39,7 @@ Pass::Pass(const std::string&		name,
 		   const MacroBindingMap&	macroBindings,
            const States&            states) :
 	_name(name),
+	_isPostProcessing(isPostProcessing),
 	_programTemplate(program),
 	_attributeBindings(attributeBindings),
 	_uniformBindings(uniformBindings),

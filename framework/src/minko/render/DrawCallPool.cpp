@@ -104,8 +104,8 @@ DrawCallPool::watchProgramSignature(DrawCall&                       drawCall,
         {
             addMacroCallback(
                 bindingKey,
-                store.propertyChanged(),
-                std::bind(&DrawCallPool::macroPropertyChangedHandler, this, std::ref(drawCalls))
+                store.propertyChanged(macroBinding.propertyName),
+                std::bind(&DrawCallPool::macroPropertyChangedHandler, this, std::ref(macroBinding), std::ref(drawCalls))
             );
         }
         else
@@ -116,7 +116,7 @@ DrawCallPool::watchProgramSignature(DrawCall&                       drawCall,
             {
                 addMacroCallback(
                     bindingKey,
-                    store.propertyRemoved(),
+                    store.propertyRemoved(macroBinding.propertyName),
                     std::bind(
                         &DrawCallPool::macroPropertyRemovedHandler,
                         this,
@@ -130,7 +130,7 @@ DrawCallPool::watchProgramSignature(DrawCall&                       drawCall,
             {
                 addMacroCallback(
                     bindingKey,
-                    store.propertyAdded(),
+                    store.propertyAdded(macroBinding.propertyName),
                     std::bind(
                         &DrawCallPool::macroPropertyAddedHandler,
                         this,
@@ -146,9 +146,9 @@ DrawCallPool::watchProgramSignature(DrawCall&                       drawCall,
 }
 
 void
-DrawCallPool::addMacroCallback(const MacroBindingKey&         key,
-                                     PropertyChanged&         signal,
-                                     const PropertyCallback&  callback)
+DrawCallPool::addMacroCallback(const MacroBindingKey&   key,
+                               PropertyChanged&         signal,
+                               const PropertyCallback&  callback)
 {
     if (_macroChangedSlot.count(key) == 0)
         _macroChangedSlot.emplace(key, ChangedSlot(signal.connect(callback), 1));
@@ -171,7 +171,7 @@ DrawCallPool::hasMacroCallback(const MacroBindingKey& key)
 }
 
 void
-DrawCallPool::macroPropertyChangedHandler(const std::list<DrawCall*>& drawCalls)
+DrawCallPool::macroPropertyChangedHandler(const data::MacroBinding& macroBinding, const std::list<DrawCall*>& drawCalls)
 {
     _invalidDrawCalls.insert(drawCalls.begin(), drawCalls.end());
 }
@@ -196,7 +196,7 @@ DrawCallPool::macroPropertyAddedHandler(const data::MacroBinding&   macroBinding
         )
     );
 
-    macroPropertyChangedHandler(drawCalls);
+    macroPropertyChangedHandler(macroBinding, drawCalls);
 }
 
 void
@@ -205,6 +205,8 @@ DrawCallPool::macroPropertyRemovedHandler(const data::MacroBinding&     macroBin
                                           const std::list<DrawCall*>&   drawCalls)
 {
     MacroBindingKey key(&macroBinding, &store);
+
+    std::cout << "removed " << macroBinding.propertyName << std::endl;
 
     removeMacroCallback(key);
     addMacroCallback(
@@ -219,7 +221,7 @@ DrawCallPool::macroPropertyRemovedHandler(const data::MacroBinding&     macroBin
         )
     );
 
-    macroPropertyChangedHandler(drawCalls);
+    macroPropertyChangedHandler(macroBinding, drawCalls);
 }
 
 void
@@ -264,6 +266,8 @@ DrawCallPool::initializeDrawCall(DrawCall& drawCall)
     // bind uniforms
     bindUniforms(pass->uniformBindings(), program, drawCall);
     drawCall.bindStates(pass->stateBindings().bindings, pass->stateBindings().defaultValues);
+    if (!pass->postProcessing())
+        drawCall.bindIndexBuffer();
 
     // FIXME: avoid const_cast
     if (programAndSignature.second != nullptr)
@@ -332,18 +336,24 @@ DrawCallPool::update()
 bool
 DrawCallPool::compareDrawCalls(DrawCall& a, DrawCall& b)
 {
-    // FIXME: Sort according to render targets
-
     const float aPriority = a.priority();
     const float bPriority = b.priority();
     const bool samePriority = fabsf(aPriority - bPriority) < 1e-3f;
 
-    if (samePriority && a.zSorted() && b.zSorted())
+    if (samePriority)
     {
-        auto aPosition = getDrawcallEyePosition(a);
-        auto bPosition = getDrawcallEyePosition(b);
+        if (a.target().id == b.target().id)
+        {
+            if (a.zSorted() && b.zSorted())
+            {
+                auto aPosition = getDrawcallEyePosition(a);
+                auto bPosition = getDrawcallEyePosition(b);
 
-        return aPosition.z > bPosition.z;
+                return aPosition.z > bPosition.z;
+            }
+        }
+
+        return a.target().id < b.target().id;
     }
 
     return aPriority > bPriority;

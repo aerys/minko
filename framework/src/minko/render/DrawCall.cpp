@@ -18,8 +18,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/render/DrawCall.hpp"
+
 #include "minko/render/DrawCallZSorter.hpp"
 #include "minko/data/Store.hpp"
+#include "minko/log/Logger.hpp"
 
 using namespace minko;
 using namespace minko::render;
@@ -41,7 +43,10 @@ DrawCall::DrawCall(const scene::Layout*   layout,
     _targetData(targetData),
     _zSorter(DrawCallZSorter::create(this)),
     _zSortNeeded(Signal<DrawCall*>::create()),
-    _target(nullptr)
+    _target(nullptr),
+    _indexBuffer(nullptr),
+    _firstIndex(nullptr),
+    _numIndices(nullptr)
 {
     _zSorter->initialize(_targetData, _rendererData, _rootData);
 }
@@ -83,7 +88,7 @@ DrawCall::bind(std::shared_ptr<Program> program)
 
     _program = program;
 
-    bindIndexBuffer();
+    // bindIndexBuffer();
     // bindStates();
     //bindUniforms();
     bindAttributes();
@@ -248,8 +253,20 @@ DrawCall::bindAttribute(ConstAttrInputRef       input,
 {
     const auto& attr = store.getPointer<VertexAttribute>(propertyName);
 
+#ifdef DEBUG
+    const auto& setAttributes = _program->setAttributeNames();
+
+    if (std::find(setAttributes.begin(), setAttributes.end(), input.name) != setAttributes.end())
+    {
+        LOG_WARNING(
+            "Program \"" + _program->name() + "\", vertex attribute \""
+            + input.name + "\" set manually but overriden by a binding to the \""
+            + propertyName + "\" property."
+        );
+    }
+#endif
+
     _attributes.push_back({
-        static_cast<uint>(_program->setAttributeNames().size() + _attributes.size()),
         input.location,
         attr->resourceId,
         attr->size,
@@ -284,28 +301,34 @@ DrawCall::bindStates(const std::map<std::string, data::Binding>&    stateBinding
 void
 DrawCall::render(AbstractContext::Ptr   context,
                  AbstractTexture::Ptr   renderTarget,
-                 const math::ivec4&     viewport) const
+                 const math::ivec4&     viewport,
+                 uint                   clearColor) const
 {
     context->setProgram(_program->id());
 
-    if (_target && _target->id)
+    auto hasOwnTarget = _target && _target->id;
+    auto renderTargetId = hasOwnTarget
+        ? *_target->id
+        : renderTarget ? renderTarget->id() : 0;
+
+    if (renderTargetId)
     {
-        if (*_target->id != context->renderTarget())
+        if (renderTargetId != context->renderTarget())
         {
-            context->setRenderToTexture(*_target->id, true);
-            context->clear();
+            context->setRenderToTexture(renderTargetId, true);
+            context->clear(
+                ((clearColor >> 24) & 0xff) / 255.f,
+                ((clearColor >> 16) & 0xff) / 255.f,
+                ((clearColor >> 8) & 0xff) / 255.f,
+                (clearColor & 0xff) / 255.f
+            );
         }
     }
     else
-    {
-        if (renderTarget)
-            context->setRenderToTexture(renderTarget->id(), true);
-        else
-            context->setRenderToBackBuffer();
+        context->setRenderToBackBuffer();
 
-        if (viewport.z >= 0 && viewport.w >= 0)
-            context->configureViewport(viewport.x, viewport.y, viewport.z, viewport.w);
-    }
+    if (!hasOwnTarget && viewport.z >= 0 && viewport.w >= 0)
+        context->configureViewport(viewport.x, viewport.y, viewport.z, viewport.w);
 
     for (const auto& u : _uniformBool)
     {
@@ -345,8 +368,15 @@ DrawCall::render(AbstractContext::Ptr   context,
             context->setUniformMatrix4x4(u.location, 1, u.data);
     }
 
+    uint numSamplers = 0;
     for (const auto& s : _samplers)
+    {
         context->setTextureAt(s.position, *s.resourceId, s.location);
+        context->setSamplerStateAt(s.position, WrapMode::CLAMP, TextureFilter::LINEAR, MipFilter::NONE);
+        ++numSamplers;
+    }
+    for (uint i = 0; i < MAX_NUM_TEXTURES; ++i)
+        context->setTextureAt(i, -1, -1);
 
     for (const auto& a : _attributes)
         context->setVertexBufferAt(a.location, *a.resourceId, a.size, *a.stride, a.offset);
@@ -358,13 +388,10 @@ DrawCall::render(AbstractContext::Ptr   context,
     context->setScissorTest(*_scissorTest, *_scissorBox);
     context->setTriangleCulling(*_triangleCulling);
 
-    for (const auto& s : _samplers)
-        context->setTextureAt(s.position, *s.resourceId, s.location);
-
-    for (const auto& a : _attributes)
-        context->setVertexBufferAt(a.position, *a.resourceId, a.size, *a.stride, a.offset);
-
-    context->drawTriangles(*_indexBuffer, *_numIndices / 3);
+    if (_pass->postProcessing())
+        context->drawTriangles(0, 2);
+    else
+        context->drawTriangles(*_indexBuffer, *_firstIndex, *_numIndices / 3);
 }
 
 data::ResolvedBinding*

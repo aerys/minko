@@ -49,88 +49,59 @@ using namespace minko::data;
 using namespace minko::file;
 using namespace minko::render;
 
-std::unordered_map<std::string, unsigned int> EffectParser::_blendFactorMap = EffectParser::initializeBlendFactorMap();
-std::unordered_map<std::string, unsigned int>
-EffectParser::initializeBlendFactorMap()
-{
-	std::unordered_map<std::string, unsigned int> m;
+std::unordered_map<std::string, unsigned int> EffectParser::_blendFactorMap = {
+	{ "src_zero", static_cast<uint>(render::Blending::Source::ZERO) },
+	{ "src_one", static_cast<uint>(render::Blending::Source::ONE) },
+	{ "src_color", static_cast<uint>(render::Blending::Source::SRC_COLOR) },
+	{ "src_one_minus_src_color", static_cast<uint>(render::Blending::Source::ONE_MINUS_SRC_COLOR) },
+	{ "src_src_alpha", static_cast<uint>(render::Blending::Source::SRC_ALPHA) },
+	{ "src_one_minus_src_alpha", static_cast<uint>(render::Blending::Source::ONE_MINUS_SRC_ALPHA) },
+	{ "src_dst_alpha", static_cast<uint>(render::Blending::Source::DST_ALPHA) },
+	{ "src_one_minus_dst_alpha", static_cast<uint>(render::Blending::Source::ONE_MINUS_DST_ALPHA) },
 
-	m["src_zero"]					= static_cast<uint>(render::Blending::Source::ZERO);
-    m["src_one"]					= static_cast<uint>(render::Blending::Source::ONE);
-    m["src_color"]					= static_cast<uint>(render::Blending::Source::SRC_COLOR);
-    m["src_one_minus_src_color"]	= static_cast<uint>(render::Blending::Source::ONE_MINUS_SRC_COLOR);
-    m["src_src_alpha"]				= static_cast<uint>(render::Blending::Source::SRC_ALPHA);
-    m["src_one_minus_src_alpha"]	= static_cast<uint>(render::Blending::Source::ONE_MINUS_SRC_ALPHA);
-    m["src_dst_alpha"]				= static_cast<uint>(render::Blending::Source::DST_ALPHA);
-    m["src_one_minus_dst_alpha"]	= static_cast<uint>(render::Blending::Source::ONE_MINUS_DST_ALPHA);
+	{ "dst_zero", static_cast<uint>(render::Blending::Destination::ZERO) },
+	{ "dst_one", static_cast<uint>(render::Blending::Destination::ONE) },
+	{ "dst_dst_color", static_cast<uint>(render::Blending::Destination::DST_COLOR) },
+	{ "dst_one_minus_dst_color", static_cast<uint>(render::Blending::Destination::ONE_MINUS_DST_COLOR) },
+	{ "dst_src_alpha_saturate", static_cast<uint>(render::Blending::Destination::SRC_ALPHA_SATURATE) },
+	{ "dst_one_minus_src_alpha", static_cast<uint>(render::Blending::Destination::ONE_MINUS_SRC_ALPHA) },
+	{ "dst_dst_alpha", static_cast<uint>(render::Blending::Destination::DST_ALPHA) },
+	{ "dst_one_minus_dst_alpha", static_cast<uint>(render::Blending::Destination::ONE_MINUS_DST_ALPHA) },
 
-    m["dst_zero"]					= static_cast<uint>(render::Blending::Destination::ZERO);
-    m["dst_one"]					= static_cast<uint>(render::Blending::Destination::ONE);
-	m["dst_dst_color"]				= static_cast<uint>(render::Blending::Destination::DST_COLOR);
-    m["dst_one_minus_dst_color"]	= static_cast<uint>(render::Blending::Destination::ONE_MINUS_DST_COLOR);
-    m["dst_src_alpha_saturate"]		= static_cast<uint>(render::Blending::Destination::SRC_ALPHA_SATURATE);
-    m["dst_one_minus_src_alpha"]	= static_cast<uint>(render::Blending::Destination::ONE_MINUS_SRC_ALPHA);
-    m["dst_dst_alpha"]				= static_cast<uint>(render::Blending::Destination::DST_ALPHA);
-    m["dst_one_minus_dst_alpha"]	= static_cast<uint>(render::Blending::Destination::ONE_MINUS_DST_ALPHA);
+	{ "default", static_cast<uint>(render::Blending::Mode::DEFAULT) },
+	{ "alpha", static_cast<uint>(render::Blending::Mode::ALPHA) },
+	{ "additive", static_cast<uint>(render::Blending::Mode::ADDITIVE) }
+};
 
-	m["default"]					= static_cast<uint>(render::Blending::Mode::DEFAULT);
-	m["alpha"]						= static_cast<uint>(render::Blending::Mode::ALPHA);
-	m["additive"]					= static_cast<uint>(render::Blending::Mode::ADDITIVE);
+std::unordered_map<std::string, render::CompareMode> EffectParser::_compareFuncMap = {
+	{ "always", render::CompareMode::ALWAYS },
+	{ "equal", render::CompareMode::EQUAL },
+	{ "greater", render::CompareMode::GREATER },
+	{ "greater_equal", render::CompareMode::GREATER_EQUAL },
+	{ "less", render::CompareMode::LESS },
+	{ "less_equal", render::CompareMode::LESS_EQUAL },
+	{ "never", render::CompareMode::NEVER },
+	{ "not_equal", render::CompareMode::NOT_EQUAL },
+};
 
-	return m;
-}
+std::unordered_map<std::string, render::StencilOperation> EffectParser::_stencilOpMap = {
+	{ "keep", render::StencilOperation::KEEP },
+	{ "zero", render::StencilOperation::ZERO },
+	{ "replace", render::StencilOperation::REPLACE },
+	{ "incr", render::StencilOperation::INCR },
+	{ "incr_wrap", render::StencilOperation::INCR_WRAP },
+	{ "decr", render::StencilOperation::DECR },
+	{ "decr_wrap", render::StencilOperation::DECR_WRAP },
+	{ "invert", render::StencilOperation::INVERT }
+};
 
-std::unordered_map<std::string, render::CompareMode> EffectParser::_compareFuncMap = EffectParser::initializeCompareFuncMap();
-std::unordered_map<std::string, render::CompareMode>
-EffectParser::initializeCompareFuncMap()
-{
-	std::unordered_map<std::string, render::CompareMode> m;
-
-	m["always"]			= render::CompareMode::ALWAYS;
-	m["equal"]			= render::CompareMode::EQUAL;
-	m["greater"]		= render::CompareMode::GREATER;
-	m["greater_equal"]	= render::CompareMode::GREATER_EQUAL;
-	m["less"]			= render::CompareMode::LESS;
-	m["less_equal"]		= render::CompareMode::LESS_EQUAL;
-	m["never"]			= render::CompareMode::NEVER;
-    m["not_equal"]      = render::CompareMode::NOT_EQUAL;
-
-	return m;
-}
-
-std::unordered_map<std::string, render::StencilOperation> EffectParser::_stencilOpMap = EffectParser::initializeStencilOperationMap();
-std::unordered_map<std::string, render::StencilOperation>
-EffectParser::initializeStencilOperationMap()
-{
-	std::unordered_map<std::string, render::StencilOperation> m;
-
-	m["keep"]			= render::StencilOperation::KEEP;
-	m["zero"]			= render::StencilOperation::ZERO;
-	m["replace"]		= render::StencilOperation::REPLACE;
-	m["incr"]			= render::StencilOperation::INCR;
-	m["incr_wrap"]		= render::StencilOperation::INCR_WRAP;
-	m["decr"]			= render::StencilOperation::DECR;
-	m["decr_wrap"]		= render::StencilOperation::DECR_WRAP;
-	m["invert"]			= render::StencilOperation::INVERT;
-
-	return m;
-}
-
-std::unordered_map<std::string, float> EffectParser::_priorityMap = EffectParser::initializePriorityMap();
-std::unordered_map<std::string, float>
-EffectParser::initializePriorityMap()
-{
-	std::unordered_map<std::string, float> m;
-
-	// The higher the priority, the earlier the drawcall is rendered.
-	m["first"]			= Priority::FIRST;
-	m["background"]		= Priority::BACKGROUND;
-	m["opaque"]			= Priority::OPAQUE;
-	m["transparent"]	= Priority::TRANSPARENT;
-	m["last"]			= Priority::LAST;
-
-	return m;
-}
+std::unordered_map<std::string, float> EffectParser::_priorityMap = {
+	{ "first", Priority::FIRST },
+	{ "background", Priority::BACKGROUND },
+	{ "opaque", Priority::OPAQUE },
+	{ "transparent", Priority::TRANSPARENT },
+	{ "last", Priority::LAST }
+};
 
 std::array<std::string, 1> EffectParser::_extraStateNames = {
     "blendingMode"
@@ -149,7 +120,8 @@ EffectParser::getPriorityValue(const std::string& name)
 EffectParser::EffectParser() :
 	_effect(nullptr),
 	_numDependencies(0),
-	_numLoadedDependencies(0)
+	_numLoadedDependencies(0),
+	_effectData(data::Provider::create())
 {
 }
 
@@ -351,6 +323,7 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
 
         passes.push_back(Pass::create(
             passName,
+			node.get("postProcessing", false).asBool(),
             Program::create(passName, _options->context(), vertexShader, fragmentShader),
             passScope.attributeBlock.bindingMap,
             passScope.uniformBlock.bindingMap,
@@ -796,9 +769,9 @@ EffectParser::parseDepthMask(const Json::Value&	    node,
 }
 
 void
-EffectParser::parseDepthFunction(const Json::Value&	node,
-                   const Scope&         scope,
-                   render::CompareMode& depthFunction)
+EffectParser::parseDepthFunction(const Json::Value&		node,
+			                     const Scope&         	scope,
+			                     render::CompareMode& 	depthFunction)
 {
     auto depthFunctionValue = node.get(States::PROPERTY_DEPTH_FUNCTION, 0);
 
@@ -913,11 +886,16 @@ EffectParser::parseTarget(const Json::Value& node, const Scope& scope)
 		}
 
 		target->upload();
+		_effectData->set(targetName, target->sampler());
 	}
 	else if (targetNode.isString())
 	{
 		targetName = targetNode.asString();
 		target = _assetLibrary->texture(targetName);
+		if (target == nullptr)
+			throw;
+
+		_effectData->set(targetName, target->sampler());
 	}
 
 	return target;
@@ -1363,6 +1341,7 @@ EffectParser::finalize()
         }
     }
 
+	_effect->data()->copyFrom(_effectData);
     _options->assetLibrary()->effect(_filename, _effect);
 
     _complete->execute(shared_from_this());
