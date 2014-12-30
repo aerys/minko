@@ -17,21 +17,22 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/file/AbstractSerializerParser.hpp"
 #include "msgpack.hpp"
-#include "minko/file/Options.hpp"
+
+#include "minko/Types.hpp"
+#include "minko/data/Provider.hpp"
+#include "minko/file/AbstractParser.hpp"
+#include "minko/file/AbstractSerializerParser.hpp"
 #include "minko/file/AssetLibrary.hpp"
-#include "minko/file/GeometryParser.hpp"
+#include "minko/file/DefaultParser.hpp"
 #include "minko/file/Dependency.hpp"
+#include "minko/file/GeometryParser.hpp"
 #include "minko/file/MaterialParser.hpp"
+#include "minko/file/Options.hpp"
 #include "minko/file/TextureParser.hpp"
 #include "minko/file/TextureWriter.hpp"
-#include "minko/data/Provider.hpp"
 #include "minko/material/Material.hpp"
-#include "minko/file/AbstractParser.hpp"
-#include "minko/Types.hpp"
 #include "minko/render/Texture.hpp"
-
 
 using namespace minko;
 using namespace minko::file;
@@ -139,17 +140,23 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&                asset
 
     if (asset.a0 < 10 && _assetTypeToFunction.find(asset.a0) == _assetTypeToFunction.end()) // external
     {
-        // TODO fixme
-        // use Loader api instead of Protocol api
+        auto assetLoader = Loader::create();
+        auto assetLoaderOptions = options->clone();
 
-        auto protocolFunction = options->protocolFunction();
-        auto protocol = protocolFunction(assetCompletePath);
+        assetLoader->options(assetLoaderOptions);
 
-        auto fileOptions = options->clone();
-        fileOptions->loadAsynchronously(false);
+        auto defaultParser = DefaultParser::create();
+
+        assetLoaderOptions
+            ->loadAsynchronously(false)
+            ->parserFunction([=](const std::string& filename) -> AbstractParser::Ptr
+            {
+                return defaultParser;
+            });
 
         auto fileSuccessfullyLoaded = true;
-        auto errorSlot = protocol->error()->connect([&](AbstractProtocol::Ptr)
+
+        auto errorSlot = assetLoader->error()->connect([&](Loader::Ptr, const Error& error)
         {
             switch (asset.a0)
             {
@@ -176,12 +183,14 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&                asset
             fileSuccessfullyLoaded = false;
         });
 
-        auto completeSlot = protocol->complete()->connect([&](AbstractProtocol::Ptr p)
+        auto completeSlot = assetLoader->complete()->connect([&](Loader::Ptr)
         {
-            data.assign(p->file()->data().begin(), p->file()->data().end());
+            data.assign(defaultParser->data().begin(), defaultParser->data().end());
         });
 
-        protocol->load(resolvedPath, assetCompletePath, fileOptions);
+        assetLoader
+            ->queue(assetCompletePath)
+            ->load();
         
         if (!fileSuccessfullyLoaded)
             return;

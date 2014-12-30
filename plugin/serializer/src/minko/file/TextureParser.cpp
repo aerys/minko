@@ -18,6 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/file/AssetLibrary.hpp"
+#include "minko/file/DefaultParser.hpp"
 #include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/PNGParser.hpp"
@@ -134,29 +135,34 @@ TextureParser::parse(const std::string&                filename,
 
     if (!_dataEmbed)
     {
+        auto defaultParser = DefaultParser::create();
+
         auto textureFileOptions = options->clone()
             ->seekingOffset(offset)
             ->seekedLength(length)
-            ->loadAsynchronously(false);
+            ->loadAsynchronously(false)
+            ->parserFunction([=](const std::string& filename) -> AbstractParser::Ptr
+            {
+                return defaultParser;
+            });
 
-        // TODO fixme
-        // use Loader API instead of Protocol API
+        auto loader = Loader::create();
 
-        auto protocol = textureFileOptions->protocolFunction()(resolvedFilename);
+        loader->options(textureFileOptions);
 
-        auto errorSlot = protocol->error()->connect([&](AbstractProtocol::Ptr protocol)
+        auto errorSlot = loader->error()->connect([&](Loader::Ptr, const Error& error)
         {
             _error->execute(
                 shared_from_this(),
-                Error("TextureLoadingError", std::string("Failed to load texture ") + protocol->file()->filename())
+                Error("TextureLoadingError", std::string("Failed to load texture ") + filename)
             );
         });
 
-        auto completeSlot = protocol->complete()->connect([&](AbstractProtocol::Ptr protocol)
+        auto completeSlot = loader->complete()->connect([&](Loader::Ptr)
         {
             const auto textureData = std::vector<unsigned char>(
-                protocol->file()->data().begin(),
-                protocol->file()->data().end()
+                defaultParser->data().begin(),
+                defaultParser->data().end()
             );
 
             if (!_formatParserFunctions.at(desiredFormat)(filename, textureFileOptions, textureData, assetLibrary, textureWidth, textureHeight, textureType, textureNumMipmaps))
@@ -168,7 +174,9 @@ TextureParser::parse(const std::string&                filename,
             }
         });
 
-        protocol->load(filename, resolvedFilename, textureFileOptions);
+        loader
+            ->queue(filename)
+            ->load();
     }
     else
     {

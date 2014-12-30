@@ -100,6 +100,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/FileProtocol.hpp"
 #include "minko/file/FileProtocolWorker.hpp"
 #include "minko/file/AbstractParser.hpp"
+#include "minko/file/DefaultParser.hpp"
 #include "minko/file/EffectParser.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/material/Material.hpp"

@@ -20,13 +20,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-
 #include "minko/file/AssetLibrary.hpp"
-#include "minko/file/Loader.hpp"
-
-#include "minko/file/Options.hpp"
+#include "minko/file/DefaultParser.hpp"
 #include "minko/file/IOStream.hpp"
-
+#include "minko/file/Loader.hpp"
+#include "minko/file/Options.hpp"
 #include "minko/log/Logger.hpp"
 
 #include "assimp/IOStream.hpp"
@@ -91,24 +89,32 @@ namespace minko
             Assimp::IOStream*
             Open(const char* pFile, const char* pMode = "rb")
             {
-                auto filename = std::string(pFile);
+                const auto filename = std::string(pFile);
 
                 auto loader = Loader::create();
 
                 loader->options(_options);
 
-                Assimp::IOStream* stream = 0;
+                auto defaultParser = DefaultParser::create();
 
-                // TODO
-                // avoid copying loaded file by providing a custom parser
-                // that feeds data to the IOStream
-
-                _loaderCompleteSlots[loader] = loader->complete()->connect([&, this](Loader::Ptr loader)
+                _options
+                    ->loadAsynchronously(false)
+                    ->parserFunction([=](const std::string& filename) -> AbstractParser::Ptr
                 {
-                    stream = new minko::file::IOStream(_assets->blob(filename));
+                    return defaultParser;
                 });
 
-                _loaderErrorSlots[loader] = loader->error()->connect([&](Loader::Ptr loader, const Error& error)
+                Assimp::IOStream* stream = nullptr;
+
+                _loaderCompleteSlots[loader] = loader->complete()->connect([&](Loader::Ptr)
+                {
+                    _loaderErrorSlots.erase(loader);
+                    _loaderCompleteSlots.erase(loader);
+
+                    stream = new minko::file::IOStream(defaultParser->data());
+                });
+
+                _loaderErrorSlots[loader] = loader->error()->connect([&](Loader::Ptr, const Error& error)
                 {
                     if (_errorFunction)
                         _errorFunction(*this, error);
