@@ -69,7 +69,9 @@ namespace minko
 
             static
             bool
-            fileExists(const std::string& filename);
+            fileExists(const std::string& filename,
+                       const std::string& username = "",
+                       const std::string& password = "");
 
         private:
             std::string _url;

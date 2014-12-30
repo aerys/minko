@@ -119,8 +119,6 @@ HTTPProtocol::errorHandler(void* arg, int code, const char * message)
 void
 HTTPProtocol::load()
 {
-    std::cout << resolvedFilename() << std::endl;
-
     _options->protocolFunction([](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
     {
         return HTTPProtocol::create();
@@ -288,7 +286,18 @@ HTTPProtocol::fileExists(const std::string& filename)
 
     return status != 404;
 #else
-    return HTTPRequest::fileExists(filename);
+    auto username = std::string();
+    auto password = std::string();
+
+    auto httpOptions = std::dynamic_pointer_cast<HTTPOptions>(_options);
+
+    if (httpOptions != nullptr)
+    {
+        username = httpOptions->username();
+        password = httpOptions->password();
+    }
+
+    return HTTPRequest::fileExists(filename, username, password);
 #endif
 }
 

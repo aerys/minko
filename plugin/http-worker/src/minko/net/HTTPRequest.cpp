@@ -40,22 +40,16 @@ HTTPRequest::HTTPRequest(const std::string& url,
 void
 HTTPRequest::run()
 {
-    std::cout << "HTTPRequest::run(): enter" << std::endl;
-
     progress()->execute(0.0f);
 
-    std::cout << "HTTPRequest::run(): before curl init" << std::endl;
-
     CURL* curl = curl_easy_init();
-
-    std::cout << "HTTPRequest::run(): after curl init" << std::endl;
 
     if (!curl)
         throw std::runtime_error("cURL not enabled");
 
-    std::cout << "HTTPRequest::run(): after curl init success" << std::endl;
+    const auto url = _url;
 
-    curl_easy_setopt(curl, CURLOPT_URL, _url.c_str());
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &curlWriteHandler);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
@@ -64,7 +58,6 @@ HTTPRequest::run()
     curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, this);
 
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-    //curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
 
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 
@@ -79,24 +72,16 @@ HTTPRequest::run()
 
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 
-    std::cout << "HTTPRequest::run(): before curl perform" << std::endl;
-
     CURLcode res = curl_easy_perform(curl);
-
-    std::cout << "HTTPRequest::run(): after curl perform" << std::endl;
 
     curl_easy_cleanup(curl);
 
     if (res != CURLE_OK)
     {
-        std::cout << "HTTPRequest::run(): curl error" << std::endl;
-
         error()->execute(res);
     }
     else
     {
-        std::cout << "HTTPRequest::run(): curl success" << std::endl;
-
         progress()->execute(1.0f);
         complete()->execute(_output);
     }
@@ -137,7 +122,9 @@ HTTPRequest::curlProgressHandler(void* arg, double total, double current, double
 }
 
 bool
-HTTPRequest::fileExists(const std::string& filename)
+HTTPRequest::fileExists(const std::string& filename,
+                        const std::string& username,
+                        const std::string& password)
 {
     auto curl = curl_easy_init();
 
@@ -148,12 +135,26 @@ HTTPRequest::fileExists(const std::string& filename)
         return false;
     }
 
-    curl_easy_setopt(curl, CURLOPT_URL, filename.c_str());
+    const auto url = filename;
+
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
     curl_easy_setopt(curl, CURLOPT_HEADER, false);
     curl_easy_setopt(curl, CURLOPT_NOBODY, true);
+    curl_easy_setopt(curl, CURLOPT_FAILONERROR, true);
+
+    if (!username.empty())
+    {
+        curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+
+        const auto authenticationString = username + ":" + password;
+
+        curl_easy_setopt(curl, CURLOPT_USERPWD, authenticationString.c_str());
+    }
 
     auto status = curl_easy_perform(curl);
+
+    curl_easy_cleanup(curl);
 
     return status == CURLE_OK;
 }
