@@ -119,7 +119,7 @@ namespace minko
 
             virtual
             void
-            resize(int width, int height, bool resizeSmoothly) = 0;
+            resize(unsigned int width, unsigned int height, bool resizeSmoothly) = 0;
 
             virtual
             void

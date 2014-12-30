@@ -17,12 +17,8 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "minko/Types.hpp"
 #include "minko/file/TextureWriter.hpp"
-
-#include "minko/render/AbstractTexture.hpp"
-#include "minko/render/CubeTexture.hpp"
-#include "minko/render/Texture.hpp"
-#include "minko/render/TextureFormatInfo.hpp"
 #include "minko/file/AbstractWriter.hpp"
 #include "minko/file/Dependency.hpp"
 #include "minko/file/PNGWriter.hpp"
@@ -30,7 +26,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/QTranscoder.hpp"
 #include "minko/file/WriterOptions.hpp"
 #include "minko/log/Logger.hpp"
-#include "minko/Types.hpp"
+#include "minko/math/Vector2.hpp"
+#include "minko/render/AbstractTexture.hpp"
+#include "minko/render/CubeTexture.hpp"
+#include "minko/render/Texture.hpp"
+#include "minko/render/TextureFormatInfo.hpp"
 
 using namespace minko;
 using namespace minko::file;
@@ -84,8 +84,19 @@ TextureWriter::embed(AssetLibraryPtr     assetLibrary,
 
         if (width != height)
         {
-            // TODO add writerOptions field to either perform upscale or downscale
-            const auto dimensionSize = std::min(width, height);
+            auto dimensionSize = writerOptions->upscaleTextureWhenProcessedForMipmapping()
+                ? std::max<uint>(width, height)
+                : std::min<uint>(width, height);
+
+            dimensionSize = std::min<uint>(
+                dimensionSize,
+                static_cast<uint>(writerOptions->textureMaxResolution()->x())
+            );
+
+            dimensionSize = std::min<uint>(
+                dimensionSize,
+                static_cast<uint>(writerOptions->textureMaxResolution()->y())
+            );
 
             const auto newWidth = dimensionSize;
             const auto newHeight = dimensionSize;
@@ -107,6 +118,18 @@ TextureWriter::embed(AssetLibraryPtr     assetLibrary,
                 break;
             }
             }
+        }
+    }
+    else
+    {
+        if (texture->width() > writerOptions->textureMaxResolution()->x() ||
+            texture->height() > writerOptions->textureMaxResolution()->y())
+        {
+            texture->resize(
+                std::min<uint>(texture->width(), writerOptions->textureMaxResolution()->x()),
+                std::min<uint>(texture->height(), writerOptions->textureMaxResolution()->y()),
+                true
+            );
         }
     }
 

@@ -106,7 +106,7 @@ Texture::data(unsigned char*    data,
 }
 
 void
-Texture::resize(int width, int height, bool resizeSmoothly)
+Texture::resize(unsigned int width, unsigned int height, bool resizeSmoothly)
 {
     assert(math::isp2(width) && math::isp2(height));
 

@@ -110,7 +110,7 @@ CubeTexture::data(unsigned char*    data,
 }
 
 void
-CubeTexture::resize(int width, int height, bool resizeSmoothly)
+CubeTexture::resize(unsigned int width, unsigned int height, bool resizeSmoothly)
 {
     assert(math::isp2(width) && math::isp2(height));
 
