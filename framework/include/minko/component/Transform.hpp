@@ -93,9 +93,7 @@ namespace minko
 				auto rootTransform = target()->root()->component<RootTransform>();
 
 				if (rootTransform && !rootTransform->_invalidLists)
-					rootTransform->_dirty[rootTransform->_nodeToId[target()]] = true;
-				/*else
-					*_modelToWorld = matrix;*/
+					rootTransform->_nodeTransformCache.at(rootTransform->_nodeToId[target()])._dirty = true;
 			}
 
 			inline
@@ -158,6 +156,23 @@ namespace minko
 				typedef RenderingBeginSignal::Slot 					RenderingBeginSlot;
                 typedef std::shared_ptr<data::Provider>             ProviderPtr;
 
+                struct NodeTransformCacheEntry
+                {
+                    NodePtr             _node;
+				    const math::mat4*   _matrix;
+				    math::mat4*		    _modelToWorldMatrix;
+
+                    int                 _parentId;
+                    int                 _firstChildId;
+                    int                 _numChildren;
+
+                    bool                _dirty;
+
+                    ProviderPtr         _provider;
+
+                    NodeTransformCacheEntry();
+                };
+
 			public:
 				inline static
 				Ptr
@@ -174,36 +189,24 @@ namespace minko
 
                 ~RootTransform()
                 {
-                    _matrix.clear();
-                    _modelToWorld.clear();
+                    _nodeTransformCache.clear();
                     _nodeToId.clear();
-                    _nodes.clear();
-                    _parentId.clear();
-                    _firstChildId.clear();
-                    _numChildren.clear();
-                    _dirty.clear();
                     _targetSlots.clear();
                     _renderingBeginSlot = nullptr;
                 }
 
 			private:
-				std::vector<const math::mat4*>  _matrix;
-				std::vector<math::mat4*>		_modelToWorld;
+                std::vector<NodeTransformCacheEntry>            _nodeTransformCache;
 
-				std::map<NodePtr, unsigned int>	_nodeToId;
-				std::list<NodePtr>			    _nodes;
-				std::vector<int>		 		_parentId;
-				std::vector<int> 		        _firstChildId;
-				std::vector<int>		        _numChildren;
-				std::vector<bool>				_dirty;
-                std::vector<ProviderPtr>        _providers;
-				bool							_invalidLists;
+				std::map<NodePtr, unsigned int>	                _nodeToId;
+                std::list<NodePtr>                              _nodes;
+				bool							                _invalidLists;
 
-				std::list<Any>					_targetSlots;
+				std::list<Any>					                _targetSlots;
                 Signal<SceneMgrPtr, uint, AbsTexPtr>::Slot      _renderingBeginSlot;
 
-                std::list<NodePtr>              _toAdd;
-                std::list<NodePtr>              _toRemove;
+                std::list<NodePtr>                              _toAdd;
+                std::list<NodePtr>                              _toRemove;
 
             protected:
             	void
