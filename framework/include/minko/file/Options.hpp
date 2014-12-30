@@ -117,16 +117,9 @@ namespace minko
                 return options;
             }
 
-            inline static
+            virtual
             Ptr
-            create(Ptr options)
-            {
-                auto instance = std::shared_ptr<Options>(new Options(*options));
-
-                instance->initialize();
-
-                return instance;
-            }
+            clone();
 
             inline
             std::shared_ptr<render::AbstractContext>

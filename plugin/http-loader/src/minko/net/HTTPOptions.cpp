@@ -32,3 +32,11 @@ HTTPOptions::HTTPOptions(const Options& copy) :
     Options(copy)
 {
 }
+
+Options::Ptr
+HTTPOptions::clone()
+{
+    auto copy = Ptr(new HTTPOptions(*this));
+
+    return copy;
+}

@@ -68,9 +68,11 @@ Options::Options() :
 Options::Options(const Options& copy) :
     _context(copy._context),
     _assets(copy._assets),
+    _includePaths(copy._includePaths),
+    _platforms(copy._platforms),
+    _userFlags(copy._userFlags),
     _parsers(copy._parsers),
     _protocols(copy._protocols),
-    _includePaths(copy._includePaths),
     _generateMipMaps(copy._generateMipMaps),
     _resizeSmoothly(copy._resizeSmoothly),
     _isCubeTexture(copy._isCubeTexture),
@@ -89,11 +91,20 @@ Options::Options(const Options& copy) :
     _parserFunction(copy._parserFunction),
     _uriFunction(copy._uriFunction),
     _nodeFunction(copy._nodeFunction),
+    _effectFunction(copy._effectFunction),
     _textureFormatFunction(copy._textureFormatFunction),
     _loadAsynchronously(copy._loadAsynchronously),
     _seekingOffset(copy._seekingOffset),
     _seekedLength(copy._seekedLength)
 {
+}
+
+Options::Ptr
+Options::clone()
+{
+    auto copy = Ptr(new Options(*this));
+
+    return copy;
 }
 
 void
@@ -146,7 +157,7 @@ Options::getProtocol(const std::string& protocol)
     auto p = _protocols.count(protocol) == 0 ? nullptr : _protocols[protocol]();
 
     if (p)
-        p->options(Options::create(p->options()));
+        p->options(p->options()->clone());
 
     return p;
 }
@@ -247,12 +258,11 @@ Options::initializeDefaultFunctions()
         throw std::runtime_error(errorMessage);
     };
 
-    if (!_defaultProtocolFunction)
-        _defaultProtocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
+    _defaultProtocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
     {
         auto defaultProtocol = options->getProtocol("file"); // "file" might be overriden (by APKProtocol for instance)
 
-        defaultProtocol->options(Options::create(options));
+        defaultProtocol->options(options->clone());
 
         return defaultProtocol;
     };

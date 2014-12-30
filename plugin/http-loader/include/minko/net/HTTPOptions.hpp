@@ -60,6 +60,9 @@ namespace minko
                 return instance;
             };
 
+            file::Options::Ptr
+            clone();
+
             inline
             const std::string&
             username() const
