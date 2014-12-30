@@ -47,7 +47,7 @@ Loader::Ptr
 Loader::queue(const std::string& filename, std::shared_ptr<Options> options)
 {
     _filesQueue.push_back(filename);
-    _filenameToOptions[filename] = Options::create(options ? options : _options);
+    _filenameToOptions[filename] = (options ? options : _options)->clone();
 
     return std::dynamic_pointer_cast<Loader>(shared_from_this());
 }
@@ -78,6 +78,8 @@ Loader::load()
 
             auto protocol = options->protocolFunction()(resolvedFilename);
 
+            protocol->options(options);
+
             if (includePaths.empty() || protocol->fileExists(resolvedFilename))
             {
                 loadFile = true;
@@ -89,6 +91,8 @@ Loader::load()
                     resolvedFilename = options->uriFunction()(File::sanitizeFilename(includePath + '/' + filename));
     
                     protocol = options->protocolFunction()(resolvedFilename);
+
+                    protocol->options(options);
     
                     if (protocol->fileExists(resolvedFilename))
                     {

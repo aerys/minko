@@ -134,7 +134,7 @@ TextureParser::parse(const std::string&                filename,
 
     if (!_dataEmbed)
     {
-        auto textureFileOptions = Options::create(options)
+        auto textureFileOptions = options->clone()
             ->seekingOffset(offset)
             ->seekedLength(length)
             ->loadAsynchronously(false);

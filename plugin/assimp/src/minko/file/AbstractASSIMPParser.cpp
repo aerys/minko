@@ -135,7 +135,7 @@ AbstractASSIMPParser::parse(const std::string&                    filename,
 
     int pos = resolvedFilename.find_last_of("\\/");
 
-    options = file::Options::create(options);
+    options = options->clone();
 
     if (pos > 0)
     {
@@ -147,7 +147,7 @@ AbstractASSIMPParser::parse(const std::string&                    filename,
     _options        = options;
 
     //fixme : find a way to handle loading dependencies asynchronously
-    auto ioHandlerOptions = Options::create(options);
+    auto ioHandlerOptions = options->clone();
     ioHandlerOptions->loadAsynchronously(false);
 
     auto ioHandler = new IOHandler(ioHandlerOptions, _assetLibrary);

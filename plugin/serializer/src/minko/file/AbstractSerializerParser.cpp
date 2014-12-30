@@ -139,10 +139,13 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&                asset
 
     if (asset.a0 < 10 && _assetTypeToFunction.find(asset.a0) == _assetTypeToFunction.end()) // external
     {
+        // TODO fixme
+        // use Loader api instead of Protocol api
+
         auto protocolFunction = options->protocolFunction();
         auto protocol = protocolFunction(assetCompletePath);
 
-        auto fileOptions = Options::create(options);
+        auto fileOptions = options->clone();
         fileOptions->loadAsynchronously(false);
 
         auto fileSuccessfullyLoaded = true;
@@ -360,7 +363,7 @@ AbstractSerializerParser::deserializeTexture(unsigned char      metaByte,
     auto assetHeaderSize = MINKO_SCENE_HEADER_SIZE + 2;
     auto textureHeaderSize = static_cast<unsigned int>(metaByte);
 
-    auto options = Options::create(assetLibrary->loader()->options());
+    auto options = assetLibrary->loader()->options()->clone();
 
     options
         ->seekingOffset(0)
