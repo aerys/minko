@@ -263,9 +263,16 @@ DrawCallPool::initializeDrawCall(DrawCall& drawCall)
 
     drawCall.bind(program);
 
+    // bind attributes
+    // FIXME: like for uniforms, watch and swap default values / binding value
+    for (const auto& input : program->inputs().attributes())
+        drawCall.bindAttribute(input, pass->attributeBindings().bindings, pass->attributeBindings().defaultValues);
     // bind uniforms
-    bindUniforms(pass->uniformBindings(), program, drawCall);
+    for (const auto& input : program->inputs().uniforms())
+        uniformBindingPropertyAddedHandler(drawCall, input, pass->uniformBindings());
+    // bind states
     drawCall.bindStates(pass->stateBindings().bindings, pass->stateBindings().defaultValues);
+    // bind index buffer
     if (!pass->isPostProcessing())
         drawCall.bindIndexBuffer();
 
@@ -278,13 +285,6 @@ DrawCallPool::initializeDrawCall(DrawCall& drawCall)
             drawCall.rendererData(),
             drawCall.targetData()
         );
-}
-
-void
-DrawCallPool::bindUniforms(data::BindingMap& uniformBindingMap, Program::Ptr program, DrawCall& drawCall)
-{
-    for (const auto& input : program->inputs().uniforms())
-        uniformBindingPropertyAddedHandler(drawCall, input, uniformBindingMap);
 }
 
 void

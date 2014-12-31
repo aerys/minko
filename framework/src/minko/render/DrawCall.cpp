@@ -93,38 +93,82 @@ DrawCall::bind(std::shared_ptr<Program> program)
     // bindIndexBuffer();
     // bindStates();
     //bindUniforms();
-    bindAttributes();
+    // bindAttributes();
 }
 
 void
-DrawCall::bindAttributes()
+DrawCall::bindAttribute(ConstAttrInputRef                             input,
+                        const std::map<std::string, data::Binding>&   attributeBindings,
+                        const data::Store&                            defaultValues)
 {
-    const auto& attributeBindings = _pass->attributeBindings();
+    data::ResolvedBinding* binding = resolveBinding(input.name, attributeBindings);
 
-    for (const auto& input : _program->inputs().attributes())
+    if (binding == nullptr)
     {
-        auto& bindings = attributeBindings.bindings;
-
-        if (bindings.count(input.name) == 0)
-            continue;
-
-        const auto& binding = bindings.at(input.name);
-        auto& store = getStore(binding.source);
-        auto propertyName = data::Store::getActualPropertyName(_variables, binding.propertyName);
-
-        if (!store.hasProperty(propertyName))
+        if (!defaultValues.hasProperty(input.name))
         {
-            if (!attributeBindings.defaultValues.hasProperty(input.name))
+            auto it = std::find(_program->setAttributeNames().begin(), _program->setAttributeNames().end(), input.name);
+
+            if (it == _program->setAttributeNames().end())
+            {
                 throw std::runtime_error(
-                    "The attribute \"" + input.name + "\" is bound to the \"" + propertyName
+                    "Program \"" + _program->name() + "\": the attribute \"" + input.name
+                    + "\" is not bound, has not been set and no default value was provided."
+                );
+            }
+
+            setAttributeValueFromStore(input, input.name, defaultValues);
+        }
+    }
+    else
+    {
+#ifdef DEBUG
+        const auto& setAttributes = _program->setAttributeNames();
+
+        if (std::find(setAttributes.begin(), setAttributes.end(), input.name) != setAttributes.end())
+        {
+            LOG_WARNING(
+                "Program \"" + _program->name() + "\", vertex attribute \""
+                + input.name + "\" set manually but overriden by a binding to the \""
+                + binding->propertyName + "\" property."
+            );
+        }
+#endif
+
+        if (!binding->store.hasProperty(binding->propertyName))
+        {
+            if (!defaultValues.hasProperty(input.name))
+            {
+                throw std::runtime_error(
+                    "Program \"" + _program->name() + "\": the attribute \""
+                    + input.name + "\" is bound to the \"" + binding->propertyName
                     + "\" property but it's not defined and no default value was provided."
                 );
+            }
 
-            bindAttribute(input, attributeBindings.defaultValues, input.name);
+            setAttributeValueFromStore(input, input.name, defaultValues);
         }
         else
-            bindAttribute(input, store, propertyName);
+            setAttributeValueFromStore(input, binding->propertyName, binding->store);
+
+        delete binding;
     }
+}
+
+void
+DrawCall::setAttributeValueFromStore(const ProgramInputs::AttributeInput& input,
+                                     const std::string&                   propertyName,
+                                     const data::Store&                   store)
+{
+    const auto* attr = store.getUnsafePointer<VertexAttribute>(propertyName);
+
+    _attributes.push_back({
+        input.location,
+        attr->resourceId,
+        attr->size,
+        attr->vertexSize,
+        attr->offset
+    });
 }
 
 data::ResolvedBinding*
@@ -246,35 +290,6 @@ DrawCall::bindIndexBuffer()
     _numIndices = const_cast<uint*>(_targetData.getPointer<uint>(
         data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].numIndices")
     ));
-}
-
-void
-DrawCall::bindAttribute(ConstAttrInputRef       input,
-                        const data::Store&      store,
-                        const std::string&      propertyName)
-{
-    const auto& attr = store.getPointer<VertexAttribute>(propertyName);
-
-#ifdef DEBUG
-    const auto& setAttributes = _program->setAttributeNames();
-
-    if (std::find(setAttributes.begin(), setAttributes.end(), input.name) != setAttributes.end())
-    {
-        LOG_WARNING(
-            "Program \"" + _program->name() + "\", vertex attribute \""
-            + input.name + "\" set manually but overriden by a binding to the \""
-            + propertyName + "\" property."
-        );
-    }
-#endif
-
-    _attributes.push_back({
-        input.location,
-        attr->resourceId,
-        attr->size,
-        attr->vertexSize,
-        attr->offset
-    });
 }
 
 void

@@ -105,9 +105,6 @@ namespace minko
             getDrawcallEyePosition(DrawCall& drawcall);
 
             void
-            bindUniforms(data::BindingMap& uniformBindings, Program::Ptr program, DrawCall& drawCall);
-
-            void
             watchProgramSignature(DrawCall&                     drawCall,
                                   const data::MacroBindingMap&  macroBindings,
                                   data::Store&                  rootData,

@@ -251,6 +251,11 @@ namespace minko
 				   const math::ivec4&				 viewport,
 				   uint 							 clearColor) const;
 
+            void
+            bindAttribute(ConstAttrInputRef     						input,
+						  const std::map<std::string, data::Binding>&   attributeBindings,
+                          const data::Store&                            defaultValues);
+
             data::ResolvedBinding*
             bindUniform(const ProgramInputs::UniformInput&          input,
                         const std::map<std::string, data::Binding>& uniformBindings,
@@ -271,14 +276,6 @@ namespace minko
             void
             reset();
 
-            void
-            bindAttributes();
-
-            void
-            bindAttribute(ConstAttrInputRef     input,
-						  const data::Store&    store,
-						  const std::string&    propertyName);
-
             data::Store&
             getStore(data::Binding::Source source);
 
@@ -290,6 +287,11 @@ namespace minko
 			setUniformValueFromStore(const ProgramInputs::UniformInput&   input,
 									 const std::string&                   propertyName,
 									 const data::Store&                   store);
+
+			void
+			setAttributeValueFromStore(const ProgramInputs::AttributeInput& input,
+									   const std::string&                   propertyName,
+									   const data::Store&                   store);
 
             template <typename T>
             T*
