@@ -427,6 +427,7 @@ DrawCall::resolveBinding(const std::string&                             inputNam
             {
                 bindingPropertyName = std::regex_replace(inputName, r, inputNameAndBinding.second.propertyName);
                 binding = &inputNameAndBinding.second;
+                isArray = false;
                 break;
             }
         }
