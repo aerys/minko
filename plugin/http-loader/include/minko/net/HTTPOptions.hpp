@@ -55,8 +55,6 @@ namespace minko
             {
                 auto instance = Ptr(new HTTPOptions(*copy));
 
-                instance->initialize();
-
                 return instance;
             };
 
@@ -96,10 +94,12 @@ namespace minko
             }
 
         protected:
-            HTTPOptions(const file::Options& copy);
+            HTTPOptions(const HTTPOptions& copy);
 
         private:
             HTTPOptions();
+
+            HTTPOptions(const file::Options& copy);
         };
     }
 }

@@ -28,6 +28,13 @@ HTTPOptions::HTTPOptions() :
 {
 }
 
+HTTPOptions::HTTPOptions(const HTTPOptions& copy) :
+    Options(copy),
+    _username(copy._username),
+    _password(copy._password)
+{
+}
+
 HTTPOptions::HTTPOptions(const Options& copy) :
     Options(copy)
 {
@@ -37,6 +44,8 @@ Options::Ptr
 HTTPOptions::clone()
 {
     auto copy = Ptr(new HTTPOptions(*this));
+
+    copy->initialize();
 
     return copy;
 }

@@ -104,6 +104,8 @@ Options::clone()
 {
     auto copy = Ptr(new Options(*this));
 
+    copy->initialize();
+
     return copy;
 }
 
@@ -112,8 +114,11 @@ Options::initialize()
 {
     initializeDefaultFunctions();
     
-    registerParser<file::EffectParser>("effect");
-    registerProtocol<FileProtocol>("file");
+    if (_parsers.find("effect") == _parsers.end())
+        registerParser<file::EffectParser>("effect");
+
+    if (_protocols.find("file") == _protocols.end())
+        registerProtocol<FileProtocol>("file");
 }
 
 void
@@ -173,33 +178,37 @@ Options::initializeDefaultFunctions()
 {
     auto options = shared_from_this();
 
-    _materialFunction = [](const std::string&, material::Material::Ptr material) -> material::Material::Ptr
-    {
-        return material;
-    };
+    if (!_materialFunction)
+        _materialFunction = [](const std::string&, material::Material::Ptr material) -> material::Material::Ptr
+        {
+            return material;
+        };
 
-    _geometryFunction = [](const std::string&, GeomPtr geom) -> GeomPtr
-    {
-        return geom;
-    };
+    if (!_geometryFunction)
+        _geometryFunction = [](const std::string&, GeomPtr geom) -> GeomPtr
+        {
+            return geom;
+        };
 
-    _uriFunction = [](const std::string& uri) -> const std::string
-    {
-        return uri;
-    };
+    if (!_uriFunction)
+        _uriFunction = [](const std::string& uri) -> const std::string
+        {
+            return uri;
+        };
 
-    _nodeFunction = [](NodePtr node) -> NodePtr
-    {
-        return node;
-    };
+    if (!_nodeFunction)
+        _nodeFunction = [](NodePtr node) -> NodePtr
+        {
+            return node;
+        };
 
-    _effectFunction = [](EffectPtr effect) -> EffectPtr
-    {
-        return effect;
-    };
+    if (!_effectFunction)
+        _effectFunction = [](EffectPtr effect) -> EffectPtr
+        {
+            return effect;
+        };
 
-    _textureFormatFunction = [this](const std::unordered_set<render::TextureFormat>& availableTextureFormats)
-                                ->render::TextureFormat
+    _textureFormatFunction = [=](const std::unordered_set<render::TextureFormat>& availableTextureFormats) ->render::TextureFormat
     {
         static const auto defaultTextureFormats = std::list<render::TextureFormat>
         {
@@ -228,7 +237,7 @@ Options::initializeDefaultFunctions()
             render::TextureFormat::RGB
         };
 
-        auto& textureFormats = _textureFormats.empty() ? defaultTextureFormats : _textureFormats;
+        auto& textureFormats = options->_textureFormats.empty() ? defaultTextureFormats : options->_textureFormats;
 
         auto textureFormatIt = std::find_if(textureFormats.begin(), textureFormats.end(),
                             [&](render::TextureFormat textureFormat) -> bool
