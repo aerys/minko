@@ -33,6 +33,8 @@ namespace minko
         public:
             typedef std::shared_ptr<WriterOptions>                              Ptr;
 
+            typedef std::shared_ptr<math::Vector2>                              Vector2Ptr;
+
         private:
             typedef std::function<const std::string(const std::string&)>        UriFunction;
 
@@ -47,6 +49,8 @@ namespace minko
 
             bool                                _compressTexture;
             bool                                _generateMipmaps;
+            bool                                _upscaleTextureWhenProcessedForMipmapping;
+            Vector2Ptr                          _textureMaxResolution;
             render::MipFilter                   _mipFilter;
             bool                                _optimizeForNormalMapping;
 
@@ -75,6 +79,8 @@ namespace minko
                 instance->_textureFormats = other->_textureFormats;
                 instance->_compressTexture = other->_compressTexture;
                 instance->_generateMipmaps = other->_generateMipmaps;
+                instance->_upscaleTextureWhenProcessedForMipmapping = other->_upscaleTextureWhenProcessedForMipmapping;
+                instance->_textureMaxResolution = other->_textureMaxResolution;
                 instance->_mipFilter = other->_mipFilter;
                 instance->_optimizeForNormalMapping = other->_optimizeForNormalMapping;
 
@@ -189,6 +195,38 @@ namespace minko
             generateMipmaps(bool value)
             {
                 _generateMipmaps = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            bool
+            upscaleTextureWhenProcessedForMipmapping() const
+            {
+                return _upscaleTextureWhenProcessedForMipmapping;
+            }
+
+            inline
+            Ptr
+            upscaleTextureWhenProcessedForMipmapping(bool value)
+            {
+                _upscaleTextureWhenProcessedForMipmapping = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            Vector2Ptr
+            textureMaxResolution() const
+            {
+                return _textureMaxResolution;
+            }
+
+            inline
+            Ptr
+            textureMaxResolution(Vector2Ptr value)
+            {
+                _textureMaxResolution = value;
 
                 return shared_from_this();
             }

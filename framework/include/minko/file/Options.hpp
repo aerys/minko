@@ -98,13 +98,11 @@ namespace minko
 			Ptr
 			create()
 			{
-				auto options = std::shared_ptr<Options>(new Options());
+                auto instance = std::shared_ptr<Options>(new Options());
 
-				options->initializeDefaultFunctions();
-				options->registerParser<file::EffectParser>("effect");
-				options->registerProtocol<FileProtocol>("file");
+                instance->initialize();
 
-				return options;
+                return instance;
 			}
 
 			inline static
@@ -118,42 +116,9 @@ namespace minko
 				return options;
 			}
 
-			inline static
+            virtual
 			Ptr
-			create(Ptr options)
-			{
-				auto opt = create();
-
-				opt->_context = options->_context;
-				opt->_assets = options->_assets;
-				opt->_parsers = options->_parsers;
-				opt->_protocols = options->_protocols;
-				opt->_includePaths = options->_includePaths;
-				opt->_generateMipMaps = options->_generateMipMaps;
-				opt->_resizeSmoothly = options->_resizeSmoothly;
-				opt->_isCubeTexture = options->_isCubeTexture;
-				opt->_startAnimation = options->_startAnimation;
-				opt->_disposeIndexBufferAfterLoading = options->_disposeIndexBufferAfterLoading;
-				opt->_disposeVertexBufferAfterLoading = options->_disposeVertexBufferAfterLoading;
-				opt->_disposeTextureAfterLoading = options->_disposeTextureAfterLoading;
-				opt->_skinningFramerate = options->_skinningFramerate;
-				opt->_skinningMethod = options->_skinningMethod;
-				opt->_effect = options->_effect;
-                opt->_textureFormats = options->_textureFormats;
-                opt->_material = options->_material;
-				opt->_materialFunction = options->_materialFunction;
-				opt->_geometryFunction = options->_geometryFunction;
-				opt->_protocolFunction = options->_protocolFunction;
-                opt->_parserFunction = options->_parserFunction;
-				opt->_uriFunction = options->_uriFunction;
-				opt->_nodeFunction = options->_nodeFunction;
-                opt->_textureFormatFunction = options->_textureFormatFunction;
-				opt->_loadAsynchronously = options->_loadAsynchronously;
-                opt->_seekingOffset = options->_seekingOffset;
-                opt->_seekedLength = options->_seekedLength;
-
-				return opt;
-			}
+            clone();
 
 			inline
 			std::shared_ptr<render::AbstractContext>
@@ -601,9 +566,16 @@ namespace minko
 			void
 			defaultProtocolFunction(const std::string& filename, const ProtocolFunction& func);
 
-		private:
+        protected:
 			Options();
 
+            Options(const Options& copy);
+
+            virtual
+            void
+            initialize();
+
+        private:
 			void
 			initializePlatforms();
 

@@ -251,6 +251,28 @@ ChromiumDOM::addDispatchMessageFunction()
     code += "   for(var i = 0; i < callbacks.length; ++i)";
     code += "       callbacks[i](event);";
     code += "};";
+    
+    code += "Minko.removeEventListener = function(type, callback)";
+    code += "{";
+    code += "   if (!(Minko.listeners[type]))";
+    code += "       Minko.listeners[type] = [];";
+    
+    code += "   var index = Minko.listeners[type].indexOf(callback);";
+    
+    code += "   if (index != -1)";
+    code += "       Minko.listeners[type].splice(index, 1);";
+    code += "};";
+
+    code += "Minko.dispatchEvent = function(event)";
+    code += "{";
+    code += "   var callbacks = Minko.listeners[event.type];";
+
+    code += "   if (!callbacks)";
+    code += "       return;";
+
+    code += "   for(var i = 0; i < callbacks.length; ++i)";
+    code += "       callbacks[i](event);";
+    code += "};";
 
     code += "Minko.dispatchMessage = function(message)";
     code += "{";

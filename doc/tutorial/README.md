@@ -21,7 +21,7 @@ Please make sure you also check the [developer reference](http://doc.v3.minko.io
 ### Mobile
 
 -   [Targeting iOS](../tutorial/Targeting_iOS.md)
--   Targeting Android (coming with the beta 2...)
+- 	[Targeting Android](../tutorial/Targeting_Android.md)
 
 ### Web
 

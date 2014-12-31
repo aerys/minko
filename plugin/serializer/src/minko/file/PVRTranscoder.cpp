@@ -102,7 +102,7 @@ PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
             }
         }
 
-        const auto generateMipmaps = writerOptions->generateMipmaps() && (texture2d->width() == texture2d->height());
+        const auto generateMipmaps = writerOptions->generateMipmaps();
 
         if (generateMipmaps)
         {

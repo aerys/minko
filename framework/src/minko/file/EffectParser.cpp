@@ -168,7 +168,7 @@ EffectParser::parse(const std::string&				    filename,
     
     int pos	= resolvedFilename.find_last_of("/\\");
 
-	_options = file::Options::create(options);
+	_options = options->clone();
 
     if (pos != std::string::npos)
     {

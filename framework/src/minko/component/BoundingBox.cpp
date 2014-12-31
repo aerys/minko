@@ -79,7 +79,7 @@ BoundingBox::targetAdded(scene::Node::Ptr target)
 		}
 	);
 
-	auto componentAddedOrRemovedCallback = [&](scene::Node::Ptr node, scene::Node::Ptr target, AbstractComponent::Ptr cmp)
+        auto componentAddedOrRemovedCallback = [=](scene::Node::Ptr node, scene::Node::Ptr target, AbstractComponent::Ptr cmp)
 	{
 		if (std::dynamic_pointer_cast<Surface>(cmp))
 		{

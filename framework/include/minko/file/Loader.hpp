@@ -171,7 +171,6 @@ namespace minko
 
             void
             protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol);
-            
 
             void
             protocolProgressHandler(std::shared_ptr<AbstractProtocol> protocol, float);
@@ -190,6 +189,9 @@ namespace minko
             
             void
             parserErrorHandler(std::shared_ptr<AbstractParser> parser, const Error& error);
+
+            void
+            errorThrown(const Error& error);
         };
     }
 }

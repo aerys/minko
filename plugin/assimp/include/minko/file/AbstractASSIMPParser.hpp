@@ -95,6 +95,8 @@ namespace minko
                 std::vector<math::mat4>>			                _nameToAnimMatrices;
 			std::set<NodePtr>										_alreadyAnimatedNodes;
 
+            std::set<std::string>                                   _meshNames;
+
 			LoaderToCompleteSlotMap									_loaderCompleteSlots;
 			LoaderToErrorSlotMap									_loaderErrorSlots;
 

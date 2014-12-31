@@ -18,6 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Common.hpp"
+#include "minko/file/DefaultParser.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/FileProtocol.hpp"
 #include "minko/file/AssetLibrary.hpp"
@@ -82,20 +83,31 @@ EmscriptenDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
 void
 EmscriptenDOMEngine::loadScript(std::string filename)
 {
-    auto options = file::Options::create(_sceneManager->assets()->loader()->options());
-    options->loadAsynchronously(false);
+	auto parser = file::DefaultParser::create();
 
-    file::AbstractProtocol::Ptr loader = file::FileProtocol::create();
+    auto options = _sceneManager->assets()->loader()->options()->clone();
 
-    auto loaderComplete = loader->complete()->connect([](std::shared_ptr<file::AbstractProtocol> loader)
+    options
+    	->loadAsynchronously(false)
+    	->parserFunction([=](const std::string& filename) -> file::AbstractParser::Ptr
+		{
+			return parser;
+		});
+
+    auto loader = file::Loader::create();
+
+    loader->options(options);
+
+    auto loaderComplete = loader->complete()->connect([=](file::Loader::Ptr)
     {
-    	std::string eval;
-    	eval.assign(loader->file()->data().begin(), loader->file()->data().end());
+    	const auto eval = std::string(parser->data().begin(), parser->data().end());
 
 		emscripten_run_script(eval.c_str());
     });
 
-	loader->load(filename, options);
+	loader
+		->queue(filename)
+		->load();
 }
 
 void

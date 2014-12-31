@@ -97,7 +97,7 @@ The first thing to do in our C++ application code is to load the main header for
 Now, we have to initialize the Lua context to give it access to our canvas and root node without forget to add a `LuaScriptManager` thereto:
 
 ```cpp
-auto canvas = Canvas::create("Minko Tutorial - My first script", 800, 600); auto sceneManager = component::SceneManager::create(canvas->context()); auto root = scene::Node::create("root")->addComponent(sceneManager);
+auto canvas = Canvas::create("Minko Tutorial - My first script", 800, 600); auto sceneManager = component::SceneManager::create(canvas); auto root = scene::Node::create("root")->addComponent(sceneManager);
 
 // initialization of Lua context LuaContext::initialize(argc, argv, root, canvas);
 
@@ -196,7 +196,7 @@ const uint WINDOW_HEIGHT = 600;
 int main(int argc, char** argv) {
 
    auto canvas = Canvas::create("Minko Tutorial - My first script", WINDOW_WIDTH, WINDOW_HEIGHT);
-   auto sceneManager = component::SceneManager::create(canvas->context());
+   auto sceneManager = component::SceneManager::create(canvas);
    auto root = scene::Node::create("root")->addComponent(sceneManager);
 
    // initialization of Lua context

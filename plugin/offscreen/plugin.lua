@@ -18,18 +18,34 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 ]]--
 
 -- offscreen plugin
-minko.plugin.offscreen = {}
+minko.plugin.offscreen = { }
 
 function minko.plugin.offscreen:enable()
+
 	defines { "MINKO_PLUGIN_OFFSCREEN" }
 
 	minko.plugin.links { "offscreen" }
 	links { "OSMesa" }
-	removelinks { "GL" }
+
+	removelinks { 
+		"GL",
+		"OpenGL32",
+		"glew32"
+	}
 
 	includedirs {
-		minko.plugin.path("offscreen") .. "/include"
+		minko.plugin.path("offscreen") .. "/include",
+		minko.plugin.path("offscreen") .. "/lib/osmesa/linux/include"
 	}
+
+	configuration { "windows32 or windows64" }
+		libdirs { minko.plugin.path("offscreen") .. "/lib/osmesa/windows/lib" }
+
+		removeincludedirs { minko.sdk.path("/framework/lib/glew/include") }
+
+		prelinkcommands {
+			minko.action.copy(minko.plugin.path("offscreen") .. "/lib/osmesa/windows/lib/*.dll")
+		}
 end
 
 newoption {

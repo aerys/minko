@@ -17,12 +17,12 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/net/HTTPProtocol.hpp"
-
-#include "minko/async/Worker.hpp"
-#include "minko/net/HTTPRequest.hpp"
-#include "minko/file/Options.hpp"
 #include "minko/Signal.hpp"
+#include "minko/async/Worker.hpp"
+#include "minko/file/Options.hpp"
+#include "minko/net/HTTPOptions.hpp"
+#include "minko/net/HTTPProtocol.hpp"
+#include "minko/net/HTTPRequest.hpp"
 #include "minko/AbstractCanvas.hpp"
 
 #if defined(EMSCRIPTEN)
@@ -119,23 +119,6 @@ HTTPProtocol::errorHandler(void* arg, int code, const char * message)
 void
 HTTPProtocol::load()
 {
-    resolvedFilename(_file->filename());
-
-    std::cout << resolvedFilename() << std::endl;
-
-    if (_options->includePaths().size() != 0)
-    {
-        if (resolvedFilename().substr(0, 7) != "http://" && resolvedFilename().substr(0, 8) != "https://")
-        {
-            for (auto path : _options->includePaths())
-            {
-                resolvedFilename(path + '/' + resolvedFilename());
-                break;
-            }
-        }
-    }
-    std::cout << resolvedFilename() << std::endl;
-
     _options->protocolFunction([](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
     {
         return HTTPProtocol::create();
@@ -259,7 +242,18 @@ HTTPProtocol::load()
     }
     else
     {
-        HTTPRequest request(resolvedFilename());
+        auto username = std::string();
+        auto password = std::string();
+
+        auto httpOptions = std::dynamic_pointer_cast<HTTPOptions>(_options);
+
+        if (httpOptions != nullptr)
+        {
+            username = httpOptions->username();
+            password = httpOptions->password();
+        }
+
+        HTTPRequest request(resolvedFilename(), username, password);
 
         request.progress()->connect([&](float p){
             progressHandler(loader.get(), int(p * 100.f), 100);
@@ -271,6 +265,39 @@ HTTPProtocol::load()
 
         completeHandler(loader.get(), &*output.begin(), output.size());
     }
+#endif
+}
+
+bool
+HTTPProtocol::fileExists(const std::string& filename)
+{
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+    auto evalString = std::string();
+
+    evalString += "var xhr = new XMLHttpRequest();\n";
+
+    evalString += "xhr.open('HEAD', '" + filename + "', false);\n";
+
+    evalString += "xhr.send(null);\n";
+
+    evalString += "(xhr.status);";
+
+    auto status = emscripten_run_script_int(evalString.c_str());
+
+    return status != 404;
+#else
+    auto username = std::string();
+    auto password = std::string();
+
+    auto httpOptions = std::dynamic_pointer_cast<HTTPOptions>(_options);
+
+    if (httpOptions != nullptr)
+    {
+        username = httpOptions->username();
+        password = httpOptions->password();
+    }
+
+    return HTTPRequest::fileExists(filename, username, password);
 #endif
 }
 

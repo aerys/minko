@@ -185,6 +185,7 @@ Canvas::initializeWindow()
     if (_flags & HIDDEN)
         windowFlags |= SDL_WINDOW_HIDDEN;
 
+# if !defined(MINKO_PLUGIN_OFFSCREEN)
     _window = SDL_CreateWindow(
         _name.c_str(),
         SDL_WINDOWPOS_CENTERED, // SDL_WINDOWPOS_UNDEFINED,
@@ -203,8 +204,9 @@ Canvas::initializeWindow()
         width(w);
         height(h);
     }
+# endif
 
-# if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID)
+# if (MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID)) && !defined(MINKO_PLUGIN_OFFSCREEN)
     _audio = SDLAudio::create(shared_from_this());
 # endif
 #endif
@@ -237,7 +239,7 @@ Canvas::initializeContext()
 {
 #if (MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS) && defined(MINKO_PLUGIN_ANGLE)
     _backend = SDLAngleBackend::create();
-#elif (MINKO_PLATFORM == MINKO_PLATFORM_LINUX) && defined(MINKO_PLUGIN_OFFSCREEN)
+#elif (defined(MINKO_PLUGIN_OFFSCREEN))
     _backend = SDLOffscreenBackend::create();
 #elif MINKO_PLATFORM == MINKO_PLATFORM_HTML5
     _backend = SDLWebGLBackend::create();
@@ -394,6 +396,8 @@ Canvas::step()
 
     auto enteredOrLeftThisFrame = false;
 
+    auto gotTextInput = false;
+
     while (SDL_PollEvent(&event))
     {
         switch (event.type)
@@ -412,12 +416,17 @@ Canvas::step()
 #endif // MINKO_PLATFORM != MINKO_PLATFORM_HTML5
         case SDL_TEXTINPUT:
         {
+            if (gotTextInput)
+                break;
+
+            gotTextInput = true;
             int i = 0;
 
             while (event.text.text[i] != '\0' && event.text.text[i] != 0)
             {
                 _keyboard->textInput()->execute(_keyboard, event.text.text[i++]);
             }
+
             break;
         }
         case SDL_TEXTEDITING:
@@ -553,6 +562,10 @@ Canvas::step()
             auto id = (int)(event.tfinger.fingerId);
             
             _touch->addTouch(id, x, y);
+            
+            _mouse->x((int)_touch->averageX());
+            _mouse->y((int)_touch->averageY());
+
             _touch->touchDown()->execute(
                 _touch, 
                 id, 
@@ -581,7 +594,11 @@ Canvas::step()
             auto y = event.tfinger.y * _height;
             auto id = (int)(event.tfinger.fingerId);
             
+            _mouse->x((int)_touch->averageX());
+            _mouse->y((int)_touch->averageY());
+
             _touch->removeTouch(id);
+
             _touch->touchUp()->execute(
                 _touch, 
                 id, 
@@ -640,6 +657,10 @@ Canvas::step()
                 _touch->lastTouchDownTime(-1.0f);
             
             _touch->updateTouch(id, x, y);
+            
+            _mouse->x((int)_touch->averageX());
+            _mouse->y((int)_touch->averageY());
+
             _touch->touchMove()->execute(
                 _touch, 
                 id,
