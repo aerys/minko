@@ -267,14 +267,15 @@ Options::initializeDefaultFunctions()
         throw std::runtime_error(errorMessage);
     };
 
-    _defaultProtocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
-    {
-        auto defaultProtocol = options->getProtocol("file"); // "file" might be overriden (by APKProtocol for instance)
+    if (!_defaultProtocolFunction)
+        _defaultProtocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
+        {
+            auto defaultProtocol = options->getProtocol("file"); // "file" might be overriden (by APKProtocol for instance)
 
-        defaultProtocol->options(options->clone());
+            defaultProtocol->options(options->clone());
 
-        return defaultProtocol;
-    };
+            return defaultProtocol;
+        };
 
     _protocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
     {
