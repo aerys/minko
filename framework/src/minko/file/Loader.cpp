@@ -227,10 +227,13 @@ Loader::processData(const std::string&                      filename,
     }
     else
     {
-        if (extension != "glsl")
-            LOG_DEBUG("no parser found for extension '" << extension << "'");
+        if (options->storeDataIfNotParsed())
+        {
+            if (extension != "glsl")
+                LOG_DEBUG("no parser found for extension '" << extension << "'");
 
-        options->assetLibrary()->blob(filename, data);
+            options->assetLibrary()->blob(filename, data);
+        }
     }
 
     return parser != nullptr;

@@ -24,7 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AbstractParser.hpp"
 #include "minko/file/AbstractSerializerParser.hpp"
 #include "minko/file/AssetLibrary.hpp"
-#include "minko/file/DefaultParser.hpp"
 #include "minko/file/Dependency.hpp"
 #include "minko/file/GeometryParser.hpp"
 #include "minko/file/MaterialParser.hpp"
@@ -143,14 +142,9 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 
         assetLoader->options(assetLoaderOptions);
 
-        auto defaultParser = DefaultParser::create();
-
         assetLoaderOptions
             ->loadAsynchronously(false)
-            ->parserFunction([=](const std::string& filename) -> AbstractParser::Ptr
-            {
-                return defaultParser;
-            });
+            ->storeDataIfNotParsed(false);
 
         auto fileSuccessfullyLoaded = true;
 
@@ -181,9 +175,9 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
             fileSuccessfullyLoaded = false;
 		});
 
-        auto completeSlot = assetLoader->complete()->connect([&](Loader::Ptr)
+        auto completeSlot = assetLoader->complete()->connect([&](Loader::Ptr assetLoaderThis)
 		{
-            data.assign(defaultParser->data().begin(), defaultParser->data().end());
+            data = assetLoaderThis->files().at(assetCompletePath)->data();
 		});
 
         assetLoader
