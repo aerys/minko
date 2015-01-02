@@ -136,7 +136,7 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 
 	_canvasResizedSlot = _canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
-		_overlayMaterial->data()->unset("diffuseMap");
+		//_overlayMaterial->data()->unset("diffuseMap");
 		_impl->browser->GetHost()->WasResized();
 
 		float wRatio = (float)canvas->width() / (float)math::clp2(canvas->width());
