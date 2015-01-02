@@ -80,7 +80,7 @@ main(int argc, char** argv)
         ->geometry("sphere",    geometry::SphereGeometry::create(sceneManager->assets()->context(), 16, 16));
 
     loader
-        ->queue(CUBE_TEXTURE, file::Options::create(loader->options())->isCubeTexture(true))
+        ->queue(CUBE_TEXTURE, loader->options()->clone()->isCubeTexture(true))
         ->queue("effect/Basic.effect")
         ->queue("effect/OculusVR/OculusVR.effect");
 
