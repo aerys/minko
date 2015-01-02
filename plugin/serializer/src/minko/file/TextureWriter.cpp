@@ -26,7 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/QTranscoder.hpp"
 #include "minko/file/WriterOptions.hpp"
 #include "minko/log/Logger.hpp"
-#include "minko/math/Vector2.hpp"
 #include "minko/render/AbstractTexture.hpp"
 #include "minko/render/CubeTexture.hpp"
 #include "minko/render/Texture.hpp"
@@ -90,12 +89,12 @@ TextureWriter::embed(AssetLibraryPtr     assetLibrary,
 
             dimensionSize = std::min<uint>(
                 dimensionSize,
-                static_cast<uint>(writerOptions->textureMaxResolution()->x())
+                static_cast<uint>(writerOptions->textureMaxResolution().x)
             );
 
             dimensionSize = std::min<uint>(
                 dimensionSize,
-                static_cast<uint>(writerOptions->textureMaxResolution()->y())
+                static_cast<uint>(writerOptions->textureMaxResolution().y)
             );
 
             const auto newWidth = dimensionSize;
@@ -122,12 +121,12 @@ TextureWriter::embed(AssetLibraryPtr     assetLibrary,
     }
     else
     {
-        if (texture->width() > writerOptions->textureMaxResolution()->x() ||
-            texture->height() > writerOptions->textureMaxResolution()->y())
+        if (texture->width() > writerOptions->textureMaxResolution().x ||
+            texture->height() > writerOptions->textureMaxResolution().y)
         {
             texture->resize(
-                std::min<uint>(texture->width(), writerOptions->textureMaxResolution()->x()),
-                std::min<uint>(texture->height(), writerOptions->textureMaxResolution()->y()),
+                std::min<uint>(texture->width(), writerOptions->textureMaxResolution().x),
+                std::min<uint>(texture->height(), writerOptions->textureMaxResolution().y),
                 true
             );
         }

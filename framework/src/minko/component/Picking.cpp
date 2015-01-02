@@ -37,7 +37,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace component;
 
-
 Picking::Picking() :
     _sceneManager(nullptr),
     _context(nullptr),
@@ -77,20 +76,6 @@ Picking::initialize(NodePtr             camera,
     _addPickingLayout = addPickingLayout;
 
 	_pickingProvider->set("projection", _pickingProjection);
-
-    _targetAddedSlot = targetAdded()->connect(std::bind(
-        &Picking::targetAddedHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2
-    ));
-
-    _targetRemovedSlot = targetRemoved()->connect(std::bind(
-        &Picking::targetRemovedHandler,
-        std::static_pointer_cast<Picking>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2
-    ));
 }
 
 void
@@ -200,9 +185,6 @@ Picking::bindSignals()
 void
 Picking::targetAdded(NodePtr target)
 {
-    if (numTargets() > 1)
-        throw std::logic_error("The Picking component cannot be added to two targets");
-
     _sceneManager = target->root()->component<SceneManager>();
     auto canvas = _sceneManager->canvas();
     
@@ -213,7 +195,7 @@ Picking::targetAdded(NodePtr target)
     bindSignals();
     
     _renderer = Renderer::create(0xFFFF00FF, nullptr, _sceneManager->assets()->effect("effect/Picking.effect"), 1000.f, "Picking Renderer");
-    _renderer->scissor(0, 0, 1, 1);
+    _renderer->scissorBox(0, 0, 1, 1);
     _renderer->layoutMask(scene::Layout::Group::PICKING);
 
 	updateDescendants(target);
@@ -513,32 +495,32 @@ Picking::renderingEnd(RendererPtr renderer)
 
     if (_executeTouchDownHandler && _lastPickedSurface)
     {
-        _touchDown->execute(_lastPickedSurface->targets()[0]);
+        _touchDown->execute(_lastPickedSurface->target());
     }
 
     if (_executeTouchUpHandler && _lastPickedSurface)
     {
-        _touchUp->execute(_lastPickedSurface->targets()[0]);
+        _touchUp->execute(_lastPickedSurface->target());
     }
 
     if (_executeTouchMoveHandler && _lastPickedSurface)
     {
-        _touchMove->execute(_lastPickedSurface->targets()[0]);
+        _touchMove->execute(_lastPickedSurface->target());
     }
 
     if (_executeTapHandler && _lastPickedSurface)
     {
-        _tap->execute(_lastPickedSurface->targets()[0]);
+        _tap->execute(_lastPickedSurface->target());
     }
 
     if (_executeDoubleTapHandler && _lastPickedSurface)
     {
-        _doubleTap->execute(_lastPickedSurface->targets()[0]);
+        _doubleTap->execute(_lastPickedSurface->target());
     }
 
     if (_executeLongHoldHandler && _lastPickedSurface)
     {
-        _longHold->execute(_lastPickedSurface->targets()[0]);
+        _longHold->execute(_lastPickedSurface->target());
     }
 
     if (!(_mouseOver->numCallbacks() > 0 || _mouseOut->numCallbacks() > 0))

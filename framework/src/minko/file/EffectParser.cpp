@@ -1192,7 +1192,7 @@ EffectParser::glslIncludeCompleteHandler(LoaderPtr 			        loader,
 
     if (pos != std::string::npos)
     {
-        options = file::Options::create(options);
+        options = options->clone();
         options->includePaths().clear();
         options->includePaths().push_back(resolvedFilename.substr(0, pos));
     }

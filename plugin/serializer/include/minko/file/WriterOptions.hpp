@@ -33,24 +33,22 @@ namespace minko
         public:
             typedef std::shared_ptr<WriterOptions>                              Ptr;
 
-            typedef std::shared_ptr<math::Vector2>                              Vector2Ptr;
-
         private:
             typedef std::function<const std::string(const std::string&)>        UriFunction;
 
         private:
-            bool                    _embedAll;
-            bool                    _addBoundingBoxes;
+            bool                                _embedAll;
+            bool                                _addBoundingBoxes;
 
-            UriFunction             _outputAssetUriFunction;
+            UriFunction                         _outputAssetUriFunction;
 
-            serialize::ImageFormat  _imageFormat;
+            serialize::ImageFormat              _imageFormat;
             std::list<render::TextureFormat>    _textureFormats;
 
             bool                                _compressTexture;
             bool                                _generateMipmaps;
             bool                                _upscaleTextureWhenProcessedForMipmapping;
-            Vector2Ptr                          _textureMaxResolution;
+            math::ivec2                         _textureMaxResolution;
             render::MipFilter                   _mipFilter;
             bool                                _optimizeForNormalMapping;
 
@@ -216,7 +214,7 @@ namespace minko
             }
 
             inline
-            Vector2Ptr
+            const math::ivec2&
             textureMaxResolution() const
             {
                 return _textureMaxResolution;
@@ -224,7 +222,7 @@ namespace minko
 
             inline
             Ptr
-            textureMaxResolution(Vector2Ptr value)
+            textureMaxResolution(const math::ivec2& value)
             {
                 _textureMaxResolution = value;
 
