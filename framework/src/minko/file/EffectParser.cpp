@@ -1271,6 +1271,7 @@ EffectParser::finalize()
         }
     }
 
+    _options->assetLibrary()->effect(_effect->data()->get<std::string>("name"), _effect);
     _options->assetLibrary()->effect(_filename, _effect);
 
     _complete->execute(shared_from_this());
