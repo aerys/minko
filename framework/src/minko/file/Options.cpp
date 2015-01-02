@@ -46,6 +46,7 @@ Options::Options() :
     _disposeIndexBufferAfterLoading(false),
     _disposeVertexBufferAfterLoading(false),
     _disposeTextureAfterLoading(false),
+    _storeDataIfNotParsed(true),
     _skinningFramerate(30),
     _skinningMethod(component::SkinningMethod::HARDWARE),
     _material(nullptr),
@@ -80,6 +81,7 @@ Options::Options(const Options& copy) :
     _disposeIndexBufferAfterLoading(copy._disposeIndexBufferAfterLoading),
     _disposeVertexBufferAfterLoading(copy._disposeVertexBufferAfterLoading),
     _disposeTextureAfterLoading(copy._disposeTextureAfterLoading),
+    _storeDataIfNotParsed(copy._storeDataIfNotParsed),
     _skinningFramerate(copy._skinningFramerate),
     _skinningMethod(copy._skinningMethod),
     _effect(copy._effect),
@@ -302,4 +304,5 @@ Options::initializeDefaultFunctions()
         return _defaultProtocolFunction(filename);
     };
 
+    _parserFunction = nullptr;
 }

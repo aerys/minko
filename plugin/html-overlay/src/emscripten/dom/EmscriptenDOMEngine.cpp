@@ -18,7 +18,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Common.hpp"
-#include "minko/file/DefaultParser.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/FileProtocol.hpp"
 #include "minko/file/AssetLibrary.hpp"
@@ -83,24 +82,21 @@ EmscriptenDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
 void
 EmscriptenDOMEngine::loadScript(std::string filename)
 {
-	auto parser = file::DefaultParser::create();
-
     auto options = _sceneManager->assets()->loader()->options()->clone();
 
     options
     	->loadAsynchronously(false)
-    	->parserFunction([=](const std::string& filename) -> file::AbstractParser::Ptr
-		{
-			return parser;
-		});
+    	->storeDataIfNotParsed(false);
 
     auto loader = file::Loader::create();
 
     loader->options(options);
 
-    auto loaderComplete = loader->complete()->connect([=](file::Loader::Ptr)
+    auto loaderComplete = loader->complete()->connect([=](file::Loader::Ptr loaderThis)
     {
-    	const auto eval = std::string(parser->data().begin(), parser->data().end());
+    	const auto& data = loaderThis->files().at(filename)->data();
+
+    	const auto eval = std::string(data.begin(), data.end());
 
 		emscripten_run_script(eval.c_str());
     });

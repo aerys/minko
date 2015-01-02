@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/file/AssetLibrary.hpp"
-#include "minko/file/DefaultParser.hpp"
 #include "minko/file/IOStream.hpp"
 #include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
@@ -95,23 +94,18 @@ namespace minko
 
                 loader->options(_options);
 
-                auto defaultParser = DefaultParser::create();
-
                 _options
                     ->loadAsynchronously(false)
-                    ->parserFunction([=](const std::string& filename) -> AbstractParser::Ptr
-                {
-                    return defaultParser;
-                });
+                    ->storeDataIfNotParsed(false);
 
                 Assimp::IOStream* stream = nullptr;
 
-                _loaderCompleteSlots[loader] = loader->complete()->connect([&](Loader::Ptr)
+                _loaderCompleteSlots[loader] = loader->complete()->connect([&](Loader::Ptr loaderThis)
                 {
                     _loaderErrorSlots.erase(loader);
                     _loaderCompleteSlots.erase(loader);
 
-                    stream = new minko::file::IOStream(defaultParser->data());
+                    stream = new minko::file::IOStream(loaderThis->files().at(filename)->data());
                 });
 
                 _loaderErrorSlots[loader] = loader->error()->connect([&](Loader::Ptr, const Error& error)

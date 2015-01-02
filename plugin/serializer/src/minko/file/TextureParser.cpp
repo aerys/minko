@@ -18,7 +18,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/file/AssetLibrary.hpp"
-#include "minko/file/DefaultParser.hpp"
 #include "minko/file/Loader.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/PNGParser.hpp"
@@ -135,16 +134,11 @@ TextureParser::parse(const std::string&                filename,
 
     if (!_dataEmbed)
     {
-        auto defaultParser = DefaultParser::create();
-
         auto textureFileOptions = options->clone()
             ->seekingOffset(offset)
             ->seekedLength(length)
             ->loadAsynchronously(false)
-            ->parserFunction([=](const std::string& filename) -> AbstractParser::Ptr
-            {
-                return defaultParser;
-            });
+            ->storeDataIfNotParsed(false);
 
         auto loader = Loader::create();
 
@@ -158,12 +152,9 @@ TextureParser::parse(const std::string&                filename,
             );
         });
 
-        auto completeSlot = loader->complete()->connect([&](Loader::Ptr)
+        auto completeSlot = loader->complete()->connect([&](Loader::Ptr loaderThis)
         {
-            const auto textureData = std::vector<unsigned char>(
-                defaultParser->data().begin(),
-                defaultParser->data().end()
-            );
+            const auto& textureData = loaderThis->files().at(filename)->data();
 
             if (!_formatParserFunctions.at(desiredFormat)(filename, textureFileOptions, textureData, assetLibrary, textureWidth, textureHeight, textureType, textureNumMipmaps))
             {
