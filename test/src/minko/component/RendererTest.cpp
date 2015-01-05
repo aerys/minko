@@ -92,3 +92,55 @@ TEST_F(RendererTest, AddAndRemoveSurfaceBubbeUp)
     renderer->render(MinkoTests::canvas()->context());
     ASSERT_EQ(renderer->numDrawCalls(), 1);
 }
+
+TEST_F(RendererTest, OneSurfaceLayoutMaskFail)
+{
+    auto fx = MinkoTests::loadEffect("effect/Basic.effect");
+    auto renderer = Renderer::create();
+    auto root = scene::Node::create()
+        ->addComponent(SceneManager::create(MinkoTests::canvas()))
+        ->addComponent(PerspectiveCamera::create(1.f))
+        ->addComponent(renderer);
+
+    auto surfaceNode = scene::Node::create();
+    root->addChild(surfaceNode);
+
+    auto surface = Surface::create(
+        geometry::CubeGeometry::create(MinkoTests::canvas()->context()),
+        material::BasicMaterial::create()->diffuseColor(math::vec4(1.f)),
+        fx
+    );
+
+    surface->layoutMask(scene::BuiltinLayout::DEBUG_ONLY);
+    surfaceNode->addComponent(surface);
+
+    renderer->render(MinkoTests::canvas()->context());
+
+    ASSERT_EQ(renderer->numDrawCalls(), 0);
+}
+
+TEST_F(RendererTest, OneSurfaceLayoutMaskPass)
+{
+    auto fx = MinkoTests::loadEffect("effect/Basic.effect");
+    auto renderer = Renderer::create();
+    auto root = scene::Node::create()
+        ->addComponent(SceneManager::create(MinkoTests::canvas()))
+        ->addComponent(PerspectiveCamera::create(1.f))
+        ->addComponent(renderer);
+
+    auto surfaceNode = scene::Node::create();
+    root->addChild(surfaceNode);
+
+    auto surface = Surface::create(
+        geometry::CubeGeometry::create(MinkoTests::canvas()->context()),
+        material::BasicMaterial::create()->diffuseColor(math::vec4(1.f)),
+        fx
+    );
+
+    surface->layoutMask(scene::BuiltinLayout::DEFAULT);
+    surfaceNode->addComponent(surface);
+
+    renderer->render(MinkoTests::canvas()->context());
+
+    ASSERT_EQ(renderer->numDrawCalls(), 1);
+}
