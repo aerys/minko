@@ -88,11 +88,12 @@ namespace minko
 
 			static
 			Ptr
-			create(const std::string& name)
+			create(const std::string& name, Layout layout = BuiltinLayout::DEFAULT)
 			{
 				Ptr node = create();
 
-				node->name(name);
+				node->_name = name;
+				node->_layout = layout;
 
 				return node;
 			}
@@ -159,7 +160,7 @@ namespace minko
             {
                 return _layout;
             }
-			
+
 			Ptr
 			layout(Layout layout);
 
