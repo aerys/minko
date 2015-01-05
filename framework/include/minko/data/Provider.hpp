@@ -145,8 +145,8 @@ namespace minko
                     T* ptr = Any::cast<T>(&_values[propertyName]);
                     auto changed = !(*ptr == value);
 
-                    // *ptr = value;
-					memcpy(ptr, &value, sizeof(T));
+                    *ptr = value;
+					// memcpy(ptr, &value, sizeof(T));
                     if (changed)
                         _propertyChanged.execute(shared_from_this(), propertyName);
                 }
