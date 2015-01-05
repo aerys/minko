@@ -192,6 +192,7 @@ namespace minko
 				 math::vec2*					hitUv 		= nullptr,
 				 math::vec3*					hitNormal 	= nullptr);
 
+			virtual
 			void
 			upload();
 

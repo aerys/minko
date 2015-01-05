@@ -31,7 +31,7 @@ namespace minko
 		{
 		public:
 			typedef std::shared_ptr<LineGeometry> Ptr;
-	
+
 		private:
 			static const uint						MAX_NUM_LINES;
 			static const std::string				ATTRNAME_START_POS;
@@ -42,7 +42,7 @@ namespace minko
 			float									_currentY;
 			float									_currentZ;
 			uint									_numLines;
-		
+
 			std::shared_ptr<render::VertexBuffer>	_vertexBuffer;
 			std::shared_ptr<render::IndexBuffer>	_indexBuffer;
 
@@ -87,6 +87,9 @@ namespace minko
 
 			Ptr
 			lineTo(const math::vec3&, unsigned int numSegments = 1);
+
+			void
+			upload();
 
 		protected:
             LineGeometry();

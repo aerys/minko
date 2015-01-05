@@ -55,9 +55,6 @@ LineGeometry::initialize(AbstractContext::Ptr context)
 	_vertexBuffer->addAttribute(ATTRNAME_START_POS,	3, 0);
 	_vertexBuffer->addAttribute(ATTRNAME_STOP_POS,	3, 3);
 	_vertexBuffer->addAttribute(ATTRNAME_WEIGHTS,	3, 6);
-
-	addVertexBuffer(_vertexBuffer);
-	indices(_indexBuffer);
 }
 
 math::vec3
@@ -162,9 +159,15 @@ LineGeometry::lineTo(float x, float y, float z, unsigned int numSegments)
 	std::swap(_vertexBuffer->data(), vertexData);
 	std::swap(_indexBuffer->data(), indexData);
 
-	_vertexBuffer->upload();
-	_indexBuffer->upload();
-
 	return std::static_pointer_cast<LineGeometry>(shared_from_this());
 }
 
+void
+LineGeometry::upload()
+{
+	_indexBuffer->upload();
+	_vertexBuffer->upload();
+
+	addVertexBuffer(_vertexBuffer);
+	indices(_indexBuffer);
+}
