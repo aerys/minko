@@ -328,6 +328,8 @@ OpenGLES2Context::drawTriangles(const uint indexBuffer, const uint firstIndex, c
 void
 OpenGLES2Context::drawTriangles(const uint firstIndex, const int numTriangles)
 {
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	_currentIndexBuffer = 0;
 	glDrawArrays(GL_TRIANGLES, firstIndex, numTriangles * 3);
 
 	checkForErrors();
