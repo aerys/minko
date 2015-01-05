@@ -161,6 +161,9 @@ bullet::ColliderDebug::initializeDisplay()
         std::placeholders::_1,
         std::placeholders::_2
     ));
+
+    if (_node)
+		_node->component<Transform>()->matrix()->copyFrom(collider->getPhysicsTransform());
 }
 
 void
