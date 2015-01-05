@@ -31,13 +31,11 @@ using namespace minko::render;
 const unsigned int	DrawCall::MAX_NUM_TEXTURES		            = 8;
 const unsigned int	DrawCall::MAX_NUM_VERTEXBUFFERS	            = 8;
 
-DrawCall::DrawCall(const scene::Layout*   layout,
-                   std::shared_ptr<Pass>  pass,
+DrawCall::DrawCall(std::shared_ptr<Pass>  pass,
                    const StringMap&       variables,
                    data::Store&           rootData,
                    data::Store&           rendererData,
                    data::Store&           targetData) :
-    _layout(layout),
     _pass(pass),
     _variables(variables),
     _rootData(rootData),
@@ -385,18 +383,18 @@ DrawCall::render(AbstractContext::Ptr   context,
             context->setUniformMatrix4x4(u.location, 1, u.data);
     }
 
-    uint numSamplers = 0;
     for (const auto& s : _samplers)
     {
         context->setTextureAt(s.position, *s.resourceId, s.location);
         context->setSamplerStateAt(s.position, WrapMode::CLAMP, TextureFilter::LINEAR, MipFilter::NONE);
-        ++numSamplers;
     }
-    for (uint i = 0; i < MAX_NUM_TEXTURES; ++i)
-        context->setTextureAt(i, -1, -1);
+    for (auto numSamplers = _samplers.size(); numSamplers < MAX_NUM_TEXTURES; ++numSamplers)
+        context->setTextureAt(numSamplers, -1, -1);
 
     for (const auto& a : _attributes)
         context->setVertexBufferAt(a.location, *a.resourceId, a.size, *a.stride, a.offset);
+    for (auto numAttributes = _attributes.size(); numAttributes < MAX_NUM_VERTEXBUFFERS; ++numAttributes)
+        context->setVertexBufferAt(numAttributes, -1, 0, 0, 0);
 
     context->setColorMask(*_colorMask);
     context->setBlendingMode(*_blendingSourceFactor, *_blendingDestinationFactor);
