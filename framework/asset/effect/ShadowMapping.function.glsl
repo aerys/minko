@@ -18,6 +18,7 @@ float shadowMapping_random(vec4 seed)
 
 bool shadowMapping_vertexIsInShadowMap(vec3 vertexLightPosition)
 {
+    return true;
     return vertexLightPosition.z < SHADOW_MAPPING_NEAR_ONE && vertexLightPosition.z > -SHADOW_MAPPING_NEAR_ONE
         && vertexLightPosition.x < SHADOW_MAPPING_NEAR_ONE && vertexLightPosition.x > -SHADOW_MAPPING_NEAR_ONE
         && vertexLightPosition.y < SHADOW_MAPPING_NEAR_ONE && vertexLightPosition.y > -SHADOW_MAPPING_NEAR_ONE;
@@ -27,7 +28,8 @@ float shadowMapping_texture2DDepth(sampler2D depths, vec2 uv, float zNear, float
 {
     float depth = unpackFloat8bitRGBA(texture2D(depths, uv));
 
-    return (depth * (zFar - zNear)) + zNear;
+    //return (depth * (zFar - zNear)) + zNear;
+    return (depth - 0.5) / 0.5;
 }
 
 float shadowMapping_texture2DCompare(sampler2D depths, vec2 uv, float compare, float zNear, float zFar)

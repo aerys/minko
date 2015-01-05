@@ -62,7 +62,9 @@ float linearDepth(float depth, float zNear, float zFar)
 
 float linearDepthOrtho(float depth, float zNear, float zFar)
 {
-    return (depth - zNear) / (zFar - zNear);
+    // depth (depth - zNear) / (zFar - zNear);
+    // return zNear + depth * (zFar - zNear)
+    return depth * 0.5 + 0.5;
 }
 
 void main(void)

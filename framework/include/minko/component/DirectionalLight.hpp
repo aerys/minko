@@ -33,13 +33,21 @@ namespace minko
 	    public:
 		    typedef std::shared_ptr<DirectionalLight> Ptr;
 
+        public:
+            typedef std::shared_ptr<render::Texture>  TexturePtr;
+
 		private:
-			math::vec3                         _worldDirection;
-            bool                               _shadowMappingEnabled;
-            std::shared_ptr<render::Texture>   _shadowMap;
-            std::shared_ptr<Renderer>          _renderer;
-            math::mat4                         _view;
-            math::mat4                         _projection;
+			math::vec3                  _worldDirection;
+            bool                        _shadowMappingEnabled;
+            uint                        _shadowMapSize;
+            std::vector<TexturePtr>     _shadowMaps;
+            uint                        _numShadowCascades;
+            std::shared_ptr<Renderer>   _shadowRenderer;
+            std::vector<math::mat4>     _shadowProjections;
+            math::mat4                  _view;
+
+        public:
+            static const uint MAX_NUM_SHADOW_CASCADES;
 
 	    public:
 		    inline static
@@ -57,18 +65,10 @@ namespace minko
 		    }
 
             inline
-            void
-            shadowProjection(const minko::math::mat4& projection)
+            const std::vector<TexturePtr>&
+            shadowMaps()
             {
-                _projection = projection;
-                updateWorldToScreenMatrix();
-            }
-
-            inline
-            std::shared_ptr<render::Texture>
-            shadowMap()
-            {
-                return _shadowMap;
+                return _shadowMaps;
             }
 
             inline
@@ -78,8 +78,15 @@ namespace minko
                 data()->set("shadowSpread", spread);
             }
 
+            inline
+            const std::vector<math::mat4>&
+            shadowProjections()
+            {
+                return _shadowProjections;
+            }
+
             void
-            computeShadowProjection(const math::mat4& viewProjection);
+            computeShadowProjection(const math::mat4& view, const math::mat4& projection);
 
 		protected:
 			void
@@ -101,6 +108,15 @@ namespace minko
 
             void
             updateWorldToScreenMatrix();
+
+            std::pair<math::vec3, math::vec3>
+            computeBox(const math::mat4& viewProjection);
+
+            std::pair<math::vec3, float>
+            computeBoundingSphere(const math::mat4& view, const math::mat4& projection);
+
+            std::pair<math::vec3, float>
+            minSphere(std::vector<math::vec3> pt, uint np, std::vector<math::vec3> bnd, uint nb);
 	    };
     }
 }

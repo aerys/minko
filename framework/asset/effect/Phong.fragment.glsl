@@ -71,13 +71,22 @@ uniform vec3 uDirectionalLight0_direction;
 uniform vec3 uDirectionalLight0_color;
 uniform float uDirectionalLight0_diffuse;
 uniform float uDirectionalLight0_specular;
-uniform sampler2D uDirectionalLight0_shadowMap;
+uniform mat4 uDirectionalLight0_viewProjection0;
+uniform sampler2D uDirectionalLight0_shadowMap0;
+uniform float uDirectionalLight0_zNear0;
+uniform float uDirectionalLight0_zFar0;
+uniform mat4 uDirectionalLight0_viewProjection1;
+uniform sampler2D uDirectionalLight0_shadowMap1;
+uniform float uDirectionalLight0_zNear1;
+uniform float uDirectionalLight0_zFar1;
+uniform mat4 uDirectionalLight0_viewProjection2;
+uniform sampler2D uDirectionalLight0_shadowMap2;
+uniform float uDirectionalLight0_zNear2;
+uniform float uDirectionalLight0_zFar2;
+uniform vec4 uDirectionalLight0_shadowCascadeDepths;
 uniform float uDirectionalLight0_shadowMapSize;
 uniform float uDirectionalLight0_shadowSpread;
 uniform float uDirectionalLight0_shadowBias;
-uniform float uDirectionalLight0_zNear;
-uniform float uDirectionalLight0_zFar;
-uniform mat4 uDirectionalLight0_viewProjection;
 
 uniform vec3 uDirectionalLight1_direction;
 uniform vec3 uDirectionalLight1_color;
@@ -145,7 +154,7 @@ float getShadow(sampler2D shadowMap, mat4 viewProj, float size, float zNear, flo
 		#if SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_HARD
 			shadow = shadowMapping_texture2DCompare(shadowMap, depthUV, shadowDepth, zNear, zFar);
 		#elif SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_ESM
-			shadow = shadowMapping_ESM(shadowMap, depthUV, shadowDepth, zNear, zFar, 80);
+			shadow = shadowMapping_ESM(shadowMap, depthUV, shadowDepth, zNear, zFar, 80.0);
 		#elif SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_PCF
 			shadow = shadowMapping_PCF(
 				shadowMap,
@@ -171,6 +180,50 @@ float getShadow(sampler2D shadowMap, mat4 viewProj, float size, float zNear, flo
 	}
 
 	return shadow;
+}
+
+float getShadowCascade3(sampler2D 	shadowMap0,
+						mat4 		viewProj0,
+						float 		zNear0,
+						float 		zFar0,
+						sampler2D 	shadowMap1,
+						mat4 		viewProj1,
+						float 		zNear1,
+						float 		zFar1,
+						sampler2D 	shadowMap2,
+						mat4 		viewProj2,
+						float 		zNear2,
+						float 		zFar2,
+						vec4 		cascadeDepths,
+						float 		depth,
+						float 		size,
+						float 		bias)
+{
+	if (depth < cascadeDepths.x)
+		return getShadow(shadowMap0, viewProj0, size, zNear0, zFar0, bias);
+	else if (depth < cascadeDepths.y)
+		return getShadow(shadowMap1, viewProj1, size, zNear1, zFar1, bias);
+	else
+		return getShadow(shadowMap2, viewProj2, size, zNear2, zFar2, bias);
+}
+
+float getShadowCascade2(sampler2D 	shadowMap0,
+						mat4 		viewProj0,
+						float 		zNear0,
+						float 		zFar0,
+						sampler2D 	shadowMap1,
+						mat4 		viewProj1,
+						float 		zNear1,
+						float 		zFar1,
+						vec4 		cascadeDepths,
+						float 		depth,
+						float 		size,
+						float 		bias)
+{
+	if (depth < cascadeDepths.x)
+		return getShadow(shadowMap0, viewProj0, size, zNear0, zFar0, bias);
+
+	return getShadow(shadowMap1, viewProj1, size, zNear1, zFar1, bias);
 }
 
 void directionalLight(vec3 lightDirection, vec3 lightColor, float lightDiffuse, float lightSpecular, float shadow)
@@ -234,7 +287,19 @@ void main(void)
 		#if NUM_DIRECTIONAL_LIGHTS > 0
 			shadow = 1.0;
 			#ifdef DIRECTIONAL_0_SHADOW_MAP
-				shadow = getShadow(uDirectionalLight0_shadowMap, uDirectionalLight0_viewProjection, uDirectionalLight0_shadowMapSize, uDirectionalLight0_zNear, uDirectionalLight0_zFar, uDirectionalLight0_shadowBias);
+				// shadow = getShadowCascade2(
+				// 	uDirectionalLight0_shadowMap0, uDirectionalLight0_viewProjection0, uDirectionalLight0_zNear0, uDirectionalLight0_zFar0,
+				// 	uDirectionalLight0_shadowMap1, uDirectionalLight0_viewProjection1, uDirectionalLight0_zNear1, uDirectionalLight0_zFar1,
+				// 	uDirectionalLight0_shadowCascadeDepths, vertexScreenPosition.z,
+				// 	uDirectionalLight0_shadowMapSize, uDirectionalLight0_shadowBias
+				// );
+				shadow = getShadowCascade3(
+					uDirectionalLight0_shadowMap0, uDirectionalLight0_viewProjection0, uDirectionalLight0_zNear0, uDirectionalLight0_zFar0,
+					uDirectionalLight0_shadowMap1, uDirectionalLight0_viewProjection1, uDirectionalLight0_zNear1, uDirectionalLight0_zFar1,
+					uDirectionalLight0_shadowMap2, uDirectionalLight0_viewProjection2, uDirectionalLight0_zNear2, uDirectionalLight0_zFar2,
+					uDirectionalLight0_shadowCascadeDepths, vertexScreenPosition.z,
+					uDirectionalLight0_shadowMapSize, uDirectionalLight0_shadowBias
+				);
 			#endif
 			directionalLight(uDirectionalLight0_direction, uDirectionalLight0_color, uDirectionalLight0_diffuse, uDirectionalLight0_specular, shadow);
 		#endif // NUM_DIRECTIONAL_LIGHTS > 0
