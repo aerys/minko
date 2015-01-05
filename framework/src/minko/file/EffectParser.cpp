@@ -261,7 +261,7 @@ EffectParser::parsePasses(const Json::Value& node, Scope& scope, std::vector<Pas
         for (auto passNode : passesNode)
         {
             // FIXME: switch to fallback instead of ignoring
-            if (!parseConfiguration(passNode))
+            if (passNode.isObject() && !parseConfiguration(passNode))
                 continue;
 
             parsePass(passNode, scope, passes);
@@ -277,26 +277,11 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
     // ancestor scope. Thus, we loop up to the root global scope to find the pass by its name.
     if (node.isString())
     {
-        auto passName = node.asString();
-        const Scope* searchScope = &scope;
-        Pass::Ptr pass = nullptr;
+		auto passName = node.asString();
+		auto pass = findPassByName(passName, scope);
 
-        do
-        {
-            auto passIt = std::find_if(searchScope->passes.begin(), searchScope->passes.end(), [&](PassPtr p)
-            {
-                return p->name() == passName;
-            });
-
-            if (passIt != searchScope->passes.end())
-                pass = *passIt;
-            else
-                searchScope = searchScope->parent;
-        }
-        while (searchScope != nullptr && pass == nullptr);
-
-        if (pass == nullptr)
-            throw std::runtime_error("Undefined pass with name '" + passName + "'.");
+		if (pass == nullptr)
+			throw std::runtime_error("Undefined pass with name '" + passName + "'.");
 
         passes.push_back(pass);
     }
@@ -307,23 +292,78 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
 
         Scope passScope(scope, scope);
 
+		render::Shader::Ptr vertexShader;
+		render::Shader::Ptr fragmentShader;
+        auto passName = _effectName + "-pass" + std::to_string(scope.passes.size());
+        auto nameNode = node.get("name", 0);
+		auto isPostProcessing = false;
+        if (nameNode.isString())
+            passName = nameNode.asString();
+        // FIXME: throw otherwise
+
+		if (node.isMember("extends"))
+		{
+			auto extendNode = node.get("extends", 0);
+
+			// if a pass "extends" another pass, then we have to init. its properties from that previously defined pass
+			if (extendNode.isString())
+			{
+				auto passName = extendNode.asString();
+				auto pass = findPassByName(passName, scope);
+
+				if (pass == nullptr)
+					throw std::runtime_error("Undefined pass with name '" + passName + "'.");
+
+				passScope.attributeBlock.bindingMap = {
+					pass->attributeBindings().bindings,
+					data::Store(pass->attributeBindings().defaultValues, true)
+				};
+
+				passScope.uniformBlock.bindingMap = {
+					pass->uniformBindings().bindings,
+					data::Store(pass->uniformBindings().defaultValues, true)
+				};
+
+				passScope.stateBlock.bindingMap.bindings = pass->stateBindings().bindings;
+				passScope.stateBlock.states = render::States(pass->states());
+				passScope.stateBlock.bindingMap.defaultValues.removeProvider(
+					passScope.stateBlock.bindingMap.defaultValues.providers().front()
+				);
+				passScope.stateBlock.bindingMap.defaultValues.addProvider(passScope.stateBlock.states.data());
+
+				passScope.macroBlock.bindingMap = {
+					pass->macroBindings().bindings,
+					data::Store(pass->macroBindings().defaultValues, true)
+				};
+
+				vertexShader = pass->program()->vertexShader();
+				fragmentShader = pass->program()->fragmentShader();
+				isPostProcessing = pass->isPostProcessing();
+			}
+			// FIXME: throw otherwise
+		}
+
         parseAttributes(node, passScope, passScope.attributeBlock);
         parseUniforms(node, passScope, passScope.uniformBlock);
         parseMacros(node, passScope, passScope.macroBlock);
         parseStates(node, passScope, passScope.stateBlock);
 
-        auto passName = _effectName + "-pass" + std::to_string(scope.passes.size());
-        auto nameNode = node.get("name", 0);
-        if (nameNode.isString())
-            passName = nameNode.asString();
-        // FIXME: throw otherwise
+		if (node.isMember("vertexShader"))
+        	vertexShader = parseShader(node.get("vertexShader", 0), passScope, Shader::Type::VERTEX_SHADER);
+		else if (!vertexShader)
+			throw std::runtime_error("Missing vertex shader for pass \"" + passName + "\"");
 
-        auto vertexShader = parseShader(node.get("vertexShader", 0), passScope, Shader::Type::VERTEX_SHADER);
-        auto fragmentShader = parseShader(node.get("fragmentShader", 0), passScope, Shader::Type::FRAGMENT_SHADER);
+		if (node.isMember("fragmentShader"))
+        	fragmentShader = parseShader(node.get("fragmentShader", 0), passScope, Shader::Type::FRAGMENT_SHADER);
+		else if (!fragmentShader)
+			throw std::runtime_error("Missing fragment shader for pass \"" + passName + "\"");
+
+		if (node.isMember("isPostProcessing"))
+			isPostProcessing = node.get("isPostProcessing", false).asBool();
 
         passes.push_back(Pass::create(
             passName,
-			node.get("isPostProcessing", false).asBool(),
+			isPostProcessing,
             Program::create(passName, _options->context(), vertexShader, fragmentShader),
             passScope.attributeBlock.bindingMap,
             passScope.uniformBlock.bindingMap,
@@ -1345,4 +1385,27 @@ EffectParser::finalize()
     _options->assetLibrary()->effect(_filename, _effect);
 
     _complete->execute(shared_from_this());
+}
+
+render::Pass::Ptr
+EffectParser::findPassByName(const std::string& passName, const Scope& scope)
+{
+	const Scope* searchScope = &scope;
+	Pass::Ptr pass = nullptr;
+
+	do
+	{
+		auto passIt = std::find_if(searchScope->passes.begin(), searchScope->passes.end(), [&](PassPtr p)
+		{
+			return p->name() == passName;
+		});
+
+		if (passIt != searchScope->passes.end())
+			pass = *passIt;
+		else
+			searchScope = searchScope->parent;
+	}
+	while (searchScope != nullptr && pass == nullptr);
+
+	return pass;
 }
