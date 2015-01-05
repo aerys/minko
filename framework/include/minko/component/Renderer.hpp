@@ -292,6 +292,16 @@ namespace minko
 			Ptr
 			removeFilter(AbsFilterPtr, data::Binding::Source);
 
+			inline
+			const scene::Layout&
+			layoutMask() const
+			{
+				return AbstractComponent::layoutMask();
+			}
+
+			void
+            layoutMask(const scene::Layout value);
+
 			/*const std::set<AbsFilterPtr>&
 			filters(data::BindingSource source) const
 			{

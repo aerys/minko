@@ -357,7 +357,7 @@ Renderer::removeSurface(Surface::Ptr surface)
 		{
 	        _drawCallPool.removeDrawCalls(_surfaceToDrawCallIterator[surface]);
 	        _surfaceToDrawCallIterator.erase(surface);
-	        _surfaceChangedSlots.erase(surface);			
+	        _surfaceChangedSlots.erase(surface);
 		}
     }
 }
@@ -666,4 +666,14 @@ bool
 Renderer::checkSurfaceLayout(SurfacePtr surface)
 {
 	return (surface->target()->layout() & surface->layoutMask() & layoutMask()) != 0;
+}
+
+void
+Renderer::layoutMask(const scene::Layout value)
+{
+	AbstractComponent::layoutMask(value);
+
+	// completely reset the draw call pool
+	_drawCallPool = DrawCallPool();
+	rootDescendantRemovedHandler(nullptr, target()->root(), nullptr);
 }
