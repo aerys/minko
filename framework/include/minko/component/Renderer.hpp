@@ -102,6 +102,8 @@ namespace minko
 			std::unordered_map<AbsFilterPtr, FilterChangedSlot>			_rootDataFilterChangedSlots;*/
 
 			std::shared_ptr<RendererFilterChangedSignal>				    _filterChanged;
+			std::map<NodePtr, Signal<NodePtr, NodePtr>::Slot>				_nodeLayoutChangedSlot;
+			std::map<SurfacePtr, Signal<AbsCmpPtr>::Slot>					_surfaceLayoutMaskChangedSlot;
 
 		public:
 			inline static
@@ -399,6 +401,24 @@ namespace minko
 
 			void
 			filterChangedHandler(AbsFilterPtr, data::Binding::Source, SurfacePtr);
+
+            bool
+            compareDrawCalls(render::DrawCall* a, render::DrawCall* b);
+
+			void
+			nodeLayoutChangedHandler(NodePtr node, NodePtr target);
+
+			void
+			surfaceLayoutMaskChangedHandler(SurfacePtr surface);
+
+			void
+			watchSurface(SurfacePtr surface);
+
+			void
+			unwatchSurface(SurfacePtr surface, NodePtr node);
+
+			bool
+			checkSurfaceLayout(SurfacePtr surface);
 		};
 	}
 }

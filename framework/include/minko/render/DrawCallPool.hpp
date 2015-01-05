@@ -33,8 +33,7 @@ namespace minko
 		class DrawCallPool
 		{
         private:
-            typedef std::list<DrawCall>                                                                 DrawCallList;
-            typedef std::list<DrawCall*>                                                                DrawCallPtrList;
+            typedef std::list<DrawCall*>                                                                DrawCallList;
             typedef DrawCallList::iterator                                                              DrawCallIterator;
             typedef data::Store::PropertyChangedSignal                                                  PropertyChanged;
             typedef std::pair<PropertyChanged::Slot, uint>                                              ChangedSlot;
@@ -47,7 +46,7 @@ namespace minko
 
             typedef std::pair_hash<const MacroBinding*, const Store*>                                   BindingHash;
             typedef std::pair_eq<const MacroBinding*, const Store*>                                     BindingEq;
-            typedef std::unordered_map<MacroBindingKey, DrawCallPtrList, BindingHash, BindingEq>        MacroToDrawCallsMap;
+            typedef std::unordered_map<MacroBindingKey, DrawCallList, BindingHash, BindingEq>        	MacroToDrawCallsMap;
             typedef std::unordered_map<MacroBindingKey, ChangedSlot, BindingHash, BindingEq>            MacroToChangedSlotMap;
 
             typedef std::pair_hash<const data::Binding*, const DrawCall*>                               DrawCallHash;
@@ -59,7 +58,7 @@ namespace minko
             typedef std::pair<DrawCallIterator, DrawCallIterator>   DrawCallIteratorPair;
 
 		private:
-            DrawCallList                    _drawCalls;
+            DrawCallList                 	_drawCalls;
             MacroToDrawCallsMap             _macroToDrawCalls;
             std::unordered_set<DrawCall*>   _invalidDrawCalls;
             MacroToChangedSlotMap           _macroChangedSlot;
@@ -79,8 +78,7 @@ namespace minko
             }
 
             DrawCallIteratorPair
-            addDrawCalls(const scene::Layout*                                   layout,
-						 std::shared_ptr<Effect>                                effect,
+            addDrawCalls(std::shared_ptr<Effect>                                effect,
                          const std::string&                                     techniqueName,
                          const std::unordered_map<std::string, std::string>&    variables,
                          data::Store&                                           rootData,
@@ -98,12 +96,6 @@ namespace minko
             update();
 
         private:
-            bool
-            compareDrawCalls(DrawCall& a, DrawCall& b);
-
-            math::vec3
-            getDrawcallEyePosition(DrawCall& drawcall);
-
             void
             watchProgramSignature(DrawCall&                     drawCall,
                                   const data::MacroBindingMap&  macroBindings,

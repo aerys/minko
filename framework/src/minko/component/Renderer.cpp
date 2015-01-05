@@ -181,8 +181,8 @@ Renderer::targetRemoved(std::shared_ptr<Node> target)
 
 void
 Renderer::addedHandler(std::shared_ptr<Node> node,
-						std::shared_ptr<Node> target,
-						std::shared_ptr<Node> parent)
+					   std::shared_ptr<Node> target,
+					   std::shared_ptr<Node> parent)
 {
 	findSceneManager();
 
@@ -192,7 +192,7 @@ Renderer::addedHandler(std::shared_ptr<Node> node,
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
-	));
+	), std::numeric_limits<float>::max());
 
 	_rootDescendantRemovedSlot = target->root()->removed().connect(std::bind(
 		&Renderer::rootDescendantRemovedHandler,
@@ -200,7 +200,7 @@ Renderer::addedHandler(std::shared_ptr<Node> node,
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
-	));
+	), std::numeric_limits<float>::max());
 
 	_componentAddedSlot = target->root()->componentAdded().connect(std::bind(
 		&Renderer::componentAddedHandler,
@@ -208,7 +208,7 @@ Renderer::addedHandler(std::shared_ptr<Node> node,
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
-	));
+	), std::numeric_limits<float>::max());
 
 	_componentRemovedSlot = target->root()->componentRemoved().connect(std::bind(
 		&Renderer::componentRemovedHandler,
@@ -216,7 +216,7 @@ Renderer::addedHandler(std::shared_ptr<Node> node,
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
-	), 10.f);
+	), std::numeric_limits<float>::max());
 
 	//_lightMaskFilter->root(target->root());
 
@@ -240,8 +240,8 @@ Renderer::removedHandler(std::shared_ptr<Node> node,
 
 void
 Renderer::rootDescendantAddedHandler(std::shared_ptr<Node> node,
-									  std::shared_ptr<Node> target,
-									  std::shared_ptr<Node> parent)
+									 std::shared_ptr<Node> target,
+									 std::shared_ptr<Node> parent)
 {
     auto surfaceNodes = NodeSet::create(target)
 		->descendants(true)
@@ -256,9 +256,9 @@ Renderer::rootDescendantAddedHandler(std::shared_ptr<Node> node,
 }
 
 void
-Renderer::rootDescendantRemovedHandler(std::shared_ptr<Node> node,
-									    std::shared_ptr<Node> target,
-									    std::shared_ptr<Node> parent)
+Renderer::rootDescendantRemovedHandler(std::shared_ptr<Node> 	node,
+									   std::shared_ptr<Node> 	target,
+									   std::shared_ptr<Node> 	parent)
 {
 	auto surfaceNodes = NodeSet::create(target)
 		->descendants(true)
@@ -269,13 +269,16 @@ Renderer::rootDescendantRemovedHandler(std::shared_ptr<Node> node,
 
 	for (auto surfaceNode : surfaceNodes->nodes())
 		for (auto surface : surfaceNode->components<Surface>())
+		{
+			unwatchSurface(surface, surfaceNode);
 			removeSurface(surface);
+		}
 }
 
 void
 Renderer::componentAddedHandler(std::shared_ptr<Node>				node,
-								 std::shared_ptr<Node>				target,
-								 std::shared_ptr<AbstractComponent>	ctrl)
+								std::shared_ptr<Node>				target,
+								std::shared_ptr<AbstractComponent>	ctrl)
 {
 	auto surfaceCtrl = std::dynamic_pointer_cast<Surface>(ctrl);
 	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
@@ -289,13 +292,16 @@ Renderer::componentAddedHandler(std::shared_ptr<Node>				node,
 void
 Renderer::componentRemovedHandler(std::shared_ptr<Node>					node,
 								  std::shared_ptr<Node>					target,
-								  std::shared_ptr<AbstractComponent>	ctrl)
+								  std::shared_ptr<AbstractComponent>	cmp)
 {
-	auto surfaceCtrl = std::dynamic_pointer_cast<Surface>(ctrl);
-	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
+	auto surface = std::dynamic_pointer_cast<Surface>(cmp);
+	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(cmp);
 
-	if (surfaceCtrl)
-		removeSurface(surfaceCtrl);
+	if (surface)
+	{
+		unwatchSurface(surface, target);
+		removeSurface(surface);
+	}
 	else if (sceneManager)
 		setSceneManager(nullptr);
 }
@@ -303,6 +309,12 @@ Renderer::componentRemovedHandler(std::shared_ptr<Node>					node,
 void
 Renderer::addSurface(Surface::Ptr surface)
 {
+	if (_surfaceToDrawCallIterator.count(surface) != 0)
+		throw std::invalid_argument("surface");
+
+	if (!checkSurfaceLayout(surface))
+		return;
+
     std::unordered_map<std::string, std::string> variables = _variables;
 
     auto& c = surface->target()->data();
@@ -313,9 +325,8 @@ Renderer::addSurface(Surface::Ptr surface)
     variables["effectUuid"] = _effect ? _effect->uuid() : surface->effect()->uuid();
 
     _surfaceToDrawCallIterator[surface] = _drawCallPool.addDrawCalls(
-		&surface->layoutMask(),
         _effect ? _effect : surface->effect(),
-        surface->technique(),
+        _effect ? "default" : surface->technique(),
         variables,
         surface->target()->root()->data(),
         target()->data(),
@@ -342,9 +353,12 @@ Renderer::removeSurface(Surface::Ptr surface)
 {
     if (_toCollect.erase(surface) == 0)
     {
-        _drawCallPool.removeDrawCalls(_surfaceToDrawCallIterator[surface]);
-        _surfaceToDrawCallIterator.erase(surface);
-        _surfaceChangedSlots.erase(surface);
+		if (_surfaceToDrawCallIterator.count(surface) != 0)
+		{
+	        _drawCallPool.removeDrawCalls(_surfaceToDrawCallIterator[surface]);
+	        _surfaceToDrawCallIterator.erase(surface);
+	        _surfaceChangedSlots.erase(surface);			
+		}
     }
 }
 
@@ -384,7 +398,10 @@ Renderer::render(render::AbstractContext::Ptr	context,
     // in _toCollect: we now have to take them into account to build
     // the corresponding draw calls before rendering
     for (auto& surface : _toCollect)
+	{
+		watchSurface(surface);
         addSurface(surface);
+	}
     _toCollect.clear();
 
 	_renderingBegin->execute(std::static_pointer_cast<Renderer>(shared_from_this()));
@@ -413,9 +430,17 @@ Renderer::render(render::AbstractContext::Ptr	context,
 		);
 
     _drawCallPool.update();
-    for (const auto& drawCall : _drawCallPool.drawCalls())
-	    if ((drawCall.layout() & layoutMask()) != 0)
-		    drawCall.render(context, rt, _viewportBox, _backgroundColor);
+	auto drawCalls = _drawCallPool.drawCalls();
+    drawCalls.sort(
+        std::bind(
+            &Renderer::compareDrawCalls,
+            this,
+            std::placeholders::_1,
+            std::placeholders::_2
+        )
+    );
+    for (const DrawCall* drawCall : drawCalls)
+	    drawCall->render(context, rt, _viewportBox, _backgroundColor);
 
 	context->setRenderToBackBuffer();
 
@@ -553,4 +578,92 @@ Renderer::filterChangedHandler(data::AbstractFilter::Ptr	filter,
 		source,
 		surface
 	);
+}
+
+bool
+Renderer::compareDrawCalls(DrawCall* a, DrawCall* b)
+{
+    const float aPriority = a->priority();
+    const float bPriority = b->priority();
+    const bool samePriority = fabsf(aPriority - bPriority) < 1e-3f;
+
+    if (samePriority)
+    {
+        if (a->target().id == b->target().id)
+        {
+            if (a->zSorted() && b->zSorted())
+            {
+                auto aPosition = a->getEyeSpacePosition();
+                auto bPosition = b->getEyeSpacePosition();
+
+                return aPosition.z > bPosition.z;
+            }
+        }
+
+        return a->target().id < b->target().id;
+    }
+
+    return aPriority > bPriority;
+}
+
+void
+Renderer::nodeLayoutChangedHandler(NodePtr node, NodePtr target)
+{
+	for (auto surface : target->components<Surface>())
+		surfaceLayoutMaskChangedHandler(surface);
+}
+
+void
+Renderer::surfaceLayoutMaskChangedHandler(Surface::Ptr surface)
+{
+	if (checkSurfaceLayout(surface))
+	{
+		if (_surfaceToDrawCallIterator.count(surface) == 0)
+			addSurface(surface);
+	}
+	else
+	{
+		if (_surfaceToDrawCallIterator.count(surface) == 0)
+			removeSurface(surface);
+	}
+}
+
+void
+Renderer::watchSurface(SurfacePtr surface)
+{
+	auto node = surface->target();
+
+	if (_nodeLayoutChangedSlot.count(node) == 0)
+	{
+		_nodeLayoutChangedSlot[node] = node->layoutChanged().connect(std::bind(
+			&Renderer::nodeLayoutChangedHandler,
+			std::static_pointer_cast<Renderer>(shared_from_this()),
+			std::placeholders::_1,
+			std::placeholders::_2
+		));
+	}
+
+	if (_surfaceLayoutMaskChangedSlot.count(surface) == 0)
+	{
+		_surfaceLayoutMaskChangedSlot[surface] = surface->layoutMaskChanged().connect(std::bind(
+			&Renderer::surfaceLayoutMaskChangedHandler,
+			std::static_pointer_cast<Renderer>(shared_from_this()),
+			surface
+		));
+	}
+}
+
+void
+Renderer::unwatchSurface(SurfacePtr surface, NodePtr node)
+{
+	_surfaceLayoutMaskChangedSlot.erase(surface);
+
+	if (!node->hasComponent<Surface>())
+		_nodeLayoutChangedSlot.erase(node);
+}
+
+bool
+Renderer::checkSurfaceLayout(SurfacePtr surface)
+{
+	return (surface->target()->layout() & surface->layoutMask() & layoutMask()) != 0;
 }

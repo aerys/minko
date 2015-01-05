@@ -36,8 +36,7 @@ DrawCallPool::DrawCallPool() :
 }
 
 DrawCallPool::DrawCallIteratorPair
-DrawCallPool::addDrawCalls(const scene::Layout*                                 layout,
-                           Effect::Ptr                                          effect,
+DrawCallPool::addDrawCalls(Effect::Ptr                                          effect,
                            const std::string&                                   techniqueName,
                            const std::unordered_map<std::string, std::string>&  variables,
                            data::Store&                                         rootData,
@@ -48,8 +47,10 @@ DrawCallPool::addDrawCalls(const scene::Layout*                                 
 
     for (const auto& pass : technique)
     {
-        _drawCalls.emplace_back(layout, pass, variables, rootData, rendererData, targetData);
-        initializeDrawCall(_drawCalls.back());
+        DrawCall* drawCall = new DrawCall(pass, variables, rootData, rendererData, targetData);
+
+        _drawCalls.push_back(drawCall);
+        initializeDrawCall(*drawCall);
     }
 
     return DrawCallIteratorPair(std::prev(_drawCalls.end(), technique.size()), std::prev(_drawCalls.end()));
@@ -62,9 +63,8 @@ DrawCallPool::removeDrawCalls(const DrawCallIteratorPair& iterators)
 
     for (auto it = iterators.first; it != end; ++it)
     {
-        DrawCall& drawCall = *it;
+        DrawCall& drawCall = **it;
 
-        // FIXME: avoid const_cast
         unwatchProgramSignature(
             drawCall,
             drawCall.pass()->macroBindings(),
@@ -72,6 +72,14 @@ DrawCallPool::removeDrawCalls(const DrawCallIteratorPair& iterators)
             drawCall.rendererData(),
             drawCall.targetData()
         );
+
+        std::list<PropertyChangedSlotMap::key_type> toRemove;
+        for (auto& bindingDrawCallPairAndSlot : _propChangedSlot)
+            if (bindingDrawCallPairAndSlot.first.second == &drawCall)
+                toRemove.push_front(bindingDrawCallPairAndSlot.first);
+
+        for (const auto& key : toRemove)
+            _propChangedSlot.erase(key);
 
         _invalidDrawCalls.erase(&drawCall);
     }
@@ -322,47 +330,6 @@ DrawCallPool::update()
         initializeDrawCall(*drawCallPtr);
 
     _invalidDrawCalls.clear();
-
-    _drawCalls.sort(
-        std::bind(
-            &DrawCallPool::compareDrawCalls,
-            this,
-            std::placeholders::_1,
-            std::placeholders::_2
-        )
-    );
-}
-
-bool
-DrawCallPool::compareDrawCalls(DrawCall& a, DrawCall& b)
-{
-    const float aPriority = a.priority();
-    const float bPriority = b.priority();
-    const bool samePriority = fabsf(aPriority - bPriority) < 1e-3f;
-
-    if (samePriority)
-    {
-        if (a.target().id == b.target().id)
-        {
-            if (a.zSorted() && b.zSorted())
-            {
-                auto aPosition = getDrawcallEyePosition(a);
-                auto bPosition = getDrawcallEyePosition(b);
-
-                return aPosition.z > bPosition.z;
-            }
-        }
-
-        return a.target().id < b.target().id;
-    }
-
-    return aPriority > bPriority;
-}
-
-math::vec3
-DrawCallPool::getDrawcallEyePosition(DrawCall& drawcall)
-{
-    return drawcall.getEyeSpacePosition();
 }
 
 void
@@ -373,7 +340,7 @@ DrawCallPool::invalidateDrawCalls(const DrawCallIteratorPair&                   
 
     for (auto it = iterators.first; it != end; ++it)
     {
-        auto& drawCall = *it;
+        auto& drawCall = **it;
 
         _invalidDrawCalls.insert(&drawCall);
         drawCall.variables().clear();
