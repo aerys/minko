@@ -54,6 +54,10 @@ namespace minko
 			virtual
 			int
 			screenY() = 0;
+            
+            virtual
+            int
+            button() = 0;
 		};
 	}
 }
