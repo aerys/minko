@@ -145,7 +145,7 @@ namespace minko
                     stateBlock(scope.stateBlock),
                     macroBlock(scope.macroBlock),
                     defaultTechnique(scope.defaultTechnique),
-                    passes(scope.passes),
+                    // passes(scope.passes),
                     techniques(scope.techniques)
                 {
                     parent.children.push_back(this);
@@ -390,6 +390,9 @@ namespace minko
 
             void
             finalize();
+
+            PassPtr
+            findPassByName(const std::string& passName, const Scope& scope);
 		};
 	}
 }
