@@ -50,7 +50,7 @@ newoption {
 
 solution "minko"
 	MINKO_HOME = path.getabsolute(os.getcwd())
-	
+
 	dofile('sdk.lua')
 
 	-- buildable SDK
@@ -129,6 +129,7 @@ solution "minko"
 		include 'plugin/png'
 		include 'plugin/sdl'
 		include 'plugin/serializer'
+		include 'plugin/debug'
 
 		-- work around the inability of Xcode to build all projects if no dependency exists between them
 		if os.is("macosx")  and (_ACTION == "xcode-ios" or _ACTION == "xcode-osx") then
