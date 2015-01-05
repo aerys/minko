@@ -40,11 +40,11 @@ TEST_F(DrawCallPoolTest, UniformDefaultToBindingSwap)
 
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
 
-    auto drawCalls = pool.addDrawCalls(fx, variables, "default", rootData, rendererData, targetData);
+    auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
-    ASSERT_EQ(drawCalls.first->boundFloatUniforms().size(), 1);
+    ASSERT_EQ((*drawCalls.first)->boundFloatUniforms().size(), 1);
     ASSERT_EQ(
-        drawCalls.first->boundFloatUniforms()[0].data,
+        (*drawCalls.first)->boundFloatUniforms()[0].data,
         math::value_ptr(pass->uniformBindings().defaultValues.get<math::vec4>("uDiffuseColor"))
     );
 
@@ -53,13 +53,13 @@ TEST_F(DrawCallPoolTest, UniformDefaultToBindingSwap)
     p->set("diffuseColor", math::vec4(1.));
     targetData.addProvider(p);
 
-    ASSERT_EQ(drawCalls.first->boundFloatUniforms().size(), 1);
+    ASSERT_EQ((*drawCalls.first)->boundFloatUniforms().size(), 1);
     ASSERT_NE(
-        drawCalls.first->boundFloatUniforms()[0].data,
+        (*drawCalls.first)->boundFloatUniforms()[0].data,
         math::value_ptr(pass->uniformBindings().defaultValues.get<math::vec4>("uDiffuseColor"))
     );
     ASSERT_EQ(
-        drawCalls.first->boundFloatUniforms()[0].data,
+        (*drawCalls.first)->boundFloatUniforms()[0].data,
         math::value_ptr(targetData.get<math::vec4>("diffuseColor"))
     );
 }
@@ -81,23 +81,23 @@ TEST_F(DrawCallPoolTest, UniformBindingToDefaultSwap)
     p->set("diffuseColor", math::vec4(1.));
     targetData.addProvider(p);
 
-    auto drawCalls = pool.addDrawCalls(fx, variables, "default", rootData, rendererData, targetData);
+    auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
-    ASSERT_EQ(drawCalls.first->boundFloatUniforms().size(), 1);
+    ASSERT_EQ((*drawCalls.first)->boundFloatUniforms().size(), 1);
     ASSERT_NE(
-        drawCalls.first->boundFloatUniforms()[0].data,
+        (*drawCalls.first)->boundFloatUniforms()[0].data,
         math::value_ptr(pass->uniformBindings().defaultValues.get<math::vec4>("uDiffuseColor"))
     );
     ASSERT_EQ(
-        drawCalls.first->boundFloatUniforms()[0].data,
+        (*drawCalls.first)->boundFloatUniforms()[0].data,
         math::value_ptr(targetData.get<math::vec4>("diffuseColor"))
     );
 
     p->unset("diffuseColor");
 
-    ASSERT_EQ(drawCalls.first->boundFloatUniforms().size(), 1);
+    ASSERT_EQ((*drawCalls.first)->boundFloatUniforms().size(), 1);
     ASSERT_EQ(
-        drawCalls.first->boundFloatUniforms()[0].data,
+        (*drawCalls.first)->boundFloatUniforms()[0].data,
         math::value_ptr(pass->uniformBindings().defaultValues.get<math::vec4>("uDiffuseColor"))
     );
 }

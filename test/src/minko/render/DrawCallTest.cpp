@@ -44,7 +44,7 @@ TEST_F(DrawCallTest, Constructor)
     data::Store rendererData;
     data::Store targetData;
 
-    DrawCall drawCall(nullptr, {}, rootData, rendererData, targetData);
+    DrawCall drawCall(nullptr, std::unordered_map<std::string, std::string>{}, rootData, rendererData, targetData);
 }
 
 TEST_F(DrawCallTest, OneFloatUniformBindingFromRootData)
@@ -60,7 +60,7 @@ TEST_F(DrawCallTest, OneFloatUniformBindingFromRootData)
     rootData.addProvider(p);
 
     std::map<std::string, data::Binding> bindings = { { "uFoo", { "foo", data::Binding::Source::ROOT } } };
-    DrawCall drawCall(nullptr, {}, rootData, rendererData, targetData);
+    DrawCall drawCall(nullptr, std::unordered_map<std::string, std::string>{}, rootData, rendererData, targetData);
     ProgramInputs::UniformInput input = { "uFoo", 23, ProgramInputs::Type::float1 };
 
     bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues) != nullptr;
@@ -162,7 +162,7 @@ TEST_F(DrawCallTest, OneIntUniformBindingFromRootData)
     rootData.addProvider(p);
 
     std::map<std::string, data::Binding> bindings = { { "uFoo", { "foo", data::Binding::Source::ROOT } } };
-    DrawCall drawCall(nullptr, {}, rootData, rendererData, targetData);
+    DrawCall drawCall(nullptr, std::unordered_map<std::string, std::string>{}, rootData, rendererData, targetData);
     ProgramInputs::UniformInput input = { "uFoo", 23, ProgramInputs::Type::int1 };
 
     bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues) != nullptr;
@@ -256,7 +256,7 @@ TEST_F(DrawCallTest, OneBoolUniformBindingFromRootData)
     rootData.addProvider(p);
 
     std::map<std::string, data::Binding> bindings = { { "uFoo", { "foo", data::Binding::Source::ROOT } } };
-    DrawCall drawCall(nullptr, {}, rootData, rendererData, targetData);
+    DrawCall drawCall(nullptr, std::unordered_map<std::string, std::string>{}, rootData, rendererData, targetData);
     ProgramInputs::UniformInput input = { "uFoo", 23, ProgramInputs::Type::bool1 };
 
     bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues) != nullptr;
@@ -347,7 +347,7 @@ TEST_F(DrawCallTest, RenderTargetDefaultValue)
 
     defaultValues.addProvider(states.data());
 
-    DrawCall drawCall(nullptr, {}, rootData, rendererData, targetData);
+    DrawCall drawCall(nullptr, std::unordered_map<std::string, std::string>{}, rootData, rendererData, targetData);
 
     drawCall.bindStates({}, defaultValues);
 
@@ -368,7 +368,7 @@ TEST_F(DrawCallTest, RenderTargetFromDefaultValues)
     states.target(texture->sampler());
     defaultValues.addProvider(states.data());
 
-    DrawCall drawCall(nullptr, {}, rootData, rendererData, targetData);
+    DrawCall drawCall(nullptr, std::unordered_map<std::string, std::string>{}, rootData, rendererData, targetData);
 
     drawCall.bindStates({}, defaultValues);
 
@@ -392,7 +392,7 @@ TEST_F(DrawCallTest, RenderTargetBindingFromTargetData)
     targetData.addProvider(p);
 
     std::map<std::string, data::Binding> bindings = { { "target", { "renderTargetTest", data::Binding::Source::TARGET } } };
-    DrawCall drawCall(nullptr, {}, rootData, rendererData, targetData);
+    DrawCall drawCall(nullptr, std::unordered_map<std::string, std::string>{}, rootData, rendererData, targetData);
 
     drawCall.bindStates(bindings, defaultValues);
 

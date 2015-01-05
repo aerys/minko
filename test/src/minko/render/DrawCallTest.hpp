@@ -69,7 +69,7 @@ namespace minko
                 }
                 rootData.addProvider(p);
 
-                DrawCall drawCall(nullptr, {}, rootData, rendererData, targetData);
+                DrawCall drawCall(nullptr, std::unordered_map<std::string, std::string>{}, rootData, rendererData, targetData);
 
                 bool uniformIsBound = true;
                 for (auto& input : inputs)
