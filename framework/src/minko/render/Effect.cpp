@@ -33,7 +33,7 @@ Effect::Effect(const std::string& name) :
 void
 Effect::addTechnique(const std::string& name, Technique& passes)
 {
-	if (_techniques.count(name) != 0)
+	if (hasTechnique(name))
 		throw std::logic_error("A technique named '" + name + "' already exists.");
 
 	for (auto& pass : passes)
@@ -59,7 +59,7 @@ Effect::addTechnique(const std::string& name, Technique& passes, const std::stri
 void
 Effect::removeTechnique(const std::string& name)
 {
-	if (_techniques.count(name) == 0)
+	if (!hasTechnique(name))
 		throw std::logic_error("The technique named '" + name + "' does not exist.");
 
 	_techniques.erase(name);
