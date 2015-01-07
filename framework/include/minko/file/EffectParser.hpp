@@ -349,9 +349,9 @@ namespace minko
                              math::ivec4&          scissorBox);
 
             void
-            parseSamplerStates(const Json::Value& node,
-                               const Scope&       scope,
-                               SamplerStates&     samplerStates);
+            parseSamplerStates(const Json::Value& node, 
+                               const Scope& scope, 
+                               render::SamplerState& samplerStates);
 
             ShaderPtr
             parseShader(const Json::Value& node, const Scope& scope, render::Shader::Type type);

@@ -574,10 +574,32 @@ EffectParser::parseUniforms(const Json::Value& node, const Scope& scope, Uniform
             auto uniformNode = uniformsNode[uniformName];
 
             parseBinding(uniformNode, scope, uniforms.bindingMap.bindings[uniformName]);
+            parseSamplerStates(uniformNode, scope, uniforms.samplerStates[uniformName]);
             parseDefaultValue(uniformNode, scope, uniformName, defaultValuesProvider);
         }
     }
     // FIXME: throw otherwise
+}
+
+void
+EffectParser::parseSamplerStates(const Json::Value& node, const Scope& scope, SamplerState& samplerStates)
+{
+    if (node.isObject())
+    {
+        auto wrapModeStr = node.get("wrapMode", "clamp").asString();
+        auto textureFilterStr = node.get("textureFilter", "nearest").asString();
+        auto mipFilterStr = node.get("mipFilter", "none").asString();
+
+        auto wrapMode = wrapModeStr == "repeat" ? WrapMode::REPEAT : WrapMode::CLAMP;
+        auto textureFilter = textureFilterStr == "linear"
+            ? TextureFilter::LINEAR
+            : TextureFilter::NEAREST;
+        auto mipFilter = mipFilterStr == "linear"
+            ? MipFilter::LINEAR
+            : (mipFilterStr == "nearest" ? MipFilter::NEAREST : MipFilter::NONE);
+
+        samplerStates = SamplerState(wrapMode, textureFilter, mipFilter);
+    }
 }
 
 void
@@ -678,8 +700,7 @@ EffectParser::parseStates(const Json::Value& node, const Scope& scope, StateBloc
         stateBlock.states.scissorTest(scissorTest);
         stateBlock.states.scissorBox(scissorBox);
 
-        // FIXME: handle sampler states & render target
-        //parseSamplerStates(statesNode, scope, samplerStates);
+        // FIXME: handle render target
         //target = parseTarget(statesNode, context, targets); // FIXME
     }
     // FIXME: throw otherwise
@@ -932,39 +953,6 @@ EffectParser::parseStencilOperations(const Json::Value& node,
 		if (zpassValue.isString())
 			stencilZPassOp = _stencilOpMap[zpassValue.asString()];
 	}
-}
-
-void
-EffectParser::parseSamplerStates(const Json::Value& node,
-                                 const Scope&       scope,
-                                 SamplerStates&     samplerStates)
-{
-    auto samplerStatesValue = node.get("samplerStates", 0);
-
-    if (samplerStatesValue.isObject())
-        for (auto propertyName : samplerStatesValue.getMemberNames())
-        {
-            auto samplerStateValue = samplerStatesValue.get(propertyName, 0);
-
-            if (samplerStateValue.isObject())
-            {
-                /*
-                auto wrapModeStr = samplerStateValue.get("wrapMode", "clamp").asString();
-                auto textureFilterStr = samplerStateValue.get("textureFilter", "nearest").asString();
-                auto mipFilterStr = samplerStateValue.get("mipFilter", "none").asString();
-
-                auto wrapMode = wrapModeStr == "repeat" ? WrapMode::REPEAT : WrapMode::CLAMP;
-                auto textureFilter = textureFilterStr == "linear"
-                    ? TextureFilter::LINEAR
-                    : TextureFilter::NEAREST;
-                auto mipFilter = mipFilterStr == "linear"
-                    ? MipFilter::LINEAR
-                    : (mipFilterStr == "nearest" ? MipFilter::NEAREST : MipFilter::NONE);
-
-                samplerStates[propertyName] = SamplerState(wrapMode, textureFilter, mipFilter);
-                */
-            }
-        }
 }
 
 void
