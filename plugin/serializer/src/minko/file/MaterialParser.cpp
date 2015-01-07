@@ -170,7 +170,7 @@ MaterialParser::deserializeBasicProperty(MaterialPtr		material,
 
 	// TODO remove basic and complex property types and always specify property content type
 
-    if (serializedProperty.a0 == "zSort")
+    if (serializedProperty.a0 == "zSorted")
         material->data()->set<bool>("zSorted", serializedPropertyValue[0]);
     else
 	    material->data()->set<float>(serializedProperty.a0, serializedPropertyValue[0]);

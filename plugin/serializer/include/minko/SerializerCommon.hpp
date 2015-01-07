@@ -38,8 +38,9 @@ namespace minko
         class AbstractWriter;
         template <typename T>
         class AbstractWriterPreprocessor;
-        class SceneWriter;
 		class SceneParser;
+        struct SceneVersion;
+        class SceneWriter;
 		class GeometryWriter;
 		class GeometryParser;
 		class MaterialParser;
