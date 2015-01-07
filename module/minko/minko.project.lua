@@ -29,8 +29,12 @@ minko.project.library = function(name)
 			"_VARIADIC_MAX=10",		-- fix for faux variadic templates limited to 5 arguments by default
 			"_USE_MATH_DEFINES"		-- enable M_PI
 		}
+		flags {
+			"NoMinimalRebuild"
+		}
 		buildoptions {
-			"/wd4503"				-- remove warnings about too long type names
+			"/wd4503",				-- remove warnings about too long type names
+			"/MP"					-- Multi Processor build (NoMinimalRebuild flag is needed)
 		}
 
 	configuration { "html5", "debug" }
