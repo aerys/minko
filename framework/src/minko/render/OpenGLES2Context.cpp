@@ -763,7 +763,7 @@ OpenGLES2Context::uploadTexture2dData(uint 		texture,
 	assert(getTextureType(texture) == TextureType::Texture2D);
 
 	glBindTexture(GL_TEXTURE_2D, texture);
-	glTexSubImage2D(GL_TEXTURE_2D, mipLevel, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glTexImage2D(GL_TEXTURE_2D, mipLevel, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
 	_currentBoundTexture = texture;
 
