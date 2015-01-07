@@ -51,7 +51,11 @@ PerspectiveCamera::PerspectiveCamera(float			      fov,
 		->set("eyePosition",		    _position)
   		->set("viewMatrix",				_view)
   		->set("projectionMatrix",		_projection)
-  		->set("worldToScreenMatrix",	_viewProjection);
+  		->set("worldToScreenMatrix",	_viewProjection)
+        ->set("fov",                    _fov)
+        ->set("aspectRatio",            _aspectRatio)
+        ->set("zNear",                  _zNear)
+        ->set("zFar",                   _zFar);
 }
 
 // TODO #Clone
@@ -120,14 +124,23 @@ PerspectiveCamera::updateMatrices(const math::mat4& modelToWorldMatrix)
 }
 
 void
-PerspectiveCamera::updateProjection(float fieldOfView, float aspectRatio, float zNear, float zFar)
+PerspectiveCamera::updateProjection(float fov, float aspectRatio, float zNear, float zFar)
 {
-	_projection = _postProjection * math::perspective(fieldOfView, aspectRatio, zNear, zFar);
+    _fov = fov;
+    _aspectRatio = aspectRatio;
+    _zNear = zNear;
+    _zFar = zFar;
+
+	_projection = _postProjection * math::perspective(fov, aspectRatio, zNear, zFar);
 	_viewProjection = _projection * _view;
 
 	_data
 		->set("projectionMatrix",		_projection)
-  		->set("worldToScreenMatrix",	_viewProjection);
+  		->set("worldToScreenMatrix",	_viewProjection)
+        ->set("fov",                    fov)
+        ->set("aspectRatio",            aspectRatio)
+        ->set("zNear",                  zNear)
+        ->set("zFar",                   zFar);
 }
 
 std::shared_ptr<math::Ray>
