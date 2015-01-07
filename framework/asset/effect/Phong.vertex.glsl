@@ -9,6 +9,7 @@
 #endif
 
 #pragma include "Skinning.function.glsl"
+#pragma include "Pop.function.glsl"
 
 attribute vec3 position;
 attribute vec2 uv;
@@ -19,6 +20,12 @@ uniform mat4 modelToWorldMatrix;
 uniform mat4 worldToScreenMatrix;
 uniform vec2 uvScale;
 uniform vec2 uvOffset;
+
+uniform int popLod;
+uniform int popFullPrecisionLod;
+
+uniform vec3 popMinBound;
+uniform vec3 popMaxBound;
 
 varying vec3 vertexPosition;
 varying vec2 vertexUV;
@@ -31,14 +38,20 @@ void main(void)
 		vertexUV = uvScale * uv + uvOffset;
 	#endif // defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP
 
-	vec4 worldPosition 	= vec4(position, 1.0);
+	vec4 worldPosition 			= vec4(position, 1.0);
 	
 	#ifdef NUM_BONES
-		worldPosition	= skinning_moveVertex(worldPosition);
+		worldPosition			= skinning_moveVertex(worldPosition);
 	#endif // NUM_BONES
+
+	#ifdef POP_LOD_ENABLED
+		vec4 quantizedPosition 	= pop_quantify(worldPosition, popLod, popMinBound, popMaxBound);
+
+		worldPosition 			= mix(quantizedPosition, worldPosition, float(popLod == popFullPrecisionLod));
+	#endif // POP_LOD_ENABLED
 	
 	#ifdef MODEL_TO_WORLD
-		worldPosition 	= modelToWorldMatrix * worldPosition;
+		worldPosition 			= modelToWorldMatrix * worldPosition;
 	#endif // MODEL_TO_WORLD
 	
 	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS || defined ENVIRONMENT_MAP_2D || defined ENVIRONMENT_CUBE_MAP

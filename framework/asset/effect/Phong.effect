@@ -46,7 +46,11 @@
 		"fogColor"				: "material[${materialUuid}].fogColor",
 		"fogDensity"			: "material[${materialUuid}].fogDensity",
 		"fogStart"				: "material[${materialUuid}].fogStart",
-		"fogEnd"				: "material[${materialUuid}].fogEnd"
+		"fogEnd"				: "material[${materialUuid}].fogEnd",
+        "popLod"                : "geometry[${geometryUuid}].popLod",
+        "popFullPrecisionLod"   : "geometry[${geometryUuid}].popFullPrecisionLod",
+        "popMinBound"           : "geometry[${geometryUuid}].popMinBound",
+        "popMaxBound"           : "geometry[${geometryUuid}].popMaxBound"
 	},
 
 	"macros" : {
@@ -68,7 +72,8 @@
 		"NUM_AMBIENT_LIGHTS"	: { "binding" : { "property" : "ambientLight.length", "source" : "root", "type" : "int" } },
 		"FOG_LIN"				: "material[${materialUuid}].fogLinear",
 		"FOG_EXP"				: "material[${materialUuid}].fogExponential",
-		"FOG_EXP2"				: "material[${materialUuid}].fogExponential2"
+		"FOG_EXP2"				: "material[${materialUuid}].fogExponential2",
+        "POP_LOD_ENABLED"       : "geometry[${geometryUuid}].popLodEnabled"
 	},
 
 	"samplerStates" : {
