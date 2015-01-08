@@ -74,7 +74,7 @@ GeometryWriter::embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 	geometry::Geometry::Ptr		geometry				= data();
 	uint						indexBufferFunctionId	= 0;
 	uint						vertexBufferFunctionId	= 0;
-	uint						metaByte				= computeMetaByte(geometry, indexBufferFunctionId, vertexBufferFunctionId, writerOptions);
+	uint						metaData				= computeMetaData(geometry, indexBufferFunctionId, vertexBufferFunctionId, writerOptions);
 	const std::string&			serializedIndexBuffer	= indexBufferWriterFunctions[indexBufferFunctionId](geometry->indices());
 	std::vector<std::string>	serializedVertexBuffers;
 	std::stringstream			sbuf;
@@ -82,8 +82,8 @@ GeometryWriter::embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 	for (std::shared_ptr<render::VertexBuffer> vertexBuffer : geometry->vertexBuffers())
 		serializedVertexBuffers.push_back(vertexBufferWriterFunctions[vertexBufferFunctionId](vertexBuffer));
 
-	msgpack::type::tuple<unsigned char, std::string, std::string, std::vector<std::string>> res(
-		metaByte,
+	msgpack::type::tuple<unsigned short, std::string, std::string, std::vector<std::string>> res(
+		metaData,
 		assetLibrary->geometryName(geometry),
 		serializedIndexBuffer,
 		serializedVertexBuffers);
@@ -131,13 +131,13 @@ GeometryWriter::serializeVertexStream(std::shared_ptr<render::VertexBuffer> vert
 	return sbuf.str();
 }
 
-unsigned char
-GeometryWriter::computeMetaByte(std::shared_ptr<geometry::Geometry> geometry, 
+unsigned short
+GeometryWriter::computeMetaData(std::shared_ptr<geometry::Geometry> geometry, 
 							    uint&								indexBufferFunctionId, 
 								uint&								vertexBufferFunctionId,
 								WriterOptionsPtr					writerOptions)
 {
-	unsigned char metaByte = 0x00;
+	unsigned short metaData = 0x0000;
 	
 	for (auto functionIdTestFunc : indexBufferTestFunctions)
 		if (functionIdTestFunc.second(geometry) && functionIdTestFunc.first >= indexBufferFunctionId)
@@ -147,9 +147,9 @@ GeometryWriter::computeMetaByte(std::shared_ptr<geometry::Geometry> geometry,
 		if (functionIdTestFunc.second(geometry) && functionIdTestFunc.first >= vertexBufferFunctionId)
 			vertexBufferFunctionId = functionIdTestFunc.first;
 
-	metaByte = ((indexBufferFunctionId << 4) & 0xF0) + (vertexBufferFunctionId & 0x0F);
+	metaData = ((indexBufferFunctionId << 12) & 0xF0) + ((vertexBufferFunctionId << 8) & 0x0F);
 
-	return metaByte;
+	return metaData;
 }
 
 bool

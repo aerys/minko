@@ -49,7 +49,7 @@ namespace minko
             typedef std::shared_ptr<component::JobManager::Job>                                                JobPtr;
             typedef std::shared_ptr<Dependency>                                                                DependencyPtr;
             typedef std::function<void(
-                unsigned char,
+                unsigned short,
                 AssetLibraryPtr,
                 OptionsPtr,
                 const std::string&,
@@ -145,7 +145,7 @@ namespace minko
 
             static
             void
-            deserializeTexture(unsigned char metaByte,
+            deserializeTexture(unsigned short metaData,
                                AssetLibraryPtr assetLibrary,
                                OptionsPtr           options,
                                const std::string&   assetCompletePath,

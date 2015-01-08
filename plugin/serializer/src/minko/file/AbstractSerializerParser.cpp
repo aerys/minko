@@ -36,7 +36,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::file;
 
-std::unordered_map<uint, std::function<void(unsigned char,
+std::unordered_map<uint, std::function<void(unsigned short,
                                             AssetLibrary::Ptr,
                                             Options::Ptr,
                                             const std::string&,
@@ -125,7 +125,7 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 	std::vector<unsigned char>	data;
 	std::string					assetCompletePath	= assetFilePath + "/";
 	std::string					resolvedPath		= "";
-	unsigned char				metaByte			= (asset.a0 & 0xFF000000) >> 24;
+	unsigned short				metaData			= (asset.a0 & 0xFFFF0000) >> 16;
 
 	asset.a0 = asset.a0 & 0x00FF;
 
@@ -222,7 +222,7 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 	{
 		if (asset.a0 == serialize::AssetType::EMBED_TEXTURE_ASSET)
 		{
-            auto imageFormat = static_cast<serialize::ImageFormat>(metaByte);
+            auto imageFormat = static_cast<serialize::ImageFormat>(metaData);
 
             auto extension = serialize::extensionFromImageFormat(imageFormat);
 
@@ -257,7 +257,7 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 
         if (assetLibrary->texture(resolvedPath) == nullptr)
         {
-            const auto headerSize = static_cast<int>(metaByte);
+            const auto headerSize = static_cast<int>(metaData);
 
             _textureParser->textureHeaderSize(headerSize);
             _textureParser->dataEmbed(true);
@@ -279,7 +279,7 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 	else
 	{
 		if (_assetTypeToFunction.find(asset.a0) != _assetTypeToFunction.end())
-            _assetTypeToFunction[asset.a0](metaByte, assetLibrary, options, assetCompletePath, _dependencies, asset.a1, _jobList);
+            _assetTypeToFunction[asset.a0](metaData, assetLibrary, options, assetCompletePath, _dependencies, asset.a1, _jobList);
 	}
 
 	data.clear();
@@ -354,7 +354,7 @@ AbstractSerializerParser::readHeader(const std::string&					filename,
 }
 
 void
-AbstractSerializerParser::deserializeTexture(unsigned char      metaByte,
+AbstractSerializerParser::deserializeTexture(unsigned short     metaData,
                                              AssetLibrary::Ptr  assetLibrary,
                                              Options::Ptr       options,
                                              const std::string& assetCompletePath,
@@ -366,7 +366,7 @@ AbstractSerializerParser::deserializeTexture(unsigned char      metaByte,
         return;
 
     auto assetHeaderSize = MINKO_SCENE_HEADER_SIZE + 2;
-    auto textureHeaderSize = static_cast<unsigned int>(metaByte);
+    auto textureHeaderSize = static_cast<unsigned int>(metaData);
 
     auto textureOptions = options->clone();
 
