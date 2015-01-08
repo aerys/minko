@@ -352,7 +352,7 @@ namespace minko
                                const Scope& scope,
                                const std::string uniformName,
                                data::Provider::Ptr defaultValues,
-                               data::Binding& binding);
+                               data::BindingMap& bindings);
 
             ShaderPtr
             parseShader(const Json::Value& node, const Scope& scope, render::Shader::Type type);

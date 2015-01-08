@@ -564,11 +564,6 @@ EffectParser::parseUniforms(const Json::Value& node, const Scope& scope, Uniform
     {
         auto defaultValuesProvider = data::Provider::create();
 
-        // We set the default values of the sampler states
-        defaultValuesProvider->set(SamplerStates::PROPERTY_WRAP_MODE, SamplerStates::DEFAULT_WRAP_MODE);
-        defaultValuesProvider->set(SamplerStates::PROPERTY_TEXTURE_FILTER, SamplerStates::DEFAULT_TEXTURE_FILTER);
-        defaultValuesProvider->set(SamplerStates::PROPERTY_MIP_FILTER, SamplerStates::DEFAULT_MIP_FILTER);
-
         uniforms.bindingMap.defaultValues.addProvider(defaultValuesProvider);
 
         for (auto uniformName : uniformsNode.getMemberNames())
@@ -576,7 +571,7 @@ EffectParser::parseUniforms(const Json::Value& node, const Scope& scope, Uniform
             auto uniformNode = uniformsNode[uniformName];
 
             parseBinding(uniformNode, scope, uniforms.bindingMap.bindings[uniformName]);
-            parseSamplerStates(uniformNode, scope, uniformName, defaultValuesProvider, uniforms.bindingMap.bindings[uniformName]);
+            parseSamplerStates(uniformNode, scope, uniformName, defaultValuesProvider, uniforms.bindingMap);
             parseDefaultValue(uniformNode, scope, uniformName, defaultValuesProvider);
         }
     }
@@ -584,7 +579,7 @@ EffectParser::parseUniforms(const Json::Value& node, const Scope& scope, Uniform
 }
 
 void
-EffectParser::parseSamplerStates(const Json::Value& node, const Scope& scope, const std::string uniformName, data::Provider::Ptr defaultValues, Binding& binding)
+EffectParser::parseSamplerStates(const Json::Value& node, const Scope& scope, const std::string uniformName, data::Provider::Ptr defaultValues, data::BindingMap& bindingMap)
 {
     if (node.isObject())
     {
@@ -606,7 +601,26 @@ EffectParser::parseSamplerStates(const Json::Value& node, const Scope& scope, co
         }
         else if (wrapModeNode.isObject())
         {
-            parseBinding(wrapModeNode, scope, binding);
+            auto uniformWrapModeBindingName = SamplerStates::uniformNameToSamplerStateName(
+                uniformName,
+                SamplerStates::PROPERTY_WRAP_MODE
+            );
+
+            parseBinding(
+                wrapModeNode, 
+                scope, 
+                bindingMap.bindings[uniformWrapModeBindingName]
+            );
+        }
+        else
+        {
+            defaultValues->set(
+                SamplerStates::uniformNameToSamplerStateName(
+                    uniformName,
+                    SamplerStates::PROPERTY_WRAP_MODE
+                ),
+                SamplerStates::DEFAULT_WRAP_MODE
+            );
         }
 
         auto textureFilterNode = node.get(SamplerStates::PROPERTY_TEXTURE_FILTER, 0);
@@ -629,7 +643,26 @@ EffectParser::parseSamplerStates(const Json::Value& node, const Scope& scope, co
         }
         else if (textureFilterNode.isObject())
         {
-            parseBinding(textureFilterNode, scope, binding);
+            auto uniformTextureFilterBindingName = SamplerStates::uniformNameToSamplerStateName(
+                uniformName,
+                SamplerStates::PROPERTY_TEXTURE_FILTER
+            );
+
+            parseBinding(
+                wrapModeNode,
+                scope,
+                bindingMap.bindings[uniformTextureFilterBindingName]
+            );
+        }
+        else
+        {
+            defaultValues->set(
+                SamplerStates::uniformNameToSamplerStateName(
+                    uniformName,
+                    SamplerStates::PROPERTY_TEXTURE_FILTER
+                ),
+                SamplerStates::DEFAULT_TEXTURE_FILTER
+            );
         }
 
         auto mipFilterNode = node.get(SamplerStates::PROPERTY_MIP_FILTER, 0);
@@ -652,8 +685,53 @@ EffectParser::parseSamplerStates(const Json::Value& node, const Scope& scope, co
         }
         else if (textureFilterNode.isObject())
         {
-            parseBinding(textureFilterNode, scope, binding);
+            auto uniformMipFilterBindingName = SamplerStates::uniformNameToSamplerStateName(
+                uniformName,
+                SamplerStates::PROPERTY_MIP_FILTER
+            );
+
+            parseBinding(
+                wrapModeNode,
+                scope,
+                bindingMap.bindings[uniformMipFilterBindingName]
+            );
         }
+        else
+        {
+            defaultValues->set(
+                SamplerStates::uniformNameToSamplerStateName(
+                    uniformName,
+                    SamplerStates::PROPERTY_MIP_FILTER
+                ),
+                SamplerStates::DEFAULT_MIP_FILTER
+            );
+        }
+    }
+    else
+    {
+        defaultValues->set(
+            SamplerStates::uniformNameToSamplerStateName(
+                uniformName,
+                SamplerStates::PROPERTY_WRAP_MODE
+            ),
+            SamplerStates::DEFAULT_WRAP_MODE
+        );
+
+        defaultValues->set(
+            SamplerStates::uniformNameToSamplerStateName(
+                uniformName,
+                SamplerStates::PROPERTY_TEXTURE_FILTER
+            ),
+            SamplerStates::DEFAULT_TEXTURE_FILTER
+        );
+
+        defaultValues->set(
+            SamplerStates::uniformNameToSamplerStateName(
+                uniformName,
+                SamplerStates::PROPERTY_MIP_FILTER
+            ),
+            SamplerStates::DEFAULT_MIP_FILTER
+        );
     }
 }
 
