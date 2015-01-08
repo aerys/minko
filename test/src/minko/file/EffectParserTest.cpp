@@ -634,22 +634,106 @@ TEST_F(EffectParserTest, SamplerStatesDefaultValues)
     ASSERT_EQ(fx->techniques().at("default").size(), 1);
 
     auto uniformDefaultValues = fx->techniques().at("default")[0]->uniformBindings().defaultValues;
+
+    auto wrapModeUniformName = SamplerStates::uniformNameToSamplerStateName(
+        "diffuseMap",
+        SamplerStates::PROPERTY_WRAP_MODE
+    );
+
+    ASSERT_TRUE(uniformDefaultValues.hasProperty(wrapModeUniformName));
+
     ASSERT_EQ(
-        fx->techniques().at("default")[0]->uniformBindings().defaultValues.get<WrapMode>(
-            SamplerStates::PROPERTY_WRAP_MODE
-        ),
+        uniformDefaultValues.get<WrapMode>(wrapModeUniformName),
         SamplerStates::DEFAULT_WRAP_MODE
     );
+
+    auto textureFilterUniformName = SamplerStates::uniformNameToSamplerStateName(
+        "diffuseMap",
+        SamplerStates::PROPERTY_TEXTURE_FILTER
+    );
+
+    ASSERT_TRUE(uniformDefaultValues.hasProperty(textureFilterUniformName));
+
     ASSERT_EQ(
-        fx->techniques().at("default")[0]->uniformBindings().defaultValues.get<TextureFilter>(
-            SamplerStates::PROPERTY_TEXTURE_FILTER
-        ),
+        uniformDefaultValues.get<TextureFilter>(textureFilterUniformName),
         SamplerStates::DEFAULT_TEXTURE_FILTER
     );
+
+    auto mipFilterUniformName = SamplerStates::uniformNameToSamplerStateName(
+        "diffuseMap",
+        SamplerStates::PROPERTY_MIP_FILTER
+    );
+
+    ASSERT_TRUE(uniformDefaultValues.hasProperty(mipFilterUniformName));
+
     ASSERT_EQ(
-        fx->techniques().at("default")[0]->uniformBindings().defaultValues.get<MipFilter>(
-            SamplerStates::PROPERTY_MIP_FILTER
-        ),
+        uniformDefaultValues.get<MipFilter>(mipFilterUniformName),
         SamplerStates::DEFAULT_MIP_FILTER
+    );
+}
+
+TEST_F(EffectParserTest, SamplerStatesBindingWrapMode)
+{
+    auto fx = loadEffect("effect/SamplerStatesBindingWrapMode.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+
+    auto uniformBindings = fx->techniques().at("default")[0]->uniformBindings().bindings;
+
+    auto wrapModeUniformName = SamplerStates::uniformNameToSamplerStateName(
+        "diffuseMap",
+        SamplerStates::PROPERTY_WRAP_MODE
+    );
+
+    ASSERT_FALSE(uniformBindings.count(wrapModeUniformName) == 0);
+    ASSERT_EQ(
+        uniformBindings.at(wrapModeUniformName).propertyName,
+        "material[${materialUuid}].diffuseMapWrapMode"
+    );
+}
+
+TEST_F(EffectParserTest, SamplerStatesBindingTextureFilter)
+{
+    auto fx = loadEffect("effect/SamplerStatesBindingTextureFilter.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+
+    auto uniformBindings = fx->techniques().at("default")[0]->uniformBindings().bindings;
+
+    auto textureFilterUniformName = SamplerStates::uniformNameToSamplerStateName(
+        "diffuseMap",
+        SamplerStates::PROPERTY_TEXTURE_FILTER
+    );
+
+    ASSERT_FALSE(uniformBindings.count(textureFilterUniformName) == 0);
+    ASSERT_EQ(
+        uniformBindings.at(textureFilterUniformName).propertyName,
+        "material[${materialUuid}].diffuseMapTextureFilter"
+    );
+}
+
+TEST_F(EffectParserTest, SamplerStatesBindingMipFilter)
+{
+    auto fx = loadEffect("effect/SamplerStatesBindingMipFilter.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+
+    auto uniformBindings = fx->techniques().at("default")[0]->uniformBindings().bindings;
+
+    auto mipFilterUniformName = SamplerStates::uniformNameToSamplerStateName(
+        "diffuseMap",
+        SamplerStates::PROPERTY_WRAP_MODE
+    );
+
+    ASSERT_FALSE(uniformBindings.count(mipFilterUniformName) == 0);
+    ASSERT_EQ(
+        uniformBindings.at(mipFilterUniformName).propertyName,
+        "material[${materialUuid}].diffuseMapMipFilter"
     );
 }
