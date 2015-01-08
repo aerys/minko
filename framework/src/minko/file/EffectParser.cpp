@@ -27,9 +27,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Effect.hpp"
 #include "minko/render/Blending.hpp"
 #include "minko/render/CompareMode.hpp"
-#include "minko/render/WrapMode.hpp"
-#include "minko/render/TextureFilter.hpp"
-#include "minko/render/MipFilter.hpp"
 #include "minko/render/TriangleCulling.hpp"
 #include "minko/render/AbstractTexture.hpp"
 #include "minko/render/Texture.hpp"
@@ -567,6 +564,11 @@ EffectParser::parseUniforms(const Json::Value& node, const Scope& scope, Uniform
     {
         auto defaultValuesProvider = data::Provider::create();
 
+        // We set the default values of the sampler states
+        defaultValuesProvider->set(SamplerStates::PROPERTY_WRAP_MODE, SamplerStates::DEFAULT_WRAP_MODE);
+        defaultValuesProvider->set(SamplerStates::PROPERTY_TEXTURE_FILTER, SamplerStates::DEFAULT_TEXTURE_FILTER);
+        defaultValuesProvider->set(SamplerStates::PROPERTY_MIP_FILTER, SamplerStates::DEFAULT_MIP_FILTER);
+
         uniforms.bindingMap.defaultValues.addProvider(defaultValuesProvider);
 
         for (auto uniformName : uniformsNode.getMemberNames())
@@ -574,7 +576,7 @@ EffectParser::parseUniforms(const Json::Value& node, const Scope& scope, Uniform
             auto uniformNode = uniformsNode[uniformName];
 
             parseBinding(uniformNode, scope, uniforms.bindingMap.bindings[uniformName]);
-            parseSamplerStates(uniformNode, scope, uniforms.samplerStates[uniformName]);
+            parseSamplerStates(uniformNode, scope, uniformName, defaultValuesProvider, uniforms.bindingMap.bindings[uniformName]);
             parseDefaultValue(uniformNode, scope, uniformName, defaultValuesProvider);
         }
     }
@@ -582,23 +584,76 @@ EffectParser::parseUniforms(const Json::Value& node, const Scope& scope, Uniform
 }
 
 void
-EffectParser::parseSamplerStates(const Json::Value& node, const Scope& scope, SamplerState& samplerStates)
+EffectParser::parseSamplerStates(const Json::Value& node, const Scope& scope, const std::string uniformName, data::Provider::Ptr defaultValues, Binding& binding)
 {
     if (node.isObject())
     {
-        auto wrapModeStr = node.get("wrapMode", "clamp").asString();
-        auto textureFilterStr = node.get("textureFilter", "nearest").asString();
-        auto mipFilterStr = node.get("mipFilter", "none").asString();
+        auto wrapModeNode = node.get(SamplerStates::PROPERTY_WRAP_MODE, 0);
 
-        auto wrapMode = wrapModeStr == "repeat" ? WrapMode::REPEAT : WrapMode::CLAMP;
-        auto textureFilter = textureFilterStr == "linear"
-            ? TextureFilter::LINEAR
-            : TextureFilter::NEAREST;
-        auto mipFilter = mipFilterStr == "linear"
-            ? MipFilter::LINEAR
-            : (mipFilterStr == "nearest" ? MipFilter::NEAREST : MipFilter::NONE);
+        if (wrapModeNode.isString())
+        {
+            auto wrapModeStr = wrapModeNode.asString();
 
-        samplerStates = SamplerState(wrapMode, textureFilter, mipFilter);
+            auto wrapMode = wrapModeStr == "repeat" ? WrapMode::REPEAT : WrapMode::CLAMP;
+
+            defaultValues->set(
+                SamplerStates::uniformNameToSamplerStateName(
+                    uniformName, 
+                    SamplerStates::PROPERTY_WRAP_MODE
+                ), 
+                wrapMode
+            );
+        }
+        else if (wrapModeNode.isObject())
+        {
+            parseBinding(wrapModeNode, scope, binding);
+        }
+
+        auto textureFilterNode = node.get(SamplerStates::PROPERTY_TEXTURE_FILTER, 0);
+
+        if (textureFilterNode.isString())
+        {
+            auto textureFilterStr = textureFilterNode.asString();
+
+            auto textureFilter = textureFilterStr == "linear"
+                ? TextureFilter::LINEAR
+                : TextureFilter::NEAREST;
+
+            defaultValues->set(
+                SamplerStates::uniformNameToSamplerStateName(
+                    uniformName, 
+                    SamplerStates::PROPERTY_TEXTURE_FILTER
+                ), 
+                textureFilter
+            );
+        }
+        else if (textureFilterNode.isObject())
+        {
+            parseBinding(textureFilterNode, scope, binding);
+        }
+
+        auto mipFilterNode = node.get(SamplerStates::PROPERTY_MIP_FILTER, 0);
+
+        if (mipFilterNode.isString())
+        {
+            auto mipFilterStr = mipFilterNode.asString();
+
+            auto mipFilter = mipFilterStr == "linear"
+                ? MipFilter::LINEAR
+                : (mipFilterStr == "nearest" ? MipFilter::NEAREST : MipFilter::NONE);
+
+            defaultValues->set(
+                SamplerStates::uniformNameToSamplerStateName(
+                    uniformName, 
+                    SamplerStates::PROPERTY_MIP_FILTER
+                ), 
+                mipFilter
+            );
+        }
+        else if (textureFilterNode.isObject())
+        {
+            parseBinding(textureFilterNode, scope, binding);
+        }
     }
 }
 
