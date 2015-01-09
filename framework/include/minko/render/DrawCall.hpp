@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Pass.hpp"
 #include "minko/render/DrawCall.hpp"
 #include "minko/render/States.hpp"
+#include "minko/render/SamplerStates.hpp"
 #include "minko/data/Binding.hpp"
 #include "minko/render/Priority.hpp"
 
@@ -58,12 +59,10 @@ namespace minko
                 const uint position;
                 const int* resourceId;
                 const int location;
-                /*
-                WrapMode* wrapMode;
-                TextureFilter* textureFilter;
-                MipFilter* mipFilter;
-                TextureType* type;
-                */
+                const WrapMode* wrapMode;
+                const TextureFilter* textureFilter;
+                const MipFilter* mipFilter;
+                //TextureType* type;
             };
 
             struct AttributeValue
@@ -248,7 +247,9 @@ namespace minko
             bindUniform(std::shared_ptr<Program>    program,
                         ConstUniformInputRef        input,
                         const data::Store&          store,
-                        const std::string&          propertyName);
+                        const std::string&          bindingName,
+                        const std::string&          propertyName,
+                        const data::BindingMap&     uniformBindings);
 
             void
             bindAttribute(std::shared_ptr<Program>  program,
@@ -263,8 +264,18 @@ namespace minko
 			void
             bindStates(const data::BindingMap& stateBindings);
 			
+            void
+            bindAttributes(std::shared_ptr<Program> program, 
+                           const data::BindingMap&  attributeBindings);
+
             data::Store&
             getStore(data::Binding::Source source);
+
+            SamplerStates
+            getSamplerStates(std::shared_ptr<Program>   program, 
+                             ConstUniformInputRef       input, 
+                             const std::string          uniformName, 
+                             const data::BindingMap&    uniformBindings);
 
             void
             uniformBindingPropertyAdded(const data::Binding&                binding,
@@ -272,15 +283,19 @@ namespace minko
                                         data::Store&                        store,
                                         const data::Store&                  defaultValues,
                                         const ProgramInputs::UniformInput&  input,
-                                        const std::string&                  propertyName);
+                                        const std::string&                  uniformName,
+                                        const std::string&                  propertyName,
+                                        const data::BindingMap&             bindingMap);
 
             void
-            uniformBindingPropertyRemoved(const data::Binding&                  binding,
-                                          Program::Ptr                          program,
-                                          data::Store&                          store,
-                                          const data::Store&                    defaultValues,
-                                          const ProgramInputs::UniformInput&    input,
-                                          const std::string&                    propertyName);
+            uniformBindingPropertyRemoved(const data::Binding&                binding,
+                                          Program::Ptr                        program,
+                                          data::Store&                        store,
+                                          const data::Store&                  defaultValues,
+                                          const ProgramInputs::UniformInput&  input,
+                                          const std::string&                  uniformName,
+                                          const std::string&                  propertyName,
+                                          const data::BindingMap&             bindingMap);
 
             template <typename T>
             T*

@@ -20,9 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/render/MipFilter.hpp"
-#include "minko/render/TextureFilter.hpp"
-#include "minko/render/WrapMode.hpp"
+#include "minko/render/SamplerStates.hpp"
 
 namespace minko
 {
@@ -39,9 +37,9 @@ namespace minko
             TextureSampler(const std::string& uuid, int* id) :
                 uuid(uuid),
                 id(id),
-                mipFilter(MipFilter::NONE),
-                textureFilter(TextureFilter::NEAREST),
-                wrapMode(WrapMode::CLAMP)
+                mipFilter(SamplerStates::DEFAULT_MIP_FILTER),
+                textureFilter(SamplerStates::DEFAULT_TEXTURE_FILTER),
+                wrapMode(SamplerStates::DEFAULT_WRAP_MODE)
             {}
 
             bool
