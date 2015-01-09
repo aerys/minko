@@ -245,6 +245,13 @@ namespace minko
                               const std::string&    valueName,
                               data::Provider::Ptr   defaultValues);
 
+            template<typename T>
+            void
+            parseDefaultValueSamplerStates(const Json::Value&    node,
+                                    const Scope&          scope,
+                                    const std::string&    valueName,
+                                    data::Provider::Ptr   defaultValues);
+
             void
             parseDefaultValueVector(const Json::Value&    defaultValueNode,
                                     const Scope&          scope,

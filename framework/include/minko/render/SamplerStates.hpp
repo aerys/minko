@@ -47,6 +47,39 @@ namespace minko
             {
                 return uniformName + "/" + sampleState;
             }
+
+            static
+            inline
+            WrapMode stringToWrapMode(const std::string& value)
+            {
+                return value == "repeat" ? WrapMode::REPEAT : WrapMode::CLAMP;
+            }
+
+            static
+            inline
+            TextureFilter stringToTextureFilter(const std::string& value)
+            {
+                return value == "linear" ? TextureFilter::LINEAR : TextureFilter::NEAREST;
+            }
+
+            static
+            inline
+            MipFilter stringToMipFilter(const std::string& value)
+            {
+                return value == "linear" ? MipFilter::LINEAR : (value == "nearest" ? MipFilter::NEAREST : MipFilter::NONE);
+            }
+
+        public:
+            WrapMode* wrapMode;
+            TextureFilter* textureFilter;
+            MipFilter* mipFilter;
+
+            SamplerStates(WrapMode* wm, TextureFilter* tf, MipFilter* mf) :
+                wrapMode(wm),
+                textureFilter(tf),
+                mipFilter(mf)
+            {
+            }
         };
 	}
 }

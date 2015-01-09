@@ -416,6 +416,33 @@ EffectParser::parseDefaultValue(const Json::Value&  node,
         loadTexture(defaultValueNode.asString(), valueName, defaultValues);
 }
 
+template<typename T>
+void
+EffectParser::parseDefaultValueSamplerStates(const Json::Value&    node,
+                                             const Scope&          scope,
+                                             const std::string&    valueName,
+                                             data::Provider::Ptr   defaultValues)
+{
+    if (!node.isObject())
+        return;
+
+    auto memberNames = node.getMemberNames();
+    if (std::find(memberNames.begin(), memberNames.end(), "default") == memberNames.end())
+        return;
+
+    auto defaultValueNode = node.get("default", 0);
+
+    if (defaultValueNode.isString())
+    {
+        if (typeid(T) == typeid(WrapMode))
+            defaultValues->set(valueName, SamplerStates::stringToWrapMode(defaultValueNode.asString()));
+        else if (typeid(T) == typeid(TextureFilter))
+            defaultValues->set(valueName, SamplerStates::stringToTextureFilter(defaultValueNode.asString()));
+        else if (typeid(T) == typeid(MipFilter))
+            defaultValues->set(valueName, SamplerStates::stringToMipFilter(defaultValueNode.asString()));
+    }
+}
+
 void
 EffectParser::parseDefaultValueVector(const Json::Value&    defaultValueNode,
                                       const Scope&          scope,
@@ -589,7 +616,7 @@ EffectParser::parseSamplerStates(const Json::Value& node, const Scope& scope, co
         {
             auto wrapModeStr = wrapModeNode.asString();
 
-            auto wrapMode = wrapModeStr == "repeat" ? WrapMode::REPEAT : WrapMode::CLAMP;
+            auto wrapMode = SamplerStates::stringToWrapMode(wrapModeStr);
 
             defaultValues->set(
                 SamplerStates::uniformNameToSamplerStateName(
@@ -611,6 +638,8 @@ EffectParser::parseSamplerStates(const Json::Value& node, const Scope& scope, co
                 scope, 
                 bindingMap.bindings[uniformWrapModeBindingName]
             );
+
+            parseDefaultValueSamplerStates<WrapMode>(wrapModeNode, scope, uniformWrapModeBindingName, defaultValues);
         }
         else
         {
@@ -629,9 +658,7 @@ EffectParser::parseSamplerStates(const Json::Value& node, const Scope& scope, co
         {
             auto textureFilterStr = textureFilterNode.asString();
 
-            auto textureFilter = textureFilterStr == "linear"
-                ? TextureFilter::LINEAR
-                : TextureFilter::NEAREST;
+            auto textureFilter = SamplerStates::stringToTextureFilter(textureFilterStr);
 
             defaultValues->set(
                 SamplerStates::uniformNameToSamplerStateName(
@@ -653,6 +680,8 @@ EffectParser::parseSamplerStates(const Json::Value& node, const Scope& scope, co
                 scope,
                 bindingMap.bindings[uniformTextureFilterBindingName]
             );
+
+            parseDefaultValueSamplerStates<TextureFilter>(textureFilterNode, scope, uniformTextureFilterBindingName, defaultValues);
         }
         else
         {
@@ -671,10 +700,8 @@ EffectParser::parseSamplerStates(const Json::Value& node, const Scope& scope, co
         {
             auto mipFilterStr = mipFilterNode.asString();
 
-            auto mipFilter = mipFilterStr == "linear"
-                ? MipFilter::LINEAR
-                : (mipFilterStr == "nearest" ? MipFilter::NEAREST : MipFilter::NONE);
-
+            auto mipFilter = SamplerStates::stringToMipFilter(mipFilterStr);
+            
             defaultValues->set(
                 SamplerStates::uniformNameToSamplerStateName(
                     uniformName, 
@@ -695,6 +722,8 @@ EffectParser::parseSamplerStates(const Json::Value& node, const Scope& scope, co
                 scope,
                 bindingMap.bindings[uniformMipFilterBindingName]
             );
+
+            parseDefaultValueSamplerStates<MipFilter>(mipFilterNode, scope, uniformMipFilterBindingName, defaultValues);
         }
         else
         {
