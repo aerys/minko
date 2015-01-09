@@ -114,6 +114,48 @@ BasicMaterial::diffuseMap() const
 }
 
 BasicMaterial&
+BasicMaterial::diffuseMapWrapMode(WrapMode wrapMode)
+{
+    data()->set("diffuseMapWrapMode", wrapMode);
+
+    return *this;
+}
+
+WrapMode
+BasicMaterial::diffuseMapWrapMode() const
+{
+    return data()->get<WrapMode>("diffuseMapWrapMode");
+}
+
+BasicMaterial&
+BasicMaterial::diffuseMapTextureFilter(TextureFilter textureFilter)
+{
+    data()->set("diffuseMapTextureFilter", textureFilter);
+
+    return *this;
+}
+
+TextureFilter
+BasicMaterial::diffuseMapTextureFilter() const
+{
+    return data()->get<TextureFilter>("diffuseMapTextureFilter");
+}
+
+BasicMaterial&
+BasicMaterial::diffuseMapMipFilter(MipFilter mipFilter)
+{
+    data()->set("diffuseMapMipFilter", mipFilter);
+
+    return *this;
+}
+
+MipFilter
+BasicMaterial::diffuseMapMipFilter() const
+{
+    return data()->get<MipFilter>("diffuseMapMipFilter");
+}
+
+BasicMaterial&
 BasicMaterial::diffuseCubeMap(std::shared_ptr<render::AbstractTexture> texture)
 {
 	assert(texture->type() == TextureType::CubeTexture);
@@ -129,6 +171,40 @@ BasicMaterial::diffuseCubeMap() const
 	return data()->hasProperty("diffuseCubeMap")
 		? data()->get<render::ResourceId>("diffuseCubeMap")
 		: -1;
+}
+
+WrapMode
+BasicMaterial::diffuseCubeMapWrapMode() const
+{
+    return data()->get<WrapMode>("diffuseCubeMapWrapMode");
+}
+
+BasicMaterial&
+BasicMaterial::diffuseCubeMapTextureFilter(TextureFilter textureFilter)
+{
+    data()->set("diffuseCubeMapTextureFilter", textureFilter);
+
+    return *this;
+}
+
+TextureFilter
+BasicMaterial::diffuseCubeMapTextureFilter() const
+{
+    return data()->get<TextureFilter>("diffuseCubeMapTextureFilter");
+}
+
+BasicMaterial&
+BasicMaterial::diffuseCubeMapMipFilter(MipFilter mipFilter)
+{
+    data()->set("diffuseCubeMapMipFilter", mipFilter);
+
+    return *this;
+}
+
+MipFilter
+BasicMaterial::diffuseCubeMapMipFilter() const
+{
+    return data()->get<MipFilter>("diffuseCubeMapMipFilter");
 }
 
 BasicMaterial&

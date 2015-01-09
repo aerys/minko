@@ -85,11 +85,47 @@ namespace minko
 			render::ResourceId
 			diffuseMap() const;
 
+            BasicMaterial&
+            diffuseMapWrapMode(render::WrapMode);
+
+            render::WrapMode
+            diffuseMapWrapMode() const;
+
+            BasicMaterial&
+            diffuseMapTextureFilter(render::TextureFilter);
+
+            render::TextureFilter
+            diffuseMapTextureFilter() const;
+
+            BasicMaterial&
+            diffuseMapMipFilter(render::MipFilter);
+
+            render::MipFilter
+            diffuseMapMipFilter() const;
+
 			BasicMaterial&
 			diffuseCubeMap(AbsTexturePtr);
 
 			render::ResourceId
 			diffuseCubeMap() const;
+
+            BasicMaterial&
+                diffuseCubeMapWrapMode(render::WrapMode);
+
+            render::WrapMode
+            diffuseCubeMapWrapMode() const;
+
+            BasicMaterial&
+            diffuseCubeMapTextureFilter(render::TextureFilter);
+
+            render::TextureFilter
+            diffuseCubeMapTextureFilter() const;
+
+            BasicMaterial&
+            diffuseCubeMapMipFilter(render::MipFilter);
+
+            render::MipFilter
+            diffuseCubeMapMipFilter() const;
 
 			BasicMaterial&
 			fogColor(const math::vec4&);
