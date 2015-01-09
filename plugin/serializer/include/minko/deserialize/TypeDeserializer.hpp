@@ -39,7 +39,7 @@ namespace minko
         public:
             static
             float
-            deserializeFloat(std::string& serializedValue)
+            deserializeFloat(const std::string& serializedValue)
             {
                 return deserializeVector<float>(serializedValue)[0];
             }
@@ -47,7 +47,7 @@ namespace minko
             template <typename T, typename ST = T>
             static
             std::vector<T>
-            deserializeVector(std::string& serializedValue)
+            deserializeVector(const std::string& serializedValue)
             {
                 std::stringstream   stream;
                 std::vector<T>      result(serializedValue.size() / sizeof(ST));
@@ -63,35 +63,35 @@ namespace minko
 
             static
             Any
-            deserializeVector4(std::tuple<uint, std::string&>& serializedVector);
+            deserializeVector4(const std::tuple<uint, std::string&>& serializedVector);
 
             static
             Any
-            deserializeVector3(std::tuple<uint, std::string&>& serializedVector);
+            deserializeVector3(const std::tuple<uint, std::string&>& serializedVector);
 
             static
             Any
-            deserializeVector2(std::tuple<uint, std::string&>& serializedVector);
+            deserializeVector2(const std::tuple<uint, std::string&>& serializedVector);
 
             static
             Any
-            deserializeMatrix4x4(std::tuple<uint, std::string&>& serializedMatrix);
+            deserializeMatrix4x4(const std::tuple<uint, std::string&>& serializedMatrix);
 
             static
             Any
-            deserializeBlending(std::tuple<uint, std::string&>& seriliazedBlending);
+            deserializeBlending(const std::tuple<uint, std::string&>& seriliazedBlending);
 
             static
             Any
-            deserializeTriangleCulling(std::tuple<uint, std::string&>& seriliazedTriangleCulling);
+            deserializeTriangleCulling(const std::tuple<uint, std::string&>& seriliazedTriangleCulling);
 
             static
             Any
-            deserializeTextureId(std::tuple<uint, std::string&>& seriliazedTextureId);
+            deserializeTextureId(const std::tuple<uint, std::string&>& seriliazedTextureId);
 
             static
             Any
-            deserializeEnvironmentMap2dType(std::tuple<uint, std::string&>&);
+            deserializeEnvironmentMap2dType(const std::tuple<uint, std::string&>&);
         };
     }
 }
