@@ -89,6 +89,23 @@ VertexBuffer::upload(uint offset, uint numVertices)
 }
 
 void
+VertexBuffer::upload(uint offset, uint numVertices, const std::vector<float>& data)
+{
+    if (data.empty())
+        return;
+
+    if (_id == -1)
+        _id = _context->createVertexBuffer(data.size());
+
+    _context->uploadVertexBufferData(
+        _id,
+        offset * _vertexSize,
+        numVertices == 0 ? data.size() : numVertices * _vertexSize,
+        const_cast<float*>(data.data())
+    );
+}
+
+void
 VertexBuffer::dispose()
 {
     if (_id != -1)
