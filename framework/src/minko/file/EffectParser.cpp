@@ -649,7 +649,7 @@ EffectParser::parseSamplerStates(const Json::Value& node, const Scope& scope, co
             );
 
             parseBinding(
-                wrapModeNode,
+                textureFilterNode,
                 scope,
                 bindingMap.bindings[uniformTextureFilterBindingName]
             );
@@ -683,7 +683,7 @@ EffectParser::parseSamplerStates(const Json::Value& node, const Scope& scope, co
                 mipFilter
             );
         }
-        else if (textureFilterNode.isObject())
+        else if (mipFilterNode.isObject())
         {
             auto uniformMipFilterBindingName = SamplerStates::uniformNameToSamplerStateName(
                 uniformName,
@@ -691,7 +691,7 @@ EffectParser::parseSamplerStates(const Json::Value& node, const Scope& scope, co
             );
 
             parseBinding(
-                wrapModeNode,
+                mipFilterNode,
                 scope,
                 bindingMap.bindings[uniformMipFilterBindingName]
             );

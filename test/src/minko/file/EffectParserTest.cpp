@@ -728,7 +728,7 @@ TEST_F(EffectParserTest, SamplerStatesBindingMipFilter)
 
     auto mipFilterUniformName = SamplerStates::uniformNameToSamplerStateName(
         "diffuseMap",
-        SamplerStates::PROPERTY_WRAP_MODE
+        SamplerStates::PROPERTY_MIP_FILTER
     );
 
     ASSERT_FALSE(uniformBindings.count(mipFilterUniformName) == 0);
