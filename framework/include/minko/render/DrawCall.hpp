@@ -47,6 +47,7 @@ namespace minko
             {
                 const int location;
                 const uint size;
+				const uint count;
                 const T* data;
             };
 
@@ -310,7 +311,11 @@ namespace minko
 
             template <typename T>
             void
-            setUniformValue(std::vector<UniformValue<T>>& uniforms, int location, uint size, const T* data)
+            setUniformValue(std::vector<UniformValue<T>>& 	uniforms,
+							int 							location,
+							uint 							size,
+							uint 							count,
+							const T* 						data)
             {
                 auto it = std::find_if(uniforms.begin(), uniforms.end(), [&](UniformValue<T>& u)
                 {
@@ -318,7 +323,7 @@ namespace minko
                 });
 
                 if (it == uniforms.end())
-                    uniforms.push_back({ location, size, data });
+                    uniforms.push_back({ location, size, count, data });
                 else
                     it->data = data;
             }
