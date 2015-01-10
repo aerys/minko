@@ -223,43 +223,43 @@ DrawCall::setUniformValueFromStore(const ProgramInputs::UniformInput&   input,
     switch (input.type)
     {
         case ProgramInputs::Type::bool1:
-            setUniformValue(_uniformBool, input.location, 1, store.getPointer<int>(propertyName));
+            setUniformValue(_uniformBool, input.location, 1, input.size, store.getPointer<int>(propertyName));
             break;
         case ProgramInputs::Type::bool2:
-            setUniformValue(_uniformBool, input.location, 2, math::value_ptr(store.get<math::ivec2>(propertyName)));
+            setUniformValue(_uniformBool, input.location, 2, input.size, math::value_ptr(store.get<math::ivec2>(propertyName)));
             break;
         case ProgramInputs::Type::bool3:
-            setUniformValue(_uniformBool, input.location, 3, math::value_ptr(store.get<math::ivec3>(propertyName)));
+            setUniformValue(_uniformBool, input.location, 3, input.size, math::value_ptr(store.get<math::ivec3>(propertyName)));
             break;
         case ProgramInputs::Type::bool4:
-            setUniformValue(_uniformBool, input.location, 4, math::value_ptr(store.get<math::ivec4>(propertyName)));
+            setUniformValue(_uniformBool, input.location, 4, input.size, math::value_ptr(store.get<math::ivec4>(propertyName)));
             break;
         case ProgramInputs::Type::int1:
-            setUniformValue(_uniformInt, input.location, 1, store.getPointer<int>(propertyName));
+            setUniformValue(_uniformInt, input.location, 1, input.size, store.getPointer<int>(propertyName));
             break;
         case ProgramInputs::Type::int2:
-            setUniformValue(_uniformInt, input.location, 2, math::value_ptr(store.get<math::ivec2>(propertyName)));
+            setUniformValue(_uniformInt, input.location, 2, input.size, math::value_ptr(store.get<math::ivec2>(propertyName)));
             break;
         case ProgramInputs::Type::int3:
-            setUniformValue(_uniformInt, input.location, 3, math::value_ptr(store.get<math::ivec3>(propertyName)));
+            setUniformValue(_uniformInt, input.location, 3, input.size, math::value_ptr(store.get<math::ivec3>(propertyName)));
             break;
         case ProgramInputs::Type::int4:
-            setUniformValue(_uniformInt, input.location, 4, math::value_ptr(store.get<math::ivec4>(propertyName)));
+            setUniformValue(_uniformInt, input.location, 4, input.size, math::value_ptr(store.get<math::ivec4>(propertyName)));
             break;
         case ProgramInputs::Type::float1:
-            setUniformValue(_uniformFloat, input.location, 1, store.getPointer<float>(propertyName));
+            setUniformValue(_uniformFloat, input.location, 1, input.size, store.getPointer<float>(propertyName));
             break;
         case ProgramInputs::Type::float2:
-            setUniformValue(_uniformFloat, input.location, 2, math::value_ptr(store.get<math::vec2>(propertyName)));
+            setUniformValue(_uniformFloat, input.location, 2, input.size, math::value_ptr(store.get<math::vec2>(propertyName)));
             break;
         case ProgramInputs::Type::float3:
-            setUniformValue(_uniformFloat, input.location, 3, math::value_ptr(store.get<math::vec3>(propertyName)));
+            setUniformValue(_uniformFloat, input.location, 3, input.size, math::value_ptr(store.get<math::vec3>(propertyName)));
             break;
         case ProgramInputs::Type::float4:
-            setUniformValue(_uniformFloat, input.location, 4, math::value_ptr(store.get<math::vec4>(propertyName)));
+            setUniformValue(_uniformFloat, input.location, 4, input.size, math::value_ptr(store.get<math::vec4>(propertyName)));
             break;
         case ProgramInputs::Type::float16:
-            setUniformValue(_uniformFloat, input.location, 16, math::value_ptr(store.get<math::mat4>(propertyName)));
+            setUniformValue(_uniformFloat, input.location, 16, input.size, math::value_ptr(store.get<math::mat4>(propertyName)));
             break;
         case ProgramInputs::Type::sampler2d:
             _samplers.push_back({
@@ -348,39 +348,39 @@ DrawCall::render(AbstractContext::Ptr   context,
     for (const auto& u : _uniformBool)
     {
         if (u.size == 1)
-            context->setUniformInt(u.location, 1, u.data);
+            context->setUniformInt(u.location, u.count, u.data);
         else if (u.size == 2)
-            context->setUniformInt2(u.location, 1, u.data);
+            context->setUniformInt2(u.location, u.count, u.data);
         else if (u.size == 3)
-            context->setUniformInt3(u.location, 1, u.data);
+            context->setUniformInt3(u.location, u.count, u.data);
         else if (u.size == 4)
-            context->setUniformInt4(u.location, 1, u.data);
+            context->setUniformInt4(u.location, u.count, u.data);
     }
 
     for (const auto& u : _uniformInt)
     {
         if (u.size == 1)
-            context->setUniformInt(u.location, 1, u.data);
+            context->setUniformInt(u.location, u.count, u.data);
         else if (u.size == 2)
-            context->setUniformInt2(u.location, 1, u.data);
+            context->setUniformInt2(u.location, u.count, u.data);
         else if (u.size == 3)
-            context->setUniformInt3(u.location, 1, u.data);
+            context->setUniformInt3(u.location, u.count, u.data);
         else if (u.size == 4)
-            context->setUniformInt4(u.location, 1, u.data);
+            context->setUniformInt4(u.location, u.count, u.data);
     }
 
     for (const auto& u : _uniformFloat)
     {
         if (u.size == 1)
-            context->setUniformFloat(u.location, 1, u.data);
+            context->setUniformFloat(u.location, u.count, u.data);
         else if (u.size == 2)
-            context->setUniformFloat2(u.location, 1, u.data);
+            context->setUniformFloat2(u.location, u.count, u.data);
         else if (u.size == 3)
-            context->setUniformFloat3(u.location, 1, u.data);
+            context->setUniformFloat3(u.location, u.count, u.data);
         else if (u.size == 4)
-            context->setUniformFloat4(u.location, 1, u.data);
+            context->setUniformFloat4(u.location, u.count, u.data);
         else if (u.size == 16)
-            context->setUniformMatrix4x4(u.location, 1, u.data);
+            context->setUniformMatrix4x4(u.location, u.count, u.data);
     }
 
     for (const auto& s : _samplers)
