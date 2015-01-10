@@ -68,9 +68,11 @@ namespace minko
             struct UniformInput : public AbstractInput
             {
                 Type type;
+				int size;
 
-                UniformInput(const std::string& name, int location, Type type) :
+                UniformInput(const std::string& name, int location, int size, Type type) :
                     AbstractInput(name, location),
+					size(size),
                     type(type)
                 {}
             };

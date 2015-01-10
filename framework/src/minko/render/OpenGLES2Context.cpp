@@ -1196,11 +1196,11 @@ OpenGLES2Context::getUniformInputs(const uint program)
 
 		name[nameLength] = 0;
 
-		ProgramInputs::Type	inputType	= convertInputType(type);
-		int					location	= glGetUniformLocation(program, &name[0]);
+		ProgramInputs::Type	inputType = convertInputType(type);
+		int	location = glGetUniformLocation(program, &name[0]);
 
         if (location >= 0 && inputType != ProgramInputs::Type::unknown)
-            inputs.emplace_back(std::string(&name[0], nameLength), location, inputType);
+            inputs.emplace_back(std::string(&name[0], nameLength), location, size, inputType);
 	}
 
     return inputs;
