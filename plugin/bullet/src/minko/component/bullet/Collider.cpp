@@ -163,7 +163,7 @@ bullet::Collider::initializeFromNode(Node::Ptr node)
 
     _graphicsTransform = node->component<Transform>();
 
-    if (fabsf(_graphicsTransform->modelToWorldMatrix(true)->determinant()) < 1e-3f)
+    if (fabsf(_graphicsTransform->modelToWorldMatrix(true)->determinant()) < 1e-4f)
         throw std::logic_error("The node's model-to-world matrix cannot be inverted.");
 
     // identify physics world
