@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/Signal.hpp"
 
 namespace minko
 {
@@ -57,6 +58,8 @@ namespace minko
             {
                 Ptr logger = std::shared_ptr<Logger>(new Logger(level, sink));
 
+                initializing()->execute(logger);
+
                 return logger;
             }
 
@@ -81,6 +84,15 @@ namespace minko
                 return _default;
             }
 
+            static
+            std::shared_ptr<Signal<std::shared_ptr<Logger>>>
+            initializing()
+            {
+                auto _initializing = Signal<std::shared_ptr<Logger>>::create();
+
+                return _initializing;
+            }
+
         private:
             Logger(Level level, Sink::Ptr sink) :
                 _level(level),
@@ -89,21 +101,21 @@ namespace minko
             }
 
         private:
-            Level                _level;
-            Sink::Ptr            _sink;
-
-            static Ptr            _default;
+            Level                                                   _level;
+            Sink::Ptr                                               _sink;
+                                    
+            static Ptr                                              _default;
         };
     }
 }
 
 // From http://stackoverflow.com/questions/8337300/c11-how-do-i-implement-convenient-logging-without-a-singleton
 #define LOG(Logger_, Message_, Level_)                  \
-    Logger_(                                              \
+    Logger_(                                            \
         static_cast<std::ostringstream&>(               \
-            std::ostringstream().flush() << Message_      \
+            std::ostringstream().flush() << Message_    \
         ).str(),                                        \
-        Level_,                                            \
+        Level_,                                         \
         __FUNCTION__,                                   \
         __FILE__,                                       \
         __LINE__                                        \

@@ -61,10 +61,8 @@ MaterialParser::parse(const std::string&                filename,
                       const std::vector<unsigned char>&    data,
                       AssetLibraryPtr                    assetLibrary)
 {
-    readHeader(filename, data);
-
-    if (_magicNumber != 0x4D4B034D)
-        throw std::logic_error("Invalid material data");
+    if (!readHeader(filename, data, 0x4D))
+        return;
 
     msgpack::object        msgpackObject;
     msgpack::zone        mempool;
@@ -82,7 +80,7 @@ MaterialParser::parse(const std::string&                filename,
     std::vector<ComplexProperty> complexProperties    = serializedMaterial.a0;
     std::vector<BasicProperty>     basicProperties    = serializedMaterial.a1;
 
-    MaterialPtr material = material::Material::create();
+	MaterialPtr material = options->material() ? material::Material::create(options->material()) : material::Material::create();
 
     material->set("diffuseColor", math::Vector4::create(1.0, 1.0, 1.0, 1.0));
 
@@ -94,8 +92,14 @@ MaterialParser::parse(const std::string&                filename,
 
     material = options->materialFunction()(material->arrayName(), material);
 
-    assetLibrary->material(filename, material);
-    _lastParsedAssetName = filename;
+    static auto nameId = 0;
+    auto uniqueName = filename;
+
+    while (assetLibrary->material(uniqueName) != nullptr)
+        uniqueName = "material" + std::to_string(nameId++);
+
+    assetLibrary->material(uniqueName, material);
+    _lastParsedAssetName = uniqueName;
 }
 
 void

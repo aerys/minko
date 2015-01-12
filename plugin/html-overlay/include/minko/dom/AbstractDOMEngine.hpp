@@ -35,7 +35,7 @@ namespace minko
 			~AbstractDOMEngine()
 			{
 			}
-
+ 
 			virtual
 			AbstractDOM::Ptr
 			load(std::string uri) = 0;
@@ -63,7 +63,6 @@ namespace minko
             virtual
 			bool
 			visible() = 0;
-
 
             virtual
             void

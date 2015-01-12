@@ -37,22 +37,35 @@ namespace minko
         protected:
             std::shared_ptr<AbstractCanvas> _canvas;
 
-            uint                            _x;
-            uint                            _y;
+            int                             _x;
+            int                             _y;
 
             bool                            _leftButtonIsDown;
             bool                            _rightButtonIsDown;
+            bool                            _middleButtonIsDown;
 
             Signal<Ptr, int, int>::Ptr      _mouseMove;
             Signal<Ptr, int, int>::Ptr      _mouseWheel;
             Signal<Ptr>::Ptr                _mouseLeftButtonDown;
             Signal<Ptr>::Ptr                _mouseLeftButtonUp;
+            Signal<Ptr>::Ptr                _mouseLeftClick;
             Signal<Ptr>::Ptr                _mouseRightButtonDown;
             Signal<Ptr>::Ptr                _mouseRightButtonUp;
+            Signal<Ptr>::Ptr                _mouseRightClick;
             Signal<Ptr>::Ptr                _mouseMiddleButtonDown;
             Signal<Ptr>::Ptr                _mouseMiddleButtonUp;
+            Signal<Ptr>::Ptr                _mouseMiddleClick;
 
             std::list<Any>                  _slots;
+            
+            int                             _lastMouseLeftDownX;
+            int                             _lastMouseLeftDownY;
+
+            int                             _lastMouseRightDownX;
+            int                             _lastMouseRightDownY;
+
+            int                             _lastMouseMiddleDownX;
+            int                             _lastMouseMiddleDownY;
 
         public:
             inline static
@@ -63,14 +76,14 @@ namespace minko
             }
 
             inline
-            uint
+            int
             x() const
             {
                 return _x;
             }
 
             inline
-            uint
+            int
             y() const
             {
                 return _y;
@@ -78,14 +91,14 @@ namespace minko
 
             inline
             void
-            x(uint x)
+            x(int x)
             {
                 _x = x;
             }
 
             inline
             void
-            y(uint y)
+            y(int y)
             {
                 _y = y;
             }
@@ -102,6 +115,13 @@ namespace minko
             rightButtonIsDown() const
             {
                 return _rightButtonIsDown;
+            }
+
+            inline
+            bool
+            middleButtonIsDown() const
+            {
+                return _middleButtonIsDown;
             }
 
             inline
@@ -148,6 +168,13 @@ namespace minko
 
             inline
             std::shared_ptr<Signal<Ptr>>
+            leftButtonClick()
+            {
+                return _mouseLeftClick;
+            }
+
+            inline
+            std::shared_ptr<Signal<Ptr>>
             rightButtonDown()
             {
                 return _mouseRightButtonDown;
@@ -158,6 +185,13 @@ namespace minko
             rightButtonUp()
             {
                 return _mouseRightButtonUp;
+            }
+
+            inline
+            std::shared_ptr<Signal<Ptr>>
+            rightButtonClick()
+            {
+                return _mouseRightClick;
             }
 
             inline
@@ -174,12 +208,22 @@ namespace minko
                 return _mouseMiddleButtonUp;
             }
 
+            inline
+            std::shared_ptr<Signal<Ptr>>
+            middleButtonClick()
+            {
+                return _mouseMiddleClick;
+            }
+
             virtual
             ~Mouse()
             {
             }
 
         protected:
+
+            static const int CLICK_MOVE_THRESHOLD;
+
             Mouse(std::shared_ptr<AbstractCanvas> canvas);
         };
     }

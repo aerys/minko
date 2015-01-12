@@ -26,3 +26,9 @@ doc/html
 remove.me
 dist
 packages
+lib/linux32/chrome-sandbox
+lib/linux64/chrome-sandbox
+lib/linux32/libcef.so
+lib/linux64/libcef.so
+lib/linux32/libffmpegsumo.so
+lib/linux64/libffmpegsumo.so

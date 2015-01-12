@@ -275,6 +275,7 @@ public class SDLActivity extends Activity {
     public static native void nativeQuit();
     public static native void nativePause();
     public static native void nativeResume();
+	public static native void onNativeDropFile(String filename);
     public static native void onNativeResize(int x, int y, int format);
     public static native int onNativePadDown(int device_id, int keycode);
     public static native int onNativePadUp(int device_id, int keycode);
@@ -312,6 +313,10 @@ public class SDLActivity extends Activity {
 
     public static Context getContext() {
         return mSingleton;
+    }
+
+    public static ViewGroup getLayout() {
+        return mLayout;
     }
 
     /**

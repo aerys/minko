@@ -31,7 +31,7 @@ int
 main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Tutorial - Rotating the camera around an object with the mouse", WINDOW_WIDTH, WINDOW_HEIGHT);
-    auto sceneManager = component::SceneManager::create(canvas->context());
+    auto sceneManager = component::SceneManager::create(canvas);
 
     // We replace the basic effect by the Phong effect to have light effects
     sceneManager->assets()->loader()->queue("effect/Phong.effect");

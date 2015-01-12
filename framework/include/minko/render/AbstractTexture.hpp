@@ -41,6 +41,7 @@ namespace minko
 
         protected:
             const TextureType   _type;
+            TextureFormat       _format;
             unsigned int        _width;
             unsigned int        _height;
             unsigned int        _widthGPU;    // always power of 2
@@ -59,6 +60,13 @@ namespace minko
             }
 
             inline
+            TextureFormat
+            format() const
+            {
+                return _format;
+            }
+
+            inline
             uint
             width() const
             {
@@ -73,11 +81,28 @@ namespace minko
             }
 
             inline
+            uint
+            originalWidth() const
+            {
+                return _width;
+            }
+
+            inline
+            uint
+            originalHeight() const
+            {
+                return _height;
+            }
+
+            inline
             bool
             mipMapping() const
             {
                 return _mipMapping;
             }
+
+            void
+            activateMipMapping();
 
             inline
             bool
@@ -88,10 +113,13 @@ namespace minko
 
             virtual
             void
-            data(unsigned char*     data,
-                 TextureFormat      format      = TextureFormat::RGBA,
-                 int                widthGPU    = -1,
-                 int                heightGPU   = -1) = 0;
+            data(unsigned char* data,
+                 int            widthGPU    = -1,
+                 int            heightGPU   = -1) = 0;
+
+            virtual
+            void
+            resize(unsigned int width, unsigned int height, bool resizeSmoothly) = 0;
 
             virtual
             void
@@ -102,6 +130,7 @@ namespace minko
                             AbstractContextPtr  context,
                             unsigned int        width,
                             unsigned int        height,
+                            TextureFormat       format,
                             bool                mipMapping,
                             bool                optimizeForRenderToTexture,
                             bool                resizeSmoothly,
@@ -111,13 +140,13 @@ namespace minko
 
             static
             void
-            resizeData(unsigned int                 width,
-                       unsigned int                 height,
-                       std::vector<unsigned char>&  data,
-                       unsigned int                 newWidth,
-                       unsigned int                 newHeight,
-                       bool                         resizeSmoothly,
-                       std::vector<unsigned char>&  newData);
+            resizeData(unsigned int width,
+                       unsigned int height,
+                       std::vector<unsigned char>&    data,
+                       unsigned int newWidth,
+                       unsigned int newHeight,
+                       bool resizeSmoothly,
+                       std::vector<unsigned char>&    newData);
 
             uint
             getMipmapWidth(uint level) const;

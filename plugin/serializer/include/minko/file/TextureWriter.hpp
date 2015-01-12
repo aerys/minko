@@ -22,28 +22,38 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/Types.hpp"
 #include "minko/SerializerCommon.hpp"
+#include "minko/file/AbstractWriter.hpp"
 
 namespace minko
 {
     namespace file
     {
-        class TextureWriter
+        class TextureWriter :
+            public AbstractWriter<std::shared_ptr<render::AbstractTexture>>
         {
         public:
-            typedef std::shared_ptr<TextureWriter>                   Ptr;
+            typedef std::shared_ptr<TextureWriter>                                      Ptr;
+
+            typedef std::function<bool(std::shared_ptr<render::AbstractTexture>,
+                                       std::shared_ptr<WriterOptions>,
+                                       std::stringstream& blob)>                        FormatWriterFunction;
 
         private:
-            typedef std::shared_ptr<AssetLibrary>                    AssetLibraryPtr;
-            typedef std::shared_ptr<Options>                         OptionsPtr;
-            typedef std::shared_ptr<WriterOptions>                   WriterOptionsPtr;
-
-            typedef std::shared_ptr<render::Texture>                 TexturePtr;
+            typedef std::shared_ptr<AssetLibrary>       AssetLibraryPtr;
+            typedef std::shared_ptr<Options>            OptionsPtr;
+            typedef std::shared_ptr<Dependency>         DependencyPtr;
+            typedef std::shared_ptr<WriterOptions>      WriterOptionsPtr;
+            typedef std::shared_ptr<render::AbstractTexture>    AbstractTexturePtr;
+            typedef std::shared_ptr<render::Texture>    TexturePtr;
 
         private:
-            serialize::ImageFormat _imageFormat;
-            TexturePtr _data;
+            static std::unordered_map<render::TextureFormat, FormatWriterFunction> _formatWriterFunctions;
+
+            int _headerSize;
 
         public:
+            ~TextureWriter() = default;
+
             inline static
             Ptr
             create()
@@ -51,25 +61,42 @@ namespace minko
                 return std::shared_ptr<TextureWriter>(new TextureWriter());
             }
 
-            void
-            data(TexturePtr data);
-
-            void
-            imageFormat(serialize::ImageFormat imageFormat);
-
-            void
-            writeRawTexture(std::string&        filename,
-                            AssetLibraryPtr     assetLibrary,
-                            OptionsPtr          options,
-                            WriterOptionsPtr    writerOptions);
+            inline
+            int
+            headerSize() const
+            {
+                return _headerSize;
+            }
 
             std::string
-            embedTexture(AssetLibraryPtr        assetLibrary,
-                         OptionsPtr             options,
-                         WriterOptionsPtr       writerOptions);
+            embed(AssetLibraryPtr   assetLibrary,
+                  OptionsPtr        options,
+                  DependencyPtr     dependency,
+                  WriterOptionsPtr  writerOptions);
 
         protected:
             TextureWriter();
+
+        private:
+            static
+            bool
+            writeRGBATexture(AbstractTexturePtr abstractTexture,
+                             WriterOptionsPtr   writerOptions,
+                             std::stringstream& blob);
+
+            static
+            bool
+            writePvrCompressedTexture(render::TextureFormat   textureFormat,
+                                      AbstractTexturePtr      abstractTexture,
+                                      WriterOptionsPtr        writerOptions,
+                                      std::stringstream&      blob);
+
+            static
+            bool
+            writeQCompressedTexture(render::TextureFormat   textureFormat,
+                                    AbstractTexturePtr      abstractTexture,
+                                    WriterOptionsPtr        writerOptions,
+                                    std::stringstream&      blob);
         };
     }
 }

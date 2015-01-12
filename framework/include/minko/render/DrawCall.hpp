@@ -245,7 +245,9 @@ namespace minko
             unbind();
 
             void
-            render(const std::shared_ptr<AbstractContext>& context, AbsTexturePtr renderTarget);
+            render(const std::shared_ptr<AbstractContext>&  context,
+                   AbsTexturePtr                            renderTarget,
+                   const render::ScissorBox&                viewport);
 
             void
             initialize(ContainerPtr                                 data,

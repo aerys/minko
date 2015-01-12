@@ -42,6 +42,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include "SDL_main.h"
 #endif
 
+// Audio only works for HTML5, Windows and Android 
+#if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID)
+# include "minko/SDLAudio.hpp"
+#endif
+
 struct SDL_Window;
 struct SDL_Surface;
 
@@ -54,6 +59,15 @@ namespace minko
     public:
         typedef std::shared_ptr<Canvas>    Ptr;
 
+        typedef enum
+        {
+            FULLSCREEN = (1u << 0),
+            RESIZABLE = (1u << 1),
+            HIDDEN = (1u << 2),
+            CHROMELESS = (1u << 3),
+            STENCIL = (1u << 4)
+        } Flags;
+
     private:
         typedef std::chrono::high_resolution_clock::time_point                  time_point;
         typedef std::shared_ptr<async::Worker>                                  WorkerPtr;
@@ -64,8 +78,7 @@ namespace minko
         uint                                                                    _width;
         uint                                                                    _height;
         std::shared_ptr<data::Provider>                                         _data;
-        bool                                                                    _useStencil;
-        bool                                                                    _chromeless;
+        int                                                                     _flags;
 
         bool                                                                    _active;
         render::AbstractContext::Ptr                                            _context;
@@ -79,11 +92,14 @@ namespace minko
         float                                                                   _framerate;
         float                                                                   _desiredFramerate;
 
+#if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID)
+        std::shared_ptr<SDLAudio>                                               _audio;
+#endif
+        
         std::shared_ptr<SDLMouse>                                               _mouse;
         std::unordered_map<int, std::shared_ptr<SDLJoystick>>                   _joysticks;
         std::shared_ptr<SDLKeyboard>                                            _keyboard;
-        std::shared_ptr<SDLTouch>                                               _touch;     // store any finger activity
-        std::vector<std::shared_ptr<SDLTouch>>                                  _touches;   // keep finger order
+        std::shared_ptr<SDLTouch>                                               _touch;
 
         // Events
         Signal<Ptr, float, float>::Ptr                                          _enterFrame;
@@ -93,11 +109,11 @@ namespace minko
         // Joystick events
         Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr      _joystickAdded;
         Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr      _joystickRemoved;
-        // Finger events
-        Signal<std::shared_ptr<input::Touch>, float>::Ptr                       _touchZoom;
 
         std::list<std::shared_ptr<async::Worker>>                               _activeWorkers;
         std::list<Any>                                                          _workerCompleteSlots;
+
+        bool                                                                    _onWindow;
 
     public:
         static inline
@@ -105,14 +121,9 @@ namespace minko
         create(const std::string&    name,
                const uint            width      = 1280,
                const uint            height     = 720,
-               bool                  useStencil = false,
-               bool                  chromeless = false)
+               int                   flags      = RESIZABLE)
         {
-            auto canvas = std::shared_ptr<Canvas>(new Canvas(name, width, height, useStencil, chromeless));
-
-#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
-            auto that = canvas->shared_from_this();
-#endif
+            auto canvas = std::shared_ptr<Canvas>(new Canvas(name, width, height, flags));
 
             canvas->initialize();
 
@@ -153,6 +164,9 @@ namespace minko
         {
             return _window;
         }
+
+        void*
+        systemWindow() const;
 
         int
         getJoystickAxis(input::Joystick::Ptr joystick, int axis);
@@ -200,28 +214,6 @@ namespace minko
         }
 
         inline
-        std::shared_ptr<input::Touch>
-        touch(uint id)
-        {
-            return id < _touches.size() ? _touches[id] : nullptr;
-        }
-
-        // Multi touch events
-        inline
-        Signal<std::shared_ptr<input::Touch>, float>::Ptr
-        touchZoom()
-        {
-            return _touchZoom;
-        }
-
-        inline
-        uint
-        numTouches()
-        {
-            return _touches.size();
-        }
-
-        inline
         std::shared_ptr<input::Joystick>
         joystick(uint id)
         {
@@ -262,7 +254,7 @@ namespace minko
         {
             return _resized;
         }
-        
+
         inline
         Signal<const std::string&>::Ptr
         fileDropped()
@@ -333,8 +325,7 @@ namespace minko
         Canvas(const std::string&   name,
                const uint           width,
                const uint           height,
-               bool                 useStencil = false,
-               bool                 chromeless = false);
+               int                  flags);
 
         void
         x(uint);

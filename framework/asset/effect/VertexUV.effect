@@ -1,5 +1,5 @@
 {
-	"name"				: "normal",
+	"name"				: "uv",
 
 	"attributeBindings"	: {
 		"position"				: "geometry[${geometryId}].position",

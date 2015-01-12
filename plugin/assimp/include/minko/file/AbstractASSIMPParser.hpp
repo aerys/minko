@@ -99,7 +99,9 @@ namespace minko
             std::unordered_map<std::string, Matrices4x4>            _nameToAnimMatrices;
             std::set<NodePtr>                                        _alreadyAnimatedNodes;
 
-            LoaderToCompleteSlotMap                                    _loaderCompleteSlots;
+            std::set<std::string>                                   _meshNames;
+
+            LoaderToCompleteSlotMap                                 _loaderCompleteSlots;
             LoaderToErrorSlotMap                                    _loaderErrorSlots;
 
             Assimp::Importer*                                       _importer;

@@ -48,7 +48,7 @@ main(int argc, char** argv)
 
     auto canvas = Canvas::create("Minko Example - Line Geometry");
 
-    auto sceneManager = SceneManager::create(canvas->context());
+    auto sceneManager = SceneManager::create(canvas);
     sceneManager->assets()->loader()->queue("effect/Line.effect");
 
     auto root = scene::Node::create("root")

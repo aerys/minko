@@ -37,6 +37,13 @@ namespace minko
             }
 
         public:
+            static
+            float
+            deserializeFloat(std::string& serializedValue)
+            {
+                return deserializeVector<float>(serializedValue)[0];
+            }
+
             template <typename T, typename ST = T>
             static
             std::vector<T>

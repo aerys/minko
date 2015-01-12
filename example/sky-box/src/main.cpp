@@ -37,7 +37,7 @@ int
 main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Example - Skybox");
-    auto sceneManager = SceneManager::create(canvas->context());
+    auto sceneManager = SceneManager::create(canvas);
 
     // setup assets
     auto loader = sceneManager->assets()->loader();
@@ -49,7 +49,7 @@ main(int argc, char** argv)
         ->registerParser<file::JPEGParser>("jpg");
 
     loader
-        ->queue(CUBE_TEXTURE, file::Options::create(loader->options())->isCubeTexture(true))
+        ->queue(CUBE_TEXTURE, loader->options()->clone()->isCubeTexture(true))
         ->queue("effect/Basic.effect");
 
     sceneManager->assets()

@@ -48,8 +48,6 @@ namespace minko
 							.property("clientY", &dom::AbstractDOMMouseEvent::clientY)
 							.property("pageX", &dom::AbstractDOMMouseEvent::pageX)
 							.property("pageY", &dom::AbstractDOMMouseEvent::pageY)
-							.property("layerX", &dom::AbstractDOMMouseEvent::layerX)
-							.property("layerY", &dom::AbstractDOMMouseEvent::layerY)
 							.property("screenX", &dom::AbstractDOMMouseEvent::screenX)
                             .property("screenY", &dom::AbstractDOMMouseEvent::screenY);
 					}

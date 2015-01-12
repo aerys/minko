@@ -111,7 +111,11 @@
 		 		-- assign IDs to every node in the tree
 		 		node.id = xcode.newid(node)
 				
-		 		node.isResource = xcode.isItemResource(prj, node)
+		 		if string.endswith(node.name, "Images.xcassets") then
+		 			node.isResource = true	
+		 		else
+		 			node.isResource = xcode.isItemResource(prj, node)
+		 		end
 				
 		 		-- assign build IDs to buildable files
 		 		if xcode.getbuildcategory(node) then					
@@ -121,7 +125,8 @@
 		 		-- remember key files that are needed elsewhere
 		 		if string.endswith(node.name, "Info.plist") then					
 		 			tr.infoplist = node		 			
-		 		end						
+		 		end
+		 		
 		 	end
 		}, true)
 		

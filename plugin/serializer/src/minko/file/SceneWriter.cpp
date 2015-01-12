@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2013 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -52,7 +52,7 @@ SceneWriter::SceneWriter()
         &typeid(component::PerspectiveCamera),
         std::bind(
             &serialize::ComponentSerializer::serializePerspectiveCamera,
-            std::placeholders::_1, std::placeholders::_2
+            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
         )
     );
 
@@ -60,7 +60,7 @@ SceneWriter::SceneWriter()
         &typeid(component::Transform),
         std::bind(
             &serialize::ComponentSerializer::serializeTransform,
-            std::placeholders::_1, std::placeholders::_2
+            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
         )
     );
 
@@ -68,7 +68,7 @@ SceneWriter::SceneWriter()
         &typeid(component::AmbientLight),
         std::bind(
             &serialize::ComponentSerializer::serializeAmbientLight,
-            std::placeholders::_1, std::placeholders::_2
+            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
         )
     );
 
@@ -76,7 +76,7 @@ SceneWriter::SceneWriter()
         &typeid(component::DirectionalLight),
         std::bind(
             &serialize::ComponentSerializer::serializeDirectionalLight,
-            std::placeholders::_1, std::placeholders::_2
+            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
         )
     );
 
@@ -84,7 +84,7 @@ SceneWriter::SceneWriter()
         &typeid(component::SpotLight),
         std::bind(
             &serialize::ComponentSerializer::serializeSpotLight,
-            std::placeholders::_1, std::placeholders::_2
+            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
         )
     );
 
@@ -92,7 +92,7 @@ SceneWriter::SceneWriter()
         &typeid(component::PointLight),
         std::bind(
             &serialize::ComponentSerializer::serializePointLight,
-            std::placeholders::_1, std::placeholders::_2
+            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
         )
     );
 
@@ -100,7 +100,7 @@ SceneWriter::SceneWriter()
         &typeid(component::Surface),
         std::bind(
             &serialize::ComponentSerializer::serializeSurface,
-            std::placeholders::_1, std::placeholders::_2
+            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
         )
     );
 
@@ -108,7 +108,7 @@ SceneWriter::SceneWriter()
         &typeid(component::Renderer),
         std::bind(
             &serialize::ComponentSerializer::serializeRenderer,
-            std::placeholders::_1, std::placeholders::_2
+            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
         )
     );
 
@@ -116,14 +116,14 @@ SceneWriter::SceneWriter()
         &typeid(component::BoundingBox),
         std::bind(
             &serialize::ComponentSerializer::serializeBoundingBox,
-            std::placeholders::_1, std::placeholders::_2
+            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
         )
     );
 }
 
 void
 SceneWriter::registerComponent(const std::type_info*    componentType,
-                               NodeWriterFunc            readFunction)
+                               NodeWriterFunc           readFunction)
 {
     _componentIdToWriteFunction[componentType] = readFunction;
 }
@@ -134,12 +134,12 @@ SceneWriter::embed(AssetLibraryPtr                      assetLibrary,
                    DependencyPtr                        dependency,
                    std::shared_ptr<WriterOptions>       writerOptions)
 {
-    std::stringstream                                sbuf;
+    std::stringstream                               sbuf;
     std::queue<std::shared_ptr<scene::Node>>        queue;
-    std::vector<SerializedNode>                        nodePack;
+    std::vector<SerializedNode>                     nodePack;
     std::vector<std::string>                        serializedControllerList;
-    std::map<AbsComponentPtr, int>                    controllerMap;
-
+    std::map<AbstractComponentPtr, int>             controllerMap;
+    
     queue.push(data());
 
     while (queue.size() > 0)
@@ -161,15 +161,15 @@ SceneWriter::embed(AssetLibraryPtr                      assetLibrary,
 }
 
 SceneWriter::SerializedNode
-SceneWriter::writeNode(std::shared_ptr<scene::Node>        node,
-                      std::vector<std::string>&            serializedControllerList,
-                      std::map<AbsComponentPtr, int>&    controllerMap,
-                      AssetLibraryPtr                    assetLibrary,
-                      DependencyPtr                        dependency)
+SceneWriter::writeNode(std::shared_ptr<scene::Node>     node,
+                      std::vector<std::string>&         serializedControllerList,
+                      std::map<AbstractComponentPtr, int>&  controllerMap,
+                      AssetLibraryPtr                   assetLibrary,
+                      DependencyPtr                     dependency)
 {
-    std::vector<uint>    componentsId;
-    int                    componentIndex = 0;
-    AbsComponentPtr        currentComponent = node->component<component::AbstractComponent>(0);
+    std::vector<uint>   componentsId;
+    int                 componentIndex = 0;
+    AbstractComponentPtr        currentComponent = node->component<component::AbstractComponent>(0);
 
     while (currentComponent != nullptr)
     {
@@ -184,7 +184,7 @@ SceneWriter::writeNode(std::shared_ptr<scene::Node>        node,
             if (_componentIdToWriteFunction.find(currentComponentType) != _componentIdToWriteFunction.end())
             {
                 index = serializedControllerList.size();
-                serializedControllerList.push_back(_componentIdToWriteFunction[currentComponentType](node, dependency));
+                serializedControllerList.push_back(_componentIdToWriteFunction[currentComponentType](node, currentComponent, dependency));
             }
         }
 

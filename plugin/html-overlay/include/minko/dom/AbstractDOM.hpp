@@ -35,27 +35,27 @@ namespace minko
 
 			virtual
 			void
-			sendMessage(std::string, bool async = true) = 0;
+			sendMessage(const std::string&, bool async = true) = 0;
 
 			virtual
 			void
-			eval(std::string, bool async = true) = 0;
+            eval(const std::string&, bool async = true) = 0;
 
 			virtual
 			AbstractDOMElement::Ptr
-			createElement(std::string) = 0;
+            createElement(const std::string&) = 0;
 
 			virtual
 			AbstractDOMElement::Ptr
-			getElementById(std::string) = 0;
+            getElementById(const std::string&) = 0;
 
 			virtual
 			std::vector<AbstractDOMElement::Ptr>
-			getElementsByClassName(std::string) = 0;
+            getElementsByClassName(const std::string&) = 0;
 
 			virtual
 			std::vector<AbstractDOMElement::Ptr>
-			getElementsByTagName(std::string) = 0;
+            getElementsByTagName(const std::string&) = 0;
 
 			virtual
 			AbstractDOMElement::Ptr

@@ -109,6 +109,7 @@ AbstractASSIMPParser::AbstractASSIMPParser() :
     _nameToNode(),
     _nameToAnimMatrices(),
     _alreadyAnimatedNodes(),
+    _meshNames(),
     _loaderCompleteSlots(),
     _loaderErrorSlots(),
     _importer(nullptr)
@@ -135,12 +136,11 @@ AbstractASSIMPParser::parse(const std::string&                    filename,
 
     int pos = resolvedFilename.find_last_of("\\/");
 
-    options = file::Options::create(options);
+    options = options->clone();
 
     if (pos > 0)
     {
-        options->includePaths().clear();
-        options->includePaths().push_back(resolvedFilename.substr(0, pos));
+        options->includePaths().push_front(resolvedFilename.substr(0, pos));
     }
 
     _filename        = filename;
@@ -148,9 +148,17 @@ AbstractASSIMPParser::parse(const std::string&                    filename,
     _options        = options;
 
     //fixme : find a way to handle loading dependencies asynchronously
-    auto ioHandlerOptions = Options::create(options);
+    auto ioHandlerOptions = options->clone();
     ioHandlerOptions->loadAsynchronously(false);
-    _importer->SetIOHandler(new IOHandler(ioHandlerOptions, _assetLibrary));
+
+    auto ioHandler = new IOHandler(ioHandlerOptions, _assetLibrary);
+
+    ioHandler->errorFunction([this](IOHandler& self, const Error& error) -> void
+    {
+        this->error()->execute(shared_from_this(), error);
+    });
+
+    _importer->SetIOHandler(ioHandler);
 
 #ifdef DEBUG
     std::cout << "AbstractASSIMPParser: preparing to parse" << std::endl;
@@ -418,8 +426,20 @@ AbstractASSIMPParser::createMeshSurface(scene::Node::Ptr     minkoNode,
         return;
 
     const auto    meshName    = getMeshName(std::string(mesh->mName.data));
+    
+    std::string realMeshName = meshName;
+
+    int id = 0;
+
+    while (_meshNames.find(realMeshName) != _meshNames.end())
+    {
+        realMeshName = meshName + "_" + std::to_string(id++);
+    }
+
+    _meshNames.insert(realMeshName);
+
     const auto    aiMat        = scene->mMaterials[mesh->mMaterialIndex];
-    auto        geometry    = createMeshGeometry(minkoNode, mesh, meshName);
+    auto        geometry = createMeshGeometry(minkoNode, mesh, realMeshName);
     auto        material    = createMaterial(aiMat);
     auto        effect        = chooseEffectByShadingMode(aiMat);
 
@@ -427,7 +447,7 @@ AbstractASSIMPParser::createMeshSurface(scene::Node::Ptr     minkoNode,
     {
         minkoNode->addComponent(
             Surface::create(
-                meshName,
+                realMeshName,
                 geometry,
                 material,
                 effect,

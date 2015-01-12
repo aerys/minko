@@ -19,7 +19,7 @@ int main(int argc, char **argv)
 
 	::testing::InitGoogleTest(&argc, argv);
 
-	MinkoTests::context(canvas->context());
+    MinkoTests::canvas(canvas);
 
 	auto output = RUN_ALL_TESTS();
 

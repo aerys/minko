@@ -63,6 +63,9 @@ namespace minko
 			AbstractAnimation::Ptr
 			stop();
 
+            AbstractAnimationPtr
+            seek(uint time);
+
 			AbstractAnimation::Ptr
 			seek(const std::string& labelName);
 

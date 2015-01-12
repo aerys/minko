@@ -56,12 +56,14 @@ namespace minko
             Signal<AbstractComponent::Ptr, NodePtr>::Slot       _targetRemovedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot             _addedSlot;
 
+            std::shared_ptr<AbstractCanvas>                     _canvas;
+
         public:
             inline static
             Ptr
-            create(const std::shared_ptr<render::AbstractContext>& context)
+            create(const std::shared_ptr<AbstractCanvas>& canvas)
             {
-                auto sm = std::shared_ptr<SceneManager>(new SceneManager(context));
+                auto sm = std::shared_ptr<SceneManager>(new SceneManager(canvas));
 
                 sm->initialize();
 
@@ -70,6 +72,13 @@ namespace minko
 
             ~SceneManager()
             {
+            }
+
+            inline
+            std::shared_ptr<AbstractCanvas>
+            canvas()
+            {
+                return _canvas;
             }
 
             inline
@@ -142,7 +151,7 @@ namespace minko
             nextFrame(float time, float deltaTime, AbsTexturePtr target = nullptr);
 
         private:
-            SceneManager(const std::shared_ptr<render::AbstractContext>& context);
+            SceneManager(const std::shared_ptr<AbstractCanvas>& canvas);
 
             void
             targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target);

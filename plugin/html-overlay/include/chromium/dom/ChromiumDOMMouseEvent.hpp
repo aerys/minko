@@ -20,10 +20,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #if defined(CHROMIUM)
 #pragma once
 
+#if MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
+#pragma warning(push)
+#pragma warning(disable:4250)
+#endif
+
 #include "minko/Common.hpp"
 #include "minko/dom/AbstractDOMMouseEvent.hpp"
 #include "minko/dom/AbstractDOMElement.hpp"
 #include "chromium/dom/ChromiumDOMEvent.hpp"
+#include "chromium/dom/ChromiumDOMObject.hpp"
 #include "include/cef_render_process_handler.h"
 
 namespace chromium
@@ -39,7 +45,7 @@ namespace chromium
 
 			~ChromiumDOMMouseEvent();
 
-        private:
+        protected:
 			ChromiumDOMMouseEvent(CefRefPtr<CefV8Value>, CefRefPtr<CefV8Context>);
 			
 		public:
@@ -47,30 +53,53 @@ namespace chromium
 			Ptr
 			create(CefRefPtr<CefV8Value>, CefRefPtr<CefV8Context>);
 
+            inline
 			int
-			clientX();
+            clientX()
+            {
+                return getProperty<int>("clientX");
+            }
 
+            inline
 			int
-			clientY();
+			clientY()
+            {
+                return getProperty<int>("clientY");
+            }
 
+            inline
 			int
-			pageX();
+			pageX()
+            {
+                return getProperty<int>("pageX");
+            }
 
+            inline
+            int
+            pageY()
+            {
+                return getProperty<int>("pageY");
+            }
+            
+            inline
 			int
-			pageY();
+			screenX()
+            {
+                return getProperty<int>("screenX");
+            }
 
+            inline
 			int
-			layerX();
-
-			int
-			layerY();
-
-			int
-			screenX();
-
-			int
-			screenY();
+            screenY()
+            {
+                return getProperty<int>("screenY");
+            }
 		};
 	}
 }
+
+#if MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
+#pragma warning(pop)
+#endif
+
 #endif

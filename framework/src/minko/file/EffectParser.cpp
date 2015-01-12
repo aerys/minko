@@ -193,7 +193,7 @@ EffectParser::parse(const std::string&				    filename,
 
     int pos	= resolvedFilename.find_last_of("/\\");
 
-	_options = file::Options::create(options);
+	_options = options->clone();
 
 	if (pos != std::string::npos)
 		_options->includePaths().push_front(resolvedFilename.substr(0, pos));
@@ -250,7 +250,7 @@ EffectParser::parse(const std::string&				    filename,
 	// the global list of passes becomes the "default" techinque
 	parseTechniques(root, resolvedFilename, _options, context);
 
-    _effect = render::Effect::create();
+    _effect = render::Effect::create(_effectName);
 
 	if (_numDependencies == _numLoadedDependencies)
 		finalize();
@@ -613,13 +613,13 @@ EffectParser::glslIncludeCompleteHandler(LoaderPtr 			        loader,
 
     auto file = loader->files().at(filename);
     auto resolvedFilename = file->resolvedFilename();
-	auto options = Options::create(_options);
+	auto options = _options->clone();
 	auto pos = resolvedFilename.find_last_of("/\\");
 
     //options->includePaths().clear();
 	if (pos != std::string::npos)
 	{
-		options = file::Options::create(options);
+		options = options->clone();
         options->includePaths().push_back(resolvedFilename.substr(0, pos));
 	}
 
@@ -1065,7 +1065,7 @@ EffectParser::parseUniformDefaultValues(const Json::Value&		contextNode,
 
 		if (pos > 0)
 		{
-			options = file::Options::create(_options);
+			options = _options->clone();
 			options->includePaths().push_back(_resolvedFilename.substr(0, pos));
 		}
 
@@ -1087,7 +1087,7 @@ EffectParser::loadTexture(const std::string&	textureFilename,
 						  UniformTypeAndValue&	uniformTypeAndValue,
 						  Options::Ptr			options)
 {
-	Options::Ptr o = Options::create(options);
+	Options::Ptr o = options->clone();
     auto loader = Loader::create(o);
 
 	o->loadAsynchronously(false);

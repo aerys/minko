@@ -24,7 +24,7 @@ main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Example - Water");
 
-    auto sceneManager = SceneManager::create(canvas->context());
+    auto sceneManager = SceneManager::create(canvas);
 
     sceneManager->assets()->loader()->options()
         ->resizeSmoothly(true)

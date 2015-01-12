@@ -28,11 +28,17 @@ namespace minko
     {
         MINKO_DEFINE_WORKER(FileProtocolWorker,
         {
-//#ifdef DEBUG
-            std::cout << "FileProtocolWorker::run(): enter" << std::endl;
-//#endif // defined(DEBUG)
+            auto seekingOffset = (static_cast<int>(static_cast<unsigned char>((input[0]))) << 24) +
+                                 (static_cast<int>(static_cast<unsigned char>((input[1]))) << 16) +
+                                 (static_cast<int>(static_cast<unsigned char>((input[2]))) << 8) + 
+                                 static_cast<int>(static_cast<unsigned char>((input[3])));
 
-            std::string filename(input.begin(), input.end());
+            auto seekedLength = (static_cast<int>(static_cast<unsigned char>((input[4]))) << 24) +
+                                (static_cast<int>(static_cast<unsigned char>((input[5]))) << 16) +
+                                (static_cast<int>(static_cast<unsigned char>((input[6]))) << 8) +
+                                static_cast<int>(static_cast<unsigned char>((input[7])));
+
+			std::string filename(input.begin() + 8, input.end());
 
             std::vector<char> output;
 
@@ -44,9 +50,9 @@ namespace minko
 
             if (file.is_open())
             {
-                uint size = uint(file.tellg());
+				uint length = seekedLength > 0 ? seekedLength : (uint(file.tellg()) - seekingOffset);
 
-                uint chunkSize = math::clp2((size / 50) / 1024);
+				uint chunkSize = math::clp2((length / 50) / 1024);
 
                 if (chunkSize > 1024)
                     chunkSize = 1024;
@@ -55,27 +61,27 @@ namespace minko
 
                 chunkSize *= 1024;
 
-//#ifdef DEBUG
-                std::cout << "FileProtocolWorker::run(): file is open, chunksize " + std::to_string(chunkSize) << std::endl;
-//#endif // defined(DEBUG)
-
-                file.seekg(0, std::ios::beg);
+				file.seekg(seekingOffset, std::ios::beg);
 
                 uint offset = 0;
 
-                while (offset < size)
+				while (offset < length)
                 {
                     uint nextOffset = offset + chunkSize;
                     uint readSize = chunkSize;
 
-                    if (nextOffset > size)
-                        readSize = size % chunkSize;
+					if (nextOffset > length)
+						readSize = length % chunkSize;
 
                     output.resize(offset + readSize);
 
                     file.read(&*output.begin() + offset, readSize);
 
-                    post(Message { "progress" }.set(float(offset + readSize) / float(size)));
+                    auto progress = float(offset + readSize) / float(length);
+
+                    progress *= 100.0;
+
+                    post(Message { "progress" }.set(progress));
 
                     offset = nextOffset;
                 }
@@ -88,10 +94,6 @@ namespace minko
             {
                 post(Message{ "error" });
             }
-
-//#ifdef DEBUG
-            std::cout << "FileProtocolWorker::run(): exit" << std::endl;
-//#endif // defined(DEBUG)
         });
     }
 }

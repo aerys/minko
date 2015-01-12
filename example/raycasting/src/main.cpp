@@ -31,7 +31,7 @@ main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Example - Ray Casting");
 
-    auto sceneManager = SceneManager::create(canvas->context());
+    auto sceneManager = SceneManager::create(canvas);
 
     std::cout << "-----------------------------" << std::endl;
     std::cout << "[R]\ttoogle the raycasting layout mask of the RED box" << std::endl;

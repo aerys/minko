@@ -20,11 +20,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-
-#include "minko/file/AbstractProtocol.hpp"
-
-#include "minko/file/Options.hpp"
+#include "minko/file/AssetLibrary.hpp"
 #include "minko/file/IOStream.hpp"
+#include "minko/file/Loader.hpp"
+#include "minko/file/Options.hpp"
+#include "minko/log/Logger.hpp"
 
 #include "assimp/IOStream.hpp"
 #include "assimp/IOSystem.hpp"
@@ -36,17 +36,16 @@ namespace minko
         class IOHandler :
             public Assimp::IOSystem
         {
-            typedef std::shared_ptr<AbstractProtocol>                       AbsProtocolPtr;
+            typedef std::shared_ptr<Loader>                                 LoaderPtr;
 
-            typedef Signal<AbsProtocolPtr>::Slot                            ProtocolSignalSlot;
+            typedef std::function<void(IOHandler&, const Error&)>           ErrorFunction;
 
-            typedef std::unordered_map<AbsProtocolPtr, ProtocolSignalSlot>    ProtocolToSlotMap;
-            typedef std::unordered_map<uint, std::string>                    TextureTypeToName;
         private:
-            std::shared_ptr<file::Options>            _options;
-            std::shared_ptr<file::AssetLibrary>        _assets;
-            ProtocolToSlotMap                        _protocolCompleteSlots;
-            ProtocolToSlotMap                        _protocolErrorSlots;
+            std::shared_ptr<file::Options>                                          _options;
+            std::shared_ptr<file::AssetLibrary>                                     _assets;
+            ErrorFunction                                                           _errorFunction;
+            std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>                  _loaderCompleteSlots;
+            std::unordered_map<LoaderPtr, Signal<LoaderPtr, const Error&>::Slot>    _loaderErrorSlots;
 
         public:
             IOHandler(std::shared_ptr<file::Options> options, std::shared_ptr<file::AssetLibrary> assets) :
@@ -54,6 +53,12 @@ namespace minko
                 _assets(assets)
             {
 
+            }
+
+            void
+            errorFunction(ErrorFunction errorFunction)
+            {
+                _errorFunction = errorFunction;
             }
 
             void
@@ -83,23 +88,37 @@ namespace minko
             Assimp::IOStream*
             Open(const char* pFile, const char* pMode = "rb")
             {
-                auto filename = std::string(pFile);
-                auto protocol = _options->protocolFunction()(filename);
+                const auto filename = std::string(pFile);
 
-                Assimp::IOStream* stream = 0;
+                auto loader = Loader::create();
 
-                _protocolCompleteSlots[protocol] = protocol->complete()->connect([&](file::AbstractProtocol::Ptr protocol)
+                loader->options(_options);
+
+                _options
+                    ->loadAsynchronously(false)
+                    ->storeDataIfNotParsed(false);
+
+                Assimp::IOStream* stream = nullptr;
+
+                _loaderCompleteSlots[loader] = loader->complete()->connect([&](Loader::Ptr loaderThis)
                 {
-                    stream = new minko::file::IOStream(protocol->file()->data());
-                });
-#ifdef DEBUG
-                _protocolErrorSlots[protocol] = protocol->error()->connect([&](file::AbstractProtocol::Ptr protocol)
-                {
-                    std::cerr << "error: could not load file '" << filename << "'" << std::endl;
-                });
-#endif // defined(DEBUG)
+                    _loaderErrorSlots.erase(loader);
+                    _loaderCompleteSlots.erase(loader);
 
-                protocol->load(filename, _options);
+                    stream = new minko::file::IOStream(loaderThis->files().at(filename)->data());
+                });
+
+                _loaderErrorSlots[loader] = loader->error()->connect([&](Loader::Ptr, const Error& error)
+                {
+                    if (_errorFunction)
+                        _errorFunction(*this, error);
+                    else
+                        throw error;
+                });
+
+                loader
+                    ->queue(filename)
+                    ->load();
 
                 return stream;
             }

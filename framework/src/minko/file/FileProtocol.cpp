@@ -44,52 +44,32 @@ FileProtocol::load()
 
     _runningLoaders.push_back(loader);
 
-    auto filename = _file->filename();
+    const auto& resolvedFilename = this->resolvedFilename();
     auto options = _options;
     auto flags = std::ios::in | std::ios::ate | std::ios::binary;
 
     std::string cleanFilename = "";
 
-    for (uint i = 0; i < filename.length(); ++i)
+    for (uint i = 0; i < resolvedFilename.length(); ++i)
     {
-        if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
+        if (i < resolvedFilename.length() - 2 && resolvedFilename.at(i) == ':' && resolvedFilename.at(i + 1) == '/' && resolvedFilename.at(i + 2) == '/')
         {
             cleanFilename = "";
             i += 2;
             continue;
         }
 
-        cleanFilename += filename.at(i);
+        cleanFilename += resolvedFilename.at(i);
     }
 
     _options = options;
 
-    auto realFilename = options->uriFunction()(File::sanitizeFilename(cleanFilename));
+    auto realFilename = cleanFilename;
 
     std::fstream file(cleanFilename, flags);
 
-    if (!file.is_open())
-    {
-        for (auto path : _options->includePaths())
-        {
-            const auto absolutePrefix = File::getBinaryDirectory() + "/";
-
-            auto testFilename = options->uriFunction()(File::sanitizeFilename(path + '/' + cleanFilename));
-
-            file.open(testFilename, flags);
-
-            if (file.is_open())
-            {
-                realFilename = testFilename;
-                break;
-            }
-        }
-    }
-
     if (file.is_open())
     {
-        resolvedFilename(realFilename);
-
         if (_options->loadAsynchronously() && AbstractCanvas::defaultCanvas() != nullptr
             && AbstractCanvas::defaultCanvas()->isWorkerRegistered("file-protocol"))
         {
@@ -108,6 +88,7 @@ FileProtocol::load()
                 else if (message.type == "progress")
                 {
                     float ratio = *reinterpret_cast<float*>(&*message.data.begin());
+
                     _progress->execute(loader, ratio);
                 }
                 else if (message.type == "error")
@@ -117,22 +98,43 @@ FileProtocol::load()
                 }
             }));
 
-            std::vector<char> input(resolvedFilename().begin(), resolvedFilename().end());
+            auto offset = options->seekingOffset();
+            auto length = options->seekedLength();
+
+            std::vector<char> offsetByteArray(4);
+            offsetByteArray[0] = (offset & 0xff000000) >> 24;
+            offsetByteArray[1] = (offset & 0x00ff0000) >> 16;
+            offsetByteArray[2] = (offset & 0x0000ff00) >> 8;
+            offsetByteArray[3] = (offset & 0x000000ff);
+
+            std::vector<char> lengthByteArray(4);
+            lengthByteArray[0] = (length & 0xff000000) >> 24;
+            lengthByteArray[1] = (length & 0x00ff0000) >> 16;
+            lengthByteArray[2] = (length & 0x0000ff00) >> 8;
+            lengthByteArray[3] = (length & 0x000000ff);
+
+            std::vector<char> input;
+            
+            input.insert(input.end(), offsetByteArray.begin(), offsetByteArray.end());
+            input.insert(input.end(), lengthByteArray.begin(), lengthByteArray.end());
+            input.insert(input.end(), cleanFilename.begin(), cleanFilename.end());
 
             worker->start(input);
         }
         else
         {
-            unsigned int size = (unsigned int)file.tellg();
+            auto offset = options->seekingOffset();
+
+			auto length = options->seekedLength() > 0 ? options->seekedLength() : (unsigned int)file.tellg();
 
             // FIXME: use fixed size buffers and call _progress accordingly
 
             _progress->execute(shared_from_this(), 0.0);
 
-            data().resize(size);
+			data().resize(length);
 
-            file.seekg(0, std::ios::beg);
-            file.read((char*)&data()[0], size);
+			file.seekg(offset, std::ios::beg);
+			file.read((char*)&data()[0], length);
             file.close();
 
             _progress->execute(loader, 1.0);
@@ -143,7 +145,14 @@ FileProtocol::load()
     }
     else
     {
-        std::cout << "FileProtocol::load() : Could not load file " + filename << std::endl;
         _error->execute(shared_from_this());
     }
+}
+
+bool
+FileProtocol::fileExists(const std::string& filename)
+{
+    std::ifstream file(filename, std::ios::in | std::ios::binary);
+
+    return file.is_open();
 }

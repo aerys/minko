@@ -26,6 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/dom/AbstractDOMMouseEvent.hpp"
 #include "minko/dom/AbstractDOMTouchEvent.hpp"
 #include "minko/dom/AbstractDOMElement.hpp"
+#include "chromium/dom/ChromiumDOMObject.hpp"
 #include "chromium/dom/ChromiumDOMElementV8Handler.hpp"
 #include "include/cef_render_process_handler.h"
 
@@ -33,7 +34,8 @@ namespace chromium
 {
 	namespace dom
 	{
-		class ChromiumDOMElement : public minko::dom::AbstractDOMElement,
+		class ChromiumDOMElement : public virtual minko::dom::AbstractDOMElement,
+            public chromium::dom::ChromiumDOMObject,
 			public std::enable_shared_from_this<ChromiumDOMElement>
 		{
 		public:
@@ -42,6 +44,10 @@ namespace chromium
 
 		private:
 			ChromiumDOMElement(CefRefPtr<CefV8Value>, CefRefPtr<CefV8Context>);
+            
+            typedef std::shared_ptr<minko::Signal<std::shared_ptr<minko::dom::AbstractDOMEvent>>>       DOMEventSignal;
+            typedef std::shared_ptr<minko::Signal<std::shared_ptr<minko::dom::AbstractDOMMouseEvent>>>  DOMMouseEventSignal;
+            typedef std::shared_ptr<minko::Signal<std::shared_ptr<minko::dom::AbstractDOMTouchEvent>>>  DOMTouchEventSignal;
 			
 		public:
 
@@ -64,44 +70,97 @@ namespace chromium
 			void
 			clear();
 
-			std::string
-			id();
 
-			void
-			id(std::string);
-
-			std::string
-			className();
-
-			void
-			className(std::string);
-
-			std::string
-			tagName();
-            
-			AbstractDOMElement::Ptr
-			parentNode();
-
-			std::vector<AbstractDOMElement::Ptr>
-			childNodes();
-            			
-			std::string
-			textContent();
-
-			void
-			textContent(std::string content);
-
+            inline
             std::string
-            value();
+            id()
+            {
+                return getProperty<std::string>("id");
+            }
 
+            inline
             void
-            value(const std::string& value);
+            id(const std::string& newId)
+            {
+                setProperty<const std::string&>("id", newId);
+            }
 
-			std::string
-			innerHTML();
+            inline
+            std::string
+            className()
+            {
+                return getProperty<std::string>("className");
+            }
 
-			void
-			innerHTML(std::string html);
+            inline
+            void
+            className(const std::string& newClass)
+            {
+                setProperty<const std::string&>("className", newClass);
+            }
+
+            inline
+            std::string
+            tagName()
+            {
+                return getProperty<std::string>("tagName");
+            }
+
+            inline
+            AbstractDOMElement::Ptr
+            parentNode()
+            {
+                return getProperty<AbstractDOMElement::Ptr>("parentNode");
+            }
+
+            inline
+            std::vector<AbstractDOMElement::Ptr>
+            childNodes()
+            {
+                return getProperty<std::vector<AbstractDOMElement::Ptr>>("childNodes");
+            }
+
+            inline
+            std::string
+            textContent()
+            {
+                return getProperty<std::string>("textContent");
+            }
+
+            inline
+            void
+            textContent(const std::string& content)
+            {
+                setProperty<const std::string&>("textContent", content);
+            }
+
+            inline
+            std::string
+            value()
+            {
+                return getProperty<std::string>("value");
+            }
+
+            inline
+            void
+            value(const std::string& v)
+            {
+                setProperty<const std::string&>("value", v);
+            }
+
+            inline
+            std::string
+            innerHTML()
+            {
+                return getProperty<std::string>("innerHTML");
+            }
+
+            inline
+            void
+            innerHTML(const std::string& html)
+            {
+                setProperty<const std::string&>("innerHTML", html);
+            }
 
 			AbstractDOMElement::Ptr
 			appendChild(AbstractDOMElement::Ptr);
@@ -116,44 +175,53 @@ namespace chromium
 			cloneNode(bool deep);
 
 			std::string
-			getAttribute(std::string name);
+            getAttribute(const std::string& name);
 
 			void
-			setAttribute(std::string name, std::string value);
+            setAttribute(const std::string& name, const std::string& value);
 
 			std::vector<AbstractDOMElement::Ptr>
-			getElementsByTagName(std::string tagName);
+			getElementsByTagName(const std::string& tagName);
 
 
 			std::string
-			style(std::string name);
+			style(const std::string& name);
 
 			void
-			style(std::string name, std::string value);
+			style(const std::string& name, const std::string& value);
 
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr
+			DOMMouseEventSignal
 			onclick();
 
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr
+			DOMMouseEventSignal
 			onmousedown();
 
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr
+			DOMMouseEventSignal
 			onmousemove();
 
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr
+			DOMMouseEventSignal
 			onmouseup();
 
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr
+			DOMMouseEventSignal
 			onmouseout();
 
-			minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>::Ptr
+			DOMMouseEventSignal
 			onmouseover();
 
-            minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr
+            DOMEventSignal
             onchange();
 
-            minko::Signal<minko::dom::AbstractDOMEvent::Ptr>::Ptr
+            DOMEventSignal
             oninput();
+
+            DOMTouchEventSignal
+            ontouchstart();
+
+            DOMTouchEventSignal
+            ontouchend();
+
+            DOMTouchEventSignal
+            ontouchmove();
 
 			static
 			void
@@ -165,15 +233,6 @@ namespace chromium
 
 		private:
 
-			CefRefPtr<CefV8Value>
-			getFunction(std::string name);
-
-			CefRefPtr<CefV8Value>
-			getProperty(std::string name);
-
-			void
-			setProperty(std::string name, CefRefPtr<CefV8Value>);
-
 			void
 			addEventListener(std::string type);
 
@@ -184,19 +243,21 @@ namespace chromium
 
 			static
 			std::map<Ptr, CefRefPtr<CefV8Value>> _elementToV8Object;
+            
+            DOMEventSignal       _onchange;
+            DOMEventSignal       _oninput;
 
-			std::atomic<bool>	_blocker;
-
-            std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>>      _onchange;
-            std::shared_ptr<minko::Signal<minko::dom::AbstractDOMEvent::Ptr>>      _oninput;
-
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onclick;
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onmousedown;
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onmousemove;
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onmouseup;
+			DOMMouseEventSignal  _onclick;
+			DOMMouseEventSignal  _onmousedown;
+			DOMMouseEventSignal  _onmousemove;
+			DOMMouseEventSignal  _onmouseup;
 			
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onmouseover;
-			std::shared_ptr<minko::Signal<minko::dom::AbstractDOMMouseEvent::Ptr>> _onmouseout;
+			DOMMouseEventSignal  _onmouseover;
+			DOMMouseEventSignal  _onmouseout;
+            
+            DOMTouchEventSignal  _ontouchstart;
+            DOMTouchEventSignal  _ontouchend;
+            DOMTouchEventSignal  _ontouchmove;
 
             bool _onchangeCallbackSet;
             bool _oninputCallbackSet;
@@ -209,9 +270,11 @@ namespace chromium
 			bool _onmouseoverCallbackSet;
 			bool _onmouseoutCallbackSet;
 
+			bool _ontouchstartCallbackSet;
+			bool _ontouchendCallbackSet;
+			bool _ontouchmoveCallbackSet;
+
 			CefRefPtr<ChromiumDOMElementV8Handler> _v8Handler;
-			CefRefPtr<CefV8Value> _v8NodeObject;
-			CefRefPtr<CefV8Context> _v8Context;
 
 			static std::list<std::function<void()>>	_functionList;
 			static std::mutex _functionListMutex;

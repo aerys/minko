@@ -69,9 +69,17 @@ DevILParser::parse(const std::string&                 filename,
     auto bmpData = ilGetData();
     checkError();
 
-    auto texture = render::Texture::create(options->context(), ilGetInteger(IL_IMAGE_WIDTH), ilGetInteger(IL_IMAGE_HEIGHT), options->generateMipmaps());
+    auto texture = render::Texture::create(
+        options->context(),
+        ilGetInteger(IL_IMAGE_WIDTH),
+        ilGetInteger(IL_IMAGE_HEIGHT),
+        options->generateMipmaps(),
+        false,
+        true,
+        format == IL_RGBA ? minko::render::TextureFormat::RGBA : minko::render::TextureFormat::RGB
+    );
 
-    texture->data(bmpData, format == IL_RGBA ? minko::render::TextureFormat::RGBA : minko::render::TextureFormat::RGB);
+    texture->data(bmpData);
     texture->upload();
 
     AssetLibrary->texture(filename, texture);

@@ -24,14 +24,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/AbstractTexture.hpp"
 #include "minko/data/StructureProvider.hpp"
 #include "minko/data/Container.hpp"
+#include "minko/AbstractCanvas.hpp"
 
 using namespace minko;
 using namespace minko::component;
 
-SceneManager::SceneManager(const std::shared_ptr<render::AbstractContext>& context) :
+SceneManager::SceneManager(const std::shared_ptr<AbstractCanvas>& canvas) :
+    _canvas(canvas),
     _frameId(0),
     _time(0.f),
-    _assets(file::AssetLibrary::create(context)),
+    _assets(file::AssetLibrary::create(canvas->context())),
     _frameBegin(Signal<Ptr, float, float>::create()),
     _frameEnd(Signal<Ptr, float, float>::create()),
     _cullBegin(Signal<Ptr>::create()),
@@ -67,7 +69,8 @@ SceneManager::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
     if (target->components<SceneManager>().size() > 1)
         throw std::logic_error("The same root node cannot have more than one SceneManager.");
 
-    target->data()->addProvider(_data);
+	target->data()->addProvider(_data);
+    target->data()->addProvider(_canvas->data());
 
     _addedSlot = target->added()->connect(std::bind(
         &SceneManager::addedHandler,
@@ -82,7 +85,8 @@ void
 SceneManager::targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 {
     _addedSlot = nullptr;
-    target->data()->removeProvider(_data);
+	target->data()->removeProvider(_data);
+    target->data()->removeProvider(_canvas->data());
 }
 
 void

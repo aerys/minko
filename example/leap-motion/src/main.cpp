@@ -30,7 +30,7 @@ main(int argc, char** argv)
     auto canvas         = Canvas::create("Minko Example - Leap Motion");
 
     // scene set-up
-    auto sceneManager   = SceneManager::create(render::OpenGLES2Context::create());
+    auto sceneManager   = SceneManager::create(canvas);
 
     auto sceneNode      = Node::create("engine")
         ->addComponent(Transform::create());

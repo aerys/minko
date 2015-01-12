@@ -106,9 +106,11 @@ namespace minko
 			AbstractComponent::Ptr
 			clone(const CloneOption& option) = 0;
 
+            virtual
 			Ptr
 			seek(uint time);
 
+            virtual
 			Ptr
 			seek(const std::string&);
 

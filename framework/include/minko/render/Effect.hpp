@@ -43,6 +43,8 @@ namespace minko
             typedef Signal<Ptr, const std::string&, const std::string&>::Ptr    TechniqueChangedSignalPtr;
 
         private:
+            std::string                                                         _name;
+
             std::unordered_map<std::string, Technique>                          _techniques;
             std::unordered_map<std::string, std::string>                        _fallback;
             std::shared_ptr<data::Provider>                                     _data;
@@ -55,20 +57,27 @@ namespace minko
         public:
             inline static
             Ptr
-            create()
+            create(const std::string& name = "")
             {
-                return std::shared_ptr<Effect>(new Effect());
+                return std::shared_ptr<Effect>(new Effect(name));
             }
 
             inline static
             Ptr
-            create(std::vector<PassPtr>& passes)
+            create(std::vector<PassPtr>& passes, const std::string& name = "")
             {
-                auto effect = create();
+                auto effect = create(name);
 
                 effect->_techniques["default"] = passes;
 
                 return effect;
+            }
+
+            inline
+            std::string
+            name()
+            {
+                return _name;
             }
 
             inline
@@ -213,7 +222,7 @@ namespace minko
             removeTechnique(const std::string& name);
 
         private:
-            Effect();
+            Effect(const std::string& name);
 
             template <typename... T>
             inline static

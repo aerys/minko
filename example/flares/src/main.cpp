@@ -34,7 +34,7 @@ main(int argc, char** argv)
 {
     auto canvas         = Canvas::create("Minko Example - Flares");
     auto context        = canvas->context();
-    auto sceneManager   = SceneManager::create(canvas->context());
+    auto sceneManager   = SceneManager::create(canvas);
     auto assets         = sceneManager->assets();
     auto defaultLoader  = assets->loader();
     auto root           = scene::Node::create("root")->addComponent(sceneManager);
@@ -46,7 +46,7 @@ main(int argc, char** argv)
         ->registerParser<file::JPEGParser>("jpg");
 
     defaultLoader
-        ->queue("texture/skybox.jpg", file::Options::create(defaultLoader->options())->isCubeTexture(true))
+        ->queue("texture/skybox.jpg", defaultLoader->options()->clone()->isCubeTexture(true))
         ->queue("texture/sprite-pointlight.png")
         ->queue("effect/PseudoLensFlare/PseudoLensFlare.effect")
         ->queue("effect/Basic.effect")

@@ -63,6 +63,7 @@ JPEGParser::parse(const std::string&                filename,
             options->generateMipmaps(),
             false,
             options->resizeSmoothly(),
+            format,
             filename
         );
 
@@ -78,6 +79,7 @@ JPEGParser::parse(const std::string&                filename,
             options->generateMipmaps(),
             false,
             options->resizeSmoothly(),
+            format,
             filename
         );
 
@@ -85,8 +87,10 @@ JPEGParser::parse(const std::string&                filename,
         assetLibrary->cubeTexture(filename, cubeTexture);
     }
 
-    texture->data(bmpData, format);
+    texture->data(bmpData);
     texture->upload();
+    if (options->disposeTextureAfterLoading())
+        texture->disposeData();
 
     free(bmpData);
 

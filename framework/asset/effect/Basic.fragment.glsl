@@ -31,10 +31,10 @@ void main(void)
 		diffuse.a = texture2D(alphaMap, vertexUV).r;
 	#endif // ALPHA_MAP
 
-	//#ifdef ALPHA_THRESHOLD
+	#ifdef ALPHA_THRESHOLD
 		if (diffuse.a < alphaThreshold)
 			discard;
-	//#endif // ALPHA_THRESHOLD
+	#endif // ALPHA_THRESHOLD
 	
 	gl_FragColor = fog_sampleFog(diffuse, gl_FragCoord);
 }

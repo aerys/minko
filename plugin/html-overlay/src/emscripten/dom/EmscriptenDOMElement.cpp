@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "emscripten/dom/EmscriptenDOMElement.hpp"
 #include "emscripten/dom/EmscriptenDOMMouseEvent.hpp"
+#include "emscripten/dom/EmscriptenDOMTouchEvent.hpp"
 #include "emscripten/dom/EmscriptenDOM.hpp"
 #include "minko/dom/AbstractDOMMouseEvent.hpp"
 #include "emscripten/emscripten.h"
@@ -39,7 +40,7 @@ EmscriptenDOMElement::domElements;
 std::map<std::string,EmscriptenDOMElement::Ptr>
 EmscriptenDOMElement::_accessorToElement;
 
-EmscriptenDOMElement::EmscriptenDOMElement(std::string jsAccessor) :
+EmscriptenDOMElement::EmscriptenDOMElement(const std::string& jsAccessor) :
 	_jsAccessor(jsAccessor),
 	_onclick(Signal<AbstractDOMMouseEvent::Ptr>::create()),
 	_onmousedown(Signal<AbstractDOMMouseEvent::Ptr>::create()),
@@ -47,6 +48,11 @@ EmscriptenDOMElement::EmscriptenDOMElement(std::string jsAccessor) :
 	_onmouseup(Signal<AbstractDOMMouseEvent::Ptr>::create()),
 	_onmouseover(Signal<AbstractDOMMouseEvent::Ptr>::create()),
 	_onmouseout(Signal<AbstractDOMMouseEvent::Ptr>::create()),
+	_oninput(Signal<AbstractDOMEvent::Ptr>::create()),
+	_onchange(Signal<AbstractDOMEvent::Ptr>::create()),
+	_ontouchstart(Signal<AbstractDOMTouchEvent::Ptr>::create()),
+	_ontouchend(Signal<AbstractDOMTouchEvent::Ptr>::create()),
+	_ontouchmove(Signal<AbstractDOMTouchEvent::Ptr>::create()),
 	_onclickSet(false),
 	_onmousedownSet(false),
 	_onmousemoveSet(false),
@@ -54,7 +60,10 @@ EmscriptenDOMElement::EmscriptenDOMElement(std::string jsAccessor) :
 	_onmouseoverSet(false),
 	_onmouseoutSet(false),
     _onchangeSet(false),
-    _oninputSet(false)
+    _oninputSet(false),
+    _ontouchstartSet(false),
+    _ontouchmoveSet(false),
+    _ontouchendSet(false)
 {
 	std::string eval = jsAccessor + ".minkoName = '" + jsAccessor + "';";
 	emscripten_run_script(eval.c_str());
@@ -62,7 +71,7 @@ EmscriptenDOMElement::EmscriptenDOMElement(std::string jsAccessor) :
 
 
 EmscriptenDOMElement::Ptr
-EmscriptenDOMElement::getDOMElement(std::string jsElement)
+EmscriptenDOMElement::getDOMElement(const std::string& jsElement)
 {
 	std::string eval = "if (" + jsElement + ".minkoName) (" + jsElement + ".minkoName); else ('');";
 	std::string minkoName = std::string(emscripten_run_script_string(eval.c_str()));
@@ -86,7 +95,7 @@ EmscriptenDOMElement::getDOMElement(std::string jsElement)
 }
 
 EmscriptenDOMElement::Ptr
-EmscriptenDOMElement::create(std::string jsAccessor)
+EmscriptenDOMElement::create(const std::string& jsAccessor)
 {
 	EmscriptenDOMElement::Ptr element(new EmscriptenDOMElement(jsAccessor));
 	domElements.push_back(element);
@@ -109,7 +118,7 @@ EmscriptenDOMElement::id()
 }
 
 void
-EmscriptenDOMElement::id(std::string newId)
+EmscriptenDOMElement::id(const std::string& newId)
 {
 	std::string eval = _jsAccessor + ".id = '" + newId + "';";
 	emscripten_run_script(eval.c_str());
@@ -124,7 +133,7 @@ EmscriptenDOMElement::className()
 }
 
 void
-EmscriptenDOMElement::className(std::string newClassName)
+EmscriptenDOMElement::className(const std::string& newClassName)
 {
 	std::string eval = _jsAccessor + ".className = '" + newClassName + "';";
 	emscripten_run_script(eval.c_str());
@@ -162,7 +171,7 @@ EmscriptenDOMElement::textContent()
 }
 
 void
-EmscriptenDOMElement::textContent(std::string newTextContent)
+EmscriptenDOMElement::textContent(const std::string& newTextContent)
 {
 	std::string eval = _jsAccessor + ".textContent = '" + newTextContent + "';";
 	emscripten_run_script(eval.c_str());
@@ -192,7 +201,7 @@ EmscriptenDOMElement::innerHTML()
 }
 
 void
-EmscriptenDOMElement::innerHTML(std::string newInnerHTML)
+EmscriptenDOMElement::innerHTML(const std::string& newInnerHTML)
 {
 	std::string eval = _jsAccessor + ".innerHTML = '" + newInnerHTML + "';";
 	emscripten_run_script(eval.c_str());
@@ -239,7 +248,7 @@ EmscriptenDOMElement::cloneNode(bool deep)
 }
 
 std::string
-EmscriptenDOMElement::getAttribute(std::string name)
+EmscriptenDOMElement::getAttribute(const std::string& name)
 {
 	std::string eval = "(" + _jsAccessor + ".getAttribute('" + name + "'))";
 	char* result = emscripten_run_script_string(eval.c_str());
@@ -247,21 +256,21 @@ EmscriptenDOMElement::getAttribute(std::string name)
 }
 
 void
-EmscriptenDOMElement::setAttribute(std::string name, std::string value)
+EmscriptenDOMElement::setAttribute(const std::string& name, const std::string& value)
 {
 	std::string eval = _jsAccessor + ".setAttribute('" + name + "', '" + value + "');";
 	emscripten_run_script(eval.c_str());
 }
 
 std::vector<minko::dom::AbstractDOMElement::Ptr>
-EmscriptenDOMElement::getElementsByTagName(std::string tagName)
+EmscriptenDOMElement::getElementsByTagName(const std::string& tagName)
 {
 	return (EmscriptenDOM::getElementList(_jsAccessor + ".getElementsByTagName('" + tagName + "')"));
 }
 
 
 std::string
-EmscriptenDOMElement::style(std::string name)
+EmscriptenDOMElement::style(const std::string& name)
 {
 	std::string eval = "(" + _jsAccessor + ".style." + name + ")";
 	char* result = emscripten_run_script_string(eval.c_str());
@@ -269,14 +278,14 @@ EmscriptenDOMElement::style(std::string name)
 }
 
 void
-EmscriptenDOMElement::style(std::string name, std::string value)
+EmscriptenDOMElement::style(const std::string& name, const std::string& value)
 {
 	std::string eval = _jsAccessor + ".style." + name + " = '" + value + "';";
 	emscripten_run_script(eval.c_str());
 }
 
 void
-EmscriptenDOMElement::addEventListener(std::string type)
+EmscriptenDOMElement::addEventListener(const std::string& type)
 {
 	std::string eval = "Minko.addListener(" + _jsAccessor + ", '" + type + "');";
 
@@ -379,6 +388,42 @@ EmscriptenDOMElement::oninput()
     return _oninput;
 }
 
+Signal<std::shared_ptr<AbstractDOMTouchEvent>>::Ptr
+EmscriptenDOMElement::ontouchstart()
+{
+    if (!_ontouchstartSet)
+    {
+        addEventListener("touchstart");
+        _ontouchstartSet = true;
+    }
+
+    return _ontouchstart;
+}
+
+Signal<std::shared_ptr<AbstractDOMTouchEvent>>::Ptr
+EmscriptenDOMElement::ontouchend()
+{
+    if (!_ontouchendSet)
+    {
+        addEventListener("touchstart");
+        _ontouchendSet = true;
+    }
+
+    return _ontouchend;
+}
+
+Signal<std::shared_ptr<AbstractDOMTouchEvent>>::Ptr
+EmscriptenDOMElement::ontouchmove()
+{
+    if (!_ontouchmoveSet)
+    {
+        addEventListener("touchmove");
+        _ontouchmoveSet = true;
+    }
+
+    return _ontouchmove;
+}
+
 void
 EmscriptenDOMElement::update()
 {
@@ -411,6 +456,23 @@ EmscriptenDOMElement::update()
 			_onmouseover->execute(EmscriptenDOMMouseEvent::create(eventName));
 		else if (type == "mouseout")
 			_onmouseout->execute(EmscriptenDOMMouseEvent::create(eventName));
+		else if (type.substr(0, 5) == "touch")
+		{
+            std::string js = eventName + ".changedTouches.length";
+            int l = emscripten_run_script_int(js.c_str());
+
+            for (auto i = 0; i < l; i++)
+            {
+            	auto touchEvent = EmscriptenDOMTouchEvent::create(eventName, i);
+            	
+            	if (type == "touchstart")
+					_ontouchstart->execute(touchEvent);
+				else if (type == "touchend")
+					_ontouchend->execute(touchEvent);
+				else if (type == "touchmove")
+					_ontouchmove->execute(touchEvent); 
+            }
+        }
 	}
 
 	eval = "Minko.clearEvents(" + _jsAccessor + ");";

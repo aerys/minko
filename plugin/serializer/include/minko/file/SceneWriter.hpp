@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2013 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -44,21 +44,21 @@ namespace minko
             typedef msgpack::type::tuple<std::string, uint, uint, std::vector<uint>, std::string>   SerializedNode;
 
         private:
-            typedef std::shared_ptr<file::Dependency>                    DependencyPtr;
-            typedef std::shared_ptr<scene::Node>                         NodePtr;
-            typedef std::function<std::string(NodePtr, DependencyPtr)>   NodeWriterFunc;
-            typedef std::shared_ptr<component::AbstractComponent>        AbsComponentPtr;
-            typedef std::shared_ptr<file::AssetLibrary>                  AssetLibraryPtr;
-            typedef std::shared_ptr<Options>                             OptionsPtr;
+            typedef std::shared_ptr<file::Dependency>                   DependencyPtr;
+            typedef std::shared_ptr<scene::Node>                        NodePtr;
+            typedef std::shared_ptr<component::AbstractComponent>       AbstractComponentPtr;
+            typedef std::function<std::string(NodePtr, AbstractComponentPtr, DependencyPtr)>    NodeWriterFunc;
+            typedef std::shared_ptr<file::AssetLibrary>                 AssetLibraryPtr;
+            typedef std::shared_ptr<Options>                            OptionsPtr;
 
         private:
-            static std::map<const std::type_info*, NodeWriterFunc>       _componentIdToWriteFunction;
+            static std::map<const std::type_info*, NodeWriterFunc> _componentIdToWriteFunction;
 
         public:
             static
             void
-            registerComponent(const std::type_info*     componentType,
-                              NodeWriterFunc            readFunction);
+            registerComponent(const std::type_info* componentType,
+                              NodeWriterFunc        readFunction);
 
             inline static
             Ptr
@@ -74,11 +74,11 @@ namespace minko
                   std::shared_ptr<WriterOptions>        writerOptions);
 
             SerializedNode
-            writeNode(std::shared_ptr<scene::Node>      node,
-                      std::vector<std::string>&         serializedControllerList,
-                      std::map<AbsComponentPtr, int>&   controllerMap,
-                      AssetLibraryPtr                   assetLibrary,
-                      DependencyPtr                     dependency);
+            writeNode(std::shared_ptr<scene::Node>          node,
+                      std::vector<std::string>&             serializedControllerList,
+                      std::map<AbstractComponentPtr, int>&  controllerMap,
+                      AssetLibraryPtr                       assetLibrary,
+                      DependencyPtr                         dependency);
 
         private :
             inline

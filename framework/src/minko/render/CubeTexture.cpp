@@ -27,11 +27,22 @@ using namespace minko::render;
 CubeTexture::CubeTexture(AbstractContext::Ptr    context,
                          unsigned int            width,
                          unsigned int            height,
+                         TextureFormat           format,
                          bool                    mipMapping,
                          bool                    optimizeForRenderToTexture,
                          bool                    resizeSmoothly,
-                         const std::string&        filename) :
-    AbstractTexture(TextureType::CubeTexture, context, width, height, mipMapping, optimizeForRenderToTexture, resizeSmoothly, filename),
+                         const std::string&      filename) :
+    AbstractTexture(
+        TextureType::CubeTexture,
+        context,
+        width,
+        height,
+        format,
+        mipMapping,
+        optimizeForRenderToTexture,
+        resizeSmoothly,
+        filename
+    ),
     _data(std::vector<std::vector<unsigned char>>(6))
 {
     // keep only the GPU relevant size of each face
@@ -41,7 +52,6 @@ CubeTexture::CubeTexture(AbstractContext::Ptr    context,
 
 void
 CubeTexture::data(unsigned char*    data,
-                  TextureFormat        format,
                   int                ,
                   int                )
 {
@@ -77,13 +87,13 @@ CubeTexture::data(unsigned char*    data,
             {
                 unsigned int xy = x + _width * y;
 
-                if (format == TextureFormat::RGBA)
+                if (_format == TextureFormat::RGBA)
                 {
                     xy <<= 2;
                     for (unsigned int k = 0; k < 4; ++k)
                         rgba[idx++] = data[xy++];
                 }
-                else if (format == TextureFormat::RGB)
+                else if (_format == TextureFormat::RGB)
                 {
                     xy *= 3;
                     for (unsigned int k = 0; k < 3; ++k)
@@ -97,6 +107,28 @@ CubeTexture::data(unsigned char*    data,
 
         resizeData(faceWidth, faceHeight, rgba, _widthGPU, _heightGPU, _resizeSmoothly, _data[faceId]);
     }
+}
+
+void
+CubeTexture::resize(unsigned int width, unsigned int height, bool resizeSmoothly)
+{
+    assert(math::isp2(width) && math::isp2(height));
+
+    const auto previousWidth = this->width();
+    const auto previousHeight = this->height();
+
+    for (int faceId = 0; faceId < 6; ++faceId)
+    {
+        auto previousData = _data[faceId];
+
+        resizeData(previousWidth, previousHeight, previousData, width, height, resizeSmoothly, _data[faceId]);
+    }
+
+    _width = width << 2;
+    _widthGPU = width;
+
+    _height = height * 3;
+    _heightGPU = height;
 }
 
 void

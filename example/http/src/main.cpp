@@ -41,7 +41,7 @@ main(int argc, char** argv)
     canvas->registerWorker<net::HTTPWorker>("http");
 #endif
 
-    auto sceneManager = SceneManager::create(canvas->context());
+    auto sceneManager = SceneManager::create(canvas);
     auto defaultOptions = sceneManager->assets()->loader()->options();
 
     defaultOptions

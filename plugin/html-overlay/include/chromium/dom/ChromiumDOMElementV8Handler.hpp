@@ -22,7 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Signal.hpp"
 #include "minko/dom/AbstractDOMMouseEvent.hpp"
-#include "chromium/dom/ChromiumDOMMouseEvent.hpp"
+#include "chromium/dom/ChromiumDOMTouchEvent.hpp"
 #include "include/cef_render_process_handler.h"
 
 namespace chromium

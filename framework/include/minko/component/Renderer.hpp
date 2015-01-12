@@ -68,6 +68,7 @@ namespace minko
             Signal<Ptr>::Ptr                                                    _renderingEnd;
             Signal<Ptr>::Ptr                                                    _beforePresent;
             AbsTexturePtr                                                       _renderTarget;
+            bool                                                                _clearBeforeRender;
 
             std::set<std::shared_ptr<Surface>>                                  _toCollect;
             EffectPtr                                                           _effect;
@@ -221,6 +222,20 @@ namespace minko
             target(AbsTexturePtr target)
             {
                 _renderTarget = target;
+            }
+
+            inline
+            bool
+            clearBeforeRender()
+            {
+                return _clearBeforeRender;
+            }
+
+            inline
+            void
+            clearBeforeRender(bool value)
+            {
+                _clearBeforeRender = value;
             }
 
             inline

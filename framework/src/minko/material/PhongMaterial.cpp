@@ -41,9 +41,8 @@ PhongMaterial::initialize()
     BasicMaterial::initialize();
 
     specularColor(0xffffffff);
-    shininess(8.0f);
+    shininess(64.0f);
     environmentAlpha(1.0f);
-    alphaThreshold(1.0f);
 
     set("environmentMap2dType", int(EnvironmentMap2dType::Unset));
 }

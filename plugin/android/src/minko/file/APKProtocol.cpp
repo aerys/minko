@@ -34,57 +34,33 @@ APKProtocol::APKProtocol()
 void
 APKProtocol::load()
 {
-    auto filename = _file->filename();
+    auto resolvedFilename = this->resolvedFilename();
+
     auto options = _options;
 
-    std::string cleanFilename = "";
+    auto protocolPrefixPosition = resolvedFilename.find("://");
 
-    for(uint i = 0; i < filename.length(); ++i)
+    if (protocolPrefixPosition != std::string::npos)
     {
-        if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
-        {
-            cleanFilename = "";
-            i += 2;
-            continue;
-        }
-
-        cleanFilename += filename.at(i);
+        resolvedFilename = resolvedFilename.substr(protocolPrefixPosition + 3);
     }
-
-    cleanFilename = File::canonizeFilename(cleanFilename);
 
     _options = options;
 
-    auto realFilename = options->uriFunction()(File::sanitizeFilename(cleanFilename));
-
-    SDL_RWops* file = SDL_RWFromFile(cleanFilename.c_str(), "rb");
-
-    if (!file)
-        for (auto path : _options->includePaths())
-        {
-            auto testFilename = options->uriFunction()(File::sanitizeFilename(path + '/' + cleanFilename));
-
-            file = SDL_RWFromFile(testFilename.c_str(), "rb");
-            if (file)
-            {
-                realFilename = testFilename;
-                break;
-            }
-        }
+    SDL_RWops* file = SDL_RWFromFile(resolvedFilename.c_str(), "rb");
 
     auto loader = shared_from_this();
 
     if (file)
     {
-        resolvedFilename(realFilename);
-
-        unsigned int size = file->size(file);
+        auto offset = options->seekingOffset();
+        auto size = options->seekedLength() > 0 ? options->seekedLength() : file->size(file);
 
         _progress->execute(shared_from_this(), 0.0);
 
         data().resize(size);
 
-        file->seek(file, RW_SEEK_SET, 0);
+        file->seek(file, offset, RW_SEEK_SET);
         file->read(file, (char*) &data()[0], size, 1);
         file->close(file);
 
@@ -96,4 +72,21 @@ APKProtocol::load()
     {
         _error->execute(shared_from_this());
     }
+}
+
+bool
+APKProtocol::fileExists(const std::string& filename)
+{
+    auto resolvedFilename = filename;
+
+    auto protocolPrefixPosition = resolvedFilename.find("://");
+
+    if (protocolPrefixPosition != std::string::npos)
+    {
+        resolvedFilename = filename.substr(protocolPrefixPosition + 3);
+    }
+
+    auto file = SDL_RWFromFile(resolvedFilename.c_str(), "rb");
+
+    return file != nullptr;
 }

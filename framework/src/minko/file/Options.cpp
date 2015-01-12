@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/material/Material.hpp"
 #include "minko/file/AbstractProtocol.hpp"
 #include "minko/file/AssetLibrary.hpp"
+#include "minko/log/Logger.hpp"
 
 #ifdef __APPLE__
 # include "CoreFoundation/CoreFoundation.h"
@@ -45,10 +46,13 @@ Options::Options() :
     _disposeIndexBufferAfterLoading(false),
     _disposeVertexBufferAfterLoading(false),
     _disposeTextureAfterLoading(false),
+    _storeDataIfNotParsed(true),
     _skinningFramerate(30),
     _skinningMethod(component::SkinningMethod::HARDWARE),
     _material(nullptr),
-    _effect(nullptr)
+    _effect(nullptr),
+    _seekingOffset(0),
+    _seekedLength(0)
 {
     auto binaryDir = File::getBinaryDirectory();
 
@@ -60,6 +64,63 @@ Options::Options() :
 
     initializePlatforms();
     initializeUserFlags();
+}
+
+Options::Options(const Options& copy) :
+    _context(copy._context),
+    _assets(copy._assets),
+    _includePaths(copy._includePaths),
+    _platforms(copy._platforms),
+    _userFlags(copy._userFlags),
+    _parsers(copy._parsers),
+    _protocols(copy._protocols),
+    _generateMipMaps(copy._generateMipMaps),
+    _resizeSmoothly(copy._resizeSmoothly),
+    _isCubeTexture(copy._isCubeTexture),
+    _startAnimation(copy._startAnimation),
+    _disposeIndexBufferAfterLoading(copy._disposeIndexBufferAfterLoading),
+    _disposeVertexBufferAfterLoading(copy._disposeVertexBufferAfterLoading),
+    _disposeTextureAfterLoading(copy._disposeTextureAfterLoading),
+    _storeDataIfNotParsed(copy._storeDataIfNotParsed),
+    _skinningFramerate(copy._skinningFramerate),
+    _skinningMethod(copy._skinningMethod),
+    _effect(copy._effect),
+    _textureFormats(copy._textureFormats),
+    _material(copy._material),
+    _materialFunction(copy._materialFunction),
+    _geometryFunction(copy._geometryFunction),
+    _protocolFunction(copy._protocolFunction),
+    _parserFunction(copy._parserFunction),
+    _uriFunction(copy._uriFunction),
+    _nodeFunction(copy._nodeFunction),
+    _effectFunction(copy._effectFunction),
+    _textureFormatFunction(copy._textureFormatFunction),
+    _loadAsynchronously(copy._loadAsynchronously),
+    _seekingOffset(copy._seekingOffset),
+    _seekedLength(copy._seekedLength)
+{
+}
+
+Options::Ptr
+Options::clone()
+{
+    auto copy = Ptr(new Options(*this));
+
+    copy->initialize();
+
+    return copy;
+}
+
+void
+Options::initialize()
+{
+    initializeDefaultFunctions();
+    
+    if (_parsers.find("effect") == _parsers.end())
+        registerParser<file::EffectParser>("effect");
+
+    if (_protocols.find("file") == _protocols.end())
+        registerProtocol<FileProtocol>("file");
 }
 
 void
@@ -91,6 +152,9 @@ Options::initializeUserFlags()
 AbstractParser::Ptr
 Options::getParser(const std::string& extension)
 {
+    if (_parserFunction)
+        return _parserFunction(extension);
+
     return _parsers.count(extension) == 0 ? nullptr : _parsers[extension]();
 }
 
@@ -100,7 +164,7 @@ Options::getProtocol(const std::string& protocol)
     auto p = _protocols.count(protocol) == 0 ? nullptr : _protocols[protocol]();
 
     if (p)
-        p->options(Options::create(p->options()));
+        p->options(p->options()->clone());
 
     return p;
 }
@@ -116,40 +180,104 @@ Options::initializeDefaultFunctions()
 {
     auto options = shared_from_this();
 
-    _materialFunction = [](const std::string&, material::Material::Ptr material) -> material::Material::Ptr
-    {
-        return material;
-    };
+    if (!_materialFunction)
+        _materialFunction = [](const std::string&, material::Material::Ptr material) -> material::Material::Ptr
+        {
+            return material;
+        };
 
-    _geometryFunction = [](const std::string&, GeomPtr geom) -> GeomPtr
-    {
-        return geom;
-    };
+    if (!_geometryFunction)
+        _geometryFunction = [](const std::string&, GeomPtr geom) -> GeomPtr
+        {
+            return geom;
+        };
 
-    _uriFunction = [](const std::string& uri) -> const std::string
-    {
-        return uri;
-    };
+    if (!_uriFunction)
+        _uriFunction = [](const std::string& uri) -> const std::string
+        {
+            return uri;
+        };
 
-    _nodeFunction = [](NodePtr node) -> NodePtr
-    {
-        return node;
-    };
+    if (!_nodeFunction)
+        _nodeFunction = [](NodePtr node) -> NodePtr
+        {
+            return node;
+        };
 
-    _effectFunction = [](EffectPtr effect) -> EffectPtr
+    if (!_effectFunction)
+        _effectFunction = [](EffectPtr effect) -> EffectPtr
+        {
+            return effect;
+        };
+
+    _textureFormatFunction = [=](const std::unordered_set<render::TextureFormat>& availableTextureFormats) ->render::TextureFormat
     {
-        return effect;
+        static const auto defaultTextureFormats = std::list<render::TextureFormat>
+        {
+            render::TextureFormat::RGBA_PVRTC2_2BPP,
+            render::TextureFormat::RGBA_PVRTC2_4BPP,
+
+            render::TextureFormat::RGBA_PVRTC1_2BPP,
+            render::TextureFormat::RGBA_PVRTC1_4BPP,
+
+            render::TextureFormat::RGB_PVRTC1_2BPP,
+            render::TextureFormat::RGB_PVRTC1_4BPP,
+
+            render::TextureFormat::RGBA_DXT5,
+            render::TextureFormat::RGBA_DXT3,
+
+            render::TextureFormat::RGBA_ATITC,
+            render::TextureFormat::RGB_ATITC,
+
+            render::TextureFormat::RGBA_ETC1,
+            render::TextureFormat::RGB_ETC1,
+
+            render::TextureFormat::RGBA_DXT1,
+            render::TextureFormat::RGB_DXT1,
+
+            render::TextureFormat::RGBA,
+            render::TextureFormat::RGB
+        };
+
+        auto& textureFormats = options->_textureFormats.empty() ? defaultTextureFormats : options->_textureFormats;
+
+        auto textureFormatIt = std::find_if(textureFormats.begin(), textureFormats.end(),
+                            [&](render::TextureFormat textureFormat) -> bool
+        {
+            return availableTextureFormats.find(textureFormat) != availableTextureFormats.end();
+        });
+
+        if (textureFormatIt != textureFormats.end())
+            return *textureFormatIt;
+
+        if (std::find(textureFormats.begin(),
+                      textureFormats.end(),
+                      render::TextureFormat::RGB) != textureFormats.end() &&
+            availableTextureFormats.find(render::TextureFormat::RGBA) != availableTextureFormats.end())
+            return render::TextureFormat::RGBA;
+
+        if (std::find(textureFormats.begin(),
+                      textureFormats.end(),
+                      render::TextureFormat::RGBA) != textureFormats.end() &&
+            availableTextureFormats.find(render::TextureFormat::RGB) != availableTextureFormats.end())
+            return render::TextureFormat::RGB;
+
+        static const auto errorMessage = "No desired texture format available";
+
+        LOG_ERROR(errorMessage);
+
+        throw std::runtime_error(errorMessage);
     };
 
     if (!_defaultProtocolFunction)
         _defaultProtocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
-    {
-        auto defaultProtocol = options->getProtocol("file"); // "file" might be overriden (by APKProtocol for instance)
+        {
+            auto defaultProtocol = options->getProtocol("file"); // "file" might be overriden (by APKProtocol for instance)
 
-        defaultProtocol->options(Options::create(options));
+            defaultProtocol->options(options->clone());
 
-        return defaultProtocol;
-    };
+            return defaultProtocol;
+        };
 
     _protocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
     {
@@ -176,4 +304,5 @@ Options::initializeDefaultFunctions()
         return _defaultProtocolFunction(filename);
     };
 
+    _parserFunction = nullptr;
 }

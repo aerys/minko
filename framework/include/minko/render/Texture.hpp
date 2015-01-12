@@ -48,6 +48,7 @@ namespace minko
                    bool                  mipMapping                  = false,
                    bool                  optimizeForRenderToTexture  = false,
                    bool                  resizeSmoothly              = true,
+                   TextureFormat         format                      = TextureFormat::RGBA,
                    const std::string&    filename                    = "")
             {
                 return std::shared_ptr<Texture>(
@@ -55,6 +56,7 @@ namespace minko
                         context,
                         width,
                         height,
+                        format,
                         mipMapping,
                         optimizeForRenderToTexture,
                         resizeSmoothly,
@@ -77,9 +79,11 @@ namespace minko
 
             void
             data(unsigned char* data,
-                 TextureFormat  format      = TextureFormat::RGBA,
                  int            widthGPU    = -1,
                  int            heightGPU   = -1);
+
+            void
+            resize(unsigned int width, unsigned int height, bool resizeSmoothly);
 
             void
             dispose();
@@ -103,6 +107,7 @@ namespace minko
             Texture(AbstractContextPtr  context,
                     unsigned int        width,
                     unsigned int        height,
+                    TextureFormat       format,
                     bool                mipMapping,
                     bool                optimizeForRenderToTexture,
                     bool                resizeSmoothly,

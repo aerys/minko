@@ -42,8 +42,7 @@ namespace minko
                 .property("keyboard",               &AbstractCanvas::keyboard)
                 .property("width",                  &AbstractCanvas::width)
                 .property("height",                 &AbstractCanvas::height)
-                .property("numTouches",             &AbstractCanvas::numTouches)
-                .property("mouse",                  &AbstractCanvas::mouse)
+                .property("touch",                  &AbstractCanvas::touch)
                 .property("keyboard",               &AbstractCanvas::keyboard)
                 .property("relativeTime",           &AbstractCanvas::relativeTime)
                 .property("frameDuration",          &AbstractCanvas::frameDuration)
@@ -59,7 +58,6 @@ namespace minko
             abstractCanvas.property("resized", &AbstractCanvas::resized);
             abstractCanvas.property("joystickAdded", &AbstractCanvas::joystickAdded);
             abstractCanvas.property("joystickRemoved", &AbstractCanvas::joystickRemoved);
-            abstractCanvas.property("touchZoom", &AbstractCanvas::touchZoom);
         }
 
     private:
