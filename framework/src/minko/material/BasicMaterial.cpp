@@ -124,7 +124,9 @@ BasicMaterial::diffuseMapWrapMode(WrapMode wrapMode)
 WrapMode
 BasicMaterial::diffuseMapWrapMode() const
 {
-    return data()->get<WrapMode>("diffuseMapWrapMode");
+    return (data()->hasProperty("diffuseMapWrapMode"))
+        ? data()->get<WrapMode>("diffuseMapWrapMode")
+        : render::SamplerStates::DEFAULT_WRAP_MODE;
 }
 
 BasicMaterial&
@@ -138,7 +140,9 @@ BasicMaterial::diffuseMapTextureFilter(TextureFilter textureFilter)
 TextureFilter
 BasicMaterial::diffuseMapTextureFilter() const
 {
-    return data()->get<TextureFilter>("diffuseMapTextureFilter");
+    return (data()->hasProperty("diffuseMapTextureFilter"))
+        ? data()->get<TextureFilter>("diffuseMapTextureFilter")
+        : render::SamplerStates::DEFAULT_TEXTURE_FILTER;
 }
 
 BasicMaterial&
@@ -152,7 +156,9 @@ BasicMaterial::diffuseMapMipFilter(MipFilter mipFilter)
 MipFilter
 BasicMaterial::diffuseMapMipFilter() const
 {
-    return data()->get<MipFilter>("diffuseMapMipFilter");
+    return (data()->hasProperty("diffuseMapMipFilter")) 
+        ? data()->get<MipFilter>("diffuseMapMipFilter") 
+        : render::SamplerStates::DEFAULT_MIP_FILTER;
 }
 
 BasicMaterial&
@@ -176,7 +182,9 @@ BasicMaterial::diffuseCubeMap() const
 WrapMode
 BasicMaterial::diffuseCubeMapWrapMode() const
 {
-    return data()->get<WrapMode>("diffuseCubeMapWrapMode");
+    return (data()->hasProperty("diffuseCubeMapWrapMode"))
+        ? data()->get<WrapMode>("diffuseCubeMapWrapMode")
+        : render::SamplerStates::DEFAULT_WRAP_MODE;
 }
 
 BasicMaterial&
@@ -190,7 +198,9 @@ BasicMaterial::diffuseCubeMapTextureFilter(TextureFilter textureFilter)
 TextureFilter
 BasicMaterial::diffuseCubeMapTextureFilter() const
 {
-    return data()->get<TextureFilter>("diffuseCubeMapTextureFilter");
+    return (data()->hasProperty("diffuseCubeMapTextureFilter"))
+        ? data()->get<TextureFilter>("diffuseCubeMapTextureFilter")
+        : render::SamplerStates::DEFAULT_TEXTURE_FILTER;
 }
 
 BasicMaterial&
@@ -204,7 +214,9 @@ BasicMaterial::diffuseCubeMapMipFilter(MipFilter mipFilter)
 MipFilter
 BasicMaterial::diffuseCubeMapMipFilter() const
 {
-    return data()->get<MipFilter>("diffuseCubeMapMipFilter");
+    return (data()->hasProperty("diffuseCubeMapMipFilter"))
+        ? data()->get<MipFilter>("diffuseCubeMapMipFilter")
+        : render::SamplerStates::DEFAULT_MIP_FILTER;
 }
 
 BasicMaterial&
@@ -332,75 +344,75 @@ BasicMaterial::blendingMode(Blending::Mode value)
 	return *this;
 }
 
-//
-//Blending::Source
-//BasicMaterial::blendingSourceFactor() const
-//{
-//	return data()->hasProperty("blendMode") 
-//		? Blending::Source(uint(data()->get<Blending::Mode>("blendMode")) & 0x00ff)
-//		: _defaultStates->blendingSourceFactor();
-//}
-//
-//Blending::Destination
-//BasicMaterial::blendingDestinationFactor() const
-//{
-//	return data()->hasProperty("blendMode") 
-//		? Blending::Destination(uint(data()->get<Blending::Mode>("blendMode")) & 0xff00)
-//		: _defaultStates->blendingDestinationFactor();
-//}
-//
-//BasicMaterial&
-//BasicMaterial::colorMask(bool value)
-//{
-//	data()->set("colorMask", value);
-//
-//	return *this;
-//}
-//
-//bool
-//BasicMaterial::colorMask() const
-//{
-//	return data()->hasProperty("colorMask")
-//		? data()->get<bool>("colorMask")
-//		: _defaultStates->colorMask();
-//}
-//
-//BasicMaterial&
-//BasicMaterial::depthMask(bool value)
-//{
-//	data()->set("depthMask", value);
-//
-//	return *this;
-//}
-//
-//bool
-//BasicMaterial::depthMask() const
-//{
-//	return data()->hasProperty("depthMask")
-//		? data()->get<bool>("depthmask")
-//		: _defaultStates->depthMask();
-//}
-//
-//BasicMaterial&
-//BasicMaterial::depthFunction(CompareMode value)
-//{
-//	data()->set("depthFunc", value);
-//
-//	return *this;
-//}
-//
-//CompareMode
-//BasicMaterial::depthFunction() const
-//{
-//	return data()->hasProperty("depthFunc")
-//		? data()->get<CompareMode>("depthFunc")
-//		: _defaultStates->depthFunc();
-//}
+
+Blending::Source
+BasicMaterial::blendingSourceFactor() const
+{
+	return data()->hasProperty("blendMode") 
+		? Blending::Source(uint(data()->get<Blending::Mode>("blendMode")) & 0x00ff)
+		: _defaultStates->blendingSourceFactor();
+}
+
+Blending::Destination
+BasicMaterial::blendingDestinationFactor() const
+{
+	return data()->hasProperty("blendMode") 
+		? Blending::Destination(uint(data()->get<Blending::Mode>("blendMode")) & 0xff00)
+		: _defaultStates->blendingDestinationFactor();
+}
+
+BasicMaterial&
+BasicMaterial::colorMask(bool value)
+{
+    data()->set(States::PROPERTY_COLOR_MASK, value);
+
+	return *this;
+}
+
+bool
+BasicMaterial::colorMask() const
+{
+    return data()->hasProperty(States::PROPERTY_COLOR_MASK)
+        ? data()->get<bool>(States::PROPERTY_COLOR_MASK)
+		: _defaultStates->colorMask();
+}
+
+BasicMaterial&
+BasicMaterial::depthMask(bool value)
+{
+    data()->set(States::PROPERTY_DEPTH_MASK, value);
+
+	return *this;
+}
+
+bool
+BasicMaterial::depthMask() const
+{
+    return data()->hasProperty(States::PROPERTY_DEPTH_MASK)
+        ? data()->get<bool>(States::PROPERTY_DEPTH_MASK)
+		: _defaultStates->depthMask();
+}
+
+BasicMaterial&
+BasicMaterial::depthFunction(CompareMode value)
+{
+    data()->set(States::PROPERTY_DEPTH_FUNCTION, value);
+
+	return *this;
+}
+
+CompareMode
+BasicMaterial::depthFunction() const
+{
+    return data()->hasProperty(States::PROPERTY_DEPTH_FUNCTION)
+        ? data()->get<CompareMode>(States::PROPERTY_DEPTH_FUNCTION)
+		: _defaultStates->depthFunction();
+}
 
 BasicMaterial&
 BasicMaterial::triangleCulling(TriangleCulling value)
 {
-	data()->set("triangleCulling", value);
+    data()->set(States::PROPERTY_TRIANGLE_CULLING, value);
 
 	return *this;
 }
@@ -408,111 +420,111 @@ BasicMaterial::triangleCulling(TriangleCulling value)
 TriangleCulling
 BasicMaterial::triangleCulling() const
 {
-	return data()->hasProperty("triangleCulling")
-		? data()->get<TriangleCulling>("triangleCulling")
+    return data()->hasProperty(States::PROPERTY_TRIANGLE_CULLING)
+        ? data()->get<TriangleCulling>(States::PROPERTY_TRIANGLE_CULLING)
 		: _defaultStates->triangleCulling();
 }
 
-//BasicMaterial&
-//BasicMaterial::stencilFunction(CompareMode value)
-//{
-//	data()->set("stencilFunc", value);
-//
-//	return *this;
-//}
-//
-//CompareMode
-//BasicMaterial::stencilFunction() const
-//{
-//	return data()->hasProperty("stencilFunc")
-//		? data()->get<CompareMode>("stencilFunc")
-//		: _defaultStates->stencilFunction();
-//}
-//
-//BasicMaterial&
-//BasicMaterial::stencilReference(int value)
-//{
-//	data()->set("stencilRef", value);
-//
-//	return *this;
-//}
-//
-//int
-//BasicMaterial::stencilReference() const
-//{
-//	return data()->hasProperty("stencilRef")
-//		? data()->get<int>("stencilRef")
-//		: _defaultStates->stencilReference();
-//}
-//
-//BasicMaterial&
-//BasicMaterial::stencilMask(uint value)
-//{
-//	data()->set("stencilMask", value);
-//
-//	return *this;
-//}
-//
-//uint
-//BasicMaterial::stencilMask() const
-//{
-//	return data()->hasProperty("stencilMask")
-//		? data()->get<uint>("stencilMask")
-//		: _defaultStates->stencilMask();
-//}
-//
-//BasicMaterial&
-//BasicMaterial::stencilFailOperation(StencilOperation value)
-//{
-//	data()->set("stencilFailOp", value);
-//
-//	return *this;
-//}
-//
-//StencilOperation
-//BasicMaterial::stencilFailOperation() const
-//{
-//	return data()->hasProperty("stencilFailOp")
-//		? data()->get<StencilOperation>("stencilFailOp")
-//		: _defaultStates->stencilFailOperation();
-//}
-//
-//BasicMaterial&
-//BasicMaterial::stencilDepthFailOperation(StencilOperation value)
-//{
-//	data()->set("stencilZFailOp", value);
-//
-//	return *this;
-//}
-//
-//StencilOperation
-//BasicMaterial::stencilDepthFailOperation() const
-//{
-//	return data()->hasProperty("stencilZFailOp")
-//		? data()->get<StencilOperation>("stencilZFailOp")
-//		: _defaultStates->stencilDepthFailOperation();
-//}
-//
-//BasicMaterial&
-//BasicMaterial::stencilDepthPassOperation(StencilOperation value)
-//{
-//	data()->set("stencilZPassOp", value);
-//
-//	return *this;
-//}
-//
-//StencilOperation
-//BasicMaterial::stencilDepthPassOperation() const
-//{
-//	return data()->hasProperty("stencilZPassOp")
-//		? data()->get<StencilOperation>("stencilZPassOp")
-//		: _defaultStates->stencilDepthPassOperation();
-//}
+BasicMaterial&
+BasicMaterial::stencilFunction(CompareMode value)
+{
+	data()->set(States::PROPERTY_STENCIL_FUNCTION, value);
+
+	return *this;
+}
+
+CompareMode
+BasicMaterial::stencilFunction() const
+{
+    return data()->hasProperty(States::PROPERTY_STENCIL_FUNCTION)
+        ? data()->get<CompareMode>(States::PROPERTY_STENCIL_FUNCTION)
+		: _defaultStates->stencilFunction();
+}
+
+BasicMaterial&
+BasicMaterial::stencilReference(int value)
+{
+    data()->set(States::PROPERTY_STENCIL_REFERENCE, value);
+
+	return *this;
+}
+
+int
+BasicMaterial::stencilReference() const
+{
+    return data()->hasProperty(States::PROPERTY_STENCIL_REFERENCE)
+        ? data()->get<int>(States::PROPERTY_STENCIL_REFERENCE)
+		: _defaultStates->stencilReference();
+}
+
+BasicMaterial&
+BasicMaterial::stencilMask(uint value)
+{
+    data()->set(States::PROPERTY_STENCIL_MASK, value);
+
+	return *this;
+}
+
+uint
+BasicMaterial::stencilMask() const
+{
+    return data()->hasProperty(States::PROPERTY_STENCIL_MASK)
+        ? data()->get<uint>(States::PROPERTY_STENCIL_MASK)
+		: _defaultStates->stencilMask();
+}
+
+BasicMaterial&
+BasicMaterial::stencilFailOperation(StencilOperation value)
+{
+    data()->set(States::PROPERTY_STENCIL_FAIL_OP, value);
+
+	return *this;
+}
+
+StencilOperation
+BasicMaterial::stencilFailOperation() const
+{
+    return data()->hasProperty(States::PROPERTY_STENCIL_FAIL_OP)
+        ? data()->get<StencilOperation>(States::PROPERTY_STENCIL_FAIL_OP)
+		: _defaultStates->stencilFailOperation();
+}
+
+BasicMaterial&
+BasicMaterial::stencilZFailOperation(StencilOperation value)
+{
+    data()->set(States::PROPERTY_STENCIL_ZFAIL_OP, value);
+
+	return *this;
+}
+
+StencilOperation
+BasicMaterial::stencilZFailOperation() const
+{
+    return data()->hasProperty(States::PROPERTY_STENCIL_ZFAIL_OP)
+        ? data()->get<StencilOperation>(States::PROPERTY_STENCIL_ZFAIL_OP)
+		: _defaultStates->stencilZFailOperation();
+}
+
+BasicMaterial&
+BasicMaterial::stencilZPassOperation(StencilOperation value)
+{
+    data()->set(States::PROPERTY_STENCIL_ZPASS_OP, value);
+
+	return *this;
+}
+
+StencilOperation
+BasicMaterial::stencilZPassOperation() const
+{
+    return data()->hasProperty(States::PROPERTY_STENCIL_ZPASS_OP)
+        ? data()->get<StencilOperation>(States::PROPERTY_STENCIL_ZPASS_OP)
+		: _defaultStates->stencilZPassOperation();
+}
 
 BasicMaterial&
 BasicMaterial::priority(float value)
 {
-	data()->set("priority", value);
+    data()->set(States::PROPERTY_PRIORITY, value);
 
 	return *this;
 }
@@ -521,15 +533,15 @@ BasicMaterial::priority(float value)
 float 
 BasicMaterial::priority() const
 {
-	return data()->hasProperty("priority")
-		? data()->get<float>("priority")
+    return data()->hasProperty(States::PROPERTY_PRIORITY)
+        ? data()->get<float>(States::PROPERTY_PRIORITY)
 		: _defaultStates->priority();
 }
 
 BasicMaterial&
 BasicMaterial::zSorted(bool value)
 {
-	data()->set("zSorted", value);
+    data()->set(States::PROPERTY_ZSORTED, value);
 
 	return *this;
 }
@@ -537,7 +549,7 @@ BasicMaterial::zSorted(bool value)
 bool
 BasicMaterial::zSorted() const
 {
-	return data()->hasProperty("zSorted")
-		? data()->get<bool>("zSorted")
+    return data()->hasProperty(States::PROPERTY_ZSORTED)
+        ? data()->get<bool>(States::PROPERTY_ZSORTED)
 		: _defaultStates->zSorted();
 }

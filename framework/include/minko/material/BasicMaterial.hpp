@@ -110,7 +110,7 @@ namespace minko
 			diffuseCubeMap() const;
 
             BasicMaterial&
-                diffuseCubeMapWrapMode(render::WrapMode);
+            diffuseCubeMapWrapMode(render::WrapMode);
 
             render::WrapMode
             diffuseCubeMapWrapMode() const;
@@ -221,16 +221,16 @@ namespace minko
 			stencilFailOperation() const;
 
 			BasicMaterial&
-			stencilDepthFailOperation(render::StencilOperation);
+			stencilZFailOperation(render::StencilOperation);
 
 			render::StencilOperation
-			stencilDepthFailOperation() const;
+			stencilZFailOperation() const;
 
 			BasicMaterial&
-			stencilDepthPassOperation(render::StencilOperation);
+			stencilZPassOperation(render::StencilOperation);
 
 			render::StencilOperation
-			stencilDepthPassOperation() const;
+			stencilZPassOperation() const;
 
 			BasicMaterial&
 			priority(float);
