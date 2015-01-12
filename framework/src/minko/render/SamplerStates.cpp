@@ -28,3 +28,17 @@ const std::string SamplerStates::PROPERTY_MIP_FILTER = "mipFilter";
 const WrapMode SamplerStates::DEFAULT_WRAP_MODE = WrapMode::CLAMP;
 const TextureFilter SamplerStates::DEFAULT_TEXTURE_FILTER = TextureFilter::NEAREST;
 const MipFilter SamplerStates::DEFAULT_MIP_FILTER = MipFilter::NONE;
+
+const std::array<std::string, 3> SamplerStates::PROPERTY_NAMES = {
+    PROPERTY_WRAP_MODE,
+    PROPERTY_TEXTURE_FILTER,
+    PROPERTY_MIP_FILTER
+};
+
+/*
+const std::map<std::string, type_info> SamplerStates::STRING_TO_ENUM_TYPE_MAP = {
+    { PROPERTY_WRAP_MODE, typeid(WrapMode) },
+    { PROPERTY_TEXTURE_FILTER, typeid(TextureFilter) },
+    { PROPERTY_MIP_FILTER, typeid(MipFilter) }
+};
+*/

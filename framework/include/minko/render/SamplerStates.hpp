@@ -33,14 +33,16 @@ namespace minko
 	    class SamplerStates
 	    {
         public:
-            static const std::string    PROPERTY_WRAP_MODE;
-            static const std::string    PROPERTY_TEXTURE_FILTER;
-            static const std::string    PROPERTY_MIP_FILTER;
+            static const std::string                        PROPERTY_WRAP_MODE;
+            static const std::string                        PROPERTY_TEXTURE_FILTER;
+            static const std::string                        PROPERTY_MIP_FILTER;
 
-            static const WrapMode		DEFAULT_WRAP_MODE;
-            static const TextureFilter	DEFAULT_TEXTURE_FILTER;
-            static const MipFilter		DEFAULT_MIP_FILTER;
+            static const std::array<std::string, 3>         PROPERTY_NAMES;
 
+            static const WrapMode		                    DEFAULT_WRAP_MODE;
+            static const TextureFilter	                    DEFAULT_TEXTURE_FILTER;
+            static const MipFilter		                    DEFAULT_MIP_FILTER;
+            
             static
             inline
             std::string uniformNameToSamplerStateName(const std::string& uniformName, const std::string& sampleState)
@@ -77,6 +79,43 @@ namespace minko
             {
                 return value == "linear" ? MipFilter::LINEAR : (value == "nearest" ? MipFilter::NEAREST : MipFilter::NONE);
             }
+
+            /*
+            static
+            inline
+            const type_info& stringToSamplerStateType(const std::string& value)
+            {
+                if (STRING_TO_ENUM_TYPE_MAP.find(value) != STRING_TO_ENUM_TYPE_MAP.end())
+                    return SamplerStates::STRING_TO_ENUM_TYPE_MAP.at(value);
+                else
+                    return SamplerStates::STRING_TO_ENUM_TYPE_MAP.at(0);
+            }
+
+            template<typename T>
+            static
+            inline
+            T stringToSamplerState(const std::string& value)
+            {
+                if (typeid(T) == typeid(WrapMode))
+                {
+                    return value == "repeat" ? WrapMode::REPEAT : WrapMode::CLAMP;
+                }
+                else if (typeid(T) == typeid(TextureFilter))
+                {
+                    return value == "linear" ? TextureFilter::LINEAR : TextureFilter::NEAREST;
+                }
+                else if (typeid(T) == typeid(MipFilter))
+                {
+                    return value == "linear" ? MipFilter::LINEAR : (value == "nearest" ? MipFilter::NEAREST : MipFilter::NONE);
+                }
+                else
+                {
+                    return MipFilter::NONE;
+                }
+            }
+            */
+        private:
+            //static const std::map<std::string, type_info>   STRING_TO_ENUM_TYPE_MAP;
 
         public:
             WrapMode* wrapMode;

@@ -610,6 +610,20 @@ EffectParser::parseSamplerStates(const Json::Value& node, const Scope& scope, co
 {
     if (node.isObject())
     {
+        /*
+        for (auto propertyName : SamplerStates::PROPERTY_NAMES)
+        {
+            auto samplerStateNode = node.get(propertyName, 0);
+
+            if (samplerStateNode.isString())
+            {
+                auto samplerStateString = samplerStateNode.asString();
+                const type_info& samplerStateType = SamplerStates::stringToSamplerStateType(propertyName);
+                auto samplerState = SamplerStates::stringToSamplerState<decltype(samplerStateType)>(samplerStateString);
+            }
+        }
+        */
+
         auto wrapModeNode = node.get(SamplerStates::PROPERTY_WRAP_MODE, 0);
 
         if (wrapModeNode.isString())
