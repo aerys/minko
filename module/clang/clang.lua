@@ -1,3 +1,6 @@
+
+dofile("module/clang/clang_complete.lua")
+
 table.inject(premake.tools.clang, 'cxxflags.system', {
 	macosx = { "-MMD", "-MP", "-std=c++11", "-stdlib=libc++" }
 })

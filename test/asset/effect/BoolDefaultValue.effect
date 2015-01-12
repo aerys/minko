@@ -1,0 +1,10 @@
+{
+    "uniforms" : {
+        "testBool1Uniform" : { "default" : true },
+        "testBool2Uniform" : { "default" : [[ true, false ]] },
+        "testBool3Uniform" : { "default" : [[ true, false, true ]] },
+        "testBool4Uniform" : { "default" : [[ true, false, true, false ]] }
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

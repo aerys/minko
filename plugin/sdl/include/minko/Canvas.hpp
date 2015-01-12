@@ -21,20 +21,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include <chrono>
 
+#ifdef __ANDROID__
+# include "minko/MinkoAndroid.hpp"
+#endif
+
 #include "minko/Common.hpp"
-#include "minko/SDLKeyboard.hpp"
-#include "minko/SDLMouse.hpp"
-#include "minko/SDLJoystick.hpp"
-#include "minko/SDLTouch.hpp"
 #include "minko/Signal.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/OpenGLES2Context.hpp"
 #include "minko/AbstractCanvas.hpp"
 #include "minko/input/Joystick.hpp"
 #include "minko/input/Touch.hpp"
+#include "minko/input/SDLMouse.hpp"
+#include "minko/input/SDLKeyboard.hpp"
+#include "minko/input/SDLTouch.hpp"
+#include "minko/input/SDLJoystick.hpp"
 #include "minko/async/Worker.hpp"
-
-#include "minko/SDLBackend.hpp"
 
 // Note: cannot be added to the .cpp because this must be compiled within the
 // main compilation-unit.
@@ -42,16 +44,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include "SDL_main.h"
 #endif
 
-// Audio only works for HTML5, Windows and Android 
-#if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID)
-# include "minko/SDLAudio.hpp"
-#endif
-
 struct SDL_Window;
 struct SDL_Surface;
 
 namespace minko
 {
+    class SDLBackend;
+
+    namespace audio
+    {
+        class SDLAudio;
+    }
+
     class Canvas :
         public AbstractCanvas,
         public std::enable_shared_from_this<Canvas>
@@ -93,13 +97,13 @@ namespace minko
         float                                                                   _desiredFramerate;
 
 #if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID)
-        std::shared_ptr<SDLAudio>                                               _audio;
+        std::shared_ptr<audio::SDLAudio>                                        _audio;
 #endif
         
-        std::shared_ptr<SDLMouse>                                               _mouse;
-        std::unordered_map<int, std::shared_ptr<SDLJoystick>>                   _joysticks;
-        std::shared_ptr<SDLKeyboard>                                            _keyboard;
-        std::shared_ptr<SDLTouch>                                               _touch;
+        std::shared_ptr<input::SDLMouse>                                        _mouse;
+        std::unordered_map<int, std::shared_ptr<input::SDLJoystick>>            _joysticks;
+        std::shared_ptr<input::SDLKeyboard>                                     _keyboard;
+        std::shared_ptr<input::SDLTouch>                                        _touch;
 
         // Events
         Signal<Ptr, float, float>::Ptr                                          _enterFrame;
@@ -221,7 +225,7 @@ namespace minko
         }
 
         inline
-        std::unordered_map<int, std::shared_ptr<SDLJoystick>>
+        std::unordered_map<int, std::shared_ptr<input::SDLJoystick>>
         joysticks()
         {
             return _joysticks;

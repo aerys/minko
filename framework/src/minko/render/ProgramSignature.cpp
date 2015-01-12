@@ -29,11 +29,11 @@ using namespace minko;
 using namespace minko::render;
 using namespace minko::data;
 
-ProgramSignature::ProgramSignature(const data::MacroBindingMap&                         macroBindings,
-                                   const std::unordered_map<std::string, std::string>&  variables,
-                                   const Store&			                            targetData,
-                                   const Store&			                            rendererData,
-                                   const Store&			                            rootData) :
+ProgramSignature::ProgramSignature(const data::MacroBindingMap&                           macroBindings,
+                                   const std::unordered_map<std::string, std::string>&    variables,
+                                   const Store&			                                  targetData,
+                                   const Store&			                                  rendererData,
+                                   const Store&			                                  rootData) :
     _mask(0)
 {
     const uint maxNumMacros = sizeof(MaskType) * 8;
@@ -83,7 +83,7 @@ ProgramSignature::ProgramSignature(const ProgramSignature& signature) :
 {
 }
 
-bool 
+bool
 ProgramSignature::operator==(const ProgramSignature& x) const
 {
 	if (_mask != x._mask)
@@ -94,7 +94,7 @@ ProgramSignature::operator==(const ProgramSignature& x) const
     {
         if (_types[i] != x._types[i])
             return false;
-        
+
         if (_types[i] != MacroBinding::Type::UNSET)
         {
             switch (_types[i])
@@ -219,9 +219,9 @@ ProgramSignature::updateProgram(Program& program) const
 }
 
 Any
-ProgramSignature::getValueFromStore(const MacroBinding&     binding,
-                                        const data::Store&  store,
-                                        const std::string&      propertyName)
+ProgramSignature::getValueFromStore(const MacroBinding& binding,
+                                    const data::Store&  store,
+                                    const std::string&  propertyName)
 {
     switch (binding.type)
     {

@@ -62,6 +62,8 @@ namespace minko
 		public:
             Store();
 
+			Store(const Store& store, bool deepCopy = false);
+
             ~Store()
             {
 

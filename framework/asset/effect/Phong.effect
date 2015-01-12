@@ -2,86 +2,87 @@
 {
 	"name"	: "phong",
 
-	"attributes" : {
-		"position"				: "geometry[${geometryUuid}].position",
-		"uv"					: "geometry[${geometryUuid}].uv",
-		"normal"				: "geometry[${geometryUuid}].normal",
-		"tangent"				: "geometry[${geometryUuid}].tangent",
-		"boneIdsA"				: "geometry[${geometryUuid}].boneIdsA",
-		"boneIdsB"				: "geometry[${geometryUuid}].boneIdsB",
-		"boneWeightsA"			: "geometry[${geometryUuid}].boneWeightsA",
-		"boneWeightsB"			: "geometry[${geometryUuid}].boneWeightsB"
-	},
-
-	"uniforms" : {
-        "uvScale"           	: { "binding" : "material[${materialUuid}].uvScale", "default" : [[ 1.0, 1.0 ]] },
-        "uvOffset"           	: { "binding" : "material[${materialUuid}].uvOffset", "default" : [[ 0.0, 0.0 ]] },
-		"diffuseColor"			: "material[${materialUuid}].diffuseColor",
-		"diffuseMap"			: "material[${materialUuid}].diffuseMap",
-		"alphaMap"				: "material[${materialUuid}].alphaMap",
-		"alphaThreshold"		: "material[${materialUuid}].alphaThreshold",
-		"normalMap"				: "material[${materialUuid}].normalMap",
-		"specularMap"			: "material[${materialUuid}].specularMap",
-		"specularColor"			: { "binding" : "material[${materialUuid}].specularColor", "default" : [[ 1.0, 1.0, 1.0, 1.0 ]] },
-		"environmentMap2d"		: "material[${materialUuid}].environmentMap2d",
-		"environmentMap2dType"	: "material[${materialUuid}].environmentMap2dType",
-		"environmentCubemap"	: "material[${materialUuid}].environmentCubemap",
-		"environmentAlpha"		: "material[${materialUuid}].environmentAlpha",
-		"shininess"				: "material[${materialUuid}].shininess",
-		"modelToWorldMatrix"	: "modelToWorldMatrix",
-		"worldToScreenMatrix"	: { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
-		"cameraPosition"		: { "binding" : { "property" : "eyePosition", "source" : "renderer" } },
-		"boneMatrices"			: "geometry[${geometryUuid}].boneMatrices",
-		"numBones"				: "geometry[${geometryUuid}].numBones",
-		"ambientLights"			: { "binding" : { "property" : "ambientLight", "source" : "root" } },
-		"directionalLights"		: { "binding" : { "property" : "directionalLight", "source" : "root" } },
-		"spotLights"			: { "binding" : { "property" : "spotLight", "source" : "root" } },
-		"pointLights"			: { "binding" : { "property" : "pointLight", "source" : "root" } },
-		"fogColor"				: "material[${materialUuid}].fogColor",
-		"fogDensity"			: "material[${materialUuid}].fogDensity",
-		"fogStart"				: "material[${materialUuid}].fogStart",
-		"fogEnd"				: "material[${materialUuid}].fogEnd"
-	},
-
-	"macros" : {
-		"DIFFUSE_MAP"			: "material[${materialUuid}].diffuseMap",
-		"NORMAL_MAP"			: "material[${materialUuid}].normalMap",
-		"SPECULAR_MAP"			: "material[${materialUuid}].specularMap",
-		"ALPHA_MAP"				: "material[${materialUuid}].alphaMap",
-		"ALPHA_THRESHOLD"		: "material[${materialUuid}].alphaThreshold",
-		"ENVIRONMENT_MAP_2D"	: "material[${materialUuid}].environmentMap2d",
-		"ENVIRONMENT_CUBE_MAP"	: "material[${materialUuid}].environmentCubemap",
-		"ENVIRONMENT_ALPHA"		: "material[${materialUuid}].environmentAlpha",
-		"ENVIRONMENT_TYPE_2D"	: "material[${materialUuid}].environmentMap2dType",
-		"SHININESS"				: "material[${materialUuid}].shininess",
-		"MODEL_TO_WORLD"		: "modelToWorldMatrix",
-		"NUM_BONES"				: "geometry[${geometryUuid}].numBones",
-		"NUM_AMBIENT_LIGHTS"	: { "binding" : { "property" : "ambientLight.length", "source" : "root", "type" : "int" } },
-		"FOG_LIN"				: "material[${materialUuid}].fogLinear",
-		"FOG_EXP"				: "material[${materialUuid}].fogExponential",
-		"FOG_EXP2"				: "material[${materialUuid}].fogExponential2"
-	},
-
-	"samplerStates" : {
-		"diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
-		"normalMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
-		"specularMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
-	},
-
-    "defaultTechnique"	: "opaque",
-
 	"techniques" : [{
+		"passes" : [
+			{
+				"name" : "phong",
 
-		"macros" : {
-			"NUM_DIRECTIONAL_LIGHTS"    : { "binding" : { "property" : "directionalLight.length", "type" : "int", "source" : "root", "max" : 8 } },
-			"NUM_POINT_LIGHTS"			: { "binding" : { "property" : "pointLight.length", "type" : "int", "source" : "root", "max" : 8 } },
-			"NUM_SPOT_LIGHTS"			: { "binding" : { "property" : "spotLight.length", "type" : "int", "source" : "root", "max" : 8 } }
-		},
+				"attributes" : {
+					"aPosition"		: "geometry[$geometryUuid].position",
+					"aUV"			: "geometry[$geometryUuid].uv",
+					"aNormal"		: "geometry[$geometryUuid].normal",
+					"aTangent"		: "geometry[$geometryUuid].tangent",
+					"aBoneIdsA"		: "geometry[$geometryUuid].boneIdsA",
+					"aBoneIdsB"		: "geometry[$geometryUuid].boneIdsB",
+					"aBoneWeightsA"	: "geometry[$geometryUuid].boneWeightsA",
+					"aBoneWeightsB"	: "geometry[$geometryUuid].boneWeightsB"
+				},
 
-		"passes"	: [
-		{
-			"vertexShader" 		: "#pragma include \"Phong.vertex.glsl\"",
-			"fragmentShader" 	: "#pragma include \"Phong.fragment.glsl\""
-		}]
+				"uniforms" : {
+					"uModelToWorldMatrix"			: "modelToWorldMatrix",
+					"uWorldToScreenMatrix"			: { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
+			        "uUVScale"           			: { "binding" : "material[$materialUuid].uvScale", "default" : [[ 1.0, 1.0 ]] },
+			        "uUVOffset"           			: { "binding" : "material[$materialUuid].uvOffset", "default" : [[ 0.0, 0.0 ]] },
+					"uDiffuseColor"					: "material[$materialUuid].diffuseColor",
+					"uDiffuseMap"					: "material[$materialUuid].diffuseMap",
+					"uAlphaMap"						: "material[$materialUuid].alphaMap",
+					"uAlphaThreshold"				: "material[$materialUuid].alphaThreshold",
+					"uNormalMap"					: "material[$materialUuid].normalMap",
+					"uSpecularMap"					: "material[$materialUuid].specularMap",
+					"uSpecularColor"				: { "binding" : "material[$materialUuid].specularColor", "default" : [[ 1.0, 1.0, 1.0, 1.0 ]] },
+					"environmentMap2d"				: "material[$materialUuid].environmentMap2d",
+					"environmentMap2dType"			: "material[$materialUuid].environmentMap2dType",
+					"environmentCubemap"			: "material[$materialUuid].environmentCubemap",
+					"uEnvironmentAlpha"				: "material[$materialUuid].environmentAlpha",
+					"uShininess"					: "material[$materialUuid].shininess",
+					"uCameraPosition"				: { "binding" : { "property" : "eyePosition", "source" : "renderer" } },
+					"uBoneMatrices"					: "geometry[$geometryUuid].boneMatrices",
+					"numBones"						: "geometry[$geometryUuid].numBones",
+					"uAmbientLights"				: { "binding" : { "property" : "ambientLight", "source" : "root" } },
+					"uSpotLights"					: { "binding" : { "property" : "spotLight", "source" : "root" } },
+					"uPointLights"					: { "binding" : { "property" : "pointLight", "source" : "root" } },
+					"uDirectionalLight(\\d)_(.+)"	: { "binding" : { "property" : "directionalLight[$1].$2", "source" : "root" } },
+					"fogColor"						: "material[$materialUuid].fogColor",
+					"fogDensity"					: "material[$materialUuid].fogDensity",
+					"fogStart"						: "material[$materialUuid].fogStart",
+					"fogEnd"						: "material[$materialUuid].fogEnd"
+				},
+
+				"macros" : {
+					"MODEL_TO_WORLD"			: "modelToWorldMatrix",
+					"SKINNING_NUM_BONES"		: "geometry[$geometryUuid].numBones",
+					"DIFFUSE_MAP"				: "material[$materialUuid].diffuseMap",
+					"NORMAL_MAP"				: "material[$materialUuid].normalMap",
+					"SPECULAR_MAP"				: "material[$materialUuid].specularMap",
+					"ALPHA_MAP"					: "material[$materialUuid].alphaMap",
+					"ALPHA_THRESHOLD"			: "material[$materialUuid].alphaThreshold",
+					"ENVIRONMENT_MAP_2D"		: "material[$materialUuid].environmentMap2d",
+					"ENVIRONMENT_CUBE_MAP"		: "material[$materialUuid].environmentCubemap",
+					"ENVIRONMENT_ALPHA"			: "material[$materialUuid].environmentAlpha",
+					"ENVIRONMENT_TYPE_2D"		: "material[$materialUuid].environmentMap2dType",
+					"SHININESS"					: "material[$materialUuid].shininess",
+					"FOG_LIN"					: "material[$materialUuid].fogLinear",
+					"FOG_EXP"					: "material[$materialUuid].fogExponential",
+					"FOG_EXP2"					: "material[$materialUuid].fogExponential2",
+					"NUM_AMBIENT_LIGHTS"		: { "binding" : { "property" : "ambientLight.length", "source" : "root", "type" : "int" } },
+					"NUM_DIRECTIONAL_LIGHTS"    : { "binding" : { "property" : "directionalLight.length", "type" : "int", "source" : "root", "max" : 4 } },
+					"NUM_POINT_LIGHTS"			: { "binding" : { "property" : "pointLight.length", "type" : "int", "source" : "root", "max" : 4 } },
+					"NUM_SPOT_LIGHTS"			: { "binding" : { "property" : "spotLight.length", "type" : "int", "source" : "root", "max" : 4 } },
+					"DIRECTIONAL_0_SHADOW_MAP"	: { "binding" : { "property" : "directionalLight[0].shadowMap0", "source" : "root" } },
+					"DIRECTIONAL_1_SHADOW_MAP"	: { "binding" : { "property" : "directionalLight[1].shadowMap0", "source" : "root" } },
+					"DIRECTIONAL_2_SHADOW_MAP"	: { "binding" : { "property" : "directionalLight[2].shadowMap0", "source" : "root" } },
+					"DIRECTIONAL_3_SHADOW_MAP"	: { "binding" : { "property" : "directionalLight[3].shadowMap0", "source" : "root" } }
+				},
+
+				"samplerStates" : {
+					"diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+					"normalMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+					"specularMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
+				},
+
+				"vertexShader" 		: "#pragma include \"Phong.vertex.glsl\"",
+				"fragmentShader" 	: "#pragma include \"Phong.fragment.glsl\""
+			}
+		]
 	}]
 }

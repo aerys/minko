@@ -46,88 +46,59 @@ using namespace minko::data;
 using namespace minko::file;
 using namespace minko::render;
 
-std::unordered_map<std::string, unsigned int> EffectParser::_blendFactorMap = EffectParser::initializeBlendFactorMap();
-std::unordered_map<std::string, unsigned int>
-EffectParser::initializeBlendFactorMap()
-{
-	std::unordered_map<std::string, unsigned int> m;
+std::unordered_map<std::string, unsigned int> EffectParser::_blendFactorMap = {
+	{ "src_zero", static_cast<uint>(render::Blending::Source::ZERO) },
+	{ "src_one", static_cast<uint>(render::Blending::Source::ONE) },
+	{ "src_color", static_cast<uint>(render::Blending::Source::SRC_COLOR) },
+	{ "src_one_minus_src_color", static_cast<uint>(render::Blending::Source::ONE_MINUS_SRC_COLOR) },
+	{ "src_src_alpha", static_cast<uint>(render::Blending::Source::SRC_ALPHA) },
+	{ "src_one_minus_src_alpha", static_cast<uint>(render::Blending::Source::ONE_MINUS_SRC_ALPHA) },
+	{ "src_dst_alpha", static_cast<uint>(render::Blending::Source::DST_ALPHA) },
+	{ "src_one_minus_dst_alpha", static_cast<uint>(render::Blending::Source::ONE_MINUS_DST_ALPHA) },
 
-	m["src_zero"]					= static_cast<uint>(render::Blending::Source::ZERO);
-    m["src_one"]					= static_cast<uint>(render::Blending::Source::ONE);
-    m["src_color"]					= static_cast<uint>(render::Blending::Source::SRC_COLOR);
-    m["src_one_minus_src_color"]	= static_cast<uint>(render::Blending::Source::ONE_MINUS_SRC_COLOR);
-    m["src_src_alpha"]				= static_cast<uint>(render::Blending::Source::SRC_ALPHA);
-    m["src_one_minus_src_alpha"]	= static_cast<uint>(render::Blending::Source::ONE_MINUS_SRC_ALPHA);
-    m["src_dst_alpha"]				= static_cast<uint>(render::Blending::Source::DST_ALPHA);
-    m["src_one_minus_dst_alpha"]	= static_cast<uint>(render::Blending::Source::ONE_MINUS_DST_ALPHA);
+	{ "dst_zero", static_cast<uint>(render::Blending::Destination::ZERO) },
+	{ "dst_one", static_cast<uint>(render::Blending::Destination::ONE) },
+	{ "dst_dst_color", static_cast<uint>(render::Blending::Destination::DST_COLOR) },
+	{ "dst_one_minus_dst_color", static_cast<uint>(render::Blending::Destination::ONE_MINUS_DST_COLOR) },
+	{ "dst_src_alpha_saturate", static_cast<uint>(render::Blending::Destination::SRC_ALPHA_SATURATE) },
+	{ "dst_one_minus_src_alpha", static_cast<uint>(render::Blending::Destination::ONE_MINUS_SRC_ALPHA) },
+	{ "dst_dst_alpha", static_cast<uint>(render::Blending::Destination::DST_ALPHA) },
+	{ "dst_one_minus_dst_alpha", static_cast<uint>(render::Blending::Destination::ONE_MINUS_DST_ALPHA) },
 
-    m["dst_zero"]					= static_cast<uint>(render::Blending::Destination::ZERO);
-    m["dst_one"]					= static_cast<uint>(render::Blending::Destination::ONE);
-	m["dst_dst_color"]				= static_cast<uint>(render::Blending::Destination::DST_COLOR);
-    m["dst_one_minus_dst_color"]	= static_cast<uint>(render::Blending::Destination::ONE_MINUS_DST_COLOR);
-    m["dst_src_alpha_saturate"]		= static_cast<uint>(render::Blending::Destination::SRC_ALPHA_SATURATE);
-    m["dst_one_minus_src_alpha"]	= static_cast<uint>(render::Blending::Destination::ONE_MINUS_SRC_ALPHA);
-    m["dst_dst_alpha"]				= static_cast<uint>(render::Blending::Destination::DST_ALPHA);
-    m["dst_one_minus_dst_alpha"]	= static_cast<uint>(render::Blending::Destination::ONE_MINUS_DST_ALPHA);
+	{ "default", static_cast<uint>(render::Blending::Mode::DEFAULT) },
+	{ "alpha", static_cast<uint>(render::Blending::Mode::ALPHA) },
+	{ "additive", static_cast<uint>(render::Blending::Mode::ADDITIVE) }
+};
 
-	m["default"]					= static_cast<uint>(render::Blending::Mode::DEFAULT);
-	m["alpha"]						= static_cast<uint>(render::Blending::Mode::ALPHA);
-	m["additive"]					= static_cast<uint>(render::Blending::Mode::ADDITIVE);
+std::unordered_map<std::string, render::CompareMode> EffectParser::_compareFuncMap = {
+	{ "always", render::CompareMode::ALWAYS },
+	{ "equal", render::CompareMode::EQUAL },
+	{ "greater", render::CompareMode::GREATER },
+	{ "greater_equal", render::CompareMode::GREATER_EQUAL },
+	{ "less", render::CompareMode::LESS },
+	{ "less_equal", render::CompareMode::LESS_EQUAL },
+	{ "never", render::CompareMode::NEVER },
+	{ "not_equal", render::CompareMode::NOT_EQUAL },
+};
 
-	return m;
-}
+std::unordered_map<std::string, render::StencilOperation> EffectParser::_stencilOpMap = {
+	{ "keep", render::StencilOperation::KEEP },
+	{ "zero", render::StencilOperation::ZERO },
+	{ "replace", render::StencilOperation::REPLACE },
+	{ "incr", render::StencilOperation::INCR },
+	{ "incr_wrap", render::StencilOperation::INCR_WRAP },
+	{ "decr", render::StencilOperation::DECR },
+	{ "decr_wrap", render::StencilOperation::DECR_WRAP },
+	{ "invert", render::StencilOperation::INVERT }
+};
 
-std::unordered_map<std::string, render::CompareMode> EffectParser::_compareFuncMap = EffectParser::initializeCompareFuncMap();
-std::unordered_map<std::string, render::CompareMode>
-EffectParser::initializeCompareFuncMap()
-{
-	std::unordered_map<std::string, render::CompareMode> m;
-
-	m["always"]			= render::CompareMode::ALWAYS;
-	m["equal"]			= render::CompareMode::EQUAL;
-	m["greater"]		= render::CompareMode::GREATER;
-	m["greater_equal"]	= render::CompareMode::GREATER_EQUAL;
-	m["less"]			= render::CompareMode::LESS;
-	m["less_equal"]		= render::CompareMode::LESS_EQUAL;
-	m["never"]			= render::CompareMode::NEVER;
-    m["not_equal"]      = render::CompareMode::NOT_EQUAL;
-    
-	return m;
-}
-
-std::unordered_map<std::string, render::StencilOperation> EffectParser::_stencilOpMap = EffectParser::initializeStencilOperationMap();
-std::unordered_map<std::string, render::StencilOperation>
-EffectParser::initializeStencilOperationMap()
-{
-	std::unordered_map<std::string, render::StencilOperation> m;
-
-	m["keep"]			= render::StencilOperation::KEEP;
-	m["zero"]			= render::StencilOperation::ZERO;
-	m["replace"]		= render::StencilOperation::REPLACE;
-	m["incr"]			= render::StencilOperation::INCR;
-	m["incr_wrap"]		= render::StencilOperation::INCR_WRAP;
-	m["decr"]			= render::StencilOperation::DECR;
-	m["decr_wrap"]		= render::StencilOperation::DECR_WRAP;
-	m["invert"]			= render::StencilOperation::INVERT;
-
-	return m;
-}
-
-std::unordered_map<std::string, float> EffectParser::_priorityMap = EffectParser::initializePriorityMap();
-std::unordered_map<std::string, float>
-EffectParser::initializePriorityMap()
-{
-	std::unordered_map<std::string, float> m;
-
-	// The higher the priority, the earlier the drawcall is rendered.
-	m["first"]			= Priority::FIRST;
-	m["background"]		= Priority::BACKGROUND;
-	m["opaque"]			= Priority::OPAQUE;
-	m["transparent"]	= Priority::TRANSPARENT;
-	m["last"]			= Priority::LAST;
-
-	return m;
-}
+std::unordered_map<std::string, float> EffectParser::_priorityMap = {
+	{ "first", Priority::FIRST },
+	{ "background", Priority::BACKGROUND },
+	{ "opaque", Priority::OPAQUE },
+	{ "transparent", Priority::TRANSPARENT },
+	{ "last", Priority::LAST }
+};
 
 std::array<std::string, 1> EffectParser::_extraStateNames = {
     "blendingMode"
@@ -146,7 +117,8 @@ EffectParser::getPriorityValue(const std::string& name)
 EffectParser::EffectParser() :
 	_effect(nullptr),
 	_numDependencies(0),
-	_numLoadedDependencies(0)
+	_numLoadedDependencies(0),
+	_effectData(data::Provider::create())
 {
 }
 
@@ -162,11 +134,10 @@ EffectParser::parse(const std::string&				    filename,
 
 	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1], root, false))
 		_error->execute(shared_from_this(), file::Error(resolvedFilename + ": " + reader.getFormattedErrorMessages()));
-    
-    int pos	= resolvedFilename.find_last_of("/\\");
 
 	_options = file::Options::create(options);
 
+    int pos	= resolvedFilename.find_last_of("/\\");
     if (pos != std::string::npos)
     {
         _options->includePaths().clear();
@@ -287,7 +258,7 @@ EffectParser::parsePasses(const Json::Value& node, Scope& scope, std::vector<Pas
         for (auto passNode : passesNode)
         {
             // FIXME: switch to fallback instead of ignoring
-            if (!parseConfiguration(passNode))
+            if (passNode.isObject() && !parseConfiguration(passNode))
                 continue;
 
             parsePass(passNode, scope, passes);
@@ -303,26 +274,11 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
     // ancestor scope. Thus, we loop up to the root global scope to find the pass by its name.
     if (node.isString())
     {
-        auto passName = node.asString();
-        const Scope* searchScope = &scope;
-        Pass::Ptr pass = nullptr;
+		auto passName = node.asString();
+		auto pass = findPassByName(passName, scope);
 
-        do
-        {
-            auto passIt = std::find_if(searchScope->passes.begin(), searchScope->passes.end(), [&](PassPtr p)
-            {
-                return p->name() == passName;
-            });
-
-            if (passIt != searchScope->passes.end())
-                pass = *passIt;
-            else
-                searchScope = searchScope->parent;
-        }
-        while (searchScope != nullptr && pass == nullptr);
-
-        if (pass == nullptr)
-            throw std::runtime_error("Undefined pass with name '" + passName + "'.");
+		if (pass == nullptr)
+			throw std::runtime_error("Undefined pass with name '" + passName + "'.");
 
         passes.push_back(pass);
     }
@@ -333,23 +289,79 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
 
         Scope passScope(scope, scope);
 
+		render::Shader::Ptr vertexShader;
+		render::Shader::Ptr fragmentShader;
+        auto passName = _effectName + "-pass" + std::to_string(scope.passes.size());
+        auto nameNode = node.get("name", 0);
+		auto isPostProcessing = false;
+        if (nameNode.isString())
+            passName = nameNode.asString();
+        // FIXME: throw otherwise
+
+		if (node.isMember("extends"))
+		{
+			auto extendNode = node.get("extends", 0);
+
+			// if a pass "extends" another pass, then we have to init. its properties from that previously defined pass
+			if (extendNode.isString())
+			{
+				auto passName = extendNode.asString();
+				auto pass = findPassByName(passName, scope);
+
+				if (pass == nullptr)
+					throw std::runtime_error("Undefined pass with name '" + passName + "'.");
+
+				passScope.attributeBlock.bindingMap = {
+					pass->attributeBindings().bindings,
+					data::Store(pass->attributeBindings().defaultValues, true)
+				};
+
+				passScope.uniformBlock.bindingMap = {
+					pass->uniformBindings().bindings,
+					data::Store(pass->uniformBindings().defaultValues, true)
+				};
+
+				passScope.stateBlock.bindingMap.bindings = pass->stateBindings().bindings;
+				passScope.stateBlock.states = render::States(pass->states());
+				passScope.stateBlock.bindingMap.defaultValues.removeProvider(
+					passScope.stateBlock.bindingMap.defaultValues.providers().front()
+				);
+				passScope.stateBlock.bindingMap.defaultValues.addProvider(passScope.stateBlock.states.data());
+
+				passScope.macroBlock.bindingMap = {
+					pass->macroBindings().bindings,
+					data::Store(pass->macroBindings().defaultValues, true)
+				};
+
+				vertexShader = pass->program()->vertexShader();
+				fragmentShader = pass->program()->fragmentShader();
+				isPostProcessing = pass->isPostProcessing();
+			}
+			// FIXME: throw otherwise
+		}
+
         parseAttributes(node, passScope, passScope.attributeBlock);
         parseUniforms(node, passScope, passScope.uniformBlock);
         parseMacros(node, passScope, passScope.macroBlock);
         parseStates(node, passScope, passScope.stateBlock);
 
-        auto passName = "pass" + std::to_string(scope.passes.size());
-        auto nameNode = node.get("name", 0);
-        if (nameNode.isString())
-            passName = nameNode.asString();
-        // FIXME: throw otherwise
+		if (node.isMember("vertexShader"))
+        	vertexShader = parseShader(node.get("vertexShader", 0), passScope, Shader::Type::VERTEX_SHADER);
+		else if (!vertexShader)
+			throw std::runtime_error("Missing vertex shader for pass \"" + passName + "\"");
 
-        auto vertexShader = parseShader(node.get("vertexShader", 0), passScope, Shader::Type::VERTEX_SHADER);
-        auto fragmentShader = parseShader(node.get("fragmentShader", 0), passScope, Shader::Type::FRAGMENT_SHADER);
+		if (node.isMember("fragmentShader"))
+        	fragmentShader = parseShader(node.get("fragmentShader", 0), passScope, Shader::Type::FRAGMENT_SHADER);
+		else if (!fragmentShader)
+			throw std::runtime_error("Missing fragment shader for pass \"" + passName + "\"");
+
+		if (node.isMember("isPostProcessing"))
+			isPostProcessing = node.get("isPostProcessing", false).asBool();
 
         passes.push_back(Pass::create(
             passName,
-            Program::create(_options->context(), vertexShader, fragmentShader),
+			isPostProcessing,
+            Program::create(passName, _options->context(), vertexShader, fragmentShader),
             passScope.attributeBlock.bindingMap,
             passScope.uniformBlock.bindingMap,
             passScope.stateBlock.bindingMap,
@@ -398,16 +410,16 @@ EffectParser::parseDefaultValue(const Json::Value&  node,
     auto defaultValueNode = node.get("default", 0);
 
     if (defaultValueNode.isObject())
-        parseDefaultValueObject(defaultValueNode, scope, valueName, defaultValues);
+        parseDefaultValueVectorObject(defaultValueNode, scope, valueName, defaultValues);
     else if (defaultValueNode.isArray())
     {
         if (defaultValueNode.size() == 1 && defaultValueNode[0].isArray())
-            parseDefaultValueVector(defaultValueNode[0], scope, valueName, defaultValues);
+            parseDefaultValueVectorArray(defaultValueNode[0], scope, valueName, defaultValues);
         else
             throw; // FIXME: support array default values
     }
     else if (defaultValueNode.isBool())
-        defaultValues->set(valueName, defaultValueNode.asBool());
+        defaultValues->set(valueName, defaultValueNode.asBool() ? 1 : 0);
     else if (defaultValueNode.isInt())
         defaultValues->set(valueName, defaultValueNode.asInt());
     else if (defaultValueNode.isDouble())
@@ -444,10 +456,10 @@ EffectParser::parseDefaultValueSamplerStates(const Json::Value&    node,
 }
 
 void
-EffectParser::parseDefaultValueVector(const Json::Value&    defaultValueNode,
-                                      const Scope&          scope,
-                                      const std::string&    valueName,
-                                      data::Provider::Ptr   defaultValues)
+EffectParser::parseDefaultValueVectorArray(const Json::Value&    defaultValueNode,
+                                           const Scope&          scope,
+                                           const std::string&    valueName,
+                                           data::Provider::Ptr   defaultValues)
 {
     auto size = defaultValueNode.size();
     auto type = defaultValueNode[0].type();
@@ -478,27 +490,26 @@ EffectParser::parseDefaultValueVector(const Json::Value&    defaultValueNode,
     }
     else if (type == Json::ValueType::booleanValue)
     {
-        std::vector<bool> value(size);
+        // GLSL bool uniforms are set using integers, thus even if the default value is written
+        // using boolean values, we store it as integers
+        // https://www.opengl.org/sdk/docs/man/html/glUniform.xhtml
+        std::vector<int> value(size);
         for (auto i = 0u; i < size; ++i)
-            value[i] = defaultValueNode[i].asBool();
-
-        // std::vector<bool> is not an actual vector of bool:
-        // https://stackoverflow.com/questions/6485496/how-to-get-stdvector-pointer-to-the-raw-data
-        // thus we cannot use &value[0] to get a bool* to use with math::make_vec
+            value[i] = defaultValueNode[i].asBool() ? 1 : 0;
         if (size == 2)
-            defaultValues->set(valueName, math::bvec2(value[0], value[1]));
+            defaultValues->set(valueName, math::make_vec2<int>(&value[0]));
         else if (size == 3)
-            defaultValues->set(valueName, math::bvec3(value[0], value[1], value[2]));
+            defaultValues->set(valueName, math::make_vec3<int>(&value[0]));
         else if (size == 4)
-            defaultValues->set(valueName, math::bvec4(value[0], value[1], value[2], value[3]));
+            defaultValues->set(valueName, math::make_vec4<int>(&value[0]));
     }
 }
 
 void
-EffectParser::parseDefaultValueObject(const Json::Value&    defaultValueNode,
-                                      const Scope&          scope,
-                                      const std::string&    valueName,
-                                      data::Provider::Ptr   defaultValues)
+EffectParser::parseDefaultValueVectorObject(const Json::Value&    defaultValueNode,
+                                            const Scope&          scope,
+                                            const std::string&    valueName,
+                                            data::Provider::Ptr   defaultValues)
 {
     auto memberNames = defaultValueNode.getMemberNames();
     auto size = memberNames.size();
@@ -531,19 +542,18 @@ EffectParser::parseDefaultValueObject(const Json::Value&    defaultValueNode,
     }
     else if (type == Json::ValueType::booleanValue)
     {
-        std::vector<bool> value(size);
+        // GLSL bool uniforms are set using integers, thus even if the default value is written
+        // using boolean values, we store it as integers
+        // https://www.opengl.org/sdk/docs/man/html/glUniform.xhtml
+        std::vector<int> value(size);
         for (auto i = 0u; i < size; ++i)
-            value[i] = defaultValueNode[offsets[i]].asBool();
-
-        // std::vector<bool> is not an actual vector of bool:
-        // https://stackoverflow.com/questions/6485496/how-to-get-stdvector-pointer-to-the-raw-data
-        // thus we cannot use &value[0] to get a bool* to use with math::make_vec
+            value[i] = defaultValueNode[offsets[i]].asBool() ? 1 : 0;
         if (size == 2)
-            defaultValues->set(valueName, math::bvec2(value[0], value[1]));
+            defaultValues->set(valueName, math::make_vec2<int>(&value[0]));
         else if (size == 3)
-            defaultValues->set(valueName, math::bvec3(value[0], value[1], value[2]));
+            defaultValues->set(valueName, math::make_vec3<int>(&value[0]));
         else if (size == 4)
-            defaultValues->set(valueName, math::bvec4(value[0], value[1], value[2], value[3]));
+            defaultValues->set(valueName, math::make_vec4<int>(&value[0]));
     }
 }
 
@@ -562,7 +572,9 @@ EffectParser::parseAttributes(const Json::Value& node, const Scope& scope, Attri
         {
             auto attributeNode = attributesNode[attributeName];
 
-            parseBinding(attributeNode, scope, attributes.bindingMap.bindings[attributeName]);
+			data::Binding binding;
+            if (parseBinding(attributeNode, scope, binding))
+				attributes.bindingMap.bindings[attributeName] = binding;
 
             /*if (!attributeNode.get("default", 0).empty())
                 throw ParserError("Default values are not yet supported for attributes.");*/
@@ -589,16 +601,26 @@ EffectParser::parseUniforms(const Json::Value& node, const Scope& scope, Uniform
 
     if (uniformsNode.isObject())
     {
-        auto defaultValuesProvider = data::Provider::create();
+        data::Provider::Ptr defaultValuesProvider;
 
-        uniforms.bindingMap.defaultValues.addProvider(defaultValuesProvider);
+		if (uniforms.bindingMap.defaultValues.providers().size() != 0)
+			defaultValuesProvider = uniforms.bindingMap.defaultValues.providers().front();
+		else
+		{
+			defaultValuesProvider = data::Provider::create();
+        	uniforms.bindingMap.defaultValues.addProvider(defaultValuesProvider);
+		}
 
         for (auto uniformName : uniformsNode.getMemberNames())
         {
             auto uniformNode = uniformsNode[uniformName];
 
-            parseBinding(uniformNode, scope, uniforms.bindingMap.bindings[uniformName]);
+			data::Binding binding;
+            if (parseBinding(uniformNode, scope, binding))
+				uniforms.bindingMap.bindings[uniformName] = binding;
+
             parseSamplerStates(uniformNode, scope, uniformName, defaultValuesProvider, uniforms.bindingMap);
+
             parseDefaultValue(uniformNode, scope, uniformName, defaultValuesProvider);
         }
     }
@@ -793,8 +815,13 @@ EffectParser::parseMacros(const Json::Value& node, const Scope& scope, MacroBloc
         {
             auto macroNode = macrosNode[macroName];
 
-            parseBinding(macroNode, scope, macros.bindingMap.bindings[macroName]);
-            parseMacroBinding(macroNode, scope, macros.bindingMap.bindings[macroName]);
+			data::MacroBinding binding;
+			if (parseBinding(macroNode, scope, binding))
+			{
+            	parseMacroBinding(macroNode, scope, binding);
+				macros.bindingMap.bindings[macroName] = binding;
+			}
+
             parseDefaultValue(macroNode, scope, macroName, defaultValuesProvider);
         }
     }
@@ -816,7 +843,9 @@ EffectParser::parseStates(const Json::Value& node, const Scope& scope, StateBloc
 
             if (statesNode[stateName].isObject())
             {
-                parseBinding(statesNode[stateName], scope, stateBlock.bindingMap.bindings[stateName]);
+				data::Binding binding;
+                if (parseBinding(statesNode[stateName], scope, binding))
+					stateBlock.bindingMap.bindings[stateName] = binding;
             }
         }
 
@@ -876,15 +905,16 @@ EffectParser::parseStates(const Json::Value& node, const Scope& scope, StateBloc
         stateBlock.states.scissorTest(scissorTest);
         stateBlock.states.scissorBox(scissorBox);
 
-        // FIXME: handle render target
-        //target = parseTarget(statesNode, context, targets); // FIXME
+		auto target = parseTarget(statesNode, scope);
+		if (target)
+			stateBlock.states.target(target->sampler());
     }
     // FIXME: throw otherwise
 }
 
 void
 EffectParser::parseBlendingMode(const Json::Value&				node,
-                                const Scope&                   scope,
+                                const Scope&                    scope,
                                 render::Blending::Source&		srcFactor,
                                 render::Blending::Destination&	dstFactor)
 {
@@ -924,7 +954,7 @@ EffectParser::parseBlendingSource(const Json::Value&        node,
     if (blendingSourceNode.isString())
     {
         auto blendingSourceString = _blendFactorMap[blendingSourceNode.asString()];
-        
+
         srcFactor = static_cast<render::Blending::Source>(blendingSourceString);
     }
 }
@@ -978,9 +1008,9 @@ EffectParser::parseDepthMask(const Json::Value&	    node,
 }
 
 void
-EffectParser::parseDepthFunction(const Json::Value&	node,
-                   const Scope&         scope,
-                   render::CompareMode& depthFunction)
+EffectParser::parseDepthFunction(const Json::Value&		node,
+			                     const Scope&         	scope,
+			                     render::CompareMode& 	depthFunction)
 {
     auto depthFunctionValue = node.get(States::PROPERTY_DEPTH_FUNCTION, 0);
 
@@ -1034,6 +1064,80 @@ EffectParser::parsePriority(const Json::Value&	node,
     }
 
     return ret;
+}
+
+AbstractTexture::Ptr
+EffectParser::parseTarget(const Json::Value& node, const Scope& scope)
+{
+	auto targetNode = node.get(States::PROPERTY_TARGET, 0);
+	AbstractTexture::Ptr target = nullptr;
+	std::string	targetName;
+
+	if (targetNode.isObject())
+	{
+		auto nameValue = targetNode.get("name", 0);
+
+		if (nameValue.isString())
+			targetName = nameValue.asString();
+
+		if (!targetNode.isMember("size") && !(targetNode.isMember("width") && targetNode.isMember("height")))
+			return nullptr;
+
+		auto width = 0;
+		auto height = 0;
+
+		if (targetNode.isMember("size"))
+			width = height = targetNode.get("size", 0).asUInt();
+		else
+		{
+			if (!targetNode.isMember("width") || !targetNode.isMember("height"))
+			{
+				_error->execute(
+					shared_from_this(),
+					file::Error(
+						_resolvedFilename
+						+ ": render target definition requires both \"width\" and \"height\" properties."
+					)
+				);
+			}
+
+			width = targetNode.get("width", 0).asUInt();
+			height = targetNode.get("height", 0).asUInt();
+		}
+
+		const bool isCubeTexture = targetNode.get("isCube", 0).isBool()
+			? targetNode.get("isCube", 0).asBool()
+			: false;
+
+		if (isCubeTexture)
+		{
+			target = CubeTexture::create(_options->context(), width, height, false, true);
+
+			if (targetName.length())
+				_assetLibrary->cubeTexture(targetName, std::static_pointer_cast<render::CubeTexture>(target));
+		}
+		else
+		{
+			target = Texture::create(_options->context(), width, height, false, true);
+
+			if (targetName.length())
+				_assetLibrary->texture(targetName, std::static_pointer_cast<render::Texture>(target));
+		}
+
+		target->upload();
+		_effectData->set(targetName, target->sampler());
+	}
+	else if (targetNode.isString())
+	{
+		targetName = targetNode.asString();
+		target = _assetLibrary->texture(targetName);
+		if (target == nullptr)
+			throw;
+
+		_effectData->set(targetName, target->sampler());
+	}
+
+	return target;
 }
 
 void
@@ -1131,7 +1235,7 @@ EffectParser::parseStencilOperations(const Json::Value& node,
 	}
 }
 
-void
+bool
 EffectParser::parseBinding(const Json::Value& node, const Scope& scope, Binding& binding)
 {
     binding.source = Binding::Source::TARGET;
@@ -1139,6 +1243,8 @@ EffectParser::parseBinding(const Json::Value& node, const Scope& scope, Binding&
     if (node.isString())
     {
         binding.propertyName = node.asString();
+
+		return true;
     }
     else
     {
@@ -1147,6 +1253,8 @@ EffectParser::parseBinding(const Json::Value& node, const Scope& scope, Binding&
         if (bindingNode.isString())
         {
             binding.propertyName = bindingNode.asString();
+
+			return true;
         }
         else if (bindingNode.isObject())
         {
@@ -1169,8 +1277,12 @@ EffectParser::parseBinding(const Json::Value& node, const Scope& scope, Binding&
                     binding.source = Binding::Source::ROOT;
             }
             // FIXME: throw otherwise
+
+			return true;
         }
     }
+
+	return false;
 }
 
 void
@@ -1435,8 +1547,31 @@ EffectParser::finalize()
         }
     }
 
-    _options->assetLibrary()->effect(_effect->data()->get<std::string>("name"), _effect);
+	_effect->data()->copyFrom(_effectData);
     _options->assetLibrary()->effect(_filename, _effect);
 
     _complete->execute(shared_from_this());
+}
+
+render::Pass::Ptr
+EffectParser::findPassByName(const std::string& passName, const Scope& scope)
+{
+	const Scope* searchScope = &scope;
+	Pass::Ptr pass = nullptr;
+
+	do
+	{
+		auto passIt = std::find_if(searchScope->passes.begin(), searchScope->passes.end(), [&](PassPtr p)
+		{
+			return p->name() == passName;
+		});
+
+		if (passIt != searchScope->passes.end())
+			pass = *passIt;
+		else
+			searchScope = searchScope->parent;
+	}
+	while (searchScope != nullptr && pass == nullptr);
+
+	return pass;
 }

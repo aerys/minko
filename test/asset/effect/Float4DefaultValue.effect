@@ -1,0 +1,7 @@
+{
+    "uniforms" : {
+        "testFloat4Uniform" : { "default" : [[ 1.0, 1.0, 1.0, 1.0 ]] }
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

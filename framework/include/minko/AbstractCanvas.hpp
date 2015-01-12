@@ -49,6 +49,10 @@ namespace minko
         height() = 0;
 
         virtual
+        std::shared_ptr<data::Provider>
+        data() const = 0;
+
+        virtual
         std::shared_ptr<render::AbstractContext>
         context() = 0;
 
@@ -75,7 +79,7 @@ namespace minko
         virtual
         Signal<Ptr, uint, uint>::Ptr
         resized() = 0;
-        
+
         virtual
         Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr
         joystickAdded() = 0;

@@ -42,7 +42,7 @@ namespace minko
             typedef Signal<data::Store&, ProviderPtr, String>   PropertyChangedSignal;
 
 		private:
-			static std::shared_ptr<math::OctTree>			_octTree;
+			std::shared_ptr<math::OctTree>			        _octTree;
 
 			std::string										_bindProperty;
 			std::shared_ptr<math::AbstractShape>			_frustum;

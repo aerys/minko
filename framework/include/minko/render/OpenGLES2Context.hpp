@@ -184,7 +184,10 @@ namespace minko
 			present();
 
 			void
-			drawTriangles(const uint indexBuffer, const int numTriangles);
+			drawTriangles(const uint indexBuffer, const uint firstIndex, const int numTriangles);
+
+			void
+			drawTriangles(const uint firstIndex, const int numTriangles);
 
 			const uint
 			createVertexBuffer(const uint size);

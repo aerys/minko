@@ -6,7 +6,7 @@ float phong_diffuseReflection(vec3 normal, vec3 lightDirection)
 float phong_specularReflection(vec3 normal, vec3 lightDirection, vec3 viewVector, float shininess)
 {
 	float NdotL = dot(normal, lightDirection);
-	
+
 	if (NdotL < 0.0)
 	{
 		return 0.0;
@@ -24,7 +24,7 @@ vec3 phong_fresnel(vec3 specularColor, vec3 lightDirection, vec3 eyeVector)
 	vec3	halfVector	= normalize(eyeVector + lightDirection);
 	float 	k			= 1.0 - max(0.0, dot(eyeVector, halfVector));
 	float 	kk			= k * k;
-	
+
 	// Schlick's approximation
 	return specularColor + (vec3(1.0) - specularColor) * kk * kk * k;
 }
@@ -38,7 +38,7 @@ mat3 phong_getTangentToWorldSpaceMatrix(vec3 worldNormal, vec3 worldTangent)
 	worldTangent = normalize(worldTangent);
 
 	return mat3(
-		worldTangent,	
+		worldTangent,
 		cross(worldNormal, worldTangent),	// bi-tangent
 		worldNormal
 	);
@@ -55,4 +55,29 @@ mat3 phong_getWorldToTangentSpaceMatrix(vec3 worldNormal, vec3 worldTangent)
 	);
 
 	return transpose;
+}
+
+vec3 phong_directionalLight(vec3 	lightDirection,
+					   		vec3 	lightColor,
+					   		float 	lightDiffuse,
+					   		float 	lightSpecular,
+					   		vec3	eyeVector,
+					   		vec3	normalVector,
+					   		vec3	specularColor,
+					   		float 	shininess)
+{
+	lightDirection = normalize(-lightDirection);
+
+	vec3 diffuseRef = phong_diffuseReflection(normalVector, lightDirection)
+		* lightColor
+		* lightDiffuse;
+
+		#if defined(SHININESS)
+		specularAccum += phong_specularReflection(normalVector, lightDirection, eyeVector, shininess)
+			* phong_fresnel(specularColor.rgb, lightDirection, eyeVector)
+			* lightColor
+			* lightSpecular;
+	#endif // SHININESS
+
+	return diffuseRef;
 }

@@ -33,27 +33,21 @@ using namespace minko::component;
 
 Node::Node() :
 	_name(""),
-	_uuid(minko::Uuid::getUuid())
+	_uuid(minko::Uuid::getUuid()),
+	_layout(BuiltinLayout::DEFAULT)
 {
-}
-
-Layouts
-Node::layouts() const
-{
-    // FIXME
-	return 0;
 }
 
 Node::Ptr
 Node::clone(const CloneOption& option)
 {
 	auto clone = cloneNode();
-	
-	std::map<Node::Ptr, Node::Ptr>		nodeMap;		// map linking nodes to their clone
+
+	std::map<Node::Ptr, Node::Ptr>	nodeMap;		// map linking nodes to their clone
 	std::map<AbsCmpPtr, AbsCmpPtr>	componentsMap;	// map linking components to their clone
-	
+
 	listItems(clone, nodeMap, componentsMap);
-	
+
 	rebindComponentsDependencies(componentsMap, nodeMap, option);
 
 	for (auto itn = nodeMap.begin(); itn != nodeMap.end(); itn++)
@@ -70,8 +64,8 @@ Node::clone(const CloneOption& option)
 			if (std::find(originComponents.begin(), originComponents.end(), component) != originComponents.end())
 			{
 				nodeMap[node]->addComponent(componentsMap[component]);
-			}			
-		}	
+			}
+		}
 	}
 
 	return nodeMap[shared_from_this()];
@@ -79,7 +73,7 @@ Node::clone(const CloneOption& option)
 
 Node::Ptr
 Node::cloneNode()
-{	
+{
 	Node::Ptr clone = Node::create();
 
 	clone->_name = shared_from_this()->name() + "_clone";
@@ -96,27 +90,27 @@ Node::listItems(Node::Ptr clonedRoot, std::map<Node::Ptr, Node::Ptr>& nodeMap, s
 	for (auto component : _components)
 	{
 		components[component] = component->clone(CloneOption::DEEP);
-	}	
+	}
 
 	nodeMap[shared_from_this()] = clonedRoot;
 
-	for (int childId = 0; childId < children().size(); childId++)
+	for (uint childId = 0; childId < children().size(); childId++)
 	{
 		auto child = children().at(childId);
 		auto clonedChild = clonedRoot->children().at(childId);
 
 		child->listItems(clonedChild, nodeMap, components);
-	}	
+	}
 }
 
-void 
+void
 Node::rebindComponentsDependencies(std::map<AbsCmpPtr, AbsCmpPtr>& componentsMap, std::map<Node::Ptr, Node::Ptr> nodeMap, CloneOption option)
 {
 	for (auto itc = componentsMap.begin(); itc != componentsMap.end(); itc++)
 	{
 		auto comp = itc->first;
 		auto compClone = std::dynamic_pointer_cast<AbstractRebindableComponent>(itc->second);
-		
+
 		if (compClone != nullptr)
 		{
 			compClone->rebindDependencies(componentsMap, nodeMap, option);
@@ -125,22 +119,21 @@ Node::rebindComponentsDependencies(std::map<AbsCmpPtr, AbsCmpPtr>& componentsMap
 }
 
 Node::Ptr
-Node::layouts(Layouts value)
+Node::layout(Layout layout)
 {
-	if (value != layouts())
+    if (layout != _layout)
 	{
-        // FIXME
-		//_data->set<Layouts>("layouts", value);
+        _layout = layout;
 
 		// bubble down
         auto descendants = NodeSet::create(shared_from_this())->descendants(true);
 		for (auto descendant : descendants->nodes())
-			descendant->_layoutsChanged.execute(descendant, shared_from_this());
+			descendant->_layoutChanged.execute(descendant, shared_from_this());
 
 		// bubble up
 		auto ancestors = NodeSet::create(shared_from_this())->ancestors();
 		for (auto ancestor : ancestors->nodes())
-			ancestor->_layoutsChanged.execute(ancestor, shared_from_this());
+			ancestor->_layoutChanged.execute(ancestor, shared_from_this());
 	}
 
 	return shared_from_this();
@@ -260,8 +253,7 @@ Node::removeComponent(std::shared_ptr<AbstractComponent> component)
 		descendant->_componentRemoved.execute(descendant, shared_from_this(), component);
 
 	// bubble up
-	auto ancestors = NodeSet::create(shared_from_this())->ancestors();
-	for (auto ancestor : ancestors->nodes())
+	for (Ptr ancestor = parent(); ancestor != nullptr; ancestor = ancestor->parent())
 		ancestor->_componentRemoved.execute(ancestor, shared_from_this(), component);
 
 	return shared_from_this();

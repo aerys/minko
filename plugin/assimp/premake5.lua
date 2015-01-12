@@ -31,6 +31,9 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"lib/assimp/code/PlyExporter.cpp",
 		"lib/assimp/code/ColladaExporter.cpp",
 		"lib/assimp/code/ObjExporter.cpp",
+		"lib/assimp/code/XFileExporter.cpp",
+		"lib/assimp/code/AssbinExporter.cpp",
+		"lib/assimp/code/3DSExporter.cpp",
 		"lib/assimp/code/Exporter.cpp",
 		"lib/assimp/code/AssimpCExport.cpp"
 	}

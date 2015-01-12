@@ -43,10 +43,16 @@ namespace minko
             {}
 
             bool
-            operator==(const TextureSampler& rhs)
+            operator==(const TextureSampler& rhs) const
             {
                 return uuid == rhs.uuid && id == rhs.id && mipFilter == rhs.mipFilter
                     && textureFilter == rhs.textureFilter && wrapMode == rhs.wrapMode;
+            }
+
+            bool
+            operator!=(const TextureSampler& rhs) const
+            {
+                return !(*this == rhs);
             }
         };
     }
