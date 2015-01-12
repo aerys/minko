@@ -23,7 +23,7 @@ int main(int argc, char **argv)
 
 	auto output = RUN_ALL_TESTS();
 
-	//wait();
+	wait();
 
 	return output;
 }

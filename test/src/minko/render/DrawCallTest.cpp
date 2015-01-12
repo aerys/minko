@@ -61,7 +61,7 @@ TEST_F(DrawCallTest, OneFloatUniformBindingFromRootData)
 
     std::map<std::string, data::Binding> bindings = { { "uFoo", { "foo", data::Binding::Source::ROOT } } };
     DrawCall drawCall(nullptr, std::unordered_map<std::string, std::string>{}, rootData, rendererData, targetData);
-    ProgramInputs::UniformInput input = { "uFoo", 23, ProgramInputs::Type::float1 };
+    ProgramInputs::UniformInput input("uFoo", 23, 1, ProgramInputs::Type::float1);
 
     bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues) != nullptr;
 
@@ -136,7 +136,7 @@ TEST_F(DrawCallTest, OneFloatUniformWithVariableBindingFromRootData)
 
     std::map<std::string, data::Binding> bindings = { { "uFoo", { "foos[${bar}].foo", data::Binding::Source::ROOT } } };
     DrawCall drawCall(nullptr, {{ "bar", "0" }}, rootData, rendererData, targetData);
-    ProgramInputs::UniformInput input = { "uFoo", 23, ProgramInputs::Type::float1 };
+    ProgramInputs::UniformInput input("uFoo", 23, 1, ProgramInputs::Type::float1);
 
     bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues) != nullptr;
 
@@ -163,7 +163,7 @@ TEST_F(DrawCallTest, OneIntUniformBindingFromRootData)
 
     std::map<std::string, data::Binding> bindings = { { "uFoo", { "foo", data::Binding::Source::ROOT } } };
     DrawCall drawCall(nullptr, std::unordered_map<std::string, std::string>{}, rootData, rendererData, targetData);
-    ProgramInputs::UniformInput input = { "uFoo", 23, ProgramInputs::Type::int1 };
+    ProgramInputs::UniformInput input("uFoo", 23, 1, ProgramInputs::Type::int1);
 
     bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues) != nullptr;
 
@@ -230,7 +230,7 @@ TEST_F(DrawCallTest, OneIntUniformWithVariableBindingFromRootData)
 
     std::map<std::string, data::Binding> bindings = { { "uFoo", { "foos[${bar}].foo", data::Binding::Source::ROOT } } };
     DrawCall drawCall(nullptr, { { "bar", "0" } }, rootData, rendererData, targetData);
-    ProgramInputs::UniformInput input = { "uFoo", 23, ProgramInputs::Type::int1 };
+    ProgramInputs::UniformInput input("uFoo", 23, 1, ProgramInputs::Type::int1);
 
     bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues) != nullptr;
 
@@ -257,7 +257,7 @@ TEST_F(DrawCallTest, OneBoolUniformBindingFromRootData)
 
     std::map<std::string, data::Binding> bindings = { { "uFoo", { "foo", data::Binding::Source::ROOT } } };
     DrawCall drawCall(nullptr, std::unordered_map<std::string, std::string>{}, rootData, rendererData, targetData);
-    ProgramInputs::UniformInput input = { "uFoo", 23, ProgramInputs::Type::bool1 };
+    ProgramInputs::UniformInput input("uFoo", 23, 1, ProgramInputs::Type::bool1);
 
     bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues) != nullptr;
 
@@ -324,7 +324,7 @@ TEST_F(DrawCallTest, OneBoolUniformWithVariableBindingFromRootData)
 
     std::map<std::string, data::Binding> bindings = { { "uFoo", { "foos[${bar}].foo", data::Binding::Source::ROOT } } };
     DrawCall drawCall(nullptr, { { "bar", "0" } }, rootData, rendererData, targetData);
-    ProgramInputs::UniformInput input = { "uFoo", 23, ProgramInputs::Type::bool1 };
+    ProgramInputs::UniformInput input("uFoo", 23, 1, ProgramInputs::Type::bool1);
 
     bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues) != nullptr;
 

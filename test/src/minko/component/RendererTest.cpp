@@ -36,19 +36,24 @@ TEST_F(RendererTest, AddAndRemoveSurfaces)
         ->addComponent(PerspectiveCamera::create(1.f))
         ->addComponent(renderer);
 
+    auto material = material::BasicMaterial::create();
+    material->diffuseColor(math::vec4(1.f));
+
     auto s1 = Surface::create(
         geometry::CubeGeometry::create(MinkoTests::canvas()->context()),
-        material::BasicMaterial::create()->diffuseColor(math::vec4(1.f)),
+        material,
         fx
     );
     auto s2 = Surface::create(
         geometry::CubeGeometry::create(MinkoTests::canvas()->context()),
-        material::BasicMaterial::create()->diffuseColor(math::vec4(1.f)),
+        material,
         fx
     );
+
+
     auto s3 = Surface::create(
         geometry::CubeGeometry::create(MinkoTests::canvas()->context()),
-        material::BasicMaterial::create()->diffuseColor(math::vec4(1.f)),
+        material,
         fx
     );
 
@@ -77,9 +82,12 @@ TEST_F(RendererTest, AddAndRemoveSurfaceBubbeUp)
     auto surfaceNode = scene::Node::create();
     root->addChild(surfaceNode);
 
+    auto material = material::BasicMaterial::create();
+    material->diffuseColor(math::vec4(1.f));
+
     auto s1 = Surface::create(
         geometry::CubeGeometry::create(MinkoTests::canvas()->context()),
-        material::BasicMaterial::create()->diffuseColor(math::vec4(1.f)),
+        material,
         fx
     );
 
@@ -105,9 +113,12 @@ TEST_F(RendererTest, OneSurfaceLayoutMaskFail)
     auto surfaceNode = scene::Node::create();
     root->addChild(surfaceNode);
 
+    auto material = material::BasicMaterial::create();
+    material->diffuseColor(math::vec4(1.f));
+
     auto surface = Surface::create(
         geometry::CubeGeometry::create(MinkoTests::canvas()->context()),
-        material::BasicMaterial::create()->diffuseColor(math::vec4(1.f)),
+        material,
         fx
     );
 
@@ -131,9 +142,12 @@ TEST_F(RendererTest, OneSurfaceLayoutMaskPass)
     auto surfaceNode = scene::Node::create();
     root->addChild(surfaceNode);
 
+    auto material = material::BasicMaterial::create();
+    material->diffuseColor(math::vec4(1.f));
+
     auto surface = Surface::create(
         geometry::CubeGeometry::create(MinkoTests::canvas()->context()),
-        material::BasicMaterial::create()->diffuseColor(math::vec4(1.f)),
+        material,
         fx
     );
 
