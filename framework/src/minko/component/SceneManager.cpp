@@ -69,7 +69,8 @@ SceneManager::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
     if (target->components<SceneManager>().size() > 1)
         throw std::logic_error("The same root node cannot have more than one SceneManager.");
 
-    target->data()->addProvider(_data);
+	target->data()->addProvider(_data);
+    target->data()->addProvider(_canvas->data());
 
     _addedSlot = target->added()->connect(std::bind(
         &SceneManager::addedHandler,
@@ -84,7 +85,8 @@ void
 SceneManager::targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
 {
     _addedSlot = nullptr;
-    target->data()->removeProvider(_data);
+	target->data()->removeProvider(_data);
+    target->data()->removeProvider(_canvas->data());
 }
 
 void
