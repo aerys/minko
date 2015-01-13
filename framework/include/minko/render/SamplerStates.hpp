@@ -81,43 +81,6 @@ namespace minko
                 return value == "linear" ? MipFilter::LINEAR : (value == "nearest" ? MipFilter::NEAREST : MipFilter::NONE);
             }
 
-            /*
-            static
-            inline
-            const type_info& stringToSamplerStateType(const std::string& value)
-            {
-                if (STRING_TO_ENUM_TYPE_MAP.find(value) != STRING_TO_ENUM_TYPE_MAP.end())
-                    return SamplerStates::STRING_TO_ENUM_TYPE_MAP.at(value);
-                else
-                    return SamplerStates::STRING_TO_ENUM_TYPE_MAP.at(0);
-            }
-
-            template<typename T>
-            static
-            inline
-            T stringToSamplerState(const std::string& value)
-            {
-                if (typeid(T) == typeid(WrapMode))
-                {
-                    return value == "repeat" ? WrapMode::REPEAT : WrapMode::CLAMP;
-                }
-                else if (typeid(T) == typeid(TextureFilter))
-                {
-                    return value == "linear" ? TextureFilter::LINEAR : TextureFilter::NEAREST;
-                }
-                else if (typeid(T) == typeid(MipFilter))
-                {
-                    return value == "linear" ? MipFilter::LINEAR : (value == "nearest" ? MipFilter::NEAREST : MipFilter::NONE);
-                }
-                else
-                {
-                    return MipFilter::NONE;
-                }
-            }
-            */
-        private:
-            //static const std::map<std::string, type_info>   STRING_TO_ENUM_TYPE_MAP;
-
         public:
             WrapMode* wrapMode;
             TextureFilter* textureFilter;

@@ -34,11 +34,3 @@ const std::array<std::string, 3> SamplerStates::PROPERTY_NAMES = {
     PROPERTY_TEXTURE_FILTER,
     PROPERTY_MIP_FILTER
 };
-
-/*
-const std::map<std::string, type_info> SamplerStates::STRING_TO_ENUM_TYPE_MAP = {
-    { PROPERTY_WRAP_MODE, typeid(WrapMode) },
-    { PROPERTY_TEXTURE_FILTER, typeid(TextureFilter) },
-    { PROPERTY_MIP_FILTER, typeid(MipFilter) }
-};
-*/
