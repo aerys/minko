@@ -215,6 +215,84 @@ DrawCall::bindUniform(ConstUniformInputRef                          input,
     return binding;
 }
 
+std::array<data::ResolvedBinding*, 3>
+DrawCall::bindSamplerStates(ConstUniformInputRef                          input,
+                            const std::map<std::string, data::Binding>&   uniformBindings,
+                            const data::Store&                            defaultValues)
+{
+    auto wrapModeBinding = bindSamplerState(input, uniformBindings, defaultValues, SamplerStates::PROPERTY_WRAP_MODE);
+    auto textureFilterBinding = bindSamplerState(input, uniformBindings, defaultValues, SamplerStates::PROPERTY_TEXTURE_FILTER);
+    auto mipFilterBinding = bindSamplerState(input, uniformBindings, defaultValues, SamplerStates::PROPERTY_MIP_FILTER);
+
+    SamplerStatesResolveBindings samplerStatesResolveBindings = {
+        wrapModeBinding,
+        textureFilterBinding,
+        mipFilterBinding
+    };
+
+    return samplerStatesResolveBindings;
+}
+
+data::ResolvedBinding*
+DrawCall::bindSamplerState(ConstUniformInputRef                          input,
+                           const std::map<std::string, data::Binding>&   uniformBindings,
+                           const data::Store&                            defaultValues,
+                           const std::string&                            samplerStateProperty)
+{
+    if (samplerStateProperty == SamplerStates::PROPERTY_WRAP_MODE || 
+        samplerStateProperty == SamplerStates::PROPERTY_TEXTURE_FILTER ||
+        samplerStateProperty == SamplerStates::PROPERTY_MIP_FILTER)
+    {
+        auto binding = resolveBinding(
+            SamplerStates::uniformNameToSamplerStateName(
+                input.name,
+                samplerStateProperty
+            ),
+            uniformBindings
+        );
+
+        if (binding == nullptr)
+        {
+            if (!defaultValues.hasProperty(input.name))
+            {
+                auto it = std::find(_program->setUniformNames().begin(), _program->setUniformNames().end(), input.name);
+
+                if (it == _program->setUniformNames().end())
+                {
+                    throw std::runtime_error(
+                        "Program \"" + _program->name() + "\": the sampler state \"" + input.name
+                        + "\" is not bound, has not been set and no default value was provided."
+                        );
+                }
+            }
+
+            setSamplerStateValueFromStore(input, input.name, defaultValues, samplerStateProperty);
+        }
+        else
+        {
+            if (!binding->store.hasProperty(binding->propertyName))
+            {
+                if (!defaultValues.hasProperty(input.name))
+                {
+                    throw std::runtime_error(
+                        "Program \"" + _program->name() + "\": the sampler state \""
+                        + input.name + "\" is bound to the \"" + binding->propertyName
+                        + "\" property but it's not defined and no default value was provided."
+                        );
+                }
+                else
+                    setSamplerStateValueFromStore(input, input.name, defaultValues, samplerStateProperty);
+            }
+            else
+                setSamplerStateValueFromStore(input, binding->propertyName, binding->store, samplerStateProperty);
+        }
+
+        return binding;
+    }
+
+    return nullptr;
+}
+
 void
 DrawCall::setUniformValueFromStore(const ProgramInputs::UniformInput&   input,
                                    const std::string&                   propertyName,
@@ -274,6 +352,22 @@ DrawCall::setUniformValueFromStore(const ProgramInputs::UniformInput&   input,
             throw std::runtime_error("unsupported program input type: " + ProgramInputs::typeToString(input.type));
         break;
     }
+}
+
+void
+DrawCall::setSamplerStateValueFromStore(const ProgramInputs::UniformInput&  input,
+                                        const std::string&                  propertyName,
+                                        const data::Store&                  store,
+                                        const std::string&                  samplerStateProperty)
+{
+    auto& sampler = _samplers.at(input.location);
+
+    if (samplerStateProperty == SamplerStates::PROPERTY_WRAP_MODE)
+        sampler.wrapMode = store.getUnsafePointer<WrapMode>(propertyName);
+    else if (samplerStateProperty == SamplerStates::PROPERTY_TEXTURE_FILTER)
+        sampler.textureFilter = store.getUnsafePointer<TextureFilter>(propertyName);
+    else if (samplerStateProperty == SamplerStates::PROPERTY_MIP_FILTER)
+        sampler.mipFilter = store.getUnsafePointer<MipFilter>(propertyName);
 }
 
 void
@@ -386,8 +480,9 @@ DrawCall::render(AbstractContext::Ptr   context,
     for (const auto& s : _samplers)
     {
         context->setTextureAt(s.position, *s.resourceId, s.location);
-        context->setSamplerStateAt(s.position, WrapMode::CLAMP, TextureFilter::LINEAR, MipFilter::NONE);
+        context->setSamplerStateAt(s.position, *s.wrapMode, *s.textureFilter, *s.mipFilter);
     }
+
     for (auto numSamplers = _samplers.size(); numSamplers < MAX_NUM_TEXTURES; ++numSamplers)
         context->setTextureAt(numSamplers, -1, -1);
 

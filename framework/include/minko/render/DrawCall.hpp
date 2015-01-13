@@ -60,12 +60,10 @@ namespace minko
                 const uint position;
                 const int* resourceId;
                 const int location;
-                /*
                 WrapMode* wrapMode;
                 TextureFilter* textureFilter;
                 MipFilter* mipFilter;
-                TextureType* type;
-                */
+                //TextureType* type;
             };
 
             struct AttributeValue
@@ -82,6 +80,8 @@ namespace minko
 			typedef std::shared_ptr<Program>			            ProgramPtr;
             typedef std::unordered_map<std::string, std::string>    StringMap;
             typedef data::Store::PropertyChangedSignal::Slot        ChangedSlot;
+            
+            typedef std::array<data::ResolvedBinding*, 3>           SamplerStatesResolveBindings;
 
 		private:
             std::shared_ptr<Pass>               _pass;
@@ -254,6 +254,17 @@ namespace minko
                         const std::map<std::string, data::Binding>& uniformBindings,
                         const data::Store&                          defaultValues);
 
+            SamplerStatesResolveBindings
+            bindSamplerStates(const ProgramInputs::UniformInput&          input,
+                              const std::map<std::string, data::Binding>& uniformBindings,
+                              const data::Store&                          defaultValues);
+
+            data::ResolvedBinding*
+            bindSamplerState(ConstUniformInputRef                          input,
+                             const std::map<std::string, data::Binding>&   uniformBindings,
+                             const data::Store&                            defaultValues,
+                             const std::string&                            samplerStateProperty);
+
 			void
             bindStates(const std::map<std::string, data::Binding>&	stateBindings,
 					   const data::Store&							defaultValues);
@@ -280,6 +291,12 @@ namespace minko
 			setUniformValueFromStore(const ProgramInputs::UniformInput&   input,
 									 const std::string&                   propertyName,
 									 const data::Store&                   store);
+
+            void
+            setSamplerStateValueFromStore(const ProgramInputs::UniformInput&   input,
+                                          const std::string&                   propertyName,
+                                          const data::Store&                   store,
+                                          const std::string&                   samplerStateProperty);
 
 			void
 			setAttributeValueFromStore(const ProgramInputs::AttributeInput& input,

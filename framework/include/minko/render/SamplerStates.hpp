@@ -52,11 +52,12 @@ namespace minko
 
             static
             inline
-            std::string uniformNameToSamplerStateBindingName(const std::string& uniformName, std::string samplerState)
+            std::string uniformNameToSamplerStateBindingName(const std::string& uniformName, const std::string& samplerState)
             {
-                samplerState[0] = toupper(samplerState[0]);
+                auto samplerStateCapitalized = std::string(samplerState);
+                samplerStateCapitalized[0] = toupper(samplerStateCapitalized[0]);
                     
-                return uniformName + samplerState;
+                return uniformName + samplerStateCapitalized;
             }
 
             static
