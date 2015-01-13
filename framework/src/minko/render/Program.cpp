@@ -103,7 +103,7 @@ Program::setAttribute(const std::string& name, const VertexAttribute& attribute,
     {
         auto oldProgram = _context->currentProgram();
 
-        _context->setVertexBufferAt(_setAttributes.size(), (uint)attribute.resourceId, attribute.size, *attribute.vertexSize, attribute.offset);
+        _context->setVertexBufferAt(_setAttributes.size(), *attribute.resourceId, attribute.size, *attribute.vertexSize, attribute.offset);
         _context->setProgram(oldProgram);
 
         _setAttributes.insert(name);

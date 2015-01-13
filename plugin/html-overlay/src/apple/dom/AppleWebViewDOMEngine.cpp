@@ -435,7 +435,8 @@ AppleWebViewDOMEngine::registerDomEvents()
         _canvas->mouse()->x(x);
         _canvas->mouse()->y(y);
 
-        _canvas->mouse()->leftButtonDown()->execute(_canvas->mouse());
+        if (event->button() == 0)
+            _canvas->mouse()->leftButtonDown()->execute(_canvas->mouse());
     });
 
     _onmouseupSlot = _currentDOM->document()->onmouseup()->connect([&](AbstractDOMMouseEvent::Ptr event)
@@ -446,7 +447,8 @@ AppleWebViewDOMEngine::registerDomEvents()
         _canvas->mouse()->x(x);
         _canvas->mouse()->y(y);
         
-        _canvas->mouse()->leftButtonUp()->execute(_canvas->mouse());
+        if (event->button() == 0)
+            _canvas->mouse()->leftButtonUp()->execute(_canvas->mouse());
     });
 
     _onmousemoveSlot = _currentDOM->document()->onmousemove()->connect([&](AbstractDOMMouseEvent::Ptr event)
@@ -504,8 +506,8 @@ AppleWebViewDOMEngine::registerDomEvents()
         float x = event->clientX();
         float y = event->clientY();
         
-        float oldX = _canvas->touch()->touch(identifier)->x();
-        float oldY = _canvas->touch()->touch(identifier)->y();
+        float oldX = _canvas->touch()->touch(identifier).x;
+        float oldY = _canvas->touch()->touch(identifier).y;
 
         SDL_Event sdlEvent;
         sdlEvent.type = SDL_FINGERMOTION;

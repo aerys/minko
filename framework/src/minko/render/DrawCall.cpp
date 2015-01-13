@@ -258,7 +258,7 @@ DrawCall::bindAttribute(Program::Ptr            program,
     const auto& attr = store.getPointer<VertexAttribute>(propertyName);
 
     _attributes.push_back({
-        program->setAttributeNames().size() + _attributes.size(),
+        static_cast<uint>(program->setAttributeNames().size() + _attributes.size()),
         input.location,
         attr->resourceId,
         attr->size,
@@ -316,7 +316,7 @@ DrawCall::bindUniform(Program::Ptr            program,
             break;
         case ProgramInputs::Type::sampler2d:
             _samplers.push_back({
-                program->setTextureNames().size() + _samplers.size(),
+                static_cast<uint>(program->setTextureNames().size() + _samplers.size()),
                 store.getPointer<TextureSampler>(propertyName)->id,
                 input.location
             });
