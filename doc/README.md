@@ -1,4 +1,4 @@
-![](../doc/image/Features_engine_Cpp_web_tank_new.jpg "fig:../doc/image/Features_engine_Cpp_web_tank_new.png")
+![](../doc/image/Features_engine_Cpp_web_tank_new.png "fig:../doc/image/Features_engine_Cpp_web_tank_new.png")
 
 #Hi there!
 
