@@ -1,5 +1,5 @@
-Platforms Compatibility for Minko 3 BETA 1
-==========================================
+Platforms Compatibility for Minko 3
+===================================
 
 The platforms compatibility matrix provides the current state of support for each platform officially targeted by the Minko Framework. you can consult the [plugins compatibility matrix](../article/Plugin_compatibility_matrix.md) to find out more about the plugins support for each platform.
 
@@ -12,7 +12,7 @@ Platforms officially targeted
 | ![](../../doc/image/Winmini.png "fig:../../doc/image/Winmini.png") Windows                   | ![](../../doc/image/Checked.png "../../doc/image/Checked.png") | windows32<br/>windows64        |
 | ![](../../doc/image/Mac_min.png "fig:../../doc/image/Mac_min.png") OS X                      | ![](../../doc/image/Checked.png "../../doc/image/Checked.png") | osx64                            |
 | ![](../../doc/image/Linux_min.png "fig:../../doc/image/Linux_min.png") Linux                 | ![](../../doc/image/Checked.png "../../doc/image/Checked.png") | linux32<br/>linux64            |
-| ![](../../doc/image/Androidmini.png "fig:../../doc/image/Androidmini.png") Android           | ![](../../doc/image/Help_16.png "../../doc/image/Help_16.png") | N/A (expected for the beta 2...) |
+| ![](../../doc/image/Androidmini.png "fig:../../doc/image/Androidmini.png") Android           | ![](../../doc/image/Checked.png "../../doc/image/Checked.png") | N/A (expected for the beta 2...) |
 | ![](../../doc/image/Iso7mini.png "fig:../../doc/image/Iso7mini.png") iOS                     | ![](../../doc/image/Checked.png "../../doc/image/Checked.png") | ios                              |
 | ![](../../doc/image/Flashmini.png "fig:../../doc/image/Flashmini.png") Flash                 | ![](../../doc/image/Help_16.png "../../doc/image/Help_16.png") | N/A                              |
 | ![](../../doc/image/Windows_phone.png "fig:../../doc/image/Windows_phone.png") Windows Phone | ![](../../doc/image/Help_16.png "../../doc/image/Help_16.png") | N/A                              |
@@ -20,7 +20,7 @@ Platforms officially targeted
 Target compatibility matrices
 -----------------------------
 
-For each platform, support may vary depending of the host version, the possible states for each host are :
+For each platform, support may vary depending of the host:
 
 -   ![](../../doc/image/Checked.png "fig:../../doc/image/Checked.png"): Fully supported
 -   ![](../../doc/image/Warning.png "fig:../../doc/image/Warning.png"): Partially supported
@@ -35,8 +35,8 @@ Minko for HTML5 relies only on WebGL, the HTML5 standard API to create 3D web ap
 |-------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Chrome 20+  | ![](../../doc/image/Checked.png "../../doc/image/Checked.png")                                                                                              |
 | Firefox 20+ | ![](../../doc/image/Checked.png "../../doc/image/Checked.png")                                                                                              |
-| IE 6-10     | ![](../../doc/image/Error.png "fig:../../doc/image/Error.png") Not supported as those versions of Internet explorer do NOT support the WebGL fonctionality. |
-| IE 11       | ![](../../doc/image/Warning.png "fig:../../doc/image/Warning.png") Some functionalities might not be fully supported                                        |
+| IE 6-10     | ![](../../doc/image/Error.png "fig:../../doc/image/Error.png") Not supported (no WebGL support) |
+| IE 11       | ![](../../doc/image/Checked.png "fig:../../doc/image/Checked.png")  |
 | Opera 18+   | ![](../../doc/image/Checked.png "../../doc/image/Checked.png")                                                                                              |
 
 ### ![](../../doc/image/Winmini.png "fig:../../doc/image/Winmini.png") Microsoft Windows
@@ -52,7 +52,7 @@ Minko for HTML5 relies only on WebGL, the HTML5 standard API to create 3D web ap
 
 | Host                 | Support                                                                                                                                                                                            |
 |----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 10.6 "Snow Leopard"  | ![](../../doc/image/Error.png "fig:../../doc/image/Error.png") Even if targeting MacOS 10.6 is technically feasible with some hacking, this version is no more supported by Apple Xcode toolchain. |
+| 10.6 "Snow Leopard"  | ![](../../doc/image/Error.png "fig:../../doc/image/Error.png") Not supported by the Xcode toolchain. |
 | 10.7 "Lion"          | ![](../../doc/image/Checked.png "../../doc/image/Checked.png")                                                                                                                                     |
 | 10.8 "Mountain Lion" | ![](../../doc/image/Checked.png "../../doc/image/Checked.png")                                                                                                                                     |
 | 10.9 "Mavericks"     | ![](../../doc/image/Checked.png "../../doc/image/Checked.png")                                                                                                                                     |
@@ -68,7 +68,7 @@ Minko for HTML5 relies only on WebGL, the HTML5 standard API to create 3D web ap
 
 | Host         | Support                                                                                                         |
 |--------------|-----------------------------------------------------------------------------------------------------------------|
-| Android 2.5+ | ![](../../doc/image/Help_16.png "fig:../../doc/image/Help_16.png") We're working on it ! Expected for beta 2... |
+| Android 4.0+ | ![](../../doc/image/Checked.png "fig:../../doc/image/Checked.png") |
 
 ### ![](../../doc/image/Iso7mini.png "fig:../../doc/image/Iso7mini.png") Apple iOS
 
@@ -80,7 +80,7 @@ Minko for HTML5 relies only on WebGL, the HTML5 standard API to create 3D web ap
 
 | Host        | Support                                                                                 |
 |-------------|-----------------------------------------------------------------------------------------|
-| Flash 11.2+ | ![](../../doc/image/Help_16.png "fig:../../doc/image/Help_16.png") We're working on it! |
+| Flash 11.2+ | ![](../../doc/image/Error.png "fig:../../doc/image/Error.png") Need support from Adobe. |
 
 ### ![](../../doc/image/Windows_phone.png "fig:../../doc/image/Windows_phone.png") Windows Phone
 
