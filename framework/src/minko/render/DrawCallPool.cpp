@@ -96,6 +96,7 @@ DrawCallPool::watchProgramSignature(DrawCall&                       drawCall,
 {
     for (const auto& macroNameAndBinding : macroBindings.bindings)
     {
+        const auto& macroName = macroNameAndBinding.first;
         const auto& macroBinding = macroNameAndBinding.second;
         auto& store = macroBinding.source == data::Binding::Source::ROOT ? rootData
             : macroBinding.source == data::Binding::Source::RENDERER ? rendererData
@@ -108,7 +109,7 @@ DrawCallPool::watchProgramSignature(DrawCall&                       drawCall,
         if (hasMacroCallback(bindingKey))
             continue;
 
-        if (macroBinding.type != data::MacroBinding::Type::UNSET)
+        if (macroBindings.types.at(macroName) != data::MacroBindingMap::MacroType::UNSET)
         {
             addMacroCallback(
                 bindingKey,

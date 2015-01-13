@@ -331,10 +331,11 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
 				);
 				passScope.stateBlock.bindingMap.defaultValues.addProvider(passScope.stateBlock.states.data());
 
-				passScope.macroBlock.bindingMap = {
+				passScope.macroBlock.bindingMap = MacroBindingMap(
 					pass->macroBindings().bindings,
-					data::Store(pass->macroBindings().defaultValues, true)
-				};
+					data::Store(pass->macroBindings().defaultValues, true),
+					pass->macroBindings().types
+				);
 
 				vertexShader = pass->program()->vertexShader();
 				fragmentShader = pass->program()->fragmentShader();
@@ -608,9 +609,15 @@ EffectParser::parseMacros(const Json::Value& node, const Scope& scope, MacroBloc
 
     if (macrosNode.isObject())
     {
-        auto defaultValuesProvider = data::Provider::create();
+        data::Provider::Ptr defaultValuesProvider;
 
-        macros.bindingMap.defaultValues.addProvider(defaultValuesProvider);
+		if (macros.bindingMap.defaultValues.providers().size() != 0)
+			defaultValuesProvider = macros.bindingMap.defaultValues.providers().front();
+		else
+		{
+			defaultValuesProvider = data::Provider::create();
+			macros.bindingMap.defaultValues.addProvider(defaultValuesProvider);
+		}
 
         for (auto macroName : macrosNode.getMemberNames())
         {
@@ -624,6 +631,14 @@ EffectParser::parseMacros(const Json::Value& node, const Scope& scope, MacroBloc
 			}
 
             parseDefaultValue(macroNode, scope, macroName, defaultValuesProvider);
+
+			macros.bindingMap.types[macroName] = MacroBindingMap::MacroType::UNSET;
+			if (macroNode.isObject())
+			{
+			    auto typeNode = macroNode.get("type", 0);
+			    if (typeNode.isString())
+					macros.bindingMap.types[macroName] = MacroBindingMap::stringToMacroType(typeNode.asString());
+			}
         }
     }
     // FIXME: throw otherwise
@@ -1128,23 +1143,7 @@ EffectParser::parseMacroBinding(const Json::Value& node, const Scope& scope, Mac
     auto bindingNode = node.get("binding", 0);
 
     if (!bindingNode.isObject())
-        return;
-
-    auto typeNode = bindingNode.get("type", 0);
-    if (typeNode.isString())
-    {
-        auto typeStr = typeNode.asString();
-
-        if (typeStr == "bool")
-            binding.type = data::MacroBinding::Type::BOOL;
-        else if (typeStr == "int")
-            binding.type = data::MacroBinding::Type::INT;
-        else if (typeStr == "float")
-            binding.type = data::MacroBinding::Type::FLOAT;
-
-        // FIXME: handle other Binding::Type values
-    }
-    // FIXME: throw otherwise
+    	return;
 
     auto minNode = bindingNode.get("min", "");
     if (minNode.isInt())

@@ -28,41 +28,20 @@ namespace minko
     {
         struct MacroBinding : public Binding
         {
-            enum class Type
-            {
-                UNSET,
-                INT,
-                INT2,
-                INT3,
-                INT4,
-                FLOAT,
-                FLOAT2,
-                FLOAT3,
-                FLOAT4,
-                BOOL,
-                BOOL2,
-                BOOL3,
-                BOOL4
-            };
-
-            Type    type;
-            int     minValue;
-            int     maxValue;
+            int minValue;
+            int maxValue;
 
             MacroBinding(const std::string& propertyName,
                          Source             source,
-                         Type               type,
                          int                min = -std::numeric_limits<int>::max(),
                          int                max = std::numeric_limits<int>::max()) :
                 Binding(propertyName, source),
-                type(type),
                 minValue(min),
                 maxValue(max)
             {}
 
             MacroBinding() :
                 Binding(),
-                type(Type::UNSET),
                 minValue(-std::numeric_limits<int>::max()),
                 maxValue(std::numeric_limits<int>::max())
             {}
