@@ -1,4 +1,8 @@
-![](../doc/image/Features_engine_Cpp_web_tank_new.png "fig:../doc/image/Features_engine_Cpp_web_tank_new.png") `Hi there!` Welcome to the official **Minko 3** documentation. Here you will find all the resources you might need to start working with Minko and learn everything about it. Tutorials, examples, technical articles... we've gathered everything in one place to make your work easier. Enjoy :)
+![](../doc/image/Features_engine_Cpp_web_tank_new.jpg "fig:../doc/image/Features_engine_Cpp_web_tank_new.png")
+
+#Hi there!
+
+Welcome to the official **Minko 3** documentation. Here you will find all the resources you might need to start working with Minko and learn everything about it. Tutorials, examples, technical articles... we've gathered everything in one place to make your work easier. Enjoy :)
 
 [Let's get started!](tutorial/Getting_started_with_Minko_3.md)
 
