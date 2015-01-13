@@ -1,0 +1,7 @@
+{
+    "macros" : {
+        "TEST_FLOAT_MACRO" : { "type" : "float", "default" : 42.24 }
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}
