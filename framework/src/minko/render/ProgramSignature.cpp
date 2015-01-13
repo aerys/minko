@@ -90,8 +90,6 @@ ProgramSignature::ProgramSignature(const data::MacroBindingMap&                 
     {
         for (const auto& propertyNameAndValue : provider->values())
         {
-            std::cout << macroBindings.types.count(propertyNameAndValue.first) << std::endl;
-
             _mask |= 1 << macroId;
             _macros.push_back(propertyNameAndValue.first);
             _types.push_back(macroBindings.types.at(propertyNameAndValue.first));
