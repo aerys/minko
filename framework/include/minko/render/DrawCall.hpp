@@ -60,9 +60,9 @@ namespace minko
                 const uint position;
                 const int* resourceId;
                 const int location;
-                WrapMode* wrapMode;
-                TextureFilter* textureFilter;
-                MipFilter* mipFilter;
+                const WrapMode* wrapMode;
+                const TextureFilter* textureFilter;
+                const MipFilter* mipFilter;
                 //TextureType* type;
             };
 

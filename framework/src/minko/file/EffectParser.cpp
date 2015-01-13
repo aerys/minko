@@ -632,20 +632,6 @@ EffectParser::parseSamplerStates(const Json::Value& node, const Scope& scope, co
 {
     if (node.isObject())
     {
-        /*
-        for (auto propertyName : SamplerStates::PROPERTY_NAMES)
-        {
-            auto samplerStateNode = node.get(propertyName, 0);
-
-            if (samplerStateNode.isString())
-            {
-                auto samplerStateString = samplerStateNode.asString();
-                const type_info& samplerStateType = SamplerStates::stringToSamplerStateType(propertyName);
-                auto samplerState = SamplerStates::stringToSamplerState<decltype(samplerStateType)>(samplerStateString);
-            }
-        }
-        */
-
         auto wrapModeNode = node.get(SamplerStates::PROPERTY_WRAP_MODE, 0);
 
         if (wrapModeNode.isString())
@@ -771,32 +757,6 @@ EffectParser::parseSamplerStates(const Json::Value& node, const Scope& scope, co
                 SamplerStates::DEFAULT_MIP_FILTER
             );
         }
-    }
-    else
-    {
-        defaultValues->set(
-            SamplerStates::uniformNameToSamplerStateName(
-                uniformName,
-                SamplerStates::PROPERTY_WRAP_MODE
-            ),
-            SamplerStates::DEFAULT_WRAP_MODE
-        );
-
-        defaultValues->set(
-            SamplerStates::uniformNameToSamplerStateName(
-                uniformName,
-                SamplerStates::PROPERTY_TEXTURE_FILTER
-            ),
-            SamplerStates::DEFAULT_TEXTURE_FILTER
-        );
-
-        defaultValues->set(
-            SamplerStates::uniformNameToSamplerStateName(
-                uniformName,
-                SamplerStates::PROPERTY_MIP_FILTER
-            ),
-            SamplerStates::DEFAULT_MIP_FILTER
-        );
     }
 }
 
