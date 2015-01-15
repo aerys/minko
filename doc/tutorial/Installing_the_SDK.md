@@ -1,7 +1,9 @@
-Step 1: Install a Git client
-----------------------------
 The SDK is only available as source code. You will have to compile it from our repository.
 
+If you don't want to bother with Git, you should simply [Download an archive of the source code](https://github.com/aerys/minko/releases) and go to [Step 4](Installing_the_SDK.md#step-4-setup-your-environment).
+
+Step 1: Install a Git client
+----------------------------
 The source code of Minko is available on [GitHub](https://github.com). This is an easy and elegant way for us to share our work. If you're already familiar with classic VCS such as Subversion (SVN), Git should not be a problem for you. Only better. You can use the official Github client for Windows or for Mac if you're into social coding.
 
 We also recommend [SmartGit](http://www.syntevo.com/smartgit/download.html) which is a really nice Git client for Windows/Mac. SmartGit is very cool because you can merge all your repositories into a single project and perform bulk actions on all of them. That's very useful when you work with Minko and some of its extensions and want to update everything!
@@ -19,7 +21,7 @@ If you're working with GitHub for Windows/Mac, you can clone the repository simp
 
 ![](../../doc/image/Minko_github_clone.jpg "../../doc/image/Minko_github_clone.jpg")
 
-The URI of the GitHub repository is : [here !](https://github.com/aerys/minko.git "here !")
+The URI of the GitHub repository is: https://github.com/aerys/minko.git
 
 Step 3 (optional): Switching to the 'dev' branch
 ------------------------------------------------
