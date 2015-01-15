@@ -11,6 +11,14 @@
 attribute vec3 aPosition;
 attribute vec2 aUV;
 
+#ifdef SKINNING_NUM_BONES
+attribute vec4 aBoneIdsA;
+attribute vec4 aBoneIdsB;
+attribute vec4 aBoneWeightsA;
+attribute vec4 aBoneWeightsB;
+uniform mat4 uBoneMatrices[SKINNING_NUM_BONES];
+#endif
+
 uniform mat4 uModelToWorldMatrix;
 uniform mat4 uWorldToScreenMatrix;
 uniform vec2 uUVScale;
@@ -42,7 +50,7 @@ void main(void)
 	vec4 pos = vec4(aPosition, 1.0);
 
 	#ifdef NUM_BONES
-		pos = skinning_moveVertex(pos);
+		pos = skinning_moveVertex(worldPosition, uBoneMatrices, aBoneIdsA, aBoneIdsB, aBoneWeightsA, aBoneWeightsB);
 	#endif
 
 	#ifdef MODEL_TO_WORLD

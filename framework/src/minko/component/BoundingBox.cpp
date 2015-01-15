@@ -52,11 +52,11 @@ BoundingBox::BoundingBox() :
 }
 
 BoundingBox::BoundingBox(const BoundingBox& bbox, const CloneOption& option) :
-_fixed(bbox._fixed),
-_box(option == CloneOption::SHALLOW ? bbox._box : math::Box::create(bbox._box->topRight(), bbox._box->bottomLeft())),
-_worldSpaceBox(option == CloneOption::SHALLOW ? bbox._worldSpaceBox : math::Box::create(bbox._worldSpaceBox->topRight(), bbox._worldSpaceBox->bottomLeft())),
-_invalidBox(bbox._invalidBox),
-_invalidWorldSpaceBox(bbox._invalidWorldSpaceBox)
+	_fixed(bbox._fixed),
+	_box(option == CloneOption::SHALLOW ? bbox._box : math::Box::create(bbox._box->topRight(), bbox._box->bottomLeft())),
+	_worldSpaceBox(option == CloneOption::SHALLOW ? bbox._worldSpaceBox : math::Box::create(bbox._worldSpaceBox->topRight(), bbox._worldSpaceBox->bottomLeft())),
+	_invalidBox(bbox._invalidBox),
+	_invalidWorldSpaceBox(bbox._invalidWorldSpaceBox)
 {
 
 }
@@ -152,7 +152,7 @@ BoundingBox::update()
     if (!_fixed)
     {
         auto surfaces = target->components<Surface>();
-        
+
 		auto min = math::vec3(
 			std::numeric_limits<float>::max(),
 			std::numeric_limits<float>::max(),
@@ -163,7 +163,7 @@ BoundingBox::update()
 			-std::numeric_limits<float>::max(),
 			-std::numeric_limits<float>::max()
 		);
-        
+
         if (!surfaces.empty())
         {
             computeBox(surfaces, min, max);

@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Store.hpp"
 #include "minko/math/Frustum.hpp"
 #include "minko/scene/NodeSet.hpp"
+#include "minko/scene/Layout.hpp"
 #include "minko/math/OctTree.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
 #include "minko/component/SceneManager.hpp"
@@ -31,11 +32,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 
-/*static*/ std::shared_ptr<math::OctTree>	Culling::_octTree;
-
-Culling::Culling(ShapePtr shape, 
-				 const std::string& bindProperty):
-	AbstractComponent(scene::Layout::Group::CULLING),
+Culling::Culling(ShapePtr shape, const std::string& bindProperty):
+    AbstractComponent(),
 	_frustum(shape),
 	_bindProperty(bindProperty)
 {
@@ -87,7 +85,7 @@ Culling::targetAddedToSceneHandler(NodePtr node, NodePtr target, NodePtr ancesto
 	{
 		_addedToSceneSlot = nullptr;
 
-		_layoutChangedSlot = target->root()->layoutsChanged().connect(std::bind(
+		_layoutChangedSlot = target->root()->layoutChanged().connect(std::bind(
 			&Culling::layoutChangedHandler,
 			std::static_pointer_cast<Culling>(shared_from_this()),
 			std::placeholders::_1,
@@ -108,10 +106,12 @@ void
 Culling::addedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 {
 	auto layoutMask = this->layoutMask();
-	scene::NodeSet::Ptr nodeSet = scene::NodeSet::create(target)->descendants(true)->where([layoutMask](NodePtr descendant)
-	{
-		return (descendant->layouts() & layoutMask) != 0;
-	});
+	scene::NodeSet::Ptr nodeSet = scene::NodeSet::create(target)
+        ->descendants(true)
+        ->where([layoutMask](NodePtr descendant)
+	    {
+		    return (descendant->layout() & scene::BuiltinLayout::IGNORE_CULLING) == 0;
+	    });
 
 	for (auto n : nodeSet->nodes())
 		_octTree->insert(n);
@@ -120,15 +120,14 @@ Culling::addedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 void
 Culling::layoutChangedHandler(NodePtr node, NodePtr target)
 {
-	if ((target->layouts() & layoutMask()) != 0)
+    if ((target->layout() & scene::BuiltinLayout::IGNORE_CULLING) == 0)
 		_octTree->insert(target);
 	else
 		_octTree->remove(target);
 }
 
 void
-Culling::worldToScreenChangedHandler(data::Store&       data,
-                                     const std::string&     propertyName)
+Culling::worldToScreenChangedHandler(data::Store& data, const std::string& propertyName)
 {
 	_frustum->updateFromMatrix(data.get<math::mat4>(propertyName));
 	

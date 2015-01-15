@@ -62,6 +62,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "glm/glm.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtc/epsilon.hpp"
+#include "glm/gtc/constants.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/random.hpp"
 #include "glm/gtx/transform.hpp"
@@ -80,7 +81,7 @@ namespace minko
 	class Color;
 	enum class CloneOption;
 	class AbstractCanvas;
-    
+
 	namespace render
 	{
         class DrawCallPool;

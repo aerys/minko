@@ -281,17 +281,17 @@ AssetLibrary::scriptName(AbsScriptPtr script)
 	throw std::logic_error("AssetLibrary does not reference this script.");
 }
 
-Layouts
+scene::Layout
 AssetLibrary::layout(const std::string& name)
 {
 	if (_layouts.count(name) == 0)
 	{
-		Layouts existingMask = 0;
+        scene::Layout existingMask = 0;
 
 		for (auto layout : _layouts)
 			existingMask |= layout.second;
 
-		Layouts mask = 1;
+        scene::Layout mask = 1;
 		for (auto i = 0; i < 32 && (existingMask & mask); ++i, mask <<= 1)
 			continue;
 
@@ -305,7 +305,7 @@ AssetLibrary::layout(const std::string& name)
 }
 
 AssetLibrary::Ptr
-AssetLibrary::layout(const std::string& name, Layouts mask)
+AssetLibrary::layout(const std::string& name, scene::Layout mask)
 {
 	_layouts[name] = mask;
 

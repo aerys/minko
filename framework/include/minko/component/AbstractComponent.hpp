@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/Signal.hpp"
-#include "minko/Uuid.hpp"
 #include "minko/scene/Layout.hpp"
 
 namespace minko
@@ -39,19 +38,19 @@ namespace minko
 
 		private:
 			std::shared_ptr<scene::Node>    _target;
-			Layouts							_layoutMask;
-			std::shared_ptr<Signal<Ptr>>	_layoutMaskChanged;
+            scene::Layout				    _layoutMask;
+			Signal<Ptr>						_layoutMaskChanged;
 
         protected:
-			AbstractComponent(Layouts layoutMask = scene::Layout::Mask::EVERYTHING) :
+            AbstractComponent(scene::Layout layoutMask = scene::LayoutMask::EVERYTHING) :
 				_layoutMask(layoutMask),
-				_layoutMaskChanged(Signal<Ptr>::create())
+				_layoutMaskChanged()
 			{
 			}
 
 			AbstractComponent(const AbstractComponent& abstractComponent, const CloneOption& option) :
 				_layoutMask(abstractComponent._layoutMask),
-				_layoutMaskChanged(Signal<Ptr>::create())
+				_layoutMaskChanged()
 			{
 			}
 
@@ -60,7 +59,6 @@ namespace minko
             ~AbstractComponent()
             {
                 _target = nullptr;
-                _layoutMaskChanged = nullptr;
             }
 
 			virtual
@@ -79,7 +77,7 @@ namespace minko
 			}
 
 			virtual
-			Layouts
+			const scene::Layout&
 			layoutMask() const
 			{
 				return _layoutMask;
@@ -87,18 +85,18 @@ namespace minko
 
 			virtual
 			void
-			layoutMask(Layouts value)
+            layoutMask(const scene::Layout value)
 			{
 				if (_layoutMask != value)
 				{
 					_layoutMask = value;
-					_layoutMaskChanged->execute(shared_from_this());
+					_layoutMaskChanged.execute(shared_from_this());
 				}
 			}
 
 			inline
-			Signal<Ptr>::Ptr
-			layoutMaskChanged() const
+			Signal<Ptr>&
+			layoutMaskChanged()
 			{
 				return _layoutMaskChanged;
 			}

@@ -85,7 +85,7 @@ FileProtocol::load()
 			}
 		}
 	}
-	
+
 	if (file.is_open())
 	{
         resolvedFilename(realFilename);
@@ -134,7 +134,7 @@ FileProtocol::load()
             lengthByteArray[3] = (length & 0x000000ff);
 
             std::vector<char> input;
-            
+
             input.insert(input.end(), offsetByteArray.begin(), offsetByteArray.end());
             input.insert(input.end(), lengthByteArray.begin(), lengthByteArray.end());
             input.insert(input.end(), resolvedFilename().begin(), resolvedFilename().end());
@@ -165,7 +165,6 @@ FileProtocol::load()
 	}
 	else
 	{
-		std::cout << "FileProtocol::load() : Could not load file " + filename << std::endl;
 		_error->execute(shared_from_this());
 	}
 }

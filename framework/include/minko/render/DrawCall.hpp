@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/DrawCall.hpp"
 #include "minko/render/States.hpp"
 #include "minko/data/Binding.hpp"
+#include "minko/data/ResolvedBinding.hpp"
 #include "minko/render/Priority.hpp"
 
 namespace minko
@@ -41,34 +42,32 @@ namespace minko
             static const unsigned int	MAX_NUM_TEXTURES;
             static const unsigned int   MAX_NUM_VERTEXBUFFERS;
 
-		private:
-            typedef const ProgramInputs::UniformInput&      ConstUniformInputRef;
-            typedef const ProgramInputs::AttributeInput&    ConstAttrInputRef;
-
             template <typename T>
             struct UniformValue
             {
                 const int location;
                 const uint size;
+				const uint count;
                 const T* data;
             };
+
+		private:
+            typedef const ProgramInputs::UniformInput&      ConstUniformInputRef;
+            typedef const ProgramInputs::AttributeInput&    ConstAttrInputRef;
 
             struct SamplerValue
             {
                 const uint position;
                 const int* resourceId;
                 const int location;
-                /*
-                WrapMode* wrapMode;
-                TextureFilter* textureFilter;
-                MipFilter* mipFilter;
-                TextureType* type;
-                */
+                const WrapMode* wrapMode;
+                const TextureFilter* textureFilter;
+                const MipFilter* mipFilter;
+                //TextureType* type;
             };
 
             struct AttributeValue
             {
-                const uint position;
                 const int location;
                 const int* resourceId;
                 const uint size;
@@ -80,22 +79,24 @@ namespace minko
 			typedef std::shared_ptr<AbstractTexture>	            AbsTexturePtr;
 			typedef std::shared_ptr<Program>			            ProgramPtr;
             typedef std::unordered_map<std::string, std::string>    StringMap;
-            typedef data::Store::PropertyChangedSignal::Slot    ChangedSlot;
+            typedef data::Store::PropertyChangedSignal::Slot        ChangedSlot;
+            
+            typedef std::array<data::ResolvedBinding*, 3>           SamplerStatesResolveBindings;
 
 		private:
+            std::shared_ptr<Pass>               _pass;
             data::Store&                        _rootData;
             data::Store&                        _rendererData;
             data::Store&                        _targetData;
             StringMap                           _variables;
 
-			std::shared_ptr<render::Pass>		_pass;
 			std::shared_ptr<Program>			_program;
             int*								_indexBuffer;
             uint*                               _firstIndex;
             uint*								_numIndices;
             std::vector<UniformValue<int>>      _uniformInt;
             std::vector<UniformValue<float>>    _uniformFloat;
-            std::vector<UniformValue<bool>>     _uniformBool;
+            std::vector<UniformValue<int>>      _uniformBool;
             std::vector<SamplerValue>           _samplers;
             std::vector<AttributeValue>         _attributes;
 
@@ -115,47 +116,24 @@ namespace minko
             StencilOperation*			        _stencilZPassOp;
             bool*						        _scissorTest;
             math::ivec4*					    _scissorBox;
-            /*SamplerStates               _samplerStates;
-            AbstractTexturePtr		    _target;*/
+			TextureSampler*						_target;
+            /*SamplerStates               		_samplerStates;*/
 
             std::map<const data::Binding*, ChangedSlot>    _propAddedOrRemovedSlot;
 
             std::shared_ptr<DrawCallZSorter>                _zSorter;
             Signal<DrawCall*>::Ptr                          _zSortNeeded;
+
 		public:
-            DrawCall(std::shared_ptr<render::Pass>  pass,
-                     const StringMap&               variables,
-                     data::Store&                   rootData,
-                     data::Store&                   rendererData,
-                     data::Store&                   targetData) :
-                _pass(pass),
-                _variables(variables),
-                _rootData(rootData),
-                _rendererData(rendererData),
-                _targetData(targetData),
-                _zSorter(nullptr),
-                _zSortNeeded(Signal<DrawCall*>::create())
-            {
+            DrawCall(std::shared_ptr<Pass>  pass,
+                     const StringMap&       variables,
+                     data::Store&           rootData,
+                     data::Store&           rendererData,
+                     data::Store&           targetData);
 
-            }
-
-            DrawCall(const DrawCall& drawCall) :
-                _pass(drawCall._pass),
-                _variables(drawCall._variables),
-                _rootData(drawCall._rootData),
-                _rendererData(drawCall._rendererData),
-                _targetData(drawCall._targetData),
-                _zSorter(drawCall._zSorter),
-                _zSortNeeded(drawCall._zSortNeeded)
-            {
-            }
-
-            void
-            initialize();
-            
             inline
             std::shared_ptr<Pass>
-            pass() const
+            pass()
             {
                 return _pass;
             }
@@ -175,45 +153,66 @@ namespace minko
             }
 
             inline
-            const data::Store&
-            rootData() const
+            const StringMap&
+            variables() const
+            {
+                return _variables;
+            }
+
+            inline
+            data::Store&
+            rootData()
             {
                 return _rootData;
             }
 
             inline
-            const data::Store&
-            rendererData() const
+            data::Store&
+            rendererData()
             {
                 return _rendererData;
             }
 
             inline
-            const data::Store&
-            targetData() const
+            data::Store&
+            targetData()
             {
                 return _targetData;
             }
 
             inline
+            const std::vector<UniformValue<int>>&
+            boundBoolUniforms() const
+            {
+                return _uniformBool;
+            }
+
+            inline
+            const std::vector<UniformValue<int>>&
+            boundIntUniforms() const
+            {
+                return _uniformInt;
+            }
+
+            inline
+            const std::vector<UniformValue<float>>&
+            boundFloatUniforms() const
+            {
+                return _uniformFloat;
+            }
+
+            inline
+            const std::vector<SamplerValue>&
+            samplers()
+            {
+                return _samplers;
+            }
+
             std::shared_ptr<DrawCallZSorter>
             zSorter() const
             {
                 return _zSorter;
             }
-
-			void
-			render(std::shared_ptr<AbstractContext>  context,
-                   AbsTexturePtr                     renderTarget) const;
-
-            void
-            bind(std::shared_ptr<Program>   program,
-                 data::BindingMap&          attributeBindings,
-                 data::BindingMap&          uniformBindings,
-                 data::BindingMap&          stateBindings);
-
-            math::vec3
-            getEyeSpacePosition();
 
             inline
             float
@@ -236,78 +235,111 @@ namespace minko
                 return _zSortNeeded;
             }
 
+			inline
+			const TextureSampler&
+			target()
+			{
+				return *_target;
+			}
+
+            void
+            bind(std::shared_ptr<Program> program);
+
+			void
+			render(std::shared_ptr<AbstractContext>  context,
+                   AbsTexturePtr                     renderTarget,
+				   const math::ivec4&				 viewport,
+				   uint 							 clearColor) const;
+
+            void
+            bindAttribute(ConstAttrInputRef     						input,
+						  const std::map<std::string, data::Binding>&   attributeBindings,
+                          const data::Store&                            defaultValues);
+
+            data::ResolvedBinding*
+            bindUniform(const ProgramInputs::UniformInput&          input,
+                        const std::map<std::string, data::Binding>& uniformBindings,
+                        const data::Store&                          defaultValues);
+
+            SamplerStatesResolveBindings
+            bindSamplerStates(const ProgramInputs::UniformInput&          input,
+                              const std::map<std::string, data::Binding>& uniformBindings,
+                              const data::Store&                          defaultValues);
+
+            data::ResolvedBinding*
+            bindSamplerState(ConstUniformInputRef                          input,
+                             const std::map<std::string, data::Binding>&   uniformBindings,
+                             const data::Store&                            defaultValues,
+                             const std::string&                            samplerStateProperty);
+
+			void
+            bindStates(const std::map<std::string, data::Binding>&	stateBindings,
+					   const data::Store&							defaultValues);
+
+			void
+			bindIndexBuffer();
+
+            math::vec3
+            getEyeSpacePosition();
+
 		private:
 
             void
             reset();
 
-            void
-            bindUniforms(std::shared_ptr<Program> program, data::BindingMap& uniformBindings);
-
-            void
-            bindUniform(std::shared_ptr<Program>    program,
-                        ConstUniformInputRef        input,
-                        const data::Store&          store,
-                        const std::string&          propertyName);
-
-            void
-            bindAttribute(std::shared_ptr<Program>  program,
-                          ConstAttrInputRef         input,
-						  const data::Store&        store,
-						  const std::string&        propertyName);
-
-			void
-			bindIndexBuffer(const std::unordered_map<std::string, std::string>& variables,
-                            const data::Store&                                  targetData);
-
-			void
-            bindStates(const data::BindingMap& stateBindings);
-			
             data::Store&
             getStore(data::Binding::Source source);
 
-            void
-            uniformBindingPropertyAdded(const data::Binding&                binding,
-                                        Program::Ptr                        program,
-                                        data::Store&                        store,
-                                        const data::Store&                  defaultValues,
-                                        const ProgramInputs::UniformInput&  input,
-                                        const std::string&                  propertyName);
+            data::ResolvedBinding*
+            resolveBinding(const std::string&          					inputName,
+                           const std::map<std::string, data::Binding>&  bindings);
+
+			void
+			setUniformValueFromStore(const ProgramInputs::UniformInput&   input,
+									 const std::string&                   propertyName,
+									 const data::Store&                   store);
 
             void
-            uniformBindingPropertyRemoved(const data::Binding&                  binding,
-                                          Program::Ptr                          program,
-                                          data::Store&                          store,
-                                          const data::Store&                    defaultValues,
-                                          const ProgramInputs::UniformInput&    input,
-                                          const std::string&                    propertyName);
+            setSamplerStateValueFromStore(const ProgramInputs::UniformInput&   input,
+                                          const std::string&                   propertyName,
+                                          const data::Store&                   store,
+                                          const std::string&                   samplerStateProperty);
+
+			void
+			setAttributeValueFromStore(const ProgramInputs::AttributeInput& input,
+									   const std::string&                   propertyName,
+									   const data::Store&                   store);
 
             template <typename T>
             T*
-            bindState(const std::string         stateName,
-                      const data::BindingMap&   stateBindings)
+            bindState(const std::string&        					stateName,
+					  const std::map<std::string, data::Binding>&   bindings,
+					  const data::Store&                            defaultValues)
             {
-                auto& bindings = stateBindings.bindings;
-
+				// FIXME: handle errors like in bindUniform()
+				// FIXME: call resolveBinding
                 if (bindings.count(stateName) == 0)
-                    return stateBindings.defaultValues.getUnsafePointer<T>(stateName);
+                    return defaultValues.getUnsafePointer<T>(stateName);
 
                 const auto& binding = bindings.at(stateName);
                 auto& store = getStore(binding.source);
-
                 auto unsafePointer = store.getUnsafePointer<T>(
                     data::Store::getActualPropertyName(_variables, binding.propertyName)
                 );
 
                 if (unsafePointer == nullptr)
-                    return stateBindings.defaultValues.getUnsafePointer<T>(stateName);
+                    return defaultValues.getUnsafePointer<T>(stateName);
 
                 return unsafePointer;
             }
 
             template <typename T>
             void
-            setUniformValue(std::vector<UniformValue<T>>& uniforms, int location, uint size, const T* data)
+            setUniformValue(std::vector<UniformValue<T>>& 	uniforms,
+							int 							location,
+							uint 							size,
+							uint 							count,
+							const T* 						data)
             {
                 auto it = std::find_if(uniforms.begin(), uniforms.end(), [&](UniformValue<T>& u)
                 {
@@ -315,7 +347,7 @@ namespace minko
                 });
 
                 if (it == uniforms.end())
-                    uniforms.push_back({ location, size, data });
+                    uniforms.push_back({ location, size, count, data });
                 else
                     it->data = data;
             }

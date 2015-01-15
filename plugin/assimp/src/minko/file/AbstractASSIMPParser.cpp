@@ -678,7 +678,7 @@ AbstractASSIMPParser::loadTexture(const std::string&	textureFilename,
 #endif // DEBUG
 
         _error->execute(shared_from_this(), Error("MissingTextureDependency", "Missing texture dependency: '" + textureFilename + "'"));
-        
+
         if (_numDependencies == _numLoadedDependencies)
             allDependenciesLoaded(scene);
 	});
@@ -812,7 +812,7 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
 
 	for (uint boneId = 0; boneId < numBones; ++boneId)
 	{
-		
+
 		const auto bone = createBone(aimesh->mBones[boneId]);
 		const auto boneName = std::string(aimesh->mBones[boneId]->mName.data);
 		auto node = _nameToNode.find(boneName)->second;
@@ -1024,7 +1024,7 @@ AbstractASSIMPParser::precomputeModelToRootMatrices(Node::Ptr			node,
 		auto& modelToRoot = modelToRootMatrices[frameId]; // warning: not a copy
 
         modelToRoot = math::mat4();
-		
+
         for (auto& trfInfo : transformsUpToRoot)
 		{
 			const auto animMatrices	= std::get<1>(trfInfo);
@@ -1608,8 +1608,9 @@ AbstractASSIMPParser::createAnimations(const aiScene* scene, bool interpolate)
 			{
 				const double keyTime = channel->mPositionKeys[k].mTime;
 				 // currently assume all keys are synchronized
-				assert(abs(keyTime - channel->mRotationKeys[k].mTime) < 1e-6 &&
-					   abs(keyTime - channel->mScalingKeys[k].mTime) < 1e-6);
+				assert((keyTime - channel->mRotationKeys[k].mTime) < 1e-6
+					&& std::abs(keyTime - channel->mScalingKeys[k].mTime) < 1e-6
+				);
 
 				const int time	= std::max(0, std::min(int(duration), (int)floor(1e+3 * keyTime)));
 

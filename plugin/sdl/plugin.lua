@@ -73,7 +73,6 @@ function minko.plugin.sdl:enable()
 	configuration { "html5", "ConsoleApp or WindowedApp" }
 		removeincludedirs { minko.plugin.path("sdl") .. "/lib/sdl/include" }
 		includedirs { "SDL" }
-		minko.plugin.enable { "webgl" }
 
 	configuration { "android", "SharedLib" }
 		links { "SDL2", "SDL2_mixer" }

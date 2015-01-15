@@ -161,3 +161,17 @@ TEST_F(NodeTest, ComponentRemoved)
     ASSERT_EQ(node->components<component::SceneManager>().size(), 0);
     ASSERT_EQ(comp->target(), nullptr);
 }
+
+TEST_F(NodeTest, LayoutChanged)
+{
+    auto node = Node::create();
+    auto changed = false;
+    auto _ = node->layoutChanged().connect([&](scene::Node::Ptr node, scene::Node::Ptr target)
+    {
+        changed = target->layout() == 42;
+    });
+
+    node->layout(42);
+
+    ASSERT_TRUE(changed);
+}

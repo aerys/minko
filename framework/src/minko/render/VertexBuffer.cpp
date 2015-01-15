@@ -38,7 +38,7 @@ VertexBuffer::VertexBuffer(std::shared_ptr<AbstractContext> context) :
 }
 
 VertexBuffer::VertexBuffer(std::shared_ptr<AbstractContext>	context,
-						   float*							data,
+						   const float*						data,
 						   const unsigned int				size,
 						   const unsigned int				offset) :
 	AbstractResource(context),
