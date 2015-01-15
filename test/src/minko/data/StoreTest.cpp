@@ -400,3 +400,59 @@ TEST_F(StoreTest, collectionPropertyPointerConsistency)
     ASSERT_EQ(c.getPointer<int>("test[1].foo"), p1->getPointer<int>("foo"));
     ASSERT_EQ(*p1->getPointer<int>("foo"), 4242);
 }
+
+TEST_F(StoreTest, providerAddedTwiceRemovedOnce)
+{
+    Store c;
+    auto p = Provider::create();
+	int propertyAdded = 0;
+	bool propertyRemoved = false;
+
+	p->set("foo", 42);
+
+	auto addedSlod = c.propertyAdded("foo").connect([&](Store&, Provider::Ptr, const std::string&)
+	{
+		propertyAdded++;
+	});
+	auto removedSlot = c.propertyRemoved("foo").connect([&](Store&, Provider::Ptr, const std::string&)
+	{
+		ASSERT_FALSE(propertyRemoved);
+		propertyRemoved = true;
+	});
+
+	c.addProvider(p);
+	c.addProvider(p);
+
+	c.removeProvider(p);
+
+	ASSERT_EQ(propertyAdded, 2);
+	ASSERT_TRUE(c.hasProperty("foo"));
+}
+
+TEST_F(StoreTest, providerAddedTwiceInCollectionRemovedOnce)
+{
+    Store c;
+    auto p = Provider::create();
+	int propertyAdded = 0;
+	bool propertyRemoved = false;
+
+	p->set("foo", 42);
+
+	auto addedSlod = c.propertyAdded("bar[0].foo").connect([&](Store&, Provider::Ptr, const std::string&)
+	{
+		propertyAdded++;
+	});
+	auto removedSlot = c.propertyRemoved("bar[0].foo").connect([&](Store&, Provider::Ptr, const std::string&)
+	{
+		ASSERT_FALSE(propertyRemoved);
+		propertyRemoved = true;
+	});
+
+	c.addProvider(p, "bar");
+	c.addProvider(p, "bar");
+
+	c.removeProvider(p ,"bar");
+
+	ASSERT_EQ(propertyAdded, 2);
+	ASSERT_TRUE(c.hasProperty("bar[0].foo"));
+}
