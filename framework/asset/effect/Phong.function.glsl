@@ -56,28 +56,3 @@ mat3 phong_getWorldToTangentSpaceMatrix(vec3 worldNormal, vec3 worldTangent)
 
 	return transpose;
 }
-
-vec3 phong_directionalLight(vec3 	lightDirection,
-					   		vec3 	lightColor,
-					   		float 	lightDiffuse,
-					   		float 	lightSpecular,
-					   		vec3	eyeVector,
-					   		vec3	normalVector,
-					   		vec3	specularColor,
-					   		float 	shininess)
-{
-	lightDirection = normalize(-lightDirection);
-
-	vec3 diffuseRef = phong_diffuseReflection(normalVector, lightDirection)
-		* lightColor
-		* lightDiffuse;
-
-		#if defined(SHININESS)
-		specularAccum += phong_specularReflection(normalVector, lightDirection, eyeVector, shininess)
-			* phong_fresnel(specularColor.rgb, lightDirection, eyeVector)
-			* lightColor
-			* lightSpecular;
-	#endif // SHININESS
-
-	return diffuseRef;
-}
