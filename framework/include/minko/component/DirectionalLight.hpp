@@ -37,18 +37,22 @@ namespace minko
             typedef std::shared_ptr<render::Texture>    TexturePtr;
             typedef std::shared_ptr<Renderer>           RendererPtr;
 
+        public:
+            static const uint MAX_NUM_SHADOW_CASCADES;
+            static const uint DEFAULT_NUM_SHADOW_CASCADES;
+            static const uint MIN_SHADOWMAP_SIZE;
+            static const uint MAX_SHADOWMAP_SIZE;
+            static const uint DEFAULT_SHADOWMAP_SIZE;
+
 		private:
 			math::vec3                  _worldDirection;
             bool                        _shadowMappingEnabled;
             uint                        _shadowMapSize;
             TexturePtr                  _shadowMap;
             uint                        _numShadowCascades;
-            std::vector<RendererPtr>    _shadowRenderers;
-            std::vector<math::mat4>     _shadowProjections;
+            std::array<RendererPtr, 4>  _shadowRenderers;
+            std::array<math::mat4, 4>   _shadowProjections;
             math::mat4                  _view;
-
-        public:
-            static const uint MAX_NUM_SHADOW_CASCADES;
 
 	    public:
 		    inline static
@@ -80,7 +84,7 @@ namespace minko
             }
 
             inline
-            const std::vector<math::mat4>&
+            const std::array<math::mat4, 4>&
             shadowProjections() const
             {
                 return _shadowProjections;
@@ -93,11 +97,19 @@ namespace minko
                 return _shadowMappingEnabled;
             }
 
+            inline
+            uint
+            numShadowCascades() const
+            {
+                return _numShadowCascades;
+            }
+
             void
             computeShadowProjection(const math::mat4& view, const math::mat4& projection);
 
             void
-            enableShadowMapping();
+            enableShadowMapping(uint shadowMapSize  = DEFAULT_SHADOWMAP_SIZE,
+                                uint numCascades    = DEFAULT_NUM_SHADOW_CASCADES);
 
             void
             disableShadowMapping(bool disposeResources = false);

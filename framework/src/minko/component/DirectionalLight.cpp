@@ -28,16 +28,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 
-const uint DirectionalLight::MAX_NUM_SHADOW_CASCADES = 4;
+const uint DirectionalLight::DEFAULT_NUM_SHADOW_CASCADES 	= 4;
+const uint DirectionalLight::MAX_NUM_SHADOW_CASCADES 		= 4;
+const uint DirectionalLight::MIN_SHADOWMAP_SIZE				= 32;
+const uint DirectionalLight::MAX_SHADOWMAP_SIZE				= 1024;
+const uint DirectionalLight::DEFAULT_SHADOWMAP_SIZE			= 512;
 
 DirectionalLight::DirectionalLight(float diffuse, float specular) :
 	AbstractDiscreteLight("directionalLight", diffuse, specular),
 	_shadowMappingEnabled(false),
-	_numShadowCascades(4),
-	_shadowProjections(MAX_NUM_SHADOW_CASCADES),
+	_numShadowCascades(0),
 	_shadowMap(nullptr),
-	_shadowMapSize(256),
-	_shadowRenderers(4, nullptr)
+	_shadowMapSize(0),
+	_shadowRenderers()
 {
     updateModelToWorldMatrix(math::mat4(1.f));
 }
@@ -123,7 +126,7 @@ DirectionalLight::initializeShadowMapping()
 		renderer->layoutMask(256);
 		target()->addComponent(renderer);
 
-		_shadowRenderers.push_back(renderer);
+		_shadowRenderers[i] = renderer;
 	}
 
 	computeShadowProjection(math::mat4(1.f), math::perspective(.785f, 1.f, 0.1f, 1000.f));
@@ -335,12 +338,15 @@ DirectionalLight::targetRemoved(minko::scene::Node::Ptr target)
 }
 
 void
-DirectionalLight::enableShadowMapping()
+DirectionalLight::enableShadowMapping(uint shadowMapSize, uint numCascades)
 {
-	if (!_shadowMappingEnabled)
+	if (!_shadowMappingEnabled || shadowMapSize != _shadowMapSize || numCascades != _numShadowCascades)
 	{
-	    if (!_shadowMap)
+	    if (!_shadowMap || shadowMapSize != _shadowMapSize || numCascades != _numShadowCascades)
 		{
+			_numShadowCascades = numCascades;
+			// FIXME: do not completely re-init shadow mapping when just the shadow map size changes
+			_shadowMapSize = shadowMapSize;
 			initializeShadowMapping();
 		}
 		else
