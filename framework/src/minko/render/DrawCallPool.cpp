@@ -215,8 +215,6 @@ DrawCallPool::macroPropertyRemovedHandler(const data::MacroBinding&     macroBin
 {
     MacroBindingKey key(&macroBinding, &store);
 
-    std::cout << "removed " << macroBinding.propertyName << std::endl;
-
     removeMacroCallback(key);
     addMacroCallback(
         key,
@@ -347,4 +345,14 @@ DrawCallPool::invalidateDrawCalls(const DrawCallIteratorPair&                   
         drawCall.variables().clear();
         drawCall.variables().insert(variables.begin(), variables.end());
     }
+}
+
+void
+DrawCallPool::clear()
+{
+    _drawCalls.clear();
+    _macroToDrawCalls.clear();
+    _invalidDrawCalls.clear();
+    _macroChangedSlot.clear();
+    _propChangedSlot.clear();
 }
