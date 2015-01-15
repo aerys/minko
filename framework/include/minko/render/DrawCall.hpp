@@ -60,9 +60,9 @@ namespace minko
                 const uint position;
                 const int* resourceId;
                 const int location;
-                const WrapMode* wrapMode;
-                const TextureFilter* textureFilter;
-                const MipFilter* mipFilter;
+                WrapMode wrapMode;
+                TextureFilter textureFilter;
+                MipFilter mipFilter;
                 //TextureType* type;
             };
 
@@ -199,6 +199,13 @@ namespace minko
             boundFloatUniforms() const
             {
                 return _uniformFloat;
+            }
+
+            inline
+            const std::vector<SamplerValue>&
+            samplers()
+            {
+                return _samplers;
             }
 
             std::shared_ptr<DrawCallZSorter>

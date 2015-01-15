@@ -871,53 +871,6 @@ TEST_F(EffectParserTest, SamplerStatesMipFilterNearest)
     );
 }
 
-TEST_F(EffectParserTest, SamplerStatesDefaultValues)
-{
-    auto fx = loadEffect("effect/SamplerStatesDefaultValues.effect");
-
-    ASSERT_NE(fx, nullptr);
-    ASSERT_EQ(fx->techniques().size(), 1);
-    ASSERT_EQ(fx->techniques().at("default").size(), 1);
-
-    auto uniformDefaultValues = fx->techniques().at("default")[0]->uniformBindings().defaultValues;
-
-    auto wrapModeUniformName = SamplerStates::uniformNameToSamplerStateName(
-        "diffuseMap",
-        SamplerStates::PROPERTY_WRAP_MODE
-    );
-
-    ASSERT_TRUE(uniformDefaultValues.hasProperty(wrapModeUniformName));
-
-    ASSERT_EQ(
-        uniformDefaultValues.get<WrapMode>(wrapModeUniformName),
-        SamplerStates::DEFAULT_WRAP_MODE
-    );
-
-    auto textureFilterUniformName = SamplerStates::uniformNameToSamplerStateName(
-        "diffuseMap",
-        SamplerStates::PROPERTY_TEXTURE_FILTER
-    );
-
-    ASSERT_TRUE(uniformDefaultValues.hasProperty(textureFilterUniformName));
-
-    ASSERT_EQ(
-        uniformDefaultValues.get<TextureFilter>(textureFilterUniformName),
-        SamplerStates::DEFAULT_TEXTURE_FILTER
-    );
-
-    auto mipFilterUniformName = SamplerStates::uniformNameToSamplerStateName(
-        "diffuseMap",
-        SamplerStates::PROPERTY_MIP_FILTER
-    );
-
-    ASSERT_TRUE(uniformDefaultValues.hasProperty(mipFilterUniformName));
-
-    ASSERT_EQ(
-        uniformDefaultValues.get<MipFilter>(mipFilterUniformName),
-        SamplerStates::DEFAULT_MIP_FILTER
-    );
-}
-
 TEST_F(EffectParserTest, SamplerStatesBindingWrapMode)
 {
     auto fx = loadEffect("effect/SamplerStatesBindingWrapMode.effect");
@@ -999,7 +952,7 @@ TEST_F(EffectParserTest, SamplerStatesBindingWrapModeWithDefaultValueClamp)
     auto uniformBindingMap = fx->techniques().at("default")[0]->uniformBindings();
 
     auto wrapModeUniformName = SamplerStates::uniformNameToSamplerStateName(
-        "diffuseMap",
+        "uDiffuseMap",
         SamplerStates::PROPERTY_WRAP_MODE
     );
 
@@ -1030,7 +983,7 @@ TEST_F(EffectParserTest, SamplerStatesBindingWrapModeWithDefaultValueRepeat)
     auto uniformBindingMap = fx->techniques().at("default")[0]->uniformBindings();
 
     auto wrapModeUniformName = SamplerStates::uniformNameToSamplerStateName(
-        "diffuseMap",
+        "uDiffuseMap",
         SamplerStates::PROPERTY_WRAP_MODE
     );
 
@@ -1063,7 +1016,7 @@ TEST_F(EffectParserTest, SamplerStatesBindingTextureFilterWithDefaultValueLinear
     auto uniformBindingMap = fx->techniques().at("default")[0]->uniformBindings();
 
     auto textureFilterUniformName = SamplerStates::uniformNameToSamplerStateName(
-        "diffuseMap",
+        "uDiffuseMap",
         SamplerStates::PROPERTY_TEXTURE_FILTER
     );
 
@@ -1094,7 +1047,7 @@ TEST_F(EffectParserTest, SamplerStatesBindingTextureFilterWithDefaultValueNeares
     auto uniformBindingMap = fx->techniques().at("default")[0]->uniformBindings();
 
     auto textureFilterUniformName = SamplerStates::uniformNameToSamplerStateName(
-        "diffuseMap",
+        "uDiffuseMap",
         SamplerStates::PROPERTY_TEXTURE_FILTER
     );
 
@@ -1127,7 +1080,7 @@ TEST_F(EffectParserTest, SamplerStatesBindingMipFilterWithDefaultValueLinear)
     auto uniformBindingMap = fx->techniques().at("default")[0]->uniformBindings();
 
     auto mipFilterUniformName = SamplerStates::uniformNameToSamplerStateName(
-        "diffuseMap",
+        "uDiffuseMap",
         SamplerStates::PROPERTY_MIP_FILTER
     );
 
@@ -1158,7 +1111,7 @@ TEST_F(EffectParserTest, SamplerStatesBindingMipFilterWithDefaultValueNearest)
     auto uniformBindingMap = fx->techniques().at("default")[0]->uniformBindings();
 
     auto mipFilterUniformName = SamplerStates::uniformNameToSamplerStateName(
-        "diffuseMap",
+        "uDiffuseMap",
         SamplerStates::PROPERTY_MIP_FILTER
     );
 
@@ -1189,7 +1142,7 @@ TEST_F(EffectParserTest, SamplerStatesBindingMipFilterWithDefaultValueNone)
     auto uniformBindingMap = fx->techniques().at("default")[0]->uniformBindings();
 
     auto mipFilterUniformName = SamplerStates::uniformNameToSamplerStateName(
-        "diffuseMap",
+        "uDiffuseMap",
         SamplerStates::PROPERTY_MIP_FILTER
     );
 

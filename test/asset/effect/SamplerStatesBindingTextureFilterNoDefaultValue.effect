@@ -1,10 +1,9 @@
 {
-	"uniforms" : {
-        "uDiffuseMap" : {
-            "binding" 		: "material[${materialUuid}].diffuseMap",
-            "textureFilter" : { 
-				"binding"   	: "material[${materialUuid}].diffuseMapTextureFilter" ,
-				"default"		: "nearest"
+	"uniforms"   : {
+        "uDiffuseMap"            : {
+            "binding"       : "material[${materialUuid}].diffuseMap",
+            "textureFilter"      : { 
+				"binding"       : "material[${materialUuid}].diffuseMapTextureFilter"
 			}
         }
     },
