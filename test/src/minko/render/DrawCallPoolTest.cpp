@@ -149,15 +149,15 @@ TEST_F(DrawCallPoolTest, SamplerStateSwapWrapModeBindingToDefaultClamp)
 
     ASSERT_EQ(samplers.size(), 1);
 
-    ASSERT_EQ(sampler.wrapMode, material->data()->get<WrapMode>(samplerStateBindingName));
-    ASSERT_EQ(sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
-    ASSERT_EQ(sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
+    ASSERT_EQ(*sampler.wrapMode, material->data()->get<WrapMode>(samplerStateBindingName));
+    ASSERT_EQ(*sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
+    ASSERT_EQ(*sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
 
     material->data()->unset(samplerStateBindingName);
 
-    ASSERT_EQ(sampler.wrapMode, pass->uniformBindings().defaultValues.get<WrapMode>(sampleStateUniformName));
-    ASSERT_EQ(sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
-    ASSERT_EQ(sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
+    ASSERT_EQ(*sampler.wrapMode, pass->uniformBindings().defaultValues.get<WrapMode>(sampleStateUniformName));
+    ASSERT_EQ(*sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
+    ASSERT_EQ(*sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
 }
 
 TEST_F(DrawCallPoolTest, SamplerStateSwapWrapModeBindingToDefaultRepeat)
@@ -205,15 +205,15 @@ TEST_F(DrawCallPoolTest, SamplerStateSwapWrapModeBindingToDefaultRepeat)
 
     ASSERT_EQ(samplers.size(), 1);
 
-    ASSERT_EQ(sampler.wrapMode, material->data()->get<WrapMode>(samplerStateBindingName));
-    ASSERT_EQ(sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
-    ASSERT_EQ(sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
+    ASSERT_EQ(*sampler.wrapMode, material->data()->get<WrapMode>(samplerStateBindingName));
+    ASSERT_EQ(*sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
+    ASSERT_EQ(*sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
 
     material->data()->unset(samplerStateBindingName);
 
-    ASSERT_EQ(sampler.wrapMode, pass->uniformBindings().defaultValues.get<WrapMode>(sampleStateUniformName));
-    ASSERT_EQ(sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
-    ASSERT_EQ(sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
+    ASSERT_EQ(*sampler.wrapMode, pass->uniformBindings().defaultValues.get<WrapMode>(sampleStateUniformName));
+    ASSERT_EQ(*sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
+    ASSERT_EQ(*sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
 }
 
 TEST_F(DrawCallPoolTest, SamplerStateSwapTextureFilterBindingToDefaultLinear)
@@ -261,17 +261,17 @@ TEST_F(DrawCallPoolTest, SamplerStateSwapTextureFilterBindingToDefaultLinear)
 
     ASSERT_EQ(samplers.size(), 1);
 
-    ASSERT_EQ(sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
-    ASSERT_EQ(sampler.textureFilter, material->data()->get<TextureFilter>(samplerStateBindingName));
-    ASSERT_EQ(sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
+    ASSERT_EQ(*sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
+    ASSERT_EQ(*sampler.textureFilter, material->data()->get<TextureFilter>(samplerStateBindingName));
+    ASSERT_EQ(*sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
 
     material->data()->unset(samplerStateBindingName);
 
     auto value = pass->uniformBindings().defaultValues.get<TextureFilter>(sampleStateUniformName);
 
-    ASSERT_EQ(sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
-    ASSERT_EQ(sampler.textureFilter, pass->uniformBindings().defaultValues.get<TextureFilter>(sampleStateUniformName));
-    ASSERT_EQ(sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
+    ASSERT_EQ(*sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
+    ASSERT_EQ(*sampler.textureFilter, pass->uniformBindings().defaultValues.get<TextureFilter>(sampleStateUniformName));
+    ASSERT_EQ(*sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
 }
 
 TEST_F(DrawCallPoolTest, SamplerStateSwapTextureFilterBindingToDefaultNearest)
@@ -322,15 +322,15 @@ TEST_F(DrawCallPoolTest, SamplerStateSwapTextureFilterBindingToDefaultNearest)
 
     auto value = material->data()->get<TextureFilter>(samplerStateBindingName);
 
-    ASSERT_EQ(sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
-    ASSERT_EQ(sampler.textureFilter, material->data()->get<TextureFilter>(samplerStateBindingName));
-    ASSERT_EQ(sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
+    ASSERT_EQ(*sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
+    ASSERT_EQ(*sampler.textureFilter, material->data()->get<TextureFilter>(samplerStateBindingName));
+    ASSERT_EQ(*sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
 
     material->data()->unset(samplerStateBindingName);
 
-    ASSERT_EQ(sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
-    ASSERT_EQ(sampler.textureFilter, pass->uniformBindings().defaultValues.get<TextureFilter>(sampleStateUniformName));
-    ASSERT_EQ(sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
+    ASSERT_EQ(*sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
+    ASSERT_EQ(*sampler.textureFilter, pass->uniformBindings().defaultValues.get<TextureFilter>(sampleStateUniformName));
+    ASSERT_EQ(*sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
 }
 
 TEST_F(DrawCallPoolTest, SamplerStateSwapMipFilterBindingToDefaultNone)
@@ -378,15 +378,15 @@ TEST_F(DrawCallPoolTest, SamplerStateSwapMipFilterBindingToDefaultNone)
 
     ASSERT_EQ(samplers.size(), 1);
 
-    ASSERT_EQ(sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
-    ASSERT_EQ(sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
-    ASSERT_EQ(sampler.mipFilter, material->data()->get<MipFilter>(samplerStateBindingName));
+    ASSERT_EQ(*sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
+    ASSERT_EQ(*sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
+    ASSERT_EQ(*sampler.mipFilter, material->data()->get<MipFilter>(samplerStateBindingName));
 
     material->data()->unset(samplerStateBindingName);
 
-    ASSERT_EQ(sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
-    ASSERT_EQ(sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
-    ASSERT_EQ(sampler.mipFilter, pass->uniformBindings().defaultValues.get<MipFilter>(sampleStateUniformName));
+    ASSERT_EQ(*sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
+    ASSERT_EQ(*sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
+    ASSERT_EQ(*sampler.mipFilter, pass->uniformBindings().defaultValues.get<MipFilter>(sampleStateUniformName));
 }
 
 TEST_F(DrawCallPoolTest, SamplerStateSwapMipFilterBindingToDefaultLinear)
@@ -434,15 +434,15 @@ TEST_F(DrawCallPoolTest, SamplerStateSwapMipFilterBindingToDefaultLinear)
 
     ASSERT_EQ(samplers.size(), 1);
 
-    ASSERT_EQ(sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
-    ASSERT_EQ(sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
-    ASSERT_EQ(sampler.mipFilter, material->data()->get<MipFilter>(samplerStateBindingName));
+    ASSERT_EQ(*sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
+    ASSERT_EQ(*sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
+    ASSERT_EQ(*sampler.mipFilter, material->data()->get<MipFilter>(samplerStateBindingName));
 
     material->data()->unset(samplerStateBindingName);
 
-    ASSERT_EQ(sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
-    ASSERT_EQ(sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
-    ASSERT_EQ(sampler.mipFilter, pass->uniformBindings().defaultValues.get<MipFilter>(sampleStateUniformName));
+    ASSERT_EQ(*sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
+    ASSERT_EQ(*sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
+    ASSERT_EQ(*sampler.mipFilter, pass->uniformBindings().defaultValues.get<MipFilter>(sampleStateUniformName));
 }
 
 TEST_F(DrawCallPoolTest, SamplerStateSwapMipFilterBindingToDefaultNearest)
@@ -490,15 +490,15 @@ TEST_F(DrawCallPoolTest, SamplerStateSwapMipFilterBindingToDefaultNearest)
 
     ASSERT_EQ(samplers.size(), 1);
 
-    ASSERT_EQ(sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
-    ASSERT_EQ(sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
-    ASSERT_EQ(sampler.mipFilter, material->data()->get<MipFilter>(samplerStateBindingName));
+    ASSERT_EQ(*sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
+    ASSERT_EQ(*sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
+    ASSERT_EQ(*sampler.mipFilter, material->data()->get<MipFilter>(samplerStateBindingName));
 
     material->data()->unset(samplerStateBindingName);
 
-    ASSERT_EQ(sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
-    ASSERT_EQ(sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
-    ASSERT_EQ(sampler.mipFilter, pass->uniformBindings().defaultValues.get<MipFilter>(sampleStateUniformName));
+    ASSERT_EQ(*sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
+    ASSERT_EQ(*sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
+    ASSERT_EQ(*sampler.mipFilter, pass->uniformBindings().defaultValues.get<MipFilter>(sampleStateUniformName));
 }
 
 /** Sampler states binding with no binding value and no default value **/
@@ -547,9 +547,9 @@ TEST_F(DrawCallPoolTest, SamplerStatesBindingWrapModeNoDefaultValue)
     ASSERT_EQ(samplers.size(), 1);
     ASSERT_FALSE(pass->uniformBindings().defaultValues.hasProperty(sampleStateUniformName));
 
-    ASSERT_EQ(sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
-    ASSERT_EQ(sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
-    ASSERT_EQ(sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
+    ASSERT_EQ(*sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
+    ASSERT_EQ(*sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
+    ASSERT_EQ(*sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
 }
 
 TEST_F(DrawCallPoolTest, SamplerStateTextureFilterBindingNoDefaultValue)
@@ -596,9 +596,9 @@ TEST_F(DrawCallPoolTest, SamplerStateTextureFilterBindingNoDefaultValue)
     ASSERT_EQ(samplers.size(), 1);
     ASSERT_FALSE(pass->uniformBindings().defaultValues.hasProperty(sampleStateUniformName));
     
-    ASSERT_EQ(sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
-    ASSERT_EQ(sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
-    ASSERT_EQ(sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
+    ASSERT_EQ(*sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
+    ASSERT_EQ(*sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
+    ASSERT_EQ(*sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
 }
 
 TEST_F(DrawCallPoolTest, SamplerStatesBindingMipFilterNoDefaultValue)
@@ -645,7 +645,7 @@ TEST_F(DrawCallPoolTest, SamplerStatesBindingMipFilterNoDefaultValue)
     ASSERT_EQ(samplers.size(), 1);
     ASSERT_FALSE(pass->uniformBindings().defaultValues.hasProperty(sampleStateUniformName));
 
-    ASSERT_EQ(sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
-    ASSERT_EQ(sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
-    ASSERT_EQ(sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
+    ASSERT_EQ(*sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
+    ASSERT_EQ(*sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
+    ASSERT_EQ(*sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
 }

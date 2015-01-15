@@ -343,13 +343,16 @@ DrawCallPool::samplerStatesBindingPropertyAddedHandler(DrawCall&                
        if (resolvedBinding != nullptr)
        {
            auto& propertyName = resolvedBinding->propertyName;
+           auto& signal = resolvedBinding->store.hasProperty(propertyName)
+               ? resolvedBinding->store.propertyRemoved(propertyName)
+               : resolvedBinding->store.propertyAdded(propertyName);
 
-            _propChangedSlot[{&resolvedBinding->binding, &drawCall}] = resolvedBinding->store.propertyChanged(propertyName).connect(std::bind(
-                &DrawCallPool::samplerStatesBindingPropertyAddedHandler,
-                this,
-                std::ref(drawCall),
-                std::ref(input),
-                std::ref(uniformBindingMap)
+           _propChangedSlot[{&resolvedBinding->binding, &drawCall}] = signal.connect(std::bind(
+               &DrawCallPool::samplerStatesBindingPropertyAddedHandler,
+               this,
+               std::ref(drawCall),
+               std::ref(input),
+               std::ref(uniformBindingMap)
             ));
 
            delete resolvedBinding;

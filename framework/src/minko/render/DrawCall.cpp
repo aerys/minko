@@ -352,23 +352,23 @@ DrawCall::setSamplerStateValueFromStore(const ProgramInputs::UniformInput&  inpu
         if (samplerStateProperty == SamplerStates::PROPERTY_WRAP_MODE)
         {
             if (store.hasProperty(propertyName))
-                sampler.wrapMode = store.get<WrapMode>(propertyName);
+                sampler.wrapMode = store.getUnsafePointer<WrapMode>(propertyName);
             else
-                sampler.wrapMode = SamplerStates::DEFAULT_WRAP_MODE;
+                sampler.wrapMode = &SamplerStates::DEFAULT_WRAP_MODE;
         }
         else if (samplerStateProperty == SamplerStates::PROPERTY_TEXTURE_FILTER)
         {
             if (store.hasProperty(propertyName))
-                sampler.textureFilter = store.get<TextureFilter>(propertyName);
+                sampler.textureFilter = store.getUnsafePointer<TextureFilter>(propertyName);
             else
-                sampler.textureFilter = SamplerStates::DEFAULT_TEXTURE_FILTER;
+                sampler.textureFilter = &SamplerStates::DEFAULT_TEXTURE_FILTER;
         }
         else if (samplerStateProperty == SamplerStates::PROPERTY_MIP_FILTER)
         {
             if (store.hasProperty(propertyName))
-                sampler.mipFilter = store.get<MipFilter>(propertyName);
+                sampler.mipFilter = store.getUnsafePointer<MipFilter>(propertyName);
             else
-                sampler.mipFilter = SamplerStates::DEFAULT_MIP_FILTER;
+                sampler.mipFilter = &SamplerStates::DEFAULT_MIP_FILTER;
         }
     }
 }
@@ -483,7 +483,7 @@ DrawCall::render(AbstractContext::Ptr   context,
     for (const auto& s : _samplers)
     {
         context->setTextureAt(s.position, *s.resourceId, s.location);
-        context->setSamplerStateAt(s.position, s.wrapMode, s.textureFilter, s.mipFilter);
+        context->setSamplerStateAt(s.position, *s.wrapMode, *s.textureFilter, *s.mipFilter);
     }
 
     for (auto numSamplers = _samplers.size(); numSamplers < MAX_NUM_TEXTURES; ++numSamplers)
