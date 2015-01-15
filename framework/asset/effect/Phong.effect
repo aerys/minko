@@ -24,11 +24,26 @@
 			        "uUVScale"           			: { "binding" : "material[$materialUuid].uvScale", "default" : [[ 1.0, 1.0 ]] },
 			        "uUVOffset"           			: { "binding" : "material[$materialUuid].uvOffset", "default" : [[ 0.0, 0.0 ]] },
 					"uDiffuseColor"					: "material[$materialUuid].diffuseColor",
-					"uDiffuseMap"					: "material[$materialUuid].diffuseMap",
+					"uDiffuseMap"					: {
+						"binding" : "material[$materialUuid].diffuseMap",
+						"wrapMode" : "repeat",
+						"textureFilter" : "linear",
+						"mipFilter": "linear"
+					},
 					"uAlphaMap"						: "material[$materialUuid].alphaMap",
 					"uAlphaThreshold"				: "material[$materialUuid].alphaThreshold",
-					"uNormalMap"					: "material[$materialUuid].normalMap",
-					"uSpecularMap"					: "material[$materialUuid].specularMap",
+					"uNormalMap"					: {
+						"binding" : "material[$materialUuid].normalMap",
+						"wrapMode" : "repeat",
+						"textureFilter" : "linear",
+						"mipFilter": "linear"
+					},
+					"uSpecularMap"					: {
+						"binding" : "material[$materialUuid].specularMap",
+						"wrapMode" : "repeat",
+						"textureFilter" : "linear",
+						"mipFilter": "linear"
+					},
 					"uSpecularColor"				: { "binding" : "material[$materialUuid].specularColor", "default" : [[ 1.0, 1.0, 1.0, 1.0 ]] },
 					"environmentMap2d"				: "material[$materialUuid].environmentMap2d",
 					"environmentMap2dType"			: "material[$materialUuid].environmentMap2dType",
@@ -73,13 +88,7 @@
 					"DIRECTIONAL_2_SHADOW_MAP"	: { "binding" : { "property" : "directionalLight[2].shadowMap0", "source" : "root" } },
 					"DIRECTIONAL_3_SHADOW_MAP"	: { "binding" : { "property" : "directionalLight[3].shadowMap0", "source" : "root" } }
 				},
-
-				"samplerStates" : {
-					"diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
-					"normalMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
-					"specularMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
-				},
-
+				
 				"vertexShader" 		: "#pragma include \"Phong.vertex.glsl\"",
 				"fragmentShader" 	: "#pragma include \"Phong.fragment.glsl\""
 			}

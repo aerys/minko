@@ -30,7 +30,12 @@
 		"fogColor"				: "material[${materialUuid}].fogColor",
 		"fogDensity"			: "material[${materialUuid}].fogDensity",
 		"fogStart"				: "material[${materialUuid}].fogStart",
-		"fogEnd"				: "material[${materialUuid}].fogEnd"
+		"fogEnd"				: "material[${materialUuid}].fogEnd",
+		"boneMatrices"			: "geometry[${geometryUuid}].boneMatrices",
+		"numBones"				: "geometry[${geometryUuid}].numBones",
+        "uWorldToScreenMatrix"  : { 
+			"binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } 
+		}
     },
 
     "macros" : {
