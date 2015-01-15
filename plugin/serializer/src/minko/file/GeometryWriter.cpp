@@ -147,7 +147,7 @@ GeometryWriter::computeMetaData(std::shared_ptr<geometry::Geometry> geometry,
 		if (functionIdTestFunc.second(geometry) && functionIdTestFunc.first >= vertexBufferFunctionId)
 			vertexBufferFunctionId = functionIdTestFunc.first;
 
-	metaData = ((indexBufferFunctionId << 12) & 0xF0) + ((vertexBufferFunctionId << 8) & 0x0F);
+	metaData = ((indexBufferFunctionId << 4) & 0xF0) + (vertexBufferFunctionId & 0x0F);
 
 	return metaData;
 }

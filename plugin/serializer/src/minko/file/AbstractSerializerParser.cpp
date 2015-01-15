@@ -127,7 +127,7 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 	std::string					resolvedPath		= "";
 	unsigned short				metaData			= (asset.a0 & 0xFFFF0000) >> 16;
 
-	asset.a0 = asset.a0 & 0x00FF;
+	asset.a0 = asset.a0 & 0x000000FF;
 
     if (asset.a0 < 10)
     {

@@ -162,6 +162,6 @@ GeometryParser::parse(const std::string&				filename,
 void
 GeometryParser::computeMetaData(unsigned short metaData, uint& indexBufferFunctionId, uint& vertexBufferFunctionId)
 {
-	indexBufferFunctionId	= 0x00000000 + ((metaData >> 12) & 0x0F);
-	vertexBufferFunctionId	= 0x00000000 + ((metaData >> 8) & 0x0F);
+	indexBufferFunctionId	= 0x00000000 + ((metaData >> 4) & 0x0F);
+	vertexBufferFunctionId	= 0x00000000 + (metaData & 0x0F);
 }
