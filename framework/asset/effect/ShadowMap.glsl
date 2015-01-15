@@ -13,7 +13,7 @@
 attribute vec3 aPosition;
 
 uniform mat4 uModelToWorldMatrix;
-uniform mat4 uWorldToScreenMatrix;
+uniform mat4 uWorldToScreenMatrix[4];
 
 varying vec4 vPosition;
 
@@ -29,7 +29,7 @@ void main(void)
         worldPosition = uModelToWorldMatrix * worldPosition;
     #endif // MODEL_TO_WORLD
 
-    vec4 screenPosition = uWorldToScreenMatrix * worldPosition;
+    vec4 screenPosition = uWorldToScreenMatrix[SHADOW_CASCADE_INDEX] * worldPosition;
 
     vPosition = screenPosition;
 

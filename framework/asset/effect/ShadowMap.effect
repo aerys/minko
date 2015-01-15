@@ -2,115 +2,52 @@
     "name" : "shadow-mapping",
 
     "techniques" : [
-
-        /*{
-            "name" : "shadow-mapping",
-            "passes" : [
-                { "extends" : "shadow-mapping-pass" },
-                { "extends" : "shadow-mapping-boxblur" }
-            ]
-        },*/
-
-        /*{
-            "name" : "cascaded-shadow-mapping-x2",
+        {
+            "name" : "shadow-map-cascade0",
             "passes" : [
                 {
-                    "extends" : "shadow-mapping-pass",
-                    "states" : {
-                        "priority" : 3.0
-                    },
-                    "uniforms" : {
-                        "uWorldToScreenMatrix"  : { "binding" : { "property" : "directionalLight[${lightUuid}].viewProjection0", "source" : "root" } },
-                        "uZNear" : { "binding" : { "property" : "directionalLight[${lightUuid}].zNear0", "source" : "root" } },
-                        "uZFar" : { "binding" : { "property" : "directionalLight[${lightUuid}].zFar0", "source" : "root" } }
-                    }
+                    "extends" : "shadow-mapping-depth",
+                    "macros" : { "SHADOW_CASCADE_INDEX" : { "type" : "int", "default" : 0 } }
                 },
                 {
                     "extends" : "shadow-mapping-boxblur",
-                    "states" : {
-                        "priority" : 2.0,
-                        "target" : { "binding" : { "property" : "directionalLight[${lightUuid}].shadowMap0", "source" : "root" }}
-                    }
-                },
-                {
-                    "extends" : "shadow-mapping-pass",
-                    "states" : {
-                        "priority" : 1.0
-                    },
-                    "uniforms" : {
-                        "uWorldToScreenMatrix" : { "binding" : { "property" : "directionalLight[${lightUuid}].viewProjection1", "source" : "root" } },
-                        "uZNear" : { "binding" : { "property" : "directionalLight[${lightUuid}].zNear1", "source" : "root" } },
-                        "uZFar" : { "binding" : { "property" : "directionalLight[${lightUuid}].zFar1", "source" : "root" } }
-                    }
-                },
-                {
-                    "extends" : "shadow-mapping-boxblur",
-                    "states" : {
-                        "priority" : 0.0,
-                        "target" : { "binding" : { "property" : "directionalLight[${lightUuid}].shadowMap1", "source" : "root" }}
-                    }
+                    "macros" : { "BOXBLUR_OFFSET" : { "type" : "int", "default" : 3 } }
                 }
             ]
-        },*/
-
+        },
         {
-            "name" : "cascaded-shadow-mapping-x3",
+            "name" : "shadow-map-cascade1",
             "passes" : [
                 {
-                    "extends" : "shadow-mapping-pass",
-                    "states" : {
-                        "priority" : 5.0
-                    },
-                    "uniforms" : {
-                        "uWorldToScreenMatrix"  : { "binding" : { "property" : "directionalLight[${lightUuid}].viewProjection0", "source" : "root" } },
-                        "uZNear" : { "binding" : { "property" : "directionalLight[${lightUuid}].zNear0", "source" : "root" } },
-                        "uZFar" : { "binding" : { "property" : "directionalLight[${lightUuid}].zFar0", "source" : "root" } }
-                    }
+                    "extends" : "shadow-mapping-depth",
+                    "macros" : { "SHADOW_CASCADE_INDEX" : { "type" : "int", "default" : 1 } }
+                },
+                "shadow-mapping-boxblur"
+            ]
+        },
+        {
+            "name" : "shadow-map-cascade2",
+            "passes" : [
+                {
+                    "extends" : "shadow-mapping-depth",
+                    "macros" : { "SHADOW_CASCADE_INDEX" : { "type" : "int", "default" : 2 } }
                 },
                 {
                     "extends" : "shadow-mapping-boxblur",
-                    "states" : {
-                        "priority" : 4.0,
-                        "target" : { "binding" : { "property" : "directionalLight[${lightUuid}].shadowMap0", "source" : "root" }}
-                    }
-                },
-
+                    "macros" : { "BOXBLUR_OFFSET" : { "type" : "int", "default" : 1 } }
+                }
+            ]
+        },
+        {
+            "name" : "shadow-map-cascade3",
+            "passes" : [
                 {
-                    "extends" : "shadow-mapping-pass",
-                    "states" : {
-                        "priority" : 3.0
-                    },
-                    "uniforms" : {
-                        "uWorldToScreenMatrix" : { "binding" : { "property" : "directionalLight[${lightUuid}].viewProjection1", "source" : "root" } },
-                        "uZNear" : { "binding" : { "property" : "directionalLight[${lightUuid}].zNear1", "source" : "root" } },
-                        "uZFar" : { "binding" : { "property" : "directionalLight[${lightUuid}].zFar1", "source" : "root" } }
-                    }
+                    "extends" : "shadow-mapping-depth",
+                    "macros" : { "SHADOW_CASCADE_INDEX" : { "type" : "int", "default" : 3 } }
                 },
                 {
                     "extends" : "shadow-mapping-boxblur",
-                    "states" : {
-                        "priority" : 2.0,
-                        "target" : { "binding" : { "property" : "directionalLight[${lightUuid}].shadowMap1", "source" : "root" }}
-                    }
-                },
-
-                {
-                    "extends" : "shadow-mapping-pass",
-                    "states" : {
-                        "priority" : 1.0
-                    },
-                    "uniforms" : {
-                        "uWorldToScreenMatrix" : { "binding" : { "property" : "directionalLight[${lightUuid}].viewProjection2", "source" : "root" } },
-                        "uZNear" : { "binding" : { "property" : "directionalLight[${lightUuid}].zNear2", "source" : "root" } },
-                        "uZFar" : { "binding" : { "property" : "directionalLight[${lightUuid}].zFar2", "source" : "root" } }
-                    }
-                },
-                {
-                    "extends" : "shadow-mapping-boxblur",
-                    "states" : {
-                        "priority" : 0.0,
-                        "target" : { "binding" : { "property" : "directionalLight[${lightUuid}].shadowMap2", "source" : "root" }}
-                    }
+                    "macros" : { "BOXBLUR_OFFSET" : { "type" : "int", "default" : 1 } }
                 }
             ]
         }
@@ -118,7 +55,7 @@
 
     "passes" : [
         {
-            "name" : "shadow-mapping-pass",
+            "name" : "shadow-mapping-depth",
 
             "attributes" : {
                 "aPosition"		: "geometry[${geometryUuid}].position",
@@ -130,9 +67,9 @@
 
             "uniforms" : {
                 "uModelToWorldMatrix"	: "modelToWorldMatrix",
-                "uWorldToScreenMatrix"  : { "binding" : { "property" : "directionalLight[${lightUuid}].viewProjection0", "source" : "root" } },
-                "uZNear"                : { "binding" : { "property" : "directionalLight[${lightUuid}].zNear0", "source" : "root" } },
-                "uZFar"                 : { "binding" : { "property" : "directionalLight[${lightUuid}].zFar0", "source" : "root" } }
+                "uWorldToScreenMatrix"  : { "binding" : { "property" : "directionalLight[${lightUuid}].viewProjection", "source" : "root" } },
+                "uZNear"                : { "binding" : { "property" : "directionalLight[${lightUuid}].zNear", "source" : "root" } },
+                "uZFar"                 : { "binding" : { "property" : "directionalLight[${lightUuid}].zFar", "source" : "root" } }
             },
 
             "macros" : {
@@ -141,7 +78,7 @@
             },
 
             "states" : {
-                "target" : "shadow-mapping-tmp",
+                "target" : "shadow-map-tmp",
                 "priority" : 1.0
             },
 
@@ -159,7 +96,7 @@
             },
 
             "uniforms" : {
-                "uTexture" : { "binding" : { "property" : "effect[${effectUuid}].shadow-mapping-tmp", "source" : "renderer" } },
+                "uTexture" : { "binding" : { "property" : "effect[${effectUuid}].shadow-map-tmp", "source" : "renderer" } },
                 "uTextureSize" : { "binding" : { "property" : "directionalLight[${lightUuid}].shadowMapSize", "source" : "root" } },
                 "uSpread" : { "binding" : { "property" : "directionalLight[${lightUuid}].shadowSpread", "source" : "root" } }
             },
@@ -191,17 +128,22 @@
 
                 #pragma include \"Pack.function.glsl\"
 
+                #ifndef BOXBLUR_OFFSET
+                # define BOXBLUR_OFFSET 2
+                #endif
+
                 void main()
                 {
                     float c = 0.0;
 
-                    for (int x = -2; x <= 2; ++x)
-                        for (int y = -2; y <= 2; ++y)
-                            c += unpackFloat8bitRGBA(texture2D(uTexture, vUV + (vec2(x, y) * uSpread) / uTextureSize));
+                    for (int x = -BOXBLUR_OFFSET; x <= BOXBLUR_OFFSET; ++x)
+                        for (int y = -BOXBLUR_OFFSET; y <= BOXBLUR_OFFSET; ++y)
+                            c += unpackFloat8bitRGBA(texture2D(uTexture, vUV + vec2(x, y) / uTextureSize));
 
-                    gl_FragColor = packFloat8bitRGBA(c / 25.0);
+                    gl_FragColor = packFloat8bitRGBA(c / ((BOXBLUR_OFFSET * 2 + 1) * (BOXBLUR_OFFSET * 2 + 1)));
                 }
             "
         }
+
     ]
 }

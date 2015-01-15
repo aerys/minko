@@ -7,7 +7,15 @@
 # define SHADOW_MAPPING_TECHNIQUE   SHADOW_MAPPING_TECHNIQUE_ESM
 #endif
 
-#define SHADOW_MAPPING_NEAR_ONE 0.999
+#define SHADOW_MAPPING_NEAR_ONE         0.999
+#define SHADOW_MAPPING_MAX_NUM_CASCADES 4
+
+const vec4 shadowMapping_viewports[4] = vec4[](
+	vec4(0.0, 0.5, 0.5, 0.5),
+	vec4(0.5, 0.5, 0.5, 0.5),
+	vec4(0.0, 0.0, 0.5, 0.5),
+	vec4(0.5, 0.0, 0.5, 0.5)
+);
 
 float shadowMapping_random(vec4 seed)
 {
@@ -90,8 +98,16 @@ float shadowMapping_ESM(sampler2D depths, vec2 uv, float compare, float zNear, f
 {
     float depth = shadowMapping_texture2DDepth(depths, uv, zNear, zFar);
 
-    depth = exp(-c * min(compare - depth, 0.05));
+    // depth = exp(-c * min(compare - depth, 0.05));
+	depth = exp(c * depth) * exp(-c * compare);
     depth = clamp(depth, 0.0, 1.0);
 
     return depth;
+}
+
+int shadowMapping_getCascadeIndex(float depth, vec4 cascadeDepths)
+{
+	vec4 s = 1 - step(depth, cascadeDepths);
+
+    return int(s.x + s.y + s.z + s.w);
 }
