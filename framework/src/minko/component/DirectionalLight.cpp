@@ -32,11 +32,12 @@ const uint DirectionalLight::MAX_NUM_SHADOW_CASCADES = 4;
 
 DirectionalLight::DirectionalLight(float diffuse, float specular) :
 	AbstractDiscreteLight("directionalLight", diffuse, specular),
-	_shadowMappingEnabled(true),
-	_numShadowCascades(3),
-	_shadowProjections(3),
-	_shadowMaps(3),
-	_shadowMapSize(256)
+	_shadowMappingEnabled(false),
+	_numShadowCascades(4),
+	_shadowProjections(MAX_NUM_SHADOW_CASCADES),
+	_shadowMap(nullptr),
+	_shadowMapSize(256),
+	_shadowRenderers(4, nullptr)
 {
     updateModelToWorldMatrix(math::mat4(1.f));
 }
@@ -62,17 +63,26 @@ DirectionalLight::updateModelToWorldMatrix(const math::mat4& modelToWorld)
 	updateWorldToScreenMatrix();
 }
 
-void
-DirectionalLight::initializeShadowMapping(file::AssetLibrary::Ptr assets)
+bool
+DirectionalLight::initializeShadowMapping()
 {
+	if (!target() || !target()->root()->hasComponent<SceneManager>())
+		return false;
+
+	auto assets = target()->root()->component<SceneManager>()->assets();
 	auto effectName = "effect/ShadowMap.effect";
 	auto fx = assets->effect(effectName);
 
 	if (!fx)
 	{
-		auto texture = render::Texture::create(assets->context(), _shadowMapSize, _shadowMapSize, false, true);
-		texture->upload();
-		assets->texture("shadow-mapping-tmp", texture);
+		auto texture = assets->texture("shadow-map-tmp");
+
+		if (!texture)
+		{
+			texture = render::Texture::create(assets->context(), _shadowMapSize, _shadowMapSize, false, true);
+			texture->upload();
+			assets->texture("shadow-map-tmp", texture);
+		}
 
 		auto loader = file::Loader::create(assets->loader());
 		// FIXME: support async loading of the ShadowMapping.effect file
@@ -82,24 +92,43 @@ DirectionalLight::initializeShadowMapping(file::AssetLibrary::Ptr assets)
 		fx = assets->effect(effectName);
 	}
 
-	_shadowMaps.resize(_numShadowCascades, nullptr);
-	for (uint i = 0; i < _numShadowCascades; ++i)
-	{
-		auto shadowMap = render::Texture::create(assets->context(), _shadowMapSize, _shadowMapSize, false, true);
-
-		shadowMap->upload();
-		_shadowMaps[i] = shadowMap;
-		data()->set("shadowMap" + std::to_string(i), shadowMap->sampler());
-	}
+	_shadowMap = render::Texture::create(assets->context(), _shadowMapSize * 2, _shadowMapSize * 2, false, true);
+	_shadowMap->upload();
 	data()
+		->set("shadowMap", _shadowMap->sampler())
 		->set("shadowSpread", 1.f)
 		->set("shadowBias", 0.01f)
 		->set("shadowMapSize", static_cast<float>(_shadowMapSize));
 
-	_shadowRenderer = component::Renderer::create(0xffffffff, _shadowMaps[0], fx, render::Priority::FIRST);
-	_shadowRenderer->effectVariables()["lightUuid"] = data()->uuid();
-	_shadowRenderer->layoutMask(256);
-	target()->addComponent(_shadowRenderer);
+	std::array<math::ivec4, 4> viewports = {
+		math::ivec4(0, _shadowMapSize, _shadowMapSize, _shadowMapSize),
+		math::ivec4(_shadowMapSize, _shadowMapSize, _shadowMapSize, _shadowMapSize),
+		math::ivec4(0, 0, _shadowMapSize, _shadowMapSize),
+		math::ivec4(_shadowMapSize, 0, _shadowMapSize, _shadowMapSize)
+	};
+	for (auto i = 0; i < _numShadowCascades; ++i)
+	{
+		auto renderer = component::Renderer::create(
+			0xffffffff,
+			_shadowMap,
+			fx,
+			"shadow-map-cascade" + std::to_string(i),
+			render::Priority::FIRST - i
+		);
+
+		renderer->clearBeforeRender(i == 0);
+		renderer->viewport(viewports[i]);
+		renderer->effectVariables()["lightUuid"] = data()->uuid();
+		// renderer->effectVariables()["shadowProjectionId"] = std::to_string(i);
+		renderer->layoutMask(256);
+		target()->addComponent(renderer);
+
+		_shadowRenderers.push_back(renderer);
+	}
+
+	computeShadowProjection(math::mat4(1.f), math::perspective(.785f, 1.f, 0.1f, 1000.f));
+
+	return true;
 }
 
 std::pair<math::vec3, math::vec3>
@@ -191,7 +220,7 @@ DirectionalLight::computeShadowProjection(const math::mat4& view, const math::ma
 
 	// http://developer.download.nvidia.com/SDK/10.5/opengl/src/cascaded_shadow_maps/doc/cascaded_shadow_maps.pdf
 	// page 7
-	std::vector<float> splits(_numShadowCascades);
+	std::array<float, 4> splits = { zFar, zFar, zFar, zFar };
 	float lambda = .8f;
 	float j = 1.f;
 	for (auto i = 0; i < _numShadowCascades - 1; ++i, j+= 1.f)
@@ -201,9 +230,7 @@ DirectionalLight::computeShadowProjection(const math::mat4& view, const math::ma
 			zNear * powf(zFar / zNear, j / (float)_numShadowCascades),
 			lambda
 		);
-
 	}
-	splits[_numShadowCascades - 1] = zFar;
 
 	for (auto i = 0; i < _numShadowCascades; ++i)
 	{
@@ -249,15 +276,16 @@ DirectionalLight::updateWorldToScreenMatrix()
 	else
 		_view = math::mat4(1.f);
 
+	std::array<float, 4> zFar;
+	std::array<float, 4> zNear;
+	std::array<math::mat4, 4> viewProjections;
+
 	for (int i = 0; i < _numShadowCascades; ++i)
 	{
 		const math::mat4& projection = _shadowProjections[i];
 		auto istr = std::to_string(i);
 		auto farMinusNear = 2.f / projection[2][2];
 	    auto farPlusNear = projection[3][2] * farMinusNear;
-	    auto zNear = (farMinusNear + farPlusNear) / 2.f;
-	    auto zFar = farPlusNear - zNear;
-		auto viewProjection = projection * _view;
 
 		// auto center = viewProjection * math::vec4(0.f, 0.f, 0.f, 1.f) / 2.f;
 		// auto q = 1.f / (float)_shadowMapSize;
@@ -271,11 +299,20 @@ DirectionalLight::updateWorldToScreenMatrix()
 		// std::cout << math::to_string(t) << std::endl;
 		// std::cout << math::to_string(math::round(t / q) * q) << std::endl;
 
-    	data()
-			->set("viewProjection" + istr, 	viewProjection)
-			->set("zNear" + istr, 			zNear)
-			->set("zFar" + istr, 			zFar);
+    	// data()
+		// 	->set("viewProjection" + istr, 	viewProjection)
+		// 	->set("zNear" + istr, 			zNear)
+		// 	->set("zFar" + istr, 			zFar);
+
+		zNear[i] = (farMinusNear + farPlusNear) / 2.f;
+		zFar[i] = farPlusNear - zNear[i];
+		viewProjections[i] = projection * _view;
 	}
+
+	data()
+		->set("viewProjection", viewProjections)
+		->set("zNear", 			zNear)
+		->set("zFar", 			zFar);
 }
 
 void
@@ -283,8 +320,8 @@ DirectionalLight::updateRoot(std::shared_ptr<scene::Node> root)
 {
 	AbstractRootDataComponent::updateRoot(root);
 
-	if (root && _shadowMappingEnabled && !_shadowRenderer && root->hasComponent<SceneManager>())
-		initializeShadowMapping(root->component<SceneManager>()->assets());
+	if (root && _shadowMappingEnabled && !_shadowMap)
+		initializeShadowMapping();
 }
 
 void
@@ -292,6 +329,55 @@ DirectionalLight::targetRemoved(minko::scene::Node::Ptr target)
 {
 	AbstractDiscreteLight::targetRemoved(target);
 
-	if (_shadowRenderer && target->hasComponent(_shadowRenderer))
-    	target->removeComponent(_shadowRenderer);
+	for (auto renderer : _shadowRenderers)
+		if (renderer && target->hasComponent(renderer))
+	    	target->removeComponent(renderer);
+}
+
+void
+DirectionalLight::enableShadowMapping()
+{
+	if (!_shadowMappingEnabled)
+	{
+	    if (!_shadowMap)
+		{
+			initializeShadowMapping();
+		}
+		else
+		{
+			for (auto renderer : _shadowRenderers)
+				if (renderer)
+					renderer->enabled(true);
+
+			data()->set("shadowMap", _shadowMap->sampler());
+		}
+
+		_shadowMappingEnabled = true;
+	}
+}
+
+void
+DirectionalLight::disableShadowMapping(bool disposeResources)
+{
+	if (_shadowMappingEnabled)
+	{
+		for (auto renderer : _shadowRenderers)
+			if (renderer)
+				renderer->enabled(false);
+		data()->unset("shadowMap");
+
+		if (disposeResources)
+		{
+			_shadowMap = nullptr;
+
+			for (auto& renderer : _shadowRenderers)
+				if (renderer && target()->hasComponent(renderer))
+				{
+			    	target()->removeComponent(renderer);
+					// renderer = nullptr;
+				}
+		}
+
+		_shadowMappingEnabled = false;
+	}
 }

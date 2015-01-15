@@ -422,24 +422,29 @@ DrawCall::render(AbstractContext::Ptr   context,
     auto renderTargetId = hasOwnTarget
         ? *_target->id
         : renderTarget ? renderTarget->id() : 0;
+    bool targetChanged = false;
 
     if (renderTargetId)
     {
         if (renderTargetId != context->renderTarget())
         {
             context->setRenderToTexture(renderTargetId, true);
-            context->clear(
-                ((clearColor >> 24) & 0xff) / 255.f,
-                ((clearColor >> 16) & 0xff) / 255.f,
-                ((clearColor >> 8) & 0xff) / 255.f,
-                (clearColor & 0xff) / 255.f
-            );
+
+            if (hasOwnTarget)
+                context->clear(
+                    ((clearColor >> 24) & 0xff) / 255.f,
+                    ((clearColor >> 16) & 0xff) / 255.f,
+                    ((clearColor >> 8) & 0xff) / 255.f,
+                    (clearColor & 0xff) / 255.f
+                );
+
+            targetChanged = true;
         }
     }
     else
         context->setRenderToBackBuffer();
 
-    if (!hasOwnTarget && viewport.z >= 0 && viewport.w >= 0)
+    if (targetChanged && !hasOwnTarget && viewport.z >= 0 && viewport.w >= 0)
         context->configureViewport(viewport.x, viewport.y, viewport.z, viewport.w);
 
     for (const auto& u : _uniformBool)
@@ -511,14 +516,14 @@ data::ResolvedBinding*
 DrawCall::resolveBinding(const std::string&                             inputName,
                          const std::map<std::string, data::Binding>&    bindings)
 {
-    bool isArray = false;
+    bool isCollection = false;
     std::string bindingName = inputName;
     auto pos = bindingName.find_first_of('[');
 
     if (pos != std::string::npos)
     {
         bindingName = bindingName.substr(0, pos);
-        isArray = true;
+        isCollection = true;
     }
 
     const data::Binding* binding = nullptr;
@@ -527,6 +532,7 @@ DrawCall::resolveBinding(const std::string&                             inputNam
     {
         binding = &bindings.at(bindingName);
         bindingPropertyName = binding->propertyName;
+        isCollection = isCollection && bindingPropertyName.find_first_of('[') == std::string::npos;
     }
     else
     {
@@ -538,7 +544,7 @@ DrawCall::resolveBinding(const std::string&                             inputNam
             {
                 bindingPropertyName = std::regex_replace(inputName, r, inputNameAndBinding.second.propertyName);
                 binding = &inputNameAndBinding.second;
-                isArray = false;
+                isCollection = false;
                 break;
             }
         }
@@ -557,7 +563,7 @@ DrawCall::resolveBinding(const std::string&                             inputNam
     // to the context providing the direct pointer to the contiguous stored data
 
     // FIXME: handle per-fields bindings instead of using the raw uniform suffix
-    if (isArray)
+    if (isCollection)
         propertyName += inputName.substr(pos);
 
     return new data::ResolvedBinding(*binding, propertyName, store);

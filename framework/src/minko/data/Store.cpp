@@ -401,15 +401,20 @@ const std::string
 Store::getActualPropertyName(const std::unordered_map<std::string, std::string>&    vars,
                              const std::string&                                     propertyName)
 {
+    std::string s = propertyName;
+
+    // FIXME: order vars keys from longer to shorter in order to match the longest matching var name
+    // or use regex_replace
+
     for (const auto& variableName : vars)
     {
         auto pos = propertyName.find("${" + variableName.first + "}");
 
         if (pos != std::string::npos)
-            return propertyName.substr(0, pos) + variableName.second + propertyName.substr(pos + variableName.first.size() + 3);
+            s = s.substr(0, pos) + variableName.second + s.substr(pos + variableName.first.size() + 3);
         else if ((pos = propertyName.find("$" + variableName.first)) != std::string::npos)
-            return propertyName.substr(0, pos) + variableName.second + propertyName.substr(pos + variableName.first.size() + 1);
+            s = s.substr(0, pos) + variableName.second + s.substr(pos + variableName.first.size() + 1);
     }
 
-    return propertyName;
+    return s;
 }

@@ -53,6 +53,7 @@ namespace minko
 			std::set<std::string>	_setUniforms;
             std::set<std::string>   _setTextures;
             std::set<std::string>   _setAttributes;
+			std::set<std::string>	_definedMacros;
 
 		public:
 			inline static
@@ -135,6 +136,13 @@ namespace minko
 			}
 
 			inline
+			const std::set<std::string>&
+			definedMacroNames() const
+			{
+				return _definedMacros;
+			}
+
+			inline
 			const ProgramInputs&
 			inputs() const
 			{
@@ -207,18 +215,12 @@ namespace minko
             Program&
 			setUniform(const std::string&, CubeTexturePtr);
 
-            inline
-            Program&
-            setAttribute(const std::string& name, const VertexAttribute& attribute)
-            {
-                return setAttribute(name, attribute, name);
-            }
-
             Program&
             define(const std::string& macroName)
             {
                 _vertexShader->define(macroName);
                 _fragmentShader->define(macroName);
+				_definedMacros.insert(macroName);
 
                 return *this;
             }
@@ -229,8 +231,16 @@ namespace minko
             {
                 _vertexShader->define(macroName, value);
                 _fragmentShader->define(macroName, value);
+				_definedMacros.insert(macroName);
 
                 return *this;
+            }
+
+            inline
+            Program&
+            setAttribute(const std::string& name, const VertexAttribute& attribute)
+            {
+                return setAttribute(name, attribute, name);
             }
 
             Program&

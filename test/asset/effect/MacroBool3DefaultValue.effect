@@ -1,0 +1,7 @@
+{
+    "macros" : {
+        "TEST_BOOL3_MACRO" : { "type" : "bool", "default" : [[ true, false, true ]] }
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

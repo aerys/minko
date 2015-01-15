@@ -33,10 +33,10 @@ namespace minko
             typedef int MaskType;
 
 		private:
-			uint				                    _mask;
-            std::vector<Any>	                    _values;
-            std::vector<data::MacroBinding::Type>   _types;
-            std::vector<std::string>                _macros;
+			uint				                    		_mask;
+            std::vector<Any>	                    		_values;
+            std::vector<data::MacroBindingMap::MacroType>   _types;
+            std::vector<std::string>                		_macros;
 
 		public:
 			ProgramSignature(const data::MacroBindingMap&                           macroBindings,
@@ -53,8 +53,8 @@ namespace minko
                 _types.clear();
                 _macros.clear();
             }
-			
-			bool 
+
+			bool
 			operator==(const ProgramSignature&) const;
 
             void
@@ -75,7 +75,7 @@ namespace minko
 			}
 
             inline
-            const std::vector<data::MacroBinding::Type>&
+            const std::vector<data::MacroBindingMap::MacroType>&
             types()
             {
                 return _types;
@@ -90,9 +90,9 @@ namespace minko
 
         private:
             Any
-            getValueFromStore(const data::MacroBinding& binding,
-                              const data::Store&        store,
-                              const std::string&        propertyName);
+            getValueFromStore(const data::Store&        				store,
+                              const std::string&        				propertyName,
+							  const data::MacroBindingMap::MacroType&   type);
 		};
 	}
 }
@@ -103,7 +103,7 @@ namespace minko
 //    struct hash<minko::render::ProgramSignature>
 //	{
 //		inline
-//		size_t 
+//		size_t
 //		operator()(const minko::render::ProgramSignature& x) const
 //		{
 //			size_t seed = std::hash<minko::uint>()(x.mask());

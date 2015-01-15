@@ -95,6 +95,9 @@ namespace minko
             void
             update();
 
+			void
+			clear();
+
         private:
             void
             watchProgramSignature(DrawCall&                     drawCall,

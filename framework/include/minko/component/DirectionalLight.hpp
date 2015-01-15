@@ -33,16 +33,17 @@ namespace minko
 	    public:
 		    typedef std::shared_ptr<DirectionalLight> Ptr;
 
-        public:
-            typedef std::shared_ptr<render::Texture>  TexturePtr;
+        private:
+            typedef std::shared_ptr<render::Texture>    TexturePtr;
+            typedef std::shared_ptr<Renderer>           RendererPtr;
 
 		private:
 			math::vec3                  _worldDirection;
             bool                        _shadowMappingEnabled;
             uint                        _shadowMapSize;
-            std::vector<TexturePtr>     _shadowMaps;
+            TexturePtr                  _shadowMap;
             uint                        _numShadowCascades;
-            std::shared_ptr<Renderer>   _shadowRenderer;
+            std::vector<RendererPtr>    _shadowRenderers;
             std::vector<math::mat4>     _shadowProjections;
             math::mat4                  _view;
 
@@ -65,10 +66,10 @@ namespace minko
 		    }
 
             inline
-            const std::vector<TexturePtr>&
-            shadowMaps()
+            TexturePtr
+            shadowMap()
             {
-                return _shadowMaps;
+                return _shadowMap;
             }
 
             inline
@@ -80,13 +81,26 @@ namespace minko
 
             inline
             const std::vector<math::mat4>&
-            shadowProjections()
+            shadowProjections() const
             {
                 return _shadowProjections;
             }
 
+            inline
+            bool
+            shadowMappingEnabled() const
+            {
+                return _shadowMappingEnabled;
+            }
+
             void
             computeShadowProjection(const math::mat4& view, const math::mat4& projection);
+
+            void
+            enableShadowMapping();
+
+            void
+            disableShadowMapping(bool disposeResources = false);
 
 		protected:
 			void
@@ -103,8 +117,8 @@ namespace minko
 
 			DirectionalLight(const DirectionalLight& directionalLight, const CloneOption& option);
 
-            void
-            initializeShadowMapping(std::shared_ptr<file::AssetLibrary> assets);
+            bool
+            initializeShadowMapping();
 
             void
             updateWorldToScreenMatrix();

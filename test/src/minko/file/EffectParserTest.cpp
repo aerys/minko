@@ -549,6 +549,138 @@ TEST_F(EffectParserTest, OneUniformBindingAndDefault)
     ASSERT_TRUE(fx->techniques().at("default")[0]->uniformBindings().defaultValues.hasProperty("uDiffuseColor"));
 }
 
+TEST_F(EffectParserTest, MacroIntDefaultValue)
+{
+    auto fx = MinkoTests::loadEffect("effect/MacroIntDefaultValue.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty("TEST_INT_MACRO"));
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.get<int>("TEST_INT_MACRO"), 42);
+}
+
+TEST_F(EffectParserTest, MacroInt2DefaultValue)
+{
+    auto fx = MinkoTests::loadEffect("effect/MacroInt2DefaultValue.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty("TEST_INT2_MACRO"));
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.get<math::ivec2>("TEST_INT2_MACRO"), math::ivec2(42, 23));
+}
+
+TEST_F(EffectParserTest, MacroInt3DefaultValue)
+{
+    auto fx = MinkoTests::loadEffect("effect/MacroInt3DefaultValue.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty("TEST_INT3_MACRO"));
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.get<math::ivec3>("TEST_INT3_MACRO"), math::ivec3(42, 23, 13));
+}
+
+TEST_F(EffectParserTest, MacroInt4DefaultValue)
+{
+    auto fx = MinkoTests::loadEffect("effect/MacroInt4DefaultValue.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty("TEST_INT4_MACRO"));
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.get<math::ivec4>("TEST_INT4_MACRO"), math::ivec4(42, 23, 13, 7));
+}
+
+TEST_F(EffectParserTest, MacroFloatDefaultValue)
+{
+    auto fx = MinkoTests::loadEffect("effect/MacroFloatDefaultValue.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty("TEST_FLOAT_MACRO"));
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.get<float>("TEST_FLOAT_MACRO"), 42.24f);
+}
+
+TEST_F(EffectParserTest, MacroFloat2DefaultValue)
+{
+    auto fx = MinkoTests::loadEffect("effect/MacroFloat2DefaultValue.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty("TEST_FLOAT2_MACRO"));
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.get<math::vec2>("TEST_FLOAT2_MACRO"), math::vec2(42.24f, 23.32f));
+}
+
+TEST_F(EffectParserTest, MacroFloat3DefaultValue)
+{
+    auto fx = MinkoTests::loadEffect("effect/MacroFloat3DefaultValue.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty("TEST_FLOAT3_MACRO"));
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.get<math::vec3>("TEST_FLOAT3_MACRO"), math::vec3(42.24f, 23.32f, 13.31f));
+}
+
+TEST_F(EffectParserTest, MacroFloat4DefaultValue)
+{
+    auto fx = MinkoTests::loadEffect("effect/MacroFloat4DefaultValue.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty("TEST_FLOAT4_MACRO"));
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.get<math::vec4>("TEST_FLOAT4_MACRO"), math::vec4(42.24f, 23.32f, 13.31f, 7.7f));
+}
+
+TEST_F(EffectParserTest, MacroBoolDefaultValue)
+{
+    auto fx = MinkoTests::loadEffect("effect/MacroBoolDefaultValue.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty("TEST_BOOL_MACRO"));
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.get<int>("TEST_BOOL_MACRO"), 1);
+}
+
+TEST_F(EffectParserTest, MacroBool2DefaultValue)
+{
+    auto fx = MinkoTests::loadEffect("effect/MacroBool2DefaultValue.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty("TEST_BOOL2_MACRO"));
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.get<math::ivec2>("TEST_BOOL2_MACRO"), math::ivec2(1, 0));
+}
+
+TEST_F(EffectParserTest, MacroBool3DefaultValue)
+{
+    auto fx = MinkoTests::loadEffect("effect/MacroBool3DefaultValue.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty("TEST_BOOL3_MACRO"));
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.get<math::ivec3>("TEST_BOOL3_MACRO"), math::ivec3(1, 0, 1));
+}
+
+TEST_F(EffectParserTest, MacroBool4DefaultValue)
+{
+    auto fx = MinkoTests::loadEffect("effect/MacroBool4DefaultValue.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty("TEST_BOOL4_MACRO"));
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.get<math::ivec4>("TEST_BOOL4_MACRO"), math::ivec4(1, 0, 1, 0));
+}
+
 TEST_F(EffectParserTest, MultiplePassesHaveDifferentStateData)
 {
     auto fx = MinkoTests::loadEffect("effect/MultiplePasses.effect");
