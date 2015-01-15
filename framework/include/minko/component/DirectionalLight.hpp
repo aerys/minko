@@ -97,6 +97,13 @@ namespace minko
                 return _shadowMappingEnabled;
             }
 
+            inline
+            uint
+            numShadowCascades() const
+            {
+                return _numShadowCascades;
+            }
+
             void
             computeShadowProjection(const math::mat4& view, const math::mat4& projection);
 
