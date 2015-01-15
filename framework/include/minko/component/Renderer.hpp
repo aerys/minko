@@ -74,6 +74,7 @@ namespace minko
 
 			std::set<std::shared_ptr<Surface>>							    _toCollect;
 			EffectPtr													    _effect;
+			std::string														_effectTechnique;
 			float														    _priority;
 			bool														    _enabled;
 			std::shared_ptr<geometry::Geometry>								_postProcessingGeom;
@@ -118,10 +119,11 @@ namespace minko
 			create(uint					backgroundColor,
 				   AbsTexturePtr		renderTarget 	= nullptr,
 				   EffectPtr			effect			= nullptr,
+				   const std::string&	effectTechnique	= "default",
 				   float				priority		= 0.f,
 				   std::string			name			= "")
 			{
-				auto ctrl = std::shared_ptr<Renderer>(new Renderer(renderTarget, effect, priority));
+				auto ctrl = std::shared_ptr<Renderer>(new Renderer(renderTarget, effect, effectTechnique, priority));
 
 				ctrl->backgroundColor(backgroundColor);
 				ctrl->name(name);
@@ -195,12 +197,9 @@ namespace minko
 			}
 
             inline
-			void viewport(const int x, const int y, const int w, const int h)
+			void viewport(math::ivec4 viewport)
             {
-				_viewportBox.x = x;
-				_viewportBox.y = y;
-				_viewportBox.z = w;
-				_viewportBox.w = h;
+				_viewportBox = viewport;
             }
 
 			inline
@@ -335,6 +334,7 @@ namespace minko
 		private:
 			Renderer(AbsTexturePtr		renderTarget 	= nullptr,
 					 EffectPtr			effect			= nullptr,
+					 const std::string& effectTechnique	= "default",
 					 float				priority		= 0.f);
 
 			void

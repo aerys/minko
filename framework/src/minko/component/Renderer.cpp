@@ -43,6 +43,7 @@ using namespace minko::render;
 
 Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 				   EffectPtr								effect,
+				   const std::string&						effectTechnique,
 				   float									priority) :
     _backgroundColor(0),
     _viewportBox(0, 0, -1, -1),
@@ -53,6 +54,7 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 	_beforePresent(Signal<Ptr>::create()),
 	//_surfaceTechniqueChangedSlot(),
 	_effect(effect),
+	_effectTechnique(effectTechnique),
     _clearBeforeRender(true),
 	_priority(priority),
 	_renderTarget(renderTarget),
@@ -166,17 +168,20 @@ Renderer::targetAdded(std::shared_ptr<Node> target)
 void
 Renderer::targetRemoved(std::shared_ptr<Node> target)
 {
-	if (_effect)
-		target->data().removeProvider(_effect->data(), Surface::EFFECT_COLLECTION_NAME);
-
 	_addedSlot = nullptr;
 	_removedSlot = nullptr;
+	_renderingBeginSlot = nullptr;
+	_surfaceChangedSlots.clear();
 
-	removedHandler(target->root(), target, target->parent());
+	_rootDescendantAddedSlot = nullptr;
+	_rootDescendantRemovedSlot = nullptr;
+	_componentAddedSlot = nullptr;
+	_componentRemovedSlot = nullptr;
 
-	/*_targetDataFilters.clear();
-	_rendererDataFilters.clear();
-	_rootDataFilters.clear();*/
+	_drawCallPool.clear();
+
+	if (_effect)
+		target->data().removeProvider(_effect->data(), Surface::EFFECT_COLLECTION_NAME);
 }
 
 void
@@ -225,8 +230,8 @@ Renderer::addedHandler(std::shared_ptr<Node> node,
 
 void
 Renderer::removedHandler(std::shared_ptr<Node> node,
-						  std::shared_ptr<Node> target,
-						  std::shared_ptr<Node> parent)
+						 std::shared_ptr<Node> target,
+						 std::shared_ptr<Node> parent)
 {
 	findSceneManager();
 
@@ -326,7 +331,7 @@ Renderer::addSurface(Surface::Ptr surface)
 
     _surfaceToDrawCallIterator[surface] = _drawCallPool.addDrawCalls(
         _effect ? _effect : surface->effect(),
-        _effect ? "default" : surface->technique(),
+        _effect ? _effectTechnique : surface->technique(),
         variables,
         surface->target()->root()->data(),
         target()->data(),
