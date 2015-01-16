@@ -45,7 +45,7 @@
         "HAS_NORMAL"            : "geometry[${geometryUuid}].normal",
         "SKINNING_NUM_BONES"    : "geometry[${geometryUuid}].numBones",
         "DIFFUSE_MAP"           : "material[${materialUuid}].diffuseMap",
-        "DIFFUSE_MAP_LOD" 		: "material[${materialUuid}].diffuseMap.size",
+        "DIFFUSE_MAP_LOD" 		: "material[${materialUuid}].diffuseMapLodEnabled",
         "DIFFUSE_CUBEMAP"       : "material[${materialUuid}].diffuseCubeMap",
 		"ALPHA_MAP"		        : "material[${materialUuid}].alphaMap",
 		"ALPHA_THRESHOLD"       : "material[${materialUuid}].alphaThreshold",

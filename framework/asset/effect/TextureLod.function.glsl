@@ -22,19 +22,23 @@ vec4 texturelod_texture2D(sampler2D tex, vec2 uv, vec2 texSize, float baseLod, f
     #if defined(GL_OES_standard_derivatives) && defined(GL_EXT_shader_texture_lod)
         float requiredLod = texturelod_mipmapLevel(tex, uv, texSize);
 
-        if (requiredLod < maxLod)
-          return defaultColor;
+        float maxTextureLod = floor(log2(texSize.x));
+    
+        if (maxLod >= maxTextureLod)
+            return defaultColor;
 
-        return texture2DLodEXT(tex, fract(uv), requiredLod);
+        return texture2DLodEXT(tex, fract(uv), max(maxLod, requiredLod));
     #else
         return defaultColor;
     #endif
 #else
     float requiredLod = texturelod_mipmapLevel(tex, uv, texSize);
 
-    if (requiredLod < maxLod)
+    float maxTextureLod = floor(log2(texSize.x));
+
+    if (maxLod >= maxTextureLod)
         return defaultColor;
 
-    return textureLod(tex, fract(uv), requiredLod);
+    return textureLod(tex, fract(uv), max(maxLod, requiredLod));
 #endif
 }
