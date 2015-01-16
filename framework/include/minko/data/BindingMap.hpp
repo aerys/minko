@@ -32,9 +32,103 @@ namespace minko
         {
             std::map<std::string, T> bindings;
             data::Store defaultValues;
+
+            BindingMapBase()
+            {
+            }
+
+            BindingMapBase(std::map<std::string, T>   bindings,
+                           const data::Store&         defaultValues) :
+                bindings(bindings),
+                defaultValues(defaultValues)
+            {
+            }
+
+            BindingMapBase(const BindingMapBase& m) :
+                bindings(m.bindings),
+                defaultValues(m.defaultValues, true)
+            {
+            }
         };
 
-        typedef BindingMapBase<data::Binding>       BindingMap;
-        typedef BindingMapBase<data::MacroBinding>  MacroBindingMap;
+        typedef BindingMapBase<data::Binding>   BindingMap;
+
+        struct MacroBindingMap : public BindingMapBase<data::MacroBinding>
+        {
+            enum class MacroType
+            {
+                UNSET,
+				INT,
+				INT2,
+				INT3,
+				INT4,
+				BOOL,
+				BOOL2,
+				BOOL3,
+				BOOL4,
+				FLOAT,
+				FLOAT2,
+				FLOAT3,
+				FLOAT4,
+				FLOAT9,
+				FLOAT16
+            };
+
+            std::map<std::string, MacroType> types;
+
+            MacroBindingMap() :
+                BindingMapBase(),
+                types()
+            {
+            }
+
+            MacroBindingMap(std::map<std::string, MacroBinding>   bindings,
+                            const data::Store&                    defaultValues,
+                            std::map<std::string, MacroType>      types) :
+                BindingMapBase(bindings, defaultValues),
+                types(types)
+            {
+            }
+
+            MacroBindingMap(const MacroBindingMap& m) :
+                BindingMapBase(m.bindings, m.defaultValues),
+                types(m.types)
+            {
+            }
+
+            static
+            MacroType
+            stringToMacroType(const std::string& s)
+            {
+                if (s == "int")
+                    return MacroType::INT;
+                if (s == "int2")
+                    return MacroType::INT2;
+                if (s == "int3")
+                    return MacroType::INT3;
+                if (s == "int4")
+                    return MacroType::INT4;
+
+                if (s == "float")
+                    return MacroType::FLOAT;
+                if (s == "float2")
+                    return MacroType::FLOAT2;
+                if (s == "float3")
+                    return MacroType::FLOAT3;
+                if (s == "float4")
+                    return MacroType::FLOAT4;
+
+                if (s == "bool")
+                    return MacroType::BOOL;
+                if (s == "bool2")
+                    return MacroType::BOOL2;
+                if (s == "bool3")
+                    return MacroType::BOOL3;
+                if (s == "bool4")
+                    return MacroType::BOOL4;
+
+                return MacroType::UNSET;
+            }
+        };
     }
 }

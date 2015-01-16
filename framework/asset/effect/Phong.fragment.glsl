@@ -80,62 +80,55 @@ uniform float		uSpecularMapMaxAvailableLod;
 uniform vec2		uSpecularMapSize;
 
 // directional lights
-uniform vec3 uDirectionalLight0_direction;
-uniform vec3 uDirectionalLight0_color;
-uniform float uDirectionalLight0_diffuse;
-uniform float uDirectionalLight0_specular;
-uniform mat4 uDirectionalLight0_viewProjection0;
-uniform sampler2D uDirectionalLight0_shadowMap0;
-uniform float uDirectionalLight0_zNear0;
-uniform float uDirectionalLight0_zFar0;
-uniform mat4 uDirectionalLight0_viewProjection1;
-uniform sampler2D uDirectionalLight0_shadowMap1;
-uniform float uDirectionalLight0_zNear1;
-uniform float uDirectionalLight0_zFar1;
-uniform mat4 uDirectionalLight0_viewProjection2;
-uniform sampler2D uDirectionalLight0_shadowMap2;
-uniform float uDirectionalLight0_zNear2;
-uniform float uDirectionalLight0_zFar2;
-uniform vec4 uDirectionalLight0_shadowCascadeDepths;
-uniform float uDirectionalLight0_shadowMapSize;
-uniform float uDirectionalLight0_shadowSpread;
-uniform float uDirectionalLight0_shadowBias;
+uniform vec3 uDirLight0_direction;
+uniform vec3 uDirLight0_color;
+uniform float uDirLight0_diffuse;
+uniform float uDirLight0_specular;
+uniform sampler2D uDirLight0_shadowMap;
+uniform mat4 uDirLight0_viewProjection[SHADOW_MAPPING_MAX_NUM_CASCADES];
+uniform float uDirLight0_zNear[SHADOW_MAPPING_MAX_NUM_CASCADES];
+uniform float uDirLight0_zFar[SHADOW_MAPPING_MAX_NUM_CASCADES];
+uniform vec4 uDirLight0_shadowCascadeDepths;
+uniform float uDirLight0_shadowMapSize;
+uniform float uDirLight0_shadowSpread;
+uniform float uDirLight0_shadowBias;
 
-uniform vec3 uDirectionalLight1_direction;
-uniform vec3 uDirectionalLight1_color;
-uniform float uDirectionalLight1_diffuse;
-uniform float uDirectionalLight1_specular;
-uniform sampler2D uDirectionalLight1_shadowMap;
-uniform float uDirectionalLight1_shadowMapSize;
-uniform float uDirectionalLight1_shadowSpread;
-uniform float uDirectionalLight1_shadowBias;
-uniform float uDirectionalLight1_zNear;
-uniform float uDirectionalLight1_zFar;
-uniform mat4 uDirectionalLight1_viewProjection;
+uniform vec3 uDirLight1_direction;
+uniform vec3 uDirLight1_color;
+uniform float uDirLight1_diffuse;
+uniform float uDirLight1_specular;
+uniform sampler2D uDirLight1_shadowMap;
+uniform mat4 uDirLight1_viewProjection[SHADOW_MAPPING_MAX_NUM_CASCADES];
+uniform float uDirLight1_zNear[SHADOW_MAPPING_MAX_NUM_CASCADES];
+uniform float uDirLight1_zFar[SHADOW_MAPPING_MAX_NUM_CASCADES];
+uniform vec4 uDirLight1_shadowCascadeDepths;
+uniform float uDirLight1_shadowMapSize;
+uniform float uDirLight1_shadowSpread;
+uniform float uDirLight1_shadowBias;
 
-uniform vec3 uDirectionalLight2_direction;
-uniform vec3 uDirectionalLight2_color;
-uniform float uDirectionalLight2_diffuse;
-uniform float uDirectionalLight2_specular;
-uniform sampler2D uDirectionalLight2_shadowMap;
-uniform float uDirectionalLight2_shadowMapSize;
-uniform float uDirectionalLight2_shadowSpread;
-uniform float uDirectionalLight2_shadowBias;
-uniform float uDirectionalLight2_zNear;
-uniform float uDirectionalLight2_zFar;
-uniform mat4 uDirectionalLight2_viewProjection;
+uniform vec3 uDirLight2_direction;
+uniform vec3 uDirLight2_color;
+uniform float uDirLight2_diffuse;
+uniform float uDirLight2_specular;
+uniform sampler2D uDirLight2_shadowMap;
+uniform float uDirLight2_shadowMapSize;
+uniform float uDirLight2_shadowSpread;
+uniform float uDirLight2_shadowBias;
+uniform float uDirLight2_zNear;
+uniform float uDirLight2_zFar;
+uniform mat4 uDirLight2_viewProjection;
 
-uniform vec3 uDirectionalLight3_direction;
-uniform vec3 uDirectionalLight3_color;
-uniform float uDirectionalLight3_diffuse;
-uniform float uDirectionalLight3_specular;
-uniform sampler2D uDirectionalLight3_shadowMap;
-uniform float uDirectionalLight3_shadowMapSize;
-uniform float uDirectionalLight3_shadowSpread;
-uniform float uDirectionalLight3_shadowBias;
-uniform float uDirectionalLight3_zNear;
-uniform float uDirectionalLight3_zFar;
-uniform mat4 uDirectionalLight3_viewProjection;
+uniform vec3 uDirLight3_direction;
+uniform vec3 uDirLight3_color;
+uniform float uDirLight3_diffuse;
+uniform float uDirLight3_specular;
+uniform sampler2D uDirLight3_shadowMap;
+uniform float uDirLight3_shadowMapSize;
+uniform float uDirLight3_shadowSpread;
+uniform float uDirLight3_shadowBias;
+uniform float uDirLight3_zNear;
+uniform float uDirLight3_zFar;
+uniform mat4 uDirLight3_viewProjection;
 // ! directional lights
 
 varying vec3 vertexPosition;
@@ -153,29 +146,38 @@ float shininessCoeff = 1.0;
 vec3 eyeVector = normalize(uCameraPosition - vertexPosition); // always in world-space
 vec3 normalVector = normalize(vertexNormal); // always in world-space
 
-float getShadow(sampler2D shadowMap, mat4 viewProj, float size, float zNear, float zFar, float bias)
+float getShadow(sampler2D 	shadowMap,
+				mat4 		viewProj[SHADOW_MAPPING_MAX_NUM_CASCADES],
+				float 		zNear[SHADOW_MAPPING_MAX_NUM_CASCADES],
+				float 		zFar[SHADOW_MAPPING_MAX_NUM_CASCADES],
+				vec4		cascadeDepths,
+				float 		size,
+				float 		bias)
 {
 	float shadow = 1.f;
-	vec3 vertexLightPosition = (viewProj * vec4(vertexPosition, 1)).xyz;
+	int index = shadowMapping_getCascadeIndex(vertexScreenPosition.z, cascadeDepths);
+	vec4 viewport = shadowMapping_viewports[index];
+	vec3 vertexLightPosition = (viewProj[index] * vec4(vertexPosition, 1)).xyz;
 
-	// FIXME: avoid branch (usint step()?)
 	if (shadowMapping_vertexIsInShadowMap(vertexLightPosition))
 	{
 		float shadowDepth = vertexLightPosition.z - bias;
 		vec2 depthUV = vertexLightPosition.xy / 2.0 + 0.5;
 
+		depthUV = vec2(depthUV.xy * viewport.zw + viewport.xy);
+
 		#if SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_HARD
-			shadow = shadowMapping_texture2DCompare(shadowMap, depthUV, shadowDepth, zNear, zFar);
+			shadow = shadowMapping_texture2DCompare(shadowMap, depthUV, shadowDepth, zNear[index], zFar[index]);
 		#elif SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_ESM
-			shadow = shadowMapping_ESM(shadowMap, depthUV, shadowDepth, zNear, zFar, 80.0);
+			shadow = shadowMapping_ESM(shadowMap, depthUV, shadowDepth, zNear[index], zFar[index], 30.0);
 		#elif SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_PCF
 			shadow = shadowMapping_PCF(
 				shadowMap,
 				vec2(size, size),
 				depthUV,
 				shadowDepth,
-				zNear,
-				zFar
+				zNear[index],
+				zFar[index]
 			);
 		// #elif SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_PCF_POISSON
 		// 	shadow = shadowMapping_PCFPoisson(
@@ -195,57 +197,12 @@ float getShadow(sampler2D shadowMap, mat4 viewProj, float size, float zNear, flo
 	return shadow;
 }
 
-float getShadowCascade3(sampler2D 	shadowMap0,
-						mat4 		viewProj0,
-						float 		zNear0,
-						float 		zFar0,
-						sampler2D 	shadowMap1,
-						mat4 		viewProj1,
-						float 		zNear1,
-						float 		zFar1,
-						sampler2D 	shadowMap2,
-						mat4 		viewProj2,
-						float 		zNear2,
-						float 		zFar2,
-						vec4 		cascadeDepths,
-						float 		depth,
-						float 		size,
-						float 		bias)
-{
-	if (depth < cascadeDepths.x)
-		return getShadow(shadowMap0, viewProj0, size, zNear0, zFar0, bias);
-	else if (depth < cascadeDepths.y)
-		return getShadow(shadowMap1, viewProj1, size, zNear1, zFar1, bias);
-	else
-		return getShadow(shadowMap2, viewProj2, size, zNear2, zFar2, bias);
-}
-
-float getShadowCascade2(sampler2D 	shadowMap0,
-						mat4 		viewProj0,
-						float 		zNear0,
-						float 		zFar0,
-						sampler2D 	shadowMap1,
-						mat4 		viewProj1,
-						float 		zNear1,
-						float 		zFar1,
-						vec4 		cascadeDepths,
-						float 		depth,
-						float 		size,
-						float 		bias)
-{
-	if (depth < cascadeDepths.x)
-		return getShadow(shadowMap0, viewProj0, size, zNear0, zFar0, bias);
-
-	return getShadow(shadowMap1, viewProj1, size, zNear1, zFar1, bias);
-}
-
 void directionalLight(vec3 lightDirection, vec3 lightColor, float lightDiffuse, float lightSpecular, float shadow)
 {
-	vec3 diffuseRef = phong_directionalLight(
-		lightDirection, lightColor, lightDiffuse, lightSpecular, eyeVector, normalVector, specular.rgb, shininessCoeff
-	);
-
-	diffuseAccum += diffuseRef * shadow;
+	diffuseAccum += phong_diffuseReflection(normalVector, normalize(-lightDirection))
+		* shadow
+		* lightDiffuse
+		* lightColor;
 
 	#if defined(SHININESS)
 		specularAccum += phong_specularReflection(normalVector, lightDirection, eyeVector, shininessCoeff)
@@ -314,42 +271,30 @@ void main(void)
 		#if NUM_DIRECTIONAL_LIGHTS > 0
 			shadow = 1.0;
 			#ifdef DIRECTIONAL_0_SHADOW_MAP
-				// shadow = getShadowCascade2(
-				// 	uDirectionalLight0_shadowMap0, uDirectionalLight0_viewProjection0, uDirectionalLight0_zNear0, uDirectionalLight0_zFar0,
-				// 	uDirectionalLight0_shadowMap1, uDirectionalLight0_viewProjection1, uDirectionalLight0_zNear1, uDirectionalLight0_zFar1,
-				// 	uDirectionalLight0_shadowCascadeDepths, vertexScreenPosition.z,
-				// 	uDirectionalLight0_shadowMapSize, uDirectionalLight0_shadowBias
-				// );
-				shadow = getShadowCascade3(
-					uDirectionalLight0_shadowMap0, uDirectionalLight0_viewProjection0, uDirectionalLight0_zNear0, uDirectionalLight0_zFar0,
-					uDirectionalLight0_shadowMap1, uDirectionalLight0_viewProjection1, uDirectionalLight0_zNear1, uDirectionalLight0_zFar1,
-					uDirectionalLight0_shadowMap2, uDirectionalLight0_viewProjection2, uDirectionalLight0_zNear2, uDirectionalLight0_zFar2,
-					uDirectionalLight0_shadowCascadeDepths, vertexScreenPosition.z,
-					uDirectionalLight0_shadowMapSize, uDirectionalLight0_shadowBias
-				);
+				shadow = getShadow(uDirLight0_shadowMap, uDirLight0_viewProjection, uDirLight0_zNear, uDirLight0_zFar, uDirLight0_shadowCascadeDepths, uDirLight0_shadowMapSize, uDirLight0_shadowBias);
 			#endif
-			directionalLight(uDirectionalLight0_direction, uDirectionalLight0_color, uDirectionalLight0_diffuse, uDirectionalLight0_specular, shadow);
+			directionalLight(uDirLight0_direction, uDirLight0_color, uDirLight0_diffuse, uDirLight0_specular, shadow);
 		#endif // NUM_DIRECTIONAL_LIGHTS > 0
 		#if NUM_DIRECTIONAL_LIGHTS > 1
 			shadow = 1.0;
 			#ifdef DIRECTIONAL_1_SHADOW_MAP
-				shadow = getShadow(uDirectionalLight1_shadowMap, uDirectionalLight1_viewProjection, uDirectionalLight1_shadowMapSize, uDirectionalLight1_zNear, uDirectionalLight1_zFar, uDirectionalLight1_shadowBias);
+				shadow = getShadow(uDirLight1_shadowMap, uDirLight1_viewProjection, uDirLight1_zNear, uDirLight1_zFar, uDirLight1_shadowCascadeDepths, uDirLight1_shadowMapSize, uDirLight1_shadowBias);
 			#endif
-			directionalLight(uDirectionalLight1_direction, uDirectionalLight1_color, uDirectionalLight1_diffuse, uDirectionalLight1_specular, shadow);
+			directionalLight(uDirLight1_direction, uDirLight1_color, uDirLight1_diffuse, uDirLight1_specular, shadow);
 		#endif // NUM_DIRECTIONAL_LIGHTS > 1
 		#if NUM_DIRECTIONAL_LIGHTS > 2
 			shadow = 1.0;
 			#ifdef DIRECTIONAL_2_SHADOW_MAP
-				shadow = getShadow(uDirectionalLight2_shadowMap, uDirectionalLight2_viewProjection, uDirectionalLight2_shadowMapSize, uDirectionalLight2_zNear, uDirectionalLight2_zFar, uDirectionalLight2_shadowBias);
+				shadow = getShadow(uDirLight2_shadowMap, uDirLight2_viewProjection, uDirLight2_zNear, uDirLight2_zFar, uDirLight2_shadowCascadeDepths, uDirLight2_shadowMapSize, uDirLight2_shadowBias);
 			#endif
-			directionalLight(uDirectionalLight2_direction, uDirectionalLight2_color, uDirectionalLight2_diffuse, uDirectionalLight2_specular, shadow);
+			directionalLight(uDirLight2_direction, uDirLight2_color, uDirLight2_diffuse, uDirLight2_specular, shadow);
 		#endif // NUM_DIRECTIONAL_LIGHTS > 2
 		#if NUM_DIRECTIONAL_LIGHTS > 3
 			shadow = 1.0;
 			#ifdef DIRECTIONAL_3_SHADOW_MAP
-				shadow = getShadow(uDirectionalLight3_shadowMap, uDirectionalLight3_viewProjection, uDirectionalLight3_shadowMapSize, uDirectionalLight3_zNear, uDirectionalLight3_zFar, uDirectionalLight3_shadowBias);
+				shadow = getShadow(uDirLight3_shadowMap, uDirLight3_viewProjection, uDirLight3_zNear, uDirLight3_zFar, uDirLight3_shadowCascadeDepths, uDirLight3_shadowMapSize, uDirLight3_shadowBias);
 			#endif
-			directionalLight(uDirectionalLight3_direction, uDirectionalLight3_color, uDirectionalLight3_diffuse, uDirectionalLight3_specular, shadow);
+			directionalLight(uDirLight3_direction, uDirLight3_color, uDirLight3_diffuse, uDirLight3_specular, shadow);
 		#endif // NUM_DIRECTIONAL_LIGHTS > 1
 
 

@@ -96,6 +96,7 @@ DrawCallPool::watchProgramSignature(DrawCall&                       drawCall,
 {
     for (const auto& macroNameAndBinding : macroBindings.bindings)
     {
+        const auto& macroName = macroNameAndBinding.first;
         const auto& macroBinding = macroNameAndBinding.second;
         auto& store = macroBinding.source == data::Binding::Source::ROOT ? rootData
             : macroBinding.source == data::Binding::Source::RENDERER ? rendererData
@@ -108,7 +109,7 @@ DrawCallPool::watchProgramSignature(DrawCall&                       drawCall,
         if (hasMacroCallback(bindingKey))
             continue;
 
-        if (macroBinding.type != data::MacroBinding::Type::UNSET)
+        if (macroBindings.types.at(macroName) != data::MacroBindingMap::MacroType::UNSET)
         {
             addMacroCallback(
                 bindingKey,
@@ -213,8 +214,6 @@ DrawCallPool::macroPropertyRemovedHandler(const data::MacroBinding&     macroBin
                                           const std::list<DrawCall*>&   drawCalls)
 {
     MacroBindingKey key(&macroBinding, &store);
-
-    std::cout << "removed " << macroBinding.propertyName << std::endl;
 
     removeMacroCallback(key);
     addMacroCallback(
@@ -382,4 +381,14 @@ DrawCallPool::invalidateDrawCalls(const DrawCallIteratorPair&                   
         drawCall.variables().clear();
         drawCall.variables().insert(variables.begin(), variables.end());
     }
+}
+
+void
+DrawCallPool::clear()
+{
+    _drawCalls.clear();
+    _macroToDrawCalls.clear();
+    _invalidDrawCalls.clear();
+    _macroChangedSlot.clear();
+    _propChangedSlot.clear();
 }

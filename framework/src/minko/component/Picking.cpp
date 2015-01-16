@@ -194,7 +194,14 @@ Picking::targetAdded(NodePtr target)
 
     bindSignals();
     
-    _renderer = Renderer::create(0xFFFF00FF, nullptr, _sceneManager->assets()->effect("effect/Picking.effect"), 1000.f, "Picking Renderer");
+    _renderer = Renderer::create(
+        0xFFFF00FF,
+        nullptr,
+        _sceneManager->assets()->effect("effect/Picking.effect"),
+        "default",
+        1000.f,
+        "Picking Renderer"
+    );
     _renderer->scissorBox(0, 0, 1, 1);
     //_renderer->layoutMask(scene::Layout::Group::PICKING);
 
@@ -218,14 +225,14 @@ Picking::targetAdded(NodePtr target)
 
 	if (target->parent() != nullptr || target->hasComponent<SceneManager>())
 		addedHandler(target, target, target->parent());
-	
+
 	target->addComponent(_renderer);
 
 	auto perspectiveCamera = _camera->component<component::PerspectiveCamera>();
 
 	target->data().addProvider(_pickingProvider);
 	target->data().addProvider(perspectiveCamera->data());
-	
+
 	addSurfacesForNode(target);
 }
 
@@ -237,7 +244,7 @@ Picking::targetRemoved(NodePtr target)
 
 	_addedSlot = nullptr;
 	_removedSlot = nullptr;
-	
+
 	removedHandler(target->root(), target, target->parent());
 }
 
@@ -262,7 +269,7 @@ Picking::addedHandler(NodePtr target, NodePtr child, NodePtr parent)
 			std::static_pointer_cast<Picking>(shared_from_this()),
 			std::placeholders::_1
         ));
-	
+
 		_componentAddedSlot = child->componentAdded().connect(std::bind(
 			&Picking::componentAddedHandler,
 			std::static_pointer_cast<Picking>(shared_from_this()),
@@ -293,7 +300,7 @@ Picking::componentAddedHandler(NodePtr								target,
 		return;
 
 	auto surfaceCtrl = std::dynamic_pointer_cast<Surface>(ctrl);
-	
+
 	if (surfaceCtrl)
 		addSurface(surfaceCtrl);
 }
@@ -425,7 +432,7 @@ Picking::renderingBegin(RendererPtr renderer)
 {
 	float mouseX = (float)_mouse->x();
 	float mouseY = (float)_mouse->y();
-	
+
 	auto perspectiveCamera	= _camera->component<component::PerspectiveCamera>();
 	auto projection			= math::perspective(
 		perspectiveCamera->fieldOfView(),
@@ -695,6 +702,6 @@ void
 Picking::updateDescendants(NodePtr target)
 {
 	auto nodeSet = scene::NodeSet::create(target)->descendants(true);
-	
+
 	_descendants = nodeSet->nodes();
 }
