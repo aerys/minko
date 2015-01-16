@@ -1,34 +1,26 @@
-#ifdef FOG_ENABLED
+#ifdef FOG_TECHNIQUE
 
-uniform vec4 fogColor;
-uniform float fogDensity;
-
-uniform float fogStart;
-uniform float fogEnd;
-
-float
-fog_Percent(vec4 fragCoord)
-{
-	float fragDist = fragCoord.z / fragCoord.w;
-	float fogFactor = (fogEnd - fragDist) / (fogEnd - fogStart);
-
-	return clamp(fogFactor, 0.0, 1.0);
-}
+#define FOG_TECHNIQUE_LIN	1
+#define FOG_TECHNIQUE_EXP	2
+#define FOG_TECHNIQUE_EXP2	3
 
 vec4
-fog_sampleFog(vec4 fragColor, vec4 fragCoord)
+fog_sampleFog(vec3 	fragColor,
+			  float fragDist,
+			  vec3 	fogColor,
+			  float fogDensity,
+			  float fogStart,
+			  float fogEnd)
 {
-	float fragDist = fragCoord.z / fragCoord.w;
-
 	float fogFactor = 0.0;
 
 	const float LOG2 = 1.442695;
 
-#ifdef FOG_LIN
+#if FOG_TECHNIQUE == FOG_TECHNIQUE_LIN
 	fogFactor = fogDensity * (1.0 - clamp((fogEnd - fragDist) / (fogEnd - fogStart), 0.0, 1.0));
-#elif defined(FOG_EXP)
+#elif FOG_TECHNIQUE == FOG_TECHNIQUE_EXP
     fogFactor = fogDensity * (1.0 - clamp(1.0 / exp2((fragDist - fogStart) * LOG2 / (fogEnd - fogStart) * 4.0), 0.0, 1.0));
-#elif defined(FOG_EXP2)
+#elif FOG_TECHNIQUE == FOG_TECHNIQUE_EXP2
     fogFactor = fogDensity * (1.0 - clamp(1.0 / exp2((fragDist * fragDist - fogStart * fogStart) * LOG2 / (fogEnd - fogStart)), 0.0, 1.0));
 #endif
 
@@ -37,4 +29,4 @@ fog_sampleFog(vec4 fragColor, vec4 fragCoord)
 	return mix(fragColor, fogColor, fogFactor);
 }
 
-#endif // FOG_ENABLED
+#endif // FOG_TECHNIQUE

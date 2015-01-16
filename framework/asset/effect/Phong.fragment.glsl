@@ -56,6 +56,10 @@ uniform sampler2D uDiffuseMap;
 uniform sampler2D uAlphaMap;
 uniform float uAlphaThreshold;
 
+// fog
+uniform vec4 uFogColor
+uniform vec2 uFogBounds;
+
 // phong
 uniform vec4 uSpecularColor;
 uniform sampler2D uNormalMap;
@@ -350,6 +354,10 @@ void main(void)
 	// Final blend of ambient, diffuse, and specular parts
 	//----------------------------------------------------
 	vec3 phong = diffuse.rgb * (ambientAccum + diffuseAccum) + specular.a * specularAccum;
+
+	#ifdef FOG_TECHNIQUE
+		phong = fog_sampleFog(phong, vertexScreenPosition.z / vertexScreenPosition.w, uFogColor.xyz, uFogColor.a, uFogBounds.x, uFogBounds.y);
+	#endif
 
 	gl_FragColor = vec4(phong.rgb, diffuse.a);
 }
