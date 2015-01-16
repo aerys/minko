@@ -58,7 +58,7 @@ namespace minko
         void
         wait(std::shared_ptr<Canvas> canvas, uint ms);
 
-    private:
+    protected:
         SDLBackend();
     };
 }
