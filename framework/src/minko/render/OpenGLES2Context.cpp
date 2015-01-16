@@ -309,7 +309,7 @@ OpenGLES2Context::present()
 }
 
 void
-OpenGLES2Context::drawTriangles(const uint indexBuffer, const int numTriangles)
+OpenGLES2Context::drawTriangles(const uint indexBuffer, const uint firstIndex, const int numTriangles)
 {
 	if (_currentIndexBuffer != indexBuffer)
 	{
@@ -327,7 +327,17 @@ OpenGLES2Context::drawTriangles(const uint indexBuffer, const int numTriangles)
 	// indices Specifies a pointer to the location where the indices are stored.
 	//
 	// glDrawElements render primitives from array data
-	glDrawElements(GL_TRIANGLES, numTriangles * 3, GL_UNSIGNED_SHORT, (void*)0);
+	glDrawElements(GL_TRIANGLES, numTriangles * 3, GL_UNSIGNED_SHORT, (const GLvoid*)firstIndex);
+
+	checkForErrors();
+}
+
+void
+OpenGLES2Context::drawTriangles(const uint firstIndex, const int numTriangles)
+{
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	_currentIndexBuffer = 0;
+	glDrawArrays(GL_TRIANGLES, firstIndex, numTriangles * 3);
 
 	checkForErrors();
 }
@@ -1278,11 +1288,11 @@ OpenGLES2Context::getUniformInputs(const uint program)
 
 		name[nameLength] = 0;
 
-		ProgramInputs::Type	inputType	= convertInputType(type);
-		int					location	= glGetUniformLocation(program, &name[0]);
+		ProgramInputs::Type	inputType = convertInputType(type);
+		int	location = glGetUniformLocation(program, &name[0]);
 
         if (location >= 0 && inputType != ProgramInputs::Type::unknown)
-            inputs.push_back({ std::string(&name[0], nameLength), inputType, location });
+            inputs.emplace_back(std::string(&name[0], nameLength), location, size, inputType);
 	}
 
     return inputs;
@@ -1314,7 +1324,7 @@ OpenGLES2Context::getAttributeInputs(const uint program)
 		int location = glGetAttribLocation(program, &name[0]);
 
         if (location >= 0)
-            inputs.push_back({ std::string(&name[0], nameLength), location });
+            inputs.emplace_back(std::string(&name[0], nameLength), location);
 	}
 
     return inputs;

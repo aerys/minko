@@ -55,6 +55,8 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 	_effect(effect),
     _clearBeforeRender(true),
 	_priority(priority),
+	_renderTarget(renderTarget),
+	_postProcessingGeom(nullptr),
 	/*_targetDataFilters(),
 	_rendererDataFilters(),
 	_rootDataFilters(),
@@ -64,11 +66,6 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 	_lightMaskFilter(data::LightMaskFilter::create()),*/
 	_filterChanged(Signal<Ptr, data::AbstractFilter::Ptr, data::Binding::Source, SurfacePtr>::create())
 {
-	if (renderTarget)
-	{
-		renderTarget->upload();
-		_renderTarget = renderTarget;
-	}
 }
 
 // TODO #Clone
@@ -112,11 +109,40 @@ Renderer::clone(const CloneOption& option)
 */
 
 void
+Renderer::initializePostProcessingGeometry()
+{
+	auto context = _sceneManager->assets()->context();
+	auto vb = render::VertexBuffer::create(context, {
+		-1.f, 	1.f, 	0.f,	1.f,
+		-1.f, 	-1.f, 	0.f, 	0.f,
+		1.f, 	1.f, 	1.f, 	1.f,
+		1.f, 	1.f, 	1.f, 	1.f,
+		-1.f, 	-1.f, 	0.f, 	0.f,
+		1.f, 	-1.f, 	1.f, 	0.f,
+	});
+	vb->addAttribute("position", 2);
+	vb->addAttribute("uv", 2, 2);
+
+	auto p = data::Provider::create();
+	p->set("postProcessingPosition", vb->attribute("position"));
+	p->set("postProcessingUV", vb->attribute("uv"));
+
+	_postProcessingGeom = geometry::Geometry::create();
+	_postProcessingGeom->addVertexBuffer(vb);
+	// _postProcessingGeom->indices(render::IndexBuffer::create(context, { 0, 2, 1, 1, 2, 3 }));
+
+	target()->data().addProvider(p);
+}
+
+void
 Renderer::targetAdded(std::shared_ptr<Node> target)
 {
     // Comment due to reflection component
 	//if (target->components<Renderer>().size() > 1)
 	//	throw std::logic_error("There cannot be two Renderer on the same node.");
+
+	if (_effect)
+		target->data().addProvider(_effect->data(), Surface::EFFECT_COLLECTION_NAME);
 
 	_addedSlot = target->added().connect(std::bind(
 		&Renderer::addedHandler,
@@ -140,6 +166,9 @@ Renderer::targetAdded(std::shared_ptr<Node> target)
 void
 Renderer::targetRemoved(std::shared_ptr<Node> target)
 {
+	if (_effect)
+		target->data().removeProvider(_effect->data(), Surface::EFFECT_COLLECTION_NAME);
+
 	_addedSlot = nullptr;
 	_removedSlot = nullptr;
 
@@ -152,8 +181,8 @@ Renderer::targetRemoved(std::shared_ptr<Node> target)
 
 void
 Renderer::addedHandler(std::shared_ptr<Node> node,
-						std::shared_ptr<Node> target,
-						std::shared_ptr<Node> parent)
+					   std::shared_ptr<Node> target,
+					   std::shared_ptr<Node> parent)
 {
 	findSceneManager();
 
@@ -163,7 +192,7 @@ Renderer::addedHandler(std::shared_ptr<Node> node,
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
-	));
+	), std::numeric_limits<float>::max());
 
 	_rootDescendantRemovedSlot = target->root()->removed().connect(std::bind(
 		&Renderer::rootDescendantRemovedHandler,
@@ -171,7 +200,7 @@ Renderer::addedHandler(std::shared_ptr<Node> node,
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
-	));
+	), std::numeric_limits<float>::max());
 
 	_componentAddedSlot = target->root()->componentAdded().connect(std::bind(
 		&Renderer::componentAddedHandler,
@@ -179,7 +208,7 @@ Renderer::addedHandler(std::shared_ptr<Node> node,
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
-	));
+	), std::numeric_limits<float>::max());
 
 	_componentRemovedSlot = target->root()->componentRemoved().connect(std::bind(
 		&Renderer::componentRemovedHandler,
@@ -187,7 +216,7 @@ Renderer::addedHandler(std::shared_ptr<Node> node,
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
-	), 10.f);
+	), std::numeric_limits<float>::max());
 
 	//_lightMaskFilter->root(target->root());
 
@@ -211,8 +240,8 @@ Renderer::removedHandler(std::shared_ptr<Node> node,
 
 void
 Renderer::rootDescendantAddedHandler(std::shared_ptr<Node> node,
-									  std::shared_ptr<Node> target,
-									  std::shared_ptr<Node> parent)
+									 std::shared_ptr<Node> target,
+									 std::shared_ptr<Node> parent)
 {
     auto surfaceNodes = NodeSet::create(target)
 		->descendants(true)
@@ -227,9 +256,9 @@ Renderer::rootDescendantAddedHandler(std::shared_ptr<Node> node,
 }
 
 void
-Renderer::rootDescendantRemovedHandler(std::shared_ptr<Node> node,
-									    std::shared_ptr<Node> target,
-									    std::shared_ptr<Node> parent)
+Renderer::rootDescendantRemovedHandler(std::shared_ptr<Node> 	node,
+									   std::shared_ptr<Node> 	target,
+									   std::shared_ptr<Node> 	parent)
 {
 	auto surfaceNodes = NodeSet::create(target)
 		->descendants(true)
@@ -240,17 +269,20 @@ Renderer::rootDescendantRemovedHandler(std::shared_ptr<Node> node,
 
 	for (auto surfaceNode : surfaceNodes->nodes())
 		for (auto surface : surfaceNode->components<Surface>())
+		{
+			unwatchSurface(surface, surfaceNode);
 			removeSurface(surface);
+		}
 }
 
 void
 Renderer::componentAddedHandler(std::shared_ptr<Node>				node,
-								 std::shared_ptr<Node>				target,
-								 std::shared_ptr<AbstractComponent>	ctrl)
+								std::shared_ptr<Node>				target,
+								std::shared_ptr<AbstractComponent>	ctrl)
 {
 	auto surfaceCtrl = std::dynamic_pointer_cast<Surface>(ctrl);
 	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
-	
+
 	if (surfaceCtrl)
         _toCollect.insert(surfaceCtrl);
 	else if (sceneManager)
@@ -260,13 +292,16 @@ Renderer::componentAddedHandler(std::shared_ptr<Node>				node,
 void
 Renderer::componentRemovedHandler(std::shared_ptr<Node>					node,
 								  std::shared_ptr<Node>					target,
-								  std::shared_ptr<AbstractComponent>	ctrl)
+								  std::shared_ptr<AbstractComponent>	cmp)
 {
-	auto surfaceCtrl = std::dynamic_pointer_cast<Surface>(ctrl);
-	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
+	auto surface = std::dynamic_pointer_cast<Surface>(cmp);
+	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(cmp);
 
-	if (surfaceCtrl)
-		removeSurface(surfaceCtrl);
+	if (surface)
+	{
+		unwatchSurface(surface, target);
+		removeSurface(surface);
+	}
 	else if (sceneManager)
 		setSceneManager(nullptr);
 }
@@ -274,23 +309,25 @@ Renderer::componentRemovedHandler(std::shared_ptr<Node>					node,
 void
 Renderer::addSurface(Surface::Ptr surface)
 {
-    std::unordered_map<std::string, std::string> variables;
+	if (_surfaceToDrawCallIterator.count(surface) != 0)
+		throw std::invalid_argument("surface");
+
+	if (!checkSurfaceLayout(surface))
+		return;
+
+    std::unordered_map<std::string, std::string> variables = _variables;
 
     auto& c = surface->target()->data();
-    auto surfaceUuid = surface->uuid();
-    auto geometryUuid = surface->geometry()->uuid();
-    auto materialUuid = surface->material()->uuid();
-    auto effectUuid = surface->effect()->uuid();
 
-    variables["surfaceUuid"] = surfaceUuid;
-    variables["geometryUuid"] = geometryUuid;
-    variables["materialUuid"] = materialUuid;
-    variables["effectUuid"] = effectUuid;
+    variables["surfaceUuid"] = surface->uuid();
+    variables["geometryUuid"] = surface->geometry()->uuid();
+    variables["materialUuid"] = surface->material()->uuid();
+    variables["effectUuid"] = _effect ? _effect->uuid() : surface->effect()->uuid();
 
     _surfaceToDrawCallIterator[surface] = _drawCallPool.addDrawCalls(
-        surface->effect(),
+        _effect ? _effect : surface->effect(),
+        _effect ? "default" : surface->technique(),
         variables,
-        surface->technique(),
         surface->target()->root()->data(),
         target()->data(),
         surface->target()->data()
@@ -316,9 +353,12 @@ Renderer::removeSurface(Surface::Ptr surface)
 {
     if (_toCollect.erase(surface) == 0)
     {
-        _drawCallPool.removeDrawCalls(_surfaceToDrawCallIterator[surface]);
-        _surfaceToDrawCallIterator.erase(surface);
-        _surfaceChangedSlots.erase(surface);
+		if (_surfaceToDrawCallIterator.count(surface) != 0)
+		{
+	        _drawCallPool.removeDrawCalls(_surfaceToDrawCallIterator[surface]);
+	        _surfaceToDrawCallIterator.erase(surface);
+	        _surfaceChangedSlots.erase(surface);
+		}
     }
 }
 
@@ -329,11 +369,11 @@ Renderer::surfaceGeometryOrMaterialChangedHandler(Surface::Ptr surface)
     // we completely remove the surface and re-add it again because
     // it's way simpler than just updating what has changed.
 
-    std::unordered_map<std::string, std::string> variables;
-    //variables["surfaceUuid"] = surface->uuid();
+    std::unordered_map<std::string, std::string> variables = _variables;
+    variables["surfaceUuid"] = surface->uuid();
     variables["geometryUuid"] = surface->geometry()->uuid();
     variables["materialUuid"] = surface->material()->uuid();
-    //variables["effectUuid"] = surface->effect()->uuid();
+    variables["effectUuid"] = _effect ? _effect->uuid() : surface->effect()->uuid();
 
     _drawCallPool.invalidateDrawCalls(_surfaceToDrawCallIterator[surface], variables);
     //removeSurface(surface);
@@ -348,7 +388,7 @@ Renderer::surfaceEffectChangedHandler(SurfacePtr surface)
 }
 
 void
-Renderer::render(render::AbstractContext::Ptr	context, 
+Renderer::render(render::AbstractContext::Ptr	context,
 				 render::AbstractTexture::Ptr	renderTarget)
 {
     if (!_enabled)
@@ -358,48 +398,51 @@ Renderer::render(render::AbstractContext::Ptr	context,
     // in _toCollect: we now have to take them into account to build
     // the corresponding draw calls before rendering
     for (auto& surface : _toCollect)
+	{
+		watchSurface(surface);
         addSurface(surface);
+	}
     _toCollect.clear();
-    
+
 	_renderingBegin->execute(std::static_pointer_cast<Renderer>(shared_from_this()));
 
-	if (_renderTarget)
-		renderTarget = _renderTarget;
-        
-    bool bCustomViewport = false;
+	auto rt = _renderTarget ? _renderTarget : renderTarget;
 
 	if (_scissorBox.z >= 0 && _scissorBox.w >= 0)
 		context->setScissorTest(true, _scissorBox);
 	else
 		context->setScissorTest(false, _scissorBox);
-	 
-    if (_viewportBox.z >= 0 && _viewportBox.w >= 0)
-    {
-        bCustomViewport = true;
-        context->configureViewport(_viewportBox.x, _viewportBox.y, _viewportBox.z, _viewportBox.w);
-	}
+
+	if (rt)
+		context->setRenderToTexture(rt->id(), true);
 	else
-		context->configureViewport(0, 0, context->viewportWidth(), context->viewportHeight());
-	
-	if (renderTarget)
-		context->setRenderToTexture(renderTarget->id(), true);
-	else
-    	context->setRenderToBackBuffer();
-    context->clear(
-	    ((_backgroundColor >> 24) & 0xff) / 255.f,
-	    ((_backgroundColor >> 16) & 0xff) / 255.f,
-	    ((_backgroundColor >> 8) & 0xff) / 255.f,
-	    (_backgroundColor & 0xff) / 255.f
-    );
+		context->setRenderToBackBuffer();
+
+	if (_viewportBox.z >= 0 && _viewportBox.w >= 0)
+		context->configureViewport(_viewportBox.x, _viewportBox.y, _viewportBox.z, _viewportBox.w);
+
+	if (_clearBeforeRender)
+		context->clear(
+			((_backgroundColor >> 24) & 0xff) / 255.f,
+			((_backgroundColor >> 16) & 0xff) / 255.f,
+			((_backgroundColor >> 8) & 0xff) / 255.f,
+			(_backgroundColor & 0xff) / 255.f
+		);
 
     _drawCallPool.update();
-    for (const auto& drawCall : _drawCallPool.drawCalls())
-        // FIXME: render the draw call only if it's the right layout
-	    //if ((drawCall->layouts() & layoutMask()) != 0)
-		    drawCall->render(context, renderTarget);
+	auto drawCalls = _drawCallPool.drawCalls();
+    drawCalls.sort(
+        std::bind(
+            &Renderer::compareDrawCalls,
+            this,
+            std::placeholders::_1,
+            std::placeholders::_2
+        )
+    );
+    for (const DrawCall* drawCall : drawCalls)
+	    drawCall->render(context, rt, _viewportBox, _backgroundColor);
 
-    if (bCustomViewport)
-        context->setScissorTest(false, _viewportBox);
+	context->setRenderToBackBuffer();
 
     _beforePresent->execute(std::static_pointer_cast<Renderer>(shared_from_this()));
 
@@ -421,7 +464,7 @@ Renderer::findSceneManager()
 	if (roots->nodes().size() > 1)
 		throw std::logic_error("Renderer cannot be in two separate scenes.");
 	else if (roots->nodes().size() == 1)
-		setSceneManager(roots->nodes()[0]->component<SceneManager>());		
+		setSceneManager(roots->nodes()[0]->component<SceneManager>());
 	else
 		setSceneManager(nullptr);
 }
@@ -441,11 +484,19 @@ Renderer::setSceneManager(std::shared_ptr<SceneManager> sceneManager)
 				std::placeholders::_2,
 				std::placeholders::_3
 			), _priority);
+
+			initializePostProcessingGeometry();
 		}
 		else
 		{
 			_sceneManager = nullptr;
 			_renderingBeginSlot = nullptr;
+
+			if (_postProcessingGeom)
+			{
+				target()->data().removeProvider(_postProcessingGeom->data(), Surface::GEOMETRY_COLLECTION_NAME);
+				_postProcessingGeom = nullptr;
+			}
 		}
 	}
 }
@@ -459,7 +510,7 @@ Renderer::sceneManagerRenderingBeginHandler(std::shared_ptr<SceneManager>	sceneM
 }
 
 Renderer::Ptr
-Renderer::addFilter(data::AbstractFilter::Ptr	filter, 
+Renderer::addFilter(data::AbstractFilter::Ptr	filter,
 					data::Binding::Source			source)
 {
     // FIXME
@@ -483,7 +534,7 @@ Renderer::addFilter(data::AbstractFilter::Ptr	filter,
 }
 
 Renderer::Ptr
-Renderer::removeFilter(data::AbstractFilter::Ptr	filter, 
+Renderer::removeFilter(data::AbstractFilter::Ptr	filter,
 					   data::Binding::Source			source)
 {
     // FIXME
@@ -517,7 +568,7 @@ Renderer::removeFilter(data::AbstractFilter::Ptr	filter,
 //}
 
 void
-Renderer::filterChangedHandler(data::AbstractFilter::Ptr	filter, 
+Renderer::filterChangedHandler(data::AbstractFilter::Ptr	filter,
 							   data::Binding::Source			source,
 							   SurfacePtr					surface)
 {
@@ -527,4 +578,105 @@ Renderer::filterChangedHandler(data::AbstractFilter::Ptr	filter,
 		source,
 		surface
 	);
+}
+
+bool
+Renderer::compareDrawCalls(DrawCall* a, DrawCall* b)
+{
+    const float aPriority = a->priority();
+    const float bPriority = b->priority();
+    const bool samePriority = fabsf(aPriority - bPriority) < 1e-3f;
+
+    if (samePriority)
+    {
+        if (a->target().id == b->target().id)
+        {
+            if (a->zSorted() && b->zSorted())
+            {
+                auto aPosition = a->getEyeSpacePosition();
+                auto bPosition = b->getEyeSpacePosition();
+
+                return aPosition.z > bPosition.z;
+            }
+        }
+
+        return a->target().id < b->target().id;
+    }
+
+    return aPriority > bPriority;
+}
+
+void
+Renderer::nodeLayoutChangedHandler(NodePtr node, NodePtr target)
+{
+	for (auto surface : target->components<Surface>())
+		surfaceLayoutMaskChangedHandler(surface);
+}
+
+void
+Renderer::surfaceLayoutMaskChangedHandler(Surface::Ptr surface)
+{
+	if (checkSurfaceLayout(surface))
+	{
+		if (_surfaceToDrawCallIterator.count(surface) == 0)
+			addSurface(surface);
+	}
+	else
+	{
+		if (_surfaceToDrawCallIterator.count(surface) == 0)
+			removeSurface(surface);
+	}
+}
+
+void
+Renderer::watchSurface(SurfacePtr surface)
+{
+	auto node = surface->target();
+
+	if (_nodeLayoutChangedSlot.count(node) == 0)
+	{
+		_nodeLayoutChangedSlot[node] = node->layoutChanged().connect(std::bind(
+			&Renderer::nodeLayoutChangedHandler,
+			std::static_pointer_cast<Renderer>(shared_from_this()),
+			std::placeholders::_1,
+			std::placeholders::_2
+		));
+	}
+
+	if (_surfaceLayoutMaskChangedSlot.count(surface) == 0)
+	{
+		_surfaceLayoutMaskChangedSlot[surface] = surface->layoutMaskChanged().connect(std::bind(
+			&Renderer::surfaceLayoutMaskChangedHandler,
+			std::static_pointer_cast<Renderer>(shared_from_this()),
+			surface
+		));
+	}
+}
+
+void
+Renderer::unwatchSurface(SurfacePtr surface, NodePtr node)
+{
+	_surfaceLayoutMaskChangedSlot.erase(surface);
+
+	if (!node->hasComponent<Surface>())
+		_nodeLayoutChangedSlot.erase(node);
+}
+
+bool
+Renderer::checkSurfaceLayout(SurfacePtr surface)
+{
+	return (surface->target()->layout() & surface->layoutMask() & layoutMask()) != 0;
+}
+
+void
+Renderer::layoutMask(const scene::Layout value)
+{
+	AbstractComponent::layoutMask(value);
+
+	// completely reset the draw call pool
+	if (target() != nullptr)
+	{
+		_drawCallPool = DrawCallPool();
+		rootDescendantRemovedHandler(nullptr, target()->root(), nullptr);
+	}
 }

@@ -45,7 +45,7 @@ SpotLight::SpotLight(const SpotLight& spotlight, const CloneOption& option) :
 
     auto test = spotlight.attenuationCoefficients();
 
-	data()->set("attenuationCoefficients", spotlight.attenuationCoefficients());
+	data()->set("attenuationCoeffs", spotlight.attenuationCoefficients());
 	data()->set("cosInnerConeAngle", spotlight.innerConeAngle());
 	data()->set("cosOuterConeAngle", spotlight.outerConeAngle());
 }
@@ -63,7 +63,7 @@ SpotLight::updateModelToWorldMatrix(const math::mat4& modelToWorld)
 {
 	data()
 		->set("position",	(modelToWorld * math::vec4(0.f, 0.f, 0.f, 1.f)).xyz())
-		->set("direction",	math::normalize(math::mat3(modelToWorld) * math::vec3(0.f, 0.f, -1.f)));	
+		->set("direction",	math::normalize(math::mat3(modelToWorld) * math::vec3(0.f, 0.f, -1.f)));
 }
 
 float
@@ -103,11 +103,11 @@ SpotLight::outerConeAngle(float radians)
 const math::vec3&
 SpotLight::attenuationCoefficients() const
 {
-	return data()->get<math::vec3>("attenuationCoefficients");
+	return data()->get<math::vec3>("attenuationCoeffs");
 }
 
 SpotLight&
-SpotLight::attenuationCoefficients(float constant, float linear, float quadratic) 
+SpotLight::attenuationCoefficients(float constant, float linear, float quadratic)
 {
 	return attenuationCoefficients(math::vec3(constant, linear, quadratic));
 }
@@ -115,7 +115,7 @@ SpotLight::attenuationCoefficients(float constant, float linear, float quadratic
 SpotLight&
 SpotLight::attenuationCoefficients(const math::vec3& value)
 {
-	data()->set("attenuationCoefficients", value);
+	data()->set("attenuationCoeffs", value);
 
 	return *this;
 }

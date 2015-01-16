@@ -9,41 +9,41 @@
 #pragma include "Fog.function.glsl")
 #pragma include "TextureLod.function.glsl"
 
-uniform vec4        diffuseColor;
-uniform sampler2D   diffuseMap;
-uniform samplerCube	diffuseCubeMap;
+uniform vec4 uDiffuseColor;
+uniform sampler2D uDiffuseMap;
+uniform samplerCube	uDiffuseCubeMap;
 
 // alpha
-uniform sampler2D 	alphaMap;
-uniform float 		alphaThreshold;
+uniform sampler2D uAlphaMap;
+uniform float uAlphaThreshold;
 
 // texture lod
-uniform float 		diffuseMapMaxAvailableLod;
-uniform vec2 		diffuseMapSize;
+uniform float 		uDiffuseMapMaxAvailableLod;
+uniform vec2 		uDiffuseMapSize;
 
 varying vec2 vVertexUV;
 varying vec3 vVertexUVW;
 
 void main(void)
 {
-	vec4 diffuse = diffuseColor;
+	vec4 diffuse = uDiffuseColor;
 
 	#if defined(DIFFUSE_CUBEMAP)
-		diffuse	= textureCube(diffuseCubeMap, vVertexUVW);
+		diffuse	= textureCube(uDiffuseCubeMap, vVertexUVW);
 	#elif defined(DIFFUSE_MAP)
 		#ifdef DIFFUSE_MAP_LOD
-			diffuse = texturelod_texture2D(diffuseMap, vVertexUV, diffuseMapSize, 0.0, diffuseMapMaxAvailableLod, diffuseColor);
+			diffuse = texturelod_texture2D(uDiffuseMap, vVertexUV, diffuseMapSize, 0.0, diffuseMapMaxAvailableLod, diffuseColor);
 		#else
-			diffuse = texture2D(diffuseMap, vVertexUV);
+			diffuse = texture2D(uDiffuseMap, vVertexUV);
 		#endif
 	#endif
 
 	#ifdef ALPHA_MAP
-		diffuse.a = texture2D(alphaMap, vVertexUV).r;
+		diffuse.a = texture2D(uAlphaMap, vVertexUV).r;
 	#endif // ALPHA_MAP
 
 	#ifdef ALPHA_THRESHOLD
-		if (diffuse.a < alphaThreshold)
+		if (diffuse.a < uAlphaThreshold)
 			discard;
 	#endif // ALPHA_THRESHOLD
 

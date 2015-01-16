@@ -1,5 +1,6 @@
 @echo off
 
-chdir ..\..\..
+pushd ..\..\..
 tool\win\bin\premake5.exe --no-test gmake
+popd
 pause

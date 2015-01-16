@@ -21,7 +21,7 @@ minko.project.library "minko-framework"
 	includedirs {
 		"src"
 	}
-    
+
 	-- json cpp
 	files {
 		"lib/jsoncpp/src/**.cpp",
@@ -38,12 +38,13 @@ minko.project.library "minko-framework"
 
 	-- glm
     files {
-        "lib/glm/**.hpp"
+        "lib/glm/**.hpp",
+		"lib/glm/**.inl"
     }
 	includedirs {
 	   "lib/glm"
 	}
-	    
+
 	-- windows
 	configuration { "windows32" }
         includedirs { minko.sdk.path("/framework/lib/glew/include") }
@@ -52,7 +53,7 @@ minko.project.library "minko-framework"
 		buildoptions {
 			"/wd4503"
 		}
-		
+
 	configuration { "windows64" }
         includedirs { minko.sdk.path("/framework/lib/glew/include") }
         files { "lib/glew/**.h" }

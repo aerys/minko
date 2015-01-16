@@ -48,6 +48,8 @@ PerspectiveCamera::PerspectiveCamera(float			      fov,
 	_postProjection(postPerspective)
 {
 	_data
+        ->set("zNear",                  _zNear)
+        ->set("zFar",                   _zFar)
 		->set("eyePosition",		    _position)
   		->set("viewMatrix",				_view)
   		->set("projectionMatrix",		_projection)
@@ -135,6 +137,8 @@ PerspectiveCamera::updateProjection(float fov, float aspectRatio, float zNear, f
 	_viewProjection = _projection * _view;
 
 	_data
+        ->set("zNear",                  _zNear)
+        ->set("zFar",                   _zFar)
 		->set("projectionMatrix",		_projection)
   		->set("worldToScreenMatrix",	_viewProjection)
         ->set("fov",                    fov)
@@ -172,7 +176,7 @@ PerspectiveCamera::project(math::vec3 worldPosition)
     auto height    = context->viewportHeight();
     auto pos       = math::vec4(worldPosition, 1.f);
     auto vector    = _viewProjection * pos;
-    
+
     vector /= vector.w;
 
     return {

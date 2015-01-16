@@ -193,7 +193,7 @@ SceneParser::parseNode(std::vector<SerializedNode>&			nodePack,
 		std::vector<uint>	componentsId	= nodePack[i].a3;
 		std::string			uuid			= nodePack[i].a4;
 
-		newNode->layouts(layouts);
+		newNode->layout(layouts);
 		newNode->name(nodePack[i].a0);
 		newNode->uuid(uuid);
 

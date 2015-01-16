@@ -32,8 +32,9 @@ using namespace minko;
 using namespace minko::render;
 using namespace minko::math;
 
-Program::Program(Program::AbsContextPtr context) :
-	AbstractResource(context)
+Program::Program(const std::string& name, Program::AbsContextPtr context) :
+	AbstractResource(context),
+	_name(name)
 {
 }
 
@@ -74,6 +75,7 @@ Program::setUniform(const std::string& name, AbstractTexture::Ptr texture)
         _context->setProgram(oldProgram);
 
         _setTextures.insert(name);
+		_setUniforms.insert(name);
     }
 
     return *this;
@@ -103,7 +105,7 @@ Program::setAttribute(const std::string& name, const VertexAttribute& attribute,
     {
         auto oldProgram = _context->currentProgram();
 
-        _context->setVertexBufferAt(_setAttributes.size(), *attribute.resourceId, attribute.size, *attribute.vertexSize, attribute.offset);
+        _context->setVertexBufferAt(it->location, *attribute.resourceId, attribute.size, *attribute.vertexSize, attribute.offset);
         _context->setProgram(oldProgram);
 
         _setAttributes.insert(name);
@@ -111,4 +113,3 @@ Program::setAttribute(const std::string& name, const VertexAttribute& attribute,
 
     return *this;
 }
-

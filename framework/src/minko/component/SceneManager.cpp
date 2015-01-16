@@ -57,7 +57,7 @@ SceneManager::targetAdded(NodePtr target)
 
     _addedSlot = target->added().connect(std::bind(
         &SceneManager::addedHandler,
-        std::static_pointer_cast<SceneManager>(shared_from_this()), 
+        std::static_pointer_cast<SceneManager>(shared_from_this()),
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3

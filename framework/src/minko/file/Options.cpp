@@ -58,9 +58,9 @@ Options::Options() :
 
     includePaths().push_back(binaryDir + "/asset");
 
-#if defined(DEBUG) && !defined(EMSCRIPTEN)
-    includePaths().push_back(binaryDir + "/../../../asset");
-#endif
+ #if defined(DEBUG) && !defined(EMSCRIPTEN)
+     includePaths().push_back(binaryDir + "/../../../asset");
+ #endif
 
     initializePlatforms();
     initializeUserFlags();

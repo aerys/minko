@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/component/AbstractComponent.hpp"
+#include "minko/Uuid.hpp"
 
 namespace minko
 {
@@ -35,13 +36,14 @@ namespace minko
 
 		public:
 			typedef std::shared_ptr<Surface>								Ptr;
-			typedef Signal<Ptr, const std::string&, bool>					TechniqueChangedSignal;	
+			typedef Signal<Ptr, const std::string&, bool>					TechniqueChangedSignal;
 			typedef Signal<Ptr, std::shared_ptr<component::Renderer>, bool> VisibilityChangedSignal;
 
 		private:
-			typedef std::shared_ptr<scene::Node>    NodePtr;
-			typedef std::shared_ptr<render::Effect>	EffectPtr;
-			typedef const std::string&				StringRef;
+			typedef std::shared_ptr<scene::Node>    	NodePtr;
+			typedef std::shared_ptr<render::Effect>		EffectPtr;
+			typedef const std::string&					StringRef;
+			typedef std::shared_ptr<AbstractComponent>	AbsCmpPtr;
 
         public:
             static const std::string SURFACE_COLLECTION_NAME;
@@ -50,26 +52,29 @@ namespace minko
             static const std::string EFFECT_COLLECTION_NAME;
 
 		private:
-			std::string								_name;
+			std::string									_name;
 
-			std::shared_ptr<geometry::Geometry>		_geometry;
-			std::shared_ptr<material::Material>		_material;
-			std::shared_ptr<render::Effect>			_effect;
-			std::string 							_technique;
-            std::shared_ptr<data::Provider>         _provider;
+			std::shared_ptr<geometry::Geometry>			_geometry;
+			std::shared_ptr<material::Material>			_material;
+			std::shared_ptr<render::Effect>				_effect;
+			std::string 								_technique;
+            std::shared_ptr<data::Provider>         	_provider;
 
-            Signal<Ptr>                             _geometryChanged;
-            Signal<Ptr>                             _materialChanged;
-            Signal<Ptr>                             _effectChanged;
+            Signal<Ptr>                             	_geometryChanged;
+            Signal<Ptr>                             	_materialChanged;
+            Signal<Ptr>                       	      	_effectChanged;
+
+			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot	_componentRemovedSlot;
 
 		public:
 			static
 			Ptr
 			create(std::shared_ptr<geometry::Geometry> 		geometry,
 				   std::shared_ptr<material::Material>		material,
-				   std::shared_ptr<render::Effect>			effect)
+				   std::shared_ptr<render::Effect>			effect,
+				   const std::string&						technique = "")
 			{
-				return create("", geometry, material, effect, "default");
+				return create("", geometry, material, effect, technique.size() ? technique : "default");
 			}
 
 			static
@@ -88,7 +93,7 @@ namespace minko
 			AbstractComponent::Ptr
 			clone(const CloneOption& option);
             */
-            
+
 			~Surface()
 			{
 			}

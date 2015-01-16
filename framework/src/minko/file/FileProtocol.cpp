@@ -48,23 +48,14 @@ FileProtocol::load()
     auto options = _options;
     auto flags = std::ios::in | std::ios::ate | std::ios::binary;
 
-    std::string cleanFilename = "";
+    auto cleanFilename = resolvedFilename;
 
-    for (uint i = 0; i < resolvedFilename.length(); ++i)
+    auto prefixPosition = resolvedFilename.find("://");
+
+    if (prefixPosition != std::string::npos)
     {
-        if (i < resolvedFilename.length() - 2 && resolvedFilename.at(i) == ':' && resolvedFilename.at(i + 1) == '/' && resolvedFilename.at(i + 2) == '/')
-        {
-            cleanFilename = "";
-            i += 2;
-            continue;
-        }
-
-        cleanFilename += resolvedFilename.at(i);
+        cleanFilename = resolvedFilename.substr(prefixPosition + 3);
     }
-
-    _options = options;
-
-    auto realFilename = cleanFilename;
 
     std::fstream file(cleanFilename, flags);
 
@@ -114,7 +105,7 @@ FileProtocol::load()
             lengthByteArray[3] = (length & 0x000000ff);
 
             std::vector<char> input;
-            
+
             input.insert(input.end(), offsetByteArray.begin(), offsetByteArray.end());
             input.insert(input.end(), lengthByteArray.begin(), lengthByteArray.end());
             input.insert(input.end(), cleanFilename.begin(), cleanFilename.end());

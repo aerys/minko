@@ -33,8 +33,21 @@ namespace minko
 	    public:
 		    typedef std::shared_ptr<DirectionalLight> Ptr;
 
+        public:
+            typedef std::shared_ptr<render::Texture>  TexturePtr;
+
 		private:
-			math::vec3	_worldDirection;
+			math::vec3                  _worldDirection;
+            bool                        _shadowMappingEnabled;
+            uint                        _shadowMapSize;
+            std::vector<TexturePtr>     _shadowMaps;
+            uint                        _numShadowCascades;
+            std::shared_ptr<Renderer>   _shadowRenderer;
+            std::vector<math::mat4>     _shadowProjections;
+            math::mat4                  _view;
+
+        public:
+            static const uint MAX_NUM_SHADOW_CASCADES;
 
 	    public:
 		    inline static
@@ -51,15 +64,59 @@ namespace minko
 		    {
 		    }
 
+            inline
+            const std::vector<TexturePtr>&
+            shadowMaps()
+            {
+                return _shadowMaps;
+            }
+
+            inline
+            void
+            shadowSpread(float spread)
+            {
+                data()->set("shadowSpread", spread);
+            }
+
+            inline
+            const std::vector<math::mat4>&
+            shadowProjections()
+            {
+                return _shadowProjections;
+            }
+
+            void
+            computeShadowProjection(const math::mat4& view, const math::mat4& projection);
+
 		protected:
 			void
             updateModelToWorldMatrix(const math::mat4& modelToWorld);
 
+            void
+            updateRoot(std::shared_ptr<scene::Node> root);
+
+            void
+            targetRemoved(std::shared_ptr<scene::Node> target);
+
 	    private:
-            DirectionalLight(float diffuse,
-                             float specular);
+            DirectionalLight(float diffuse, float specular);
 
 			DirectionalLight(const DirectionalLight& directionalLight, const CloneOption& option);
+
+            void
+            initializeShadowMapping(std::shared_ptr<file::AssetLibrary> assets);
+
+            void
+            updateWorldToScreenMatrix();
+
+            std::pair<math::vec3, math::vec3>
+            computeBox(const math::mat4& viewProjection);
+
+            std::pair<math::vec3, float>
+            computeBoundingSphere(const math::mat4& view, const math::mat4& projection);
+
+            std::pair<math::vec3, float>
+            minSphere(std::vector<math::vec3> pt, uint np, std::vector<math::vec3> bnd, uint nb);
 	    };
     }
 }

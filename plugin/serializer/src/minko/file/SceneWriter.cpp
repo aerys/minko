@@ -202,7 +202,7 @@ SceneWriter::writeNode(std::shared_ptr<scene::Node>		node,
 		currentComponent = node->component<component::AbstractComponent>(++componentIndex);
 	}
 
-	SerializedNode res(node->name(), node->layouts(), node->children().size(), componentsId, node->uuid());
+	SerializedNode res(node->name(), node->layout(), node->children().size(), componentsId, node->uuid());
 
 	return res;
 }

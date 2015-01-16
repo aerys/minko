@@ -27,8 +27,57 @@ using namespace minko;
 using namespace minko::data;
 
 Store::Store() :
-    _lengthProvider(nullptr)
+    _providers(),
+    _collections(),
+    _lengthProvider(nullptr),
+    _propertyAdded(),
+    _propertyRemoved(),
+    _propertyChanged(),
+    _propertyNameToChangedSignal(),
+    _propertyNameToAddedSignal(),
+    _propertyNameToRemovedSignal(),
+    _propertySlots(),
+    _collectionItemAddedSlots(),
+    _collectionItemRemovedSlots()
 {
+}
+
+Store::Store(const Store& store, bool deepCopy) :
+    _propertyAdded(),
+    _propertyRemoved(),
+    _propertyChanged(),
+    _propertyNameToChangedSignal(),
+    _propertyNameToAddedSignal(),
+    _propertyNameToRemovedSignal(),
+    _propertySlots(),
+    _collectionItemAddedSlots(),
+    _collectionItemRemovedSlots()
+{
+    if (deepCopy)
+    {
+        std::list<data::Provider::Ptr> added;
+
+        for (auto collection : store._collections)
+        {
+            added.insert(added.end(), collection->items().begin(), collection->items().end());
+            addCollection(Collection::create(collection));
+        }
+
+        for (auto provider : store._providers)
+        {
+            auto it = std::find(added.begin(), added.end(), provider);
+
+            if (it == added.end())
+                _providers.push_back(Provider::create(provider));
+        }
+    }
+    else
+    {
+        _collections = store._collections;
+        _providers = store._providers;
+        if (store._lengthProvider)
+            _lengthProvider = Provider::create(store._lengthProvider);
+    }
 }
 
 void
@@ -64,10 +113,10 @@ Store::removeCollection(std::shared_ptr<Collection> collection)
 
 void
 Store::executePropertySignal(Provider::Ptr                                        provider,
-                                 Collection::Ptr                                      collection,
-                                 const std::string&                                   propertyName,
-                                 const PropertyChangedSignal&                         anyChangedSignal,
-                                 const std::map<std::string, PropertyChangedSignal>&  propertyNameToSignal)
+                             Collection::Ptr                                      collection,
+                             const std::string&                                   propertyName,
+                             const PropertyChangedSignal&                         anyChangedSignal,
+                             const std::map<std::string, PropertyChangedSignal>&  propertyNameToSignal)
 {
     anyChangedSignal.execute(*this, provider, propertyName);
     if (collection)
@@ -86,8 +135,8 @@ Store::executePropertySignal(Provider::Ptr                                      
 
 void
 Store::providerPropertyAddedHandler(Provider::Ptr       provider,
-                                        Collection::Ptr     collection,
-                                        const std::string& 	propertyName)
+                                    Collection::Ptr     collection,
+                                    const std::string& 	propertyName)
 {
     executePropertySignal(provider, collection, propertyName, _propertyAdded, _propertyNameToAddedSignal);
     executePropertySignal(provider, collection, propertyName, _propertyChanged, _propertyNameToChangedSignal);
@@ -96,8 +145,8 @@ Store::providerPropertyAddedHandler(Provider::Ptr       provider,
 
 void
 Store::providerPropertyRemovedHandler(Provider::Ptr         provider,
-                                          Collection::Ptr       collection,
-                                          const std::string&	propertyName)
+                                      Collection::Ptr       collection,
+                                      const std::string&	propertyName)
 {
     executePropertySignal(provider, collection, propertyName, _propertyChanged, _propertyNameToChangedSignal);
     executePropertySignal(provider, collection, propertyName, _propertyRemoved, _propertyNameToRemovedSignal);
@@ -253,7 +302,7 @@ Store::doRemoveProvider(ProviderPtr provider, CollectionPtr collection)
         int providerIndex = std::find(collection->items().begin(), collection->items().end(), provider)
             - collection->items().begin();
         auto prefix = collection->name() + "[" + std::to_string(providerIndex) + "].";
-        
+
         for (const auto& nameAndValue : provider->values())
             if (_propertyNameToChangedSignal.count(prefix + nameAndValue.first) != 0
                 && _propertyNameToChangedSignal[prefix + nameAndValue.first].numCallbacks() == 0)
@@ -334,7 +383,7 @@ Store::addProviderToCollection(std::shared_ptr<data::Provider> provider,
 
 void
 Store::removeProviderFromCollection(std::shared_ptr<data::Provider> provider,
-                                        const std::string&              collectionName)
+                                    const std::string&              collectionName)
 {
     auto collectionIt = std::find_if(_collections.begin(), _collections.end(), [&](data::Collection::Ptr c)
     {
@@ -350,17 +399,17 @@ Store::removeProviderFromCollection(std::shared_ptr<data::Provider> provider,
 
 const std::string
 Store::getActualPropertyName(const std::unordered_map<std::string, std::string>&    vars,
-                                 const std::string&                                     propertyName)
+                             const std::string&                                     propertyName)
 {
     for (const auto& variableName : vars)
     {
         auto pos = propertyName.find("${" + variableName.first + "}");
 
         if (pos != std::string::npos)
-            return propertyName.substr(0, pos) + variableName.second
-                + propertyName.substr(pos + variableName.first.size() + 3);
+            return propertyName.substr(0, pos) + variableName.second + propertyName.substr(pos + variableName.first.size() + 3);
+        else if ((pos = propertyName.find("$" + variableName.first)) != std::string::npos)
+            return propertyName.substr(0, pos) + variableName.second + propertyName.substr(pos + variableName.first.size() + 1);
     }
 
     return propertyName;
 }
-

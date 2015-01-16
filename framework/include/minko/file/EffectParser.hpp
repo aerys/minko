@@ -31,6 +31,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/BindingMap.hpp"
 #include "minko/data/Store.hpp"
 #include "minko/render/States.hpp"
+#include "minko/render/SamplerStates.hpp"
 
 namespace Json {
     class Value;
@@ -60,7 +61,6 @@ namespace minko
             typedef std::vector<PassPtr>                                    Passes;
             typedef std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>  LoaderCompleteSlotMap;
             typedef std::unordered_map<LoaderPtr, LoaderErrorSlot>          LoaderErrorSlotMap;
-            typedef std::unordered_map<std::string, render::SamplerState>   SamplerStates;
 
             enum class GLSLBlockType
             {
@@ -82,9 +82,21 @@ namespace minko
             struct StateBlock : public Block<data::BindingMap>
             {
                 render::States states;
-                
+
                 StateBlock()
                 {
+                    bindingMap.defaultValues.addProvider(states.data());
+                }
+
+                StateBlock(const StateBlock& s) :
+                    Block(s),
+                    states(s.states)
+                {
+                    // data::Store copy constructor makes a shallow copy, to avoid ending up with
+                    // data::Provider shared by multiple blocks/copes, we have to simulate a deep copy
+                    // by emptying the data::Store and then add the actual data::Provider of the new
+                    // render::States object
+                    bindingMap.defaultValues.removeProvider(bindingMap.defaultValues.providers().front());
                     bindingMap.defaultValues.addProvider(states.data());
                 }
             };
@@ -94,7 +106,6 @@ namespace minko
 
             struct UniformBlock : public Block<data::BindingMap>
             {
-                std::unordered_map<std::string, render::SamplerState> samplerStates;
             };
 
             struct Scope
@@ -133,7 +144,7 @@ namespace minko
                     stateBlock(scope.stateBlock),
                     macroBlock(scope.macroBlock),
                     defaultTechnique(scope.defaultTechnique),
-                    passes(scope.passes),
+                    // passes(scope.passes),
                     techniques(scope.techniques)
                 {
                     parent.children.push_back(this);
@@ -159,6 +170,7 @@ namespace minko
             ShaderToGLSLBlocks              _shaderToGLSL;
 			unsigned int					_numDependencies;
 			unsigned int					_numLoadedDependencies;
+            std::shared_ptr<data::Provider> _effectData;
 
             LoaderCompleteSlotMap           _loaderCompleteSlots;
             LoaderErrorSlotMap              _loaderErrorSlots;
@@ -195,22 +207,6 @@ namespace minko
 		private:
 			EffectParser();
 
-            static
-            std::unordered_map<std::string, unsigned int>
-            initializeBlendFactorMap();
-
-            static
-            std::unordered_map<std::string, render::CompareMode>
-            initializeCompareFuncMap();
-
-            static
-            std::unordered_map<std::string, render::StencilOperation>
-            initializeStencilOperationMap();
-
-            static
-            std::unordered_map<std::string, float>
-            initializePriorityMap();
-
             float
             getPriorityValue(const std::string& name);
 
@@ -246,19 +242,26 @@ namespace minko
                               const std::string&    valueName,
                               data::Provider::Ptr   defaultValues);
 
+            template<typename T>
             void
-            parseDefaultValueVector(const Json::Value&    defaultValueNode,
+            parseDefaultValueSamplerStates(const Json::Value&    node,
                                     const Scope&          scope,
                                     const std::string&    valueName,
                                     data::Provider::Ptr   defaultValues);
 
             void
-            parseDefaultValueObject(const Json::Value&    node,
-                                    const Scope&          scope,
-                                    const std::string&    valueName,
-                                    data::Provider::Ptr   defaultValues);
+            parseDefaultValueVectorArray(const Json::Value&    defaultValueNode,
+                                         const Scope&          scope,
+                                         const std::string&    valueName,
+                                         data::Provider::Ptr   defaultValues);
 
             void
+            parseDefaultValueVectorObject(const Json::Value&    node,
+                                          const Scope&          scope,
+                                          const std::string&    valueName,
+                                          data::Provider::Ptr   defaultValues);
+
+            bool
             parseBinding(const Json::Value& node, const Scope& scope, data::Binding& binding);
 
             void
@@ -286,14 +289,14 @@ namespace minko
                               render::Blending::Destination&	dstFactor);
 
             void
-            parseBlendingSource(const Json::Value&        node,
-                                              const Scope&              scope,
-                                              render::Blending::Source&	srcFactor);
+            parseBlendingSource(const Json::Value&          node,
+                                const Scope&                scope,
+                                render::Blending::Source&	srcFactor);
 
             void
             parseBlendingSource(const Json::Value&             node,
-                                              const Scope&                   scope,
-                                              render::Blending::Destination& destFactor);
+                                const Scope&                   scope,
+                                render::Blending::Destination& destFactor);
 
             void
             parseZSort(const Json::Value&   node,
@@ -325,6 +328,10 @@ namespace minko
                           const Scope&          scope,
                           float                 defaultPriority);
 
+            std::shared_ptr<render::AbstractTexture>
+            parseTarget(const Json::Value&  node,
+                        const Scope&        scope);
+
             void
             parseStencilState(const Json::Value&        node,
                               const Scope&              scope,
@@ -349,9 +356,11 @@ namespace minko
                              math::ivec4&          scissorBox);
 
             void
-            parseSamplerStates(const Json::Value& node,
-                               const Scope&       scope,
-                               SamplerStates&     samplerStates);
+            parseSamplerStates(const Json::Value& node, 
+                               const Scope& scope,
+                               const std::string uniformName,
+                               data::Provider::Ptr defaultValues,
+                               data::BindingMap& bindings);
 
             ShaderPtr
             parseShader(const Json::Value& node, const Scope& scope, render::Shader::Type type);
@@ -389,6 +398,9 @@ namespace minko
 
             void
             finalize();
+
+            PassPtr
+            findPassByName(const std::string& passName, const Scope& scope);
 		};
 	}
 }

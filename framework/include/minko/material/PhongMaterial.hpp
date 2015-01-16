@@ -66,23 +66,113 @@ namespace minko
             render::ResourceId
 			normalMap() const;
 
+            Ptr
+            normalMapWrapMode(render::WrapMode);
+
+            render::WrapMode
+            normalMapWrapMode() const;
+
+            Ptr
+            normalMapTextureFilter(render::TextureFilter);
+
+            render::TextureFilter
+            normalMapTextureFilter() const;
+
+            Ptr
+            normalMapMipFilter(render::MipFilter);
+
+            render::MipFilter
+            normalMapMipFilter() const;
+
 			Ptr
 			specularMap(AbsTexturePtr);
 
 			render::ResourceId
 			specularMap() const;
 
+            Ptr
+            specularMapWrapMode(render::WrapMode);
+
+            render::WrapMode
+            specularMapWrapMode() const;
+
+            Ptr
+            specularMapTextureFilter(render::TextureFilter);
+
+            render::TextureFilter
+            specularMapTextureFilter() const;
+
+            Ptr
+            specularMapMipFilter(render::MipFilter);
+
+            render::MipFilter
+            specularMapMipFilter() const;
+
 			Ptr
 			environmentMap(AbsTexturePtr, render::EnvironmentMap2dType type = render::EnvironmentMap2dType::Unset);
 
+            Ptr
+            environmentMapWrapMode(render::WrapMode);
+
+            render::WrapMode
+            environmentMapWrapMode() const;
+
+            Ptr
+            environmentMapTextureFilter(render::TextureFilter);
+
+            render::TextureFilter
+            environmentMapTextureFilter() const;
+
+            Ptr
+            environmentMapMipFilter(render::MipFilter);
+
+            render::MipFilter
+            environmentMapMipFilter() const;
+
             render::ResourceId
 			environmentCubemap() const;
+
+            Ptr
+            environmentCubemapWrapMode(render::WrapMode);
+
+            render::WrapMode
+            environmentCubemapWrapMode() const;
+
+            Ptr
+            environmentCubemapTextureFilter(render::TextureFilter);
+
+            render::TextureFilter
+            environmentCubemapTextureFilter() const;
+
+            Ptr
+            environmentCubemapMipFilter(render::MipFilter);
+
+            render::MipFilter
+            environmentCubemapMipFilter() const;
 
             render::ResourceId
 			environmentMap2d() const;
 
 			render::EnvironmentMap2dType
 			environmentMap2dType() const;
+
+            Ptr
+            environmentMap2dWrapMode(render::WrapMode);
+
+            render::WrapMode
+            environmentMap2dWrapMode() const;
+
+            Ptr
+            environmentMap2dTextureFilter(render::TextureFilter);
+
+            render::TextureFilter
+            environmentMap2dTextureFilter() const;
+
+            Ptr
+            environmentMap2dMipFilter(render::MipFilter);
+
+            render::MipFilter
+            environmentMap2dMipFilter() const;
 
 			Ptr
 			environmentAlpha(float);
@@ -95,6 +185,24 @@ namespace minko
 
             render::ResourceId
 			alphaMap() const;
+
+            Ptr
+            alphaMapWrapMode(render::WrapMode);
+
+            render::WrapMode
+            alphaMapWrapMode() const;
+
+            Ptr
+            alphaMapTextureFilter(render::TextureFilter);
+
+            render::TextureFilter
+            alphaMapTextureFilter() const;
+
+            Ptr
+            alphaMapMipFilter(render::MipFilter);
+
+            render::MipFilter
+            alphaMapMipFilter() const;
 
 			Ptr
 			alphaThreshold(float);
