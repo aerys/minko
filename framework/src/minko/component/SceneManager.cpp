@@ -68,6 +68,7 @@ void
 SceneManager::targetRemoved(NodePtr target)
 {
     _addedSlot = nullptr;
+
 	target->data().removeProvider(_data);
     target->data().removeProvider(_canvas->data());
 }

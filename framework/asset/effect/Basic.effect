@@ -21,6 +21,8 @@
             "textureFilter" : "linear",
             "mipFilter"     : "linear"
         },
+        "uDiffuseMapMaxAvailableLod" : "material[${materialUuid}].diffuseMap.maxAvailableLod",
+        "uDiffuseMapSize"        : "material[${materialUuid}].diffuseMap.size",
 		"uAlphaMap"				: "material[${materialUuid}].alphaMap",
 		"uAlphaThreshold"		: "material[${materialUuid}].alphaThreshold",
         "uDiffuseCubeMap"       : "material[${materialUuid}].diffuseCubeMap",
@@ -30,7 +32,12 @@
 		"fogColor"				: "material[${materialUuid}].fogColor",
 		"fogDensity"			: "material[${materialUuid}].fogDensity",
 		"fogStart"				: "material[${materialUuid}].fogStart",
-		"fogEnd"				: "material[${materialUuid}].fogEnd"
+		"fogEnd"				: "material[${materialUuid}].fogEnd",
+		"boneMatrices"			: "geometry[${geometryUuid}].boneMatrices",
+		"numBones"				: "geometry[${geometryUuid}].numBones",
+        "uWorldToScreenMatrix"  : { 
+			"binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } 
+		}
     },
 
     "macros" : {
@@ -38,6 +45,7 @@
         "HAS_NORMAL"            : "geometry[${geometryUuid}].normal",
         "SKINNING_NUM_BONES"    : "geometry[${geometryUuid}].numBones",
         "DIFFUSE_MAP"           : "material[${materialUuid}].diffuseMap",
+        "DIFFUSE_MAP_LOD" 		: "material[${materialUuid}].diffuseMapLodEnabled",
         "DIFFUSE_CUBEMAP"       : "material[${materialUuid}].diffuseCubeMap",
 		"ALPHA_MAP"		        : "material[${materialUuid}].alphaMap",
 		"ALPHA_THRESHOLD"       : "material[${materialUuid}].alphaThreshold",

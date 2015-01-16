@@ -89,4 +89,6 @@ CubeGeometry::initialize(std::shared_ptr<AbstractContext> context)
     addVertexBuffer(vertexBuffer);
 
     indices(IndexBuffer::create(context, std::begin(i), std::end(i)));
+
+    computeCenterPosition();
 }

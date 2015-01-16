@@ -35,7 +35,8 @@ JobManager::Job::Job() :
 }
 
 JobManager::JobManager(unsigned int loadingFramerate):
-    _loadingFramerate(loadingFramerate)
+    _loadingFramerate(loadingFramerate),
+    _jobPriorityChanged(false)
 {
     _frameTime = 1.f / loadingFramerate;
 }
@@ -55,6 +56,8 @@ JobManager::pushJob(Job::Ptr job)
             }
 
             insertJob(job);
+
+            _jobPriorityChanged = true;
         }))
     );
 
@@ -80,8 +83,11 @@ JobManager::end(NodePtr target)
 
     while (consumeTime < _frameTime)
     {
-        if (currentJob == nullptr)
+        if (currentJob == nullptr ||
+            _jobPriorityChanged)
         {
+            _jobPriorityChanged = false;
+
             currentJob = _jobs.back();
 
             if (!currentJob->running())

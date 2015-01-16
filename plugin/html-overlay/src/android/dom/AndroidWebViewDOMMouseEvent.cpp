@@ -62,6 +62,12 @@ AndroidWebViewDOMMouseEvent::screenY()
 	return _screenY;
 }
 
+int
+AndroidWebViewDOMMouseEvent::button()
+{
+	return _button;
+}
+
 void
 AndroidWebViewDOMMouseEvent::clientX(int value)
 {
@@ -96,4 +102,10 @@ void
 AndroidWebViewDOMMouseEvent::screenY(int value)
 {
 	_screenY = value;
+}
+
+void
+AndroidWebViewDOMMouseEvent::button(int value)
+{
+	_button = value;
 }

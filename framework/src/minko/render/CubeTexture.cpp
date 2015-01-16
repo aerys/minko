@@ -110,6 +110,28 @@ CubeTexture::data(unsigned char*    data,
 }
 
 void
+CubeTexture::resize(unsigned int width, unsigned int height, bool resizeSmoothly)
+{
+    assert(math::isp2(width) && math::isp2(height));
+
+    const auto previousWidth = this->width();
+    const auto previousHeight = this->height();
+
+    for (int faceId = 0; faceId < 6; ++faceId)
+    {
+        auto previousData = _data[faceId];
+
+        resizeData(previousWidth, previousHeight, previousData, width, height, resizeSmoothly, _data[faceId]);
+    }
+
+    _width = width << 2;
+    _widthGPU = width;
+
+    _height = height * 3;
+    _heightGPU = height;
+}
+
+void
 CubeTexture::upload()
 {
     if (_id == -1)

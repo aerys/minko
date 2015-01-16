@@ -31,6 +31,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/BindingMap.hpp"
 #include "minko/data/Store.hpp"
 #include "minko/render/States.hpp"
+#include "minko/render/SamplerStates.hpp"
 
 namespace Json {
     class Value;
@@ -60,7 +61,6 @@ namespace minko
             typedef std::vector<PassPtr>                                    Passes;
             typedef std::unordered_map<LoaderPtr, Signal<LoaderPtr>::Slot>  LoaderCompleteSlotMap;
             typedef std::unordered_map<LoaderPtr, LoaderErrorSlot>          LoaderErrorSlotMap;
-            typedef std::unordered_map<std::string, render::SamplerState>   SamplerStates;
 
             enum class GLSLBlockType
             {
@@ -106,7 +106,6 @@ namespace minko
 
             struct UniformBlock : public Block<data::BindingMap>
             {
-                std::unordered_map<std::string, render::SamplerState> samplerStates;
             };
 
             struct Scope
@@ -243,6 +242,13 @@ namespace minko
                               const std::string&    valueName,
                               data::Provider::Ptr   defaultValues);
 
+            template<typename T>
+            void
+            parseDefaultValueSamplerStates(const Json::Value&    node,
+                                    const Scope&          scope,
+                                    const std::string&    valueName,
+                                    data::Provider::Ptr   defaultValues);
+
             void
             parseDefaultValueVectorArray(const Json::Value&    defaultValueNode,
                                          const Scope&          scope,
@@ -350,9 +356,11 @@ namespace minko
                              math::ivec4&          scissorBox);
 
             void
-            parseSamplerStates(const Json::Value& node,
-                               const Scope&       scope,
-                               SamplerStates&     samplerStates);
+            parseSamplerStates(const Json::Value& node, 
+                               const Scope& scope,
+                               const std::string uniformName,
+                               data::Provider::Ptr defaultValues,
+                               data::BindingMap& bindings);
 
             ShaderPtr
             parseShader(const Json::Value& node, const Scope& scope, render::Shader::Type type);

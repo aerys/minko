@@ -320,8 +320,44 @@ DrawCallPool::uniformBindingPropertyAddedHandler(DrawCall&                      
 
         delete resolvedBinding;
     }
+
+    if (input.type == ProgramInputs::Type::sampler2d)
+    {
+        samplerStatesBindingPropertyAddedHandler(drawCall, input, uniformBindingMap);
+    }
+
 }
 
+void
+DrawCallPool::samplerStatesBindingPropertyAddedHandler(DrawCall&                          drawCall,
+                                                       const ProgramInputs::UniformInput& input,
+                                                       const data::BindingMap&            uniformBindingMap)
+{
+   auto resolvedBindings = drawCall.bindSamplerStates(
+        input, uniformBindingMap.bindings, uniformBindingMap.defaultValues
+    );
+
+   for (auto resolvedBinding : resolvedBindings)
+   {
+       if (resolvedBinding != nullptr)
+       {
+           auto& propertyName = resolvedBinding->propertyName;
+           auto& signal = resolvedBinding->store.hasProperty(propertyName)
+               ? resolvedBinding->store.propertyRemoved(propertyName)
+               : resolvedBinding->store.propertyAdded(propertyName);
+
+           _propChangedSlot[{&resolvedBinding->binding, &drawCall}] = signal.connect(std::bind(
+               &DrawCallPool::samplerStatesBindingPropertyAddedHandler,
+               this,
+               std::ref(drawCall),
+               std::ref(input),
+               std::ref(uniformBindingMap)
+            ));
+
+           delete resolvedBinding;
+       }
+   }
+}
 void
 DrawCallPool::update()
 {

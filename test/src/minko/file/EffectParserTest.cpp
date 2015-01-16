@@ -25,9 +25,20 @@ using namespace minko;
 using namespace minko::render;
 using namespace minko::file;
 
+Effect::Ptr
+EffectParserTest::loadEffect(const std::string& filename)
+{   
+    auto lib = AssetLibrary::create(MinkoTests::canvas()->context());
+
+    lib->loader()->queue(filename);
+    lib->loader()->load();
+
+    return lib->effect(filename);
+}
+
 TEST_F(EffectParserTest, OneAttributeBinding)
 {
-    auto fx = MinkoTests::loadEffect("effect/OneAttributeBinding.effect");
+    auto fx = loadEffect("effect/OneAttributeBinding.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -39,7 +50,7 @@ TEST_F(EffectParserTest, OneAttributeBinding)
 
 TEST_F(EffectParserTest, TwoAttributeBindings)
 {
-    auto fx = MinkoTests::loadEffect("effect/TwoAttributeBindings.effect");
+    auto fx = loadEffect("effect/TwoAttributeBindings.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -53,7 +64,7 @@ TEST_F(EffectParserTest, TwoAttributeBindings)
 
 TEST_F(EffectParserTest, OneUniformBinding)
 {
-    auto fx = MinkoTests::loadEffect("effect/OneUniformBinding.effect");
+    auto fx = loadEffect("effect/OneUniformBinding.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -69,7 +80,7 @@ TEST_F(EffectParserTest, OneUniformBinding)
 
 TEST_F(EffectParserTest, StatesDefaultValues)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesDefaultValues.effect");
+    auto fx = loadEffect("effect/StatesDefaultValues.effect");
     auto& states = fx->techniques().at("default")[0]->states();
 
     ASSERT_EQ(states.priority(), States::DEFAULT_PRIORITY);
@@ -97,7 +108,7 @@ TEST_F(EffectParserTest, StatesDefaultValues)
 
 TEST_F(EffectParserTest, PriorityFloatDefaultValue)
 {
-    auto fx = MinkoTests::loadEffect("effect/PriorityFloatDefaultValue.effect");
+    auto fx = loadEffect("effect/PriorityFloatDefaultValue.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().priority(), 42.f);
@@ -105,7 +116,7 @@ TEST_F(EffectParserTest, PriorityFloatDefaultValue)
 
 TEST_F(EffectParserTest, PriorityFloatArrayValue)
 {
-    auto fx = MinkoTests::loadEffect("effect/PriorityFloatArrayValue.effect");
+    auto fx = loadEffect("effect/PriorityFloatArrayValue.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().priority(), 2042.f);
@@ -115,7 +126,7 @@ TEST_F(EffectParserTest, PriorityFloatArrayValue)
 
 TEST_F(EffectParserTest, StatesDepthMask)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesDepthMask.effect");
+    auto fx = loadEffect("effect/StatesDepthMask.effect");
 
     auto value = fx->techniques().at("default")[0]->states().depthMask();
 
@@ -127,7 +138,7 @@ TEST_F(EffectParserTest, StatesDepthMask)
 
 TEST_F(EffectParserTest, StatesDepthFunctionAlways)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesDepthFunctionAlways.effect");
+    auto fx = loadEffect("effect/StatesDepthFunctionAlways.effect");
 
     auto value = fx->techniques().at("default")[0]->states().depthFunction();
 
@@ -137,7 +148,7 @@ TEST_F(EffectParserTest, StatesDepthFunctionAlways)
 
 TEST_F(EffectParserTest, StatesDepthFunctionEqual)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesDepthFunctionEqual.effect");
+    auto fx = loadEffect("effect/StatesDepthFunctionEqual.effect");
 
     auto value = fx->techniques().at("default")[0]->states().depthFunction();
 
@@ -147,7 +158,7 @@ TEST_F(EffectParserTest, StatesDepthFunctionEqual)
 
 TEST_F(EffectParserTest, StatesDepthFunctionGreater)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesDepthFunctionGreater.effect");
+    auto fx = loadEffect("effect/StatesDepthFunctionGreater.effect");
 
     auto value = fx->techniques().at("default")[0]->states().depthFunction();
 
@@ -157,7 +168,7 @@ TEST_F(EffectParserTest, StatesDepthFunctionGreater)
 
 TEST_F(EffectParserTest, StatesDepthFunctionGreaterEqual)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesDepthFunctionGreaterEqual.effect");
+    auto fx = loadEffect("effect/StatesDepthFunctionGreaterEqual.effect");
 
     auto value = fx->techniques().at("default")[0]->states().depthFunction();
 
@@ -167,7 +178,7 @@ TEST_F(EffectParserTest, StatesDepthFunctionGreaterEqual)
 
 TEST_F(EffectParserTest, StatesDepthFunctionLess)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesDepthFunctionLess.effect");
+    auto fx = loadEffect("effect/StatesDepthFunctionLess.effect");
 
     auto value = fx->techniques().at("default")[0]->states().depthFunction();
 
@@ -177,7 +188,7 @@ TEST_F(EffectParserTest, StatesDepthFunctionLess)
 
 TEST_F(EffectParserTest, StatesDepthFunctionLessEqual)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesDepthFunctionLessEqual.effect");
+    auto fx = loadEffect("effect/StatesDepthFunctionLessEqual.effect");
 
     auto value = fx->techniques().at("default")[0]->states().depthFunction();
 
@@ -187,7 +198,7 @@ TEST_F(EffectParserTest, StatesDepthFunctionLessEqual)
 
 TEST_F(EffectParserTest, StatesDepthFunctionNever)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesDepthFunctionNever.effect");
+    auto fx = loadEffect("effect/StatesDepthFunctionNever.effect");
 
     auto value = fx->techniques().at("default")[0]->states().depthFunction();
 
@@ -197,7 +208,7 @@ TEST_F(EffectParserTest, StatesDepthFunctionNever)
 
 TEST_F(EffectParserTest, StatesDepthFunctionNotEqual)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesDepthFunctionNotEqual.effect");
+    auto fx = loadEffect("effect/StatesDepthFunctionNotEqual.effect");
 
     auto value = fx->techniques().at("default")[0]->states().depthFunction();
 
@@ -209,7 +220,7 @@ TEST_F(EffectParserTest, StatesDepthFunctionNotEqual)
 
 TEST_F(EffectParserTest, StatesTriangleCullingBack)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesTriangleCullingBack.effect");
+    auto fx = loadEffect("effect/StatesTriangleCullingBack.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().triangleCulling(), TriangleCulling::BACK);
@@ -217,7 +228,7 @@ TEST_F(EffectParserTest, StatesTriangleCullingBack)
 
 TEST_F(EffectParserTest, StatesTriangleCullingBoth)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesTriangleCullingBoth.effect");
+    auto fx = loadEffect("effect/StatesTriangleCullingBoth.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().triangleCulling(), TriangleCulling::BOTH);
@@ -225,7 +236,7 @@ TEST_F(EffectParserTest, StatesTriangleCullingBoth)
 
 TEST_F(EffectParserTest, StatesTriangleCullingFront)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesTriangleCullingFront.effect");
+    auto fx = loadEffect("effect/StatesTriangleCullingFront.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().triangleCulling(), TriangleCulling::FRONT);
@@ -233,7 +244,7 @@ TEST_F(EffectParserTest, StatesTriangleCullingFront)
 
 TEST_F(EffectParserTest, StatesTriangleCullingNone)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesTriangleCullingNone.effect");
+    auto fx = loadEffect("effect/StatesTriangleCullingNone.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().triangleCulling(), TriangleCulling::NONE);
@@ -243,7 +254,7 @@ TEST_F(EffectParserTest, StatesTriangleCullingNone)
 
 TEST_F(EffectParserTest, StatesBlendingModeDefault)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesBlendingModeDefault.effect");
+    auto fx = loadEffect("effect/StatesBlendingModeDefault.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::ONE);
@@ -252,7 +263,7 @@ TEST_F(EffectParserTest, StatesBlendingModeDefault)
 
 TEST_F(EffectParserTest, StatesBlendingModeAdditive)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesBlendingModeAdditive.effect");
+    auto fx = loadEffect("effect/StatesBlendingModeAdditive.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::ONE);
@@ -261,7 +272,7 @@ TEST_F(EffectParserTest, StatesBlendingModeAdditive)
 
 TEST_F(EffectParserTest, StatesBlendingModeAlpha)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesBlendingModeAlpha.effect");
+    auto fx = loadEffect("effect/StatesBlendingModeAlpha.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::SRC_ALPHA);
@@ -290,7 +301,7 @@ TEST_F(EffectParserTest, StatesTarget)
 
 TEST_F(EffectParserTest, StatesBindingPriority)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesBindingPriority.effect");
+    auto fx = loadEffect("effect/StatesBindingPriority.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -302,7 +313,7 @@ TEST_F(EffectParserTest, StatesBindingPriority)
 
 TEST_F(EffectParserTest, StatesBindingZSorted)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesBindingZSorted.effect");
+    auto fx = loadEffect("effect/StatesBindingZSorted.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -314,7 +325,7 @@ TEST_F(EffectParserTest, StatesBindingZSorted)
 
 TEST_F(EffectParserTest, StatesBindingBlendingMode)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesBindingBlendingMode.effect");
+    auto fx = loadEffect("effect/StatesBindingBlendingMode.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -326,7 +337,7 @@ TEST_F(EffectParserTest, StatesBindingBlendingMode)
 
 TEST_F(EffectParserTest, StatesBindingBlendingSource)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesBindingBlendingSource.effect");
+    auto fx = loadEffect("effect/StatesBindingBlendingSource.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -338,7 +349,7 @@ TEST_F(EffectParserTest, StatesBindingBlendingSource)
 
 TEST_F(EffectParserTest, StatesBindingBlendingDestination)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesBindingBlendingDestination.effect");
+    auto fx = loadEffect("effect/StatesBindingBlendingDestination.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -350,7 +361,7 @@ TEST_F(EffectParserTest, StatesBindingBlendingDestination)
 
 TEST_F(EffectParserTest, StatesBindingColorMask)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesBindingColorMask.effect");
+    auto fx = loadEffect("effect/StatesBindingColorMask.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -362,7 +373,7 @@ TEST_F(EffectParserTest, StatesBindingColorMask)
 
 TEST_F(EffectParserTest, StatesBindingDepthMask)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesBindingDepthMask.effect");
+    auto fx = loadEffect("effect/StatesBindingDepthMask.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -374,7 +385,7 @@ TEST_F(EffectParserTest, StatesBindingDepthMask)
 
 TEST_F(EffectParserTest, StatesBindingDepthFunction)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesBindingDepthFunction.effect");
+    auto fx = loadEffect("effect/StatesBindingDepthFunction.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -386,7 +397,7 @@ TEST_F(EffectParserTest, StatesBindingDepthFunction)
 
 TEST_F(EffectParserTest, StatesBindingTriangleCulling)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesBindingTriangleCulling.effect");
+    auto fx = loadEffect("effect/StatesBindingTriangleCulling.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -398,7 +409,7 @@ TEST_F(EffectParserTest, StatesBindingTriangleCulling)
 
 TEST_F(EffectParserTest, StatesBindingStencilFunction)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesBindingStencilFunction.effect");
+    auto fx = loadEffect("effect/StatesBindingStencilFunction.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -410,7 +421,7 @@ TEST_F(EffectParserTest, StatesBindingStencilFunction)
 
 TEST_F(EffectParserTest, StatesBindingStencilReference)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesBindingStencilReference.effect");
+    auto fx = loadEffect("effect/StatesBindingStencilReference.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -422,7 +433,7 @@ TEST_F(EffectParserTest, StatesBindingStencilReference)
 
 TEST_F(EffectParserTest, StatesBindingStencilMask)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesBindingStencilMask.effect");
+    auto fx = loadEffect("effect/StatesBindingStencilMask.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -434,7 +445,7 @@ TEST_F(EffectParserTest, StatesBindingStencilMask)
 
 TEST_F(EffectParserTest, StatesBindingStencilFailOperation)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesBindingStencilFailOperation.effect");
+    auto fx = loadEffect("effect/StatesBindingStencilFailOperation.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -446,7 +457,7 @@ TEST_F(EffectParserTest, StatesBindingStencilFailOperation)
 
 TEST_F(EffectParserTest, StatesBindingStencilZFailOperation)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesBindingStencilZFailOperation.effect");
+    auto fx = loadEffect("effect/StatesBindingStencilZFailOperation.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -458,7 +469,7 @@ TEST_F(EffectParserTest, StatesBindingStencilZFailOperation)
 
 TEST_F(EffectParserTest, StatesBindingStencilZPassOperation)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesBindingStencilZPassOperation.effect");
+    auto fx = loadEffect("effect/StatesBindingStencilZPassOperation.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -470,7 +481,7 @@ TEST_F(EffectParserTest, StatesBindingStencilZPassOperation)
 
 TEST_F(EffectParserTest, StatesBindingScissorTest)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesBindingScissorTest.effect");
+    auto fx = loadEffect("effect/StatesBindingScissorTest.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -482,7 +493,7 @@ TEST_F(EffectParserTest, StatesBindingScissorTest)
 
 TEST_F(EffectParserTest, StatesBindingScissorBox)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesBindingScissorBox.effect");
+    auto fx = loadEffect("effect/StatesBindingScissorBox.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -494,7 +505,7 @@ TEST_F(EffectParserTest, StatesBindingScissorBox)
 
 TEST_F(EffectParserTest, StatesBindingTarget)
 {
-    auto fx = MinkoTests::loadEffect("effect/StatesBindingTarget.effect");
+    auto fx = loadEffect("effect/StatesBindingTarget.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -862,4 +873,423 @@ TEST_F(EffectParserTest, MultiplePassesHaveDifferentAttributeData)
     ASSERT_EQ(fx->techniques().at("default")[1]->attributeBindings().defaultValues.providers().size(), 1);
     ASSERT_EQ(fx->techniques().at("default")[2]->attributeBindings().defaultValues.providers().size(), 1);
 
+}
+
+/** Sampler states **/
+
+TEST_F(EffectParserTest, SamplerStatesWrapModeClamp)
+{
+    auto fx = loadEffect("effect/SamplerStatesWrapModeClamp.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(
+        fx->techniques().at("default")[0]->uniformBindings().defaultValues.get<WrapMode>(
+            SamplerStates::uniformNameToSamplerStateName(
+                "diffuseMap", 
+                SamplerStates::PROPERTY_WRAP_MODE
+            )
+        ), 
+        WrapMode::CLAMP
+    );
+}
+
+TEST_F(EffectParserTest, SamplerStatesWrapModeRepeat)
+{
+    auto fx = loadEffect("effect/SamplerStatesWrapModeRepeat.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(
+        fx->techniques().at("default")[0]->uniformBindings().defaultValues.get<WrapMode>(
+            SamplerStates::uniformNameToSamplerStateName(
+                "diffuseMap", 
+                SamplerStates::PROPERTY_WRAP_MODE
+            )
+        ),
+        WrapMode::REPEAT
+    );
+}
+
+TEST_F(EffectParserTest, SamplerStatesTextureFilterLinear)
+{
+    auto fx = loadEffect("effect/SamplerStatesTextureFilterLinear.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(
+        fx->techniques().at("default")[0]->uniformBindings().defaultValues.get<TextureFilter>(
+            SamplerStates::uniformNameToSamplerStateName(
+                "diffuseMap", 
+                SamplerStates::PROPERTY_TEXTURE_FILTER
+            )
+        ),
+        TextureFilter::LINEAR
+    );
+}
+
+TEST_F(EffectParserTest, SamplerStatesTextureFilterNearest)
+{
+    auto fx = loadEffect("effect/SamplerStatesTextureFilterNearest.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(
+        fx->techniques().at("default")[0]->uniformBindings().defaultValues.get<TextureFilter>(
+            SamplerStates::uniformNameToSamplerStateName(
+                "diffuseMap", 
+                SamplerStates::PROPERTY_TEXTURE_FILTER
+            )
+        ),
+        TextureFilter::NEAREST
+    );
+}
+
+TEST_F(EffectParserTest, SamplerStatesMipFilterNone)
+{
+    auto fx = loadEffect("effect/SamplerStatesMipFilterNone.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(
+        fx->techniques().at("default")[0]->uniformBindings().defaultValues.get<MipFilter>(
+        SamplerStates::uniformNameToSamplerStateName(
+                "diffuseMap", 
+                SamplerStates::PROPERTY_MIP_FILTER
+            )
+        ),
+        MipFilter::NONE
+    );
+}
+
+TEST_F(EffectParserTest, SamplerStatesMipFilterLinear)
+{
+    auto fx = loadEffect("effect/SamplerStatesMipFilterLinear.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(
+        fx->techniques().at("default")[0]->uniformBindings().defaultValues.get<MipFilter>(
+        SamplerStates::uniformNameToSamplerStateName(
+                "diffuseMap", 
+                SamplerStates::PROPERTY_MIP_FILTER
+            )
+        ),
+        MipFilter::LINEAR
+    );
+}
+
+TEST_F(EffectParserTest, SamplerStatesMipFilterNearest)
+{
+    auto fx = loadEffect("effect/SamplerStatesMipFilterNearest.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_EQ(
+        fx->techniques().at("default")[0]->uniformBindings().defaultValues.get<MipFilter>(
+        SamplerStates::uniformNameToSamplerStateName(
+                "diffuseMap", 
+                SamplerStates::PROPERTY_MIP_FILTER
+            )
+        ),
+        MipFilter::NEAREST
+    );
+}
+
+TEST_F(EffectParserTest, SamplerStatesBindingWrapMode)
+{
+    auto fx = loadEffect("effect/SamplerStatesBindingWrapMode.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+
+    auto uniformBindings = fx->techniques().at("default")[0]->uniformBindings().bindings;
+
+    auto wrapModeUniformName = SamplerStates::uniformNameToSamplerStateName(
+        "diffuseMap",
+        SamplerStates::PROPERTY_WRAP_MODE
+    );
+
+    ASSERT_FALSE(uniformBindings.count(wrapModeUniformName) == 0);
+    ASSERT_EQ(
+        uniformBindings.at(wrapModeUniformName).propertyName,
+        "material[${materialUuid}].diffuseMapWrapMode"
+    );
+}
+
+TEST_F(EffectParserTest, SamplerStatesBindingTextureFilter)
+{
+    auto fx = loadEffect("effect/SamplerStatesBindingTextureFilter.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+
+    auto uniformBindings = fx->techniques().at("default")[0]->uniformBindings().bindings;
+
+    auto textureFilterUniformName = SamplerStates::uniformNameToSamplerStateName(
+        "diffuseMap",
+        SamplerStates::PROPERTY_TEXTURE_FILTER
+    );
+
+    ASSERT_FALSE(uniformBindings.count(textureFilterUniformName) == 0);
+    ASSERT_EQ(
+        uniformBindings.at(textureFilterUniformName).propertyName,
+        "material[${materialUuid}].diffuseMapTextureFilter"
+    );
+}
+
+TEST_F(EffectParserTest, SamplerStatesBindingMipFilter)
+{
+    auto fx = loadEffect("effect/SamplerStatesBindingMipFilter.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+
+    auto uniformBindings = fx->techniques().at("default")[0]->uniformBindings().bindings;
+
+    auto mipFilterUniformName = SamplerStates::uniformNameToSamplerStateName(
+        "diffuseMap",
+        SamplerStates::PROPERTY_MIP_FILTER
+    );
+
+    ASSERT_FALSE(uniformBindings.count(mipFilterUniformName) == 0);
+    ASSERT_EQ(
+        uniformBindings.at(mipFilterUniformName).propertyName,
+        "material[${materialUuid}].diffuseMapMipFilter"
+    );
+}
+
+/* Sampler states binding with default value */
+
+// Wrap mode
+
+TEST_F(EffectParserTest, SamplerStatesBindingWrapModeWithDefaultValueClamp)
+{
+    auto fx = loadEffect("effect/SamplerStatesBindingWrapModeWithDefaultValueClamp.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+
+    auto uniformBindingMap = fx->techniques().at("default")[0]->uniformBindings();
+
+    auto wrapModeUniformName = SamplerStates::uniformNameToSamplerStateName(
+        "uDiffuseMap",
+        SamplerStates::PROPERTY_WRAP_MODE
+    );
+
+    // Check binding
+    ASSERT_FALSE(uniformBindingMap.bindings.count(wrapModeUniformName) == 0);
+    ASSERT_EQ(
+        uniformBindingMap.bindings.at(wrapModeUniformName).propertyName,
+        "material[${materialUuid}].diffuseMapWrapMode"
+    );
+
+    // Check default value
+    ASSERT_TRUE(uniformBindingMap.defaultValues.hasProperty(wrapModeUniformName));
+
+    ASSERT_EQ(
+        uniformBindingMap.defaultValues.get<WrapMode>(wrapModeUniformName),
+        WrapMode::CLAMP
+    );
+}
+
+TEST_F(EffectParserTest, SamplerStatesBindingWrapModeWithDefaultValueRepeat)
+{
+    auto fx = loadEffect("effect/SamplerStatesBindingWrapModeWithDefaultValueRepeat.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+
+    auto uniformBindingMap = fx->techniques().at("default")[0]->uniformBindings();
+
+    auto wrapModeUniformName = SamplerStates::uniformNameToSamplerStateName(
+        "uDiffuseMap",
+        SamplerStates::PROPERTY_WRAP_MODE
+    );
+
+    // Check binding
+    ASSERT_FALSE(uniformBindingMap.bindings.count(wrapModeUniformName) == 0);
+    ASSERT_EQ(
+        uniformBindingMap.bindings.at(wrapModeUniformName).propertyName,
+        "material[${materialUuid}].diffuseMapWrapMode"
+        );
+
+    // Check default value
+    ASSERT_TRUE(uniformBindingMap.defaultValues.hasProperty(wrapModeUniformName));
+
+    ASSERT_EQ(
+        uniformBindingMap.defaultValues.get<WrapMode>(wrapModeUniformName),
+        WrapMode::REPEAT
+    );
+}
+
+// Texture filter
+
+TEST_F(EffectParserTest, SamplerStatesBindingTextureFilterWithDefaultValueLinear)
+{
+    auto fx = loadEffect("effect/SamplerStatesBindingTextureFilterWithDefaultValueLinear.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+
+    auto uniformBindingMap = fx->techniques().at("default")[0]->uniformBindings();
+
+    auto textureFilterUniformName = SamplerStates::uniformNameToSamplerStateName(
+        "uDiffuseMap",
+        SamplerStates::PROPERTY_TEXTURE_FILTER
+    );
+
+    // Check binding
+    ASSERT_FALSE(uniformBindingMap.bindings.count(textureFilterUniformName) == 0);
+    ASSERT_EQ(
+        uniformBindingMap.bindings.at(textureFilterUniformName).propertyName,
+        "material[${materialUuid}].diffuseMapTextureFilter"
+    );
+
+    // Check default value
+    ASSERT_TRUE(uniformBindingMap.defaultValues.hasProperty(textureFilterUniformName));
+
+    ASSERT_EQ(
+        uniformBindingMap.defaultValues.get<TextureFilter>(textureFilterUniformName),
+        TextureFilter::LINEAR
+    );
+}
+
+TEST_F(EffectParserTest, SamplerStatesBindingTextureFilterWithDefaultValueNearest)
+{
+    auto fx = loadEffect("effect/SamplerStatesBindingTextureFilterWithDefaultValueNearest.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+
+    auto uniformBindingMap = fx->techniques().at("default")[0]->uniformBindings();
+
+    auto textureFilterUniformName = SamplerStates::uniformNameToSamplerStateName(
+        "uDiffuseMap",
+        SamplerStates::PROPERTY_TEXTURE_FILTER
+    );
+
+    // Check binding
+    ASSERT_FALSE(uniformBindingMap.bindings.count(textureFilterUniformName) == 0);
+    ASSERT_EQ(
+        uniformBindingMap.bindings.at(textureFilterUniformName).propertyName,
+        "material[${materialUuid}].diffuseMapTextureFilter"
+    );
+
+    // Check default value
+    ASSERT_TRUE(uniformBindingMap.defaultValues.hasProperty(textureFilterUniformName));
+
+    ASSERT_EQ(
+        uniformBindingMap.defaultValues.get<TextureFilter>(textureFilterUniformName),
+        TextureFilter::NEAREST
+    );
+}
+
+// Mip filter
+
+TEST_F(EffectParserTest, SamplerStatesBindingMipFilterWithDefaultValueLinear)
+{
+    auto fx = loadEffect("effect/SamplerStatesBindingMipFilterWithDefaultValueLinear.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+
+    auto uniformBindingMap = fx->techniques().at("default")[0]->uniformBindings();
+
+    auto mipFilterUniformName = SamplerStates::uniformNameToSamplerStateName(
+        "uDiffuseMap",
+        SamplerStates::PROPERTY_MIP_FILTER
+    );
+
+    // Check binding
+    ASSERT_FALSE(uniformBindingMap.bindings.count(mipFilterUniformName) == 0);
+    ASSERT_EQ(
+        uniformBindingMap.bindings.at(mipFilterUniformName).propertyName,
+        "material[${materialUuid}].diffuseMapMipFilter"
+    );
+
+    // Check default value
+    ASSERT_TRUE(uniformBindingMap.defaultValues.hasProperty(mipFilterUniformName));
+
+    ASSERT_EQ(
+        uniformBindingMap.defaultValues.get<MipFilter>(mipFilterUniformName),
+        MipFilter::LINEAR
+    );
+}
+
+TEST_F(EffectParserTest, SamplerStatesBindingMipFilterWithDefaultValueNearest)
+{
+    auto fx = loadEffect("effect/SamplerStatesBindingMipFilterWithDefaultValueNearest.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+
+    auto uniformBindingMap = fx->techniques().at("default")[0]->uniformBindings();
+
+    auto mipFilterUniformName = SamplerStates::uniformNameToSamplerStateName(
+        "uDiffuseMap",
+        SamplerStates::PROPERTY_MIP_FILTER
+    );
+
+    // Check binding
+    ASSERT_FALSE(uniformBindingMap.bindings.count(mipFilterUniformName) == 0);
+    ASSERT_EQ(
+        uniformBindingMap.bindings.at(mipFilterUniformName).propertyName,
+        "material[${materialUuid}].diffuseMapMipFilter"
+    );
+
+    // Check default value
+    ASSERT_TRUE(uniformBindingMap.defaultValues.hasProperty(mipFilterUniformName));
+
+    ASSERT_EQ(
+        uniformBindingMap.defaultValues.get<MipFilter>(mipFilterUniformName),
+        MipFilter::NEAREST
+    );
+}
+
+TEST_F(EffectParserTest, SamplerStatesBindingMipFilterWithDefaultValueNone)
+{
+    auto fx = loadEffect("effect/SamplerStatesBindingMipFilterWithDefaultValueNone.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+
+    auto uniformBindingMap = fx->techniques().at("default")[0]->uniformBindings();
+
+    auto mipFilterUniformName = SamplerStates::uniformNameToSamplerStateName(
+        "uDiffuseMap",
+        SamplerStates::PROPERTY_MIP_FILTER
+    );
+
+    // Check binding
+    ASSERT_FALSE(uniformBindingMap.bindings.count(mipFilterUniformName) == 0);
+    ASSERT_EQ(
+        uniformBindingMap.bindings.at(mipFilterUniformName).propertyName,
+        "material[${materialUuid}].diffuseMapMipFilter"
+    );
+
+    // Check default value
+    ASSERT_TRUE(uniformBindingMap.defaultValues.hasProperty(mipFilterUniformName));
+
+    ASSERT_EQ(
+        uniformBindingMap.defaultValues.get<MipFilter>(mipFilterUniformName),
+        MipFilter::NONE
+    );
 }

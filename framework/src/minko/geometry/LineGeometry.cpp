@@ -170,4 +170,6 @@ LineGeometry::upload()
 
 	addVertexBuffer(_vertexBuffer);
 	indices(_indexBuffer);
+
+    computeCenterPosition();
 }

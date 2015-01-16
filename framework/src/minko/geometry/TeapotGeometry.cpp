@@ -204,6 +204,8 @@ TeapotGeometry::initialize(std::shared_ptr<render::AbstractContext> context, con
 	addVertexBuffer(vb);
 
 	indices(render::IndexBuffer::create(context, indicesData));
+
+    computeCenterPosition();
 }
 
 void

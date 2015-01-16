@@ -17,11 +17,8 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "minko/Types.hpp"
 #include "minko/file/TextureWriter.hpp"
-
-#include "minko/render/AbstractTexture.hpp"
-#include "minko/render/Texture.hpp"
-#include "minko/render/TextureFormatInfo.hpp"
 #include "minko/file/AbstractWriter.hpp"
 #include "minko/file/Dependency.hpp"
 #include "minko/file/PNGWriter.hpp"
@@ -29,7 +26,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/QTranscoder.hpp"
 #include "minko/file/WriterOptions.hpp"
 #include "minko/log/Logger.hpp"
-#include "minko/Types.hpp"
+#include "minko/render/AbstractTexture.hpp"
+#include "minko/render/CubeTexture.hpp"
+#include "minko/render/Texture.hpp"
+#include "minko/render/TextureFormatInfo.hpp"
 
 using namespace minko;
 using namespace minko::file;
@@ -74,6 +74,64 @@ TextureWriter::embed(AssetLibraryPtr     assetLibrary,
 {
     auto texture = _data;
 
+    const auto generateMipmaps = writerOptions->generateMipmaps();
+
+    if (generateMipmaps)
+    {
+        const auto width = texture->width();
+        const auto height = texture->height();
+
+        if (width != height)
+        {
+            auto dimensionSize = writerOptions->upscaleTextureWhenProcessedForMipmapping()
+                ? std::max<uint>(width, height)
+                : std::min<uint>(width, height);
+
+            dimensionSize = std::min<uint>(
+                dimensionSize,
+                static_cast<uint>(writerOptions->textureMaxResolution().x)
+            );
+
+            dimensionSize = std::min<uint>(
+                dimensionSize,
+                static_cast<uint>(writerOptions->textureMaxResolution().y)
+            );
+
+            const auto newWidth = dimensionSize;
+            const auto newHeight = dimensionSize;
+
+            switch (texture->type())
+            {
+            case TextureType::Texture2D:
+            {
+                auto texture2d = std::static_pointer_cast<Texture>(texture);
+
+                texture->resize(newWidth, newHeight, true);
+
+                break;
+            }
+            case TextureType::CubeTexture:
+            {
+                // TODO
+
+                break;
+            }
+            }
+        }
+    }
+    else
+    {
+        if (texture->width() > writerOptions->textureMaxResolution().x ||
+            texture->height() > writerOptions->textureMaxResolution().y)
+        {
+            texture->resize(
+                std::min<uint>(texture->width(), writerOptions->textureMaxResolution().x),
+                std::min<uint>(texture->height(), writerOptions->textureMaxResolution().y),
+                true
+            );
+        }
+    }
+
     const auto& textureFormats = writerOptions->textureFormats();
 
     std::stringstream headerStream;
@@ -112,8 +170,9 @@ TextureWriter::embed(AssetLibraryPtr     assetLibrary,
 
     const auto width = texture->width();
     const auto height = texture->height();
-    const auto numFaces = static_cast<unsigned char>(texture->type() == TextureType::Texture2D ? 1 : 6);
-    const auto numMipmaps = static_cast<unsigned char>(writerOptions->generateMipmaps() && texture->width() == texture->height() ? math::getp2(texture->width()) + 1 : 0);
+
+    const auto numFaces = static_cast<unsigned char>((texture->type() == TextureType::Texture2D ? 1 : 6));
+    const auto numMipmaps = static_cast<unsigned char>((generateMipmaps ? math::getp2(width) + 1 : 0));
 
     auto textureHeaderData = msgpack::type::make_tuple<int, int, unsigned char, unsigned char>(
         width,
@@ -179,7 +238,7 @@ TextureWriter::writePvrCompressedTexture(TextureFormat        textureFormat,
     if (!PVRTranscoder::transcode(abstractTexture, writerOptions, textureFormat, out, { PVRTranscoder::Options::fastCompression }))
         return false;
 
-    msgpack::pack(blob, out);
+    blob.write(reinterpret_cast<const char*>(out.data()), out.size());
 
     return true;
 }
@@ -195,7 +254,7 @@ TextureWriter::writeQCompressedTexture(TextureFormat        textureFormat,
     if (!QTranscoder::transcode(abstractTexture, writerOptions, textureFormat, out))
         return false;
 
-    msgpack::pack(blob, out);
+    blob.write(reinterpret_cast<const char*>(out.data()), out.size());
 
     return true;
 }

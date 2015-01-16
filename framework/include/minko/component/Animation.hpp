@@ -41,7 +41,6 @@ namespace minko
 
 		private:
             std::vector<AbsTimelinePtr>                                _timelines;
-			MasterAnimationPtr										_master;
 
 		public:
 			inline static
@@ -98,7 +97,6 @@ namespace minko
 			void
             frameBeginHandler(std::shared_ptr<SceneManager> manager, float time, float deltaTime) override
 			{
-				if (_master == nullptr)
 					AbstractAnimation::frameBeginHandler(manager, time, deltaTime);
 			}
 
@@ -106,7 +104,6 @@ namespace minko
 			void
             updateNextLabelIds(uint time) override
 			{
-				if (_master == nullptr)
 					AbstractAnimation::updateNextLabelIds(time);
 			}
 
@@ -114,7 +111,6 @@ namespace minko
 			void 
             checkLabelHit(uint previousTime, uint newTime) override
 			{
-				if (_master == nullptr)
 					AbstractAnimation::checkLabelHit(previousTime, newTime);
 			}
 		};

@@ -116,7 +116,7 @@ const uint WINDOW_HEIGHT = 600;
 int main(int argc, char** argv) {
 
  auto canvas = Canvas::create("Minko Tutorial - Loading and using textures", WINDOW_WIDTH, WINDOW_HEIGHT);
- auto sceneManager = component::SceneManager::create(canvas->context());
+ auto sceneManager = component::SceneManager::create(canvas);
  sceneManager->assets()
    ->registerParser<[file::JPEGParser>](file::JPEGParser>)("jpg")
    ->queue("effect/Basic.effect")

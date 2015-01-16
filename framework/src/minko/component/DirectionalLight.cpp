@@ -279,8 +279,8 @@ DirectionalLight::updateWorldToScreenMatrix()
 	else
 		_view = math::mat4(1.f);
 
-	std::array<float, 4> zFar;
-	std::array<float, 4> zNear;
+    std::array<float, 4> zFar = { 0.f, 0.f, 0.f, 0.f };
+	std::array<float, 4> zNear = { 0.f, 0.f, 0.f, 0.f };
 	std::array<math::mat4, 4> viewProjections;
 
 	for (int i = 0; i < _numShadowCascades; ++i)

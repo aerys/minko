@@ -61,3 +61,9 @@ EmscriptenDOMMouseEvent::screenY()
 {
 	return getProperty("screenY");
 }
+
+int
+EmscriptenDOMMouseEvent::button()
+{
+	return getProperty("button");
+}

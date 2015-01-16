@@ -28,7 +28,7 @@ using namespace minko;
 using namespace minko::deserialize;
 
 Any
-TypeDeserializer::deserializeVector4(std::tuple<uint, std::string&>& serializedVector)
+TypeDeserializer::deserializeVector4(const std::tuple<uint, std::string&>& serializedVector)
 {
 	std::vector<float>	defaultValues(4, 0);
 	uint				serializedIndex = 0;
@@ -49,7 +49,7 @@ TypeDeserializer::deserializeVector4(std::tuple<uint, std::string&>& serializedV
 }
 		
 Any
-TypeDeserializer::deserializeVector3(std::tuple<uint, std::string&>& serializedVector)
+TypeDeserializer::deserializeVector3(const std::tuple<uint, std::string&>& serializedVector)
 {
 	std::vector<float>	defaultValues(3, 0);
 	uint				serializedIndex = 0;
@@ -69,7 +69,7 @@ TypeDeserializer::deserializeVector3(std::tuple<uint, std::string&>& serializedV
 }
 			
 Any
-TypeDeserializer::deserializeVector2(std::tuple<uint, std::string&>& serializedVector)
+TypeDeserializer::deserializeVector2(const std::tuple<uint, std::string&>& serializedVector)
 {
 	std::vector<float>	defaultValues(2, 0);
 	uint				serializedIndex = 0;
@@ -88,7 +88,7 @@ TypeDeserializer::deserializeVector2(std::tuple<uint, std::string&>& serializedV
 }
 
 Any
-TypeDeserializer::deserializeMatrix4x4(std::tuple<uint, std::string&>& serializeMatrix)
+TypeDeserializer::deserializeMatrix4x4(const std::tuple<uint, std::string&>& serializeMatrix)
 {
 	std::vector<float> matrixValues(16, 0);
 	std::stringstream	stream;
@@ -113,7 +113,7 @@ TypeDeserializer::deserializeMatrix4x4(std::tuple<uint, std::string&>& serialize
 }
 
 Any
-TypeDeserializer::deserializeBlending(std::tuple<uint, std::string&>& seriliazedBlending)
+TypeDeserializer::deserializeBlending(const std::tuple<uint, std::string&>& seriliazedBlending)
 {
 	if (std::get<1>(seriliazedBlending) == "+")
 		return Any(render::Blending::Mode::ADDITIVE);
@@ -125,7 +125,7 @@ TypeDeserializer::deserializeBlending(std::tuple<uint, std::string&>& seriliazed
 }
 
 Any
-TypeDeserializer::deserializeTriangleCulling(std::tuple<uint, std::string&>& seriliazedTriangleCulling)
+TypeDeserializer::deserializeTriangleCulling(const std::tuple<uint, std::string&>& seriliazedTriangleCulling)
 {
 	if (std::get<1>(seriliazedTriangleCulling) == "b")
 		return Any(render::TriangleCulling::BACK);
@@ -137,7 +137,7 @@ TypeDeserializer::deserializeTriangleCulling(std::tuple<uint, std::string&>& ser
 }
 
 Any
-TypeDeserializer::deserializeEnvironmentMap2dType(std::tuple<uint, std::string&>& serialized)
+TypeDeserializer::deserializeEnvironmentMap2dType(const std::tuple<uint, std::string&>& serialized)
 {
 	if (std::get<1>(serialized) == "p")
 		return Any(render::EnvironmentMap2dType::Probe);
@@ -148,7 +148,7 @@ TypeDeserializer::deserializeEnvironmentMap2dType(std::tuple<uint, std::string&>
 }
 
 Any
-TypeDeserializer::deserializeTextureId(std::tuple<uint, std::string&>& seriliazedTextureId)
+TypeDeserializer::deserializeTextureId(const std::tuple<uint, std::string&>& seriliazedTextureId)
 {
 	return Any(std::get<0>(seriliazedTextureId) & 0x00FFFFFF);
 }

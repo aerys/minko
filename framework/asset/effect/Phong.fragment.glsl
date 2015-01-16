@@ -4,9 +4,12 @@
 	precision mediump float;
 #endif
 
+#pragma include "TextureLod.extension.glsl"
+
 #pragma include "Envmap.function.glsl"
 #pragma include "Pack.function.glsl"
 #pragma include "Phong.function.glsl"
+#pragma include "TextureLod.function.glsl"
 #pragma include "ShadowMapping.function.glsl"
 
 struct AmbientLight
@@ -69,6 +72,16 @@ uniform vec3 uCameraPosition;
 
 // env. mapping
 uniform float uEnvironmentAlpha;
+
+// texture lod
+uniform float 		uDiffuseMapMaxAvailableLod;
+uniform vec2 		uDiffuseMapSize;
+
+uniform float		uNormalMapMaxAvailableLod;
+uniform vec2		uNormalMapSize;
+
+uniform float		uSpecularMapMaxAvailableLod;
+uniform vec2		uSpecularMapSize;
 
 // directional lights
 uniform vec3 uDirLight0_direction;
@@ -210,7 +223,11 @@ void main(void)
 	#endif // SHININESS
 
 	#ifdef DIFFUSE_MAP
-		diffuse = texture2D(uDiffuseMap, vertexUV);
+		#ifdef DIFFUSE_MAP_LOD
+			diffuse = texturelod_texture2D(uDiffuseMap, vertexUV, uDiffuseMapSize, 0.0, uDiffuseMapMaxAvailableLod, uDiffuseColor);
+		#else
+			diffuse = texture2D(uDiffuseMap, vertexUV);
+		#endif
 	#endif // DIFFUSE_MAP
 
 	#ifdef ALPHA_MAP
@@ -224,7 +241,11 @@ void main(void)
 
 	#if defined(SHININESS) || ( (defined(ENVIRONMENT_MAP_2D) || defined(ENVIRONMENT_CUBE_MAP)) && !defined(ENVIRONMENT_ALPHA) )
 		#ifdef SPECULAR_MAP
-			specular = texture2D(uSpecularMap, vertexUV);
+			#ifdef SPECULAR_MAP_LOD
+				specular = texturelod_texture2D(uSpecularMap, vertexUV, uSpecularMapSize, 0.0, uSpecularMapMaxAvailableLod, uSpecularColor);
+			#else
+				specular = texture2D(uSpecularMap, vertexUV);
+			#endif
 		#elif defined NORMAL_MAP
 			specular.a = texture2D(uNormalMap, vertexUV).a; // ???
 		#endif // SPECULAR_MAP
@@ -241,7 +262,13 @@ void main(void)
 			mat3 tangentToWorldMatrix = phong_getTangentToWorldSpaceMatrix(normalVector, vertexTangent);
 
 			// bring normal from tangent-space normal to world-space
-			normalVector = tangentToWorldMatrix * normalize(2.0 * texture2D(normalMap, vertexUV).xyz - 1.0);
+			#ifdef NORMAL_MAP_LOD
+				vec4 normalColor = texturelod_texture2D(uNormalMap, vertexUV, uNormalMapSize, 0.0, uNormalMapMaxAvailableLod, vec4(0.0));
+			#else
+				vec4 normalColor = texture2D(uNormalMap, vertexUV);
+			#endif
+
+			normalVector = tangentToWorldMatrix * normalize(2.0 * normalColor.xyz - 1.0);
 		#endif // NORMAL_MAP
 
 		float shadow;

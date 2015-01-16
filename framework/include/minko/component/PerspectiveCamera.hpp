@@ -183,7 +183,7 @@ namespace minko
 			}
 
 			void
-			updateProjection(float aspectRatio, float fieldOfView, float zNear, float zFar);
+			updateProjection(float fov, float aspectRatio, float zNear, float zFar);
 
 			std::shared_ptr<math::Ray>
 			unproject(float x, float y);

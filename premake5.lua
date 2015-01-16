@@ -131,6 +131,10 @@ solution "minko"
 		include 'plugin/serializer'
 		include 'plugin/debug'
 
+		if _OPTIONS['with-offscreen'] then
+			include 'plugin/offscreen'
+		end
+
 		-- work around the inability of Xcode to build all projects if no dependency exists between them
 		if os.is("macosx")  and (_ACTION == "xcode-ios" or _ACTION == "xcode-osx") then
 			minko.project.library "sdk"
@@ -152,6 +156,7 @@ solution "minko"
 	if not _OPTIONS['no-example'] then
 		--include 'example/assimp'
 		-- include 'example/audio'
+		include 'example/blending'
 		-- include 'example/clone'
 		include 'example/cube'
 		-- include 'example/devil'
@@ -181,6 +186,10 @@ solution "minko"
 		-- include 'example/stencil'
 		-- include 'example/visibility'
 		-- include 'example/water'
+
+		if _OPTIONS['with-offscreen'] then
+			include 'example/offscreen'
+		end
 
 		if os.is("macosx")  and (_ACTION == "xcode-ios" or _ACTION == "xcode-osx") then
 			minko.project.library "all-examples"

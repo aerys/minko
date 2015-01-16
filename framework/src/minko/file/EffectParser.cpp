@@ -27,9 +27,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Effect.hpp"
 #include "minko/render/Blending.hpp"
 #include "minko/render/CompareMode.hpp"
-#include "minko/render/WrapMode.hpp"
-#include "minko/render/TextureFilter.hpp"
-#include "minko/render/MipFilter.hpp"
 #include "minko/render/TriangleCulling.hpp"
 #include "minko/render/AbstractTexture.hpp"
 #include "minko/render/Texture.hpp"
@@ -138,7 +135,7 @@ EffectParser::parse(const std::string&				    filename,
 	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1], root, false))
 		_error->execute(shared_from_this(), file::Error(resolvedFilename + ": " + reader.getFormattedErrorMessages()));
 
-	_options = file::Options::create(options);
+	_options = options->clone();
 
     int pos	= resolvedFilename.find_last_of("/\\");
     if (pos != std::string::npos)
@@ -432,6 +429,33 @@ EffectParser::parseDefaultValue(const Json::Value&  node,
         loadTexture(defaultValueNode.asString(), valueName, defaultValues);
 }
 
+template<typename T>
+void
+EffectParser::parseDefaultValueSamplerStates(const Json::Value&    node,
+                                             const Scope&          scope,
+                                             const std::string&    valueName,
+                                             data::Provider::Ptr   defaultValues)
+{
+    if (!node.isObject())
+        return;
+
+    auto memberNames = node.getMemberNames();
+    if (std::find(memberNames.begin(), memberNames.end(), "default") == memberNames.end())
+        return;
+
+    auto defaultValueNode = node.get("default", 0);
+
+    if (defaultValueNode.isString())
+    {
+        if (typeid(T) == typeid(WrapMode))
+            defaultValues->set(valueName, SamplerStates::stringToWrapMode(defaultValueNode.asString()));
+        else if (typeid(T) == typeid(TextureFilter))
+            defaultValues->set(valueName, SamplerStates::stringToTextureFilter(defaultValueNode.asString()));
+        else if (typeid(T) == typeid(MipFilter))
+            defaultValues->set(valueName, SamplerStates::stringToMipFilter(defaultValueNode.asString()));
+    }
+}
+
 void
 EffectParser::parseDefaultValueVectorArray(const Json::Value&    defaultValueNode,
                                            const Scope&          scope,
@@ -596,10 +620,115 @@ EffectParser::parseUniforms(const Json::Value& node, const Scope& scope, Uniform
             if (parseBinding(uniformNode, scope, binding))
 				uniforms.bindingMap.bindings[uniformName] = binding;
 
+            parseSamplerStates(uniformNode, scope, uniformName, defaultValuesProvider, uniforms.bindingMap);
+
             parseDefaultValue(uniformNode, scope, uniformName, defaultValuesProvider);
         }
     }
     // FIXME: throw otherwise
+}
+
+void
+EffectParser::parseSamplerStates(const Json::Value& node, const Scope& scope, const std::string uniformName, data::Provider::Ptr defaultValues, data::BindingMap& bindingMap)
+{
+    if (node.isObject())
+    {
+        auto wrapModeNode = node.get(SamplerStates::PROPERTY_WRAP_MODE, 0);
+
+        if (wrapModeNode.isString())
+        {
+            auto wrapModeStr = wrapModeNode.asString();
+
+            auto wrapMode = SamplerStates::stringToWrapMode(wrapModeStr);
+
+            defaultValues->set(
+                SamplerStates::uniformNameToSamplerStateName(
+                    uniformName, 
+                    SamplerStates::PROPERTY_WRAP_MODE
+                ), 
+                wrapMode
+            );
+        }
+        else if (wrapModeNode.isObject())
+        {
+            auto uniformWrapModeBindingName = SamplerStates::uniformNameToSamplerStateName(
+                uniformName,
+                SamplerStates::PROPERTY_WRAP_MODE
+            );
+
+            parseBinding(
+                wrapModeNode, 
+                scope, 
+                bindingMap.bindings[uniformWrapModeBindingName]
+            );
+
+            parseDefaultValueSamplerStates<WrapMode>(wrapModeNode, scope, uniformWrapModeBindingName, defaultValues);
+        }
+
+        auto textureFilterNode = node.get(SamplerStates::PROPERTY_TEXTURE_FILTER, 0);
+
+        if (textureFilterNode.isString())
+        {
+            auto textureFilterStr = textureFilterNode.asString();
+
+            auto textureFilter = SamplerStates::stringToTextureFilter(textureFilterStr);
+
+            defaultValues->set(
+                SamplerStates::uniformNameToSamplerStateName(
+                    uniformName, 
+                    SamplerStates::PROPERTY_TEXTURE_FILTER
+                ), 
+                textureFilter
+            );
+        }
+        else if (textureFilterNode.isObject())
+        {
+            auto uniformTextureFilterBindingName = SamplerStates::uniformNameToSamplerStateName(
+                uniformName,
+                SamplerStates::PROPERTY_TEXTURE_FILTER
+            );
+
+            parseBinding(
+                textureFilterNode,
+                scope,
+                bindingMap.bindings[uniformTextureFilterBindingName]
+            );
+
+            parseDefaultValueSamplerStates<TextureFilter>(textureFilterNode, scope, uniformTextureFilterBindingName, defaultValues);
+        }
+
+        auto mipFilterNode = node.get(SamplerStates::PROPERTY_MIP_FILTER, 0);
+
+        if (mipFilterNode.isString())
+        {
+            auto mipFilterStr = mipFilterNode.asString();
+
+            auto mipFilter = SamplerStates::stringToMipFilter(mipFilterStr);
+            
+            defaultValues->set(
+                SamplerStates::uniformNameToSamplerStateName(
+                    uniformName, 
+                    SamplerStates::PROPERTY_MIP_FILTER
+                ), 
+                mipFilter
+            );
+        }
+        else if (mipFilterNode.isObject())
+        {
+            auto uniformMipFilterBindingName = SamplerStates::uniformNameToSamplerStateName(
+                uniformName,
+                SamplerStates::PROPERTY_MIP_FILTER
+            );
+
+            parseBinding(
+                mipFilterNode,
+                scope,
+                bindingMap.bindings[uniformMipFilterBindingName]
+            );
+
+            parseDefaultValueSamplerStates<MipFilter>(mipFilterNode, scope, uniformMipFilterBindingName, defaultValues);
+        }
+    }
 }
 
 void
@@ -1051,39 +1180,6 @@ EffectParser::parseStencilOperations(const Json::Value& node,
 	}
 }
 
-void
-EffectParser::parseSamplerStates(const Json::Value& node,
-                                 const Scope&       scope,
-                                 SamplerStates&     samplerStates)
-{
-    auto samplerStatesValue = node.get("samplerStates", 0);
-
-    if (samplerStatesValue.isObject())
-        for (auto propertyName : samplerStatesValue.getMemberNames())
-        {
-            auto samplerStateValue = samplerStatesValue.get(propertyName, 0);
-
-            if (samplerStateValue.isObject())
-            {
-                /*
-                auto wrapModeStr = samplerStateValue.get("wrapMode", "clamp").asString();
-                auto textureFilterStr = samplerStateValue.get("textureFilter", "nearest").asString();
-                auto mipFilterStr = samplerStateValue.get("mipFilter", "none").asString();
-
-                auto wrapMode = wrapModeStr == "repeat" ? WrapMode::REPEAT : WrapMode::CLAMP;
-                auto textureFilter = textureFilterStr == "linear"
-                    ? TextureFilter::LINEAR
-                    : TextureFilter::NEAREST;
-                auto mipFilter = mipFilterStr == "linear"
-                    ? MipFilter::LINEAR
-                    : (mipFilterStr == "nearest" ? MipFilter::NEAREST : MipFilter::NONE);
-
-                samplerStates[propertyName] = SamplerState(wrapMode, textureFilter, mipFilter);
-                */
-            }
-        }
-}
-
 bool
 EffectParser::parseBinding(const Json::Value& node, const Scope& scope, Binding& binding)
 {
@@ -1301,7 +1397,7 @@ EffectParser::glslIncludeCompleteHandler(LoaderPtr 			        loader,
 
     if (pos != std::string::npos)
     {
-        options = file::Options::create(options);
+        options = options->clone();
         options->includePaths().clear();
         options->includePaths().push_back(resolvedFilename.substr(0, pos));
     }

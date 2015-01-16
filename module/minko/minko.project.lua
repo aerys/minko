@@ -29,8 +29,12 @@ minko.project.library = function(name)
 			"_VARIADIC_MAX=10",		-- fix for faux variadic templates limited to 5 arguments by default
 			"_USE_MATH_DEFINES"		-- enable M_PI
 		}
+		flags {
+			"NoMinimalRebuild"
+		}
 		buildoptions {
-			"/wd4503"				-- remove warnings about too long type names
+			"/wd4503",				-- remove warnings about too long type names
+			"/MP"					-- Multi Processor build (NoMinimalRebuild flag is needed)
 		}
 
 	configuration { "html5", "debug" }
@@ -260,6 +264,8 @@ minko.project.application = function(name)
 			-- cmd = cmd .. ' -s ERROR_ON_UNDEFINED_SYMBOLS=1'
 			-- disable exception catching
 			cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=0'
+			-- allow memory pool to be dynamic
+			cmd = cmd .. ' ALLOW_MEMORY_GROWTH=1'
 			-- use a separate *.mem file to initialize the app memory
 			cmd = cmd .. ' --memory-init-file 1'
 			-- set the app (or the sdk) template.html
@@ -359,8 +365,9 @@ minko.project.application = function(name)
 			minko.sdk.path("/framework/bin/android/release")
 		}
 
-    configuration { "with-offscreen" }
+	if _OPTIONS['with-offscreen'] then
             minko.plugin.enable { "offscreen" }
+    end
 
     configuration { "android", "debug" }
 		libdirs {

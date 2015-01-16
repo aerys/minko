@@ -130,7 +130,7 @@ GeometryParser::parse(const std::string&				filename,
 	uint indexBufferFunction = 0;
 	uint vertexBufferFunction = 0;
 
-	computeMetaByte(serializedGeometry.a0, indexBufferFunction, vertexBufferFunction);
+	computeMetaData(serializedGeometry.a0, indexBufferFunction, vertexBufferFunction);
 
 	geom->indices(indexBufferParserFunctions[indexBufferFunction](serializedGeometry.a2, options->context()));
 	serializedGeometry.a2.clear();
@@ -160,8 +160,8 @@ GeometryParser::parse(const std::string&				filename,
 }
 
 void
-GeometryParser::computeMetaByte(unsigned char byte, uint& indexBufferFunctionId, uint& vertexBufferFunctionId)
+GeometryParser::computeMetaData(unsigned short metaData, uint& indexBufferFunctionId, uint& vertexBufferFunctionId)
 {
-	indexBufferFunctionId	= 0x00000000 + ((byte >> 4) & 0x0F);
-	vertexBufferFunctionId	= 0x00000000 + (byte & 0x0F);
+	indexBufferFunctionId	= 0x00000000 + ((metaData >> 4) & 0x0F);
+	vertexBufferFunctionId	= 0x00000000 + (metaData & 0x0F);
 }

@@ -46,6 +46,7 @@ Options::Options() :
     _disposeIndexBufferAfterLoading(false),
     _disposeVertexBufferAfterLoading(false),
     _disposeTextureAfterLoading(false),
+    _storeDataIfNotParsed(true),
     _skinningFramerate(30),
     _skinningMethod(component::SkinningMethod::HARDWARE),
     _material(nullptr),
@@ -57,12 +58,69 @@ Options::Options() :
 
     includePaths().push_back(binaryDir + "/asset");
 
-// #if defined(DEBUG) && !defined(EMSCRIPTEN)
-//     includePaths().push_back(binaryDir + "/../../../asset");
-// #endif
+ #if defined(DEBUG) && !defined(EMSCRIPTEN)
+     includePaths().push_back(binaryDir + "/../../../asset");
+ #endif
 
     initializePlatforms();
     initializeUserFlags();
+}
+
+Options::Options(const Options& copy) :
+    _context(copy._context),
+    _assets(copy._assets),
+    _includePaths(copy._includePaths),
+    _platforms(copy._platforms),
+    _userFlags(copy._userFlags),
+    _parsers(copy._parsers),
+    _protocols(copy._protocols),
+    _generateMipMaps(copy._generateMipMaps),
+    _resizeSmoothly(copy._resizeSmoothly),
+    _isCubeTexture(copy._isCubeTexture),
+    _startAnimation(copy._startAnimation),
+    _disposeIndexBufferAfterLoading(copy._disposeIndexBufferAfterLoading),
+    _disposeVertexBufferAfterLoading(copy._disposeVertexBufferAfterLoading),
+    _disposeTextureAfterLoading(copy._disposeTextureAfterLoading),
+    _storeDataIfNotParsed(copy._storeDataIfNotParsed),
+    _skinningFramerate(copy._skinningFramerate),
+    _skinningMethod(copy._skinningMethod),
+    _effect(copy._effect),
+    _textureFormats(copy._textureFormats),
+    _material(copy._material),
+    _materialFunction(copy._materialFunction),
+    _geometryFunction(copy._geometryFunction),
+    _protocolFunction(copy._protocolFunction),
+    _parserFunction(copy._parserFunction),
+    _uriFunction(copy._uriFunction),
+    _nodeFunction(copy._nodeFunction),
+    _effectFunction(copy._effectFunction),
+    _textureFormatFunction(copy._textureFormatFunction),
+    _loadAsynchronously(copy._loadAsynchronously),
+    _seekingOffset(copy._seekingOffset),
+    _seekedLength(copy._seekedLength)
+{
+}
+
+Options::Ptr
+Options::clone()
+{
+    auto copy = Ptr(new Options(*this));
+
+    copy->initialize();
+
+    return copy;
+}
+
+void
+Options::initialize()
+{
+    initializeDefaultFunctions();
+    
+    if (_parsers.find("effect") == _parsers.end())
+        registerParser<file::EffectParser>("effect");
+
+    if (_protocols.find("file") == _protocols.end())
+        registerProtocol<FileProtocol>("file");
 }
 
 void
@@ -106,7 +164,7 @@ Options::getProtocol(const std::string& protocol)
     auto p = _protocols.count(protocol) == 0 ? nullptr : _protocols[protocol]();
 
     if (p)
-        p->options(Options::create(p->options()));
+        p->options(p->options()->clone());
 
     return p;
 }
@@ -122,33 +180,37 @@ Options::initializeDefaultFunctions()
 {
     auto options = shared_from_this();
 
-    _materialFunction = [](const std::string&, material::Material::Ptr material) -> material::Material::Ptr
-    {
-        return material;
-    };
+    if (!_materialFunction)
+        _materialFunction = [](const std::string&, material::Material::Ptr material) -> material::Material::Ptr
+        {
+            return material;
+        };
 
-    _geometryFunction = [](const std::string&, GeomPtr geom) -> GeomPtr
-    {
-        return geom;
-    };
+    if (!_geometryFunction)
+        _geometryFunction = [](const std::string&, GeomPtr geom) -> GeomPtr
+        {
+            return geom;
+        };
 
-    _uriFunction = [](const std::string& uri) -> const std::string
-    {
-        return uri;
-    };
+    if (!_uriFunction)
+        _uriFunction = [](const std::string& uri) -> const std::string
+        {
+            return uri;
+        };
 
-    _nodeFunction = [](NodePtr node) -> NodePtr
-    {
-        return node;
-    };
+    if (!_nodeFunction)
+        _nodeFunction = [](NodePtr node) -> NodePtr
+        {
+            return node;
+        };
 
-    _effectFunction = [](EffectPtr effect) -> EffectPtr
-    {
-        return effect;
-    };
+    if (!_effectFunction)
+        _effectFunction = [](EffectPtr effect) -> EffectPtr
+        {
+            return effect;
+        };
 
-    _textureFormatFunction = [this](const std::unordered_set<render::TextureFormat>& availableTextureFormats)
-                                ->render::TextureFormat
+    _textureFormatFunction = [=](const std::unordered_set<render::TextureFormat>& availableTextureFormats) ->render::TextureFormat
     {
         static const auto defaultTextureFormats = std::list<render::TextureFormat>
         {
@@ -177,7 +239,7 @@ Options::initializeDefaultFunctions()
             render::TextureFormat::RGB
         };
 
-        auto& textureFormats = _textureFormats.empty() ? defaultTextureFormats : _textureFormats;
+        auto& textureFormats = options->_textureFormats.empty() ? defaultTextureFormats : options->_textureFormats;
 
         auto textureFormatIt = std::find_if(textureFormats.begin(), textureFormats.end(),
                             [&](render::TextureFormat textureFormat) -> bool
@@ -207,39 +269,40 @@ Options::initializeDefaultFunctions()
         throw std::runtime_error(errorMessage);
     };
 
-	if (!_defaultProtocolFunction)
-		_defaultProtocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
-	{
-		auto defaultProtocol = options->getProtocol("file"); // "file" might be overriden (by APKProtocol for instance)
+    if (!_defaultProtocolFunction)
+        _defaultProtocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
+        {
+            auto defaultProtocol = options->getProtocol("file"); // "file" might be overriden (by APKProtocol for instance)
 
-		defaultProtocol->options(Options::create(options));
+            defaultProtocol->options(options->clone());
 
-		return defaultProtocol;
-	};
+            return defaultProtocol;
+        };
 
-	_protocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
-	{
-		std::string protocol = "";
+    _protocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
+    {
+        std::string protocol = "";
 
-		uint i;
+        uint i;
 
-		for (i = 0; i < filename.length(); ++i)
-		{
-			if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
-				break;
+        for (i = 0; i < filename.length(); ++i)
+        {
+            if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
+                break;
 
-			protocol += filename.at(i);
-		}
+            protocol += filename.at(i);
+        }
 
-		if (i != filename.length())
-		{
-			auto loader = options->getProtocol(protocol);
+        if (i != filename.length())
+        {
+            auto loader = options->getProtocol(protocol);
 
-			if (loader)
-				return loader;
-		}
+            if (loader)
+                return loader;
+        }
 
-		return _defaultProtocolFunction(filename);
-	};
+        return _defaultProtocolFunction(filename);
+    };
 
+    _parserFunction = nullptr;
 }

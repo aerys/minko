@@ -1,4 +1,12 @@
 minko.project.library "minko-framework"
+
+	-- fixme remove dependency with offscreen plugin
+	if _OPTIONS['with-offscreen'] then
+		minko.plugin.enable("offscreen")
+	end
+
+	configuration { }
+
 	kind "StaticLib"
 
 	language "C++"

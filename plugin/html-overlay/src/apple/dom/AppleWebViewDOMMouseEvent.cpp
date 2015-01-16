@@ -79,3 +79,12 @@ AppleWebViewDOMMouseEvent::screenY()
 
     return result;
 }
+
+int
+AppleWebViewDOMMouseEvent::button()
+{
+    std::string js = "(" + _jsAccessor + ".button)";
+    int result = atoi(_engine->eval(js).c_str());
+    
+    return result;
+}

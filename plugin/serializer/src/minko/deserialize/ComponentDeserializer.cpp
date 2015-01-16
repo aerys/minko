@@ -65,8 +65,8 @@ ComponentDeserializer::deserializeTransform(file::SceneVersion                  
 
 	auto transformMatrix = Any::cast<math::mat4>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
     
-    // For Scene file of version 0.2.3 or less we need to transpose transform matrixes
-    if (sceneVersion.version <= 514)
+    // For .scene file of version 0.2.x or less we need to transpose transform matrixes
+    if (sceneVersion.minor < 3)
     {
         transformMatrix = math::transpose(transformMatrix);
     }

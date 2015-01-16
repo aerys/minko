@@ -101,3 +101,551 @@ TEST_F(DrawCallPoolTest, UniformBindingToDefaultSwap)
         math::value_ptr(pass->uniformBindings().defaultValues.get<math::vec4>("uDiffuseColor"))
     );
 }
+
+/** Sampler states binding swap **/
+
+TEST_F(DrawCallPoolTest, SamplerStateSwapWrapModeBindingToDefaultClamp)
+{
+    auto samplerStateMaterialValue = WrapMode::REPEAT;
+    auto samplerStateProperty = SamplerStates::PROPERTY_WRAP_MODE;
+
+    auto fx = MinkoTests::loadEffect("effect/SamplerStatesBindingWrapModeWithDefaultValueClamp.effect");
+    auto pass = fx->techniques().at("default")[0];
+    DrawCallPool pool;
+    data::Store rootData;
+    data::Store rendererData;
+    data::Store targetData;
+
+    auto samplerUniformName = "uDiffuseMap";
+    auto samplerBindingName = "diffuseMap";
+
+    auto sampleStateUniformName = SamplerStates::uniformNameToSamplerStateName(
+        samplerUniformName,
+        samplerStateProperty
+    );
+
+    auto samplerStateBindingName = SamplerStates::uniformNameToSamplerStateBindingName(
+        samplerBindingName,
+        samplerStateProperty
+    );
+
+    auto material = material::Material::create();
+    auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
+    std::unordered_map<std::string, std::string> variables = { { "materialUuid", material->uuid() } };
+
+    material->data()->set(samplerBindingName, texture->sampler());
+    material->data()->set(samplerStateBindingName, samplerStateMaterialValue);
+
+    auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
+    variables.insert({ "geometryUuid", geom->uuid() });
+
+    targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
+    targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
+
+    auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
+
+    auto& samplers = (*drawCalls.first)->samplers();
+    auto& sampler = samplers[0];
+
+    ASSERT_EQ(samplers.size(), 1);
+
+    ASSERT_EQ(*sampler.wrapMode, material->data()->get<WrapMode>(samplerStateBindingName));
+    ASSERT_EQ(*sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
+    ASSERT_EQ(*sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
+
+    material->data()->unset(samplerStateBindingName);
+
+    ASSERT_EQ(*sampler.wrapMode, pass->uniformBindings().defaultValues.get<WrapMode>(sampleStateUniformName));
+    ASSERT_EQ(*sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
+    ASSERT_EQ(*sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
+}
+
+TEST_F(DrawCallPoolTest, SamplerStateSwapWrapModeBindingToDefaultRepeat)
+{
+    auto samplerStateMaterialValue = WrapMode::CLAMP;
+    auto samplerStateProperty = SamplerStates::PROPERTY_WRAP_MODE;
+
+    auto fx = MinkoTests::loadEffect("effect/SamplerStatesBindingWrapModeWithDefaultValueClamp.effect");
+    auto pass = fx->techniques().at("default")[0];
+    DrawCallPool pool;
+    data::Store rootData;
+    data::Store rendererData;
+    data::Store targetData;
+
+    auto samplerUniformName = "uDiffuseMap";
+    auto samplerBindingName = "diffuseMap";
+
+    auto sampleStateUniformName = SamplerStates::uniformNameToSamplerStateName(
+        samplerUniformName,
+        samplerStateProperty
+    );
+
+    auto samplerStateBindingName = SamplerStates::uniformNameToSamplerStateBindingName(
+        samplerBindingName,
+        samplerStateProperty
+    );
+
+    auto material = material::Material::create();
+    auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
+    std::unordered_map<std::string, std::string> variables = { { "materialUuid", material->uuid() } };
+
+    material->data()->set(samplerBindingName, texture->sampler());
+    material->data()->set(samplerStateBindingName, samplerStateMaterialValue);
+
+    auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
+    variables.insert({ "geometryUuid", geom->uuid() });
+
+    targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
+    targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
+
+    auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
+
+    auto& samplers = (*drawCalls.first)->samplers();
+    auto& sampler = samplers[0];
+
+    ASSERT_EQ(samplers.size(), 1);
+
+    ASSERT_EQ(*sampler.wrapMode, material->data()->get<WrapMode>(samplerStateBindingName));
+    ASSERT_EQ(*sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
+    ASSERT_EQ(*sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
+
+    material->data()->unset(samplerStateBindingName);
+
+    ASSERT_EQ(*sampler.wrapMode, pass->uniformBindings().defaultValues.get<WrapMode>(sampleStateUniformName));
+    ASSERT_EQ(*sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
+    ASSERT_EQ(*sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
+}
+
+TEST_F(DrawCallPoolTest, SamplerStateSwapTextureFilterBindingToDefaultLinear)
+{
+    auto samplerStateMaterialValue = TextureFilter::NEAREST;
+    auto samplerStateProperty = SamplerStates::PROPERTY_TEXTURE_FILTER;
+
+    auto fx = MinkoTests::loadEffect("effect/SamplerStatesBindingTextureFilterWithDefaultValueLinear.effect");
+    auto pass = fx->techniques().at("default")[0];
+    DrawCallPool pool;
+    data::Store rootData;
+    data::Store rendererData;
+    data::Store targetData;
+
+    auto samplerUniformName = "uDiffuseMap";
+    auto samplerBindingName = "diffuseMap";
+
+    auto sampleStateUniformName = SamplerStates::uniformNameToSamplerStateName(
+        samplerUniformName,
+        samplerStateProperty
+    );
+
+    auto samplerStateBindingName = SamplerStates::uniformNameToSamplerStateBindingName(
+        samplerBindingName,
+        samplerStateProperty
+    );
+
+    auto material = material::Material::create();
+    auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
+    std::unordered_map<std::string, std::string> variables = { { "materialUuid", material->uuid() } };
+
+    material->data()->set(samplerBindingName, texture->sampler());
+    material->data()->set(samplerStateBindingName, samplerStateMaterialValue);
+
+    auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
+    variables.insert({ "geometryUuid", geom->uuid() });
+
+    targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
+    targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
+
+    auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
+
+    auto& samplers = (*drawCalls.first)->samplers();
+    auto& sampler = samplers[0];
+
+    ASSERT_EQ(samplers.size(), 1);
+
+    ASSERT_EQ(*sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
+    ASSERT_EQ(*sampler.textureFilter, material->data()->get<TextureFilter>(samplerStateBindingName));
+    ASSERT_EQ(*sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
+
+    material->data()->unset(samplerStateBindingName);
+
+    auto value = pass->uniformBindings().defaultValues.get<TextureFilter>(sampleStateUniformName);
+
+    ASSERT_EQ(*sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
+    ASSERT_EQ(*sampler.textureFilter, pass->uniformBindings().defaultValues.get<TextureFilter>(sampleStateUniformName));
+    ASSERT_EQ(*sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
+}
+
+TEST_F(DrawCallPoolTest, SamplerStateSwapTextureFilterBindingToDefaultNearest)
+{
+    auto samplerStateMaterialValue = TextureFilter::LINEAR;
+    auto samplerStateProperty = SamplerStates::PROPERTY_TEXTURE_FILTER;
+
+    auto fx = MinkoTests::loadEffect("effect/SamplerStatesBindingTextureFilterWithDefaultValueNearest.effect");
+    auto pass = fx->techniques().at("default")[0];
+    DrawCallPool pool;
+    data::Store rootData;
+    data::Store rendererData;
+    data::Store targetData;
+
+    auto samplerUniformName = "uDiffuseMap";
+    auto samplerBindingName = "diffuseMap";
+
+    auto sampleStateUniformName = SamplerStates::uniformNameToSamplerStateName(
+        samplerUniformName,
+        samplerStateProperty
+    );
+
+    auto samplerStateBindingName = SamplerStates::uniformNameToSamplerStateBindingName(
+        samplerBindingName,
+        samplerStateProperty
+    );
+
+    auto material = material::Material::create();
+    auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
+    std::unordered_map<std::string, std::string> variables = { { "materialUuid", material->uuid() } };
+
+    auto p = data::Provider::create();
+    material->data()->set(samplerBindingName, texture->sampler());
+    material->data()->set(samplerStateBindingName, samplerStateMaterialValue);
+
+    auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
+    variables.insert({ "geometryUuid", geom->uuid() });
+
+    targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
+    targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
+
+    auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
+
+    auto& samplers = (*drawCalls.first)->samplers();
+    auto& sampler = samplers[0];
+
+    ASSERT_EQ(samplers.size(), 1);
+
+    auto value = material->data()->get<TextureFilter>(samplerStateBindingName);
+
+    ASSERT_EQ(*sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
+    ASSERT_EQ(*sampler.textureFilter, material->data()->get<TextureFilter>(samplerStateBindingName));
+    ASSERT_EQ(*sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
+
+    material->data()->unset(samplerStateBindingName);
+
+    ASSERT_EQ(*sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
+    ASSERT_EQ(*sampler.textureFilter, pass->uniformBindings().defaultValues.get<TextureFilter>(sampleStateUniformName));
+    ASSERT_EQ(*sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
+}
+
+TEST_F(DrawCallPoolTest, SamplerStateSwapMipFilterBindingToDefaultNone)
+{
+    auto samplerStateMaterialValue = MipFilter::LINEAR;
+    auto samplerStateProperty = SamplerStates::PROPERTY_MIP_FILTER;
+
+    auto fx = MinkoTests::loadEffect("effect/SamplerStatesBindingMipFilterWithDefaultValueNone.effect");
+    auto pass = fx->techniques().at("default")[0];
+    DrawCallPool pool;
+    data::Store rootData;
+    data::Store rendererData;
+    data::Store targetData;
+
+    auto samplerUniformName = "uDiffuseMap";
+    auto samplerBindingName = "diffuseMap";
+
+    auto sampleStateUniformName = SamplerStates::uniformNameToSamplerStateName(
+        samplerUniformName,
+        samplerStateProperty
+    );
+
+    auto samplerStateBindingName = SamplerStates::uniformNameToSamplerStateBindingName(
+        samplerBindingName,
+        samplerStateProperty
+    );
+
+    auto material = material::Material::create();
+    auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
+    std::unordered_map<std::string, std::string> variables = { { "materialUuid", material->uuid() } };
+
+    material->data()->set(samplerBindingName, texture->sampler());
+    material->data()->set(samplerStateBindingName, samplerStateMaterialValue);
+
+    auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
+    variables.insert({ "geometryUuid", geom->uuid() });
+
+    targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
+    targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
+
+    auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
+
+    auto& samplers = (*drawCalls.first)->samplers();
+    auto& sampler = samplers[0];
+
+    ASSERT_EQ(samplers.size(), 1);
+
+    ASSERT_EQ(*sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
+    ASSERT_EQ(*sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
+    ASSERT_EQ(*sampler.mipFilter, material->data()->get<MipFilter>(samplerStateBindingName));
+
+    material->data()->unset(samplerStateBindingName);
+
+    ASSERT_EQ(*sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
+    ASSERT_EQ(*sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
+    ASSERT_EQ(*sampler.mipFilter, pass->uniformBindings().defaultValues.get<MipFilter>(sampleStateUniformName));
+}
+
+TEST_F(DrawCallPoolTest, SamplerStateSwapMipFilterBindingToDefaultLinear)
+{
+    auto samplerStateMaterialValue = MipFilter::NONE;
+    auto samplerStateProperty = SamplerStates::PROPERTY_MIP_FILTER;
+
+    auto fx = MinkoTests::loadEffect("effect/SamplerStatesBindingMipFilterWithDefaultValueLinear.effect");
+    auto pass = fx->techniques().at("default")[0];
+    DrawCallPool pool;
+    data::Store rootData;
+    data::Store rendererData;
+    data::Store targetData;
+
+    auto samplerUniformName = "uDiffuseMap";
+    auto samplerBindingName = "diffuseMap";
+
+    auto sampleStateUniformName = SamplerStates::uniformNameToSamplerStateName(
+        samplerUniformName,
+        samplerStateProperty
+        );
+
+    auto samplerStateBindingName = SamplerStates::uniformNameToSamplerStateBindingName(
+        samplerBindingName,
+        samplerStateProperty
+        );
+
+    auto material = material::Material::create();
+    auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
+    std::unordered_map<std::string, std::string> variables = { { "materialUuid", material->uuid() } };
+
+    material->data()->set(samplerBindingName, texture->sampler());
+    material->data()->set(samplerStateBindingName, samplerStateMaterialValue);
+
+    auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
+    variables.insert({ "geometryUuid", geom->uuid() });
+
+    targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
+    targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
+
+    auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
+
+    auto& samplers = (*drawCalls.first)->samplers();
+    auto& sampler = samplers[0];
+
+    ASSERT_EQ(samplers.size(), 1);
+
+    ASSERT_EQ(*sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
+    ASSERT_EQ(*sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
+    ASSERT_EQ(*sampler.mipFilter, material->data()->get<MipFilter>(samplerStateBindingName));
+
+    material->data()->unset(samplerStateBindingName);
+
+    ASSERT_EQ(*sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
+    ASSERT_EQ(*sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
+    ASSERT_EQ(*sampler.mipFilter, pass->uniformBindings().defaultValues.get<MipFilter>(sampleStateUniformName));
+}
+
+TEST_F(DrawCallPoolTest, SamplerStateSwapMipFilterBindingToDefaultNearest)
+{
+    auto samplerStateMaterialValue = MipFilter::NONE;
+    auto samplerStateProperty = SamplerStates::PROPERTY_MIP_FILTER;
+
+    auto fx = MinkoTests::loadEffect("effect/SamplerStatesBindingMipFilterWithDefaultValueNearest.effect");
+    auto pass = fx->techniques().at("default")[0];
+    DrawCallPool pool;
+    data::Store rootData;
+    data::Store rendererData;
+    data::Store targetData;
+
+    auto samplerUniformName = "uDiffuseMap";
+    auto samplerBindingName = "diffuseMap";
+
+    auto sampleStateUniformName = SamplerStates::uniformNameToSamplerStateName(
+        samplerUniformName,
+        samplerStateProperty
+    );
+
+    auto samplerStateBindingName = SamplerStates::uniformNameToSamplerStateBindingName(
+        samplerBindingName,
+        samplerStateProperty
+    );
+
+    auto material = material::Material::create();
+    auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
+    std::unordered_map<std::string, std::string> variables = { { "materialUuid", material->uuid() } };
+
+    material->data()->set(samplerBindingName, texture->sampler());
+    material->data()->set(samplerStateBindingName, samplerStateMaterialValue);
+
+    auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
+    variables.insert({ "geometryUuid", geom->uuid() });
+
+    targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
+    targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
+
+    auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
+
+    auto& samplers = (*drawCalls.first)->samplers();
+    auto& sampler = samplers[0];
+
+    ASSERT_EQ(samplers.size(), 1);
+
+    ASSERT_EQ(*sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
+    ASSERT_EQ(*sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
+    ASSERT_EQ(*sampler.mipFilter, material->data()->get<MipFilter>(samplerStateBindingName));
+
+    material->data()->unset(samplerStateBindingName);
+
+    ASSERT_EQ(*sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
+    ASSERT_EQ(*sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
+    ASSERT_EQ(*sampler.mipFilter, pass->uniformBindings().defaultValues.get<MipFilter>(sampleStateUniformName));
+}
+
+/** Sampler states binding with no binding value and no default value **/
+
+TEST_F(DrawCallPoolTest, SamplerStatesBindingWrapModeNoDefaultValue)
+{
+    auto samplerStateProperty = SamplerStates::PROPERTY_WRAP_MODE;
+
+    auto fx = MinkoTests::loadEffect("effect/SamplerStatesBindingWrapModeNoDefaultValue.effect");
+    auto pass = fx->techniques().at("default")[0];
+    DrawCallPool pool;
+    data::Store rootData;
+    data::Store rendererData;
+    data::Store targetData;
+
+    auto samplerUniformName = "uDiffuseMap";
+    auto samplerBindingName = "diffuseMap";
+
+    auto sampleStateUniformName = SamplerStates::uniformNameToSamplerStateName(
+        samplerUniformName,
+        samplerStateProperty
+    );
+
+    auto samplerStateBindingName = SamplerStates::uniformNameToSamplerStateBindingName(
+        samplerBindingName,
+        samplerStateProperty
+    );
+
+    auto material = material::Material::create();
+    auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
+    std::unordered_map<std::string, std::string> variables = { { "materialUuid", material->uuid() } };
+
+    material->data()->set(samplerBindingName, texture->sampler());
+
+    auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
+    variables.insert({ "geometryUuid", geom->uuid() });
+
+    targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
+    targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
+
+    auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
+
+    auto& samplers = (*drawCalls.first)->samplers();
+    auto& sampler = samplers[0];
+
+    ASSERT_EQ(samplers.size(), 1);
+    ASSERT_FALSE(pass->uniformBindings().defaultValues.hasProperty(sampleStateUniformName));
+
+    ASSERT_EQ(*sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
+    ASSERT_EQ(*sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
+    ASSERT_EQ(*sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
+}
+
+TEST_F(DrawCallPoolTest, SamplerStateTextureFilterBindingNoDefaultValue)
+{
+    auto samplerStateProperty = SamplerStates::PROPERTY_TEXTURE_FILTER;
+
+    auto fx = MinkoTests::loadEffect("effect/SamplerStatesBindingTextureFilterNoDefaultValue.effect");
+    auto pass = fx->techniques().at("default")[0];
+    DrawCallPool pool;
+    data::Store rootData;
+    data::Store rendererData;
+    data::Store targetData;
+
+    auto samplerUniformName = "uDiffuseMap";
+    auto samplerBindingName = "diffuseMap";
+
+    auto sampleStateUniformName = SamplerStates::uniformNameToSamplerStateName(
+        samplerUniformName,
+        samplerStateProperty
+    );
+
+    auto samplerStateBindingName = SamplerStates::uniformNameToSamplerStateBindingName(
+        samplerBindingName,
+        samplerStateProperty
+    );
+
+    auto material = material::Material::create();
+    auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
+    std::unordered_map<std::string, std::string> variables = { { "materialUuid", material->uuid() } };
+
+    material->data()->set(samplerBindingName, texture->sampler());
+
+    auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
+    variables.insert({ "geometryUuid", geom->uuid() });
+
+    targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
+    targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
+
+    auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
+
+    auto& samplers = (*drawCalls.first)->samplers();
+    auto& sampler = samplers[0];
+
+    ASSERT_EQ(samplers.size(), 1);
+    ASSERT_FALSE(pass->uniformBindings().defaultValues.hasProperty(sampleStateUniformName));
+    
+    ASSERT_EQ(*sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
+    ASSERT_EQ(*sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
+    ASSERT_EQ(*sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
+}
+
+TEST_F(DrawCallPoolTest, SamplerStatesBindingMipFilterNoDefaultValue)
+{
+    auto samplerStateProperty = SamplerStates::PROPERTY_MIP_FILTER;
+
+    auto fx = MinkoTests::loadEffect("effect/SamplerStatesBindingMipFilterNoDefaultValue.effect");
+    auto pass = fx->techniques().at("default")[0];
+    DrawCallPool pool;
+    data::Store rootData;
+    data::Store rendererData;
+    data::Store targetData;
+
+    auto samplerUniformName = "uDiffuseMap";
+    auto samplerBindingName = "diffuseMap";
+
+    auto sampleStateUniformName = SamplerStates::uniformNameToSamplerStateName(
+        samplerUniformName,
+        samplerStateProperty
+    );
+
+    auto samplerStateBindingName = SamplerStates::uniformNameToSamplerStateBindingName(
+        samplerBindingName,
+        samplerStateProperty
+    );
+
+    auto material = material::Material::create();
+    auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
+    std::unordered_map<std::string, std::string> variables = { { "materialUuid", material->uuid() } };
+
+    material->data()->set(samplerBindingName, texture->sampler());
+
+    auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
+    variables.insert({ "geometryUuid", geom->uuid() });
+
+    targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
+    targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
+
+    auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
+
+    auto& samplers = (*drawCalls.first)->samplers();
+    auto& sampler = samplers[0];
+
+    ASSERT_EQ(samplers.size(), 1);
+    ASSERT_FALSE(pass->uniformBindings().defaultValues.hasProperty(sampleStateUniformName));
+
+    ASSERT_EQ(*sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
+    ASSERT_EQ(*sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
+    ASSERT_EQ(*sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
+}

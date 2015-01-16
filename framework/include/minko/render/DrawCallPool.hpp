@@ -144,6 +144,11 @@ namespace minko
             uniformBindingPropertyAddedHandler(DrawCall&                          drawCall,
                                                const ProgramInputs::UniformInput& input,
                                                const data::BindingMap&            uniformBindingMap);
+
+            void
+            samplerStatesBindingPropertyAddedHandler(DrawCall&                          drawCall,
+                                                     const ProgramInputs::UniformInput& input,
+                                                     const data::BindingMap&            uniformBindingMap);
         };
 	}
 }

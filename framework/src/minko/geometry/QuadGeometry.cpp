@@ -80,4 +80,6 @@ QuadGeometry::initialize(std::shared_ptr<render::AbstractContext> context)
     addVertexBuffer(vertexBuffer);
 
     indices(indexBuffer);
+
+    computeCenterPosition();
 }

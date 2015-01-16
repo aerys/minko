@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoSDL.hpp"
 
 using namespace minko;
-using namespace minko::math;
 using namespace minko::component;
 
 const uint WINDOW_WIDTH = 800;
@@ -46,18 +45,22 @@ main(int argc, char** argv)
             );
         root->addChild(camera);
 
+
+        auto cubeMaterial = material::BasicMaterial::create();
+        cubeMaterial->diffuseColor(math::vec4(0.f, 0.f, 1.f, 1.f));
+
         auto cube = scene::Node::create("cube")
-            ->addComponent(Transform::create(Matrix4x4::create()->translation(0.f, 0.f, -5.f)))
+            ->addComponent(Transform::create(math::translate(math::mat4(), math::vec3(0.f, 0.f, -5.f))))
             ->addComponent(Surface::create(
-			geometry::CubeGeometry::create(canvas->context()),
-            material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
-			sceneManager->assets()->effect("effect/Basic.effect")
+			    geometry::CubeGeometry::create(canvas->context()),
+                cubeMaterial,
+			    sceneManager->assets()->effect("effect/Basic.effect")
             ));
         root->addChild(cube);
 
         auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
         {
-            cube->component<Transform>()->matrix()->prependRotationY(.01f);
+            cube->component<Transform>()->matrix(cube->component<Transform>()->matrix() * math::rotate(.01f, math::vec3(0, 1, 0)));
             sceneManager->nextFrame(t, dt);
         });
 
