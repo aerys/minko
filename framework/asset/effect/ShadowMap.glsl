@@ -54,12 +54,6 @@ uniform float uZFar;
 
 varying vec4 vPosition;
 
-float linearDepth(float depth, float zNear, float zFar)
-{
-    return (2.0 * zNear) / (zFar + zNear - depth * (zFar - zNear));
-}
-
-
 float linearDepthOrtho(float depth, float zNear, float zFar)
 {
     // depth (depth - zNear) / (zFar - zNear);

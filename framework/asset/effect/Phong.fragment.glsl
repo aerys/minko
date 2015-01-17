@@ -1,7 +1,11 @@
 #ifdef FRAGMENT_SHADER
 
 #ifdef GL_ES
-	precision mediump float;
+    #ifdef GL_FRAGMENT_PRECISION_HIGH
+        precision highp float;
+    #else
+        precision mediump float;
+    #endif
 #endif
 
 #pragma include "TextureLod.extension.glsl"
@@ -11,6 +15,7 @@
 #pragma include "Phong.function.glsl"
 #pragma include "TextureLod.function.glsl"
 #pragma include "ShadowMapping.function.glsl"
+#pragma include "Fog.function.glsl"
 
 struct AmbientLight
 {
@@ -60,7 +65,7 @@ uniform sampler2D uAlphaMap;
 uniform float uAlphaThreshold;
 
 // fog
-uniform vec4 uFogColor
+uniform vec4 uFogColor;
 uniform vec2 uFogBounds;
 
 // phong
@@ -74,14 +79,14 @@ uniform vec3 uCameraPosition;
 uniform float uEnvironmentAlpha;
 
 // texture lod
-uniform float 		uDiffuseMapMaxAvailableLod;
-uniform vec2 		uDiffuseMapSize;
+uniform float uDiffuseMapMaxAvailableLod;
+uniform vec2 uDiffuseMapSize;
 
-uniform float		uNormalMapMaxAvailableLod;
-uniform vec2		uNormalMapSize;
+uniform float uNormalMapMaxAvailableLod;
+uniform vec2 uNormalMapSize;
 
-uniform float		uSpecularMapMaxAvailableLod;
-uniform vec2		uSpecularMapSize;
+uniform float uSpecularMapMaxAvailableLod;
+uniform vec2 uSpecularMapSize;
 
 // directional lights
 uniform vec3 uDirLight0_direction;
@@ -383,7 +388,7 @@ void main(void)
 	vec3 phong = diffuse.rgb * (ambientAccum + diffuseAccum) + specular.a * specularAccum;
 
 	#ifdef FOG_TECHNIQUE
-		phong = fog_sampleFog(phong, vertexScreenPosition.z / vertexScreenPosition.w, uFogColor.xyz, uFogColor.a, uFogBounds.x, uFogBounds.y);
+		phong = fog_sampleFog(phong, vertexScreenPosition.z, uFogColor.xyz, uFogColor.a, uFogBounds.x, uFogBounds.y);
 	#endif
 
 	gl_FragColor = vec4(phong.rgb, diffuse.a);
