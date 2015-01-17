@@ -239,7 +239,7 @@ DrawCall::bindSamplerState(ConstUniformInputRef                          input,
                            const data::Store&                            defaultValues,
                            const std::string&                            samplerStateProperty)
 {
-    if (samplerStateProperty == SamplerStates::PROPERTY_WRAP_MODE || 
+    if (samplerStateProperty == SamplerStates::PROPERTY_WRAP_MODE ||
         samplerStateProperty == SamplerStates::PROPERTY_TEXTURE_FILTER ||
         samplerStateProperty == SamplerStates::PROPERTY_MIP_FILTER)
     {
@@ -376,15 +376,17 @@ DrawCall::setSamplerStateValueFromStore(const ProgramInputs::UniformInput&  inpu
 void
 DrawCall::bindIndexBuffer()
 {
-    _indexBuffer = const_cast<int*>(_targetData.getPointer<int>(
-        data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].indices")
-    ));
-    _firstIndex = const_cast<uint*>(_targetData.getPointer<uint>(
-        data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].firstIndex")
-    ));
-    _numIndices = const_cast<uint*>(_targetData.getPointer<uint>(
-        data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].numIndices")
-    ));
+    auto indexBufferProperty = data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].indices");
+    if (_targetData.hasProperty(indexBufferProperty))
+        _indexBuffer = const_cast<int*>(_targetData.getPointer<int>(indexBufferProperty));
+
+    auto firstIndexProperty = data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].firstIndex");
+    if (_targetData.hasProperty(firstIndexProperty))
+        _firstIndex = const_cast<uint*>(_targetData.getPointer<uint>(firstIndexProperty));
+
+    auto numIndicesProperty = data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].numIndices");
+    if (_targetData.hasProperty(numIndicesProperty))
+        _numIndices = const_cast<uint*>(_targetData.getPointer<uint>(numIndicesProperty));
 }
 
 void
