@@ -109,23 +109,23 @@ DrawCallPool::watchProgramSignature(DrawCall&                       drawCall,
         if (hasMacroCallback(bindingKey))
             continue;
 
+        auto propertyName = Store::getActualPropertyName(drawCall.variables(), macroBinding.propertyName);
+
         if (macroBindings.types.at(macroName) != data::MacroBindingMap::MacroType::UNSET)
         {
             addMacroCallback(
                 bindingKey,
-                store.propertyChanged(macroBinding.propertyName),
+                store.propertyChanged(propertyName),
                 std::bind(&DrawCallPool::macroPropertyChangedHandler, this, std::ref(macroBinding), std::ref(drawCalls))
             );
         }
         else
         {
-            auto propertyName = Store::getActualPropertyName(drawCall.variables(), macroBinding.propertyName);
-
             if (store.hasProperty(propertyName))
             {
                 addMacroCallback(
                     bindingKey,
-                    store.propertyRemoved(macroBinding.propertyName),
+                    store.propertyRemoved(propertyName),
                     std::bind(
                         &DrawCallPool::macroPropertyRemovedHandler,
                         this,
@@ -139,7 +139,7 @@ DrawCallPool::watchProgramSignature(DrawCall&                       drawCall,
             {
                 addMacroCallback(
                     bindingKey,
-                    store.propertyAdded(macroBinding.propertyName),
+                    store.propertyAdded(propertyName),
                     std::bind(
                         &DrawCallPool::macroPropertyAddedHandler,
                         this,
