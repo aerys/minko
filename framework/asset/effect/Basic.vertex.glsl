@@ -50,7 +50,7 @@ void main(void)
 	vec4 pos = vec4(aPosition, 1.0);
 
 	#ifdef SKINNING_NUM_BONES
-		pos = skinning_moveVertex(worldPosition, uBoneMatrices, aBoneIdsA, aBoneIdsB, aBoneWeightsA, aBoneWeightsB);
+		pos = skinning_moveVertex(pos, uBoneMatrices, aBoneIdsA, aBoneIdsB, aBoneWeightsA, aBoneWeightsB);
 	#endif
 
 	#ifdef MODEL_TO_WORLD
