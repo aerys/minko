@@ -96,6 +96,9 @@ JobManager::end(NodePtr target)
                 currentJob->running(true);
                 currentJob->beforeFirstStep();
             }
+
+            if (currentJob->priority() <= 0.f)
+                break;
         }
 
         currentJob->step();
