@@ -150,7 +150,7 @@ solution "minko"
 
 	-- example
 	if not _OPTIONS['no-example'] then
-		--include 'example/assimp'
+		include 'example/assimp'
 		-- include 'example/audio'
 		include 'example/blending'
 		-- include 'example/clone'

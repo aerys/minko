@@ -31,13 +31,12 @@ Skin::Skin(unsigned int numBones, unsigned int duration, unsigned int numFrames)
 	_numBones(numBones),
 	_duration(duration),
 	_timeFactor(duration > 0 ? numFrames / float(duration) : 0.0f),
-	_boneMatricesPerFrame(numFrames, std::vector<float>(numBones << 4, 0.0f)),
+	_boneMatricesPerFrame(numFrames, std::vector<math::mat4>(numBones)),
 	_maxNumVertexBones(0),
 	_numVertexBones(),
 	_vertexBones(),
 	_vertexBoneWeights()
 {
-
 }
 
 Skin::Skin(const Skin& skin) :
@@ -71,7 +70,7 @@ Skin::matrix(unsigned int		frameId,
 	assert(frameId < numFrames() && boneId < numBones());
 #endif // DEBUG_SKINNING
 
-	std::copy(math::value_ptr(value), math::value_ptr(value) + 16, &(_boneMatricesPerFrame[frameId][boneId << 4]));
+    _boneMatricesPerFrame[frameId][boneId] = value;
 }
 
 Skin::Ptr
@@ -184,19 +183,11 @@ Skin::transposeMatrices()
 {	
 	for (auto& frameMatrices : _boneMatricesPerFrame)
 	{
-		assert(frameMatrices.size() % 16 == 0);
-		const unsigned int	numBones	= frameMatrices.size() >> 4;
-		float*				matrices	= &(frameMatrices[0]);
+		const unsigned int	numBones	= frameMatrices.size();
 
 		for (unsigned int boneId = 0; boneId < numBones; ++boneId)
 		{
-			float* matrix = matrices + (boneId << 4);
-			std::swap(matrix[1],	matrix[4]);
-			std::swap(matrix[2],	matrix[8]);
-			std::swap(matrix[3],	matrix[12]);
-			std::swap(matrix[6],	matrix[9]);
-			std::swap(matrix[7],	matrix[13]);
-			std::swap(matrix[11],	matrix[14]);
+            math::mat4& matrix = math::transpose(frameMatrices[boneId]);
 		}
 	}
 	return shared_from_this();
