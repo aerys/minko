@@ -274,17 +274,17 @@ Skinning::updateFrame(unsigned int frameId, Node::Ptr target)
 }
 
 void
-Skinning::performSoftwareSkinning(Node::Ptr					    target, 
-								 const std::vector<math::mat4>&	boneMatrices)
+Skinning::performSoftwareSkinning(Node::Ptr					        target, 
+								  const std::vector<math::mat4>&	boneMatrices)
 {
 #ifdef DEBUG_SKINNING
 	assert(target && _targetGeometry.count(target) > 0 && _targetInputPositions.count(target) > 0);
 #endif //DEBUG_SKINNING
 	
-	auto geometry	= _targetGeometry[target];
+	auto geometry = _targetGeometry[target];
 
 	// transform positions
-	auto xyzBuffer	= geometry->vertexBuffer(ATTRNAME_POSITION);
+	auto xyzBuffer = geometry->vertexBuffer(ATTRNAME_POSITION);
     const auto& xyzAttr = xyzBuffer->attribute(ATTRNAME_POSITION);
 
 	performSoftwareSkinning(xyzAttr, xyzBuffer, _targetInputPositions[target], boneMatrices, false);
@@ -312,9 +312,9 @@ Skinning::performSoftwareSkinning(const VertexAttribute&		 attr,
 	assert(boneMatrices.size() == (_skin->numBones() << 4));
 #endif // DEBUG_SKINNING
 
-	const unsigned int	vertexSize		= vertexBuffer->vertexSize();
-	std::vector<float>&	outputData		= vertexBuffer->data();
-	const unsigned int	numVertices		= outputData.size() / vertexSize;
+	const unsigned int	vertexSize = vertexBuffer->vertexSize();
+	std::vector<float>&	outputData = vertexBuffer->data();
+	const unsigned int	numVertices = outputData.size() / vertexSize;
 	
 #ifdef DEBUG_SKINNING
 	assert(numVertices == _skin->numVertices());
@@ -323,52 +323,30 @@ Skinning::performSoftwareSkinning(const VertexAttribute&		 attr,
 	unsigned int index = attr.offset;
 	for (unsigned int vId = 0; vId < numVertices; ++vId)
 	{
-		const float x1 = inputData[index];
-		const float y1 = inputData[index+1];
-		const float z1 = inputData[index+2];
-
-        /*
-		float x2 = 0.0f;
-		float y2 = 0.0f;
-		float z2 = 0.0f;
-        */
-
-        math::vec4 v1 = math::vec4(x1, y1, z1, 0.f);
-        math::vec4 v2 = math::vec4(0.f);
+        math::vec4 v1 = math::vec4(inputData[index], inputData[index + 1], inputData[index + 2], 1.f);
+        math::vec4 v2 = math::vec4(1.f);
 
 		const unsigned int numVertexBones = _skin->numVertexBones(vId);
 		for (unsigned int j = 0; j < numVertexBones; ++j)
 		{
-			unsigned int	boneId		= 0;
-			float			boneWeight	= 0.0f;
+			unsigned int boneId = 0;
+			float boneWeight = 0.0f;
 
 			_skin->vertexBoneData(vId, j, boneId, boneWeight);
-
-			//const float*	boneMatrix	= &(boneMatrices[boneId << 4]);
 
             const math::mat4& boneMatrix = (boneMatrices[boneId]);
 
 			if (!doDeltaTransform)
 			{
                 v2 += boneWeight * (boneMatrix * v1);
-                /*
-				x2 += boneWeight * (boneMatrix[0] * x1 + boneMatrix[4] * y1 + boneMatrix[8]  * z1 + boneMatrix[12]);
-				y2 += boneWeight * (boneMatrix[1] * x1 + boneMatrix[5] * y1 + boneMatrix[9]  * z1 + boneMatrix[13]);
-				z2 += boneWeight * (boneMatrix[2] * x1 + boneMatrix[6] * y1 + boneMatrix[10] * z1 + boneMatrix[14]);
-                */
 			}
 			else
 			{
                 v2 += math::vec4(boneWeight * (math::mat3(boneMatrix)) * math::vec3(v1), 0);
-                /*
-				x2 += boneWeight * (boneMatrix[0] * x1 + boneMatrix[4] * y1 + boneMatrix[8]  * z1);
-				y2 += boneWeight * (boneMatrix[1] * x1 + boneMatrix[5] * y1 + boneMatrix[9]  * z1);
-				z2 += boneWeight * (boneMatrix[2] * x1 + boneMatrix[6] * y1 + boneMatrix[10] * z1);
-                */
 			}
 		}
 
-		outputData[index]	= v2.x;
+		outputData[index] = v2.x;
 		outputData[index+1]	= v2.y;
 		outputData[index+2]	= v2.z;
 
