@@ -117,7 +117,11 @@ namespace minko
             typename std::enable_if<is_valid<T>::value, const T&>::type
             get(const std::string& propertyName) const
 			{
+#ifdef DEBUG
+                return *Any::cast<T>(&_values.at(propertyName));
+#else
                 return *Any::unsafe_cast<T>(&_values.at(propertyName));
+#endif
 			}
 
             template <typename T>
