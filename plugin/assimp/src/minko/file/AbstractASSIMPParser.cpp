@@ -840,14 +840,14 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
 
 		for (uint frameId = 0; frameId < numFrames; ++frameId)
 		{
-            modelToRootMatrices[frameId] = boneOffsetMatrix * modelToRootMatrices[frameId];
+            modelToRootMatrices[frameId] = modelToRootMatrices[frameId] * boneOffsetMatrix;
 			skin->matrix(frameId, boneId, modelToRootMatrices[frameId]);
 		}
 	}
 
 	// also find all bone children that must also be animated and synchronized with the
 	// skinning component.
-	std::set<Node::Ptr>			slaves;
+	std::set<Node::Ptr> slaves;
 	std::vector<Animation::Ptr>	slaveAnimations;
 
 	for (uint boneId = 0; boneId < numBones; ++boneId)
@@ -875,8 +875,8 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
 
 		precomputeModelToRootMatrices(n, skeletonRoot, matrices);
 
-		auto timeline	= animation::Matrix4x4Timeline::create(PNAME_TRANSFORM, duration, timetable, matrices);
-		auto animation	= Animation::create(std::vector<animation::AbstractTimeline::Ptr>(1, timeline));
+		auto timeline = animation::Matrix4x4Timeline::create(PNAME_TRANSFORM, duration, timetable, matrices);
+		auto animation = Animation::create(std::vector<animation::AbstractTimeline::Ptr>(1, timeline));
 
 		n->addComponent(animation);
 		slaveAnimations.push_back(animation);
@@ -891,12 +891,14 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
 	}
 
 	// add skinning component to mesh
-	meshNode->addComponent(Skinning::create(
-		skin->reorganizeByVertices()->transposeMatrices(),
-		_options->skinningMethod(),
-		_assetLibrary->context(),
-		skeletonRoot
-	));
+    auto skinning = Skinning::create(
+        skin->reorganizeByVertices()->transposeMatrices(),
+        _options->skinningMethod(),
+        _assetLibrary->context(),
+        skeletonRoot
+    );
+
+	meshNode->addComponent(skinning);
 
 	meshNode->addComponent(MasterAnimation::create());
 
@@ -1043,8 +1045,8 @@ AbstractASSIMPParser::precomputeModelToRootMatrices(Node::Ptr			node,
 			const auto animMatrices	= std::get<1>(trfInfo);
 			const auto matrix		= std::get<2>(trfInfo);
 
-			if (animMatrices)
-                modelToRoot = (*animMatrices)[std::min (int(frameId), int(animMatrices->size() - 1))] * modelToRoot;
+            if (animMatrices)
+                modelToRoot = (*animMatrices)[std::min(int(frameId), int(animMatrices->size() - 1))] * modelToRoot;
 			else if (matrix)
 				modelToRoot = *matrix * modelToRoot;
 		}
@@ -1163,10 +1165,10 @@ AbstractASSIMPParser::sample(const aiNodeAnim*				nodeAnimation,
 
 		// recompose the interpolated matrix at the specified frame
         matrices[frameId] = math::mat4(
-				scaling.x * rotationMatrix[0][0], scaling.y * rotationMatrix[0][1], scaling.z * rotationMatrix[0][2],  position.x,
-				scaling.x * rotationMatrix[1][0], scaling.y * rotationMatrix[1][1], scaling.z * rotationMatrix[1][2],  position.y,
-				scaling.x * rotationMatrix[2][0], scaling.y * rotationMatrix[2][1], scaling.z * rotationMatrix[2][2], position.z,
-				0.0, 0.0, 0.0, 1.0f
+            scaling.x * rotationMatrix[0][0], scaling.y * rotationMatrix[0][1], scaling.z * rotationMatrix[0][2], 0.0,
+            scaling.x * rotationMatrix[1][0], scaling.y * rotationMatrix[1][1], scaling.z * rotationMatrix[1][2], 0.0,
+            scaling.x * rotationMatrix[2][0], scaling.y * rotationMatrix[2][1], scaling.z * rotationMatrix[2][2], 0.0,
+            position.x, position.y, position.z , 1.0f
 			);
 
 #ifdef DEBUG
@@ -1448,7 +1450,7 @@ AbstractASSIMPParser::chooseMaterialByShadingMode(const aiMaterial* aiMat) const
 render::Effect::Ptr
 AbstractASSIMPParser::chooseEffectByShadingMode(const aiMaterial* aiMat) const
 {
-	render::Effect::Ptr effect = _options->effect();
+    render::Effect::Ptr effect = _options->effect();
 
 	if (effect == nullptr && aiMat)
 	{
@@ -1463,8 +1465,8 @@ AbstractASSIMPParser::chooseEffectByShadingMode(const aiMaterial* aiMat) const
 				case aiShadingMode_Toon:
 				case aiShadingMode_OrenNayar:
 				case aiShadingMode_Minnaert:
-					if (_assetLibrary->effect("basic"))
-						effect = _assetLibrary->effect("basic");
+					if (_assetLibrary->effect("effect/Basic.effect"))
+						effect = _assetLibrary->effect("effect/Basic.effect");
 #ifdef DEBUG
 					else
 						std::cerr << "Basic effect not available in the asset library." << std::endl;
@@ -1475,8 +1477,8 @@ AbstractASSIMPParser::chooseEffectByShadingMode(const aiMaterial* aiMat) const
 				case aiShadingMode_Blinn:
 				case aiShadingMode_CookTorrance:
 				case aiShadingMode_Fresnel:
-					if (_assetLibrary->effect("phong"))
-						effect = _assetLibrary->effect("phong");
+					if (_assetLibrary->effect("effect/Phong.effect"))
+						effect = _assetLibrary->effect("effect/Phong.effect");
 #ifdef DEBUG
 					else
 						std::cerr << "Phong effect not available in the asset library." << std::endl;

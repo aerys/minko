@@ -58,7 +58,7 @@
 					"uShininess"					: "material[$materialUuid].shininess",
 					"uCameraPosition"				: { "binding" : { "property" : "eyePosition", "source" : "renderer" } },
 					"uBoneMatrices"					: "geometry[$geometryUuid].boneMatrices",
-					"numBones"						: "geometry[$geometryUuid].numBones",
+					"uNumBones"						: "geometry[$geometryUuid].numBones",
 					"uAmbientLights"				: { "binding" : { "property" : "ambientLight", "source" : "root" } },
 					"uSpotLights"					: { "binding" : { "property" : "spotLight", "source" : "root" } },
 					"uPointLights"					: { "binding" : { "property" : "pointLight", "source" : "root" } },
@@ -75,7 +75,7 @@
 
 				"macros" : {
 					"MODEL_TO_WORLD"			: "modelToWorldMatrix",
-					"SKINNING_NUM_BONES"		: "geometry[$geometryUuid].numBones",
+					"SKINNING_NUM_BONES"		: { "binding" : "geometry[$geometryUuid].numBones", "type" : "int" },
 					"DIFFUSE_MAP"				: "material[$materialUuid].diffuseMap",
 					"DIFFUSE_MAP_LOD"			: "material[${materialUuid}].diffuseMapLodEnabled",
 					"NORMAL_MAP"				: "material[$materialUuid].normalMap",

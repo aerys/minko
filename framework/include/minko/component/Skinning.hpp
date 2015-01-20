@@ -138,13 +138,13 @@ namespace minko
 			updateFrame(uint frameId, NodePtr);
 
 			void
-			performSoftwareSkinning(NodePtr, const std::vector<float>&);
+			performSoftwareSkinning(NodePtr, const std::vector<math::mat4>&);
 
 			void
 			performSoftwareSkinning(const render::VertexAttribute&, 
 									render::VertexBuffer::Ptr, 
 									const std::vector<float>&, 
-									const std::vector<float>&, 
+                                    const std::vector<math::mat4>&,
 									bool doDeltaTransform);
 
 			render::VertexBuffer::Ptr

@@ -199,7 +199,9 @@ float getShadow(sampler2D 	shadowMap,
 
 void directionalLight(vec3 lightDirection, vec3 lightColor, float lightDiffuse, float lightSpecular, float shadow)
 {
-	diffuseAccum += phong_diffuseReflection(normalVector, normalize(-lightDirection))
+	lightDirection = normalize(-lightDirection);
+
+	diffuseAccum += phong_diffuseReflection(normalVector, lightDirection)
 		* shadow
 		* lightDiffuse
 		* lightColor;
