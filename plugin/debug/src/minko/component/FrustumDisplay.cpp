@@ -46,12 +46,12 @@ FrustumDisplay::FrustumDisplay(const math::mat4& projection) :
 {
     _material
         ->diffuseColor(math::vec4(1.f, 1.f, 1.f, .1f))
-        // ->depthFunction(render::CompareMode::ALWAYS)
-        ->priority(render::Priority::LAST)
-        ->depthMask(false)
-        ->zSorted(true)
-        ->triangleCulling(render::TriangleCulling::NONE)
-        ->blendingMode(render::Blending::Mode::ADDITIVE);
+        // .depthFunction(render::CompareMode::ALWAYS)
+        .priority(render::Priority::LAST)
+        .depthMask(false)
+        .zSorted(true)
+        .triangleCulling(render::TriangleCulling::NONE)
+        .blendingMode(render::Blending::Mode::ADDITIVE);
 }
 
 void

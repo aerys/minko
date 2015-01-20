@@ -135,7 +135,7 @@ EffectParser::parse(const std::string&				    filename,
 	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1], root, false))
 		_error->execute(shared_from_this(), file::Error(resolvedFilename + ": " + reader.getFormattedErrorMessages()));
 
-	_options = file::Options::create(options);
+	_options = options->clone();
 
     int pos	= resolvedFilename.find_last_of("/\\");
     if (pos != std::string::npos)
@@ -1397,7 +1397,7 @@ EffectParser::glslIncludeCompleteHandler(LoaderPtr 			        loader,
 
     if (pos != std::string::npos)
     {
-        options = file::Options::create(options);
+        options = options->clone();
         options->includePaths().clear();
         options->includePaths().push_back(resolvedFilename.substr(0, pos));
     }

@@ -42,12 +42,21 @@ namespace minko
         public:
             typedef std::shared_ptr<AbstractSerializerParser>                Ptr;
             typedef msgpack::type::tuple<unsigned int, short, std::string>    SerializedAsset;
-            typedef std::shared_ptr<file::AssetLibrary>                        AssetLibraryPtr;
+            typedef std::shared_ptr<AssetLibrary>                           AssetLibraryPtr;
+            typedef std::shared_ptr<Options>                                OptionsPtr;
 
         private:
             typedef std::shared_ptr<component::JobManager::Job>                                                JobPtr;
             typedef std::shared_ptr<Dependency>                                                                DependencyPtr;
-            typedef std::function<void(unsigned char, AssetLibraryPtr, std::string&, DependencyPtr, short, std::list<JobPtr>&)>    AssetDeserializeFunction;
+            typedef std::function<void(
+                unsigned short,
+                AssetLibraryPtr,
+                OptionsPtr,
+                const std::string&,
+                DependencyPtr,
+                short,
+                std::list<JobPtr>&
+            )>                                                              AssetDeserializeFunction;
 
         protected:
             DependencyPtr                        _dependencies;
@@ -136,9 +145,10 @@ namespace minko
 
             static
             void
-            deserializeTexture(unsigned char metaByte,
+            deserializeTexture(unsigned short metaData,
                                AssetLibraryPtr assetLibrary,
-                               std::string& assetCompletePath,
+                               OptionsPtr           options,
+                               const std::string&   assetCompletePath,
                                DependencyPtr dependency,
                                short assetId,
                                std::list<JobPtr>& jobs);

@@ -67,7 +67,7 @@ AbstractAnimation::Ptr
 stun(AbstractAnimation::Ptr anim);
 
 std::shared_ptr<AbstractAnimation> anim = nullptr;
-std::shared_ptr<AbstractAnimation> anim_clone = nullptr;
+std::shared_ptr<AbstractAnimation> anim_clone2 = nullptr;
 
 Signal<AbstractAnimation::Ptr>::Slot started;
 Signal<AbstractAnimation::Ptr>::Slot stopped;
@@ -125,31 +125,7 @@ int main(int argc, char** argv)
 	
 		auto pirate = sceneManager->assets()->symbol(MODEL_FILENAME);
 
-		auto animationsParent = Node::create();
-
-		animationsParent->addChild(pirate);
-
-		auto pirate2 = scene::Node::create()->addChild(pirate->clone(CloneOption::DEEP));
-		if (!pirate2->hasComponent<Transform>())
-			pirate2->addComponent(Transform::create());
-		pirate2->component<Transform>()->matrix()->prependTranslation(5, 0, 0);
-		animationsParent->addChild(pirate2);
-
-		auto pirate3 = scene::Node::create()->addChild(pirate->clone(CloneOption::DEEP));
-		if (!pirate3->hasComponent<Transform>())
-			pirate3->addComponent(Transform::create());
-		pirate3->component<Transform>()->matrix()->prependTranslation(0, 0, 5);
-		animationsParent->addChild(pirate3);
-
-		auto pirate4 = scene::Node::create()->addChild(pirate->clone(CloneOption::DEEP));
-		if (!pirate4->hasComponent<Transform>())
-			pirate4->addComponent(Transform::create());
-		pirate4->component<Transform>()->matrix()->prependTranslation(5, 0, 5);
-		animationsParent->addChild(pirate4);
-
-		root->addChild(animationsParent);
-
-		auto animationNodes = scene::NodeSet::create(pirate)
+        auto animationNodes = scene::NodeSet::create(pirate)
 			->descendants(true)
 			->where([](scene::Node::Ptr n){ return n->hasComponent<MasterAnimation>(); });
 
@@ -178,6 +154,32 @@ int main(int argc, char** argv)
 		looped = anim->looped()->connect([](AbstractAnimation::Ptr){ std::cout << "\nanimation looped" << std::endl; });
 		labelHit = anim->labelHit()->connect([](AbstractAnimation::Ptr, std::string name, uint time){ std::cout << "label '" << name << "'\thit at t = " << time << std::endl; });
 
+		auto animationsParent = Node::create();
+
+		animationsParent->addChild(pirate);
+
+		auto pirate2 = scene::Node::create()->addChild(pirate->clone(CloneOption::DEEP));
+		if (!pirate2->hasComponent<Transform>())
+			pirate2->addComponent(Transform::create());
+		pirate2->component<Transform>()->matrix()->prependTranslation(5, 0, 0);
+		animationsParent->addChild(pirate2);
+
+		auto pirate3 = scene::Node::create()->addChild(pirate->clone(CloneOption::DEEP));
+		if (!pirate3->hasComponent<Transform>())
+			pirate3->addComponent(Transform::create());
+		pirate3->component<Transform>()->matrix()->prependTranslation(0, 0, 5);
+		animationsParent->addChild(pirate3);
+
+		auto pirate4 = scene::Node::create()->addChild(pirate->clone(CloneOption::DEEP));
+		if (!pirate4->hasComponent<Transform>())
+			pirate4->addComponent(Transform::create());
+		pirate4->component<Transform>()->matrix()->prependTranslation(5, 0, 5);
+		animationsParent->addChild(pirate4);
+
+		root->addChild(animationsParent);
+
+		
+
 		
 
 		std::vector<std::shared_ptr<AbstractAnimation>> _animations;
@@ -202,8 +204,8 @@ int main(int argc, char** argv)
 			? animationNodes_clone->nodes().front()
 			: nullptr;
 
-		anim_clone = animationNode_clone->component<MasterAnimation>();
-		anim_clone
+		anim_clone2 = animationNode_clone->component<MasterAnimation>();
+		anim_clone2
 			->addLabel(LABEL_RUN_START, 0)
 			->addLabel(LABEL_RUN_STOP, 800)
 			->addLabel(LABEL_IDLE, 900)
@@ -225,7 +227,7 @@ int main(int argc, char** argv)
 
 
 		idle(anim);
-		//idle(anim_clone);		
+		stun(anim_clone2);		
 
 		auto meshes = scene::NodeSet::create(sceneManager->assets()->symbol(MODEL_FILENAME))->descendants(false, false)->where([=](scene::Node::Ptr node)
 		{

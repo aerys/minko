@@ -120,7 +120,7 @@ namespace std
     template<typename T>
     inline
     std::string
-    to_string(const std::list<T>& list, const std::string& separator = ", ")
+    to_string(const std::list<T>& list, const std::string& separator)
     {
         std::string s = "";
 

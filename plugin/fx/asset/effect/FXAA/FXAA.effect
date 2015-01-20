@@ -1,5 +1,5 @@
 {
-	"name" : "fxaa",
+	"name" : "FXAA",
 	"attributeBindings" : {
 		"position"	: "geometry[${geometryId}].position",
 		"uv"		: "geometry[${geometryId}].uv"

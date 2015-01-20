@@ -21,6 +21,8 @@
             "textureFilter" : "linear",
             "mipFilter"     : "linear"
         },
+        "uDiffuseMapMaxAvailableLod" : "material[${materialUuid}].diffuseMap.maxAvailableLod",
+        "uDiffuseMapSize"        : "material[${materialUuid}].diffuseMap.size",
 		"uAlphaMap"				: "material[${materialUuid}].alphaMap",
 		"uAlphaThreshold"		: "material[${materialUuid}].alphaThreshold",
         "uDiffuseCubeMap"       : "material[${materialUuid}].diffuseCubeMap",
@@ -41,6 +43,7 @@
         "HAS_NORMAL"            : "geometry[${geometryUuid}].normal",
         "SKINNING_NUM_BONES"    : { "binding" : "geometry[$geometryUuid].numBones", "type" : "int" },
         "DIFFUSE_MAP"           : "material[${materialUuid}].diffuseMap",
+        "DIFFUSE_MAP_LOD" 		: "material[${materialUuid}].diffuseMapLodEnabled",
         "DIFFUSE_CUBEMAP"       : "material[${materialUuid}].diffuseCubeMap",
 		"ALPHA_MAP"		        : "material[${materialUuid}].alphaMap",
 		"ALPHA_THRESHOLD"       : "material[${materialUuid}].alphaThreshold",

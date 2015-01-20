@@ -124,6 +124,7 @@ namespace minko
 			float					_frameTime;
             std::list<Job::Ptr>                                             _jobs;
             std::unordered_map<Job::Ptr, Signal<float>::Slot>               _jobPriorityChangedSlots;
+            bool 					_jobPriorityChanged;
 			clock_t					_frameStartTime;
 
 		public:

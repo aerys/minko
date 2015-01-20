@@ -328,10 +328,12 @@ src/main.cpp
 #include "minko/MinkoSDL.hpp"
 
 #include "MyCustomMaterial.hpp"
-using namespace minko; 
+
+using namespace minko; 
 using namespace minko::math; 
 using namespace minko::component;
-const uint WINDOW_WIDTH = 800; 
+
+const uint WINDOW_WIDTH = 800; 
 const uint WINDOW_HEIGHT = 600;
 
 geometry::Geometry::Ptr createGeometryWithAttribute(render::AbstractContext::Ptr);
@@ -341,7 +343,7 @@ render::Effect::Ptr getEffectWithAttribute(file::AssetLibrary::Ptr);
 int main(int argc, char** argv) {
 
  auto canvas = Canvas::create("Minko Tutorial - Working with custom vertex attributes", WINDOW_WIDTH, WINDOW_HEIGHT);
- auto sceneManager = component::SceneManager::create(canvas->context());
+ auto sceneManager = component::SceneManager::create(canvas);
  sceneManager->assets()->queue("effect/MyCustomEffect.effect");
  auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
  {

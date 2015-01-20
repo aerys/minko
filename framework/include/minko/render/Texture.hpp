@@ -83,6 +83,9 @@ namespace minko
                  int            heightGPU   = -1);
 
             void
+            resize(unsigned int width, unsigned int height, bool resizeSmoothly);
+
+            void
             dispose();
 
             void

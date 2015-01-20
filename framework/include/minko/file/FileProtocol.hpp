@@ -44,6 +44,9 @@ namespace minko
             void
             load();
 
+            bool
+            fileExists(const std::string& filename);
+
         protected:
             FileProtocol();
 

@@ -67,7 +67,7 @@ const uint WINDOW_HEIGHT = 600; std::string SCENE_FILENAME = "model/myScene/mySc
 int main(int argc, char** argv) {
 
    auto canvas = Canvas::create("Minko Tutorial - Loading .scene files", WINDOW_WIDTH, WINDOW_HEIGHT);
-   auto sceneManager = SceneManager::create(canvas->context());
+   auto sceneManager = SceneManager::create(canvas);
 
    sceneManager->assets()->registerParser<minko::[file::SceneParser>](file::SceneParser>)("scene");
    sceneManager->assets()->queue("effect/Phong.effect");

@@ -143,6 +143,9 @@ namespace minko
 			upload(uint offset, uint numVertices = 0);
 
 			void
+			upload(uint offset, uint numVertices, const std::vector<float>& data);
+
+			void
 			dispose();
 
             void

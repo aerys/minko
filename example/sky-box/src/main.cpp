@@ -48,7 +48,7 @@ main(int argc, char** argv)
         ->registerParser<file::JPEGParser>("jpg");
 
     loader
-        ->queue(CUBE_TEXTURE, file::Options::create(loader->options())->isCubeTexture(true))
+        ->queue(CUBE_TEXTURE, loader->options()->clone()->isCubeTexture(true))
 		->queue("effect/Basic.effect");
 
 	sceneManager->assets()

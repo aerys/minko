@@ -37,16 +37,18 @@ namespace minko
             typedef std::function<const std::string(const std::string&)>        UriFunction;
 
         private:
-            bool                    _embedAll;
-            bool                    _addBoundingBoxes;
+            bool                                _embedAll;
+            bool                                _addBoundingBoxes;
 
-            UriFunction             _outputAssetUriFunction;
+            UriFunction                         _outputAssetUriFunction;
 
-            serialize::ImageFormat  _imageFormat;
+            serialize::ImageFormat              _imageFormat;
             std::list<render::TextureFormat>    _textureFormats;
 
             bool                                _compressTexture;
             bool                                _generateMipmaps;
+            bool                                _upscaleTextureWhenProcessedForMipmapping;
+            math::ivec2                         _textureMaxResolution;
             render::MipFilter                   _mipFilter;
             bool                                _optimizeForNormalMapping;
 
@@ -75,6 +77,8 @@ namespace minko
                 instance->_textureFormats = other->_textureFormats;
                 instance->_compressTexture = other->_compressTexture;
                 instance->_generateMipmaps = other->_generateMipmaps;
+                instance->_upscaleTextureWhenProcessedForMipmapping = other->_upscaleTextureWhenProcessedForMipmapping;
+                instance->_textureMaxResolution = other->_textureMaxResolution;
                 instance->_mipFilter = other->_mipFilter;
                 instance->_optimizeForNormalMapping = other->_optimizeForNormalMapping;
 
@@ -189,6 +193,38 @@ namespace minko
             generateMipmaps(bool value)
             {
                 _generateMipmaps = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            bool
+            upscaleTextureWhenProcessedForMipmapping() const
+            {
+                return _upscaleTextureWhenProcessedForMipmapping;
+            }
+
+            inline
+            Ptr
+            upscaleTextureWhenProcessedForMipmapping(bool value)
+            {
+                _upscaleTextureWhenProcessedForMipmapping = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            const math::ivec2&
+            textureMaxResolution() const
+            {
+                return _textureMaxResolution;
+            }
+
+            inline
+            Ptr
+            textureMaxResolution(const math::ivec2& value)
+            {
+                _textureMaxResolution = value;
 
                 return shared_from_this();
             }

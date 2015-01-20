@@ -37,6 +37,8 @@ int main(int argc, char** argv)
 
         root->addComponent(sceneManager);
 
+        root->addComponent(AmbientLight::create());
+
         // setup camera
         camera->addComponent(Renderer::create(0x7F7F7FFF));
         camera->addComponent(Transform::create());
@@ -72,7 +74,8 @@ int main(int argc, char** argv)
             std::cout << "Taking screenshot (screenshot.png)." << std::endl;
             lastTime = time;
             canvas->context()->readPixels(&*buffer->begin());
-            writer->write("screenshot.png", *buffer, canvas->width(), canvas->height());
+            writer->write("C:\\Users\\TEST\\screenshot.png", *buffer, canvas->width(), canvas->height());
+            canvas->quit();
         }
 
         sceneManager->nextFrame(time, deltaTime);

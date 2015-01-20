@@ -173,19 +173,7 @@ namespace minko
 				if (foundIt == _values.end())
 					throw std::invalid_argument("propertyName");
 
-				// FIXME: remove try-catch and implement as
-				// return Any::cast<T>(&foundIt->second) != nullptr;
-
-				try
-				{
-					Any::cast<T>(foundIt->second);
-				}
-				catch (...)
-				{
-					return false;
-				}
-
-				return true;
+				return Any::cast<T>(&foundIt->second) != nullptr;
 			}
 
 			virtual

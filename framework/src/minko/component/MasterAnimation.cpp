@@ -48,12 +48,6 @@ MasterAnimation::MasterAnimation(const MasterAnimation& masterAnim, const CloneO
 	AbstractAnimation(masterAnim, option),
 	_animations()
 {
-	/*
-	for (auto animation : masterAnim._animations) 
-	{
-		_animations.push_back(std::dynamic_pointer_cast<Animation>(animation->clone(option)));
-	}
-	*/
 }
 
 AbstractComponent::Ptr
@@ -98,18 +92,12 @@ MasterAnimation::initAnimations()
 		{
 			_animations.push_back(descendant->component<Skinning>());
 		}
-
-		if (descendant->hasComponent<Animation>())
-		{
-			_animations.push_back(descendant->component<Animation>());
-		}
 	}
 
 	_maxTime = 0;
 
 	for (auto& animation : _animations)
 	{
-		// animation->_master = std::dynamic_pointer_cast<MasterAnimation>(shared_from_this());
 		_maxTime = std::max(_maxTime, animation->getMaxTime());
 	}
 
@@ -188,7 +176,9 @@ MasterAnimation::addLabel(const std::string& name, uint time)
 	AbstractAnimation::addLabel(name, time);
 
 	for (auto& animation : _animations)
+    {
 		animation->addLabel(name, time);
+    }
 
 	return std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this());
 }

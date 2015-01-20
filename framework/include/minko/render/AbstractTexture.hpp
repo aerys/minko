@@ -90,6 +90,20 @@ namespace minko
 			}
 
             inline
+            uint
+            originalWidth() const
+            {
+                return _width;
+            }
+
+            inline
+            uint
+            originalHeight() const
+            {
+                return _height;
+            }
+
+            inline
             bool
             mipMapping() const
             {
@@ -114,6 +128,10 @@ namespace minko
 
 			virtual
 			void
+            resize(unsigned int width, unsigned int height, bool resizeSmoothly) = 0;
+
+            virtual
+            void
 			disposeData() = 0;
 
 		protected:

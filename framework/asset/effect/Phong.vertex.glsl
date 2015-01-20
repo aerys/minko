@@ -7,6 +7,7 @@
 #endif
 
 #pragma include "Skinning.function.glsl"
+#pragma include "Pop.function.glsl"
 
 attribute 	vec3 	aPosition;
 attribute 	vec2 	aUV;
@@ -26,6 +27,12 @@ uniform 	vec2 	uUVScale;
 uniform 	vec2 	uUVOffset;
 uniform 	mat4 	uLightWorldToScreenMatrix;
 
+uniform 	int 	uPopLod;
+uniform 	int 	uPopFullPrecisionLod;
+
+uniform 	vec3 	uPopMinBound;
+uniform 	vec3 	uPopMaxBound;
+
 varying 	vec3 	vertexPosition;
 varying 	vec4 	vertexScreenPosition;
 varying 	vec2 	vertexUV;
@@ -44,6 +51,12 @@ void main(void)
 		worldPosition = skinning_moveVertex(worldPosition, uBoneMatrices, aBoneIdsA, aBoneIdsB, aBoneWeightsA, aBoneWeightsB);
 	#endif // SKINNING_NUM_BONES
 
+	#ifdef POP_LOD_ENABLED
+		vec4 quantizedPosition 	= pop_quantify(worldPosition, uPopLod, uPopMinBound, uPopMaxBound);
+
+		worldPosition 			= mix(quantizedPosition, worldPosition, float(uPopLod == uPopFullPrecisionLod));
+	#endif // POP_LOD_ENABLED
+	
 	#ifdef MODEL_TO_WORLD
 		worldPosition 	= uModelToWorldMatrix * worldPosition;
 	#endif // MODEL_TO_WORLD

@@ -82,20 +82,28 @@ EmscriptenDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
 void
 EmscriptenDOMEngine::loadScript(std::string filename)
 {
-    auto options = file::Options::create(_sceneManager->assets()->loader()->options());
-    options->loadAsynchronously(false);
+    auto options = _sceneManager->assets()->loader()->options()->clone();
 
-    file::AbstractProtocol::Ptr loader = file::FileProtocol::create();
+    options
+    	->loadAsynchronously(false)
+    	->storeDataIfNotParsed(false);
 
-    auto loaderComplete = loader->complete()->connect([](std::shared_ptr<file::AbstractProtocol> loader)
+    auto loader = file::Loader::create();
+
+    loader->options(options);
+
+    auto loaderComplete = loader->complete()->connect([=](file::Loader::Ptr loaderThis)
     {
-    	std::string eval;
-    	eval.assign(loader->file()->data().begin(), loader->file()->data().end());
+    	const auto& data = loaderThis->files().at(filename)->data();
+
+    	const auto eval = std::string(data.begin(), data.end());
 
 		emscripten_run_script(eval.c_str());
     });
 
-	loader->load(filename, options);
+	loader
+		->queue(filename)
+		->load();
 }
 
 void

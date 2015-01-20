@@ -87,7 +87,7 @@ namespace minko
             }
 
             void
-            computeMetaByte(unsigned char byte, uint& indexBufferFunctionId, uint& vertexBufferFunctionId);
+            computeMetaData(unsigned short metaData, uint& indexBufferFunctionId, uint& vertexBufferFunctionId);
 
             void
             initialize();
