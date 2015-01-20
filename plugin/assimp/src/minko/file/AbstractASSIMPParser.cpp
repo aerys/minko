@@ -834,7 +834,7 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
 
 	// also find all bone children that must also be animated and synchronized with the
 	// skinning component.
-	std::set<Node::Ptr>			slaves;
+	std::set<Node::Ptr> slaves;
 	std::vector<Animation::Ptr>	slaveAnimations;
 
 	for (uint boneId = 0; boneId < numBones; ++boneId)
@@ -862,8 +862,8 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
 
 		precomputeModelToRootMatrices(n, skeletonRoot, matrices);
 
-		auto timeline	= animation::Matrix4x4Timeline::create(PNAME_TRANSFORM, duration, timetable, matrices);
-		auto animation	= Animation::create(std::vector<animation::AbstractTimeline::Ptr>(1, timeline));
+		auto timeline = animation::Matrix4x4Timeline::create(PNAME_TRANSFORM, duration, timetable, matrices);
+		auto animation = Animation::create(std::vector<animation::AbstractTimeline::Ptr>(1, timeline));
 
 		n->addComponent(animation);
 		slaveAnimations.push_back(animation);
@@ -884,6 +884,7 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
         _assetLibrary->context(),
         skeletonRoot
     );
+
 	meshNode->addComponent(skinning);
 
 	meshNode->addComponent(MasterAnimation::create());

@@ -292,7 +292,7 @@ Skinning::performSoftwareSkinning(Node::Ptr					        target,
 	// transform normals
 	if (geometry->hasVertexAttribute(ATTRNAME_NORMAL) && _targetInputNormals.count(target) > 0)
 	{
-		auto normalBuffer	= geometry->vertexBuffer(ATTRNAME_NORMAL);
+		auto normalBuffer = geometry->vertexBuffer(ATTRNAME_NORMAL);
         const auto&	normalAttr = normalBuffer->attribute(ATTRNAME_NORMAL);
 
 		performSoftwareSkinning(normalAttr, normalBuffer, _targetInputNormals[target], boneMatrices, true);
@@ -312,9 +312,9 @@ Skinning::performSoftwareSkinning(const VertexAttribute&		 attr,
 	assert(boneMatrices.size() == (_skin->numBones() << 4));
 #endif // DEBUG_SKINNING
 
-	const unsigned int	vertexSize = vertexBuffer->vertexSize();
+	const unsigned int vertexSize = vertexBuffer->vertexSize();
 	std::vector<float>&	outputData = vertexBuffer->data();
-	const unsigned int	numVertices = outputData.size() / vertexSize;
+	const unsigned int numVertices = outputData.size() / vertexSize;
 	
 #ifdef DEBUG_SKINNING
 	assert(numVertices == _skin->numVertices());
@@ -324,7 +324,7 @@ Skinning::performSoftwareSkinning(const VertexAttribute&		 attr,
 	for (unsigned int vId = 0; vId < numVertices; ++vId)
 	{
         math::vec4 v1 = math::vec4(inputData[index], inputData[index + 1], inputData[index + 2], 1.f);
-        math::vec4 v2 = math::vec4(1.f);
+        math::vec4 v2 = math::vec4(0.f);
 
 		const unsigned int numVertexBones = _skin->numVertexBones(vId);
 		for (unsigned int j = 0; j < numVertexBones; ++j)
@@ -342,7 +342,7 @@ Skinning::performSoftwareSkinning(const VertexAttribute&		 attr,
 			}
 			else
 			{
-                v2 += math::vec4(boneWeight * (math::mat3(boneMatrix)) * math::vec3(v1), 0);
+                v2 += math::vec4(boneWeight * (math::mat3(boneMatrix)) * math::vec3(v1), 1.f);
 			}
 		}
 
