@@ -23,75 +23,76 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::file;
+using namespace minko::render;
 
 std::map<const std::type_info*, std::function<std::tuple<uint, std::string>(Any)>> MaterialWriter::_typeToWriteFunction;
 
 
 MaterialWriter::MaterialWriter()
 {
-    _magicNumber = 0x0000004D | MINKO_SCENE_MAGIC_NUMBER;
+	_magicNumber = 0x0000004D | MINKO_SCENE_MAGIC_NUMBER;
 
-    _typeToWriteFunction[&typeid(std::shared_ptr<math::Matrix4x4>)]        = std::bind(&serialize::TypeSerializer::serializeMatrix4x4, std::placeholders::_1);
-    _typeToWriteFunction[&typeid(std::shared_ptr<math::Vector2>)]        = std::bind(&serialize::TypeSerializer::serializeVector2, std::placeholders::_1);
-    _typeToWriteFunction[&typeid(std::shared_ptr<math::Vector3>)]        = std::bind(&serialize::TypeSerializer::serializeVector3, std::placeholders::_1);
-    _typeToWriteFunction[&typeid(std::shared_ptr<math::Vector4>)]        = std::bind(&serialize::TypeSerializer::serializeVector4, std::placeholders::_1);
-    _typeToWriteFunction[&typeid(render::Blending::Mode)]                = std::bind(&serialize::TypeSerializer::serializeBlending, std::placeholders::_1);
-    _typeToWriteFunction[&typeid(render::TriangleCulling)]                = std::bind(&serialize::TypeSerializer::serializeCulling, std::placeholders::_1);
+	_typeToWriteFunction[&typeid(math::mat4)]		        = std::bind(&serialize::TypeSerializer::serializeMatrix4x4, std::placeholders::_1);
+	_typeToWriteFunction[&typeid(math::vec2)]		        = std::bind(&serialize::TypeSerializer::serializeVector2, std::placeholders::_1);
+	_typeToWriteFunction[&typeid(math::vec3)]		        = std::bind(&serialize::TypeSerializer::serializeVector3, std::placeholders::_1);
+	_typeToWriteFunction[&typeid(math::vec4)]		        = std::bind(&serialize::TypeSerializer::serializeVector4, std::placeholders::_1);
+	_typeToWriteFunction[&typeid(render::Blending::Mode)]	= std::bind(&serialize::TypeSerializer::serializeBlending, std::placeholders::_1);
+	_typeToWriteFunction[&typeid(render::TriangleCulling)]	= std::bind(&serialize::TypeSerializer::serializeCulling, std::placeholders::_1);
 }
 
 std::string
-MaterialWriter::embed(std::shared_ptr<AssetLibrary>        assetLibrary,
-                      std::shared_ptr<Options>            options,
-                      Dependency::Ptr                    dependency,
+MaterialWriter::embed(std::shared_ptr<AssetLibrary>		assetLibrary,
+					  std::shared_ptr<Options>			options,
+					  Dependency::Ptr					dependency,
                       std::shared_ptr<WriterOptions>    writerOptions)
 {
-    material::Material::Ptr                material = std::dynamic_pointer_cast<material::Material>(data());
-    std::vector<ComplexPropertyTuple>    serializedComplexProperties;
-    std::vector<BasicPropertyTuple>        serializedBasicProperties;
+	material::Material::Ptr				material = std::dynamic_pointer_cast<material::Material>(data());
+	std::vector<ComplexPropertyTuple>	serializedComplexProperties;
+	std::vector<BasicPropertyTuple>		serializedBasicProperties;
 
-    for (std::string structuredPropertyName : material->propertyNames())
-    {
-        std::string propertyName = structuredPropertyName;
+	for (const auto& value : material->data()->values())
+	{
+		std::string propertyName = value.first;
 
-        if (serializeMaterialValue<uint>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-            continue;
-        else if (serializeMaterialValue<int>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-            continue;
-        else if (serializeMaterialValue<unsigned short>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-            continue;
-        else if (serializeMaterialValue<short>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-            continue;
-        else if (serializeMaterialValue<unsigned char>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-            continue;
-        else if (serializeMaterialValue<char>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-            continue;
-        else if (serializeMaterialValue<float>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-            continue;
-        else if (serializeMaterialValue<bool>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-            continue;
-        else if (serializeMaterialValue<render::Blending::Mode>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-            continue;
-        else if (serializeMaterialValue<render::TriangleCulling>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-            continue;
-        else if (serializeMaterialValue<std::shared_ptr<math::Vector2>>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-            continue;
-        else if (serializeMaterialValue<std::shared_ptr<math::Vector3>>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-            continue;
-        else if (serializeMaterialValue<std::shared_ptr<math::Vector4>>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-            continue;
-        else if (serializeMaterialValue<std::shared_ptr<math::Matrix4x4>>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-            continue;
-        else if (serializeMaterialValue<TexturePtr>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
-            continue;
-        else
-            std::cerr << propertyName << " can't be serialized : missing technique" << std::endl << std::endl;
-    }
+		if (serializeMaterialValue<uint>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
+			continue;
+		else if (serializeMaterialValue<int>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
+			continue;
+		else if (serializeMaterialValue<unsigned short>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
+			continue;
+		else if (serializeMaterialValue<short>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
+			continue;
+		else if (serializeMaterialValue<unsigned char>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
+			continue;
+		else if (serializeMaterialValue<char>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
+			continue;
+		else if (serializeMaterialValue<float>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
+			continue;
+		else if (serializeMaterialValue<bool>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
+			continue;
+		else if (serializeMaterialValue<render::Blending::Mode>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
+			continue;
+		else if (serializeMaterialValue<render::TriangleCulling>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
+			continue;
+		else if (serializeMaterialValue<math::vec2>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
+			continue;
+		else if (serializeMaterialValue<math::vec3>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
+			continue;
+		else if (serializeMaterialValue<math::vec4>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
+			continue;
+		else if (serializeMaterialValue<math::mat4>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
+			continue;
+		else if (serializeMaterialValue<TextureSampler>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
+			continue;
+		else
+			std::cerr << propertyName << " can't be serialized : missing technique" << std::endl << std::endl;
+	}
 
-    msgpack::type::tuple<std::vector<ComplexPropertyTuple>, std::vector<BasicPropertyTuple>> res(
-        serializedComplexProperties, serializedBasicProperties);
+	msgpack::type::tuple<std::vector<ComplexPropertyTuple>, std::vector<BasicPropertyTuple>> res(
+		serializedComplexProperties, serializedBasicProperties);
 
-    std::stringstream sbuf;
-    msgpack::pack(sbuf, res);
+	std::stringstream sbuf;
+	msgpack::pack(sbuf, res);
 
-    return sbuf.str();
+	return sbuf.str();
 }

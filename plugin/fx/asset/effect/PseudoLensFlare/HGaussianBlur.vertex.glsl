@@ -24,8 +24,10 @@ http://xissburg.com/faster-gaussian-blur-in-glsl/
 
 #ifdef VERTEX_SHADER
 
-#ifdef GL_ES
-precision mediump float;
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+    precision highp float;
+#else
+    precision mediump float;
 #endif
 
 attribute vec3 a_position;

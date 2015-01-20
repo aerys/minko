@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/SerializerCommon.hpp"
 #include "minko/Types.hpp"
 
 namespace minko
@@ -29,13 +30,11 @@ namespace minko
         class WriterOptions:
             public std::enable_shared_from_this<WriterOptions>
         {
-        private:
-            typedef std::function<const std::string(const std::string&)>        UriFunction;
-
         public:
             typedef std::shared_ptr<WriterOptions>                              Ptr;
 
-            typedef std::shared_ptr<math::Vector2>                              Vector2Ptr;
+        private:
+            typedef std::function<const std::string(const std::string&)>        UriFunction;
 
         private:
             bool                                _embedAll;
@@ -49,20 +48,20 @@ namespace minko
             bool                                _compressTexture;
             bool                                _generateMipmaps;
             bool                                _upscaleTextureWhenProcessedForMipmapping;
-            Vector2Ptr                          _textureMaxResolution;
+            math::ivec2                         _textureMaxResolution;
             render::MipFilter                   _mipFilter;
             bool                                _optimizeForNormalMapping;
 
         public:
             inline
             static
-            Ptr
-            create()
-            {
+			Ptr
+			create()
+			{
                 auto writerOptions = Ptr(new WriterOptions());
 
                 return writerOptions;
-            }
+			}
 
             inline
             static
@@ -87,36 +86,36 @@ namespace minko
             }
 
             inline
-            bool
-            embedAll() const
-            {
-                return _embedAll;
-            }
+			bool
+			embedAll() const
+			{
+				return _embedAll;
+			}
+
+			inline
+			Ptr
+			embedAll(bool value)
+			{
+				_embedAll = value;
+
+				return shared_from_this();
+			}
 
             inline
-            Ptr
-            embedAll(bool value)
-            {
-                _embedAll = value;
+			bool
+			addBoundingBoxes() const
+			{
+				return _addBoundingBoxes;
+			}
 
-                return shared_from_this();
-            }
+			inline
+			Ptr
+			addBoundingBoxes(bool value)
+			{
+				_addBoundingBoxes = value;
 
-            inline
-            bool
-            addBoundingBoxes() const
-            {
-                return _addBoundingBoxes;
-            }
-
-            inline
-            Ptr
-            addBoundingBoxes(bool value)
-            {
-                _addBoundingBoxes = value;
-
-                return shared_from_this();
-            }
+				return shared_from_this();
+			}
 
             inline
             const UriFunction&
@@ -135,20 +134,20 @@ namespace minko
             }
 
             inline
-            serialize::ImageFormat
-            imageFormat() const
-            {
-                return _imageFormat;
-            }
+			serialize::ImageFormat
+			imageFormat() const
+			{
+				return _imageFormat;
+			}
 
-            inline
-            Ptr
-            imageFormat(serialize::ImageFormat value)
-            {
-                _imageFormat = value;
+			inline
+			Ptr
+			imageFormat(serialize::ImageFormat value)
+			{
+				_imageFormat = value;
 
-                return shared_from_this();
-            }
+				return shared_from_this();
+			}
 
             inline
             const std::list<render::TextureFormat>&
@@ -215,7 +214,7 @@ namespace minko
             }
 
             inline
-            Vector2Ptr
+            const math::ivec2&
             textureMaxResolution() const
             {
                 return _textureMaxResolution;
@@ -223,7 +222,7 @@ namespace minko
 
             inline
             Ptr
-            textureMaxResolution(Vector2Ptr value)
+            textureMaxResolution(const math::ivec2& value)
             {
                 _textureMaxResolution = value;
 

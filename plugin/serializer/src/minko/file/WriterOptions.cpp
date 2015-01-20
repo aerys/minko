@@ -18,7 +18,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/file/WriterOptions.hpp"
-#include "minko/math/Vector2.hpp"
 #include "minko/render/MipFilter.hpp"
 
 using namespace minko;
@@ -36,7 +35,7 @@ WriterOptions::WriterOptions() :
     _compressTexture(true),
     _generateMipmaps(true),
     _upscaleTextureWhenProcessedForMipmapping(true),
-    _textureMaxResolution(Vector2::create(2048, 2048)),
+    _textureMaxResolution(math::ivec2(2048, 2048)),
     _mipFilter(MipFilter::LINEAR),
     _optimizeForNormalMapping(false)
 {

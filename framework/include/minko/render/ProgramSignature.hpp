@@ -20,78 +20,99 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/data/MacroBinding.hpp"
+#include "minko/data/BindingMap.hpp"
 
 namespace minko
 {
-    namespace render
-    {
-        class ProgramSignature
-        {
+	namespace render
+	{
+		class ProgramSignature
+		{
         private:
-            static const uint    MAX_NUM_BINDINGS;
+            typedef int MaskType;
 
-            uint                _mask;
-            std::vector<int>    _values;
+		private:
+			uint				                    		_mask;
+            std::vector<Any>	                    		_values;
+            std::vector<data::MacroBindingMap::MacroType>   _types;
+            std::vector<std::string>                		_macros;
 
-        public:
-            inline
-            ProgramSignature():
-                _mask(0),
-                _values(MAX_NUM_BINDINGS, 0)
+		public:
+			ProgramSignature(const data::MacroBindingMap&                           macroBindings,
+                             const std::unordered_map<std::string, std::string>&    variables,
+						     const data::Store&                                     targetData,
+                             const data::Store&		                                rendererData,
+                             const data::Store&                                     rootData);
+
+            ProgramSignature(const ProgramSignature& signature);
+
+            ~ProgramSignature()
             {
+                _values.clear();
+                _types.clear();
+                _macros.clear();
             }
+
+			bool
+			operator==(const ProgramSignature&) const;
 
             void
-            build(std::shared_ptr<render::Pass>,
-                  FormatNameFunction,
-                  std::shared_ptr<data::Container>   targetData,
-                  std::shared_ptr<data::Container>   rendererData,
-                  std::shared_ptr<data::Container>   rootData,
-                  std::string&                       defines,
-                  std::list<std::string>&            booleanMacros,
-                  std::list<std::string>&            integerMacros,
-                  std::list<std::string>&            incorrectIntegerMacros);
-
-            bool
-            operator==(const ProgramSignature&) const;
+            updateProgram(Program& program) const;
 
             inline
-            uint
-            mask() const
+			uint
+			mask() const
+			{
+				return _mask;
+			}
+
+			inline
+			const std::vector<Any>&
+			values() const
+			{
+				return _values;
+			}
+
+            inline
+            const std::vector<data::MacroBindingMap::MacroType>&
+            types()
             {
-                return _mask;
+                return _types;
             }
 
             inline
-            const std::vector<int>&
-            values() const
+            const std::vector<std::string>&
+            macros() const
             {
-                return _values;
-            }
-        };
-    }
-}
-
-namespace std
-{
-    template<> struct hash<minko::render::ProgramSignature>
-    {
-        inline
-        size_t
-        operator()(const minko::render::ProgramSignature& x) const
-        {
-            size_t seed = std::hash<minko::uint>()(x.mask());
-
-            for (unsigned int i=0; i < x.values().size(); ++i)
-            {
-                const int value = (x.mask() >> i) != 0
-                    ? x.values()[i]
-                    : 0;
-
-                hash_combine(seed, value);
+                return _macros;
             }
 
-            return seed;
-        }
-    };
+        private:
+            Any
+            getValueFromStore(const data::Store&        				store,
+                              const std::string&        				propertyName,
+							  const data::MacroBindingMap::MacroType&   type);
+		};
+	}
 }
+//
+//namespace std
+//{
+//	template<>
+//    struct hash<minko::render::ProgramSignature>
+//	{
+//		inline
+//		size_t
+//		operator()(const minko::render::ProgramSignature& x) const
+//		{
+//			size_t seed = std::hash<minko::uint>()(x.mask());
+//            auto i = 0u;
+//
+//            for (auto value : x.values())
+//                hash_combine(seed, (x.mask() >> i) != 0 ? value : 0);
+//
+//			return seed;
+//		}
+//	};
+//}

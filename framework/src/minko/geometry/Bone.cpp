@@ -19,21 +19,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/geometry/Bone.hpp"
 
+#include "minko/scene/Node.hpp"
+
 using namespace minko;
 using namespace minko::geometry;
-using namespace minko::math;
 using namespace minko::scene;
 
-#include <minko/scene/Node.hpp>
-#include <minko/math/Matrix4x4.hpp>
-
-Bone::Bone(Matrix4x4::Ptr						offsetMatrix, 
-           const std::vector<unsigned short>&    vertexIds,
-           const std::vector<float>&            vertexWeights) :
-    _offsetMatrix(Matrix4x4::create()->copyFrom(offsetMatrix)),
-    _vertexIds(vertexIds),
-    _vertexWeights(vertexWeights)
+Bone::Bone(Node::Ptr							node, 
+		   const math::mat4&					offsetMatrix, 
+		   const std::vector<unsigned short>&	vertexIds, 
+		   const std::vector<float>&			vertexWeights) :
+	_node(node),
+	_offsetMatrix(offsetMatrix),
+	_vertexIds(vertexIds),
+	_vertexWeights(vertexWeights)
 {
-    if (_vertexIds.size() != _vertexWeights.size())
-        throw std::logic_error("A bone's arrays of vertex indices and vertex weights must have the same size.");
+	if (_vertexIds.size() != _vertexWeights.size())
+		throw std::logic_error("A bone's arrays of vertex indices and vertex weights must have the same size.");
 }

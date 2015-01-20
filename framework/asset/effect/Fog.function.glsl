@@ -1,3 +1,5 @@
+#ifdef FOG_ENABLED
+
 uniform vec4 fogColor;
 uniform float fogDensity;
 
@@ -34,3 +36,5 @@ fog_sampleFog(vec4 fragColor, vec4 fragCoord)
 
 	return mix(fragColor, fogColor, fogFactor);
 }
+
+#endif // FOG_ENABLED

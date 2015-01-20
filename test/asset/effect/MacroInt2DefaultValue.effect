@@ -1,0 +1,7 @@
+{
+    "macros" : {
+        "TEST_INT2_MACRO" : { "type" : "int2", "default" : [[ 42, 23 ]] }
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

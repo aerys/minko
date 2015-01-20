@@ -46,86 +46,86 @@ std::map<const std::type_info*, SceneWriter::NodeWriterFunc> SceneWriter::_compo
 
 SceneWriter::SceneWriter()
 {
-    _magicNumber = MINKO_SCENE_MAGIC_NUMBER;
+	_magicNumber = MINKO_SCENE_MAGIC_NUMBER;
 
-    registerComponent(
-        &typeid(component::PerspectiveCamera),
-        std::bind(
-            &serialize::ComponentSerializer::serializePerspectiveCamera,
-            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
-        )
-    );
+	registerComponent(
+		&typeid(component::PerspectiveCamera),
+		std::bind(
+			&serialize::ComponentSerializer::serializePerspectiveCamera,
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+		)
+	);
 
-    registerComponent(
-        &typeid(component::Transform),
-        std::bind(
-            &serialize::ComponentSerializer::serializeTransform,
-            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
-        )
-    );
+	registerComponent(
+		&typeid(component::Transform),
+		std::bind(
+			&serialize::ComponentSerializer::serializeTransform,
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+		)
+	);
 
-    registerComponent(
-        &typeid(component::AmbientLight),
-        std::bind(
-            &serialize::ComponentSerializer::serializeAmbientLight,
-            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
-        )
-    );
+	registerComponent(
+		&typeid(component::AmbientLight),
+		std::bind(
+			&serialize::ComponentSerializer::serializeAmbientLight,
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+		)
+	);
 
-    registerComponent(
-        &typeid(component::DirectionalLight),
-        std::bind(
-            &serialize::ComponentSerializer::serializeDirectionalLight,
-            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
-        )
-    );
+	registerComponent(
+		&typeid(component::DirectionalLight),
+		std::bind(
+			&serialize::ComponentSerializer::serializeDirectionalLight,
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+		)
+	);
 
-    registerComponent(
-        &typeid(component::SpotLight),
-        std::bind(
-            &serialize::ComponentSerializer::serializeSpotLight,
-            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
-        )
-    );
+	registerComponent(
+		&typeid(component::SpotLight),
+		std::bind(
+			&serialize::ComponentSerializer::serializeSpotLight,
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+		)
+	);
 
-    registerComponent(
-        &typeid(component::PointLight),
-        std::bind(
-            &serialize::ComponentSerializer::serializePointLight,
-            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
-        )
-    );
+	registerComponent(
+		&typeid(component::PointLight),
+		std::bind(
+			&serialize::ComponentSerializer::serializePointLight,
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+		)
+	);
 
-    registerComponent(
-        &typeid(component::Surface),
-        std::bind(
-            &serialize::ComponentSerializer::serializeSurface,
-            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
-        )
-    );
+	registerComponent(
+		&typeid(component::Surface),
+		std::bind(
+			&serialize::ComponentSerializer::serializeSurface,
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+		)
+	);
 
-    registerComponent(
-        &typeid(component::Renderer),
-        std::bind(
-            &serialize::ComponentSerializer::serializeRenderer,
-            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
-        )
-    );
+	registerComponent(
+		&typeid(component::Renderer),
+		std::bind(
+			&serialize::ComponentSerializer::serializeRenderer,
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+		)
+	);
 
-    registerComponent(
-        &typeid(component::BoundingBox),
-        std::bind(
-            &serialize::ComponentSerializer::serializeBoundingBox,
-            std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
-        )
-    );
+	registerComponent(
+		&typeid(component::BoundingBox),
+		std::bind(
+			&serialize::ComponentSerializer::serializeBoundingBox,
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+		)
+	);
 }
 
 void
-SceneWriter::registerComponent(const std::type_info*    componentType,
-                               NodeWriterFunc           readFunction)
+SceneWriter::registerComponent(const std::type_info*	componentType,
+							   NodeWriterFunc			readFunction)
 {
-    _componentIdToWriteFunction[componentType] = readFunction;
+	_componentIdToWriteFunction[componentType] = readFunction;
 }
 
 std::string
@@ -134,67 +134,75 @@ SceneWriter::embed(AssetLibraryPtr                      assetLibrary,
                    DependencyPtr                        dependency,
                    std::shared_ptr<WriterOptions>       writerOptions)
 {
-    std::stringstream                               sbuf;
-    std::queue<std::shared_ptr<scene::Node>>        queue;
-    std::vector<SerializedNode>                     nodePack;
-    std::vector<std::string>                        serializedControllerList;
-    std::map<AbstractComponentPtr, int>             controllerMap;
-    
-    queue.push(data());
+	std::stringstream								sbuf;
+	std::queue<std::shared_ptr<scene::Node>>		queue;
+	std::vector<SerializedNode>						nodePack;
+	std::vector<std::string>						serializedControllerList;
+	std::map<AbstractComponentPtr, int>				controllerMap;
+	
+	queue.push(data());
 
-    while (queue.size() > 0)
-    {
-        std::shared_ptr<scene::Node>    currentNode = queue.front();
+	while (queue.size() > 0)
+	{
+		std::shared_ptr<scene::Node>	currentNode = queue.front();
 
-        nodePack.push_back(writeNode(currentNode, serializedControllerList, controllerMap, assetLibrary, dependency));
+		nodePack.push_back(writeNode(currentNode, serializedControllerList, controllerMap, assetLibrary, dependency, writerOptions));
 
-        for (uint i = 0; i < currentNode->children().size(); ++i)
-            queue.push(currentNode->children()[i]);
+		for (uint i = 0; i < currentNode->children().size(); ++i)
+			queue.push(currentNode->children()[i]);
 
-        queue.pop();
-    }
+		queue.pop();
+	}
 
-    msgpack::type::tuple<std::vector<std::string>, std::vector<SerializedNode>> res(serializedControllerList, nodePack);
-    msgpack::pack(sbuf, res);
+	msgpack::type::tuple<std::vector<std::string>, std::vector<SerializedNode>> res(serializedControllerList, nodePack);
+	msgpack::pack(sbuf, res);
 
-    return sbuf.str();
+	return sbuf.str();
 }
 
 SceneWriter::SerializedNode
-SceneWriter::writeNode(std::shared_ptr<scene::Node>     node,
-                      std::vector<std::string>&         serializedControllerList,
-                      std::map<AbstractComponentPtr, int>&  controllerMap,
-                      AssetLibraryPtr                   assetLibrary,
-                      DependencyPtr                     dependency)
+SceneWriter::writeNode(std::shared_ptr<scene::Node>		node,
+					  std::vector<std::string>&			serializedControllerList,
+					  std::map<AbstractComponentPtr, int>&	controllerMap,
+					  AssetLibraryPtr					assetLibrary,
+					  DependencyPtr						dependency,
+					  WriterOptions::Ptr 				writerOptions)
 {
-    std::vector<uint>   componentsId;
-    int                 componentIndex = 0;
-    AbstractComponentPtr        currentComponent = node->component<component::AbstractComponent>(0);
+	if (writerOptions->addBoundingBoxes() &&
+		node->hasComponent<component::Surface>() &&
+	 	!node->hasComponent<component::BoundingBox>())
+	{
+			node->addComponent(component::BoundingBox::create());
+	}
 
-    while (currentComponent != nullptr)
-    {
-        int index = -1;
+ 	std::vector<uint>	componentsId;
+	int					componentIndex = 0;
+	AbstractComponentPtr		currentComponent = node->component<component::AbstractComponent>(0);
 
-        if (controllerMap.find(currentComponent) != controllerMap.end())
-            index = controllerMap[currentComponent];
-        else
-        {
-            const std::type_info* currentComponentType = &typeid(*currentComponent);
+	while (currentComponent != nullptr)
+	{
+		int index = -1;
 
-            if (_componentIdToWriteFunction.find(currentComponentType) != _componentIdToWriteFunction.end())
-            {
-                index = serializedControllerList.size();
-                serializedControllerList.push_back(_componentIdToWriteFunction[currentComponentType](node, currentComponent, dependency));
-            }
-        }
+		if (controllerMap.find(currentComponent) != controllerMap.end())
+			index = controllerMap[currentComponent];
+		else
+		{
+			const std::type_info* currentComponentType = &typeid(*currentComponent);
 
-        if (index != -1)
-            componentsId.push_back(index);
+			if (_componentIdToWriteFunction.find(currentComponentType) != _componentIdToWriteFunction.end())
+			{
+				index = serializedControllerList.size();
+				serializedControllerList.push_back(_componentIdToWriteFunction[currentComponentType](node, currentComponent, dependency));
+			}
+		}
 
-        currentComponent = node->component<component::AbstractComponent>(++componentIndex);
-    }
+		if (index != -1)
+			componentsId.push_back(index);
 
-    SerializedNode res(node->name(), node->layouts(), node->children().size(), componentsId, node->uuid());
+		currentComponent = node->component<component::AbstractComponent>(++componentIndex);
+	}
 
-    return res;
+	SerializedNode res(node->name(), node->layout(), node->children().size(), componentsId, node->uuid());
+
+	return res;
 }

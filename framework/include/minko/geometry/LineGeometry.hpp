@@ -25,75 +25,77 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-    namespace geometry
-    {
-        class LineGeometry:    public Geometry
-        {
-        public:
-            typedef std::shared_ptr<LineGeometry> Ptr;
+	namespace geometry
+	{
+		class LineGeometry:	public Geometry
+		{
+		public:
+			typedef std::shared_ptr<LineGeometry> Ptr;
 
-        private:
-            static const uint                       MAX_NUM_LINES;
-            static const std::string                ATTRNAME_START_POS;
-            static const std::string                ATTRNAME_STOP_POS;
-            static const std::string                ATTRNAME_WEIGHTS;
+		private:
+			static const uint						MAX_NUM_LINES;
+			static const std::string				ATTRNAME_START_POS;
+			static const std::string				ATTRNAME_STOP_POS;
+			static const std::string				ATTRNAME_WEIGHTS;
 
-            float                                   _currentX;
-            float                                   _currentY;
-            float                                   _currentZ;
-            uint                                    _numLines;
+			float									_currentX;
+			float									_currentY;
+			float									_currentZ;
+			uint									_numLines;
 
-            std::shared_ptr<render::VertexBuffer>   _vertexBuffer;
-            std::shared_ptr<render::IndexBuffer>    _indexBuffer;
+			std::shared_ptr<render::VertexBuffer>	_vertexBuffer;
+			std::shared_ptr<render::IndexBuffer>	_indexBuffer;
 
-        public:
-            inline static
-            Ptr
-            create(std::shared_ptr<render::AbstractContext> context)
-            {
-                Ptr ptr = std::shared_ptr<LineGeometry>(new LineGeometry());
+		public:
+			inline static
+			Ptr
+			create(std::shared_ptr<render::AbstractContext> context)
+			{
+				Ptr ptr = std::shared_ptr<LineGeometry>(new LineGeometry());
 
-                ptr->initialize(context);
+				ptr->initialize(context);
 
-                return ptr;
-            }
+				return ptr;
+			}
 
-            std::shared_ptr<math::Vector3>
-            currentXYZ(std::shared_ptr<math::Vector3> output = nullptr) const;
+			math::vec3
+			currentXYZ() const;
 
-            inline
-            uint
-            numLines() const
-            {
-                return _numLines;
-            }
+			inline
+			uint
+			numLines() const
+			{
+				return _numLines;
+			}
 
-            inline
-            Ptr
-            moveTo(float x, float y, float z)
-            {
-                _currentX    = x;
-                _currentY    = y;
-                _currentZ    = z;
+			inline
+			Ptr
+			moveTo(float x, float y, float z)
+			{
+				_currentX	= x;
+				_currentY	= y;
+				_currentZ	= z;
 
-                return std::static_pointer_cast<LineGeometry>(shared_from_this());
-            }
+				return std::static_pointer_cast<LineGeometry>(shared_from_this());
+			}
 
-            Ptr
-            moveTo(std::shared_ptr<math::Vector3>);
+			Ptr
+			moveTo(const math::vec3&);
 
-            Ptr
-            lineTo(float x, float y, float z, unsigned int numSegments = 1);
+			Ptr
+			lineTo(float x, float y, float z, unsigned int numSegments = 1);
 
-            Ptr
-            lineTo(std::shared_ptr<math::Vector3>, unsigned int numSegments = 1);
+			Ptr
+			lineTo(const math::vec3&, unsigned int numSegments = 1);
 
+			void
+			upload();
 
-        private:
+		protected:
             LineGeometry();
 
-            void
-            initialize(std::shared_ptr<render::AbstractContext>);
-        };
-    }
+			void
+			initialize(std::shared_ptr<render::AbstractContext> context);
+		};
+	}
 }

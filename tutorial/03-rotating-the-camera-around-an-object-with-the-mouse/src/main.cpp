@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoSDL.hpp"
 
 using namespace minko;
-using namespace minko::math;
 using namespace minko::component;
 
 const uint WINDOW_WIDTH = 800;
@@ -43,7 +42,7 @@ main(int argc, char** argv)
         auto camera = scene::Node::create("camera")
             ->addComponent(Renderer::create(0x7f7f7fff))
             ->addComponent(Transform::create(
-            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0., 0., -5.f))
+            math::inverse(math::lookAt(math::vec3(0., 0., -5.f), math::vec3(), math::vec3(0, 1, 0)))
             ))
             ->addComponent(PerspectiveCamera::create(
             (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f)
@@ -53,17 +52,27 @@ main(int argc, char** argv)
         // Add a simple directional light to really see the camera rotation
         auto directionalLight = scene::Node::create("directionalLight")
             ->addComponent(DirectionalLight::create())
-            ->addComponent(Transform::create(Matrix4x4::create()->lookAt(
-                Vector3::create(-0.33f, -0.33f, 0.33f), Vector3::create())));
+            ->addComponent(Transform::create(
+                math::inverse(
+                    math::lookAt(
+                       math::vec3(), math::vec3(-0.33f, -0.33f, 0.33f), math::vec3(0, 1, 0))
+                    )
+                )
+            );
         root->addChild(directionalLight);
 
         // Replace the cube by a sphere to inscrease light visibility
+        auto sphereMaterial = material::BasicMaterial::create();
+        sphereMaterial->diffuseColor(math::vec4(0.f, 0.f, 1.f, 1.f));
+
         auto sphere = scene::Node::create("sphere")
             ->addComponent(Surface::create(
-            geometry::SphereGeometry::create(canvas->context()),
-            material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
-			sceneManager->assets()->effect("effect/Phong.effect")
-            ));
+                geometry::SphereGeometry::create(canvas->context()),
+                sphereMaterial,
+			    sceneManager->assets()->effect("effect/Phong.effect")
+                )
+            );
+
         root->addChild(sphere);
 
         Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
@@ -84,7 +93,7 @@ main(int argc, char** argv)
 
         auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
         {
-            camera->component<Transform>()->matrix()->appendRotationY(cameraRotationSpeed);
+            camera->component<Transform>()->matrix(math::rotate(cameraRotationSpeed, math::vec3(0, 1, 0)) * camera->component<Transform>()->matrix());
             cameraRotationSpeed *= .99f;
 
             sceneManager->nextFrame(t, dt);

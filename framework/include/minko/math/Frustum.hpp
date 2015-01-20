@@ -24,48 +24,48 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-    namespace math
-    {
-        class Frustum :
-            public AbstractShape
-        {
+	namespace math
+	{
+		class Frustum :
+			public AbstractShape
+		{
 
-        public:
-            typedef std::shared_ptr<Frustum> Ptr;
+		public:
+			typedef std::shared_ptr<Frustum> Ptr;
 
-        private:
-            std::vector<std::shared_ptr<math::Vector3>>   _points;
-            std::array<std::shared_ptr<math::Vector4>, 6> _planes;
+		private:
+			std::vector<math::vec3>			_points;
+			std::array<math::vec4, 6> 		_planes;
+			
+			std::array<bool, 6> 			_blfResult;
+			std::array<bool, 6> 			_blbResult;
+			std::array<bool, 6> 			_brfResult;
+			std::array<bool, 6> 			_brbResult;
+			std::array<bool, 6> 			_tlfResult;
+			std::array<bool, 6> 			_tlbResult;
+			std::array<bool, 6> 			_trfResult;
+			std::array<bool, 6> 			_trbResult;
 
-            std::array<bool, 6> _blfResult;
-            std::array<bool, 6> _blbResult;
-            std::array<bool, 6> _brfResult;
-            std::array<bool, 6> _brbResult;
-            std::array<bool, 6> _tlfResult;
-            std::array<bool, 6> _tlbResult;
-            std::array<bool, 6> _trfResult;
-            std::array<bool, 6> _trbResult;
+		public:
+			inline static
+			Ptr
+			create()
+			{
+				return std::shared_ptr<Frustum>(new Frustum());
+			}
 
-        public:
-            inline static
-            Ptr
-            create()
-            {
-                return std::shared_ptr<Frustum>(new Frustum());
-            }
+			bool
+			cast(std::shared_ptr<Ray> ray, float& distance);
 
-            bool
-            cast(std::shared_ptr<Ray> ray, float& distance);
+			void
+			updateFromMatrix(const math::mat4& matrix);
 
-            void
-            updateFromMatrix(std::shared_ptr<math::Matrix4x4> matrix);
+			ShapePosition
+			testBoundingBox(std::shared_ptr<math::Box> box);
 
-            ShapePosition
-            testBoundingBox(std::shared_ptr<math::Box> box);
-
-        private:
-            Frustum();
-        };
-    }
+		private:
+			Frustum();
+		};
+	}
 }
 

@@ -71,30 +71,31 @@ TEST_F(TransformTest, ModelToWorldUpdate)
 {
 	auto sceneManager = SceneManager::create(MinkoTests::canvas());
 	auto root = Node::create()->addComponent(sceneManager);
-	auto n1 = Node::create()->addComponent(Transform::create());
+    auto n1Transform = Transform::create();
+	auto n1 = Node::create()->addComponent(n1Transform);
 	auto n2 = Node::create()->addComponent(Transform::create());
 
 	root->addChild(n1)->addChild(n2);
-	// init. transform.modelToWorldMatrix by performing a first frame
+	// init. modelToWorldMatrix by performing a first frame
 	sceneManager->nextFrame(0.0f, 0.0f);
 
 	auto updated1 = false;
-	auto _ = n1->data()->propertyValueChanged("transform.modelToWorldMatrix")->connect(
-		[&](data::Container::Ptr c, const std::string& propertyName)
+	auto _ = n1->data().propertyChanged("modelToWorldMatrix").connect(
+		[&](data::Store& c, data::Provider::Ptr p, const std::string& propertyName)
 		{
 			updated1 = true;
 		}
 	);
 
 	auto updated2 = false;
-	auto __ = n2->data()->propertyValueChanged("transform.modelToWorldMatrix")->connect(
-		[&](data::Container::Ptr c, const std::string& propertyName)
+	auto __ = n2->data().propertyChanged("modelToWorldMatrix").connect(
+        [&](data::Store& c, data::Provider::Ptr p, const std::string& propertyName)
 		{
 			updated2 = true;
 		}
 	);
 
-	n1->component<Transform>()->matrix()->appendTranslation(1.f);
+    n1Transform->matrix(math::translate(n1Transform->matrix(), math::vec3(1.F, 0.f, 0.f)));
 	//n2->component<Transform>()->matrix()->appendTranslation(1.f);
 
 	sceneManager->nextFrame(0.0f, 0.0f);
@@ -107,33 +108,35 @@ TEST_F(TransformTest, ModelToWorldMultipleUpdates)
 {
 	auto sceneManager = SceneManager::create(MinkoTests::canvas());
 	auto root = Node::create()->addComponent(sceneManager);
-	auto n1 = Node::create()->addComponent(Transform::create());
+    auto n1Transform = Transform::create();
+	auto n1 = Node::create()->addComponent(n1Transform);
 	auto n2 = Node::create()->addComponent(Transform::create());
-	auto n3 = Node::create()->addComponent(Transform::create());
+    auto n3Transform = Transform::create();
+	auto n3 = Node::create()->addComponent(n3Transform);
 
 	root->addChild(n1)->addChild(n2);
 	n2->addChild(n3);
-	// init. transform.modelToWorldMatrix by performing a first frame
+	// init. modelToWorldMatrix by performing a first frame
 	sceneManager->nextFrame(0.0f, 0.0f);
 
 	auto updated1 = false;
-	auto _ = n1->data()->propertyValueChanged("transform.modelToWorldMatrix")->connect(
-		[&](data::Container::Ptr c, const std::string& propertyName)
+	auto _ = n1->data().propertyChanged("modelToWorldMatrix").connect(
+        [&](data::Store& c, data::Provider::Ptr p, const std::string& propertyName)
 		{
 			updated1 = true;
 		}
 	);
 
 	auto updated2 = false;
-	auto __ = n3->data()->propertyValueChanged("transform.modelToWorldMatrix")->connect(
-		[&](data::Container::Ptr c, const std::string& propertyName)
+	auto __ = n3->data().propertyChanged("modelToWorldMatrix").connect(
+        [&](data::Store& c, data::Provider::Ptr p, const std::string& propertyName)
 		{
 			updated2 = true;
 		}
 	);
 
-	n1->component<Transform>()->matrix()->appendTranslation(1.f);
-	n3->component<Transform>()->matrix()->appendTranslation(1.f);
+	n1Transform->matrix(math::translate(n1Transform->matrix(), math::vec3(1.f, 0.f, 0.f)));
+    n3Transform->matrix(math::translate(n3Transform->matrix(), math::vec3(1.f, 0.f, 0.f)));
 
 	sceneManager->nextFrame(0.0f, 0.0f);
 
@@ -146,37 +149,39 @@ TEST_F(TransformTest, ModelToWorldMultipleUpdatesMultipleFrames)
 {
 	auto sceneManager = SceneManager::create(MinkoTests::canvas());
 	auto root = Node::create()->addComponent(sceneManager);
-	auto n1 = Node::create()->addComponent(Transform::create());
-	auto n2 = Node::create()->addComponent(Transform::create());
-	auto n3 = Node::create()->addComponent(Transform::create());
+    auto n1Transform = Transform::create();
+	auto n1 = Node::create()->addComponent(n1Transform);
+    auto n2 = Node::create()->addComponent(Transform::create());
+    auto n3Transform = Transform::create();
+    auto n3 = Node::create()->addComponent(n3Transform);
 
 	root->addChild(n1)->addChild(n2);
 
-	// init. transform.modelToWorldMatrix by performing a first frame
+	// init. modelToWorldMatrix by performing a first frame
 	sceneManager->nextFrame(0.0f, 0.0f);
 
 	auto updated1 = false;
-	auto _ = n1->data()->propertyValueChanged("transform.modelToWorldMatrix")->connect(
-		[&](data::Container::Ptr c, const std::string& propertyName)
+	auto _ = n1->data().propertyChanged("modelToWorldMatrix").connect(
+        [&](data::Store& c, data::Provider::Ptr p, const std::string& propertyName)
 		{
 			updated1 = true;
 		}
 	);
 
 	auto updated2 = false;
-	auto __ = n3->data()->propertyValueChanged("transform.modelToWorldMatrix")->connect(
-		[&](data::Container::Ptr c, const std::string& propertyName)
+	auto __ = n3->data().propertyChanged("modelToWorldMatrix").connect(
+        [&](data::Store& c, data::Provider::Ptr p, const std::string& propertyName)
 		{
 			updated2 = true;
 		}
 	);
 
-	n1->component<Transform>()->matrix()->appendTranslation(1.f);
+    n1Transform->matrix(math::translate(n1Transform->matrix(), math::vec3(42.f, 0.f, 0.f)));
 
 	sceneManager->nextFrame(0.0f, 0.0f);
 
 	n2->addChild(n3);
-	n3->component<Transform>()->matrix()->appendTranslation(1.f);
+    n3Transform->matrix(math::translate(n3Transform->matrix(), math::vec3(42.f, 0.f, 0.f)));
 
 	sceneManager->nextFrame(0.0f, 0.0f);
 
@@ -204,15 +209,10 @@ TEST_F(TransformTest, NodeHierarchyTransformIssueWithBlockingNode)
 
 	auto n5 = Node::create("cb");
 	n5->addComponent(Transform::create());
-
-	n1->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(-4, 0, 0)));
-
-	n2->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(-5, 0, 0)));
-
-	n3->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(4, 0, 0)));
-
-	n4->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(5, 0, 0)));
-
+	n1->addComponent(Transform::create(math::translate(math::vec3(-4.f, 0.f, 0.f))));
+    n2->addComponent(Transform::create(math::translate(math::vec3(-5.f, 0.f, 0.f))));
+    n3->addComponent(Transform::create(math::translate(math::vec3(4.f, 0, 0.f))));
+    n4->addComponent(Transform::create(math::translate(math::vec3(5.f, 0.f, 0.f))));
 
 	root->addChild(p2);
 		p2->addChild(p1);
@@ -226,15 +226,23 @@ TEST_F(TransformTest, NodeHierarchyTransformIssueWithBlockingNode)
 
 	sceneManager->nextFrame(0.0f, 0.0f);
 
-	n1->component<Transform>()->matrix()->prependTranslation(0, -1, 0);
-	p2->component<Transform>()->matrix()->prependTranslation(0, 1, 0);
+    n1->component<Transform>()->matrix(math::translate(
+        n1->component<Transform>()->matrix(),
+        math::vec3(0.f, -1.f, 0.f)
+    ));
+    p2->component<Transform>()->matrix(math::translate(
+        p2->component<Transform>()->matrix(),
+        math::vec3(0.f, 1.f, 0.f)
+    ));
 
 	sceneManager->nextFrame(0.0f, 0.0f);
 
-	ASSERT_TRUE(n1->component<Transform>()->matrix()->transform(Vector3::create())->equals(Vector3::create(-4, -1, 0)));
-	ASSERT_TRUE(n2->component<Transform>()->matrix()->transform(Vector3::create())->equals(Vector3::create(-5, 0, 0)));
-	ASSERT_TRUE(n3->component<Transform>()->modelToWorld(Vector3::create())->equals(Vector3::create(4, 1, 0)));
-	ASSERT_TRUE(n4->component<Transform>()->modelToWorld(Vector3::create())->equals(Vector3::create(5, 1, 0)));
+    auto zero = math::vec4(0.f, 0.f, 0.f, 1.f);
+
+	ASSERT_EQ((n1->component<Transform>()->matrix() * zero).xyz(), math::vec3(-4.f, -1.f, 0.f));
+	ASSERT_EQ((n2->component<Transform>()->matrix() * zero).xyz(), math::vec3(-5.f, 0.f, 0.f));
+    ASSERT_EQ((n3->component<Transform>()->modelToWorldMatrix() * zero).xyz(), math::vec3(4.f, 1.f, 0.f));
+    ASSERT_EQ((n4->component<Transform>()->modelToWorldMatrix() * zero).xyz(), math::vec3(5.f, 1.f, 0.f));
 }
 
 TEST_F(TransformTest, NodeHierarchyTransformIssueWithoutBlockingNode)
@@ -256,39 +264,27 @@ TEST_F(TransformTest, NodeHierarchyTransformIssueWithoutBlockingNode)
 	auto n5 = Node::create("cb");
 	n5->addComponent(Transform::create());
 
-	n1
-		->addComponent(Transform::create(
-		Matrix4x4::create()
-		->appendScale(1.f)
-		->appendTranslation(-4, 0, 0)
-		));
+	n1->addComponent(Transform::create(
+        math::translate(math::vec3(-4.f, 0.f, 0.f))
+	));
 
-	n2
-		->addComponent(Transform::create(
-		Matrix4x4::create()
-		->appendScale(1.f)
-		->appendTranslation(-5, 0, 0)
-		));
+	n2->addComponent(Transform::create(
+        math::translate(math::vec3(-5.f, 0.f, 0.f))
+	));
 
-	n3
-		->addComponent(Transform::create(
-		Matrix4x4::create()
-		->appendScale(5.f)
-		->appendTranslation(4, 0, 0)
-		));
-	n4
-		->addComponent(Transform::create(
-		Matrix4x4::create()
-		->appendScale(10.f)
-		->appendTranslation(5, 0, 0)
-		));
-
+	n3->addComponent(Transform::create(
+        math::scale(math::vec3(5.f)) * math::translate(math::vec3(4.f, 0.f, 0.f))
+	));
+	
+    n4->addComponent(Transform::create(
+        math::scale(math::vec3(10.f)) * math::translate(math::vec3(5.f, 0.f, 0.f))
+	));
 
 	root->addChild(p2);
 		p2->addChild(p1);
 			p1->addChild(n3);
 			p1->addChild(n4);
-		//p2->addChild(n5);
+		p2->addChild(n5);
 
 	root->addChild(p3);
 		p3->addChild(n1);
@@ -296,15 +292,49 @@ TEST_F(TransformTest, NodeHierarchyTransformIssueWithoutBlockingNode)
 
 	sceneManager->nextFrame(0.0f, 0.0f);
 
-	n1->component<Transform>()->matrix()->prependTranslation(0, -1, 0);
-	p2->component<Transform>()->matrix()->prependTranslation(0, 1, 0);
+    n1->component<Transform>()->matrix(math::translate(
+        n1->component<Transform>()->matrix(),
+        math::vec3(0.f, -1.f, 0.f)
+    ));
+    p2->component<Transform>()->matrix(math::translate(
+        p2->component<Transform>()->matrix(),
+        math::vec3(0.f, 1.f, 0.f)
+    ));
 
 	sceneManager->nextFrame(0.0f, 0.0f);
 
-	ASSERT_TRUE(n1->component<Transform>()->matrix()->transform(Vector3::create())->equals(Vector3::create(-4, -1, 0)));
-	ASSERT_TRUE(n2->component<Transform>()->matrix()->transform(Vector3::create())->equals(Vector3::create(-5, 0, 0)));
-	ASSERT_TRUE(n3->component<Transform>()->modelToWorld(Vector3::create())->equals(Vector3::create(4, 1, 0)));
-	ASSERT_TRUE(n4->component<Transform>()->modelToWorld(Vector3::create())->equals(Vector3::create(5, 1, 0)));
+    auto zero = math::vec4(0.f, 0.f, 0.f, 1.f);
+
+	ASSERT_EQ((n1->component<Transform>()->matrix() * zero).xyz(), math::vec3(-4.f, -1.f, 0.f));
+    ASSERT_EQ((n2->component<Transform>()->matrix() * zero).xyz(), math::vec3(-5.f, 0.f, 0.f));
+    ASSERT_EQ((n3->component<Transform>()->modelToWorldMatrix() * zero).xyz(), math::vec3(20.f, 1.f, 0.f));
+    ASSERT_EQ((n4->component<Transform>()->modelToWorldMatrix() * zero).xyz(), math::vec3(50.f, 1.f, 0.f));
+}
+
+TEST_F(TransformTest, RemoveParentTransform)
+{
+    auto root = Node::create("root");
+    auto a = Node::create("a");
+    auto b = Node::create("b");
+    auto c = Node::create("c");
+
+    root->addComponent(Transform::create(math::translate(math::vec3(0.f, 0.f, 1.f))));
+
+    a->addComponent(Transform::create(math::translate(math::vec3(1.f, 0.f, 0.f))));
+    root->addChild(a);
+
+
+    b->addComponent(Transform::create(math::translate(math::vec3(0.f, 1.f, 0.f))));
+    root->addChild(b);
+
+    c->addComponent(Transform::create(math::translate(math::vec3(2.f, 1.f, 0.f))));
+    b->addChild(c);
+
+    b->removeComponent(b->component<Transform>());
+
+    c->component<Transform>()->updateModelToWorldMatrix();
+
+    ASSERT_EQ(c->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(2.f, 1.f, 1.f)));
 }
 
 TEST_F(TransformTest, Clone)
@@ -312,8 +342,7 @@ TEST_F(TransformTest, Clone)
 	auto sceneManager = SceneManager::create(MinkoTests::canvas());
 	auto root = Node::create()->addComponent(sceneManager);
 	auto n1 = Node::create()
-		->addComponent(Transform::create(Matrix4x4::create()));
-
+		->addComponent(Transform::create(math::mat4()));
 
 	auto n2 = n1->clone(CloneOption::DEEP);
 
@@ -322,10 +351,42 @@ TEST_F(TransformTest, Clone)
 
 	sceneManager->nextFrame(0.0f, 0.0f);
 
-	ASSERT_TRUE(n2->component<Transform>()->matrix()->equals(n1->component<Transform>()->matrix()));
+	ASSERT_TRUE(n2->component<Transform>()->matrix() == n1->component<Transform>()->matrix());
 
-	n2->component<Transform>()->matrix()->prependTranslation(Vector3::create(-5., 0, 2));
+    n2->component<Transform>()->matrix(math::translate(math::vec3(-5., 0, 2)) * n2->component<Transform>()->matrix());
 	sceneManager->nextFrame(0.0f, 0.0f);
 
-	ASSERT_FALSE(n2->component<Transform>()->matrix()->equals(n1->component<Transform>()->matrix()));
+	ASSERT_FALSE(n2->component<Transform>()->matrix() == n1->component<Transform>()->matrix());
+}
+
+TEST_F(TransformTest, WrongModelToWorldIssue)
+{
+    auto sceneManager = SceneManager::create(MinkoTests::canvas());
+
+    auto root = Node::create()->addComponent(sceneManager);
+    auto n1 = Node::create("n1")
+        ->addComponent(
+            Transform::create(
+                math::inverse(
+                    math::lookAt(
+                        math::vec3(42.f, 42.f, 42.f),
+                        math::vec3(),
+                        math::vec3(0.f, 1.f, 0.f)
+                    )
+                )
+            )
+        );
+
+    auto n2 = Node::create("n2")->addComponent(Transform::create());
+    auto n21 = Node::create("n21")->addComponent(Transform::create());
+
+    root->addChild(n1);
+    root->addChild(n2);
+    n2->addChild(n21);
+
+    sceneManager->nextFrame(0.0f, 0.0f);
+
+    ASSERT_EQ(math::vec3(n1->component<Transform>()->matrix() * math::vec4(math::vec3(), 1)), math::vec3(42.f, 42.f, 42.f));
+    ASSERT_EQ(n2->component<Transform>()->modelToWorldMatrix(), math::mat4());
+    ASSERT_EQ(n21->component<Transform>()->modelToWorldMatrix(), math::mat4());
 }

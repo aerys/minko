@@ -24,58 +24,58 @@ using namespace minko::file;
 
 namespace minko
 {
-    namespace file
-    {
-        MINKO_DEFINE_WORKER(FileProtocolWorker,
-        {
-            auto seekingOffset = (static_cast<int>(static_cast<unsigned char>((input[0]))) << 24) +
-                                 (static_cast<int>(static_cast<unsigned char>((input[1]))) << 16) +
-                                 (static_cast<int>(static_cast<unsigned char>((input[2]))) << 8) + 
-                                 static_cast<int>(static_cast<unsigned char>((input[3])));
+	namespace file
+	{
+		MINKO_DEFINE_WORKER(FileProtocolWorker,
+		{
+            auto seekingOffset = (static_cast<int>(static_cast<unsigned char>(input[0])) << 24) +
+                                 (static_cast<int>(static_cast<unsigned char>(input[1])) << 16) +
+                                 (static_cast<int>(static_cast<unsigned char>(input[2])) << 8) +
+                                 static_cast<int>(static_cast<unsigned char>(input[3]));
 
-            auto seekedLength = (static_cast<int>(static_cast<unsigned char>((input[4]))) << 24) +
-                                (static_cast<int>(static_cast<unsigned char>((input[5]))) << 16) +
-                                (static_cast<int>(static_cast<unsigned char>((input[6]))) << 8) +
-                                static_cast<int>(static_cast<unsigned char>((input[7])));
+            auto seekedLength = (static_cast<int>(static_cast<unsigned char>(input[4])) << 24) +
+                                (static_cast<int>(static_cast<unsigned char>(input[5])) << 16) +
+                                (static_cast<int>(static_cast<unsigned char>(input[6])) << 8) +
+                                static_cast<int>(static_cast<unsigned char>(input[7]));
 
 			std::string filename(input.begin() + 8, input.end());
 
-            std::vector<char> output;
+			std::vector<char> output;
 
-            post(Message { "progress" }.set(0.0f));
+			post(Message { "progress" }.set(0.0f));
 
-            auto flags = std::ios::in | std::ios::ate | std::ios::binary;
+			auto flags = std::ios::in | std::ios::ate | std::ios::binary;
 
-            std::fstream file(filename, flags);
+			std::fstream file(filename, flags);
 
-            if (file.is_open())
-            {
+			if (file.is_open())
+			{
 				uint length = seekedLength > 0 ? seekedLength : (uint(file.tellg()) - seekingOffset);
 
 				uint chunkSize = math::clp2((length / 50) / 1024);
 
-                if (chunkSize > 1024)
-                    chunkSize = 1024;
-                else if (chunkSize <= 0)
-                    chunkSize = 8;
+				if (chunkSize > 1024)
+					chunkSize = 1024;
+				else if (chunkSize <= 0)
+					chunkSize = 8;
 
-                chunkSize *= 1024;
+				chunkSize *= 1024;
 
 				file.seekg(seekingOffset, std::ios::beg);
 
-                uint offset = 0;
+				uint offset = 0;
 
 				while (offset < length)
-                {
-                    uint nextOffset = offset + chunkSize;
-                    uint readSize = chunkSize;
+				{
+					uint nextOffset = offset + chunkSize;
+					uint readSize = chunkSize;
 
 					if (nextOffset > length)
 						readSize = length % chunkSize;
 
-                    output.resize(offset + readSize);
+					output.resize(offset + readSize);
 
-                    file.read(&*output.begin() + offset, readSize);
+					file.read(&*output.begin() + offset, readSize);
 
                     auto progress = float(offset + readSize) / float(length);
 
@@ -83,17 +83,17 @@ namespace minko
 
                     post(Message { "progress" }.set(progress));
 
-                    offset = nextOffset;
-                }
+					offset = nextOffset;
+				}
 
-                file.close();
+				file.close();
 
-                post(Message{ "complete" }.set(output));
-            }
-            else
-            {
-                post(Message{ "error" });
-            }
-        });
-    }
+				post(Message{ "complete" }.set(output));
+			}
+			else
+			{
+				post(Message{ "error" });
+			}
+		});
+	}
 }

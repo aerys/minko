@@ -27,10 +27,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Dependency.hpp"
 
 using namespace minko;
-using namespace minko::math;
 using namespace minko::serialize;
 using namespace minko::deserialize;
 
+/*
 TEST_F(GeometrySerializerTest, CubeGeometrySerialization)
 {
 	auto cubeGeometry		= geometry::CubeGeometry::create(MinkoTests::canvas()->context());
@@ -43,10 +43,12 @@ TEST_F(GeometrySerializerTest, CubeGeometrySerialization)
 
 	assetLibrary->geometry("cube", cubeGeometry);
 	geometryWriter->data(cubeGeometry);
-	geometryWriter->write(filename,
-                          assetLibrary,
-                          file::Options::create(MinkoTests::canvas()->context()),
-                          file::WriterOptions::create());
+	geometryWriter->write(
+        filename,
+        assetLibrary,
+        file::Options::create(MinkoTests::canvas()->context()),
+        file::WriterOptions::create()
+    );
 
 	std::vector<unsigned char>  data;
 	auto						flags = std::ios::in | std::ios::ate | std::ios::binary;
@@ -73,7 +75,7 @@ TEST_F(GeometrySerializerTest, SphereGeometrySerialization)
 	auto geometryParser		= file::GeometryParser::create();
 	std::string	filename	= "asset.tmp";
 
-	assetLibrary->geometry("Sphere", sphereGeometry);
+	assetLibrary->geometry("sphere", sphereGeometry);
 	geometryWriter->data(sphereGeometry);
 	geometryWriter->write(filename,
                           assetLibrary,
@@ -92,6 +94,7 @@ TEST_F(GeometrySerializerTest, SphereGeometrySerialization)
 
 	geometryParser->parse(filename, filename, file::Options::create(MinkoTests::canvas()->context()), data, outputAssetLibrary);
 
-	ASSERT_TRUE(outputAssetLibrary->geometry("Sphere") != nullptr);
-	ASSERT_TRUE(sphereGeometry->equals(outputAssetLibrary->geometry("Sphere")));
+	ASSERT_TRUE(outputAssetLibrary->geometry("sphere") != nullptr);
+	ASSERT_TRUE(sphereGeometry->equals(outputAssetLibrary->geometry("sphere")));
 }
+*/

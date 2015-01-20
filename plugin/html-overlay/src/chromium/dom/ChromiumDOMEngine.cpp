@@ -103,13 +103,14 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 
 		int result = CefInitialize(*_impl->mainArgs, settings, _impl->app.get(), nullptr);
 
-		_overlayMaterial = material::BasicMaterial::create()->diffuseMap(texture);
+		_overlayMaterial = material::BasicMaterial::create();
+        _overlayMaterial->diffuseMap(texture);
 
 		loadOverlayEffect();
 
 		float wRatio = (float)canvas->width() / (float)math::clp2(canvas->width());
 		float hRatio = (float)canvas->height() / (float)math::clp2(canvas->height());
-		_overlayMaterial->set("overlayRatio", math::Vector2::create(wRatio, hRatio));
+		_overlayMaterial->data()->set("overlayRatio", math::vec2(wRatio, hRatio));
 		
         auto overlayEffect = _sceneManager->assets()->effect("effect/HtmlOverlay.effect");
 		
@@ -122,8 +123,8 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 				overlayEffect
 			));
 
-			_quad->component<component::Surface>()->visible(_visible);
-
+            // TODO: Redmine #4274
+			//_quad->component<component::Surface>()->visible(_visible);
 		}
 		else
 		{
@@ -135,12 +136,12 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 
 	_canvasResizedSlot = _canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
-		_overlayMaterial->unset("diffuseMap");
+		_overlayMaterial->data()->unset("diffuseMap");
 		_impl->browser->GetHost()->WasResized();
 
 		float wRatio = (float)canvas->width() / (float)math::clp2(canvas->width());
 		float hRatio = (float)canvas->height() / (float)math::clp2(canvas->height());
-		_overlayMaterial->set("overlayRatio", math::Vector2::create(wRatio, hRatio));
+		_overlayMaterial->data()->set("overlayRatio", math::vec2(wRatio, hRatio));
 		_overlayMaterial->diffuseMap(_impl->renderHandler->renderTexture);
 		enterFrame();
 	});
@@ -246,8 +247,11 @@ ChromiumDOMEngine::loadLocal(std::string filename)
 void
 ChromiumDOMEngine::visible(bool value)
 {
+    // TODO: Redmine #4274
+    /*
 	if (_quad != nullptr && _quad->hasComponent<component::Surface>())
 		_quad->component<component::Surface>()->visible(value);
+    */
 
 	if (_impl != nullptr)
 	{

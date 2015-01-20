@@ -26,97 +26,96 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-    namespace file
-    {
-        class Options:
-            public std::enable_shared_from_this<Options>
-        {
-        private:
-            typedef std::shared_ptr<AbstractProtocol>                                    AbsProtocolPtr;
-            typedef std::shared_ptr<data::Provider>                                        ProviderPtr;
-            typedef std::shared_ptr<material::Material>                                    MaterialPtr;
-            typedef std::shared_ptr<geometry::Geometry>                                    GeomPtr;
-            typedef std::shared_ptr<scene::Node>                                        NodePtr;
-            typedef std::shared_ptr<render::Effect>                                        EffectPtr;
-            typedef std::shared_ptr<Loader>                                             LoaderPtr;
-            typedef std::shared_ptr<AbstractParser>                                     AbsParserPtr;
-            typedef std::function<AbsParserPtr(void)>                                   ParserHandler;
-            typedef std::function<AbsProtocolPtr(void)>                                    ProtocolHandler;
+	namespace file
+	{
+		class Options:
+			public std::enable_shared_from_this<Options>
+		{
+		private:
+			typedef std::shared_ptr<AbstractProtocol>						            AbsProtocolPtr;
+			typedef std::shared_ptr<data::Provider>										ProviderPtr;
+			typedef std::shared_ptr<material::Material>									MaterialPtr;
+			typedef std::shared_ptr<geometry::Geometry>									GeomPtr;
+			typedef std::shared_ptr<scene::Node>										NodePtr;
+			typedef std::shared_ptr<render::Effect>										EffectPtr;
+			typedef std::shared_ptr<Loader>                                             LoaderPtr;
+			typedef std::shared_ptr<AbstractParser>                                     AbsParserPtr;
+			typedef std::function<AbsParserPtr(void)>                                   ParserHandler;
+			typedef std::function<AbsProtocolPtr(void)>		                            ProtocolHandler;
 
-        public:
-            typedef std::shared_ptr<Options>                                            Ptr;
+		public:
+			typedef std::shared_ptr<Options>											Ptr;
 
-            typedef std::function<MaterialPtr(const std::string&, MaterialPtr)>            MaterialFunction;
-            typedef std::function<GeomPtr(const std::string&, GeomPtr)>                 GeometryFunction;
-            typedef std::function<AbsProtocolPtr(const std::string&)>                    ProtocolFunction;
+			typedef std::function<MaterialPtr(const std::string&, MaterialPtr)>			MaterialFunction;
+			typedef std::function<GeomPtr(const std::string&, GeomPtr)> 				GeometryFunction;
+			typedef std::function<AbsProtocolPtr(const std::string&)>	                ProtocolFunction;
             typedef std::function<AbsParserPtr(const std::string&)>                     ParserFunction;
-            typedef std::function<const std::string(const std::string&)>                UriFunction;
-            typedef std::function<NodePtr(NodePtr)>                                        NodeFunction;
-            typedef std::function<EffectPtr(EffectPtr)>                                    EffectFunction;
+			typedef std::function<const std::string(const std::string&)>				UriFunction;
+			typedef std::function<NodePtr(NodePtr)>										NodeFunction;
+			typedef std::function<EffectPtr(EffectPtr)>									EffectFunction;
 
             typedef std::function<render::TextureFormat(const std::unordered_set<render::TextureFormat>&)>
                                                                                         TextureFormatFunction;
 
-        private:
-            std::shared_ptr<render::AbstractContext>            _context;
-            std::shared_ptr<AssetLibrary>                       _assets;
-            std::list<std::string>                                _includePaths;
-            std::list<std::string>                                _platforms;
-            std::list<std::string>                                _userFlags;
+		private:
+			std::shared_ptr<render::AbstractContext>	        _context;
+			std::shared_ptr<AssetLibrary>                       _assets;
+			std::list<std::string>						        _includePaths;
+			std::list<std::string>						        _platforms;
+			std::list<std::string>						        _userFlags;
 
-            std::unordered_map<std::string, ParserHandler>        _parsers;
-            std::unordered_map<std::string, ProtocolHandler>    _protocols;
+			std::unordered_map<std::string, ParserHandler>	    _parsers;
+			std::unordered_map<std::string, ProtocolHandler>    _protocols;
 
-            bool                                                _generateMipMaps;
-            bool                                                _resizeSmoothly;
-            bool                                                _isCubeTexture;
-            bool                                                _startAnimation;
-            bool                                                _loadAsynchronously;
+			bool                                                _generateMipMaps;
+			bool										        _resizeSmoothly;
+			bool										        _isCubeTexture;
+			bool										        _startAnimation;
+			bool										        _loadAsynchronously;
             bool                                                _disposeIndexBufferAfterLoading;
             bool                                                _disposeVertexBufferAfterLoading;
             bool                                                _disposeTextureAfterLoading;
             bool                                                _storeDataIfNotParsed;
-            unsigned int                                        _skinningFramerate;
-            component::SkinningMethod                            _skinningMethod;
-            std::shared_ptr<render::Effect>                     _effect;
-            MaterialPtr                                            _material;
+			unsigned int								        _skinningFramerate;
+			component::SkinningMethod					        _skinningMethod;
+			std::shared_ptr<render::Effect>                     _effect;
+			MaterialPtr									        _material;
             std::list<render::TextureFormat>                    _textureFormats;
-            MaterialFunction                                    _materialFunction;
-            GeometryFunction                                    _geometryFunction;
-            ProtocolFunction                                    _protocolFunction;
+			MaterialFunction							        _materialFunction;
+			GeometryFunction							        _geometryFunction;
+			ProtocolFunction								    _protocolFunction;
             ParserFunction                                      _parserFunction;
-            UriFunction                                            _uriFunction;
-            NodeFunction                                        _nodeFunction;
-            EffectFunction                                        _effectFunction;
+			UriFunction									        _uriFunction;
+			NodeFunction								        _nodeFunction;
+			EffectFunction								        _effectFunction;
             TextureFormatFunction                               _textureFormatFunction;
-
             int                                                 _seekingOffset;
             int                                                 _seekedLength;
-			
-            static ProtocolFunction                                _defaultProtocolFunction;
 
-        public:
-            inline static
-            Ptr
-            create()
-            {
+			static ProtocolFunction								_defaultProtocolFunction;
+		
+		public:
+			inline static
+			Ptr
+			create()
+			{
                 auto instance = std::shared_ptr<Options>(new Options());
 
                 instance->initialize();
 
                 return instance;
-            }
+			}
 
-            inline static
-            Ptr
-            create(std::shared_ptr<render::AbstractContext> context)
-            {
-                auto options = create();
+			inline static
+			Ptr
+			create(std::shared_ptr<render::AbstractContext> context)
+			{
+				auto options = create();
 
-                options->_context = context;
+				options->_context = context;
 
-                return options;
-            }
+				return options;
+			}
 
             inline static
             Ptr
@@ -151,187 +150,187 @@ namespace minko
             }
 
             virtual
-            Ptr
+			Ptr
             clone();
 
-            inline
-            std::shared_ptr<render::AbstractContext>
-            context() const
-            {
-                return _context;
-            }
+			inline
+			std::shared_ptr<render::AbstractContext>
+			context() const
+			{
+				return _context;
+			}
 
-            inline
-            void
-            context(std::shared_ptr<render::AbstractContext> context)
-            {
-                _context = context;
-            }
+			inline
+			void
+			context(std::shared_ptr<render::AbstractContext> context)
+			{
+				_context = context;
+			}
 
-            inline
-            std::shared_ptr<AssetLibrary>
-            assetLibrary()
-            {
-                return _assets;
-            }
+			inline
+			std::shared_ptr<AssetLibrary>
+			assetLibrary()
+			{
+				return _assets;
+			}
 
-            inline
-            void
-            assetLibrary(std::shared_ptr<AssetLibrary> assetLibrary)
-            {
-                _assets = assetLibrary;
-            }
+			inline
+			void
+			assetLibrary(std::shared_ptr<AssetLibrary> assetLibrary)
+			{
+				_assets = assetLibrary;
+			}
 
-            inline
-            std::list<std::string>&
-            includePaths()
-            {
-                return _includePaths;
-            }
+			inline
+			std::list<std::string>&
+			includePaths()
+			{
+				return _includePaths;
+			}
 
-            inline
-            std::list<std::string>&
-            platforms()
-            {
-                return _platforms;
-            }
+			inline
+			std::list<std::string>&
+			platforms()
+			{
+				return _platforms;
+			}
 
-            inline
-            std::list<std::string>&
-            userFlags()
-            {
-                return _userFlags;
-            }
+			inline
+			std::list<std::string>&
+			userFlags()
+			{
+				return _userFlags;
+			}
 
-            inline
-            bool
-            generateMipmaps() const
-            {
-                return _generateMipMaps;
-            }
+			inline
+			bool
+			generateMipmaps() const
+			{
+				return _generateMipMaps;
+			}
 
-            inline
-            Ptr
-            generateMipmaps(bool generateMipmaps)
-            {
-                _generateMipMaps = generateMipmaps;
+			inline
+			Ptr
+			generateMipmaps(bool generateMipmaps)
+			{
+				_generateMipMaps = generateMipmaps;
 
-                return shared_from_this();
-            }
+				return shared_from_this();
+			}
 
-            inline
-            bool
-            startAnimation() const
-            {
-                return _startAnimation;
-            }
+			inline
+			bool
+			startAnimation() const
+			{
+				return _startAnimation;
+			}
 
-            inline
-            Ptr
-            startAnimation(bool value)
-            {
-                _startAnimation = value;
+			inline
+			Ptr
+			startAnimation(bool value)
+			{
+				_startAnimation = value;
 
-                return shared_from_this();
-            }
+				return shared_from_this();
+			}
 
-            inline
-            bool
-            loadAsynchronously() const
-            {
-                return _loadAsynchronously;
-            }
+			inline
+			bool
+			loadAsynchronously() const
+			{
+				return _loadAsynchronously;
+			}
 
-            inline
-            Ptr
-            loadAsynchronously(bool value)
-            {
-                _loadAsynchronously = value;
+			inline
+			Ptr
+			loadAsynchronously(bool value)
+			{
+				_loadAsynchronously = value;
 
-                return shared_from_this();
-            }
+				return shared_from_this();
+			}
 
-            inline
-            bool
-            resizeSmoothly() const
-            {
-                return _resizeSmoothly;
-            }
+			inline
+			bool
+			resizeSmoothly() const
+			{
+				return _resizeSmoothly;
+			}
 
-            inline
-            Ptr
-            resizeSmoothly(bool value)
-            {
-                _resizeSmoothly = value;
+			inline
+			Ptr
+			resizeSmoothly(bool value)
+			{
+				_resizeSmoothly = value;
 
-                return shared_from_this();
-            }
+				return shared_from_this();
+			}
 
-            inline
-            bool
-            isCubeTexture() const
-            {
-                return _isCubeTexture;
-            }
+			inline
+			bool
+			isCubeTexture() const
+			{
+				return _isCubeTexture;
+			}
 
-            inline
-            Ptr
-            isCubeTexture(bool value)
-            {
-                _isCubeTexture = value;
+			inline
+			Ptr
+			isCubeTexture(bool value)
+			{
+				_isCubeTexture = value;
 
-                return shared_from_this();
-            }
+				return shared_from_this();
+			}
 
-            inline
-            bool
-            disposeIndexBufferAfterLoading() const
-            {
-                return _disposeIndexBufferAfterLoading;
-            }
+			inline
+			bool
+			disposeIndexBufferAfterLoading() const
+			{
+				return _disposeIndexBufferAfterLoading;
+			}
 
-            inline
-            Ptr
-            disposeIndexBufferAfterLoading(bool value)
-            {
-                _disposeIndexBufferAfterLoading = value;
+			inline
+			Ptr
+			disposeIndexBufferAfterLoading(bool value)
+			{
+				_disposeIndexBufferAfterLoading = value;
 
-                return shared_from_this();
-            }
+				return shared_from_this();
+			}
 
-            inline
-            bool
-            disposeVertexBufferAfterLoading() const
-            {
-                return _disposeVertexBufferAfterLoading;
-            }
+			inline
+			bool
+			disposeVertexBufferAfterLoading() const
+			{
+				return _disposeVertexBufferAfterLoading;
+			}
 
-            inline
-            Ptr
-            disposeVertexBufferAfterLoading(bool value)
-            {
-                _disposeVertexBufferAfterLoading = value;
+			inline
+			Ptr
+			disposeVertexBufferAfterLoading(bool value)
+			{
+				_disposeVertexBufferAfterLoading = value;
 
-                return shared_from_this();
-            }
+				return shared_from_this();
+			}
 
-            inline
-            bool
-            disposeTextureAfterLoading() const
-            {
-                return _disposeTextureAfterLoading;
-            }
+			inline
+			bool
+			disposeTextureAfterLoading() const
+			{
+				return _disposeTextureAfterLoading;
+			}
 
-            inline
-            Ptr
-            disposeTextureAfterLoading(bool value)
-            {
-                _disposeTextureAfterLoading = value;
+			inline
+			Ptr
+			disposeTextureAfterLoading(bool value)
+			{
+				_disposeTextureAfterLoading = value;
 
-                return shared_from_this();
-            }
+				return shared_from_this();
+			}
 
-            inline
+			inline
             bool
             storeDataIfNotParsed() const
             {
@@ -348,70 +347,70 @@ namespace minko
             }
 
             inline
-            unsigned int
-            skinningFramerate() const
-            {
-                return _skinningFramerate;
-            }
+			unsigned int
+			skinningFramerate() const
+			{
+				return _skinningFramerate;
+			}
 
-            inline
-            Ptr
-            skinningFramerate(unsigned int value)
-            {
-                _skinningFramerate = value;
+			inline
+			Ptr
+			skinningFramerate(unsigned int value)
+			{
+				_skinningFramerate = value;
 
-                return shared_from_this();
-            }
+				return shared_from_this();
+			}
 
-            inline
-            component::SkinningMethod
-            skinningMethod() const
-            {
-                return _skinningMethod;
-            }
+			inline
+			component::SkinningMethod
+			skinningMethod() const
+			{
+				return _skinningMethod;
+			}
 
-            inline
-            Ptr
-            skinningMethod(component::SkinningMethod value)
-            {
-                _skinningMethod    = value;
+			inline
+			Ptr
+			skinningMethod(component::SkinningMethod value)
+			{
+				_skinningMethod	= value;
 
-                return shared_from_this();
-            }
+				return shared_from_this();
+			}
 
-            inline
-            std::shared_ptr<render::Effect>
-            effect() const
-            {
-                return _effect;
-            }
+			inline
+			std::shared_ptr<render::Effect>
+			effect() const
+			{
+				return _effect;
+			}
 
-            inline
-            Ptr
-            effect(std::shared_ptr<render::Effect> effect)
-            {
-                _effect = effect;
+			inline
+			Ptr
+			effect(std::shared_ptr<render::Effect> effect)
+			{
+				_effect = effect;
 
-                return shared_from_this();
-            }
+				return shared_from_this();
+			}
 
-            inline
-            MaterialPtr
-            material() const
-            {
-                return _material;
-            }
+			inline
+			MaterialPtr
+			material() const
+			{
+				return _material;
+			}
 
-            inline
-            Ptr
-            material(MaterialPtr material)
-            {
-                _material = material;
+			inline
+			Ptr
+			material(MaterialPtr material)
+			{
+				_material = material;
 
-                return shared_from_this();
-            }
+				return shared_from_this();
+			}
 
-            inline
+			inline
             Ptr
             registerTextureFormat(render::TextureFormat textureFormat)
             {
@@ -421,21 +420,21 @@ namespace minko
             }
 
             inline
-            const ProtocolFunction&
-            protocolFunction() const
-            {
-                return _protocolFunction;
-            }
+			const ProtocolFunction&
+			protocolFunction() const
+			{
+				return _protocolFunction;
+			}
 
-            inline
-            Ptr
-            protocolFunction(const ProtocolFunction& func)
-            {
-                _protocolFunction = func;
+			inline
+			Ptr
+			protocolFunction(const ProtocolFunction& func)
+			{
+				_protocolFunction = func;
 
-                return shared_from_this();
-            }
-
+				return shared_from_this();
+			}
+            
             inline
 			const ParserFunction&
 			parserFunction() const
@@ -453,84 +452,84 @@ namespace minko
 			}
 
 			inline
-            const MaterialFunction&
-            materialFunction() const
-            {
-                return _materialFunction;
-            }
+			const MaterialFunction&
+			materialFunction() const
+			{
+				return _materialFunction;
+			}
 
-            inline
-            Ptr
-            materialFunction(const MaterialFunction& func)
-            {
-                _materialFunction = func;
+			inline
+			Ptr
+			materialFunction(const MaterialFunction& func)
+			{
+				_materialFunction = func;
 
-                return shared_from_this();
-            }
+				return shared_from_this();
+			}
 
-            inline
-            const GeometryFunction&
-            geometryFunction() const
-            {
-                return _geometryFunction;
-            }
+			inline
+			const GeometryFunction&
+			geometryFunction() const
+			{
+				return _geometryFunction;
+			}
 
-            inline
-            Ptr
-            geometryFunction(const GeometryFunction& func)
-            {
-                _geometryFunction = func;
+			inline
+			Ptr
+			geometryFunction(const GeometryFunction& func)
+			{
+				_geometryFunction = func;
 
-                return shared_from_this();
-            }
+				return shared_from_this();
+			}
 
-            inline
-            const UriFunction&
-            uriFunction() const
-            {
-                return _uriFunction;
-            }
+			inline
+			const UriFunction&
+			uriFunction() const
+			{
+				return _uriFunction;
+			}
 
-            inline
-            Ptr
-            uriFunction(const UriFunction& func)
-            {
-                _uriFunction = func;
+			inline
+			Ptr
+			uriFunction(const UriFunction& func)
+			{
+				_uriFunction = func;
 
-                return shared_from_this();
-            }
+				return shared_from_this();
+			}
 
-            inline
-            const NodeFunction&
-            nodeFunction() const
-            {
-                return _nodeFunction;
-            }
+			inline
+			const NodeFunction&
+			nodeFunction() const
+			{
+				return _nodeFunction;
+			}
 
-            inline
-            Ptr
-            nodeFunction(const NodeFunction& func)
-            {
-                _nodeFunction = func;
+			inline
+			Ptr
+			nodeFunction(const NodeFunction& func)
+			{
+				_nodeFunction = func;
 
-                return shared_from_this();
-            }
+				return shared_from_this();
+			}
 
-            inline
-            const EffectFunction&
-            effectFunction() const
-            {
-                return _effectFunction;
-            }
+			inline
+			const EffectFunction&
+			effectFunction() const
+			{
+				return _effectFunction;
+			}
 
-            inline
-            Ptr
-            effectFunction(const EffectFunction& func)
-            {
-                _effectFunction = func;
+			inline
+			Ptr
+			effectFunction(const EffectFunction& func)
+			{
+				_effectFunction = func;
 
-                return shared_from_this();
-            }
+				return shared_from_this();
+			}
 
             inline
             const TextureFormatFunction&
@@ -580,44 +579,44 @@ namespace minko
 				return shared_from_this();
 			}
 
-            template <typename T>
-            typename std::enable_if<std::is_base_of<file::AbstractParser, T>::value, Ptr>::type
-            registerParser(const std::string& extension)
-            {
-                std::string ext(extension);
+			template <typename T>
+			typename std::enable_if<std::is_base_of<file::AbstractParser, T>::value, Ptr>::type
+			registerParser(const std::string& extension)
+			{
+				std::string ext(extension);
 
-                std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+				std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
 
-                _parsers[ext] = T::create;
+				_parsers[ext] = T::create;
 
-                return shared_from_this();
-            }
+				return shared_from_this();
+			}
 
-            std::shared_ptr<AbstractParser>
-            getParser(const std::string& extension);
+			std::shared_ptr<AbstractParser>
+			getParser(const std::string& extension);
 
-            template <typename T>
-            typename std::enable_if<std::is_base_of<file::AbstractProtocol, T>::value, Ptr>::type
-            registerProtocol(const std::string& protocol)
-            {
-                std::string prefix(protocol);
+			template <typename T>
+			typename std::enable_if<std::is_base_of<file::AbstractProtocol, T>::value, Ptr>::type
+			registerProtocol(const std::string& protocol)
+			{
+				std::string prefix(protocol);
 
-                std::transform(prefix.begin(), prefix.end(), prefix.begin(), ::tolower);
+				std::transform(prefix.begin(), prefix.end(), prefix.begin(), ::tolower);
 
-                _protocols[prefix] = T::create;
+				_protocols[prefix] = T::create;
 
-                return shared_from_this();
-            }
+				return shared_from_this();
+			}
 
-            AbsProtocolPtr
-            getProtocol(const std::string& protocol);
+			AbsProtocolPtr
+			getProtocol(const std::string& protocol);
 
-            static
-            void
-            defaultProtocolFunction(const std::string& filename, const ProtocolFunction& func);
+			static
+			void
+			defaultProtocolFunction(const std::string& filename, const ProtocolFunction& func);
 
         protected:
-            Options();
+			Options();
 
             Options(const Options& copy);
 
@@ -626,14 +625,14 @@ namespace minko
             initialize();
 
         private:
-            void
-            initializePlatforms();
+			void
+			initializePlatforms();
 
-            void
-            initializeUserFlags();
+			void
+			initializeUserFlags();
 
-            void
-            initializeDefaultFunctions();
-        };
-    }
+			void
+			initializeDefaultFunctions();
+		};
+	}
 }

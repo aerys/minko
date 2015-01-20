@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/Minko.hpp"
+#include "minko/MinkoTests.hpp"
 
 #include "gtest/gtest.h"
 

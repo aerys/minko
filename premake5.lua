@@ -60,7 +60,7 @@ solution "minko"
 	if not _OPTIONS['no-framework'] then
 		include 'framework'
 	end
-		
+
 	-- tutorial
 	if not _OPTIONS['no-tutorial'] then
 		include 'tutorial/01-hello-cube'
@@ -111,24 +111,25 @@ solution "minko"
 	-- plugin
 	if not _OPTIONS['no-plugin'] then
 		include 'plugin/android'
-		include 'plugin/lua'
-		include 'plugin/angle'
+		--include 'plugin/lua'
+		--include 'plugin/angle'
 		include 'plugin/zlib'
 		include 'plugin/assimp'
 		include 'plugin/devil'
-		include 'plugin/bullet'
-		include 'plugin/fx'
+		--include 'plugin/bullet'
+		--include 'plugin/fx'
 		include 'plugin/html-overlay'
-		include 'plugin/http-loader'
-		include 'plugin/http-worker'
+		--include 'plugin/http-loader'
+		--include 'plugin/http-worker'
 		include 'plugin/jpeg'
-		include 'plugin/leap'
-		include 'plugin/oculus'
-		include 'plugin/particles'
+		--include 'plugin/leap'
+		--include 'plugin/oculus'
+		--include 'plugin/offscreen'
+		--include 'plugin/particles'
 		include 'plugin/png'
 		include 'plugin/sdl'
 		include 'plugin/serializer'
-		include 'plugin/webgl'
+		include 'plugin/debug'
 
 		if _OPTIONS['with-offscreen'] then
 			include 'plugin/offscreen'
@@ -154,35 +155,37 @@ solution "minko"
 	-- example
 	if not _OPTIONS['no-example'] then
 		include 'example/assimp'
-		include 'example/audio'
-		include 'example/clone'
+		-- include 'example/audio'
+		include 'example/blending'
+		-- include 'example/clone'
 		include 'example/cube'
-		include 'example/devil'
-		include 'example/effect-config'
-		include 'example/flares'
-		include 'example/fog'
-		include 'example/frustum'
-		include 'example/hologram'
-		include 'example/html-overlay'
-		include 'example/http'
-		include 'example/jobs'
-		include 'example/joystick'
-		include 'example/keyboard'
-		include 'example/leap-motion'
-		include 'example/light'
-		include 'example/line-geometry'
-		include 'example/lua-scripts'
-		include 'example/multi-surfaces'
-		include 'example/oculus'
-		include 'example/particles'
-		include 'example/physics'
-		include 'example/picking'
-		include 'example/raycasting'
+		-- include 'example/devil'
+		-- include 'example/effect-config'
+		-- include 'example/flares'
+		-- include 'example/fog'
+		-- include 'example/frustum'
+		-- include 'example/hologram'
+		-- include 'example/html-overlay'
+		-- include 'example/http'
+		-- include 'example/jobs'
+		-- include 'example/joystick'
+		-- include 'example/keyboard'
+		-- include 'example/leap-motion'
+		-- include 'example/light'
+		-- include 'example/line-geometry'
+		-- include 'example/lua-scripts'
+		-- include 'example/multi-surfaces'
+		-- include 'example/oculus'
+		-- include 'example/offscreen'
+		-- include 'example/particles'
+		-- include 'example/physics'
+		-- include 'example/picking'
+		-- include 'example/raycasting'
 		include 'example/serializer'
-		include 'example/sky-box'
-		include 'example/stencil'
-		include 'example/visibility'
-		include 'example/water'
+		-- include 'example/sky-box'
+		-- include 'example/stencil'
+		-- include 'example/visibility'
+		-- include 'example/water'
 
 		if _OPTIONS['with-offscreen'] then
 			include 'example/offscreen'
@@ -340,7 +343,7 @@ newaction {
 			local projectType = _OPTIONS['type']
 			local config = _OPTIONS['config']
 			local outputDir = _OPTIONS['regroup-dir']
-			
+
 			local completeOutputDir = outputDir .. '/' .. platform .. '/' .. config .. '/' .. projectType
 			os.mkdir(completeOutputDir)
 
@@ -352,7 +355,7 @@ newaction {
 				local sourceDir = projectType .. '/' .. dirName .. '/bin/' .. platform .. '/' .. config
 				if os.isdir(sourceDir) then
 					print(dirName)
-					
+
 					os.mkdir(completeOutputDir .. '/' .. dirName)
 
 					if platform == 'android' then

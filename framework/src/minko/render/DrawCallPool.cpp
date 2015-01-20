@@ -18,657 +18,377 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/render/DrawCallPool.hpp"
-#include "minko/render/DrawCall.hpp"
-#include "minko/component/Renderer.hpp"
-#include "minko/component/Surface.hpp"
-#include "minko/render/Effect.hpp"
-#include "minko/render/Program.hpp"
-#include "minko/data/Container.hpp"
-#include "minko/scene/Node.hpp"
-#include "minko/render/Blending.hpp"
-#include "minko/geometry/Geometry.hpp"
-#include "minko/data/ArrayProvider.hpp"
-#include "minko/material/Material.hpp"
+
+#include "minko/render/DrawCallZSorter.hpp"
+#include "minko/data/ResolvedBinding.hpp"
 
 using namespace minko;
-using namespace minko::math;
 using namespace minko::render;
-using namespace minko::component;
-using namespace minko::data;
 
-/*static*/ const unsigned int                                    DrawCallPool::NUM_FALLBACK_ATTEMPTS        = 32;
-/*static*/ std::unordered_map<DrawCall::Ptr, Vector3::Ptr>        DrawCallPool::_cachedDrawcallPositions;
-
-std::unordered_map<std::string, std::pair<std::string, int>>    DrawCallPool::_variablePropertyNameToPosition;
-
-
-DrawCallPool::DrawCallPool(Renderer::Ptr renderer):
-    _renderer(renderer),
-    _toCollect(),
-    _toRemove(),
-    _invisibleSurfaces(),
-    _surfaceToDrawCalls(),
-    _drawcallToSurface(),
-    _drawcallToMacroChangedSlot(),
-    _drawcallToZSortNeededSlot(),
+DrawCallPool::DrawCallPool() :
     _drawCalls(),
-    _dirtyDrawCalls(),
-    _mustZSort(true),
-    _surfaceToTechniqueChangedSlot(),
-    _surfaceToVisibilityChangedSlots(),
-    _surfaceToIndexChangedSlots(),
-    _surfaceBadMacroToTechniques(),
-    _surfaceBadMacroToChangedSlot(),
-    _rendererFilterChangedSlot(nullptr)
+    _macroToDrawCalls(),
+    _invalidDrawCalls(),
+    _macroChangedSlot(),
+    _propChangedSlot()
 {
-    if (_renderer == nullptr)
-        throw std::invalid_argument("renderer");
+
+}
+
+DrawCallPool::DrawCallIteratorPair
+DrawCallPool::addDrawCalls(Effect::Ptr                                          effect,
+                           const std::string&                                   techniqueName,
+                           const std::unordered_map<std::string, std::string>&  variables,
+                           data::Store&                                         rootData,
+                           data::Store&                                         rendererData,
+                           data::Store&                                         targetData)
+{
+    const auto& technique = effect->technique(techniqueName);
+
+    for (const auto& pass : technique)
+    {
+        DrawCall* drawCall = new DrawCall(pass, variables, rootData, rendererData, targetData);
+
+        _drawCalls.push_back(drawCall);
+        initializeDrawCall(*drawCall);
+    }
+
+    return DrawCallIteratorPair(std::prev(_drawCalls.end(), technique.size()), std::prev(_drawCalls.end()));
 }
 
 void
-DrawCallPool::initialize()
+DrawCallPool::removeDrawCalls(const DrawCallIteratorPair& iterators)
 {
-    _rendererFilterChangedSlot = _renderer->filterChanged()->connect([=](Renderer::Ptr r, AbstractFilterPtr f, data::BindingSource s, SurfacePtr surface){
-        rendererFilterChangedHandler(r, f, s, surface);
-    });
-}
+    auto end = std::next(iterators.second);
 
-const std::list<DrawCall::Ptr>&
-DrawCallPool::drawCalls()
-{
-    const bool doZSort = _mustZSort || !_toCollect.empty();
-
-    for (auto& surface : _toRemove)
-        cleanSurface(surface);
-    _toRemove.clear();
-
-    auto dirtyDrawCalls = _dirtyDrawCalls;
-    _dirtyDrawCalls.clear();
-
-    for (auto& d : dirtyDrawCalls)
-        refreshDrawCall(d);
-
-    for (auto& surface : _toCollect)
+    for (auto it = iterators.first; it != end; ++it)
     {
-        auto& newDrawCalls = generateDrawCall(surface, NUM_FALLBACK_ATTEMPTS);
+        DrawCall& drawCall = **it;
 
-        _drawCalls.insert(_drawCalls.end(), newDrawCalls.begin(), newDrawCalls.end());
+        unwatchProgramSignature(
+            drawCall,
+            drawCall.pass()->macroBindings(),
+            drawCall.rootData(),
+            drawCall.rendererData(),
+            drawCall.targetData()
+        );
+
+        std::list<PropertyChangedSlotMap::key_type> toRemove;
+        for (auto& bindingDrawCallPairAndSlot : _propChangedSlot)
+            if (bindingDrawCallPairAndSlot.first.second == &drawCall)
+                toRemove.push_front(bindingDrawCallPairAndSlot.first);
+
+        for (const auto& key : toRemove)
+            _propChangedSlot.erase(key);
+
+        _invalidDrawCalls.erase(&drawCall);
     }
-    _toCollect.clear();
 
-    if (doZSort)
-    {
-        _cachedDrawcallPositions.clear();
-        _drawCalls.sort(&DrawCallPool::compareDrawCalls);
-    }
-    _mustZSort = false;
-
-    return _drawCalls;
-}
-
-/*static*/
-bool
-DrawCallPool::compareDrawCalls(DrawCall::Ptr a,
-                               DrawCall::Ptr b)
-{
-    const float    aPriority            = a->priority();
-    const float    bPriority            = b->priority();
-    const bool    arePrioritiesEqual    = fabsf(aPriority - bPriority) < 1e-3f;
-
-    if (!arePrioritiesEqual)
-        return aPriority > bPriority;
-
-    if (a->zSorted() || b->zSorted())
-    {
-        static Vector3::Ptr aPosition = Vector3::create();
-        static Vector3::Ptr bPosition = Vector3::create();
-
-        getDrawcallEyePosition(a, aPosition);
-        getDrawcallEyePosition(b, bPosition);
-
-        return aPosition->z() > bPosition->z();
-    }
-    else
-    {
-        // ordered by target texture id, if any
-        return a->target() && (!b->target() || (a->target()->id() > b->target()->id()));
-    }
-}
-
-/*static*/
-Vector3::Ptr
-DrawCallPool::getDrawcallEyePosition(DrawCall::Ptr drawcall,
-                                     Vector3::Ptr output)
-{
-    const auto foundPositionIt = _cachedDrawcallPositions.find(drawcall);
-
-    if (foundPositionIt != _cachedDrawcallPositions.end())
-    {
-        if (output == nullptr)
-            output = Vector3::create(foundPositionIt->second);
-        else
-            output->copyFrom(foundPositionIt->second);
-
-        return output;
-    }
-    else
-        return drawcall->getEyeSpacePosition(output);
+    _drawCalls.erase(iterators.first, end);
 }
 
 void
-DrawCallPool::addSurface(Surface::Ptr surface)
+DrawCallPool::watchProgramSignature(DrawCall&                       drawCall,
+                                    const data::MacroBindingMap&    macroBindings,
+                                    data::Store&                    rootData,
+                                    data::Store&                    rendererData,
+                                    data::Store&                    targetData)
 {
-    _surfaceToRootContainer[surface] = surface->targets()[0]->root()->data();
-
-    _surfaceToTechniqueChangedSlot[surface] = surface->techniqueChanged()->connect(std::bind(
-        &DrawCallPool::techniqueChangedHandler,
-        shared_from_this(),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3));
-
-    _surfaceToVisibilityChangedSlots.insert(std::pair<SurfacePtr, VisibilityChanged::Slot>(surface, surface->visibilityChanged()->connect(std::bind(
-        &DrawCallPool::visibilityChangedHandler,
-        shared_from_this(),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3))));
-
-    _surfaceToVisibilityChangedSlots.insert(std::pair<SurfacePtr, VisibilityChanged::Slot>(surface, surface->computedVisibilityChanged()->connect(std::bind(
-        &DrawCallPool::visibilityChangedHandler,
-        shared_from_this(),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3))));
-
-    // drawcall variable monitoring handlers
-
-    auto geometrySlot        = surface->geometry()->data()->indexChanged()->connect(std::bind(
-        &DrawCallPool::drawCallVariablesChangedHandler,
-        shared_from_this(),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        surface
-    ));
-
-    _surfaceToIndexChangedSlots.insert(std::pair<Surface::Ptr, ArrayIndexChanged::Slot>(surface, geometrySlot));
-
-    auto arrayMaterial        = std::dynamic_pointer_cast<data::ArrayProvider>(surface->material());
-    if (arrayMaterial)
+    for (const auto& macroNameAndBinding : macroBindings.bindings)
     {
-        auto materialSlot    = arrayMaterial->indexChanged()->connect(std::bind(
-            &DrawCallPool::drawCallVariablesChangedHandler,
-            shared_from_this(),
-            std::placeholders::_1,
-            std::placeholders::_2,
-            surface
-        ));
+        const auto& macroName = macroNameAndBinding.first;
+        const auto& macroBinding = macroNameAndBinding.second;
+        auto& store = macroBinding.source == data::Binding::Source::ROOT ? rootData
+            : macroBinding.source == data::Binding::Source::RENDERER ? rendererData
+            : targetData;
+        auto bindingKey = MacroBindingKey(&macroBinding, &store);
+        auto& drawCalls = _macroToDrawCalls[bindingKey];
 
-        _surfaceToMaterialProviderIndex[surface] = surface->getTarget(0)->data()->getProviderIndex(arrayMaterial);
-        _surfaceToIndexChangedSlots.insert(std::pair<Surface::Ptr, ArrayIndexChanged::Slot>(surface, materialSlot));
-    }
+        drawCalls.push_back(&drawCall);
 
-    //if (std::find(_toCollect.begin(), _toCollect.end(), surface) == _toCollect.end())
-    if (surface->visible(_renderer))
-        _toCollect.insert(surface);
-    else
-        _invisibleSurfaces.insert(surface);
-}
+        if (hasMacroCallback(bindingKey))
+            continue;
 
-
-void
-DrawCallPool::removeSurface(Surface::Ptr surface)
-{
-    auto foundSurfaceIt = _toCollect.find(surface);
-
-    if (foundSurfaceIt == _toCollect.end())
-        _toRemove.insert(surface);
-    else
-        _toCollect.erase(foundSurfaceIt);
-}
-
-void
-DrawCallPool::cleanSurface(Surface::Ptr    surface)
-{
-    deleteDrawCalls(surface);
-
-    _surfaceToDrawCalls[surface].clear();
-    _surfaceToTechniqueChangedSlot.erase(surface);
-    //_surfaceToVisibilityChangedSlots.erase(surface);
-    _surfaceToIndexChangedSlots.erase(surface);
-
-    if (_surfaceBadMacroToTechniques.count(surface))
-        _surfaceBadMacroToTechniques.erase(surface);
-    if (_surfaceBadMacroToChangedSlot.count(surface))
-        _surfaceBadMacroToChangedSlot.erase(surface);
-}
-
-void
-DrawCallPool::techniqueChangedHandler(Surface::Ptr            surface,
-                                      const std::string&    technique,
-                                      bool                    updateDrawCall)
-{
-    deleteDrawCalls(surface);
-    if (updateDrawCall && std::find(_toCollect.begin(), _toCollect.end(), surface) == _toCollect.end())
-        _toCollect.insert(surface);
-}
-
-void
-DrawCallPool::visibilityChangedHandler(Surface::Ptr        surface,
-                                       Renderer::Ptr    renderer,
-                                       bool                value)
-{
-    if (renderer != _renderer && renderer != nullptr)
-        return;
-
-    bool visible = surface->visible(_renderer) && surface->computedVisibility(_renderer);
-
-    if (visible && _invisibleSurfaces.find(surface) != _invisibleSurfaces.end()) // visible and already wasn't visible before
-    {
-        _toCollect.insert(surface);
-        _invisibleSurfaces.erase(surface);
-    }
-    else if (!visible && _invisibleSurfaces.find(surface) == _invisibleSurfaces.end()) // not visible but was visible before
-    {
-        _toRemove.insert(surface);
-        _invisibleSurfaces.insert(surface);
-    }
-
-}
-
-void
-DrawCallPool::drawCallVariablesChangedHandler(data::ArrayProvider::Ptr    provider,
-                                              uint                        index,
-                                              Surface::Ptr                surface)
-{
-    if (surface->getTarget(0)->data()->getProviderIndex(provider) != _surfaceToMaterialProviderIndex[surface] && _toRemove.find(surface) == _toRemove.end())
-    {
-        _toCollect.insert(surface);
-        _surfaceToMaterialProviderIndex[surface] = surface->getTarget(0)->data()->getProviderIndex(provider);
-    }
-}
-
-std::list<DrawCall::Ptr>&
-DrawCallPool::generateDrawCall(Surface::Ptr    surface,
-                               unsigned int    numAttempts)
-{
-    if (_surfaceToDrawCalls.find(surface) != _surfaceToDrawCalls.end())
-        deleteDrawCalls(surface);
-
-    bool                            mustFallbackTechnique    = false;
-    std::shared_ptr<render::Effect> effect                    = surface->effect();
-    std::string                        technique                = surface->technique();
-
-    if (_renderer->effect())
-    {
-        effect        = _renderer->effect();
-        technique    = effect->techniques().begin()->first;
-    }
-
-    _surfaceToDrawCalls    [surface] = std::list<DrawCall::Ptr>();
-
-    for (const auto& pass : effect->technique(technique))
-    {
-        auto drawCall = initializeDrawCall(surface, pass);
-
-        if (drawCall)
+        if (macroBindings.types.at(macroName) != data::MacroBindingMap::MacroType::UNSET)
         {
-            _surfaceToDrawCalls[surface].push_back(drawCall);
-
-            _drawcallToSurface[drawCall] = surface;
-
-            _drawcallToMacroChangedSlot[drawCall] = drawCall->macroChanged()->connect([=](DrawCall::Ptr d, Container::Ptr c, const std::string& n){
-                drawcallMacroChangedHandler(d, c, n);
-            });
-
-            _drawcallToZSortNeededSlot[drawCall] = drawCall->zsortNeeded()->connect([=](DrawCall::Ptr d){
-                drawcallZSortNeededHandler(d);
-            });
+            addMacroCallback(
+                bindingKey,
+                store.propertyChanged(macroBinding.propertyName),
+                std::bind(&DrawCallPool::macroPropertyChangedHandler, this, std::ref(macroBinding), std::ref(drawCalls))
+            );
         }
         else
         {
-            // one pass failed without any viable fallback, fallback the whole technique then.
-            mustFallbackTechnique = true;
-            break;
-        }
-    }
+            auto propertyName = Store::getActualPropertyName(drawCall.variables(), macroBinding.propertyName);
 
-    if (mustFallbackTechnique)
-    {
-        _surfaceToDrawCalls[surface].clear();
-
-        if (numAttempts > 0 && effect->hasFallback(technique))
-        {
-            surface->setEffectAndTechnique(effect, effect->fallback(technique), false);
-
-            return generateDrawCall(surface, numAttempts - 1);
-        }
-    }
-
-    return _surfaceToDrawCalls[surface];
-}
-
-DrawCall::Ptr
-DrawCallPool::initializeDrawCall(Surface::Ptr    surface,
-                                 Pass::Ptr        pass,
-                                 DrawCall::Ptr    drawCall)
-{
-    if (pass == nullptr)
-        return nullptr;
-
-    const auto    target            = surface->targets()[0];
-
-    std::shared_ptr<data::Container>    fullTargetData        = target->data();
-    std::shared_ptr<data::Container>    fullRendererData    = _renderer->targets()[0]->data();
-    std::shared_ptr<data::Container>    fullRootData        = target->root()->data();
-
-    ContainerPtr targetData        = nullptr;
-    ContainerPtr rendererData    = nullptr;
-    ContainerPtr rootData        = nullptr;
-
-    if (drawCall)
-    {
-        targetData        = drawCall->targetData();
-        rendererData    = drawCall->rendererData();
-        rootData        = drawCall->rootData();
-
-        //drawCall->unbind();
-    }
-
-    _renderer->setFilterSurface(surface);
-
-    const auto&    targetFilters    = _renderer->filters(data::BindingSource::TARGET);
-    const auto&    rendererFilters    = _renderer->filters(data::BindingSource::RENDERER);
-    const auto&    rootFilters        = _renderer->filters(data::BindingSource::ROOT);
-
-    targetData        = fullTargetData->filter(targetFilters);
-    rendererData    = fullRendererData->filter(rendererFilters);
-    rootData        = fullRootData->filter(rootFilters);
-
-    // get drawcall's property name formatting function (dependent on filters!)
-    auto geometryId    = targetData->getProviderIndex(surface->geometry()->data());
-    auto materialId    = targetData->getProviderIndex(surface->material());
-
-    std::unordered_map<std::string, std::string> drawCallVariables;
-
-    drawCallVariables["geometryId"] = std::to_string(geometryId);
-    drawCallVariables["materialId"] = std::to_string(materialId);
-
-    FormatNameFunction formatNameFunc = std::bind(
-        &DrawCallPool::formatPropertyName,
-        shared_from_this(),
-        std::placeholders::_1,
-        drawCallVariables
-    );
-
-    auto program = getWorkingProgram(
-        surface,
-        pass,
-        formatNameFunc,
-        fullTargetData,
-        fullRendererData,
-        fullRootData,
-        targetData,
-        rendererData,
-        rootData
-    );
-
-    if (!program)
-        return nullptr;
-
-    if (drawCall == nullptr)
-        drawCall = DrawCall::create(pass);
-
-    drawCall->configure(
-        program,
-        formatNameFunc,
-        fullTargetData,
-        fullRendererData,
-        fullRootData,
-        targetData,
-        rendererData,
-        rootData
-    );
-    return drawCall;
-}
-
-
-std::shared_ptr<Program>
-DrawCallPool::getWorkingProgram(Surface::Ptr            surface,
-                                Pass::Ptr                pass,
-                                FormatNameFunction        formatNameFunc,
-                                ContainerPtr            fullTargetData,
-                                ContainerPtr            fullRendererData,
-                                ContainerPtr            fullRootData,
-                                ContainerPtr            targetData,
-                                ContainerPtr            rendererData,
-                                ContainerPtr            rootData)
-{
-    // get program signature from filtered data containers
-    std::list<std::string>    booleanMacros;
-    std::list<std::string>    integerMacros;
-    std::list<std::string>    incorrectIntegerMacros;
-
-    Program::Ptr program = pass->selectProgram(
-        formatNameFunc,
-        targetData,
-        rendererData,
-        rootData,
-        booleanMacros,
-        integerMacros,
-        incorrectIntegerMacros
-    );
-
-    // forgive good macros
-    for (auto& macroName : integerMacros)
-    {
-        if (_surfaceBadMacroToTechniques[surface].count(macroName) > 0)
-        {
-            auto&    macroTechniques = _surfaceBadMacroToTechniques[surface][macroName];
-            auto    foundTechIt        = std::find(macroTechniques.begin(), macroTechniques.end(), surface->technique());
-
-            if (foundTechIt != macroTechniques.end())
+            if (store.hasProperty(propertyName))
             {
-                macroTechniques.erase(foundTechIt);
-
-                if (macroTechniques.empty() && _surfaceBadMacroToChangedSlot[surface].count(macroName) > 0)
-                    _surfaceBadMacroToChangedSlot[surface].erase(macroName);
-            }
-        }
-    }
-
-    // blame macros that made the current technique fail
-    for (auto& macroName : incorrectIntegerMacros)
-    {
-        const auto& binding            = pass->macroBindings().find(macroName)->second;
-
-        const auto& propertyName    = std::get<0>(binding);
-        auto        source            = std::get<1>(binding);
-
-        auto        container        = source == data::BindingSource::TARGET
-            ? targetData
-            : (source == data::BindingSource::RENDERER ? rendererData : rootData);
-
-        auto        fullContainer    = source == data::BindingSource::TARGET
-            ? fullTargetData
-            : (source == data::BindingSource::RENDERER ? fullRendererData : fullRootData);
-
-        const auto&    formattedName    = formatNameFunc(propertyName);
-
-        const bool    inContainer        = container->hasProperty(formattedName);
-        const bool    inFullContainer    = fullContainer->hasProperty(formattedName);
-
-        if (inContainer)
-        {
-            if (container->isLengthProperty(formattedName)
-                && fullContainer->hasProperty(formattedName))
-            {
-                auto slot = fullContainer->propertyReferenceChanged(formattedName)->connect([=](Container::Ptr c, const std::string& n){
-                    surfaceBadMacroChangedHandler(surface, macroName);
-                });
-
-                _surfaceBadMacroToTechniques[surface][macroName].insert(surface->technique());
-                _surfaceBadMacroToChangedSlot[surface][macroName] = slot;
+                addMacroCallback(
+                    bindingKey,
+                    store.propertyRemoved(macroBinding.propertyName),
+                    std::bind(
+                        &DrawCallPool::macroPropertyRemovedHandler,
+                        this,
+                        std::ref(macroBinding),
+                        std::ref(store),
+                        std::ref(drawCalls)
+                    )
+                );
             }
             else
             {
-                auto slot = container->propertyReferenceChanged(formattedName)->connect([=](Container::Ptr c, const std::string& n){
-                    surfaceBadMacroChangedHandler(surface, macroName);
-                });
-
-                _surfaceBadMacroToTechniques[surface][macroName].insert(surface->technique());
-                _surfaceBadMacroToChangedSlot[surface][macroName] = slot;
+                addMacroCallback(
+                    bindingKey,
+                    store.propertyAdded(macroBinding.propertyName),
+                    std::bind(
+                        &DrawCallPool::macroPropertyAddedHandler,
+                        this,
+                        std::ref(macroBinding),
+                        std::ref(store),
+                        std::ref(drawCalls)
+                    )
+                );
             }
-        }
-        else if (fullContainer->hasProperty(propertyName))
-        {
-            auto slot = fullContainer->propertyReferenceChanged(propertyName)->connect([=](Container::Ptr c, const std::string& n){
-                surfaceBadMacroChangedHandler(surface, macroName);
-            });
 
-            _surfaceBadMacroToTechniques[surface][macroName].insert(surface->technique());
-            _surfaceBadMacroToChangedSlot[surface][macroName] = slot;
         }
     }
-
-    return program;
 }
 
 void
-DrawCallPool::deleteDrawCalls(Surface::Ptr surface)
+DrawCallPool::addMacroCallback(const MacroBindingKey&   key,
+                               PropertyChanged&         signal,
+                               const PropertyCallback&  callback)
 {
-    auto& drawCalls = _surfaceToDrawCalls[surface];
+    if (_macroChangedSlot.count(key) == 0)
+        _macroChangedSlot.emplace(key, ChangedSlot(signal.connect(callback), 1));
+    else
+        _macroChangedSlot[key].second++;
+}
 
-    while (!drawCalls.empty())
+void
+DrawCallPool::removeMacroCallback(const MacroBindingKey& key)
+{
+    _macroChangedSlot[key].second--;
+    if (_macroChangedSlot[key].second == 0)
+        _macroChangedSlot.erase(key);
+}
+
+bool
+DrawCallPool::hasMacroCallback(const MacroBindingKey& key)
+{
+    return _macroChangedSlot.count(key) != 0;
+}
+
+void
+DrawCallPool::macroPropertyChangedHandler(const data::MacroBinding& macroBinding, const std::list<DrawCall*>& drawCalls)
+{
+    _invalidDrawCalls.insert(drawCalls.begin(), drawCalls.end());
+}
+
+void
+DrawCallPool::macroPropertyAddedHandler(const data::MacroBinding&   macroBinding,
+                                        data::Store&                store,
+                                        const std::list<DrawCall*>& drawCalls)
+{
+    MacroBindingKey key(&macroBinding, &store);
+
+    removeMacroCallback(key);
+    addMacroCallback(
+        key,
+        store.propertyRemoved(),
+        std::bind(
+            &DrawCallPool::macroPropertyRemovedHandler,
+            this,
+            std::ref(macroBinding),
+            std::ref(store),
+            std::ref(drawCalls)
+        )
+    );
+
+    macroPropertyChangedHandler(macroBinding, drawCalls);
+}
+
+void
+DrawCallPool::macroPropertyRemovedHandler(const data::MacroBinding&     macroBinding,
+                                          data::Store&                  store,
+                                          const std::list<DrawCall*>&   drawCalls)
+{
+    MacroBindingKey key(&macroBinding, &store);
+
+    removeMacroCallback(key);
+    addMacroCallback(
+        key,
+        store.propertyAdded(),
+        std::bind(
+            &DrawCallPool::macroPropertyAddedHandler,
+            this,
+            std::ref(macroBinding),
+            std::ref(store),
+            std::ref(drawCalls)
+        )
+    );
+
+    macroPropertyChangedHandler(macroBinding, drawCalls);
+}
+
+void
+DrawCallPool::unwatchProgramSignature(DrawCall&                     drawCall,
+                                      const data::MacroBindingMap&  macroBindings,
+                                      data::Store&                  rootData,
+                                      data::Store&                  rendererData,
+                                      data::Store&                  targetData)
+{
+    for (const auto& macroNameAndBinding : macroBindings.bindings)
     {
-        auto drawCall = drawCalls.front();
-        drawCalls.pop_front();
+        const auto& macroBinding = macroNameAndBinding.second;
+        auto& store = macroBinding.source == data::Binding::Source::ROOT ? rootData
+            : macroBinding.source == data::Binding::Source::RENDERER ? rendererData
+            : targetData;
+        auto bindingKey = MacroBindingKey(&macroBinding, &store);
+        auto& drawCalls = _macroToDrawCalls.at(bindingKey);
 
-        _drawcallToSurface.erase(drawCall);
-        _drawcallToMacroChangedSlot.erase(drawCall);
-        _drawcallToZSortNeededSlot.erase(drawCall);
+        drawCalls.remove(&drawCall);
 
-        _drawCalls.remove(drawCall);
-        _dirtyDrawCalls.erase(drawCall);
+        if (drawCalls.size() == 0)
+            _macroToDrawCalls.erase(bindingKey);
+
+        removeMacroCallback(bindingKey);
     }
 }
 
 void
-DrawCallPool::drawcallMacroChangedHandler(DrawCall::Ptr            drawCall,
-                                          Container::Ptr        container,
-                                          const std::string&    propertyName)
+DrawCallPool::initializeDrawCall(DrawCall& drawCall)
 {
-    if (drawCall)
-        _dirtyDrawCalls.insert(drawCall);
-}
+    auto pass = drawCall.pass();
+    auto programAndSignature = pass->selectProgram(
+        drawCall.variables(), drawCall.targetData(), drawCall.rendererData(), drawCall.rootData()
+    );
+    auto program = programAndSignature.first;
 
-void
-DrawCallPool::drawcallZSortNeededHandler(DrawCall::Ptr)
-{
-    _mustZSort = true;
-}
-
-void
-DrawCallPool::surfaceBadMacroChangedHandler(Surface::Ptr        surface,
-                                            const std::string&    macroName)
-{
-    if (surface == nullptr)
+    if (program == drawCall.program())
         return;
 
-    auto effect = _renderer->effect() ? _renderer->effect() : surface->effect();
+    drawCall.bind(program);
 
-    if (_surfaceBadMacroToTechniques[surface].count(macroName) > 0)
+    // bind attributes
+    // FIXME: like for uniforms, watch and swap default values / binding value
+    for (const auto& input : program->inputs().attributes())
+        drawCall.bindAttribute(input, pass->attributeBindings().bindings, pass->attributeBindings().defaultValues);
+    // bind uniforms
+    for (const auto& input : program->inputs().uniforms())
+        uniformBindingPropertyAddedHandler(drawCall, input, pass->uniformBindings());
+    // bind states
+    drawCall.bindStates(pass->stateBindings().bindings, pass->stateBindings().defaultValues);
+    // bind index buffer
+    if (!pass->isPostProcessing())
+        drawCall.bindIndexBuffer();
+
+    // FIXME: avoid const_cast
+    if (programAndSignature.second != nullptr)
+        watchProgramSignature(
+            drawCall,
+            drawCall.pass()->macroBindings(),
+            drawCall.rootData(),
+            drawCall.rendererData(),
+            drawCall.targetData()
+        );
+}
+
+void
+DrawCallPool::uniformBindingPropertyAddedHandler(DrawCall&                          drawCall,
+                                                 const ProgramInputs::UniformInput& input,
+                                                 const data::BindingMap&            uniformBindingMap)
+{
+    data::ResolvedBinding* resolvedBinding = drawCall.bindUniform(
+        input, uniformBindingMap.bindings, uniformBindingMap.defaultValues
+    );
+
+    if (resolvedBinding != nullptr)
     {
-        const auto& techniques    = _surfaceBadMacroToTechniques[surface][macroName];
+        auto& propertyName = resolvedBinding->propertyName;
+        auto& signal = resolvedBinding->store.hasProperty(propertyName)
+            ? resolvedBinding->store.propertyRemoved(propertyName)
+            : resolvedBinding->store.propertyAdded(propertyName);
 
-        if (!techniques.empty())
-        {
-            auto        techniqueIt    = _surfaceBadMacroToTechniques[surface][macroName].begin();
-            const auto& technique    = *techniqueIt; // FIXME
+        _propChangedSlot[{&resolvedBinding->binding, &drawCall}] = signal.connect(std::bind(
+            &DrawCallPool::uniformBindingPropertyAddedHandler,
+            this,
+            std::ref(drawCall),
+            std::ref(input),
+            std::ref(uniformBindingMap)
+        ));
 
-            surface->setEffectAndTechnique(effect, technique);
-        }
+        delete resolvedBinding;
+    }
+
+    if (input.type == ProgramInputs::Type::sampler2d)
+    {
+        samplerStatesBindingPropertyAddedHandler(drawCall, input, uniformBindingMap);
+    }
+
+}
+
+void
+DrawCallPool::samplerStatesBindingPropertyAddedHandler(DrawCall&                          drawCall,
+                                                       const ProgramInputs::UniformInput& input,
+                                                       const data::BindingMap&            uniformBindingMap)
+{
+   auto resolvedBindings = drawCall.bindSamplerStates(
+        input, uniformBindingMap.bindings, uniformBindingMap.defaultValues
+    );
+
+   for (auto resolvedBinding : resolvedBindings)
+   {
+       if (resolvedBinding != nullptr)
+       {
+           auto& propertyName = resolvedBinding->propertyName;
+           auto& signal = resolvedBinding->store.hasProperty(propertyName)
+               ? resolvedBinding->store.propertyRemoved(propertyName)
+               : resolvedBinding->store.propertyAdded(propertyName);
+
+           _propChangedSlot[{&resolvedBinding->binding, &drawCall}] = signal.connect(std::bind(
+               &DrawCallPool::samplerStatesBindingPropertyAddedHandler,
+               this,
+               std::ref(drawCall),
+               std::ref(input),
+               std::ref(uniformBindingMap)
+            ));
+
+           delete resolvedBinding;
+       }
+   }
+}
+void
+DrawCallPool::update()
+{
+    for (auto* drawCallPtr : _invalidDrawCalls)
+        initializeDrawCall(*drawCallPtr);
+
+    _invalidDrawCalls.clear();
+}
+
+void
+DrawCallPool::invalidateDrawCalls(const DrawCallIteratorPair&                         iterators,
+                                  const std::unordered_map<std::string, std::string>& variables)
+{
+    auto end = std::next(iterators.second);
+
+    for (auto it = iterators.first; it != end; ++it)
+    {
+        auto& drawCall = **it;
+
+        _invalidDrawCalls.insert(&drawCall);
+        drawCall.variables().clear();
+        drawCall.variables().insert(variables.begin(), variables.end());
     }
 }
 
 void
-DrawCallPool::rendererFilterChangedHandler(Renderer::Ptr                    renderer,
-                                           DrawCallPool::AbstractFilterPtr    filter,
-                                           data::BindingSource                source,
-                                           SurfacePtr                        surface)
+DrawCallPool::clear()
 {
-    if (surface != nullptr)
-    {
-        auto drawCalls = _surfaceToDrawCalls[surface];
-
-        for (auto drawCall : drawCalls)
-            _dirtyDrawCalls.insert(drawCall);
-    }
-    else
-    {
-        for (auto drawCallList : _surfaceToDrawCalls)
-            _dirtyDrawCalls.insert(drawCallList.second.begin(), drawCallList.second.end());
-    }
-
-    _mustZSort = true;
-}
-
-void
-DrawCallPool::refreshDrawCall(DrawCall::Ptr drawCall)
-{
-    if (_drawcallToSurface.count(drawCall) == 0)
-        return;
-
-    auto surface    = _drawcallToSurface[drawCall];
-    auto effect        = _renderer->effect() ? _renderer->effect() : surface->effect();
-    auto technique    = surface->technique();
-
-    if (initializeDrawCall(surface, drawCall->pass(), drawCall) == nullptr)
-    {
-        // failed to update drawcall, try to fallback
-        if (effect->hasFallback(technique))
-            surface->setEffectAndTechnique(effect, effect->fallback(technique), true);
-    }
-}
-
-std::string
-DrawCallPool::formatPropertyName(const std::string&                                rawPropertyName,
-                                 std::unordered_map<std::string, std::string>&    variableToValue)
-{
-    std::string propertyName = rawPropertyName;
-
-    if (_variablePropertyNameToPosition.find(rawPropertyName) != _variablePropertyNameToPosition.end())
-    {
-        auto variablePosition = _variablePropertyNameToPosition[rawPropertyName];
-
-        if (variablePosition.second != -1)
-        {
-            auto key = "${" + variablePosition.first + "}";
-            propertyName.replace(variablePosition.second, key.size(), variableToValue[variablePosition.first]);
-        }
-    }
-    else
-    {
-        auto variableIt = variableToValue.begin();
-        bool changed = false;
-
-        while (variableIt != variableToValue.end())
-        {
-            auto key = "${" + variableIt->first + "}";
-            size_t position = rawPropertyName.rfind(key);
-
-            if (position != std::string::npos)
-            {
-                propertyName.replace(position, key.size(), variableIt->second);
-                _variablePropertyNameToPosition[rawPropertyName] = std::pair<std::string, int>(variableIt->first, position);
-                changed = true;
-            }
-            variableIt++;
-        }
-
-        if (!changed)
-            _variablePropertyNameToPosition[rawPropertyName] = std::pair<std::string, int>("", -1);
-    }
-
-    return propertyName;
+    _drawCalls.clear();
+    _macroToDrawCalls.clear();
+    _invalidDrawCalls.clear();
+    _macroChangedSlot.clear();
+    _propChangedSlot.clear();
 }

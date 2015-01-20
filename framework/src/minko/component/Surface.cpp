@@ -21,52 +21,51 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/scene/Node.hpp"
 #include "minko/geometry/Geometry.hpp"
+#include "minko/material/Material.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/render/DrawCall.hpp"
 #include "minko/render/Pass.hpp"
 #include "minko/render/Program.hpp"
-#include "minko/data/Container.hpp"
-#include "minko/data/ArrayProvider.hpp"
+#include "minko/data/Store.hpp"
+#include "minko/data/Provider.hpp"
 #include "minko/component/Renderer.hpp"
 #include "minko/CloneOption.hpp"
 #include "minko/material/Material.hpp"
 
 using namespace minko;
 using namespace minko::scene;
-using namespace minko::material;
 using namespace minko::data;
 using namespace minko::component;
 using namespace minko::geometry;
 using namespace minko::render;
+using namespace minko::material;
 
-Surface::Surface(std::string                name,
-                 Geometry::Ptr                 geometry,
-				 material::Material::Ptr	material,
-                 Effect::Ptr                effect,
-                 const std::string&            technique) :
-    AbstractComponent(),
-    _name(name),
-    _geometry(geometry),
-    _material(material),
-    _effect(effect),
-    _technique(technique),
-    _visible(true),
-    _rendererToVisibility(),
-    _rendererToComputedVisibility(),
-    _techniqueChanged(TechniqueChangedSignal::create()),
-    _visibilityChanged(VisibilityChangedSignal::create()),
-    _computedVisibilityChanged(VisibilityChangedSignal::create()),
-    _targetAddedSlot(nullptr),
-    _targetRemovedSlot(nullptr),
-    _addedSlot(nullptr),
-    _removedSlot(nullptr)
+const std::string Surface::SURFACE_COLLECTION_NAME = "surface";
+const std::string Surface::GEOMETRY_COLLECTION_NAME = "geometry";
+const std::string Surface::MATERIAL_COLLECTION_NAME = "material";
+const std::string Surface::EFFECT_COLLECTION_NAME = "effect";
+
+Surface::Surface(std::string		name,
+				 Geometry::Ptr 		geometry,
+				 Material::Ptr 		material,
+				 Effect::Ptr		effect,
+				 const std::string&	technique) :
+	AbstractComponent(),
+	_name(name),
+	_geometry(geometry),
+	_material(material),
+	_effect(effect),
+    _provider(data::Provider::create()),
+	_technique(technique)
 {
-    if (_effect == nullptr)
-        throw std::invalid_argument("effect");
-    if (!_effect->hasTechnique(_technique))
-        throw std::logic_error("Effect does not provide a '" + _technique + "' technique.");
+	if (_effect == nullptr)
+		throw std::invalid_argument("effect");
+	if (!_effect->hasTechnique(_technique))
+		throw std::logic_error("Effect does not provide a '" + _technique + "' technique.");
 }
 
+// TODO #Clone
+/*
 Surface::Surface(const Surface& surface, const CloneOption& option) :
 	AbstractComponent(surface, option),
 	_name(surface._name),
@@ -96,162 +95,132 @@ Surface::clone(const CloneOption& option)
 {
 	Ptr surface(new Surface(*this, option));
 
-	surface->initialize();
-
 	return surface;
 }
+*/
 
 void
-Surface::initialize()
+Surface::targetAdded(scene::Node::Ptr target)
 {
-    _targetAddedSlot = targetAdded()->connect(std::bind(
-        &Surface::targetAddedHandler,
-        std::static_pointer_cast<Surface>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2
-    ));
+    auto& targetData = target->data();
 
-    _targetRemovedSlot = targetRemoved()->connect(std::bind(
-        &Surface::targetRemovedHandler,
-        std::static_pointer_cast<Surface>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2
-    ));
+    targetData.addProvider(_provider, SURFACE_COLLECTION_NAME);
+    targetData.addProvider(_material->data(), MATERIAL_COLLECTION_NAME);
+    targetData.addProvider(_geometry->data(), GEOMETRY_COLLECTION_NAME);
+    targetData.addProvider(_effect->data(), EFFECT_COLLECTION_NAME);
 }
 
 void
-Surface::targetAddedHandler(AbstractComponent::Ptr    ctrl,
-                            scene::Node::Ptr        target)
-
+Surface::targetRemoved(scene::Node::Ptr target)
 {
-    auto targetData    = target->data();
+	// When a Surface is removed, each Renderer will remove the corresponding draw calls
+	// but Renderer listen to the Node::componentRemoved() signal, which is triggered after
+	// Surface::targetRemoved() is called.
+	// Thus, if we remove the data::Provider directly in Surface::targetRemoved, draw call
+	// bindings will see the corresponding properties have been removed and will throw if there
+	// is no default value.
+	// To avoid this, we have to make sure the draw calls are removed before the providers. This
+	// is why we remove the providers in a Node::componentRemoved() signal callback.
+	// Listeing to Node::componentRemoved() is not enough because of bubbling. To be sure to remove
+	// the provider after anything else, we listen to the componentRemoved() of the node's root.
+	_componentRemovedSlot = target->root()->componentRemoved().connect(
+		[=](scene::Node::Ptr, scene::Node::Ptr target, component::AbstractComponent::Ptr)
+		{
+			_componentRemovedSlot = nullptr;
 
-    _addedSlot = target->added()->connect(std::bind(
-        &Surface::addedHandler,
-        std::static_pointer_cast<Surface>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3
-    ));
+		    auto& targetData = target->data();
 
-    _removedSlot = target->removed()->connect(std::bind(
-        &Surface::removedHandler,
-        std::static_pointer_cast<Surface>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3
-    ));
-
-	auto arrayProviderMaterial = std::static_pointer_cast<data::ArrayProvider>(_material);
-
-    if (arrayProviderMaterial)
-		targetData->addProvider(std::static_pointer_cast<data::ArrayProvider>(_material));
-    else
-		targetData->addProvider(std::static_pointer_cast<data::ArrayProvider>(_material));
-
-    targetData->addProvider(_geometry->data());
-    targetData->addProvider(_effect->data());
+		    targetData.removeProvider(_provider, SURFACE_COLLECTION_NAME);
+		    targetData.removeProvider(_material->data(), MATERIAL_COLLECTION_NAME);
+		    targetData.removeProvider(_geometry->data(), GEOMETRY_COLLECTION_NAME);
+		    targetData.removeProvider(_effect->data(), EFFECT_COLLECTION_NAME);
+		}
+	);
 }
 
 void
-Surface::targetRemovedHandler(AbstractComponent::Ptr    ctrl,
-                              scene::Node::Ptr            target)
+Surface::geometry(geometry::Geometry::Ptr geometry)
 {
-    auto data = target->data();
-
-    _removedSlot    = nullptr;
-
-	data->removeProvider(std::static_pointer_cast<data::ArrayProvider>(_material));
-    data->removeProvider(_geometry->data());
-    data->removeProvider(_effect->data());
-}
-
-void
-Surface::addedHandler(Node::Ptr, Node::Ptr target, Node::Ptr)
-{
-}
-
-void
-Surface::removedHandler(Node::Ptr, Node::Ptr target, Node::Ptr)
-{
-}
-
-void
-Surface::geometry(geometry::Geometry::Ptr newGeometry)
-{
-    for (unsigned int i = 0; i < targets().size(); ++i)
-    {
-        std::shared_ptr<scene::Node> target = targets()[i];
-
-        target->data()->removeProvider(_geometry->data());
-        target->data()->addProvider(newGeometry->data());
-    }
-
-    _geometry = newGeometry;
-}
-
-void
-Surface::effect(render::Effect::Ptr        effect,
-                const std::string&        technique)
-{
-    setEffectAndTechnique(effect, technique, true);
-}
-
-void
-Surface::visible(component::Renderer::Ptr    renderer,
-                 bool                        value)
-{
-    if (visible(renderer) != value)
-    {
-        _rendererToVisibility[renderer] = value;
-        _visibilityChanged->execute(
-            std::static_pointer_cast<Surface>(shared_from_this()),
-            renderer,
-            value
-        );
-    }
-}
-
-void
-Surface::computedVisibility(component::Renderer::Ptr    renderer,
-                            bool                        value)
-{
-    if (computedVisibility(renderer) != value)
-    {
-        _rendererToComputedVisibility[renderer] = value;
-        _computedVisibilityChanged->execute(
-            std::static_pointer_cast<Surface>(shared_from_this()),
-            renderer,
-            value
-        );
-    }
-}
-
-void
-Surface::setEffectAndTechnique(Effect::Ptr            effect,
-                               const std::string&    technique,
-                               bool                    updateDrawcalls)
-{
-    if (_effect == effect && _technique == technique)
+    if (geometry == _geometry)
         return;
 
-    if (effect == nullptr)
-        throw std::invalid_argument("effect");
-    if (!effect->hasTechnique(technique))
-        throw std::logic_error("Effect does not provide a '" + technique + "' technique.");
+    auto t = target();
 
-    for (auto& n : targets())
+    if (t)
+        t->data().removeProvider(_geometry->data(), GEOMETRY_COLLECTION_NAME);
+
+    _geometry = geometry;
+
+    if (t)
+        t->data().addProvider(_geometry->data(), GEOMETRY_COLLECTION_NAME);
+
+    _geometryChanged.execute(std::static_pointer_cast<Surface>(shared_from_this()));
+}
+
+void
+Surface::firstIndex(unsigned short index)
+{
+    // TODO
+}
+
+void
+Surface::numIndices(unsigned short numIndices)
+{
+    // TODO
+}
+
+void
+Surface::material(material::Material::Ptr material)
+{
+    if (material == _material)
+        return;
+
+    auto t = target();
+
+    if (t)
+        t->data().removeProvider(_material->data(), MATERIAL_COLLECTION_NAME);
+
+    _material = material;
+
+    if (t)
+        t->data().addProvider(_material->data(), MATERIAL_COLLECTION_NAME);
+
+    _materialChanged.execute(std::static_pointer_cast<Surface>(shared_from_this()));
+}
+
+void
+Surface::effect(render::Effect::Ptr		effect,
+				const std::string&		technique)
+{
+	setEffectAndTechnique(effect, technique);
+}
+
+void
+Surface::setEffectAndTechnique(Effect::Ptr			effect,
+							   const std::string&	technique)
+{
+	if (effect == nullptr)
+		throw std::invalid_argument("effect");
+	if (!effect->hasTechnique(technique))
+		throw std::logic_error("Effect does not provide a '" + technique + "' technique.");
+
+    auto changed = false;
+
+    if (effect != _effect)
     {
-        n->data()->removeProvider(_effect->data());
-        n->data()->addProvider(effect->data());
+        changed = true;
+	    target()->data().removeProvider(_effect->data(), EFFECT_COLLECTION_NAME);
+    	_effect = effect;
+        target()->data().addProvider(effect->data(), EFFECT_COLLECTION_NAME);
     }
 
-    _effect        = effect;
-    _technique    = technique;
+    if (technique != _technique)
+    {
+        changed = true;
+    	_technique = technique;
+        _provider->set("technique", technique);
+    }
 
-    _techniqueChanged->execute(
-        std::static_pointer_cast<Surface>(shared_from_this()),
-        _technique,
-        updateDrawcalls
-    );
+    if (changed)
+        _effectChanged.execute(std::static_pointer_cast<Surface>(shared_from_this()));
 }

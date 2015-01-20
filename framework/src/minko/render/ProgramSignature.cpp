@@ -20,169 +20,261 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/ProgramSignature.hpp"
 
 #include "minko/render/Pass.hpp"
-#include "minko/data/Container.hpp"
+#include "minko/data/Store.hpp"
 #include "minko/render/DrawCall.hpp"
+#include "minko/data/BindingMap.hpp"
+#include "minko/data/MacroBinding.hpp"
 
 using namespace minko;
 using namespace minko::render;
 using namespace minko::data;
 
-//#define DEACTIVATE_FALLBACK // since beta 1
-
-/*static*/ const uint ProgramSignature::MAX_NUM_BINDINGS = 32;
-
-void
-ProgramSignature::build(Pass::Ptr                pass,
-                        FormatNameFunction        formatNameFunc,
-                        Container::Ptr            targetData,
-                        Container::Ptr            rendererData,
-                        Container::Ptr            rootData,
-                        std::string&            defines,
-                        std::list<std::string>&    booleanMacros,
-                        std::list<std::string>&    integerMacros,
-                        std::list<std::string>&    incorrectIntegerMacros)
+ProgramSignature::ProgramSignature(const data::MacroBindingMap&                           macroBindings,
+                                   const std::unordered_map<std::string, std::string>&    variables,
+                                   const Store&			                                  targetData,
+                                   const Store&			                                  rendererData,
+                                   const Store&			                                  rootData) :
+    _mask(0)
 {
-    _mask = 0;
-    _values.clear();
-    _values.resize(MAX_NUM_BINDINGS, 0);
+    const uint maxNumMacros = sizeof(MaskType) * 8;
 
-    defines.clear();
+    _values.reserve(maxNumMacros);
+    _macros.reserve(maxNumMacros);
 
-    booleanMacros.clear();
-    integerMacros.clear();
-    incorrectIntegerMacros.clear();
-
-    std::unordered_map<std::string, MacroBindingDefault> explicitDefinitions;
-
-    pass->getExplicitDefinitions(explicitDefinitions);
-
-    unsigned int macroId    = 0;
-    for (auto& macroBinding : pass->macroBindings())
+	unsigned int macroId = 0;
+	for (const auto& macroNameAndBinding : macroBindings.bindings)
     {
-        const auto&    macroName        = macroBinding.first;
-        auto        macroDefault    = macroBinding.second;
-
-        const auto& propertyName    = formatNameFunc(std::get<0>(macroDefault));
-        auto        source            = std::get<1>(macroDefault);
-        auto        container        = source == BindingSource::TARGET
+        const auto&	macroName = macroNameAndBinding.first;
+        const auto&	macroBinding = macroNameAndBinding.second;
+        auto propertyName = Store::getActualPropertyName(variables, macroBinding.propertyName);
+        auto& store = macroBinding.source == Binding::Source::TARGET
             ? targetData
-            : (source == BindingSource::RENDERER ? rendererData : rootData);
+            : (macroBinding.source == Binding::Source::RENDERER ? rendererData : rootData);
+        bool macroIsDefined = store.hasProperty(propertyName);
+        bool hasDefaultValue = macroBindings.defaultValues.hasProperty(propertyName);
 
-        bool                macroExists;
-        bool                isMacroInteger;
-        MacroBindingDefault    defaultMacro;
+        if (macroIsDefined || hasDefaultValue)
+		{
+            MacroBindingMap::MacroType type = macroBindings.types.at(macroName);
 
-        const auto                    foundExplicitDefIt    = explicitDefinitions.find(macroName);
-        if (foundExplicitDefIt == explicitDefinitions.end())
-        {
-            // no explicit definition
-            macroExists        = container->hasProperty(propertyName);
-            isMacroInteger    = macroExists && container->propertyHasType<int>(propertyName, true);
-            defaultMacro    = std::get<2>(macroBinding.second);
-        }
-        else
-        {
-            // explicit definition by the pass
-            macroExists        = true;
-            defaultMacro    = foundExplicitDefIt->second;
-            isMacroInteger    = (defaultMacro.semantic == MacroBindingDefaultValueSemantic::VALUE);
+			// WARNING: we do not support more than 32 macro bindings
+            if (macroId == maxNumMacros)
+				throw;
 
-            explicitDefinitions.erase(macroName);
-        }
+			_mask |= 1 << macroId; // update program signature
 
-        const auto    defaultMacroExists        = defaultMacro.semantic == MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
-        const bool    isDefaultMacroInteger    = defaultMacro.semantic == MacroBindingDefaultValueSemantic::VALUE;
-        const bool    canUseDefaultMacro        = defaultMacroExists || isDefaultMacroInteger;
+            _macros.push_back(macroName);
+            _types.push_back(type);
+            if (type != MacroBindingMap::MacroType::UNSET)
+			{
+				// update program signature
+                auto value = getValueFromStore(
+                    macroIsDefined ? store : macroBindings.defaultValues,
+                    propertyName,
+                    type
+                );
 
+                if (type == MacroBindingMap::MacroType::INT)
+                    value = std::max(
+                        macroBinding.minValue,
+                        std::min(macroBinding.maxValue, Any::cast<int>(value))
+                    );
 
-        if (macroExists || canUseDefaultMacro)
-        {
-            if (pass->isExplicitlyUndefined(macroName))
-                continue;
+                _values.push_back(value);
+			}
+		}
+		++macroId;
+	}
 
-            // WARNING: we do not support more than 32 macro bindings
-            if (macroId == MAX_NUM_BINDINGS)
-                throw;
-
-            _mask |= 1 << macroId; // update program signature
-
-
-            if (isMacroInteger || isDefaultMacroInteger)
-            {
-                const int    min        = std::get<3>(macroBinding.second);
-                const int    max        = std::get<4>(macroBinding.second);
-
-                int            value    = isMacroInteger
-                    ? container->get<int>(propertyName)
-                    : defaultMacro.value.value;
-
-#ifdef DEACTIVATE_FALLBACK
-                value = std::max(min, std::min(max, value));
-#endif // DEACTIVATE_FALLBACK
-
-                // update program signature
-                _values[macroId] = value;
-
-                if (value < min || value > max)
-                {
-                    if (macroExists)
-                        incorrectIntegerMacros.push_back(macroName);
-
-#ifdef DEACTIVATE_FALLBACK
-                    throw;
-#endif // DEACTIVATE_FALLBACK
-                }
-                else
-                {
-                    defines += "#define " + macroName + " " + std::to_string(value) + "\n";
-
-                    if (macroExists && value > 0) // FIXME
-                        integerMacros.push_back(macroName);
-                }
-            }
-            else if (macroExists || defaultMacroExists)
-            {
-                defines += "#define " + macroName + "\n";
-
-                if (macroExists)
-                    booleanMacros.push_back(macroName);
-            }
-        }
-        ++macroId;
-    }
-
-    // treat remaining unprocessed explicit macro definitions
-    for (auto& macroNameAndDefault : explicitDefinitions)
+    for (auto provider : macroBindings.defaultValues.providers())
     {
-        // WARNING: we do not support more than 32 macro bindings
-        if (macroId == MAX_NUM_BINDINGS)
-            throw;
+        for (const auto& propertyNameAndValue : provider->values())
+        {
+            _mask |= 1 << macroId;
+            _macros.push_back(propertyNameAndValue.first);
+            _types.push_back(macroBindings.types.at(propertyNameAndValue.first));
+            _values.push_back(propertyNameAndValue.second);
 
-        _mask |= 1 << macroId; // update program signature
-
-        const auto& macroName        = macroNameAndDefault.first;
-        const auto& macroDefault    = macroNameAndDefault.second;
-
-        if (macroDefault.semantic ==MacroBindingDefaultValueSemantic::VALUE)
-            defines += "#define " + macroName + " " + std::to_string(macroDefault.value.value) + "\n";
-        else
-            defines += "#define " + macroName + "\n";
-
-        ++macroId;
+            ++macroId;
+        }
     }
+}
+
+ProgramSignature::ProgramSignature(const ProgramSignature& signature) :
+    _mask(signature._mask),
+    _values(signature._values)
+{
 }
 
 bool
 ProgramSignature::operator==(const ProgramSignature& x) const
 {
-    if (_mask != x._mask)
-        return false;
+	if (_mask != x._mask)
+		return false;
 
-    for (unsigned int i = 0; i < MAX_NUM_BINDINGS; ++i)
+    auto j = 0;
+    for (unsigned int i = 0; i < _types.size(); ++i)
     {
-        if ((_mask >> i) != 0
-            && _values[i] != x._values[i])
+        if (_types[i] != x._types[i])
             return false;
+
+        if (_types[i] != MacroBindingMap::MacroType::UNSET)
+        {
+            switch (_types[i])
+            {
+            case MacroBindingMap::MacroType::BOOL:
+                if (Any::cast<bool>(_values[j]) != Any::cast<bool>(x._values[j]))
+                    return false;
+                break;
+            case MacroBindingMap::MacroType::BOOL2:
+                if (Any::cast<math::bvec2>(_values[j]) != Any::cast<math::bvec2>(x._values[j]))
+                    return false;
+                break;
+            case MacroBindingMap::MacroType::BOOL3:
+                if (Any::cast<math::bvec3>(_values[j]) != Any::cast<math::bvec3>(x._values[j]))
+                    return false;
+                break;
+            case MacroBindingMap::MacroType::BOOL4:
+                if (Any::cast<math::bvec4>(_values[j]) != Any::cast<math::bvec4>(x._values[j]))
+                    return false;
+                break;
+            case MacroBindingMap::MacroType::INT:
+                if (Any::cast<int>(_values[j]) != Any::cast<int>(x._values[j]))
+                    return false;
+                break;
+            case MacroBindingMap::MacroType::INT2:
+                if (Any::cast<math::ivec2>(_values[j]) != Any::cast<math::ivec2>(x._values[j]))
+                    return false;
+                break;
+            case MacroBindingMap::MacroType::INT3:
+                if (Any::cast<math::ivec3>(_values[j]) != Any::cast<math::ivec3>(x._values[j]))
+                    return false;
+                break;
+            case MacroBindingMap::MacroType::INT4:
+                if (Any::cast<math::ivec4>(_values[j]) != Any::cast<math::ivec4>(x._values[j]))
+                    return false;
+                break;
+            case MacroBindingMap::MacroType::FLOAT:
+                if (Any::cast<float>(_values[j]) != Any::cast<float>(x._values[j]))
+                    return false;
+                break;
+            case MacroBindingMap::MacroType::FLOAT2:
+                if (Any::cast<math::vec2>(_values[j]) != Any::cast<math::vec2>(x._values[j]))
+                    return false;
+                break;
+            case MacroBindingMap::MacroType::FLOAT3:
+                if (Any::cast<math::vec3>(_values[j]) != Any::cast<math::vec3>(x._values[j]))
+                    return false;
+                break;
+            case MacroBindingMap::MacroType::FLOAT4:
+                if (Any::cast<math::vec4>(_values[j]) != Any::cast<math::vec4>(x._values[j]))
+                    return false;
+                break;
+            case MacroBindingMap::MacroType::UNSET:
+                throw;
+            }
+
+            ++j;
+        }
     }
-    return true;
+
+	return true;
+}
+
+void
+ProgramSignature::updateProgram(Program& program) const
+{
+    auto typeIndex  = 0;
+    auto macroIndex = 0;
+    auto valueIndex = 0;
+
+    for (auto j = 0; j < 32; ++j)
+    {
+        if ((_mask & (1 << j)) != 0)
+        {
+            switch (_types[typeIndex])
+            {
+                case MacroBindingMap::MacroType::UNSET:
+                    program.define(_macros[macroIndex]);
+                    break;
+                case MacroBindingMap::MacroType::BOOL:
+                    program.define(_macros[macroIndex], Any::unsafe_cast<bool>(_values[valueIndex++]));
+                    break;
+                case MacroBindingMap::MacroType::BOOL2:
+                    program.define(_macros[macroIndex], Any::unsafe_cast<math::bvec2>(_values[valueIndex++]));
+                    break;
+                case MacroBindingMap::MacroType::BOOL3:
+                    program.define(_macros[macroIndex], Any::unsafe_cast<math::bvec3>(_values[valueIndex++]));
+                    break;
+                case MacroBindingMap::MacroType::BOOL4:
+                    program.define(_macros[macroIndex], Any::unsafe_cast<math::bvec4>(_values[valueIndex++]));
+                    break;
+                case MacroBindingMap::MacroType::INT:
+                    program.define(_macros[macroIndex], Any::unsafe_cast<int>(_values[valueIndex++]));
+                    break;
+                case MacroBindingMap::MacroType::INT2:
+                    program.define(_macros[macroIndex], Any::unsafe_cast<math::ivec2>(_values[valueIndex++]));
+                    break;
+                case MacroBindingMap::MacroType::INT3:
+                    program.define(_macros[macroIndex], Any::unsafe_cast<math::ivec3>(_values[valueIndex++]));
+                    break;
+                case MacroBindingMap::MacroType::INT4:
+                    program.define(_macros[macroIndex], Any::unsafe_cast<math::ivec4>(_values[valueIndex++]));
+                    break;
+                case MacroBindingMap::MacroType::FLOAT:
+                    program.define(_macros[macroIndex], Any::unsafe_cast<float>(_values[valueIndex++]));
+                    break;
+                case MacroBindingMap::MacroType::FLOAT2:
+                    program.define(_macros[macroIndex], Any::unsafe_cast<math::vec2>(_values[valueIndex++]));
+                    break;
+                case MacroBindingMap::MacroType::FLOAT3:
+                    program.define(_macros[macroIndex], Any::unsafe_cast<math::vec3>(_values[valueIndex++]));
+                    break;
+                case MacroBindingMap::MacroType::FLOAT4:
+                    program.define(_macros[macroIndex], Any::unsafe_cast<math::vec4>(_values[valueIndex++]));
+                    break;
+            }
+
+            ++typeIndex;
+            ++macroIndex;
+        }
+    }
+}
+
+Any
+ProgramSignature::getValueFromStore(const data::Store&                  store,
+                                    const std::string&                  propertyName,
+                                    const MacroBindingMap::MacroType&   type)
+{
+    switch (type)
+    {
+    case MacroBindingMap::MacroType::BOOL:
+        return store.get<bool>(propertyName);
+    case MacroBindingMap::MacroType::BOOL2:
+        return store.get<math::bvec2>(propertyName);
+    case MacroBindingMap::MacroType::BOOL3:
+        return store.get<math::bvec3>(propertyName);
+    case MacroBindingMap::MacroType::BOOL4:
+        return store.get<math::bvec4>(propertyName);
+    case MacroBindingMap::MacroType::INT:
+        return store.get<int>(propertyName);
+    case MacroBindingMap::MacroType::INT2:
+        return store.get<math::ivec2>(propertyName);
+    case MacroBindingMap::MacroType::INT3:
+        return store.get<math::ivec3>(propertyName);
+    case MacroBindingMap::MacroType::INT4:
+        return store.get<math::ivec4>(propertyName);
+    case MacroBindingMap::MacroType::FLOAT:
+        return store.get<float>(propertyName);
+    case MacroBindingMap::MacroType::FLOAT2:
+        return store.get<math::vec2>(propertyName);
+    case MacroBindingMap::MacroType::FLOAT3:
+        return store.get<math::vec3>(propertyName);
+    case MacroBindingMap::MacroType::FLOAT4:
+        return store.get<math::vec4>(propertyName);
+    case MacroBindingMap::MacroType::UNSET:
+        throw;
+    }
+
+    throw;
 }

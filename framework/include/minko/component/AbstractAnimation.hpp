@@ -52,8 +52,8 @@ namespace minko
 			};
 
 		protected:
-			uint														_maxTime;
-			uint														_currentTime;	// relative to animation 
+			uint		_maxTime;
+			uint		_currentTime;	// relative to animation 
 			Signal<AbsCmpPtr, NodePtr>::Slot				            _targetAddedSlot;
 			Signal<AbsCmpPtr, NodePtr>::Slot				            _targetRemovedSlot;
 			Signal<NodePtr, NodePtr, NodePtr>::Slot			            _addedSlot;
@@ -229,8 +229,13 @@ namespace minko
 				return _isReversed;
 			}
 
+            virtual
+            inline
 			void
-			isReversed(bool);
+            isReversed(bool value)
+            {
+                _isReversed = value;
+            }
 
 			inline
 			uint
@@ -239,11 +244,12 @@ namespace minko
 				return _maxTime;
 			}
 
+            virtual
 			inline
 			void
 			timeFunction(const std::function<uint(uint)>& func)
 			{
-				_timeFunction = func;
+                _timeFunction = func;
 			}
 
 			inline
@@ -295,10 +301,10 @@ namespace minko
 			initialize();
 
 			void
-			targetAddedHandler(AbsCmpPtr cmp, NodePtr node);
+			targetAdded(NodePtr node);
 
 			void
-			targetRemovedHandler(AbsCmpPtr cmp, NodePtr node);
+			targetRemoved(NodePtr node);
 
 			virtual
             void

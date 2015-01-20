@@ -16,7 +16,7 @@ dofile('module/ext/color.lua')
  -- table.inspect
 dofile('module/ext/inspect.lua')
 
-function table.copy (t) -- shallow-copy a table
+function table.copy(t) -- shallow-copy a table
     if type(t) ~= "table" then return t end
     local meta = getmetatable(t)
     local target = {}
@@ -25,7 +25,7 @@ function table.copy (t) -- shallow-copy a table
     return target
 end
 
-function table.clone (t) -- deep-copy a table
+function table.clone(t) -- deep-copy a table
     if type(t) ~= "table" then return t end
     local meta = getmetatable(t)
     local target = {}

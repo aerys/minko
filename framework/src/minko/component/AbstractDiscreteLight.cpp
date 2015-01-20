@@ -19,50 +19,49 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/AbstractDiscreteLight.hpp"
 
-#include "minko/math/Matrix4x4.hpp"
 #include "minko/scene/Node.hpp"
-#include "minko/data/Container.hpp"
+#include "minko/data/Store.hpp"
 
 using namespace minko;
 using namespace minko::component;
 
 AbstractDiscreteLight::AbstractDiscreteLight(const std::string& arrayName,
-                                             float                diffuse,
-                                             float                specular) :
-    AbstractLight(arrayName)
+											 float				diffuse,
+											 float				specular) :
+	AbstractLight(arrayName)
 {
-    data()
-        ->set("diffuse", diffuse)
-        ->set("specular", specular);
+	data()
+		->set("diffuse", 	diffuse)
+		->set("specular", 	specular);
 }
 
 void
-AbstractDiscreteLight::targetAddedHandler(AbstractComponent::Ptr cmp, std::shared_ptr<scene::Node> target)
+AbstractDiscreteLight::targetAdded(std::shared_ptr<scene::Node> target)
 {
-    AbstractLight::targetAddedHandler(cmp, target);
+	AbstractLight::targetAdded(target);
 
-    _modelToWorldChangedSlot = target->data()->propertyValueChanged("transform.modelToWorldMatrix")->connect(std::bind(
-        &AbstractDiscreteLight::modelToWorldMatrixChangedHandler,
-        std::dynamic_pointer_cast<AbstractDiscreteLight>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2
-    ));
+	_modelToWorldChangedSlot = target->data().propertyChanged("modelToWorldMatrix").connect(std::bind(
+		&AbstractDiscreteLight::modelToWorldMatrixChangedHandler,
+		std::dynamic_pointer_cast<AbstractDiscreteLight>(shared_from_this()),
+		std::placeholders::_1,
+        std::placeholders::_3
+	));
 
-    if (target->data()->hasProperty("transform.modelToWorldMatrix"))
-        updateModelToWorldMatrix(target->data()->get<math::Matrix4x4::Ptr>("transform.modelToWorldMatrix"));
+	if (target->data().hasProperty("modelToWorldMatrix"))
+		updateModelToWorldMatrix(target->data().get<math::mat4>("modelToWorldMatrix"));
 }
 
 void
-AbstractDiscreteLight::targetRemovedHandler(AbstractComponent::Ptr cmp, std::shared_ptr<scene::Node> target)
+AbstractDiscreteLight::targetRemoved(std::shared_ptr<scene::Node> target)
 {
-    AbstractLight::targetRemovedHandler(cmp, target);
+	AbstractLight::targetRemoved(target);
 
-    _modelToWorldChangedSlot = nullptr;
+	_modelToWorldChangedSlot = nullptr;
 }
 
 void
-AbstractDiscreteLight::modelToWorldMatrixChangedHandler(std::shared_ptr<data::Container>     container,
-                                                         const std::string&                     propertyName)
+AbstractDiscreteLight::modelToWorldMatrixChangedHandler(data::Store& 	container,
+								 						const std::string& 	propertyName)
 {
-    updateModelToWorldMatrix(container->get<math::Matrix4x4::Ptr>(propertyName));
+	updateModelToWorldMatrix(container.get<math::mat4>(propertyName));
 }

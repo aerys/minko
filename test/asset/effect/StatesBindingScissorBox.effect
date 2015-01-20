@@ -1,0 +1,7 @@
+{
+    "states" : {
+        "scissorBox" : { "binding" : "material[${materialUuid}].scissorBox" }
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

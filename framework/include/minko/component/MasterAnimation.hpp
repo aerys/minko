@@ -33,10 +33,10 @@ namespace minko
 			public AbstractAnimation
 		{
 		public:
-			typedef std::shared_ptr<MasterAnimation>		Ptr;
+			typedef std::shared_ptr<MasterAnimation>	Ptr;
 
 		private:
-			typedef std::shared_ptr<Animation>				AnimationPtr;
+			typedef std::shared_ptr<Animation>			AnimationPtr;
 			typedef std::shared_ptr<AbstractAnimation>		AbstractAnimationPtr;
 			typedef std::shared_ptr<scene::Node>			NodePtr;
 			typedef std::shared_ptr<AbstractComponent>		AbsCmpPtr;
@@ -51,8 +51,6 @@ namespace minko
 			create(bool isLooping = true)
 			{
 				Ptr ptr(new MasterAnimation(isLooping));
-
-				ptr->initialize();
 
 				return ptr;
 			}
@@ -99,19 +97,36 @@ namespace minko
 			void
 			rebindDependencies(std::map<AbsCmpPtr, AbsCmpPtr>& componentsMap, std::map<NodePtr, NodePtr>& nodeMap, CloneOption option);
 
+            inline
+            void
+            timeFunction(const std::function<uint(uint)>& func)
+            {
+                AbstractAnimation::timeFunction(func);
+
+                for (auto& animation : _animations)
+                    animation->timeFunction(func);
+            }
+
+            inline
+            void
+            isReversed(bool value)
+            {
+                AbstractAnimation::isReversed(value);
+
+                for (auto& animation : _animations)
+                    animation->isReversed(value);
+            }
+
 		protected:
 			MasterAnimation(bool isLooping);
 
 			MasterAnimation(const MasterAnimation& masterAnim, const CloneOption& option);
 
 			void
-			initialize();
+			targetAdded(NodePtr target);
 
 			void
-			targetAddedHandler(AbsCmpPtr cmp, NodePtr node);
-
-			void
-			targetRemovedHandler(AbsCmpPtr cmp, NodePtr node);
+			targetRemoved(NodePtr target);
 
 			virtual
 			void

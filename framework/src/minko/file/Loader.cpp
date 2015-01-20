@@ -140,7 +140,11 @@ Loader::load()
 void
 Loader::protocolErrorHandler(std::shared_ptr<AbstractProtocol> protocol)
 {
-    auto error = Error("ProtocolError", "Protocol error: " + protocol->file()->filename());
+    auto error = Error(
+        "ProtocolError",
+        std::string("Protocol error: ") + protocol->file()->filename() +
+        std::string(", include paths: ") + std::to_string(_options->includePaths(), ",")
+    );
 
     errorThrown(error);
 }
@@ -191,7 +195,7 @@ Loader::protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol)
     if (!parsed)
     {
         --_numFilesToParse;
-        
+
         finalize();
     }
 }
@@ -274,7 +278,7 @@ Loader::errorThrown(const Error& error)
         _error->execute(shared_from_this(), error);
     else
     {
-        LOG_DEBUG(error.type() << ": " << error.what());
+        LOG_ERROR(error.type() << ": " << error.what());
         
         throw error;
     }

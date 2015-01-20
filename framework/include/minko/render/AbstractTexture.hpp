@@ -22,44 +22,53 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/render/AbstractResource.hpp"
+#include "minko/render/TextureSampler.hpp"
 
 namespace minko
 {
-    namespace render
-    {
-        class AbstractTexture :
-            public AbstractResource
-        {
-        public:
-            typedef std::shared_ptr<AbstractTexture>    Ptr;
+	namespace render
+	{
+		class AbstractTexture :
+			public AbstractResource
+		{
+		public:
+			typedef std::shared_ptr<AbstractTexture>	Ptr;
 
-        private:
-            typedef std::shared_ptr<AbstractContext>    AbstractContextPtr;
+		private:
+			typedef std::shared_ptr<AbstractContext>	AbstractContextPtr;
 
-        public:
-            static const uint MAX_SIZE;
+		public:
+			static const uint MAX_SIZE;
 
-        protected:
-            const TextureType   _type;
+		protected:
+			const TextureType	_type;
+            TextureSampler      _sampler;
             TextureFormat       _format;
-            unsigned int        _width;
-            unsigned int        _height;
-            unsigned int        _widthGPU;    // always power of 2
-            unsigned int        _heightGPU;    // always power of 2
-            bool                _mipMapping;
-            bool                _resizeSmoothly;
-            bool                _optimizeForRenderToTexture;
-            std::string         _filename;
+			unsigned int		_width;		
+			unsigned int		_height;	
+			unsigned int		_widthGPU;	// always power of 2
+			unsigned int		_heightGPU;	// always power of 2
+            bool				_mipMapping;
+			bool				_resizeSmoothly;
+			bool				_optimizeForRenderToTexture;
+			std::string			_filename;			
 
-        public:
+		public:
             inline
-            TextureType
-            type() const
+            const TextureSampler&
+            sampler()
             {
-                return _type;
+                return _sampler;
             }
 
-            inline
+			inline
+			TextureType
+			type() const
+			{
+				return _type;
+			}
+
+			inline
             TextureFormat
             format() const
             {
@@ -67,18 +76,18 @@ namespace minko
             }
 
             inline
-            uint
-            width() const
-            {
-                return _widthGPU;
-            }
+			uint
+			width() const
+			{
+				return _widthGPU;
+			}
 
-            inline
-            uint
-            height() const
-            {
-                return _heightGPU;
-            }
+			inline
+			uint
+			height() const
+			{
+				return _heightGPU;
+			}
 
             inline
             uint
@@ -104,55 +113,55 @@ namespace minko
             void
             activateMipMapping();
 
-            inline
-            bool
-            optimizeForRenderToTexture() const
-            {
-                return _optimizeForRenderToTexture;
-            }
+			inline
+			bool
+			optimizeForRenderToTexture() const
+			{
+				return _optimizeForRenderToTexture;
+			}
 
-            virtual
-            void
+			virtual
+			void
             data(unsigned char* data,
-                 int            widthGPU    = -1,
-                 int            heightGPU   = -1) = 0;
+				 int			widthGPU	= -1,
+				 int			heightGPU	= -1) = 0;
 
-            virtual
-            void
+			virtual
+			void
             resize(unsigned int width, unsigned int height, bool resizeSmoothly) = 0;
 
             virtual
             void
-            disposeData() = 0;
+			disposeData() = 0;
 
-        protected:
-            AbstractTexture(TextureType         type,
-                            AbstractContextPtr  context,
-                            unsigned int        width,
-                            unsigned int        height,
+		protected:
+			AbstractTexture(TextureType			type,
+							AbstractContextPtr	context,
+							unsigned int		width,
+							unsigned int		height,
                             TextureFormat       format,
-                            bool                mipMapping,
-                            bool                optimizeForRenderToTexture,
-                            bool                resizeSmoothly,
-                            const std::string&  filename);
+							bool                mipMapping,
+							bool				optimizeForRenderToTexture,
+							bool				resizeSmoothly,
+							const std::string&	filename);
 
             ~AbstractTexture() = default;
 
-            static
-            void
-            resizeData(unsigned int width,
-                       unsigned int height,
-                       std::vector<unsigned char>&    data,
-                       unsigned int newWidth,
-                       unsigned int newHeight,
-                       bool resizeSmoothly,
-                       std::vector<unsigned char>&    newData);
+			static
+			void
+			resizeData(unsigned int width, 
+					   unsigned int height, 
+					   std::vector<unsigned char>&	data, 
+			           unsigned int newWidth, 
+					   unsigned int newHeight,
+					   bool resizeSmoothly,
+					   std::vector<unsigned char>&	newData);
 
-            uint
-            getMipmapWidth(uint level) const;
+			uint
+			getMipmapWidth(uint level) const;
 
-            uint
-            getMipmapHeight(uint level) const;
-        };
-    }
+			uint
+			getMipmapHeight(uint level) const;
+		};
+	}
 }

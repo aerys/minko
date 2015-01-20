@@ -94,6 +94,13 @@ namespace chromium
             {
                 return getProperty<int>("screenY");
             }
+
+            inline
+            int
+            button()
+            {
+                return getProperty<int>("button");
+            }
 		};
 	}
 }

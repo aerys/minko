@@ -95,8 +95,8 @@ namespace minko
             void
             initialize();
 
-            unsigned char
-            computeMetaByte(std::shared_ptr<geometry::Geometry> geometry,
+            unsigned short
+            computeMetaData(std::shared_ptr<geometry::Geometry> geometry,
                             uint&                               indexBufferFunctionId,
                             uint&                               vertexBufferFunctionId,
                             WriterOptionsPtr                    writerOptions);

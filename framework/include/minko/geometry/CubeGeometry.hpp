@@ -20,34 +20,40 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "Geometry.hpp"
+#include "minko/geometry/Geometry.hpp"
 #include "minko/render/VertexBuffer.hpp"
 #include "minko/render/IndexBuffer.hpp"
 
 namespace minko
 {
-    namespace geometry
-    {
-        class CubeGeometry :
-            public Geometry
-        {
-        public:
-            typedef std::shared_ptr<Geometry> Ptr;
+	namespace geometry
+	{
+		class CubeGeometry :
+			public Geometry
+		{
+		public:
+			typedef std::shared_ptr<Geometry> Ptr;
 
-            static
-            Ptr
-            create(std::shared_ptr<render::AbstractContext> context)
+			static
+			Ptr
+			create(std::shared_ptr<render::AbstractContext> context)
+			{
+				auto geom = std::shared_ptr<CubeGeometry>(new CubeGeometry());
+
+				geom->initialize(context);
+
+				return geom;
+			}
+
+		protected:
+            CubeGeometry() :
+                Geometry("cube")
             {
-                auto geom = std::shared_ptr<CubeGeometry>(new CubeGeometry());
 
-                geom->initialize(context);
-
-                return geom;
             }
 
-        protected:
-            void
-            initialize(std::shared_ptr<render::AbstractContext> context);
-        };
-    }
+			void
+			initialize(std::shared_ptr<render::AbstractContext> context);
+		};			
+	}
 }

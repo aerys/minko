@@ -19,7 +19,4 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Uuid.hpp"
 
-namespace minko
-{
-    bool Uuid::_randSeeded = false;
-}
+bool minko::Uuid::_randSeeded = false;

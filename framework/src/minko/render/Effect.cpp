@@ -26,52 +26,64 @@ using namespace minko;
 using namespace minko::render;
 
 Effect::Effect(const std::string& name) :
-_name(name),
-_techniques(),
-_fallback(),
-_data(data::Provider::create()),
-_uniformFunctions(),
-_attributeFunctions(),
-_indexFunction(nullptr),
-_macroFunctions()
+    _data(data::Provider::create())
 {
-
 }
 
 void
 Effect::addTechnique(const std::string& name, Technique& passes)
 {
-    if (_techniques.count(name) != 0)
-        throw std::logic_error("A technique named '" + name + "' already exists.");
+	if (hasTechnique(name))
+		throw std::logic_error("A technique named '" + name + "' already exists.");
 
-    for (auto& pass : passes)
-    {
-        for (auto& func : _uniformFunctions)
-            func(pass);
-        for (auto& func : _attributeFunctions)
-            func(pass);
-        if (_indexFunction)
-            _indexFunction->operator()(pass);
-        for (auto& func : _macroFunctions)
-            func(pass);
-    }
-    _techniques[name] = passes;
+	for (auto& pass : passes)
+	{
+		for (auto& func : _uniformFunctions)
+			func(pass);
+		for (auto& func : _attributeFunctions)
+			func(pass);
+		for (auto& func : _macroFunctions)
+			func(pass);
+	}
+	_techniques[name] = passes;
 }
 
 void
 Effect::addTechnique(const std::string& name, Technique& passes, const std::string& fallback)
 {
-    _fallback[name] = fallback;
+	_fallback[name] = fallback;
 
-    addTechnique(name, passes);
+	addTechnique(name, passes);
 }
 
 void
 Effect::removeTechnique(const std::string& name)
 {
-    if (_techniques.count(name) == 0)
-        throw std::logic_error("The technique named '" + name + "' does not exist.");
+	if (!hasTechnique(name))
+		throw std::logic_error("The technique named '" + name + "' does not exist.");
 
-    _techniques.erase(name);
-    _fallback.erase(name);
+	_techniques.erase(name);
+	_fallback.erase(name);
+}
+
+void
+Effect::setAttribute(const std::string& name, const VertexAttribute& attribute)
+{
+	_attributeFunctions.push_back(std::bind(
+		&Effect::setVertexAttributeOnPass, std::placeholders::_1, name, attribute
+	));
+
+	for (auto& technique : _techniques)
+		for (auto& pass : technique.second)
+			pass->setAttribute(name, attribute);
+}
+
+void
+Effect::define(const std::string& macroName)
+{
+    _macroFunctions.push_back(std::bind(&Effect::defineOnPass, std::placeholders::_1, macroName));
+
+	for (auto& technique : _techniques)
+		for (auto& pass : technique.second)
+			pass->define(macroName);
 }

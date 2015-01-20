@@ -27,11 +27,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-    namespace geometry
-    {
-        class Skin;
+	namespace geometry
+	{
+		class Skin;
 		class Bone;
-    };
+	};
 
 	namespace component
 	{
@@ -43,7 +43,6 @@ namespace minko
 
 		private:
 			typedef std::shared_ptr<scene::Node>					NodePtr;
-			typedef std::shared_ptr<math::Matrix4x4>				Matrix4x4Ptr;
 			typedef std::shared_ptr<render::AbstractContext>		AbstractContextPtr;
 			typedef std::shared_ptr<render::VertexBuffer>			VertexBufferPtr;
 			typedef std::shared_ptr<component::AbstractComponent>	AbsCmpPtr;
@@ -52,106 +51,107 @@ namespace minko
 			typedef std::shared_ptr<geometry::Geometry>				GeometryPtr;
 			typedef std::shared_ptr<geometry::Skin>					SkinPtr;
 			typedef std::shared_ptr<geometry::Bone>					BonePtr;
-            typedef std::shared_ptr<data::Provider>                 ProviderPtr;
-            typedef std::shared_ptr<data::ArrayProvider>            ArrayProviderPtr;
+			typedef std::shared_ptr<data::Provider>					ProviderPtr;
+			typedef std::shared_ptr<data::Provider>			        ArrayProviderPtr;
 
-            typedef Signal<AbsCmpPtr, NodePtr>                      TargetAddedOrRemovedSignal;
-            typedef Signal<NodePtr, NodePtr, NodePtr>               AddedOrRemovedSignal;
-            typedef Signal<SceneManagerPtr>                         SceneManagerSignal;
+			typedef Signal<AbsCmpPtr, NodePtr>						TargetAddedOrRemovedSignal;
+			typedef Signal<NodePtr, NodePtr, NodePtr>				AddedOrRemovedSignal;
+			typedef Signal<SceneManagerPtr>							SceneManagerSignal;
 
-        public:
-            static const std::string                                PNAME_NUM_BONES;
-            static const std::string                                PNAME_BONE_MATRICES;
-            static const std::string                                ATTRNAME_BONE_IDS_A;
-            static const std::string                                ATTRNAME_BONE_IDS_B;
-            static const std::string                                ATTRNAME_BONE_WEIGHTS_A;
-            static const std::string                                ATTRNAME_BONE_WEIGHTS_B;
-            static const unsigned int                               MAX_NUM_BONES_PER_VERTEX;
+		public:
+			static const std::string								PNAME_NUM_BONES;
+			static const std::string								PNAME_BONE_MATRICES;
+			static const std::string								ATTRNAME_BONE_IDS_A;
+			static const std::string								ATTRNAME_BONE_IDS_B;
+			static const std::string								ATTRNAME_BONE_WEIGHTS_A;
+			static const std::string								ATTRNAME_BONE_WEIGHTS_B;
+			static const unsigned int								MAX_NUM_BONES_PER_VERTEX;
 
-        private:
-            static const std::string                                ATTRNAME_POSITION;
-            static const std::string                                ATTRNAME_NORMAL;
+		private:
+			static const std::string								ATTRNAME_POSITION;
+			static const std::string								ATTRNAME_NORMAL;
 
-        private:
+		private:
 			SkinPtr													_skin;
-            AbstractContextPtr                                      _context;
-            SkinningMethod                                          _method;
+			AbstractContextPtr										_context;
+			SkinningMethod											_method;
 
-            NodePtr                                                 _skeletonRoot;
-            bool                                                    _moveTargetBelowRoot;
+			NodePtr													_skeletonRoot;
+			bool													_moveTargetBelowRoot;
 
-            render::VertexBuffer::Ptr                               _boneVertexBuffer;      // vertex buffer storing vertex attributes
+			render::VertexBuffer::Ptr								_boneVertexBuffer; // vertex buffer storing vertex attributes
 
-            std::unordered_map<NodePtr, GeometryPtr>                _targetGeometry;
-            std::unordered_map<NodePtr,    std::vector<float>>      _targetInputPositions;  // only for software skinning
-            std::unordered_map<NodePtr,    std::vector<float>>      _targetInputNormals;    // only for software skinning
+			std::unordered_map<NodePtr, GeometryPtr>				_targetGeometry;
+			std::unordered_map<NodePtr,	std::vector<float>>			_targetInputPositions;	// only for software skinning
+			std::unordered_map<NodePtr,	std::vector<float>>			_targetInputNormals;	// only for software skinning
 
-            TargetAddedOrRemovedSignal::Slot                        _targetAddedSlot;
+			TargetAddedOrRemovedSignal::Slot						_targetAddedSlot;
 
-        public:
-            inline static
-            Ptr
-            create(const SkinPtr                           skin,
-                   SkinningMethod                          method,
-                   AbstractContextPtr                      context,
-                   NodePtr                                 skeletonRoot,
-                   bool                                    moveTargetBelowRoot  = false,
-                   bool                                    isLooping            = true)
-            {
+		public:
+			inline static
+			Ptr
+			create(const SkinPtr						skin, 
+				   SkinningMethod						method, 
+				   AbstractContextPtr					context, 
+				   NodePtr								skeletonRoot,
+				   bool									moveTargetBelowRoot = false,
+				   bool									isLooping = true)
+			{
 				Ptr ptr(new Skinning(skin, method, context, skeletonRoot, moveTargetBelowRoot, isLooping));
 
-                ptr->initialize();
+				ptr->initialize();
 
-                return ptr;
-            }
+				return ptr;
+			}
 
 			AbsCmpPtr
 			clone(const CloneOption& option);
 
-        private:
-            Skinning(const SkinPtr,
-                     SkinningMethod,
-                     AbstractContextPtr,
-                     NodePtr,
-                     bool,
-                     bool);
-
-			Skinning(const Skinning&     skinning,
-	                 const CloneOption&  option);
-
+        protected:
             void
             initialize();
 
             void
-            addedHandler(NodePtr, NodePtr, NodePtr);
+            targetAdded(NodePtr target);
 
-            void
-            removedHandler(NodePtr, NodePtr, NodePtr);
+		private:
+			Skinning(const SkinPtr, 
+					 SkinningMethod, 
+					 AbstractContextPtr, 
+					 NodePtr,
+					 bool,
+					 bool);
 
-            void
-            update();
+			Skinning(const Skinning&     skinning,
+	                 const CloneOption&  option);
 
-            void
-            updateFrame(uint frameId, NodePtr);
+			void
+			addedHandler(NodePtr, NodePtr, NodePtr);
 
-            void
-            targetAddedHandler(AbsCmpPtr, NodePtr);
+			void
+			removedHandler(NodePtr, NodePtr, NodePtr);
 
-            void
-            performSoftwareSkinning(NodePtr, const std::vector<float>&);
+			void
+			update();
 
-            void
-            performSoftwareSkinning(render::VertexBuffer::AttributePtr,
-                                    render::VertexBuffer::Ptr,
-                                    const std::vector<float>&,
-                                    const std::vector<float>&,
-                                    bool doDeltaTransform);
+			void
+			updateFrame(uint frameId, NodePtr);
 
-            render::VertexBuffer::Ptr
-            createVertexBufferForBones() const;
+			void
+			performSoftwareSkinning(NodePtr, const std::vector<math::mat4>&);
+
+			void
+			performSoftwareSkinning(const render::VertexAttribute&, 
+									render::VertexBuffer::Ptr, 
+									const std::vector<float>&, 
+                                    const std::vector<math::mat4>&,
+									bool doDeltaTransform);
+
+			render::VertexBuffer::Ptr
+			createVertexBufferForBones() const;
 
 			void
 			rebindDependencies(std::map<AbstractComponent::Ptr, AbstractComponent::Ptr>& componentsMap, std::map<NodePtr, NodePtr>& nodeMap, CloneOption option);
-        };
-    }
+		};
+	}
 }

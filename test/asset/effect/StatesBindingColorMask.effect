@@ -1,0 +1,7 @@
+{
+    "states" : {
+        "colorMask" : { "binding" : "material[${materialUuid}].colorMask" }
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

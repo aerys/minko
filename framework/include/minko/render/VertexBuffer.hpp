@@ -22,189 +22,171 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/render/AbstractResource.hpp"
-#include "minko/math/Convertible.hpp"
+#include "minko/render/VertexAttribute.hpp"
 
 namespace minko
 {
-    namespace render
-    {
-        class VertexBuffer :
-            public AbstractResource,
-            public std::enable_shared_from_this<VertexBuffer>,
-            public Convertible<VertexBuffer>
-        {
-        public:
-            typedef std::shared_ptr<VertexBuffer>                                Ptr;
-            typedef const std::tuple<std::string, unsigned int, unsigned int>    Attribute;
-            typedef std::shared_ptr<Attribute>                                   AttributePtr;
-            typedef std::shared_ptr<math::Vector3>                               Vector3Ptr;
+	namespace render
+	{
+		class VertexBuffer :
+			public AbstractResource,
+			public std::enable_shared_from_this<VertexBuffer>
+		{
+		public:
+			typedef std::shared_ptr<VertexBuffer>		Ptr;
 
-        private:
-            std::vector<float>                  _data;
-            std::list<AttributePtr>             _attributes;
-            uint                                _vertexSize;
-            Vector3Ptr                          _minPosition;
-            Vector3Ptr                          _maxPosition;
+		private:
+			std::vector<float>					_data;
+            std::list<VertexAttribute>		    _attributes;
+			uint								_vertexSize;
 
-            std::shared_ptr<Signal<Ptr, int>>   _vertexSizeChanged;
+			std::shared_ptr<Signal<Ptr, int>>	_vertexSizeChanged;
 
-        public:
-            ~VertexBuffer()
-            {
-                dispose();
-            }
+		public:
+			~VertexBuffer()
+			{
+				dispose();
+			}
 
-            inline static
-            Ptr
-            create(std::shared_ptr<render::AbstractContext> context)
-            {
-                return std::shared_ptr<VertexBuffer>(new VertexBuffer(context));
-            }
+			inline static
+			Ptr
+			create(std::shared_ptr<render::AbstractContext> context)
+			{
+				return std::shared_ptr<VertexBuffer>(new VertexBuffer(context));
+			}
 
-            inline static
-            Ptr
-            create(std::shared_ptr<render::AbstractContext>  context,
-                   float*                                    data,
-                   const unsigned int                        size,
-                   const unsigned int                        offset = 0)
-            {
-                return std::shared_ptr<VertexBuffer>(new VertexBuffer(
+			inline static
+			Ptr
+			create(std::shared_ptr<render::AbstractContext>	context,
+				   const float*								data,
+				   const unsigned int						size,
+				   const unsigned int						offset = 0)
+			{
+				return std::shared_ptr<VertexBuffer>(new VertexBuffer(
                     context, data, size, offset
-                ));
-            }
+				));
+			}
 
-            inline static
-            Ptr
-            create(std::shared_ptr<render::AbstractContext>  context,
-                    std::vector<float>::const_iterator       begin,
-                    std::vector<float>::const_iterator       end)
-            {
-                return std::shared_ptr<VertexBuffer>(new VertexBuffer(context, begin, end));
-            }
+			inline static
+			Ptr
+			create(std::shared_ptr<render::AbstractContext>	context,
+					std::vector<float>::const_iterator		begin,
+					std::vector<float>::const_iterator		end)
+			{
+				return std::shared_ptr<VertexBuffer>(new VertexBuffer(context, begin, end));
+			}
 
-            inline static
-            Ptr
+			inline static
+			Ptr
             create(std::shared_ptr<render::AbstractContext>   context,
                    float*                                     begin,
                    float*                                     end)
-            {
-                return std::shared_ptr<VertexBuffer>(new VertexBuffer(
-                    context,
-                    begin,
-                    end
-                ));
-            }
+			{
+				return std::shared_ptr<VertexBuffer>(new VertexBuffer(
+					context,
+					begin,
+					end
+				));
+			}
 
-            inline static
-            Ptr
-            create(std::shared_ptr<render::AbstractContext>   context,
-                   const std::vector<float>&                  data)
-            {
-                return create(context, data.begin(), data.end());
-            }
+			inline static
+			Ptr
+			create(std::shared_ptr<render::AbstractContext>	context,
+				   const std::vector<float>&				data)
+			{
+				return create(context, data.begin(), data.end());
+			}
 
-            inline
-            std::vector<float>&
-            data()
-            {
-                return _data;
-            }
+			inline
+			std::vector<float>&
+			data()
+			{
+				return _data;
+			}
 
-            inline
-            std::list<AttributePtr>&
-            attributes()
-            {
-                return _attributes;
-            }
+			inline
+            const std::list<VertexAttribute>&
+			attributes()
+			{
+				return _attributes;
+			}
 
-            inline
-            const uint
-            vertexSize()
-            {
-                return _vertexSize;
-            }
+			inline
+			const uint
+			vertexSize()
+			{
+				return _vertexSize;
+			}
 
-            inline
-            std::shared_ptr<Signal<Ptr, int>>
-            vertexSizeChanged()
-            {
-                return _vertexSizeChanged;
-            }
+			inline
+			std::shared_ptr<Signal<Ptr, int>>
+			vertexSizeChanged()
+			{
+				return _vertexSizeChanged;
+			}
 
-            inline
-            uint
-            numVertices() const
-            {
-                return _vertexSize > 0 ? _data.size() / _vertexSize : 0;
-            }
+			inline
+			uint
+			numVertices() const
+			{
+				return _vertexSize > 0 ? _data.size() / _vertexSize : 0;
+			}
 
-            inline
-            void
-            upload()
-            {
-                upload(0, 0);
-            }
+			inline
+			void
+			upload()
+			{
+				upload(0, 0);
+			}
 
-            void
-            upload(uint offset, uint numVertices = 0);
+			void
+			upload(uint offset, uint numVertices = 0);
 
-            void
-            dispose();
+			void
+			upload(uint offset, uint numVertices, const std::vector<float>& data);
+
+			void
+			dispose();
 
             void
             disposeData();
 
-            void
-            addAttribute(const std::string& name, const unsigned int size, const unsigned int offset = 0);
+			void
+			addAttribute(const std::string& name, const unsigned int size, const unsigned int offset = 0);
 
-            void
-            removeAttribute(const std::string& name);
+			void
+			removeAttribute(const std::string& name);
 
-            bool
-            hasAttribute(const std::string& attributeName) const;
+			bool
+			hasAttribute(const std::string& attributeName) const;
 
-            AttributePtr
-            attribute(const std::string& attributeName) const;
+            const VertexAttribute&
+			attribute(const std::string& attributeName) const;
 
-            bool
-            equals(std::shared_ptr<VertexBuffer> vertexBuffer)
-            {
-                return _data == vertexBuffer->_data;
-            }
+			bool
+			equals(std::shared_ptr<VertexBuffer> vertexBuffer)
+			{
+				return _data == vertexBuffer->_data;
+			}
 
-            Vector3Ptr
-            minPosition(Vector3Ptr output = nullptr);
+		protected:
+			VertexBuffer(std::shared_ptr<render::AbstractContext> context);
 
-            Vector3Ptr
-            maxPosition(Vector3Ptr output = nullptr);
+			VertexBuffer(std::shared_ptr<render::AbstractContext>	context,
+						 const float*								data,
+						 const unsigned int							size,
+						 const unsigned int							offset);
 
-            Vector3Ptr
-            centerPosition(Vector3Ptr output = nullptr);
+			VertexBuffer(std::shared_ptr<render::AbstractContext>	context,
+							std::vector<float>::const_iterator		begin,
+							std::vector<float>::const_iterator		end);
 
-        protected:
-            VertexBuffer(std::shared_ptr<render::AbstractContext>    context);
+			VertexBuffer(std::shared_ptr<render::AbstractContext>	context,
+						 float*										begin,
+						 float*										end);
 
-            VertexBuffer(std::shared_ptr<render::AbstractContext>    context,
-                            float*                                   data,
-                            const unsigned int                       size,
-                            const unsigned int                       offset);
-
-            VertexBuffer(std::shared_ptr<render::AbstractContext>    context,
-                            std::vector<float>::const_iterator       begin,
-                            std::vector<float>::const_iterator       end);
-
-            VertexBuffer(std::shared_ptr<render::AbstractContext>    context,
-                         float*                                      begin,
-                         float*                                      end);
-
-            void
-            vertexSize(unsigned int value);
-
-            void
-            invalidatePositionBounds();
-
-            void
-            updatePositionBounds();
-        };
-    }
+			void
+			vertexSize(unsigned int value);
+		};
+	}
 }

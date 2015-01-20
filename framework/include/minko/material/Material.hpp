@@ -21,57 +21,85 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/data/ArrayProvider.hpp"
+#include "minko/data/Provider.hpp"
+#include "minko/Uuid.hpp"
 
 namespace minko
 {
-    namespace material
-    {
-        class Material :
-            public data::ArrayProvider
-        {
-        public:
-            typedef std::shared_ptr<Material>    Ptr;
+	namespace material
+	{
+		class Material :
+            public std::enable_shared_from_this<Material>,
+            public Uuid::has_uuid
+		{
+		public:
+			typedef std::shared_ptr<Material>	Ptr;
 
-        public:
-            inline static
-            Ptr
-            create()
+        private:
+            std::shared_ptr<data::Provider> _provider;
+
+		public:
+            ~Material()
             {
-                return std::shared_ptr<Material>(new Material());
+                _provider = nullptr;
             }
 
-            inline static
-            Ptr
-			create(const std::string& name)
+			inline static
+			Ptr
+			create(const std::string& name = "material")
 			{
-				return std::shared_ptr<Material>(new Material(name));
+                auto instance = Ptr(new Material(name));
+
+                instance->initialize();
+
+                return instance;
 			}
 
 			inline static
 			Ptr
-            create(Ptr source)
+			create(Ptr source)
+			{
+				auto mat = create();
+
+				mat->_provider->copyFrom(source->_provider);
+
+				return mat;
+			}
+            
+            inline
+            const std::string&
+            uuid() const
             {
-                auto mat = create();
-
-                if (source)
-                    mat->copyFrom(source);
-
-                return mat;
+                return _provider->uuid();
             }
 
-			template <typename T>
-			inline
-			Ptr
-			set(const std::string& propertyName, T value)
-			{
-				return std::static_pointer_cast<Material>(Provider::set(propertyName, value));
-			}
+            inline
+            const std::string&
+            name() const
+            {
+                return _provider->get<std::string>("name");
+            }
 
-        protected:
-            Material();
+            inline
+            std::shared_ptr<data::Provider>
+            data() const
+            {
+                return _provider;
+            }
 
-			Material(const std::string& name);
-        };
-    }
+		protected:
+			Material(const std::string& name) :
+                _provider(data::Provider::create())
+            {
+                _provider->set("name", name);
+                _provider->set("uuid", _provider->uuid());
+            }
+
+            virtual
+            void
+            initialize()
+            {
+            }
+		};
+	}
 }

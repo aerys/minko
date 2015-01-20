@@ -47,7 +47,7 @@ Touch::averageX()
 
     for (int i = 0; i < l; ++i)
     {
-        x += _touches[_identifiers[i]]->x();
+        x += _touches[_identifiers[i]].x;
     }
 
     x /= l;
@@ -63,7 +63,7 @@ Touch::averageY()
 
     for (int i = 0; i < l; ++i)
     {
-        y += _touches[_identifiers[i]]->y();
+        y += _touches[_identifiers[i]].y;
     }
 
     y /= l;

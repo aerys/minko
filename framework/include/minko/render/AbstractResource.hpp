@@ -20,63 +20,73 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/Uuid.hpp"
 
 namespace minko
 {
-    namespace render
-    {
-        class AbstractResource
-        {
-        public:
-            typedef std::shared_ptr<AbstractResource>   Ptr;
+	namespace render
+	{
+		class AbstractResource
+		{
+		public:
+			typedef std::shared_ptr<AbstractResource> Ptr;
 
-        protected:
-            std::shared_ptr<render::AbstractContext>    _context;
-            int                                         _id;
+		protected:
+            const std::string                           _uuid;
+			std::shared_ptr<render::AbstractContext>	_context;
+			ResourceId									_id;
 
-        public:
+		public:
             inline
-            std::shared_ptr<render::AbstractContext>
-            context()
+            const std::string&
+            uuid()
             {
-                return _context;
+                return _uuid;
             }
 
-            inline
-            const int
-            id()
-            {
-                if (_id == -1)
-                    throw;
+			inline
+			std::shared_ptr<render::AbstractContext>
+			context()
+			{
+				return _context;
+			}
 
-                return _id;
-            }
+			inline
+			const ResourceId
+			id()
+			{
+				if (_id == -1)
+					throw;
 
-            inline
-            const bool
-            isReady()
-            {
-                return _id != -1;
-            }
+				return _id;
+			}
 
-            virtual
-            void
-            dispose() = 0;
+			inline
+			const bool
+			isReady()
+			{
+				return _id != -1;
+			}
 
-            virtual
-            void
-            upload() = 0;
+			virtual
+			void
+			dispose() = 0;
 
-        protected:
-            AbstractResource(std::shared_ptr<render::AbstractContext> context) :
-                _context(context),
-                _id(-1)
-            {
-            }
+			virtual
+			void
+			upload() = 0;
 
-            ~AbstractResource()
-            {
-            }
-        };
-    }
+		protected:
+			AbstractResource(std::shared_ptr<render::AbstractContext> context) :
+                _uuid(Uuid::getUuid()),
+				_context(context),
+				_id(-1)
+			{
+			}
+
+			~AbstractResource()
+			{
+			}
+		};
+	}
 }

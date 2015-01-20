@@ -20,391 +20,337 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/Signal.hpp"
 
 #include "minko/Signal.hpp"
-#include "minko/render/Blending.hpp"
-#include "minko/data/Container.hpp"
+#include "minko/data/Store.hpp"
 #include "minko/render/Pass.hpp"
-#include "minko/render/ProgramInputs.hpp"
+#include "minko/render/DrawCall.hpp"
 #include "minko/render/States.hpp"
-#include "minko/render/AbstractTexture.hpp"
+#include "minko/data/Binding.hpp"
+#include "minko/data/ResolvedBinding.hpp"
 #include "minko/render/Priority.hpp"
-#include "minko/scene/Layout.hpp"
 
 namespace minko
 {
-    namespace render
-    {
+	namespace render
+	{
         class DrawCallZSorter;
 
-        class DrawCall :
-            public std::enable_shared_from_this<DrawCall>
-        {
+        class DrawCall
+		{
         public:
-            typedef std::shared_ptr<DrawCall>                               Ptr;
+            static const unsigned int	MAX_NUM_TEXTURES;
+            static const unsigned int   MAX_NUM_VERTEXBUFFERS;
 
-        private:
-            enum class ContainerId{ COMPLETE = 0, FILTERED };
-
-            typedef std::shared_ptr<scene::Node>                            NodePtr;
-            typedef std::shared_ptr<AbstractContext>                        AbsCtxPtr;
-            typedef std::shared_ptr<AbstractTexture>                        AbsTexturePtr;
-            typedef std::shared_ptr<data::Provider>                         ProviderPtr;
-            typedef std::shared_ptr<data::Container>                        ContainerPtr;
-            typedef std::shared_ptr<Program>                                ProgramPtr;
-
-            typedef data::Container::PropertyChangedSignal::Slot            PropertyChangedSlot;
-
-            typedef std::tuple<int, int>                                    Int2;
-            typedef std::tuple<int, int, int>                               Int3;
-            typedef std::tuple<int, int, int, int>                          Int4;
-
-        private:
-            static const unsigned int                                       MAX_NUM_TEXTURES;
-            static const unsigned int                                       MAX_NUM_VERTEXBUFFERS;
-
-            static SamplerState                                             _defaultSamplerState;
-
-            std::shared_ptr<render::Pass>                                   _pass;
-
-            // filtered data containers
-            std::shared_ptr<data::Container>                                _targetData;
-            std::shared_ptr<data::Container>                                _rendererData;
-            std::shared_ptr<data::Container>                                _rootData;
-            // complete data containers
-            std::shared_ptr<data::Container>                                _fullTargetData;
-            std::shared_ptr<data::Container>                                _fullRendererData;
-            std::shared_ptr<data::Container>                                _fullRootData;
-
-            std::shared_ptr<Program>                                        _program;
-
-            std::list<Signal<ContainerPtr, ProviderPtr>::Slot>              _containerUpdateSlots;
-
-            FormatNameFunction                                              _formatFunction;
-
-            std::vector<int>                                                _vertexBufferIds;
-            std::vector<int>                                                _vertexBufferLocations;
-            std::vector<int>                                                _vertexSizes;
-            std::vector<int>                                                _vertexAttributeSizes;
-            std::vector<int>                                                _vertexAttributeOffsets;
-            std::vector<int>                                                _textureIds;
-            std::vector<int>                                                _textureLocations;
-            std::vector<WrapMode>                                           _textureWrapMode;
-            std::vector<TextureFilter>                                      _textureFilters;
-            std::vector<MipFilter>                                          _textureMipFilters;
-            std::vector<TextureType>                                        _textureTypes;
-            uint                                                            _numIndices;
-            uint                                                            _indexBuffer;
-            AbsTexturePtr                                                   _target;
-            render::Blending::Mode                                          _blendMode;
-            bool                                                            _colorMask;
-            bool                                                            _depthMask;
-            render::CompareMode                                             _depthFunc;
-            render::TriangleCulling                                         _triangleCulling;
-            render::CompareMode                                             _stencilFunc;
-            int                                                             _stencilRef;
-            uint                                                            _stencilMask;
-            render::StencilOperation                                        _stencilFailOp;
-            render::StencilOperation                                        _stencilZFailOp;
-            render::StencilOperation                                        _stencilZPassOp;
-            bool                                                            _scissorTest;
-            render::ScissorBox                                              _scissorBox;
-            Layouts                                                         _layouts;
-            float                                                           _priority;
-            bool                                                            _zsorted;
-            std::unordered_map<uint, float>                                 _uniformFloat;
-            std::unordered_map<uint, std::shared_ptr<math::Vector2>>        _uniformFloat2;
-            std::unordered_map<uint, std::shared_ptr<math::Vector3>>        _uniformFloat3;
-            std::unordered_map<uint, std::shared_ptr<math::Vector4>>        _uniformFloat4;
-            std::unordered_map<uint, const float*>                          _uniformFloat16;
-            std::unordered_map<uint, int>                                   _uniformInt;
-            std::unordered_map<uint, Int2>                                  _uniformInt2;
-            std::unordered_map<uint, Int3>                                  _uniformInt3;
-            std::unordered_map<uint, Int4>                                  _uniformInt4;
-            std::unordered_map<uint, data::UniformArrayPtr<float>>          _uniformFloats;
-            std::unordered_map<uint, data::UniformArrayPtr<float>>          _uniformFloats2;
-            std::unordered_map<uint, data::UniformArrayPtr<float>>          _uniformFloats3;
-            std::unordered_map<uint, data::UniformArrayPtr<float>>          _uniformFloats4;
-            std::unordered_map<uint, data::UniformArrayPtr<float>>          _uniformFloats16;
-            std::unordered_map<uint, data::UniformArrayPtr<int>>            _uniformInts;
-            std::unordered_map<uint, data::UniformArrayPtr<int>>            _uniformInts2;
-            std::unordered_map<uint, data::UniformArrayPtr<int>>            _uniformInts3;
-            std::unordered_map<uint, data::UniformArrayPtr<int>>            _uniformInts4;
-
-            std::unordered_map<std::string, std::list<Any>>                                           _referenceChangedSlots;        // Any = PropertyChangedSlot
-            std::list<PropertyChangedSlot>                                                            _macroAddedOrRemovedSlots;
-            std::unordered_map<ContainerPtr, std::unordered_map<std::string, PropertyChangedSlot>>    _macroChangedSlots;            // Any = PropertyChangedSlot
-            Signal<std::shared_ptr<IndexBuffer>>::Slot                                                _indicesChangedSlot;
-            Signal<ContainerPtr, const std::string&>::Slot                                            _layoutsPropertyChangedSlot;
-
-            Signal<Ptr>::Ptr                                                _zsortNeeded;
-            Signal<Ptr, ContainerPtr, const std::string&>::Ptr              _macroChanged;
-
-            std::unordered_map<uint, std::set<std::string>>                 _containerMacroPNames;
-            std::unordered_map<uint, std::list<data::MacroRegexPredicate>>  _containerMacroRegex;
-
-            std::shared_ptr<DrawCallZSorter>                                _zSorter;
-
-        public:
-            static inline
-            Ptr
-            create(std::shared_ptr<Pass> pass)
+            template <typename T>
+            struct UniformValue
             {
-                Ptr ptr = std::shared_ptr<DrawCall>(new DrawCall(pass));
+                const int location;
+                const uint size;
+				const uint count;
+                const T* data;
+            };
 
-                ptr->initialize();
+		private:
+            typedef const ProgramInputs::UniformInput&      ConstUniformInputRef;
+            typedef const ProgramInputs::AttributeInput&    ConstAttrInputRef;
 
-                return ptr;
-            }
+            struct SamplerValue
+            {
+                const uint position;
+                const int* resourceId;
+                const int location;
+                const WrapMode* wrapMode;
+                const TextureFilter* textureFilter;
+                const MipFilter* mipFilter;
+                //TextureType* type;
+            };
+
+            struct AttributeValue
+            {
+                const int location;
+                const int* resourceId;
+                const uint size;
+                const uint* stride;
+                const uint offset;
+            };
+
+            typedef std::shared_ptr<AbstractContext>	            AbsCtxPtr;
+			typedef std::shared_ptr<AbstractTexture>	            AbsTexturePtr;
+			typedef std::shared_ptr<Program>			            ProgramPtr;
+            typedef std::unordered_map<std::string, std::string>    StringMap;
+            typedef data::Store::PropertyChangedSignal::Slot        ChangedSlot;
+            
+            typedef std::array<data::ResolvedBinding*, 3>           SamplerStatesResolveBindings;
+
+		private:
+            std::shared_ptr<Pass>               _pass;
+            data::Store&                        _rootData;
+            data::Store&                        _rendererData;
+            data::Store&                        _targetData;
+            StringMap                           _variables;
+
+			std::shared_ptr<Program>			_program;
+            int*								_indexBuffer;
+            uint*                               _firstIndex;
+            uint*								_numIndices;
+            std::vector<UniformValue<int>>      _uniformInt;
+            std::vector<UniformValue<float>>    _uniformFloat;
+            std::vector<UniformValue<int>>      _uniformBool;
+            std::vector<SamplerValue>           _samplers;
+            std::vector<AttributeValue>         _attributes;
+
+            float*				                _priority;
+            bool*						        _zSorted;
+            Blending::Source*		            _blendingSourceFactor;
+            Blending::Destination*	            _blendingDestinationFactor;
+            bool*						        _colorMask;
+            bool*					            _depthMask;
+            CompareMode*		    		    _depthFunc;
+            TriangleCulling*                    _triangleCulling;
+            CompareMode*					    _stencilFunction;
+            int*							    _stencilReference;
+            uint*						        _stencilMask;
+            StencilOperation*			        _stencilFailOp;
+            StencilOperation*			        _stencilZFailOp;
+            StencilOperation*			        _stencilZPassOp;
+            bool*						        _scissorTest;
+            math::ivec4*					    _scissorBox;
+			TextureSampler*						_target;
+            /*SamplerStates               		_samplerStates;*/
+
+            std::map<const data::Binding*, ChangedSlot>    _propAddedOrRemovedSlot;
+
+            std::shared_ptr<DrawCallZSorter>                _zSorter;
+            Signal<DrawCall*>::Ptr                          _zSortNeeded;
+
+		public:
+            DrawCall(std::shared_ptr<Pass>  pass,
+                     const StringMap&       variables,
+                     data::Store&           rootData,
+                     data::Store&           rendererData,
+                     data::Store&           targetData);
 
             inline
             std::shared_ptr<Pass>
-            pass() const
+            pass()
             {
                 return _pass;
             }
 
             inline
-            ContainerPtr
-            targetData() const
+            std::shared_ptr<Program>
+            program() const
             {
-                return _targetData;
+                return _program;
             }
 
             inline
-            ContainerPtr
-            rendererData() const
+            StringMap&
+            variables()
             {
-                return _rendererData;
+                return _variables;
             }
 
             inline
-            ContainerPtr
-            rootData() const
+            const StringMap&
+            variables() const
+            {
+                return _variables;
+            }
+
+            inline
+            data::Store&
+            rootData()
             {
                 return _rootData;
             }
 
             inline
-            Ptr
-            formatNameFunction(FormatNameFunction func)
+            data::Store&
+            rendererData()
             {
-                _formatFunction = func;
-
-                return shared_from_this();
+                return _rendererData;
             }
 
             inline
-            std::string
-            formatPropertyName(const std::string& rawPropertyName)
+            data::Store&
+            targetData()
             {
-                return _formatFunction ? _formatFunction(rawPropertyName) : rawPropertyName;
+                return _targetData;
             }
 
             inline
-            AbsTexturePtr
-            target() const
+            const std::vector<UniformValue<int>>&
+            boundBoolUniforms() const
             {
-                return _target;
+                return _uniformBool;
+            }
+
+            inline
+            const std::vector<UniformValue<int>>&
+            boundIntUniforms() const
+            {
+                return _uniformInt;
+            }
+
+            inline
+            const std::vector<UniformValue<float>>&
+            boundFloatUniforms() const
+            {
+                return _uniformFloat;
+            }
+
+            inline
+            const std::vector<SamplerValue>&
+            samplers()
+            {
+                return _samplers;
+            }
+
+            std::shared_ptr<DrawCallZSorter>
+            zSorter() const
+            {
+                return _zSorter;
             }
 
             inline
             float
             priority() const
             {
-                return _priority;
-            }
-
-            inline
-            Layouts
-            layouts() const
-            {
-                return _layouts;
+                return *_priority;
             }
 
             inline
             bool
             zSorted() const
             {
-                return _zsorted && Priority::LAST < _priority && !( _priority > Priority::TRANSPARENT);
-            }
-
-
-            void
-            configure(ProgramPtr,
-                      FormatNameFunction,
-                      ContainerPtr    fullTargetData, // original containers
-                      ContainerPtr    fullRendererData,
-                      ContainerPtr    fullRootData,
-                      ContainerPtr    targetData, // filtered containers
-                      ContainerPtr    rendererData,
-                      ContainerPtr    rootData);
-
-            void
-            unbind();
-
-            void
-            render(const std::shared_ptr<AbstractContext>&  context,
-                   AbsTexturePtr                            renderTarget,
-                   const render::ScissorBox&                viewport);
-
-            void
-            initialize(ContainerPtr                                 data,
-                       const std::map<std::string, std::string>&    inputNameToBindingName);
-
-            std::shared_ptr<math::Vector3>
-            getEyeSpacePosition(std::shared_ptr<math::Vector3> output = nullptr);
-
-            inline
-            Signal<Ptr>::Ptr
-            zsortNeeded() const
-            {
-                return _zsortNeeded;
+                return *_zSorted;
             }
 
             inline
-            Signal<Ptr, ContainerPtr, const std::string&>::Ptr
-            macroChanged() const
+            Signal<DrawCall*>::Ptr
+            zSortNeeded() const
             {
-                return _macroChanged;
+                return _zSortNeeded;
             }
 
-        private:
-            explicit
-            DrawCall(std::shared_ptr<Pass>);
+			inline
+			const TextureSampler&
+			target()
+			{
+				return *_target;
+			}
 
             void
-            initialize();
+            bind(std::shared_ptr<Program> program);
+
+			void
+			render(std::shared_ptr<AbstractContext>  context,
+                   AbsTexturePtr                     renderTarget,
+				   const math::ivec4&				 viewport,
+				   uint 							 clearColor) const;
 
             void
-            initializePassMacroRegex();
+            bindAttribute(ConstAttrInputRef     						input,
+						  const std::map<std::string, data::Binding>&   attributeBindings,
+                          const data::Store&                            defaultValues);
+
+            data::ResolvedBinding*
+            bindUniform(const ProgramInputs::UniformInput&          input,
+                        const std::map<std::string, data::Binding>& uniformBindings,
+                        const data::Store&                          defaultValues);
+
+            SamplerStatesResolveBindings
+            bindSamplerStates(const ProgramInputs::UniformInput&          input,
+                              const std::map<std::string, data::Binding>& uniformBindings,
+                              const data::Store&                          defaultValues);
+
+            data::ResolvedBinding*
+            bindSamplerState(ConstUniformInputRef                          input,
+                             const std::map<std::string, data::Binding>&   uniformBindings,
+                             const data::Store&                            defaultValues,
+                             const std::string&                            samplerStateProperty);
+
+			void
+            bindStates(const std::map<std::string, data::Binding>&	stateBindings,
+					   const data::Store&							defaultValues);
+
+			void
+			bindIndexBuffer();
+
+            math::vec3
+            getEyeSpacePosition();
+
+		private:
 
             void
             reset();
 
-            void
-            bind();
+            data::Store&
+            getStore(data::Binding::Source source);
+
+            data::ResolvedBinding*
+            resolveBinding(const std::string&          					inputName,
+                           const std::map<std::string, data::Binding>&  bindings);
+
+			void
+			setUniformValueFromStore(const ProgramInputs::UniformInput&   input,
+									 const std::string&                   propertyName,
+									 const data::Store&                   store);
 
             void
-            trackMacros();
+            setSamplerStateValueFromStore(const ProgramInputs::UniformInput&   input,
+                                          const std::string&                   propertyName,
+                                          const data::Store&                   store,
+                                          const std::string&                   samplerStateProperty);
 
-            void
-            bindProgramDefaultUniforms();
+			void
+			setAttributeValueFromStore(const ProgramInputs::AttributeInput& input,
+									   const std::string&                   propertyName,
+									   const data::Store&                   store);
 
-            void
-            bindProgramInputs();
+            template <typename T>
+            T*
+            bindState(const std::string&        					stateName,
+					  const std::map<std::string, data::Binding>&   bindings,
+					  const data::Store&                            defaultValues)
+            {
+				// FIXME: handle errors like in bindUniform()
+				// FIXME: call resolveBinding
+                if (bindings.count(stateName) == 0)
+                    return defaultValues.getUnsafePointer<T>(stateName);
 
-            void
-            bindIndexBuffer();
+                const auto& binding = bindings.at(stateName);
+                auto& store = getStore(binding.source);
+                auto unsafePointer = store.getUnsafePointer<T>(
+                    data::Store::getActualPropertyName(_variables, binding.propertyName)
+                );
 
-            void
-            bindTargetLayouts();
+                if (unsafePointer == nullptr)
+                    return defaultValues.getUnsafePointer<T>(stateName);
 
-            void
-            bindStates();
-
-            void
-            bindVertexAttribute(const std::string& propertyName, int location, uint vertexBufferIndex);
-
-            void
-            bindTextureSampler(const std::string& propertyName, int location, uint textureIndex, const SamplerState&);
-
-            void
-            bindUniform(const std::string& propertyName, ProgramInputs::Type, int location);
-
-            void
-            bindUniformArray(const std::string& propertyName, ContainerPtr, ProgramInputs::Type, int location);
-
-            void
-            bindFloatUniformArray(const std::string& propertyName, ContainerPtr, ProgramInputs::Type, int location);
-
-            void
-            bindIntegerUniformArray(const std::string& propertyName, ContainerPtr, ProgramInputs::Type, int location);
-
-            void
-            watchUniformRefChange(ContainerPtr, const std::string& propertyName, ProgramInputs::Type, int location);
-
-            void
-            targetLayoutsChangedHandler(NodePtr, NodePtr);
-
-            ContainerPtr
-            getContainer(ContainerId, data::BindingSource source) const;
+                return unsafePointer;
+            }
 
             template <typename T>
             void
-            bindState(const std::string& stateName, T defaultValue, T& stateValue)
+            setUniformValue(std::vector<UniformValue<T>>& 	uniforms,
+							int 							location,
+							uint 							size,
+							uint 							count,
+							const T* 						data)
             {
-                const auto&                stateBindings    = _pass->stateBindings();
-                data::Container::Ptr    container        = nullptr;
-                std::string                propertyName    = "";
-
-                if (stateBindings.count(stateName) > 0)
+                auto it = std::find_if(uniforms.begin(), uniforms.end(), [&](UniformValue<T>& u)
                 {
-                    const auto&    binding    = stateBindings.at(stateName);
+                    return u.location == location;
+                });
 
-                    propertyName        = formatPropertyName(std::get<0>(binding));
-                    container            = getContainer(ContainerId::FILTERED, std::get<1>(binding));
-                }
-
-
-                if (container)
-                {
-                    stateValue = container->hasProperty(propertyName)
-                        ? container->get<T>(propertyName)
-                        : defaultValue;
-
-                    if (_referenceChangedSlots.count(propertyName) == 0)
-                    {
-                        _referenceChangedSlots[propertyName].push_back(container->propertyReferenceChanged(propertyName)->connect(std::bind(
-                            &DrawCall::bindState<T>,
-                            shared_from_this(),
-                            stateName,
-                            defaultValue,
-                            stateValue
-                        )));
-                    }
-                }
+                if (it == uniforms.end())
+                    uniforms.push_back({ location, size, count, data });
                 else
-                    stateValue = defaultValue;
-
-                uploadIfTexture<T>(stateValue);
+                    it->data = data;
             }
-
-
-            template <typename T>
-            typename std::enable_if<std::is_convertible< T, std::shared_ptr<render::AbstractTexture> >::value, T>::type
-            uploadIfTexture(T value)
-            {
-                render::AbstractTexture::Ptr texture = value;
-
-                if (texture && !texture->isReady())
-                    texture->upload();
-
-                return value;
-            }
-            template <typename T>
-            typename std::enable_if<!std::is_convertible< T, std::shared_ptr<render::AbstractTexture> >::value, T>::type
-            uploadIfTexture(T value)
-            {
-                // actually does nothing
-                return value;
-            }
-
-            bool
-            isTrackedMacro(const std::string&, ContainerId) const;
-
-            void
-            macroAddedHandler(ContainerPtr, ContainerId, const std::string&);
-
-            void
-            macroChangedHandler(ContainerPtr, const std::string&);
-
-            void
-            macroRemovedHandler(ContainerPtr, ContainerId, const std::string&);
-
-            void
-            remoteProviderRemovedHandler(data::BindingSource, ProviderPtr);
-        };
-    }
+		};
+	}
 }

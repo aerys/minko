@@ -22,105 +22,102 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/deserialize/TypeDeserializer.hpp"
 
 using namespace minko;
-using namespace minko::math;
 using namespace minko::serialize;
 using namespace minko::deserialize;
 
 TEST_F(MathTypeSerializerTest, DefaultVector4)
 {
-	auto vec = Vector4::create();
+	math::vec4 vec;
 	std::tuple<uint, std::string> vecSerialized = TypeSerializer::serializeVector4(Any(vec));
 	std::tuple<uint, std::string&> vecSerialized2(std::get<0>(vecSerialized), std::get<1>(vecSerialized));
-	Vector4::Ptr vecResult = Any::cast<Vector4::Ptr>(TypeDeserializer::deserializeVector4(vecSerialized2));
+	auto vecResult = Any::cast<math::vec4>(TypeDeserializer::deserializeVector4(vecSerialized2));
 
-	ASSERT_TRUE(vec->equals(vecResult));
+	ASSERT_EQ(vec, vecResult);
 }
 
 TEST_F(MathTypeSerializerTest, RandomVector4)
 {
-	auto vec = Vector4::create(
+	math::vec4 vec(
 		MathTypeSerializerTest::random(), 
 		MathTypeSerializerTest::random(), 
 		MathTypeSerializerTest::random(), 
-		MathTypeSerializerTest::random());
+		MathTypeSerializerTest::random()
+    );
 	std::tuple<uint, std::string> vecSerialized = TypeSerializer::serializeVector4(Any(vec));
 	std::tuple<uint, std::string&> vecSerialized2(std::get<0>(vecSerialized), std::get<1>(vecSerialized));
-	Vector4::Ptr vecResult = Any::cast<Vector4::Ptr>(TypeDeserializer::deserializeVector4(vecSerialized2));
+	auto vecResult = Any::cast<math::vec4>(TypeDeserializer::deserializeVector4(vecSerialized2));
 
-	ASSERT_TRUE(vec->equals(vecResult));
+	ASSERT_EQ(vec, vecResult);
 }
 
 TEST_F(MathTypeSerializerTest, DefaultVector3)
 {
-	auto vec = Vector3::create();
+	math::vec3 vec;
 	std::tuple<uint, std::string> vecSerialized = TypeSerializer::serializeVector3(Any(vec));
 	std::tuple<uint, std::string&> vecSerialized2(std::get<0>(vecSerialized), std::get<1>(vecSerialized));
-	Vector3::Ptr vecResult = Any::cast<Vector3::Ptr>(TypeDeserializer::deserializeVector3(vecSerialized2));
+	auto vecResult = Any::cast<math::vec3>(TypeDeserializer::deserializeVector3(vecSerialized2));
 
-	ASSERT_TRUE(vec->equals(vecResult));
+	ASSERT_EQ(vec, vecResult);
 }
 
 TEST_F(MathTypeSerializerTest, RandomVector3)
 {
-	auto vec = Vector3::create(
+	math::vec3 vec(
 		MathTypeSerializerTest::random(),
 		MathTypeSerializerTest::random(),
-		MathTypeSerializerTest::random());
+		MathTypeSerializerTest::random()
+    );
 	std::tuple<uint, std::string> vecSerialized = TypeSerializer::serializeVector3(Any(vec));
 	std::tuple<uint, std::string&> vecSerialized2(std::get<0>(vecSerialized), std::get<1>(vecSerialized));
+    auto vecResult = Any::cast<math::vec3>(TypeDeserializer::deserializeVector3(vecSerialized2));
 
-	Vector3::Ptr vecResult = Any::cast<Vector3::Ptr>(TypeDeserializer::deserializeVector3(vecSerialized2));
-
-	ASSERT_TRUE(vec->equals(vecResult));
+	ASSERT_EQ(vec, vecResult);
 }
 
 TEST_F(MathTypeSerializerTest, DefaultVector2)
 {
-	auto vec = Vector2::create();
+	math::vec2 vec;
 	std::tuple<uint, std::string> vecSerialized = TypeSerializer::serializeVector2(Any(vec));
 	std::tuple<uint, std::string&> vecSerialized2(std::get<0>(vecSerialized), std::get<1>(vecSerialized));
+	auto vecResult = Any::cast<math::vec2>(TypeDeserializer::deserializeVector2(vecSerialized2));
 
-	Vector2::Ptr vecResult = Any::cast<Vector2::Ptr>(TypeDeserializer::deserializeVector2(vecSerialized2));
-
-	ASSERT_TRUE(vec->equals(vecResult));
+	ASSERT_EQ(vec, vecResult);
 }
 
 TEST_F(MathTypeSerializerTest, RandomVector2)
 {
-	auto vec = Vector2::create(
+	math::vec2 vec(
 		MathTypeSerializerTest::random(),
-		MathTypeSerializerTest::random());
+		MathTypeSerializerTest::random()
+    );
 	std::tuple<uint, std::string> vecSerialized = TypeSerializer::serializeVector2(Any(vec));
 	std::tuple<uint, std::string&> vecSerialized2(std::get<0>(vecSerialized), std::get<1>(vecSerialized));
+	auto vecResult = Any::cast<math::vec2>(TypeDeserializer::deserializeVector2(vecSerialized2));
 
-	Vector2::Ptr vecResult = Any::cast<Vector2::Ptr>(TypeDeserializer::deserializeVector2(vecSerialized2));
-
-	ASSERT_TRUE(vec->equals(vecResult));
+	ASSERT_EQ(vec, vecResult);
 }
 
 TEST_F(MathTypeSerializerTest, DefaultMatrix4x4)
 {
-	auto matrix = Matrix4x4::create();
+	math::mat4 matrix;
 	std::tuple<uint, std::string> matrixSerialized = TypeSerializer::serializeMatrix4x4(Any(matrix));
 	std::tuple<uint, std::string&> matrixSerialized2(std::get<0>(matrixSerialized), std::get<1>(matrixSerialized));
+	auto matrixResult = Any::cast<math::mat4>(TypeDeserializer::deserializeMatrix4x4(matrixSerialized2));
 
-	Matrix4x4::Ptr matrixResult = Any::cast<Matrix4x4::Ptr>(TypeDeserializer::deserializeMatrix4x4(matrixSerialized2));
-
-	ASSERT_TRUE(matrix->equals(matrixResult));
+	ASSERT_EQ(matrix, matrixResult);
 }
 
 TEST_F(MathTypeSerializerTest, RandomMatrix4x4)
 {
-	auto matrix = Matrix4x4::create();
-	matrix->initialize(
+	math::mat4 matrix(
 		MathTypeSerializerTest::random(), MathTypeSerializerTest::random(), MathTypeSerializerTest::random(), MathTypeSerializerTest::random(),
 		MathTypeSerializerTest::random(), MathTypeSerializerTest::random(), MathTypeSerializerTest::random(), MathTypeSerializerTest::random(), 
 		MathTypeSerializerTest::random(), MathTypeSerializerTest::random(), MathTypeSerializerTest::random(), MathTypeSerializerTest::random(), 
-		MathTypeSerializerTest::random(), MathTypeSerializerTest::random(), MathTypeSerializerTest::random(), MathTypeSerializerTest::random());
+		MathTypeSerializerTest::random(), MathTypeSerializerTest::random(), MathTypeSerializerTest::random(), MathTypeSerializerTest::random()
+    );
 	std::tuple<uint, std::string> matrixSerialized = TypeSerializer::serializeMatrix4x4(Any(matrix));
 	std::tuple<uint, std::string&> matrixSerialized2(std::get<0>(matrixSerialized), std::get<1>(matrixSerialized));
+	auto matrixResult = Any::cast<math::mat4>(TypeDeserializer::deserializeMatrix4x4(matrixSerialized2));
 
-	Matrix4x4::Ptr matrixResult = Any::cast<Matrix4x4::Ptr>(TypeDeserializer::deserializeMatrix4x4(matrixSerialized2));
-
-	ASSERT_TRUE(matrix->equals(matrixResult));
+	ASSERT_EQ(matrix, matrixResult);
 }

@@ -25,4 +25,4 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "dom/AbstractDOMMouseEvent.hpp"
 #include "dom/AbstractDOMTouchEvent.hpp"
 #include "dom/AbstractDOMEngine.hpp"
-#include "lua/HtmlOverlayLuaBindingsCollection.hpp"
+//#include "lua/HtmlOverlayLuaBindingsCollection.hpp"

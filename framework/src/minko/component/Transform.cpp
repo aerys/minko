@@ -19,24 +19,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/Transform.hpp"
 
-#include "minko/math/Matrix4x4.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
-#include "minko/data/Container.hpp"
-#include "minko/data/StructureProvider.hpp"
+#include "minko/data/Store.hpp"
 #include "minko/component/SceneManager.hpp"
 
 using namespace minko;
 using namespace minko::component;
-using namespace minko::math;
 
 Transform::Transform() :
-    minko::component::AbstractComponent(),
-    _matrix(Matrix4x4::create()),
-    _modelToWorld(Matrix4x4::create()),
-    _worldToModel(Matrix4x4::create()),
-    _data(data::StructureProvider::create("transform"))
+	minko::component::AbstractComponent(),
+	_matrix(nullptr),
+    _modelToWorld(nullptr),
+//	_worldToModel(1.),
+	_data(data::Provider::create())
 {
+	_data
+		->set<math::mat4>("matrix", 			math::mat4(1.f))
+        ->set<math::mat4>("modelToWorldMatrix", math::mat4(1.f));
+
+    _matrix = _data->getUnsafePointer<math::mat4>("matrix");
+    _modelToWorld = _data->getUnsafePointer<math::mat4>("modelToWorldMatrix");
 }
 
 AbstractComponent::Ptr
@@ -46,69 +49,55 @@ Transform::clone(const CloneOption& option)
 }
 
 void
-Transform::initialize()
+Transform::targetAdded(scene::Node::Ptr	target)
 {
-    _targetAddedSlot = targetAdded()->connect(std::bind(
-        &Transform::targetAddedHandler,
-        std::static_pointer_cast<Transform>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2
-    ));
+	if (target->component<Transform>(1) != nullptr)
+		throw std::logic_error("A node cannot have more than one Transform.");
 
-    _targetRemovedSlot = targetRemoved()->connect(std::bind(
-        &Transform::targetRemovedHandler,
-        std::static_pointer_cast<Transform>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2
-    ));
+	target->data().addProvider(_data);
 
-    _data->set<Matrix4x4::Ptr>("matrix", _matrix);
-    _data->set<Matrix4x4::Ptr>("modelToWorldMatrix", _modelToWorld);
-    //_data->set("transform/worldToModelMatrix", _worldToModel);
-}
+	auto callback = std::bind(
+		&Transform::addedOrRemovedHandler,
+		std::static_pointer_cast<Transform>(shared_from_this()),
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3
+	);
 
-void
-Transform::targetAddedHandler(AbstractComponent::Ptr    ctrl,
-                              scene::Node::Ptr            target)
-{
-    if (targets().size() > 1)
-        throw std::logic_error("Transform cannot have more than one target.");
-    if (target->component<Transform>(1) != nullptr)
-        throw std::logic_error("A node cannot have more than one Transform.");
+	_addedSlot = target->added().connect(callback);
+	//_removedSlot = target->removed()->connect(callback);
 
-    target->data()->addProvider(_data);
-
-    auto callback = std::bind(
-        &Transform::addedOrRemovedHandler,
-        std::static_pointer_cast<Transform>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3
-    );
-
-    _addedSlot = target->added()->connect(callback);
-    //_removedSlot = target->removed()->connect(callback);
-
-    addedOrRemovedHandler(nullptr, target, target->parent());
+	addedOrRemovedHandler(nullptr, target, target->parent());
 }
 
 void
 Transform::addedOrRemovedHandler(scene::Node::Ptr node,
-                                 scene::Node::Ptr target,
-                                 scene::Node::Ptr parent)
+								 scene::Node::Ptr target,
+								 scene::Node::Ptr parent)
 {
     if (!target->root()->component<RootTransform>())
-        target->root()->addComponent(RootTransform::create());
+		target->root()->addComponent(RootTransform::create());
 }
 
 void
-Transform::targetRemovedHandler(AbstractComponent::Ptr ctrl,
-                                scene::Node::Ptr         target)
+Transform::targetRemoved(scene::Node::Ptr target)
 {
-    target->data()->removeProvider(_data);
+	target->data().removeProvider(_data);
 
-    _addedSlot = nullptr;
-    _removedSlot = nullptr;
+	_addedSlot = nullptr;
+	_removedSlot = nullptr;
+}
+
+Transform::RootTransform::NodeTransformCacheEntry::NodeTransformCacheEntry() :
+    _node(nullptr),
+    _matrix(nullptr),
+    _modelToWorldMatrix(nullptr),
+    _parentId(-1),
+    _firstChildId(-1),
+    _numChildren(0),
+    _dirty(true),
+    _provider(nullptr)
+{
 }
 
 AbstractComponent::Ptr
@@ -119,310 +108,356 @@ Transform::RootTransform::clone(const CloneOption& option)
 }
 
 void
-Transform::RootTransform::initialize()
+Transform::RootTransform::targetAdded(scene::Node::Ptr target)
 {
-    _targetSlots.push_back(targetAdded()->connect(std::bind(
-        &Transform::RootTransform::targetAddedHandler,
-        std::static_pointer_cast<RootTransform>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2
-    )));
+	_targetSlots.push_back(target->added().connect(std::bind(
+		&Transform::RootTransform::addedHandler,
+		std::static_pointer_cast<RootTransform>(shared_from_this()),
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3
+	)));
+	_targetSlots.push_back(target->removed().connect(std::bind(
+		&Transform::RootTransform::removedHandler,
+		std::static_pointer_cast<RootTransform>(shared_from_this()),
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3
+	)));
+	_targetSlots.push_back(target->componentAdded().connect(std::bind(
+		&Transform::RootTransform::componentAddedHandler,
+		std::static_pointer_cast<RootTransform>(shared_from_this()),
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3
+	)));
+	_targetSlots.push_back(target->componentRemoved().connect(std::bind(
+		&Transform::RootTransform::componentRemovedHandler,
+		std::static_pointer_cast<RootTransform>(shared_from_this()),
+		std::placeholders::_1,
+		std::placeholders::_2,
+		std::placeholders::_3
+	)));
 
-    _targetSlots.push_back(targetRemoved()->connect(std::bind(
-        &Transform::RootTransform::targetRemovedHandler,
-        std::static_pointer_cast<RootTransform>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2
-    )));
+	auto sceneManager = target->root()->component<SceneManager>();
+
+	if (sceneManager != nullptr)
+		_renderingBeginSlot = sceneManager->renderingBegin()->connect(std::bind(
+			&Transform::RootTransform::renderingBeginHandler, 
+			std::static_pointer_cast<RootTransform>(shared_from_this()), 
+			std::placeholders::_1, 
+			std::placeholders::_2, 
+			std::placeholders::_3
+		), 1000.f);
+
+	addedHandler(target, target->root(), target->parent());
 }
 
 void
-Transform::RootTransform::targetAddedHandler(AbstractComponent::Ptr     ctrl,
-                                             scene::Node::Ptr            target)
+Transform::RootTransform::targetRemoved(scene::Node::Ptr target)
 {
-    _targetSlots.push_back(target->added()->connect(std::bind(
-        &Transform::RootTransform::addedHandler,
-        std::static_pointer_cast<RootTransform>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3
-    )));
-    _targetSlots.push_back(target->removed()->connect(std::bind(
-        &Transform::RootTransform::removedHandler,
-        std::static_pointer_cast<RootTransform>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3
-    )));
-    _targetSlots.push_back(target->componentAdded()->connect(std::bind(
-        &Transform::RootTransform::componentAddedHandler,
-        std::static_pointer_cast<RootTransform>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3
-    )));
-    _targetSlots.push_back(target->componentRemoved()->connect(std::bind(
-        &Transform::RootTransform::componentRemovedHandler,
-        std::static_pointer_cast<RootTransform>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2,
-        std::placeholders::_3
-    )));
-
-    auto sceneManager = target->root()->component<SceneManager>();
-
-    if (sceneManager != nullptr)
-        _renderingBeginSlot = sceneManager->renderingBegin()->connect(std::bind(
-            &Transform::RootTransform::renderingBeginHandler,
-            std::static_pointer_cast<RootTransform>(shared_from_this()),
-            std::placeholders::_1,
-            std::placeholders::_2,
-            std::placeholders::_3
-        ), 1000.f);
-
-    addedHandler(nullptr, target, target->parent());
+	_targetSlots.clear();
+	_renderingBeginSlot = nullptr;
 }
 
 void
-Transform::RootTransform::targetRemovedHandler(AbstractComponent::Ptr     ctrl,
-                                               scene::Node::Ptr            target)
+Transform::RootTransform::componentAddedHandler(scene::Node::Ptr		node,
+												scene::Node::Ptr 		target,
+												AbstractComponent::Ptr	ctrl)
 {
-    _targetSlots.clear();
-    _renderingBeginSlot = nullptr;
+	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
+
+	if (sceneManager != nullptr)
+		_renderingBeginSlot = sceneManager->renderingBegin()->connect(std::bind(
+			&Transform::RootTransform::renderingBeginHandler, 
+			std::static_pointer_cast<RootTransform>(shared_from_this()), 
+			std::placeholders::_1, 
+			std::placeholders::_2, 
+			std::placeholders::_3
+		), 1000.f);
+    else
+    {
+        if (std::dynamic_pointer_cast<Transform>(ctrl) != nullptr)
+        {
+            auto removeIt = std::find(_toRemove.begin(), _toRemove.end(), target);
+
+            if (removeIt != _toRemove.end())
+                _toRemove.erase(removeIt);
+            else
+            {
+                _toAdd.push_back(target);
+                _invalidLists = true;
+            }
+        }
+    }
 }
 
 void
-Transform::RootTransform::componentAddedHandler(scene::Node::Ptr        node,
-                                                scene::Node::Ptr         target,
-                                                AbstractComponent::Ptr    ctrl)
+Transform::RootTransform::componentRemovedHandler(scene::Node::Ptr			node,
+												  scene::Node::Ptr 			target,
+												  AbstractComponent::Ptr	ctrl)
 {
-    auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
+	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
 
-    if (sceneManager != nullptr)
-        _renderingBeginSlot = sceneManager->renderingBegin()->connect(std::bind(
-            &Transform::RootTransform::renderingBeginHandler,
-            std::static_pointer_cast<RootTransform>(shared_from_this()),
-            std::placeholders::_1,
-            std::placeholders::_2,
-            std::placeholders::_3
-        ), 1000.f);
-    else if (std::dynamic_pointer_cast<Transform>(ctrl) != nullptr)
-        _invalidLists = true;
-}
+	if (sceneManager)
+		_renderingBeginSlot = nullptr;
+    else
+    {
+        if (std::dynamic_pointer_cast<Transform>(ctrl) != nullptr)
+        {
+            auto addIt = std::find(_toAdd.begin(), _toAdd.end(), target);
 
-void
-Transform::RootTransform::componentRemovedHandler(scene::Node::Ptr            node,
-                                                  scene::Node::Ptr             target,
-                                                  AbstractComponent::Ptr    ctrl)
-{
-    auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
-
-    if (sceneManager)
-        _renderingBeginSlot = nullptr;
-    else if (std::dynamic_pointer_cast<Transform>(ctrl) != nullptr)
-        _invalidLists = true;
+            if (addIt != _toAdd.end())
+                _toAdd.erase(addIt);
+            else
+            {
+                _toRemove.push_back(target);
+                _invalidLists = true;
+            }
+        }
+    }
 }
 
 void
 Transform::RootTransform::addedHandler(scene::Node::Ptr node,
-                                       scene::Node::Ptr target,
-                                       scene::Node::Ptr ancestor)
+									   scene::Node::Ptr target,
+									   scene::Node::Ptr ancestor)
 {
-    auto descendants = scene::NodeSet::create(target->root())->descendants(false);
-    for (auto descendant : descendants->nodes())
+    if (node->root() == this->target() && node != target)
     {
-        auto rootTransformCtrl = descendant->component<RootTransform>();
+        auto otherRoot = target->component<RootTransform>();
 
-        if (rootTransformCtrl)
-            descendant->removeComponent(rootTransformCtrl);
+        if (otherRoot != nullptr)
+        {
+            _toAdd.insert(_toAdd.begin(), otherRoot->_nodes.begin(), otherRoot->_nodes.end());
+            _toAdd.insert(_toAdd.begin(), otherRoot->_toAdd.begin(), otherRoot->_toAdd.end());
+            for (const auto& toRemove : _toRemove)
+                _toAdd.remove(toRemove);
+            _invalidLists = true;
+        
+            target->removeComponent(otherRoot);
+        }
     }
-
-    _invalidLists = true;
 }
 
 void
 Transform::RootTransform::removedHandler(scene::Node::Ptr node,
-                                         scene::Node::Ptr target,
-                                         scene::Node::Ptr ancestor)
+									     scene::Node::Ptr target,
+										 scene::Node::Ptr ancestor)
 {
-    _invalidLists = true;
+	_invalidLists = true;
+
+    auto withTransforms = scene::NodeSet::create(target)
+        ->descendants(true, false)
+        ->where([](scene::Node::Ptr n){ return n->hasComponent<Transform>(); });
+    _toRemove.insert(_toRemove.begin(), withTransforms->nodes().begin(), withTransforms->nodes().end());
 }
 
 void
 Transform::RootTransform::updateTransformsList()
 {
-    _transforms        .clear();
-    _modelToWorld    .clear();
-    _nodeToId        .clear();
-    _idToNode        .clear();
-    _parentId        .clear();
-    _firstChildId    .clear();
-    _numChildren    .clear();
+    if (_toAdd.empty() && _toRemove.empty())
+        return;
 
-    auto withTransforms            = scene::NodeSet::create(targets())
-        ->descendants(true, false)
-        ->where([](scene::Node::Ptr n){ return n->hasComponent<Transform>(); });
+    for (const auto& toRemove : _toRemove)
+        _nodeToId.erase(toRemove);
 
-    auto nodesWithTransform    = withTransforms->nodes();
+    _nodes.clear();
 
-    juxtaposeSiblings(nodesWithTransform); // make sure siblings are at contiguous positions in the vector
+    for (const auto& nodeAndId : _nodeToId)
+        _nodes.push_back(nodeAndId.first);
 
-    _transforms        .resize(nodesWithTransform.size());
-    _modelToWorld    .resize(nodesWithTransform.size());
-    _idToNode        .resize(nodesWithTransform.size());
-    _parentId        .resize(nodesWithTransform.size(), -1);
-    _firstChildId    .resize(nodesWithTransform.size(), 0);
-    _numChildren    .resize(nodesWithTransform.size(), 0);
+    for (const auto& node : _toAdd)
+        _nodes.push_back(node);
 
-    for (uint nodeId = 0; nodeId < nodesWithTransform.size(); ++nodeId)
-    {
-        auto    node        = nodesWithTransform[nodeId];
-        auto    transform    = node->component<Transform>();
-        auto    ancestor    = node->parent();
+    _toAdd.clear();
+    _toRemove.clear();
 
-        while (ancestor != nullptr && _nodeToId.count(ancestor) == 0)
+    _nodeTransformCache.clear();
+    _nodeTransformCache.resize(_nodes.size(), NodeTransformCacheEntry());
+
+    sortNodes();
+
+    auto nodeId = 0;
+    auto ancestor = scene::Node::Ptr();
+    auto ancestorId = -1;
+    auto firstSiblingId = -1;
+    auto numSiblings = 0;
+
+    for (const auto& node : _nodes)
+	{
+        auto previousAncestor = ancestor;
+
+        ancestor = node->parent();
+
+        while (ancestor != nullptr && !ancestor->hasComponent<Transform>())
             ancestor = ancestor->parent();
 
-        _nodeToId[node]            = nodeId;
-
-        _transforms[nodeId]        = transform->_matrix;
-        _modelToWorld[nodeId]    = transform->_modelToWorld;
-        _idToNode[nodeId]        = node;
-
-        if (ancestor)
+        if (ancestor == nullptr)
         {
-            assert(_nodeToId.count(ancestor) > 0);
-            auto ancestorId = _nodeToId[ancestor];
-
-            _parentId[nodeId]    = ancestorId;
-
-            if (_numChildren[ancestorId] == 0)
-                _firstChildId[ancestorId] = nodeId;
-            ++_numChildren[ancestorId];
+            numSiblings = 0;
         }
-    }
+        else if (ancestor != previousAncestor)
+        {
+            if (previousAncestor == nullptr)
+            {
+                ancestorId = _nodeToId.at(ancestor);
 
-    _invalidLists = false;
-}
+                firstSiblingId = nodeId;
+                ++numSiblings;
+            }
+            else
+            {
+                const auto previousAncestorId = _nodeToId.at(previousAncestor);
 
-/*static*/
-void
-Transform::RootTransform::juxtaposeSiblings(std::vector<NodePtr>& nodes)
-{
-    // assumes 'nodes' is the result of a breadth-first search from the nodes
-    std::unordered_map<scene::Node::Ptr, unsigned int>    firstChild;
+                auto& previousAncestorCacheEntry = _nodeTransformCache.at(previousAncestorId);
 
-    for (unsigned int nodeId = 0; nodeId < nodes.size(); ++nodeId)
-    {
-        auto it            = nodes.begin() + nodeId;
-        auto node        = *it;
-        auto ancestor    = node->parent();
-        while (ancestor != nullptr
-            && std::find(nodes.begin(), it, ancestor) == nodes.end())
-            ancestor = ancestor->parent();
+                previousAncestorCacheEntry._firstChildId = firstSiblingId;
+                previousAncestorCacheEntry._numChildren = numSiblings;
 
-        if (firstChild.count(ancestor) == 0)
-            firstChild[ancestor] = nodeId;
+                firstSiblingId = nodeId;
+                numSiblings = 1;
+
+                previousAncestor = ancestor;
+
+                ancestorId = _nodeToId.at(ancestor);
+            }
+        }
         else
         {
-            assert(firstChild[ancestor] <= nodeId);
-
-            nodes.erase(it);
-            nodes.insert(nodes.begin() + firstChild[ancestor], node);
+            ++numSiblings;
         }
+
+		_nodeToId[node] = nodeId;
+
+        auto& nodeCacheEntry = _nodeTransformCache.at(nodeId);
+
+        nodeCacheEntry._node = node;
+
+        nodeCacheEntry._parentId = ancestorId;
+
+        nodeCacheEntry._matrix = node->data().getPointer<math::mat4>("matrix");
+		nodeCacheEntry._modelToWorldMatrix = node->data().getUnsafePointer<math::mat4>("modelToWorldMatrix");
+        nodeCacheEntry._provider = node->component<Transform>()->_data;
+
+        ++nodeId;
+	}
+
+    if (ancestor != nullptr)
+    {
+        ancestorId = _nodeToId.at(ancestor);
+
+        auto& ancestorCacheEntry = _nodeTransformCache.at(ancestorId);
+
+        ancestorCacheEntry._firstChildId = firstSiblingId;
+        ancestorCacheEntry._numChildren = numSiblings;
     }
+
+	_invalidLists = false;
+}
+
+void
+Transform::RootTransform::sortNodes()
+{
+    // TODO fixme
+    // avoid using NodeSet
+    // instead, sort _nodes in place on a first pass
+    // then update _nodeTransformCache entries on a second pass
+
+    auto sortedNodeSet = scene::NodeSet::create(_nodes.front()->root())
+        ->descendants(true, false)
+        ->where([this](scene::Node::Ptr descendant) -> bool
+    {
+        return descendant->hasComponent<Transform>();
+    });
+
+    _nodes.assign(sortedNodeSet->nodes().begin(), sortedNodeSet->nodes().end());
 }
 
 void
 Transform::RootTransform::updateTransforms()
 {
-    unsigned int numNodes     = _transforms.size();
-    unsigned int nodeId     = 0;
+    math::mat4 modelToWorldMatrix;
+    uint nodeId = 0;
 
-    while (nodeId < numNodes)
-    {
-        auto parentModelToWorldMatrix     = _modelToWorld[nodeId];
-        auto numChildren                 = _numChildren[nodeId];
-        auto firstChildId                 = _firstChildId[nodeId];
-        auto lastChildId                 = firstChildId + numChildren;
-        auto parentId                     = _parentId[nodeId];
-        auto parentTransformChanged     = parentModelToWorldMatrix->_hasChanged;
+    for (const auto& node : _nodes)
+	{
+        auto& nodeCacheEntry = _nodeTransformCache.at(nodeId);
 
-        parentModelToWorldMatrix->_hasChanged = false;
+		if (nodeCacheEntry._dirty)
+		{
+			auto parentId = nodeCacheEntry._parentId;
 
-        if (parentId == -1)
-        {
-            auto parentTransform = _transforms[nodeId];
-
-            if (_transforms[nodeId]->_hasChanged)
+			if (parentId < 0)
+				modelToWorldMatrix = *nodeCacheEntry._matrix;
+            else
             {
-                parentModelToWorldMatrix->copyFrom(parentTransform);
-                parentModelToWorldMatrix->_hasChanged = false;
-                parentTransform->_hasChanged = false;
-                parentTransformChanged = true;
+                const auto& parentCacheEntry = _nodeTransformCache.at(parentId);
+
+                modelToWorldMatrix = *parentCacheEntry._modelToWorldMatrix * *nodeCacheEntry._matrix;
             }
-        }
 
-        for (auto childId = firstChildId; childId < lastChildId; ++childId)
-        {
-            auto modelToWorld   = _modelToWorld[childId];
-            auto transform      = _transforms[childId];
-
-            if (transform->_hasChanged || parentTransformChanged)
+            // Because we use an unsafe pointer that gives us a direct access to the
+            // data provider internal value for "modelToWorldMatrix", we have to trigger
+            // the "property changed" signal manually.
+            // This technique completely bypasses the storeproperty name resolving
+            // mechanism and is a lot faster.
+            if (*nodeCacheEntry._modelToWorldMatrix != modelToWorldMatrix)
             {
-                modelToWorld->lock()->copyFrom(transform)->append(parentModelToWorldMatrix)->unlock();
-                transform->_hasChanged = false;
+                auto& nodeData = node->data();
+                auto provider = nodeCacheEntry._provider;
+
+                // manually update the data provider internal mat4 object
+                *nodeCacheEntry._modelToWorldMatrix = modelToWorldMatrix;
+
+                // execute the "property changed" signal(s) manually
+                nodeData.propertyChanged().execute(nodeData, provider, "modelToWorldMatrix");
+                if (nodeData.hasPropertyChangedSignal("modelToWorldMatrix"))
+                    nodeData.propertyChanged("modelToWorldMatrix").execute(
+                        nodeData,
+                        provider,
+                        "modelToWorldMatrix"
+                    );
+
+			    auto numChildren = nodeCacheEntry._numChildren;
+
+                if (numChildren > 0)
+                {
+                    auto firstChildId = nodeCacheEntry._firstChildId;
+                    auto lastChildId = firstChildId + numChildren;
+
+                    for (auto childId = firstChildId; childId < lastChildId; ++childId)
+                    {
+                        auto& childCacheEntry = _nodeTransformCache.at(childId);
+
+                        childCacheEntry._dirty = true;
+                    }
+                }
             }
-        }
+
+	       	nodeCacheEntry._dirty = false;
+		}
 
         ++nodeId;
-    }
+	}
 }
 
 void
 Transform::RootTransform::forceUpdate(scene::Node::Ptr node, bool updateTransformLists)
 {
-    if (_invalidLists || updateTransformLists)
-        updateTransformsList();
+	if (_invalidLists || updateTransformLists)
+		updateTransformsList();
 
-    auto                targetNodeId    = _nodeToId[node];
-    int                    nodeId            = targetNodeId;
-    auto                dirtyRoot        = -1;
-    std::vector<uint>    path;
-
-    // find the "dirty" root and build the path to get back to the target node
-    while (nodeId >= 0)
-    {
-        if ((_transforms[nodeId]->_hasChanged)
-            || (nodeId != targetNodeId && _modelToWorld[nodeId]->_hasChanged))
-            dirtyRoot = nodeId;
-
-        path.push_back(nodeId);
-
-        nodeId = _parentId[nodeId];
-    }
-
-    // update that path starting from the dirty root
-    for (int i = path.size() - 1; i >= 0; --i)
-    {
-        auto dirtyNodeId    = path[i];
-        auto parentId        = _parentId[dirtyNodeId];
-        auto modelToWorld    = _modelToWorld[dirtyNodeId];
-
-        modelToWorld->copyFrom(_transforms[dirtyNodeId]);
-        if (parentId != -1)
-            modelToWorld->append(_modelToWorld[parentId]);
-        modelToWorld->_hasChanged = false;
-    }
+	updateTransforms();
 }
 
 void
-Transform::RootTransform::renderingBeginHandler(std::shared_ptr<SceneManager>               sceneManager,
-                                                uint                                        frameId,
-                                                std::shared_ptr<render::AbstractTexture>    abstractTexture)
+Transform::RootTransform::renderingBeginHandler(std::shared_ptr<SceneManager>				sceneManager, 
+											    uint										frameId, 
+												std::shared_ptr<render::AbstractTexture>	abstractTexture)
 {
-    if (_invalidLists)
-        updateTransformsList();
+	if (_invalidLists)
+	    updateTransformsList();
 
-    updateTransforms();
+	updateTransforms();
 }

@@ -23,72 +23,62 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Signal.hpp"
 #include "minko/component/AbstractRootDataComponent.hpp"
-#include "minko/data/ArrayProvider.hpp"
 #include "minko/scene/Layout.hpp"
 
 namespace minko
 {
-    namespace data
-    {
-        class LightMaskFilter;
-    }
+	namespace component
+	{
+		class AbstractLight :
+			public AbstractRootDataComponent
+		{
+			friend class data::LightMaskFilter;
 
-    namespace component
-    {
-        class AbstractLight :
-            public AbstractRootDataComponent<data::ArrayProvider>
-        {
-            friend class data::LightMaskFilter;
+		public:
+			typedef std::shared_ptr<AbstractLight> 		Ptr;
 
-        public:
-            typedef std::shared_ptr<AbstractLight>         Ptr;
+		private:
+			typedef	std::shared_ptr<scene::Node>		NodePtr;
+			typedef std::shared_ptr<AbstractComponent>	AbsCmpPtr;
 
-        private:
-            typedef    std::shared_ptr<scene::Node>        NodePtr;
-            typedef std::shared_ptr<AbstractComponent>     AbsCmpPtr;
+		private:
+			math::vec3  _color;
 
-        private:
-            std::shared_ptr<math::Vector3>                 _color;
-
-            Signal<NodePtr, NodePtr>::Slot                 _targetLayoutChangedSlot;
-
-        public:
+        protected:
             inline
-            std::shared_ptr<math::Vector3>
-            color()
+            std::shared_ptr<data::Provider>
+            data() const
             {
-                return _color;
+                return provider();
             }
 
-            Ptr
-            color(std::shared_ptr<math::Vector3>);
+		public:
+            virtual
+            ~AbstractLight()
+            {
+            }
 
-            Ptr
-            color(std::shared_ptr<math::Vector4>);
+			inline
+			const math::vec3&
+			color() const
+			{
+				return _color;
+			}
 
-            Ptr
-            color(uint color);
+			AbstractLight::Ptr
+			color(const math::vec3&);
 
-            Layouts
+            const scene::Layout&
             layoutMask() const
             {
                 return AbstractComponent::layoutMask();
             }
 
-            void
-            layoutMask(Layouts value);
+			void
+			layoutMask(scene::Layout value);
 
-        protected:
-            AbstractLight(const std::string& arrayName);
-
-            void
-            targetAddedHandler(AbsCmpPtr, NodePtr);
-
-            void
-            targetRemovedHandler(AbsCmpPtr, NodePtr);
-
-            void
-            targetLayoutsChangedHandler(NodePtr, NodePtr);
-        };
-    }
+		protected:
+			AbstractLight(const std::string& arrayName);
+		};
+	}
 }

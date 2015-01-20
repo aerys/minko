@@ -23,125 +23,134 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/Signal.hpp"
-#include "minko/math/Vector3.hpp"
 #include "minko/math/AbstractShape.hpp"
 #include "minko/math/Box.hpp"
 
-
 namespace minko
 {
-    namespace component
-    {
+	namespace component
+	{
         class Surface;
         
-        class BoundingBox :
-            public AbstractComponent
-        {
-        public:
-            typedef std::shared_ptr<BoundingBox>    Ptr;
+		class BoundingBox :
+			public AbstractComponent
+		{
+		public:
+			typedef std::shared_ptr<BoundingBox>	Ptr;
 
-        private:
-            typedef std::shared_ptr<scene::Node>            NodePtr;
-            typedef std::shared_ptr<AbstractComponent>      AbsCmpPtr;
-            typedef std::shared_ptr<data::Container>        ContainerPtr;
+		private:
+			typedef std::shared_ptr<scene::Node>		NodePtr;
+			typedef std::shared_ptr<AbstractComponent>	AbsCmpPtr;
+            typedef std::shared_ptr<data::Provider>	    ProviderPtr;
+            typedef const std::string&                  String;
 
-        private:
-            const bool                                      _fixed;
+		private:
+			const bool										_fixed;
 
-            std::shared_ptr<math::Box>                      _box;
-            std::shared_ptr<math::Box>                      _worldSpaceBox;
+			std::shared_ptr<math::Box>						_box;
+			std::shared_ptr<math::Box>						_worldSpaceBox;
 
-            bool                                            _invalidBox;
-            bool                                            _invalidWorldSpaceBox;
+			bool											_invalidBox;
+			bool											_invalidWorldSpaceBox;
 
-            Signal<AbsCmpPtr, NodePtr>::Slot                _targetAddedSlot;
-            Signal<AbsCmpPtr, NodePtr>::Slot                _targetRemovedSlot;
-            Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot       _componentAddedSlot;
-            Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot       _componentRemovedSlot;
-            Signal<ContainerPtr, const std::string&>::Slot  _modelToWorldChangedSlot;
+			Signal<AbsCmpPtr, NodePtr>::Slot				_targetAddedSlot;
+			Signal<AbsCmpPtr, NodePtr>::Slot				_targetRemovedSlot;
+			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot		_componentAddedSlot;
+			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot	    _componentRemovedSlot;
+			Signal<data::Store&, ProviderPtr, String>::Slot	_modelToWorldChangedSlot;
 
-        public:
-            inline static
-            Ptr
-            create()
-            {
-                auto bb = std::shared_ptr<BoundingBox>(new BoundingBox());
+		public:
+			inline static
+			Ptr
+			create()
+			{
+				auto bb = std::shared_ptr<BoundingBox>(new BoundingBox());
 
-                bb->initialize();
+				return bb;
+			}
 
-                return bb;
-            }
+			inline static
+			Ptr
+			create(float size, const math::vec3& center)
+			{
+				return create(size, size, size, center);
+			}
 
-            inline static
-            Ptr
-            create(float size, std::shared_ptr<math::Vector3> center)
-            {
-                return create(size, size, size, center);
-            }
+			inline static
+			Ptr
+			create(float width, float height, float depth, const math::vec3& center)
+			{
+				return create(
+					math::vec3(
+						center.x - width * .5f, center.y - height * .5f, center.z - depth * .5f
+					),
+					math::vec3(
+						center.x + width * .5f, center.y + height * .5f, center.z + depth * .5f
+					)
+				);
+			}
 
-            inline static
-            Ptr
-            create(float width, float height, float depth, std::shared_ptr<math::Vector3> center)
-            {
-                return create(
-                    math::Vector3::create(
-                        center->x() - width * .5f, center->y() - height * .5f, center->z() - depth * .5f
-                    ),
-                    math::Vector3::create(
-                        center->x() + width * .5f, center->y() + height * .5f, center->z() + depth * .5f
-                    )
-                );
-            }
+			inline static
+			Ptr
+			create(const math::vec3& topRight, const math::vec3& bottomLeft)
+			{
+				auto bb = std::shared_ptr<BoundingBox>(new BoundingBox(topRight, bottomLeft));
 
-            inline static
-            Ptr
-            create(std::shared_ptr<math::Vector3> topRight, std::shared_ptr<math::Vector3> bottomLeft)
-            {
-                auto bb = std::shared_ptr<BoundingBox>(new BoundingBox(topRight, bottomLeft));
-
-                bb->initialize();
-
-                return bb;
-            }
+				return bb;
+			}
 
 			AbstractComponent::Ptr
 			clone(const CloneOption& option);
 
-            inline
-            std::shared_ptr<math::AbstractShape>
-            shape()
-            {
-                return std::static_pointer_cast<math::AbstractShape>(box());
-            }
+			inline
+			std::shared_ptr<math::AbstractShape>
+			shape()
+			{
+				return std::static_pointer_cast<math::AbstractShape>(box());
+			}
 
-            inline
-            std::shared_ptr<math::Box>
-            box()
-            {
-                if (_invalidWorldSpaceBox)
-                    updateWorldSpaceBox();
+			inline
+			std::shared_ptr<math::Box>
+			box()
+			{
+				if (_invalidWorldSpaceBox)
+					updateWorldSpaceBox();
 
-                return _worldSpaceBox;
-            }
+				return _worldSpaceBox;
+			}
+
+			inline
+			std::shared_ptr<math::Box>
+			modelSpaceBox()
+			{
+				if (_invalidBox)
+					update();
+
+				return _box;
+			}
+
+			void
+			update();
+
+        protected:
+            void
+            targetAdded(NodePtr target);
 
             void
-            update();
+            targetRemoved(NodePtr target);
 
-        private:
-            BoundingBox(std::shared_ptr<math::Vector3> topRight, std::shared_ptr<math::Vector3> bottomLeft);
+		private:
+			BoundingBox(const math::vec3& topRight, const math::vec3& bottomLeft);
 
-            BoundingBox();
+			BoundingBox();
 
 			BoundingBox(const BoundingBox& bbox, const CloneOption& option);
 
-            void
-            initialize();
-
-            void
-            updateWorldSpaceBox();
+			void
+			updateWorldSpaceBox();
             
             void
-            computeBox(const std::vector<std::shared_ptr<component::Surface>>& surfaces, math::Vector3::Ptr min, math::Vector3::Ptr max);
-        };
-    }
+            computeBox(const std::vector<std::shared_ptr<component::Surface>>& surfaces, math::vec3& min, math::vec3& max);
+		};
+	}
 }

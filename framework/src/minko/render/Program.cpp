@@ -22,132 +22,94 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/Shader.hpp"
 #include "minko/render/VertexBuffer.hpp"
+#include "minko/render/VertexAttribute.hpp"
 #include "minko/render/AbstractTexture.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/render/CubeTexture.hpp"
 #include "minko/render/IndexBuffer.hpp"
-#include "minko/math/Vector2.hpp"
-#include "minko/math/Vector3.hpp"
-#include "minko/math/Vector4.hpp"
 
 using namespace minko;
 using namespace minko::render;
 using namespace minko::math;
 
-Program::Program(Program::AbstractContextPtr context) :
-    AbstractResource(context),
-    _uniformFloat2(),
-    _textures(),
-    _vertexBuffers(),
-    _indexBuffer(nullptr)
+Program::Program(const std::string& name, Program::AbsContextPtr context) :
+	AbstractResource(context),
+	_name(name)
 {
 }
 
 void
 Program::upload()
 {
-    _id = context()->createProgram();
-    _context->attachShader(_id, _vertexShader->id());
-    _context->attachShader(_id, _fragmentShader->id());
-    _context->linkProgram(_id);
+	_id = context()->createProgram();
+	_context->attachShader(_id, _vertexShader->id());
+	_context->attachShader(_id, _fragmentShader->id());
+	_context->linkProgram(_id);
 
-    _inputs = _context->getProgramInputs(_id);
+	_inputs = _context->getProgramInputs(_id);
 }
 
 void
 Program::dispose()
 {
-    _context->deleteProgram(_id);
-    _id = -1;
+	_context->deleteProgram(_id);
+	_id = -1;
 
-    _vertexShader = nullptr;
-    _fragmentShader = nullptr;
-
-
-    _uniformFloat2.clear();
-    _textures.clear();
-    _vertexBuffers.clear();
-    _indexBuffer = nullptr;
+	_vertexShader = nullptr;
+	_fragmentShader = nullptr;
 }
 
-void
-Program::setUniform(const std::string& name, float v1)
-{
-    if (!_inputs->hasName(name))
-        return;
-
-    _uniformFloat[_inputs->location(name)] = v1;
-}
-
-void
-Program::setUniform(const std::string& name, float v1, float v2)
-{
-    if (!_inputs->hasName(name))
-        return;
-
-    _uniformFloat2[_inputs->location(name)] = Vector2::create(v1, v2);
-}
-
-void
-Program::setUniform(const std::string& name, float v1, float v2, float v3)
-{
-    if (!_inputs->hasName(name))
-        return;
-
-    _uniformFloat3[_inputs->location(name)] = Vector3::create(v1, v2, v3);
-}
-
-void
-Program::setUniform(const std::string& name, float v1, float v2, float v3, float v4)
-{
-    if (!_inputs->hasName(name))
-        return;
-
-    _uniformFloat4[_inputs->location(name)] = Vector4::create(v1, v2, v3, v4);
-}
-
-void
+Program&
 Program::setUniform(const std::string& name, AbstractTexture::Ptr texture)
 {
-    if (!_inputs->hasName(name))
-        return;
-
-    _textures[_inputs->location(name)] = texture;
-}
-
-void
-Program::setUniform(const std::string& name, Texture::Ptr texture)
-{
-    setUniform(name, std::static_pointer_cast<AbstractTexture>(texture));
-}
-
-void
-Program::setUniform(const std::string& name, CubeTexture::Ptr texture)
-{
-    setUniform(name, std::static_pointer_cast<AbstractTexture>(texture));
-}
-
-void
-Program::setVertexAttribute(const std::string& name, unsigned int attributeSize, const std::vector<float>& data)
-{
-    if (!_inputs->hasName(name))
-        return;
-
-    auto vertexBuffer = VertexBuffer::create(_context, data);
-    vertexBuffer->addAttribute(name, attributeSize, 0);
-
-    _vertexBuffers[_inputs->location(name)] = vertexBuffer;
-}
-
-void
-Program::setIndexBuffer(const std::vector<unsigned short>& indices)
-{
-    if (indices.empty())
+    auto it = std::find_if(_inputs.uniforms().begin(), _inputs.uniforms().end(), [&](const ProgramInputs::UniformInput& u)
     {
-        _indexBuffer = nullptr;
+        return u.name == name;
+    });
 
-        return;
+    if (it != _inputs.uniforms().end())
+    {
+        auto oldProgram = _context->currentProgram();
+
+        _context->setTextureAt(_setTextures.size(), texture->id(), it->location);
+        _context->setProgram(oldProgram);
+
+        _setTextures.insert(name);
+		_setUniforms.insert(name);
     }
 
-    _indexBuffer = IndexBuffer::create(_context, indices);
+    return *this;
+}
+
+Program&
+Program::setUniform(const std::string& name, Texture::Ptr texture)
+{
+	return setUniform(name, std::static_pointer_cast<AbstractTexture>(texture));
+}
+
+Program&
+Program::setUniform(const std::string& name, CubeTexture::Ptr texture)
+{
+	return setUniform(name, std::static_pointer_cast<AbstractTexture>(texture));
+}
+
+Program&
+Program::setAttribute(const std::string& name, const VertexAttribute& attribute, const std::string& attributeName)
+{
+    auto it = std::find_if(_inputs.attributes().begin(), _inputs.attributes().end(), [&](const ProgramInputs::AttributeInput& a)
+    {
+        return a.name == name;
+    });
+
+    if (it != _inputs.attributes().end())
+    {
+        auto oldProgram = _context->currentProgram();
+
+        _context->setVertexBufferAt(it->location, *attribute.resourceId, attribute.size, *attribute.vertexSize, attribute.offset);
+        _context->setProgram(oldProgram);
+
+        _setAttributes.insert(name);
+    }
+
+    return *this;
 }

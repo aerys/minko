@@ -19,9 +19,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/material/BasicMaterial.hpp"
 
-#include "minko/Color.hpp"
-#include "minko/math/Vector2.hpp"
-#include "minko/math/Vector4.hpp"
 #include "minko/render/AbstractTexture.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/render/CubeTexture.hpp"
@@ -31,471 +28,528 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::material;
 using namespace minko::render;
-using namespace minko::math;
 
-/*static*/ const States::Ptr BasicMaterial::_defaultStates;
+/*static*/ const std::shared_ptr<render::States> BasicMaterial::_defaultStates;
 
 BasicMaterial::BasicMaterial():
-    Material()
+	Material("BasicMaterial")
 {
 }
 
-/*virtual*/
 void
 BasicMaterial::initialize()
 {
-    diffuseColor(0xffffffff);
-    set<Vector2::Ptr>("uvScale",    Vector2::create(1.0f, 1.0f));
-    set<Vector2::Ptr>("uvOffset",    Vector2::create(0.0f, 0.0f));
+	diffuseColor(0xffffffff);
 }
 
-BasicMaterial::Ptr
-BasicMaterial::uvScale(float u, float v)
+BasicMaterial&
+BasicMaterial::uvScale(const math::vec2& value)
 {
-    get<Vector2::Ptr>("uvScale")->setTo(u, v);
+    data()->set("uvScale", value);
 
-    return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
+	return *this;
 }
 
-BasicMaterial::Ptr
-BasicMaterial::uvScale(Vector2::Ptr value)
+const math::vec2&
+BasicMaterial::uvScale() const
 {
-    return uvScale(value->x(), value->y());
+    return data()->get<math::vec2>("uvScale");
 }
 
-Vector2::Ptr
-BasicMaterial::uvScale(Vector2::Ptr output) const
+BasicMaterial&
+BasicMaterial::uvOffset(const math::vec2& value)
 {
-    return output
-        ? output->copyFrom(get<Vector2::Ptr>("uvScale"))
-        : Vector2::create(get<Vector2::Ptr>("uvScale"));
+    data()->set("uvOffset", value);
+
+	return *this;
 }
 
-BasicMaterial::Ptr
-BasicMaterial::uvOffset(float u, float v)
+const math::vec2&
+BasicMaterial::uvOffset() const
 {
-    get<Vector2::Ptr>("uvOffset")->setTo(u, v);
-
-    return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
+    return data()->get<math::vec2>("uvOffset");
 }
 
-BasicMaterial::Ptr
-BasicMaterial::uvOffset(Vector2::Ptr value)
+BasicMaterial&
+BasicMaterial::diffuseColor(const math::vec4& value)
 {
-    return uvOffset(value->x(), value->y());
+	data()->set("diffuseColor", value);
+
+	return *this;
 }
 
-Vector2::Ptr
-BasicMaterial::uvOffset(Vector2::Ptr output) const
+BasicMaterial&
+BasicMaterial::diffuseColor(uint diffuseRGBA)
 {
-    return output
-        ? output->copyFrom(get<Vector2::Ptr>("uvOffset"))
-        : Vector2::create(get<Vector2::Ptr>("uvOffset"));
+	return diffuseColor(math::rgba(diffuseRGBA));
 }
 
-BasicMaterial::Ptr
-BasicMaterial::diffuseColor(Vector4::Ptr value)
-{
-    set("diffuseColor", value);
-
-    return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
-}
-
-BasicMaterial::Ptr
-BasicMaterial::diffuseColor(uint rgba)
-{
-    return diffuseColor(Color::uintToVec4(rgba));
-}
-
-Vector4::Ptr
+math::vec4
 BasicMaterial::diffuseColor() const
 {
-    return get<Vector4::Ptr>("diffuseColor");
+	return data()->get<math::vec4>("diffuseColor");
 }
 
-BasicMaterial::Ptr
+BasicMaterial&
 BasicMaterial::diffuseMap(TexturePtr texture)
 {
-    assert(texture->type() == TextureType::Texture2D);
+#ifdef DEBUG
+	assert(texture == nullptr || texture->type() == TextureType::Texture2D);
+#endif
 
-    set("diffuseMap", texture);
+    if (texture)
+    	data()->set("diffuseMap", texture->sampler());
+    else
+        data()->unset("diffuseMap");
 
-    return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
+	return *this;
 }
 
-Texture::Ptr
+render::ResourceId
 BasicMaterial::diffuseMap() const
 {
-    return hasProperty("diffuseMap")
-        ? std::dynamic_pointer_cast<Texture>(get<AbstractTexture::Ptr>("diffuseMap"))
-        : nullptr;
+	return data()->hasProperty("diffuseMap")
+		? data()->get<render::ResourceId>("diffuseMap")
+		: -1;
 }
 
-BasicMaterial::Ptr
+BasicMaterial&
+BasicMaterial::diffuseMapWrapMode(WrapMode wrapMode)
+{
+    data()->set("diffuseMapWrapMode", wrapMode);
+
+    return *this;
+}
+
+WrapMode
+BasicMaterial::diffuseMapWrapMode() const
+{
+    return (data()->hasProperty("diffuseMapWrapMode"))
+        ? data()->get<WrapMode>("diffuseMapWrapMode")
+        : render::SamplerStates::DEFAULT_WRAP_MODE;
+}
+
+BasicMaterial&
+BasicMaterial::diffuseMapTextureFilter(TextureFilter textureFilter)
+{
+    data()->set("diffuseMapTextureFilter", textureFilter);
+
+    return *this;
+}
+
+TextureFilter
+BasicMaterial::diffuseMapTextureFilter() const
+{
+    return (data()->hasProperty("diffuseMapTextureFilter"))
+        ? data()->get<TextureFilter>("diffuseMapTextureFilter")
+        : render::SamplerStates::DEFAULT_TEXTURE_FILTER;
+}
+
+BasicMaterial&
+BasicMaterial::diffuseMapMipFilter(MipFilter mipFilter)
+{
+    data()->set("diffuseMapMipFilter", mipFilter);
+
+    return *this;
+}
+
+MipFilter
+BasicMaterial::diffuseMapMipFilter() const
+{
+    return (data()->hasProperty("diffuseMapMipFilter")) 
+        ? data()->get<MipFilter>("diffuseMapMipFilter") 
+        : render::SamplerStates::DEFAULT_MIP_FILTER;
+}
+
+BasicMaterial&
 BasicMaterial::diffuseCubeMap(std::shared_ptr<render::AbstractTexture> texture)
 {
-    assert(texture->type() == TextureType::CubeTexture);
+	assert(texture->type() == TextureType::CubeTexture);
 
-    set("diffuseCubeMap", texture);
+	data()->set("diffuseCubeMap", texture->id());
 
-    return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
+	return *this;
 }
 
-CubeTexture::Ptr
+render::ResourceId
 BasicMaterial::diffuseCubeMap() const
 {
-    return hasProperty("diffuseCubeMap")
-        ? std::dynamic_pointer_cast<CubeTexture>(get<AbstractTexture::Ptr>("diffuseCubeMap"))
-        : nullptr;
+	return data()->hasProperty("diffuseCubeMap")
+		? data()->get<render::ResourceId>("diffuseCubeMap")
+		: -1;
 }
 
-BasicMaterial::Ptr
-BasicMaterial::fogColor(Vector4::Ptr value)
+WrapMode
+BasicMaterial::diffuseCubeMapWrapMode() const
 {
-    set("fogColor", value);
-
-    return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
+    return (data()->hasProperty("diffuseCubeMapWrapMode"))
+        ? data()->get<WrapMode>("diffuseCubeMapWrapMode")
+        : render::SamplerStates::DEFAULT_WRAP_MODE;
 }
 
-BasicMaterial::Ptr
-BasicMaterial::fogColor(uint rgba)
+BasicMaterial&
+BasicMaterial::diffuseCubeMapTextureFilter(TextureFilter textureFilter)
 {
-    return fogColor(Color::uintToVec4(rgba));
+    data()->set("diffuseCubeMapTextureFilter", textureFilter);
+
+    return *this;
 }
 
-Vector4::Ptr
+TextureFilter
+BasicMaterial::diffuseCubeMapTextureFilter() const
+{
+    return (data()->hasProperty("diffuseCubeMapTextureFilter"))
+        ? data()->get<TextureFilter>("diffuseCubeMapTextureFilter")
+        : render::SamplerStates::DEFAULT_TEXTURE_FILTER;
+}
+
+BasicMaterial&
+BasicMaterial::diffuseCubeMapMipFilter(MipFilter mipFilter)
+{
+    data()->set("diffuseCubeMapMipFilter", mipFilter);
+
+    return *this;
+}
+
+MipFilter
+BasicMaterial::diffuseCubeMapMipFilter() const
+{
+    return (data()->hasProperty("diffuseCubeMapMipFilter"))
+        ? data()->get<MipFilter>("diffuseCubeMapMipFilter")
+        : render::SamplerStates::DEFAULT_MIP_FILTER;
+}
+
+BasicMaterial&
+BasicMaterial::fogColor(const math::vec4& value)
+{
+	data()->set("fogColor", value);
+
+	return *this;
+}
+
+BasicMaterial&
+BasicMaterial::fogColor(uint fogRGBA)
+{
+	return fogColor(math::rgba(fogRGBA));
+}
+
+math::vec4
 BasicMaterial::fogColor() const
 {
-    return get<Vector4::Ptr>("fogColor");
+	return data()->get<math::vec4>("fogColor");
 }
 
-BasicMaterial::Ptr
+BasicMaterial&
 BasicMaterial::fogDensity(float value)
 {
-    set("fogDensity", value);
+    data()->set("fogDensity", value);
 
-    return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
+    return *this;
 }
 
 float
 BasicMaterial::fogDensity() const
 {
-    return get<float>("fogDensity");
+    return data()->get<float>("fogDensity");
 }
 
-BasicMaterial::Ptr
+BasicMaterial&
 BasicMaterial::fogStart(float value)
 {
-    set("fogStart", value);
+    data()->set("fogStart", value);
 
-    return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
+    return *this;
 }
 
 float
 BasicMaterial::fogStart() const
 {
-    return get<float>("fogStart");
+    return data()->get<float>("fogStart");
 }
 
-BasicMaterial::Ptr
+BasicMaterial&
 BasicMaterial::fogEnd(float value)
 {
-    set("fogEnd", value);
+    data()->set("fogEnd", value);
 
-    return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
+    return *this;
 }
 
 float
 BasicMaterial::fogEnd() const
 {
-    return get<float>("fogEnd");
+    return data()->get<float>("fogEnd");
 }
 
-BasicMaterial::Ptr
+BasicMaterial&
 BasicMaterial::fogType(render::FogType value)
 {
-    unset("fogLinear");
-    unset("fogExponential");
-    unset("fogExponential2");
+    data()->unset("fogLinear");
+    data()->unset("fogExponential");
+    data()->unset("fogExponential2");
 
     switch (value)
     {
     case render::FogType::Linear:
-        set("fogLinear", true);
+        data()->set("fogLinear", true);
         break;
     case render::FogType::Exponential:
-        set("fogExponential", true);
+        data()->set("fogExponential", true);
         break;
     case render::FogType::Exponential2:
-        set("fogExponential2", true);
+        data()->set("fogExponential2", true);
         break;
     default:
         break;
     }
 
-    return std::dynamic_pointer_cast<BasicMaterial>(shared_from_this());
+    return *this;
 }
 
 render::FogType
 BasicMaterial::fogType() const
 {
-    if (hasProperty("fogLinear"))
+    if (data()->hasProperty("fogLinear"))
         return render::FogType::Linear;
 
-    if (hasProperty("fogExponential"))
+    if (data()->hasProperty("fogExponential"))
         return render::FogType::Exponential;
 
-    if (hasProperty("fogExponential2"))
+    if (data()->hasProperty("fogExponential2"))
         return render::FogType::Exponential2;
 
     return render::FogType::None;
 }
 
-BasicMaterial::Ptr
+BasicMaterial&
 BasicMaterial::blendingMode(Blending::Source src, Blending::Destination dst)
 {
-    set<Blending::Mode>("blendMode", src | dst);
+	data()->set<Blending::Mode>("blendingMode", src | dst);
+    data()->set<render::Blending::Source>(render::States::PROPERTY_BLENDING_SOURCE, src);
+    data()->set<render::Blending::Destination>(render::States::PROPERTY_BLENDING_DESTINATION, dst);
 
-    return std::static_pointer_cast<BasicMaterial>(shared_from_this());
+	return *this;
 }
 
-BasicMaterial::Ptr
+BasicMaterial&
 BasicMaterial::blendingMode(Blending::Mode value)
 {
-    set("blendMode", value);
+    auto srcBlendingMode = static_cast<render::Blending::Source>(static_cast<uint>(value) & 0x00ff);
+    auto dstBlendingMode = static_cast<render::Blending::Destination>(static_cast<uint>(value) & 0xff00);
 
-    return std::static_pointer_cast<BasicMaterial>(shared_from_this());
+    data()->set<render::Blending::Mode>("blendingMode", value);
+    data()->set<render::Blending::Source>(render::States::PROPERTY_BLENDING_SOURCE, srcBlendingMode);
+    data()->set<render::Blending::Destination>(render::States::PROPERTY_BLENDING_DESTINATION, dstBlendingMode);
+
+	return *this;
 }
+
 
 Blending::Source
 BasicMaterial::blendingSourceFactor() const
 {
-    return hasProperty("blendMode")
-        ? Blending::Source(uint(get<Blending::Mode>("blendMode")) & 0x00ff)
-        : _defaultStates->blendingSourceFactor();
+	return data()->hasProperty("blendMode") 
+		? Blending::Source(uint(data()->get<Blending::Mode>("blendMode")) & 0x00ff)
+		: _defaultStates->blendingSourceFactor();
 }
 
 Blending::Destination
 BasicMaterial::blendingDestinationFactor() const
 {
-    return hasProperty("blendMode")
-        ? Blending::Destination(uint(get<Blending::Mode>("blendMode")) & 0xff00)
-        : _defaultStates->blendingDestinationFactor();
+	return data()->hasProperty("blendMode") 
+		? Blending::Destination(uint(data()->get<Blending::Mode>("blendMode")) & 0xff00)
+		: _defaultStates->blendingDestinationFactor();
 }
 
-BasicMaterial::Ptr
+BasicMaterial&
 BasicMaterial::colorMask(bool value)
 {
-    set("colorMask", value);
+    data()->set(States::PROPERTY_COLOR_MASK, value);
 
-    return std::static_pointer_cast<BasicMaterial>(shared_from_this());
+	return *this;
 }
 
 bool
 BasicMaterial::colorMask() const
 {
-    return hasProperty("colorMask")
-        ? get<bool>("colorMask")
-        : _defaultStates->colorMask();
+    return data()->hasProperty(States::PROPERTY_COLOR_MASK)
+        ? data()->get<bool>(States::PROPERTY_COLOR_MASK)
+		: _defaultStates->colorMask();
 }
 
-BasicMaterial::Ptr
+BasicMaterial&
 BasicMaterial::depthMask(bool value)
 {
-    set("depthMask", value);
+    data()->set(States::PROPERTY_DEPTH_MASK, value);
 
-    return std::static_pointer_cast<BasicMaterial>(shared_from_this());
+	return *this;
 }
 
 bool
 BasicMaterial::depthMask() const
 {
-    return hasProperty("depthMask")
-        ? get<bool>("depthmask")
-        : _defaultStates->depthMask();
+    return data()->hasProperty(States::PROPERTY_DEPTH_MASK)
+        ? data()->get<bool>(States::PROPERTY_DEPTH_MASK)
+		: _defaultStates->depthMask();
 }
 
-BasicMaterial::Ptr
+BasicMaterial&
 BasicMaterial::depthFunction(CompareMode value)
 {
-    set("depthFunc", value);
+    data()->set(States::PROPERTY_DEPTH_FUNCTION, value);
 
-    return std::static_pointer_cast<BasicMaterial>(shared_from_this());
+	return *this;
 }
 
 CompareMode
 BasicMaterial::depthFunction() const
 {
-    return hasProperty("depthFunc")
-        ? get<CompareMode>("depthFunc")
-        : _defaultStates->depthFunc();
+    return data()->hasProperty(States::PROPERTY_DEPTH_FUNCTION)
+        ? data()->get<CompareMode>(States::PROPERTY_DEPTH_FUNCTION)
+		: _defaultStates->depthFunction();
 }
 
-BasicMaterial::Ptr
+BasicMaterial&
 BasicMaterial::triangleCulling(TriangleCulling value)
 {
-    set("triangleCulling", value);
+    data()->set(States::PROPERTY_TRIANGLE_CULLING, value);
 
-    return std::static_pointer_cast<BasicMaterial>(shared_from_this());
+	return *this;
 }
 
 TriangleCulling
 BasicMaterial::triangleCulling() const
 {
-    return hasProperty("triangleCulling")
-        ? get<TriangleCulling>("triangleCulling")
-        : _defaultStates->triangleCulling();
+    return data()->hasProperty(States::PROPERTY_TRIANGLE_CULLING)
+        ? data()->get<TriangleCulling>(States::PROPERTY_TRIANGLE_CULLING)
+		: _defaultStates->triangleCulling();
 }
 
-BasicMaterial::Ptr
+BasicMaterial&
 BasicMaterial::stencilFunction(CompareMode value)
 {
-    set("stencilFunc", value);
+	data()->set(States::PROPERTY_STENCIL_FUNCTION, value);
 
-    return std::static_pointer_cast<BasicMaterial>(shared_from_this());
+	return *this;
 }
 
 CompareMode
 BasicMaterial::stencilFunction() const
 {
-    return hasProperty("stencilFunc")
-        ? get<CompareMode>("stencilFunc")
-        : _defaultStates->stencilFunction();
+    return data()->hasProperty(States::PROPERTY_STENCIL_FUNCTION)
+        ? data()->get<CompareMode>(States::PROPERTY_STENCIL_FUNCTION)
+		: _defaultStates->stencilFunction();
 }
 
-BasicMaterial::Ptr
+BasicMaterial&
 BasicMaterial::stencilReference(int value)
 {
-    set("stencilRef", value);
+    data()->set(States::PROPERTY_STENCIL_REFERENCE, value);
 
-    return std::static_pointer_cast<BasicMaterial>(shared_from_this());
+	return *this;
 }
 
 int
 BasicMaterial::stencilReference() const
 {
-    return hasProperty("stencilRef")
-        ? get<int>("stencilRef")
-        : _defaultStates->stencilReference();
+    return data()->hasProperty(States::PROPERTY_STENCIL_REFERENCE)
+        ? data()->get<int>(States::PROPERTY_STENCIL_REFERENCE)
+		: _defaultStates->stencilReference();
 }
 
-BasicMaterial::Ptr
+BasicMaterial&
 BasicMaterial::stencilMask(uint value)
 {
-    set("stencilMask", value);
+    data()->set(States::PROPERTY_STENCIL_MASK, value);
 
-    return std::static_pointer_cast<BasicMaterial>(shared_from_this());
+	return *this;
 }
 
 uint
 BasicMaterial::stencilMask() const
 {
-    return hasProperty("stencilMask")
-        ? get<uint>("stencilMask")
-        : _defaultStates->stencilMask();
+    return data()->hasProperty(States::PROPERTY_STENCIL_MASK)
+        ? data()->get<uint>(States::PROPERTY_STENCIL_MASK)
+		: _defaultStates->stencilMask();
 }
 
-BasicMaterial::Ptr
+BasicMaterial&
 BasicMaterial::stencilFailOperation(StencilOperation value)
 {
-    set("stencilFailOp", value);
+    data()->set(States::PROPERTY_STENCIL_FAIL_OP, value);
 
-    return std::static_pointer_cast<BasicMaterial>(shared_from_this());
+	return *this;
 }
 
 StencilOperation
 BasicMaterial::stencilFailOperation() const
 {
-    return hasProperty("stencilFailOp")
-        ? get<StencilOperation>("stencilFailOp")
-        : _defaultStates->stencilFailOperation();
+    return data()->hasProperty(States::PROPERTY_STENCIL_FAIL_OP)
+        ? data()->get<StencilOperation>(States::PROPERTY_STENCIL_FAIL_OP)
+		: _defaultStates->stencilFailOperation();
 }
 
-BasicMaterial::Ptr
-BasicMaterial::stencilDepthFailOperation(StencilOperation value)
+BasicMaterial&
+BasicMaterial::stencilZFailOperation(StencilOperation value)
 {
-    set("stencilZFailOp", value);
+    data()->set(States::PROPERTY_STENCIL_ZFAIL_OP, value);
 
-    return std::static_pointer_cast<BasicMaterial>(shared_from_this());
+	return *this;
 }
 
 StencilOperation
-BasicMaterial::stencilDepthFailOperation() const
+BasicMaterial::stencilZFailOperation() const
 {
-    return hasProperty("stencilZFailOp")
-        ? get<StencilOperation>("stencilZFailOp")
-        : _defaultStates->stencilDepthFailOperation();
+    return data()->hasProperty(States::PROPERTY_STENCIL_ZFAIL_OP)
+        ? data()->get<StencilOperation>(States::PROPERTY_STENCIL_ZFAIL_OP)
+		: _defaultStates->stencilZFailOperation();
 }
 
-BasicMaterial::Ptr
-BasicMaterial::stencilDepthPassOperation(StencilOperation value)
+BasicMaterial&
+BasicMaterial::stencilZPassOperation(StencilOperation value)
 {
-    set("stencilZPassOp", value);
+    data()->set(States::PROPERTY_STENCIL_ZPASS_OP, value);
 
-    return std::static_pointer_cast<BasicMaterial>(shared_from_this());
+	return *this;
 }
 
 StencilOperation
-BasicMaterial::stencilDepthPassOperation() const
+BasicMaterial::stencilZPassOperation() const
 {
-    return hasProperty("stencilZPassOp")
-        ? get<StencilOperation>("stencilZPassOp")
-        : _defaultStates->stencilDepthPassOperation();
+    return data()->hasProperty(States::PROPERTY_STENCIL_ZPASS_OP)
+        ? data()->get<StencilOperation>(States::PROPERTY_STENCIL_ZPASS_OP)
+		: _defaultStates->stencilZPassOperation();
 }
 
-BasicMaterial::Ptr
+BasicMaterial&
 BasicMaterial::priority(float value)
 {
-    set("priority", value);
+    data()->set(States::PROPERTY_PRIORITY, value);
 
-    return std::static_pointer_cast<BasicMaterial>(shared_from_this());
+	return *this;
 }
 
-float
+
+float 
 BasicMaterial::priority() const
 {
-    return hasProperty("priority")
-        ? get<float>("priority")
-        : _defaultStates->priority();
+    return data()->hasProperty(States::PROPERTY_PRIORITY)
+        ? data()->get<float>(States::PROPERTY_PRIORITY)
+		: _defaultStates->priority();
 }
 
-BasicMaterial::Ptr
+BasicMaterial&
 BasicMaterial::zSorted(bool value)
 {
-    set("zSort", value);
+    data()->set(States::PROPERTY_ZSORTED, value);
 
-    return std::static_pointer_cast<BasicMaterial>(shared_from_this());
+	return *this;
 }
 
 bool
 BasicMaterial::zSorted() const
 {
-    return hasProperty("zSort")
-        ? get<bool>("zSort")
-        : _defaultStates->zSorted();
+    return data()->hasProperty(States::PROPERTY_ZSORTED)
+        ? data()->get<bool>(States::PROPERTY_ZSORTED)
+		: _defaultStates->zSorted();
 }
-
-BasicMaterial::Ptr
-BasicMaterial::target(AbstractTexture::Ptr value)
-{
-    set("target", value);
-
-    return std::static_pointer_cast<BasicMaterial>(shared_from_this());
-}
-
-AbstractTexture::Ptr
-BasicMaterial::target() const
-{
-    return hasProperty("target")
-        ? get<AbstractTexture::Ptr>("zSort")
-        : nullptr;
-}
-
-BasicMaterial::Ptr
-BasicMaterial::isTransparent(bool transparent, bool zSort)
-{
-    return priority(transparent ? Priority::TRANSPARENT : Priority::OPAQUE)
-        ->zSorted(zSort)
-        ->blendingMode(transparent ? Blending::Mode::ALPHA : Blending::Mode::DEFAULT);
-}
-

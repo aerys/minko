@@ -26,81 +26,81 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-    namespace component
-    {
-        class JobManager :
-            public AbstractScript
-        {
-        public:
-            class Job
-            {
+	namespace component
+	{
+		class JobManager :
+			public AbstractScript
+		{
+		public:
+			class Job
+			{
             public:
-                typedef std::shared_ptr<Job>    Ptr;
+				typedef std::shared_ptr<Job> Ptr;
 
-                friend JobManager;
+				friend JobManager;
 
             protected:
-                std::shared_ptr<JobManager>     _jobManager;
-                bool                            _running;
-                bool                            _oneStepPerFrame;
-
+				std::shared_ptr<JobManager>		_jobManager;
+				bool							_running;
+				bool							_oneStepPerFrame;
+				
                 Signal<float>::Ptr              _priorityChanged;
 
             public:
-                virtual
-                bool
-                complete() = 0;
+				virtual
+				bool
+				complete() = 0;
 
-                virtual
-                void
-                beforeFirstStep() = 0;
+				virtual
+				void
+				beforeFirstStep() = 0;
 
-                virtual
-                void
-                step() = 0;
+				virtual
+				void
+				step() = 0;
+				
+				virtual
+				float
+				priority() = 0;
+				
+				virtual
+				void
+				afterLastStep() = 0;
 
-                virtual
-                float
-                priority() = 0;
+				inline
+				bool
+				running()
+				{
+					return _running;
+				}
 
-                virtual
-                void
-                afterLastStep() = 0;
+				inline
+				void
+				running(bool value)
+				{
+					_running = value;
+				}
 
-                inline
-                bool
-                running()
-                {
-                    return _running;
-                }
+				inline
+				bool
+				oneStepPerFrame()
+				{
+					return _oneStepPerFrame;
+				}
 
-                inline
-                void
-                running(bool value)
-                {
-                    _running = value;
-                }
+				inline
+				void
+				oneStepPerFrame(bool value)
+				{
+					_oneStepPerFrame = value;
+				}
 
-                inline
-                bool
-                oneStepPerFrame()
-                {
-                    return _oneStepPerFrame;
-                }
-
-                inline
-                void
-                oneStepPerFrame(bool value)
-                {
-                    _oneStepPerFrame = value;
-                }
-
-                inline
-                std::shared_ptr<JobManager>
-                jobManager()
-                {
-                    return _jobManager;
-                }
+				inline
+				std::shared_ptr<JobManager>
+				jobManager()
+				{
+					return _jobManager;
+				}
 
                 inline
                 Signal<float>::Ptr
@@ -110,48 +110,45 @@ namespace minko
                 }
 
             protected:
-                Job();
-            };
+				Job();
+			};
 
-        public:
-            typedef std::shared_ptr<JobManager>     Ptr;
+		public:
+			typedef std::shared_ptr<JobManager>	Ptr;
 
-        private:
-            typedef std::shared_ptr<scene::Node>    NodePtr;
-
-        private:
-            unsigned int                                                    _loadingFramerate;
-            float                                                           _frameTime;
+		private:
+			typedef std::shared_ptr<scene::Node> NodePtr;
+		
+		private:
+			unsigned int			_loadingFramerate;
+			float					_frameTime;
             std::list<Job::Ptr>                                             _jobs;
             std::unordered_map<Job::Ptr, Signal<float>::Slot>               _jobPriorityChangedSlots;
-            clock_t                                                         _frameStartTime;
+            bool 					_jobPriorityChanged;
+			clock_t					_frameStartTime;
 
-        public:
-            static
-            Ptr
-            create(unsigned int loadingFramerate)
-            {
-                Ptr taskManager(new JobManager(loadingFramerate));
+		public:
+			static
+			Ptr
+			create(unsigned int loadingFramerate)
+			{
+                return std::shared_ptr<JobManager>(new JobManager(loadingFramerate));
+			};
 
-                taskManager->initialize();
-
-                return taskManager;
-            };
-
-            Ptr
+			Ptr
             pushJob(Job::Ptr job);
 
-            void
-            update(NodePtr target);
+			void
+			update(NodePtr target);
 
-            void
-            end(NodePtr target);
+			void
+			end(NodePtr target);
 
-        private:
-            JobManager(unsigned int loadingFramerate);
+		private:
+			JobManager(unsigned int loadingFramerate);
 
             void
             insertJob(Job::Ptr job);
-        };
-    }
+		};
+	}
 }

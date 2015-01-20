@@ -21,11 +21,11 @@ printNode(std::ostream& out, Node::Ptr node, uint depth)
     bool hasIdentity    = false;
     if (hasTransform)
     {
-        const std::vector<float>& data = node->component<Transform>()->matrix()->data();
+        const auto& data = node->component<Transform>()->matrix();
 
         hasIdentity = true;
         for (unsigned int i = 0; i < 16; ++i)
-            hasIdentity = hasIdentity && fabsf(data[i] - (i % 5 == 0 ? 1.0f : 0.0f)) < 1e-4f;
+            hasIdentity = hasIdentity && fabsf(data[i / 4][i % 4] - (i % 5 == 0 ? 1.0f : 0.0f)) < 1e-4f;
     }
 
     for (uint d = 0; d < depth; ++d)

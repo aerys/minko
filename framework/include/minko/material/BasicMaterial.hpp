@@ -29,208 +29,226 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-    namespace material
-    {
-        class BasicMaterial :
-            public Material
-        {
-        public:
-            typedef std::shared_ptr<BasicMaterial>              Ptr;
+	namespace material
+	{
+		class BasicMaterial :
+			public Material
+		{
+		public:
+			typedef std::shared_ptr<BasicMaterial>				Ptr;
 
-        protected:
-            typedef std::shared_ptr<render::AbstractTexture>    AbsTexturePtr;
-            typedef std::shared_ptr<render::Texture>            TexturePtr;
-            typedef std::shared_ptr<render::CubeTexture>        CubeTexturePtr;
-            typedef std::shared_ptr<render::States>             RenderStatesPtr;
-            typedef std::shared_ptr<math::Vector2>              Vector2Ptr;
-            typedef std::shared_ptr<math::Vector4>              Vector4Ptr;
+		protected:
+			typedef std::shared_ptr<render::AbstractTexture>	AbsTexturePtr;
+			typedef std::shared_ptr<render::Texture>			TexturePtr;
+			typedef std::shared_ptr<render::CubeTexture>		CubeTexturePtr;
+			typedef std::shared_ptr<render::States>				RenderStatesPtr;
 
-        protected:
-            static const RenderStatesPtr                        _defaultStates;
+		protected:
+			static const std::shared_ptr<render::States>		_defaultStates;
 
-        public:
-            inline static
-            Ptr
-            create()
-            {
-                Ptr ptr = std::shared_ptr<BasicMaterial>(new BasicMaterial());
+		public:
+			inline static
+			Ptr
+			create()
+			{
+				auto instance = Ptr(new BasicMaterial());
 
-                ptr->initialize();
+				instance->initialize();
 
-                return ptr;
-            }
+				return instance;
+			}
 
-            Ptr
-            diffuseColor(Vector4Ptr);
+			BasicMaterial&
+			diffuseColor(const math::vec4&);
 
-            Ptr
-            diffuseColor(uint);
+			BasicMaterial&
+			diffuseColor(uint);
 
-            Vector4Ptr
-            diffuseColor() const;
+			math::vec4
+			diffuseColor() const;
 
-            Ptr
-            uvScale(float, float);
+			BasicMaterial&
+			uvScale(const math::vec2& v);
 
-            Ptr
-            uvScale(Vector2Ptr);
+			const math::vec2&
+			uvScale() const;
 
-            Vector2Ptr
-            uvScale(Vector2Ptr = nullptr) const;
+			BasicMaterial&
+			uvOffset(const math::vec2& v);
 
-            Ptr
-            uvOffset(float, float);
+			const math::vec2&
+			uvOffset() const;
 
-            Ptr
-            uvOffset(Vector2Ptr);
-
-            Vector2Ptr
-            uvOffset(Vector2Ptr = nullptr) const;
-
-            Ptr
+			BasicMaterial&
             diffuseMap(TexturePtr);
 
-            TexturePtr
-            diffuseMap() const;
+			render::ResourceId
+			diffuseMap() const;
 
-            Ptr
-            diffuseCubeMap(AbsTexturePtr);
+            BasicMaterial&
+            diffuseMapWrapMode(render::WrapMode);
 
-            CubeTexturePtr
-            diffuseCubeMap() const;
+            render::WrapMode
+            diffuseMapWrapMode() const;
 
-            Ptr
-            fogColor(Vector4Ptr);
+            BasicMaterial&
+            diffuseMapTextureFilter(render::TextureFilter);
 
-            Ptr
-            fogColor(uint);
+            render::TextureFilter
+            diffuseMapTextureFilter() const;
 
-            Vector4Ptr
-            fogColor() const;
+            BasicMaterial&
+            diffuseMapMipFilter(render::MipFilter);
 
-            Ptr
+            render::MipFilter
+            diffuseMapMipFilter() const;
+
+			BasicMaterial&
+			diffuseCubeMap(AbsTexturePtr);
+
+			render::ResourceId
+			diffuseCubeMap() const;
+
+            BasicMaterial&
+            diffuseCubeMapWrapMode(render::WrapMode);
+
+            render::WrapMode
+            diffuseCubeMapWrapMode() const;
+
+            BasicMaterial&
+            diffuseCubeMapTextureFilter(render::TextureFilter);
+
+            render::TextureFilter
+            diffuseCubeMapTextureFilter() const;
+
+            BasicMaterial&
+            diffuseCubeMapMipFilter(render::MipFilter);
+
+            render::MipFilter
+            diffuseCubeMapMipFilter() const;
+
+			BasicMaterial&
+			fogColor(const math::vec4&);
+
+			BasicMaterial&
+			fogColor(uint);
+
+			math::vec4
+			fogColor() const;
+
+            BasicMaterial&
             fogDensity(float);
 
             float
             fogDensity() const;
 
-            Ptr
+            BasicMaterial&
             fogStart(float);
 
             float
             fogStart() const;
 
-            Ptr
+            BasicMaterial&
             fogEnd(float);
 
             float
             fogEnd() const;
 
-            Ptr
+            BasicMaterial&
             fogType(render::FogType);
 
             render::FogType
             fogType() const;
 
-            Ptr
-            blendingMode(render::Blending::Source, render::Blending::Destination);
+			BasicMaterial&
+			blendingMode(render::Blending::Source, render::Blending::Destination);
 
-            Ptr
-            blendingMode(render::Blending::Mode);
+			BasicMaterial&
+			blendingMode(render::Blending::Mode);
 
-            render::Blending::Source
-            blendingSourceFactor() const;
+			render::Blending::Source
+			blendingSourceFactor() const;
 
-            render::Blending::Destination
-            blendingDestinationFactor() const;
+			render::Blending::Destination
+			blendingDestinationFactor() const;
 
-            Ptr
-            colorMask(bool);
+			BasicMaterial&
+			colorMask(bool);
 
-            bool
-            colorMask() const;
+			bool
+			colorMask() const;
 
-            Ptr
-            depthMask(bool);
+			BasicMaterial&
+			depthMask(bool);
 
-            bool
-            depthMask() const;
+			bool
+			depthMask() const;
 
-            Ptr
-            depthFunction(render::CompareMode);
+			BasicMaterial&
+			depthFunction(render::CompareMode);
 
-            render::CompareMode
-            depthFunction() const;
+			render::CompareMode
+			depthFunction() const;
 
-            Ptr
-            triangleCulling(render::TriangleCulling);
+			BasicMaterial&
+			triangleCulling(render::TriangleCulling);
 
-            render::TriangleCulling
-            triangleCulling() const;
+			render::TriangleCulling
+			triangleCulling() const;
 
-            Ptr
-            stencilFunction(render::CompareMode);
+			BasicMaterial&
+			stencilFunction(render::CompareMode);
 
-            render::CompareMode
-            stencilFunction() const;
+			render::CompareMode
+			stencilFunction() const;
 
-            Ptr
-            stencilReference(int);
+			BasicMaterial&
+			stencilReference(int);
 
-            int
-            stencilReference() const;
+			int
+			stencilReference() const;
 
-            Ptr
-            stencilMask(uint);
+			BasicMaterial&
+			stencilMask(uint);
 
-            uint
-            stencilMask() const;
+			uint
+			stencilMask() const;
 
-            Ptr
-            stencilFailOperation(render::StencilOperation);
+			BasicMaterial&
+			stencilFailOperation(render::StencilOperation);
 
-            render::StencilOperation
-            stencilFailOperation() const;
+			render::StencilOperation
+			stencilFailOperation() const;
 
-            Ptr
-            stencilDepthFailOperation(render::StencilOperation);
+			BasicMaterial&
+			stencilZFailOperation(render::StencilOperation);
 
-            render::StencilOperation
-            stencilDepthFailOperation() const;
+			render::StencilOperation
+			stencilZFailOperation() const;
 
-            Ptr
-            stencilDepthPassOperation(render::StencilOperation);
+			BasicMaterial&
+			stencilZPassOperation(render::StencilOperation);
 
-            render::StencilOperation
-            stencilDepthPassOperation() const;
+			render::StencilOperation
+			stencilZPassOperation() const;
 
-            Ptr
-            priority(float);
+			BasicMaterial&
+			priority(float);
 
-            float
-            priority() const;
+			float 
+			priority() const;
 
-            Ptr
-            zSorted(bool);
+			BasicMaterial&
+			zSorted(bool);
 
-            bool
-            zSorted() const;
+			bool
+			zSorted() const;
 
-            Ptr
-            isTransparent(bool transparent, bool zSort = false);
+		protected:
+			BasicMaterial();
 
-            Ptr
-            target(AbsTexturePtr);
-
-            AbsTexturePtr
-            target() const;
-
-        protected:
-            BasicMaterial();
-
-            virtual
             void
             initialize();
-        };
-    }
+		};
+	}
 }

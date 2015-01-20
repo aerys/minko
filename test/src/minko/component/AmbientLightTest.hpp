@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -20,17 +20,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Minko.hpp"
+#include "minko/MinkoTests.hpp"
 
 #include "gtest/gtest.h"
 
 namespace minko
 {
-	namespace component
-	{
-		class AmbientLightTest :
-			public ::testing::Test
-		{
+    namespace component
+    {
+        class AmbientLightTest :
+            public ::testing::Test
+        {
 
-		};
-	}
+        };
+    }
 }

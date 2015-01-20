@@ -17,42 +17,81 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#pragma once
+
 #include "minko/Common.hpp"
 
 namespace minko
 {
-    class Uuid
-    {
-    private:
-        static bool            _randSeeded;
+	class Uuid
+	{
+	private:
+		static bool	_randSeeded;
 
     public:
-
-        static
-        std::string
-        getUuid()
+        class has_uuid
         {
-            return s4() + s4() + "-" + s4() + "-" + s4() + "-" + s4() + "-" + s4() + s4() + s4();
-        }
+        public:
+            virtual
+            const std::string&
+            uuid() const = 0;
+        };
 
-    private:
-
-        static
-        std::string
-        s4()
+        class enable_uuid
+            : public has_uuid
         {
-            if (!_randSeeded)
+        protected:
+            const std::string _uuid;
+
+        protected:
+            enable_uuid() :
+                _uuid(Uuid::getUuid())
             {
-                std::srand(std::time(0));
-                _randSeeded = true;
             }
 
-            int rand = std::rand();
+            enable_uuid(const std::string& uuid) :
+                _uuid(uuid)
+            {
+            }
 
-            std::ostringstream os;
-            os << std::hex << rand;
+        public:
+            virtual
+            ~enable_uuid()
+            {}
 
-            return os.str().substr(0, 4);
-        }
-    };
+            inline
+            const std::string&
+            uuid() const
+            {
+                return _uuid;
+            }
+        };
+
+	public:
+		static
+		std::string
+		getUuid()
+		{
+			return s4() + s4() + "-" + s4() + "-" + s4() + "-" + s4() + "-" + s4() + s4() + s4();
+		}
+
+	private:
+		static
+		std::string
+		s4()
+		{
+			if (!_randSeeded)
+			{
+				std::srand(static_cast<uint>(std::time(0)));
+				_randSeeded = true;
+			}
+
+			int rand = std::rand();
+
+			std::ostringstream os;
+			os << std::hex << rand;
+
+			return os.str().substr(0, 4);
+		}
+	};
 }
