@@ -372,12 +372,6 @@ AbstractAnimation::resetPlaybackWindow()
 }
 
 void
-AbstractAnimation::isReversed(bool value)
-{
-	_isReversed = value;
-}
-
-void
 AbstractAnimation::updateNextLabelIds(uint time)
 {
 	_nextLabelIds.clear();

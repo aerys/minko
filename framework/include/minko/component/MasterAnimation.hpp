@@ -97,6 +97,26 @@ namespace minko
 			void
 			rebindDependencies(std::map<AbsCmpPtr, AbsCmpPtr>& componentsMap, std::map<NodePtr, NodePtr>& nodeMap, CloneOption option);
 
+            inline
+            void
+            timeFunction(const std::function<uint(uint)>& func)
+            {
+                AbstractAnimation::timeFunction(func);
+
+                for (auto& animation : _animations)
+                    animation->timeFunction(func);
+            }
+
+            inline
+            void
+            isReversed(bool value)
+            {
+                AbstractAnimation::isReversed(value);
+
+                for (auto& animation : _animations)
+                    animation->isReversed(value);
+            }
+
 		protected:
 			MasterAnimation(bool isLooping);
 
