@@ -1,7 +1,7 @@
 vec4
-pop_quantify(vec4 position, int popLod, vec3 popMinBound, vec3 popMaxBound)
+pop_quantify(vec4 position, float popLod, vec3 popMinBound, vec3 popMaxBound)
 {
-	float segmentCount = pow(float(2.0), float(popLod));
+	float segmentCount = pow(float(2.0), popLod);
 
 	vec3 boxSize = popMaxBound - popMinBound;
 	vec3 offset = position.xyz - popMinBound;
@@ -22,7 +22,7 @@ pop_quantify(vec4 position, int popLod, vec3 popMinBound, vec3 popMaxBound)
 }
 
 float
-pop_error(vec4 position, vec4 quantizedPosition, int popLod, vec3 popMinBound, vec3 popMaxBound, float popErrorBound)
+pop_error(vec4 position, vec4 quantizedPosition, float popLod, vec3 popMinBound, vec3 popMaxBound, float popErrorBound)
 {
 	float errorRate = length(position - quantizedPosition) / popErrorBound;
 

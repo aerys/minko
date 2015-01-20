@@ -27,8 +27,8 @@ uniform 	vec2 	uUVScale;
 uniform 	vec2 	uUVOffset;
 uniform 	mat4 	uLightWorldToScreenMatrix;
 
-uniform 	int 	uPopLod;
-uniform 	int 	uPopFullPrecisionLod;
+uniform 	float 	uPopLod;
+uniform 	float 	uPopFullPrecisionLod;
 
 uniform 	vec3 	uPopMinBound;
 uniform 	vec3 	uPopMaxBound;
@@ -54,7 +54,7 @@ void main(void)
 	#ifdef POP_LOD_ENABLED
 		vec4 quantizedPosition 	= pop_quantify(worldPosition, uPopLod, uPopMinBound, uPopMaxBound);
 
-		worldPosition 			= mix(quantizedPosition, worldPosition, float(uPopLod == uPopFullPrecisionLod));
+		worldPosition 			= mix(quantizedPosition, worldPosition, float(floor(uPopLod) == floor(uPopFullPrecisionLod)));
 	#endif // POP_LOD_ENABLED
 	
 	#ifdef MODEL_TO_WORLD
