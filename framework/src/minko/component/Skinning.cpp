@@ -342,7 +342,7 @@ Skinning::performSoftwareSkinning(const VertexAttribute&		 attr,
 			}
 			else
 			{
-                v2 += math::vec4(boneWeight * (math::mat3(boneMatrix)) * math::vec3(v1), 1.f);
+                v2 += math::vec4(boneWeight * (math::mat3(boneMatrix)) * math::vec3(v1), 0.f);
 			}
 		}
 
