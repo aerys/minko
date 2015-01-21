@@ -102,6 +102,69 @@ TEST_F(DrawCallPoolTest, UniformBindingToDefaultSwap)
     );
 }
 
+TEST_F(DrawCallPoolTest, WatchAndDefineIntMacro)
+{
+    auto fx = MinkoTests::loadEffect("effect/OneIntMacroBinding.effect");
+    auto pass = fx->techniques().at("default")[0];
+    DrawCallPool pool;
+    data::Store rootData;
+    data::Store rendererData;
+    data::Store targetData;
+    std::unordered_map<std::string, std::string> variables;
+
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().bindings.size(), 1);
+    ASSERT_EQ(targetData.propertyChanged("bar").numCallbacks(), 0);
+
+    auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
+
+    ASSERT_EQ(targetData.propertyChanged("bar").numCallbacks(), 1);
+    ASSERT_FALSE((*drawCalls.first)->program()->definedMacroNames().find("FOO") != (*drawCalls.first)->program()->definedMacroNames().end());
+
+    auto p = data::Provider::create();
+    p->set("bar", 42);
+    targetData.addProvider(p);
+    pool.update();
+
+    ASSERT_TRUE((*drawCalls.first)->program()->definedMacroNames().find("FOO") != (*drawCalls.first)->program()->definedMacroNames().end());
+
+    p->unset("bar");
+    pool.update();
+
+    ASSERT_FALSE((*drawCalls.first)->program()->definedMacroNames().find("FOO") != (*drawCalls.first)->program()->definedMacroNames().end());
+}
+
+TEST_F(DrawCallPoolTest, WatchAndDefineVariableIntMacro)
+{
+    auto fx = MinkoTests::loadEffect("effect/OneVariableIntMacroBinding.effect");
+    auto pass = fx->techniques().at("default")[0];
+    DrawCallPool pool;
+    data::Store rootData;
+    data::Store rendererData;
+    data::Store targetData;
+    auto p = data::Provider::create();
+    std::string materialUuid = p->uuid();
+    std::unordered_map<std::string, std::string> variables = {{ "materialUuid", materialUuid }};
+
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().bindings.size(), 1);
+    ASSERT_EQ(targetData.propertyChanged("bar").numCallbacks(), 0);
+
+    auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
+
+    ASSERT_EQ(targetData.propertyChanged("material[" + materialUuid + "].bar").numCallbacks(), 1);
+    ASSERT_FALSE((*drawCalls.first)->program()->definedMacroNames().find("FOO") != (*drawCalls.first)->program()->definedMacroNames().end());
+
+    p->set("bar", 42);
+    targetData.addProvider(p, "material");
+    pool.update();
+
+    ASSERT_TRUE((*drawCalls.first)->program()->definedMacroNames().find("FOO") != (*drawCalls.first)->program()->definedMacroNames().end());
+
+    p->unset("bar");
+    pool.update();
+
+    ASSERT_FALSE((*drawCalls.first)->program()->definedMacroNames().find("FOO") != (*drawCalls.first)->program()->definedMacroNames().end());
+}
+
 /** Sampler states binding swap **/
 
 TEST_F(DrawCallPoolTest, SamplerStateSwapWrapModeBindingToDefaultClamp)
@@ -595,7 +658,7 @@ TEST_F(DrawCallPoolTest, SamplerStateTextureFilterBindingNoDefaultValue)
 
     ASSERT_EQ(samplers.size(), 1);
     ASSERT_FALSE(pass->uniformBindings().defaultValues.hasProperty(sampleStateUniformName));
-    
+
     ASSERT_EQ(*sampler.wrapMode, SamplerStates::DEFAULT_WRAP_MODE);
     ASSERT_EQ(*sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
     ASSERT_EQ(*sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);

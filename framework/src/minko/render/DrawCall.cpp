@@ -239,7 +239,7 @@ DrawCall::bindSamplerState(ConstUniformInputRef                          input,
                            const data::Store&                            defaultValues,
                            const std::string&                            samplerStateProperty)
 {
-    if (samplerStateProperty == SamplerStates::PROPERTY_WRAP_MODE || 
+    if (samplerStateProperty == SamplerStates::PROPERTY_WRAP_MODE ||
         samplerStateProperty == SamplerStates::PROPERTY_TEXTURE_FILTER ||
         samplerStateProperty == SamplerStates::PROPERTY_MIP_FILTER)
     {
@@ -248,10 +248,7 @@ DrawCall::bindSamplerState(ConstUniformInputRef                          input,
             samplerStateProperty
         );
 
-        auto binding = resolveBinding(
-            samplerStateUniformName,
-            uniformBindings
-        );
+        auto binding = resolveBinding(samplerStateUniformName, uniformBindings);
 
         if (binding == nullptr)
         {
@@ -376,15 +373,17 @@ DrawCall::setSamplerStateValueFromStore(const ProgramInputs::UniformInput&  inpu
 void
 DrawCall::bindIndexBuffer()
 {
-    _indexBuffer = const_cast<int*>(_targetData.getPointer<int>(
-        data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].indices")
-    ));
-    _firstIndex = const_cast<uint*>(_targetData.getPointer<uint>(
-        data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].firstIndex")
-    ));
-    _numIndices = const_cast<uint*>(_targetData.getPointer<uint>(
-        data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].numIndices")
-    ));
+    auto indexBufferProperty = data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].indices");
+    if (_targetData.hasProperty(indexBufferProperty))
+        _indexBuffer = const_cast<int*>(_targetData.getPointer<int>(indexBufferProperty));
+
+    auto firstIndexProperty = data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].firstIndex");
+    if (_targetData.hasProperty(firstIndexProperty))
+        _firstIndex = const_cast<uint*>(_targetData.getPointer<uint>(firstIndexProperty));
+
+    auto numIndicesProperty = data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].numIndices");
+    if (_targetData.hasProperty(numIndicesProperty))
+        _numIndices = const_cast<uint*>(_targetData.getPointer<uint>(numIndicesProperty));
 }
 
 void
@@ -491,13 +490,13 @@ DrawCall::render(AbstractContext::Ptr   context,
         context->setSamplerStateAt(s.position, *s.wrapMode, *s.textureFilter, *s.mipFilter);
     }
 
-    for (auto numSamplers = _samplers.size(); numSamplers < MAX_NUM_TEXTURES; ++numSamplers)
-        context->setTextureAt(numSamplers, -1, -1);
+    // for (auto numSamplers = _samplers.size(); numSamplers < MAX_NUM_TEXTURES; ++numSamplers)
+    //     context->setTextureAt(numSamplers, -1, -1);
 
     for (const auto& a : _attributes)
         context->setVertexBufferAt(a.location, *a.resourceId, a.size, *a.stride, a.offset);
-    for (auto numAttributes = _attributes.size(); numAttributes < MAX_NUM_VERTEXBUFFERS; ++numAttributes)
-        context->setVertexBufferAt(numAttributes, -1, 0, 0, 0);
+    // for (auto numAttributes = _attributes.size(); numAttributes < MAX_NUM_VERTEXBUFFERS; ++numAttributes)
+    //     context->setVertexBufferAt(numAttributes, -1, 0, 0, 0);
 
     context->setColorMask(*_colorMask);
     context->setBlendingMode(*_blendingSourceFactor, *_blendingDestinationFactor);

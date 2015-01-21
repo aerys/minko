@@ -29,14 +29,12 @@
 		"uBoneMatrices"			: "geometry[${geometryUuid}].boneMatrices",
 		"uNumBones"				: "geometry[${geometryUuid}].numBones",
         "uWorldToScreenMatrix"  : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
-		"fogColor"				: "material[${materialUuid}].fogColor",
-		"fogDensity"			: "material[${materialUuid}].fogDensity",
-		"fogStart"				: "material[${materialUuid}].fogStart",
-		"fogEnd"				: "material[${materialUuid}].fogEnd",
-		"boneMatrices"			: "geometry[${geometryUuid}].boneMatrices",
+		"uFogColor"				: "material[$materialUuid].fogColor",
+        "uFogBounds"			: "material[$materialUuid].fogBounds",
+        "boneMatrices"			: "geometry[${geometryUuid}].boneMatrices",
 		"numBones"				: "geometry[${geometryUuid}].numBones",
-        "uWorldToScreenMatrix"  : { 
-			"binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } 
+        "uWorldToScreenMatrix"  : {
+			"binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" }
 		}
     },
 
@@ -54,7 +52,8 @@
 		"FOG_EXP"               : "material[${materialUuid}].fogExponential",
 		"FOG_EXP2"              : "material[${materialUuid}].fogExponential2",
         "UV_OFFSET"             : "material[${materialUuid}].uvOffset",
-        "UV_SCALE"              : "material[${materialUuid}].uvScale"
+        "UV_SCALE"              : "material[${materialUuid}].uvScale",
+        "FOG_TECHNIQUE"			: { "binding" : "material[$materialUuid].fogTechnique", "type" : "int" }
     },
 
 	"states" : {

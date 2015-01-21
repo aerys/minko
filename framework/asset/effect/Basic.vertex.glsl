@@ -1,9 +1,11 @@
 #ifdef VERTEX_SHADER
 
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
+#ifdef GL_ES
+    #ifdef GL_FRAGMENT_PRECISION_HIGH
+        precision highp float;
+    #else
+        precision mediump float;
+    #endif
 #endif
 
 #pragma include "Skinning.function.glsl"
@@ -26,6 +28,7 @@ uniform vec2 uUVOffset;
 
 varying vec2 vVertexUV;
 varying vec3 vVertexUVW;
+varying vec4 vVertexScreenPosition;
 
 void main(void)
 {
@@ -57,7 +60,10 @@ void main(void)
 		pos = uModelToWorldMatrix * pos;
 	#endif
 
-	gl_Position = uWorldToScreenMatrix * pos;
+    vec4 screenPos = uWorldToScreenMatrix * pos;
+
+    vVertexScreenPosition = screenPos;
+	gl_Position = screenPos;
 }
 
 #endif // VERTEX_SHADER

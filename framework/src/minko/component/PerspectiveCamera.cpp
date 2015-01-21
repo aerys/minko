@@ -48,8 +48,6 @@ PerspectiveCamera::PerspectiveCamera(float			      fov,
 	_postProjection(postPerspective)
 {
 	_data
-        ->set("zNear",                  _zNear)
-        ->set("zFar",                   _zFar)
 		->set("eyePosition",		    _position)
   		->set("viewMatrix",				_view)
   		->set("projectionMatrix",		_projection)
