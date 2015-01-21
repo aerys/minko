@@ -325,7 +325,6 @@ DrawCallPool::uniformBindingPropertyAddedHandler(DrawCall&                      
     {
         samplerStatesBindingPropertyAddedHandler(drawCall, input, uniformBindingMap);
     }
-
 }
 
 void
@@ -333,12 +332,12 @@ DrawCallPool::samplerStatesBindingPropertyAddedHandler(DrawCall&                
                                                        const ProgramInputs::UniformInput& input,
                                                        const data::BindingMap&            uniformBindingMap)
 {
-   auto resolvedBindings = drawCall.bindSamplerStates(
+    auto resolvedBindings = drawCall.bindSamplerStates(
         input, uniformBindingMap.bindings, uniformBindingMap.defaultValues
     );
 
-   for (auto resolvedBinding : resolvedBindings)
-   {
+    for (auto resolvedBinding : resolvedBindings)
+    {
        if (resolvedBinding != nullptr)
        {
            auto& propertyName = resolvedBinding->propertyName;
@@ -356,7 +355,7 @@ DrawCallPool::samplerStatesBindingPropertyAddedHandler(DrawCall&                
 
            delete resolvedBinding;
        }
-   }
+    }
 }
 void
 DrawCallPool::update()
