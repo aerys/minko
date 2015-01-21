@@ -25,7 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::component;
-using namespace minko::math;
 
 scene::Node::Ptr lightNode;
 scene::Node::Ptr debugNode = scene::Node::create("debug", scene::BuiltinLayout::DEBUG_ONLY);
@@ -219,11 +218,11 @@ int main(int argc, char** argv)
         if (k->keyIsDown(input::Keyboard::Key::L))
         {
             auto p = camera->component<PerspectiveCamera>();
-            std::array<vec4, 4> colors = {
-                vec4(1.f, 0.f, 0.f, .2f),
-                vec4(0.f, 1.f, 0.f, .2f),
-                vec4(0.f, 0.f, 1.f, .2f),
-                vec4(1.f, 1.f, 0.f, .2f)
+            std::array<math::vec4, 4> colors = {
+                math::vec4(1.f, 0.f, 0.f, .2f),
+                math::vec4(0.f, 1.f, 0.f, .2f),
+                math::vec4(0.f, 0.f, 1.f, .2f),
+                math::vec4(1.f, 1.f, 0.f, .2f)
             };
 
             directionalLight->computeShadowProjection(p->viewMatrix(), p->projectionMatrix());
