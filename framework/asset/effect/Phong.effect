@@ -62,13 +62,32 @@
 					"uAmbientLights"				: { "binding" : { "property" : "ambientLight", "source" : "root" } },
 					"uSpotLights"					: { "binding" : { "property" : "spotLight", "source" : "root" } },
 					"uPointLights"					: { "binding" : { "property" : "pointLight", "source" : "root" } },
-					"uDirLight(\\d)_shadowMap"		: {
-						"binding" : { "property" : "directionalLight[$1].shadowMap", "source" : "root" },
+					"uDirLight0_shadowMap"		: {
+						"binding" : { "property" : "directionalLight[0].shadowMap", "source" : "root" },
 						"wrapMode" : "clamp",
 						"textureFilter" : "linear",
 						"mipFilter": "linear"
 					},
-					"uDirLight(\\d)_(\\w+).*"		: { "binding" : { "property" : "directionalLight[$1].$2", "source" : "root" } },
+					"uDirLight1_shadowMap"		: {
+						"binding" : { "property" : "directionalLight[1].shadowMap", "source" : "root" },
+						"wrapMode" : "clamp",
+						"textureFilter" : "linear",
+						"mipFilter": "linear"
+					},
+					"uDirLight2_shadowMap"		: {
+						"binding" : { "property" : "directionalLight[2].shadowMap", "source" : "root" },
+						"wrapMode" : "clamp",
+						"textureFilter" : "linear",
+						"mipFilter": "linear"
+					},
+					"uDirLight3_shadowMap"		: {
+						"binding" : { "property" : "directionalLight[3].shadowMap", "source" : "root" },
+						"wrapMode" : "clamp",
+						"textureFilter" : "linear",
+						"mipFilter": "linear"
+					},
+					"uDirLight(\\d)_(\\w+)"			: { "binding" : { "property" : "directionalLight[$1].$2", "source" : "root" } },
+					"uDirLight(\\d)_(\\w+)\\[0\\]"	: { "binding" : { "property" : "directionalLight[$1].$2", "source" : "root" } },
 					"uFogColor"						: "material[$materialUuid].fogColor",
 					"uFogBounds"					: "material[$materialUuid].fogBounds",
         			"uPopLod"                		: "geometry[${geometryUuid}].popLod",

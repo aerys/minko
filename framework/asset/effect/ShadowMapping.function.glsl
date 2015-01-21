@@ -10,13 +10,6 @@
 #define SHADOW_MAPPING_NEAR_ONE         0.999
 #define SHADOW_MAPPING_MAX_NUM_CASCADES 4
 
-const vec4 shadowMapping_viewports[4] = vec4[](
-	vec4(0.0, 0.5, 0.5, 0.5),
-	vec4(0.5, 0.5, 0.5, 0.5),
-	vec4(0.0, 0.0, 0.5, 0.5),
-	vec4(0.5, 0.0, 0.5, 0.5)
-);
-
 float shadowMapping_random(vec4 seed)
 {
     float dot_product = dot(seed, vec4(12.9898, 78.233, 45.164, 94.673));
@@ -105,9 +98,30 @@ float shadowMapping_ESM(sampler2D depths, vec2 uv, float compare, float zNear, f
     return depth;
 }
 
-int shadowMapping_getCascadeIndex(float depth, vec4 cascadeDepths)
+vec4 shadowMapping_getCascadeWeights(float depth, vec4 splitNear, vec4 splitFar)
 {
-	vec4 s = 1 - step(depth, cascadeDepths);
+	vec4 near = step(splitNear, vec4(depth));
+	vec4 far = step(depth, splitFar);
 
-    return int(s.x + s.y + s.z + s.w);
+	return near * far;
+}
+
+vec4 shadowMapping_getCascadeViewport(vec4 weights)
+{
+	vec2 offset = vec2(0.0, 0.5) * weights.x
+		+ vec2(0.5, 0.5) * weights.y
+		+ vec2(0.0, 0.0) * weights.z
+		+ vec2(0.5, 0.0) * weights.w;
+
+	return vec4(offset, 0.5, 0.5);
+}
+
+mat4 shadowMapping_getCascadeViewProjection(vec4 weights, mat4 viewProj[SHADOW_MAPPING_MAX_NUM_CASCADES])
+{
+	return viewProj[0] * weights.x + viewProj[1] * weights.y + viewProj[2] * weights.z + viewProj[3] * weights.w;
+}
+
+float shadowMapping_getCascadeZ(vec4 weights, float z[SHADOW_MAPPING_MAX_NUM_CASCADES])
+{
+	return z[0] * weights.x + z[1] * weights.y + z[2] * weights.z + z[3] * weights.w;
 }

@@ -223,21 +223,23 @@ DirectionalLight::computeShadowProjection(const math::mat4& view, const math::ma
 
 	// http://developer.download.nvidia.com/SDK/10.5/opengl/src/cascaded_shadow_maps/doc/cascaded_shadow_maps.pdf
 	// page 7
-	std::array<float, 4> splits = { zFar, zFar, zFar, zFar };
+	std::array<float, 4> splitFar = { zFar, zFar, zFar, zFar };
+	std::array<float, 4> splitNear = { zNear, zNear, zNear, zNear };
 	float lambda = .8f;
 	float j = 1.f;
 	for (auto i = 0; i < _numShadowCascades - 1; ++i, j+= 1.f)
 	{
-		splits[i] = math::mix(
+		splitFar[i] = math::mix(
 			zNear + (j / (float)_numShadowCascades) * (zFar - zNear),
 			zNear * powf(zFar / zNear, j / (float)_numShadowCascades),
 			lambda
 		);
+		splitNear[i + 1] = splitFar[i];
 	}
 
 	for (auto i = 0; i < _numShadowCascades; ++i)
 	{
-		math::mat4 cameraViewProjection = math::perspective(fov, ratio, zNear, splits[i]) * view;
+		math::mat4 cameraViewProjection = math::perspective(fov, ratio, zNear, splitFar[i]) * view;
 		auto box = computeBox(cameraViewProjection);
 		auto projection = math::ortho<float>(
 	        box.first.x, box.second.x,
@@ -263,10 +265,11 @@ DirectionalLight::computeShadowProjection(const math::mat4& view, const math::ma
 		// _shadowProjections[i] = cameraViewProjection;
 		_shadowProjections[i] = projection;
 
-		zNear = splits[i];
+		zNear = splitFar[i];
 	}
 
-	data()->set("shadowCascadeDepths", math::make_vec4(&splits[0]));
+	data()->set("shadowSplitFar", math::make_vec4(&splitFar[0]));
+	data()->set("shadowSplitNear", math::make_vec4(&splitNear[0]));
 
 	updateWorldToScreenMatrix();
 }
