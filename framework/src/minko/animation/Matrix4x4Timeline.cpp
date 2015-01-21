@@ -26,11 +26,11 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::animation;
 
-Matrix4x4Timeline::Matrix4x4Timeline(const std::string& 				propertyName,
-									 uint 								duration,
-									 const std::vector<uint>& 			timetable,
-									 const std::vector<math::mat4>& 	matrices,
-									 bool 								interpolate):
+Matrix4x4Timeline::Matrix4x4Timeline(const std::string& 			propertyName,
+									 uint 							duration,
+									 const std::vector<uint>& 		timetable,
+									 const std::vector<math::mat4>& matrices,
+									 bool 							interpolate):
 	AbstractTimeline(propertyName, duration),
 	_matrices(),
 	_interpolate(interpolate)
@@ -56,8 +56,8 @@ Matrix4x4Timeline::clone()
 }
 
 void
-Matrix4x4Timeline::initializeMatrixTimetable(const std::vector<uint>& 			timetable,
-											 const std::vector<math::mat4>& 	matrices)
+Matrix4x4Timeline::initializeMatrixTimetable(const std::vector<uint>& 		timetable,
+											 const std::vector<math::mat4>& matrices)
 {
 	if (timetable.empty())
 		throw std::invalid_argument("timetable");
@@ -83,7 +83,8 @@ Matrix4x4Timeline::initializeMatrixTimetable(const std::vector<uint>& 			timetab
 		[](const std::pair<uint, math::mat4>& a, const std::pair<uint, math::mat4>& b)
 		{
 			return a.first < b.first;
-		});
+		}
+    );
 }
 
 void
@@ -103,8 +104,8 @@ Matrix4x4Timeline::update(uint time,
     	data.set(_propertyName, interpolate(time));
     else
     {
-        const uint	t		= getTimeInRange(time, _duration + 1);
-	    const uint	keyId	= getIndexForTime(t, _matrices);
+        const uint t = getTimeInRange(time, _duration + 1);
+	    const uint keyId = getIndexForTime(t, _matrices);
 
     	data.set(_propertyName, _matrices[keyId].second);
     }
@@ -113,8 +114,8 @@ Matrix4x4Timeline::update(uint time,
 math::mat4
 Matrix4x4Timeline::interpolate(uint time) const
 {
-    const auto	t		= getTimeInRange(time, _duration + 1);
-	const auto	keyId	= getIndexForTime(t, _matrices);
+    const auto t = getTimeInRange(time, _duration + 1);
+	const auto keyId = getIndexForTime(t, _matrices);
 
     // all matrices are sorted in order of increasing time
     if (t < _matrices.front().first || t >= _matrices.back().first)
@@ -125,8 +126,8 @@ Matrix4x4Timeline::interpolate(uint time) const
 #endif
     
 	const auto& current	= _matrices[keyId];
-	const auto& next	= _matrices[keyId + 1];
-	const float ratio	= current.first < next.first 
+	const auto& next = _matrices[keyId + 1];
+	const float ratio = current.first < next.first 
 		? (t - current.first) / (float)(next.first - current.first)
 		: 0.0f;
 
