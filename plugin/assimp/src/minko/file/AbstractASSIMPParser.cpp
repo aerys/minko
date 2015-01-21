@@ -812,11 +812,12 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
 
 		return;
 	}
-	const uint	duration		= uint(floorf(1e+3f * numFrames / (float)_options->skinningFramerate())); // in milliseconds
-	auto	skin				= Skin::create(numBones, duration, numFrames);
-	auto	skeletonRoot		= getSkeletonRoot(aimesh); //findNode("ALL");
-	auto	boneTransforms		= std::vector<std::vector<float>>(numBones, std::vector<float>(numFrames * 16, 0.0f));
-	auto	modelToRootMatrices	= std::vector<math::mat4>(numFrames);
+
+	const uint duration = uint(floorf(1e+3f * numFrames / (float)_options->skinningFramerate())); // in milliseconds
+	auto skin = Skin::create(numBones, duration, numFrames);
+	auto skeletonRoot = getSkeletonRoot(aimesh); //findNode("ALL");
+	auto boneTransforms = std::vector<std::vector<float>>(numBones, std::vector<float>(numFrames * 16, 0.0f));
+	auto modelToRootMatrices	= std::vector<math::mat4>(numFrames);
 
 	std::vector<scene::Node::Ptr> boneNodes;
 
@@ -825,7 +826,6 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
 
 	for (uint boneId = 0; boneId < numBones; ++boneId)
 	{
-
 		const auto bone = createBone(aimesh->mBones[boneId]);
 		const auto boneName = std::string(aimesh->mBones[boneId]->mName.data);
 		auto node = _nameToNode.find(boneName)->second;
@@ -892,7 +892,7 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
 
 	// add skinning component to mesh
     auto skinning = Skinning::create(
-        skin->reorganizeByVertices()->transposeMatrices(),
+        skin->reorganizeByVertices(),
         _options->skinningMethod(),
         _assetLibrary->context(),
         skeletonRoot
