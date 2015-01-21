@@ -1284,11 +1284,9 @@ EffectParser::parseGLSL(const std::string&      glsl,
 
     while (std::getline(stream, line))
     {
-        auto firstSharpPos = line.find_first_of('#');
-        if (firstSharpPos != std::string::npos && line.substr(firstSharpPos, 16) == "#pragma include "
-            && (line[firstSharpPos + 16] == '"' || line[firstSharpPos + 16] == '\''))
+        if (line.find("#pragma include ") == 0 && (line[16] == '"' || line[16] == '\''))
         {
-            auto filename = line.substr(firstSharpPos + 17, line.find_last_of(line[firstSharpPos + 16]) - 17 - firstSharpPos);
+            auto filename = line.substr(17, line.find_last_of(line[16]) - 17);
 
             if (lastBlockEnd != i)
                 insertIt = blocks->insert_after(insertIt, GLSLBlock(GLSLBlockType::TEXT, glsl.substr(lastBlockEnd, i - lastBlockEnd)));
