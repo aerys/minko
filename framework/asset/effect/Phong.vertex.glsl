@@ -54,9 +54,17 @@ void main(void)
 	#endif // NUM_BONES
 
 	#ifdef POP_LOD_ENABLED
-		vec4 quantizedPosition 	= pop_quantify(worldPosition, uPopLod, uPopMinBound, uPopMaxBound);
+		float popLod = floor(uPopLod);
 
-		worldPosition 			= mix(quantizedPosition, worldPosition, float(floor(uPopLod) == floor(uPopFullPrecisionLod)));
+		vec4 quantizedPosition 	= pop_quantify(worldPosition, popLod, uPopMinBound, uPopMaxBound);
+
+		#ifdef POP_BLENDING_ENABLED
+			vec4 blendingQuantizedPosition = pop_quantify(worldPosition, popLod + 1.0, uPopMinBound, uPopMaxBound);
+
+			quantizedPosition = mix(quantizedPosition, blendingQuantizedPosition, fract(uPopLod));
+		#endif
+
+		worldPosition 			= mix(quantizedPosition, worldPosition, float(floor(popLod) == floor(uPopFullPrecisionLod)));
 	#endif // POP_LOD_ENABLED
 
 	#ifdef MODEL_TO_WORLD

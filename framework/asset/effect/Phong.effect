@@ -121,7 +121,8 @@
 					"DIRECTIONAL_1_SHADOW_MAP"	: { "binding" : { "property" : "directionalLight[1].shadowMap", "source" : "root" } },
 					"DIRECTIONAL_2_SHADOW_MAP"	: { "binding" : { "property" : "directionalLight[2].shadowMap", "source" : "root" } },
 					"DIRECTIONAL_3_SHADOW_MAP"	: { "binding" : { "property" : "directionalLight[3].shadowMap", "source" : "root" } },
-        			"POP_LOD_ENABLED"       	: "geometry[${geometryUuid}].popLodEnabled"
+        			"POP_LOD_ENABLED"       	: "geometry[${geometryUuid}].popLodEnabled",
+        			"POP_BLENDING_ENABLED"		: "geometry[${geometryUuid}].popBlendingEnabled"
 				},
 
 				"vertexShader" 		: "#pragma include \"Phong.vertex.glsl\"",
