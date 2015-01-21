@@ -76,6 +76,9 @@ namespace minko
             void
             initializeLines(const std::vector<math::vec3>& vertices);
 
+            void
+            initializePlanes(const std::vector<math::vec3>& vertices);
+
             std::shared_ptr<geometry::Geometry>
             initializeFrustumGeometry(const std::vector<math::vec3>&            vertices,
                                       std::shared_ptr<render::AbstractContext>  context);
