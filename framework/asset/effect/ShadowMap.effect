@@ -156,6 +156,7 @@
                 {
                     float c = 0.0;
 
+                    // FIXME: avoid blending when the depth diff is > some threshold
                     for (int x = -BOXBLUR_OFFSET; x <= BOXBLUR_OFFSET; ++x)
                         for (int y = -BOXBLUR_OFFSET; y <= BOXBLUR_OFFSET; ++y)
                             c += unpackFloat8bitRGBA(texture2D(uTexture, vUV + vec2(x, y) / uTextureSize));
