@@ -186,6 +186,7 @@ solution "minko"
 		-- include 'example/stencil'
 		-- include 'example/visibility'
 		-- include 'example/water'
+		include 'example/shadow-mapping'
 
 		if _OPTIONS['with-offscreen'] then
 			include 'example/offscreen'
