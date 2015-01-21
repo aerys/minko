@@ -58,7 +58,7 @@ namespace minko
             struct SamplerValue
             {
                 const uint position;
-                const int* resourceId;
+                const TextureSampler* sampler;
                 const int location;
                 const WrapMode* wrapMode;
                 const TextureFilter* textureFilter;
