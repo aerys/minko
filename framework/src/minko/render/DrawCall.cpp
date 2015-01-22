@@ -95,9 +95,9 @@ DrawCall::bind(std::shared_ptr<Program> program)
 }
 
 void
-DrawCall::bindAttribute(ConstAttrInputRef                             input,
-                        const std::map<std::string, data::Binding>&   attributeBindings,
-                        const data::Store&                            defaultValues)
+DrawCall::bindAttribute(ConstAttrInputRef                                       input,
+                        const std::unordered_map<std::string, data::Binding>&   attributeBindings,
+                        const data::Store&                                      defaultValues)
 {
     data::ResolvedBinding* binding = resolveBinding(input.name, attributeBindings);
 
@@ -170,9 +170,9 @@ DrawCall::setAttributeValueFromStore(const ProgramInputs::AttributeInput& input,
 }
 
 data::ResolvedBinding*
-DrawCall::bindUniform(ConstUniformInputRef                          input,
-                      const std::map<std::string, data::Binding>&   uniformBindings,
-                      const data::Store&                            defaultValues)
+DrawCall::bindUniform(ConstUniformInputRef                                      input,
+                      const std::unordered_map<std::string, data::Binding>&     uniformBindings,
+                      const data::Store&                                        defaultValues)
 {
     data::ResolvedBinding* binding = resolveBinding(input.name, uniformBindings);
 
@@ -216,9 +216,9 @@ DrawCall::bindUniform(ConstUniformInputRef                          input,
 }
 
 std::array<data::ResolvedBinding*, 3>
-DrawCall::bindSamplerStates(ConstUniformInputRef                          input,
-                            const std::map<std::string, data::Binding>&   uniformBindings,
-                            const data::Store&                            defaultValues)
+DrawCall::bindSamplerStates(ConstUniformInputRef                                    input,
+                            const std::unordered_map<std::string, data::Binding>&   uniformBindings,
+                            const data::Store&                                      defaultValues)
 {
     auto wrapModeBinding = bindSamplerState(input, uniformBindings, defaultValues, SamplerStates::PROPERTY_WRAP_MODE);
     auto textureFilterBinding = bindSamplerState(input, uniformBindings, defaultValues, SamplerStates::PROPERTY_TEXTURE_FILTER);
@@ -234,10 +234,10 @@ DrawCall::bindSamplerStates(ConstUniformInputRef                          input,
 }
 
 data::ResolvedBinding*
-DrawCall::bindSamplerState(ConstUniformInputRef                          input,
-                           const std::map<std::string, data::Binding>&   uniformBindings,
-                           const data::Store&                            defaultValues,
-                           const std::string&                            samplerStateProperty)
+DrawCall::bindSamplerState(ConstUniformInputRef                                     input,
+                           const std::unordered_map<std::string, data::Binding>&    uniformBindings,
+                           const data::Store&                                       defaultValues,
+                           const std::string&                                       samplerStateProperty)
 {
     if (samplerStateProperty == SamplerStates::PROPERTY_WRAP_MODE ||
         samplerStateProperty == SamplerStates::PROPERTY_TEXTURE_FILTER ||
@@ -387,8 +387,8 @@ DrawCall::bindIndexBuffer()
 }
 
 void
-DrawCall::bindStates(const std::map<std::string, data::Binding>&    stateBindings,
-                     const data::Store&                             defaultValues)
+DrawCall::bindStates(const std::unordered_map<std::string, data::Binding>&  stateBindings,
+                     const data::Store&                                     defaultValues)
 {
     _priority = bindState<float>(States::PROPERTY_PRIORITY, stateBindings, defaultValues);
     _zSorted = bindState<bool>(States::PROPERTY_ZSORTED, stateBindings, defaultValues);
@@ -512,8 +512,8 @@ DrawCall::render(AbstractContext::Ptr   context,
 }
 
 data::ResolvedBinding*
-DrawCall::resolveBinding(const std::string&                             inputName,
-                         const std::map<std::string, data::Binding>&    bindings)
+DrawCall::resolveBinding(const std::string&                                     inputName,
+                         const std::unordered_map<std::string, data::Binding>&  bindings)
 {
     bool isCollection = false;
     std::string bindingName = inputName;
