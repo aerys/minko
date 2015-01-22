@@ -712,3 +712,28 @@ TEST_F(DrawCallPoolTest, SamplerStatesBindingMipFilterNoDefaultValue)
     ASSERT_EQ(*sampler.textureFilter, SamplerStates::DEFAULT_TEXTURE_FILTER);
     ASSERT_EQ(*sampler.mipFilter, SamplerStates::DEFAULT_MIP_FILTER);
 }
+
+TEST_F(DrawCallPoolTest, SameMacroBindingDifferentVariables)
+{
+    auto fx = MinkoTests::loadEffect("effect/OneVariableIntMacroBinding.effect");
+    auto pass = fx->techniques().at("default")[0];
+    DrawCallPool pool;
+    data::Store rootData;
+    data::Store rendererData;
+    data::Store targetData;
+    auto p1 = data::Provider::create();
+    auto p2 = data::Provider::create();
+    std::string materialUuid1 = p1->uuid();
+    std::string materialUuid2 = p2->uuid();
+    std::unordered_map<std::string, std::string> variables1 = { { "materialUuid", materialUuid1 } };
+    std::unordered_map<std::string, std::string> variables2 = { { "materialUuid", materialUuid2 } };
+
+    targetData.addProvider(p1, component::Surface::MATERIAL_COLLECTION_NAME);
+    targetData.addProvider(p2, component::Surface::MATERIAL_COLLECTION_NAME);
+
+    auto drawCalls = pool.addDrawCalls(fx, "default", variables1, rootData, rendererData, targetData);
+    auto drawCalls2 = pool.addDrawCalls(fx, "default", variables2, rootData, rendererData, targetData);
+
+    ASSERT_EQ(targetData.propertyChanged("material[" + materialUuid1 + "].bar").numCallbacks(), 1);
+    ASSERT_EQ(targetData.propertyChanged("material[" + materialUuid2 + "].bar").numCallbacks(), 1);
+}
