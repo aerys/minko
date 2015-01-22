@@ -1,3 +1,5 @@
+#pragma include "Pack.function.glsl"
+
 #define SHADOW_MAPPING_TECHNIQUE_HARD			0
 #define SHADOW_MAPPING_TECHNIQUE_ESM			1
 #define SHADOW_MAPPING_TECHNIQUE_PCF			2
