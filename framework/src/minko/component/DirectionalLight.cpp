@@ -109,7 +109,7 @@ DirectionalLight::initializeShadowMapping()
 		math::ivec4(0, 0, _shadowMapSize, _shadowMapSize),
 		math::ivec4(_shadowMapSize, 0, _shadowMapSize, _shadowMapSize)
 	};
-	for (auto i = 0; i < _numShadowCascades; ++i)
+	for (auto i = 0u; i < _numShadowCascades; ++i)
 	{
 		auto renderer = component::Renderer::create(
 			0xffffffff,
@@ -204,6 +204,9 @@ DirectionalLight::computeBoundingSphere(const math::mat4& view, const math::mat4
 void
 DirectionalLight::computeShadowProjection(const math::mat4& view, const math::mat4& projection)
 {
+    if (!_shadowMappingEnabled)
+        return;
+
 	math::mat4 invProjection = math::inverse(projection);
 	std::vector<math::vec4> v = {
 		invProjection * math::vec4(-1.f, 1.f, -1.f, 1.f),
@@ -227,7 +230,7 @@ DirectionalLight::computeShadowProjection(const math::mat4& view, const math::ma
 	std::array<float, 4> splitNear = { zNear, zNear, zNear, zNear };
 	float lambda = .8f;
 	float j = 1.f;
-	for (auto i = 0; i < _numShadowCascades - 1; ++i, j+= 1.f)
+	for (auto i = 0u; i < _numShadowCascades - 1; ++i, j+= 1.f)
 	{
 		splitFar[i] = math::mix(
 			zNear + (j / (float)_numShadowCascades) * (zFar - zNear),
@@ -237,7 +240,7 @@ DirectionalLight::computeShadowProjection(const math::mat4& view, const math::ma
 		splitNear[i + 1] = splitFar[i];
 	}
 
-	for (auto i = 0; i < _numShadowCascades; ++i)
+	for (auto i = 0u; i < _numShadowCascades; ++i)
 	{
 		math::mat4 cameraViewProjection = math::perspective(fov, ratio, zNear, splitFar[i]) * view;
 		auto box = computeBox(cameraViewProjection);
@@ -286,7 +289,7 @@ DirectionalLight::updateWorldToScreenMatrix()
 	std::array<float, 4> zNear = { 0.f, 0.f, 0.f, 0.f };
 	std::array<math::mat4, 4> viewProjections;
 
-	for (int i = 0; i < _numShadowCascades; ++i)
+	for (uint i = 0u; i < _numShadowCascades; ++i)
 	{
 		const math::mat4& projection = _shadowProjections[i];
 		auto istr = std::to_string(i);
