@@ -61,7 +61,7 @@
 		"blendingDestination"	: { "binding" : "material[${materialUuid}].blendingDestination" },
         "triangleCulling"       : { "binding" : "material[${materialUuid}].triangleCulling" },
         "zSorted"               : { "binding" : "material[${materialUuid}].zSorted" },
-        "priority"              : { "binding" : "material[${materialUuid}].priority" }
+        "priority"              : { "binding" : "material[${materialUuid}].priority" },
         "depthMask"             : { "binding" : "material[${materialUuid}].depthMask" },
         "depthFunction"         : { "binding" : "material[${materialUuid}].depthFunction" }
     },

@@ -396,15 +396,15 @@ DrawCallPool::update()
 }
 
 bool
-DrawCallPool::compareDrawCalls(DrawCall& a, DrawCall& b)
+DrawCallPool::compareDrawCalls(DrawCall* a, DrawCall* b)
 {
     // FIXME: Sort according to render targets
 
-    const float aPriority = a.priority();
-    const float bPriority = b.priority();
+    const float aPriority = a->priority();
+    const float bPriority = b->priority();
     const bool samePriority = fabsf(aPriority - bPriority) < 1e-3f;
 
-    if (samePriority && a.zSorted() && b.zSorted())
+    if (samePriority && a->zSorted() && b->zSorted())
     {
         auto aPosition = getDrawcallEyePosition(a);
         auto bPosition = getDrawcallEyePosition(b);
@@ -416,9 +416,9 @@ DrawCallPool::compareDrawCalls(DrawCall& a, DrawCall& b)
 }
 
 math::vec3
-DrawCallPool::getDrawcallEyePosition(DrawCall& drawcall)
+DrawCallPool::getDrawcallEyePosition(DrawCall* drawcall)
 {
-    return drawcall.getEyeSpacePosition();
+    return drawcall->getEyeSpacePosition();
 }
 
 void

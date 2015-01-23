@@ -99,6 +99,12 @@ namespace minko
 			clear();
 
         private:
+            bool
+            compareDrawCalls(DrawCall* a, DrawCall* b);
+
+            math::vec3
+            getDrawcallEyePosition(DrawCall* drawcall);
+
             void
             watchProgramSignature(DrawCall&                     drawCall,
                                   const data::MacroBindingMap&  macroBindings,
