@@ -30,8 +30,8 @@ uniform 	vec2 	uUVOffset;
 uniform 	mat4 	uLightWorldToScreenMatrix;
 
 uniform 	float 	uPopLod;
+uniform 	float 	uPopBlendingLod;
 uniform 	float 	uPopFullPrecisionLod;
-
 uniform 	vec3 	uPopMinBound;
 uniform 	vec3 	uPopMaxBound;
 
@@ -54,17 +54,11 @@ void main(void)
 	#endif // NUM_BONES
 
 	#ifdef POP_LOD_ENABLED
-		float popLod = floor(uPopLod);
-
-		vec4 quantizedPosition 	= pop_quantify(worldPosition, popLod, uPopMinBound, uPopMaxBound);
-
 		#ifdef POP_BLENDING_ENABLED
-			vec4 blendingQuantizedPosition = pop_quantify(worldPosition, popLod + 1.0, uPopMinBound, uPopMaxBound);
-
-			quantizedPosition = mix(quantizedPosition, blendingQuantizedPosition, fract(uPopLod));
-		#endif
-
-		worldPosition 			= mix(quantizedPosition, worldPosition, float(floor(popLod) == floor(uPopFullPrecisionLod)));
+			worldPosition = pop_blend(worldPosition, uPopLod, uPopBlendingLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound);
+		#else
+			worldPosition = pop_quantify(worldPosition, uPopLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound);
+		#endif // POP_BLENDING_ENABLED
 	#endif // POP_LOD_ENABLED
 
 	#ifdef MODEL_TO_WORLD
