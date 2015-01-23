@@ -1,4 +1,4 @@
---[[
+/*
 Copyright (c) 2013 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -15,24 +15,40 @@ BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR P
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-]]--
+*/
 
--- fx plugin
-minko.plugin.fx = {}
+/*
+Original "Faster Gaussian Blur" implementation by Nilson Souto
+http://xissburg.com/faster-gaussian-blur-in-glsl/
+*/
 
-function minko.plugin.fx:enable()
-	defines { "MINKO_PLUGIN_FX" }
+#ifdef FRAGMENT_SHADER
+
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+varying vec2 vTexcoord;
+
+uniform sampler2D uTexture;
+uniform float uTextureSize;
+
+void main(void)
+{
+	vec4 fragmentColor = texture2D(uTexture, vTexcoord) * 0.2270270270;
 	
-	configuration { "not StaticLib" }
-		-- minko.plugin.links { "fx" }
-		includedirs { minko.plugin.path("fx") .. "/include" }
-		
-		prelinkcommands {
-			minko.action.copy(minko.plugin.path("fx") .. "/asset"),
-		}
-end
-
-newoption {
-	trigger		= "with-fx",
-	description	= "Enable the Minko FX plugin."
+	fragmentColor += texture2D( uTexture, vTexcoord + vec2(0.0, 0.0) / uTextureSize) * 0.2270270270;
+	fragmentColor += texture2D( uTexture, vTexcoord - vec2(0.0, 0.0) / uTextureSize) * 0.2270270270;
+	
+	fragmentColor += texture2D( uTexture, vTexcoord + vec2(1.3846153846, 0.0) / uTextureSize) * 0.3162162162;
+	fragmentColor += texture2D( uTexture, vTexcoord - vec2(1.3846153846, 0.0) / uTextureSize) * 0.3162162162;
+	
+	fragmentColor += texture2D( uTexture, vTexcoord + vec2(3.2307692308, 0.0) / uTextureSize) * 0.0702702703;
+	fragmentColor += texture2D( uTexture, vTexcoord - vec2(3.2307692308, 0.0) / uTextureSize) * 0.0702702703;
+	
+	
+	
+	gl_FragColor = fragmentColor;
 }
+
+#endif

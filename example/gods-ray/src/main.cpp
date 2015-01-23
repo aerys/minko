@@ -42,17 +42,21 @@ createRandomCube(scene::Node::Ptr root, geometry::Geometry::Ptr geom, render::Ef
 
 int main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Minko Example - God's Ray", 800, 600);
-    auto sceneManager = SceneManager::create(canvas);
-    auto root = scene::Node::create("root")->addComponent(sceneManager);
+    auto canvas         = Canvas::create("Minko Example - God's Ray", 800, 600);
+    auto sceneManager   = SceneManager::create(canvas);
+    auto root           = scene::Node::create("root")->addComponent(sceneManager);
+    auto assets         = sceneManager->assets();
+    auto context        = canvas->context();
 
     //sceneManager->assets()->context()->errorsEnabled(true);
 
     // setup assets
-    sceneManager->assets()->loader()
+    assets->loader()
+        ->queue("effect/LightScattering/LightScattering.effect")
         ->queue("effect/Basic.effect");
 
-    sceneManager->assets()->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
+
+    assets->geometry("cube", geometry::CubeGeometry::create(context));
 
     auto camera = scene::Node::create("camera")
         ->addComponent(Renderer::create())
@@ -65,25 +69,58 @@ int main(int argc, char** argv)
     auto meshes = scene::Node::create();
     root->addChild(meshes);
 
-    auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
+    // post-processing
+    auto ppScene = scene::Node::create()->addComponent(Renderer::create());
+    auto ppTarget = render::Texture::create(context, math::clp2(canvas->width()), math::clp2(canvas->height()), false, true);
+    auto ppMaterial = material::BasicMaterial::create();
+
+    ppMaterial->data()->set("backbuffer", ppTarget->sampler());
+    ppTarget->upload();
+
+    auto _ = assets->loader()->complete()->connect([=](file::Loader::Ptr loader)
     {
         for (auto i = 0; i < 100; ++i)
             createRandomCube(
                 meshes,
-                sceneManager->assets()->geometry("cube"),
-                sceneManager->assets()->effect("effect/Basic.effect")
+                assets->geometry("cube"),
+                assets->effect("effect/Basic.effect")
             );
 
+        ppScene->addComponent(Surface::create(
+            geometry::QuadGeometry::create(context),
+            ppMaterial,
+            assets->effect("effect/LightScattering/LightScattering.effect")
+        ));
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
-    {
-        camera->component<Transform>()->matrix(
-            math::rotate(0.005f, math::vec3(0.f, 1.f, 0.f))
-            * camera->component<Transform>()->matrix()
-        );
+    Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
+    auto cameraRotationXSpeed = 0.005f;
+    auto cameraRotationYSpeed = 0.f;
+    auto yaw = -4.03f;
+    auto pitch = 2.05f;
+    auto minPitch = 0.f + 1e-5;
+    auto maxPitch = float(M_PI) - 1e-5;
+    auto lookAt = math::vec3(0.f, 0.f, 0.f);
+    auto distance = 15.f;
 
-        sceneManager->nextFrame(time, deltaTime);
+    auto mouseWheel = canvas->mouse()->wheel()->connect([&](input::Mouse::Ptr m, int h, int v)
+    {
+        distance += (float)v / 10.f;
+    });
+
+    auto mouseDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr m)
+    {
+        mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr, int dx, int dy)
+        {
+            cameraRotationYSpeed = float(dx) * .0025f;
+            cameraRotationXSpeed = float(dy) * -.0025f;
+        });
+    });
+
+    auto mouseUp = canvas->mouse()->leftButtonUp()->connect([&](input::Mouse::Ptr m)
+    {
+        mouseMove = nullptr;
+        cameraRotationXSpeed = 0.005f;
     });
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
@@ -91,7 +128,34 @@ int main(int argc, char** argv)
         camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
     });
 
-    sceneManager->assets()->loader()->load();
+    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    {
+        yaw += cameraRotationYSpeed;
+        cameraRotationYSpeed *= 0.9f;
+
+        pitch += cameraRotationXSpeed;
+        cameraRotationXSpeed *= 0.9f;
+
+        if (pitch > maxPitch)
+            pitch = maxPitch;
+        else if (pitch < minPitch)
+            pitch = minPitch;
+
+        camera->component<Transform>()->matrix(math::lookAt(
+            lookAt,
+            math::vec3(
+                lookAt.x + distance * std::cos(yaw) * std::sin(pitch),
+                lookAt.y + distance * std::cos(pitch),
+                lookAt.z + distance * std::sin(yaw) * std::sin(pitch)
+            ),
+            math::vec3(0.0f, 1.0f, 0.0f)
+        ));
+
+        sceneManager->nextFrame(time, deltaTime, ppTarget);
+        ppScene->component<Renderer>()->render(context);
+    });
+
+    assets->loader()->load();
     canvas->run();
 
     return 0;

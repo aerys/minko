@@ -1,4 +1,4 @@
---[[
+/*
 Copyright (c) 2013 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -15,24 +15,29 @@ BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR P
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-]]--
+*/
 
--- fx plugin
-minko.plugin.fx = {}
+/*
+Original "Pseudo Lens Flare" implementation by John Chapman
+http://john-chapman-graphics.blogspot.co.uk/2013/02/pseudo-lens-flare.html
+*/
 
-function minko.plugin.fx:enable()
-	defines { "MINKO_PLUGIN_FX" }
-	
-	configuration { "not StaticLib" }
-		-- minko.plugin.links { "fx" }
-		includedirs { minko.plugin.path("fx") .. "/include" }
-		
-		prelinkcommands {
-			minko.action.copy(minko.plugin.path("fx") .. "/asset"),
-		}
-end
+#ifdef FRAGMENT_SHADER
 
-newoption {
-	trigger		= "with-fx",
-	description	= "Enable the Minko FX plugin."
+#ifdef GL_ES
+precision mediump float;
+#endif
+
+uniform sampler2D uInputTex;
+
+uniform vec4 uScale;
+uniform vec4 uBias;
+
+varying vec2 vTexcoord;
+
+void main()
+{
+	gl_FragColor = max(vec4(0.0), texture2D(uInputTex, vTexcoord) + uBias) * uScale;
 }
+
+#endif

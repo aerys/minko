@@ -117,7 +117,7 @@ solution "minko"
 		include 'plugin/assimp'
 		include 'plugin/devil'
 		--include 'plugin/bullet'
-		--include 'plugin/fx'
+		include 'plugin/fx'
 		include 'plugin/html-overlay'
 		--include 'plugin/http-loader'
 		--include 'plugin/http-worker'
@@ -154,9 +154,9 @@ solution "minko"
 
 	-- example
 	if not _OPTIONS['no-example'] then
-		include 'example/assimp'
+		-- include 'example/assimp'
 		-- include 'example/audio'
-		include 'example/blending'
+		-- include 'example/blending'
 		-- include 'example/clone'
 		include 'example/cube'
 		-- include 'example/devil'
@@ -172,6 +172,7 @@ solution "minko"
 		-- include 'example/keyboard'
 		-- include 'example/leap-motion'
 		-- include 'example/light'
+		include 'example/gods-ray'
 		-- include 'example/line-geometry'
 		-- include 'example/lua-scripts'
 		-- include 'example/multi-surfaces'
@@ -181,15 +182,15 @@ solution "minko"
 		-- include 'example/physics'
 		-- include 'example/picking'
 		-- include 'example/raycasting'
-		include 'example/serializer'
+		-- include 'example/serializer'
 		-- include 'example/sky-box'
 		-- include 'example/stencil'
 		-- include 'example/visibility'
 		-- include 'example/water'
 
-		if _OPTIONS['with-offscreen'] then
-			include 'example/offscreen'
-		end
+		-- if _OPTIONS['with-offscreen'] then
+		-- 	include 'example/offscreen'
+		-- end
 
 		if os.is("macosx")  and (_ACTION == "xcode-ios" or _ACTION == "xcode-osx") then
 			minko.project.library "all-examples"
