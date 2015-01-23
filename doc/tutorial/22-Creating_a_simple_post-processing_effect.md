@@ -38,13 +38,11 @@ attribute vec2 aUv;
 
 varying vec4 vVertexUv;
 
-void main(void) {
-
- vVertexUv = vec2(aUv.x, 1 - uv.y);
-
- gl_Position = vec4(aPosition, 1) * vec4(1., 1., 1., .5);
-
-} 
+void main(void)
+{
+  vVertexUv = vec2(aUv.x, 1 - uv.y);
+  gl_Position = vec4(aPosition, 1) * vec4(1., 1., 1., .5);
+}
 ```
 
 
@@ -64,13 +62,12 @@ uniform sampler2D uBackbuffer;
 
 varying vec2 vVertexUv;
 
-void main() {
+void main()
+{
+  vec4 pixel = texture2D(uBackbuffer, vVertexUv);
+  float average = (pixel.r + pixel.g + pixel.b) / 3;
 
- vec4 pixel = texture2D(uBackbuffer, vVertexUv);
- float average = (pixel.r + pixel.g + pixel.b) / 3;
-
- gl_FragColor = vec4(average, average, average, 1);
-
+  gl_FragColor = vec4(average, average, average, 1);
 } 
 ```
 
