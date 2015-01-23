@@ -114,7 +114,7 @@ const std::string TEXTURE_FILENAME = "texture/box.jpg";
 int main(int argc, char** argv) {
 
    auto canvas = Canvas::create("Minko Tutorial - Hello falling cube!", WINDOW_WIDTH, WINDOW_HEIGHT);
-   auto sceneManager = SceneManager::create(canvas->context());
+   auto sceneManager = SceneManager::create(canvas);
 
    sceneManager->assets()
        ->registerParser<[file::PNGParser>](file::PNGParser>)("png")

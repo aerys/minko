@@ -58,7 +58,7 @@ namespace minko
 			inline static
 			Ptr
 			create(std::shared_ptr<render::AbstractContext>	context,
-				   float*									data,
+				   const float*								data,
 				   const unsigned int						size,
 				   const unsigned int						offset = 0)
 			{
@@ -143,6 +143,9 @@ namespace minko
 			upload(uint offset, uint numVertices = 0);
 
 			void
+			upload(uint offset, uint numVertices, const std::vector<float>& data);
+
+			void
 			dispose();
 
             void
@@ -170,9 +173,9 @@ namespace minko
 			VertexBuffer(std::shared_ptr<render::AbstractContext> context);
 
 			VertexBuffer(std::shared_ptr<render::AbstractContext>	context,
-							float*									data,
-							const unsigned int						size,
-							const unsigned int						offset);
+						 const float*								data,
+						 const unsigned int							size,
+						 const unsigned int							offset);
 
 			VertexBuffer(std::shared_ptr<render::AbstractContext>	context,
 							std::vector<float>::const_iterator		begin,

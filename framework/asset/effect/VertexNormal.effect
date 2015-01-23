@@ -26,13 +26,11 @@
     	"passes"	: [{
 		    "vertexShader" : "
 		
-			    #ifdef GL_ES
-			# ifdef MINKO_PLATFORM_IOS
-				precision highp float;
-			# else
-				    precision mediump float;
-			# endif
-			    #endif
+                #ifdef GL_FRAGMENT_PRECISION_HIGH
+                    precision highp float;
+                #else
+                    precision mediump float;
+                #endif
 
 			    uniform mat4 modelToWorldMatrix;
 			    uniform mat4 worldToScreenMatrix;

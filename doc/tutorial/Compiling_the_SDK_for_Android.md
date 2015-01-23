@@ -61,8 +61,6 @@ The final folder hierarchy should be as follow:
  platform-tools
  toolchains
  tools
-
-
 ```
 
 
@@ -89,17 +87,20 @@ $ keytool -genkey -v -keystore my-release-key.keystore -alias [ALIAS NAME] -keya
 ```
 
 
-(make sure to replace *[ALIAS NAME]* by your alias name)
+(make sure to replace `[ALIAS NAME]` by your alias name)
 
 If you follow the instructions, you should have a generated **.keystore** file.
 
 Then, you have to define 3 new environment variables:
 
--   ANDROID_KEYSTORE_ALIAS: the alias used to generate the .keystore file.
--   ANDROID_KEYSTORE_PASSWORD: the password used to generate the .keystore file.
--   ANDROID_KEYSTORE_PATH: the path to you .keystore file (including the .keystore filename)
+-   `ANDROID_KEYSTORE_ALIAS`: the alias used to generate the .keystore file.
+-   `ANDROID_KEYSTORE_PASSWORD`: the password used to generate the .keystore file.
+-   `ANDROID_KEYSTORE_PATH`: the path to you .keystore file (including the .keystore filename)
 
-Last step for build in release for Android is to make sure that you have a binary called **zipalign** in your *${ANDROID}/tools* directory. If not, take it from *${ANDROID}/build-tools/[LAST API VERSION]*.
+Last step for build in release for Android is to make sure that you have a binary called **zipalign** in your `${ANDROID}/tools` directory. If not, take it from `${ANDROID}/build-tools/[LAST API VERSION]`.
+
+For further information, please follow the official [Android documentation](http://developer.android.com/tools/publishing/app-signing.html#signing-manually).
+
 
 Step 5: Compile the SDK
 -----------------------

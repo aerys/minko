@@ -48,8 +48,8 @@ SkinningComponentDeserializer::computeSkinning(file::Options::Ptr						options,
 											   const std::vector<scene::Node::Ptr>&		boneNodes,
 											   Node::Ptr								skeletonRoot)
 {
-	unsigned int	framerate	= options->skinningFramerate();
-	SkinningMethod	method		= options->skinningMethod();
+	unsigned int framerate = options->skinningFramerate();
+	SkinningMethod method = options->skinningMethod();
 
 	if (!haveBonesCommonRoot(bones, boneNodes, skeletonRoot))
 		throw std::logic_error("Sone bones are not connected to the specified skeleton root.");
@@ -63,8 +63,8 @@ SkinningComponentDeserializer::computeSkinning(file::Options::Ptr						options,
         << NodeSet::create(skeletonRoot)->descendants(true)->where([](Node::Ptr n){ return n->hasComponent<Animation>(); })->nodes().size() 
         << std::endl;
 
-    NodeTransformTimeline   nodeToTimelines;
-    NodeMatrices            nodeToFrameMatrices;
+    NodeTransformTimeline nodeToTimelines;
+    NodeMatrices nodeToFrameMatrices;
 
     const unsigned int duration = collectAnimations(
         bones, 
@@ -90,7 +90,7 @@ SkinningComponentDeserializer::computeSkinning(file::Options::Ptr						options,
         skin->bone(boneId, bones[boneId]);
 
 		for (auto& m : matrices)
-			m = bones[boneId]->offsetMatrix();
+			m = math::transpose(bones[boneId]->offsetMatrix());
 
         precomputeModelToRootMatrices(
 			boneNodes[boneId],
@@ -122,7 +122,7 @@ SkinningComponentDeserializer::computeSkinning(file::Options::Ptr						options,
 	//clean(skeletonRoot);
 
 	return Skinning::create(
-        skin->reorganizeByVertices()->transposeMatrices(),
+        skin->reorganizeByVertices(),
         options->skinningMethod(),
         context,
 		skeletonRoot,
@@ -132,13 +132,13 @@ SkinningComponentDeserializer::computeSkinning(file::Options::Ptr						options,
 
 /*static */
 void
-SkinningComponentDeserializer::computeSurfaceAnimations(unsigned int				duration, 
-														unsigned int				numFrames, 
-														Node::Ptr					skeletonRoot, 
-														const std::vector<BonePtr>&	bones,
-														const std::vector<scene::Node::Ptr>&		boneNodes,
-														const NodeMatrices&			nodeToFrameMatrices,
-														std::vector<AnimationPtr>&	slaveAnimations)
+SkinningComponentDeserializer::computeSurfaceAnimations(unsigned int				            duration, 
+														unsigned int				            numFrames, 
+														Node::Ptr					            skeletonRoot, 
+														const std::vector<BonePtr>&	            bones,
+														const std::vector<scene::Node::Ptr>&	boneNodes,
+														const NodeMatrices&			            nodeToFrameMatrices,
+														std::vector<AnimationPtr>&	            slaveAnimations)
 {
 	slaveAnimations.clear();
 	if (numFrames <= 1 || skeletonRoot == nullptr || bones.empty())
@@ -169,10 +169,11 @@ SkinningComponentDeserializer::computeSurfaceAnimations(unsigned int				duration
 
 		precomputeModelToRootMatrices(n, skeletonRoot, nodeToFrameMatrices, matrices);
 
-		auto timeline	= animation::Matrix4x4Timeline::create(PNAME_TRANSFORM, duration, timetable, matrices);
-		auto animation	= Animation::create(std::vector<animation::AbstractTimeline::Ptr>(1, timeline));
+		auto timeline = animation::Matrix4x4Timeline::create(PNAME_TRANSFORM, duration, timetable, matrices);
+		auto animation = Animation::create(std::vector<animation::AbstractTimeline::Ptr>(1, timeline));
 
 		n->addComponent(animation);
+
 		slaveAnimations.push_back(animation);
 	}
 
@@ -180,6 +181,7 @@ SkinningComponentDeserializer::computeSurfaceAnimations(unsigned int				duration
 	{
 		if (n->parent())
 			n->parent()->removeChild(n);
+
 		skeletonRoot->addChild(n);
 	}
 }
@@ -242,11 +244,13 @@ SkinningComponentDeserializer::precomputeModelToRootMatrices(Node::Ptr			       
             assert(foundMatricesIt->second.size() == numFrames);
 
             for (unsigned int frameId = 0; frameId < numFrames; ++frameId)
-                matrices[frameId] *= foundMatricesIt->second[frameId];
+                matrices[frameId] = foundMatricesIt->second[frameId] * matrices[frameId];
         }
         else if (currentNode->hasComponent<Transform>())
+        {
             for (auto& m : matrices)
-                m *= currentNode->component<Transform>()->matrix();
+                m = currentNode->component<Transform>()->matrix() * m;
+        }
 
         currentNode = currentNode->parent();
     }
@@ -264,8 +268,8 @@ SkinningComponentDeserializer::sampleAnimations(file::Options::Ptr						options,
 {
     nodeToFrameMatrices.clear();
 
-    const unsigned int  numFrames   = (unsigned int)std::max(2, int(floorf(options->skinningFramerate() * duration * 1e-3f)));
-    const float         timeStep    = duration / float(numFrames - 1);
+    const unsigned int numFrames = (unsigned int)std::max(2, int(floorf(options->skinningFramerate() * duration * 1e-3f)));
+    const float timeStep = duration / float(numFrames - 1);
 
 #ifdef DEBUG
     std::cout << "Skinning deserializetion\nduration = " << duration << " (framerate = " << options->skinningFramerate() << ") -> " << numFrames << " frames" << std::endl;
@@ -273,18 +277,18 @@ SkinningComponentDeserializer::sampleAnimations(file::Options::Ptr						options,
 
     for (auto& nodeAndTimeline : nodeToTimelines)
     {
-        auto node       = nodeAndTimeline.first;
-        auto timeline   = nodeAndTimeline.second;
+        auto node = nodeAndTimeline.first;
+        auto timeline = nodeAndTimeline.second;
 
         // predecompose matrices for better interpolation
         nodeToFrameMatrices[node] = std::vector<math::mat4>(numFrames);
 
-        auto&   matrices    = nodeToFrameMatrices[node];
-        float   time        = 0.0f;
+        auto& matrices = nodeToFrameMatrices[node];
+        float time = 0.0f;
         for (unsigned int frameId = 0; frameId < numFrames; ++frameId)
         {
-            matrices[frameId]   = timeline->interpolate((unsigned int)floorf(time));
-            time                += timeStep;
+            matrices[frameId] = timeline->interpolate((unsigned int)floorf(time));
+            time += timeStep;
         }
     }
 

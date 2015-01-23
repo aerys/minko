@@ -27,7 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 namespace minko
 {
 	namespace data
-	{			
+	{
 		class Provider :
 			public std::enable_shared_from_this<Provider>,
             public Uuid::enable_uuid
@@ -66,7 +66,7 @@ namespace minko
 			create()
 			{
 				Ptr provider = std::shared_ptr<Provider>(new Provider());
-				
+
 				return provider;
 			}
 
@@ -78,7 +78,7 @@ namespace minko
 			}
 
 			inline
-			bool 
+			bool
             hasProperty(const std::string& propertyName) const
             {
                 return _values.count(propertyName) != 0;
@@ -117,7 +117,11 @@ namespace minko
             typename std::enable_if<is_valid<T>::value, const T&>::type
             get(const std::string& propertyName) const
 			{
+#ifdef DEBUG
+                return *Any::cast<T>(&_values.at(propertyName));
+#else
                 return *Any::unsafe_cast<T>(&_values.at(propertyName));
+#endif
 			}
 
             template <typename T>
@@ -146,6 +150,7 @@ namespace minko
                     auto changed = !(*ptr == value);
 
                     *ptr = value;
+					// memcpy(ptr, &value, sizeof(T));
                     if (changed)
                         _propertyChanged.execute(shared_from_this(), propertyName);
                 }
@@ -168,19 +173,7 @@ namespace minko
 				if (foundIt == _values.end())
 					throw std::invalid_argument("propertyName");
 
-				// FIXME: remove try-catch and implement as
-				// return Any::cast<T>(&foundIt->second) != nullptr;
-
-				try
-				{
-					Any::cast<T>(foundIt->second);
-				}
-				catch (...)
-				{
-					return false;
-				}
-				
-				return true;
+				return Any::cast<T>(&foundIt->second) != nullptr;
 			}
 
 			virtual

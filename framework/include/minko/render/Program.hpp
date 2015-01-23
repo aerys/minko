@@ -45,26 +45,29 @@ namespace minko
 			typedef std::shared_ptr<render::AbstractContext>	AbsContextPtr;
 
 		private:
+			const std::string		_name;
 			std::shared_ptr<Shader> _vertexShader;
 			std::shared_ptr<Shader>	_fragmentShader;
 			ProgramInputs   		_inputs;
 
+			std::set<std::string>	_setUniforms;
             std::set<std::string>   _setTextures;
             std::set<std::string>   _setAttributes;
+			std::set<std::string>	_definedMacros;
 
 		public:
 			inline static
 			Ptr
-			create(AbsContextPtr context)
+			create(const std::string& name, AbsContextPtr context)
 			{
-				return std::shared_ptr<Program>(new Program(context));
+				return std::shared_ptr<Program>(new Program(name, context));
 			}
 
 			inline static
 			Ptr
 			create(Ptr program, bool deepCopy = false)
 			{
-				auto p = create(program->_context);
+				auto p = create(program->_name, program->_context);
 
 				p->_vertexShader	= deepCopy ? Shader::create(program->_vertexShader) : program->_vertexShader;
 				p->_fragmentShader	= deepCopy ? Shader::create(program->_fragmentShader) : program->_fragmentShader;
@@ -77,16 +80,24 @@ namespace minko
 
 			inline static
 			Ptr
-			create(AbsContextPtr		    context,
+			create(const std::string		name,
+				   AbsContextPtr		    context,
 				   std::shared_ptr<Shader>	vertexShader,
 				   std::shared_ptr<Shader>	fragmentShader)
 			{
-				auto p = create(context);
+				auto p = create(name, context);
 
 				p->_vertexShader  = vertexShader;
 				p->_fragmentShader = fragmentShader;
 
 				return p;
+			}
+
+			inline
+			const std::string&
+			name()
+			{
+				return _name;
 			}
 
 			inline
@@ -104,18 +115,32 @@ namespace minko
 			}
 
             inline
-            const std::set<std::string>
-            setTextureNames()
+            const std::set<std::string>&
+            setTextureNames() const
             {
                 return _setTextures;
             }
 
             inline
-            const std::set<std::string>
-            setAttributeNames()
+            const std::set<std::string>&
+            setAttributeNames() const
             {
                 return _setAttributes;
             }
+
+			inline
+			const std::set<std::string>&
+			setUniformNames() const
+			{
+				return _setUniforms;
+			}
+
+			inline
+			const std::set<std::string>&
+			definedMacroNames() const
+			{
+				return _definedMacros;
+			}
 
 			inline
 			const ProgramInputs&
@@ -146,6 +171,8 @@ namespace minko
                     _context->setProgram(_id);
                     setUniformOnContext<T, size>(it->location, count, v);
                     _context->setProgram(oldProgram);
+
+					_setUniforms.insert(name);
                 }
 
                 return *this;
@@ -184,22 +211,16 @@ namespace minko
 
             Program&
 			setUniform(const std::string&, TexturePtr);
-			
+
             Program&
 			setUniform(const std::string&, CubeTexturePtr);
-
-            inline
-            Program&
-            setAttribute(const std::string& name, const VertexAttribute& attribute)
-            {
-                return setAttribute(name, attribute, name);
-            }
 
             Program&
             define(const std::string& macroName)
             {
                 _vertexShader->define(macroName);
                 _fragmentShader->define(macroName);
+				_definedMacros.insert(macroName);
 
                 return *this;
             }
@@ -210,8 +231,16 @@ namespace minko
             {
                 _vertexShader->define(macroName, value);
                 _fragmentShader->define(macroName, value);
+				_definedMacros.insert(macroName);
 
                 return *this;
+            }
+
+            inline
+            Program&
+            setAttribute(const std::string& name, const VertexAttribute& attribute)
+            {
+                return setAttribute(name, attribute, name);
             }
 
             Program&
@@ -223,7 +252,7 @@ namespace minko
             }
 
 		private:
-			Program(AbsContextPtr context);
+			Program(const std::string& name, AbsContextPtr context);
 
             template <typename T, size_t size>
             void

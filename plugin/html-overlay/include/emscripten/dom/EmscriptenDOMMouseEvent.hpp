@@ -68,6 +68,9 @@ namespace emscripten
 
 			int
 			screenY();
+
+			int
+			button();
 		};
 	}
 }

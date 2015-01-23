@@ -86,6 +86,7 @@ namespace std
     */
 
     template<typename T, minko::math::precision P>
+    inline
     std::string
     to_string(const minko::math::detail::tvec1<T, P>& v)
     {
@@ -93,6 +94,7 @@ namespace std
     }
 
     template<typename T, minko::math::precision P>
+    inline
     std::string
     to_string(const minko::math::detail::tvec2<T, P>& v)
     {
@@ -100,6 +102,7 @@ namespace std
     }
 
     template<typename T, minko::math::precision P>
+    inline
     std::string
     to_string(const minko::math::detail::tvec3<T, P>& v)
     {
@@ -107,12 +110,81 @@ namespace std
     }
 
     template<typename T, minko::math::precision P>
+    inline
     std::string
     to_string(const minko::math::detail::tvec4<T, P>& v)
     {
         return minko::math::to_string(v);
     }
-	
+
+    template<typename T>
+    inline
+    std::string
+    to_string(const std::list<T>& list, const std::string& separator)
+    {
+        std::string s = "";
+
+        for (const T& e : list)
+        {
+            if (s.size())
+                s += separator;
+            s += std::to_string(e);
+        }
+
+        return s;
+    }
+
+    template<>
+    inline
+    std::string
+    to_string<std::string>(const std::list<std::string>& list, const std::string& separator)
+    {
+        std::string s = "";
+
+        for (const std::string& e : list)
+        {
+            if (s.size())
+                s += separator;
+            s += e;
+        }
+
+        return s;
+    }
+
+    template<typename T>
+    inline
+    std::string
+    to_string(const std::vector<T>& list, const std::string& separator = ", ")
+    {
+        std::string s = "";
+
+        for (const T& e : list)
+        {
+            if (s.size())
+                s += separator;
+            s += std::to_string(e);
+        }
+
+        return s;
+    }
+
+    template<>
+    inline
+    std::string
+    to_string<std::string>(const std::vector<std::string>& list, const std::string& separator)
+    {
+        std::string s = "";
+
+        for (const std::string& e : list)
+        {
+            if (s.size())
+                s += separator;
+            s += e;
+        }
+
+        return s;
+    }
+
 #ifdef __ANDROID__
 	template <typename T>
 	inline
@@ -125,11 +197,12 @@ namespace std
 	}
 #endif
 
-    template<> struct hash<minko::render::TextureFormat>
+    template<>
+    struct hash<minko::render::TextureFormat>
     {
         inline
-            size_t
-            operator()(const minko::render::TextureFormat& x) const
+        size_t
+        operator()(const minko::render::TextureFormat& x) const
         {
             return std::hash<unsigned int>()(static_cast<unsigned int>(x));
         }
@@ -190,4 +263,3 @@ namespace std
         return result;
     }
 }
-

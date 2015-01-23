@@ -28,6 +28,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Dependency.hpp"
 #include "minko/render/Blending.hpp"
 #include "minko/render/TriangleCulling.hpp"
+#include "minko/render/SamplerStates.hpp"
 #include "minko/file/Dependency.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/render/Priority.hpp"
@@ -37,6 +38,7 @@ using namespace minko;
 using namespace minko::file;
 using namespace minko::deserialize;
 using namespace minko::serialize;
+using namespace minko::render;
 
 std::map<uint, std::function<Any(std::tuple<uint, std::string&>&)>> MaterialParser::_typeIdToReadFunction;
 
@@ -149,9 +151,35 @@ MaterialParser::deserializeComplexProperty(MaterialPtr			material,
     }
     else if (type == TEXTURE)
     {
+        auto sampler = _dependencies->getTextureReference(Any::cast<uint>(TypeDeserializer::deserializeTextureId(serializedPropertyTuple)))->sampler();
+
         material->data()->set(
             serializedProperty.a0,
-            _dependencies->getTextureReference(Any::cast<uint>(TypeDeserializer::deserializeTextureId(serializedPropertyTuple)))->sampler()
+            sampler
+        );
+
+        material->data()->set(
+            SamplerStates::uniformNameToSamplerStateBindingName(
+                serializedProperty.a0,
+                SamplerStates::PROPERTY_WRAP_MODE
+            ),
+            sampler.wrapMode
+        );
+
+        material->data()->set(
+            SamplerStates::uniformNameToSamplerStateBindingName(
+                serializedProperty.a0,
+                SamplerStates::PROPERTY_TEXTURE_FILTER
+            ),
+            sampler.textureFilter
+        );
+
+        material->data()->set(
+            SamplerStates::uniformNameToSamplerStateBindingName(
+                serializedProperty.a0,
+                SamplerStates::PROPERTY_MIP_FILTER
+            ),
+            sampler.mipFilter
         );
     }
 	else if (type == ENVMAPTYPE)
@@ -170,7 +198,7 @@ MaterialParser::deserializeBasicProperty(MaterialPtr		material,
 
 	// TODO remove basic and complex property types and always specify property content type
 
-    if (serializedProperty.a0 == "zSort")
+    if (serializedProperty.a0 == "zSorted")
         material->data()->set<bool>("zSorted", serializedPropertyValue[0]);
     else
 	    material->data()->set<float>(serializedProperty.a0, serializedPropertyValue[0]);

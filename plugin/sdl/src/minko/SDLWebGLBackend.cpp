@@ -20,12 +20,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/SDLWebGLBackend.hpp"
 #include "minko/Canvas.hpp"
 
-#include "emscripten/emscripten.h"
+#if MINKO_PLATFORM & MINKO_PLATFORM_HTML5
+# include "emscripten/emscripten.h"
+#endif
 #include "SDL.h"
 
 using namespace minko;
 
 Canvas::Ptr currentCanvas;
+
+SDLWebGLBackend::SDLWebGLBackend()
+{
+}
 
 void
 emscriptenMainLoop()

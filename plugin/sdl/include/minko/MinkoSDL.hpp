@@ -27,7 +27,3 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include "minko/audio/SDLSoundChannel.hpp"
 # include "minko/audio/SoundParser.hpp"
 #endif
-
-#ifdef __ANDROID__
-# include "minko/MinkoAndroid.hpp"
-#endif

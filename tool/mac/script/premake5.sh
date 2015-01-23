@@ -1,1 +1,1 @@
-../../lin/script/premake5.sh
+../../lin/bin/premake5.sh

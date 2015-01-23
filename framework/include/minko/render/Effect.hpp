@@ -40,11 +40,13 @@ namespace minko
 			typedef std::shared_ptr<Pass>										PassPtr;
 			typedef std::shared_ptr<VertexBuffer>								VertexBufferPtr;
 			typedef std::shared_ptr<std::function<void(PassPtr)>>				OnPassFunctionPtr;
-			typedef std::list<std::function<void(PassPtr)>>						OnPassFunctionList;	
+			typedef std::list<std::function<void(PassPtr)>>						OnPassFunctionList;
 			typedef std::vector<PassPtr> 										Technique;
 			typedef Signal<Ptr, const std::string&, const std::string&>::Ptr	TechniqueChangedSignalPtr;
 
 		private:
+            std::string                                                         _name;
+
 			std::unordered_map<std::string, Technique>		_techniques;
 			std::unordered_map<std::string, std::string>	_fallback;
 			std::shared_ptr<data::Provider>					_data;
@@ -97,12 +99,10 @@ namespace minko
 			const Technique&
 			technique(const std::string& techniqueName) const
 			{
-				auto foundTechniqueIt = _techniques.find(techniqueName);
-
-				if (foundTechniqueIt == _techniques.end())
+				if (!hasTechnique(techniqueName))
 					throw std::invalid_argument("techniqueName = " + techniqueName);
 
-				return foundTechniqueIt->second;
+				return _techniques.at(techniqueName);
 			}
 
 			inline
@@ -178,14 +178,14 @@ namespace minko
             Effect(const std::string& name);
 
 			template <typename... T>
-			static 
+			static
 			void
 			setUniformOnPass(std::shared_ptr<Pass> pass, const std::string& name, const T&... values)
 			{
 				pass->setUniform(name, values...);
 			}
 
-			static 
+			static
 			void
 			setVertexAttributeOnPass(std::shared_ptr<Pass> pass, const std::string& name, const VertexAttribute& attribute)
 			{
@@ -206,6 +206,6 @@ namespace minko
             {
                 pass->define(macroName, macroValue);
             }
-		};		
+		};
 	}
 }

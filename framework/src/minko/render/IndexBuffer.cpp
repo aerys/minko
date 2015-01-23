@@ -53,6 +53,32 @@ IndexBuffer::upload(uint	offset,
 }
 
 void
+IndexBuffer::upload(uint                                offset,
+                    int                                 count,
+                    const std::vector<unsigned short>&  data)
+{
+    if (data.empty())
+        return;
+
+    assert(count <= (int)data.size());
+
+    if (_id == -1)
+        _id = _context->createIndexBuffer(data.size());
+
+    const auto numIndices = count > 0 ? count : data.size();
+    _numIndices = numIndices;
+
+    _context->uploaderIndexBufferData(
+        _id,
+        offset,
+        numIndices,
+        const_cast<unsigned short*>(data.data())
+    );
+
+    _changed->execute(shared_from_this());
+}
+
+void
 IndexBuffer::dispose()
 {
     if (_id != -1)

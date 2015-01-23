@@ -175,7 +175,7 @@ TEST_F(SignalTest, LockRemove)
 		v = i;
 		slot2 = nullptr;
 	});
-	
+
 	slot2 = s->connect([&](int i)
 	{
 		w = i;
@@ -186,4 +186,39 @@ TEST_F(SignalTest, LockRemove)
 	ASSERT_EQ(s->numCallbacks(), 1);
 	ASSERT_EQ(v, 42);
 	ASSERT_EQ(w, 42);
+}
+
+TEST_F(SignalTest, Priority)
+{
+	Signal<> s;
+	int i = 0;
+
+	auto _1 = s.connect([&]()
+	{
+		ASSERT_EQ(i++, 4);
+	}, 0.f);
+
+	auto _2 = s.connect([&]()
+	{
+		ASSERT_EQ(i++, 1);
+	}, 3.f);
+
+	auto _3 = s.connect([&]()
+	{
+		ASSERT_EQ(i++, 0);
+	}, 4.f);
+
+	auto _4 = s.connect([&]()
+	{
+		ASSERT_EQ(i++, 3);
+	}, 1.f);
+
+	auto _5 = s.connect([&]()
+	{
+		ASSERT_EQ(i++, 2);
+	}, 2.f);
+
+	s.execute();
+
+	ASSERT_EQ(i, 5);
 }

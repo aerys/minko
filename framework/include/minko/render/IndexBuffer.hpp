@@ -108,6 +108,9 @@ namespace minko
 			upload(uint offset, int count = -1);
 
 			void
+			upload(uint offset, int count, const std::vector<unsigned short>& data);
+
+			void
 			dispose();
 
             void

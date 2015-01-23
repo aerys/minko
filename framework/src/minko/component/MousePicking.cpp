@@ -29,7 +29,7 @@ using namespace minko;
 using namespace minko::component;
 
 MousePicking::MousePicking() :
-	AbstractComponent(scene::Layout::Mask::RAYCASTING_DEFAULT),
+	AbstractComponent(),
 	_move(MouseSignal::create()),
 	_over(MouseSignal::create()),
 	_out(MouseSignal::create()),
@@ -45,17 +45,6 @@ MousePicking::MousePicking() :
 void
 MousePicking::initialize()
 {
-	/*
-	_targetAddedSlot = targetAdded()->connect([&](AbstractComponent::Ptr cmp, scene::Node::Ptr target)
-	{
-
-	});
-
-	_targetRemovedSlot = targetRemoved()->connect([&](AbstractComponent::Ptr cmp, scene::Node::Ptr target)
-	{
-
-	});
-	*/
 }
 
 void
@@ -67,7 +56,7 @@ MousePicking::pick(std::shared_ptr<math::Ray>	ray)
 		->descendants(true)
 		->where([&](scene::Node::Ptr node) 
 		{ 
-			return (node->layouts() & layoutMask()) != 0 
+			return (node->layout() & layoutMask()) != 0 
 				&&  node->hasComponent<BoundingBox>(); 
 		}
 	);

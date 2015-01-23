@@ -51,6 +51,6 @@ namespace minko
         wait(std::shared_ptr<Canvas> canvas, uint ms);
 
     private:
-        SDLWebGLBackend() = default;
+        SDLWebGLBackend();
     };
 }

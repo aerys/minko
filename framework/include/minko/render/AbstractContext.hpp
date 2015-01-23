@@ -90,7 +90,11 @@ namespace minko
 
 			virtual
 			void
-			drawTriangles(const uint indexBuffer, const int numTriangles) = 0;
+			drawTriangles(const uint indexBuffer, const uint firstIndex, const int numTriangles) = 0;
+
+			virtual
+			void
+			drawTriangles(const uint firstIndex, const int numTriangles) = 0;
 
 			virtual
 			const uint

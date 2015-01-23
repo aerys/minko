@@ -33,8 +33,7 @@ namespace minko
 		class DrawCallPool
 		{
         private:
-            typedef std::list<DrawCall>                                                                 DrawCallList;
-            typedef std::list<DrawCall*>                                                                DrawCallPtrList;
+            typedef std::list<DrawCall*>                                                                DrawCallList;
             typedef DrawCallList::iterator                                                              DrawCallIterator;
             typedef data::Store::PropertyChangedSignal                                                  PropertyChanged;
             typedef std::pair<PropertyChanged::Slot, uint>                                              ChangedSlot;
@@ -47,8 +46,8 @@ namespace minko
 
             typedef std::pair_hash<const MacroBinding*, const Store*>                                   BindingHash;
             typedef std::pair_eq<const MacroBinding*, const Store*>                                     BindingEq;
-            typedef std::unordered_map<MacroBindingKey, DrawCallPtrList, BindingHash, BindingEq>        MacroToDrawCallsMap;
-            typedef std::unordered_map<PropertyChanged*, ChangedSlot>                                   MacroToChangedSlotMap;
+            typedef std::unordered_map<MacroBindingKey, DrawCallList, BindingHash, BindingEq>        	MacroToDrawCallsMap;
+            typedef std::unordered_map<MacroBindingKey, ChangedSlot, BindingHash, BindingEq>            MacroToChangedSlotMap;
 
             typedef std::pair_hash<const data::Binding*, const DrawCall*>                               DrawCallHash;
             typedef std::pair_eq<const data::Binding*, const DrawCall*>                                 DrawCallEq;
@@ -59,7 +58,7 @@ namespace minko
             typedef std::pair<DrawCallIterator, DrawCallIterator>   DrawCallIteratorPair;
 
 		private:
-            DrawCallList                    _drawCalls;
+            DrawCallList                 	_drawCalls;
             MacroToDrawCallsMap             _macroToDrawCalls;
             std::unordered_set<DrawCall*>   _invalidDrawCalls;
             MacroToChangedSlotMap           _macroChangedSlot;
@@ -77,11 +76,11 @@ namespace minko
             {
                 return _drawCalls;
             }
-			
+
             DrawCallIteratorPair
             addDrawCalls(std::shared_ptr<Effect>                                effect,
-                         const std::unordered_map<std::string, std::string>&    variables,
                          const std::string&                                     techniqueName,
+                         const std::unordered_map<std::string, std::string>&    variables,
                          data::Store&                                           rootData,
                          data::Store&                                           rendererData,
                          data::Store&                                           targetData);
@@ -96,16 +95,10 @@ namespace minko
             void
             update();
 
+			void
+			clear();
+
         private:
-            bool
-            compareDrawCalls(DrawCall& a, DrawCall& b);
-
-            math::vec3
-            getDrawcallEyePosition(DrawCall& drawcall);
-
-            void
-            bindUniforms(data::BindingMap& uniformBindings, Program::Ptr program, DrawCall& drawCall);
-
             void
             watchProgramSignature(DrawCall&                     drawCall,
                                   const data::MacroBindingMap&  macroBindings,
@@ -121,31 +114,41 @@ namespace minko
                                     data::Store&                    targetData);
 
             void
-            macroPropertyAddedHandler(data::Store&                  store,
+            macroPropertyAddedHandler(const data::MacroBinding&   macroBinding,
+                                      data::Store&                  store,
                                       const std::list<DrawCall*>&   drawCalls);
 
             void
-            macroPropertyRemovedHandler(data::Store&                store,
+            macroPropertyRemovedHandler(const data::MacroBinding&   macroBinding,
+                                        data::Store&                store,
                                         const std::list<DrawCall*>& drawCalls);
 
             void
-            macroPropertyChangedHandler(const std::list<DrawCall*>& drawCalls);
+            macroPropertyChangedHandler(const data::MacroBinding& macroBinding, const std::list<DrawCall*>& drawCalls);
 
             void
             initializeDrawCall(DrawCall& drawCall);
-            
-            void
-            addUniqueStoreCallback(PropertyChanged&           key,
-                                   data::Store&               store,
-                                   const PropertyCallback&    callback);
 
             void
-            removeUniqueStoreCallback(PropertyChanged& key);
+            addMacroCallback(const MacroBindingKey&     key,
+                             PropertyChanged&           signal,
+                             const PropertyCallback&    callback);
+
+            void
+            removeMacroCallback(const MacroBindingKey& key);
+
+            bool
+            hasMacroCallback(const MacroBindingKey& key);
 
             void
             uniformBindingPropertyAddedHandler(DrawCall&                          drawCall,
                                                const ProgramInputs::UniformInput& input,
                                                const data::BindingMap&            uniformBindingMap);
+
+            void
+            samplerStatesBindingPropertyAddedHandler(DrawCall&                          drawCall,
+                                                     const ProgramInputs::UniformInput& input,
+                                                     const data::BindingMap&            uniformBindingMap);
         };
 	}
 }

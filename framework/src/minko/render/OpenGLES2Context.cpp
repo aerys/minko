@@ -39,7 +39,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #  include "GLES2/gl2.h"
 #  include "GLES2/gl2ext.h"
 # else
+#  if !defined(MINKO_PLUGIN_OFFSCREEN) // temporary
 #  include "GL/glew.h"
+#  else
+#   include <windows.h>
+#   include <GL/gl.h>
+#   include <GL/glu.h>
+#   include <GL/glext.h>
+#  endif
 # endif
 #elif MINKO_PLATFORM == MINKO_PLATFORM_OSX
 # include <OpenGL/gl.h>
@@ -162,7 +169,7 @@ OpenGLES2Context::OpenGLES2Context() :
 	_currentStencilZFailOp(StencilOperation::UNSET),
 	_currentStencilZPassOp(StencilOperation::UNSET)
 {
-#if (MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS) && !defined(MINKO_PLUGIN_ANGLE)
+#if (MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS) && !defined(MINKO_PLUGIN_ANGLE) && !defined(MINKO_PLUGIN_OFFSCREEN)
 	glewInit();
 #endif
 
@@ -302,7 +309,7 @@ OpenGLES2Context::present()
 }
 
 void
-OpenGLES2Context::drawTriangles(const uint indexBuffer, const int numTriangles)
+OpenGLES2Context::drawTriangles(const uint indexBuffer, const uint firstIndex, const int numTriangles)
 {
 	if (_currentIndexBuffer != indexBuffer)
 	{
@@ -320,7 +327,17 @@ OpenGLES2Context::drawTriangles(const uint indexBuffer, const int numTriangles)
 	// indices Specifies a pointer to the location where the indices are stored.
 	//
 	// glDrawElements render primitives from array data
-	glDrawElements(GL_TRIANGLES, numTriangles * 3, GL_UNSIGNED_SHORT, (void*)0);
+	glDrawElements(GL_TRIANGLES, numTriangles * 3, GL_UNSIGNED_SHORT, (const GLvoid*)firstIndex);
+
+	checkForErrors();
+}
+
+void
+OpenGLES2Context::drawTriangles(const uint firstIndex, const int numTriangles)
+{
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	_currentIndexBuffer = 0;
+	glDrawArrays(GL_TRIANGLES, firstIndex, numTriangles * 3);
 
 	checkForErrors();
 }
@@ -683,6 +700,54 @@ OpenGLES2Context::createCompressedTexture(TextureType     type,
     _currentTextureFilter[texture]    = TextureFilter::NEAREST;
     _currentMipFilter[texture]        = MipFilter::NONE;
 
+    const auto oglFormat = availableTextureFormats().at(format);
+
+    if (mipMapping)
+    {
+        uint level = 0;
+        uint h = height;
+        uint w = width;
+
+        for (uint size = width > height ? width : height;
+             size > 0;
+             size = size >> 1, w = w >> 1, h = h >> 1)
+        {
+        	const auto dataSize = TextureFormatInfo::textureSize(format, w, h);
+        	const auto data = std::vector<unsigned char>(dataSize, 0);
+
+         	if (type == TextureType::Texture2D)
+         		glCompressedTexImage2D(GL_TEXTURE_2D, level, oglFormat, w, h, 0, dataSize, data.data());
+            else
+            {
+         		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, level, oglFormat, w, h, 0, dataSize, data.data());
+         		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, level, oglFormat, w, h, 0, dataSize, data.data());
+         		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, level, oglFormat, w, h, 0, dataSize, data.data());
+         		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, level, oglFormat, w, h, 0, dataSize, data.data());
+         		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, level, oglFormat, w, h, 0, dataSize, data.data());
+         		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, level, oglFormat, w, h, 0, dataSize, data.data());
+            }
+
+            ++level;
+        }
+    }
+    else
+    {
+        const auto dataSize = TextureFormatInfo::textureSize(format, width, height);
+    	const auto data = std::vector<unsigned char>(dataSize, 0);
+
+        if (type == TextureType::Texture2D)
+     		glCompressedTexImage2D(GL_TEXTURE_2D, 0, oglFormat, width, height, 0, dataSize, data.data());
+        else
+        {
+     		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, oglFormat, width, height, 0, dataSize, data.data());
+     		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, oglFormat, width, height, 0, dataSize, data.data());
+     		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, oglFormat, width, height, 0, dataSize, data.data());
+     		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, oglFormat, width, height, 0, dataSize, data.data());
+     		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, oglFormat, width, height, 0, dataSize, data.data());
+     		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, oglFormat, width, height, 0, dataSize, data.data());
+        }
+    }
+
     checkForErrors();
 
     return texture;
@@ -774,7 +839,7 @@ OpenGLES2Context::uploadCompressedTexture2dData(uint          texture,
     const auto& formats = availableTextureFormats();
 
     glBindTexture(GL_TEXTURE_2D, texture);
-    glCompressedTexImage2D(GL_TEXTURE_2D, mipLevel, formats.at(format), width, height, 0, size, data);
+    glCompressedTexSubImage2D(GL_TEXTURE_2D, mipLevel, 0, 0, width, height, formats.at(format), size, data);
 
     _currentBoundTexture = texture;
 
@@ -1032,16 +1097,53 @@ OpenGLES2Context::setProgram(const uint program)
 	checkForErrors();
 }
 
+static
+std::string
+glslVersionString()
+{
+    auto fullVersion = std::string(reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION)));
+
+    if (fullVersion.empty())
+        return "";
+
+    auto glslVersion = std::string();
+
+    const auto minorVersionSeparatorPosition = fullVersion.find_first_of(".");
+
+    if (minorVersionSeparatorPosition == std::string::npos)
+        return std::string(0, fullVersion.find_first_of(" "));
+
+    glslVersion += std::string(fullVersion.begin(), fullVersion.begin() + minorVersionSeparatorPosition);
+
+    const auto minorVersionPosition = minorVersionSeparatorPosition + 1;
+    const auto buildVersionSeparatorPosition = fullVersion.find_first_of(". ", minorVersionPosition);
+
+    if (buildVersionSeparatorPosition == std::string::npos)
+        return glslVersion + "00";
+
+    glslVersion += std::string(
+        fullVersion.begin() + minorVersionPosition,
+        fullVersion.begin() + buildVersionSeparatorPosition
+    );
+
+    return glslVersion;
+}
+
 void
 OpenGLES2Context::setShaderSource(const uint shader,
 								  const std::string& source)
 {
+    // TODO fixme
+    // temporary allowing version > 120
+    // implement new *Context to properly handle it
+
 #ifdef GL_ES_VERSION_2_0
 	std::string src = "#version 100\n" + source;
 #else
 	std::string src = "#version 120\n" + source;
 #endif // GL_ES_VERSION_2_0
-	const char* sourceString = src.c_str();
+
+    const char* sourceString = src.c_str();
 
 	glShaderSource(shader, 1, &sourceString, 0);
 
@@ -1186,11 +1288,11 @@ OpenGLES2Context::getUniformInputs(const uint program)
 
 		name[nameLength] = 0;
 
-		ProgramInputs::Type	inputType	= convertInputType(type);
-		int					location	= glGetUniformLocation(program, &name[0]);
+		ProgramInputs::Type	inputType = convertInputType(type);
+		int	location = glGetUniformLocation(program, &name[0]);
 
         if (location >= 0 && inputType != ProgramInputs::Type::unknown)
-            inputs.emplace_back(std::string(&name[0], nameLength), location, inputType);
+            inputs.emplace_back(std::string(&name[0], nameLength), location, size, inputType);
 	}
 
     return inputs;

@@ -229,8 +229,13 @@ namespace minko
 				return _isReversed;
 			}
 
+            virtual
+            inline
 			void
-			isReversed(bool);
+            isReversed(bool value)
+            {
+                _isReversed = value;
+            }
 
 			inline
 			uint
@@ -239,11 +244,12 @@ namespace minko
 				return _maxTime;
 			}
 
+            virtual
 			inline
 			void
 			timeFunction(const std::function<uint(uint)>& func)
 			{
-				_timeFunction = func;
+                _timeFunction = func;
 			}
 
 			inline

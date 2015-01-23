@@ -53,10 +53,11 @@ SceneManager::targetAdded(NodePtr target)
 		throw std::logic_error("The same root node cannot have more than one SceneManager.");
 
 	target->data().addProvider(_data);
+    target->data().addProvider(_canvas->data());
 
     _addedSlot = target->added().connect(std::bind(
         &SceneManager::addedHandler,
-        std::static_pointer_cast<SceneManager>(shared_from_this()), 
+        std::static_pointer_cast<SceneManager>(shared_from_this()),
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3
@@ -67,7 +68,9 @@ void
 SceneManager::targetRemoved(NodePtr target)
 {
     _addedSlot = nullptr;
+
 	target->data().removeProvider(_data);
+    target->data().removeProvider(_canvas->data());
 }
 
 void

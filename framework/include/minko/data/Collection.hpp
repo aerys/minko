@@ -54,6 +54,23 @@ namespace minko
                 return std::shared_ptr<Collection>(new Collection(name));
             }
 
+            static inline
+            Ptr
+            create(Ptr collection, bool deepCopy = false)
+            {
+                auto copy = create(collection->_name);
+
+                if (deepCopy)
+                {
+                    for (auto item : collection->_items)
+                        copy->_items.push_back(Provider::create(item));
+                }
+                else
+                    copy->_items = collection->_items;
+
+                return copy;
+            }
+
             inline
             const std::string&
             name()
@@ -116,7 +133,7 @@ namespace minko
             {
                 _items.insert(position, provider);
                 _itemAdded.execute(*this, provider);
-                
+
                 return *this;
             }
 

@@ -40,83 +40,54 @@ FileProtocol::_runningLoaders;
 void
 FileProtocol::load()
 {
-	auto loader = std::static_pointer_cast<FileProtocol>(shared_from_this());
+    auto loader = std::static_pointer_cast<FileProtocol>(shared_from_this());
 
-	_runningLoaders.push_back(loader);
+    _runningLoaders.push_back(loader);
 
-	auto filename = _file->filename();
-	auto options = _options;
-	auto flags = std::ios::in | std::ios::ate | std::ios::binary;
+    const auto& resolvedFilename = this->resolvedFilename();
+    auto options = _options;
+    auto flags = std::ios::in | std::ios::ate | std::ios::binary;
 
-	std::string cleanFilename = "";
+    auto cleanFilename = resolvedFilename;
 
-	for (uint i = 0; i < filename.length(); ++i)
-	{
-		if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
-		{
-			cleanFilename = "";
-			i += 2;
-			continue;
-		}
+    auto prefixPosition = resolvedFilename.find("://");
 
-		cleanFilename += filename.at(i);
-	}
+    if (prefixPosition != std::string::npos)
+    {
+        cleanFilename = resolvedFilename.substr(prefixPosition + 3);
+    }
 
-	_options = options;
+    std::fstream file(cleanFilename, flags);
 
-    auto realFilename = options->uriFunction()(File::sanitizeFilename(cleanFilename));
-
-	std::fstream file(cleanFilename, flags);
-
-	if (!file.is_open())
-	{
-		for (auto path : _options->includePaths())
-		{
-            const auto absolutePrefix = File::getBinaryDirectory() + "/";
-
-			auto testFilename = options->uriFunction()(File::sanitizeFilename(path + '/' + cleanFilename));
-
-			file.open(testFilename, flags);
-
-			if (file.is_open())
-			{
-				realFilename = testFilename;
-				break;
-			}
-		}
-	}
-	
-	if (file.is_open())
-	{
-        resolvedFilename(realFilename);
-
-		if (_options->loadAsynchronously() && AbstractCanvas::defaultCanvas() != nullptr
+    if (file.is_open())
+    {
+        if (_options->loadAsynchronously() && AbstractCanvas::defaultCanvas() != nullptr
             && AbstractCanvas::defaultCanvas()->isWorkerRegistered("file-protocol"))
-		{
-			file.close();
-			auto worker = AbstractCanvas::defaultCanvas()->getWorker("file-protocol");
+        {
+            file.close();
+            auto worker = AbstractCanvas::defaultCanvas()->getWorker("file-protocol");
 
-			_workerSlots.push_back(worker->message()->connect([=](async::Worker::Ptr, async::Worker::Message message)
-			{
-				if (message.type == "complete")
-				{
-					void* bytes = &*message.data.begin();
-					data().assign(static_cast<unsigned char*>(bytes), static_cast<unsigned char*>(bytes) + message.data.size());
-					_complete->execute(loader);
-					_runningLoaders.remove(loader);
-				}
-				else if (message.type == "progress")
-				{
-					float ratio = *reinterpret_cast<float*>(&*message.data.begin());
+            _workerSlots.push_back(worker->message()->connect([=](async::Worker::Ptr, async::Worker::Message message)
+            {
+                if (message.type == "complete")
+                {
+                    void* bytes = &*message.data.begin();
+                    data().assign(static_cast<unsigned char*>(bytes), static_cast<unsigned char*>(bytes) + message.data.size());
+                    _complete->execute(loader);
+                    _runningLoaders.remove(loader);
+                }
+                else if (message.type == "progress")
+                {
+                    float ratio = *reinterpret_cast<float*>(&*message.data.begin());
 
-					_progress->execute(loader, ratio);
-				}
-				else if (message.type == "error")
-				{
-					_error->execute(loader);
-					_runningLoaders.remove(loader);
-				}
-			}));
+                    _progress->execute(loader, ratio);
+                }
+                else if (message.type == "error")
+                {
+                    _error->execute(loader);
+                    _runningLoaders.remove(loader);
+                }
+            }));
 
             auto offset = options->seekingOffset();
             auto length = options->seekedLength();
@@ -134,38 +105,45 @@ FileProtocol::load()
             lengthByteArray[3] = (length & 0x000000ff);
 
             std::vector<char> input;
-            
+
             input.insert(input.end(), offsetByteArray.begin(), offsetByteArray.end());
             input.insert(input.end(), lengthByteArray.begin(), lengthByteArray.end());
-            input.insert(input.end(), resolvedFilename().begin(), resolvedFilename().end());
+            input.insert(input.end(), cleanFilename.begin(), cleanFilename.end());
 
-			worker->start(input);
-		}
-		else
-		{
+            worker->start(input);
+        }
+        else
+        {
             auto offset = options->seekingOffset();
 
 			auto length = options->seekedLength() > 0 ? options->seekedLength() : (unsigned int)file.tellg();
 
-			// FIXME: use fixed size buffers and call _progress accordingly
+            // FIXME: use fixed size buffers and call _progress accordingly
 
-			_progress->execute(shared_from_this(), 0.0);
+            _progress->execute(shared_from_this(), 0.0);
 
 			data().resize(length);
 
 			file.seekg(offset, std::ios::beg);
 			file.read((char*)&data()[0], length);
-			file.close();
+            file.close();
 
-			_progress->execute(loader, 1.0);
+            _progress->execute(loader, 1.0);
 
-			_complete->execute(shared_from_this());
-			_runningLoaders.remove(loader);
-		}
-	}
-	else
-	{
-		std::cout << "FileProtocol::load() : Could not load file " + filename << std::endl;
-		_error->execute(shared_from_this());
-	}
+            _complete->execute(shared_from_this());
+            _runningLoaders.remove(loader);
+        }
+    }
+    else
+    {
+        _error->execute(shared_from_this());
+    }
+}
+
+bool
+FileProtocol::fileExists(const std::string& filename)
+{
+    std::ifstream file(filename, std::ios::in | std::ios::binary);
+
+    return file.is_open();
 }

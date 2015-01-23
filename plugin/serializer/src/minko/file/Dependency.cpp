@@ -325,13 +325,13 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
         content = assetName;
     }
 
-    auto metaByte = static_cast<unsigned char>(writer->headerSize());
+    auto metaData = static_cast<unsigned short>(writer->headerSize());
 
-    auto metaData =
+    auto fullMetaData =
         static_cast<unsigned int>(assetType) +
-        static_cast<unsigned int>(metaByte << 24);
+        static_cast<unsigned int>(metaData << 16);
 
-    SerializedAsset res(metaData, resourceId, content);
+    SerializedAsset res(fullMetaData, resourceId, content);
 
 	return res;
 }
@@ -368,7 +368,7 @@ Dependency::serializeMaterial(std::shared_ptr<Dependency>			dependency,
         {
             materialName = assetLibrary->materialName(material) + ".material";
         }
-        catch (const std::exception& exception)
+        catch (std::exception exception)
         {
             materialName = "default" + std::to_string(materialNameId++) + ".material";
         }

@@ -17,38 +17,45 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/file/AbstractSerializerParser.hpp"
 #include "msgpack.hpp"
-#include "minko/file/Options.hpp"
+
+#include "minko/Types.hpp"
+#include "minko/data/Provider.hpp"
+#include "minko/file/AbstractParser.hpp"
+#include "minko/file/AbstractSerializerParser.hpp"
 #include "minko/file/AssetLibrary.hpp"
-#include "minko/file/GeometryParser.hpp"
 #include "minko/file/Dependency.hpp"
+#include "minko/file/GeometryParser.hpp"
 #include "minko/file/MaterialParser.hpp"
+#include "minko/file/Options.hpp"
 #include "minko/file/TextureParser.hpp"
 #include "minko/file/TextureWriter.hpp"
 #include "minko/material/Material.hpp"
-#include "minko/file/AbstractParser.hpp"
-#include "minko/Types.hpp"
 #include "minko/render/Texture.hpp"
-
 
 using namespace minko;
 using namespace minko::file;
 
-std::unordered_map<uint, std::function<void(unsigned char,
-											AbstractSerializerParser::AssetLibraryPtr,
-											std::string&,
+std::unordered_map<uint, std::function<void(unsigned short,
+                                            AssetLibrary::Ptr,
+                                            Options::Ptr,
+                                            const std::string&,
 											std::shared_ptr<Dependency>,
 											short,
                                             std::list<std::shared_ptr<component::JobManager::Job>>&)>> AbstractSerializerParser::_assetTypeToFunction =
 {
-    { serialize::AssetType::TEXTURE_PACK_ASSET, std::bind(deserializeTexture, 
+    {
+        serialize::AssetType::TEXTURE_PACK_ASSET, std::bind(
+            &AbstractSerializerParser::deserializeTexture, 
                                                           std::placeholders::_1,
                                                           std::placeholders::_2,
                                                           std::placeholders::_3,
                                                           std::placeholders::_4,
                                                           std::placeholders::_5,
-                                                          std::placeholders::_6) }
+            std::placeholders::_6,
+            std::placeholders::_7
+        )
+    }
 };
 
 void
@@ -118,9 +125,9 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 	std::vector<unsigned char>	data;
 	std::string					assetCompletePath	= assetFilePath + "/";
 	std::string					resolvedPath		= "";
-	unsigned char				metaByte			= (asset.a0 & 0xFF000000) >> 24;
+	unsigned short				metaData			= (asset.a0 & 0xFFFF0000) >> 16;
 
-	asset.a0 = asset.a0 & 0x00FF;
+	asset.a0 = asset.a0 & 0x000000FF;
 
     if (asset.a0 < 10)
     {
@@ -130,14 +137,18 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 
 	if (asset.a0 < 10 && _assetTypeToFunction.find(asset.a0) == _assetTypeToFunction.end()) // external
 	{
-		auto protocolFunction = options->protocolFunction();
-		auto protocol = protocolFunction(assetCompletePath);
+        auto assetLoader = Loader::create();
+        auto assetLoaderOptions = options->clone();
 
-		auto fileOptions = Options::create(options);
-		fileOptions->loadAsynchronously(false);
+        assetLoader->options(assetLoaderOptions);
+
+        assetLoaderOptions
+            ->loadAsynchronously(false)
+            ->storeDataIfNotParsed(false);
 
         auto fileSuccessfullyLoaded = true;
-		auto errorSlot = protocol->error()->connect([&](AbstractProtocol::Ptr)
+
+        auto errorSlot = assetLoader->error()->connect([&](Loader::Ptr, const Error& error)
 		{
 			switch (asset.a0)
 			{
@@ -164,12 +175,14 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
             fileSuccessfullyLoaded = false;
 		});
 
-		auto completeSlot = protocol->complete()->connect([&](AbstractProtocol::Ptr p)
+        auto completeSlot = assetLoader->complete()->connect([&](Loader::Ptr assetLoaderThis)
 		{
-			data.assign(p->file()->data().begin(), p->file()->data().end());
+            data = assetLoaderThis->files().at(assetCompletePath)->data();
 		});
 
-		protocol->load(assetCompletePath, fileOptions);
+        assetLoader
+            ->queue(assetCompletePath)
+            ->load();
         
         if (!fileSuccessfullyLoaded)
             return;
@@ -209,7 +222,7 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 	{
 		if (asset.a0 == serialize::AssetType::EMBED_TEXTURE_ASSET)
 		{
-            auto imageFormat = static_cast<serialize::ImageFormat>(metaByte);
+            auto imageFormat = static_cast<serialize::ImageFormat>(metaData);
 
             auto extension = serialize::extensionFromImageFormat(imageFormat);
 
@@ -244,7 +257,7 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 
         if (assetLibrary->texture(resolvedPath) == nullptr)
         {
-            const auto headerSize = static_cast<int>(metaByte);
+            const auto headerSize = static_cast<int>(metaData);
 
             _textureParser->textureHeaderSize(headerSize);
             _textureParser->dataEmbed(true);
@@ -266,7 +279,7 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 	else
 	{
 		if (_assetTypeToFunction.find(asset.a0) != _assetTypeToFunction.end())
-			_assetTypeToFunction[asset.a0](metaByte, assetLibrary, assetCompletePath, _dependencies, asset.a1, _jobList);
+            _assetTypeToFunction[asset.a0](metaData, assetLibrary, options, assetCompletePath, _dependencies, asset.a1, _jobList);
 	}
 
 	data.clear();
@@ -341,9 +354,10 @@ AbstractSerializerParser::readHeader(const std::string&					filename,
 }
 
 void
-AbstractSerializerParser::deserializeTexture(unsigned char      metaByte,
-                                             AssetLibraryPtr    assetLibrary,
-                                             std::string&       assetCompletePath,
+AbstractSerializerParser::deserializeTexture(unsigned short     metaData,
+                                             AssetLibrary::Ptr  assetLibrary,
+                                             Options::Ptr       options,
+                                             const std::string& assetCompletePath,
                                              DependencyPtr      dependency,
                                              short              assetId,
                                              std::list<JobPtr>& jobs)
@@ -352,11 +366,12 @@ AbstractSerializerParser::deserializeTexture(unsigned char      metaByte,
         return;
 
     auto assetHeaderSize = MINKO_SCENE_HEADER_SIZE + 2;
-    auto textureHeaderSize = static_cast<unsigned int>(metaByte);
+    auto textureHeaderSize = static_cast<unsigned int>(metaData);
 
-    auto options = Options::create(assetLibrary->loader()->options());
+    auto textureOptions = options->clone();
 
-    options
+    textureOptions
+        ->loadAsynchronously(false)
         ->seekingOffset(0)
         ->seekedLength(assetHeaderSize + textureHeaderSize)
         ->parserFunction([&](const std::string& extension) -> AbstractParser::Ptr
@@ -373,7 +388,7 @@ AbstractSerializerParser::deserializeTexture(unsigned char      metaByte,
     });
 
     auto textureLoader = Loader::create();
-    textureLoader->options(options);
+    textureLoader->options(textureOptions);
 
     auto texture = render::AbstractTexture::Ptr();
 
@@ -386,7 +401,7 @@ AbstractSerializerParser::deserializeTexture(unsigned char      metaByte,
         ->queue(assetCompletePath)
         ->load();
 
-    if (options->disposeTextureAfterLoading())
+    if (textureOptions->disposeTextureAfterLoading())
         texture->disposeData();
 
     dependency->registerReference(assetId, texture);

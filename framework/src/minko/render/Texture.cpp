@@ -106,6 +106,25 @@ Texture::data(unsigned char*    data,
 }
 
 void
+Texture::resize(unsigned int width, unsigned int height, bool resizeSmoothly)
+{
+    assert(math::isp2(width) && math::isp2(height));
+
+    const auto previousWidth = this->width();
+    const auto previousHeight = this->height();
+
+    auto previousData = _data;
+
+    resizeData(previousWidth, previousHeight, previousData, width, height, resizeSmoothly, _data);
+
+    _width = width;
+    _widthGPU = width;
+
+    _height = height;
+    _heightGPU = height;
+}
+
+void
 Texture::upload()
 {
     if (_id == -1)

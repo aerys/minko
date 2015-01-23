@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2013 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -254,7 +254,7 @@ ComponentSerializer::serializeBoundingBox(NodePtr 			    node,
 					 				      DependencyPtr 	    dependencies)
 {
     auto                boundingBox = std::static_pointer_cast<component::BoundingBox>(component);
-	math::Box::Ptr 		box 		= node->component<component::BoundingBox>()->modelSpaceBox();
+	math::Box::Ptr 		box 		= boundingBox->modelSpaceBox();
 	const math::vec3&	topRight 	= box->topRight();
     const math::vec3& 	bottomLeft  = box->bottomLeft();
 

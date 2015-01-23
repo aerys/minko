@@ -311,7 +311,7 @@ ComponentDeserializer::deserializeAnimation(file::SceneVersion    sceneVersion,
 		std::tuple<uint, std::string&> serializedMatrixTuple(dst.a2[i].a0, dst.a2[i].a1);
 
 		timetable.push_back(dst.a1[i]);
-		matrices.push_back(Any::cast<math::mat4>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple)));
+		matrices.push_back(math::transpose(Any::cast<math::mat4>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple))));
 	}
 
 	timelines.push_back(animation::Matrix4x4Timeline::create("transform.matrix", duration, timetable, matrices, interpolate));

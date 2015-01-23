@@ -64,12 +64,12 @@ namespace minko
                     {
                         p->set<T>(propertyName, valueFunc());
                         bindings["u" + propertyName] = { propertyName, data::Binding::Source::ROOT };
-                        inputs.emplace_back("u" + propertyName, 1 + std::abs(rand()), inputType);
+                        inputs.emplace_back("u" + propertyName, 1 + std::abs(rand()), 1, inputType);
                     }
                 }
                 rootData.addProvider(p);
 
-                DrawCall drawCall(nullptr, {}, rootData, rendererData, targetData);
+                DrawCall drawCall(nullptr, std::unordered_map<std::string, std::string>{}, rootData, rendererData, targetData);
 
                 bool uniformIsBound = true;
                 for (auto& input : inputs)

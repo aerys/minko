@@ -25,7 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::component;
-using namespace minko::math;
 
 const uint            WINDOW_WIDTH    = 800;
 const uint            WINDOW_HEIGHT    = 600;
@@ -117,8 +116,14 @@ main(int argc, char** argv)
     auto camera = scene::Node::create("camera")
         ->addComponent(Renderer::create(0x7f7f7fff))
         ->addComponent(Transform::create(
-            Matrix4x4::create()->lookAt(Vector3::create(0.f, 0.75f, 0.f), Vector3::create(0.25f, 0.75f, 2.5f))
-        ))
+            math::inverse(
+                math::lookAt(
+                    math::vec3(0.25f, 0.75f, 2.5f), 
+                    math::vec3(0.f, 0.75f, 0.f), 
+                    math::vec3(0, 1, 0))
+                )
+            )
+        )
         ->addComponent(PerspectiveCamera::create(canvas->aspectRatio())
         );
     root->addChild(camera);
