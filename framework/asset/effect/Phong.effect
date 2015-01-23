@@ -91,6 +91,7 @@
 					"uFogColor"						: "material[$materialUuid].fogColor",
 					"uFogBounds"					: "material[$materialUuid].fogBounds",
         			"uPopLod"                		: "geometry[${geometryUuid}].popLod",
+        			"uPopBlendingLod"          		: "geometry[${geometryUuid}].popBlendingLod",
         			"uPopFullPrecisionLod"   		: "geometry[${geometryUuid}].popFullPrecisionLod",
         			"uPopMinBound"           		: "geometry[${geometryUuid}].popMinBound",
         			"uPopMaxBound"           		: "geometry[${geometryUuid}].popMaxBound"
