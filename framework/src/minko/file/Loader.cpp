@@ -221,11 +221,11 @@ Loader::processData(const std::string&                      filename,
         ));
         
         _parserErrorSlots[parser] = parser->error()->connect(std::bind(
-                                                                       &Loader::parserErrorHandler,
-                                                                       shared_from_this(),
-                                                                       std::placeholders::_1,
-                                                                       std::placeholders::_2
-                                                                       ));
+            &Loader::parserErrorHandler,
+            shared_from_this(),
+            std::placeholders::_1,
+            std::placeholders::_2
+        ));
 
         parser->parse(filename, resolvedFilename, options, data, options->assetLibrary());
     }

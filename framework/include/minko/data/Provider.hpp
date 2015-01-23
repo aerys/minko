@@ -54,11 +54,11 @@ namespace minko
             };
 
 		private:
-			std::map<std::string, Any>	    _values;
+            std::unordered_map<std::string, Any>	_values;
 
-			Signal<Ptr, const std::string&> _propertyAdded;
-            Signal<Ptr, const std::string&>	_propertyChanged;
-			Signal<Ptr, const std::string&>	_propertyRemoved;
+			Signal<Ptr, const std::string&>         _propertyAdded;
+            Signal<Ptr, const std::string&>	        _propertyChanged;
+			Signal<Ptr, const std::string&>	        _propertyRemoved;
 
 		public:
 			static
@@ -85,7 +85,7 @@ namespace minko
             }
 
 			inline
-			const std::map<std::string, Any>&
+            const std::unordered_map<std::string, Any>&
 			values() const
 			{
 				return _values;

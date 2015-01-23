@@ -58,112 +58,112 @@ namespace minko
 				return instance;
 			}
 
-			BasicMaterial&
+			Ptr
 			diffuseColor(const math::vec4&);
 
-			BasicMaterial&
+			Ptr
 			diffuseColor(uint);
 
 			math::vec4
 			diffuseColor() const;
 
-			BasicMaterial&
+			Ptr
 			uvScale(const math::vec2& v);
 
 			const math::vec2&
 			uvScale() const;
 
-			BasicMaterial&
+			Ptr
 			uvOffset(const math::vec2& v);
 
 			const math::vec2&
 			uvOffset() const;
 
-			BasicMaterial&
+			Ptr
             diffuseMap(TexturePtr);
 
 			render::ResourceId
 			diffuseMap() const;
 
-            BasicMaterial&
+            Ptr
             diffuseMapWrapMode(render::WrapMode);
 
             render::WrapMode
             diffuseMapWrapMode() const;
 
-            BasicMaterial&
+            Ptr
             diffuseMapTextureFilter(render::TextureFilter);
 
             render::TextureFilter
             diffuseMapTextureFilter() const;
 
-            BasicMaterial&
+            Ptr
             diffuseMapMipFilter(render::MipFilter);
 
             render::MipFilter
             diffuseMapMipFilter() const;
 
-			BasicMaterial&
+			Ptr
 			diffuseCubeMap(AbsTexturePtr);
 
 			render::ResourceId
 			diffuseCubeMap() const;
 
-            BasicMaterial&
+            Ptr
             diffuseCubeMapWrapMode(render::WrapMode);
 
             render::WrapMode
             diffuseCubeMapWrapMode() const;
 
-            BasicMaterial&
+            Ptr
             diffuseCubeMapTextureFilter(render::TextureFilter);
 
             render::TextureFilter
             diffuseCubeMapTextureFilter() const;
 
-            BasicMaterial&
+            Ptr
             diffuseCubeMapMipFilter(render::MipFilter);
 
             render::MipFilter
             diffuseCubeMapMipFilter() const;
 
-			BasicMaterial&
+			Ptr
 			fogColor(const math::vec4&);
 
-			BasicMaterial&
+			Ptr
 			fogColor(uint);
 
 			math::vec4
 			fogColor() const;
 
-            BasicMaterial&
+            Ptr
             fogDensity(float);
 
             float
             fogDensity() const;
 
-            BasicMaterial&
+            Ptr
             fogStart(float);
 
             float
             fogStart() const;
 
-            BasicMaterial&
+            Ptr
             fogEnd(float);
 
             float
             fogEnd() const;
 
-            BasicMaterial&
+            Ptr
             fogType(render::FogType);
 
             render::FogType
             fogType() const;
 
-			BasicMaterial&
+			Ptr
 			blendingMode(render::Blending::Source, render::Blending::Destination);
 
-			BasicMaterial&
+			Ptr
 			blendingMode(render::Blending::Mode);
 
 			render::Blending::Source
@@ -172,73 +172,73 @@ namespace minko
 			render::Blending::Destination
 			blendingDestinationFactor() const;
 
-			BasicMaterial&
+			Ptr
 			colorMask(bool);
 
 			bool
 			colorMask() const;
 
-			BasicMaterial&
+			Ptr
 			depthMask(bool);
 
 			bool
 			depthMask() const;
 
-			BasicMaterial&
+			Ptr
 			depthFunction(render::CompareMode);
 
 			render::CompareMode
 			depthFunction() const;
 
-			BasicMaterial&
+			Ptr
 			triangleCulling(render::TriangleCulling);
 
 			render::TriangleCulling
 			triangleCulling() const;
 
-			BasicMaterial&
+			Ptr
 			stencilFunction(render::CompareMode);
 
 			render::CompareMode
 			stencilFunction() const;
 
-			BasicMaterial&
+			Ptr
 			stencilReference(int);
 
 			int
 			stencilReference() const;
 
-			BasicMaterial&
+			Ptr
 			stencilMask(uint);
 
 			uint
 			stencilMask() const;
 
-			BasicMaterial&
+			Ptr
 			stencilFailOperation(render::StencilOperation);
 
 			render::StencilOperation
 			stencilFailOperation() const;
 
-			BasicMaterial&
+			Ptr
 			stencilZFailOperation(render::StencilOperation);
 
 			render::StencilOperation
 			stencilZFailOperation() const;
 
-			BasicMaterial&
+			Ptr
 			stencilZPassOperation(render::StencilOperation);
 
 			render::StencilOperation
 			stencilZPassOperation() const;
 
-			BasicMaterial&
+			Ptr
 			priority(float);
 
 			float
 			priority() const;
 
-			BasicMaterial&
+			Ptr
 			zSorted(bool);
 
 			bool

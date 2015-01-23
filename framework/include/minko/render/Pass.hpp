@@ -45,7 +45,7 @@ namespace minko
             typedef std::unordered_map<std::string, SamplerState>		SamplerStatesMap;
             typedef std::unordered_map<ProgramSignature*, ProgramPtr>	SignatureToProgramMap;
 			typedef std::function<void(ProgramPtr)>						ProgramFunc;
-			typedef std::map<std::string, ProgramFunc>					ProgramFuncMap;
+			typedef std::unordered_map<std::string, ProgramFunc>		ProgramFuncMap;
 			typedef std::unordered_map<std::string, data::MacroBinding> MacroBindingsMap;
 
 		private:

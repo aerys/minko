@@ -449,7 +449,7 @@ TEST_F(DrawCallTest, SamplerStatesImplicitDefaultValues)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -518,7 +518,7 @@ TEST_F(DrawCallTest, SamplerStatesWrapModeWithDefaultValueRepeat)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -585,7 +585,7 @@ TEST_F(DrawCallTest, SamplerStatesWrapModeWithDefaultValueClamp)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -652,7 +652,7 @@ TEST_F(DrawCallTest, SamplerStatesTextureFilterWithDefaultValueLinear)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -719,7 +719,7 @@ TEST_F(DrawCallTest, SamplerStatesTextureFilterWithDefaultValueNearest)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -786,7 +786,7 @@ TEST_F(DrawCallTest, SamplerStatesMipFilterWithDefaultValueLinear)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -853,7 +853,7 @@ TEST_F(DrawCallTest, SamplerStatesMipFilterWithDefaultValueLinearNearest)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -920,7 +920,7 @@ TEST_F(DrawCallTest, SamplerStatesMipFilterWithDefaultValueNone)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -942,7 +942,7 @@ TEST_F(DrawCallTest, SamplerStatesWrapModeWithVariableBindingFromRootData)
     data::Store defaultValues;
 
     auto p = data::Provider::create();
-    
+
     auto samplerUniformName = "uDiffuseMap";
     std::string samplerBindingName = "diffuseMap";
 
@@ -967,7 +967,7 @@ TEST_F(DrawCallTest, SamplerStatesWrapModeWithVariableBindingFromRootData)
         { samplerUniformName, { samplerUniformValue, data::Binding::Source::ROOT } },
         { wrapModeUniformName, { wrapModeUniformValue, data::Binding::Source::ROOT } }
     };
-    
+
     DrawCall drawCall(nullptr, { { "id", "0" } }, rootData, rendererData, targetData);
 
     auto location = 23;
@@ -990,7 +990,7 @@ TEST_F(DrawCallTest, SamplerStatesWrapModeWithVariableBindingFromRootData)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_NE(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -1012,7 +1012,7 @@ TEST_F(DrawCallTest, SamplerStatesTextureFilterWithVariableBindingFromRootData)
     auto size = 0;
 
     auto p = data::Provider::create();
-    
+
     auto samplerUniformName = "uDiffuseMap";
     std::string samplerBindingName = "diffuseMap";
 
@@ -1037,7 +1037,7 @@ TEST_F(DrawCallTest, SamplerStatesTextureFilterWithVariableBindingFromRootData)
         { samplerUniformName, { samplerUniformValue, data::Binding::Source::ROOT } },
         { textureFilterUniformName, { textureFilterUniformValue, data::Binding::Source::ROOT } }
     };
-    
+
     DrawCall drawCall(nullptr, { { "id", "0" } }, rootData, rendererData, targetData);
 
     ProgramInputs::UniformInput input(samplerUniformName, location, size, ProgramInputs::Type::sampler2d);
@@ -1057,7 +1057,7 @@ TEST_F(DrawCallTest, SamplerStatesTextureFilterWithVariableBindingFromRootData)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_NE(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -1124,7 +1124,7 @@ TEST_F(DrawCallTest, SamplerStatesMipFilterWithVariableBindingFromRootData)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_NE(resolvedBindings.at(2), nullptr);

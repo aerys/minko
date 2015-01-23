@@ -162,7 +162,7 @@ solution "minko"
 		-- include 'example/devil'
 		-- include 'example/effect-config'
 		-- include 'example/flares'
-		-- include 'example/fog'
+		include 'example/fog'
 		-- include 'example/frustum'
 		-- include 'example/hologram'
 		-- include 'example/html-overlay'
@@ -187,6 +187,7 @@ solution "minko"
 		-- include 'example/stencil'
 		-- include 'example/visibility'
 		-- include 'example/water'
+		include 'example/shadow-mapping'
 
 		-- if _OPTIONS['with-offscreen'] then
 		-- 	include 'example/offscreen'
