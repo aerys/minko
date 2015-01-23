@@ -40,8 +40,8 @@ varying vec4 vVertexUv;
 
 void main(void)
 {
-  vVertexUv = vec2(aUv.x, 1 - uv.y);
-  gl_Position = vec4(aPosition, 1) * vec4(1., 1., 1., .5);
+    vVertexUv = vec2(aUv.x, 1 - uv.y);
+    gl_Position = vec4(aPosition, 1) * vec4(1., 1., 1., .5);
 }
 ```
 
@@ -55,7 +55,7 @@ Here, we will simply sample the backbuffer and use an average of its `RGB` value
 
 ```glsl
 #ifdef GL_ES
-  precision mediump float;
+    precision mediump float;
 #endif
 
 uniform sampler2D uBackbuffer;
@@ -64,10 +64,10 @@ varying vec2 vVertexUv;
 
 void main()
 {
-  vec4 pixel = texture2D(uBackbuffer, vVertexUv);
-  float average = (pixel.r + pixel.g + pixel.b) / 3;
+    vec4 pixel = texture2D(uBackbuffer, vVertexUv);
+    float average = (pixel.r + pixel.g + pixel.b) / 3;
 
-  gl_FragColor = vec4(average, average, average, 1);
+    gl_FragColor = vec4(average, average, average, 1);
 } 
 ```
 
@@ -94,8 +94,7 @@ When our `Effect` has been successfully loaded, we can fetch it from the library
 auto ppFx = sceneManager->assets()->effect("effect/Desaturate.effect");
 
 if (!ppFx)
-
- throw std::logic_error("The post-processing effect has not been loaded.");
+    throw std::logic_error("The post-processing effect has not been loaded.");
 
 ppFx->setUniform("uBackbuffer", ppTarget); 
 ```
@@ -106,15 +105,14 @@ As you can see, we also set the `uBackbuffer` uniform to be our `ppTarget` which
 The final initialization step is to create a second scene - completely different from your actual 3D scene - that will only hold a single surface made from the quad geometry that it supposed to represent our screen, a dummy `Material` and our post-processing effect:
 
 ```cpp
-auto ppRenderer = Renderer::create(); auto ppScene = scene::Node::create()
-
- ->addComponent(ppRenderer)
- ->addComponent(Surface::create(
-   geometry::QuadGeometry::create(sceneManager->assets()->context()),
-   material::Material::create(),
-   ppFx
- ));
-
+auto ppRenderer = Renderer::create();
+auto ppScene = scene::Node::create()
+    ->addComponent(ppRenderer)
+    ->addComponent(Surface::create(
+        geometry::QuadGeometry::create(sceneManager->assets()->context()),
+        material::Material::create(),
+        ppFx
+    ));
 ```
 
 
@@ -126,11 +124,10 @@ Now that all we need for post-processing is intialized, we just have to make sur
 We just have to update what we do in our `Canvas::enterFrame()` callback:
 
 ```cpp
-auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt) {
-
- sceneManager->nextFrame(t, dt, ppTarget);
- ppRenderer->render(assets->context());
-
+auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
+{
+    sceneManager->nextFrame(t, dt, ppTarget);
+    ppRenderer->render(assets->context());
 } 
 ```
 
@@ -143,14 +140,13 @@ If we want our post-processing to have a good quality, we have to make sure the 
 We will do this in our `Canvas::resized()` callback:
 
 ```cpp
-auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, unsigned int width, unsigned int height) {
+auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, unsigned int width, unsigned int height)
+{
+    camera->component<PerspectiveCamera>()->aspectRatio(float(width) / float(height));
 
- camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
-
- ppTarget = render::Texture::create(assets->context(), clp2(width), clp2(height), false, true);
- ppTarget->upload();
- ppFx->setUniform("uBackbuffer", ppTarget);
-
+    ppTarget = render::Texture::create(assets->context(), clp2(width), clp2(height), false, true);
+    ppTarget->upload();
+    ppFx->setUniform("uBackbuffer", ppTarget);
 }); 
 ```
 
@@ -211,75 +207,76 @@ using namespace minko;
 using namespace minko::math; 
 using namespace minko::component;
 
-const uint WINDOW_WIDTH = 800; 
+const uint WINDOW_WIDTH = 800;
 const uint WINDOW_HEIGHT = 600;
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv)
+{
+    auto canvas = Canvas::create("Minko Tutorial - Creating a simple post-processing effect", WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto sceneManager = component::SceneManager::create(canvas);
+    sceneManager->assets()
+        ->queue("effect/Basic.effect")
+        ->queue("effect/Desaturate.effect");
 
- auto canvas = Canvas::create("Minko Tutorial - Creating a simple post-processing effect", WINDOW_WIDTH, WINDOW_HEIGHT);
- auto sceneManager = component::SceneManager::create(canvas);
- sceneManager->assets()
-   ->queue("effect/Basic.effect")
-   ->queue("effect/Desaturate.effect");
+    auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+    {
+        auto root = scene::Node::create("root")
+            ->addComponent(sceneManager);
+    
+        auto camera = scene::Node::create("camera")
+            ->addComponent(Renderer::create(0x7f7f7fff))
+            ->addComponent(PerspectiveCamera::create(canvas->aspectRatio())
+        ));
+        root->addChild(camera);
+        
+        auto cube = scene::Node::create("cube")
+            ->addComponent(Transform::create(Matrix4x4::create()->translation(0.f, 0.f, -5.f)))
+            ->addComponent(Surface::create(
+                geometry::CubeGeometry::create(assets->context()),
+                material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
+                assets->effect("effect/Basic.effect")
+            ));
+        root->addChild(cube);
+    
+        auto ppTarget = render::Texture::create(assets->context(), 1024, 1024, false, true);
+        ppTarget->upload();
+    
+        auto ppFx = sceneManager->assets()->effect("effect/Desaturate.effect");
+    
+        if (!ppFx)
+            throw std::logic_error("The post-processing effect has not been loaded.");
+    
+        ppFx->setUniform("uBackbuffer", ppTarget);
+    
+        auto ppRenderer = Renderer::create();
+        auto ppScene = scene::Node::create()
+            ->addComponent(ppRenderer)
+            ->addComponent(Surface::create(
+                geometry::QuadGeometry::create(sceneManager->assets()->context()),
+                material::Material::create(),
+                ppFx
+            ));
+     
+        auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, uint width, uint height)
+        {
+            camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
 
- auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
- {
-   auto root = scene::Node::create("root")
-     ->addComponent(sceneManager);
-   auto camera = scene::Node::create("camera")
-     ->addComponent(Renderer::create(0x7f7f7fff))
-     ->addComponent(PerspectiveCamera::create(
-       (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT, (float)PI * 0.25f, .1f, 1000.f)
-     ));
-   root->addChild(camera);
-   auto cube = scene::Node::create("cube")
-     ->addComponent(Transform::create(Matrix4x4::create()->translation(0.f, 0.f, -5.f)))
-     ->addComponent(Surface::create(
-       geometry::CubeGeometry::create(assets->context()),
-       material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
-       assets->effect("effect/Basic.effect")
-     ));
-   root->addChild(cube);
+            ppTarget = render::Texture::create(assets->context(), clp2(width), clp2(height), false, true);
+            ppTarget->upload();
+            ppFx->setUniform("uBackbuffer", ppTarget);
+        });
 
-   auto ppTarget = render::Texture::create(assets->context(), 1024, 1024, false, true);
+        auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
+        {
+            cube->component<Transform>()->transform()->prependRotationY(.01f);
 
-   ppTarget->upload();
-
-   auto ppFx = sceneManager->assets()->effect("effect/Desaturate.effect");
-
-   if (!ppFx)
-     throw std::logic_error("The post-processing effect has not been loaded.");
-
-   ppFx->setUniform("uBackbuffer", ppTarget);
-
-   auto ppRenderer = Renderer::create();
-   auto ppScene = scene::Node::create()
-     ->addComponent(ppRenderer)
-     ->addComponent(Surface::create(
-       geometry::QuadGeometry::create(sceneManager->assets()->context()),
-       material::Material::create(),
-       ppFx
-     ));
-   auto resized = canvas->resized()->connect([&](Canvas::Ptr canvas, uint width, uint height)
-   {
-     camera->component<PerspectiveCamera>()->aspectRatio((float)width / (float)height);
-
-     ppTarget = render::Texture::create(assets->context(), clp2(width), clp2(height), false, true);
-     ppTarget->upload();
-     ppFx->setUniform("uBackbuffer", ppTarget);
-   });
-   auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
-   {
-     cube->component<Transform>()->transform()->prependRotationY(.01f);
-
-     sceneManager->nextFrame(t, dt, ppTarget);
-     ppRenderer->render(assets->context());
-   });
-   canvas->run();
- });
- sceneManager->assets()->load();
- return 0;
-
+            sceneManager->nextFrame(t, dt, ppTarget);
+            ppRenderer->render(assets->context());
+        });
+    });
+    canvas->run();
+    sceneManager->assets()->load();
+    return 0;
 } 
 ```
 
