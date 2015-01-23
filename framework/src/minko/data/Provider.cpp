@@ -26,11 +26,12 @@ using namespace minko::data;
 
 Provider::Provider()
 {
+    // _values.set_deleted_key("");
 }
 
 Provider::Ptr
 Provider::unset(const std::string& propertyName)
-{	
+{
     if (_values.count(propertyName) != 0)
 	{
         _values.erase(propertyName);
@@ -44,7 +45,7 @@ Provider::Ptr
 Provider::clone()
 {
 	auto provider = Provider::create();
-	
+
 	provider->copyFrom(shared_from_this());
 
 	return provider;
@@ -57,4 +58,3 @@ Provider::copyFrom(Provider::Ptr source)
 
 	return shared_from_this();
 }
-

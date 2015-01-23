@@ -24,6 +24,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Signal.hpp"
 #include "minko/Uuid.hpp"
 
+#include "google/sparse_hash_map"
+
 namespace minko
 {
 	namespace data
@@ -35,6 +37,11 @@ namespace minko
 		public:
 			typedef std::shared_ptr<Provider>		Ptr;
 			typedef std::shared_ptr<const Provider>	ConstPtr;
+
+			// template <class K, class V>
+			// using map = google::sparse_hash_map<K, V>;
+			template <class K, class V>
+			using map = std::unordered_map<K, V>;
 
         private:
             template <typename T>
@@ -54,7 +61,7 @@ namespace minko
             };
 
 		private:
-            std::unordered_map<std::string, Any>	_values;
+            map<std::string, Any>					_values;
 
 			Signal<Ptr, const std::string&>         _propertyAdded;
             Signal<Ptr, const std::string&>	        _propertyChanged;
@@ -85,7 +92,7 @@ namespace minko
             }
 
 			inline
-            const std::unordered_map<std::string, Any>&
+            const map<std::string, Any>&
 			values() const
 			{
 				return _values;
@@ -117,7 +124,7 @@ namespace minko
             typename std::enable_if<is_valid<T>::value, const T&>::type
             get(const std::string& propertyName) const
 			{
-                return *Any::unsafe_cast<T>(&_values.at(propertyName));
+                return *Any::unsafe_cast<T>(&(_values.find(propertyName)->second));
 			}
 
             template <typename T>
@@ -125,7 +132,7 @@ namespace minko
             typename std::enable_if<is_valid<T>::value, const T*>::type
             getPointer(const std::string& propertyName) const
             {
-                return Any::unsafe_cast<T>(&_values.at(propertyName));
+                return Any::unsafe_cast<T>(&(_values.find(propertyName)->second));
             }
 
             template <typename T>
@@ -133,7 +140,7 @@ namespace minko
             typename std::enable_if<is_valid<T>::value, T*>::type
             getUnsafePointer(const std::string& propertyName)
             {
-                return Any::unsafe_cast<T>(&_values.at(propertyName));
+                return Any::unsafe_cast<T>(&(_values.find(propertyName)->second));
             }
 
             template <typename T>
