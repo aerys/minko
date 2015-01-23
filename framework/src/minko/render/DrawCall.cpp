@@ -322,7 +322,7 @@ DrawCall::setUniformValueFromStore(const ProgramInputs::UniformInput&   input,
         case ProgramInputs::Type::sampler2d:
             _samplers.push_back({
                 static_cast<uint>(_program->setTextureNames().size() + _samplers.size()),
-                store.getPointer<TextureSampler>(propertyName)->id,
+                store.getPointer<TextureSampler>(propertyName),
                 input.location
             });
         break;
@@ -489,7 +489,7 @@ DrawCall::render(AbstractContext::Ptr   context,
 
     for (const auto& s : _samplers)
     {
-        context->setTextureAt(s.position, *s.resourceId, s.location);
+        context->setTextureAt(s.position, *s.sampler->id, s.location);
         context->setSamplerStateAt(s.position, *s.wrapMode, *s.textureFilter, *s.mipFilter);
     }
 
@@ -498,8 +498,10 @@ DrawCall::render(AbstractContext::Ptr   context,
 
     for (const auto& a : _attributes)
         context->setVertexBufferAt(a.location, *a.resourceId, a.size, *a.stride, a.offset);
+    /*
     for (auto numAttributes = _attributes.size(); numAttributes < MAX_NUM_VERTEXBUFFERS; ++numAttributes)
         context->setVertexBufferAt(numAttributes, -1, 0, 0, 0);
+    */
 
     context->setColorMask(*_colorMask);
     context->setBlendingMode(*_blendingSourceFactor, *_blendingDestinationFactor);

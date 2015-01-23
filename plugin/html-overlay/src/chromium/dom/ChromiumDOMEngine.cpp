@@ -136,14 +136,13 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 
 	_canvasResizedSlot = _canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
 	{
-		//_overlayMaterial->data()->unset("diffuseMap");
 		_impl->browser->GetHost()->WasResized();
 
 		float wRatio = (float)canvas->width() / (float)math::clp2(canvas->width());
 		float hRatio = (float)canvas->height() / (float)math::clp2(canvas->height());
-		_overlayMaterial->data()->set("overlayRatio", math::vec2(wRatio, hRatio));
-		_overlayMaterial->diffuseMap(_impl->renderHandler->renderTexture);
-		enterFrame();
+
+        _overlayMaterial->data()->set("overlayRatio", math::vec2(wRatio, hRatio));
+        _overlayMaterial->diffuseMap(_impl->renderHandler->renderTexture);
 	});
 
 	_renderBeginSlot = _sceneManager->renderingBegin()->connect([&](std::shared_ptr<component::SceneManager>, uint, render::AbstractTexture::Ptr)
