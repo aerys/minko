@@ -30,7 +30,7 @@ Provider::Provider()
 
 Provider::Ptr
 Provider::unset(const std::string& propertyName)
-{	
+{
     if (_values.count(propertyName) != 0)
 	{
         _values.erase(propertyName);
@@ -44,7 +44,7 @@ Provider::Ptr
 Provider::clone()
 {
 	auto provider = Provider::create();
-	
+
 	provider->copyFrom(shared_from_this());
 
 	return provider;

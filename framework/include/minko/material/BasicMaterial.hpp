@@ -235,7 +235,7 @@ namespace minko
 			BasicMaterial&
 			priority(float);
 
-			float 
+			float
 			priority() const;
 
 			BasicMaterial&

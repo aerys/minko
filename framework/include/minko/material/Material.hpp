@@ -65,7 +65,7 @@ namespace minko
 
 				return mat;
 			}
-            
+
             inline
             const std::string&
             uuid() const
