@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::component;
-using namespace minko::math;
 
 static const std::string EFFECT_FILENAME = "effect/Phong.effect";
 
@@ -51,8 +50,8 @@ main(int argc, char** argv)
             << "Press [E]\tto activate exponential fog\n"
             << "Press [F]\tto activate square exponential fog\n"
             << "Press [N]\tto deactivate fog\n"
-            << "Press [P]\tto to increase fog density\n"
-            << "Press [M]\tto to decrease fog density"
+            << "Press [P]\tto increase fog density\n"
+            << "Press [M]\tto decrease fog density"
             << std::endl;
 
         auto root = scene::Node::create("root")

@@ -1,3 +1,5 @@
+#pragma include "Pack.function.glsl"
+
 #define SHADOW_MAPPING_TECHNIQUE_HARD			0
 #define SHADOW_MAPPING_TECHNIQUE_ESM			1
 #define SHADOW_MAPPING_TECHNIQUE_PCF			2
@@ -7,7 +9,7 @@
 # define SHADOW_MAPPING_TECHNIQUE   SHADOW_MAPPING_TECHNIQUE_ESM
 #endif
 
-#define SHADOW_MAPPING_NEAR_ONE         0.999
+#define SHADOW_MAPPING_NEAR_ONE         0.99
 #define SHADOW_MAPPING_MAX_NUM_CASCADES 4
 
 float shadowMapping_random(vec4 seed)
@@ -19,10 +21,8 @@ float shadowMapping_random(vec4 seed)
 
 bool shadowMapping_vertexIsInShadowMap(vec3 vertexLightPosition)
 {
-    return true;
-    return vertexLightPosition.z < SHADOW_MAPPING_NEAR_ONE && vertexLightPosition.z > -SHADOW_MAPPING_NEAR_ONE
-        && vertexLightPosition.x < SHADOW_MAPPING_NEAR_ONE && vertexLightPosition.x > -SHADOW_MAPPING_NEAR_ONE
-        && vertexLightPosition.y < SHADOW_MAPPING_NEAR_ONE && vertexLightPosition.y > -SHADOW_MAPPING_NEAR_ONE;
+    return all(bvec3(step(vertexLightPosition, vec3(SHADOW_MAPPING_NEAR_ONE))))
+        && all(bvec3(step(vec3(-SHADOW_MAPPING_NEAR_ONE), vertexLightPosition)));
 }
 
 float shadowMapping_texture2DDepth(sampler2D depths, vec2 uv, float zNear, float zFar)

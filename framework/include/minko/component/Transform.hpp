@@ -198,7 +198,7 @@ namespace minko
 			private:
                 std::vector<NodeTransformCacheEntry>            _nodeTransformCache;
 
-				std::map<NodePtr, unsigned int>	                _nodeToId;
+                std::unordered_map<NodePtr, unsigned int>	    _nodeToId;
                 std::list<NodePtr>                              _nodes;
 				bool							                _invalidLists;
 

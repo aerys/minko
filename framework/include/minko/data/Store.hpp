@@ -30,34 +30,39 @@ namespace minko
 		{
 
 		private:
-            typedef Signal<Provider::Ptr, const std::string&>	        ProviderChangedSignal;
-            typedef std::list<ProviderChangedSignal::Slot>              ProviderChangedSignalSlotList;
+            typedef Signal<Provider::Ptr, const std::string&>	            ProviderChangedSignal;
+            typedef std::list<ProviderChangedSignal::Slot>                  ProviderChangedSignalSlotList;
 
-			typedef std::shared_ptr<Provider>						    ProviderPtr;
-            typedef std::shared_ptr<Collection>						    CollectionPtr;
-			typedef std::shared_ptr<data::AbstractFilter>			    AbsFilterPtr;
-			typedef Signal<ProviderPtr, const std::string&>			    ProviderPropertyChangedSignal;
-			typedef ProviderPropertyChangedSignal::Slot				    ProviderPropertyChangedSlot;
-            typedef Signal<Collection&, ProviderPtr>::Slot              CollectionChangedSignalSlot;
+			typedef std::shared_ptr<Provider>						        ProviderPtr;
+            typedef std::shared_ptr<Collection>						        CollectionPtr;
+			typedef std::shared_ptr<data::AbstractFilter>			        AbsFilterPtr;
+			typedef Signal<ProviderPtr, const std::string&>			        ProviderPropertyChangedSignal;
+			typedef ProviderPropertyChangedSignal::Slot				        ProviderPropertyChangedSlot;
+            typedef Signal<Collection&, ProviderPtr>::Slot                  CollectionChangedSignalSlot;
 
         public:
             typedef Signal<Store&, ProviderPtr, const std::string&>	PropertyChangedSignal;
 
         private:
-			std::list<ProviderPtr>									_providers;
-            std::list<CollectionPtr>                                _collections;
-            Provider::Ptr                                           _lengthProvider;
+            typedef std::unordered_map<std::string, PropertyChangedSignal>  ChangedSignalSlotMap;
+            typedef std::map<ProviderPtr, ProviderChangedSignalSlotList>    ProviderToChangedSlotListMap;
+            typedef std::map<CollectionPtr, CollectionChangedSignalSlot>    CollectionToChangedSlotMap;
 
-			PropertyChangedSignal	    							_propertyAdded;
-			PropertyChangedSignal     								_propertyRemoved;
-            PropertyChangedSignal                                   _propertyChanged;
-            std::map<std::string, PropertyChangedSignal>            _propertyNameToChangedSignal;
-            std::map<std::string, PropertyChangedSignal>            _propertyNameToAddedSignal;
-            std::map<std::string, PropertyChangedSignal>            _propertyNameToRemovedSignal;
+        private:
+			std::list<ProviderPtr>			_providers;
+            std::list<CollectionPtr>        _collections;
+            Provider::Ptr                   _lengthProvider;
 
-            std::map<ProviderPtr, ProviderChangedSignalSlotList>	_propertySlots;
-            std::map<CollectionPtr, CollectionChangedSignalSlot>    _collectionItemAddedSlots;
-            std::map<CollectionPtr, CollectionChangedSignalSlot>    _collectionItemRemovedSlots;
+			PropertyChangedSignal	    	_propertyAdded;
+			PropertyChangedSignal     		_propertyRemoved;
+            PropertyChangedSignal           _propertyChanged;
+            ChangedSignalSlotMap            _propertyNameToChangedSignal;
+            ChangedSignalSlotMap            _propertyNameToAddedSignal;
+            ChangedSignalSlotMap            _propertyNameToRemovedSignal;
+
+            ProviderToChangedSlotListMap	_propertySlots;
+            CollectionToChangedSlotMap      _collectionItemAddedSlots;
+            CollectionToChangedSlotMap      _collectionItemRemovedSlots;
 
 		public:
             Store();
@@ -299,11 +304,11 @@ namespace minko
             updateCollectionLength(CollectionPtr collection);
 
             void
-            executePropertySignal(ProviderPtr                                          provider,
-                                  CollectionPtr                                        collection,
-                                  const std::string&                                   propertyName,
-                                  const PropertyChangedSignal&                         anyChangedSignal,
-                                  const std::map<std::string, PropertyChangedSignal>&  propertyNameToSignal);
+            executePropertySignal(ProviderPtr                                                   provider,
+                                  CollectionPtr                                                 collection,
+                                  const std::string&                                            propertyName,
+                                  const PropertyChangedSignal&                                  anyChangedSignal,
+                                  const std::unordered_map<std::string, PropertyChangedSignal>& propertyNameToSignal);
 		};
 	}
 }
