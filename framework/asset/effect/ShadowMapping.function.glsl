@@ -1,3 +1,5 @@
+#pragma include "Pack.function.glsl"
+
 #define SHADOW_MAPPING_TECHNIQUE_HARD			0
 #define SHADOW_MAPPING_TECHNIQUE_ESM			1
 #define SHADOW_MAPPING_TECHNIQUE_PCF			2
@@ -7,15 +9,8 @@
 # define SHADOW_MAPPING_TECHNIQUE   SHADOW_MAPPING_TECHNIQUE_ESM
 #endif
 
-#define SHADOW_MAPPING_NEAR_ONE         0.999
+#define SHADOW_MAPPING_NEAR_ONE         0.99
 #define SHADOW_MAPPING_MAX_NUM_CASCADES 4
-
-const vec4 shadowMapping_viewports[4] = vec4[](
-	vec4(0.0, 0.5, 0.5, 0.5),
-	vec4(0.5, 0.5, 0.5, 0.5),
-	vec4(0.0, 0.0, 0.5, 0.5),
-	vec4(0.5, 0.0, 0.5, 0.5)
-);
 
 float shadowMapping_random(vec4 seed)
 {
@@ -26,10 +21,8 @@ float shadowMapping_random(vec4 seed)
 
 bool shadowMapping_vertexIsInShadowMap(vec3 vertexLightPosition)
 {
-    return true;
-    return vertexLightPosition.z < SHADOW_MAPPING_NEAR_ONE && vertexLightPosition.z > -SHADOW_MAPPING_NEAR_ONE
-        && vertexLightPosition.x < SHADOW_MAPPING_NEAR_ONE && vertexLightPosition.x > -SHADOW_MAPPING_NEAR_ONE
-        && vertexLightPosition.y < SHADOW_MAPPING_NEAR_ONE && vertexLightPosition.y > -SHADOW_MAPPING_NEAR_ONE;
+    return all(bvec3(step(vertexLightPosition, vec3(SHADOW_MAPPING_NEAR_ONE))))
+        && all(bvec3(step(vec3(-SHADOW_MAPPING_NEAR_ONE), vertexLightPosition)));
 }
 
 float shadowMapping_texture2DDepth(sampler2D depths, vec2 uv, float zNear, float zFar)
@@ -105,9 +98,30 @@ float shadowMapping_ESM(sampler2D depths, vec2 uv, float compare, float zNear, f
     return depth;
 }
 
-int shadowMapping_getCascadeIndex(float depth, vec4 cascadeDepths)
+vec4 shadowMapping_getCascadeWeights(float depth, vec4 splitNear, vec4 splitFar)
 {
-	vec4 s = 1 - step(depth, cascadeDepths);
+	vec4 near = step(splitNear, vec4(depth));
+	vec4 far = step(depth, splitFar);
 
-    return int(s.x + s.y + s.z + s.w);
+	return near * far;
+}
+
+vec4 shadowMapping_getCascadeViewport(vec4 weights)
+{
+	vec2 offset = vec2(0.0, 0.5) * weights.x
+		+ vec2(0.5, 0.5) * weights.y
+		+ vec2(0.0, 0.0) * weights.z
+		+ vec2(0.5, 0.0) * weights.w;
+
+	return vec4(offset, 0.5, 0.5);
+}
+
+mat4 shadowMapping_getCascadeViewProjection(vec4 weights, mat4 viewProj[SHADOW_MAPPING_MAX_NUM_CASCADES])
+{
+	return viewProj[0] * weights.x + viewProj[1] * weights.y + viewProj[2] * weights.z + viewProj[3] * weights.w;
+}
+
+float shadowMapping_getCascadeZ(vec4 weights, float z[SHADOW_MAPPING_MAX_NUM_CASCADES])
+{
+	return z[0] * weights.x + z[1] * weights.y + z[2] * weights.z + z[3] * weights.w;
 }

@@ -62,11 +62,34 @@
 					"uAmbientLights"				: { "binding" : { "property" : "ambientLight", "source" : "root" } },
 					"uSpotLights"					: { "binding" : { "property" : "spotLight", "source" : "root" } },
 					"uPointLights"					: { "binding" : { "property" : "pointLight", "source" : "root" } },
-					"uDirLight(\\d)_(\\w+).*"		: { "binding" : { "property" : "directionalLight[$1].$2", "source" : "root" } },
-					"fogColor"						: "material[$materialUuid].fogColor",
-					"fogDensity"					: "material[$materialUuid].fogDensity",
-					"fogStart"						: "material[$materialUuid].fogStart",
-					"fogEnd"						: "material[$materialUuid].fogEnd",
+					"uDirLight0_shadowMap"		: {
+						"binding" : { "property" : "directionalLight[0].shadowMap", "source" : "root" },
+						"wrapMode" : "clamp",
+						"textureFilter" : "linear",
+						"mipFilter": "linear"
+					},
+					"uDirLight1_shadowMap"		: {
+						"binding" : { "property" : "directionalLight[1].shadowMap", "source" : "root" },
+						"wrapMode" : "clamp",
+						"textureFilter" : "linear",
+						"mipFilter": "linear"
+					},
+					"uDirLight2_shadowMap"		: {
+						"binding" : { "property" : "directionalLight[2].shadowMap", "source" : "root" },
+						"wrapMode" : "clamp",
+						"textureFilter" : "linear",
+						"mipFilter": "linear"
+					},
+					"uDirLight3_shadowMap"		: {
+						"binding" : { "property" : "directionalLight[3].shadowMap", "source" : "root" },
+						"wrapMode" : "clamp",
+						"textureFilter" : "linear",
+						"mipFilter": "linear"
+					},
+					"uDirLight(\\d)_(\\w+)"			: { "binding" : { "property" : "directionalLight[$1].$2", "source" : "root" } },
+					"uDirLight(\\d)_(\\w+)\\[0\\]"	: { "binding" : { "property" : "directionalLight[$1].$2", "source" : "root" } },
+					"uFogColor"						: "material[$materialUuid].fogColor",
+					"uFogBounds"					: "material[$materialUuid].fogBounds",
         			"uPopLod"                		: "geometry[${geometryUuid}].popLod",
         			"uPopFullPrecisionLod"   		: "geometry[${geometryUuid}].popFullPrecisionLod",
         			"uPopMinBound"           		: "geometry[${geometryUuid}].popMinBound",
@@ -89,9 +112,7 @@
 					"ENVIRONMENT_ALPHA"			: "material[$materialUuid].environmentAlpha",
 					"ENVIRONMENT_TYPE_2D"		: "material[$materialUuid].environmentMap2dType",
 					"SHININESS"					: "material[$materialUuid].shininess",
-					"FOG_LIN"					: "material[$materialUuid].fogLinear",
-					"FOG_EXP"					: "material[$materialUuid].fogExponential",
-					"FOG_EXP2"					: "material[$materialUuid].fogExponential2",
+					"FOG_TECHNIQUE"				: { "binding" : "material[$materialUuid].fogTechnique", "type" : "int" },
 					"NUM_AMBIENT_LIGHTS"		: { "binding" : { "property" : "ambientLight.length", "source" : "root" }, "type" : "int" },
 					"NUM_DIRECTIONAL_LIGHTS"    : { "binding" : { "property" : "directionalLight.length", "source" : "root", "max" : 4 }, "type" : "int" },
 					"NUM_POINT_LIGHTS"			: { "binding" : { "property" : "pointLight.length", "source" : "root", "max" : 4 }, "type" : "int" },
