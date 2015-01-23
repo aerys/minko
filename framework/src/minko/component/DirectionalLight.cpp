@@ -226,8 +226,8 @@ DirectionalLight::computeShadowProjection(const math::mat4& view, const math::ma
 
 	// http://developer.download.nvidia.com/SDK/10.5/opengl/src/cascaded_shadow_maps/doc/cascaded_shadow_maps.pdf
 	// page 7
-	std::array<float, 4> splitFar = { zFar, zFar, zFar, zFar };
-	std::array<float, 4> splitNear = { zNear, zNear, zNear, zNear };
+    auto splitFar = std::vector<float> { zFar, zFar, zFar, zFar };
+    auto splitNear = std::vector<float> { zNear, zNear, zNear, zNear };
 	float lambda = .8f;
 	float j = 1.f;
 	for (auto i = 0u; i < _numShadowCascades - 1; ++i, j+= 1.f)
@@ -285,9 +285,9 @@ DirectionalLight::updateWorldToScreenMatrix()
 	else
 		_view = math::mat4(1.f);
 
-    std::array<float, 4> zFar = { 0.f, 0.f, 0.f, 0.f };
-	std::array<float, 4> zNear = { 0.f, 0.f, 0.f, 0.f };
-	std::array<math::mat4, 4> viewProjections;
+    auto zFar = std::vector<float> { 0.f, 0.f, 0.f, 0.f };
+    auto zNear = std::vector<float> { 0.f, 0.f, 0.f, 0.f };
+    auto viewProjections = std::vector<math::mat4>();
 
 	for (uint i = 0u; i < _numShadowCascades; ++i)
 	{
@@ -313,9 +313,9 @@ DirectionalLight::updateWorldToScreenMatrix()
 		// 	->set("zNear" + istr, 			zNear)
 		// 	->set("zFar" + istr, 			zFar);
 
-		zNear[i] = (farMinusNear + farPlusNear) / 2.f;
-		zFar[i] = farPlusNear - zNear[i];
-		viewProjections[i] = projection * _view;
+		zNear.push_back((farMinusNear + farPlusNear) / 2.f);
+		zFar.push_back(farPlusNear - zNear.at(i));
+		viewProjections.push_back(projection * _view);
 	}
 
 	data()
