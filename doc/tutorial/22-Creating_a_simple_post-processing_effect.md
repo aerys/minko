@@ -10,7 +10,7 @@ Post-processing is done in two steps:
 -   The scene is rendered as usual but in a texture.
 -   This texture is used to render a fullscreen quad and each pixel can be modified using the fragment shader.
 
-enterFrame The second step implies writing at least one shader. But you might also have to write multiple shaders for multi-pass post-processing effects.
+The second step implies writing at least one shader. But you might also have to write multiple shaders for multi-pass post-processing effects.
 
 Step 1: The vertex shader
 -------------------------
