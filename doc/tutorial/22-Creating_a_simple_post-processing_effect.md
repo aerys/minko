@@ -28,10 +28,13 @@ Note how we actually divide `w` by 2 instead of multiplying `x` and `y` by 2. It
 
 Because OpenGL performs render to texture using an inverted y axis, we also have modify the original UVs to make sure our backbuffer will be sampled properly. Here is the final code for our post-processing vertex shader:
 
-```c
-#ifdef GL_ES precision mediump float; #endif
+```glsl
+#ifdef GL_ES
+  precision mediump float;
+#endif
 
-attribute vec3 aPosition; attribute vec2 aUv;
+attribute vec3 aPosition;
+attribute vec2 aUv;
 
 varying vec4 vVertexUv;
 
@@ -52,8 +55,10 @@ The vertex shader is pretty standard and should be pretty much the same for most
 
 Here, we will simply sample the backbuffer and use an average of its `RGB` value to get a greyscale result color:
 
-```c
-#ifdef GL_ES precision mediump float; #endif
+```glsl
+#ifdef GL_ES
+  precision mediump float;
+#endif
 
 uniform sampler2D uBackbuffer;
 
