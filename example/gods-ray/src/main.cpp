@@ -20,13 +20,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Minko.hpp"
 #include "minko/MinkoSDL.hpp"
 
+#include "TextureDebugDisplay.hpp"
+
 using namespace minko;
 using namespace minko::component;
 
 void
 createRandomCube(scene::Node::Ptr root, geometry::Geometry::Ptr geom, render::Effect::Ptr effect)
 {
-    auto node = scene::Node::create();
+    auto node = scene::Node::create("cube", scene::BuiltinLayout::DEFAULT | 256);
     auto r = math::sphericalRand(1.f);
     auto material = material::BasicMaterial::create();
 
@@ -55,11 +57,13 @@ int main(int argc, char** argv)
         ->queue("effect/LightScattering/LightScattering.effect")
         ->queue("effect/Basic.effect");
 
-
     assets->geometry("cube", geometry::CubeGeometry::create(context));
 
+    auto renderer = Renderer::create();
+    renderer->layoutMask(renderer->layoutMask() & ~scene::BuiltinLayout::DEBUG_ONLY);
+
     auto camera = scene::Node::create("camera")
-        ->addComponent(Renderer::create())
+        ->addComponent(renderer)
         ->addComponent(Transform::create(
             math::inverse(math::lookAt(math::vec3(0.f), math::vec3(0.f, 0.f, 1.f), math::vec3(0.f, 1.f, 0.f)))
         ))
@@ -70,12 +74,18 @@ int main(int argc, char** argv)
     root->addChild(meshes);
 
     // post-processing
-    auto ppScene = scene::Node::create()->addComponent(Renderer::create());
+    auto ppRenderer = Renderer::create();
+    auto ppScene = scene::Node::create()->addComponent(ppRenderer);
     auto ppTarget = render::Texture::create(context, math::clp2(canvas->width()), math::clp2(canvas->height()), false, true);
     auto ppMaterial = material::BasicMaterial::create();
 
     ppMaterial->data()->set("backbuffer", ppTarget->sampler());
     ppTarget->upload();
+
+    auto debugDisplay1 = TextureDebugDisplay::create();
+    auto debugNode1 = scene::Node::create("debug", scene::BuiltinLayout::DEBUG_ONLY);
+    debugDisplay1->initialize(assets, ppTarget);
+    debugNode1->addComponent(debugDisplay1);
 
     auto _ = assets->loader()->complete()->connect([=](file::Loader::Ptr loader)
     {
@@ -91,6 +101,8 @@ int main(int argc, char** argv)
             ppMaterial,
             assets->effect("effect/LightScattering/LightScattering.effect")
         ));
+
+        ppScene->addChild(debugNode1);
     });
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
