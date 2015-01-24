@@ -48,7 +48,7 @@ int main(int argc, char** argv)
     auto assets         = sceneManager->assets();
     auto context        = canvas->context();
 
-    //sceneManager->assets()->context()->errorsEnabled(true);
+    context->errorsEnabled(true);
 
     // setup assets
     assets->loader()
@@ -61,7 +61,7 @@ int main(int argc, char** argv)
     auto camera = scene::Node::create("camera")
         ->addComponent(Renderer::create())
         ->addComponent(Transform::create(
-            math::inverse(math::lookAt(math::vec3(0.f), math::vec3(1.f), math::vec3(0.f, 1.f, 0.f)))
+            math::inverse(math::lookAt(math::vec3(0.f), math::vec3(0.f, 0.f, 1.f), math::vec3(0.f, 1.f, 0.f)))
         ))
         ->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
     root->addChild(camera);
@@ -93,36 +93,6 @@ int main(int argc, char** argv)
         ));
     });
 
-    Signal<input::Mouse::Ptr, int, int>::Slot mouseMove;
-    auto cameraRotationXSpeed = 0.005f;
-    auto cameraRotationYSpeed = 0.f;
-    auto yaw = -4.03f;
-    auto pitch = 2.05f;
-    auto minPitch = 0.f + 1e-5;
-    auto maxPitch = float(M_PI) - 1e-5;
-    auto lookAt = math::vec3(0.f, 0.f, 0.f);
-    auto distance = 15.f;
-
-    auto mouseWheel = canvas->mouse()->wheel()->connect([&](input::Mouse::Ptr m, int h, int v)
-    {
-        distance += (float)v / 10.f;
-    });
-
-    auto mouseDown = canvas->mouse()->leftButtonDown()->connect([&](input::Mouse::Ptr m)
-    {
-        mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr, int dx, int dy)
-        {
-            cameraRotationYSpeed = float(dx) * .0025f;
-            cameraRotationXSpeed = float(dy) * -.0025f;
-        });
-    });
-
-    auto mouseUp = canvas->mouse()->leftButtonUp()->connect([&](input::Mouse::Ptr m)
-    {
-        mouseMove = nullptr;
-        cameraRotationXSpeed = 0.005f;
-    });
-
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
     {
         camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
@@ -130,26 +100,10 @@ int main(int argc, char** argv)
 
     auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
     {
-        yaw += cameraRotationYSpeed;
-        cameraRotationYSpeed *= 0.9f;
-
-        pitch += cameraRotationXSpeed;
-        cameraRotationXSpeed *= 0.9f;
-
-        if (pitch > maxPitch)
-            pitch = maxPitch;
-        else if (pitch < minPitch)
-            pitch = minPitch;
-
-        camera->component<Transform>()->matrix(math::lookAt(
-            lookAt,
-            math::vec3(
-                lookAt.x + distance * std::cos(yaw) * std::sin(pitch),
-                lookAt.y + distance * std::cos(pitch),
-                lookAt.z + distance * std::sin(yaw) * std::sin(pitch)
-            ),
-            math::vec3(0.0f, 1.0f, 0.0f)
-        ));
+        camera->component<Transform>()->matrix(
+            math::rotate(0.01f, math::vec3(0.f, 1.f, 0.f))
+            * camera->component<Transform>()->matrix()
+        );
 
         sceneManager->nextFrame(time, deltaTime, ppTarget);
         ppScene->component<Renderer>()->render(context);
