@@ -18,8 +18,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/material/WaterMaterial.hpp"
-#include "minko/Color.hpp"
-#include "minko/math/Vector4.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/render/CubeTexture.hpp"
 
@@ -40,12 +38,18 @@ WaterMaterial::initialize()
     _amplitudes.resize(_numWaves, 0.001f);
     _origins.resize(_numWaves * 2, 0.f);
     _waveLength.resize(_numWaves, 0.1f);
-    _sharpness.resize(_numWaves, 0.f);
     _speeds.resize(_numWaves, 1.f);
+    _sharpness.resize(_numWaves, 0.f);
     _waveType.resize(_numWaves, 0.f);
+    data()
+        ->set("numWaves",       _numWaves)
+        ->set("waveOrigins",    _origins)
+        ->set("waveLength",     _waveLength)
+        ->set("waveAmplitudes", _amplitudes)
+        ->set("waveSharpness",  _sharpness)
+        ->set("waveSpeed",      _speeds)
+        ->set("waveType",       _waveType);
 
-
-    set<int>("numWaves", _numWaves);
     specularColor(0xffffffff);
     shininess(8.0f);
     reflectivity(0.0f);
@@ -64,38 +68,26 @@ WaterMaterial::initialize()
     fogStart(100.f);
     fogEnd(400.0f);
     fogType(render::FogType::Exponential);
-
-    data::UniformArrayPtr<float>    amplitudesUniformArray(new data::UniformArray<float>(_numWaves, &(_amplitudes[0])));
-    data::UniformArrayPtr<float>    originsUniformArray(new data::UniformArray<float>(_numWaves * 2, &(_origins[0])));
-    data::UniformArrayPtr<float>    waveLengthUniformArray(new data::UniformArray<float>(_numWaves, &(_waveLength[0])));
-    data::UniformArrayPtr<float>    sharpnessUniformArray(new data::UniformArray<float>(_numWaves, &(_sharpness[0])));
-    data::UniformArrayPtr<float>    speedsUniformArray(new data::UniformArray<float>(_numWaves, &(_speeds[0])));
-    data::UniformArrayPtr<float>    waveTypeUniformArray(new data::UniformArray<float>(_numWaves, &(_waveType[0])));
-
-    set<data::UniformArrayPtr<float>>("waveOrigins",    originsUniformArray);
-    set<data::UniformArrayPtr<float>>("waveLength",        waveLengthUniformArray);
-    set<data::UniformArrayPtr<float>>("waveAmplitudes", amplitudesUniformArray);
-    set<data::UniformArrayPtr<float>>("waveSharpness",    sharpnessUniformArray);
-    set<data::UniformArrayPtr<float>>("waveSpeed",        speedsUniformArray);
-    set<data::UniformArrayPtr<float>>("waveType",        waveTypeUniformArray);
 }
 
 
 WaterMaterial::Ptr
-WaterMaterial::setDirection(int waveId, std::shared_ptr<math::Vector2> direction)
+WaterMaterial::setDirection(int waveId, const math::vec2& direction)
 {
-    _origins[waveId * 2] = direction->x();
-    _origins[waveId * 2 + 1] = direction->y();
+    _origins[waveId * 2] = direction.x;
+    _origins[waveId * 2 + 1] = direction.y;
     _waveType[waveId] = 0;
+
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
 }
 
 WaterMaterial::Ptr
-WaterMaterial::setCenter(int waveId, std::shared_ptr<math::Vector2> origin)
+WaterMaterial::setCenter(int waveId, const math::vec2& origin)
 {
-    _origins[waveId * 2] = origin->x();
-    _origins[waveId * 2 + 1] = origin->y();
+    _origins[waveId * 2] = origin.x;
+    _origins[waveId * 2 + 1] = origin.y;
     _waveType[waveId] = 1;
+
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
 }
 
@@ -136,17 +128,9 @@ WaterMaterial::reflectionMap(render::AbstractTexture::Ptr value)
     if (value->type() == render::TextureType::CubeTexture)
         throw new std::logic_error("Only 2d reflection maps are currently supported.");
 
-    set("reflectionMap", std::static_pointer_cast<render::AbstractTexture>(value));
+    data()->set("reflectionMap", value->sampler());
 
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
-}
-
-render::Texture::Ptr
-WaterMaterial::reflectionMap() const
-{
-    return hasProperty("reflectionMap")
-        ? std::dynamic_pointer_cast<render::Texture>(get<render::AbstractTexture::Ptr>("reflectionMap"))
-        : nullptr;
 }
 
 WaterMaterial::Ptr
@@ -155,17 +139,9 @@ WaterMaterial::depthMap(render::AbstractTexture::Ptr value)
     if (value->type() == render::TextureType::CubeTexture)
         throw new std::logic_error("Only 2d depth maps are currently supported.");
 
-    set("depthMap", std::static_pointer_cast<render::AbstractTexture>(value));
+    data()->set("depthMap", value->sampler());
 
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
-}
-
-render::Texture::Ptr
-WaterMaterial::depthMap() const
-{
-    return hasProperty("depthMap")
-        ? std::dynamic_pointer_cast<render::Texture>(get<render::AbstractTexture::Ptr>("depthMap"))
-        : nullptr;
 }
 
 WaterMaterial::Ptr
@@ -174,23 +150,15 @@ WaterMaterial::dudvMap(render::AbstractTexture::Ptr value)
     if (value->type() == render::TextureType::CubeTexture)
         throw new std::logic_error("Only 2d dudv maps are currently supported.");
 
-    set("dudvMap", std::static_pointer_cast<render::AbstractTexture>(value));
+    data()->set("dudvMap", value->sampler());
 
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
-}
-
-render::Texture::Ptr
-WaterMaterial::dudvMap() const
-{
-    return hasProperty("dudvMap")
-        ? std::dynamic_pointer_cast<render::Texture>(get<render::AbstractTexture::Ptr>("dudvMap"))
-        : nullptr;
 }
 
 WaterMaterial::Ptr
 WaterMaterial::dudvSpeed(float s)
 {
-    set("dudvSpeed", s);
+    data()->set("dudvSpeed", s);
 
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
 }
@@ -198,13 +166,13 @@ WaterMaterial::dudvSpeed(float s)
 float
 WaterMaterial::dudvSpeed() const
 {
-    return get<float>("dudvSpeed");
+    return data()->get<float>("dudvSpeed");
 }
 
 WaterMaterial::Ptr
 WaterMaterial::dudvFactor(float s)
 {
-    set("dudvFactor", s);
+    data()->set("dudvFactor", s);
 
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
 }
@@ -212,13 +180,13 @@ WaterMaterial::dudvFactor(float s)
 float
 WaterMaterial::dudvFactor() const
 {
-    return get<float>("dudvFactor");
+    return data()->get<float>("dudvFactor");
 }
 
 WaterMaterial::Ptr
 WaterMaterial::fresnelMultiplier(float s)
 {
-    set("fresnelMultiplier", s);
+    data()->set("fresnelMultiplier", s);
 
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
 }
@@ -226,14 +194,14 @@ WaterMaterial::fresnelMultiplier(float s)
 float
 WaterMaterial::fresnelMultiplier() const
 {
-    return get<float>("fresnelMultiplier");
+    return data()->get<float>("fresnelMultiplier");
 }
 
 
 WaterMaterial::Ptr
 WaterMaterial::normalMultiplier(float value)
 {
-    set("normalMultiplier", value);
+    data()->set("normalMultiplier", value);
 
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
 }
@@ -241,13 +209,13 @@ WaterMaterial::normalMultiplier(float value)
 float
 WaterMaterial::normalMultiplier() const
 {
-    return get<float>("normalMultiplier");
+    return data()->get<float>("normalMultiplier");
 }
 
 WaterMaterial::Ptr
 WaterMaterial::fresnelPow(float value)
 {
-    set("fresnelPow", value);
+    data()->set("fresnelPow", value);
 
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
 }
@@ -255,7 +223,7 @@ WaterMaterial::fresnelPow(float value)
 float
 WaterMaterial::fresnelPow() const
 {
-    return get<float>("fresnelPow");
+    return data()->get<float>("fresnelPow");
 }
 
 WaterMaterial::Ptr
@@ -264,17 +232,9 @@ WaterMaterial::normalMap(render::AbstractTexture::Ptr value)
     if (value->type() == render::TextureType::CubeTexture)
         throw new std::logic_error("Only 2d normal maps are currently supported.");
 
-    set("normalMap", std::static_pointer_cast<render::AbstractTexture>(value));
+    data()->set("normalMap", value->sampler());
 
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
-}
-
-render::Texture::Ptr
-WaterMaterial::normalMap() const
-{
-    return hasProperty("normalMap")
-        ? std::dynamic_pointer_cast<render::Texture>(get<render::AbstractTexture::Ptr>("normalMap"))
-        : nullptr;
 }
 
 
@@ -284,17 +244,9 @@ WaterMaterial::flowMap(AbsTexturePtr value)
     if (value->type() == render::TextureType::CubeTexture)
         throw new std::logic_error("Only 2d flow maps are currently supported.");
 
-    set("flowMap", std::static_pointer_cast<render::AbstractTexture>(value));
+    data()->set("flowMap", value->sampler());
 
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
-}
-
-render::Texture::Ptr
-WaterMaterial::flowMap() const
-{
-    return hasProperty("flowMap")
-        ? std::dynamic_pointer_cast<render::Texture>(get<render::AbstractTexture::Ptr>("flowMap"))
-        : nullptr;
 }
 
 WaterMaterial::Ptr
@@ -303,23 +255,15 @@ WaterMaterial::noiseMap(AbsTexturePtr value)
     if (value->type() == render::TextureType::CubeTexture)
         throw new std::logic_error("Only 2d noise maps are currently supported.");
 
-    set("noiseMap", std::static_pointer_cast<render::AbstractTexture>(value));
+    data()->set("noiseMap", value->sampler());
 
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
-}
-
-WaterMaterial::TexturePtr
-WaterMaterial::noiseMap() const
-{
-    return hasProperty("noiseMap")
-        ? std::dynamic_pointer_cast<render::Texture>(get<render::AbstractTexture::Ptr>("noiseMap"))
-        : nullptr;
 }
 
 WaterMaterial::Ptr
 WaterMaterial::normalMapSpeed(float s)
 {
-    set("normalSpeed", s);
+    data()->set("normalSpeed", s);
 
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
 }
@@ -327,13 +271,13 @@ WaterMaterial::normalMapSpeed(float s)
 float
 WaterMaterial::normalMapSpeed() const
 {
-    return get<float>("normalSpeed");
+    return data()->get<float>("normalSpeed");
 }
 
 WaterMaterial::Ptr
-WaterMaterial::specularColor(math::Vector4::Ptr color)
+WaterMaterial::specularColor(const math::vec4& color)
 {
-    set("specularColor", color);
+    data()->set("specularColor", color);
 
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
 }
@@ -341,19 +285,19 @@ WaterMaterial::specularColor(math::Vector4::Ptr color)
 WaterMaterial::Ptr
 WaterMaterial::specularColor(uint color)
 {
-    return specularColor(Color::uintToVec4(color));
+    return specularColor(math::rgba(color));
 }
 
-math::Vector4::Ptr
+const math::vec4&
 WaterMaterial::specularColor() const
 {
-    return get<math::Vector4::Ptr>("specularColor");
+    return data()->get<math::vec4>("specularColor");
 }
 
 WaterMaterial::Ptr
 WaterMaterial::shininess(float value)
 {
-    set("shininess", value);
+    data()->set("shininess", value);
 
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
 }
@@ -361,13 +305,13 @@ WaterMaterial::shininess(float value)
 float
 WaterMaterial::shininess() const
 {
-    return get<float>("shininess");
+    return data()->get<float>("shininess");
 }
 
 WaterMaterial::Ptr
 WaterMaterial::normalMapScale(float value)
 {
-    set("normalMapScale", value);
+    data()->set("normalMapScale", value);
 
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
 }
@@ -375,13 +319,13 @@ WaterMaterial::normalMapScale(float value)
 float
 WaterMaterial::normalMapScale() const
 {
-    return get<float>("normalMapScale");
+    return data()->get<float>("normalMapScale");
 }
 
 WaterMaterial::Ptr
 WaterMaterial::flowMapScale(float value)
 {
-    set("flowMapScale", value);
+    data()->set("flowMapScale", value);
 
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
 }
@@ -389,13 +333,13 @@ WaterMaterial::flowMapScale(float value)
 float
 WaterMaterial::flowMapScale() const
 {
-    return get<float>("flowMapScale");
+    return data()->get<float>("flowMapScale");
 }
 
 WaterMaterial::Ptr
 WaterMaterial::flowMapCycle(float value)
 {
-    set("flowMapCycle", value);
+    data()->set("flowMapCycle", value);
 
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
 }
@@ -403,13 +347,13 @@ WaterMaterial::flowMapCycle(float value)
 float
 WaterMaterial::flowMapCycle() const
 {
-    return get<float>("flowMapCycle");
+    return data()->get<float>("flowMapCycle");
 }
 
 WaterMaterial::Ptr
 WaterMaterial::reflectivity(float value)
 {
-    set("reflectivity", value);
+    data()->set("reflectivity", value);
 
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
 }
@@ -417,13 +361,13 @@ WaterMaterial::reflectivity(float value)
 float
 WaterMaterial::reflectivity() const
 {
-    return get<float>("reflectivity");
+    return data()->get<float>("reflectivity");
 }
 
 WaterMaterial::Ptr
 WaterMaterial::flowMapOffset1(float value)
 {
-    set("flowMapOffset1", value);
+    data()->set("flowMapOffset1", value);
 
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
 }
@@ -431,13 +375,13 @@ WaterMaterial::flowMapOffset1(float value)
 float
 WaterMaterial::flowMapOffset1() const
 {
-    return get<float>("flowMapOffset1");
+    return data()->get<float>("flowMapOffset1");
 }
 
 WaterMaterial::Ptr
 WaterMaterial::flowMapOffset2(float value)
 {
-    set("flowMapOffset2", value);
+    data()->set("flowMapOffset2", value);
 
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
 }
@@ -445,5 +389,5 @@ WaterMaterial::flowMapOffset2(float value)
 float
 WaterMaterial::flowMapOffset2() const
 {
-    return get<float>("flowMapOffset2");
+    return data()->get<float>("flowMapOffset2");
 }

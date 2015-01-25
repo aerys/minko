@@ -21,5 +21,4 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/Reflection.hpp"
 #include "minko/component/Water.hpp"
-#include "minko/component/Hologram.hpp"
 #include "minko/material/WaterMaterial.hpp"

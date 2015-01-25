@@ -21,8 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/data/Provider.hpp"
-#include "minko/component/SceneManager.hpp"
-#include "minko/data/Container.hpp"
 #include "minko/material/WaterMaterial.hpp"
 
 using namespace minko;
@@ -31,72 +29,36 @@ using namespace minko::component;
 
 Water::Water(float cycle, std::shared_ptr<material::WaterMaterial> mat) :
     _cycle(cycle),
-    _waterMaterial(mat)
+    _waterMaterial(mat),
+    _provider(data::Provider::create())
 {
-    _provider = data::Provider::create();
 }
 
 void
-Water::initialize()
+Water::start(NodePtr target)
 {
-
-    _targetAddedSlot = targetAdded()->connect([&](AbstractComponent::Ptr cmp, NodePtr target)
-    {
-
-        if (target->root()->hasComponent<SceneManager>())
-            targetAddedToScene(nullptr, target, nullptr);
-        else
-            _addedToSceneSlot = target->added()->connect(std::bind(
-            &Water::targetAddedToScene,
-            std::static_pointer_cast<Water>(shared_from_this()),
-            std::placeholders::_1,
-            std::placeholders::_2,
-            std::placeholders::_3));
-    });
+    _provider->set<float>("offsetTime", 0.f);
+    _provider->set<float>("frameId", 0.f);
 }
 
 void
-Water::targetAddedHandler(AbstractComponent::Ptr cmp, NodePtr target)
+Water::update(NodePtr target)
 {
-    target->added()->connect([&](NodePtr node, NodePtr target, NodePtr ancestor)
-    {
-        if (target->root()->hasComponent<SceneManager>())
-            targetAddedToScene(nullptr, target, nullptr);
-    });
-}
+    _provider->set<float>("frameId", _provider->get<float>("frameId") + 1);
 
-void
-Water::targetAddedToScene(NodePtr node, NodePtr target, NodePtr ancestor)
-{
-    _addedToSceneSlot = nullptr;
+    float flowMapOffset1 = _waterMaterial->flowMapOffset1();
+    float flowMapOffset2 = _waterMaterial->flowMapOffset2();
+    float flowSpeed = _waterMaterial->normalMapSpeed();
 
-    if (!target->root()->data()->hasProvider(_provider))
-    {
-        _provider->set<float>("offsetTime", 0);
-        _provider->set<float>("frameId", 0);
-        target->root()->data()->addProvider(_provider);
-    }
+    flowMapOffset1 += flowSpeed * deltaTime();
+    flowMapOffset2 += flowSpeed * deltaTime();
 
-    // Listen scene manager
-    _frameBeginSlot = target->root()->component<SceneManager>()->frameBegin()->connect(
-        [&](std::shared_ptr<SceneManager> sceneManager, float time, float deltaTime)
-    {
-        _provider->set<float>("frameId", _provider->get<float>("frameId") + 1);
+    if (flowMapOffset1 >= _cycle)
+        flowMapOffset1 -= _cycle;
 
-        float flowMapOffset1 = _waterMaterial->flowMapOffset1();
-        float flowMapOffset2 = _waterMaterial->flowMapOffset2();
-        float flowSpeed = _waterMaterial->normalMapSpeed();
+    if (flowMapOffset2 >= _cycle)
+        flowMapOffset2 -= _cycle;
 
-        flowMapOffset1 += flowSpeed * deltaTime;
-        flowMapOffset2 += flowSpeed * deltaTime;
-
-        if (flowMapOffset1 >= _cycle)
-            flowMapOffset1 -= _cycle;
-
-        if (flowMapOffset2 >= _cycle)
-            flowMapOffset2 -= _cycle;
-
-        _waterMaterial->flowMapOffset1(flowMapOffset1);
-        _waterMaterial->flowMapOffset2(flowMapOffset2);
-    });
+    _waterMaterial->flowMapOffset1(flowMapOffset1);
+    _waterMaterial->flowMapOffset2(flowMapOffset2);
 }
