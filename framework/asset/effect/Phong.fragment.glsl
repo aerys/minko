@@ -179,11 +179,11 @@ uniform float uSpotLight3_cosOuterConeAngle;
 uniform vec3 uSpotLight3_attenuationCoeffs;
 uniform float uSpotLight3_specular;
 
-varying vec3 vertexPosition;
-varying vec2 vertexUV;
-varying vec3 vertexNormal;
-varying vec3 vertexTangent;
-varying vec4 vertexScreenPosition;
+varying vec3 vVertexPosition;
+varying vec2 vVertexUV;
+varying vec3 vVertexNormal;
+varying vec3 vVertexTangent;
+varying vec4 vVertexScreenPosition;
 
 float getShadow(sampler2D 	shadowMap,
 				mat4 		viewProj[SHADOW_MAPPING_MAX_NUM_CASCADES],
@@ -195,12 +195,12 @@ float getShadow(sampler2D 	shadowMap,
 				float 		bias)
 {
 	float shadow = 1.0;
-    vec4 weights = shadowMapping_getCascadeWeights(vertexScreenPosition.z, splitNear, splitFar);
+    vec4 weights = shadowMapping_getCascadeWeights(vVertexScreenPosition.z, splitNear, splitFar);
 	vec4 viewport = shadowMapping_getCascadeViewport(weights);
     mat4 viewProjection = shadowMapping_getCascadeViewProjection(weights, viewProj);
     float near = shadowMapping_getCascadeZ(weights, zNear);
     float far = shadowMapping_getCascadeZ(weights, zFar);
-	vec3 vertexLightPosition = (viewProjection * vec4(vertexPosition, 1)).xyz;
+	vec3 vertexLightPosition = (viewProjection * vec4(vVertexPosition, 1)).xyz;
 
 	if (shadowMapping_vertexIsInShadowMap(vertexLightPosition))
 	{
@@ -224,7 +224,7 @@ float getShadow(sampler2D 	shadowMap,
 		// 		zNear,
 		// 		zFar,
 		// 		uShadowRandomMap,
-		// 		vertexScreenPosition.xy / vertexScreenPosition.w / 2.0 + 0.5,
+		// 		vVertexScreenPosition.xy / vVertexScreenPosition.w / 2.0 + 0.5,
 		// 		uShadowSpread
 		// 	);
 		#endif
@@ -241,8 +241,8 @@ void main(void)
 	vec4 diffuse = uDiffuseColor;
 	vec4 specular = uSpecularColor;
 	float shininessCoeff = 1.0;
-	vec3 eyeVector = normalize(uCameraPosition - vertexPosition); // always in world-space
-	vec3 normalVector = normalize(vertexNormal); // always in world-space
+	vec3 eyeVector = normalize(uCameraPosition - vVertexPosition); // always in world-space
+	vec3 normalVector = normalize(vVertexNormal); // always in world-space
 
 	#ifdef SHININESS
 		shininessCoeff = max(1.0, uShininess);
@@ -250,14 +250,14 @@ void main(void)
 
 	#ifdef DIFFUSE_MAP
 		#ifdef DIFFUSE_MAP_LOD
-			diffuse = texturelod_texture2D(uDiffuseMap, vertexUV, uDiffuseMapSize, 0.0, uDiffuseMapMaxAvailableLod, uDiffuseColor);
+			diffuse = texturelod_texture2D(uDiffuseMap, vVertexUV, uDiffuseMapSize, 0.0, uDiffuseMapMaxAvailableLod, uDiffuseColor);
 		#else
-			diffuse = texture2D(uDiffuseMap, vertexUV);
+			diffuse = texture2D(uDiffuseMap, vVertexUV);
 		#endif
 	#endif // DIFFUSE_MAP
 
 	#ifdef ALPHA_MAP
-		diffuse.a = texture2D(uAlphaMap, vertexUV).r;
+		diffuse.a = texture2D(uAlphaMap, vVertexUV).r;
 	#endif // ALPHA_MAP
 
 	#ifdef ALPHA_THRESHOLD
@@ -268,12 +268,12 @@ void main(void)
 	#if defined(SHININESS) || ( (defined(ENVIRONMENT_MAP_2D) || defined(ENVIRONMENT_CUBE_MAP)) && !defined(ENVIRONMENT_ALPHA) )
 		#ifdef SPECULAR_MAP
 			#ifdef SPECULAR_MAP_LOD
-				specular = texturelod_texture2D(uSpecularMap, vertexUV, uSpecularMapSize, 0.0, uSpecularMapMaxAvailableLod, uSpecularColor);
+				specular = texturelod_texture2D(uSpecularMap, vVertexUV, uSpecularMapSize, 0.0, uSpecularMapMaxAvailableLod, uSpecularColor);
 			#else
-				specular = texture2D(uSpecularMap, vertexUV);
+				specular = texture2D(uSpecularMap, vVertexUV);
 			#endif
 		#elif defined NORMAL_MAP
-			specular.a = texture2D(uNormalMap, vertexUV).a; // ???
+			specular.a = texture2D(uNormalMap, vVertexUV).a; // ???
 		#endif // SPECULAR_MAP
 	#endif
 
@@ -295,13 +295,13 @@ void main(void)
 	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
 		#ifdef NORMAL_MAP
 			// warning: the normal vector must be normalized at this point!
-			mat3 tangentToWorldMatrix = phong_getTangentToWorldSpaceMatrix(normalVector, vertexTangent);
+			mat3 tangentToWorldMatrix = phong_getTangentToWorldSpaceMatrix(normalVector, vVertexTangent);
 
 			// bring normal from tangent-space normal to world-space
 			#ifdef NORMAL_MAP_LOD
-				vec4 normalColor = texturelod_texture2D(uNormalMap, vertexUV, uNormalMapSize, 0.0, uNormalMapMaxAvailableLod, vec4(0.0));
+				vec4 normalColor = texturelod_texture2D(uNormalMap, vVertexUV, uNormalMapSize, 0.0, uNormalMapMaxAvailableLod, vec4(0.0));
 			#else
-				vec4 normalColor = texture2D(uNormalMap, vertexUV);
+				vec4 normalColor = texture2D(uNormalMap, vVertexUV);
 			#endif
 
 			normalVector = tangentToWorldMatrix * normalize(2.0 * normalColor.xyz - 1.0);
@@ -365,8 +365,8 @@ void main(void)
         float att = 0.;
         #ifdef NUM_POINT_LIGHTS
     		#if NUM_POINT_LIGHTS > 0
-                dir = normalize(uPointLight0_position - vertexPosition);
-                dist = length(uPointLight0_position - vertexPosition);
+                dir = normalize(uPointLight0_position - vVertexPosition);
+                dist = length(uPointLight0_position - vVertexPosition);
                 distVec = vec3(1.0, dist, dist * dist);
                 att = any(lessThan(uPointLight0_attenuationCoeffs, vec3(0.0))) ? 1.0 : max(0.0, 1.0 - dist / dot(uPointLight0_attenuationCoeffs, distVec));
                 diffuseAccum += phong_diffuseReflection(normalVector, dir) * uPointLight0_color * uPointLight0_diffuse;// * att;
@@ -376,8 +376,8 @@ void main(void)
                 #endif // defined(SHININESS)
             #endif // NUM_POINT_LIGHTS > 0
             #if NUM_POINT_LIGHTS > 1
-                dir = normalize(uPointLight1_position - vertexPosition);
-                dist = length(uPointLight1_position - vertexPosition);
+                dir = normalize(uPointLight1_position - vVertexPosition);
+                dist = length(uPointLight1_position - vVertexPosition);
                 distVec = vec3(1.0, dist, dist * dist);
                 att = any(lessThan(uPointLight1_attenuationCoeffs, vec3(0.0))) ? 1.0 : max(0.0, 1.0 - dist / dot(uPointLight1_attenuationCoeffs, distVec));
                 diffuseAccum += phong_diffuseReflection(normalVector, dir) * uPointLight1_color * uPointLight1_diffuse;// * att;
@@ -387,8 +387,8 @@ void main(void)
                 #endif // defined(SHININESS)
             #endif // NUM_POINT_LIGHTS > 1
             #if NUM_POINT_LIGHTS > 2
-                dir = normalize(uPointLight2_position - vertexPosition);
-                dist = length(uPointLight2_position - vertexPosition);
+                dir = normalize(uPointLight2_position - vVertexPosition);
+                dist = length(uPointLight2_position - vVertexPosition);
                 distVec = vec3(1.0, dist, dist * dist);
                 att = any(lessThan(uPointLight2_attenuationCoeffs, vec3(0.0))) ? 1.0 : max(0.0, 1.0 - dist / dot(uPointLight2_attenuationCoeffs, distVec));
                 diffuseAccum += phong_diffuseReflection(normalVector, dir) * uPointLight2_color * uPointLight2_diffuse;// * att;
@@ -398,8 +398,8 @@ void main(void)
                 #endif // defined(SHININESS)
             #endif // NUM_POINT_LIGHTS > 2
             #if NUM_POINT_LIGHTS > 3
-                dir = normalize(uPointLight3_position - vertexPosition);
-                dist = length(uPointLight3_position - vertexPosition);
+                dir = normalize(uPointLight3_position - vVertexPosition);
+                dist = length(uPointLight3_position - vVertexPosition);
                 distVec = vec3(1.0, dist, dist * dist);
                 att = any(lessThan(uPointLight3_attenuationCoeffs, vec3(0.0))) ? 1.0 : max(0.0, 1.0 - dist / dot(uPointLight3_attenuationCoeffs, distVec));
                 diffuseAccum += phong_diffuseReflection(normalVector, dir) * uPointLight3_color * uPointLight3_diffuse;// * att;
@@ -414,8 +414,8 @@ void main(void)
         float cutoff = 0.;
         #ifdef NUM_SPOT_LIGHTS
     		#if NUM_SPOT_LIGHTS > 0
-                dir = normalize(uSpotLight0_position - vertexPosition);
-                dist = length(uSpotLight0_position - vertexPosition);
+                dir = normalize(uSpotLight0_position - vVertexPosition);
+                dist = length(uSpotLight0_position - vVertexPosition);
                 cosSpot = dot(-dir, uSpotLight0_direction);
                 if (uSpotLight0_cosOuterConeAngle < cosSpot)
                 {
@@ -432,8 +432,8 @@ void main(void)
                 }
             #endif // NUM_SPOT_LIGHTS > 0
             #if NUM_SPOT_LIGHTS > 1
-                dir = normalize(uSpotLight1_position - vertexPosition);
-                dist = length(uSpotLight1_position - vertexPosition);
+                dir = normalize(uSpotLight1_position - vVertexPosition);
+                dist = length(uSpotLight1_position - vVertexPosition);
                 cosSpot = dot(-dir, uSpotLight1_direction);
                 if (uSpotLight1_cosOuterConeAngle < cosSpot)
                 {
@@ -450,8 +450,8 @@ void main(void)
                 }
             #endif // NUM_SPOT_LIGHTS > 1
             #if NUM_SPOT_LIGHTS > 2
-                dir = normalize(uSpotLight2_position - vertexPosition);
-                dist = length(uSpotLight2_position - vertexPosition);
+                dir = normalize(uSpotLight2_position - vVertexPosition);
+                dist = length(uSpotLight2_position - vVertexPosition);
                 cosSpot = dot(-dir, uSpotLight2_direction);
                 if (uSpotLight2_cosOuterConeAngle < cosSpot)
                 {
@@ -468,8 +468,8 @@ void main(void)
                 }
             #endif // NUM_SPOT_LIGHTS > 2
             #if NUM_SPOT_LIGHTS > 3
-                dir = normalize(uSpotLight3_position - vertexPosition);
-                dist = length(uSpotLight3_position - vertexPosition);
+                dir = normalize(uSpotLight3_position - vVertexPosition);
+                dist = length(uSpotLight3_position - vVertexPosition);
                 cosSpot = dot(-dir, uSpotLight3_direction);
                 if (uSpotLight3_cosOuterConeAngle < cosSpot)
                 {
@@ -503,7 +503,7 @@ void main(void)
 	vec3 phong = diffuse.rgb * (ambientAccum + diffuseAccum) + specular.a * specularAccum;
 
 	#ifdef FOG_TECHNIQUE
-		phong = fog_sampleFog(phong, vertexScreenPosition.z, uFogColor.xyz, uFogColor.a, uFogBounds.x, uFogBounds.y);
+		phong = fog_sampleFog(phong, vVertexScreenPosition.z, uFogColor.xyz, uFogColor.a, uFogBounds.x, uFogBounds.y);
 	#endif
 
 	gl_FragColor = vec4(phong.rgb, diffuse.a);
