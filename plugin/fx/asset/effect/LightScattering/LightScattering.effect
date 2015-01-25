@@ -2,8 +2,6 @@
 {
     "name"  : "light scattering",
 
-    "isPostProcessing": true,
-
     "attributes" :
     {
         "aPosition"     : "geometry[${geometryUuid}].position",
@@ -21,6 +19,7 @@
             "passes":
             [
                 {
+
                     "vertexShader"      :
                     "
                         attribute vec3 aPosition;

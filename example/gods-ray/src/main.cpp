@@ -25,21 +25,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 
-void
-createRandomCube(scene::Node::Ptr root, geometry::Geometry::Ptr geom, render::Effect::Ptr effect)
+scene::Node::Ptr
+createRandomCube(geometry::Geometry::Ptr geom, render::Effect::Ptr effect)
 {
-    auto node = scene::Node::create("cube", scene::BuiltinLayout::DEFAULT | 256);
     auto r = math::sphericalRand(1.f);
-    auto material = material::BasicMaterial::create();
 
-    material->diffuseColor(math::vec4((r + 1.f) * .5f, 1.f));
+    auto node = scene::Node::create()
+        ->addComponent(Transform::create(
+            math::translate(r * 50.f) * math::scale(math::vec3(10.f))
+        ))
+        ->addComponent(Surface::create(
+            geom,
+            material::BasicMaterial::create()->diffuseColor(math::vec4((r + 1.f) * .5f, 1.f)),
+            effect
+        ));
 
-    node->addComponent(Transform::create(
-        math::translate(r * 50.f) * math::scale(math::vec3(10.f))
-    ));
-    node->addComponent(Surface::create(geom, material, effect));
-
-    root->addChild(node);
+    return node;
 }
 
 int main(int argc, char** argv)
@@ -61,6 +62,7 @@ int main(int argc, char** argv)
 
     auto renderer = Renderer::create();
     renderer->layoutMask(renderer->layoutMask() & ~scene::BuiltinLayout::DEBUG_ONLY);
+    renderer->backgroundColor(0x323347ff);
 
     auto camera = scene::Node::create("camera")
         ->addComponent(renderer)
@@ -70,8 +72,9 @@ int main(int argc, char** argv)
         ->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
     root->addChild(camera);
 
-    auto meshes = scene::Node::create();
-    root->addChild(meshes);
+    auto helio = scene::Node::create()
+        ->addComponent(Transform::create());
+    root->addChild(helio);
 
     // post-processing
     auto ppRenderer = Renderer::create();
@@ -90,10 +93,26 @@ int main(int argc, char** argv)
     auto _ = assets->loader()->complete()->connect([=](file::Loader::Ptr loader)
     {
         for (auto i = 0; i < 100; ++i)
-            createRandomCube(
-                meshes,
-                assets->geometry("cube"),
+            root->addChild(createRandomCube(
+                geometry::CubeGeometry::create(context), //assets->geometry("cube"),
                 assets->effect("effect/Basic.effect")
+            ));
+
+        helio
+            ->addChild(scene::Node::create("sun")
+                ->addComponent(Transform::create(
+                    math::translate(math::mat4(1.f), math::vec3(0.f, 0.f, 100.f))
+                ))
+                ->addChild(scene::Node::create()
+                    ->addComponent(Transform::create(
+                        math::scale(math::mat4(1.f), math::vec3(10.f))
+                    ))
+                    ->addComponent(Surface::create(
+                        geometry::SphereGeometry::create(context),
+                        material::BasicMaterial::create()->diffuseColor(math::vec4(1.f)),
+                        assets->effect("effect/Basic.effect")
+                    ))
+                )
             );
 
         ppScene->addComponent(Surface::create(
@@ -105,16 +124,21 @@ int main(int argc, char** argv)
         ppScene->addChild(debugNode1);
     });
 
-    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+    auto resized = canvas->resized()->connect([=](AbstractCanvas::Ptr canvas, uint w, uint h)
     {
         camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([=](Canvas::Ptr canvas, float time, float deltaTime)
     {
         camera->component<Transform>()->matrix(
-            math::rotate(0.01f, math::vec3(0.f, 1.f, 0.f))
+            math::rotate(0.001f, math::vec3(0.f, 1.f, 0.f))
             * camera->component<Transform>()->matrix()
+        );
+
+        helio->component<Transform>()->matrix(
+            math::rotate(0.001f, math::vec3(0.f, 1.f, 0.f))
+            * helio->component<Transform>()->matrix()
         );
 
         sceneManager->nextFrame(time, deltaTime, ppTarget);
