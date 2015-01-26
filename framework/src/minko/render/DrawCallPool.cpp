@@ -385,12 +385,6 @@ DrawCallPool::update()
     _invalidDrawCalls.clear();
 }
 
-math::vec3
-DrawCallPool::getDrawcallEyePosition(DrawCall* drawcall)
-{
-    return drawcall->getEyeSpacePosition();
-}
-
 void
 DrawCallPool::invalidateDrawCalls(const DrawCallIteratorPair&                         iterators,
                                   const std::unordered_map<std::string, std::string>& variables)
@@ -405,6 +399,45 @@ DrawCallPool::invalidateDrawCalls(const DrawCallIteratorPair&                   
         drawCall.variables().clear();
         drawCall.variables().insert(variables.begin(), variables.end());
     }
+}
+
+void
+DrawCallPool::sortDrawCalls()
+{
+    _drawCalls.sort(
+        std::bind(
+            &DrawCallPool::compareDrawCalls,
+            this,
+            std::placeholders::_1,
+            std::placeholders::_2
+        )
+    );
+}
+
+bool
+DrawCallPool::compareDrawCalls(DrawCall* a, DrawCall* b)
+{
+    const float aPriority = a->priority();
+    const float bPriority = b->priority();
+    const bool samePriority = fabsf(aPriority - bPriority) < 1e-3f;
+
+    if (samePriority)
+    {
+        if (a->target().id == b->target().id)
+        {
+            if (a->zSorted() && b->zSorted())
+            {
+                auto aPosition = a->getEyeSpacePosition();
+                auto bPosition = b->getEyeSpacePosition();
+
+                return aPosition.z > bPosition.z;
+            }
+        }
+
+        return a->target().id < b->target().id;
+    }
+
+    return aPriority > bPriority;
 }
 
 void

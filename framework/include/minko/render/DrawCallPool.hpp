@@ -93,6 +93,9 @@ namespace minko
                                 const std::unordered_map<std::string, std::string>& variables);
 
             void
+            sortDrawCalls();
+
+            void
             update();
 
 			void
@@ -101,9 +104,6 @@ namespace minko
         private:
             bool
             compareDrawCalls(DrawCall* a, DrawCall* b);
-
-            math::vec3
-            getDrawcallEyePosition(DrawCall* drawcall);
 
             void
             watchProgramSignature(DrawCall&                     drawCall,
