@@ -90,10 +90,13 @@ namespace minko
 
 				*_matrix = matrix;
 
-				auto rootTransform = target()->root()->component<RootTransform>();
+                if (target() != nullptr)
+                {
+                    auto rootTransform = target()->root()->component<RootTransform>();
 
-				if (rootTransform && !rootTransform->_invalidLists)
-					rootTransform->_nodeTransformCache.at(rootTransform->_nodeToId[target()])._dirty = true;
+                    if (rootTransform && !rootTransform->_invalidLists)
+                        rootTransform->_nodeTransformCache.at(rootTransform->_nodeToId[target()])._dirty = true;
+                }
 			}
 
 			inline
