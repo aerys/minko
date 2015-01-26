@@ -264,10 +264,14 @@ Loader::finalize()
     if (_loading.size() == 0 && _filesQueue.size() == 0 && _numFilesToParse == 0)
     {
         _protocolSlots.clear();
+        _protocolProgressSlots.clear();
         _parserErrorSlots.clear();
         _filenameToOptions.clear();
 
         _complete->execute(shared_from_this());
+
+        _protocolToProgress.clear();
+        _files.clear();
     }
 }
 

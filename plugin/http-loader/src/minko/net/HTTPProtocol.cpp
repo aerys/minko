@@ -91,7 +91,7 @@ HTTPProtocol::completeHandler(void* arg, void* data, unsigned int size)
     loader->_progress->execute(loader, 1.0);
     loader->_complete->execute(loader);
 
-    // HTTPProtocol::_runningLoaders.remove(loader);
+    HTTPProtocol::_runningLoaders.remove(loader);
 }
 
 void
@@ -113,7 +113,7 @@ HTTPProtocol::errorHandler(void* arg, int code, const char * message)
 
     loader->_error->execute(loader);
 
-    // HTTPProtocol::_runningLoaders.remove(loader);
+    HTTPProtocol::_runningLoaders.remove(loader);
 }
 
 void
