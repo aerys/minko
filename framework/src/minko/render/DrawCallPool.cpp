@@ -19,7 +19,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/DrawCallPool.hpp"
 
-#include "minko/render/DrawCallZSorter.hpp"
 #include "minko/data/ResolvedBinding.hpp"
 
 using namespace minko;
@@ -384,35 +383,6 @@ DrawCallPool::update()
         initializeDrawCall(*drawCallPtr, true);
 
     _invalidDrawCalls.clear();
-
-    _drawCalls.sort(
-        std::bind(
-            &DrawCallPool::compareDrawCalls,
-            this,
-            std::placeholders::_1,
-            std::placeholders::_2
-        )
-    );
-}
-
-bool
-DrawCallPool::compareDrawCalls(DrawCall* a, DrawCall* b)
-{
-    // FIXME: Sort according to render targets
-
-    const float aPriority = a->priority();
-    const float bPriority = b->priority();
-    const bool samePriority = fabsf(aPriority - bPriority) < 1e-3f;
-
-    if (samePriority && a->zSorted() && b->zSorted())
-    {
-        auto aPosition = getDrawcallEyePosition(a);
-        auto bPosition = getDrawcallEyePosition(b);
-
-        return aPosition.z > bPosition.z;
-    }
-
-    return aPriority < bPriority;
 }
 
 math::vec3
