@@ -178,10 +178,8 @@ DrawCallZSorter::propertyRemovedHandler(data::Store& store,
 void
 DrawCallZSorter::requestZSort()
 {
-    /*
     if (_drawcall->zSorted())
-        _drawcall->zSortNeeded()->execute(_drawcall); // temporary ugly solution
-    */
+        _drawcall->zSortNeeded()->execute(_drawcall);
 }
 
 math::vec3
