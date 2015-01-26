@@ -154,7 +154,9 @@ HTTPProtocol::load()
             resolvedFilename().c_str(),
             "GET",
             "",
+#if defined(EMSCRIPTEN_WGET_HEADERS)
             additionalHeader.c_str(),
+#endif
             loader.get(),
             0,
             &wget2CompleteHandler,

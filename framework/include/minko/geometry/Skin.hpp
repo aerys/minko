@@ -37,17 +37,17 @@ namespace minko
 			typedef std::shared_ptr<Bone>	BonePtr;
 
 		private:
-			const unsigned int				_numBones;
-			std::vector<BonePtr>			_bones;
+			const unsigned int				        _numBones;
+			std::vector<BonePtr>			        _bones;
 
-			const uint						_duration;				// in milliseconds
-			const float						_timeFactor;
-			std::vector<std::vector<float>>	_boneMatricesPerFrame;
+			const uint						        _duration;				// in milliseconds
+			const float						        _timeFactor;
+			std::vector<std::vector<math::mat4>>	_boneMatricesPerFrame;
 
-			unsigned int					_maxNumVertexBones;
-			std::vector<unsigned int>		_numVertexBones;		// size = #vertices
-			std::vector<unsigned int>		_vertexBones;			// size = #vertices * #bones      
-			std::vector<float>				_vertexBoneWeights;		// size = #vertices * #bones   
+			unsigned int					        _maxNumVertexBones;
+			std::vector<unsigned int>		        _numVertexBones;		// size = #vertices
+			std::vector<unsigned int>		        _vertexBones;			// size = #vertices * #bones      
+			std::vector<float>				        _vertexBoneWeights;		// size = #vertices * #bones   
 			
 		public:
 			inline
@@ -122,20 +122,20 @@ namespace minko
 
 			inline
 			void
-			setBoneMatricesPerFrame(std::vector<std::vector<float>> boneMatricesPerFrame)
+			setBoneMatricesPerFrame(std::vector<std::vector<math::mat4>> boneMatricesPerFrame)
 			{
 				_boneMatricesPerFrame = boneMatricesPerFrame;
 			}
 
 			inline
-			std::vector<std::vector<float>>
+            std::vector<std::vector<math::mat4>>
 			getBoneMatricesPerFrame()
 			{
 				return _boneMatricesPerFrame;
 			}
 
 			inline
-			const std::vector<float>&
+			const std::vector<math::mat4>&
 			matrices(unsigned int frameId) const
 			{
 				return _boneMatricesPerFrame[frameId];

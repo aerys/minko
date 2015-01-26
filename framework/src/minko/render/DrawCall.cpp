@@ -273,51 +273,53 @@ DrawCall::setUniformValueFromStore(const ProgramInputs::UniformInput&   input,
                                    const std::string&                   propertyName,
                                    const data::Store&                   store)
 {
+    bool isArray = input.name[input.name.size() - 1] == ']';
+
     switch (input.type)
     {
         case ProgramInputs::Type::bool1:
-            setUniformValue(_uniformBool, input.location, 1, input.size, store.getPointer<int>(propertyName));
+            setUniformValue(_uniformBool, input.location, 1, input.size, (!isArray ? store.getPointer<int>(propertyName) : &store.get<std::vector<int>>(propertyName)[0]));
             break;
         case ProgramInputs::Type::bool2:
-            setUniformValue(_uniformBool, input.location, 2, input.size, math::value_ptr(store.get<math::ivec2>(propertyName)));
+            setUniformValue(_uniformBool, input.location, 2, input.size, (!isArray ? math::value_ptr(store.get<math::ivec2>(propertyName)) : math::value_ptr(store.get<std::vector<math::ivec2>>(propertyName)[0])));
             break;
         case ProgramInputs::Type::bool3:
-            setUniformValue(_uniformBool, input.location, 3, input.size, math::value_ptr(store.get<math::ivec3>(propertyName)));
+            setUniformValue(_uniformBool, input.location, 3, input.size, (!isArray ? math::value_ptr(store.get<math::ivec3>(propertyName)) : math::value_ptr(store.get<std::vector<math::ivec3>>(propertyName)[0])));
             break;
         case ProgramInputs::Type::bool4:
-            setUniformValue(_uniformBool, input.location, 4, input.size, math::value_ptr(store.get<math::ivec4>(propertyName)));
+            setUniformValue(_uniformBool, input.location, 4, input.size, (!isArray ? math::value_ptr(store.get<math::ivec4>(propertyName)) : math::value_ptr(store.get<std::vector<math::ivec4>>(propertyName)[0])));
             break;
         case ProgramInputs::Type::int1:
-            setUniformValue(_uniformInt, input.location, 1, input.size, store.getPointer<int>(propertyName));
+            setUniformValue(_uniformInt, input.location, 1, input.size, (!isArray ? store.getPointer<int>(propertyName) : &store.get<std::vector<int>>(propertyName)[0]));
             break;
         case ProgramInputs::Type::int2:
-            setUniformValue(_uniformInt, input.location, 2, input.size, math::value_ptr(store.get<math::ivec2>(propertyName)));
+            setUniformValue(_uniformInt, input.location, 2, input.size, (!isArray ? math::value_ptr(store.get<math::ivec2>(propertyName)) : math::value_ptr(store.get<std::vector<math::ivec2>>(propertyName)[0])));
             break;
         case ProgramInputs::Type::int3:
-            setUniformValue(_uniformInt, input.location, 3, input.size, math::value_ptr(store.get<math::ivec3>(propertyName)));
+            setUniformValue(_uniformInt, input.location, 3, input.size, (!isArray ? math::value_ptr(store.get<math::ivec3>(propertyName)) : math::value_ptr(store.get<std::vector<math::ivec3>>(propertyName)[0])));
             break;
         case ProgramInputs::Type::int4:
-            setUniformValue(_uniformInt, input.location, 4, input.size, math::value_ptr(store.get<math::ivec4>(propertyName)));
+            setUniformValue(_uniformInt, input.location, 4, input.size, (!isArray ? math::value_ptr(store.get<math::ivec4>(propertyName)) : math::value_ptr(store.get<std::vector<math::ivec4>>(propertyName)[0])));
             break;
         case ProgramInputs::Type::float1:
-            setUniformValue(_uniformFloat, input.location, 1, input.size, store.getPointer<float>(propertyName));
+            setUniformValue(_uniformFloat, input.location, 1, input.size, (!isArray ? store.getPointer<float>(propertyName) : &store.get<std::vector<float>>(propertyName)[0]));
             break;
         case ProgramInputs::Type::float2:
-            setUniformValue(_uniformFloat, input.location, 2, input.size, math::value_ptr(store.get<math::vec2>(propertyName)));
+            setUniformValue(_uniformFloat, input.location, 2, input.size, (!isArray ? math::value_ptr(store.get<math::vec2>(propertyName)) : math::value_ptr(store.get<std::vector<math::vec2>>(propertyName)[0])));
             break;
         case ProgramInputs::Type::float3:
-            setUniformValue(_uniformFloat, input.location, 3, input.size, math::value_ptr(store.get<math::vec3>(propertyName)));
+            setUniformValue(_uniformFloat, input.location, 3, input.size, (!isArray ? math::value_ptr(store.get<math::vec3>(propertyName)) : math::value_ptr(store.get<std::vector<math::vec3>>(propertyName)[0])));
             break;
         case ProgramInputs::Type::float4:
-            setUniformValue(_uniformFloat, input.location, 4, input.size, math::value_ptr(store.get<math::vec4>(propertyName)));
+            setUniformValue(_uniformFloat, input.location, 4, input.size, (!isArray ? math::value_ptr(store.get<math::vec4>(propertyName)) : math::value_ptr(store.get<std::vector<math::vec4>>(propertyName)[0])));
             break;
         case ProgramInputs::Type::float16:
-            setUniformValue(_uniformFloat, input.location, 16, input.size, math::value_ptr(store.get<math::mat4>(propertyName)));
+            setUniformValue(_uniformFloat, input.location, 16, input.size, (!isArray ? math::value_ptr(store.get<math::mat4>(propertyName)) : math::value_ptr(store.get<std::vector<math::mat4>>(propertyName)[0])));
             break;
         case ProgramInputs::Type::sampler2d:
             _samplers.push_back({
                 static_cast<uint>(_program->setTextureNames().size() + _samplers.size()),
-                store.getPointer<TextureSampler>(propertyName)->id,
+                store.getPointer<TextureSampler>(propertyName),
                 input.location
             });
         break;
@@ -486,7 +488,7 @@ DrawCall::render(AbstractContext::Ptr   context,
 
     for (const auto& s : _samplers)
     {
-        context->setTextureAt(s.position, *s.resourceId, s.location);
+        context->setTextureAt(s.position, *s.sampler->id, s.location);
         context->setSamplerStateAt(s.position, *s.wrapMode, *s.textureFilter, *s.mipFilter);
     }
 
@@ -495,8 +497,10 @@ DrawCall::render(AbstractContext::Ptr   context,
 
     for (const auto& a : _attributes)
         context->setVertexBufferAt(a.location, *a.resourceId, a.size, *a.stride, a.offset);
-    // for (auto numAttributes = _attributes.size(); numAttributes < MAX_NUM_VERTEXBUFFERS; ++numAttributes)
-    //     context->setVertexBufferAt(numAttributes, -1, 0, 0, 0);
+    /*
+    for (auto numAttributes = _attributes.size(); numAttributes < MAX_NUM_VERTEXBUFFERS; ++numAttributes)
+        context->setVertexBufferAt(numAttributes, -1, 0, 0, 0);
+    */
 
     context->setColorMask(*_colorMask);
     context->setBlendingMode(*_blendingSourceFactor, *_blendingDestinationFactor);

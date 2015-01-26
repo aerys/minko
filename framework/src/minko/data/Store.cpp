@@ -271,7 +271,7 @@ Store::updateCollectionLength(data::Collection::Ptr collection)
         doAddProvider(_lengthProvider);
     }
 
-    _lengthProvider->set(collection->name() + ".length", collection->items().size());
+    _lengthProvider->set<int>(collection->name() + ".length", collection->items().size());
 }
 
 void

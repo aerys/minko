@@ -49,9 +49,9 @@ void main(void)
 
 	vec4 worldPosition = vec4(aPosition, 1.0);
 
-	#ifdef NUM_BONES
+	#ifdef SKINNING_NUM_BONES
 		worldPosition = skinning_moveVertex(worldPosition, uBoneMatrices, aBoneIdsA, aBoneIdsB, aBoneWeightsA, aBoneWeightsB);
-	#endif // NUM_BONES
+	#endif // SKINNING_NUM_BONES
 
 	#ifdef POP_LOD_ENABLED
 		#ifdef POP_BLENDING_ENABLED
@@ -70,9 +70,9 @@ void main(void)
 		vertexPosition = worldPosition.xyz;
 		vertexNormal = aNormal;
 
-		#ifdef NUM_BONES
+		#ifdef SKINNING_NUM_BONES
 			vertexNormal = skinning_moveVertex(vec4(aNormal, 0.0), uBoneMatrices, aBoneIdsA, aBoneIdsB, aBoneWeightsA, aBoneWeightsB).xyz;
-		#endif // NUM_BONES
+		#endif // SKINNING_NUM_BONES
 
 		#ifdef MODEL_TO_WORLD
 			vertexNormal = mat3(uModelToWorldMatrix) * vertexNormal;
