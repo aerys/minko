@@ -46,7 +46,8 @@ DrawCall::DrawCall(std::shared_ptr<Pass>  pass,
     _target(nullptr),
     _indexBuffer(nullptr),
     _firstIndex(nullptr),
-    _numIndices(nullptr)
+    _numIndices(nullptr),
+    _zSorted(nullptr)
 {
     _zSorter->initialize(_targetData, _rendererData, _rootData);
 }

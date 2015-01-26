@@ -223,7 +223,10 @@ namespace minko
             bool
             zSorted() const
             {
-                return *_zSorted;
+                if (_zSorted)
+                    return *_zSorted;
+                else
+                    return false;
             }
 
             inline
