@@ -2,23 +2,23 @@
 {
     "name"  : "light scattering",
 
-    "attributes" :
-    {
-        "aPosition"     : "geometry[${geometryUuid}].position",
-        "aUV"           : "geometry[${geometryUuid}].uv"
-    },
-
-    "uniforms"   :
-    {
-        "uInputTex" : "material[${materialUuid}].backbuffer"
-    },
-
     "techniques":
     [
         {
             "passes":
             [
                 {
+                    "attributes" :
+                    {
+                        "aPosition"     : "geometry[${geometryUuid}].position",
+                        "aUV"           : "geometry[${geometryUuid}].uv"
+                    },
+
+                    "uniforms"   :
+                    {
+                        "lightPositionOnScreen" : "material[${materialUuid}].lightPositionOnScreen",
+                        "uInputTex" : "material[${materialUuid}].backbuffer"
+                    },
 
                     "vertexShader"      :
                     "
@@ -36,22 +36,84 @@
 
                     "fragmentShader"    :
                     "
+                        uniform vec2 lightPositionOnScreen;
                         uniform sampler2D uInputTex;
+
+                        const float decay = 0.95;
+                        const float weight = 0.90;
+                        const float exposure = 0.40;
+                        const float density = 0.926;
+
+                        const int NUM_SAMPLES = 1;
 
                         varying vec2 vVertexUV;
 
                         void main()
                         {
-                            vec4 pixel = texture2D(uInputTex, vVertexUV);
-                            float average = (pixel.r + pixel.g + pixel.b) / 3;
+                            // vec4 pixel = texture2D(uInputTex, vVertexUV);
 
-                            gl_FragColor = vec4(average, average, average, 1);
+                            // gl_FragColor = pixel;
+
+                            vec2 deltaTextCoord = vec2( gl_TexCoord[0].st - lightPositionOnScreen.xy );
+                            vec2 textCoo = gl_TexCoord[0].st;
+                            deltaTextCoord *= 1.0 / float(NUM_SAMPLES) * density;
+                            float illuminationDecay = 1.0;
+
+                            for (int i = 0; i < NUM_SAMPLES; i++)
+                            {
+                                textCoo -= deltaTextCoord;
+                                vec4 sample = texture2D(uInputTex, textCoo);
+
+                                sample *= illuminationDecay * weight;
+
+                                gl_FragColor += sample;
+
+                                illuminationDecay *= decay;
+                             }
+
+                             gl_FragColor *= exposure;
                         }
                     "
                 }
             ],
             "unusedPasses" :
             [
+                {
+                    "attributes" :
+                    {
+                        "aPosition"     : "geometry[${geometryUuid}].position",
+                        "aUV"           : "geometry[${geometryUuid}].uv"
+                    },
+                    "uniforms"          : {
+                        "uLightPositionOnScreen"     : "material[${materialId}].lightPositionOnScreen"
+                    },
+                    "triangleCulling"   : "none",
+                    "states" : {
+                        "target" : {
+                            "name" : "lightscattering_target_1",
+                            "size" : 256
+                        },
+                        "colorMask": 0
+                    },
+                    "vertexShader" :
+                    "
+                        attribute vec3 aPosition;
+                        attribute vec2 aUV;
+
+                        void main(void)
+                        {
+                            gl_Position = vec4(aPosition, 1) * vec4(1., 1., 1., .5);
+                        }
+                    ",
+                    "fragmentShader" :
+                    "
+                        void main()
+                        {
+                            gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+                        }
+                    "
+                },
+
                 {
                     "name" : "downsample and threshold",
                     "uniformBindings" : {
