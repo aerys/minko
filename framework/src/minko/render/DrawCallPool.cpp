@@ -72,14 +72,7 @@ DrawCallPool::removeDrawCalls(const DrawCallIteratorPair& iterators)
             drawCall.rendererData(),
             drawCall.targetData()
         );
-
-        std::list<PropertyChangedSlotMap::key_type> toRemove;
-        for (auto& bindingDrawCallPairAndSlot : _propChangedSlot)
-            if (bindingDrawCallPairAndSlot.first.second == &drawCall)
-                toRemove.push_front(bindingDrawCallPairAndSlot.first);
-
-        for (const auto& key : toRemove)
-            _propChangedSlot.erase(key);
+        unbindDrawCall(drawCall);
 
         _invalidDrawCalls.erase(&drawCall);
     }
@@ -275,6 +268,7 @@ DrawCallPool::initializeDrawCall(DrawCall& drawCall, bool forceRebind)
         return;
 
     if (drawCall.program())
+    {
         unwatchProgramSignature(
             drawCall,
             drawCall.pass()->macroBindings(),
@@ -282,23 +276,10 @@ DrawCallPool::initializeDrawCall(DrawCall& drawCall, bool forceRebind)
             drawCall.rendererData(),
             drawCall.targetData()
         );
+        unbindDrawCall(drawCall);
+    }
 
-    drawCall.bind(program);
-
-    // bind attributes
-    // FIXME: like for uniforms, watch and swap default values / binding value
-    for (const auto& input : program->inputs().attributes())
-        drawCall.bindAttribute(input, pass->attributeBindings().bindings, pass->attributeBindings().defaultValues);
-    // bind uniforms
-    for (const auto& input : program->inputs().uniforms())
-        uniformBindingPropertyAddedHandler(drawCall, input, pass->uniformBindings(), forceRebind);
-    // bind states
-    drawCall.bindStates(pass->stateBindings().bindings, pass->stateBindings().defaultValues);
-    // bind index buffer
-    if (!pass->isPostProcessing())
-        drawCall.bindIndexBuffer();
-
-    // FIXME: avoid const_cast
+    bindDrawCall(drawCall, pass, program, forceRebind);
     if (programAndSignature.second != nullptr)
         watchProgramSignature(
             drawCall,
@@ -329,14 +310,19 @@ DrawCallPool::uniformBindingPropertyAddedHandler(DrawCall&                      
             ? resolvedBinding->store.propertyRemoved(propertyName)
             : resolvedBinding->store.propertyAdded(propertyName);
 
-        _propChangedSlot[{&resolvedBinding->binding, &drawCall}] = signal.connect(std::bind(
-            &DrawCallPool::uniformBindingPropertyAddedHandler,
-            this,
-            std::ref(drawCall),
-            std::ref(input),
-            std::ref(uniformBindingMap),
-            false
-        ));
+        _propChangedSlot[{&resolvedBinding->binding, &drawCall}] = signal.connect(
+            [&](data::Store&, data::Provider::Ptr, const std::string&)
+            {
+                _drawCallToPropRebindFuncs[&drawCall].push_back(std::bind(
+                    &DrawCallPool::uniformBindingPropertyAddedHandler,
+                    this,
+                    std::ref(drawCall),
+                    std::ref(input),
+                    std::ref(uniformBindingMap),
+                    false
+                ));
+            }
+        );
 
         delete resolvedBinding;
     }
@@ -358,32 +344,42 @@ DrawCallPool::samplerStatesBindingPropertyAddedHandler(DrawCall&                
 
     for (auto resolvedBinding : resolvedBindings)
     {
-       if (resolvedBinding != nullptr)
-       {
-           auto& propertyName = resolvedBinding->propertyName;
-           auto& signal = resolvedBinding->store.hasProperty(propertyName)
-               ? resolvedBinding->store.propertyRemoved(propertyName)
-               : resolvedBinding->store.propertyAdded(propertyName);
+        if (resolvedBinding != nullptr)
+        {
+            auto& propertyName = resolvedBinding->propertyName;
+            auto& signal = resolvedBinding->store.hasProperty(propertyName)
+                ? resolvedBinding->store.propertyRemoved(propertyName)
+                : resolvedBinding->store.propertyAdded(propertyName);
 
-           _propChangedSlot[{&resolvedBinding->binding, &drawCall}] = signal.connect(std::bind(
-               &DrawCallPool::samplerStatesBindingPropertyAddedHandler,
-               this,
-               std::ref(drawCall),
-               std::ref(input),
-               std::ref(uniformBindingMap)
-            ));
+            _propChangedSlot[{&resolvedBinding->binding, &drawCall}] = signal.connect(
+                [&](data::Store&, data::Provider::Ptr, const std::string&)
+                {
+                    _drawCallToPropRebindFuncs[&drawCall].push_back(std::bind(
+                        &DrawCallPool::samplerStatesBindingPropertyAddedHandler,
+                        this,
+                        std::ref(drawCall),
+                        std::ref(input),
+                        std::ref(uniformBindingMap)
+                    ));
+                }
+            );
 
-           delete resolvedBinding;
-       }
+            delete resolvedBinding;
+        }
     }
 }
+
 void
 DrawCallPool::update()
 {
     for (auto* drawCallPtr : _invalidDrawCalls)
         initializeDrawCall(*drawCallPtr, true);
-
     _invalidDrawCalls.clear();
+
+    for (auto drawCallPtrAndFuncList : _drawCallToPropRebindFuncs)
+        for (auto& func : drawCallPtrAndFuncList.second)
+            func();
+    _drawCallToPropRebindFuncs.clear();
 }
 
 void
@@ -410,4 +406,37 @@ DrawCallPool::clear()
     _invalidDrawCalls.clear();
     _macroChangedSlot.clear();
     _propChangedSlot.clear();
+}
+
+void
+DrawCallPool::bindDrawCall(DrawCall& drawCall, Pass::Ptr pass, Program::Ptr program, bool forceRebind)
+{
+    drawCall.bind(program);
+
+    // bind attributes
+    // FIXME: like for uniforms, watch and swap default values / binding value
+    for (const auto& input : program->inputs().attributes())
+        drawCall.bindAttribute(input, pass->attributeBindings().bindings, pass->attributeBindings().defaultValues);
+    // bind uniforms
+    for (const auto& input : program->inputs().uniforms())
+        uniformBindingPropertyAddedHandler(drawCall, input, pass->uniformBindings(), forceRebind);
+    // bind states
+    drawCall.bindStates(pass->stateBindings().bindings, pass->stateBindings().defaultValues);
+    // bind index buffer
+    if (!pass->isPostProcessing())
+        drawCall.bindIndexBuffer();
+}
+
+void
+DrawCallPool::unbindDrawCall(DrawCall& drawCall)
+{
+    std::list<PropertyChangedSlotMap::key_type> toRemove;
+    for (auto& bindingDrawCallPairAndSlot : _propChangedSlot)
+        if (bindingDrawCallPairAndSlot.first.second == &drawCall)
+            toRemove.push_front(bindingDrawCallPairAndSlot.first);
+
+    for (const auto& key : toRemove)
+        _propChangedSlot.erase(key);
+
+    _drawCallToPropRebindFuncs.erase(&drawCall);
 }
