@@ -53,7 +53,7 @@ namespace minko
 
                 auto p = data::Provider::create();
                 auto numProperties = 1 + std::abs(rand() % 32);
-                std::map<std::string, data::Binding> bindings;
+                std::unordered_map<std::string, data::Binding> bindings;
                 std::vector<ProgramInputs::UniformInput> inputs;
 
                 for (auto i = 0; i < numProperties; ++i)
