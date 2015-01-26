@@ -1,6 +1,6 @@
 @echo off
 
 pushd ..\..\..
-tool\win\bin\premake5.exe --no-test %* vs2013
+tool\win\bin\premake5.exe %* vs2013
 popd
 pause
