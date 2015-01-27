@@ -43,13 +43,18 @@ namespace minko
 			typedef ProviderPropertyChangedSignal::Slot				        	ProviderPropertyChangedSlot;
             typedef Signal<Collection&, ProviderPtr>::Slot                  	CollectionChangedSignalSlot;
 
+			// template <class K, class V, typename... H>
+			// using map = google::sparse_hash_map<K, V, H...>;
+			template <class K, class V, typename... H>
+			using map = std::unordered_map<K, V, H...>;
+
         public:
             typedef Signal<Store&, ProviderPtr, const PropertyName&>			PropertyChangedSignal;
 
         private:
-            typedef std::unordered_map<PropertyName, PropertyChangedSignal, PropertyName::hash, PropertyName::equal_to>  	ChangedSignalSlotMap;
-            typedef std::map<ProviderPtr, ProviderChangedSignalSlotList>    	ProviderToChangedSlotListMap;
-            typedef std::map<CollectionPtr, CollectionChangedSignalSlot>    	CollectionToChangedSlotMap;
+            typedef map<PropertyName, PropertyChangedSignal, PropertyName::hash, PropertyName::equal_to> 					ChangedSignalMap;
+            typedef map<ProviderPtr, ProviderChangedSignalSlotList, std::hash<ProviderPtr>, std::equal_to<ProviderPtr>> 	ProviderToChangedSlotListMap;
+            typedef map<CollectionPtr, CollectionChangedSignalSlot, std::hash<CollectionPtr>, std::equal_to<CollectionPtr>> CollectionToChangedSlotMap;
 
         private:
 			std::list<ProviderPtr>			_providers;
@@ -59,9 +64,9 @@ namespace minko
 			PropertyChangedSignal	    	_propertyAdded;
 			PropertyChangedSignal     		_propertyRemoved;
             PropertyChangedSignal           _propertyChanged;
-            ChangedSignalSlotMap            _propertyNameToChangedSignal;
-            ChangedSignalSlotMap            _propertyNameToAddedSignal;
-            ChangedSignalSlotMap            _propertyNameToRemovedSignal;
+            ChangedSignalMap            	_propertyNameToChangedSignal;
+            ChangedSignalMap            	_propertyNameToAddedSignal;
+            ChangedSignalMap            	_propertyNameToRemovedSignal;
 
             ProviderToChangedSlotListMap	_propertySlots;
             CollectionToChangedSlotMap      _collectionItemAddedSlots;
@@ -350,8 +355,8 @@ namespace minko
             executePropertySignal(ProviderPtr                   provider,
                                   CollectionPtr                 collection,
                                   const PropertyName&           propertyName,
-                                  const PropertyChangedSignal&  anyChangedSignal,
-                                  const ChangedSignalSlotMap&	propertyNameToSignal);
+								  const PropertyChangedSignal&   anyChangedSignal,
+                                  const ChangedSignalMap& 		propertyNameToSignal);
 		};
 	}
 }

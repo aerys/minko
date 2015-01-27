@@ -40,6 +40,12 @@ Store::Store() :
     _collectionItemAddedSlots(),
     _collectionItemRemovedSlots()
 {
+    // _propertyNameToChangedSignal.set_deleted_key("");
+    // _propertyNameToAddedSignal.set_deleted_key("");
+    // _propertyNameToRemovedSignal.set_deleted_key("");
+    // _propertySlots.set_deleted_key(nullptr);
+    // _collectionItemAddedSlots.set_deleted_key(nullptr);
+    // _collectionItemRemovedSlots.set_deleted_key(nullptr);
 }
 
 Store::Store(const Store& store, bool deepCopy) :
@@ -116,21 +122,21 @@ Store::executePropertySignal(Provider::Ptr                  provider,
                              Collection::Ptr                collection,
                              const PropertyName&            propertyName,
                              const PropertyChangedSignal&   anyChangedSignal,
-                             const ChangedSignalSlotMap&    propertyNameToSignal)
+                             const ChangedSignalMap&        propertyNameToSignal)
 {
     anyChangedSignal.execute(*this, provider, propertyName);
     if (collection)
     {
         auto formattedPropertyName = formatPropertyName(collection, provider, *propertyName, true);
         if (propertyNameToSignal.count(formattedPropertyName) != 0)
-            propertyNameToSignal.at(formattedPropertyName).execute(*this, provider, propertyName);
+            propertyNameToSignal.find(formattedPropertyName)->second.execute(*this, provider, propertyName);
 
         formattedPropertyName = formatPropertyName(collection, provider, *propertyName);
         if (propertyNameToSignal.count(formattedPropertyName) != 0)
-            propertyNameToSignal.at(formattedPropertyName).execute(*this, provider, propertyName);
+            propertyNameToSignal.find(formattedPropertyName)->second.execute(*this, provider, propertyName);
     }
     else if (propertyNameToSignal.count(propertyName) != 0)
-        propertyNameToSignal.at(propertyName).execute(*this, provider, propertyName);
+        propertyNameToSignal.find(propertyName)->second.execute(*this, provider, propertyName);
 }
 
 void
@@ -245,15 +251,21 @@ Store::doAddProvider(ProviderPtr provider, CollectionPtr collection)
         std::placeholders::_2
     )));
 
-    _propertySlots[provider].push_back(provider->propertyChanged().connect(std::bind(
-        &Store::executePropertySignal,
-        this,
-        provider,
-        collection,
-        std::placeholders::_2,
-        std::ref(_propertyChanged),
-        std::ref(_propertyNameToChangedSignal)
-    )));
+    // _propertySlots[provider].push_back(provider->propertyChanged().connect(std::bind(
+    //     &Store::executePropertySignal,
+    //     this,
+    //     provider,
+    //     collection,
+    //     std::placeholders::_2,
+    //     std::ref(_propertyChanged),
+    //     std::ref(_propertyNameToChangedSignal)
+    // )));
+    _propertySlots[provider].push_back(provider->propertyChanged().connect(
+        [=](Provider::Ptr p, const PropertyName& propertyName)
+        {
+            executePropertySignal(p, collection, propertyName, this->_propertyChanged, this->_propertyNameToChangedSignal);
+        }
+    ));
 
     for (auto property : provider->values())
         providerPropertyAddedHandler(provider, collection, property.first);
