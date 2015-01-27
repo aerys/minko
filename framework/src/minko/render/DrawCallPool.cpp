@@ -311,7 +311,7 @@ DrawCallPool::uniformBindingPropertyAddedHandler(DrawCall&                      
             : resolvedBinding->store.propertyAdded(propertyName);
 
         _propChangedSlot[{&resolvedBinding->binding, &drawCall}] = signal.connect(
-            [&](data::Store&, data::Provider::Ptr, const std::string&)
+            [&](data::Store&, data::Provider::Ptr, const data::Provider::PropertyName&)
             {
                 _drawCallToPropRebindFuncs[&drawCall].push_back(std::bind(
                     &DrawCallPool::uniformBindingPropertyAddedHandler,
@@ -352,7 +352,7 @@ DrawCallPool::samplerStatesBindingPropertyAddedHandler(DrawCall&                
                 : resolvedBinding->store.propertyAdded(propertyName);
 
             _propChangedSlot[{&resolvedBinding->binding, &drawCall}] = signal.connect(
-                [&](data::Store&, data::Provider::Ptr, const std::string&)
+                [&](data::Store&, data::Provider::Ptr, const data::Provider::PropertyName&)
                 {
                     _drawCallToPropRebindFuncs[&drawCall].push_back(std::bind(
                         &DrawCallPool::samplerStatesBindingPropertyAddedHandler,

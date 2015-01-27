@@ -92,7 +92,7 @@ ProgramSignature::ProgramSignature(const data::MacroBindingMap&                 
         {
             _mask |= 1 << macroId;
             _macros.push_back(propertyNameAndValue.first);
-            _types.push_back(macroBindings.types.at(propertyNameAndValue.first));
+            _types.push_back(macroBindings.types.at(*propertyNameAndValue.first));
             _values.push_back(propertyNameAndValue.second);
 
             ++macroId;
@@ -195,43 +195,43 @@ ProgramSignature::updateProgram(Program& program) const
             switch (_types[typeIndex])
             {
                 case MacroBindingMap::MacroType::UNSET:
-                    program.define(_macros[macroIndex]);
+                    program.define(*_macros[macroIndex]);
                     break;
                 case MacroBindingMap::MacroType::BOOL:
-                    program.define(_macros[macroIndex], Any::unsafe_cast<bool>(_values[valueIndex++]));
+                    program.define(*_macros[macroIndex], Any::unsafe_cast<bool>(_values[valueIndex++]));
                     break;
                 case MacroBindingMap::MacroType::BOOL2:
-                    program.define(_macros[macroIndex], Any::unsafe_cast<math::bvec2>(_values[valueIndex++]));
+                    program.define(*_macros[macroIndex], Any::unsafe_cast<math::bvec2>(_values[valueIndex++]));
                     break;
                 case MacroBindingMap::MacroType::BOOL3:
-                    program.define(_macros[macroIndex], Any::unsafe_cast<math::bvec3>(_values[valueIndex++]));
+                    program.define(*_macros[macroIndex], Any::unsafe_cast<math::bvec3>(_values[valueIndex++]));
                     break;
                 case MacroBindingMap::MacroType::BOOL4:
-                    program.define(_macros[macroIndex], Any::unsafe_cast<math::bvec4>(_values[valueIndex++]));
+                    program.define(*_macros[macroIndex], Any::unsafe_cast<math::bvec4>(_values[valueIndex++]));
                     break;
                 case MacroBindingMap::MacroType::INT:
-                    program.define(_macros[macroIndex], Any::unsafe_cast<int>(_values[valueIndex++]));
+                    program.define(*_macros[macroIndex], Any::unsafe_cast<int>(_values[valueIndex++]));
                     break;
                 case MacroBindingMap::MacroType::INT2:
-                    program.define(_macros[macroIndex], Any::unsafe_cast<math::ivec2>(_values[valueIndex++]));
+                    program.define(*_macros[macroIndex], Any::unsafe_cast<math::ivec2>(_values[valueIndex++]));
                     break;
                 case MacroBindingMap::MacroType::INT3:
-                    program.define(_macros[macroIndex], Any::unsafe_cast<math::ivec3>(_values[valueIndex++]));
+                    program.define(*_macros[macroIndex], Any::unsafe_cast<math::ivec3>(_values[valueIndex++]));
                     break;
                 case MacroBindingMap::MacroType::INT4:
-                    program.define(_macros[macroIndex], Any::unsafe_cast<math::ivec4>(_values[valueIndex++]));
+                    program.define(*_macros[macroIndex], Any::unsafe_cast<math::ivec4>(_values[valueIndex++]));
                     break;
                 case MacroBindingMap::MacroType::FLOAT:
-                    program.define(_macros[macroIndex], Any::unsafe_cast<float>(_values[valueIndex++]));
+                    program.define(*_macros[macroIndex], Any::unsafe_cast<float>(_values[valueIndex++]));
                     break;
                 case MacroBindingMap::MacroType::FLOAT2:
-                    program.define(_macros[macroIndex], Any::unsafe_cast<math::vec2>(_values[valueIndex++]));
+                    program.define(*_macros[macroIndex], Any::unsafe_cast<math::vec2>(_values[valueIndex++]));
                     break;
                 case MacroBindingMap::MacroType::FLOAT3:
-                    program.define(_macros[macroIndex], Any::unsafe_cast<math::vec3>(_values[valueIndex++]));
+                    program.define(*_macros[macroIndex], Any::unsafe_cast<math::vec3>(_values[valueIndex++]));
                     break;
                 case MacroBindingMap::MacroType::FLOAT4:
-                    program.define(_macros[macroIndex], Any::unsafe_cast<math::vec4>(_values[valueIndex++]));
+                    program.define(*_macros[macroIndex], Any::unsafe_cast<math::vec4>(_values[valueIndex++]));
                     break;
             }
 

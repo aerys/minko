@@ -78,6 +78,8 @@ namespace minko
 	class Any;
 	template<typename... A>
 	class Signal;
+    template<typename T>
+    class Flyweight;
 	class Color;
 	enum class CloneOption;
 	class AbstractCanvas;

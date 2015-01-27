@@ -112,20 +112,20 @@ Store::removeCollection(std::shared_ptr<Collection> collection)
 }
 
 void
-Store::executePropertySignal(Provider::Ptr                                                  provider,
-                             Collection::Ptr                                                collection,
-                             const std::string&                                             propertyName,
-                             const PropertyChangedSignal&                                   anyChangedSignal,
-                             const std::unordered_map<std::string, PropertyChangedSignal>&  propertyNameToSignal)
+Store::executePropertySignal(Provider::Ptr                  provider,
+                             Collection::Ptr                collection,
+                             const PropertyName&            propertyName,
+                             const PropertyChangedSignal&   anyChangedSignal,
+                             const ChangedSignalSlotMap&    propertyNameToSignal)
 {
     anyChangedSignal.execute(*this, provider, propertyName);
     if (collection)
     {
-        auto formattedPropertyName = formatPropertyName(collection, provider, propertyName, true);
+        auto formattedPropertyName = formatPropertyName(collection, provider, *propertyName, true);
         if (propertyNameToSignal.count(formattedPropertyName) != 0)
             propertyNameToSignal.at(formattedPropertyName).execute(*this, provider, propertyName);
 
-        formattedPropertyName = formatPropertyName(collection, provider, propertyName);
+        formattedPropertyName = formatPropertyName(collection, provider, *propertyName);
         if (propertyNameToSignal.count(formattedPropertyName) != 0)
             propertyNameToSignal.at(formattedPropertyName).execute(*this, provider, propertyName);
     }
@@ -134,9 +134,9 @@ Store::executePropertySignal(Provider::Ptr                                      
 }
 
 void
-Store::providerPropertyAddedHandler(Provider::Ptr       provider,
-                                    Collection::Ptr     collection,
-                                    const std::string& 	propertyName)
+Store::providerPropertyAddedHandler(Provider::Ptr                   provider,
+                                    Collection::Ptr                 collection,
+                                    const Provider::PropertyName& 	propertyName)
 {
     executePropertySignal(provider, collection, propertyName, _propertyAdded, _propertyNameToAddedSignal);
     executePropertySignal(provider, collection, propertyName, _propertyChanged, _propertyNameToChangedSignal);
@@ -144,14 +144,14 @@ Store::providerPropertyAddedHandler(Provider::Ptr       provider,
 
 
 void
-Store::providerPropertyRemovedHandler(Provider::Ptr         provider,
-                                      Collection::Ptr       collection,
-                                      const std::string&	propertyName)
+Store::providerPropertyRemovedHandler(Provider::Ptr                 provider,
+                                      Collection::Ptr               collection,
+                                      const Provider::PropertyName&	propertyName)
 {
     executePropertySignal(provider, collection, propertyName, _propertyChanged, _propertyNameToChangedSignal);
     executePropertySignal(provider, collection, propertyName, _propertyRemoved, _propertyNameToRemovedSignal);
 
-    auto formattedName = formatPropertyName(collection, provider, propertyName);
+    auto formattedName = formatPropertyName(collection, provider, *propertyName);
     if (_propertyNameToAddedSignal.count(formattedName)
         && _propertyNameToAddedSignal[formattedName].numCallbacks() == 0)
         _propertyNameToAddedSignal.erase(formattedName);
@@ -162,7 +162,7 @@ Store::providerPropertyRemovedHandler(Provider::Ptr         provider,
         && _propertyNameToChangedSignal[formattedName].numCallbacks() == 0)
         _propertyNameToChangedSignal.erase(formattedName);
 
-    formattedName = formatPropertyName(collection, provider, propertyName, true);
+    formattedName = formatPropertyName(collection, provider, *propertyName, true);
     if (_propertyNameToAddedSignal.count(formattedName)
         && _propertyNameToAddedSignal[formattedName].numCallbacks() == 0)
         _propertyNameToAddedSignal.erase(formattedName);
@@ -304,9 +304,9 @@ Store::doRemoveProvider(ProviderPtr provider, CollectionPtr collection)
         auto prefix = collection->name() + "[" + std::to_string(providerIndex) + "].";
 
         for (const auto& nameAndValue : provider->values())
-            if (_propertyNameToChangedSignal.count(prefix + nameAndValue.first) != 0
-                && _propertyNameToChangedSignal[prefix + nameAndValue.first].numCallbacks() == 0)
-                _propertyNameToChangedSignal.erase(prefix + nameAndValue.first);
+            if (_propertyNameToChangedSignal.count(prefix + *nameAndValue.first) != 0
+                && _propertyNameToChangedSignal[prefix + *nameAndValue.first].numCallbacks() == 0)
+                _propertyNameToChangedSignal.erase(prefix + *nameAndValue.first);
 
         updateCollectionLength(collection);
 
@@ -328,7 +328,7 @@ Store::doRemoveProvider(ProviderPtr provider, CollectionPtr collection)
 
 }
 
-std::string
+Store::PropertyName
 Store::formatPropertyName(Collection::Ptr       collection,
                           Provider::Ptr         provider,
                           const std::string&    propertyName,
@@ -345,13 +345,13 @@ Store::formatPropertyName(Collection::Ptr       collection,
     return formatPropertyName(collection, std::to_string(it - collection->items().begin()), propertyName);
 }
 
-std::string
+Store::PropertyName
 Store::formatPropertyName(Collection::Ptr collection, const std::string& index, const std::string& propertyName)
 {
     if (collection == nullptr)
         return propertyName;
 
-    return collection->name() + "[" + index + "]." + propertyName;
+    return PropertyName(collection->name() + "[" + index + "]." + propertyName);
 }
 
 void

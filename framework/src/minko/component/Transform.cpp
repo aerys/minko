@@ -143,10 +143,10 @@ Transform::RootTransform::targetAdded(scene::Node::Ptr target)
 
 	if (sceneManager != nullptr)
 		_renderingBeginSlot = sceneManager->renderingBegin()->connect(std::bind(
-			&Transform::RootTransform::renderingBeginHandler, 
-			std::static_pointer_cast<RootTransform>(shared_from_this()), 
-			std::placeholders::_1, 
-			std::placeholders::_2, 
+			&Transform::RootTransform::renderingBeginHandler,
+			std::static_pointer_cast<RootTransform>(shared_from_this()),
+			std::placeholders::_1,
+			std::placeholders::_2,
 			std::placeholders::_3
 		), 1000.f);
 
@@ -169,10 +169,10 @@ Transform::RootTransform::componentAddedHandler(scene::Node::Ptr		node,
 
 	if (sceneManager != nullptr)
 		_renderingBeginSlot = sceneManager->renderingBegin()->connect(std::bind(
-			&Transform::RootTransform::renderingBeginHandler, 
-			std::static_pointer_cast<RootTransform>(shared_from_this()), 
-			std::placeholders::_1, 
-			std::placeholders::_2, 
+			&Transform::RootTransform::renderingBeginHandler,
+			std::static_pointer_cast<RootTransform>(shared_from_this()),
+			std::placeholders::_1,
+			std::placeholders::_2,
 			std::placeholders::_3
 		), 1000.f);
     else
@@ -234,7 +234,7 @@ Transform::RootTransform::addedHandler(scene::Node::Ptr node,
             for (const auto& toRemove : _toRemove)
                 _toAdd.remove(toRemove);
             _invalidLists = true;
-        
+
             target->removeComponent(otherRoot);
         }
     }
@@ -379,6 +379,7 @@ Transform::RootTransform::updateTransforms()
 {
     math::mat4 modelToWorldMatrix;
     uint nodeId = 0;
+	auto propertyName = data::Store::PropertyName(std::string("modelToWorldMatrix"));
 
     for (const auto& node : _nodes)
 	{
@@ -411,13 +412,9 @@ Transform::RootTransform::updateTransforms()
                 *nodeCacheEntry._modelToWorldMatrix = modelToWorldMatrix;
 
                 // execute the "property changed" signal(s) manually
-                nodeData.propertyChanged().execute(nodeData, provider, "modelToWorldMatrix");
+                nodeData.propertyChanged().execute(nodeData, provider, propertyName);
                 if (nodeData.hasPropertyChangedSignal("modelToWorldMatrix"))
-                    nodeData.propertyChanged("modelToWorldMatrix").execute(
-                        nodeData,
-                        provider,
-                        "modelToWorldMatrix"
-                    );
+                    nodeData.propertyChanged("modelToWorldMatrix").execute(nodeData, provider, propertyName);
 
 			    auto numChildren = nodeCacheEntry._numChildren;
 
@@ -452,8 +449,8 @@ Transform::RootTransform::forceUpdate(scene::Node::Ptr node, bool updateTransfor
 }
 
 void
-Transform::RootTransform::renderingBeginHandler(std::shared_ptr<SceneManager>				sceneManager, 
-											    uint										frameId, 
+Transform::RootTransform::renderingBeginHandler(std::shared_ptr<SceneManager>				sceneManager,
+											    uint										frameId,
 												std::shared_ptr<render::AbstractTexture>	abstractTexture)
 {
 	if (_invalidLists)

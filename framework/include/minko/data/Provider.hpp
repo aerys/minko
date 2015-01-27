@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/Any.hpp"
 #include "minko/Signal.hpp"
+#include "minko/Flyweight.hpp"
 #include "minko/Uuid.hpp"
 
 namespace minko
@@ -33,8 +34,9 @@ namespace minko
             public Uuid::enable_uuid
 		{
 		public:
-			typedef std::shared_ptr<Provider>		Ptr;
-			typedef std::shared_ptr<const Provider>	ConstPtr;
+			typedef std::shared_ptr<Provider>															Ptr;
+			typedef Flyweight<std::string>																PropertyName;
+			typedef std::unordered_map<PropertyName, Any, PropertyName::hash, PropertyName::equal_to> 	ValueMap;
 
         private:
             template <typename T>
@@ -54,11 +56,11 @@ namespace minko
             };
 
 		private:
-            std::unordered_map<std::string, Any>	_values;
+            ValueMap							_values;
 
-			Signal<Ptr, const std::string&>         _propertyAdded;
-            Signal<Ptr, const std::string&>	        _propertyChanged;
-			Signal<Ptr, const std::string&>	        _propertyRemoved;
+			Signal<Ptr, const PropertyName&>    _propertyAdded;
+            Signal<Ptr, const PropertyName&>	_propertyChanged;
+			Signal<Ptr, const PropertyName&>	_propertyRemoved;
 
 		public:
 			static
@@ -85,28 +87,28 @@ namespace minko
             }
 
 			inline
-            const std::unordered_map<std::string, Any>&
+            const ValueMap&
 			values() const
 			{
 				return _values;
 			}
 
 			inline
-			Signal<Ptr, const std::string&>&
+			Signal<Ptr, const PropertyName&>&
 			propertyAdded()
 			{
 				return _propertyAdded;
 			}
 
             inline
-			Signal<Ptr, const std::string&>&
+			Signal<Ptr, const PropertyName&>&
 			propertyChanged()
 			{
 				return _propertyChanged;
 			}
 
 			inline
-			Signal<Ptr, const std::string&>&
+			Signal<Ptr, const PropertyName&>&
 			propertyRemoved()
 			{
 				return _propertyRemoved;
@@ -114,31 +116,62 @@ namespace minko
 
 			template <typename T>
 			inline
+			const T&
+			get(const std::string& propertyName)
+			{
+				return get<T>(PropertyName(propertyName));
+			}
+
+			template <typename T>
+			inline
             typename std::enable_if<is_valid<T>::value, const T&>::type
-            get(const std::string& propertyName) const
+            get(const PropertyName& propertyName) const
 			{
                 return *Any::unsafe_cast<T>(&_values.at(propertyName));
+			}
+
+			template <typename T>
+			inline
+			const T*
+			getPointer(const std::string& propertyName)
+			{
+				return getPointer<T>(PropertyName(propertyName));
 			}
 
             template <typename T>
             inline
             typename std::enable_if<is_valid<T>::value, const T*>::type
-            getPointer(const std::string& propertyName) const
+            getPointer(const PropertyName& propertyName) const
             {
                 return Any::unsafe_cast<T>(&_values.at(propertyName));
             }
+
+			template <typename T>
+			inline
+			T*
+			getUnsafePointer(const std::string& propertyName)
+			{
+				return getUnsafePointer<T>(PropertyName(propertyName));
+			}
 
             template <typename T>
             inline
             typename std::enable_if<is_valid<T>::value, T*>::type
-            getUnsafePointer(const std::string& propertyName)
+            getUnsafePointer(const PropertyName& propertyName)
             {
                 return Any::unsafe_cast<T>(&_values.at(propertyName));
             }
 
+			template <typename T>
+			Ptr
+			set(const std::string& propertyName, T value)
+			{
+				return set<T>(PropertyName(propertyName), value);
+			}
+
             template <typename T>
             typename std::enable_if<is_valid<T>::value, Ptr>::type
-            set(const std::string& propertyName, T value)
+            set(const PropertyName& propertyName, T value)
             {
                 if (_values.count(propertyName) != 0)
                 {
@@ -162,7 +195,7 @@ namespace minko
 
             template <typename T>
 			bool
-            propertyHasType(const std::string& propertyName) const
+            propertyHasType(const PropertyName& propertyName) const
 			{
                 const auto foundIt = _values.find(propertyName);
 
