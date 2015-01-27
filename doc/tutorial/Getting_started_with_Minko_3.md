@@ -10,6 +10,7 @@ To get started with Minko 3 beta 2, just follow those tutorials:
     -   To target Linux, follow the [Compiling the SDK for Linux](../tutorial/Compiling_the_SDK_for_Linux.md) tutorial.
     -   To target HTML5, follow the [Compiling the SDK for HTML5](../tutorial/Compiling_the_SDK_for_HTML5.md) tutorial.
     -   To target iOS, follow the [Compiling the SDK for iOS](../tutorial/Compiling_the_SDK_for_iOS.md) tutorial.
+    -   To target Android, follow the [Compiling the SDK for Android](../tutorial/Compiling_the_SDK_for_Android.md) tutorial.
 -   [Create a new application](../tutorial/Create_a_new_application.md)
 
 If you need help, please post on the dedicated [support forum](http://minko.io/forums/forum/support/minko-engine/).
