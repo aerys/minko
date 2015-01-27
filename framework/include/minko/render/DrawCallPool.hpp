@@ -93,12 +93,18 @@ namespace minko
                                 const std::unordered_map<std::string, std::string>& variables);
 
             void
+            sortDrawCalls();
+
+            void
             update();
 
 			void
 			clear();
 
         private:
+            bool
+            compareDrawCalls(DrawCall* a, DrawCall* b);
+
             void
             watchProgramSignature(DrawCall&                     drawCall,
                                   const data::MacroBindingMap&  macroBindings,

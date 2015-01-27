@@ -39,40 +39,26 @@ namespace minko
             typedef std::shared_ptr<DrawCallZSorter>    Ptr;
 
         private:
-            struct PropertyInfo
-            {
-                data::Binding::Source   source;
-                bool                    isMatrix;
-
-                inline
-                PropertyInfo() : source(data::Binding::Source::TARGET), isMatrix(false) { }
-
-                inline
-                    PropertyInfo(data::Binding::Source src, bool isMat) : source(src), isMatrix(isMat) { }
-            };
-
             typedef std::shared_ptr<Signal<DrawCall*>>                                              ZSortNeedSignalPtr;
             typedef Signal<data::Store&, std::shared_ptr<data::Provider>, const std::string&>::Slot PropertyChangedSlot;
-            typedef std::unordered_map<std::string, PropertyInfo>                                   PropertyInfos;
+            typedef std::unordered_map<std::string, data::Binding::Source>                          PropertyInfos;
 
         private:
             static const PropertyInfos                                  _rawProperties;
 
             DrawCall*                                                   _drawcall;
 
-            PropertyInfos                                               _properties;
             PropertyChangedSlot                                         _targetPropAddedSlot;
             PropertyChangedSlot                                         _targetPropRemovedSlot;
             PropertyChangedSlot                                         _rendererPropAddedSlot;
             PropertyChangedSlot                                         _rendererPropRemovedSlot;
 
-            std::unordered_map<std::string, PropertyChangedSlot>        _propChangedSlots;
-            std::unordered_map<std::string, PropertyChangedSlot>        _matrixChangedSlots;
+            std::unordered_map<std::string, PropertyChangedSlot>        _propertyChangedSlots;
 
             // positional members
-            std::pair<std::string, geometry::Geometry*> _vertexPositions;
-            std::pair<std::string, math::mat4>                          _modelToWorldMatrix;
-            std::pair<std::string, math::mat4>                          _worldToScreenMatrix;
+            math::vec3                                                  _centerPosition;
+            const math::mat4*                                           _modelToWorldMatrix;
+            const math::mat4*                                           _worldToScreenMatrix;
 
         public:
             inline static
@@ -106,9 +92,6 @@ namespace minko
 
             void
             requestZSort();
-
-            void
-            recordIfPositionalMembers(data::Store&, const std::string&, bool, bool);
         };
     }
 }
