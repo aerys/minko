@@ -67,6 +67,9 @@ uniform float uShininess;
 uniform vec3 uCameraPosition;
 
 // env. mapping
+uniform sampler2D uEnvironmentMap2d;
+uniform int uEnvironmentMap2dType;
+uniform samplerCube uEnvironmentCubemap;
 uniform float uEnvironmentAlpha;
 
 // texture lod
@@ -366,7 +369,7 @@ void main(void)
 	#endif // defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
 
 	#if defined(ENVIRONMENT_MAP_2D) || defined(ENVIRONMENT_CUBE_MAP)
-		vec4 envmapColor = envmap_sampleEnvironmentMap(eyeVector, normalVector);
+		vec4 envmapColor = envmap_sampleEnvironmentMap(uEnvironmentMap2d, uEnvironmentMap2dType, uEnvironmentCubemap, eyeVector, normalVector);
 		float reflectivity = specular.a;
 
 		#ifdef ENVIRONMENT_ALPHA
