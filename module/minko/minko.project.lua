@@ -30,11 +30,11 @@ minko.project.library = function(name)
 			"_USE_MATH_DEFINES"		-- enable M_PI
 		}
 		flags {
-			"NoMinimalRebuild"
+			-- "NoMinimalRebuild"
 		}
 		buildoptions {
-			"/wd4503",				-- remove warnings about too long type names
-			"/MP"					-- Multi Processor build (NoMinimalRebuild flag is needed)
+			-- "/wd4503",				-- remove warnings about too long type names
+			-- "/MP"					-- Multi Processor build (NoMinimalRebuild flag is needed)
 		}
 
 	configuration { "html5", "debug" }
@@ -214,7 +214,8 @@ minko.project.application = function(name)
 			local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O3 ' .. buildoptions()[1]
 
 			linkoptions {
-				"--llvm-lto 1"
+				"--llvm-lto 1",
+				"--tracing"
 			}
 
 			-- enable the closure compiler
@@ -265,7 +266,7 @@ minko.project.application = function(name)
 			-- disable exception catching
 			cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=0'
 			-- allow memory pool to be dynamic
-			cmd = cmd .. ' ALLOW_MEMORY_GROWTH=1'
+			cmd = cmd .. ' -s ALLOW_MEMORY_GROWTH=1'
 			-- use a separate *.mem file to initialize the app memory
 			cmd = cmd .. ' --memory-init-file 1'
 			-- set the app (or the sdk) template.html
