@@ -178,7 +178,7 @@ Options::defaultProtocolFunction(const std::string& filename, const ProtocolFunc
 void
 Options::initializeDefaultFunctions()
 {
-    auto options = shared_from_this();
+    auto options = this;
 
     if (!_materialFunction)
         _materialFunction = [](const std::string&, material::Material::Ptr material) -> material::Material::Ptr
