@@ -49,6 +49,9 @@ namespace minko
             bool
             fileExists(const std::string& filename);
 
+            bool
+            isAbsolutePath(const std::string& filename) const;
+
         protected:
             HTTPProtocol();
 

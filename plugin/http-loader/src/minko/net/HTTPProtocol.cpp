@@ -303,6 +303,12 @@ HTTPProtocol::fileExists(const std::string& filename)
 #endif
 }
 
+bool
+HTTPProtocol::isAbsolutePath(const std::string& filename) const
+{
+    return filename.find("://") != std::string::npos;
+}
+
 #if defined(EMSCRIPTEN)
 void
 HTTPProtocol::wget2CompleteHandler(unsigned int id, void* arg, void* data, unsigned int size)

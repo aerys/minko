@@ -150,3 +150,15 @@ FileProtocol::fileExists(const std::string& filename)
 
     return file.is_open();
 }
+
+bool
+FileProtocol::isAbsolutePath(const std::string& filename) const
+{
+    const auto cleanFilename = File::sanitizeFilename(filename);
+
+#if MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
+    return cleanFilename.find(":/") != std::string::npos;
+#else
+    return cleanFilename.find_first_of("/") == 0u;
+#endif
+}

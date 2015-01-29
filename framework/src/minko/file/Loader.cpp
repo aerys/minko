@@ -80,7 +80,9 @@ Loader::load()
 
             protocol->options(options);
 
-            if (includePaths.empty() || protocol->fileExists(resolvedFilename))
+            if (includePaths.empty() ||
+                protocol->isAbsolutePath(filename) ||
+                protocol->fileExists(resolvedFilename))
             {
                 loadFile = true;
             }
