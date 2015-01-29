@@ -30,31 +30,31 @@ namespace minko
 		class Store
 		{
 		public:
-			typedef Flyweight<std::string>										PropertyName;
+			typedef Flyweight<std::string>								PropertyName;
 
 		private:
-            typedef Signal<Provider::Ptr, const PropertyName&>	            	ProviderChangedSignal;
-            typedef std::list<ProviderChangedSignal::Slot>                  	ProviderChangedSignalSlotList;
+            typedef Signal<Provider::Ptr, const PropertyName&>	        ProviderChangedSignal;
+            typedef std::list<ProviderChangedSignal::Slot>              ProviderChangedSignalSlotList;
 
-			typedef std::shared_ptr<Provider>						        	ProviderPtr;
-            typedef std::shared_ptr<Collection>						        	CollectionPtr;
-			typedef std::shared_ptr<data::AbstractFilter>			        	AbsFilterPtr;
-			typedef Signal<ProviderPtr, const PropertyName&>			        ProviderPropertyChangedSignal;
-			typedef ProviderPropertyChangedSignal::Slot				        	ProviderPropertyChangedSlot;
-            typedef Signal<Collection&, ProviderPtr>::Slot                  	CollectionChangedSignalSlot;
+			typedef std::shared_ptr<Provider>						    ProviderPtr;
+            typedef std::shared_ptr<Collection>						    CollectionPtr;
+			typedef std::shared_ptr<data::AbstractFilter>			    AbsFilterPtr;
+			typedef Signal<ProviderPtr, const PropertyName&>			ProviderPropertyChangedSignal;
+			typedef ProviderPropertyChangedSignal::Slot				    ProviderPropertyChangedSlot;
+            typedef Signal<Collection&, ProviderPtr>::Slot              CollectionChangedSignalSlot;
 
-			// template <class K, class V, typename... H>
-			// using map = google::sparse_hash_map<K, V, H...>;
 			template <class K, class V, typename... H>
-			using map = std::unordered_map<K, V, H...>;
+			using map = google::sparse_hash_map<K, V, H...>;
+			// template <class K, class V, typename... H>
+			// using map = std::unordered_map<K, V, H...>;
 
         public:
-            typedef Signal<Store&, ProviderPtr, const PropertyName&>			PropertyChangedSignal;
+            typedef Signal<Store&, ProviderPtr, const PropertyName&>	PropertyChangedSignal;
 
         private:
-            typedef map<PropertyName, PropertyChangedSignal, PropertyName::hash, PropertyName::equal_to> 					ChangedSignalMap;
-            typedef map<ProviderPtr, ProviderChangedSignalSlotList, std::hash<ProviderPtr>, std::equal_to<ProviderPtr>> 	ProviderToChangedSlotListMap;
-            typedef map<CollectionPtr, CollectionChangedSignalSlot, std::hash<CollectionPtr>, std::equal_to<CollectionPtr>> CollectionToChangedSlotMap;
+            typedef map<PropertyName, PropertyChangedSignal> 			ChangedSignalMap;
+            typedef map<ProviderPtr, ProviderChangedSignalSlotList> 	ProviderToChangedSlotListMap;
+            typedef map<CollectionPtr, CollectionChangedSignalSlot> 	CollectionToChangedSlotMap;
 
         private:
 			std::list<ProviderPtr>			_providers;
@@ -83,14 +83,6 @@ namespace minko
             }
 
             template <typename T>
-			inline
-			bool
-			propertyHasType(const std::string& propertyName) const
-			{
-				return propertyHasType<T>(propertyName);
-			}
-
-            template <typename T>
 			bool
 			propertyHasType(const PropertyName& propertyName) const
 			{
@@ -101,14 +93,6 @@ namespace minko
                     throw;
 
 				return provider->propertyHasType<T>(std::get<1>(providerAndToken));
-			}
-
-			template <typename T>
-			inline
-			const T&
-			get(const std::string& propertyName) const
-			{
-				return get<T>(PropertyName(propertyName));
 			}
 
 			template <typename T>
@@ -124,14 +108,6 @@ namespace minko
                 return provider->get<T>(std::get<1>(providerAndToken));
 			}
 
-			template <typename T>
-			inline
-			const T*
-			getPointer(const std::string& propertyName) const
-			{
-				return getPointer<T>(PropertyName(propertyName));
-			}
-
             template <typename T>
             const T*
             getPointer(const PropertyName& propertyName) const
@@ -144,14 +120,6 @@ namespace minko
 
                 return provider->getPointer<T>(std::get<1>(providerAndToken));
             }
-
-			template <typename T>
-			inline
-			T*
-			getUnsafePointer(const std::string& propertyName) const
-			{
-				return getUnsafePointer<T>(PropertyName(propertyName));
-			}
 
             template <typename T>
             T*
@@ -168,14 +136,6 @@ namespace minko
 
                 return provider->getUnsafePointer<T>(std::get<1>(providerAndToken));
             }
-
-			template <typename T>
-			inline
-			void
-			set(const std::string& propertyName, T value)
-			{
-				set<T>(PropertyName(propertyName), value);
-			}
 
 			template <typename T>
 			void
@@ -355,7 +315,7 @@ namespace minko
             executePropertySignal(ProviderPtr                   provider,
                                   CollectionPtr                 collection,
                                   const PropertyName&           propertyName,
-								  const PropertyChangedSignal&   anyChangedSignal,
+								  const PropertyChangedSignal&  anyChangedSignal,
                                   const ChangedSignalMap& 		propertyNameToSignal);
 		};
 	}

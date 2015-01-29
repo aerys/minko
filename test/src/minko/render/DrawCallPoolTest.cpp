@@ -52,6 +52,7 @@ TEST_F(DrawCallPoolTest, UniformDefaultToBindingSwap)
 
     p->set("diffuseColor", math::vec4(1.));
     targetData.addProvider(p);
+    pool.update();
 
     ASSERT_EQ((*drawCalls.first)->boundFloatUniforms().size(), 1);
     ASSERT_NE(
@@ -94,6 +95,7 @@ TEST_F(DrawCallPoolTest, UniformBindingToDefaultSwap)
     );
 
     p->unset("diffuseColor");
+    pool.update();
 
     ASSERT_EQ((*drawCalls.first)->boundFloatUniforms().size(), 1);
     ASSERT_EQ(
@@ -163,6 +165,27 @@ TEST_F(DrawCallPoolTest, WatchAndDefineVariableIntMacro)
     pool.update();
 
     ASSERT_FALSE((*drawCalls.first)->program()->definedMacroNames().find("FOO") != (*drawCalls.first)->program()->definedMacroNames().end());
+}
+
+TEST_F(DrawCallPoolTest, StopWatchingMacroAfterDrawCallsRemoved)
+{
+    auto fx = MinkoTests::loadEffect("effect/OneVariableIntMacroBinding.effect");
+    auto pass = fx->techniques().at("default")[0];
+    DrawCallPool pool;
+    data::Store rootData;
+    data::Store rendererData;
+    data::Store targetData;
+    auto p = data::Provider::create();
+    std::string materialUuid = p->uuid();
+    std::unordered_map<std::string, std::string> variables = {{ "materialUuid", materialUuid }};
+
+    auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
+
+    ASSERT_EQ(targetData.propertyChanged("material[" + materialUuid + "].bar").numCallbacks(), 1);
+
+    pool.removeDrawCalls(drawCalls);
+
+    ASSERT_EQ(targetData.propertyChanged("material[" + materialUuid + "].bar").numCallbacks(), 0);
 }
 
 /** Sampler states binding swap **/

@@ -24,31 +24,6 @@ namespace minko
     template <typename T>
     class Flyweight
     {
-    public:
-        struct hash
-        {
-            inline
-            size_t
-            operator()(const Flyweight<T>& key) const
-            {
-                std::hash<T> h;
-
-                return h(*key._value);
-            }
-        };
-
-        struct equal_to
-        {
-            inline
-            bool
-            operator()(const Flyweight<T>& a, const Flyweight<T>& b) const
-            {
-                std::equal_to<T> eq;
-
-                return eq(*a._value, *b._value);
-            }
-        };
-
     private:
         static std::unordered_set<T> _values;
 
@@ -58,6 +33,12 @@ namespace minko
         Flyweight(const T& v)
         {
             _value = &(*_values.insert(v).first);
+        }
+
+        template <typename... U>
+        Flyweight(U... args)
+        {
+            _value = &(*_values.emplace(args...).first);
         }
 
         Flyweight(const Flyweight& f) :
@@ -71,7 +52,7 @@ namespace minko
 
         inline
         const T*
-        value()
+        value() const
         {
             return _value;
         }
@@ -103,3 +84,28 @@ namespace minko
 
 template <typename T>
 std::unordered_set<T> minko::Flyweight<T>::_values;
+
+namespace std
+{
+    template <typename T>
+    struct hash<minko::Flyweight<T>>
+    {
+        inline
+        size_t
+        operator()(const minko::Flyweight<T>& key) const
+        {
+            return reinterpret_cast<size_t>(key.value());
+        }
+    };
+
+    template <typename T>
+    struct equal_to<minko::Flyweight<T>>
+    {
+        inline
+        bool
+        operator()(const minko::Flyweight<T>& a, const minko::Flyweight<T>& b) const
+        {
+            return a.value() == b.value();
+        }
+    };
+}

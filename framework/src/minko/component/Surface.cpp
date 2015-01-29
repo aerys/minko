@@ -113,29 +113,12 @@ Surface::targetAdded(scene::Node::Ptr target)
 void
 Surface::targetRemoved(scene::Node::Ptr target)
 {
-	// When a Surface is removed, each Renderer will remove the corresponding draw calls
-	// but Renderer listen to the Node::componentRemoved() signal, which is triggered after
-	// Surface::targetRemoved() is called.
-	// Thus, if we remove the data::Provider directly in Surface::targetRemoved, draw call
-	// bindings will see the corresponding properties have been removed and will throw if there
-	// is no default value.
-	// To avoid this, we have to make sure the draw calls are removed before the providers. This
-	// is why we remove the providers in a Node::componentRemoved() signal callback.
-	// Listeing to Node::componentRemoved() is not enough because of bubbling. To be sure to remove
-	// the provider after anything else, we listen to the componentRemoved() of the node's root.
-	_componentRemovedSlot = target->root()->componentRemoved().connect(
-		[=](scene::Node::Ptr, scene::Node::Ptr target, component::AbstractComponent::Ptr)
-		{
-			_componentRemovedSlot = nullptr;
+    auto& targetData = target->data();
 
-		    auto& targetData = target->data();
-
-		    targetData.removeProvider(_provider, SURFACE_COLLECTION_NAME);
-		    targetData.removeProvider(_material->data(), MATERIAL_COLLECTION_NAME);
-		    targetData.removeProvider(_geometry->data(), GEOMETRY_COLLECTION_NAME);
-		    targetData.removeProvider(_effect->data(), EFFECT_COLLECTION_NAME);
-		}
-	);
+    targetData.removeProvider(_provider, SURFACE_COLLECTION_NAME);
+    targetData.removeProvider(_material->data(), MATERIAL_COLLECTION_NAME);
+    targetData.removeProvider(_geometry->data(), GEOMETRY_COLLECTION_NAME);
+    targetData.removeProvider(_effect->data(), EFFECT_COLLECTION_NAME);
 }
 
 void

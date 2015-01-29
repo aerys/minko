@@ -36,10 +36,10 @@ namespace minko
             public Uuid::enable_uuid
 		{
         private:
-			// template <class K, class V>
-			// using map = google::sparse_hash_map<K, V>;
-			template <class K, typename... V>
-			using map = std::unordered_map<K, V...>;
+			template <class K, class V, typename... H>
+			using map = google::sparse_hash_map<K, V, H...>;
+			// template <class K, typename... V>
+			// using map = std::unordered_map<K, V...>;
 
             template <typename T>
             struct is_shared_ptr : std::false_type {};
@@ -58,9 +58,9 @@ namespace minko
             };
 
 		public:
-			typedef std::shared_ptr<Provider>											Ptr;
-			typedef Flyweight<std::string>												PropertyName;
-			typedef map<PropertyName, Any, PropertyName::hash, PropertyName::equal_to> 	ValueMap;
+			typedef std::shared_ptr<Provider>	Ptr;
+			typedef Flyweight<std::string>		PropertyName;
+			typedef map<PropertyName, Any> 		ValueMap;
 
 		private:
             ValueMap							_values;
@@ -123,26 +123,10 @@ namespace minko
 
 			template <typename T>
 			inline
-			const T&
-			get(const std::string& propertyName)
-			{
-				return get<T>(PropertyName(propertyName));
-			}
-
-			template <typename T>
-			inline
             typename std::enable_if<is_valid<T>::value, const T&>::type
             get(const PropertyName& propertyName) const
 			{
                 return *Any::unsafe_cast<T>(&(_values.find(propertyName)->second));
-			}
-
-			template <typename T>
-			inline
-			const T*
-			getPointer(const std::string& propertyName)
-			{
-				return getPointer<T>(PropertyName(propertyName));
 			}
 
             template <typename T>
@@ -153,14 +137,6 @@ namespace minko
                 return Any::unsafe_cast<T>(&(_values.find(propertyName)->second));
             }
 
-			template <typename T>
-			inline
-			T*
-			getUnsafePointer(const std::string& propertyName)
-			{
-				return getUnsafePointer<T>(PropertyName(propertyName));
-			}
-
             template <typename T>
             inline
             typename std::enable_if<is_valid<T>::value, T*>::type
@@ -168,13 +144,6 @@ namespace minko
             {
                 return Any::unsafe_cast<T>(&(_values.find(propertyName)->second));
             }
-
-			template <typename T>
-			Ptr
-			set(const std::string& propertyName, T value)
-			{
-				return set<T>(PropertyName(propertyName), value);
-			}
 
             template <typename T>
             typename std::enable_if<is_valid<T>::value, Ptr>::type
