@@ -265,6 +265,8 @@ minko.project.application = function(name)
 			-- cmd = cmd .. ' -s ERROR_ON_UNDEFINED_SYMBOLS=1'
 			-- disable exception catching
 			cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=0'
+			-- allow memory pool to be dynamic
+			cmd = cmd .. ' -s ALLOW_MEMORY_GROWTH=1'
 			-- use a separate *.mem file to initialize the app memory
 			cmd = cmd .. ' --memory-init-file 1'
 			-- set the app (or the sdk) template.html
