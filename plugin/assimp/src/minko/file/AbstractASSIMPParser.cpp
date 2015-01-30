@@ -411,9 +411,13 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
 std::string
 AbstractASSIMPParser::getMaterialName(const std::string& materialName)
 {
-    static int currentId = 0;
+    static auto currentId = 0;
 
-    return materialName.empty() ? std::string("default" + std::to_string(currentId++)) : materialName;
+    const auto validMaterialName = File::removePrefixPathFromFilename(materialName);
+
+    return validMaterialName.empty()
+        ? std::string("default" + std::to_string(currentId++))
+        : validMaterialName;
 }
 
 std::string
@@ -421,7 +425,9 @@ AbstractASSIMPParser::getMeshName(const std::string& meshName)
 {
     static int currentId = 0;
 
-    return meshName.empty() ? std::string("default" + std::to_string(currentId++)) : meshName;
+    const auto validMeshName = File::removePrefixPathFromFilename(meshName);
+
+    return validMeshName.empty() ? std::string("default" + std::to_string(currentId++)) : validMeshName;
 }
 
 void

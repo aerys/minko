@@ -161,3 +161,18 @@ File::canonizeFilename(const std::string& filename)
 
     return output;
 }
+
+std::string
+File::removePrefixPathFromFilename(const std::string& filename)
+{
+    const auto cleanFilename = sanitizeFilename(filename);
+
+    auto filenameWithoutPrefixPath = cleanFilename;
+
+    const auto lastSeparatorPosition = filenameWithoutPrefixPath.find_last_of("/");
+
+    if (lastSeparatorPosition != std::string::npos)
+        filenameWithoutPrefixPath = filenameWithoutPrefixPath.substr(lastSeparatorPosition + 1);
+
+    return filenameWithoutPrefixPath;
+}
