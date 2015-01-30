@@ -276,8 +276,8 @@ void main(void)
 			#endif
 			diffuseAccum += phong_diffuseReflection(normalVector, dir) * shadow * uDirLight0_diffuse * uDirLight0_color;
 			#if defined(SHININESS)
-				specularAccum += phong_specularReflection(normalVector, uDirLight0_direction, eyeVector, shininessCoeff) * uDirLight0_color * uDirLight0_specular
-					* phong_fresnel(specular.rgb, dir, eyeVector);
+				specularAccum += phong_specularReflection(normalVector, dir, eyeVector, shininessCoeff) * uDirLight0_color * uDirLight0_specular
+					* phong_fresnel(specular.rgb, -dir, eyeVector);
 			#endif // SHININESS
 		#endif // NUM_DIRECTIONAL_LIGHTS > 0
 		#if NUM_DIRECTIONAL_LIGHTS > 1
@@ -288,8 +288,8 @@ void main(void)
 			#endif
 			diffuseAccum += phong_diffuseReflection(normalVector, dir) * shadow * uDirLight1_diffuse * uDirLight1_color;
 			#if defined(SHININESS)
-				specularAccum += phong_specularReflection(normalVector, uDirLight1_direction, eyeVector, shininessCoeff) * uDirLight1_color * uDirLight1_specular
-					* phong_fresnel(specular.rgb, dir, eyeVector);
+				specularAccum += phong_specularReflection(normalVector, dir, eyeVector, shininessCoeff) * uDirLight1_color * uDirLight1_specular
+					* phong_fresnel(specular.rgb, -dir, eyeVector);
 			#endif // SHININESS
 		#endif // NUM_DIRECTIONAL_LIGHTS > 1
 		#if NUM_DIRECTIONAL_LIGHTS > 2
@@ -300,8 +300,8 @@ void main(void)
 			#endif
 			diffuseAccum += phong_diffuseReflection(normalVector, dir) * shadow * uDirLight2_diffuse * uDirLight2_color;
 			#if defined(SHININESS)
-				specularAccum += phong_specularReflection(normalVector, uDirLight2_direction, eyeVector, shininessCoeff) * uDirLight2_color * uDirLight2_specular
-					* phong_fresnel(specular.rgb, dir, eyeVector);
+				specularAccum += phong_specularReflection(normalVector, dir, eyeVector, shininessCoeff) * uDirLight2_color * uDirLight2_specular
+					* phong_fresnel(specular.rgb, -dir, eyeVector);
 			#endif // SHININESS
 		#endif // NUM_DIRECTIONAL_LIGHTS > 2
 		#if NUM_DIRECTIONAL_LIGHTS > 3
@@ -312,10 +312,10 @@ void main(void)
 			#endif
 			diffuseAccum += phong_diffuseReflection(normalVector, dir) * shadow * uDirLight3_diffuse * uDirLight3_color;
 			#if defined(SHININESS)
-				specularAccum += phong_specularReflection(normalVector, uDirLight3_direction, eyeVector, shininessCoeff) * uDirLight3_color * uDirLight3_specular
-					* phong_fresnel(specular.rgb, dir, eyeVector);
+				specularAccum += phong_specularReflection(normalVector, dir, eyeVector, shininessCoeff) * uDirLight3_color * uDirLight3_specular
+					* phong_fresnel(specular.rgb, -dir, eyeVector);
 			#endif // SHININESS
-		#endif // NUM_DIRECTIONAL_LIGHTS > 1
+		#endif // NUM_DIRECTIONAL_LIGHTS > 3
 
 
 		#ifdef NUM_POINT_LIGHTS
