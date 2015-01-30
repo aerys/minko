@@ -19,7 +19,7 @@
 
 	"macroBindings"	: {
 		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix",
-		"NUM_BONES"				: "geometry[${geometryId}].numBones"
+		"SKINNING_NUM_BONES"	: "geometry[${geometryId}].numBones"
 	},
 		
 	"stateBindings" : {
@@ -78,9 +78,9 @@
 				
 				vertexUV = uv;
 				
-				#ifdef NUM_BONES
+				#ifdef SKINNING_NUM_BONES
 					pos 	= skinning_moveVertex(pos);
-				#endif // NUM_BONES
+				#endif // SKINNING_NUM_BONES
 				
 				#ifdef MODEL_TO_WORLD
 					pos 		= modelToWorldMatrix * pos;

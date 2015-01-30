@@ -18,8 +18,8 @@
 	},
 
 	"macros"	: {
-		"MODEL_TO_WORLD"    : "modelToWorldMatrix",
-		"NUM_BONES"			: "geometry[${geometryUuid}].numBones"
+		"MODEL_TO_WORLD"    	: "modelToWorldMatrix",
+		"SKINNING_NUM_BONES"	: "geometry[${geometryUuid}].numBones"
 	},
 
     "techniques" : [{
@@ -48,10 +48,10 @@
 				vec4 n 		= normalize(vec4(normal, 0.0)); 
 
 				
-				    #ifdef NUM_BONES
+				    #ifdef SKINNING_NUM_BONES
 					    pos 	= skinning_moveVertex(pos);
 					    n 		= skinning_moveVertex(n);
-				    #endif // NUM_BONES
+				    #endif // SKINNING_NUM_BONES
 				
 				worldNormal	= normalize(n.xyz);
 

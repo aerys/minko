@@ -49,9 +49,9 @@ void main(void)
 
 	vec4 worldPosition = vec4(aPosition, 1.0);
 
-	#ifdef NUM_BONES
+	#ifdef SKINNING_NUM_BONES
 		worldPosition = skinning_moveVertex(worldPosition, aBoneWeightsA, aBoneWeightsB);
-	#endif // NUM_BONES
+	#endif // SKINNING_NUM_BONES
 
 	#ifdef POP_LOD_ENABLED
 		vec4 quantizedPosition 	= pop_quantify(worldPosition, uPopLod, uPopMinBound, uPopMaxBound);
@@ -68,9 +68,9 @@ void main(void)
 		vertexPosition = worldPosition.xyz;
 		vertexNormal = aNormal;
 
-		#ifdef NUM_BONES
-			vVertexNormal = skinning_moveVertex(vec4(aNormal, 0.0), aBoneWeightsA, aBoneWeightsB).xyz;
-		#endif // NUM_BONES
+		#ifdef SKINNING_NUM_BONES
+			vertexNormal = skinning_moveVertex(vec4(aNormal, 0.0), aBoneWeightsA, aBoneWeightsB).xyz;
+		#endif // SKINNING_NUM_BONES
 
 		#ifdef MODEL_TO_WORLD
 			vertexNormal = mat3(uModelToWorldMatrix) * vertexNormal;
