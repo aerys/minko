@@ -3,7 +3,7 @@ This tutorial requires that you have read [Create a new application](Create_a_ne
 Step 1: Set up the environment
 ------------------------------
 
-Please read the tutorial [Compiling the SDK for Android](Compiling the SDK for Android) to know how to set up the environment to build for Android.
+Please read the tutorial [Compiling the SDK for Android](Compiling_the_SDK_for_Android.md) to know how to set up the environment to build for Android.
 
 Step 2: Generate the Makefile
 -----------------------------

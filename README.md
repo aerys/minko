@@ -15,13 +15,13 @@ The repository hosts the source code of ***Minko 3***. Looking for Minko 2? We'v
 Resources
 ---------
 * [Official website](http://minko.io/ "Website")
-* [Documentation](http://doc.v3.minko.io/ "Documentation")
+* [Documentation](doc "Documentation")
 * [Forums](http://minko.io/forums "Forums")
 
 Get started
 ===========
 
-For more detailed instructions, please follow our [Getting started with Minko 3 beta 1](http://doc.v3.minko.io/wiki/Getting_started_with_Minko_3_beta_1) tutorial.
+For more detailed instructions, please follow our [Getting started with Minko 3](doc/tutorial/Getting_started_with_Minko_3.md) tutorial.
 
 ### Windows
 * Set the `MINKO_HOME` environment variable to the root of the SDK.

@@ -1,19 +1,12 @@
-
-uniform sampler2D	environmentMap2d;
-uniform int			environmentType2d;
-
-uniform samplerCube	environmentCubemap;
-
 vec3 
 envmap_cartesian3DToSpherical3D(vec3 xyz)
 {
-	float r 	= sqrt(xyz.x * xyz.x + xyz.y * xyz.y + xyz.z * xyz.z);
-	float phi 	= acos(xyz.y);
+	float r = sqrt(xyz.x * xyz.x + xyz.y * xyz.y + xyz.z * xyz.z);
+	float phi = acos(xyz.y);
 	float theta = atan(xyz.z, xyz.x);
 
 	return vec3(r, theta, phi);
 }
-
 
 vec2 
 envmap_spherical3DToCartesian2D(float theta, float phi)
@@ -37,7 +30,11 @@ envmap_blinnNewellProjection(vec3 xyz)
 
 
 vec4
-envmap_sampleEnvironmentMap(vec3 eyeDir, vec3 normalDir)
+envmap_sampleEnvironmentMap(sampler2D environmentMap2d, 
+							int	environmentType2d, 
+							samplerCube environmentCubemap, 
+							vec3 eyeDir, 
+							vec3 normalDir)
 {
 	// Both 'eyeDir' and 'normalDir' must be normalized at this point.
 
@@ -45,15 +42,15 @@ envmap_sampleEnvironmentMap(vec3 eyeDir, vec3 normalDir)
 
 	#if defined(ENVIRONMENT_CUBE_MAP)
 
-		vec3 	reflectedDir	= reflect(eyeDir, normalDir);
+		vec3 reflectedDir = reflect(eyeDir, normalDir);
 
-		envmapColor 			= textureCube(environmentCubemap, reflectedDir);
+		envmapColor = textureCube(environmentCubemap, reflectedDir);
 
 	#elif defined(ENVIRONMENT_MAP_2D)
 
-		vec3 	reflectedDir	= reflect(eyeDir, normalDir);
-		int 	mappingType		= 0; // probe mapping by default (cf minko/Common.hpp)
-		vec2 	envmapUV 		= vec2(0.0);
+		vec3 reflectedDir = reflect(eyeDir, normalDir);
+		int mappingType = 0; // probe mapping by default (cf minko/Common.hpp)
+		vec2 envmapUV = vec2(0.0);
 
 		#if defined(ENVIRONMENT_TYPE_2D)
 
@@ -63,11 +60,11 @@ envmap_sampleEnvironmentMap(vec3 eyeDir, vec3 normalDir)
 
 
 		if (mappingType == 1) // blinn-newell
-			envmapUV 				= envmap_blinnNewellProjection(reflectedDir);
+			envmapUV = envmap_blinnNewellProjection(reflectedDir);
 		else
 		{
-			vec3 sphericalCoords	= envmap_cartesian3DToSpherical3D(reflectedDir);
-			envmapUV 				= envmap_spherical3DToCartesian2D(reflectedDir.y, reflectedDir.z);
+			vec3 sphericalCoords = envmap_cartesian3DToSpherical3D(reflectedDir);
+			envmapUV = envmap_spherical3DToCartesian2D(reflectedDir.y, reflectedDir.z);
 		}
 
 		envmapColor = texture2D(environmentMap2d, envmapUV);
