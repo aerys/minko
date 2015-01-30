@@ -29,14 +29,13 @@ using namespace minko::component;
 JobManager::Job::Job() :
     _jobManager(),
     _running(false),
-    _oneStepPerFrame(false),
     _priorityChanged(Signal<float>::create())
 {
 }
 
 JobManager::JobManager(unsigned int loadingFramerate):
     _loadingFramerate(loadingFramerate),
-    _jobPriorityChanged(false)
+    _sortingNeeded(false)
 {
     _frameTime = 1.f / loadingFramerate;
 }
@@ -48,16 +47,7 @@ JobManager::pushJob(Job::Ptr job)
         job,
         job->priorityChanged()->connect([=](float priority) -> void 
         {
-            auto jobIt = std::find(_jobs.begin(), _jobs.end(), job);
-
-            if (jobIt != _jobs.end())
-            {
-                _jobs.erase(jobIt);
-            }
-
-            insertJob(job);
-
-            _jobPriorityChanged = true;
+            _sortingNeeded = true;
         }))
     );
 
@@ -83,11 +73,17 @@ JobManager::end(NodePtr target)
 
     while (consumeTime < _frameTime)
     {
-        if (currentJob == nullptr ||
-            _jobPriorityChanged)
+        if (_sortingNeeded)
         {
-            _jobPriorityChanged = false;
+            _sortingNeeded = false;
 
+            currentJob = nullptr;
+
+            _jobs.sort(Job::PriorityComparator());
+        }
+
+        if (currentJob == nullptr)
+        {
             currentJob = _jobs.back();
 
             if (!currentJob->running())
@@ -115,30 +111,13 @@ JobManager::end(NodePtr target)
             if (_jobs.empty())
                 return;
         }
-        else
-        {
-            if (currentJob->oneStepPerFrame())
-            {
-                _jobs.push_back(currentJob);
-                currentJob = nullptr;
-                consumeTime = _frameTime;
-            }
-        }
     }
 }
 
 void
 JobManager::insertJob(Job::Ptr job)
 {
-    auto jobPosition = std::lower_bound(
-        _jobs.begin(),
-        _jobs.end(),
-        job,
-        [&](Job::Ptr left, Job::Ptr right) -> bool
-        {
-            return left->priority() < right->priority();
-        }
-    );
+    _jobs.push_back(job);
 
-    _jobs.insert(jobPosition, job);
+    _sortingNeeded = true;
 }
