@@ -15,14 +15,9 @@ attribute 	vec3 	aPosition;
 attribute 	vec2 	aUV;
 attribute 	vec3 	aNormal;
 attribute 	vec3 	aTangent;
-attribute 	vec4	aBoneIdsA;
-attribute 	vec4	aBoneIdsB;
 attribute 	vec4	aBoneWeightsA;
 attribute 	vec4	aBoneWeightsB;
 
-#ifdef SKINNING_NUM_BONES
-uniform 	mat4	uBoneMatrices[SKINNING_NUM_BONES];
-#endif
 uniform 	mat4 	uModelToWorldMatrix;
 uniform 	mat4 	uWorldToScreenMatrix;
 uniform 	vec2 	uUVScale;

@@ -39,12 +39,8 @@
 			    attribute vec3 aNormal;
 
 				#ifdef SKINNING_NUM_BONES
-				attribute vec4 aBoneIdsA;
-				attribute vec4 aBoneIdsB;
 				attribute vec4 aBoneWeightsA;
 				attribute vec4 aBoneWeightsB;
-				
-				uniform mat4 uBoneMatrices[SKINNING_NUM_BONES];
 				#endif
 
 			    varying vec3 worldNormal;
@@ -58,8 +54,8 @@
 
 				
 				    #ifdef SKINNING_NUM_BONES
-					    pos = skinning_moveVertex(pos, uBoneMatrices, aBoneIdsA, aBoneIdsB, aBoneWeightsA, aBoneWeightsB);
-					    n = skinning_moveVertex(n, uBoneMatrices, aBoneIdsA, aBoneIdsB, aBoneWeightsA, aBoneWeightsB);
+					    pos = skinning_moveVertex(pos, aBoneWeightsA, aBoneWeightsB);
+					    n = skinning_moveVertex(n, aBoneWeightsA, aBoneWeightsB);
 				    #endif // SKINNING_NUM_BONES
 				
 					worldNormal	= normalize(n.xyz);
