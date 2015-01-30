@@ -45,6 +45,17 @@ namespace minko
                 return instance;
 			}
 
+			inline static
+			Ptr
+			create(Ptr source)
+			{
+				auto pm = create();
+
+				pm->data()->copyFrom(source->data());
+
+				return pm;
+			}
+
 			Ptr
 			specularColor(const math::vec4&);
 

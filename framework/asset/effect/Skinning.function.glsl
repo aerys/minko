@@ -1,9 +1,10 @@
 #if defined(VERTEX_SHADER) && defined(SKINNING_NUM_BONES)
 
+	uniform mat4 boneMatrices[SKINNING_NUM_BONES];
+	attribute vec4 boneIdsA;
+	attribute vec4 boneIdsB;
+
 	vec4 skinning_moveVertex(vec4 inputVec,
-							 mat4 boneMatrices[SKINNING_NUM_BONES],
-							 vec4 boneIdsA,
-							 vec4 boneIdsB,
 							 vec4 boneWeightsA,
 							 vec4 boneWeightsB)
 	{

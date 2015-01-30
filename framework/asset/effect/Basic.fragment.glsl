@@ -1,12 +1,16 @@
 #ifdef FRAGMENT_SHADER
 
 #ifdef GL_ES
-	precision mediump float;
+    #ifdef GL_FRAGMENT_PRECISION_HIGH
+        precision highp float;
+    #else
+        precision mediump float;
+    #endif
 #endif
 
 #pragma include "TextureLod.extension.glsl"
 
-#pragma include "Fog.function.glsl")
+#pragma include "Fog.function.glsl"
 #pragma include "TextureLod.function.glsl"
 
 uniform vec4 uDiffuseColor;
@@ -17,12 +21,17 @@ uniform samplerCube	uDiffuseCubeMap;
 uniform sampler2D uAlphaMap;
 uniform float uAlphaThreshold;
 
+// fog
+uniform vec4 uFogColor;
+uniform vec2 uFogBounds;
+
 // texture lod
-uniform float 		uDiffuseMapMaxAvailableLod;
-uniform vec2 		uDiffuseMapSize;
+uniform float uDiffuseMapMaxAvailableLod;
+uniform vec2 uDiffuseMapSize;
 
 varying vec2 vVertexUV;
 varying vec3 vVertexUVW;
+varying vec4 vVertexScreenPosition;
 
 void main(void)
 {
@@ -47,9 +56,10 @@ void main(void)
 			discard;
 	#endif // ALPHA_THRESHOLD
 
-	#ifdef FOG_ENABLED
-		diffuse = fog_sampleFog(diffuse, gl_FragCoord);
-	#endif // FOG_ENABLED
+
+	#ifdef FOG_TECHNIQUE
+		diffuse.rgb = fog_sampleFog(diffuse.rgb, vVertexScreenPosition.z, uFogColor.xyz, uFogColor.a, uFogBounds.x, uFogBounds.y);
+	#endif
 
 	gl_FragColor = diffuse;
 }

@@ -1,9 +1,11 @@
 #ifdef VERTEX_SHADER
 
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
+#ifdef GL_ES
+    #ifdef GL_FRAGMENT_PRECISION_HIGH
+        precision highp float;
+    #else
+        precision mediump float;
+    #endif
 #endif
 
 #pragma include "Skinning.function.glsl"
@@ -47,16 +49,16 @@ void main(void)
 
 	vec4 worldPosition = vec4(aPosition, 1.0);
 
-	#ifdef SKINNING_NUM_BONES
-		worldPosition = skinning_moveVertex(worldPosition, uBoneMatrices, aBoneIdsA, aBoneIdsB, aBoneWeightsA, aBoneWeightsB);
-	#endif // SKINNING_NUM_BONES
+	#ifdef NUM_BONES
+		worldPosition = skinning_moveVertex(worldPosition, aBoneWeightsA, aBoneWeightsB);
+	#endif // NUM_BONES
 
 	#ifdef POP_LOD_ENABLED
 		vec4 quantizedPosition 	= pop_quantify(worldPosition, uPopLod, uPopMinBound, uPopMaxBound);
 
 		worldPosition 			= mix(quantizedPosition, worldPosition, float(uPopLod == uPopFullPrecisionLod));
 	#endif // POP_LOD_ENABLED
-	
+
 	#ifdef MODEL_TO_WORLD
 		worldPosition 	= uModelToWorldMatrix * worldPosition;
 	#endif // MODEL_TO_WORLD
@@ -66,9 +68,9 @@ void main(void)
 		vertexPosition = worldPosition.xyz;
 		vertexNormal = aNormal;
 
-		#ifdef SKINNING_NUM_BONES
-			vertexNormal = skinning_moveVertex(vec4(aNormal, 0.0), uBoneMatrices, aBoneIdsA, aBoneIdsB, aBoneWeightsA, aBoneWeightsB).xyz;
-		#endif // SKINNING_NUM_BONES
+		#ifdef NUM_BONES
+			vVertexNormal = skinning_moveVertex(vec4(aNormal, 0.0), aBoneWeightsA, aBoneWeightsB).xyz;
+		#endif // NUM_BONES
 
 		#ifdef MODEL_TO_WORLD
 			vertexNormal = mat3(uModelToWorldMatrix) * vertexNormal;
