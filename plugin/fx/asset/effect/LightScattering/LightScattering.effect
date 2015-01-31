@@ -17,7 +17,7 @@
                     "uniforms"   :
                     {
                         "lightPositionOnScreen" : "material[${materialUuid}].lightPositionOnScreen",
-                        "uInputTex" : "material[${materialUuid}].backbuffer"
+                        "uBackbuffer" : "material[${materialUuid}].backbuffer"
                     },
 
                     "vertexShader"      :
@@ -37,32 +37,34 @@
                     "fragmentShader"    :
                     "
                         uniform vec2 lightPositionOnScreen;
-                        uniform sampler2D uInputTex;
+                        uniform sampler2D uBackbuffer;
 
-                        const float decay = 0.95;
-                        const float weight = 0.90;
-                        const float exposure = 0.40;
+                        const float decay = 0.96815;
+                        const float weight = 0.58767;
+                        const float exposure = 0.2;
                         const float density = 0.926;
 
-                        const int NUM_SAMPLES = 1;
+                        const int NUM_SAMPLES = 64;
 
                         varying vec2 vVertexUV;
 
                         void main()
                         {
-                            // vec4 pixel = texture2D(uInputTex, vVertexUV);
+                            // vec4 pixel = texture2D(uBackbuffer, lightPositionOnScreen.xy); //vVertexUV);
 
                             // gl_FragColor = pixel;
 
-                            vec2 deltaTextCoord = vec2( gl_TexCoord[0].st - lightPositionOnScreen.xy );
+                            // vec2 deltaTextCoord = vec2( gl_TexCoord[0].st - lightPositionOnScreen.xy );
+                            vec2 deltaTextCoord = vec2(vVertexUV.xy - lightPositionOnScreen.xy);
                             vec2 textCoo = gl_TexCoord[0].st;
+                            // vec2 textCoo = vVertexUV.xy;
                             deltaTextCoord *= 1.0 / float(NUM_SAMPLES) * density;
                             float illuminationDecay = 1.0;
 
                             for (int i = 0; i < NUM_SAMPLES; i++)
                             {
                                 textCoo -= deltaTextCoord;
-                                vec4 sample = texture2D(uInputTex, textCoo);
+                                vec4 sample = texture2D(uBackbuffer, textCoo);
 
                                 sample *= illuminationDecay * weight;
 

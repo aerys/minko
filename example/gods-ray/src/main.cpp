@@ -150,6 +150,8 @@ int main(int argc, char** argv)
 
         math::vec3 sunPosition = math::vec3(sun->component<Transform>()->modelToWorldMatrix()[3]);
         math::vec3 lightPositionOnScreen = camera->component<PerspectiveCamera>()->project(sunPosition);
+        lightPositionOnScreen = math::vec3(lightPositionOnScreen.x / canvas->width(), lightPositionOnScreen.y / canvas->height(), 1.f);
+        // std::cout << glm::to_string(lightPositionOnScreen) << std::endl;
 
         ppMaterial->data()->set("lightPositionOnScreen", lightPositionOnScreen.xy());
 
