@@ -58,9 +58,9 @@ TEST_F(StoreTest, PropertyAdded)
 	p->set("foo", 42);
 
 	auto _ = c.propertyAdded().connect(
-		[&](Store& container, Provider::Ptr provider, const std::string& propertyName)
+		[&](Store& container, Provider::Ptr provider, const Provider::PropertyName& propertyName)
 		{
-			if (propertyName == "foo")
+			if (*propertyName == "foo")
 				v = container.get<int>("foo");
 		}
 	);
@@ -79,9 +79,9 @@ TEST_F(StoreTest, PropertyRemoved)
 	p->set("foo", 42);
 
 	auto _ = c.propertyAdded().connect(
-        [&](Store& container, Provider::Ptr provider, const std::string& propertyName)
+        [&](Store& container, Provider::Ptr provider, const Provider::PropertyName& propertyName)
 		{
-			if (propertyName == "foo")
+			if (*propertyName == "foo")
 				v = 42;
 		}
 	);
@@ -101,9 +101,9 @@ TEST_F(StoreTest, propertyChangedWhenAdded)
 	p->set("foo", 42);
 
 	auto _ = c.propertyChanged("foo").connect(
-        [&](Store& container, Provider::Ptr provider, const std::string& propertyName)
+        [&](Store& container, Provider::Ptr provider, const Provider::PropertyName& propertyName)
 		{
-			if (propertyName == "foo")
+			if (*propertyName == "foo")
 				v = container.get<int>("foo");
 		}
 	);
@@ -122,9 +122,9 @@ TEST_F(StoreTest, propertyChangedWhenAddedOnProvider)
 	c.addProvider(p);
 
 	auto _ = c.propertyChanged("foo").connect(
-        [&](Store& container, Provider::Ptr provider, const std::string& propertyName)
+        [&](Store& container, Provider::Ptr provider, const Provider::PropertyName& propertyName)
 		{
-			if (propertyName == "foo")
+			if (*propertyName == "foo")
 				v = container.get<int>("foo");
 		}
 	);
@@ -144,9 +144,9 @@ TEST_F(StoreTest, propertyChangedWhenSetOnProvider)
 	p->set("foo", 23);
 
 	auto _ = c.propertyChanged("foo").connect(
-        [&](Store& container, Provider::Ptr provider, const std::string& propertyName)
+        [&](Store& container, Provider::Ptr provider, const Provider::PropertyName& propertyName)
 		{
-			if (propertyName == "foo")
+			if (*propertyName == "foo")
 				v = container.get<int>("foo");
 		}
 	);
@@ -166,9 +166,9 @@ TEST_F(StoreTest, propertyChangedNot)
 	p->set("foo", 42);
 
 	auto _ = c.propertyChanged("foo").connect(
-        [&](Store& container, Provider::Ptr provider, const std::string& propertyName)
+        [&](Store& container, Provider::Ptr provider, const Provider::PropertyName& propertyName)
 		{
-			if (propertyName == "foo")
+			if (*propertyName == "foo")
 				v = container.get<int>("foo");
 		}
 	);
@@ -275,9 +275,9 @@ TEST_F(StoreTest, collectionPropertyAdded)
     c.addCollection(cc);
 
     auto _ = c.propertyAdded().connect(
-        [&](Store& container, Provider::Ptr provider, const std::string& propertyName)
+        [&](Store& container, Provider::Ptr provider, const Provider::PropertyName& propertyName)
         {
-            propertyAdded = propertyName == "foo" && provider->get<int>(propertyName) == 42;
+            propertyAdded = *propertyName == "foo" && provider->get<int>(propertyName) == 42;
         }
     );
 
@@ -298,9 +298,9 @@ TEST_F(StoreTest, collectionPropertyChanged)
     p->set("foo", 42);
 
     auto _ = c.propertyChanged("test[0].foo").connect(
-        [&](Store& container, Provider::Ptr provider, const std::string& propertyName)
+        [&](Store& container, Provider::Ptr provider, const Provider::PropertyName& propertyName)
         {
-          propertyChanged = propertyName == "foo" && provider->get<int>(propertyName) == 4242;
+          propertyChanged = *propertyName == "foo" && provider->get<int>(propertyName) == 4242;
         }
     );
 
@@ -321,9 +321,9 @@ TEST_F(StoreTest, collectionPropertyChangedNot)
     p->set("foo", 42);
 
     auto _ = c.propertyChanged("test[0].foo").connect(
-        [&](Store& container, Provider::Ptr provider, const std::string& propertyName)
+        [&](Store& container, Provider::Ptr provider, const Provider::PropertyName& propertyName)
         {
-            propertyChanged = propertyName == "foo" && provider->get<int>(propertyName) == 42;
+            propertyChanged = *propertyName == "foo" && provider->get<int>(propertyName) == 42;
         }
     );
 
@@ -344,9 +344,9 @@ TEST_F(StoreTest, collectionPropertyRemoved)
     c.addCollection(cc);
 
     auto _ = c.propertyRemoved().connect(
-        [&](Store& container, Provider::Ptr provider, const std::string& propertyName)
+        [&](Store& container, Provider::Ptr provider, const Provider::PropertyName& propertyName)
         {
-            propertyRemoved = propertyName == "foo";
+            propertyRemoved = *propertyName == "foo";
         }
     );
 
@@ -369,9 +369,9 @@ TEST_F(StoreTest, collectionNthPropertyChanged)
     c.addCollection(cc);
 
     auto _ = c.propertyChanged("test[1].foo").connect(
-        [&](Store& container, Provider::Ptr provider, const std::string& propertyName)
+        [&](Store& container, Provider::Ptr provider, const Provider::PropertyName& propertyName)
         {
-            propertyChanged = propertyName == "foo" && provider->get<int>(propertyName) == 42;
+            propertyChanged = *propertyName == "foo" && provider->get<int>(propertyName) == 42;
         }
     );
 
@@ -410,11 +410,11 @@ TEST_F(StoreTest, providerAddedTwiceRemovedOnce)
 
 	p->set("foo", 42);
 
-	auto addedSlod = c.propertyAdded("foo").connect([&](Store&, Provider::Ptr, const std::string&)
+	auto addedSlod = c.propertyAdded("foo").connect([&](Store&, Provider::Ptr, const Provider::PropertyName&)
 	{
 		propertyAdded++;
 	});
-	auto removedSlot = c.propertyRemoved("foo").connect([&](Store&, Provider::Ptr, const std::string&)
+	auto removedSlot = c.propertyRemoved("foo").connect([&](Store&, Provider::Ptr, const Provider::PropertyName&)
 	{
 		ASSERT_FALSE(propertyRemoved);
 		propertyRemoved = true;
@@ -438,11 +438,11 @@ TEST_F(StoreTest, providerAddedTwiceInCollectionRemovedOnce)
 
 	p->set("foo", 42);
 
-	auto addedSlod = c.propertyAdded("bar[0].foo").connect([&](Store&, Provider::Ptr, const std::string&)
+	auto addedSlod = c.propertyAdded("bar[0].foo").connect([&](Store&, Provider::Ptr, const Provider::PropertyName&)
 	{
 		propertyAdded++;
 	});
-	auto removedSlot = c.propertyRemoved("bar[0].foo").connect([&](Store&, Provider::Ptr, const std::string&)
+	auto removedSlot = c.propertyRemoved("bar[0].foo").connect([&](Store&, Provider::Ptr, const Provider::PropertyName&)
 	{
 		ASSERT_FALSE(propertyRemoved);
 		propertyRemoved = true;

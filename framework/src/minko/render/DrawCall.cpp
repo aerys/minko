@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Store.hpp"
 #include "minko/log/Logger.hpp"
 
-#include <regex>
+// #include <regex>
 
 using namespace minko;
 using namespace minko::render;
@@ -519,9 +519,10 @@ DrawCall::resolveBinding(const std::string&                                     
 {
     bool isCollection = false;
     std::string bindingName = inputName;
+    bool isArray = inputName[inputName.length() - 1] == ']';
     auto pos = bindingName.find_first_of('[');
 
-    if (pos != std::string::npos)
+    if (!isArray && pos != std::string::npos)
     {
         bindingName = bindingName.substr(0, pos);
         isCollection = true;
@@ -533,26 +534,26 @@ DrawCall::resolveBinding(const std::string&                                     
     {
         binding = &bindings.at(bindingName);
         bindingPropertyName = binding->propertyName;
-        isCollection = isCollection && bindingPropertyName.find_first_of('[') == std::string::npos;
+        // isCollection = isCollection && bindingPropertyName.find_first_of('[') == std::string::npos;
     }
-    else
-    {
-        for (const auto& inputNameAndBinding : bindings)
-        {
-            std::regex r(inputNameAndBinding.first);
-
-            if (std::regex_match(inputName, r))
-            {
-                bindingPropertyName = std::regex_replace(inputName, r, inputNameAndBinding.second.propertyName);
-                binding = &inputNameAndBinding.second;
-                isCollection = false;
-                break;
-            }
-        }
+    // else
+    // {
+    //     for (const auto& inputNameAndBinding : bindings)
+    //     {
+    //         std::regex r(inputNameAndBinding.first);
+    //
+    //         if (std::regex_match(inputName, r))
+    //         {
+    //             bindingPropertyName = std::regex_replace(inputName, r, inputNameAndBinding.second.propertyName);
+    //             binding = &inputNameAndBinding.second;
+    //             isCollection = false;
+    //             break;
+    //         }
+    //     }
 
         if (!binding)
             return nullptr;
-    }
+    // }
 
     auto& store = getStore(binding->source);
     auto propertyName = data::Store::getActualPropertyName(_variables, bindingPropertyName);
@@ -564,7 +565,7 @@ DrawCall::resolveBinding(const std::string&                                     
     // to the context providing the direct pointer to the contiguous stored data
 
     // FIXME: handle per-fields bindings instead of using the raw uniform suffix
-    if (isCollection)
+    if (isCollection && !isArray)
         propertyName += inputName.substr(pos);
 
     return new data::ResolvedBinding(*binding, propertyName, store);

@@ -784,7 +784,9 @@ EffectParser::parseStates(const Json::Value& node, const Scope& scope, StateBloc
         {
             if (std::find(States::PROPERTY_NAMES.begin(), States::PROPERTY_NAMES.end(), stateName) == States::PROPERTY_NAMES.end() &&
                 std::find(_extraStateNames.begin(), _extraStateNames.end(), stateName) == _extraStateNames.end())
-                throw; // FIXME: log warning because the state name does not match any known state
+			{
+				_error->execute(shared_from_this(), file::Error("Unknown state \"" + stateName + "\"."));
+			}
 
             if (statesNode[stateName].isObject())
             {

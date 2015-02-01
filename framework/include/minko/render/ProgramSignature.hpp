@@ -36,7 +36,7 @@ namespace minko
 			uint				                    		_mask;
             std::vector<Any>	                    		_values;
             std::vector<data::MacroBindingMap::MacroType>   _types;
-            std::vector<std::string>                		_macros;
+            std::vector<Flyweight<std::string>>             _macros;
 
 		public:
 			ProgramSignature(const data::MacroBindingMap&                           macroBindings,
@@ -82,7 +82,7 @@ namespace minko
             }
 
             inline
-            const std::vector<std::string>&
+            const std::vector<Flyweight<std::string>>&
             macros() const
             {
                 return _macros;

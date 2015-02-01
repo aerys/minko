@@ -33,26 +33,21 @@ namespace minko
 		class DrawCallPool
 		{
         private:
-            typedef std::list<DrawCall*>                                                                DrawCallList;
-            typedef DrawCallList::iterator                                                              DrawCallIterator;
-            typedef data::Store::PropertyChangedSignal                                                  PropertyChanged;
-            typedef std::pair<PropertyChanged::Slot, uint>                                              ChangedSlot;
-            typedef data::Store                                                                         Store;
-            typedef std::shared_ptr<data::Collection>                                                   CollectionPtr;
-            typedef std::shared_ptr<data::Provider>                                                     ProviderPtr;
-            typedef data::MacroBinding                                                                  MacroBinding;
-            typedef std::pair<std::string, const Store*>                                                MacroBindingKey;
-            typedef PropertyChanged::Callback                                                           PropertyCallback;
-
-            typedef std::pair_hash<std::string, const Store*>                                           MacroBindingHash;
-            typedef std::pair_eq<std::string, const Store*>                                             MacroBindingEq;
-            typedef std::unordered_map<MacroBindingKey, DrawCallList, MacroBindingHash, MacroBindingEq> MacroToDrawCallsMap;
-            typedef std::unordered_map<MacroBindingKey, ChangedSlot, MacroBindingHash, MacroBindingEq>  MacroToChangedSlotMap;
-
-            typedef std::pair_hash<const data::Binding*, const DrawCall*>                               DrawCallHash;
-            typedef std::pair_eq<const data::Binding*, const DrawCall*>                                 DrawCallEq;
-            typedef std::pair<const data::Binding*, const DrawCall*>                                    DrawCallKey;
-            typedef std::unordered_map<DrawCallKey, PropertyChanged::Slot, DrawCallHash, DrawCallEq>    PropertyChangedSlotMap;
+            typedef std::list<DrawCall*>                                                DrawCallList;
+            typedef DrawCallList::iterator                                              DrawCallIterator;
+            typedef data::Store::PropertyChangedSignal                                  PropertyChanged;
+            typedef std::pair<PropertyChanged::Slot, uint>                              ChangedSlot;
+            typedef data::Store                                                         Store;
+            typedef std::shared_ptr<data::Collection>                                   CollectionPtr;
+            typedef std::shared_ptr<data::Provider>                                     ProviderPtr;
+            typedef data::MacroBinding                                                  MacroBinding;
+            typedef std::tuple<std::string, const MacroBinding*, const Store*>          MacroBindingKey;
+            typedef PropertyChanged::Callback                                           PropertyCallback;
+			typedef std::unordered_map<DrawCall*, std::list<std::function<void(void)>>>	PropertyRebindFuncMap;
+            typedef std::unordered_map<MacroBindingKey, DrawCallList> 					MacroToDrawCallsMap;
+            typedef std::unordered_map<MacroBindingKey, ChangedSlot>  					MacroToChangedSlotMap;
+            typedef std::pair<const data::Binding*, const DrawCall*>                    DrawCallKey;
+            typedef std::unordered_map<DrawCallKey, PropertyChanged::Slot>    			PropertyChangedSlotMap;
 
         public:
             typedef std::pair<DrawCallIterator, DrawCallIterator>   DrawCallIteratorPair;
@@ -63,6 +58,8 @@ namespace minko
             std::unordered_set<DrawCall*>   _invalidDrawCalls;
             MacroToChangedSlotMap           _macroChangedSlot;
             PropertyChangedSlotMap          _propChangedSlot;
+
+			PropertyRebindFuncMap 			_drawCallToPropRebindFuncs;
 
 		public:
             DrawCallPool();
@@ -152,6 +149,15 @@ namespace minko
             samplerStatesBindingPropertyAddedHandler(DrawCall&                          drawCall,
                                                      const ProgramInputs::UniformInput& input,
                                                      const data::BindingMap&            uniformBindingMap);
+
+			void
+			bindDrawCall(DrawCall& 					drawCall,
+						 std::shared_ptr<Pass> 		pass,
+						 std::shared_ptr<Program> 	program,
+						 bool						forceRebind);
+
+			void
+			unbindDrawCall(DrawCall& drawCall);
         };
 	}
 }

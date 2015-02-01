@@ -379,6 +379,7 @@ Transform::RootTransform::updateTransforms()
 {
     math::mat4 modelToWorldMatrix;
     uint nodeId = 0;
+	auto propertyName = data::Store::PropertyName(std::string("modelToWorldMatrix"));
 
     for (const auto& node : _nodes)
 	{
@@ -411,13 +412,9 @@ Transform::RootTransform::updateTransforms()
                 *nodeCacheEntry._modelToWorldMatrix = modelToWorldMatrix;
 
                 // execute the "property changed" signal(s) manually
-                nodeData.propertyChanged().execute(nodeData, provider, "modelToWorldMatrix");
+                nodeData.propertyChanged().execute(nodeData, provider, propertyName);
                 if (nodeData.hasPropertyChangedSignal("modelToWorldMatrix"))
-                    nodeData.propertyChanged("modelToWorldMatrix").execute(
-                        nodeData,
-                        provider,
-                        "modelToWorldMatrix"
-                    );
+                    nodeData.propertyChanged("modelToWorldMatrix").execute(nodeData, provider, propertyName);
 
 			    auto numChildren = nodeCacheEntry._numChildren;
 

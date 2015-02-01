@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/component/AbstractComponent.hpp"
+#include "minko/component/AbstractScript.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/Renderer.hpp"
@@ -30,52 +30,55 @@ namespace minko
 {
     namespace component
     {
-        class Reflection :
-            public AbstractComponent
+        class Reflection : public AbstractScript
         {
         public:
-            typedef std::shared_ptr<Reflection>                 Ptr;
+            typedef std::shared_ptr<Reflection> Ptr;
 
         private:
-            typedef std::shared_ptr<scene::Node>                NodePtr;
-            typedef std::shared_ptr<AbstractComponent>          AbsCmpPtr;
-            typedef std::shared_ptr<data::StructureProvider>    ContainerPtr;
+            typedef std::shared_ptr<scene::Node>                            NodePtr;
+            typedef std::shared_ptr<AbstractComponent>                      AbsCmpPtr;
+            typedef std::shared_ptr<render::AbstractTexture>                AbsTexturePtr;
+            typedef std::shared_ptr<render::Texture>                        TexturePtr;
+            typedef Signal<SceneManager::Ptr, uint, AbsTexturePtr>::Slot    RenderSignalSlot;
+            typedef std::shared_ptr<data::Provider>                         ProviderPtr;
+            typedef Signal<ProviderPtr, const std::string&>::Slot           PropertyChangedSlot;
 
         private:
             // Signals
-            Signal<AbsCmpPtr, NodePtr>::Ptr                                                             _rootAdded;
+            Signal<AbsCmpPtr, NodePtr>::Ptr         _rootAdded;
 
             // Slots
-            Signal<AbsCmpPtr, NodePtr>::Slot                                                            _targetAddedSlot;
-            Signal<AbsCmpPtr, NodePtr>::Slot                                                            _targetRemovedSlot;
-            Signal<AbsCmpPtr, NodePtr>::Slot                                                            _rootAddedSlot;
-            Signal<std::shared_ptr<data::Provider>, const std::string&>::Slot                           _viewMatrixChangedSlot;
-            Signal<NodePtr, NodePtr, NodePtr>::Slot                                                     _addedToSceneSlot;
-            Signal<component::SceneManager::Ptr, uint, std::shared_ptr<render::AbstractTexture>>::Slot  _frameRenderingSlot;
+            Signal<AbsCmpPtr, NodePtr>::Slot        _targetAddedSlot;
+            Signal<AbsCmpPtr, NodePtr>::Slot        _targetRemovedSlot;
+            Signal<AbsCmpPtr, NodePtr>::Slot        _rootAddedSlot;
+            PropertyChangedSlot                     _viewMatrixChangedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot _addedToSceneSlot;
+            RenderSignalSlot                        _frameRenderingSlot;
 
-            uint                                                _width;
-            uint                                                _height;
-            uint                                                _clearColor;
-            std::shared_ptr<file::AssetLibrary>                 _assets;
+            uint                                    _width;
+            uint                                    _height;
+            uint                                    _clearColor;
+            std::shared_ptr<file::AssetLibrary>     _assets;
 
             // One active camera only
-            std::shared_ptr<render::Texture>                    _renderTarget;
-            NodePtr                                             _virtualCamera;
-            NodePtr                                             _activeCamera;
-            PerspectiveCamera::Ptr                              _perspectiveCamera;
-            Transform::Ptr                                      _cameraTransform;
-            Transform::Ptr                                      _virtualCameraTransform;
-            Renderer::Ptr                                       _reflectionRenderer;
-            math::Matrix4x4::Ptr                                _reflectedViewMatrix;
+            std::shared_ptr<render::Texture>        _renderTarget;
+            NodePtr                                 _virtualCamera;
+            NodePtr                                 _activeCamera;
+            PerspectiveCamera::Ptr                  _perspectiveCamera;
+            Transform::Ptr                          _cameraTransform;
+            Transform::Ptr                          _virtualCameraTransform;
+            Renderer::Ptr                           _reflectionRenderer;
+            math::mat4                              _reflectedViewMatrix;
 
             // Multiple active cameras
-            std::shared_ptr<render::Effect>                     _reflectionEffect;
-            std::vector<NodePtr>                                _cameras;
-            std::vector<NodePtr>                                _virtualCameras;
-            std::vector<std::shared_ptr<render::Texture>>       _renderTargets;
-            std::array<float, 4>                                _clipPlane;
+            std::shared_ptr<render::Effect>         _reflectionEffect;
+            std::vector<NodePtr>                    _cameras;
+            std::vector<NodePtr>                    _virtualCameras;
+            std::vector<TexturePtr>                 _renderTargets;
+            std::array<float, 4>                    _clipPlane;
 
-            bool                                                _enabled;
+            bool                                    _enabled;
 
         public:
             inline static
@@ -85,27 +88,17 @@ namespace minko
                    uint renderTargetHeight,
                    uint clearColor)
             {
-                auto reflection = std::shared_ptr<Reflection>(new Reflection(
-                    assets, renderTargetWidth, renderTargetHeight, clearColor));
-
-                reflection->initialize();
-
-                return reflection;
+                return std::shared_ptr<Reflection>(new Reflection(
+                    assets, renderTargetWidth, renderTargetHeight, clearColor
+                ));
             }
 
             AbstractComponent::Ptr
             clone(const CloneOption& option);
 
             inline
-            Signal<AbsCmpPtr, std::shared_ptr<scene::Node>>::Ptr
-            rootAdded() const
-            {
-                return _rootAdded;
-            }
-
-            inline
             std::shared_ptr<render::Texture>
-            getRenderTarget()
+            renderTarget()
             {
                 return _renderTarget;
             }
@@ -113,11 +106,7 @@ namespace minko
             void
             updateReflectionMatrix();
 
-            void
-            enabled(bool value);
-
         private:
-
             Reflection(std::shared_ptr<file::AssetLibrary> assets,
                        uint renderTargetWidth,
                        uint renderTargetHeight,
@@ -126,22 +115,13 @@ namespace minko
             Reflection(const Reflection& reflection, const CloneOption& option);
 
             void
-            initialize();
+            start(NodePtr target);
 
             void
-            setSceneManager(NodePtr node, NodePtr target, NodePtr ancestor);
+            update(NodePtr target);
 
             void
-            targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
-
-            void
-            targetAddedToScene(NodePtr node, NodePtr target, NodePtr ancestor);
-
-            void
-            cameraPropertyValueChangedHandler(std::shared_ptr<data::Provider> provider, const std::string& property);
-
-            void
-            updateReflectionMatrixes();
+            stop(NodePtr target);
         };
     }
 }

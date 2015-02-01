@@ -24,8 +24,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::data;
 
-Provider::Provider()
+Provider::Provider() :
+    _values()
 {
+    // _values.set_deleted_key("");
 }
 
 Provider::Ptr
@@ -57,4 +59,3 @@ Provider::copyFrom(Provider::Ptr source)
 
 	return shared_from_this();
 }
-

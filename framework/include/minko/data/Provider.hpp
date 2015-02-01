@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/Any.hpp"
 #include "minko/Signal.hpp"
+#include "minko/Flyweight.hpp"
 #include "minko/Uuid.hpp"
 
 namespace minko
@@ -32,11 +33,12 @@ namespace minko
 			public std::enable_shared_from_this<Provider>,
             public Uuid::enable_uuid
 		{
-		public:
-			typedef std::shared_ptr<Provider>		Ptr;
-			typedef std::shared_ptr<const Provider>	ConstPtr;
-
         private:
+            // template <class K, class V, typename... H>
+            // using map = google::sparse_hash_map<K, V, H...>;
+            template <class K, typename... V>
+            using map = std::unordered_map<K, V...>;
+
             template <typename T>
             struct is_shared_ptr : std::false_type {};
             template <typename T>
@@ -53,12 +55,17 @@ namespace minko
                     && !is_shared_ptr<T>::value &&!is_weak_ptr<T>::value;
             };
 
-		private:
-            std::unordered_map<std::string, Any>	_values;
+		public:
+			typedef std::shared_ptr<Provider>	Ptr;
+			typedef Flyweight<std::string>		PropertyName;
+			typedef map<PropertyName, Any> 		ValueMap;
 
-			Signal<Ptr, const std::string&>         _propertyAdded;
-            Signal<Ptr, const std::string&>	        _propertyChanged;
-			Signal<Ptr, const std::string&>	        _propertyRemoved;
+		private:
+            ValueMap							_values;
+
+			Signal<Ptr, const PropertyName&>    _propertyAdded;
+            Signal<Ptr, const PropertyName&>	_propertyChanged;
+			Signal<Ptr, const PropertyName&>	_propertyRemoved;
 
 		public:
 			static
@@ -85,28 +92,28 @@ namespace minko
             }
 
 			inline
-            const std::unordered_map<std::string, Any>&
+            const ValueMap&
 			values() const
 			{
 				return _values;
 			}
 
 			inline
-			Signal<Ptr, const std::string&>&
+			Signal<Ptr, const PropertyName&>&
 			propertyAdded()
 			{
 				return _propertyAdded;
 			}
 
             inline
-			Signal<Ptr, const std::string&>&
+			Signal<Ptr, const PropertyName&>&
 			propertyChanged()
 			{
 				return _propertyChanged;
 			}
 
 			inline
-			Signal<Ptr, const std::string&>&
+			Signal<Ptr, const PropertyName&>&
 			propertyRemoved()
 			{
 				return _propertyRemoved;
@@ -115,34 +122,30 @@ namespace minko
 			template <typename T>
 			inline
             typename std::enable_if<is_valid<T>::value, const T&>::type
-            get(const std::string& propertyName) const
+            get(const PropertyName& propertyName) const
 			{
-#ifdef DEBUG
-                return *Any::cast<T>(&_values.at(propertyName));
-#else
-                return *Any::unsafe_cast<T>(&_values.at(propertyName));
-#endif
+                return *Any::unsafe_cast<T>(&(_values.find(propertyName)->second));
 			}
 
             template <typename T>
             inline
             typename std::enable_if<is_valid<T>::value, const T*>::type
-            getPointer(const std::string& propertyName) const
+            getPointer(const PropertyName& propertyName) const
             {
-                return Any::unsafe_cast<T>(&_values.at(propertyName));
+                return Any::unsafe_cast<T>(&(_values.find(propertyName)->second));
             }
 
             template <typename T>
             inline
             typename std::enable_if<is_valid<T>::value, T*>::type
-            getUnsafePointer(const std::string& propertyName)
+            getUnsafePointer(const PropertyName& propertyName)
             {
-                return Any::unsafe_cast<T>(&_values.at(propertyName));
+                return Any::unsafe_cast<T>(&(_values.find(propertyName)->second));
             }
 
             template <typename T>
             typename std::enable_if<is_valid<T>::value, Ptr>::type
-            set(const std::string& propertyName, T value)
+            set(const PropertyName& propertyName, T value)
             {
                 if (_values.count(propertyName) != 0)
                 {
@@ -166,7 +169,7 @@ namespace minko
 
             template <typename T>
 			bool
-            propertyHasType(const std::string& propertyName) const
+            propertyHasType(const PropertyName& propertyName) const
 			{
                 const auto foundIt = _values.find(propertyName);
 
