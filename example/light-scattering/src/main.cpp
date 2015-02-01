@@ -49,7 +49,7 @@ createRandomCube(geometry::Geometry::Ptr geom, render::Effect::Ptr effect)
 
 int main(int argc, char** argv)
 {
-    auto canvas         = Canvas::create("Minko Example - God's Ray", 800, 600);
+    auto canvas         = Canvas::create("Minko Example - Light Scattering", 800, 600);
     auto sceneManager   = SceneManager::create(canvas);
     auto root           = scene::Node::create("root")->addComponent(sceneManager);
     auto assets         = sceneManager->assets();
@@ -59,17 +59,37 @@ int main(int argc, char** argv)
 
     // setup assets
     assets->loader()
+        ->queue("effect/LightScattering/LightSource.effect")
         ->queue("effect/LightScattering/LightScattering.effect")
         ->queue("effect/Basic.effect");
 
     assets->geometry("cube", geometry::CubeGeometry::create(context));
 
+    // standard
     auto renderer = Renderer::create();
     renderer->layoutMask(renderer->layoutMask() & ~scene::BuiltinLayout::DEBUG_ONLY);
-    renderer->backgroundColor(0x323347ff);
+    renderer->backgroundColor(0xff0000ff);
+
+    // forward
+    auto fwdTarget = render::Texture::create(context, math::clp2(canvas->width()), math::clp2(canvas->height()), false, true);
+    fwdTarget->upload();
+
+    // post-processing
+    auto ppRenderer = Renderer::create();
+    auto ppScene = scene::Node::create()->addComponent(ppRenderer);
+    auto ppTarget = render::Texture::create(context, math::clp2(canvas->width()), math::clp2(canvas->height()), false, true);
+    auto ppMaterial = material::BasicMaterial::create();
+
+    ppMaterial->data()->set("lightbuffer", fwdTarget->sampler());
+    ppMaterial->data()->set("backbuffer", ppTarget->sampler());
+    ppRenderer->clearBeforeRender(true);
+    ppTarget->upload();
+
+    // scene
+    auto debugNode1 = scene::Node::create("debug1", scene::BuiltinLayout::DEBUG_ONLY);
+    auto debugNode2 = scene::Node::create("debug2", scene::BuiltinLayout::DEBUG_ONLY);
 
     auto camera = scene::Node::create("camera")
-        ->addComponent(renderer)
         ->addComponent(Transform::create(
             math::inverse(math::lookAt(math::vec3(0.f), math::vec3(0.f, 0.f, 1.f), math::vec3(0.f, 1.f, 0.f)))
         ))
@@ -81,27 +101,6 @@ int main(int argc, char** argv)
     root->addChild(helio);
 
     auto sun = scene::Node::create("sun");
-
-    // post-processing
-    auto ppRenderer = Renderer::create();
-    auto ppScene = scene::Node::create()->addComponent(ppRenderer);
-    auto ppTarget = render::Texture::create(context, math::clp2(canvas->width()), math::clp2(canvas->height()), false, true);
-    auto ppMaterial = material::BasicMaterial::create();
-
-    ppMaterial->data()->set("backbuffer", ppTarget->sampler());
-    ppTarget->upload();
-
-    auto fwdEffect = assets->effect("effect/LightScattering/LightScattering.effect");
-    auto fwdRenderer = Renderer::create();
-    fwdRenderer->backgroundColor(0x323347ff);
-    fwdRenderer->effectTechnique("forward");
-    auto fwdScene = scene::Node::create()->addComponent(fwdRenderer);
-
-    ppRenderer->clearBeforeRender(true);
-    fwdRenderer->clearBeforeRender(true);
-
-    auto debugNode1 = scene::Node::create("debug1", scene::BuiltinLayout::DEBUG_ONLY);
-    auto debugNode2 = scene::Node::create("debug2", scene::BuiltinLayout::DEBUG_ONLY);
 
     auto _ = assets->loader()->complete()->connect([=](file::Loader::Ptr loader)
     {
@@ -138,18 +137,24 @@ int main(int argc, char** argv)
             assets->effect("effect/LightScattering/LightScattering.effect")
         ));
 
+        // forward
+        auto fwdEffect = assets->effect("effect/LightScattering/LightSource.effect");
+        auto fwdRenderer = Renderer::create(0x000000ff, fwdTarget, fwdEffect);
+        fwdRenderer->layoutMask(fwdRenderer->layoutMask() & ~scene::BuiltinLayout::DEBUG_ONLY);
+        fwdRenderer->clearBeforeRender(true);
+        camera->addComponent(fwdRenderer);
+        camera->addComponent(renderer);
+
         auto debugDisplay1 = TextureDebugDisplay::create();
-        debugDisplay1->initialize(assets, assets->texture("lightscattering_target_1"));
+        debugDisplay1->initialize(assets, fwdTarget);
         debugNode1->addComponent(debugDisplay1);
+        ppScene->addChild(debugNode1);
 
         auto debugDisplay2 = TextureDebugDisplay::create();
         debugDisplay2->initialize(assets, ppTarget);
         debugDisplay2->material()->data()->set("spritePosition", math::vec2(10, 440));
         debugNode2->addComponent(debugDisplay2);
-        ppScene->addChild(debugNode1);
         ppScene->addChild(debugNode2);
-
-        fwdRenderer->renderTarget(assets->texture("lightscattering_target_1"));
     });
 
     auto resized = canvas->resized()->connect([=](AbstractCanvas::Ptr canvas, uint w, uint h)
@@ -177,7 +182,8 @@ int main(int argc, char** argv)
         ppMaterial->data()->set("lightPositionOnScreen", lightPositionOnScreen.xy());
 
         // Rendering in "black and white" to fwdTarget.
-        fwdRenderer->render(context);
+        // fwdRenderer->render(context);
+        camera->component<Renderer>(0)->render(context);
 
         // Rendering the scene normally to ppTarget.
         sceneManager->nextFrame(time, deltaTime, ppTarget);
