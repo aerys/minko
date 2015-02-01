@@ -26,6 +26,7 @@ using namespace minko;
 using namespace minko::render;
 
 DrawCallPool::DrawCallPool() :
+    _batchId(0),
     _drawCalls(),
     _macroToDrawCalls(),
     _invalidDrawCalls(),
@@ -35,7 +36,7 @@ DrawCallPool::DrawCallPool() :
 
 }
 
-DrawCallPool::DrawCallIteratorPair
+uint
 DrawCallPool::addDrawCalls(Effect::Ptr                                          effect,
                            const std::string&                                   techniqueName,
                            const std::unordered_map<std::string, std::string>&  variables,
@@ -45,39 +46,41 @@ DrawCallPool::addDrawCalls(Effect::Ptr                                          
 {
     const auto& technique = effect->technique(techniqueName);
 
+    _batchId++;
     for (const auto& pass : technique)
     {
-        DrawCall* drawCall = new DrawCall(pass, variables, rootData, rendererData, targetData);
+        DrawCall* drawCall = new DrawCall(_batchId, pass, variables, rootData, rendererData, targetData);
 
         _drawCalls.push_back(drawCall);
         initializeDrawCall(*drawCall);
     }
 
-    return DrawCallIteratorPair(std::prev(_drawCalls.end(), technique.size()), std::prev(_drawCalls.end()));
+    return _batchId;
 }
 
 void
-DrawCallPool::removeDrawCalls(const DrawCallIteratorPair& iterators)
+DrawCallPool::removeDrawCalls(uint batchId)
 {
-    auto end = std::next(iterators.second);
-
-    for (auto it = iterators.first; it != end; ++it)
+    _drawCalls.remove_if([&](DrawCall* drawCall)
     {
-        DrawCall& drawCall = **it;
+        if (drawCall->batchId() == batchId)
+        {
+            unwatchProgramSignature(
+                *drawCall,
+                drawCall->pass()->macroBindings(),
+                drawCall->rootData(),
+                drawCall->rendererData(),
+                drawCall->targetData()
+            );
+            unbindDrawCall(*drawCall);
 
-        unwatchProgramSignature(
-            drawCall,
-            drawCall.pass()->macroBindings(),
-            drawCall.rootData(),
-            drawCall.rendererData(),
-            drawCall.targetData()
-        );
-        unbindDrawCall(drawCall);
+            _invalidDrawCalls.erase(drawCall);
 
-        _invalidDrawCalls.erase(&drawCall);
-    }
+            return true;
+        }
 
-    _drawCalls.erase(iterators.first, end);
+        return false;
+    });
 }
 
 void
@@ -373,21 +376,29 @@ DrawCallPool::update()
         for (auto& func : drawCallPtrAndFuncList.second)
             func();
     _drawCallToPropRebindFuncs.clear();
+
+    _drawCalls.sort(
+        std::bind(
+            &DrawCallPool::compareDrawCalls,
+            this,
+            std::placeholders::_1,
+            std::placeholders::_2
+        )
+    );
 }
 
 void
-DrawCallPool::invalidateDrawCalls(const DrawCallIteratorPair&                         iterators,
-                                  const std::unordered_map<std::string, std::string>& variables)
+DrawCallPool::invalidateDrawCalls(uint                                                  batchId,
+                                  const std::unordered_map<std::string, std::string>&   variables)
 {
-    auto end = std::next(iterators.second);
-
-    for (auto it = iterators.first; it != end; ++it)
+    for (DrawCall* drawCall : _drawCalls)
     {
-        auto& drawCall = **it;
-
-        _invalidDrawCalls.insert(&drawCall);
-        drawCall.variables().clear();
-        drawCall.variables().insert(variables.begin(), variables.end());
+        if (drawCall->batchId() == batchId)
+        {
+            _invalidDrawCalls.insert(drawCall);
+            drawCall->variables().clear();
+            drawCall->variables().insert(variables.begin(), variables.end());
+        }
     }
 }
 
@@ -432,4 +443,30 @@ DrawCallPool::unbindDrawCall(DrawCall& drawCall)
         _propChangedSlot.erase(key);
 
     _drawCallToPropRebindFuncs.erase(&drawCall);
+}
+
+bool
+DrawCallPool::compareDrawCalls(DrawCall* a, DrawCall* b)
+{
+    const float aPriority = a->priority();
+    const float bPriority = b->priority();
+    const bool samePriority = fabsf(aPriority - bPriority) < 1e-3f;
+
+    if (samePriority)
+    {
+        if (a->target().id == b->target().id)
+        {
+            if (a->zSorted() && b->zSorted())
+            {
+                auto aPosition = a->getEyeSpacePosition();
+                auto bPosition = b->getEyeSpacePosition();
+
+                return aPosition.z > bPosition.z;
+            }
+        }
+
+        return a->target().id < b->target().id;
+    }
+
+    return aPriority > bPriority;
 }

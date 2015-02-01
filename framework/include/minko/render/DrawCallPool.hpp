@@ -53,6 +53,7 @@ namespace minko
             typedef std::pair<DrawCallIterator, DrawCallIterator>   DrawCallIteratorPair;
 
 		private:
+			uint							_batchId;
             DrawCallList                 	_drawCalls;
             MacroToDrawCallsMap             _macroToDrawCalls;
             std::unordered_set<DrawCall*>   _invalidDrawCalls;
@@ -74,7 +75,7 @@ namespace minko
                 return _drawCalls;
             }
 
-            DrawCallIteratorPair
+            uint
             addDrawCalls(std::shared_ptr<Effect>                                effect,
                          const std::string&                                     techniqueName,
                          const std::unordered_map<std::string, std::string>&    variables,
@@ -83,10 +84,10 @@ namespace minko
                          data::Store&                                           targetData);
 
             void
-            removeDrawCalls(const DrawCallIteratorPair& iterators);
+            removeDrawCalls(uint batchId);
 
             void
-            invalidateDrawCalls(const DrawCallIteratorPair&                         iterators,
+            invalidateDrawCalls(uint												batchId,
                                 const std::unordered_map<std::string, std::string>& variables);
 
             void
@@ -158,6 +159,9 @@ namespace minko
 
 			void
 			unbindDrawCall(DrawCall& drawCall);
+
+			bool
+			compareDrawCalls(DrawCall* a, DrawCall* b);
         };
 	}
 }

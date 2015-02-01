@@ -80,10 +80,11 @@ namespace minko
 			typedef std::shared_ptr<Program>			            ProgramPtr;
             typedef std::unordered_map<std::string, std::string>    StringMap;
             typedef data::Store::PropertyChangedSignal::Slot        ChangedSlot;
-            
+
             typedef std::array<data::ResolvedBinding*, 3>           SamplerStatesResolveBindings;
 
 		private:
+			uint								_batchId;
             std::shared_ptr<Pass>               _pass;
             data::Store&                        _rootData;
             data::Store&                        _rendererData;
@@ -123,11 +124,19 @@ namespace minko
             Signal<DrawCall*>::Ptr              _zSortNeeded;
 
 		public:
-            DrawCall(std::shared_ptr<Pass>  pass,
+            DrawCall(uint					batchId,
+					 std::shared_ptr<Pass>  pass,
                      const StringMap&       variables,
                      data::Store&           rootData,
                      data::Store&           rendererData,
                      data::Store&           targetData);
+
+			inline
+			uint
+			batchId() const
+			{
+				return _batchId;
+			}
 
             inline
             std::shared_ptr<Pass>

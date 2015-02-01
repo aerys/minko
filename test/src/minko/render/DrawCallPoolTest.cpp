@@ -42,9 +42,9 @@ TEST_F(DrawCallPoolTest, UniformDefaultToBindingSwap)
 
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
-    ASSERT_EQ((*drawCalls.first)->boundFloatUniforms().size(), 1);
+    ASSERT_EQ(pool.drawCalls().front()->boundFloatUniforms().size(), 1);
     ASSERT_EQ(
-        (*drawCalls.first)->boundFloatUniforms()[0].data,
+        pool.drawCalls().front()->boundFloatUniforms()[0].data,
         math::value_ptr(pass->uniformBindings().defaultValues.get<math::vec4>("uDiffuseColor"))
     );
 
@@ -54,13 +54,13 @@ TEST_F(DrawCallPoolTest, UniformDefaultToBindingSwap)
     targetData.addProvider(p);
     pool.update();
 
-    ASSERT_EQ((*drawCalls.first)->boundFloatUniforms().size(), 1);
+    ASSERT_EQ(pool.drawCalls().front()->boundFloatUniforms().size(), 1);
     ASSERT_NE(
-        (*drawCalls.first)->boundFloatUniforms()[0].data,
+        pool.drawCalls().front()->boundFloatUniforms()[0].data,
         math::value_ptr(pass->uniformBindings().defaultValues.get<math::vec4>("uDiffuseColor"))
     );
     ASSERT_EQ(
-        (*drawCalls.first)->boundFloatUniforms()[0].data,
+        pool.drawCalls().front()->boundFloatUniforms()[0].data,
         math::value_ptr(targetData.get<math::vec4>("diffuseColor"))
     );
 }
@@ -84,22 +84,22 @@ TEST_F(DrawCallPoolTest, UniformBindingToDefaultSwap)
 
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
-    ASSERT_EQ((*drawCalls.first)->boundFloatUniforms().size(), 1);
+    ASSERT_EQ(pool.drawCalls().front()->boundFloatUniforms().size(), 1);
     ASSERT_NE(
-        (*drawCalls.first)->boundFloatUniforms()[0].data,
+        pool.drawCalls().front()->boundFloatUniforms()[0].data,
         math::value_ptr(pass->uniformBindings().defaultValues.get<math::vec4>("uDiffuseColor"))
     );
     ASSERT_EQ(
-        (*drawCalls.first)->boundFloatUniforms()[0].data,
+        pool.drawCalls().front()->boundFloatUniforms()[0].data,
         math::value_ptr(targetData.get<math::vec4>("diffuseColor"))
     );
 
     p->unset("diffuseColor");
     pool.update();
 
-    ASSERT_EQ((*drawCalls.first)->boundFloatUniforms().size(), 1);
+    ASSERT_EQ(pool.drawCalls().front()->boundFloatUniforms().size(), 1);
     ASSERT_EQ(
-        (*drawCalls.first)->boundFloatUniforms()[0].data,
+        pool.drawCalls().front()->boundFloatUniforms()[0].data,
         math::value_ptr(pass->uniformBindings().defaultValues.get<math::vec4>("uDiffuseColor"))
     );
 }
@@ -120,19 +120,19 @@ TEST_F(DrawCallPoolTest, WatchAndDefineIntMacro)
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
     ASSERT_EQ(targetData.propertyChanged("bar").numCallbacks(), 1);
-    ASSERT_FALSE((*drawCalls.first)->program()->definedMacroNames().find("FOO") != (*drawCalls.first)->program()->definedMacroNames().end());
+    ASSERT_FALSE(pool.drawCalls().front()->program()->definedMacroNames().find("FOO") != pool.drawCalls().front()->program()->definedMacroNames().end());
 
     auto p = data::Provider::create();
     p->set("bar", 42);
     targetData.addProvider(p);
     pool.update();
 
-    ASSERT_TRUE((*drawCalls.first)->program()->definedMacroNames().find("FOO") != (*drawCalls.first)->program()->definedMacroNames().end());
+    ASSERT_TRUE(pool.drawCalls().front()->program()->definedMacroNames().find("FOO") != pool.drawCalls().front()->program()->definedMacroNames().end());
 
     p->unset("bar");
     pool.update();
 
-    ASSERT_FALSE((*drawCalls.first)->program()->definedMacroNames().find("FOO") != (*drawCalls.first)->program()->definedMacroNames().end());
+    ASSERT_FALSE(pool.drawCalls().front()->program()->definedMacroNames().find("FOO") != pool.drawCalls().front()->program()->definedMacroNames().end());
 }
 
 TEST_F(DrawCallPoolTest, WatchAndDefineVariableIntMacro)
@@ -153,18 +153,18 @@ TEST_F(DrawCallPoolTest, WatchAndDefineVariableIntMacro)
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
     ASSERT_EQ(targetData.propertyChanged("material[" + materialUuid + "].bar").numCallbacks(), 1);
-    ASSERT_FALSE((*drawCalls.first)->program()->definedMacroNames().find("FOO") != (*drawCalls.first)->program()->definedMacroNames().end());
+    ASSERT_FALSE(pool.drawCalls().front()->program()->definedMacroNames().find("FOO") != pool.drawCalls().front()->program()->definedMacroNames().end());
 
     p->set("bar", 42);
     targetData.addProvider(p, "material");
     pool.update();
 
-    ASSERT_TRUE((*drawCalls.first)->program()->definedMacroNames().find("FOO") != (*drawCalls.first)->program()->definedMacroNames().end());
+    ASSERT_TRUE(pool.drawCalls().front()->program()->definedMacroNames().find("FOO") != pool.drawCalls().front()->program()->definedMacroNames().end());
 
     p->unset("bar");
     pool.update();
 
-    ASSERT_FALSE((*drawCalls.first)->program()->definedMacroNames().find("FOO") != (*drawCalls.first)->program()->definedMacroNames().end());
+    ASSERT_FALSE(pool.drawCalls().front()->program()->definedMacroNames().find("FOO") != pool.drawCalls().front()->program()->definedMacroNames().end());
 }
 
 TEST_F(DrawCallPoolTest, StopWatchingMacroAfterDrawCallsRemoved)
@@ -230,7 +230,7 @@ TEST_F(DrawCallPoolTest, SamplerStateSwapWrapModeBindingToDefaultClamp)
 
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
-    auto& samplers = (*drawCalls.first)->samplers();
+    auto& samplers = pool.drawCalls().front()->samplers();
     auto& sampler = samplers[0];
 
     ASSERT_EQ(samplers.size(), 1);
@@ -286,7 +286,7 @@ TEST_F(DrawCallPoolTest, SamplerStateSwapWrapModeBindingToDefaultRepeat)
 
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
-    auto& samplers = (*drawCalls.first)->samplers();
+    auto& samplers = pool.drawCalls().front()->samplers();
     auto& sampler = samplers[0];
 
     ASSERT_EQ(samplers.size(), 1);
@@ -342,7 +342,7 @@ TEST_F(DrawCallPoolTest, SamplerStateSwapTextureFilterBindingToDefaultLinear)
 
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
-    auto& samplers = (*drawCalls.first)->samplers();
+    auto& samplers = pool.drawCalls().front()->samplers();
     auto& sampler = samplers[0];
 
     ASSERT_EQ(samplers.size(), 1);
@@ -401,7 +401,7 @@ TEST_F(DrawCallPoolTest, SamplerStateSwapTextureFilterBindingToDefaultNearest)
 
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
-    auto& samplers = (*drawCalls.first)->samplers();
+    auto& samplers = pool.drawCalls().front()->samplers();
     auto& sampler = samplers[0];
 
     ASSERT_EQ(samplers.size(), 1);
@@ -459,7 +459,7 @@ TEST_F(DrawCallPoolTest, SamplerStateSwapMipFilterBindingToDefaultNone)
 
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
-    auto& samplers = (*drawCalls.first)->samplers();
+    auto& samplers = pool.drawCalls().front()->samplers();
     auto& sampler = samplers[0];
 
     ASSERT_EQ(samplers.size(), 1);
@@ -515,7 +515,7 @@ TEST_F(DrawCallPoolTest, SamplerStateSwapMipFilterBindingToDefaultLinear)
 
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
-    auto& samplers = (*drawCalls.first)->samplers();
+    auto& samplers = pool.drawCalls().front()->samplers();
     auto& sampler = samplers[0];
 
     ASSERT_EQ(samplers.size(), 1);
@@ -571,7 +571,7 @@ TEST_F(DrawCallPoolTest, SamplerStateSwapMipFilterBindingToDefaultNearest)
 
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
-    auto& samplers = (*drawCalls.first)->samplers();
+    auto& samplers = pool.drawCalls().front()->samplers();
     auto& sampler = samplers[0];
 
     ASSERT_EQ(samplers.size(), 1);
@@ -627,7 +627,7 @@ TEST_F(DrawCallPoolTest, SamplerStatesBindingWrapModeNoDefaultValue)
 
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
-    auto& samplers = (*drawCalls.first)->samplers();
+    auto& samplers = pool.drawCalls().front()->samplers();
     auto& sampler = samplers[0];
 
     ASSERT_EQ(samplers.size(), 1);
@@ -676,7 +676,7 @@ TEST_F(DrawCallPoolTest, SamplerStateTextureFilterBindingNoDefaultValue)
 
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
-    auto& samplers = (*drawCalls.first)->samplers();
+    auto& samplers = pool.drawCalls().front()->samplers();
     auto& sampler = samplers[0];
 
     ASSERT_EQ(samplers.size(), 1);
@@ -725,7 +725,7 @@ TEST_F(DrawCallPoolTest, SamplerStatesBindingMipFilterNoDefaultValue)
 
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
-    auto& samplers = (*drawCalls.first)->samplers();
+    auto& samplers = pool.drawCalls().front()->samplers();
     auto& sampler = samplers[0];
 
     ASSERT_EQ(samplers.size(), 1);

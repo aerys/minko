@@ -435,16 +435,7 @@ Renderer::render(render::AbstractContext::Ptr	context,
 		);
 
     _drawCallPool.update();
-	auto drawCalls = _drawCallPool.drawCalls();
-    drawCalls.sort(
-        std::bind(
-            &Renderer::compareDrawCalls,
-            this,
-            std::placeholders::_1,
-            std::placeholders::_2
-        )
-    );
-    for (const DrawCall* drawCall : drawCalls)
+    for (const DrawCall* drawCall : _drawCallPool.drawCalls())
 	    drawCall->render(context, rt, _viewportBox, _backgroundColor);
 
 	context->setRenderToBackBuffer();
@@ -583,32 +574,6 @@ Renderer::filterChangedHandler(data::AbstractFilter::Ptr	filter,
 		source,
 		surface
 	);
-}
-
-bool
-Renderer::compareDrawCalls(DrawCall* a, DrawCall* b)
-{
-    const float aPriority = a->priority();
-    const float bPriority = b->priority();
-    const bool samePriority = fabsf(aPriority - bPriority) < 1e-3f;
-
-    if (samePriority)
-    {
-        if (a->target().id == b->target().id)
-        {
-            if (a->zSorted() && b->zSorted())
-            {
-                auto aPosition = a->getEyeSpacePosition();
-                auto bPosition = b->getEyeSpacePosition();
-
-                return aPosition.z > bPosition.z;
-            }
-        }
-
-        return a->target().id < b->target().id;
-    }
-
-    return aPriority > bPriority;
 }
 
 void
