@@ -20,8 +20,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/MaterialWriter.hpp"
 
 #include "minko/Flyweight.hpp"
+#include "minko/Any.hpp"
 #include "minko/render/Blending.hpp"
 #include "minko/render/TriangleCulling.hpp"
+
+#include "google/sparse_hash_map"
 
 using namespace minko;
 using namespace minko::file;

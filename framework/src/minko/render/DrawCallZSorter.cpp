@@ -26,7 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::data;
 using namespace minko::render;
-using namespace minko::math;
 
 // Names of the properties that may cause a Z-sort change between drawcalls
 const DrawCallZSorter::PropertyInfos DrawCallZSorter::_rawProperties = initializeRawProperties();
@@ -113,9 +112,9 @@ DrawCallZSorter::recordIfPositionalMembers(data::Store&         store,
             //_vertexPositions.second = store.get<geometry::Geometry>(propertyName);
         }
         else if (propertyName == _modelToWorldMatrix.first)
-            _modelToWorldMatrix.second = store.get<mat4>(propertyName);
+            _modelToWorldMatrix.second = store.get<math::mat4>(propertyName);
         else if (propertyName == _worldToScreenMatrix.first)
-            _worldToScreenMatrix.second = store.get<mat4>(propertyName);
+            _worldToScreenMatrix.second = store.get<math::mat4>(propertyName);
     }
     else if (isPropertyRemoved)
     {

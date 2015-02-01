@@ -95,9 +95,9 @@
 _START_GOOGLE_NAMESPACE_
 
 template <class Key, class T,
-          class HashFcn = SPARSEHASH_HASH<Key>,   // defined in sparseconfig.h
-          class EqualKey = std::equal_to<Key>,
-          class Alloc = libc_allocator_with_realloc<std::pair<const Key, T> > >
+          class HashFcn,   // defined in sparseconfig.h
+          class EqualKey,
+          class Alloc>
 class sparse_hash_map {
  private:
   // Apparently select1st is not stl-standard, so we define our own

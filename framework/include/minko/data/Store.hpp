@@ -23,6 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Flyweight.hpp"
 #include "minko/data/Provider.hpp"
 
+#include "sparsehash/forward.h"
+
 namespace minko
 {
 	namespace data
@@ -43,10 +45,10 @@ namespace minko
 			typedef ProviderPropertyChangedSignal::Slot				    ProviderPropertyChangedSlot;
             typedef Signal<Collection&, ProviderPtr>::Slot              CollectionChangedSignalSlot;
 
-			template <class K, class V, typename... H>
-			using map = google::sparse_hash_map<K, V, H...>;
-			// template <class K, class V, typename... H>
-			// using map = std::unordered_map<K, V, H...>;
+			template <typename... H>
+			using map = google::sparse_hash_map<H...>;
+			/*template <class K, class V, typename... H>
+			using map = std::unordered_map<K, V, H...>;*/
 
         public:
             typedef Signal<Store&, ProviderPtr, const PropertyName&>	PropertyChangedSignal;
@@ -64,23 +66,20 @@ namespace minko
 			PropertyChangedSignal	    	_propertyAdded;
 			PropertyChangedSignal     		_propertyRemoved;
             PropertyChangedSignal           _propertyChanged;
-            ChangedSignalMap            	_propertyNameToChangedSignal;
-            ChangedSignalMap            	_propertyNameToAddedSignal;
-            ChangedSignalMap            	_propertyNameToRemovedSignal;
+            ChangedSignalMap*            	_propertyNameToChangedSignal;
+            ChangedSignalMap*            	_propertyNameToAddedSignal;
+            ChangedSignalMap*            	_propertyNameToRemovedSignal;
 
-            ProviderToChangedSlotListMap	_propertySlots;
-            CollectionToChangedSlotMap      _collectionItemAddedSlots;
-            CollectionToChangedSlotMap      _collectionItemRemovedSlots;
+            ProviderToChangedSlotListMap*	_propertySlots;
+            CollectionToChangedSlotMap*     _collectionItemAddedSlots;
+            CollectionToChangedSlotMap*     _collectionItemRemovedSlots;
 
 		public:
             Store();
 
 			Store(const Store& store, bool deepCopy = false);
 
-            ~Store()
-            {
-
-            }
+            ~Store();
 
             template <typename T>
 			bool
@@ -171,26 +170,14 @@ namespace minko
                 return _propertyChanged;
             }
 
-            inline
             PropertyChangedSignal&
-            propertyAdded(const std::string& propertyName)
-            {
-                return _propertyNameToAddedSignal[propertyName];
-            }
+            propertyAdded(const std::string& propertyName);
 
-            inline
             PropertyChangedSignal&
-            propertyRemoved(const std::string& propertyName)
-            {
-                return _propertyNameToRemovedSignal[propertyName];
-            }
+            propertyRemoved(const std::string& propertyName);
 
-            inline
             PropertyChangedSignal&
-            propertyChanged(const std::string& propertyName)
-            {
-                return _propertyNameToChangedSignal[propertyName];
-            }
+            propertyChanged(const std::string& propertyName);
 
             inline
 			const std::list<ProviderPtr>&
@@ -245,26 +232,14 @@ namespace minko
                 return std::get<0>(getProviderByPropertyName(propertyName)) != nullptr;
             }
 
-            inline
             bool
-            hasPropertyAddedSignal(const std::string& propertyName) const
-            {
-                return _propertyNameToAddedSignal.count(propertyName) != 0;
-            }
+            hasPropertyAddedSignal(const std::string& propertyName) const;
 
-            inline
             bool
-            hasPropertyRemovedSignal(const std::string& propertyName) const
-            {
-                return _propertyNameToRemovedSignal.count(propertyName) != 0;
-            }
+            hasPropertyRemovedSignal(const std::string& propertyName) const;
 
-            inline
             bool
-            hasPropertyChangedSignal(const std::string& propertyName) const
-            {
-                return _propertyNameToChangedSignal.count(propertyName) != 0;
-            }
+            hasPropertyChangedSignal(const std::string& propertyName) const;
 
             static
             const std::string

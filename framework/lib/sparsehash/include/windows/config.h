@@ -13,7 +13,7 @@
 #define HASH_MAP_H  <hash_map>
 
 /* the namespace of the hash<> function */
-#define HASH_NAMESPACE  stdext
+#define HASH_NAMESPACE  std
 
 /* the location of <unordered_set> or <hash_set> */
 #define HASH_SET_H  <hash_set>

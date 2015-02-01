@@ -10,7 +10,7 @@
 #define HASH_FUN_H  <hash_map>
 
 /* the namespace of the hash<> function */
-#define HASH_NAMESPACE  stdext
+#define HASH_NAMESPACE  std
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
@@ -22,7 +22,7 @@
 #define HAVE_MEMCPY  1
 
 /* Define to 1 if you have the <stdint.h> header file. */
-#undef HAVE_STDINT_H
+#define HAVE_STDINT_H
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #define HAVE_SYS_TYPES_H  1
@@ -37,10 +37,10 @@
 #define HAVE___UINT16  1
 
 /* The system-provided hash function including the namespace. */
-#define SPARSEHASH_HASH  HASH_NAMESPACE::hash_compare
+#define SPARSEHASH_HASH  HASH_NAMESPACE::hash
 
 /* The system-provided hash function, in namespace HASH_NAMESPACE. */
-#define SPARSEHASH_HASH_NO_NAMESPACE  hash_compare
+#define SPARSEHASH_HASH_NO_NAMESPACE  hash
 
 /* Stops putting the code inside the Google namespace */
 #define _END_GOOGLE_NAMESPACE_  }

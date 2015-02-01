@@ -32,7 +32,7 @@
  */
 
 #include <sparsehash/internal/sparseconfig.h>
-#ifndef WIN32
+#ifndef _WIN32
 # error You should only be including windows/port.cc in a windows environment!
 #endif
 

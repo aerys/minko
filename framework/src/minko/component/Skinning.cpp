@@ -36,7 +36,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::data;
 using namespace minko::scene;
-using namespace minko::math;
 using namespace minko::component;
 using namespace minko::geometry;
 using namespace minko::render;

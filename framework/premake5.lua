@@ -47,20 +47,26 @@ minko.project.library "minko-framework"
 
 	-- sparsehash
 	files {
-		-- "lib/sparsehash/src/*.h",
-		-- "lib/sparsehash/src/*.cc",
-		"lib/sparsehash/src/google/**.h",
-		"lib/sparsehash/src/google/**.cc",
 		"lib/sparsehash/src/sparsehash/**.h",
 		"lib/sparsehash/src/sparsehash/**.cc"
 	}
-	includedirs {
-		"lib/sparsehash/src"
-	}
 	configuration { "windows" }
+		defines {
+			"_SCL_SECURE_NO_WARNINGS"
+		}
 		files {
-			"lib/sparsehash/src/windows/**.h",
-			"lib/sparsehash/src/windows/**.cc"
+			--"lib/sparsehash/src/windows/**.cc",
+			"lib/sparsehash/include/windows/**.h"
+		}
+		includedirs {
+			"lib/sparsehash/include/windows"
+		}
+	configuration { "not windows*" }
+		files {
+			"lib/sparsehash/include/**.h"
+		}
+		includedirs {
+			"lib/sparsehash/include"
 		}
 	configuration {}
 

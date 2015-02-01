@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Flyweight.hpp"
 #include "minko/Uuid.hpp"
 
-#include "google/sparse_hash_map"
+#include "sparsehash/forward.h"
 
 namespace minko
 {
@@ -36,10 +36,10 @@ namespace minko
             public Uuid::enable_uuid
 		{
         private:
-			template <class K, class V, typename... H>
-			using map = google::sparse_hash_map<K, V, H...>;
-			// template <class K, typename... V>
-			// using map = std::unordered_map<K, V...>;
+			template <typename... H>
+			using map = google::sparse_hash_map<H...>;
+			/*template <class K, typename... V>
+			using map = std::unordered_map<K, V...>;*/
 
             template <typename T>
             struct is_shared_ptr : std::false_type {};
@@ -63,7 +63,7 @@ namespace minko
 			typedef map<PropertyName, Any> 		ValueMap;
 
 		private:
-            ValueMap							_values;
+            ValueMap*							_values;
 
 			Signal<Ptr, const PropertyName&>    _propertyAdded;
             Signal<Ptr, const PropertyName&>	_propertyChanged;
@@ -86,18 +86,14 @@ namespace minko
 				return create()->copyFrom(source);
 			}
 
-			inline
 			bool
-            hasProperty(const std::string& propertyName) const
-            {
-                return _values.count(propertyName) != 0;
-            }
+            hasProperty(const PropertyName& propertyName) const;
 
 			inline
             const ValueMap&
 			values() const
 			{
-				return _values;
+				return *_values;
 			}
 
 			inline
@@ -126,7 +122,7 @@ namespace minko
             typename std::enable_if<is_valid<T>::value, const T&>::type
             get(const PropertyName& propertyName) const
 			{
-                return *Any::unsafe_cast<T>(&(_values.find(propertyName)->second));
+                return *Any::unsafe_cast<T>(&getValue(propertyName));
 			}
 
             template <typename T>
@@ -134,7 +130,7 @@ namespace minko
             typename std::enable_if<is_valid<T>::value, const T*>::type
             getPointer(const PropertyName& propertyName) const
             {
-                return Any::unsafe_cast<T>(&(_values.find(propertyName)->second));
+                return Any::unsafe_cast<T>(&getValue(propertyName));
             }
 
             template <typename T>
@@ -142,16 +138,16 @@ namespace minko
             typename std::enable_if<is_valid<T>::value, T*>::type
             getUnsafePointer(const PropertyName& propertyName)
             {
-                return Any::unsafe_cast<T>(&(_values.find(propertyName)->second));
+                return Any::unsafe_cast<T>(&getValue(propertyName));
             }
 
             template <typename T>
             typename std::enable_if<is_valid<T>::value, Ptr>::type
             set(const PropertyName& propertyName, T value)
             {
-                if (_values.count(propertyName) != 0)
+                if (hasProperty(propertyName))
                 {
-                    T* ptr = Any::cast<T>(&_values[propertyName]);
+                    T* ptr = Any::cast<T>(&getValue(propertyName));
                     auto changed = !(*ptr == value);
 
                     *ptr = value;
@@ -161,7 +157,7 @@ namespace minko
                 }
                 else
                 {
-                    _values[propertyName] = value;
+                    setValue(propertyName, value);
                     _propertyAdded.execute(shared_from_this(), propertyName);
                     _propertyChanged.execute(shared_from_this(), propertyName);
                 }
@@ -173,12 +169,7 @@ namespace minko
 			bool
             propertyHasType(const PropertyName& propertyName) const
 			{
-                const auto foundIt = _values.find(propertyName);
-
-				if (foundIt == _values.end())
-					throw std::invalid_argument("propertyName");
-
-				return Any::cast<T>(&foundIt->second) != nullptr;
+				return Any::cast<T>(&getValue(propertyName)) != nullptr;
 			}
 
 			virtual
@@ -192,8 +183,17 @@ namespace minko
 			Ptr
 			copyFrom(Ptr source);
 
+            ~Provider();
+
 		protected:
 			Provider();
+
+        private:
+            Any&
+            getValue(const PropertyName& propertyName) const;
+
+            void
+            setValue(const PropertyName& propertyName, Any value);
 		};
 	}
 }

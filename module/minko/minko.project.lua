@@ -13,6 +13,10 @@ minko.project.library = function(name)
 	includedirs { minko.sdk.path("/framework/lib/glm") }
 	-- sparsehash
 	includedirs { minko.sdk.path("/framework/lib/sparsehash/src") }
+	configuration { "windows" }
+		includedirs { minko.sdk.path("/framework/lib/sparsehash/include/windows") }
+	configuration { "not windows*" }
+		includedirs { minko.sdk.path("/framework/lib/sparsehash/include") }
 
 	configuration { "debug"}
 		defines { "DEBUG" }

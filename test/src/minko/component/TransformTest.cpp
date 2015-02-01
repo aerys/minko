@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoTests.hpp"
 
 using namespace minko;
-using namespace minko::math;
 using namespace minko::component;
 using namespace minko::scene;
 
