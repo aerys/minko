@@ -5,6 +5,7 @@
     "techniques":
     [
         {
+            "name": "default",
             "passes":
             [
                 {
@@ -16,7 +17,7 @@
 
                     "uniforms"   :
                     {
-                        "lightPositionOnScreen" : "material[${materialUuid}].lightPositionOnScreen",
+                        "uLightPositionOnScreen" : "material[${materialUuid}].lightPositionOnScreen",
                         "uBackbuffer" : "material[${materialUuid}].backbuffer"
                     },
 
@@ -36,7 +37,7 @@
 
                     "fragmentShader"    :
                     "
-                        uniform vec2 lightPositionOnScreen;
+                        uniform vec2 uLightPositionOnScreen;
                         uniform sampler2D uBackbuffer;
 
                         const float decay = 0.96815;
@@ -50,14 +51,12 @@
 
                         void main()
                         {
-                            // vec4 pixel = texture2D(uBackbuffer, lightPositionOnScreen.xy); //vVertexUV);
+                            vec4 pixel = texture2D(uBackbuffer, uLightPositionOnScreen.xy);
 
-                            // gl_FragColor = pixel;
+                            gl_FragColor = pixel;
 
-                            // vec2 deltaTextCoord = vec2( gl_TexCoord[0].st - lightPositionOnScreen.xy );
-                            vec2 deltaTextCoord = vec2(vVertexUV.xy - lightPositionOnScreen.xy);
-                            vec2 textCoo = gl_TexCoord[0].st;
-                            // vec2 textCoo = vVertexUV.xy;
+                            vec2 deltaTextCoord = vec2(vVertexUV.xy - uLightPositionOnScreen.xy);
+                            vec2 textCoo = vVertexUV.xy;
                             deltaTextCoord *= 1.0 / float(NUM_SAMPLES) * density;
                             float illuminationDecay = 1.0;
 
@@ -74,6 +73,43 @@
                              }
 
                              gl_FragColor *= exposure;
+                        }
+                    "
+                }
+            ]
+        },
+        {
+            "name": "forward", // not really forward...
+            "passes":
+            [
+                {
+                    "attributes" :
+                    {
+                        "aPosition"     : "geometry[${geometryUuid}].position",
+                        "aUV"           : "geometry[${geometryUuid}].uv"
+                    },
+
+                    "uniforms"   :
+                    {
+                        "uIsLightSource" : "material[${materialUuid}].isLightSource"
+                    },
+
+                    "states" : {
+                        "target" : {
+                            "name" : "lightscattering_target_1",
+                            "size" : 256
+                        }
+                    },
+
+                    "vertexShader" : "#pragma include('Basic.vertex.glsl')",
+
+                    "fragmentShader" :
+                    "
+                        uniform vec2 uIsLightSource;
+
+                        void main()
+                        {
+                            gl_FragColor = vec4(uIsLightSource, 0.0, 0.0, 1.0);
                         }
                     "
                 }

@@ -31,8 +31,8 @@ createRandomCube(geometry::Geometry::Ptr geom, render::Effect::Ptr effect)
     auto r = math::sphericalRand(1.f);
 
     auto material = material::BasicMaterial::create()
-        // ->diffuseColor(math::vec4((r + 1.f) * .5f, 1.f));
-        ->diffuseColor(math::vec4(0.f, 0.f, 0.f, 1.f));
+        ->diffuseColor(math::vec4((r + 1.f) * .5f, 1.f));
+        // ->diffuseColor(math::vec4(0.f, 0.f, 0.f, 1.f));
 
     auto node = scene::Node::create()
         ->addComponent(Transform::create(
@@ -91,6 +91,18 @@ int main(int argc, char** argv)
     ppMaterial->data()->set("backbuffer", ppTarget->sampler());
     ppTarget->upload();
 
+    auto fwdEffect = assets->effect("effect/LightScattering/LightScattering.effect");
+    auto fwdRenderer = Renderer::create();
+    fwdRenderer->backgroundColor(0x323347ff);
+    fwdRenderer->effectTechnique("forward");
+    auto fwdScene = scene::Node::create()->addComponent(fwdRenderer);
+
+    ppRenderer->clearBeforeRender(true);
+    fwdRenderer->clearBeforeRender(true);
+
+    auto debugNode1 = scene::Node::create("debug1", scene::BuiltinLayout::DEBUG_ONLY);
+    auto debugNode2 = scene::Node::create("debug2", scene::BuiltinLayout::DEBUG_ONLY);
+
     auto _ = assets->loader()->complete()->connect([=](file::Loader::Ptr loader)
     {
         for (auto i = 0; i < 100; ++i)
@@ -98,6 +110,10 @@ int main(int argc, char** argv)
                 assets->geometry("cube"),
                 assets->effect("effect/Basic.effect")
             ));
+
+        auto sunMaterial = material::BasicMaterial::create()
+            ->diffuseColor(math::vec4(1.f, 0.32f, 0.05f, 1.f));
+        sunMaterial->data()->set("isLightSource", true);
 
         helio
             ->addChild(scene::Node::create()
@@ -110,7 +126,7 @@ int main(int argc, char** argv)
                     ))
                     ->addComponent(Surface::create(
                         geometry::SphereGeometry::create(context),
-                        material::BasicMaterial::create()->diffuseColor(math::vec4(1.f)),
+                        sunMaterial,
                         assets->effect("effect/Basic.effect")
                     ))
                 )
@@ -123,12 +139,17 @@ int main(int argc, char** argv)
         ));
 
         auto debugDisplay1 = TextureDebugDisplay::create();
-        auto debugNode1 = scene::Node::create("debug", scene::BuiltinLayout::DEBUG_ONLY);
-        // debugDisplay1->initialize(assets, assets->texture("lightscattering_target_1"));
-        debugDisplay1->initialize(assets, ppTarget);
+        debugDisplay1->initialize(assets, assets->texture("lightscattering_target_1"));
         debugNode1->addComponent(debugDisplay1);
 
+        auto debugDisplay2 = TextureDebugDisplay::create();
+        debugDisplay2->initialize(assets, ppTarget);
+        debugDisplay2->material()->data()->set("spritePosition", math::vec2(10, 440));
+        debugNode2->addComponent(debugDisplay2);
         ppScene->addChild(debugNode1);
+        ppScene->addChild(debugNode2);
+
+        fwdRenderer->renderTarget(assets->texture("lightscattering_target_1"));
     });
 
     auto resized = canvas->resized()->connect([=](AbstractCanvas::Ptr canvas, uint w, uint h)
@@ -155,8 +176,13 @@ int main(int argc, char** argv)
 
         ppMaterial->data()->set("lightPositionOnScreen", lightPositionOnScreen.xy());
 
+        // Rendering in "black and white" to fwdTarget.
+        fwdRenderer->render(context);
+
+        // Rendering the scene normally to ppTarget.
         sceneManager->nextFrame(time, deltaTime, ppTarget);
-        ppRenderer->clearBeforeRender(true);
+
+        // Blending fwdTarget with ppTarget, enabling light scattering.
         ppRenderer->render(context);
     });
 

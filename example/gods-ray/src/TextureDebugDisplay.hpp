@@ -51,6 +51,12 @@ public:
         _surface->layoutMask(minko::scene::BuiltinLayout::DEBUG_ONLY);
     }
 
+    minko::material::Material::Ptr
+    material()
+    {
+        return _material;
+    }
+
 protected:
     void
     targetAdded(minko::scene::Node::Ptr target)
