@@ -172,7 +172,7 @@ solution "minko"
 		-- include 'example/keyboard'
 		-- include 'example/leap-motion'
 		-- include 'example/light'
-		include 'example/gods-ray'
+		include 'example/light-scattering'
 		-- include 'example/line-geometry'
 		-- include 'example/lua-scripts'
 		-- include 'example/multi-surfaces'
