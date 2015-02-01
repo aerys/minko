@@ -322,8 +322,6 @@ Renderer::addSurface(Surface::Ptr surface)
 
     std::unordered_map<std::string, std::string> variables = _variables;
 
-    auto& c = surface->target()->data();
-
     variables["surfaceUuid"] = surface->uuid();
     variables["geometryUuid"] = surface->geometry()->uuid();
     variables["materialUuid"] = surface->material()->uuid();
