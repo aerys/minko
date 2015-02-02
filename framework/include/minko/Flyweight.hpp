@@ -53,6 +53,12 @@ namespace minko
         {
         }
 
+        Flyweight(Flyweight&& f) :
+            _value(f._value)
+        {
+            f._value = nullptr;
+        }
+
         ~Flyweight()
         {
         }
@@ -83,6 +89,15 @@ namespace minko
         operator=(const Flyweight<T>& rhs)
         {
             _value = rhs._value;
+
+            return *this;
+        }
+
+        inline
+        Flyweight<T>&
+        operator=(Flyweight<T>&& other)
+        {
+            _value = other._value;
 
             return *this;
         }
