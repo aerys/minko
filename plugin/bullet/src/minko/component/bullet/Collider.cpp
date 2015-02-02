@@ -19,43 +19,41 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/bullet/Collider.hpp"
 
-#include <minko/math/Matrix4x4.hpp>
-#include <minko/scene/Node.hpp>
-#include <minko/scene/NodeSet.hpp>
-#include <minko/component/Transform.hpp>
-#include <minko/component/Surface.hpp>
-#include <minko/component/bullet/AbstractPhysicsShape.hpp>
-#include <minko/component/bullet/ColliderData.hpp>
-#include <minko/component/bullet/PhysicsWorld.hpp>
-#include <minko/component/bullet/PhysicsWorld.hpp>
-#include <minko/file/AssetLibrary.hpp>
+#include "minko/scene/Node.hpp"
+#include "minko/scene/NodeSet.hpp"
+#include "minko/component/Transform.hpp"
+#include "minko/component/Surface.hpp"
+#include "minko/component/bullet/AbstractPhysicsShape.hpp"
+#include "minko/component/bullet/ColliderData.hpp"
+#include "minko/component/bullet/PhysicsWorld.hpp"
+#include "minko/component/bullet/PhysicsWorld.hpp"
+#include "minko/file/AssetLibrary.hpp"
 
 #include "minko/math/tools.hpp"
 
 using namespace minko;
-using namespace minko::math;
 using namespace minko::scene;
 using namespace minko::component;
 
 bullet::Collider::Collider(ColliderData::Ptr data):
-    AbstractComponent(Layout::Mask::COLLISIONS_DYNAMIC_DEFAULT),
+    AbstractComponent(LayoutMask::COLLISIONS_DYNAMIC_DEFAULT),
     _colliderData(data),
     _canSleep(false),
     _triggerCollisions(false),
-    _linearFactor(Vector3::create(1.0f, 1.0f, 1.0f)),
+    _linearFactor(math::vec3(1.0f, 1.0f, 1.0f)),
     _linearDamping(0.0f),
     _linearSleepingThreshold(0.8f),
-    _angularFactor(Vector3::create(1.0f, 1.0f, 1.0f)),
+    _angularFactor(math::vec3(1.0f, 1.0f, 1.0f)),
     _angularDamping(0.0f),
     _angularSleepingThreshold(1.0f),
     _physicsWorld(nullptr),
-    _correction(Matrix4x4::create()),
-    _physicsTransform(Matrix4x4::create()),
+    _correction(math::mat4()),
+    _physicsTransform(math::mat4()),
     _graphicsTransform(nullptr),
     _propertiesChanged(Signal<Ptr>::create()),
     _collisionStarted(Signal<Ptr, Ptr>::create()),
     _collisionEnded(Signal<Ptr, Ptr>::create()),
-    _physicsTransformChanged(Signal<Ptr, Matrix4x4::Ptr>::create()),
+    _physicsTransformChanged(Signal<Ptr, math::mat4>::create()),
     _graphicsTransformChanged(Signal<Ptr, Transform::Ptr>::create()),
     _targetAddedSlot(nullptr),
     _targetRemovedSlot(nullptr),
@@ -74,31 +72,9 @@ bullet::Collider::clone(const CloneOption& option)
 }
 
 void
-bullet::Collider::initialize()
+bullet::Collider::targetAdded(Node::Ptr target)
 {
-    _targetAddedSlot    = targetAdded()->connect(std::bind(
-        &bullet::Collider::targetAddedHandler,
-        std::static_pointer_cast<Collider>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2
-    ));
-
-    _targetRemovedSlot    = targetRemoved()->connect(std::bind(
-        &bullet::Collider::targetRemovedHandler,
-        std::static_pointer_cast<Collider>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2
-    ));
-}
-
-void
-bullet::Collider::targetAddedHandler(AbstractComponent::Ptr,
-                                     Node::Ptr target)
-{
-    if (targets().size() > 1)
-        throw std::logic_error("Collider cannot have more than one target.");
-
-    _addedSlot        = targets().front()->added()->connect(std::bind(
+    _addedSlot = target->added().connect(std::bind(
         &bullet::Collider::addedHandler,
         std::static_pointer_cast<Collider>(shared_from_this()),
         std::placeholders::_1,
@@ -106,7 +82,7 @@ bullet::Collider::targetAddedHandler(AbstractComponent::Ptr,
         std::placeholders::_3
         ));
 
-    _removedSlot    = targets().front()->removed()->connect(std::bind(
+    _removedSlot = target->removed().connect(std::bind(
         &bullet::Collider::removedHandler,
         std::static_pointer_cast<Collider>(shared_from_this()),
         std::placeholders::_1,
@@ -116,23 +92,20 @@ bullet::Collider::targetAddedHandler(AbstractComponent::Ptr,
 }
 
 void
-bullet::Collider::targetRemovedHandler(AbstractComponent::Ptr,
-                                       Node::Ptr target)
+bullet::Collider::targetRemoved(Node::Ptr target)
 {
     if (_physicsWorld != nullptr)
         _physicsWorld->removeChild(std::static_pointer_cast<Collider>(shared_from_this()));
 
-    _physicsWorld        = nullptr;
-    _graphicsTransform    = nullptr;
+    _physicsWorld = nullptr;
+    _graphicsTransform = nullptr;
 
-    _addedSlot            = nullptr;
-    _removedSlot        = nullptr;
+    _addedSlot = nullptr;
+    _removedSlot = nullptr;
 }
 
 void
-bullet::Collider::addedHandler(Node::Ptr node,
-                               Node::Ptr,
-                               Node::Ptr)
+bullet::Collider::addedHandler(Node::Ptr node, Node::Ptr, Node::Ptr)
 {
     initializeFromNode(node);
 
@@ -155,18 +128,18 @@ bullet::Collider::initializeFromNode(Node::Ptr node)
     if (_graphicsTransform != nullptr && _physicsWorld != nullptr)
         return;
 
-    _physicsTransform->identity(); // matrix automatically updated by physicsWorldTransformChangedHandler
+    _physicsTransform = math::mat4(); // Matrix automatically updated by physicsWorldTransformChangedHandler
 
-    // get existing transform component or create one if necessary
+    // Get existing transform component or create one if necessary
     if (!node->hasComponent<Transform>())
         node->addComponent(Transform::create());
 
     _graphicsTransform = node->component<Transform>();
 
-    if (fabsf(_graphicsTransform->modelToWorldMatrix(true)->determinant()) < 1e-4f)
+    if (fabsf(math::determinant(_graphicsTransform->modelToWorldMatrix(true))) < 1e-4f)
         throw std::logic_error("The node's model-to-world matrix cannot be inverted.");
 
-    // identify physics world
+    // Identify physics world
     auto withPhysicsWorld = NodeSet::create(node)
         ->ancestors(true)
         ->where([](Node::Ptr n){ return n->hasComponent<bullet::PhysicsWorld>(); });
@@ -189,33 +162,24 @@ bullet::Collider::synchronizePhysicsWithGraphics(bool forceTransformUpdate)
 {
     assert(_graphicsTransform);
 
-    auto        graphicsTransform        = _graphicsTransform->modelToWorldMatrix(forceTransformUpdate);
-    static auto graphicsNoScale            = Matrix4x4::create();
-    static auto graphicsNoScaleInverse    = Matrix4x4::create();
-    static auto centerOfMassOffset        = Matrix4x4::create();
-    static auto physicsTransform        = Matrix4x4::create();
+    auto graphicsTransform = _graphicsTransform->modelToWorldMatrix(forceTransformUpdate);
+    static auto graphicsNoScale = math::mat4();
+    static auto graphicsNoScaleInverse = math::mat4();
+    static auto centerOfMassOffset = math::mat4();
+    static auto physicsTransform = math::mat4();
 
     // remove the scaling/shear from the graphics transform, but record it to restitute it during rendering
-    removeScalingShear(
+    math::removeScalingShear(
         graphicsTransform,
         graphicsNoScale,
         _correction
     );
 
-    graphicsNoScaleInverse
-        ->copyFrom(graphicsNoScale)
-        ->invert();
+    graphicsNoScaleInverse = math::inverse(graphicsNoScale);
+    centerOfMassOffset = graphicsNoScale * (_colliderData->shape()->deltaTransformInverse() * graphicsNoScaleInverse);
+    physicsTransform = _colliderData->shape()->deltaTransform() * graphicsNoScale;
 
-    centerOfMassOffset
-        ->copyFrom(graphicsNoScaleInverse)
-        ->append(_colliderData->shape()->deltaTransformInverse())
-        ->append(graphicsNoScale);
-
-    physicsTransform
-        ->copyFrom(_colliderData->shape()->deltaTransform())
-        ->prepend(graphicsNoScale);
-
-    setPhysicsTransform(physicsTransform, _graphicsTransform->matrix());
+    setPhysicsTransform(physicsTransform, &_graphicsTransform->matrix());
 
     if (_physicsWorld)
         _physicsWorld->updateRigidBodyState(
@@ -226,63 +190,54 @@ bullet::Collider::synchronizePhysicsWithGraphics(bool forceTransformUpdate)
 }
 
 bullet::Collider::Ptr
-bullet::Collider::setPhysicsTransform(Matrix4x4::Ptr    physicsTransform,
-                                      Matrix4x4::Ptr    graphicsModelToParent,
-                                      bool                forceTransformUpdate)
+bullet::Collider::setPhysicsTransform(const math::mat4& physicsTransform,
+                                      const math::mat4* graphicsModelToParent,
+                                      bool              forceTransformUpdate)
 {
     assert(_graphicsTransform);
 
-    // update the physics world transform
-    _physicsTransform->copyFrom(physicsTransform);
+    // Update the physics world transform
+    _physicsTransform = physicsTransform;
 
     if (graphicsModelToParent)
-        _graphicsTransform->matrix()->copyFrom(graphicsModelToParent);
+        _graphicsTransform->matrix(*graphicsModelToParent);
     else
     {
-        // recompute graphics transform from the physics transform
+        // Recompute graphics transform from the physics transform
 
-        // update the graphics local transform
-        static auto worldToParent    = Matrix4x4::create();
+        // Update the graphics local transform
+        static auto worldToParent    = math::mat4();
 
-        worldToParent
-            ->copyFrom(_graphicsTransform->modelToWorldMatrix(forceTransformUpdate))->invert()
-            ->append(_graphicsTransform->matrix());
+        worldToParent = _graphicsTransform->matrix() * math::inverse(_graphicsTransform->modelToWorldMatrix(forceTransformUpdate));
 
-        _graphicsTransform->matrix()
-            ->copyFrom(_correction)
-            ->append(_colliderData->shape()->deltaTransformInverse())
-            ->append(physicsTransform)
-            ->append(worldToParent);
+        _graphicsTransform->matrix(worldToParent * (physicsTransform * (_colliderData->shape()->deltaTransformInverse() * _correction)));
     }
 
-    // fire update signals
+    // Fire update signals
     _physicsTransformChanged->execute(std::static_pointer_cast<Collider>(shared_from_this()), _physicsTransform);
     _graphicsTransformChanged->execute(std::static_pointer_cast<Collider>(shared_from_this()), _graphicsTransform);
 
     return std::static_pointer_cast<Collider>(shared_from_this());
 }
 
-Matrix4x4::Ptr
-bullet::Collider::getPhysicsTransform(Matrix4x4::Ptr output) const
+math::mat4
+bullet::Collider::getPhysicsTransform() const
 {
-    return output
-        ? output->copyFrom(_physicsTransform)
-        : Matrix4x4::create(_physicsTransform);
+    return _physicsTransform;
 }
 
-Vector3::Ptr
-bullet::Collider::linearVelocity(Vector3::Ptr output) const
+math::vec3
+bullet::Collider::linearVelocity() const
 {
     return _physicsWorld
         ? _physicsWorld->getColliderLinearVelocity(
-            std::static_pointer_cast<const Collider>(shared_from_this()),
-            output
+            std::static_pointer_cast<const Collider>(shared_from_this())
         )
-        : output;
+        : math::vec3();
 }
 
 bullet::Collider::Ptr
-bullet::Collider::linearVelocity(Vector3::Ptr value)
+bullet::Collider::linearVelocity(const math::vec3& value)
 {
     if (_physicsWorld)
         _physicsWorld->setColliderLinearVelocity(
@@ -293,19 +248,18 @@ bullet::Collider::linearVelocity(Vector3::Ptr value)
     return std::static_pointer_cast<Collider>(shared_from_this());
 }
 
-Vector3::Ptr
-bullet::Collider::angularVelocity(Vector3::Ptr output) const
+math::vec3
+bullet::Collider::angularVelocity(const math::vec3& output) const
 {
     return _physicsWorld
         ? _physicsWorld->getColliderAngularVelocity(
-            std::static_pointer_cast<const Collider>(shared_from_this()),
-            output
+            std::static_pointer_cast<const Collider>(shared_from_this())
         )
-        : output;
+        : math::vec3();
 }
 
 bullet::Collider::Ptr
-bullet::Collider::angularVelocity(Vector3::Ptr value)
+bullet::Collider::angularVelocity(const math::vec3& value)
 {
     if (_physicsWorld)
         _physicsWorld->setColliderAngularVelocity(
@@ -317,41 +271,39 @@ bullet::Collider::angularVelocity(Vector3::Ptr value)
 }
 
 bullet::Collider::Ptr
-bullet::Collider::applyImpulse(Vector3::Ptr impulse, Vector3::Ptr relPosition)
+bullet::Collider::applyImpulse(const math::vec3& impulse, const math::vec3& relPosition)
 {
-    if (_physicsTransform)
-        _physicsWorld->applyImpulse(
-            std::static_pointer_cast<Collider>(shared_from_this()),
-            impulse,
-            false,
-            relPosition
-        );
+    _physicsWorld->applyImpulse(
+        std::static_pointer_cast<Collider>(shared_from_this()),
+        impulse,
+        false,
+        relPosition
+    );
 
     return std::static_pointer_cast<Collider>(shared_from_this());
 }
 
 bullet::Collider::Ptr
-bullet::Collider::applyRelativeImpulse(Vector3::Ptr impulse, Vector3::Ptr relPosition)
+bullet::Collider::applyRelativeImpulse(const math::vec3& impulse, const math::vec3& relPosition)
 {
-    if (_physicsTransform)
-        _physicsWorld->applyImpulse(
-            std::static_pointer_cast<Collider>(shared_from_this()),
-            impulse,
-            true,
-            nullptr
-        );
+    _physicsWorld->applyImpulse(
+        std::static_pointer_cast<Collider>(shared_from_this()),
+        impulse,
+        true,
+        math::vec3()
+    );
 
     return std::static_pointer_cast<Collider>(shared_from_this());
 }
 
 bullet::Collider::Ptr
-bullet::Collider::linearFactor(Vector3::Ptr values)
+bullet::Collider::linearFactor(const math::vec3& values)
 {
-    const bool changed = fabsf(values->x() - _linearFactor->x()) > 1e-3f
-        || fabsf(values->y() - _linearFactor->y()) > 1e-3f
-        || fabsf(values->z() - _linearFactor->z()) > 1e-3f;
+    const bool changed = fabsf(values.x - _linearFactor.x) > 1e-3f
+        || fabsf(values.y - _linearFactor.y) > 1e-3f
+        || fabsf(values.z - _linearFactor.z) > 1e-3f;
 
-    _linearFactor->copyFrom(values);
+    _linearFactor = values;
 
     if (changed)
         _propertiesChanged->execute(std::static_pointer_cast<Collider>(shared_from_this()));
@@ -361,13 +313,13 @@ bullet::Collider::linearFactor(Vector3::Ptr values)
 
 
 bullet::Collider::Ptr
-bullet::Collider::angularFactor(Vector3::Ptr values)
+bullet::Collider::angularFactor(const math::vec3& values)
 {
-    const bool changed = fabsf(values->x() - _angularFactor->x()) > 1e-3f
-        || fabsf(values->y() - _angularFactor->y()) > 1e-3f
-        || fabsf(values->z() - _angularFactor->z()) > 1e-3f;
+    const bool changed = fabsf(values.x - _angularFactor.x) > 1e-3f
+        || fabsf(values.y - _angularFactor.y) > 1e-3f
+        || fabsf(values.z - _angularFactor.z) > 1e-3f;
 
-    _angularFactor->copyFrom(values);
+    _angularFactor = values;
 
     if (changed)
         _propertiesChanged->execute(std::static_pointer_cast<Collider>(shared_from_this()));
@@ -382,8 +334,8 @@ bullet::Collider::damping(float linearDamping, float angularDamping)
     const bool changed = fabsf(_linearDamping - linearDamping) > 1e-3f
         || fabsf(_angularDamping - angularDamping) > 1e-3f;
 
-    _linearDamping    = linearDamping;
-    _angularDamping    = angularDamping;
+    _linearDamping = linearDamping;
+    _angularDamping = angularDamping;
 
     if (changed)
         _propertiesChanged->execute(std::static_pointer_cast<Collider>(shared_from_this()));
@@ -397,8 +349,8 @@ bullet::Collider::sleepingThresholds(float linearSleepingThreshold, float angula
     const bool changed = fabsf(_linearSleepingThreshold - linearSleepingThreshold) > 1e-3f
         || fabsf(_angularSleepingThreshold - angularSleepingThreshold) > 1e-3f;
 
-    _linearSleepingThreshold    = linearSleepingThreshold;
-    _angularSleepingThreshold    = angularSleepingThreshold;
+    _linearSleepingThreshold = linearSleepingThreshold;
+    _angularSleepingThreshold = angularSleepingThreshold;
 
     if (changed)
         _propertiesChanged->execute(std::static_pointer_cast<Collider>(shared_from_this()));

@@ -97,9 +97,9 @@ bullet::PhysicsWorld::BulletCollider::initializeCollisionShape(AbstractPhysicsSh
     }
 
     bulletShape->setLocalScaling(btVector3(
-        shape->localScaling()->x(),
-        shape->localScaling()->y(),
-        shape->localScaling()->z()
+        shape->localScaling().x,
+        shape->localScaling().y,
+        shape->localScaling().z
     ));
 
     bulletShape->setMargin(shape->margin());
@@ -145,14 +145,14 @@ bullet::PhysicsWorld::BulletCollider::initializeMotionState(Collider::Ptr) const
 }
 
 void
-bullet::PhysicsWorld::BulletCollider::initializeCollisionObject(Collider::Ptr                        collider,
-                                                                std::shared_ptr<btCollisionShape>    bulletCollisionShape,
-                                                                std::shared_ptr<btMotionState>        bulletMotionState)
+bullet::PhysicsWorld::BulletCollider::initializeCollisionObject(Collider::Ptr                       collider,
+                                                                std::shared_ptr<btCollisionShape>   bulletCollisionShape,
+                                                                std::shared_ptr<btMotionState>      bulletMotionState)
 {
-    // only rigid objects are considerered for the moment
+    // Only rigid objects are considerered for the moment
     auto data = collider->colliderData();
 
-    btVector3 inertia (0.0, 0.0, 0.0);
+    btVector3 inertia (0.f, 0.f, 0.f);
     if (data->inertia() == nullptr)
     {
         if (data->mass() > 0.0f)
@@ -160,9 +160,9 @@ bullet::PhysicsWorld::BulletCollider::initializeCollisionObject(Collider::Ptr   
     }
     else
     {
-        inertia.setX(data->inertia()->x());
-        inertia.setY(data->inertia()->y());
-        inertia.setZ(data->inertia()->z());
+        inertia.setX(data->inertia()->x);
+        inertia.setY(data->inertia()->y);
+        inertia.setZ(data->inertia()->z);
     }
 
     // construction of a new rigid collision object

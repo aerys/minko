@@ -27,10 +27,10 @@ using namespace minko::component;
 bullet::AbstractPhysicsShape::AbstractPhysicsShape(Type type):
     _type(type),
     _margin(0.0f),
-    _localScaling(Vector3::create(1.0f, 1.0f, 1.0f)),
+    _localScaling(math::vec3(1.0f, 1.0f, 1.0f)),
     _volumeScaling(1.0f),
-    _deltaTransform(Matrix4x4::create()->identity()),
-    _deltaTransformInverse(Matrix4x4::create()->identity()),
+    _deltaTransform(math::mat4()),
+    _deltaTransformInverse(math::mat4()),
     _shapeChanged(Signal<Ptr>::create())
 {
 
@@ -39,26 +39,26 @@ bullet::AbstractPhysicsShape::AbstractPhysicsShape(Type type):
 void
 bullet::AbstractPhysicsShape::localScaling(float x, float y, float z)
 {
-    _localScaling->setTo(x, y, z);
+    _localScaling.x = x;
+    _localScaling.y = y;
+    _localScaling.z = z;
     _volumeScaling = fabsf(x * y * z);
 }
 
 void
-bullet::AbstractPhysicsShape::initialize(Matrix4x4::Ptr deltaTransform,
-                                         Matrix4x4::Ptr graphicsStartTransform)
+bullet::AbstractPhysicsShape::initialize(const math::mat4& deltaTransform,
+                                         const math::mat4& graphicsStartTransform)
 {
-    auto deltaScaling = Matrix4x4::create();
+    auto deltaScaling = math::mat4();
     removeScalingShear(
         deltaTransform,
         _deltaTransform,
         deltaScaling
     );
 
-    _deltaTransformInverse
-        ->copyFrom(_deltaTransform)
-        ->invert();
+    _deltaTransformInverse = math::inverse(_deltaTransform);
 
-    localScaling(deltaScaling->values()[0], deltaScaling->values()[5], deltaScaling->values()[10]);
+    localScaling(deltaScaling[0][0], deltaScaling[1][1], deltaScaling[2][2]);
 
 #ifdef DEBUG_PHYSICS
     PhysicsWorld::print(std::cout << "- delta\t=\n", _deltaTransform) << std::endl;
