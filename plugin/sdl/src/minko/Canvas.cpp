@@ -475,9 +475,6 @@ Canvas::step()
 
         case SDL_MOUSEMOTION:
         {
-            auto oldX = _mouse->input::Mouse::x();
-            auto oldY = _mouse->input::Mouse::y();
-
             int windowW;
             int windowH;
 
@@ -495,7 +492,8 @@ Canvas::step()
             _mouse->x(x);
             _mouse->y(y);
 
-            _mouse->move()->execute(_mouse, x - oldX, y - oldY);
+            _mouse->move()->execute(_mouse, event.motion.xrel, event.motion.yrel);
+
             break;
         }
 
