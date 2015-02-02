@@ -27,23 +27,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::scene;
 using namespace minko::component;
-using namespace minko::math;
 
-const std::string      TEXTURE_FILENAME    = "texture/box.png";
-const float            GROUND_WIDTH        = 5.0f;
-const float            GROUND_HEIGHT       = 0.25f;
-const float            GROUND_DEPTH        = 5.0f;
-const float            GROUND_THICK        = 0.05f;
+const std::string   TEXTURE_FILENAME    = "texture/box.png";
+const float         GROUND_WIDTH        = 5.0f;
+const float         GROUND_HEIGHT       = 0.25f;
+const float         GROUND_DEPTH        = 5.0f;
+const float         GROUND_THICK        = 0.05f;
 
-const float            MIN_MASS            = 1.0f;
-const float            MAX_MASS            = 3.0f;
-const float            MIN_SCALE           = 0.2f;
-const float            MAX_SCALE           = 1.0f;
-const float            IMPULSE_STRENGTH    = 3.0f;
-const auto             MIN_DROP_POS        = Vector3::create(-GROUND_WIDTH * 0.5f + 0.5f, 5.0f, -GROUND_DEPTH * 0.5f + 0.5f);
-const auto             MAX_DROP_POS        = Vector3::create( GROUND_WIDTH * 0.5f - 0.5f, 5.0f,  GROUND_DEPTH * 0.5f - 0.5f);
+const float         MIN_MASS            = 1.0f;
+const float         MAX_MASS            = 3.0f;
+const float         MIN_SCALE           = 0.2f;
+const float         MAX_SCALE           = 1.0f;
+const float         IMPULSE_STRENGTH    = 3.0f;
+const auto          MIN_DROP_POS        = math::vec3(-GROUND_WIDTH * 0.5f + 0.5f, 5.0f, -GROUND_DEPTH * 0.5f + 0.5f);
+const auto          MAX_DROP_POS        = math::vec3( GROUND_WIDTH * 0.5f - 0.5f, 5.0f,  GROUND_DEPTH * 0.5f - 0.5f);
 
-const unsigned int     MAX_NUM_OBJECTS     = 32;
+const unsigned int  MAX_NUM_OBJECTS     = 32;
 
 Signal<input::Keyboard::Ptr>::Slot keyDown;
 Signal<input::Touch::Ptr, int, float, float>::Slot touchDown;
@@ -62,8 +61,8 @@ bouncePhysicObjects(Node::Ptr root);
 int
 main(int argc, char** argv)
 {
-    auto canvas            = Canvas::create("Minko Example - Physics");
-    auto sceneManager    = SceneManager::create(canvas);
+    auto canvas = Canvas::create("Minko Example - Physics");
+    auto sceneManager = SceneManager::create(canvas);
 
     // setup assets
     sceneManager->assets()->loader()->options()
@@ -75,8 +74,8 @@ main(int argc, char** argv)
         ->registerParser<file::PNGParser>("png");
 
     sceneManager->assets()
-        ->geometry("sphere",    geometry::SphereGeometry::create(sceneManager->assets()->context(), 16, 16))
-        ->geometry("cube",      geometry::CubeGeometry::create(sceneManager->assets()->context()));
+        ->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context(), 16, 16))
+        ->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()));
 
     sceneManager->assets()->loader()
 #ifdef DISPLAY_COLLIDERS
@@ -95,14 +94,14 @@ main(int argc, char** argv)
     auto camera = scene::Node::create("camera")
         ->addComponent(Renderer::create(0x7f7f7fff))
         ->addComponent(Transform::create(
-            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(5.0f, 1.5f, 5.0f))
-        ))
+        math::inverse(math::lookAt(math::vec3(5.0f, 1.5f, 5.0f), math::vec3(), math::vec3(0.f, 1.f, 0.f))
+        )))
         ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
 
     root->addChild(camera);
 
     auto groundNode = scene::Node::create("groundNode")->addComponent(Transform::create(
-        Matrix4x4::create()->appendRotationZ(-float(M_PI) * 0.1f)
+        math::rotate(-float(M_PI) * 0.1f, math::vec3(0.f, 0.f, 1.f)) * math::mat4()
     ));
 
     // set-up lighting environment
@@ -111,9 +110,17 @@ main(int argc, char** argv)
 
     auto dirLightNode = scene::Node::create("dirLight")
         ->addComponent(DirectionalLight::create())
-        ->addComponent(Transform::create(
-            Matrix4x4::create()->lookAt(Vector4::zero(), Vector4::create(0.5f, 5.0f, 3.0f))
-        ));
+        ->addComponent(
+            Transform::create(
+                math::inverse(
+                    math::lookAt(
+                        math::vec3(0.5f, 5.0f, 3.0f), 
+                        math::vec3(), 
+                        math::vec3(0.f, 1.f, 0.f)
+                    )
+                )
+            )
+        );
 
     dirLightNode->component<DirectionalLight>()->specular(0.5f);
 
@@ -122,18 +129,21 @@ main(int argc, char** argv)
         ->addChild(dirLightNode);
 
 #ifdef DISPLAY_COLLIDERS
-    root->data()->addProvider(canvas->data());
+    root->data().addProvider(canvas->data());
 #endif // DISPLAY_COLLIDERS
 
     auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
     {
+        auto material = material::BasicMaterial::create();
+        material->diffuseMap(sceneManager->assets()->texture(TEXTURE_FILENAME));
+
         auto groundNodeA = scene::Node::create("groundNodeA")
             ->addComponent(Transform::create(
-                Matrix4x4::create()->appendScale(GROUND_WIDTH, GROUND_THICK, GROUND_DEPTH)
+                math::scale(math::vec3(GROUND_WIDTH, GROUND_THICK, GROUND_DEPTH)) * math::mat4()
             ))
             ->addComponent(Surface::create(
                 sceneManager->assets()->geometry("cube"),
-                material::BasicMaterial::create()->diffuseMap(sceneManager->assets()->texture(TEXTURE_FILENAME)),
+                material,
                 sceneManager->assets()->effect("phong")
             ))
             ->addComponent(bullet::Collider::create(
@@ -143,15 +153,17 @@ main(int argc, char** argv)
                     )
             ));
 
+        auto materialGroundNodeB = material::BasicMaterial::create();
+        materialGroundNodeB->diffuseColor(0x241f1cff);
+
         auto groundNodeB = scene::Node::create("groundNodeB")
             ->addComponent(Transform::create(
-                Matrix4x4::create()
-                    ->appendScale(GROUND_THICK, GROUND_HEIGHT, GROUND_DEPTH)
-                    ->appendTranslation(0.5f * (GROUND_WIDTH + GROUND_THICK), 0.5f * (GROUND_HEIGHT - GROUND_THICK), 0.0f)
+                math::translate(math::vec3(0.5f * (GROUND_WIDTH + GROUND_THICK), 0.5f * (GROUND_HEIGHT - GROUND_THICK), 0.0f)) * 
+                (math::scale(math::vec3(GROUND_THICK, GROUND_HEIGHT, GROUND_DEPTH)) * math::mat4())
             ))
             ->addComponent(Surface::create(
                 sceneManager->assets()->geometry("cube"),
-                material::BasicMaterial::create()->diffuseColor(0x241f1cff),
+                materialGroundNodeB,
                 sceneManager->assets()->effect("phong")
             ))
             ->addComponent(bullet::Collider::create(
@@ -206,18 +218,18 @@ main(int argc, char** argv)
 Node::Ptr
 createPhysicsObject(unsigned int id, file::AssetLibrary::Ptr assets, bool isCube)
 {
-    const float mass        = MIN_MASS  + (rand() / (float)RAND_MAX) * (MAX_MASS - MIN_MASS);
-    const float size        = MIN_SCALE + (rand() / (float)RAND_MAX) * (MAX_SCALE - MIN_SCALE);
+    const float mass = MIN_MASS  + (rand() / (float)RAND_MAX) * (MAX_MASS - MIN_MASS);
+    const float size = MIN_SCALE + (rand() / (float)RAND_MAX) * (MAX_SCALE - MIN_SCALE);
 
-    const float startX        = MIN_DROP_POS->x() + (rand() / (float)RAND_MAX) * (MAX_DROP_POS->x() - MIN_DROP_POS->x());
-    const float startY        = MIN_DROP_POS->y() + (rand() / (float)RAND_MAX) * (MAX_DROP_POS->y() - MIN_DROP_POS->y());
-    const float startZ        = MIN_DROP_POS->z() + (rand() / (float)RAND_MAX) * (MAX_DROP_POS->z() - MIN_DROP_POS->z());
+    const float startX = MIN_DROP_POS.x + (rand() / (float)RAND_MAX) * (MAX_DROP_POS.x - MIN_DROP_POS.x);
+    const float startY = MIN_DROP_POS.y + (rand() / (float)RAND_MAX) * (MAX_DROP_POS.y - MIN_DROP_POS.y);
+    const float startZ = MIN_DROP_POS.z + (rand() / (float)RAND_MAX) * (MAX_DROP_POS.z - MIN_DROP_POS.z);
 
-    const float halfSize    = 0.5f * size;
-    const float hue            = (id % 10) * 0.1f;
-    auto        diffColor    = Color::hslaToRgba(hue, 1.0f, 0.5f, 1.0f);
-    auto        specColor    = Color::hslaToRgba(hue, 1.0f, 0.8f, 1.0f);
-    const float shininess    = 2.0f * (rand() / (float)RAND_MAX) * 6.0f;
+    const float halfSize = 0.5f * size;
+    const float hue = (id % 10) * 0.1f;
+    auto diffColor = math::rgbColor(math::vec3(hue, 1.0f, 0.5f));
+    auto specColor = math::rgbColor(math::vec3(hue, 1.0f, 0.8f));
+    const float shininess = 2.0f * (rand() / (float)RAND_MAX) * 6.0f;
 
     bullet::Collider::Ptr collider = nullptr;
 
@@ -240,18 +252,20 @@ createPhysicsObject(unsigned int id, file::AssetLibrary::Ptr assets, bool isCube
         collider = bullet::Collider::create(sphColliderData);
     }
 
+    auto matrix = math::mat4();
+    matrix = math::scale(math::vec3(size)) * matrix;
+    matrix = math::translate(math::vec3(startX, startY, startZ)) * matrix;
+
+    auto material = material::PhongMaterial::create();
+    material->data()->set("specularColor", specColor);
+    material->data()->set("shininess", shininess);
+    material->data()->set("diffuseColor", diffColor);
+
     return scene::Node::create("physicsObject_" + std::to_string(id))
-        ->addComponent(Transform::create(
-            Matrix4x4::create()
-                ->appendScale(size)
-                ->appendTranslation(startX, startY, startZ)
-        ))
+        ->addComponent(Transform::create(matrix))
         ->addComponent(Surface::create(
             assets->geometry(isCube ? "cube" : "sphere"),
-            material::PhongMaterial::create()
-                ->specularColor(specColor)
-                ->shininess(shininess)
-                ->diffuseColor(diffColor),
+            material,
             assets->effect("phong")
         ))
         ->addComponent(collider)
@@ -284,7 +298,7 @@ bouncePhysicObjects(Node::Ptr root)
         ->where([](Node::Ptr n)
     {
         return n->hasComponent<component::bullet::Collider>()
-            && n->component<component::Transform>()->modelToWorldMatrix()->translation()->length() < 10.0f // still close to the origin
+            && math::length(math::vec3(n->component<component::Transform>()->modelToWorldMatrix()[3])) < 10.0f // still close to the origin
             && n->name().find("physicsObject") != std::string::npos;
     });
 
@@ -293,6 +307,6 @@ bouncePhysicObjects(Node::Ptr root)
         auto randomId = rand() % physicsObjects->nodes().size();
         auto randomCollider = physicsObjects->nodes()[randomId]->component<component::bullet::Collider>();
 
-        randomCollider->applyImpulse(Vector3::create(0.0f, IMPULSE_STRENGTH * randomCollider->colliderData()->mass(), 0.0));
+        randomCollider->applyImpulse(math::vec3(0.0f, IMPULSE_STRENGTH * randomCollider->colliderData()->mass(), 0.0), math::vec3());
     }
 }
