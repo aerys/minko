@@ -32,10 +32,7 @@
 		"uFogColor"				: "material[$materialUuid].fogColor",
         "uFogBounds"			: "material[$materialUuid].fogBounds",
         "boneMatrices"			: "geometry[${geometryUuid}].boneMatrices",
-		"numBones"				: "geometry[${geometryUuid}].numBones",
-        "uWorldToScreenMatrix"  : {
-			"binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" }
-		}
+		"numBones"				: "geometry[${geometryUuid}].numBones"
     },
 
     "macros" : {
