@@ -79,7 +79,13 @@ namespace minko
 		public:
             Store();
 
-			Store(const Store& store, bool deepCopy = false);
+            Store(Store&& store);
+
+            Store(const Store& store);
+
+			Store(const Store& store, bool deepCopy);
+
+            Store& operator=(Store&&);
 
             ~Store();
 
@@ -293,6 +299,12 @@ namespace minko
                                   const PropertyName&           propertyName,
 								  const PropertyChangedSignal&  anyChangedSignal,
                                   const ChangedSignalMap& 		propertyNameToSignal);
+
+            void
+            copyFrom(const Store& store, bool deepCopy = false);
+
+            void
+            initialize();
 		};
 	}
 }

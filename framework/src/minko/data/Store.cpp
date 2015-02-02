@@ -42,15 +42,13 @@ Store::Store() :
     _collectionItemAddedSlots(new CollectionToChangedSlotMap()),
     _collectionItemRemovedSlots(new CollectionToChangedSlotMap())
 {
-    _propertyNameToChangedSignal->set_deleted_key("");
-    _propertyNameToAddedSignal->set_deleted_key("");
-    _propertyNameToRemovedSignal->set_deleted_key("");
-    _propertySlots->set_deleted_key(nullptr);
-    _collectionItemAddedSlots->set_deleted_key(nullptr);
-    _collectionItemRemovedSlots->set_deleted_key(nullptr);
+    initialize();
 }
 
-Store::Store(const Store& store, bool deepCopy) :
+Store::Store(const Store& store) :
+    _providers(),
+    _collections(),
+    _lengthProvider(nullptr),
     _propertyAdded(),
     _propertyRemoved(),
     _propertyChanged(),
@@ -60,6 +58,93 @@ Store::Store(const Store& store, bool deepCopy) :
     _propertySlots(new ProviderToChangedSlotListMap()),
     _collectionItemAddedSlots(new CollectionToChangedSlotMap()),
     _collectionItemRemovedSlots(new CollectionToChangedSlotMap())
+{
+    initialize();
+    copyFrom(store, true);
+}
+
+Store::Store(const Store& store, bool deepCopy) :
+    _providers(),
+    _collections(),
+    _lengthProvider(nullptr),
+    _propertyAdded(),
+    _propertyRemoved(),
+    _propertyChanged(),
+    _propertyNameToChangedSignal(new ChangedSignalMap()),
+    _propertyNameToAddedSignal(new ChangedSignalMap()),
+    _propertyNameToRemovedSignal(new ChangedSignalMap()),
+    _propertySlots(new ProviderToChangedSlotListMap()),
+    _collectionItemAddedSlots(new CollectionToChangedSlotMap()),
+    _collectionItemRemovedSlots(new CollectionToChangedSlotMap())
+{
+    initialize();
+    copyFrom(store, deepCopy);
+}
+
+Store::Store(Store&& other)
+{
+    _providers = std::move(other._providers);
+    _collections = std::move(other._collections);
+    _lengthProvider = std::move(other._lengthProvider);
+    _propertyAdded = std::move(other._propertyAdded);
+    _propertyRemoved = std::move(other._propertyRemoved);
+    _propertyChanged = std::move(other._propertyChanged);
+    _propertyNameToChangedSignal = std::move(other._propertyNameToChangedSignal);
+    _propertyNameToAddedSignal = std::move(other._propertyNameToAddedSignal);
+    _propertyNameToRemovedSignal = std::move(other._propertyNameToRemovedSignal);
+    _propertySlots = std::move(other._propertySlots);
+    _collectionItemAddedSlots = std::move(other._collectionItemAddedSlots);
+    _collectionItemRemovedSlots = std::move(other._collectionItemRemovedSlots);
+
+    other._propertyNameToChangedSignal = nullptr;
+    other._propertyNameToAddedSignal = nullptr;
+    other._propertyNameToRemovedSignal = nullptr;
+    other._propertySlots = nullptr;
+    other._collectionItemAddedSlots = nullptr;
+    other._collectionItemRemovedSlots = nullptr;
+
+    //initialize();
+}
+
+Store&
+Store::operator=(Store&& other)
+{
+    _providers = std::move(other._providers);
+    _collections = std::move(other._collections);
+    _lengthProvider = std::move(other._lengthProvider);
+    _propertyAdded = std::move(other._propertyAdded);
+    _propertyRemoved = std::move(other._propertyRemoved);
+    _propertyChanged = std::move(other._propertyChanged);
+    _propertyNameToChangedSignal = other._propertyNameToChangedSignal;
+    _propertyNameToAddedSignal = other._propertyNameToAddedSignal;
+    _propertyNameToRemovedSignal = other._propertyNameToRemovedSignal;
+    _propertySlots = other._propertySlots;
+    _collectionItemAddedSlots = other._collectionItemAddedSlots;
+    _collectionItemRemovedSlots = other._collectionItemRemovedSlots;
+
+    other._propertyNameToChangedSignal = nullptr;
+    other._propertyNameToAddedSignal = nullptr;
+    other._propertyNameToRemovedSignal = nullptr;
+    other._propertySlots = nullptr;
+    other._collectionItemAddedSlots = nullptr;
+    other._collectionItemRemovedSlots = nullptr;
+
+    return *this;
+}
+
+void
+Store::initialize()
+{
+    _propertyNameToChangedSignal->set_deleted_key("");
+    _propertyNameToAddedSignal->set_deleted_key("");
+    _propertyNameToRemovedSignal->set_deleted_key("");
+    _propertySlots->set_deleted_key(nullptr);
+    _collectionItemAddedSlots->set_deleted_key(nullptr);
+    _collectionItemRemovedSlots->set_deleted_key(nullptr);
+}
+
+void
+Store::copyFrom(const Store& store, bool deepCopy)
 {
     if (deepCopy)
     {

@@ -311,15 +311,11 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
 				if (pass == nullptr)
 					throw std::runtime_error("Undefined pass with name '" + passName + "'.");
 
-				passScope.attributeBlock.bindingMap = {
-					pass->attributeBindings().bindings,
-					data::Store(pass->attributeBindings().defaultValues, true)
-				};
+                passScope.attributeBlock.bindingMap.bindings = pass->attributeBindings().bindings;
+                passScope.attributeBlock.bindingMap.defaultValues = data::Store(pass->attributeBindings().defaultValues, true);
 
-				passScope.uniformBlock.bindingMap = {
-					pass->uniformBindings().bindings,
-					data::Store(pass->uniformBindings().defaultValues, true)
-				};
+                passScope.uniformBlock.bindingMap.bindings = pass->uniformBindings().bindings;
+                passScope.uniformBlock.bindingMap.defaultValues = data::Store(pass->uniformBindings().defaultValues, true);
 
 				passScope.stateBlock.bindingMap.bindings = pass->stateBindings().bindings;
 				passScope.stateBlock.states = render::States(pass->states());
@@ -328,11 +324,9 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
 				);
 				passScope.stateBlock.bindingMap.defaultValues.addProvider(passScope.stateBlock.states.data());
 
-				passScope.macroBlock.bindingMap = MacroBindingMap(
-					pass->macroBindings().bindings,
-					data::Store(pass->macroBindings().defaultValues, true),
-					pass->macroBindings().types
-				);
+                passScope.macroBlock.bindingMap.bindings = pass->macroBindings().bindings;
+                passScope.macroBlock.bindingMap.defaultValues = data::Store(pass->macroBindings().defaultValues, true);
+                passScope.macroBlock.bindingMap.types = pass->macroBindings().types;
 
 				vertexShader = pass->program()->vertexShader();
 				fragmentShader = pass->program()->fragmentShader();
