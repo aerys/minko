@@ -25,20 +25,27 @@ namespace minko
     class Flyweight
     {
     private:
-        static std::unordered_set<T> _values;
-
         const T* _value;
 
     public:
-        Flyweight(const T& v)
+        static
+        std::unordered_set<T>&
+        getValues()
         {
-            _value = &(*_values.insert(v).first);
+            static std::unordered_set<T> values;
+
+            return values;
+        }
+
+        Flyweight(const T& v) :
+            _value(&(*getValues().insert(v).first))
+        {
         }
 
         template <typename... U>
-        Flyweight(U... args)
+        Flyweight(U... args) :
+            _value(_value = &(*(getValues().emplace(args...).first)))
         {
-            _value = &(*_values.emplace(args...).first);
         }
 
         Flyweight(const Flyweight& f) :
@@ -81,9 +88,6 @@ namespace minko
         }
     };
 }
-
-template <typename T>
-std::unordered_set<T> minko::Flyweight<T>::_values;
 
 namespace std
 {
