@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/BindingMap.hpp"
 #include "minko/data/MacroBinding.hpp"
 
-#include "google/sparse_hash_map"
+#include "sparsehash/sparse_hash_map"
 
 using namespace minko;
 using namespace minko::render;

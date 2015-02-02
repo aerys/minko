@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Collection.hpp"
 #include "minko/data/AbstractFilter.hpp"
 
-#include "google/sparse_hash_map"
+#include "sparsehash/sparse_hash_map"
 
 using namespace minko;
 using namespace minko::data;
@@ -102,8 +102,6 @@ Store::Store(Store&& other)
     other._propertySlots = nullptr;
     other._collectionItemAddedSlots = nullptr;
     other._collectionItemRemovedSlots = nullptr;
-
-    //initialize();
 }
 
 Store&
@@ -422,6 +420,7 @@ Store::updateCollectionLength(data::Collection::Ptr collection)
 void
 Store::doRemoveProvider(ProviderPtr provider, CollectionPtr collection)
 {
+    assert(provider != nullptr);
     assert(std::find(_providers.begin(), _providers.end(), provider) != _providers.end());
 
     // execute all the "property removed" signals

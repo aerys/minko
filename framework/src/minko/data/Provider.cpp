@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Provider.hpp"
 
 #include "minko/Uuid.hpp"
-#include "google/sparse_hash_map"
+#include "sparsehash/sparse_hash_map"
 
 using namespace minko;
 using namespace minko::data;
