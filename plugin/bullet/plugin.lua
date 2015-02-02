@@ -26,7 +26,8 @@ function minko.plugin.bullet:enable()
 	defines { "MINKO_PLUGIN_BULLET" }
 
 	minko.plugin.enable("serializer")
-	minko.plugin.enable("lua")
+	-- TODO: Fix Lua part of Bullet plugin
+	--minko.plugin.enable("lua")
 end
 
 newoption {
