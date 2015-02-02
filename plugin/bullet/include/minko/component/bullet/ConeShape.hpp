@@ -32,15 +32,15 @@ namespace minko
                 public AbstractPhysicsShape
             {
             public:
-                typedef std::shared_ptr<ConeShape>                    Ptr;
+                typedef std::shared_ptr<ConeShape>                  Ptr;
 
             private:
-                typedef std::shared_ptr<geometry::LineGeometry>        LineGeometryPtr;
+                typedef std::shared_ptr<geometry::LineGeometry>     LineGeometryPtr;
                 typedef std::shared_ptr<render::AbstractContext>    AbsContextPtr;
 
             private:
-                float                                                _radius;
-                float                                                _height;
+                float                                               _radius;
+                float                                               _height;
 
             public:
                 inline static
@@ -61,8 +61,9 @@ namespace minko
                 void
                 radius(float radius)
                 {
-                    const bool needsUpdate    = fabsf(radius - _radius) > 1e-6f;
-                    _radius    = radius;
+                    const bool needsUpdate = fabsf(radius - _radius) > 1e-6f;
+                    _radius = radius;
+
                     if (needsUpdate)
                         shapeChanged()->execute(shared_from_this());
                 }
@@ -78,8 +79,9 @@ namespace minko
                 void
                 height(float height)
                 {
-                    const bool needsUpdate    = fabsf(height - _height) > 1e-6f;
-                    _height    = height;
+                    const bool needsUpdate = fabsf(height - _height) > 1e-6f;
+                    _height = height;
+
                     if (needsUpdate)
                         shapeChanged()->execute(shared_from_this());
                 }
@@ -88,8 +90,8 @@ namespace minko
                 float
                 volume() const
                 {
-                    const float radius    = _radius + _margin;
-                    const float volume    = (float(M_PI) / 3.0f) * radius * radius * (_height + _margin);
+                    const float radius = _radius + _margin;
+                    const float volume = (float(M_PI) / 3.0f) * radius * radius * (_height + _margin);
 
                     return volume * _volumeScaling;
                 }
