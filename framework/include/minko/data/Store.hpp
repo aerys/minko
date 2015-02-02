@@ -44,6 +44,8 @@ namespace minko
 			typedef Signal<ProviderPtr, const PropertyName&>			ProviderPropertyChangedSignal;
 			typedef ProviderPropertyChangedSignal::Slot				    ProviderPropertyChangedSlot;
             typedef Signal<Collection&, ProviderPtr>::Slot              CollectionChangedSignalSlot;
+            typedef Flyweight<std::string>                              FString;
+            typedef std::unordered_map<FString, FString>                FStringMap;
 
 			template <typename... H>
 			using map = google::sparse_hash_map<H...>;
@@ -171,13 +173,13 @@ namespace minko
             }
 
             PropertyChangedSignal&
-            propertyAdded(const std::string& propertyName);
+            propertyAdded(const PropertyName& propertyName);
 
             PropertyChangedSignal&
-            propertyRemoved(const std::string& propertyName);
+            propertyRemoved(const PropertyName& propertyName);
 
             PropertyChangedSignal&
-            propertyChanged(const std::string& propertyName);
+            propertyChanged(const PropertyName& propertyName);
 
             inline
 			const std::list<ProviderPtr>&
@@ -227,38 +229,37 @@ namespace minko
 
             inline
 			bool
-			hasProperty(const std::string& propertyName) const
+            hasProperty(const PropertyName& propertyName) const
             {
-                return std::get<0>(getProviderByPropertyName(propertyName)) != nullptr;
+                return std::get<0>(getProviderByPropertyName(*propertyName)) != nullptr;
             }
 
             bool
-            hasPropertyAddedSignal(const std::string& propertyName) const;
+            hasPropertyAddedSignal(const PropertyName& propertyName) const;
 
             bool
-            hasPropertyRemovedSignal(const std::string& propertyName) const;
+            hasPropertyRemovedSignal(const PropertyName& propertyName) const;
 
             bool
-            hasPropertyChangedSignal(const std::string& propertyName) const;
+            hasPropertyChangedSignal(const PropertyName& propertyName) const;
 
             static
             const std::string
-            getActualPropertyName(const std::unordered_map<std::string, std::string>&   variables,
-                                  const std::string&                                    propertyName);
+            getActualPropertyName(const FStringMap& variables, const FString& propertyName);
 
 		private:
 			std::pair<ProviderPtr, std::string>
             getProviderByPropertyName(const std::string& propertyName) const;
 
 			void
-			providerPropertyAddedHandler(ProviderPtr        			provider,
-                                         CollectionPtr      			collection,
-                                         const Flyweight<std::string>& 	propertyName);
+			providerPropertyAddedHandler(ProviderPtr        provider,
+                                         CollectionPtr      collection,
+                                         const FString& 	propertyName);
 
 			void
-			providerPropertyRemovedHandler(ProviderPtr          			provider,
-                                           CollectionPtr        			collection,
-                                           const Flyweight<std::string>&   	propertyName);
+			providerPropertyRemovedHandler(ProviderPtr          provider,
+                                           CollectionPtr        collection,
+                                           const FString&   	propertyName);
 
             void
             doAddProvider(ProviderPtr provider, CollectionPtr collection = nullptr);

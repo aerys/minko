@@ -31,11 +31,11 @@ using namespace minko;
 using namespace minko::render;
 using namespace minko::data;
 
-ProgramSignature::ProgramSignature(const data::MacroBindingMap&                           macroBindings,
-                                   const std::unordered_map<std::string, std::string>&    variables,
-                                   const Store&			                                  targetData,
-                                   const Store&			                                  rendererData,
-                                   const Store&			                                  rootData) :
+ProgramSignature::ProgramSignature(const data::MacroBindingMap& macroBindings,
+                                   const FStringMap&            variables,
+                                   const Store&			        targetData,
+                                   const Store&			        rendererData,
+                                   const Store&			        rootData) :
     _mask(0)
 {
     const uint maxNumMacros = sizeof(MaskType) * 8;

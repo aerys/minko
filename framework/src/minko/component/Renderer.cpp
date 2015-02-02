@@ -320,7 +320,7 @@ Renderer::addSurface(Surface::Ptr surface)
 	if (!checkSurfaceLayout(surface))
 		return;
 
-    std::unordered_map<std::string, std::string> variables = _variables;
+    std::unordered_map<FString, FString> variables = _variables;
 
     auto& c = surface->target()->data();
 
@@ -374,7 +374,7 @@ Renderer::surfaceGeometryOrMaterialChangedHandler(Surface::Ptr surface)
     // we completely remove the surface and re-add it again because
     // it's way simpler than just updating what has changed.
 
-    std::unordered_map<std::string, std::string> variables = _variables;
+    std::unordered_map<FString, FString> variables = _variables;
     variables["surfaceUuid"] = surface->uuid();
     variables["geometryUuid"] = surface->geometry()->uuid();
     variables["materialUuid"] = surface->material()->uuid();

@@ -99,37 +99,37 @@ Store::~Store()
 }
 
 Store::PropertyChangedSignal&
-Store::propertyAdded(const std::string& propertyName)
+Store::propertyAdded(const PropertyName& propertyName)
 {
     return (*_propertyNameToAddedSignal)[propertyName];
 }
 
 Store::PropertyChangedSignal&
-Store::propertyRemoved(const std::string& propertyName)
+Store::propertyRemoved(const PropertyName& propertyName)
 {
     return (*_propertyNameToRemovedSignal)[propertyName];
 }
 
 Store::PropertyChangedSignal&
-Store::propertyChanged(const std::string& propertyName)
+Store::propertyChanged(const PropertyName& propertyName)
 {
     return (*_propertyNameToChangedSignal)[propertyName];
 }
 
 bool
-Store::hasPropertyAddedSignal(const std::string& propertyName) const
+Store::hasPropertyAddedSignal(const PropertyName& propertyName) const
 {
     return _propertyNameToAddedSignal->count(propertyName) != 0;
 }
 
 bool
-Store::hasPropertyRemovedSignal(const std::string& propertyName) const
+Store::hasPropertyRemovedSignal(const PropertyName& propertyName) const
 {
     return _propertyNameToRemovedSignal->count(propertyName) != 0;
 }
 
 bool
-Store::hasPropertyChangedSignal(const std::string& propertyName) const
+Store::hasPropertyChangedSignal(const PropertyName& propertyName) const
 {
     return _propertyNameToChangedSignal->count(propertyName) != 0;
 }
@@ -331,7 +331,7 @@ Store::updateCollectionLength(data::Collection::Ptr collection)
         doAddProvider(_lengthProvider);
     }
 
-    _lengthProvider->set(collection->name() + ".length", collection->items().size());
+    _lengthProvider->set(*collection->name() + ".length", collection->items().size());
 }
 
 void
@@ -361,7 +361,7 @@ Store::doRemoveProvider(ProviderPtr provider, CollectionPtr collection)
     {
         int providerIndex = std::find(collection->items().begin(), collection->items().end(), provider)
             - collection->items().begin();
-        auto prefix = collection->name() + "[" + std::to_string(providerIndex) + "].";
+        auto prefix = *collection->name() + "[" + std::to_string(providerIndex) + "].";
 
         for (const auto& nameAndValue : provider->values())
             if (_propertyNameToChangedSignal->count(prefix + *nameAndValue.first) != 0
@@ -411,7 +411,7 @@ Store::formatPropertyName(Collection::Ptr collection, const std::string& index, 
     if (collection == nullptr)
         return propertyName;
 
-    return PropertyName(collection->name() + "[" + index + "]." + propertyName);
+    return PropertyName(*collection->name() + "[" + index + "]." + propertyName);
 }
 
 void
@@ -458,22 +458,21 @@ Store::removeProviderFromCollection(std::shared_ptr<data::Provider> provider,
 
 
 const std::string
-Store::getActualPropertyName(const std::unordered_map<std::string, std::string>&    vars,
-                             const std::string&                                     propertyName)
+Store::getActualPropertyName(const FStringMap& vars, const FString& propertyName)
 {
-    std::string s = propertyName;
+    std::string s = *propertyName;
 
     // FIXME: order vars keys from longer to shorter in order to match the longest matching var name
     // or use regex_replace
 
     for (const auto& variableName : vars)
     {
-        auto pos = propertyName.find("${" + variableName.first + "}");
+        auto pos = (*propertyName).find("${" + *variableName.first + "}");
 
         if (pos != std::string::npos)
-            s = s.substr(0, pos) + variableName.second + s.substr(pos + variableName.first.size() + 3);
-        else if ((pos = propertyName.find("$" + variableName.first)) != std::string::npos)
-            s = s.substr(0, pos) + variableName.second + s.substr(pos + variableName.first.size() + 1);
+            s = s.substr(0, pos) + *variableName.second + s.substr(pos + (*variableName.first).size() + 3);
+        else if ((pos = (*propertyName).find("$" + *variableName.first)) != std::string::npos)
+            s = s.substr(0, pos) + *variableName.second + s.substr(pos + (*variableName.first).size() + 1);
     }
 
     return s;

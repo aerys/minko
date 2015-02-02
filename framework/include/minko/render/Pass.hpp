@@ -28,6 +28,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Program.hpp"
 #include "minko/render/States.hpp"
 #include "minko/render/VertexAttribute.hpp"
+#include "minko/Flyweight.hpp"
 
 namespace minko
 {
@@ -47,6 +48,8 @@ namespace minko
 			typedef std::function<void(ProgramPtr)>						ProgramFunc;
 			typedef std::unordered_map<std::string, ProgramFunc>		ProgramFuncMap;
 			typedef std::unordered_map<std::string, data::MacroBinding> MacroBindingsMap;
+            typedef Flyweight<std::string>                              FString;
+            typedef std::unordered_map<FString, FString>                FStringMap;
 
 		private:
 			const std::string		_name;
@@ -185,10 +188,10 @@ namespace minko
 			}
 
             std::pair<std::shared_ptr<Program>, const ProgramSignature*>
-            selectProgram(const std::unordered_map<std::string, std::string>&   translatedPropertyNames,
-						  const data::Store&	                            	targetData,
-						  const data::Store&	                            	rendererData,
-                          const data::Store&	                            	rootData);
+            selectProgram(const FStringMap&     translatedPropertyNames,
+						  const data::Store&    targetData,
+						  const data::Store&	rendererData,
+                          const data::Store&	rootData);
 
 			template <typename... T>
 			void

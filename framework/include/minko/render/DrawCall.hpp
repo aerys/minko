@@ -29,6 +29,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Binding.hpp"
 #include "minko/data/ResolvedBinding.hpp"
 #include "minko/render/Priority.hpp"
+#include "minko/Flyweight.hpp"
 
 namespace minko
 {
@@ -78,7 +79,8 @@ namespace minko
             typedef std::shared_ptr<AbstractContext>	            AbsCtxPtr;
 			typedef std::shared_ptr<AbstractTexture>	            AbsTexturePtr;
 			typedef std::shared_ptr<Program>			            ProgramPtr;
-            typedef std::unordered_map<std::string, std::string>    StringMap;
+            typedef Flyweight<std::string>                          FString;
+            typedef std::unordered_map<FString, FString>            FStringMap;
             typedef data::Store::PropertyChangedSignal::Slot        ChangedSlot;
 
             typedef std::array<data::ResolvedBinding*, 3>           SamplerStatesResolveBindings;
@@ -89,7 +91,7 @@ namespace minko
             data::Store&                        _rootData;
             data::Store&                        _rendererData;
             data::Store&                        _targetData;
-            StringMap                           _variables;
+            FStringMap                          _variables;
 
 			std::shared_ptr<Program>			_program;
             int*								_indexBuffer;
@@ -126,7 +128,7 @@ namespace minko
 		public:
             DrawCall(uint					batchId,
 					 std::shared_ptr<Pass>  pass,
-                     const StringMap&       variables,
+                     const FStringMap&      variables,
                      data::Store&           rootData,
                      data::Store&           rendererData,
                      data::Store&           targetData);
@@ -153,14 +155,14 @@ namespace minko
             }
 
             inline
-            StringMap&
+            FStringMap&
             variables()
             {
                 return _variables;
             }
 
             inline
-            const StringMap&
+            const FStringMap&
             variables() const
             {
                 return _variables;

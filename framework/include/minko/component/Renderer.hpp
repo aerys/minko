@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/scene/Layout.hpp"
 #include "minko/render/DrawCallPool.hpp"
+#include "minko/Flyweight.hpp"
 
 namespace minko
 {
@@ -58,6 +59,7 @@ namespace minko
             typedef Signal<SurfacePtr>                                                      SurfaceChangedSignal;
             typedef render::DrawCallPool::DrawCallIteratorPair                              DrawCallIteratorPair;
             typedef std::unordered_map<SurfacePtr, std::list<SurfaceChangedSignal::Slot>>   SurfaceSlotMap;
+            typedef Flyweight<std::string>                                                  FString;
 
 		private:
 			std::string											_name;
@@ -71,7 +73,7 @@ namespace minko
 			Signal<Ptr>::Ptr									_beforePresent;
 			AbsTexturePtr										_renderTarget;
             bool                                                _clearBeforeRender;
-			std::unordered_map<std::string, std::string>		_variables;
+            std::unordered_map<FString, FString>		        _variables;
 
 			std::set<std::shared_ptr<Surface>>					_toCollect;
 			EffectPtr											_effect;
@@ -234,7 +236,7 @@ namespace minko
             }
 
 			inline
-			std::unordered_map<std::string, std::string>&
+			std::unordered_map<FString, FString>&
 			effectVariables()
 			{
 				return _variables;

@@ -112,7 +112,7 @@ GeometryWriter::serializeVertexStream(std::shared_ptr<render::VertexBuffer> vert
     for (const auto& attribute : vertexBuffer->attributes())
 	{
 		serializedAttributes.push_back(msgpack::type::tuple<std::string, unsigned char, unsigned char>(
-            attribute.name,
+            *attribute.name,
             attribute.size,
             attribute.offset
         ));
