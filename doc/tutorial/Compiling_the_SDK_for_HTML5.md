@@ -51,7 +51,7 @@ sudo apt-get install nodejs
 export EMSCRIPTEN=/opt/emscripten
 sudo mkdir -m 777 ${EMSCRIPTEN}
 git clone <https://github.com/kripken/emscripten> ${EMSCRIPTEN}
-cd ${EMSCRIPTEN} && git checkout 1.13.0 # Above versions are broken. echo "EMSCRIPTEN=${EMSCRIPTEN}"->> ~/.profile 
+cd ${EMSCRIPTEN} && git checkout 1.27.0 # Above versions are broken. echo "EMSCRIPTEN=${EMSCRIPTEN}"->> ~/.profile 
 ```
 
 ```bash
