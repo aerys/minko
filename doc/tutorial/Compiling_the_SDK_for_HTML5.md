@@ -45,17 +45,20 @@ The procedure for Ubuntu 12.10 is detailled [here](https://github.com/kripken/em
 Under Ubuntu 13.04+, the procedure is easier:
 
 ```bash
+sudo apt-get install -y python-software-properties python g++ make
+sudo add-apt-repository ppa:chris-lea/node.js
+sudo apt-get update 
+```
+
+```bash
 sudo apt-get install clang-3.2
 sudo apt-get install nodejs
 
 export EMSCRIPTEN=/opt/emscripten
 sudo mkdir -m 777 ${EMSCRIPTEN}
 git clone <https://github.com/kripken/emscripten> ${EMSCRIPTEN}
-cd ${EMSCRIPTEN} && git checkout 1.27.0 # Above versions are broken. echo "EMSCRIPTEN=${EMSCRIPTEN}"->> ~/.profile 
-```
-
-```bash
-sudo apt-get update sudo apt-get install -y python-software-properties python g++ make sudo add-apt-repository ppa:chris-lea/node.js sudo apt-get update 
+cd ${EMSCRIPTEN} && git checkout 1.27.0
+echo "EMSCRIPTEN=${EMSCRIPTEN}"->> ~/.profile 
 ```
 
 
