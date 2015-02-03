@@ -37,6 +37,7 @@ namespace minko
 
 		private:
 			typedef msgpack::type::tuple<unsigned int, short, std::string> SerializedAsset;
+
 			typedef std::function<SerializedAsset(std::shared_ptr<file::Dependency>, std::shared_ptr<file::AssetLibrary>, std::shared_ptr<geometry::Geometry>, uint, std::shared_ptr<file::Options>, std::shared_ptr<file::WriterOptions>, std::vector<Dependency::SerializedAsset>&)>		GeometryWriterFunction;
             typedef std::function<SerializedAsset(std::shared_ptr<file::Dependency>, std::shared_ptr<file::AssetLibrary>, std::shared_ptr<render::AbstractTexture>, uint, std::shared_ptr<file::Options>, std::shared_ptr<file::WriterOptions>)>	TextureWriterFunction;
             typedef std::function<SerializedAsset(std::shared_ptr<file::Dependency>, std::shared_ptr<file::AssetLibrary>, std::shared_ptr<material::Material>, uint, std::shared_ptr<file::Options>, std::shared_ptr<file::WriterOptions>)>			MaterialWriterFunction;
@@ -48,12 +49,14 @@ namespace minko
 			std::unordered_map<std::shared_ptr<scene::Node>, uint>			_subSceneDependencies;
 			std::unordered_map<std::shared_ptr<geometry::Geometry>, uint>	_geometryDependencies;
 			std::unordered_map<std::shared_ptr<render::Effect>, uint>		_effectDependencies;
+			std::unordered_map<std::shared_ptr<LinkedAsset>, uint>		    _linkedAssetDependencies;
 
 			std::unordered_map<uint, AbsTexturePtr>							_textureReferences;
 			std::unordered_map<uint, std::shared_ptr<material::Material>>	_materialReferences;
 			std::unordered_map<uint, std::shared_ptr<scene::Node>>			_subSceneReferences;
 			std::unordered_map<uint, std::shared_ptr<geometry::Geometry>>	_geometryReferences;
 			std::unordered_map<uint, std::shared_ptr<render::Effect>>		_effectReferences;
+			std::unordered_map<uint, std::shared_ptr<LinkedAsset>>          _linkedAssetReferences;
 
 			uint															_currentId;
 			std::shared_ptr<Options>										_options;
@@ -64,7 +67,6 @@ namespace minko
 
 			static TextureWriterFunction									_textureWriteFunction;
 			static MaterialWriterFunction									_materialWriteFunction;
-
 
 		public:
 			inline static
@@ -129,8 +131,14 @@ namespace minko
 			bool
 			hasDependency(std::shared_ptr<render::Effect> effect);
 
+            bool
+			hasDependency(std::shared_ptr<LinkedAsset> linkedAsset);
+
 			uint
 			registerDependency(std::shared_ptr<render::Effect> effect);
+
+            uint
+            registerDependency(std::shared_ptr<LinkedAsset> linkedAsset);
 
 			std::shared_ptr<geometry::Geometry>
 			getGeometryReference(uint geometryId);
@@ -162,6 +170,12 @@ namespace minko
 			void
 			registerReference(uint referenceId, std::shared_ptr<scene::Node> subScene);
 
+            void
+            registerReference(uint referenceId, std::shared_ptr<LinkedAsset> linkedAsset);
+
+            std::shared_ptr<LinkedAsset>
+            getLinkedAssetReference(uint id);
+
 			bool
 			geometryReferenceExist(uint referenceId);
 
@@ -174,10 +188,15 @@ namespace minko
 			bool
 			effectReferenceExist(uint referenceId);
 
+			bool
+			linkedAssetReferenceExist(uint referenceId);
+
 			std::vector<SerializedAsset>
-			serialize(std::shared_ptr<file::AssetLibrary>       assetLibrary,
+			serialize(const std::string&                        parentFilename,
+                      std::shared_ptr<file::AssetLibrary>       assetLibrary,
 					  std::shared_ptr<file::Options>            options,
-                      std::shared_ptr<file::WriterOptions>      writerOptions);
+                      std::shared_ptr<file::WriterOptions>      writerOptions,
+                      std::vector<unsigned char>&               internalLinkedAssetData);
 
 			static
 			SerializedAsset
@@ -230,13 +249,6 @@ namespace minko
 			}
 
 		private:
-            void
-            copyEffectDependency(std::shared_ptr<AssetLibrary>          assets,
-                                 std::shared_ptr<Options>               options,
-                                 const std::ifstream&                   source,
-                                 std::shared_ptr<render::Effect>        effect,
-                                 SerializedAsset&                       result,
-                                 std::shared_ptr<WriterOptions>         writerOptions);
 
 			Dependency();
 		};

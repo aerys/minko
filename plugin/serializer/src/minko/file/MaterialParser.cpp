@@ -151,7 +151,7 @@ MaterialParser::deserializeComplexProperty(MaterialPtr			material,
     }
     else if (type == TEXTURE)
     {
-        auto sampler = _dependencies->getTextureReference(Any::cast<uint>(TypeDeserializer::deserializeTextureId(serializedPropertyTuple)))->sampler();
+        auto sampler = _dependency->getTextureReference(Any::cast<uint>(TypeDeserializer::deserializeTextureId(serializedPropertyTuple)))->sampler();
 
         material->data()->set(
             serializedProperty.a0,

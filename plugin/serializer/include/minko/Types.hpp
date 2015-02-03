@@ -68,7 +68,8 @@ namespace minko
 			EFFECT_ASSET                = 3,
 			EMBED_EFFECT_ASSET          = 13,
             TEXTURE_PACK_ASSET          = 4,
-            EMBED_TEXTURE_PACK_ASSET    = 14
+            EMBED_TEXTURE_PACK_ASSET    = 14,
+            LINKED_ASSET                = 15
 		};
 
         enum class ImageFormat
