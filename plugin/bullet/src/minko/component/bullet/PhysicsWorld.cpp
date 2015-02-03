@@ -221,7 +221,7 @@ bullet::PhysicsWorld::updateColliderProperties(Collider::Ptr collider)
     if (collider == nullptr)
         return;
 
-    auto foundColliderIt    = _colliderMap.find(collider);
+    auto foundColliderIt = _colliderMap.find(collider);
     if (foundColliderIt != _colliderMap.end())
     {
         auto rigidBody = foundColliderIt->second->rigidBody();

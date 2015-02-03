@@ -109,13 +109,6 @@ namespace minko
                 getPhysicsTransform() const;
 
                 inline
-                NodePtr
-                target() const
-                {
-                    return target();
-                }
-
-                inline
                 uint
                 uid() const
                 {

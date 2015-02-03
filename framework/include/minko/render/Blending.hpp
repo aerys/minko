@@ -56,7 +56,7 @@ namespace minko
             {
                 DEFAULT     = (uint)Source::ONE | (uint)Destination::ZERO,
                 ALPHA       = (uint)Source::SRC_ALPHA | (uint)Destination::ONE_MINUS_SRC_ALPHA,
-                ADDITIVE    = (uint)Source::ONE | (uint)Destination::ONE
+                ADDITIVE    = (uint)Source::SRC_ALPHA | (uint)Destination::ONE
             };
         };
 

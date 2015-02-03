@@ -1,0 +1,30 @@
+{
+    "name" : "texture-debug-display",
+
+    "techniques" : [{
+        "passes" : [{
+
+            "attributes" : {
+                "aPosition" : "geometry[${geometryUuid}].position"
+            },
+
+            "states" : {
+                "depthMask" : false,
+                "depthFunction" : "always",
+                "priority" : [ "last", -10.0 ]
+            },
+
+            "uniforms" : {
+                "uSize" : { "default" : [[ 200.0, 200.0 ]] },
+                "uPosition" : { "default" : [[ 10.0, 10.0 ]], "binding" : "spritePosition" },
+                "uTexture" : "material[${materialUuid}].texture",
+                "uViewport" : { "binding" : { "property" : "viewport", "source" : "root" } }
+            },
+
+            "vertexShader" : "#pragma include \"TextureDebugDisplay.glsl\"",
+
+            "fragmentShader" : "#pragma include \"TextureDebugDisplay.glsl\""
+
+        }]
+    }]
+}

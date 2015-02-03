@@ -100,9 +100,11 @@ main(int argc, char** argv)
 
     root->addChild(camera);
 
-    auto groundNode = scene::Node::create("groundNode")->addComponent(Transform::create(
-        math::rotate(-float(M_PI) * 0.1f, math::vec3(0.f, 0.f, 1.f)) * math::mat4()
-    ));
+    auto groundNode = scene::Node::create("groundNode")
+        ->addComponent(Transform::create(
+            math::rotate(-float(M_PI) * 0.1f, math::vec3(0.f, 0.f, 1.f)) * math::mat4()
+        )
+    );
 
     // set-up lighting environment
     auto ambientLightNode = scene::Node::create("ambientLight")
@@ -144,7 +146,7 @@ main(int argc, char** argv)
             ->addComponent(Surface::create(
                 sceneManager->assets()->geometry("cube"),
                 material,
-                sceneManager->assets()->effect("phong")
+                sceneManager->assets()->effect("effect/Phong.effect")
             ))
             ->addComponent(bullet::Collider::create(
                     bullet::ColliderData::create(
@@ -164,7 +166,7 @@ main(int argc, char** argv)
             ->addComponent(Surface::create(
                 sceneManager->assets()->geometry("cube"),
                 materialGroundNodeB,
-                sceneManager->assets()->effect("phong")
+                sceneManager->assets()->effect("effect/Phong.effect")
             ))
             ->addComponent(bullet::Collider::create(
                 bullet::ColliderData::create(
@@ -266,7 +268,7 @@ createPhysicsObject(unsigned int id, file::AssetLibrary::Ptr assets, bool isCube
         ->addComponent(Surface::create(
             assets->geometry(isCube ? "cube" : "sphere"),
             material,
-            assets->effect("phong")
+            assets->effect("effect/Phong.effect")
         ))
         ->addComponent(collider)
 #ifdef DISPLAY_COLLIDERS

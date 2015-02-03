@@ -105,7 +105,7 @@ bullet::Collider::targetRemoved(Node::Ptr target)
 }
 
 void
-bullet::Collider::addedHandler(Node::Ptr node, Node::Ptr, Node::Ptr)
+bullet::Collider::addedHandler(Node::Ptr node, Node::Ptr target, Node::Ptr ancestor)
 {
     initializeFromNode(node);
 
