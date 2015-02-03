@@ -14,10 +14,8 @@ There are multiple approach to install Emscripten, all listed on the [SDK](https
 
 ### Windows
 
--   Install the full package of the [Emscripten](https://github.com/kripken/emscripten/wiki/Emscripten-SDK#wiki-downloads Emscripten SDK 1.16)
+-   Install the full package of the [Emscripten](http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html)
 -   Double-click `tool\win\script\install_emscripten.bat`
-
-
 
 -   Run **Emscripten Command Prompt** (available in your applications)
 -   Type `emsdk install mingw-4.6.2-32bit`
@@ -27,10 +25,9 @@ There are multiple approach to install Emscripten, all listed on the [SDK](https
 -   Make sure you don't have any `sh.exe` in your `PATH` (msysgit for instance)
 
 
-
 ### OS X
 
--   Run `tool/mac/script/install_emscripten.sh` (this will install the [<https://github.com/kripken/emscripten/wiki/Emscripten-SDK>#wiki-downloads Emscripten SDK])
+-   Run `tool/mac/script/install_emscripten.sh` (this will install the [Emscripten SDK](http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html))
 
 ### Linux
 
@@ -41,16 +38,21 @@ There are multiple approach to install Emscripten, all listed on the [SDK](https
 -   Clang 3.2+
 -   Node.js 0.8+
 -   Python 2.7+
--   Emscripten 1.13+
+-   Emscripten 1.27+
 
 The procedure for Ubuntu 12.10 is detailled [here](https://github.com/kripken/emscripten/wiki/Getting-Started-on-Ubuntu-12.10), and should be fairly similar for other Linux flavors.
 
 Under Ubuntu 13.04+, the procedure is easier:
 
 ```bash
-sudo apt-get install clang-3.2 sudo apt-get install nodejs export EMSCRIPTEN=/opt/emscripten sudo mkdir -m 777 ${EMSCRIPTEN} git clone <https://github.com/kripken/emscripten> ${EMSCRIPTEN} cd ${EMSCRIPTEN} && git checkout 1.13.0 # Above versions are broken. echo "EMSCRIPTEN=${EMSCRIPTEN}"->> ~/.profile 
-```
+sudo apt-get install clang-3.2
+sudo apt-get install nodejs
 
+export EMSCRIPTEN=/opt/emscripten
+sudo mkdir -m 777 ${EMSCRIPTEN}
+git clone <https://github.com/kripken/emscripten> ${EMSCRIPTEN}
+cd ${EMSCRIPTEN} && git checkout 1.13.0 # Above versions are broken. echo "EMSCRIPTEN=${EMSCRIPTEN}"->> ~/.profile 
+```
 
 ```bash
 sudo apt-get update sudo apt-get install -y python-software-properties python g++ make sudo add-apt-repository ppa:chris-lea/node.js sudo apt-get update 
@@ -59,7 +61,7 @@ sudo apt-get update sudo apt-get install -y python-software-properties python g+
 
 Then you need to **install the latest Emscripten compiler backend based on LLVM aka "fastcomp"**. Just follow the instructions available on the [<https://github.com/kripken/emscripten/wiki/LLVM-Backend>#getting-fastcomp Getting Fastcomp page of the Emscripten wiki]. 
 
-Note: Currently, Minko supports **Emscripten 1.16.0**.
+Note: Currently, Minko supports **Emscripten 1.27.0**.
 
 Step 2: Building the SDK
 ------------------------
