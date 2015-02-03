@@ -35,10 +35,10 @@ There are multiple approach to install Emscripten, all listed on the [SDK](https
 
  The Emscripten SDK installer is not yet compatible with Linux, so you will have to install the components manually. Depending on the platform you're on, the procedure differs, but the components are the same:
 
--   Clang 3.2+
--   Node.js 0.8+
--   Python 2.7+
--   Emscripten 1.27+
+  -   Clang 3.2+
+  -   Node.js 0.8+
+  -   Python 2.7+
+  -   Emscripten 1.27+
 
 The procedure for Ubuntu 12.10 is detailled [here](https://github.com/kripken/emscripten/wiki/Getting-Started-on-Ubuntu-12.10), and should be fairly similar for other Linux flavors.
 
@@ -56,7 +56,7 @@ sudo apt-get install nodejs
 
 export EMSCRIPTEN=/opt/emscripten
 sudo mkdir -m 777 ${EMSCRIPTEN}
-git clone <https://github.com/kripken/emscripten> ${EMSCRIPTEN}
+git clone https://github.com/kripken/emscripten ${EMSCRIPTEN}
 cd ${EMSCRIPTEN} && git checkout 1.27.0
 echo "EMSCRIPTEN=${EMSCRIPTEN}"->> ~/.profile 
 ```
@@ -77,7 +77,6 @@ To make things easy, just run the following batch script:
 > %MINKO_HOME%/tool/win/script/build_html5.bat 
 ```
 
-
 It will generate the required Makefiles and run Emscripten for you. By default, it will build the framework, the plugins, the examples and the tutorials. It might take some time, so feel free to customize this script to generate solution files that will exclude some projects (like the examples or the tutorials) that you don't need.
 
 For example, to compile only the framework, the plugins and the examples, you can run the following script:
@@ -85,7 +84,6 @@ For example, to compile only the framework, the plugins and the examples, you ca
 ```bash
 > %MINKO_HOME%/tool/win/script/build_html5_no_tutorial.bat 
 ```
-
 
 ### Linux / OSX
 
@@ -125,16 +123,15 @@ $ make config=html5_release
 If you want to leverage multicore processors, you can use the following command line (replace '4' by your actual number of cores):
 
 ```bash
-$ make -j 4 config=html5_release 
+$ make -j4 config=html5_release 
 ```
-
 
 It should speed up the compilation process significantly.
 
 Step 5: Enjoy!
 --------------
 
-If you have compiled the examples/tutorials, you can try to launch them by opening the corresponding HTML file that will be located in the `bin/html5/release` directory of each project. **Make sure you open those files from an actual web server and not directly from your file system (do not use "<file:///>").**
+If you have compiled the examples/tutorials, you can try to launch them by opening the corresponding HTML file that will be located in the `bin/html5/release` directory of each project. **Make sure you open those files from an actual web server and not directly from your file system (do not use "file:///").**
 
 You can now use your SDK to [Create a new application](../tutorial/Create_a_new_application.md).
 
