@@ -47,7 +47,7 @@ Loader::Ptr
 Loader::queue(const std::string& filename, std::shared_ptr<Options> options)
 {
     _filesQueue.push_back(filename);
-    _filenameToOptions[filename] = (options ? options : _options)->clone();
+    _filenameToOptions[filename] = (options ? options : _options);
 
     return std::dynamic_pointer_cast<Loader>(shared_from_this());
 }

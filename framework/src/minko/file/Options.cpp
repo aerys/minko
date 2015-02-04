@@ -114,6 +114,7 @@ Options::clone()
 void
 Options::initialize()
 {
+    resetNotInheritedValues();
     initializeDefaultFunctions();
     
     if (_parsers.find("effect") == _parsers.end())
@@ -305,4 +306,11 @@ Options::initializeDefaultFunctions()
     };
 
     _parserFunction = nullptr;
+}
+
+void
+Options::resetNotInheritedValues()
+{
+    seekingOffset(0);
+    seekedLength(0);
 }

@@ -285,7 +285,7 @@ Dependency::serializeGeometry(std::shared_ptr<Dependency>				dependency,
 
     geometryWriter->data(geometry);
 
-    if (writerOptions->embedAll())
+    if (writerOptions->embedMode() & WriterOptions::EmbedMode::Geometry)
     {
         assetType = serialize::AssetType::EMBED_GEOMETRY_ASSET;
 
@@ -340,7 +340,7 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
 
     writer->data(texture);
 
-    if (writerOptions->embedAll())
+    if (writerOptions->embedMode() & WriterOptions::EmbedMode::Texture)
     {
         assetType = serialize::AssetType::EMBED_TEXTURE_PACK_ASSET;
 
@@ -386,7 +386,7 @@ Dependency::serializeMaterial(std::shared_ptr<Dependency>			dependency,
 
     materialWriter->data(material);
 
-    if (writerOptions->embedAll())
+    if (writerOptions->embedMode() & WriterOptions::EmbedMode::Material)
     {
         assetType = serialize::AssetType::EMBED_MATERIAL_ASSET;
         content = materialWriter->embedAll(assetLibrary, options, writerOptions, dependency);

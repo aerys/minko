@@ -117,38 +117,6 @@ namespace minko
 				return options;
 			}
 
-            inline static
-            Ptr
-            create(Ptr options)
-            {
-                auto opt = create();
-
-                opt->_context = options->_context;
-                opt->_assets = options->_assets;
-                opt->_parsers = options->_parsers;
-                opt->_protocols = options->_protocols;
-                opt->_includePaths = options->_includePaths;
-                opt->_generateMipMaps = options->_generateMipMaps;
-                opt->_resizeSmoothly = options->_resizeSmoothly;
-                opt->_isCubeTexture = options->_isCubeTexture;
-                opt->_startAnimation = options->_startAnimation;
-                opt->_disposeIndexBufferAfterLoading = options->_disposeIndexBufferAfterLoading;
-                opt->_disposeVertexBufferAfterLoading = options->_disposeVertexBufferAfterLoading;
-                opt->_disposeTextureAfterLoading = options->_disposeTextureAfterLoading;
-                opt->_skinningFramerate = options->_skinningFramerate;
-                opt->_skinningMethod = options->_skinningMethod;
-                opt->_effect = options->_effect;
-                opt->_materialFunction = options->_materialFunction;
-                opt->_geometryFunction = options->_geometryFunction;
-                opt->_protocolFunction = options->_protocolFunction;
-                opt->_effectFunction = options->_effectFunction;
-                opt->_uriFunction = options->_uriFunction;
-                opt->_nodeFunction = options->_nodeFunction;
-                opt->_loadAsynchronously = options->_loadAsynchronously;
-
-                return opt;
-            }
-
             virtual
 			Ptr
             clone();
@@ -633,6 +601,9 @@ namespace minko
 
 			void
 			initializeDefaultFunctions();
+
+            void
+            resetNotInheritedValues();
 		};
 	}
 }

@@ -33,12 +33,22 @@ namespace minko
         public:
             typedef std::shared_ptr<WriterOptions>                              Ptr;
 
+            struct EmbedMode
+            {
+                static const auto None      = 0u;
+                static const auto Geometry  = 1u << 0;
+                static const auto Material  = 1u << 1;
+                static const auto Texture   = 1u << 2;
+                static const auto All       = Geometry | Material | Texture;
+            };
+
         private:
             typedef std::function<const std::string(const std::string&)>        UriFunction;
 
         private:
-            bool                                _embedAll;
             bool                                _addBoundingBoxes;
+
+            unsigned int                        _embedMode;
 
             UriFunction                         _outputAssetUriFunction;
 
@@ -70,8 +80,8 @@ namespace minko
             {
                 auto instance = WriterOptions::create();
 
-                instance->_embedAll = other->_embedAll;
                 instance->_addBoundingBoxes = other->_addBoundingBoxes;
+                instance->_embedMode = other->_embedMode;
                 instance->_outputAssetUriFunction = other->_outputAssetUriFunction;
                 instance->_imageFormat = other->_imageFormat;
                 instance->_textureFormats = other->_textureFormats;
@@ -87,22 +97,6 @@ namespace minko
 
             inline
 			bool
-			embedAll() const
-			{
-				return _embedAll;
-			}
-
-			inline
-			Ptr
-			embedAll(bool value)
-			{
-				_embedAll = value;
-
-				return shared_from_this();
-			}
-
-            inline
-			bool
 			addBoundingBoxes() const
 			{
 				return _addBoundingBoxes;
@@ -113,6 +107,22 @@ namespace minko
 			addBoundingBoxes(bool value)
 			{
 				_addBoundingBoxes = value;
+
+				return shared_from_this();
+			}
+
+            inline
+			unsigned int
+			embedMode() const
+			{
+				return _embedMode;
+			}
+
+			inline
+			Ptr
+			embedMode(unsigned int value)
+			{
+				_embedMode = value;
 
 				return shared_from_this();
 			}

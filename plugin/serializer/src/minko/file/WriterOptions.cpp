@@ -27,8 +27,8 @@ using namespace minko::render;
 using namespace minko::serialize;
 
 WriterOptions::WriterOptions() :
-    _embedAll(false),
     _addBoundingBoxes(false),
+    _embedMode(EmbedMode::All),
     _outputAssetUriFunction([=](const std::string& str) -> std::string { return str; }),
     _imageFormat(ImageFormat::PNG),
     _textureFormats(),
