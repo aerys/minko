@@ -3,30 +3,30 @@
     "name"  	: "line",
 
     "attributes" : {
-        "startPosition"			: "geometry[$geometryUuid].startPosition",
-		"stopPosition"			: "geometry[$geometryUuid].stopPosition",
-		"weights"				: "geometry[$geometryUuid].weights"
+        "aStartPosition"	    : "geometry[$geometryUuid].startPosition",
+		"aStopPosition"			: "geometry[$geometryUuid].stopPosition",
+		"aWeights"				: "geometry[$geometryUuid].weights"
     },
 
     "uniforms"   : {
-        "diffuseColor"          : { "binding" : "material[$materialUuid].diffuseColor" },
-		"modelToWorldMatrix"    : { "binding" : "modelToWorldMatrix" },
-		"worldToScreenMatrix"   : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
-        "lineThickness"         : { "binding" : { "property" : "material[$materialUuid].lineThickness", "source" : "target" }, "default" : 1.0 },
-		"viewport"				: { "binding" : { "property" : "viewport", "source" : "root" } }
+        "uModelToWorldMatrix"    : "modelToWorldMatrix",
+        "uDiffuseColor"          : { "binding" : "material[$materialUuid].diffuseColor" },
+		"uWorldToScreenMatrix"   : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
+        "uLineThickness"         : { "binding" : { "property" : "material[$materialUuid].lineThickness", "source" : "target" }, "default" : 1.0 },
+		"uViewport"				 : { "binding" : { "property" : "viewport", "source" : "root" } }
     },
 
     "macros" : {
         "DIFFUSE_COLOR"         : "material[$materialUuid].diffuseColor",
-        "MODEL_TO_WORLD"        : "transform.modelToWorldMatrix"
+        "MODEL_TO_WORLD"        : "modelToWorldMatrix"
     },
 
     "states" : {
-        "priority"	            : { "default" : "opaque", "binding" : "material[${materialUuid}].priority" },
+        "priority"	            : { "binding" : "material[${materialUuid}].priority", "default" : "opaque" },
         "blendingSource"		: { "binding" : "material[${materialUuid}].blendingSource" },
 		"blendingDestination"	: { "binding" : "material[${materialUuid}].blendingDestination" },
         "depthMask"             : { "binding" : "material[$materialUuid].depthMask" },
-        "depthFunction"         : { "binding" : "material[$materialUuid].depthFunc" },
+        "depthFunction"         : { "binding" : "material[$materialUuid].depthFunction" },
         "triangleCulling"       : { "binding" : "material[$materialUuid].triangleCulling" }
     },
 
