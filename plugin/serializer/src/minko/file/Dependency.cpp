@@ -432,7 +432,7 @@ Dependency::serialize(const std::string&                        parentFilename,
                       std::shared_ptr<file::AssetLibrary>       assetLibrary,
 					  std::shared_ptr<file::Options>            options,
                       std::shared_ptr<file::WriterOptions>      writerOptions,
-                      std::vector<unsigned char>&               internalLinkedAssetData)
+                      std::vector<std::vector<unsigned char>>&  internalLinkedAssets)
 {
 	std::vector<SerializedAsset> serializedAsset;
 
@@ -487,8 +487,11 @@ Dependency::serialize(const std::string&                        parentFilename,
 		serializedAsset.insert(serializedAsset.begin(), res);
 	}
 
-    auto internalLinkedAssetDataOffset = internalLinkedAssetData.size();
-
+    auto internalLinkedAssetDataOffset = 0;
+    
+    for (const auto& internalLinkedAsset : internalLinkedAssets)
+        internalLinkedAssetDataOffset += internalLinkedAsset.size();
+        
     for (const auto& linkedAssetToIdPair : _linkedAssetDependencies)
     {
         const auto& linkedAsset = *linkedAssetToIdPair.first;
@@ -515,15 +518,10 @@ Dependency::serialize(const std::string&                        parentFilename,
             const auto validFilename = File::removePrefixPathFromFilename(parentFilename);
             linkedAssetData.a2 = validFilename;
 
-            internalLinkedAssetData.resize(internalLinkedAssetData.size() + linkedAsset.length());
-
-            std::copy(
-                linkedAsset.data().begin(),
-                linkedAsset.data().begin() + linkedAsset.length(),
-                internalLinkedAssetData.begin() + internalLinkedAssetDataOffset
-            );
+            internalLinkedAssets.emplace_back(linkedAsset.data().begin(), linkedAsset.data().end());
 
             internalLinkedAssetDataOffset += linkedAsset.length();
+
             break;
         }
 

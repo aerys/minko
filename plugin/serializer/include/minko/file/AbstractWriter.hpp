@@ -203,13 +203,13 @@ namespace minko
                             writerOptions
                         );
 
-                        auto linkedAssetData = std::vector<unsigned char>();
+                        auto internalLinkedAssets = std::vector<std::vector<unsigned char>>();
                         auto serializedDependency = localDependency->serialize(
                             filename,
                             assetLibrary,
                             options,
                             writerOptions,
-                            linkedAssetData
+                            internalLinkedAssets
                         );
 
                         if (userDefinedDependency.size() > 0)
@@ -257,11 +257,13 @@ namespace minko
 
                         file.write(serializedData.c_str(), serializedData.size());
 
-                        if (!linkedAssetData.empty())
+                        for (const auto& internalLinkedAsset : internalLinkedAssets)
+                        {
                             file.write(
-                                std::string(linkedAssetData.begin(), linkedAssetData.end()).c_str(),
-                                linkedAssetData.size()
+                                reinterpret_cast<const char*>(internalLinkedAsset.data()),
+                                internalLinkedAsset.size()
                             );
+                        }
 
                         file.close();
                     }
@@ -395,13 +397,13 @@ namespace minko
                         writerOptions
                     );
 
-                    auto linkedAssetData = std::vector<unsigned char>();
+                    auto internalLinkedAssets = std::vector<std::vector<unsigned char>>();
                     auto serializedDependency = localDependency->serialize(
                         "",
                         assetLibrary,
                         options,
                         writerOptions,
-                        linkedAssetData
+                        internalLinkedAssets
                     );
 
                     if (userDefinedDependency.size() > 0)
@@ -428,11 +430,13 @@ namespace minko
                     data.write(sbuf.str().c_str(), dependencySize);
                     data.write(serializedData.c_str(), sceneDataSize);
                     
-                    if (!linkedAssetData.empty())
+                    for (const auto& internalLinkedAsset : internalLinkedAssets)
+                    {
                         data.write(
-                            std::string(linkedAssetData.begin(), linkedAssetData.end()).c_str(),
-                            linkedAssetData.size()
+                            reinterpret_cast<const char*>(internalLinkedAsset.data()),
+                            internalLinkedAsset.size()
                         );
+                    }
 
                     complete()->execute(this->shared_from_this());
 

@@ -196,7 +196,7 @@ namespace minko
                       std::shared_ptr<file::AssetLibrary>       assetLibrary,
 					  std::shared_ptr<file::Options>            options,
                       std::shared_ptr<file::WriterOptions>      writerOptions,
-                      std::vector<unsigned char>&               internalLinkedAssetData);
+                      std::vector<std::vector<unsigned char>>&  internalLinkedAssets);
 
 			static
 			SerializedAsset
