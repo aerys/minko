@@ -291,12 +291,23 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
             unpacked.get().convert(&linkedAssetdata);
         }
 
+        auto linkedAssetOffset = linkedAssetdata.a0;
+        auto linkedAssetFilename = linkedAssetdata.a2;
+        const auto linkedAssetLinkType = static_cast<LinkedAsset::LinkType>(linkedAssetdata.a4);
+
+        if (linkedAssetLinkType == LinkedAsset::LinkType::Internal)
+        {
+            linkedAssetOffset += internalLinkedContentOffset();
+
+            linkedAssetFilename = assetCompletePath + linkedAssetFilename;
+        }
+
         auto linkedAsset = LinkedAsset::create()
-            ->offset(linkedAssetdata.a0)
+            ->offset(linkedAssetOffset)
             ->length(linkedAssetdata.a1)
-            ->filename(linkedAssetdata.a2)
+            ->filename(linkedAssetFilename)
             ->data(linkedAssetdata.a3)
-            ->linkType(static_cast<LinkedAsset::LinkType>(linkedAssetdata.a4));
+            ->linkType(linkedAssetLinkType);
 
         _dependency->registerReference(asset.a1, linkedAsset);
     }

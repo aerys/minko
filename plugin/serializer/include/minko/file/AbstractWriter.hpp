@@ -172,7 +172,7 @@ namespace minko
                   std::shared_ptr<Options>              options,
                   std::shared_ptr<WriterOptions>        writerOptions,
                   Dependency::Ptr                       dependency,
-                  SerializedDependency&					userDefinedDependency)
+                  const SerializedDependency&	        userDefinedDependency)
             {
                 preprocess(data(), assetLibrary);
 
@@ -368,7 +368,7 @@ namespace minko
                      std::shared_ptr<Options>       options,
                      std::shared_ptr<WriterOptions> writerOptions,
                      Dependency::Ptr                dependency,
-                     SerializedDependency&			userDefinedDependency)
+                     const SerializedDependency&	userDefinedDependency)
             {
                 preprocess(data(), assetLibrary);
 
