@@ -1,0 +1,19 @@
+language: cpp
+
+compiler:
+  - gcc
+
+before_script:
+  - bash tool/lin/bin/premake5.sh --cc=gcc gmake
+  - make config=linux64_release
+  - cd test/bin/linux64/release
+
+script: ./minko-tests
+
+branches:
+  only:
+    - master
+    - dev
+
+os:
+  - linux
