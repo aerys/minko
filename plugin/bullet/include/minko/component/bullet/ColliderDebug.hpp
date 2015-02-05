@@ -77,6 +77,9 @@ namespace minko
 				void
 				initializeDisplay();
 
+                void
+                addRootColliderDebugNode();
+
 				void
 				targetAdded(NodePtr);
 
