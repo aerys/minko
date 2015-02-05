@@ -50,18 +50,15 @@ bullet::AbstractPhysicsShape::initialize(const math::mat4& deltaTransform,
                                          const math::mat4& graphicsStartTransform)
 {
     auto deltaScaling = math::mat4();
-    removeScalingShear(
-        deltaTransform,
-        _deltaTransform,
-        deltaScaling
-    );
+
+    _deltaTransform = removeScalingShear(deltaTransform, deltaScaling);
 
     _deltaTransformInverse = math::inverse(_deltaTransform);
 
     localScaling(deltaScaling[0][0], deltaScaling[1][1], deltaScaling[2][2]);
 
 #ifdef DEBUG_PHYSICS
-    PhysicsWorld::print(std::cout << "- delta\t=\n", _deltaTransform) << std::endl;
-    std::cout << "- local scaling\t= [ " << _localScaling->x() << " " << _localScaling->y() << " " << _localScaling->z() << " ]" << std::endl;
+    std::cout << "- delta\t=\n" << std::to_string(_deltaTransform) << std::endl;
+    std::cout << "- local scaling\t= [ " << _localScaling.x << " " << _localScaling.y << " " << _localScaling.z << " ]" << std::endl;
 #endif // DEBUG_PHYSICS
 }

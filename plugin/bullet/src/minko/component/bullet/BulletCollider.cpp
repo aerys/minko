@@ -52,11 +52,11 @@ bullet::PhysicsWorld::BulletCollider::initialize(Collider::Ptr collider)
     if (collider == nullptr || collider->colliderData() == nullptr)
         throw std::invalid_argument("collider");
 
-    std::shared_ptr<btCollisionShape>    bulletCollisionShape    = initializeCollisionShape(collider->colliderData()->shape());
-    std::shared_ptr<btMotionState>        bulletMotionState        = initializeMotionState(collider);
+    std::shared_ptr<btCollisionShape> bulletCollisionShape = initializeCollisionShape(collider->colliderData()->shape());
+    std::shared_ptr<btMotionState> bulletMotionState = initializeMotionState(collider);
 
 #ifdef DEBUG_PHYSICS
-    std::cout << "[" << data->name() << "]\tinit collision shape\n\t- local scaling = " << bulletCollisionShape->getLocalScaling()[0]
+    std::cout << "[Bullet Collider]\tinit collision shape\n\t- local scaling = " << bulletCollisionShape->getLocalScaling()[0]
     << "\n\t- margin = " << bulletCollisionShape->getMargin() << std::endl;
 #endif // DEBUG_PHYSICS
 

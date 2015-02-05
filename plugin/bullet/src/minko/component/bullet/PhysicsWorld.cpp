@@ -155,7 +155,7 @@ bullet::PhysicsWorld::setSceneManager(std::shared_ptr<SceneManager> sceneManager
 }
 
 void
-bullet::PhysicsWorld::addChild(Collider::Ptr collider)
+bullet::PhysicsWorld::addCollider(Collider::Ptr collider)
 {
     if (collider == nullptr || collider->target() == nullptr)
         throw std::invalid_argument("collider");
@@ -168,9 +168,9 @@ bullet::PhysicsWorld::addChild(Collider::Ptr collider)
     //    << "\tmask = " << std::bitset<16>(data->collisionMask())
     //    << std::endl;
 
-    auto uid            = _uidAllocator->allocate();
+    auto uid = _uidAllocator->allocate();
     auto bulletCollider = BulletCollider::create(collider);
-    auto rigidBody        = bulletCollider->rigidBody().get();
+    auto rigidBody = bulletCollider->rigidBody().get();
 
     collider->uid(uid);
 
@@ -178,26 +178,26 @@ bullet::PhysicsWorld::addChild(Collider::Ptr collider)
     _colliderMap[collider] = bulletCollider;
     _colliderReverseMap[rigidBody] = collider;
 
-    // TODO: Physics => uncomment this part when layouts are fixed  
-    /*
-    _colliderNodeLayoutChangedSlot[collider] = collider->target()->layoutsChanged()->connect([=](Node::Ptr, Node::Ptr){ updateColliderNodeProperties(collider); });
+    _colliderNodeLayoutChangedSlot[collider] = collider->target()->layoutChanged().connect([=](Node::Ptr, Node::Ptr){ updateColliderNodeProperties(collider); });
     _colliderPropertiesChangedSlot[collider] = collider->propertiesChanged()->connect([=](Collider::Ptr){ updateColliderProperties(collider); });
-    _colliderLayoutMaskChangedSlot[collider] = collider->layoutMaskChanged()->connect([=](AbstractComponent::Ptr){ updateColliderLayoutMask(collider); });
+    _colliderLayoutMaskChangedSlot[collider] = collider->layoutMaskChanged().connect([=](AbstractComponent::Ptr){ updateColliderLayoutMask(collider); });
 
     std::dynamic_pointer_cast<btDiscreteDynamicsWorld>(_bulletDynamicsWorld)
         ->addRigidBody(
             rigidBody,
-            short(collider->target()->layouts() & ((1<<16) - 1)),
+            short(collider->target()->layout() & ((1<<16) - 1)),
             short(collider->layoutMask() & ((1<<16) - 1))
          );
-    */
+
     updateColliderProperties(collider);
     updateColliderNodeProperties(collider);
 
 #ifdef DEBUG_PHYSICS
-    std::cout << "[" << data->name() << "]\tadd physics body" << std::endl;
+    std::cout << "[" << target()->name() << "]\tadd physics body" << std::endl;
 
-    print(std::cout << "rigidbody.worldTransform =\n", bulletCollider->rigidBody()->getWorldTransform()) << std::endl;
+    auto matrix = math::fromBulletTransform(bulletCollider->rigidBody()->getWorldTransform());
+
+    std::cout << "rigidbody.worldTransform =\n" << std::to_string(matrix) << std::endl;
 #endif // DEBUG_PHYSICS
 }
 
@@ -241,13 +241,13 @@ bullet::PhysicsWorld::updateColliderLayoutMask(Collider::Ptr collider)
     if (collider == nullptr)
         return;
 
-    auto foundColliderIt    = _colliderMap.find(collider);
+    auto foundColliderIt = _colliderMap.find(collider);
     if (foundColliderIt != _colliderMap.end())
     {
         auto rigidBody = foundColliderIt->second->rigidBody();
         assert(rigidBody && rigidBody->getBroadphaseProxy());
 
-        rigidBody->getBroadphaseProxy()->m_collisionFilterMask    = short(collider->layoutMask() & ((1<<16) - 1));
+        rigidBody->getBroadphaseProxy()->m_collisionFilterMask = short(collider->layoutMask() & ((1<<16) - 1));
     }
 }
 
@@ -257,19 +257,18 @@ bullet::PhysicsWorld::updateColliderNodeProperties(Collider::Ptr collider)
     if (collider == nullptr || collider->target() == nullptr)
         return;
 
-    auto foundColliderIt    = _colliderMap.find(collider);
+    auto foundColliderIt = _colliderMap.find(collider);
     if (foundColliderIt != _colliderMap.end())
     {
-        auto rigidBody    = foundColliderIt->second->rigidBody();
+        auto rigidBody = foundColliderIt->second->rigidBody();
         assert(rigidBody && rigidBody->getBroadphaseProxy());
 
-        // TODO: Physics => uncomment when layouts are fixed
-        //rigidBody->getBroadphaseProxy()->m_collisionFilterGroup = short(collider->target()->layouts() & ((1<<16) - 1));
+        rigidBody->getBroadphaseProxy()->m_collisionFilterGroup = short(collider->target()->layout() & ((1<<16) - 1));
     }
 }
 
 void
-bullet::PhysicsWorld::removeChild(Collider::Ptr collider)
+bullet::PhysicsWorld::removeCollider(Collider::Ptr collider)
 {
     if (collider == nullptr)
         return;
@@ -363,7 +362,7 @@ bullet::PhysicsWorld::updateColliders()
 
 void
 bullet::PhysicsWorld::updateRigidBodyState(Collider::Ptr        collider,
-                                           const math::mat4&    graphicsNoScaleTransform,
+                                           math::mat4&          graphicsNoScaleTransform,
                                            const math::mat4&    centerOfMassOffset)
 {
 #ifdef DEBUG
@@ -374,6 +373,7 @@ bullet::PhysicsWorld::updateRigidBodyState(Collider::Ptr        collider,
 #endif // DEBUG
 
     auto foundDataIt = _colliderMap.find(collider);
+
     if (foundDataIt == _colliderMap.end())
         return;
 
@@ -383,13 +383,13 @@ bullet::PhysicsWorld::updateRigidBodyState(Collider::Ptr        collider,
     if (bulletMotionState == nullptr)
         return;
 
-    // update the motion state's center of mass offset transform
+    // Update the motion state's center of mass offset transform
     math::toBulletTransform(centerOfMassOffset, bulletMotionState->m_centerOfMassOffset);
 
-    // update the motion state's world transform
+    // Update the motion state's world transform
     math::toBulletTransform(graphicsNoScaleTransform, bulletMotionState->m_graphicsWorldTrans);
 
-    // synchronize bullet
+    // Synchronize bullet
     static btTransform bulletTransform;
 
     bulletMotionState->getWorldTransform(bulletTransform);
