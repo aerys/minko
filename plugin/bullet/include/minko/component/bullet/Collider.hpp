@@ -34,46 +34,49 @@ namespace minko
                 public AbstractComponent
             {
             public:
-                typedef std::shared_ptr<Collider>                    Ptr;
-                typedef std::shared_ptr<const Collider>                ConstPtr;
+                typedef std::shared_ptr<Collider>                   Ptr;
+                typedef std::shared_ptr<const Collider>             ConstPtr;
 
             private:
-                typedef std::shared_ptr<file::AssetLibrary>            AssetLibraryPtr;
-                typedef std::shared_ptr<AbstractComponent>            AbsCmpPtr;
+                typedef std::shared_ptr<file::AssetLibrary>         AssetLibraryPtr;
+                typedef std::shared_ptr<AbstractComponent>          AbsCmpPtr;
                 typedef std::shared_ptr<scene::Node>                NodePtr;
-                typedef std::shared_ptr<scene::NodeSet>                NodeSetPtr;
-                typedef std::shared_ptr<ColliderData>                ColliderDataPtr;
-                typedef std::shared_ptr<Transform>                    TransformPtr;
-                typedef std::shared_ptr<PhysicsWorld>                PhysicsWorldPtr;
+                typedef std::shared_ptr<scene::NodeSet>             NodeSetPtr;
+                typedef std::shared_ptr<ColliderData>               ColliderDataPtr;
+                typedef std::shared_ptr<Transform>                  TransformPtr;
+                typedef std::shared_ptr<PhysicsWorld>               PhysicsWorldPtr;
                 typedef std::shared_ptr<Surface>                    SurfacePtr;
+                typedef std::shared_ptr<component::SceneManager>    SceneManagerPtr;
+                typedef std::shared_ptr<render::AbstractTexture>    AbsTexturePtr;
 
             private:
-                int                                                    _uid;
-                ColliderDataPtr                                        _colliderData;
+                int                                                 _uid;
+                ColliderDataPtr                                     _colliderData;
                 bool                                                _canSleep;
                 bool                                                _triggerCollisions;
-                math::vec3                                            _linearFactor;
-                float                                                _linearDamping;
-                float                                                _linearSleepingThreshold;
-                math::vec3                                            _angularFactor;
-                float                                                _angularDamping;
-                float                                                _angularSleepingThreshold;
+                math::vec3                                          _linearFactor;
+                float                                               _linearDamping;
+                float                                               _linearSleepingThreshold;
+                math::vec3                                          _angularFactor;
+                float                                               _angularDamping;
+                float                                               _angularSleepingThreshold;
 
-                PhysicsWorldPtr                                        _physicsWorld;
-                math::mat4                                        _correction;
-                math::mat4                                        _physicsTransform;
+                PhysicsWorldPtr                                     _physicsWorld;
+                math::mat4                                          _correction;
+                math::mat4                                          _physicsTransform;
                 TransformPtr                                        _graphicsTransform;
 
                 std::shared_ptr<Signal<Ptr>>                        _propertiesChanged;
-                std::shared_ptr<Signal<Ptr, Ptr>>                    _collisionStarted;
-                std::shared_ptr<Signal<Ptr, Ptr>>                    _collisionEnded;
+                std::shared_ptr<Signal<Ptr, Ptr>>                   _collisionStarted;
+                std::shared_ptr<Signal<Ptr, Ptr>>                   _collisionEnded;
                 std::shared_ptr<Signal<Ptr, math::mat4>>            _physicsTransformChanged;
-                std::shared_ptr<Signal<Ptr, TransformPtr>>            _graphicsTransformChanged;
+                std::shared_ptr<Signal<Ptr, TransformPtr>>          _graphicsTransformChanged;
 
                 Signal<AbsCmpPtr, NodePtr>::Slot                    _targetAddedSlot;
                 Signal<AbsCmpPtr, NodePtr>::Slot                    _targetRemovedSlot;
-                Signal<NodePtr, NodePtr, NodePtr>::Slot                _addedSlot;
-                Signal<NodePtr, NodePtr, NodePtr>::Slot                _removedSlot;
+                Signal<NodePtr, NodePtr, NodePtr>::Slot             _addedSlot;
+                Signal<NodePtr, NodePtr, NodePtr>::Slot             _removedSlot;
+                Signal<SceneManagerPtr, float, float>::Slot         _frameBeginSlot;
 
             public:
                 inline static

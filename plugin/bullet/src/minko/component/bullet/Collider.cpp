@@ -23,6 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/NodeSet.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/Surface.hpp"
+#include "minko/component/SceneManager.hpp"
+#include "minko/component/Renderer.hpp"
 #include "minko/component/bullet/AbstractPhysicsShape.hpp"
 #include "minko/component/bullet/ColliderData.hpp"
 #include "minko/component/bullet/PhysicsWorld.hpp"
@@ -40,12 +42,12 @@ bullet::Collider::Collider(ColliderData::Ptr data):
     _colliderData(data),
     _canSleep(false),
     _triggerCollisions(false),
-    _linearFactor(math::vec3(1.0f, 1.0f, 1.0f)),
-    _linearDamping(0.0f),
+    _linearFactor(math::vec3(1.f, 1.f, 1.f)),
+    _linearDamping(0.f),
     _linearSleepingThreshold(0.8f),
-    _angularFactor(math::vec3(1.0f, 1.0f, 1.0f)),
-    _angularDamping(0.0f),
-    _angularSleepingThreshold(1.0f),
+    _angularFactor(math::vec3(1.f, 1.f, 1.f)),
+    _angularDamping(0.f),
+    _angularSleepingThreshold(1.f),
     _physicsWorld(nullptr),
     _correction(math::mat4()),
     _physicsTransform(math::mat4()),
@@ -80,7 +82,8 @@ bullet::Collider::targetAdded(Node::Ptr target)
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3
-        ));
+        )
+    );
 
     _removedSlot = target->removed().connect(std::bind(
         &bullet::Collider::removedHandler,
@@ -88,14 +91,17 @@ bullet::Collider::targetAdded(Node::Ptr target)
         std::placeholders::_1,
         std::placeholders::_2,
         std::placeholders::_3
-        ));
+        )
+    );
+
+    addedHandler(target, target->root(), target->parent());
 }
 
 void
 bullet::Collider::targetRemoved(Node::Ptr target)
 {
     if (_physicsWorld != nullptr)
-        _physicsWorld->removeChild(std::static_pointer_cast<Collider>(shared_from_this()));
+        _physicsWorld->removeCollider(std::static_pointer_cast<Collider>(shared_from_this()));
 
     _physicsWorld = nullptr;
     _graphicsTransform = nullptr;
@@ -107,9 +113,20 @@ bullet::Collider::targetRemoved(Node::Ptr target)
 void
 bullet::Collider::addedHandler(Node::Ptr node, Node::Ptr target, Node::Ptr ancestor)
 {
-    initializeFromNode(node);
+    if (target->root()->hasComponent<SceneManager>())
+    {
+        auto sceneManager = target->root()->component<SceneManager>();
 
-    assert(_graphicsTransform);
+        _frameBeginSlot = sceneManager->frameBegin()->connect([=](std::shared_ptr<SceneManager>, float, float)
+        {
+            _frameBeginSlot = nullptr;
+
+            initializeFromNode(node);
+
+            assert(_graphicsTransform);
+        });
+    }
+
 }
 
 void
@@ -118,8 +135,8 @@ bullet::Collider::removedHandler(Node::Ptr, Node::Ptr, Node::Ptr)
     //if (_physicsWorld != nullptr)
     //    _physicsWorld->removeChild(std::static_pointer_cast<Collider>(shared_from_this()));
 
-    //_physicsWorld        = nullptr;
-    //_graphicsTransform    = nullptr;
+    //_physicsWorld = nullptr;
+    //_graphicsTransform = nullptr;
 }
 
 void
@@ -128,7 +145,8 @@ bullet::Collider::initializeFromNode(Node::Ptr node)
     if (_graphicsTransform != nullptr && _physicsWorld != nullptr)
         return;
 
-    _physicsTransform = math::mat4(); // Matrix automatically updated by physicsWorldTransformChangedHandler
+    // This matrix is automatically updated by physicsWorldTransformChangedHandler
+    _physicsTransform = math::mat4(); 
 
     // Get existing transform component or create one if necessary
     if (!node->hasComponent<Transform>())
@@ -136,7 +154,10 @@ bullet::Collider::initializeFromNode(Node::Ptr node)
 
     _graphicsTransform = node->component<Transform>();
 
-    if (fabsf(math::determinant(_graphicsTransform->modelToWorldMatrix(true))) < 1e-4f)
+    // The target has just been added to another node, we need to update the modelToWorldMatrix
+    auto modelToWorldMatrix = _graphicsTransform->modelToWorldMatrix(true);
+
+    if (fabsf(math::determinant(modelToWorldMatrix)) < 1e-4f)
         throw std::logic_error("The node's model-to-world matrix cannot be inverted.");
 
     // Identify physics world
@@ -152,7 +173,7 @@ bullet::Collider::initializeFromNode(Node::Ptr node)
         : withPhysicsWorld->nodes().front()->component<bullet::PhysicsWorld>();
 
     if (_physicsWorld)
-        _physicsWorld->addChild(std::static_pointer_cast<Collider>(shared_from_this()));
+        _physicsWorld->addCollider(std::static_pointer_cast<Collider>(shared_from_this()));
 
     synchronizePhysicsWithGraphics();
 }
@@ -168,12 +189,8 @@ bullet::Collider::synchronizePhysicsWithGraphics(bool forceTransformUpdate)
     static auto centerOfMassOffset = math::mat4();
     static auto physicsTransform = math::mat4();
 
-    // remove the scaling/shear from the graphics transform, but record it to restitute it during rendering
-    math::removeScalingShear(
-        graphicsTransform,
-        graphicsNoScale,
-        _correction
-    );
+    // Remove the scale from the graphics transform, but record it to restitute it during rendering
+    graphicsNoScale = math::removeScalingShear(graphicsTransform, _correction);
 
     graphicsNoScaleInverse = math::inverse(graphicsNoScale);
     centerOfMassOffset = graphicsNoScale * (_colliderData->shape()->deltaTransformInverse() * graphicsNoScaleInverse);
@@ -182,11 +199,13 @@ bullet::Collider::synchronizePhysicsWithGraphics(bool forceTransformUpdate)
     setPhysicsTransform(physicsTransform, &_graphicsTransform->matrix());
 
     if (_physicsWorld)
+    {
         _physicsWorld->updateRigidBodyState(
             std::static_pointer_cast<Collider>(shared_from_this()),
             graphicsNoScale,
             centerOfMassOffset
         );
+    }
 }
 
 bullet::Collider::Ptr
@@ -200,17 +219,17 @@ bullet::Collider::setPhysicsTransform(const math::mat4& physicsTransform,
     _physicsTransform = physicsTransform;
 
     if (graphicsModelToParent)
+    {
         _graphicsTransform->matrix(*graphicsModelToParent);
+    }
     else
     {
         // Recompute graphics transform from the physics transform
-
         // Update the graphics local transform
-        static auto worldToParent    = math::mat4();
+        static auto worldToParent = math::mat4();
 
         worldToParent = _graphicsTransform->matrix() * math::inverse(_graphicsTransform->modelToWorldMatrix(forceTransformUpdate));
-
-        _graphicsTransform->matrix(worldToParent * (physicsTransform * (_colliderData->shape()->deltaTransformInverse() * _correction)));
+        _graphicsTransform->matrix(worldToParent * (_physicsTransform * (_colliderData->shape()->deltaTransformInverse() * _correction)));
     }
 
     // Fire update signals
