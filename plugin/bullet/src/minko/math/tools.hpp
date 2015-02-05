@@ -32,7 +32,11 @@ namespace minko
 
         inline
         math::mat4
-        removeScalingShear(const math::mat4& input, const math::mat4& output, const minko::math::mat4& correction);
+        removeScalingShear(const math::mat4& input, minko::math::mat4& correction);
+
+        inline
+        std::pair<math::mat4, math::mat4>
+        decomposeQR(const minko::math::mat4& matA);
 
         inline
         math::mat4
@@ -61,31 +65,103 @@ minko::math::convert(const math::vec3& value)
 
 inline
 minko::math::mat4
-minko::math::removeScalingShear(const minko::math::mat4& input,
-                                const minko::math::mat4& output,
-                                const minko::math::mat4& correction)
+minko::math::removeScalingShear(const minko::math::mat4& input, minko::math::mat4& correction)
 {
     static auto matrix = math::mat4();
 
-    // Beta 2 implementation
-    /* 
-    // remove translational component, then perform QR decomposition
-    auto translation = input->translation();
-    matrix
-        ->copyFrom(input)
-        ->appendTranslation(-(*translation))
-        ->decomposeQR(output, correction);
-
-    return output->appendTranslation(translation);
-    */
-
-    // Beta 3 equivalent
     auto translation = input[3];
-    matrix = math::translate(math::vec3(-translation)) * input;
-    // TODO
-    //->decomposeQR(output, correction);
+    matrix = math::translate(math::vec3(-translation)) * input; // Remove translation
 
-    return matrix;
+    auto qr = math::decomposeQR(matrix);
+    auto output = qr.first;
+    correction = qr.second;
+
+    return math::translate(math::vec3(translation)) * output;
+}
+
+inline
+std::pair<minko::math::mat4, minko::math::mat4>
+minko::math::decomposeQR(const minko::math::mat4& matA)
+{
+    auto jColumn = math::vec4();
+    auto accProj = math::vec4();
+
+    auto projVec = std::vector<double>(16, 0.f);
+    auto rValues = std::vector<double>(16, 0.f);
+
+    for (unsigned int j = 0; j < 4; ++j)
+    {
+        // jth column
+        jColumn = matA[j];
+        accProj = { 0.f, 0.f, 0.f, 0.f };
+
+        for (unsigned int i = 0; i < j; ++i)
+        {
+            const double dot =
+                projVec[4 * i] * jColumn[0] +
+                projVec[4 * i + 1] * jColumn[1] +
+                projVec[4 * i + 2] * jColumn[2] +
+                projVec[4 * i + 3] * jColumn[3];
+
+            for (unsigned int k = 0; k < 4; ++k)
+                accProj[k] += dot * projVec[4 * i + k];
+        }
+
+        double squaredLength = 0.0;
+        for (unsigned int k = 0; k < 4; ++k)
+        {
+            const double diff = jColumn[k] - accProj[k];
+
+            projVec[4 * j + k] = diff;
+            squaredLength += diff * diff;
+        }
+
+        const double invLength = squaredLength > 1e-6 ? 1.f / math::sqrt(squaredLength) : 0.f;
+
+        for (unsigned int k = 0; k < 4; ++k)
+            projVec[4 * j + k] *= invLength;
+
+        for (unsigned int i = 0; i <= j; ++i)
+        {
+            const double dot =
+                projVec[4 * i] * jColumn[0] +
+                projVec[4 * i + 1] * jColumn[1] +
+                projVec[4 * i + 2] * jColumn[2] +
+                projVec[4 * i + 3] * jColumn[3];
+
+            rValues[j + 4 * i] = dot;
+        }
+    }
+
+    auto matQ = math::mat4(
+        projVec[0], projVec[1], projVec[2], projVec[3],
+        projVec[4], projVec[5], projVec[6], projVec[7],
+        projVec[8], projVec[9], projVec[10], projVec[11],
+        projVec[12], projVec[13], projVec[14], projVec[15]
+    );
+
+    auto matR = math::mat4(
+        rValues[0], rValues[4], rValues[8], rValues[12],
+        rValues[1], rValues[5], rValues[9], rValues[13],
+        rValues[2], rValues[6], rValues[10], rValues[14],
+        rValues[3], rValues[7], rValues[11], rValues[15]
+    );
+
+    if (math::determinant(math::mat3(matQ)) < 0.f)
+    {
+        // Important: account for possible reflection in the Q orthogonal matrix
+        matQ[0][0] *= -1.f;
+        matQ[0][1] *= -1.f;
+        matQ[0][2] *= -1.f;
+        matQ[0][3] *= -1.f;
+
+        matR[0][0] *= -1.f;
+        matR[1][0] *= -1.f;
+        matR[2][0] *= -1.f;
+        matR[3][0] *= -1.f;
+    }
+
+    return std::make_pair(matQ, matR);
 }
 
 
@@ -97,10 +173,10 @@ minko::math::fromBulletTransform(const btTransform& transform)
     auto translation = transform.getOrigin();
 
     return minko::math::mat4(
-        basis[0][0], basis[0][1], basis[0][2], translation[0],
-        basis[1][0], basis[1][1], basis[1][2], translation[1],
-        basis[2][0], basis[2][1], basis[2][2], translation[2],
-        0.0f, 0.0f, 0.0f, 1.0f
+        basis[0][0], basis[1][0], basis[2][0], 0.f,
+        basis[0][1], basis[1][1], basis[2][1], 0.f,
+        basis[0][2], basis[1][2], basis[2][2], 0.f,
+        translation[0], translation[1], translation[2], 1.f
     );
 }
 
