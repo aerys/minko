@@ -93,6 +93,7 @@ namespace minko
 			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot					    _componentRemovedSlot;
 			Signal<SceneManagerPtr, uint, AbsTexturePtr>::Slot			    _renderingBeginSlot;
             SurfaceSlotMap                                                  _surfaceChangedSlots;
+            Signal<Store&, ProviderPtr, const std::string&>::Slot           _worldToScreenMatrixPropertyChangedSlot;
 
 			render::DrawCallPool								            _drawCallPool;
             std::unordered_map<SurfacePtr, DrawCallIteratorPair>            _surfaceToDrawCallIterator;

@@ -1,4 +1,4 @@
-/*,
+/*
 Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -31,7 +31,6 @@ DrawCallPool::DrawCallPool() :
     _macroChangedSlot(),
     _propChangedSlot()
 {
-
 }
 
 DrawCallPool::DrawCallIteratorPair
@@ -162,6 +161,7 @@ void
 DrawCallPool::removeMacroCallback(const MacroBindingKey& key)
 {
     _macroChangedSlot[key].second--;
+
     if (_macroChangedSlot[key].second == 0)
         _macroChangedSlot.erase(key);
 }
@@ -279,7 +279,9 @@ DrawCallPool::initializeDrawCall(DrawCall& drawCall, bool forceRebind)
     }
 
     bindDrawCall(drawCall, pass, program, forceRebind);
+
     if (programAndSignature.second != nullptr)
+    {
         watchProgramSignature(
             drawCall,
             drawCall.pass()->macroBindings(),
@@ -287,6 +289,7 @@ DrawCallPool::initializeDrawCall(DrawCall& drawCall, bool forceRebind)
             drawCall.rendererData(),
             drawCall.targetData()
         );
+    }
 }
 
 void
@@ -373,11 +376,15 @@ DrawCallPool::update()
 {
     for (auto* drawCallPtr : _invalidDrawCalls)
         initializeDrawCall(*drawCallPtr, true);
+
     _invalidDrawCalls.clear();
 
     for (auto drawCallPtrAndFuncList : _drawCallToPropRebindFuncs)
+    {
         for (auto& func : drawCallPtrAndFuncList.second)
             func();
+    }
+
     _drawCallToPropRebindFuncs.clear();
 }
 
@@ -455,11 +462,14 @@ DrawCallPool::bindDrawCall(DrawCall& drawCall, Pass::Ptr pass, Program::Ptr prog
     // FIXME: like for uniforms, watch and swap default values / binding value
     for (const auto& input : program->inputs().attributes())
         drawCall.bindAttribute(input, pass->attributeBindings().bindings, pass->attributeBindings().defaultValues);
+
     // bind uniforms
     for (const auto& input : program->inputs().uniforms())
         uniformBindingPropertyAddedHandler(drawCall, input, pass->uniformBindings(), forceRebind);
+
     // bind states
     drawCall.bindStates(pass->stateBindings().bindings, pass->stateBindings().defaultValues);
+
     // bind index buffer
     if (!pass->isPostProcessing())
         drawCall.bindIndexBuffer();
@@ -470,8 +480,10 @@ DrawCallPool::unbindDrawCall(DrawCall& drawCall)
 {
     std::list<PropertyChangedSlotMap::key_type> toRemove;
     for (auto& bindingDrawCallPairAndSlot : _propChangedSlot)
+    {
         if (bindingDrawCallPairAndSlot.first.second == &drawCall)
             toRemove.push_front(bindingDrawCallPairAndSlot.first);
+    }
 
     for (const auto& key : toRemove)
         _propChangedSlot.erase(key);

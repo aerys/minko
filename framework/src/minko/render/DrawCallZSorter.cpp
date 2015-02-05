@@ -40,7 +40,6 @@ DrawCallZSorter::initializeRawProperties()
     props["material[${materialUuid}].zSorted"] = data::Binding::Source::TARGET;
     props["geometry[${geometryUuid}].position"] = data::Binding::Source::TARGET;
     props["modelToWorldMatrix"] = data::Binding::Source::TARGET;
-    props["worldToScreenMatrix"] = data::Binding::Source::RENDERER;
 
     return props;
 }
@@ -65,6 +64,10 @@ DrawCallZSorter::initialize(data::Store& targetData,
 {
     if (targetData.hasProperty("centerPosition"))
         _centerPosition = targetData.get<math::vec3>("centerPosition");
+    if (targetData.hasProperty("modelToWorldMatrix"))
+        _modelToWorldMatrix = targetData.getPointer<math::mat4>("modelToWorldMatrix");
+    if (rendererData.hasProperty("worldToScreenMatrix"))
+        _worldToScreenMatrix = rendererData.getPointer<math::mat4>("worldToScreenMatrix");
 
     clear();
 
@@ -138,9 +141,9 @@ DrawCallZSorter::propertyAddedHandler(data::Store& store,
     if (!store.hasProperty(propertyName))
         return;
 
-    if (propertyName == "modelToWorldMatrix" && store.hasProperty("modelToWorldMatrix"))
+    if (_modelToWorldMatrix == nullptr && propertyName == "modelToWorldMatrix" && store.hasProperty("modelToWorldMatrix"))
         _modelToWorldMatrix = store.getPointer<math::mat4>("modelToWorldMatrix");
-    else if (propertyName == "worldToScreenMatrix" && store.hasProperty("worldToScreenMatrix"))
+    else if (_worldToScreenMatrix == nullptr && propertyName == "worldToScreenMatrix" && store.hasProperty("worldToScreenMatrix"))
         _worldToScreenMatrix = store.getPointer<math::mat4>("worldToScreenMatrix");
 
     if (_propertyChangedSlots.find(propertyName) == _propertyChangedSlots.end())

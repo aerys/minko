@@ -28,6 +28,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/AbstractTexture.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/component/SceneManager.hpp"
+#include "minko/component/PerspectiveCamera.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/render/DrawCallPool.hpp"
 #include "minko/data/AbstractFilter.hpp"
@@ -287,12 +288,22 @@ Renderer::componentAddedHandler(std::shared_ptr<Node>				node,
 								std::shared_ptr<AbstractComponent>	ctrl)
 {
 	auto surfaceCtrl = std::dynamic_pointer_cast<Surface>(ctrl);
-	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
+    auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
+    auto perspectiveCamera = std::dynamic_pointer_cast<PerspectiveCamera>(ctrl);
 
 	if (surfaceCtrl)
         _toCollect.insert(surfaceCtrl);
 	else if (sceneManager)
 		setSceneManager(sceneManager);
+    else if (perspectiveCamera)
+    {
+        _worldToScreenMatrixPropertyChangedSlot = perspectiveCamera->target()->data().propertyChanged("worldToScreenMatrix").connect(
+            [&](data::Store&, data::Provider::Ptr, const std::string&)
+            {
+                _mustZSort = true;
+            }
+        );
+    }
 }
 
 void

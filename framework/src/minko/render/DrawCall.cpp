@@ -28,8 +28,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::render;
 
-const unsigned int	DrawCall::MAX_NUM_TEXTURES		            = 8;
-const unsigned int	DrawCall::MAX_NUM_VERTEXBUFFERS	            = 8;
+const unsigned int DrawCall::MAX_NUM_TEXTURES       = 8;
+const unsigned int DrawCall::MAX_NUM_VERTEXBUFFERS  = 8;
 
 DrawCall::DrawCall(std::shared_ptr<Pass>  pass,
                    const StringMap&       variables,
