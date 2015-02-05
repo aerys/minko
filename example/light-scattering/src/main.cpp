@@ -68,7 +68,7 @@ int main(int argc, char** argv)
     // standard
     auto renderer = Renderer::create();
     renderer->layoutMask(renderer->layoutMask() & ~scene::BuiltinLayout::DEBUG_ONLY);
-    renderer->backgroundColor(0xff0000ff);
+    renderer->backgroundColor(0x23097aff);
 
     // forward
     auto fwdTarget = render::Texture::create(context, math::clp2(canvas->width()), math::clp2(canvas->height()), false, true);

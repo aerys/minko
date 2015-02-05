@@ -46,7 +46,7 @@
                         const float exposure = 0.2;
                         const float density = 0.926;
 
-                        const int NUM_SAMPLES = 64;
+                        const int NUM_SAMPLES = 128;
 
                         varying vec2 vVertexUV;
 
