@@ -116,8 +116,7 @@ PhysicsExtension::deserializePhysics(file::SceneVersion                     scen
 
     const short filterGroup = short(dst.a6 & ((1<<16) - 1)); // overriden by node's layouts
     
-    // TODO: Physics -> uncomment after Layout fix merge
-    //const auto filterMask = Layouts(dst.a7);
+    const auto filterMask = scene::Layout(dst.a7);
 
     auto data = component::bullet::ColliderData::create(
         mass,
@@ -130,8 +129,7 @@ PhysicsExtension::deserializePhysics(file::SceneVersion                     scen
         //->collisionGroup(filterGroup) // information stored in node layouts
         ->triggerCollisions(dst.a7 != 0);
 
-    // TODO: Physics -> uncomment after Layout fix merge
-    //collider->layoutMask(filterMask);
+    collider->layoutMask(filterMask);
 
     return collider;
 }
