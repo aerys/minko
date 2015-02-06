@@ -134,7 +134,7 @@ namespace minko
             }
 
             void
-            write(std::string&                          filename,
+            write(const std::string&                    filename,
                   std::shared_ptr<AssetLibrary>         assetLibrary,
                   std::shared_ptr<Options>              options,
                   std::shared_ptr<WriterOptions>        writerOptions)
@@ -144,139 +144,51 @@ namespace minko
                     assetLibrary,
                     options,
                     writerOptions,
-                    nullptr,
-                    SerializedDependency()
+                    nullptr
                 );
             }
 
             void
-            write(std::string&                          filename,
+            write(const std::string&                    filename,
                   std::shared_ptr<AssetLibrary>         assetLibrary,
                   std::shared_ptr<Options>              options,
                   std::shared_ptr<WriterOptions>        writerOptions,
                   Dependency::Ptr                       dependency)
             {
+                auto embeddedHeaderData = std::vector<unsigned char>();
+
                 write(
                     filename,
                     assetLibrary,
                     options,
                     writerOptions,
                     dependency,
-                    SerializedDependency()
+                    {},
+                    embeddedHeaderData
                 );
             }
 
             void
-            write(std::string&                          filename,
+            write(const std::string&                    filename,
                   std::shared_ptr<AssetLibrary>         assetLibrary,
                   std::shared_ptr<Options>              options,
                   std::shared_ptr<WriterOptions>        writerOptions,
                   Dependency::Ptr                       dependency,
-                  const SerializedDependency&	        userDefinedDependency)
+                  const SerializedDependency&	        userDefinedDependency,
+                  std::vector<unsigned char>&           embeddedHeaderData)
             {
-                preprocess(data(), assetLibrary);
+                std::ofstream file(filename, std::ios::out | std::ios::binary | std::ios::trunc);
 
-                auto localDependency = Dependency::Ptr();
-                auto globalDependency = Dependency::Ptr();
-
-                if (dependency == nullptr)
-                {
-                    globalDependency = Dependency::create();
-                    localDependency = globalDependency;
-                }
-                else
-                {
-                    globalDependency = dependency;
-                    localDependency = Dependency::create();
-                }
-
-                try
-                {
-                    std::ofstream file(filename, std::ios::out | std::ios::binary | std::ios::trunc);
-
-                    if (file)
-                    {
-                        const auto serializedData = embed(
-                            assetLibrary,
-                            options,
-                            globalDependency,
-                            writerOptions
-                        );
-
-                        auto internalLinkedAssets = std::vector<std::vector<unsigned char>>();
-                        auto serializedDependency = localDependency->serialize(
-                            filename,
-                            assetLibrary,
-                            options,
-                            writerOptions,
-                            internalLinkedAssets
-                        );
-
-                        if (userDefinedDependency.size() > 0)
-                            serializedDependency.insert(
-                                serializedDependency.begin(),
-                                userDefinedDependency.begin(),
-                                userDefinedDependency.end()
-                            );
-
-                        std::vector<std::string> serializedDependencyBufs;
-
-                        unsigned int dependencySize = 2;
-
-                        for (auto serializedDependency : serializedDependency)
-                        {
-                            dependencySize += 4;
-
-                            std::stringstream sbuf;
-                            msgpack::pack(sbuf, serializedDependency);
-
-                            serializedDependencyBufs.push_back(sbuf.str());
-
-                            dependencySize += sbuf.str().size();
-                        }
-
-                        msgpack::type::tuple<SerializedDependency> res(serializedDependency);
-
-                        auto dataSize = serializedData.size();
-
-                        char* header = getHeader(dependencySize, dataSize);
-
-                        auto headerSize = MINKO_SCENE_HEADER_SIZE;
-
-                        file.write(header, headerSize);
-
-                        writeShort(file, serializedDependencyBufs.size());
-
-                        for (auto& dependencyBuffer : serializedDependencyBufs)
-                        {
-                            writeInt(file, dependencyBuffer.size());
-                            file.write(dependencyBuffer.c_str(), dependencyBuffer.size());
-
-                            dependencyBuffer.clear();
-                        }
-
-                        file.write(serializedData.c_str(), serializedData.size());
-
-                        for (const auto& internalLinkedAsset : internalLinkedAssets)
-                        {
-                            file.write(
-                                reinterpret_cast<const char*>(internalLinkedAsset.data()),
-                                internalLinkedAsset.size()
-                            );
-                        }
-
-                        file.close();
-                    }
-                    else
-                        std::cerr << "File " << filename << " can't be opened" << std::endl;
-                }
-                catch (const WriterError& exception)
-                {
-                    if (error()->numCallbacks() > 0)
-                        error()->execute(this->shared_from_this(), exception);
-                    else
-                        throw exception;
-                }
+                doWrite(
+                    filename,
+                    assetLibrary,
+                    options,
+                    writerOptions,
+                    dependency,
+                    userDefinedDependency,
+                    embeddedHeaderData,
+                    file
+                );
 
                 complete()->execute(this->shared_from_this());
             }
@@ -317,7 +229,7 @@ namespace minko
 			}
 
 			void
-			writeInt(std::ofstream& file, int i)
+			writeInt(std::ostream& file, int i)
 			{
 				char data[4];
 
@@ -330,7 +242,7 @@ namespace minko
 			}
 
 			void
-			writeShort(std::ofstream& file, int s)
+			writeShort(std::ostream& file, int s)
 			{
 				char data[2];
 
@@ -372,6 +284,61 @@ namespace minko
                      Dependency::Ptr                dependency,
                      const SerializedDependency&	userDefinedDependency)
             {
+                auto data = std::stringstream();
+
+                auto embeddedHeaderdata = std::vector<unsigned char>();
+
+                doWrite(
+                    {},
+                    assetLibrary,
+                    options,
+                    writerOptions,
+                    dependency,
+                    userDefinedDependency,
+                    embeddedHeaderdata,
+                    data
+                );
+
+                complete()->execute(this->shared_from_this());
+
+                return data.str();
+            }
+
+			virtual
+			std::string
+			embed(std::shared_ptr<AssetLibrary>		assetLibrary,
+				  std::shared_ptr<Options>			options,
+                  Dependency::Ptr                   dependency,
+                  std::shared_ptr<WriterOptions>    writerOptions,
+                  std::vector<unsigned char>&       embededHeaderData) = 0;
+
+		protected:
+			AbstractWriter() :
+				_complete(Signal<Ptr>::create()),
+                _error(Signal<Ptr, const WriterError&>::create())
+            {
+            }
+
+        private:
+            inline
+            void
+            preprocess(T& data, std::shared_ptr<file::AssetLibrary> assetLibrary)
+            {
+                for (auto preprocessor : _preprocessors)
+                    preprocessor->process(data, assetLibrary);
+            }
+
+            inline
+            void
+            doWrite(const std::string&                    filename,
+                    std::shared_ptr<AssetLibrary>         assetLibrary,
+                    std::shared_ptr<Options>              options,
+                    std::shared_ptr<WriterOptions>        writerOptions,
+                    Dependency::Ptr                       dependency,
+                    const SerializedDependency&	          userDefinedDependency,
+                    std::vector<unsigned char>&           embeddedHeaderData,
+                    std::ostream&                         result)
+            {
                 preprocess(data(), assetLibrary);
 
                 auto localDependency = Dependency::Ptr();
@@ -390,16 +357,17 @@ namespace minko
 
                 try
                 {
-                    auto serializedData = embed(
+                    const auto serializedData = embed(
                         assetLibrary,
                         options,
                         globalDependency,
-                        writerOptions
+                        writerOptions,
+                        embeddedHeaderData
                     );
 
                     auto internalLinkedAssets = std::vector<std::vector<unsigned char>>();
                     auto serializedDependency = localDependency->serialize(
-                        "",
+                        filename,
                         assetLibrary,
                         options,
                         writerOptions,
@@ -407,46 +375,67 @@ namespace minko
                     );
 
                     if (userDefinedDependency.size() > 0)
+                    {
                         serializedDependency.insert(
                             serializedDependency.begin(),
                             userDefinedDependency.begin(),
                             userDefinedDependency.end()
                         );
+                    }
+
+                    std::vector<std::string> serializedDependencyBufs;
+
+                    unsigned int dependencySize = 2;
+
+                    for (auto serializedDependency : serializedDependency)
+                    {
+                        dependencySize += 4;
+
+                        std::stringstream sbuf;
+                        msgpack::pack(sbuf, serializedDependency);
+
+                        serializedDependencyBufs.push_back(sbuf.str());
+
+                        dependencySize += sbuf.str().size();
+                    }
 
                     msgpack::type::tuple<SerializedDependency> res(serializedDependency);
 
-                    std::stringstream data;
+                    auto dataSize = serializedData.size();
 
-                    std::stringstream sbuf;
-                    msgpack::pack(sbuf, res);
-
-                    auto dependencySize = sbuf.str().size();
-                    auto sceneDataSize = serializedData.size();
-                    auto header = getHeader(dependencySize, sceneDataSize);
+                    char* header = getHeader(dependencySize, dataSize);
 
                     auto headerSize = MINKO_SCENE_HEADER_SIZE;
 
-                    data.write(header, headerSize);
-                    data.write(sbuf.str().c_str(), dependencySize);
-                    data.write(serializedData.c_str(), sceneDataSize);
-                    
+                    embeddedHeaderData.insert(embeddedHeaderData.begin(), header, header + headerSize);
+
+                    const auto numDependencies = short(serializedDependencyBufs.size());
+
+                    embeddedHeaderData.push_back((numDependencies & 0xff00) >> 8);
+                    embeddedHeaderData.push_back((numDependencies & 0x00ff));
+
+                    result.write(
+                        reinterpret_cast<const char*>(embeddedHeaderData.data()),
+                        embeddedHeaderData.size()
+                    );
+
+                    for (auto& dependencyBuffer : serializedDependencyBufs)
+                    {
+                        writeInt(result, dependencyBuffer.size());
+                        result.write(dependencyBuffer.c_str(), dependencyBuffer.size());
+
+                        dependencyBuffer.clear();
+                    }
+
+                    result.write(serializedData.c_str(), serializedData.size());
+
                     for (const auto& internalLinkedAsset : internalLinkedAssets)
                     {
-                        data.write(
+                        result.write(
                             reinterpret_cast<const char*>(internalLinkedAsset.data()),
                             internalLinkedAsset.size()
                         );
                     }
-
-                    complete()->execute(this->shared_from_this());
-
-                    sbuf.clear();
-                    serializedData.clear();
-                    serializedData.shrink_to_fit();
-                    free(header);
-
-                    return data.str();
-
                 }
                 catch (const WriterError& exception)
                 {
@@ -455,31 +444,6 @@ namespace minko
                     else
                         throw exception;
                 }
-
-                return std::string();
-            }
-
-			virtual
-			std::string
-			embed(std::shared_ptr<AssetLibrary>		assetLibrary,
-				  std::shared_ptr<Options>			options,
-                  Dependency::Ptr                   dependency,
-                  std::shared_ptr<WriterOptions>    writerOptions) = 0;
-
-		protected:
-			AbstractWriter() :
-				_complete(Signal<Ptr>::create()),
-                _error(Signal<Ptr, const WriterError&>::create())
-            {
-            }
-
-        private:
-            inline
-            void
-            preprocess(T& data, std::shared_ptr<file::AssetLibrary> assetLibrary)
-            {
-                for (auto preprocessor : _preprocessors)
-                    preprocessor->process(data, assetLibrary);
             }
         };
     }

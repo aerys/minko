@@ -67,10 +67,11 @@ TextureWriter::TextureWriter() :
 }
 
 std::string
-TextureWriter::embed(AssetLibraryPtr     assetLibrary,
-                     OptionsPtr          options,
-                     Dependency::Ptr     dependency,
-                     WriterOptionsPtr    writerOptions)
+TextureWriter::embed(AssetLibraryPtr               assetLibrary,
+                     OptionsPtr                    options,
+                     DependencyPtr                 dependency,
+                     WriterOptionsPtr              writerOptions,
+                     std::vector<unsigned char>&   embeddedHeaderData)
 {
     auto texture = _data;
 

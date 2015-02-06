@@ -87,6 +87,10 @@ namespace minko
             std::string
             removePrefixPathFromFilename(const std::string& filename);
 
+            static
+            std::string
+            replaceExtension(const std::string& filename, const std::string& extension);
+
         private:
             File() = default;
         };

@@ -309,7 +309,8 @@ Dependency::serializeGeometry(std::shared_ptr<Dependency>				dependency,
 
         auto completeFilename = writerOptions->outputAssetUriFunction()(filename);
 
-		geometryWriter->write(completeFilename, assetLibrary, options, writerOptions, dependency, userDefinedDependency);
+        auto embeddedHeaderData = std::vector<unsigned char>();
+		geometryWriter->write(completeFilename, assetLibrary, options, writerOptions, dependency, userDefinedDependency, embeddedHeaderData);
 
         content = filename;
     }
@@ -526,7 +527,13 @@ Dependency::serialize(const std::string&                        parentFilename,
         }
 
         case LinkedAsset::LinkType::External:
+        {
+            const auto validFilename = File::removePrefixPathFromFilename(linkedAssetData.a2);
+
+            linkedAssetData.a2 = validFilename;
+
             break;
+        }
 
         default:
             break;

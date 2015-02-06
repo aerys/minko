@@ -69,10 +69,11 @@ namespace minko
             }
 
             std::string
-            embed(AssetLibraryPtr   assetLibrary,
-                  OptionsPtr        options,
-                  DependencyPtr     dependency,
-                  WriterOptionsPtr  writerOptions);
+            embed(AssetLibraryPtr               assetLibrary,
+                  OptionsPtr                    options,
+                  DependencyPtr                 dependency,
+                  WriterOptionsPtr              writerOptions,
+                  std::vector<unsigned char>&   embeddedHeaderData);
 
         protected:
             TextureWriter();

@@ -62,7 +62,8 @@ namespace minko
 			embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 				  std::shared_ptr<Options>			options,
 				  Dependency::Ptr					dependency,
-                  std::shared_ptr<WriterOptions>    writerOptions);
+                  std::shared_ptr<WriterOptions>    writerOptions,
+                  std::vector<unsigned char>&       embeddedHeaderData);
 
 		private:
 			MaterialWriter();

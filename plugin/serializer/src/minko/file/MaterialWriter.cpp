@@ -44,7 +44,8 @@ std::string
 MaterialWriter::embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 					  std::shared_ptr<Options>			options,
 					  Dependency::Ptr					dependency,
-                      std::shared_ptr<WriterOptions>    writerOptions)
+                      std::shared_ptr<WriterOptions>    writerOptions,
+                      std::vector<unsigned char>&       embeddedHeaderData)
 {
 	material::Material::Ptr				material = std::dynamic_pointer_cast<material::Material>(data());
 	std::vector<ComplexPropertyTuple>	serializedComplexProperties;

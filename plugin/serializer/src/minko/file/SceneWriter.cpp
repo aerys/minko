@@ -132,7 +132,8 @@ std::string
 SceneWriter::embed(AssetLibraryPtr                      assetLibrary,
                    OptionsPtr                           options,
                    DependencyPtr                        dependency,
-                   std::shared_ptr<WriterOptions>       writerOptions)
+                   std::shared_ptr<WriterOptions>       writerOptions,
+                   std::vector<unsigned char>&          embeddedHeaderData)
 {
 	std::stringstream								sbuf;
 	std::queue<std::shared_ptr<scene::Node>>		queue;
