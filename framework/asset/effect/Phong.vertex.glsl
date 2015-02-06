@@ -19,6 +19,7 @@ attribute 	vec4	aBoneIdsA;
 attribute 	vec4	aBoneIdsB;
 attribute 	vec4	aBoneWeightsA;
 attribute 	vec4	aBoneWeightsB;
+attribute	vec4	aColor;
 
 #ifdef SKINNING_NUM_BONES
 uniform 	mat4	uBoneMatrices[SKINNING_NUM_BONES];
@@ -40,12 +41,17 @@ varying 	vec4 	vertexScreenPosition;
 varying 	vec2 	vertexUV;
 varying 	vec3 	vertexNormal;
 varying 	vec3 	vertexTangent;
+varying		vec4	vertexColor;
 
 void main(void)
 {
 	#if defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP
 		vertexUV = uUVScale * aUV + uUVOffset;
 	#endif // defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP
+
+	#if defined VERTEX_COLOR
+		vertexColor = aColor;
+	#endif // VERTEX_COLOR
 
 	vec4 worldPosition = vec4(aPosition, 1.0);
 
