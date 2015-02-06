@@ -119,8 +119,15 @@ namespace minko
 			TextureSampler*						_target;
             /*SamplerStates               		_samplerStates;*/
 
-            std::shared_ptr<DrawCallZSorter>    _zSorter;
-            Signal<DrawCall*>::Ptr              _zSortNeeded;
+            // Positional members
+            math::vec3                          _centerPosition;
+            const math::mat4*                   _modelToWorldMatrix;
+            const math::mat4*                   _worldToScreenMatrix;
+
+            ChangedSlot                         _modelToWorldMatrixPropertyAddedSlot;
+            ChangedSlot                         _worldToScreenMatrixPropertyAddedSlot;
+            ChangedSlot                         _modelToWorldMatrixPropertyRemovedSlot;
+            ChangedSlot                         _worldToScreenMatrixPropertyRemovedSlot;
 
 		public:
             DrawCall(std::shared_ptr<Pass>  pass,
@@ -205,13 +212,7 @@ namespace minko
             {
                 return _samplers;
             }
-
-            std::shared_ptr<DrawCallZSorter>
-            zSorter() const
-            {
-                return _zSorter;
-            }
-
+            
             inline
             float
             priority() const
@@ -228,14 +229,7 @@ namespace minko
                 else
                     return false;
             }
-
-            inline
-            Signal<DrawCall*>::Ptr
-            zSortNeeded() const
-            {
-                return _zSortNeeded;
-            }
-
+            
 			inline
 			const TextureSampler&
 			target()
@@ -276,6 +270,9 @@ namespace minko
 			void
             bindStates(const std::unordered_map<std::string, data::Binding>&	stateBindings,
 					   const data::Store&							            defaultValues);
+
+            void
+            bindPositionalMembers();
 
 			void
 			bindIndexBuffer();

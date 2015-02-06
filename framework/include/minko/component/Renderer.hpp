@@ -386,9 +386,6 @@ namespace minko
 											  uint							frameId,
 											  AbsTexturePtr					renderTarget);
 
-            void
-            drawCallZSortNeededHandler(render::DrawCall*);
-
 			void
 			findSceneManager();
 
