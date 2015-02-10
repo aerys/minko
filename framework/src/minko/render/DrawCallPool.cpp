@@ -75,8 +75,10 @@ DrawCallPool::addDrawCalls(Effect::Ptr        effect,
 void
 DrawCallPool::removeDrawCalls(uint batchId)
 {
-    _drawCalls.remove_if([&](DrawCall* drawCall)
+    for (auto it = _drawCalls.begin(); it != _drawCalls.end();)
     {
+        auto drawCall = *it;
+
         if (drawCall->batchId() == batchId)
         {
             unwatchProgramSignature(
@@ -90,11 +92,11 @@ DrawCallPool::removeDrawCalls(uint batchId)
 
             _invalidDrawCalls.erase(drawCall);
 
-            return true;
+            _drawCalls.erase(it++);
         }
-
-        return false;
-    });
+        else
+            ++it;        
+    }
 }
 
 void
@@ -155,7 +157,7 @@ DrawCallPool::addMacroCallback(const MacroBindingKey&   key,
                                const PropertyCallback&  callback)
 {
     if (_macroChangedSlot->count(key) == 0)
-        (*_macroChangedSlot)[key] = ChangedSlot(signal.connect(callback, 10), 1);
+        (*_macroChangedSlot)[key] = ChangedSlot(signal.connect(callback), 1);
     else
         (*_macroChangedSlot)[key].second++;
 }
@@ -249,7 +251,7 @@ DrawCallPool::unwatchProgramSignature(DrawCall&                     drawCall,
         auto propertyName = Store::getActualPropertyName(drawCall.variables(), macroBinding.propertyName);
         auto bindingKey = MacroBindingKey(propertyName, &macroBinding, &store);
         auto& drawCalls = (*_macroToDrawCalls)[bindingKey];
-
+        
         drawCalls.remove(&drawCall);
 
         if (drawCalls.size() == 0)
@@ -310,21 +312,26 @@ DrawCallPool::uniformBindingPropertyAddedHandler(DrawCall&                      
     if (resolvedBinding != nullptr)
     {
         auto& propertyName = resolvedBinding->propertyName;
+        auto bindingPtr = &resolvedBinding->binding;
         auto& signal = resolvedBinding->store.hasProperty(propertyName)
             ? resolvedBinding->store.propertyRemoved(propertyName)
             : resolvedBinding->store.propertyAdded(propertyName);
 
-        (*_propChangedSlot)[{&resolvedBinding->binding, &drawCall}] = signal.connect(
-            [&](data::Store&, data::Provider::Ptr, const data::Provider::PropertyName&)
-            {
-                (*_drawCallToPropRebindFuncs)[&drawCall].push_back(
-                    [&, forceRebind, this]()
-                    {
-                        uniformBindingPropertyAddedHandler(drawCall, input, uniformBindingMap, forceRebind);
-                    }
-                );
-            }
-        );
+        _propChangedSlot->insert(std::make_pair(
+            std::make_pair(bindingPtr, &drawCall),
+            signal.connect(
+                [&, bindingPtr](data::Store&, data::Provider::Ptr, const data::Provider::PropertyName&)
+                {
+                    _propChangedSlot->erase({ bindingPtr, &drawCall });
+                    (*_drawCallToPropRebindFuncs)[&drawCall].push_back(
+                        [&, forceRebind, this]()
+                        {
+                            uniformBindingPropertyAddedHandler(drawCall, input, uniformBindingMap, forceRebind);
+                        }
+                    );
+                }
+            )
+        ));
 
         delete resolvedBinding;
     }
@@ -439,15 +446,17 @@ DrawCallPool::bindDrawCall(DrawCall& drawCall, Pass::Ptr pass, Program::Ptr prog
 void
 DrawCallPool::unbindDrawCall(DrawCall& drawCall)
 {
-    std::list<PropertyChangedSlotMap::key_type> toRemove;
-    for (auto& bindingDrawCallPairAndSlot : *_propChangedSlot)
-        if (bindingDrawCallPairAndSlot.first.second == &drawCall)
-            toRemove.push_front(bindingDrawCallPairAndSlot.first);
-
-    for (const auto& key : toRemove)
-        _propChangedSlot->erase(key);
+    for (auto it = _propChangedSlot->begin(); it != _propChangedSlot->end();)
+    {
+        if (it->first.second == &drawCall)
+            _propChangedSlot->erase(it++);
+        else
+            ++it;
+    }
+    //_propChangedSlot->clear();
 
     _drawCallToPropRebindFuncs->erase(&drawCall);
+    //_drawCallToPropRebindFuncs->clear();
 }
 
 bool

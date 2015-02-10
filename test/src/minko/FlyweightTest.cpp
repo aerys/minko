@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Flyweight.hpp"
 
+#include "sparsehash/sparse_hash_map"
+
 using namespace minko;
 
 TEST_F(FlyweightTest, IntegerFlyweight)
@@ -44,4 +46,16 @@ TEST_F(FlyweightTest, PointerDoesNotChangeOnGrow)
         Flyweight<int> b = 23;
 
     ASSERT_EQ(*a, 42);
+}
+
+TEST_F(FlyweightTest, FlyweightMapKey)
+{
+    google::sparse_hash_map<Flyweight<std::string>, int> map;
+
+    map["foo"] = 42;
+    map["bar"] = 24;
+
+    ASSERT_EQ(map.size(), 2);
+    ASSERT_EQ(map["foo"], 42);
+    ASSERT_EQ(map["bar"], 24);
 }
