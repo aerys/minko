@@ -43,11 +43,26 @@ namespace minko
 		typedef std::shared_ptr<SignalSlot<A...>>   Slot;
 
 	private:
-        CallbackCollection _callbacks;
+        CallbackCollection  _callbacks;
 
 	public:
         Signal()
         {
+        }
+
+        Signal(Signal&& other)
+        {
+            std::move(other._callbacks.begin(), other._callbacks.end(), _callbacks.begin());
+            assert(other._callbacks.size() == 0);
+        }
+
+        Signal&
+        operator=(Signal&& other)
+        {
+            std::move(other._callbacks.begin(), other._callbacks.end(), _callbacks.begin());
+            assert(other._callbacks.size() == 0);
+
+            return *this;
         }
 
         ~Signal()
@@ -59,6 +74,7 @@ namespace minko
                 if (slot)
                     slot->_signal = nullptr;
             }
+            _callbacks.clear();
         }
 
         inline
@@ -79,7 +95,7 @@ namespace minko
 		Slot
 		connect(Callback callback, float priority = 0)
 		{
-			auto connection = std::make_shared<SignalSlot<A...>>(this);
+			auto connection = SignalSlot<A...>::create(this);
 			
             _callbacks.push_back(CallbackRecord(priority, callback, connection));
             connection->_it = std::prev(_callbacks.end());
@@ -104,8 +120,14 @@ namespace minko
 		execute(A... arguments) const
 		{
             auto callbacks = _callbacks;
-			for (auto& callback : callbacks)
-				std::get<1>(callback)(arguments...);
+            for (auto& callback : callbacks)
+                if (!std::get<2>(callback).expired())
+				    std::get<1>(callback)(arguments...);
+
+#ifdef DEBUG
+            for (auto& callback : _callbacks)
+                assert(!std::get<2>(callback).expired());
+#endif // DEBUG
 		}
 
         inline
@@ -125,15 +147,36 @@ namespace minko
 		public:
 			typedef std::shared_ptr<SignalSlot<T...>>	Ptr;
 
+        private:
+            struct ConcreteSignalSlot : public SignalSlot<T...> {
+                ConcreteSignalSlot(Signal<T...>* signal) :
+                    SignalSlot(signal)
+                {}
+            };
+
 		private:
 			Signal<T...>* 	  _signal;
             CallbackIterator  _it;
 
+        private:
+            SignalSlot(Signal<T...>* signal) :
+                _signal(signal)
+            {
+                assert(_signal != nullptr);
+            }
+
+            inline static
+            Ptr
+            create(Signal<T...>* signal)
+            {
+                return std::make_shared<ConcreteSignalSlot>(signal);
+            }
+
 		public:
-			const Signal<T...>&
+			const Signal<T...>*
 			signal()
 			{
-				return *_signal;
+				return _signal;
 			}
 
 			void
@@ -151,10 +194,6 @@ namespace minko
 				disconnect();
 			}
 
-			SignalSlot(Signal<T...>* signal) :
-				_signal(signal)
-			{
-			}
 		};
 
 	};
