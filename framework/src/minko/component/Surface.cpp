@@ -113,12 +113,24 @@ Surface::targetAdded(scene::Node::Ptr target)
 void
 Surface::targetRemoved(scene::Node::Ptr target)
 {
-    auto& targetData = target->data();
+    // Problem: if we remove the providers right away, all the other components and especially the Renderer and its
+    // DrawCallPool will be "notified" by Store::propertyAdded/Removed signals. This will trigger a lot of useless
+    // code since, as the Surface is actually being removed, all the corresponding DrawCalls will be removed from
+    // the pool anyway.
+    // Solution: we wait for the componentRemoved() signal on the target's root. That's the same signal the
+    // Renderer is listening too, but with a higher priority. Thus, when we will remove the providers the corresponding
+    // signals will be disconnected already. 
+    _bubbleUpSlot = target->root()->componentRemoved().connect([this, target](Node::Ptr n, Node::Ptr t, AbsCmpPtr c)
+    {
+        _bubbleUpSlot = nullptr;
 
-    targetData.removeProvider(_provider, SURFACE_COLLECTION_NAME);
-    targetData.removeProvider(_material->data(), MATERIAL_COLLECTION_NAME);
-    targetData.removeProvider(_geometry->data(), GEOMETRY_COLLECTION_NAME);
-    targetData.removeProvider(_effect->data(), EFFECT_COLLECTION_NAME);
+        auto& targetData = target->data();
+
+        targetData.removeProvider(_provider, SURFACE_COLLECTION_NAME);
+        targetData.removeProvider(_material->data(), MATERIAL_COLLECTION_NAME);
+        targetData.removeProvider(_geometry->data(), GEOMETRY_COLLECTION_NAME);
+        targetData.removeProvider(_effect->data(), EFFECT_COLLECTION_NAME);
+    });
 }
 
 void
