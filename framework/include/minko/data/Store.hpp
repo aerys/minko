@@ -56,7 +56,7 @@ namespace minko
             typedef Signal<Store&, ProviderPtr, const PropertyName&>	PropertyChangedSignal;
 
         private:
-            typedef map<PropertyName, PropertyChangedSignal> 			ChangedSignalMap;
+            typedef map<PropertyName, PropertyChangedSignal*> 			ChangedSignalMap;
             typedef map<ProviderPtr, ProviderChangedSignalSlotList> 	ProviderToChangedSlotListMap;
             typedef map<CollectionPtr, CollectionChangedSignalSlot> 	CollectionToChangedSlotMap;
 
@@ -178,14 +178,26 @@ namespace minko
                 return _propertyChanged;
             }
 
+            inline
             PropertyChangedSignal&
-            propertyAdded(const PropertyName& propertyName);
+            propertyAdded(const PropertyName& propertyName)
+            {
+                return getOrInsertSignal(_propertyNameToAddedSignal, propertyName);
+            }
 
+            inline
             PropertyChangedSignal&
-            propertyRemoved(const PropertyName& propertyName);
+            propertyRemoved(const PropertyName& propertyName)
+            {
+                return getOrInsertSignal(_propertyNameToRemovedSignal, propertyName);
+            }
 
+            inline
             PropertyChangedSignal&
-            propertyChanged(const PropertyName& propertyName);
+            propertyChanged(const PropertyName& propertyName)
+            {
+                return getOrInsertSignal(_propertyNameToChangedSignal, propertyName);
+            }
 
             inline
 			const std::list<ProviderPtr>&
@@ -302,6 +314,9 @@ namespace minko
 
             void
             copyFrom(const Store& store, bool deepCopy = false);
+
+            PropertyChangedSignal&
+            getOrInsertSignal(ChangedSignalMap* signals, const PropertyName& propertyName);
 
             void
             initialize();
