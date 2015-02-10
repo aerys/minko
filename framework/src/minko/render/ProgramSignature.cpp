@@ -32,7 +32,7 @@ using namespace minko::render;
 using namespace minko::data;
 
 ProgramSignature::ProgramSignature(const data::MacroBindingMap& macroBindings,
-                                   const FStringMap&            variables,
+                                   const EffectVariables&       variables,
                                    const Store&			        targetData,
                                    const Store&			        rendererData,
                                    const Store&			        rootData) :

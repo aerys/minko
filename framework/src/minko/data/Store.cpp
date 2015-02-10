@@ -566,7 +566,7 @@ Store::removeProviderFromCollection(std::shared_ptr<data::Provider> provider,
 }
 
 const std::string
-Store::getActualPropertyName(const FStringMap& vars, const FString& propertyName)
+Store::getActualPropertyName(const FStringList& vars, const FString& propertyName)
 {
     std::string s = *propertyName;
 

@@ -74,7 +74,7 @@ namespace minko
 			Ptr
 			create()
 			{
-				Ptr provider = std::shared_ptr<Provider>(new Provider());
+				Ptr provider = std::make_shared<Provider>();
 
 				return provider;
 			}
@@ -185,8 +185,8 @@ namespace minko
 
             ~Provider();
 
-		protected:
 			Provider();
+		protected:
 
         private:
             Any&

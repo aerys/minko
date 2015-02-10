@@ -79,8 +79,6 @@ namespace minko
             typedef std::shared_ptr<AbstractContext>	            AbsCtxPtr;
 			typedef std::shared_ptr<AbstractTexture>	            AbsTexturePtr;
 			typedef std::shared_ptr<Program>			            ProgramPtr;
-            typedef Flyweight<std::string>                          FString;
-            typedef std::unordered_map<FString, FString>            FStringMap;
             typedef data::Store::PropertyChangedSignal::Slot        ChangedSlot;
 
             typedef std::array<data::ResolvedBinding*, 3>           SamplerStatesResolveBindings;
@@ -91,7 +89,7 @@ namespace minko
             data::Store&                        _rootData;
             data::Store&                        _rendererData;
             data::Store&                        _targetData;
-            FStringMap                          _variables;
+            EffectVariables                		_variables;
 
 			std::shared_ptr<Program>			_program;
             int*								_indexBuffer;
@@ -128,7 +126,7 @@ namespace minko
 		public:
             DrawCall(uint					batchId,
 					 std::shared_ptr<Pass>  pass,
-                     const FStringMap&      variables,
+                     const EffectVariables& variables,
                      data::Store&           rootData,
                      data::Store&           rendererData,
                      data::Store&           targetData);
@@ -155,14 +153,14 @@ namespace minko
             }
 
             inline
-            FStringMap&
+            EffectVariables&
             variables()
             {
                 return _variables;
             }
 
             inline
-            const FStringMap&
+            const EffectVariables&
             variables() const
             {
                 return _variables;

@@ -320,14 +320,12 @@ Renderer::addSurface(Surface::Ptr surface)
 	if (!checkSurfaceLayout(surface))
 		return;
 
-    std::unordered_map<FString, FString> variables = _variables;
+    render::EffectVariables variables = _variables;
 
-    auto& c = surface->target()->data();
-
-    variables["surfaceUuid"] = surface->uuid();
-    variables["geometryUuid"] = surface->geometry()->uuid();
-    variables["materialUuid"] = surface->material()->uuid();
-    variables["effectUuid"] = _effect ? _effect->uuid() : surface->effect()->uuid();
+	variables.push_back({ "surfaceUuid", surface->uuid() });
+	variables.push_back({ "geometryUuid", surface->geometry()->uuid() });
+	variables.push_back({ "materialUuid", surface->material()->uuid() });
+	variables.push_back({ "effectUuid", _effect ? _effect->uuid() : surface->effect()->uuid() });
 
     _surfaceToDrawCallIterator[surface] = _drawCallPool.addDrawCalls(
         _effect ? _effect : surface->effect(),
@@ -379,11 +377,11 @@ Renderer::surfaceGeometryOrMaterialChangedHandler(Surface::Ptr surface)
     // we completely remove the surface and re-add it again because
     // it's way simpler than just updating what has changed.
 
-    std::unordered_map<FString, FString> variables = _variables;
-    variables["surfaceUuid"] = surface->uuid();
-    variables["geometryUuid"] = surface->geometry()->uuid();
-    variables["materialUuid"] = surface->material()->uuid();
-    variables["effectUuid"] = _effect ? _effect->uuid() : surface->effect()->uuid();
+    render::EffectVariables variables = _variables;
+    variables.push_back({ "surfaceUuid", surface->uuid() });
+	variables.push_back({ "geometryUuid", surface->geometry()->uuid() });
+	variables.push_back({ "materialUuid", surface->material()->uuid() });
+	variables.push_back({ "effectUuid", _effect ? _effect->uuid() : surface->effect()->uuid() });
 
     _drawCallPool.invalidateDrawCalls(_surfaceToDrawCallIterator[surface], variables);
     //removeSurface(surface);

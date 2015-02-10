@@ -19,7 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/hash.hpp"
+#include "minko/Hash.hpp"
 
 namespace minko
 {
@@ -111,18 +111,18 @@ namespace minko
     };
 
     template <typename T>
-    struct hash<Flyweight<T>>
+    struct Hash<Flyweight<T>>
     {
         inline
         size_t
         operator()(const Flyweight<T>& key) const
         {
-            return hash<T*>()(key.value());
+            return Hash<T*>()(key.value());
         }
     };
 
     template <typename T>
-    struct equal_to<Flyweight<T>>
+    struct EqualTo<Flyweight<T>>
     {
         inline
         bool
@@ -136,5 +136,8 @@ namespace minko
 namespace std
 {
     template <typename T>
-    struct hash<minko::Flyweight<T>> : public minko::hash<minko::Flyweight<T>> {};
+    struct hash<minko::Flyweight<T>> : public minko::Hash<minko::Flyweight<T>> {};
+
+    template <typename T>
+    struct equal_to<minko::Flyweight<T>> : public minko::EqualTo<minko::Flyweight<T>> {};
 }

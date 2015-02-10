@@ -54,10 +54,10 @@ Pass::Pass(const std::string&		name,
 }
 
 std::pair<std::shared_ptr<Program>, const ProgramSignature*>
-Pass::selectProgram(const FStringMap&   vars,
-					const Store&		targetData,
-					const Store&		rendererData,
-					const Store&		rootData)
+Pass::selectProgram(const EffectVariables&  vars,
+					const Store&			targetData,
+					const Store&			rendererData,
+					const Store&			rootData)
 {
 	Program::Ptr program = nullptr;
     ProgramSignature* signature = nullptr;

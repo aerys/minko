@@ -121,7 +121,7 @@ DirectionalLight::initializeShadowMapping()
 
 		renderer->clearBeforeRender(i == 0);
 		renderer->viewport(viewports[i]);
-		renderer->effectVariables()["lightUuid"] = data()->uuid();
+		renderer->effectVariables().push_back({ "lightUuid", data()->uuid() });
 		// renderer->effectVariables()["shadowProjectionId"] = std::to_string(i);
 		renderer->layoutMask(256);
 		target()->addComponent(renderer);

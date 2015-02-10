@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/DrawCall.hpp"
 #include "minko/data/Store.hpp"
 #include "minko/Flyweight.hpp"
-#include "minko/hash.hpp"
+#include "minko/Hash.hpp"
 
 #include "sparsehash/forward.h"
 
@@ -43,7 +43,7 @@ namespace minko
             using map = std::unordered_map<K, V...>;*/
 
             typedef std::pair<const data::Binding*, const DrawCall*> DrawCallKey;
-            typedef minko::hash<DrawCallKey> DrawCallKeyHash;
+            typedef Hash<DrawCallKey> DrawCallKeyHash;
             /*struct DrawCallKeyHash
             {
                 inline
@@ -52,31 +52,30 @@ namespace minko
                 {
                     size_t s;
 
-                    minko::hash_combine(s, x.first);
-                    minko::hash_combine(s, x.second);
+                    Hash_combine(s, x.first);
+                    Hash_combine(s, x.second);
 
                     return s;
                 }
             };*/
 
-            typedef std::list<DrawCall*>                                                DrawCallList;
-            typedef DrawCallList::iterator                                              DrawCallIterator;
-            typedef data::Store::PropertyChangedSignal                                  PropertyChanged;
-            typedef std::pair<PropertyChanged::Slot, uint>                              ChangedSlot;
-            typedef data::Store                                                         Store;
-            typedef std::shared_ptr<data::Collection>                                   CollectionPtr;
-            typedef std::shared_ptr<data::Provider>                                     ProviderPtr;
-            typedef data::MacroBinding                                                  MacroBinding;
-            typedef Flyweight<std::string>                                              PropertyName;
-            typedef std::tuple<PropertyName, const MacroBinding*, const Store*>         MacroBindingKey;
-            typedef PropertyChanged::Callback                                           PropertyCallback;
-            typedef map<DrawCall*, std::list<std::function<void(void)>>>	            PropertyRebindFuncMap;
-            typedef minko::hash<MacroBindingKey>                                        MacroBindingKeyHash;
-            typedef minko::equal_to<MacroBindingKey>                                    MacroBindingKeyEq;
-            typedef map<MacroBindingKey, DrawCallList, MacroBindingKeyHash>             MacroToDrawCallsMap;
-            typedef map<MacroBindingKey, ChangedSlot, MacroBindingKeyHash>              MacroToChangedSlotMap;
-            typedef map<DrawCallKey, PropertyChanged::Slot, DrawCallKeyHash>            PropertyChangedSlotMap;
-            typedef std::unordered_map<PropertyName, PropertyName>                      FStringMap;
+            typedef std::list<DrawCall*>                                        DrawCallList;
+            typedef DrawCallList::iterator                                      DrawCallIterator;
+            typedef data::Store::PropertyChangedSignal                          PropertyChanged;
+            typedef std::pair<PropertyChanged::Slot, uint>                      ChangedSlot;
+            typedef data::Store                                                 Store;
+            typedef std::shared_ptr<data::Collection>                           CollectionPtr;
+            typedef std::shared_ptr<data::Provider>                             ProviderPtr;
+            typedef data::MacroBinding                                          MacroBinding;
+            typedef Flyweight<std::string>                                      PropertyName;
+            typedef std::tuple<PropertyName, const MacroBinding*, const Store*>	MacroBindingKey;
+            typedef PropertyChanged::Callback                                   PropertyCallback;
+            typedef map<DrawCall*, std::list<std::function<void(void)>>>	    PropertyRebindFuncMap;
+            typedef Hash<MacroBindingKey>                                		MacroBindingKeyHash;
+            typedef EqualTo<MacroBindingKey>                            		MacroBindingKeyEq;
+            typedef map<MacroBindingKey, DrawCallList, MacroBindingKeyHash>     MacroToDrawCallsMap;
+            typedef map<MacroBindingKey, ChangedSlot, MacroBindingKeyHash>      MacroToChangedSlotMap;
+            typedef map<DrawCallKey, PropertyChanged::Slot, DrawCallKeyHash>    PropertyChangedSlotMap;
 
         public:
             typedef std::pair<DrawCallIterator, DrawCallIterator>   DrawCallIteratorPair;
@@ -105,7 +104,7 @@ namespace minko
             uint
             addDrawCalls(std::shared_ptr<Effect>    effect,
                          const std::string&         techniqueName,
-                         const FStringMap&          variables,
+                         const EffectVariables&     variables,
                          data::Store&               rootData,
                          data::Store&               rendererData,
                          data::Store&               targetData);
@@ -114,7 +113,7 @@ namespace minko
             removeDrawCalls(uint batchId);
 
             void
-            invalidateDrawCalls(uint batchId, const FStringMap& variables);
+            invalidateDrawCalls(uint batchId, const EffectVariables& variables);
 
             void
             update();

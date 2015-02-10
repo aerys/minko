@@ -33,7 +33,7 @@ const unsigned int	DrawCall::MAX_NUM_VERTEXBUFFERS	            = 8;
 
 DrawCall::DrawCall(uint                   batchId,
                    std::shared_ptr<Pass>  pass,
-                   const FStringMap&      variables,
+                   const EffectVariables& variables,
                    data::Store&           rootData,
                    data::Store&           rendererData,
                    data::Store&           targetData) :

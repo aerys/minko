@@ -115,7 +115,7 @@ void
 Options::initialize()
 {
     initializeDefaultFunctions();
-    
+
     if (_parsers.find("effect") == _parsers.end())
         registerParser<file::EffectParser>("effect");
 
@@ -210,7 +210,7 @@ Options::initializeDefaultFunctions()
             return effect;
         };
 
-    _textureFormatFunction = [=](const std::unordered_set<render::TextureFormat>& availableTextureFormats) ->render::TextureFormat
+    _textureFormatFunction = [=](const TextureFormatSet& availableTextureFormats) ->render::TextureFormat
     {
         static const auto defaultTextureFormats = std::list<render::TextureFormat>
         {

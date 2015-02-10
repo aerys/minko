@@ -59,7 +59,6 @@ namespace minko
             typedef Signal<SurfacePtr>                                                      SurfaceChangedSignal;
             typedef render::DrawCallPool::DrawCallIteratorPair                              DrawCallIteratorPair;
             typedef std::unordered_map<SurfacePtr, std::list<SurfaceChangedSignal::Slot>>   SurfaceSlotMap;
-            typedef Flyweight<std::string>                                                  FString;
 
 		private:
 			std::string											_name;
@@ -73,7 +72,7 @@ namespace minko
 			Signal<Ptr>::Ptr									_beforePresent;
 			AbsTexturePtr										_renderTarget;
             bool                                                _clearBeforeRender;
-            std::unordered_map<FString, FString>		        _variables;
+            render::EffectVariables		        				_variables;
 
 			std::set<std::shared_ptr<Surface>>					_toCollect;
 			EffectPtr											_effect;
@@ -236,7 +235,7 @@ namespace minko
             }
 
 			inline
-			std::unordered_map<FString, FString>&
+			render::EffectVariables&
 			effectVariables()
 			{
 				return _variables;
@@ -265,7 +264,7 @@ namespace minko
 
 			void
 			render(std::shared_ptr<render::AbstractContext> context,
-				   AbsTexturePtr 		renderTarget = nullptr);
+				   AbsTexturePtr 							renderTarget = nullptr);
 
 			inline
 			Signal<Ptr>::Ptr

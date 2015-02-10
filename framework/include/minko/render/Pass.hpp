@@ -48,8 +48,6 @@ namespace minko
 			typedef std::function<void(ProgramPtr)>						ProgramFunc;
 			typedef std::unordered_map<std::string, ProgramFunc>		ProgramFuncMap;
 			typedef std::unordered_map<std::string, data::MacroBinding> MacroBindingsMap;
-            typedef Flyweight<std::string>                              FString;
-            typedef std::unordered_map<FString, FString>                FStringMap;
 
 		private:
 			const std::string		_name;
@@ -188,10 +186,10 @@ namespace minko
 			}
 
             std::pair<std::shared_ptr<Program>, const ProgramSignature*>
-            selectProgram(const FStringMap&     translatedPropertyNames,
-						  const data::Store&    targetData,
-						  const data::Store&	rendererData,
-                          const data::Store&	rootData);
+            selectProgram(const EffectVariables&    translatedPropertyNames,
+						  const data::Store&    	targetData,
+						  const data::Store&		rendererData,
+                          const data::Store&		rootData);
 
 			template <typename... T>
 			void

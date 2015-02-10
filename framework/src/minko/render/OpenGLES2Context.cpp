@@ -134,7 +134,7 @@ OpenGLES2Context::initializeStencilOperationsMap()
 	return m;
 }
 
-std::unordered_map<TextureFormat, unsigned int> OpenGLES2Context::_availableTextureFormats;
+std::unordered_map<TextureFormat, uint, Hash<TextureFormat>> OpenGLES2Context::_availableTextureFormats;
 
 OpenGLES2Context::OpenGLES2Context() :
 	_errorsEnabled(false),
@@ -1767,7 +1767,7 @@ OpenGLES2Context::supportsExtension(const std::string& extensionNameString)
     return availableExtensionStrings.find(extensionNameString) != std::string::npos;
 }
 
-const std::unordered_map<TextureFormat, unsigned int>&
+const std::unordered_map<TextureFormat, uint, Hash<TextureFormat>>&
 OpenGLES2Context::availableTextureFormats()
 {
     if (!_availableTextureFormats.empty())

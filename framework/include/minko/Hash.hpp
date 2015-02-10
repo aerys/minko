@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 namespace minko
 {
     template <typename T>
-    struct hash
+    struct Hash
     {
         virtual
         size_t
@@ -32,7 +32,7 @@ namespace minko
     };
 
     template <typename T>
-    struct equal_to
+    struct EqualTo
     {
         virtual
         bool
@@ -44,32 +44,32 @@ namespace minko
     void
     hash_combine(std::size_t& seed, const T& v)
     {
-        hash<T> hasher;
+        Hash<T> hasher;
 
         seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
 
     template <class T>
-    struct hash<T*>
+    struct Hash<T*>
     {
         size_t
         operator()(const T* x) const
         {
             size_t value = (size_t)x;
-         
+
             value = ~value + (value << 15);
             value = value ^ (value >> 12);
             value = value + (value << 2);
             value = value ^ (value >> 4);
             value = value * 2057;
             value = value ^ (value >> 16);
-         
+
             return value;
         }
     };
 
     template<>
-    struct hash<minko::render::TextureFormat>
+    struct Hash<minko::render::TextureFormat>
     {
         inline
         size_t
@@ -81,7 +81,7 @@ namespace minko
 
     // generic std::hash and std::equal_to specializations for std::pair
     template<typename T, typename V>
-    struct hash<std::pair<T, V>>
+    struct Hash<std::pair<T, V>>
     {
         inline
         size_t
@@ -97,7 +97,7 @@ namespace minko
     };
 
     template<typename T, typename V>
-    struct equal_to<std::pair<T, V>>
+    struct EqualTo<std::pair<T, V>>
     {
         inline
         bool
@@ -133,7 +133,7 @@ namespace minko
     }
 
     template <typename... T>
-    struct hash<std::tuple<T...>>
+    struct Hash<std::tuple<T...>>
     {
         inline
         size_t
@@ -148,7 +148,7 @@ namespace minko
     };
 
     template <typename... T>
-    struct equal_to<std::tuple<T...>>
+    struct EqualTo<std::tuple<T...>>
     {
         inline
         bool

@@ -51,12 +51,12 @@ DrawCallPool::~DrawCallPool()
 }
 
 uint
-DrawCallPool::addDrawCalls(Effect::Ptr        effect,
-                           const std::string& techniqueName,
-                           const FStringMap&  variables,
-                           data::Store&       rootData,
-                           data::Store&       rendererData,
-                           data::Store&       targetData)
+DrawCallPool::addDrawCalls(Effect::Ptr              effect,
+                           const std::string&       techniqueName,
+                           const EffectVariables&   variables,
+                           data::Store&             rootData,
+                           data::Store&             rendererData,
+                           data::Store&             targetData)
 {
     const auto& technique = effect->technique(techniqueName);
 
@@ -95,7 +95,7 @@ DrawCallPool::removeDrawCalls(uint batchId)
             _drawCalls.erase(it++);
         }
         else
-            ++it;        
+            ++it;
     }
 }
 
@@ -251,7 +251,7 @@ DrawCallPool::unwatchProgramSignature(DrawCall&                     drawCall,
         auto propertyName = Store::getActualPropertyName(drawCall.variables(), macroBinding.propertyName);
         auto bindingKey = MacroBindingKey(propertyName, &macroBinding, &store);
         auto& drawCalls = (*_macroToDrawCalls)[bindingKey];
-        
+
         drawCalls.remove(&drawCall);
 
         if (drawCalls.size() == 0)
@@ -400,7 +400,7 @@ DrawCallPool::update()
 }
 
 void
-DrawCallPool::invalidateDrawCalls(uint batchId, const FStringMap& variables)
+DrawCallPool::invalidateDrawCalls(uint batchId, const EffectVariables& variables)
 {
     for (DrawCall* drawCall : _drawCalls)
     {
@@ -408,7 +408,7 @@ DrawCallPool::invalidateDrawCalls(uint batchId, const FStringMap& variables)
         {
             _invalidDrawCalls.insert(drawCall);
             drawCall->variables().clear();
-            drawCall->variables().insert(variables.begin(), variables.end());
+            drawCall->variables().insert(drawCall->variables().end(), variables.begin(), variables.end());
         }
     }
 }

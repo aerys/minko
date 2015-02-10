@@ -34,7 +34,7 @@ using namespace minko::file;
 using namespace minko::render;
 using namespace minko::serialize;
 
-std::unordered_map<render::TextureFormat, TextureParser::FormatParserFunction> TextureParser::_formatParserFunctions =
+std::unordered_map<render::TextureFormat, TextureParser::FormatParserFunction, Hash<TextureFormat>> TextureParser::_formatParserFunctions =
 {
     { TextureFormat::RGB, std::bind(parseRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6, std::placeholders::_7, std::placeholders::_8) },
     { TextureFormat::RGBA, std::bind(parseRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4, std::placeholders::_5, std::placeholders::_6, std::placeholders::_7, std::placeholders::_8) },
@@ -99,7 +99,9 @@ TextureParser::parse(const std::string&                filename,
 
     const auto& contextAvailableTextureFormats = OpenGLES2Context::availableTextureFormats();
 
-    auto availableTextureFormats = std::unordered_multiset<TextureFormat>(contextAvailableTextureFormats.size());
+    auto availableTextureFormats = std::unordered_multiset<TextureFormat, Hash<TextureFormat>>(
+        contextAvailableTextureFormats.size()
+    );
 
     for (const auto& entry : contextAvailableTextureFormats)
     {
@@ -113,7 +115,7 @@ TextureParser::parse(const std::string&                filename,
         availableTextureFormats.insert(static_cast<TextureFormat>(entry.a0));
     }
 
-    auto filteredAvailableTextureFormats = std::unordered_set<TextureFormat>(availableTextureFormats.size());
+    auto filteredAvailableTextureFormats = std::unordered_set<TextureFormat, Hash<TextureFormat>>(availableTextureFormats.size());
 
     for (auto textureFormat : availableTextureFormats)
     {

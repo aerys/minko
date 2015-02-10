@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Pass.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/Uuid.hpp"
+#include "minko/Flyweight.hpp"
 
 namespace minko
 {
@@ -34,7 +35,7 @@ namespace minko
             public Uuid::has_uuid
 		{
 		public:
-			typedef std::shared_ptr<Effect>	Ptr;
+			typedef std::shared_ptr<Effect>										Ptr;
 
 		private:
 			typedef std::shared_ptr<Pass>										PassPtr;

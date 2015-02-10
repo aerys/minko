@@ -45,7 +45,7 @@ namespace minko
 			typedef ProviderPropertyChangedSignal::Slot				    ProviderPropertyChangedSlot;
             typedef Signal<Collection&, ProviderPtr>::Slot              CollectionChangedSignalSlot;
             typedef Flyweight<std::string>                              FString;
-            typedef std::unordered_map<FString, FString>                FStringMap;
+			typedef std::list<std::pair<FString, FString>>				FStringList;
 
 			template <typename... H>
 			using map = google::sparse_hash_map<H...>;
@@ -263,7 +263,7 @@ namespace minko
 
             static
             const std::string
-            getActualPropertyName(const FStringMap& variables, const FString& propertyName);
+            getActualPropertyName(const FStringList& variables, const FString& propertyName);
 
 		private:
 			std::pair<ProviderPtr, std::string>

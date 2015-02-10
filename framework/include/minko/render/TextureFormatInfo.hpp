@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
+#include "minko/Hash.hpp"
+
 namespace minko
 {
     namespace render
@@ -64,7 +66,7 @@ namespace minko
             };
 
         private:
-            static std::map<TextureFormat, Entry> _formats;
+            static std::unordered_map<TextureFormat, Entry, Hash<TextureFormat>> _formats;
 
         public:
             static
