@@ -51,9 +51,7 @@ minko.project.library "minko-framework"
 		"lib/sparsehash/src/sparsehash/**.cc"
 	}
 	configuration { "windows" }
-		defines {
-			"_SCL_SECURE_NO_WARNINGS"
-		}
+		buildoptions { "/wd4996" }
 		files {
 			--"lib/sparsehash/src/windows/**.cc",
 			"lib/sparsehash/include/windows/**.h"
