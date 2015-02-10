@@ -140,4 +140,12 @@ namespace std
 
     template <typename T>
     struct equal_to<minko::Flyweight<T>> : public minko::EqualTo<minko::Flyweight<T>> {};
+
+    template<typename T>
+    inline
+    std::string
+    to_string(const minko::Flyweight<T>& v)
+    {
+        return std::to_string(*v.value());
+    }
 }
