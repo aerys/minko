@@ -416,9 +416,6 @@ namespace minko
 			filterChangedHandler(AbsFilterPtr, data::Binding::Source, SurfacePtr);
 
 			void
-			nodeLayoutChangedHandler(NodePtr node, NodePtr target);
-
-			void
 			surfaceLayoutMaskChangedHandler(SurfacePtr surface);
 
 			void

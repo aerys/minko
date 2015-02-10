@@ -338,19 +338,24 @@ Renderer::addSurface(Surface::Ptr surface)
         surface->target()->data()
     );
 
-    auto callback = std::bind(
-        &Renderer::surfaceGeometryOrMaterialChangedHandler,
-        std::static_pointer_cast<Renderer>(shared_from_this()),
-        surface
-    );
-
-    _surfaceChangedSlots[surface].push_back(surface->geometryChanged().connect(callback));
-    _surfaceChangedSlots[surface].push_back(surface->materialChanged().connect(callback));
-    _surfaceChangedSlots[surface].push_back(surface->effectChanged().connect(std::bind(
-        &Renderer::surfaceEffectChangedHandler,
-        std::static_pointer_cast<Renderer>(shared_from_this()),
-        surface
-    )));
+    _surfaceChangedSlots[surface].push_back(surface->geometryChanged().connect(
+        [this](Surface::Ptr s)
+        {
+            surfaceGeometryOrMaterialChangedHandler(s);
+        }
+    ));
+    _surfaceChangedSlots[surface].push_back(surface->materialChanged().connect(
+        [this](Surface::Ptr s)
+        {
+            surfaceGeometryOrMaterialChangedHandler(s);
+        }
+    ));
+    _surfaceChangedSlots[surface].push_back(surface->effectChanged().connect(
+        [this](Surface::Ptr s)
+        {
+            surfaceEffectChangedHandler(s);
+        }
+    ));
 }
 
 void
@@ -577,13 +582,6 @@ Renderer::filterChangedHandler(data::AbstractFilter::Ptr	filter,
 }
 
 void
-Renderer::nodeLayoutChangedHandler(NodePtr node, NodePtr target)
-{
-	for (auto surface : target->components<Surface>())
-		surfaceLayoutMaskChangedHandler(surface);
-}
-
-void
 Renderer::surfaceLayoutMaskChangedHandler(Surface::Ptr surface)
 {
 	if (checkSurfaceLayout(surface))
@@ -605,21 +603,23 @@ Renderer::watchSurface(SurfacePtr surface)
 
 	if (_nodeLayoutChangedSlot.count(node) == 0)
 	{
-		_nodeLayoutChangedSlot[node] = node->layoutChanged().connect(std::bind(
-			&Renderer::nodeLayoutChangedHandler,
-			std::static_pointer_cast<Renderer>(shared_from_this()),
-			std::placeholders::_1,
-			std::placeholders::_2
-		));
+		_nodeLayoutChangedSlot[node] = node->layoutChanged().connect(
+            [this](Node::Ptr n, Node::Ptr t)
+            {
+                for (auto surface : t->components<Surface>())
+                    surfaceLayoutMaskChangedHandler(surface);
+            }
+		);
 	}
 
 	if (_surfaceLayoutMaskChangedSlot.count(surface) == 0)
 	{
-		_surfaceLayoutMaskChangedSlot[surface] = surface->layoutMaskChanged().connect(std::bind(
-			&Renderer::surfaceLayoutMaskChangedHandler,
-			std::static_pointer_cast<Renderer>(shared_from_this()),
-			surface
-		));
+		_surfaceLayoutMaskChangedSlot[surface] = surface->layoutMaskChanged().connect(
+            [this](AbsCmpPtr s)
+            {
+                surfaceLayoutMaskChangedHandler(std::static_pointer_cast<Surface>(s));
+            }
+		);
 	}
 }
 
