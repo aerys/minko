@@ -70,7 +70,7 @@ TEST_F(RendererTest, AddAndRemoveSurfaces)
     ASSERT_EQ(renderer->numDrawCalls(), 0);
 }
 
-TEST_F(RendererTest, AddAndRemoveSurfaceBubbeUp)
+TEST_F(RendererTest, AddAndRemoveSurfaceBubbleUp)
 {
     auto fx = MinkoTests::loadEffect("effect/Basic.effect");
     auto renderer = Renderer::create();
