@@ -388,10 +388,10 @@ TEST_F(DrawCallTest, RenderTargetBindingFromTargetData)
     auto p = data::Provider::create();
 
     texture->upload();
-    p->set("renderTargetTest", texture->sampler());
+    p->set(States::PROPERTY_TARGET, texture->sampler());
     targetData.addProvider(p);
 
-    std::map<std::string, data::Binding> bindings = { { "target", { "renderTargetTest", data::Binding::Source::TARGET } } };
+    std::map<std::string, data::Binding> bindings = { { "target", { States::PROPERTY_TARGET, data::Binding::Source::TARGET } } };
     DrawCall drawCall(nullptr, std::unordered_map<std::string, std::string>{}, rootData, rendererData, targetData);
 
     drawCall.bindStates(bindings, defaultValues);
