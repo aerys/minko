@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -455,4 +455,258 @@ TEST_F(StoreTest, providerAddedTwiceInCollectionRemovedOnce)
 
 	ASSERT_EQ(propertyAdded, 2);
 	ASSERT_TRUE(c.hasProperty("bar[0].foo"));
+}
+
+TEST_F(StoreTest, specificPropertyAddedSignal)
+{
+    Store s;
+
+    ASSERT_FALSE(s.hasPropertyAddedSignal("test"));
+
+    auto& s1 = s.propertyAdded("test");
+
+    ASSERT_TRUE(s.hasPropertyAddedSignal("test"));
+    ASSERT_EQ(s1.numCallbacks(), 0);
+
+    Store::PropertyName callbackPropertyName;
+    Store* callbackStore;
+    Provider::Ptr callbackProvider;
+    bool executed = false;
+    auto _ = s1.connect([&](Store& store, Provider::Ptr provider, Store::PropertyName propertyName)
+    {
+        executed = true;
+        callbackStore = &store;
+        callbackProvider = provider;
+        callbackPropertyName = propertyName;
+    });
+
+    ASSERT_EQ(s1.numCallbacks(), 1);
+
+    auto p = Provider::create();
+
+    p->set("test", 42);
+    ASSERT_FALSE(executed);
+    s.addProvider(p);
+
+    ASSERT_TRUE(executed);
+    ASSERT_EQ(callbackStore, &s);
+    ASSERT_EQ(callbackProvider, p);
+    ASSERT_EQ(callbackPropertyName, "test");
+}
+
+TEST_F(StoreTest, specificPropertyRemovedSignal)
+{
+    Store s;
+
+    ASSERT_FALSE(s.hasPropertyAddedSignal("test"));
+
+    auto& s1 = s.propertyRemoved("test");
+
+    ASSERT_TRUE(s.hasPropertyRemovedSignal("test"));
+    ASSERT_EQ(s1.numCallbacks(), 0);
+
+    Store::PropertyName callbackPropertyName;
+    Store* callbackStore;
+    Provider::Ptr callbackProvider;
+    bool executed = false;
+    auto _ = s1.connect([&](Store& store, Provider::Ptr provider, Store::PropertyName propertyName)
+    {
+        executed = true;
+        callbackStore = &store;
+        callbackProvider = provider;
+        callbackPropertyName = propertyName;
+    });
+
+    ASSERT_EQ(s1.numCallbacks(), 1);
+
+    auto p = Provider::create();
+
+    p->set("test", 42);
+    s.addProvider(p);
+    ASSERT_FALSE(executed);
+    s.removeProvider(p);
+
+    ASSERT_TRUE(executed);
+    ASSERT_EQ(callbackStore, &s);
+    ASSERT_EQ(callbackProvider, p);
+    ASSERT_EQ(callbackPropertyName, "test");
+}
+
+TEST_F(StoreTest, specificPropertyChangedSignal)
+{
+    Store s;
+    auto p = Provider::create();
+
+    p->set("test", 42);
+    s.addProvider(p);
+
+    ASSERT_FALSE(s.hasPropertyChangedSignal("test"));
+
+    auto& s1 = s.propertyChanged("test");
+
+    ASSERT_TRUE(s.hasPropertyChangedSignal("test"));
+    ASSERT_EQ(s1.numCallbacks(), 0);
+
+    Store::PropertyName callbackPropertyName;
+    Store* callbackStore;
+    Provider::Ptr callbackProvider;
+    bool executed = false;
+    auto _ = s1.connect([&](Store& store, Provider::Ptr provider, Store::PropertyName propertyName)
+    {
+        executed = true;
+        callbackStore = &store;
+        callbackProvider = provider;
+        callbackPropertyName = propertyName;
+    });
+
+    ASSERT_EQ(s1.numCallbacks(), 1);
+
+    ASSERT_FALSE(executed);
+    p->set("test", 24);
+
+    ASSERT_TRUE(executed);
+    ASSERT_EQ(callbackStore, &s);
+    ASSERT_EQ(callbackProvider, p);
+    ASSERT_EQ(callbackPropertyName, "test");
+}
+
+TEST_F(StoreTest, doNotFreeUsedPropertyAddedSignals)
+{
+    Store s;
+    auto p = Provider::create();
+
+    p->set("test", 42);
+    s.addProvider(p);
+
+    ASSERT_FALSE(s.hasPropertyAddedSignal("test"));
+
+    auto& s1 = s.propertyAdded("test");
+
+    ASSERT_EQ(s1.numCallbacks(), 0);
+    ASSERT_TRUE(s.hasPropertyAddedSignal("test"));
+
+    auto _ = s1.connect([&](Store& store, Provider::Ptr provider, Store::PropertyName propertyName)
+    {
+        // nothing
+    });
+
+    ASSERT_EQ(s1.numCallbacks(), 1);
+
+    s.removeProvider(p);
+
+    ASSERT_TRUE(s.hasPropertyAddedSignal("test"));
+}
+
+TEST_F(StoreTest, doNotFreeUsedPropertyChangedSignals)
+{
+    Store s;
+    auto p = Provider::create();
+
+    p->set("test", 42);
+    s.addProvider(p);
+
+    ASSERT_FALSE(s.hasPropertyChangedSignal("test"));
+
+    auto& s1 = s.propertyChanged("test");
+
+    ASSERT_EQ(s1.numCallbacks(), 0);
+    ASSERT_TRUE(s.hasPropertyChangedSignal("test"));
+
+    auto _ = s1.connect([&](Store& store, Provider::Ptr provider, Store::PropertyName propertyName)
+    {
+        // nothing
+    });
+
+    ASSERT_EQ(s1.numCallbacks(), 1);
+
+    s.removeProvider(p);
+
+    ASSERT_TRUE(s.hasPropertyChangedSignal("test"));
+}
+
+TEST_F(StoreTest, doNotFreeUsedPropertyRemovedSignals)
+{
+    Store s;
+    auto p = Provider::create();
+
+    p->set("test", 42);
+    s.addProvider(p);
+
+    ASSERT_FALSE(s.hasPropertyRemovedSignal("test"));
+
+    auto& s1 = s.propertyRemoved("test");
+
+    ASSERT_EQ(s1.numCallbacks(), 0);
+    ASSERT_TRUE(s.hasPropertyRemovedSignal("test"));
+
+    auto _ = s1.connect([&](Store& store, Provider::Ptr provider, Store::PropertyName propertyName)
+    {
+        // nothing
+    });
+
+    ASSERT_EQ(s1.numCallbacks(), 1);
+
+    s.removeProvider(p);
+
+    ASSERT_TRUE(s.hasPropertyRemovedSignal("test"));
+}
+
+TEST_F(StoreTest, freeUnusedPropertyAddedSignals)
+{
+    Store s;
+    auto p = Provider::create();
+
+    p->set("test", 42);
+    s.addProvider(p);
+
+    ASSERT_FALSE(s.hasPropertyAddedSignal("test"));
+
+    auto& s1 = s.propertyAdded("test");
+
+    ASSERT_EQ(s1.numCallbacks(), 0);
+    ASSERT_TRUE(s.hasPropertyAddedSignal("test"));
+
+    s.removeProvider(p);
+
+    ASSERT_FALSE(s.hasPropertyAddedSignal("test"));
+}
+
+TEST_F(StoreTest, freeUnusedPropertyChangedSignals)
+{
+    Store s;
+    auto p = Provider::create();
+
+    p->set("test", 42);
+    s.addProvider(p);
+
+    ASSERT_FALSE(s.hasPropertyChangedSignal("test"));
+
+    auto& s1 = s.propertyChanged("test");
+
+    ASSERT_EQ(s1.numCallbacks(), 0);
+    ASSERT_TRUE(s.hasPropertyChangedSignal("test"));
+
+    s.removeProvider(p);
+
+    ASSERT_FALSE(s.hasPropertyChangedSignal("test"));
+}
+
+TEST_F(StoreTest, freeUnusedPropertyRemovedSignals)
+{
+    Store s;
+    auto p = Provider::create();
+
+    p->set("test", 42);
+    s.addProvider(p);
+
+    ASSERT_FALSE(s.hasPropertyRemovedSignal("test"));
+
+    auto& s1 = s.propertyRemoved("test");
+
+    ASSERT_EQ(s1.numCallbacks(), 0);
+    ASSERT_TRUE(s.hasPropertyRemovedSignal("test"));
+
+    s.removeProvider(p);
+
+    ASSERT_FALSE(s.hasPropertyRemovedSignal("test"));
 }
