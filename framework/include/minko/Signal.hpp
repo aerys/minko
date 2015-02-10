@@ -50,6 +50,10 @@ namespace minko
         {
         }
 
+		Signal(const Signal& other)
+		{
+		}
+
         Signal(Signal&& other)
         {
             std::move(other._callbacks.begin(), other._callbacks.end(), _callbacks.begin());
@@ -95,11 +99,11 @@ namespace minko
 		Slot
 		connect(Callback callback, float priority = 0)
 		{
-			auto connection = SignalSlot<A...>::create(this);
-			
+			auto connection = std::make_shared<SignalSlot<A...>>(this);
+
             _callbacks.push_back(CallbackRecord(priority, callback, connection));
             connection->_it = std::prev(_callbacks.end());
-				
+
 			if (_callbacks.size() >= 2)
 			{
 				auto prec = std::prev(_callbacks.end(), 2);
@@ -147,32 +151,16 @@ namespace minko
 		public:
 			typedef std::shared_ptr<SignalSlot<T...>>	Ptr;
 
-        private:
-            struct ConcreteSignalSlot : public SignalSlot<T...> {
-                ConcreteSignalSlot(Signal<T...>* signal) :
-                    SignalSlot(signal)
-                {}
-            };
-
 		private:
 			Signal<T...>* 	  _signal;
             CallbackIterator  _it;
 
-        private:
-            SignalSlot(Signal<T...>* signal) :
-                _signal(signal)
-            {
-                assert(_signal != nullptr);
-            }
-
-            inline static
-            Ptr
-            create(Signal<T...>* signal)
-            {
-                return std::make_shared<ConcreteSignalSlot>(signal);
-            }
-
 		public:
+			SignalSlot(Signal<T...>* signal) :
+				_signal(signal)
+			{
+			}
+
 			const Signal<T...>*
 			signal()
 			{
