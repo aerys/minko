@@ -1401,9 +1401,21 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 		aiString path;
 		if (aiMat->GetTexture(textureType, 0, &path) == AI_SUCCESS)
 		{
-			render::AbstractTexture::Ptr texture = _assetLibrary->texture(std::string(path.data));
+            const auto textureFilename = std::string(path.data);
 
-			if (texture)
+			auto texture = _assetLibrary->texture(textureFilename);
+
+            const auto textureIsValid = texture != nullptr;
+
+            texture = std::static_pointer_cast<render::Texture>(_options->textureFunction()(
+                textureFilename,
+                texture
+            ));
+
+            if (!textureIsValid && texture != nullptr)
+                _assetLibrary->texture(textureFilename, texture);
+
+			if (texture != nullptr)
 				material->data()->set(textureName, texture->sampler());
 		}
 	}

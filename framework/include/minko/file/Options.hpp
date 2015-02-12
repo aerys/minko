@@ -36,6 +36,7 @@ namespace minko
 			typedef std::shared_ptr<data::Provider>										ProviderPtr;
 			typedef std::shared_ptr<material::Material>									MaterialPtr;
 			typedef std::shared_ptr<geometry::Geometry>									GeomPtr;
+			typedef std::shared_ptr<render::AbstractTexture>                            AbstractTexturePtr;
 			typedef std::shared_ptr<scene::Node>										NodePtr;
 			typedef std::shared_ptr<render::Effect>										EffectPtr;
 			typedef std::shared_ptr<Loader>                                             LoaderPtr;
@@ -47,6 +48,7 @@ namespace minko
 			typedef std::shared_ptr<Options>											Ptr;
 
 			typedef std::function<MaterialPtr(const std::string&, MaterialPtr)>			MaterialFunction;
+			typedef std::function<AbstractTexturePtr(const std::string&, AbstractTexturePtr)>	TextureFunction;
 			typedef std::function<GeomPtr(const std::string&, GeomPtr)> 				GeometryFunction;
 			typedef std::function<AbsProtocolPtr(const std::string&)>	                ProtocolFunction;
             typedef std::function<AbsParserPtr(const std::string&)>                     ParserFunction;
@@ -82,6 +84,7 @@ namespace minko
 			MaterialPtr									        _material;
             std::list<render::TextureFormat>                    _textureFormats;
 			MaterialFunction							        _materialFunction;
+			TextureFunction							            _textureFunction;
 			GeometryFunction							        _geometryFunction;
 			ProtocolFunction								    _protocolFunction;
             ParserFunction                                      _parserFunction;
@@ -431,6 +434,22 @@ namespace minko
 			materialFunction(const MaterialFunction& func)
 			{
 				_materialFunction = func;
+
+				return shared_from_this();
+			}
+
+			inline
+			const TextureFunction&
+			textureFunction() const
+			{
+				return _textureFunction;
+			}
+
+			inline
+			Ptr
+			textureFunction(const TextureFunction& func)
+			{
+				_textureFunction = func;
 
 				return shared_from_this();
 			}

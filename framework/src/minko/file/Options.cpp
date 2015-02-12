@@ -88,6 +88,7 @@ Options::Options(const Options& copy) :
     _textureFormats(copy._textureFormats),
     _material(copy._material),
     _materialFunction(copy._materialFunction),
+    _textureFunction(copy._textureFunction),
     _geometryFunction(copy._geometryFunction),
     _protocolFunction(copy._protocolFunction),
     _parserFunction(copy._parserFunction),
@@ -185,6 +186,12 @@ Options::initializeDefaultFunctions()
         _materialFunction = [](const std::string&, material::Material::Ptr material) -> material::Material::Ptr
         {
             return material;
+        };
+
+    if (!_textureFunction)
+        _textureFunction = [](const std::string&, AbstractTexturePtr texture) -> AbstractTexturePtr
+        {
+            return texture;
         };
 
     if (!_geometryFunction)
