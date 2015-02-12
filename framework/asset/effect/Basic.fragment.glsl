@@ -6,7 +6,7 @@
 
 #pragma include "TextureLod.extension.glsl"
 
-#pragma include "Fog.function.glsl")
+#pragma include "Fog.function.glsl"
 #pragma include "TextureLod.function.glsl"
 
 uniform vec4 uDiffuseColor;
@@ -18,8 +18,8 @@ uniform sampler2D uAlphaMap;
 uniform float uAlphaThreshold;
 
 // texture lod
-uniform float 		uDiffuseMapMaxAvailableLod;
-uniform vec2 		uDiffuseMapSize;
+uniform float uDiffuseMapMaxAvailableLod;
+uniform vec2 uDiffuseMapSize;
 
 varying vec2 vVertexUV;
 varying vec3 vVertexUVW;

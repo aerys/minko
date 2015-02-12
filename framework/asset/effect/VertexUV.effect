@@ -1,105 +1,104 @@
 {
-	"name"				: "uv",
+	"name" : "uv",
 
-	"attributeBindings"	: {
-		"position"				: "geometry[${geometryId}].position",
-		"uv"                    : "geometry[${geometryId}].uv",
-		"boneIdsA"				: "geometry[${geometryId}].boneIdsA",
-		"boneIdsB"				: "geometry[${geometryId}].boneIdsB",		
-		"boneWeightsA"			: "geometry[${geometryId}].boneWeightsA",
-		"boneWeightsB"			: "geometry[${geometryId}].boneWeightsB"
+	"attributes" : {
+		"aPosition"     : "geometry[${geometryUuid}].position",
+		"aUV"			: "geometry[${geometryUuid}].uv",
+		"aBoneIdsA"		: "geometry[${geometryUuid}].boneIdsA",
+		"aBoneIdsB"		: "geometry[${geometryUuid}].boneIdsB",		
+		"aBoneWeightsA"	: "geometry[${geometryUuid}].boneWeightsA",
+		"aBoneWeightsB"	: "geometry[${geometryUuid}].boneWeightsB"
 	},
 
-	"uniformBindings"	: {
-        "modelToWorldMatrix"    : "transform.modelToWorldMatrix",
-        "worldToScreenMatrix"   : { "property" : "camera.worldToScreenMatrix", "source" : "renderer" },
-		"boneMatrices"			: "geometry[${geometryId}].boneMatrices",
-		"numBones"				: "geometry[${geometryId}].numBones"
+	"uniforms" : {
+        "uModelToWorldMatrix"	: "modelToWorldMatrix",
+		"uWorldToScreenMatrix"	: { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
+		"uBoneMatrices"			: "geometry[${geometryUuid}].boneMatrices",
+		"uNumBones"				: "geometry[${geometryUuid}].numBones"
 	},
 
-	"macroBindings"	: {
-		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix",
-		"NUM_BONES"				: "geometry[${geometryId}].numBones"
+	"macros"	: {
+		"MODEL_TO_WORLD"	 	: "modelToWorldMatrix",
+		"SKINNING_NUM_BONES"	: { "binding" : "geometry[$geometryUuid].numBones", "type" : "int" }
 	},
-		
-	"stateBindings" : {
-        "blendMode"             : "material[${materialId}].blendMode",
-        "colorMask"             : "material[${materialId}].colorMask",
-        "depthMask"             : "material[${materialId}].depthMask",
-        "depthFunc"             : "material[${materialId}].depthFunc",
-        "triangleCulling"       : "material[${materialId}].triangleCulling",
-        "stencilFunc"           : "material[${materialId}].stencilFunc",
-        "stencilRef"            : "material[${materialId}].stencilRef",
-        "stencilMask"           : "material[${materialId}].stencilMask",
-        "stencilFailOp"         : "material[${materialId}].stencilFailOp",
-        "stencilZFailOp"        : "material[${materialId}].stencilZFailOp",
-        "stencilZPassOp"        : "material[${materialId}].stencilZPassOp",
-        "scissorBox.x"          : { "property" : "scissorBox.x",        "source" : "renderer" },
-        "scissorBox.y"          : { "property" : "scissorBox.y",        "source" : "renderer" },
-        "scissorBox.width"      : { "property" : "scissorBox.width",    "source" : "renderer" },
-        "scissorBox.height"     : { "property" : "scissorBox.height",   "source" : "renderer" },
-        "priority"              : "material[${materialId}].priority",
-        "zSort"					: "material[${materialId}].zSort",
-        "layouts"               : "node.layouts"
+	
+
+	"states" : {
+        "blendingMode"          : { "binding" : "material[${materialId}].blendingMode", "default" : ["one", "zero"] },
+        "colorMask"             : { "binding" : "material[${materialId}].colorMask", "default" : true },
+        "depthMask"             : { "binding" : "material[${materialId}].depthMask", "default" : [true, "less_equal"] },
+        "depthFunction"         : "material[${materialId}].depthFunction",
+        "triangleCulling"       : { "binding" : "material[${materialId}].triangleCulling", "default" : "none" },
+        "stencilFunction"       : { "binding" : "material[${materialId}].stencilFunction", "default" : "always" },
+        "stencilReference"      : { "binding" : "material[${materialId}].stencilReference", "default" : 0 },
+        "stencilMask"           : { "binding" : "material[${materialId}].stencilMask", "default" : 1 },
+        "stencilFailOperation"  : { "binding" : "material[${materialId}].stencilFailOperation", "default" : "keep" },
+        "stencilZFailOperation" : { "binding" : "material[${materialId}].stencilZFailOperation", "default" : "keep" },
+        "stencilZPassOperation" : { "binding" : "material[${materialId}].stencilZPassOperation", "default" : "keep" },
+        "scissorTest"			: false,
+        "scissorBox"          	: { "binding" : "material[${materialId}].scissorBox", "default" : [0, 0, -1, -1] },
+        "priority"              : { "binding" : "material[${materialId}].priority", "default" : "opaque" },
+        "zSorted"				: false
     },
 
-    "blendMode"         : ["one", "zero"],
-    "colorMask"         : true,
-    "depthTest"         : [true, "less_equal"],
-    "triangleCulling"   : "none",
-	"stencilTest"		: ["always", 0, 1, ["keep", "keep", "keep"]],
-    "scissorTest"		: false,
-	"scissorBox"		: [0, 0, -1, -1],
-    "priority"          : "opaque",
-    "zSort"             : false,
-	
-	"passes"	: [{
-		"vertexShader"	: "
+	"techniques" : [{
+		"passes" : [{
+			"vertexShader" : "
 
-            #ifdef GL_FRAGMENT_PRECISION_HIGH
-                precision highp float;
-            #else
-                precision mediump float;
-            #endif
+	            #ifdef GL_FRAGMENT_PRECISION_HIGH
+	                precision highp float;
+	            #else
+	                precision mediump float;
+	            #endif
 
-			uniform mat4 modelToWorldMatrix;
-			uniform mat4 worldToScreenMatrix;
+				uniform mat4 uModelToWorldMatrix;
+				uniform mat4 uWorldToScreenMatrix;
 
-			attribute vec3 position;
-			attribute vec2 uv;
+				attribute vec3 aPosition;
+				attribute vec2 aUV;
 
-			varying vec2 vertexUV;
+				#ifdef SKINNING_NUM_BONES
+				attribute vec4 aBoneIdsA;
+				attribute vec4 aBoneIdsB;
+				attribute vec4 aBoneWeightsA;
+				attribute vec4 aBoneWeightsB;
 
-			#pragma include('Skinning.function.glsl')
+				uniform mat4 uBoneMatrices[SKINNING_NUM_BONES];
+				#endif
 
-			void main(void)
-			{
-				vec4 pos    = vec4(position, 1.0);
-				
-				vertexUV = uv;
-				
-				#ifdef NUM_BONES
-					pos 	= skinning_moveVertex(pos);
-				#endif // NUM_BONES
-				
-				#ifdef MODEL_TO_WORLD
-					pos 		= modelToWorldMatrix * pos;
-				#endif // MODEL_TO_WORLD
+				varying vec2 vertexUV;
 
-				gl_Position =  worldToScreenMatrix * pos;
-			}
-		",
-		"fragmentShader"	: "
-			#ifdef GL_ES
-				precision mediump float;
-			#endif
+				#pragma include \"Skinning.function.glsl\"
 
-			varying vec2 vertexUV;
+				void main(void)
+				{
+					vec4 pos = vec4(aPosition, 1.0);
+					
+					vertexUV = aUV;
+					
+					#ifdef SKINNING_NUM_BONES
+						pos = skinning_moveVertex(pos, uBoneMatrices, aBoneIdsA, aBoneIdsB, aBoneWeightsA, aBoneWeightsB);
+					#endif // SKINNING_NUM_BONES
+					
+					#ifdef MODEL_TO_WORLD
+						pos = uModelToWorldMatrix * pos;
+					#endif // MODEL_TO_WORLD
 
-			void main(void)
-			{
-				gl_FragColor = vec4(vertexUV.x, vertexUV.y, 0.0, 1.0);
-			}
-		"
+					gl_Position = uWorldToScreenMatrix * pos;
+				}
+			",
+			"fragmentShader" : "
+				#ifdef GL_ES
+					precision mediump float;
+				#endif
+
+				varying vec2 vertexUV;
+
+				void main(void)
+				{
+					gl_FragColor = vec4(vertexUV.x, vertexUV.y, 0.0, 1.0);
+				}
+			"
+		}]
 	}]
 }
