@@ -30,15 +30,15 @@ namespace minko
         template <typename T = data::Binding>
         struct BindingMapBase
         {
-            std::map<std::string, T> bindings;
+            std::unordered_map<std::string, T> bindings;
             data::Store defaultValues;
 
             BindingMapBase()
             {
             }
 
-            BindingMapBase(std::map<std::string, T>   bindings,
-                           const data::Store&         defaultValues) :
+            BindingMapBase(std::unordered_map<std::string, T>   bindings,
+                           const data::Store&                   defaultValues) :
                 bindings(bindings),
                 defaultValues(defaultValues)
             {
@@ -74,7 +74,7 @@ namespace minko
 				FLOAT16
             };
 
-            std::map<std::string, MacroType> types;
+            std::unordered_map<std::string, MacroType> types;
 
             MacroBindingMap() :
                 BindingMapBase(),
@@ -82,9 +82,9 @@ namespace minko
             {
             }
 
-            MacroBindingMap(std::map<std::string, MacroBinding>   bindings,
-                            const data::Store&                    defaultValues,
-                            std::map<std::string, MacroType>      types) :
+            MacroBindingMap(std::unordered_map<std::string, MacroBinding>   bindings,
+                            const data::Store&                              defaultValues,
+                            std::unordered_map<std::string, MacroType>      types) :
                 BindingMapBase(bindings, defaultValues),
                 types(types)
             {

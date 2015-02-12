@@ -23,9 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::component;
-using namespace minko::math;
 
-static const std::string TEXTURE_FILENAME = "texture/box.png";
 static const std::string EFFECT_FILENAME = "effect/Phong.effect";
 
 static const float CAMERA_SPEED = 20.0f;
@@ -44,142 +42,119 @@ main(int argc, char** argv)
         ->registerParser<file::PNGParser>("png");
 
     sceneManager->assets()->loader()
-        ->queue(TEXTURE_FILENAME)
         ->queue(EFFECT_FILENAME);
 
     auto _ = sceneManager->assets()->loader()->complete()->connect([ = ](file::Loader::Ptr loader)
     {
-        std::cout << "Press [L]\tto activate linear fog\nPress [E]\tto activate exponential fog\nPress [F]\tto activate square exponential fog\nPress [N]\tto deactivate fog\nPress [P]\tto to increase fog density\nPress [M]\tto to decrease fog density" << std::endl;
+        std::cout << "Press [L]\tto activate linear fog\n"
+            << "Press [E]\tto activate exponential fog\n"
+            << "Press [F]\tto activate square exponential fog\n"
+            << "Press [N]\tto deactivate fog\n"
+            << "Press [P]\tto increase fog density\n"
+            << "Press [M]\tto decrease fog density"
+            << std::endl;
 
         auto root = scene::Node::create("root")
             ->addComponent(sceneManager);
 
+        auto teapotGeom = geometry::TeapotGeometry::create(sceneManager->assets()->context());
+        teapotGeom->computeNormals();
+        auto material = material::PhongMaterial::create();
+        material->diffuseColor(0x00ff00ff);
+        material->data()->set("fogTechnique", (int)material::FogTechnique::LIN);
+        material->data()->set("fogBounds", math::vec2(10.f, 20.f));
+        material->data()->set("fogColor", math::vec4(.5f, .5f, .5f, 1.f));
         auto mesh = scene::Node::create("mesh")
-            ->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(Vector3::create(0.0f, 0.5f, 0.0f))));
+            ->addComponent(Transform::create(
+                math::translate(math::vec3(0.f, 0.5f, 0.f)) * math::scale(math::vec3(.5f))
+            ))
+            ->addComponent(Surface::create(
+                teapotGeom,
+                material,
+                sceneManager->assets()->effect(EFFECT_FILENAME)
+            ));
+        root->addChild(mesh);
 
         auto camera = scene::Node::create("camera")
             ->addComponent(Renderer::create(0x7f7f7fff))
-            ->addComponent(Transform::create(
-                Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 1.5f, 6.f))
-            ))
-            ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
+            ->addComponent(Transform::create(math::inverse(
+                math::lookAt(math::vec3(6.f), math::vec3(0.f), math::vec3(0.f, 1.f, 0.f))
+            )))
+            ->addComponent(PerspectiveCamera::create(canvas->aspectRatio(), 0.785f, .1f, 20.f));
         root->addChild(camera);
 
-        auto material = material::PhongMaterial::create()
-            ->diffuseMap(sceneManager->assets()->texture(TEXTURE_FILENAME))
-            ->fogType(render::FogType::None)
-            ->fogColor(Vector4::create(0.6f, 0.6f, 0.6f, 1.0f))
-            ->fogStart(5.0f)
-            ->fogEnd(25.0f)
-            ->fogDensity(1.0f);
-
-        auto groundMaterial = std::static_pointer_cast<material::PhongMaterial>(material::PhongMaterial::create()->copyFrom(material));
-        groundMaterial->unset("diffuseMap");
-        groundMaterial->diffuseColor(0xAA0000FF);
-
-        mesh->addComponent(Surface::create(
-            geometry::CubeGeometry::create(sceneManager->assets()->context()),
-            material,
-            sceneManager->assets()->effect(EFFECT_FILENAME)));
-
+        auto groundMaterial = material::PhongMaterial::create(material);
+        groundMaterial->diffuseColor(0xFF0000FF);
         auto groundNode = scene::Node::create("ground")
-            ->addComponent(Transform::create(Matrix4x4::create()->appendScale(16.0f)->appendRotationX(-float(M_PI) / 2.0f)))
+            ->addComponent(Transform::create(math::scale(math::vec3(100.0f)) * math::rotate(-float(M_PI) * .5f, math::vec3(1.f, 0.f, 0.f))))
             ->addComponent(Surface::create(
                 geometry::QuadGeometry::create(sceneManager->assets()->context()),
                 groundMaterial,
                 sceneManager->assets()->effect(EFFECT_FILENAME)
             ));
-
         root->addChild(groundNode);
 
-        auto ambientLight = scene::Node::create("ambientLight")
-            ->addComponent(AmbientLight::create(0.25f));
+        auto lights = scene::Node::create("lights")
+            ->addComponent(AmbientLight::create(0.25f))
+            ->addComponent(DirectionalLight::create()->diffuse(0.8f)->color(math::vec3(1.f)))
+            ->addComponent(Transform::create(math::inverse(
+                math::lookAt(math::vec3(0.f), math::vec3(-1.f), math::vec3(0.f, 1.f, 0.f))
+            )));
+        root->addChild(lights);
 
-        ambientLight->component<AmbientLight>()->color(Vector4::create(1.0f, 1.0f, 1.0f, 1.0f));
-        root->addChild(ambientLight);
-
-        auto directionalLight = scene::Node::create("directionalLight")
-            ->addComponent(DirectionalLight::create()->diffuse(0.8f)->color(0xFFFFFFFF))
-            ->addComponent(Transform::create(Matrix4x4::create()->lookAt(Vector3::create(), Vector3::create(3.0f, 2.0f, 3.0f))));
-
-        root->addChild(directionalLight);
-
-        std::vector<Matrix4x4::Ptr> keyTransforms;
-
-        keyTransforms.push_back(Matrix4x4::create()->appendTranslation(Vector3::create(0.0f, 0.5f, 0.0f)));
-        keyTransforms.push_back(Matrix4x4::create()->copyFrom(keyTransforms[0])->appendTranslation(Vector3::create(0.0f, 0.0f, -15.0f)));
-        keyTransforms.push_back(Matrix4x4::create()->copyFrom(keyTransforms[1])->appendTranslation(Vector3::create(0.0f, 0.0f, 15.0f)));
-
-        auto segmentDuration = 1500U;
-
-        auto cubeAnimation = Animation::create(
-        {
-            minko::animation::Matrix4x4Timeline::create(
-                "transform.matrix",
-                segmentDuration * 3,
-                { segmentDuration * 0, segmentDuration * 1, segmentDuration * 2 },
-                keyTransforms,
-                true
-            )
-        }, true);
-
-        mesh->addComponent(cubeAnimation);
-
-        root->addChild(mesh);
-
-        auto cameraMove = Vector3::create();
+        math::vec3 cameraMove(0.f);
 
         auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
         {
             if (k->keyIsDown(input::Keyboard::LEFT))
-                cameraMove = Vector3::create(-1.0f, 0.0f, 0.0f);
+                cameraMove = math::vec3(-1.0f, 0.0f, 0.0f);
             else if (k->keyIsDown(input::Keyboard::UP))
-                cameraMove = Vector3::create(0.0f, 0.0f, -1.0f);
+                cameraMove = math::vec3(0.0f, 0.0f, -1.0f);
             else if (k->keyIsDown(input::Keyboard::RIGHT))
-                cameraMove = Vector3::create(1.0f, 0.0f, 0.0f);
+                cameraMove = math::vec3(1.0f, 0.0f, 0.0f);
             else if (k->keyIsDown(input::Keyboard::DOWN))
-                cameraMove = Vector3::create(0.0f, 0.0f, 1.0f);
+                cameraMove = math::vec3(0.0f, 0.0f, 1.0f);
 
             else if (k->keyIsDown(input::Keyboard::P))
             {
-                material->fogDensity(material->fogDensity() * 2.0f);
-                groundMaterial->fogDensity(material->fogDensity() * 2.0f);
+                // material->fogDensity(material->fogDensity() * 2.0f);
+                // groundMaterial->fogDensity(material->fogDensity() * 2.0f);
 
-                std::cout << "fog density: " << material->fogDensity() << std::endl;
+                // std::cout << "fog density: " << material->fogDensity() << std::endl;
             }
             else if (k->keyIsDown(input::Keyboard::M))
             {
-                material->fogDensity(material->fogDensity() / 2.0f);
-                groundMaterial->fogDensity(material->fogDensity() / 2.0f);
+                // material->fogDensity(material->fogDensity() / 2.0f);
+                // groundMaterial->fogDensity(material->fogDensity() / 2.0f);
 
-                std::cout << "fog density: " << material->fogDensity() << std::endl;
+                // std::cout << "fog density: " << material->fogDensity() << std::endl;
             }
 
             else if (k->keyIsDown(input::Keyboard::N))
             {
-                material->fogType(render::FogType::None);
-                groundMaterial->fogType(render::FogType::None);
+                material->data()->unset("fogTechnique");
+                groundMaterial->data()->unset("fogTechnique");
 
                 std::cout << "fog is inactive" << std::endl;
             }
             else if (k->keyIsDown(input::Keyboard::L))
             {
-                material->fogType(render::FogType::Linear);
-                groundMaterial->fogType(render::FogType::Linear);
+                material->data()->set("fogTechnique", (int)material::FogTechnique::LIN);
+                groundMaterial->data()->set("fogTechnique", (int)material::FogTechnique::LIN);
 
                 std::cout << "fog type is linear" << std::endl;
             }
             else if (k->keyIsDown(input::Keyboard::E))
             {
-                material->fogType(render::FogType::Exponential);
-                groundMaterial->fogType(render::FogType::Exponential);
+                material->data()->set("fogTechnique", (int)material::FogTechnique::EXP);
+                groundMaterial->data()->set("fogTechnique", (int)material::FogTechnique::EXP);
 
                 std::cout << "fog type is exponential" << std::endl;
             }
             else if (k->keyIsDown(input::Keyboard::F))
             {
-                material->fogType(render::FogType::Exponential2);
-                groundMaterial->fogType(render::FogType::Exponential2);
+                material->data()->set("fogTechnique", (int)material::FogTechnique::EXP2);
+                groundMaterial->data()->set("fogTechnique", (int)material::FogTechnique::EXP2);
 
                 std::cout << "fog type is exponential2" << std::endl;
             }
@@ -192,11 +167,15 @@ main(int argc, char** argv)
 
         auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float dt)
         {
-            cameraMove = cameraMove->normalize() * CAMERA_SPEED * (dt / 1000.0f);
-            camera->component<Transform>()->matrix()->appendTranslation(cameraMove);
-            cameraMove = Vector3::create()->zero();
+            cameraMove = cameraMove * CAMERA_SPEED * (dt / 1000.0f);
+            camera->component<Transform>()->matrix(
+                camera->component<Transform>()->matrix() * math::translate(cameraMove)
+            );
+            cameraMove *= .9f;
 
-            mesh->component<Transform>()->matrix()->prependRotationY(.01f);
+            mesh->component<Transform>()->matrix(
+
+            );
 
             sceneManager->nextFrame(time, dt);
         });
@@ -206,5 +185,3 @@ main(int argc, char** argv)
 
     sceneManager->assets()->loader()->load();
 }
-
-

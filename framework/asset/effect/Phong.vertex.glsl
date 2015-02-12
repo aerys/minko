@@ -1,9 +1,11 @@
 #ifdef VERTEX_SHADER
 
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
+#ifdef GL_ES
+    #ifdef GL_FRAGMENT_PRECISION_HIGH
+        precision highp float;
+    #else
+        precision mediump float;
+    #endif
 #endif
 
 #pragma include "Skinning.function.glsl"
@@ -56,7 +58,7 @@ void main(void)
 
 		worldPosition 			= mix(quantizedPosition, worldPosition, float(uPopLod == uPopFullPrecisionLod));
 	#endif // POP_LOD_ENABLED
-	
+
 	#ifdef MODEL_TO_WORLD
 		worldPosition 	= uModelToWorldMatrix * worldPosition;
 	#endif // MODEL_TO_WORLD

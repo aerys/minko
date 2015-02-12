@@ -96,7 +96,10 @@
             },
 
             "uniforms" : {
-                "uTexture" : { "binding" : { "property" : "effect[${effectUuid}].shadow-map-tmp", "source" : "renderer" } },
+                "uTexture" : {
+                    "binding" : { "property" : "effect[${effectUuid}].shadow-map-tmp", "source" : "renderer" },
+                    "textureFilter" : "linear"
+                },
                 "uTextureSize" : { "binding" : { "property" : "directionalLight[${lightUuid}].shadowMapSize", "source" : "root" } },
                 "uSpread" : { "binding" : { "property" : "directionalLight[${lightUuid}].shadowSpread", "source" : "root" } }
             },
@@ -106,6 +109,14 @@
             },
 
             "vertexShader" : "
+                #ifdef GL_ES
+                # ifdef MINKO_PLATFORM_IOS
+                    precision highp float;
+                # else
+                    precision mediump float;
+                # endif
+                #endif
+
                 attribute vec2 aPosition;
                 attribute vec2 aUV;
 
@@ -120,6 +131,15 @@
             ",
 
             "fragmentShader" : "
+
+                #ifdef GL_ES
+                # ifdef MINKO_PLATFORM_IOS
+                    precision highp float;
+                # else
+                    precision mediump float;
+                # endif
+                #endif
+
                 uniform sampler2D uTexture;
                 uniform float uTextureSize;
                 uniform float uSpread;
@@ -136,11 +156,12 @@
                 {
                     float c = 0.0;
 
+                    // FIXME: avoid blending when the depth diff is > some threshold
                     for (int x = -BOXBLUR_OFFSET; x <= BOXBLUR_OFFSET; ++x)
                         for (int y = -BOXBLUR_OFFSET; y <= BOXBLUR_OFFSET; ++y)
                             c += unpackFloat8bitRGBA(texture2D(uTexture, vUV + vec2(x, y) / uTextureSize));
 
-                    gl_FragColor = packFloat8bitRGBA(c / ((BOXBLUR_OFFSET * 2 + 1) * (BOXBLUR_OFFSET * 2 + 1)));
+                    gl_FragColor = packFloat8bitRGBA(c / float((BOXBLUR_OFFSET * 2 + 1) * (BOXBLUR_OFFSET * 2 + 1)));
                 }
             "
         }

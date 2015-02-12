@@ -19,7 +19,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/DrawCall.hpp"
 
-#include "minko/render/DrawCallZSorter.hpp"
 #include "minko/data/Store.hpp"
 #include "minko/log/Logger.hpp"
 
@@ -28,8 +27,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::render;
 
-const unsigned int	DrawCall::MAX_NUM_TEXTURES		            = 8;
-const unsigned int	DrawCall::MAX_NUM_VERTEXBUFFERS	            = 8;
+const unsigned int DrawCall::MAX_NUM_TEXTURES       = 8;
+const unsigned int DrawCall::MAX_NUM_VERTEXBUFFERS  = 8;
 
 DrawCall::DrawCall(std::shared_ptr<Pass>  pass,
                    const StringMap&       variables,
@@ -41,14 +40,19 @@ DrawCall::DrawCall(std::shared_ptr<Pass>  pass,
     _rootData(rootData),
     _rendererData(rendererData),
     _targetData(targetData),
-    _zSorter(DrawCallZSorter::create(this)),
-    _zSortNeeded(Signal<DrawCall*>::create()),
     _target(nullptr),
     _indexBuffer(nullptr),
     _firstIndex(nullptr),
-    _numIndices(nullptr)
+    _numIndices(nullptr),
+    _zSorted(nullptr),
+    _centerPosition(),
+    _modelToWorldMatrix(nullptr),
+    _worldToScreenMatrix(nullptr),
+    _modelToWorldMatrixPropertyRemovedSlot(nullptr),
+    _worldToScreenMatrixPropertyRemovedSlot(nullptr)
 {
-    _zSorter->initialize(_targetData, _rendererData, _rootData);
+    // For Z-sorting
+    bindPositionalMembers();
 }
 
 data::Store&
@@ -95,9 +99,51 @@ DrawCall::bind(std::shared_ptr<Program> program)
 }
 
 void
-DrawCall::bindAttribute(ConstAttrInputRef                             input,
-                        const std::map<std::string, data::Binding>&   attributeBindings,
-                        const data::Store&                            defaultValues)
+DrawCall::bindPositionalMembers()
+{
+    if (_targetData.hasProperty("centerPosition"))
+        _centerPosition = _targetData.get<math::vec3>("centerPosition");
+
+    if (_targetData.hasProperty("modelToWorldMatrix"))
+        _modelToWorldMatrix = _targetData.getPointer<math::mat4>("modelToWorldMatrix");
+    else
+    {
+        _modelToWorldMatrixPropertyAddedSlot = _targetData.propertyAdded("modelToWorldMatrix").connect(
+            [&](data::Store&, std::shared_ptr<data::Provider>, const std::string&)
+        {
+            _modelToWorldMatrix = _targetData.getPointer<math::mat4>("modelToWorldMatrix");
+        });
+    }
+
+    if (_rendererData.hasProperty("worldToScreenMatrix"))
+        _worldToScreenMatrix = _rendererData.getPointer<math::mat4>("worldToScreenMatrix");
+    else
+    {
+        _worldToScreenMatrixPropertyAddedSlot = _rendererData.propertyAdded("worldToScreenMatrix").connect(
+            [&](data::Store& store, std::shared_ptr<data::Provider> data, const std::string& propertyName)
+        {
+            _worldToScreenMatrix = _rendererData.getPointer<math::mat4>("worldToScreenMatrix");
+        });
+    }
+
+    // Removed slot
+    _modelToWorldMatrixPropertyRemovedSlot = _targetData.propertyRemoved("modelToWorldMatrix").connect(
+        [&](data::Store&, std::shared_ptr<data::Provider>, const std::string&)
+    {
+        _modelToWorldMatrix = nullptr;
+    });
+
+    _worldToScreenMatrixPropertyRemovedSlot = _rendererData.propertyRemoved("worldToScreenMatrix").connect(
+        [&](data::Store& store, std::shared_ptr<data::Provider> data, const std::string& propertyName)
+    {
+        _worldToScreenMatrix = nullptr;
+    });
+}
+
+void
+DrawCall::bindAttribute(ConstAttrInputRef                                       input,
+                        const std::unordered_map<std::string, data::Binding>&   attributeBindings,
+                        const data::Store&                                      defaultValues)
 {
     data::ResolvedBinding* binding = resolveBinding(input.name, attributeBindings);
 
@@ -170,9 +216,9 @@ DrawCall::setAttributeValueFromStore(const ProgramInputs::AttributeInput& input,
 }
 
 data::ResolvedBinding*
-DrawCall::bindUniform(ConstUniformInputRef                          input,
-                      const std::map<std::string, data::Binding>&   uniformBindings,
-                      const data::Store&                            defaultValues)
+DrawCall::bindUniform(ConstUniformInputRef                                      input,
+                      const std::unordered_map<std::string, data::Binding>&     uniformBindings,
+                      const data::Store&                                        defaultValues)
 {
     data::ResolvedBinding* binding = resolveBinding(input.name, uniformBindings);
 
@@ -216,9 +262,9 @@ DrawCall::bindUniform(ConstUniformInputRef                          input,
 }
 
 std::array<data::ResolvedBinding*, 3>
-DrawCall::bindSamplerStates(ConstUniformInputRef                          input,
-                            const std::map<std::string, data::Binding>&   uniformBindings,
-                            const data::Store&                            defaultValues)
+DrawCall::bindSamplerStates(ConstUniformInputRef                                    input,
+                            const std::unordered_map<std::string, data::Binding>&   uniformBindings,
+                            const data::Store&                                      defaultValues)
 {
     auto wrapModeBinding = bindSamplerState(input, uniformBindings, defaultValues, SamplerStates::PROPERTY_WRAP_MODE);
     auto textureFilterBinding = bindSamplerState(input, uniformBindings, defaultValues, SamplerStates::PROPERTY_TEXTURE_FILTER);
@@ -234,12 +280,12 @@ DrawCall::bindSamplerStates(ConstUniformInputRef                          input,
 }
 
 data::ResolvedBinding*
-DrawCall::bindSamplerState(ConstUniformInputRef                          input,
-                           const std::map<std::string, data::Binding>&   uniformBindings,
-                           const data::Store&                            defaultValues,
-                           const std::string&                            samplerStateProperty)
+DrawCall::bindSamplerState(ConstUniformInputRef                                     input,
+                           const std::unordered_map<std::string, data::Binding>&    uniformBindings,
+                           const data::Store&                                       defaultValues,
+                           const std::string&                                       samplerStateProperty)
 {
-    if (samplerStateProperty == SamplerStates::PROPERTY_WRAP_MODE || 
+    if (samplerStateProperty == SamplerStates::PROPERTY_WRAP_MODE ||
         samplerStateProperty == SamplerStates::PROPERTY_TEXTURE_FILTER ||
         samplerStateProperty == SamplerStates::PROPERTY_MIP_FILTER)
     {
@@ -248,10 +294,7 @@ DrawCall::bindSamplerState(ConstUniformInputRef                          input,
             samplerStateProperty
         );
 
-        auto binding = resolveBinding(
-            samplerStateUniformName,
-            uniformBindings
-        );
+        auto binding = resolveBinding(samplerStateUniformName, uniformBindings);
 
         if (binding == nullptr)
         {
@@ -378,20 +421,22 @@ DrawCall::setSamplerStateValueFromStore(const ProgramInputs::UniformInput&  inpu
 void
 DrawCall::bindIndexBuffer()
 {
-    _indexBuffer = const_cast<int*>(_targetData.getPointer<int>(
-        data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].indices")
-    ));
-    _firstIndex = const_cast<uint*>(_targetData.getPointer<uint>(
-        data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].firstIndex")
-    ));
-    _numIndices = const_cast<uint*>(_targetData.getPointer<uint>(
-        data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].numIndices")
-    ));
+    auto indexBufferProperty = data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].indices");
+    if (_targetData.hasProperty(indexBufferProperty))
+        _indexBuffer = const_cast<int*>(_targetData.getPointer<int>(indexBufferProperty));
+
+    auto firstIndexProperty = data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].firstIndex");
+    if (_targetData.hasProperty(firstIndexProperty))
+        _firstIndex = const_cast<uint*>(_targetData.getPointer<uint>(firstIndexProperty));
+
+    auto numIndicesProperty = data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].numIndices");
+    if (_targetData.hasProperty(numIndicesProperty))
+        _numIndices = const_cast<uint*>(_targetData.getPointer<uint>(numIndicesProperty));
 }
 
 void
-DrawCall::bindStates(const std::map<std::string, data::Binding>&    stateBindings,
-                     const data::Store&                             defaultValues)
+DrawCall::bindStates(const std::unordered_map<std::string, data::Binding>&  stateBindings,
+                     const data::Store&                                     defaultValues)
 {
     _priority = bindState<float>(States::PROPERTY_PRIORITY, stateBindings, defaultValues);
     _zSorted = bindState<bool>(States::PROPERTY_ZSORTED, stateBindings, defaultValues);
@@ -493,15 +538,14 @@ DrawCall::render(AbstractContext::Ptr   context,
         context->setSamplerStateAt(s.position, *s.wrapMode, *s.textureFilter, *s.mipFilter);
     }
 
-    for (auto numSamplers = _samplers.size(); numSamplers < MAX_NUM_TEXTURES; ++numSamplers)
-        context->setTextureAt(numSamplers, -1, -1);
+    // for (auto numSamplers = _samplers.size(); numSamplers < MAX_NUM_TEXTURES; ++numSamplers)
+    //     context->setTextureAt(numSamplers, -1, -1);
 
     for (const auto& a : _attributes)
         context->setVertexBufferAt(a.location, *a.resourceId, a.size, *a.stride, a.offset);
-    /*
-    for (auto numAttributes = _attributes.size(); numAttributes < MAX_NUM_VERTEXBUFFERS; ++numAttributes)
-        context->setVertexBufferAt(numAttributes, -1, 0, 0, 0);
-    */
+
+    // for (auto numAttributes = _attributes.size(); numAttributes < MAX_NUM_VERTEXBUFFERS; ++numAttributes)
+    //     context->setVertexBufferAt(numAttributes, -1, 0, 0, 0);
 
     context->setColorMask(*_colorMask);
     context->setBlendingMode(*_blendingSourceFactor, *_blendingDestinationFactor);
@@ -517,8 +561,8 @@ DrawCall::render(AbstractContext::Ptr   context,
 }
 
 data::ResolvedBinding*
-DrawCall::resolveBinding(const std::string&                             inputName,
-                         const std::map<std::string, data::Binding>&    bindings)
+DrawCall::resolveBinding(const std::string&                                     inputName,
+                         const std::unordered_map<std::string, data::Binding>&  bindings)
 {
     bool isCollection = false;
     std::string bindingName = inputName;
@@ -576,7 +620,12 @@ DrawCall::resolveBinding(const std::string&                             inputNam
 math::vec3
 DrawCall::getEyeSpacePosition()
 {
-    auto eyePosition = _zSorter->getEyeSpacePosition();
+    auto modelView = math::mat4();
 
-    return eyePosition;
+    if (_modelToWorldMatrix != nullptr)
+        modelView = *_modelToWorldMatrix;
+    if (_worldToScreenMatrix != nullptr)
+        modelView = (*_worldToScreenMatrix) * modelView;
+
+    return math::vec3(modelView * math::vec4(_centerPosition, 1));
 }

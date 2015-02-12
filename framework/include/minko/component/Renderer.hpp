@@ -40,24 +40,25 @@ namespace minko
 			typedef std::shared_ptr<Renderer>   Ptr;
 
 		private:
-			typedef std::shared_ptr<scene::Node>						            NodePtr;
-			typedef std::shared_ptr<AbstractComponent>					            AbsCmpPtr;
-			typedef std::shared_ptr<render::AbstractContext>			            AbsContext;
-			typedef std::shared_ptr<Surface>							            SurfacePtr;
-			typedef std::shared_ptr<render::DrawCall>					            DrawCallPtr;
-			typedef std::shared_ptr<SceneManager>						            SceneManagerPtr;
-			typedef std::shared_ptr<render::AbstractTexture>			            AbsTexturePtr;
-			typedef std::shared_ptr<render::Effect>						            EffectPtr;
-			typedef std::shared_ptr<data::AbstractFilter>				            AbsFilterPtr;
-			typedef Signal<SurfacePtr, const std::string&, bool>::Slot	            SurfaceTechniqueChangedSlot;
-			typedef Signal<AbsFilterPtr, SurfacePtr>::Slot				            FilterChangedSlot;
-            typedef data::Store                                                 	Store;
-            typedef std::shared_ptr<data::Collection>                               CollectionPtr;
-            typedef std::shared_ptr<data::Provider>                                 ProviderPtr;
-			typedef Signal<Ptr, AbsFilterPtr, data::Binding::Source, SurfacePtr>	RendererFilterChangedSignal;
-            typedef Signal<SurfacePtr>                                              SurfaceChangedSignal;
-            typedef render::DrawCallPool::DrawCallIteratorPair                      DrawCallIteratorPair;
-
+			typedef std::shared_ptr<scene::Node>						                    NodePtr;
+			typedef std::shared_ptr<AbstractComponent>					                    AbsCmpPtr;
+			typedef std::shared_ptr<render::AbstractContext>			                    AbsContext;
+			typedef std::shared_ptr<Surface>							                    SurfacePtr;
+			typedef std::shared_ptr<render::DrawCall>					                    DrawCallPtr;
+			typedef std::shared_ptr<SceneManager>						                    SceneManagerPtr;
+			typedef std::shared_ptr<render::AbstractTexture>			                    AbsTexturePtr;
+			typedef std::shared_ptr<render::Effect>						                    EffectPtr;
+			typedef std::shared_ptr<data::AbstractFilter>				                    AbsFilterPtr;
+			typedef Signal<SurfacePtr, const std::string&, bool>::Slot	                    SurfaceTechniqueChangedSlot;
+			typedef Signal<AbsFilterPtr, SurfacePtr>::Slot				                    FilterChangedSlot;
+            typedef data::Store                                                 	        Store;
+            typedef std::shared_ptr<data::Collection>                                       CollectionPtr;
+            typedef std::shared_ptr<data::Provider>                                         ProviderPtr;
+			typedef Signal<Ptr, AbsFilterPtr, data::Binding::Source, SurfacePtr>	        RendererFilterChangedSignal;
+            typedef Signal<SurfacePtr>                                                      SurfaceChangedSignal;
+            typedef render::DrawCallPool::DrawCallIteratorPair                              DrawCallIteratorPair;
+            typedef std::unordered_map<SurfacePtr, std::list<SurfaceChangedSignal::Slot>>   SurfaceSlotMap;
+            typedef Signal<render::DrawCall*>                                               ZSortNeeded;
 		private:
 			std::string													    _name;
 
@@ -78,6 +79,9 @@ namespace minko
 			float														    _priority;
 			bool														    _enabled;
 			std::shared_ptr<geometry::Geometry>								_postProcessingGeom;
+            bool                                                            _mustZSort;
+
+            std::unordered_map<const render::DrawCall*, ZSortNeeded::Slot>  _drawCallToZSortNeededSlot;
 
 			Signal<AbsCmpPtr, NodePtr>::Slot							    _targetAddedSlot;
 			Signal<AbsCmpPtr, NodePtr>::Slot							    _targetRemovedSlot;
@@ -88,10 +92,11 @@ namespace minko
 			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot					    _componentAddedSlot;
 			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot					    _componentRemovedSlot;
 			Signal<SceneManagerPtr, uint, AbsTexturePtr>::Slot			    _renderingBeginSlot;
-            std::map<SurfacePtr, std::list<SurfaceChangedSignal::Slot>>     _surfaceChangedSlots;
+            SurfaceSlotMap                                                  _surfaceChangedSlots;
+            Signal<Store&, ProviderPtr, const std::string&>::Slot           _worldToScreenMatrixPropertyChangedSlot;
 
 			render::DrawCallPool								            _drawCallPool;
-            std::map<SurfacePtr, DrawCallIteratorPair>                      _surfaceToDrawCallIterator;
+            std::unordered_map<SurfacePtr, DrawCallIteratorPair>            _surfaceToDrawCallIterator;
 
 			/*std::set<AbsFilterPtr>										_targetDataFilters;
 			std::set<AbsFilterPtr>										_rendererDataFilters;
@@ -103,8 +108,8 @@ namespace minko
 			std::unordered_map<AbsFilterPtr, FilterChangedSlot>			_rootDataFilterChangedSlots;*/
 
 			std::shared_ptr<RendererFilterChangedSignal>				    _filterChanged;
-			std::map<NodePtr, Signal<NodePtr, NodePtr>::Slot>				_nodeLayoutChangedSlot;
-			std::map<SurfacePtr, Signal<AbsCmpPtr>::Slot>					_surfaceLayoutMaskChangedSlot;
+			std::unordered_map<NodePtr, Signal<NodePtr, NodePtr>::Slot>		_nodeLayoutChangedSlot;
+            std::unordered_map<SurfacePtr, Signal<AbsCmpPtr>::Slot>			_surfaceLayoutMaskChangedSlot;
 
 		public:
 			inline static
@@ -299,7 +304,7 @@ namespace minko
 			}
 
 			void
-            layoutMask(const scene::Layout value);
+            layoutMask(scene::Layout value);
 
 			/*const std::set<AbsFilterPtr>&
 			filters(data::BindingSource source) const

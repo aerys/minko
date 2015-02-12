@@ -59,7 +59,7 @@ TEST_F(DrawCallTest, OneFloatUniformBindingFromRootData)
     p->set<float>("foo", 42.f);
     rootData.addProvider(p);
 
-    std::map<std::string, data::Binding> bindings = { { "uFoo", { "foo", data::Binding::Source::ROOT } } };
+    std::unordered_map<std::string, data::Binding> bindings = { { "uFoo", { "foo", data::Binding::Source::ROOT } } };
     DrawCall drawCall(nullptr, std::unordered_map<std::string, std::string>{}, rootData, rendererData, targetData);
     ProgramInputs::UniformInput input("uFoo", 23, 1, ProgramInputs::Type::float1);
 
@@ -134,7 +134,7 @@ TEST_F(DrawCallTest, OneFloatUniformWithVariableBindingFromRootData)
     p->set<float>("foo", 42.f);
     rootData.addProvider(p, "foos");
 
-    std::map<std::string, data::Binding> bindings = { { "uFoo", { "foos[${bar}].foo", data::Binding::Source::ROOT } } };
+    std::unordered_map<std::string, data::Binding> bindings = { { "uFoo", { "foos[${bar}].foo", data::Binding::Source::ROOT } } };
     DrawCall drawCall(nullptr, {{ "bar", "0" }}, rootData, rendererData, targetData);
     ProgramInputs::UniformInput input("uFoo", 23, 1, ProgramInputs::Type::float1);
 
@@ -161,7 +161,7 @@ TEST_F(DrawCallTest, OneIntUniformBindingFromRootData)
     p->set<int>("foo", 42);
     rootData.addProvider(p);
 
-    std::map<std::string, data::Binding> bindings = { { "uFoo", { "foo", data::Binding::Source::ROOT } } };
+    std::unordered_map<std::string, data::Binding> bindings = { { "uFoo", { "foo", data::Binding::Source::ROOT } } };
     DrawCall drawCall(nullptr, std::unordered_map<std::string, std::string>{}, rootData, rendererData, targetData);
     ProgramInputs::UniformInput input("uFoo", 23, 1, ProgramInputs::Type::int1);
 
@@ -228,7 +228,7 @@ TEST_F(DrawCallTest, OneIntUniformWithVariableBindingFromRootData)
     p->set<int>("foo", 42);
     rootData.addProvider(p, "foos");
 
-    std::map<std::string, data::Binding> bindings = { { "uFoo", { "foos[${bar}].foo", data::Binding::Source::ROOT } } };
+    std::unordered_map<std::string, data::Binding> bindings = { { "uFoo", { "foos[${bar}].foo", data::Binding::Source::ROOT } } };
     DrawCall drawCall(nullptr, { { "bar", "0" } }, rootData, rendererData, targetData);
     ProgramInputs::UniformInput input("uFoo", 23, 1, ProgramInputs::Type::int1);
 
@@ -255,7 +255,7 @@ TEST_F(DrawCallTest, OneBoolUniformBindingFromRootData)
     p->set<int>("foo", 1);
     rootData.addProvider(p);
 
-    std::map<std::string, data::Binding> bindings = { { "uFoo", { "foo", data::Binding::Source::ROOT } } };
+    std::unordered_map<std::string, data::Binding> bindings = { { "uFoo", { "foo", data::Binding::Source::ROOT } } };
     DrawCall drawCall(nullptr, std::unordered_map<std::string, std::string>{}, rootData, rendererData, targetData);
     ProgramInputs::UniformInput input("uFoo", 23, 1, ProgramInputs::Type::bool1);
 
@@ -322,7 +322,7 @@ TEST_F(DrawCallTest, OneBoolUniformWithVariableBindingFromRootData)
     p->set<int>("foo", 1);
     rootData.addProvider(p, "foos");
 
-    std::map<std::string, data::Binding> bindings = { { "uFoo", { "foos[${bar}].foo", data::Binding::Source::ROOT } } };
+    std::unordered_map<std::string, data::Binding> bindings = { { "uFoo", { "foos[${bar}].foo", data::Binding::Source::ROOT } } };
     DrawCall drawCall(nullptr, { { "bar", "0" } }, rootData, rendererData, targetData);
     ProgramInputs::UniformInput input("uFoo", 23, 1, ProgramInputs::Type::bool1);
 
@@ -391,7 +391,7 @@ TEST_F(DrawCallTest, RenderTargetBindingFromTargetData)
     p->set("renderTargetTest", texture->sampler());
     targetData.addProvider(p);
 
-    std::map<std::string, data::Binding> bindings = { { "target", { "renderTargetTest", data::Binding::Source::TARGET } } };
+    std::unordered_map<std::string, data::Binding> bindings = { { "target", { "renderTargetTest", data::Binding::Source::TARGET } } };
     DrawCall drawCall(nullptr, std::unordered_map<std::string, std::string>{}, rootData, rendererData, targetData);
 
     drawCall.bindStates(bindings, defaultValues);
@@ -423,7 +423,7 @@ TEST_F(DrawCallTest, SamplerStatesImplicitDefaultValues)
 
     auto samplerUniformValue = "material[${id}]." + samplerBindingName;
 
-    std::map<std::string, data::Binding> bindings = {
+    std::unordered_map<std::string, data::Binding> bindings = {
         { samplerUniformName, { samplerUniformValue, data::Binding::Source::ROOT } },
     };
 
@@ -449,7 +449,7 @@ TEST_F(DrawCallTest, SamplerStatesImplicitDefaultValues)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -495,7 +495,7 @@ TEST_F(DrawCallTest, SamplerStatesWrapModeWithDefaultValueRepeat)
     defaultValues.addProvider(defaultValueProvider);
     defaultValueProvider->set(sampleStateUniformName, sampleStateUniformDefaultValue);
 
-    std::map<std::string, data::Binding> bindings = {
+    std::unordered_map<std::string, data::Binding> bindings = {
         { samplerUniformName, { samplerUniformValue, data::Binding::Source::ROOT } }
     };
 
@@ -518,7 +518,7 @@ TEST_F(DrawCallTest, SamplerStatesWrapModeWithDefaultValueRepeat)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -562,7 +562,7 @@ TEST_F(DrawCallTest, SamplerStatesWrapModeWithDefaultValueClamp)
     defaultValues.addProvider(defaultValueProvider);
     defaultValueProvider->set(sampleStateUniformName, sampleStateUniformDefaultValue);
 
-    std::map<std::string, data::Binding> bindings = {
+    std::unordered_map<std::string, data::Binding> bindings = {
         { samplerUniformName, { samplerUniformValue, data::Binding::Source::ROOT } }
     };
 
@@ -585,7 +585,7 @@ TEST_F(DrawCallTest, SamplerStatesWrapModeWithDefaultValueClamp)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -629,7 +629,7 @@ TEST_F(DrawCallTest, SamplerStatesTextureFilterWithDefaultValueLinear)
     defaultValues.addProvider(defaultValueProvider);
     defaultValueProvider->set(sampleStateUniformName, sampleStateUniformDefaultValue);
 
-    std::map<std::string, data::Binding> bindings = {
+    std::unordered_map<std::string, data::Binding> bindings = {
         { samplerUniformName, { samplerUniformValue, data::Binding::Source::ROOT } }
     };
 
@@ -652,7 +652,7 @@ TEST_F(DrawCallTest, SamplerStatesTextureFilterWithDefaultValueLinear)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -696,7 +696,7 @@ TEST_F(DrawCallTest, SamplerStatesTextureFilterWithDefaultValueNearest)
     defaultValues.addProvider(defaultValueProvider);
     defaultValueProvider->set(sampleStateUniformName, sampleStateUniformDefaultValue);
 
-    std::map<std::string, data::Binding> bindings = {
+    std::unordered_map<std::string, data::Binding> bindings = {
         { samplerUniformName, { samplerUniformValue, data::Binding::Source::ROOT } }
     };
 
@@ -719,7 +719,7 @@ TEST_F(DrawCallTest, SamplerStatesTextureFilterWithDefaultValueNearest)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -763,7 +763,7 @@ TEST_F(DrawCallTest, SamplerStatesMipFilterWithDefaultValueLinear)
     defaultValues.addProvider(defaultValueProvider);
     defaultValueProvider->set(sampleStateUniformName, sampleStateUniformDefaultValue);
 
-    std::map<std::string, data::Binding> bindings = {
+    std::unordered_map<std::string, data::Binding> bindings = {
         { samplerUniformName, { samplerUniformValue, data::Binding::Source::ROOT } }
     };
 
@@ -786,7 +786,7 @@ TEST_F(DrawCallTest, SamplerStatesMipFilterWithDefaultValueLinear)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -830,7 +830,7 @@ TEST_F(DrawCallTest, SamplerStatesMipFilterWithDefaultValueLinearNearest)
     defaultValues.addProvider(defaultValueProvider);
     defaultValueProvider->set(sampleStateUniformName, sampleStateUniformDefaultValue);
 
-    std::map<std::string, data::Binding> bindings = {
+    std::unordered_map<std::string, data::Binding> bindings = {
         { samplerUniformName, { samplerUniformValue, data::Binding::Source::ROOT } }
     };
 
@@ -853,7 +853,7 @@ TEST_F(DrawCallTest, SamplerStatesMipFilterWithDefaultValueLinearNearest)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -897,7 +897,7 @@ TEST_F(DrawCallTest, SamplerStatesMipFilterWithDefaultValueNone)
     defaultValues.addProvider(defaultValueProvider);
     defaultValueProvider->set(sampleStateUniformName, sampleStateUniformDefaultValue);
 
-    std::map<std::string, data::Binding> bindings = {
+    std::unordered_map<std::string, data::Binding> bindings = {
         { samplerUniformName, { samplerUniformValue, data::Binding::Source::ROOT } }
     };
 
@@ -920,7 +920,7 @@ TEST_F(DrawCallTest, SamplerStatesMipFilterWithDefaultValueNone)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -942,7 +942,7 @@ TEST_F(DrawCallTest, SamplerStatesWrapModeWithVariableBindingFromRootData)
     data::Store defaultValues;
 
     auto p = data::Provider::create();
-    
+
     auto samplerUniformName = "uDiffuseMap";
     std::string samplerBindingName = "diffuseMap";
 
@@ -963,11 +963,11 @@ TEST_F(DrawCallTest, SamplerStatesWrapModeWithVariableBindingFromRootData)
     auto samplerUniformValue = "material[${id}]." + samplerBindingName;
     auto wrapModeUniformValue = "material[${id}]." + wrapModeBindingName;
 
-    std::map<std::string, data::Binding> bindings = {
+    std::unordered_map<std::string, data::Binding> bindings = {
         { samplerUniformName, { samplerUniformValue, data::Binding::Source::ROOT } },
         { wrapModeUniformName, { wrapModeUniformValue, data::Binding::Source::ROOT } }
     };
-    
+
     DrawCall drawCall(nullptr, { { "id", "0" } }, rootData, rendererData, targetData);
 
     auto location = 23;
@@ -990,7 +990,7 @@ TEST_F(DrawCallTest, SamplerStatesWrapModeWithVariableBindingFromRootData)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_NE(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -1012,7 +1012,7 @@ TEST_F(DrawCallTest, SamplerStatesTextureFilterWithVariableBindingFromRootData)
     auto size = 0;
 
     auto p = data::Provider::create();
-    
+
     auto samplerUniformName = "uDiffuseMap";
     std::string samplerBindingName = "diffuseMap";
 
@@ -1033,11 +1033,11 @@ TEST_F(DrawCallTest, SamplerStatesTextureFilterWithVariableBindingFromRootData)
     auto samplerUniformValue = "material[${id}]." + samplerBindingName;
     auto textureFilterUniformValue = "material[${id}]." + textureFilterBindingName;
 
-    std::map<std::string, data::Binding> bindings = {
+    std::unordered_map<std::string, data::Binding> bindings = {
         { samplerUniformName, { samplerUniformValue, data::Binding::Source::ROOT } },
         { textureFilterUniformName, { textureFilterUniformValue, data::Binding::Source::ROOT } }
     };
-    
+
     DrawCall drawCall(nullptr, { { "id", "0" } }, rootData, rendererData, targetData);
 
     ProgramInputs::UniformInput input(samplerUniformName, location, size, ProgramInputs::Type::sampler2d);
@@ -1057,7 +1057,7 @@ TEST_F(DrawCallTest, SamplerStatesTextureFilterWithVariableBindingFromRootData)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_NE(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -1100,7 +1100,7 @@ TEST_F(DrawCallTest, SamplerStatesMipFilterWithVariableBindingFromRootData)
     auto samplerUniformValue = "material[${id}]." + samplerBindingName;
     auto mipFilterUniformValue = "material[${id}]." + mipFilterBindingName;
 
-    std::map<std::string, data::Binding> bindings = {
+    std::unordered_map<std::string, data::Binding> bindings = {
         { samplerUniformName, { samplerUniformValue, data::Binding::Source::ROOT } },
         { mipFilterUniformName, { mipFilterUniformValue, data::Binding::Source::ROOT } }
     };
@@ -1124,7 +1124,7 @@ TEST_F(DrawCallTest, SamplerStatesMipFilterWithVariableBindingFromRootData)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_NE(resolvedBindings.at(2), nullptr);

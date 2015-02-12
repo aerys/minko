@@ -119,10 +119,15 @@ namespace minko
 			TextureSampler*						_target;
             /*SamplerStates               		_samplerStates;*/
 
-            std::map<const data::Binding*, ChangedSlot>    _propAddedOrRemovedSlot;
+            // Positional members
+            math::vec3                          _centerPosition;
+            const math::mat4*                   _modelToWorldMatrix;
+            const math::mat4*                   _worldToScreenMatrix;
 
-            std::shared_ptr<DrawCallZSorter>                _zSorter;
-            Signal<DrawCall*>::Ptr                          _zSortNeeded;
+            ChangedSlot                         _modelToWorldMatrixPropertyAddedSlot;
+            ChangedSlot                         _worldToScreenMatrixPropertyAddedSlot;
+            ChangedSlot                         _modelToWorldMatrixPropertyRemovedSlot;
+            ChangedSlot                         _worldToScreenMatrixPropertyRemovedSlot;
 
 		public:
             DrawCall(std::shared_ptr<Pass>  pass,
@@ -207,13 +212,7 @@ namespace minko
             {
                 return _samplers;
             }
-
-            std::shared_ptr<DrawCallZSorter>
-            zSorter() const
-            {
-                return _zSorter;
-            }
-
+            
             inline
             float
             priority() const
@@ -225,16 +224,12 @@ namespace minko
             bool
             zSorted() const
             {
-                return *_zSorted;
+                if (_zSorted)
+                    return *_zSorted;
+                else
+                    return false;
             }
-
-            inline
-            Signal<DrawCall*>::Ptr
-            zSortNeeded() const
-            {
-                return _zSortNeeded;
-            }
-
+            
 			inline
 			const TextureSampler&
 			target()
@@ -252,29 +247,32 @@ namespace minko
 				   uint 							 clearColor) const;
 
             void
-            bindAttribute(ConstAttrInputRef     						input,
-						  const std::map<std::string, data::Binding>&   attributeBindings,
-                          const data::Store&                            defaultValues);
+            bindAttribute(ConstAttrInputRef     						        input,
+						  const std::unordered_map<std::string, data::Binding>& attributeBindings,
+                          const data::Store&                                    defaultValues);
 
             data::ResolvedBinding*
-            bindUniform(const ProgramInputs::UniformInput&          input,
-                        const std::map<std::string, data::Binding>& uniformBindings,
-                        const data::Store&                          defaultValues);
+            bindUniform(const ProgramInputs::UniformInput&                      input,
+                        const std::unordered_map<std::string, data::Binding>&   uniformBindings,
+                        const data::Store&                                      defaultValues);
 
             SamplerStatesResolveBindings
-            bindSamplerStates(const ProgramInputs::UniformInput&          input,
-                              const std::map<std::string, data::Binding>& uniformBindings,
-                              const data::Store&                          defaultValues);
+            bindSamplerStates(const ProgramInputs::UniformInput&                    input,
+                              const std::unordered_map<std::string, data::Binding>& uniformBindings,
+                              const data::Store&                                    defaultValues);
 
             data::ResolvedBinding*
-            bindSamplerState(ConstUniformInputRef                          input,
-                             const std::map<std::string, data::Binding>&   uniformBindings,
-                             const data::Store&                            defaultValues,
-                             const std::string&                            samplerStateProperty);
+            bindSamplerState(ConstUniformInputRef                                   input,
+                             const std::unordered_map<std::string, data::Binding>&  uniformBindings,
+                             const data::Store&                                     defaultValues,
+                             const std::string&                                     samplerStateProperty);
 
 			void
-            bindStates(const std::map<std::string, data::Binding>&	stateBindings,
-					   const data::Store&							defaultValues);
+            bindStates(const std::unordered_map<std::string, data::Binding>&	stateBindings,
+					   const data::Store&							            defaultValues);
+
+            void
+            bindPositionalMembers();
 
 			void
 			bindIndexBuffer();
@@ -291,8 +289,8 @@ namespace minko
             getStore(data::Binding::Source source);
 
             data::ResolvedBinding*
-            resolveBinding(const std::string&          					inputName,
-                           const std::map<std::string, data::Binding>&  bindings);
+            resolveBinding(const std::string&          					            inputName,
+                           const std::unordered_map<std::string, data::Binding>&    bindings);
 
 			void
 			setUniformValueFromStore(const ProgramInputs::UniformInput&   input,
@@ -312,9 +310,9 @@ namespace minko
 
             template <typename T>
             T*
-            bindState(const std::string&        					stateName,
-					  const std::map<std::string, data::Binding>&   bindings,
-					  const data::Store&                            defaultValues)
+            bindState(const std::string&        					            stateName,
+					  const std::unordered_map<std::string, data::Binding>&     bindings,
+					  const data::Store&                                        defaultValues)
             {
 				// FIXME: handle errors like in bindUniform()
 				// FIXME: call resolveBinding
