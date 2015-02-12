@@ -179,7 +179,7 @@ solution "minko"
 		-- include 'example/offscreen'
 		-- include 'example/particles'
 		-- include 'example/physics'
-		-- include 'example/picking'
+		include 'example/picking'
 		-- include 'example/raycasting'
 		include 'example/serializer'
 		-- include 'example/sky-box'
