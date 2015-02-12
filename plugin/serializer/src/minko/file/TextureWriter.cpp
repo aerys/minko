@@ -187,11 +187,14 @@ TextureWriter::embed(AssetLibraryPtr               assetLibrary,
 
     msgpack::pack(headerStream, headerData);
 
-    _headerSize = headerStream.str().size();
+    const auto serializedHeaderData = headerStream.str();
+    unsigned short headerSize = serializedHeaderData.size();
+
+    _headerSize = headerSize;
 
     std::stringstream result;
 
-    result << headerStream.str() << blobStream.str();
+    result << headerSize << headerStream.str() << blobStream.str();
 
     return result.str();
 }

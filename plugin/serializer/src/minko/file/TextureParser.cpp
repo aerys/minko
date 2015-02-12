@@ -71,7 +71,7 @@ TextureParser::parse(const std::string&                filename,
 {
     readHeader(filename, data, 0x00000054);
 
-    auto textureHeaderOffset = _headerSize + _dependenciesSize;
+    auto textureHeaderOffset = _headerSize + _dependenciesSize + 2;
     auto textureBlobOffset = textureHeaderOffset + _textureHeaderSize;
 
     auto rawTextureHeaderData = std::vector<unsigned char>(data.begin() + textureHeaderOffset,

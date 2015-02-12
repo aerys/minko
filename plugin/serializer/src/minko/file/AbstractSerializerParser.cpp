@@ -261,9 +261,10 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 
         if (assetLibrary->texture(resolvedPath) == nullptr)
         {
-            const auto headerSize = static_cast<int>(metaData);
+            const auto hasTextureHeaderSize = (((metaData & 0xf000) >> 15) == 1 ? true : false);
+            auto textureHeaderSize = static_cast<unsigned int>(metaData & 0x0fff);
 
-            _textureParser->textureHeaderSize(headerSize);
+            _textureParser->textureHeaderSize(textureHeaderSize);
             _textureParser->dataEmbed(true);
 
             _textureParser->parse(resolvedPath, assetCompletePath, options, data, assetLibrary);
@@ -412,10 +413,43 @@ AbstractSerializerParser::deserializeTexture(unsigned short     metaData,
     if (assetLibrary->texture(assetCompletePath) != nullptr)
         return;
 
-    auto assetHeaderSize = MINKO_SCENE_HEADER_SIZE + 2;
-    auto textureHeaderSize = static_cast<unsigned int>(metaData);
+    auto assetHeaderSize = MINKO_SCENE_HEADER_SIZE + 2 + 2;
+
+    const auto hasTextureHeaderSize = (((metaData & 0xf000) >> 15) == 1 ? true : false);
+    auto textureHeaderSize = static_cast<unsigned int>(metaData & 0x0fff);
 
     auto textureOptions = options->clone();
+
+    if (!hasTextureHeaderSize)
+    {
+        auto textureHeaderLoader = Loader::create();
+        auto textureHeaderOptions = textureOptions->clone()
+            ->loadAsynchronously(false)
+            ->seekingOffset(0)
+            ->seekedLength(assetHeaderSize)
+            ->storeDataIfNotParsed(false);
+
+        textureHeaderLoader->options(textureHeaderOptions);
+
+        auto textureHeaderLoaderCompleteSlot = textureHeaderLoader->complete()->connect(
+            [&](Loader::Ptr loaderThis) -> void
+        {
+            const auto& headerData = loaderThis->files().at(assetCompletePath)->data();
+
+            const auto textureHeaderSizeOffset = assetHeaderSize - 2;
+
+            auto headerDataStream = std::stringstream(std::string(
+                headerData.begin() + textureHeaderSizeOffset,
+                headerData.begin() + textureHeaderSizeOffset + 2
+            ));
+
+            headerDataStream >> textureHeaderSize;
+        });
+
+        textureHeaderLoader
+            ->queue(assetCompletePath)
+            ->load();
+    }
 
     textureOptions
         ->loadAsynchronously(false)

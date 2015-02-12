@@ -283,9 +283,11 @@ Dependency::serializeGeometry(std::shared_ptr<Dependency>				dependency,
     serialize::AssetType        assetType;
     std::string                 content;
 
+    const auto assetIsNull = writerOptions->assetIsNull(geometry->uuid());
+
     geometryWriter->data(geometry);
 
-    if (writerOptions->embedMode() & WriterOptions::EmbedMode::Geometry)
+    if (!assetIsNull && writerOptions->embedMode() & WriterOptions::EmbedMode::Geometry)
     {
         assetType = serialize::AssetType::EMBED_GEOMETRY_ASSET;
 
@@ -307,10 +309,13 @@ Dependency::serializeGeometry(std::shared_ptr<Dependency>				dependency,
             filename = "geometry" + std::to_string(geometryNameId++) + ".geometry";
         }
 
-        auto completeFilename = writerOptions->outputAssetUriFunction()(filename);
+        if (!assetIsNull)
+        {
+            auto completeFilename = writerOptions->outputAssetUriFunction()(filename);
 
-        auto embeddedHeaderData = std::vector<unsigned char>();
-		geometryWriter->write(completeFilename, assetLibrary, options, writerOptions, dependency, userDefinedDependency, embeddedHeaderData);
+            auto embeddedHeaderData = std::vector<unsigned char>();
+            geometryWriter->write(completeFilename, assetLibrary, options, writerOptions, dependency, userDefinedDependency, embeddedHeaderData);
+        }
 
         content = filename;
     }
@@ -335,13 +340,15 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
     auto assetType              = serialize::AssetType();
     auto content                = std::string();
 
+    const auto assetIsNull = writerOptions->assetIsNull(texture->uuid());
+
     auto extension = fileName.substr(fileName.find_last_of(".") + 1);
     if (extension != textureExtension)
         fileName = fileName.substr(0, fileName.size() - (extension.size())) + std::string(textureExtension);
 
     writer->data(texture);
 
-    if (writerOptions->embedMode() & WriterOptions::EmbedMode::Texture)
+    if (!assetIsNull && writerOptions->embedMode() & WriterOptions::EmbedMode::Texture)
     {
         assetType = serialize::AssetType::EMBED_TEXTURE_PACK_ASSET;
 
@@ -357,18 +364,22 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
         // differentiate asset location relatively to scene root from asset name
         auto assetName = fileName.substr(fileName.find_last_of("/\\") + 1);
 
-        writer->write(completeFileName, assetLibrary, options, writerOptions, dependency);
+        if (!assetIsNull)
+        {
+            writer->write(completeFileName, assetLibrary, options, writerOptions, dependency);
+        }
 
         content = assetName;
     }
 
-    auto metaData = static_cast<unsigned short>(writer->headerSize());
+    const auto hasHeaderSize = !assetIsNull;
+    const auto headerSize = writer->headerSize();
 
-    auto fullMetaData =
-        static_cast<unsigned int>(assetType) +
-        static_cast<unsigned int>(metaData << 16);
+    const auto metadata = static_cast<unsigned int>(hasHeaderSize ? 1u << 31 : 0u) +
+                          static_cast<unsigned int>((headerSize & 0x0fff) << 16) +
+                          static_cast<unsigned int>(assetType);
 
-    SerializedAsset res(fullMetaData, resourceId, content);
+    SerializedAsset res(metadata, resourceId, content);
 
 	return res;
 }
@@ -385,9 +396,11 @@ Dependency::serializeMaterial(std::shared_ptr<Dependency>			dependency,
     serialize::AssetType        assetType;
     std::string                 content;
 
+    const auto assetIsNull = writerOptions->assetIsNull(material->uuid());
+
     materialWriter->data(material);
 
-    if (writerOptions->embedMode() & WriterOptions::EmbedMode::Material)
+    if (!assetIsNull && writerOptions->embedMode() & WriterOptions::EmbedMode::Material)
     {
         assetType = serialize::AssetType::EMBED_MATERIAL_ASSET;
         content = materialWriter->embedAll(assetLibrary, options, writerOptions, dependency);
@@ -418,7 +431,10 @@ Dependency::serializeMaterial(std::shared_ptr<Dependency>			dependency,
 
         auto completeFilename = writerOptions->outputAssetUriFunction()(filename);
 
-        materialWriter->write(completeFilename, assetLibrary, options, writerOptions, dependency);
+        if (!assetIsNull)
+        {
+            materialWriter->write(completeFilename, assetLibrary, options, writerOptions, dependency);
+        }
 
         content = filename;
     }
