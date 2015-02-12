@@ -62,9 +62,9 @@ void main(void)
 
 	#ifdef POP_LOD_ENABLED
 		#ifdef POP_BLENDING_ENABLED
-			worldPosition = pop_blend(worldPosition, uPopLod, uPopBlendingLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound);
+			worldPosition = pop_blend(worldPosition, aNormal, uPopLod, uPopBlendingLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound);
 		#else
-			worldPosition = pop_quantify(worldPosition, uPopLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound);
+			worldPosition = pop_quantify(worldPosition, aNormal, uPopLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound);
 		#endif // POP_BLENDING_ENABLED
 	#endif // POP_LOD_ENABLED
 
