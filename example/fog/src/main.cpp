@@ -61,7 +61,7 @@ main(int argc, char** argv)
         teapotGeom->computeNormals();
         auto material = material::PhongMaterial::create();
         material->diffuseColor(0x00ff00ff);
-        material->data()->set("fogTechnique", material::FogTechnique::LIN);
+        material->data()->set("fogTechnique", (int)material::FogTechnique::LIN);
         material->data()->set("fogBounds", math::vec2(10.f, 20.f));
         material->data()->set("fogColor", math::vec4(.5f, .5f, .5f, 1.f));
         auto mesh = scene::Node::create("mesh")
@@ -139,22 +139,22 @@ main(int argc, char** argv)
             }
             else if (k->keyIsDown(input::Keyboard::L))
             {
-                material->data()->set("fogTechnique", material::FogTechnique::LIN);
-                groundMaterial->data()->set("fogTechnique", material::FogTechnique::LIN);
+                material->data()->set("fogTechnique", (int)material::FogTechnique::LIN);
+                groundMaterial->data()->set("fogTechnique", (int)material::FogTechnique::LIN);
 
                 std::cout << "fog type is linear" << std::endl;
             }
             else if (k->keyIsDown(input::Keyboard::E))
             {
-                material->data()->set("fogTechnique", material::FogTechnique::EXP);
-                groundMaterial->data()->set("fogTechnique", material::FogTechnique::EXP);
+                material->data()->set("fogTechnique", (int)material::FogTechnique::EXP);
+                groundMaterial->data()->set("fogTechnique", (int)material::FogTechnique::EXP);
 
                 std::cout << "fog type is exponential" << std::endl;
             }
             else if (k->keyIsDown(input::Keyboard::F))
             {
-                material->data()->set("fogTechnique", material::FogTechnique::EXP2);
-                groundMaterial->data()->set("fogTechnique", material::FogTechnique::EXP2);
+                material->data()->set("fogTechnique", (int)material::FogTechnique::EXP2);
+                groundMaterial->data()->set("fogTechnique", (int)material::FogTechnique::EXP2);
 
                 std::cout << "fog type is exponential2" << std::endl;
             }

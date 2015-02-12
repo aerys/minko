@@ -75,7 +75,7 @@ Picking::initialize(NodePtr             camera,
     _emulateMouseWithTouch = emulateMouseWithTouch;
     _addPickingLayout = addPickingLayout;
 
-	_pickingProvider->set("projection", _pickingProjection);
+	_pickingProvider->set("pickingProjection", _pickingProjection);
 }
 
 void
@@ -203,7 +203,7 @@ Picking::targetAdded(NodePtr target)
         "Picking Renderer"
     );
     _renderer->scissorBox(0, 0, 1, 1);
-    //_renderer->layoutMask(scene::Layout::Group::PICKING);
+    _renderer->layoutMask(scene::BuiltinLayout::PICKING);
 
 	updateDescendants(target);
 
@@ -319,8 +319,8 @@ Picking::componentRemovedHandler(NodePtr							target,
 	if (surfaceCtrl)
 		removeSurface(surfaceCtrl, node);
 
-	/*if (!node->hasComponent<Surface>() && _addPickingLayout)
-		node->layout(node->layout() & ~scene::Layout::Group::PICKING);*/
+	if (!node->hasComponent<Surface>() && _addPickingLayout)
+		node->layout(node->layout() & ~scene::BuiltinLayout::PICKING);
 }
 
 void
@@ -335,7 +335,7 @@ Picking::addSurface(SurfacePtr surface)
 
 		_surfaceToProvider[surface] = data::Provider::create();
 
-		_surfaceToProvider[surface]->set("color", math::vec4(
+		_surfaceToProvider[surface]->set("pickingColor", math::vec4(
 			((_pickingId >> 16) & 0xff) / 255.f,
 			((_pickingId >> 8) & 0xff) / 255.f,
 			((_pickingId)& 0xff) / 255.f,
@@ -347,10 +347,12 @@ Picking::addSurface(SurfacePtr surface)
 		{
 			_targetToProvider[target()] = _surfaceToProvider[surface];
 			target()->data().addProvider(_surfaceToProvider[surface]);
+
+            auto targetData = target()->data();
 		}
 
-		/*if (_addPickingLayout)
-			target()->layouts(target()->layouts() | scene::Layout::Group::PICKING);*/
+        if (_addPickingLayout)
+            target()->layout(target()->layout() | scene::BuiltinLayout::PICKING);
 	}
 }
 
@@ -420,7 +422,7 @@ Picking::removeSurfacesForNode(NodePtr node)
 
 	for (auto surfaceNode : surfaces->nodes())
 	{
-		//surfaceNode->layouts(surfaceNode->layouts() & ~scene::Layout::Group::PICKING);
+		surfaceNode->layout(surfaceNode->layout() & ~scene::BuiltinLayout::PICKING);
 
 		for (auto surface : surfaceNode->components<Surface>())
 			removeSurface(surface, surfaceNode);
@@ -434,7 +436,7 @@ Picking::renderingBegin(RendererPtr renderer)
 	float mouseY = (float)_mouse->y();
 
 	auto perspectiveCamera	= _camera->component<component::PerspectiveCamera>();
-	auto projection			= math::perspective(
+	auto projection	= math::perspective(
 		perspectiveCamera->fieldOfView(),
 		perspectiveCamera->aspectRatio(),
 		perspectiveCamera->zNear(),
@@ -442,9 +444,9 @@ Picking::renderingBegin(RendererPtr renderer)
 	);
 
 	projection[2][0] = mouseX / _context->viewportWidth() * 2.f;
-	projection[1][3] = (_context->viewportHeight() - mouseY) / _context->viewportHeight() * 2.f;
+	projection[2][1] = (_context->viewportHeight() - mouseY) / _context->viewportHeight() * 2.f;
 
-	_pickingProvider->set("projection", projection);
+	_pickingProvider->set("pickingProjection", projection);
 }
 
 void

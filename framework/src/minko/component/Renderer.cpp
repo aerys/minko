@@ -28,6 +28,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/AbstractTexture.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/component/SceneManager.hpp"
+#include "minko/component/PerspectiveCamera.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/render/DrawCallPool.hpp"
 #include "minko/data/AbstractFilter.hpp"
@@ -49,6 +50,7 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
     _viewportBox(0, 0, -1, -1),
 	_scissorBox(0, 0, -1, -1),
 	_enabled(true),
+    _mustZSort(true),
 	_renderingBegin(Signal<Ptr>::create()),
 	_renderingEnd(Signal<Ptr>::create()),
 	_beforePresent(Signal<Ptr>::create()),
@@ -286,12 +288,22 @@ Renderer::componentAddedHandler(std::shared_ptr<Node>				node,
 								std::shared_ptr<AbstractComponent>	ctrl)
 {
 	auto surfaceCtrl = std::dynamic_pointer_cast<Surface>(ctrl);
-	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
+    auto sceneManager = std::dynamic_pointer_cast<SceneManager>(ctrl);
+    auto perspectiveCamera = std::dynamic_pointer_cast<PerspectiveCamera>(ctrl);
 
 	if (surfaceCtrl)
         _toCollect.insert(surfaceCtrl);
 	else if (sceneManager)
 		setSceneManager(sceneManager);
+    else if (perspectiveCamera)
+    {
+        _worldToScreenMatrixPropertyChangedSlot = perspectiveCamera->target()->data().propertyChanged("worldToScreenMatrix").connect(
+            [&](data::Store&, data::Provider::Ptr, const std::string&)
+            {
+                _mustZSort = true;
+            }
+        );
+    }
 }
 
 void
@@ -337,6 +349,8 @@ Renderer::addSurface(Surface::Ptr surface)
         target()->data(),
         surface->target()->data()
     );
+
+    auto drawCall = *(_surfaceToDrawCallIterator[surface].first);
 
     auto callback = std::bind(
         &Renderer::surfaceGeometryOrMaterialChangedHandler,
@@ -399,6 +413,8 @@ Renderer::render(render::AbstractContext::Ptr	context,
     if (!_enabled)
 		return;
 
+    const bool doZSort = _mustZSort || !_toCollect.empty();
+
     // some surfaces have been added during the frame and collected
     // in _toCollect: we now have to take them into account to build
     // the corresponding draw calls before rendering
@@ -407,6 +423,7 @@ Renderer::render(render::AbstractContext::Ptr	context,
 		watchSurface(surface);
         addSurface(surface);
 	}
+
     _toCollect.clear();
 
 	_renderingBegin->execute(std::static_pointer_cast<Renderer>(shared_from_this()));
@@ -435,15 +452,19 @@ Renderer::render(render::AbstractContext::Ptr	context,
 		);
 
     _drawCallPool.update();
-	auto drawCalls = _drawCallPool.drawCalls();
-    drawCalls.sort(
-        std::bind(
-            &Renderer::compareDrawCalls,
-            this,
-            std::placeholders::_1,
-            std::placeholders::_2
-        )
-    );
+    
+    auto static counter = 0;
+
+    if (doZSort)
+    {
+        _drawCallPool.sortDrawCalls();
+        counter++;
+    }
+
+    _mustZSort = false;
+
+    auto drawCalls = _drawCallPool.drawCalls();
+
     for (const DrawCall* drawCall : drawCalls)
 	    drawCall->render(context, rt, _viewportBox, _backgroundColor);
 
@@ -583,32 +604,6 @@ Renderer::filterChangedHandler(data::AbstractFilter::Ptr	filter,
 		source,
 		surface
 	);
-}
-
-bool
-Renderer::compareDrawCalls(DrawCall* a, DrawCall* b)
-{
-    const float aPriority = a->priority();
-    const float bPriority = b->priority();
-    const bool samePriority = fabsf(aPriority - bPriority) < 1e-3f;
-
-    if (samePriority)
-    {
-        if (a->target().id == b->target().id)
-        {
-            if (a->zSorted() && b->zSorted())
-            {
-                auto aPosition = a->getEyeSpacePosition();
-                auto bPosition = b->getEyeSpacePosition();
-
-                return aPosition.z > bPosition.z;
-            }
-        }
-
-        return a->target().id < b->target().id;
-    }
-
-    return aPriority > bPriority;
 }
 
 void
