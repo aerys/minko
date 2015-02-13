@@ -177,9 +177,6 @@ namespace minko
 			Ptr
 			disposeBones();
 
-			Ptr
-			transposeMatrices();
-
 		private:
 			Skin(unsigned int numBones, unsigned int duration, unsigned int numFrames);
 

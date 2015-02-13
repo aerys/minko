@@ -177,18 +177,3 @@ Skin::disposeBones()
 
 	return shared_from_this();
 }
-
-Skin::Ptr
-Skin::transposeMatrices()
-{	
-	for (auto& frameMatrices : _boneMatricesPerFrame)
-	{
-		const unsigned int	numBones	= frameMatrices.size();
-
-		for (unsigned int boneId = 0; boneId < numBones; ++boneId)
-		{
-            math::mat4& matrix = math::transpose(frameMatrices[boneId]);
-		}
-	}
-	return shared_from_this();
-}
