@@ -40,7 +40,6 @@ namespace minko
 				typedef std::shared_ptr<scene::Node>				NodePtr;
 				typedef std::shared_ptr<AbstractComponent>			AbsCmpPtr;
 				typedef std::shared_ptr<Collider>					ColliderPtr;
-				typedef std::shared_ptr<math::Matrix4x4>			Matrix4x4Ptr;
 				typedef std::shared_ptr<Surface>					SurfacePtr;
 				typedef std::shared_ptr<file::AssetLibrary>			AssetLibraryPtr;
 
@@ -49,7 +48,7 @@ namespace minko
 				SurfacePtr											_surface;
                 NodePtr                                             _node;
 
-				Signal<ColliderPtr, Matrix4x4Ptr>::Slot				_physicsTransformChangedSlot;
+				Signal<ColliderPtr, math::mat4>::Slot				_physicsTransformChangedSlot;
 
 				Signal<AbsCmpPtr, NodePtr>::Slot					_targetAddedSlot;
 				Signal<AbsCmpPtr, NodePtr>::Slot					_targetRemovedSlot;
@@ -62,8 +61,6 @@ namespace minko
 				create(AssetLibraryPtr assets)
 				{
 					Ptr ptr = std::shared_ptr<ColliderDebug>(new ColliderDebug(assets));
-
-					ptr->initialize();
 
 					return ptr;
 				}
@@ -80,11 +77,14 @@ namespace minko
 				void
 				initializeDisplay();
 
-				void
-				targetAddedHandler(AbsCmpPtr, NodePtr);
+                void
+                addRootColliderDebugNode();
 
 				void
-				targetRemovedHandler(AbsCmpPtr, NodePtr);
+				targetAdded(NodePtr);
+
+				void
+				targetRemoved(NodePtr);
 
 				void
 				addedHandler(NodePtr, NodePtr, NodePtr);
@@ -93,7 +93,7 @@ namespace minko
 				removedHandler(NodePtr, NodePtr, NodePtr);
 
 				void
-				physicsTransformChangedHandler(ColliderPtr, Matrix4x4Ptr);
+                physicsTransformChangedHandler(ColliderPtr, const math::mat4&);
 			};
 		}
 	}

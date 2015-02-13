@@ -52,8 +52,11 @@ Program::upload()
 void
 Program::dispose()
 {
-	_context->deleteProgram(_id);
-	_id = -1;
+    if (_id != -1)
+    {
+	    _context->deleteProgram(_id);
+	    _id = -1;
+    }
 
 	_vertexShader = nullptr;
 	_fragmentShader = nullptr;

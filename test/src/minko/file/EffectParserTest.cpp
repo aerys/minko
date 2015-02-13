@@ -266,7 +266,7 @@ TEST_F(EffectParserTest, StatesBlendingModeAdditive)
     auto fx = loadEffect("effect/StatesBlendingModeAdditive.effect");
 
     ASSERT_NE(fx, nullptr);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::ONE);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::SRC_ALPHA);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestinationFactor(), Blending::Destination::ONE);
 }
 

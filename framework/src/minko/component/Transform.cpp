@@ -368,7 +368,7 @@ Transform::RootTransform::sortNodes()
         ->descendants(true, false)
         ->where([this](scene::Node::Ptr descendant) -> bool
     {
-        return descendant->hasComponent<Transform>();
+        return descendant->hasComponent<Transform>() && std::find(_nodes.begin(), _nodes.end(), descendant) != _nodes.end();
     });
 
     _nodes.assign(sortedNodeSet->nodes().begin(), sortedNodeSet->nodes().end());

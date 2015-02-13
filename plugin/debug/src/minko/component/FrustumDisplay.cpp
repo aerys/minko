@@ -46,12 +46,12 @@ FrustumDisplay::FrustumDisplay(const math::mat4& projection) :
 {
     _material
         ->diffuseColor(math::vec4(1.f, 1.f, 1.f, .1f))
-        // .depthFunction(render::CompareMode::ALWAYS)
-        .priority(render::Priority::LAST)
-        .depthMask(false)
-        .zSorted(true)
-        .triangleCulling(render::TriangleCulling::NONE)
-        .blendingMode(render::Blending::Mode::ADDITIVE);
+        // ->depthFunction(render::CompareMode::ALWAYS)
+        ->priority(render::Priority::LAST)
+        ->depthMask(false)
+        ->zSorted(true)
+        // ->triangleCulling(render::TriangleCulling::NONE)
+        ->blendingMode(render::Blending::Mode::ADDITIVE);
 }
 
 void
@@ -94,6 +94,14 @@ void
 FrustumDisplay::initialize()
 {
     auto vertices = getVertices();
+
+    initializePlanes(vertices);
+    initializeLines(vertices);
+}
+
+void
+FrustumDisplay::initializePlanes(const std::vector<math::vec3>& vertices)
+{
     auto assets = target()->root()->component<SceneManager>()->assets();
 
     auto effect = assets->effect("effect/Basic.effect");
@@ -113,8 +121,6 @@ FrustumDisplay::initialize()
     _surface = Surface::create(geom, _material, effect, "transparent");
     _surface->layoutMask(scene::BuiltinLayout::DEBUG_ONLY);
     target()->addComponent(_surface);
-
-    initializeLines(vertices);
 }
 
 void

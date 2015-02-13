@@ -49,9 +49,10 @@ namespace minko
 
             static
             std::shared_ptr<component::AbstractComponent>
-            deserializePhysics(std::string&                                serializedAnimation,
-                               std::shared_ptr<file::AssetLibrary>        assetLibrary,
-                               std::shared_ptr<file::Dependency>        dependencies);
+            deserializePhysics(file::SceneVersion                   sceneVersion,
+                               std::string&                         serializedAnimation,
+                               std::shared_ptr<file::AssetLibrary>  assetLibrary,
+                               std::shared_ptr<file::Dependency>    dependencies);
         };
     }
 }

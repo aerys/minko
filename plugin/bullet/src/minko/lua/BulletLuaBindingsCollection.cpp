@@ -27,6 +27,7 @@ using namespace minko;
 using namespace minko::lua;
 using namespace minko::component;
 
+/*
 std::vector<std::function<void(LuaGlue&)>>
 BulletLuaBindingsCollection::getBulletBindings()
 {
@@ -44,3 +45,4 @@ BulletLuaBindingsCollection::getBulletBindings(std::vector<std::function<void(Lu
     bindings.push_back(&bullet::LuaPhysicsWorld::bind);
     return bindings;
 }
+*/

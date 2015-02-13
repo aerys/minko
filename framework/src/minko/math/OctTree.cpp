@@ -38,11 +38,11 @@ math::OctTree::OctTree(float				worldSize,
 					   uint					maxDepth,
 					   const math::vec3&	center,
 					   uint					depth) :
-	_worldSize(worldSize),
+	_maxDepth(maxDepth),
 	_depth(depth),
-	_center(center),
 	_splitted(false),
-	_maxDepth(maxDepth)
+	_worldSize(worldSize),
+	_center(center)
 {
 	float edgel = edgeLength();
 
@@ -67,9 +67,9 @@ math::OctTree::generateVisual(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 
         auto material = material::BasicMaterial::create();
 
-        material->diffuseColor(0x00FF0030)
-            .blendingMode(render::Blending::Mode::ALPHA)
-            .triangleCulling(render::TriangleCulling::NONE);
+        material->diffuseColor(0x00FF0030);
+		material->blendingMode(render::Blending::Mode::ALPHA);
+        material->triangleCulling(render::TriangleCulling::NONE);
 
 		node
 			->addComponent(component::Transform::create(t))
@@ -103,10 +103,10 @@ math::OctTree::split()
 			for (uint z = 0; z < 2; ++z)
 			{
 				uint index = x + (y << 1) + (z << 2);
-				
+
 				_children[index] = math::OctTree::create(
 					_worldSize,
-					_maxDepth, 
+					_maxDepth,
 					math::vec3(
 						_center.x + (x == 0 ? -size / 2 : size / 2),
 						_center.y + (y == 0 ? -size / 2 : size / 2),
@@ -149,14 +149,14 @@ math::OctTree::insert(std::shared_ptr<scene::Node> node)
 	{
 		if (!octant->_splitted)
 			octant->split();
-		
+
 		uint xIndex = 0;
 		uint yIndex = 0;
 		uint zIndex = 0;
 
 		if (newNodeCenter.x > octant->_center.x)
 			xIndex = 1;
-		
+
 		if (newNodeCenter.y > octant->_center.y)
 			yIndex = 1;
 
@@ -216,12 +216,12 @@ math::OctTree::nodeModelToWorldChanged()
 }
 
 void
-math::OctTree::testFrustum(std::shared_ptr<math::AbstractShape>				frustum, 
+math::OctTree::testFrustum(std::shared_ptr<math::AbstractShape>				frustum,
 					 std::function<void(std::shared_ptr<scene::Node>)>	insideFrustumCallback,
 					 std::function<void(std::shared_ptr<scene::Node>)>	outsideFustumCallback)
 {
 	auto result = frustum->testBoundingBox(_octantBox);
-	
+
 	if (result == ShapePosition::AROUND || result == ShapePosition::INSIDE)
 	{
 		if (_splitted)
@@ -255,7 +255,7 @@ math::OctTree::remove(std::shared_ptr<scene::Node> node)
 
 	_nodeToOctant.erase(node);
 	//_matrixToNode.erase(node->data()->get<math::mat4::Ptr>("transform.modelToWorldMatrix"));
-	
+
 
 	return shared_from_this();
 }

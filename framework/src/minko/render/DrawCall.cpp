@@ -95,9 +95,9 @@ DrawCall::bind(std::shared_ptr<Program> program)
 }
 
 void
-DrawCall::bindAttribute(ConstAttrInputRef                             input,
-                        const std::map<std::string, data::Binding>&   attributeBindings,
-                        const data::Store&                            defaultValues)
+DrawCall::bindAttribute(ConstAttrInputRef                                       input,
+                        const std::unordered_map<std::string, data::Binding>&   attributeBindings,
+                        const data::Store&                                      defaultValues)
 {
     data::ResolvedBinding* binding = resolveBinding(input.name, attributeBindings);
 
@@ -170,9 +170,9 @@ DrawCall::setAttributeValueFromStore(const ProgramInputs::AttributeInput& input,
 }
 
 data::ResolvedBinding*
-DrawCall::bindUniform(ConstUniformInputRef                          input,
-                      const std::map<std::string, data::Binding>&   uniformBindings,
-                      const data::Store&                            defaultValues)
+DrawCall::bindUniform(ConstUniformInputRef                                      input,
+                      const std::unordered_map<std::string, data::Binding>&     uniformBindings,
+                      const data::Store&                                        defaultValues)
 {
     data::ResolvedBinding* binding = resolveBinding(input.name, uniformBindings);
 
@@ -216,9 +216,9 @@ DrawCall::bindUniform(ConstUniformInputRef                          input,
 }
 
 std::array<data::ResolvedBinding*, 3>
-DrawCall::bindSamplerStates(ConstUniformInputRef                          input,
-                            const std::map<std::string, data::Binding>&   uniformBindings,
-                            const data::Store&                            defaultValues)
+DrawCall::bindSamplerStates(ConstUniformInputRef                                    input,
+                            const std::unordered_map<std::string, data::Binding>&   uniformBindings,
+                            const data::Store&                                      defaultValues)
 {
     auto wrapModeBinding = bindSamplerState(input, uniformBindings, defaultValues, SamplerStates::PROPERTY_WRAP_MODE);
     auto textureFilterBinding = bindSamplerState(input, uniformBindings, defaultValues, SamplerStates::PROPERTY_TEXTURE_FILTER);
@@ -234,12 +234,12 @@ DrawCall::bindSamplerStates(ConstUniformInputRef                          input,
 }
 
 data::ResolvedBinding*
-DrawCall::bindSamplerState(ConstUniformInputRef                          input,
-                           const std::map<std::string, data::Binding>&   uniformBindings,
-                           const data::Store&                            defaultValues,
-                           const std::string&                            samplerStateProperty)
+DrawCall::bindSamplerState(ConstUniformInputRef                                     input,
+                           const std::unordered_map<std::string, data::Binding>&    uniformBindings,
+                           const data::Store&                                       defaultValues,
+                           const std::string&                                       samplerStateProperty)
 {
-    if (samplerStateProperty == SamplerStates::PROPERTY_WRAP_MODE || 
+    if (samplerStateProperty == SamplerStates::PROPERTY_WRAP_MODE ||
         samplerStateProperty == SamplerStates::PROPERTY_TEXTURE_FILTER ||
         samplerStateProperty == SamplerStates::PROPERTY_MIP_FILTER)
     {
@@ -248,10 +248,7 @@ DrawCall::bindSamplerState(ConstUniformInputRef                          input,
             samplerStateProperty
         );
 
-        auto binding = resolveBinding(
-            samplerStateUniformName,
-            uniformBindings
-        );
+        auto binding = resolveBinding(samplerStateUniformName, uniformBindings);
 
         if (binding == nullptr)
         {
@@ -322,7 +319,7 @@ DrawCall::setUniformValueFromStore(const ProgramInputs::UniformInput&   input,
         case ProgramInputs::Type::sampler2d:
             _samplers.push_back({
                 static_cast<uint>(_program->setTextureNames().size() + _samplers.size()),
-                store.getPointer<TextureSampler>(propertyName)->id,
+                store.getPointer<TextureSampler>(propertyName),
                 input.location
             });
         break;
@@ -378,20 +375,22 @@ DrawCall::setSamplerStateValueFromStore(const ProgramInputs::UniformInput&  inpu
 void
 DrawCall::bindIndexBuffer()
 {
-    _indexBuffer = const_cast<int*>(_targetData.getPointer<int>(
-        data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].indices")
-    ));
-    _firstIndex = const_cast<uint*>(_targetData.getPointer<uint>(
-        data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].firstIndex")
-    ));
-    _numIndices = const_cast<uint*>(_targetData.getPointer<uint>(
-        data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].numIndices")
-    ));
+    auto indexBufferProperty = data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].indices");
+    if (_targetData.hasProperty(indexBufferProperty))
+        _indexBuffer = const_cast<int*>(_targetData.getPointer<int>(indexBufferProperty));
+
+    auto firstIndexProperty = data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].firstIndex");
+    if (_targetData.hasProperty(firstIndexProperty))
+        _firstIndex = const_cast<uint*>(_targetData.getPointer<uint>(firstIndexProperty));
+
+    auto numIndicesProperty = data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].numIndices");
+    if (_targetData.hasProperty(numIndicesProperty))
+        _numIndices = const_cast<uint*>(_targetData.getPointer<uint>(numIndicesProperty));
 }
 
 void
-DrawCall::bindStates(const std::map<std::string, data::Binding>&    stateBindings,
-                     const data::Store&                             defaultValues)
+DrawCall::bindStates(const std::unordered_map<std::string, data::Binding>&  stateBindings,
+                     const data::Store&                                     defaultValues)
 {
     _priority = bindState<float>(States::PROPERTY_PRIORITY, stateBindings, defaultValues);
     _zSorted = bindState<bool>(States::PROPERTY_ZSORTED, stateBindings, defaultValues);
@@ -489,17 +488,18 @@ DrawCall::render(AbstractContext::Ptr   context,
 
     for (const auto& s : _samplers)
     {
-        context->setTextureAt(s.position, *s.resourceId, s.location);
+        context->setTextureAt(s.position, *s.sampler->id, s.location);
         context->setSamplerStateAt(s.position, *s.wrapMode, *s.textureFilter, *s.mipFilter);
     }
 
-    for (auto numSamplers = _samplers.size(); numSamplers < MAX_NUM_TEXTURES; ++numSamplers)
-        context->setTextureAt(numSamplers, -1, -1);
+    // for (auto numSamplers = _samplers.size(); numSamplers < MAX_NUM_TEXTURES; ++numSamplers)
+    //     context->setTextureAt(numSamplers, -1, -1);
 
     for (const auto& a : _attributes)
         context->setVertexBufferAt(a.location, *a.resourceId, a.size, *a.stride, a.offset);
-    for (auto numAttributes = _attributes.size(); numAttributes < MAX_NUM_VERTEXBUFFERS; ++numAttributes)
-        context->setVertexBufferAt(numAttributes, -1, 0, 0, 0);
+
+    // for (auto numAttributes = _attributes.size(); numAttributes < MAX_NUM_VERTEXBUFFERS; ++numAttributes)
+    //     context->setVertexBufferAt(numAttributes, -1, 0, 0, 0);
 
     context->setColorMask(*_colorMask);
     context->setBlendingMode(*_blendingSourceFactor, *_blendingDestinationFactor);
@@ -515,8 +515,8 @@ DrawCall::render(AbstractContext::Ptr   context,
 }
 
 data::ResolvedBinding*
-DrawCall::resolveBinding(const std::string&                             inputName,
-                         const std::map<std::string, data::Binding>&    bindings)
+DrawCall::resolveBinding(const std::string&                                     inputName,
+                         const std::unordered_map<std::string, data::Binding>&  bindings)
 {
     bool isCollection = false;
     std::string bindingName = inputName;

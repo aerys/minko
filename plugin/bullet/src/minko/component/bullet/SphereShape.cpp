@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/AbstractContext.hpp"
 #include "minko/geometry/LineGeometry.hpp"
-#include "minko/math/Vector3.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -37,9 +36,9 @@ bullet::SphereShape::getGeometry(render::AbstractContext::Ptr context) const
 
     auto lines = LineGeometry::create(context);
 
-    const auto radiusX = _radius * localScaling()->x();
-    const auto radiusY = _radius * localScaling()->y();
-    const auto radiusZ = _radius * localScaling()->z();
+    const auto radiusX = _radius * localScaling().x;
+    const auto radiusY = _radius * localScaling().y;
+    const auto radiusZ = _radius * localScaling().z;
 
     for (unsigned int j = 0; j < 3; ++j)
     {

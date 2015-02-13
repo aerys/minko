@@ -944,7 +944,7 @@ TEST_F(DrawCallTest, SamplerStatesWrapModeWithVariableBindingFromRootData)
     data::Store defaultValues;
 
     auto p = data::Provider::create();
-    
+
     auto samplerUniformName = "uDiffuseMap";
     std::string samplerBindingName = "diffuseMap";
 
@@ -969,7 +969,7 @@ TEST_F(DrawCallTest, SamplerStatesWrapModeWithVariableBindingFromRootData)
         { samplerUniformName, { samplerUniformValue, data::Binding::Source::ROOT } },
         { wrapModeUniformName, { wrapModeUniformValue, data::Binding::Source::ROOT } }
     };
-    
+
     DrawCall drawCall(nullptr, { { "id", "0" } }, rootData, rendererData, targetData);
 
     auto location = 23;
@@ -1014,7 +1014,7 @@ TEST_F(DrawCallTest, SamplerStatesTextureFilterWithVariableBindingFromRootData)
     auto size = 0;
 
     auto p = data::Provider::create();
-    
+
     auto samplerUniformName = "uDiffuseMap";
     std::string samplerBindingName = "diffuseMap";
 
@@ -1039,7 +1039,7 @@ TEST_F(DrawCallTest, SamplerStatesTextureFilterWithVariableBindingFromRootData)
         { samplerUniformName, { samplerUniformValue, data::Binding::Source::ROOT } },
         { textureFilterUniformName, { textureFilterUniformValue, data::Binding::Source::ROOT } }
     };
-    
+
     DrawCall drawCall(nullptr, { { "id", "0" } }, rootData, rendererData, targetData);
 
     ProgramInputs::UniformInput input(samplerUniformName, location, size, ProgramInputs::Type::sampler2d);

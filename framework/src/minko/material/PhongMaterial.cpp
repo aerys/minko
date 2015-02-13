@@ -37,8 +37,8 @@ PhongMaterial::initialize()
     BasicMaterial::initialize();
 
     specularColor(0xffffffff);
-    shininess(64.0f);
-    environmentAlpha(1.0f);
+    // shininess(64.0f);
+    // environmentAlpha(1.0f);
 
     data()->set("environmentMap2dType", int(EnvironmentMap2dType::Unset));
 }
@@ -84,7 +84,7 @@ PhongMaterial::environmentMap(AbstractTexture::Ptr value, EnvironmentMap2dType t
 	{
 		if (type != EnvironmentMap2dType::Probe && type != EnvironmentMap2dType::BlinnNewell)
 			throw std::invalid_argument("type");
-	
+
 		data()->set("environmentMap2d", std::static_pointer_cast<AbstractTexture>(value)->id());
 		data()->set("environmentMap2dType", int(type));
 	}
@@ -148,7 +148,7 @@ PhongMaterial::environmentMapMipFilter() const
 render::ResourceId
 PhongMaterial::environmentCubemap() const
 {
-	return data()->hasProperty("environmentCubemap") 
+	return data()->hasProperty("environmentCubemap")
 		? data()->get<render::ResourceId>("environmentCubemap")
 		: -1;
 }
@@ -204,7 +204,7 @@ PhongMaterial::environmentCubemapMipFilter() const
 render::ResourceId
 PhongMaterial::environmentMap2d() const
 {
-	return data()->hasProperty("environmentMap2d") 
+	return data()->hasProperty("environmentMap2d")
 		? data()->get<render::ResourceId>("environmentMap2d")
 		: -1;
 }
@@ -291,7 +291,7 @@ PhongMaterial::normalMap(AbstractTexture::Ptr value)
 render::ResourceId
 PhongMaterial::normalMap() const
 {
-	return data()->hasProperty("normalMap") 
+	return data()->hasProperty("normalMap")
 		? data()->get<render::ResourceId>("normalMap")
 		: -1;
 }
@@ -358,7 +358,7 @@ PhongMaterial::specularMap(AbstractTexture::Ptr value)
 render::ResourceId
 PhongMaterial::specularMap() const
 {
-	return data()->hasProperty("specularMap") 
+	return data()->hasProperty("specularMap")
 		? data()->get<render::ResourceId>("specularMap")
 		: -1;
 }
@@ -425,7 +425,7 @@ PhongMaterial::alphaMap(AbstractTexture::Ptr value)
 render::ResourceId
 PhongMaterial::alphaMap() const
 {
-	return data()->hasProperty("alphaMap") 
+	return data()->hasProperty("alphaMap")
 		? data()->get<render::ResourceId>("alphaMap")
 		: -1;
 }
