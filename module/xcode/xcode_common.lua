@@ -1031,9 +1031,8 @@
 
 		if cfg.platform == "ios" then
 			xcode.PrintBuildSetting(4, 'TARGETED_DEVICE_FAMILY = "1,2";', cfg)
+			xcode.PrintBuildSetting(4, 'CODE_SIGN_IDENTITY = "iPhone Developer";', cfg)
 		end
-
-		xcode.PrintBuildSetting(4, 'CODE_SIGN_IDENTITY = "iPhone Developer";', cfg)
 
 		_p(3,'};')
 		_p(3,'name = "%s";', cfgname)

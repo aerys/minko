@@ -349,7 +349,8 @@ TEST_F(DrawCallTest, RenderTargetDefaultValue)
 
     DrawCall drawCall(nullptr, std::unordered_map<std::string, std::string>{}, rootData, rendererData, targetData);
 
-    drawCall.bindStates({}, defaultValues);
+    std::map<std::string, data::Binding> bindings;
+    drawCall.bindStates(bindings, defaultValues);
 
     ASSERT_EQ(drawCall.target(), States::DEFAULT_TARGET);
 }
@@ -370,7 +371,8 @@ TEST_F(DrawCallTest, RenderTargetFromDefaultValues)
 
     DrawCall drawCall(nullptr, std::unordered_map<std::string, std::string>{}, rootData, rendererData, targetData);
 
-    drawCall.bindStates({}, defaultValues);
+    std::map<std::string, data::Binding> bindings;
+    drawCall.bindStates(bindings, defaultValues);
 
     ASSERT_NE(drawCall.target(), States::DEFAULT_TARGET);
     ASSERT_EQ(drawCall.target(), texture->sampler());
