@@ -38,7 +38,7 @@ TEST_F(DrawCallPoolTest, UniformDefaultToBindingSwap)
     data::Store rendererData;
     data::Store targetData;
     auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
-    std::unordered_map<Flyweight<std::string>, Flyweight<std::string>> variables = { { "geometryUuid", geom->uuid() } };
+    render::EffectVariables variables = { { "geometryUuid", geom->uuid() } };
 
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
 
@@ -76,7 +76,7 @@ TEST_F(DrawCallPoolTest, UniformBindingToDefaultSwap)
     data::Store rendererData;
     data::Store targetData;
     auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
-    std::unordered_map<Flyweight<std::string>, Flyweight<std::string>> variables = { { "geometryUuid", geom->uuid() } };
+    render::EffectVariables variables = { { "geometryUuid", geom->uuid() } };
 
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
     auto p = data::Provider::create();
@@ -114,7 +114,7 @@ TEST_F(DrawCallPoolTest, WatchAndDefineIntMacro)
     data::Store rootData;
     data::Store rendererData;
     data::Store targetData;
-    std::unordered_map<Flyweight<std::string>, Flyweight<std::string>> variables;
+    render::EffectVariables variables;
 
     ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().bindings.size(), 1);
     ASSERT_EQ(targetData.propertyChanged("bar").numCallbacks(), 0);
@@ -147,7 +147,7 @@ TEST_F(DrawCallPoolTest, WatchAndDefineVariableIntMacro)
     data::Store targetData;
     auto p = data::Provider::create();
     std::string materialUuid = p->uuid();
-    std::unordered_map<Flyweight<std::string>, Flyweight<std::string>> variables = {{ "materialUuid", materialUuid }};
+    render::EffectVariables variables = {{ "materialUuid", materialUuid }};
 
     ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().bindings.size(), 1);
     ASSERT_EQ(targetData.propertyChanged("bar").numCallbacks(), 0);
@@ -179,7 +179,7 @@ TEST_F(DrawCallPoolTest, StopWatchingMacroAfterDrawCallsRemoved)
     data::Store targetData;
     auto p = data::Provider::create();
     std::string materialUuid = p->uuid();
-    std::unordered_map<Flyweight<std::string>, Flyweight<std::string>> variables = {{ "materialUuid", materialUuid }};
+    render::EffectVariables variables = {{ "materialUuid", materialUuid }};
 
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
@@ -219,13 +219,13 @@ TEST_F(DrawCallPoolTest, SamplerStateSwapWrapModeBindingToDefaultClamp)
 
     auto material = material::Material::create();
     auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
-    std::unordered_map<Flyweight<std::string>, Flyweight<std::string>> variables = { { "materialUuid", material->uuid() } };
+    render::EffectVariables variables = { { "materialUuid", material->uuid() } };
 
     material->data()->set(samplerBindingName, texture->sampler());
     material->data()->set(samplerStateBindingName, samplerStateMaterialValue);
 
     auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
-    variables.insert({ "geometryUuid", geom->uuid() });
+    variables.push_back({ "geometryUuid", geom->uuid() });
 
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
     targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
@@ -275,13 +275,13 @@ TEST_F(DrawCallPoolTest, SamplerStateSwapWrapModeBindingToDefaultRepeat)
 
     auto material = material::Material::create();
     auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
-    std::unordered_map<Flyweight<std::string>, Flyweight<std::string>> variables = { { "materialUuid", material->uuid() } };
+    render::EffectVariables variables = { { "materialUuid", material->uuid() } };
 
     material->data()->set(samplerBindingName, texture->sampler());
     material->data()->set(samplerStateBindingName, samplerStateMaterialValue);
 
     auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
-    variables.insert({ "geometryUuid", geom->uuid() });
+    variables.push_back({ "geometryUuid", geom->uuid() });
 
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
     targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
@@ -331,13 +331,13 @@ TEST_F(DrawCallPoolTest, SamplerStateSwapTextureFilterBindingToDefaultLinear)
 
     auto material = material::Material::create();
     auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
-    std::unordered_map<Flyweight<std::string>, Flyweight<std::string>> variables = { { "materialUuid", material->uuid() } };
+    render::EffectVariables variables = { { "materialUuid", material->uuid() } };
 
     material->data()->set(samplerBindingName, texture->sampler());
     material->data()->set(samplerStateBindingName, samplerStateMaterialValue);
 
     auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
-    variables.insert({ "geometryUuid", geom->uuid() });
+    variables.push_back({ "geometryUuid", geom->uuid() });
 
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
     targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
@@ -389,14 +389,14 @@ TEST_F(DrawCallPoolTest, SamplerStateSwapTextureFilterBindingToDefaultNearest)
 
     auto material = material::Material::create();
     auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
-    std::unordered_map<Flyweight<std::string>, Flyweight<std::string>> variables = { { "materialUuid", material->uuid() } };
+    render::EffectVariables variables = { { "materialUuid", material->uuid() } };
 
     auto p = data::Provider::create();
     material->data()->set(samplerBindingName, texture->sampler());
     material->data()->set(samplerStateBindingName, samplerStateMaterialValue);
 
     auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
-    variables.insert({ "geometryUuid", geom->uuid() });
+    variables.push_back({ "geometryUuid", geom->uuid() });
 
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
     targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
@@ -448,13 +448,13 @@ TEST_F(DrawCallPoolTest, SamplerStateSwapMipFilterBindingToDefaultNone)
 
     auto material = material::Material::create();
     auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
-    std::unordered_map<Flyweight<std::string>, Flyweight<std::string>> variables = { { "materialUuid", material->uuid() } };
+    render::EffectVariables variables = { { "materialUuid", material->uuid() } };
 
     material->data()->set(samplerBindingName, texture->sampler());
     material->data()->set(samplerStateBindingName, samplerStateMaterialValue);
 
     auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
-    variables.insert({ "geometryUuid", geom->uuid() });
+    variables.push_back({ "geometryUuid", geom->uuid() });
 
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
     targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
@@ -504,13 +504,13 @@ TEST_F(DrawCallPoolTest, SamplerStateSwapMipFilterBindingToDefaultLinear)
 
     auto material = material::Material::create();
     auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
-    std::unordered_map<Flyweight<std::string>, Flyweight<std::string>> variables = { { "materialUuid", material->uuid() } };
+    render::EffectVariables variables = { { "materialUuid", material->uuid() } };
 
     material->data()->set(samplerBindingName, texture->sampler());
     material->data()->set(samplerStateBindingName, samplerStateMaterialValue);
 
     auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
-    variables.insert({ "geometryUuid", geom->uuid() });
+    variables.push_back({ "geometryUuid", geom->uuid() });
 
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
     targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
@@ -560,13 +560,13 @@ TEST_F(DrawCallPoolTest, SamplerStateSwapMipFilterBindingToDefaultNearest)
 
     auto material = material::Material::create();
     auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
-    std::unordered_map<Flyweight<std::string>, Flyweight<std::string>> variables = { { "materialUuid", material->uuid() } };
+    render::EffectVariables variables = { { "materialUuid", material->uuid() } };
 
     material->data()->set(samplerBindingName, texture->sampler());
     material->data()->set(samplerStateBindingName, samplerStateMaterialValue);
 
     auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
-    variables.insert({ "geometryUuid", geom->uuid() });
+    variables.push_back({ "geometryUuid", geom->uuid() });
 
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
     targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
@@ -617,12 +617,12 @@ TEST_F(DrawCallPoolTest, SamplerStatesBindingWrapModeNoDefaultValue)
 
     auto material = material::Material::create();
     auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
-    std::unordered_map<Flyweight<std::string>, Flyweight<std::string>> variables = { { "materialUuid", material->uuid() } };
+    render::EffectVariables variables = { { "materialUuid", material->uuid() } };
 
     material->data()->set(samplerBindingName, texture->sampler());
 
     auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
-    variables.insert({ "geometryUuid", geom->uuid() });
+    variables.push_back({ "geometryUuid", geom->uuid() });
 
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
     targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
@@ -666,12 +666,12 @@ TEST_F(DrawCallPoolTest, SamplerStateTextureFilterBindingNoDefaultValue)
 
     auto material = material::Material::create();
     auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
-    std::unordered_map<Flyweight<std::string>, Flyweight<std::string>> variables = { { "materialUuid", material->uuid() } };
+    render::EffectVariables variables = { { "materialUuid", material->uuid() } };
 
     material->data()->set(samplerBindingName, texture->sampler());
 
     auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
-    variables.insert({ "geometryUuid", geom->uuid() });
+    variables.push_back({ "geometryUuid", geom->uuid() });
 
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
     targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
@@ -715,12 +715,12 @@ TEST_F(DrawCallPoolTest, SamplerStatesBindingMipFilterNoDefaultValue)
 
     auto material = material::Material::create();
     auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
-    std::unordered_map<Flyweight<std::string>, Flyweight<std::string>> variables = { { "materialUuid", material->uuid() } };
+    render::EffectVariables variables = { { "materialUuid", material->uuid() } };
 
     material->data()->set(samplerBindingName, texture->sampler());
 
     auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
-    variables.insert({ "geometryUuid", geom->uuid() });
+    variables.push_back({ "geometryUuid", geom->uuid() });
 
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
     targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
@@ -750,8 +750,8 @@ TEST_F(DrawCallPoolTest, SameMacroBindingDifferentVariables)
     auto p2 = data::Provider::create();
     std::string materialUuid1 = p1->uuid();
     std::string materialUuid2 = p2->uuid();
-    std::unordered_map<Flyweight<std::string>, Flyweight<std::string>> variables1 = { { "materialUuid", materialUuid1 } };
-    std::unordered_map<Flyweight<std::string>, Flyweight<std::string>> variables2 = { { "materialUuid", materialUuid2 } };
+    render::EffectVariables variables1 = { { "materialUuid", materialUuid1 } };
+    render::EffectVariables variables2 = { { "materialUuid", materialUuid2 } };
 
     targetData.addProvider(p1, component::Surface::MATERIAL_COLLECTION_NAME);
     targetData.addProvider(p2, component::Surface::MATERIAL_COLLECTION_NAME);
