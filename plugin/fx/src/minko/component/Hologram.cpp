@@ -17,6 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+/*
 #include "minko/component/Hologram.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/file/AssetLibrary.hpp"
@@ -114,14 +115,14 @@ Hologram::initTarget(AbstractComponent::Ptr cmp, NodePtr target, NodePtr ancesto
     if (target->hasComponent<Surface>())
     {
 
-        /*target->component<Surface>()->material()
-            ->set("mapResolution", float(MAP_RESOLUTION));*/
+        //target->component<Surface>()->material()
+        //    ->set("mapResolution", float(MAP_RESOLUTION));
 
-        /*target->component<Surface>()->material()
-            ->set("frontFaceNormalMap", _frontFaceNormalRenderTarget1)
-            ->set("backFaceNormalMap", _backFaceNormalRenderTarget1)
-            ->set("depthMap", _depthMapRenderTarget1)
-            ->set("mapResolution", float(MAP_RESOLUTION));*/
+        //target->component<Surface>()->material()
+        //    ->set("frontFaceNormalMap", _frontFaceNormalRenderTarget1)
+        //    ->set("backFaceNormalMap", _backFaceNormalRenderTarget1)
+        //    ->set("depthMap", _depthMapRenderTarget1)
+        //    ->set("mapResolution", float(MAP_RESOLUTION));
 
         //target->layouts(target->layouts() | 1u << 21);
     }
@@ -156,3 +157,5 @@ Hologram::targetAddedToScene(NodePtr node, NodePtr target, NodePtr ancestor)
             target->component<Surface>()->material()->set("time", time);
     });
 }
+
+*/

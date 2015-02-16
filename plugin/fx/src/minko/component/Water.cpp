@@ -22,13 +22,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/component/SceneManager.hpp"
-#include "minko/data/Container.hpp"
+#include "minko/data/Store.hpp"
 #include "minko/material/WaterMaterial.hpp"
 
 using namespace minko;
-using namespace math;
 using namespace minko::component;
 
+/*
 Water::Water(float cycle, std::shared_ptr<material::WaterMaterial> mat) :
     _cycle(cycle),
     _waterMaterial(mat)
@@ -100,3 +100,4 @@ Water::targetAddedToScene(NodePtr node, NodePtr target, NodePtr ancestor)
         _waterMaterial->flowMapOffset2(flowMapOffset2);
     });
 }
+*/

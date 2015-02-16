@@ -34,12 +34,12 @@ namespace minko
 
         private:
             uint                _numWaves;
-            std::vector<float>    _amplitudes;
-            std::vector<float>    _waveLength;
-            std::vector<float>    _origins;
-            std::vector<float>    _speeds;
-            std::vector<float>    _sharpness;
-            std::vector<float>    _waveType;
+            std::vector<float>  _amplitudes;
+            std::vector<float>  _waveLength;
+            std::vector<float>  _origins;
+            std::vector<float>  _speeds;
+            std::vector<float>  _sharpness;
+            std::vector<float>  _waveType;
 
         public:
             inline static
@@ -54,10 +54,10 @@ namespace minko
             }
 
             Ptr
-            setDirection(int waveId, std::shared_ptr<math::Vector2> direction);
+            setDirection(int waveId, const math::vec2& direction);
 
             Ptr
-            setCenter(int waveId, std::shared_ptr<math::Vector2> origin);
+            setCenter(int waveId, const math::vec2& origin);
 
             Ptr
             setAmplitude(int waveId, float amplitude);
@@ -72,12 +72,12 @@ namespace minko
             setSpeed(int waveId, float speed);
 
             Ptr
-            specularColor(Vector4Ptr);
+            specularColor(const math::vec4&);
 
             Ptr
             specularColor(uint);
 
-            Vector4Ptr
+            math::vec4
             specularColor() const;
 
             Ptr

@@ -35,19 +35,18 @@ namespace minko
             typedef std::shared_ptr<Water>    Ptr;
 
         private:
-            typedef std::shared_ptr<scene::Node>                NodePtr;
-            typedef std::shared_ptr<AbstractComponent>            AbsCmpPtr;
-            typedef std::shared_ptr<data::StructureProvider>    ContainerPtr;
+            typedef std::shared_ptr<scene::Node>            NodePtr;
+            typedef std::shared_ptr<AbstractComponent>      AbsCmpPtr;
 
         private:
-            Signal<AbsCmpPtr, NodePtr>::Ptr                       _rootAdded;
+            Signal<AbsCmpPtr, NodePtr>::Ptr                                         _rootAdded;
 
             Signal<AbsCmpPtr, NodePtr>::Slot                                        _targetAddedSlot;
             Signal<AbsCmpPtr, NodePtr>::Slot                                        _targetRemovedSlot;
             Signal<AbsCmpPtr, NodePtr>::Slot                                        _rootAddedSlot;
-            Signal<NodePtr, NodePtr, NodePtr>::Slot                                    _addedToSceneSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot                                 _addedToSceneSlot;
             Signal<std::shared_ptr<component::SceneManager>, float, float>::Slot    _frameBeginSlot;
-            std::shared_ptr<data::Provider>                                            _provider;
+            std::shared_ptr<data::Provider>                                         _provider;
             std::shared_ptr<material::WaterMaterial>                                _waterMaterial;
 
             float _cycle;

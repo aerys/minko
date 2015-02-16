@@ -18,14 +18,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/material/WaterMaterial.hpp"
-#include "minko/Color.hpp"
-#include "minko/math/Vector4.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/render/CubeTexture.hpp"
 
 using namespace minko;
 using namespace minko::material;
 
+/*
 WaterMaterial::WaterMaterial(uint numWaves) :
 _numWaves(numWaves)
 {
@@ -44,8 +43,7 @@ WaterMaterial::initialize()
     _speeds.resize(_numWaves, 1.f);
     _waveType.resize(_numWaves, 0.f);
 
-
-    set<int>("numWaves", _numWaves);
+    data()->set<int>("numWaves", _numWaves);
     specularColor(0xffffffff);
     shininess(8.0f);
     reflectivity(0.0f);
@@ -65,37 +63,38 @@ WaterMaterial::initialize()
     fogEnd(400.0f);
     fogType(render::FogType::Exponential);
 
-    data::UniformArrayPtr<float>    amplitudesUniformArray(new data::UniformArray<float>(_numWaves, &(_amplitudes[0])));
-    data::UniformArrayPtr<float>    originsUniformArray(new data::UniformArray<float>(_numWaves * 2, &(_origins[0])));
-    data::UniformArrayPtr<float>    waveLengthUniformArray(new data::UniformArray<float>(_numWaves, &(_waveLength[0])));
-    data::UniformArrayPtr<float>    sharpnessUniformArray(new data::UniformArray<float>(_numWaves, &(_sharpness[0])));
-    data::UniformArrayPtr<float>    speedsUniformArray(new data::UniformArray<float>(_numWaves, &(_speeds[0])));
-    data::UniformArrayPtr<float>    waveTypeUniformArray(new data::UniformArray<float>(_numWaves, &(_waveType[0])));
+    data::UniformArrayPtr<float> amplitudesUniformArray(new data::UniformArray<float>(_numWaves, &(_amplitudes[0])));
+    data::UniformArrayPtr<float> originsUniformArray(new data::UniformArray<float>(_numWaves * 2, &(_origins[0])));
+    data::UniformArrayPtr<float> waveLengthUniformArray(new data::UniformArray<float>(_numWaves, &(_waveLength[0])));
+    data::UniformArrayPtr<float> sharpnessUniformArray(new data::UniformArray<float>(_numWaves, &(_sharpness[0])));
+    data::UniformArrayPtr<float> speedsUniformArray(new data::UniformArray<float>(_numWaves, &(_speeds[0])));
+    data::UniformArrayPtr<float> waveTypeUniformArray(new data::UniformArray<float>(_numWaves, &(_waveType[0])));
 
-    set<data::UniformArrayPtr<float>>("waveOrigins",    originsUniformArray);
-    set<data::UniformArrayPtr<float>>("waveLength",        waveLengthUniformArray);
-    set<data::UniformArrayPtr<float>>("waveAmplitudes", amplitudesUniformArray);
-    set<data::UniformArrayPtr<float>>("waveSharpness",    sharpnessUniformArray);
-    set<data::UniformArrayPtr<float>>("waveSpeed",        speedsUniformArray);
-    set<data::UniformArrayPtr<float>>("waveType",        waveTypeUniformArray);
+    //set<data::UniformArrayPtr<float>>("waveOrigins",    originsUniformArray);
+    //set<data::UniformArrayPtr<float>>("waveLength",        waveLengthUniformArray);
+    //set<data::UniformArrayPtr<float>>("waveAmplitudes", amplitudesUniformArray);
+    //set<data::UniformArrayPtr<float>>("waveSharpness",    sharpnessUniformArray);
+    //set<data::UniformArrayPtr<float>>("waveSpeed",        speedsUniformArray);
+    //set<data::UniformArrayPtr<float>>("waveType",        waveTypeUniformArray);
 }
 
 
 WaterMaterial::Ptr
-WaterMaterial::setDirection(int waveId, std::shared_ptr<math::Vector2> direction)
+WaterMaterial::setDirection(int waveId, const math::vec2& direction)
 {
-    _origins[waveId * 2] = direction->x();
-    _origins[waveId * 2 + 1] = direction->y();
+    _origins[waveId * 2] = direction.x;
+    _origins[waveId * 2 + 1] = direction.y;
     _waveType[waveId] = 0;
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
 }
 
 WaterMaterial::Ptr
-WaterMaterial::setCenter(int waveId, std::shared_ptr<math::Vector2> origin)
+WaterMaterial::setCenter(int waveId, const math::vec2& origin)
 {
-    _origins[waveId * 2] = origin->x();
-    _origins[waveId * 2 + 1] = origin->y();
+    _origins[waveId * 2] = origin.x;
+    _origins[waveId * 2 + 1] = origin.y;
     _waveType[waveId] = 1;
+
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
 }
 
@@ -447,3 +446,4 @@ WaterMaterial::flowMapOffset2() const
 {
     return get<float>("flowMapOffset2");
 }
+*/

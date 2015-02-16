@@ -17,9 +17,9 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/component/Reflection.hpp"
+/*
 
-#include "minko/math/Vector3.hpp"
+#include "minko/component/Reflection.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/Renderer.hpp"
@@ -30,7 +30,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AssetLibrary.hpp"
 
 using namespace minko;
-using namespace math;
 using namespace minko::component;
 
 Reflection::Reflection(
@@ -104,65 +103,65 @@ Reflection::initialize()
     {
     });
 
-  /*  _rootAddedSlot = rootAdded()->connect([&](AbstractComponent::Ptr cmp, scene::Node::Ptr target)
-    {
-        // Get the target's transform to compute clipping plane
-        auto transform = target->component<Transform>();
+    //_rootAddedSlot = rootAdded()->connect([&](AbstractComponent::Ptr cmp, scene::Node::Ptr target)
+    //{
+    //    // Get the target's transform to compute clipping plane
+    //    auto transform = target->component<Transform>();
 
-        auto root = target->root();
+    //    auto root = target->root();
 
-        for (auto child : root->children())
-        {
-            auto perspectiveCameras = child->components<PerspectiveCamera>();
-            auto renderers = child->components<Renderer>();
-            if (perspectiveCameras.size() > 0 && renderers.size() > 0)
-            {
-                auto perspectiveCamera = perspectiveCameras[0];
-                for (auto renderer : renderers)
-                {
-                    // It's a main camera (renders into the back buffer)
-                    if (renderer->target() == nullptr)
-                    {
-                        auto renderTarget = render::Texture::create(_assets->context(), _width, _height, false, true);
+    //    for (auto child : root->children())
+    //    {
+    //        auto perspectiveCameras = child->components<PerspectiveCamera>();
+    //        auto renderers = child->components<Renderer>();
+    //        if (perspectiveCameras.size() > 0 && renderers.size() > 0)
+    //        {
+    //            auto perspectiveCamera = perspectiveCameras[0];
+    //            for (auto renderer : renderers)
+    //            {
+    //                // It's a main camera (renders into the back buffer)
+    //                if (renderer->target() == nullptr)
+    //                {
+    //                    auto renderTarget = render::Texture::create(_assets->context(), _width, _height, false, true);
 
-                        // Create a new render target
-                        _renderTargets.push_back(renderTarget);
+    //                    // Create a new render target
+    //                    _renderTargets.push_back(renderTarget);
 
-                        // Create a virtual camera
-                        auto virtualPerspectiveCameraComponent = PerspectiveCamera::create(
-                            (float) _width / (float) _height, float(M_PI) * 0.25f, .1f, 1000.f);
+    //                    // Create a virtual camera
+    //                    auto virtualPerspectiveCameraComponent = PerspectiveCamera::create(
+    //                        (float) _width / (float) _height, float(M_PI) * 0.25f, .1f, 1000.f);
 
-                        auto cameraTarget = Vector3::create();
-                        auto reflectedPosition = Vector3::create();
+    //                    auto cameraTarget = Vector3::create();
+    //                    auto reflectedPosition = Vector3::create();
 
-                        auto virtualCamera = scene::Node::create("virtualCamera")
-                            ->addComponent(Renderer::create(_clearColor, _renderTarget, _reflectionEffect))
-                            ->addComponent(virtualPerspectiveCameraComponent)
-                            ->addComponent(Transform::create(Matrix4x4::create()
-                            ->lookAt(cameraTarget, reflectedPosition)));
+    //                    auto virtualCamera = scene::Node::create("virtualCamera")
+    //                        ->addComponent(Renderer::create(_clearColor, _renderTarget, _reflectionEffect))
+    //                        ->addComponent(virtualPerspectiveCameraComponent)
+    //                        ->addComponent(Transform::create(Matrix4x4::create()
+    //                        ->lookAt(cameraTarget, reflectedPosition)));
 
-                        // Add the virtual camera to the scene
-                        root->addChild(virtualCamera);
+    //                    // Add the virtual camera to the scene
+    //                    root->addChild(virtualCamera);
 
-                        // Bind this camera with a virtual camera (by index for now)
-                        // TODO: Use unordered_map instead
-                        _cameras.push_back(child);
-                        _virtualCameras.push_back(virtualCamera);
+    //                    // Bind this camera with a virtual camera (by index for now)
+    //                    // TODO: Use unordered_map instead
+    //                    _cameras.push_back(child);
+    //                    _virtualCameras.push_back(virtualCamera);
 
-                        // Use slot to detect when update the virtual camera
-                        _viewMatrixChangedSlot = perspectiveCamera->data()->propertyValueChanged()->connect(
-                            std::bind(
-                            &Reflection::cameraPropertyValueChangedHandler,
-                            shared_from_this(),
-                            std::placeholders::_1,
-                            std::placeholders::_2
-                            )
-                            );
-                    }
-                }
-            }
-        }
-    });*/
+    //                    // Use slot to detect when update the virtual camera
+    //                    _viewMatrixChangedSlot = perspectiveCamera->data()->propertyValueChanged()->connect(
+    //                        std::bind(
+    //                        &Reflection::cameraPropertyValueChangedHandler,
+    //                        shared_from_this(),
+    //                        std::placeholders::_1,
+    //                        std::placeholders::_2
+    //                        )
+    //                        );
+    //                }
+    //            }
+    //        }
+    //    }
+    //});
 }
 
 void
@@ -303,3 +302,5 @@ Reflection::enabled(bool value)
 			renderer->enabled(value);
 	}
 }
+
+*/
