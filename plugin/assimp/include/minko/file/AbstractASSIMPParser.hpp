@@ -152,6 +152,11 @@ namespace minko
             createMeshSurface(NodePtr, const aiScene*, aiMesh*);
 
             void
+            createUnusedMaterials(const aiScene*                  scene,
+                                  std::shared_ptr<AssetLibrary>   assetLibrary,
+                                  std::shared_ptr<Options>        options);
+
+            void
 			createLights(const aiScene*);
 
 			void

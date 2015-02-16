@@ -89,6 +89,10 @@ namespace minko
 
             static
             std::string
+            getExtension(const std::string& filename);
+
+            static
+            std::string
             replaceExtension(const std::string& filename, const std::string& extension);
 
         private:

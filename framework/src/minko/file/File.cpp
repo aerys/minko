@@ -178,6 +178,28 @@ File::removePrefixPathFromFilename(const std::string& filename)
 }
 
 std::string
+File::getExtension(const std::string& filename)
+{
+    auto extension = std::string();
+
+    const auto lastDotPosition = filename.find_last_of(".");
+
+    if (lastDotPosition != std::string::npos)
+    {
+        extension = filename.substr(lastDotPosition + 1);
+
+        std::transform(
+            extension.begin(),
+            extension.end(),
+            extension.begin(),
+            ::tolower
+        );
+    }
+
+    return extension;
+}
+
+std::string
 File::replaceExtension(const std::string& filename, const std::string& extension)
 {
     auto transformedFilename = filename;

@@ -152,9 +152,9 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 
     auto ioHandler = new IOHandler(ioHandlerOptions, _assetLibrary);
 
-    ioHandler->errorFunction([this](IOHandler& self, const Error& error) -> void
+    ioHandler->errorFunction([this](IOHandler& self, const std::string& filename, const Error& error) -> void
     {
-        this->error()->execute(shared_from_this(), error);
+        this->error()->execute(shared_from_this(), Error("MissingAssetDependency", filename));
     });
 
     _importer->SetIOHandler(ioHandler);
@@ -208,6 +208,9 @@ AbstractASSIMPParser::allDependenciesLoaded(const aiScene* scene)
 
 	_symbol = scene::Node::create(_filename);
 	createSceneTree(_symbol, scene, scene->mRootNode, _options->assetLibrary());
+
+    if (_options->processUnusedAsset())
+        createUnusedMaterials(scene, _options->assetLibrary(), _options);
 
 #ifdef DEBUG_ASSIMP
 	printNode(std::cout << "\n", _symbol, 0) << std::endl;
@@ -509,6 +512,19 @@ AbstractASSIMPParser::createCameras(const aiScene* scene)
 }
 
 void
+AbstractASSIMPParser::createUnusedMaterials(const aiScene*      scene,
+                                            AssetLibrary::Ptr   assetLibrary,
+                                            Options::Ptr        options)
+{
+    for (auto i = 0u; i < scene->mNumMaterials; ++i)
+    {
+        auto aiMaterial = scene->mMaterials[i];
+
+        createMaterial(aiMaterial);
+    }
+}
+
+void
 AbstractASSIMPParser::createLights(const aiScene* scene)
 {
     for (uint i = 0; i < scene->mNumLights; i++)
@@ -696,7 +712,7 @@ AbstractASSIMPParser::loadTexture(const std::string&	textureFilename,
         std::cerr << "AbstractASSIMPParser: unable to find texture with filename '" << textureFilename << "'" << std::endl;
 #endif // DEBUG
 
-        _error->execute(shared_from_this(), Error("MissingTextureDependency", "Missing texture dependency: '" + textureFilename + "'"));
+        _error->execute(shared_from_this(), Error("MissingTextureDependency", textureFilename));
 
         if (_numDependencies == _numLoadedDependencies)
             allDependenciesLoaded(scene);
