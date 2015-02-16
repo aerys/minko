@@ -1,45 +1,47 @@
 {
 	"name" : "FXAA",
-	"attributeBindings" : {
-		"position"	: "geometry[${geometryId}].position",
-		"uv"		: "geometry[${geometryId}].uv"
+
+	"attributes" : {
+		"aPosition"	: "geometry[${geometryUuid}].position",
+		"aUV"		: "geometry[${geometryUuid}].uv"
 	},
 
-	"uniformBindings" : {
-		"textureSampler"	: "material[${materialId}].backbuffer",
-		"texcoordOffset"	: "invBackbufferSize"
+	"uniforms" : {
+		"uTextureSampler"	: {
+			"binding" : "material[${materialUuid}].diffuseMap",
+			"textureFilter" : "linear"
+		},
+		"uTexcoordOffset"	: "material[${materialUuid}].invertedDiffuseMapSize"
 	},
 
-	"samplerStates" : {
-		"textureSampler"	: { "textureFilter" : "linear" }
+	"states" : {
+		"triangleCulling" : "none"
 	},
 
-	"triangleCulling" : "none",
+	"techniques" : [{
+    	"passes"	: [{
+			"vertexShader" : "
+				#ifdef GL_FRAGMENT_PRECISION_HIGH
+				    precision highp float;
+				#else
+				    precision mediump float;
+				#endif
 
-	"passes" : [{
-		
-		"vertexShader" : "
-			#ifdef GL_FRAGMENT_PRECISION_HIGH
-			    precision highp float;
-			#else
-			    precision mediump float;
-			#endif
+				attribute vec3 aPosition;
+				attribute vec2 aUV;
 
-			attribute vec3 position;
-			attribute vec2 uv;
+				varying vec4 vertTexcoord;
+				varying vec4 vertColor;
 
-			varying vec4 vertTexcoord;
-			varying vec4 vertColor;
+				void main(void)
+				{
+					vertTexcoord = vec4(aUV, 0, 0);
+					vertColor = vec4(1.);
 
-			void main(void)
-			{
-				vertTexcoord = vec4(uv, 0, 0);
-				vertColor = vec4(1.);
-
-				gl_Position = vec4(position, 1) * vec4(1., -1., 1., 0.5);
-			}
-		",
-
-		"fragmentShader" : "#pragma include('FXAA.fragment.glsl')"
+					gl_Position = vec4(aPosition, 1) * vec4(1., -1., 1., 0.5);
+				}
+			",
+			"fragmentShader" : "#pragma include \"FXAA.fragment.glsl\""
+		}]
 	}]
 }
