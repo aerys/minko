@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoSDL.hpp"
 
 using namespace minko;
-using namespace minko::math;
 using namespace minko::component;
 
 const uint WINDOW_WIDTH = 800;
@@ -52,24 +51,29 @@ main(int argc, char** argv)
             ->addComponent(PerspectiveCamera::create(
                 (float) WINDOW_WIDTH / (float) WINDOW_HEIGHT, float(M_PI) * 0.25f, .1f, 1000.f)
             )
-            ->addComponent(Transform::create(Matrix4x4::create()
-            ->lookAt(Vector3::create(), Vector3::create(0.f, 0.f, -5.f))));
+            ->addComponent(Transform::create(
+                math::inverse(math::lookAt(math::vec3(0.f, 0.f, -5.f), math::vec3(), math::vec3(0.f, 1.f, 0.f))))
+            );
         root->addChild(camera);
+
+        auto material = material::BasicMaterial::create();
+        material->diffuseColor(math::vec4(0.f, 0.f, 1.f, 1.f));
 
         auto cube = scene::Node::create("cube")
             ->addComponent(Transform::create())
             ->addComponent(Surface::create(
                 geometry::CubeGeometry::create(canvas->context()),
-                material::BasicMaterial::create()->diffuseColor(Vector4::create(0.f, 0.f, 1.f, 1.f)),
+                material,
     			sceneManager->assets()->effect("effect/Basic.effect")
             ));
         root->addChild(cube);
 
-        auto renderTarget = render::Texture::create(canvas->context(), clp2(WINDOW_WIDTH), clp2(WINDOW_HEIGHT), false, true);
+        auto renderTarget = render::Texture::create(canvas->context(), math::clp2(WINDOW_WIDTH), math::clp2(WINDOW_HEIGHT), false, true);
         renderTarget->upload();
 
-        effect->setUniform("textureSampler", renderTarget);
-        effect->setUniform("texcoordOffset", Vector2::create(1.0f / renderTarget->width(), 1.0f / renderTarget->height()));
+        auto ppMaterial = material::BasicMaterial::create();
+        ppMaterial->diffuseMap(renderTarget);
+        ppMaterial->data()->set("invertedDiffuseMapSize", math::vec2(1.f / float(renderTarget->width()), 1.f / float(renderTarget->height())));
 
         auto renderer = Renderer::create();
         auto postProcessingScene = scene::Node::create()
@@ -77,7 +81,7 @@ main(int argc, char** argv)
         ->addComponent(
             Surface::create(
                 geometry::QuadGeometry::create(sceneManager->assets()->context()),
-                material::Material::create(),
+                ppMaterial,
                 effect
             )
         );
@@ -86,12 +90,11 @@ main(int argc, char** argv)
         {
             camera->component<PerspectiveCamera>()->aspectRatio((float) width / (float) height);
 
-			renderTarget = render::Texture::create(sceneManager->assets()->context(), clp2(width), clp2(height), false, true);
+			renderTarget = render::Texture::create(sceneManager->assets()->context(), math::clp2(width), math::clp2(height), false, true);
             renderTarget->upload();
 
-            effect->setUniform("textureSampler", renderTarget);
-            effect->setUniform("texcoordOffset",
-                Vector2::create(1.0f / renderTarget->width(), 1.0f / renderTarget->height()));
+            ppMaterial->diffuseMap(renderTarget);
+            ppMaterial->data()->set("invertedDiffuseMapSize", math::vec2(1.f / float(renderTarget->width()), 1.f / float(renderTarget->height())));
         });
 
         auto enableFXAA = true;
@@ -107,12 +110,11 @@ main(int argc, char** argv)
                 else
                     std::cout << "Disable FXAA" << std::endl;
             }
-
         });
 
         auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float t, float dt)
         {
-            cube->component<Transform>()->matrix()->prependRotationY(.01f);
+            cube->component<Transform>()->matrix(cube->component<Transform>()->matrix() * math::rotate(.01f, math::vec3(0.f, 1.f, 0.f)));
 
             if (enableFXAA)
             {
