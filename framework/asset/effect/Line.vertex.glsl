@@ -8,32 +8,32 @@
 # endif
 #endif
 
-attribute vec3 startPosition;
-attribute vec3 stopPosition;
-attribute vec3 weights;
+attribute vec3 aStartPosition;
+attribute vec3 aStopPosition;
+attribute vec3 aWeights;
 
-uniform	mat4 modelToWorldMatrix;
-uniform	mat4 worldToScreenMatrix;
-uniform	vec4 viewport;
-uniform	float lineThickness;
+uniform	mat4 uModelToWorldMatrix;
+uniform	mat4 uWorldToScreenMatrix;
+uniform	vec4 uViewport;
+uniform	float uLineThickness;
 
 void
 main()
 {
-	float wStart = weights.x;
-	float wStop = weights.y;
-	float lineSpread = weights.z;
+	float wStart = aWeights.x;
+	float wStop = aWeights.y;
+	float lineSpread = aWeights.z;
 
-	vec4 startPos = vec4(startPosition,	1.0);
-	vec4 stopPos = vec4(stopPosition, 1.0);
+	vec4 startPos = vec4(aStartPosition, 1.0);
+	vec4 stopPos = vec4(aStopPosition, 1.0);
 
 	#ifdef MODEL_TO_WORLD
-		startPos = modelToWorldMatrix * startPos;
-		stopPos	= modelToWorldMatrix * stopPos;
+		startPos = uModelToWorldMatrix * startPos;
+		stopPos	= uModelToWorldMatrix * stopPos;
 	#endif // MODEL_TO_WORLD
 
-	startPos = worldToScreenMatrix * startPos;
-	stopPos = worldToScreenMatrix * stopPos;
+	startPos = uWorldToScreenMatrix * startPos;
+	stopPos = uWorldToScreenMatrix * stopPos;
 
 	vec4 pos = wStart * startPos + wStop * stopPos;
 	float posW = pos.w;
@@ -48,8 +48,8 @@ main()
 		0.0
 	));
 	normal *= lineSpread;
-	normal *= lineThickness;
-	normal /= vec3(viewport.zw, 1.0); // ( 1/viewport.width, 1/viewport.height, 1 )
+	normal *= uLineThickness;
+	normal /= vec3(uViewport.zw, 1.0); // ( 1/uViewport.width, 1/uViewport.height, 1 )
 
 	pos	/= posW;
 	pos.xyz += normal;

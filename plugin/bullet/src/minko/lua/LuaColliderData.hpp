@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/BulletCommon.hpp"
 
+/*
+
 #include "minko/MinkoLua.hpp"
 #include "minko/component/bullet/ColliderData.hpp"
 
@@ -33,8 +35,6 @@ namespace minko
             class LuaColliderData :
                 public LuaWrapper
             {
-            private:
-                typedef std::shared_ptr<math::Vector3> Vector3Ptr;
             public:
 
                 static
@@ -45,27 +45,27 @@ namespace minko
                         .method("getRestitution", &ColliderData::restitution)
                         .method("getFriction", &ColliderData::friction)
                         .method("getMass", &ColliderData::mass);
-                        /*.property("collisionStated", &ColliderData::collisionStarted);
-                    MINKO_LUAGLUE_BIND_SIGNAL(state, ColliderData::Ptr, ColliderData::Ptr);
-                        .method("getMass",                &ColliderData::mass)
-                        .method("getInertia",            &ColliderData::inertia)
-                        .method("getIsStatic",            &ColliderData::isStatic)
-                        .method("setRestitution",        static_cast<void (ColliderData::*)(float)>(&ColliderData::restitution))
-                        .method("setFriction",            static_cast<void (ColliderData::*)(float)>(&ColliderData::friction))
-                        .method("setRollingFriction",    static_cast<void (ColliderData::*)(float)>(&ColliderData::rollingFriction))
+                    //    .property("collisionStated", &ColliderData::collisionStarted);
+                    //MINKO_LUAGLUE_BIND_SIGNAL(state, ColliderData::Ptr, ColliderData::Ptr);
+                    //    .method("getMass",                &ColliderData::mass)
+                    //    .method("getInertia",            &ColliderData::inertia)
+                    //    .method("getIsStatic",            &ColliderData::isStatic)
+                    //    .method("setRestitution",        static_cast<void (ColliderData::*)(float)>(&ColliderData::restitution))
+                    //    .method("setFriction",            static_cast<void (ColliderData::*)(float)>(&ColliderData::friction))
+                    //    .method("setRollingFriction",    static_cast<void (ColliderData::*)(float)>(&ColliderData::rollingFriction))
 
-                        .method("getRollingFriction",    static_cast<float (ColliderData::*)(void) const>(&ColliderData::rollingFriction))
-                        */
+                    //    .method("getRollingFriction",    static_cast<float (ColliderData::*)(void) const>(&ColliderData::rollingFriction))
+
                         //.property("triggeredCollision", &ColliderData::triggerCollisions, &ColliderData::triggerCollisions)
 
 
                     //MINKO_LUAGLUE_BIND_SIGNAL(state, ColliderData::Ptr, ColliderData::Ptr);
                     //colliderData.property("collisionStarted", &ColliderData::collisionStarted);
-                    /*collideData.method("collisionEnded", &ColliderData::collisionEnded);
-                    */
+                    //collideData.method("collisionEnded", &ColliderData::collisionEnded);
                 }
 
             };
         }
     }
 }
+*/

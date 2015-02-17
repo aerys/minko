@@ -16,15 +16,10 @@ attribute 	vec3 	aPosition;
 attribute 	vec2 	aUV;
 attribute 	vec3 	aNormal;
 attribute 	vec3 	aTangent;
-attribute 	vec4	aBoneIdsA;
-attribute 	vec4	aBoneIdsB;
 attribute 	vec4	aBoneWeightsA;
 attribute 	vec4	aBoneWeightsB;
 attribute	float	aColor;
 
-#ifdef SKINNING_NUM_BONES
-uniform 	mat4	uBoneMatrices[SKINNING_NUM_BONES];
-#endif
 uniform 	mat4 	uModelToWorldMatrix;
 uniform 	mat4 	uWorldToScreenMatrix;
 uniform 	vec2 	uUVScale;
@@ -57,7 +52,7 @@ void main(void)
 	vec4 worldPosition = vec4(aPosition, 1.0);
 
 	#ifdef SKINNING_NUM_BONES
-		worldPosition = skinning_moveVertex(worldPosition, uBoneMatrices, aBoneIdsA, aBoneIdsB, aBoneWeightsA, aBoneWeightsB);
+		worldPosition = skinning_moveVertex(worldPosition, aBoneWeightsA, aBoneWeightsB);
 	#endif // SKINNING_NUM_BONES
 
 	#ifdef POP_LOD_ENABLED
@@ -78,7 +73,7 @@ void main(void)
 		vertexNormal = aNormal;
 
 		#ifdef SKINNING_NUM_BONES
-			vertexNormal = skinning_moveVertex(vec4(aNormal, 0.0), uBoneMatrices, aBoneIdsA, aBoneIdsB, aBoneWeightsA, aBoneWeightsB).xyz;
+			vertexNormal = skinning_moveVertex(vec4(aNormal, 0.0), aBoneWeightsA, aBoneWeightsB).xyz;
 		#endif // SKINNING_NUM_BONES
 
 		#ifdef MODEL_TO_WORLD

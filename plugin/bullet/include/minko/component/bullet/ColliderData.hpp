@@ -36,28 +36,25 @@ namespace minko
                 typedef std::shared_ptr<ColliderData> Ptr;
 
                 typedef std::shared_ptr<scene::Node>            NodePtr;
-                typedef std::shared_ptr<AbstractPhysicsShape>    AbsShapePtr;
-                typedef std::shared_ptr<math::Matrix4x4>        Matrix4x4Ptr;
-                typedef std::shared_ptr<math::Quaternion>        QuaternionPtr;
-                typedef std::shared_ptr<math::Vector3>            Vector3Ptr;
+                typedef std::shared_ptr<AbstractPhysicsShape>   AbsShapePtr;
 
             private:
-                const float                                        _mass;
-                AbsShapePtr                                        _shape;
-                Vector3Ptr                                        _inertia;
-                float                                            _restitution;       // from bullet: best simulation results using zero restitution.
-                float                                            _friction;          // from bullet: best simulation results when friction is non-zero
-                float                                            _rollingFriction;
+                const float                                     _mass;
+                AbsShapePtr                                     _shape;
+                math::vec3*                                     _inertia;
+                float                                           _restitution;       // from bullet: best simulation results using zero restitution.
+                float                                           _friction;          // from bullet: best simulation results when friction is non-zero
+                float                                           _rollingFriction;
 
             public:
                 inline static
                 Ptr
                 create(float        mass,
-                       AbsShapePtr    shape,
-                       float        restitution        = 0.0f,
+                       AbsShapePtr  shape,
+                       float        restitution     = 0.0f,
                        float        friction        = 0.5f,
-                       float        rollingFriction    = 0.0f,
-                       Vector3Ptr    inertia            = nullptr)
+                       float        rollingFriction = 0.0f,
+                       math::vec3*  inertia         = nullptr)
                 {
                     return std::shared_ptr<ColliderData>(new ColliderData(
                         mass,
@@ -91,7 +88,7 @@ namespace minko
                 }
 
                 inline
-                Vector3Ptr
+                math::vec3*
                 inertia() const
                 {
                     return _inertia;
@@ -120,12 +117,12 @@ namespace minko
 
             private:
                 inline
-                ColliderData(float            mass,
-                             AbsShapePtr    shape,
-                             float            restitution,
-                             float            friction,
-                             float            rollingFriction,
-                             Vector3Ptr        inertia):
+                ColliderData(float              mass,
+                             AbsShapePtr        shape,
+                             float              restitution,
+                             float              friction,
+                             float              rollingFriction,
+                             math::vec3*        inertia):
                     _mass(mass),
                     _shape(shape),
                     _inertia(inertia),

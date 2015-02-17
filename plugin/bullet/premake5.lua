@@ -3,7 +3,8 @@ PROJECT_NAME = path.getname(os.getcwd())
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	minko.plugin.enable("serializer")
-	minko.plugin.enable("lua")
+	-- TODO: Fix Lua part of Bullet plugin
+	-- minko.plugin.enable("lua")
 
 	files {
 		"lib/**.hpp",

@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/BulletCommon.hpp"
 
+/*
+
 #include "minko/MinkoLua.hpp"
 #include "minko/component/bullet/PhysicsWorld.hpp"
 
@@ -46,3 +48,4 @@ namespace minko
         }
     }
 }
+*/

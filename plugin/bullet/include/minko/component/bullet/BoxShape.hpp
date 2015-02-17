@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include <minko/component/bullet/AbstractPhysicsShape.hpp>
-#include "minko/math/Vector3.hpp"
 
 namespace minko
 {
@@ -33,17 +32,16 @@ namespace minko
                 public AbstractPhysicsShape
             {
             public:
-                typedef std::shared_ptr<BoxShape>                    Ptr;
+                typedef std::shared_ptr<BoxShape>                   Ptr;
 
             private:
-                typedef std::shared_ptr<math::Vector3>                Vector3Ptr;
-                typedef std::shared_ptr<geometry::LineGeometry>        LineGeometryPtr;
+                typedef std::shared_ptr<geometry::LineGeometry>     LineGeometryPtr;
                 typedef std::shared_ptr<render::AbstractContext>    AbsContextPtr;
 
             private:
-                float                                                _halfExtentX;
-                float                                                _halfExtentY;
-                float                                                _halfExtentZ;
+                float                                               _halfExtentX;
+                float                                               _halfExtentY;
+                float                                               _halfExtentZ;
 
             public:
                 inline static
@@ -64,8 +62,9 @@ namespace minko
                 void
                 halfExtentX(float halfExtentX)
                 {
-                    const bool needsUpdate    = fabsf(halfExtentX - _halfExtentX) > 1e-6f;
-                    _halfExtentX    = halfExtentX;
+                    const bool needsUpdate = fabsf(halfExtentX - _halfExtentX) > 1e-6f;
+                    _halfExtentX = halfExtentX;
+
                     if (needsUpdate)
                         shapeChanged()->execute(shared_from_this());
                 }
@@ -81,8 +80,9 @@ namespace minko
                 void
                 halfExtentY(float halfExtentY)
                 {
-                    const bool needsUpdate    = fabsf(halfExtentY - _halfExtentY) > 1e-6f;
-                    _halfExtentY    = halfExtentY;
+                    const bool needsUpdate = fabsf(halfExtentY - _halfExtentY) > 1e-6f;
+                    _halfExtentY = halfExtentY;
+
                     if (needsUpdate)
                         shapeChanged()->execute(shared_from_this());
                 }
@@ -98,8 +98,9 @@ namespace minko
                 void
                 halfExtentZ(float halfExtentZ)
                 {
-                    const bool needsUpdate    = fabsf(halfExtentZ - _halfExtentZ) > 1e-6f;
-                    _halfExtentZ    = halfExtentZ;
+                    const bool needsUpdate = fabsf(halfExtentZ - _halfExtentZ) > 1e-6f;
+                    _halfExtentZ = halfExtentZ;
+
                     if (needsUpdate)
                         shapeChanged()->execute(shared_from_this());
                 }
@@ -109,9 +110,9 @@ namespace minko
                 volume() const
                 {
                     const float volume = 8.0f
-                        * _localScaling->x() * (_halfExtentX + _margin)
-                        * _localScaling->y() * (_halfExtentY + _margin)
-                        * _localScaling->z() * (_halfExtentZ + _margin);
+                        * _localScaling.x * (_halfExtentX + _margin)
+                        * _localScaling.y * (_halfExtentY + _margin)
+                        * _localScaling.z * (_halfExtentZ + _margin);
 
                     return volume;
                 }

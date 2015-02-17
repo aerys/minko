@@ -44,7 +44,7 @@ main(int argc, char** argv)
     auto fxLoader = file::Loader::create(defaultLoader);
 
     fxLoader
-        //->queue("effect/Phong.effect")
+        ->queue("effect/Phong.effect")
         ->queue("effect/Basic.effect");
     defaultLoader->options()
         ->generateMipmaps(true)
@@ -57,7 +57,7 @@ main(int argc, char** argv)
 
     auto fxComplete = fxLoader->complete()->connect([&](file::Loader::Ptr loader)
     {
-        defaultLoader->options()->effect(sceneManager->assets()->effect("effect/Basic.effect"));
+        defaultLoader->options()->effect(sceneManager->assets()->effect("effect/Phong.effect"));
         defaultLoader->options()->disposeTextureAfterLoading(true);
         defaultLoader->queue(inputFileName);
         defaultLoader->load();
@@ -128,7 +128,7 @@ main(int argc, char** argv)
         root->children()[0]->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
     });
 
-    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr canvas, float time, float deltaTime)
+    auto enterFrame = canvas->enterFrame()->connect([&](AbstractCanvas::Ptr c, float time, float deltaTime)
     {
         yaw += cameraRotationYSpeed;
         cameraRotationYSpeed *= 0.9f;
@@ -150,6 +150,8 @@ main(int argc, char** argv)
             math::vec3(0.f, 1.f, 0.f)
             )));
         sceneManager->nextFrame(time, deltaTime);
+
+        std::cout << "FPS: " << canvas->framerate() << std::endl;
     });
 
     fxLoader->load();

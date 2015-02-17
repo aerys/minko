@@ -15,11 +15,8 @@ attribute vec3 aPosition;
 attribute vec2 aUV;
 
 #ifdef SKINNING_NUM_BONES
-attribute vec4 aBoneIdsA;
-attribute vec4 aBoneIdsB;
 attribute vec4 aBoneWeightsA;
 attribute vec4 aBoneWeightsB;
-uniform mat4 uBoneMatrices[SKINNING_NUM_BONES];
 #endif
 
 uniform mat4 uModelToWorldMatrix;
@@ -60,7 +57,7 @@ void main(void)
 	vec4 pos = vec4(aPosition, 1.0);
 
 	#ifdef SKINNING_NUM_BONES
-		pos = skinning_moveVertex(pos, uBoneMatrices, aBoneIdsA, aBoneIdsB, aBoneWeightsA, aBoneWeightsB);
+		pos = skinning_moveVertex(pos, aBoneWeightsA, aBoneWeightsB);
 	#endif
 
     #ifdef POP_LOD_ENABLED

@@ -46,7 +46,7 @@ namespace minko
 		public:
 			static
 			AbsComponentPtr
-            deserializeTransform(file::SceneVersion        sceneVersion,
+            deserializeTransform(file::SceneVersion sceneVersion,
                                  std::string&	    serializedTransformData,
 								 AssetLibraryPtr    assetLibrary,
 								 DependencyPtr	    dependencies);
