@@ -410,8 +410,14 @@ AbstractSerializerParser::deserializeTexture(unsigned short     metaData,
                                              short              assetId,
                                              std::list<JobPtr>& jobs)
 {
-    if (assetLibrary->texture(assetCompletePath) != nullptr)
+    auto existingTexture = assetLibrary->texture(assetCompletePath);
+
+    if (existingTexture != nullptr)
+    {
+        dependency->registerReference(assetId, existingTexture);
+
         return;
+    }
 
     auto assetHeaderSize = MINKO_SCENE_HEADER_SIZE + 2 + 2;
 
