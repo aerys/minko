@@ -73,7 +73,8 @@ main(int argc, char** argv)
 
         auto ppMaterial = material::BasicMaterial::create();
         ppMaterial->diffuseMap(renderTarget);
-        ppMaterial->data()->set("invertedDiffuseMapSize", math::vec2(1.f / float(renderTarget->width()), 1.f / float(renderTarget->height())));
+
+        effect->data()->set("invertedDiffuseMapSize", math::vec2(1.f / float(renderTarget->width()), 1.f / float(renderTarget->height())));
 
         auto renderer = Renderer::create();
         auto postProcessingScene = scene::Node::create()
@@ -94,8 +95,9 @@ main(int argc, char** argv)
             renderTarget->upload();
 
             ppMaterial->diffuseMap(renderTarget);
-            ppMaterial->data()->set("invertedDiffuseMapSize", math::vec2(1.f / float(renderTarget->width()), 1.f / float(renderTarget->height())));
+            effect->data()->set("invertedDiffuseMapSize", math::vec2(1.f / float(renderTarget->width()), 1.f / float(renderTarget->height())));
         });
+
 
         auto enableFXAA = true;
 

@@ -11,7 +11,7 @@
 			"binding" : "material[${materialUuid}].diffuseMap",
 			"textureFilter" : "linear"
 		},
-		"uTexcoordOffset"	: "material[${materialUuid}].invertedDiffuseMapSize"
+		"uTexcoordOffset"	: "invertedDiffuseMapSize"
 	},
 
 	"states" : {
