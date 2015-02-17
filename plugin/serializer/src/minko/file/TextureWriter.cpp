@@ -224,7 +224,10 @@ TextureWriter::writeRGBATexture(AbstractTexture::Ptr abstractTexture,
         return false;
     }
 
-    msgpack::type::tuple<int, std::vector<unsigned char>> serializedTexture(static_cast<int>(imageFormat), textureData);
+    msgpack::type::tuple<int, std::string> serializedTexture(
+        static_cast<int>(imageFormat),
+        std::string(textureData.begin(), textureData.end())
+    );
 
     msgpack::pack(blob, serializedTexture);
 
