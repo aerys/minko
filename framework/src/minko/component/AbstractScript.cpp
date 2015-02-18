@@ -126,10 +126,9 @@ AbstractScript::frameBeginHandler(SceneManager::Ptr sceneManager, float time, fl
     _time = time;
     _deltaTime = deltaTime;
 
-    if (!_started[target] && ready(target))
+    if (!_started[target] && ready(target) && target != nullptr)
 	{
         _started[target] = true;
-
         start(target);
 	}
 
