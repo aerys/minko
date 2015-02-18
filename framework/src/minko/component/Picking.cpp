@@ -359,7 +359,7 @@ Picking::addSurface(SurfacePtr surface)
 void
 Picking::removeSurface(SurfacePtr surface, NodePtr node)
 {
-	if (_surfaceToPickingId.find(surface) == _surfaceToPickingId.end())
+	/*if (_surfaceToPickingId.find(surface) == _surfaceToPickingId.end())
 		return;
 
 	auto surfacePickingId = _surfaceToPickingId[surface];
@@ -375,7 +375,7 @@ Picking::removeSurface(SurfacePtr surface, NodePtr node)
 	}
 
 	_surfaceToPickingId.erase(surface);
-	_pickingIdToSurface.erase(surfacePickingId);
+	_pickingIdToSurface.erase(surfacePickingId);*/
 }
 
 void
@@ -384,15 +384,15 @@ Picking::removedHandler(NodePtr target, NodePtr child, NodePtr parent)
 	if (std::find(_descendants.begin(), _descendants.end(), child) == _descendants.end())
 		return;
 
-	if (target == child)
+	/*if (target == child)
 	{
 		_renderingBeginSlot = nullptr;
 		_renderingEndSlot = nullptr;
-	}
+	}*/
 
-	removeSurfacesForNode(child);
+	//removeSurfacesForNode(child);
 
-	updateDescendants(target);
+	//updateDescendants(target);
 }
 
 void
