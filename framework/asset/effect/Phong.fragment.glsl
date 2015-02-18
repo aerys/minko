@@ -384,7 +384,13 @@ void main(void)
 	#endif // defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
 
 	#if defined(ENVIRONMENT_MAP_2D) || defined(ENVIRONMENT_CUBE_MAP)
-		vec4 envmapColor = envmap_sampleEnvironmentMap(uEnvironmentMap2d, uEnvironmentMap2dType, uEnvironmentCubemap, eyeVector, normalVector);
+
+		#if defined(ENVIRONMENT_MAP_2D)
+			vec4 envmapColor = envmap_sampleEnvironmentMap2D(uEnvironmentMap2d, uEnvironmentMap2dType, eyeVector, normalVector);
+		#elif defined(ENVIRONMENT_CUBE_MAP)
+			vec4 envmapColor = envmap_sampleEnvironmentCubeMap(uEnvironmentCubemap, eyeVector, normalVector);
+		#endif
+
 		float reflectivity = specular.a;
 
 		#ifdef ENVIRONMENT_ALPHA
