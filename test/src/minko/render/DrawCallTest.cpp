@@ -449,7 +449,7 @@ TEST_F(DrawCallTest, SamplerStatesImplicitDefaultValues)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -518,7 +518,7 @@ TEST_F(DrawCallTest, SamplerStatesWrapModeWithDefaultValueRepeat)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -585,7 +585,7 @@ TEST_F(DrawCallTest, SamplerStatesWrapModeWithDefaultValueClamp)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -652,7 +652,7 @@ TEST_F(DrawCallTest, SamplerStatesTextureFilterWithDefaultValueLinear)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -719,7 +719,7 @@ TEST_F(DrawCallTest, SamplerStatesTextureFilterWithDefaultValueNearest)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -786,7 +786,7 @@ TEST_F(DrawCallTest, SamplerStatesMipFilterWithDefaultValueLinear)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -853,7 +853,7 @@ TEST_F(DrawCallTest, SamplerStatesMipFilterWithDefaultValueLinearNearest)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -920,7 +920,7 @@ TEST_F(DrawCallTest, SamplerStatesMipFilterWithDefaultValueNone)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -990,7 +990,7 @@ TEST_F(DrawCallTest, SamplerStatesWrapModeWithVariableBindingFromRootData)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_NE(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -1057,7 +1057,7 @@ TEST_F(DrawCallTest, SamplerStatesTextureFilterWithVariableBindingFromRootData)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_NE(resolvedBindings.at(1), nullptr);
     ASSERT_EQ(resolvedBindings.at(2), nullptr);
@@ -1124,7 +1124,7 @@ TEST_F(DrawCallTest, SamplerStatesMipFilterWithVariableBindingFromRootData)
 
     auto samplers = drawCall.samplers();
 
-    ASSERT_TRUE(resolvedBindings.size(), 3);
+    ASSERT_EQ(resolvedBindings.size(), 3);
     ASSERT_EQ(resolvedBindings.at(0), nullptr);
     ASSERT_EQ(resolvedBindings.at(1), nullptr);
     ASSERT_NE(resolvedBindings.at(2), nullptr);
