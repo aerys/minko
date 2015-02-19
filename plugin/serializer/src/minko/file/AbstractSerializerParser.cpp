@@ -444,7 +444,7 @@ AbstractSerializerParser::deserializeTexture(unsigned short     metaData,
 
             const auto textureHeaderSizeOffset = assetHeaderSize - 2;
 
-            auto headerDataStream = std::stringstream(std::string(
+            std::stringstream headerDataStream(std::string(
                 headerData.begin() + textureHeaderSizeOffset,
                 headerData.begin() + textureHeaderSizeOffset + 2
             ));

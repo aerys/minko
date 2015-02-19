@@ -26,6 +26,12 @@ using namespace minko::math;
 using namespace minko::render;
 using namespace minko::serialize;
 
+const unsigned int WriterOptions::EmbedMode::None       = 0u;
+const unsigned int WriterOptions::EmbedMode::Geometry   = 1u << 0;
+const unsigned int WriterOptions::EmbedMode::Material   = 1u << 1;
+const unsigned int WriterOptions::EmbedMode::Texture    = 1u << 2;
+const unsigned int WriterOptions::EmbedMode::All        = Geometry | Material | Texture;
+
 WriterOptions::WriterOptions() :
     _addBoundingBoxes(false),
     _embedMode(EmbedMode::All),

@@ -35,11 +35,11 @@ namespace minko
 
             struct EmbedMode
             {
-                static const auto None      = 0u;
-                static const auto Geometry  = 1u << 0;
-                static const auto Material  = 1u << 1;
-                static const auto Texture   = 1u << 2;
-                static const auto All       = Geometry | Material | Texture;
+                static const unsigned int None;
+                static const unsigned int Geometry;
+                static const unsigned int Material;
+                static const unsigned int Texture;
+                static const unsigned int All;
             };
 
         private:

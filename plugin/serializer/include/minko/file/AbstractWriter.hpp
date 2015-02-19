@@ -284,7 +284,7 @@ namespace minko
                      Dependency::Ptr                dependency,
                      const SerializedDependency&	userDefinedDependency)
             {
-                auto data = std::stringstream();
+                std::stringstream data;
 
                 auto embeddedHeaderdata = std::vector<unsigned char>();
 
@@ -387,12 +387,12 @@ namespace minko
 
                     unsigned int dependencySize = 2;
 
-                    for (auto serializedDependency : serializedDependency)
+                    for (auto serializedDependencyEntry : serializedDependency)
                     {
                         dependencySize += 4;
 
                         std::stringstream sbuf;
-                        msgpack::pack(sbuf, serializedDependency);
+                        msgpack::pack(sbuf, serializedDependencyEntry);
 
                         serializedDependencyBufs.push_back(sbuf.str());
 
