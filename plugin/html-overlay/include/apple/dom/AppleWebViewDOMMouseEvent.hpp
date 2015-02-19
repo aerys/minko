@@ -71,6 +71,9 @@ namespace apple
 
             int
             screenY();
+            
+            int
+            button();
         };
     }
 }

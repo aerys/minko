@@ -49,6 +49,10 @@ namespace minko
         height() = 0;
 
         virtual
+        std::shared_ptr<data::Provider>
+        data() const = 0;
+
+        virtual
         std::shared_ptr<render::AbstractContext>
         context() = 0;
 

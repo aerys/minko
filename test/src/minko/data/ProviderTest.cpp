@@ -85,7 +85,7 @@ TEST_F(ProviderTest, PropertyAdded)
 {
 	auto p = Provider::create();
 	auto v = 0;
-	auto _ = p->propertyAdded()->connect(
+	auto _ = p->propertyAdded().connect(
 		[&](Provider::Ptr provider, const std::string& propertyName)
 		{
 			if (provider == p && propertyName == "foo")
@@ -102,7 +102,7 @@ TEST_F(ProviderTest, PropertyRemoved)
 {
 	auto p = Provider::create();
 	auto v = 0;
-	auto _ = p->propertyRemoved()->connect(
+	auto _ = p->propertyRemoved().connect(
 		[&](Provider::Ptr provider, const std::string& propertyName)
 		{
 			if (provider == p && propertyName == "foo")
@@ -111,16 +111,16 @@ TEST_F(ProviderTest, PropertyRemoved)
 	);
 
 	p->set("foo", 42);
-	p->unset("foo");
+    p->unset("foo");
 
 	ASSERT_EQ(v, 42);
 }
 
-TEST_F(ProviderTest, ValueChanged)
+TEST_F(ProviderTest, PropertyChanged)
 {
 	auto p = Provider::create();
 	auto v = 0;
-	auto _ = p->propertyValueChanged()->connect(
+	auto _ = p->propertyChanged().connect(
 		[&](Provider::Ptr provider, const std::string& propertyName)
 		{
 			if (provider == p && propertyName == "foo")
@@ -133,47 +133,107 @@ TEST_F(ProviderTest, ValueChanged)
 	ASSERT_EQ(v, 42);
 }
 
-//TEST_F(ProviderTest, ValueChangedNot)
-//{
-//	auto p = Provider::create();
-//	auto v = 0;
-//
-//	p->set("foo", 42);
-//
-//	auto _ = p->propertyValueChanged()->connect(
-//		[&](Provider::Ptr provider, const std::string& propertyName)
-//		{
-//			if (provider == p && propertyName == "foo")
-//				v = provider->get<int>("foo");
-//		}
-//	);
-//
-//	p->set("foo", 42);
-//
-//	ASSERT_NE(v, 42);
-//}
-
-TEST_F(ProviderTest, Swap)
+TEST_F(ProviderTest, ValueChangedNot)
 {
 	auto p = Provider::create();
-	auto vFoo = 0;
-	auto vBar = 0;
+	auto v = 0;
 
 	p->set("foo", 42);
-	p->set("bar", 24);
 
-	auto _ = p->propertyValueChanged()->connect(
+	auto _ = p->propertyChanged().connect(
 		[&](Provider::Ptr provider, const std::string& propertyName)
 		{
 			if (provider == p && propertyName == "foo")
-				vFoo = p->get<int>("foo");
-			if (provider == p && propertyName == "bar")
-				vBar = p->get<int>("bar");
+				v = provider->get<int>("foo");
 		}
 	);
 
-	p->swap("foo", "bar");
+	p->set("foo", 42);
 
-	ASSERT_EQ(vFoo, 24);
-	ASSERT_EQ(vBar, 42);
+	ASSERT_NE(v, 42);
+}
+
+TEST_F(ProviderTest, IntegerPointerConsistency)
+{
+    auto p = Provider::create();
+
+    p->set("integer", 42);
+
+    ASSERT_EQ(p->getPointer<render::TextureSampler>("integer"), p->getPointer<render::TextureSampler>("integer"));
+}
+
+TEST_F(ProviderTest, IntegerPointerConsistency2)
+{
+    auto p = Provider::create();
+
+    p->set("integer", 42);
+    auto ptr1 = p->getPointer<int>("integer");
+
+    p->set("integer", 24);
+    auto ptr2 = p->getPointer<int>("integer");
+
+    ASSERT_EQ(ptr1, ptr2);
+}
+
+TEST_F(ProviderTest, TextureSamplerPointerConsistency)
+{
+    auto p = Provider::create();
+    auto t1 = render::Texture::create(MinkoTests::canvas()->context(), 2, 2);
+
+    p->set("texture", t1->sampler());
+
+    ASSERT_EQ(p->getPointer<render::TextureSampler>("texture"), p->getPointer<render::TextureSampler>("texture"));
+}
+
+TEST_F(ProviderTest, TextureSamplerPointerConsistency2)
+{
+    auto p = Provider::create();
+    auto t1 = render::Texture::create(MinkoTests::canvas()->context(), 2, 2);
+    auto t2 = render::Texture::create(MinkoTests::canvas()->context(), 4, 4);
+
+    p->set("texture", t1->sampler());
+    auto ptr1 = p->getPointer<render::TextureSampler>("texture");
+
+    p->set("texture", t2->sampler());
+    auto ptr2 = p->getPointer<render::TextureSampler>("texture");
+
+    ASSERT_EQ(ptr1, ptr2);
+}
+
+TEST_F(ProviderTest, VertexAttributePointerConsistency)
+{
+    auto p = Provider::create();
+    auto g = geometry::CubeGeometry::create(MinkoTests::canvas()->context());
+    const auto& a1 = g->getVertexAttribute("position");
+
+    p->set("position", g->getVertexAttribute("position"));
+
+    ASSERT_EQ(p->getPointer<render::VertexAttribute>("position"), p->getPointer<render::VertexAttribute>("position"));
+}
+
+TEST_F(ProviderTest, VertexAttributePointerConsistency2)
+{
+    auto p = Provider::create();
+    auto cube = geometry::CubeGeometry::create(MinkoTests::canvas()->context());
+    auto sphere = geometry::SphereGeometry::create(MinkoTests::canvas()->context());
+
+    p->set("position", cube->getVertexAttribute("position"));
+    auto ptr1 = p->getPointer<render::VertexAttribute>("position");
+
+    p->set("position", sphere->getVertexAttribute("position"));
+    auto ptr2 = p->getPointer<render::VertexAttribute>("position");
+
+    ASSERT_EQ(ptr1, ptr2);
+}
+
+TEST_F(ProviderTest, CreateByCopy)
+{
+	auto p1 = Provider::create();
+
+	p1->set("test", 42.f);
+
+	auto p2 = Provider::create(p1);
+
+	ASSERT_EQ(p1->get<float>("test"), p2->get<float>("test"));
+	ASSERT_NE(p1->getUnsafePointer<float>("test"), p2->getUnsafePointer<float>("test"));
 }

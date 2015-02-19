@@ -50,7 +50,7 @@ namespace minko
             typedef std::shared_ptr<file::Loader>                           LoaderPtr;
             typedef std::shared_ptr<scene::Node>                            NodePtr;
             typedef std::shared_ptr<component::AbstractScript>              AbsScriptPtr;
-            typedef std::shared_ptr<data::Provider>                         MaterialPtr;
+			typedef std::shared_ptr<material::Material>		    MaterialPtr;
             typedef std::shared_ptr<audio::Sound>                           SoundPtr;
 
         private:
@@ -66,7 +66,7 @@ namespace minko
             std::unordered_map<std::string, NodePtr>                        _symbols;
             std::unordered_map<std::string, std::vector<unsigned char>>     _blobs;
             std::unordered_map<std::string, AbsScriptPtr>                   _scripts;
-            std::unordered_map<std::string, Layouts>                        _layouts;
+            std::unordered_map<std::string, scene::Layout>				    _layouts;
             std::unordered_map<std::string, SoundPtr>                       _sounds;
 
             Signal<Ptr, std::shared_ptr<AbstractParser>>::Ptr               _parserError;
@@ -137,6 +137,9 @@ namespace minko
             TexturePtr
             texture(const std::string& name) const;
 
+            std::shared_ptr<render::AbstractTexture>
+            getTextureByUuid(const std::string& uuid);
+
             Ptr
             cubeTexture(const std::string& name, CubeTexturePtr texture);
 
@@ -201,11 +204,11 @@ namespace minko
             const std::string&
             scriptName(AbsScriptPtr script);
 
-            Layouts
+            scene::Layout
             layout(const std::string& name);
 
             Ptr
-            layout(const std::string& name, Layouts);
+			layout(const std::string& name, scene::Layout);
 
             audio::Sound::Ptr
             sound(const std::string& name);

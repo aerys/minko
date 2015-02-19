@@ -19,45 +19,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/SpotLight.hpp"
 
-#include "minko/math/Vector3.hpp"
-#include "minko/math/Matrix4x4.hpp"
-
 using namespace minko;
-using namespace minko::math;
 using namespace minko::component;
 
 SpotLight::SpotLight(float diffuse,
-                     float specular,
+					 float specular,
+                     float innerAngleRadians,
+                     float outerAngleRadians,
                      float attenuationConstant,
                      float attenuationLinear,
                      float attenuationQuadratic) :
-    AbstractDiscreteLight("spotLights", diffuse, specular),
-    _attenuationCoeffs(Vector3::create(attenuationConstant, attenuationLinear, attenuationQuadratic)),
-    _worldPosition(Vector3::create(0.0f, 0.0f, 0.0f)),
-    _worldDirection(Vector3::create()->copyFrom(Vector3::forward()))
+	AbstractDiscreteLight("spotLight", diffuse, specular)
 {
+    updateModelToWorldMatrix(math::mat4(1.f));
 
-    data()->set("attenuationCoeffs",    _attenuationCoeffs);
-    data()->set("position",                _worldPosition);
-    data()->set("direction",            _worldDirection);
+    attenuationCoefficients(math::vec3(attenuationConstant, attenuationLinear, attenuationQuadratic));
+	innerConeAngle(innerAngleRadians);
+	outerConeAngle(outerAngleRadians);
 }
 
 SpotLight::SpotLight(const SpotLight& spotlight, const CloneOption& option) :
-	AbstractDiscreteLight("spotLights", spotlight.diffuse(), spotlight.specular()),
-	_attenuationCoeffs(Vector3::create(spotlight._attenuationCoeffs->x(), spotlight._attenuationCoeffs->y(), spotlight._attenuationCoeffs->z())),
-	_worldPosition(Vector3::create(spotlight.data()->get<Vector3::Ptr>("position"))),
-	_worldDirection(Vector3::create(spotlight.data()->get<Vector3::Ptr>("direction"))),
-	_cosInnerConeAngle(spotlight.cosInnerConeAngle()),
-	_cosOuterConeAngle(spotlight.cosOuterConeAngle())
+	AbstractDiscreteLight("spotLights", spotlight.diffuse(), spotlight.specular())
 {
+    updateModelToWorldMatrix(math::mat4(1.f));
 
-	data()->set("attenuationCoeffs", _attenuationCoeffs);
-	data()->set("position", _worldPosition);
-	data()->set("direction", _worldDirection);
+    auto test = spotlight.attenuationCoefficients();
 
-	data()->set<float>("cosInnerConeAngle", _cosInnerConeAngle);
-	data()->set<float>("cosOuterConeAngle", _cosOuterConeAngle);
-
+	data()->set("attenuationCoeffs", spotlight.attenuationCoefficients());
+	data()->set("cosInnerConeAngle", spotlight.innerConeAngle());
+	data()->set("cosOuterConeAngle", spotlight.outerConeAngle());
 }
 
 AbstractComponent::Ptr
@@ -65,69 +55,75 @@ SpotLight::clone(const CloneOption& option)
 {
 	auto light = std::shared_ptr<SpotLight>(new SpotLight(*this, option));
 
-	light->AbstractDiscreteLight::initialize();
-
 	return light;
 }
 
 void
-SpotLight::initialize(float innerAngleRadians,
-                      float outerAngleRadians)
+SpotLight::updateModelToWorldMatrix(const math::mat4& modelToWorld)
 {
-    AbstractDiscreteLight::initialize();
-
-    innerConeAngle(innerAngleRadians);
-    outerConeAngle(std::max(outerAngleRadians, innerAngleRadians));
+	data()
+		->set("position",	(modelToWorld * math::vec4(0.f, 0.f, 0.f, 1.f)).xyz())
+		->set("direction",	math::normalize(math::mat3(modelToWorld) * math::vec3(0.f, 0.f, -1.f)));
 }
 
-void
-SpotLight::updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld)
+float
+SpotLight::innerConeAngle() const
 {
-    modelToWorld->copyTranslation(_worldPosition);
-    modelToWorld->deltaTransform(Vector3::forward(), _worldDirection);
+    return acos(data()->get<float>("cosInnerConeAngle"));
 }
 
-SpotLight::Ptr
+SpotLight&
 SpotLight::innerConeAngle(float radians)
 {
-    _cosInnerConeAngle = cosf(std::max(0.0f, std::min(0.5f * float(M_PI), radians)));
-    data()->set<float>("cosInnerConeAngle", _cosInnerConeAngle);
+	data()->set<float>(
+		"cosInnerConeAngle",
+		cosf(std::max(0.0f, std::min(0.5f * math::pi<float>(), radians)))
+	);
 
-    return std::static_pointer_cast<SpotLight>(shared_from_this());
+	return *this;
 }
 
-SpotLight::Ptr
+float
+SpotLight::outerConeAngle() const
+{
+    return acos(data()->get<float>("cosOuterConeAngle"));
+}
+
+SpotLight&
 SpotLight::outerConeAngle(float radians)
 {
-    _cosOuterConeAngle = cosf(std::max(0.0f, std::min(0.5f * float(M_PI), radians)));
-    data()->set<float>("cosOuterConeAngle", _cosOuterConeAngle);
+	data()->set<float>(
+		"cosOuterConeAngle",
+        cosf(std::max(0.0f, std::min(0.5f * math::pi<float>(), radians)))
+	);
 
-    return std::static_pointer_cast<SpotLight>(shared_from_this());
+	return *this;
 }
 
-Vector3::Ptr
+const math::vec3&
 SpotLight::attenuationCoefficients() const
 {
-    return data()->get<math::Vector3::Ptr>("attenuationCoeffs");
+	return data()->get<math::vec3>("attenuationCoeffs");
 }
 
-SpotLight::Ptr
+SpotLight&
 SpotLight::attenuationCoefficients(float constant, float linear, float quadratic)
 {
-    return attenuationCoefficients(Vector3::create(constant, linear, quadratic));
+	return attenuationCoefficients(math::vec3(constant, linear, quadratic));
 }
 
-SpotLight::Ptr
-SpotLight::attenuationCoefficients(Vector3::Ptr value)
+SpotLight&
+SpotLight::attenuationCoefficients(const math::vec3& value)
 {
-    _attenuationCoeffs->copyFrom(value);
-    data()->set<Vector3::Ptr>("attenuationCoeffs", _attenuationCoeffs);
+	data()->set("attenuationCoeffs", value);
 
-    return std::static_pointer_cast<SpotLight>(shared_from_this());
+	return *this;
 }
 
 bool
 SpotLight::attenuationEnabled() const
 {
-    return !( _attenuationCoeffs->x() < 0.0f || _attenuationCoeffs->y() < 0.0f || _attenuationCoeffs->z() < 0.0f);
+	auto& coef = attenuationCoefficients();
+
+	return !(coef.x < 0.0f || coef.y < 0.0f || coef.z < 0.0f);
 }

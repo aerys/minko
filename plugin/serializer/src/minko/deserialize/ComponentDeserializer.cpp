@@ -18,6 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/deserialize/ComponentDeserializer.hpp"
+#include "minko/file/AbstractSerializerParser.hpp"
 #include "minko/component/BoundingBox.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
@@ -48,7 +49,8 @@ using namespace minko;
 using namespace minko::deserialize;
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeTransform(std::string&                        packed,
+ComponentDeserializer::deserializeTransform(file::SceneVersion                  sceneVersion,
+                                            std::string&						serializedTransformData,
                                             std::shared_ptr<file::AssetLibrary> assetLibrary,
                                             std::shared_ptr<file::Dependency>   dependencies)
 {
@@ -58,13 +60,20 @@ ComponentDeserializer::deserializeTransform(std::string&                        
 
     std::tuple<uint, std::string&> serializedMatrixTuple(dst.get<0>(), dst.get<1>());
 
-    Matrix4x4Ptr transformMatrix = Any::cast<Matrix4x4Ptr>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
+	auto transformMatrix = Any::cast<math::mat4>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
+    
+    // For .scene file of version 0.2.x or less we need to transpose transform matrices
+    if (sceneVersion.minor < 3)
+    {
+        transformMatrix = math::transpose(transformMatrix);
+    }
 
     return component::Transform::create(transformMatrix);
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeProjectionCamera(std::string&                         packed,
+ComponentDeserializer::deserializeProjectionCamera(file::SceneVersion                         sceneVersion,
+                                                   std::string&							serializedCameraData,
                                                    std::shared_ptr<file::AssetLibrary>  assetLibrary,
                                                    std::shared_ptr<file::Dependency>    dependencies)
 {
@@ -78,7 +87,8 @@ ComponentDeserializer::deserializeProjectionCamera(std::string&                 
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeAmbientLight(std::string&                         packed,
+ComponentDeserializer::deserializeAmbientLight(file::SceneVersion                         sceneVersion,
+                                               std::string&							serializedAmbientLight,
                                                std::shared_ptr<file::AssetLibrary>  assetLibrary,
                                                std::shared_ptr<file::Dependency>    dependencies)
 {
@@ -90,13 +100,14 @@ ComponentDeserializer::deserializeAmbientLight(std::string&                     
     std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
 
     ambientLight->ambient(dstContent[0]);
-    ambientLight->color()->setTo(dstContent[1], dstContent[2], dstContent[3]);
+	ambientLight->color(math::vec3(dstContent[1], dstContent[2], dstContent[3]));
 
     return ambientLight;
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeDirectionalLight(std::string&                         packed,
+ComponentDeserializer::deserializeDirectionalLight(file::SceneVersion                         sceneVersion,
+                                                   std::string&							serializedDirectionalLight,
                                                    std::shared_ptr<file::AssetLibrary>  assetLibrary,
                                                    std::shared_ptr<file::Dependency>    dependencies)
 {
@@ -109,13 +120,14 @@ ComponentDeserializer::deserializeDirectionalLight(std::string&                 
 
     directionalLight->diffuse(dstContent[0]);
     directionalLight->specular(dstContent[1]);
-    directionalLight->color()->setTo(dstContent[2], dstContent[3], dstContent[4]);
+	directionalLight->color(math::vec3(dstContent[2], dstContent[3], dstContent[4]));
 
     return directionalLight;
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializePointLight(std::string&                           packed,
+ComponentDeserializer::deserializePointLight(file::SceneVersion                           sceneVersion,
+                                             std::string&							serializedPointLight,
                                              std::shared_ptr<file::AssetLibrary>    assetLibrary,
                                              std::shared_ptr<file::Dependency>      dependencies)
 {
@@ -129,13 +141,14 @@ ComponentDeserializer::deserializePointLight(std::string&                       
     pointLight->diffuse(dstContent[0]);
     pointLight->specular(dstContent[1]);
     pointLight->attenuationCoefficients(dstContent[2], dstContent[3], dstContent[4]);
-    pointLight->color()->setTo(dstContent[5], dstContent[6], dstContent[7]);
+	pointLight->color(math::vec3(dstContent[5], dstContent[6], dstContent[7]));
 
     return pointLight;
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeSpotLight(std::string&                        packed,
+ComponentDeserializer::deserializeSpotLight(file::SceneVersion                        sceneVersion,
+                                            std::string&						serializedSpotLight,
                                             std::shared_ptr<file::AssetLibrary> assetLibrary,
                                             std::shared_ptr<file::Dependency>   dependencies)
 {
@@ -151,13 +164,14 @@ ComponentDeserializer::deserializeSpotLight(std::string&                        
     spotLight->attenuationCoefficients(dstContent[2], dstContent[3], dstContent[4]);
     spotLight->innerConeAngle(dstContent[5]);
     spotLight->outerConeAngle(dstContent[6]);
-    spotLight->color()->setTo(dstContent[7], dstContent[8], dstContent[9]);
+	spotLight->color(math::vec3(dstContent[7], dstContent[8], dstContent[9]));
 
     return spotLight;
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeSurface(std::string&                              packed,
+ComponentDeserializer::deserializeSurface(file::SceneVersion                          sceneVersion,
+                                          std::string&							serializedSurface,
                                           std::shared_ptr<file::AssetLibrary>       assetLibrary,
                                           std::shared_ptr<file::Dependency>         dependencies)
 {
@@ -176,7 +190,7 @@ ComponentDeserializer::deserializeSurface(std::string&                          
     {
         unpack(ext, dst.get<3>().data(), dst.get<3>().size());
 
-        for (int i = 0; i < ext.get<0>().size(); ++i)
+		for (uint i = 0; i < ext.a0.size(); ++i)
         {
             auto extension = ext.get<0>()[i];
 
@@ -205,13 +219,14 @@ ComponentDeserializer::deserializeSurface(std::string&                          
         technique
     );
 
-    surface->visible(visible);
+	//surface->visible(visible);
 
     return surface;
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeRenderer(std::string&                         packed,
+ComponentDeserializer::deserializeRenderer(file::SceneVersion                         sceneVersion,
+                                           std::string&							serializedRenderer,
                                            std::shared_ptr<file::AssetLibrary>  assetLibrary,
                                            std::shared_ptr<file::Dependency>    dependencies)
 {
@@ -227,7 +242,8 @@ ComponentDeserializer::deserializeRenderer(std::string&                         
 
 
 ComponentDeserializer::AbsComponentPtr
-ComponentDeserializer::deserializeAnimation(std::string&        packed,
+ComponentDeserializer::deserializeAnimation(file::SceneVersion    sceneVersion,
+                                            std::string&	serializedAnimation,
                                             AssetLibraryPtr     assetLibrary,
                                             DependencyPtr       dependencies)
 {
@@ -236,7 +252,7 @@ ComponentDeserializer::deserializeAnimation(std::string&        packed,
 
     unpack(dst, packed.data(), packed.size() - 1);
 
-    std::vector<math::Matrix4x4::Ptr>   matrices;
+	std::vector<math::mat4>	matrices;
     std::vector<uint>                   timetable;
     uint                                duration    = dst.get<0>();
     bool                                interpolate = dst.get<3>();
@@ -245,8 +261,8 @@ ComponentDeserializer::deserializeAnimation(std::string&        packed,
     {
         std::tuple<uint, std::string&> serializedMatrixTuple(dst.get<2>()[i].get<0>(), dst.get<2>()[i].get<1>());
 
-        timetable.push_back(dst.get<1>()[i]);
-        matrices.push_back(Any::cast<Matrix4x4Ptr>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple)));
+		timetable.push_back(dst.a1[i]);
+		matrices.push_back(math::transpose(Any::cast<math::mat4>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple))));
     }
 
     timelines.push_back(animation::Matrix4x4Timeline::create("transform.matrix", duration, timetable, matrices, interpolate));
@@ -255,7 +271,8 @@ ComponentDeserializer::deserializeAnimation(std::string&        packed,
 }
 
 ComponentDeserializer::AbsComponentPtr
-ComponentDeserializer::deserializeSkinning(std::string&     packed,
+ComponentDeserializer::deserializeSkinning(file::SceneVersion     sceneVersion, 
+                                           std::string&		serializedAnimation,
                                            AssetLibraryPtr  assetLibrary,
                                            DependencyPtr    dependencies)
 {
@@ -274,8 +291,8 @@ ComponentDeserializer::deserializeSkinning(std::string&     packed,
     std::vector<std::vector<uint>>                  bonesVertexIds;
     std::vector<std::vector<float>>                 bonesWeights;
     std::vector<scene::Node::Ptr>                   nodes;
+	std::vector<math::mat4> offsetMatrices;
     std::vector<scene::Node::Ptr>                   boneNodes;
-    std::vector<std::shared_ptr<math::Matrix4x4>>   offsetMatrices;
 
     for (uint i = 0; i < numBones; i++)
     {
@@ -284,8 +301,8 @@ ComponentDeserializer::deserializeSkinning(std::string&     packed,
         std::string                     nodeName        = serializedBone.get<0>();
         std::vector<uint>               vertexIntIds    = TypeDeserializer::deserializeVector<uint, uint>(serializedBone.get<1>());
         std::vector<unsigned short>     vertexShortIds(vertexIntIds.begin(), vertexIntIds.end());
-        std::vector<float>              boneWeight      = TypeDeserializer::deserializeVector<float>(serializedBone.get<2>());
-        auto                            offsetMatrix    = Any::cast<Matrix4x4Ptr>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
+		std::vector<float>				boneWeight		= TypeDeserializer::deserializeVector<float>(serializedBone.a2);
+		auto							offsetMatrix	= Any::cast<math::mat4>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
 
         auto nodeSet = scene::NodeSet::create(root)
             ->descendants(true, false)
@@ -293,9 +310,9 @@ ComponentDeserializer::deserializeSkinning(std::string&     packed,
 
         if (!nodeSet->nodes().empty())
         {
-
-            bones.push_back(geometry::Bone::create(offsetMatrix, vertexShortIds, boneWeight));
-            boneNodes.push_back(nodeSet->nodes()[0]);
+            auto node = nodeSet->nodes()[0];
+			bones.push_back(geometry::Bone::create(node, offsetMatrix, vertexShortIds, boneWeight));
+			boneNodes.push_back(node);
         }
     }
 
@@ -309,7 +326,8 @@ ComponentDeserializer::deserializeSkinning(std::string&     packed,
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeBoundingBox(std::string&                          packed,
+ComponentDeserializer::deserializeBoundingBox(file::SceneVersion                          sceneVersion,
+                                              std::string&							serializedBoundingBox,
                                               std::shared_ptr<file::AssetLibrary>   assetLibrary,
                                               std::shared_ptr<file::Dependency>     dependencies)
 {
@@ -319,12 +337,10 @@ ComponentDeserializer::deserializeBoundingBox(std::string&                      
 
     auto componentData = deserialize::TypeDeserializer::deserializeVector<float>(dst);
 
-    auto component = component::BoundingBox::create(componentData[3],
+	return component::BoundingBox::create(
+        componentData[3],
                                                     componentData[4],
                                                     componentData[5],
-                                                    math::Vector3::create(componentData[0],
-                                                                          componentData[1],
-                                                                          componentData[2]));
-
-    return component;
+        math::vec3(componentData[0], componentData[1], componentData[2])
+    );
 }

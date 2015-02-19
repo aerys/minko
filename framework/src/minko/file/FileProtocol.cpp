@@ -44,52 +44,23 @@ FileProtocol::load()
 
     _runningLoaders.push_back(loader);
 
-    auto filename = _file->filename();
+    const auto& resolvedFilename = this->resolvedFilename();
     auto options = _options;
     auto flags = std::ios::in | std::ios::ate | std::ios::binary;
 
-    std::string cleanFilename = "";
+    auto cleanFilename = resolvedFilename;
 
-    for (uint i = 0; i < filename.length(); ++i)
+    auto prefixPosition = resolvedFilename.find("://");
+
+    if (prefixPosition != std::string::npos)
     {
-        if (i < filename.length() - 2 && filename.at(i) == ':' && filename.at(i + 1) == '/' && filename.at(i + 2) == '/')
-        {
-            cleanFilename = "";
-            i += 2;
-            continue;
-        }
-
-        cleanFilename += filename.at(i);
+        cleanFilename = resolvedFilename.substr(prefixPosition + 3);
     }
-
-    _options = options;
-
-    auto realFilename = options->uriFunction()(File::sanitizeFilename(cleanFilename));
 
     std::fstream file(cleanFilename, flags);
 
-    if (!file.is_open())
-    {
-        for (auto path : _options->includePaths())
-        {
-            const auto absolutePrefix = File::getBinaryDirectory() + "/";
-
-            auto testFilename = options->uriFunction()(File::sanitizeFilename(path + '/' + cleanFilename));
-
-            file.open(testFilename, flags);
-
-            if (file.is_open())
-            {
-                realFilename = testFilename;
-                break;
-            }
-        }
-    }
-
     if (file.is_open())
     {
-        resolvedFilename(realFilename);
-
         if (_options->loadAsynchronously() && AbstractCanvas::defaultCanvas() != nullptr
             && AbstractCanvas::defaultCanvas()->isWorkerRegistered("file-protocol"))
         {
@@ -134,10 +105,10 @@ FileProtocol::load()
             lengthByteArray[3] = (length & 0x000000ff);
 
             std::vector<char> input;
-            
+
             input.insert(input.end(), offsetByteArray.begin(), offsetByteArray.end());
             input.insert(input.end(), lengthByteArray.begin(), lengthByteArray.end());
-            input.insert(input.end(), resolvedFilename().begin(), resolvedFilename().end());
+            input.insert(input.end(), cleanFilename.begin(), cleanFilename.end());
 
             worker->start(input);
         }
@@ -165,7 +136,14 @@ FileProtocol::load()
     }
     else
     {
-        std::cout << "FileProtocol::load() : Could not load file " + filename << std::endl;
         _error->execute(shared_from_this());
     }
+}
+
+bool
+FileProtocol::fileExists(const std::string& filename)
+{
+    std::ifstream file(filename, std::ios::in | std::ios::binary);
+
+    return file.is_open();
 }

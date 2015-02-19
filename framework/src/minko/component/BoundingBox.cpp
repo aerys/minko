@@ -20,20 +20,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/BoundingBox.hpp"
 
 #include "minko/math/Box.hpp"
-#include "minko/math/Vector3.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/geometry/Geometry.hpp"
-#include "minko/data/Container.hpp"
+#include "minko/data/Store.hpp"
 #include "minko/CloneOption.hpp"
 
 using namespace minko;
-using namespace math;
 using namespace minko::component;
 
-BoundingBox::BoundingBox(Vector3::Ptr topRight, Vector3::Ptr bottomLeft) :
+BoundingBox::BoundingBox(const math::vec3& topRight, const math::vec3& bottomLeft) :
     _fixed(true),
     _box(math::Box::create(topRight, bottomLeft)),
     _worldSpaceBox(math::Box::create(topRight, bottomLeft)),
@@ -54,11 +52,11 @@ BoundingBox::BoundingBox() :
 }
 
 BoundingBox::BoundingBox(const BoundingBox& bbox, const CloneOption& option) :
-_fixed(bbox._fixed),
-_box(option == CloneOption::SHALLOW ? bbox._box : math::Box::create(bbox._box->topRight(), bbox._box->bottomLeft())),
-_worldSpaceBox(option == CloneOption::SHALLOW ? bbox._worldSpaceBox : math::Box::create(bbox._worldSpaceBox->topRight(), bbox._worldSpaceBox->bottomLeft())),
-_invalidBox(bbox._invalidBox),
-_invalidWorldSpaceBox(bbox._invalidWorldSpaceBox)
+	_fixed(bbox._fixed),
+	_box(option == CloneOption::SHALLOW ? bbox._box : math::Box::create(bbox._box->topRight(), bbox._box->bottomLeft())),
+	_worldSpaceBox(option == CloneOption::SHALLOW ? bbox._worldSpaceBox : math::Box::create(bbox._worldSpaceBox->topRight(), bbox._worldSpaceBox->bottomLeft())),
+	_invalidBox(bbox._invalidBox),
+	_invalidWorldSpaceBox(bbox._invalidWorldSpaceBox)
 {
 
 }
@@ -68,21 +66,14 @@ BoundingBox::clone(const CloneOption& option)
 {
 	Ptr bbox(new BoundingBox(*this, option));
 
-	bbox->initialize();
-
 	return bbox;
 }
 
 void
-BoundingBox::initialize()
+BoundingBox::targetAdded(scene::Node::Ptr target)
 {
-    _targetAddedSlot = targetAdded()->connect([=](AbstractComponent::Ptr cmp, scene::Node::Ptr target)
-    {
-        if (targets().size() > 1)
-            throw std::logic_error("The same BoundingBox cannot have 2 different targets");
-
-        _modelToWorldChangedSlot = target->data()->propertyValueChanged("transform.modelToWorldMatrix")->connect(
-            [=](data::Container::Ptr data, const std::string& propertyName)
+	_modelToWorldChangedSlot = target->data().propertyChanged("modelToWorldMatrix").connect(
+		[&](data::Store& data, data::Provider::Ptr provider, const std::string& propertyName)
             {
                 _invalidWorldSpaceBox = true;
             }
@@ -97,21 +88,21 @@ BoundingBox::initialize()
             }
         };
 
-        _componentAddedSlot = target->componentAdded()->connect(componentAddedOrRemovedCallback);
-        _componentRemovedSlot = target->componentAdded()->connect(componentAddedOrRemovedCallback);
+	_componentAddedSlot = target->componentAdded().connect(componentAddedOrRemovedCallback);
+	_componentRemovedSlot = target->componentAdded().connect(componentAddedOrRemovedCallback);
 
         _invalidBox = true;
-    });
-
-    _targetRemovedSlot = targetRemoved()->connect([&](AbstractComponent::Ptr cmp, scene::Node::Ptr target)
-    {
-        _componentAddedSlot = nullptr;
-        _componentRemovedSlot = nullptr;
-    });
 }
 
 void
-BoundingBox::computeBox(const std::vector<component::Surface::Ptr>& surfaces, math::Vector3::Ptr min, math::Vector3::Ptr max)
+BoundingBox::targetRemoved(scene::Node::Ptr target)
+{
+        _componentAddedSlot = nullptr;
+        _componentRemovedSlot = nullptr;
+}
+
+void
+BoundingBox::computeBox(const std::vector<component::Surface::Ptr>& surfaces, math::vec3& min, math::vec3& max)
 {
     for (auto& surface : surfaces)
     {
@@ -119,8 +110,7 @@ BoundingBox::computeBox(const std::vector<component::Surface::Ptr>& surfaces, ma
         if (geom->hasVertexAttribute("position"))
         {
             auto xyzBuffer = geom->vertexBuffer("position");
-            auto attr = xyzBuffer->attribute("position");
-            auto offset = std::get<2>(*attr);
+            auto offset = xyzBuffer->attribute("position").offset;
             
             for (uint i = 0; i < xyzBuffer->numVertices(); ++i)
             {
@@ -128,26 +118,26 @@ BoundingBox::computeBox(const std::vector<component::Surface::Ptr>& surfaces, ma
                 auto y = xyzBuffer->data()[i * xyzBuffer->vertexSize() + offset + 1];
                 auto z = xyzBuffer->data()[i * xyzBuffer->vertexSize() + offset + 2];
                 
-                if (x < min->x())
-                    min->x(x);
-                if (x > max->x())
-                    max->x(x);
+                if (x < min.x)
+                	min.x = x;
+                if (x > max.x)
+                	max.x = x;
                 
-                if (y < min->y())
-                    min->y(y);
-                if (y > max->y())
-                    max->y(y);
+                if (y < min.y)
+                	min.y = y;
+                if (y > max.y)
+                	max.y = y;
                 
-                if (z < min->z())
-                    min->z(z);
-                if (z > max->z())
-                    max->z(z);
+                if (z < min.z)
+                	min.z = z;
+                if (z > max.z)
+                	max.z = z;
             }
         }
         else
         {
-            min->setTo(0.f, 0.f, 0.f);
-            max->setTo(0.f, 0.f, 0.f);
+        	min = { 0.f, 0.f, 0.f };
+        	max = { 0.f, 0.f, 0.f };
         }
     }
 }
@@ -157,32 +147,18 @@ BoundingBox::update()
 {
     _invalidBox = false;
 
-    auto target = targets()[0];
+    auto target = this->target();
 
     if (!_fixed)
     {
-        // Get all surfaces of the current node
         auto surfaces = target->components<Surface>();
         
-        // We don't forget to add surfaces of node's children
-//        auto childrenWithSurface = scene::NodeSet::create(target)->descendants(true)->where([=](scene::Node::Ptr node)
-//        {
-//            return node->hasComponent<Surface>();
-//        });
-//        
-//        for (auto node : childrenWithSurface->nodes())
-//        {
-//            auto nodeSurfaces = node->components<component::Surface>();
-//            surfaces.insert(surfaces.begin(), nodeSurfaces.begin(), nodeSurfaces.end());
-//        }
-        
-        auto min = Vector3::create(
+		auto min = math::vec3(
             std::numeric_limits<float>::max(),
             std::numeric_limits<float>::max(),
             std::numeric_limits<float>::max()
         );
-        
-        auto max = Vector3::create(
+		auto max = math::vec3(
             -std::numeric_limits<float>::max(),
             -std::numeric_limits<float>::max(),
             -std::numeric_limits<float>::max()
@@ -192,13 +168,13 @@ BoundingBox::update()
         {
             computeBox(surfaces, min, max);
 
-            _box->bottomLeft()->copyFrom(min);
-            _box->topRight()->copyFrom(max);
+			_box->bottomLeft(min);
+			_box->topRight(max);
         }
         else
         {
-            _box->bottomLeft()->copyFrom(Vector3::zero());
-            _box->topRight()->copyFrom(Vector3::zero());
+			_box->bottomLeft(math::vec3(0.));
+			_box->topRight(math::vec3(0.));
         }
     }
 
@@ -213,25 +189,26 @@ BoundingBox::updateWorldSpaceBox()
 
     _invalidWorldSpaceBox = false;
 
-    if (!targets()[0]->data()->hasProperty("transform.modelToWorldMatrix"))
+	if (!target()->data().hasProperty("modelToWorldMatrix"))
     {
-        _worldSpaceBox->topRight()->copyFrom(_box->topRight());
-        _worldSpaceBox->bottomLeft()->copyFrom(_box->bottomLeft());
+		_worldSpaceBox->topRight(_box->topRight());
+		_worldSpaceBox->bottomLeft(_box->bottomLeft());
     }
     else
     {
-        auto t = targets()[0]->data()->get<Matrix4x4::Ptr>("transform.modelToWorldMatrix");
+		auto t = target()->data().get<math::mat4>("modelToWorldMatrix");
         auto vertices = _box->getVertices();
+		auto numVertices = vertices.size();
 
-        for (auto& vertex : vertices)
-            t->transform(vertex, vertex);
+		for (uint i = 0; i < numVertices; ++i)
+			vertices[i] = (t * math::vec4(vertices[i], 1.f)).xyz();
 
-        auto max = _worldSpaceBox->topRight()->setTo(
+		auto max = math::vec3(
             -std::numeric_limits<float>::max(),
             -std::numeric_limits<float>::max(),
             -std::numeric_limits<float>::max()
         );
-        auto min = _worldSpaceBox->bottomLeft()->setTo(
+		auto min = math::vec3(
             std::numeric_limits<float>::max(),
             std::numeric_limits<float>::max(),
             std::numeric_limits<float>::max()
@@ -239,20 +216,23 @@ BoundingBox::updateWorldSpaceBox()
 
         for (auto& vertex : vertices)
         {
-            if (vertex->x() > max->x())
-                max->x(vertex->x());
-            if (vertex->x() < min->x())
-                min->x(vertex->x());
+			if (vertex.x > max.x)
+				max.x = vertex.x;
+			if (vertex.x < min.x)
+				min.x = vertex.x;
 
-            if (vertex->y() > max->y())
-                max->y(vertex->y());
-            if (vertex->y() < min->y())
-                min->y(vertex->y());
+			if (vertex.y > max.y)
+				max.y = vertex.y;
+			if (vertex.y < min.y)
+				min.y = vertex.y;
 
-            if (vertex->z() > max->z())
-                max->z(vertex->z());
-            if (vertex->z() < min->z())
-                min->z(vertex->z());
+			if (vertex.z > max.z)
+				max.z = vertex.z;
+			if (vertex.z < min.z)
+				min.z = vertex.z;
         }
+
+		_worldSpaceBox->topRight(max);
+		_worldSpaceBox->bottomLeft(min);
     }
 }

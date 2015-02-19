@@ -27,9 +27,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Effect.hpp"
 #include "minko/render/Blending.hpp"
 #include "minko/render/CompareMode.hpp"
-#include "minko/render/WrapMode.hpp"
-#include "minko/render/TextureFilter.hpp"
-#include "minko/render/MipFilter.hpp"
 #include "minko/render/TriangleCulling.hpp"
 #include "minko/render/AbstractTexture.hpp"
 #include "minko/render/Texture.hpp"
@@ -39,7 +36,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/FileProtocol.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/AssetLibrary.hpp"
+#include "minko/data/Store.hpp"
 #include "minko/log/Logger.hpp"
+
 #include "json/json.h"
 
 using namespace minko;
@@ -47,121 +46,66 @@ using namespace minko::data;
 using namespace minko::file;
 using namespace minko::render;
 
-std::unordered_map<std::string, unsigned int> EffectParser::_blendFactorMap = EffectParser::initializeBlendFactorMap();
-std::unordered_map<std::string, unsigned int>
-EffectParser::initializeBlendFactorMap()
-{
-	std::unordered_map<std::string, unsigned int> m;
+std::unordered_map<std::string, unsigned int> EffectParser::_blendFactorMap = {
+	{ "src_zero", static_cast<uint>(render::Blending::Source::ZERO) },
+	{ "src_one", static_cast<uint>(render::Blending::Source::ONE) },
+	{ "src_color", static_cast<uint>(render::Blending::Source::SRC_COLOR) },
+	{ "src_one_minus_src_color", static_cast<uint>(render::Blending::Source::ONE_MINUS_SRC_COLOR) },
+	{ "src_src_alpha", static_cast<uint>(render::Blending::Source::SRC_ALPHA) },
+	{ "src_one_minus_src_alpha", static_cast<uint>(render::Blending::Source::ONE_MINUS_SRC_ALPHA) },
+	{ "src_dst_alpha", static_cast<uint>(render::Blending::Source::DST_ALPHA) },
+	{ "src_one_minus_dst_alpha", static_cast<uint>(render::Blending::Source::ONE_MINUS_DST_ALPHA) },
 
-	m["src_zero"]					= static_cast<uint>(render::Blending::Source::ZERO);
-    m["src_one"]					= static_cast<uint>(render::Blending::Source::ONE);
-    m["src_color"]					= static_cast<uint>(render::Blending::Source::SRC_COLOR);
-    m["src_one_minus_src_color"]	= static_cast<uint>(render::Blending::Source::ONE_MINUS_SRC_COLOR);
-    m["src_src_alpha"]				= static_cast<uint>(render::Blending::Source::SRC_ALPHA);
-    m["src_one_minus_src_alpha"]	= static_cast<uint>(render::Blending::Source::ONE_MINUS_SRC_ALPHA);
-    m["src_dst_alpha"]				= static_cast<uint>(render::Blending::Source::DST_ALPHA);
-    m["src_one_minus_dst_alpha"]	= static_cast<uint>(render::Blending::Source::ONE_MINUS_DST_ALPHA);
+	{ "dst_zero", static_cast<uint>(render::Blending::Destination::ZERO) },
+	{ "dst_one", static_cast<uint>(render::Blending::Destination::ONE) },
+	{ "dst_dst_color", static_cast<uint>(render::Blending::Destination::DST_COLOR) },
+	{ "dst_one_minus_dst_color", static_cast<uint>(render::Blending::Destination::ONE_MINUS_DST_COLOR) },
+	{ "dst_src_alpha_saturate", static_cast<uint>(render::Blending::Destination::SRC_ALPHA_SATURATE) },
+	{ "dst_one_minus_src_alpha", static_cast<uint>(render::Blending::Destination::ONE_MINUS_SRC_ALPHA) },
+	{ "dst_dst_alpha", static_cast<uint>(render::Blending::Destination::DST_ALPHA) },
+	{ "dst_one_minus_dst_alpha", static_cast<uint>(render::Blending::Destination::ONE_MINUS_DST_ALPHA) },
 
-    m["dst_zero"]					= static_cast<uint>(render::Blending::Destination::ZERO);
-    m["dst_one"]					= static_cast<uint>(render::Blending::Destination::ONE);
-	m["dst_dst_color"]				= static_cast<uint>(render::Blending::Destination::DST_COLOR);
-    m["dst_one_minus_dst_color"]	= static_cast<uint>(render::Blending::Destination::ONE_MINUS_DST_COLOR);
-    m["dst_src_alpha_saturate"]		= static_cast<uint>(render::Blending::Destination::SRC_ALPHA_SATURATE);
-    m["dst_one_minus_src_alpha"]	= static_cast<uint>(render::Blending::Destination::ONE_MINUS_SRC_ALPHA);
-    m["dst_dst_alpha"]				= static_cast<uint>(render::Blending::Destination::DST_ALPHA);
-    m["dst_one_minus_dst_alpha"]	= static_cast<uint>(render::Blending::Destination::ONE_MINUS_DST_ALPHA);
+	{ "default", static_cast<uint>(render::Blending::Mode::DEFAULT) },
+	{ "alpha", static_cast<uint>(render::Blending::Mode::ALPHA) },
+	{ "additive", static_cast<uint>(render::Blending::Mode::ADDITIVE) }
+};
 
-	m["default"]					= static_cast<uint>(render::Blending::Mode::DEFAULT);
-	m["alpha"]						= static_cast<uint>(render::Blending::Mode::ALPHA);
-	m["additive"]					= static_cast<uint>(render::Blending::Mode::ADDITIVE);
+std::unordered_map<std::string, render::CompareMode> EffectParser::_compareFuncMap = {
+	{ "always", render::CompareMode::ALWAYS },
+	{ "equal", render::CompareMode::EQUAL },
+	{ "greater", render::CompareMode::GREATER },
+	{ "greater_equal", render::CompareMode::GREATER_EQUAL },
+	{ "less", render::CompareMode::LESS },
+	{ "less_equal", render::CompareMode::LESS_EQUAL },
+	{ "never", render::CompareMode::NEVER },
+	{ "not_equal", render::CompareMode::NOT_EQUAL },
+};
 
-	return m;
-}
+std::unordered_map<std::string, render::StencilOperation> EffectParser::_stencilOpMap = {
+	{ "keep", render::StencilOperation::KEEP },
+	{ "zero", render::StencilOperation::ZERO },
+	{ "replace", render::StencilOperation::REPLACE },
+	{ "incr", render::StencilOperation::INCR },
+	{ "incr_wrap", render::StencilOperation::INCR_WRAP },
+	{ "decr", render::StencilOperation::DECR },
+	{ "decr_wrap", render::StencilOperation::DECR_WRAP },
+	{ "invert", render::StencilOperation::INVERT }
+};
 
-std::unordered_map<std::string, render::CompareMode> EffectParser::_compareFuncMap = EffectParser::initializeCompareFuncMap();
-std::unordered_map<std::string, render::CompareMode>
-EffectParser::initializeCompareFuncMap()
-{
-	std::unordered_map<std::string, render::CompareMode> m;
+std::unordered_map<std::string, float> EffectParser::_priorityMap = {
+	{ "first", Priority::FIRST },
+	{ "background", Priority::BACKGROUND },
+	{ "opaque", Priority::OPAQUE },
+	{ "transparent", Priority::TRANSPARENT },
+	{ "last", Priority::LAST }
+};
 
-	m["always"]			= render::CompareMode::ALWAYS;
-	m["equal"]			= render::CompareMode::EQUAL;
-	m["greater"]		= render::CompareMode::GREATER;
-	m["greater_equal"]	= render::CompareMode::GREATER_EQUAL;
-	m["less"]			= render::CompareMode::LESS;
-	m["less_equal"]		= render::CompareMode::LESS_EQUAL;
-	m["never"]			= render::CompareMode::NEVER;
-	m["not_equal"]		= render::CompareMode::NOT_EQUAL;
-
-	return m;
-}
-
-std::unordered_map<std::string, render::StencilOperation> EffectParser::_stencilOpMap = EffectParser::initializeStencilOperationMap();
-std::unordered_map<std::string, render::StencilOperation>
-EffectParser::initializeStencilOperationMap()
-{
-	std::unordered_map<std::string, render::StencilOperation> m;
-
-	m["keep"]			= render::StencilOperation::KEEP;
-	m["zero"]			= render::StencilOperation::ZERO;
-	m["replace"]		= render::StencilOperation::REPLACE;
-	m["incr"]			= render::StencilOperation::INCR;
-	m["incr_wrap"]		= render::StencilOperation::INCR_WRAP;
-	m["decr"]			= render::StencilOperation::DECR;
-	m["decr_wrap"]		= render::StencilOperation::DECR_WRAP;
-	m["invert"]			= render::StencilOperation::INVERT;
-
-	return m;
-}
-
-std::unordered_map<std::string, float> EffectParser::_priorityMap = EffectParser::initializePriorityMap();
-std::unordered_map<std::string, float>
-EffectParser::initializePriorityMap()
-{
-	std::unordered_map<std::string, float> m;
-
-	// The higher the priority, the earlier the drawcall is rendered.
-	m["first"]			= Priority::FIRST;
-	m["background"]		= Priority::BACKGROUND;
-	m["opaque"]			= Priority::OPAQUE;
-	m["transparent"]	= Priority::TRANSPARENT;
-	m["last"]			= Priority::LAST;
-
-	return m;
-}
-
-data::MacroBindingMap
-EffectParser::initializeDefaultMacroBindings() const
-{
-	data::MacroBindingMap m;
-	std::string propertyName;
-
-#if MINKO_PLATFORM & MINKO_PLATFORM_WINDOWS
-	propertyName = "MINKO_PLATFORM_WINDOWS";
-#elif MINKO_PLATFORM & MINKO_PLATFORM_OSX
-	propertyName = "MINKO_PLATFORM_OSX";
-#elif MINKO_PLATFORM & MINKO_PLATFORM_LINUX
-	propertyName = "MINKO_PLATFORM_LINUX";
-#elif MINKO_PLATFORM & MINKO_PLATFORM_IOS
-	propertyName = "MINKO_PLATFORM_IOS";
-#elif MINKO_PLATFORM & MINKO_PLATFORM_ANDROID
-	propertyName = "MINKO_PLATFORM_ANDROID";
-#elif MINKO_PLATFORM & MINKO_PLATFORM_HTML5
-	propertyName = "MINKO_PLATFORM_HTML5";
-#else
-	return m;
-#endif
-
-	MacroBindingDefault&	bindingDefault	= std::get<2>(m[propertyName]);
-
-	bindingDefault.semantic = MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
-	bindingDefault.value.propertyExists = true;
-
-	return m;
-}
+std::array<std::string, 1> EffectParser::_extraStateNames = {
+    "blendingMode"
+};
 
 float
-EffectParser::priority(const std::string& name)
+EffectParser::getPriorityValue(const std::string& name)
 {
 	auto foundPriorityIt = _priorityMap.find(name);
 
@@ -174,7 +118,7 @@ EffectParser::EffectParser() :
 	_effect(nullptr),
 	_numDependencies(0),
 	_numLoadedDependencies(0),
-	_defaultStates(render::States::create())
+	_effectData(data::Provider::create())
 {
 }
 
@@ -191,545 +135,840 @@ EffectParser::parse(const std::string&				    filename,
 	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1], root, false))
 		_error->execute(shared_from_this(), file::Error(resolvedFilename + ": " + reader.getFormattedErrorMessages()));
 
+	_options = options->clone();
+
     int pos	= resolvedFilename.find_last_of("/\\");
-
-	_options = file::Options::create(options);
-
-	if (pos != std::string::npos)
+    if (pos != std::string::npos)
+    {
+        _options->includePaths().clear();
 		_options->includePaths().push_front(resolvedFilename.substr(0, pos));
+    }
 
 	_filename = filename;
 	_resolvedFilename = resolvedFilename;
 	_assetLibrary = assetLibrary;
 	_effectName	= root.get("name", filename).asString();
-	_defaultTechnique = root.get("defaultTechnique", "default").asString();
 
-	auto context = _assetLibrary->context();
-
-	// parse default values for bindings and states
-	/*
-	auto defaultQueue = root.get("queue", "opaque").asString();
-	_defaultStates->priority(priority(defaultQueue));
-	*/
-	_defaultStates = parseRenderStates(root, context, _globalTargets, _defaultStates, 0.0f);
-	_defaultMacroBindings = initializeDefaultMacroBindings();
-
-	parseBindings(
-		root,
-		_defaultAttributeBindings,
-		_defaultUniformBindings,
-		_defaultStateBindings,
-		_defaultMacroBindings,
-		_defaultUniformValues
-	);
-
-	// parse a global list of passes
-	parsePasses(
-		root,
-		resolvedFilename,
-		_options,
-		context,
-		_globalPasses,
-		_globalTargets,
-		_defaultAttributeBindings,
-		_defaultUniformBindings,
-		_defaultStateBindings,
-		_defaultMacroBindings,
-		_defaultStates,
-		_defaultUniformValues
-	);
-
-	// parse a global list of render targets
-	auto targetsValue = root.get("targets", 0);
-
-	if (targetsValue.isArray())
-		for (auto targetValue : targetsValue)
-			parseTarget(targetValue, context, _globalTargets);
-
-	// parse the list of techniques, if no "techniques" directive is found then
-	// the global list of passes becomes the "default" techinque
-	parseTechniques(root, resolvedFilename, _options, context);
+    parseGlobalScope(root, _globalScope);
 
     _effect = render::Effect::create(_effectName);
-
-	if (_numDependencies == _numLoadedDependencies)
-		finalize();
-	
-	_options->includePaths().pop_front();
-}
-
-render::States::Ptr
-EffectParser::parseRenderStates(const Json::Value&		root,
-								AbstractContext::Ptr	context,
-								TexturePtrMap&			targets,
-								render::States::Ptr		defaultStates,
-								float					priorityOffset)
-{
-	auto zSorted			= defaultStates->zSorted();
-	auto blendSrcFactor		= defaultStates->blendingSourceFactor();
-	auto blendDstFactor		= defaultStates->blendingDestinationFactor();
-	auto colorMask			= defaultStates->colorMask();
-	auto depthMask			= defaultStates->depthMask();
-	auto depthFunc			= defaultStates->depthFunc();
-    auto triangleCulling	= defaultStates->triangleCulling();
-	auto stencilFunc		= defaultStates->stencilFunction();
-	auto stencilRef			= defaultStates->stencilReference();
-	auto stencilMask		= defaultStates->stencilMask();
-	auto stencilFailOp		= defaultStates->stencilFailOperation();
-	auto stencilZFailOp		= defaultStates->stencilDepthFailOperation();
-	auto stencilZPassOp		= defaultStates->stencilDepthPassOperation();
-	auto scissorTest		= defaultStates->scissorTest();
-	auto scissorBox			= defaultStates->scissorBox();
-
-	AbstractTexture::Ptr target = defaultStates->target();
-	std::unordered_map<std::string, SamplerState> samplerStates = defaultStates->samplers();
-
-	const float priority = parsePriority(root, defaultStates->priority() + priorityOffset);
-	parseZSort(root, zSorted);
-	parseBlendMode(root, blendSrcFactor, blendDstFactor);
-	parseColorMask(root, colorMask);
-	parseDepthTest(root, depthMask, depthFunc);
-	parseTriangleCulling(root, triangleCulling);
-    parseSamplerStates(root, samplerStates);
-	parseStencilState(root, stencilFunc, stencilRef, stencilMask, stencilFailOp, stencilZFailOp, stencilZPassOp);
-	parseScissorTest(root, scissorTest, scissorBox);
-	target = parseTarget(root, context, targets);
-
-	return render::States::create(
-		samplerStates,
-		(float)priority,
-		zSorted,
-		blendSrcFactor,
-		blendDstFactor,
-		colorMask,
-		depthMask,
-		depthFunc,
-		triangleCulling,
-		stencilFunc,
-		stencilRef,
-		stencilMask,
-		stencilFailOp,
-		stencilZFailOp,
-		stencilZPassOp,
-		scissorTest,
-		scissorBox,
-		target
-	);
+    if (_numDependencies == _numLoadedDependencies)
+        finalize();
 }
 
 void
-EffectParser::parsePasses(const Json::Value&		root,
-						  const std::string&		resolvedFilename,
-						  file::Options::Ptr		options,
-						  AbstractContext::Ptr		context,
-						  std::vector<Pass::Ptr>&	passes,
-						  TexturePtrMap&			targets,
-						  BindingMap&			    defaultAttributeBindings,
-						  BindingMap&			    defaultUniformBindings,
-						  BindingMap&			    defaultStateBindings,
-						  MacroBindingMap&	        defaultMacroBindings,
-						  render::States::Ptr		defaultStates,
-						  UniformValues&			defaultUniformDefaultValues)
+EffectParser::parseGlobalScope(const Json::Value& node, Scope& scope)
 {
-	auto passId				= 0;
-	auto passesValue		= root.get("passes", 0);
+    parseAttributes(node, scope, scope.attributeBlock);
+    parseUniforms(node, scope, scope.uniformBlock);
+    parseMacros(node, scope, scope.macroBlock);
+    parseStates(node, scope, scope.stateBlock);
+    parsePasses(node, scope, scope.passes);
+    parseTechniques(node, scope, scope.techniques);
+}
 
-    for (auto passValue : passesValue)
+bool
+EffectParser::parseConfiguration(const Json::Value& node)
+{
+    auto confValue = node.get("configuration", 0);
+    auto platforms = _options->platforms();
+    auto userFlags = _options->userFlags();
+    auto r = false;
+
+    if (confValue.isArray())
     {
-        passId++;
-		const auto priorityOffset = (float)(passesValue.size() - passId);
-
-        if (passValue.isString())
+        for (auto value : confValue)
         {
-            auto name = passValue.asString();
-            auto passIt = std::find_if(
-                _globalPasses.begin(),
-                _globalPasses.end(),
-                [&](Pass::Ptr pass)
-	            {
-	                return pass->name() == name;
-	            }
-	        );
-
-            if (passIt == _globalPasses.end())
-                _error->execute(shared_from_this(), file::Error("Pass '" + name + "' does not exist."));
-
-            auto pass = *passIt;
-            auto passCopy = Pass::create(pass, true);
-
-			passCopy->states()->priority(defaultStates->priority() + priorityOffset);
-			_glslBlocks[passCopy->program()->vertexShader()] = _glslBlocks[pass->program()->vertexShader()];
-			_glslBlocks[passCopy->program()->fragmentShader()] = _glslBlocks[pass->program()->fragmentShader()];
-
-            // set uniform default values
-            for (auto& nameAndValues : defaultUniformDefaultValues)
-                setUniformDefaultValueOnPass(
-                    passCopy,
-                    nameAndValues.first,
-                    nameAndValues.second.first,
-                    nameAndValues.second.second
-                );
-
-            passes.push_back(passCopy);
+            // if the config. token is a string and we can find it in the list of platforms,
+            // then the configuration is ok and we return true
+            if (value.isString() &&
+                (std::find(platforms.begin(), platforms.end(), value.asString()) != platforms.end() ||
+                std::find(userFlags.begin(), userFlags.end(), value.asString()) != userFlags.end()))
+            {
+                return true;
+            }
+            else if (value.isArray())
+            {
+                // if the config. token is an array, we check that *all* the string tokens are in
+                // the platforms list; if a single of them is not there then the config. token
+                // is considered to be false
+                for (auto str : value)
+                {
+                        if (str.isString() &&
+                            (std::find(platforms.begin(), platforms.end(), str.asString()) == platforms.end() ||
+                            std::find(userFlags.begin(), userFlags.end(), str.asString()) != userFlags.end()))
+                    {
+                        r = r || false;
+                        break;
+                    }
+                }
+            }
         }
-        else
+    }
+    else
+        return true;
+
+    return r;
+}
+
+void
+EffectParser::parseTechniques(const Json::Value& node, Scope& scope, Techniques& techniques)
+{
+    auto techniquesNode = node.get("techniques", 0);
+    auto firstTechnique = true;
+
+    if (techniquesNode.isArray())
+    {
+        for (auto techniqueNode : techniquesNode)
         {
-            if (!parseConfiguration(passValue))
+            // FIXME: switch to fallback instead of ignoring
+            if (!parseConfiguration(techniqueNode))
                 continue;
 
-            auto	name		= passValue.get("name", std::to_string(passId)).asString();
-			auto	fallback	= passValue.get("fallback", std::string()).asString();
+            auto techniqueNameNode = techniqueNode.get("name", 0);
+            auto techniqueName = techniqueNameNode.isString()
+                ? techniqueNameNode.asString()
+                : firstTechnique ? "default" : "technique" + std::to_string(techniques.size());
 
-            // pass bindings
-            BindingMap		attributeBindings(defaultAttributeBindings);
-            BindingMap		uniformBindings(defaultUniformBindings);
-            BindingMap		stateBindings(defaultStateBindings);
-            MacroBindingMap	macroBindings(defaultMacroBindings);
-            UniformValues	uniformDefaultValues(defaultUniformDefaultValues);
+            Scope techniqueScope(scope, scope);
 
-            parseBindings(
-                passValue,
-                attributeBindings,
-                uniformBindings,
-                stateBindings,
-                macroBindings,
-                uniformDefaultValues
-            );
+            parseAttributes(techniqueNode, techniqueScope, techniqueScope.attributeBlock);
+            parseUniforms(techniqueNode, techniqueScope, techniqueScope.uniformBlock);
+            parseMacros(techniqueNode, techniqueScope, techniqueScope.macroBlock);
+            parseStates(techniqueNode, techniqueScope, techniqueScope.stateBlock);
+            parsePasses(techniqueNode, techniqueScope, techniques[techniqueName]);
 
-            // render states
-            auto states = parseRenderStates(passValue, context, targets, defaultStates, priorityOffset);
-
-            // program
-            auto vertexShaderValue = passValue.get("vertexShader", 0);
-            auto vertexShader = parseShader(
-                vertexShaderValue, resolvedFilename, options, render::Shader::Type::VERTEX_SHADER
-            );
-
-            if (!vertexShader)
-            	_error->execute(shared_from_this(), Error("Missing vertex shader for pass '" + name + "'"));
-
-            auto fragmentShaderValue = passValue.get("fragmentShader", 0);
-            auto fragmentShader = parseShader(
-                fragmentShaderValue, resolvedFilename, options, render::Shader::Type::FRAGMENT_SHADER
-            );
-
-            if (!fragmentShader)
-				_error->execute(shared_from_this(), Error("Missing fragment shader for pass '" + name + "'"));
-
-            auto pass = render::Pass::create(
-                name,
-                Program::create(options->context(), vertexShader, fragmentShader),
-                attributeBindings,
-                uniformBindings,
-                stateBindings,
-                macroBindings,
-                states,
-				fallback
-            );
-
-			// set uniform default values
-            for (auto& nameAndValues : uniformDefaultValues)
-                setUniformDefaultValueOnPass(
-                    pass,
-                    nameAndValues.first,
-                    nameAndValues.second.first,
-                    nameAndValues.second.second
-                );
-
-            passes.push_back(pass);
+            if (firstTechnique)
+            {
+                firstTechnique = false;
+                techniques["default"] = techniques[techniqueName];
+            }
         }
-	}
+    }
+    // FIXME: throw otherwise
 }
 
 void
-EffectParser::setUniformDefaultValueOnPass(render::Pass::Ptr	pass,
-										   const std::string&	name,
-										   UniformType			type,
-										   UniformValue&		value)
+EffectParser::parsePasses(const Json::Value& node, Scope& scope, std::vector<PassPtr>& passes)
 {
-	if (type == UniformType::INT)
-	{
-		auto& nv = value.numericValue;
+    auto passesNode = node.get("passes", 0);
 
-		if (nv.size() == 1)
-			pass->setUniform(name, nv[0].intValue);
-		else if (nv.size() == 2)
-			pass->setUniform(name, nv[0].intValue, nv[1].intValue);
-		else if (nv.size() == 3)
-			pass->setUniform(name, nv[0].intValue, nv[1].intValue, nv[2].intValue);
-		else if (nv.size() == 4)
-			pass->setUniform(name, nv[0].intValue, nv[1].intValue, nv[2].intValue, nv[3].intValue);
-	}
-	else if (type == UniformType::FLOAT)
-	{
-		auto& nv = value.numericValue;
-
-		if (nv.size() == 1)
-			pass->setUniform(name, nv[0].floatValue);
-		else if (nv.size() == 2)
-			pass->setUniform(name, nv[0].floatValue, nv[1].floatValue);
-		else if (nv.size() == 3)
-			pass->setUniform(name, nv[0].floatValue, nv[1].floatValue, nv[2].floatValue);
-		else if (nv.size() == 4)
-			pass->setUniform(name, nv[0].floatValue, nv[1].floatValue, nv[2].floatValue, nv[3].floatValue);
-	}
-	else if (type == UniformType::TEXTURE)
-	{
-		pass->setUniform(name, value.textureValue);
-	}
-}
-
-render::Shader::Ptr
-EffectParser::parseShader(const Json::Value& 		shaderNode,
-						  const std::string&		resolvedFilename,
-						  file::Options::Ptr    	options,
-						  render::Shader::Type 		type)
-{
-	std::string glsl;
-
-	if (shaderNode.isString())
-		glsl = shaderNode.asString();
-	else
-		return nullptr;
-
-	auto shader = Shader::create(options->context(), type, glsl);
-	auto blocks = std::shared_ptr<GLSLBlockList>(new GLSLBlockList());
-
-	blocks->push_front(GLSLBlock(GLSLBlockType::TEXT, ""));
-	_glslBlocks[shader] = blocks;
-	parseGLSL(glsl, options, blocks, blocks->begin());
-
-	return shader;
-}
-
-void
-EffectParser::parseGLSL(std::string 			glsl,
-						file::Options::Ptr 		options,
-						GLSLBlockListPtr		blocks,
-						GLSLBlockList::iterator	insertIt)
-{
-	std::string line;
-	std::stringstream stream(glsl);
-	auto i = 0;
-	auto lastBlockEnd = 0;
-	auto numIncludes = 0;
-
-	while (std::getline(stream, line))
-	{
-		auto firstSharpPos = line.find_first_of('#');
-		if (firstSharpPos != std::string::npos && line.substr(firstSharpPos, 16) == "#pragma include("
-			&& (line[firstSharpPos + 16] == '"' || line[firstSharpPos + 16] == '\''))
-		{
-			auto filename = line.substr(firstSharpPos + 17, line.find_last_of(line[firstSharpPos + 16]) - 17 - firstSharpPos);
-
-			if (lastBlockEnd != i)
-				insertIt = blocks->insert_after(insertIt, GLSLBlock(GLSLBlockType::TEXT, glsl.substr(lastBlockEnd, i - lastBlockEnd)));
-			insertIt = blocks->insert_after(insertIt, GLSLBlock(GLSLBlockType::FILE, filename));
-
-			lastBlockEnd = i + line.size() + 1;
-
-			++numIncludes;
-		}
-		i += line.size() + 1;
-	}
-
-	if (i != lastBlockEnd)
-		insertIt = blocks->insert_after(insertIt, GLSLBlock(GLSLBlockType::TEXT, glsl.substr(lastBlockEnd)));
-
-	if (numIncludes)
-		loadGLSLDependencies(blocks, options);
-}
-
-void
-EffectParser::loadGLSLDependencies(GLSLBlockListPtr		blocks,
-								   file::Options::Ptr 	options)
-{
-	for (auto blockIt = blocks->begin(); blockIt != blocks->end(); blockIt++)
-	{
-		auto& block = *blockIt;
-
-		if (block.first == GLSLBlockType::FILE)
-		{
-			if (options->assetLibrary()->hasBlob(block.second))
-			{
-				auto& data = options->assetLibrary()->blob(block.second);
-
-				block.first = GLSLBlockType::TEXT;
-#ifdef DEBUG
-				block.second = "//#pragma include(\"" + block.second + "\")\n";
-#else
-				block.second = "\n";
-#endif
-				parseGLSL(std::string((const char*)&data[0], data.size()), options, blocks, blockIt);
-			}
-			else
-			{
-				auto loader = Loader::create(options);
-
-				++_numDependencies;
-
-				_loaderCompleteSlots[loader] = loader->complete()->connect(std::bind(
-				    &EffectParser::glslIncludeCompleteHandler,
-				    std::static_pointer_cast<EffectParser>(shared_from_this()),
-					std::placeholders::_1,
-					blocks,
-					blockIt,
-					block.second
-				));
-
-				_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
-				    &EffectParser::dependencyErrorHandler,
-					std::static_pointer_cast<EffectParser>(shared_from_this()),
-					std::placeholders::_1,
-					std::placeholders::_2,
-					block.second
-			    ));
-
-				loader->queue(block.second)->load();
-			}
-		}
-	}
-
-	if (_numDependencies == _numLoadedDependencies && _effect)
-		finalize();
-}
-
-void
-EffectParser::glslIncludeCompleteHandler(LoaderPtr 			        loader,
-										 GLSLBlockListPtr 			blocks,
-	 								     GLSLBlockList::iterator 	blockIt,
-                                         const std::string&         filename)
-{
-	auto& block = *blockIt;
-
-	block.first = GLSLBlockType::TEXT;
-#ifdef DEBUG
-	block.second = "//#pragma include(\"" + filename + "\")\n";
-#else
-	block.second = "\n";
-#endif
-
-	++_numLoadedDependencies;
-
-    auto file = loader->files().at(filename);
-    auto resolvedFilename = file->resolvedFilename();
-	auto options = Options::create(_options);
-	auto pos = resolvedFilename.find_last_of("/\\");
-
-    //options->includePaths().clear();
-	if (pos != std::string::npos)
-	{
-		options = file::Options::create(options);
-        options->includePaths().push_back(resolvedFilename.substr(0, pos));
-	}
-
-    parseGLSL(std::string((const char*)&file->data()[0], file->data().size()), options, blocks, blockIt);
-
-	if (_numDependencies == _numLoadedDependencies && _effect)
-		finalize();
-}
-
-void
-EffectParser::dependencyErrorHandler(std::shared_ptr<Loader> loader, const Error& error, const std::string& filename)
-{
-	LOG_ERROR("unable to load dependency '" << filename << "', included paths are:");
-	for (auto& path : loader->options()->includePaths())
-		LOG_ERROR("\t" << path);
-
-    _error->execute(shared_from_this(), file::Error("Unable to load dependencies."));
-}
-
-void
-EffectParser::parseBlendMode(const Json::Value&				contextNode,
-						     render::Blending::Source&		srcFactor,
-						     render::Blending::Destination&	dstFactor)
-{
-	auto blendModeArray	= contextNode.get("blendMode", 0);
-
-	if (blendModeArray.isArray())
-	{
-		auto blendSrcFactorString = "src_" + blendModeArray[0].asString();
-		if (_blendFactorMap.count(blendSrcFactorString))
-			srcFactor = static_cast<render::Blending::Source>(_blendFactorMap[blendSrcFactorString]);
-
-		auto blendDstFactorString = "dst_" + blendModeArray[1].asString();
-		if (_blendFactorMap.count(blendDstFactorString))
-			dstFactor = static_cast<render::Blending::Destination>(_blendFactorMap[blendDstFactorString]);
-	}
-	else if (blendModeArray.isString())
-	{
-		auto blendModeString = blendModeArray.asString();
-
-		if (_blendFactorMap.count(blendModeString))
-		{
-			auto blendMode = _blendFactorMap[blendModeString];
-
-			srcFactor = static_cast<render::Blending::Source>(blendMode & 0x00ff);
-			dstFactor = static_cast<render::Blending::Destination>(blendMode & 0xff00);
-		}
-	}
-}
-
-void
-EffectParser::parseZSort(const Json::Value&	contextNode,
-						 bool& zSorted) const
-{
-	auto zsortedValue	= contextNode.get("zSort", 0);
-
-	if (zsortedValue.isBool())
-		zSorted = zsortedValue.asBool();
-}
-
-void
-EffectParser::parseColorMask(const Json::Value&	contextNode,
-						     bool& colorMask) const
-{
-	auto colorMaskValue	= contextNode.get("colorMask", 0);
-
-	if (colorMaskValue.isBool())
-		colorMask = colorMaskValue.asBool();
-}
-
-void
-EffectParser::parseDepthTest(const Json::Value& contextNode,
-							 bool& depthMask,
-							 render::CompareMode& depthFunc)
-{
-	auto depthTest	= contextNode.get("depthTest", 0);
-
-	if (depthTest.isObject())
-	{
-        auto depthMaskValue = depthTest.get("depthMask", 0);
-        auto depthFuncValue = depthTest.get("depthFunc", 0);
-
-        if (depthMaskValue.isBool())
-            depthMask = depthMaskValue.asBool();
-
-        if (depthFuncValue.isString())
-    		depthFunc = _compareFuncMap[depthFuncValue.asString()];
-	}
-    else if (depthTest.isArray())
+    if (passesNode.isArray())
     {
-        depthMask = depthTest[0].asBool();
-		depthFunc = _compareFuncMap[depthTest[1].asString()];
+        for (auto passNode : passesNode)
+        {
+            // FIXME: switch to fallback instead of ignoring
+            if (passNode.isObject() && !parseConfiguration(passNode))
+                continue;
+
+            parsePass(passNode, scope, passes);
+        }
+    }
+    // FIXME: throw otherwise
+}
+
+void
+EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassPtr>& passes)
+{
+    // If the pass is just a string, we assume it's referencing an existing pass defined in an
+    // ancestor scope. Thus, we loop up to the root global scope to find the pass by its name.
+    if (node.isString())
+    {
+		auto passName = node.asString();
+		auto pass = findPassByName(passName, scope);
+
+		if (pass == nullptr)
+			throw std::runtime_error("Undefined pass with name '" + passName + "'.");
+
+        passes.push_back(pass);
     }
     else
     {
-    	auto depthMaskValue = contextNode.get("depthMask", 0);
-    	auto depthFuncValue = contextNode.get("depthFunc", 0);
+        // If the pass is an actual pass object, we parse all its data, create the corresponding
+        // Pass object and add it to the vector.
 
-    	if (depthMaskValue.isBool())
-    		depthMask = depthMaskValue.asBool();
-    	if (depthFuncValue.isString())
-    		depthFunc = _compareFuncMap[depthFuncValue.asString()];
+        Scope passScope(scope, scope);
+
+		render::Shader::Ptr vertexShader;
+		render::Shader::Ptr fragmentShader;
+        auto passName = _effectName + "-pass" + std::to_string(scope.passes.size());
+        auto nameNode = node.get("name", 0);
+		auto isPostProcessing = false;
+        if (nameNode.isString())
+            passName = nameNode.asString();
+        // FIXME: throw otherwise
+
+		if (node.isMember("extends"))
+		{
+			auto extendNode = node.get("extends", 0);
+
+			// if a pass "extends" another pass, then we have to init. its properties from that previously defined pass
+			if (extendNode.isString())
+			{
+				auto passName = extendNode.asString();
+				auto pass = findPassByName(passName, scope);
+
+				if (pass == nullptr)
+					throw std::runtime_error("Undefined pass with name '" + passName + "'.");
+
+				passScope.attributeBlock.bindingMap = {
+					pass->attributeBindings().bindings,
+					data::Store(pass->attributeBindings().defaultValues, true)
+				};
+
+				passScope.uniformBlock.bindingMap = {
+					pass->uniformBindings().bindings,
+					data::Store(pass->uniformBindings().defaultValues, true)
+				};
+
+				passScope.stateBlock.bindingMap.bindings = pass->stateBindings().bindings;
+				passScope.stateBlock.states = render::States(pass->states());
+				passScope.stateBlock.bindingMap.defaultValues.removeProvider(
+					passScope.stateBlock.bindingMap.defaultValues.providers().front()
+				);
+				passScope.stateBlock.bindingMap.defaultValues.addProvider(passScope.stateBlock.states.data());
+
+				passScope.macroBlock.bindingMap = MacroBindingMap(
+					pass->macroBindings().bindings,
+					data::Store(pass->macroBindings().defaultValues, true),
+					pass->macroBindings().types
+				);
+
+				vertexShader = pass->program()->vertexShader();
+				fragmentShader = pass->program()->fragmentShader();
+				isPostProcessing = pass->isPostProcessing();
+			}
+			// FIXME: throw otherwise
+		}
+
+        parseAttributes(node, passScope, passScope.attributeBlock);
+        parseUniforms(node, passScope, passScope.uniformBlock);
+        parseMacros(node, passScope, passScope.macroBlock);
+        parseStates(node, passScope, passScope.stateBlock);
+
+		if (node.isMember("vertexShader"))
+        	vertexShader = parseShader(node.get("vertexShader", 0), passScope, Shader::Type::VERTEX_SHADER);
+		else if (!vertexShader)
+			throw std::runtime_error("Missing vertex shader for pass \"" + passName + "\"");
+
+		if (node.isMember("fragmentShader"))
+        	fragmentShader = parseShader(node.get("fragmentShader", 0), passScope, Shader::Type::FRAGMENT_SHADER);
+		else if (!fragmentShader)
+			throw std::runtime_error("Missing fragment shader for pass \"" + passName + "\"");
+
+		if (node.isMember("isPostProcessing"))
+			isPostProcessing = node.get("isPostProcessing", false).asBool();
+
+        passes.push_back(Pass::create(
+            passName,
+			isPostProcessing,
+            Program::create(passName, _options->context(), vertexShader, fragmentShader),
+            passScope.attributeBlock.bindingMap,
+            passScope.uniformBlock.bindingMap,
+            passScope.stateBlock.bindingMap,
+            passScope.macroBlock.bindingMap,
+            passScope.stateBlock.states
+        ));
+    }
+}
+
+//void
+//EffectParser::parseDefaultValue(const Json::Value&  node,
+//                                const Scope&        scope,
+//                                const std::string&  valueName,
+//                                Json::ValueType     expectedType,
+//                                data::Provider::Ptr defaultValues)
+//{
+//    if (!node.isObject())
+//        return ;
+//
+//    auto defaultValueNode = node.get("default", 0);
+//
+//    if (defaultValueNode.isObject()
+//        && defaultValueNode[defaultValueNode.getMemberNames()[0]].type() != expectedType)
+//        throw;
+//    else if (defaultValueNode.isArray() && defaultValueNode[0].type() != expectedType)
+//        throw;
+//    else if (defaultValueNode.type() != expectedType)
+//        throw;
+//
+//    parseDefaultValue(node, scope, valueName, defaultValues);
+//}
+
+void
+EffectParser::parseDefaultValue(const Json::Value&  node,
+                                const Scope&        scope,
+                                const std::string&  valueName,
+                                data::Provider::Ptr defaultValues)
+{
+    if (!node.isObject())
+        return;
+
+    auto memberNames = node.getMemberNames();
+    if (std::find(memberNames.begin(), memberNames.end(), "default") == memberNames.end())
+        return;
+
+    auto defaultValueNode = node.get("default", 0);
+
+    if (defaultValueNode.isObject())
+        parseDefaultValueVectorObject(defaultValueNode, scope, valueName, defaultValues);
+    else if (defaultValueNode.isArray())
+    {
+        if (defaultValueNode.size() == 1 && defaultValueNode[0].isArray())
+            parseDefaultValueVectorArray(defaultValueNode[0], scope, valueName, defaultValues);
+        else
+            throw; // FIXME: support array default values
+    }
+    else if (defaultValueNode.isBool())
+        defaultValues->set(valueName, defaultValueNode.asBool() ? 1 : 0);
+    else if (defaultValueNode.isInt())
+        defaultValues->set(valueName, defaultValueNode.asInt());
+    else if (defaultValueNode.isDouble())
+        defaultValues->set(valueName, defaultValueNode.asFloat());
+    else if (defaultValueNode.isString())
+        loadTexture(defaultValueNode.asString(), valueName, defaultValues);
+}
+
+template<typename T>
+void
+EffectParser::parseDefaultValueSamplerStates(const Json::Value&    node,
+                                             const Scope&          scope,
+                                             const std::string&    valueName,
+                                             data::Provider::Ptr   defaultValues)
+{
+    if (!node.isObject())
+        return;
+
+    auto memberNames = node.getMemberNames();
+    if (std::find(memberNames.begin(), memberNames.end(), "default") == memberNames.end())
+        return;
+
+    auto defaultValueNode = node.get("default", 0);
+
+    if (defaultValueNode.isString())
+    {
+        if (typeid(T) == typeid(WrapMode))
+            defaultValues->set(valueName, SamplerStates::stringToWrapMode(defaultValueNode.asString()));
+        else if (typeid(T) == typeid(TextureFilter))
+            defaultValues->set(valueName, SamplerStates::stringToTextureFilter(defaultValueNode.asString()));
+        else if (typeid(T) == typeid(MipFilter))
+            defaultValues->set(valueName, SamplerStates::stringToMipFilter(defaultValueNode.asString()));
     }
 }
 
 void
-EffectParser::parseTriangleCulling(const Json::Value& contextNode,
-								   TriangleCulling& triangleCulling)
+EffectParser::parseDefaultValueVectorArray(const Json::Value&    defaultValueNode,
+                                           const Scope&          scope,
+                                           const std::string&    valueName,
+                                           data::Provider::Ptr   defaultValues)
 {
-    auto triangleCullingValue   = contextNode.get("triangleCulling", 0);
+    auto size = defaultValueNode.size();
+    auto type = defaultValueNode[0].type();
+
+    if (type == Json::ValueType::intValue)
+    {
+        std::vector<int> value(size);
+        for (auto i = 0u; i < size; ++i)
+            value[i] = defaultValueNode[i].asInt();
+        if (size == 2)
+            defaultValues->set(valueName, math::make_vec2<int>(&value[0]));
+        else if (size == 3)
+            defaultValues->set(valueName, math::make_vec3<int>(&value[0]));
+        else if (size == 4)
+            defaultValues->set(valueName, math::make_vec4<int>(&value[0]));
+    }
+    else if (type == Json::ValueType::realValue)
+    {
+        std::vector<float> value(size);
+        for (auto i = 0u; i < size; ++i)
+            value[i] = defaultValueNode[i].asFloat();
+        if (size == 2)
+            defaultValues->set(valueName, math::make_vec2<float>(&value[0]));
+        else if (size == 3)
+            defaultValues->set(valueName, math::make_vec3<float>(&value[0]));
+        else if (size == 4)
+            defaultValues->set(valueName, math::make_vec4<float>(&value[0]));
+    }
+    else if (type == Json::ValueType::booleanValue)
+    {
+        // GLSL bool uniforms are set using integers, thus even if the default value is written
+        // using boolean values, we store it as integers
+        // https://www.opengl.org/sdk/docs/man/html/glUniform.xhtml
+        std::vector<int> value(size);
+        for (auto i = 0u; i < size; ++i)
+            value[i] = defaultValueNode[i].asBool() ? 1 : 0;
+        if (size == 2)
+            defaultValues->set(valueName, math::make_vec2<int>(&value[0]));
+        else if (size == 3)
+            defaultValues->set(valueName, math::make_vec3<int>(&value[0]));
+        else if (size == 4)
+            defaultValues->set(valueName, math::make_vec4<int>(&value[0]));
+    }
+}
+
+void
+EffectParser::parseDefaultValueVectorObject(const Json::Value&    defaultValueNode,
+                                            const Scope&          scope,
+                                            const std::string&    valueName,
+                                            data::Provider::Ptr   defaultValues)
+{
+    auto memberNames = defaultValueNode.getMemberNames();
+    auto size = memberNames.size();
+    auto type = defaultValueNode[memberNames[0]].type();
+    std::vector<std::string> offsets = { "x", "y", "z", "w" };
+
+    if (type == Json::ValueType::intValue)
+    {
+        std::vector<int> value(size);
+        for (auto i = 0u; i < size; ++i)
+            value[i] = defaultValueNode[offsets[i]].asInt();
+        if (size == 2)
+            defaultValues->set(valueName, math::make_vec2<int>(&value[0]));
+        else if (size == 3)
+            defaultValues->set(valueName, math::make_vec3<int>(&value[0]));
+        else if (size == 4)
+            defaultValues->set(valueName, math::make_vec4<int>(&value[0]));
+    }
+    else if (type == Json::ValueType::realValue)
+    {
+        std::vector<float> value(size);
+        for (auto i = 0u; i < size; ++i)
+            value[i] = defaultValueNode[offsets[i]].asFloat();
+        if (size == 2)
+            defaultValues->set(valueName, math::make_vec2<float>(&value[0]));
+        else if (size == 3)
+            defaultValues->set(valueName, math::make_vec3<float>(&value[0]));
+        else if (size == 4)
+            defaultValues->set(valueName, math::make_vec4<float>(&value[0]));
+    }
+    else if (type == Json::ValueType::booleanValue)
+    {
+        // GLSL bool uniforms are set using integers, thus even if the default value is written
+        // using boolean values, we store it as integers
+        // https://www.opengl.org/sdk/docs/man/html/glUniform.xhtml
+        std::vector<int> value(size);
+        for (auto i = 0u; i < size; ++i)
+            value[i] = defaultValueNode[offsets[i]].asBool() ? 1 : 0;
+        if (size == 2)
+            defaultValues->set(valueName, math::make_vec2<int>(&value[0]));
+        else if (size == 3)
+            defaultValues->set(valueName, math::make_vec3<int>(&value[0]));
+        else if (size == 4)
+            defaultValues->set(valueName, math::make_vec4<int>(&value[0]));
+    }
+}
+
+void
+EffectParser::parseAttributes(const Json::Value& node, const Scope& scope, AttributeBlock& attributes)
+{
+    auto attributesNode = node.get("attributes", 0);
+
+    if (attributesNode.isObject())
+    {
+        auto defaultValuesProvider = data::Provider::create();
+
+        attributes.bindingMap.defaultValues.addProvider(defaultValuesProvider);
+
+        for (auto attributeName : attributesNode.getMemberNames())
+        {
+            auto attributeNode = attributesNode[attributeName];
+
+			data::Binding binding;
+            if (parseBinding(attributeNode, scope, binding))
+				attributes.bindingMap.bindings[attributeName] = binding;
+
+            /*if (!attributeNode.get("default", 0).empty())
+                throw ParserError("Default values are not yet supported for attributes.");*/
+
+            // FIXME: support default values for vertex attributes
+            /*
+            parseDefaultValue(
+                attributeNode,
+                scope,
+                attributeName,
+                //Json::ValueType::realValue,
+                defaultValuesProvider
+            );
+            */
+        }
+    }
+    // FIXME: throw otherwise
+}
+
+void
+EffectParser::parseUniforms(const Json::Value& node, const Scope& scope, UniformBlock& uniforms)
+{
+    auto uniformsNode = node.get("uniforms", 0);
+
+    if (uniformsNode.isObject())
+    {
+        data::Provider::Ptr defaultValuesProvider;
+
+		if (uniforms.bindingMap.defaultValues.providers().size() != 0)
+			defaultValuesProvider = uniforms.bindingMap.defaultValues.providers().front();
+		else
+		{
+			defaultValuesProvider = data::Provider::create();
+        	uniforms.bindingMap.defaultValues.addProvider(defaultValuesProvider);
+		}
+
+        for (auto uniformName : uniformsNode.getMemberNames())
+        {
+            auto uniformNode = uniformsNode[uniformName];
+
+			data::Binding binding;
+            if (parseBinding(uniformNode, scope, binding))
+				uniforms.bindingMap.bindings[uniformName] = binding;
+
+            parseSamplerStates(uniformNode, scope, uniformName, defaultValuesProvider, uniforms.bindingMap);
+
+            parseDefaultValue(uniformNode, scope, uniformName, defaultValuesProvider);
+        }
+    }
+    // FIXME: throw otherwise
+}
+
+void
+EffectParser::parseSamplerStates(const Json::Value& node, const Scope& scope, const std::string uniformName, data::Provider::Ptr defaultValues, data::BindingMap& bindingMap)
+{
+    if (node.isObject())
+    {
+        auto wrapModeNode = node.get(SamplerStates::PROPERTY_WRAP_MODE, 0);
+
+        if (wrapModeNode.isString())
+        {
+            auto wrapModeStr = wrapModeNode.asString();
+
+            auto wrapMode = SamplerStates::stringToWrapMode(wrapModeStr);
+
+            defaultValues->set(
+                SamplerStates::uniformNameToSamplerStateName(
+                    uniformName, 
+                    SamplerStates::PROPERTY_WRAP_MODE
+                ), 
+                wrapMode
+            );
+        }
+        else if (wrapModeNode.isObject())
+        {
+            auto uniformWrapModeBindingName = SamplerStates::uniformNameToSamplerStateName(
+                uniformName,
+                SamplerStates::PROPERTY_WRAP_MODE
+            );
+
+            parseBinding(
+                wrapModeNode, 
+                scope, 
+                bindingMap.bindings[uniformWrapModeBindingName]
+            );
+
+            parseDefaultValueSamplerStates<WrapMode>(wrapModeNode, scope, uniformWrapModeBindingName, defaultValues);
+        }
+
+        auto textureFilterNode = node.get(SamplerStates::PROPERTY_TEXTURE_FILTER, 0);
+
+        if (textureFilterNode.isString())
+        {
+            auto textureFilterStr = textureFilterNode.asString();
+
+            auto textureFilter = SamplerStates::stringToTextureFilter(textureFilterStr);
+
+            defaultValues->set(
+                SamplerStates::uniformNameToSamplerStateName(
+                    uniformName, 
+                    SamplerStates::PROPERTY_TEXTURE_FILTER
+                ), 
+                textureFilter
+            );
+        }
+        else if (textureFilterNode.isObject())
+        {
+            auto uniformTextureFilterBindingName = SamplerStates::uniformNameToSamplerStateName(
+                uniformName,
+                SamplerStates::PROPERTY_TEXTURE_FILTER
+            );
+
+            parseBinding(
+                textureFilterNode,
+                scope,
+                bindingMap.bindings[uniformTextureFilterBindingName]
+            );
+
+            parseDefaultValueSamplerStates<TextureFilter>(textureFilterNode, scope, uniformTextureFilterBindingName, defaultValues);
+        }
+
+        auto mipFilterNode = node.get(SamplerStates::PROPERTY_MIP_FILTER, 0);
+
+        if (mipFilterNode.isString())
+        {
+            auto mipFilterStr = mipFilterNode.asString();
+
+            auto mipFilter = SamplerStates::stringToMipFilter(mipFilterStr);
+            
+            defaultValues->set(
+                SamplerStates::uniformNameToSamplerStateName(
+                    uniformName, 
+                    SamplerStates::PROPERTY_MIP_FILTER
+                ), 
+                mipFilter
+            );
+        }
+        else if (mipFilterNode.isObject())
+        {
+            auto uniformMipFilterBindingName = SamplerStates::uniformNameToSamplerStateName(
+                uniformName,
+                SamplerStates::PROPERTY_MIP_FILTER
+            );
+
+            parseBinding(
+                mipFilterNode,
+                scope,
+                bindingMap.bindings[uniformMipFilterBindingName]
+            );
+
+            parseDefaultValueSamplerStates<MipFilter>(mipFilterNode, scope, uniformMipFilterBindingName, defaultValues);
+        }
+    }
+}
+
+void
+EffectParser::parseMacros(const Json::Value& node, const Scope& scope, MacroBlock& macros)
+{
+    auto macrosNode = node.get("macros", 0);
+
+    if (macrosNode.isObject())
+    {
+        data::Provider::Ptr defaultValuesProvider;
+
+		if (macros.bindingMap.defaultValues.providers().size() != 0)
+			defaultValuesProvider = macros.bindingMap.defaultValues.providers().front();
+		else
+		{
+			defaultValuesProvider = data::Provider::create();
+			macros.bindingMap.defaultValues.addProvider(defaultValuesProvider);
+		}
+
+        for (auto macroName : macrosNode.getMemberNames())
+        {
+            auto macroNode = macrosNode[macroName];
+
+			data::MacroBinding binding;
+			if (parseBinding(macroNode, scope, binding))
+			{
+            	parseMacroBinding(macroNode, scope, binding);
+				macros.bindingMap.bindings[macroName] = binding;
+			}
+
+            parseDefaultValue(macroNode, scope, macroName, defaultValuesProvider);
+
+			macros.bindingMap.types[macroName] = MacroBindingMap::MacroType::UNSET;
+			if (macroNode.isObject())
+			{
+			    auto typeNode = macroNode.get("type", 0);
+			    if (typeNode.isString())
+					macros.bindingMap.types[macroName] = MacroBindingMap::stringToMacroType(typeNode.asString());
+			}
+        }
+    }
+    // FIXME: throw otherwise
+}
+
+void
+EffectParser::parseStates(const Json::Value& node, const Scope& scope, StateBlock& stateBlock)
+{
+    auto statesNode = node.get("states", 0);
+
+    if (statesNode.isObject())
+    {
+        for (auto stateName : statesNode.getMemberNames())
+        {
+            if (std::find(States::PROPERTY_NAMES.begin(), States::PROPERTY_NAMES.end(), stateName) == States::PROPERTY_NAMES.end() &&
+                std::find(_extraStateNames.begin(), _extraStateNames.end(), stateName) == _extraStateNames.end())
+                throw; // FIXME: log warning because the state name does not match any known state
+
+            if (statesNode[stateName].isObject())
+            {
+				data::Binding binding;
+                if (parseBinding(statesNode[stateName], scope, binding))
+					stateBlock.bindingMap.bindings[stateName] = binding;
+            }
+        }
+
+        // parse & set priority default value
+        float priority = parsePriority(statesNode, scope, render::States::DEFAULT_PRIORITY);
+        stateBlock.states.priority(priority);
+
+        // parse & set z-sorted default value
+        bool zSorted = render::States::DEFAULT_ZSORTED;
+        parseZSort(statesNode, scope, zSorted);
+        stateBlock.states.zSorted(zSorted);
+
+        // parse & set blending factors default values
+        render::Blending::Source blendSrcFactor = render::States::DEFAULT_BLENDING_SOURCE;
+        render::Blending::Destination blendDstFactor = render::States::DEFAULT_BLENDING_DESTINATION;
+        parseBlendingMode(statesNode, scope, blendSrcFactor, blendDstFactor);
+        stateBlock.states.blendingSourceFactor(blendSrcFactor);
+        stateBlock.states.blendingDestinationFactor(blendDstFactor);
+
+        // parse & set color mask default value
+        bool colorMask = render::States::DEFAULT_COLOR_MASK;
+        parseColorMask(statesNode, scope, colorMask);
+        stateBlock.states.colorMask(colorMask);
+
+        // parse & set depth mask/func default values
+        bool depthMask = render::States::DEFAULT_DEPTH_MASK;
+        parseDepthMask(statesNode, scope, depthMask);
+        CompareMode depthFunction = render::States::DEFAULT_DEPTH_FUNCTION;
+        parseDepthFunction(statesNode, scope, depthFunction);
+        stateBlock.states.depthMask(depthMask);
+        stateBlock.states.depthFunction(depthFunction);
+
+        // parse & set triangle culling default value
+        TriangleCulling triangleCulling = render::States::DEFAULT_TRIANGLE_CULLING;
+        parseTriangleCulling(statesNode, scope, triangleCulling);
+        stateBlock.states.triangleCulling(triangleCulling);
+
+        // parse & set stencil default values
+        CompareMode stencilFunc = render::States::DEFAULT_STENCIL_FUNCTION;
+        int stencilRef = render::States::DEFAULT_STENCIL_REFERENCE;
+        uint stencilMask = render::States::DEFAULT_STENCIL_MASK;
+        StencilOperation stencilFailOp = render::States::DEFAULT_STENCIL_FAIL_OP;
+        StencilOperation stencilZFailOp = render::States::DEFAULT_STENCIL_ZFAIL_OP;
+        StencilOperation stencilZPassOp = render::States::DEFAULT_STENCIL_ZPASS_OP;
+        parseStencilState(statesNode, scope, stencilFunc, stencilRef, stencilMask, stencilFailOp, stencilZFailOp, stencilZPassOp);
+        stateBlock.states.stencilFunction(stencilFunc);
+        stateBlock.states.stencilReference(stencilRef);
+        stateBlock.states.stencilMask(stencilMask);
+        stateBlock.states.stencilFailOperation(stencilFailOp);
+        stateBlock.states.stencilZFailOperation(stencilZFailOp);
+        stateBlock.states.stencilZPassOperation(stencilZPassOp);
+
+        // parse & set scissor test/box default values
+        bool scissorTest = render::States::DEFAULT_SCISSOR_TEST;
+        math::ivec4 scissorBox = render::States::DEFAULT_SCISSOR_BOX;
+        parseScissorTest(statesNode, scope, scissorTest, scissorBox);
+        stateBlock.states.scissorTest(scissorTest);
+        stateBlock.states.scissorBox(scissorBox);
+
+		auto target = parseTarget(statesNode, scope);
+		if (target)
+			stateBlock.states.target(target->sampler());
+    }
+    // FIXME: throw otherwise
+}
+
+void
+EffectParser::parseBlendingMode(const Json::Value&				node,
+                                const Scope&                    scope,
+                                render::Blending::Source&		srcFactor,
+                                render::Blending::Destination&	dstFactor)
+{
+    auto blendingModeNode = node.get(_extraStateNames[0], 0);
+
+    if (blendingModeNode.isArray())
+    {
+        auto blendSrcFactorString = "src_" + blendingModeNode[0].asString();
+        if (_blendFactorMap.count(blendSrcFactorString))
+            srcFactor = static_cast<render::Blending::Source>(_blendFactorMap[blendSrcFactorString]);
+
+        auto blendDstFactorString = "dst_" + blendingModeNode[1].asString();
+        if (_blendFactorMap.count(blendDstFactorString))
+            dstFactor = static_cast<render::Blending::Destination>(_blendFactorMap[blendDstFactorString]);
+    }
+    else if (blendingModeNode.isString())
+    {
+        auto blendingModeString = blendingModeNode.asString();
+
+        if (_blendFactorMap.count(blendingModeString))
+        {
+            auto blendingMode = _blendFactorMap[blendingModeString];
+
+            srcFactor = static_cast<render::Blending::Source>(blendingMode & 0x00ff);
+            dstFactor = static_cast<render::Blending::Destination>(blendingMode & 0xff00);
+        }
+    }
+}
+
+void
+EffectParser::parseBlendingSource(const Json::Value&        node,
+                                  const Scope&              scope,
+                                  render::Blending::Source&	srcFactor)
+{
+    auto blendingSourceNode = node.get(States::PROPERTY_BLENDING_SOURCE, 0);
+
+    if (blendingSourceNode.isString())
+    {
+        auto blendingSourceString = _blendFactorMap[blendingSourceNode.asString()];
+
+        srcFactor = static_cast<render::Blending::Source>(blendingSourceString);
+    }
+}
+
+void
+EffectParser::parseBlendingSource(const Json::Value&             node,
+                                  const Scope&                   scope,
+                                  render::Blending::Destination& destFactor)
+{
+    auto blendingDestinationNode = node.get(States::PROPERTY_BLENDING_DESTINATION, 0);
+
+    if (blendingDestinationNode.isString())
+    {
+        auto blendingDestination = _blendFactorMap[blendingDestinationNode.asString()];
+
+        destFactor = static_cast<render::Blending::Destination>(blendingDestination);
+    }
+}
+
+void
+EffectParser::parseZSort(const Json::Value&	node,
+                         const Scope&       scope,
+                         bool&              zSorted)
+{
+    auto zSortedValue = node.get(States::PROPERTY_ZSORTED, 0);
+
+    if (zSortedValue.isBool())
+        zSorted = zSortedValue.asBool();
+}
+
+void
+EffectParser::parseColorMask(const Json::Value&	node,
+                             const Scope&       scope,
+                             bool&              colorMask) const
+{
+    auto colorMaskValue = node.get("colorMask", 0);
+
+    if (colorMaskValue.isBool())
+        colorMask = colorMaskValue.asBool();
+}
+
+void
+EffectParser::parseDepthMask(const Json::Value&	    node,
+                             const Scope&           scope,
+                             bool&                  depthMask)
+{
+    auto depthMaskValue = node.get(States::PROPERTY_DEPTH_MASK, 0);
+
+    if (depthMaskValue.isBool())
+        depthMask = depthMaskValue.asBool();
+}
+
+void
+EffectParser::parseDepthFunction(const Json::Value&		node,
+			                     const Scope&         	scope,
+			                     render::CompareMode& 	depthFunction)
+{
+    auto depthFunctionValue = node.get(States::PROPERTY_DEPTH_FUNCTION, 0);
+
+    if (depthFunctionValue.isString())
+        depthFunction = _compareFuncMap[depthFunctionValue.asString()];
+}
+
+void
+EffectParser::parseTriangleCulling(const Json::Value&   node,
+                                   const Scope&         scope,
+                                   TriangleCulling&     triangleCulling)
+{
+    auto triangleCullingValue = node.get(States::PROPERTY_TRIANGLE_CULLING, 0);
 
     if (triangleCullingValue.isString())
     {
@@ -747,359 +986,449 @@ EffectParser::parseTriangleCulling(const Json::Value& contextNode,
 }
 
 float
-EffectParser::parsePriority(const Json::Value& contextNode,
-							float defaultPriority)
+EffectParser::parsePriority(const Json::Value&	node,
+                            const Scope&        scope,
+                            float               defaultPriority)
 {
-	auto	priorityNode	= contextNode.get("priority", defaultPriority);
-	float	ret				= defaultPriority;
+    auto	priorityNode = node.get(States::PROPERTY_PRIORITY, defaultPriority);
+    float	ret = defaultPriority;
 
-	if (!priorityNode.isNull())
-	{
-		if (priorityNode.isInt())
-			ret = (float)priorityNode.asInt();
-		else if (priorityNode.isDouble())
-			ret = (float)priorityNode.asDouble();
-		else if (priorityNode.isString())
-			ret = priority(priorityNode.asString());
-		else if (priorityNode.isArray())
-		{
-			if (priorityNode[0].isString() && priorityNode[1].isDouble())
-				ret = priority(priorityNode[0].asString()) + (float)priorityNode[1].asDouble();
-		}
-	}
-
-	return ret;
-}
-
-static
-bool
-subStringIsNotEmpty(const std::string& str, char endDelimiter, int& offset, std::string& subString)
-{
-    auto endDelimiterOffset = str.find_first_of(endDelimiter);
-
-    if (endDelimiterOffset == std::string::npos)
-        return false;
-
-    subString = str.substr(offset, endDelimiterOffset - offset);
-
-    offset = endDelimiterOffset + 1;
-
-    return !subString.empty();
-}
-
-static
-bool
-propertyHasVariable(const std::string& propertyName)
-{
-    auto offset = 0;
-
-    auto subString = std::string();
-
-    if (!subStringIsNotEmpty(propertyName, '[', offset, subString))
-        return false;
-
-    if (offset < propertyName.size() && propertyName[offset++] != '$')
-        return false;
-
-    if (offset < propertyName.size() && propertyName[offset++] != '{')
-        return false;
-
-    if (!subStringIsNotEmpty(propertyName, '}', offset, subString))
-        return false;
-
-    if (offset < propertyName.size() && propertyName[offset++] != ']')
-        return false;
-
-    if (offset < propertyName.size() && propertyName[offset++] != '.')
-        return false;
-
-    return true;
-}
-
-void
-EffectParser::parseBindingNameAndSource(const Json::Value&	    contextNode, 
-										std::string&		    propertyName, 
-										BindingSource&		    source,
-										MacroRegexPredicate&	regex)
-{
-    regex = MacroRegexPredicate();
-
-	source	= BindingSource::TARGET;
-
-	if (contextNode.isString())
-		propertyName = contextNode.asString();
-	else if (contextNode.isObject())
-	{
-		auto propertyValue = contextNode.get("property", 0);
-		auto sourceValue = contextNode.get("source", 0);
-
-		if (propertyValue.isString())
-			propertyName = propertyValue.asString();
-
-		if (sourceValue.isString())
-		{
-			auto sourceString = sourceValue.asString();
-
-			if (sourceString == "target")
-				source = BindingSource::TARGET;
-			else if (sourceString == "renderer")
-				source = BindingSource::RENDERER;
-			else if (sourceString == "root")
-				source = BindingSource::ROOT;
-		}
-	}
-
-	if (!propertyName.empty())
-	{
-        auto filteredMacroHandler = [](const std::string& macro,
-                                       const std::string& sourceName,
-                                       const std::string& propertyName) -> bool
+    if (!priorityNode.isNull())
+    {
+        if (priorityNode.isInt())
+            ret = (float)priorityNode.asInt();
+        else if (priorityNode.isDouble())
+            ret = (float)priorityNode.asDouble();
+        else if (priorityNode.isString())
+            ret = getPriorityValue(priorityNode.asString());
+        else if (priorityNode.isArray())
         {
-            auto offset = 0;
+            if (priorityNode[0].isString() && priorityNode[1].isDouble())
+                ret = getPriorityValue(priorityNode[0].asString()) + (float)priorityNode[1].asDouble();
+        }
+    }
 
-            auto subString = std::string();
+    return ret;
+}
 
-            if (!subStringIsNotEmpty(macro, '[', offset, subString))
-                return false;
+AbstractTexture::Ptr
+EffectParser::parseTarget(const Json::Value& node, const Scope& scope)
+{
+	auto targetNode = node.get(States::PROPERTY_TARGET, 0);
+	AbstractTexture::Ptr target = nullptr;
+	std::string	targetName;
 
-            if (subString != sourceName)
-                return false;
+	if (targetNode.isObject())
+	{
+		auto nameValue = targetNode.get("name", 0);
 
-            auto nextOffset = macro.find_first_of(']', offset);
+		if (nameValue.isString())
+			targetName = nameValue.asString();
 
-            if (nextOffset == std::string::npos)
-                return false;
+		if (!targetNode.isMember("size") && !(targetNode.isMember("width") && targetNode.isMember("height")))
+			return nullptr;
 
-            auto indexString = macro.substr(offset, nextOffset - offset);
+		auto width = 0;
+		auto height = 0;
 
-            for (auto i = 0; i < indexString.size(); ++i)
-                if (indexString[i] < '0' || indexString[i] > '9')
-                    return false;
-
-            offset = nextOffset + 1;
-
-            if (macro[offset++] != '.')
-                return false;
-
-            subString = macro.substr(offset);
-
-            return subString == propertyName;
-        };
-
-        if (propertyHasVariable(propertyName))
+		if (targetNode.isMember("size"))
+			width = height = targetNode.get("size", 0).asUInt();
+		else
 		{
-			// generate regex to recognize the macro when coming from filtered out data provider
+			if (!targetNode.isMember("width") || !targetNode.isMember("height"))
+			{
+				_error->execute(
+					shared_from_this(),
+					file::Error(
+						_resolvedFilename
+						+ ": render target definition requires both \"width\" and \"height\" properties."
+					)
+				);
+			}
 
-            auto sourceName = propertyName.substr(0, propertyName.find_first_of("["));
-            auto propertyNameWithoutSource = propertyName.substr(propertyName.find_last_of(".") + 1);
-	
-            regex = std::bind(filteredMacroHandler, std::placeholders::_1, sourceName, propertyNameWithoutSource);
+			width = targetNode.get("width", 0).asUInt();
+			height = targetNode.get("height", 0).asUInt();
 		}
+
+		const bool isCubeTexture = targetNode.get("isCube", 0).isBool()
+			? targetNode.get("isCube", 0).asBool()
+			: false;
+
+		if (isCubeTexture)
+		{
+			target = CubeTexture::create(_options->context(), width, height, false, true);
+
+			if (targetName.length())
+				_assetLibrary->cubeTexture(targetName, std::static_pointer_cast<render::CubeTexture>(target));
+		}
+		else
+		{
+			target = Texture::create(_options->context(), width, height, false, true);
+
+			if (targetName.length())
+				_assetLibrary->texture(targetName, std::static_pointer_cast<render::Texture>(target));
+		}
+
+		target->upload();
+		_effectData->set(targetName, target->sampler());
+	}
+	else if (targetNode.isString())
+	{
+		targetName = targetNode.asString();
+		target = _assetLibrary->texture(targetName);
+		if (target == nullptr)
+			throw;
+
+		_effectData->set(targetName, target->sampler());
+	}
+
+	return target;
+}
+
+void
+EffectParser::parseStencilState(const Json::Value&  node,
+                                const Scope&        scope,
+								CompareMode&        stencilFunc,
+								int&                stencilRef,
+								uint&               stencilMask,
+								StencilOperation&   stencilFailOp,
+								StencilOperation&   stencilZFailOp,
+								StencilOperation&   stencilZPassOp)
+{
+	auto stencilTest = node.get("stencilTest", 0);
+
+	if (stencilTest.isObject())
+	{
+        auto stencilFuncValue = stencilTest.get(States::PROPERTY_STENCIL_FUNCTION, 0);
+        auto stencilRefValue = stencilTest.get(States::PROPERTY_STENCIL_REFERENCE, 0);
+        auto stencilMaskValue = stencilTest.get(States::PROPERTY_STENCIL_MASK, 0);
+		auto stencilOpsValue = stencilTest.get("stencilOps", 0);
+
+		if (stencilFuncValue.isString())
+			stencilFunc	= _compareFuncMap[stencilFuncValue.asString()];
+		if (stencilRefValue.isInt())
+			stencilRef	= stencilRefValue.asInt();
+		if (stencilMaskValue.isUInt())
+			stencilMask	= stencilMaskValue.asUInt();
+
+		parseStencilOperations(stencilOpsValue, scope, stencilFailOp, stencilZFailOp, stencilZPassOp);
+	}
+    else if (stencilTest.isArray())
+    {
+		stencilFunc = _compareFuncMap[stencilTest[0].asString()];
+		stencilRef	= stencilTest[1].asInt();
+		stencilMask	= stencilTest[2].asUInt();
+
+		parseStencilOperations(stencilTest[3], scope, stencilFailOp, stencilZFailOp, stencilZPassOp);
+    }
+}
+
+void
+EffectParser::parseScissorTest(const Json::Value& node,
+                               const Scope&       scope,
+							   bool&			  scissorTest,
+							   math::ivec4&	      scissorBox)
+{
+	auto scissorTestNode = node.get(States::PROPERTY_SCISSOR_TEST, 0);
+
+	if (!scissorTestNode.isNull() && scissorTestNode.isBool())
+		scissorTest = scissorTestNode.asBool();
+
+	auto scissorBoxNode	= node.get("scissorBox", 0);
+
+	if (!scissorBoxNode.isNull() && scissorBoxNode.isArray())
+	{
+		if (scissorBoxNode[0].isInt())
+			scissorBox.x = scissorBoxNode[0].asInt();
+		if (scissorBoxNode[1].isInt())
+			scissorBox.y = scissorBoxNode[1].asInt();
+		if (scissorBoxNode[2].isInt())
+			scissorBox.z = scissorBoxNode[2].asInt();
+		if (scissorBoxNode[3].isInt())
+			scissorBox.w = scissorBoxNode[3].asInt();
 	}
 }
 
 void
-EffectParser::parseBindings(const Json::Value&	contextNode,
-						    BindingMap&			attributeBindings,
-						    BindingMap&			uniformBindings,
-						    BindingMap&			stateBindings,
-							MacroBindingMap&	macroBindings,
-							UniformValues&		uniformDefaultValues)
+EffectParser::parseStencilOperations(const Json::Value& node,
+                                     const Scope&       scope,
+									 StencilOperation& 	stencilFailOp,
+									 StencilOperation& 	stencilZFailOp,
+									 StencilOperation& 	stencilZPassOp)
 {
-	auto attributeBindingsValue = contextNode.get("attributeBindings", 0);
-	if (attributeBindingsValue.isObject())
-		for (auto propertyName : attributeBindingsValue.getMemberNames())
-			parseBindingNameAndSource(
-				attributeBindingsValue.get(propertyName, 0),
-				attributeBindings[propertyName].first,
-				attributeBindings[propertyName].second
-			);
-
-	parseUniformBindings(contextNode, uniformBindings, uniformDefaultValues);
-
-	auto stateBindingsValue = contextNode.get("stateBindings", 0);
-	if (stateBindingsValue.isObject())
-		for (auto propertyName : stateBindingsValue.getMemberNames())
-			parseBindingNameAndSource(
-				stateBindingsValue.get(propertyName, 0),
-				stateBindings[propertyName].first,
-				stateBindings[propertyName].second
-			);
-
-	parseMacroBindings(contextNode, macroBindings);
-}
-
-void
-EffectParser::parseMacroBindings(const Json::Value&	contextNode, MacroBindingMap& macroBindings)
-{
-	auto macroBindingsValue = contextNode.get("macroBindings", 0);
-
-	if (macroBindingsValue.isObject())
+	if (node.isArray())
 	{
-		for (auto propertyName : macroBindingsValue.getMemberNames())
-		{
-			auto macroBindingValue = macroBindingsValue.get(propertyName, 0);
+		if (node[0].isString())
+			stencilFailOp = _stencilOpMap[node[0].asString()];
+		if (node[1].isString())
+			stencilZFailOp = _stencilOpMap[node[1].asString()];
+		if (node[2].isString())
+			stencilZPassOp = _stencilOpMap[node[2].asString()];
+	}
+	else
+	{
+		auto failValue	= node.get("fail", 0);
+		auto zfailValue	= node.get("zfail", 0);
+		auto zpassValue	= node.get("zpass", 0);
 
-			MacroBindingDefault&	bindingDefault	= std::get<2>(macroBindings[propertyName]);
-			auto&					min				= std::get<3>(macroBindings[propertyName]);
-			auto&					max				= std::get<4>(macroBindings[propertyName]);
-
-			bindingDefault.semantic = MacroBindingDefaultValueSemantic::UNSET;
-			min						= -INT_MAX;
-			max						= INT_MAX;
-
-			parseBindingNameAndSource(
-				macroBindingValue,
-				std::get<0>(macroBindings[propertyName]),
-				std::get<1>(macroBindings[propertyName]),
-				std::get<5>(macroBindings[propertyName])
-			);
-
-			if (macroBindingValue.isObject())
-			{
-				auto nameValue		= macroBindingValue.get("property", 0);
-				auto minValue		= macroBindingValue.get("min", -INT_MAX);
-				auto maxValue		= macroBindingValue.get("max", INT_MAX);
-				auto defaultValue	= macroBindingValue.get("default", "");
-
-				if (defaultValue.isInt())
-				{
-					bindingDefault.semantic = MacroBindingDefaultValueSemantic::VALUE;
-					bindingDefault.value.value = defaultValue.asInt();
-				}
-				else if (defaultValue.isBool())
-				{
-					bindingDefault.semantic = MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
-					bindingDefault.value.propertyExists = defaultValue.asBool();
-				}
-
-				min = minValue.asInt();
-				max = maxValue.asInt();
-			}
-			else if (macroBindingValue.isInt())
-			{
-				bindingDefault.semantic = MacroBindingDefaultValueSemantic::VALUE;
-				bindingDefault.value.value = macroBindingValue.asInt();
-			}
-			else if (macroBindingValue.isBool())
-			{
-				bindingDefault.semantic = MacroBindingDefaultValueSemantic::PROPERTY_EXISTS;
-				bindingDefault.value.propertyExists = macroBindingValue.asBool();
-			}
-		}
+		if (failValue.isString())
+			stencilFailOp = _stencilOpMap[failValue.asString()];
+		if (zfailValue.isString())
+			stencilZFailOp = _stencilOpMap[zfailValue.asString()];
+		if (zpassValue.isString())
+			stencilZPassOp = _stencilOpMap[zpassValue.asString()];
 	}
 }
 
-void
-EffectParser::parseUniformBindings(const Json::Value&	contextNode,
-								   BindingMap&	uniformBindings,
-								   UniformValues&		uniformDefaultValues)
+bool
+EffectParser::parseBinding(const Json::Value& node, const Scope& scope, Binding& binding)
 {
-	auto uniformBindingsValue = contextNode.get("uniformBindings", 0);
-	if (uniformBindingsValue.isObject())
-		for (auto propertyName : uniformBindingsValue.getMemberNames())
-		{
-			auto uniformBindingValue = uniformBindingsValue.get(propertyName, 0);
+    binding.source = Binding::Source::TARGET;
 
-			parseBindingNameAndSource(
-				uniformBindingValue,
-				uniformBindings[propertyName].first,
-				uniformBindings[propertyName].second
-			);
+    if (node.isString())
+    {
+        binding.propertyName = node.asString();
 
-			if (uniformBindingValue.isObject())
-			{
-				auto nameValue = uniformBindingValue.get("property", 0);
-				auto defaultValue = uniformBindingValue.get("default", "");
+		return true;
+    }
+    else
+    {
+        auto bindingNode = node.get("binding", 0);
 
-				if (defaultValue.isArray() || defaultValue.isNumeric()
-					|| (defaultValue.isString() && !defaultValue.asString().empty()))
-				{
-					parseUniformDefaultValues(defaultValue, uniformDefaultValues[propertyName]);
-				}
-			}
-			else if (uniformBindingValue.isArray() || uniformBindingValue.isNumeric())
-				parseUniformDefaultValues(uniformBindingValue, uniformDefaultValues[propertyName]);
-		}
+        if (bindingNode.isString())
+        {
+            binding.propertyName = bindingNode.asString();
+
+			return true;
+        }
+        else if (bindingNode.isObject())
+        {
+            auto propertyNode = bindingNode.get("property", 0);
+            auto sourceNode = bindingNode.get("source", 0);
+
+            if (propertyNode.isString())
+                binding.propertyName = propertyNode.asString();
+            // FIXME: throw otherwise
+
+            if (sourceNode.isString())
+            {
+                auto sourceStr = sourceNode.asString();
+
+                if (sourceStr == "target")
+                    binding.source = Binding::Source::TARGET;
+                else if (sourceStr == "renderer")
+                    binding.source = Binding::Source::RENDERER;
+                else if (sourceStr == "root")
+                    binding.source = Binding::Source::ROOT;
+            }
+            // FIXME: throw otherwise
+
+			return true;
+        }
+    }
+
+	return false;
 }
 
 void
-EffectParser::parseUniformDefaultValues(const Json::Value&		contextNode,
-										UniformTypeAndValue&	uniformTypeAndValue)
+EffectParser::parseMacroBinding(const Json::Value& node, const Scope& scope, MacroBinding& binding)
 {
-	if (contextNode.isArray())
-	{
-		for (auto value : contextNode)
-			parseUniformDefaultValues(value, uniformTypeAndValue);
+    if (!node.isObject())
+        return;
 
-		return;
-	}
+    auto bindingNode = node.get("binding", 0);
 
-	UniformValue& v = uniformTypeAndValue.second;
+    if (!bindingNode.isObject())
+    	return;
 
-	if (contextNode.isNumeric())
-	{
-		UniformNumericValue nv;
+    auto minNode = bindingNode.get("min", "");
+    if (minNode.isInt())
+        binding.minValue = minNode.asInt();
+    // FIXME: throw otherwise
 
-		if (contextNode.isDouble())
-		{
-			nv.floatValue = contextNode.asFloat();
-			uniformTypeAndValue.first = UniformType::FLOAT;
-		}
-		else if (contextNode.isInt())
-		{
-			nv.intValue = contextNode.asInt();
-			uniformTypeAndValue.first = UniformType::INT;
-		}
+    auto maxNode = bindingNode.get("max", "");
+    if (maxNode.isInt())
+        binding.maxValue = maxNode.asInt();
+    // FIXME: throw otherwise
+}
 
-		v.numericValue.push_back(nv);
-	}
-	else if (contextNode.isString())
-	{
-		auto textureFilename = contextNode.asString();
-		int pos = _resolvedFilename.find_last_of("/\\");
-		auto options = _options;
+render::Shader::Ptr
+EffectParser::parseShader(const Json::Value& node, const Scope& scope, render::Shader::Type type)
+{
+    if (!node.isString())
+        throw;
 
-		uniformTypeAndValue.first = UniformType::TEXTURE;
-		uniformTypeAndValue.second.textureValue = nullptr;
+    std::string glsl = node.asString();
 
-		if (pos > 0)
-		{
-			options = file::Options::create(_options);
-			options->includePaths().push_back(_resolvedFilename.substr(0, pos));
-		}
+    auto shader = Shader::create(_options->context(), type, glsl);
+    auto blocks = std::shared_ptr<GLSLBlockList>(new GLSLBlockList());
 
-		uniformTypeAndValue.second.textureValue = _assetLibrary->texture(textureFilename);
-		for (auto& path : options->includePaths())
-		{
-			uniformTypeAndValue.second.textureValue = _assetLibrary->texture(path + "/" + textureFilename);
-			if (uniformTypeAndValue.second.textureValue)
-				break;
-		}
+    blocks->push_front(GLSLBlock(GLSLBlockType::TEXT, ""));
+    _shaderToGLSL[shader] = blocks;
+    parseGLSL(glsl, _options, blocks, blocks->begin());
 
-		if (!uniformTypeAndValue.second.textureValue)
-			loadTexture(textureFilename, uniformTypeAndValue, options);
-	}
+    return shader;
+}
+
+void
+EffectParser::parseGLSL(const std::string&      glsl,
+                        file::Options::Ptr 		options,
+                        GLSLBlockListPtr		blocks,
+                        GLSLBlockList::iterator	insertIt)
+{
+    std::string line;
+    std::stringstream stream(glsl);
+    auto i = 0;
+    auto lastBlockEnd = 0;
+    auto numIncludes = 0;
+
+    while (std::getline(stream, line))
+    {
+        auto pos = line.find("#pragma include ");
+        auto commentPos = line.find("//");
+        if (pos != std::string::npos && (commentPos == std::string::npos || pos < commentPos) && (line[pos + 16] == '"' || line[pos + 16] == '\''))
+        {
+            auto filename = line.substr(pos + 17, line.find_last_of(line[pos + 16]) - (pos + 17));
+
+            if (lastBlockEnd != i)
+                insertIt = blocks->insert_after(insertIt, GLSLBlock(GLSLBlockType::TEXT, glsl.substr(lastBlockEnd, i - lastBlockEnd)));
+            insertIt = blocks->insert_after(insertIt, GLSLBlock(GLSLBlockType::FILE, filename));
+
+            lastBlockEnd = i + line.size() + 1;
+
+            ++numIncludes;
+        }
+        i += line.size() + 1;
+    }
+
+    if (i != lastBlockEnd)
+        insertIt = blocks->insert_after(insertIt, GLSLBlock(GLSLBlockType::TEXT, glsl.substr(lastBlockEnd)));
+
+    if (numIncludes)
+        loadGLSLDependencies(blocks, options);
+}
+
+void
+EffectParser::loadGLSLDependencies(GLSLBlockListPtr blocks, file::Options::Ptr options)
+{
+    auto loader = Loader::create(options);
+
+    for (auto blockIt = blocks->begin(); blockIt != blocks->end(); blockIt++)
+    {
+        auto& block = *blockIt;
+
+        if (block.first == GLSLBlockType::FILE)
+        {
+            if (options->assetLibrary()->hasBlob(block.second))
+            {
+                auto& data = options->assetLibrary()->blob(block.second);
+
+                block.first = GLSLBlockType::TEXT;
+#ifdef DEBUG
+                block.second = "//#pragma include(\"" + block.second + "\")\n";
+#else
+                block.second = "\n";
+#endif
+                parseGLSL(std::string((const char*)&data[0], data.size()), options, blocks, blockIt);
+            }
+            else
+            {
+                ++_numDependencies;
+
+                _loaderCompleteSlots[loader] = loader->complete()->connect(std::bind(
+                    &EffectParser::glslIncludeCompleteHandler,
+                    std::static_pointer_cast<EffectParser>(shared_from_this()),
+                    std::placeholders::_1,
+                    blocks,
+                    blockIt,
+                    block.second
+                ));
+
+                _loaderErrorSlots[loader] = loader->error()->connect(std::bind(
+                    &EffectParser::dependencyErrorHandler,
+                    std::static_pointer_cast<EffectParser>(shared_from_this()),
+                    std::placeholders::_1,
+                    std::placeholders::_2,
+                    block.second
+                ));
+
+                loader->queue(block.second)->load();
+            }
+        }
+    }
+
+    if (_numDependencies == _numLoadedDependencies && _effect)
+        finalize();
+}
+
+void
+EffectParser::dependencyErrorHandler(std::shared_ptr<Loader> loader, const Error& error, const std::string& filename)
+{
+    /*LOG_ERROR("unable to load dependency '" << filename << "', included paths are:");
+    for (auto& path : loader->options()->includePaths())
+        LOG_ERROR("\t" << path);*/
+
+    _error->execute(shared_from_this(), file::Error("Unable to load dependencies."));
+}
+
+void
+EffectParser::glslIncludeCompleteHandler(LoaderPtr 			        loader,
+                                         GLSLBlockListPtr 			blocks,
+                                         GLSLBlockList::iterator 	blockIt,
+                                         const std::string&         filename)
+{
+    auto& block = *blockIt;
+
+    block.first = GLSLBlockType::TEXT;
+
+    // FIXME: use the GLSL "line" directive instead
+#ifdef DEBUG
+    block.second = "//#pragma include(\"" + filename + "\")\n";
+#else
+    block.second = "\n";
+#endif
+
+    ++_numLoadedDependencies;
+
+    auto file = loader->files().at(filename);
+    auto resolvedFilename = file->resolvedFilename();
+    auto options = _options;
+    auto pos = resolvedFilename.find_last_of("/\\");
+
+    if (pos != std::string::npos)
+    {
+        options = options->clone();
+        options->includePaths().clear();
+        options->includePaths().push_back(resolvedFilename.substr(0, pos));
+    }
+
+    parseGLSL(std::string((const char*)&file->data()[0], file->data().size()), options, blocks, blockIt);
+
+    if (_numDependencies == _numLoadedDependencies && _effect)
+        finalize();
 }
 
 void
 EffectParser::loadTexture(const std::string&	textureFilename,
-						  UniformTypeAndValue&	uniformTypeAndValue,
-						  Options::Ptr			options)
+                          const std::string&    uniformName,
+						  data::Provider::Ptr   defaultValues)
 {
-	Options::Ptr o = Options::create(options);
-    auto loader = Loader::create(o);
-
-	o->loadAsynchronously(false);
+    auto loader = Loader::create(_options);
 
 	_numDependencies++;
 
 	_loaderCompleteSlots[loader] = loader->complete()->connect([&](file::Loader::Ptr loader)
 	{
-		uniformTypeAndValue.second.textureValue = _assetLibrary->texture(textureFilename);
-		uniformTypeAndValue.second.textureValue->upload();
+        auto texture = _assetLibrary->texture(textureFilename);
+
+        //value.textureValues.push_back(texture);
+        defaultValues->set(uniformName, texture->sampler());
+		texture->upload();
 
         ++_numLoadedDependencies;
+
+        if (_numDependencies == _numLoadedDependencies && _effect)
+            finalize();
 	});
 
 	_loaderErrorSlots[loader] = loader->error()->connect(std::bind(
@@ -1113,392 +1442,65 @@ EffectParser::loadTexture(const std::string&	textureFilename,
 	loader->queue(textureFilename)->load();
 }
 
-void
-EffectParser::parseSamplerStates(const Json::Value&                                     contextNode,
-                                 std::unordered_map<std::string, render::SamplerState>& samplerStates)
+std::shared_ptr<render::States>
+EffectParser::createStates(const StateBlock& block)
 {
-    auto samplerStatesValue = contextNode.get("samplerStates", 0);
-
-    if (samplerStatesValue.isObject())
-        for (auto propertyName : samplerStatesValue.getMemberNames())
-        {
-            auto samplerStateValue = samplerStatesValue.get(propertyName, 0);
-
-            if (samplerStateValue.isObject())
-            {
-                auto wrapModeStr        = samplerStateValue.get("wrapMode", "clamp").asString();
-                auto textureFilterStr   = samplerStateValue.get("textureFilter", "nearest").asString();
-                auto mipFilterStr       = samplerStateValue.get("mipFilter", "none").asString();
-                auto wrapMode           = wrapModeStr == "repeat" ? WrapMode::REPEAT : WrapMode::CLAMP;
-                auto textureFilter      = textureFilterStr == "linear"
-                    ? TextureFilter::LINEAR
-                    : TextureFilter::NEAREST;
-                auto mipFilter          = mipFilterStr == "linear"
-                    ? MipFilter::LINEAR
-                    : (mipFilterStr == "nearest" ? MipFilter::NEAREST : MipFilter::NONE);
-
-                samplerStates[propertyName] = SamplerState(wrapMode, textureFilter, mipFilter);
-            }
-        }
-}
-
-void
-EffectParser::parseStencilState(const Json::Value& contextNode,
-								CompareMode& stencilFunc,
-								int& stencilRef,
-								uint& stencilMask,
-								StencilOperation& stencilFailOp,
-								StencilOperation& stencilZFailOp,
-								StencilOperation& stencilZPassOp) const
-{
-	auto stencilTest	= contextNode.get("stencilTest", 0);
-
-	if (stencilTest.isObject())
-	{
-        auto stencilFuncValue	= stencilTest.get("stencilFunc", 0);
-		auto stencilRefValue	= stencilTest.get("stencilRef", 0);
-		auto stencilMaskValue	= stencilTest.get("stencilMask", 0);
-		auto stencilOpsValue	= stencilTest.get("stencilOps", 0);
-
-		if (stencilFuncValue.isString())
-			stencilFunc	= _compareFuncMap[stencilFuncValue.asString()];
-		if (stencilRefValue.isInt())
-			stencilRef	= stencilRefValue.asInt();
-		if (stencilMaskValue.isUInt())
-			stencilMask	= stencilMaskValue.asUInt();
-		parseStencilOperations(stencilOpsValue, stencilFailOp, stencilZFailOp, stencilZPassOp);
-	}
-    else if (stencilTest.isArray())
-    {
-		stencilFunc = _compareFuncMap[stencilTest[0].asString()];
-		stencilRef	= stencilTest[1].asInt();
-		stencilMask	= stencilTest[2].asUInt();
-		parseStencilOperations(stencilTest[3], stencilFailOp, stencilZFailOp, stencilZPassOp);
-    }
-}
-
-void
-EffectParser::parseScissorTest(const Json::Value& contextNode,
-								bool&			  scissorTest,
-								ScissorBox&	      scissorBox) const
-{
-	auto scissorTestNode		= contextNode.get("scissorTest", 0);
-
-	if (!scissorTestNode.isNull() && scissorTestNode.isBool())
-		scissorTest = scissorTestNode.asBool();
-
-	auto scissorBoxNode			= contextNode.get("scissorBox", 0);
-
-	if (!scissorBoxNode.isNull() && scissorBoxNode.isArray())
-	{
-		if (scissorBoxNode[0].isInt())
-			scissorBox.x		= scissorBoxNode[0].asInt();
-		if (scissorBoxNode[1].isInt())
-			scissorBox.y		= scissorBoxNode[1].asInt();
-		if (scissorBoxNode[2].isInt())
-			scissorBox.width	= scissorBoxNode[2].asInt();
-		if (scissorBoxNode[3].isInt())
-			scissorBox.height	= scissorBoxNode[3].asInt();
-	}
-}
-
-void
-EffectParser::parseStencilOperations(const Json::Value& contextNode,
-									 StencilOperation& 	stencilFailOp,
-									 StencilOperation& 	stencilZFailOp,
-									 StencilOperation& 	stencilZPassOp) const
-{
-	if (contextNode.isArray())
-	{
-		if (contextNode[0].isString())
-			stencilFailOp = _stencilOpMap[contextNode[0].asString()];
-		if (contextNode[1].isString())
-			stencilZFailOp = _stencilOpMap[contextNode[1].asString()];
-		if (contextNode[2].isString())
-			stencilZPassOp = _stencilOpMap[contextNode[2].asString()];
-	}
-	else
-	{
-		auto failValue	= contextNode.get("fail", 0);
-		auto zfailValue	= contextNode.get("zfail", 0);
-		auto zpassValue	= contextNode.get("zpass", 0);
-
-		if (failValue.isString())
-			stencilFailOp = _stencilOpMap[failValue.asString()];
-		if (zfailValue.isString())
-			stencilZFailOp = _stencilOpMap[zfailValue.asString()];
-		if (zpassValue.isString())
-			stencilZPassOp = _stencilOpMap[zpassValue.asString()];
-	}
-}
-
-AbstractTexture::Ptr
-EffectParser::parseTarget(const Json::Value&                contextNode,
-                          std::shared_ptr<AbstractContext>  context,
-                          TexturePtrMap&                    targets)
-{
-    auto targetValue = contextNode.get("target", 0);
-
-	AbstractTexture::Ptr   target;
-	std::string            targetName;
-
-    if (targetValue.isObject())
-    {
-        auto nameValue  = targetValue.get("name", 0);
-
-        if (nameValue.isString())
-			targetName = nameValue.asString();
-
-        auto sizeValue  = targetValue.get("size", 0);
-        auto width      = 0;
-        auto height     = 0;
-
-        if (sizeValue.asUInt() != 0)
-            width = height = sizeValue.asUInt();
-        else
-        {
-            width = targetValue.get("width", 0).asUInt();
-            height = targetValue.get("height", 0).asUInt();
-        }
-
-		const bool isCubeTexture = targetValue.get("isCube", 0).isBool()
-			? targetValue.get("isCube", 0).asBool()
-			: false;
-
-		if (!isCubeTexture)
-        {
-            auto texture = Texture::create(context, width, height, false, true);
-
-            if (targetName.length())
-                _assetLibrary->texture(targetName, texture);
-            target = texture;
-        }
-		else
-        {
-            auto cubeTexture = CubeTexture::create(context, width, height, false, true);
-
-            if (targetName.length())
-                _assetLibrary->cubeTexture(targetName, cubeTexture);
-            target = cubeTexture;
-        }
-
-		target->upload();
-    }
-	else if (targetValue.isString())
-	{
-		targetName = targetValue.asString();
-		target = _assetLibrary->texture(targetName);
-	}
-
-	if (target && targetName.length())
-		targets[targetName] = target;
-
-    return target;
-}
-
-void
-EffectParser::parseTechniques(const Json::Value&				root,
-							  const std::string&				filename,
-							  std::shared_ptr<file::Options>	options,
-							  render::AbstractContext::Ptr		context)
-{
-	auto techniquesValues = root.get("techniques", 0);
-
-	if (techniquesValues.isArray())
-	{
-		for (auto techniqueValue : techniquesValues)
-		{
-			if (!parseConfiguration(techniqueValue))
-				continue;
-
-			if (techniqueValue.isObject())
-			{
-				auto techniqueName	= techniqueValue.get("name", "default").asString();
-				auto& targets		= _techniqueTargets[techniqueName];
-				auto& passes		= _techniquePasses[techniqueName];
-				auto fallbackValue	= techniqueValue.get("fallback", 0);
-
-				if (fallbackValue.isString() && fallbackValue.asString().length())
-					_techniqueFallback[techniqueName] = fallbackValue.asString();
-
-				BindingMap		attributeBindings(_defaultAttributeBindings);
-				BindingMap		uniformBindings(_defaultUniformBindings);
-				BindingMap		stateBindings(_defaultStateBindings);
-				MacroBindingMap	macroBindings(_defaultMacroBindings);
-				UniformValues	uniformDefaultValues(_defaultUniformValues);
-        
-				// bindings
-				parseBindings(
-					techniqueValue,
-					attributeBindings,
-					uniformBindings,
-					stateBindings,
-					macroBindings,
-					uniformDefaultValues
-				);
-
-				// render states
-				auto states = parseRenderStates(techniqueValue, context, _globalTargets, _defaultStates, 0.0f);
-
-				parsePasses(
-					techniqueValue,
-					filename,
-					options,
-					context,
-					passes,
-					targets,
-					attributeBindings,
-					uniformBindings,
-					stateBindings,
-					macroBindings,
-					states,
-					uniformDefaultValues
-				);
-			}
-		}
-	}
-	else
-	{
-		_techniquePasses["default"] = _globalPasses;
-		_techniqueTargets["default"] = _globalTargets;
-	}
-}
-
-bool
-EffectParser::parseConfiguration(const Json::Value&	root)
-{
-	auto confValue	= root.get("configuration", 0);
-	auto platforms	= _options->platforms();
-	auto userFlags	= _options->userFlags();
-	auto r = false;
-
-	if (confValue.isArray())
-	{
-		for (auto value : confValue)
-		{
-			// if the config. token is a string and we can find it in the list of platforms,
-			// then the configuration is ok and we return true
-			if (value.isString() &&
-				(std::find(platforms.begin(), platforms.end(), value.asString()) != platforms.end() ||
-				std::find(userFlags.begin(), userFlags.end(), value.asString()) != userFlags.end()))
-				return true;
-			else if (value.isArray())
-			{
-				// if the config. token is an array, we check that *all* the string tokens are in
-				// the platforms list; if a single of them is not there then the config. token
-				// is considered to be false
-				for (auto str : value)
-				if (str.isString() &&
-					(std::find(platforms.begin(), platforms.end(), str.asString()) == platforms.end() ||
-					std::find(userFlags.begin(), userFlags.end(), str.asString()) != userFlags.end()))
-				{
-					r = r || false;
-					break;
-				}
-			}
-		}
-	}
-	else
-		return true;
-
-	return r;
+    return nullptr;
 }
 
 std::string
 EffectParser::concatenateGLSLBlocks(GLSLBlockListPtr blocks)
 {
-	std::string glsl = "";
+    std::string glsl = "";
 
-	for (auto& block : *blocks)
-		glsl += block.second;
+    for (auto& block : *blocks)
+        glsl += block.second;
 
-	return glsl;
+    return glsl;
 }
 
 void
 EffectParser::finalize()
 {
-	for (auto& technique : _techniquePasses)
+    for (auto& technique : _globalScope.techniques)
     {
-    	auto techniqueName = technique.first;
-		auto passes = technique.second;
+        _effect->addTechnique(technique.first, technique.second);
 
-		for (auto& pass : passes)
-		{
-			auto program = pass->program();
+        for (auto pass : technique.second)
+        {
+            auto vs = pass->program()->vertexShader();
+            auto fs = pass->program()->fragmentShader();
 
-			program->vertexShader()->source(
-				"#define VERTEX_SHADER\r\n"
-				+ concatenateGLSLBlocks(_glslBlocks[program->vertexShader()])
-			);
-
-			program->fragmentShader()->source(
-				"#define FRAGMENT_SHADER\r\n"
-				+ concatenateGLSLBlocks(_glslBlocks[program->fragmentShader()])
-			);
-		}
-
-		if (_techniqueFallback.count(techniqueName))
-		{
-			_effect->addTechnique(techniqueName, passes, _techniqueFallback[techniqueName]);
-			if (techniqueName != "default" && techniqueName == _defaultTechnique)
-				_effect->addTechnique("default", passes, _techniqueFallback[techniqueName]);
-		}
-		else
-		{
-			_effect->addTechnique(techniqueName, passes);
-			if (techniqueName != "default" && techniqueName == _defaultTechnique)
-				_effect->addTechnique("default", passes);
-		}
+            vs->source("#define VERTEX_SHADER\n" + concatenateGLSLBlocks(_shaderToGLSL[vs]));
+            fs->source("#define FRAGMENT_SHADER\n" + concatenateGLSLBlocks(_shaderToGLSL[fs]));
+        }
     }
 
-	if (!_effect->techniques().empty() && _effect->techniques().count("default") == 0)
+	_effect->data()->copyFrom(_effectData);
+    _options->assetLibrary()->effect(_filename, _effect);
+
+    _complete->execute(shared_from_this());
+}
+
+render::Pass::Ptr
+EffectParser::findPassByName(const std::string& passName, const Scope& scope)
+{
+	const Scope* searchScope = &scope;
+	Pass::Ptr pass = nullptr;
+
+	do
 	{
-		// FIXME
-		const std::string&		viableTechniqueName = _effect->techniques().begin()->first;
-		std::vector<Pass::Ptr>	viableTechnique		(_effect->technique(viableTechniqueName));
-
-		if (_effect->hasFallback(viableTechniqueName))
-			_effect->addTechnique("default", viableTechnique, _effect->fallback(viableTechniqueName));
-		else
-			_effect->addTechnique("default", viableTechnique);
-
-		LOG_WARNING("Effect '" << _effectName << "' does not provide achievable default technique ('" << _defaultTechnique << "'), switched to '" << viableTechniqueName << "'");
-	}
-
-#ifdef DEBUG_FALLBACK
-	std::cout << "\nfinalize '" << _effectName << "'" << std::endl;
-	for (auto& technique : _effect->techniques())
-	{
-		std::cout << "\t- technique '" << technique.first << "'";
-		if (_effect->hasFallback(technique.first))
-			std::cout << "\t-> '" << _effect->fallback(technique.first) << "'" << std::endl;
-		else
-			std::cout << std::endl;
-
-		for (auto& pass : technique.second)
+		auto passIt = std::find_if(searchScope->passes.begin(), searchScope->passes.end(), [&](PassPtr p)
 		{
-			std::cout << "\t\t- pass '" << pass->name() << "'\tpriority = " << pass->states()->priority();
-			if (!pass->fallback().empty())
-				std::cout << "\t-> '" << pass->fallback() << "'" << std::endl;
-			else
-				std::cout << std::endl;
-		}
+			return p->name() == passName;
+		});
+
+		if (passIt != searchScope->passes.end())
+			pass = *passIt;
+		else
+			searchScope = searchScope->parent;
 	}
-#endif // DEBUG_FALLBACK
+	while (searchScope != nullptr && pass == nullptr);
 
-	for (auto& techniqueNameAndTargets : _techniqueTargets)
-		for (auto& target : techniqueNameAndTargets.second)
-			_effect->data()->set(target.first, target.second);
-
-	for (auto& targetNameAndPtr : _globalTargets)
-		_effect->data()->set(targetNameAndPtr.first, targetNameAndPtr.second);
-
-	_assetLibrary->effect(_effectName, _effect);
-    _assetLibrary->effect(_filename, _effect);
-
-	_complete->execute(shared_from_this());
-
-    _loaderCompleteSlots.clear();
-    _loaderErrorSlots.clear();
+	return pass;
 }

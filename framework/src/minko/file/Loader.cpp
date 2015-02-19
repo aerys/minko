@@ -47,11 +47,10 @@ Loader::Ptr
 Loader::queue(const std::string& filename, std::shared_ptr<Options> options)
 {
     _filesQueue.push_back(filename);
-    _filenameToOptions[filename] = Options::create(options ? options : _options);
+    _filenameToOptions[filename] = (options ? options : _options)->clone();
 
     return std::dynamic_pointer_cast<Loader>(shared_from_this());
 }
-
 
 void
 Loader::load()
@@ -70,8 +69,42 @@ Loader::load()
         for (auto& filename : queue)
         {
             auto options = _filenameToOptions[filename];
-            auto protocol =  options->protocolFunction()(filename);
 
+            const auto& includePaths = options->includePaths();
+
+            auto loadFile = false;
+
+            auto resolvedFilename = options->uriFunction()(File::sanitizeFilename(filename));
+
+            auto protocol = options->protocolFunction()(resolvedFilename);
+
+            protocol->options(options);
+
+            if (includePaths.empty() || protocol->fileExists(resolvedFilename))
+            {
+                loadFile = true;
+            }
+            else
+            {
+                for (const auto& includePath : includePaths)
+                {
+                    resolvedFilename = options->uriFunction()(File::sanitizeFilename(includePath + '/' + filename));
+    
+                    protocol = options->protocolFunction()(resolvedFilename);
+
+                    protocol->options(options);
+    
+                    if (protocol->fileExists(resolvedFilename))
+                    {
+                        loadFile = true;
+    
+                        break;
+                    }
+                }
+            }
+
+            if (loadFile)
+            {    
             _files[filename] = protocol->file();
 
             _filesQueue.erase(std::find(_filesQueue.begin(), _filesQueue.end(), filename));
@@ -94,7 +127,12 @@ Loader::load()
                 std::placeholders::_2
             )));
 
-            protocol->load(filename, options);
+                protocol->load(filename, resolvedFilename, options);
+            }
+            else
+            {
+                errorThrown(Error("ProtocolError", std::string("File does not exist: ") + filename));
+            }
         }
     }
 }
@@ -102,21 +140,13 @@ Loader::load()
 void
 Loader::protocolErrorHandler(std::shared_ptr<AbstractProtocol> protocol)
 {
-    LOG_ERROR(protocol->file()->filename());
-
-    auto error = Error("ProtocolError", "Protocol error: " + protocol->file()->filename());
-
-    _protocolSlots.clear();
-    _protocolProgressSlots.clear();
-
-    if (_error->numCallbacks() != 0)
-        _error->execute(shared_from_this(), error);
-    else
-    {
-        LOG_DEBUG(error.type() << ": " << error.what());
+    auto error = Error(
+        "ProtocolError",
+        std::string("Protocol error: ") + protocol->file()->filename() +
+        std::string(", include paths: ") + std::to_string(_options->includePaths(), ",")
+    );
         
-        throw error;
-    }
+    errorThrown(error);
 }
 
 void
@@ -203,10 +233,13 @@ Loader::processData(const std::string&                      filename,
     }
     else
     {
+        if (options->storeDataIfNotParsed())
+        {
         if (extension != "glsl")
             LOG_DEBUG("no parser found for extension '" << extension << "'");
 
         options->assetLibrary()->blob(filename, data);
+    }
     }
 
     return parser != nullptr;
@@ -224,14 +257,7 @@ Loader::parserCompleteHandler(AbstractParser::Ptr parser)
 void
 Loader::parserErrorHandler(AbstractParser::Ptr parser, const Error& error)
 {
-    if (_error->numCallbacks() != 0)
-        _error->execute(shared_from_this(), error);
-    else
-    {
-        LOG_ERROR(error.type() << ": " << error.what());
-        
-        throw error;
-    }
+    errorThrown(error);
 }
 
 void
@@ -244,5 +270,18 @@ Loader::finalize()
         _filenameToOptions.clear();
 
         _complete->execute(shared_from_this());
+    }
+}
+
+void
+Loader::errorThrown(const Error& error)
+{
+    if (_error->numCallbacks() > 0)
+        _error->execute(shared_from_this(), error);
+    else
+    {
+        LOG_ERROR(error.type() << ": " << error.what());
+        
+        throw error;
     }
 }

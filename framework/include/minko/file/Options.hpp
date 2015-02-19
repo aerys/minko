@@ -76,6 +76,7 @@ namespace minko
             bool                                                _disposeIndexBufferAfterLoading;
             bool                                                _disposeVertexBufferAfterLoading;
             bool                                                _disposeTextureAfterLoading;
+            bool                                                _storeDataIfNotParsed;
             unsigned int                                        _skinningFramerate;
             component::SkinningMethod                            _skinningMethod;
             std::shared_ptr<render::Effect>                     _effect;
@@ -89,7 +90,6 @@ namespace minko
             NodeFunction                                        _nodeFunction;
             EffectFunction                                        _effectFunction;
             TextureFormatFunction                               _textureFormatFunction;
-
             int                                                 _seekingOffset;
             int                                                 _seekedLength;
 			
@@ -100,13 +100,11 @@ namespace minko
             Ptr
             create()
             {
-                auto options = std::shared_ptr<Options>(new Options());
+                auto instance = std::shared_ptr<Options>(new Options());
 
-                options->initializeDefaultFunctions();
-                options->registerParser<file::EffectParser>("effect");
-                options->registerProtocol<FileProtocol>("file");
+                instance->initialize();
 
-                return options;
+                return instance;
             }
 
             inline static
@@ -142,21 +140,20 @@ namespace minko
                 opt->_skinningFramerate = options->_skinningFramerate;
                 opt->_skinningMethod = options->_skinningMethod;
                 opt->_effect = options->_effect;
-                opt->_textureFormats = options->_textureFormats;
-				opt->_material = options->_material;
                 opt->_materialFunction = options->_materialFunction;
                 opt->_geometryFunction = options->_geometryFunction;
                 opt->_protocolFunction = options->_protocolFunction;
-                opt->_parserFunction = options->_parserFunction;
+                opt->_effectFunction = options->_effectFunction;
                 opt->_uriFunction = options->_uriFunction;
                 opt->_nodeFunction = options->_nodeFunction;
-                opt->_textureFormatFunction = options->_textureFormatFunction;
                 opt->_loadAsynchronously = options->_loadAsynchronously;
-                opt->_seekingOffset = options->_seekingOffset;
-                opt->_seekedLength = options->_seekedLength;
 
                 return opt;
             }
+
+            virtual
+			Ptr
+            clone();
 
             inline
             std::shared_ptr<render::AbstractContext>
@@ -347,6 +344,22 @@ namespace minko
             disposeTextureAfterLoading(bool value)
             {
                 _disposeTextureAfterLoading = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            bool
+            storeDataIfNotParsed() const
+            {
+                return _storeDataIfNotParsed;
+            }
+
+            inline
+            Ptr
+            storeDataIfNotParsed(bool value)
+            {
+                _storeDataIfNotParsed = value;
 
                 return shared_from_this();
             }
@@ -620,9 +633,16 @@ namespace minko
             void
             defaultProtocolFunction(const std::string& filename, const ProtocolFunction& func);
 
-        private:
+        protected:
             Options();
 
+            Options(const Options& copy);
+
+            virtual
+            void
+            initialize();
+
+        private:
             void
             initializePlatforms();
 

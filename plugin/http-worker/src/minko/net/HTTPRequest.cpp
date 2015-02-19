@@ -17,6 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "minko/log/Logger.hpp"
 #include "minko/net/HTTPRequest.hpp"
 
 #include "curl/curl.h"
@@ -24,33 +25,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::net;
 
-HTTPRequest::HTTPRequest(std::string url) :
+HTTPRequest::HTTPRequest(const std::string& url,
+                         const std::string& username,
+                         const std::string& password) :
     _url(url),
     _progress(Signal<float>::create()),
     _error(Signal<int>::create()),
-    _complete(Signal<const std::vector<char>&>::create())
+    _complete(Signal<const std::vector<char>&>::create()),
+    _username(username),
+    _password(password)
 {
 }
 
 void
 HTTPRequest::run()
 {
-    std::cout << "HTTPRequest::run(): enter" << std::endl;
-
     progress()->execute(0.0f);
 
-    std::cout << "HTTPRequest::run(): before curl init" << std::endl;
-
     CURL* curl = curl_easy_init();
-
-    std::cout << "HTTPRequest::run(): after curl init" << std::endl;
 
     if (!curl)
         throw std::runtime_error("cURL not enabled");
 
-    std::cout << "HTTPRequest::run(): after curl init success" << std::endl;
+    const auto url = _url;
 
-    curl_easy_setopt(curl, CURLOPT_URL, _url.c_str());
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &curlWriteHandler);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
@@ -59,45 +58,42 @@ HTTPRequest::run()
     curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, this);
 
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-    //curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
 
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 	
 
-	try
+    if (!_username.empty())
+    {
+        curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+
+        const auto authenticationString = _username + ":" + _password;
+
+        curl_easy_setopt(curl, CURLOPT_USERPWD, authenticationString.c_str());
+    }
+
+    curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+
+    try
 	{
-		CURLcode res = curl_easy_perform(curl);
+        CURLcode res = curl_easy_perform(curl);
 
-    curl_easy_cleanup(curl);
+        curl_easy_cleanup(curl);
 
-		if (res != CURLE_OK)
-		{
-			//std::cout << "HTTPRequest::run(): curl error" << std::endl;
-
-			error()->execute(res);
-		}
-		else
-		{
-			//std::cout << "HTTPRequest::run(): curl success" << std::endl;
-            auto str = std::string(_output.begin(), _output.end());
-
-            if (str.find("No resource found") != std::string::npos || str.find("404 Not Found") != std::string::npos)
-            {
-			    error()->execute(res);
-            }
-            else
-            {
-			    progress()->execute(1.0f);
-			    complete()->execute(_output);
-            }
-		}
-	}
+	    if (res != CURLE_OK)
+        {
+            error()->execute(res);
+        }
+        else
+        {
+            progress()->execute(1.0f);
+            complete()->execute(_output);
+       }
+    }
 	catch (std::logic_error &e)
 	{
 		std::cerr << "ERROR IN CURL PERFORM" << std::endl;
 		return;
 	}
-
         
 }
 
@@ -133,4 +129,42 @@ HTTPRequest::curlProgressHandler(void* arg, double total, double current, double
     request->progress()->execute(float(ratio));
 
     return 0;
+}
+
+bool
+HTTPRequest::fileExists(const std::string& filename,
+                        const std::string& username,
+                        const std::string& password)
+{
+    auto curl = curl_easy_init();
+
+    if (!curl)
+    {
+        LOG_ERROR("cURL is not enabled");
+
+        return false;
+    }
+
+    const auto url = filename;
+
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+
+    curl_easy_setopt(curl, CURLOPT_HEADER, false);
+    curl_easy_setopt(curl, CURLOPT_NOBODY, true);
+    curl_easy_setopt(curl, CURLOPT_FAILONERROR, true);
+
+    if (!username.empty())
+    {
+        curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+
+        const auto authenticationString = username + ":" + password;
+
+        curl_easy_setopt(curl, CURLOPT_USERPWD, authenticationString.c_str());
+    }
+
+    auto status = curl_easy_perform(curl);
+
+    curl_easy_cleanup(curl);
+
+    return status == CURLE_OK;
 }

@@ -23,10 +23,10 @@ using namespace minko;
 using namespace minko::component;
 
 AmbientLight::AmbientLight(float ambient) :
-    AbstractLight("ambientLights"),
-    _ambient(ambient)
+	AbstractLight("ambientLight"),
+	_ambient(ambient)
 {
-    data()->set("ambient", ambient);
+	data()->set("ambient", ambient);
 }
 
 AmbientLight::AmbientLight(const AmbientLight& ambientLight, const CloneOption& option) :
@@ -40,8 +40,6 @@ AbstractComponent::Ptr
 AmbientLight::clone(const CloneOption& option)
 {
 	auto al = std::shared_ptr<AmbientLight>(new AmbientLight(*this, option));
-
-	al->initialize();
 
 	return al;
 }

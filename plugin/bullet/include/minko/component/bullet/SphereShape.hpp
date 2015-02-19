@@ -35,11 +35,11 @@ namespace minko
                 typedef std::shared_ptr<SphereShape>                Ptr;
 
             private:
-                typedef std::shared_ptr<geometry::LineGeometry>        LineGeometryPtr;
+                typedef std::shared_ptr<geometry::LineGeometry>     LineGeometryPtr;
                 typedef std::shared_ptr<render::AbstractContext>    AbsContextPtr;
 
             private:
-                float                                                _radius;
+                float                                               _radius;
 
             public:
                 inline static
@@ -61,7 +61,8 @@ namespace minko
                 radius(float radius)
                 {
                     const bool needsUpdate = fabsf(radius - _radius) > 1e-6f;
-                    _radius    = radius;
+                    _radius = radius;
+
                     if (needsUpdate)
                         shapeChanged()->execute(shared_from_this());
                 }
@@ -70,8 +71,8 @@ namespace minko
                 float
                 volume() const
                 {
-                    const float radius    = _radius + _margin;
-                    const float volume    = (float(M_PI) * 4.0f / 3.0f) * radius * radius * radius;
+                    const float radius = _radius + _margin;
+                    const float volume = (float(M_PI) * 4.0f / 3.0f) * radius * radius * radius;
 
                     return volume * _volumeScaling;
                 }

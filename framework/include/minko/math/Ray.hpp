@@ -21,65 +21,60 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
-#include "minko/math/Vector3.hpp"
-
 namespace minko
 {
-    namespace math
-    {
-        class Ray
-        {
-        public:
-            typedef std::shared_ptr<Ray>        Ptr;
+	namespace math
+	{
+		class Ray
+		{
+		public:
+			typedef std::shared_ptr<Ray>	Ptr;
 
-        private:
-            typedef std::shared_ptr<Vector3>    Vector3Ptr;
+		private:
+			vec3	_origin;
+			vec3	_direction;
 
-        private:
-            Vector3Ptr                          _origin;
-            Vector3Ptr                          _direction;
+		public:
+			inline static
+			Ptr
+			create(const vec3& origin, const vec3& direction)
+			{
+				return std::shared_ptr<Ray>(new Ray(origin, direction));
+			}
 
-        public:
-            inline static
-            Ptr
-            create(Vector3Ptr origin, Vector3Ptr direction)
-            {
-                return std::shared_ptr<Ray>(new Ray(origin, direction));
-            }
+			inline static
+			Ptr
+			create()
+			{
+				return std::shared_ptr<Ray>(new Ray());
+			}
 
-            inline static
-            Ptr
-            create()
-            {
-                return std::shared_ptr<Ray>(new Ray());
-            }
+			inline
+			vec3&
+			direction()
+			{
+				return _direction;
+			}
 
-            inline
-            Vector3Ptr
-            direction()
-            {
-                return _direction;
-            }
+			inline
+			vec3&
+			origin()
+			{
+				return _origin;
+			}
 
-            inline
-            Vector3Ptr
-            origin()
-            {
-                return _origin;
-            }
+		private:
+			Ray(const vec3& origin, const vec3& direction) :
+				_origin(origin),
+				_direction(direction)
+			{
+			}
 
-        private:
-            Ray(Vector3Ptr origin, Vector3Ptr direction) :
-                _origin(Vector3::create(origin)),
-                _direction(Vector3::create(direction))
-            {
-            }
-
-            Ray() :
-                _origin(Vector3::create()),
-                _direction(Vector3::create(0.f, 0.f, -1.f))
-            {
-            }
-        };
-    }
+			Ray() :
+				_origin(vec3(0.)),
+				_direction(vec3(0.f, 0.f, -1.f))
+			{
+			}
+		};
+	}
 }

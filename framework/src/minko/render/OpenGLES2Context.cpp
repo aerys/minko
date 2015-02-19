@@ -26,7 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/TextureFormatInfo.hpp"
 #include "minko/render/TriangleCulling.hpp"
 #include "minko/render/StencilOperation.hpp"
-#include "minko/math/Matrix4x4.hpp"
 #include "minko/log/Logger.hpp"
 
 #include <iomanip>
@@ -40,7 +39,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #  include "GLES2/gl2.h"
 #  include "GLES2/gl2ext.h"
 # else
+#  if !defined(MINKO_PLUGIN_OFFSCREEN) // temporary
 #  include "GL/glew.h"
+#  else
+#   include <windows.h>
+#   include <GL/gl.h>
+#   include <GL/glu.h>
+#   include <GL/glext.h>
+#  endif
 # endif
 #elif MINKO_PLATFORM == MINKO_PLATFORM_OSX
 # include <OpenGL/gl.h>
@@ -152,7 +158,7 @@ OpenGLES2Context::OpenGLES2Context() :
     _currentWrapMode(),
     _currentTextureFilter(),
     _currentMipFilter(),
-    _currentBlendMode(Blending::Mode::DEFAULT),
+	_currentBlendingMode(Blending::Mode::DEFAULT),
     _currentColorMask(true),
     _currentDepthMask(true),
     _currentDepthFunc(CompareMode::UNSET),
@@ -163,7 +169,7 @@ OpenGLES2Context::OpenGLES2Context() :
     _currentStencilZFailOp(StencilOperation::UNSET),
     _currentStencilZPassOp(StencilOperation::UNSET)
 {
-#if (MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS) && !defined(MINKO_PLUGIN_ANGLE)
+#if (MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS) && !defined(MINKO_PLUGIN_ANGLE) && !defined(MINKO_PLUGIN_OFFSCREEN)
     glewInit();
 #endif
 
@@ -303,7 +309,7 @@ OpenGLES2Context::present()
 }
 
 void
-OpenGLES2Context::drawTriangles(const uint indexBuffer, const int numTriangles)
+OpenGLES2Context::drawTriangles(const uint indexBuffer, const uint firstIndex, const int numTriangles)
 {
     if (_currentIndexBuffer != indexBuffer)
     {
@@ -321,7 +327,17 @@ OpenGLES2Context::drawTriangles(const uint indexBuffer, const int numTriangles)
     // indices Specifies a pointer to the location where the indices are stored.
     //
     // glDrawElements render primitives from array data
-    glDrawElements(GL_TRIANGLES, numTriangles * 3, GL_UNSIGNED_SHORT, (void*)0);
+	glDrawElements(GL_TRIANGLES, numTriangles * 3, GL_UNSIGNED_SHORT, (const GLvoid*)firstIndex);
+
+	checkForErrors();
+}
+
+void
+OpenGLES2Context::drawTriangles(const uint firstIndex, const int numTriangles)
+{
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	_currentIndexBuffer = 0;
+	glDrawArrays(GL_TRIANGLES, firstIndex, numTriangles * 3);
 
     checkForErrors();
 }
@@ -427,7 +443,7 @@ OpenGLES2Context::setVertexBufferAt(const uint    position,
     if (currentVertexBuffer == vertexBuffer
         && _currentVertexSize[position] == size
         && _currentVertexStride[position] == stride
-        && _currentVertexOffset[position] == position)
+		&& _currentVertexOffset[position] == offset)
         return ;
 
     _currentVertexBuffer[position] = vertexBuffer;
@@ -710,6 +726,54 @@ OpenGLES2Context::createCompressedTexture(TextureType     type,
     _currentTextureFilter[texture]    = TextureFilter::NEAREST;
     _currentMipFilter[texture]        = MipFilter::NONE;
 
+    const auto oglFormat = availableTextureFormats().at(format);
+
+    if (mipMapping)
+    {
+        uint level = 0;
+        uint h = height;
+        uint w = width;
+
+        for (uint size = width > height ? width : height;
+             size > 0;
+             size = size >> 1, w = w >> 1, h = h >> 1)
+        {
+        	const auto dataSize = TextureFormatInfo::textureSize(format, w, h);
+        	const auto data = std::vector<unsigned char>(dataSize, 0);
+
+         	if (type == TextureType::Texture2D)
+         		glCompressedTexImage2D(GL_TEXTURE_2D, level, oglFormat, w, h, 0, dataSize, data.data());
+            else
+            {
+         		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, level, oglFormat, w, h, 0, dataSize, data.data());
+         		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, level, oglFormat, w, h, 0, dataSize, data.data());
+         		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, level, oglFormat, w, h, 0, dataSize, data.data());
+         		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, level, oglFormat, w, h, 0, dataSize, data.data());
+         		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, level, oglFormat, w, h, 0, dataSize, data.data());
+         		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, level, oglFormat, w, h, 0, dataSize, data.data());
+            }
+
+            ++level;
+        }
+    }
+    else
+    {
+        const auto dataSize = TextureFormatInfo::textureSize(format, width, height);
+    	const auto data = std::vector<unsigned char>(dataSize, 0);
+
+        if (type == TextureType::Texture2D)
+     		glCompressedTexImage2D(GL_TEXTURE_2D, 0, oglFormat, width, height, 0, dataSize, data.data());
+        else
+        {
+     		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, oglFormat, width, height, 0, dataSize, data.data());
+     		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, oglFormat, width, height, 0, dataSize, data.data());
+     		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, oglFormat, width, height, 0, dataSize, data.data());
+     		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, oglFormat, width, height, 0, dataSize, data.data());
+     		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, oglFormat, width, height, 0, dataSize, data.data());
+     		glCompressedTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, oglFormat, width, height, 0, dataSize, data.data());
+        }
+    }
+
     checkForErrors();
 
     return texture;
@@ -801,7 +865,7 @@ OpenGLES2Context::uploadCompressedTexture2dData(uint          texture,
     const auto& formats = availableTextureFormats();
 
     glBindTexture(GL_TEXTURE_2D, texture);
-    glCompressedTexImage2D(GL_TEXTURE_2D, mipLevel, formats.at(format), width, height, 0, size, data);
+    glCompressedTexSubImage2D(GL_TEXTURE_2D, mipLevel, 0, 0, width, height, formats.at(format), size, data);
 
     _currentBoundTexture = texture;
 
@@ -1059,15 +1123,52 @@ OpenGLES2Context::setProgram(const uint program)
     checkForErrors();
 }
 
+static
+std::string
+glslVersionString()
+{
+    auto fullVersion = std::string(reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION)));
+
+    if (fullVersion.empty())
+        return "";
+
+    auto glslVersion = std::string();
+
+    const auto minorVersionSeparatorPosition = fullVersion.find_first_of(".");
+
+    if (minorVersionSeparatorPosition == std::string::npos)
+        return std::string(0, fullVersion.find_first_of(" "));
+
+    glslVersion += std::string(fullVersion.begin(), fullVersion.begin() + minorVersionSeparatorPosition);
+
+    const auto minorVersionPosition = minorVersionSeparatorPosition + 1;
+    const auto buildVersionSeparatorPosition = fullVersion.find_first_of(". ", minorVersionPosition);
+
+    if (buildVersionSeparatorPosition == std::string::npos)
+        return glslVersion + "00";
+
+    glslVersion += std::string(
+        fullVersion.begin() + minorVersionPosition,
+        fullVersion.begin() + buildVersionSeparatorPosition
+    );
+
+    return glslVersion;
+}
+
 void
 OpenGLES2Context::setShaderSource(const uint shader,
                                   const std::string& source)
 {
+    // TODO fixme
+    // temporary allowing version > 120
+    // implement new *Context to properly handle it
+
 #ifdef GL_ES_VERSION_2_0
     std::string src = "#version 100\n" + source;
 #else
     std::string src = "#version 120\n" + source;
 #endif // GL_ES_VERSION_2_0
+
     const char* sourceString = src.c_str();
 
     glShaderSource(shader, 1, &sourceString, 0);
@@ -1137,18 +1238,12 @@ OpenGLES2Context::deleteFragmentShader(const uint fragmentShader)
     checkForErrors();
 }
 
-std::shared_ptr<ProgramInputs>
+ProgramInputs
 OpenGLES2Context::getProgramInputs(const uint program)
 {
-    std::vector<std::string> names;
-    std::vector<ProgramInputs::Type> types;
-    std::vector<uint> locations;
-
     setProgram(program);
-    fillUniformInputs(program, names, types, locations);
-    fillAttributeInputs(program, names, types, locations);
 
-    return ProgramInputs::create(shared_from_this(), program, names, types, locations);
+    return ProgramInputs(getUniformInputs(program), getAttributeInputs(program));
 }
 
 /*static*/
@@ -1196,12 +1291,11 @@ OpenGLES2Context::convertInputType(unsigned int type)
 }
 
 
-void
-OpenGLES2Context::fillUniformInputs(const uint                    program,
-                                    std::vector<std::string>&            names,
-                                    std::vector<ProgramInputs::Type>&    types,
-                                    std::vector<uint>&            locations)
+std::vector<ProgramInputs::UniformInput>
+OpenGLES2Context::getUniformInputs(const uint program)
 {
+    std::vector<ProgramInputs::UniformInput> inputs;
+
     int total = -1;
     int maxUniformNameLength = -1;
 
@@ -1224,20 +1318,17 @@ OpenGLES2Context::fillUniformInputs(const uint                    program,
         int                    location    = glGetUniformLocation(program, &name[0]);
 
         if (location >= 0 && inputType != ProgramInputs::Type::unknown)
-        {
-            names.push_back(std::string(&name[0], nameLength));
-            types.push_back(inputType);
-            locations.push_back(location);
-        }
+            inputs.emplace_back(std::string(&name[0], nameLength), location, size, inputType);
     }
+
+    return inputs;
 }
 
-void
-OpenGLES2Context::fillAttributeInputs(const uint                program,
-                                     std::vector<std::string>&            names,
-                                     std::vector<ProgramInputs::Type>&    types,
-                                     std::vector<uint>&            locations)
+std::vector<ProgramInputs::AttributeInput>
+OpenGLES2Context::getAttributeInputs(const uint program)
 {
+    std::vector<ProgramInputs::AttributeInput> inputs;
+
     int total = -1;
     int maxAttributeNameLength = -1;
 
@@ -1256,17 +1347,13 @@ OpenGLES2Context::fillAttributeInputs(const uint                program,
 
         name[nameLength] = 0;
 
-        ProgramInputs::Type inputType = ProgramInputs::Type::attribute;
-
         int location = glGetAttribLocation(program, &name[0]);
 
         if (location >= 0)
-        {
-            names.push_back(std::string(&name[0], nameLength));
-            types.push_back(inputType);
-            locations.push_back(location);
-        }
+            inputs.emplace_back(std::string(&name[0], nameLength), location);
     }
+
+    return inputs;
 }
 
 std::string
@@ -1318,171 +1405,11 @@ OpenGLES2Context::getProgramInfoLogs(const uint program)
 }
 
 void
-OpenGLES2Context::setUniform(uint location, int value)
+OpenGLES2Context::setBlendingMode(Blending::Source source, Blending::Destination destination)
 {
-    glUniform1i(location, value);
-    checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniform(uint location, int v1, int v2)
-{
-    glUniform2i(location, v1, v2);
-    checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniform(uint location, int v1, int v2, int v3)
-{
-    glUniform3i(location, v1, v2, v3);
-    checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniform(uint location, int v1, int v2, int v3, int v4)
-{
-    glUniform4i(location, v1, v2, v3, v4);
-    checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniform(uint location, float value)
-{
-    glUniform1f(location, value);
-    checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniform(uint location, float v1, float v2)
-{
-    glUniform2f(location, v1, v2);
-    checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniform(uint location, float v1, float v2, float v3)
-{
-    glUniform3f(location, v1, v2, v3);
-    checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniform(uint location, float v1, float v2, float v3, float v4)
-{
-    glUniform4f(location, v1, v2, v3, v4);
-    checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniforms(uint location, uint size, const float* values)
-{
-    glUniform1fv(location, size, values);
-    checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniforms2(uint location, uint size, const float* values)
-{
-    glUniform2fv(location, size, values);
-    checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniforms3(uint location, uint size, const float* values)
-{
-    glUniform3fv(location, size, values);
-    checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniforms4(uint location, uint size, const float* values)
-{
-    glUniform4fv(location, size, values);
-    checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniforms(uint location, uint size, const int* values)
-{
-    glUniform1iv(location, size, values);
-    checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniforms2(uint location, uint size, const int* values)
-{
-    glUniform2iv(location, size, values);
-    checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniforms3(uint location, uint size, const int* values)
-{
-    glUniform3iv(location, size, values);
-    checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniforms4(uint location, uint size, const int* values)
-{
-    glUniform4iv(location, size, values);
-    checkForErrors();
-}
-
-void
-OpenGLES2Context::setUniform(const uint& location, const uint& size, bool transpose, const float* values)
-{
-#ifdef GL_ES_VERSION_2_0
-
-    if (transpose)
-    {
-        float* transposed = new float[size << 4];
-
-        for (uint i = 0; i < size; ++i)
+	if ((static_cast<uint>(source) | static_cast<uint>(destination)) != static_cast<uint>(_currentBlendingMode))
         {
-            const float* matrix = values + (i << 4);
-            float* tmatrix = transposed + (i << 4);
-
-            tmatrix[0]  = matrix[0];
-            tmatrix[1]  = matrix[4];
-            tmatrix[2]  = matrix[8];
-            tmatrix[3]  = matrix[12];
-            tmatrix[4]  = matrix[1];
-            tmatrix[5]  = matrix[5];
-            tmatrix[6]  = matrix[9];
-            tmatrix[7]  = matrix[13];
-            tmatrix[8]  = matrix[2];
-            tmatrix[9]  = matrix[6];
-            tmatrix[10] = matrix[10];
-            tmatrix[11] = matrix[14];
-            tmatrix[12] = matrix[3];
-            tmatrix[13] = matrix[7];
-            tmatrix[14] = matrix[11];
-            tmatrix[15] = matrix[15];
-        }
-
-        glUniformMatrix4fv(location, size, false, transposed);
-
-        delete[] transposed;
-    }
-    else
-        glUniformMatrix4fv(location, size, false, values);
-
-#else
-
-    glUniformMatrix4fv(location, size, transpose, values);
-
-#endif
-
-    checkForErrors();
-}
-
-void
-OpenGLES2Context::setBlendMode(Blending::Source source, Blending::Destination destination)
-{
-    if ((static_cast<uint>(source) | static_cast<uint>(destination)) != static_cast<uint>(_currentBlendMode))
-    {
-        _currentBlendMode = (Blending::Mode)((uint)source | (uint)destination);
+        _currentBlendingMode = (Blending::Mode)((uint)source | (uint)destination);
 
         glBlendFunc(
             _blendingFactors[static_cast<uint>(source) & 0x00ff],
@@ -1494,15 +1421,15 @@ OpenGLES2Context::setBlendMode(Blending::Source source, Blending::Destination de
 }
 
 void
-OpenGLES2Context::setBlendMode(Blending::Mode blendMode)
+OpenGLES2Context::setBlendingMode(Blending::Mode blendingMode)
 {
-    if (blendMode != _currentBlendMode)
+    if (blendingMode != _currentBlendingMode)
     {
-        _currentBlendMode = blendMode;
+        _currentBlendingMode = blendingMode;
 
         glBlendFunc(
-            _blendingFactors[static_cast<uint>(blendMode) & 0x00ff],
-            _blendingFactors[static_cast<uint>(blendMode) & 0xff00]
+            _blendingFactors[static_cast<uint>(blendingMode) & 0x00ff],
+            _blendingFactors[static_cast<uint>(blendingMode) & 0xff00]
         );
     }
 
@@ -1584,8 +1511,7 @@ OpenGLES2Context::readPixels(unsigned int x, unsigned int y, unsigned int width,
 }
 
 void
-OpenGLES2Context::setScissorTest(bool                        scissorTest,
-                                 const render::ScissorBox&    scissorBox)
+OpenGLES2Context::setScissorTest(bool scissorTest, const math::ivec4& scissorBox)
 {
     if (scissorTest)
     {
@@ -1596,7 +1522,7 @@ OpenGLES2Context::setScissorTest(bool                        scissorTest,
         uint    width = 0;
         uint    height = 0;
 
-        if (scissorBox.width < 0 || scissorBox.height < 0)
+		if (scissorBox.z < 0 || scissorBox.w < 0)
         {
             x        = _viewportX;
             y        = _viewportY;
@@ -1607,8 +1533,8 @@ OpenGLES2Context::setScissorTest(bool                        scissorTest,
         {
             x        = scissorBox.x;
             y        = scissorBox.y;
-            width    = scissorBox.width;
-            height    = scissorBox.height;
+			width	= scissorBox.z;
+			height	= scissorBox.w;
         }
 
         glScissor(x, y, width, height);
@@ -1798,6 +1724,60 @@ OpenGLES2Context::generateMipmaps(uint texture)
     _currentBoundTexture = texture;
 
     checkForErrors();
+}
+
+void
+OpenGLES2Context::setUniformFloat(uint location, uint count, const float* v)
+{
+    glUniform1fv(location, count, v);
+}
+
+void
+OpenGLES2Context::setUniformFloat2(uint location, uint count, const float* v)
+{
+    glUniform2fv(location, count, v);
+}
+
+void
+OpenGLES2Context::setUniformFloat3(uint location, uint count, const float* v)
+{
+    glUniform3fv(location, count, v);
+}
+
+void
+OpenGLES2Context::setUniformFloat4(uint location, uint count, const float* v)
+{
+    glUniform4fv(location, count, v);
+}
+
+void
+OpenGLES2Context::setUniformMatrix4x4(uint location, uint count, const float* v)
+{
+    glUniformMatrix4fv(location, count, false, v);
+}
+
+void
+OpenGLES2Context::setUniformInt(uint location, uint count, const int* v)
+{
+    glUniform1iv(location, count, v);
+}
+
+void
+OpenGLES2Context::setUniformInt2(uint location, uint count, const int* v)
+{
+    glUniform2iv(location, count, v);
+}
+
+void
+OpenGLES2Context::setUniformInt3(uint location, uint count, const int* v)
+{
+    glUniform3iv(location, count, v);
+}
+
+void
+OpenGLES2Context::setUniformInt4(uint location, uint count, const int* v)
+{
+    glUniform4iv(location, count, v);
 }
 
 bool

@@ -25,291 +25,364 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/TriangleCulling.hpp"
 #include "minko/render/CompareMode.hpp"
 #include "minko/render/StencilOperation.hpp"
+#include "minko/render/TextureSampler.hpp"
 #include "minko/scene/Layout.hpp"
+#include "minko/data/Store.hpp"
+#include "minko/data/Provider.hpp"
 
 namespace minko
 {
     namespace render
     {
-        class States
-        {
+	    class States
+	    {
+        private:
+            typedef std::shared_ptr<render::AbstractTexture>    AbsTexturePtr;
+
         public:
-            typedef std::shared_ptr<States>                                 Ptr;
-            typedef std::unordered_map<std::string, render::SamplerState>   SamplerStates;
-            typedef std::shared_ptr<math::Vector4>                          Vector4Ptr;
-            typedef std::shared_ptr<render::AbstractTexture>                AbstractTexturePtr;
+            static const std::string                    PROPERTY_PRIORITY;
+            static const std::string                    PROPERTY_ZSORTED;
+            static const std::string                    PROPERTY_BLENDING_SOURCE;
+            static const std::string                    PROPERTY_BLENDING_DESTINATION;
+            static const std::string                    PROPERTY_COLOR_MASK;
+            static const std::string                    PROPERTY_DEPTH_MASK;
+            static const std::string                    PROPERTY_DEPTH_FUNCTION;
+            static const std::string                    PROPERTY_TRIANGLE_CULLING;
+            static const std::string                    PROPERTY_STENCIL_FUNCTION;
+            static const std::string                    PROPERTY_STENCIL_REFERENCE;
+            static const std::string                    PROPERTY_STENCIL_MASK;
+            static const std::string                    PROPERTY_STENCIL_FAIL_OP;
+            static const std::string                    PROPERTY_STENCIL_ZFAIL_OP;
+            static const std::string                    PROPERTY_STENCIL_ZPASS_OP;
+            static const std::string                    PROPERTY_SCISSOR_TEST;
+            static const std::string                    PROPERTY_SCISSOR_BOX;
+            static const std::string                    PROPERTY_TARGET;
+
+            static const std::array<std::string, 17>    PROPERTY_NAMES;
+
+            static const float				            DEFAULT_PRIORITY;
+            static const bool					        DEFAULT_ZSORTED;
+            static const Blending::Source		        DEFAULT_BLENDING_SOURCE;
+            static const Blending::Destination	        DEFAULT_BLENDING_DESTINATION;
+            static const bool					        DEFAULT_COLOR_MASK;
+            static const bool					        DEFAULT_DEPTH_MASK;
+            static const CompareMode		            DEFAULT_DEPTH_FUNCTION;
+            static const TriangleCulling                DEFAULT_TRIANGLE_CULLING;
+            static const CompareMode			        DEFAULT_STENCIL_FUNCTION;
+            static const int					        DEFAULT_STENCIL_REFERENCE;
+            static const uint					        DEFAULT_STENCIL_MASK;
+            static const StencilOperation		        DEFAULT_STENCIL_FAIL_OP;
+            static const StencilOperation		        DEFAULT_STENCIL_ZFAIL_OP;
+            static const StencilOperation		        DEFAULT_STENCIL_ZPASS_OP;
+            static const bool					        DEFAULT_SCISSOR_TEST;
+            static const math::ivec4 			        DEFAULT_SCISSOR_BOX;
+            static const TextureSampler                 DEFAULT_TARGET;
 
         private:
-            float                       _priority;
-            bool                        _zsorted;
-            Blending::Source            _blendingSourceFactor;
-            Blending::Destination       _blendingDestinationFactor;
-            bool                        _colorMask;
-            bool                        _depthMask;
-            CompareMode                 _depthFunc;
-            TriangleCulling             _triangleCulling;
-            CompareMode                 _stencilFunction;
-            int                         _stencilReference;
-            uint                        _stencilMask;
-            StencilOperation            _stencilFailOp;
-            StencilOperation            _stencilZFailOp;
-            StencilOperation            _stencilZPassOp;
-            bool                        _scissorTest;
-            ScissorBox                  _scissorBox;
-            SamplerStates               _samplerStates;
-            AbstractTexturePtr          _target;
+            std::shared_ptr<data::Provider> _data;
 
-        public:
-            inline static
-            Ptr
-            create(const SamplerStates&     samplerStates,
-                   float                    priority                    = 0.f,
-                   bool                     zSorted                     = false,
-                   Blending::Source         blendingSourceFactor        = Blending::Source::ONE,
-                   Blending::Destination    blendingDestinationFactor   = Blending::Destination::ZERO,
-                   bool                     colorMask                   = true,
-                   bool                     depthMask                   = true,
-                   CompareMode              depthFunc                   = CompareMode::LESS,
-                   TriangleCulling          triangleCulling             = TriangleCulling::BACK,
-                   CompareMode              stencilFunction             = CompareMode::ALWAYS,
-                   int                      stencilRef                  = 0,
-                   uint                     stencilMask                 = 0x1,
-                   StencilOperation         stencilFailOp               = StencilOperation::KEEP,
-                   StencilOperation         stencilZFailOp              = StencilOperation::KEEP,
-                   StencilOperation         stencilZPassOp              = StencilOperation::KEEP,
-                   bool                     scissorTest                 = false,
-                   const ScissorBox&        scissorBox                  = ScissorBox(),
-                   AbstractTexturePtr       target                      = nullptr)
+		public:
+            States(float					priority            = DEFAULT_PRIORITY,
+                   bool						zSorted             = DEFAULT_ZSORTED,
+                   Blending::Source			blendingSource      = DEFAULT_BLENDING_SOURCE,
+                   Blending::Destination	blendingDestination = DEFAULT_BLENDING_DESTINATION,
+                   bool						colorMask           = DEFAULT_COLOR_MASK,
+                   bool						depthMask           = DEFAULT_DEPTH_MASK,
+                   CompareMode				depthFunc           = DEFAULT_DEPTH_FUNCTION,
+                   TriangleCulling          triangleCulling     = DEFAULT_TRIANGLE_CULLING,
+                   CompareMode				stencilFunction     = DEFAULT_STENCIL_FUNCTION,
+                   int						stencilRef          = DEFAULT_STENCIL_REFERENCE,
+                   uint						stencilMask         = DEFAULT_STENCIL_MASK,
+                   StencilOperation			stencilFailOp       = DEFAULT_STENCIL_FAIL_OP,
+                   StencilOperation			stencilZFailOp      = DEFAULT_STENCIL_ZFAIL_OP,
+                   StencilOperation			stencilZPassOp      = DEFAULT_STENCIL_ZPASS_OP,
+                   bool						scissorTest         = DEFAULT_SCISSOR_TEST,
+                   const math::ivec4&		scissorBox          = DEFAULT_SCISSOR_BOX,
+                   TextureSampler		    target              = DEFAULT_TARGET);
+
+            States(const States& states);
+
+            void
+            resetDefaultValues();
+
+            inline
+            std::shared_ptr<data::Provider>
+            data()
             {
-                return std::shared_ptr<States>(new States(
-                    samplerStates,
-                    priority,
-                    zSorted,
-                    blendingSourceFactor,
-                    blendingDestinationFactor,
-                    colorMask,
-                    depthMask,
-                    depthFunc,
-                    triangleCulling,
-                    stencilFunction,
-                    stencilRef,
-                    stencilMask,
-                    stencilFailOp,
-                    stencilZFailOp,
-                    stencilZPassOp,
-                    scissorTest,
-                    scissorBox,
-                    target
-                ));
-            }
-
-            inline static
-            Ptr
-            create(Ptr states)
-            {
-                return std::shared_ptr<States>(new States(
-                    states->_samplerStates,
-                    states->_priority,
-                    states->_zsorted,
-                    states->_blendingSourceFactor,
-                    states->_blendingDestinationFactor,
-                    states->_colorMask,
-                    states->_depthMask,
-                    states->_depthFunc,
-                    states->_triangleCulling,
-                    states->_stencilFunction,
-                    states->_stencilReference,
-                    states->_stencilMask,
-                    states->_stencilFailOp,
-                    states->_stencilZFailOp,
-                    states->_stencilZPassOp,
-                    states->_scissorTest,
-                    states->_scissorBox,
-                    states->_target
-                ));
-            }
-
-            inline static
-            Ptr
-            create()
-            {
-                SamplerStates states;
-
-                return create(states);
+                return _data;
             }
 
             inline
             float
             priority() const
             {
-                return _priority;
+                return _data->get<float>(PROPERTY_PRIORITY);
             }
 
             inline
-            void
+            States&
             priority(float priority)
             {
-                _priority = priority;
+            	_data->set<float>(PROPERTY_PRIORITY, priority);
+
+                return *this;
             }
 
+			inline
+			bool
+			zSorted() const
+			{
+				return _data->get<bool>(PROPERTY_ZSORTED);
+			}
+
             inline
-            bool
-            zSorted() const
+            States&
+            zSorted(bool zSorted)
             {
-                return _zsorted;
+                _data->set(PROPERTY_ZSORTED, zSorted);
+
+                return *this;
             }
 
             inline
             Blending::Source
             blendingSourceFactor() const
             {
-                return _blendingSourceFactor;
+                return _data->get<Blending::Source>(PROPERTY_BLENDING_SOURCE);
+            }
+
+            inline
+            States&
+            blendingSourceFactor(Blending::Source value)
+            {
+                _data->set(PROPERTY_BLENDING_SOURCE, value);
+
+                return *this;
             }
 
             inline
             Blending::Destination
             blendingDestinationFactor() const
             {
-                return _blendingDestinationFactor;
+                return _data->get<Blending::Destination>(PROPERTY_BLENDING_DESTINATION);
             }
 
             inline
-            bool
-            colorMask() const
+            States&
+            blendingDestinationFactor(Blending::Destination value)
             {
-                return _colorMask;
+                _data->set(PROPERTY_BLENDING_DESTINATION, value);
+
+                return *this;
+            }
+
+			inline
+			bool
+			colorMask() const
+			{
+				return _data->get<bool>(PROPERTY_COLOR_MASK);
+			}
+
+            inline
+            States&
+            colorMask(bool value)
+            {
+                _data->set(PROPERTY_COLOR_MASK, value);
+
+                return *this;
             }
 
             inline
             bool
             depthMask() const
             {
-                return _depthMask;
+                return _data->get<bool>(PROPERTY_DEPTH_MASK);
+            }
+
+            inline
+            States&
+            depthMask(bool value)
+            {
+                _data->set(PROPERTY_DEPTH_MASK, value);
+
+                return *this;
             }
 
             inline
             CompareMode
-            depthFunc() const
+            depthFunction() const
             {
-                return _depthFunc;
+                return _data->get<CompareMode>(PROPERTY_DEPTH_FUNCTION);
+            }
+
+            inline
+            States&
+            depthFunction(CompareMode value)
+            {
+                _data->set(PROPERTY_DEPTH_FUNCTION, value);
+
+                return *this;
             }
 
             inline
             TriangleCulling
             triangleCulling() const
             {
-                return _triangleCulling;
+                return _data->get<TriangleCulling>(PROPERTY_TRIANGLE_CULLING);
             }
 
             inline
-            CompareMode
-            stencilFunction() const
+            States&
+            triangleCulling(TriangleCulling value)
             {
-                return _stencilFunction;
+                _data->set(PROPERTY_TRIANGLE_CULLING, value);
+
+                return *this;
             }
 
+			inline
+			CompareMode
+			stencilFunction() const
+			{
+                return _data->get<CompareMode>(PROPERTY_STENCIL_FUNCTION);
+			}
+
             inline
-            int
-            stencilReference() const
+            States&
+            stencilFunction(CompareMode value)
             {
-                return _stencilReference;
+                _data->set(PROPERTY_STENCIL_FUNCTION, value);
+
+                return *this;
             }
 
+			inline
+			int
+			stencilReference() const
+			{
+				return _data->get<int>(PROPERTY_STENCIL_REFERENCE);
+			}
+
             inline
-            uint
-            stencilMask() const
+            States&
+            stencilReference(int value)
             {
-                return _stencilMask;
+                _data->set(PROPERTY_STENCIL_REFERENCE, value);
+
+                return *this;
             }
 
+			inline
+			uint
+			stencilMask() const
+			{
+				return _data->get<uint>(PROPERTY_STENCIL_MASK);
+			}
+
             inline
-            StencilOperation
-            stencilFailOperation() const
+            States&
+            stencilMask(uint value)
             {
-                return _stencilFailOp;
+                _data->set(PROPERTY_STENCIL_MASK, value);
+
+                return *this;
             }
 
+			inline
+			StencilOperation
+			stencilFailOperation() const
+			{
+                return _data->get<StencilOperation>(PROPERTY_STENCIL_FAIL_OP);
+			}
+
             inline
-            StencilOperation
-            stencilDepthFailOperation() const
+            States&
+            stencilFailOperation(StencilOperation value)
             {
-                return _stencilZFailOp;
+                _data->set(PROPERTY_STENCIL_FAIL_OP, value);
+
+                return *this;
             }
 
+			inline
+			StencilOperation
+			stencilZFailOperation() const
+			{
+                return _data->get<StencilOperation>(PROPERTY_STENCIL_ZFAIL_OP);
+			}
+
             inline
-            StencilOperation
-            stencilDepthPassOperation() const
+            States&
+            stencilZFailOperation(StencilOperation value)
             {
-                return _stencilZPassOp;
+                _data->set(PROPERTY_STENCIL_ZFAIL_OP, value);
+
+                return *this;
             }
 
+			inline
+			StencilOperation
+			stencilZPassOperation() const
+			{
+                return _data->get<StencilOperation>(PROPERTY_STENCIL_ZPASS_OP);
+			}
+
             inline
-            bool
-            scissorTest() const
+            States&
+            stencilZPassOperation(StencilOperation value)
             {
-                return _scissorTest;
+                _data->set(PROPERTY_STENCIL_ZPASS_OP, value);
+
+                return *this;
             }
 
+			inline
+			bool
+			scissorTest() const
+			{
+                return _data->get<bool>(PROPERTY_SCISSOR_TEST);
+			}
+
             inline
-            const ScissorBox&
-            scissorBox() const
+            States&
+            scissorTest(bool value)
             {
-                return _scissorBox;
+                _data->set(PROPERTY_SCISSOR_TEST, value);
+
+                return *this;
             }
 
+			inline
+			math::ivec4
+			scissorBox() const
+			{
+                return _data->get<math::ivec4>(PROPERTY_SCISSOR_BOX);
+			}
+
             inline
-            const SamplerStates&
-            samplers() const
+            States&
+            scissorBox(math::ivec4 value)
             {
-                return _samplerStates;
+                _data->set(PROPERTY_SCISSOR_BOX, value);
+
+                return *this;
             }
 
             inline
-            AbstractTexturePtr
+            const TextureSampler&
             target() const
             {
-                return _target;
+                return _data->get<TextureSampler>(PROPERTY_TARGET);
             }
 
-        private:
-            States(const SamplerStates&     samplerSates,
-                   float                    priority,
-                   bool                     zSorted,
-                   Blending::Source         blendingSourceFactor,
-                   Blending::Destination    blendingDestinationFactor,
-                   bool                     colorMask,
-                   bool                     depthMask,
-                   CompareMode              depthFunc,
-                   TriangleCulling          triangleCulling,
-                   CompareMode              stencilFunc,
-                   int                      stencilRef,
-                   uint                     stencilMask,
-                   StencilOperation         stencilFailOp,
-                   StencilOperation         stencilZFailOp,
-                   StencilOperation         stencilZPassOp,
-                   bool                     scissorTest,
-                   const ScissorBox&        scissorBox,
-                   AbstractTexturePtr       target) :
-                _samplerStates(samplerSates),
-                _priority(priority),
-                _zsorted(zSorted),
-                _blendingSourceFactor(blendingSourceFactor),
-                _blendingDestinationFactor(blendingDestinationFactor),
-                _colorMask(colorMask),
-                _depthMask(depthMask),
-                _depthFunc(depthFunc),
-                _triangleCulling(triangleCulling),
-                _stencilFunction(stencilFunc),
-                _stencilReference(stencilRef),
-                _stencilMask(stencilMask),
-                _stencilFailOp(stencilFailOp),
-                _stencilZFailOp(stencilZFailOp),
-                _stencilZPassOp(stencilZPassOp),
-                _scissorTest(scissorTest),
-                _scissorBox(scissorBox),
-                _target(target)
+            inline
+            States&
+            target(const TextureSampler& target)
             {
+                _data->set(PROPERTY_TARGET, target);
+
+                return *this;
             }
         };
-    }
+	}
 }

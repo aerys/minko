@@ -90,7 +90,7 @@ namespace minko
             std::unordered_map<uint, TextureFilter>   _currentTextureFilter;
             std::unordered_map<uint, MipFilter>       _currentMipFilter;
             int                                       _currentProgram;
-            Blending::Mode                            _currentBlendMode;
+			Blending::Mode			                _currentBlendingMode;
             bool                                    _currentColorMask;
             bool                                    _currentDepthMask;
             CompareMode                                _currentDepthFunc;
@@ -184,7 +184,10 @@ namespace minko
             present();
 
             void
-            drawTriangles(const uint indexBuffer, const int numTriangles);
+			drawTriangles(const uint indexBuffer, const uint firstIndex, const int numTriangles);
+
+			void
+			drawTriangles(const uint firstIndex, const int numTriangles);
 
             const uint
             createVertexBuffer(const uint size);
@@ -320,7 +323,7 @@ namespace minko
             void
             deleteFragmentShader(const uint fragmentShader);
 
-            std::shared_ptr<ProgramInputs>
+			ProgramInputs
             getProgramInputs(const uint program);
 
             std::string
@@ -330,62 +333,10 @@ namespace minko
             getProgramInfoLogs(const uint program);
 
             void
-            setUniform(uint location, int);
+            setBlendingMode(Blending::Source source, Blending::Destination destination);
 
             void
-            setUniform(uint location, int, int);
-
-            void
-            setUniform(uint location, int, int, int);
-
-            void
-            setUniform(uint location, int, int, int, int);
-
-            void
-            setUniform(uint location, float);
-
-            void
-            setUniform(uint location, float, float);
-
-            void
-            setUniform(uint location, float, float, float);
-
-            void
-            setUniform(uint location, float, float, float, float);
-
-            void
-            setUniforms(uint location, uint size, const int*);
-
-            void
-            setUniforms2(uint location, uint size, const int*);
-
-            void
-            setUniforms3(uint location, uint size, const int*);
-
-            void
-            setUniforms4(uint location, uint size, const int*);
-
-            void
-            setUniforms(uint location, uint size, const float*);
-
-            void
-            setUniforms2(uint location, uint size, const float*);
-
-            void
-            setUniforms3(uint location, uint size, const float*);
-
-            void
-            setUniforms4(uint location, uint size, const float*);
-
-            virtual
-            void
-            setUniform(const uint& location, const uint& size, bool transpose, const float* values);
-
-            void
-            setBlendMode(Blending::Source source, Blending::Destination destination);
-
-            void
-            setBlendMode(Blending::Mode blendMode);
+            setBlendingMode(Blending::Mode blendingMode);
 
             void
             setDepthTest(bool depthMask, CompareMode depthFunc);
@@ -402,7 +353,7 @@ namespace minko
                            StencilOperation    stencilZPassOp);
 
             void
-            setScissorTest(bool    scissorTest, const render::ScissorBox& scissorBox);
+			setScissorTest(bool	scissorTest, const math::ivec4& scissorBox);
 
             void
             readPixels(unsigned int x, unsigned int y, unsigned int width, unsigned int height, unsigned char* pixels);
@@ -429,18 +380,12 @@ namespace minko
             OpenGLES2Context();
 
             virtual
-            void
-            fillUniformInputs(const uint                program,
-                              std::vector<std::string>&            names,
-                              std::vector<ProgramInputs::Type>&    types,
-                              std::vector<unsigned int>&        locations);
+			std::vector<ProgramInputs::UniformInput>
+			getUniformInputs(const uint program);
 
             virtual
-            void
-            fillAttributeInputs(const uint                    program,
-                                std::vector<std::string>&            names,
-                                std::vector<ProgramInputs::Type>&    types,
-                                std::vector<unsigned int>&            locations);
+            std::vector<ProgramInputs::AttributeInput>
+            getAttributeInputs(const uint program);
 
             static
             ProgramInputs::Type
@@ -494,6 +439,33 @@ namespace minko
 
             TextureType
             getTextureType(uint textureId) const;
+
+            void
+            setUniformFloat(uint location, uint count, const float* v);
+
+            void
+            setUniformFloat2(uint location, uint count, const float* v);
+
+            void
+            setUniformFloat3(uint location, uint count, const float* v);
+
+            void
+            setUniformFloat4(uint location, uint count, const float* v);
+
+            void
+            setUniformMatrix4x4(uint location, uint count, const float* v);
+
+            void
+            setUniformInt(uint location, uint count, const int* v);
+
+            void
+            setUniformInt2(uint location, uint count, const int* v);
+
+            void
+            setUniformInt3(uint location, uint count, const int* v);
+
+            void
+            setUniformInt4(uint location, uint count, const int* v);
         };
     }
 }

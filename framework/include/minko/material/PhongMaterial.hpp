@@ -25,88 +25,208 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-    namespace material
-    {
-        class PhongMaterial:
-            public BasicMaterial
-        {
-        public:
-            typedef std::shared_ptr<PhongMaterial>    Ptr;
+	namespace material
+	{
+		class PhongMaterial:
+			public BasicMaterial
+		{
+		public:
+			typedef std::shared_ptr<PhongMaterial>	Ptr;
 
-        public:
-            inline static
-            Ptr
-            create()
-            {
-                Ptr ptr = std::shared_ptr<PhongMaterial>(new PhongMaterial());
+		public:
+			inline static
+			Ptr
+			create()
+			{
+                auto instance = Ptr(new PhongMaterial());
 
-                ptr->initialize();
+                instance->initialize();
 
-                return ptr;
-            }
+                return instance;
+			}
 
-            Ptr
-            specularColor(Vector4Ptr);
+			inline static
+			Ptr
+			create(Ptr source)
+			{
+				auto pm = create();
 
-            Ptr
-            specularColor(uint);
+				pm->data()->copyFrom(source->data());
 
-            Vector4Ptr
-            specularColor() const;
+				return pm;
+			}
 
-            Ptr
-            shininess(float);
+			Ptr
+			specularColor(const math::vec4&);
 
-            float
-            shininess() const;
+			Ptr
+			specularColor(uint);
 
-            Ptr
-            normalMap(AbsTexturePtr);
+			math::vec4
+			specularColor() const;
 
-            TexturePtr
-            normalMap() const;
+			Ptr
+			shininess(float);
 
-            Ptr
-            specularMap(AbsTexturePtr);
+			float
+			shininess() const;
 
-            TexturePtr
-            specularMap() const;
+			Ptr
+			normalMap(AbsTexturePtr);
 
-            Ptr
-            environmentMap(AbsTexturePtr, render::EnvironmentMap2dType type = render::EnvironmentMap2dType::Unset);
-
-            CubeTexturePtr
-            environmentCubemap() const;
-
-            TexturePtr
-            environmentMap2d() const;
-
-            render::EnvironmentMap2dType
-            environmentMap2dType() const;
+            render::ResourceId
+			normalMap() const;
 
             Ptr
-            environmentAlpha(float);
+            normalMapWrapMode(render::WrapMode);
 
-            float
-            environmentAlpha() const;
-
-            Ptr
-            alphaMap(AbsTexturePtr);
-
-            TexturePtr
-            alphaMap() const;
+            render::WrapMode
+            normalMapWrapMode() const;
 
             Ptr
-            alphaThreshold(float);
+            normalMapTextureFilter(render::TextureFilter);
 
-            float
-            alphaThreshold() const;
+            render::TextureFilter
+            normalMapTextureFilter() const;
 
-        private:
-            PhongMaterial();
+            Ptr
+            normalMapMipFilter(render::MipFilter);
 
+            render::MipFilter
+            normalMapMipFilter() const;
+
+			Ptr
+			specularMap(AbsTexturePtr);
+
+			render::ResourceId
+			specularMap() const;
+
+            Ptr
+            specularMapWrapMode(render::WrapMode);
+
+            render::WrapMode
+            specularMapWrapMode() const;
+
+            Ptr
+            specularMapTextureFilter(render::TextureFilter);
+
+            render::TextureFilter
+            specularMapTextureFilter() const;
+
+            Ptr
+            specularMapMipFilter(render::MipFilter);
+
+            render::MipFilter
+            specularMapMipFilter() const;
+
+			Ptr
+			environmentMap(AbsTexturePtr, render::EnvironmentMap2dType type = render::EnvironmentMap2dType::Unset);
+
+            Ptr
+            environmentMapWrapMode(render::WrapMode);
+
+            render::WrapMode
+            environmentMapWrapMode() const;
+
+            Ptr
+            environmentMapTextureFilter(render::TextureFilter);
+
+            render::TextureFilter
+            environmentMapTextureFilter() const;
+
+            Ptr
+            environmentMapMipFilter(render::MipFilter);
+
+            render::MipFilter
+            environmentMapMipFilter() const;
+
+            render::ResourceId
+			environmentCubemap() const;
+
+            Ptr
+            environmentCubemapWrapMode(render::WrapMode);
+
+            render::WrapMode
+            environmentCubemapWrapMode() const;
+
+            Ptr
+            environmentCubemapTextureFilter(render::TextureFilter);
+
+            render::TextureFilter
+            environmentCubemapTextureFilter() const;
+
+            Ptr
+            environmentCubemapMipFilter(render::MipFilter);
+
+            render::MipFilter
+            environmentCubemapMipFilter() const;
+
+            render::ResourceId
+			environmentMap2d() const;
+
+			render::EnvironmentMap2dType
+			environmentMap2dType() const;
+
+            Ptr
+            environmentMap2dWrapMode(render::WrapMode);
+
+            render::WrapMode
+            environmentMap2dWrapMode() const;
+
+            Ptr
+            environmentMap2dTextureFilter(render::TextureFilter);
+
+            render::TextureFilter
+            environmentMap2dTextureFilter() const;
+
+            Ptr
+            environmentMap2dMipFilter(render::MipFilter);
+
+            render::MipFilter
+            environmentMap2dMipFilter() const;
+
+			Ptr
+			environmentAlpha(float);
+
+			float
+			environmentAlpha() const;
+
+			Ptr
+			alphaMap(AbsTexturePtr);
+
+            render::ResourceId
+			alphaMap() const;
+
+            Ptr
+            alphaMapWrapMode(render::WrapMode);
+
+            render::WrapMode
+            alphaMapWrapMode() const;
+
+            Ptr
+            alphaMapTextureFilter(render::TextureFilter);
+
+            render::TextureFilter
+            alphaMapTextureFilter() const;
+
+            Ptr
+            alphaMapMipFilter(render::MipFilter);
+
+            render::MipFilter
+            alphaMapMipFilter() const;
+
+			Ptr
+			alphaThreshold(float);
+
+			float
+			alphaThreshold() const;
+
+        protected:
             void
             initialize();
-        };
-    }
+
+		private:
+			PhongMaterial();
+		};
+	}
 }

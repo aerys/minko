@@ -28,203 +28,300 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-    namespace render
-    {
-        class Program :
-            public AbstractResource
+	namespace render
+	{
+		class Program :
+			public AbstractResource
+		{
+		public:
+			typedef std::shared_ptr<Program>					Ptr;
+
+		private:
+			typedef std::shared_ptr<render::VertexBuffer>		VertexBufferPtr;
+			typedef std::shared_ptr<render::IndexBuffer>		IndexBufferPtr;
+			typedef std::shared_ptr<render::AbstractTexture>	AbstractTexturePtr;
+			typedef std::shared_ptr<render::Texture>			TexturePtr;
+			typedef std::shared_ptr<render::CubeTexture>		CubeTexturePtr;
+			typedef std::shared_ptr<render::AbstractContext>	AbsContextPtr;
+
+		private:
+			const std::string		_name;
+			std::shared_ptr<Shader> _vertexShader;
+			std::shared_ptr<Shader>	_fragmentShader;
+			ProgramInputs   		_inputs;
+
+			std::set<std::string>	_setUniforms;
+            std::set<std::string>   _setTextures;
+            std::set<std::string>   _setAttributes;
+			std::set<std::string>	_definedMacros;
+
+		public:
+			inline static
+			Ptr
+			create(const std::string& name, AbsContextPtr context)
+			{
+				return std::shared_ptr<Program>(new Program(name, context));
+			}
+
+			inline static
+			Ptr
+			create(Ptr program, bool deepCopy = false)
+			{
+				auto p = create(program->_name, program->_context);
+
+				p->_vertexShader	= deepCopy ? Shader::create(program->_vertexShader) : program->_vertexShader;
+				p->_fragmentShader	= deepCopy ? Shader::create(program->_fragmentShader) : program->_fragmentShader;
+				p->_inputs			= program->_inputs;
+                p->_setTextures     = program->_setTextures;
+                p->_setAttributes   = program->_setAttributes;
+
+				return p;
+			}
+
+			inline static
+			Ptr
+			create(const std::string		name,
+				   AbsContextPtr		    context,
+				   std::shared_ptr<Shader>	vertexShader,
+				   std::shared_ptr<Shader>	fragmentShader)
+			{
+				auto p = create(name, context);
+
+				p->_vertexShader  = vertexShader;
+				p->_fragmentShader = fragmentShader;
+
+				return p;
+			}
+
+			inline
+			const std::string&
+			name()
+			{
+				return _name;
+			}
+
+			inline
+			std::shared_ptr<Shader>
+			vertexShader() const
+			{
+				return _vertexShader;
+			}
+
+			inline
+			std::shared_ptr<Shader>
+			fragmentShader() const
+			{
+				return _fragmentShader;
+			}
+
+            inline
+            const std::set<std::string>&
+            setTextureNames() const
+            {
+                return _setTextures;
+            }
+
+            inline
+            const std::set<std::string>&
+            setAttributeNames() const
+            {
+                return _setAttributes;
+            }
+
+			inline
+			const std::set<std::string>&
+			setUniformNames() const
+			{
+				return _setUniforms;
+			}
+
+			inline
+			const std::set<std::string>&
+			definedMacroNames() const
+			{
+				return _definedMacros;
+			}
+
+			inline
+			const ProgramInputs&
+			inputs() const
+			{
+				return _inputs;
+			}
+
+			void
+			upload();
+
+			void
+			dispose();
+
+			template <typename T, int size>
+			Program&
+			setUniform(const std::string& name, uint count, T* v)
+			{
+                auto it = std::find_if(_inputs.uniforms().begin(), _inputs.uniforms().end(), [&](const ProgramInputs::UniformInput& u)
+                {
+                    return u.name == name;
+                });
+
+                if (it != _inputs.uniforms().end())
+                {
+                    auto oldProgram = _context->currentProgram();
+
+                    _context->setProgram(_id);
+                    setUniformOnContext<T, size>(it->location, count, v);
+                    _context->setProgram(oldProgram);
+
+					_setUniforms.insert(name);
+                }
+
+                return *this;
+			}
+
+            template <typename T>
+            Program&
+            setUniform(const std::string& name, T v)
+            {
+                return setUniform<T, 1>(name, 1, &v);
+            }
+
+            template <typename T, int P>
+            Program&
+            setUniform(const std::string& name, math::detail::tvec2<T, P> value)
+            {
+                return setUniform<T, 2>(name, 1, math::value_ptr(value));
+            }
+
+            template <typename T, int P>
+            Program&
+            setUniform(const std::string& name, math::detail::tvec3<T, P> value)
+            {
+                return setUniform<T, 3>(name, 1, math::value_ptr(value));
+            }
+
+            template <typename T, int P>
+            Program&
+            setUniform(const std::string& name, math::detail::tvec4<T, P> value)
+            {
+                return setUniform<T, 4>(name, 1, math::value_ptr(value));
+            }
+
+            Program&
+			setUniform(const std::string&, AbstractTexturePtr);
+
+            Program&
+			setUniform(const std::string&, TexturePtr);
+
+            Program&
+			setUniform(const std::string&, CubeTexturePtr);
+
+            Program&
+            define(const std::string& macroName)
+            {
+                _vertexShader->define(macroName);
+                _fragmentShader->define(macroName);
+				_definedMacros.insert(macroName);
+
+                return *this;
+            }
+
+            template <typename T>
+            Program&
+            define(const std::string& macroName, T value)
+            {
+                _vertexShader->define(macroName, value);
+                _fragmentShader->define(macroName, value);
+				_definedMacros.insert(macroName);
+
+                return *this;
+            }
+
+            inline
+            Program&
+            setAttribute(const std::string& name, const VertexAttribute& attribute)
+            {
+                return setAttribute(name, attribute, name);
+            }
+
+            Program&
+            setAttribute(const std::string& name, const VertexAttribute& attribute, const std::string& attributeName);
+
+            ~Program()
+            {
+                dispose();
+            }
+
+		private:
+			Program(const std::string& name, AbsContextPtr context);
+
+            template <typename T, size_t size>
+            void
+            setUniformOnContext(uint location, uint count, T* v)
+            {}
+		};
+
+        template <>
+        inline
+        void
+        Program::setUniformOnContext<float, 1>(uint location, uint count, float* v)
         {
-        public:
-            typedef std::shared_ptr<Program>                    Ptr;
+            _context->setUniformFloat(location, count, v);
+        }
 
-        private:
-            typedef std::shared_ptr<render::VertexBuffer>       VertexBufferPtr;
-            typedef std::shared_ptr<render::IndexBuffer>        IndexBufferPtr;
-            typedef std::shared_ptr<render::AbstractTexture>    AbstractTexturePtr;
-            typedef std::shared_ptr<render::Texture>            TexturePtr;
-            typedef std::shared_ptr<render::CubeTexture>        CubeTexturePtr;
-            typedef std::shared_ptr<render::AbstractContext>    AbstractContextPtr;
-            typedef std::shared_ptr<render::ProgramInputs>      ProgramInputsPtr;
-            typedef std::shared_ptr<math::Vector2>              Vector2Ptr;
-            typedef std::shared_ptr<math::Vector3>              Vector3Ptr;
-            typedef std::shared_ptr<math::Vector4>              Vector4Ptr;
+        template <>
+        inline
+        void
+        Program::setUniformOnContext<float, 2>(uint location, uint count, float* v)
+        {
+            _context->setUniformFloat2(location, count, v);
+        }
 
-        private:
-            std::shared_ptr<Shader>                             _vertexShader;
-            std::shared_ptr<Shader>                             _fragmentShader;
-            ProgramInputsPtr                                    _inputs;
+        template <>
+        inline
+        void
+        Program::setUniformOnContext<float, 3>(uint location, uint count, float* v)
+        {
+            _context->setUniformFloat3(location, count, v);
+        }
 
-            std::unordered_map<int, float>                      _uniformFloat;
-            std::unordered_map<int, Vector2Ptr>                 _uniformFloat2;
-            std::unordered_map<int, Vector3Ptr>                 _uniformFloat3;
-            std::unordered_map<int, Vector4Ptr>                 _uniformFloat4;
-            std::unordered_map<int, AbstractTexturePtr>         _textures;
-            std::unordered_map<int, VertexBufferPtr>            _vertexBuffers;
-            IndexBufferPtr                                      _indexBuffer;
+        template <>
+        inline
+        void
+        Program::setUniformOnContext<float, 4>(uint location, uint count, float* v)
+        {
+            _context->setUniformFloat4(location, count, v);
+        }
 
-        public:
-            inline static
-            Ptr
-            create(AbstractContextPtr context)
-            {
-                return std::shared_ptr<Program>(new Program(context));
-            }
+        template <>
+        inline
+        void
+        Program::setUniformOnContext<int, 1>(uint location, uint count, int* v)
+        {
+            _context->setUniformInt(location, count, v);
+        }
 
-            inline static
-            Ptr
-            create(Ptr program, bool deepCopy = false)
-            {
-                auto p = create(program->_context);
+        template <>
+        inline
+        void
+        Program::setUniformOnContext<int, 2>(uint location, uint count, int* v)
+        {
+            _context->setUniformInt2(location, count, v);
+        }
 
-                p->_vertexShader    = deepCopy ? Shader::create(program->_vertexShader) : program->_vertexShader;
-                p->_fragmentShader  = deepCopy ? Shader::create(program->_fragmentShader) : program->_fragmentShader;
-                p->_inputs          = program->inputs();
-                p->_textures        = program->_textures;
-                p->_vertexBuffers   = program->_vertexBuffers;
-                p->_indexBuffer     = program->_indexBuffer;
+        template <>
+        inline
+        void
+        Program::setUniformOnContext<int, 3>(uint location, uint count, int* v)
+        {
+            _context->setUniformInt3(location, count, v);
+        }
 
-                return p;
-            }
-
-            inline static
-            Ptr
-            create(AbstractContextPtr         context,
-                   std::shared_ptr<Shader>    vertexShader,
-                   std::shared_ptr<Shader>    fragmentShader)
-            {
-                auto p = create(context);
-
-                p->_vertexShader = vertexShader;
-                p->_fragmentShader = fragmentShader;
-
-                return p;
-            }
-
-            inline
-            std::shared_ptr<Shader>
-            vertexShader() const
-            {
-                return _vertexShader;
-            }
-
-            inline
-            std::shared_ptr<Shader>
-            fragmentShader() const
-            {
-                return _fragmentShader;
-            }
-
-            inline
-            ProgramInputsPtr
-            inputs() const
-            {
-                return _inputs;
-            }
-
-            inline
-            const std::unordered_map<int, float>&
-            uniformFloat() const
-            {
-                return _uniformFloat;
-            }
-
-            inline
-            const std::unordered_map<int, Vector2Ptr>&
-            uniformFloat2() const
-            {
-                return _uniformFloat2;
-            }
-
-            inline
-            const std::unordered_map<int, Vector3Ptr>&
-            uniformFloat3() const
-            {
-                return _uniformFloat3;
-            }
-
-            inline
-            const std::unordered_map<int, Vector4Ptr>&
-            uniformFloat4() const
-            {
-                return _uniformFloat4;
-            }
-
-            inline
-            const std::unordered_map<int, AbstractTexturePtr>&
-            textures() const
-            {
-                return _textures;
-            }
-
-            inline
-            const std::unordered_map<int, VertexBufferPtr>&
-            vertexBuffers() const
-            {
-                return _vertexBuffers;
-            }
-
-            inline
-            bool
-            hasVertexBufferLocation(uint vertexLocation) const
-            {
-                return _vertexBuffers.find(vertexLocation) != _vertexBuffers.end();
-            }
-
-            inline
-            IndexBufferPtr
-            indexBuffer() const
-            {
-                return _indexBuffer;
-            }
-
-            void
-            upload();
-
-            void
-            dispose();
-
-            template <typename... T>
-            void
-            setUniform(const std::string& name, const T&... values)
-            {
-                if (!_inputs->hasName(name))
-                    return;
-
-                auto oldProgram = _context->currentProgram();
-
-                _context->setProgram(_id);
-                _context->setUniform(_inputs->location(name), values...);
-                _context->setProgram(oldProgram);
-            }
-
-            void
-            setUniform(const std::string&, float);
-
-            void
-            setUniform(const std::string&, float, float);
-
-            void
-            setUniform(const std::string&, float, float, float);
-
-            void
-            setUniform(const std::string&, float, float, float, float);
-
-            void
-            setUniform(const std::string&, AbstractTexturePtr);
-
-            void
-            setUniform(const std::string&, TexturePtr);
-
-            void
-            setUniform(const std::string&, CubeTexturePtr);
-
-            void
-            setVertexAttribute(const std::string& name, unsigned int attributeSize, const std::vector<float>& data);
-
-            void
-            setIndexBuffer(const std::vector<unsigned short>&);
-
-        private:
-            Program(AbstractContextPtr context);
-        };
-    }
+        template <>
+        inline
+        void
+        Program::setUniformOnContext<int, 4>(uint location, uint count, int* v)
+        {
+            _context->setUniformInt4(location, count, v);
+        }
+	}
 }

@@ -26,6 +26,7 @@ if "%GIT%"=="" (
 rem Make sure Git is in our temporary PATH.
 set PATH=%GIT%bin;%PATH%
 
-chdir ..\..\..
+pushd ..\..\..
 tool\win\bin\premake5.exe clean
+popd
 pause

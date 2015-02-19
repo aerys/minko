@@ -50,7 +50,8 @@ namespace android
 				_pageX(0),
 				_pageY(0),
 				_screenX(0),
-				_screenY(0)
+				_screenY(0),
+				_button(0)
 			{
 			}
 
@@ -61,7 +62,8 @@ namespace android
 				_pageX(event->pageX()),
 				_pageY(event->pageY()),
 				_screenX(event->screenX()),
-				_screenY(event->screenY())
+				_screenY(event->screenY()),
+				_button(event->button())
 			{
 			}
 
@@ -101,6 +103,9 @@ namespace android
 			int
 			screenY();
 
+			int
+			button();
+
 			void
 			clientX(int);
 
@@ -119,6 +124,9 @@ namespace android
 			void
 			screenY(int);
 
+			void
+			button(int);
+
 		private:
 			int _clientX;
 			int _clientY;
@@ -126,6 +134,7 @@ namespace android
 			int _pageY;
 			int _screenX;
 			int _screenY;
+			int _button;
 		};
 	}
 }

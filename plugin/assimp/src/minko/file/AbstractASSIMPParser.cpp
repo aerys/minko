@@ -58,7 +58,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::component;
-using namespace minko::math;
 using namespace minko::file;
 using namespace minko::scene;
 using namespace minko::geometry;
@@ -109,6 +108,7 @@ AbstractASSIMPParser::AbstractASSIMPParser() :
     _nameToNode(),
     _nameToAnimMatrices(),
     _alreadyAnimatedNodes(),
+    _meshNames(),
     _loaderCompleteSlots(),
     _loaderErrorSlots(),
     _importer(nullptr)
@@ -135,7 +135,7 @@ AbstractASSIMPParser::parse(const std::string&                    filename,
 
     int pos = resolvedFilename.find_last_of("\\/");
 
-    options = file::Options::create(options);
+    options = options->clone();
 
     if (pos > 0)
     {
@@ -147,7 +147,7 @@ AbstractASSIMPParser::parse(const std::string&                    filename,
     _options        = options;
 
     //fixme : find a way to handle loading dependencies asynchronously
-    auto ioHandlerOptions = Options::create(options);
+    auto ioHandlerOptions = options->clone();
     ioHandlerOptions->loadAsynchronously(false);
 
     auto ioHandler = new IOHandler(ioHandlerOptions, _assetLibrary);
@@ -408,6 +408,14 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
 }
 
 std::string
+AbstractASSIMPParser::getMaterialName(const std::string& materialName)
+{
+    static int currentId = 0;
+
+    return materialName.empty() ? std::string("default" + std::to_string(currentId++)) : materialName;
+}
+
+std::string
 AbstractASSIMPParser::getMeshName(const std::string& meshName)
 {
     static int currentId = 0;
@@ -424,8 +432,20 @@ AbstractASSIMPParser::createMeshSurface(scene::Node::Ptr     minkoNode,
         return;
 
     const auto    meshName    = getMeshName(std::string(mesh->mName.data));
+    
+    std::string realMeshName = meshName;
+
+    int id = 0;
+
+    while (_meshNames.find(realMeshName) != _meshNames.end())
+    {
+        realMeshName = meshName + "_" + std::to_string(id++);
+    }
+
+    _meshNames.insert(realMeshName);
+
     const auto    aiMat        = scene->mMaterials[mesh->mMaterialIndex];
-    auto        geometry    = createMeshGeometry(minkoNode, mesh, meshName);
+    auto        geometry = createMeshGeometry(minkoNode, mesh, realMeshName);
     auto        material    = createMaterial(aiMat);
     auto        effect        = chooseEffectByShadingMode(aiMat);
 
@@ -433,7 +453,7 @@ AbstractASSIMPParser::createMeshSurface(scene::Node::Ptr     minkoNode,
     {
         minkoNode->addComponent(
             Surface::create(
-                meshName,
+                realMeshName,
                 geometry,
                 material,
                 effect,
@@ -456,9 +476,9 @@ AbstractASSIMPParser::createCameras(const aiScene* scene)
         const auto    aiPosition    = aiCamera->mPosition;
         const auto    aiLookAt    = aiCamera->mLookAt;
         const auto    aiUp        = aiCamera->mUp;
-        auto        position    = Vector3::create(aiPosition.x, aiPosition.y, aiPosition.z)->normalize();
-        auto        target        = Vector3::create(aiPosition.x + aiLookAt.x, aiPosition.y + aiLookAt.y, aiPosition.z + aiLookAt.z)->normalize();
-        auto        up            = Vector3::create(aiUp.x, aiUp.y, aiUp.z)->normalize();
+		auto		position	= math::normalize(math::vec3(aiPosition.x, aiPosition.y, aiPosition.z));
+		auto		target		= math::normalize(math::vec3(aiPosition.x + aiLookAt.x, aiPosition.y + aiLookAt.y, aiPosition.z + aiLookAt.z));
+		auto		up			= math::normalize(math::vec3(aiUp.x, aiUp.y, aiUp.z));
 
         const auto    cameraName    = std::string(aiCamera->mName.data);
         auto        cameraNode = scene::Node::create(cameraName + "_camera_" + std::to_string(i))
@@ -469,7 +489,7 @@ AbstractASSIMPParser::createCameras(const aiScene* scene)
                 aiCamera->mClipPlaneFar
             ))
             ->addComponent(Transform::create(
-                Matrix4x4::create()->lookAt(target, position, up)
+                math::inverse(math::lookAt(position, target, up))
             ));
 
         scene::Node::Ptr parentNode = !cameraName.empty()
@@ -519,28 +539,20 @@ AbstractASSIMPParser::createLights(const aiScene* scene)
 
         if (aiDirection.Length() > 0.0f)
         {
-            auto    direction    = Vector3::create(aiDirection.x, aiDirection.y, aiDirection.z);
-            auto    position    = Vector3::create(aiPosition.x, aiPosition.y, aiPosition.z);
+			auto	direction	= math::vec3(aiDirection.x, aiDirection.y, aiDirection.z);
+			auto	position	= math::vec3(aiPosition.x, aiPosition.y, aiPosition.z);
 
             auto    transform    = lightNode->component<Transform>();
             if (transform)
             {
-                direction    = transform->matrix()->deltaTransform(direction);
-                position    = transform->matrix()->transform(position);
+				direction	= math::mat3(transform->matrix()) * direction;
+				position	= math::vec3(math::mat4(transform->matrix()) * math::vec4(position, 1.f));
             }
             else
                 lightNode->addComponent(Transform::create());
 
-            auto    lookAt        = Vector3::create(position)->add(direction)->normalize();
-            auto    matrix        = lightNode->component<Transform>()->matrix();
-            try
-            {
-                matrix->lookAt(lookAt, position, Vector3::yAxis());
-            }
-            catch(std::exception e)
-            {
-                matrix->lookAt(lookAt, position, Vector3::xAxis());
-            }
+			auto lookAt		= math::normalize(position + direction);
+            auto matrix     = math::lookAt(position, lookAt, math::vec3(0.f, 1.f, 0.f));
         }
 
         const float            diffuse            = 1.0f;
@@ -552,7 +564,7 @@ AbstractASSIMPParser::createLights(const aiScene* scene)
                     DirectionalLight::create(
                         diffuse,
                         specular
-                    )->color(Vector3::create(aiDiffuseColor.r, aiDiffuseColor.g, aiDiffuseColor.b))
+					)->color(math::vec3(aiDiffuseColor.r, aiDiffuseColor.g, aiDiffuseColor.b))
                 );
                 break;
 
@@ -564,7 +576,7 @@ AbstractASSIMPParser::createLights(const aiScene* scene)
                         aiLight->mAttenuationConstant,
                         aiLight->mAttenuationLinear,
                         aiLight->mAttenuationQuadratic
-                    )->color(Vector3::create(aiDiffuseColor.r, aiDiffuseColor.g, aiDiffuseColor.b))
+					)->color(math::vec3(aiDiffuseColor.r, aiDiffuseColor.g, aiDiffuseColor.b))
                 );
                 break;
 
@@ -578,7 +590,7 @@ AbstractASSIMPParser::createLights(const aiScene* scene)
                         aiLight->mAttenuationConstant,
                         aiLight->mAttenuationLinear,
                         aiLight->mAttenuationQuadratic
-                    )->color(Vector3::create(aiDiffuseColor.r, aiDiffuseColor.g, aiDiffuseColor.b))
+					)->color(math::vec3(aiDiffuseColor.r, aiDiffuseColor.g, aiDiffuseColor.b))
                 );
                 break;
 
@@ -779,20 +791,20 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
 
         return;
     }
+
     const uint    duration        = uint(floorf(1e+3f * numFrames / (float)_options->skinningFramerate())); // in milliseconds
     auto    skin                = Skin::create(numBones, duration, numFrames);
     auto    skeletonRoot        = getSkeletonRoot(aimesh); //findNode("ALL");
     auto    boneTransforms        = std::vector<std::vector<float>>(numBones, std::vector<float>(numFrames * 16, 0.0f));
-    auto    modelToRootMatrices    = std::vector<Matrix4x4::Ptr>(numFrames);
+	auto modelToRootMatrices	= std::vector<math::mat4>(numFrames);
 
 	std::vector<scene::Node::Ptr> boneNodes;
 
     for (auto& m : modelToRootMatrices)
-        m = Matrix4x4::create();
+		m = math::mat4();
 
     for (uint boneId = 0; boneId < numBones; ++boneId)
     {
-		
         const auto bone = createBone(aimesh->mBones[boneId]);
 		const auto boneName = std::string(aimesh->mBones[boneId]->mName.data);
 		auto node = _nameToNode.find(boneName)->second;
@@ -807,7 +819,7 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
 
         for (uint frameId = 0; frameId < numFrames; ++frameId)
         {
-            modelToRootMatrices[frameId]->prepend(boneOffsetMatrix);  // from bind space to root space
+            modelToRootMatrices[frameId] = modelToRootMatrices[frameId] * boneOffsetMatrix;
             skin->matrix(frameId, boneId, modelToRootMatrices[frameId]);
         }
     }
@@ -836,9 +848,9 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
     slaveAnimations.reserve(slaves.size());
     for (auto& n : slaves)
     {
-        auto matrices = std::vector<Matrix4x4::Ptr>(numFrames);
+		auto matrices = std::vector<math::mat4>(numFrames);
         for (auto& m : matrices)
-            m = Matrix4x4::create();
+			m = math::mat4();
 
         precomputeModelToRootMatrices(n, skeletonRoot, matrices);
 
@@ -858,12 +870,14 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
     }
 
     // add skinning component to mesh
-    meshNode->addComponent(Skinning::create(
-		skin->reorganizeByVertices()->transposeMatrices(),
+    auto skinning = Skinning::create(
+        skin->reorganizeByVertices(),
         _options->skinningMethod(),
         _assetLibrary->context(),
         skeletonRoot
-    ));
+    );
+
+	meshNode->addComponent(skinning);
 
 	meshNode->addComponent(MasterAnimation::create());
 
@@ -964,11 +978,11 @@ AbstractASSIMPParser::getBoneCommonAncestor(const aiMesh* aimesh) const
 void
 AbstractASSIMPParser::precomputeModelToRootMatrices(Node::Ptr                        node,
                                             Node::Ptr                        root,
-                                            std::vector<Matrix4x4::Ptr>&    modelToRootMatrices) const
+											std::vector<math::mat4>&	modelToRootMatrices) const
 {
     assert(node && !modelToRootMatrices.empty());
 
-    typedef std::tuple<Node::Ptr, const std::vector<Matrix4x4::Ptr>*, Matrix4x4::Ptr> NodeTransformInfo;
+	typedef std::tuple<Node::Ptr, const std::vector<math::mat4>*, const math::mat4*> NodeTransformInfo;
 
     // precompute the sequence of local-to-parent transformations from node to root
     std::list<NodeTransformInfo> transformsUpToRoot;
@@ -990,7 +1004,7 @@ AbstractASSIMPParser::precomputeModelToRootMatrices(Node::Ptr                   
         if (foundAnimMatricesIt != _nameToAnimMatrices.end())
             std::get<1>(transformsUpToRoot.back()) = &(foundAnimMatricesIt->second);
         else if (currentNode->hasComponent<Transform>())
-            std::get<2>(transformsUpToRoot.back()) = currentNode->component<Transform>()->matrix();
+			std::get<2>(transformsUpToRoot.back()) = &currentNode->component<Transform>()->matrix();
 
         currentNode = currentNode->parent();
     }
@@ -1001,19 +1015,19 @@ AbstractASSIMPParser::precomputeModelToRootMatrices(Node::Ptr                   
 
     for (uint frameId = 0; frameId < numFrames; ++frameId)
     {
-        auto modelToRoot = modelToRootMatrices[frameId]; // warning: not a copy
-        assert(modelToRoot);
+		auto& modelToRoot = modelToRootMatrices[frameId]; // warning: not a copy
 
-        modelToRoot->identity();
+        modelToRoot = math::mat4();
+
         for (auto& trfInfo : transformsUpToRoot)
         {
             const auto animMatrices    = std::get<1>(trfInfo);
             const auto matrix        = std::get<2>(trfInfo);
 
             if (animMatrices)
-                modelToRoot->append((*animMatrices)[std::min (int(frameId), int(animMatrices->size() - 1))]);
+                modelToRoot = (*animMatrices)[std::min(int(frameId), int(animMatrices->size() - 1))] * modelToRoot;
             else if (matrix)
-                modelToRoot->append(matrix);
+				modelToRoot = *matrix * modelToRoot;
         }
     }
 }
@@ -1036,7 +1050,7 @@ AbstractASSIMPParser::createBone(const aiBone* aibone) const
         boneVertexWeights[i]    = aibone->mWeights[i].mWeight;
     }
 
-	return Bone::create(offsetMatrix, boneVertexIds, boneVertexWeights);
+	return Bone::create(_nameToNode.at(boneName), offsetMatrix, boneVertexIds, boneVertexWeights);
 }
 
 void
@@ -1075,7 +1089,7 @@ AbstractASSIMPParser::sampleAnimation(const aiAnimation* animation)
 
         if (!nodeName.empty())
         {
-            _nameToAnimMatrices[nodeName] = std::vector<Matrix4x4::Ptr>();
+			_nameToAnimMatrices[nodeName] = std::vector<math::mat4>();
             sample(nodeAnimation, sampleTimes, _nameToAnimMatrices[nodeName]);
         }
     }
@@ -1085,14 +1099,14 @@ AbstractASSIMPParser::sampleAnimation(const aiAnimation* animation)
 void
 AbstractASSIMPParser::sample(const aiNodeAnim*                nodeAnimation,
                      const std::vector<float>&        times,
-                     std::vector<Matrix4x4::Ptr>&    matrices)
+					         std::vector<math::mat4>&	    matrices)
 {
     assert(nodeAnimation);
 
-    static auto position        = Vector3::create();
-    static auto scaling            = Vector3::create();
-    static auto rotation        = Quaternion::create();
-    static auto rotationMatrix    = Matrix4x4::create();
+	static auto position		= math::vec3();
+	static auto scaling			= math::vec3();
+	static auto rotation		= math::quat();
+	static auto rotationMatrix	= math::mat4();
 
 #ifdef DEBUG
     //std::cout << "\nsample animation of mesh('" << nodeAnimation->mNodeName.C_Str() << "')" << std::endl;
@@ -1114,29 +1128,26 @@ AbstractASSIMPParser::sample(const aiNodeAnim*                nodeAnimation,
         const float time = times[frameId];
 
         // sample position from keys
-        sample(nodeAnimation->mPositionKeys, positionKeyTimeFactors, time, position);
+		position = sample(nodeAnimation->mPositionKeys, positionKeyTimeFactors, time);
 
         // sample rotation from keys
-        sample(nodeAnimation->mRotationKeys, rotationKeyTimeFactors, time, rotation);
-        rotation->normalize();
+		rotation = sample(nodeAnimation->mRotationKeys, rotationKeyTimeFactors, time);
+        rotation = math::normalize(rotation);
 
-        if (rotation->length() == 0.)
-            rotationMatrix->identity();
+		if (math::length(rotation) == 0.f)
+            rotationMatrix = math::mat4();
         else
-            rotation->toMatrix(rotationMatrix);
-
-        const std::vector<float>&    rotation    = rotationMatrix->data();
+            rotationMatrix = math::mat4_cast(rotation);
 
         // sample scaling from keys
-        sample(nodeAnimation->mScalingKeys, scalingKeyTimeFactors, time, scaling);
+		scaling = sample(nodeAnimation->mScalingKeys, scalingKeyTimeFactors, time);
 
         // recompose the interpolated matrix at the specified frame
-        matrices[frameId] = Matrix4x4::create()
-            ->initialize(
-                scaling->x() * rotation[0], scaling->y() * rotation[1], scaling->z() * rotation[2],  position->x(),
-                scaling->x() * rotation[4], scaling->y() * rotation[5], scaling->z() * rotation[6],  position->y(),
-                scaling->x() * rotation[8], scaling->y() * rotation[9], scaling->z() * rotation[10], position->z(),
-                0.0, 0.0, 0.0, 1.0f
+        matrices[frameId] = math::mat4(
+            scaling.x * rotationMatrix[0][0], scaling.y * rotationMatrix[0][1], scaling.z * rotationMatrix[0][2], 0.0,
+            scaling.x * rotationMatrix[1][0], scaling.y * rotationMatrix[1][1], scaling.z * rotationMatrix[1][2], 0.0,
+            scaling.x * rotationMatrix[2][0], scaling.y * rotationMatrix[2][1], scaling.z * rotationMatrix[2][2], 0.0,
+            position.x, position.y, position.z , 1.0f
             );
 
 #ifdef DEBUG
@@ -1146,28 +1157,25 @@ AbstractASSIMPParser::sample(const aiNodeAnim*                nodeAnimation,
 }
 
 /*static*/
-Vector3::Ptr
+math::vec3
 AbstractASSIMPParser::sample(const aiVectorKey*            keys,
                      const std::vector<float>&    keyTimeFactors,
-                     float                        time,
-                     Vector3::Ptr                output)
+					         float						time)
 {
-    if (output == nullptr)
-        output = Vector3::create(0.0f, 0.0f, 0.0f);
-
+    auto output = math::vec3();
     const unsigned int    numKeys    = keyTimeFactors.size();
     const unsigned int    id        = getIndexForTime(numKeys, keys, time);
     const aiVector3D&    value0    = keys[id].mValue;
 
     if (id == numKeys - 1)
-        output->setTo(value0.x, value0.y, value0.z);
+		output = math::vec3(value0.x, value0.y, value0.z);
     else
     {
         const float            w1        = (time - (float)keys[id].mTime) * keyTimeFactors[id];
         const float            w0        = 1.0f - w1;
         const aiVector3D&    value1    = keys[id+1].mValue;
 
-        output->setTo(
+		output = math::vec3(
             w0 * value0.x + w1 * value1.x,
             w0 * value0.y + w1 * value1.y,
             w0 * value0.z + w1 * value1.z
@@ -1178,21 +1186,18 @@ AbstractASSIMPParser::sample(const aiVectorKey*            keys,
 }
 
 /*static*/
-Quaternion::Ptr
+math::quat
 AbstractASSIMPParser::sample(const aiQuatKey*            keys,
                      const std::vector<float>&    keyTimeFactors,
-                     float                        time,
-                     Quaternion::Ptr            output)
+					         float						time)
 {
-    if (output == nullptr)
-        output = Quaternion::create();
-
+    auto output = math::quat();
     const unsigned int    numKeys    = keyTimeFactors.size();
     const unsigned int    id        = getIndexForTime(numKeys, keys, time);
     const aiQuaternion&    value0    = keys[id].mValue;
 
     if (id == numKeys - 1)
-        output->setTo(value0.x, value0.y, value0.z, value0.w);
+		output = math::quat(value0.w, value0.x, value0.y, value0.z);
     else
     {
         const float            w1        = (time - (float)keys[id].mTime) * keyTimeFactors[id];
@@ -1202,7 +1207,7 @@ AbstractASSIMPParser::sample(const aiQuatKey*            keys,
         aiQuaternion interp;
         aiQuaternion::Interpolate(interp, value0, value1, w1);
 
-        output = convert(interp, output);
+		output = convert(interp);
     }
 
     return output;
@@ -1251,51 +1256,46 @@ AbstractASSIMPParser::getIndexForTime(unsigned int    numKeys,
 }
 
 /*static*/
-Quaternion::Ptr
-AbstractASSIMPParser::convert(const aiQuaternion& quaternion, Quaternion::Ptr output)
+math::quat
+AbstractASSIMPParser::convert(const aiQuaternion& quaternion)
 {
-    if (output == nullptr)
-        output = Quaternion::create();
-
-    return output->setTo(quaternion.x, quaternion.y, quaternion.z, quaternion.w);
+	return math::quat(quaternion.w, quaternion.x, quaternion.y, quaternion.z);
 }
 
 /*static*/
-Matrix4x4::Ptr
-AbstractASSIMPParser::convert(const aiMatrix4x4& matrix, Matrix4x4::Ptr output)
+math::mat4
+AbstractASSIMPParser::convert(const aiMatrix4x4& matrix)
 {
-    if (output == nullptr)
-        output = Matrix4x4::create();
+    // Assimp aiMatrix4x4 are row-major meanwhile
+    // glm mat4 are column-major (so are OpenGL matrices)
 
-    return output->initialize(
-        matrix.a1, matrix.a2, matrix.a3, matrix.a4,
-        matrix.b1, matrix.b2, matrix.b3, matrix.b4,
-        matrix.c1, matrix.c2, matrix.c3, matrix.c4,
-        matrix.d1, matrix.d2, matrix.d3, matrix.d4
+    return math::mat4(
+        matrix.a1, matrix.b1, matrix.c1, matrix.d1,
+        matrix.a2, matrix.b2, matrix.c2, matrix.d2,
+        matrix.a3, matrix.b3, matrix.c3, matrix.d3,
+        matrix.a4, matrix.b4, matrix.c4, matrix.d4
     );
 }
 
 /*static*/
-Matrix4x4::Ptr
+math::mat4
 AbstractASSIMPParser::convert(const aiVector3D&        scaling,
                       const aiQuaternion&    quaternion,
-                      const aiVector3D&        translation,
-                      Matrix4x4Ptr            output)
+					          const aiVector3D&		translation)
 {
-    if (output == nullptr)
-        output = Matrix4x4::create();
+    auto output = math::mat4();
 
-    static auto rotation        = Quaternion::create();
-    static auto rotationMatrix    = Matrix4x4::create();
+	static auto rotation		= math::quat();
+	static auto rotationMatrix	= math::mat4();
 
-    convert(quaternion, rotation)->toMatrix(rotationMatrix);
-    const auto& rotationData    = rotationMatrix->data();
+    rotationMatrix              = math::mat4_cast(convert(quaternion));
+	const auto& rotationData	= rotationMatrix;
 
-    return output->initialize(
-        scaling.x * rotationData[0], scaling.y * rotationData[1], scaling.z * rotationData[2],  translation.x,
-        scaling.x * rotationData[4], scaling.y * rotationData[5], scaling.z * rotationData[6],  translation.y,
-        scaling.x * rotationData[8], scaling.y * rotationData[9], scaling.z * rotationData[10], translation.z,
-        0.0, 0.0, 0.0, 1.0f
+    return math::mat4(
+		scaling.x * rotationData[0][0], scaling.y * rotationData[0][1], scaling.z * rotationData[0][2],  translation.x,
+		scaling.x * rotationData[1][0], scaling.y * rotationData[1][1], scaling.z * rotationData[1][2],  translation.y,
+		scaling.x * rotationData[2][0], scaling.y * rotationData[2][1], scaling.z * rotationData[2][2], translation.z,
+		0.f, 0.f, 0.f, 1.f
     );
 }
 
@@ -1310,19 +1310,21 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
     auto materialName = std::string();
 
     aiString rawMaterialName;
-    if (aiMat->Get(AI_MATKEY_NAME, rawMaterialName) != AI_SUCCESS)
-        return material;
-
+    if (aiMat->Get(AI_MATKEY_NAME, rawMaterialName) == AI_SUCCESS)
+    {
     materialName = rawMaterialName.data;
+    }
+
+    materialName = getMaterialName(materialName);
 
     auto existingMaterial = _assetLibrary->material(materialName);
 
     if (existingMaterial != nullptr)
         return existingMaterial;
 
-    material->set("blendMode",            getBlendingMode(aiMat));
-    material->set("triangleCulling",    getTriangleCulling(aiMat));
-    material->set("wireframe",            getWireframe(aiMat)); // bool
+	material->data()->set("blendMode",			getBlendingMode(aiMat));
+	material->data()->set("triangleCulling",	getTriangleCulling(aiMat));
+	material->data()->set("wireframe",			getWireframe(aiMat)); // bool
 
     float opacity        = setScalarProperty(material, "opacity",            aiMat, AI_MATKEY_OPACITY,                1.0f);
     float shininess        = setScalarProperty(material, "shininess",            aiMat, AI_MATKEY_SHININESS,                0.0f);
@@ -1331,33 +1333,33 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
     float refractiveIdx    = setScalarProperty(material, "refractiveIndex",    aiMat, AI_MATKEY_REFRACTI,                1.0f);
     float bumpScaling    = setScalarProperty(material, "bumpScaling",        aiMat, AI_MATKEY_BUMPSCALING,            1.0f);
 
-    auto diffuseColor        = setColorProperty(material, "diffuseColor",        aiMat, AI_MATKEY_COLOR_DIFFUSE,        Vector4::create(0.0f, 0.0f, 0.0f, 1.0f));
-    auto specularColor        = setColorProperty(material, "specularColor",        aiMat, AI_MATKEY_COLOR_SPECULAR,    Vector4::create(0.0f, 0.0f, 0.0f, 1.0f));
-    auto ambientColor        = setColorProperty(material, "ambientColor",        aiMat, AI_MATKEY_COLOR_AMBIENT,        Vector4::create(0.0f, 0.0f, 0.0f, 1.0f));
-    auto emissiveColor        = setColorProperty(material, "emissiveColor",        aiMat, AI_MATKEY_COLOR_EMISSIVE,    Vector4::create(0.0f, 0.0f, 0.0f, 1.0f));
-    auto reflectiveColor    = setColorProperty(material, "reflectiveColor",        aiMat, AI_MATKEY_COLOR_REFLECTIVE,    Vector4::create(0.0f, 0.0f, 0.0f, 1.0f));
-    auto transparentColor    = setColorProperty(material, "transparentColor",    aiMat, AI_MATKEY_COLOR_TRANSPARENT,    Vector4::create(0.0f, 0.0f, 0.0f, 1.0f));
+	auto diffuseColor		= setColorProperty(material, "diffuseColor",		aiMat, AI_MATKEY_COLOR_DIFFUSE);
+	auto specularColor		= setColorProperty(material, "specularColor",		aiMat, AI_MATKEY_COLOR_SPECULAR);
+	auto ambientColor		= setColorProperty(material, "ambientColor",		aiMat, AI_MATKEY_COLOR_AMBIENT);
+	auto emissiveColor		= setColorProperty(material, "emissiveColor",		aiMat, AI_MATKEY_COLOR_EMISSIVE);
+	auto reflectiveColor	= setColorProperty(material, "reflectiveColor",		aiMat, AI_MATKEY_COLOR_REFLECTIVE);
+	auto transparentColor	= setColorProperty(material, "transparentColor",	aiMat, AI_MATKEY_COLOR_TRANSPARENT);
 
     if (shininess < 1.0f)
         // Gouraud-like shading (-> no specular)
-        specularColor->w(0.0f);
+		specularColor.w = 0.f;
 
     if (opacity < 1.0f)
     {
-        diffuseColor->w(opacity);
-        specularColor->w(opacity);
-        ambientColor->w(opacity);
-        emissiveColor->w(opacity);
-        reflectiveColor->w(opacity);
-        transparentColor->w(opacity);
+		diffuseColor.w = opacity;
+		specularColor.w = opacity;
+		ambientColor.w = opacity;
+		emissiveColor.w = opacity;
+		reflectiveColor.w = opacity;
+		transparentColor.w = opacity;
 
-        material->set("priority",    render::Priority::TRANSPARENT);
-        material->set("zSort",        true);
+		material->data()->set("priority",	render::Priority::TRANSPARENT);
+		material->data()->set("zSort",		true);
     }
     else
     {
-        material->set("priority",    render::Priority::OPAQUE);
-        material->set("zSort",        false);
+		material->data()->set("priority",	render::Priority::OPAQUE);
+		material->data()->set("zSort",		false);
     }
 
     for (auto& textureTypeAndName : _textureTypeToName)
@@ -1375,7 +1377,7 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
             render::AbstractTexture::Ptr texture = _assetLibrary->texture(std::string(path.data));
 
             if (texture)
-                material->set(textureName, texture);
+				material->data()->set(textureName, texture->sampler());
         }
     }
 
@@ -1442,8 +1444,8 @@ AbstractASSIMPParser::chooseEffectByShadingMode(const aiMaterial* aiMat) const
                 case aiShadingMode_Toon:
                 case aiShadingMode_OrenNayar:
                 case aiShadingMode_Minnaert:
-                    if (_assetLibrary->effect("basic"))
-                        effect = _assetLibrary->effect("basic");
+					if (_assetLibrary->effect("effect/Basic.effect"))
+						effect = _assetLibrary->effect("effect/Basic.effect");
 #ifdef DEBUG
                     else
                         std::cerr << "Basic effect not available in the asset library." << std::endl;
@@ -1454,8 +1456,8 @@ AbstractASSIMPParser::chooseEffectByShadingMode(const aiMaterial* aiMat) const
                 case aiShadingMode_Blinn:
                 case aiShadingMode_CookTorrance:
                 case aiShadingMode_Fresnel:
-                    if (_assetLibrary->effect("phong"))
-                        effect = _assetLibrary->effect("phong");
+					if (_assetLibrary->effect("effect/Phong.effect"))
+						effect = _assetLibrary->effect("effect/Phong.effect");
 #ifdef DEBUG
                     else
                         std::cerr << "Phong effect not available in the asset library." << std::endl;
@@ -1524,27 +1526,27 @@ AbstractASSIMPParser::getWireframe(const aiMaterial* aiMat) const
         : false;
 }
 
-Vector4::Ptr
+math::vec4
 AbstractASSIMPParser::setColorProperty(material::Material::Ptr    material,
                                const std::string&        propertyName,
                                const aiMaterial*        aiMat,
                                const char*                aiMatKeyName,
                                unsigned int                aiType,
                                unsigned int                aiIndex,
-                               Vector4::Ptr                defaultValue)
+							           const math::vec4&		defaultValue)
 {
-    assert(material && aiMat && defaultValue);
+	assert(material && aiMat);
 
     aiColor4D color;
-    color.r = defaultValue->x();
-    color.g = defaultValue->y();
-    color.b = defaultValue->z();
-    color.a = defaultValue->w();
+	color.r = defaultValue.x;
+	color.g = defaultValue.y;
+	color.b = defaultValue.z;
+	color.a = defaultValue.w;
 
     auto ret = aiMat->Get(aiMatKeyName, aiType, aiIndex, color);
-    material->set(propertyName, Vector4::create(color.r, color.g, color.b, color.a));
+	material->data()->set(propertyName, math::vec4(color.r, color.g, color.b, color.a));
 
-    return material->get<Vector4::Ptr>(propertyName);
+	return material->data()->get<math::vec4>(propertyName);
 }
 
 float
@@ -1561,9 +1563,9 @@ AbstractASSIMPParser::setScalarProperty(material::Material::Ptr    material,
     float scalar = defaultValue;
 
     auto ret = aiMat->Get(aiMatKeyName, aiType, aiIndex, scalar);
-    material->set(propertyName, scalar);
+	material->data()->set(propertyName, scalar);
 
-    return material->get<float>(propertyName);
+	return material->data()->get<float>(propertyName);
     //if (aiMat->Get(aiMatKeyName, aiType, aiIndex, scalar) == AI_SUCCESS)
     //    material->set(propertyName, scalar);
 }
@@ -1594,14 +1596,15 @@ AbstractASSIMPParser::createAnimations(const aiScene* scene, bool interpolate)
                    channel->mNumScalingKeys == numKeys);
 
             std::vector<uint>            timetable    (numKeys, 0);
-            std::vector<Matrix4x4::Ptr>    matrices    (numKeys, nullptr);
+			std::vector<math::mat4>	    matrices	(numKeys, math::mat4());
 
             for (uint k = 0; k < numKeys; ++k)
             {
                 const double keyTime = channel->mPositionKeys[k].mTime;
                  // currently assume all keys are synchronized
-                assert(abs(keyTime - channel->mRotationKeys[k].mTime) < 1e-6 &&
-                       abs(keyTime - channel->mScalingKeys[k].mTime) < 1e-6);
+				assert((keyTime - channel->mRotationKeys[k].mTime) < 1e-6
+					&& std::abs(keyTime - channel->mScalingKeys[k].mTime) < 1e-6
+				);
 
                 const int time    = std::max(0, std::min(int(duration), (int)floor(1e+3 * keyTime)));
 

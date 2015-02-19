@@ -1,111 +1,85 @@
 {
-	"name"				: "normal",
+	"name" : "vertex-normal",
 
-	"attributeBindings"	: {
-		"position"				: "geometry[${geometryId}].position",
-		"normal"				: "geometry[${geometryId}].normal",
-		"boneIdsA"				: "geometry[${geometryId}].boneIdsA",
-		"boneIdsB"				: "geometry[${geometryId}].boneIdsB",		
-		"boneWeightsA"			: "geometry[${geometryId}].boneWeightsA",
-		"boneWeightsB"			: "geometry[${geometryId}].boneWeightsB"
+	"attributes" : {
+		"aPosition"		: "geometry[${geometryUuid}].position",
+		"aNormal"		: "geometry[${geometryUuid}].normal",
+		"aBoneIdsA"		: "geometry[${geometryUuid}].boneIdsA",
+		"aBoneIdsB"		: "geometry[${geometryUuid}].boneIdsB",		
+		"aBoneWeightsA"	: "geometry[${geometryUuid}].boneWeightsA",
+		"aBoneWeightsB"	: "geometry[${geometryUuid}].boneWeightsB"
 	},
 
-	"uniformBindings"	: {
-        "modelToWorldMatrix"    : "transform.modelToWorldMatrix",
-        "worldToScreenMatrix"   : { "property" : "camera.worldToScreenMatrix", "source" : "renderer" },
-		"boneMatrices"			: "geometry[${geometryId}].boneMatrices",
-		"numBones"				: "geometry[${geometryId}].numBones"
+	"uniforms" : {
+        "uModelToWorldMatrix"	: "modelToWorldMatrix",
+		"uWorldToScreenMatrix"	: { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
+		"uBoneMatrices"			: "geometry[${geometryUuid}].boneMatrices",
+		"uNumBones"				: "geometry[${geometryUuid}].numBones"
 	},
 
-	"macroBindings"	: {
-		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix",
-		"NUM_BONES"				: "geometry[${geometryId}].numBones"
+	"macros" : {
+		"MODEL_TO_WORLD"		: "modelToWorldMatrix",
+		"SKINNING_NUM_BONES"	: { "binding" : "geometry[$geometryUuid].numBones", "type" : "int" }
 	},
+
+    "techniques" : [{
+    	"passes"	: [{
+		    "vertexShader" : "
 		
-	"stateBindings" : {
-        "blendMode"             : "material[${materialId}].blendMode",
-        "colorMask"             : "material[${materialId}].colorMask",
-        "depthMask"             : "material[${materialId}].depthMask",
-        "depthFunc"             : "material[${materialId}].depthFunc",
-        "triangleCulling"       : "material[${materialId}].triangleCulling",
-        "stencilFunc"           : "material[${materialId}].stencilFunc",
-        "stencilRef"            : "material[${materialId}].stencilRef",
-        "stencilMask"           : "material[${materialId}].stencilMask",
-        "stencilFailOp"         : "material[${materialId}].stencilFailOp",
-        "stencilZFailOp"        : "material[${materialId}].stencilZFailOp",
-        "stencilZPassOp"        : "material[${materialId}].stencilZPassOp",
-        "scissorBox.x"          : { "property" : "scissorBox.x",        "source" : "renderer" },
-        "scissorBox.y"          : { "property" : "scissorBox.y",        "source" : "renderer" },
-        "scissorBox.width"      : { "property" : "scissorBox.width",    "source" : "renderer" },
-        "scissorBox.height"     : { "property" : "scissorBox.height",   "source" : "renderer" },
-        "priority"              : "material[${materialId}].priority",
-        "zSort"					: "material[${materialId}].zSort",
-        "layouts"               : "node.layouts"
-    },
+                #ifdef GL_FRAGMENT_PRECISION_HIGH
+                    precision highp float;
+                #else
+                    precision mediump float;
+                #endif
 
-    "blendMode"         : ["one", "zero"],
-    "colorMask"         : true,
-    "depthTest"         : [true, "less_equal"],
-    "triangleCulling"   : "none",
-	"stencilTest"		: ["always", 0.0, 1.0, ["keep", "keep", "keep"]],
-    "scissorTest"		: false,
-	"scissorBox"		: [0.0, 0.0, -1.0, -1.0],
-    "priority"          : "opaque",
-    "zSort"             : false,
-	
-	"passes"	: [{
-		"vertexShader"	: "
+			    uniform mat4 uModelToWorldMatrix;
+			    uniform mat4 uWorldToScreenMatrix;
 
-			#ifdef GL_ES
-			# ifdef MINKO_PLATFORM_IOS
-				precision highp float;
-			# else
-				precision mediump float;
-			# endif
-			#endif
+			    attribute vec3 aPosition;
+			    attribute vec3 aNormal;
 
-			uniform mat4 modelToWorldMatrix;
-			uniform mat4 worldToScreenMatrix;
+				#ifdef SKINNING_NUM_BONES
+				attribute vec4 aBoneWeightsA;
+				attribute vec4 aBoneWeightsB;
+				#endif
 
-			attribute vec3 position;
-			attribute vec3 normal;
+			    varying vec3 worldNormal;
 
-			varying vec3 worldNormal;
+			    #pragma include \"Skinning.function.glsl\"
 
-			#pragma include('Skinning.function.glsl')
-
-			void main(void)
-			{
-				vec4 pos    = vec4(position, 1.0);
-				vec4 n 		= normalize(vec4(normal, 0.0)); 
+			    void main(void)
+			    {
+				    vec4 pos = vec4(aPosition, 1.0);
+					vec4 n = normalize(vec4(aNormal, 0.0)); 
 
 				
-				#ifdef NUM_BONES
-					pos 	= skinning_moveVertex(pos);
-					n 		= skinning_moveVertex(n);
-				#endif // NUM_BONES
+				    #ifdef SKINNING_NUM_BONES
+					    pos = skinning_moveVertex(pos, aBoneWeightsA, aBoneWeightsB);
+					    n = skinning_moveVertex(n, aBoneWeightsA, aBoneWeightsB);
+				    #endif // SKINNING_NUM_BONES
 				
-				worldNormal	= normalize(n.xyz);
+					worldNormal	= normalize(n.xyz);
 
-				#ifdef MODEL_TO_WORLD
-					pos 		= modelToWorldMatrix * pos;
-					worldNormal	= mat3(modelToWorldMatrix) * worldNormal;
-				#endif // MODEL_TO_WORLD
+				    #ifdef MODEL_TO_WORLD
+					    pos = uModelToWorldMatrix * pos;
+					    worldNormal	= mat3(uModelToWorldMatrix) * worldNormal;
+				    #endif // MODEL_TO_WORLD
 
-				gl_Position =  worldToScreenMatrix * pos;
-			}
-		",
-		"fragmentShader"	: "
-			#ifdef GL_ES
-				precision mediump float;
-			#endif
+				    gl_Position =  uWorldToScreenMatrix * pos;
+			    }
+		    ",
+		    "fragmentShader" : "
+			    #ifdef GL_ES
+				    precision mediump float;
+			    #endif
 
-			varying vec3 worldNormal;
+			    varying vec3 worldNormal;
 
-			void main(void)
-			{
-				gl_FragColor = vec4((normalize(worldNormal.xyz) + 1.0) * 0.5, 1.0);
-			}
-		"
-	}]
+			    void main(void)
+			    {
+				    gl_FragColor = vec4((normalize(worldNormal.xyz) + 1.0) * 0.5, 1.0);
+			    }
+		    "
+	    }]
+    }]
 }

@@ -9,6 +9,9 @@ minko.project.library = function(name)
 	location "."
 	includedirs { minko.sdk.path("/framework/include") }
 
+	-- glm
+	includedirs { minko.sdk.path("/framework/lib/glm") }
+
 	configuration { "debug"}
 		defines { "DEBUG" }
 		flags { "Symbols" }
@@ -26,8 +29,12 @@ minko.project.library = function(name)
 			"_VARIADIC_MAX=10",		-- fix for faux variadic templates limited to 5 arguments by default
 			"_USE_MATH_DEFINES"		-- enable M_PI
 		}
+		flags {
+			-- "NoMinimalRebuild"
+		}
 		buildoptions {
-			"/wd4503"				-- remove warnings about too long type names
+			"/wd4503",				-- remove warnings about too long type names
+			-- "/MP"					-- Multi Processor build (NoMinimalRebuild flag is needed)
 		}
 
 	configuration { "html5", "debug" }
@@ -109,7 +116,8 @@ minko.project.application = function(name)
 		links {
 			"minko-framework",
 			"GL",
-			"m"
+			"m",
+			"pthread"
 		}
 		prelinkcommands {
 			minko.action.copy(minko.sdk.path("/framework/asset")),
@@ -118,6 +126,9 @@ minko.project.application = function(name)
 	configuration { "linux64", "debug" }
 		libdirs {
 			minko.sdk.path("/framework/bin/linux64/debug")
+		}
+		prelinkcommands {
+			minko.action.copy("asset"),
 		}
 
 	configuration { "linux64", "release" }
@@ -133,7 +144,8 @@ minko.project.application = function(name)
 		links {
 			"minko-framework",
 			"GL",
-			"m"
+			"m",
+			"pthread"
 		}
 		prelinkcommands {
 			minko.action.copy(minko.sdk.path("/framework/asset")),
@@ -142,6 +154,9 @@ minko.project.application = function(name)
 	configuration { "linux32", "debug" }
 		libdirs {
 			minko.sdk.path("/framework/bin/linux32/debug")
+		}
+		prelinkcommands {
+			minko.action.copy("asset"),
 		}
 
 	configuration { "linux32", "release" }
@@ -181,7 +196,6 @@ minko.project.application = function(name)
 		}
 
 	configuration { "html5" }
-		minko.plugin.enable("webgl")
 
 		links {
 			"minko-framework",
@@ -197,7 +211,7 @@ minko.project.application = function(name)
 	if premake.tools.gcc.tools.emscripten then
 	configuration { "html5", "release" }
 		local emcc = premake.tools.gcc.tools.emscripten.cc
-		local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html ' .. buildoptions()[1]
+			local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O3 ' .. buildoptions()[1]
 
 		linkoptions {
 			"--llvm-lto 1"
@@ -252,6 +266,8 @@ minko.project.application = function(name)
 		-- cmd = cmd .. ' -s ERROR_ON_UNDEFINED_SYMBOLS=1'
 		-- disable exception catching
 		cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=0'
+			-- allow memory pool to be dynamic
+			cmd = cmd .. ' ALLOW_MEMORY_GROWTH=1'
 		-- use a separate *.mem file to initialize the app memory
 		cmd = cmd .. ' --memory-init-file 1'
 		-- set the app (or the sdk) template.html
@@ -351,8 +367,9 @@ minko.project.application = function(name)
 			minko.sdk.path("/framework/bin/android/release")
 		}
 
-    configuration { "with-offscreen" }
+	if _OPTIONS['with-offscreen'] then
             minko.plugin.enable { "offscreen" }
+    end
 
     configuration { "android", "debug" }
     	libdirs {

@@ -29,9 +29,9 @@ using namespace minko::geometry;
 LineGeometry::Ptr
 bullet::BoxShape::getGeometry(render::AbstractContext::Ptr context) const
 {
-    const auto halfExtentX = _halfExtentX * localScaling()->x();
-    const auto halfExtentY = _halfExtentY * localScaling()->y();
-    const auto halfExtentZ = _halfExtentZ * localScaling()->z();
+    const auto halfExtentX = _halfExtentX * localScaling().x;
+    const auto halfExtentY = _halfExtentY * localScaling().y;
+    const auto halfExtentZ = _halfExtentZ * localScaling().z;
 
     auto lines = LineGeometry::create(context)
 

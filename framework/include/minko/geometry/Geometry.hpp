@@ -20,156 +20,184 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/data/ArrayProvider.hpp"
+#include "minko/data/Provider.hpp"
 #include "minko/render/VertexBuffer.hpp"
+#include "minko/render/IndexBuffer.hpp"
+#include "minko/Uuid.hpp"
 
 namespace minko
 {
-    namespace geometry
-    {
-        class Geometry :
-            public std::enable_shared_from_this<Geometry>
-        {
-        public:
-            typedef std::shared_ptr<Geometry> Ptr;
+	namespace geometry
+	{
+		class Geometry :
+			public std::enable_shared_from_this<Geometry>,
+            public Uuid::has_uuid
+		{
+		public:
+			typedef std::shared_ptr<Geometry> Ptr;
 
-        private:
-            typedef std::shared_ptr<render::VertexBuffer>       VBPtr;
-            typedef std::shared_ptr<data::ArrayProvider>        ProviderPtr;
+		private:
+			typedef std::shared_ptr<render::VertexBuffer>   VBPtr;
+			typedef std::shared_ptr<data::Provider>         ProviderPtr;
 
-        private:
-            ProviderPtr                                         _data;
-            unsigned int                                        _vertexSize;
-            unsigned int                                        _numVertices;
-            std::list<VBPtr>                                    _vertexBuffers;
-            std::shared_ptr<render::IndexBuffer>                _indexBuffer;
+		private:
+			ProviderPtr								_data;
+			unsigned int							_vertexSize;
+			unsigned int							_numVertices;
+			std::list<VBPtr>						_vertexBuffers;
+			std::shared_ptr<render::IndexBuffer>	_indexBuffer;
 
-            std::unordered_map<VBPtr, Signal<VBPtr, int>::Slot> _vbToVertexSizeChangedSlot;
+			std::unordered_map<VBPtr, Signal<VBPtr, int>::Slot>	_vbToVertexSizeChangedSlot;
 
-        public:
-            virtual
-            ~Geometry()
+		public:
+			virtual
+			~Geometry()
+			{
+                _data = nullptr;
+                _vertexBuffers.clear();
+                _indexBuffer = nullptr;
+			}
+
+			static
+			Ptr
+            create(const std::string& name = "geometry")
+			{
+				return std::shared_ptr<Geometry>(new Geometry(name));
+			}
+
+            inline
+            const std::string&
+            uuid() const
             {
-
-            }
-
-            static
-            Ptr
-            create()
-            {
-                return std::shared_ptr<Geometry>(new Geometry());
+                return _data->uuid();
             }
 
 			Ptr
 			clone();
 
+			inline
+			ProviderPtr
+			data() const
+			{
+				return _data;
+			}
+
+			inline
+			const std::list<VBPtr>&
+			vertexBuffers() const
+			{
+				return _vertexBuffers;
+			}
+
             inline
-            ProviderPtr
-            data() const
+            const std::string&
+            name()
             {
-                return _data;
+                return _data->get<std::string>("name");
             }
 
-            inline
-            const std::list<VBPtr>&
-            vertexBuffers() const
-            {
-                return _vertexBuffers;
-            }
+			inline
+			VBPtr
+			vertexBuffer(const std::string& vertexAttributeName)
+			{
+				auto vertexBufferIt = std::find_if(
+					_vertexBuffers.begin(),
+					_vertexBuffers.end(),
+					[&](render::VertexBuffer::Ptr vb) { return vb->hasAttribute(vertexAttributeName); }
+				);
 
-            inline
-            VBPtr
-            vertexBuffer(const std::string& vertexAttributeName)
-            {
-                auto vertexBufferIt = std::find_if(
-                    _vertexBuffers.begin(),
-                    _vertexBuffers.end(),
-                    [&](render::VertexBuffer::Ptr vb) { return vb->hasAttribute(vertexAttributeName); }
-                );
+				if (vertexBufferIt == _vertexBuffers.end())
+                    return nullptr;
 
-                if (vertexBufferIt == _vertexBuffers.end())
-                    throw std::invalid_argument("vertexAttributeName = " + vertexAttributeName);
+				return *vertexBufferIt;
+			}
 
-                return *vertexBufferIt;
-            }
+			inline
+			bool
+			hasVertexBuffer(VBPtr vertexBuffer) const
+			{
+				return std::find(_vertexBuffers.begin(), _vertexBuffers.end(), vertexBuffer) != _vertexBuffers.end();
+			}
 
-            inline
-            bool
-            hasVertexBuffer(VBPtr vertexBuffer) const
-            {
-                return std::find(_vertexBuffers.begin(), _vertexBuffers.end(), vertexBuffer) != _vertexBuffers.end();
-            }
+			inline
+			bool
+			hasVertexAttribute(const std::string& vertexAttributeName) const
+			{
+				return _data->hasProperty(vertexAttributeName);
+			}
 
-            inline
-            bool
-            hasVertexAttribute(const std::string& vertexAttributeName) const
-            {
-                return _data->hasProperty(vertexAttributeName);
-            }
+			inline
+			void
+			indices(std::shared_ptr<render::IndexBuffer> indices)
+			{
+				_indexBuffer = indices;
+				_data->set("indices", indices->id());
+                _data->set("firstIndex", 0u);
+                _data->set("numIndices", indices->numIndices());
+			}
 
-            inline
-            void
-            indices(std::shared_ptr<render::IndexBuffer> indices)
-            {
-                _indexBuffer = indices;
-                _data->set("indices", indices);
-            }
+			inline
+			std::shared_ptr<render::IndexBuffer>
+			indices() const
+			{
+				return _indexBuffer;
+			}
 
-            inline
-            std::shared_ptr<render::IndexBuffer>
-            indices() const
-            {
-                return _indexBuffer;
-            }
+			void
+			addVertexBuffer(std::shared_ptr<render::VertexBuffer>);
 
-            void
-            addVertexBuffer(std::shared_ptr<render::VertexBuffer>);
+			void
+			removeVertexBuffer(VBPtr vertexBuffer);
 
-            void
-            removeVertexBuffer(VBPtr vertexBuffer);
+			void
+			removeVertexBuffer(const std::string& vertexAttributeName);
 
-            void
-            removeVertexBuffer(const std::string& vertexAttributeName);
+			inline
+			unsigned int
+			numVertices() const
+			{
+				return _numVertices;
+			}
 
-            inline
-            unsigned int
-            numVertices() const
-            {
-                return _numVertices;
-            }
+			inline
+			unsigned int
+			vertexSize() const
+			{
+				return _vertexSize;
+			};
 
-            inline
-            unsigned int
-            vertexSize() const
-            {
-                return _vertexSize;
-            };
+			Ptr
+			computeNormals();
+
+			Ptr
+			computeTangentSpace(bool computeNormals);
 
             Ptr
-            computeNormals();
+            computeCenterPosition();
 
-            Ptr
-            computeTangentSpace(bool computeNormals);
+			void
+			removeDuplicatedVertices();
 
-            void
-            removeDuplicatedVertices();
+			static
+			void
+			removeDuplicatedVertices(std::vector<unsigned short>&		indices,
+									 std::vector<std::vector<float>>&	vertices,
+									 uint								numVertices);
 
-            static
-            void
-            removeDuplicatedVertices(std::vector<unsigned short>&        indices,
-                                     std::vector<std::vector<float>>&    vertices,
-                                     uint                                numVertices);
+            const render::VertexAttribute&
+            getVertexAttribute(const std::string& attributeName) const;
 
-            bool
-            cast(std::shared_ptr<math::Ray>        ray,
-                 float&                            distance,
-                 uint&                             triangle,
-                 std::shared_ptr<math::Vector3>    hitXyz        = nullptr,
-                 std::shared_ptr<math::Vector2>    hitUv         = nullptr,
-                 std::shared_ptr<math::Vector3>    hitNormal     = nullptr);
+			bool
+			cast(std::shared_ptr<math::Ray>		ray,
+				 float&							distance,
+				 uint&							triangle,
+				 math::vec3*					hitXyz		= nullptr,
+				 math::vec2*					hitUv 		= nullptr,
+				 math::vec3*					hitNormal 	= nullptr);
 
-            void
-            upload();
+			virtual
+			void
+			upload();
 
             void
             disposeIndexBufferData();
@@ -177,52 +205,33 @@ namespace minko
             void
             disposeVertexBufferData();
 
-            inline
-            bool
-            equals(Ptr geom)
-            {
-                bool vertexEquality     = _vertexBuffers.size() == geom->_vertexBuffers.size();
-                bool indexEquality      = _indexBuffer == geom->_indexBuffer;
-                auto vertexBuffer1Start = _vertexBuffers.begin();
-                auto vertexBuffer2Start = geom->_vertexBuffers.begin();
+			bool
+			equals(Ptr geom) const;
 
-                if (vertexEquality)
-                {
-                    for (uint i = 0; i < _vertexBuffers.size() && vertexEquality; ++i)
-                    {
-                        vertexEquality = vertexEquality && (*vertexBuffer1Start == *vertexBuffer2Start);
-                        std::next(vertexBuffer1Start);
-                        std::next(vertexBuffer2Start);
-                    }
-                }
-
-                return vertexEquality && indexEquality;
-            }
-
-        protected:
-            Geometry();
+		protected:
+			Geometry(const std::string& name);
 
 			Geometry(const Geometry& geometry);
 
-            inline
-            void
-            vertexSize(unsigned int value)
-            {
-                _vertexSize = value;
-            }
+			inline
+			void
+			vertexSize(unsigned int value)
+			{
+				_vertexSize = value;
+			}
 
-            void
-            vertexSizeChanged(VBPtr vertexBuffer, int offset);
+			void
+			vertexSizeChanged(VBPtr vertexBuffer, int offset);
 
-        private:
-            void
-            removeVertexBuffer(std::list<VBPtr>::iterator vertexBufferIt);
+		private:
+			void
+			removeVertexBuffer(std::list<VBPtr>::iterator vertexBufferIt);
 
-            void
-            getHitUv(uint triangle, std::shared_ptr<math::Vector2> lambda, std::shared_ptr<math::Vector2> hitUv);
+			void
+			getHitUv(uint triangle, math::vec2& lambda, math::vec2* hitUv);
 
-            void
-            getHitNormal(uint triangle, std::shared_ptr<math::Vector3> hitNormal);
-        };
-    }
+			void
+			getHitNormal(uint triangle, math::vec3* hitNormal);
+		};
+	}
 }

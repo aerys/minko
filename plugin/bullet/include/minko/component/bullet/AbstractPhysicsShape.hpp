@@ -43,19 +43,16 @@ namespace minko
                 };
 
             private:
-                typedef std::shared_ptr<math::Vector3>                Vector3Ptr;
-                typedef std::shared_ptr<math::Quaternion>            QuaternionPtr;
-                typedef std::shared_ptr<math::Matrix4x4>            Matrix4x4Ptr;
-                typedef std::shared_ptr<geometry::LineGeometry>        LineGeometryPtr;
-                typedef std::shared_ptr<render::AbstractContext>    AbsContextPtr;
+                typedef std::shared_ptr<geometry::LineGeometry> LineGeometryPtr;
+                typedef std::shared_ptr<render::AbstractContext> AbsContextPtr;
 
             protected:
-                Type            _type;
-                float            _margin;
-                Matrix4x4Ptr    _deltaTransform;
-                Matrix4x4Ptr    _deltaTransformInverse;
-                Vector3Ptr        _localScaling;
-                float            _volumeScaling;
+                Type        _type;
+                float       _margin;
+                math::mat4  _deltaTransform;
+                math::mat4  _deltaTransformInverse;
+                math::vec3  _localScaling;
+                float       _volumeScaling;
 
             private:
                 std::shared_ptr<Signal<Ptr>> _shapeChanged;
@@ -70,7 +67,7 @@ namespace minko
                 }
 
                 void
-                initialize(Matrix4x4Ptr deltaTransform, Matrix4x4Ptr graphicsStartTransform);
+                initialize(const math::mat4& deltaTransform, const math::mat4& graphicsStartTransform);
 
                 virtual
                 float
@@ -98,14 +95,15 @@ namespace minko
                 void
                 margin(float margin)
                 {
-                    const bool needsUpdate    = fabsf(margin - _margin) > 1e-6f;
-                    _margin    = margin;
+                    const bool needsUpdate = fabsf(margin - _margin) > 1e-6f;
+                    _margin = margin;
+
                     if (needsUpdate)
                         shapeChanged()->execute(shared_from_this());
                 }
 
                 inline
-                Vector3Ptr
+                math::vec3
                 localScaling() const
                 {
                     return _localScaling;
@@ -115,14 +113,14 @@ namespace minko
                 localScaling(float x, float y, float z);
 
                 inline
-                Matrix4x4Ptr
+                math::mat4
                 deltaTransform() const
                 {
                     return _deltaTransform;
                 }
 
                 inline
-                Matrix4x4Ptr
+                math::mat4
                 deltaTransformInverse() const
                 {
                     return _deltaTransformInverse;

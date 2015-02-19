@@ -27,314 +27,258 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/ProgramSignature.hpp"
 #include "minko/render/Program.hpp"
 #include "minko/render/States.hpp"
-#include "minko/math/Vector2.hpp"
-#include "minko/math/Vector3.hpp"
-#include "minko/math/Vector4.hpp"
-#include "minko/math/Matrix4x4.hpp"
+#include "minko/render/VertexAttribute.hpp"
 
 namespace minko
 {
-    namespace render
-    {
-        class Pass :
-            public std::enable_shared_from_this<Pass>
-        {
-        public:
-            typedef std::shared_ptr<Pass> Ptr;
+	namespace render
+	{
+		class Pass :
+			public std::enable_shared_from_this<Pass>
+		{
+		public:
+			typedef std::shared_ptr<Pass> Ptr;
 
-        private:
-             typedef std::shared_ptr<Program>                                            ProgramPtr;
-            typedef std::shared_ptr<VertexBuffer>                                        VertexBufferPtr;
-            typedef std::unordered_map<std::string, SamplerState>                        SamplerStatesMap;
-            typedef std::shared_ptr<States>                                              StatesPtr;
-            typedef std::unordered_map<ProgramSignature, ProgramPtr>                     SignatureProgramMap;
-            typedef std::shared_ptr<std::function<void(ProgramPtr)>>                     OnProgramFunctionPtr;
-            typedef std::list<std::function<void(ProgramPtr)>>                           OnProgramFunctionList;
-            typedef std::unordered_map<std::string, data::MacroBinding>                  MacroBindingsMap;
+		private:
+ 			typedef std::shared_ptr<Program>							ProgramPtr;
+			typedef std::shared_ptr<VertexBuffer>						VertexBufferPtr;
+            typedef std::unordered_map<std::string, SamplerState>		SamplerStatesMap;
+            typedef std::unordered_map<ProgramSignature*, ProgramPtr>	SignatureToProgramMap;
+			typedef std::function<void(ProgramPtr)>						ProgramFunc;
+			typedef std::unordered_map<std::string, ProgramFunc>		ProgramFuncMap;
+			typedef std::unordered_map<std::string, data::MacroBinding> MacroBindingsMap;
 
-        private:
-            const std::string                       _name;
-            ProgramPtr                              _programTemplate;
-            data::BindingMap                        _attributeBindings;
-            data::BindingMap                        _uniformBindings;
-            data::BindingMap                        _stateBindings;
-            data::MacroBindingMap                   _macroBindings;
-            StatesPtr                               _states;
-            std::string                             _fallback;
-            SignatureProgramMap                     _signatureToProgram;
+		private:
+			const std::string		_name;
+			bool					_isPostProcessing;
+			ProgramPtr				_programTemplate;
+			data::BindingMap		_attributeBindings;
+			data::BindingMap		_uniformBindings;
+			data::BindingMap		_stateBindings;
+			data::MacroBindingMap	_macroBindings;
+            States				    _states;
+            SignatureToProgramMap	_signatureToProgram;
 
-            OnProgramFunctionList                   _uniformFunctions;
-            OnProgramFunctionList                   _attributeFunctions;
-            OnProgramFunctionPtr                    _indexFunction;
-            std::set<std::string>                   _undefinedMacros;
-            std::set<std::string>                   _definedBoolMacros;
-            std::unordered_map<std::string, int>    _definedIntMacros;
+			ProgramFuncMap			_uniformFunctions;
+			ProgramFuncMap			_attributeFunctions;
+			ProgramFuncMap   		_macroFunctions;
 
-        public:
-            inline static
-            Ptr
-            create(const std::string&               name,
-                   std::shared_ptr<render::Program> program,
-                   const data::BindingMap&          attributeBindings,
-                   const data::BindingMap&          uniformBindings,
-                   const data::BindingMap&          stateBindings,
-                   const data::MacroBindingMap&     macroBindings,
-                   StatesPtr                        states,
-                   const std::string&               fallback)
+		public:
+            ~Pass()
             {
-                return std::shared_ptr<Pass>(new Pass(
-                    name,
-                    program,
-                    attributeBindings,
-                    uniformBindings,
-                    stateBindings,
-                    macroBindings,
-                    states,
-                    fallback
-                ));
+                for (auto& signatureAndProgram : _signatureToProgram)
+                    delete signatureAndProgram.first;
             }
 
-            inline static
-            Ptr
-            create(Ptr pass, float, bool deepCopy = false)
-            {
-                auto p = create(
-                    pass->_name,
-                    deepCopy ? Program::create(pass->_programTemplate, deepCopy) : pass->_programTemplate,
-                    pass->_attributeBindings,
-                    pass->_uniformBindings,
-                    pass->_stateBindings,
-                    pass->_macroBindings,
-                    deepCopy ? States::create(pass->_states) : pass->_states,
-                    pass->_fallback
+			inline static
+			Ptr
+			create(const std::string&				name,
+				   bool								isPostProcessing,
+				   std::shared_ptr<render::Program>	program,
+				   const data::BindingMap&			attributeBindings,
+				   const data::BindingMap&			uniformBindings,
+				   const data::BindingMap&			stateBindings,
+				   const data::MacroBindingMap&		macroBindings,
+                   const States&       				states)
+			{
+				return std::shared_ptr<Pass>(new Pass(
+					name,
+					isPostProcessing,
+					program,
+					attributeBindings,
+					uniformBindings,
+					stateBindings,
+					macroBindings,
+                    states
+				));
+			}
+
+			inline static
+			Ptr
+			create(Ptr pass, float, bool deepCopy = false)
+			{
+				auto p = create(
+					pass->_name,
+					pass->_isPostProcessing,
+					deepCopy ? Program::create(pass->_programTemplate, deepCopy) : pass->_programTemplate,
+					pass->_attributeBindings,
+					pass->_uniformBindings,
+					pass->_stateBindings,
+					pass->_macroBindings,
+					deepCopy ? States(pass->_states) : pass->_states
+				);
+
+                for (auto& signatureProgram : pass->_signatureToProgram)
+                    p->_signatureToProgram[new ProgramSignature(*signatureProgram.first)] = signatureProgram.second;
+
+				p->_uniformFunctions = pass->_uniformFunctions;
+				p->_attributeFunctions = pass->_attributeFunctions;
+				p->_macroFunctions = pass->_macroFunctions;
+
+				if (pass->_programTemplate->isReady())
+				{
+					for (auto& nameAndFunc : p->_uniformFunctions)
+						nameAndFunc.second(pass->_programTemplate);
+					for (auto& nameAndFunc : p->_attributeFunctions)
+						nameAndFunc.second(pass->_programTemplate);
+					for (auto& nameAndFunc : p->_macroFunctions)
+						nameAndFunc.second(pass->_programTemplate);
+				}
+
+				return p;
+			}
+
+			inline
+			const std::string&
+			name()
+			{
+				return _name;
+			}
+
+			inline
+			bool
+			isPostProcessing() const
+			{
+				return _isPostProcessing;
+			}
+
+			inline
+			std::shared_ptr<Program>
+			program()
+			{
+				return _programTemplate;
+			}
+
+			inline
+			data::BindingMap&
+			attributeBindings()
+			{
+				return _attributeBindings;
+			}
+
+			inline
+			data::BindingMap&
+			uniformBindings()
+			{
+				return _uniformBindings;
+			}
+
+			inline
+			data::BindingMap&
+			stateBindings()
+			{
+				return _stateBindings;
+			}
+
+			inline
+			data::MacroBindingMap&
+			macroBindings()
+			{
+				return _macroBindings;
+			}
+
+			inline
+			States&
+			states()
+			{
+				return _states;
+			}
+
+            std::pair<std::shared_ptr<Program>, const ProgramSignature*>
+            selectProgram(const std::unordered_map<std::string, std::string>&   translatedPropertyNames,
+						  const data::Store&	                            	targetData,
+						  const data::Store&	                            	rendererData,
+                          const data::Store&	                            	rootData);
+
+			template <typename... T>
+			void
+			setUniform(const std::string& name, const T&... values)
+			{
+				_uniformFunctions[name] = std::bind(
+					&Pass::setUniformOnProgram<T...>, std::placeholders::_1, name, values...
+				);
+
+				if (_programTemplate->isReady())
+					_programTemplate->setUniform(name, values...);
+				for (auto signatureAndProgram : _signatureToProgram)
+					signatureAndProgram.second->setUniform(name, values...);
+			}
+
+			inline
+			void
+            setAttribute(const std::string& name, const VertexAttribute& attribute)
+			{
+				_attributeFunctions[name] = std::bind(
+					&Pass::setVertexAttributeOnProgram, std::placeholders::_1, name, attribute
+				);
+
+				if (_programTemplate->isReady())
+					_programTemplate->setAttribute(name, attribute);
+				for (auto signatureAndProgram : _signatureToProgram)
+					signatureAndProgram.second->setAttribute(name, attribute);
+			}
+
+			inline
+			void
+			define(const std::string& macroName)
+			{
+                _macroFunctions[macroName] = std::bind(&Pass::defineOnProgram, std::placeholders::_1, macroName);
+                _programTemplate->define(macroName);
+			}
+
+            template <typename T>
+			inline
+			void
+			define(const std::string& macroName, T macroValue)
+			{
+                _macroFunctions[macroName] = std::bind(
+                    &Pass::defineOnProgramWithValue<T>, std::placeholders::_1, macroName, macroValue
                 );
+                _programTemplate->define(macroName, macroValue);
+			}
 
-                p->_signatureToProgram = pass->_signatureToProgram;
+		private:
+			Pass(const std::string&					name,
+				 bool								isPostProcessing,
+				 std::shared_ptr<render::Program>	program,
+				 const data::BindingMap&			attributeBindings,
+				 const data::BindingMap&			uniformBindings,
+				 const data::BindingMap&			stateBindings,
+				 const data::MacroBindingMap&		macroBindings,
+                 const States&                      states);
 
-                p->_uniformFunctions = pass->_uniformFunctions;
-                p->_attributeFunctions = pass->_attributeFunctions;
-                p->_indexFunction = pass->_indexFunction;
+			template <typename... T>
+			static
+			void
+			setUniformOnProgram(std::shared_ptr<Program> program, const std::string& name, const T&... values)
+			{
+				program->setUniform(name, values...);
+			}
 
-                if (pass->_programTemplate->isReady())
-                {
-                    for (auto& f : p->_uniformFunctions)
-                        f(pass->_programTemplate);
-                    for (auto& f : p->_attributeFunctions)
-                        f(pass->_programTemplate);
-                    if (p->_indexFunction)
-                        p->_indexFunction->operator()(pass->_programTemplate);
-                }
-
-                return p;
-            }
-
-            inline
-            const std::string&
-            name()
-            {
-                return _name;
-            }
-
-            inline
-            std::shared_ptr<Program>
-            program()
-            {
-                return _programTemplate;
-            }
-
-            inline
-            const data::BindingMap&
-            attributeBindings() const
-            {
-                return _attributeBindings;
-            }
-
-            inline
-            const data::BindingMap&
-            uniformBindings() const
-            {
-                return _uniformBindings;
-            }
-
-            inline
-            const data::BindingMap&
-            stateBindings() const
-            {
-                return _stateBindings;
-            }
-
-            inline
-            const data::MacroBindingMap&
-            macroBindings() const
-            {
-                return _macroBindings;
-            }
-
-            inline
-            StatesPtr
-            states() const
-            {
-                return _states;
-            }
-
-            inline
-            const std::string&
-            fallback()
-            {
-                return _fallback;
-            }
-
-            std::shared_ptr<Program>
-            selectProgram(FormatNameFunction,
-                          std::shared_ptr<data::Container>   targetData,
-                          std::shared_ptr<data::Container>   rendererData,
-                          std::shared_ptr<data::Container>   rootData,
-                          std::list<std::string>&            booleanMacros,
-                          std::list<std::string>&            integerMacros,
-                          std::list<std::string>&            incorrectIntegerMacros);
-
-            template <typename... T>
-            void
-            setUniform(const std::string& name, const T&... values)
-            {
-                _uniformFunctions.push_back(std::bind(
-                    &Pass::setUniformOnProgram<T...>, std::placeholders::_1, name, values...
-                ));
-
-                if (_programTemplate->isReady())
-                    _programTemplate->setUniform(name, values...);
-                for (auto signatureAndProgram : _signatureToProgram)
-                    signatureAndProgram.second->setUniform(name, values...);
-            }
-
-            inline
-            void
-            setVertexAttribute(const std::string& name, unsigned int attributeSize, const std::vector<float>& data)
-            {
-                _attributeFunctions.push_back(std::bind(
-                    &Pass::setVertexAttributeOnProgram, std::placeholders::_1, name, attributeSize, data
-                ));
-
-                if (_programTemplate->isReady())
-                    _programTemplate->setVertexAttribute(name, attributeSize, data);
-                for (auto signatureAndProgram : _signatureToProgram)
-                    signatureAndProgram.second->setVertexAttribute(name, attributeSize, data);
-            }
-
-            inline
-            void
-            setIndexBuffer(const std::vector<unsigned short>& indices)
-            {
-                _indexFunction = std::make_shared<std::function<void(ProgramPtr)>>(std::bind(
-                    &Pass::setIndexBufferOnProgram, std::placeholders::_1, indices
-                ));
-
-                if (_programTemplate->isReady())
-                    _programTemplate->setIndexBuffer(indices);
-                for (auto signatureAndProgram : _signatureToProgram)
-                    signatureAndProgram.second->setIndexBuffer(indices);
-            }
-
-            inline
-            void
-            define(const std::string& macroName)
-            {
-                if (!macroName.empty())
-                    _definedBoolMacros.insert(macroName);
-            }
-
-            inline
-            void
-            define(const std::string& macroName, int macroValue)
-            {
-                if (!macroName.empty())
-                    _definedIntMacros[macroName] = macroValue;
-            }
-
-            inline
-            void
-            undefine(const std::string& macroName)
-            {
-                if (!macroName.empty())
-                    _undefinedMacros.insert(macroName);
-            }
-
-            void
-            getExplicitDefinitions(std::unordered_map<std::string, data::MacroBindingDefault>& macroNameToValue) const;
-
-            inline
-            bool
-            isExplicitlyUndefined(const std::string& macroName) const
-            {
-                return _undefinedMacros.find(macroName) != _undefinedMacros.end();
-            }
-
-        private:
-            Pass(const std::string&                 name,
-                 std::shared_ptr<render::Program>   program,
-                 const data::BindingMap&            attributeBindings,
-                 const data::BindingMap&            uniformBindings,
-                 const data::BindingMap&            stateBindings,
-                 const data::MacroBindingMap&       macroBindings,
-                 std::shared_ptr<States>            states,
-                 const std::string&                 fallback);
-
-            template <typename... T>
-            static
-            void
-            setUniformOnProgram(std::shared_ptr<Program> program, const std::string& name, const T&... values)
-            {
-                program->setUniform(name, values...);
-            }
+			static
+			void
+            setVertexAttributeOnProgram(std::shared_ptr<Program> program, const std::string& name, const VertexAttribute& attribute)
+			{
+				program->setAttribute(name, attribute);
+			}
 
             static
             void
-            setVertexAttributeOnProgram(std::shared_ptr<Program> program, const std::string& name, unsigned int attributeSize, const std::vector<float>& data)
+            defineOnProgram(std::shared_ptr<Program> program, const std::string& macroName)
             {
-                program->setVertexAttribute(name, attributeSize, data);
+                program->define(macroName);
             }
 
+            template <typename T>
             static
             void
-            setIndexBufferOnProgram(std::shared_ptr<Program> program, const std::vector<unsigned short>& indices)
+            defineOnProgramWithValue(std::shared_ptr<Program> program, const std::string& macroName, T value)
             {
-                program->setIndexBuffer(indices);
+                program->define(macroName, value);
             }
 
-            ProgramPtr
-            finalizeProgram(ProgramPtr program);
-        };
-
-        template <>
-        inline
-        void
-        Pass::setUniform(const std::string& name, const math::Vector2::Ptr& v)
-        {
-            setUniform(name, v->x(), v->y());
-        };
-
-        template <>
-        inline
-        void
-        Pass::setUniform(const std::string& name, const math::Vector3::Ptr& v)
-        {
-            setUniform(name, v->x(), v->y(), v->z());
-        };
-
-        template <>
-        inline
-        void
-        Pass::setUniform(const std::string& name, const math::Vector4::Ptr& v)
-        {
-            setUniform(name, v->x(), v->y(), v->z(), v->w());
-        };
-
-        template <>
-        inline
-        void
-        Pass::setUniform(const std::string& name, const math::Matrix4x4::Ptr& v)
-        {
-            setUniform(name, 1, true, &v->data()[0]);
-        };
-    }
+			ProgramPtr
+			finalizeProgram(ProgramPtr program);
+		};
+	}
 }

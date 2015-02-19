@@ -20,8 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/PerspectiveCamera.hpp"
 
 #include "minko/scene/Node.hpp"
-#include "minko/math/Matrix4x4.hpp"
-#include "minko/data/StructureProvider.hpp"
+#include "minko/data/Provider.hpp"
 #include "minko/math/Ray.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/scene/Node.hpp"
@@ -31,26 +30,36 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::component;
-using namespace minko::math;
 
-PerspectiveCamera::PerspectiveCamera(float            fov,
-                                     float            aspectRatio,
-                                     float            zNear,
-                                     float            zFar,
-                                     Matrix4x4::Ptr    postPerspective) :
-    _data(data::StructureProvider::create("camera")),
-    _fov(fov),
-    _aspectRatio(aspectRatio),
-    _zNear(zNear),
-    _zFar(zFar),
-      _view(Matrix4x4::create()),
-      _projection(Matrix4x4::create()->perspective(fov, aspectRatio, zNear, zFar)),
-      _viewProjection(Matrix4x4::create()->copyFrom(_projection)),
-    _position(Vector3::create()),
-    _postProjection(postPerspective)
+PerspectiveCamera::PerspectiveCamera(float			      fov,
+                                     float			      aspectRatio,
+                                     float			      zNear,
+                                     float			      zFar,
+									 const math::mat4&	  postPerspective) :
+	_data(data::Provider::create()),
+	_fov(fov),
+	_aspectRatio(aspectRatio),
+	_zNear(zNear),
+	_zFar(zFar),
+  	_view(math::mat4(1.f)),
+  	_projection(math::perspective(fov, aspectRatio, zNear, zFar)),
+  	_viewProjection(_projection),
+    _position(),
+	_postProjection(postPerspective)
 {
+	_data
+		->set("eyePosition",		    _position)
+  		->set("viewMatrix",				_view)
+  		->set("projectionMatrix",		_projection)
+  		->set("worldToScreenMatrix",	_viewProjection)
+        ->set("fov",                    _fov)
+        ->set("aspectRatio",            _aspectRatio)
+        ->set("zNear",                  _zNear)
+        ->set("zFar",                   _zFar);
 }
 
+// TODO #Clone
+/*
 PerspectiveCamera::PerspectiveCamera(const PerspectiveCamera& camera, const CloneOption& option) :
 	_data(camera._data->clone()),
 	_fov(camera._fov),
@@ -70,131 +79,107 @@ PerspectiveCamera::clone(const CloneOption& option)
 {
 	auto ctrl = std::shared_ptr<PerspectiveCamera>(new PerspectiveCamera(*this, option));
 
-	ctrl->initialize();
-
 	return ctrl;
 }
+*/
 
 void
-PerspectiveCamera::initialize()
+PerspectiveCamera::targetAdded(NodePtr target)
 {
-    _targetAddedSlot = targetAdded()->connect(std::bind(
-        &PerspectiveCamera::targetAddedHandler,
-        std::static_pointer_cast<PerspectiveCamera>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2
-    ));
+	target->data().addProvider(_data);
 
-    _targetRemovedSlot = targetRemoved()->connect(std::bind(
-        &PerspectiveCamera::targetRemovedHandler,
-        std::static_pointer_cast<PerspectiveCamera>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2
-    ));
+  	_modelToWorldChangedSlot = target->data().propertyChanged("modelToWorldMatrix").connect(std::bind(
+    	&PerspectiveCamera::localToWorldChangedHandler,
+		std::static_pointer_cast<PerspectiveCamera>(shared_from_this()),
+    	std::placeholders::_1
+  	));
 
-    _data
-        ->set("position",                _position)
-          ->set("viewMatrix",                _view)
-          ->set("projectionMatrix",        _projection)
-          ->set("worldToScreenMatrix",    _viewProjection);
+    if (target->data().hasProperty("modelToWorldMatrix"))
+        updateMatrices(target->data().get<math::mat4>("modelToWorldMatrix"));
 }
 
 void
-PerspectiveCamera::targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
+PerspectiveCamera::targetRemoved(NodePtr target)
 {
-    target->data()->addProvider(_data);
-
-      _modelToWorldChangedSlot = target->data()->propertyValueChanged("transform.modelToWorldMatrix")->connect(std::bind(
-        &PerspectiveCamera::localToWorldChangedHandler,
-        std::static_pointer_cast<PerspectiveCamera>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2
-      ));
-
-    if (target->data()->hasProperty("transform.modelToWorldMatrix"))
-        updateMatrices(target->data()->get<Matrix4x4::Ptr>("transform.modelToWorldMatrix"));
+	target->data().removeProvider(_data);
 }
 
 void
-PerspectiveCamera::targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
+PerspectiveCamera::localToWorldChangedHandler(data::Store& data)
 {
-    target->data()->removeProvider(_data);
+    updateMatrices(data.get<math::mat4>("modelToWorldMatrix"));
 }
 
 void
-PerspectiveCamera::localToWorldChangedHandler(data::Container::Ptr    data,
-                                              const std::string&    propertyName)
+PerspectiveCamera::updateMatrices(const math::mat4& modelToWorldMatrix)
 {
-    updateMatrices(data->get<Matrix4x4::Ptr>("transform.modelToWorldMatrix"));
+	_position = (modelToWorldMatrix * math::vec4(0.f, 0.f, 0.f, 1.f)).xyz();
+    _view = math::inverse(modelToWorldMatrix);
+
+	_data
+		->set("eyePosition",	_position)
+  		->set("viewMatrix",     _view);
+
+	updateProjection(_fov, _aspectRatio, _zNear, _zFar);
 }
 
 void
-PerspectiveCamera::updateMatrices(std::shared_ptr<Matrix4x4> modelToWorldMatrix)
+PerspectiveCamera::updateProjection(float fov, float aspectRatio, float zNear, float zFar)
 {
-    _view->lock();
-      _view->copyFrom(modelToWorldMatrix);
-    _view->transform(Vector3::zero(), _position);
-    _view->invert();
-    _view->unlock();
+    _fov = fov;
+    _aspectRatio = aspectRatio;
+    _zNear = zNear;
+    _zFar = zFar;
 
-    updateProjection(_fov, _aspectRatio, _zNear, _zFar);
-}
+	_projection = _postProjection * math::perspective(fov, aspectRatio, zNear, zFar);
+	_viewProjection = _projection * _view;
 
-void
-PerspectiveCamera::updateProjection(float fieldOfView, float aspectRatio, float zNear, float zFar)
-{
-    _projection->perspective(_fov, _aspectRatio, _zNear, _zFar);
-
-    if (_postProjection)
-        _projection->append(_postProjection);
-
-    _viewProjection->lock()->copyFrom(_view)->append(_projection)->unlock();
+	_data
+        ->set("zNear",                  _zNear)
+        ->set("zFar",                   _zFar)
+		->set("projectionMatrix",		_projection)
+  		->set("worldToScreenMatrix",	_viewProjection)
+        ->set("fov",                    fov)
+        ->set("aspectRatio",            aspectRatio)
+        ->set("zNear",                  zNear)
+        ->set("zFar",                   zFar);
 }
 
 std::shared_ptr<math::Ray>
-PerspectiveCamera::unproject(float x, float y, std::shared_ptr<math::Ray> out)
+PerspectiveCamera::unproject(float x, float y)
 {
-    if (!out)
-        out = Ray::create();
+	auto fovDiv2 = _fov * .5f;
+	auto dx = tanf(fovDiv2) * x * _aspectRatio;
+	auto dy = -tanf(fovDiv2) * y;
 
-    auto fovDiv2 = _fov * .5f;
-    auto dx = tanf(fovDiv2) * x * _aspectRatio;
-    auto dy = -tanf(fovDiv2) * y;
+	auto origin = math::vec3(dx * _zNear, dy * _zNear, -_zNear);
+	auto direction = math::normalize(math::vec3(dx * _zNear, dy * _zNear, -_zNear));
 
-    out->origin()->setTo(dx * _zNear, dy * _zNear, -_zNear);
-    out->direction()->setTo(dx * _zNear, dy * _zNear, -_zNear)->normalize();
+	auto t = target()->component<Transform>();
 
-    auto t = targets()[0]->component<Transform>();
+	if (t)
+	{
+		origin = (math::vec4(origin, 1.f) * t->modelToWorldMatrix()).xyz();
+		direction = math::normalize(direction * math::mat3x3(t->modelToWorldMatrix()));
+	}
 
-    if (t)
-    {
-        t->modelToWorld(out->origin(), out->origin());
-        t->deltaModelToWorld(out->direction(), out->direction());
-        out->direction()->normalize();
-    }
-
-    return out;
+	return math::Ray::create(origin, direction);
 }
 
-std::shared_ptr<math::Vector3>
-PerspectiveCamera::project(std::shared_ptr<math::Vector3> worldPosition, std::shared_ptr<math::Vector3> out)
+math::vec3
+PerspectiveCamera::project(math::vec3 worldPosition)
 {
-    if (!out)
-        out = Vector3::create();
+    auto context   = target()->root()->component<SceneManager>()->assets()->context();
+    auto width     = context->viewportWidth();
+    auto height    = context->viewportHeight();
+    auto pos       = math::vec4(worldPosition, 1.f);
+    auto vector    = _viewProjection * pos;
 
-    auto vector = _viewProjection->project(worldPosition);
+    vector /= vector.w;
 
-    auto context = getTarget(0)->root()->component<SceneManager>()->assets()->context();
-
-    auto width = context->viewportWidth();
-    auto height = context->viewportHeight();
-
-    out->x(width * ((vector->x() + 1.0f) * .5f));
-    out->y(height * ((1.0f - ((vector->y() + 1.0f) * .5f))));
-
-    //depth
-    _view->transform(worldPosition, vector);
-    out->z(-vector->z());
-
-    return out;
+    return {
+       width * ((vector.x + 1.0f) * .5f),
+	   height * ((1.0f - ((vector.y + 1.0f) * .5f))),
+       -(_view * pos).z
+    };
 }

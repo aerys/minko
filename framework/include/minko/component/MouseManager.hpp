@@ -27,72 +27,63 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-    namespace component
-    {
-        class MouseManager :
-            public AbstractComponent
-        {
-        private:
-            typedef std::shared_ptr<scene::Node>            NodePtr;
-            typedef std::shared_ptr<math::Ray>              RayPtr;
-            typedef std::shared_ptr<input::Mouse>           MousePtr;
+	namespace component
+	{
+		class MouseManager :
+			public AbstractComponent
+		{
+		private:
+			typedef std::shared_ptr<scene::Node>	NodePtr;
+			typedef std::shared_ptr<math::Ray>		RayPtr;
+			typedef std::shared_ptr<input::Mouse>	MousePtr;
 
-        public:
-            typedef std::pair<NodePtr, float>               Hit;
-            typedef std::list<Hit>                          HitList;
-            typedef std::shared_ptr<MouseManager>           Ptr;
+		public:
+			typedef std::pair<NodePtr, float>		Hit;
+			typedef std::list<Hit>					HitList;
+			typedef std::shared_ptr<MouseManager>	Ptr;
 
-        private:
-            MousePtr                                        _mouse;
-            std::shared_ptr<math::Vector3>                  _previousRayOrigin;
-            NodePtr                                         _lastItemUnderCursor;
+		private:
+			MousePtr										_mouse;
+			math::vec3									    _previousRayOrigin;
+			NodePtr											_lastItemUnderCursor;
 
-            RayPtr                                          _ray;
+			RayPtr											_ray;
 
-            Signal<AbstractComponent::Ptr, NodePtr>::Slot   _targetAddedSlot;
-            Signal<AbstractComponent::Ptr, NodePtr>::Slot   _targetRemovedSlot;
-            Signal<MousePtr, int, int>::Slot                _mouseMoveSlot;
-            Signal<MousePtr>::Slot                          _mouseLeftButtonDownSlot;
+			Signal<AbstractComponent::Ptr, NodePtr>::Slot	_targetAddedSlot;
+			Signal<AbstractComponent::Ptr, NodePtr>::Slot	_targetRemovedSlot;
+			Signal<MousePtr, int, int>::Slot				_mouseMoveSlot;
+			Signal<MousePtr>::Slot							_mouseLeftButtonDownSlot;
 
-        public:
-            inline static
-            Ptr
-            create()
-            {
-                auto mm = std::shared_ptr<MouseManager>(new MouseManager());
+		public:
+			inline static
+			Ptr
+			create(std::shared_ptr<input::Mouse> mouse = nullptr)
+			{
+                return std::shared_ptr<MouseManager>(new MouseManager(mouse));
+			}
 
-                mm->initialize();
+			inline
+			MousePtr
+			mouse()
+			{
+				return _mouse;
+			}
 
-                return mm;
-            }
+			void
+			pick(std::shared_ptr<math::Ray> ray);
 
-            inline static
-            Ptr
-            create(std::shared_ptr<input::Mouse> mouse)
-            {
-                auto mm = std::shared_ptr<MouseManager>(new MouseManager());
-
-                mm->_mouse = mouse;
-                mm->initialize();
-
-                return mm;
-            }
-
-            inline
-            MousePtr
-            mouse()
-            {
-                return _mouse;
-            }
+        protected:
+            void
+            targetAdded(scene::Node::Ptr target);
 
             void
-            pick(std::shared_ptr<math::Ray> ray);
+            targetRemoved(scene::Node::Ptr target);
 
-        private:
-            MouseManager();
+		private:
+            MouseManager(std::shared_ptr<input::Mouse> mouse);
 
-            void
-            initialize();
-        };
-    }
+			void
+			initialize();
+		};
+	}
 }

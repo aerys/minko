@@ -24,36 +24,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-    namespace component
-    {
+	namespace component
+	{
         class Animation : public AbstractAnimation
-        {
-            friend class MasterAnimation;
+		{
+			friend class MasterAnimation;
 
-        public:
-            typedef std::shared_ptr<Animation>                        Ptr;
+		public:
+			typedef std::shared_ptr<Animation>						Ptr;
 
-        private:
-            typedef std::shared_ptr<animation::AbstractTimeline>    AbsTimelinePtr;
-            typedef std::shared_ptr<MasterAnimation>                MasterAnimationPtr;
+		private:
+			typedef std::shared_ptr<animation::AbstractTimeline>	AbsTimelinePtr;
+			typedef std::shared_ptr<MasterAnimation>				MasterAnimationPtr;
             typedef std::shared_ptr<scene::Node>                    NodePtr;
             typedef std::shared_ptr<AbstractComponent>                AbsCmpPtr;
 
-        private:
+		private:
             std::vector<AbsTimelinePtr>                                _timelines;
-            MasterAnimationPtr                                        _master;
 
-        public:
-            inline static
-            Ptr
-            create(const std::vector<AbsTimelinePtr>& timelines, bool isLooping = true)
-            {
-                Ptr ptr = std::shared_ptr<Animation>(new Animation(timelines, isLooping));
+		public:
+			inline static
+			Ptr
+			create(const std::vector<AbsTimelinePtr>& timelines, bool isLooping = true)
+			{
+				Ptr ptr = std::shared_ptr<Animation>(new Animation(timelines, isLooping));
 
                 ptr->initialize();
 
-                return ptr;
-            }
+				return ptr;
+			}
 
             AbstractComponent::Ptr
             clone(const CloneOption& option);
@@ -61,19 +60,19 @@ namespace minko
             void
             rebindDependencies(std::map<AbsCmpPtr, AbsCmpPtr>& componentsMap, std::map<NodePtr, NodePtr>& nodeMap, CloneOption option);
 
-            inline
-            uint
-            numTimelines() const
-            {
-                return _timelines.size();
-            }
+			inline
+			uint
+			numTimelines() const
+			{
+				return _timelines.size();
+			}
 
-            inline
-            AbsTimelinePtr
-            timeline(uint timelineId) const
-            {
-                return _timelines[timelineId];
-            }
+			inline
+			AbsTimelinePtr
+			timeline(uint timelineId) const
+			{
+				return _timelines[timelineId];
+			}
 
             inline
             const std::vector<AbsTimelinePtr>&
@@ -82,39 +81,38 @@ namespace minko
                 return _timelines;
             }
 
-        private:
-            Animation(const std::vector<AbsTimelinePtr>&, bool isLooping);
+        protected:
+            void
+            initialize();
+
+		private:
+			Animation(const std::vector<AbsTimelinePtr>&, bool isLooping);
 
             Animation(const Animation& anim,const CloneOption& option);
 
-            void
-            initialize() override;
+			void
+			update();
 
-            void
-            update() override;
 
-            void
+			void
             frameBeginHandler(std::shared_ptr<SceneManager> manager, float time, float deltaTime) override
-            {
-                if (_master == nullptr)
-                    AbstractAnimation::frameBeginHandler(manager, time, deltaTime);
-            }
+			{
+					AbstractAnimation::frameBeginHandler(manager, time, deltaTime);
+			}
 
             inline
-            void
+			void
             updateNextLabelIds(uint time) override
-            {
-                if (_master == nullptr)
-                    AbstractAnimation::updateNextLabelIds(time);
-            }
+			{
+					AbstractAnimation::updateNextLabelIds(time);
+			}
 
             inline
-            void
+			void 
             checkLabelHit(uint previousTime, uint newTime) override
-            {
-                if (_master == nullptr)
-                    AbstractAnimation::checkLabelHit(previousTime, newTime);
-            }
-        };
-    }
+			{
+					AbstractAnimation::checkLabelHit(previousTime, newTime);
+			}
+		};
+	}
 }

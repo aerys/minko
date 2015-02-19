@@ -19,62 +19,34 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/AbstractLight.hpp"
 
-#include "minko/Color.hpp"
 #include "minko/scene/Node.hpp"
-#include "minko/math/Vector3.hpp"
-#include "minko/math/Vector4.hpp"
 #include "minko/Signal.hpp"
 
 using namespace minko;
 using namespace minko::component;
 
-AbstractLight::AbstractLight(const std::string& arrayName) :
-    AbstractRootDataComponent<data::ArrayProvider>(data::ArrayProvider::create(arrayName)),
-    _color(math::Vector3::create(1.0f, 1.0f, 1.0f)),
-    _targetLayoutChangedSlot(nullptr)
+AbstractLight::AbstractLight(const std::string& collectionName) :
+    AbstractRootDataComponent(collectionName),
+	_color(math::vec3(1.0f, 1.0f, 1.0f))
 {
-    data()->set("color", _color);
+	data()->set("color", _color);
 }
 
 void
-AbstractLight::layoutMask(Layouts value)
+AbstractLight::layoutMask(scene::Layout value)
 {
-    data()->set("layoutMask", value);
-    AbstractComponent::layoutMask(value);
+	data()->set("layoutMask", value);
+	AbstractComponent::layoutMask(value);
 }
 
 AbstractLight::Ptr
-AbstractLight::color(math::Vector3::Ptr color)
+AbstractLight::color(const math::vec3& color)
 {
-    _color->copyFrom(color);
+	if (color != _color)
+	{
+		_color = color;
+		data()->set("color", _color);		
+	}
 
-    return std::static_pointer_cast<AbstractLight>(shared_from_this());
-}
-
-AbstractLight::Ptr
-AbstractLight::color(math::Vector4::Ptr color)
-{
-    _color->setTo(color->x(), color->y(), color->z());
-
-    return std::static_pointer_cast<AbstractLight>(shared_from_this());
-}
-
-AbstractLight::Ptr
-AbstractLight::color(uint rgba)
-{
-    return color(Color::uintToVec4(rgba));
-}
-
-void
-AbstractLight::targetAddedHandler(component::AbstractComponent::Ptr component,
-                                  scene::Node::Ptr                    target)
-{
-    AbstractRootDataComponent<data::ArrayProvider>::targetAddedHandler(component, target);
-}
-
-void
-AbstractLight::targetRemovedHandler(component::AbstractComponent::Ptr component,
-                                    scene::Node::Ptr                    target)
-{
-    AbstractRootDataComponent<data::ArrayProvider>::targetRemovedHandler(component, target);
+	return std::static_pointer_cast<AbstractLight>(shared_from_this());
 }

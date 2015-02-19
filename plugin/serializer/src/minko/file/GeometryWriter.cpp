@@ -74,7 +74,7 @@ GeometryWriter::embed(std::shared_ptr<AssetLibrary>     assetLibrary,
     geometry::Geometry::Ptr     geometry                = data();
     uint                        indexBufferFunctionId   = 0;
     uint                        vertexBufferFunctionId  = 0;
-    uint                        metaByte                = computeMetaByte(geometry, indexBufferFunctionId, vertexBufferFunctionId, writerOptions);
+	uint						metaData				= computeMetaData(geometry, indexBufferFunctionId, vertexBufferFunctionId, writerOptions);
     const std::string&          serializedIndexBuffer   = indexBufferWriterFunctions[indexBufferFunctionId](geometry->indices());
     std::vector<std::string>    serializedVertexBuffers;
     std::stringstream           sbuf;
@@ -82,8 +82,8 @@ GeometryWriter::embed(std::shared_ptr<AssetLibrary>     assetLibrary,
     for (std::shared_ptr<render::VertexBuffer> vertexBuffer : geometry->vertexBuffers())
         serializedVertexBuffers.push_back(vertexBufferWriterFunctions[vertexBufferFunctionId](vertexBuffer));
 
-    msgpack::type::tuple<unsigned char, std::string, std::string, std::vector<std::string>> res(
-        metaByte,
+	msgpack::type::tuple<unsigned short, std::string, std::string, std::vector<std::string>> res(
+		metaData,
         assetLibrary->geometryName(geometry),
         serializedIndexBuffer,
         serializedVertexBuffers);
@@ -107,19 +107,15 @@ GeometryWriter::serializeIndexStreamChar(std::shared_ptr<render::IndexBuffer> in
 std::string
 GeometryWriter::serializeVertexStream(std::shared_ptr<render::VertexBuffer> vertexBuffer)
 {
-    std::list<render::VertexBuffer::AttributePtr>                                   attributes  = vertexBuffer->attributes();
     std::vector<msgpack::type::tuple<std::string, unsigned char, unsigned char>>    serializedAttributes;
 
-    auto attributesIt = attributes.begin();
-
-    while (attributesIt != attributes.end())
+    for (const auto& attribute : vertexBuffer->attributes())
     {
         serializedAttributes.push_back(msgpack::type::tuple<std::string, unsigned char, unsigned char>(
-            std::get<0>((**attributesIt)),
-            std::get<1>((**attributesIt)),
-            std::get<2>((**attributesIt))));
-
-        attributesIt++;
+            attribute.name,
+            attribute.size,
+            attribute.offset
+        ));
     }
 
     std::string         serializedVector = serialize::TypeSerializer::serializeVector<float>(vertexBuffer->data());
@@ -127,32 +123,33 @@ GeometryWriter::serializeVertexStream(std::shared_ptr<render::VertexBuffer> vert
 
     msgpack::type::tuple<std::string, std::vector<msgpack::type::tuple<std::string, unsigned char, unsigned char>>> res(
         serializedVector,
-        serializedAttributes);
+		serializedAttributes
+    );
 
     msgpack::pack(sbuf, res);
 
     return sbuf.str();
 }
 
-unsigned char
-GeometryWriter::computeMetaByte(std::shared_ptr<geometry::Geometry> geometry,
+unsigned short
+GeometryWriter::computeMetaData(std::shared_ptr<geometry::Geometry> geometry, 
                                 uint&                               indexBufferFunctionId,
                                 uint&                               vertexBufferFunctionId,
                                 WriterOptionsPtr                    writerOptions)
 {
+	unsigned short metaData = 0x0000;
+	
     for (auto functionIdTestFunc : indexBufferTestFunctions)
-    {
         if (functionIdTestFunc.second(geometry) && functionIdTestFunc.first >= indexBufferFunctionId)
             indexBufferFunctionId = functionIdTestFunc.first;
-    }
 
     for (auto functionIdTestFunc : vertexBufferTestFunctions)
-    {
         if (functionIdTestFunc.second(geometry) && functionIdTestFunc.first >= vertexBufferFunctionId)
             vertexBufferFunctionId = functionIdTestFunc.first;
-    }
 
-    return ((indexBufferFunctionId << 4) & 0xF0) + (vertexBufferFunctionId & 0x0F);
+	metaData = ((indexBufferFunctionId << 4) & 0xF0) + (vertexBufferFunctionId & 0x0F);
+
+	return metaData;
 }
 
 bool

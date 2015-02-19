@@ -23,194 +23,147 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Signal.hpp"
 #include "minko/render/Pass.hpp"
+#include "minko/data/Provider.hpp"
+#include "minko/Uuid.hpp"
 
 namespace minko
 {
-    namespace render
-    {
-        class Effect :
-            public std::enable_shared_from_this<Effect>
-        {
-        public:
-            typedef std::shared_ptr<Effect>    Ptr;
+	namespace render
+	{
+		class Effect :
+            public Uuid::has_uuid
+		{
+		public:
+			typedef std::shared_ptr<Effect>	Ptr;
 
-        private:
-            typedef std::shared_ptr<Pass>                                       PassPtr;
-            typedef std::shared_ptr<VertexBuffer>                               VertexBufferPtr;
-            typedef std::shared_ptr<std::function<void(PassPtr)>>               OnPassFunctionPtr;
-            typedef std::list<std::function<void(PassPtr)>>                     OnPassFunctionList;
-            typedef std::vector<PassPtr>                                        Technique;
-            typedef Signal<Ptr, const std::string&, const std::string&>::Ptr    TechniqueChangedSignalPtr;
+		private:
+			typedef std::shared_ptr<Pass>										PassPtr;
+			typedef std::shared_ptr<VertexBuffer>								VertexBufferPtr;
+			typedef std::shared_ptr<std::function<void(PassPtr)>>				OnPassFunctionPtr;
+			typedef std::list<std::function<void(PassPtr)>>						OnPassFunctionList;
+			typedef std::vector<PassPtr> 										Technique;
+			typedef Signal<Ptr, const std::string&, const std::string&>::Ptr	TechniqueChangedSignalPtr;
 
-        private:
+		private:
             std::string                                                         _name;
 
-            std::unordered_map<std::string, Technique>                          _techniques;
-            std::unordered_map<std::string, std::string>                        _fallback;
-            std::shared_ptr<data::Provider>                                     _data;
+			std::unordered_map<std::string, Technique>		_techniques;
+			std::unordered_map<std::string, std::string>	_fallback;
+			std::shared_ptr<data::Provider>					_data;
 
-            OnPassFunctionList                                                  _uniformFunctions;
-            OnPassFunctionList                                                  _attributeFunctions;
-            OnPassFunctionPtr                                                   _indexFunction;
-            OnPassFunctionList                                                  _macroFunctions;
+			OnPassFunctionList								_uniformFunctions;
+			OnPassFunctionList								_attributeFunctions;
+            OnPassFunctionList                              _macroFunctions;
 
-        public:
-            inline static
-            Ptr
-            create(const std::string& name = "")
-            {
-                return std::shared_ptr<Effect>(new Effect(name));
-            }
+		public:
+			inline static
+			Ptr
+            create(const std::string& name)
+			{
+				return std::shared_ptr<Effect>(new Effect(name));
+			}
 
-            inline static
-            Ptr
-            create(std::vector<PassPtr>& passes, const std::string& name = "")
-            {
-                auto effect = create(name);
+			inline static
+			Ptr
+            create(const std::string& name, std::vector<PassPtr>& passes)
+			{
+				auto effect = create(name);
 
-                effect->_techniques["default"] = passes;
+				effect->_techniques["default"] = passes;
 
-                return effect;
-            }
-
-            inline
-            std::string
-            name()
-            {
-                return _name;
-            }
-
-            inline
-            const std::unordered_map<std::string, Technique>&
-            techniques() const
-            {
-                return _techniques;
-            }
-
-            inline
-            std::shared_ptr<data::Provider>
-            data() const
-            {
-                return _data;
-            }
-
-            inline
-            const Technique&
-            technique(const std::string& techniqueName) const
-            {
-                auto foundTechniqueIt = _techniques.find(techniqueName);
-
-                if (foundTechniqueIt == _techniques.end())
-                    throw std::invalid_argument("techniqueName = " + techniqueName);
-
-                return foundTechniqueIt->second;
-            }
+				return effect;
+			}
 
             inline
             const std::string&
-            fallback(const std::string& techniqueName) const
+            uuid() const
             {
-                auto foundFallbackIt = _fallback.find(techniqueName);
-
-                if (foundFallbackIt == _fallback.end())
-                    throw std::invalid_argument("techniqueName = " + techniqueName);
-
-                return foundFallbackIt->second;
+                return _data->uuid();
             }
 
             inline
-            bool
-            hasTechnique(const std::string& techniqueName) const
-            {
-                return _techniques.count(techniqueName) != 0;
-            }
+			const std::unordered_map<std::string, Technique>&
+			techniques() const
+			{
+				return _techniques;
+			}
 
-            inline
-            bool
-            hasFallback(const std::string& techniqueName) const
-            {
-                return _fallback.count(techniqueName) != 0;
-            }
+			inline
+			std::shared_ptr<data::Provider>
+			data() const
+			{
+				return _data;
+			}
+
+			inline
+			const Technique&
+			technique(const std::string& techniqueName) const
+			{
+				if (!hasTechnique(techniqueName))
+					throw std::invalid_argument("techniqueName = " + techniqueName);
+
+				return _techniques.at(techniqueName);
+			}
+
+			inline
+			const std::string&
+			fallback(const std::string& techniqueName) const
+			{
+				auto foundFallbackIt = _fallback.find(techniqueName);
+
+				if (foundFallbackIt == _fallback.end())
+					throw std::invalid_argument("techniqueName = " + techniqueName);
+
+				return foundFallbackIt->second;
+			}
+
+			inline
+			bool
+			hasTechnique(const std::string& techniqueName) const
+			{
+				return _techniques.count(techniqueName) != 0;
+			}
+
+			inline
+			bool
+			hasFallback(const std::string& techniqueName) const
+			{
+				return _fallback.count(techniqueName) != 0;
+			}
 
             template <typename... T>
-            void
-            setUniform(const std::string& name, const T&... values)
-            {
-                _uniformFunctions.push_back(std::bind(
-                    &Effect::setUniformOnPass<T...>, std::placeholders::_1, name, values...
-                ));
+			void
+			setUniform(const std::string& name, const T&... values)
+			{
+				_uniformFunctions.push_back(std::bind(
+					&Effect::setUniformOnPass<T...>, std::placeholders::_1, name, values...
+				));
 
-                for (auto& technique : _techniques)
-                    for (auto& pass : technique.second)
-                        pass->setUniform(name, values...);
-            }
+				for (auto& technique : _techniques)
+					for (auto& pass : technique.second)
+						pass->setUniform(name, values...);
+			}
 
-        private:
-            inline
-            void
-            setIndexBuffer(const std::vector<unsigned short>& indices)
-            {
-                _indexFunction = std::make_shared<std::function<void(PassPtr)>>(std::bind(
-                    &Effect::setIndexBufferOnPass, std::placeholders::_1, indices
-                ));
+		public:
+			void
+			setAttribute(const std::string& name, const VertexAttribute& attribute);
 
-                for (auto& technique : _techniques)
-                    for (auto& pass : technique.second)
-                        pass->setIndexBuffer(indices);
-            }
+			void
+			define(const std::string& macroName);
 
-        public:
-            inline
-            void
-            setVertexAttribute(const std::string& name, unsigned int attributeSize, const std::vector<float>& data)
-            {
-                _attributeFunctions.push_back(std::bind(
-                    &Effect::setVertexAttributeOnPass, std::placeholders::_1, name, attributeSize, data
-                ));
-
-                for (auto& technique : _techniques)
-                    for (auto& pass : technique.second)
-                        pass->setVertexAttribute(name, attributeSize, data);
-            }
-
-            inline
-            void
-            define(const std::string& macroName)
-            {
+            template <typename T>
+			inline
+			void
+			define(const std::string& macroName, T macroValue)
+			{
                 _macroFunctions.push_back(std::bind(
-                    &Effect::defineBooleanMacroOnPass, std::placeholders::_1, macroName
+                    &Effect::defineOnPassWithValue<T>, std::placeholders::_1, macroName, macroValue
                 ));
 
-                for (auto& technique : _techniques)
-                    for (auto& pass : technique.second)
-                        pass->define(macroName);
-            }
-
-            inline
-            void
-            define(const std::string& macroName, int macroValue)
-            {
-                _macroFunctions.push_back(std::bind(
-                    &Effect::defineIntegerMacroOnPass, std::placeholders::_1, macroName, macroValue
-                ));
-
-                for (auto& technique : _techniques)
-                    for (auto& pass : technique.second)
-                        pass->define(macroName, macroValue);
-            }
-
-            inline
-            void
-            undefine(const std::string& macroName)
-            {
-                _macroFunctions.push_back(std::bind(
-                    &Effect::undefineMacroOnPass, std::placeholders::_1, macroName
-                ));
-
-                for (auto& technique : _techniques)
-                    for (auto& pass : technique.second)
-                        pass->undefine(macroName);
-            }
+				for (auto& technique : _techniques)
+					for (auto& pass : technique.second)
+						pass->define(macroName, macroValue);
+			}
 
             void
             addTechnique(const std::string& name, Technique& passes);
@@ -221,51 +174,38 @@ namespace minko
             void
             removeTechnique(const std::string& name);
 
-        private:
+		private:
             Effect(const std::string& name);
 
-            template <typename... T>
-            inline static
-            void
-            setUniformOnPass(std::shared_ptr<Pass> pass, const std::string& name, const T&... values)
-            {
-                pass->setUniform(name, values...);
-            }
+			template <typename... T>
+			static
+			void
+			setUniformOnPass(std::shared_ptr<Pass> pass, const std::string& name, const T&... values)
+			{
+				pass->setUniform(name, values...);
+			}
 
-            inline static
-            void
-            setVertexAttributeOnPass(std::shared_ptr<Pass> pass, const std::string& name, unsigned int attributeSize, const std::vector<float>& data)
-            {
-                pass->setVertexAttribute(name, attributeSize, data);
-            }
+			static
+			void
+			setVertexAttributeOnPass(std::shared_ptr<Pass> pass, const std::string& name, const VertexAttribute& attribute)
+			{
+				pass->setAttribute(name, attribute);
+			}
 
-            inline static
+            static
             void
-            setIndexBufferOnPass(std::shared_ptr<Pass> pass, const std::vector<unsigned short>& indices)
-            {
-                pass->setIndexBuffer(indices);
-            }
-
-            inline static
-            void
-            defineBooleanMacroOnPass(std::shared_ptr<Pass> pass, const std::string& macroName)
+            defineOnPass(std::shared_ptr<Pass> pass, const std::string& macroName)
             {
                 pass->define(macroName);
             }
 
-            inline static
+            template <typename T>
+            static
             void
-            defineIntegerMacroOnPass(std::shared_ptr<Pass> pass, const std::string& macroName, int macroValue)
+            defineOnPassWithValue(std::shared_ptr<Pass> pass, const std::string& macroName, T macroValue)
             {
                 pass->define(macroName, macroValue);
             }
-
-            inline static
-            void
-            undefineMacroOnPass(std::shared_ptr<Pass> pass, const std::string& macroName)
-            {
-                pass->undefine(macroName);
-            }
-        };
-    }
+		};
+	}
 }

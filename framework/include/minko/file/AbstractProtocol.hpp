@@ -92,10 +92,13 @@ namespace minko
 
             inline
             void
-            load(const std::string& filename, std::shared_ptr<Options> options)
+            load(const std::string&         filename,
+                 const std::string&         resolvedFilename,
+                 std::shared_ptr<Options>   options)
             {
                 _options = options;
                 _file->_filename = filename;
+                _file->_resolvedFilename = resolvedFilename;
 
                 load();
             }
@@ -103,6 +106,10 @@ namespace minko
             virtual
             void
             load() = 0;
+
+            virtual
+            bool
+            fileExists(const std::string& filename) = 0;
 
         protected:
             AbstractProtocol();
@@ -112,13 +119,6 @@ namespace minko
             resolvedFilename()
             {
                 return _file->_resolvedFilename;
-            }
-
-            inline
-            void
-            resolvedFilename(const std::string& resolvedFilename)
-            {
-                _file->_resolvedFilename = resolvedFilename;
             }
 
             inline

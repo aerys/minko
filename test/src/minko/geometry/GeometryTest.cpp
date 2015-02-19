@@ -114,7 +114,7 @@ TEST_F(GeometryTest, VertexBufferAddedInData)
 	g->addVertexBuffer(vb);
 
 	ASSERT_TRUE(g->data()->hasProperty("position"));
-	ASSERT_TRUE(g->data()->get<render::VertexBuffer::Ptr>("position") == vb);
+	ASSERT_EQ(g->data()->get<render::VertexAttribute>("position"), vb->attribute("position"));
 }
 
 TEST_F(GeometryTest, VertexBufferRemovedFromData)

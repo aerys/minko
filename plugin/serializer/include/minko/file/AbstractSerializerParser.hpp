@@ -28,23 +28,35 @@ namespace minko
 {
     namespace file
     {
+        struct SceneVersion
+        {
+            int version;
+            int major;
+            int minor;
+            int patch;
+        };
+
         class AbstractSerializerParser:
             public AbstractParser
         {
         public:
             typedef std::shared_ptr<AbstractSerializerParser>               Ptr;
             typedef msgpack::type::tuple<unsigned int, short, std::string>  SerializedAsset;
-            typedef std::shared_ptr<file::AssetLibrary>                     AssetLibraryPtr;
+            typedef std::shared_ptr<AssetLibrary>                           AssetLibraryPtr;
+            typedef std::shared_ptr<Options>                                OptionsPtr;
 
         private:
             typedef std::shared_ptr<component::JobManager::Job>             JobPtr;
             typedef std::shared_ptr<Dependency>                             DependencyPtr;
-            typedef std::function<void (unsigned char,
-                                        AssetLibraryPtr,
-                                        std::string&,
-                                        DependencyPtr,
-                                        short,
-                                        std::list<JobPtr>&)>                AssetDeserializeFunction;
+            typedef std::function<void(
+                unsigned short,
+                AssetLibraryPtr,
+                OptionsPtr,
+                const std::string&,
+                DependencyPtr,
+                short,
+                std::list<JobPtr>&
+            )>                                                              AssetDeserializeFunction;
 
         protected:
             DependencyPtr                       _dependencies;
@@ -62,19 +74,12 @@ namespace minko
             unsigned int                                                _dependenciesSize;
             unsigned int                                                _sceneDataSize;
 
-            int                                                         _version;
-            int                                                         _versionHi;
-            int                                                         _versionLow;
-            int                                                         _versionBuild;
+            SceneVersion                                            _version;
 
         private:
             static std::unordered_map<uint, AssetDeserializeFunction>   _assetTypeToFunction;
 
         public:
-            inline static
-            Ptr
-            create();
-
             virtual
             void
             parse(const std::string&                filename,
@@ -140,9 +145,10 @@ namespace minko
 
             static
             void
-            deserializeTexture(unsigned char                            metaByte,
+            deserializeTexture(unsigned short metaData,
                                AssetLibraryPtr                          assetLibrary,
-                               std::string&                             assetCompletePath,
+                               OptionsPtr           options,
+                               const std::string&   assetCompletePath,
                                DependencyPtr                            dependency,
                                short                                    assetId,
                                std::list<JobPtr>&                       jobs);

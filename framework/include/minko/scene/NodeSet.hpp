@@ -23,63 +23,68 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-    namespace scene
-    {
-        class NodeSet
-        {
-        public:
-            typedef std::shared_ptr<NodeSet> Ptr;
+	namespace scene
+	{
+		class NodeSet
+		{
+		public:
+			typedef std::shared_ptr<NodeSet> Ptr;
 
-        private:
-            std::vector<std::shared_ptr<Node>> _nodes;
+		private:
+			std::vector<std::shared_ptr<Node>> _nodes;
 
-        public:
-            inline static
-            Ptr
-            create(const std::list<std::shared_ptr<Node>>& nodes)
+		public:
+            ~NodeSet()
             {
-                Ptr set = create();
-
-                set->_nodes.insert(set->_nodes.end(), nodes.begin(), nodes.end());
-
-                return set;
+                _nodes.clear();
             }
 
-            inline static
-            Ptr
-            create(const std::vector<std::shared_ptr<Node>>& nodes)
-            {
-                Ptr set = create();
+			inline static
+			Ptr
+			create(const std::list<std::shared_ptr<Node>>& nodes)
+			{
+				Ptr set = create();
 
-                set->_nodes.insert(set->_nodes.end(), nodes.begin(), nodes.end());
+				set->_nodes.insert(set->_nodes.end(), nodes.begin(), nodes.end());
 
-                return set;
-            }
+				return set;
+			}
 
-            inline static
-            Ptr
-            create(std::shared_ptr<Node> node)
-            {
-                Ptr set = create();
+			inline static
+			Ptr
+			create(const std::vector<std::shared_ptr<Node>>& nodes)
+			{
+				Ptr set = create();
 
-                set->_nodes.push_back(node);
+				set->_nodes.insert(set->_nodes.end(), nodes.begin(), nodes.end());
 
-                return set;
-            }
+				return set;
+			}
 
-            inline static
-            Ptr
-            create()
-            {
-                return std::shared_ptr<NodeSet>(new NodeSet());
-            }
+			inline static
+			Ptr
+			create(std::shared_ptr<Node> node)
+			{
+				Ptr set = create();
 
-            inline
-            const std::vector<std::shared_ptr<Node>>&
-            nodes()
-            {
-                return _nodes;
-            }
+				set->_nodes.push_back(node);
+
+				return set;
+			}
+
+			inline static
+			Ptr
+			create()
+			{
+				return std::shared_ptr<NodeSet>(new NodeSet());
+			}
+
+			inline
+			const std::vector<std::shared_ptr<Node>>&
+			nodes()
+			{
+				return _nodes;
+			}
 
             inline
             int
@@ -88,26 +93,26 @@ namespace minko
                 return _nodes.size();
             }
 
-            Ptr
-            descendants(bool andSelf = false, bool depthFirst = true, Ptr result = nullptr);
+			Ptr
+			descendants(bool andSelf = false, bool depthFirst = true, Ptr result = nullptr);
 
-            Ptr
-            ancestors(bool andSelf = false, Ptr result = nullptr);
+			Ptr
+			ancestors(bool andSelf = false, Ptr result = nullptr);
 
-            Ptr
-            children(bool andSelf = false, Ptr result = nullptr);
+			Ptr
+			children(bool andSelf = false, Ptr result = nullptr);
 
-            Ptr
-            where(std::function<bool(std::shared_ptr<Node>)> filter, Ptr result = nullptr);
+			Ptr
+			where(std::function<bool(std::shared_ptr<Node>)> filter, Ptr result = nullptr);
 
-            Ptr
-            roots(Ptr result = nullptr);
+			Ptr
+			roots(Ptr result = nullptr);
 
-        private:
-            NodeSet() :
-                _nodes()
-            {
-            }
-        };
-    }
+		private:
+			NodeSet() :
+				_nodes()
+			{
+			}
+		};		
+	}
 }

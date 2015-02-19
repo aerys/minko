@@ -28,7 +28,9 @@ namespace minko
         class HTTPRequest
         {
         public:
-            HTTPRequest(std::string url);
+            HTTPRequest(const std::string& url,
+                        const std::string& username = "",
+                        const std::string& password = "");
 
             void
                 run();
@@ -65,12 +67,21 @@ namespace minko
                 int
                 curlProgressHandler(void* arg, double total, double current, double, double);
 
+            static
+            bool
+            fileExists(const std::string& filename,
+                       const std::string& username = "",
+                       const std::string& password = "");
+
         private:
             std::string _url;
             std::vector<char> _output;
             Signal<float>::Ptr _progress;
             Signal<int>::Ptr _error;
             Signal<const std::vector<char>&>::Ptr _complete;
+            
+            std::string _username;
+            std::string _password;
         };
     }
 }

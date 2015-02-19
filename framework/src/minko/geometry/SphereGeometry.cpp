@@ -105,6 +105,8 @@ SphereGeometry::initializeVertices(std::shared_ptr<AbstractContext>    context,
         stream->addAttribute("normal", 3, 5);
 
     addVertexBuffer(stream);
+
+    computeCenterPosition();
 }
 
 void

@@ -31,7 +31,7 @@ namespace minko
 			typedef std::shared_ptr<AbstractTimeline>	Ptr;
 
 		protected:
-			typedef std::shared_ptr<data::Container>	UpdateTargetPtr;
+			typedef std::shared_ptr<data::Store>	UpdateTargetPtr;
 
 		protected:
 			std::string	_propertyName;
@@ -91,7 +91,7 @@ namespace minko
 
 			virtual
 			void
-			update(uint time, UpdateTargetPtr, bool skipPropertyNameFormatting = true) = 0;
+			update(uint time, data::Store& data, bool skipPropertyNameFormatting = true) = 0;
 
 		protected:
 			AbstractTimeline(const std::string& propertyName, uint duration);

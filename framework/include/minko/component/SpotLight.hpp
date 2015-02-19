@@ -25,130 +25,84 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-    namespace component
-    {
-        class SpotLight :
-            public AbstractDiscreteLight
-        {
-        public:
-            typedef std::shared_ptr<SpotLight>  Ptr;
+	namespace component
+	{
+		class SpotLight :
+			public AbstractDiscreteLight
+		{
+		public:
+			typedef std::shared_ptr<SpotLight> Ptr;
 
-        private:
-            float                               _cosInnerConeAngle;
-            float                               _cosOuterConeAngle;
-            std::shared_ptr<math::Vector3>      _attenuationCoeffs;
-            std::shared_ptr<math::Vector3>      _worldPosition;
-            std::shared_ptr<math::Vector3>      _worldDirection;
-
-        public:
-            inline static
-            Ptr
-            create(float innerAngleRadians      = float(M_PI) * 0.25f,
-                   float outerAngleRadians      = -1.0f,
-                   float diffuse                = 1.0f,
-                   float specular               = 1.0f,
-                   float attenuationConstant    = -1.0f,
-                   float attenuationLinear      = -1.0f,
-                   float attenuationQuadratic   = -1.0f)
-            {
-                auto light = std::shared_ptr<SpotLight>(
-                    new SpotLight(
-                        diffuse,
-                        specular,
-                        attenuationConstant,
-                        attenuationLinear,
-                        attenuationQuadratic
-                    )
-                );
-
-                light->initialize(innerAngleRadians, outerAngleRadians);
-
-                return light;
-            }
+		public:
+			inline static
+			Ptr
+			create(float diffuse				= 1.0f,
+				   float specular				= 1.0f,
+                   float innerAngleRadians      = M_PI * 0.20f,
+                   float outerAngleRadians      = M_PI * 0.25f,
+				   float attenuationConstant	= -1.0f,
+				   float attenuationLinear		= -1.0f,
+				   float attenuationQuadratic	= -1.0f)
+			{
+                return std::shared_ptr<SpotLight>(new SpotLight(
+                    diffuse,
+                    specular,
+                    innerAngleRadians,
+                    outerAngleRadians,
+                    attenuationConstant,
+                    attenuationLinear,
+                    attenuationQuadratic
+                ));
+			}
 
 			AbstractComponent::Ptr
 			clone(const CloneOption& option);
 
-            inline
             float
-            cosInnerConeAngle() const
+            innerConeAngle() const;
+
+			SpotLight&
+			innerConeAngle(float radians);
+
+            float
+            outerConeAngle() const;
+
+			SpotLight&
+			outerConeAngle(float radians);
+
+			bool
+			attenuationEnabled() const;
+
+			const math::vec3&
+			attenuationCoefficients() const;
+
+			SpotLight&
+			attenuationCoefficients(float constant, float linear, float quadratic);
+
+			SpotLight&
+			attenuationCoefficients(const math::vec3&);
+
+            inline
+            math::vec3
+            position() const
             {
-                return _cosInnerConeAngle;
+                return data()->get<math::vec3>("position");
             }
 
-            Ptr
-            innerConeAngle(float radians);
+		protected:
+			void
+            updateModelToWorldMatrix(const math::mat4& modelToWorld);
 
-            inline
-            float
-            cosOuterConeAngle() const
-            {
-                return _cosOuterConeAngle;
-            }
-
-            Ptr
-            outerConeAngle(float radians);
-
-            bool
-            attenuationEnabled() const;
-
-            std::shared_ptr<math::Vector3>
-            attenuationCoefficients() const;
-
-            Ptr
-            attenuationCoefficients(float constant, float linear, float quadratic);
-
-            Ptr
-            attenuationCoefficients(std::shared_ptr<math::Vector3>);
-
-			inline
-			std::shared_ptr<math::Vector3>
-			position() const
-			{
-				return data()->get<std::shared_ptr<math::Vector3>>("position");
-			}
-
-			inline
-			Ptr
-			position(std::shared_ptr<math::Vector3> position)
-			{
-				data()->set<std::shared_ptr<math::Vector3>>("position", position);
-
-				return std::static_pointer_cast<SpotLight>(shared_from_this());
-			}
-
-			inline
-			std::shared_ptr<math::Vector3>
-			direction() const
-			{
-				return data()->get<std::shared_ptr<math::Vector3>>("direction");
-			}
-
-			inline
-			Ptr
-			direction(std::shared_ptr<math::Vector3> direction)
-			{
-				data()->set<std::shared_ptr<math::Vector3>>("direction", direction);
-
-				return std::static_pointer_cast<SpotLight>(shared_from_this());
-			}
-
-        protected:
-            void
-            updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld);
-
-        private:
-            SpotLight(float diffuse,
+		private:
+			SpotLight(float diffuse,
                       float specular,
+                      float innerAngleRadians,
+                      float outerAngleRadians,
                       float attenuationConstant,
                       float attenuationLinear,
                       float attenuationQuadratic);
 
 			SpotLight(const SpotLight& spotlight, const CloneOption& option);
-
-            void
-            initialize(float innerAngleRadians,
-                       float outerAngleRadians);
-        };
-    }
+		};
+	}
 }

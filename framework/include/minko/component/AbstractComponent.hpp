@@ -20,52 +20,46 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/Signal.hpp"
 
+#include "minko/Signal.hpp"
 #include "minko/scene/Layout.hpp"
 
 namespace minko
 {
-    namespace component
-    {
-        class AbstractComponent:
-            public std::enable_shared_from_this<AbstractComponent>
-        {
-            friend class scene::Node;
+	namespace component
+	{
+		class AbstractComponent:
+			public std::enable_shared_from_this<AbstractComponent>
+		{
+			friend class scene::Node;
 
-        public:
-            typedef std::shared_ptr<AbstractComponent>  Ptr;
+		public:
+			typedef std::shared_ptr<AbstractComponent>  Ptr;
 
-        private:
-            std::vector<std::shared_ptr<scene::Node>>                       _targets;
-            Layouts                                                         _layoutMask;
-
-            std::shared_ptr<Signal<Ptr, std::shared_ptr<scene::Node>>>      _targetAdded;
-            std::shared_ptr<Signal<Ptr, std::shared_ptr<scene::Node>>>      _targetRemoved;
-            std::shared_ptr<Signal<Ptr>>                                    _layoutMaskChanged;
+		private:
+			std::shared_ptr<scene::Node>    _target;
+            scene::Layout				    _layoutMask;
+			Signal<Ptr>						_layoutMaskChanged;
 
         protected:
-            AbstractComponent(Layouts layoutMask = scene::Layout::Mask::EVERYTHING) :
-                _targets(),
-                _layoutMask(layoutMask),
-                _targetAdded(Signal<Ptr, std::shared_ptr<scene::Node>>::create()),
-                _targetRemoved(Signal<Ptr, std::shared_ptr<scene::Node>>::create()),
-                _layoutMaskChanged(Signal<Ptr>::create())
-            {
-            }
+            AbstractComponent(scene::Layout layoutMask = scene::LayoutMask::EVERYTHING) :
+				_layoutMask(layoutMask),
+				_layoutMaskChanged()
+			{
+			}
 
 			AbstractComponent(const AbstractComponent& abstractComponent, const CloneOption& option) :
-				_targets(),
 				_layoutMask(abstractComponent._layoutMask),
-				_targetAdded(Signal<Ptr, std::shared_ptr<scene::Node>>::create()),
-				_targetRemoved(Signal<Ptr, std::shared_ptr<scene::Node>>::create()),
-				_layoutMaskChanged(Signal<Ptr>::create())
+				_layoutMaskChanged()
 			{
 			}
 
         public:
             virtual
-            ~AbstractComponent() = 0;
+            ~AbstractComponent()
+            {
+                _target = nullptr;
+            }
 
 			virtual
 			AbstractComponent::Ptr
@@ -75,70 +69,56 @@ namespace minko
 				return shared_from_this();
 			}
 
-            inline
-            const std::vector<std::shared_ptr<scene::Node>>&
-            targets() const
-            {
-                return _targets;
-            }
+			inline
+			std::shared_ptr<scene::Node>
+			target() const
+			{
+				return _target;
+			}
 
-            inline
-            const unsigned int
-            numTargets() const
-            {
-                return _targets.size();
-            }
+			virtual
+			const scene::Layout&
+			layoutMask() const
+			{
+				return _layoutMask;
+			}
 
-            inline
-            std::shared_ptr<scene::Node>
-            getTarget(unsigned int index) const
-            {
-                return _targets[index];
-            }
+			virtual
+			void
+            layoutMask(scene::Layout value)
+			{
+				if (_layoutMask != value)
+				{
+					_layoutMask = value;
+					_layoutMaskChanged.execute(shared_from_this());
+				}
+			}
 
+			inline
+			Signal<Ptr>&
+			layoutMaskChanged()
+			{
+				return _layoutMaskChanged;
+			}
+
+        private:
+            void
+            target(std::shared_ptr<scene::Node> target);
+
+        protected:
             virtual
-            Layouts
-            layoutMask() const
+            void
+            targetAdded(std::shared_ptr<scene::Node> target)
             {
-                return _layoutMask;
+                // nothing
             }
 
             virtual
             void
-            layoutMask(Layouts value)
+            targetRemoved(std::shared_ptr<scene::Node> target)
             {
-                if (_layoutMask != value)
-                {
-                    _layoutMask = value;
-                    _layoutMaskChanged->execute(shared_from_this());
-                }
+                // nothing
             }
-
-            inline
-            Signal<Ptr, std::shared_ptr<scene::Node>>::Ptr
-            targetAdded() const
-            {
-                return _targetAdded;
-            }
-
-            inline
-            Signal<Ptr, std::shared_ptr<scene::Node>>::Ptr
-            targetRemoved() const
-            {
-                return _targetRemoved;
-            }
-
-            inline
-            Signal<Ptr>::Ptr
-            layoutMaskChanged() const
-            {
-                return _layoutMaskChanged;
-            }
-        };
-
-        inline
-        AbstractComponent::~AbstractComponent()
-        {
-        }
-    }
+		};
+	}
 }

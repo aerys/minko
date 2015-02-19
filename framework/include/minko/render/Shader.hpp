@@ -25,84 +25,113 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-    namespace render
-    {
-        class Shader :
-            public AbstractResource
-        {
-        public:
-            typedef std::shared_ptr<Shader> Ptr;
+	namespace render
+	{
+		class Shader :
+			public AbstractResource
+		{
+		public:
+			typedef std::shared_ptr<Shader> Ptr;
 
-            enum class Type
-            {
-                VERTEX_SHADER,
-                FRAGMENT_SHADER
-            };
+			enum class Type
+			{
+				VERTEX_SHADER,
+				FRAGMENT_SHADER
+			};
 
-        private:
-            Type        _type;
-            std::string _source;
+		private:
+			Type		            _type;
+			std::string             _source;
+            std::set<std::string>   _definedMacros;
 
-        public:
-            inline static
-            Ptr
-            create(std::shared_ptr<AbstractContext> context, Type type)
-            {
-                return std::shared_ptr<Shader>(new Shader(context, type));
-            }
+		public:
+			inline static
+			Ptr
+			create(std::shared_ptr<AbstractContext> context, Type type)
+			{
+				return std::shared_ptr<Shader>(new Shader(context, type));
+			}
 
-            inline static
-            Ptr
-            create(std::shared_ptr<AbstractContext> context, Type type, const std::string& source)
-            {
-                auto s = create(context, type);
+			inline static
+			Ptr
+			create(std::shared_ptr<AbstractContext> context, Type type, const std::string& source)
+			{
+				auto s = create(context, type);
 
-                s->_source = source;
+				s->_source = source;
 
-                return s;
-            }
+				return s;
+			}
 
-            inline static
-            Ptr
-            create(Ptr shader)
-            {
-                return create(shader->_context, shader->_type, shader->_source);
-            }
+			inline static
+			Ptr
+			create(Ptr shader)
+			{
+                auto s = create(shader->context(), shader->_type);
 
-            inline
-            Type
-            type() const
-            {
-                return _type;
-            }
+                s->_source = shader->_source;
+                s->_definedMacros = shader->_definedMacros;
 
-            inline
-            const std::string&
-            source()
-            {
-                return _source;
-            }
+				return s;
+			}
+
+			inline
+			Type
+			type() const
+			{
+				return _type;
+			}
+
+			inline
+			const std::string&
+			source()
+			{
+				return _source;
+			}
+
+			inline
+			void
+			source(const std::string& source)
+			{
+				_source = source;
+			}
 
             inline
             void
-            source(const std::string& source)
+            define(const std::string& macroName)
             {
-                _source = source;
+                if (std::find(_definedMacros.begin(), _definedMacros.end(), macroName) == _definedMacros.end())
+                {
+                    _source = "#define " + macroName + "\n" + _source;
+                    _definedMacros.insert(macroName);
+                }
             }
 
+            template <typename T>
+            inline
             void
-            dispose();
-
-            void
-            upload();
-
-        private:
-            Shader(std::shared_ptr<AbstractContext> context,
-                   Type type) :
-                AbstractResource(context),
-                _type(type)
+            define(const std::string& macroName, T value)
             {
+                if (std::find(_definedMacros.begin(), _definedMacros.end(), macroName) == _definedMacros.end())
+                {
+                    _source = "#define " + macroName + " " + std::to_string(value) + "\n" + _source;
+                    _definedMacros.insert(macroName);
+                }
             }
-        };
-    }
+
+			void
+			dispose();
+
+			void
+			upload();
+
+		private:
+			Shader(std::shared_ptr<AbstractContext> context,
+				   Type								type) :
+				AbstractResource(context),
+				_type(type)
+			{
+			}
+		};
+	}
 }

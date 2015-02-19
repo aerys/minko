@@ -31,6 +31,17 @@ MasterAnimation::MasterAnimation(bool isLooping) :
 	AbstractAnimation(isLooping),
 	_animations()
 {
+	/*
+	_maxTime = 0;
+
+	for (auto& animation : _animations)
+	{
+		animation->_master = std::dynamic_pointer_cast<MasterAnimation>(shared_from_this());
+		_maxTime = std::max(_maxTime, animation->_maxTime);
+	}
+
+	setPlaybackWindow(0, _maxTime)->seek(0)->play();
+	*/
 }
 
 MasterAnimation::MasterAnimation(const MasterAnimation& masterAnim, const CloneOption& option) :
@@ -44,58 +55,31 @@ MasterAnimation::clone(const CloneOption& option)
 {
 	auto anim = std::shared_ptr<MasterAnimation>(new MasterAnimation(*this, option));
 
-	anim->initialize();
-
 	return anim;
 }
 
-/*virtual*/
 void
-MasterAnimation::initialize()
+MasterAnimation::targetAdded(Node::Ptr target)
 {
-	AbstractAnimation::initialize();
-
-	_targetAddedSlot = targetAdded()->connect(std::bind(
-		&MasterAnimation::targetAddedHandler,
-		std::dynamic_pointer_cast<MasterAnimation>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2
-		));
-
-	_targetRemovedSlot = targetRemoved()->connect(std::bind(
-		&MasterAnimation::targetRemovedHandler,
-		std::dynamic_pointer_cast<MasterAnimation>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2
-		));
-	
-}
-
-void
-MasterAnimation::targetAddedHandler(AbstractComponent::Ptr cmp,
-									  Node::Ptr node)
-{
-	_addedSlot = node->added()->connect(std::bind(
+	_addedSlot = target->added().connect(std::bind(
 		&MasterAnimation::addedHandler,
 		std::dynamic_pointer_cast<MasterAnimation>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
-		));
+	));
 
-	_removedSlot = node->removed()->connect(std::bind(
+	_removedSlot = target->removed().connect(std::bind(
 		&MasterAnimation::removedHandler,
 		std::dynamic_pointer_cast<MasterAnimation>(shared_from_this()),
 		std::placeholders::_1,
 		std::placeholders::_2,
 		std::placeholders::_3
-		));
+	));
 
-	_target = node;
-
+	_target = target;
 	
-		initAnimations();
-	
+	initAnimations();
 }
 
 void
@@ -121,8 +105,7 @@ MasterAnimation::initAnimations()
 }
 
 void
-MasterAnimation::targetRemovedHandler(AbstractComponent::Ptr cmp,
-										Node::Ptr node)
+MasterAnimation::targetRemoved(Node::Ptr target)
 {
 }
 

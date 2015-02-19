@@ -90,7 +90,11 @@ namespace minko
 
             virtual
             void
-            drawTriangles(const uint indexBuffer, const int numTriangles) = 0;
+			drawTriangles(const uint indexBuffer, const uint firstIndex, const int numTriangles) = 0;
+
+			virtual
+			void
+			drawTriangles(const uint firstIndex, const int numTriangles) = 0;
 
             virtual
             const uint
@@ -254,113 +258,45 @@ namespace minko
             deleteFragmentShader(const uint fragmentShader) = 0;
 
             virtual
-            std::shared_ptr<ProgramInputs>
+			ProgramInputs
             getProgramInputs(const uint program) = 0;
 
             virtual
             void
-            setUniform(uint location, int value) = 0;
+            setBlendingMode(Blending::Source source, Blending::Destination destination) = 0;
 
             virtual
             void
-            setUniform(uint location, int v1, int v2) = 0;
+            setBlendingMode(Blending::Mode blendMode) = 0;
 
             virtual
             void
-            setUniform(uint location, int v1, int v2, int v3) = 0;
+			setColorMask(bool) = 0;
 
             virtual
             void
-            setUniform(uint location, int v1, int v2, int v3, int v4) = 0;
+			setDepthTest(bool depthMask, CompareMode depthFunc) = 0;
 
             virtual
             void
-            setUniform(uint location, float value) = 0;
+			setStencilTest(CompareMode		stencilFunc,
+						   int				stencilRef,
+						   uint				stencilMask,
+						   StencilOperation	stencilFailOp,
+						   StencilOperation	stencilZFailOp,
+						   StencilOperation	stencilZPassOp) = 0;
 
             virtual
             void
-            setUniform(uint location, float v1, float v2) = 0;
+			setScissorTest(bool	scissorTest, const math::ivec4&) = 0;
 
             virtual
             void
-            setUniform(uint location, float v1, float v2, float v3) = 0;
+			readPixels(unsigned char* pixels) = 0;
 
             virtual
             void
-            setUniform(uint location, float v1, float v2, float v3, float v4) = 0;
-
-            virtual
-            void
-            setUniform(const uint& location, const uint& size, bool transpose, const float* values) = 0;
-
-            virtual
-            void
-            setUniforms(uint location, uint size, const float* values) = 0;
-
-            virtual
-            void
-            setUniforms2(uint location, uint size, const float* values) = 0;
-
-            virtual
-            void
-            setUniforms3(uint location, uint size, const float* values) = 0;
-
-            virtual
-            void
-            setUniforms4(uint location, uint size, const float* values) = 0;
-
-            virtual
-            void
-            setUniforms(uint location, uint size, const int* values) = 0;
-
-            virtual
-            void
-            setUniforms2(uint location, uint size, const int* values) = 0;
-
-            virtual
-            void
-            setUniforms3(uint location, uint size, const int* values) = 0;
-
-            virtual
-            void
-            setUniforms4(uint location, uint size, const int* values) = 0;
-
-            virtual
-            void
-            setBlendMode(Blending::Source source, Blending::Destination destination) = 0;
-
-            virtual
-            void
-            setBlendMode(Blending::Mode blendMode) = 0;
-
-            virtual
-            void
-            setColorMask(bool) = 0;
-
-            virtual
-            void
-            setDepthTest(bool depthMask, CompareMode depthFunc) = 0;
-
-            virtual
-            void
-            setStencilTest(CompareMode        stencilFunc,
-                           int                stencilRef,
-                           uint                stencilMask,
-                           StencilOperation    stencilFailOp,
-                           StencilOperation    stencilZFailOp,
-                           StencilOperation    stencilZPassOp) = 0;
-
-            virtual
-            void
-            setScissorTest(bool    scissorTest, const render::ScissorBox&) = 0;
-
-            virtual
-            void
-            readPixels(unsigned char* pixels) = 0;
-
-            virtual
-            void
-            readPixels(unsigned int x, unsigned int y, unsigned int width, unsigned int height, unsigned char* pixels) = 0;
+			readPixels(unsigned int x, unsigned int y, unsigned int width, unsigned int height, unsigned char* pixels) = 0;
 
             virtual
             void
@@ -377,6 +313,42 @@ namespace minko
             virtual
             void
             generateMipmaps(unsigned int texture) = 0;
+
+            virtual
+            void
+            setUniformFloat(uint location, uint count, const float* v) = 0;
+
+            virtual
+            void
+            setUniformFloat2(uint location, uint count, const float* v) = 0;
+
+            virtual
+            void
+            setUniformFloat3(uint location, uint count, const float* v) = 0;
+
+            virtual
+            void
+            setUniformFloat4(uint location, uint count, const float* v) = 0;
+
+            virtual
+            void
+            setUniformMatrix4x4(uint location, uint count, const float* v) = 0;
+
+            virtual
+            void
+            setUniformInt(uint location, uint count, const int* v) = 0;
+
+            virtual
+            void
+            setUniformInt2(uint location, uint count, const int* v) = 0;
+
+            virtual
+            void
+            setUniformInt3(uint location, uint count, const int* v) = 0;
+
+            virtual
+            void
+            setUniformInt4(uint location, uint count, const int* v) = 0;
         };
     }
 }

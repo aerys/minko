@@ -23,35 +23,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-    typedef uint32_t Layouts;
-
     namespace scene
     {
-        class Layout
+        typedef uint32_t Layout;
+
+        struct BuiltinLayout
         {
-        public:
+            static const Layout DEFAULT;
+            static const Layout DEBUG_ONLY;
+            static const Layout STATIC;
+            static const Layout IGNORE_RAYCASTING;
+            static const Layout IGNORE_CULLING;
+            static const Layout _RESERVED_1;
+            static const Layout _RESERVED_2;
+            static const Layout _RESERVED_3;
+        };
 
-            class Group
-            {
-            public:
-                static const Layouts DEFAULT;
-                // static const Layouts STATIC;
-                static const Layouts IGNORE_RAYCASTING;
-                static const Layouts CULLING;
-                static const Layouts PICKING;
-                static const Layouts REFLECTION;
-            };
-
-            class Mask
-            {
-            public:
-                static const Layouts NOTHING;
-                static const Layouts EVERYTHING;
-                static const Layouts COLLISIONS_DYNAMIC_DEFAULT;
-                // static const Layouts COLLISIONS_STATIC_DEFAULT;
-                static const Layouts RAYCASTING_DEFAULT;
-            };
-
+        struct LayoutMask
+        {
+            static const Layout NOTHING;
+            static const Layout EVERYTHING;
+            static const Layout COLLISIONS_DYNAMIC_DEFAULT;
         };
     }
 }

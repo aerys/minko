@@ -56,7 +56,7 @@ namespace minko
             {
                 DEFAULT     = (uint)Source::ONE | (uint)Destination::ZERO,
                 ALPHA       = (uint)Source::SRC_ALPHA | (uint)Destination::ONE_MINUS_SRC_ALPHA,
-                ADDITIVE    = (uint)Source::ONE | (uint)Destination::ONE
+                ADDITIVE    = (uint)Source::SRC_ALPHA | (uint)Destination::ONE
             };
         };
 
@@ -68,10 +68,24 @@ namespace minko
         }
 
         inline
-        unsigned int
-        operator&(Blending::Mode& mode, int mask)
+        uint
+        operator&(const Blending::Mode mode, const uint mask)
         {
-            return static_cast<unsigned int>(mode) & mask;
+            return static_cast<uint>(mode) & mask;
+        }
+
+        inline
+        uint
+        operator&(const Blending::Mode mode, const Blending::Destination mask)
+        {
+            return static_cast<uint>(mode) & static_cast<uint>(mask);
+        }
+
+        inline
+        uint
+        operator&(const Blending::Mode mode, const Blending::Source mask)
+        {
+            return static_cast<uint>(mode) & static_cast<uint>(mask);
         }
     }
 }

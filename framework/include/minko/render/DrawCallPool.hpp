@@ -20,183 +20,138 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+
 #include "minko/Signal.hpp"
-
-namespace std
-{
-    template<>
-    struct hash< std::pair< std::shared_ptr<minko::component::Surface>, std::shared_ptr<minko::scene::Node> > >
-    {
-        inline
-        size_t
-        operator()(const std::pair< std::shared_ptr<minko::component::Surface>, std::shared_ptr<minko::scene::Node> >& x) const
-        {
-            size_t seed = std::hash<long>()(long(x.first.get()));
-
-            hash_combine(seed, std::hash<long>()(long(x.second.get())));
-
-            return seed;
-        }
-    };
-}
+#include "minko/render/Effect.hpp"
+#include "minko/render/DrawCall.hpp"
+#include "minko/data/Store.hpp"
 
 namespace minko
 {
-    namespace render
-    {
-
-        class DrawCallPool :
-            public std::enable_shared_from_this<DrawCallPool>
-        {
-        public:
-            typedef std::shared_ptr<DrawCallPool>                                                       Ptr;
-
+	namespace render
+	{
+		class DrawCallPool
+		{
         private:
-            typedef std::shared_ptr<DrawCall>                                                           DrawCallPtr;
-            typedef std::shared_ptr<math::Vector3>                                                      Vector3Ptr;
-            typedef std::shared_ptr<data::Container>                                                    ContainerPtr;
-            typedef std::shared_ptr<component::Surface>                                                 SurfacePtr;
-            typedef std::shared_ptr<component::Renderer>                                                RendererPtr;
-            typedef std::shared_ptr<render::Pass>                                                       PassPtr;
-            typedef std::shared_ptr<scene::Node>                                                        NodePtr;
-            typedef std::shared_ptr<data::ArrayProvider>                                                ArrayProviderPtr;
-            typedef std::shared_ptr<data::AbstractFilter>                                               AbstractFilterPtr;
+            typedef std::list<DrawCall*>                                                                DrawCallList;
+            typedef DrawCallList::iterator                                                              DrawCallIterator;
+            typedef data::Store::PropertyChangedSignal                                                  PropertyChanged;
+            typedef std::pair<PropertyChanged::Slot, uint>                                              ChangedSlot;
+            typedef data::Store                                                                         Store;
+            typedef std::shared_ptr<data::Collection>                                                   CollectionPtr;
+            typedef std::shared_ptr<data::Provider>                                                     ProviderPtr;
+            typedef data::MacroBinding                                                                  MacroBinding;
+            typedef std::pair<std::string, const Store*>                                                MacroBindingKey;
+            typedef PropertyChanged::Callback                                                           PropertyCallback;
 
-            typedef std::unordered_set<std::string>                                                     Techniques;
+            typedef std::pair_hash<std::string, const Store*>                                           MacroBindingHash;
+            typedef std::pair_eq<std::string, const Store*>                                             MacroBindingEq;
+            typedef std::unordered_map<MacroBindingKey, DrawCallList, MacroBindingHash, MacroBindingEq> MacroToDrawCallsMap;
+            typedef std::unordered_map<MacroBindingKey, ChangedSlot, MacroBindingHash, MacroBindingEq>  MacroToChangedSlotMap;
 
-            typedef Signal<DrawCallPtr, ContainerPtr, const std::string&>                               DrawCallMacroChanged;
-            typedef Signal<ContainerPtr, const std::string&>                                            PropertyChanged;
-            typedef Signal<SurfacePtr, const std::string&, bool>                                        TechniqueChanged;
-            typedef Signal<SurfacePtr, RendererPtr, bool>                                               VisibilityChanged;
-            typedef Signal<DrawCallPtr>                                                                 ZSortNeeded;
-            typedef Signal<ArrayProviderPtr, uint>                                                      ArrayIndexChanged;
-            typedef Signal<RendererPtr, AbstractFilterPtr, data::BindingSource, SurfacePtr>             RendererFilterChanged;
-
-        private:
-            static const unsigned int                                                                   NUM_FALLBACK_ATTEMPTS;
-            static std::unordered_map<std::string, std::pair<std::string, int>>                         _variablePropertyNameToPosition;
-            static std::unordered_map<DrawCallPtr, Vector3Ptr>                                          _cachedDrawcallPositions; // in eye space
-
-            RendererPtr                                                                                 _renderer;
-
-            // surface that will generate new draw call next frame
-            std::set<SurfacePtr>                                                                        _toCollect;
-            std::set<SurfacePtr>                                                                        _toRemove;
-            std::set<SurfacePtr>                                                                        _invisibleSurfaces;
-
-            std::unordered_map<SurfacePtr, std::list<DrawCallPtr>>                                      _surfaceToDrawCalls;
-            std::unordered_map<DrawCallPtr, SurfacePtr>                                                 _drawcallToSurface;
-            std::unordered_map<DrawCallPtr, DrawCallMacroChanged::Slot>                                 _drawcallToMacroChangedSlot;
-            std::unordered_map<DrawCallPtr, ZSortNeeded::Slot>                                          _drawcallToZSortNeededSlot;
-            std::unordered_map<SurfacePtr, ContainerPtr>                                                _surfaceToRootContainer;
-            std::unordered_map<SurfacePtr, uint>                                                        _surfaceToMaterialProviderIndex;
-            std::list<DrawCallPtr>                                                                      _drawCalls;
-
-            std::set<DrawCallPtr>                                                                       _dirtyDrawCalls;
-            bool                                                                                        _mustZSort; // forces z-sorting at next frame
-
-            std::unordered_map<SurfacePtr, TechniqueChanged::Slot>                                      _surfaceToTechniqueChangedSlot;
-            std::unordered_multimap<SurfacePtr, VisibilityChanged::Slot>                                _surfaceToVisibilityChangedSlots;
-            std::unordered_multimap<SurfacePtr, ArrayIndexChanged::Slot>                                _surfaceToIndexChangedSlots;
-
-            std::unordered_map<SurfacePtr, std::unordered_map<std::string, Techniques>>                 _surfaceBadMacroToTechniques;
-            std::unordered_map<SurfacePtr, std::unordered_map<std::string, PropertyChanged::Slot>>      _surfaceBadMacroToChangedSlot;
-
-            RendererFilterChanged::Slot                                                                 _rendererFilterChangedSlot;
+            typedef std::pair_hash<const data::Binding*, const DrawCall*>                               DrawCallHash;
+            typedef std::pair_eq<const data::Binding*, const DrawCall*>                                 DrawCallEq;
+            typedef std::pair<const data::Binding*, const DrawCall*>                                    DrawCallKey;
+            typedef std::unordered_map<DrawCallKey, PropertyChanged::Slot, DrawCallHash, DrawCallEq>    PropertyChangedSlotMap;
 
         public:
-            inline static
-            Ptr
-            create(RendererPtr renderer)
+            typedef std::pair<DrawCallIterator, DrawCallIterator>   DrawCallIteratorPair;
+
+		private:
+            DrawCallList                 	_drawCalls;
+            MacroToDrawCallsMap             _macroToDrawCalls;
+            std::unordered_set<DrawCall*>   _invalidDrawCalls;
+            MacroToChangedSlotMap           _macroChangedSlot;
+            PropertyChangedSlotMap          _propChangedSlot;
+
+		public:
+            DrawCallPool();
+
+            ~DrawCallPool()
             {
-                Ptr ptr = std::shared_ptr<DrawCallPool>(new DrawCallPool(renderer));
-
-                ptr->initialize();
-
-                return ptr;
             }
 
-            const std::list<std::shared_ptr<DrawCall>>&
-            drawCalls();
+			const DrawCallList&
+            drawCalls()
+            {
+                return _drawCalls;
+            }
+
+            DrawCallIteratorPair
+            addDrawCalls(std::shared_ptr<Effect>                                effect,
+                         const std::string&                                     techniqueName,
+                         const std::unordered_map<std::string, std::string>&    variables,
+                         data::Store&                                           rootData,
+                         data::Store&                                           rendererData,
+                         data::Store&                                           targetData);
 
             void
-            addSurface(SurfacePtr);
+            removeDrawCalls(const DrawCallIteratorPair& iterators);
 
             void
-            removeSurface(SurfacePtr);
+            invalidateDrawCalls(const DrawCallIteratorPair&                         iterators,
+                                const std::unordered_map<std::string, std::string>& variables);
+
+            void
+            update();
+
+			void
+			clear();
 
         private:
-            explicit
-            DrawCallPool(RendererPtr renderer);
+            void
+            watchProgramSignature(DrawCall&                     drawCall,
+                                  const data::MacroBindingMap&  macroBindings,
+                                  data::Store&                  rootData,
+                                  data::Store&                  rendererData,
+                                  data::Store&                  targetData);
 
             void
-            initialize();
-
-            // generate draw call for one mesh
-            std::shared_ptr<DrawCall>
-            initializeDrawCall(SurfacePtr,
-                               PassPtr,
-                               DrawCallPtr = nullptr);
-
-            std::shared_ptr<Program>
-            getWorkingProgram(SurfacePtr,
-                              PassPtr,
-                              FormatNameFunction,
-                              ContainerPtr fullTargetData,
-                              ContainerPtr fullRendererData,
-                              ContainerPtr fullRootData,
-                              ContainerPtr targetData,
-                              ContainerPtr rendererData,
-                              ContainerPtr rootData);
-
-            std::list<DrawCallPtr>&
-            generateDrawCall(SurfacePtr, unsigned int numAttempts);
+            unwatchProgramSignature(DrawCall&                       drawCall,
+                                    const data::MacroBindingMap&    macroBindings,
+                                    data::Store&                    rootData,
+                                    data::Store&                    rendererData,
+                                    data::Store&                    targetData);
 
             void
-            refreshDrawCall(DrawCallPtr);
+            macroPropertyAddedHandler(const data::MacroBinding&     macroBinding,
+                                      const std::string&            propertyName,
+                                      data::Store&                  store,
+                                      const std::list<DrawCall*>&   drawCalls);
 
             void
-            deleteDrawCalls(SurfacePtr);
+            macroPropertyRemovedHandler(const data::MacroBinding&   macroBinding,
+                                        const std::string&          propertyName,
+                                        data::Store&                store,
+                                        const std::list<DrawCall*>& drawCalls);
 
             void
-            cleanSurface(SurfacePtr);
+            macroPropertyChangedHandler(const data::MacroBinding& macroBinding, const std::list<DrawCall*>& drawCalls);
 
             void
-            techniqueChangedHandler(SurfacePtr, const std::string& technique, bool updateDrawCall);
+            initializeDrawCall(DrawCall& drawCall, bool forceRebind = false);
 
             void
-            visibilityChangedHandler(SurfacePtr, RendererPtr, bool visibility);
+            addMacroCallback(const MacroBindingKey&     key,
+                             PropertyChanged&           signal,
+                             const PropertyCallback&    callback);
 
             void
-            drawCallVariablesChangedHandler(ArrayProviderPtr, uint index, SurfacePtr);
+            removeMacroCallback(const MacroBindingKey& key);
 
-            const data::MacroBindingMap
-            getDrawCallmacroBindings(DrawCallPtr drawcall);
-
-            void
-            drawcallMacroChangedHandler(DrawCallPtr, ContainerPtr, const std::string&);
-
-            void
-            drawcallZSortNeededHandler(DrawCallPtr);
-
-            void
-            surfaceBadMacroChangedHandler(SurfacePtr, const std::string&);
-
-            void
-            rendererFilterChangedHandler(RendererPtr, AbstractFilterPtr, data::BindingSource, SurfacePtr);
-
-            std::string
-            formatPropertyName(const std::string&                               rawPropertyName,
-                               std::unordered_map<std::string, std::string>&    variablesToValue);
-
-            static
-            Vector3Ptr
-            getDrawcallEyePosition(DrawCallPtr, Vector3Ptr output = nullptr);
-
-            static
             bool
-            compareDrawCalls(DrawCallPtr, DrawCallPtr);
-        };
-    }
-}
+            hasMacroCallback(const MacroBindingKey& key);
 
+            void
+            uniformBindingPropertyAddedHandler(DrawCall&                          drawCall,
+                                               const ProgramInputs::UniformInput& input,
+                                               const data::BindingMap&            uniformBindingMap,
+                                               bool                               forceRebind = false);
+
+            void
+            samplerStatesBindingPropertyAddedHandler(DrawCall&                          drawCall,
+                                                     const ProgramInputs::UniformInput& input,
+                                                     const data::BindingMap&            uniformBindingMap);
+        };
+	}
+}

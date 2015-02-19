@@ -103,7 +103,8 @@ GeometryParser::parse(const std::string&                filename,
         return;
 
     std::string                 folderPathName          = extractFolderPath(resolvedFilename);
-    geometry::Geometry::Ptr     geom                    = geometry::Geometry::create();
+	extractDependencies(assetLibrary, data, _headerSize, _dependenciesSize, options, folderPathName);
+	geometry::Geometry::Ptr geom	= geometry::Geometry::create(filename);
     SerializedGeometry          serializedGeometry;
 
     extractDependencies(assetLibrary, data, _headerSize, _dependenciesSize, options, folderPathName);
@@ -113,7 +114,7 @@ GeometryParser::parse(const std::string&                filename,
     uint indexBufferFunction = 0;
     uint vertexBufferFunction = 0;
 
-    computeMetaByte(serializedGeometry.get<0>(), indexBufferFunction, vertexBufferFunction);
+	computeMetaData(serializedGeometry.a0, indexBufferFunction, vertexBufferFunction);
 
     geom->indices(indexBufferParserFunctions[indexBufferFunction](serializedGeometry.get<2>(), options->context()));
 
@@ -139,8 +140,8 @@ GeometryParser::parse(const std::string&                filename,
 }
 
 void
-GeometryParser::computeMetaByte(unsigned char byte, uint& indexBufferFunctionId, uint& vertexBufferFunctionId)
+GeometryParser::computeMetaData(unsigned short metaData, uint& indexBufferFunctionId, uint& vertexBufferFunctionId)
 {
-    indexBufferFunctionId    = 0x00000000 + ((byte >> 4) & 0x0F);
-    vertexBufferFunctionId    = 0x00000000 + (byte & 0x0F);
+	indexBufferFunctionId	= 0x00000000 + ((metaData >> 4) & 0x0F);
+	vertexBufferFunctionId	= 0x00000000 + (metaData & 0x0F);
 }

@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::file;
+using namespace minko::math;
 using namespace minko::render;
 using namespace minko::serialize;
 
@@ -32,7 +33,9 @@ WriterOptions::WriterOptions() :
     _imageFormat(ImageFormat::PNG),
     _textureFormats(),
     _compressTexture(true),
-    _generateMipmaps(false),
+    _generateMipmaps(true),
+    _upscaleTextureWhenProcessedForMipmapping(true),
+    _textureMaxResolution(math::ivec2(2048, 2048)),
     _mipFilter(MipFilter::LINEAR),
     _optimizeForNormalMapping(false)
 {

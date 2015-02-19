@@ -23,7 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/Signal.hpp"
-#include "minko/data/Container.hpp"
+#include "minko/data/Store.hpp"
+#include "minko/data/Collection.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/scene/Node.hpp"
 
@@ -31,29 +32,36 @@ namespace minko
 {
     namespace component
     {
-        template <class ProviderClass>
-        class AbstractRootDataComponent<ProviderClass, typename std::enable_if<std::is_base_of<data::Provider, ProviderClass>::value>::type> :
+	    class AbstractRootDataComponent :
             public AbstractComponent
-        {
+	    {
         private:
             typedef std::shared_ptr<scene::Node>            NodePtr;
 
         private:
-            std::shared_ptr<ProviderClass>                  _data;
+            std::shared_ptr<data::Provider>                 _provider;
+            std::string                                     _collectionName;
             bool                                            _enabled;
             NodePtr                                         _root;
 
-            Signal<AbstractComponent::Ptr, NodePtr>::Slot   _targetAddedSlot;
-            Signal<AbstractComponent::Ptr, NodePtr>::Slot   _targetRemovedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot         _addedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot         _removedSlot;
 
-        protected:
-            inline
-            std::shared_ptr<ProviderClass>
-            data() const
+	    protected:
+            virtual
+            ~AbstractRootDataComponent()
             {
-                return _data;
+                _provider = nullptr;
+                _root = nullptr;
+                _addedSlot = nullptr;
+                _removedSlot = nullptr;
+            }
+
+            inline
+            std::shared_ptr<data::Provider>
+            provider() const
+            {
+                return _provider;
             }
 
             inline
@@ -63,55 +71,32 @@ namespace minko
                 return _root;
             }
 
-            AbstractRootDataComponent(std::shared_ptr<ProviderClass> provider) :
-                _data(provider),
+            AbstractRootDataComponent(const std::string& collectionName) :
+                _provider(data::Provider::create()),
+                _collectionName(collectionName),
                 _enabled(true)
             {
             }
 
-            virtual
             void
-            initialize()
+            targetAdded(NodePtr target)
             {
-                _targetAddedSlot = targetAdded()->connect(std::bind(
-                    &AbstractRootDataComponent<ProviderClass>::targetAddedHandler,
-                    std::static_pointer_cast<AbstractRootDataComponent<ProviderClass>>(shared_from_this()),
-                    std::placeholders::_1,
-                    std::placeholders::_2
-                ));
-
-                _targetRemovedSlot = targetRemoved()->connect(std::bind(
-                    &AbstractRootDataComponent<ProviderClass>::targetRemovedHandler,
-                    std::static_pointer_cast<AbstractRootDataComponent<ProviderClass>>(shared_from_this()),
-                    std::placeholders::_1,
-                    std::placeholders::_2
-                ));
-            }
-
-            virtual
-            void
-            targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
-            {
-                if (targets().size() > 1)
-                    throw std::logic_error("This component cannot have more than 1 target.");
-
                 auto cb = std::bind(
                     &AbstractRootDataComponent::addedOrRemovedHandler,
-                    std::static_pointer_cast<AbstractRootDataComponent<ProviderClass>>(shared_from_this()),
+                    std::static_pointer_cast<AbstractRootDataComponent>(shared_from_this()),
                     std::placeholders::_1,
                     std::placeholders::_2,
                     std::placeholders::_3
                 );
 
-                _addedSlot = target->added()->connect(cb);
-                _removedSlot = target->removed()->connect(cb);
+                _addedSlot = target->added().connect(cb);
+                _removedSlot = target->removed().connect(cb);
 
                 updateRoot(target->root());
             }
 
-            virtual
             void
-            targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target)
+            targetRemoved(NodePtr target)
             {
                 updateRoot(nullptr);
             }
@@ -131,13 +116,38 @@ namespace minko
                     return;
 
                 if (_root)
-                    _root->data()->removeProvider(_data);
+                {
+                    const auto& collections = _root->data().collections();
+                    auto collectionIt = std::find_if(collections.begin(), collections.end(), [&](data::Collection::Ptr c)
+                    {
+                        return c->name() == _collectionName;
+                    });
+                    auto collection = *collectionIt;
 
+                    collection->remove(_provider);
+                }
+                
                 _root = root;
 
                 if (_root)
-                    _root->data()->addProvider(_data);
+                {
+                    const auto& collections = _root->data().collections();
+                    auto collectionIt = std::find_if(collections.begin(), collections.end(), [&](data::Collection::Ptr c)
+                    {
+                        return c->name() == _collectionName;
+                    });
+
+                    if (collectionIt == collections.end())
+                    {
+                        auto collection = data::Collection::create(_collectionName);
+
+                        collection->pushBack(_provider);
+                        _root->data().addCollection(collection);
+                    }
+                    else
+                        (*collectionIt)->pushBack(_provider);
+                }
             }
-        };
+	    };
     }
 }

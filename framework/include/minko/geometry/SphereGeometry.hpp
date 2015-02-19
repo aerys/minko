@@ -24,45 +24,49 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-    namespace geometry
-    {
-        class SphereGeometry :
-            public Geometry
-        {
-        public:
-            typedef std::shared_ptr<SphereGeometry>    Ptr;
+	namespace geometry
+	{
+		class SphereGeometry :
+			public Geometry
+		{
+		public:
+			typedef std::shared_ptr<SphereGeometry>	Ptr;
 
-        private:
+		public:
+			inline static
+			Ptr
+			create(std::shared_ptr<render::AbstractContext>	context,
+					unsigned int							numParallels	= 10,
+					unsigned int							numMeridians	= 0,
+					bool									withNormals		= true)
+			{
+				numMeridians = numMeridians != 0 ? numMeridians : numParallels;
 
-        public:
-            inline static
-            Ptr
-            create(std::shared_ptr<render::AbstractContext> context,
-                    unsigned int                            numParallels    = 10,
-                    unsigned int                            numMeridians    = 0,
-                    bool                                    withNormals     = true)
+				auto geom = std::shared_ptr<SphereGeometry>(new SphereGeometry());
+
+				geom->initializeVertices(context, numParallels, numMeridians, withNormals);
+				geom->initializeIndices(context, numParallels, numMeridians);
+
+				return geom;
+			}
+
+        protected:
+            SphereGeometry() :
+                Geometry("sphere")
             {
-                numMeridians = numMeridians != 0 ? numMeridians : numParallels;
-
-                auto geom = std::shared_ptr<SphereGeometry>(new SphereGeometry());
-
-                geom->initializeVertices(context, numParallels, numMeridians, withNormals);
-                geom->initializeIndices(context, numParallels, numMeridians);
-
-                return geom;
             }
 
-        private:
-            void
-            initializeVertices(std::shared_ptr<render::AbstractContext>    context,
-                               unsigned int                                numParallels,
-                               unsigned int                                numMeridians,
-                               bool                                        withNormals);
+		private:
+			void
+			initializeVertices(std::shared_ptr<render::AbstractContext>	context,
+							   unsigned int								numParallels,
+							   unsigned int								numMeridians,
+							   bool										withNormals);
 
-            void
-            initializeIndices(std::shared_ptr<render::AbstractContext>     context,
-                                unsigned int                               numParallels,
-                                unsigned int                               numMeridians);
-        };
-    }
+			void
+			initializeIndices(std::shared_ptr<render::AbstractContext>	context,
+								unsigned int							numParallels,
+								unsigned int							numMeridians);
+		};
+	}
 }

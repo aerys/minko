@@ -111,6 +111,20 @@ AssetLibrary::texture(const std::string& name, render::Texture::Ptr texture)
     return std::enable_shared_from_this<AssetLibrary>::shared_from_this();
 }
 
+std::shared_ptr<render::AbstractTexture>
+AssetLibrary::getTextureByUuid(const std::string& uuid)
+{
+    auto it = std::find_if(_textures.begin(), _textures.end(), [&](const std::pair<std::string, TexturePtr>& t)
+    {
+        return t.second->isReady() && t.second->uuid() == uuid;
+    });
+
+    if (it == _textures.end())
+        return nullptr;
+
+    return it->second;
+}
+
 render::CubeTexture::Ptr
 AssetLibrary::cubeTexture(const std::string& name) const
 {
@@ -300,17 +314,17 @@ AssetLibrary::scriptName(AbsScriptPtr script)
     throw std::logic_error("AssetLibrary does not reference this script.");
 }
 
-Layouts
+scene::Layout
 AssetLibrary::layout(const std::string& name)
 {
     if (_layouts.count(name) == 0)
     {
-        Layouts existingMask = 0;
+        scene::Layout existingMask = 0;
 
         for (auto layout : _layouts)
             existingMask |= layout.second;
 
-        Layouts mask = 1;
+        scene::Layout mask = 1;
         for (auto i = 0; i < 32 && (existingMask & mask); ++i, mask <<= 1)
             continue;
 
@@ -324,7 +338,7 @@ AssetLibrary::layout(const std::string& name)
 }
 
 AssetLibrary::Ptr
-AssetLibrary::layout(const std::string& name, Layouts mask)
+AssetLibrary::layout(const std::string& name, scene::Layout mask)
 {
     _layouts[name] = mask;
 

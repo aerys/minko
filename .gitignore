@@ -21,9 +21,16 @@ Makefile
 *.lastbuildstate
 *.vsglog
 *.cache
+*.vspx
+*.rsp
+.clang_complete
+.atom-build.json
 doc/html
 remove.me
 dist
 packages
 .DS_Store
-bin/
+framework/bin
+plugin/*/bin
+example/*/bin
+test/*/bin

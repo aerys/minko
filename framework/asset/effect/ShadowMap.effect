@@ -1,0 +1,170 @@
+{
+    "name" : "shadow-mapping",
+
+    "techniques" : [
+        {
+            "name" : "shadow-map-cascade0",
+            "passes" : [
+                {
+                    "extends" : "shadow-mapping-depth",
+                    "macros" : { "SHADOW_CASCADE_INDEX" : { "type" : "int", "default" : 0 } }
+                },
+                {
+                    "extends" : "shadow-mapping-boxblur",
+                    "macros" : { "BOXBLUR_OFFSET" : { "type" : "int", "default" : 3 } }
+                }
+            ]
+        },
+        {
+            "name" : "shadow-map-cascade1",
+            "passes" : [
+                {
+                    "extends" : "shadow-mapping-depth",
+                    "macros" : { "SHADOW_CASCADE_INDEX" : { "type" : "int", "default" : 1 } }
+                },
+                "shadow-mapping-boxblur"
+            ]
+        },
+        {
+            "name" : "shadow-map-cascade2",
+            "passes" : [
+                {
+                    "extends" : "shadow-mapping-depth",
+                    "macros" : { "SHADOW_CASCADE_INDEX" : { "type" : "int", "default" : 2 } }
+                },
+                {
+                    "extends" : "shadow-mapping-boxblur",
+                    "macros" : { "BOXBLUR_OFFSET" : { "type" : "int", "default" : 1 } }
+                }
+            ]
+        },
+        {
+            "name" : "shadow-map-cascade3",
+            "passes" : [
+                {
+                    "extends" : "shadow-mapping-depth",
+                    "macros" : { "SHADOW_CASCADE_INDEX" : { "type" : "int", "default" : 3 } }
+                },
+                {
+                    "extends" : "shadow-mapping-boxblur",
+                    "macros" : { "BOXBLUR_OFFSET" : { "type" : "int", "default" : 1 } }
+                }
+            ]
+        }
+    ],
+
+    "passes" : [
+        {
+            "name" : "shadow-mapping-depth",
+
+            "attributes" : {
+                "aPosition"		: "geometry[${geometryUuid}].position",
+                "boneIdsA"		: "geometry[${geometryUuid}].boneIdsA",
+                "boneIdsB"		: "geometry[${geometryUuid}].boneIdsB",
+                "boneWeightsA"	: "geometry[${geometryUuid}].boneWeightsA",
+                "boneWeightsB"	: "geometry[${geometryUuid}].boneWeightsB"
+            },
+
+            "uniforms" : {
+                "uModelToWorldMatrix"	: "modelToWorldMatrix",
+                "uWorldToScreenMatrix"  : { "binding" : { "property" : "directionalLight[${lightUuid}].viewProjection", "source" : "root" } },
+                "uZNear"                : { "binding" : { "property" : "directionalLight[${lightUuid}].zNear", "source" : "root" } },
+                "uZFar"                 : { "binding" : { "property" : "directionalLight[${lightUuid}].zFar", "source" : "root" } }
+            },
+
+            "macros" : {
+                "MODEL_TO_WORLD"    : "modelToWorldMatrix",
+                "NUM_BONES"			: "geometry[${geometryUuid}].numBones"
+            },
+
+            "states" : {
+                "target" : "shadow-map-tmp",
+                "priority" : 1.0
+            },
+
+            "vertexShader" : "#pragma include \"ShadowMap.glsl\"",
+            "fragmentShader" : "#pragma include \"ShadowMap.glsl\""
+        },
+
+        {
+            "name" : "shadow-mapping-boxblur",
+            "isPostProcessing" : true,
+
+            "attributes" : {
+                "aPosition" : { "binding" : { "property" : "postProcessingPosition", "source" : "renderer" } },
+                "aUV" : { "binding" : { "property" : "postProcessingUV", "source" : "renderer" } }
+            },
+
+            "uniforms" : {
+                "uTexture" : {
+                    "binding" : { "property" : "effect[${effectUuid}].shadow-map-tmp", "source" : "renderer" },
+                    "textureFilter" : "linear"
+                },
+                "uTextureSize" : { "binding" : { "property" : "directionalLight[${lightUuid}].shadowMapSize", "source" : "root" } },
+                "uSpread" : { "binding" : { "property" : "directionalLight[${lightUuid}].shadowSpread", "source" : "root" } }
+            },
+
+            "states" : {
+                "priority" : 0.0
+            },
+
+            "vertexShader" : "
+                #ifdef GL_ES
+                # ifdef MINKO_PLATFORM_IOS
+                    precision highp float;
+                # else
+                    precision mediump float;
+                # endif
+                #endif
+
+                attribute vec2 aPosition;
+                attribute vec2 aUV;
+
+                varying vec2 vUV;
+
+                void main()
+                {
+                    gl_Position = vec4(aPosition, 0, 1);
+
+                    vUV = aUV;
+                }
+            ",
+
+            "fragmentShader" : "
+
+                #ifdef GL_ES
+                # ifdef MINKO_PLATFORM_IOS
+                    precision highp float;
+                # else
+                    precision mediump float;
+                # endif
+                #endif
+
+                uniform sampler2D uTexture;
+                uniform float uTextureSize;
+                uniform float uSpread;
+
+                varying vec2 vUV;
+
+                #pragma include \"Pack.function.glsl\"
+
+                #ifndef BOXBLUR_OFFSET
+                # define BOXBLUR_OFFSET 2
+                #endif
+
+                void main()
+                {
+                    float c = 0.0;
+
+                    // FIXME: avoid blending when the depth diff is > some threshold
+                    for (int x = -BOXBLUR_OFFSET; x <= BOXBLUR_OFFSET; ++x)
+                        for (int y = -BOXBLUR_OFFSET; y <= BOXBLUR_OFFSET; ++y)
+                            c += unpackFloat8bitRGBA(texture2D(uTexture, vUV + vec2(x, y) / uTextureSize));
+
+                    gl_FragColor = packFloat8bitRGBA(c / float((BOXBLUR_OFFSET * 2 + 1) * (BOXBLUR_OFFSET * 2 + 1)));
+                }
+            "
+        }
+
+    ]
+}

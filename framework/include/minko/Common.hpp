@@ -53,6 +53,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <bitset>
 #include <regex>
 
+#ifndef _MSC_VER
+# define GLM_FORCE_CXX11
+//# define GLM_FORCE_INLINE
+#endif
+#define GLM_FORCE_RADIANS
+#define GLM_SWIZZLE
+#include "glm/glm.hpp"
+#include "glm/gtc/type_ptr.hpp"
+#include "glm/gtc/epsilon.hpp"
+#include "glm/gtc/constants.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/gtc/random.hpp"
+#include "glm/gtx/transform.hpp"
+#include "glm/gtx/matrix_interpolation.hpp"
+#include "glm/gtx/color_space.hpp"
+#include "glm/gtx/string_cast.hpp"
+
 namespace minko
 {
     typedef unsigned int uint;
@@ -86,11 +103,13 @@ namespace minko
         class Effect;
         class ProgramInputs;
 
+        typedef int ResourceId;
         class AbstractResource;
         class Shader;
         class Program;
         class ProgramSignature;
         class VertexFormat;
+        class VertexAttribute;
         class VertexBuffer;
         class IndexBuffer;
 
@@ -140,17 +159,7 @@ namespace minko
         class Texture;
         class RectangleTexture;
         class CubeTexture;
-
-        struct ScissorBox
-        {
-            int        x, y;
-            int    width, height;
-
-            inline
-            ScissorBox(): x(0), y(0), width(-1), height(-1)
-            {
-            }
-        };
+        struct TextureSampler;
 
         enum class FogType
         {
@@ -172,8 +181,6 @@ namespace minko
     namespace component
     {
         class AbstractComponent;
-		class AbstractRebindableComponent;
-        template <class ProviderClass, class Enable = void>
         class AbstractRootDataComponent;
         class SceneManager;
         class Transform;
@@ -207,24 +214,14 @@ namespace minko
     namespace data
     {
         class Provider;
-        class ArrayProvider;
-        class StructureProvider;
-        class ValueBase;
-        class Value;
-        class Container;
+		class Store;
         class AbstractFilter;
+        class Collection;
 
-        enum class BindingSource
-        {
-            TARGET,
-            RENDERER,
-            ROOT
-        };
-
-        typedef std::pair<std::string, BindingSource>                        Binding;
-        typedef std::unordered_map<std::string, Binding>                    BindingMap;
-        typedef std::pair<std::shared_ptr<data::Container>, std::string>    ContainerAndName;
-
+        struct Binding;
+        struct MacroBinding;
+        //struct BindingMap;
+        //struct MacroBindingMap;
 
         template<typename T>
         using UniformArray = std::pair<uint, const T*>;
@@ -232,31 +229,7 @@ namespace minko
         template<typename T>
         using UniformArrayPtr = std::shared_ptr<UniformArray<T>>;
 
-        enum class MacroBindingDefaultValueSemantic
-        {
-            UNSET,
-            VALUE,
-            PROPERTY_EXISTS
-        };
-
-        union MacroBindingDefaultValue
-        {
-            bool    propertyExists;
-            int        value;
-        };
-
-        struct MacroBindingDefault
-        {
-            MacroBindingDefaultValueSemantic    semantic;
-            MacroBindingDefaultValue            value;
-        };
-
-        typedef std::function<bool(const std::string&)> MacroRegexPredicate;
-        typedef std::tuple<std::string, BindingSource, MacroBindingDefault, int, int, MacroRegexPredicate>    MacroBinding;
-
-        typedef std::unordered_map<std::string, MacroBinding> MacroBindingMap;
-
-        class ContainerProperty;
+		class LightMaskFilter;
     }
 
     namespace geometry
@@ -277,11 +250,8 @@ namespace minko
 
     namespace math
     {
-        class Vector2;
-        class Vector3;
-        class Vector4;
-        class Matrix4x4;
-        class Quaternion;
+		using namespace glm;
+
         class Ray;
         class AbstractShape;
         class Box;
@@ -289,6 +259,18 @@ namespace minko
         class OctTree;
 
         inline
+		vec4
+		rgba(uint rgba)
+		{
+			return math::vec4(
+		        (float)((rgba >> 24) & 0xff) / 255.f,
+		        (float)((rgba >> 16) & 0xff) / 255.f,
+		        (float)((rgba >> 8) & 0xff) / 255.f,
+		        (float)(rgba & 0xff) / 255.f
+		    );
+		}
+
+		inline
         bool
         isp2(unsigned int x)
         {
@@ -401,161 +383,4 @@ namespace minko
     }
 }
 
-template<typename T>
-std::shared_ptr<T>
-operator*(std::shared_ptr<T> a, float b)
-{
-    return (*a) * b;
-}
-
-template<typename T>
-std::shared_ptr<T>
-operator*(std::shared_ptr<T> a, std::shared_ptr<T> b)
-{
-    return *a * b;
-}
-
-template<typename T>
-std::shared_ptr<T>
-operator-(std::shared_ptr<T> a, std::shared_ptr<T> b)
-{
-    return *a - b;
-}
-
-template<typename T>
-std::shared_ptr<T>
-operator+(std::shared_ptr<T> a, std::shared_ptr<T> b)
-{
-    return *a + b;
-}
-
-template<typename T>
-std::shared_ptr<T>
-operator/(std::shared_ptr<T> a, std::shared_ptr<T> b)
-{
-    return *a / b;
-}
-
-template<typename T>
-std::shared_ptr<T>
-operator*=(std::shared_ptr<T> a, std::shared_ptr<T> b)
-{
-    return *a *= b;
-}
-
-template<typename T>
-std::shared_ptr<T>
-operator+=(std::shared_ptr<T> a, std::shared_ptr<T> b)
-{
-    return *a += b;
-}
-
-template<typename T>
-std::shared_ptr<T>
-operator-=(std::shared_ptr<T> a, std::shared_ptr<T> b)
-{
-    return *a -= b;
-}
-
-namespace std
-{
-    template <class T>
-    inline
-    void
-    hash_combine(size_t & seed, const T& v)
-    {
-        hash<T> hasher;
-        seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    }
-
-#ifdef __ANDROID__
-    template <typename T>
-    inline
-    string
-    to_string(T v)
-    {
-        ostringstream oss;
-        oss << v;
-        return oss.str();
-    }
-#endif
-
-    template<> struct hash<minko::data::ContainerAndName>
-    {
-        inline
-        size_t
-        operator()(const minko::data::ContainerAndName& x) const
-        {
-            size_t seed = std::hash<std::shared_ptr<minko::data::Container>>()(x.first);
-
-            hash_combine<std::string>(seed, x.second);
-
-            return seed;
-        }
-    };
-
-    template<> struct hash<minko::render::TextureFormat>
-    {
-        inline
-        size_t
-        operator()(const minko::render::TextureFormat& x) const
-        {
-            return std::hash<unsigned int>()(static_cast<unsigned int>(x));
-        }
-    };
-
-    inline
-    std::string
-    replaceAll(std::string str, const std::string& from, const std::string& to)
-    {
-        size_t start_pos = 0;
-        
-        while((start_pos = str.find(from, start_pos)) != std::string::npos)
-        {
-            str.replace(start_pos, from.length(), to);
-            start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
-        }
-        
-        return str;
-    }
-
-    inline
-    std::vector<std::string>
-    stringSplit(std::string str, std::string token)
-    {
-        std::vector<std::string> result;
-
-        auto i = str.find_first_of(token);
-
-        while (i != -1)
-        {
-            result.push_back(str.substr(0, i));
-
-            str = str.substr(i + 1);
-
-            i = str.find_first_of(token);
-        }
-
-        result.push_back(str);
-
-        return result;
-    }
-    
-
-    inline
-    std::string
-    stringJoin(std::vector<std::string> strings, std::string delimiter)
-    {
-        std::string result;
-
-        for (size_t i = 0; i < strings.size(); ++i)
-        {
-            if (i != 0)
-                result += delimiter;
-
-            result += strings[i];
-        }
-        
-        return result;
-    }
-}
+#include "minko/std.hpp"

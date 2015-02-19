@@ -577,8 +577,8 @@ AndroidWebViewDOMEngine::registerDomEvents()
         float x = event->clientX();
         float y = event->clientY();
         
-        float oldX = _canvas->touch()->touch(identifier)->x();
-        float oldY = _canvas->touch()->touch(identifier)->y();
+        float oldX = _canvas->touch()->touch(identifier).x;
+        float oldY = _canvas->touch()->touch(identifier).y;
 
         SDL_Event sdlEvent;
         sdlEvent.type = SDL_FINGERMOTION;

@@ -26,33 +26,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-    namespace component
-    {
-        class AbstractScript :
-            public AbstractComponent
-        {
-        public:
-            typedef std::shared_ptr<AbstractScript>                         Ptr;
+	namespace component
+	{
+		class AbstractScript :
+			public AbstractComponent
+		{
+		public:
+			typedef std::shared_ptr<AbstractScript>                         Ptr;
 
-        private:
-            typedef std::shared_ptr<scene::Node>                            NodePtr;
-            typedef std::shared_ptr<AbstractComponent>                      AbsCmpPtr;
+		private:
+			typedef std::shared_ptr<scene::Node>		                    NodePtr;
+			typedef std::shared_ptr<AbstractComponent>	                    AbsCmpPtr;
 
-        private:
-            std::unordered_map<NodePtr, bool>                               _started;
+		private:
+			std::unordered_map<NodePtr, bool>				                _started;
             float                                                           _time;
             float                                                           _deltaTime;
 
-            Signal<AbsCmpPtr, NodePtr>::Slot                                _targetAddedSlot;
-            Signal<AbsCmpPtr, NodePtr>::Slot                                _targetRemovedSlot;
+			Signal<AbsCmpPtr, NodePtr>::Slot				                _targetAddedSlot;
+			Signal<AbsCmpPtr, NodePtr>::Slot				                _targetRemovedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot                         _addedSlot;
             Signal<NodePtr, NodePtr, NodePtr>::Slot                         _removedSlot;
-            Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot                       _componentAddedSlot;
-            Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot                       _componentRemovedSlot;
-            Signal<std::shared_ptr<SceneManager>, float, float>::Slot       _frameBeginSlot;
-            Signal<std::shared_ptr<SceneManager>, float, float>::Slot       _frameEndSlot;
+			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot		                _componentAddedSlot;
+			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot		                _componentRemovedSlot;
+			Signal<std::shared_ptr<SceneManager>, float, float>::Slot		_frameBeginSlot;
+			Signal<std::shared_ptr<SceneManager>, float, float>::Slot		_frameEndSlot;
 
-        protected:
+		protected:
             inline
             float
             time()
@@ -67,81 +67,77 @@ namespace minko
                 return _deltaTime;
             }
 
-            virtual
-            void
-            start(NodePtr target)
-            {
-                // nothing
-            }
+			virtual
+			void
+			start(NodePtr target)
+			{
+				// nothing
+			}
 
-            virtual
-            void
-            update(NodePtr target)
-            {
-                // nothing
-            }
+			virtual
+			void
+			update(NodePtr target)
+			{
+				// nothing
+			}
 
-            virtual
-            void
-            end(NodePtr target)
-            {
-                // nothing
-            }
+			virtual
+			void
+			end(NodePtr target)
+			{
+				// nothing
+			}
 
-            virtual
-            void
-            stop(NodePtr target)
-            {
-                // nothing
-            }
+			virtual
+			void
+			stop(NodePtr target)
+			{
+				// nothing
+			}
 
-            virtual
-            bool
-            ready(NodePtr target)
-            {
-                return true;
-            }
+			virtual
+			bool
+			ready(NodePtr target)
+			{
+				return true;
+			}
 
-            virtual
-            bool
-            running(NodePtr target)
-            {
-                return true;
-            }
+			virtual
+			bool
+			running(NodePtr target)
+			{
+				return true;
+			}
 
-        protected:
-            virtual
-            void
-            initialize();
+		protected:
+			virtual
+			void
+			targetAdded(NodePtr node);
 
-            virtual
-            void
-            targetAddedHandler(AbsCmpPtr cmp, NodePtr node);
-
-            virtual
-            void
-            targetRemovedHandler(AbsCmpPtr cmp, NodePtr node);
+			virtual
+			void
+			targetRemoved(NodePtr node);
 
             void
             addedOrRemovedHandler(NodePtr node, NodePtr target, NodePtr parent);
 
-            void
-            componentAddedHandler(NodePtr node, NodePtr target, AbsCmpPtr component);
+			void
+			componentAddedHandler(NodePtr node, NodePtr	target, AbsCmpPtr component);
 
-            void
-            componentRemovedHandler(NodePtr node, NodePtr target, AbsCmpPtr component);
+			void
+			componentRemovedHandler(NodePtr	node, NodePtr target, AbsCmpPtr	component);
 
-            void
-            frameBeginHandler(std::shared_ptr<SceneManager> sceneManager, float, float);
+			void
+			frameBeginHandler(std::shared_ptr<SceneManager> sceneManager, float, float);
 
-            void
-            frameEndHandler(std::shared_ptr<SceneManager> sceneManager, float, float);
+			void
+			frameEndHandler(std::shared_ptr<SceneManager> sceneManager, float, float);
 
-            void
-            findSceneManager();
+			void
+			findSceneManager();
 
-            void
-            setSceneManager(std::shared_ptr<SceneManager> sceneManager);
-        };
-    }
+			void
+			setSceneManager(std::shared_ptr<SceneManager> sceneManager);
+		};
+	}
 }

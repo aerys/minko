@@ -18,37 +18,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/component/PointLight.hpp"
-
-#include "minko/math/Vector4.hpp"
-#include "minko/math/Matrix4x4.hpp"
 #include "minko/CloneOption.hpp"
 
 using namespace minko;
-using namespace minko::math;
 using namespace minko::component;
 
 PointLight::PointLight(float diffuse,
-                       float specular,
-                       float attenuationConstant,
-                       float attenuationLinear,
-                       float attenuationQuadratic):
-    AbstractDiscreteLight("pointLights", diffuse, specular),
-    _attenuationCoeffs(Vector3::create(attenuationConstant, attenuationLinear, attenuationQuadratic)),
-    _worldPosition(Vector3::create(0.0f, 0.0f, 0.0f))
+					   float specular,
+					   float attenuationConstant,
+					   float attenuationLinear,
+					   float attenuationQuadratic):
+	AbstractDiscreteLight("pointLight", diffuse, specular),
+	_attenuationCoeffs(math::vec3(attenuationConstant, attenuationLinear, attenuationQuadratic)),
+	_worldPosition(math::vec3(0.f))
 {
-    data()
-        ->set("attenuationCoeffs",    _attenuationCoeffs)
-        ->set("position",            _worldPosition);
+	data()->set("attenuationCoeffs", _attenuationCoeffs);
+    updateModelToWorldMatrix(math::mat4(1.f));
 }
 
 PointLight::PointLight(const PointLight& pointLight, const CloneOption& option) :
 	AbstractDiscreteLight("pointLights", pointLight.diffuse(), pointLight.specular()),
-	_attenuationCoeffs(Vector3::create(pointLight._attenuationCoeffs->x(), pointLight._attenuationCoeffs->y(), pointLight._attenuationCoeffs->z())),
-	_worldPosition(Vector3::create(pointLight.data()->get<Vector3::Ptr>("position")))
+	_attenuationCoeffs(pointLight.attenuationCoefficients())
 {
-	data()
-		->set("attenuationCoeffs", _attenuationCoeffs)
-		->set("position", _worldPosition);
+    updateModelToWorldMatrix(math::mat4(1.f));
 }
 
 AbstractComponent::Ptr
@@ -56,40 +48,37 @@ PointLight::clone(const CloneOption& option)
 {
 	auto light = std::shared_ptr<PointLight>(new PointLight(*this, option));
 
-	light->AbstractDiscreteLight::initialize();
-
 	return light;
 }
 
 void
-PointLight::updateModelToWorldMatrix(std::shared_ptr<math::Matrix4x4> modelToWorld)
+PointLight::updateModelToWorldMatrix(const math::mat4& modelToWorld)
 {
-    modelToWorld->copyTranslation(_worldPosition);
+    data()->set("position", (modelToWorld * math::vec4(0.f, 0.f, 0.f, 1.f)).xyz());
 }
 
-Vector3::Ptr
+const math::vec3&
 PointLight::attenuationCoefficients() const
 {
-    return data()->get<math::Vector3::Ptr>("attenuationCoeffs");
+	return _attenuationCoeffs;
 }
 
 PointLight::Ptr
-PointLight::attenuationCoefficients(float constant, float linear, float quadratic)
+PointLight::attenuationCoefficients(float constant, float linear, float quadratic) 
 {
-    return attenuationCoefficients(Vector3::create(constant, linear, quadratic));
+	return attenuationCoefficients(math::vec3(constant, linear, quadratic));
 }
 
 PointLight::Ptr
-PointLight::attenuationCoefficients(Vector3::Ptr value)
+PointLight::attenuationCoefficients(const math::vec3& value)
 {
-    _attenuationCoeffs->copyFrom(value);
-    data()->set<Vector3::Ptr>("attenuationCoeffs", _attenuationCoeffs);
+	data()->set("attenuationCoeffs", _attenuationCoeffs = value);
 
-    return std::static_pointer_cast<PointLight>(shared_from_this());
+	return std::static_pointer_cast<PointLight>(shared_from_this());
 }
 
 bool
 PointLight::attenuationEnabled() const
 {
-    return !( _attenuationCoeffs->x() < 0.0f || _attenuationCoeffs->y() < 0.0f || _attenuationCoeffs->z() < 0.0f);
+	return !( _attenuationCoeffs.x < 0.0f || _attenuationCoeffs.y < 0.0f || _attenuationCoeffs.z < 0.0f);
 }

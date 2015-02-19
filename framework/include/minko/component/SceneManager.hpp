@@ -28,47 +28,45 @@ namespace minko
 {
     namespace component
     {
-        class SceneManager :
+	    class SceneManager :
             public AbstractComponent
-        {
-        public:
-            typedef std::shared_ptr<SceneManager>               Ptr;
+	    {
+	    public:
+		    typedef std::shared_ptr<SceneManager> Ptr;
 
         private:
-            typedef std::shared_ptr<scene::Node>                NodePtr;
-            typedef std::shared_ptr<render::AbstractTexture>    AbsTexturePtr;
+            typedef std::shared_ptr<scene::Node>				NodePtr;
+			typedef std::shared_ptr<render::AbstractTexture>	AbsTexturePtr;
 
         private:
-            uint                                                _frameId;
-            float                                               _time;
-            std::shared_ptr<file::AssetLibrary>                 _assets;
+            uint                                            _frameId;
+            float                                           _time;
+            std::shared_ptr<file::AssetLibrary>             _assets;
 
-            Signal<Ptr, float, float>::Ptr                      _frameBegin;
-            Signal<Ptr, float, float>::Ptr                      _frameEnd;
-            Signal<Ptr>::Ptr                                    _cullBegin;
-            Signal<Ptr>::Ptr                                    _cullEnd;
-            Signal<Ptr, uint, AbsTexturePtr>::Ptr               _renderBegin;
-            Signal<Ptr, uint, AbsTexturePtr>::Ptr               _renderEnd;
+            Signal<Ptr, float, float>::Ptr                  _frameBegin;
+            Signal<Ptr, float, float>::Ptr                  _frameEnd;
+			Signal<Ptr>::Ptr                                _cullBegin;
+			Signal<Ptr>::Ptr                                _cullEnd;
+			Signal<Ptr, uint, AbsTexturePtr>::Ptr           _renderBegin;
+			Signal<Ptr, uint, AbsTexturePtr>::Ptr           _renderEnd;
 
-            std::shared_ptr<data::StructureProvider>            _data;
+			std::shared_ptr<data::Provider>		            _data;
 
-            Signal<AbstractComponent::Ptr, NodePtr>::Slot       _targetAddedSlot;
-            Signal<AbstractComponent::Ptr, NodePtr>::Slot       _targetRemovedSlot;
-            Signal<NodePtr, NodePtr, NodePtr>::Slot             _addedSlot;
+            Signal<AbstractComponent::Ptr, NodePtr>::Slot   _targetAddedSlot;
+            Signal<AbstractComponent::Ptr, NodePtr>::Slot   _targetRemovedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot         _addedSlot;
 
             std::shared_ptr<AbstractCanvas>                     _canvas;
 
-        public:
-            inline static
-            Ptr
+	    public:
+		    inline static
+		    Ptr
             create(const std::shared_ptr<AbstractCanvas>& canvas)
-            {
+		    {
                 auto sm = std::shared_ptr<SceneManager>(new SceneManager(canvas));
 
-                sm->initialize();
-
                 return sm;
-            }
+		    }
 
             ~SceneManager()
             {
@@ -109,58 +107,56 @@ namespace minko
                 return _frameEnd;
             }
 
-            inline
-            Signal<Ptr>::Ptr
-            cullingBegin()
-            {
-                return _cullBegin;
-            }
+			inline
+			Signal<Ptr>::Ptr
+			cullingBegin()
+			{
+				return _cullBegin;
+			}
 
-            inline
-            Signal<Ptr>::Ptr
-            cullingEnd()
-            {
-                return _cullEnd;
-            }
+			inline
+			Signal<Ptr>::Ptr
+			cullingEnd()
+			{
+				return _cullEnd;
+			}
 
-            inline
-            Signal<Ptr, uint, AbsTexturePtr>::Ptr
-            renderingBegin()
-            {
-                return _renderBegin;
-            }
+			inline
+			Signal<Ptr, uint, AbsTexturePtr>::Ptr
+			renderingBegin()
+			{
+				return _renderBegin;
+			}
 
-            inline
-            Signal<Ptr, uint, AbsTexturePtr>::Ptr
-            renderingEnd()
-            {
-                return _renderEnd;
-            }
+			inline
+			Signal<Ptr, uint, AbsTexturePtr>::Ptr
+			renderingEnd()
+			{
+				return _renderEnd;
+			}
 
             inline
             float
             time() const
             {
-                return _time; // in milliseconds
+                return _time;
             }
-
-            void
-            initialize();
 
             void
             nextFrame(float time, float deltaTime, AbsTexturePtr target = nullptr);
 
-        private:
+        protected:
+            void
+            targetAdded(NodePtr target);
+
+            void
+            targetRemoved(NodePtr target);
+
+	    private:
             SceneManager(const std::shared_ptr<AbstractCanvas>& canvas);
 
             void
-            targetAddedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
-
-            void
-            targetRemovedHandler(AbstractComponent::Ptr ctrl, NodePtr target);
-
-            void
             addedHandler(NodePtr node, NodePtr target, NodePtr ancestor);
-        };
+	    };
     }
 }

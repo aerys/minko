@@ -27,18 +27,16 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::animation;
 
-Animation::Animation(const std::vector<AbstractTimeline::Ptr>& timelines,
-                     bool isLooping):
-    AbstractAnimation(isLooping),
-    _timelines(timelines),
-    _master(nullptr)
+Animation::Animation(const std::vector<AbstractTimeline::Ptr>& timelines, 
+					 bool                                      isLooping):
+	AbstractAnimation(isLooping),
+    _timelines(timelines)
 {
 }
 
 Animation::Animation(const Animation& anim, const CloneOption& option) :
     AbstractAnimation(anim),
-    _timelines(anim._timelines.size()),
-    _master(nullptr)
+    _timelines(anim._timelines.size())
 {
     for (std::size_t i = 0; i < anim._timelines.size(); i++)
     {
@@ -62,26 +60,23 @@ Animation::initialize()
 {
     AbstractAnimation::initialize();
 
-    _maxTime = 0;
+	_maxTime = 0;
 
-    for (auto& timeline : _timelines)
-        _maxTime = std::max(_maxTime, timeline->duration());
+	for (auto& timeline : _timelines)
+		_maxTime = std::max(_maxTime, timeline->duration());
 
-    setPlaybackWindow(0, _maxTime)->seek(0);
+	setPlaybackWindow(0, _maxTime)->seek(0);
 }
 
 void
 Animation::update()
 {
-    for (auto& target : targets())
+	for (auto& timeline : _timelines)
     {
-        auto container = target->data();
-
-        for (auto& timeline : _timelines)
         {
             const uint currentTime = _currentTime % (timeline->duration() + 1); // Warning: bounds!
 
-            timeline->update(currentTime, target->data());
+            timeline->update(currentTime, target()->data());
         }
     }
 }

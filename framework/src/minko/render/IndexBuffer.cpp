@@ -27,43 +27,69 @@ using namespace minko::render;
 
 
 void
-IndexBuffer::upload(uint    offset,
-                    int        count)
+IndexBuffer::upload(uint	offset,
+					int		count)
 {
-    if (_data.empty())
+	if (_data.empty())
+		return;
+
+	assert(count <= (int)_data.size());
+
+	if (_id == -1)
+    	_id = _context->createIndexBuffer(_data.size());
+
+	const auto oldNumIndices	= _numIndices;
+	_numIndices					= count > 0 ? count : _data.size();
+
+	_context->uploaderIndexBufferData(
+		_id,
+		offset,
+        _numIndices,
+		&_data[offset]
+	);
+
+	if (_numIndices != oldNumIndices)
+		_changed->execute(shared_from_this());
+}
+
+void
+IndexBuffer::upload(uint                                offset,
+                    int                                 count,
+                    const std::vector<unsigned short>&  data)
+{
+    if (data.empty())
         return;
 
-    assert(count <= (int)_data.size());
+    assert(count <= (int)data.size());
 
     if (_id == -1)
-        _id = _context->createIndexBuffer(_data.size());
+        _id = _context->createIndexBuffer(data.size());
 
-    const auto oldNumIndices    = _numIndices;
-    _numIndices                    = count >= 0 ? count : _data.size();
+    const auto numIndices = count > 0 ? count : data.size();
+    _numIndices = numIndices;
 
     _context->uploaderIndexBufferData(
         _id,
         offset,
-        _numIndices,
-        &_data[0]
+        numIndices,
+        const_cast<unsigned short*>(data.data())
     );
 
-    if (_numIndices != oldNumIndices)
-        _changed->execute(shared_from_this());
+    _changed->execute(shared_from_this());
 }
 
 void
 IndexBuffer::dispose()
 {
     if (_id != -1)
-        _context->deleteIndexBuffer(_id);
+	    _context->deleteIndexBuffer(_id);
 
-    _id            = -1;
-    _numIndices    = 0;
+	_id			= -1;
+	_numIndices	= 0;
 
     disposeData();
 
-    _changed->execute(shared_from_this());
+	_changed->execute(shared_from_this());
 }
 
 void IndexBuffer::disposeData()

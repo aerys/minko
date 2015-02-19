@@ -1,0 +1,7 @@
+{
+    "states" : {
+        "triangleCulling" : { "binding" : "material[${materialUuid}].triangleCulling" }
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

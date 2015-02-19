@@ -1,0 +1,7 @@
+{
+    "states" : {
+        "depthMask" : { "binding" : "material[${materialUuid}].depthMask" }
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

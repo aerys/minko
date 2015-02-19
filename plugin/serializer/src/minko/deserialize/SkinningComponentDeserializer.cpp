@@ -28,9 +28,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Animation.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/animation/Matrix4x4Timeline.hpp"
-#include "minko/math/Vector3.hpp"
-#include "minko/math/Quaternion.hpp"
-#include "minko/math/Matrix4x4.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/render/AbstractContext.hpp"
 
@@ -45,58 +42,55 @@ using namespace minko::deserialize;
 
 /*static*/
 Skinning::Ptr
-SkinningComponentDeserializer::computeSkinning(file::Options::Ptr                        options,
+SkinningComponentDeserializer::computeSkinning(file::Options::Ptr						options,
                                                render::AbstractContext::Ptr             context,
-                                               const std::vector<geometry::Bone::Ptr>&    bones,
+											   const std::vector<geometry::Bone::Ptr>&	bones, 
 											   const std::vector<scene::Node::Ptr>&		boneNodes,
-                                               Node::Ptr                                skeletonRoot)
+											   Node::Ptr								skeletonRoot)
 {
-    unsigned int    framerate    = options->skinningFramerate();
-    SkinningMethod    method        = options->skinningMethod();
+	unsigned int framerate = options->skinningFramerate();
+	SkinningMethod method = options->skinningMethod();
 
 	if (!haveBonesCommonRoot(bones, boneNodes, skeletonRoot))
-        throw std::logic_error("Sone bones are not connected to the specified skeleton root.");
+		throw std::logic_error("Sone bones are not connected to the specified skeleton root.");
 
-    std::cout
-        << "# abstract animations under skeleton root = "
-        << NodeSet::create(skeletonRoot)->descendants(true)->where([](Node::Ptr n){ return n->hasComponent<AbstractAnimation>(); })->nodes().size()
+    std::cout 
+        << "# abstract animations under skeleton root = " 
+        << NodeSet::create(skeletonRoot)->descendants(true)->where([](Node::Ptr n){ return n->hasComponent<AbstractAnimation>(); })->nodes().size() 
         << std::endl;
-    std::cout
-        << "# animations under skeleton root = "
-        << NodeSet::create(skeletonRoot)->descendants(true)->where([](Node::Ptr n){ return n->hasComponent<Animation>(); })->nodes().size()
+    std::cout 
+        << "# animations under skeleton root = " 
+        << NodeSet::create(skeletonRoot)->descendants(true)->where([](Node::Ptr n){ return n->hasComponent<Animation>(); })->nodes().size() 
         << std::endl;
 
-    NodeTransformTimeline   nodeToTimelines;
-    NodeMatrices            nodeToFrameMatrices;
+    NodeTransformTimeline nodeToTimelines;
+    NodeMatrices nodeToFrameMatrices;
 
     const unsigned int duration = collectAnimations(
-        bones,
+        bones, 
 		boneNodes,
-        skeletonRoot,
+        skeletonRoot, 
         nodeToTimelines
     );
 
     const unsigned int numFrames = sampleAnimations(
-        options,
-        bones,
-        skeletonRoot,
-        duration,
+        options, 
+        bones, 
+        skeletonRoot, 
+        duration, 
         nodeToTimelines,
         nodeToFrameMatrices
     );
 
     auto skin = geometry::Skin::create(bones.size(), duration, numFrames);
 
-    std::vector<Matrix4x4::Ptr> matrices(numFrames, nullptr);
-    for (auto& m : matrices)
-        m = Matrix4x4::create();
-
+    std::vector<math::mat4> matrices(numFrames);
     for (unsigned int boneId = 0; boneId < bones.size(); ++boneId)
     {
         skin->bone(boneId, bones[boneId]);
 
-        for (auto& m : matrices)
-            m->copyFrom(bones[boneId]->offsetMatrix());
+		for (auto& m : matrices)
+			m = math::transpose(bones[boneId]->offsetMatrix());
 
         precomputeModelToRootMatrices(
 			boneNodes[boneId],
@@ -109,139 +103,132 @@ SkinningComponentDeserializer::computeSkinning(file::Options::Ptr               
             skin->matrix(frameId, boneId, matrices[frameId]);
     }
 
-    // find bone-dependent surfaces and add animations to them.
-    std::vector<component::Animation::Ptr> slaveAnimations;
+	// find bone-dependent surfaces and add animations to them.
+	std::vector<component::Animation::Ptr> slaveAnimations;
 
-    computeSurfaceAnimations(
-        duration,
-        numFrames,
-        skeletonRoot,
-        bones,
+	computeSurfaceAnimations(
+		duration, 
+		numFrames, 
+		skeletonRoot, 
+		bones, 
 		boneNodes,
-        nodeToFrameMatrices,
-        slaveAnimations
-    );
+		nodeToFrameMatrices,
+		slaveAnimations
+	);
 
-    //removeAnimations(skeletonRoot); // FIXME
+	//removeAnimations(skeletonRoot); // FIXME 
     // strip the scene nodes below the skeleton off their obsolete
     // Transform and Animation components.
-    //clean(skeletonRoot);
+	//clean(skeletonRoot);
 
-    return Skinning::create(
-        skin->reorganizeByVertices()->transposeMatrices(),
+	return Skinning::create(
+        skin->reorganizeByVertices(),
         options->skinningMethod(),
         context,
-        skeletonRoot,
-        true
+		skeletonRoot,
+		true
     );
 }
 
 /*static */
 void
-SkinningComponentDeserializer::computeSurfaceAnimations(unsigned int                duration,
-                                                        unsigned int                numFrames,
-                                                        Node::Ptr                    skeletonRoot,
-                                                        const std::vector<BonePtr>&    bones,
-														const std::vector<scene::Node::Ptr>&		boneNodes,
-                                                        const NodeMatrices&            nodeToFrameMatrices,
-                                                        std::vector<AnimationPtr>&    slaveAnimations)
+SkinningComponentDeserializer::computeSurfaceAnimations(unsigned int				            duration, 
+														unsigned int				            numFrames, 
+														Node::Ptr					            skeletonRoot, 
+														const std::vector<BonePtr>&	            bones,
+														const std::vector<scene::Node::Ptr>&	boneNodes,
+														const NodeMatrices&			            nodeToFrameMatrices,
+														std::vector<AnimationPtr>&	            slaveAnimations)
 {
-    slaveAnimations.clear();
-    if (numFrames <= 1 || skeletonRoot == nullptr || bones.empty())
-        return;
+	slaveAnimations.clear();
+	if (numFrames <= 1 || skeletonRoot == nullptr || bones.empty())
+		return;
 
-    std::set<Node::Ptr>    slaves;
+	std::set<Node::Ptr>	slaves;
 
 	for (unsigned int boneId = 0; boneId < bones.size(); ++boneId)
-    {
+	{
 		auto childrenWithSurface = NodeSet::create(boneNodes[boneId])
-            ->descendants(true)
-            ->where([](Node::Ptr n)
-            {
-                return n->hasComponent<Surface>();
-            });
+			->descendants(true)
+			->where([](Node::Ptr n)
+			{ 
+				return n->hasComponent<Surface>(); 
+			});
 
-        slaves.insert(childrenWithSurface->nodes().begin(), childrenWithSurface->nodes().end());
-    }
+		slaves.insert(childrenWithSurface->nodes().begin(), childrenWithSurface->nodes().end());
+	}
 
-    auto timetable = std::vector<uint>(numFrames, 0);
-    for (uint i = 0; i < numFrames; ++i)
-        timetable[i] = uint(floorf(i * duration / float(numFrames - 1)));
+	auto timetable = std::vector<uint>(numFrames, 0);
+	for (uint i = 0; i < numFrames; ++i)
+		timetable[i] = uint(floorf(i * duration / float(numFrames - 1)));
 
-    slaveAnimations.reserve(slaves.size());
-    for (auto& n : slaves)
-    {
-        auto matrices = std::vector<Matrix4x4::Ptr>(numFrames);
-        for (auto& m : matrices)
-            m = Matrix4x4::create();
+	slaveAnimations.reserve(slaves.size());
+	for (auto& n : slaves)
+	{
+        std::vector<math::mat4> matrices(numFrames);
 
-        precomputeModelToRootMatrices(n, skeletonRoot, nodeToFrameMatrices, matrices);
+		precomputeModelToRootMatrices(n, skeletonRoot, nodeToFrameMatrices, matrices);
 
-        auto timeline    = animation::Matrix4x4Timeline::create(PNAME_TRANSFORM, duration, timetable, matrices);
-        auto animation    = Animation::create(std::vector<animation::AbstractTimeline::Ptr>(1, timeline));
+		auto timeline = animation::Matrix4x4Timeline::create(PNAME_TRANSFORM, duration, timetable, matrices);
+		auto animation = Animation::create(std::vector<animation::AbstractTimeline::Ptr>(1, timeline));
 
-        n->addComponent(animation);
-        slaveAnimations.push_back(animation);
-    }
+		n->addComponent(animation);
 
-    for (auto& n : slaves)
-    {
-        if (n->parent())
-            n->parent()->removeChild(n);
-        skeletonRoot->addChild(n);
-    }
+		slaveAnimations.push_back(animation);
+	}
+
+	for (auto& n : slaves)
+	{
+		if (n->parent())
+			n->parent()->removeChild(n);
+
+		skeletonRoot->addChild(n);
+	}
 }
 
 /*static*/
 void
 SkinningComponentDeserializer::clean(Node::Ptr skeletonRoot)
 {
-    assert(skeletonRoot && skeletonRoot->hasComponent<Transform>());
+	assert(skeletonRoot && skeletonRoot->hasComponent<Transform>());
 
-    auto worldToSkeletonMatrix = math::Matrix4x4::create()
-        ->copyFrom(skeletonRoot->component<Transform>()->modelToWorldMatrix(true))
-        ->invert();
-    auto modelToWorldMatrix = math::Matrix4x4::create();
+    auto worldToSkeletonMatrix = math::inverse(skeletonRoot->component<Transform>()->modelToWorldMatrix(true));
+	auto modelToWorldMatrix = math::mat4();
+	auto withTransforms = scene::NodeSet::create(skeletonRoot)
+		->descendants(true, false)
+		->where([](Node::Ptr n){ return n->hasComponent<Transform>(); });
 
-    auto withTransforms = scene::NodeSet::create(skeletonRoot)
-        ->descendants(true, false)
-        ->where([](Node::Ptr n){ return n->hasComponent<Transform>(); });
+	std::unordered_map<Node::Ptr, math::mat4> nodeToModelToWorld;
 
-    std::unordered_map<Node::Ptr, Matrix4x4::Ptr> nodeToModelToWorld;
+	// precompute node-to-modelToWorld association
+	for (auto& n : withTransforms->nodes())
+		nodeToModelToWorld[n] = n->component<Transform>()->modelToWorldMatrix(true);
 
-    // precompute node-to-modelToWorld association
-    for (auto& n : withTransforms->nodes())
-        nodeToModelToWorld[n] = math::Matrix4x4::create()->copyFrom(
-            n->component<Transform>()->modelToWorldMatrix(true)
-        );
-
-    for (auto& n : withTransforms->nodes())
-        if (!n->hasComponent<Surface>())
-            n->removeComponent(n->component<Transform>());
-        else
-            n->component<Transform>()->matrix()
-                ->copyFrom(nodeToModelToWorld[n])
-                ->append(worldToSkeletonMatrix);
+	for (auto& n : withTransforms->nodes())
+		if (!n->hasComponent<Surface>())
+			n->removeComponent(n->component<Transform>());
+		else
+			n->component<Transform>()->matrix(nodeToModelToWorld[n] * worldToSkeletonMatrix);
 }
 
 /*static*/
 void
 SkinningComponentDeserializer::removeAnimations(Node::Ptr skeletonRoot)
 {
-    auto withAnimations = scene::NodeSet::create(skeletonRoot)
-        ->descendants(false)
-        ->where([](Node::Ptr n){ return n->hasComponent<Animation>(); });
+	auto withAnimations = scene::NodeSet::create(skeletonRoot)
+		->descendants(false)
+		->where([](Node::Ptr n){ return n->hasComponent<Animation>(); });
 
-    for (auto& n : withAnimations->nodes())
-        n->removeComponent(n->component<Animation>());
+	for (auto& n : withAnimations->nodes())
+		n->removeComponent(n->component<Animation>());
 }
 
 /*static*/
 void
-SkinningComponentDeserializer::precomputeModelToRootMatrices(Node::Ptr                        node,
-                                                             Node::Ptr                      skeletonRoot,
-                                                             const NodeMatrices&            nodeToFrameMatrices,
-                                                             std::vector<Matrix4x4::Ptr>&   matrices)
+SkinningComponentDeserializer::precomputeModelToRootMatrices(Node::Ptr			        node, 
+                                                             Node::Ptr                  skeletonRoot, 
+                                                             const NodeMatrices&        nodeToFrameMatrices,
+                                                             std::vector<math::mat4>&   matrices)
 {
     const unsigned int numFrames = matrices.size();
 
@@ -257,11 +244,13 @@ SkinningComponentDeserializer::precomputeModelToRootMatrices(Node::Ptr          
             assert(foundMatricesIt->second.size() == numFrames);
 
             for (unsigned int frameId = 0; frameId < numFrames; ++frameId)
-                matrices[frameId]->append(foundMatricesIt->second[frameId]);
+                matrices[frameId] = foundMatricesIt->second[frameId] * matrices[frameId];
         }
         else if (currentNode->hasComponent<Transform>())
+        {
             for (auto& m : matrices)
-                m->append(currentNode->component<Transform>()->matrix());
+                m = currentNode->component<Transform>()->matrix() * m;
+        }
 
         currentNode = currentNode->parent();
     }
@@ -270,8 +259,8 @@ SkinningComponentDeserializer::precomputeModelToRootMatrices(Node::Ptr          
 
 /*static*/
 unsigned int
-SkinningComponentDeserializer::sampleAnimations(file::Options::Ptr                        options,
-                                                const std::vector<geometry::Bone::Ptr>& bones,
+SkinningComponentDeserializer::sampleAnimations(file::Options::Ptr						options,
+                                                const std::vector<geometry::Bone::Ptr>& bones, 
                                                 Node::Ptr                               skeletonRoot,
                                                 unsigned int                            duration, // expected in milliseconds
                                                 const NodeTransformTimeline&            nodeToTimelines,
@@ -279,8 +268,8 @@ SkinningComponentDeserializer::sampleAnimations(file::Options::Ptr              
 {
     nodeToFrameMatrices.clear();
 
-    const unsigned int  numFrames   = (unsigned int)std::max(2, int(floorf(options->skinningFramerate() * duration * 1e-3f)));
-    const float         timeStep    = duration / float(numFrames - 1);
+    const unsigned int numFrames = (unsigned int)std::max(2, int(floorf(options->skinningFramerate() * duration * 1e-3f)));
+    const float timeStep = duration / float(numFrames - 1);
 
 #ifdef DEBUG
     std::cout << "Skinning deserializetion\nduration = " << duration << " (framerate = " << options->skinningFramerate() << ") -> " << numFrames << " frames" << std::endl;
@@ -288,18 +277,18 @@ SkinningComponentDeserializer::sampleAnimations(file::Options::Ptr              
 
     for (auto& nodeAndTimeline : nodeToTimelines)
     {
-        auto node       = nodeAndTimeline.first;
-        auto timeline   = nodeAndTimeline.second;
+        auto node = nodeAndTimeline.first;
+        auto timeline = nodeAndTimeline.second;
 
         // predecompose matrices for better interpolation
-        nodeToFrameMatrices[node]   = std::vector<Matrix4x4::Ptr>(numFrames, nullptr);
+        nodeToFrameMatrices[node] = std::vector<math::mat4>(numFrames);
 
-        auto&   matrices    = nodeToFrameMatrices[node];
-        float   time        = 0.0f;
+        auto& matrices = nodeToFrameMatrices[node];
+        float time = 0.0f;
         for (unsigned int frameId = 0; frameId < numFrames; ++frameId)
         {
-            matrices[frameId]   = timeline->interpolate((unsigned int)floorf(time));
-            time                += timeStep;
+            matrices[frameId] = timeline->interpolate((unsigned int)floorf(time));
+            time += timeStep;
         }
     }
 
@@ -308,64 +297,62 @@ SkinningComponentDeserializer::sampleAnimations(file::Options::Ptr              
 
 /*static*/
 unsigned int
-SkinningComponentDeserializer::collectAnimations(const std::vector<geometry::Bone::Ptr>&    bones,
+SkinningComponentDeserializer::collectAnimations(const std::vector<geometry::Bone::Ptr>&	bones, 
 												 const std::vector<scene::Node::Ptr>&		boneNodes,
-                                                 Node::Ptr                                    skeletonRoot,
-                                                 NodeTransformTimeline&                        nodeToTimelines)
+												 Node::Ptr									skeletonRoot,
+												 NodeTransformTimeline&						nodeToTimelines)
 {
-    unsigned int duration = 0;
-    nodeToTimelines.clear();
+	unsigned int duration = 0;
+	nodeToTimelines.clear();
 
 	for (unsigned int boneId = 0; boneId < bones.size(); ++boneId)
-    {
+	{
 		auto currentNode = boneNodes[boneId];
-        do
-        {
-            if (!currentNode)
-                break;
+		do
+		{
+			if (!currentNode)
+				break;
 
-            if (currentNode->hasComponent<Animation>())
-            {
-                auto animation = currentNode->component<Animation>();
+			if (currentNode->hasComponent<Animation>())
+			{
+				auto animation = currentNode->component<Animation>();
 
-                for (auto& timeline : animation->timelines())
-                    if (timeline->propertyName() == "transform.matrix")
-                    {
-                        duration                        = std::max(duration, timeline->duration());
-                        auto matrixTimeline             = std::dynamic_pointer_cast<Matrix4x4Timeline>(timeline);
+				for (auto& timeline : animation->timelines())
+					if (timeline->propertyName() == "transform.matrix")
+					{
+                        auto matrixTimeline = std::dynamic_pointer_cast<Matrix4x4Timeline>(timeline);
+
+						duration = std::max(duration, timeline->duration());
                         assert(matrixTimeline);
-
-                        nodeToTimelines[currentNode]    = matrixTimeline;
+				        nodeToTimelines[currentNode] = matrixTimeline;
 
                         break;
-                    }
-            }
-            currentNode = currentNode->parent();
-        }
-        while (currentNode != skeletonRoot);
-    }
+					}
+			}
+			currentNode = currentNode->parent();
+		}
+		while (currentNode != skeletonRoot);
+	}
 
-    return duration;
+	return duration;
 }
 
 /*static*/
 bool
-SkinningComponentDeserializer::haveBonesCommonRoot(const std::vector<geometry::Bone::Ptr>&    bones,
+SkinningComponentDeserializer::haveBonesCommonRoot(const std::vector<geometry::Bone::Ptr>&	bones, 
 												   const std::vector<scene::Node::Ptr>&		boneNodes,
-                                                   Node::Ptr                                skeletonRoot)
+												   Node::Ptr								skeletonRoot)
 {
-    if (bones.empty())
-        return false;
+	if (bones.empty())
+		return false;
 
-    bool hasCommonRoot = true;
-	for (unsigned int boneId = 0; boneId < bones.size(); ++boneId)
-        hasCommonRoot =
-            hasCommonRoot
-            &&
-			!NodeSet::create(boneNodes[boneId])
-                ->ancestors(true)
-                ->where([=](Node::Ptr n){ return n == skeletonRoot; })
-                ->nodes().empty();
+	bool hasCommonRoot = true;
+	for (auto& bone : bones)
+		hasCommonRoot =  hasCommonRoot 
+			&& !NodeSet::create(bone->node())
+				->ancestors(true)
+				->where([=](Node::Ptr n){ return n == skeletonRoot; })
+				->nodes().empty();
 
-    return hasCommonRoot;
+	return hasCommonRoot;
 }

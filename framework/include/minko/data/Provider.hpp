@@ -22,238 +22,173 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 #include "minko/Any.hpp"
 #include "minko/Signal.hpp"
-#include "minko/data/Value.hpp"
+#include "minko/Uuid.hpp"
 
 namespace minko
 {
-    namespace data
-    {
-        class Provider :
-            public std::enable_shared_from_this<Provider>
-        {
-        public:
-            typedef std::shared_ptr<Provider>                        Ptr;
-            typedef std::shared_ptr<const Provider>                  ConstPtr;
+	namespace data
+	{
+		class Provider :
+			public std::enable_shared_from_this<Provider>,
+            public Uuid::enable_uuid
+		{
+		public:
+			typedef std::shared_ptr<Provider>		Ptr;
+			typedef std::shared_ptr<const Provider>	ConstPtr;
 
         private:
-            template <typename P>
-            class ValueWrapper;
+            template <typename T>
+            struct is_shared_ptr : std::false_type {};
+            template <typename T>
+            struct is_shared_ptr<std::shared_ptr<T>> : std::true_type {};
 
-            typedef Signal<std::shared_ptr<Value>>::Slot ChangedSignalSlot;
+            template <typename T>
+            struct is_weak_ptr : std::false_type {};
+            template <typename T>
+            struct is_weak_ptr<std::weak_ptr<T>> : std::true_type{};
 
-        private:
-            std::vector<std::string>                                _names;
-            std::unordered_map<std::string, Any>                    _values;
-            std::unordered_map<std::string, ChangedSignalSlot>      _valueChangedSlots;
-            std::unordered_map<std::string, ChangedSignalSlot>      _referenceChangedSlots;
+            template <typename T>
+            struct is_valid {
+                static const bool value = !std::is_pointer<T>::value && !std::is_reference<T>::value
+                    && !is_shared_ptr<T>::value &&!is_weak_ptr<T>::value;
+            };
 
-            std::shared_ptr<Signal<Ptr, const std::string&>>        _propertyAdded;
-            std::shared_ptr<Signal<Ptr, const std::string&>>        _propValueChanged;
-            std::shared_ptr<Signal<Ptr, const std::string&>>        _propReferenceChanged;
-            std::shared_ptr<Signal<Ptr, const std::string&>>        _propertyRemoved;
+		private:
+            std::unordered_map<std::string, Any>	_values;
 
-        public:
-            static const std::string NO_STRUCT_SEP;
+			Signal<Ptr, const std::string&>         _propertyAdded;
+            Signal<Ptr, const std::string&>	        _propertyChanged;
+			Signal<Ptr, const std::string&>	        _propertyRemoved;
 
-        public:
-            static
-            Ptr
-            create()
+		public:
+			static
+			Ptr
+			create()
+			{
+				Ptr provider = std::shared_ptr<Provider>(new Provider());
+
+				return provider;
+			}
+
+			static
+			Ptr
+			create(Ptr source)
+			{
+				return create()->copyFrom(source);
+			}
+
+			inline
+			bool
+            hasProperty(const std::string& propertyName) const
             {
-                Ptr provider = std::shared_ptr<Provider>(new Provider());
-
-                return provider;
+                return _values.count(propertyName) != 0;
             }
 
-            static
-            Ptr
-            create(Ptr source)
-            {
-                return create()->copyFrom(source);
-            }
-
-            inline
-            const std::vector<std::string>&
-            propertyNames() const
-            {
-                return _names;
-            }
-
-            virtual
-            bool
-            hasProperty(const std::string&, bool skipPropertyNameFormatting = false) const;
-
-            inline
+			inline
             const std::unordered_map<std::string, Any>&
-            values() const
-            {
-                return _values;
-            }
+			values() const
+			{
+				return _values;
+			}
+
+			inline
+			Signal<Ptr, const std::string&>&
+			propertyAdded()
+			{
+				return _propertyAdded;
+			}
 
             inline
-            const std::string&
-            propertyName(const unsigned int propertyIndex) const
-            {
-                return _names[propertyIndex];
-            }
+			Signal<Ptr, const std::string&>&
+			propertyChanged()
+			{
+				return _propertyChanged;
+			}
 
-            inline
-            std::shared_ptr<Signal<Ptr, const std::string&>>
-            propertyValueChanged() const
-            {
-                return _propValueChanged;
-            }
+			inline
+			Signal<Ptr, const std::string&>&
+			propertyRemoved()
+			{
+				return _propertyRemoved;
+			}
 
-            inline
-            std::shared_ptr<Signal<Ptr, const std::string&>>
-            propertyReferenceChanged() const
-            {
-                return _propReferenceChanged;
-            }
-
-            inline
-            std::shared_ptr<Signal<Ptr, const std::string&>>
-            propertyAdded() const
-            {
-                return _propertyAdded;
-            }
-
-            inline
-            std::shared_ptr<Signal<Ptr, const std::string&>>
-            propertyRemoved() const
-            {
-                return _propertyRemoved;
-            }
-
-            template <typename T>
-            T
-            get(const std::string& propertyName, bool skipPropertyNameFormatting) const
-            {
-                const std::string&    formattedName    = skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
-                auto                  foundIt          = values().find(formattedName);
-
-                if (foundIt == values().end())
-                    throw std::invalid_argument("propertyName");
-
-                return Any::unsafe_cast<T>(foundIt->second);
-            }
-
-            template <typename T>
-            inline
-            T
+			template <typename T>
+			inline
+            typename std::enable_if<is_valid<T>::value, const T&>::type
             get(const std::string& propertyName) const
-            {
-                return get<T>(propertyName, false);
-            }
+			{
+#ifdef DEBUG
+                return *Any::cast<T>(&_values.at(propertyName));
+#else
+                return *Any::unsafe_cast<T>(&_values.at(propertyName));
+#endif
+			}
 
             template <typename T>
-            bool
-            propertyHasType(const std::string& propertyName, bool skipPropertyNameFormatting = false) const
+            inline
+            typename std::enable_if<is_valid<T>::value, const T*>::type
+            getPointer(const std::string& propertyName) const
             {
-                const std::string&    formattedName    = skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
-                const auto            foundIt          = _values.find(formattedName);
-
-                if (foundIt == _values.end())
-                    throw std::invalid_argument("propertyName");
-
-				return Any::cast<T>(&foundIt->second) != nullptr;
-
-            }
-
-            template <typename T>
-            typename std::enable_if<!std::is_convertible<T, Value::Ptr>::value, Provider::Ptr>::type
-            set(const std::string& propertyName, T value, bool skipPropertyNameFormatting)
-            {
-                auto          formattedName    = skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
-
-                const auto    foundValueIt     = _values.find(formattedName);
-                const bool    isNewValue       = foundValueIt == _values.end();
-
-                _values[formattedName] = value;
-
-                if (isNewValue)
-                {
-                    _names.push_back(formattedName);
-
-                    _propertyAdded->execute(shared_from_this(), formattedName);
-                }
-
-                _propReferenceChanged->execute(shared_from_this(), formattedName);
-                _propValueChanged->execute(shared_from_this(), formattedName);
-
-                return shared_from_this();
-            }
-
-            template <typename T>
-            typename std::enable_if<std::is_convertible<T, Value::Ptr>::value, Provider::Ptr>::type
-            set(const std::string& propertyName, T value, bool skipPropertyNameFormatting)
-            {
-                auto          formattedName    = skipPropertyNameFormatting ? propertyName : formatPropertyName(propertyName);
-
-                const auto    foundValueIt     = _values.find(formattedName);
-                const bool    isNewValue       = (foundValueIt == _values.end());
-
-                _values[formattedName] = value;
-
-                if (isNewValue)
-                {
-                    _valueChangedSlots[formattedName] = value->changed()->connect(std::bind(
-                         &Signal<Provider::Ptr, const std::string&>::execute,
-                         _propValueChanged,
-                         shared_from_this(),
-                         formattedName
-                    ));
-
-                    _names.push_back(formattedName);
-
-                    _propertyAdded->execute(shared_from_this(), formattedName);
-                }
-
-                _propReferenceChanged->execute(shared_from_this(), formattedName);
-                _propValueChanged->execute(shared_from_this(), formattedName);
-
-                return shared_from_this();
+                return Any::unsafe_cast<T>(&_values.at(propertyName));
             }
 
             template <typename T>
             inline
-            Ptr
+            typename std::enable_if<is_valid<T>::value, T*>::type
+            getUnsafePointer(const std::string& propertyName)
+            {
+                return Any::unsafe_cast<T>(&_values.at(propertyName));
+            }
+
+            template <typename T>
+            typename std::enable_if<is_valid<T>::value, Ptr>::type
             set(const std::string& propertyName, T value)
             {
-				return Provider::set(propertyName, value, false);
+                if (_values.count(propertyName) != 0)
+                {
+                    T* ptr = Any::cast<T>(&_values[propertyName]);
+                    auto changed = !(*ptr == value);
+
+                    *ptr = value;
+					// memcpy(ptr, &value, sizeof(T));
+                    if (changed)
+                        _propertyChanged.execute(shared_from_this(), propertyName);
+                }
+                else
+                {
+                    _values[propertyName] = value;
+                    _propertyAdded.execute(shared_from_this(), propertyName);
+                    _propertyChanged.execute(shared_from_this(), propertyName);
+                }
+
+                return shared_from_this();
             }
 
-            virtual
-            Ptr
+            template <typename T>
+			bool
+            propertyHasType(const std::string& propertyName) const
+			{
+                const auto foundIt = _values.find(propertyName);
+
+				if (foundIt == _values.end())
+					throw std::invalid_argument("propertyName");
+
+				return Any::cast<T>(&foundIt->second) != nullptr;
+			}
+
+			virtual
+			Ptr
             unset(const std::string& propertyName);
 
-            Ptr
-            swap(const std::string& propertyName1, const std::string& propertyName2, bool skipPropertyNameFormatting = false);
+			Ptr
+			clone();
 
-            Ptr
-            clone();
+			virtual
+			Ptr
+			copyFrom(Ptr source);
 
-            virtual
-            Ptr
-            copyFrom(Ptr source);
-
-        protected:
-            Provider();
-
-
-            virtual
-            std::string
-            formatPropertyName(const std::string& propertyName) const
-            {
-                return propertyName;
-            }
-
-            virtual
-            std::string
-            unformatPropertyName(const std::string& propertyName) const
-            {
-                return propertyName;
-            }
-        };
-    }
+		protected:
+			Provider();
+		};
+	}
 }
