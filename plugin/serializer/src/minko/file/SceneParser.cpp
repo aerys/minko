@@ -30,16 +30,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/MasterAnimation.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
-
-#include "msgpack.hpp"
+#include "minko/deserialize/Unpacker.hpp"
 
 #include <stack>
 
 using namespace minko;
 using namespace minko::file;
+using namespace minko::deserialize;
 
 std::unordered_map<std::int8_t, SceneParser::ComponentReadFunction> SceneParser::_componentIdToReadFunction;
-
 
 SceneParser::SceneParser()
 {
@@ -146,20 +145,13 @@ SceneParser::parse(const std::string&					filename,
 
 	std::string 		folderPath = extractFolderPath(resolvedFilename);
 
-	extractDependencies(assetLibrary, data, _headerSize, _dependenciesSize, options, folderPath);
+    msgpack::type::tuple<std::vector<std::string>, std::vector<SerializedNode>> dst;
 
-	msgpack::object		deserialized;
-	msgpack::zone		mempool;
-	msgpack::unpack((char*)&data[_headerSize + _dependenciesSize], _sceneDataSize, NULL, &mempool, &deserialized);
+    extractDependencies(assetLibrary, data, _headerSize, _dependenciesSize, options, folderPath);
 
-	msgpack::type::tuple<std::vector<std::string>, std::vector<SerializedNode>> dst;
-	deserialized.convert(&dst);
+    unpack(dst, data, _sceneDataSize, _headerSize + _dependenciesSize);
 
-	std::vector<unsigned char>* d = (std::vector<unsigned char>*)&data;
-	d->clear();
-	d->shrink_to_fit();
-
-	assetLibrary->symbol(filename, parseNode(dst.a1, dst.a0, assetLibrary, options));
+    assetLibrary->symbol(filename, parseNode(dst.get<1>(), dst.get<0>(), assetLibrary, options));
 
 	if (_jobList.size() > 0)
 	{
@@ -185,16 +177,16 @@ SceneParser::parseNode(std::vector<SerializedNode>&			nodePack,
 	std::map<int, std::vector<scene::Node::Ptr>>		componentIdToNodes;
     std::map<scene::Node::Ptr, scene::Node::Ptr>        nodeToParentMap;
 
-	for (uint i = 0; i < nodePack.size(); ++i)
-	{
-		scene::Node::Ptr	newNode			= scene::Node::create();
-		uint				layouts			= nodePack[i].a1;
-		uint				numChildren		= nodePack[i].a2;
-		std::vector<uint>	componentsId	= nodePack[i].a3;
-		std::string			uuid			= nodePack[i].a4;
+    for (uint i = 0; i < nodePack.size(); ++i)
+    {
+        scene::Node::Ptr    newNode            = scene::Node::create();
+        uint                layouts            = nodePack[i].get<1>();
+        uint                numChildren        = nodePack[i].get<2>();
+        std::vector<uint>    componentsId    = nodePack[i].get<3>();
+        std::string            uuid            = nodePack[i].get<4>();
 
 		newNode->layout(layouts);
-		newNode->name(nodePack[i].a0);
+		newNode->name(nodePack[i].get<0>());
 		newNode->uuid(uuid);
 
 		for (uint componentId : componentsId)

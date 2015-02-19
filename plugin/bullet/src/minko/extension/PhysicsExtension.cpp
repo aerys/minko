@@ -28,12 +28,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/bullet/ConeShape.hpp"
 #include "minko/component/bullet/CylinderShape.hpp"
 #include "minko/deserialize/TypeDeserializer.hpp"
+#include "minko/deserialize/Unpacker.hpp"
 #include "minko/Any.hpp"
 #include "minko/component/bullet/ColliderData.hpp"
 #include "minko/component/bullet/Collider.hpp"
-#include "msgpack.hpp"
 
 using namespace minko;
+using namespace minko::deserialize;
 using namespace minko::extension;
 
 void
@@ -47,25 +48,20 @@ PhysicsExtension::bind()
 }
 
 std::shared_ptr<component::AbstractComponent>
-PhysicsExtension::deserializePhysics(file::SceneVersion                     sceneVersion,
-                                     std::string&                           serializedCollider,
+PhysicsExtension::deserializePhysics(std::string&                           packed,
                                      std::shared_ptr<file::AssetLibrary>    assetLibrary,
                                      std::shared_ptr<file::Dependency>      dependencies)
 {
-    component::bullet::AbstractPhysicsShape::Ptr deserializedShape;
-    msgpack::zone mempool;
-    msgpack::object deserialized;
-
+    component::bullet::AbstractPhysicsShape::Ptr    deserializedShape;
     // shape type, shape data, delta transform, <density, friction, restit>, dynamic, trigger, filterGroup, filterMask
     msgpack::type::tuple<int, std::string, msgpack::type::tuple<uint, std::string>, std::string, bool, bool, uint, uint> dst;
 
-    auto result = msgpack::unpack(serializedCollider.data(), serializedCollider.size() - 1, nullptr, &mempool, &deserialized);
-    deserialized.convert(&dst);
+    unpack(dst, packed.data(), packed.size() - 1);
 
-    std::vector<float> shapeData = deserialize::TypeDeserializer::deserializeVector<float>(dst.a1);
-    std::vector<float> physicsData = deserialize::TypeDeserializer::deserializeVector<float>(dst.a3);
+    std::vector<float> shapeData = deserialize::TypeDeserializer::deserializeVector<float>(dst.get<1>());
+    std::vector<float> physicsData = deserialize::TypeDeserializer::deserializeVector<float>(dst.get<3>());
 
-    uint shapeType = dst.a0;
+    uint shapeType = dst.get<0>();
     
     // TODO: Replace constant integer by Enum
     if (shapeType == 1) // Ball
@@ -98,7 +94,7 @@ PhysicsExtension::deserializePhysics(file::SceneVersion                     scen
         );
     }
 
-    std::tuple<uint, std::string&> serializedMatrixTuple(dst.a2.a0, dst.a2.a1);
+    std::tuple<uint, std::string&> serializedMatrixTuple(dst.get<2>().get<0>(), dst.get<2>().get<1>());
 
     auto deltaMatrix = Any::cast<math::mat4>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
 
@@ -111,12 +107,11 @@ PhysicsExtension::deserializePhysics(file::SceneVersion                     scen
 
     auto mass = density * deserializedShape->volume();
 
-    if (dst.a4 == false)
+    if (dst.get<4>() == false)
         mass = 0.0f;
 
-    const short filterGroup = short(dst.a6 & ((1<<16) - 1)); // overriden by node's layouts
-    
-    const auto filterMask = scene::Layout(dst.a7);
+    const short filterGroup = short(dst.get<6>() & ((1<<16) - 1)); // overriden by node's layouts
+    const auto    filterMask = Layouts(dst.get<7>());
 
     auto data = component::bullet::ColliderData::create(
         mass,
@@ -127,7 +122,7 @@ PhysicsExtension::deserializePhysics(file::SceneVersion                     scen
 
     auto collider = component::bullet::Collider::create(data)
         //->collisionGroup(filterGroup) // information stored in node layouts
-        ->triggerCollisions(dst.a7 != 0);
+        ->triggerCollisions(dst.get<7>() != 0);
 
     collider->layoutMask(filterMask);
 

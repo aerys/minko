@@ -100,8 +100,6 @@ TypeDeserializer::deserializeMatrix4x4(const std::tuple<uint, std::string&>& ser
 	matrixValues[10] = 1;
 	matrixValues[15] = 1;
 
-	unsigned int serializedIndex = 0;
-
 	for (unsigned int i = 0; i < 16; ++i)
 	{
 		if (std::get<0>(serializeMatrix) & (1u << i))

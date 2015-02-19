@@ -21,8 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/SerializerCommon.hpp"
 #include "minko/file/AbstractParser.hpp"
-#include "msgpack.hpp"
 #include "minko/component/JobManager.hpp"
+#include "minko/deserialize/Unpacker.hpp"
 
 namespace minko
 {
@@ -46,8 +46,8 @@ namespace minko
             typedef std::shared_ptr<Options>                                OptionsPtr;
 
         private:
-            typedef std::shared_ptr<component::JobManager::Job>                                                JobPtr;
-            typedef std::shared_ptr<Dependency>                                                                DependencyPtr;
+            typedef std::shared_ptr<component::JobManager::Job>             JobPtr;
+            typedef std::shared_ptr<Dependency>                             DependencyPtr;
             typedef std::function<void(
                 unsigned short,
                 AssetLibraryPtr,
@@ -59,25 +59,25 @@ namespace minko
             )>                                                              AssetDeserializeFunction;
 
         protected:
-            DependencyPtr                        _dependencies;
-            std::shared_ptr<GeometryParser>        _geometryParser;
-            std::shared_ptr<MaterialParser>        _materialParser;
+            DependencyPtr                       _dependencies;
+            std::shared_ptr<GeometryParser>     _geometryParser;
+            std::shared_ptr<MaterialParser>     _materialParser;
             std::shared_ptr<TextureParser>      _textureParser;
 
-            std::string                                                _lastParsedAssetName;
-            std::list<std::shared_ptr<component::JobManager::Job>>    _jobList;
+            std::string                                                 _lastParsedAssetName;
+            std::list<std::shared_ptr<component::JobManager::Job>>      _jobList;
 
-            int                                                        _magicNumber;
+            int                                                         _magicNumber;
 
-            unsigned int                                            _fileSize;
-            short                                                    _headerSize;
-            unsigned int                                            _dependenciesSize;
-            unsigned int                                            _sceneDataSize;
+            unsigned int                                                _fileSize;
+            short                                                       _headerSize;
+            unsigned int                                                _dependenciesSize;
+            unsigned int                                                _sceneDataSize;
 
             SceneVersion                                            _version;
 
         private:
-            static std::unordered_map<uint, AssetDeserializeFunction> _assetTypeToFunction;
+            static std::unordered_map<uint, AssetDeserializeFunction>   _assetTypeToFunction;
 
         public:
             virtual
@@ -85,8 +85,8 @@ namespace minko
             parse(const std::string&                filename,
                   const std::string&                resolvedFilename,
                   std::shared_ptr<Options>          options,
-                  const std::vector<unsigned char>&    data,
-                  AssetLibraryPtr                    assetLibrary);
+                  const std::vector<unsigned char>& data,
+                  AssetLibraryPtr                   assetLibrary);
 
             static
             void
@@ -94,16 +94,16 @@ namespace minko
 
         protected:
             void
-            extractDependencies(AssetLibraryPtr                            assetLibrary,
-                                  const std::vector<unsigned char>&        data,
-                                short                                    dataOffset,
+            extractDependencies(AssetLibraryPtr                         assetLibrary,
+                                const std::vector<unsigned char>&       data,
+                                short                                   dataOffset,
                                 unsigned int                            dependenciesSize,
                                 std::shared_ptr<Options>                options,
                                 std::string&                            assetFilePath);
 
             inline
             void
-            dependecy(std::shared_ptr<Dependency> dependecies)
+            dependency(std::shared_ptr<Dependency> dependecies)
             {
                 _dependencies = dependecies;
             }
@@ -112,18 +112,18 @@ namespace minko
             AbstractSerializerParser();
 
             void
-            deserializeAsset(SerializedAsset&                    asset,
-                              AssetLibraryPtr                    assetLibrary,
-                              std::shared_ptr<Options>            options,
-                              std::string&                        assetFilePath);
+            deserializeAsset(SerializedAsset&                           asset,
+                              AssetLibraryPtr                           assetLibrary,
+                              std::shared_ptr<Options>                  options,
+                              std::string&                              assetFilePath);
 
             std::string
             extractFolderPath(const std::string& filepath);
 
             bool
-            readHeader(const std::string&                   filename,
-                       const std::vector<unsigned char>&    data,
-                       int                                  extension = 0x00);
+            readHeader(const std::string&                               filename,
+                       const std::vector<unsigned char>&                data,
+                       int                                              extension = 0x00);
 
             int
             readInt(const std::vector<unsigned char>& data, int offset)
