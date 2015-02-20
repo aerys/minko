@@ -48,7 +48,8 @@ PhysicsExtension::bind()
 }
 
 std::shared_ptr<component::AbstractComponent>
-PhysicsExtension::deserializePhysics(std::string&                           packed,
+PhysicsExtension::deserializePhysics(file::SceneVersion                   sceneVersion, 
+									 std::string&                           packed,
                                      std::shared_ptr<file::AssetLibrary>    assetLibrary,
                                      std::shared_ptr<file::Dependency>      dependencies)
 {
@@ -111,7 +112,7 @@ PhysicsExtension::deserializePhysics(std::string&                           pack
         mass = 0.0f;
 
     const short filterGroup = short(dst.get<6>() & ((1<<16) - 1)); // overriden by node's layouts
-    const auto    filterMask = Layouts(dst.get<7>());
+    const auto    filterMask = scene::Layout(dst.get<7>());
 
     auto data = component::bullet::ColliderData::create(
         mass,
