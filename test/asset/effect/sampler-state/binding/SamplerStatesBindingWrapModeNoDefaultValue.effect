@@ -1,17 +1,16 @@
 {
 	"uniforms"   : {
-        "uDiffuseMap"            : {
+        "uDiffuseMap"   : {
             "binding"       : "material[${materialUuid}].diffuseMap",
-            "textureFilter"      : { 
-				"binding"       : "material[${materialUuid}].diffuseMapTextureFilter" ,
-				"default"		: "linear"
+            "wrapMode"      : { 
+				"binding"       : "material[${materialUuid}].diffuseMapWrapMode"
 			}
         }
     },
 
     "techniques" : [{
         "passes" : [{
-            "vertexShader" : "#pragma include \"dummy.glsl\"",
+            "vertexShader" : "#pragma include \"../../dummy.glsl\"",
             "fragmentShader" : "
                 uniform sampler2D uDiffuseMap;
 

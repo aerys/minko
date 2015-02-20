@@ -3,14 +3,15 @@
         "uDiffuseMap"            : {
             "binding"       : "material[${materialUuid}].diffuseMap",
             "mipFilter"      : { 
-				"binding"       : "material[${materialUuid}].diffuseMapMipFilter"
+				"binding"       : "material[${materialUuid}].diffuseMapMipFilter" ,
+				"default"		: "nearest"
 			}
         }
     },
 
     "techniques" : [{
         "passes" : [{
-            "vertexShader" : "#pragma include \"dummy.glsl\"",
+            "vertexShader" : "#pragma include \"../../dummy.glsl\"",
             "fragmentShader" : "
                 uniform sampler2D uDiffuseMap;
 
