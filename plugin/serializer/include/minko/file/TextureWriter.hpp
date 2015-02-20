@@ -98,6 +98,13 @@ namespace minko
                                     AbstractTexturePtr      abstractTexture,
                                     WriterOptionsPtr        writerOptions,
                                     std::stringstream&      blob);
+
+            static
+            bool
+            writeCRNCompressedTexture(render::TextureFormat   textureFormat,
+                                      AbstractTexturePtr      abstractTexture,
+                                      WriterOptionsPtr        writerOptions,
+                                      std::stringstream&      blob);
         };
     }
 }
