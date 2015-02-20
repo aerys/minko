@@ -215,6 +215,13 @@ namespace minko
             }
 
             inline
+            Signal<DrawCall*>::Ptr
+            zSortNeeded() const
+            {
+                return _zSortNeeded;
+            }
+
+            inline
             float
             priority() const
             {
@@ -229,10 +236,101 @@ namespace minko
             }
 
             inline
-            Signal<DrawCall*>::Ptr
-            zSortNeeded() const
+            Blending::Source
+            blendingSource() const
             {
-                return _zSortNeeded;
+                return *_blendingSourceFactor;
+            }
+
+            inline
+            Blending::Destination
+            blendingDestination() const
+            {
+                return *_blendingDestinationFactor;
+            }
+
+            inline
+            bool
+            colorMask() const
+            {
+                return *_colorMask;
+            }
+
+            inline
+            bool
+            depthMask() const
+            {
+                return *_depthMask;
+            }
+
+            inline
+            CompareMode
+            depthFunction() const
+            {
+                return *_depthFunc;
+            }
+
+            inline
+            TriangleCulling
+            triangleCulling() const
+            {
+                return *_triangleCulling;
+            }
+
+            inline
+            CompareMode
+            stencilFunction() const
+            {
+                return *_stencilFunction;
+            }
+
+            inline
+            int
+            stencilReference() const
+            {
+                return *_stencilReference;
+            }
+
+            inline
+            uint
+            stencilMask() const
+            {
+                return *_stencilMask;
+            }
+
+            inline
+            StencilOperation
+            stencilFailOperation() const
+            {
+                return *_stencilFailOp;
+            }
+
+            inline
+            StencilOperation
+            stencilZFailOperation() const
+            {
+                return *_stencilZFailOp;
+            }
+
+            inline
+            StencilOperation
+            stencilZPassOperation() const
+            {
+                return *_stencilZPassOp;
+            }
+
+            inline
+            bool
+            scissorTest() const
+            {
+                return *_scissorTest;
+            }
+
+            inline
+            math::ivec4
+            scissorBox() const
+            {
+                return *_scissorBox;
             }
 
 			inline
