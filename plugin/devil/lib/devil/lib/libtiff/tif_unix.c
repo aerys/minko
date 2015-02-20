@@ -31,7 +31,6 @@
 
 #if !defined(__WIN32__) && !defined(_WIN32) && !defined(WIN32)
 
-#include "tif_config.h"
 
 #ifdef HAVE_SYS_TYPES_H
 # include <sys/types.h>
@@ -54,6 +53,8 @@
 #ifdef HAVE_IO_H
 # include <io.h>
 #endif
+
+#include "tif_config.h"
 
 #include "tiffiop.h"
 
