@@ -79,7 +79,7 @@ RectangleTexture::data(unsigned char*    data,
 }
 
 void
-RectangleTexture::resize(int width, int height, bool resizeSmoothly)
+RectangleTexture::resize(unsigned int width, unsigned int height, bool resizeSmoothly)
 {
     const auto previousWidth = this->width();
     const auto previousHeight = this->height();

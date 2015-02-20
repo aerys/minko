@@ -36,6 +36,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::file;
+using namespace minko::deserialize;
 
 std::unordered_map<std::int8_t, SceneParser::ComponentReadFunction> SceneParser::_componentIdToReadFunction;
 
@@ -142,7 +143,7 @@ SceneParser::parse(const std::string&                   filename,
     if (!readHeader(filename, data))
         return;
 
-    std::string folderPath = extractFolderPath(resolvedFilename);
+	std::string 		folderPath = extractFolderPath(resolvedFilename);
 
     msgpack::type::tuple<std::vector<std::string>, std::vector<SerializedNode>> dst;
 
@@ -185,8 +186,8 @@ SceneParser::parseNode(std::vector<SerializedNode>&            nodePack,
         std::string            uuid            = nodePack[i].get<4>();
 
 		newNode->layout(layouts);
-		newNode->name(nodePack[i].a0);
-        newNode->uuid(uuid);
+		newNode->name(nodePack[i].get<0>());
+		newNode->uuid(uuid);
 
         for (uint componentId : componentsId)
             componentIdToNodes[componentId].push_back(newNode);

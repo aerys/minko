@@ -56,22 +56,22 @@ std::shared_ptr<render::VertexBuffer>
 GeometryParser::deserializeVertexBuffer(std::string&                                serializedVertexBuffer,
                                         std::shared_ptr<render::AbstractContext>    context)
 {
-    msgpack::type::tuple<std::string, std::vector<SerializeAttribute>> deserializedVertex;
+	msgpack::type::tuple<std::string, std::vector<SerializeAttribute>>	deserializedVertex;
 
     unpack(deserializedVertex, serializedVertexBuffer.data(), serializedVertexBuffer.size());
 
-    std::vector<float>      vector          = deserialize::TypeDeserializer::deserializeVector<float>(deserializedVertex.get<0>());
-    VertexBufferPtr         vertexBuffer    = render::VertexBuffer::create(context, vector);
+	std::vector<float>		vector			= deserialize::TypeDeserializer::deserializeVector<float>(deserializedVertex.get<0>());
+	VertexBufferPtr			vertexBuffer	= render::VertexBuffer::create(context, vector);
 
-    uint numAttributes = deserializedVertex.get<1>().size();
+	uint numAttributes = deserializedVertex.get<1>().size();
 
-    for (unsigned int attributesIndex = 0; attributesIndex < numAttributes; ++attributesIndex)
-        vertexBuffer->addAttribute(
-            deserializedVertex.get<1>()[attributesIndex].get<0>(),
-            deserializedVertex.get<1>()[attributesIndex].get<1>(),
-            deserializedVertex.get<1>()[attributesIndex].get<2>());
+	for (unsigned int attributesIndex = 0; attributesIndex < numAttributes; ++attributesIndex)
+		vertexBuffer->addAttribute(
+			deserializedVertex.get<1>()[attributesIndex].get<0>(),
+			deserializedVertex.get<1>()[attributesIndex].get<1>(),
+			deserializedVertex.get<1>()[attributesIndex].get<2>());
 
-    return vertexBuffer;
+	return vertexBuffer;
 }
 
 GeometryParser::IndexBufferPtr
@@ -102,8 +102,7 @@ GeometryParser::parse(const std::string&                filename,
     if (!readHeader(filename, data, 0x47))
         return;
 
-    std::string                 folderPathName          = extractFolderPath(resolvedFilename);
-	extractDependencies(assetLibrary, data, _headerSize, _dependenciesSize, options, folderPathName);
+	std::string				folderPathName = extractFolderPath(resolvedFilename);
 	geometry::Geometry::Ptr geom	= geometry::Geometry::create(filename);
     SerializedGeometry          serializedGeometry;
 
@@ -114,14 +113,14 @@ GeometryParser::parse(const std::string&                filename,
     uint indexBufferFunction = 0;
     uint vertexBufferFunction = 0;
 
-	computeMetaData(serializedGeometry.a0, indexBufferFunction, vertexBufferFunction);
+	computeMetaData(serializedGeometry.get<0>(), indexBufferFunction, vertexBufferFunction);
 
     geom->indices(indexBufferParserFunctions[indexBufferFunction](serializedGeometry.get<2>(), options->context()));
 
     for (std::string serializedVertexBuffer : serializedGeometry.get<3>())
     {
         geom->addVertexBuffer(vertexBufferParserFunctions[vertexBufferFunction](serializedVertexBuffer, options->context()));
-    }
+	}
 
     geom = options->geometryFunction()(serializedGeometry.get<1>(), geom);
 

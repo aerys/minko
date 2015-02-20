@@ -34,14 +34,14 @@ namespace minko
             typedef std::shared_ptr<MaterialParser>                             Ptr;
 
             typedef msgpack::type::tuple<uint, std::string>                     ComplexPropertyValue;
-            typedef msgpack::type::tuple<std::string, std::string>              BasicProperty;
-            typedef msgpack::type::tuple<std::string, ComplexPropertyValue>     ComplexProperty;
+			typedef msgpack::type::tuple<std::string, std::string>				BasicProperty;
+			typedef msgpack::type::tuple<std::string, ComplexPropertyValue>		ComplexProperty;
             typedef msgpack::type::tuple<std::vector<ComplexProperty>,
                                          std::vector<BasicProperty>>            SerializedMaterial;
-            typedef std::shared_ptr<material::Material>                         MaterialPtr;
-            typedef std::shared_ptr<AssetLibrary>                               AssetLibraryPtr;
-            typedef std::shared_ptr<Options>                                    OptionsPtr;
-            typedef std::shared_ptr<render::AbstractTexture>                    TexturePtr;
+			typedef std::shared_ptr<material::Material>							MaterialPtr;
+			typedef std::shared_ptr<AssetLibrary>								AssetLibraryPtr;
+			typedef std::shared_ptr<Options>									OptionsPtr;
+			typedef std::shared_ptr<render::AbstractTexture>					TexturePtr;
 
         private:
             static std::map<uint, std::function<Any(std::tuple<uint, std::string&>&)>> _typeIdToReadFunction;

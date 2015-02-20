@@ -48,7 +48,7 @@ VideoCameraPreview::VideoCameraPreview() :
 void
 VideoCameraPreview::initialize()
 {
-    _targetAddedSlot = targetAdded()->connect(std::bind(
+    /*_targetAddedSlot = targetAdded()->connect(std::bind(
         &VideoCameraPreview::targetAddedHandler,
         std::static_pointer_cast<VideoCameraPreview>(shared_from_this()),
         std::placeholders::_1,
@@ -60,7 +60,7 @@ VideoCameraPreview::initialize()
         std::static_pointer_cast<VideoCameraPreview>(shared_from_this()),
         std::placeholders::_1,
         std::placeholders::_2
-    ));
+    ));*/
 
     _frameBeginSlot = _sceneManager->frameBegin()->connect(std::bind(
         &VideoCameraPreview::frameBeginHandler,
@@ -86,7 +86,7 @@ VideoCameraPreview::initialize()
 }
 
 void
-VideoCameraPreview::targetAddedHandler(AbstractComponent::Ptr component, scene::Node::Ptr target)
+VideoCameraPreview::targetAdded(scene::Node::Ptr target)
 {
     _videoCameraFrameReceivedSlot = _videoCamera->frameReceived()->connect(
         std::bind(
@@ -100,13 +100,13 @@ VideoCameraPreview::targetAddedHandler(AbstractComponent::Ptr component, scene::
     ));
 
     if (_videoPreviewTarget != nullptr)
-        _previewSurface->material()->set("diffuseMap", _videoPreviewTarget);
+        _previewSurface->material()->data()->set("diffuseMap", _videoPreviewTarget->sampler());
 
     target->addComponent(_previewSurface);
 }
 
 void
-VideoCameraPreview::targetRemovedHandler(AbstractComponent::Ptr component, scene::Node::Ptr target)
+VideoCameraPreview::targetRemoved(scene::Node::Ptr target)
 {
     target->removeComponent(_previewSurface);
 
@@ -146,7 +146,8 @@ void
 VideoCameraPreview::forceBackgroundUpdate()
 {
     if (_previewSurface != nullptr && _videoPreviewTarget != nullptr)
-        _previewSurface->material()->set("diffuseMap", _videoPreviewTarget);
+		_previewSurface->material()->data()->set("diffuseMap", _videoPreviewTarget->sampler());
+	
 }
 
 void
@@ -173,8 +174,8 @@ VideoCameraPreview::initializeVideoPreviewTarget(int width, int height, ImageFor
 
     if (_previewSurface != nullptr)
     {
-        _previewSurface->material()->set("diffuseMap", _videoPreviewTarget);
-        _previewSurface->material()->set("cameraRatio", float(width) / float(height));
+        _previewSurface->material()->data()->set("diffuseMap", _videoPreviewTarget->sampler());
+        _previewSurface->material()->data()->set("cameraRatio", float(width) / float(height));
     }
 }
 

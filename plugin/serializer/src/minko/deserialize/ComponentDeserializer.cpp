@@ -49,16 +49,17 @@ using namespace minko;
 using namespace minko::deserialize;
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeTransform(file::SceneVersion                  sceneVersion,
-                                            std::string&						serializedTransformData,
-                                            std::shared_ptr<file::AssetLibrary> assetLibrary,
-                                            std::shared_ptr<file::Dependency>   dependencies)
-{
-    msgpack::type::tuple<uint, std::string>     dst;
+ComponentDeserializer::deserializeTransform(file::SceneVersion sceneVersion,
+                                            std::string&                         packed,
+											std::shared_ptr<file::AssetLibrary>	assetLibrary,
+											std::shared_ptr<file::Dependency>	dependencies)
+{	
+	msgpack::type::tuple<uint, std::string>		dst;
 
     minko::deserialize::unpack(dst, packed.data(), packed.size() - 1);
-
-    std::tuple<uint, std::string&> serializedMatrixTuple(dst.get<0>(), dst.get<1>());
+    uint& _0 = dst.get<0>();
+    std::string& _1 = dst.get<1>();
+	std::tuple<uint, std::string&> serializedMatrixTuple(_0, _1);
 
 	auto transformMatrix = Any::cast<math::mat4>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
     
@@ -72,32 +73,32 @@ ComponentDeserializer::deserializeTransform(file::SceneVersion                  
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeProjectionCamera(file::SceneVersion                         sceneVersion,
-                                                   std::string&							serializedCameraData,
-                                                   std::shared_ptr<file::AssetLibrary>  assetLibrary,
-                                                   std::shared_ptr<file::Dependency>    dependencies)
+ComponentDeserializer::deserializeProjectionCamera(file::SceneVersion sceneVersion,
+                                                   std::string&                         packed,
+												   std::shared_ptr<file::AssetLibrary>	assetLibrary,
+												   std::shared_ptr<file::Dependency>	dependencies)
 {
-    std::string         dst;
+	std::string				dst;
 
     unpack(dst, packed.data(), packed.size() - 1);
 
-    std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
+	std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
 
-    return component::PerspectiveCamera::create(dstContent[0], dstContent[1], dstContent[2], dstContent[3]);
+	return component::PerspectiveCamera::create(dstContent[0], dstContent[1], dstContent[2], dstContent[3]);
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeAmbientLight(file::SceneVersion                         sceneVersion,
-                                               std::string&							serializedAmbientLight,
-                                               std::shared_ptr<file::AssetLibrary>  assetLibrary,
-                                               std::shared_ptr<file::Dependency>    dependencies)
+ComponentDeserializer::deserializeAmbientLight(file::SceneVersion sceneVersion,
+                                               std::string&                         packed,
+											   std::shared_ptr<file::AssetLibrary>	assetLibrary,
+											   std::shared_ptr<file::Dependency>	dependencies)
 {
-    std::string                                 dst;
-    std::shared_ptr<component::AmbientLight>    ambientLight = component::AmbientLight::create();
+	std::string 								dst;
+	std::shared_ptr<component::AmbientLight>	ambientLight = component::AmbientLight::create();
 
     unpack(dst, packed.data(), packed.size() - 1);
 
-    std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
+	std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
 
     ambientLight->ambient(dstContent[0]);
 	ambientLight->color(math::vec3(dstContent[1], dstContent[2], dstContent[3]));
@@ -106,17 +107,17 @@ ComponentDeserializer::deserializeAmbientLight(file::SceneVersion               
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeDirectionalLight(file::SceneVersion                         sceneVersion,
-                                                   std::string&							serializedDirectionalLight,
-                                                   std::shared_ptr<file::AssetLibrary>  assetLibrary,
-                                                   std::shared_ptr<file::Dependency>    dependencies)
+ComponentDeserializer::deserializeDirectionalLight(file::SceneVersion sceneVersion,
+                                                   std::string&                         packed,
+												   std::shared_ptr<file::AssetLibrary>	assetLibrary,
+												   std::shared_ptr<file::Dependency>	dependencies)
 {
-    std::string                                     dst;
-    std::shared_ptr<component::DirectionalLight>    directionalLight = component::DirectionalLight::create();
+	std::string										dst;
+	std::shared_ptr<component::DirectionalLight>	directionalLight = component::DirectionalLight::create();
 
     unpack(dst, packed.data(), packed.size() - 1);
 
-    std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
+	std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
 
     directionalLight->diffuse(dstContent[0]);
     directionalLight->specular(dstContent[1]);
@@ -126,17 +127,17 @@ ComponentDeserializer::deserializeDirectionalLight(file::SceneVersion           
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializePointLight(file::SceneVersion                           sceneVersion,
-                                             std::string&							serializedPointLight,
-                                             std::shared_ptr<file::AssetLibrary>    assetLibrary,
-                                             std::shared_ptr<file::Dependency>      dependencies)
+ComponentDeserializer::deserializePointLight(file::SceneVersion sceneVersion,
+                                             std::string&                           packed,
+											 std::shared_ptr<file::AssetLibrary>	assetLibrary,
+											 std::shared_ptr<file::Dependency>		dependencies)
 {
-    std::string                                 dst;
-    std::shared_ptr<component::PointLight>      pointLight = component::PointLight::create();
+	std::string									dst;
+	std::shared_ptr<component::PointLight>		pointLight = component::PointLight::create();
 
     unpack(dst, packed.data(), packed.size() - 1);
 
-    std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
+	std::vector<float> dstContent = deserialize::TypeDeserializer::deserializeVector<float>(dst);
 
     pointLight->diffuse(dstContent[0]);
     pointLight->specular(dstContent[1]);
@@ -147,13 +148,13 @@ ComponentDeserializer::deserializePointLight(file::SceneVersion                 
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeSpotLight(file::SceneVersion                        sceneVersion,
-                                            std::string&						serializedSpotLight,
-                                            std::shared_ptr<file::AssetLibrary> assetLibrary,
-                                            std::shared_ptr<file::Dependency>   dependencies)
+ComponentDeserializer::deserializeSpotLight(file::SceneVersion sceneVersion,
+                                            std::string&                        packed,
+										    std::shared_ptr<file::AssetLibrary>	assetLibrary,
+											std::shared_ptr<file::Dependency>	dependencies)
 {
-    std::string                                 dst;
-    std::shared_ptr<component::SpotLight>       spotLight = component::SpotLight::create();
+	std::string									dst;
+	std::shared_ptr<component::SpotLight>		spotLight = component::SpotLight::create();
 
     unpack(dst, packed.data(), packed.size() - 1);
 
@@ -170,29 +171,30 @@ ComponentDeserializer::deserializeSpotLight(file::SceneVersion                  
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeSurface(file::SceneVersion                          sceneVersion,
-                                          std::string&							serializedSurface,
-                                          std::shared_ptr<file::AssetLibrary>       assetLibrary,
-                                          std::shared_ptr<file::Dependency>         dependencies)
+ComponentDeserializer::deserializeSurface(file::SceneVersion sceneVersion,
+                                          std::string&                              packed,
+										  std::shared_ptr<file::AssetLibrary>	assetLibrary,
+										  std::shared_ptr<file::Dependency>		dependencies)
 {
-    msgpack::type::tuple<unsigned short, unsigned short, unsigned short, std::string>   dst;
-    msgpack::type::tuple<std::vector<SurfaceExtension>>                                 ext;
+	msgpack::type::tuple<unsigned short, unsigned short, unsigned short, std::string>	dst;
+	msgpack::type::tuple<std::vector<SurfaceExtension>>									ext;
 
     unpack(dst, packed.data(), packed.size() - 1);
 
-    geometry::Geometry::Ptr     geometry    = dependencies->getGeometryReference(dst.get<0>());
-    material::Material::Ptr     material    = dependencies->getMaterialReference(dst.get<1>());
-    render::Effect::Ptr         effect      = dependencies->getEffectReference(dst.get<2>());
-    std::string                 technique   = "default";
-    bool                        visible     = true;
+	geometry::Geometry::Ptr		geometry	= dependencies->getGeometryReference(dst.get<0>());
+	material::Material::Ptr		material	= dependencies->getMaterialReference(dst.get<1>());
+	render::Effect::Ptr			effect		= dependencies->getEffectReference(dst.get<2>());
+	std::string					technique	= "default";
+	bool						visible		= true;
 
     if (dst.get<3>().size() > 0)
     {
         unpack(ext, dst.get<3>().data(), dst.get<3>().size());
 
-		for (uint i = 0; i < ext.a0.size(); ++i)
+        for (int i = 0; i < ext.get<0>().size(); ++i)
         {
             auto extension = ext.get<0>()[i];
+
 
             if (extension.get<0>() == "visible")
             {
@@ -225,13 +227,13 @@ ComponentDeserializer::deserializeSurface(file::SceneVersion                    
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeRenderer(file::SceneVersion                         sceneVersion,
-                                           std::string&							serializedRenderer,
-                                           std::shared_ptr<file::AssetLibrary>  assetLibrary,
-                                           std::shared_ptr<file::Dependency>    dependencies)
+ComponentDeserializer::deserializeRenderer(file::SceneVersion sceneVersion,
+                                           std::string&                         packed,
+										   std::shared_ptr<file::AssetLibrary>	assetLibrary,
+										   std::shared_ptr<file::Dependency>	dependencies)
 {
-    msgpack::type::tuple<unsigned int>      dst;
-    std::shared_ptr<component::Renderer>    renderer = component::Renderer::create();
+	msgpack::type::tuple<unsigned int>		dst;
+	std::shared_ptr<component::Renderer>	renderer = component::Renderer::create();
 
     unpack(dst, packed.data(), packed.size() - 1);
 
@@ -242,18 +244,18 @@ ComponentDeserializer::deserializeRenderer(file::SceneVersion                   
 
 
 ComponentDeserializer::AbsComponentPtr
-ComponentDeserializer::deserializeAnimation(file::SceneVersion    sceneVersion,
-                                            std::string&	serializedAnimation,
-                                            AssetLibraryPtr     assetLibrary,
-                                            DependencyPtr       dependencies)
+ComponentDeserializer::deserializeAnimation(file::SceneVersion sceneVersion,
+                                            std::string&        packed,
+											AssetLibraryPtr	assetLibrary,
+											DependencyPtr	dependencies)
 {
-    std::vector<animation::AbstractTimeline::Ptr>                                    timelines;
-    msgpack::type::tuple<uint, std::vector<uint>, VectorOfSerializedMatrix, bool>    dst;
+	std::vector<animation::AbstractTimeline::Ptr>									timelines;
+	msgpack::type::tuple<uint, std::vector<uint>, VectorOfSerializedMatrix, bool>	dst;
 
     unpack(dst, packed.data(), packed.size() - 1);
 
-	std::vector<math::mat4>	matrices;
-    std::vector<uint>                   timetable;
+	std::vector<math::mat4>				matrices;
+	std::vector<uint>                   timetable;
     uint                                duration    = dst.get<0>();
     bool                                interpolate = dst.get<3>();
 
@@ -261,7 +263,7 @@ ComponentDeserializer::deserializeAnimation(file::SceneVersion    sceneVersion,
     {
         std::tuple<uint, std::string&> serializedMatrixTuple(dst.get<2>()[i].get<0>(), dst.get<2>()[i].get<1>());
 
-		timetable.push_back(dst.a1[i]);
+		timetable.push_back(dst.get<1>()[i]);
 		matrices.push_back(math::transpose(Any::cast<math::mat4>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple))));
     }
 
@@ -271,10 +273,10 @@ ComponentDeserializer::deserializeAnimation(file::SceneVersion    sceneVersion,
 }
 
 ComponentDeserializer::AbsComponentPtr
-ComponentDeserializer::deserializeSkinning(file::SceneVersion     sceneVersion, 
-                                           std::string&		serializedAnimation,
-                                           AssetLibraryPtr  assetLibrary,
-                                           DependencyPtr    dependencies)
+ComponentDeserializer::deserializeSkinning(file::SceneVersion sceneVersion,
+                                           std::string&     packed,
+										   AssetLibraryPtr	assetLibrary,
+										   DependencyPtr	dependencies)
 {
     typedef msgpack::type::tuple<std::string, std::string, std::string, SerializedMatrix>   boneType;
     msgpack::type::tuple<std::vector<boneType>, std::string, short>                         dst;
@@ -291,7 +293,7 @@ ComponentDeserializer::deserializeSkinning(file::SceneVersion     sceneVersion,
     std::vector<std::vector<uint>>                  bonesVertexIds;
     std::vector<std::vector<float>>                 bonesWeights;
     std::vector<scene::Node::Ptr>                   nodes;
-	std::vector<math::mat4> offsetMatrices;
+	std::vector<math::mat4>                         offsetMatrices;
     std::vector<scene::Node::Ptr>                   boneNodes;
 
     for (uint i = 0; i < numBones; i++)
@@ -301,8 +303,8 @@ ComponentDeserializer::deserializeSkinning(file::SceneVersion     sceneVersion,
         std::string                     nodeName        = serializedBone.get<0>();
         std::vector<uint>               vertexIntIds    = TypeDeserializer::deserializeVector<uint, uint>(serializedBone.get<1>());
         std::vector<unsigned short>     vertexShortIds(vertexIntIds.begin(), vertexIntIds.end());
-		std::vector<float>				boneWeight		= TypeDeserializer::deserializeVector<float>(serializedBone.a2);
-		auto							offsetMatrix	= Any::cast<math::mat4>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
+        std::vector<float>              boneWeight      = TypeDeserializer::deserializeVector<float>(serializedBone.get<2>());
+        auto							offsetMatrix	= Any::cast<math::mat4>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
 
         auto nodeSet = scene::NodeSet::create(root)
             ->descendants(true, false)
@@ -326,8 +328,8 @@ ComponentDeserializer::deserializeSkinning(file::SceneVersion     sceneVersion,
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeBoundingBox(file::SceneVersion                          sceneVersion,
-                                              std::string&							serializedBoundingBox,
+ComponentDeserializer::deserializeBoundingBox(file::SceneVersion sceneVersion,
+                                              std::string&                          packed,
                                               std::shared_ptr<file::AssetLibrary>   assetLibrary,
                                               std::shared_ptr<file::Dependency>     dependencies)
 {

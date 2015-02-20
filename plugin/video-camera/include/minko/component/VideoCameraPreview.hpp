@@ -100,11 +100,11 @@ namespace minko
 			void
 			initialize();
 
-            void
-            targetAddedHandler(AbstractComponentPtr component, NodePtr target);
+			void
+			targetAdded(NodePtr target);
 
-            void
-            targetRemovedHandler(AbstractComponentPtr component, NodePtr target);
+			void
+			targetRemoved(NodePtr target);
 
             void
             frameBeginHandler(SceneManagerPtr sceneManager, float time, float deltaTime);

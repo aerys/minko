@@ -90,22 +90,22 @@ TypeDeserializer::deserializeVector2(const std::tuple<uint, std::string&>& seria
 Any
 TypeDeserializer::deserializeMatrix4x4(const std::tuple<uint, std::string&>& serializeMatrix)
 {
-    std::vector<float> matrixValues(16, 0);
-    std::stringstream    stream;
+	std::vector<float> matrixValues(16, 0);
+	std::stringstream	stream;
+	
+	stream << std::get<1>(serializeMatrix);
+	//(&*serializeMatrix.a1.begin(), serializeMatrix.a1.size());
+	matrixValues[0] = 1;
+	matrixValues[5] = 1;
+	matrixValues[10] = 1;
+	matrixValues[15] = 1;
 
-    stream << std::get<1>(serializeMatrix);
-    //(&*serializeMatrix.get<1>().begin(), serializeMatrix.get<1>().size());
-    matrixValues[0] = 1;
-    matrixValues[5] = 1;
-    matrixValues[10] = 1;
-    matrixValues[15] = 1;
-
-    for (unsigned int i = 0; i < 16; ++i)
-    {
-        if (std::get<0>(serializeMatrix) & (1u << i))
-            read<float>(stream, matrixValues[i]);
-            //matrixValues[i] = serializeMatrix.get<1>()[serializedIndex++];
-    }
+	for (unsigned int i = 0; i < 16; ++i)
+	{
+		if (std::get<0>(serializeMatrix) & (1u << i))
+			read<float>(stream, matrixValues[i]);
+			//matrixValues[i] = serializeMatrix.a1[serializedIndex++];
+	}
 
 	return Any(math::make_mat4(&matrixValues[0]));
 }
