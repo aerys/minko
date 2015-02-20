@@ -31,7 +31,8 @@ HTTPOptions::HTTPOptions() :
 HTTPOptions::HTTPOptions(const HTTPOptions& copy) :
     Options(copy),
     _username(copy._username),
-    _password(copy._password)
+    _password(copy._password),
+    _additionalHeaders(copy._additionalHeaders)
 {
 }
 
