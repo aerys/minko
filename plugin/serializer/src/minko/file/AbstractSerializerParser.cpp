@@ -192,7 +192,7 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 		_dependencies->geometryReferenceExist(asset.get<1>()) == false) // geometry
 	{
         _geometryParser->_jobList.clear();
-		_geometryParser->dependecy(_dependencies);
+		_geometryParser->dependency(_dependencies);
 
 		if (asset.get<0>() == serialize::AssetType::EMBED_GEOMETRY_ASSET)
 			resolvedPath = "geometry_" + std::to_string(asset.get<1>());
@@ -205,7 +205,7 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 		_dependencies->materialReferenceExist(asset.get<1>()) == false) // material
 	{
 		_materialParser->_jobList.clear();
-		_materialParser->dependecy(_dependencies);
+		_materialParser->dependency(_dependencies);
 
 		if (asset.get<0>() == serialize::AssetType::EMBED_MATERIAL_ASSET)
 			resolvedPath = "material_" + std::to_string(asset.get<1>());
