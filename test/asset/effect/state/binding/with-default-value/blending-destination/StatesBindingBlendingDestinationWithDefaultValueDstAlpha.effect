@@ -1,6 +1,6 @@
 {
     "states" : {
-        "blendingDestination" : { "binding" : "material[${materialUuid}].blendingDestination", "default" : "dst_dst_alpha" }
+        "blendingDestination" : { "binding" : "material[${materialUuid}].blendingDestination", "default" : "dst_alpha" }
     },
 
     "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]

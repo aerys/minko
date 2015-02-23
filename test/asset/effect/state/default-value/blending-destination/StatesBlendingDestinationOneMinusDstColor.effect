@@ -1,0 +1,7 @@
+{
+    "states" : {
+        "blendingDestination" : "one_minus_dst_color"
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

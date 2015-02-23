@@ -1,0 +1,7 @@
+{
+    "states" : {
+        "stencilZPassOperation" : "incr"
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

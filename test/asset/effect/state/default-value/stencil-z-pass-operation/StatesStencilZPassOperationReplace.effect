@@ -1,0 +1,7 @@
+{
+    "states" : {
+        "stencilZPassOperation" : "replace"
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

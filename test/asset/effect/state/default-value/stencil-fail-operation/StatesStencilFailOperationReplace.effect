@@ -1,0 +1,7 @@
+{
+    "states" : {
+        "stencilFailOperation" : "replace"
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

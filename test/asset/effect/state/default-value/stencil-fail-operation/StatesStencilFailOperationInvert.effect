@@ -1,6 +1,6 @@
 {
     "states" : {
-        "blendingMode" : { "binding" : "material[${materialUuid}].blendingMode" }
+        "stencilFailOperation" : "invert"
     },
 
     "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]

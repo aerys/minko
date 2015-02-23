@@ -1,6 +1,6 @@
 {
     "states" : {
-        "blendingSource" : { "binding" : "material[${materialUuid}].blendingSource", "default" : "src_one_minus_src_color" }
+        "blendingSource" : { "binding" : "material[${materialUuid}].blendingSource", "default" : "one_minus_src_color" }
     },
 
     "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
