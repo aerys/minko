@@ -476,7 +476,7 @@ BasicMaterial::stencilMask() const
 BasicMaterial&
 BasicMaterial::stencilFailOperation(StencilOperation value)
 {
-    data()->set(States::PROPERTY_STENCIL_FAIL_OP, value);
+    data()->set(States::PROPERTY_STENCIL_FAIL_OPERATION, value);
 
 	return *this;
 }
@@ -484,15 +484,15 @@ BasicMaterial::stencilFailOperation(StencilOperation value)
 StencilOperation
 BasicMaterial::stencilFailOperation() const
 {
-    return data()->hasProperty(States::PROPERTY_STENCIL_FAIL_OP)
-        ? data()->get<StencilOperation>(States::PROPERTY_STENCIL_FAIL_OP)
+    return data()->hasProperty(States::PROPERTY_STENCIL_FAIL_OPERATION)
+        ? data()->get<StencilOperation>(States::PROPERTY_STENCIL_FAIL_OPERATION)
 		: _defaultStates->stencilFailOperation();
 }
 
 BasicMaterial&
 BasicMaterial::stencilZFailOperation(StencilOperation value)
 {
-    data()->set(States::PROPERTY_STENCIL_ZFAIL_OP, value);
+    data()->set(States::PROPERTY_STENCIL_ZFAIL_OPERATION, value);
 
 	return *this;
 }
@@ -500,15 +500,15 @@ BasicMaterial::stencilZFailOperation(StencilOperation value)
 StencilOperation
 BasicMaterial::stencilZFailOperation() const
 {
-    return data()->hasProperty(States::PROPERTY_STENCIL_ZFAIL_OP)
-        ? data()->get<StencilOperation>(States::PROPERTY_STENCIL_ZFAIL_OP)
+    return data()->hasProperty(States::PROPERTY_STENCIL_ZFAIL_OPERATION)
+        ? data()->get<StencilOperation>(States::PROPERTY_STENCIL_ZFAIL_OPERATION)
 		: _defaultStates->stencilZFailOperation();
 }
 
 BasicMaterial&
 BasicMaterial::stencilZPassOperation(StencilOperation value)
 {
-    data()->set(States::PROPERTY_STENCIL_ZPASS_OP, value);
+    data()->set(States::PROPERTY_STENCIL_ZPASS_OPERATION, value);
 
 	return *this;
 }
@@ -516,8 +516,8 @@ BasicMaterial::stencilZPassOperation(StencilOperation value)
 StencilOperation
 BasicMaterial::stencilZPassOperation() const
 {
-    return data()->hasProperty(States::PROPERTY_STENCIL_ZPASS_OP)
-        ? data()->get<StencilOperation>(States::PROPERTY_STENCIL_ZPASS_OP)
+    return data()->hasProperty(States::PROPERTY_STENCIL_ZPASS_OPERATION)
+        ? data()->get<StencilOperation>(States::PROPERTY_STENCIL_ZPASS_OPERATION)
 		: _defaultStates->stencilZPassOperation();
 }
 

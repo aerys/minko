@@ -456,26 +456,26 @@ DrawCall::setStateValueFromStore(const std::string&   stateName,
         else
             _stencilMask = &States::DEFAULT_STENCIL_MASK; 
     }
-    else if (stateName == States::PROPERTY_STENCIL_FAIL_OP) 
+    else if (stateName == States::PROPERTY_STENCIL_FAIL_OPERATION)
     { 
         if (store.hasProperty(stateName)) 
             _stencilFailOp = store.getUnsafePointer<StencilOperation>(stateName); 
         else 
-            _stencilFailOp = &States::DEFAULT_STENCIL_FAIL_OP; 
+            _stencilFailOp = &States::DEFAULT_STENCIL_FAIL_OPERATION;
     }
-    else if (stateName == States::PROPERTY_STENCIL_ZFAIL_OP)
+    else if (stateName == States::PROPERTY_STENCIL_ZFAIL_OPERATION)
     { 
         if (store.hasProperty(stateName)) 
             _stencilZFailOp = store.getUnsafePointer<StencilOperation>(stateName); 
         else 
-            _stencilZFailOp = &States::DEFAULT_STENCIL_ZFAIL_OP; 
+            _stencilZFailOp = &States::DEFAULT_STENCIL_ZFAIL_OPERATION;
     }
-    else if (stateName == States::PROPERTY_STENCIL_ZPASS_OP)
+    else if (stateName == States::PROPERTY_STENCIL_ZPASS_OPERATION)
     { 
         if (store.hasProperty(stateName)) 
             _stencilZPassOp = store.getUnsafePointer<StencilOperation>(stateName); 
         else 
-            _stencilZPassOp = &States::DEFAULT_STENCIL_ZPASS_OP; 
+            _stencilZPassOp = &States::DEFAULT_STENCIL_ZPASS_OPERATION;
     }
     else if (stateName == States::PROPERTY_SCISSOR_TEST) 
     { 
@@ -530,9 +530,9 @@ DrawCall::bindStates(const std::map<std::string, data::Binding>&    stateBinding
         bindState(States::PROPERTY_STENCIL_FUNCTION, stateBindings, defaultValues),
         bindState(States::PROPERTY_STENCIL_REFERENCE, stateBindings, defaultValues),
         bindState(States::PROPERTY_STENCIL_MASK, stateBindings, defaultValues),
-        bindState(States::PROPERTY_STENCIL_FAIL_OP, stateBindings, defaultValues),
-        bindState(States::PROPERTY_STENCIL_ZFAIL_OP, stateBindings, defaultValues),
-        bindState(States::PROPERTY_STENCIL_ZPASS_OP, stateBindings, defaultValues),
+        bindState(States::PROPERTY_STENCIL_FAIL_OPERATION, stateBindings, defaultValues),
+        bindState(States::PROPERTY_STENCIL_ZFAIL_OPERATION, stateBindings, defaultValues),
+        bindState(States::PROPERTY_STENCIL_ZPASS_OPERATION, stateBindings, defaultValues),
         bindState(States::PROPERTY_SCISSOR_TEST, stateBindings, defaultValues),
         bindState(States::PROPERTY_SCISSOR_BOX, stateBindings, defaultValues),
         bindState(States::PROPERTY_TARGET, stateBindings, defaultValues)
