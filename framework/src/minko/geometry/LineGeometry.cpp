@@ -27,16 +27,16 @@ using namespace minko;
 using namespace minko::geometry;
 using namespace minko::render;
 
-/*static*/ const uint			LineGeometry::MAX_NUM_LINES			= 16000;
-/*static*/ const std::string	LineGeometry::ATTRNAME_START_POS	= "startPosition";
-/*static*/ const std::string	LineGeometry::ATTRNAME_STOP_POS		= "stopPosition";
-/*static*/ const std::string	LineGeometry::ATTRNAME_WEIGHTS		= "weights";
+/*static*/ const uint		 LineGeometry::MAX_NUM_LINES		= 16000;
+/*static*/ const std::string LineGeometry::ATTRNAME_START_POS	= "startPosition";
+/*static*/ const std::string LineGeometry::ATTRNAME_STOP_POS    = "stopPosition";
+/*static*/ const std::string LineGeometry::ATTRNAME_WEIGHTS		= "weights";
 
 LineGeometry::LineGeometry():
 	Geometry("line"),
-	_currentX(0.0f),
-	_currentY(0.0f),
-	_currentZ(0.0f),
+	_currentX(0.f),
+	_currentY(0.f),
+	_currentZ(0.f),
 	_numLines(0),
 	_vertexBuffer(nullptr),
 	_indexBuffer(nullptr)
@@ -49,12 +49,12 @@ LineGeometry::initialize(AbstractContext::Ptr context)
 	if (context == nullptr)
 		throw std::invalid_argument("context");
 
-	_vertexBuffer	= VertexBuffer::create(context);
-	_indexBuffer	= IndexBuffer::create(context);
+	_vertexBuffer = VertexBuffer::create(context);
+	_indexBuffer = IndexBuffer::create(context);
 
 	_vertexBuffer->addAttribute(ATTRNAME_START_POS,	3, 0);
-	_vertexBuffer->addAttribute(ATTRNAME_STOP_POS,	3, 3);
-	_vertexBuffer->addAttribute(ATTRNAME_WEIGHTS,	3, 6);
+	_vertexBuffer->addAttribute(ATTRNAME_STOP_POS, 3, 3);
+	_vertexBuffer->addAttribute(ATTRNAME_WEIGHTS, 3, 6);
 }
 
 math::vec3
@@ -81,34 +81,37 @@ LineGeometry::lineTo(float x, float y, float z, unsigned int numSegments)
 	if (numSegments == 0)
 		return moveTo(x, y, z);
 
-	const uint					vertexSize			= _vertexBuffer->vertexSize();
-	const unsigned int			oldVertexDataSize	= _vertexBuffer->data().size();
-	const unsigned int			oldIndexDataSize	= _indexBuffer->data().size();
+	const uint vertexSize = _vertexBuffer->vertexSize();
+	const unsigned int oldVertexDataSize = _vertexBuffer->data().size();
+	const unsigned int oldIndexDataSize	= _indexBuffer->data().size();
 
-	std::vector<float>			vertexData	(oldVertexDataSize	+ 4 * numSegments * vertexSize);
-	std::vector<unsigned short>	indexData	(oldIndexDataSize	+ 6 * numSegments);
+	std::vector<float> vertexData (oldVertexDataSize + 4 * numSegments * vertexSize);
+	std::vector<unsigned short>	indexData (oldIndexDataSize + 6 * numSegments);
 
 	if (oldVertexDataSize > 0)
 		memcpy(&vertexData[0], &_vertexBuffer->data()[0], sizeof(float) * oldVertexDataSize);
+
 	if (oldIndexDataSize > 0)
 		memcpy(&indexData[0], &_indexBuffer->data()[0], sizeof(unsigned short) * oldIndexDataSize);
 
 	_vertexBuffer->dispose();
 	_indexBuffer->dispose();
 
-	const float invNumSegments	= 1.0f / (float)numSegments;
-	const float stepX			= (x - _currentX) * invNumSegments;
-	const float stepY			= (y - _currentY) * invNumSegments;
-	const float stepZ			= (z - _currentZ) * invNumSegments;
-	unsigned int vid			= oldVertexDataSize;
-	unsigned int iid			= oldIndexDataSize;
+	const float invNumSegments	= 1.f / (float)numSegments;
+	const float stepX = (x - _currentX) * invNumSegments;
+	const float stepY = (y - _currentY) * invNumSegments;
+	const float stepZ = (z - _currentZ) * invNumSegments;
+	unsigned int vid = oldVertexDataSize;
+	unsigned int iid = oldIndexDataSize;
 
 	for (unsigned int segmentId = 0; segmentId < numSegments; ++segmentId)
 	{
-		if (_numLines >= MAX_NUM_LINES)
-			throw std::logic_error(
-				"Maximal number of segments (" + std::to_string(_numLines) + ") for line geometry reached."
-			);
+        if (_numLines >= MAX_NUM_LINES)
+        {
+            throw std::logic_error(
+                "Maximal number of segments (" + std::to_string(_numLines) + ") for line geometry reached."
+            );
+        }
 
 		const float nextX = _currentX + stepX;
 		const float nextY = _currentY + stepY;
@@ -116,9 +119,9 @@ LineGeometry::lineTo(float x, float y, float z, unsigned int numSegments)
 
 		for (unsigned int k = 0; k < 4; ++k)
 		{
-			const float wStart		= k < 2 ? 1.0f : 0.0f;
-			const float	wStop		= k < 2 ? 0.0f : 1.0f;
-			const float lineSpread	= 0 < k && k < 3 ? 1.0f : -1.0f;
+			const float wStart = k < 2 ? 1.f : 0.f;
+			const float	wStop = k < 2 ? 0.f : 1.f;
+			const float lineSpread = 0 < k && k < 3 ? 1.f : -1.f;
 
 			// start position
 			vertexData[vid++] = _currentX;
@@ -145,9 +148,9 @@ LineGeometry::lineTo(float x, float y, float z, unsigned int numSegments)
 		indexData[iid++] = iOffset + 3;
 		indexData[iid++] = iOffset + 2;
 
-		_currentX	= nextX;
-		_currentY	= nextY;
-		_currentZ	= nextZ;
+		_currentX = nextX;
+		_currentY = nextY;
+		_currentZ = nextZ;
 		++_numLines;
 	}
 

@@ -28,13 +28,12 @@
         "POP_LOD_ENABLED"       : "geometry[${geometryUuid}].popLodEnabled",
         "POP_BLENDING_ENABLED"  : "geometry[${geometryUuid}].popBlendingEnabled"
 	},
-	
 
 	"states" : {
         "blendingMode"          : { "binding" : "material[${materialId}].blendingMode", "default" : ["one", "zero"] },
         "colorMask"             : { "binding" : "material[${materialId}].colorMask", "default" : true },
         "depthMask"             : { "binding" : "material[${materialId}].depthMask", "default" : [true, "less_equal"] },
-        "depthFunction"         : "material[${materialId}].depthFunction",
+        "depthFunction"         : { "binding" : "material[${materialId}].depthFunction", "default" : "always" },
         "triangleCulling"       : { "binding" : "material[${materialId}].triangleCulling", "default" : "none" },
         "stencilFunction"       : { "binding" : "material[${materialId}].stencilFunction", "default" : "always" },
         "stencilReference"      : { "binding" : "material[${materialId}].stencilReference", "default" : 0 },
@@ -66,12 +65,8 @@
 				attribute vec2 aUV;
 
 				#ifdef SKINNING_NUM_BONES
-				attribute vec4 aBoneIdsA;
-				attribute vec4 aBoneIdsB;
 				attribute vec4 aBoneWeightsA;
 				attribute vec4 aBoneWeightsB;
-
-				uniform mat4 uBoneMatrices[SKINNING_NUM_BONES];
 				#endif
 
 				uniform float uPopLod;
@@ -92,7 +87,7 @@
 					vertexUV = aUV;
 					
 					#ifdef SKINNING_NUM_BONES
-						pos = skinning_moveVertex(pos, uBoneMatrices, aBoneIdsA, aBoneIdsB, aBoneWeightsA, aBoneWeightsB);
+						pos = skinning_moveVertex(pos, aBoneWeightsA, aBoneWeightsB);
 					#endif // SKINNING_NUM_BONES
 					
     				#ifdef POP_LOD_ENABLED

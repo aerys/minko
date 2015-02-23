@@ -21,8 +21,9 @@ pop_quantify(vec4 position, vec3 normal, float popLod, float popFullPrecisionLod
 {
 	vec4 quantizedPosition = pop_quantify(position, normal, popLod, popMinBound, popMaxBound);
 
-	return step(popLod, popFullPrecisionLod) * quantizedPosition +
-		   step(popFullPrecisionLod, popLod) * position;
+	return popLod >= popFullPrecisionLod
+		? position
+		: quantizedPosition;
 }
 
 float
@@ -42,6 +43,7 @@ vec4 pop_blend(vec4 position, vec3 normal, float popLod, float popBlendingLod, f
 
 	vec4 blendedQuantizedPosition = mix(blendingQuantizedPosition, quantizedPosition, fract(popBlendingLod));
 
-	return step(intPopBlendingLod, popFullPrecisionLod) * blendedQuantizedPosition +
-		   step(popFullPrecisionLod, intPopBlendingLod) * position;
+	return intPopBlendingLod >= popFullPrecisionLod
+		? position
+		: blendedQuantizedPosition;
 }

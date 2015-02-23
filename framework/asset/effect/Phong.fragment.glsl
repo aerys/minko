@@ -378,7 +378,7 @@ void main(void)
 
 					#ifdef SHININESS
 						specularAccum += phong_specularReflection(normalVector, lightDirection, eyeVector, shininessCoeff)
-							* phong_fresnel(uSpotLights[i].specular.rgb, lightDirection, eyeVector)
+							* phong_fresnel(specular.rgb, lightDirection, eyeVector)
 							* uSpotLights[i].color
 							* (uSpotLights[i].specular * attenuation * cutoff);
 					#endif // SHININESS

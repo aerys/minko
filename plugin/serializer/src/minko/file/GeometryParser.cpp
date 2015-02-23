@@ -155,8 +155,14 @@ GeometryParser::parse(const std::string&				filename,
         geom->disposeVertexBufferData();
     }
 
-	assetLibrary->geometry(serializedGeometry.a1, geom);
-	_lastParsedAssetName = serializedGeometry.a1;
+    static auto nameId = 0;
+    auto uniqueName = serializedGeometry.a1;
+
+    while (assetLibrary->geometry(uniqueName) != nullptr)
+        uniqueName = "geometry" + std::to_string(nameId++);
+
+	assetLibrary->geometry(uniqueName, geom);
+	_lastParsedAssetName = uniqueName;
 }
 
 void

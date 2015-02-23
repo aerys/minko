@@ -49,7 +49,7 @@ using namespace minko;
 using namespace minko::deserialize;
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeTransform(file::SceneVersion                        sceneVersion,
+ComponentDeserializer::deserializeTransform(file::SceneVersion                  sceneVersion,
                                             std::string&						serializedTransformData,
 											std::shared_ptr<file::AssetLibrary>	assetLibrary,
 											std::shared_ptr<file::Dependency>	dependencies)
@@ -65,7 +65,7 @@ ComponentDeserializer::deserializeTransform(file::SceneVersion                  
 
 	auto transformMatrix = Any::cast<math::mat4>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
     
-    // For .scene file of version 0.2.x or less we need to transpose transform matrixes
+    // For .scene file of version 0.2.x or less we need to transpose transform matrices
     if (sceneVersion.minor < 3)
     {
         transformMatrix = math::transpose(transformMatrix);

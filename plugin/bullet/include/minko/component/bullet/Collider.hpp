@@ -34,48 +34,49 @@ namespace minko
                 public AbstractComponent
             {
             public:
-                typedef std::shared_ptr<Collider>                    Ptr;
-                typedef std::shared_ptr<const Collider>                ConstPtr;
+                typedef std::shared_ptr<Collider>                   Ptr;
+                typedef std::shared_ptr<const Collider>             ConstPtr;
 
             private:
-                typedef std::shared_ptr<file::AssetLibrary>            AssetLibraryPtr;
-                typedef std::shared_ptr<AbstractComponent>            AbsCmpPtr;
+                typedef std::shared_ptr<file::AssetLibrary>         AssetLibraryPtr;
+                typedef std::shared_ptr<AbstractComponent>          AbsCmpPtr;
                 typedef std::shared_ptr<scene::Node>                NodePtr;
-                typedef std::shared_ptr<scene::NodeSet>                NodeSetPtr;
-                typedef std::shared_ptr<math::Vector3>                Vector3Ptr;
-                typedef std::shared_ptr<math::Matrix4x4>            Matrix4x4Ptr;
-                typedef std::shared_ptr<ColliderData>                ColliderDataPtr;
-                typedef std::shared_ptr<Transform>                    TransformPtr;
-                typedef std::shared_ptr<PhysicsWorld>                PhysicsWorldPtr;
+                typedef std::shared_ptr<scene::NodeSet>             NodeSetPtr;
+                typedef std::shared_ptr<ColliderData>               ColliderDataPtr;
+                typedef std::shared_ptr<Transform>                  TransformPtr;
+                typedef std::shared_ptr<PhysicsWorld>               PhysicsWorldPtr;
                 typedef std::shared_ptr<Surface>                    SurfacePtr;
+                typedef std::shared_ptr<component::SceneManager>    SceneManagerPtr;
+                typedef std::shared_ptr<render::AbstractTexture>    AbsTexturePtr;
 
             private:
-                int                                                    _uid;
-                ColliderDataPtr                                        _colliderData;
+                int                                                 _uid;
+                ColliderDataPtr                                     _colliderData;
                 bool                                                _canSleep;
                 bool                                                _triggerCollisions;
-                Vector3Ptr                                            _linearFactor;
-                float                                                _linearDamping;
-                float                                                _linearSleepingThreshold;
-                Vector3Ptr                                            _angularFactor;
-                float                                                _angularDamping;
-                float                                                _angularSleepingThreshold;
+                math::vec3                                          _linearFactor;
+                float                                               _linearDamping;
+                float                                               _linearSleepingThreshold;
+                math::vec3                                          _angularFactor;
+                float                                               _angularDamping;
+                float                                               _angularSleepingThreshold;
 
-                PhysicsWorldPtr                                        _physicsWorld;
-                Matrix4x4Ptr                                        _correction;
-                Matrix4x4Ptr                                        _physicsTransform;
+                PhysicsWorldPtr                                     _physicsWorld;
+                math::mat4                                          _correction;
+                math::mat4                                          _physicsTransform;
                 TransformPtr                                        _graphicsTransform;
 
                 std::shared_ptr<Signal<Ptr>>                        _propertiesChanged;
-                std::shared_ptr<Signal<Ptr, Ptr>>                    _collisionStarted;
-                std::shared_ptr<Signal<Ptr, Ptr>>                    _collisionEnded;
-                std::shared_ptr<Signal<Ptr, Matrix4x4Ptr>>            _physicsTransformChanged;
-                std::shared_ptr<Signal<Ptr, TransformPtr>>            _graphicsTransformChanged;
+                std::shared_ptr<Signal<Ptr, Ptr>>                   _collisionStarted;
+                std::shared_ptr<Signal<Ptr, Ptr>>                   _collisionEnded;
+                std::shared_ptr<Signal<Ptr, math::mat4>>            _physicsTransformChanged;
+                std::shared_ptr<Signal<Ptr, TransformPtr>>          _graphicsTransformChanged;
 
                 Signal<AbsCmpPtr, NodePtr>::Slot                    _targetAddedSlot;
                 Signal<AbsCmpPtr, NodePtr>::Slot                    _targetRemovedSlot;
-                Signal<NodePtr, NodePtr, NodePtr>::Slot                _addedSlot;
-                Signal<NodePtr, NodePtr, NodePtr>::Slot                _removedSlot;
+                Signal<NodePtr, NodePtr, NodePtr>::Slot             _addedSlot;
+                Signal<NodePtr, NodePtr, NodePtr>::Slot             _removedSlot;
+                Signal<SceneManagerPtr, float, float>::Slot         _frameBeginSlot;
 
             public:
                 inline static
@@ -83,8 +84,6 @@ namespace minko
                 create(ColliderDataPtr data)
                 {
                     Ptr collider(new Collider(data));
-
-                    collider->initialize();
 
                     return collider;
                 }
@@ -107,17 +106,10 @@ namespace minko
                 synchronizePhysicsWithGraphics(bool forceTransformUpdate = false);
 
                 Ptr
-                setPhysicsTransform(Matrix4x4Ptr, Matrix4x4Ptr = nullptr, bool forceTransformUpdate = false);
+                setPhysicsTransform(const math::mat4&, const math::mat4* = nullptr, bool forceTransformUpdate = false);
 
-                Matrix4x4Ptr
-                getPhysicsTransform(Matrix4x4Ptr = nullptr) const;
-
-                inline
-                NodePtr
-                target() const
-                {
-                    return targets().empty() ? nullptr : targets().front();
-                }
+                math::mat4
+                getPhysicsTransform() const;
 
                 inline
                 uint
@@ -138,43 +130,43 @@ namespace minko
                     return std::static_pointer_cast<Collider>(shared_from_this());
                 }
 
-                Vector3Ptr
-                linearVelocity(Vector3Ptr = nullptr) const;
+                math::vec3
+                linearVelocity() const;
 
                 Ptr
-                linearVelocity(Vector3Ptr);
+                linearVelocity(const math::vec3&);
 
                 inline
-                Vector3Ptr
+                math::vec3
                 linearFactor() const
                 {
                     return _linearFactor;
                 }
 
                 Ptr
-                linearFactor(Vector3Ptr);
+                linearFactor(const math::vec3&);
 
-                Vector3Ptr
-                angularVelocity(Vector3Ptr = nullptr) const;
+                math::vec3
+                angularVelocity(const math::vec3&) const;
 
                 Ptr
-                angularVelocity(Vector3Ptr);
+                angularVelocity(const math::vec3&);
 
                 inline
-                Vector3Ptr
+                math::vec3
                 angularFactor() const
                 {
                     return _angularFactor;
                 }
 
                 Ptr
-                angularFactor(Vector3Ptr);
+                angularFactor(const math::vec3&);
 
                 Ptr
-                applyImpulse(Vector3Ptr impulse, Vector3Ptr relPosition = nullptr);
+                applyImpulse(const math::vec3& impulse, const math::vec3& relPosition);
 
                 Ptr
-                applyRelativeImpulse(Vector3Ptr impulse, Vector3Ptr relPosition = nullptr);
+                applyRelativeImpulse(const math::vec3& impulse, const math::vec3& relPosition);
 
                 inline
                 bool
@@ -258,7 +250,7 @@ namespace minko
                 }
 
                 inline
-                std::shared_ptr<Signal<Ptr, Matrix4x4Ptr>>
+                std::shared_ptr<Signal<Ptr, math::mat4>>
                 physicsTransformChanged() const
                 {
                     return _physicsTransformChanged;
@@ -275,16 +267,13 @@ namespace minko
                 Collider(ColliderDataPtr);
 
                 void
-                initialize();
-
-                void
                 initializeFromNode(NodePtr);
 
                 void
-                targetAddedHandler(AbsCmpPtr, NodePtr);
+                targetAdded(NodePtr);
 
                 void
-                targetRemovedHandler(AbsCmpPtr, NodePtr);
+                targetRemoved(NodePtr);
 
                 void
                 addedHandler(NodePtr, NodePtr, NodePtr);
