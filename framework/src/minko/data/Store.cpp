@@ -112,11 +112,11 @@ Store::removeCollection(std::shared_ptr<Collection> collection)
 }
 
 void
-Store::executePropertySignal(Provider::Ptr                                        provider,
-                             Collection::Ptr                                      collection,
-                             const std::string&                                   propertyName,
-                             const PropertyChangedSignal&                         anyChangedSignal,
-                             const std::map<std::string, PropertyChangedSignal>&  propertyNameToSignal)
+Store::executePropertySignal(Provider::Ptr                                                  provider,
+                             Collection::Ptr                                                collection,
+                             const std::string&                                             propertyName,
+                             const PropertyChangedSignal&                                   anyChangedSignal,
+                             const std::unordered_map<std::string, PropertyChangedSignal>&  propertyNameToSignal)
 {
     anyChangedSignal.execute(*this, provider, propertyName);
     if (collection)

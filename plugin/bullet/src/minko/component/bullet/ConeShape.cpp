@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/AbstractContext.hpp"
 #include "minko/geometry/LineGeometry.hpp"
-#include "minko/math/Vector3.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -35,9 +34,9 @@ bullet::ConeShape::getGeometry(render::AbstractContext::Ptr context) const
     static const float            cAngStep    = cosf(angStep);
     static const float            sAngStep    = sinf(angStep);
 
-    const auto radiusX = _radius * localScaling()->x();
-    const auto heightY = _height * localScaling()->y();
-    const auto radiusZ = _radius * localScaling()->z();
+    const auto radiusX = _radius * localScaling().x;
+    const auto heightY = _height * localScaling().y;
+    const auto radiusZ = _radius * localScaling().z;
 
     const float upperY    = 0.5f * heightY;
     const float lowerY    = -0.5f * heightY;

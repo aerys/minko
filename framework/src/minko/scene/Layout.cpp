@@ -31,5 +31,6 @@ const Layout BuiltinLayout::_RESERVED_1         = 1 << 5;
 const Layout BuiltinLayout::_RESERVED_2         = 1 << 6;
 const Layout BuiltinLayout::_RESERVED_3         = 1 << 7;
 
-const Layout LayoutMask::NOTHING                = 0;
-const Layout LayoutMask::EVERYTHING             = 0xffffffff;
+const Layout LayoutMask::NOTHING                    = 0;
+const Layout LayoutMask::COLLISIONS_DYNAMIC_DEFAULT = EVERYTHING;
+const Layout LayoutMask::EVERYTHING                 = 0xffffffff;

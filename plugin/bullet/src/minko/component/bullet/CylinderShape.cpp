@@ -21,7 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/AbstractContext.hpp"
 #include "minko/geometry/LineGeometry.hpp"
-#include "minko/math/Vector3.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -35,9 +34,9 @@ bullet::CylinderShape::getGeometry(render::AbstractContext::Ptr context) const
     static const float            cAngStep    = cosf(angStep);
     static const float            sAngStep    = sinf(angStep);
 
-    const auto halfExtentX = _halfExtentX * localScaling()->x();
-    const auto halfExtentY = _halfExtentY * localScaling()->y();
-    const auto halfExtentZ = _halfExtentZ * localScaling()->z();
+    const auto halfExtentX = _halfExtentX * localScaling().x;
+    const auto halfExtentY = _halfExtentY * localScaling().y;
+    const auto halfExtentZ = _halfExtentZ * localScaling().z;
 
     auto lines = LineGeometry::create(context)
 

@@ -43,6 +43,7 @@ namespace minko
         {
             static const Layout NOTHING;
             static const Layout EVERYTHING;
+            static const Layout COLLISIONS_DYNAMIC_DEFAULT;
         };
     }
 }

@@ -21,10 +21,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/BulletCommon.hpp"
 
+/*
+
 #include "minko/MinkoLua.hpp"
 #include "minko/component/bullet/Collider.hpp"
 #include "minko/scene/Node.hpp"
-
 namespace minko
 {
     namespace component
@@ -190,3 +191,4 @@ namespace minko
         }
     }
 }
+*/

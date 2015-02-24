@@ -41,13 +41,13 @@ namespace minko
             typedef std::shared_ptr<data::Collection>                                                   CollectionPtr;
             typedef std::shared_ptr<data::Provider>                                                     ProviderPtr;
             typedef data::MacroBinding                                                                  MacroBinding;
-            typedef std::pair<const MacroBinding*, const Store*>                                        MacroBindingKey;
+            typedef std::pair<std::string, const Store*>                                                MacroBindingKey;
             typedef PropertyChanged::Callback                                                           PropertyCallback;
 
-            typedef std::pair_hash<const MacroBinding*, const Store*>                                   BindingHash;
-            typedef std::pair_eq<const MacroBinding*, const Store*>                                     BindingEq;
-            typedef std::unordered_map<MacroBindingKey, DrawCallList, BindingHash, BindingEq>        	MacroToDrawCallsMap;
-            typedef std::unordered_map<MacroBindingKey, ChangedSlot, BindingHash, BindingEq>            MacroToChangedSlotMap;
+            typedef std::pair_hash<std::string, const Store*>                                           MacroBindingHash;
+            typedef std::pair_eq<std::string, const Store*>                                             MacroBindingEq;
+            typedef std::unordered_map<MacroBindingKey, DrawCallList, MacroBindingHash, MacroBindingEq> MacroToDrawCallsMap;
+            typedef std::unordered_map<MacroBindingKey, ChangedSlot, MacroBindingHash, MacroBindingEq>  MacroToChangedSlotMap;
 
             typedef std::pair_hash<const data::Binding*, const DrawCall*>                               DrawCallHash;
             typedef std::pair_eq<const data::Binding*, const DrawCall*>                                 DrawCallEq;
@@ -114,12 +114,14 @@ namespace minko
                                     data::Store&                    targetData);
 
             void
-            macroPropertyAddedHandler(const data::MacroBinding&   macroBinding,
+            macroPropertyAddedHandler(const data::MacroBinding&     macroBinding,
+                                      const std::string&            propertyName,
                                       data::Store&                  store,
                                       const std::list<DrawCall*>&   drawCalls);
 
             void
             macroPropertyRemovedHandler(const data::MacroBinding&   macroBinding,
+                                        const std::string&          propertyName,
                                         data::Store&                store,
                                         const std::list<DrawCall*>& drawCalls);
 
@@ -127,7 +129,7 @@ namespace minko
             macroPropertyChangedHandler(const data::MacroBinding& macroBinding, const std::list<DrawCall*>& drawCalls);
 
             void
-            initializeDrawCall(DrawCall& drawCall);
+            initializeDrawCall(DrawCall& drawCall, bool forceRebind = false);
 
             void
             addMacroCallback(const MacroBindingKey&     key,
@@ -143,7 +145,8 @@ namespace minko
             void
             uniformBindingPropertyAddedHandler(DrawCall&                          drawCall,
                                                const ProgramInputs::UniformInput& input,
-                                               const data::BindingMap&            uniformBindingMap);
+                                               const data::BindingMap&            uniformBindingMap,
+                                               bool                               forceRebind = false);
 
             void
             stateBindingPropertyAddedHandler(DrawCall&                drawCall,

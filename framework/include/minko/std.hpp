@@ -70,20 +70,24 @@ namespace std
 		}
 	};
 
-    /*
 	inline
 	std::string
 	to_string(const minko::math::mat4& matrix)
 	{
 		std::string str = "mat4(";
 		auto ptr = minko::math::value_ptr(matrix);
-		for (auto i = 0; i < 15; ++i)
-			str += to_string(ptr[i]) + ", ";
+        for (auto i = 0; i < 15; ++i)
+        {
+            if (i % 4 == 0)
+                str += "\n";
+
+            str += to_string(ptr[i]) + ", ";
+        }
+
 		str += to_string(ptr[15]) + ")";
 
 		return str;
 	}
-    */
 
     template<typename T, minko::math::precision P>
     inline

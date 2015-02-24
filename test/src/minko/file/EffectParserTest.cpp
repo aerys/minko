@@ -532,7 +532,7 @@ TEST_F(EffectParserTest, StatesBlendingModeAdditive)
     auto fx = loadEffect("effect/state/default-value/blending-mode/StatesBlendingModeAdditive.effect");
 
     ASSERT_NE(fx, nullptr);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::ONE);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::SRC_ALPHA);
     ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestinationFactor(), Blending::Destination::ONE);
 }
 
@@ -550,8 +550,8 @@ TEST_F(EffectParserTest, StatesBlendingModeArray)
     auto fx = loadEffect("effect/state/default-value/blending-mode/StatesBlendingModeArray.effect");
 
     ASSERT_NE(fx, nullptr);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::ONE);
-    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestinationFactor(), Blending::Destination::ZERO);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingSourceFactor(), Blending::Source::SRC_COLOR);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().blendingDestinationFactor(), Blending::Destination::SRC_ALPHA_SATURATE);
 }
 
 /* Blending Source */
@@ -1824,7 +1824,7 @@ TEST_F(EffectParserTest, StatesBindingStencilMaskWithDefaultValue0)
     auto effectFile = "effect/state/binding/with-default-value/stencil-mask/StatesBindingStencilMaskWithDefaultValue0.effect";
     auto defaultValue = 0;
 
-    checkStateBindingWithDefaultValue<int>(effectFile, stateName, defaultValue);
+    checkStateBindingWithDefaultValue<uint>(effectFile, stateName, defaultValue);
 }
 
 TEST_F(EffectParserTest, StatesBindingStencilMaskWithDefaultValue1)
@@ -1833,7 +1833,7 @@ TEST_F(EffectParserTest, StatesBindingStencilMaskWithDefaultValue1)
     auto effectFile = "effect/state/binding/with-default-value/stencil-mask/StatesBindingStencilMaskWithDefaultValue1.effect";
     auto defaultValue = 1;
 
-    checkStateBindingWithDefaultValue<int>(effectFile, stateName, defaultValue);
+    checkStateBindingWithDefaultValue<uint>(effectFile, stateName, defaultValue);
 }
 
 /* Stencil fail operation */

@@ -1,6 +1,6 @@
 {
     "states" : {
-        "blendingMode": ["one", "zero"]
+        "blendingMode": ["color", "src_alpha_saturate"]
     },
 
     "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
