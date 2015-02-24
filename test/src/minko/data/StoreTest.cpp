@@ -202,7 +202,7 @@ TEST_F(StoreTest, addProviderToCollection)
 
     ASSERT_NE(std::find(c.providers().begin(), c.providers().end(), p), c.providers().end());
     ASSERT_TRUE(c.hasProperty("test[0].foo"));
-    ASSERT_EQ(c.get<unsigned int>("test[0].foo"), 42);
+    ASSERT_EQ(c.get<int>("test[0].foo"), 42);
 }
 
 TEST_F(StoreTest, removeCollection)
@@ -236,7 +236,7 @@ TEST_F(StoreTest, removeProviderFromCollection)
 
     ASSERT_NE(std::find(c.collections().begin(), c.collections().end(), cc), c.collections().end());
     ASSERT_EQ(std::find(c.providers().begin(), c.providers().end(), p), c.providers().end());
-    ASSERT_EQ(c.get<unsigned int>("test.length"), 0u);
+    ASSERT_EQ(c.get<int>("test.length"), 0u);
 }
 
 TEST_F(StoreTest, getCollectionNth)
@@ -251,13 +251,13 @@ TEST_F(StoreTest, getCollectionNth)
     p1->set("foo", 4242);
     p2->set("foo", 424242);
     c.addCollection(cc);
-    ASSERT_EQ(c.get<unsigned int>("test.length"), 0u);
+    ASSERT_EQ(c.get<int>("test.length"), 0u);
     cc->pushBack(p0);
-    ASSERT_EQ(c.get<unsigned int>("test.length"), 1u);
+    ASSERT_EQ(c.get<int>("test.length"), 1u);
     cc->pushBack(p1);
-    ASSERT_EQ(c.get<unsigned int>("test.length"), 2u);
+    ASSERT_EQ(c.get<int>("test.length"), 2u);
     cc->pushBack(p2);
-    ASSERT_EQ(c.get<unsigned int>("test.length"), 3u);
+    ASSERT_EQ(c.get<int>("test.length"), 3u);
 
     ASSERT_EQ(c.get<int>("test[0].foo"), 42);
     ASSERT_EQ(c.get<int>("test[1].foo"), 4242);
