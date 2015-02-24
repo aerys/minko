@@ -8,7 +8,7 @@
 
     "techniques" : [{
         "passes" : [{
-            "vertexShader" : "#pragma include \"dummy.glsl\"",
+            "vertexShader" : "#pragma include \"../../dummy.glsl\"",
             "fragmentShader" : "
                 uniform vec4 uDiffuseColor;
 

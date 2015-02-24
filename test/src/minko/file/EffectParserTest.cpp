@@ -42,7 +42,7 @@ EffectParserTest::loadEffect(const std::string& filename)
 
 TEST_F(EffectParserTest, OneAttributeBinding)
 {
-    auto fx = loadEffect("effect/OneAttributeBinding.effect");
+    auto fx = loadEffect("effect/attribute/binding/OneAttributeBinding.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -54,7 +54,7 @@ TEST_F(EffectParserTest, OneAttributeBinding)
 
 TEST_F(EffectParserTest, TwoAttributeBindings)
 {
-    auto fx = loadEffect("effect/TwoAttributeBindings.effect");
+    auto fx = loadEffect("effect/attribute/binding/TwoAttributeBindings.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -72,7 +72,7 @@ TEST_F(EffectParserTest, TwoAttributeBindings)
 
 TEST_F(EffectParserTest, OneUniformBinding)
 {
-    auto fx = loadEffect("effect/OneUniformBinding.effect");
+    auto fx = loadEffect("effect/uniform/binding/OneUniformBinding.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -84,7 +84,7 @@ TEST_F(EffectParserTest, OneUniformBinding)
 
 TEST_F(EffectParserTest, BoolDefaultValue)
 {
-    auto fx = MinkoTests::loadEffect("effect/BoolDefaultValue.effect");
+    auto fx = MinkoTests::loadEffect("effect/uniform/default-value/BoolDefaultValue.effect");
 
     ASSERT_EQ(fx->techniques().size(), 1);
     ASSERT_EQ(fx->techniques().at("default").size(), 1);
@@ -96,7 +96,7 @@ TEST_F(EffectParserTest, BoolDefaultValue)
 
 TEST_F(EffectParserTest, Float4DefaultValue)
 {
-    auto fx = MinkoTests::loadEffect("effect/Float4DefaultValue.effect");
+    auto fx = MinkoTests::loadEffect("effect/uniform/default-value/Float4DefaultValue.effect");
 
     ASSERT_EQ(fx->techniques().size(), 1);
     ASSERT_EQ(fx->techniques().at("default").size(), 1);
@@ -105,7 +105,7 @@ TEST_F(EffectParserTest, Float4DefaultValue)
 
 TEST_F(EffectParserTest, OneUniformBindingAndDefault)
 {
-    auto fx = MinkoTests::loadEffect("effect/OneUniformBindingAndDefault.effect");
+    auto fx = MinkoTests::loadEffect("effect/uniform/binding/OneUniformBindingAndDefault.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -122,7 +122,7 @@ TEST_F(EffectParserTest, OneUniformBindingAndDefault)
 
 TEST_F(EffectParserTest, MacroIntDefaultValue)
 {
-    auto fx = MinkoTests::loadEffect("effect/MacroIntDefaultValue.effect");
+    auto fx = MinkoTests::loadEffect("effect/macro/default-value/MacroIntDefaultValue.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -133,7 +133,7 @@ TEST_F(EffectParserTest, MacroIntDefaultValue)
 
 TEST_F(EffectParserTest, MacroInt2DefaultValue)
 {
-    auto fx = MinkoTests::loadEffect("effect/MacroInt2DefaultValue.effect");
+    auto fx = MinkoTests::loadEffect("effect/macro/default-value/MacroInt2DefaultValue.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -144,7 +144,7 @@ TEST_F(EffectParserTest, MacroInt2DefaultValue)
 
 TEST_F(EffectParserTest, MacroInt3DefaultValue)
 {
-    auto fx = MinkoTests::loadEffect("effect/MacroInt3DefaultValue.effect");
+    auto fx = MinkoTests::loadEffect("effect/macro/default-value/MacroInt3DefaultValue.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -155,7 +155,7 @@ TEST_F(EffectParserTest, MacroInt3DefaultValue)
 
 TEST_F(EffectParserTest, MacroInt4DefaultValue)
 {
-    auto fx = MinkoTests::loadEffect("effect/MacroInt4DefaultValue.effect");
+    auto fx = MinkoTests::loadEffect("effect/macro/default-value/MacroInt4DefaultValue.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -166,7 +166,7 @@ TEST_F(EffectParserTest, MacroInt4DefaultValue)
 
 TEST_F(EffectParserTest, MacroFloatDefaultValue)
 {
-    auto fx = MinkoTests::loadEffect("effect/MacroFloatDefaultValue.effect");
+    auto fx = MinkoTests::loadEffect("effect/macro/default-value/MacroFloatDefaultValue.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -177,7 +177,7 @@ TEST_F(EffectParserTest, MacroFloatDefaultValue)
 
 TEST_F(EffectParserTest, MacroFloat2DefaultValue)
 {
-    auto fx = MinkoTests::loadEffect("effect/MacroFloat2DefaultValue.effect");
+    auto fx = MinkoTests::loadEffect("effect/macro/default-value/MacroFloat2DefaultValue.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -188,7 +188,7 @@ TEST_F(EffectParserTest, MacroFloat2DefaultValue)
 
 TEST_F(EffectParserTest, MacroFloat3DefaultValue)
 {
-    auto fx = MinkoTests::loadEffect("effect/MacroFloat3DefaultValue.effect");
+    auto fx = MinkoTests::loadEffect("effect/macro/default-value/MacroFloat3DefaultValue.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -199,7 +199,7 @@ TEST_F(EffectParserTest, MacroFloat3DefaultValue)
 
 TEST_F(EffectParserTest, MacroFloat4DefaultValue)
 {
-    auto fx = MinkoTests::loadEffect("effect/MacroFloat4DefaultValue.effect");
+    auto fx = MinkoTests::loadEffect("effect/macro/default-value/MacroFloat4DefaultValue.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -210,7 +210,7 @@ TEST_F(EffectParserTest, MacroFloat4DefaultValue)
 
 TEST_F(EffectParserTest, MacroBoolDefaultValue)
 {
-    auto fx = MinkoTests::loadEffect("effect/MacroBoolDefaultValue.effect");
+    auto fx = MinkoTests::loadEffect("effect/macro/default-value/MacroBoolDefaultValue.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -221,7 +221,7 @@ TEST_F(EffectParserTest, MacroBoolDefaultValue)
 
 TEST_F(EffectParserTest, MacroBool2DefaultValue)
 {
-    auto fx = MinkoTests::loadEffect("effect/MacroBool2DefaultValue.effect");
+    auto fx = MinkoTests::loadEffect("effect/macro/default-value/MacroBool2DefaultValue.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -232,7 +232,7 @@ TEST_F(EffectParserTest, MacroBool2DefaultValue)
 
 TEST_F(EffectParserTest, MacroBool3DefaultValue)
 {
-    auto fx = MinkoTests::loadEffect("effect/MacroBool3DefaultValue.effect");
+    auto fx = MinkoTests::loadEffect("effect/macro/default-value/MacroBool3DefaultValue.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -243,7 +243,7 @@ TEST_F(EffectParserTest, MacroBool3DefaultValue)
 
 TEST_F(EffectParserTest, MacroBool4DefaultValue)
 {
-    auto fx = MinkoTests::loadEffect("effect/MacroBool4DefaultValue.effect");
+    auto fx = MinkoTests::loadEffect("effect/macro/default-value/MacroBool4DefaultValue.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -258,7 +258,7 @@ TEST_F(EffectParserTest, MacroBool4DefaultValue)
 
 TEST_F(EffectParserTest, MultiplePassesHaveDifferentStateData)
 {
-    auto fx = MinkoTests::loadEffect("effect/MultiplePasses.effect");
+    auto fx = MinkoTests::loadEffect("effect/pass/MultiplePasses.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -306,7 +306,7 @@ TEST_F(EffectParserTest, MultiplePassesHaveDifferentStateData)
 
 TEST_F(EffectParserTest, MultiplePassesHaveDifferentUniformData)
 {
-    auto fx = MinkoTests::loadEffect("effect/MultiplePasses.effect");
+    auto fx = MinkoTests::loadEffect("effect/pass/MultiplePasses.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -355,7 +355,7 @@ TEST_F(EffectParserTest, MultiplePassesHaveDifferentUniformData)
 
 TEST_F(EffectParserTest, MultiplePassesHaveDifferentMacroData)
 {
-    auto fx = MinkoTests::loadEffect("effect/MultiplePasses.effect");
+    auto fx = MinkoTests::loadEffect("effect/pass/MultiplePasses.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -403,7 +403,7 @@ TEST_F(EffectParserTest, MultiplePassesHaveDifferentMacroData)
 
 TEST_F(EffectParserTest, MultiplePassesHaveDifferentAttributeData)
 {
-    auto fx = MinkoTests::loadEffect("effect/MultiplePasses.effect");
+    auto fx = MinkoTests::loadEffect("effect/pass/MultiplePasses.effect");
 
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
@@ -1317,42 +1317,42 @@ TEST_F(EffectParserTest, StatesBindingTriangleCulling)
 
 TEST_F(EffectParserTest, StatesBindingStencilFunction)
 {
-    auto filename = "effect/state/binding/no-default-value/stencil/StatesBindingStencilFunction.effect";
+    auto filename = "effect/state/binding/no-default-value/StatesBindingStencilFunction.effect";
 
     checkStateBinding(filename, States::PROPERTY_STENCIL_FUNCTION);
 }
 
 TEST_F(EffectParserTest, StatesBindingStencilReference)
 {
-    auto filename = "effect/state/binding/no-default-value/stencil/StatesBindingStencilReference.effect";
+    auto filename = "effect/state/binding/no-default-value/StatesBindingStencilReference.effect";
 
     checkStateBinding(filename, States::PROPERTY_STENCIL_REFERENCE);
 }
 
 TEST_F(EffectParserTest, StatesBindingStencilMask)
 {
-    auto filename = "effect/state/binding/no-default-value/stencil/StatesBindingStencilMask.effect";
+    auto filename = "effect/state/binding/no-default-value/StatesBindingStencilMask.effect";
 
     checkStateBinding(filename, States::PROPERTY_STENCIL_MASK);
 }
 
 TEST_F(EffectParserTest, StatesBindingStencilFailOperation)
 {
-    auto filename = "effect/state/binding/no-default-value/stencil/StatesBindingStencilFailOperation.effect";
+    auto filename = "effect/state/binding/no-default-value/StatesBindingStencilFailOperation.effect";
 
     checkStateBinding(filename, States::PROPERTY_STENCIL_FAIL_OPERATION);
 }
 
 TEST_F(EffectParserTest, StatesBindingStencilZFailOperation)
 {
-    auto filename = "effect/state/binding/no-default-value/stencil/StatesBindingStencilZFailOperation.effect";
+    auto filename = "effect/state/binding/no-default-value/StatesBindingStencilZFailOperation.effect";
 
     checkStateBinding(filename, States::PROPERTY_STENCIL_ZFAIL_OPERATION);
 }
 
 TEST_F(EffectParserTest, StatesBindingStencilZPassOperation)
 {
-    auto filename = "effect/state/binding/no-default-value/stencil/StatesBindingStencilZPassOperation.effect";
+    auto filename = "effect/state/binding/no-default-value/StatesBindingStencilZPassOperation.effect";
 
     checkStateBinding(filename, States::PROPERTY_STENCIL_ZPASS_OPERATION);
 }

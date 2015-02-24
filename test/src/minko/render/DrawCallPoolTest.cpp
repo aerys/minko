@@ -58,7 +58,7 @@ TEST_F(DrawCallPoolTest, Constructor)
 
 TEST_F(DrawCallPoolTest, UniformDefaultToBindingSwap)
 {
-    auto fx = MinkoTests::loadEffect("effect/OneUniformBindingAndDefault.effect");
+    auto fx = MinkoTests::loadEffect("effect/uniform/binding/OneUniformBindingAndDefault.effect");
     auto pass = fx->techniques().at("default")[0];
     DrawCallPool pool;
     data::Store rootData;
@@ -95,7 +95,7 @@ TEST_F(DrawCallPoolTest, UniformDefaultToBindingSwap)
 
 TEST_F(DrawCallPoolTest, UniformBindingToDefaultSwap)
 {
-    auto fx = MinkoTests::loadEffect("effect/OneUniformBindingAndDefault.effect");
+    auto fx = MinkoTests::loadEffect("effect/uniform/binding/OneUniformBindingAndDefault.effect");
     auto pass = fx->techniques().at("default")[0];
     DrawCallPool pool;
     data::Store rootData;
@@ -133,7 +133,7 @@ TEST_F(DrawCallPoolTest, UniformBindingToDefaultSwap)
 
 TEST_F(DrawCallPoolTest, WatchAndDefineIntMacro)
 {
-    auto fx = MinkoTests::loadEffect("effect/OneIntMacroBinding.effect");
+    auto fx = MinkoTests::loadEffect("effect/macro/binding/OneIntMacroBinding.effect");
     auto pass = fx->techniques().at("default")[0];
     DrawCallPool pool;
     data::Store rootData;
@@ -164,7 +164,7 @@ TEST_F(DrawCallPoolTest, WatchAndDefineIntMacro)
 
 TEST_F(DrawCallPoolTest, WatchAndDefineVariableIntMacro)
 {
-    auto fx = MinkoTests::loadEffect("effect/OneVariableIntMacroBinding.effect");
+    auto fx = MinkoTests::loadEffect("effect/macro/binding/OneVariableIntMacroBinding.effect");
     auto pass = fx->techniques().at("default")[0];
     DrawCallPool pool;
     data::Store rootData;
@@ -192,6 +192,31 @@ TEST_F(DrawCallPoolTest, WatchAndDefineVariableIntMacro)
     pool.update();
 
     ASSERT_FALSE((*drawCalls.first)->program()->definedMacroNames().find("FOO") != (*drawCalls.first)->program()->definedMacroNames().end());
+}
+
+TEST_F(DrawCallPoolTest, SameMacroBindingDifferentVariables)
+{
+    auto fx = MinkoTests::loadEffect("effect/macro/binding/OneVariableIntMacroBinding.effect");
+    auto pass = fx->techniques().at("default")[0];
+    DrawCallPool pool;
+    data::Store rootData;
+    data::Store rendererData;
+    data::Store targetData;
+    auto p1 = data::Provider::create();
+    auto p2 = data::Provider::create();
+    std::string materialUuid1 = p1->uuid();
+    std::string materialUuid2 = p2->uuid();
+    std::unordered_map<std::string, std::string> variables1 = { { "materialUuid", materialUuid1 } };
+    std::unordered_map<std::string, std::string> variables2 = { { "materialUuid", materialUuid2 } };
+
+    targetData.addProvider(p1, component::Surface::MATERIAL_COLLECTION_NAME);
+    targetData.addProvider(p2, component::Surface::MATERIAL_COLLECTION_NAME);
+
+    auto drawCalls = pool.addDrawCalls(fx, "default", variables1, rootData, rendererData, targetData);
+    auto drawCalls2 = pool.addDrawCalls(fx, "default", variables2, rootData, rendererData, targetData);
+
+    ASSERT_EQ(targetData.propertyChanged("material[" + materialUuid1 + "].bar").numCallbacks(), 1);
+    ASSERT_EQ(targetData.propertyChanged("material[" + materialUuid2 + "].bar").numCallbacks(), 1);
 }
 
 /** Sampler states binding swap **/
@@ -1932,30 +1957,4 @@ TEST_F(DrawCallPoolTest, StatesBindingTargetWithDefaultValueWidthHeight)
         renderTargetName,
         renderTargetSize
     );
-}
-
-
-TEST_F(DrawCallPoolTest, SameMacroBindingDifferentVariables)
-{
-    auto fx = MinkoTests::loadEffect("effect/OneVariableIntMacroBinding.effect");
-    auto pass = fx->techniques().at("default")[0];
-    DrawCallPool pool;
-    data::Store rootData;
-    data::Store rendererData;
-    data::Store targetData;
-    auto p1 = data::Provider::create();
-    auto p2 = data::Provider::create();
-    std::string materialUuid1 = p1->uuid();
-    std::string materialUuid2 = p2->uuid();
-    std::unordered_map<std::string, std::string> variables1 = { { "materialUuid", materialUuid1 } };
-    std::unordered_map<std::string, std::string> variables2 = { { "materialUuid", materialUuid2 } };
-
-    targetData.addProvider(p1, component::Surface::MATERIAL_COLLECTION_NAME);
-    targetData.addProvider(p2, component::Surface::MATERIAL_COLLECTION_NAME);
-
-    auto drawCalls = pool.addDrawCalls(fx, "default", variables1, rootData, rendererData, targetData);
-    auto drawCalls2 = pool.addDrawCalls(fx, "default", variables2, rootData, rendererData, targetData);
-
-    ASSERT_EQ(targetData.propertyChanged("material[" + materialUuid1 + "].bar").numCallbacks(), 1);
-    ASSERT_EQ(targetData.propertyChanged("material[" + materialUuid2 + "].bar").numCallbacks(), 1);
 }
