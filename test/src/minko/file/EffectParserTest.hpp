@@ -135,7 +135,7 @@ namespace minko
 
                 auto uniformBindingMap = fx->techniques().at("default")[0]->uniformBindings();
 
-                auto uniformName = SamplerStates::uniformNameToSamplerStateName(
+                auto uniformName = render::SamplerStates::uniformNameToSamplerStateName(
                     "uDiffuseMap",
                     samplerStateProperty
                 );
