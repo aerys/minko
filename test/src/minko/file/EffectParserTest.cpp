@@ -2108,7 +2108,6 @@ TEST_F(EffectParserTest, StatesBindingTargetWithDefaultValueSize)
     ASSERT_EQ(stateBindings.bindings.at(stateName).propertyName, "material[${materialUuid}]." + stateName);
     ASSERT_EQ(stateBindings.bindings.at(stateName).source, data::Binding::Source::TARGET);
 
-    ASSERT_NE(fx, nullptr);
     ASSERT_NE(states.target(), States::DEFAULT_TARGET);
     ASSERT_EQ(states.target(), assets->texture("test-render-target")->sampler());
     ASSERT_NE(assets->texture("test-render-target"), nullptr);
@@ -2133,7 +2132,6 @@ TEST_F(EffectParserTest, StatesBindingTargetWithDefaultValueWidthHeight)
     ASSERT_EQ(stateBindings.bindings.at(stateName).propertyName, "material[${materialUuid}]." + stateName);
     ASSERT_EQ(stateBindings.bindings.at(stateName).source, data::Binding::Source::TARGET);
 
-    ASSERT_NE(fx, nullptr);
     ASSERT_NE(states.target(), States::DEFAULT_TARGET);
     ASSERT_EQ(states.target(), assets->texture("test-render-target")->sampler());
     ASSERT_NE(assets->texture("test-render-target"), nullptr);
