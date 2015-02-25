@@ -176,7 +176,8 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 		//| aiProcess_OptimizeGraph // makes the mesh simply vanish
 		| aiProcess_FlipUVs
 		| aiProcess_SortByPType
-		| aiProcess_Triangulate,
+		| aiProcess_Triangulate
+        | aiProcess_RemoveRedundantMaterials,
 		resolvedFilename.c_str()
 	);
 
@@ -411,26 +412,41 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
 	return geometry;
 }
 
+const std::string&
+AbstractASSIMPParser::getValidAssetName(const std::string& name)
+{
+    auto validAssetNameIt = _validAssetNames.find(name);
+
+    if (validAssetNameIt != _validAssetNames.end())
+        return validAssetNameIt->second;
+
+    auto validAssetName = name;
+
+    validAssetName = File::removePrefixPathFromFilename(validAssetName);
+
+    const auto invalidSymbolRegex = std::regex("\\W+");
+
+    validAssetName = std::regex_replace(
+        validAssetName,
+        invalidSymbolRegex,
+        ""
+    );
+
+    auto newValidAssetNameIt = _validAssetNames.insert(std::make_pair(name, validAssetName));
+
+    return newValidAssetNameIt.first->second;
+}
+
 std::string
 AbstractASSIMPParser::getMaterialName(const std::string& materialName)
 {
-    static auto currentId = 0;
-
-    const auto validMaterialName = File::removePrefixPathFromFilename(materialName);
-
-    return validMaterialName.empty()
-        ? std::string("default" + std::to_string(currentId++))
-        : validMaterialName;
+    return getValidAssetName(materialName);
 }
 
 std::string
 AbstractASSIMPParser::getMeshName(const std::string& meshName)
 {
-    static int currentId = 0;
-
-    const auto validMeshName = File::removePrefixPathFromFilename(meshName);
-
-    return validMeshName.empty() ? std::string("default" + std::to_string(currentId++)) : validMeshName;
+    return getValidAssetName(meshName);
 }
 
 void
@@ -1365,7 +1381,17 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
     if (existingMaterial != nullptr)
         return existingMaterial;
 
-	material->data()->set("blendMode",			getBlendingMode(aiMat));
+    const auto blendingMode = getBlendingMode(aiMat);
+
+    {
+        auto srcBlendingMode = static_cast<render::Blending::Source>(static_cast<uint>(blendingMode) & 0x00ff);
+        auto dstBlendingMode = static_cast<render::Blending::Destination>(static_cast<uint>(blendingMode) & 0xff00);
+
+        material->data()->set<render::Blending::Mode>("blendingMode", blendingMode);
+        material->data()->set<render::Blending::Source>(render::States::PROPERTY_BLENDING_SOURCE, srcBlendingMode);
+        material->data()->set<render::Blending::Destination>(render::States::PROPERTY_BLENDING_DESTINATION, dstBlendingMode);
+    }
+
 	material->data()->set("triangleCulling",	getTriangleCulling(aiMat));
 	material->data()->set("wireframe",			getWireframe(aiMat)); // bool
 
@@ -1387,22 +1413,27 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 		// Gouraud-like shading (-> no specular)
 		specularColor.w = 0.f;
 
-	if (opacity < 1.0f)
-	{
-		diffuseColor.w = opacity;
-		specularColor.w = opacity;
-		ambientColor.w = opacity;
-		emissiveColor.w = opacity;
-		reflectiveColor.w = opacity;
-		transparentColor.w = opacity;
+    auto transparent = opacity < 1.f;
 
+    if (transparent)
+    {
+        diffuseColor.w = opacity;
+        specularColor.w = opacity;
+        ambientColor.w = opacity;
+        emissiveColor.w = opacity;
+        reflectiveColor.w = opacity;
+        transparentColor.w = opacity;
+    }
+
+    if (transparent || !(blendingMode & render::Blending::Destination::ZERO))
+    {
 		material->data()->set("priority",	render::Priority::TRANSPARENT);
-		material->data()->set("zSort",		true);
+		material->data()->set("zSorted",	true);
 	}
 	else
 	{
 		material->data()->set("priority",	render::Priority::OPAQUE);
-		material->data()->set("zSort",		false);
+		material->data()->set("zSorted",	false);
 	}
 
 	for (auto& textureTypeAndName : _textureTypeToName)
@@ -1431,8 +1462,12 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
             if (!textureIsValid && texture != nullptr)
                 _assetLibrary->texture(textureFilename, texture);
 
-			if (texture != nullptr)
-				material->data()->set(textureName, texture->sampler());
+            if (texture != nullptr)
+            {
+                material->data()->set(textureName, texture->sampler());
+
+                textureSet(material, textureName, texture);
+            }
 		}
 	}
 
@@ -1441,6 +1476,16 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
     _assetLibrary->material(materialName, processedMaterial);
 
     return processedMaterial;
+}
+
+void
+AbstractASSIMPParser::textureSet(material::Material::Ptr material, const std::string& textureTypeName, render::AbstractTexture::Ptr texture)
+{
+    if (textureTypeName == _textureTypeToName.at(aiTextureType_OPACITY) &&
+        !material->data()->hasProperty("alphaThreshold"))
+    {
+        material->data()->set("alphaThreshold", .01f);
+    }
 }
 
 material::Material::Ptr
