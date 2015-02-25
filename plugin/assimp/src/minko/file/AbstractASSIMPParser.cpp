@@ -480,17 +480,22 @@ AbstractASSIMPParser::createCameras(const aiScene* scene)
 		auto		target		= math::normalize(math::vec3(aiPosition.x + aiLookAt.x, aiPosition.y + aiLookAt.y, aiPosition.z + aiLookAt.z));
 		auto		up			= math::normalize(math::vec3(aiUp.x, aiUp.y, aiUp.z));
 
-        const auto    cameraName    = std::string(aiCamera->mName.data);
-        auto        cameraNode = scene::Node::create(cameraName + "_camera_" + std::to_string(i))
-            ->addComponent(PerspectiveCamera::create(
-                aiCamera->mAspect,
-                aiCamera->mHorizontalFOV * aiCamera->mAspect, // need the vertical FOV
-                aiCamera->mClipPlaneNear,
-                aiCamera->mClipPlaneFar
-            ))
-            ->addComponent(Transform::create(
-                math::inverse(math::lookAt(position, target, up))
-            ));
+        if (math::vec3(aiPosition.x + aiLookAt.x, aiPosition.y + aiLookAt.y, aiPosition.z + aiLookAt.z) == math::vec3())
+        {
+            target = math::vec3(1e-6f, 1e-6f, 1e-6f);
+        }
+
+        auto lookat = math::lookAt(position,target, up);
+        auto transform = Transform::create(math::inverse(lookat));
+		const auto	cameraName	= std::string(aiCamera->mName.data);
+		auto		cameraNode = scene::Node::create(cameraName + "_camera_" + std::to_string(i))
+			->addComponent(PerspectiveCamera::create(
+				aiCamera->mAspect,
+				aiCamera->mHorizontalFOV * aiCamera->mAspect, // need the vertical FOV
+				aiCamera->mClipPlaneNear,
+				aiCamera->mClipPlaneFar
+			))
+			->addComponent(transform);
 
         scene::Node::Ptr parentNode = !cameraName.empty()
             ? findNode(cameraName)
