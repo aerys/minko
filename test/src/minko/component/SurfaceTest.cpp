@@ -32,6 +32,7 @@ SurfaceTest::SetUp()
     auto loader = _sceneManager->assets()->loader();
     loader->options()->loadAsynchronously(false);
     loader->queue("effect/Basic.effect");
+    loader->queue("effect/Phong.effect");
     loader->load();
 
     auto redMaterial = material::BasicMaterial::create();
@@ -303,4 +304,17 @@ TEST_F(SurfaceTest, RemoveLastSurface)
     ASSERT_EQ(node->data().get<render::VertexAttribute>("geometry[1].uv"), _sceneManager->assets()->geometry("sphere")->getVertexAttribute("uv"));
     ASSERT_TRUE(node->data().hasProperty("material[1].diffuseColor"));
     ASSERT_EQ(node->data().get<math::vec4>("material[1].diffuseColor"), math::vec4(0.f, 1.f, 0.f, 1.f));
+}
+
+TEST_F(SurfaceTest, SetEffectNoTarget)
+{
+    auto surface = Surface::create(
+        _sceneManager->assets()->geometry("cube"),
+        material::BasicMaterial::create(),
+        _sceneManager->assets()->effect("effect/Basic.effect")
+    );
+
+    surface->effect(_sceneManager->assets()->effect("effect/Phong.effect"));
+
+    ASSERT_EQ(surface->effect(), _sceneManager->assets()->effect("effect/Phong.effect"));
 }
