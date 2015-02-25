@@ -15,10 +15,19 @@ pop_quantify(vec4 position, int popLod, vec3 popMinBound, vec3 popMaxBound)
 	float indexY = floor(offset.y * segmentCount / boxSize.y);
 	float indexZ = floor(offset.z * segmentCount / boxSize.z);
 
-	return vec4(vec3((indexX + 0.5) * boxSize.x / segmentCount,
-					 (indexY + 0.5) * boxSize.y / segmentCount,
-					 (indexZ + 0.5) * boxSize.z / segmentCount) + popMinBound,
-				position.w);
+	vec3 quantizedPosition = (popIndex + 0.5) * boxSize / segmentCount + popMinBound;
+
+	return vec4(quantizedPosition, position.w);
+}
+
+vec4
+pop_quantify(vec4 position, vec3 normal, float popLod, float popFullPrecisionLod, vec3 popMinBound, vec3 popMaxBound)
+{
+	vec4 quantizedPosition = pop_quantify(position, normal, popLod, popMinBound, popMaxBound);
+
+	return popLod >= popFullPrecisionLod
+		? position
+		: quantizedPosition;
 }
 
 float
@@ -27,4 +36,18 @@ pop_error(vec4 position, vec4 quantizedPosition, int popLod, vec3 popMinBound, v
 	float errorRate = length(position - quantizedPosition) / popErrorBound;
 
 	return clamp(errorRate, 0.0, 1.0);
+}
+
+vec4 pop_blend(vec4 position, vec3 normal, float popLod, float popBlendingLod, float popFullPrecisionLod, vec3 popMinBound, vec3 popMaxBound)
+{
+	float intPopBlendingLod = floor(popBlendingLod);
+
+	vec4 quantizedPosition = pop_quantify(position, normal, popLod, popFullPrecisionLod, popMinBound, popMaxBound);
+	vec4 blendingQuantizedPosition = pop_quantify(position, normal, intPopBlendingLod, popFullPrecisionLod, popMinBound, popMaxBound);
+
+	vec4 blendedQuantizedPosition = mix(blendingQuantizedPosition, quantizedPosition, fract(popBlendingLod));
+
+	return intPopBlendingLod >= popFullPrecisionLod
+		? position
+		: blendedQuantizedPosition;
 }
