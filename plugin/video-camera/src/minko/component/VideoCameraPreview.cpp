@@ -48,20 +48,6 @@ VideoCameraPreview::VideoCameraPreview() :
 void
 VideoCameraPreview::initialize()
 {
-    /*_targetAddedSlot = targetAdded()->connect(std::bind(
-        &VideoCameraPreview::targetAddedHandler,
-        std::static_pointer_cast<VideoCameraPreview>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2
-    ));
-
-    _targetRemovedSlot = targetRemoved()->connect(std::bind(
-        &VideoCameraPreview::targetRemovedHandler,
-        std::static_pointer_cast<VideoCameraPreview>(shared_from_this()),
-        std::placeholders::_1,
-        std::placeholders::_2
-    ));*/
-
     _frameBeginSlot = _sceneManager->frameBegin()->connect(std::bind(
         &VideoCameraPreview::frameBeginHandler,
         std::static_pointer_cast<VideoCameraPreview>(shared_from_this()),
