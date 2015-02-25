@@ -99,7 +99,11 @@ namespace minko
 
                 _options
                     ->loadAsynchronously(false)
-                    ->storeDataIfNotParsed(false);
+                    ->storeDataIfNotParsed(false)
+                    ->parserFunction([](const std::string&) -> AbstractParser::Ptr
+                    {
+                        return nullptr;
+                    });
 
                 Assimp::IOStream* stream = nullptr;
 
