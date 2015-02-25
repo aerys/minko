@@ -163,7 +163,6 @@ namespace minko
                 return (short)(data[offset] << 8 | data[offset + 1]);
             }
 
-            static
             void
             deserializeTexture(unsigned short metaData,
                                AssetLibraryPtr assetLibrary,
