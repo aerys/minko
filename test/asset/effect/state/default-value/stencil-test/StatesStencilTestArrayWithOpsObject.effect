@@ -1,0 +1,7 @@
+{
+    "states" : {
+        "stencilTest" : ["equal", 1, 0, { "fail" : "zero", "zfail" : "replace", "zpass" : "incr" }]
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

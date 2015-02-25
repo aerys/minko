@@ -1,0 +1,7 @@
+{
+    "states" : {
+        "blendingDestination" : { "binding" : "material[${materialUuid}].blendingDestination", "default" : "zero" }
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

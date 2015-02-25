@@ -46,28 +46,47 @@ using namespace minko::data;
 using namespace minko::file;
 using namespace minko::render;
 
-std::unordered_map<std::string, unsigned int> EffectParser::_blendFactorMap = {
-	{ "src_zero", static_cast<uint>(render::Blending::Source::ZERO) },
-	{ "src_one", static_cast<uint>(render::Blending::Source::ONE) },
-	{ "src_color", static_cast<uint>(render::Blending::Source::SRC_COLOR) },
-	{ "src_one_minus_src_color", static_cast<uint>(render::Blending::Source::ONE_MINUS_SRC_COLOR) },
-	{ "src_src_alpha", static_cast<uint>(render::Blending::Source::SRC_ALPHA) },
-	{ "src_one_minus_src_alpha", static_cast<uint>(render::Blending::Source::ONE_MINUS_SRC_ALPHA) },
-	{ "src_dst_alpha", static_cast<uint>(render::Blending::Source::DST_ALPHA) },
-	{ "src_one_minus_dst_alpha", static_cast<uint>(render::Blending::Source::ONE_MINUS_DST_ALPHA) },
+const std::string EffectParser::EXTRA_PROPERTY_BLENDING_MODE = "blendingMode";
+const std::string EffectParser::EXTRA_PROPERTY_STENCIL_TEST = "stencilTest";
 
-	{ "dst_zero", static_cast<uint>(render::Blending::Destination::ZERO) },
-	{ "dst_one", static_cast<uint>(render::Blending::Destination::ONE) },
-	{ "dst_dst_color", static_cast<uint>(render::Blending::Destination::DST_COLOR) },
-	{ "dst_one_minus_dst_color", static_cast<uint>(render::Blending::Destination::ONE_MINUS_DST_COLOR) },
-	{ "dst_src_alpha_saturate", static_cast<uint>(render::Blending::Destination::SRC_ALPHA_SATURATE) },
-	{ "dst_one_minus_src_alpha", static_cast<uint>(render::Blending::Destination::ONE_MINUS_SRC_ALPHA) },
-	{ "dst_dst_alpha", static_cast<uint>(render::Blending::Destination::DST_ALPHA) },
-	{ "dst_one_minus_dst_alpha", static_cast<uint>(render::Blending::Destination::ONE_MINUS_DST_ALPHA) },
+std::array<std::string, 2> EffectParser::_extraStateNames = {
+    EffectParser::EXTRA_PROPERTY_BLENDING_MODE,
+    EffectParser::EXTRA_PROPERTY_STENCIL_TEST
+};
 
-	{ "default", static_cast<uint>(render::Blending::Mode::DEFAULT) },
-	{ "alpha", static_cast<uint>(render::Blending::Mode::ALPHA) },
-	{ "additive", static_cast<uint>(render::Blending::Mode::ADDITIVE) }
+// These following extra properties are only parsed as a subnode of a state
+// we don't need them into the extraStateNames array
+const std::string EffectParser::EXTRA_PROPERTY_STENCIL_OPS = "stencilOps";
+const std::string EffectParser::EXTRA_PROPERTY_STENCIL_FAIL_OP = "fail";
+const std::string EffectParser::EXTRA_PROPERTY_STENCIL_Z_FAIL_OP = "zfail";
+const std::string EffectParser::EXTRA_PROPERTY_STENCIL_Z_PASS_OP = "zpass";
+
+std::unordered_map<std::string, unsigned int> EffectParser::_blendingSourceMap = {
+    { "zero", static_cast<uint>(render::Blending::Source::ZERO) },
+    { "one", static_cast<uint>(render::Blending::Source::ONE) },
+    { "color", static_cast<uint>(render::Blending::Source::SRC_COLOR) },
+    { "one_minus_src_color", static_cast<uint>(render::Blending::Source::ONE_MINUS_SRC_COLOR) },
+    { "src_alpha", static_cast<uint>(render::Blending::Source::SRC_ALPHA) },
+    { "one_minus_src_alpha", static_cast<uint>(render::Blending::Source::ONE_MINUS_SRC_ALPHA) },
+    { "dst_alpha", static_cast<uint>(render::Blending::Source::DST_ALPHA) },
+    { "one_minus_dst_alpha", static_cast<uint>(render::Blending::Source::ONE_MINUS_DST_ALPHA) },
+};
+
+std::unordered_map<std::string, unsigned int> EffectParser::_blendingDestinationMap = {
+    { "zero", static_cast<uint>(render::Blending::Destination::ZERO) },
+    { "one", static_cast<uint>(render::Blending::Destination::ONE) },
+    { "dst_color", static_cast<uint>(render::Blending::Destination::DST_COLOR) },
+    { "one_minus_dst_color", static_cast<uint>(render::Blending::Destination::ONE_MINUS_DST_COLOR) },
+    { "src_alpha_saturate", static_cast<uint>(render::Blending::Destination::SRC_ALPHA_SATURATE) },
+    { "one_minus_src_alpha", static_cast<uint>(render::Blending::Destination::ONE_MINUS_SRC_ALPHA) },
+    { "dst_alpha", static_cast<uint>(render::Blending::Destination::DST_ALPHA) },
+    { "one_minus_dst_alpha", static_cast<uint>(render::Blending::Destination::ONE_MINUS_DST_ALPHA) },
+};
+
+std::unordered_map<std::string, unsigned int> EffectParser::_blendingModeMap = {
+    { "default", static_cast<uint>(render::Blending::Mode::DEFAULT) },
+    { "alpha", static_cast<uint>(render::Blending::Mode::ALPHA) },
+    { "additive", static_cast<uint>(render::Blending::Mode::ADDITIVE) }
 };
 
 std::unordered_map<std::string, render::CompareMode> EffectParser::_compareFuncMap = {
@@ -78,7 +97,14 @@ std::unordered_map<std::string, render::CompareMode> EffectParser::_compareFuncM
 	{ "less", render::CompareMode::LESS },
 	{ "less_equal", render::CompareMode::LESS_EQUAL },
 	{ "never", render::CompareMode::NEVER },
-	{ "not_equal", render::CompareMode::NOT_EQUAL },
+	{ "not_equal", render::CompareMode::NOT_EQUAL }
+};
+
+std::unordered_map<std::string, render::TriangleCulling> EffectParser::_triangleCullingMap = {
+    { "none", render::TriangleCulling::NONE },
+    { "front", render::TriangleCulling::FRONT },
+    { "back", render::TriangleCulling::BACK },
+    { "both", render::TriangleCulling::BOTH }
 };
 
 std::unordered_map<std::string, render::StencilOperation> EffectParser::_stencilOpMap = {
@@ -98,10 +124,6 @@ std::unordered_map<std::string, float> EffectParser::_priorityMap = {
 	{ "opaque", Priority::OPAQUE },
 	{ "transparent", Priority::TRANSPARENT },
 	{ "last", Priority::LAST }
-};
-
-std::array<std::string, 1> EffectParser::_extraStateNames = {
-    "blendingMode"
 };
 
 float
@@ -372,29 +394,6 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
     }
 }
 
-//void
-//EffectParser::parseDefaultValue(const Json::Value&  node,
-//                                const Scope&        scope,
-//                                const std::string&  valueName,
-//                                Json::ValueType     expectedType,
-//                                data::Provider::Ptr defaultValues)
-//{
-//    if (!node.isObject())
-//        return ;
-//
-//    auto defaultValueNode = node.get("default", 0);
-//
-//    if (defaultValueNode.isObject()
-//        && defaultValueNode[defaultValueNode.getMemberNames()[0]].type() != expectedType)
-//        throw;
-//    else if (defaultValueNode.isArray() && defaultValueNode[0].type() != expectedType)
-//        throw;
-//    else if (defaultValueNode.type() != expectedType)
-//        throw;
-//
-//    parseDefaultValue(node, scope, valueName, defaultValues);
-//}
-
 void
 EffectParser::parseDefaultValue(const Json::Value&  node,
                                 const Scope&        scope,
@@ -454,6 +453,39 @@ EffectParser::parseDefaultValueSamplerStates(const Json::Value&    node,
         else if (typeid(T) == typeid(MipFilter))
             defaultValues->set(valueName, SamplerStates::stringToMipFilter(defaultValueNode.asString()));
     }
+}
+
+void
+EffectParser::parseDefaultValueStates(const Json::Value&    node,
+                                      const Scope&          scope,
+                                      const std::string&    stateName,
+                                      data::Provider::Ptr   defaultValues)
+{
+    if (!node.isObject())
+        return;
+
+    auto memberNames = node.getMemberNames();
+    if (std::find(memberNames.begin(), memberNames.end(), "default") == memberNames.end())
+        return;
+
+    auto defaultValueNode = node.get("default", 0);
+
+    if (defaultValueNode.isBool())
+        defaultValues->set(stateName, defaultValueNode.asBool() ? 1 : 0);
+    else if (defaultValueNode.isInt())
+        defaultValues->set(stateName, defaultValueNode.asInt());
+    else if (defaultValueNode.isDouble())
+        defaultValues->set(stateName, defaultValueNode.asFloat());
+    else if (defaultValueNode.isString())
+        defaultValues->set(stateName, defaultValueNode.asString());
+    else if (defaultValueNode.isArray())
+    {
+        if (stateName == States::PROPERTY_PRIORITY && node[0].isString() && node[1].isDouble())
+            defaultValues->set(stateName, getPriorityValue(node[0].asString()) + (float)node[1].asDouble());
+        else
+            throw; // FIXME: support array default values
+    }
+
 }
 
 void
@@ -782,402 +814,432 @@ EffectParser::parseStates(const Json::Value& node, const Scope& scope, StateBloc
     {
         for (auto stateName : statesNode.getMemberNames())
         {
-            if (std::find(States::PROPERTY_NAMES.begin(), States::PROPERTY_NAMES.end(), stateName) == States::PROPERTY_NAMES.end() &&
-                std::find(_extraStateNames.begin(), _extraStateNames.end(), stateName) == _extraStateNames.end())
-                throw; // FIXME: log warning because the state name does not match any known state
-
-            if (statesNode[stateName].isObject())
+            if (std::find(States::PROPERTY_NAMES.begin(), States::PROPERTY_NAMES.end(), stateName) != States::PROPERTY_NAMES.end())
             {
-				data::Binding binding;
-                if (parseBinding(statesNode[stateName], scope, binding))
-					stateBlock.bindingMap.bindings[stateName] = binding;
+                // Parse states
+                if (statesNode[stateName].isObject())
+                {
+                    data::Binding binding;
+                    if (parseBinding(statesNode[stateName], scope, binding))
+                        stateBlock.bindingMap.bindings[stateName] = binding;
+                    else
+                        parseState(statesNode[stateName], scope, stateBlock, stateName);
+
+                    // Don't forget to parse default value, even if there is no binding
+                    if (statesNode[stateName].isMember("default"))
+                    {
+                        auto defaultValueNode = statesNode[stateName].get("default", 0);
+                        parseState(defaultValueNode, scope, stateBlock, stateName);
+                    }
+                }
+                else
+                {
+                    parseState(statesNode[stateName], scope, stateBlock, stateName);
+                }
+            }
+            else if (std::find(_extraStateNames.begin(), _extraStateNames.end(), stateName) != _extraStateNames.end())
+            {
+                // Parse extra states
+                if (stateName == EXTRA_PROPERTY_BLENDING_MODE)
+                {
+                    parseBlendingMode(statesNode[stateName], scope, stateBlock);
+                }
+                else if (stateName == EXTRA_PROPERTY_STENCIL_TEST)
+                {
+                    parseStencilState(statesNode[stateName], scope, stateBlock);
+                }
+            }
+            else
+            {
+                throw; // FIXME: log warning because the state name does not match any known state
             }
         }
-
-        // parse & set priority default value
-        float priority = parsePriority(statesNode, scope, render::States::DEFAULT_PRIORITY);
-        stateBlock.states.priority(priority);
-
-        // parse & set z-sorted default value
-        bool zSorted = render::States::DEFAULT_ZSORTED;
-        parseZSort(statesNode, scope, zSorted);
-        stateBlock.states.zSorted(zSorted);
-
-        // parse & set blending factors default values
-        render::Blending::Source blendSrcFactor = render::States::DEFAULT_BLENDING_SOURCE;
-        render::Blending::Destination blendDstFactor = render::States::DEFAULT_BLENDING_DESTINATION;
-        parseBlendingMode(statesNode, scope, blendSrcFactor, blendDstFactor);
-        stateBlock.states.blendingSourceFactor(blendSrcFactor);
-        stateBlock.states.blendingDestinationFactor(blendDstFactor);
-
-        // parse & set color mask default value
-        bool colorMask = render::States::DEFAULT_COLOR_MASK;
-        parseColorMask(statesNode, scope, colorMask);
-        stateBlock.states.colorMask(colorMask);
-
-        // parse & set depth mask/func default values
-        bool depthMask = render::States::DEFAULT_DEPTH_MASK;
-        parseDepthMask(statesNode, scope, depthMask);
-        CompareMode depthFunction = render::States::DEFAULT_DEPTH_FUNCTION;
-        parseDepthFunction(statesNode, scope, depthFunction);
-        stateBlock.states.depthMask(depthMask);
-        stateBlock.states.depthFunction(depthFunction);
-
-        // parse & set triangle culling default value
-        TriangleCulling triangleCulling = render::States::DEFAULT_TRIANGLE_CULLING;
-        parseTriangleCulling(statesNode, scope, triangleCulling);
-        stateBlock.states.triangleCulling(triangleCulling);
-
-        // parse & set stencil default values
-        CompareMode stencilFunc = render::States::DEFAULT_STENCIL_FUNCTION;
-        int stencilRef = render::States::DEFAULT_STENCIL_REFERENCE;
-        uint stencilMask = render::States::DEFAULT_STENCIL_MASK;
-        StencilOperation stencilFailOp = render::States::DEFAULT_STENCIL_FAIL_OP;
-        StencilOperation stencilZFailOp = render::States::DEFAULT_STENCIL_ZFAIL_OP;
-        StencilOperation stencilZPassOp = render::States::DEFAULT_STENCIL_ZPASS_OP;
-        parseStencilState(statesNode, scope, stencilFunc, stencilRef, stencilMask, stencilFailOp, stencilZFailOp, stencilZPassOp);
-        stateBlock.states.stencilFunction(stencilFunc);
-        stateBlock.states.stencilReference(stencilRef);
-        stateBlock.states.stencilMask(stencilMask);
-        stateBlock.states.stencilFailOperation(stencilFailOp);
-        stateBlock.states.stencilZFailOperation(stencilZFailOp);
-        stateBlock.states.stencilZPassOperation(stencilZPassOp);
-
-        // parse & set scissor test/box default values
-        bool scissorTest = render::States::DEFAULT_SCISSOR_TEST;
-        math::ivec4 scissorBox = render::States::DEFAULT_SCISSOR_BOX;
-        parseScissorTest(statesNode, scope, scissorTest, scissorBox);
-        stateBlock.states.scissorTest(scissorTest);
-        stateBlock.states.scissorBox(scissorBox);
-
-		auto target = parseTarget(statesNode, scope);
-		if (target)
-			stateBlock.states.target(target->sampler());
     }
-    // FIXME: throw otherwise
 }
 
 void
-EffectParser::parseBlendingMode(const Json::Value&				node,
-                                const Scope&                    scope,
-                                render::Blending::Source&		srcFactor,
-                                render::Blending::Destination&	dstFactor)
+EffectParser::parseState(const Json::Value& node, const Scope& scope, StateBlock& stateBlock, const std::string& stateProperty)
 {
-    auto blendingModeNode = node.get(_extraStateNames[0], 0);
+    if (stateProperty == States::PROPERTY_PRIORITY)
+        parsePriority(node, scope, stateBlock);
+    else if (stateProperty == _extraStateNames[0])
+        parseBlendingMode(node, scope, stateBlock);
+    else if (stateProperty == States::PROPERTY_BLENDING_SOURCE)
+        parseBlendingSource(node, scope, stateBlock);
+    else if (stateProperty == States::PROPERTY_BLENDING_DESTINATION)
+        parseBlendingDestination(node, scope, stateBlock);
+    else if (stateProperty == States::PROPERTY_ZSORTED)
+        parseZSort(node, scope, stateBlock);
+    else if (stateProperty == States::PROPERTY_COLOR_MASK)
+        parseColorMask(node, scope, stateBlock);
+    else if (stateProperty == States::PROPERTY_DEPTH_MASK)
+        parseDepthMask(node, scope, stateBlock);
+    else if (stateProperty == States::PROPERTY_DEPTH_FUNCTION)
+        parseDepthFunction(node, scope, stateBlock);
+    else if (stateProperty == States::PROPERTY_TRIANGLE_CULLING)
+        parseTriangleCulling(node, scope, stateBlock);
+    else if (stateProperty == States::PROPERTY_STENCIL_FUNCTION)
+        parseStencilFunction(node, scope, stateBlock);
+    else if (stateProperty == States::PROPERTY_STENCIL_REFERENCE)
+        parseStencilReference(node, scope, stateBlock);
+    else if (stateProperty == States::PROPERTY_STENCIL_MASK)
+        parseStencilMask(node, scope, stateBlock);
+    else if (stateProperty == States::PROPERTY_STENCIL_FAIL_OPERATION)
+        parseStencilFailOperation(node, scope, stateBlock);
+    else if (stateProperty == States::PROPERTY_STENCIL_ZFAIL_OPERATION)
+        parseStencilZFailOperation(node, scope, stateBlock);
+    else if (stateProperty == States::PROPERTY_STENCIL_ZPASS_OPERATION)
+        parseStencilZPassOperation(node, scope, stateBlock);
+    else if (stateProperty == States::PROPERTY_SCISSOR_TEST)
+        parseScissorTest(node, scope, stateBlock);
+    else if (stateProperty == States::PROPERTY_SCISSOR_BOX)
+        parseScissorBox(node, scope, stateBlock);
+    else if (stateProperty == States::PROPERTY_TARGET)
+        parseTarget(node, scope, stateBlock);
+}
 
-    if (blendingModeNode.isArray())
+void
+EffectParser::parsePriority(const Json::Value&	node,
+                            const Scope&        scope,
+                            StateBlock&         stateBlock)
+{
+    if (!node.isNull())
     {
-        auto blendSrcFactorString = "src_" + blendingModeNode[0].asString();
-        if (_blendFactorMap.count(blendSrcFactorString))
-            srcFactor = static_cast<render::Blending::Source>(_blendFactorMap[blendSrcFactorString]);
-
-        auto blendDstFactorString = "dst_" + blendingModeNode[1].asString();
-        if (_blendFactorMap.count(blendDstFactorString))
-            dstFactor = static_cast<render::Blending::Destination>(_blendFactorMap[blendDstFactorString]);
-    }
-    else if (blendingModeNode.isString())
-    {
-        auto blendingModeString = blendingModeNode.asString();
-
-        if (_blendFactorMap.count(blendingModeString))
+        if (node.isInt())
+            stateBlock.states.priority((float)node.asInt());
+        else if (node.isDouble())
+            stateBlock.states.priority((float)node.asDouble());
+        else if (node.isString())
+            stateBlock.states.priority(getPriorityValue(node.asString()));
+        else if (node.isArray())
         {
-            auto blendingMode = _blendFactorMap[blendingModeString];
-
-            srcFactor = static_cast<render::Blending::Source>(blendingMode & 0x00ff);
-            dstFactor = static_cast<render::Blending::Destination>(blendingMode & 0xff00);
+            if (node[0].isString() && node[1].isDouble())
+                stateBlock.states.priority(getPriorityValue(node[0].asString()) + (float)node[1].asDouble());
         }
     }
 }
 
 void
-EffectParser::parseBlendingSource(const Json::Value&        node,
-                                  const Scope&              scope,
-                                  render::Blending::Source&	srcFactor)
+EffectParser::parseBlendingMode(const Json::Value&	node,
+                                const Scope&        scope,
+                                StateBlock&         stateBlock)
 {
-    auto blendingSourceNode = node.get(States::PROPERTY_BLENDING_SOURCE, 0);
-
-    if (blendingSourceNode.isString())
+    if (node.isArray())
     {
-        auto blendingSourceString = _blendFactorMap[blendingSourceNode.asString()];
+        auto blendingSrcString = node[0].asString();
+        if (_blendingSourceMap.count(blendingSrcString))
+            stateBlock.states.blendingSourceFactor(static_cast<render::Blending::Source>(_blendingSourceMap[blendingSrcString]));
 
-        srcFactor = static_cast<render::Blending::Source>(blendingSourceString);
+        auto blendingDstString = node[1].asString();
+        if (_blendingDestinationMap.count(blendingDstString))
+            stateBlock.states.blendingDestinationFactor(static_cast<render::Blending::Destination>(_blendingDestinationMap[blendingDstString]));
+    }
+    else if (node.isString())
+    {
+        auto blendingModeString = node.asString();
+
+        if (_blendingModeMap.count(blendingModeString))
+        {
+            auto blendingMode = _blendingModeMap[blendingModeString];
+
+            stateBlock.states.blendingSourceFactor(static_cast<render::Blending::Source>(blendingMode & 0x00ff));
+            stateBlock.states.blendingDestinationFactor(static_cast<render::Blending::Destination>(blendingMode & 0xff00));
+        }
     }
 }
 
 void
-EffectParser::parseBlendingSource(const Json::Value&             node,
-                                  const Scope&                   scope,
-                                  render::Blending::Destination& destFactor)
+EffectParser::parseBlendingSource(const Json::Value&    node,
+                                  const Scope&          scope,
+                                  StateBlock&           stateBlock)
 {
-    auto blendingDestinationNode = node.get(States::PROPERTY_BLENDING_DESTINATION, 0);
-
-    if (blendingDestinationNode.isString())
+    if (node.isString())
     {
-        auto blendingDestination = _blendFactorMap[blendingDestinationNode.asString()];
+        auto blendingSourceString = _blendingSourceMap[node.asString()];
 
-        destFactor = static_cast<render::Blending::Destination>(blendingDestination);
+        stateBlock.states.blendingSourceFactor(static_cast<render::Blending::Source>(blendingSourceString));
+    }
+}
+
+void
+EffectParser::parseBlendingDestination(const Json::Value&   node,
+                                       const Scope&         scope,
+                                       StateBlock&          stateBlock)
+{
+    if (node.isString())
+    {
+        auto blendingDestination = _blendingDestinationMap[node.asString()];
+
+        stateBlock.states.blendingDestinationFactor(static_cast<render::Blending::Destination>(blendingDestination));
     }
 }
 
 void
 EffectParser::parseZSort(const Json::Value&	node,
                          const Scope&       scope,
-                         bool&              zSorted)
+                         StateBlock&        stateBlock)
 {
-    auto zSortedValue = node.get(States::PROPERTY_ZSORTED, 0);
-
-    if (zSortedValue.isBool())
-        zSorted = zSortedValue.asBool();
+    if (node.isBool())
+        stateBlock.states.zSorted(node.asBool());
 }
 
 void
 EffectParser::parseColorMask(const Json::Value&	node,
                              const Scope&       scope,
-                             bool&              colorMask) const
+                             StateBlock&        stateBlock) const
 {
-    auto colorMaskValue = node.get("colorMask", 0);
-
-    if (colorMaskValue.isBool())
-        colorMask = colorMaskValue.asBool();
+    if (node.isBool())
+        stateBlock.states.colorMask(node.asBool());
 }
 
 void
 EffectParser::parseDepthMask(const Json::Value&	    node,
                              const Scope&           scope,
-                             bool&                  depthMask)
+                             StateBlock&            stateBlock)
 {
-    auto depthMaskValue = node.get(States::PROPERTY_DEPTH_MASK, 0);
-
-    if (depthMaskValue.isBool())
-        depthMask = depthMaskValue.asBool();
+    if (node.isBool())
+        stateBlock.states.depthMask(node.asBool());
 }
 
 void
-EffectParser::parseDepthFunction(const Json::Value&		node,
-			                     const Scope&         	scope,
-			                     render::CompareMode& 	depthFunction)
+EffectParser::parseDepthFunction(const Json::Value&	node,
+			                     const Scope&       scope,
+                                 StateBlock&        stateBlock)
 {
-    auto depthFunctionValue = node.get(States::PROPERTY_DEPTH_FUNCTION, 0);
+    if (node.isString())
+    {
+        auto compareModeString = node.asString();
+        auto exist = _compareFuncMap.find(compareModeString) != _compareFuncMap.end();
 
-    if (depthFunctionValue.isString())
-        depthFunction = _compareFuncMap[depthFunctionValue.asString()];
+        if (exist)
+            stateBlock.states.depthFunction(_compareFuncMap[compareModeString]);
+    }
 }
 
 void
 EffectParser::parseTriangleCulling(const Json::Value&   node,
                                    const Scope&         scope,
-                                   TriangleCulling&     triangleCulling)
+                                   StateBlock&          stateBlock)
 {
-    auto triangleCullingValue = node.get(States::PROPERTY_TRIANGLE_CULLING, 0);
-
-    if (triangleCullingValue.isString())
+    if (node.isString())
     {
-        auto triangleCullingString = triangleCullingValue.asString();
+        auto triangleCullingString = node.asString();
+        auto exist = _triangleCullingMap.find(triangleCullingString) != _triangleCullingMap.end();
 
-        if (triangleCullingString == "back")
-            triangleCulling = TriangleCulling::BACK;
-        else if (triangleCullingString == "front")
-            triangleCulling = TriangleCulling::FRONT;
-        else if (triangleCullingString == "both")
-            triangleCulling = TriangleCulling::BOTH;
-        else if (triangleCullingString == "none")
-            triangleCulling = TriangleCulling::NONE;
+        if (exist)
+            stateBlock.states.triangleCulling(_triangleCullingMap[triangleCullingString]);
     }
-}
-
-float
-EffectParser::parsePriority(const Json::Value&	node,
-                            const Scope&        scope,
-                            float               defaultPriority)
-{
-    auto	priorityNode = node.get(States::PROPERTY_PRIORITY, defaultPriority);
-    float	ret = defaultPriority;
-
-    if (!priorityNode.isNull())
-    {
-        if (priorityNode.isInt())
-            ret = (float)priorityNode.asInt();
-        else if (priorityNode.isDouble())
-            ret = (float)priorityNode.asDouble();
-        else if (priorityNode.isString())
-            ret = getPriorityValue(priorityNode.asString());
-        else if (priorityNode.isArray())
-        {
-            if (priorityNode[0].isString() && priorityNode[1].isDouble())
-                ret = getPriorityValue(priorityNode[0].asString()) + (float)priorityNode[1].asDouble();
-        }
-    }
-
-    return ret;
-}
-
-AbstractTexture::Ptr
-EffectParser::parseTarget(const Json::Value& node, const Scope& scope)
-{
-	auto targetNode = node.get(States::PROPERTY_TARGET, 0);
-	AbstractTexture::Ptr target = nullptr;
-	std::string	targetName;
-
-	if (targetNode.isObject())
-	{
-		auto nameValue = targetNode.get("name", 0);
-
-		if (nameValue.isString())
-			targetName = nameValue.asString();
-
-		if (!targetNode.isMember("size") && !(targetNode.isMember("width") && targetNode.isMember("height")))
-			return nullptr;
-
-		auto width = 0;
-		auto height = 0;
-
-		if (targetNode.isMember("size"))
-			width = height = targetNode.get("size", 0).asUInt();
-		else
-		{
-			if (!targetNode.isMember("width") || !targetNode.isMember("height"))
-			{
-				_error->execute(
-					shared_from_this(),
-					file::Error(
-						_resolvedFilename
-						+ ": render target definition requires both \"width\" and \"height\" properties."
-					)
-				);
-			}
-
-			width = targetNode.get("width", 0).asUInt();
-			height = targetNode.get("height", 0).asUInt();
-		}
-
-		const bool isCubeTexture = targetNode.get("isCube", 0).isBool()
-			? targetNode.get("isCube", 0).asBool()
-			: false;
-
-		if (isCubeTexture)
-		{
-			target = CubeTexture::create(_options->context(), width, height, false, true);
-
-			if (targetName.length())
-				_assetLibrary->cubeTexture(targetName, std::static_pointer_cast<render::CubeTexture>(target));
-		}
-		else
-		{
-			target = Texture::create(_options->context(), width, height, false, true);
-
-			if (targetName.length())
-				_assetLibrary->texture(targetName, std::static_pointer_cast<render::Texture>(target));
-		}
-
-		target->upload();
-		_effectData->set(targetName, target->sampler());
-	}
-	else if (targetNode.isString())
-	{
-		targetName = targetNode.asString();
-		target = _assetLibrary->texture(targetName);
-		if (target == nullptr)
-			throw;
-
-		_effectData->set(targetName, target->sampler());
-	}
-
-	return target;
 }
 
 void
 EffectParser::parseStencilState(const Json::Value&  node,
                                 const Scope&        scope,
-								CompareMode&        stencilFunc,
-								int&                stencilRef,
-								uint&               stencilMask,
-								StencilOperation&   stencilFailOp,
-								StencilOperation&   stencilZFailOp,
-								StencilOperation&   stencilZPassOp)
+                                StateBlock&         stateBlock)
 {
-	auto stencilTest = node.get("stencilTest", 0);
-
-	if (stencilTest.isObject())
+	if (node.isObject())
 	{
-        auto stencilFuncValue = stencilTest.get(States::PROPERTY_STENCIL_FUNCTION, 0);
-        auto stencilRefValue = stencilTest.get(States::PROPERTY_STENCIL_REFERENCE, 0);
-        auto stencilMaskValue = stencilTest.get(States::PROPERTY_STENCIL_MASK, 0);
-		auto stencilOpsValue = stencilTest.get("stencilOps", 0);
+        auto stencilFuncValue = node.get(States::PROPERTY_STENCIL_FUNCTION, 0);
+        auto stencilRefValue = node.get(States::PROPERTY_STENCIL_REFERENCE, 0);
+        auto stencilMaskValue = node.get(States::PROPERTY_STENCIL_MASK, 0);
+        auto stencilOpsValue = node.get(EXTRA_PROPERTY_STENCIL_OPS, 0);
 
-		if (stencilFuncValue.isString())
-			stencilFunc	= _compareFuncMap[stencilFuncValue.asString()];
-		if (stencilRefValue.isInt())
-			stencilRef	= stencilRefValue.asInt();
-		if (stencilMaskValue.isUInt())
-			stencilMask	= stencilMaskValue.asUInt();
+        parseStencilFunction(stencilFuncValue, scope, stateBlock);
+        parseStencilReference(stencilRefValue, scope, stateBlock);
+        parseStencilMask(stencilMaskValue, scope, stateBlock);
 
-		parseStencilOperations(stencilOpsValue, scope, stencilFailOp, stencilZFailOp, stencilZPassOp);
+        parseStencilOperations(stencilOpsValue, scope, stateBlock);
 	}
-    else if (stencilTest.isArray())
+    else if (node.isArray())
     {
-		stencilFunc = _compareFuncMap[stencilTest[0].asString()];
-		stencilRef	= stencilTest[1].asInt();
-		stencilMask	= stencilTest[2].asUInt();
+        parseStencilFunction(node[0], scope, stateBlock);
+        parseStencilReference(node[1], scope, stateBlock);
+        parseStencilMask(node[2], scope, stateBlock);
 
-		parseStencilOperations(stencilTest[3], scope, stencilFailOp, stencilZFailOp, stencilZPassOp);
+        parseStencilOperations(node[3], scope, stateBlock);
     }
 }
 
 void
-EffectParser::parseScissorTest(const Json::Value& node,
-                               const Scope&       scope,
-							   bool&			  scissorTest,
-							   math::ivec4&	      scissorBox)
+EffectParser::parseStencilFunction(const Json::Value&  node,
+                                   const Scope&        scope,
+                                   StateBlock&         stateBlock)
 {
-	auto scissorTestNode = node.get(States::PROPERTY_SCISSOR_TEST, 0);
+    if (node.isString())
+        stateBlock.states.stencilFunction(_compareFuncMap[node.asString()]);
+}
 
-	if (!scissorTestNode.isNull() && scissorTestNode.isBool())
-		scissorTest = scissorTestNode.asBool();
+void
+EffectParser::parseStencilReference(const Json::Value&  node,
+                                    const Scope&        scope,
+                                    StateBlock&         stateBlock)
+{
+    if (node.isInt())
+        stateBlock.states.stencilReference(node.asInt());
+}
 
-	auto scissorBoxNode	= node.get("scissorBox", 0);
-
-	if (!scissorBoxNode.isNull() && scissorBoxNode.isArray())
-	{
-		if (scissorBoxNode[0].isInt())
-			scissorBox.x = scissorBoxNode[0].asInt();
-		if (scissorBoxNode[1].isInt())
-			scissorBox.y = scissorBoxNode[1].asInt();
-		if (scissorBoxNode[2].isInt())
-			scissorBox.z = scissorBoxNode[2].asInt();
-		if (scissorBoxNode[3].isInt())
-			scissorBox.w = scissorBoxNode[3].asInt();
-	}
+void
+EffectParser::parseStencilMask(const Json::Value&  node,
+                               const Scope&        scope,
+                               StateBlock&         stateBlock)
+{
+    if (node.isInt())
+        stateBlock.states.stencilMask(node.asUInt());
 }
 
 void
 EffectParser::parseStencilOperations(const Json::Value& node,
                                      const Scope&       scope,
-									 StencilOperation& 	stencilFailOp,
-									 StencilOperation& 	stencilZFailOp,
-									 StencilOperation& 	stencilZPassOp)
+                                     StateBlock&        stateBlock)
 {
-	if (node.isArray())
-	{
-		if (node[0].isString())
-			stencilFailOp = _stencilOpMap[node[0].asString()];
-		if (node[1].isString())
-			stencilZFailOp = _stencilOpMap[node[1].asString()];
-		if (node[2].isString())
-			stencilZPassOp = _stencilOpMap[node[2].asString()];
-	}
-	else
-	{
-		auto failValue	= node.get("fail", 0);
-		auto zfailValue	= node.get("zfail", 0);
-		auto zpassValue	= node.get("zpass", 0);
+    if (node.isArray())
+    {
+        if (node[0].isString())
+            stateBlock.states.stencilFailOperation(_stencilOpMap[node[0].asString()]);
+        if (node[1].isString())
+            stateBlock.states.stencilZFailOperation(_stencilOpMap[node[1].asString()]);
+        if (node[2].isString())
+            stateBlock.states.stencilZPassOperation(_stencilOpMap[node[2].asString()]);
+    }
+    else
+    {
+        parseStencilFailOperation(node.get(EXTRA_PROPERTY_STENCIL_FAIL_OP, 0), scope, stateBlock);
+        parseStencilZFailOperation(node.get(EXTRA_PROPERTY_STENCIL_Z_FAIL_OP, 0), scope, stateBlock);
+        parseStencilZPassOperation(node.get(EXTRA_PROPERTY_STENCIL_Z_PASS_OP, 0), scope, stateBlock);
+    }
+}
 
-		if (failValue.isString())
-			stencilFailOp = _stencilOpMap[failValue.asString()];
-		if (zfailValue.isString())
-			stencilZFailOp = _stencilOpMap[zfailValue.asString()];
-		if (zpassValue.isString())
-			stencilZPassOp = _stencilOpMap[zpassValue.asString()];
-	}
+void
+EffectParser::parseStencilFailOperation(const Json::Value& node,
+                                        const Scope&       scope,
+                                        StateBlock&        stateBlock)
+{
+    if (node.isString())
+        stateBlock.states.stencilFailOperation(_stencilOpMap[node.asString()]);
+}
+
+void
+EffectParser::parseStencilZFailOperation(const Json::Value& node,
+                                         const Scope&       scope,
+                                         StateBlock&        stateBlock)
+{
+    if (node.isString())
+        stateBlock.states.stencilZFailOperation(_stencilOpMap[node.asString()]);
+}
+
+void
+EffectParser::parseStencilZPassOperation(const Json::Value& node,
+                                         const Scope&       scope,
+                                         StateBlock&        stateBlock)
+{
+    if (node.isString())
+        stateBlock.states.stencilZPassOperation(_stencilOpMap[node.asString()]);
+}
+
+void
+EffectParser::parseScissorTest(const Json::Value& node,
+                               const Scope&       scope,
+                               StateBlock&        stateBlock)
+{
+    if (!node.isNull() && node.isBool())
+        stateBlock.states.scissorTest(node.asBool());
+}
+
+void
+EffectParser::parseScissorBox(const Json::Value& node,
+                              const Scope&       scope,
+                              StateBlock&        stateBlock)
+{
+    if (!node.isNull() && node.isArray())
+    {
+        auto scissorBox = math::ivec4();
+        
+        if (node[0].isInt())
+            scissorBox.x = node[0].asInt();
+        if (node[1].isInt())
+            scissorBox.y = node[1].asInt();
+        if (node[2].isInt())
+            scissorBox.z = node[2].asInt();
+        if (node[3].isInt())
+            scissorBox.w = node[3].asInt();
+
+        stateBlock.states.scissorBox(scissorBox);
+    }
+}
+
+void
+EffectParser::parseTarget(const Json::Value&    node, 
+                          const Scope&          scope,
+                          StateBlock&           stateBlock)
+{
+    AbstractTexture::Ptr target = nullptr;
+    std::string	targetName;
+
+    if (node.isObject())
+    {
+        auto nameValue = node.get("name", 0);
+
+        if (nameValue.isString())
+            targetName = nameValue.asString();
+
+        if (!node.isMember("size") && !(node.isMember("width") && node.isMember("height")))
+            return;
+
+        auto width = 0;
+        auto height = 0;
+
+        if (node.isMember("size"))
+            width = height = node.get("size", 0).asUInt();
+        else
+        {
+            if (!node.isMember("width") || !node.isMember("height"))
+            {
+                _error->execute(
+                    shared_from_this(),
+                    file::Error(
+                    _resolvedFilename
+                    + ": render target definition requires both \"width\" and \"height\" properties."
+                    )
+                );
+            }
+
+            width = node.get("width", 0).asUInt();
+            height = node.get("height", 0).asUInt();
+        }
+
+        const bool isCubeTexture = node.get("isCube", 0).isBool()
+            ? node.get("isCube", 0).asBool()
+            : false;
+
+        if (isCubeTexture)
+        {
+            target = CubeTexture::create(_options->context(), width, height, false, true);
+
+            if (targetName.length())
+                _assetLibrary->cubeTexture(targetName, std::static_pointer_cast<render::CubeTexture>(target));
+        }
+        else
+        {
+            target = Texture::create(_options->context(), width, height, false, true);
+
+            if (targetName.length())
+                _assetLibrary->texture(targetName, std::static_pointer_cast<render::Texture>(target));
+        }
+
+        target->upload();
+        _effectData->set(targetName, target->sampler());
+    }
+    else if (node.isString())
+    {
+        targetName = node.asString();
+        target = _assetLibrary->texture(targetName);
+        if (target == nullptr)
+            throw;
+
+        _effectData->set(targetName, target->sampler());
+    }
+
+    if (target)
+        stateBlock.states.target(target->sampler());
 }
 
 bool

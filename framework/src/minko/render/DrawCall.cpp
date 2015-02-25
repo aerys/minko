@@ -373,6 +373,131 @@ DrawCall::setSamplerStateValueFromStore(const ProgramInputs::UniformInput&  inpu
 }
 
 void
+DrawCall::setStateValueFromStore(const std::string&   stateName,
+                                 const data::Store&   store)
+{
+    if (stateName == States::PROPERTY_PRIORITY)
+    {
+        if (store.hasProperty(stateName))
+            _priority = store.getUnsafePointer<float>(stateName);
+        else
+            _priority = &States::DEFAULT_PRIORITY;
+    }
+    else if (stateName == States::PROPERTY_ZSORTED) 
+    {
+        if (store.hasProperty(stateName))
+            _zSorted = store.getUnsafePointer<bool>(stateName);
+        else 
+            _zSorted = &States::DEFAULT_ZSORTED;
+    }
+    else if (stateName == States::PROPERTY_BLENDING_SOURCE) 
+    {
+        if (store.hasProperty(stateName))
+            _blendingSourceFactor = store.getUnsafePointer<Blending::Source>(stateName);
+        else
+            _blendingSourceFactor = &States::DEFAULT_BLENDING_SOURCE;
+    }
+    else if (stateName == States::PROPERTY_BLENDING_DESTINATION)
+    {
+        if (store.hasProperty(stateName))
+            _blendingDestinationFactor = store.getUnsafePointer<Blending::Destination>(stateName);
+        else
+            _blendingDestinationFactor = &States::DEFAULT_BLENDING_DESTINATION;
+    }
+    else if (stateName == States::PROPERTY_COLOR_MASK) 
+    { 
+        if (store.hasProperty(stateName)) 
+            _colorMask = store.getUnsafePointer<bool>(stateName); 
+        else 
+            _colorMask = &States::DEFAULT_COLOR_MASK; 
+    }
+    else if (stateName == States::PROPERTY_DEPTH_MASK)
+    {
+        if (store.hasProperty(stateName)) 
+            _depthMask = store.getUnsafePointer<bool>(stateName);
+        else 
+            _depthMask = &States::DEFAULT_DEPTH_MASK;
+    }
+    else if (stateName == States::PROPERTY_DEPTH_FUNCTION) 
+    { 
+        if (store.hasProperty(stateName)) 
+            _depthFunc = store.getUnsafePointer<CompareMode>(stateName); 
+        else 
+            _depthFunc = &States::DEFAULT_DEPTH_FUNCTION; 
+    }
+    else if (stateName == States::PROPERTY_TRIANGLE_CULLING)
+    { 
+        if (store.hasProperty(stateName)) 
+            _triangleCulling = store.getUnsafePointer<TriangleCulling>(stateName); 
+        else 
+            _triangleCulling = &States::DEFAULT_TRIANGLE_CULLING; 
+    }
+    else if (stateName == States::PROPERTY_STENCIL_FUNCTION) 
+    { 
+        if (store.hasProperty(stateName)) 
+            _stencilFunction = store.getUnsafePointer<CompareMode>(stateName); 
+        else 
+            _stencilFunction = &States::DEFAULT_STENCIL_FUNCTION; 
+    }
+    else if (stateName == States::PROPERTY_STENCIL_REFERENCE) 
+    { 
+        if (store.hasProperty(stateName)) 
+            _stencilReference = store.getUnsafePointer<int>(stateName); 
+        else 
+            _stencilReference = &States::DEFAULT_STENCIL_REFERENCE; 
+    }
+    else if (stateName == States::PROPERTY_STENCIL_MASK) 
+    { 
+        if (store.hasProperty(stateName)) 
+            _stencilMask = store.getUnsafePointer<uint>(stateName); 
+        else
+            _stencilMask = &States::DEFAULT_STENCIL_MASK; 
+    }
+    else if (stateName == States::PROPERTY_STENCIL_FAIL_OPERATION)
+    { 
+        if (store.hasProperty(stateName)) 
+            _stencilFailOp = store.getUnsafePointer<StencilOperation>(stateName); 
+        else 
+            _stencilFailOp = &States::DEFAULT_STENCIL_FAIL_OPERATION;
+    }
+    else if (stateName == States::PROPERTY_STENCIL_ZFAIL_OPERATION)
+    { 
+        if (store.hasProperty(stateName)) 
+            _stencilZFailOp = store.getUnsafePointer<StencilOperation>(stateName); 
+        else 
+            _stencilZFailOp = &States::DEFAULT_STENCIL_ZFAIL_OPERATION;
+    }
+    else if (stateName == States::PROPERTY_STENCIL_ZPASS_OPERATION)
+    { 
+        if (store.hasProperty(stateName)) 
+            _stencilZPassOp = store.getUnsafePointer<StencilOperation>(stateName); 
+        else 
+            _stencilZPassOp = &States::DEFAULT_STENCIL_ZPASS_OPERATION;
+    }
+    else if (stateName == States::PROPERTY_SCISSOR_TEST) 
+    { 
+        if (store.hasProperty(stateName)) 
+            _scissorTest = store.getUnsafePointer<bool>(stateName); 
+        else 
+            _scissorTest = &States::DEFAULT_SCISSOR_TEST; 
+    }
+    else if (stateName == States::PROPERTY_SCISSOR_BOX)
+    { 
+        if (store.hasProperty(stateName)) 
+            _scissorBox = store.getUnsafePointer<math::ivec4>(stateName); 
+        else 
+            _scissorBox = &States::DEFAULT_SCISSOR_BOX; 
+    }
+    else if (stateName == States::PROPERTY_TARGET)
+    { 
+        if (store.hasProperty(stateName)) 
+            _target = store.getUnsafePointer<TextureSampler>(stateName); 
+        else 
+            _target = &States::DEFAULT_TARGET; 
+    }
+}
+
+void
 DrawCall::bindIndexBuffer()
 {
     auto indexBufferProperty = data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].indices");
@@ -388,27 +513,31 @@ DrawCall::bindIndexBuffer()
         _numIndices = const_cast<uint*>(_targetData.getPointer<uint>(numIndicesProperty));
 }
 
-void
+std::array<data::ResolvedBinding*, 17>
 DrawCall::bindStates(const std::unordered_map<std::string, data::Binding>&  stateBindings,
                      const data::Store&                                     defaultValues)
 {
-    _priority = bindState<float>(States::PROPERTY_PRIORITY, stateBindings, defaultValues);
-    _zSorted = bindState<bool>(States::PROPERTY_ZSORTED, stateBindings, defaultValues);
-    _blendingSourceFactor = bindState<Blending::Source>(States::PROPERTY_BLENDING_SOURCE, stateBindings, defaultValues);
-    _blendingDestinationFactor = bindState<Blending::Destination>(States::PROPERTY_BLENDING_DESTINATION, stateBindings, defaultValues);
-    _colorMask = bindState<bool>(States::PROPERTY_COLOR_MASK, stateBindings, defaultValues);
-    _depthMask = bindState<bool>(States::PROPERTY_DEPTH_MASK, stateBindings, defaultValues);
-    _depthFunc = bindState<CompareMode>(States::PROPERTY_DEPTH_FUNCTION, stateBindings, defaultValues);
-    _triangleCulling = bindState<TriangleCulling>(States::PROPERTY_TRIANGLE_CULLING, stateBindings, defaultValues);
-    _stencilFunction = bindState<CompareMode>(States::PROPERTY_STENCIL_FUNCTION, stateBindings, defaultValues);
-    _stencilReference = bindState<int>(States::PROPERTY_STENCIL_REFERENCE, stateBindings, defaultValues);
-    _stencilMask = bindState<uint>(States::PROPERTY_STENCIL_MASK, stateBindings, defaultValues);
-    _stencilFailOp = bindState<StencilOperation>(States::PROPERTY_STENCIL_FAIL_OP, stateBindings, defaultValues);
-    _stencilZFailOp = bindState<StencilOperation>(States::PROPERTY_STENCIL_ZFAIL_OP, stateBindings, defaultValues);
-    _stencilZPassOp = bindState<StencilOperation>(States::PROPERTY_STENCIL_ZPASS_OP, stateBindings, defaultValues);
-    _scissorTest = bindState<bool>(States::PROPERTY_SCISSOR_TEST, stateBindings, defaultValues);
-    _scissorBox = bindState<math::ivec4>(States::PROPERTY_SCISSOR_BOX, stateBindings, defaultValues);
-    _target = bindState<TextureSampler>(States::PROPERTY_TARGET, stateBindings, defaultValues);
+    std::array<data::ResolvedBinding*, 17> statesResolveBindings = {
+        bindState(States::PROPERTY_PRIORITY, stateBindings, defaultValues),
+        bindState(States::PROPERTY_ZSORTED, stateBindings, defaultValues),
+        bindState(States::PROPERTY_BLENDING_SOURCE, stateBindings, defaultValues),
+        bindState(States::PROPERTY_BLENDING_DESTINATION, stateBindings, defaultValues),
+        bindState(States::PROPERTY_COLOR_MASK, stateBindings, defaultValues),
+        bindState(States::PROPERTY_DEPTH_MASK, stateBindings, defaultValues),
+        bindState(States::PROPERTY_DEPTH_FUNCTION, stateBindings, defaultValues),
+        bindState(States::PROPERTY_TRIANGLE_CULLING, stateBindings, defaultValues),
+        bindState(States::PROPERTY_STENCIL_FUNCTION, stateBindings, defaultValues),
+        bindState(States::PROPERTY_STENCIL_REFERENCE, stateBindings, defaultValues),
+        bindState(States::PROPERTY_STENCIL_MASK, stateBindings, defaultValues),
+        bindState(States::PROPERTY_STENCIL_FAIL_OPERATION, stateBindings, defaultValues),
+        bindState(States::PROPERTY_STENCIL_ZFAIL_OPERATION, stateBindings, defaultValues),
+        bindState(States::PROPERTY_STENCIL_ZPASS_OPERATION, stateBindings, defaultValues),
+        bindState(States::PROPERTY_SCISSOR_TEST, stateBindings, defaultValues),
+        bindState(States::PROPERTY_SCISSOR_BOX, stateBindings, defaultValues),
+        bindState(States::PROPERTY_TARGET, stateBindings, defaultValues)
+    };
+
+    return statesResolveBindings;
 }
 
 void

@@ -93,7 +93,7 @@ namespace minko
                     states(s.states)
                 {
                     // data::Store copy constructor makes a shallow copy, to avoid ending up with
-                    // data::Provider shared by multiple blocks/copes, we have to simulate a deep copy
+                    // data::Provider shared by multiple blocks/scopes, we have to simulate a deep copy
                     // by emptying the data::Store and then add the actual data::Provider of the new
                     // render::States object
                     bindingMap.defaultValues.removeProvider(bindingMap.defaultValues.providers().front());
@@ -152,13 +152,24 @@ namespace minko
             };
 
 		private:
-			static std::unordered_map<std::string, unsigned int>				_blendFactorMap;
-			static std::unordered_map<std::string, render::CompareMode>			_compareFuncMap;
+            static const std::string    EXTRA_PROPERTY_BLENDING_MODE;
+            static const std::string    EXTRA_PROPERTY_STENCIL_TEST;
+            static const std::string    EXTRA_PROPERTY_STENCIL_OPS;
+            static const std::string    EXTRA_PROPERTY_STENCIL_FAIL_OP;
+            static const std::string    EXTRA_PROPERTY_STENCIL_Z_FAIL_OP;
+            static const std::string    EXTRA_PROPERTY_STENCIL_Z_PASS_OP;
+
+
+            static std::unordered_map<std::string, unsigned int>				_blendingSourceMap;
+            static std::unordered_map<std::string, unsigned int>				_blendingDestinationMap;
+            static std::unordered_map<std::string, unsigned int>				_blendingModeMap;
+            static std::unordered_map<std::string, render::CompareMode>			_compareFuncMap;
+            static std::unordered_map<std::string, render::TriangleCulling>		_triangleCullingMap;
 			static std::unordered_map<std::string, render::StencilOperation>	_stencilOpMap;
 			static std::unordered_map<std::string, float>					    _priorityMap;
-            static std::array<std::string, 1>                                   _extraStateNames;
+            static std::array<std::string, 2>                                   _extraStateNames;
 
-		private:
+        private:
             std::string						_filename;
 			std::string						_resolvedFilename;
 			std::shared_ptr<file::Options>	_options;
@@ -228,14 +239,6 @@ namespace minko
             void
             parseDefaultValue(const Json::Value& node, const Scope& scope);
 
-
-            /*void
-            parseDefaultValue(const Json::Value&    node,
-                              const Scope&          scope,
-                              const std::string&    valueName,
-                              Json::ValueType       expectedType,
-                              data::Provider::Ptr   defaultValues);*/
-
             void
             parseDefaultValue(const Json::Value&    node,
                               const Scope&          scope,
@@ -247,6 +250,12 @@ namespace minko
             parseDefaultValueSamplerStates(const Json::Value&    node,
                                     const Scope&          scope,
                                     const std::string&    valueName,
+                                    data::Provider::Ptr   defaultValues);
+
+            void
+            parseDefaultValueStates(const Json::Value&    node,
+                                    const Scope&          scope,
+                                    const std::string&    stateName,
                                     data::Provider::Ptr   defaultValues);
 
             void
@@ -283,77 +292,107 @@ namespace minko
             parseStates(const Json::Value& node, const Scope& scope, StateBlock& states);
 
             void
-            parseBlendingMode(const Json::Value&				node,
-                              const Scope&                      scope,
-                              render::Blending::Source&		    srcFactor,
-                              render::Blending::Destination&	dstFactor);
+            parseState(const Json::Value& node, const Scope& scope, StateBlock& stateBlock, const std::string& stateProperty);
 
             void
-            parseBlendingSource(const Json::Value&          node,
-                                const Scope&                scope,
-                                render::Blending::Source&	srcFactor);
+            parsePriority(const Json::Value&    node, 
+                          const Scope&          scope, 
+                          StateBlock&           stateBlock);
 
             void
-            parseBlendingSource(const Json::Value&             node,
-                                const Scope&                   scope,
-                                render::Blending::Destination& destFactor);
+            parseBlendingMode(const Json::Value&    node,
+                              const Scope&          scope,
+                              StateBlock&           stateBlock);
+
+            void
+            parseBlendingSource(const Json::Value&  node,
+                                const Scope&        scope,
+                                StateBlock&         stateBlock);
+
+            void
+            parseBlendingDestination(const Json::Value&  node,
+                                     const Scope&        scope,
+                                     StateBlock&         stateBlock);
 
             void
             parseZSort(const Json::Value&   node,
                        const Scope&         scope,
-                       bool&                zSorted);
+                       StateBlock&          stateBlock);
 
             void
             parseColorMask(const Json::Value&   node,
                            const Scope&         scope,
-                           bool&                colorMask) const;
+                           StateBlock&          stateBlock) const;
 
             void
             parseDepthMask(const Json::Value&	node,
                            const Scope&         scope,
-                           bool&                depthMask);
+                           StateBlock&          stateBlock);
 
             void
             parseDepthFunction(const Json::Value&	node,
                                const Scope&         scope,
-                               render::CompareMode& depthFunction);
+                               StateBlock&          stateBlock);
 
             void
             parseTriangleCulling(const Json::Value&         node,
                                  const Scope&               scope,
-                                 render::TriangleCulling&   triangleCulling);
+                                 StateBlock&          stateBlock);
 
-            float
-            parsePriority(const Json::Value&    node,
-                          const Scope&          scope,
-                          float                 defaultPriority);
-
-            std::shared_ptr<render::AbstractTexture>
+            void
             parseTarget(const Json::Value&  node,
-                        const Scope&        scope);
+                        const Scope&        scope,
+                        StateBlock&         stateBlock);
 
             void
-            parseStencilState(const Json::Value&        node,
-                              const Scope&              scope,
-                              render::CompareMode&      stencilFunc,
-                              int&                      stencilRef,
-                              uint&                     stencilMask,
-                              render::StencilOperation& stencilFailOp,
-                              render::StencilOperation& stencilZFailOp,
-                              render::StencilOperation& stencilZPassOp);
+            parseStencilState(const Json::Value&    node,
+                              const Scope&          scope,
+                              StateBlock&           stateBlock);
 
             void
-            parseStencilOperations(const Json::Value&           node,
-                                   const Scope&                 scope,
-                                   render::StencilOperation&    stencilFailOp,
-                                   render::StencilOperation&    stencilZFailOp,
-                                   render::StencilOperation&    stencilZPassOp);
+            parseStencilFunction(const Json::Value&    node,
+                                const Scope&          scope,
+                                StateBlock&           stateBlock);
 
             void
-            parseScissorTest(const Json::Value&    node,
+            parseStencilReference(const Json::Value&    node,
+                                  const Scope&          scope,
+                                  StateBlock&           stateBlock);
+
+            void
+            parseStencilMask(const Json::Value&    node,
                              const Scope&          scope,
-                             bool&                 scissorTest,
-                             math::ivec4&          scissorBox);
+                             StateBlock&           stateBlock);
+
+            void
+            parseStencilOperations(const Json::Value&   node,
+                                   const Scope&         scope,
+                                   StateBlock&          stateBlock);
+
+            void
+            parseStencilFailOperation(const Json::Value&   node,
+                                      const Scope&         scope,
+                                      StateBlock&          stateBlock);
+
+            void
+            parseStencilZFailOperation(const Json::Value&   node,
+                                       const Scope&         scope,
+                                       StateBlock&          stateBlock);
+
+            void
+            parseStencilZPassOperation(const Json::Value&   node,
+                                       const Scope&         scope,
+                                       StateBlock&          stateBlock);
+
+            void
+            parseScissorTest(const Json::Value&     node,
+                             const Scope&           scope,
+                             StateBlock&            stateBlock);
+
+            void
+            parseScissorBox(const Json::Value&     node,
+                            const Scope&           scope,
+                            StateBlock&            stateBlock);
 
             void
             parseSamplerStates(const Json::Value& node, 

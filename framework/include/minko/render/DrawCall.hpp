@@ -82,6 +82,7 @@ namespace minko
             typedef data::Store::PropertyChangedSignal::Slot        ChangedSlot;
             
             typedef std::array<data::ResolvedBinding*, 3>           SamplerStatesResolveBindings;
+            typedef std::array<data::ResolvedBinding*, 17>          StatesResolveBindings;
 
 		private:
             std::shared_ptr<Pass>               _pass;
@@ -100,24 +101,23 @@ namespace minko
             std::vector<SamplerValue>           _samplers;
             std::vector<AttributeValue>         _attributes;
 
-            float*				                _priority;
-            bool*						        _zSorted;
-            Blending::Source*		            _blendingSourceFactor;
-            Blending::Destination*	            _blendingDestinationFactor;
-            bool*						        _colorMask;
-            bool*					            _depthMask;
-            CompareMode*		    		    _depthFunc;
-            TriangleCulling*                    _triangleCulling;
-            CompareMode*					    _stencilFunction;
-            int*							    _stencilReference;
-            uint*						        _stencilMask;
-            StencilOperation*			        _stencilFailOp;
-            StencilOperation*			        _stencilZFailOp;
-            StencilOperation*			        _stencilZPassOp;
-            bool*						        _scissorTest;
-            math::ivec4*					    _scissorBox;
-			TextureSampler*						_target;
-            /*SamplerStates               		_samplerStates;*/
+            const float*				        _priority;
+            const bool*						    _zSorted;
+            const Blending::Source*		        _blendingSourceFactor;
+            const Blending::Destination*	    _blendingDestinationFactor;
+            const bool*						    _colorMask;
+            const bool*					        _depthMask;
+            const CompareMode*		    		_depthFunc;
+            const TriangleCulling*              _triangleCulling;
+            const CompareMode*					_stencilFunction;
+            const int*							_stencilReference;
+            const uint*						    _stencilMask;
+            const StencilOperation*			    _stencilFailOp;
+            const StencilOperation*			    _stencilZFailOp;
+            const StencilOperation*			    _stencilZPassOp;
+            const bool*						    _scissorTest;
+            const math::ivec4*					_scissorBox;
+            const TextureSampler*			    _target;
 
             std::shared_ptr<DrawCallZSorter>    _zSorter;
             Signal<DrawCall*>::Ptr              _zSortNeeded;
@@ -213,6 +213,13 @@ namespace minko
             }
 
             inline
+            Signal<DrawCall*>::Ptr
+            zSortNeeded() const
+            {
+                return _zSortNeeded;
+            }
+
+            inline
             float
             priority() const
             {
@@ -227,10 +234,101 @@ namespace minko
             }
 
             inline
-            Signal<DrawCall*>::Ptr
-            zSortNeeded() const
+            Blending::Source
+            blendingSource() const
             {
-                return _zSortNeeded;
+                return *_blendingSourceFactor;
+            }
+
+            inline
+            Blending::Destination
+            blendingDestination() const
+            {
+                return *_blendingDestinationFactor;
+            }
+
+            inline
+            bool
+            colorMask() const
+            {
+                return *_colorMask;
+            }
+
+            inline
+            bool
+            depthMask() const
+            {
+                return *_depthMask;
+            }
+
+            inline
+            CompareMode
+            depthFunction() const
+            {
+                return *_depthFunc;
+            }
+
+            inline
+            TriangleCulling
+            triangleCulling() const
+            {
+                return *_triangleCulling;
+            }
+
+            inline
+            CompareMode
+            stencilFunction() const
+            {
+                return *_stencilFunction;
+            }
+
+            inline
+            int
+            stencilReference() const
+            {
+                return *_stencilReference;
+            }
+
+            inline
+            uint
+            stencilMask() const
+            {
+                return *_stencilMask;
+            }
+
+            inline
+            StencilOperation
+            stencilFailOperation() const
+            {
+                return *_stencilFailOp;
+            }
+
+            inline
+            StencilOperation
+            stencilZFailOperation() const
+            {
+                return *_stencilZFailOp;
+            }
+
+            inline
+            StencilOperation
+            stencilZPassOperation() const
+            {
+                return *_stencilZPassOp;
+            }
+
+            inline
+            bool
+            scissorTest() const
+            {
+                return *_scissorTest;
+            }
+
+            inline
+            math::ivec4
+            scissorBox() const
+            {
+                return *_scissorBox;
             }
 
 			inline
@@ -270,8 +368,8 @@ namespace minko
                              const data::Store&                                     defaultValues,
                              const std::string&                                     samplerStateProperty);
 
-			void
-            bindStates(const std::unordered_map<std::string, data::Binding>&	stateBindings,
+			StatesResolveBindings
+            bindStates(const std::unordered_map<std::string, data::Binding>&    stateBindings,
 					   const data::Store&							            defaultValues);
 
 			void
@@ -303,32 +401,38 @@ namespace minko
                                           const data::Store&                   store,
                                           const std::string&                   samplerStateProperty);
 
+            void
+            setStateValueFromStore(const std::string&   stateName,
+                                   const data::Store&   store);
+
 			void
 			setAttributeValueFromStore(const ProgramInputs::AttributeInput& input,
 									   const std::string&                   propertyName,
 									   const data::Store&                   store);
 
-            template <typename T>
-            T*
+            data::ResolvedBinding*
             bindState(const std::string&        					            stateName,
-					  const std::unordered_map<std::string, data::Binding>&     bindings,
-					  const data::Store&                                        defaultValues)
+                      const std::unordered_map<std::string, data::Binding>&     bindings,
+                      const data::Store&                                        defaultValues)
             {
-				// FIXME: handle errors like in bindUniform()
-				// FIXME: call resolveBinding
-                if (bindings.count(stateName) == 0)
-                    return defaultValues.getUnsafePointer<T>(stateName);
-
-                const auto& binding = bindings.at(stateName);
-                auto& store = getStore(binding.source);
-                auto unsafePointer = store.getUnsafePointer<T>(
-                    data::Store::getActualPropertyName(_variables, binding.propertyName)
+                auto binding = resolveBinding(
+                    stateName,
+                    bindings
                 );
 
-                if (unsafePointer == nullptr)
-                    return defaultValues.getUnsafePointer<T>(stateName);
+                if (binding == nullptr)
+                {
+                    setStateValueFromStore(stateName, defaultValues);
+                }
+                else
+                {
+                    if (!binding->store.hasProperty(binding->propertyName))
+                        setStateValueFromStore(stateName, defaultValues);
+                    else
+                        setStateValueFromStore(stateName, binding->store);
+                }
 
-                return unsafePointer;
+                return binding;
             }
 
             template <typename T>

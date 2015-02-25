@@ -1,0 +1,16 @@
+{
+    "states" : {
+        "stencilTest" : {
+			"stencilFunction" : "equal", 
+			"stencilReference" : 1, 
+			"stencilMask" : 0, 
+			"stencilOps" : {
+				"fail" : "zero", 
+				"zfail" : "replace", 
+				"zpass" : "incr"
+			}
+		}
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

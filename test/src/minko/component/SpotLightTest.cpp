@@ -45,7 +45,7 @@ TEST_F(SpotLightTest, AddLight)
     root->addChild(lights);
 
     ASSERT_TRUE(root->data().hasProperty("spotLight.length"));
-    ASSERT_EQ(root->data().get<uint>("spotLight.length"), 1);
+    ASSERT_EQ(root->data().get<int>("spotLight.length"), 1);
     ASSERT_TRUE(root->data().hasProperty("spotLight[0].color"));
     ASSERT_EQ(root->data().get<math::vec3>("spotLight[0].color"), math::vec3(1.f));
     ASSERT_TRUE(root->data().hasProperty("spotLight[0].diffuse"));
@@ -64,7 +64,7 @@ TEST_F(SpotLightTest, RemoveSingleLight)
     root->addChild(lights);
     lights->removeComponent(al);
 
-    ASSERT_EQ(root->data().get<uint>("spotLight.length"), 0);
+    ASSERT_EQ(root->data().get<int>("spotLight.length"), 0);
     ASSERT_FALSE(root->data().hasProperty("spotLight[0].color"));
     ASSERT_FALSE(root->data().hasProperty("spotLight[0].diffuse"));
     ASSERT_FALSE(root->data().hasProperty("spotLight[0].specular"));
@@ -81,7 +81,7 @@ TEST_F(SpotLightTest, AddMultipleLights)
     al1->color(math::vec3(1.f, 0.f, 0.f));
     lights->addComponent(al1);
 
-    ASSERT_EQ(root->data().get<uint>("spotLight.length"), 1);
+    ASSERT_EQ(root->data().get<int>("spotLight.length"), 1);
     ASSERT_TRUE(root->data().hasProperty("spotLight[0].color"));
     ASSERT_EQ(root->data().get<math::vec3>("spotLight[0].color"), math::vec3(1.f, 0.f, 0.f));
     ASSERT_TRUE(root->data().hasProperty("spotLight[0].diffuse"));
@@ -93,7 +93,7 @@ TEST_F(SpotLightTest, AddMultipleLights)
     al2->color(math::vec3(0.f, 1.f, 0.f));
     lights->addComponent(al2);
 
-    ASSERT_EQ(root->data().get<uint>("spotLight.length"), 2);
+    ASSERT_EQ(root->data().get<int>("spotLight.length"), 2);
     ASSERT_TRUE(root->data().hasProperty("spotLight[1].color"));
     ASSERT_EQ(root->data().get<math::vec3>("spotLight[1].color"), math::vec3(0.f, 1.f, 0.f));
     ASSERT_TRUE(root->data().hasProperty("spotLight[1].diffuse"));
@@ -105,7 +105,7 @@ TEST_F(SpotLightTest, AddMultipleLights)
     al3->color(math::vec3(0.f, 0.f, 1.f));
     lights->addComponent(al3);
 
-    ASSERT_EQ(root->data().get<uint>("spotLight.length"), 3);
+    ASSERT_EQ(root->data().get<int>("spotLight.length"), 3);
     ASSERT_TRUE(root->data().hasProperty("spotLight[2].color"));
     ASSERT_EQ(root->data().get<math::vec3>("spotLight[2].color"), math::vec3(0.f, 0.f, 1.f));
     ASSERT_TRUE(root->data().hasProperty("spotLight[2].diffuse"));
@@ -135,7 +135,7 @@ TEST_F(SpotLightTest, RemoveFirstLight)
 
     lights->removeComponent(al1);
 
-    ASSERT_EQ(root->data().get<uint>("spotLight.length"), 2);
+    ASSERT_EQ(root->data().get<int>("spotLight.length"), 2);
     ASSERT_TRUE(root->data().hasProperty("spotLight[0].color"));
     ASSERT_EQ(root->data().get<math::vec3>("spotLight[0].color"), math::vec3(0.f, 1.f, 0.f));
     ASSERT_TRUE(root->data().hasProperty("spotLight[0].diffuse"));
@@ -171,7 +171,7 @@ TEST_F(SpotLightTest, RemoveNthLight)
 
     lights->removeComponent(al2);
 
-    ASSERT_EQ(root->data().get<uint>("spotLight.length"), 2);
+    ASSERT_EQ(root->data().get<int>("spotLight.length"), 2);
     ASSERT_TRUE(root->data().hasProperty("spotLight[0].color"));
     ASSERT_TRUE(root->data().hasProperty("spotLight[0].diffuse"));
     ASSERT_TRUE(root->data().hasProperty("spotLight[0].specular"));
@@ -207,7 +207,7 @@ TEST_F(SpotLightTest, RemoveLastLight)
 
     lights->removeComponent(al3);
 
-    ASSERT_EQ(root->data().get<uint>("spotLight.length"), 2);
+    ASSERT_EQ(root->data().get<int>("spotLight.length"), 2);
     ASSERT_TRUE(root->data().hasProperty("spotLight[0].color"));
     ASSERT_EQ(root->data().get<math::vec3>("spotLight[0].color"), math::vec3(1.f, 0.f, 0.f));
     ASSERT_TRUE(root->data().hasProperty("spotLight[0].diffuse"));
