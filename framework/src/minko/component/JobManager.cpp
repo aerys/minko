@@ -26,6 +26,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 
+const unsigned int JobManager::_defaultMinimumNumStepsPerFrame = 1u;
+
 JobManager::Job::Job() :
     _jobManager(),
     _running(false),
@@ -71,7 +73,9 @@ JobManager::end(NodePtr target)
     auto consumeTime        = float(std::clock() - _frameStartTime) / CLOCKS_PER_SEC;
     Job::Ptr currentJob     = nullptr;
 
-    while (consumeTime < _frameTime)
+    auto numStepPerformed = 0u;
+
+    while (consumeTime < _frameTime || numStepPerformed < _defaultMinimumNumStepsPerFrame)
     {
         if (_sortingNeeded)
         {
@@ -81,6 +85,9 @@ JobManager::end(NodePtr target)
 
             _jobs.sort(Job::PriorityComparator());
         }
+
+        if (!hasPendingJob())
+            break;
 
         if (currentJob == nullptr)
         {
@@ -92,12 +99,11 @@ JobManager::end(NodePtr target)
                 currentJob->running(true);
                 currentJob->beforeFirstStep();
             }
-
-            if (currentJob->priority() <= 0.f)
-                break;
         }
 
         currentJob->step();
+
+        ++numStepPerformed;
 
         consumeTime = (float(std::clock() - _frameStartTime) / CLOCKS_PER_SEC);
 
@@ -120,4 +126,10 @@ JobManager::insertJob(Job::Ptr job)
     _jobs.push_back(job);
 
     _sortingNeeded = true;
+}
+
+bool
+JobManager::hasPendingJob() const
+{
+    return !_jobs.empty() && _jobs.back()->priority() > 0.f;
 }

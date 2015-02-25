@@ -116,6 +116,8 @@ namespace minko
 			typedef std::shared_ptr<scene::Node> NodePtr;
 		
 		private:
+            static const unsigned int                           _defaultMinimumNumStepsPerFrame;
+
 			unsigned int			                            _loadingFramerate;
 			float					                            _frameTime;
             std::list<Job::Ptr>                			        _jobs;
@@ -145,6 +147,9 @@ namespace minko
 
             void
             insertJob(Job::Ptr job);
+
+            bool
+            hasPendingJob() const;
 		};
 	}
 }
