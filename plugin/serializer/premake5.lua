@@ -96,7 +96,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 				"MINKO_NO_CRNLIB"
 			}
 
-		configuration { "linux64" }
+		configuration { "windows64 or linux64" }
 			defines {
 				"MINKO_NO_QCOMPRESS"
 			}
@@ -106,7 +106,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 				"lib/PVRTexTool/Include"
 			}
 
-		configuration { "windows or linux32 or osx" }
+		configuration { "windows32 or linux32 or osx" }
 			includedirs {
 				"lib/QCompress/Inc"
 			}
