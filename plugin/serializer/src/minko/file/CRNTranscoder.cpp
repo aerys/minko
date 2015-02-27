@@ -75,7 +75,7 @@ CRNTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
 
         compressorParameters.m_file_type = cCRNFileTypeDDS;
         compressorParameters.m_format = textureFormatToCRNTextureFomat.at(outFormat);
-        compressorParameters.m_dxt_compressor_type = crn_dxt_compressor_type::cCRNDXTCompressorCRN;
+        compressorParameters.m_dxt_compressor_type = crn_dxt_compressor_type::cCRNDXTCompressorRYG;
         compressorParameters.m_dxt_quality = crn_dxt_quality::cCRNDXTQualityUber;
         compressorParameters.m_quality_level = cCRNMaxQualityLevel;
 
