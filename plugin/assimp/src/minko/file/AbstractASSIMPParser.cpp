@@ -163,11 +163,9 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 	std::cout << "AbstractASSIMPParser: preparing to parse" << std::endl;
 #endif // DEBUG
 
-	const aiScene* scene = _importer->ReadFileFromMemory(
-		&data[0],
-		data.size(),
-		//| aiProcess_GenSmoothNormals // assertion is raised by assimp
+    auto flags =
 		aiProcess_JoinIdenticalVertices
+        //| aiProcess_GenSmoothNormals // assertion is raised by assimp
 		| aiProcess_GenSmoothNormals
 		| aiProcess_SplitLargeMeshes
 		| aiProcess_LimitBoneWeights
@@ -176,8 +174,19 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 		//| aiProcess_OptimizeGraph // makes the mesh simply vanish
 		| aiProcess_FlipUVs
 		| aiProcess_SortByPType
-		| aiProcess_Triangulate
-        | aiProcess_RemoveRedundantMaterials,
+		| aiProcess_Triangulate;
+
+    if (!options->processUnusedAsset())
+    {
+        // this flags discards unused materials in addition to
+        // removing duplicated ones
+        flags |= aiProcess_RemoveRedundantMaterials;
+    }
+
+	const aiScene* scene = _importer->ReadFileFromMemory(
+		&data[0],
+		data.size(),
+		flags,
 		resolvedFilename.c_str()
 	);
 
