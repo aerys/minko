@@ -429,7 +429,7 @@ AbstractASSIMPParser::getValidAssetName(const std::string& name)
     validAssetName = std::regex_replace(
         validAssetName,
         invalidSymbolRegex,
-        ""
+        std::string()
     );
 
     auto newValidAssetNameIt = _validAssetNames.insert(std::make_pair(name, validAssetName));
