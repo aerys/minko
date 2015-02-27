@@ -1,362 +1,405 @@
 #ifdef FRAGMENT_SHADER
 
 #ifdef GL_ES
-	precision mediump float;
+    #ifdef GL_FRAGMENT_PRECISION_HIGH
+        precision highp float;
+    #else
+        precision mediump float;
+    #endif
 #endif
 
-#pragma include("Phong.function.glsl")
-#pragma include("Envmap.function.glsl")
-#pragma include("Fog.function.glsl")
-#pragma include("Water.function.glsl")
-#pragma include("../Reflection/Reflection.function.glsl")
+#pragma include "TextureLod.extension.glsl"
 
-#ifdef PRECOMPUTED_AMBIENT
-	uniform vec3 sumAmbients;
-#endif // PRECOMPUTED_AMBIENT
+#pragma include "Envmap.function.glsl"
+#pragma include "Phong.function.glsl"
+#pragma include "TextureLod.function.glsl"
+#pragma include "ShadowMapping.function.glsl"
+#pragma include "Fog.function.glsl"
 
-#ifndef MINKO_NO_GLSL_STRUCT
+struct AmbientLight
+{
+	vec3 	color;
+	float 	ambient;
+};
 
-	#pragma include("Phong.struct.glsl")
+struct PointLight
+{
+	vec3	color;
+	float	diffuse;
+	float	specular;
+	vec3	attenuationCoeffs;
+	vec3	position;
+};
 
-	#ifdef NUM_AMBIENT_LIGHTS
-		uniform AmbientLight		ambientLights[NUM_AMBIENT_LIGHTS];
-	#endif // NUM_AMBIENT_LIGHTS
+struct SpotLight
+{
+	vec3	direction;
+	float	diffuse;
+	vec3	position;
+	float	cosInnerConeAngle;
+	vec3	color;
+	float	cosOuterConeAngle;
+	vec3	attenuationCoeffs;
+	float	specular;
+};
 
-	#ifdef NUM_DIRECTIONAL_LIGHTS
-		uniform DirectionalLight	directionalLights[NUM_DIRECTIONAL_LIGHTS];
-	#endif // NUM_DIRECTIONAL_LIGHTS
+#ifdef NUM_AMBIENT_LIGHTS
+	uniform AmbientLight uAmbientLights[NUM_AMBIENT_LIGHTS];
+#endif // NUM_AMBIENT_LIGHTS
 
-	#ifdef NUM_POINT_LIGHTS
-		uniform PointLight			pointLights[NUM_POINT_LIGHTS];
-	#endif // NUM_POINT_LIGHTS
+#ifdef NUM_POINT_LIGHTS
+	uniform PointLight uPointLights[NUM_POINT_LIGHTS];
+#endif // NUM_POINT_LIGHTS
 
-	#ifdef NUM_SPOT_LIGHTS
-		uniform SpotLight			spotLights[NUM_SPOT_LIGHTS];
-	#endif // NUM_SPOT_LIGHTS
+#ifdef NUM_SPOT_LIGHTS
+	uniform SpotLight uSpotLights[NUM_SPOT_LIGHTS];
+#endif // NUM_SPOT_LIGHTS
 
-#else
-
-	#ifdef NUM_AMBIENT_LIGHTS
-		uniform vec3	ambientLights_color[NUM_AMBIENT_LIGHTS];
-		uniform float	ambientLights_ambient[NUM_AMBIENT_LIGHTS];
-	#endif // NUM_AMBIENT_LIGHTS
-
-	#ifdef NUM_DIRECTIONAL_LIGHTS
-		uniform vec3	directionalLights_color[NUM_DIRECTIONAL_LIGHTS];
-		uniform float	directionalLights_diffuse[NUM_DIRECTIONAL_LIGHTS];
-		uniform float	directionalLights_specular[NUM_DIRECTIONAL_LIGHTS];
-		uniform vec3	directionalLights_direction[NUM_DIRECTIONAL_LIGHTS];
-	#endif // NUM_DIRECTIONAL_LIGHTS
-
-	#ifdef NUM_POINT_LIGHTS
-		uniform vec3	pointLights_color[NUM_POINT_LIGHTS];
-		uniform float	pointLights_diffuse[NUM_POINT_LIGHTS];
-		uniform float	pointLights_specular[NUM_POINT_LIGHTS];
-		uniform vec3	pointLights_attenuationCoeffs[NUM_POINT_LIGHTS];
-		uniform vec3	pointLights_position[NUM_POINT_LIGHTS];
-	#endif // NUM_POINT_LIGHTS
-
-	#ifdef NUM_SPOT_LIGHTS
-		uniform vec3	spotLights_color[NUM_SPOT_LIGHTS];
-		uniform float	spotLights_diffuse[NUM_SPOT_LIGHTS];
-		uniform float	spotLights_specular[NUM_SPOT_LIGHTS];
-		uniform vec3	spotLights_attenuationCoeffs[NUM_SPOT_LIGHTS];
-		uniform vec3	spotLights_position[NUM_SPOT_LIGHTS];
-		uniform vec3	spotLights_direction[NUM_SPOT_LIGHTS];
-		uniform float	spotLights_cosInnerConeAngle[NUM_SPOT_LIGHTS];
-		uniform float	spotLights_cosOuterConeAngle[NUM_SPOT_LIGHTS];
-	#endif // NUM_SPOT_LIGHTS
-	
-#endif // MINKO_NO_GLSL_STRUCT
-	
 // diffuse
-uniform vec4 		diffuseColor;
-uniform sampler2D 	diffuseMap;
+uniform vec4 uDiffuseColor;
+uniform sampler2D uDiffuseMap;
+
+// alpha
+uniform sampler2D uAlphaMap;
+uniform float uAlphaThreshold;
+
+// fog
+uniform vec4 uFogColor;
+uniform vec2 uFogBounds;
 
 // phong
-uniform vec4 		specularColor;
-uniform sampler2D 	normalMap;
-uniform sampler2D 	specularMap;
-uniform sampler2D 	flowMap;
-uniform sampler2D 	noiseMap;
-uniform sampler2D	reflectionMap;
-uniform sampler2D	dudvMap;
-uniform float 		shininess;
-uniform vec3 		cameraPosition;
-uniform float		normalSpeed;
-uniform float		frameId;
-uniform float 		normalMapScale;
-uniform float 		flowMapScale;
-uniform float 		flowMapCycle;
-uniform float 		flowMapOffset1;
-uniform float 		flowMapOffset2;
-uniform float		reflectivity;
-uniform float		dudvSpeed;
-uniform float		dudvFactor;
-uniform float		fresnelMultiplier;
-uniform float		fresnelPow;
-uniform float		normalMultiplier;
+uniform vec4 uSpecularColor;
+uniform sampler2D uNormalMap;
+uniform sampler2D uSpecularMap;
+uniform float uShininess;
+uniform vec3 uCameraPosition;
 
-varying vec4		vertexScreenPosition;
-varying vec3 		vertexPosition;
-varying vec2 		vertexUV;
-varying vec3 		vertexNormal;
-varying vec3 		vertexTangent;
+// env. mapping
+uniform float uEnvironmentAlpha;
+
+// texture lod
+uniform float uDiffuseMapMaxAvailableLod;
+uniform vec2 uDiffuseMapSize;
+
+uniform float uNormalMapMaxAvailableLod;
+uniform vec2 uNormalMapSize;
+
+uniform float uSpecularMapMaxAvailableLod;
+uniform vec2 uSpecularMapSize;
+
+// directional lights
+uniform vec3 uDirLight0_direction;
+uniform vec3 uDirLight0_color;
+uniform float uDirLight0_diffuse;
+uniform float uDirLight0_specular;
+uniform sampler2D uDirLight0_shadowMap;
+uniform mat4 uDirLight0_viewProjection[SHADOW_MAPPING_MAX_NUM_CASCADES];
+uniform float uDirLight0_zNear[SHADOW_MAPPING_MAX_NUM_CASCADES];
+uniform float uDirLight0_zFar[SHADOW_MAPPING_MAX_NUM_CASCADES];
+uniform vec4 uDirLight0_shadowSplitNear;
+uniform vec4 uDirLight0_shadowSplitFar;
+uniform float uDirLight0_shadowMapSize;
+uniform float uDirLight0_shadowSpread;
+uniform float uDirLight0_shadowBias;
+
+uniform vec3 uDirLight1_direction;
+uniform vec3 uDirLight1_color;
+uniform float uDirLight1_diffuse;
+uniform float uDirLight1_specular;
+uniform sampler2D uDirLight1_shadowMap;
+uniform mat4 uDirLight1_viewProjection[SHADOW_MAPPING_MAX_NUM_CASCADES];
+uniform float uDirLight1_zNear[SHADOW_MAPPING_MAX_NUM_CASCADES];
+uniform float uDirLight1_zFar[SHADOW_MAPPING_MAX_NUM_CASCADES];
+uniform vec4 uDirLight1_shadowSplitNear;
+uniform vec4 uDirLight1_shadowSplitFar;
+uniform float uDirLight1_shadowMapSize;
+uniform float uDirLight1_shadowSpread;
+uniform float uDirLight1_shadowBias;
+
+uniform vec3 uDirLight2_direction;
+uniform vec3 uDirLight2_color;
+uniform float uDirLight2_diffuse;
+uniform float uDirLight2_specular;
+uniform sampler2D uDirLight2_shadowMap;
+uniform mat4 uDirLight2_viewProjection[SHADOW_MAPPING_MAX_NUM_CASCADES];
+uniform float uDirLight2_zNear[SHADOW_MAPPING_MAX_NUM_CASCADES];
+uniform float uDirLight2_zFar[SHADOW_MAPPING_MAX_NUM_CASCADES];
+uniform vec4 uDirLight2_shadowSplitNear;
+uniform vec4 uDirLight2_shadowSplitFar;
+uniform float uDirLight2_shadowMapSize;
+uniform float uDirLight2_shadowSpread;
+uniform float uDirLight2_shadowBias;
+
+uniform vec3 uDirLight3_direction;
+uniform vec3 uDirLight3_color;
+uniform float uDirLight3_diffuse;
+uniform float uDirLight3_specular;
+uniform sampler2D uDirLight3_shadowMap;
+uniform mat4 uDirLight3_viewProjection[SHADOW_MAPPING_MAX_NUM_CASCADES];
+uniform float uDirLight3_zNear[SHADOW_MAPPING_MAX_NUM_CASCADES];
+uniform float uDirLight3_zFar[SHADOW_MAPPING_MAX_NUM_CASCADES];
+uniform vec4 uDirLight3_shadowSplitNear;
+uniform vec4 uDirLight3_shadowSplitFar;
+uniform float uDirLight3_shadowMapSize;
+uniform float uDirLight3_shadowSpread;
+uniform float uDirLight3_shadowBias;
+// ! directional lights
+
+varying vec3 vertexPosition;
+varying vec2 vertexUV;
+varying vec3 vertexNormal;
+varying vec3 vertexTangent;
+varying vec4 vertexScreenPosition;
+
+float getShadow(sampler2D 	shadowMap,
+				mat4 		viewProj[SHADOW_MAPPING_MAX_NUM_CASCADES],
+				float 		zNear[SHADOW_MAPPING_MAX_NUM_CASCADES],
+				float 		zFar[SHADOW_MAPPING_MAX_NUM_CASCADES],
+				vec4		splitNear,
+                vec4        splitFar,
+				float 		size,
+				float 		bias)
+{
+	float shadow = 1.0;
+    vec4 weights = shadowMapping_getCascadeWeights(vertexScreenPosition.z, splitNear, splitFar);
+	vec4 viewport = shadowMapping_getCascadeViewport(weights);
+    mat4 viewProjection = shadowMapping_getCascadeViewProjection(weights, viewProj);
+    float near = shadowMapping_getCascadeZ(weights, zNear);
+    float far = shadowMapping_getCascadeZ(weights, zFar);
+	vec3 vertexLightPosition = (viewProjection * vec4(vertexPosition, 1)).xyz;
+
+	if (shadowMapping_vertexIsInShadowMap(vertexLightPosition))
+	{
+		float shadowDepth = vertexLightPosition.z - bias;
+		vec2 depthUV = vertexLightPosition.xy / 2.0 + 0.5;
+
+		depthUV = vec2(depthUV.xy * viewport.zw + viewport.xy);
+
+		#if SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_HARD
+			shadow = shadowMapping_texture2DCompare(shadowMap, depthUV, shadowDepth, near, far);
+		#elif SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_ESM
+			shadow = shadowMapping_ESM(shadowMap, depthUV, shadowDepth, near, far, 30.0);
+		#elif SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_PCF
+			shadow = shadowMapping_PCF(shadowMap, vec2(size, size), depthUV, shadowDepth, near, far);
+		// #elif SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_PCF_POISSON
+		// 	shadow = shadowMapping_PCFPoisson(
+		// 		shadowMap,
+		// 		vec2(size, size),
+		// 		depthUV,
+		// 		shadowDepth,
+		// 		zNear,
+		// 		zFar,
+		// 		uShadowRandomMap,
+		// 		vertexScreenPosition.xy / vertexScreenPosition.w / 2.0 + 0.5,
+		// 		uShadowSpread
+		// 	);
+		#endif
+	}
+
+	return shadow;
+}
 
 void main(void)
 {
-	//float dotNormal			= 0.0;
-	vec4 diffuse 			= diffuseColor;
-	vec4 specular 			= specularColor;
-	float specularAlpha		= diffuse.a;
-	float fresnelAccum		= 0.0;
-	float fresnelMax		= 0.001;
-	//float fogPercent		= fog_Percent(gl_FragCoord);
+	vec3 ambientAccum = vec3(0.0);
+	vec3 diffuseAccum = vec3(0.0);
+	vec3 specularAccum	= vec3(0.0);
+	vec4 diffuse = uDiffuseColor;
+	vec4 specular = uSpecularColor;
+	float shininessCoeff = 1.0;
+	vec3 eyeVector = normalize(uCameraPosition - vertexPosition); // always in world-space
+	vec3 normalVector = normalize(vertexNormal); // always in world-space
+
+	#ifdef SHININESS
+		shininessCoeff = max(1.0, uShininess);
+	#endif // SHININESS
 
 	#ifdef DIFFUSE_MAP
-		diffuse = texture2D(diffuseMap, vertexUV);
+		#ifdef DIFFUSE_MAP_LOD
+			diffuse = texturelod_texture2D(uDiffuseMap, vertexUV, uDiffuseMapSize, 0.0, uDiffuseMapMaxAvailableLod, uDiffuseColor);
+		#else
+			diffuse = texture2D(uDiffuseMap, vertexUV);
+		#endif
 	#endif // DIFFUSE_MAP
 
+	#ifdef ALPHA_MAP
+		diffuse.a = texture2D(uAlphaMap, vertexUV).r;
+	#endif // ALPHA_MAP
 
-	vec3	ambientAccum	= vec3(0.0);
-	vec3	diffuseAccum	= vec3(0.0);
-	vec3	specularAccum	= vec3(0.0); 
+	#ifdef ALPHA_THRESHOLD
+		if (diffuse.a < uAlphaThreshold)
+			discard;
+	#endif // ALPHA_THRESHOLD
 
-	#ifdef PRECOMPUTED_AMBIENT
-	//------------------------
-		ambientAccum += sumAmbients;
-	#else
-	
-		#ifdef NUM_AMBIENT_LIGHTS
-			for (int i = 0; i < NUM_AMBIENT_LIGHTS; ++i)
-			{
-				#ifndef MINKO_NO_GLSL_STRUCT
-					ambientAccum 	+= ambientLights[i].color * ambientLights[i].ambient;
-				#else
-					ambientAccum	+= ambientLights_color[i] * ambientLights_ambient[i];
-				#endif // MINKO_NO_GLSL_STRUCT
-			}
-		#endif // NUM_AMBIENT_LIGHTS
+	#if defined(SHININESS) || ( (defined(ENVIRONMENT_MAP_2D) || defined(ENVIRONMENT_CUBE_MAP)) && !defined(ENVIRONMENT_ALPHA) )
+		#ifdef SPECULAR_MAP
+			#ifdef SPECULAR_MAP_LOD
+				specular = texturelod_texture2D(uSpecularMap, vertexUV, uSpecularMapSize, 0.0, uSpecularMapMaxAvailableLod, uSpecularColor);
+			#else
+				specular = texture2D(uSpecularMap, vertexUV);
+			#endif
+		#elif defined NORMAL_MAP
+			specular.a = texture2D(uNormalMap, vertexUV).a; // ???
+		#endif // SPECULAR_MAP
+	#endif
 
-	#endif // PRECOMPUTED_AMBIENT
-	
-
-	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS || defined ENVIRONMENT_MAP_2D || defined ENVIRONMENT_CUBE_MAP
-
-	vec3 eyeVector	= normalize(cameraPosition - vertexPosition); // always in world-space
-
-	#endif // NUM_DIRECTIONAL_LIGHTS || NUM_POINT_LIGHTS || NUM_SPOT_LIGHTS || ENVIRONMENT_MAP_2D || ENVIRONMENT_CUBE_MAP
+	#ifdef NUM_AMBIENT_LIGHTS
+		for (int i = 0; i < NUM_AMBIENT_LIGHTS; ++i)
+			ambientAccum += uAmbientLights[i].color * uAmbientLights[i].ambient;
+	#endif // NUM_AMBIENT_LIGHTS
 
 	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
-		
-		vec3	lightColor				= vec3(0.0);
-		vec3 	lightDirection			= vec3(0.0);
-		vec3	lightSpotDirection		= vec3(0.0);
-		vec3 	lightPosition			= vec3(0.0);
-		float	lightDiffuseCoeff		= 1.0;
-		float	lightSpecularCoeff		= 1.0;
-		vec3	lightAttenuationCoeffs	= vec3(1.0, 0.0, 0.0);
-		float	lightCosInnerAng		= 0.0;
-		float	lightCosOuterAng		= 0.0;
-		float 	contribution			= 0.0;
-		
-		vec3 	normalVector			= normalize(vertexNormal); // always in world-space
-		
 		#ifdef NORMAL_MAP
 			// warning: the normal vector must be normalized at this point!
-			mat3 tangentToWorldMatrix 	= phong_getTangentToWorldSpaceMatrix(normalVector, vertexTangent);
+			mat3 tangentToWorldMatrix = phong_getTangentToWorldSpaceMatrix(normalVector, vertexTangent);
 
-			#ifdef FLOW_MAP
-				float noiseOffset 			= 0.0;
-
-				#ifdef NOISE_MAP
-				noiseOffset = texture2D(noiseMap, vertexUV).r;
-				#endif
-				vec2 flowmap 				= (texture2D(flowMap, vertexUV * flowMapScale).rg * 2.0 - 1.0);
-
-				float phase0 				= noiseOffset * 0.5 + flowMapOffset1;
-				float phase1 				= noiseOffset * 0.5 + flowMapOffset2;
-
-				vec3 normalSample1			= 2.0 * texture2D(normalMap, vertexUV * normalMapScale + flowmap * phase0).xyz - 1.0;
-				vec3 normalSample2			= 2.0 * texture2D(normalMap, vertexUV * normalMapScale + flowmap * phase1).xyz - 1.0;
-
-				float halfCycle				= flowMapCycle / 2.0;
-				float f 					= abs(halfCycle - flowMapOffset1) / halfCycle;
-
-				normalVector 				= tangentToWorldMatrix * normalize(mix(normalSample1, normalSample2, f));
+			// bring normal from tangent-space normal to world-space
+			#ifdef NORMAL_MAP_LOD
+				vec4 normalColor = texturelod_texture2D(uNormalMap, vertexUV, uNormalMapSize, 0.0, uNormalMapMaxAvailableLod, vec4(0.0));
 			#else
-				vec2 uvOffset				= vec2(frameId * normalSpeed, frameId * normalSpeed);
-				vec3 normalSample1			= 2.0 * texture2D(normalMap, vertexUV * normalMapScale + uvOffset).xyz - 1.0;
-				vec3 normalSample2			= 2.0 * texture2D(normalMap, vertexUV * normalMapScale + uvOffset * vec2(-0.71, 0.91)).xyz - 1.0;
-
-				normalVector				= tangentToWorldMatrix * normalize(mix(normalSample1, normalSample2, 0.5)); // bring normal from tangent-space normal to world-space
+				vec4 normalColor = texture2D(uNormalMap, vertexUV);
 			#endif
+
+			normalVector = tangentToWorldMatrix * normalize(2.0 * normalColor.xyz - 1.0);
 		#endif // NORMAL_MAP
-		
 
-		#ifdef NUM_DIRECTIONAL_LIGHTS
-		//---------------------------
-		for (int i = 0; i < NUM_DIRECTIONAL_LIGHTS; ++i)
-		{
-			#ifndef MINKO_NO_GLSL_STRUCT
-				lightColor			= directionalLights[i].color;
-				lightDiffuseCoeff	= directionalLights[i].diffuse;
-				lightSpecularCoeff	= directionalLights[i].specular;
-				lightDirection		= directionalLights[i].direction;
-			#else
-				lightColor			= directionalLights_color[i];
-				lightDiffuseCoeff	= directionalLights_diffuse[i];
-				lightSpecularCoeff	= directionalLights_specular[i];
-				lightDirection		= directionalLights_direction[i];
-			#endif // MINKO_NO_GLSL_STRUCT
-	
-			lightDirection	= normalize(-lightDirection);
-			
-			diffuseAccum		+= phong_diffuseReflection(normalVector, lightDirection)
-				* lightColor
-				* lightDiffuseCoeff;
-
+		float shadow;
+		vec3 dir;
+		#if NUM_DIRECTIONAL_LIGHTS > 0
+			shadow = 1.0;
+			dir = normalize(-uDirLight0_direction);
+			#ifdef DIRECTIONAL_0_SHADOW_MAP
+				shadow = getShadow(uDirLight0_shadowMap, uDirLight0_viewProjection, uDirLight0_zNear, uDirLight0_zFar, uDirLight0_shadowSplitNear, uDirLight0_shadowSplitFar, uDirLight0_shadowMapSize, uDirLight0_shadowBias);
+			#endif
+			diffuseAccum += phong_diffuseReflection(normalVector, dir) * shadow * uDirLight0_diffuse * uDirLight0_color;
 			#if defined(SHININESS)
-				specularAccum	+= 
-					phong_specularReflection(normalVector, lightDirection, eyeVector, shininess) 
-					* phong_fresnel(specular.rgb, lightDirection, eyeVector)
-					* lightColor
-					* lightSpecularCoeff;
-				specularAlpha += phong_specularReflection(normalVector, lightDirection, eyeVector, shininess) * lightSpecularCoeff;
+				specularAccum += phong_specularReflection(normalVector, uDirLight0_direction, eyeVector, shininessCoeff) * uDirLight0_color * uDirLight0_specular
+					* phong_fresnel(specular.rgb, dir, eyeVector);
 			#endif // SHININESS
-		
-			fresnelAccum += fresnelFactor(vec3(0.0, 1.0, 0.0), eyeVector, fresnelMultiplier, 0.0, fresnelPow) * lightDiffuseCoeff;
-			fresnelMax   += lightDiffuseCoeff;
-		}
-
-		#endif // NUM_DIRECTIONAL_LIGHTS
-		
-				#ifdef NUM_POINT_LIGHTS
-		//---------------------
-		for (int i = 0; i < NUM_POINT_LIGHTS; ++i)
-		{
-			#ifndef MINKO_NO_GLSL_STRUCT
-				lightColor				= pointLights[i].color;
-				lightDiffuseCoeff		= pointLights[i].diffuse;
-				lightSpecularCoeff		= pointLights[i].specular;
-				lightAttenuationCoeffs	= pointLights[i].attenuationCoeffs;
-				lightPosition			= pointLights[i].position;
-			#else
-				lightColor				= pointLights_color[i];
-				lightDiffuseCoeff		= pointLights_diffuse[i];
-				lightSpecularCoeff		= pointLights_specular[i];
-				lightAttenuationCoeffs	= pointLights_attenuationCoeffs[i];
-				lightPosition			= pointLights_position[i];
-			#endif // MINKO_NO_GLSL_STRUCT
-		
-			lightDirection			= lightPosition - vertexPosition;
-			float distanceToLight 	= length(lightDirection);
-			lightDirection 			/= distanceToLight;
-			
-			vec3	distVec 	= vec3(1.0, distanceToLight, distanceToLight * distanceToLight);
-			float 	attenuation = any(lessThan(lightAttenuationCoeffs, vec3(0.0)))
-				? 1.0
-				: max(0.0, 1.0 - distanceToLight / dot(lightAttenuationCoeffs, distVec)); 
-
-			diffuseAccum		+= phong_diffuseReflection(normalVector, lightDirection)
-				* lightColor
-				* (lightDiffuseCoeff * attenuation);
-
+		#endif // NUM_DIRECTIONAL_LIGHTS > 0
+		#if NUM_DIRECTIONAL_LIGHTS > 1
+			shadow = 1.0;
+			dir = normalize(-uDirLight1_direction);
+			#ifdef DIRECTIONAL_1_SHADOW_MAP
+				shadow = getShadow(uDirLight1_shadowMap, uDirLight1_viewProjection, uDirLight1_zNear, uDirLight1_zFar, uDirLight1_shadowSplitNear, uDirLight1_shadowSplitFar, uDirLight1_shadowMapSize, uDirLight1_shadowBias);
+			#endif
+			diffuseAccum += phong_diffuseReflection(normalVector, dir) * shadow * uDirLight1_diffuse * uDirLight1_color;
 			#if defined(SHININESS)
-				specularAccum	+= 
-					phong_specularReflection(normalVector, lightDirection, eyeVector, shininess) 
-					* phong_fresnel(specular.rgb, lightDirection, eyeVector)
-					* lightColor
-					* (lightSpecularCoeff * attenuation);
-				specularAlpha += phong_specularReflection(normalVector, lightDirection, eyeVector, shininess) * (lightSpecularCoeff * attenuation);
-			#endif // SHININESS	
-		}
-		#endif // NUM_POINT_LIGHTS
-		
-	#ifdef NUM_SPOT_LIGHTS
-		//--------------------
-		for (int i = 0; i < NUM_SPOT_LIGHTS; ++i)
-		{
-			#ifndef MINKO_NO_GLSL_STRUCT
-				lightColor				= spotLights[i].color;
-				lightDiffuseCoeff		= spotLights[i].diffuse;
-				lightSpecularCoeff		= spotLights[i].specular;
-				lightAttenuationCoeffs	= spotLights[i].attenuationCoeffs;
-				lightPosition			= spotLights[i].position;
-				lightSpotDirection		= spotLights[i].direction;
-				lightCosInnerAng		= spotLights[i].cosInnerConeAngle;
-				lightCosOuterAng		= spotLights[i].cosOuterConeAngle;
-			#else
-				lightColor				= spotLights_color[i];
-				lightDiffuseCoeff		= spotLights_diffuse[i];
-				lightSpecularCoeff		= spotLights_specular[i];
-				lightAttenuationCoeffs	= spotLights_attenuationCoeffs[i];
-				lightPosition			= spotLights_position[i];
-				lightSpotDirection		= spotLights_direction[i];
-				lightCosInnerAng		= spotLights_cosInnerConeAngle[i];
-				lightCosOuterAng		= spotLights_cosOuterConeAngle[i];
-			#endif // MINKO_NO_GLSL_STRUCT
-			
-			
-			lightDirection			= lightPosition - vertexPosition;
-			float distanceToLight	= length(lightDirection);
-			lightDirection			/= distanceToLight;
-			
-			lightSpotDirection	= normalize(-lightSpotDirection);						
-			float cosSpot		= dot(-lightDirection, lightSpotDirection);
+				specularAccum += phong_specularReflection(normalVector, uDirLight1_direction, eyeVector, shininessCoeff) * uDirLight1_color * uDirLight1_specular
+					* phong_fresnel(specular.rgb, dir, eyeVector);
+			#endif // SHININESS
+		#endif // NUM_DIRECTIONAL_LIGHTS > 1
+		#if NUM_DIRECTIONAL_LIGHTS > 2
+			shadow = 1.0;
+			dir = normalize(-uDirLight2_direction);
+			#ifdef DIRECTIONAL_2_SHADOW_MAP
+				shadow = getShadow(uDirLight2_shadowMap, uDirLight2_viewProjection, uDirLight2_zNear, uDirLight2_zFar, uDirLight2_shadowSplitNear, uDirLight2_shadowSplitFar, uDirLight2_shadowMapSize, uDirLight2_shadowBias);
+			#endif
+			diffuseAccum += phong_diffuseReflection(normalVector, dir) * shadow * uDirLight2_diffuse * uDirLight2_color;
+			#if defined(SHININESS)
+				specularAccum += phong_specularReflection(normalVector, uDirLight2_direction, eyeVector, shininessCoeff) * uDirLight2_color * uDirLight2_specular
+					* phong_fresnel(specular.rgb, dir, eyeVector);
+			#endif // SHININESS
+		#endif // NUM_DIRECTIONAL_LIGHTS > 2
+		#if NUM_DIRECTIONAL_LIGHTS > 3
+			shadow = 1.0;
+			dir = normalize(-uDirLight3_direction);
+			#ifdef DIRECTIONAL_3_SHADOW_MAP
+				shadow = getShadow(uDirLight3_shadowMap, uDirLight3_viewProjection, uDirLight3_zNear, uDirLight3_zFar, uDirLight3_shadowSplitNear, uDirLight3_shadowSplitFar, uDirLight3_shadowMapSize, uDirLight3_shadowBias);
+			#endif
+			diffuseAccum += phong_diffuseReflection(normalVector, dir) * shadow * uDirLight3_diffuse * uDirLight3_color;
+			#if defined(SHININESS)
+				specularAccum += phong_specularReflection(normalVector, uDirLight3_direction, eyeVector, shininessCoeff) * uDirLight3_color * uDirLight3_specular
+					* phong_fresnel(specular.rgb, dir, eyeVector);
+			#endif // SHININESS
+		#endif // NUM_DIRECTIONAL_LIGHTS > 1
 
-			if (lightCosOuterAng < cosSpot)
+
+		#ifdef NUM_POINT_LIGHTS
+		//---------------------
+			for (int i = 0; i < NUM_POINT_LIGHTS; ++i)
 			{
-				vec3	distVec 	= vec3(1.0, distanceToLight, distanceToLight * distanceToLight);
-				float 	attenuation = any(lessThan(lightAttenuationCoeffs, vec3(0.0)))
+				vec3 lightDirection = uPointLights[i].position - vertexPosition;
+				float distanceToLight = length(lightDirection);
+				lightDirection /= distanceToLight;
+
+				vec3 distVec = vec3(1.0, distanceToLight, distanceToLight * distanceToLight);
+				float attenuation = any(lessThan(uPointLights[i].attenuationCoeffs, vec3(0.0)))
 					? 1.0
-					: max(0.0, 1.0 - distanceToLight / dot(lightAttenuationCoeffs, distVec)); 
-					
-				float cutoff	= cosSpot < lightCosInnerAng && lightCosOuterAng < lightCosInnerAng 
-					? (cosSpot - lightCosOuterAng) / (lightCosInnerAng - lightCosOuterAng) 
-					: 1.0;	
+					: max(0.0, 1.0 - distanceToLight / dot(uPointLights[i].attenuationCoeffs, distVec));
 
+				diffuseAccum += phong_diffuseReflection(normalVector, lightDirection)
+					* uPointLights[i].color
+					* (uPointLights[i].diffuse * attenuation);
 
-				diffuseAccum		+= phong_diffuseReflection(normalVector, lightDirection)
-					* lightColor
-					* (lightDiffuseCoeff * attenuation * cutoff);
-
-				#ifdef SHININESS
-					specularAccum	+= 
-						phong_specularReflection(normalVector, lightDirection, eyeVector, shininess) 
+				#if defined(SHININESS)
+					specularAccum += phong_specularReflection(normalVector, lightDirection, eyeVector, shininessCoeff)
 						* phong_fresnel(specular.rgb, lightDirection, eyeVector)
-						* lightColor
-						* (lightSpecularCoeff * attenuation * cutoff);
-					specularAlpha += phong_specularReflection(normalVector, lightDirection, eyeVector, shininess) * (lightSpecularCoeff * attenuation * cutoff);
-
+						* uPointLights[i].color
+						* (uPointLights[i].specular * attenuation);
 				#endif // SHININESS
 			}
-		}
+		#endif // NUM_POINT_LIGHTS
+
+		#ifdef NUM_SPOT_LIGHTS
+		//--------------------
+			for (int i = 0; i < NUM_SPOT_LIGHTS; ++i)
+			{
+				vec3 lightDirection = uSpotLights[i].position - vertexPosition;
+				float distanceToLight = length(lightDirection);
+				lightDirection /= distanceToLight;
+
+				vec3 lightSpotDirection = uSpotLights[i].direction;
+				lightSpotDirection	= normalize(lightSpotDirection);
+				float cosSpot = dot(-lightDirection, lightSpotDirection);
+
+				if (uSpotLights[i].cosOuterConeAngle < cosSpot)
+				{
+					vec3 distVec = vec3(1.0, distanceToLight, distanceToLight * distanceToLight);
+					float attenuation = any(lessThan(uSpotLights[i].attenuationCoeffs, vec3(0.0)))
+						? 1.0
+						: max(0.0, 1.0 - distanceToLight / dot(uSpotLights[i].attenuationCoeffs, distVec));
+
+					float cutoff = cosSpot < uSpotLights[i].cosInnerConeAngle && uSpotLights[i].cosOuterConeAngle < uSpotLights[i].cosInnerConeAngle
+						? (cosSpot - uSpotLights[i].cosOuterConeAngle) / (uSpotLights[i].cosInnerConeAngle - uSpotLights[i].cosOuterConeAngle)
+						: 1.0;
+
+					diffuseAccum += phong_diffuseReflection(normalVector, lightDirection)
+						* uSpotLights[i].color
+						* uSpotLights[i].diffuse * attenuation * cutoff;
+
+					#ifdef SHININESS
+						specularAccum += phong_specularReflection(normalVector, lightDirection, eyeVector, shininessCoeff)
+							* phong_fresnel(uSpotLights[i].specular.rgb, lightDirection, eyeVector)
+							* uSpotLights[i].color
+							* (uSpotLights[i].specular * attenuation * cutoff);
+					#endif // SHININESS
+				}
+			}
 		#endif // NUM_SPOT_LIGHTS
-		
+
 	#endif // defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
+
+	#if defined(ENVIRONMENT_MAP_2D) || defined(ENVIRONMENT_CUBE_MAP)
+		vec4 envmapColor = envmap_sampleEnvironmentMap(eyeVector, normalVector);
+		float reflectivity = specular.a;
+
+		#ifdef ENVIRONMENT_ALPHA
+			reflectivity = uEnvironmentAlpha;
+		#endif // ENVIRONMENT_ALPHA
+
+		diffuse.rgb = mix(diffuse.rgb, envmapColor.rgb, reflectivity);
+	#endif // defined(ENVIRONMENT_MAP_2D) || defined(ENVIRONMENT_CUBE_MAP)
 
 	// Final blend of ambient, diffuse, and specular parts
 	//----------------------------------------------------
+	vec3 phong = diffuse.rgb * (ambientAccum + diffuseAccum) + specular.a * specularAccum;
 
-	vec3 phongColor	= diffuse.rgb * (ambientAccum + diffuseAccum);
-	
-	#ifdef REFLECTION_MAP
-		#ifdef DUDV_MAP
-			vec2 dudvOffset = ((1.0 - vertexUV) + (frameId * dudvSpeed));
-
-			phongColor = mix(phongColor, getDuDvReflectionColor(vertexScreenPosition, vertexUV.xy, reflectionMap, texture2D(dudvMap, dudvOffset).rb * dudvFactor).rgb, max(reflectivity, fresnelAccum / fresnelMax));
-		#else
-			phongColor = mix(phongColor, getReflectionColor(vertexScreenPosition, vertexUV, reflectionMap).rgb, max(reflectivity, fresnelAccum / fresnelMax));
-		#endif
+	#ifdef FOG_TECHNIQUE
+		phong = fog_sampleFog(phong, vertexScreenPosition.z, uFogColor.xyz, uFogColor.a, uFogBounds.x, uFogBounds.y);
 	#endif
 
-	vec3 phong		= phongColor + specularAccum;
-	gl_FragColor	= vec4(phong.rgb, specularAlpha);
-	gl_FragColor 	= fog_sampleFog(gl_FragColor, gl_FragCoord);
-
-	//gl_FragColor = vec4(vertexTangent / 2.0 + 0.5, 1.0);
-	//gl_FragColor = vec4(normalize(vertexNormal) / 2.0 + 0.5, 1.0);
+	gl_FragColor = vec4(phong.rgb, diffuse.a);
 }
 
 #endif // FRAGMENT_SHADER

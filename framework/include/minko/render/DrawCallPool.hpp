@@ -43,6 +43,7 @@ namespace minko
             typedef data::MacroBinding                                                                  MacroBinding;
             typedef std::pair<std::string, const Store*>                                                MacroBindingKey;
             typedef PropertyChanged::Callback                                                           PropertyCallback;
+			typedef std::unordered_map<DrawCall*, std::list<std::function<void(void)>>>					PropertyRebindFuncMap;
 
             typedef std::pair_hash<std::string, const Store*>                                           MacroBindingHash;
             typedef std::pair_eq<std::string, const Store*>                                             MacroBindingEq;
@@ -63,6 +64,8 @@ namespace minko
             std::unordered_set<DrawCall*>   _invalidDrawCalls;
             MacroToChangedSlotMap           _macroChangedSlot;
             PropertyChangedSlotMap          _propChangedSlot;
+
+			PropertyRebindFuncMap 			_drawCallToPropRebindFuncs;
 
 		public:
             DrawCallPool();
@@ -156,6 +159,15 @@ namespace minko
             samplerStatesBindingPropertyAddedHandler(DrawCall&                          drawCall,
                                                      const ProgramInputs::UniformInput& input,
                                                      const data::BindingMap&            uniformBindingMap);
+
+			void
+			bindDrawCall(DrawCall& 					drawCall,
+						 std::shared_ptr<Pass> 		pass,
+						 std::shared_ptr<Program> 	program,
+						 bool						forceRebind);
+
+			void
+			unbindDrawCall(DrawCall& drawCall);
         };
 	}
 }

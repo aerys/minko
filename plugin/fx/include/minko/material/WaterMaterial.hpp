@@ -72,12 +72,12 @@ namespace minko
             setSpeed(int waveId, float speed);
 
             Ptr
-            specularColor(const math::vec4&);
+            specularColor(const math::vec4& color);
 
             Ptr
-            specularColor(uint);
+            specularColor(uint color);
 
-            math::vec4
+            const math::vec4&
             specularColor() const;
 
             Ptr
