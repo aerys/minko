@@ -76,7 +76,7 @@ EmscriptenDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
 	_enterFrameSlot = _sceneManager->frameBegin()->connect([&](std::shared_ptr<component::SceneManager>, float, float)
 	{
 		enterFrame();
-	});
+	}, -100.f);
 }
 
 void
