@@ -58,7 +58,7 @@ namespace minko
             typedef Signal<SurfacePtr>                                                      SurfaceChangedSignal;
             typedef render::DrawCallPool::DrawCallIteratorPair                              DrawCallIteratorPair;
             typedef std::unordered_map<SurfacePtr, std::list<SurfaceChangedSignal::Slot>>   SurfaceSlotMap;
-
+            typedef Signal<render::DrawCall*>                                               ZSortNeeded;
 		private:
 			std::string													    _name;
 
@@ -79,6 +79,9 @@ namespace minko
 			float														    _priority;
 			bool														    _enabled;
 			std::shared_ptr<geometry::Geometry>								_postProcessingGeom;
+            bool                                                            _mustZSort;
+
+            std::unordered_map<const render::DrawCall*, ZSortNeeded::Slot>  _drawCallToZSortNeededSlot;
 
 			Signal<AbsCmpPtr, NodePtr>::Slot							    _targetAddedSlot;
 			Signal<AbsCmpPtr, NodePtr>::Slot							    _targetRemovedSlot;
@@ -90,6 +93,7 @@ namespace minko
 			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot					    _componentRemovedSlot;
 			Signal<SceneManagerPtr, uint, AbsTexturePtr>::Slot			    _renderingBeginSlot;
             SurfaceSlotMap                                                  _surfaceChangedSlots;
+            Signal<Store&, ProviderPtr, const std::string&>::Slot           _worldToScreenMatrixPropertyChangedSlot;
 
 			render::DrawCallPool								            _drawCallPool;
             std::unordered_map<SurfacePtr, DrawCallIteratorPair>            _surfaceToDrawCallIterator;

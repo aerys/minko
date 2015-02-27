@@ -19,7 +19,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/DrawCall.hpp"
 
-#include "minko/render/DrawCallZSorter.hpp"
 #include "minko/data/Store.hpp"
 #include "minko/log/Logger.hpp"
 
@@ -28,8 +27,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::render;
 
-const unsigned int	DrawCall::MAX_NUM_TEXTURES		            = 8;
-const unsigned int	DrawCall::MAX_NUM_VERTEXBUFFERS	            = 8;
+const unsigned int DrawCall::MAX_NUM_TEXTURES       = 8;
+const unsigned int DrawCall::MAX_NUM_VERTEXBUFFERS  = 8;
 
 DrawCall::DrawCall(std::shared_ptr<Pass>  pass,
                    const StringMap&       variables,
@@ -41,14 +40,19 @@ DrawCall::DrawCall(std::shared_ptr<Pass>  pass,
     _rootData(rootData),
     _rendererData(rendererData),
     _targetData(targetData),
-    _zSorter(DrawCallZSorter::create(this)),
-    _zSortNeeded(Signal<DrawCall*>::create()),
     _target(nullptr),
     _indexBuffer(nullptr),
     _firstIndex(nullptr),
-    _numIndices(nullptr)
+    _numIndices(nullptr),
+    _zSorted(nullptr),
+    _centerPosition(),
+    _modelToWorldMatrix(nullptr),
+    _worldToScreenMatrix(nullptr),
+    _modelToWorldMatrixPropertyRemovedSlot(nullptr),
+    _worldToScreenMatrixPropertyRemovedSlot(nullptr)
 {
-    _zSorter->initialize(_targetData, _rendererData, _rootData);
+    // For Z-sorting
+    bindPositionalMembers();
 }
 
 data::Store&
@@ -92,6 +96,48 @@ DrawCall::bind(std::shared_ptr<Program> program)
     // bindStates();
     //bindUniforms();
     // bindAttributes();
+}
+
+void
+DrawCall::bindPositionalMembers()
+{
+    if (_targetData.hasProperty("centerPosition"))
+        _centerPosition = _targetData.get<math::vec3>("centerPosition");
+
+    if (_targetData.hasProperty("modelToWorldMatrix"))
+        _modelToWorldMatrix = _targetData.getPointer<math::mat4>("modelToWorldMatrix");
+    else
+    {
+        _modelToWorldMatrixPropertyAddedSlot = _targetData.propertyAdded("modelToWorldMatrix").connect(
+            [&](data::Store&, std::shared_ptr<data::Provider>, const std::string&)
+        {
+            _modelToWorldMatrix = _targetData.getPointer<math::mat4>("modelToWorldMatrix");
+        });
+    }
+
+    if (_rendererData.hasProperty("worldToScreenMatrix"))
+        _worldToScreenMatrix = _rendererData.getPointer<math::mat4>("worldToScreenMatrix");
+    else
+    {
+        _worldToScreenMatrixPropertyAddedSlot = _rendererData.propertyAdded("worldToScreenMatrix").connect(
+            [&](data::Store& store, std::shared_ptr<data::Provider> data, const std::string& propertyName)
+        {
+            _worldToScreenMatrix = _rendererData.getPointer<math::mat4>("worldToScreenMatrix");
+        });
+    }
+
+    // Removed slot
+    _modelToWorldMatrixPropertyRemovedSlot = _targetData.propertyRemoved("modelToWorldMatrix").connect(
+        [&](data::Store&, std::shared_ptr<data::Provider>, const std::string&)
+    {
+        _modelToWorldMatrix = nullptr;
+    });
+
+    _worldToScreenMatrixPropertyRemovedSlot = _rendererData.propertyRemoved("worldToScreenMatrix").connect(
+        [&](data::Store& store, std::shared_ptr<data::Provider> data, const std::string& propertyName)
+    {
+        _worldToScreenMatrix = nullptr;
+    });
 }
 
 void
@@ -704,7 +750,12 @@ DrawCall::resolveBinding(const std::string&                                     
 math::vec3
 DrawCall::getEyeSpacePosition()
 {
-    auto eyePosition = _zSorter->getEyeSpacePosition();
+    auto modelView = math::mat4();
 
-    return eyePosition;
+    if (_modelToWorldMatrix != nullptr)
+        modelView = *_modelToWorldMatrix;
+    if (_worldToScreenMatrix != nullptr)
+        modelView = (*_worldToScreenMatrix) * modelView;
+
+    return math::vec3(modelView * math::vec4(_centerPosition, 1));
 }

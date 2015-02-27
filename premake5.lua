@@ -156,7 +156,7 @@ solution "minko"
 	if not _OPTIONS['no-example'] then
 		include 'example/assimp'
 		-- include 'example/audio'
-		-- include 'example/blending'
+		include 'example/blending'
 		-- include 'example/clone'
 		include 'example/cube'
 		-- include 'example/devil'
@@ -165,7 +165,7 @@ solution "minko"
 		include 'example/fog'
 		-- include 'example/frustum'
 		-- include 'example/hologram'
-		-- include 'example/html-overlay'
+		include 'example/html-overlay'
 		-- include 'example/http'
 		-- include 'example/jobs'
 		-- include 'example/joystick'

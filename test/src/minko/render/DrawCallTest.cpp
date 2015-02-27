@@ -394,6 +394,7 @@ TEST_F(DrawCallTest, RenderTargetBindingFromTargetData)
     targetData.addProvider(p);
 
     std::unordered_map<std::string, data::Binding> bindings = { { "target", { States::PROPERTY_TARGET, data::Binding::Source::TARGET } } };
+
     DrawCall drawCall(nullptr, std::unordered_map<std::string, std::string>{}, rootData, rendererData, targetData);
 
     drawCall.bindStates(bindings, defaultValues);

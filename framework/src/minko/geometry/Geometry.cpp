@@ -82,6 +82,8 @@ Geometry::addVertexBuffer(render::VertexBuffer::Ptr vertexBuffer)
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
+
+    computeCenterPosition();
 }
 
 void

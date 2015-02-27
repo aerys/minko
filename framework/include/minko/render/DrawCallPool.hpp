@@ -64,6 +64,8 @@ namespace minko
             std::unordered_set<DrawCall*>   _invalidDrawCalls;
             MacroToChangedSlotMap           _macroChangedSlot;
             PropertyChangedSlotMap          _propChangedSlot;
+            PropertyChangedSlotMap          _zSortUsefulPropertyChangedSlot;
+            std::vector<std::string>        _zSortUsefulPropertyNames;
 
 			PropertyRebindFuncMap 			_drawCallToPropRebindFuncs;
 
@@ -96,12 +98,18 @@ namespace minko
                                 const std::unordered_map<std::string, std::string>& variables);
 
             void
+            sortDrawCalls();
+
+            void
             update();
 
 			void
 			clear();
 
         private:
+            bool
+            compareDrawCalls(DrawCall* a, DrawCall* b);
+
             void
             watchProgramSignature(DrawCall&                     drawCall,
                                   const data::MacroBindingMap&  macroBindings,

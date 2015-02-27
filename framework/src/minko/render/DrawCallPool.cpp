@@ -1,4 +1,4 @@
-/*,
+/*
 Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
@@ -19,7 +19,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/DrawCallPool.hpp"
 
-#include "minko/render/DrawCallZSorter.hpp"
 #include "minko/data/ResolvedBinding.hpp"
 
 using namespace minko;
@@ -30,9 +29,15 @@ DrawCallPool::DrawCallPool() :
     _macroToDrawCalls(),
     _invalidDrawCalls(),
     _macroChangedSlot(),
-    _propChangedSlot()
+    _propChangedSlot(),
+    _zSortUsefulPropertyChangedSlot()
 {
-
+    _zSortUsefulPropertyNames = {
+        "modelToWorldMatrix",
+        "material[${materialUuid}].priority",
+        "material[${materialUuid}].zSorted",
+        "geometry[${geometryUuid}].position"
+    };
 }
 
 DrawCallPool::DrawCallIteratorPair
@@ -163,6 +168,7 @@ void
 DrawCallPool::removeMacroCallback(const MacroBindingKey& key)
 {
     _macroChangedSlot[key].second--;
+
     if (_macroChangedSlot[key].second == 0)
         _macroChangedSlot.erase(key);
 }
@@ -311,7 +317,8 @@ DrawCallPool::uniformBindingPropertyAddedHandler(DrawCall&                      
     if (resolvedBinding != nullptr)
     {
         auto& propertyName = resolvedBinding->propertyName;
-        auto& signal = resolvedBinding->store.hasProperty(propertyName)
+        auto propertyExist = resolvedBinding->store.hasProperty(propertyName);
+        auto& signal = propertyExist
             ? resolvedBinding->store.propertyRemoved(propertyName)
             : resolvedBinding->store.propertyAdded(propertyName);
 
@@ -328,6 +335,28 @@ DrawCallPool::uniformBindingPropertyAddedHandler(DrawCall&                      
                 ));
             }
         );
+
+        // If this draw call needs to be sorted
+        // => we listen to the useful properties
+        if (propertyExist && drawCall.zSorted())
+        {
+            auto propertyRelatedToZSort = false;
+            for (auto i = 0; i < _zSortUsefulPropertyNames.size(); i++)
+            {
+                if (data::Store::getActualPropertyName(drawCall.variables(), _zSortUsefulPropertyNames[i]) == propertyName)
+                    propertyRelatedToZSort = true;
+            }
+
+            if (propertyRelatedToZSort)
+            {
+                // Bind the signal to request a Z-sorting if one of these properties changed
+                _zSortUsefulPropertyChangedSlot[{&resolvedBinding->binding, &drawCall}] = resolvedBinding->store.propertyChanged().connect(
+                    [&](data::Store&, data::Provider::Ptr, const std::string& propertyName)
+                {
+                    sortDrawCalls();
+                });
+            }
+        }
 
         delete resolvedBinding;
     }
@@ -409,8 +438,11 @@ DrawCallPool::update()
     _invalidDrawCalls.clear();
 
     for (auto drawCallPtrAndFuncList : _drawCallToPropRebindFuncs)
+    {
         for (auto& func : drawCallPtrAndFuncList.second)
             func();
+    }
+
     _drawCallToPropRebindFuncs.clear();
 }
 
@@ -428,6 +460,45 @@ DrawCallPool::invalidateDrawCalls(const DrawCallIteratorPair&                   
         drawCall.variables().clear();
         drawCall.variables().insert(variables.begin(), variables.end());
     }
+}
+
+void
+DrawCallPool::sortDrawCalls()
+{
+    _drawCalls.sort(
+        std::bind(
+            &DrawCallPool::compareDrawCalls,
+            this,
+            std::placeholders::_1,
+            std::placeholders::_2
+        )
+    );
+}
+
+bool
+DrawCallPool::compareDrawCalls(DrawCall* a, DrawCall* b)
+{
+    const float aPriority = a->priority();
+    const float bPriority = b->priority();
+    const bool samePriority = fabsf(aPriority - bPriority) < 1e-3f;
+
+    if (samePriority)
+    {
+        if (a->target().id == b->target().id)
+        {
+            if (a->zSorted() && b->zSorted())
+            {
+                auto aPosition = a->getEyeSpacePosition();
+                auto bPosition = b->getEyeSpacePosition();
+
+                return aPosition.z > bPosition.z;
+            }
+        }
+
+        return a->target().id < b->target().id;
+    }
+
+    return aPriority > bPriority;
 }
 
 void
@@ -450,12 +521,13 @@ DrawCallPool::bindDrawCall(DrawCall& drawCall, Pass::Ptr pass, Program::Ptr prog
     for (const auto& input : program->inputs().attributes())
         drawCall.bindAttribute(input, pass->attributeBindings().bindings, pass->attributeBindings().defaultValues);
 
+    // bind states
+     stateBindingPropertyAddedHandler(drawCall, pass->stateBindings());
+
     // bind uniforms
     for (const auto& input : program->inputs().uniforms())
         uniformBindingPropertyAddedHandler(drawCall, input, pass->uniformBindings(), forceRebind);
 
-    // bind states
-     stateBindingPropertyAddedHandler(drawCall, pass->stateBindings());
 
     // bind index buffer
     if (!pass->isPostProcessing())
@@ -467,8 +539,10 @@ DrawCallPool::unbindDrawCall(DrawCall& drawCall)
 {
     std::list<PropertyChangedSlotMap::key_type> toRemove;
     for (auto& bindingDrawCallPairAndSlot : _propChangedSlot)
+    {
         if (bindingDrawCallPairAndSlot.first.second == &drawCall)
             toRemove.push_front(bindingDrawCallPairAndSlot.first);
+    }
 
     for (const auto& key : toRemove)
         _propChangedSlot.erase(key);
