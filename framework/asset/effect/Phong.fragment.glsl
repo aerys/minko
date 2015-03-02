@@ -258,7 +258,7 @@ void main(void)
 
 	#ifdef DIFFUSE_MAP
 		#ifdef DIFFUSE_MAP_LOD
-			diffuse = texturelod_texture2D(uDiffuseMap, vVertexUV, uDiffuseMapSize, 0.0, uDiffuseMapMaxAvailableLod, uDiffuseColor);
+			diffuse = texturelod_texture2D(uDiffuseMap, vVertexUV, uDiffuseMapSize, 0.0, uDiffuseMapMaxAvailableLod, diffuse);
 		#else
 			diffuse = texture2D(uDiffuseMap, vVertexUV);
 		#endif
