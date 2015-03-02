@@ -106,6 +106,10 @@ namespace minko
             static
             bool
             hasSeparateAlphaChannel(TextureFormat format);
+
+            static
+            std::list<TextureFormat>
+            textureFormats();
         };
     }
 }

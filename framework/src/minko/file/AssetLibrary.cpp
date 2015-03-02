@@ -97,11 +97,11 @@ AssetLibrary::texture(const std::string& name, render::Texture::Ptr texture)
 }
 
 std::shared_ptr<render::AbstractTexture>
-AssetLibrary::getTextureByUuid(const std::string& uuid)
+AssetLibrary::getTextureByUuid(const std::string& uuid, bool failIfNotReady)
 {
     auto it = std::find_if(_textures.begin(), _textures.end(), [&](const std::pair<std::string, TexturePtr>& t)
     {
-        return t.second->isReady() && t.second->uuid() == uuid;
+        return t.second->uuid() == uuid && (!failIfNotReady || t.second->isReady());
     });
 
     if (it == _textures.end())

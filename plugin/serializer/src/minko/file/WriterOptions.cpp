@@ -26,9 +26,15 @@ using namespace minko::math;
 using namespace minko::render;
 using namespace minko::serialize;
 
+const unsigned int WriterOptions::EmbedMode::None       = 0u;
+const unsigned int WriterOptions::EmbedMode::Geometry   = 1u << 0;
+const unsigned int WriterOptions::EmbedMode::Material   = 1u << 1;
+const unsigned int WriterOptions::EmbedMode::Texture    = 1u << 2;
+const unsigned int WriterOptions::EmbedMode::All        = Geometry | Material | Texture;
+
 WriterOptions::WriterOptions() :
-    _embedAll(false),
     _addBoundingBoxes(false),
+    _embedMode(EmbedMode::All),
     _outputAssetUriFunction([=](const std::string& str) -> std::string { return str; }),
     _imageFormat(ImageFormat::PNG),
     _textureFormats(),
@@ -37,6 +43,7 @@ WriterOptions::WriterOptions() :
     _upscaleTextureWhenProcessedForMipmapping(true),
     _textureMaxResolution(math::ivec2(2048, 2048)),
     _mipFilter(MipFilter::LINEAR),
-    _optimizeForNormalMapping(false)
+    _optimizeForNormalMapping(false),
+    _nullAssetUuids()
 {
 }

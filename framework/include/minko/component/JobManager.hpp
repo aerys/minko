@@ -39,10 +39,20 @@ namespace minko
 
 				friend JobManager;
 
+			private:
+				struct PriorityComparator
+				{
+					inline
+					bool
+					operator()(const Job::Ptr& left, const Job::Ptr& right) const
+					{
+						return left->priority() < right->priority();
+					}
+				};
+
             protected:
 				std::shared_ptr<JobManager>		_jobManager;
 				bool							_running;
-				bool							_oneStepPerFrame;
 				
                 Signal<float>::Ptr              _priorityChanged;
 
@@ -82,20 +92,6 @@ namespace minko
 				}
 
 				inline
-				bool
-				oneStepPerFrame()
-				{
-					return _oneStepPerFrame;
-				}
-
-				inline
-				void
-				oneStepPerFrame(bool value)
-				{
-					_oneStepPerFrame = value;
-				}
-
-				inline
 				std::shared_ptr<JobManager>
 				jobManager()
 				{
@@ -120,12 +116,14 @@ namespace minko
 			typedef std::shared_ptr<scene::Node> NodePtr;
 		
 		private:
-			unsigned int			_loadingFramerate;
-			float					_frameTime;
-            std::list<Job::Ptr>                                             _jobs;
-            std::unordered_map<Job::Ptr, Signal<float>::Slot>               _jobPriorityChangedSlots;
-            bool 					_jobPriorityChanged;
-			clock_t					_frameStartTime;
+            static const unsigned int                           _defaultMinimumNumStepsPerFrame;
+
+			unsigned int			                            _loadingFramerate;
+			float					                            _frameTime;
+            std::list<Job::Ptr>                			        _jobs;
+            std::unordered_map<Job::Ptr, Signal<float>::Slot>   _jobPriorityChangedSlots;
+            bool 					                            _sortingNeeded;
+			clock_t					                            _frameStartTime;
 
 		public:
 			static
@@ -149,6 +147,9 @@ namespace minko
 
             void
             insertJob(Job::Ptr job);
+
+            bool
+            hasPendingJob() const;
 		};
 	}
 }

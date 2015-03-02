@@ -25,14 +25,15 @@ namespace minko
 {
     namespace extension
     {
-        class AbstractExtension
+        class AbstractExtension :
+            public std::enable_shared_from_this<AbstractExtension>
         {
         public:
             typedef std::shared_ptr<AbstractExtension> Ptr;
 
         public:
             virtual
-            void
+            Ptr
             bind() = 0;
         };
 
@@ -40,12 +41,13 @@ namespace minko
         {
         public:
             template <typename T>
-            typename std::enable_if<std::is_base_of<extension::AbstractExtension, T>::value, void>::type
+            typename std::enable_if<std::is_base_of<AbstractExtension, T>::value, std::shared_ptr<T>>::type
             static
-            activeExtension()
+            activateExtension()
             {
-                std::shared_ptr<T> extension = T::initialize();
-                extension->bind();
+                auto extension = T::create();
+
+                return std::static_pointer_cast<T>(extension->bind());
             }
         };
     }

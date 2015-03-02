@@ -18,6 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/file/MaterialWriter.hpp"
+#include "minko/log/Logger.hpp"
 #include "minko/render/Blending.hpp"
 #include "minko/render/TriangleCulling.hpp"
 
@@ -44,7 +45,8 @@ std::string
 MaterialWriter::embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 					  std::shared_ptr<Options>			options,
 					  Dependency::Ptr					dependency,
-                      std::shared_ptr<WriterOptions>    writerOptions)
+                      std::shared_ptr<WriterOptions>    writerOptions,
+                      std::vector<unsigned char>&       embeddedHeaderData)
 {
 	material::Material::Ptr				material = std::dynamic_pointer_cast<material::Material>(data());
 	std::vector<ComplexPropertyTuple>	serializedComplexProperties;
@@ -84,8 +86,10 @@ MaterialWriter::embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 			continue;
 		else if (serializeMaterialValue<TextureSampler>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
 			continue;
-		else
-			std::cerr << propertyName << " can't be serialized : missing technique" << std::endl << std::endl;
+        else
+        {
+            LOG_DEBUG(propertyName << " can't be serialized : missing technique");
+        }
 	}
 
 	msgpack::type::tuple<std::vector<ComplexPropertyTuple>, std::vector<BasicPropertyTuple>> res(

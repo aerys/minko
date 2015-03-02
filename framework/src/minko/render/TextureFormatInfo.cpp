@@ -114,3 +114,14 @@ TextureFormatInfo::hasSeparateAlphaChannel(TextureFormat format)
 {
     return _formats.at(format)._hasSeparateAlphaChannel;
 }
+
+std::list<TextureFormat>
+TextureFormatInfo::textureFormats()
+{
+    auto formats = std::list<TextureFormat>();
+
+    for (const auto& textureFormat : _formats)
+        formats.push_back(textureFormat.first);
+
+    return formats;
+}

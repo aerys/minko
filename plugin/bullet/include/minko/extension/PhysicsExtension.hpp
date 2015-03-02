@@ -34,13 +34,13 @@ namespace minko
             typedef std::shared_ptr<PhysicsExtension> Ptr;
 
         public:
-            void
+            AbstractExtension::Ptr
             bind();
 
             static
             inline
             Ptr
-            initialize()
+            create()
             {
                 Ptr extention(new PhysicsExtension());
 

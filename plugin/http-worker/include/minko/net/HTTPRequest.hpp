@@ -30,7 +30,9 @@ namespace minko
         public:
             HTTPRequest(const std::string& url,
                         const std::string& username = "",
-                        const std::string& password = "");
+                        const std::string& password = "",
+                        const std::unordered_map<std::string, std::string>& additionalHeaders =
+                            std::unordered_map<std::string, std::string>());
 
             void
                 run();
@@ -71,7 +73,9 @@ namespace minko
             bool
             fileExists(const std::string& filename,
                        const std::string& username = "",
-                       const std::string& password = "");
+                       const std::string& password = "",
+                       const std::unordered_map<std::string, std::string>& additionalHeaders =
+                           std::unordered_map<std::string, std::string>());
 
         private:
             std::string _url;
@@ -82,6 +86,7 @@ namespace minko
             
             std::string _username;
             std::string _password;
+            std::unordered_map<std::string, std::string> _additionalHeaders;
         };
     }
 }

@@ -69,10 +69,11 @@ namespace minko
             }
 
             std::string
-            embed(AssetLibraryPtr   assetLibrary,
-                  OptionsPtr        options,
-                  DependencyPtr     dependency,
-                  WriterOptionsPtr  writerOptions);
+            embed(AssetLibraryPtr               assetLibrary,
+                  OptionsPtr                    options,
+                  DependencyPtr                 dependency,
+                  WriterOptionsPtr              writerOptions,
+                  std::vector<unsigned char>&   embeddedHeaderData);
 
         protected:
             TextureWriter();
@@ -97,6 +98,13 @@ namespace minko
                                     AbstractTexturePtr      abstractTexture,
                                     WriterOptionsPtr        writerOptions,
                                     std::stringstream&      blob);
+
+            static
+            bool
+            writeCRNCompressedTexture(render::TextureFormat   textureFormat,
+                                      AbstractTexturePtr      abstractTexture,
+                                      WriterOptionsPtr        writerOptions,
+                                      std::stringstream&      blob);
         };
     }
 }

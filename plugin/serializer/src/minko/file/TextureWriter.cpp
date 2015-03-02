@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Types.hpp"
 #include "minko/file/TextureWriter.hpp"
 #include "minko/file/AbstractWriter.hpp"
+#include "minko/file/CRNTranscoder.hpp"
 #include "minko/file/Dependency.hpp"
 #include "minko/file/PNGWriter.hpp"
 #include "minko/file/PVRTranscoder.hpp"
@@ -40,10 +41,10 @@ std::unordered_map<TextureFormat, TextureWriter::FormatWriterFunction> TextureWr
     { TextureFormat::RGB, std::bind(writeRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
     { TextureFormat::RGBA, std::bind(writeRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
 
-    { TextureFormat::RGB_DXT1, std::bind(writePvrCompressedTexture, TextureFormat::RGB_DXT1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
+    { TextureFormat::RGB_DXT1, std::bind(writeCRNCompressedTexture, TextureFormat::RGB_DXT1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
     { TextureFormat::RGBA_DXT1, std::bind(writeQCompressedTexture, TextureFormat::RGBA_DXT1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
-    { TextureFormat::RGBA_DXT3, std::bind(writePvrCompressedTexture, TextureFormat::RGBA_DXT3, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
-    { TextureFormat::RGBA_DXT5, std::bind(writePvrCompressedTexture, TextureFormat::RGBA_DXT5, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
+    { TextureFormat::RGBA_DXT3, std::bind(writeCRNCompressedTexture, TextureFormat::RGBA_DXT3, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
+    { TextureFormat::RGBA_DXT5, std::bind(writeCRNCompressedTexture, TextureFormat::RGBA_DXT5, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
 
     { TextureFormat::RGB_ETC1, std::bind(writePvrCompressedTexture, TextureFormat::RGB_ETC1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
 
@@ -67,10 +68,11 @@ TextureWriter::TextureWriter() :
 }
 
 std::string
-TextureWriter::embed(AssetLibraryPtr     assetLibrary,
-                     OptionsPtr          options,
-                     Dependency::Ptr     dependency,
-                     WriterOptionsPtr    writerOptions)
+TextureWriter::embed(AssetLibraryPtr               assetLibrary,
+                     OptionsPtr                    options,
+                     DependencyPtr                 dependency,
+                     WriterOptionsPtr              writerOptions,
+                     std::vector<unsigned char>&   embeddedHeaderData)
 {
     auto texture = _data;
 
@@ -186,11 +188,14 @@ TextureWriter::embed(AssetLibraryPtr     assetLibrary,
 
     msgpack::pack(headerStream, headerData);
 
-    _headerSize = headerStream.str().size();
+    const auto serializedHeaderData = headerStream.str();
+    unsigned short headerSize = serializedHeaderData.size();
+
+    _headerSize = headerSize;
 
     std::stringstream result;
 
-    result << headerStream.str() << blobStream.str();
+    result << headerSize << headerStream.str() << blobStream.str();
 
     return result.str();
 }
@@ -220,7 +225,10 @@ TextureWriter::writeRGBATexture(AbstractTexture::Ptr abstractTexture,
         return false;
     }
 
-    msgpack::type::tuple<int, std::vector<unsigned char>> serializedTexture(static_cast<int>(imageFormat), textureData);
+    msgpack::type::tuple<int, std::string> serializedTexture(
+        static_cast<int>(imageFormat),
+        std::string(textureData.begin(), textureData.end())
+    );
 
     msgpack::pack(blob, serializedTexture);
 
@@ -252,6 +260,22 @@ TextureWriter::writeQCompressedTexture(TextureFormat        textureFormat,
     auto out = std::vector<unsigned char>();
 
     if (!QTranscoder::transcode(abstractTexture, writerOptions, textureFormat, out))
+        return false;
+
+    blob.write(reinterpret_cast<const char*>(out.data()), out.size());
+
+    return true;
+}
+
+bool
+TextureWriter::writeCRNCompressedTexture(TextureFormat        textureFormat,
+                                         AbstractTexture::Ptr abstractTexture,
+                                         WriterOptions::Ptr   writerOptions,
+                                         std::stringstream&   blob)
+{
+    auto out = std::vector<unsigned char>();
+
+    if (!CRNTranscoder::transcode(abstractTexture, writerOptions, textureFormat, out))
         return false;
 
     blob.write(reinterpret_cast<const char*>(out.data()), out.size());

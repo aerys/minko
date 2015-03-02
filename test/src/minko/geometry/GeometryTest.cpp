@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::geometry;
+using namespace minko::render;
 
 TEST_F(GeometryTest, Create)
 {
@@ -129,4 +130,250 @@ TEST_F(GeometryTest, VertexBufferRemovedFromData)
 	g->removeVertexBuffer(vb);
 
 	ASSERT_FALSE(g->data()->hasProperty("position"));
+}
+
+TEST_F(GeometryTest, ComputeNotExistingNormals)
+{
+    auto context = MinkoTests::canvas()->context();
+
+    std::vector<float> expectedNormalData = {
+        // top
+        0.f, 1.f, 0.f,
+        0.f, 1.f, 0.f,
+        0.f, 1.f, 0.f,
+        0.f, 1.f, 0.f,
+        0.f, 1.f, 0.f,
+        0.f, 1.f, 0.f,
+        // bottom
+        0.f, -1.f, 0.f,
+        0.f, -1.f, 0.f,
+        0.f, -1.f, 0.f,
+        0.f, -1.f, 0.f,
+        0.f, -1.f, 0.f,
+        0.f, -1.f, 0.f,
+        // front
+        0.f, 0.f, -1.f,
+        0.f, 0.f, -1.f,
+        0.f, 0.f, -1.f,
+        0.f, 0.f, -1.f,
+        0.f, 0.f, -1.f,
+        0.f, 0.f, -1.f,
+        // back
+        0.f, 0.f, 1.f,
+        0.f, 0.f, 1.f,
+        0.f, 0.f, 1.f,
+        0.f, 0.f, 1.f,
+        0.f, 0.f, 1.f,
+        0.f, 0.f, 1.f,
+        // left
+        -1.f, 0.f, 0.f,
+        -1.f, 0.f, 0.f,
+        -1.f, 0.f, 0.f,
+        -1.f, 0.f, 0.f,
+        -1.f, 0.f, 0.f,
+        -1.f, 0.f, 0.f,
+        // right
+        1.f, 0.f, 0.f,
+        1.f, 0.f, 0.f,
+        1.f, 0.f, 0.f,
+        1.f, 0.f, 0.f,
+        1.f, 0.f, 0.f,
+        1.f, 0.f, 0.f
+    };
+
+    std::vector<float> geometryData =
+    {
+        // top
+        0.5, 0.5, -0.5, 1.f, 0.f,
+        -0.5, 0.5, 0.5, 0.f, 1.f,
+        0.5, 0.5, 0.5, 1.f, 1.f,
+        0.5, 0.5, -0.5, 1.f, 0.f,
+        -0.5, 0.5, -0.5, 0.f, 0.f,
+        -0.5, 0.5, 0.5, 0.f, 1.f,
+        // bottom
+        -0.5, -0.5, 0.5,0.f, 0.f,
+        0.5, -0.5, -0.5, 1., 1.,
+        0.5, -0.5, 0.5, 1.f, 0.,
+        -0.5, -0.5, -0.5, 0.f, 1.f,
+        0.5, -0.5, -0.5, 1.f, 1.f,
+        -0.5, -0.5, 0.5, 0.f, 0.f,
+        // front
+        0.5, -0.5, -0.5, 0.f, 1.f,
+        -0.5, 0.5, -0.5, 1.f, 0.f,
+        0.5, 0.5, -0.5, 0.f, 0.f,
+        -0.5, 0.5, -0.5, 1.f, 0.f,
+        0.5, -0.5, -0.5, 0.f, 1.f,
+        -0.5, -0.5, -0.5, 1.f, 1.f,
+        // back
+        -0.5, 0.5, 0.5, 0.f, 0.f,
+        -0.5, -0.5, 0.5, 0.f, 1.f,
+        0.5, 0.5, 0.5, 1.f, 0.f,
+        -0.5, -0.5, 0.5, 0.f, 1.f,
+        0.5, -0.5, 0.5, 1.f, 1.f,
+        0.5, 0.5, 0.5, 1.f, 0.f,
+        // left
+        -0.5, -0.5, 0.5, 1.f, 1.f,
+        -0.5, 0.5, -0.5, 0.f, 0.f,
+        -0.5, -0.5, -0.5, 0.f, 1.f,
+        -0.5, 0.5, -0.5, 0.f, 0.f,
+        -0.5, -0.5, 0.5, 1.f, 1.f,
+        -0.5, 0.5, 0.5, 1.f, 0.f,
+        // right
+        0.5, -0.5, -0.5, 1.f, 1.f,
+        0.5, 0.5, -0.5, 1.f, 0.f,
+        0.5, 0.5, 0.5, 0.f, 0.f,
+        0.5, 0.5, 0.5, 0.f, 0.f,
+        0.5, -0.5, 0.5, 0.f, 1.f,
+        0.5, -0.5, -0.5, 1.f, 1.f
+    };
+
+    unsigned short i[] = {
+        0, 1, 2, 3, 4, 5,
+        6, 7, 8, 9, 10, 11,
+        12, 13, 14, 15, 16, 17,
+        18, 19, 20, 21, 22, 23,
+        24, 25, 26, 27, 28, 29,
+        30, 31, 32, 33, 34, 35
+    };
+
+    auto geometry = Geometry::create();
+
+    auto vertexBuffer = VertexBuffer::create(context, std::begin(geometryData), std::end(geometryData));
+
+    vertexBuffer->addAttribute("position", 3, 0);
+    vertexBuffer->addAttribute("uv", 2, 3);
+
+    geometry->addVertexBuffer(vertexBuffer);
+
+    geometry->indices(IndexBuffer::create(context, std::begin(i), std::end(i)));
+
+    geometry->computeNormals();
+
+    const auto& normalData = geometry->vertexBuffer("normal")->data();
+
+    ASSERT_EQ(normalData.size(), expectedNormalData.size());
+    ASSERT_TRUE(std::equal(normalData.begin(), normalData.end(), expectedNormalData.begin()));
+}
+
+TEST_F(GeometryTest, ComputeExistingNormals)
+{
+    auto context = MinkoTests::canvas()->context();
+
+    std::vector<float> geometryData = {
+        // top
+        0.5, 0.5, -0.5,     0.f, -1.f, 0.f,     1.f, 0.f,
+        -0.5, 0.5, 0.5,     0.f, 1.f, 0.f,      0.f, 1.f,
+        0.5, 0.5, 0.5,      0.f, 1.f, 0.f,      1.f, 1.f,
+        0.5, 0.5, -0.5,     0.f, 1.f, 0.f,      1.f, 0.f,
+        -0.5, 0.5, -0.5,    0.f, 1.f, 0.f,      0.f, 0.f,
+        -0.5, 0.5, 0.5,     0.f, 1.f, 0.f,      0.f, 1.f,
+        // bottom
+        -0.5, -0.5, 0.5,    0.f, -1.f, 0.f,     0.f, 0.f,
+        0.5, -0.5, -0.5,    0.f, -1.f, 0.f,     1., 1.,
+        0.5, -0.5, 0.5,     0.f, -1.f, 0.f,     1.f, 0.,
+        -0.5, -0.5, -0.5,   0.f, -1.f, 0.f,     0.f, 1.f,
+        0.5, -0.5, -0.5,    0.f, -1.f, 0.f,     1.f, 1.f,
+        -0.5, -0.5, 0.5,    0.f, -1.f, 0.f,     0.f, 0.f,
+        // front
+        0.5, -0.5, -0.5,    0.f, 0.f, -1.f,     0.f, 1.f,
+        -0.5, 0.5, -0.5,    0.f, 0.f, -1.f,     1.f, 0.f,
+        0.5, 0.5, -0.5,     0.f, 0.f, -1.f,     0.f, 0.f,
+        -0.5, 0.5, -0.5,    0.f, 0.f, -1.f,     1.f, 0.f,
+        0.5, -0.5, -0.5,    0.f, 0.f, -1.f,     0.f, 1.f,
+        -0.5, -0.5, -0.5,   0.f, 0.f, -1.f,     1.f, 1.f,
+        // back
+        -0.5, 0.5, 0.5,     0.f, 0.f, 1.f,      0.f, 0.f,
+        -0.5, -0.5, 0.5,    0.f, 0.f, 1.f,      0.f, 1.f,
+        0.5, 0.5, 0.5,      0.f, 0.f, 1.f,      1.f, 0.f,
+        -0.5, -0.5, 0.5,    0.f, 0.f, 1.f,      0.f, 1.f,
+        0.5, -0.5, 0.5,     0.f, 0.f, 1.f,      1.f, 1.f,
+        0.5, 0.5, 0.5,      0.f, 0.f, 1.f,      1.f, 0.f,
+        // left
+        -0.5, -0.5, 0.5,    -1.f, 0.f, 0.f,     1.f, 1.f,
+        -0.5, 0.5, -0.5,    -1.f, 0.f, 0.f,     0.f, 0.f,
+        -0.5, -0.5, -0.5,   -1.f, 0.f, 0.f,     0.f, 1.f,
+        -0.5, 0.5, -0.5,    -1.f, 0.f, 0.f,     0.f, 0.f,
+        -0.5, -0.5, 0.5,    -1.f, 0.f, 0.f,     1.f, 1.f,
+        -0.5, 0.5, 0.5,     -1.f, 0.f, 0.f,     1.f, 0.f,
+        // right
+        0.5, -0.5, -0.5,    1.f, 0.f, 0.f,      1.f, 1.f,
+        0.5, 0.5, -0.5,     1.f, 0.f, 0.f,      1.f, 0.f,
+        0.5, 0.5, 0.5,      1.f, 0.f, 0.f,      0.f, 0.f,
+        0.5, 0.5, 0.5,      1.f, 0.f, 0.f,      0.f, 0.f,
+        0.5, -0.5, 0.5,     1.f, 0.f, 0.f,      0.f, 1.f,
+        0.5, -0.5, -0.5,    1.f, 0.f, 0.f,      1.f, 1.f
+    };
+
+    std::vector<float> expectedNormalData = {
+        // top
+        0.5, 0.5, -0.5,     0.f, 1.f, 0.f,      1.f, 0.f,
+        -0.5, 0.5, 0.5,     0.f, 1.f, 0.f,      0.f, 1.f,
+        0.5, 0.5, 0.5,      0.f, 1.f, 0.f,      1.f, 1.f,
+        0.5, 0.5, -0.5,     0.f, 1.f, 0.f,      1.f, 0.f,
+        -0.5, 0.5, -0.5,    0.f, 1.f, 0.f,      0.f, 0.f,
+        -0.5, 0.5, 0.5,     0.f, 1.f, 0.f,      0.f, 1.f,
+        // bottom
+        -0.5, -0.5, 0.5,    0.f, -1.f, 0.f,     0.f, 0.f,
+        0.5, -0.5, -0.5,    0.f, -1.f, 0.f,     1., 1.,
+        0.5, -0.5, 0.5,     0.f, -1.f, 0.f,     1.f, 0.,
+        -0.5, -0.5, -0.5,   0.f, -1.f, 0.f,     0.f, 1.f,
+        0.5, -0.5, -0.5,    0.f, -1.f, 0.f,     1.f, 1.f,
+        -0.5, -0.5, 0.5,    0.f, -1.f, 0.f,     0.f, 0.f,
+        // front
+        0.5, -0.5, -0.5,    0.f, 0.f, -1.f,     0.f, 1.f,
+        -0.5, 0.5, -0.5,    0.f, 0.f, -1.f,     1.f, 0.f,
+        0.5, 0.5, -0.5,     0.f, 0.f, -1.f,     0.f, 0.f,
+        -0.5, 0.5, -0.5,    0.f, 0.f, -1.f,     1.f, 0.f,
+        0.5, -0.5, -0.5,    0.f, 0.f, -1.f,     0.f, 1.f,
+        -0.5, -0.5, -0.5,   0.f, 0.f, -1.f,     1.f, 1.f,
+        // back
+        -0.5, 0.5, 0.5,     0.f, 0.f, 1.f,      0.f, 0.f,
+        -0.5, -0.5, 0.5,    0.f, 0.f, 1.f,      0.f, 1.f,
+        0.5, 0.5, 0.5,      0.f, 0.f, 1.f,      1.f, 0.f,
+        -0.5, -0.5, 0.5,    0.f, 0.f, 1.f,      0.f, 1.f,
+        0.5, -0.5, 0.5,     0.f, 0.f, 1.f,      1.f, 1.f,
+        0.5, 0.5, 0.5,      0.f, 0.f, 1.f,      1.f, 0.f,
+        // left
+        -0.5, -0.5, 0.5,    -1.f, 0.f, 0.f,     1.f, 1.f,
+        -0.5, 0.5, -0.5,    -1.f, 0.f, 0.f,     0.f, 0.f,
+        -0.5, -0.5, -0.5,   -1.f, 0.f, 0.f,     0.f, 1.f,
+        -0.5, 0.5, -0.5,    -1.f, 0.f, 0.f,     0.f, 0.f,
+        -0.5, -0.5, 0.5,    -1.f, 0.f, 0.f,     1.f, 1.f,
+        -0.5, 0.5, 0.5,     -1.f, 0.f, 0.f,     1.f, 0.f,
+        // right
+        0.5, -0.5, -0.5,    1.f, 0.f, 0.f,      1.f, 1.f,
+        0.5, 0.5, -0.5,     1.f, 0.f, 0.f,      1.f, 0.f,
+        0.5, 0.5, 0.5,      1.f, 0.f, 0.f,      0.f, 0.f,
+        0.5, 0.5, 0.5,      1.f, 0.f, 0.f,      0.f, 0.f,
+        0.5, -0.5, 0.5,     1.f, 0.f, 0.f,      0.f, 1.f,
+        0.5, -0.5, -0.5,    1.f, 0.f, 0.f,      1.f, 1.f
+    };
+
+    unsigned short i[] = {
+        0, 1, 2, 3, 4, 5,
+        6, 7, 8, 9, 10, 11,
+        12, 13, 14, 15, 16, 17,
+        18, 19, 20, 21, 22, 23,
+        24, 25, 26, 27, 28, 29,
+        30, 31, 32, 33, 34, 35
+    };
+
+    auto geometry = Geometry::create();
+
+    auto vertexBuffer = VertexBuffer::create(context, std::begin(geometryData), std::end(geometryData));
+
+    vertexBuffer->addAttribute("position", 3, 0);
+    vertexBuffer->addAttribute("normal", 3, 3);
+    vertexBuffer->addAttribute("uv", 2, 6);
+
+    geometry->addVertexBuffer(vertexBuffer);
+
+    geometry->indices(IndexBuffer::create(context, std::begin(i), std::end(i)));
+
+    geometry->computeNormals();
+
+    const auto& normalData = geometry->vertexBuffer("normal")->data();
+
+    ASSERT_EQ(normalData.size(), expectedNormalData.size());
+    ASSERT_TRUE(std::equal(normalData.begin(), normalData.end(), expectedNormalData.begin()));
 }
