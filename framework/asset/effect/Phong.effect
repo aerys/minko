@@ -15,7 +15,7 @@
 					"aBoneIdsA"		: "geometry[${geometryUuid}].boneIdsA",
 					"aBoneIdsB"		: "geometry[${geometryUuid}].boneIdsB",
 					"aBoneWeightsA"	: "geometry[${geometryUuid}].boneWeightsA",
-					"aBoneWeightsB"	: "geometry[${geometryUuid}].boneWeightsB"
+					"aBoneWeightsB"	: "geometry[${geometryUuid}].boneWeightsB",
 					"aColor"		: "geometry[${geometryUuid}].color"
 				},
 
