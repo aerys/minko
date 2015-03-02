@@ -79,6 +79,10 @@ namespace minko
             TextureWriter();
 
         private:
+            void
+            ensureTextureSizeIsValid(std::shared_ptr<render::AbstractTexture>   texture,
+                                     std::shared_ptr<WriterOptions>             writerOptions);
+
             static
             bool
             writeRGBATexture(AbstractTexturePtr abstractTexture,
