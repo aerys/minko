@@ -37,7 +37,7 @@ varying 	vec4 	vVertexScreenPosition;
 varying 	vec2 	vVertexUV;
 varying 	vec3 	vVertexNormal;
 varying 	vec3 	vVertexTangent;
-varying		vec3	vertexColor;
+varying		vec4	vertexColor;
 
 void main(void)
 {
