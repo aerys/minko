@@ -130,6 +130,34 @@ HTTPProtocol::load()
 
     loader->progress()->execute(loader, 0.0);
 
+    auto username = std::string();
+    auto password = std::string();
+    auto additionalHeaders = std::unordered_map<std::string, std::string>();
+
+    auto httpOptions = std::dynamic_pointer_cast<HTTPOptions>(_options);
+
+    if (httpOptions != nullptr)
+    {
+        username = httpOptions->username();
+        password = httpOptions->password();
+
+        additionalHeaders = httpOptions->additionalHeaders();
+    }
+
+    auto seekingOffset = _options->seekingOffset();
+    auto seekedLength = _options->seekedLength();
+
+    if (seekingOffset >= 0 && seekedLength > 0)
+    {
+        auto rangeMin = std::to_string(seekingOffset);
+        auto rangeMax = std::to_string(seekingOffset + seekedLength - 1);
+
+        additionalHeaders.insert(std::make_pair(
+            "Range",
+            "bytes=" + rangeMin + "-" + rangeMax
+        ));
+    }
+
 #if defined(EMSCRIPTEN)
     if (options()->loadAsynchronously())
     {
@@ -137,17 +165,25 @@ HTTPProtocol::load()
         //emscripten_async_wget_data(resolvedFilename().c_str(), loader.get(), &completeHandler, &errorHandler);
 
         //EMSCRIPTEN >= 1.13.1
-        auto additionalHeader = std::string();
+        auto additionalHeadersJsonString = std::string();
 
-        auto seekingOffset = _options->seekingOffset();
-        auto seekedLength = _options->seekedLength();
-
-        if (seekingOffset >= 0 && seekedLength > 0)
+        if (!additionalHeaders.empty())
         {
-            auto rangeMin = std::to_string(seekingOffset);
-            auto rangeMax = std::to_string(seekingOffset + seekedLength - 1);
+            auto additionalHeaderCount = 0u;
 
-            additionalHeader = std::string("{ \"Range\" : \"bytes=") + rangeMin + "-" + rangeMax + "\" }";
+            additionalHeadersJsonString += "{ ";
+
+            for (const auto& additionalHeader : additionalHeaders)
+            {
+                additionalHeadersJsonString += std::string("\"" + additionalHeader.first + "\" : \"" + additionalHeader.second + "\"");
+
+                if (additionalHeaderCount < additionalHeaders.size() - 1)
+                    additionalHeadersJsonString += ", ";
+
+                ++additionalHeaderCount;
+            }
+
+            additionalHeadersJsonString += " }";
         }
 
         emscripten_async_wget2_data(
@@ -155,7 +191,7 @@ HTTPProtocol::load()
             "GET",
             "",
 #if defined(EMSCRIPTEN_WGET_HEADERS)
-            additionalHeader.c_str(),
+            additionalHeadersJsonString.c_str(),
 #endif
             loader.get(),
             0,
@@ -173,15 +209,9 @@ HTTPProtocol::load()
 
         eval += "xhr.overrideMimeType('text/plain; charset=x-user-defined');\n";
 
-        auto seekingOffset = _options->seekingOffset();
-        auto seekedLength = _options->seekedLength();
-
-        if (seekingOffset >= 0 && seekedLength > 0)
+        for (const auto& additionalHeader : additionalHeaders)
         {
-            auto rangeMin = std::to_string(seekingOffset);
-            auto rangeMax = std::to_string(seekingOffset + seekedLength - 1);
-
-            eval += "xhr.setRequestHeader('Range', 'bytes=" + rangeMin + "-" + rangeMax + "');\n";
+            eval += "xhr.setRequestHeader('" + additionalHeader.first + "', '" + additionalHeader.second + "');\n";
         }
 
         eval += "xhr.send(null);\n";
@@ -244,18 +274,7 @@ HTTPProtocol::load()
     }
     else
     {
-        auto username = std::string();
-        auto password = std::string();
-
-        auto httpOptions = std::dynamic_pointer_cast<HTTPOptions>(_options);
-
-        if (httpOptions != nullptr)
-        {
-            username = httpOptions->username();
-            password = httpOptions->password();
-        }
-
-        HTTPRequest request(resolvedFilename(), username, password);
+        HTTPRequest request(resolvedFilename(), username, password, &additionalHeaders);
 
         request.progress()->connect([&](float p){
             progressHandler(loader.get(), int(p * 100.f), 100);
@@ -290,6 +309,7 @@ HTTPProtocol::fileExists(const std::string& filename)
 #else
     auto username = std::string();
     auto password = std::string();
+    const std::unordered_map<std::string, std::string>* additionalHeaders = nullptr;
 
     auto httpOptions = std::dynamic_pointer_cast<HTTPOptions>(_options);
 
@@ -297,9 +317,11 @@ HTTPProtocol::fileExists(const std::string& filename)
     {
         username = httpOptions->username();
         password = httpOptions->password();
+
+        additionalHeaders = &httpOptions->additionalHeaders();
     }
 
-    return HTTPRequest::fileExists(filename, username, password);
+    return HTTPRequest::fileExists(filename, username, password, additionalHeaders);
 #endif
 }
 

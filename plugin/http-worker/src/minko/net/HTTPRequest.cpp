@@ -28,15 +28,18 @@ using namespace minko::net;
 HTTPRequest::HTTPRequest(const std::string& url,
                          const std::string& username,
                          const std::string& password,
-                         const std::unordered_map<std::string, std::string>& additionalHeaders) :
+                         const std::unordered_map<std::string, std::string>* additionalHeaders) :
     _url(url),
     _progress(Signal<float>::create()),
     _error(Signal<int>::create()),
     _complete(Signal<const std::vector<char>&>::create()),
     _username(username),
-    _password(password),
-    _additionalHeaders(additionalHeaders)
+    _password(password)
 {
+    if (additionalHeaders == nullptr)
+        _additionalHeaders = std::unordered_map<std::string, std::string>();
+    else
+        _additionalHeaders = *additionalHeaders;
 }
 
 void
@@ -74,9 +77,31 @@ HTTPRequest::run()
 
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 
+    curl_slist* headerList = nullptr;
+
+    const auto& additionalHeaders = _additionalHeaders;
+
+    if (!additionalHeaders.empty())
+    {
+        for (const auto& additionalHeader : additionalHeaders)
+        {
+            headerList = curl_slist_append(
+                headerList,
+                std::string(additionalHeader.first + ":" + additionalHeader.second).c_str()
+            );
+        }
+
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerList);
+    }
+
     CURLcode res = curl_easy_perform(curl);
 
     curl_easy_cleanup(curl);
+
+    if (headerList != nullptr)
+    {
+        curl_slist_free_all(headerList);
+    }
 
     if (res != CURLE_OK)
     {
@@ -127,7 +152,7 @@ bool
 HTTPRequest::fileExists(const std::string& filename,
                         const std::string& username,
                         const std::string& password,
-                        const std::unordered_map<std::string, std::string>& additionalHeaders)
+                        const std::unordered_map<std::string, std::string> *additionalHeaders)
 {
     auto curl = curl_easy_init();
 
@@ -157,9 +182,9 @@ HTTPRequest::fileExists(const std::string& filename,
 
     curl_slist* headerList = nullptr;
 
-    if (!additionalHeaders.empty())
+    if (additionalHeaders)
     {
-        for (const auto& additionalHeader : additionalHeaders)
+        for (const auto& additionalHeader : *additionalHeaders)
         {
             headerList = curl_slist_append(
                 headerList,
