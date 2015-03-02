@@ -28,15 +28,18 @@ using namespace minko::net;
 HTTPRequest::HTTPRequest(const std::string& url,
                          const std::string& username,
                          const std::string& password,
-                         const std::unordered_map<std::string, std::string>& additionalHeaders) :
+                         const std::unordered_map<std::string, std::string>* additionalHeaders) :
     _url(url),
     _progress(Signal<float>::create()),
     _error(Signal<int>::create()),
     _complete(Signal<const std::vector<char>&>::create()),
     _username(username),
-    _password(password),
-    _additionalHeaders(additionalHeaders)
+    _password(password)
 {
+    if (additionalHeaders == nullptr)
+        _additionalHeaders = std::unordered_map<std::string, std::string>();
+    else
+        _additionalHeaders = *additionalHeaders;
 }
 
 void
@@ -127,7 +130,7 @@ bool
 HTTPRequest::fileExists(const std::string& filename,
                         const std::string& username,
                         const std::string& password,
-                        const std::unordered_map<std::string, std::string>& additionalHeaders)
+                        const std::unordered_map<std::string, std::string> *additionalHeaders)
 {
     auto curl = curl_easy_init();
 
@@ -157,9 +160,9 @@ HTTPRequest::fileExists(const std::string& filename,
 
     curl_slist* headerList = nullptr;
 
-    if (!additionalHeaders.empty())
+    if (additionalHeaders)
     {
-        for (const auto& additionalHeader : additionalHeaders)
+        for (const auto& additionalHeader : *additionalHeaders)
         {
             headerList = curl_slist_append(
                 headerList,
