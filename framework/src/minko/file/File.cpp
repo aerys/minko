@@ -210,11 +210,10 @@ File::replaceExtension(const std::string& filename, const std::string& extension
     {
         auto previousExtension = transformedFilename.substr(lastDotPosition + 1);
 
-        if (extension != previousExtension)
-            transformedFilename = transformedFilename.substr(
-                0,
-                transformedFilename.size() - (previousExtension.size() + 1)
-            );
+        transformedFilename = transformedFilename.substr(
+            0,
+            transformedFilename.size() - (previousExtension.size() + 1)
+        );
     }
 
     transformedFilename += std::string(".") + extension;
