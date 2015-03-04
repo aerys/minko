@@ -31,7 +31,7 @@ namespace minko
             HTTPRequest(const std::string& url,
                         const std::string& username = "",
                         const std::string& password = "",
-                        const std::unordered_map<std::string, std::string> *additionalHeaders = nullptr);
+                        const std::unordered_map<std::string, std::string>* additionalHeaders = nullptr);
 
             void
                 run();

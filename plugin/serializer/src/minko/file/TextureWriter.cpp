@@ -41,11 +41,16 @@ std::unordered_map<TextureFormat, TextureWriter::FormatWriterFunction> TextureWr
     { TextureFormat::RGB, std::bind(writeRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
     { TextureFormat::RGBA, std::bind(writeRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
 
-    { TextureFormat::RGB_DXT1, std::bind(writeCRNCompressedTexture, TextureFormat::RGB_DXT1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
+#if MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
+    { TextureFormat::RGB_DXT1, std::bind(writePvrCompressedTexture, TextureFormat::RGB_DXT1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
     { TextureFormat::RGBA_DXT1, std::bind(writeQCompressedTexture, TextureFormat::RGBA_DXT1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
+    { TextureFormat::RGBA_DXT3, std::bind(writePvrCompressedTexture, TextureFormat::RGBA_DXT3, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
+    { TextureFormat::RGBA_DXT5, std::bind(writePvrCompressedTexture, TextureFormat::RGBA_DXT5, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
+#elif MINKO_PLATFORM == MINKO_PLATFORM_LINUX
+    { TextureFormat::RGB_DXT1, std::bind(writeCRNCompressedTexture, TextureFormat::RGB_DXT1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
     { TextureFormat::RGBA_DXT3, std::bind(writeCRNCompressedTexture, TextureFormat::RGBA_DXT3, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
     { TextureFormat::RGBA_DXT5, std::bind(writeCRNCompressedTexture, TextureFormat::RGBA_DXT5, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
-
+#endif
     { TextureFormat::RGB_ETC1, std::bind(writePvrCompressedTexture, TextureFormat::RGB_ETC1, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
 
     { TextureFormat::RGB_PVRTC1_2BPP, std::bind(writePvrCompressedTexture, TextureFormat::RGB_PVRTC1_2BPP, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
@@ -76,63 +81,9 @@ TextureWriter::embed(AssetLibraryPtr               assetLibrary,
 {
     auto texture = _data;
 
+    ensureTextureSizeIsValid(texture, writerOptions);
+
     const auto generateMipmaps = writerOptions->generateMipmaps();
-
-    if (generateMipmaps)
-    {
-        const auto width = texture->width();
-        const auto height = texture->height();
-
-        if (width != height)
-        {
-            auto dimensionSize = writerOptions->upscaleTextureWhenProcessedForMipmapping()
-                ? std::max<uint>(width, height)
-                : std::min<uint>(width, height);
-
-            dimensionSize = std::min<uint>(
-                dimensionSize,
-                static_cast<uint>(writerOptions->textureMaxResolution().x)
-            );
-
-            dimensionSize = std::min<uint>(
-                dimensionSize,
-                static_cast<uint>(writerOptions->textureMaxResolution().y)
-            );
-
-            const auto newWidth = dimensionSize;
-            const auto newHeight = dimensionSize;
-
-            switch (texture->type())
-            {
-            case TextureType::Texture2D:
-            {
-                auto texture2d = std::static_pointer_cast<Texture>(texture);
-
-                texture->resize(newWidth, newHeight, true);
-
-                break;
-            }
-            case TextureType::CubeTexture:
-            {
-                // TODO
-
-                break;
-            }
-            }
-        }
-    }
-    else
-    {
-        if (texture->width() > writerOptions->textureMaxResolution().x ||
-            texture->height() > writerOptions->textureMaxResolution().y)
-        {
-            texture->resize(
-                std::min<uint>(texture->width(), writerOptions->textureMaxResolution().x),
-                std::min<uint>(texture->height(), writerOptions->textureMaxResolution().y),
-                true
-            );
-        }
-    }
 
     const auto& textureFormats = writerOptions->textureFormats();
 
@@ -198,6 +149,71 @@ TextureWriter::embed(AssetLibraryPtr               assetLibrary,
     result << headerSize << headerStream.str() << blobStream.str();
 
     return result.str();
+}
+
+void
+TextureWriter::ensureTextureSizeIsValid(AbstractTexture::Ptr    texture,
+                                        WriterOptions::Ptr      writerOptions)
+{
+    if (writerOptions->generateMipmaps())
+    {
+        const auto width = texture->width();
+        const auto height = texture->height();
+
+        auto newWidth = width;
+        auto newHeight = height;
+
+        if (width != height)
+        {
+            newWidth = newHeight = writerOptions->upscaleTextureWhenProcessedForMipmapping()
+                ? std::max<uint>(width, height)
+                : std::min<uint>(width, height);
+        }
+
+        newWidth = std::min<uint>(
+            newWidth,
+            static_cast<uint>(writerOptions->textureMaxResolution().x)
+        );
+
+        newHeight = std::min<uint>(
+            newHeight,
+            static_cast<uint>(writerOptions->textureMaxResolution().y)
+        );
+
+        if (width == newWidth &&
+            height == newHeight)
+            return;
+
+        switch (texture->type())
+        {
+        case TextureType::Texture2D:
+        {
+            auto texture2d = std::static_pointer_cast<Texture>(texture);
+
+            texture->resize(newWidth, newHeight, true);
+
+            break;
+        }
+        case TextureType::CubeTexture:
+        {
+            // TODO
+
+            break;
+        }
+        }
+    }
+    else
+    {
+        if (texture->width() > writerOptions->textureMaxResolution().x ||
+            texture->height() > writerOptions->textureMaxResolution().y)
+        {
+            texture->resize(
+                std::min<uint>(texture->width(), writerOptions->textureMaxResolution().x),
+                std::min<uint>(texture->height(), writerOptions->textureMaxResolution().y),
+                true
+            );
+        }
+    }
 }
 
 bool

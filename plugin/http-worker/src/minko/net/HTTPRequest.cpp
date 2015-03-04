@@ -77,9 +77,31 @@ HTTPRequest::run()
 
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 
+    curl_slist* headerList = nullptr;
+
+    const auto& additionalHeaders = _additionalHeaders;
+
+    if (!additionalHeaders.empty())
+    {
+        for (const auto& additionalHeader : additionalHeaders)
+        {
+            headerList = curl_slist_append(
+                headerList,
+                std::string(additionalHeader.first + ":" + additionalHeader.second).c_str()
+            );
+        }
+
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerList);
+    }
+
     CURLcode res = curl_easy_perform(curl);
 
     curl_easy_cleanup(curl);
+
+    if (headerList != nullptr)
+    {
+        curl_slist_free_all(headerList);
+    }
 
     if (res != CURLE_OK)
     {
