@@ -126,6 +126,7 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&             asset,
 	std::string					resolvedPath		= "";
 	unsigned short				metaData			= (asset.get<0>() & 0xFFFF0000) >> 16;
 
+	asset.get<0>() = asset.get<0>() & 0x000000FF;
 
     if (asset.get<0>() < 10)
     {
@@ -255,9 +256,10 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&             asset,
 
         if (assetLibrary->texture(resolvedPath) == nullptr)
         {
-            const auto headerSize = static_cast<int>(metaData);
+			const auto hasTextureHeaderSize = (((metaData & 0xf000) >> 15) == 1 ? true : false);
+			auto textureHeaderSize = static_cast<unsigned int>(metaData & 0x0fff);
 
-            _textureParser->textureHeaderSize(headerSize);
+			_textureParser->textureHeaderSize(textureHeaderSize);
             _textureParser->dataEmbed(true);
 
             _textureParser->parse(resolvedPath, assetCompletePath, options, data, assetLibrary);

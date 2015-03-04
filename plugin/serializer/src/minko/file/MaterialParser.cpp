@@ -145,36 +145,41 @@ MaterialParser::deserializeComplexProperty(MaterialPtr            material,
     }
     else if (type == TEXTURE)
     {
-        auto sampler = _dependencies->getTextureReference(Any::cast<uint>(TypeDeserializer::deserializeTextureId(serializedPropertyTuple)))->sampler();
+        auto textureDependencyId = Any::cast<uint>(TypeDeserializer::deserializeTextureId(serializedPropertyTuple));
 
-        material->data()->set(
-            serializedProperty.get<0>(),
-            sampler
-        );
+        if (_dependencies->textureReferenceExist(textureDependencyId))
+        {
+            auto sampler = _dependencies->getTextureReference(textureDependencyId)->sampler();
 
-        material->data()->set(
-            SamplerStates::uniformNameToSamplerStateBindingName(
+            material->data()->set(
                 serializedProperty.get<0>(),
-                SamplerStates::PROPERTY_WRAP_MODE
-            ),
-            sampler.wrapMode
-        );
+                sampler
+            );
 
-        material->data()->set(
-            SamplerStates::uniformNameToSamplerStateBindingName(
-                serializedProperty.get<0>(),
-                SamplerStates::PROPERTY_TEXTURE_FILTER
-            ),
-            sampler.textureFilter
-        );
+            material->data()->set(
+                SamplerStates::uniformNameToSamplerStateBindingName(
+                    serializedProperty.get<0>(),
+                    SamplerStates::PROPERTY_WRAP_MODE
+                ),
+                sampler.wrapMode
+            );
 
-        material->data()->set(
-            SamplerStates::uniformNameToSamplerStateBindingName(
-                serializedProperty.get<0>(),
-                SamplerStates::PROPERTY_MIP_FILTER
-            ),
-            sampler.mipFilter
-        );
+            material->data()->set(
+                SamplerStates::uniformNameToSamplerStateBindingName(
+                    serializedProperty.get<0>(),
+                    SamplerStates::PROPERTY_TEXTURE_FILTER
+                ),
+                sampler.textureFilter
+            );
+
+            material->data()->set(
+                SamplerStates::uniformNameToSamplerStateBindingName(
+                    serializedProperty.get<0>(),
+                    SamplerStates::PROPERTY_MIP_FILTER
+                ),
+                sampler.mipFilter
+            );
+        }
     }
     else if (type == ENVMAPTYPE)
     {
