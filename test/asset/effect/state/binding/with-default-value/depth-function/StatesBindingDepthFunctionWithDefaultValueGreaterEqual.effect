@@ -1,0 +1,7 @@
+{
+    "states" : {
+        "depthFunction" : { "binding" : "material[${materialUuid}].depthFunction", "default" : "greater_equal" }
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

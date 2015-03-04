@@ -349,7 +349,7 @@ TEST_F(DrawCallTest, RenderTargetDefaultValue)
 
     DrawCall drawCall(nullptr, std::unordered_map<std::string, std::string>{}, rootData, rendererData, targetData);
 
-    std::map<std::string, data::Binding> bindings;
+    std::unordered_map<std::string, data::Binding> bindings;
     drawCall.bindStates(bindings, defaultValues);
 
     ASSERT_EQ(drawCall.target(), States::DEFAULT_TARGET);
@@ -371,7 +371,7 @@ TEST_F(DrawCallTest, RenderTargetFromDefaultValues)
 
     DrawCall drawCall(nullptr, std::unordered_map<std::string, std::string>{}, rootData, rendererData, targetData);
 
-    std::map<std::string, data::Binding> bindings;
+    std::unordered_map<std::string, data::Binding> bindings;
     drawCall.bindStates(bindings, defaultValues);
 
     ASSERT_NE(drawCall.target(), States::DEFAULT_TARGET);
@@ -390,10 +390,11 @@ TEST_F(DrawCallTest, RenderTargetBindingFromTargetData)
     auto p = data::Provider::create();
 
     texture->upload();
-    p->set("renderTargetTest", texture->sampler());
+    p->set(States::PROPERTY_TARGET, texture->sampler());
     targetData.addProvider(p);
 
-    std::unordered_map<std::string, data::Binding> bindings = { { "target", { "renderTargetTest", data::Binding::Source::TARGET } } };
+    std::unordered_map<std::string, data::Binding> bindings = { { "target", { States::PROPERTY_TARGET, data::Binding::Source::TARGET } } };
+
     DrawCall drawCall(nullptr, std::unordered_map<std::string, std::string>{}, rootData, rendererData, targetData);
 
     drawCall.bindStates(bindings, defaultValues);

@@ -1,0 +1,7 @@
+{
+    "states" : {
+        "blendingSource" : "one"
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

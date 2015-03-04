@@ -1,0 +1,7 @@
+{
+    "states" : {
+        "stencilReference" : { "binding" : "material[${materialUuid}].stencilReference", "default" : 0 }
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

@@ -1,0 +1,7 @@
+{
+    "states" : {
+        "stencilFailOperation" : { "binding" : "material[${materialUuid}].stencilFailOperation", "default" : "invert" }
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

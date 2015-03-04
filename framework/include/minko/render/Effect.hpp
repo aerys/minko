@@ -45,7 +45,7 @@ namespace minko
 			typedef Signal<Ptr, const std::string&, const std::string&>::Ptr	TechniqueChangedSignalPtr;
 
 		private:
-            std::string                                                         _name;
+            std::string                                     _name;
 
 			std::unordered_map<std::string, Technique>		_techniques;
 			std::unordered_map<std::string, std::string>	_fallback;
@@ -79,6 +79,13 @@ namespace minko
             uuid() const
             {
                 return _data->uuid();
+            }
+
+            inline
+            const std::string&
+            name() const
+            {
+                return _name;
             }
 
             inline

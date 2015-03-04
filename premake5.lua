@@ -92,7 +92,7 @@ solution "minko"
 		-- include 'tutorial/27-working-with-point-lights'
 		-- include 'tutorial/28-working-with-spot-lights'
 		-- include 'tutorial/29-hello-falling-cube'
-		-- include 'tutorial/30-applying-anti-aliasing-effect'
+		include 'tutorial/30-applying-anti-aliasing-effect'
 
 		if os.is("macosx")  and (_ACTION == "xcode-ios" or _ACTION == "xcode-osx") then
 			minko.project.library "all-tutorials"
@@ -117,7 +117,7 @@ solution "minko"
 		include 'plugin/assimp'
 		include 'plugin/devil'
 		include 'plugin/bullet'
-		--include 'plugin/fx'
+		include 'plugin/fx'
 		include 'plugin/html-overlay'
 		include 'plugin/http-loader'
 		include 'plugin/http-worker'

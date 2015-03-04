@@ -12,6 +12,7 @@
 
     "uniforms"   : {
         "uModelToWorldMatrix"   : "modelToWorldMatrix",
+        "uWorldToScreenMatrix"  : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
         "uUVOffset"             : "material[${materialUuid}].uvOffset",
         "uUVScale"              : "material[${materialUuid}].uvScale",
         "uDiffuseColor"         : "material[${materialUuid}].diffuseColor",
@@ -28,7 +29,6 @@
         "uDiffuseCubeMap"       : "material[${materialUuid}].diffuseCubeMap",
 		"uBoneMatrices"			: "geometry[${geometryUuid}].boneMatrices",
 		"uNumBones"				: "geometry[${geometryUuid}].numBones",
-        "uWorldToScreenMatrix"  : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
 		"uFogColor"				: "material[$materialUuid].fogColor",
         "uFogBounds"			: "material[$materialUuid].fogBounds",
         "uWorldToScreenMatrix"  : {

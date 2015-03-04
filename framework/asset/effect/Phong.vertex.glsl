@@ -32,17 +32,17 @@ uniform 	float 	uPopFullPrecisionLod;
 uniform 	vec3 	uPopMinBound;
 uniform 	vec3 	uPopMaxBound;
 
-varying 	vec3 	vertexPosition;
-varying 	vec4 	vertexScreenPosition;
-varying 	vec2 	vertexUV;
-varying 	vec3 	vertexNormal;
-varying 	vec3 	vertexTangent;
+varying 	vec3 	vVertexPosition;
+varying 	vec4 	vVertexScreenPosition;
+varying 	vec2 	vVertexUV;
+varying 	vec3 	vVertexNormal;
+varying 	vec3 	vVertexTangent;
 varying		vec4	vertexColor;
 
 void main(void)
 {
 	#if defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP
-		vertexUV = uUVScale * aUV + uUVOffset;
+		vVertexUV = uUVScale * aUV + uUVOffset;
 	#endif // defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP
 
 	#if defined VERTEX_COLOR
@@ -69,31 +69,31 @@ void main(void)
 
 	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS || defined ENVIRONMENT_MAP_2D || defined ENVIRONMENT_CUBE_MAP
 
-		vertexPosition = worldPosition.xyz;
-		vertexNormal = aNormal;
+		vVertexPosition = worldPosition.xyz;
+		vVertexNormal = aNormal;
 
 		#ifdef SKINNING_NUM_BONES
-			vertexNormal = skinning_moveVertex(vec4(aNormal, 0.0), aBoneWeightsA, aBoneWeightsB).xyz;
+			vVertexNormal = skinning_moveVertex(vec4(aNormal, 0.0), aBoneWeightsA, aBoneWeightsB).xyz;
 		#endif // SKINNING_NUM_BONES
 
 		#ifdef MODEL_TO_WORLD
-			vertexNormal = mat3(uModelToWorldMatrix) * vertexNormal;
+			vVertexNormal = mat3(uModelToWorldMatrix) * vVertexNormal;
 		#endif // MODEL_TO_WORLD
-		vertexNormal = normalize(vertexNormal);
+		vVertexNormal = normalize(vVertexNormal);
 
 		#ifdef NORMAL_MAP
-			vertexTangent = aTangent;
+			vVertexTangent = aTangent;
 			#ifdef MODEL_TO_WORLD
-				vertexTangent = mat3(uModelToWorldMatrix) * vertexTangent;
+				vVertexTangent = mat3(uModelToWorldMatrix) * vVertexTangent;
 			#endif // MODEL_TO_WORLD
-			vertexTangent = normalize(vertexTangent);
+			vVertexTangent = normalize(vVertexTangent);
 		#endif // NORMAL_MAP
 
 	#endif // NUM_DIRECTIONAL_LIGHTS || NUM_POINT_LIGHTS || NUM_SPOT_LIGHTS || ENVIRONMENT_MAP_2D || ENVIRONMENT_CUBE_MAP
 
 	vec4 screenPosition = uWorldToScreenMatrix * worldPosition;
 
-	vertexScreenPosition = screenPosition;
+	vVertexScreenPosition = screenPosition;
 
 	gl_Position = screenPosition;
 }

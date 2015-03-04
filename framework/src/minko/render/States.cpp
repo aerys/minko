@@ -24,41 +24,41 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::render;
 
-const std::string           States::PROPERTY_PRIORITY               = "priority";
-const std::string           States::PROPERTY_ZSORTED                = "zSorted";
-const std::string           States::PROPERTY_BLENDING_SOURCE        = "blendingSource";
-const std::string           States::PROPERTY_BLENDING_DESTINATION   = "blendingDestination";
-const std::string           States::PROPERTY_COLOR_MASK             = "colorMask";
-const std::string           States::PROPERTY_DEPTH_MASK             = "depthMask";
-const std::string           States::PROPERTY_DEPTH_FUNCTION         = "depthFunction";
-const std::string           States::PROPERTY_TRIANGLE_CULLING       = "triangleCulling";
-const std::string           States::PROPERTY_STENCIL_FUNCTION       = "stencilFunction";
-const std::string           States::PROPERTY_STENCIL_REFERENCE      = "stencilReference";
-const std::string           States::PROPERTY_STENCIL_MASK           = "stencilMask";
-const std::string           States::PROPERTY_STENCIL_FAIL_OP        = "stencilFailOperation";
-const std::string           States::PROPERTY_STENCIL_ZFAIL_OP       = "stencilZFailOperation";
-const std::string           States::PROPERTY_STENCIL_ZPASS_OP       = "stencilZPassOperation";
-const std::string           States::PROPERTY_SCISSOR_TEST           = "scissorTest";
-const std::string           States::PROPERTY_SCISSOR_BOX            = "scissorBox";
-const std::string           States::PROPERTY_TARGET                 = "target";
+const std::string           States::PROPERTY_PRIORITY                   = "priority";
+const std::string           States::PROPERTY_ZSORTED                    = "zSorted";
+const std::string           States::PROPERTY_BLENDING_SOURCE            = "blendingSource";
+const std::string           States::PROPERTY_BLENDING_DESTINATION       = "blendingDestination";
+const std::string           States::PROPERTY_COLOR_MASK                 = "colorMask";
+const std::string           States::PROPERTY_DEPTH_MASK                 = "depthMask";
+const std::string           States::PROPERTY_DEPTH_FUNCTION             = "depthFunction";
+const std::string           States::PROPERTY_TRIANGLE_CULLING           = "triangleCulling";
+const std::string           States::PROPERTY_STENCIL_FUNCTION           = "stencilFunction";
+const std::string           States::PROPERTY_STENCIL_REFERENCE          = "stencilReference";
+const std::string           States::PROPERTY_STENCIL_MASK               = "stencilMask";
+const std::string           States::PROPERTY_STENCIL_FAIL_OPERATION     = "stencilFailOperation";
+const std::string           States::PROPERTY_STENCIL_ZFAIL_OPERATION    = "stencilZFailOperation";
+const std::string           States::PROPERTY_STENCIL_ZPASS_OPERATION    = "stencilZPassOperation";
+const std::string           States::PROPERTY_SCISSOR_TEST               = "scissorTest";
+const std::string           States::PROPERTY_SCISSOR_BOX                = "scissorBox";
+const std::string           States::PROPERTY_TARGET                     = "target";
 
-const float				    States::DEFAULT_PRIORITY                = Priority::OPAQUE;
-const bool					States::DEFAULT_ZSORTED                 = false;
-const Blending::Source		States::DEFAULT_BLENDING_SOURCE         = Blending::Source::ONE;
-const Blending::Destination States::DEFAULT_BLENDING_DESTINATION    = Blending::Destination::ZERO;
-const bool					States::DEFAULT_COLOR_MASK              = true;
-const bool					States::DEFAULT_DEPTH_MASK              = true;
-const CompareMode		    States::DEFAULT_DEPTH_FUNCTION          = CompareMode::LESS;
-const TriangleCulling       States::DEFAULT_TRIANGLE_CULLING        = TriangleCulling::BACK;
-const CompareMode			States::DEFAULT_STENCIL_FUNCTION        = CompareMode::ALWAYS;
-const int					States::DEFAULT_STENCIL_REFERENCE       = 0;
-const uint					States::DEFAULT_STENCIL_MASK            = 1;
-const StencilOperation		States::DEFAULT_STENCIL_FAIL_OP         = StencilOperation::KEEP;
-const StencilOperation		States::DEFAULT_STENCIL_ZFAIL_OP        = StencilOperation::KEEP;
-const StencilOperation		States::DEFAULT_STENCIL_ZPASS_OP        = StencilOperation::KEEP;
-const bool					States::DEFAULT_SCISSOR_TEST            = false;
-const math::ivec4			States::DEFAULT_SCISSOR_BOX             = math::ivec4();
-const TextureSampler        States::DEFAULT_TARGET                  = TextureSampler("", nullptr);
+const float				    States::DEFAULT_PRIORITY                    = Priority::OPAQUE;
+const bool					States::DEFAULT_ZSORTED                     = false;
+const Blending::Source		States::DEFAULT_BLENDING_SOURCE             = Blending::Source::ONE;
+const Blending::Destination States::DEFAULT_BLENDING_DESTINATION        = Blending::Destination::ZERO;
+const bool					States::DEFAULT_COLOR_MASK                  = true;
+const bool					States::DEFAULT_DEPTH_MASK                  = true;
+const CompareMode		    States::DEFAULT_DEPTH_FUNCTION              = CompareMode::LESS;
+const TriangleCulling       States::DEFAULT_TRIANGLE_CULLING            = TriangleCulling::BACK;
+const CompareMode			States::DEFAULT_STENCIL_FUNCTION            = CompareMode::ALWAYS;
+const int					States::DEFAULT_STENCIL_REFERENCE           = 0;
+const uint					States::DEFAULT_STENCIL_MASK                = 1;
+const StencilOperation		States::DEFAULT_STENCIL_FAIL_OPERATION      = StencilOperation::KEEP;
+const StencilOperation		States::DEFAULT_STENCIL_ZFAIL_OPERATION     = StencilOperation::KEEP;
+const StencilOperation		States::DEFAULT_STENCIL_ZPASS_OPERATION     = StencilOperation::KEEP;
+const bool					States::DEFAULT_SCISSOR_TEST                = false;
+const math::ivec4			States::DEFAULT_SCISSOR_BOX                 = math::ivec4();
+const TextureSampler        States::DEFAULT_TARGET                      = TextureSampler("", nullptr);
 
 const std::array<std::string, 17> States::PROPERTY_NAMES = {
     PROPERTY_PRIORITY,
@@ -72,9 +72,9 @@ const std::array<std::string, 17> States::PROPERTY_NAMES = {
     PROPERTY_STENCIL_FUNCTION,
     PROPERTY_STENCIL_REFERENCE,
     PROPERTY_STENCIL_MASK,
-    PROPERTY_STENCIL_FAIL_OP,
-    PROPERTY_STENCIL_ZFAIL_OP,
-    PROPERTY_STENCIL_ZPASS_OP,
+    PROPERTY_STENCIL_FAIL_OPERATION,
+    PROPERTY_STENCIL_ZFAIL_OPERATION,
+    PROPERTY_STENCIL_ZPASS_OPERATION,
     PROPERTY_SCISSOR_TEST,
     PROPERTY_SCISSOR_BOX,
     PROPERTY_TARGET
@@ -139,9 +139,9 @@ States::resetDefaultValues()
     _data->set(PROPERTY_STENCIL_FUNCTION, DEFAULT_STENCIL_FUNCTION);
     _data->set(PROPERTY_STENCIL_REFERENCE, DEFAULT_STENCIL_REFERENCE);
     _data->set(PROPERTY_STENCIL_MASK, DEFAULT_STENCIL_MASK);
-    _data->set(PROPERTY_STENCIL_FAIL_OP, DEFAULT_STENCIL_FAIL_OP);
-    _data->set(PROPERTY_STENCIL_ZFAIL_OP, DEFAULT_STENCIL_ZFAIL_OP);
-    _data->set(PROPERTY_STENCIL_ZPASS_OP, DEFAULT_STENCIL_ZPASS_OP);
+    _data->set(PROPERTY_STENCIL_FAIL_OPERATION, DEFAULT_STENCIL_FAIL_OPERATION);
+    _data->set(PROPERTY_STENCIL_ZFAIL_OPERATION, DEFAULT_STENCIL_ZFAIL_OPERATION);
+    _data->set(PROPERTY_STENCIL_ZPASS_OPERATION, DEFAULT_STENCIL_ZPASS_OPERATION);
     _data->set(PROPERTY_SCISSOR_TEST, DEFAULT_SCISSOR_TEST);
     _data->set(PROPERTY_SCISSOR_BOX, DEFAULT_SCISSOR_BOX);
     _data->set(PROPERTY_TARGET, DEFAULT_TARGET);

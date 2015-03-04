@@ -216,7 +216,7 @@ AppleWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr 
 	_enterFrameSlot = _sceneManager->frameBegin()->connect([&](std::shared_ptr<component::SceneManager>, float t, float dt)
 	{
 		enterFrame(t);
-	});
+	}, -100.0f);
 }
 
 void

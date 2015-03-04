@@ -1,0 +1,7 @@
+{
+    "states" : {
+        "stencilZPassOperation" : { "binding" : "material[${materialUuid}].stencilZPassOperation", "default" : "decr_wrap" }
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

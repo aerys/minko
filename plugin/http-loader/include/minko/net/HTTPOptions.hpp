@@ -57,6 +57,8 @@ namespace minko
             {
                 auto instance = Ptr(new HTTPOptions(*copy));
 
+                instance->initialize();
+
                 return instance;
             };
 

@@ -1,0 +1,7 @@
+{
+	"states" : {
+        "priority" : { "binding" : "material[${materialUuid}].priority", "default" : "last" }
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

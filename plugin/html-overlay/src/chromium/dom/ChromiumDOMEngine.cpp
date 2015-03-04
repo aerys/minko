@@ -150,10 +150,6 @@ ChromiumDOMEngine::initialize(AbstractCanvas::Ptr canvas, std::shared_ptr<compon
 		enterFrame();
 	}, -100.0f);
 
-	_endFrameSlot = _sceneManager->frameEnd()->connect([&](std::shared_ptr<component::SceneManager>, float, float)
-	{
-	});
-
 	root->addChild(_quad);
 }
 

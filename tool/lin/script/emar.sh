@@ -10,11 +10,11 @@ ARGS=()
 
 for ARG in "$@"; do
 	if [[ "${ARG}" == "-rcs" ]]; then
-		ARGS+=("rk")
+		ARGS+=("rcs")
 	else
 		ARGS+=("${ARG}")
 	fi
 done
 
-test "$verbose" != 0 && echo "${BIN} ${ARGS}"
+test "$verbose" != 0 && echo "${BIN} ${ARGS[@]}"
 python "${BIN}" "${ARGS[@]}"

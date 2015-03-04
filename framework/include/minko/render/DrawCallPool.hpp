@@ -64,6 +64,8 @@ namespace minko
             std::unordered_set<DrawCall*>   _invalidDrawCalls;
             MacroToChangedSlotMap           _macroChangedSlot;
             PropertyChangedSlotMap          _propChangedSlot;
+            PropertyChangedSlotMap          _zSortUsefulPropertyChangedSlot;
+            std::vector<std::string>        _zSortUsefulPropertyNames;
 
 			PropertyRebindFuncMap 			_drawCallToPropRebindFuncs;
 
@@ -156,6 +158,10 @@ namespace minko
                                                const ProgramInputs::UniformInput& input,
                                                const data::BindingMap&            uniformBindingMap,
                                                bool                               forceRebind = false);
+
+            void
+            stateBindingPropertyAddedHandler(DrawCall&                drawCall,
+                                             const data::BindingMap&  stateBindingMap);
 
             void
             samplerStatesBindingPropertyAddedHandler(DrawCall&                          drawCall,

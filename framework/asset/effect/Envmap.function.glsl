@@ -22,54 +22,55 @@ envmap_blinnNewellProjection(vec3 xyz)
 {
 	float PI = 3.14159265358979323846264;
 
-	float u = (atan(xyz.x, xyz.z) + PI) / (2. * PI);
-	float v = (asin(xyz.y) + PI / 2.) / PI;
+	float u = (atan(xyz.x, xyz.z) + PI) / (2.0 * PI);
+	float v = (asin(xyz.y) + PI / 2.0) / PI;
 
 	return vec2(u, v);
 }
 
 
 vec4
-envmap_sampleEnvironmentMap(sampler2D environmentMap2d, 
-							int	environmentType2d, 
-							samplerCube environmentCubemap, 
-							vec3 eyeDir, 
-							vec3 normalDir)
+envmap_sampleEnvironmentCubeMap(samplerCube environmentCubemap, 
+							    vec3 eyeDir, 
+							    vec3 normalDir)
 {
 	// Both 'eyeDir' and 'normalDir' must be normalized at this point.
 
 	vec4 envmapColor = vec4(0.0, 0.0, 0.0, 0.0);
+	vec3 reflectedDir = reflect(eyeDir, normalDir);
+	
+	envmapColor = textureCube(environmentCubemap, reflectedDir);
 
-	#if defined(ENVIRONMENT_CUBE_MAP)
+	return envmapColor;
+}
 
-		vec3 reflectedDir = reflect(eyeDir, normalDir);
+vec4
+envmap_sampleEnvironmentMap2D(sampler2D environmentMap2d, 
+							  int environmentType2d, 							
+							  vec3 eyeDir, 
+							  vec3 normalDir)
+{
+	vec4 envmapColor = vec4(0.0, 0.0, 0.0, 0.0);
+	vec3 reflectedDir = reflect(eyeDir, normalDir);
 
-		envmapColor = textureCube(environmentCubemap, reflectedDir);
+	int mappingType = 0; // probe mapping by default (cf minko/Common.hpp)
+	vec2 envmapUV = vec2(0.0);
 
-	#elif defined(ENVIRONMENT_MAP_2D)
+	#if defined(ENVIRONMENT_TYPE_2D)
 
-		vec3 reflectedDir = reflect(eyeDir, normalDir);
-		int mappingType = 0; // probe mapping by default (cf minko/Common.hpp)
-		vec2 envmapUV = vec2(0.0);
+		mappingType = environmentType2d;
 
-		#if defined(ENVIRONMENT_TYPE_2D)
-
-			mappingType = environmentType2d;
-
-		#endif  //ENVIRONMENT_TYPE_2D
+	#endif  //ENVIRONMENT_TYPE_2D
 
 
-		if (mappingType == 1) // blinn-newell
-			envmapUV = envmap_blinnNewellProjection(reflectedDir);
-		else
-		{
-			vec3 sphericalCoords = envmap_cartesian3DToSpherical3D(reflectedDir);
-			envmapUV = envmap_spherical3DToCartesian2D(reflectedDir.y, reflectedDir.z);
-		}
+	if (mappingType == 1) // blinn-newell
+		envmapUV = envmap_blinnNewellProjection(reflectedDir);
+	else
+	{
+		vec3 sphericalCoords = envmap_cartesian3DToSpherical3D(reflectedDir);
+		envmapUV = envmap_spherical3DToCartesian2D(reflectedDir.y, reflectedDir.z);
+	}
 
-		envmapColor = texture2D(environmentMap2d, envmapUV);
-
-	#endif  // ENVIRONMENT_MAP_2D
-
+	envmapColor = texture2D(environmentMap2d, envmapUV);
 	return envmapColor;
 }

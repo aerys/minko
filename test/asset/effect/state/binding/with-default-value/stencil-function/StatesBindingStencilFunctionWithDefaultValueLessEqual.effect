@@ -1,0 +1,7 @@
+{
+    "states" : {
+        "stencilFunction" : { "binding" : "material[${materialUuid}].stencilFunction", "default" : "less_equal" }
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

@@ -1,97 +1,132 @@
 {
-	"name"				: "hologram",
+	"name"	: "hologram",
 
-	"attributeBindings"	: {
-		"position"				: "geometry[${geometryId}].position",
-		"normal"				: "geometry[${geometryId}].normal",
-		"uv"					: "geometry[${geometryId}].uv",
-		"boneIdsA"				: "geometry[${geometryId}].boneIdsA",
-		"boneIdsB"				: "geometry[${geometryId}].boneIdsB",		
-		"boneWeightsA"			: "geometry[${geometryId}].boneWeightsA",
-		"boneWeightsB"			: "geometry[${geometryId}].boneWeightsB"
+	"attributes" : {
+		"aPosition"		: "geometry[${geometryId}].position",
+		"aNormal"		: "geometry[${geometryId}].normal",
+		"aUV"			: "geometry[${geometryId}].uv",
+		"aBoneIdsA"		: "geometry[${geometryId}].boneIdsA",
+		"aBoneIdsB"		: "geometry[${geometryId}].boneIdsB",
+		"aBoneWeightsA"	: "geometry[${geometryId}].boneWeightsA",
+		"aBoneWeightsB"	: "geometry[${geometryId}].boneWeightsB"
 	},
 
-	"uniformBindings"	: {
-        "modelToWorldMatrix"    : "transform.modelToWorldMatrix",
-        "worldToScreenMatrix"   : { "property" : "camera.worldToScreenMatrix", "source" : "renderer" },
-		"boneMatrices"			: "geometry[${geometryId}].boneMatrices",
-		"numBones"				: "geometry[${geometryId}].numBones"
+	"uniforms" : {
+        "uModelToWorldMatrix"   : "modelToWorldMatrix",
+        "uWorldToScreenMatrix"  : { "property" : "worldToScreenMatrix", "source" : "renderer" },
+		"uBoneMatrices"			: "geometry[${geometryId}].boneMatrices"
 	},
 
-	"macroBindings"	: {
-		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix",
-		"NUM_BONES"				: "geometry[${geometryId}].numBones"
+	"macros" : {
+		"MODEL_TO_WORLD"		: "modelToWorldMatrix",
+		"SKINNING_NUM_BONES"	: { "binding" : "geometry[${geometryId}].numBones", "type" : "int" }
 	},
 
 	"techniques" : [{
-		"passes"	: [{
-			"name"				: "hologram_depth_pass",
-			"priority"			: [ "transparent", 3.0 ],
-			"target"			: { "name" : "hologram_depthMap", "size" : 1024 },
-			"uniformBindings"	: {
-				"cameraPosition"	: { "property" : "camera.position",	"source" : "renderer" }
+		"passes" : [{
+			"name" : "hologram_depth_pass",
+
+			"states" : {
+				"priority" 	: [ "transparent", 3.0 ],
+				"target" 	: { "name" : "hologram_depthMap", "size" : 1024 }
 			},
-			"vertexShader"      : "#pragma include('../Depth/Depth.vertex.glsl')",
-			"fragmentShader"    : "#pragma include('../Depth/Depth.fragment.glsl')"
+			"uniforms"	: {
+				"cameraPosition" : { "property" : "camera.position",	"source" : "renderer" }
+			},
+			"vertexShader" 		: "#pragma include \"../Depth/Depth.vertex.glsl\"",
+			"fragmentShader" 	: "#pragma include \"../Depth/Depth.fragment.glsl\""
 		},
 		{
-			"name"				: "hologram_normal_back_pass",
-			"priority"			: [ "transparent", 2.0 ],
-			"triangleCulling"   : "front",
-			"target"			: { "name" : "hologram_backFaceNormalMap", "size" : 1024 },
-			"attributeBindings"	: {
-				"tangent"	: "geometry[${geometryId}].tangent"
+			"name" : "hologram_normal_back_pass",
+
+			"states" : {
+				"priority" 			: [ "transparent", 2.0 ],
+				"triangleCulling" 	: "front",
+				"target" 			: { "name" : "hologram_backFaceNormalMap", "size" : 1024 }
 			},
-			"uniformBindings"	: {
-				"normalMap"	: "material[${materialId}].normalMap"
+
+			"attributes" : {
+				"aTangent" : "geometry[${geometryId}].tangent"
 			},
-			"macroBindings"		: {
+
+			"uniforms" : {
+				"uNormalMap" : {
+					"binding" 		: "material[${materialId}].normalMap",
+					"wrapMode" 		: "repeat",
+					"textureFilter" : "linear",
+					"mipFilter" 	: "linear"
+				}
+			},
+
+			"macros" : {
 				"NORMAL_MAP"	: "material[${materialId}].normalMap"
 			},
-			"samplerStates"	: {
-				"normalMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
-			},
+
 			"vertexShader"		: "#pragma include('HologramNormals.vertex.glsl')",
 			"fragmentShader"	: "#pragma include('HologramNormals.fragment.glsl')"
 		},
 		{
-			"name"				: "hologram_normal_front_pass",
-			"priority"			: [ "transparent", 1.0 ],
-			"triangleCulling"   : "back",
-			"target"			: { "name" : "hologram_frontFaceNormalMap", "size" : 1024 },
-			"attributeBindings"	: {
-				"tangent"	: "geometry[${geometryId}].tangent"
+			"name" : "hologram_normal_front_pass",
+
+			"states" :
+			{
+				"priority"			: [ "transparent", 1.0 ],
+				"triangleCulling"   : "back",
+				"target"			: { "name" : "hologram_frontFaceNormalMap", "size" : 1024 }
 			},
-			"uniformBindings"	: {
-				"normalMap"	: "material[${materialId}].normalMap"
+
+			"attributes" : {
+				"aTangent"	: "geometry[${geometryId}].tangent"
 			},
-			"macroBindings"		: {
+
+			"uniforms"	: {
+				"uNormalMap" : {
+					"binding" 		: "material[${materialId}].normalMap",
+					"wrapMode" 		: "repeat",
+					"textureFilter" : "linear",
+					"mipFilter" 	: "linear"
+				}
+			},
+
+			"macros" : {
 				"NORMAL_MAP"	: "material[${materialId}].normalMap"
 			},
-			"samplerStates"	: {
-				"normalMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
-			},
-			"vertexShader"		: "#pragma include('HologramNormals.vertex.glsl')",
-			"fragmentShader"	: "#pragma include('HologramNormals.fragment.glsl')"
+
+			"vertexShader"		: "#pragma include \"HologramNormals.vertex.glsl\"",
+			"fragmentShader"	: "#pragma include \"HologramNormals.fragment.glsl\""
 		},
 		{
 			"name"				: "hologram_render_pass",
-			"priority"			: [ "transparent", 0.0 ],
-			"depthTest"			: "always",
-			"blendMode"			: "alpha",
-			"zSort"				: "true",
 
-			"uniformBindings"	: {
-				"depthMap"				: "hologram_depthMap",
-				"frontFaceNormalMap"	: "hologram_frontFaceNormalMap",
-				"backFaceNormalMap"		: "hologram_backFaceNormalMap",
-				"diffuseColor"          : "material[${materialId}].diffuseColor",
-				"noiseMap"				: { "property" : "material[${materialId}].hologramNoiseMap", "default" : "hologram_noise.png" },
-				"time"					: { "property" : "scene.time", "source" : "root" },
-				"cameraPosition"		: { "property" : "camera.position", "source" : "renderer" }
+			"states" : {
+				"priority"	: [ "transparent", 0.0 ],
+				"depthTest"	: "always",
+				"blendMode"	: "alpha",
+				"zSort"		: "true"
 			},
 
-			"macroBindings"	: {
+			"uniforms"	: {
+				"uDepthMap"				: "hologram_depthMap",
+				"uFrontFaceNormalMap"	: "hologram_frontFaceNormalMap",
+				"uBackFaceNormalMap"	: {
+					"binding" 		: "hologram_backFaceNormalMap",
+					"wrapMode" 		: "repeat",
+					"textureFilter" : "linear",
+					"mipFilter" 	: "linear"
+				},
+				"uDiffuseColor"         : "material[${materialId}].diffuseColor",
+				"uNoiseMap"				: {
+					"binding" 		: "material[${materialId}].hologramNoiseMap",
+					"default" 		: "hologram_noise.png",
+					"wrapMode" 		: "repeat",
+					"textureFilter" : "linear",
+					"mipFilter" 	: "linear"
+				},
+				"uTime"					: { "property" : "time", "source" : "root" },
+				"uCameraPosition"		: { "property" : "cameraPosition", "source" : "renderer" }
+			},
+
+			"macros"	: {
 				"MAP_RESOLUTION"		: { "default" : 1024 },
 				"DEPTH_MAP"				: "hologram_depthMap",
 				"FRONT_FACE_NORMAL_MAP"	: "hologram_frontFaceNormalMap",
@@ -107,9 +142,9 @@
 				"noiseMap"				: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
 			},
 
-			"vertexShader"      : "#pragma include('Hologram.vertex.glsl')",
-			"fragmentShader"    : "#pragma include('Hologram.fragment.glsl')"
+			"vertexShader"      : "#pragma include \"Hologram.vertex.glsl\"",
+			"fragmentShader"    : "#pragma include \"Hologram.fragment.glsl\""
 		}]
 	}]
-	
+
 }

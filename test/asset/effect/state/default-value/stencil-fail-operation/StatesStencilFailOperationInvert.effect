@@ -1,0 +1,7 @@
+{
+    "states" : {
+        "stencilFailOperation" : "invert"
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

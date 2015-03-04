@@ -66,10 +66,10 @@
             },
 
             "uniforms" : {
-                "uModelToWorldMatrix"	: "modelToWorldMatrix",
-                "uWorldToScreenMatrix"  : { "binding" : { "property" : "directionalLight[${lightUuid}].viewProjection", "source" : "root" } },
-                "uZNear"                : { "binding" : { "property" : "directionalLight[${lightUuid}].zNear", "source" : "root" } },
-                "uZFar"                 : { "binding" : { "property" : "directionalLight[${lightUuid}].zFar", "source" : "root" } }
+                "uModelToWorldMatrix"	  : "modelToWorldMatrix",
+                "uWorldToScreenMatrix[0]" : { "binding" : { "property" : "directionalLight[${lightUuid}].viewProjection", "source" : "root" } },
+                "uZNear[0]"               : { "binding" : { "property" : "directionalLight[${lightUuid}].zNear", "source" : "root" } },
+                "uZFar[0]"                : { "binding" : { "property" : "directionalLight[${lightUuid}].zFar", "source" : "root" } }
             },
 
             "macros" : {

@@ -19,17 +19,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/DrawCall.hpp"
 
-#include "minko/render/DrawCallZSorter.hpp"
 #include "minko/data/Store.hpp"
 #include "minko/log/Logger.hpp"
 
-#include <regex>
+// #include <regex>
 
 using namespace minko;
 using namespace minko::render;
 
-const unsigned int	DrawCall::MAX_NUM_TEXTURES		            = 8;
-const unsigned int	DrawCall::MAX_NUM_VERTEXBUFFERS	            = 8;
+const unsigned int DrawCall::MAX_NUM_TEXTURES       = 8;
+const unsigned int DrawCall::MAX_NUM_VERTEXBUFFERS  = 8;
 
 DrawCall::DrawCall(std::shared_ptr<Pass>  pass,
                    const StringMap&       variables,
@@ -41,15 +40,19 @@ DrawCall::DrawCall(std::shared_ptr<Pass>  pass,
     _rootData(rootData),
     _rendererData(rendererData),
     _targetData(targetData),
-    _zSorter(DrawCallZSorter::create(this)),
-    _zSortNeeded(Signal<DrawCall*>::create()),
     _target(nullptr),
     _indexBuffer(nullptr),
     _firstIndex(nullptr),
     _numIndices(nullptr),
-    _zSorted(nullptr)
+    _zSorted(nullptr),
+    _centerPosition(),
+    _modelToWorldMatrix(nullptr),
+    _worldToScreenMatrix(nullptr),
+    _modelToWorldMatrixPropertyRemovedSlot(nullptr),
+    _worldToScreenMatrixPropertyRemovedSlot(nullptr)
 {
-    _zSorter->initialize(_targetData, _rendererData, _rootData);
+    // For Z-sorting
+    bindPositionalMembers();
 }
 
 data::Store&
@@ -93,6 +96,48 @@ DrawCall::bind(std::shared_ptr<Program> program)
     // bindStates();
     //bindUniforms();
     // bindAttributes();
+}
+
+void
+DrawCall::bindPositionalMembers()
+{
+    if (_targetData.hasProperty("centerPosition"))
+        _centerPosition = _targetData.get<math::vec3>("centerPosition");
+
+    if (_targetData.hasProperty("modelToWorldMatrix"))
+        _modelToWorldMatrix = _targetData.getPointer<math::mat4>("modelToWorldMatrix");
+    else
+    {
+        _modelToWorldMatrixPropertyAddedSlot = _targetData.propertyAdded("modelToWorldMatrix").connect(
+            [&](data::Store&, std::shared_ptr<data::Provider>, const std::string&)
+        {
+            _modelToWorldMatrix = _targetData.getPointer<math::mat4>("modelToWorldMatrix");
+        });
+    }
+
+    if (_rendererData.hasProperty("worldToScreenMatrix"))
+        _worldToScreenMatrix = _rendererData.getPointer<math::mat4>("worldToScreenMatrix");
+    else
+    {
+        _worldToScreenMatrixPropertyAddedSlot = _rendererData.propertyAdded("worldToScreenMatrix").connect(
+            [&](data::Store& store, std::shared_ptr<data::Provider> data, const std::string& propertyName)
+        {
+            _worldToScreenMatrix = _rendererData.getPointer<math::mat4>("worldToScreenMatrix");
+        });
+    }
+
+    // Removed slot
+    _modelToWorldMatrixPropertyRemovedSlot = _targetData.propertyRemoved("modelToWorldMatrix").connect(
+        [&](data::Store&, std::shared_ptr<data::Provider>, const std::string&)
+    {
+        _modelToWorldMatrix = nullptr;
+    });
+
+    _worldToScreenMatrixPropertyRemovedSlot = _rendererData.propertyRemoved("worldToScreenMatrix").connect(
+        [&](data::Store& store, std::shared_ptr<data::Provider> data, const std::string& propertyName)
+    {
+        _worldToScreenMatrix = nullptr;
+    });
 }
 
 void
@@ -374,6 +419,131 @@ DrawCall::setSamplerStateValueFromStore(const ProgramInputs::UniformInput&  inpu
 }
 
 void
+DrawCall::setStateValueFromStore(const std::string&   stateName,
+                                 const data::Store&   store)
+{
+    if (stateName == States::PROPERTY_PRIORITY)
+    {
+        if (store.hasProperty(stateName))
+            _priority = store.getUnsafePointer<float>(stateName);
+        else
+            _priority = &States::DEFAULT_PRIORITY;
+    }
+    else if (stateName == States::PROPERTY_ZSORTED) 
+    {
+        if (store.hasProperty(stateName))
+            _zSorted = store.getUnsafePointer<bool>(stateName);
+        else 
+            _zSorted = &States::DEFAULT_ZSORTED;
+    }
+    else if (stateName == States::PROPERTY_BLENDING_SOURCE) 
+    {
+        if (store.hasProperty(stateName))
+            _blendingSourceFactor = store.getUnsafePointer<Blending::Source>(stateName);
+        else
+            _blendingSourceFactor = &States::DEFAULT_BLENDING_SOURCE;
+    }
+    else if (stateName == States::PROPERTY_BLENDING_DESTINATION)
+    {
+        if (store.hasProperty(stateName))
+            _blendingDestinationFactor = store.getUnsafePointer<Blending::Destination>(stateName);
+        else
+            _blendingDestinationFactor = &States::DEFAULT_BLENDING_DESTINATION;
+    }
+    else if (stateName == States::PROPERTY_COLOR_MASK) 
+    { 
+        if (store.hasProperty(stateName)) 
+            _colorMask = store.getUnsafePointer<bool>(stateName); 
+        else 
+            _colorMask = &States::DEFAULT_COLOR_MASK; 
+    }
+    else if (stateName == States::PROPERTY_DEPTH_MASK)
+    {
+        if (store.hasProperty(stateName)) 
+            _depthMask = store.getUnsafePointer<bool>(stateName);
+        else 
+            _depthMask = &States::DEFAULT_DEPTH_MASK;
+    }
+    else if (stateName == States::PROPERTY_DEPTH_FUNCTION) 
+    { 
+        if (store.hasProperty(stateName)) 
+            _depthFunc = store.getUnsafePointer<CompareMode>(stateName); 
+        else 
+            _depthFunc = &States::DEFAULT_DEPTH_FUNCTION; 
+    }
+    else if (stateName == States::PROPERTY_TRIANGLE_CULLING)
+    { 
+        if (store.hasProperty(stateName)) 
+            _triangleCulling = store.getUnsafePointer<TriangleCulling>(stateName); 
+        else 
+            _triangleCulling = &States::DEFAULT_TRIANGLE_CULLING; 
+    }
+    else if (stateName == States::PROPERTY_STENCIL_FUNCTION) 
+    { 
+        if (store.hasProperty(stateName)) 
+            _stencilFunction = store.getUnsafePointer<CompareMode>(stateName); 
+        else 
+            _stencilFunction = &States::DEFAULT_STENCIL_FUNCTION; 
+    }
+    else if (stateName == States::PROPERTY_STENCIL_REFERENCE) 
+    { 
+        if (store.hasProperty(stateName)) 
+            _stencilReference = store.getUnsafePointer<int>(stateName); 
+        else 
+            _stencilReference = &States::DEFAULT_STENCIL_REFERENCE; 
+    }
+    else if (stateName == States::PROPERTY_STENCIL_MASK) 
+    { 
+        if (store.hasProperty(stateName)) 
+            _stencilMask = store.getUnsafePointer<uint>(stateName); 
+        else
+            _stencilMask = &States::DEFAULT_STENCIL_MASK; 
+    }
+    else if (stateName == States::PROPERTY_STENCIL_FAIL_OPERATION)
+    { 
+        if (store.hasProperty(stateName)) 
+            _stencilFailOp = store.getUnsafePointer<StencilOperation>(stateName); 
+        else 
+            _stencilFailOp = &States::DEFAULT_STENCIL_FAIL_OPERATION;
+    }
+    else if (stateName == States::PROPERTY_STENCIL_ZFAIL_OPERATION)
+    { 
+        if (store.hasProperty(stateName)) 
+            _stencilZFailOp = store.getUnsafePointer<StencilOperation>(stateName); 
+        else 
+            _stencilZFailOp = &States::DEFAULT_STENCIL_ZFAIL_OPERATION;
+    }
+    else if (stateName == States::PROPERTY_STENCIL_ZPASS_OPERATION)
+    { 
+        if (store.hasProperty(stateName)) 
+            _stencilZPassOp = store.getUnsafePointer<StencilOperation>(stateName); 
+        else 
+            _stencilZPassOp = &States::DEFAULT_STENCIL_ZPASS_OPERATION;
+    }
+    else if (stateName == States::PROPERTY_SCISSOR_TEST) 
+    { 
+        if (store.hasProperty(stateName)) 
+            _scissorTest = store.getUnsafePointer<bool>(stateName); 
+        else 
+            _scissorTest = &States::DEFAULT_SCISSOR_TEST; 
+    }
+    else if (stateName == States::PROPERTY_SCISSOR_BOX)
+    { 
+        if (store.hasProperty(stateName)) 
+            _scissorBox = store.getUnsafePointer<math::ivec4>(stateName); 
+        else 
+            _scissorBox = &States::DEFAULT_SCISSOR_BOX; 
+    }
+    else if (stateName == States::PROPERTY_TARGET)
+    { 
+        if (store.hasProperty(stateName)) 
+            _target = store.getUnsafePointer<TextureSampler>(stateName); 
+        else 
+            _target = &States::DEFAULT_TARGET; 
+    }
+}
+
+void
 DrawCall::bindIndexBuffer()
 {
     auto indexBufferProperty = data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].indices");
@@ -389,27 +559,31 @@ DrawCall::bindIndexBuffer()
         _numIndices = const_cast<uint*>(_targetData.getPointer<uint>(numIndicesProperty));
 }
 
-void
+std::array<data::ResolvedBinding*, 17>
 DrawCall::bindStates(const std::unordered_map<std::string, data::Binding>&  stateBindings,
                      const data::Store&                                     defaultValues)
 {
-    _priority = bindState<float>(States::PROPERTY_PRIORITY, stateBindings, defaultValues);
-    _zSorted = bindState<bool>(States::PROPERTY_ZSORTED, stateBindings, defaultValues);
-    _blendingSourceFactor = bindState<Blending::Source>(States::PROPERTY_BLENDING_SOURCE, stateBindings, defaultValues);
-    _blendingDestinationFactor = bindState<Blending::Destination>(States::PROPERTY_BLENDING_DESTINATION, stateBindings, defaultValues);
-    _colorMask = bindState<bool>(States::PROPERTY_COLOR_MASK, stateBindings, defaultValues);
-    _depthMask = bindState<bool>(States::PROPERTY_DEPTH_MASK, stateBindings, defaultValues);
-    _depthFunc = bindState<CompareMode>(States::PROPERTY_DEPTH_FUNCTION, stateBindings, defaultValues);
-    _triangleCulling = bindState<TriangleCulling>(States::PROPERTY_TRIANGLE_CULLING, stateBindings, defaultValues);
-    _stencilFunction = bindState<CompareMode>(States::PROPERTY_STENCIL_FUNCTION, stateBindings, defaultValues);
-    _stencilReference = bindState<int>(States::PROPERTY_STENCIL_REFERENCE, stateBindings, defaultValues);
-    _stencilMask = bindState<uint>(States::PROPERTY_STENCIL_MASK, stateBindings, defaultValues);
-    _stencilFailOp = bindState<StencilOperation>(States::PROPERTY_STENCIL_FAIL_OP, stateBindings, defaultValues);
-    _stencilZFailOp = bindState<StencilOperation>(States::PROPERTY_STENCIL_ZFAIL_OP, stateBindings, defaultValues);
-    _stencilZPassOp = bindState<StencilOperation>(States::PROPERTY_STENCIL_ZPASS_OP, stateBindings, defaultValues);
-    _scissorTest = bindState<bool>(States::PROPERTY_SCISSOR_TEST, stateBindings, defaultValues);
-    _scissorBox = bindState<math::ivec4>(States::PROPERTY_SCISSOR_BOX, stateBindings, defaultValues);
-    _target = bindState<TextureSampler>(States::PROPERTY_TARGET, stateBindings, defaultValues);
+    std::array<data::ResolvedBinding*, 17> statesResolveBindings = {
+        bindState(States::PROPERTY_PRIORITY, stateBindings, defaultValues),
+        bindState(States::PROPERTY_ZSORTED, stateBindings, defaultValues),
+        bindState(States::PROPERTY_BLENDING_SOURCE, stateBindings, defaultValues),
+        bindState(States::PROPERTY_BLENDING_DESTINATION, stateBindings, defaultValues),
+        bindState(States::PROPERTY_COLOR_MASK, stateBindings, defaultValues),
+        bindState(States::PROPERTY_DEPTH_MASK, stateBindings, defaultValues),
+        bindState(States::PROPERTY_DEPTH_FUNCTION, stateBindings, defaultValues),
+        bindState(States::PROPERTY_TRIANGLE_CULLING, stateBindings, defaultValues),
+        bindState(States::PROPERTY_STENCIL_FUNCTION, stateBindings, defaultValues),
+        bindState(States::PROPERTY_STENCIL_REFERENCE, stateBindings, defaultValues),
+        bindState(States::PROPERTY_STENCIL_MASK, stateBindings, defaultValues),
+        bindState(States::PROPERTY_STENCIL_FAIL_OPERATION, stateBindings, defaultValues),
+        bindState(States::PROPERTY_STENCIL_ZFAIL_OPERATION, stateBindings, defaultValues),
+        bindState(States::PROPERTY_STENCIL_ZPASS_OPERATION, stateBindings, defaultValues),
+        bindState(States::PROPERTY_SCISSOR_TEST, stateBindings, defaultValues),
+        bindState(States::PROPERTY_SCISSOR_BOX, stateBindings, defaultValues),
+        bindState(States::PROPERTY_TARGET, stateBindings, defaultValues)
+    };
+
+    return statesResolveBindings;
 }
 
 void
@@ -522,9 +696,10 @@ DrawCall::resolveBinding(const std::string&                                     
 {
     bool isCollection = false;
     std::string bindingName = inputName;
+    bool isArray = inputName[inputName.length() - 1] == ']';
     auto pos = bindingName.find_first_of('[');
 
-    if (pos != std::string::npos)
+    if (!isArray && pos != std::string::npos)
     {
         bindingName = bindingName.substr(0, pos);
         isCollection = true;
@@ -536,26 +711,26 @@ DrawCall::resolveBinding(const std::string&                                     
     {
         binding = &bindings.at(bindingName);
         bindingPropertyName = binding->propertyName;
-        isCollection = isCollection && bindingPropertyName.find_first_of('[') == std::string::npos;
+        // isCollection = isCollection && bindingPropertyName.find_first_of('[') == std::string::npos;
     }
-    else
-    {
-        for (const auto& inputNameAndBinding : bindings)
-        {
-            std::regex r(inputNameAndBinding.first);
-
-            if (std::regex_match(inputName, r))
-            {
-                bindingPropertyName = std::regex_replace(inputName, r, inputNameAndBinding.second.propertyName);
-                binding = &inputNameAndBinding.second;
-                isCollection = false;
-                break;
-            }
-        }
+    // else
+    // {
+    //     for (const auto& inputNameAndBinding : bindings)
+    //     {
+    //         std::regex r(inputNameAndBinding.first);
+    //
+    //         if (std::regex_match(inputName, r))
+    //         {
+    //             bindingPropertyName = std::regex_replace(inputName, r, inputNameAndBinding.second.propertyName);
+    //             binding = &inputNameAndBinding.second;
+    //             isCollection = false;
+    //             break;
+    //         }
+    //     }
 
         if (!binding)
             return nullptr;
-    }
+    // }
 
     auto& store = getStore(binding->source);
     auto propertyName = data::Store::getActualPropertyName(_variables, bindingPropertyName);
@@ -567,7 +742,7 @@ DrawCall::resolveBinding(const std::string&                                     
     // to the context providing the direct pointer to the contiguous stored data
 
     // FIXME: handle per-fields bindings instead of using the raw uniform suffix
-    if (isCollection)
+    if (isCollection && !isArray)
         propertyName += inputName.substr(pos);
 
     return new data::ResolvedBinding(*binding, propertyName, store);
@@ -576,7 +751,12 @@ DrawCall::resolveBinding(const std::string&                                     
 math::vec3
 DrawCall::getEyeSpacePosition()
 {
-    auto eyePosition = _zSorter->getEyeSpacePosition();
+    auto modelView = math::mat4();
 
-    return eyePosition;
+    if (_modelToWorldMatrix != nullptr)
+        modelView = *_modelToWorldMatrix;
+    if (_worldToScreenMatrix != nullptr)
+        modelView = (*_worldToScreenMatrix) * modelView;
+
+    return math::vec3(modelView * math::vec4(_centerPosition, 1));
 }

@@ -1,0 +1,7 @@
+{
+    "states" : {
+        "stencilFunction" : "never"
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}
