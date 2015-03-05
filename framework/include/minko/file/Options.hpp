@@ -36,6 +36,7 @@ namespace minko
 			typedef std::shared_ptr<data::Provider>										ProviderPtr;
 			typedef std::shared_ptr<material::Material>									MaterialPtr;
 			typedef std::shared_ptr<geometry::Geometry>									GeomPtr;
+			typedef std::shared_ptr<render::AbstractTexture>                            AbstractTexturePtr;
 			typedef std::shared_ptr<scene::Node>										NodePtr;
 			typedef std::shared_ptr<render::Effect>										EffectPtr;
 			typedef std::shared_ptr<Loader>                                             LoaderPtr;
@@ -47,6 +48,7 @@ namespace minko
 			typedef std::shared_ptr<Options>											Ptr;
 
 			typedef std::function<MaterialPtr(const std::string&, MaterialPtr)>			MaterialFunction;
+			typedef std::function<AbstractTexturePtr(const std::string&, AbstractTexturePtr)>	TextureFunction;
 			typedef std::function<GeomPtr(const std::string&, GeomPtr)> 				GeometryFunction;
 			typedef std::function<AbsProtocolPtr(const std::string&)>	                ProtocolFunction;
             typedef std::function<AbsParserPtr(const std::string&)>                     ParserFunction;
@@ -76,12 +78,14 @@ namespace minko
             bool                                                _disposeVertexBufferAfterLoading;
             bool                                                _disposeTextureAfterLoading;
             bool                                                _storeDataIfNotParsed;
+            bool                                                _processUnusedAsset;
 			unsigned int								        _skinningFramerate;
 			component::SkinningMethod					        _skinningMethod;
 			std::shared_ptr<render::Effect>                     _effect;
 			MaterialPtr									        _material;
             std::list<render::TextureFormat>                    _textureFormats;
 			MaterialFunction							        _materialFunction;
+			TextureFunction							            _textureFunction;
 			GeometryFunction							        _geometryFunction;
 			ProtocolFunction								    _protocolFunction;
             ParserFunction                                      _parserFunction;
@@ -116,38 +120,6 @@ namespace minko
 
 				return options;
 			}
-
-            inline static
-            Ptr
-            create(Ptr options)
-            {
-                auto opt = create();
-
-                opt->_context = options->_context;
-                opt->_assets = options->_assets;
-                opt->_parsers = options->_parsers;
-                opt->_protocols = options->_protocols;
-                opt->_includePaths = options->_includePaths;
-                opt->_generateMipMaps = options->_generateMipMaps;
-                opt->_resizeSmoothly = options->_resizeSmoothly;
-                opt->_isCubeTexture = options->_isCubeTexture;
-                opt->_startAnimation = options->_startAnimation;
-                opt->_disposeIndexBufferAfterLoading = options->_disposeIndexBufferAfterLoading;
-                opt->_disposeVertexBufferAfterLoading = options->_disposeVertexBufferAfterLoading;
-                opt->_disposeTextureAfterLoading = options->_disposeTextureAfterLoading;
-                opt->_skinningFramerate = options->_skinningFramerate;
-                opt->_skinningMethod = options->_skinningMethod;
-                opt->_effect = options->_effect;
-                opt->_materialFunction = options->_materialFunction;
-                opt->_geometryFunction = options->_geometryFunction;
-                opt->_protocolFunction = options->_protocolFunction;
-                opt->_effectFunction = options->_effectFunction;
-                opt->_uriFunction = options->_uriFunction;
-                opt->_nodeFunction = options->_nodeFunction;
-                opt->_loadAsynchronously = options->_loadAsynchronously;
-
-                return opt;
-            }
 
             virtual
 			Ptr
@@ -346,6 +318,22 @@ namespace minko
                 return shared_from_this();
             }
 
+			inline
+            bool
+            processUnusedAsset() const
+            {
+                return _processUnusedAsset;
+            }
+
+            inline
+            Ptr
+            processUnusedAsset(bool value)
+            {
+                _processUnusedAsset = value;
+
+                return shared_from_this();
+            }
+
             inline
 			unsigned int
 			skinningFramerate() const
@@ -463,6 +451,22 @@ namespace minko
 			materialFunction(const MaterialFunction& func)
 			{
 				_materialFunction = func;
+
+				return shared_from_this();
+			}
+
+			inline
+			const TextureFunction&
+			textureFunction() const
+			{
+				return _textureFunction;
+			}
+
+			inline
+			Ptr
+			textureFunction(const TextureFunction& func)
+			{
+				_textureFunction = func;
 
 				return shared_from_this();
 			}
@@ -633,6 +637,9 @@ namespace minko
 
 			void
 			initializeDefaultFunctions();
+
+            void
+            resetNotInheritedValues();
 		};
 	}
 }

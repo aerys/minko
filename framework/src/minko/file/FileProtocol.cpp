@@ -67,7 +67,7 @@ FileProtocol::load()
             file.close();
             auto worker = AbstractCanvas::defaultCanvas()->getWorker("file-protocol");
 
-            _workerSlots.push_back(worker->message()->connect([=](async::Worker::Ptr, async::Worker::Message message)
+            _workerSlots.insert(std::make_pair(worker, worker->message()->connect([=](async::Worker::Ptr, async::Worker::Message message)
             {
                 if (message.type == "complete")
                 {
@@ -75,6 +75,7 @@ FileProtocol::load()
                     data().assign(static_cast<unsigned char*>(bytes), static_cast<unsigned char*>(bytes) + message.data.size());
                     _complete->execute(loader);
                     _runningLoaders.remove(loader);
+                    _workerSlots.erase(worker);
                 }
                 else if (message.type == "progress")
                 {
@@ -85,9 +86,11 @@ FileProtocol::load()
                 else if (message.type == "error")
                 {
                     _error->execute(loader);
+                    _complete->execute(loader);
                     _runningLoaders.remove(loader);
+                    _workerSlots.erase(worker);
                 }
-            }));
+            })));
 
             auto offset = options->seekingOffset();
             auto length = options->seekedLength();
@@ -146,4 +149,16 @@ FileProtocol::fileExists(const std::string& filename)
     std::ifstream file(filename, std::ios::in | std::ios::binary);
 
     return file.is_open();
+}
+
+bool
+FileProtocol::isAbsolutePath(const std::string& filename) const
+{
+    const auto cleanFilename = File::sanitizeFilename(filename);
+
+#if MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
+    return cleanFilename.find(":/") != std::string::npos;
+#else
+    return cleanFilename.find_first_of("/") == 0u;
+#endif
 }

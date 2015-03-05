@@ -29,14 +29,19 @@
         "uDiffuseCubeMap"       : "material[${materialUuid}].diffuseCubeMap",
 		"uBoneMatrices"			: "geometry[${geometryUuid}].boneMatrices",
 		"uNumBones"				: "geometry[${geometryUuid}].numBones",
-		"uFogColor"				: "material[$materialUuid].fogColor",
-        "uFogBounds"			: "material[$materialUuid].fogBounds"
+		"uFogColor"				: "material[${materialUuid}].fogColor",
+        "uFogBounds"			: "material[${materialUuid}].fogBounds",
+        "uPopLod"               : "geometry[${geometryUuid}].popLod",
+        "uPopBlendingLod"       : "geometry[${geometryUuid}].popBlendingLod",
+        "uPopFullPrecisionLod"  : "geometry[${geometryUuid}].popFullPrecisionLod",
+        "uPopMinBound"          : "geometry[${geometryUuid}].popMinBound",
+        "uPopMaxBound"          : "geometry[${geometryUuid}].popMaxBound"
     },
 
     "macros" : {
         "MODEL_TO_WORLD"        : "modelToWorldMatrix",
         "HAS_NORMAL"            : "geometry[${geometryUuid}].normal",
-        "SKINNING_NUM_BONES"    : { "binding" : "geometry[$geometryUuid].numBones", "type" : "int" },
+        "SKINNING_NUM_BONES"    : { "binding" : "geometry[${geometryUuid}].numBones", "type" : "int" },
         "DIFFUSE_MAP"           : "material[${materialUuid}].diffuseMap",
         "DIFFUSE_MAP_LOD" 		: "material[${materialUuid}].diffuseMapLodEnabled",
         "DIFFUSE_CUBEMAP"       : "material[${materialUuid}].diffuseCubeMap",
@@ -48,7 +53,9 @@
 		"FOG_EXP2"              : "material[${materialUuid}].fogExponential2",
         "UV_OFFSET"             : "material[${materialUuid}].uvOffset",
         "UV_SCALE"              : "material[${materialUuid}].uvScale",
-        "FOG_TECHNIQUE"			: { "binding" : "material[$materialUuid].fogTechnique", "type" : "int" }
+        "FOG_TECHNIQUE"			: { "binding" : "material[${materialUuid}].fogTechnique", "type" : "int" },
+        "POP_LOD_ENABLED"       : "geometry[${geometryUuid}].popLodEnabled",
+        "POP_BLENDING_ENABLED"  : "geometry[${geometryUuid}].popBlendingEnabled"
     },
 
 	"states" : {

@@ -49,6 +49,7 @@ namespace minko
         class TextureParser;
         class TextureWriter;
         class WriterOptions;
+        class LinkedAsset;
 	}
 
 	namespace serialize

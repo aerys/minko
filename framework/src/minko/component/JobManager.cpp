@@ -26,17 +26,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 
+const unsigned int JobManager::_defaultMinimumNumStepsPerFrame = 1u;
+
 JobManager::Job::Job() :
     _jobManager(),
     _running(false),
-    _oneStepPerFrame(false),
     _priorityChanged(Signal<float>::create())
 {
 }
 
 JobManager::JobManager(unsigned int loadingFramerate):
     _loadingFramerate(loadingFramerate),
-    _jobPriorityChanged(false)
+    _sortingNeeded(false)
 {
     _frameTime = 1.f / loadingFramerate;
 }
@@ -48,16 +49,7 @@ JobManager::pushJob(Job::Ptr job)
         job,
         job->priorityChanged()->connect([=](float priority) -> void 
         {
-            auto jobIt = std::find(_jobs.begin(), _jobs.end(), job);
-
-            if (jobIt != _jobs.end())
-            {
-                _jobs.erase(jobIt);
-            }
-
-            insertJob(job);
-
-            _jobPriorityChanged = true;
+            _sortingNeeded = true;
         }))
     );
 
@@ -81,13 +73,24 @@ JobManager::end(NodePtr target)
     auto consumeTime        = float(std::clock() - _frameStartTime) / CLOCKS_PER_SEC;
     Job::Ptr currentJob     = nullptr;
 
-    while (consumeTime < _frameTime)
-    {
-        if (currentJob == nullptr ||
-            _jobPriorityChanged)
-        {
-            _jobPriorityChanged = false;
+    auto numStepPerformed = 0u;
 
+    while (consumeTime < _frameTime || numStepPerformed < _defaultMinimumNumStepsPerFrame)
+    {
+        if (_sortingNeeded)
+        {
+            _sortingNeeded = false;
+
+            currentJob = nullptr;
+
+            _jobs.sort(Job::PriorityComparator());
+        }
+
+        if (!hasPendingJob())
+            break;
+
+        if (currentJob == nullptr)
+        {
             currentJob = _jobs.back();
 
             if (!currentJob->running())
@@ -99,6 +102,8 @@ JobManager::end(NodePtr target)
         }
 
         currentJob->step();
+
+        ++numStepPerformed;
 
         consumeTime = (float(std::clock() - _frameStartTime) / CLOCKS_PER_SEC);
 
@@ -112,30 +117,19 @@ JobManager::end(NodePtr target)
             if (_jobs.empty())
                 return;
         }
-        else
-        {
-            if (currentJob->oneStepPerFrame())
-            {
-                _jobs.push_back(currentJob);
-                currentJob = nullptr;
-                consumeTime = _frameTime;
-            }
-        }
     }
 }
 
 void
 JobManager::insertJob(Job::Ptr job)
 {
-    auto jobPosition = std::lower_bound(
-        _jobs.begin(),
-        _jobs.end(),
-        job,
-        [&](Job::Ptr left, Job::Ptr right) -> bool
-        {
-            return left->priority() < right->priority();
-        }
-    );
+    _jobs.push_back(job);
 
-    _jobs.insert(jobPosition, job);
+    _sortingNeeded = true;
+}
+
+bool
+JobManager::hasPendingJob() const
+{
+    return !_jobs.empty() && _jobs.back()->priority() > 0.f;
 }

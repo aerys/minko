@@ -19,38 +19,41 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
-#include "minko/Common.hpp"
-#include "minko/file/AbstractProtocol.hpp"
+#include "minko/file/AnyASSIMPParser.hpp"
+
+namespace Assimp
+{
+    class MTLImporter;
+}
 
 namespace minko
 {
     namespace file
     {
-        class APKProtocol :
-            public AbstractProtocol
+        template <>
+        class AnyASSIMPParser<Assimp::MTLImporter> : public AbstractASSIMPParser
         {
         public:
-            typedef std::shared_ptr<APKProtocol>    Ptr;
+
+            typedef std::shared_ptr<AnyASSIMPParser<Assimp::MTLImporter>> Ptr;
 
         public:
-            inline static
+
+            virtual ~AnyASSIMPParser() { }
+
+            static
             Ptr
-            create()
-            {
-                return std::shared_ptr<APKProtocol>(new APKProtocol());
-            }
+            create();
 
+            virtual
             void
-            load();
+            provideLoaders(Assimp::Importer& importer);
 
-            bool
-            fileExists(const std::string& filename);
+        private:
 
-            bool
-            isAbsolutePath(const std::string& filename) const;
-
-        protected:
-            APKProtocol();
+            AnyASSIMPParser() { }
         };
+
+        using MTLParser = AnyASSIMPParser<Assimp::MTLImporter>;
     }
 }

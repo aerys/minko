@@ -47,6 +47,7 @@ Options::Options() :
     _disposeVertexBufferAfterLoading(false),
     _disposeTextureAfterLoading(false),
     _storeDataIfNotParsed(true),
+    _processUnusedAsset(false),
     _skinningFramerate(30),
     _skinningMethod(component::SkinningMethod::HARDWARE),
     _material(nullptr),
@@ -82,12 +83,14 @@ Options::Options(const Options& copy) :
     _disposeVertexBufferAfterLoading(copy._disposeVertexBufferAfterLoading),
     _disposeTextureAfterLoading(copy._disposeTextureAfterLoading),
     _storeDataIfNotParsed(copy._storeDataIfNotParsed),
+    _processUnusedAsset(copy._processUnusedAsset),
     _skinningFramerate(copy._skinningFramerate),
     _skinningMethod(copy._skinningMethod),
     _effect(copy._effect),
     _textureFormats(copy._textureFormats),
     _material(copy._material),
     _materialFunction(copy._materialFunction),
+    _textureFunction(copy._textureFunction),
     _geometryFunction(copy._geometryFunction),
     _protocolFunction(copy._protocolFunction),
     _parserFunction(copy._parserFunction),
@@ -114,6 +117,7 @@ Options::clone()
 void
 Options::initialize()
 {
+    resetNotInheritedValues();
     initializeDefaultFunctions();
     
     if (_parsers.find("effect") == _parsers.end())
@@ -178,12 +182,18 @@ Options::defaultProtocolFunction(const std::string& filename, const ProtocolFunc
 void
 Options::initializeDefaultFunctions()
 {
-    auto options = shared_from_this();
+    auto options = this;
 
     if (!_materialFunction)
         _materialFunction = [](const std::string&, material::Material::Ptr material) -> material::Material::Ptr
         {
             return material;
+        };
+
+    if (!_textureFunction)
+        _textureFunction = [](const std::string&, AbstractTexturePtr texture) -> AbstractTexturePtr
+        {
+            return texture;
         };
 
     if (!_geometryFunction)
@@ -305,4 +315,11 @@ Options::initializeDefaultFunctions()
     };
 
     _parserFunction = nullptr;
+}
+
+void
+Options::resetNotInheritedValues()
+{
+    seekingOffset(0);
+    seekedLength(0);
 }

@@ -151,36 +151,41 @@ MaterialParser::deserializeComplexProperty(MaterialPtr			material,
     }
     else if (type == TEXTURE)
     {
-        auto sampler = _dependencies->getTextureReference(Any::cast<uint>(TypeDeserializer::deserializeTextureId(serializedPropertyTuple)))->sampler();
+        auto textureDependencyId = Any::cast<uint>(TypeDeserializer::deserializeTextureId(serializedPropertyTuple));
 
-        material->data()->set(
-            serializedProperty.a0,
-            sampler
-        );
+        if (_dependency->textureReferenceExist(textureDependencyId))
+        {
+            auto sampler = _dependency->getTextureReference(textureDependencyId)->sampler();
 
-        material->data()->set(
-            SamplerStates::uniformNameToSamplerStateBindingName(
+            material->data()->set(
                 serializedProperty.a0,
-                SamplerStates::PROPERTY_WRAP_MODE
-            ),
-            sampler.wrapMode
-        );
+                sampler
+            );
 
-        material->data()->set(
-            SamplerStates::uniformNameToSamplerStateBindingName(
-                serializedProperty.a0,
-                SamplerStates::PROPERTY_TEXTURE_FILTER
-            ),
-            sampler.textureFilter
-        );
+            material->data()->set(
+                SamplerStates::uniformNameToSamplerStateBindingName(
+                    serializedProperty.a0,
+                    SamplerStates::PROPERTY_WRAP_MODE
+                ),
+                sampler.wrapMode
+            );
 
-        material->data()->set(
-            SamplerStates::uniformNameToSamplerStateBindingName(
-                serializedProperty.a0,
-                SamplerStates::PROPERTY_MIP_FILTER
-            ),
-            sampler.mipFilter
-        );
+            material->data()->set(
+                SamplerStates::uniformNameToSamplerStateBindingName(
+                    serializedProperty.a0,
+                    SamplerStates::PROPERTY_TEXTURE_FILTER
+                ),
+                sampler.textureFilter
+            );
+
+            material->data()->set(
+                SamplerStates::uniformNameToSamplerStateBindingName(
+                    serializedProperty.a0,
+                    SamplerStates::PROPERTY_MIP_FILTER
+                ),
+                sampler.mipFilter
+            );
+        }
     }
 	else if (type == ENVMAPTYPE)
 	{
@@ -200,6 +205,8 @@ MaterialParser::deserializeBasicProperty(MaterialPtr		material,
 
     if (serializedProperty.a0 == "zSorted")
         material->data()->set<bool>("zSorted", serializedPropertyValue[0]);
-    else
+    else if (serializedProperty.a0 == "environmentMap2dType")
+		material->data()->set<int>("environmentMap2dType", int(serializedPropertyValue[0]));
+	else
 	    material->data()->set<float>(serializedProperty.a0, serializedPropertyValue[0]);
 }

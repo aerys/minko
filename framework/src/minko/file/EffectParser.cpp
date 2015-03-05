@@ -1542,6 +1542,9 @@ EffectParser::finalize()
     _options->assetLibrary()->effect(_filename, _effect);
 
     _complete->execute(shared_from_this());
+
+    _loaderCompleteSlots.clear();
+    _loaderErrorSlots.clear();
 }
 
 render::Pass::Ptr

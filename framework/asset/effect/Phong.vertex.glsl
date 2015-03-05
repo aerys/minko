@@ -10,6 +10,7 @@
 
 #pragma include "Skinning.function.glsl"
 #pragma include "Pop.function.glsl"
+#pragma include "Pack.function.glsl"
 
 attribute 	vec3 	aPosition;
 attribute 	vec2 	aUV;
@@ -17,6 +18,7 @@ attribute 	vec3 	aNormal;
 attribute 	vec3 	aTangent;
 attribute 	vec4	aBoneWeightsA;
 attribute 	vec4	aBoneWeightsB;
+attribute	float	aColor;
 
 uniform 	mat4 	uModelToWorldMatrix;
 uniform 	mat4 	uWorldToScreenMatrix;
@@ -24,9 +26,9 @@ uniform 	vec2 	uUVScale;
 uniform 	vec2 	uUVOffset;
 uniform 	mat4 	uLightWorldToScreenMatrix;
 
-uniform 	int 	uPopLod;
-uniform 	int 	uPopFullPrecisionLod;
-
+uniform 	float 	uPopLod;
+uniform 	float 	uPopBlendingLod;
+uniform 	float 	uPopFullPrecisionLod;
 uniform 	vec3 	uPopMinBound;
 uniform 	vec3 	uPopMaxBound;
 
@@ -35,12 +37,17 @@ varying 	vec4 	vVertexScreenPosition;
 varying 	vec2 	vVertexUV;
 varying 	vec3 	vVertexNormal;
 varying 	vec3 	vVertexTangent;
+varying		vec4	vVertexColor;
 
 void main(void)
 {
 	#if defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP
 		vVertexUV = uUVScale * aUV + uUVOffset;
 	#endif // defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP
+
+	#if defined VERTEX_COLOR
+		vVertexColor = vec4(packFloat8bitRGB(aColor), 1.0);
+	#endif // VERTEX_COLOR
 
 	vec4 worldPosition = vec4(aPosition, 1.0);
 
@@ -49,9 +56,11 @@ void main(void)
 	#endif // SKINNING_NUM_BONES
 
 	#ifdef POP_LOD_ENABLED
-		vec4 quantizedPosition 	= pop_quantify(worldPosition, uPopLod, uPopMinBound, uPopMaxBound);
-
-		worldPosition 			= mix(quantizedPosition, worldPosition, float(uPopLod == uPopFullPrecisionLod));
+		#ifdef POP_BLENDING_ENABLED
+			worldPosition = pop_blend(worldPosition, aNormal, uPopLod, uPopBlendingLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound);
+		#else
+			worldPosition = pop_quantify(worldPosition, aNormal, uPopLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound);
+		#endif // POP_BLENDING_ENABLED
 	#endif // POP_LOD_ENABLED
 
 	#ifdef MODEL_TO_WORLD

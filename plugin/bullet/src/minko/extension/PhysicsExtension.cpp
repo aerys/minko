@@ -36,7 +36,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::extension;
 
-void
+AbstractExtension::Ptr
 PhysicsExtension::bind()
 {
     file::SceneParser::registerComponent(50, std::bind(&PhysicsExtension::deserializePhysics,
@@ -44,6 +44,8 @@ PhysicsExtension::bind()
         std::placeholders::_2,
         std::placeholders::_3,
         std::placeholders::_4));
+
+    return shared_from_this();
 }
 
 std::shared_ptr<component::AbstractComponent>

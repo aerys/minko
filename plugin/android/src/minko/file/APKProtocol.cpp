@@ -90,3 +90,10 @@ APKProtocol::fileExists(const std::string& filename)
 
     return file != nullptr;
 }
+
+bool
+APKProtocol::isAbsolutePath(const std::string& filename) const
+{
+    return filename.find("://") != std::string::npos ||
+           filename.find_first_of("/") == 0u;
+}

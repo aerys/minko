@@ -71,7 +71,7 @@ TextureParser::parse(const std::string&                filename,
 {
     readHeader(filename, data, 0x00000054);
 
-    auto textureHeaderOffset = _headerSize + _dependenciesSize;
+    auto textureHeaderOffset = _headerSize + _dependenciesSize + 2;
     auto textureBlobOffset = textureHeaderOffset + _textureHeaderSize;
 
     auto rawTextureHeaderData = std::vector<unsigned char>(data.begin() + textureHeaderOffset,
@@ -200,7 +200,7 @@ TextureParser::parseRGBATexture(const std::string&                  fileName,
     msgpack::unpacked unpacked;
     msgpack::unpack(&unpacked, reinterpret_cast<const char*>(data.data()), data.size());
 
-    auto deserializedTexture = unpacked.get().as<msgpack::type::tuple<int, std::vector<unsigned char>>>();
+    auto deserializedTexture = unpacked.get().as<msgpack::type::tuple<int, std::string>>();
 
     auto imageFormat = static_cast<ImageFormat>(deserializedTexture.a0);
 
@@ -216,7 +216,13 @@ TextureParser::parseRGBATexture(const std::string&                  fileName,
         return false;
     }
 
-    parser->parse(fileName, fileName, options, deserializedTexture.a1, assetLibrary);
+    parser->parse(
+        fileName,
+        fileName,
+        options,
+        std::vector<unsigned char>(deserializedTexture.a1.begin(), deserializedTexture.a1.end()),
+        assetLibrary
+    );
 
     return true;
 }

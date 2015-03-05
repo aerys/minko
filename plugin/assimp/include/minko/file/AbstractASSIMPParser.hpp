@@ -67,6 +67,7 @@ namespace minko
 			typedef std::shared_ptr<geometry::Skin>					            SkinPtr;
 			typedef std::shared_ptr<material::Material>				            MaterialPtr;
 			typedef std::shared_ptr<render::Effect>					            EffectPtr;
+			typedef std::shared_ptr<render::AbstractTexture>		            AbstracTexturePtr;
 
 			typedef Signal<LoaderPtr>::Slot		                                LoaderCompleteSignalSlot;
             typedef Signal<LoaderPtr, const file::Error&>::Slot                 LoaderErrorSignalSlot;
@@ -101,6 +102,8 @@ namespace minko
 			LoaderToErrorSlotMap									_loaderErrorSlots;
 
             Assimp::Importer*                                       _importer;
+
+            std::unordered_map<std::string, std::string>            _validAssetNames;
 
 		public:
 
@@ -137,11 +140,9 @@ namespace minko
             GeometryPtr
             createMeshGeometry(NodePtr, aiMesh*, const std::string&);
 
-            static
             std::string
             getMaterialName(const std::string& materialName);
 
-            static
             std::string
             getMeshName(const std::string& meshName);
 
@@ -150,6 +151,11 @@ namespace minko
 
             void
             createMeshSurface(NodePtr, const aiScene*, aiMesh*);
+
+            void
+            createUnusedMaterials(const aiScene*                  scene,
+                                  std::shared_ptr<AssetLibrary>   assetLibrary,
+                                  std::shared_ptr<Options>        options);
 
             void
 			createLights(const aiScene*);
@@ -271,6 +277,12 @@ namespace minko
 
             void
             textureCompleteHandler(std::shared_ptr<file::Loader> loader, const aiScene* scene);
+
+            void
+            textureSet(MaterialPtr material, const std::string& textureTypeName, AbstracTexturePtr texture);
+
+            const std::string&
+            getValidAssetName(const std::string& name);
 		};
 	}
 }

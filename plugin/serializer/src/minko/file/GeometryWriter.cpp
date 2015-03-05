@@ -69,7 +69,8 @@ std::string
 GeometryWriter::embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 					  std::shared_ptr<Options>			options,
 					  Dependency::Ptr					dependency,
-					  WriterOptions::Ptr				writerOptions)
+					  WriterOptions::Ptr				writerOptions,
+                      std::vector<unsigned char>&       embeddedHeaderData)
 {
 	geometry::Geometry::Ptr		geometry				= data();
 	uint						indexBufferFunctionId	= 0;

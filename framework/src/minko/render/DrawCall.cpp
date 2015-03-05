@@ -672,9 +672,10 @@ DrawCall::render(AbstractContext::Ptr   context,
 
     for (const auto& a : _attributes)
         context->setVertexBufferAt(a.location, *a.resourceId, a.size, *a.stride, a.offset);
-
-    // for (auto numAttributes = _attributes.size(); numAttributes < MAX_NUM_VERTEXBUFFERS; ++numAttributes)
-    //     context->setVertexBufferAt(numAttributes, -1, 0, 0, 0);
+    /*
+    for (auto numAttributes = _attributes.size(); numAttributes < MAX_NUM_VERTEXBUFFERS; ++numAttributes)
+        context->setVertexBufferAt(numAttributes, -1, 0, 0, 0);
+    */
 
     context->setColorMask(*_colorMask);
     context->setBlendingMode(*_blendingSourceFactor, *_blendingDestinationFactor);

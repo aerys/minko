@@ -29,7 +29,7 @@
 /*
  * ``Library-private'' definitions.
  */
-
+#include "stdio.h"
 #include "tif_config.h"
 
 #ifdef HAVE_FCNTL_H
