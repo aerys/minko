@@ -105,3 +105,4 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/input/Touch.hpp"
 #include "minko/scene/Layout.hpp"
 #include "minko/async/Worker.hpp"
+#include "minko/log/Logger.hpp"

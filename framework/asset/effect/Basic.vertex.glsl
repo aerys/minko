@@ -36,7 +36,7 @@ varying vec4 vVertexScreenPosition;
 
 void main(void)
 {
-	#if defined(DIFFUSE_MAP) || defined(ALPHA_MAP)
+	#if defined(VERTEX_UV) && (defined(DIFFUSE_MAP) || defined(ALPHA_MAP))
 		vec2 uv = aUV;
 
 		#if defined(UV_SCALE)

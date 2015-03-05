@@ -203,9 +203,10 @@
 
 				"macros" : {
 					"MODEL_TO_WORLD"			: "modelToWorldMatrix",
-					"SKINNING_NUM_BONES"		: { "binding" : "geometry[$geometryUuid].numBones", "type" : "int" },
-					"DIFFUSE_MAP"				: "material[$materialUuid].diffuseMap",
-					"VERTEX_COLOR"				: "geometry[geometryUuid].color",
+					"SKINNING_NUM_BONES"		: { "binding" : "geometry[${geometryUuid}].numBones", "type" : "int" },
+					"DIFFUSE_MAP"				: "material[${materialUuid}].diffuseMap",
+					"VERTEX_COLOR"				: "geometry[${geometryUuid}].color",
+					"VERTEX_UV"					: "geometry[${geometryUuid}].uv",
 					"DIFFUSE_MAP_LOD"			: "material[${materialUuid}].diffuseMapLodEnabled",
 					"NORMAL_MAP"				: "material[${materialUuid}].normalMap",
 					"NORMAL_MAP_LOD"			: "material[${materialUuid}].normalMapLodEnabled",

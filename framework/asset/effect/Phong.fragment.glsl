@@ -256,15 +256,15 @@ void main(void)
 		shininessCoeff = max(1.0, uShininess);
 	#endif // SHININESS
 
-	#ifdef DIFFUSE_MAP
+	#if defined(DIFFUSE_MAP) && defined(VERTEX_UV)
 		#ifdef DIFFUSE_MAP_LOD
-			diffuse = texturelod_texture2D(uDiffuseMap, vVertexUV, uDiffuseMapSize, 0.0, uDiffuseMapMaxAvailableLod, uDiffuseColor);
+			diffuse = texturelod_texture2D(uDiffuseMap, vVertexUV, uDiffuseMapSize, 0.0, uDiffuseMapMaxAvailableLod, diffuse);
 		#else
 			diffuse = texture2D(uDiffuseMap, vVertexUV);
 		#endif
 	#endif // DIFFUSE_MAP
 
-	#ifdef ALPHA_MAP
+	#if defined(ALPHA_MAP) && defined(VERTEX_UV)
 		diffuse.a = texture2D(uAlphaMap, vVertexUV).r;
 	#endif // ALPHA_MAP
 
@@ -274,13 +274,13 @@ void main(void)
 	#endif // ALPHA_THRESHOLD
 
 	#if defined(SHININESS) || ( (defined(ENVIRONMENT_MAP_2D) || defined(ENVIRONMENT_CUBE_MAP)) && !defined(ENVIRONMENT_ALPHA) )
-		#ifdef SPECULAR_MAP
+		#if defined(SPECULAR_MAP) && defined(VERTEX_UV)
 			#ifdef SPECULAR_MAP_LOD
 				specular = texturelod_texture2D(uSpecularMap, vVertexUV, uSpecularMapSize, 0.0, uSpecularMapMaxAvailableLod, uSpecularColor);
 			#else
 				specular = texture2D(uSpecularMap, vVertexUV);
 			#endif
-		#elif defined NORMAL_MAP
+		#elif defined(NORMAL_MAP) && defined(VERTEX_UV)
 			specular.a = texture2D(uNormalMap, vVertexUV).a; // ???
 		#endif // SPECULAR_MAP
 	#endif
@@ -301,7 +301,7 @@ void main(void)
     #endif
 
 	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
-		#ifdef NORMAL_MAP
+		#if defined(NORMAL_MAP) && defined(VERTEX_UV)
 			// warning: the normal vector must be normalized at this point!
 			mat3 tangentToWorldMatrix = phong_getTangentToWorldSpaceMatrix(normalVector, vVertexTangent);
 
