@@ -161,7 +161,7 @@ SceneParser::parseHeader(const std::string&					filename,
 
         return;
     }
-    /*
+
     auto embedContentLoader = Loader::create();
     auto embedContentOptions = options->clone();
 
@@ -197,18 +197,6 @@ SceneParser::parseHeader(const std::string&					filename,
     embedContentLoader
         ->queue(filename)
         ->load();
-    */
-    auto embedContentOptions = options->clone();
-    auto d = std::vector<unsigned char>(data.begin() + MINKO_SCENE_HEADER_SIZE, data.end());
-
-    parseEmbedContent(
-        filename,
-        resolvedFilename,
-        embedContentOptions,
-        d,
-        assetLibrary
-    );
-
 }
 
 void
