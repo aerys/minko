@@ -59,6 +59,8 @@ namespace minko
         private:
             static std::unordered_map<int8_t, ComponentReadFunction>    _componentIdToReadFunction;
 
+            Signal<std::shared_ptr<Loader>>::Slot                       _embedContentLoaderCompleteSlot;
+
         public:
             inline static
             Ptr
@@ -80,6 +82,20 @@ namespace minko
                   AssetLibraryPtr                   assetLibrary);
 
         private:
+            void
+            parseHeader(const std::string&					filename,
+				        const std::string&					resolvedFilename,
+				        std::shared_ptr<Options>			options,
+				        const std::vector<unsigned char>&	data,
+				        AssetLibraryPtr					    assetLibrary);
+
+            void
+            parseEmbedContent(const std::string&				filename,
+				              const std::string&				resolvedFilename,
+				              std::shared_ptr<Options>			options,
+				              const std::vector<unsigned char>&	data,
+				              AssetLibraryPtr					assetLibrary);
+
             std::shared_ptr<scene::Node>
             parseNode(std::vector<SerializedNode>&  nodePack,
                       std::vector<std::string>&     componentPack,

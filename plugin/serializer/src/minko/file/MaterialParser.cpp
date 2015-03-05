@@ -147,9 +147,9 @@ MaterialParser::deserializeComplexProperty(MaterialPtr            material,
     {
         auto textureDependencyId = Any::cast<uint>(TypeDeserializer::deserializeTextureId(serializedPropertyTuple));
 
-        if (_dependencies->textureReferenceExist(textureDependencyId))
+        if (_dependency->textureReferenceExist(textureDependencyId))
         {
-            auto sampler = _dependencies->getTextureReference(textureDependencyId)->sampler();
+            auto sampler = _dependency->getTextureReference(textureDependencyId)->sampler();
 
             material->data()->set(
                 serializedProperty.get<0>(),
@@ -199,6 +199,8 @@ MaterialParser::deserializeBasicProperty(MaterialPtr        material,
 
     if (serializedProperty.get<0>() == "zSorted")
         material->data()->set<bool>("zSorted", serializedPropertyValue[0]);
+    else if (serializedProperty.a0 == "environmentMap2dType")
+		material->data()->set<int>("environmentMap2dType", int(serializedPropertyValue[0]));
     else
 	    material->data()->set<float>(serializedProperty.get<0>(), serializedPropertyValue[0]);
 }

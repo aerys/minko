@@ -352,6 +352,11 @@ Renderer::addSurface(Surface::Ptr surface)
 
     auto drawCall = *(_surfaceToDrawCallIterator[surface].first);
 
+    _drawCallToZSortNeededSlot[drawCall] = drawCall->zSortNeeded()->connect([&](DrawCall* d)
+    {
+        drawCallZSortNeededHandler(d);
+    });
+
     auto callback = std::bind(
         &Renderer::surfaceGeometryOrMaterialChangedHandler,
         std::static_pointer_cast<Renderer>(shared_from_this()),
@@ -453,13 +458,8 @@ Renderer::render(render::AbstractContext::Ptr	context,
 
     _drawCallPool.update();
     
-    auto static counter = 0;
-
     if (doZSort)
-    {
         _drawCallPool.sortDrawCalls();
-        counter++;
-    }
 
     _mustZSort = false;
 
@@ -475,6 +475,12 @@ Renderer::render(render::AbstractContext::Ptr	context,
     context->present();
 
     _renderingEnd->execute(std::static_pointer_cast<Renderer>(shared_from_this()));
+}
+
+void
+Renderer::drawCallZSortNeededHandler(DrawCall* drawcall)
+{
+    _mustZSort = true;
 }
 
 void

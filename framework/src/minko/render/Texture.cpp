@@ -84,6 +84,8 @@ Texture::data(unsigned char*    data,
         }
         else if (_format == TextureFormat::RGB)
         {
+            _format = TextureFormat::RGBA;
+
             for (unsigned int i = 0, j = 0; j < size; i += 3, j += 4)
             {
                 rgba[j] = data[i];

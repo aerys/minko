@@ -20,37 +20,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/file/AbstractProtocol.hpp"
+#include "minko/SerializerCommon.hpp"
 
 namespace minko
 {
     namespace file
     {
-        class APKProtocol :
-            public AbstractProtocol
+        class CRNTranscoder
         {
         public:
-            typedef std::shared_ptr<APKProtocol>    Ptr;
-
-        public:
-            inline static
-            Ptr
-            create()
-            {
-                return std::shared_ptr<APKProtocol>(new APKProtocol());
-            }
-
-            void
-            load();
-
+            static
             bool
-            fileExists(const std::string& filename);
-
-            bool
-            isAbsolutePath(const std::string& filename) const;
-
-        protected:
-            APKProtocol();
+            transcode(std::shared_ptr<render::AbstractTexture>  texture,
+                      std::shared_ptr<WriterOptions>            writerOptions,
+                      render::TextureFormat                     outFormat,
+                      std::vector<unsigned char>&               out);
         };
     }
 }

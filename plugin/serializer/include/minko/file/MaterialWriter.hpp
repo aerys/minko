@@ -62,7 +62,8 @@ namespace minko
 			embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 				  std::shared_ptr<Options>			options,
 				  Dependency::Ptr					dependency,
-                  std::shared_ptr<WriterOptions>    writerOptions);
+                  std::shared_ptr<WriterOptions>    writerOptions,
+                  std::vector<unsigned char>&       embeddedHeaderData);
 
 		private:
 			MaterialWriter();
@@ -78,9 +79,14 @@ namespace minko
 			{
 				if (material->data()->propertyHasType<render::TextureSampler>(propertyName))
 				{
-					std::tuple<uint, std::string> serializedTexture = serialize::TypeSerializer::serializeTexture(Any(dependency->registerDependency(
-                        assets->getTextureByUuid(material->data()->get<render::TextureSampler>(propertyName).uuid)
-                    )));
+					std::tuple<uint, std::string> serializedTexture = serialize::TypeSerializer::serializeTexture(Any(
+                        dependency->registerDependency(
+                            assets->getTextureByUuid(
+                                material->data()->get<render::TextureSampler>(propertyName).uuid,
+                                false
+                            )
+                        )
+                    ));
 					TupleIntString serializedMsgTexture(std::get<0>(serializedTexture), std::get<1>(serializedTexture));
 
 					ComplexPropertyTuple serializedProperty(propertyName, serializedMsgTexture);

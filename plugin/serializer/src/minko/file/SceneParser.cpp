@@ -42,6 +42,8 @@ std::unordered_map<std::int8_t, SceneParser::ComponentReadFunction> SceneParser:
 
 SceneParser::SceneParser()
 {
+    _dependency = Dependency::create();
+
     _geometryParser = file::GeometryParser::create();
     _materialParser = file::MaterialParser::create();
     _textureParser = file::TextureParser::create();
@@ -138,11 +140,71 @@ SceneParser::parse(const std::string&                   filename,
                    const std::vector<unsigned char>&    data,
                    AssetLibraryPtr                      assetLibrary)
 {
-    _dependencies->options(options);
+    _dependency = Dependency::create();
 
+	_dependency->options(options);
+
+    parseHeader(filename, resolvedFilename, options, data, assetLibrary);
+}
+
+void
+SceneParser::parseHeader(const std::string&					filename,
+				         const std::string&					resolvedFilename,
+				         std::shared_ptr<Options>			options,
+				         const std::vector<unsigned char>&	data,
+				         AssetLibraryPtr					assetLibrary)
+{
     if (!readHeader(filename, data))
-        return;
+    {
+        _error->execute(shared_from_this(), Error("SceneParsingError", "Failed to parse header: " + filename));
 
+        return;
+    }
+
+    auto embedContentLoader = Loader::create();
+    auto embedContentOptions = options->clone();
+
+    embedContentLoader->options(embedContentOptions);
+
+    const auto embedContentOffset = this->embedContentOffset();
+    const auto embedContentLength = this->embedContentLength();
+
+    embedContentOptions
+        ->seekingOffset(embedContentOffset)
+        ->seekedLength(embedContentLength)
+        ->storeDataIfNotParsed(false)
+        ->parserFunction([](const std::string& extension) -> AbstractParser::Ptr
+        {
+            return nullptr;
+        }); 
+
+    _embedContentLoaderCompleteSlot = embedContentLoader->complete()->connect(
+        [=](Loader::Ptr embedContentLoaderThis) -> void
+        {
+            _embedContentLoaderCompleteSlot = nullptr;
+
+            parseEmbedContent(
+                filename,
+                resolvedFilename,
+                embedContentOptions,
+                embedContentLoaderThis->files().at(filename)->data(),
+                assetLibrary
+            );
+        }
+    );
+
+    embedContentLoader
+        ->queue(filename)
+        ->load();
+}
+
+void
+SceneParser::parseEmbedContent(const std::string&					filename,
+				               const std::string&					resolvedFilename,
+				               std::shared_ptr<Options>				options,
+				               const std::vector<unsigned char>&	data,
+				               AssetLibraryPtr					    assetLibrary)
+{
 	std::string 		folderPath = extractFolderPath(resolvedFilename);
 
     msgpack::type::tuple<std::vector<std::string>, std::vector<SerializedNode>> dst;
@@ -223,7 +285,7 @@ SceneParser::parseNode(std::vector<SerializedNode>&            nodePack,
             parent->addChild(node);
     }
 
-    _dependencies->loadedRoot(root);
+	_dependency->loadedRoot(root);
 
     std::set<uint> markedComponent;
 
@@ -237,7 +299,7 @@ SceneParser::parseNode(std::vector<SerializedNode>&            nodePack,
         {
             if (_componentIdToReadFunction.find(dst) != _componentIdToReadFunction.end())
             {
-                std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[dst](_version, componentPack[componentIndex], assetLibrary, _dependencies);
+                std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[dst](_version, componentPack[componentIndex], assetLibrary, _dependency);
 
                 for (scene::Node::Ptr node : componentIdToNodes[componentIndex])
                     node->addComponent(newComponent);
@@ -250,7 +312,7 @@ SceneParser::parseNode(std::vector<SerializedNode>&            nodePack,
     for (auto componentIndex2 : markedComponent)
     {
         isSkinningFree = false;
-        std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[serialize::SKINNING](_version, componentPack[componentIndex2], assetLibrary, _dependencies);
+        std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[serialize::SKINNING](_version, componentPack[componentIndex2], assetLibrary, _dependency);
 
         for (scene::Node::Ptr node : componentIdToNodes[componentIndex2])
 		{

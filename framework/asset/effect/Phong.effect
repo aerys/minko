@@ -15,7 +15,8 @@
 					"aBoneIdsA"		: "geometry[$geometryUuid].boneIdsA",
 					"aBoneIdsB"		: "geometry[$geometryUuid].boneIdsB",
 					"aBoneWeightsA"	: "geometry[$geometryUuid].boneWeightsA",
-					"aBoneWeightsB"	: "geometry[$geometryUuid].boneWeightsB"
+					"aBoneWeightsB"	: "geometry[$geometryUuid].boneWeightsB",
+					"aColor"		: "geometry[$geometryUuid].color"
 				},
 
 				"uniforms" : {
@@ -91,6 +92,7 @@
 					"uFogColor"						: "material[$materialUuid].fogColor",
 					"uFogBounds"					: "material[$materialUuid].fogBounds",
         			"uPopLod"                		: "geometry[${geometryUuid}].popLod",
+        			"uPopBlendingLod"          		: "geometry[${geometryUuid}].popBlendingLod",
         			"uPopFullPrecisionLod"   		: "geometry[${geometryUuid}].popFullPrecisionLod",
         			"uPopMinBound"           		: "geometry[${geometryUuid}].popMinBound",
         			"uPopMaxBound"           		: "geometry[${geometryUuid}].popMaxBound"
@@ -100,6 +102,7 @@
 					"MODEL_TO_WORLD"			: "modelToWorldMatrix",
 					"SKINNING_NUM_BONES"		: { "binding" : "geometry[$geometryUuid].numBones", "type" : "int" },
 					"DIFFUSE_MAP"				: "material[$materialUuid].diffuseMap",
+					"VERTEX_COLOR"				: "geometry[geometryUuid].color",
 					"DIFFUSE_MAP_LOD"			: "material[${materialUuid}].diffuseMapLodEnabled",
 					"NORMAL_MAP"				: "material[$materialUuid].normalMap",
 					"NORMAL_MAP_LOD"			: "material[${materialUuid}].normalMapLodEnabled",
@@ -121,7 +124,18 @@
 					"DIRECTIONAL_1_SHADOW_MAP"	: { "binding" : { "property" : "directionalLight[1].shadowMap", "source" : "root" } },
 					"DIRECTIONAL_2_SHADOW_MAP"	: { "binding" : { "property" : "directionalLight[2].shadowMap", "source" : "root" } },
 					"DIRECTIONAL_3_SHADOW_MAP"	: { "binding" : { "property" : "directionalLight[3].shadowMap", "source" : "root" } },
-        			"POP_LOD_ENABLED"       	: "geometry[${geometryUuid}].popLodEnabled"
+        			"POP_LOD_ENABLED"       	: "geometry[${geometryUuid}].popLodEnabled",
+        			"POP_BLENDING_ENABLED"		: "geometry[${geometryUuid}].popBlendingEnabled"
+				},
+
+				"states" : {
+					"blendingSource"		: { "binding" : "material[${materialUuid}].blendingSource" },
+					"blendingDestination"	: { "binding" : "material[${materialUuid}].blendingDestination" },
+			        "triangleCulling"       : { "binding" : "material[${materialUuid}].triangleCulling" },
+			        "zSorted"               : { "binding" : "material[${materialUuid}].zSorted" },
+			        "priority"              : { "binding" : "material[${materialUuid}].priority" },
+					"depthMask"             : { "binding" : "material[${materialUuid}].depthMask" },
+			        "depthFunction"         : { "binding" : "material[${materialUuid}].depthFunction" }
 				},
 
 				"states" : {

@@ -36,9 +36,12 @@ namespace minko
         class IOHandler :
             public Assimp::IOSystem
         {
-            typedef std::shared_ptr<Loader>                                 LoaderPtr;
+            typedef std::shared_ptr<Loader>     LoaderPtr;
 
-            typedef std::function<void(IOHandler&, const Error&)>           ErrorFunction;
+            typedef std::function<void(
+                IOHandler&,
+                const std::string&,
+                const Error&)>                  ErrorFunction;
 
         private:
             std::shared_ptr<file::Options>                                          _options;
@@ -96,7 +99,11 @@ namespace minko
 
                 _options
                     ->loadAsynchronously(false)
-                    ->storeDataIfNotParsed(false);
+                    ->storeDataIfNotParsed(false)
+                    ->parserFunction([](const std::string&) -> AbstractParser::Ptr
+                    {
+                        return nullptr;
+                    });
 
                 Assimp::IOStream* stream = nullptr;
 
@@ -111,7 +118,7 @@ namespace minko
                 _loaderErrorSlots[loader] = loader->error()->connect([&](Loader::Ptr, const Error& error)
                 {
                     if (_errorFunction)
-                        _errorFunction(*this, error);
+                        _errorFunction(*this, filename, error);
                     else
                         throw error;
                 });

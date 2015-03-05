@@ -229,7 +229,14 @@ namespace minko
                 else
                     return false;
             }
-            
+
+            inline
+            Signal<DrawCall*>::Ptr
+            zSortNeeded() const
+            {
+                return _zSortNeeded;
+            }
+
 			inline
 			const TextureSampler&
 			target()

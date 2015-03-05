@@ -47,7 +47,7 @@ Loader::Ptr
 Loader::queue(const std::string& filename, std::shared_ptr<Options> options)
 {
     _filesQueue.push_back(filename);
-    _filenameToOptions[filename] = (options ? options : _options)->clone();
+    _filenameToOptions[filename] = (options ? options : _options);
 
     return std::dynamic_pointer_cast<Loader>(shared_from_this());
 }
@@ -80,7 +80,9 @@ Loader::load()
 
             protocol->options(options);
 
-            if (includePaths.empty() || protocol->fileExists(resolvedFilename))
+            if (includePaths.empty() ||
+                protocol->isAbsolutePath(filename) ||
+                protocol->fileExists(resolvedFilename))
             {
                 loadFile = true;
             }
@@ -266,10 +268,14 @@ Loader::finalize()
     if (_loading.size() == 0 && _filesQueue.size() == 0 && _numFilesToParse == 0)
     {
         _protocolSlots.clear();
+        _protocolProgressSlots.clear();
         _parserErrorSlots.clear();
         _filenameToOptions.clear();
 
         _complete->execute(shared_from_this());
+
+        _protocolToProgress.clear();
+        _files.clear();
     }
 }
 

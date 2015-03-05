@@ -33,12 +33,22 @@ namespace minko
         public:
             typedef std::shared_ptr<WriterOptions>                              Ptr;
 
+            struct EmbedMode
+            {
+                static const unsigned int None;
+                static const unsigned int Geometry;
+                static const unsigned int Material;
+                static const unsigned int Texture;
+                static const unsigned int All;
+            };
+
         private:
             typedef std::function<const std::string(const std::string&)>        UriFunction;
 
         private:
-            bool                                _embedAll;
             bool                                _addBoundingBoxes;
+
+            unsigned int                        _embedMode;
 
             UriFunction                         _outputAssetUriFunction;
 
@@ -51,6 +61,8 @@ namespace minko
             math::ivec2                         _textureMaxResolution;
             render::MipFilter                   _mipFilter;
             bool                                _optimizeForNormalMapping;
+
+            std::set<std::string>               _nullAssetUuids;
 
         public:
             inline
@@ -70,8 +82,8 @@ namespace minko
             {
                 auto instance = WriterOptions::create();
 
-                instance->_embedAll = other->_embedAll;
                 instance->_addBoundingBoxes = other->_addBoundingBoxes;
+                instance->_embedMode = other->_embedMode;
                 instance->_outputAssetUriFunction = other->_outputAssetUriFunction;
                 instance->_imageFormat = other->_imageFormat;
                 instance->_textureFormats = other->_textureFormats;
@@ -81,25 +93,10 @@ namespace minko
                 instance->_textureMaxResolution = other->_textureMaxResolution;
                 instance->_mipFilter = other->_mipFilter;
                 instance->_optimizeForNormalMapping = other->_optimizeForNormalMapping;
+                instance->_nullAssetUuids = other->_nullAssetUuids;
 
                 return instance;
             }
-
-            inline
-			bool
-			embedAll() const
-			{
-				return _embedAll;
-			}
-
-			inline
-			Ptr
-			embedAll(bool value)
-			{
-				_embedAll = value;
-
-				return shared_from_this();
-			}
 
             inline
 			bool
@@ -113,6 +110,22 @@ namespace minko
 			addBoundingBoxes(bool value)
 			{
 				_addBoundingBoxes = value;
+
+				return shared_from_this();
+			}
+
+            inline
+			unsigned int
+			embedMode() const
+			{
+				return _embedMode;
+			}
+
+			inline
+			Ptr
+			embedMode(unsigned int value)
+			{
+				_embedMode = value;
 
 				return shared_from_this();
 			}
@@ -259,6 +272,20 @@ namespace minko
                 _optimizeForNormalMapping = value;
 
                 return shared_from_this();
+            }
+
+            inline
+            std::set<std::string>&
+            nullAssetUuids()
+            {
+                return _nullAssetUuids;
+            }
+
+            inline
+            bool
+            assetIsNull(const std::string& uuid) const
+            {
+                return _nullAssetUuids.find(uuid) != _nullAssetUuids.end();
             }
 
         private:

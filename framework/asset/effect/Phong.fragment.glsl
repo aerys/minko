@@ -153,6 +153,7 @@ varying vec2 vertexUV;
 varying vec3 vertexNormal;
 varying vec3 vertexTangent;
 varying vec4 vertexScreenPosition;
+varying vec4 vertexColor;
 
 float getShadow(sampler2D 	shadowMap,
 				mat4 		viewProj[SHADOW_MAPPING_MAX_NUM_CASCADES],
@@ -213,13 +214,17 @@ void main(void)
 	vec3 eyeVector = normalize(uCameraPosition - vertexPosition); // always in world-space
 	vec3 normalVector = normalize(vertexNormal); // always in world-space
 
+	#ifdef VERTEX_COLOR
+		diffuse = vertexColor;
+	#endif // VERTEX_COLOR
+
 	#ifdef SHININESS
 		shininessCoeff = max(1.0, uShininess);
 	#endif // SHININESS
 
 	#ifdef DIFFUSE_MAP
 		#ifdef DIFFUSE_MAP_LOD
-			diffuse = texturelod_texture2D(uDiffuseMap, vertexUV, uDiffuseMapSize, 0.0, uDiffuseMapMaxAvailableLod, uDiffuseColor);
+			diffuse = texturelod_texture2D(uDiffuseMap, vertexUV, uDiffuseMapSize, 0.0, uDiffuseMapMaxAvailableLod, diffuse);
 		#else
 			diffuse = texture2D(uDiffuseMap, vertexUV);
 		#endif

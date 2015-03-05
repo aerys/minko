@@ -20,4 +20,6 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			defines { "EMSCRIPTEN_WGET_HEADERS" }
 	end
 
+	configuration {}
+
 	minko.plugin.enable("http-worker")

@@ -43,7 +43,8 @@ namespace minko
             std::shared_ptr<Signal<Ptr>>                _error;
 
         public:
-            virtual ~AbstractProtocol() = default;
+            virtual
+            ~AbstractProtocol() = default;
 
             static Ptr
             create();
@@ -110,6 +111,10 @@ namespace minko
             virtual
             bool
             fileExists(const std::string& filename) = 0;
+
+            virtual
+            bool
+            isAbsolutePath(const std::string& filename) const = 0;
 
         protected:
             AbstractProtocol();

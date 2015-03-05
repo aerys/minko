@@ -193,7 +193,7 @@ TextureParser::parseRGBATexture(const std::string&                  fileName,
                                 render::TextureType                 type,
                                 int                                 numMipmaps)
 {
-    msgpack::type::tuple<int, std::vector<unsigned char>> deserializedTexture;
+    msgpack::type::tuple<int, std::string> deserializedTexture;
     unpack(deserializedTexture, data, data.size());
 
     auto imageFormat = static_cast<ImageFormat>(deserializedTexture.get<0>());
@@ -210,7 +210,13 @@ TextureParser::parseRGBATexture(const std::string&                  fileName,
         return false;
     }
 
-    parser->parse(fileName, fileName, options, deserializedTexture.get<1>(), assetLibrary);
+    parser->parse(
+        fileName,
+        fileName,
+        options,
+        std::vector<unsigned char>(deserializedTexture.get<1>().begin(), deserializedTexture.get<1>().end()),
+        assetLibrary
+    );
 
     return true;
 }

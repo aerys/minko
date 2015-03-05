@@ -53,13 +53,14 @@ namespace minko
                 AssetLibraryPtr,
                 OptionsPtr,
                 const std::string&,
+                const std::vector<unsigned char>&,
                 DependencyPtr,
                 short,
                 std::list<JobPtr>&
             )>                                                              AssetDeserializeFunction;
 
         protected:
-            DependencyPtr                       _dependencies;
+            DependencyPtr                       _dependency;
             std::shared_ptr<GeometryParser>     _geometryParser;
             std::shared_ptr<MaterialParser>     _materialParser;
             std::shared_ptr<TextureParser>      _textureParser;
@@ -80,13 +81,19 @@ namespace minko
             static std::unordered_map<uint, AssetDeserializeFunction>   _assetTypeToFunction;
 
         public:
-            virtual
             void
             parse(const std::string&                filename,
                   const std::string&                resolvedFilename,
                   std::shared_ptr<Options>          options,
                   const std::vector<unsigned char>& data,
                   AssetLibraryPtr                   assetLibrary);
+
+            inline
+            void
+            dependency(std::shared_ptr<Dependency> dependency)
+            {
+                _dependency = dependency;
+            }
 
             static
             void
@@ -101,14 +108,6 @@ namespace minko
                                 std::shared_ptr<Options>                options,
                                 std::string&                            assetFilePath);
 
-            inline
-            void
-            dependency(std::shared_ptr<Dependency> dependecies)
-            {
-                _dependencies = dependecies;
-            }
-
-        protected:
             AbstractSerializerParser();
 
             void
@@ -119,6 +118,27 @@ namespace minko
 
             std::string
             extractFolderPath(const std::string& filepath);
+
+            inline
+            int
+            embedContentOffset() const
+            {
+                return _headerSize;
+            }
+
+            inline
+            int
+            embedContentLength() const
+            {
+                return _dependenciesSize + _sceneDataSize;
+            }
+
+            inline
+            int
+            internalLinkedContentOffset() const
+            {
+                return embedContentOffset() + embedContentLength();
+            }
 
             bool
             readHeader(const std::string&                               filename,
@@ -143,12 +163,12 @@ namespace minko
                 return (short)(data[offset] << 8 | data[offset + 1]);
             }
 
-            static
             void
             deserializeTexture(unsigned short metaData,
                                AssetLibraryPtr                          assetLibrary,
                                OptionsPtr           options,
                                const std::string&   assetCompletePath,
+                               const std::vector<unsigned char>& data,
                                DependencyPtr                            dependency,
                                short                                    assetId,
                                std::list<JobPtr>&                       jobs);

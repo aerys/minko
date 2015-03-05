@@ -152,9 +152,9 @@ AbstractASSIMPParser::parse(const std::string&                    filename,
 
     auto ioHandler = new IOHandler(ioHandlerOptions, _assetLibrary);
 
-    ioHandler->errorFunction([this](IOHandler& self, const Error& error) -> void
+    ioHandler->errorFunction([this](IOHandler& self, const std::string& filename, const Error& error) -> void
     {
-        this->error()->execute(shared_from_this(), error);
+        this->error()->execute(shared_from_this(), Error("MissingAssetDependency", filename));
     });
 
     _importer->SetIOHandler(ioHandler);
@@ -163,11 +163,9 @@ AbstractASSIMPParser::parse(const std::string&                    filename,
     std::cout << "AbstractASSIMPParser: preparing to parse" << std::endl;
 #endif // DEBUG
 
-    const aiScene* scene = _importer->ReadFileFromMemory(
-        &data[0],
-        data.size(),
-        //| aiProcess_GenSmoothNormals // assertion is raised by assimp
+    auto flags =
         aiProcess_JoinIdenticalVertices
+        //| aiProcess_GenSmoothNormals // assertion is raised by assimp
         | aiProcess_GenSmoothNormals
         | aiProcess_SplitLargeMeshes
         | aiProcess_LimitBoneWeights
@@ -176,7 +174,19 @@ AbstractASSIMPParser::parse(const std::string&                    filename,
         //| aiProcess_OptimizeGraph // makes the mesh simply vanish
         | aiProcess_FlipUVs
         | aiProcess_SortByPType
-        | aiProcess_Triangulate,
+		| aiProcess_Triangulate;
+
+    if (!options->processUnusedAsset())
+    {
+        // this flags discards unused materials in addition to
+        // removing duplicated ones
+        flags |= aiProcess_RemoveRedundantMaterials;
+    }
+
+	const aiScene* scene = _importer->ReadFileFromMemory(
+		&data[0],
+		data.size(),
+		flags,
         resolvedFilename.c_str()
     );
 
@@ -208,6 +218,9 @@ AbstractASSIMPParser::allDependenciesLoaded(const aiScene* scene)
 
     _symbol = scene::Node::create(_filename);
     createSceneTree(_symbol, scene, scene->mRootNode, _options->assetLibrary());
+
+    if (_options->processUnusedAsset())
+        createUnusedMaterials(scene, _options->assetLibrary(), _options);
 
 #ifdef DEBUG_ASSIMP
     printNode(std::cout << "\n", _symbol, 0) << std::endl;
@@ -407,20 +420,41 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
     return geometry;
 }
 
+const std::string&
+AbstractASSIMPParser::getValidAssetName(const std::string& name)
+{
+    auto validAssetNameIt = _validAssetNames.find(name);
+
+    if (validAssetNameIt != _validAssetNames.end())
+        return validAssetNameIt->second;
+
+    auto validAssetName = name;
+
+    validAssetName = File::removePrefixPathFromFilename(validAssetName);
+
+    const auto invalidSymbolRegex = std::regex("\\W+");
+
+    validAssetName = std::regex_replace(
+        validAssetName,
+        invalidSymbolRegex,
+        std::string()
+    );
+
+    auto newValidAssetNameIt = _validAssetNames.insert(std::make_pair(name, validAssetName));
+
+    return newValidAssetNameIt.first->second;
+}
+
 std::string
 AbstractASSIMPParser::getMaterialName(const std::string& materialName)
 {
-    static int currentId = 0;
-
-    return materialName.empty() ? std::string("default" + std::to_string(currentId++)) : materialName;
+    return getValidAssetName(materialName);
 }
 
 std::string
 AbstractASSIMPParser::getMeshName(const std::string& meshName)
 {
-    static int currentId = 0;
-
-    return meshName.empty() ? std::string("default" + std::to_string(currentId++)) : meshName;
+    return getValidAssetName(meshName);
 }
 
 void
@@ -503,6 +537,19 @@ AbstractASSIMPParser::createCameras(const aiScene* scene)
 
         if (parentNode)
             parentNode->addChild(cameraNode);
+    }
+}
+
+void
+AbstractASSIMPParser::createUnusedMaterials(const aiScene*      scene,
+                                            AssetLibrary::Ptr   assetLibrary,
+                                            Options::Ptr        options)
+{
+    for (auto i = 0u; i < scene->mNumMaterials; ++i)
+    {
+        auto aiMaterial = scene->mMaterials[i];
+
+        createMaterial(aiMaterial);
     }
 }
 
@@ -694,7 +741,7 @@ AbstractASSIMPParser::loadTexture(const std::string&    textureFilename,
         std::cerr << "AbstractASSIMPParser: unable to find texture with filename '" << textureFilename << "'" << std::endl;
 #endif // DEBUG
         
-        _error->execute(shared_from_this(), Error("MissingTextureDependency", "Missing texture dependency: '" + textureFilename + "'"));
+        _error->execute(shared_from_this(), Error("MissingTextureDependency", textureFilename));
         
         if (_numDependencies == _numLoadedDependencies)
             allDependenciesLoaded(scene);
@@ -1327,7 +1374,17 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
     if (existingMaterial != nullptr)
         return existingMaterial;
 
-	material->data()->set("blendMode",			getBlendingMode(aiMat));
+    const auto blendingMode = getBlendingMode(aiMat);
+
+    {
+        auto srcBlendingMode = static_cast<render::Blending::Source>(static_cast<uint>(blendingMode) & 0x00ff);
+        auto dstBlendingMode = static_cast<render::Blending::Destination>(static_cast<uint>(blendingMode) & 0xff00);
+
+        material->data()->set<render::Blending::Mode>("blendingMode", blendingMode);
+        material->data()->set<render::Blending::Source>(render::States::PROPERTY_BLENDING_SOURCE, srcBlendingMode);
+        material->data()->set<render::Blending::Destination>(render::States::PROPERTY_BLENDING_DESTINATION, dstBlendingMode);
+    }
+
 	material->data()->set("triangleCulling",	getTriangleCulling(aiMat));
 	material->data()->set("wireframe",			getWireframe(aiMat)); // bool
 
@@ -1349,7 +1406,9 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
         // Gouraud-like shading (-> no specular)
 		specularColor.w = 0.f;
 
-    if (opacity < 1.0f)
+    auto transparent = opacity < 1.f;
+
+    if (transparent)
     {
 		diffuseColor.w = opacity;
 		specularColor.w = opacity;
@@ -1357,14 +1416,17 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 		emissiveColor.w = opacity;
 		reflectiveColor.w = opacity;
 		transparentColor.w = opacity;
+    }
 
+    if (transparent || !(blendingMode & render::Blending::Destination::ZERO))
+    {
 		material->data()->set("priority",	render::Priority::TRANSPARENT);
-		material->data()->set("zSort",		true);
+		material->data()->set("zSorted",	true);
     }
     else
     {
 		material->data()->set("priority",	render::Priority::OPAQUE);
-		material->data()->set("zSort",		false);
+		material->data()->set("zSorted",	false);
     }
 
     for (auto& textureTypeAndName : _textureTypeToName)
@@ -1379,10 +1441,26 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
         aiString path;
         if (aiMat->GetTexture(textureType, 0, &path) == AI_SUCCESS)
         {
-            render::AbstractTexture::Ptr texture = _assetLibrary->texture(std::string(path.data));
+            const auto textureFilename = std::string(path.data);
 
-            if (texture)
+			auto texture = _assetLibrary->texture(textureFilename);
+
+            const auto textureIsValid = texture != nullptr;
+
+            texture = std::static_pointer_cast<render::Texture>(_options->textureFunction()(
+                textureFilename,
+                texture
+            ));
+
+            if (!textureIsValid && texture != nullptr)
+                _assetLibrary->texture(textureFilename, texture);
+
+            if (texture != nullptr)
+            {
 				material->data()->set(textureName, texture->sampler());
+
+                textureSet(material, textureName, texture);
+            }
         }
     }
 
@@ -1391,6 +1469,16 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
     _assetLibrary->material(materialName, processedMaterial);
 
     return processedMaterial;
+}
+
+void
+AbstractASSIMPParser::textureSet(material::Material::Ptr material, const std::string& textureTypeName, render::AbstractTexture::Ptr texture)
+{
+    if (textureTypeName == _textureTypeToName.at(aiTextureType_OPACITY) &&
+        !material->data()->hasProperty("alphaThreshold"))
+    {
+        material->data()->set("alphaThreshold", .01f);
+    }
 }
 
 material::Material::Ptr

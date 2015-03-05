@@ -79,6 +79,8 @@ DevILParser::parse(const std::string&                 filename,
         format == IL_RGBA ? minko::render::TextureFormat::RGBA : minko::render::TextureFormat::RGB
     );
 
+    texture = std::static_pointer_cast<render::Texture>(options->textureFunction()(filename, texture));
+
     texture->data(bmpData);
     texture->upload();
 

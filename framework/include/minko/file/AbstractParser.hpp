@@ -36,6 +36,9 @@ namespace minko
             std::shared_ptr<Signal<Ptr, const Error&>>  _error;
             
         public:
+            virtual
+            ~AbstractParser() = default;
+
             inline
             std::shared_ptr<Signal<Ptr>>
             complete()

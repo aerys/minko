@@ -22,12 +22,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/GeometryWriter.hpp"
 #include "minko/file/TextureWriter.hpp"
 #include "minko/geometry/Geometry.hpp"
+#include "minko/file/LinkedAsset.hpp"
 #include "minko/file/MaterialWriter.hpp"
 #include "minko/file/WriterOptions.hpp"
 #include "minko/material/Material.hpp"
+#include "minko/serialize/TypeSerializer.hpp"
 
 using namespace minko;
 using namespace minko::file;
+using namespace minko::serialize;
 
 std::unordered_map<uint, Dependency::GeometryTestFunc>			Dependency::_geometryTestFunctions;
 std::unordered_map<uint, Dependency::GeometryWriterFunction>	Dependency::_geometryWriteFunctions;
@@ -150,6 +153,21 @@ Dependency::registerDependency(std::shared_ptr<scene::Node> subScene)
 	return _subSceneDependencies[subScene];
 }
 
+bool
+Dependency::hasDependency(std::shared_ptr<LinkedAsset> linkedAsset)
+{
+	return _linkedAssetDependencies.find(linkedAsset) != _linkedAssetDependencies.end();
+}
+
+uint
+Dependency::registerDependency(std::shared_ptr<LinkedAsset> linkedAsset)
+{
+	if (!hasDependency(linkedAsset))
+		_linkedAssetDependencies[linkedAsset] = _currentId++;
+
+	return _linkedAssetDependencies[linkedAsset];
+}
+
 std::shared_ptr<geometry::Geometry>
 Dependency::getGeometryReference(uint geometryId)
 {
@@ -204,10 +222,22 @@ Dependency::registerReference(uint referenceId, std::shared_ptr<render::Effect> 
 	_effectReferences[referenceId] = effect;
 }
 
+void
+Dependency::registerReference(uint referenceId, std::shared_ptr<LinkedAsset> linkedAsset)
+{
+	_linkedAssetReferences[referenceId] = linkedAsset;
+}
+
 std::shared_ptr<render::Effect>
 Dependency::getEffectReference(uint effectId)
 {
 	return _effectReferences[effectId];
+}
+
+std::shared_ptr<LinkedAsset>
+Dependency::getLinkedAssetReference(uint referenceId)
+{
+	return _linkedAssetReferences[referenceId];
 }
 
 bool
@@ -234,6 +264,12 @@ Dependency::effectReferenceExist(uint referenceId)
 	return _effectReferences.find(referenceId) != _effectReferences.end();
 }
 
+bool
+Dependency::linkedAssetReferenceExist(uint referenceId)
+{
+	return _linkedAssetReferences.find(referenceId) != _linkedAssetReferences.end();
+}
+
 Dependency::SerializedAsset
 Dependency::serializeGeometry(std::shared_ptr<Dependency>				dependency,
 							  std::shared_ptr<file::AssetLibrary>		assetLibrary,
@@ -241,19 +277,21 @@ Dependency::serializeGeometry(std::shared_ptr<Dependency>				dependency,
 							  uint										resourceId,
 							  std::shared_ptr<file::Options>			options,
                               std::shared_ptr<file::WriterOptions>		writerOptions,
-							  std::vector<Dependency::SerializedAsset>&	includeDependecies)
+							  std::vector<Dependency::SerializedAsset>&	userDefinedDependency)
 {
 	GeometryWriter::Ptr         geometryWriter = GeometryWriter::create();
     serialize::AssetType        assetType;
     std::string                 content;
 
+    const auto assetIsNull = writerOptions->assetIsNull(geometry->uuid());
+
     geometryWriter->data(geometry);
 
-    if (writerOptions->embedAll())
+    if (!assetIsNull && writerOptions->embedMode() & WriterOptions::EmbedMode::Geometry)
     {
         assetType = serialize::AssetType::EMBED_GEOMETRY_ASSET;
 
-		content = geometryWriter->embedAll(assetLibrary, options, writerOptions, includeDependecies);
+		content = geometryWriter->embedAll(assetLibrary, options, writerOptions, dependency, userDefinedDependency);
     }
     else
     {
@@ -271,9 +309,13 @@ Dependency::serializeGeometry(std::shared_ptr<Dependency>				dependency,
             filename = "geometry" + std::to_string(geometryNameId++) + ".geometry";
         }
 
-        auto completeFilename = writerOptions->outputAssetUriFunction()(filename);
+        if (!assetIsNull)
+        {
+            auto completeFilename = writerOptions->outputAssetUriFunction()(filename);
 
-		geometryWriter->write(completeFilename, assetLibrary, options, writerOptions, includeDependecies);
+            auto embeddedHeaderData = std::vector<unsigned char>();
+            geometryWriter->write(completeFilename, assetLibrary, options, writerOptions, dependency, userDefinedDependency, embeddedHeaderData);
+        }
 
         content = filename;
     }
@@ -298,17 +340,19 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
     auto assetType              = serialize::AssetType();
     auto content                = std::string();
 
+    const auto assetIsNull = writerOptions->assetIsNull(texture->uuid());
+
     auto extension = fileName.substr(fileName.find_last_of(".") + 1);
     if (extension != textureExtension)
         fileName = fileName.substr(0, fileName.size() - (extension.size())) + std::string(textureExtension);
 
     writer->data(texture);
 
-    if (writerOptions->embedAll())
+    if (!assetIsNull && writerOptions->embedMode() & WriterOptions::EmbedMode::Texture)
     {
         assetType = serialize::AssetType::EMBED_TEXTURE_PACK_ASSET;
 
-        content = writer->embedAll(assetLibrary, options, writerOptions);
+        content = writer->embedAll(assetLibrary, options, writerOptions, dependency);
     }
     else
     {
@@ -320,18 +364,22 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
         // differentiate asset location relatively to scene root from asset name
         auto assetName = fileName.substr(fileName.find_last_of("/\\") + 1);
 
-        writer->write(completeFileName, assetLibrary, options, writerOptions);
+        if (!assetIsNull)
+        {
+            writer->write(completeFileName, assetLibrary, options, writerOptions, dependency);
+        }
 
         content = assetName;
     }
 
-    auto metaData = static_cast<unsigned short>(writer->headerSize());
+    const auto hasHeaderSize = !assetIsNull;
+    const auto headerSize = writer->headerSize();
 
-    auto fullMetaData =
-        static_cast<unsigned int>(assetType) +
-        static_cast<unsigned int>(metaData << 16);
+    const auto metadata = static_cast<unsigned int>(hasHeaderSize ? 1u << 31 : 0u) +
+                          static_cast<unsigned int>((headerSize & 0x0fff) << 16) +
+                          static_cast<unsigned int>(assetType);
 
-    SerializedAsset res(fullMetaData, resourceId, content);
+    SerializedAsset res(metadata, resourceId, content);
 
 	return res;
 }
@@ -348,18 +396,18 @@ Dependency::serializeMaterial(std::shared_ptr<Dependency>			dependency,
     serialize::AssetType        assetType;
     std::string                 content;
 
+    const auto assetIsNull = writerOptions->assetIsNull(material->uuid());
+
     materialWriter->data(material);
 
-    if (writerOptions->embedAll())
+    if (!assetIsNull && writerOptions->embedMode() & WriterOptions::EmbedMode::Material)
     {
         assetType = serialize::AssetType::EMBED_MATERIAL_ASSET;
-		materialWriter->parentDependencies(dependency);
-        content = materialWriter->embedAll(assetLibrary, options, writerOptions);
+        content = materialWriter->embedAll(assetLibrary, options, writerOptions, dependency);
     }
     else
     {
         assetType = serialize::AssetType::MATERIAL_ASSET;
-		materialWriter->parentDependencies(nullptr);
 
         static auto materialNameId = 0;
         auto materialName = std::string();
@@ -383,7 +431,10 @@ Dependency::serializeMaterial(std::shared_ptr<Dependency>			dependency,
 
         auto completeFilename = writerOptions->outputAssetUriFunction()(filename);
 
-        materialWriter->write(completeFilename, assetLibrary, options, writerOptions);
+        if (!assetIsNull)
+        {
+            materialWriter->write(completeFilename, assetLibrary, options, writerOptions, dependency);
+        }
 
         content = filename;
     }
@@ -394,9 +445,11 @@ Dependency::serializeMaterial(std::shared_ptr<Dependency>			dependency,
 }
 
 std::vector<Dependency::SerializedAsset>
-Dependency::serialize(std::shared_ptr<file::AssetLibrary>       assetLibrary,
+Dependency::serialize(const std::string&                        parentFilename,
+                      std::shared_ptr<file::AssetLibrary>       assetLibrary,
 					  std::shared_ptr<file::Options>            options,
-                      std::shared_ptr<file::WriterOptions>      writerOptions)
+                      std::shared_ptr<file::WriterOptions>      writerOptions,
+                      std::vector<std::vector<unsigned char>>&  internalLinkedAssets)
 {
 	std::vector<SerializedAsset> serializedAsset;
 
@@ -451,112 +504,68 @@ Dependency::serialize(std::shared_ptr<file::AssetLibrary>       assetLibrary,
 		serializedAsset.insert(serializedAsset.begin(), res);
 	}
 
-#if 0
-    for (const auto& itEffect : _effectDependencies)
+    auto internalLinkedAssetDataOffset = 0;
+    
+    for (const auto& internalLinkedAsset : internalLinkedAssets)
+        internalLinkedAssetDataOffset += internalLinkedAsset.size();
+        
+    for (const auto& linkedAssetToIdPair : _linkedAssetDependencies)
     {
-#ifdef DEBUG
-        std::string filenameInput= "bin/debug/" + assetLibrary->effectName(itEffect.first);
-#else
-        std::string filenameInput= assetLibrary->effectName(itEffect.first);
-#endif
-        std::ifstream source(filenameInput, std::ios::binary);
+        const auto& linkedAsset = *linkedAssetToIdPair.first;
+        const auto id = linkedAssetToIdPair.second;
 
-        SerializedAsset dependencyRes;
+        msgpack::type::tuple<int, int, std::string, std::vector<unsigned char>, int> linkedAssetData(
+            linkedAsset.offset(),
+            linkedAsset.length(),
+            linkedAsset.filename(),
+            {},
+            static_cast<int>(linkedAsset.linkType())
+        );
 
-        copyEffectDependency(assetLibrary, options, source, itEffect.first, dependencyRes);
-
-        serialize::AssetType    assetType;
-        std::string             content;
-
-        if (writerOptions->embedAll())
+        switch (linkedAsset.linkType())
         {
-            assetType = serialize::AssetType::EMBED_EFFECT_ASSET;
+        case LinkedAsset::LinkType::Copy:
+            linkedAssetData.a3 = linkedAsset.data();
+            break;
 
-            serializedAsset.insert(serializedAsset.begin(), dependencyRes);
-
-            content = std::string(std::istreambuf_iterator<char>(source),
-                                  std::istreambuf_iterator<char>());
-        }
-        else
+        case LinkedAsset::LinkType::Internal:
         {
-            assetType = serialize::AssetType::EFFECT_ASSET;
+            linkedAssetData.a0 = internalLinkedAssetDataOffset;
 
-            std::string filenameOutput= "";
+            const auto validFilename = File::removePrefixPathFromFilename(parentFilename);
+            linkedAssetData.a2 = validFilename;
 
-            for (int charIndex = filenameInput.size() - 1;
-                 charIndex >= 0 && filenameInput[charIndex] != '/';
-                 --charIndex)
-            {
-                filenameOutput.insert(0, filenameInput.substr(charIndex, 1));
-            }
+            internalLinkedAssets.emplace_back(linkedAsset.data().begin(), linkedAsset.data().end());
 
-            auto completeOutputFilename = writerOptions->outputAssetUriFunction()(filenameOutput);
+            internalLinkedAssetDataOffset += linkedAsset.length();
 
-            std::ofstream dst(completeOutputFilename, std::ios::binary);
-
-            dst << source.rdbuf();
-
-            source.close();
-            dst.close();
-
-            content = filenameOutput;
+            break;
         }
 
-        SerializedAsset res(assetType, itEffect.second, content);
-        serializedAsset.insert(serializedAsset.begin(), res);
+        case LinkedAsset::LinkType::External:
+        {
+            const auto validFilename = File::removePrefixPathFromFilename(linkedAssetData.a2);
+
+            linkedAssetData.a2 = validFilename;
+
+            break;
+        }
+
+        default:
+            break;
+        }
+
+        std::stringstream linkedAssetSerializedData;
+        msgpack::pack(linkedAssetSerializedData, linkedAssetData);
+
+        const auto serializedLinkedAsset = SerializedAsset(
+            LINKED_ASSET,
+            id,
+            linkedAssetSerializedData.str()
+        );
+
+        serializedAsset.insert(serializedAsset.begin(), serializedLinkedAsset);
     }
-#endif
+
     return serializedAsset;
-}
-
-void
-Dependency::copyEffectDependency(std::shared_ptr<AssetLibrary>          assets,
-                                 std::shared_ptr<Options>               options,
-                                 const std::ifstream&                   source,
-                                 std::shared_ptr<render::Effect>        effect,
-                                 SerializedAsset&                       result,
-                                 std::shared_ptr<WriterOptions>         writerOptions)
-{
-    std::stringstream   effectContent;
-    std::size_t         found;
-
-    effectContent << source.rdbuf();
-
-    uint i = 0;
-
-    while ((found = effectContent.str().find(".glsl", i)) != std::string::npos)
-    {
-        uint position = found;
-
-        while (effectContent.str()[position - 1] != '\'')
-            position--;
-
-        std::string dependencyFile = effectContent.str().substr(position, found + 5 - position);
-
-        std::cout << dependencyFile << std::endl;
-
-#ifdef DEBUG
-        std::ifstream dependencySource("bin/debug/effect/" + dependencyFile, std::ios::binary);
-#else
-        std::ifstream dependencySource("effect/" + dependencyFile, std::ios::binary);
-#endif
-        if (writerOptions->embedAll())
-        {
-            // TODO
-            // see how effect dep are processed
-        }
-        else
-        {
-            dependencyFile = writerOptions->outputAssetUriFunction()(dependencyFile);
-
-            std::ofstream dst(dependencyFile, std::ios::binary);
-
-            dst << dependencySource.rdbuf();
-
-            dependencySource.close();
-            dst.close();
-        }
-
-        i = (found + 6);
-    }
 }

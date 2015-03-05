@@ -31,11 +31,14 @@
         "uWorldToScreenMatrix"  : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
 		"uFogColor"				: "material[$materialUuid].fogColor",
         "uFogBounds"			: "material[$materialUuid].fogBounds",
-        "boneMatrices"			: "geometry[${geometryUuid}].boneMatrices",
-		"numBones"				: "geometry[${geometryUuid}].numBones",
         "uWorldToScreenMatrix"  : {
 			"binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" }
-		}
+		},
+        "uPopLod"               : "geometry[${geometryUuid}].popLod",
+        "uPopBlendingLod"       : "geometry[${geometryUuid}].popBlendingLod",
+        "uPopFullPrecisionLod"  : "geometry[${geometryUuid}].popFullPrecisionLod",
+        "uPopMinBound"          : "geometry[${geometryUuid}].popMinBound",
+        "uPopMaxBound"          : "geometry[${geometryUuid}].popMaxBound"
     },
 
     "macros" : {
@@ -53,7 +56,9 @@
 		"FOG_EXP2"              : "material[${materialUuid}].fogExponential2",
         "UV_OFFSET"             : "material[${materialUuid}].uvOffset",
         "UV_SCALE"              : "material[${materialUuid}].uvScale",
-        "FOG_TECHNIQUE"			: { "binding" : "material[$materialUuid].fogTechnique", "type" : "int" }
+        "FOG_TECHNIQUE"			: { "binding" : "material[$materialUuid].fogTechnique", "type" : "int" },
+        "POP_LOD_ENABLED"       : "geometry[${geometryUuid}].popLodEnabled",
+        "POP_BLENDING_ENABLED"  : "geometry[${geometryUuid}].popBlendingEnabled"
     },
 
 	"states" : {

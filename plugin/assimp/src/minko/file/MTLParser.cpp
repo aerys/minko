@@ -17,40 +17,21 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "minko/file/MTLParser.hpp"
 
-#include "minko/Common.hpp"
-#include "minko/file/AbstractProtocol.hpp"
+#include "../code/AssimpPCH.h"
+#include "assimp/Importer.hpp"
+#include "assimp/MTLImporter.h"
 
-namespace minko
+using namespace minko;
+using namespace file;
+
+MTLParser::Ptr MTLParser::create()
 {
-    namespace file
-    {
-        class APKProtocol :
-            public AbstractProtocol
-        {
-        public:
-            typedef std::shared_ptr<APKProtocol>    Ptr;
+    return MTLParser::Ptr(new MTLParser());
+}
 
-        public:
-            inline static
-            Ptr
-            create()
-            {
-                return std::shared_ptr<APKProtocol>(new APKProtocol());
-            }
-
-            void
-            load();
-
-            bool
-            fileExists(const std::string& filename);
-
-            bool
-            isAbsolutePath(const std::string& filename) const;
-
-        protected:
-            APKProtocol();
-        };
-    }
+void MTLParser::provideLoaders(Assimp::Importer& importer)
+{
+    importer.RegisterLoader(new Assimp::MTLImporter());
 }

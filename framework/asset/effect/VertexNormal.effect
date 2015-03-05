@@ -14,22 +14,30 @@
         "uModelToWorldMatrix"	: "modelToWorldMatrix",
 		"uWorldToScreenMatrix"	: { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
 		"uBoneMatrices"			: "geometry[${geometryUuid}].boneMatrices",
-		"uNumBones"				: "geometry[${geometryUuid}].numBones"
+		"uNumBones"				: "geometry[${geometryUuid}].numBones",
+        "uPopLod"               : "geometry[${geometryUuid}].popLod",
+        "uPopBlendingLod"       : "geometry[${geometryUuid}].popBlendingLod",
+        "uPopFullPrecisionLod"  : "geometry[${geometryUuid}].popFullPrecisionLod",
+        "uPopMinBound"          : "geometry[${geometryUuid}].popMinBound",
+        "uPopMaxBound"          : "geometry[${geometryUuid}].popMaxBound"
 	},
 
 	"macros" : {
 		"MODEL_TO_WORLD"		: "modelToWorldMatrix",
-		"SKINNING_NUM_BONES"	: { "binding" : "geometry[$geometryUuid].numBones", "type" : "int" }
+		"SKINNING_NUM_BONES"	: { "binding" : "geometry[$geometryUuid].numBones", "type" : "int" },
+        "POP_LOD_ENABLED"       : "geometry[${geometryUuid}].popLodEnabled",
+        "POP_BLENDING_ENABLED"  : "geometry[${geometryUuid}].popBlendingEnabled"
 	},
 
     "techniques" : [{
     	"passes"	: [{
 		    "vertexShader" : "
-		
-                #ifdef GL_FRAGMENT_PRECISION_HIGH
-                    precision highp float;
-                #else
-                    precision mediump float;
+                #ifdef GL_ES
+                    #ifdef GL_FRAGMENT_PRECISION_HIGH
+                        precision highp float;
+                    #else
+                        precision mediump float;
+                    #endif
                 #endif
 
 			    uniform mat4 uModelToWorldMatrix;
@@ -43,9 +51,16 @@
 				attribute vec4 aBoneWeightsB;
 				#endif
 
+				uniform float uPopLod;
+				uniform float uPopBlendingLod;
+				uniform float uPopFullPrecisionLod;
+				uniform vec3 uPopMinBound;
+				uniform vec3 uPopMaxBound;
+
 			    varying vec3 worldNormal;
 
 			    #pragma include \"Skinning.function.glsl\"
+			    #pragma include \"Pop.function.glsl\"
 
 			    void main(void)
 			    {
@@ -57,7 +72,15 @@
 					    pos = skinning_moveVertex(pos, aBoneWeightsA, aBoneWeightsB);
 					    n = skinning_moveVertex(n, aBoneWeightsA, aBoneWeightsB);
 				    #endif // SKINNING_NUM_BONES
-				
+
+    				#ifdef POP_LOD_ENABLED
+    				    #ifdef POP_BLENDING_ENABLED
+    				        pos = pop_blend(pos, aNormal, uPopLod, uPopBlendingLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound);
+    				    #else
+    				        pos = pop_quantify(pos, aNormal, uPopLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound);
+    				    #endif // POP_BLENDING_ENABLED
+    				#endif // POP_LOD_ENABLED
+
 					worldNormal	= normalize(n.xyz);
 
 				    #ifdef MODEL_TO_WORLD
@@ -69,9 +92,13 @@
 			    }
 		    ",
 		    "fragmentShader" : "
-			    #ifdef GL_ES
-				    precision mediump float;
-			    #endif
+                #ifdef GL_ES
+                    #ifdef GL_FRAGMENT_PRECISION_HIGH
+                        precision highp float;
+                    #else
+                        precision mediump float;
+                    #endif
+                #endif
 
 			    varying vec3 worldNormal;
 
