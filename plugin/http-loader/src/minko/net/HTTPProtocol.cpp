@@ -144,13 +144,13 @@ HTTPProtocol::load()
         additionalHeaders = httpOptions->additionalHeaders();
     }
 
-    auto seekingOffset = _options->seekingOffset();
-    auto seekedLength = _options->seekedLength();
+        auto seekingOffset = _options->seekingOffset();
+        auto seekedLength = _options->seekedLength();
 
-    if (seekingOffset >= 0 && seekedLength > 0)
-    {
-        auto rangeMin = std::to_string(seekingOffset);
-        auto rangeMax = std::to_string(seekingOffset + seekedLength - 1);
+        if (seekingOffset >= 0 && seekedLength > 0)
+        {
+            auto rangeMin = std::to_string(seekingOffset);
+            auto rangeMax = std::to_string(seekingOffset + seekedLength - 1);
 
         additionalHeaders.insert(std::make_pair(
             "Range",
@@ -276,15 +276,27 @@ HTTPProtocol::load()
     {
         HTTPRequest request(resolvedFilename(), username, password, &additionalHeaders);
 
-        request.progress()->connect([&](float p){
+        auto requestIsSuccessfull = true;
+
+        auto requestErrorSlot = request.error()->connect([&](int error)
+        {
+            requestIsSuccessfull = false;
+
+            this->error()->execute(shared_from_this());
+        });
+
+        auto requestProgressSlot = request.progress()->connect([&](float p){
             progressHandler(loader.get(), int(p * 100.f), 100);
         });
 
         request.run();
 
-        std::vector<char>& output = request.output();
+        if (requestIsSuccessfull)
+        {
+            std::vector<char>& output = request.output();
 
-        completeHandler(loader.get(), &*output.begin(), output.size());
+            completeHandler(loader.get(), &*output.begin(), output.size());
+        }
     }
 #endif
 }

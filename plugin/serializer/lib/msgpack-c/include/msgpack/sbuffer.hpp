@@ -1,7 +1,7 @@
 //
 // MessagePack for C++ simple buffer implementation
 //
-// Copyright (C) 2008-2009 FURUHASHI Sadayuki
+// Copyright (C) 2008-2013 FURUHASHI Sadayuki and KONDO Takatoshi
 //
 //    Licensed under the Apache License, Version 2.0 (the "License");
 //    you may not use this file except in compliance with the License.
@@ -15,98 +15,120 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 //
-#ifndef MSGPACK_SBUFFER_HPP__
-#define MSGPACK_SBUFFER_HPP__
+#ifndef MSGPACK_SBUFFER_HPP
+#define MSGPACK_SBUFFER_HPP
 
-#include "sbuffer.h"
+#include "msgpack/versioning.hpp"
+
 #include <stdexcept>
+
+#ifndef MSGPACK_SBUFFER_INIT_SIZE
+#define MSGPACK_SBUFFER_INIT_SIZE 8192
+#endif
 
 namespace msgpack {
 
+MSGPACK_API_VERSION_NAMESPACE(v1) {
 
-class sbuffer : public msgpack_sbuffer {
+class sbuffer {
 public:
-	sbuffer(size_t initsz = MSGPACK_SBUFFER_INIT_SIZE)
-	{
-		if(initsz == 0) {
-			base::data = NULL;
-		} else {
-			base::data = (char*)::malloc(initsz);
-			if(!base::data) {
-				throw std::bad_alloc();
-			}
-		}
+    sbuffer(size_t initsz = MSGPACK_SBUFFER_INIT_SIZE):m_size(0), m_alloc(initsz)
+    {
+        if(initsz == 0) {
+            m_data = nullptr;
+        } else {
+            m_data = (char*)::malloc(initsz);
+            if(!m_data) {
+                throw std::bad_alloc();
+            }
+        }
+    }
 
-		base::size = 0;
-		base::alloc = initsz;
-	}
-
-	~sbuffer()
-	{
-		::free(base::data);
-	}
+    ~sbuffer()
+    {
+        ::free(m_data);
+    }
 
 public:
-	void write(const char* buf, unsigned int len)
-	{
-		if(base::alloc - base::size < len) {
-			expand_buffer(len);
-		}
-		memcpy(base::data + base::size, buf, len);
-		base::size += len;
-	}
+    void write(const char* buf, size_t len)
+    {
+        if(m_alloc - m_size < len) {
+            expand_buffer(len);
+        }
+        ::memcpy(m_data + m_size, buf, len);
+        m_size += len;
+    }
 
-	char* data()
-	{
-		return base::data;
-	}
+    char* data()
+    {
+        return m_data;
+    }
 
-	const char* data() const
-	{
-		return base::data;
-	}
+    const char* data() const
+    {
+        return m_data;
+    }
 
-	size_t size() const
-	{
-		return base::size;
-	}
+    size_t size() const
+    {
+        return m_size;
+    }
 
-	char* release()
-	{
-		return msgpack_sbuffer_release(this);
-	}
+    char* release()
+    {
+        char* tmp = m_data;
+        m_size = 0;
+        m_data = nullptr;
+        m_alloc = 0;
+        return tmp;
+    }
 
-	void clear()
-	{
-		msgpack_sbuffer_clear(this);
-	}
-
-private:
-	void expand_buffer(size_t len)
-	{
-		size_t nsize = (base::alloc > 0) ?
-				base::alloc * 2 : MSGPACK_SBUFFER_INIT_SIZE;
-	
-		while(nsize < base::size + len) { nsize *= 2; }
-	
-		void* tmp = realloc(base::data, nsize);
-		if(!tmp) {
-			throw std::bad_alloc();
-		}
-	
-		base::data = (char*)tmp;
-		base::alloc = nsize;
-	}
+    void clear()
+    {
+        m_size = 0;
+    }
 
 private:
-	typedef msgpack_sbuffer base;
+    void expand_buffer(size_t len)
+    {
+        size_t nsize = (m_alloc > 0) ?
+                m_alloc * 2 : MSGPACK_SBUFFER_INIT_SIZE;
+
+        while(nsize < m_size + len) {
+            size_t tmp_nsize = nsize * 2;
+            if (tmp_nsize <= nsize) {
+                nsize = m_size + len;
+                break;
+            }
+            nsize = tmp_nsize;
+        }
+
+        void* tmp = ::realloc(m_data, nsize);
+        if(!tmp) {
+            throw std::bad_alloc();
+        }
+
+        m_data = static_cast<char*>(tmp);
+        m_alloc = nsize;
+    }
+
+#if defined(MSGPACK_USE_CPP03)
+private:
+    sbuffer(const sbuffer&);
+    sbuffer& operator=(const sbuffer&);
+#else  // defined(MSGPACK_USE_CPP03)
+    sbuffer(const sbuffer&) = delete;
+    sbuffer& operator=(const sbuffer&) = delete;
+#endif // defined(MSGPACK_USE_CPP03)
 
 private:
-	sbuffer(const sbuffer&);
+    size_t m_size;
+    char* m_data;
+    size_t m_alloc;
 };
 
+}  // MSGPACK_API_VERSION_NAMESPACE(v1)
 
 }  // namespace msgpack
 
 #endif /* msgpack/sbuffer.hpp */
-

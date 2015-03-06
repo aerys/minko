@@ -4,14 +4,14 @@
 	precision mediump float;
 #endif
 
-uniform vec4        pickingColor;
+uniform vec4 uPickingColor;
 
 void main(void)
 {
 #ifndef PICKING_COLOR
 	discard;
 #else
-	gl_FragColor = pickingColor;
+	gl_FragColor = uPickingColor;
 #endif
 }
 

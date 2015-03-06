@@ -32,21 +32,21 @@ using namespace minko;
 using namespace minko::component;
 
 BoundingBox::BoundingBox(const math::vec3& topRight, const math::vec3& bottomLeft) :
-	_fixed(true),
-	_box(math::Box::create(topRight, bottomLeft)),
-	_worldSpaceBox(math::Box::create(topRight, bottomLeft)),
-	_invalidBox(true),
-	_invalidWorldSpaceBox(true)
+    _fixed(true),
+    _box(math::Box::create(topRight, bottomLeft)),
+    _worldSpaceBox(math::Box::create(topRight, bottomLeft)),
+    _invalidBox(true),
+    _invalidWorldSpaceBox(true)
 {
 
 }
 
 BoundingBox::BoundingBox() :
-	_fixed(false),
-	_box(math::Box::create()),
-	_worldSpaceBox(math::Box::create()),
-	_invalidBox(true),
-	_invalidWorldSpaceBox(true)
+    _fixed(false),
+    _box(math::Box::create()),
+    _worldSpaceBox(math::Box::create()),
+    _invalidBox(true),
+    _invalidWorldSpaceBox(true)
 {
 
 }
@@ -74,31 +74,31 @@ BoundingBox::targetAdded(scene::Node::Ptr target)
 {
 	_modelToWorldChangedSlot = target->data().propertyChanged("modelToWorldMatrix").connect(
 		[&](data::Store& data, data::Provider::Ptr provider, const std::string& propertyName)
-		{
-			_invalidWorldSpaceBox = true;
-		}
-	);
+            {
+                _invalidWorldSpaceBox = true;
+            }
+        );
 
         auto componentAddedOrRemovedCallback = [=](scene::Node::Ptr node, scene::Node::Ptr target, AbstractComponent::Ptr cmp)
-	{
-		if (std::dynamic_pointer_cast<Surface>(cmp))
-		{
-			_invalidBox = true;
-			_invalidWorldSpaceBox = true;
-		}
-	};
+        {
+            if (std::dynamic_pointer_cast<Surface>(cmp))
+            {
+                _invalidBox = true;
+                _invalidWorldSpaceBox = true;
+            }
+        };
 
 	_componentAddedSlot = target->componentAdded().connect(componentAddedOrRemovedCallback);
 	_componentRemovedSlot = target->componentAdded().connect(componentAddedOrRemovedCallback);
 
-	_invalidBox = true;
+        _invalidBox = true;
 }
 
 void
 BoundingBox::targetRemoved(scene::Node::Ptr target)
 {
-	_componentAddedSlot = nullptr;
-	_componentRemovedSlot = nullptr;
+        _componentAddedSlot = nullptr;
+        _componentRemovedSlot = nullptr;
 }
 
 void
@@ -111,23 +111,23 @@ BoundingBox::computeBox(const std::vector<component::Surface::Ptr>& surfaces, ma
         {
             auto xyzBuffer = geom->vertexBuffer("position");
             auto offset = xyzBuffer->attribute("position").offset;
-
+            
             for (uint i = 0; i < xyzBuffer->numVertices(); ++i)
             {
                 auto x = xyzBuffer->data()[i * xyzBuffer->vertexSize() + offset];
                 auto y = xyzBuffer->data()[i * xyzBuffer->vertexSize() + offset + 1];
                 auto z = xyzBuffer->data()[i * xyzBuffer->vertexSize() + offset + 2];
-
+                
                 if (x < min.x)
                 	min.x = x;
                 if (x > max.x)
                 	max.x = x;
-
+                
                 if (y < min.y)
                 	min.y = y;
                 if (y > max.y)
                 	max.y = y;
-
+                
                 if (z < min.z)
                 	min.z = z;
                 if (z > max.z)
@@ -152,70 +152,70 @@ BoundingBox::update()
     if (!_fixed)
     {
         auto surfaces = target->components<Surface>();
-
+        
 		auto min = math::vec3(
-			std::numeric_limits<float>::max(),
-			std::numeric_limits<float>::max(),
-			std::numeric_limits<float>::max()
-		);
+            std::numeric_limits<float>::max(),
+            std::numeric_limits<float>::max(),
+            std::numeric_limits<float>::max()
+        );
 		auto max = math::vec3(
-			-std::numeric_limits<float>::max(),
-			-std::numeric_limits<float>::max(),
-			-std::numeric_limits<float>::max()
-		);
-
+            -std::numeric_limits<float>::max(),
+            -std::numeric_limits<float>::max(),
+            -std::numeric_limits<float>::max()
+        );
+        
         if (!surfaces.empty())
         {
             computeBox(surfaces, min, max);
 
 			_box->bottomLeft(min);
 			_box->topRight(max);
-		}
-		else
-		{
+        }
+        else
+        {
 			_box->bottomLeft(math::vec3(0.));
 			_box->topRight(math::vec3(0.));
-		}
-	}
+        }
+    }
 
-	_invalidWorldSpaceBox = true;
+    _invalidWorldSpaceBox = true;
 }
 
 void
 BoundingBox::updateWorldSpaceBox()
 {
-	if (_invalidBox)
-		update();
+    if (_invalidBox)
+        update();
 
-	_invalidWorldSpaceBox = false;
+    _invalidWorldSpaceBox = false;
 
 	if (!target()->data().hasProperty("modelToWorldMatrix"))
-	{
+    {
 		_worldSpaceBox->topRight(_box->topRight());
 		_worldSpaceBox->bottomLeft(_box->bottomLeft());
-	}
-	else
-	{
+    }
+    else
+    {
 		auto t = target()->data().get<math::mat4>("modelToWorldMatrix");
-		auto vertices = _box->getVertices();
+        auto vertices = _box->getVertices();
 		auto numVertices = vertices.size();
 
 		for (uint i = 0; i < numVertices; ++i)
 			vertices[i] = (t * math::vec4(vertices[i], 1.f)).xyz();
 
 		auto max = math::vec3(
-			-std::numeric_limits<float>::max(),
-			-std::numeric_limits<float>::max(),
-			-std::numeric_limits<float>::max()
-		);
+            -std::numeric_limits<float>::max(),
+            -std::numeric_limits<float>::max(),
+            -std::numeric_limits<float>::max()
+        );
 		auto min = math::vec3(
-			std::numeric_limits<float>::max(),
-			std::numeric_limits<float>::max(),
-			std::numeric_limits<float>::max()
-		);
+            std::numeric_limits<float>::max(),
+            std::numeric_limits<float>::max(),
+            std::numeric_limits<float>::max()
+        );
 
-		for (auto& vertex : vertices)
-		{
+        for (auto& vertex : vertices)
+        {
 			if (vertex.x > max.x)
 				max.x = vertex.x;
 			if (vertex.x < min.x)
@@ -230,9 +230,9 @@ BoundingBox::updateWorldSpaceBox()
 				max.z = vertex.z;
 			if (vertex.z < min.z)
 				min.z = vertex.z;
-		}
+        }
 
 		_worldSpaceBox->topRight(max);
 		_worldSpaceBox->bottomLeft(min);
-	}
+    }
 }

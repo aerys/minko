@@ -34,19 +34,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/TextureWriter.hpp"
 #include "minko/material/Material.hpp"
 #include "minko/render/Texture.hpp"
+#include "minko/deserialize/Unpacker.hpp"
 
 using namespace minko;
 using namespace minko::deserialize;
 using namespace minko::file;
+using namespace minko::deserialize;
 
 std::unordered_map<uint, std::function<void(
     unsigned short,
-    AssetLibrary::Ptr,
-    Options::Ptr,
-    const std::string&,
+                                            AssetLibrary::Ptr,
+                                            Options::Ptr,
+                                            const std::string&,
     const std::vector<unsigned char>&,
-	std::shared_ptr<Dependency>,
-	short,
+                                            std::shared_ptr<Dependency>,
+                                            short,
     std::list<std::shared_ptr<component::JobManager::Job>>&
 )>> 
 AbstractSerializerParser::_assetTypeToFunction;
@@ -54,7 +56,7 @@ AbstractSerializerParser::_assetTypeToFunction;
 void
 AbstractSerializerParser::registerAssetFunction(uint assetTypeId, AssetDeserializeFunction f)
 {
-	_assetTypeToFunction[assetTypeId] = f;
+    _assetTypeToFunction[assetTypeId] = f;
 }
 
 AbstractSerializerParser::AbstractSerializerParser()
@@ -63,73 +65,70 @@ AbstractSerializerParser::AbstractSerializerParser()
 
 
 void
-AbstractSerializerParser::parse(const std::string&					filename,
-								const std::string&					resolvedFilename,
-								std::shared_ptr<Options>			options,
-								const std::vector<unsigned char>&	data,
-								AssetLibraryPtr						assetLibrary)
+AbstractSerializerParser::parse(const std::string&                    filename,
+                                const std::string&                    resolvedFilename,
+                                std::shared_ptr<Options>              options,
+                                const std::vector<unsigned char>&     data,
+                                AssetLibraryPtr                       assetLibrary)
 {
     _filename = filename;
     _resolvedFilename = resolvedFilename;
 }
 
 void
-AbstractSerializerParser::extractDependencies(AssetLibraryPtr						assetLibrary,
-											  const std::vector<unsigned char>&		data,
-											  short									dataOffset,
-											  unsigned int							dependenciesSize,
-											  std::shared_ptr<Options>				options,
-											  std::string&							assetFilePath)
+AbstractSerializerParser::extractDependencies(AssetLibraryPtr                       assetLibrary,
+                                              const std::vector<unsigned char>&     data,
+                                              short                                 dataOffset,
+                                              unsigned int                          dependenciesSize,
+                                              std::shared_ptr<Options>              options,
+                                              std::string&                          assetFilePath)
 {
-	msgpack::object							msgpackObject;
-	msgpack::zone							mempool;
 	SerializedAsset							serializedAsset;
 
-	auto nbDependencies = readShort(data, dataOffset);
+    auto nbDependencies = readShort(data, dataOffset);
 
-	unsigned int offset = dataOffset + 2;
+    unsigned int offset = dataOffset + 2;
 
-	for (int index = 0; index < nbDependencies; ++index)
-	{
-		if (offset >(dataOffset + dependenciesSize))
+    for (int index = 0; index < nbDependencies; ++index)
+    {
+        if (offset >(dataOffset + dependenciesSize))
         {
             _error->execute(shared_from_this(), Error("DependencyParsingError", "Error while parsing dependencies"));
             return;
         }
 
-		auto assetSize = readUInt(data, offset);
+        auto assetSize = readUInt(data, offset);
 
-		offset += 4;
+        offset += 4;
 
-		msgpack::unpack((char*)&data[offset], assetSize, NULL, &mempool, &msgpackObject);
-		msgpackObject.convert(&serializedAsset);
+        unpack(serializedAsset, data, assetSize, offset);
 
-		deserializeAsset(serializedAsset, assetLibrary, options, assetFilePath);
+        deserializeAsset(serializedAsset, assetLibrary, options, assetFilePath);
 
-		offset += assetSize;
-	}
+        offset += assetSize;
+    }
 }
 
 void
-AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
-											AssetLibraryPtr				assetLibrary,
-											std::shared_ptr<Options>	options,
-											std::string&				assetFilePath)
+AbstractSerializerParser::deserializeAsset(SerializedAsset&             asset,
+                                           AssetLibraryPtr              assetLibrary,
+                                           std::shared_ptr<Options>     options,
+                                           std::string&                 assetFilePath)
 {
 	std::vector<unsigned char>	data;
 	std::string					assetCompletePath	= assetFilePath + "/";
 	std::string					resolvedPath		= "";
-	unsigned short				metaData			= (asset.a0 & 0xFFFF0000) >> 16;
+	unsigned short				metaData			= (asset.get<0>() & 0xFFFF0000) >> 16;
 
-	asset.a0 = asset.a0 & 0x000000FF;
+	asset.get<0>() = asset.get<0>() & 0x000000FF;
 
-    if (asset.a0 < 10)
+    if (asset.get<0>() < 10)
     {
-		assetCompletePath += asset.a2;
-		resolvedPath = asset.a2;
+        assetCompletePath += asset.get<2>();
+        resolvedPath = asset.get<2>();
     }
 
-	if (asset.a0 < 10 && _assetTypeToFunction.find(asset.a0) == _assetTypeToFunction.end()) // external
+	if (asset.get<0>() < 10 && _assetTypeToFunction.find(asset.get<0>()) == _assetTypeToFunction.end()) // external
 	{
         auto assetLoader = Loader::create();
         auto assetLoaderOptions = options->clone();
@@ -144,89 +143,89 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 
         auto errorSlot = assetLoader->error()->connect([&](Loader::Ptr, const Error& error)
 		{
-			switch (asset.a0)
+			switch (asset.get<0>())
 			{
 			case serialize::AssetType::GEOMETRY_ASSET:
                 _error->execute(shared_from_this(), Error("MissingGeometryDependency", "Missing geometry dependency: '" + assetCompletePath + "'"));
                 break;
 
-			case serialize::AssetType::MATERIAL_ASSET:
+            case serialize::AssetType::MATERIAL_ASSET:
                 _error->execute(shared_from_this(), Error("MissingMaterialDependency", "Missing material dependency: '" + assetCompletePath + "'"));
                 break;
 
-			case serialize::AssetType::TEXTURE_ASSET:
+            case serialize::AssetType::TEXTURE_ASSET:
                 _error->execute(shared_from_this(), Error("MissingTextureDependency", "Missing texture dependency: '" + assetCompletePath + "'"));
                 break;
 
-			case serialize::AssetType::EFFECT_ASSET:
+            case serialize::AssetType::EFFECT_ASSET:
                 _error->execute(shared_from_this(), Error("MissingEffectDependency", "Missing effect dependency: '" + assetCompletePath + "'"));
                 break;
 
-			default:
-				break;
-			}
-            
+            default:
+                break;
+            }
+
             fileSuccessfullyLoaded = false;
-		});
+        });
 
         auto completeSlot = assetLoader->complete()->connect([&](Loader::Ptr assetLoaderThis)
-		{
+        {
             data = assetLoaderThis->files().at(assetCompletePath)->data();
-		});
+        });
 
         assetLoader
             ->queue(assetCompletePath)
             ->load();
-        
+
         if (!fileSuccessfullyLoaded)
             return;
 	}
 	else
-		data.assign(asset.a2.begin(), asset.a2.end());
+		data.assign(asset.get<2>().begin(), asset.get<2>().end());
 
-	if ((asset.a0 == serialize::AssetType::GEOMETRY_ASSET || asset.a0 == serialize::AssetType::EMBED_GEOMETRY_ASSET) &&
-		_dependency->geometryReferenceExist(asset.a1) == false) // geometry
+	if ((asset.get<0>() == serialize::AssetType::GEOMETRY_ASSET || asset.get<0>() == serialize::AssetType::EMBED_GEOMETRY_ASSET) &&
+		_dependency->geometryReferenceExist(asset.get<1>()) == false) // geometry
 	{
         _geometryParser->_jobList.clear();
 		_geometryParser->dependency(_dependency);
 
-		if (asset.a0 == serialize::AssetType::EMBED_GEOMETRY_ASSET)
-			resolvedPath = "geometry_" + std::to_string(asset.a1);
+		if (asset.get<0>() == serialize::AssetType::EMBED_GEOMETRY_ASSET)
+			resolvedPath = "geometry_" + std::to_string(asset.get<1>());
 
 		_geometryParser->parse(resolvedPath, assetCompletePath, options, data, assetLibrary);
-		_dependency->registerReference(asset.a1, assetLibrary->geometry(_geometryParser->_lastParsedAssetName));
+		_dependency->registerReference(asset.get<1>(), assetLibrary->geometry(_geometryParser->_lastParsedAssetName));
 		_jobList.splice(_jobList.end(), _geometryParser->_jobList);
 	}
-	else if ((asset.a0 == serialize::AssetType::MATERIAL_ASSET || asset.a0 == serialize::AssetType::EMBED_MATERIAL_ASSET) &&
-		_dependency->materialReferenceExist(asset.a1) == false) // material
+	else if ((asset.get<0>() == serialize::AssetType::MATERIAL_ASSET || asset.get<0>() == serialize::AssetType::EMBED_MATERIAL_ASSET) &&
+		_dependency->materialReferenceExist(asset.get<1>()) == false) // material
 	{
 		_materialParser->_jobList.clear();
 		_materialParser->dependency(_dependency);
 
-		if (asset.a0 == serialize::AssetType::EMBED_MATERIAL_ASSET)
-			resolvedPath = "material_" + std::to_string(asset.a1);
+		if (asset.get<0>() == serialize::AssetType::EMBED_MATERIAL_ASSET)
+			resolvedPath = "material_" + std::to_string(asset.get<1>());
 
 		_materialParser->parse(resolvedPath, assetCompletePath, options, data, assetLibrary);
-		_dependency->registerReference(asset.a1, assetLibrary->material(_materialParser->_lastParsedAssetName));
+		_dependency->registerReference(asset.get<1>(), assetLibrary->material(_materialParser->_lastParsedAssetName));
 		_jobList.splice(_jobList.end(), _materialParser->_jobList);
 	}
-    else if ((asset.a0 == serialize::AssetType::EMBED_TEXTURE_ASSET ||
-        asset.a0 == serialize::AssetType::TEXTURE_ASSET) &&
-			(_dependency->textureReferenceExist(asset.a1) == false || _dependency->getTextureReference(asset.a1) == nullptr)) // texture
+    else if ((asset.get<0>() == serialize::AssetType::EMBED_TEXTURE_ASSET ||
+        asset.get<0>() == serialize::AssetType::TEXTURE_ASSET) &&
+			(_dependency->textureReferenceExist(asset.get<1>()) == false || _dependency->getTextureReference(asset.get<1>()) == nullptr)) // texture
 	{
-		if (asset.a0 == serialize::AssetType::EMBED_TEXTURE_ASSET)
+		if (asset.get<0>() == serialize::AssetType::EMBED_TEXTURE_ASSET)
 		{
             auto imageFormat = static_cast<serialize::ImageFormat>(metaData);
 
             auto extension = serialize::extensionFromImageFormat(imageFormat);
 
-			resolvedPath = std::to_string(asset.a1) + "." + extension;
+			resolvedPath = std::to_string(asset.get<1>()) + "." + extension;
 			assetCompletePath += resolvedPath;
 		}
 
-			auto extension = resolvedPath.substr(resolvedPath.find_last_of(".") + 1);
+        auto extension = resolvedPath.substr(resolvedPath.find_last_of(".") + 1);
 
-			std::shared_ptr<file::AbstractParser> parser = assetLibrary->loader()->options()->getParser(extension);
+        std::shared_ptr<file::AbstractParser> parser = assetLibrary->loader()->options()->getParser(extension);
 
         static auto nameId = 0;
         auto uniqueName = resolvedPath;
@@ -241,20 +240,20 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
         if (options->disposeTextureAfterLoading())
             texture->disposeData();
 
-        _dependency->registerReference(asset.a1, texture);
+        _dependency->registerReference(asset.get<1>(), texture);
     }
-    else if (asset.a0 == serialize::AssetType::EMBED_TEXTURE_PACK_ASSET &&
-             (_dependency->textureReferenceExist(asset.a1) == false ||
-             _dependency->getTextureReference(asset.a1) == nullptr))
+    else if (asset.get<0>() == serialize::AssetType::EMBED_TEXTURE_PACK_ASSET &&
+             (_dependency->textureReferenceExist(asset.get<1>()) == false ||
+             _dependency->getTextureReference(asset.get<1>()) == nullptr))
     {
-        resolvedPath = "texture_" + std::to_string(asset.a1);
+        resolvedPath = "texture_" + std::to_string(asset.get<1>());
 
         if (assetLibrary->texture(resolvedPath) == nullptr)
         {
-            const auto hasTextureHeaderSize = (((metaData & 0xf000) >> 15) == 1 ? true : false);
-            auto textureHeaderSize = static_cast<unsigned int>(metaData & 0x0fff);
+			const auto hasTextureHeaderSize = (((metaData & 0xf000) >> 15) == 1 ? true : false);
+			auto textureHeaderSize = static_cast<unsigned int>(metaData & 0x0fff);
 
-            _textureParser->textureHeaderSize(textureHeaderSize);
+			_textureParser->textureHeaderSize(textureHeaderSize);
             _textureParser->dataEmbed(true);
 
             _textureParser->parse(resolvedPath, assetCompletePath, options, data, assetLibrary);
@@ -264,31 +263,31 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
         	if (options->disposeTextureAfterLoading())
         	    texture->disposeData();
 		}
-		_dependency->registerReference(asset.a1, assetLibrary->texture(resolvedPath));
+		_dependency->registerReference(asset.get<1>(), assetLibrary->texture(resolvedPath));
 	}
-    else if (asset.a0 == serialize::AssetType::TEXTURE_PACK_ASSET)
+    else if (asset.get<0>() == serialize::AssetType::TEXTURE_PACK_ASSET)
     {
-        deserializeTexture(metaData, assetLibrary, options, assetCompletePath, data, _dependency, asset.a1, _jobList);
+        deserializeTexture(metaData, assetLibrary, options, assetCompletePath, data, _dependency, asset.get<1>(), _jobList);
     }
-	else if (asset.a0 == serialize::AssetType::EFFECT_ASSET && _dependency->effectReferenceExist(asset.a1) == false) // effect
+	else if (asset.get<0>() == serialize::AssetType::EFFECT_ASSET && _dependency->effectReferenceExist(asset.get<1>()) == false) // effect
 	{
 		assetLibrary->loader()->queue(assetCompletePath);
-		_dependency->registerReference(asset.a1, assetLibrary->effect(assetCompletePath));
+		_dependency->registerReference(asset.get<1>(), assetLibrary->effect(assetCompletePath));
 	}
-    else if (asset.a0 == serialize::AssetType::LINKED_ASSET)
+    else if (asset.get<0>() == serialize::AssetType::LINKED_ASSET)
     {
         msgpack::type::tuple<int, int, std::string, std::vector<unsigned char>, int> linkedAssetdata;
 
         {
             msgpack::unpacked unpacked;
-            msgpack::unpack(&unpacked, asset.a2.c_str(), asset.a2.size());
+            msgpack::unpack(&unpacked, asset.get<2>().c_str(), asset.get<2>().size());
 
             unpacked.get().convert(&linkedAssetdata);
         }
 
-        auto linkedAssetOffset = linkedAssetdata.a0;
-        auto linkedAssetFilename = linkedAssetdata.a2;
-        const auto linkedAssetLinkType = static_cast<LinkedAsset::LinkType>(linkedAssetdata.a4);
+        auto linkedAssetOffset = linkedAssetdata.get<0>();
+        auto linkedAssetFilename = linkedAssetdata.get<2>();
+        const auto linkedAssetLinkType = static_cast<LinkedAsset::LinkType>(linkedAssetdata.get<4>());
 
         if (linkedAssetLinkType == LinkedAsset::LinkType::Internal)
         {
@@ -299,51 +298,45 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 
         auto linkedAsset = LinkedAsset::create()
             ->offset(linkedAssetOffset)
-            ->length(linkedAssetdata.a1)
+            ->length(linkedAssetdata.get<1>())
             ->filename(linkedAssetFilename)
-            ->data(linkedAssetdata.a3)
+            ->data(linkedAssetdata.get<3>())
             ->linkType(linkedAssetLinkType);
 
-        _dependency->registerReference(asset.a1, linkedAsset);
+        _dependency->registerReference(asset.get<1>(), linkedAsset);
     }
 	else
 	{
-        if (_assetTypeToFunction.find(asset.a0) != _assetTypeToFunction.end())
+        if (_assetTypeToFunction.find(asset.get<0>()) != _assetTypeToFunction.end())
         {
-            _assetTypeToFunction[asset.a0](
+            _assetTypeToFunction[asset.get<0>()](
                 metaData,
                 assetLibrary,
                 options,
                 assetCompletePath,
                 data,
                 _dependency,
-                asset.a1,
+                asset.get<1>(),
                 _jobList
             );
         }
 	}
-
-	data.clear();
-	data.shrink_to_fit();
-
-	asset.a2.clear();
-	asset.a2.shrink_to_fit();
 }
 
 std::string
 AbstractSerializerParser::extractFolderPath(const std::string& filepath)
 {
-	unsigned found = filepath.find_last_of("/\\");
+    unsigned found = filepath.find_last_of("/\\");
 
-	return filepath.substr(0, found);
+    return filepath.substr(0, found);
 }
 
 bool
-AbstractSerializerParser::readHeader(const std::string&					filename,
+AbstractSerializerParser::readHeader(const std::string&                    filename,
                                      const std::vector<unsigned char>&     data,
                                      int                                   extension)
 {
-	_magicNumber = readInt(data, 0);
+    _magicNumber = readInt(data, 0);
 
 	// File should start with 0x4D4B03 (MK3). Last byte reserved for extensions (Material, Geometry...)
     if (_magicNumber != MINKO_SCENE_MAGIC_NUMBER + (extension & 0xFF))
@@ -351,7 +344,7 @@ AbstractSerializerParser::readHeader(const std::string&					filename,
         _error->execute(shared_from_this(), Error("InvalidFile", "Invalid scene file '" + filename + "': magic number mismatch"));
         return false;
     }
-    
+
 	_version.version = readInt(data, 4);
 
     _version.major = int(data[4]);
@@ -361,35 +354,35 @@ AbstractSerializerParser::readHeader(const std::string&					filename,
     if (_version.major != MINKO_SCENE_VERSION_MAJOR || 
         _version.minor > MINKO_SCENE_VERSION_MINOR || 
         (_version.minor <= MINKO_SCENE_VERSION_MINOR && _version.patch < MINKO_SCENE_VERSION_PATCH))
-	{
+    {
 		auto fileVersion = std::to_string(_version.major) + "." + std::to_string(_version.minor) + "." + std::to_string(_version.patch);
 		auto sceneVersion = std::to_string(MINKO_SCENE_VERSION_MAJOR) + "." + std::to_string(MINKO_SCENE_VERSION_MINOR) + "." + std::to_string(MINKO_SCENE_VERSION_PATCH);
 
         auto message = "File " + filename + " doesn't match serializer version (file has v" + fileVersion + " while current version is v" + sceneVersion + ")";
 
         std::cerr << message << std::endl;
-        
+
         _error->execute(shared_from_this(), Error("InvalidFile", message));
         return false;
-	}
+    }
 
 	// Versions with the same MAJOR value but different MINOR or PATCH value should be compatible
 #if DEBUG
     if (_version.minor != MINKO_SCENE_VERSION_MINOR || _version.patch != MINKO_SCENE_VERSION_PATCH)
-	{
+    {
 		auto fileVersion = std::to_string(_version.major) + "." + std::to_string(_version.minor) + "." + std::to_string(_version.patch);
 		auto sceneVersion = std::to_string(MINKO_SCENE_VERSION_MAJOR) + "." + std::to_string(MINKO_SCENE_VERSION_MINOR) + "." + std::to_string(MINKO_SCENE_VERSION_PATCH);
 
-		std::cout << "Warning: file " + filename + " is v" + fileVersion + " while current version is v" + sceneVersion << std::endl;
-	}
+        std::cout << "Warning: file " + filename + " is v" + fileVersion + " while current version is v" + sceneVersion << std::endl;
+    }
 #endif
 
-	_fileSize = readUInt(data, 8);
+    _fileSize = readUInt(data, 8);
 
-	_headerSize = readShort(data, 12);
+    _headerSize = readShort(data, 12);
 
-	_dependenciesSize = readUInt(data, 14);
-	_sceneDataSize = readUInt(data, 18);
+	_dependencySize = readUInt(data, 14);
+    _sceneDataSize = readUInt(data, 18);
 
     return true;
 }

@@ -79,7 +79,7 @@ namespace minko
         virtual
         Signal<Ptr, uint, uint>::Ptr
         resized() = 0;
-
+        
         virtual
         Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr
         joystickAdded() = 0;
@@ -87,6 +87,14 @@ namespace minko
         virtual
         Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr
         joystickRemoved() = 0;
+
+        virtual
+        Signal<AbstractCanvas::Ptr>::Ptr
+        suspended() = 0;
+
+        virtual
+        Signal<AbstractCanvas::Ptr>::Ptr
+        resumed() = 0;
 
         virtual
         int

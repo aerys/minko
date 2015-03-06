@@ -209,18 +209,21 @@ Surface::setEffectAndTechnique(Effect::Ptr			effect,
     if (effect != _effect)
     {
         changed = true;
-	    target()->data().removeProvider(_effect->data(), EFFECT_COLLECTION_NAME);
-    	_effect = effect;
-        target()->data().addProvider(effect->data(), EFFECT_COLLECTION_NAME);
+		if (target() != nullptr)
+		{
+			target()->data().removeProvider(_effect->data(), EFFECT_COLLECTION_NAME);
+			target()->data().addProvider(effect->data(), EFFECT_COLLECTION_NAME);
+		}
+		_effect = effect;
     }
 
     if (technique != _technique)
     {
         changed = true;
-    	_technique = technique;
+		_technique = technique;
         _provider->set("technique", technique);
     }
-
+		
     if (changed)
         _effectChanged.execute(std::static_pointer_cast<Surface>(shared_from_this()));
 }

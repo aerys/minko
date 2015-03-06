@@ -41,6 +41,7 @@ Options::Options() :
     _generateMipMaps(false),
     _resizeSmoothly(false),
     _isCubeTexture(false),
+    _isRectangleTexture(false),
     _startAnimation(true),
     _loadAsynchronously(false),
     _disposeIndexBufferAfterLoading(false),
@@ -60,7 +61,7 @@ Options::Options() :
     includePaths().push_back(binaryDir + "/asset");
 
  #if defined(DEBUG) && !defined(EMSCRIPTEN)
-     includePaths().push_back(binaryDir + "/../../../asset");
+    includePaths().push_back(binaryDir + "/../../../asset");
  #endif
 
     initializePlatforms();
@@ -78,6 +79,7 @@ Options::Options(const Options& copy) :
     _generateMipMaps(copy._generateMipMaps),
     _resizeSmoothly(copy._resizeSmoothly),
     _isCubeTexture(copy._isCubeTexture),
+	_isRectangleTexture(copy._isRectangleTexture),
     _startAnimation(copy._startAnimation),
     _disposeIndexBufferAfterLoading(copy._disposeIndexBufferAfterLoading),
     _disposeVertexBufferAfterLoading(copy._disposeVertexBufferAfterLoading),
@@ -185,10 +187,10 @@ Options::initializeDefaultFunctions()
     auto options = this;
 
     if (!_materialFunction)
-        _materialFunction = [](const std::string&, material::Material::Ptr material) -> material::Material::Ptr
-        {
-            return material;
-        };
+    _materialFunction = [](const std::string&, material::Material::Ptr material) -> material::Material::Ptr
+    {
+        return material;
+    };
 
     if (!_textureFunction)
         _textureFunction = [](const std::string&, AbstractTexturePtr texture) -> AbstractTexturePtr
@@ -197,28 +199,28 @@ Options::initializeDefaultFunctions()
         };
 
     if (!_geometryFunction)
-        _geometryFunction = [](const std::string&, GeomPtr geom) -> GeomPtr
-        {
-            return geom;
-        };
+    _geometryFunction = [](const std::string&, GeomPtr geom) -> GeomPtr
+    {
+        return geom;
+    };
 
     if (!_uriFunction)
-        _uriFunction = [](const std::string& uri) -> const std::string
-        {
-            return uri;
-        };
+    _uriFunction = [](const std::string& uri) -> const std::string
+    {
+        return uri;
+    };
 
     if (!_nodeFunction)
-        _nodeFunction = [](NodePtr node) -> NodePtr
-        {
-            return node;
-        };
+    _nodeFunction = [](NodePtr node) -> NodePtr
+    {
+        return node;
+    };
 
     if (!_effectFunction)
-        _effectFunction = [](EffectPtr effect) -> EffectPtr
-        {
-            return effect;
-        };
+    _effectFunction = [](EffectPtr effect) -> EffectPtr
+    {
+        return effect;
+    };
 
     _textureFormatFunction = [=](const std::unordered_set<render::TextureFormat>& availableTextureFormats) ->render::TextureFormat
     {
@@ -281,13 +283,13 @@ Options::initializeDefaultFunctions()
 
     if (!_defaultProtocolFunction)
         _defaultProtocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
-        {
-            auto defaultProtocol = options->getProtocol("file"); // "file" might be overriden (by APKProtocol for instance)
+    {
+        auto defaultProtocol = options->getProtocol("file"); // "file" might be overriden (by APKProtocol for instance)
 
             defaultProtocol->options(options->clone());
 
-            return defaultProtocol;
-        };
+        return defaultProtocol;
+    };
 
     _protocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>
     {

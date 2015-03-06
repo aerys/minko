@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/SerializerCommon.hpp"
-#include "msgpack.hpp"
+#include "minko/deserialize/Unpacker.hpp"
 
 namespace minko
 {
@@ -29,97 +29,96 @@ namespace minko
         struct SceneVersion;
     }
 
-	namespace deserialize
-	{
+    namespace deserialize
+    {
 
-		class ComponentDeserializer
-		{
+        class ComponentDeserializer
+        {
+        private:
+            typedef std::shared_ptr<file::Dependency>               DependencyPtr;
+            typedef std::shared_ptr<file::AssetLibrary>             AssetLibraryPtr;
+            typedef std::shared_ptr<component::AbstractComponent>   AbsComponentPtr;
+            typedef msgpack::type::tuple<uint, std::string>         SerializedMatrix;
+            typedef std::vector<SerializedMatrix>                   VectorOfSerializedMatrix;
+            typedef msgpack::type::tuple<std::string, std::string>  SurfaceExtension;
 
-		private:
-            typedef std::shared_ptr<file::Dependency>				DependencyPtr;
-			typedef std::shared_ptr<file::AssetLibrary>				AssetLibraryPtr;
-			typedef std::shared_ptr<component::AbstractComponent>	AbsComponentPtr;
-			typedef msgpack::type::tuple<uint, std::string>			SerializedMatrix;
-			typedef std::vector<SerializedMatrix>					VectorOfSerializedMatrix;
-			typedef msgpack::type::tuple<std::string, std::string>	SurfaceExtension;
-
-		public:
-			static
-			AbsComponentPtr
+        public:
+            static
+            AbsComponentPtr
             deserializeTransform(file::SceneVersion sceneVersion,
                                  std::string&	    serializedTransformData,
-								 AssetLibraryPtr    assetLibrary,
-								 DependencyPtr	    dependencies);
+                                 AssetLibraryPtr        assetLibrary,
+                                 DependencyPtr          dependencies);
 
-			static
-			AbsComponentPtr
+            static
+            AbsComponentPtr
             deserializeProjectionCamera(file::SceneVersion    sceneVersion,
                                         std::string&	serializedCameraData,
-										AssetLibraryPtr	assetLibrary,
-										DependencyPtr	dependencies);
+                                        AssetLibraryPtr assetLibrary,
+                                        DependencyPtr   dependencies);
 
-			static
-			AbsComponentPtr
+            static
+            AbsComponentPtr
             deserializeAmbientLight(file::SceneVersion    sceneVersion, 
                                     std::string&	serializedAmbientLight,
-									AssetLibraryPtr	assetLibrary,
-									DependencyPtr	dependencies);
+                                    AssetLibraryPtr     assetLibrary,
+                                    DependencyPtr       dependencies);
 
-			static
-			AbsComponentPtr
+            static
+            AbsComponentPtr
             deserializeDirectionalLight(file::SceneVersion    sceneVersion,
                                         std::string&	serializedDirectionalLight,
-										AssetLibraryPtr	assetLibrary,
-										DependencyPtr	dependencies);
+                                        AssetLibraryPtr assetLibrary,
+                                        DependencyPtr   dependencies);
 
-			static
-			AbsComponentPtr
+            static
+            AbsComponentPtr
             deserializePointLight(file::SceneVersion      sceneVersion,
                                   std::string&	    serializedPointLight,
-								  AssetLibraryPtr   assetLibrary,
-								  DependencyPtr	    dependencies);
+                                  AssetLibraryPtr       assetLibrary,
+                                  DependencyPtr         dependencies);
 
-			static
-			AbsComponentPtr
+            static
+            AbsComponentPtr
             deserializeSpotLight(file::SceneVersion       sceneVersion,
                                  std::string&	    serializedSpotLight,
-								 AssetLibraryPtr    assetLibrary,
-								 DependencyPtr	    dependencies);
+                                 AssetLibraryPtr        assetLibrary,
+                                 DependencyPtr          dependencies);
 
-			static
-			AbsComponentPtr
+            static
+            AbsComponentPtr
             deserializeSurface(file::SceneVersion     sceneVersion,
                                std::string&		serializedSurface,
-							   AssetLibraryPtr	assetLibrary,
-							   DependencyPtr	dependencies);
+                               AssetLibraryPtr          assetLibrary,
+                               DependencyPtr            dependencies);
 
-			static
-			AbsComponentPtr
+            static
+            AbsComponentPtr
             deserializeRenderer(file::SceneVersion    sceneVersion,
                                 std::string&	serializedRenderer,
-							    AssetLibraryPtr	assetLibrary,
-							    DependencyPtr	dependencies);
+                               AssetLibraryPtr          assetLibrary,
+                               DependencyPtr            dependencies);
 
-			static
-			AbsComponentPtr
+            static
+            AbsComponentPtr
             deserializeAnimation(file::SceneVersion       sceneVersion,
                                  std::string&	    serializedAnimation,
-								 AssetLibraryPtr    assetLibrary,
-								 DependencyPtr	    dependencies);
+                                 AssetLibraryPtr        assetLibrary,
+                                 DependencyPtr          dependencies);
 
-			static
-			AbsComponentPtr
+            static
+            AbsComponentPtr
             deserializeSkinning(file::SceneVersion    sceneVersion,
                                 std::string&	serializedAnimation,
-								AssetLibraryPtr	assetLibrary,
-								DependencyPtr	dependencies);
+                                AssetLibraryPtr         assetLibrary,
+                                DependencyPtr           dependencies);
 
-			static
-			AbsComponentPtr
+            static
+            AbsComponentPtr
             deserializeBoundingBox(file::SceneVersion     sceneVersion,
                                    std::string&	    serializedBoundingBox,
-                                   AssetLibraryPtr  assetLibrary,
-                                   DependencyPtr    dependencies);
-		};
-	}
+                                   AssetLibraryPtr      assetLibrary,
+                                   DependencyPtr        dependencies);
+        };
+    }
 }

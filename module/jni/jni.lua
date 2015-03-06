@@ -46,6 +46,7 @@ end
 
 -- writing toolchain name in a fake symlink to avoid actual symlinks on Windows (requiring privileges)
 local NDK_HOME = ANDROID .. "/toolchains/default"
+local LOCAL_MINKO_HOME = MINKO_HOME
 local extension = ''
 
 if (os.is("linux") and not os.isdir(NDK_HOME)) or (os.is("windows") and not os.isfile(NDK_HOME)) then
