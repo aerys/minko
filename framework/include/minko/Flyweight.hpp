@@ -87,6 +87,27 @@ namespace minko
         }
 
         inline
+        bool
+        operator==(const T& rhs) const
+        {
+            return *_value == rhs;
+        }
+
+        inline
+        bool
+        operator!=(const Flyweight<T>& rhs) const
+        {
+            return _value != rhs._value;
+        }
+
+        inline
+        bool
+        operator!=(const T& rhs) const
+        {
+            return *_value != rhs;
+        }
+
+        inline
         const Flyweight<T>&
         operator=(const Flyweight<T>& rhs)
         {

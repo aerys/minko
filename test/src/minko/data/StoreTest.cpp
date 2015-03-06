@@ -491,7 +491,7 @@ TEST_F(StoreTest, specificPropertyAddedSignal)
     ASSERT_TRUE(executed);
     ASSERT_EQ(callbackStore, &s);
     ASSERT_EQ(callbackProvider, p);
-    ASSERT_EQ(callbackPropertyName, "test");
+    ASSERT_EQ(callbackPropertyName, std::string("test"));
 }
 
 TEST_F(StoreTest, specificPropertyRemovedSignal)
@@ -529,7 +529,7 @@ TEST_F(StoreTest, specificPropertyRemovedSignal)
     ASSERT_TRUE(executed);
     ASSERT_EQ(callbackStore, &s);
     ASSERT_EQ(callbackProvider, p);
-    ASSERT_EQ(callbackPropertyName, "test");
+    ASSERT_EQ(callbackPropertyName, std::string("test"));
 }
 
 TEST_F(StoreTest, specificPropertyChangedSignal)
@@ -567,7 +567,7 @@ TEST_F(StoreTest, specificPropertyChangedSignal)
     ASSERT_TRUE(executed);
     ASSERT_EQ(callbackStore, &s);
     ASSERT_EQ(callbackProvider, p);
-    ASSERT_EQ(callbackPropertyName, "test");
+    ASSERT_EQ(callbackPropertyName, std::string("test"));
 }
 
 TEST_F(StoreTest, doNotFreeUsedPropertyAddedSignals)

@@ -33,7 +33,7 @@ DrawCallPool::DrawCallPool() :
     _invalidDrawCalls(),
     _macroChangedSlot(new MacroToChangedSlotMap()),
     _propChangedSlot(new PropertyChangedSlotMap()),
-    _drawCallToPropRebindFuncs(new PropertyRebindFuncMap())
+    _drawCallToPropRebindFuncs(new PropertyRebindFuncMap()),
     _zSortUsefulPropertyChangedSlot()
 {
     _macroToDrawCalls->set_deleted_key(MacroBindingKey("", nullptr, nullptr));
@@ -325,7 +325,8 @@ DrawCallPool::uniformBindingPropertyAddedHandler(DrawCall&                      
     {
         auto& propertyName = resolvedBinding->propertyName;
         auto bindingPtr = &resolvedBinding->binding;
-        auto& signal = resolvedBinding->store.hasProperty(propertyName)
+        auto propertyExist = resolvedBinding->store.hasProperty(propertyName);
+        auto& signal = propertyExist
             ? resolvedBinding->store.propertyRemoved(propertyName)
             : resolvedBinding->store.propertyAdded(propertyName);
 
@@ -359,11 +360,15 @@ DrawCallPool::uniformBindingPropertyAddedHandler(DrawCall&                      
             if (propertyRelatedToZSort)
             {
                 // Bind the signal to request a Z-sorting if one of these properties changed
-                _zSortUsefulPropertyChangedSlot[{&resolvedBinding->binding, &drawCall}] = resolvedBinding->store.propertyChanged().connect(
-                    [&](data::Store&, data::Provider::Ptr, const std::string& propertyName)
-                {
-                    sortDrawCalls();
-                });
+                _zSortUsefulPropertyChangedSlot->insert(std::make_pair(
+                    std::make_pair(bindingPtr, &drawCall), 
+                    resolvedBinding->store.propertyChanged().connect(
+                    [&](data::Store&, data::Provider::Ptr, const data::Provider::PropertyName&)
+                        {
+                            sortDrawCalls();
+                        })
+                    )
+                );
             }
         }
 
@@ -394,17 +399,20 @@ DrawCallPool::samplerStatesBindingPropertyAddedHandler(DrawCall&                
                 ? resolvedBinding->store.propertyRemoved(propertyName)
                 : resolvedBinding->store.propertyAdded(propertyName);
 
-            (*_propChangedSlot)[{&resolvedBinding->binding, &drawCall}] = signal.connect(
-                [&](data::Store&, data::Provider::Ptr, const data::Provider::PropertyName&)
-                {
-                    (*_drawCallToPropRebindFuncs)[&drawCall].push_back(
-                        [&, this]()
-                        {
-                            samplerStatesBindingPropertyAddedHandler(drawCall, input, uniformBindingMap);
-                        }
-                    );
-                }
-            );
+            _propChangedSlot->insert(std::make_pair(
+                std::make_pair(&resolvedBinding->binding, &drawCall),
+                signal.connect(
+                    [&](data::Store&, data::Provider::Ptr, const data::Provider::PropertyName&)
+                    {
+                        (*_drawCallToPropRebindFuncs)[&drawCall].push_back(
+                            [&, this]()
+                            {
+                                samplerStatesBindingPropertyAddedHandler(drawCall, input, uniformBindingMap);
+                            }
+                        );
+                    }
+                )
+            ));
 
             delete resolvedBinding;
         }
@@ -426,12 +434,15 @@ DrawCallPool::stateBindingPropertyAddedHandler(DrawCall&                drawCall
                 ? resolvedBinding->store.propertyRemoved(propertyName)
                 : resolvedBinding->store.propertyAdded(propertyName);
 
-            _propChangedSlot[{&resolvedBinding->binding, &drawCall}] = signal.connect(std::bind(
-                &DrawCallPool::stateBindingPropertyAddedHandler,
-                this,
-                std::ref(drawCall),
-                std::ref(stateBindingMap)
-            ));
+            _propChangedSlot->insert(std::make_pair(
+                std::make_pair(&resolvedBinding->binding, &drawCall),
+                signal.connect(std::bind(
+                    &DrawCallPool::stateBindingPropertyAddedHandler,
+                    this,
+                    std::ref(drawCall),
+                    std::ref(stateBindingMap)
+                )
+            )));
 
             delete resolvedBinding;
         }
@@ -564,30 +575,4 @@ DrawCallPool::unbindDrawCall(DrawCall& drawCall)
 
     _drawCallToPropRebindFuncs->erase(&drawCall);
     //_drawCallToPropRebindFuncs->clear();
-}
-
-bool
-DrawCallPool::compareDrawCalls(DrawCall* a, DrawCall* b)
-{
-    const float aPriority = a->priority();
-    const float bPriority = b->priority();
-    const bool samePriority = fabsf(aPriority - bPriority) < 1e-3f;
-
-    if (samePriority)
-    {
-        if (a->target().id == b->target().id)
-        {
-            if (a->zSorted() && b->zSorted())
-            {
-                auto aPosition = a->getEyeSpacePosition();
-                auto bPosition = b->getEyeSpacePosition();
-
-                return aPosition.z > bPosition.z;
-            }
-        }
-
-        return a->target().id < b->target().id;
-    }
-
-    return aPriority > bPriority;
 }

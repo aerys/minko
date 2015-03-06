@@ -111,7 +111,7 @@ DrawCall::bindPositionalMembers()
     else
     {
         _modelToWorldMatrixPropertyAddedSlot = _targetData.propertyAdded("modelToWorldMatrix").connect(
-            [&](data::Store&, std::shared_ptr<data::Provider>, const std::string&)
+            [&](data::Store&, std::shared_ptr<data::Provider>, const data::Provider::PropertyName&)
         {
             _modelToWorldMatrix = _targetData.getPointer<math::mat4>("modelToWorldMatrix");
         });
@@ -122,7 +122,7 @@ DrawCall::bindPositionalMembers()
     else
     {
         _worldToScreenMatrixPropertyAddedSlot = _rendererData.propertyAdded("worldToScreenMatrix").connect(
-            [&](data::Store& store, std::shared_ptr<data::Provider> data, const std::string& propertyName)
+            [&](data::Store& store, std::shared_ptr<data::Provider> data, const data::Provider::PropertyName&)
         {
             _worldToScreenMatrix = _rendererData.getPointer<math::mat4>("worldToScreenMatrix");
         });
@@ -130,13 +130,13 @@ DrawCall::bindPositionalMembers()
 
     // Removed slot
     _modelToWorldMatrixPropertyRemovedSlot = _targetData.propertyRemoved("modelToWorldMatrix").connect(
-        [&](data::Store&, std::shared_ptr<data::Provider>, const std::string&)
+        [&](data::Store&, std::shared_ptr<data::Provider>, const data::Provider::PropertyName&)
     {
         _modelToWorldMatrix = nullptr;
     });
 
     _worldToScreenMatrixPropertyRemovedSlot = _rendererData.propertyRemoved("worldToScreenMatrix").connect(
-        [&](data::Store& store, std::shared_ptr<data::Provider> data, const std::string& propertyName)
+        [&](data::Store& store, std::shared_ptr<data::Provider> data, const data::Provider::PropertyName&)
     {
         _worldToScreenMatrix = nullptr;
     });

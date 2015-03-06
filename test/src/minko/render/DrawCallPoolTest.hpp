@@ -57,13 +57,13 @@ namespace minko
                 auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
                 targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
 
-                std::unordered_map<std::string, std::string> variables{
+                render::EffectVariables variables{
                     { "materialUuid", material->uuid() },
                     { "geometryUuid", geom->uuid() }
                 };
 
-                auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
-                auto drawCall = *drawCalls.first;
+                pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
+                auto drawCall = pool.drawCalls().front();
                 auto stateDefaultValues = drawCall->pass()->stateBindings().defaultValues;
 
                 material->data()->set(stateName, stateMaterialValue);
@@ -75,6 +75,9 @@ namespace minko
 
                 material->data()->unset(stateName);
                 
+                auto drawCallValue = valueFunc(drawCall);
+                auto stateDefaultValue = stateDefaultValues.get<T>(stateName);
+
                 ASSERT_EQ(valueFunc(drawCall), stateDefaultValues.get<T>(stateName));
             }
 
@@ -105,13 +108,13 @@ namespace minko
                 auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
                 targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
 
-                std::unordered_map<std::string, std::string> variables{
+                render::EffectVariables variables{
                     { "materialUuid", material->uuid() },
                     { "geometryUuid", geom->uuid() }
                 };
 
-                auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
-                auto drawCall = *drawCalls.first;
+                pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
+                auto drawCall = pool.drawCalls().front();
                 auto stateDefaultValues = drawCall->pass()->stateBindings().defaultValues;
 
                 material->data()->set(stateName, stateMaterialValue);

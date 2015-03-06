@@ -231,8 +231,8 @@ TEST_F(DrawCallPoolTest, SameMacroBindingDifferentVariables)
     auto p2 = data::Provider::create();
     std::string materialUuid1 = p1->uuid();
     std::string materialUuid2 = p2->uuid();
-    std::unordered_map<std::string, std::string> variables1 = { { "materialUuid", materialUuid1 } };
-    std::unordered_map<std::string, std::string> variables2 = { { "materialUuid", materialUuid2 } };
+    render::EffectVariables variables1 = { { "materialUuid", materialUuid1 } };
+    render::EffectVariables variables2 = { { "materialUuid", materialUuid2 } };
 
     targetData.addProvider(p1, component::Surface::MATERIAL_COLLECTION_NAME);
     targetData.addProvider(p2, component::Surface::MATERIAL_COLLECTION_NAME);

@@ -298,7 +298,7 @@ Renderer::componentAddedHandler(std::shared_ptr<Node>				node,
     else if (perspectiveCamera)
     {
         _worldToScreenMatrixPropertyChangedSlot = perspectiveCamera->target()->data().propertyChanged("worldToScreenMatrix").connect(
-            [&](data::Store&, data::Provider::Ptr, const std::string&)
+            [&](data::Store&, data::Provider::Ptr, const data::Provider::PropertyName&)
             {
                 _mustZSort = true;
             }
@@ -347,8 +347,6 @@ Renderer::addSurface(Surface::Ptr surface)
         target()->data(),
         surface->target()->data()
     );
-
-    auto drawCall = *(_surfaceToDrawCallIterator[surface].first);
 
     auto callback = std::bind(
         &Renderer::surfaceGeometryOrMaterialChangedHandler,

@@ -61,57 +61,57 @@ namespace minko
             typedef std::unordered_map<SurfacePtr, std::list<SurfaceChangedSignal::Slot>>   SurfaceSlotMap;
             typedef Signal<render::DrawCall*>                                               ZSortNeeded;
 		private:
-			std::string											_name;
+			std::string											                    _name;
 
-			unsigned int										_backgroundColor;
-            math::ivec4      									_viewportBox;
-			math::ivec4      									_scissorBox;
-			std::shared_ptr<SceneManager>						_sceneManager;
-			Signal<Ptr>::Ptr									_renderingBegin;
-			Signal<Ptr>::Ptr									_renderingEnd;
-			Signal<Ptr>::Ptr									_beforePresent;
-			AbsTexturePtr										_renderTarget;
-            bool                                                _clearBeforeRender;
-            render::EffectVariables		        				_variables;
+			unsigned int										                    _backgroundColor;
+            math::ivec4      									                    _viewportBox;
+			math::ivec4      									                    _scissorBox;
+			std::shared_ptr<SceneManager>						                    _sceneManager;
+			Signal<Ptr>::Ptr									                    _renderingBegin;
+			Signal<Ptr>::Ptr									                    _renderingEnd;
+			Signal<Ptr>::Ptr									                    _beforePresent;
+			AbsTexturePtr										                    _renderTarget;
+            bool                                                                    _clearBeforeRender;
+            render::EffectVariables		        				                    _variables;
 
 
-			std::set<std::shared_ptr<Surface>>					_toCollect;
-			EffectPtr											_effect;
-			std::string											_effectTechnique;
-			float												_priority;
-			bool												_enabled;
-			std::shared_ptr<geometry::Geometry>					_postProcessingGeom;
-			bool                                                _mustZSort;
+			std::set<std::shared_ptr<Surface>>					                    _toCollect;
+			EffectPtr											                    _effect;
+			std::string											                    _effectTechnique;
+			float												                    _priority;
+			bool												                    _enabled;
+			std::shared_ptr<geometry::Geometry>					                    _postProcessingGeom;
+			bool                                                                    _mustZSort;
 
-			std::unordered_map<const render::DrawCall*, ZSortNeeded::Slot>  _drawCallToZSortNeededSlot;
+			std::unordered_map<const render::DrawCall*, ZSortNeeded::Slot>          _drawCallToZSortNeededSlot;
 			
-			Signal<AbsCmpPtr, NodePtr>::Slot					_targetAddedSlot;
-			Signal<AbsCmpPtr, NodePtr>::Slot					_targetRemovedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot				_addedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot				_removedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot				_rootDescendantAddedSlot;
-			Signal<NodePtr, NodePtr, NodePtr>::Slot				_rootDescendantRemovedSlot;
-			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot			_componentAddedSlot;
-			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot			_componentRemovedSlot;
-			Signal<SceneManagerPtr, uint, AbsTexturePtr>::Slot	_renderingBeginSlot;
-            SurfaceSlotMap                                      _surfaceChangedSlots;
-            Signal<Store&, ProviderPtr, const std::string&>::Slot           _worldToScreenMatrixPropertyChangedSlot;
+			Signal<AbsCmpPtr, NodePtr>::Slot					                    _targetAddedSlot;
+			Signal<AbsCmpPtr, NodePtr>::Slot					                    _targetRemovedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot				                    _addedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot				                    _removedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot				                    _rootDescendantAddedSlot;
+			Signal<NodePtr, NodePtr, NodePtr>::Slot				                    _rootDescendantRemovedSlot;
+			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot			                    _componentAddedSlot;
+			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot			                    _componentRemovedSlot;
+			Signal<SceneManagerPtr, uint, AbsTexturePtr>::Slot	                    _renderingBeginSlot;
+            SurfaceSlotMap                                                          _surfaceChangedSlots;
+            Signal<Store&, ProviderPtr, const data::Provider::PropertyName&>::Slot  _worldToScreenMatrixPropertyChangedSlot;
 
-			render::DrawCallPool								_drawCallPool;
-            std::unordered_map<SurfacePtr, uint>            	_surfaceToDrawCallIterator;
+			render::DrawCallPool								                    _drawCallPool;
+            std::unordered_map<SurfacePtr, uint>                                    _surfaceToDrawCallIterator;
 
-			/*std::set<AbsFilterPtr>										_targetDataFilters;
-			std::set<AbsFilterPtr>										_rendererDataFilters;
-			std::set<AbsFilterPtr>										_rootDataFilters;
-			std::shared_ptr<data::LightMaskFilter>						_lightMaskFilter;*/
+			/*std::set<AbsFilterPtr>										        _targetDataFilters;
+			std::set<AbsFilterPtr>										            _rendererDataFilters;
+			std::set<AbsFilterPtr>										            _rootDataFilters;
+			std::shared_ptr<data::LightMaskFilter>						            _lightMaskFilter;*/
 
-			/*std::unordered_map<AbsFilterPtr, FilterChangedSlot>			_targetDataFilterChangedSlots;
-			std::unordered_map<AbsFilterPtr, FilterChangedSlot>			_rendererDataFilterChangedSlots;
-			std::unordered_map<AbsFilterPtr, FilterChangedSlot>			_rootDataFilterChangedSlots;*/
+			/*std::unordered_map<AbsFilterPtr, FilterChangedSlot>			        _targetDataFilterChangedSlots;
+			std::unordered_map<AbsFilterPtr, FilterChangedSlot>			            _rendererDataFilterChangedSlots;
+			std::unordered_map<AbsFilterPtr, FilterChangedSlot>			            _rootDataFilterChangedSlots;*/
 
-			std::shared_ptr<RendererFilterChangedSignal>				    _filterChanged;
-			std::unordered_map<NodePtr, Signal<NodePtr, NodePtr>::Slot>		_nodeLayoutChangedSlot;
-            std::unordered_map<SurfacePtr, Signal<AbsCmpPtr>::Slot>			_surfaceLayoutMaskChangedSlot;
+			std::shared_ptr<RendererFilterChangedSignal>				            _filterChanged;
+			std::unordered_map<NodePtr, Signal<NodePtr, NodePtr>::Slot>		        _nodeLayoutChangedSlot;
+            std::unordered_map<SurfacePtr, Signal<AbsCmpPtr>::Slot>			        _surfaceLayoutMaskChangedSlot;
 
 		public:
 			inline static
