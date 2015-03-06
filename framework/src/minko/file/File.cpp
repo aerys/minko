@@ -178,6 +178,21 @@ File::removePrefixPathFromFilename(const std::string& filename)
 }
 
 std::string
+File::extractPrefixPathFromFilename(const std::string& filename)
+{
+    const auto cleanFilename = sanitizeFilename(filename);
+
+    auto prefixPath = cleanFilename;
+
+    const auto lastSeparatorPosition = prefixPath.find_last_of("/");
+
+    if (lastSeparatorPosition != std::string::npos)
+        prefixPath = prefixPath.substr(0, lastSeparatorPosition);
+
+    return prefixPath;
+}
+
+std::string
 File::getExtension(const std::string& filename)
 {
     auto extension = std::string();

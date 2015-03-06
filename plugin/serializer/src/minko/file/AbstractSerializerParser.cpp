@@ -69,6 +69,8 @@ AbstractSerializerParser::parse(const std::string&					filename,
 								const std::vector<unsigned char>&	data,
 								AssetLibraryPtr						assetLibrary)
 {
+    _filename = filename;
+    _resolvedFilename = resolvedFilename;
 }
 
 void
@@ -292,7 +294,7 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
         {
             linkedAssetOffset += internalLinkedContentOffset();
 
-            linkedAssetFilename = assetCompletePath + linkedAssetFilename;
+            linkedAssetFilename = assetCompletePath + File::removePrefixPathFromFilename(_resolvedFilename);
         }
 
         auto linkedAsset = LinkedAsset::create()

@@ -89,6 +89,10 @@ namespace minko
 
             static
             std::string
+            extractPrefixPathFromFilename(const std::string& filename);
+
+            static
+            std::string
             getExtension(const std::string& filename);
 
             static

@@ -77,6 +77,9 @@ namespace minko
 
             SceneVersion                                            _version;
 
+            std::string                                             _filename;
+            std::string                                             _resolvedFilename;
+
         private:
             static std::unordered_map<uint, AssetDeserializeFunction> _assetTypeToFunction;
 
