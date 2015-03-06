@@ -174,7 +174,8 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 		//| aiProcess_OptimizeGraph // makes the mesh simply vanish
 		| aiProcess_FlipUVs
 		| aiProcess_SortByPType
-		| aiProcess_Triangulate;
+		| aiProcess_Triangulate
+        | aiProcess_ImproveCacheLocality;
 
     if (!options->processUnusedAsset())
     {
