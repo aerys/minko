@@ -21,17 +21,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/data/ResolvedBinding.hpp"
 
+#include "sparsehash/sparse_hash_map"
+
 using namespace minko;
 using namespace minko::render;
 
 DrawCallPool::DrawCallPool() :
+    _batchId(0),
     _drawCalls(),
-    _macroToDrawCalls(),
+    _macroToDrawCalls(new MacroToDrawCallsMap()),
     _invalidDrawCalls(),
-    _macroChangedSlot(),
-    _propChangedSlot(),
+    _macroChangedSlot(new MacroToChangedSlotMap()),
+    _propChangedSlot(new PropertyChangedSlotMap()),
+    _drawCallToPropRebindFuncs(new PropertyRebindFuncMap())
     _zSortUsefulPropertyChangedSlot()
 {
+    _macroToDrawCalls->set_deleted_key(MacroBindingKey("", nullptr, nullptr));
+    _macroChangedSlot->set_deleted_key(MacroBindingKey("", nullptr, nullptr));
+    _propChangedSlot->set_deleted_key(DrawCallKey(nullptr, nullptr));
+    _drawCallToPropRebindFuncs->set_deleted_key(nullptr);
+
     _zSortUsefulPropertyNames = {
         "modelToWorldMatrix",
         "material[${materialUuid}].priority",
@@ -40,49 +49,61 @@ DrawCallPool::DrawCallPool() :
     };
 }
 
-DrawCallPool::DrawCallIteratorPair
-DrawCallPool::addDrawCalls(Effect::Ptr                                          effect,
-                           const std::string&                                   techniqueName,
-                           const std::unordered_map<std::string, std::string>&  variables,
-                           data::Store&                                         rootData,
-                           data::Store&                                         rendererData,
-                           data::Store&                                         targetData)
+DrawCallPool::~DrawCallPool()
+{
+    delete _macroToDrawCalls;
+    delete _macroChangedSlot;
+    delete _propChangedSlot;
+    delete _drawCallToPropRebindFuncs;
+}
+
+uint
+DrawCallPool::addDrawCalls(Effect::Ptr              effect,
+                           const std::string&       techniqueName,
+                           const EffectVariables&   variables,
+                           data::Store&             rootData,
+                           data::Store&             rendererData,
+                           data::Store&             targetData)
 {
     const auto& technique = effect->technique(techniqueName);
 
+    _batchId++;
     for (const auto& pass : technique)
     {
-        DrawCall* drawCall = new DrawCall(pass, variables, rootData, rendererData, targetData);
+        DrawCall* drawCall = new DrawCall(_batchId, pass, variables, rootData, rendererData, targetData);
 
         _drawCalls.push_back(drawCall);
         initializeDrawCall(*drawCall);
     }
 
-    return DrawCallIteratorPair(std::prev(_drawCalls.end(), technique.size()), std::prev(_drawCalls.end()));
+    return _batchId;
 }
 
 void
-DrawCallPool::removeDrawCalls(const DrawCallIteratorPair& iterators)
+DrawCallPool::removeDrawCalls(uint batchId)
 {
-    auto end = std::next(iterators.second);
-
-    for (auto it = iterators.first; it != end; ++it)
+    for (auto it = _drawCalls.begin(); it != _drawCalls.end();)
     {
-        DrawCall& drawCall = **it;
+        auto drawCall = *it;
 
-        unwatchProgramSignature(
-            drawCall,
-            drawCall.pass()->macroBindings(),
-            drawCall.rootData(),
-            drawCall.rendererData(),
-            drawCall.targetData()
-        );
-        unbindDrawCall(drawCall);
+        if (drawCall->batchId() == batchId)
+        {
+            unwatchProgramSignature(
+                *drawCall,
+                drawCall->pass()->macroBindings(),
+                drawCall->rootData(),
+                drawCall->rendererData(),
+                drawCall->targetData()
+            );
+            unbindDrawCall(*drawCall);
 
-        _invalidDrawCalls.erase(&drawCall);
+            _invalidDrawCalls.erase(drawCall);
+
+            _drawCalls.erase(it++);
+        }
+        else
+            ++it;
     }
-
-    _drawCalls.erase(iterators.first, end);
 }
 
 void
@@ -100,55 +121,39 @@ DrawCallPool::watchProgramSignature(DrawCall&                       drawCall,
             : macroBinding.source == data::Binding::Source::RENDERER ? rendererData
             : targetData;
         auto propertyName = Store::getActualPropertyName(drawCall.variables(), macroBinding.propertyName);
-        auto bindingKey = MacroBindingKey(propertyName, &store);
-        auto& drawCalls = _macroToDrawCalls[bindingKey];
+        auto bindingKey = MacroBindingKey(propertyName, &macroBinding, &store);
+        auto& drawCalls = (*_macroToDrawCalls)[bindingKey];
+
+        assert(std::find(drawCalls.begin(), drawCalls.end(), &drawCall) == drawCalls.end());
 
         drawCalls.push_back(&drawCall);
-
-        if (hasMacroCallback(bindingKey))
-            continue;
 
         if (macroBindings.types.at(macroName) != data::MacroBindingMap::MacroType::UNSET)
         {
             addMacroCallback(
                 bindingKey,
                 store.propertyChanged(propertyName),
-                std::bind(&DrawCallPool::macroPropertyChangedHandler, this, std::ref(macroBinding), std::ref(drawCalls))
+                [&, this](data::Store&, data::Provider::Ptr, const data::Provider::PropertyName&)
+                {
+                    macroPropertyChangedHandler(macroBinding, drawCalls);
+                }
             );
         }
         else
         {
-            if (store.hasProperty(propertyName))
-            {
-                addMacroCallback(
-                    bindingKey,
-                    store.propertyRemoved(propertyName),
-                    std::bind(
-                        &DrawCallPool::macroPropertyRemovedHandler,
-                        this,
-                        std::ref(macroBinding),
-                        propertyName,
-                        std::ref(store),
-                        std::ref(drawCalls)
-                    )
-                );
-            }
-            else
-            {
-                addMacroCallback(
-                    bindingKey,
-                    store.propertyAdded(propertyName),
-                    std::bind(
-                        &DrawCallPool::macroPropertyAddedHandler,
-                        this,
-                        std::ref(macroBinding),
-                        propertyName,
-                        std::ref(store),
-                        std::ref(drawCalls)
-                    )
-                );
-            }
+            auto hasProperty = store.hasProperty(propertyName);
 
+            addMacroCallback(
+                bindingKey,
+                hasProperty ? store.propertyRemoved(propertyName) : store.propertyAdded(propertyName),
+                [&, hasProperty, this](data::Store& s, data::Provider::Ptr, const data::Provider::PropertyName& p)
+                {
+                    if (hasProperty)
+                        macroPropertyRemovedHandler(macroBinding, p, s, drawCalls);
+                    else
+                        macroPropertyAddedHandler(macroBinding, p, s, drawCalls);
+                }
+            );
         }
     }
 }
@@ -158,25 +163,29 @@ DrawCallPool::addMacroCallback(const MacroBindingKey&   key,
                                PropertyChanged&         signal,
                                const PropertyCallback&  callback)
 {
-    if (_macroChangedSlot.count(key) == 0)
-        _macroChangedSlot.emplace(key, ChangedSlot(signal.connect(callback, 10), 1));
+    if (_macroChangedSlot->count(key) == 0)
+        (*_macroChangedSlot)[key] = ChangedSlot(signal.connect(callback), 1);
     else
-        _macroChangedSlot[key].second++;
+        (*_macroChangedSlot)[key].second++;
 }
 
 void
 DrawCallPool::removeMacroCallback(const MacroBindingKey& key)
 {
-    _macroChangedSlot[key].second--;
+    if (!_macroChangedSlot->count(key))
+        return;
 
-    if (_macroChangedSlot[key].second == 0)
-        _macroChangedSlot.erase(key);
+    assert((*_macroChangedSlot)[key].second != 0);
+
+    (*_macroChangedSlot)[key].second--;
+    if ((*_macroChangedSlot)[key].second == 0)
+        _macroChangedSlot->erase(key);
 }
 
 bool
 DrawCallPool::hasMacroCallback(const MacroBindingKey& key)
 {
-    return _macroChangedSlot.count(key) != 0;
+    return _macroChangedSlot->count(key) != 0;
 }
 
 void
@@ -187,24 +196,20 @@ DrawCallPool::macroPropertyChangedHandler(const data::MacroBinding& macroBinding
 
 void
 DrawCallPool::macroPropertyAddedHandler(const data::MacroBinding&   macroBinding,
-                                        const std::string&          propertyName,
+                                        const PropertyName&         propertyName,
                                         data::Store&                store,
                                         const std::list<DrawCall*>& drawCalls)
 {
-    MacroBindingKey key(propertyName, &store);
+    MacroBindingKey key(propertyName, &macroBinding, &store);
 
     removeMacroCallback(key);
     addMacroCallback(
         key,
-        store.propertyRemoved(),
-        std::bind(
-            &DrawCallPool::macroPropertyRemovedHandler,
-            this,
-            std::ref(macroBinding),
-            propertyName,
-            std::ref(store),
-            std::ref(drawCalls)
-        )
+        store.propertyRemoved(propertyName),
+        [&, this](data::Store& s, data::Provider::Ptr, const data::Provider::PropertyName& p)
+        {
+            macroPropertyRemovedHandler(macroBinding, p, s, drawCalls);
+        }
     );
 
     macroPropertyChangedHandler(macroBinding, drawCalls);
@@ -212,24 +217,26 @@ DrawCallPool::macroPropertyAddedHandler(const data::MacroBinding&   macroBinding
 
 void
 DrawCallPool::macroPropertyRemovedHandler(const data::MacroBinding&     macroBinding,
-                                          const std::string&            propertyName,
+                                          const PropertyName&           propertyName,
                                           data::Store&                  store,
                                           const std::list<DrawCall*>&   drawCalls)
 {
-    MacroBindingKey key(propertyName, &store);
+    // If the store still has the property, it means that it was not really removed
+    // but that one of the copies of the properties was removed (ie same material added multiple
+    // times to the same store). Thus the macro state should not be affected.
+    if (store.hasProperty(propertyName))
+        return;
+
+    MacroBindingKey key(propertyName, &macroBinding, &store);
 
     removeMacroCallback(key);
     addMacroCallback(
         key,
-        store.propertyAdded(),
-        std::bind(
-            &DrawCallPool::macroPropertyAddedHandler,
-            this,
-            std::ref(macroBinding),
-            propertyName,
-            std::ref(store),
-            std::ref(drawCalls)
-        )
+        store.propertyAdded(propertyName),
+        [&, this](data::Store& s, data::Provider::Ptr, const data::Provider::PropertyName& p)
+        {
+            macroPropertyAddedHandler(macroBinding, p, s, drawCalls);
+        }
     );
 
     macroPropertyChangedHandler(macroBinding, drawCalls);
@@ -249,13 +256,13 @@ DrawCallPool::unwatchProgramSignature(DrawCall&                     drawCall,
             : macroBinding.source == data::Binding::Source::RENDERER ? rendererData
             : targetData;
         auto propertyName = Store::getActualPropertyName(drawCall.variables(), macroBinding.propertyName);
-        auto bindingKey = MacroBindingKey(propertyName, &store);
-        auto& drawCalls = _macroToDrawCalls.at(bindingKey);
+        auto bindingKey = MacroBindingKey(propertyName, &macroBinding, &store);
+        auto& drawCalls = (*_macroToDrawCalls)[bindingKey];
 
         drawCalls.remove(&drawCall);
 
         if (drawCalls.size() == 0)
-            _macroToDrawCalls.erase(bindingKey);
+            _macroToDrawCalls->erase(bindingKey);
 
         removeMacroCallback(bindingKey);
     }
@@ -317,24 +324,26 @@ DrawCallPool::uniformBindingPropertyAddedHandler(DrawCall&                      
     if (resolvedBinding != nullptr)
     {
         auto& propertyName = resolvedBinding->propertyName;
-        auto propertyExist = resolvedBinding->store.hasProperty(propertyName);
-        auto& signal = propertyExist
+        auto bindingPtr = &resolvedBinding->binding;
+        auto& signal = resolvedBinding->store.hasProperty(propertyName)
             ? resolvedBinding->store.propertyRemoved(propertyName)
             : resolvedBinding->store.propertyAdded(propertyName);
 
-        _propChangedSlot[{&resolvedBinding->binding, &drawCall}] = signal.connect(
-            [&](data::Store&, data::Provider::Ptr, const std::string&)
-            {
-                _drawCallToPropRebindFuncs[&drawCall].push_back(std::bind(
-                    &DrawCallPool::uniformBindingPropertyAddedHandler,
-                    this,
-                    std::ref(drawCall),
-                    std::ref(input),
-                    std::ref(uniformBindingMap),
-                    false
-                ));
-            }
-        );
+        _propChangedSlot->insert(std::make_pair(
+            std::make_pair(bindingPtr, &drawCall),
+            signal.connect(
+                [&, bindingPtr](data::Store&, data::Provider::Ptr, const data::Provider::PropertyName&)
+                {
+                    _propChangedSlot->erase({ bindingPtr, &drawCall });
+                    (*_drawCallToPropRebindFuncs)[&drawCall].push_back(
+                        [&, forceRebind, this]()
+                        {
+                            uniformBindingPropertyAddedHandler(drawCall, input, uniformBindingMap, forceRebind);
+                        }
+                    );
+                }
+            )
+        ));
 
         // If this draw call needs to be sorted
         // => we listen to the useful properties
@@ -385,16 +394,15 @@ DrawCallPool::samplerStatesBindingPropertyAddedHandler(DrawCall&                
                 ? resolvedBinding->store.propertyRemoved(propertyName)
                 : resolvedBinding->store.propertyAdded(propertyName);
 
-            _propChangedSlot[{&resolvedBinding->binding, &drawCall}] = signal.connect(
-                [&](data::Store&, data::Provider::Ptr, const std::string&)
+            (*_propChangedSlot)[{&resolvedBinding->binding, &drawCall}] = signal.connect(
+                [&](data::Store&, data::Provider::Ptr, const data::Provider::PropertyName&)
                 {
-                    _drawCallToPropRebindFuncs[&drawCall].push_back(std::bind(
-                        &DrawCallPool::samplerStatesBindingPropertyAddedHandler,
-                        this,
-                        std::ref(drawCall),
-                        std::ref(input),
-                        std::ref(uniformBindingMap)
-                    ));
+                    (*_drawCallToPropRebindFuncs)[&drawCall].push_back(
+                        [&, this]()
+                        {
+                            samplerStatesBindingPropertyAddedHandler(drawCall, input, uniformBindingMap);
+                        }
+                    );
                 }
             );
 
@@ -437,28 +445,35 @@ DrawCallPool::update()
         initializeDrawCall(*drawCallPtr, true);
     _invalidDrawCalls.clear();
 
-    for (auto drawCallPtrAndFuncList : _drawCallToPropRebindFuncs)
+    for (auto drawCallPtrAndFuncList : *_drawCallToPropRebindFuncs)
     {
         for (auto& func : drawCallPtrAndFuncList.second)
             func();
     }
+    
+    _drawCallToPropRebindFuncs->clear();
 
-    _drawCallToPropRebindFuncs.clear();
+    _drawCalls.sort(
+        std::bind(
+            &DrawCallPool::compareDrawCalls,
+            this,
+            std::placeholders::_1,
+            std::placeholders::_2
+        )
+    );
 }
 
 void
-DrawCallPool::invalidateDrawCalls(const DrawCallIteratorPair&                         iterators,
-                                  const std::unordered_map<std::string, std::string>& variables)
+DrawCallPool::invalidateDrawCalls(uint batchId, const EffectVariables& variables)
 {
-    auto end = std::next(iterators.second);
-
-    for (auto it = iterators.first; it != end; ++it)
+    for (DrawCall* drawCall : _drawCalls)
     {
-        auto& drawCall = **it;
-
-        _invalidDrawCalls.insert(&drawCall);
-        drawCall.variables().clear();
-        drawCall.variables().insert(variables.begin(), variables.end());
+        if (drawCall->batchId() == batchId)
+        {
+            _invalidDrawCalls.insert(drawCall);
+            drawCall->variables().clear();
+            drawCall->variables().insert(drawCall->variables().end(), variables.begin(), variables.end());
+        }
     }
 }
 
@@ -505,10 +520,11 @@ void
 DrawCallPool::clear()
 {
     _drawCalls.clear();
-    _macroToDrawCalls.clear();
+    _macroToDrawCalls->clear();
     _invalidDrawCalls.clear();
-    _macroChangedSlot.clear();
-    _propChangedSlot.clear();
+    _macroChangedSlot->clear();
+    _propChangedSlot->clear();
+    _drawCallToPropRebindFuncs->clear();
 }
 
 void
@@ -537,15 +553,41 @@ DrawCallPool::bindDrawCall(DrawCall& drawCall, Pass::Ptr pass, Program::Ptr prog
 void
 DrawCallPool::unbindDrawCall(DrawCall& drawCall)
 {
-    std::list<PropertyChangedSlotMap::key_type> toRemove;
-    for (auto& bindingDrawCallPairAndSlot : _propChangedSlot)
+    for (auto it = _propChangedSlot->begin(); it != _propChangedSlot->end();)
     {
-        if (bindingDrawCallPairAndSlot.first.second == &drawCall)
-            toRemove.push_front(bindingDrawCallPairAndSlot.first);
+        if (it->first.second == &drawCall)
+            _propChangedSlot->erase(it++);
+        else
+            ++it;
+    }
+    //_propChangedSlot->clear();
+
+    _drawCallToPropRebindFuncs->erase(&drawCall);
+    //_drawCallToPropRebindFuncs->clear();
+}
+
+bool
+DrawCallPool::compareDrawCalls(DrawCall* a, DrawCall* b)
+{
+    const float aPriority = a->priority();
+    const float bPriority = b->priority();
+    const bool samePriority = fabsf(aPriority - bPriority) < 1e-3f;
+
+    if (samePriority)
+    {
+        if (a->target().id == b->target().id)
+        {
+            if (a->zSorted() && b->zSorted())
+            {
+                auto aPosition = a->getEyeSpacePosition();
+                auto bPosition = b->getEyeSpacePosition();
+
+                return aPosition.z > bPosition.z;
+            }
+        }
+
+        return a->target().id < b->target().id;
     }
 
-    for (const auto& key : toRemove)
-        _propChangedSlot.erase(key);
-
-    _drawCallToPropRebindFuncs.erase(&drawCall);
+    return aPriority > bPriority;
 }

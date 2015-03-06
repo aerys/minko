@@ -30,20 +30,20 @@ namespace minko
 		class ProgramSignature
 		{
         private:
-            typedef int MaskType;
+            typedef int                                     MaskType;
 
 		private:
 			uint				                    		_mask;
             std::vector<Any>	                    		_values;
             std::vector<data::MacroBindingMap::MacroType>   _types;
-            std::vector<std::string>                		_macros;
+            std::vector<Flyweight<std::string>>             _macros;
 
 		public:
-			ProgramSignature(const data::MacroBindingMap&                           macroBindings,
-                             const std::unordered_map<std::string, std::string>&    variables,
-						     const data::Store&                                     targetData,
-                             const data::Store&		                                rendererData,
-                             const data::Store&                                     rootData);
+			ProgramSignature(const data::MacroBindingMap&   macroBindings,
+                             const EffectVariables&         variables,
+						     const data::Store&             targetData,
+                             const data::Store&		        rendererData,
+                             const data::Store&             rootData);
 
             ProgramSignature(const ProgramSignature& signature);
 
@@ -82,7 +82,7 @@ namespace minko
             }
 
             inline
-            const std::vector<std::string>&
+            const std::vector<Flyweight<std::string>>&
             macros() const
             {
                 return _macros;

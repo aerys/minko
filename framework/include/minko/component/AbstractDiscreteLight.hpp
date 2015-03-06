@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/component/AbstractLight.hpp"
+#include "minko/Flyweight.hpp"
 #include "minko/Signal.hpp"
 
 namespace minko
@@ -33,10 +34,10 @@ namespace minko
 		{
         private:
             typedef std::shared_ptr<data::Provider>     ProviderPtr;
-            typedef const std::string&                  String;
+            typedef const Flyweight<std::string>&       PropertyName;
 
 		private:
-			Signal<data::Store&, ProviderPtr, String>::Slot	_modelToWorldChangedSlot;
+			Signal<data::Store&, ProviderPtr, PropertyName>::Slot	_modelToWorldChangedSlot;
 
 		public:
 			inline
@@ -72,8 +73,8 @@ namespace minko
 			}
 
 		protected:
-			AbstractDiscreteLight(const std::string&	arrayName, 
-								  float					diffuse		= 1.0f, 
+			AbstractDiscreteLight(const std::string&	arrayName,
+								  float					diffuse		= 1.0f,
 								  float					specular	= 1.0f);
 
 			virtual
@@ -85,8 +86,8 @@ namespace minko
             targetRemoved(std::shared_ptr<scene::Node> target);
 
             void
-            modelToWorldMatrixChangedHandler(data::Store& 	container,
-            								 const std::string& propertyName);
+            modelToWorldMatrixChangedHandler(data::Store& 					container,
+            								 const Flyweight<std::string>& 	propertyName);
 
             virtual
             void

@@ -73,7 +73,7 @@ void
 BoundingBox::targetAdded(scene::Node::Ptr target)
 {
 	_modelToWorldChangedSlot = target->data().propertyChanged("modelToWorldMatrix").connect(
-		[&](data::Store& data, data::Provider::Ptr provider, const std::string& propertyName)
+		[&](data::Store& data, data::Provider::Ptr provider, const data::Provider::PropertyName& propertyName)
 		{
 			_invalidWorldSpaceBox = true;
 		}

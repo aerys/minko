@@ -11,6 +11,13 @@ minko.project.library = function(name)
 
 	-- glm
 	includedirs { minko.sdk.path("/framework/lib/glm") }
+	-- sparsehash
+	includedirs { minko.sdk.path("/framework/lib/sparsehash/src") }
+	configuration { "windows" }
+		includedirs { minko.sdk.path("/framework/lib/sparsehash/include/windows") }
+		buildoptions { "/wd4996" }
+	configuration { "not windows*" }
+		includedirs { minko.sdk.path("/framework/lib/sparsehash/include") }
 
 	configuration { "debug"}
 		defines { "DEBUG" }
@@ -30,11 +37,11 @@ minko.project.library = function(name)
 			"_USE_MATH_DEFINES"		-- enable M_PI
 		}
 		flags {
-			-- "NoMinimalRebuild"
+			--"NoMinimalRebuild"
 		}
 		buildoptions {
 			"/wd4503",				-- remove warnings about too long type names
-			-- "/MP"					-- Multi Processor build (NoMinimalRebuild flag is needed)
+			--"/MP"					-- Multi Processor build (NoMinimalRebuild flag is needed)
 		}
 
 	configuration { "html5", "debug" }

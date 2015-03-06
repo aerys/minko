@@ -29,6 +29,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Binding.hpp"
 #include "minko/data/ResolvedBinding.hpp"
 #include "minko/render/Priority.hpp"
+#include "minko/Flyweight.hpp"
 
 namespace minko
 {
@@ -78,18 +79,18 @@ namespace minko
             typedef std::shared_ptr<AbstractContext>	            AbsCtxPtr;
 			typedef std::shared_ptr<AbstractTexture>	            AbsTexturePtr;
 			typedef std::shared_ptr<Program>			            ProgramPtr;
-            typedef std::unordered_map<std::string, std::string>    StringMap;
             typedef data::Store::PropertyChangedSignal::Slot        ChangedSlot;
-            
+
             typedef std::array<data::ResolvedBinding*, 3>           SamplerStatesResolveBindings;
             typedef std::array<data::ResolvedBinding*, 17>          StatesResolveBindings;
 
 		private:
+			uint								_batchId;
             std::shared_ptr<Pass>               _pass;
             data::Store&                        _rootData;
             data::Store&                        _rendererData;
             data::Store&                        _targetData;
-            StringMap                           _variables;
+            EffectVariables                		_variables;
 
 			std::shared_ptr<Program>			_program;
             int*								_indexBuffer;
@@ -130,11 +131,19 @@ namespace minko
             ChangedSlot                         _worldToScreenMatrixPropertyRemovedSlot;
 
 		public:
-            DrawCall(std::shared_ptr<Pass>  pass,
-                     const StringMap&       variables,
+            DrawCall(uint					batchId,
+					 std::shared_ptr<Pass>  pass,
+                     const EffectVariables& variables,
                      data::Store&           rootData,
                      data::Store&           rendererData,
                      data::Store&           targetData);
+
+			inline
+			uint
+			batchId() const
+			{
+				return _batchId;
+			}
 
             inline
             std::shared_ptr<Pass>
@@ -151,14 +160,14 @@ namespace minko
             }
 
             inline
-            StringMap&
+            EffectVariables&
             variables()
             {
                 return _variables;
             }
 
             inline
-            const StringMap&
+            const EffectVariables&
             variables() const
             {
                 return _variables;

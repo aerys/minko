@@ -93,7 +93,7 @@ Geometry::removeVertexBuffer(std::list<render::VertexBuffer::Ptr>::iterator vert
 	vertexBuffer->dispose();
 
 	for (auto attribute : vertexBuffer->attributes())
-		_data->unset(attribute.name);
+		_data->unset(*attribute.name);
 
 	_vertexSize	-= vertexBuffer->vertexSize();
 	_data->set("vertex.size", _vertexSize);

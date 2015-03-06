@@ -30,11 +30,13 @@ using namespace minko::render;
 const unsigned int DrawCall::MAX_NUM_TEXTURES       = 8;
 const unsigned int DrawCall::MAX_NUM_VERTEXBUFFERS  = 8;
 
-DrawCall::DrawCall(std::shared_ptr<Pass>  pass,
-                   const StringMap&       variables,
+DrawCall::DrawCall(uint                   batchId,
+                   std::shared_ptr<Pass>  pass,
+                   const EffectVariables& variables,
                    data::Store&           rootData,
                    data::Store&           rendererData,
                    data::Store&           targetData) :
+    _batchId(batchId),
     _pass(pass),
     _variables(variables),
     _rootData(rootData),
@@ -707,7 +709,10 @@ DrawCall::resolveBinding(const std::string&                                     
 
     const data::Binding* binding = nullptr;
     std::string bindingPropertyName;
-    if (bindings.count(bindingName) != 0)
+
+    // Some OpenGL drivers will provide uniform array names without the "[0]" suffix. In order to properly match uniform array
+    // bindings, we will check for bindings with 1) the original name first but also 2) the named with the "[0]" suffix appened.
+    if (bindings.count(bindingName) != 0 || (!isArray && bindings.count(bindingName += "[0]") != 0))
     {
         binding = &bindings.at(bindingName);
         bindingPropertyName = binding->propertyName;

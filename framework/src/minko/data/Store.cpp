@@ -23,6 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Collection.hpp"
 #include "minko/data/AbstractFilter.hpp"
 
+#include "sparsehash/sparse_hash_map"
+
 using namespace minko;
 using namespace minko::data;
 
@@ -33,25 +35,114 @@ Store::Store() :
     _propertyAdded(),
     _propertyRemoved(),
     _propertyChanged(),
-    _propertyNameToChangedSignal(),
-    _propertyNameToAddedSignal(),
-    _propertyNameToRemovedSignal(),
-    _propertySlots(),
-    _collectionItemAddedSlots(),
-    _collectionItemRemovedSlots()
+    _propertyNameToChangedSignal(new ChangedSignalMap()),
+    _propertyNameToAddedSignal(new ChangedSignalMap()),
+    _propertyNameToRemovedSignal(new ChangedSignalMap()),
+    _propertySlots(new ProviderToChangedSlotListMap()),
+    _collectionItemAddedSlots(new CollectionToChangedSlotMap()),
+    _collectionItemRemovedSlots(new CollectionToChangedSlotMap())
 {
+    initialize();
 }
 
-Store::Store(const Store& store, bool deepCopy) :
+Store::Store(const Store& store) :
+    _providers(),
+    _collections(),
+    _lengthProvider(nullptr),
     _propertyAdded(),
     _propertyRemoved(),
     _propertyChanged(),
-    _propertyNameToChangedSignal(),
-    _propertyNameToAddedSignal(),
-    _propertyNameToRemovedSignal(),
-    _propertySlots(),
-    _collectionItemAddedSlots(),
-    _collectionItemRemovedSlots()
+    _propertyNameToChangedSignal(new ChangedSignalMap()),
+    _propertyNameToAddedSignal(new ChangedSignalMap()),
+    _propertyNameToRemovedSignal(new ChangedSignalMap()),
+    _propertySlots(new ProviderToChangedSlotListMap()),
+    _collectionItemAddedSlots(new CollectionToChangedSlotMap()),
+    _collectionItemRemovedSlots(new CollectionToChangedSlotMap())
+{
+    initialize();
+    copyFrom(store, true);
+}
+
+Store::Store(const Store& store, bool deepCopy) :
+    _providers(),
+    _collections(),
+    _lengthProvider(nullptr),
+    _propertyAdded(),
+    _propertyRemoved(),
+    _propertyChanged(),
+    _propertyNameToChangedSignal(new ChangedSignalMap()),
+    _propertyNameToAddedSignal(new ChangedSignalMap()),
+    _propertyNameToRemovedSignal(new ChangedSignalMap()),
+    _propertySlots(new ProviderToChangedSlotListMap()),
+    _collectionItemAddedSlots(new CollectionToChangedSlotMap()),
+    _collectionItemRemovedSlots(new CollectionToChangedSlotMap())
+{
+    initialize();
+    copyFrom(store, deepCopy);
+}
+
+Store::Store(Store&& other)
+{
+    _providers = std::move(other._providers);
+    _collections = std::move(other._collections);
+    _lengthProvider = std::move(other._lengthProvider);
+    _propertyAdded = std::move(other._propertyAdded);
+    _propertyRemoved = std::move(other._propertyRemoved);
+    _propertyChanged = std::move(other._propertyChanged);
+    _propertyNameToChangedSignal = std::move(other._propertyNameToChangedSignal);
+    _propertyNameToAddedSignal = std::move(other._propertyNameToAddedSignal);
+    _propertyNameToRemovedSignal = std::move(other._propertyNameToRemovedSignal);
+    _propertySlots = std::move(other._propertySlots);
+    _collectionItemAddedSlots = std::move(other._collectionItemAddedSlots);
+    _collectionItemRemovedSlots = std::move(other._collectionItemRemovedSlots);
+
+    other._propertyNameToChangedSignal = nullptr;
+    other._propertyNameToAddedSignal = nullptr;
+    other._propertyNameToRemovedSignal = nullptr;
+    other._propertySlots = nullptr;
+    other._collectionItemAddedSlots = nullptr;
+    other._collectionItemRemovedSlots = nullptr;
+}
+
+Store&
+Store::operator=(Store&& other)
+{
+    _providers = std::move(other._providers);
+    _collections = std::move(other._collections);
+    _lengthProvider = std::move(other._lengthProvider);
+    _propertyAdded = std::move(other._propertyAdded);
+    _propertyRemoved = std::move(other._propertyRemoved);
+    _propertyChanged = std::move(other._propertyChanged);
+    _propertyNameToChangedSignal = other._propertyNameToChangedSignal;
+    _propertyNameToAddedSignal = other._propertyNameToAddedSignal;
+    _propertyNameToRemovedSignal = other._propertyNameToRemovedSignal;
+    _propertySlots = other._propertySlots;
+    _collectionItemAddedSlots = other._collectionItemAddedSlots;
+    _collectionItemRemovedSlots = other._collectionItemRemovedSlots;
+
+    other._propertyNameToChangedSignal = nullptr;
+    other._propertyNameToAddedSignal = nullptr;
+    other._propertyNameToRemovedSignal = nullptr;
+    other._propertySlots = nullptr;
+    other._collectionItemAddedSlots = nullptr;
+    other._collectionItemRemovedSlots = nullptr;
+
+    return *this;
+}
+
+void
+Store::initialize()
+{
+    _propertyNameToChangedSignal->set_deleted_key("");
+    _propertyNameToAddedSignal->set_deleted_key("");
+    _propertyNameToRemovedSignal->set_deleted_key("");
+    _propertySlots->set_deleted_key(nullptr);
+    _collectionItemAddedSlots->set_deleted_key(nullptr);
+    _collectionItemRemovedSlots->set_deleted_key(nullptr);
+}
+
+void
+Store::copyFrom(const Store& store, bool deepCopy)
 {
     if (deepCopy)
     {
@@ -80,17 +171,78 @@ Store::Store(const Store& store, bool deepCopy) :
     }
 }
 
+Store::~Store()
+{
+    if (_propertyNameToChangedSignal)
+        for (auto& it : *_propertyNameToChangedSignal)
+            delete it.second;
+    delete _propertyNameToChangedSignal;
+
+    if (_propertyNameToAddedSignal)
+        for (auto& it : *_propertyNameToAddedSignal)
+            delete it.second;
+    delete _propertyNameToAddedSignal;
+
+    if (_propertyNameToRemovedSignal)
+        for (auto& it : *_propertyNameToRemovedSignal)
+            delete it.second;
+    delete _propertyNameToRemovedSignal;
+
+    delete _propertySlots;
+    delete _collectionItemAddedSlots;
+    delete _collectionItemRemovedSlots;
+}
+
+Store::PropertyChangedSignal&
+Store::getOrInsertSignal(ChangedSignalMap* signals, const PropertyName& propertyName)
+{
+    PropertyChangedSignal* signal;
+    if (signals->count(propertyName) == 0)
+    {
+        signal = new PropertyChangedSignal();
+        signals->insert(std::make_pair(propertyName, signal));
+    }
+    else
+        signal = signals->find(propertyName)->second;
+
+    return *signal;
+}
+
+bool
+Store::hasPropertyAddedSignal(const PropertyName& propertyName) const
+{
+    return _propertyNameToAddedSignal->count(propertyName) != 0;
+}
+
+bool
+Store::hasPropertyRemovedSignal(const PropertyName& propertyName) const
+{
+    return _propertyNameToRemovedSignal->count(propertyName) != 0;
+}
+
+bool
+Store::hasPropertyChangedSignal(const PropertyName& propertyName) const
+{
+    return _propertyNameToChangedSignal->count(propertyName) != 0;
+}
+
 void
 Store::addCollection(std::shared_ptr<Collection> collection)
 {
     _collections.push_back(collection);
 
-    _collectionItemAddedSlots[collection] = collection->itemAdded().connect(std::bind(
-        &Store::doAddProvider, this, std::placeholders::_2, collection
-    ));
-    _collectionItemRemovedSlots[collection] = collection->itemRemoved().connect(std::bind(
-        &Store::doRemoveProvider, this, std::placeholders::_2, collection
-    ));
+    (*_collectionItemAddedSlots)[collection] = collection->itemAdded().connect(
+        [this, collection](Collection&, Provider::Ptr provider)
+        {
+            doAddProvider(provider, collection);
+        }
+    );
+    (*_collectionItemRemovedSlots)[collection] = collection->itemRemoved().connect(
+        [this, collection](Collection&, Provider::Ptr provider)
+        {
+            doRemoveProvider(provider, collection);
+        }
+    );
 
     if (collection->items().size() != 0)
         for (auto provider : collection->items())
@@ -104,74 +256,91 @@ Store::removeCollection(std::shared_ptr<Collection> collection)
 {
     _collections.remove(collection);
 
-    _collectionItemAddedSlots.erase(collection);
-    _collectionItemRemovedSlots.erase(collection);
+    _collectionItemAddedSlots->erase(collection);
+    _collectionItemRemovedSlots->erase(collection);
 
     for (auto provider : collection->items())
         doRemoveProvider(provider, collection);
 }
 
 void
-Store::executePropertySignal(Provider::Ptr                                                  provider,
-                             Collection::Ptr                                                collection,
-                             const std::string&                                             propertyName,
-                             const PropertyChangedSignal&                                   anyChangedSignal,
-                             const std::unordered_map<std::string, PropertyChangedSignal>&  propertyNameToSignal)
+Store::executePropertySignal(Provider::Ptr                  provider,
+                             Collection::Ptr                collection,
+                             const PropertyName&            propertyName,
+                             const PropertyChangedSignal&   anyChangedSignal,
+                             const ChangedSignalMap&        propertyNameToSignal)
 {
     anyChangedSignal.execute(*this, provider, propertyName);
     if (collection)
     {
-        auto formattedPropertyName = formatPropertyName(collection, provider, propertyName, true);
+        auto formattedPropertyName = formatPropertyName(collection, provider, *propertyName, true);
         if (propertyNameToSignal.count(formattedPropertyName) != 0)
-            propertyNameToSignal.at(formattedPropertyName).execute(*this, provider, propertyName);
+            propertyNameToSignal.find(formattedPropertyName)->second->execute(*this, provider, propertyName);
 
-        formattedPropertyName = formatPropertyName(collection, provider, propertyName);
+        formattedPropertyName = formatPropertyName(collection, provider, *propertyName);
         if (propertyNameToSignal.count(formattedPropertyName) != 0)
-            propertyNameToSignal.at(formattedPropertyName).execute(*this, provider, propertyName);
+            propertyNameToSignal.find(formattedPropertyName)->second->execute(*this, provider, propertyName);
     }
     else if (propertyNameToSignal.count(propertyName) != 0)
-        propertyNameToSignal.at(propertyName).execute(*this, provider, propertyName);
+        propertyNameToSignal.find(propertyName)->second->execute(*this, provider, propertyName);
 }
 
 void
-Store::providerPropertyAddedHandler(Provider::Ptr       provider,
-                                    Collection::Ptr     collection,
-                                    const std::string& 	propertyName)
+Store::providerPropertyAddedHandler(Provider::Ptr                   provider,
+                                    Collection::Ptr                 collection,
+                                    const Provider::PropertyName& 	propertyName)
 {
-    executePropertySignal(provider, collection, propertyName, _propertyAdded, _propertyNameToAddedSignal);
-    executePropertySignal(provider, collection, propertyName, _propertyChanged, _propertyNameToChangedSignal);
+    executePropertySignal(provider, collection, propertyName, _propertyAdded, *_propertyNameToAddedSignal);
+    executePropertySignal(provider, collection, propertyName, _propertyChanged, *_propertyNameToChangedSignal);
 }
 
-
 void
-Store::providerPropertyRemovedHandler(Provider::Ptr         provider,
-                                      Collection::Ptr       collection,
-                                      const std::string&	propertyName)
+Store::providerPropertyRemovedHandler(Provider::Ptr                 provider,
+                                      Collection::Ptr               collection,
+                                      const Provider::PropertyName&	propertyName)
 {
-    executePropertySignal(provider, collection, propertyName, _propertyChanged, _propertyNameToChangedSignal);
-    executePropertySignal(provider, collection, propertyName, _propertyRemoved, _propertyNameToRemovedSignal);
+    executePropertySignal(provider, collection, propertyName, _propertyChanged, *_propertyNameToChangedSignal);
+    executePropertySignal(provider, collection, propertyName, _propertyRemoved, *_propertyNameToRemovedSignal);
 
-    auto formattedName = formatPropertyName(collection, provider, propertyName);
-    if (_propertyNameToAddedSignal.count(formattedName)
-        && _propertyNameToAddedSignal[formattedName].numCallbacks() == 0)
-        _propertyNameToAddedSignal.erase(formattedName);
-    if (_propertyNameToRemovedSignal.count(formattedName)
-        && _propertyNameToRemovedSignal[formattedName].numCallbacks() == 0)
-        _propertyNameToRemovedSignal.erase(formattedName);
-    if (_propertyNameToChangedSignal.count(formattedName)
-        && _propertyNameToChangedSignal[formattedName].numCallbacks() == 0)
-        _propertyNameToChangedSignal.erase(formattedName);
+    auto formattedName = formatPropertyName(collection, provider, *propertyName);
+    auto it = _propertyNameToAddedSignal->find(formattedName);
+    if (it != _propertyNameToAddedSignal->end() && it->second->numCallbacks() == 0)
+    {
+        delete it->second;
+        _propertyNameToAddedSignal->erase(it);
+    }
+    it = _propertyNameToRemovedSignal->find(formattedName);
+    if (it != _propertyNameToRemovedSignal->end() && it->second->numCallbacks() == 0)
+    {
+        delete it->second;
+        _propertyNameToRemovedSignal->erase(it);
+    }
+    it = _propertyNameToChangedSignal->find(formattedName);
+    if (it != _propertyNameToChangedSignal->end() && it->second->numCallbacks() == 0)
+    {
+        delete it->second;
+        _propertyNameToChangedSignal->erase(it);
+    }
 
-    formattedName = formatPropertyName(collection, provider, propertyName, true);
-    if (_propertyNameToAddedSignal.count(formattedName)
-        && _propertyNameToAddedSignal[formattedName].numCallbacks() == 0)
-        _propertyNameToAddedSignal.erase(formattedName);
-    if (_propertyNameToRemovedSignal.count(formattedName)
-        && _propertyNameToRemovedSignal[formattedName].numCallbacks() == 0)
-        _propertyNameToRemovedSignal.erase(formattedName);
-    if (_propertyNameToChangedSignal.count(formattedName)
-        && _propertyNameToChangedSignal[formattedName].numCallbacks() == 0)
-        _propertyNameToChangedSignal.erase(formattedName);
+    formattedName = formatPropertyName(collection, provider, *propertyName, true);
+    it = _propertyNameToAddedSignal->find(formattedName);
+    if (it != _propertyNameToAddedSignal->end() && it->second->numCallbacks() == 0)
+    {
+        delete it->second;
+        _propertyNameToAddedSignal->erase(it);
+    }
+    it = _propertyNameToRemovedSignal->find(formattedName);
+    if (it != _propertyNameToRemovedSignal->end() && it->second->numCallbacks() == 0)
+    {
+        delete it->second;
+        _propertyNameToRemovedSignal->erase(it);
+    }
+    it = _propertyNameToChangedSignal->find(formattedName);
+    if (it != _propertyNameToChangedSignal->end() && it->second->numCallbacks() == 0)
+    {
+        delete it->second;
+        _propertyNameToChangedSignal->erase(it);
+    }
 }
 
 std::pair<Provider::Ptr, std::string>
@@ -229,31 +398,26 @@ Store::doAddProvider(ProviderPtr provider, CollectionPtr collection)
 {
     _providers.push_back(provider);
 
-    _propertySlots[provider].push_back(provider->propertyAdded().connect(std::bind(
-        &Store::providerPropertyAddedHandler,
-        this,
-        provider,
-        collection,
-        std::placeholders::_2
-    )));
+    (*_propertySlots)[provider].push_back(provider->propertyAdded().connect(
+        [this, collection](Provider::Ptr p, const Provider::PropertyName& propertyName)
+        {
+            providerPropertyAddedHandler(p, collection, propertyName);
+        }
+    ));
 
-    _propertySlots[provider].push_back(provider->propertyRemoved().connect(std::bind(
-        &Store::providerPropertyRemovedHandler,
-        this,
-        provider,
-        collection,
-        std::placeholders::_2
-    )));
+    (*_propertySlots)[provider].push_back(provider->propertyRemoved().connect(
+        [this, collection](Provider::Ptr p, const Provider::PropertyName& propertyName)
+        {
+            providerPropertyRemovedHandler(p, collection, propertyName);
+        }
+    ));
 
-    _propertySlots[provider].push_back(provider->propertyChanged().connect(std::bind(
-        &Store::executePropertySignal,
-        this,
-        provider,
-        collection,
-        std::placeholders::_2,
-        std::ref(_propertyChanged),
-        std::ref(_propertyNameToChangedSignal)
-    )));
+    (*_propertySlots)[provider].push_back(provider->propertyChanged().connect(
+        [this, collection](Provider::Ptr p, const PropertyName& propertyName)
+        {
+            executePropertySignal(p, collection, propertyName, _propertyChanged, *_propertyNameToChangedSignal);
+        }
+    ));
 
     for (auto property : provider->values())
         providerPropertyAddedHandler(provider, collection, property.first);
@@ -271,42 +435,47 @@ Store::updateCollectionLength(data::Collection::Ptr collection)
         doAddProvider(_lengthProvider);
     }
 
-    _lengthProvider->set<int>(collection->name() + ".length", collection->items().size());
+    _lengthProvider->set<int>(*collection->name() + ".length", collection->items().size());
 }
 
 void
 Store::doRemoveProvider(ProviderPtr provider, CollectionPtr collection)
 {
-    assert(std::find(_providers.begin(), _providers.end(), provider) != _providers.end());
+    auto it = std::find(_providers.begin(), _providers.end(), provider);
+
+    assert(provider != nullptr);
+    assert(it != _providers.end());
+
+    _providers.erase(it);
+    //if (std::find(_providers.begin(), _providers.end(), provider) != _providers.end())
+        //return;
 
     // execute all the "property removed" signals
     for (auto property : provider->values())
         providerPropertyRemovedHandler(provider, collection, property.first);
 
-    _providers.erase(std::find(_providers.begin(), _providers.end(), provider));
-
     // erase all the slots (property added, changed, removed) for this provider
-    _propertySlots.erase(provider);
+    _propertySlots->erase(provider);
 
     // destroy all signals that might have been created for each property declared by the provider
     // warning! erase the signal only if it has no callbacks anymore, otherwise it should be kept valid
     if (!collection)
     {
         for (const auto& nameAndValue : provider->values())
-            if (_propertyNameToChangedSignal.count(nameAndValue.first) != 0
-                && _propertyNameToChangedSignal[nameAndValue.first].numCallbacks() == 0)
-                _propertyNameToChangedSignal.erase(nameAndValue.first);
+            if (_propertyNameToChangedSignal->count(nameAndValue.first) != 0
+                && (*_propertyNameToChangedSignal)[nameAndValue.first]->numCallbacks() == 0)
+                _propertyNameToChangedSignal->erase(nameAndValue.first);
     }
     else
     {
         int providerIndex = std::find(collection->items().begin(), collection->items().end(), provider)
             - collection->items().begin();
-        auto prefix = collection->name() + "[" + std::to_string(providerIndex) + "].";
+        auto prefix = *collection->name() + "[" + std::to_string(providerIndex) + "].";
 
         for (const auto& nameAndValue : provider->values())
-            if (_propertyNameToChangedSignal.count(prefix + nameAndValue.first) != 0
-                && _propertyNameToChangedSignal[prefix + nameAndValue.first].numCallbacks() == 0)
-                _propertyNameToChangedSignal.erase(prefix + nameAndValue.first);
+            if (_propertyNameToChangedSignal->count(prefix + *nameAndValue.first) != 0
+                && (*_propertyNameToChangedSignal)[prefix + *nameAndValue.first]->numCallbacks() == 0)
+                _propertyNameToChangedSignal->erase(prefix + *nameAndValue.first);
 
         updateCollectionLength(collection);
 
@@ -322,13 +491,13 @@ Store::doRemoveProvider(ProviderPtr provider, CollectionPtr collection)
             const auto& provider = collection->items()[i];
 
             for (const auto& property : provider->values())
-                executePropertySignal(provider, collection, property.first, _propertyChanged, _propertyNameToChangedSignal);
+                executePropertySignal(provider, collection, property.first, _propertyChanged, *_propertyNameToChangedSignal);
         }
     }
 
 }
 
-std::string
+Store::PropertyName
 Store::formatPropertyName(Collection::Ptr       collection,
                           Provider::Ptr         provider,
                           const std::string&    propertyName,
@@ -345,13 +514,13 @@ Store::formatPropertyName(Collection::Ptr       collection,
     return formatPropertyName(collection, std::to_string(it - collection->items().begin()), propertyName);
 }
 
-std::string
+Store::PropertyName
 Store::formatPropertyName(Collection::Ptr collection, const std::string& index, const std::string& propertyName)
 {
     if (collection == nullptr)
         return propertyName;
 
-    return collection->name() + "[" + index + "]." + propertyName;
+    return PropertyName(*collection->name() + "[" + index + "]." + propertyName);
 }
 
 void
@@ -396,24 +565,22 @@ Store::removeProviderFromCollection(std::shared_ptr<data::Provider> provider,
     (*collectionIt)->remove(provider);
 }
 
-
 const std::string
-Store::getActualPropertyName(const std::unordered_map<std::string, std::string>&    vars,
-                             const std::string&                                     propertyName)
+Store::getActualPropertyName(const FStringList& vars, const FString& propertyName)
 {
-    std::string s = propertyName;
+    std::string s = *propertyName;
 
     // FIXME: order vars keys from longer to shorter in order to match the longest matching var name
     // or use regex_replace
 
     for (const auto& variableName : vars)
     {
-        auto pos = propertyName.find("${" + variableName.first + "}");
+        auto pos = (*propertyName).find("${" + *variableName.first + "}");
 
         if (pos != std::string::npos)
-            s = s.substr(0, pos) + variableName.second + s.substr(pos + variableName.first.size() + 3);
-        else if ((pos = propertyName.find("$" + variableName.first)) != std::string::npos)
-            s = s.substr(0, pos) + variableName.second + s.substr(pos + variableName.first.size() + 1);
+            s = s.substr(0, pos) + *variableName.second + s.substr(pos + (*variableName.first).size() + 3);
+        else if ((pos = (*propertyName).find("$" + *variableName.first)) != std::string::npos)
+            s = s.substr(0, pos) + *variableName.second + s.substr(pos + (*variableName.first).size() + 1);
     }
 
     return s;

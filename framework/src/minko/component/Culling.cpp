@@ -51,7 +51,7 @@ Culling::targetAdded(NodePtr target)
 
 	if (_octTree == nullptr)
 		_octTree = math::OctTree::create(50, 7, math::vec3(0.f));
-	
+
 	if (target->root()->hasComponent<SceneManager>())
 		targetAddedToSceneHandler(nullptr, target, nullptr);
 	else
@@ -62,7 +62,7 @@ Culling::targetAdded(NodePtr target)
 			std::placeholders::_2,
 			std::placeholders::_3
 		));
-	
+
 	_viewMatrixChangedSlot = target->data().propertyChanged(_bindProperty).connect(std::bind(
 		&Culling::worldToScreenChangedHandler,
 		std::static_pointer_cast<Culling>(shared_from_this()),
@@ -127,14 +127,14 @@ Culling::layoutChangedHandler(NodePtr node, NodePtr target)
 }
 
 void
-Culling::worldToScreenChangedHandler(data::Store& data, const std::string& propertyName)
+Culling::worldToScreenChangedHandler(data::Store& data, const String& propertyName)
 {
 	_frustum->updateFromMatrix(data.get<math::mat4>(propertyName));
-	
+
 	auto renderer = target()->component<Renderer>();
 
 	_octTree->testFrustum(
-		_frustum, 
+		_frustum,
 		[&](NodePtr node)
 		{
 			//node->component<Surface>()->computedVisibility(renderer, true);

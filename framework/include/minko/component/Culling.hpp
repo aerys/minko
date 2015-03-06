@@ -35,11 +35,11 @@ namespace minko
 			typedef std::shared_ptr<Culling>    Ptr;
 
 		private:
-			typedef std::shared_ptr<scene::Node>			    NodePtr;
-			typedef std::shared_ptr<math::AbstractShape>	    ShapePtr;
-            typedef std::shared_ptr<data::Provider>             ProviderPtr;
-            typedef const std::string&                          String;
-            typedef Signal<data::Store&, ProviderPtr, String>   PropertyChangedSignal;
+			typedef std::shared_ptr<scene::Node>			    		NodePtr;
+			typedef std::shared_ptr<math::AbstractShape>	    		ShapePtr;
+            typedef std::shared_ptr<data::Provider>             		ProviderPtr;
+            typedef Flyweight<std::string>		                		String;
+            typedef Signal<data::Store&, ProviderPtr, const String&>   	PropertyChangedSignal;
 
 		private:
 			std::shared_ptr<math::OctTree>			        _octTree;
@@ -80,7 +80,7 @@ namespace minko
 
 			void
 			worldToScreenChangedHandler(data::Store&    data,
-                                        const std::string&  propertyName);
+                                        const String&	propertyName);
 
 			void
 			targetAddedToSceneHandler(NodePtr node, NodePtr target, NodePtr ancestor);

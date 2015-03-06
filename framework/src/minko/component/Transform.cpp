@@ -56,15 +56,10 @@ Transform::targetAdded(scene::Node::Ptr	target)
 
 	target->data().addProvider(_data);
 
-	auto callback = std::bind(
-		&Transform::addedOrRemovedHandler,
-		std::static_pointer_cast<Transform>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	);
-
-	_addedSlot = target->added().connect(callback);
+	_addedSlot = target->added().connect([=](scene::Node::Ptr n, scene::Node::Ptr t, scene::Node::Ptr p)
+    {
+        addedOrRemovedHandler(n, t, p);
+    });
 	//_removedSlot = target->removed()->connect(callback);
 
 	addedOrRemovedHandler(nullptr, target, target->parent());
@@ -110,43 +105,39 @@ Transform::RootTransform::clone(const CloneOption& option)
 void
 Transform::RootTransform::targetAdded(scene::Node::Ptr target)
 {
-	_targetSlots.push_back(target->added().connect(std::bind(
-		&Transform::RootTransform::addedHandler,
-		std::static_pointer_cast<RootTransform>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	)));
-	_targetSlots.push_back(target->removed().connect(std::bind(
-		&Transform::RootTransform::removedHandler,
-		std::static_pointer_cast<RootTransform>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	)));
-	_targetSlots.push_back(target->componentAdded().connect(std::bind(
-		&Transform::RootTransform::componentAddedHandler,
-		std::static_pointer_cast<RootTransform>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	)));
-	_targetSlots.push_back(target->componentRemoved().connect(std::bind(
-		&Transform::RootTransform::componentRemovedHandler,
-		std::static_pointer_cast<RootTransform>(shared_from_this()),
-		std::placeholders::_1,
-		std::placeholders::_2,
-		std::placeholders::_3
-	)));
+    _targetSlots.push_back(target->added().connect(
+        [this](scene::Node::Ptr n, scene::Node::Ptr t, scene::Node::Ptr p)
+        {
+            addedHandler(n, t, p);
+        }
+	));
+    _targetSlots.push_back(target->removed().connect(
+        [this](scene::Node::Ptr n, scene::Node::Ptr t, scene::Node::Ptr p)
+        {
+            removedHandler(n, t, p);
+        }
+    ));
+    _targetSlots.push_back(target->componentAdded().connect(
+        [this](scene::Node::Ptr n, scene::Node::Ptr t, AbsCtrlPtr c)
+        {
+            componentAddedHandler(n, t, c);
+        }
+    ));
+    _targetSlots.push_back(target->componentRemoved().connect(
+        [this](scene::Node::Ptr n, scene::Node::Ptr t, AbsCtrlPtr c)
+        {
+            componentRemovedHandler(n, t, c);
+        }
+	));
 
 	auto sceneManager = target->root()->component<SceneManager>();
 
 	if (sceneManager != nullptr)
 		_renderingBeginSlot = sceneManager->renderingBegin()->connect(std::bind(
-			&Transform::RootTransform::renderingBeginHandler, 
-			std::static_pointer_cast<RootTransform>(shared_from_this()), 
-			std::placeholders::_1, 
-			std::placeholders::_2, 
+			&Transform::RootTransform::renderingBeginHandler,
+			std::static_pointer_cast<RootTransform>(shared_from_this()),
+			std::placeholders::_1,
+			std::placeholders::_2,
 			std::placeholders::_3
 		), 1000.f);
 
@@ -169,10 +160,10 @@ Transform::RootTransform::componentAddedHandler(scene::Node::Ptr		node,
 
 	if (sceneManager != nullptr)
 		_renderingBeginSlot = sceneManager->renderingBegin()->connect(std::bind(
-			&Transform::RootTransform::renderingBeginHandler, 
-			std::static_pointer_cast<RootTransform>(shared_from_this()), 
-			std::placeholders::_1, 
-			std::placeholders::_2, 
+			&Transform::RootTransform::renderingBeginHandler,
+			std::static_pointer_cast<RootTransform>(shared_from_this()),
+			std::placeholders::_1,
+			std::placeholders::_2,
 			std::placeholders::_3
 		), 1000.f);
     else
@@ -234,7 +225,7 @@ Transform::RootTransform::addedHandler(scene::Node::Ptr node,
             for (const auto& toRemove : _toRemove)
                 _toAdd.remove(toRemove);
             _invalidLists = true;
-        
+
             target->removeComponent(otherRoot);
         }
     }
@@ -379,6 +370,7 @@ Transform::RootTransform::updateTransforms()
 {
     math::mat4 modelToWorldMatrix;
     uint nodeId = 0;
+	auto propertyName = data::Store::PropertyName(std::string("modelToWorldMatrix"));
 
     for (const auto& node : _nodes)
 	{
@@ -411,13 +403,9 @@ Transform::RootTransform::updateTransforms()
                 *nodeCacheEntry._modelToWorldMatrix = modelToWorldMatrix;
 
                 // execute the "property changed" signal(s) manually
-                nodeData.propertyChanged().execute(nodeData, provider, "modelToWorldMatrix");
+                nodeData.propertyChanged().execute(nodeData, provider, propertyName);
                 if (nodeData.hasPropertyChangedSignal("modelToWorldMatrix"))
-                    nodeData.propertyChanged("modelToWorldMatrix").execute(
-                        nodeData,
-                        provider,
-                        "modelToWorldMatrix"
-                    );
+                    nodeData.propertyChanged("modelToWorldMatrix").execute(nodeData, provider, propertyName);
 
 			    auto numChildren = nodeCacheEntry._numChildren;
 
@@ -452,8 +440,8 @@ Transform::RootTransform::forceUpdate(scene::Node::Ptr node, bool updateTransfor
 }
 
 void
-Transform::RootTransform::renderingBeginHandler(std::shared_ptr<SceneManager>				sceneManager, 
-											    uint										frameId, 
+Transform::RootTransform::renderingBeginHandler(std::shared_ptr<SceneManager>				sceneManager,
+											    uint										frameId,
 												std::shared_ptr<render::AbstractTexture>	abstractTexture)
 {
 	if (_invalidLists)

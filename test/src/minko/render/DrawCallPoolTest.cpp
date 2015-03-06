@@ -19,6 +19,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "DrawCallPoolTest.hpp"
 
+#include "minko/Hash.hpp"
+
 using namespace minko;
 using namespace minko::render;
 
@@ -65,15 +67,15 @@ TEST_F(DrawCallPoolTest, UniformDefaultToBindingSwap)
     data::Store rendererData;
     data::Store targetData;
     auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
-    std::unordered_map<std::string, std::string> variables = { { "geometryUuid", geom->uuid() } };
+    render::EffectVariables variables = { { "geometryUuid", geom->uuid() } };
 
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
 
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
-    ASSERT_EQ((*drawCalls.first)->boundFloatUniforms().size(), 1);
+    ASSERT_EQ(pool.drawCalls().front()->boundFloatUniforms().size(), 1);
     ASSERT_EQ(
-        (*drawCalls.first)->boundFloatUniforms()[0].data,
+        pool.drawCalls().front()->boundFloatUniforms()[0].data,
         math::value_ptr(pass->uniformBindings().defaultValues.get<math::vec4>("uDiffuseColor"))
     );
 
@@ -81,16 +83,15 @@ TEST_F(DrawCallPoolTest, UniformDefaultToBindingSwap)
 
     p->set("diffuseColor", math::vec4(1.));
     targetData.addProvider(p);
-
     pool.update();
 
-    ASSERT_EQ((*drawCalls.first)->boundFloatUniforms().size(), 1);
+    ASSERT_EQ(pool.drawCalls().front()->boundFloatUniforms().size(), 1);
     ASSERT_NE(
-        (*drawCalls.first)->boundFloatUniforms()[0].data,
+        pool.drawCalls().front()->boundFloatUniforms()[0].data,
         math::value_ptr(pass->uniformBindings().defaultValues.get<math::vec4>("uDiffuseColor"))
     );
     ASSERT_EQ(
-        (*drawCalls.first)->boundFloatUniforms()[0].data,
+        pool.drawCalls().front()->boundFloatUniforms()[0].data,
         math::value_ptr(targetData.get<math::vec4>("diffuseColor"))
     );
 }
@@ -104,7 +105,7 @@ TEST_F(DrawCallPoolTest, UniformBindingToDefaultSwap)
     data::Store rendererData;
     data::Store targetData;
     auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
-    std::unordered_map<std::string, std::string> variables = { { "geometryUuid", geom->uuid() } };
+    render::EffectVariables variables = { { "geometryUuid", geom->uuid() } };
 
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
     auto p = data::Provider::create();
@@ -114,22 +115,22 @@ TEST_F(DrawCallPoolTest, UniformBindingToDefaultSwap)
 
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
-    ASSERT_EQ((*drawCalls.first)->boundFloatUniforms().size(), 1);
+    ASSERT_EQ(pool.drawCalls().front()->boundFloatUniforms().size(), 1);
     ASSERT_NE(
-        (*drawCalls.first)->boundFloatUniforms()[0].data,
+        pool.drawCalls().front()->boundFloatUniforms()[0].data,
         math::value_ptr(pass->uniformBindings().defaultValues.get<math::vec4>("uDiffuseColor"))
     );
     ASSERT_EQ(
-        (*drawCalls.first)->boundFloatUniforms()[0].data,
+        pool.drawCalls().front()->boundFloatUniforms()[0].data,
         math::value_ptr(targetData.get<math::vec4>("diffuseColor"))
     );
 
     p->unset("diffuseColor");
     pool.update();
 
-    ASSERT_EQ((*drawCalls.first)->boundFloatUniforms().size(), 1);
+    ASSERT_EQ(pool.drawCalls().front()->boundFloatUniforms().size(), 1);
     ASSERT_EQ(
-        (*drawCalls.first)->boundFloatUniforms()[0].data,
+        pool.drawCalls().front()->boundFloatUniforms()[0].data,
         math::value_ptr(pass->uniformBindings().defaultValues.get<math::vec4>("uDiffuseColor"))
     );
 }
@@ -142,7 +143,7 @@ TEST_F(DrawCallPoolTest, WatchAndDefineIntMacro)
     data::Store rootData;
     data::Store rendererData;
     data::Store targetData;
-    std::unordered_map<std::string, std::string> variables;
+    render::EffectVariables variables;
 
     ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().bindings.size(), 1);
     ASSERT_EQ(targetData.propertyChanged("bar").numCallbacks(), 0);
@@ -150,19 +151,19 @@ TEST_F(DrawCallPoolTest, WatchAndDefineIntMacro)
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
     ASSERT_EQ(targetData.propertyChanged("bar").numCallbacks(), 1);
-    ASSERT_FALSE((*drawCalls.first)->program()->definedMacroNames().find("FOO") != (*drawCalls.first)->program()->definedMacroNames().end());
+    ASSERT_FALSE(pool.drawCalls().front()->program()->definedMacroNames().find("FOO") != pool.drawCalls().front()->program()->definedMacroNames().end());
 
     auto p = data::Provider::create();
     p->set("bar", 42);
     targetData.addProvider(p);
     pool.update();
 
-    ASSERT_TRUE((*drawCalls.first)->program()->definedMacroNames().find("FOO") != (*drawCalls.first)->program()->definedMacroNames().end());
+    ASSERT_TRUE(pool.drawCalls().front()->program()->definedMacroNames().find("FOO") != pool.drawCalls().front()->program()->definedMacroNames().end());
 
     p->unset("bar");
     pool.update();
 
-    ASSERT_FALSE((*drawCalls.first)->program()->definedMacroNames().find("FOO") != (*drawCalls.first)->program()->definedMacroNames().end());
+    ASSERT_FALSE(pool.drawCalls().front()->program()->definedMacroNames().find("FOO") != pool.drawCalls().front()->program()->definedMacroNames().end());
 }
 
 TEST_F(DrawCallPoolTest, WatchAndDefineVariableIntMacro)
@@ -175,7 +176,7 @@ TEST_F(DrawCallPoolTest, WatchAndDefineVariableIntMacro)
     data::Store targetData;
     auto p = data::Provider::create();
     std::string materialUuid = p->uuid();
-    std::unordered_map<std::string, std::string> variables = {{ "materialUuid", materialUuid }};
+    render::EffectVariables variables = {{ "materialUuid", materialUuid }};
 
     ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().bindings.size(), 1);
     ASSERT_EQ(targetData.propertyChanged("bar").numCallbacks(), 0);
@@ -183,18 +184,39 @@ TEST_F(DrawCallPoolTest, WatchAndDefineVariableIntMacro)
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
     ASSERT_EQ(targetData.propertyChanged("material[" + materialUuid + "].bar").numCallbacks(), 1);
-    ASSERT_FALSE((*drawCalls.first)->program()->definedMacroNames().find("FOO") != (*drawCalls.first)->program()->definedMacroNames().end());
+    ASSERT_FALSE(pool.drawCalls().front()->program()->definedMacroNames().find("FOO") != pool.drawCalls().front()->program()->definedMacroNames().end());
 
     p->set("bar", 42);
     targetData.addProvider(p, "material");
     pool.update();
 
-    ASSERT_TRUE((*drawCalls.first)->program()->definedMacroNames().find("FOO") != (*drawCalls.first)->program()->definedMacroNames().end());
+    ASSERT_TRUE(pool.drawCalls().front()->program()->definedMacroNames().find("FOO") != pool.drawCalls().front()->program()->definedMacroNames().end());
 
     p->unset("bar");
     pool.update();
 
-    ASSERT_FALSE((*drawCalls.first)->program()->definedMacroNames().find("FOO") != (*drawCalls.first)->program()->definedMacroNames().end());
+    ASSERT_FALSE(pool.drawCalls().front()->program()->definedMacroNames().find("FOO") != pool.drawCalls().front()->program()->definedMacroNames().end());
+}
+
+TEST_F(DrawCallPoolTest, StopWatchingMacroAfterDrawCallsRemoved)
+{
+    auto fx = MinkoTests::loadEffect("effect/OneVariableIntMacroBinding.effect");
+    auto pass = fx->techniques().at("default")[0];
+    DrawCallPool pool;
+    data::Store rootData;
+    data::Store rendererData;
+    data::Store targetData;
+    auto p = data::Provider::create();
+    std::string materialUuid = p->uuid();
+    render::EffectVariables variables = {{ "materialUuid", materialUuid }};
+
+    auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
+
+    ASSERT_EQ(targetData.propertyChanged("material[" + materialUuid + "].bar").numCallbacks(), 1);
+
+    pool.removeDrawCalls(drawCalls);
+
+    ASSERT_EQ(targetData.propertyChanged("material[" + materialUuid + "].bar").numCallbacks(), 0);
 }
 
 TEST_F(DrawCallPoolTest, SameMacroBindingDifferentVariables)
@@ -251,20 +273,20 @@ TEST_F(DrawCallPoolTest, SamplerStateSwapWrapModeBindingToDefaultClamp)
 
     auto material = material::Material::create();
     auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
-    std::unordered_map<std::string, std::string> variables = { { "materialUuid", material->uuid() } };
+    render::EffectVariables variables = { { "materialUuid", material->uuid() } };
 
     material->data()->set(samplerBindingName, texture->sampler());
     material->data()->set(samplerStateBindingName, samplerStateMaterialValue);
 
     auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
-    variables.insert({ "geometryUuid", geom->uuid() });
+    variables.push_back({ "geometryUuid", geom->uuid() });
 
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
     targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
 
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
-    auto& samplers = (*drawCalls.first)->samplers();
+    auto& samplers = pool.drawCalls().front()->samplers();
     auto& sampler = samplers[0];
 
     ASSERT_EQ(samplers.size(), 1);
@@ -308,20 +330,20 @@ TEST_F(DrawCallPoolTest, SamplerStateSwapWrapModeBindingToDefaultRepeat)
 
     auto material = material::Material::create();
     auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
-    std::unordered_map<std::string, std::string> variables = { { "materialUuid", material->uuid() } };
+    render::EffectVariables variables = { { "materialUuid", material->uuid() } };
 
     material->data()->set(samplerBindingName, texture->sampler());
     material->data()->set(samplerStateBindingName, samplerStateMaterialValue);
 
     auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
-    variables.insert({ "geometryUuid", geom->uuid() });
+    variables.push_back({ "geometryUuid", geom->uuid() });
 
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
     targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
 
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
-    auto& samplers = (*drawCalls.first)->samplers();
+    auto& samplers = pool.drawCalls().front()->samplers();
     auto& sampler = samplers[0];
 
     ASSERT_EQ(samplers.size(), 1);
@@ -365,20 +387,20 @@ TEST_F(DrawCallPoolTest, SamplerStateSwapTextureFilterBindingToDefaultLinear)
 
     auto material = material::Material::create();
     auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
-    std::unordered_map<std::string, std::string> variables = { { "materialUuid", material->uuid() } };
+    render::EffectVariables variables = { { "materialUuid", material->uuid() } };
 
     material->data()->set(samplerBindingName, texture->sampler());
     material->data()->set(samplerStateBindingName, samplerStateMaterialValue);
 
     auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
-    variables.insert({ "geometryUuid", geom->uuid() });
+    variables.push_back({ "geometryUuid", geom->uuid() });
 
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
     targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
 
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
-    auto& samplers = (*drawCalls.first)->samplers();
+    auto& samplers = pool.drawCalls().front()->samplers();
     auto& sampler = samplers[0];
 
     ASSERT_EQ(samplers.size(), 1);
@@ -424,21 +446,21 @@ TEST_F(DrawCallPoolTest, SamplerStateSwapTextureFilterBindingToDefaultNearest)
 
     auto material = material::Material::create();
     auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
-    std::unordered_map<std::string, std::string> variables = { { "materialUuid", material->uuid() } };
+    render::EffectVariables variables = { { "materialUuid", material->uuid() } };
 
     auto p = data::Provider::create();
     material->data()->set(samplerBindingName, texture->sampler());
     material->data()->set(samplerStateBindingName, samplerStateMaterialValue);
 
     auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
-    variables.insert({ "geometryUuid", geom->uuid() });
+    variables.push_back({ "geometryUuid", geom->uuid() });
 
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
     targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
 
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
-    auto& samplers = (*drawCalls.first)->samplers();
+    auto& samplers = pool.drawCalls().front()->samplers();
     auto& sampler = samplers[0];
 
     ASSERT_EQ(samplers.size(), 1);
@@ -484,20 +506,20 @@ TEST_F(DrawCallPoolTest, SamplerStateSwapMipFilterBindingToDefaultNone)
 
     auto material = material::Material::create();
     auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
-    std::unordered_map<std::string, std::string> variables = { { "materialUuid", material->uuid() } };
+    render::EffectVariables variables = { { "materialUuid", material->uuid() } };
 
     material->data()->set(samplerBindingName, texture->sampler());
     material->data()->set(samplerStateBindingName, samplerStateMaterialValue);
 
     auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
-    variables.insert({ "geometryUuid", geom->uuid() });
+    variables.push_back({ "geometryUuid", geom->uuid() });
 
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
     targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
 
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
-    auto& samplers = (*drawCalls.first)->samplers();
+    auto& samplers = pool.drawCalls().front()->samplers();
     auto& sampler = samplers[0];
 
     ASSERT_EQ(samplers.size(), 1);
@@ -541,20 +563,20 @@ TEST_F(DrawCallPoolTest, SamplerStateSwapMipFilterBindingToDefaultLinear)
 
     auto material = material::Material::create();
     auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
-    std::unordered_map<std::string, std::string> variables = { { "materialUuid", material->uuid() } };
+    render::EffectVariables variables = { { "materialUuid", material->uuid() } };
 
     material->data()->set(samplerBindingName, texture->sampler());
     material->data()->set(samplerStateBindingName, samplerStateMaterialValue);
 
     auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
-    variables.insert({ "geometryUuid", geom->uuid() });
+    variables.push_back({ "geometryUuid", geom->uuid() });
 
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
     targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
 
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
-    auto& samplers = (*drawCalls.first)->samplers();
+    auto& samplers = pool.drawCalls().front()->samplers();
     auto& sampler = samplers[0];
 
     ASSERT_EQ(samplers.size(), 1);
@@ -598,20 +620,20 @@ TEST_F(DrawCallPoolTest, SamplerStateSwapMipFilterBindingToDefaultNearest)
 
     auto material = material::Material::create();
     auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
-    std::unordered_map<std::string, std::string> variables = { { "materialUuid", material->uuid() } };
+    render::EffectVariables variables = { { "materialUuid", material->uuid() } };
 
     material->data()->set(samplerBindingName, texture->sampler());
     material->data()->set(samplerStateBindingName, samplerStateMaterialValue);
 
     auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
-    variables.insert({ "geometryUuid", geom->uuid() });
+    variables.push_back({ "geometryUuid", geom->uuid() });
 
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
     targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
 
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
-    auto& samplers = (*drawCalls.first)->samplers();
+    auto& samplers = pool.drawCalls().front()->samplers();
     auto& sampler = samplers[0];
 
     ASSERT_EQ(samplers.size(), 1);
@@ -656,19 +678,19 @@ TEST_F(DrawCallPoolTest, SamplerStatesBindingWrapModeNoDefaultValue)
 
     auto material = material::Material::create();
     auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
-    std::unordered_map<std::string, std::string> variables = { { "materialUuid", material->uuid() } };
+    render::EffectVariables variables = { { "materialUuid", material->uuid() } };
 
     material->data()->set(samplerBindingName, texture->sampler());
 
     auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
-    variables.insert({ "geometryUuid", geom->uuid() });
+    variables.push_back({ "geometryUuid", geom->uuid() });
 
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
     targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
 
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
-    auto& samplers = (*drawCalls.first)->samplers();
+    auto& samplers = pool.drawCalls().front()->samplers();
     auto& sampler = samplers[0];
 
     ASSERT_EQ(samplers.size(), 1);
@@ -705,19 +727,19 @@ TEST_F(DrawCallPoolTest, SamplerStateTextureFilterBindingNoDefaultValue)
 
     auto material = material::Material::create();
     auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
-    std::unordered_map<std::string, std::string> variables = { { "materialUuid", material->uuid() } };
+    render::EffectVariables variables = { { "materialUuid", material->uuid() } };
 
     material->data()->set(samplerBindingName, texture->sampler());
 
     auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
-    variables.insert({ "geometryUuid", geom->uuid() });
+    variables.push_back({ "geometryUuid", geom->uuid() });
 
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
     targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
 
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
-    auto& samplers = (*drawCalls.first)->samplers();
+    auto& samplers = pool.drawCalls().front()->samplers();
     auto& sampler = samplers[0];
 
     ASSERT_EQ(samplers.size(), 1);
@@ -754,19 +776,19 @@ TEST_F(DrawCallPoolTest, SamplerStatesBindingMipFilterNoDefaultValue)
 
     auto material = material::Material::create();
     auto texture = Texture::create(MinkoTests::canvas()->context(), 1024, 1024, false, true);
-    std::unordered_map<std::string, std::string> variables = { { "materialUuid", material->uuid() } };
+    render::EffectVariables variables = { { "materialUuid", material->uuid() } };
 
     material->data()->set(samplerBindingName, texture->sampler());
 
     auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
-    variables.insert({ "geometryUuid", geom->uuid() });
+    variables.push_back({ "geometryUuid", geom->uuid() });
 
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
     targetData.addProvider(material->data(), component::Surface::MATERIAL_COLLECTION_NAME);
 
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
-    auto& samplers = (*drawCalls.first)->samplers();
+    auto& samplers = pool.drawCalls().front()->samplers();
     auto& sampler = samplers[0];
 
     ASSERT_EQ(samplers.size(), 1);
