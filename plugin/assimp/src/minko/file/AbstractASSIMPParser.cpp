@@ -143,6 +143,7 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 	}
 
     _filename		= filename;
+    _resolvedFilename = resolvedFilename;
 	_assetLibrary	= assetLibrary;
 	_options		= options;
 
@@ -662,8 +663,7 @@ void
 AbstractASSIMPParser::parseDependencies(const std::string& 	filename,
 										const aiScene*		scene)
 {
-	std::set<std::string>	loadedFilenames;
-	aiString				path;
+	aiString path;
 
 	_numDependencies = 0;
 
@@ -682,25 +682,20 @@ AbstractASSIMPParser::parseDependencies(const std::string& 	filename,
 
 				if (texFound == AI_SUCCESS)
 				{
-					std::string filename(path.data);
+					const auto filename = std::string(path.data);
 
-					if (!filename.empty() &&
-						loadedFilenames.find(filename) == loadedFilenames.end())
-					{
-#ifdef DEBUG
-						std::cout << "ASSIMParser: loading texture '" << filename << "'..." << std::endl;
-#endif
-						loadedFilenames.insert(filename);
-					}
+                    const auto assetName = File::removePrefixPathFromFilename(filename);
+
+                    _textureFilenameToAssetName.insert(std::make_pair(filename, assetName));
 				}
 			}
 		}
 	}
 
-	_numDependencies = loadedFilenames.size();
+	_numDependencies = _textureFilenameToAssetName.size();
 
-	for (auto& name : loadedFilenames)
-		loadTexture(name, name, _options, scene);
+	for (auto& filenameToAssetNamePair : _textureFilenameToAssetName)
+		loadTexture(filenameToAssetNamePair.first, filenameToAssetNamePair.second, _options, scene);
 }
 
 void
@@ -720,9 +715,16 @@ AbstractASSIMPParser::loadTexture(const std::string&	textureFilename,
 								  Options::Ptr			options,
 								  const aiScene*		scene)
 {
+    const auto textureParentPrefixPath = File::extractPrefixPathFromFilename(_resolvedFilename);
+
+    const auto texturePrefixPath = File::extractPrefixPathFromFilename(textureFilename);
+
 	auto loader = Loader::create();
 
-    loader->options(options);
+    loader->options(options->clone());
+
+    loader->options()
+        ->includePaths().push_front(textureParentPrefixPath + "/" + texturePrefixPath);
 
 	_loaderCompleteSlots[loader] = loader->complete()->connect(std::bind(
 		&AbstractASSIMPParser::textureCompleteHandler,
@@ -735,16 +737,16 @@ AbstractASSIMPParser::loadTexture(const std::string&	textureFilename,
 	{
 		++_numLoadedDependencies;
 #ifdef DEBUG
-        std::cerr << "AbstractASSIMPParser: unable to find texture with filename '" << textureFilename << "'" << std::endl;
+        std::cerr << "AbstractASSIMPParser: unable to find texture with filename '" << assetName << "'" << std::endl;
 #endif // DEBUG
 
-        _error->execute(shared_from_this(), Error("MissingTextureDependency", textureFilename));
+        _error->execute(shared_from_this(), Error("MissingTextureDependency", assetName));
 
         if (_numDependencies == _numLoadedDependencies)
             allDependenciesLoaded(scene);
 	});
 
-	loader->queue(textureFilename, options)->load();
+	loader->queue(assetName)->load();
 }
 
 void
@@ -1460,17 +1462,19 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 		{
             const auto textureFilename = std::string(path.data);
 
-			auto texture = _assetLibrary->texture(textureFilename);
+            const auto textureAssetName = _textureFilenameToAssetName.at(textureFilename);
+
+			auto texture = _assetLibrary->texture(textureAssetName);
 
             const auto textureIsValid = texture != nullptr;
 
             texture = std::static_pointer_cast<render::Texture>(_options->textureFunction()(
-                textureFilename,
+                textureAssetName,
                 texture
             ));
 
             if (!textureIsValid && texture != nullptr)
-                _assetLibrary->texture(textureFilename, texture);
+                _assetLibrary->texture(textureAssetName, texture);
 
             if (texture != nullptr)
             {

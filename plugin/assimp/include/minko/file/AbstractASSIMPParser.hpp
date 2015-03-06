@@ -83,6 +83,7 @@ namespace minko
             unsigned int											_numDependencies;
 			unsigned int											_numLoadedDependencies;
             std::string												_filename;
+            std::string												_resolvedFilename;
             std::shared_ptr<AssetLibrary>							_assetLibrary;
 			std::shared_ptr<file::Options>							_options;
 
@@ -97,6 +98,8 @@ namespace minko
 			std::set<NodePtr>										_alreadyAnimatedNodes;
 
             std::set<std::string>                                   _meshNames;
+
+            std::unordered_map<std::string, std::string>            _textureFilenameToAssetName;
 
 			LoaderToCompleteSlotMap									_loaderCompleteSlots;
 			LoaderToErrorSlotMap									_loaderErrorSlots;
