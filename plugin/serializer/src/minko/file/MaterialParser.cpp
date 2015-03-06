@@ -65,9 +65,9 @@ MaterialParser::parse(const std::string&                filename,
 	std::string 		folderpath = extractFolderPath(resolvedFilename);
     SerializedMaterial  serializedMaterial;
 
-    extractDependencies(assetLibrary, data, _headerSize, _dependenciesSize, options, folderpath);
+    extractDependencies(assetLibrary, data, _headerSize, _dependencySize, options, folderpath);
 
-    unpack(serializedMaterial, data, _sceneDataSize, _headerSize + _dependenciesSize);
+    unpack(serializedMaterial, data, _sceneDataSize, _headerSize + _dependencySize);
 
     std::vector<ComplexProperty>    complexProperties   = serializedMaterial.get<0>();
     std::vector<BasicProperty>      basicProperties     = serializedMaterial.get<1>();
@@ -199,7 +199,7 @@ MaterialParser::deserializeBasicProperty(MaterialPtr        material,
 
     if (serializedProperty.get<0>() == "zSorted")
         material->data()->set<bool>("zSorted", serializedPropertyValue[0]);
-    else if (serializedProperty.a0 == "environmentMap2dType")
+    else if (serializedProperty.get<0>() == "environmentMap2dType")
 		material->data()->set<int>("environmentMap2dType", int(serializedPropertyValue[0]));
     else
 	    material->data()->set<float>(serializedProperty.get<0>(), serializedPropertyValue[0]);

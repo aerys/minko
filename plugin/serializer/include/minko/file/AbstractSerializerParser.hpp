@@ -72,7 +72,7 @@ namespace minko
 
             unsigned int                                                _fileSize;
             short                                                       _headerSize;
-            unsigned int                                                _dependenciesSize;
+            unsigned int                                                _dependencySize;
             unsigned int                                                _sceneDataSize;
 
             SceneVersion                                            _version;
@@ -130,7 +130,7 @@ namespace minko
             int
             embedContentLength() const
             {
-                return _dependenciesSize + _sceneDataSize;
+                return _dependencySize + _sceneDataSize;
             }
 
             inline

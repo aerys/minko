@@ -106,9 +106,9 @@ GeometryParser::parse(const std::string&                filename,
 	geometry::Geometry::Ptr geom	= geometry::Geometry::create(filename);
     SerializedGeometry          serializedGeometry;
 
-    extractDependencies(assetLibrary, data, _headerSize, _dependenciesSize, options, folderPathName);
+    extractDependencies(assetLibrary, data, _headerSize, _dependencySize, options, folderPathName);
 
-    unpack(serializedGeometry, data, _sceneDataSize, _headerSize + _dependenciesSize);
+    unpack(serializedGeometry, data, _sceneDataSize, _headerSize + _dependencySize);
 
     uint indexBufferFunction = 0;
     uint vertexBufferFunction = 0;

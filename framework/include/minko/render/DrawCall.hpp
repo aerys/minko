@@ -129,6 +129,8 @@ namespace minko
             ChangedSlot                         _modelToWorldMatrixPropertyRemovedSlot;
             ChangedSlot                         _worldToScreenMatrixPropertyRemovedSlot;
 
+			Signal<DrawCall*>::Ptr              _zSortNeeded;
+
 		public:
             DrawCall(std::shared_ptr<Pass>  pass,
                      const StringMap&       variables,

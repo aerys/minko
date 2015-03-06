@@ -209,9 +209,9 @@ SceneParser::parseEmbedContent(const std::string&					filename,
 
     msgpack::type::tuple<std::vector<std::string>, std::vector<SerializedNode>> dst;
 
-    extractDependencies(assetLibrary, data, _headerSize, _dependenciesSize, options, folderPath);
+    extractDependencies(assetLibrary, data, 0, _dependencySize, options, folderPath);
 
-    unpack(dst, data, _sceneDataSize, _headerSize + _dependenciesSize);
+    unpack(dst, data, _sceneDataSize, _dependencySize);
 
     assetLibrary->symbol(filename, parseNode(dst.get<1>(), dst.get<0>(), assetLibrary, options));
 

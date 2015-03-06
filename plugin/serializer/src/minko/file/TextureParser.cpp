@@ -73,7 +73,7 @@ TextureParser::parse(const std::string&                filename,
 {
     readHeader(filename, data, 0x00000054);
 
-    auto textureHeaderOffset = _headerSize + _dependenciesSize + 2;
+    auto textureHeaderOffset = _headerSize + _dependencySize + 2;
     auto textureBlobOffset = textureHeaderOffset + _textureHeaderSize;
 
     typedef msgpack::type::tuple<

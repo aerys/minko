@@ -69,8 +69,6 @@ namespace minko
 
 			PropertyRebindFuncMap 			_drawCallToPropRebindFuncs;
 
-			PropertyRebindFuncMap 			_drawCallToPropRebindFuncs;
-
 		public:
             DrawCallPool();
 
