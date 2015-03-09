@@ -75,10 +75,8 @@ DrawCallPool::addDrawCalls(Effect::Ptr              effect,
 void
 DrawCallPool::removeDrawCalls(uint batchId)
 {
-    for (auto it = _drawCalls.begin(); it != _drawCalls.end();)
+    _drawCalls.remove_if([&](DrawCall* drawCall)
     {
-        auto drawCall = *it;
-
         if (drawCall->batchId() == batchId)
         {
             unwatchProgramSignature(
@@ -92,10 +90,14 @@ DrawCallPool::removeDrawCalls(uint batchId)
 
             _invalidDrawCalls.erase(drawCall);
 
-            _drawCalls.erase(it++);
+            delete drawCall;
+
+            assert(_drawCallToPropRebindFuncs->count(drawCall) == 0);
+            for (auto it = _propChangedSlot->begin(); it != _propChangedSlot->end(); ++it)
+                assert(it->first.second != drawCall);
+
+            return true;
         }
-        else
-            ++it;
     }
 }
 
@@ -361,7 +363,7 @@ DrawCallPool::samplerStatesBindingPropertyAddedHandler(DrawCall&                
                 : resolvedBinding->store.propertyAdded(propertyName);
 
             (*_propChangedSlot)[{&resolvedBinding->binding, &drawCall}] = signal.connect(
-                [&](data::Store&, data::Provider::Ptr, const data::Provider::PropertyName&)
+                [&, this](data::Store&, data::Provider::Ptr, const data::Provider::PropertyName&)
                 {
                     (*_drawCallToPropRebindFuncs)[&drawCall].push_back(
                         [&, this]()
@@ -388,6 +390,7 @@ DrawCallPool::update()
         for (auto& func : drawCallPtrAndFuncList.second)
             func();
     _drawCallToPropRebindFuncs->clear();
+    _drawCallToPropRebindFuncs->resize(0);
 
     _drawCalls.sort(
         std::bind(
@@ -418,10 +421,14 @@ DrawCallPool::clear()
 {
     _drawCalls.clear();
     _macroToDrawCalls->clear();
+    _macroToDrawCalls->resize(0);
     _invalidDrawCalls.clear();
     _macroChangedSlot->clear();
+    _macroChangedSlot->resize(0);
     _propChangedSlot->clear();
+    _propChangedSlot->resize(0);
     _drawCallToPropRebindFuncs->clear();
+    _drawCallToPropRebindFuncs->resize(0);
 }
 
 void
