@@ -110,6 +110,40 @@ AbstractSerializerParser::extractDependencies(AssetLibraryPtr						assetLibrary,
 	}
 }
 
+static
+bool
+loadAssetData(const std::string&            resolvedFilename,
+              Options::Ptr                  options,
+              std::vector<unsigned char>&   out)
+{
+    auto assetLoader = Loader::create();
+    auto assetLoaderOptions = options->clone();
+
+    assetLoader->options(assetLoaderOptions);
+
+    assetLoaderOptions
+        ->loadAsynchronously(false)
+        ->storeDataIfNotParsed(false);
+
+    auto fileSuccessfullyLoaded = true;
+
+    auto errorSlot = assetLoader->error()->connect([&](Loader::Ptr, const Error& error)
+    {
+        fileSuccessfullyLoaded = false;
+    });
+
+    auto completeSlot = assetLoader->complete()->connect([&](Loader::Ptr assetLoaderThis)
+    {
+        out = assetLoaderThis->files().at(resolvedFilename)->data();
+    });
+
+    assetLoader
+        ->queue(resolvedFilename)
+        ->load();
+
+    return fileSuccessfullyLoaded;
+}
+
 void
 AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 											AssetLibraryPtr				assetLibrary,
@@ -129,64 +163,22 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 		resolvedPath = asset.a2;
     }
 
-	if (asset.a0 < 10 && _assetTypeToFunction.find(asset.a0) == _assetTypeToFunction.end()) // external
-	{
-        auto assetLoader = Loader::create();
-        auto assetLoaderOptions = options->clone();
-
-        assetLoader->options(assetLoaderOptions);
-
-        assetLoaderOptions
-            ->loadAsynchronously(false)
-            ->storeDataIfNotParsed(false);
-
-        auto fileSuccessfullyLoaded = true;
-
-        auto errorSlot = assetLoader->error()->connect([&](Loader::Ptr, const Error& error)
-		{
-			switch (asset.a0)
-			{
-			case serialize::AssetType::GEOMETRY_ASSET:
-                _error->execute(shared_from_this(), Error("MissingGeometryDependency", "Missing geometry dependency: '" + assetCompletePath + "'"));
-                break;
-
-			case serialize::AssetType::MATERIAL_ASSET:
-                _error->execute(shared_from_this(), Error("MissingMaterialDependency", "Missing material dependency: '" + assetCompletePath + "'"));
-                break;
-
-			case serialize::AssetType::TEXTURE_ASSET:
-                _error->execute(shared_from_this(), Error("MissingTextureDependency", "Missing texture dependency: '" + assetCompletePath + "'"));
-                break;
-
-			case serialize::AssetType::EFFECT_ASSET:
-                _error->execute(shared_from_this(), Error("MissingEffectDependency", "Missing effect dependency: '" + assetCompletePath + "'"));
-                break;
-
-			default:
-				break;
-			}
-            
-            fileSuccessfullyLoaded = false;
-		});
-
-        auto completeSlot = assetLoader->complete()->connect([&](Loader::Ptr assetLoaderThis)
-		{
-            data = assetLoaderThis->files().at(assetCompletePath)->data();
-		});
-
-        assetLoader
-            ->queue(assetCompletePath)
-            ->load();
-        
-        if (!fileSuccessfullyLoaded)
-            return;
-	}
-	else
-		data.assign(asset.a2.begin(), asset.a2.end());
+	data.assign(asset.a2.begin(), asset.a2.end());
 
 	if ((asset.a0 == serialize::AssetType::GEOMETRY_ASSET || asset.a0 == serialize::AssetType::EMBED_GEOMETRY_ASSET) &&
 		_dependency->geometryReferenceExist(asset.a1) == false) // geometry
 	{
+        if (asset.a0 == serialize::AssetType::GEOMETRY_ASSET &&
+            !loadAssetData(assetCompletePath, options, data))
+        {
+            _error->execute(
+                shared_from_this(),
+                Error("MissingGeometryDependency", assetCompletePath)
+            );
+
+            return;
+        }
+
         _geometryParser->_jobList.clear();
 		_geometryParser->dependency(_dependency);
 
@@ -200,6 +192,17 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 	else if ((asset.a0 == serialize::AssetType::MATERIAL_ASSET || asset.a0 == serialize::AssetType::EMBED_MATERIAL_ASSET) &&
 		_dependency->materialReferenceExist(asset.a1) == false) // material
 	{
+        if (asset.a0 == serialize::AssetType::MATERIAL_ASSET &&
+            !loadAssetData(assetCompletePath, options, data))
+        {
+            _error->execute(
+                shared_from_this(),
+                Error("MissingMaterialDependency", assetCompletePath)
+            );
+
+            return;
+        }
+
 		_materialParser->_jobList.clear();
 		_materialParser->dependency(_dependency);
 
@@ -214,19 +217,31 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
         asset.a0 == serialize::AssetType::TEXTURE_ASSET) &&
 			(_dependency->textureReferenceExist(asset.a1) == false || _dependency->getTextureReference(asset.a1) == nullptr)) // texture
 	{
-		if (asset.a0 == serialize::AssetType::EMBED_TEXTURE_ASSET)
-		{
+        if (asset.a0 == serialize::AssetType::EMBED_TEXTURE_ASSET)
+        {
             auto imageFormat = static_cast<serialize::ImageFormat>(metaData);
 
             auto extension = serialize::extensionFromImageFormat(imageFormat);
 
-			resolvedPath = std::to_string(asset.a1) + "." + extension;
-			assetCompletePath += resolvedPath;
-		}
+            resolvedPath = std::to_string(asset.a1) + "." + extension;
+            assetCompletePath += resolvedPath;
+        }
+        else
+        {
+            if (!loadAssetData(assetCompletePath, options, data))
+            {
+                _error->execute(
+                    shared_from_this(),
+                    Error("MissingTextureDependency", assetCompletePath)
+                );
 
-			auto extension = resolvedPath.substr(resolvedPath.find_last_of(".") + 1);
+                return;
+            }
+        }
 
-			std::shared_ptr<file::AbstractParser> parser = assetLibrary->loader()->options()->getParser(extension);
+		auto extension = resolvedPath.substr(resolvedPath.find_last_of(".") + 1);
+
+		std::shared_ptr<file::AbstractParser> parser = assetLibrary->loader()->options()->getParser(extension);
 
         static auto nameId = 0;
         auto uniqueName = resolvedPath;
