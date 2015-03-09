@@ -378,6 +378,11 @@ namespace minko
             bindStates(const std::unordered_map<std::string, data::Binding>&    stateBindings,
 					   const data::Store&							            defaultValues);
 
+            data::ResolvedBinding*
+            bindState(const std::string&        					            stateName,
+                      const std::unordered_map<std::string, data::Binding>&     bindings,
+                      const data::Store&                                        defaultValues);
+
             void
             bindPositionalMembers();
 
@@ -418,31 +423,6 @@ namespace minko
 			setAttributeValueFromStore(const ProgramInputs::AttributeInput& input,
 									   const std::string&                   propertyName,
 									   const data::Store&                   store);
-
-            data::ResolvedBinding*
-            bindState(const std::string&        					            stateName,
-                      const std::unordered_map<std::string, data::Binding>&     bindings,
-                      const data::Store&                                        defaultValues)
-            {
-                auto binding = resolveBinding(
-                    stateName,
-                    bindings
-                );
-
-                if (binding == nullptr)
-                {
-                    setStateValueFromStore(stateName, defaultValues);
-                }
-                else
-                {
-                    if (!binding->store.hasProperty(binding->propertyName))
-                        setStateValueFromStore(stateName, defaultValues);
-                    else
-                        setStateValueFromStore(stateName, binding->store);
-                }
-
-                return binding;
-            }
 
             template <typename T>
             void

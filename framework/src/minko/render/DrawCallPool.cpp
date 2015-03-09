@@ -420,32 +420,42 @@ DrawCallPool::samplerStatesBindingPropertyAddedHandler(DrawCall&                
 }
 
 void
-DrawCallPool::stateBindingPropertyAddedHandler(DrawCall&                drawCall,
-                                               const data::BindingMap&  stateBindingMap)
+DrawCallPool::stateBindingPropertyAddedHandler(const std::string&       stateName,
+                                               DrawCall&                drawCall,
+                                               const data::BindingMap&  stateBindingMap,
+                                               bool                     forceRebind)
 {
-    auto resolvedBindings = drawCall.bindStates(stateBindingMap.bindings, stateBindingMap.defaultValues);
+    if (!forceRebind && std::find(_invalidDrawCalls.begin(), _invalidDrawCalls.end(), &drawCall) != _invalidDrawCalls.end())
+        return;
 
-    for (auto resolvedBinding : resolvedBindings)
+    auto resolvedBinding = drawCall.bindState(stateName, stateBindingMap.bindings, stateBindingMap.defaultValues);
+
+    if (resolvedBinding != nullptr)
     {
-        if (resolvedBinding != nullptr)
-        {
-            auto& propertyName = resolvedBinding->propertyName;
-            auto& signal = resolvedBinding->store.hasProperty(propertyName)
-                ? resolvedBinding->store.propertyRemoved(propertyName)
-                : resolvedBinding->store.propertyAdded(propertyName);
+        auto bindingPtr = &resolvedBinding->binding;
+        auto& propertyName = resolvedBinding->propertyName;
+        auto& signal = resolvedBinding->store.hasProperty(propertyName)
+            ? resolvedBinding->store.propertyRemoved(propertyName)
+            : resolvedBinding->store.propertyAdded(propertyName);
 
-            _propChangedSlot->insert(std::make_pair(
+        _propChangedSlot->insert(
+            std::make_pair(
                 std::make_pair(&resolvedBinding->binding, &drawCall),
-                signal.connect(std::bind(
-                    &DrawCallPool::stateBindingPropertyAddedHandler,
-                    this,
-                    std::ref(drawCall),
-                    std::ref(stateBindingMap)
-                )
-            )));
+                signal.connect(
+                [&, bindingPtr](data::Store&, data::Provider::Ptr, const data::Provider::PropertyName&)
+                {
+                    _propChangedSlot->erase({ bindingPtr, &drawCall });
 
-            delete resolvedBinding;
-        }
+                    (*_drawCallToPropRebindFuncs)[&drawCall].push_back(
+                    [&, forceRebind, this]()
+                    {
+                        stateBindingPropertyAddedHandler(stateName, drawCall, stateBindingMap, forceRebind);
+                    });
+                })
+            )
+        );
+
+        delete resolvedBinding;
     }
 }
 
@@ -463,15 +473,6 @@ DrawCallPool::update()
     }
     
     _drawCallToPropRebindFuncs->clear();
-
-    _drawCalls.sort(
-        std::bind(
-            &DrawCallPool::compareDrawCalls,
-            this,
-            std::placeholders::_1,
-            std::placeholders::_2
-        )
-    );
 }
 
 void
@@ -549,7 +550,8 @@ DrawCallPool::bindDrawCall(DrawCall& drawCall, Pass::Ptr pass, Program::Ptr prog
         drawCall.bindAttribute(input, pass->attributeBindings().bindings, pass->attributeBindings().defaultValues);
 
     // bind states
-     stateBindingPropertyAddedHandler(drawCall, pass->stateBindings());
+    for (const auto& input : pass->stateBindings().bindings)
+        stateBindingPropertyAddedHandler(input.first, drawCall, pass->stateBindings(), forceRebind);
 
     // bind uniforms
     for (const auto& input : program->inputs().uniforms())

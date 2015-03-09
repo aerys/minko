@@ -177,8 +177,10 @@ namespace minko
                                                bool                               forceRebind = false);
 
             void
-            stateBindingPropertyAddedHandler(DrawCall&                drawCall,
-                                             const data::BindingMap&  stateBindingMap);
+            stateBindingPropertyAddedHandler(const std::string&         stateName,
+                                             DrawCall&                  drawCall,
+                                             const data::BindingMap&    stateBindingMap,
+                                             bool                       forceRebind);
 
             void
             samplerStatesBindingPropertyAddedHandler(DrawCall&                          drawCall,
