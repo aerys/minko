@@ -110,9 +110,10 @@ int main(int argc, char** argv)
                 assets->effect("effect/Basic.effect")
             ));
 
-        auto sunMaterial = material::BasicMaterial::create()
-            ->diffuseColor(math::vec4(1.f, 0.32f, 0.05f, 1.f));
-        sunMaterial->data()->set("isLightSource", true);
+        auto sunMaterial = material::BasicMaterial::create({
+            { "diffuseColor", math::vec4(1.f, 0.32f, 0.05f, 1.f) },
+            { "isLightSource", true }
+        });
 
         helio
             ->addChild(scene::Node::create()
