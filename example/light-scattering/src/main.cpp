@@ -83,7 +83,6 @@ int main(int argc, char** argv)
 
     ppMaterial->data()->set("lightbuffer", fwdTarget->sampler());
     ppMaterial->data()->set("backbuffer", ppTarget->sampler());
-    ppRenderer->clearBeforeRender(true);
     ppTarget->upload();
 
     // scene
@@ -147,7 +146,6 @@ int main(int argc, char** argv)
             assets->effect("effect/LightScattering/EmissionMap.effect")
         );
         fwdRenderer->layoutMask(fwdRenderer->layoutMask() & ~scene::BuiltinLayout::DEBUG_ONLY);
-        fwdRenderer->clearBeforeRender(true);
         camera->addComponent(fwdRenderer);
 
         auto debugDisplay1 = TextureDebugDisplay::create();
