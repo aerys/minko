@@ -579,8 +579,8 @@ DrawCallPool::bindDrawCall(DrawCall& drawCall, Pass::Ptr pass, Program::Ptr prog
         drawCall.bindAttribute(input, pass->attributeBindings().bindings, pass->attributeBindings().defaultValues);
 
     // bind states
-    for (const auto& input : pass->stateBindings().bindings)
-        stateBindingPropertyAddedHandler(input.first, drawCall, pass->stateBindings(), forceRebind);
+    for (const auto& stateName : States::PROPERTY_NAMES)
+        stateBindingPropertyAddedHandler(stateName, drawCall, pass->stateBindings(), forceRebind);
 
     // bind uniforms
     for (const auto& input : program->inputs().uniforms())
