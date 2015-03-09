@@ -73,7 +73,7 @@ namespace minko
             typedef map<DrawCall*, std::list<std::function<void(void)>>>	    PropertyRebindFuncMap;
             typedef Hash<MacroBindingKey>                                		MacroBindingKeyHash;
             typedef EqualTo<MacroBindingKey>                            		MacroBindingKeyEq;
-            typedef map<MacroBindingKey, DrawCallList, MacroBindingKeyHash>     MacroToDrawCallsMap;
+            typedef map<MacroBindingKey, DrawCallList*, MacroBindingKeyHash>    MacroToDrawCallsMap;
             typedef map<MacroBindingKey, ChangedSlot, MacroBindingKeyHash>      MacroToChangedSlotMap;
             typedef map<DrawCallKey, PropertyChanged::Slot, DrawCallKeyHash>    PropertyChangedSlotMap;
 
@@ -146,16 +146,16 @@ namespace minko
             macroPropertyAddedHandler(const data::MacroBinding&     macroBinding,
                                       const PropertyName&           propertyName,
                                       data::Store&                  store,
-                                      const std::list<DrawCall*>&   drawCalls);
+                                      const std::list<DrawCall*>*   drawCalls);
 
             void
             macroPropertyRemovedHandler(const data::MacroBinding&   macroBinding,
                                         const PropertyName&         propertyName,
                                         data::Store&                store,
-                                        const std::list<DrawCall*>& drawCalls);
+                                        const std::list<DrawCall*>* drawCalls);
 
             void
-            macroPropertyChangedHandler(const data::MacroBinding& macroBinding, const std::list<DrawCall*>& drawCalls);
+            macroPropertyChangedHandler(const data::MacroBinding& macroBinding, const std::list<DrawCall*>* drawCalls);
 
             void
             initializeDrawCall(DrawCall& drawCall, bool forceRebind = false);
