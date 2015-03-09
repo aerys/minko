@@ -16,7 +16,7 @@
 
                     "uniforms"   :
                     {
-                        "uLightPositionOnScreen" : "material[${materialUuid}].lightPositionOnScreen",
+                        "uScreenSpaceLightPosition" : "material[${materialUuid}].screenSpaceLightPosition",
                         "uBackbuffer" : "material[${materialUuid}].backbuffer",
                         "uLightbuffer" : "material[${materialUuid}].lightbuffer"
                     },
@@ -37,7 +37,7 @@
 
                     "fragmentShader"    :
                     "
-                        uniform vec2 uLightPositionOnScreen;
+                        uniform vec2 uScreenSpaceLightPosition;
                         uniform sampler2D uBackbuffer;
                         uniform sampler2D uLightbuffer;
 
@@ -55,7 +55,7 @@
                             vec4 pixelColor = texture2D(uBackbuffer, vVertexUV.xy);
                             vec4 pixelLight = texture2D(uLightbuffer, vVertexUV.xy);
 
-                            vec2 deltaTextCoord = vec2(vVertexUV.xy - uLightPositionOnScreen.xy);
+                            vec2 deltaTextCoord = vec2(vVertexUV.xy - uScreenSpaceLightPosition.xy);
                             vec2 textCoord = vVertexUV.xy;
                             deltaTextCoord *= 1.0 / float(NUM_SAMPLES) * density;
                             float illuminationDecay = 1.0;
