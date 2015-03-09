@@ -67,6 +67,10 @@ namespace minko
                 auto stateDefaultValues = drawCall->pass()->stateBindings().defaultValues;
 
                 material->data()->set(stateName, stateMaterialValue);
+                pool.update();
+
+                auto drawCallValue = valueFunc(drawCall);
+                auto stateDefaultValue = stateDefaultValues.get<T>(stateName);
 
                 auto hasProperty = drawCall->targetData().hasProperty(stateName);
                 ASSERT_TRUE(hasProperty);
@@ -74,9 +78,10 @@ namespace minko
                 ASSERT_EQ(valueFunc(drawCall), material->data()->get<T>(stateName));
 
                 material->data()->unset(stateName);
-                
-                auto drawCallValue = valueFunc(drawCall);
-                auto stateDefaultValue = stateDefaultValues.get<T>(stateName);
+                pool.update();
+
+                drawCallValue = valueFunc(drawCall);
+                stateDefaultValue = stateDefaultValues.get<T>(stateName);
 
                 ASSERT_EQ(valueFunc(drawCall), stateDefaultValues.get<T>(stateName));
             }
@@ -118,6 +123,7 @@ namespace minko
                 auto stateDefaultValues = drawCall->pass()->stateBindings().defaultValues;
 
                 material->data()->set(stateName, stateMaterialValue);
+                pool.update();
 
                 auto hasProperty = drawCall->targetData().hasProperty(stateName);
                 ASSERT_TRUE(hasProperty);
@@ -125,6 +131,7 @@ namespace minko
                 ASSERT_EQ(drawCall->target(), material->data()->get<TextureSampler>(stateName));
 
                 material->data()->unset(stateName);
+                pool.update();
 
                 auto states = drawCall->pass()->states();
 

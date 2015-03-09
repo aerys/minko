@@ -1511,7 +1511,7 @@ TEST_F(DrawCallPoolTest, StatesBindingStencilReferenceWithDefaultValue0)
 {
     auto stateName = States::PROPERTY_STENCIL_REFERENCE;
     auto effectFile = "effect/state/binding/with-default-value/stencil-reference/StatesBindingStencilReferenceWithDefaultValue0.effect";
-    auto stateMaterialValue = 0;
+    auto stateMaterialValue = 1;
 
     testStateBindingToDefaultValueSwap<int>(
         stateMaterialValue,
@@ -1525,7 +1525,7 @@ TEST_F(DrawCallPoolTest, StatesBindingStencilReferenceWithDefaultValue1)
 {
     auto stateName = States::PROPERTY_STENCIL_REFERENCE;
     auto effectFile = "effect/state/binding/with-default-value/stencil-reference/StatesBindingStencilReferenceWithDefaultValue1.effect";
-    auto stateMaterialValue = 1;
+    auto stateMaterialValue = 0;
 
     testStateBindingToDefaultValueSwap<int>(
         stateMaterialValue,
@@ -1541,7 +1541,7 @@ TEST_F(DrawCallPoolTest, StatesBindingStencilMaskWithDefaultValue0)
 {
     auto stateName = States::PROPERTY_STENCIL_MASK;
     auto effectFile = "effect/state/binding/with-default-value/stencil-mask/StatesBindingStencilMaskWithDefaultValue0.effect";
-    auto stateMaterialValue = 0;
+    auto stateMaterialValue = 1;
 
     testStateBindingToDefaultValueSwap<uint>(
         stateMaterialValue,
@@ -1555,7 +1555,7 @@ TEST_F(DrawCallPoolTest, StatesBindingStencilMaskWithDefaultValue1)
 {
     auto stateName = States::PROPERTY_STENCIL_MASK;
     auto effectFile = "effect/state/binding/with-default-value/stencil-mask/StatesBindingStencilMaskWithDefaultValue1.effect";
-    auto stateMaterialValue = 1;
+    auto stateMaterialValue = 0;
 
     testStateBindingToDefaultValueSwap<uint>(
         stateMaterialValue,
@@ -1913,7 +1913,7 @@ TEST_F(DrawCallPoolTest, StatesBindingScissorTestWithDefaultValueTrue)
 {
     auto stateName = States::PROPERTY_SCISSOR_TEST;
     auto effectFile = "effect/state/binding/with-default-value/scissor-test/StatesBindingScissorTestWithDefaultValueTrue.effect";
-    auto stateMaterialValue = true;
+    auto stateMaterialValue = false;
 
     testStateBindingToDefaultValueSwap<bool>(
         stateMaterialValue,
@@ -1927,7 +1927,7 @@ TEST_F(DrawCallPoolTest, StatesBindingScissorTestWithDefaultValueFalse)
 {
     auto stateName = States::PROPERTY_SCISSOR_TEST;
     auto effectFile = "effect/state/binding/with-default-value/scissor-test/StatesBindingScissorTestWithDefaultValueFalse.effect";
-    auto stateMaterialValue = false;
+    auto stateMaterialValue = true;
 
     testStateBindingToDefaultValueSwap<bool>(
         stateMaterialValue,
@@ -1943,7 +1943,7 @@ TEST_F(DrawCallPoolTest, StatesBindingScissorBoxWithDefaultValueArray)
 {
     auto stateName = States::PROPERTY_SCISSOR_BOX;
     auto effectFile = "effect/state/binding/with-default-value/scissor-box/StatesBindingScissorBoxWithDefaultValueArray.effect";
-    auto stateMaterialValue = math::ivec4(1, 1, 42, 42);
+    auto stateMaterialValue = math::ivec4(0);
 
     testStateBindingToDefaultValueSwap<math::ivec4>(
         stateMaterialValue,

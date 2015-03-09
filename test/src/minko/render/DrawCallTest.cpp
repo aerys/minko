@@ -392,7 +392,7 @@ TEST_F(DrawCallTest, RenderTargetBindingFromTargetData)
     p->set(States::PROPERTY_TARGET, texture->sampler());
     targetData.addProvider(p);
 
-    std::unordered_map<std::string, data::Binding> bindings = { { "target", { "renderTargetTest", data::Binding::Source::TARGET } } };
+    std::unordered_map<std::string, data::Binding> bindings = { { States::PROPERTY_TARGET, { States::PROPERTY_TARGET, data::Binding::Source::TARGET } } };
     DrawCall drawCall(0, nullptr, EffectVariables{}, rootData, rendererData, targetData);
 
     drawCall.bindStates(bindings, defaultValues);

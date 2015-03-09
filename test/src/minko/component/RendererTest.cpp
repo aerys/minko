@@ -44,12 +44,12 @@ TEST_F(RendererTest, AddAndRemoveSurfaces)
         material,
         fx
     );
+
     auto s2 = Surface::create(
         geometry::CubeGeometry::create(MinkoTests::canvas()->context()),
         material,
         fx
     );
-
 
     auto s3 = Surface::create(
         geometry::CubeGeometry::create(MinkoTests::canvas()->context()),
