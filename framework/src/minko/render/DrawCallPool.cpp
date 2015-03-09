@@ -34,7 +34,8 @@ DrawCallPool::DrawCallPool() :
     _macroChangedSlot(new MacroToChangedSlotMap()),
     _propChangedSlot(new PropertyChangedSlotMap()),
     _drawCallToPropRebindFuncs(new PropertyRebindFuncMap()),
-    _zSortUsefulPropertyChangedSlot()
+    _zSortUsefulPropertyChangedSlot(new PropertyChangedSlotMap()),
+    _mustZSort(false)
 {
     _macroToDrawCalls->set_deleted_key(MacroBindingKey("", nullptr, nullptr));
     _macroChangedSlot->set_deleted_key(MacroBindingKey("", nullptr, nullptr));
@@ -360,13 +361,15 @@ DrawCallPool::uniformBindingPropertyAddedHandler(DrawCall&                      
             if (propertyRelatedToZSort)
             {
                 // Bind the signal to request a Z-sorting if one of these properties changed
-                _zSortUsefulPropertyChangedSlot->insert(std::make_pair(
-                    std::make_pair(bindingPtr, &drawCall), 
-                    resolvedBinding->store.propertyChanged().connect(
-                    [&](data::Store&, data::Provider::Ptr, const data::Provider::PropertyName&)
-                        {
-                            sortDrawCalls();
-                        })
+                _zSortUsefulPropertyChangedSlot->insert(
+                    std::make_pair(
+                        std::make_pair(bindingPtr, &drawCall), 
+                        resolvedBinding->store.propertyChanged().connect(
+                            [&](data::Store&, data::Provider::Ptr, const data::Provider::PropertyName&)
+                            {
+                                _mustZSort = true;
+                            }
+                        )
                     )
                 );
             }
@@ -460,7 +463,7 @@ DrawCallPool::stateBindingPropertyAddedHandler(const std::string&       stateNam
 }
 
 void
-DrawCallPool::update()
+DrawCallPool::update(bool forceZSort)
 {
     for (auto* drawCallPtr : _invalidDrawCalls)
         initializeDrawCall(*drawCallPtr, true);
@@ -473,6 +476,16 @@ DrawCallPool::update()
     }
     
     _drawCallToPropRebindFuncs->clear();
+
+    if (_mustZSort || forceZSort)
+    {
+        _drawCalls.sort(
+            [&](DrawCall* a, DrawCall* b) -> bool
+            {
+                return compareDrawCalls(a, b);
+            }
+        );
+    }
 }
 
 void
@@ -556,7 +569,6 @@ DrawCallPool::bindDrawCall(DrawCall& drawCall, Pass::Ptr pass, Program::Ptr prog
     // bind uniforms
     for (const auto& input : program->inputs().uniforms())
         uniformBindingPropertyAddedHandler(drawCall, input, pass->uniformBindings(), forceRebind);
-
 
     // bind index buffer
     if (!pass->isPostProcessing())

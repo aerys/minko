@@ -409,7 +409,7 @@ Renderer::render(render::AbstractContext::Ptr	context,
     if (!_enabled)
 		return;
 
-    const bool doZSort = _mustZSort || !_toCollect.empty();
+    const bool forceZSort = _mustZSort || !_toCollect.empty();
 
     // some surfaces have been added during the frame and collected
     // in _toCollect: we now have to take them into account to build
@@ -447,16 +447,8 @@ Renderer::render(render::AbstractContext::Ptr	context,
 			(_backgroundColor & 0xff) / 255.f
 		);
 
-    _drawCallPool.update();
+    _drawCallPool.update(forceZSort);
     
-    auto static counter = 0;
-
-    if (doZSort)
-    {
-        _drawCallPool.sortDrawCalls();
-        counter++;
-    }
-
     _mustZSort = false;
 
     auto drawCalls = _drawCallPool.drawCalls();

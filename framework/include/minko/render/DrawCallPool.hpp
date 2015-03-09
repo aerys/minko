@@ -89,6 +89,7 @@ namespace minko
             PropertyChangedSlotMap*         _propChangedSlot;
             PropertyChangedSlotMap*         _zSortUsefulPropertyChangedSlot;
             std::vector<std::string>        _zSortUsefulPropertyNames;
+            bool                            _mustZSort;
 
 			PropertyRebindFuncMap* 			_drawCallToPropRebindFuncs;
 
@@ -121,7 +122,7 @@ namespace minko
             sortDrawCalls();
 
             void
-            update();
+            update(bool forceZSort = false);
 
 			void
 			clear();
