@@ -71,6 +71,7 @@ int main(int argc, char** argv)
     renderer->backgroundColor(0x23097aff);
 
     // forward
+    auto fwdRenderer = Renderer::create();
     auto fwdTarget = render::Texture::create(context, math::clp2(canvas->width()), math::clp2(canvas->height()), false, true);
     fwdTarget->upload();
 
@@ -93,7 +94,8 @@ int main(int argc, char** argv)
         ->addComponent(Transform::create(
             math::inverse(math::lookAt(math::vec3(0.f), math::vec3(0.f, 0.f, 1.f), math::vec3(0.f, 1.f, 0.f)))
         ))
-        ->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f));
+        ->addComponent(PerspectiveCamera::create(800.f / 600.f, float(M_PI) * 0.25f, .1f, 1000.f))
+        ->addComponent(renderer);
     root->addChild(camera);
 
     auto helio = scene::Node::create("helio")
@@ -102,7 +104,7 @@ int main(int argc, char** argv)
 
     auto sun = scene::Node::create("sun");
 
-    auto _ = assets->loader()->complete()->connect([=](file::Loader::Ptr loader)
+    auto _ = assets->loader()->complete()->connect([&](file::Loader::Ptr loader)
     {
         for (auto i = 0; i < 100; ++i)
             root->addChild(createRandomCube(
@@ -139,12 +141,14 @@ int main(int argc, char** argv)
         ));
 
         // forward
-        auto fwdEffect = assets->effect("effect/LightScattering/EmissionMap.effect");
-        auto fwdRenderer = Renderer::create(0x000000ff, fwdTarget, fwdEffect);
+        fwdRenderer = Renderer::create(
+            0x000000ff,
+            fwdTarget,
+            assets->effect("effect/LightScattering/EmissionMap.effect")
+        );
         fwdRenderer->layoutMask(fwdRenderer->layoutMask() & ~scene::BuiltinLayout::DEBUG_ONLY);
         fwdRenderer->clearBeforeRender(true);
         camera->addComponent(fwdRenderer);
-        camera->addComponent(renderer);
 
         auto debugDisplay1 = TextureDebugDisplay::create();
         debugDisplay1->initialize(assets, fwdTarget);
@@ -183,8 +187,7 @@ int main(int argc, char** argv)
         ppMaterial->data()->set("screenSpaceLightPosition", screenSpaceLightPosition.xy());
 
         // Rendering in "black and white" to fwdTarget.
-        // fwdRenderer->render(context);
-        camera->component<Renderer>(0)->render(context);
+        fwdRenderer->render(context);
 
         // Rendering the scene normally to ppTarget.
         sceneManager->nextFrame(time, deltaTime, ppTarget);
