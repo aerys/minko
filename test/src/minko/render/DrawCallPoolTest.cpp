@@ -200,7 +200,7 @@ TEST_F(DrawCallPoolTest, WatchAndDefineVariableIntMacro)
 
 TEST_F(DrawCallPoolTest, StopWatchingMacroAfterDrawCallsRemoved)
 {
-    auto fx = MinkoTests::loadEffect("effect/OneVariableIntMacroBinding.effect");
+    auto fx = MinkoTests::loadEffect("effect/macro/binding/OneVariableIntMacroBinding.effect");
     auto pass = fx->techniques().at("default")[0];
     DrawCallPool pool;
     data::Store rootData;
@@ -1225,7 +1225,7 @@ TEST_F(DrawCallPoolTest, StatesBindingDepthFunctionWithDefaultValueAlways)
 {
     auto stateName = States::PROPERTY_DEPTH_FUNCTION;
     auto effectFile = "effect/state/binding/with-default-value/depth-function/StatesBindingDepthFunctionWithDefaultValueAlways.effect";
-    auto stateMaterialValue = CompareMode::ALWAYS;
+    auto stateMaterialValue = CompareMode::EQUAL;
 
     testStateBindingToDefaultValueSwap<CompareMode>(
         stateMaterialValue,
@@ -1239,7 +1239,7 @@ TEST_F(DrawCallPoolTest, StatesBindingDepthFunctionWithDefaultValueEqual)
 {
     auto stateName = States::PROPERTY_DEPTH_FUNCTION;
     auto effectFile = "effect/state/binding/with-default-value/depth-function/StatesBindingDepthFunctionWithDefaultValueEqual.effect";
-    auto stateMaterialValue = CompareMode::EQUAL;
+    auto stateMaterialValue = CompareMode::ALWAYS;
 
     testStateBindingToDefaultValueSwap<CompareMode>(
         stateMaterialValue,
@@ -1253,7 +1253,7 @@ TEST_F(DrawCallPoolTest, StatesBindingDepthFunctionWithDefaultValueGreater)
 {
     auto stateName = States::PROPERTY_DEPTH_FUNCTION;
     auto effectFile = "effect/state/binding/with-default-value/depth-function/StatesBindingDepthFunctionWithDefaultValueGreater.effect";
-    auto stateMaterialValue = CompareMode::GREATER;
+    auto stateMaterialValue = CompareMode::ALWAYS;
 
     testStateBindingToDefaultValueSwap<CompareMode>(
         stateMaterialValue,
@@ -1267,7 +1267,7 @@ TEST_F(DrawCallPoolTest, StatesBindingDepthFunctionWithDefaultValueGreaterEqual)
 {
     auto stateName = States::PROPERTY_DEPTH_FUNCTION;
     auto effectFile = "effect/state/binding/with-default-value/depth-function/StatesBindingDepthFunctionWithDefaultValueGreaterEqual.effect";
-    auto stateMaterialValue = CompareMode::GREATER_EQUAL;
+    auto stateMaterialValue = CompareMode::ALWAYS;
 
     testStateBindingToDefaultValueSwap<CompareMode>(
         stateMaterialValue,
@@ -1281,7 +1281,7 @@ TEST_F(DrawCallPoolTest, StatesBindingDepthFunctionWithDefaultValueLess)
 {
     auto stateName = States::PROPERTY_DEPTH_FUNCTION;
     auto effectFile = "effect/state/binding/with-default-value/depth-function/StatesBindingDepthFunctionWithDefaultValueLess.effect";
-    auto stateMaterialValue = CompareMode::LESS;
+    auto stateMaterialValue = CompareMode::ALWAYS;
 
     testStateBindingToDefaultValueSwap<CompareMode>(
         stateMaterialValue,
@@ -1295,7 +1295,7 @@ TEST_F(DrawCallPoolTest, StatesBindingDepthFunctionWithDefaultValueLessEqual)
 {
     auto stateName = States::PROPERTY_DEPTH_FUNCTION;
     auto effectFile = "effect/state/binding/with-default-value/depth-function/StatesBindingDepthFunctionWithDefaultValueLessEqual.effect";
-    auto stateMaterialValue = CompareMode::LESS_EQUAL;
+    auto stateMaterialValue = CompareMode::ALWAYS;
 
     testStateBindingToDefaultValueSwap<CompareMode>(
         stateMaterialValue,
@@ -1309,7 +1309,7 @@ TEST_F(DrawCallPoolTest, StatesBindingDepthFunctionWithDefaultValueNever)
 {
     auto stateName = States::PROPERTY_DEPTH_FUNCTION;
     auto effectFile = "effect/state/binding/with-default-value/depth-function/StatesBindingDepthFunctionWithDefaultValueNever.effect";
-    auto stateMaterialValue = CompareMode::NEVER;
+    auto stateMaterialValue = CompareMode::ALWAYS;
 
     testStateBindingToDefaultValueSwap<CompareMode>(
         stateMaterialValue,
@@ -1323,7 +1323,7 @@ TEST_F(DrawCallPoolTest, StatesBindingDepthFunctionWithDefaultValueNotEqual)
 {
     auto stateName = States::PROPERTY_DEPTH_FUNCTION;
     auto effectFile = "effect/state/binding/with-default-value/depth-function/StatesBindingDepthFunctionWithDefaultValueNotEqual.effect";
-    auto stateMaterialValue = CompareMode::NOT_EQUAL;
+    auto stateMaterialValue = CompareMode::ALWAYS;
 
     testStateBindingToDefaultValueSwap<CompareMode>(
         stateMaterialValue,
