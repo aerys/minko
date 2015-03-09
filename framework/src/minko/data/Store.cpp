@@ -386,8 +386,10 @@ Store::getProviderByPropertyName(const std::string& propertyName) const
     else
     {
         for (const auto& provider : _providers)
-            if (provider->hasProperty(propertyName) != 0)
+        {
+            if (provider->hasProperty(propertyName))
                 return std::pair<Provider::Ptr, std::string>(provider, propertyName);
+        }
     }
 
     return std::pair<Provider::Ptr, std::string>(nullptr, propertyName);
