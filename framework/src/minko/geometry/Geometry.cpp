@@ -220,11 +220,14 @@ Geometry::computeNormals()
         (*normalsData)[indexOffset + 2] *= invLength;
 	}
 
-    normalBuffer = VertexBuffer::create(xyzBuffer->context(), *normalsData);
-    normalBuffer->addAttribute("normal", normalSize, normalOffset);
-    addVertexBuffer(normalBuffer);
+    if (!normalBuffer)
+    {
+        normalBuffer = VertexBuffer::create(xyzBuffer->context(), *normalsData);
+        normalBuffer->addAttribute("normal", normalSize, normalOffset);
+        addVertexBuffer(normalBuffer);
 
-    delete normalsData;
+        delete normalsData;
+    }
 
 	return shared_from_this();
 }
