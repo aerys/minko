@@ -33,9 +33,9 @@ namespace minko
 		{
 		public:
 			typedef Flyweight<std::string>								PropertyName;
+            typedef Signal<Provider::Ptr, const PropertyName&>	        ProviderChangedSignal;
 
 		private:
-            typedef Signal<Provider::Ptr, const PropertyName&>	        ProviderChangedSignal;
             typedef std::list<ProviderChangedSignal::Slot>              ProviderChangedSignalSlotList;
 
 			typedef std::shared_ptr<Provider>						    ProviderPtr;
