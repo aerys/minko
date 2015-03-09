@@ -30,6 +30,16 @@ Provider::Provider() :
     // _values.set_deleted_key("");
 }
 
+Provider::Provider(const ValueMap& values) :
+	_values()
+{
+	for (auto& p : values)
+	{
+		// Using: Any& operator=(Any rhs)
+        _values[p.first] = p.second;
+	}
+}
+
 Provider::Ptr
 Provider::unset(const std::string& propertyName)
 {

@@ -95,6 +95,14 @@ namespace minko
                 _provider->set("uuid", _provider->uuid());
             }
 
+            Material(const std::string& name,
+                     const data::Provider::ValueMap& values) :
+                _provider(data::Provider::create(values))
+            {
+                _provider->set("name", name);
+                _provider->set("uuid", _provider->uuid());
+            }
+
             virtual
             void
             initialize()

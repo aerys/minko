@@ -79,6 +79,15 @@ namespace minko
 
 			static
 			Ptr
+			create(const ValueMap& values)
+			{
+				Ptr provider = std::shared_ptr<Provider>(new Provider(values));
+
+				return provider;
+			}
+
+			static
+			Ptr
 			create(Ptr source)
 			{
 				return create()->copyFrom(source);
@@ -192,6 +201,8 @@ namespace minko
 
 		protected:
 			Provider();
+
+			Provider(const ValueMap& values);
 		};
 	}
 }
