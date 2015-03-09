@@ -1,6 +1,5 @@
-// light scattering
 {
-    "name"  : "light source",
+    "name"  : "emission map",
 
     "uniforms"   : {
         "uModelToWorldMatrix"   : "modelToWorldMatrix",
@@ -72,7 +71,7 @@
                     {
                         "uIsLightSource" : {
                             "binding": "material[${materialUuid}].isLightSource",
-                            "default": 0
+                            "default": false
                         }
                     },
 
@@ -84,7 +83,7 @@
 
                         void main()
                         {
-                            gl_FragColor = vec4(uIsLightSource, uIsLightSource, uIsLightSource, 1.0);
+                            gl_FragColor = vec4(vec3(float(uIsLightSource)), 1.0);
                         }
                     "
                 }

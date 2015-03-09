@@ -59,7 +59,7 @@ int main(int argc, char** argv)
 
     // setup assets
     assets->loader()
-        ->queue("effect/LightScattering/LightSource.effect")
+        ->queue("effect/LightScattering/EmissionMap.effect")
         ->queue("effect/LightScattering/LightScattering.effect")
         ->queue("effect/Basic.effect");
 
@@ -139,7 +139,7 @@ int main(int argc, char** argv)
         ));
 
         // forward
-        auto fwdEffect = assets->effect("effect/LightScattering/LightSource.effect");
+        auto fwdEffect = assets->effect("effect/LightScattering/EmissionMap.effect");
         auto fwdRenderer = Renderer::create(0x000000ff, fwdTarget, fwdEffect);
         fwdRenderer->layoutMask(fwdRenderer->layoutMask() & ~scene::BuiltinLayout::DEBUG_ONLY);
         fwdRenderer->clearBeforeRender(true);
