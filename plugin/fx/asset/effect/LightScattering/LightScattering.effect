@@ -18,7 +18,7 @@
                     {
                         "uScreenSpaceLightPosition" : "material[${materialUuid}].screenSpaceLightPosition",
                         "uBackbuffer" : "material[${materialUuid}].backbuffer",
-                        "uLightbuffer" : "material[${materialUuid}].lightbuffer"
+                        "uEmissionMap" : "material[${materialUuid}].emissionMap"
                     },
 
                     "vertexShader"      :
@@ -39,7 +39,7 @@
                     "
                         uniform vec2 uScreenSpaceLightPosition;
                         uniform sampler2D uBackbuffer;
-                        uniform sampler2D uLightbuffer;
+                        uniform sampler2D uEmissionMap;
 
                         const float decay = 0.96815;
                         const float weight = 0.58767;
@@ -53,7 +53,7 @@
                         void main()
                         {
                             vec4 pixelColor = texture2D(uBackbuffer, vVertexUV.xy);
-                            vec4 pixelLight = texture2D(uLightbuffer, vVertexUV.xy);
+                            vec4 pixelLight = texture2D(uEmissionMap, vVertexUV.xy);
 
                             vec2 deltaTextCoord = vec2(vVertexUV.xy - uScreenSpaceLightPosition.xy);
                             vec2 textCoord = vVertexUV.xy;
@@ -63,7 +63,7 @@
                             for (int i = 0; i < NUM_SAMPLES; i++)
                             {
                                 textCoord -= deltaTextCoord;
-                                vec4 sample = texture2D(uLightbuffer, textCoord);
+                                vec4 sample = texture2D(uEmissionMap, textCoord);
 
                                 sample *= illuminationDecay * weight;
 

@@ -81,7 +81,7 @@ int main(int argc, char** argv)
     auto ppTarget = render::Texture::create(context, math::clp2(canvas->width()), math::clp2(canvas->height()), false, true);
     auto ppMaterial = material::BasicMaterial::create();
 
-    ppMaterial->data()->set("lightbuffer", fwdTarget->sampler());
+    ppMaterial->data()->set("emissionMap", fwdTarget->sampler());
     ppMaterial->data()->set("backbuffer", ppTarget->sampler());
     ppTarget->upload();
 
