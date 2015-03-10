@@ -342,17 +342,14 @@ Picking::addSurface(SurfacePtr surface)
 			1
 		));
 
-
-		if (_targetToProvider.find(target()) == _targetToProvider.end())
+        if (_targetToProvider.find(surface->target()) == _targetToProvider.end())
 		{
-			_targetToProvider[target()] = _surfaceToProvider[surface];
-			target()->data().addProvider(_surfaceToProvider[surface]);
-
-            auto targetData = target()->data();
+            _targetToProvider[surface->target()] = _surfaceToProvider[surface];
+            surface->target()->data().addProvider(_surfaceToProvider[surface]);
 		}
 
         if (_addPickingLayout)
-            target()->layout(target()->layout() | scene::BuiltinLayout::PICKING);
+            surface->target()->layout(target()->layout() | scene::BuiltinLayout::PICKING);
 	}
 }
 
