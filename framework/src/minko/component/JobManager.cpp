@@ -101,22 +101,26 @@ JobManager::end(NodePtr target)
             }
         }
 
-        currentJob->step();
+        auto currentJobComplete = currentJob->complete();
 
-        ++numStepPerformed;
+        if (!currentJobComplete)
+        {
+            currentJob->step();
 
-        consumeTime = (float(std::clock() - _frameStartTime) / CLOCKS_PER_SEC);
+            currentJobComplete |= currentJob->complete();
+        }
 
-        if (currentJob->complete())
+        if (currentJobComplete)
         {
             _jobs.pop_back();
             currentJob->afterLastStep();
             _jobPriorityChangedSlots.erase(currentJob);
             currentJob = nullptr;
-
-            if (_jobs.empty())
-                return;
         }
+
+        ++numStepPerformed;
+
+        consumeTime = (float(std::clock() - _frameStartTime) / CLOCKS_PER_SEC);
     }
 }
 

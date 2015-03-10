@@ -205,6 +205,8 @@ MaterialParser::deserializeBasicProperty(MaterialPtr		material,
 
     if (serializedProperty.a0 == "zSorted")
         material->data()->set<bool>("zSorted", serializedPropertyValue[0]);
-    else
+    else if (serializedProperty.a0 == "environmentMap2dType")
+		material->data()->set<int>("environmentMap2dType", int(serializedPropertyValue[0]));
+	else
 	    material->data()->set<float>(serializedProperty.a0, serializedPropertyValue[0]);
 }

@@ -37,19 +37,21 @@ void main(void)
 {
 	vec4 diffuse = uDiffuseColor;
 
-	#if defined(DIFFUSE_CUBEMAP)
-		diffuse	= textureCube(uDiffuseCubeMap, vVertexUVW);
-	#elif defined(DIFFUSE_MAP)
-		#ifdef DIFFUSE_MAP_LOD
-			diffuse = texturelod_texture2D(uDiffuseMap, vVertexUV, diffuseMapSize, 0.0, diffuseMapMaxAvailableLod, diffuseColor);
-		#else
-			diffuse = texture2D(uDiffuseMap, vVertexUV);
+	#if defined(VERTEX_UV)
+		#if defined(DIFFUSE_CUBEMAP)
+			diffuse	= textureCube(uDiffuseCubeMap, vVertexUVW);
+		#elif defined(DIFFUSE_MAP)
+			#ifdef DIFFUSE_MAP_LOD
+				diffuse = texturelod_texture2D(uDiffuseMap, vVertexUV, uDiffuseMapSize, 0.0, uDiffuseMapMaxAvailableLod, diffuse);
+			#else
+				diffuse = texture2D(uDiffuseMap, vVertexUV);
+			#endif
 		#endif
-	#endif
+	#endif // VERTEX_UV
 
-	#ifdef ALPHA_MAP
+	#if defined(VERTEX_UV) && defined(ALPHA_MAP)
 		diffuse.a = texture2D(uAlphaMap, vVertexUV).r;
-	#endif // ALPHA_MAP
+	#endif // VERTEX_UV && ALPHA_MAP
 
 	#ifdef ALPHA_THRESHOLD
 		if (diffuse.a < uAlphaThreshold)

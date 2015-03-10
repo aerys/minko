@@ -141,6 +141,21 @@ SceneParser::parse(const std::string&					filename,
 				   const std::vector<unsigned char>&	data,
 				   AssetLibraryPtr					    assetLibrary)
 {
+    AbstractSerializerParser::parse(filename, resolvedFilename, options, data, assetLibrary);
+
+    const auto scenePath = File::extractPrefixPathFromFilename(resolvedFilename);
+
+    auto& includePaths = options->includePaths();
+
+    auto includePathIt = std::find_if(
+        includePaths.begin(),
+        includePaths.end(),
+        [&](const std::string& includePath) -> bool { return includePath == scenePath; }
+    );
+
+    if (includePathIt == includePaths.end())
+        includePaths.push_back(scenePath);
+
     _dependency = Dependency::create();
 
 	_dependency->options(options);
@@ -161,7 +176,7 @@ SceneParser::parseHeader(const std::string&					filename,
 
         return;
     }
-    /*
+
     auto embedContentLoader = Loader::create();
     auto embedContentOptions = options->clone();
 
@@ -197,18 +212,6 @@ SceneParser::parseHeader(const std::string&					filename,
     embedContentLoader
         ->queue(filename)
         ->load();
-    */
-    auto embedContentOptions = options->clone();
-    auto d = std::vector<unsigned char>(data.begin() + MINKO_SCENE_HEADER_SIZE, data.end());
-
-    parseEmbedContent(
-        filename,
-        resolvedFilename,
-        embedContentOptions,
-        d,
-        assetLibrary
-    );
-
 }
 
 void

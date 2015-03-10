@@ -1011,21 +1011,21 @@ private:
 	std::vector<unsigned int> ConvertMeshMultiMaterial(const MeshGeometry& mesh, const Model& model, 
 		const aiMatrix4x4& node_global_transform)	
 	{
-		const MatIndexArray& mindices = mesh.GetMaterialIndices();
-		ai_assert(mindices.size());
-	
-		std::set<MatIndexArray::value_type> had;
-		std::vector<unsigned int> indices;
+        const MatIndexArray& mindices = mesh.GetMaterialIndices();
+        ai_assert(mindices.size());
+    
+        std::set<MatIndexArray::value_type> had;
+        std::vector<unsigned int> indices;
 
-		BOOST_FOREACH(MatIndexArray::value_type index, mindices) {
-			if(had.find(index) == had.end()) {
+        BOOST_FOREACH(MatIndexArray::value_type index, mindices) {
+            if (had.find(index) == had.end() && mesh.GetFaceIndexCounts().size() == mindices.size()) {
 
-				indices.push_back(ConvertMeshMultiMaterial(mesh, model, index, node_global_transform));
-				had.insert(index);
-			}
-		}
+                indices.push_back(ConvertMeshMultiMaterial(mesh, model, index, node_global_transform));
+                had.insert(index);
+            }
+        }
 
-		return indices;
+        return indices;
 	}
 
 
