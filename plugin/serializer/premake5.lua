@@ -5,13 +5,13 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	minko.plugin.enable("png")
 
 	files {
-		"include/**.hpp",
+		"src/**.hpp",
+		"src/**.h",
 		"src/**.cpp",
+		"src/**.c",
 		"include/**.hpp",
-		"lib/msgpack-c/**.h",
-		"lib/msgpack-c/**.hpp",
-		"lib/msgpack-c/**.c",
-		"lib/msgpack-c/**.cpp"
+		"lib/msgpack-c/src/**.cpp",
+		"lib/msgpack-c/include/**.hpp"
 	}
 
 	includedirs {

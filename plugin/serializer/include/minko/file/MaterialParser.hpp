@@ -25,50 +25,52 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace file
-	{
-		class MaterialParser :
-			public AbstractSerializerParser
-		{
-		private:
-			typedef std::shared_ptr<MaterialParser>								Ptr;
+    namespace file
+    {
+        class MaterialParser :
+            public AbstractSerializerParser
+        {
+        private:
+            typedef std::shared_ptr<MaterialParser>                             Ptr;
 
             typedef msgpack::type::tuple<uint, std::string>                     ComplexPropertyValue;
 			typedef msgpack::type::tuple<std::string, std::string>				BasicProperty;
 			typedef msgpack::type::tuple<std::string, ComplexPropertyValue>		ComplexProperty;
+            typedef msgpack::type::tuple<std::vector<ComplexProperty>,
+                                         std::vector<BasicProperty>>            SerializedMaterial;
 			typedef std::shared_ptr<material::Material>							MaterialPtr;
 			typedef std::shared_ptr<AssetLibrary>								AssetLibraryPtr;
 			typedef std::shared_ptr<Options>									OptionsPtr;
 			typedef std::shared_ptr<render::AbstractTexture>					TexturePtr;
 
-		private:
-			static std::map<uint, std::function<Any(std::tuple<uint, std::string&>&)>> _typeIdToReadFunction;
+        private:
+            static std::map<uint, std::function<Any(std::tuple<uint, std::string&>&)>> _typeIdToReadFunction;
 
-		public:
-			inline static
-			Ptr
-			create()
-			{
-				return std::shared_ptr<MaterialParser>(new MaterialParser());
-			}
+        public:
+            inline static
+            Ptr
+            create()
+            {
+                return std::shared_ptr<MaterialParser>(new MaterialParser());
+            }
 
-			void
-			parse(const std::string&				filename,
-				  const std::string&                resolvedFilename,
-				  OptionsPtr						options,
-				  const std::vector<unsigned char>&	data,
-				  AssetLibraryPtr					assetLibrary);
+            void
+            parse(const std::string&                filename,
+                  const std::string&                resolvedFilename,
+                  OptionsPtr                        options,
+                  const std::vector<unsigned char>& data,
+                  AssetLibraryPtr                   assetLibrary);
 
-		private:
-			void
-			deserializeComplexProperty(MaterialPtr			material,
-									   ComplexProperty		serializedProperty);
+        private:
+            void
+            deserializeComplexProperty(MaterialPtr      material,
+                                       ComplexProperty  serializedProperty);
 
-			void
-			deserializeBasicProperty(MaterialPtr		material,
-									 BasicProperty		serializedProperty);
+            void
+            deserializeBasicProperty(MaterialPtr        material,
+                                     BasicProperty      serializedProperty);
 
-			MaterialParser();
-		};
-	}
+            MaterialParser();
+        };
+    }
 }

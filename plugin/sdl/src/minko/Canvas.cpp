@@ -24,10 +24,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Options.hpp"
 #include "minko/log/Logger.hpp"
 #include "minko/SDLBackend.hpp"
-#include "minko/input/SDLKeyboard.hpp"
-#include "minko/input/SDLMouse.hpp"
-#include "minko/input/SDLJoystick.hpp"
-#include "minko/input/SDLTouch.hpp"
+#include "minko/scene/Node.hpp"
+#include "minko/component/SceneManager.hpp"
+#include "minko/component/Renderer.hpp"
+#include "minko/component/Transform.hpp"
+#include "minko/component/PerspectiveCamera.hpp"
 
 #if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
 # include "minko/file/FileProtocolWorker.hpp"
@@ -59,6 +60,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #endif
 
 using namespace minko;
+using namespace minko::component;
+using namespace minko::scene;
 using namespace minko::async;
 
 Canvas::Canvas(const std::string& name, const uint width, const uint height, int flags) :
@@ -75,9 +78,11 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, int
     _fileDropped(Signal<const std::string&>::create()),
     _joystickAdded(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
     _joystickRemoved(Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::create()),
-	_width(width),
-	_height(height),
-	_x(0),
+    _suspended(Signal<AbstractCanvas::Ptr>::create()),
+    _resumed(Signal<AbstractCanvas::Ptr>::create()),
+    _width(width),
+    _height(height),
+    _x(0),
     _y(0),
     _onWindow(false)
 {
@@ -99,16 +104,16 @@ Canvas::initialize()
     NSString* appLibraryFolder = [NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     NSString* appDocumentFolder = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
     NSArray* backupFolders = [NSArray arrayWithObjects: appLibraryFolder, appDocumentFolder, nil];
-
+    
     NSURL * url;
     for (NSString* folder in backupFolders)
     {
         url = [NSURL fileURLWithPath:folder];
-
+        
         assert([[NSFileManager defaultManager] fileExistsAtPath: [url path]]);
-
+        
         NSLog(@"Final URL: %@", url);
-
+        
         NSError *error = nil;
         BOOL success = [url setResourceValue: [NSNumber numberWithBool: YES]
                             forKey: NSURLIsExcludedFromBackupKey error: &error];
@@ -263,6 +268,30 @@ Canvas::initializeContext()
 
     if (!_context)
         throw std::runtime_error("Could not create context");
+}
+
+Canvas::NodePtr  
+Canvas::createScene()
+{
+    auto sceneManager = SceneManager::create(shared_from_this());
+    auto root = Node::create("root")
+        ->addComponent(sceneManager);
+
+    _camera = Node::create("camera")
+		->addComponent(Renderer::create(0x7f7f7fff))
+		->addComponent(Transform::create(
+			math::inverse(math::lookAt(math::vec3(0.f, 0.f, 3.f), math::vec3(), math::vec3(0.f, 1.f, 0.f)))
+		))
+		->addComponent(PerspectiveCamera::create(shared_from_this()->aspectRatio()));
+
+    root->addChild(_camera);
+
+    _resizedSlot = _resized->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+	{
+		_camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+	});
+
+    return root;
 }
 
 uint
@@ -431,7 +460,7 @@ Canvas::step()
 
             gotTextInput = true;
             int i = 0;
-
+            
             while (event.text.text[i] != '\0' && event.text.text[i] != 0)
             {
                 _keyboard->textInput()->execute(_keyboard, event.text.text[i++]);
@@ -448,14 +477,14 @@ Canvas::step()
         {
             _keyboard->keyDown()->execute(_keyboard);
 
-			auto keyCode = static_cast<input::Keyboard::KeyCode>(event.key.keysym.sym);
+            auto keyCode = static_cast<input::Keyboard::KeyCode>(event.key.keysym.sym);
 
             for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
             {
                 auto code = static_cast<input::Keyboard::Key>(i);
 
-				if (!_keyboard->hasKeyDownSignal(code))
-					continue;
+                if (!_keyboard->hasKeyDownSignal(code))
+                    continue;
 
                 auto pair = input::KeyMap::keyToKeyCodeMap.find(code);
 
@@ -469,20 +498,20 @@ Canvas::step()
         {
             _keyboard->keyUp()->execute(_keyboard);
 
-			auto keyCode = static_cast<input::Keyboard::KeyCode>(event.key.keysym.sym);
+            auto keyCode = static_cast<input::Keyboard::KeyCode>(event.key.keysym.sym);
 
-			for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
-			{
-				auto code = static_cast<input::Keyboard::Key>(i);
+            for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
+            {
+                auto code = static_cast<input::Keyboard::Key>(i);
 
-				if (!_keyboard->hasKeyUpSignal(code))
-					continue;
+                if (!_keyboard->hasKeyUpSignal(code))
+                    continue;
 
                 auto pair = input::KeyMap::keyToKeyCodeMap.find(code);
 
                 if (pair != input::KeyMap::keyToKeyCodeMap.end() && pair->second == keyCode)
-					_keyboard->keyUp(code)->execute(_keyboard, i);
-			}
+                    _keyboard->keyUp(code)->execute(_keyboard, i);
+            }
 
             for (uint i = 0; i < input::Keyboard::NUM_KEYS; ++i)
             {
@@ -498,19 +527,19 @@ Canvas::step()
 			int windowW;
 			int windowH;
 
-			SDL_GetWindowSize(_window, &windowW, &windowH);
+            SDL_GetWindowSize(_window, &windowW, &windowH);
 
-			auto x = event.motion.x;
-			auto y = event.motion.y;
+            auto x = event.motion.x;
+            auto y = event.motion.y;
 
-			if (windowW != _width || windowH != _height)
-			{
+            if (windowW != _width || windowH != _height)
+            {
                 x = int(float(_width) * float(event.motion.x) / float(windowW));
-				y = int(float(_height) * float(event.motion.y) / float(windowH));
-			}
+                y = int(float(_height) * float(event.motion.y) / float(windowH));
+            }
 
-			_mouse->x(x);
-			_mouse->y(y);
+            _mouse->x(x);
+            _mouse->y(y);
 
             _mouse->move()->execute(_mouse, event.motion.xrel, event.motion.yrel);
 
@@ -562,7 +591,7 @@ Canvas::step()
             break;
         }
 
-            // Touch events
+        // Touch events
         case SDL_FINGERDOWN:
         {
             auto x = event.tfinger.x * _width;
@@ -575,9 +604,9 @@ Canvas::step()
             _mouse->y((int)_touch->averageY());
 
             _touch->touchDown()->execute(
-                _touch,
-                id,
-                x,
+                _touch, 
+                id, 
+                x, 
                 y
             );
 
@@ -608,9 +637,9 @@ Canvas::step()
             _touch->removeTouch(id);
 
             _touch->touchUp()->execute(
-                _touch,
-                id,
-                x,
+                _touch, 
+                id, 
+                x, 
                 y
             );
 
@@ -625,11 +654,11 @@ Canvas::step()
                     dY < input::SDLTouch::TAP_MOVE_THRESHOLD)
                 {
                     _touch->tap()->execute(_touch, x, y);
-
+                    
                     dX = std::abs(x - _touch->lastTapX()) * 0.75f;
                     dY = std::abs(y - _touch->lastTapY()) * 0.75f;
                     dT = _relativeTime - _touch->lastTapTime();
-
+                    
                     if (_touch->lastTapTime() != -1.0f &&
                         dT < input::SDLTouch::DOUBLE_TAP_DELAY_THRESHOLD &&
                         dX < input::SDLTouch::TAP_MOVE_THRESHOLD &&
@@ -654,7 +683,7 @@ Canvas::step()
         }
 
         case SDL_FINGERMOTION:
-            {
+        {
             auto id = (int)(event.tfinger.fingerId);
             auto x = event.tfinger.x * _width;
             auto y = event.tfinger.y * _height;
@@ -663,39 +692,39 @@ Canvas::step()
 
             if (std::abs(_touch->lastTouchDownX() - x) > input::SDLTouch::TAP_MOVE_THRESHOLD || std::abs(_touch->lastTouchDownY() - y) > input::SDLTouch::TAP_MOVE_THRESHOLD)
                 _touch->lastTouchDownTime(-1.0f);
-
+            
             _touch->updateTouch(id, x, y);
             
             _mouse->x((int)_touch->averageX());
             _mouse->y((int)_touch->averageY());
 
             _touch->touchMove()->execute(
-                _touch,
+                _touch, 
                 id,
                 dx,
                 dy
             );
-
-                // Gestures
+            
+            // Gestures
 				if (event.tfinger.dx > input::SDLTouch::SWIPE_PRECISION)
-                {
-                    _touch->swipeRight()->execute(_touch);
-                }
+            {
+                _touch->swipeRight()->execute(_touch);
+            }
 
                 if (-event.tfinger.dx > input::SDLTouch::SWIPE_PRECISION)
-                {
-                    _touch->swipeLeft()->execute(_touch);
-                }
+            {
+                _touch->swipeLeft()->execute(_touch);
+            }
 
                 if (event.tfinger.dy > input::SDLTouch::SWIPE_PRECISION)
-                {
-                    _touch->swipeDown()->execute(_touch);
-                }
+            {
+                _touch->swipeDown()->execute(_touch);
+            }
 
                 if (-event.tfinger.dy > input::SDLTouch::SWIPE_PRECISION)
-                {
-                    _touch->swipeUp()->execute(_touch);
-                }
+            {
+                _touch->swipeUp()->execute(_touch);
+            }
 
             if (_touch->numTouches() == 2)
             {
@@ -708,9 +737,9 @@ Canvas::step()
                     {
                         hasTouch2 = true;
                         touch2 = _touch->touch(_touch->identifiers()[i]);
-                    }
                 }
-
+                }
+                
                 if (hasTouch2)
                 {
                     auto dX1 = (x - dx) - touch2.x;
@@ -718,10 +747,10 @@ Canvas::step()
 
                     auto dX2 = x - touch2.x;
                     auto dY2 = y - touch2.y;
-
+                    
                     auto dist1 = std::sqrt(std::pow(dX1, 2) + std::pow(dY1, 2));
                     auto dist2 = std::sqrt(std::pow(dX2, 2) + std::pow(dY2, 2));
-
+                    
                     auto deltaDist = dist2 - dist1;
 
                     if (deltaDist != 0.f)
@@ -844,6 +873,16 @@ Canvas::step()
         }
 #endif // MINKO_PLATFORM_HTML5
 
+#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+        case SDL_APP_DIDENTERBACKGROUND:
+            suspended()->execute(shared_from_this());
+            break;
+
+        case SDL_APP_DIDENTERFOREGROUND:
+            resumed()->execute(shared_from_this());
+            break;
+#endif // MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+
         default:
             break;
         }
@@ -893,7 +932,7 @@ void
 Canvas::quit()
 {
     _active = false;
-
+    
 #if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID)
     _audio = nullptr;
 #endif

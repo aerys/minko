@@ -135,9 +135,6 @@ namespace minko
             initImporter();
 
 			void
-			resetParser();
-
-            void
 			createSceneTree(NodePtr minkoNode, const aiScene* scene, aiNode* ainode, std::shared_ptr<AssetLibrary> assets);
 
             GeometryPtr
@@ -268,9 +265,6 @@ namespace minko
 
 			math::vec4
 			setColorProperty(MaterialPtr, const std::string& propertyName, const aiMaterial*, const char*, unsigned int, unsigned int, const math::vec4& defaultValue = math::vec4(0.f, 0.f, 0.f, 1.f));
-
-			void
-			disposeNodeMaps();
 
 			void
 			apply(NodePtr, const std::function<NodePtr(NodePtr)>&);

@@ -27,33 +27,22 @@ minko.plugin["http-worker"].enable = function (self)
 
 	defines { "CURL_STATICLIB" }
 
-    configuration { "not html5" }
-	    minko.plugin.links { "http-worker" }
+	configuration { "not html5" }
+		minko.plugin.links { "http-worker" }
+
 	configuration { "windows32 or windows64" }
 		links { "libcurl" }
 
-	configuration { "windows32", "debug" }
-		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/windows32/debug" }
+	configuration { "windows32" }
+		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/windows32" }
 		postbuildcommands {
-			minko.action.copy(minko.plugin.path("http-worker") .. "/lib/curl/lib/windows32/debug/*.dll")
+			minko.action.copy(minko.plugin.path("http-worker") .. "/lib/curl/lib/windows32/*.dll")
 		}
 
-	configuration { "windows32", "release" }
-		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/windows32/release" }
+	configuration { "windows64" }
+		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/windows64" }
 		postbuildcommands {
-			minko.action.copy(minko.plugin.path("http-worker") .. "/lib/curl/lib/windows32/release/*.dll")
-		}
-
-	configuration { "windows64", "debug" }
-		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/windows64/debug" }
-		postbuildcommands {
-			minko.action.copy(minko.plugin.path("http-worker") .. "/lib/curl/lib/windows64/debug/*.dll")
-		}
-
-	configuration { "windows64", "release" }
-		libdirs { minko.plugin.path("http-worker") .. "/lib/curl/lib/windows64/release" }
-		postbuildcommands {
-			minko.action.copy(minko.plugin.path("http-worker") .. "/lib/curl/lib/windows64/release/*.dll")
+			minko.action.copy(minko.plugin.path("http-worker") .. "/lib/curl/lib/windows64/*.dll")
 		}
 
 	configuration { "linux32 or linux64" }

@@ -53,19 +53,22 @@ namespace minko
                 typedef std::shared_ptr<PhysicsWorld>                               Ptr;
 
             private:
-                typedef std::shared_ptr<LinearIdAllocator>                          LinearIdAllocatorPtr;
-                typedef std::shared_ptr<AbstractComponent>                          AbsCmp;
-                typedef std::shared_ptr<scene::Node>                                NodePtr;
-                typedef std::shared_ptr<Collider>                                   ColliderPtr;
-                typedef std::shared_ptr<const Collider>                             ConstColliderPtr;
-                typedef std::shared_ptr<Renderer>                                   RendererPtr;
+                typedef std::shared_ptr<LinearIdAllocator>                                  LinearIdAllocatorPtr;
+                typedef std::shared_ptr<AbstractComponent>                                  AbsCmp;
+                typedef std::shared_ptr<scene::Node>                                        NodePtr;
+                typedef std::shared_ptr<Collider>                                           ColliderPtr;
+                typedef std::shared_ptr<const Collider>                                     ConstColliderPtr;
+                typedef std::shared_ptr<Renderer>                                           RendererPtr;
+                typedef std::shared_ptr<math::vec3>                                         Vector3Ptr;
+                typedef std::shared_ptr<math::mat4>                                         Matrix4x4Ptr;
+                typedef std::shared_ptr<math::quat>                                         QuaternionPtr;
 
-                typedef std::shared_ptr<btTransform>                                btTransformPtr;
-                typedef std::shared_ptr<btBroadphaseInterface>                      btBroadphasePtr;
-                typedef std::shared_ptr<btCollisionConfiguration>                   btCollisionConfigurationPtr;
-                typedef std::shared_ptr<btConstraintSolver>                         btConstraintSolverPtr;
-                typedef std::shared_ptr<btDispatcher>                               btDispatcherPtr;
-                typedef std::shared_ptr<btDynamicsWorld>                            btDynamicsWorldPtr;
+                typedef std::shared_ptr<btTransform>                                    btTransformPtr;
+                typedef std::shared_ptr<btBroadphaseInterface>                            btBroadphasePtr;
+                typedef std::shared_ptr<btCollisionConfiguration>                        btCollisionConfigurationPtr;
+                typedef std::shared_ptr<btConstraintSolver>                                btConstraintSolverPtr;
+                typedef std::shared_ptr<btDispatcher>                                    btDispatcherPtr;
+                typedef std::shared_ptr<btDynamicsWorld>                                btDynamicsWorldPtr;
 
                 class BulletCollider;
                 typedef std::shared_ptr<BulletCollider>                             BulletColliderPtr;

@@ -39,7 +39,7 @@ namespace minko
                 typedef std::shared_ptr<AbstractPhysicsShape>   AbsShapePtr;
 
             private:
-                const float                                     _mass;
+                float                                           _mass;
                 AbsShapePtr                                     _shape;
                 math::vec3*                                     _inertia;
                 float                                           _restitution;       // from bullet: best simulation results using zero restitution.
@@ -78,6 +78,13 @@ namespace minko
                 mass() const
                 {
                     return _mass;
+                }
+
+                inline
+                void
+                mass(float m)
+                {
+                    _mass = m;
                 }
 
                 inline

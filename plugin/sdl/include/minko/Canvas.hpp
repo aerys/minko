@@ -74,6 +74,7 @@ namespace minko
 
     private:
         typedef std::chrono::high_resolution_clock::time_point                  time_point;
+        typedef std::shared_ptr<scene::Node>                                    NodePtr;
         typedef std::shared_ptr<async::Worker>                                  WorkerPtr;
 
         std::string                                                             _name;
@@ -108,16 +109,21 @@ namespace minko
         // Events
         Signal<Ptr, float, float>::Ptr                                          _enterFrame;
         Signal<AbstractCanvas::Ptr, uint, uint>::Ptr                            _resized;
+        Signal<AbstractCanvas::Ptr, uint, uint>::Slot                           _resizedSlot;
         // File dropped
         Signal<const std::string&>::Ptr                                         _fileDropped;
         // Joystick events
         Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr      _joystickAdded;
         Signal<AbstractCanvas::Ptr, std::shared_ptr<input::Joystick>>::Ptr      _joystickRemoved;
 
+        Signal<AbstractCanvas::Ptr>::Ptr                                        _suspended;
+        Signal<AbstractCanvas::Ptr>::Ptr                                        _resumed;
+
         std::list<std::shared_ptr<async::Worker>>                               _activeWorkers;
         std::list<Any>                                                          _workerCompleteSlots;
 
         bool                                                                    _onWindow;
+        NodePtr                                                                 _camera;
 
     public:
         static inline
@@ -143,6 +149,9 @@ namespace minko
         {
             return _name;
         }
+
+        NodePtr
+        createScene();
 
         uint
         x();
@@ -265,6 +274,20 @@ namespace minko
         {
             return _fileDropped;
         }
+
+        inline
+        Signal<AbstractCanvas::Ptr>::Ptr
+        suspended()
+        {
+            return _suspended;
+        }
+
+        inline
+        Signal<AbstractCanvas::Ptr>::Ptr
+        resumed()
+        {
+            return _resumed;
+        }        
 
         inline
         minko::render::AbstractContext::Ptr

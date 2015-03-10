@@ -45,73 +45,73 @@ HTTPRequest::HTTPRequest(const std::string& url,
 void
 HTTPRequest::run()
 {
-    progress()->execute(0.0f);
+	progress()->execute(0.0f);
 
-    CURL* curl = curl_easy_init();
+	CURL* curl = curl_easy_init();
 
-    if (!curl)
-        throw std::runtime_error("cURL not enabled");
+	if (!curl)
+		throw std::runtime_error("cURL not enabled");
 
-    const auto url = _url;
+	const auto url = _url;
 
-    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
 
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &curlWriteHandler);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
+	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &curlWriteHandler);
+	curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
 
-    curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, &curlProgressHandler);
-    curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, this);
+	curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, &curlProgressHandler);
+	curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, this);
 
-    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
 
-    curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+	curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 
-    if (!_username.empty())
-    {
-        curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+	if (!_username.empty())
+	{
+		curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
 
-        const auto authenticationString = _username + ":" + _password;
+		const auto authenticationString = _username + ":" + _password;
 
-        curl_easy_setopt(curl, CURLOPT_USERPWD, authenticationString.c_str());
-    }
+		curl_easy_setopt(curl, CURLOPT_USERPWD, authenticationString.c_str());
+	}
 
-    curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+	curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 
-    curl_slist* headerList = nullptr;
+	curl_slist* headerList = nullptr;
 
-    const auto& additionalHeaders = _additionalHeaders;
+	const auto& additionalHeaders = _additionalHeaders;
 
-    if (!additionalHeaders.empty())
-    {
-        for (const auto& additionalHeader : additionalHeaders)
-        {
-            headerList = curl_slist_append(
-                headerList,
-                std::string(additionalHeader.first + ":" + additionalHeader.second).c_str()
-            );
-        }
+	if (!additionalHeaders.empty())
+	{
+		for (const auto& additionalHeader : additionalHeaders)
+		{
+			headerList = curl_slist_append(
+				headerList,
+				std::string(additionalHeader.first + ":" + additionalHeader.second).c_str()
+				);
+		}
 
-        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerList);
-    }
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerList);
+	}
 
-    CURLcode res = curl_easy_perform(curl);
+	CURLcode res = curl_easy_perform(curl);
 
-    curl_easy_cleanup(curl);
+	curl_easy_cleanup(curl);
 
-    if (headerList != nullptr)
-    {
-        curl_slist_free_all(headerList);
-    }
+	if (headerList != nullptr)
+	{
+		curl_slist_free_all(headerList);
+	}
 
-    if (res != CURLE_OK)
-    {
-        error()->execute(res);
-    }
-    else
-    {
-        progress()->execute(1.0f);
-        complete()->execute(_output);
-    }
+	if (res != CURLE_OK)
+	{
+		error()->execute(res);
+	}
+	else
+	{
+		progress()->execute(1.0f);
+		complete()->execute(_output);
+	}
 }
 
 size_t

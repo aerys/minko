@@ -3,72 +3,35 @@
     
 	"priority"	: "opaque",
 	
-    "attributeBindings" : {
-        "position"              : "geometry[${geometryId}].position",
-        "uv"                    : "geometry[${geometryId}].uv",
-		"boneIdsA"				: "geometry[${geometryId}].boneIdsA",
-		"boneIdsB"				: "geometry[${geometryId}].boneIdsB",		
-		"boneWeightsA"			: "geometry[${geometryId}].boneWeightsA",
-		"boneWeightsB"			: "geometry[${geometryId}].boneWeightsB"
+    "attributes" : {
+        "aPosition"       : "geometry[${geometryUuid}].position",
+        "aUV"             : "geometry[${geometryUuid}].uv",
+        "aBoneIdsA"       : "geometry[${geometryUuid}].boneIdsA",
+        "aBoneIdsB"       : "geometry[${geometryUuid}].boneIdsB",
+        "aBoneWeightsA"   : "geometry[${geometryUuid}].boneWeightsA",
+        "aBoneWeightsB"   : "geometry[${geometryUuid}].boneWeightsB"
     },
     
-    "uniformBindings"   : {
-        "pickingColor"          : "picking.color",
-        "modelToWorldMatrix"    : "transform.modelToWorldMatrix",
-        "worldToViewMatrix"     : { "property" : "camera.viewMatrix",           "source" : "renderer"},
-        "worldToScreenMatrix"   : { "property" : "camera.worldToScreenMatrix",  "source" : "renderer" },
-        "pickingProjection"     : { "property" : "picking.projection",          "source" : "renderer"},
-        "cameraProjection"      : { "property" : "camera.projectionMatrix",     "source" : "renderer"},
-		"boneMatrices"			: "geometry[${geometryId}].boneMatrices",
-		"numBones"				: "geometry[${geometryId}].numBones"
+    "uniforms"   : {
+        "uPickingColor"          : { "binding" : { "property" : "pickingColor", "source" : "root"} },
+        "uModelToWorldMatrix"    : "modelToWorldMatrix",
+        "uWorldToViewMatrix"     : { "binding" : { "property" : "viewMatrix", "source" : "renderer"} },
+        "uPickingProjection"     : { "binding" : { "property" : "pickingProjection",    "source" : "renderer"} },
+		"boneMatrices"			: "geometry[${geometryUuid}].boneMatrices",
+		"numBones"				: "geometry[${geometryUuid}].numBones"
     },
 
-    "macroBindings" : {
-        "HAS_POSITION"          : "geometry[${geometryId}].position",
-        "MODEL_TO_WORLD"        : "transform.modelToWorldMatrix",
-        "NUM_BONES"             : "geometry[${geometryId}].numBones",
-        "PICKING_COLOR"         : "picking.color"
-    },
-        
-    "stateBindings" : {
-        "blendMode"             : "material[${materialId}].blendMode",
-        "colorMask"             : "material[${materialId}].colorMask",
-        "depthMask"             : "material[${materialId}].depthMask",
-        "depthFunc"             : "material[${materialId}].depthFunc",
-        "triangleCulling"       : "material[${materialId}].triangleCulling",
-        "stencilFunc"           : "material[${materialId}].stencilFunc",
-        "stencilRef"            : "material[${materialId}].stencilRef",
-        "stencilMask"           : "material[${materialId}].stencilMask",
-        "stencilFailOp"         : "material[${materialId}].stencilFailOp",
-        "stencilZFailOp"        : "material[${materialId}].stencilZFailOp",
-        "stencilZPassOp"        : "material[${materialId}].stencilZPassOp",
-        "scissorBox.x"          : { "property" : "scissorBox.x",        "source" : "renderer" },
-        "scissorBox.y"          : { "property" : "scissorBox.y",        "source" : "renderer" },
-        "scissorBox.width"      : { "property" : "scissorBox.width",    "source" : "renderer" },
-        "scissorBox.height"     : { "property" : "scissorBox.height",   "source" : "renderer" },
-        "priority"              : "material[${materialId}].priority",
-        "zSort"                 : "material[${materialId}].zSort",
-        "layouts"               : "node.layouts"
-    },
-    
-    "blendMode"         : ["one", "zero"],
-    "colorMask"         : true,
-    "depthTest"         : [true, "less_equal"],
-    "triangleCulling"   : "none",
-    "stencilTest"       : ["always", 0, 1, ["keep", "keep", "keep"]],
-    "scissorTest"       : false,
-    "scissorBox"        : [0, 0, -1, -1],
-    "priority"          : "opaque",
-    "zSort"             : false,
-    
-    "samplerStates" : {
-        "diffuseMap"    : { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
+    "macros" : {
+        "HAS_POSITION"          : "geometry[${geometryUuid}].position",
+        "MODEL_TO_WORLD"        : "modelToWorldMatrix",
+        "SKINNING_NUM_BONES"    : { "binding" : "geometry[$geometryUuid].numBones", "type" : "int" },
+        "PICKING_COLOR"         : { "binding" : { "property" : "pickingColor", "source" : "root"} }
     },
     
 	"techniques" : [{
 		"passes"    : [{
-            "vertexShader" : "#pragma include('Picking.vertex.glsl')",
-            "fragmentShader" : "#pragma include('Picking.fragment.glsl')"
+             "vertexShader"      : "#pragma include \"Picking.vertex.glsl\"",
+             "fragmentShader"    : "#pragma include \"Picking.fragment.glsl\""
 		}]
 	}]
 }
