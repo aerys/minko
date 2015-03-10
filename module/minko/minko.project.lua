@@ -32,9 +32,10 @@ minko.project.library = function(name)
 
 	configuration { "vs*" }
 		defines {
-			"NOMINMAX",				-- do not define min/max as macro in windows.h
-			"_VARIADIC_MAX=10",		-- fix for faux variadic templates limited to 5 arguments by default
-			"_USE_MATH_DEFINES"		-- enable M_PI
+			"NOMINMAX",									    -- do not define min/max as macro in windows.h
+			"_VARIADIC_MAX=10",							    -- fix for faux variadic templates limited to 5 arguments by default
+			"_USE_MATH_DEFINES",						    -- enable M_PI
+			"_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS"		-- disable "<hash_map> is deprecated and will be REMOVED" error
 		}
 		flags {
 			--"NoMinimalRebuild"
