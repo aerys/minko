@@ -48,11 +48,13 @@ initializeShadowMapping(scene::Node::Ptr root, file::AssetLibrary::Ptr assets)
         )));
     root->addChild(lightNode);
 
-    auto debugDisplay1 = TextureDebugDisplay::create();
-    auto debugNode1 = scene::Node::create("debug");
-    debugDisplay1->initialize(assets, directionalLight->shadowMap());
-    debugNode1->addComponent(debugDisplay1);
-    root->addChild(debugNode1);
+    if (directionalLight->shadowMappingEnabled())
+    {
+        auto debugDisplay = TextureDebugDisplay::create();
+
+        debugDisplay->initialize(assets, directionalLight->shadowMap());
+        debugNode->addComponent(debugDisplay);
+    }
 
     auto lightNode2 = scene::Node::create()
         ->addComponent(directionalLight2)
@@ -127,7 +129,7 @@ int main(int argc, char** argv)
             ->addComponent(Surface::create(
                 geometry::TeapotGeometry::create(sceneManager->assets()->context())->computeNormals(),
                 material::BasicMaterial::create()
-                    ->diffuseColor(math::vec4(1.f, 1.f, 1.f, 1.f)),
+                    ->diffuseColor(math::vec4(.8f, 1.f, .8f, 1.f)),
                 sceneManager->assets()->effect(effectName)
             ))
             ->addComponent(Transform::create(math::scale(math::vec3(.3f))));
@@ -226,7 +228,7 @@ int main(int argc, char** argv)
             };
 
             directionalLight->computeShadowProjection(p->viewMatrix(), p->projectionMatrix());
-            for (auto i = 0; i < directionalLight->numShadowCascades(); ++i)
+            for (auto i = 0u; i < directionalLight->numShadowCascades(); ++i)
             {
                 if (frustums[i] && debugNode->hasComponent(frustums[i]))
                     debugNode->removeComponent(frustums[i]);
@@ -246,14 +248,20 @@ int main(int argc, char** argv)
             if (directionalLight->shadowMappingEnabled())
                 directionalLight->disableShadowMapping(k->keyIsDown(input::Keyboard::Key::SHIFT));
             else
+            {
                 directionalLight->enableShadowMapping();
+                cameraMoved = true;
+            }
         }
         if (k->keyIsDown(input::Keyboard::Key::Z))
         {
             if (directionalLight2->shadowMappingEnabled())
                 directionalLight2->disableShadowMapping(k->keyIsDown(input::Keyboard::Key::SHIFT));
             else
+            {
                 directionalLight2->enableShadowMapping();
+                cameraMoved = true;
+            }
         }
 
         if (cameraMoved)
@@ -269,8 +277,6 @@ int main(int argc, char** argv)
     {
         camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
     });
-
-    projectionAuto = true;
 
     auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
     {

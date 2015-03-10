@@ -28,6 +28,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Program.hpp"
 #include "minko/render/States.hpp"
 #include "minko/render/VertexAttribute.hpp"
+#include "minko/Flyweight.hpp"
 
 namespace minko
 {
@@ -185,10 +186,10 @@ namespace minko
 			}
 
             std::pair<std::shared_ptr<Program>, const ProgramSignature*>
-            selectProgram(const std::unordered_map<std::string, std::string>&   translatedPropertyNames,
-						  const data::Store&	                            	targetData,
-						  const data::Store&	                            	rendererData,
-                          const data::Store&	                            	rootData);
+            selectProgram(const EffectVariables&    translatedPropertyNames,
+						  const data::Store&    	targetData,
+						  const data::Store&		rendererData,
+                          const data::Store&		rootData);
 
 			template <typename... T>
 			void

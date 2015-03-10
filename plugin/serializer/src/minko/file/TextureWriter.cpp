@@ -36,7 +36,7 @@ using namespace minko;
 using namespace minko::file;
 using namespace minko::render;
 
-std::unordered_map<TextureFormat, TextureWriter::FormatWriterFunction> TextureWriter::_formatWriterFunctions = 
+std::unordered_map<TextureFormat, TextureWriter::FormatWriterFunction, Hash<TextureFormat>> TextureWriter::_formatWriterFunctions = 
 {
     { TextureFormat::RGB, std::bind(writeRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
     { TextureFormat::RGBA, std::bind(writeRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
@@ -112,7 +112,7 @@ TextureWriter::embed(AssetLibraryPtr               assetLibrary,
         else
         {
             auto length = blobStream.str().size() - offset;
-    
+
             formatHeaderData.push_back(msgpack::type::make_tuple<int, int, int>(
                 static_cast<int>(textureFormat),
                 offset,

@@ -77,6 +77,10 @@ namespace minko
             struct Block
             {
                 T bindingMap;
+
+                virtual
+                ~Block()
+                {}
             };
 
             struct StateBlock : public Block<data::BindingMap>
@@ -103,10 +107,7 @@ namespace minko
 
             typedef Block<data::BindingMap> AttributeBlock;
             typedef Block<data::MacroBindingMap> MacroBlock;
-
-            struct UniformBlock : public Block<data::BindingMap>
-            {
-            };
+            typedef Block<data::BindingMap> UniformBlock;
 
             struct Scope
             {
@@ -395,7 +396,7 @@ namespace minko
                             StateBlock&            stateBlock);
 
             void
-            parseSamplerStates(const Json::Value& node, 
+            parseSamplerStates(const Json::Value& node,
                                const Scope& scope,
                                const std::string uniformName,
                                data::Provider::Ptr defaultValues,

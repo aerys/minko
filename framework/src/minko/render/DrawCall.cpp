@@ -30,21 +30,38 @@ using namespace minko::render;
 const unsigned int DrawCall::MAX_NUM_TEXTURES       = 8;
 const unsigned int DrawCall::MAX_NUM_VERTEXBUFFERS  = 8;
 
-DrawCall::DrawCall(std::shared_ptr<Pass>  pass,
-                   const StringMap&       variables,
+DrawCall::DrawCall(uint                   batchId,
+                   std::shared_ptr<Pass>  pass,
+                   const EffectVariables& variables,
                    data::Store&           rootData,
                    data::Store&           rendererData,
                    data::Store&           targetData) :
+    _batchId(batchId),
     _pass(pass),
     _variables(variables),
     _rootData(rootData),
     _rendererData(rendererData),
     _targetData(targetData),
-    _target(nullptr),
     _indexBuffer(nullptr),
     _firstIndex(nullptr),
     _numIndices(nullptr),
-    _zSorted(nullptr),
+    _priority(&States::DEFAULT_PRIORITY),
+    _zSorted(&States::DEFAULT_ZSORTED),
+    _blendingSourceFactor(&States::DEFAULT_BLENDING_SOURCE),
+    _blendingDestinationFactor(&States::DEFAULT_BLENDING_DESTINATION),
+    _colorMask(&States::DEFAULT_COLOR_MASK),
+    _depthMask(&States::DEFAULT_DEPTH_MASK),
+    _depthFunc(&States::DEFAULT_DEPTH_FUNCTION),
+    _triangleCulling(&States::DEFAULT_TRIANGLE_CULLING),
+    _stencilFunction(&States::DEFAULT_STENCIL_FUNCTION),
+    _stencilReference(&States::DEFAULT_STENCIL_REFERENCE),
+    _stencilMask(&States::DEFAULT_STENCIL_MASK),
+    _stencilFailOp(&States::DEFAULT_STENCIL_FAIL_OPERATION),
+    _stencilZFailOp(&States::DEFAULT_STENCIL_ZFAIL_OPERATION),
+    _stencilZPassOp(&States::DEFAULT_STENCIL_ZPASS_OPERATION),
+    _scissorTest(&States::DEFAULT_SCISSOR_TEST),
+    _scissorBox(&States::DEFAULT_SCISSOR_BOX),
+    _target(&States::DEFAULT_TARGET),
     _centerPosition(),
     _modelToWorldMatrix(nullptr),
     _worldToScreenMatrix(nullptr),
@@ -109,7 +126,7 @@ DrawCall::bindPositionalMembers()
     else
     {
         _modelToWorldMatrixPropertyAddedSlot = _targetData.propertyAdded("modelToWorldMatrix").connect(
-            [&](data::Store&, std::shared_ptr<data::Provider>, const std::string&)
+            [&](data::Store&, std::shared_ptr<data::Provider>, const data::Provider::PropertyName&)
         {
             _modelToWorldMatrix = _targetData.getPointer<math::mat4>("modelToWorldMatrix");
         });
@@ -120,7 +137,7 @@ DrawCall::bindPositionalMembers()
     else
     {
         _worldToScreenMatrixPropertyAddedSlot = _rendererData.propertyAdded("worldToScreenMatrix").connect(
-            [&](data::Store& store, std::shared_ptr<data::Provider> data, const std::string& propertyName)
+            [&](data::Store& store, std::shared_ptr<data::Provider> data, const data::Provider::PropertyName&)
         {
             _worldToScreenMatrix = _rendererData.getPointer<math::mat4>("worldToScreenMatrix");
         });
@@ -128,13 +145,13 @@ DrawCall::bindPositionalMembers()
 
     // Removed slot
     _modelToWorldMatrixPropertyRemovedSlot = _targetData.propertyRemoved("modelToWorldMatrix").connect(
-        [&](data::Store&, std::shared_ptr<data::Provider>, const std::string&)
+        [&](data::Store&, std::shared_ptr<data::Provider>, const data::Provider::PropertyName&)
     {
         _modelToWorldMatrix = nullptr;
     });
 
     _worldToScreenMatrixPropertyRemovedSlot = _rendererData.propertyRemoved("worldToScreenMatrix").connect(
-        [&](data::Store& store, std::shared_ptr<data::Provider> data, const std::string& propertyName)
+        [&](data::Store& store, std::shared_ptr<data::Provider> data, const data::Provider::PropertyName&)
     {
         _worldToScreenMatrix = nullptr;
     });
@@ -559,6 +576,31 @@ DrawCall::bindIndexBuffer()
         _numIndices = const_cast<uint*>(_targetData.getPointer<uint>(numIndicesProperty));
 }
 
+data::ResolvedBinding*
+DrawCall::bindState(const std::string&        					            stateName,
+                    const std::unordered_map<std::string, data::Binding>&     bindings,
+                    const data::Store&                                        defaultValues)
+{
+    auto binding = resolveBinding(
+        stateName,
+        bindings
+    );
+
+    if (binding == nullptr)
+    {
+        setStateValueFromStore(stateName, defaultValues);
+    }
+    else
+    {
+        if (!binding->store.hasProperty(binding->propertyName))
+            setStateValueFromStore(stateName, defaultValues);
+        else
+            setStateValueFromStore(stateName, binding->store);
+    }
+
+    return binding;
+}
+
 std::array<data::ResolvedBinding*, 17>
 DrawCall::bindStates(const std::unordered_map<std::string, data::Binding>&  stateBindings,
                      const data::Store&                                     defaultValues)
@@ -707,7 +749,10 @@ DrawCall::resolveBinding(const std::string&                                     
 
     const data::Binding* binding = nullptr;
     std::string bindingPropertyName;
-    if (bindings.count(bindingName) != 0)
+
+    // Some OpenGL drivers will provide uniform array names without the "[0]" suffix. In order to properly match uniform array
+    // bindings, we will check for bindings with 1) the original name first but also 2) the named with the "[0]" suffix appened.
+    if (bindings.count(bindingName) != 0 || (!isArray && bindings.count(bindingName += "[0]") != 0))
     {
         binding = &bindings.at(bindingName);
         bindingPropertyName = binding->propertyName;

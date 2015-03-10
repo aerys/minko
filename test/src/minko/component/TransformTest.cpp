@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoTests.hpp"
 
 using namespace minko;
-using namespace minko::math;
 using namespace minko::component;
 using namespace minko::scene;
 
@@ -81,7 +80,7 @@ TEST_F(TransformTest, ModelToWorldUpdate)
 
 	auto updated1 = false;
 	auto _ = n1->data().propertyChanged("modelToWorldMatrix").connect(
-		[&](data::Store& c, data::Provider::Ptr p, const std::string& propertyName)
+		[&](data::Store& c, data::Provider::Ptr p, const data::Provider::PropertyName& propertyName)
 		{
 			updated1 = true;
 		}
@@ -89,7 +88,7 @@ TEST_F(TransformTest, ModelToWorldUpdate)
 
 	auto updated2 = false;
 	auto __ = n2->data().propertyChanged("modelToWorldMatrix").connect(
-        [&](data::Store& c, data::Provider::Ptr p, const std::string& propertyName)
+        [&](data::Store& c, data::Provider::Ptr p, const data::Provider::PropertyName& propertyName)
 		{
 			updated2 = true;
 		}
@@ -121,7 +120,7 @@ TEST_F(TransformTest, ModelToWorldMultipleUpdates)
 
 	auto updated1 = false;
 	auto _ = n1->data().propertyChanged("modelToWorldMatrix").connect(
-        [&](data::Store& c, data::Provider::Ptr p, const std::string& propertyName)
+        [&](data::Store& c, data::Provider::Ptr p, const data::Provider::PropertyName& propertyName)
 		{
 			updated1 = true;
 		}
@@ -129,7 +128,7 @@ TEST_F(TransformTest, ModelToWorldMultipleUpdates)
 
 	auto updated2 = false;
 	auto __ = n3->data().propertyChanged("modelToWorldMatrix").connect(
-        [&](data::Store& c, data::Provider::Ptr p, const std::string& propertyName)
+        [&](data::Store& c, data::Provider::Ptr p, const data::Provider::PropertyName& propertyName)
 		{
 			updated2 = true;
 		}
@@ -162,7 +161,7 @@ TEST_F(TransformTest, ModelToWorldMultipleUpdatesMultipleFrames)
 
 	auto updated1 = false;
 	auto _ = n1->data().propertyChanged("modelToWorldMatrix").connect(
-        [&](data::Store& c, data::Provider::Ptr p, const std::string& propertyName)
+        [&](data::Store& c, data::Provider::Ptr p, const data::Provider::PropertyName& propertyName)
 		{
 			updated1 = true;
 		}
@@ -170,7 +169,7 @@ TEST_F(TransformTest, ModelToWorldMultipleUpdatesMultipleFrames)
 
 	auto updated2 = false;
 	auto __ = n3->data().propertyChanged("modelToWorldMatrix").connect(
-        [&](data::Store& c, data::Provider::Ptr p, const std::string& propertyName)
+        [&](data::Store& c, data::Provider::Ptr p, const data::Provider::PropertyName& propertyName)
 		{
 			updated2 = true;
 		}
@@ -205,7 +204,7 @@ TEST_F(TransformTest, NodeHierarchyTransformIssueWithBlockingNode)
 	p2->addComponent(Transform::create());
 	auto p1 = Node::create("f");
 	//p1->addComponent(Transform::create());
-	
+
 
 	auto n5 = Node::create("cb");
 	n5->addComponent(Transform::create());
@@ -275,7 +274,7 @@ TEST_F(TransformTest, NodeHierarchyTransformIssueWithoutBlockingNode)
 	n3->addComponent(Transform::create(
         math::scale(math::vec3(5.f)) * math::translate(math::vec3(4.f, 0.f, 0.f))
 	));
-	
+
     n4->addComponent(Transform::create(
         math::scale(math::vec3(10.f)) * math::translate(math::vec3(5.f, 0.f, 0.f))
 	));

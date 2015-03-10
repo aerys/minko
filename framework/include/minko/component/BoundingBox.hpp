@@ -31,7 +31,7 @@ namespace minko
 	namespace component
 	{
         class Surface;
-        
+
 		class BoundingBox :
 			public AbstractComponent
 		{
@@ -42,7 +42,7 @@ namespace minko
 			typedef std::shared_ptr<scene::Node>		NodePtr;
 			typedef std::shared_ptr<AbstractComponent>	AbsCmpPtr;
             typedef std::shared_ptr<data::Provider>	    ProviderPtr;
-            typedef const std::string&                  String;
+            typedef const Flyweight<std::string>&       String;
 
 		private:
 			const bool										_fixed;
@@ -148,7 +148,7 @@ namespace minko
 
 			void
 			updateWorldSpaceBox();
-            
+
             void
             computeBox(const std::vector<std::shared_ptr<component::Surface>>& surfaces, math::vec3& min, math::vec3& max);
 		};

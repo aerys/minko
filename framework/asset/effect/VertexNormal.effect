@@ -13,7 +13,7 @@
 	"uniforms" : {
         "uModelToWorldMatrix"	: "modelToWorldMatrix",
 		"uWorldToScreenMatrix"	: { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
-		"uBoneMatrices"			: "geometry[${geometryUuid}].boneMatrices",
+		"uBoneMatrices[0]"		: "geometry[${geometryUuid}].boneMatrices",
 		"uNumBones"				: "geometry[${geometryUuid}].numBones",
         "uPopLod"               : "geometry[${geometryUuid}].popLod",
         "uPopBlendingLod"       : "geometry[${geometryUuid}].popBlendingLod",
