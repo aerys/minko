@@ -18,10 +18,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/file/WriterOptions.hpp"
+#include "minko/geometry/Geometry.hpp"
+#include "minko/material/Material.hpp"
+#include "minko/render/AbstractTexture.hpp"
 #include "minko/render/MipFilter.hpp"
 
 using namespace minko;
 using namespace minko::file;
+using namespace minko::geometry;
+using namespace minko::material;
 using namespace minko::math;
 using namespace minko::render;
 using namespace minko::serialize;
@@ -35,7 +40,12 @@ const unsigned int WriterOptions::EmbedMode::All        = Geometry | Material | 
 WriterOptions::WriterOptions() :
     _addBoundingBoxes(false),
     _embedMode(EmbedMode::All),
-    _outputAssetUriFunction([=](const std::string& str) -> std::string { return str; }),
+    _geometryUriFunction([](const std::string& str) -> std::string { return str; }),
+    _materialUriFunction([](const std::string& str) -> std::string { return str; }),
+    _textureUriFunction([](const std::string& str) -> std::string { return str; }),
+    _geometryFunction([](const std::string& filename, Geometry::Ptr geometry) -> Geometry::Ptr { return geometry; }),
+    _materialFunction([](const std::string& filename, Material::Ptr material) -> Material::Ptr { return material; }),
+    _textureFunction([](const std::string& filename, AbstractTexture::Ptr texture) -> AbstractTexture::Ptr { return texture; }),
     _imageFormat(ImageFormat::PNG),
     _textureFormats(),
     _compressTexture(true),
