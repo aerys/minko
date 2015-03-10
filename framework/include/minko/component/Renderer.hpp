@@ -344,6 +344,9 @@ namespace minko
 					 const std::string& effectTechnique	= "default",
 					 float				priority		= 0.f);
 
+            void
+            reset();
+
 			void
 			initializePostProcessingGeometry();
 

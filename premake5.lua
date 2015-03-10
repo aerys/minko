@@ -171,7 +171,7 @@ solution "minko"
 		-- include 'example/joystick'
 		-- include 'example/keyboard'
 		-- include 'example/leap-motion'
-		-- include 'example/light'
+		include 'example/light'
 		-- include 'example/line-geometry'
 		-- include 'example/lua-scripts'
 		-- include 'example/multi-surfaces'

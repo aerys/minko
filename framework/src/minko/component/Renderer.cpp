@@ -113,6 +113,14 @@ Renderer::clone(const CloneOption& option)
 */
 
 void
+Renderer::reset()
+{
+    _toCollect.clear();
+    _surfaceToDrawCallIterator.clear();
+    _drawCallPool.clear();
+}
+
+void
 Renderer::initializePostProcessingGeometry()
 {
 	auto context = _sceneManager->assets()->context();
@@ -226,6 +234,7 @@ Renderer::addedHandler(std::shared_ptr<Node> node,
 	), std::numeric_limits<float>::max());
 
 	//_lightMaskFilter->root(target->root());
+    reset();
 
 	rootDescendantAddedHandler(nullptr, target->root(), nullptr);
 }
@@ -313,14 +322,17 @@ Renderer::componentRemovedHandler(std::shared_ptr<Node>					node,
 {
 	auto surface = std::dynamic_pointer_cast<Surface>(cmp);
 	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(cmp);
+    auto perspectiveCamera = std::dynamic_pointer_cast<PerspectiveCamera>(cmp);
 
 	if (surface)
 	{
 		unwatchSurface(surface, target);
 		removeSurface(surface);
 	}
-	else if (sceneManager)
-		setSceneManager(nullptr);
+    else if (sceneManager)
+        setSceneManager(nullptr);
+    else if (perspectiveCamera)
+        _worldToScreenMatrixPropertyChangedSlot = nullptr;
 }
 
 void
