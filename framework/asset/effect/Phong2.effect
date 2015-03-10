@@ -1,0 +1,375 @@
+// phong effect
+{
+	"name"	: "phong",
+		
+	"attributeBindings"	: {
+		"position"				: "geometry[${geometryId}].position",
+		"uv"					: "geometry[${geometryId}].uv",
+		"normal"				: "geometry[${geometryId}].normal",
+		"tangent"				: "geometry[${geometryId}].tangent",
+		"boneIdsA"				: "geometry[${geometryId}].boneIdsA",
+		"boneIdsB"				: "geometry[${geometryId}].boneIdsB",		
+		"boneWeightsA"			: "geometry[${geometryId}].boneWeightsA",
+		"boneWeightsB"			: "geometry[${geometryId}].boneWeightsB"
+	},
+	
+	"uniformBindings"	: {
+        "uvScale"           	: { "property" : "material[${materialId}].uvScale", "default" : [1.0, 1.0] },
+        "uvOffset"           	: { "property" : "material[${materialId}].uvOffset", "default" : [0.0, 0.0] },
+		"diffuseColor"			: "material[${materialId}].diffuseColor",
+		"diffuseMap"			: "material[${materialId}].diffuseMap",
+		"alphaMap"				: "material[${materialId}].alphaMap",
+		"alphaThreshold"		: "material[${materialId}].alphaThreshold",
+		"normalMap"				: "material[${materialId}].normalMap",
+		"specularMap"			: "material[${materialId}].specularMap",
+		"specularColor"			: { "property" : "material[${materialId}].specularColor", "default" : [ 1.0, 1.0, 1.0, 1.0 ] },
+		"environmentMap2d"		: "material[${materialId}].environmentMap2d",
+		"environmentMap2dType"	: "material[${materialId}].environmentMap2dType",
+		"environmentCubemap"	: "material[${materialId}].environmentCubemap",
+		"environmentAlpha"		: "material[${materialId}].environmentAlpha",
+		"shininess"				: "material[${materialId}].shininess",
+		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
+		"worldToScreenMatrix"	: { "property" : "camera.worldToScreenMatrix", 		"source" : "renderer" },
+		"cameraPosition"		: { "property" : "camera.position", 				"source" : "renderer" },
+		"boneMatrices"			: "geometry[${geometryId}].boneMatrices",
+		"numBones"				: "geometry[${geometryId}].numBones",
+		"ambientLights"			: { "property" : "ambientLights",					"source" : "root" },
+		"directionalLights"		: { "property" : "directionalLights",				"source" : "root" },
+		"spotLights"			: { "property" : "spotLights",						"source" : "root" },
+		"pointLights"			: { "property" : "pointLights",						"source" : "root" },
+		"fogColor"				: "material[${materialId}].fogColor",
+		"fogDensity"			: "material[${materialId}].fogDensity",
+		"fogStart"				: "material[${materialId}].fogStart",
+		"fogEnd"				: "material[${materialId}].fogEnd",
+		"ambient0_color"		: { "property": "ambientLights[0].color", "source": "root" },
+		"ambient1_color"		: { "property": "ambientLights[1].color", "source": "root" },
+		"ambient2_color"		: { "property": "ambientLights[2].color", "source": "root" },
+		"ambient3_color"		: { "property": "ambientLights[3].color", "source": "root" },
+		"ambient4_color"		: { "property": "ambientLights[4].color", "source": "root" },
+		"ambient5_color"		: { "property": "ambientLights[5].color", "source": "root" },
+		"ambient6_color"		: { "property": "ambientLights[6].color", "source": "root" },
+		"ambient7_color"		: { "property": "ambientLights[7].color", "source": "root" },
+		"ambient0_ambient"		: { "property": "ambientLights[0].ambient", "source": "root" },
+		"ambient1_ambient"		: { "property": "ambientLights[1].ambient", "source": "root" },
+		"ambient2_ambient"		: { "property": "ambientLights[2].ambient", "source": "root" },
+		"ambient3_ambient"		: { "property": "ambientLights[3].ambient", "source": "root" },
+		"ambient4_ambient"		: { "property": "ambientLights[4].ambient", "source": "root" },
+		"ambient5_ambient"		: { "property": "ambientLights[5].ambient", "source": "root" },
+		"ambient6_ambient"		: { "property": "ambientLights[6].ambient", "source": "root" },
+		"ambient7_ambient"		: { "property": "ambientLights[7].ambient", "source": "root" },
+		"directional0_color"	: { "property": "directionalLights[0].color", "source": "root" },
+		"directional1_color"	: { "property": "directionalLights[1].color", "source": "root" },
+		"directional2_color"	: { "property": "directionalLights[2].color", "source": "root" },
+		"directional3_color"	: { "property": "directionalLights[3].color", "source": "root" },
+		"directional4_color"	: { "property": "directionalLights[4].color", "source": "root" },
+		"directional5_color"	: { "property": "directionalLights[5].color", "source": "root" },
+		"directional6_color"	: { "property": "directionalLights[6].color", "source": "root" },
+		"directional7_color"	: { "property": "directionalLights[7].color", "source": "root" },
+		"directional0_diffuse"	: { "property": "directionalLights[0].diffuse", "source": "root" },
+		"directional1_diffuse"	: { "property": "directionalLights[1].diffuse", "source": "root" },
+		"directional2_diffuse"	: { "property": "directionalLights[2].diffuse", "source": "root" },
+		"directional3_diffuse"	: { "property": "directionalLights[3].diffuse", "source": "root" },
+		"directional4_diffuse"	: { "property": "directionalLights[4].diffuse", "source": "root" },
+		"directional5_diffuse"	: { "property": "directionalLights[5].diffuse", "source": "root" },
+		"directional6_diffuse"	: { "property": "directionalLights[6].diffuse", "source": "root" },
+		"directional7_diffuse"	: { "property": "directionalLights[7].diffuse", "source": "root" },
+		"directional0_specular"	: { "property": "directionalLights[0].specular", "source": "root" },
+		"directional1_specular"	: { "property": "directionalLights[1].specular", "source": "root" },
+		"directional2_specular"	: { "property": "directionalLights[2].specular", "source": "root" },
+		"directional3_specular"	: { "property": "directionalLights[3].specular", "source": "root" },
+		"directional4_specular"	: { "property": "directionalLights[4].specular", "source": "root" },
+		"directional5_specular"	: { "property": "directionalLights[5].specular", "source": "root" },
+		"directional6_specular"	: { "property": "directionalLights[6].specular", "source": "root" },
+		"directional7_specular"	: { "property": "directionalLights[7].specular", "source": "root" },
+		"directional0_direction": { "property": "directionalLights[0].direction", "source": "root" },
+		"directional1_direction": { "property": "directionalLights[1].direction", "source": "root" },
+		"directional2_direction": { "property": "directionalLights[2].direction", "source": "root" },
+		"directional3_direction": { "property": "directionalLights[3].direction", "source": "root" },
+		"directional4_direction": { "property": "directionalLights[4].direction", "source": "root" },
+		"directional5_direction": { "property": "directionalLights[5].direction", "source": "root" },
+		"directional6_direction": { "property": "directionalLights[6].direction", "source": "root" },
+		"directional7_direction": { "property": "directionalLights[7].direction", "source": "root" },
+		"point0_color": { "property": "pointLights[0].color", "source": "root" },
+		"point1_color": { "property": "pointLights[1].color", "source": "root" },
+		"point2_color": { "property": "pointLights[2].color", "source": "root" },
+		"point3_color": { "property": "pointLights[3].color", "source": "root" },
+		"point4_color": { "property": "pointLights[4].color", "source": "root" },
+		"point5_color": { "property": "pointLights[5].color", "source": "root" },
+		"point6_color": { "property": "pointLights[6].color", "source": "root" },
+		"point7_color": { "property": "pointLights[7].color", "source": "root" },
+		"point0_diffuse": { "property": "pointLights[0].diffuse", "source": "root" },
+		"point1_diffuse": { "property": "pointLights[1].diffuse", "source": "root" },
+		"point2_diffuse": { "property": "pointLights[2].diffuse", "source": "root" },
+		"point3_diffuse": { "property": "pointLights[3].diffuse", "source": "root" },
+		"point4_diffuse": { "property": "pointLights[4].diffuse", "source": "root" },
+		"point5_diffuse": { "property": "pointLights[5].diffuse", "source": "root" },
+		"point6_diffuse": { "property": "pointLights[6].diffuse", "source": "root" },
+		"point7_diffuse": { "property": "pointLights[7].diffuse", "source": "root" },
+		"point0_specular": { "property": "pointLights[0].specular", "source": "root" },
+		"point1_specular": { "property": "pointLights[1].specular", "source": "root" },
+		"point2_specular": { "property": "pointLights[2].specular", "source": "root" },
+		"point3_specular": { "property": "pointLights[3].specular", "source": "root" },
+		"point4_specular": { "property": "pointLights[4].specular", "source": "root" },
+		"point5_specular": { "property": "pointLights[5].specular", "source": "root" },
+		"point6_specular": { "property": "pointLights[6].specular", "source": "root" },
+		"point7_specular": { "property": "pointLights[7].specular", "source": "root" },
+		"point0_attenuationCoeffs": { "property": "pointLights[0].attenuationCoeffs", "source": "root" },
+		"point1_attenuationCoeffs": { "property": "pointLights[1].attenuationCoeffs", "source": "root" },
+		"point2_attenuationCoeffs": { "property": "pointLights[2].attenuationCoeffs", "source": "root" },
+		"point3_attenuationCoeffs": { "property": "pointLights[3].attenuationCoeffs", "source": "root" },
+		"point4_attenuationCoeffs": { "property": "pointLights[4].attenuationCoeffs", "source": "root" },
+		"point5_attenuationCoeffs": { "property": "pointLights[5].attenuationCoeffs", "source": "root" },
+		"point6_attenuationCoeffs": { "property": "pointLights[6].attenuationCoeffs", "source": "root" },
+		"point7_attenuationCoeffs": { "property": "pointLights[7].attenuationCoeffs", "source": "root" },
+		"point0_position": { "property": "pointLights[0].position", "source": "root" },
+		"point1_position": { "property": "pointLights[1].position", "source": "root" },
+		"point2_position": { "property": "pointLights[2].position", "source": "root" },
+		"point3_position": { "property": "pointLights[3].position", "source": "root" },
+		"point4_position": { "property": "pointLights[4].position", "source": "root" },
+		"point5_position": { "property": "pointLights[5].position", "source": "root" },
+		"point6_position": { "property": "pointLights[6].position", "source": "root" },
+		"point7_position": { "property": "pointLights[7].position", "source": "root" },
+		"spot0_direction": { "property": "spotLights[0].direction", "source": "root" },
+		"spot1_direction": { "property": "spotLights[1].direction", "source": "root" },
+		"spot2_direction": { "property": "spotLights[2].direction", "source": "root" },
+		"spot3_direction": { "property": "spotLights[3].direction", "source": "root" },
+		"spot4_direction": { "property": "spotLights[4].direction", "source": "root" },
+		"spot5_direction": { "property": "spotLights[5].direction", "source": "root" },
+		"spot6_direction": { "property": "spotLights[6].direction", "source": "root" },
+		"spot7_direction": { "property": "spotLights[7].direction", "source": "root" },
+		"spot0_diffuse": { "property": "spotLights[0].diffuse", "source": "root" },
+		"spot1_diffuse": { "property": "spotLights[1].diffuse", "source": "root" },
+		"spot2_diffuse": { "property": "spotLights[2].diffuse", "source": "root" },
+		"spot3_diffuse": { "property": "spotLights[3].diffuse", "source": "root" },
+		"spot4_diffuse": { "property": "spotLights[4].diffuse", "source": "root" },
+		"spot5_diffuse": { "property": "spotLights[5].diffuse", "source": "root" },
+		"spot6_diffuse": { "property": "spotLights[6].diffuse", "source": "root" },
+		"spot7_diffuse": { "property": "spotLights[7].diffuse", "source": "root" },
+		"spot0_position": { "property": "spotLights[0].position", "source": "root" },
+		"spot1_position": { "property": "spotLights[1].position", "source": "root" },
+		"spot2_position": { "property": "spotLights[2].position", "source": "root" },
+		"spot3_position": { "property": "spotLights[3].position", "source": "root" },
+		"spot4_position": { "property": "spotLights[4].position", "source": "root" },
+		"spot5_position": { "property": "spotLights[5].position", "source": "root" },
+		"spot6_position": { "property": "spotLights[6].position", "source": "root" },
+		"spot7_position": { "property": "spotLights[7].position", "source": "root" },
+		"spot0_cosInnerConeAngle": { "property": "spotLights[0].cosInnerConeAngle", "source": "root" },
+		"spot1_cosInnerConeAngle": { "property": "spotLights[1].cosInnerConeAngle", "source": "root" },
+		"spot2_cosInnerConeAngle": { "property": "spotLights[2].cosInnerConeAngle", "source": "root" },
+		"spot3_cosInnerConeAngle": { "property": "spotLights[3].cosInnerConeAngle", "source": "root" },
+		"spot4_cosInnerConeAngle": { "property": "spotLights[4].cosInnerConeAngle", "source": "root" },
+		"spot5_cosInnerConeAngle": { "property": "spotLights[5].cosInnerConeAngle", "source": "root" },
+		"spot6_cosInnerConeAngle": { "property": "spotLights[6].cosInnerConeAngle", "source": "root" },
+		"spot7_cosInnerConeAngle": { "property": "spotLights[7].cosInnerConeAngle", "source": "root" },
+		"spot0_color": { "property": "spotLights[0].color", "source": "root" },
+		"spot1_color": { "property": "spotLights[1].color", "source": "root" },
+		"spot2_color": { "property": "spotLights[2].color", "source": "root" },
+		"spot3_color": { "property": "spotLights[3].color", "source": "root" },
+		"spot4_color": { "property": "spotLights[4].color", "source": "root" },
+		"spot5_color": { "property": "spotLights[5].color", "source": "root" },
+		"spot6_color": { "property": "spotLights[6].color", "source": "root" },
+		"spot7_color": { "property": "spotLights[7].color", "source": "root" },
+		"spot0_cosOuterCosAngle": { "property": "spotLights[0].cosOuterCosAngle", "source": "root" },
+		"spot1_cosOuterCosAngle": { "property": "spotLights[1].cosOuterCosAngle", "source": "root" },
+		"spot2_cosOuterCosAngle": { "property": "spotLights[2].cosOuterCosAngle", "source": "root" },
+		"spot3_cosOuterCosAngle": { "property": "spotLights[3].cosOuterCosAngle", "source": "root" },
+		"spot4_cosOuterCosAngle": { "property": "spotLights[4].cosOuterCosAngle", "source": "root" },
+		"spot5_cosOuterCosAngle": { "property": "spotLights[5].cosOuterCosAngle", "source": "root" },
+		"spot6_cosOuterCosAngle": { "property": "spotLights[6].cosOuterCosAngle", "source": "root" },
+		"spot7_cosOuterCosAngle": { "property": "spotLights[7].cosOuterCosAngle", "source": "root" },
+		"spot0_attenuationCoeffs": { "property": "spotLights[0].attenuationCoeffs", "source": "root" },
+		"spot1_attenuationCoeffs": { "property": "spotLights[1].attenuationCoeffs", "source": "root" },
+		"spot2_attenuationCoeffs": { "property": "spotLights[2].attenuationCoeffs", "source": "root" },
+		"spot3_attenuationCoeffs": { "property": "spotLights[3].attenuationCoeffs", "source": "root" },
+		"spot4_attenuationCoeffs": { "property": "spotLights[4].attenuationCoeffs", "source": "root" },
+		"spot5_attenuationCoeffs": { "property": "spotLights[5].attenuationCoeffs", "source": "root" },
+		"spot6_attenuationCoeffs": { "property": "spotLights[6].attenuationCoeffs", "source": "root" },
+		"spot7_attenuationCoeffs": { "property": "spotLights[7].attenuationCoeffs", "source": "root" },
+		"spot0_specular": { "property": "spotLights[0].specular", "source": "root" },
+		"spot1_specular": { "property": "spotLights[1].specular", "source": "root" },
+		"spot2_specular": { "property": "spotLights[2].specular", "source": "root" },
+		"spot3_specular": { "property": "spotLights[3].specular", "source": "root" },
+		"spot4_specular": { "property": "spotLights[4].specular", "source": "root" },
+		"spot5_specular": { "property": "spotLights[5].specular", "source": "root" },
+		"spot6_specular": { "property": "spotLights[6].specular", "source": "root" },
+		"spot7_specular": { "property": "spotLights[7].specular", "source": "root" }
+	},
+
+	"macroBindings"	: {
+		"DIFFUSE_MAP"			: "material[${materialId}].diffuseMap",
+		"NORMAL_MAP"			: "material[${materialId}].normalMap",
+		"SPECULAR_MAP"			: "material[${materialId}].specularMap",
+		"ALPHA_MAP"				: "material[${materialId}].alphaMap",
+		"ALPHA_THRESHOLD"		: "material[${materialId}].alphaThreshold",
+		"ENVIRONMENT_MAP_2D"	: "material[${materialId}].environmentMap2d",
+		"ENVIRONMENT_CUBE_MAP"	: "material[${materialId}].environmentCubemap",
+		"ENVIRONMENT_ALPHA"		: "material[${materialId}].environmentAlpha",
+		"ENVIRONMENT_TYPE_2D"	: "material[${materialId}].environmentMap2dType",
+		"SHININESS"				: "material[${materialId}].shininess",
+		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix",
+		"NUM_BONES"				: "geometry[${geometryId}].numBones",
+		"NUM_AMBIENT_LIGHTS"	: { "property" : "ambientLights.length",		"source" : "root" },
+		"FOG_LIN"				: "material[${materialId}].fogLinear",
+		"FOG_EXP"				: "material[${materialId}].fogExponential",
+		"FOG_EXP2"				: "material[${materialId}].fogExponential2"
+	},
+		
+	"stateBindings"	: {
+        "blendMode"             : "material[${materialId}].blendMode",
+        "colorMask"             : "material[${materialId}].colorMask",
+        "depthMask"             : "material[${materialId}].depthMask",
+        "depthFunc"             : "material[${materialId}].depthFunc",
+        "triangleCulling"       : "material[${materialId}].triangleCulling",
+        "stencilFunc"           : "material[${materialId}].stencilFunc",
+        "stencilRef"            : "material[${materialId}].stencilRef",
+        "stencilMask"           : "material[${materialId}].stencilMask",
+        "stencilFailOp"         : "material[${materialId}].stencilFailOp",
+        "stencilZFailOp"        : "material[${materialId}].stencilZFailOp",
+        "stencilZPassOp"        : "material[${materialId}].stencilZPassOp",
+        "scissorBox.x"          : { "property" : "scissorBox.x",        "source" : "renderer" },
+        "scissorBox.y"          : { "property" : "scissorBox.y",        "source" : "renderer" },
+        "scissorBox.width"      : { "property" : "scissorBox.width",    "source" : "renderer" },
+        "scissorBox.height"     : { "property" : "scissorBox.height",   "source" : "renderer" },
+        "priority"              : "material[${materialId}].priority",
+        "zSort"					: "material[${materialId}].zSort",
+        "layouts"               : "node.layouts"
+	},
+
+	"samplerStates" : {
+		"diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+		"normalMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
+		"specularMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
+	},
+	
+    "colorMask"         : true,
+    "depthTest"         : [true, "less_equal"],
+    "triangleCulling"   : "back",
+	"stencilTest"		: ["always", 0, 1, ["keep", "keep", "keep"]],
+    "scissorTest"		: false,
+	"scissorBox"		: [0, 0, -1, -1],
+
+
+	"defaultTechnique"	: "opaque",
+	
+	"techniques" : [
+		// SINGLE PASS TECHNIQUES
+		//-----------------------
+		{
+			"name"				: "opaque",
+			"fallback" 			: "opaque-multipass",
+
+			"blendMode"			: ["one", "zero"],
+   			"priority"          : "opaque",
+    		"zSort"             : false,
+			
+			"macroBindings" : {
+				"NUM_DIRECTIONAL_LIGHTS"	: { "property" : "directionalLights.length",	"source" : "root",	"max" : 8 },
+				"NUM_POINT_LIGHTS"			: { "property" : "pointLights.length", 			"source" : "root",	"max" : 8 },
+				"NUM_SPOT_LIGHTS"			: { "property" : "spotLights.length", 			"source" : "root",	"max" : 8 }
+			},
+				
+			"passes"	: [
+			{
+				"vertexShader" 		: "#pragma include('Phong.vertex.glsl')",
+				"fragmentShader" 	: "#pragma include('Phong2.fragment.glsl')"
+			}]
+		},
+
+		{
+			"name"				: "opaque-no-struct",
+			"fallback" 			: "opaque-multipass",
+
+			"blendMode"			: ["one", "zero"],
+   			"priority"          : "opaque",
+    		"zSort"             : false,
+			
+			"configuration"		: [ "no-glsl-struct" ],
+			
+			"macroBindings" : {
+				"NUM_DIRECTIONAL_LIGHTS"	: { "property" : "directionalLights.length",	"source" : "root",	"max" : 8 },
+				"NUM_POINT_LIGHTS"			: { "property" : "pointLights.length", 			"source" : "root",	"max" : 8 },
+				"NUM_SPOT_LIGHTS"			: { "property" : "spotLights.length", 			"source" : "root",	"max" : 8 }
+			},
+				
+			"passes"	: [
+			{
+				"vertexShader" 		: "#pragma include('Phong.vertex.glsl')",
+				"fragmentShader" 	: "#pragma include('Phong2.fragment.glsl')"
+			}]
+		},
+
+		{
+			"name"				: "transparent",
+			"fallback"			: "transparent-multipass",
+
+			"blendMode"			: "alpha",
+   			"priority"          : "transparent",
+    		"zSort"             : true,
+			
+			"macroBindings" : {
+				"NUM_DIRECTIONAL_LIGHTS"	: { "property" : "directionalLights.length",	"source" : "root",	"max" : 8 },
+				"NUM_POINT_LIGHTS"			: { "property" : "pointLights.length", 			"source" : "root",	"max" : 8 },
+				"NUM_SPOT_LIGHTS"			: { "property" : "spotLights.length", 			"source" : "root",	"max" : 8 }
+			},
+				
+			"passes"	: [
+			{
+				"vertexShader"		: "#pragma include('Phong.vertex.glsl')",
+				"fragmentShader"	: "#pragma include('Phong.fragment.glsl')"
+			}]
+		},
+
+		{
+			"name"				: "transparent-no-struct",
+			"fallback"			: "transparent-multipass",
+
+			"blendMode"			: "alpha",
+   			"priority"          : "transparent",
+    		"zSort"             : true,
+			
+			"configuration"		: [ "no-glsl-struct" ],
+
+			"macroBindings" : {
+				"NUM_DIRECTIONAL_LIGHTS"	: { "property" : "directionalLights.length",	"source" : "root",	"max" : 8 },
+				"NUM_POINT_LIGHTS"			: { "property" : "pointLights.length", 			"source" : "root",	"max" : 8 },
+				"NUM_SPOT_LIGHTS"			: { "property" : "spotLights.length", 			"source" : "root",	"max" : 8 }
+			},
+				
+			"passes"	: [
+			{
+				"vertexShader"		: "#pragma include('Phong.vertex.glsl')",
+				"fragmentShader"	: "#pragma include('Phong2.fragment.glsl')"
+			}]
+		},
+
+		// MULTI-PASS TECHNIQUES (coming soon)
+		//----------------------
+		{
+			"name" 					: "opaque-multipass",
+
+			"blendMode"				: ["one", "zero"],
+   			"priority"          	: "opaque",
+    		"zSort"             	: false,
+
+			"passes" 	: [
+			{
+				"vertexShader" 		: "#pragma include('Basic.vertex.glsl')",
+				"fragmentShader" 	: "#pragma include('Basic.fragment.glsl')"
+			}]
+		},
+
+		{
+			"name" 					: "transparent-multipass",
+
+			"blendMode"				: "alpha",
+   			"priority"         		: "transparent",
+    		"zSort"             	: true,
+
+			"passes" 	: [
+			{
+				"vertexShader" 		: "#pragma include('Basic.vertex.glsl')",
+				"fragmentShader" 	: "#pragma include('Basic.fragment.glsl')"
+			}]
+		}
+	]
+}

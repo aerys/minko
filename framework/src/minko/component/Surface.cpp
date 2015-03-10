@@ -204,9 +204,12 @@ Surface::setEffectAndTechnique(Effect::Ptr			effect,
     if (effect != _effect)
     {
         changed = true;
+		if (target() != nullptr)
+		{
 	    target()->data().removeProvider(_effect->data(), EFFECT_COLLECTION_NAME);
-    	_effect = effect;
         target()->data().addProvider(effect->data(), EFFECT_COLLECTION_NAME);
+    }
+		_effect = effect;
     }
 
     if (technique != _technique)

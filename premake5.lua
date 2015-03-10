@@ -115,6 +115,7 @@ solution "minko"
 		--include 'plugin/angle'
 		include 'plugin/zlib'
 		include 'plugin/assimp'
+		include 'plugin/debug'
 		include 'plugin/devil'
 		include 'plugin/bullet'
 		include 'plugin/fx'
@@ -129,7 +130,7 @@ solution "minko"
 		include 'plugin/png'
 		include 'plugin/sdl'
 		include 'plugin/serializer'
-		include 'plugin/debug'
+        include 'plugin/video-camera'		
 
 		if _OPTIONS['with-offscreen'] then
 			include 'plugin/offscreen'
@@ -178,8 +179,8 @@ solution "minko"
 		-- include 'example/oculus'
 		-- include 'example/offscreen'
 		-- include 'example/particles'
-		include 'example/physics'
-		-- include 'example/picking'
+		-- include 'example/physics'
+		include 'example/picking'
 		-- include 'example/raycasting'
 		include 'example/serializer'
 		-- include 'example/sky-box'

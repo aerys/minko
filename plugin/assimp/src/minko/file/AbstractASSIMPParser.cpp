@@ -117,6 +117,7 @@ AbstractASSIMPParser::AbstractASSIMPParser() :
 
 AbstractASSIMPParser::~AbstractASSIMPParser()
 {
+    delete _importer;
 }
 
 void
@@ -130,7 +131,6 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 	std::cout << "AbstractASSIMPParser::parse()" << std::endl;
 #endif // DEBUG
 
-	resetParser();
 	initImporter();
 
 	int pos = resolvedFilename.find_last_of("\\/");
@@ -261,7 +261,6 @@ AbstractASSIMPParser::allDependenciesLoaded(const aiScene* scene)
 	if (_numDependencies == _numLoadedDependencies)
 		finalize();
 
-	disposeNodeMaps();
 }
 
 void
@@ -336,10 +335,10 @@ AbstractASSIMPParser::getTransformFromAssimp(aiNode* ainode)
 Geometry::Ptr
 AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mesh, const std::string& meshName)
 {
-    auto existingGeometry = _assetLibrary->geometry(meshName);
+    /*auto existingGeometry = _assetLibrary->geometry(meshName);
 
     if (existingGeometry != nullptr)
-        return existingGeometry;
+        return existingGeometry;*/
 
 	unsigned int vertexSize = 0;
 
@@ -517,6 +516,13 @@ AbstractASSIMPParser::createCameras(const aiScene* scene)
 		auto		target		= math::normalize(math::vec3(aiPosition.x + aiLookAt.x, aiPosition.y + aiLookAt.y, aiPosition.z + aiLookAt.z));
 		auto		up			= math::normalize(math::vec3(aiUp.x, aiUp.y, aiUp.z));
 
+        if (math::vec3(aiPosition.x + aiLookAt.x, aiPosition.y + aiLookAt.y, aiPosition.z + aiLookAt.z) == math::vec3())
+        {
+            target = math::vec3(1e-6f, 1e-6f, 1e-6f);
+        }
+
+        auto lookat = math::lookAt(position,target, up);
+        auto transform = Transform::create(math::inverse(lookat));
 		const auto	cameraName	= std::string(aiCamera->mName.data);
 		auto		cameraNode = scene::Node::create(cameraName + "_camera_" + std::to_string(i))
 			->addComponent(PerspectiveCamera::create(
@@ -525,9 +531,7 @@ AbstractASSIMPParser::createCameras(const aiScene* scene)
 				aiCamera->mClipPlaneNear,
 				aiCamera->mClipPlaneFar
 			))
-			->addComponent(Transform::create(
-                math::inverse(math::lookAt(position, target, up))
-			));
+			->addComponent(transform);
 
 		scene::Node::Ptr parentNode = !cameraName.empty()
 			? findNode(cameraName)
@@ -760,26 +764,6 @@ AbstractASSIMPParser::textureCompleteHandler(file::Loader::Ptr loader, const aiS
 
 	if (_numDependencies == _numLoadedDependencies)
 		allDependenciesLoaded(scene);
-}
-
-void
-AbstractASSIMPParser::resetParser()
-{
-	_numDependencies		= 0;
-	_numLoadedDependencies	= 0;
-	_filename.clear();
-	_symbol	= nullptr;
-
-	disposeNodeMaps();
-}
-void
-AbstractASSIMPParser::disposeNodeMaps()
-{
-	_aiNodeToNode.clear();
-	_aiMeshToNode.clear();
-	_nameToNode.clear();
-	_nameToAnimMatrices.clear();
-	_alreadyAnimatedNodes.clear();
 }
 
 unsigned int

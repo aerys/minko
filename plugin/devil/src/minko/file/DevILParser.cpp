@@ -84,6 +84,9 @@ DevILParser::parse(const std::string&                 filename,
     texture->data(bmpData);
     texture->upload();
 
+    if (options->disposeTextureAfterLoading())
+        texture->disposeData();
+
     AssetLibrary->texture(filename, texture);
 
     complete()->execute(shared_from_this());

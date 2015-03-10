@@ -65,7 +65,7 @@ static const std::string NormalTexture4      = "map_bump";
 static const std::string NormalTexture5      = "map_Bump";
 static const std::string NormalTexture6      = "adobe_map_Normal";
 static const std::string DisplacementTexture = "disp";
-static const std::string SpecularityTexture  = "map_ns";
+static const std::string SpecularityTexture  = "map_ns"; 
 
 // texture option specific token
 static const std::string BlendUOption		= "-blendu";

@@ -159,8 +159,9 @@ PerspectiveCamera::unproject(float x, float y)
 
 	if (t)
 	{
-		origin = (math::vec4(origin, 1.f) * t->modelToWorldMatrix()).xyz();
-		direction = math::normalize(direction * math::mat3x3(t->modelToWorldMatrix()));
+        auto tModelToWorld = t->modelToWorldMatrix();
+        origin = math::vec3(tModelToWorld * math::vec4(origin, 1));
+        direction = math::normalize(math::mat3(tModelToWorld) * direction).xyz();
 	}
 
 	return math::Ray::create(origin, direction);

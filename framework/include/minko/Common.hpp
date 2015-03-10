@@ -159,6 +159,7 @@ namespace minko
 
 		class AbstractTexture;
 		class Texture;
+        class RectangleTexture;
 		class CubeTexture;
         struct TextureSampler;
 
