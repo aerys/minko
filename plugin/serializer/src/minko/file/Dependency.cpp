@@ -532,9 +532,6 @@ Dependency::serialize(const std::string&                        parentFilename,
         {
             linkedAssetData.a0 = internalLinkedAssetDataOffset;
 
-            const auto validFilename = File::removePrefixPathFromFilename(parentFilename);
-            linkedAssetData.a2 = validFilename;
-
             internalLinkedAssets.emplace_back(linkedAsset.data().begin(), linkedAsset.data().end());
 
             internalLinkedAssetDataOffset += linkedAsset.length();
