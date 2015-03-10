@@ -115,6 +115,7 @@ solution "minko"
 		--include 'plugin/angle'
 		include 'plugin/zlib'
 		include 'plugin/assimp'
+		include 'plugin/debug'
 		include 'plugin/devil'
 		include 'plugin/bullet'
 		include 'plugin/fx'
