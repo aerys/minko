@@ -45,12 +45,39 @@ namespace minko
         private:
             typedef std::function<const std::string(const std::string&)>        UriFunction;
 
+            typedef std::function<
+                std::shared_ptr<geometry::Geometry>(
+                    const std::string&,
+                    std::shared_ptr<geometry::Geometry>
+                )
+            > GeometryFunction;
+
+            typedef std::function<
+                std::shared_ptr<material::Material>(
+                    const std::string&,
+                    std::shared_ptr<material::Material>
+                )
+            > MaterialFunction;
+
+            typedef std::function<
+                std::shared_ptr<render::AbstractTexture>(
+                    const std::string&,
+                    std::shared_ptr<render::AbstractTexture>
+                )
+            > TextureFunction;
+
         private:
             bool                                _addBoundingBoxes;
 
             unsigned int                        _embedMode;
 
-            UriFunction                         _outputAssetUriFunction;
+            UriFunction                         _geometryUriFunction;
+            UriFunction                         _materialUriFunction;
+            UriFunction                         _textureUriFunction;
+
+            GeometryFunction                    _geometryFunction;
+            MaterialFunction                    _materialFunction;
+            TextureFunction                     _textureFunction;
 
             serialize::ImageFormat              _imageFormat;
             std::list<render::TextureFormat>    _textureFormats;
@@ -84,7 +111,12 @@ namespace minko
 
                 instance->_addBoundingBoxes = other->_addBoundingBoxes;
                 instance->_embedMode = other->_embedMode;
-                instance->_outputAssetUriFunction = other->_outputAssetUriFunction;
+                instance->_geometryUriFunction = other->_geometryUriFunction;
+                instance->_materialUriFunction = other->_materialUriFunction;
+                instance->_textureUriFunction = other->_textureUriFunction;
+                instance->_geometryFunction = other->_geometryFunction;
+                instance->_materialFunction = other->_materialFunction;
+                instance->_textureFunction = other->_textureFunction;
                 instance->_imageFormat = other->_imageFormat;
                 instance->_textureFormats = other->_textureFormats;
                 instance->_compressTexture = other->_compressTexture;
@@ -132,16 +164,96 @@ namespace minko
 
             inline
             const UriFunction&
-            outputAssetUriFunction() const
+            geometryUriFunction() const
             {
-                return _outputAssetUriFunction;
+                return _geometryUriFunction;
             }
 
             inline
             Ptr
-            outputAssetUriFunction(const UriFunction& func)
+            geometryUriFunction(const UriFunction& func)
             {
-                _outputAssetUriFunction = func;
+                _geometryUriFunction = func;
+
+                return shared_from_this();
+            }
+
+            inline
+            const UriFunction&
+            materialUriFunction() const
+            {
+                return _materialUriFunction;
+            }
+
+            inline
+            Ptr
+            materialUriFunction(const UriFunction& func)
+            {
+                _materialUriFunction = func;
+
+                return shared_from_this();
+            }
+
+            inline
+            const UriFunction&
+            textureUriFunction() const
+            {
+                return _textureUriFunction;
+            }
+
+            inline
+            Ptr
+            textureUriFunction(const UriFunction& func)
+            {
+                _textureUriFunction = func;
+
+                return shared_from_this();
+            }
+
+            inline
+            const GeometryFunction&
+            geometryFunction() const
+            {
+                return _geometryFunction;
+            }
+
+            inline
+            Ptr
+            geometryFunction(const GeometryFunction& func)
+            {
+                _geometryFunction = func;
+
+                return shared_from_this();
+            }
+
+            inline
+            const MaterialFunction&
+            materialFunction() const
+            {
+                return _materialFunction;
+            }
+
+            inline
+            Ptr
+            materialFunction(const MaterialFunction& func)
+            {
+                _materialFunction = func;
+
+                return shared_from_this();
+            }
+
+            inline
+            const TextureFunction&
+            textureFunction() const
+            {
+                return _textureFunction;
+            }
+
+            inline
+            Ptr
+            textureFunction(const TextureFunction& func)
+            {
+                _textureFunction = func;
 
                 return shared_from_this();
             }

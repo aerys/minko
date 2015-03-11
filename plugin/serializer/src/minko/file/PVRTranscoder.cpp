@@ -195,7 +195,7 @@ PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
 
     auto debugOutputFileName = std::string("debug_") + TextureFormatInfo::name(outFormat) + "_" + std::to_string(pvrTextureId++);
 
-    debugOutputFileName = writerOptions->outputAssetUriFunction()(debugOutputFileName);
+    debugOutputFileName = writerOptions->textureUriFunction()(debugOutputFileName);
 
     pvrTexture->saveFile(debugOutputFileName.c_str());
 #endif
