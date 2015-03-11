@@ -39,12 +39,12 @@ namespace minko
         operator()(const T& a, const T& b) const = 0;
     };
 
-    template <class T>
+    template <typename T, typename H = Hash<T>>
     inline
     void
     hash_combine(std::size_t& seed, const T& v)
     {
-        Hash<T> hasher;
+        H hasher;
 
         seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
