@@ -20,14 +20,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/serialize/ComponentSerializer.hpp"
 #include "msgpack.hpp"
 #include "minko/Types.hpp"
+#include "minko/animation/AbstractTimeLine.hpp"
+#include "minko/animation/Matrix4x4TimeLine.hpp"
+#include "minko/component/Animation.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
 #include "minko/component/AmbientLight.hpp"
 #include "minko/component/DirectionalLight.hpp"
 #include "minko/component/PointLight.hpp"
+#include "minko/component/Skinning.hpp"
 #include "minko/component/SpotLight.hpp"
 #include "minko/component/Surface.hpp"
+#include "minko/geometry/Bone.hpp"
 #include "minko/geometry/Geometry.hpp"
+#include "minko/geometry/Skin.hpp"
 #include "minko/material/Material.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/component/Renderer.hpp"
@@ -247,6 +253,115 @@ ComponentSerializer::serializeRenderer(NodePtr			    node,
 	return buffer.str();
 }
 
+std::string
+ComponentSerializer::serializeAnimation(NodePtr			        node,
+                                        AbstractComponentPtr    component,
+                                        DependencyPtr	        dependencies)
+{
+    auto type = static_cast<int8_t>(serialize::ANIMATION);
+    auto animation = std::dynamic_pointer_cast<component::Animation>(component);
+    std::stringstream buffer;
+
+    auto src = msgpack::type::tuple<
+        unsigned int,
+        std::vector<unsigned int>,
+        std::vector<msgpack::type::tuple<unsigned int, std::string>>,
+        bool
+    >();
+
+    for (auto i = 0u; i < animation->numTimelines(); ++i)
+    {
+        auto timeline = std::static_pointer_cast<animation::Matrix4x4Timeline>(animation->timeline(i));
+
+        src.get<0>() = timeline->duration();
+
+        for (const auto& timeToMatrixPair : timeline->matrices())
+        {
+            auto serializedMatrix = TypeSerializer::serializeMatrix4x4(timeToMatrixPair.second);
+
+            src.get<1>().push_back(timeToMatrixPair.first);
+            src.get<2>().emplace_back(
+                std::get<0>(serializedMatrix),
+                std::get<1>(serializedMatrix)
+            );
+        }
+
+        src.get<3>() = timeline->interpolate();
+    }
+
+    msgpack::pack(buffer, src);
+    msgpack::pack(buffer, type);
+
+    return buffer.str();
+}
+
+std::string
+ComponentSerializer::serializeSkinning(NodePtr			    node,
+                                       AbstractComponentPtr component,
+                                       DependencyPtr	    dependencies)
+{
+    auto type = static_cast<int8_t>(serialize::SKINNING);
+    auto skinning = std::dynamic_pointer_cast<component::Skinning>(component);
+    std::stringstream buffer;
+
+    auto skin = skinning->skin();
+
+    auto src = msgpack::type::tuple<
+        std::vector<msgpack::type::tuple<
+            std::string, std::string, std::string, std::vector<msgpack::type::tuple<unsigned int, std::string>>
+        >>,
+        std::string,
+        short
+    >();
+
+    src.get<1>() = node->name();
+    src.get<2>() = skin->duration();
+
+    for (auto i = 0u; i < skin->numBones(); ++i)
+    {
+        auto bone = skin->bone(i);
+
+        auto serializedBoneMatrices = std::vector<msgpack::type::tuple<unsigned int, std::string>>(
+            skin->numFrames()
+        );
+
+        for (auto frameId = 0u; frameId < skinning->skin()->numFrames(); ++frameId)
+        {
+            const auto& matrix = skin->matrices(frameId).at(i);
+
+            const auto serializedMatrix = TypeSerializer::serializeMatrix4x4(matrix);
+
+            serializedBoneMatrices[frameId] = msgpack::type::tuple<unsigned int, std::string>(
+                std::get<0>(serializedMatrix),
+                std::get<1>(serializedMatrix)
+            );
+        }
+
+        auto serializedOffsetMatrix = TypeSerializer::serializeMatrix4x4(bone->offsetMatrix());
+
+        auto serializedBone = msgpack::type::tuple<
+            std::string,
+            std::string,
+            std::string,
+            std::vector<msgpack::type::tuple<unsigned int, std::string>>
+        >(
+            bone->node()->name(),
+            TypeSerializer::serializeVector<unsigned int>(std::vector<unsigned int>(
+                bone->vertexIds().begin(),
+                bone->vertexIds().end()
+            )),
+            TypeSerializer::serializeVector<float>(bone->vertexWeights()),
+            serializedBoneMatrices
+        );
+
+        src.get<0>().push_back(serializedBone);
+    }
+
+    msgpack::pack(buffer, src);
+    msgpack::pack(buffer, type);
+
+    return buffer.str();
+}
 
 std::string
 ComponentSerializer::serializeBoundingBox(NodePtr 			    node,

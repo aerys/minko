@@ -24,16 +24,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-    namespace file
-    {
-        struct SceneVersion;
-    }
+	namespace deserialize
+	{
 
-    namespace deserialize
-    {
+		class ComponentDeserializer
+		{
 
-        class ComponentDeserializer
-        {
         private:
             typedef std::shared_ptr<file::Dependency>               DependencyPtr;
             typedef std::shared_ptr<file::AssetLibrary>             AssetLibraryPtr;

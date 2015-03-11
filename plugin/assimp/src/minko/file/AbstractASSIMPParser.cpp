@@ -936,14 +936,40 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
 
 	meshNode->addComponent(MasterAnimation::create());
 
-	auto irrelevantTransforms = NodeSet::create(skeletonRoot)
-		->descendants(false)
-		->where([](Node::Ptr n){
-			return n->hasComponent<Transform>() && !n->hasComponent<Animation>() && !n->hasComponent<Surface>();
-		});
+    auto irrelevantTransformNodes = std::set<Node::Ptr>();
 
-	for (auto& n : irrelevantTransforms->nodes())
-		n->removeComponent(n->component<Transform>());
+    for (auto boneNode : boneNodes)
+    {
+        auto boneNodeDescendants = NodeSet::create(boneNode)
+            ->descendants(true)
+            ->where([](Node::Ptr descendant) -> bool { return descendant->hasComponent<Transform>(); });
+
+        irrelevantTransformNodes.insert(
+            boneNodeDescendants->nodes().begin(),
+            boneNodeDescendants->nodes().end()
+        );
+    }
+
+    auto animatedNodes = NodeSet::create(skeletonRoot)
+        ->descendants(true)
+        ->where([&](Node::Ptr descendant) -> bool
+        {
+            return descendant->hasComponent<Animation>() || descendant->hasComponent<Skinning>();
+        });
+
+    for (auto animatedNode : animatedNodes->nodes())
+    {
+        auto animatedNodeDescendants = NodeSet::create(animatedNode)
+            ->descendants(true);
+
+        irrelevantTransformNodes.insert(
+            animatedNodeDescendants->nodes().begin(),
+            animatedNodeDescendants->nodes().end()
+        );
+    }
+
+    for (auto irrelevantTransformNode : irrelevantTransformNodes)
+        irrelevantTransformNode->removeComponent(irrelevantTransformNode->component<Transform>());
 }
 
 Node::Ptr
