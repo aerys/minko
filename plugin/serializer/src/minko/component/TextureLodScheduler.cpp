@@ -66,7 +66,10 @@ TextureLodScheduler::surfaceAdded(Surface::Ptr surface)
     auto material = surface->material();
 	auto values = material->data()->values();
 
-    for (const auto& propertyNameToValuePair : values)
+
+    auto textures = std::unordered_map<AbstractTexture::Ptr, Flyweight<std::string>>();
+
+    for (const auto& propertyNameToValuePair : material->data()->values())
     {
         const auto propertyName = propertyNameToValuePair.first;
 
@@ -76,6 +79,14 @@ TextureLodScheduler::surfaceAdded(Surface::Ptr surface)
         auto texture = _sceneManager->assets()->getTextureByUuid(
             material->data()->get<TextureSampler>(propertyName).uuid
         );
+
+        textures.insert(std::make_pair(texture, propertyName));
+    }
+
+    for (auto textureToTextureNamePair : textures)
+    {
+        auto texture = textureToTextureNamePair.first;
+        const auto textureName = *textureToTextureNamePair.second;
 
         auto masterLodScheduler = this->masterLodScheduler();
 
@@ -124,7 +135,7 @@ TextureLodScheduler::surfaceAdded(Surface::Ptr surface)
         ));
 
         material->data()->set(
-			*propertyName + std::string(".") + std::string("maxAvailableLod"),
+			textureName + std::string(".") + std::string("maxAvailableLod"),
             static_cast<float>(lodToMipLevel(
                 DEFAULT_LOD,
                 resource->texture->width(),
@@ -133,18 +144,16 @@ TextureLodScheduler::surfaceAdded(Surface::Ptr surface)
         );
 
         material->data()->set(
-			*propertyName + std::string(".") + std::string("size"),
+			textureName + std::string(".") + std::string("size"),
             math::vec2(texture->width(), texture->height())
         );
 
         material->data()->set(
-			*propertyName + std::string("LodEnabled"),
+			textureName + std::string("LodEnabled"),
             true
         );
 
-        material->data()->set("diffuseColor", math::vec4(1.f, 1.f, 1.f, 1.f));
-
-        resource->textureName = *propertyName;
+        resource->textureName = textureName;
 
         resource->materials.insert(material);
         resource->surfaceToActiveLodMap.insert(std::make_pair(surface, -1));
