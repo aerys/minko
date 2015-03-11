@@ -67,13 +67,13 @@ namespace minko
         protected:
             struct ResourceInfo
             {
-                ProviderPtr                                     data;
+                ProviderPtr														data;
 
-                bool                                            lodRequirementIsInvalid;
+                bool															lodRequirementIsInvalid;
 
-                LodInfo                                         lodInfo;
+                LodInfo															lodInfo;
 
-                Signal<ProviderPtr, const std::string&>::Slot   propertyChangedSlot;
+                Signal<ProviderPtr, const data::Provider::PropertyName&>::Slot   propertyChangedSlot;
 
                 inline
                 explicit
@@ -103,31 +103,31 @@ namespace minko
             typedef data::Store*                            StorePtr;
 
         protected:
-            static const int                                            DEFAULT_LOD;
+            static const int																DEFAULT_LOD;
 
         private:
-            MasterLodSchedulerPtr                                       _masterLodScheduler;
+            MasterLodSchedulerPtr															_masterLodScheduler;
 
-            std::unordered_map<std::string, ResourceInfo>               _resources;
+            std::unordered_map<std::string, ResourceInfo>									_resources;
 
-            ComponentSolverFunction                                     _sceneManagerFunction;
-            ComponentSolverFunction                                     _rendererFunction;
-            ComponentSolverFunction                                     _masterLodSchedulerFunction;
+            ComponentSolverFunction															_sceneManagerFunction;
+            ComponentSolverFunction															_rendererFunction;
+            ComponentSolverFunction															_masterLodSchedulerFunction;
 
-            Signal<NodePtr, NodePtr, NodePtr>::Slot                     _nodeAddedSlot;
-            Signal<NodePtr, NodePtr, NodePtr>::Slot                     _nodeRemovedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot											_nodeAddedSlot;
+            Signal<NodePtr, NodePtr, NodePtr>::Slot											_nodeRemovedSlot;
 
-            Signal<NodePtr, NodePtr, AbstractComponentPtr>::Slot        _componentAddedSlot;
-            Signal<NodePtr, NodePtr, AbstractComponentPtr>::Slot        _componentRemovedSlot;
+            Signal<NodePtr, NodePtr, AbstractComponentPtr>::Slot							_componentAddedSlot;
+            Signal<NodePtr, NodePtr, AbstractComponentPtr>::Slot							_componentRemovedSlot;
 
-            Signal<SceneManagerPtr, float, float>::Slot                 _frameBeginSlot;
+            Signal<SceneManagerPtr, float, float>::Slot										_frameBeginSlot;
 
-            Signal<data::Store&, ProviderPtr, const std::string&>::Slot _rootNodePropertyChangedSlot;
-            Signal<data::Store&, ProviderPtr, const std::string&>::Slot _rendererNodePropertyChangedSlot;
+            Signal<data::Store&, ProviderPtr, const data::Provider::PropertyName&>::Slot	_rootNodePropertyChangedSlot;
+            Signal<data::Store&, ProviderPtr, const data::Provider::PropertyName&>::Slot	_rendererNodePropertyChangedSlot;
 
-            std::list<SurfacePtr>                                       _addedSurfaces;
-            std::list<SurfacePtr>                                       _removedSurfaces;
-            NodeSetPtr                                                  _candidateNodes;
+            std::list<SurfacePtr>															_addedSurfaces;
+            std::list<SurfacePtr>															_removedSurfaces;
+            NodeSetPtr																		_candidateNodes;
 
         public:
             ~AbstractLodScheduler() = default;
@@ -296,14 +296,14 @@ namespace minko
             frameBeginHandler(SceneManagerPtr sceneManager, float time, float deltaTime);
 
             void
-            rootNodePropertyChangedHandler(data::Store&          store,
-                                           ProviderPtr           provider,
-                                           const std::string&    propertyName);
+            rootNodePropertyChangedHandler(data::Store&								store,
+                                           ProviderPtr								provider,
+										   const data::Provider::PropertyName&		propertyName);
 
             void
-            rendererNodePropertyChangedHandler(data::Store&          store,
-                                               ProviderPtr           provider,
-                                               const std::string&    propertyName);
+            rendererNodePropertyChangedHandler(data::Store&								store,
+                                               ProviderPtr								provider,
+											   const data::Provider::PropertyName&		propertyName);
 
             void
             updateCandidateNodes(NodePtr target);

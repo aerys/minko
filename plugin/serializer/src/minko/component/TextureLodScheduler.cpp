@@ -34,6 +34,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
 
+#include "sparsehash/sparse_hash_map"
+
 using namespace minko;
 using namespace minko::component;
 using namespace minko::data;
@@ -111,9 +113,9 @@ TextureLodScheduler::surfaceAdded(Surface::Ptr surface)
         resource->modelToWorldMatrixChangedSlots.insert(std::make_pair(
             surfaceTarget,
             surfaceTarget->data().propertyChanged("modelToWorldMatrix").connect(
-                [=](Store&              store,
-                    Provider::Ptr       provider,
-                    const std::string&  propertyName)
+                [=](Store&								 store,
+                    Provider::Ptr						 provider,
+					const data::Provider::PropertyName&  propertyName)
                 {
                     invalidateLodRequirement(*resource->base);
                 }
@@ -121,7 +123,7 @@ TextureLodScheduler::surfaceAdded(Surface::Ptr surface)
         ));
 
         material->data()->set(
-            propertyName + std::string(".") + std::string("maxAvailableLod"),
+			*propertyName + std::string(".") + std::string("maxAvailableLod"),
             static_cast<float>(lodToMipLevel(
                 DEFAULT_LOD,
                 resource->texture->width(),
@@ -130,18 +132,18 @@ TextureLodScheduler::surfaceAdded(Surface::Ptr surface)
         );
 
         material->data()->set(
-            propertyName + std::string(".") + std::string("size"),
+			*propertyName + std::string(".") + std::string("size"),
             math::vec2(texture->width(), texture->height())
         );
 
         material->data()->set(
-            propertyName + std::string("LodEnabled"),
+			*propertyName + std::string("LodEnabled"),
             true
         );
 
         material->data()->set("diffuseColor", math::vec4(1.f, 1.f, 1.f, 1.f));
 
-        resource->textureName = propertyName;
+        resource->textureName = *propertyName;
 
         resource->materials.insert(material);
         resource->surfaceToActiveLodMap.insert(std::make_pair(surface, -1));

@@ -249,7 +249,7 @@ StreamedTextureParser::matchingTextureFormat(std::shared_ptr<Options>           
 {
     const auto& contextAvailableTextureFormats = OpenGLES2Context::availableTextureFormats();
 
-    auto availableTextureFormatMatches = std::unordered_multiset<TextureFormat>(contextAvailableTextureFormats.size());
+    auto availableTextureFormatMatches = std::unordered_multiset<TextureFormat, Hash<TextureFormat>>(contextAvailableTextureFormats.size());
 
     for (const auto& textureFormatToContextFormat : contextAvailableTextureFormats)
     {
@@ -261,7 +261,7 @@ StreamedTextureParser::matchingTextureFormat(std::shared_ptr<Options>           
         availableTextureFormatMatches.insert(textureFormat);
     }
 
-    auto filteredAvailableTextureFormats = std::unordered_set<TextureFormat>(availableTextureFormatMatches.size());
+    auto filteredAvailableTextureFormats = std::unordered_set<TextureFormat, Hash<TextureFormat>>(availableTextureFormatMatches.size());
 
     for (auto textureFormat : availableTextureFormatMatches)
     {

@@ -39,7 +39,7 @@ namespace minko
                                        std::vector<msgpack::type::tuple<int, int>>&)>   FormatWriterFunction;
 
         private:
-            static std::unordered_map<render::TextureFormat, FormatWriterFunction>  _formatWriterFunctions;
+            static std::unordered_map<render::TextureFormat, FormatWriterFunction, Hash<render::TextureFormat>>  _formatWriterFunctions;
 
             std::shared_ptr<LinkedAsset>        _linkedAsset;
             int                                 _linkedAssetId;

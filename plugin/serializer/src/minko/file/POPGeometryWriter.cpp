@@ -405,7 +405,7 @@ POPGeometryWriter::serializeHeader(msgpack::sbuffer&                    headerBu
             vertexAttributes.push_back(
                 msgpack::type::tuple<unsigned int, std::string, unsigned int, unsigned int>(
                     vertexBufferIndex,
-                    attribute.name,
+                    *attribute.name,
                     attribute.size,
                     attribute.offset
                 )

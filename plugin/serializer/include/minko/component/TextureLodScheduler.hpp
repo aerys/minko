@@ -56,7 +56,7 @@ namespace minko
 
                 std::unordered_map<
                     NodePtr,
-                    Signal<data::Store&, ProviderPtr, const std::string&>::Slot
+                    Signal<data::Store&, ProviderPtr, const data::Provider::PropertyName&>::Slot
                 >                                               modelToWorldMatrixChangedSlots;
             };
 

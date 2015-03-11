@@ -35,7 +35,7 @@ using namespace minko;
 using namespace minko::file;
 using namespace minko::render;
 
-std::unordered_map<TextureFormat, StreamedTextureWriter::FormatWriterFunction> StreamedTextureWriter::_formatWriterFunctions = 
+std::unordered_map<TextureFormat, StreamedTextureWriter::FormatWriterFunction, Hash<render::TextureFormat>> StreamedTextureWriter::_formatWriterFunctions =
 {
     { TextureFormat::RGB, std::bind(writeRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },
     { TextureFormat::RGBA, std::bind(writeRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) },

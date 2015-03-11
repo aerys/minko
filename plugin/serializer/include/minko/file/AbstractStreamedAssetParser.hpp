@@ -37,42 +37,42 @@ namespace minko
             typedef std::shared_ptr<AbstractStreamedAssetParser> Ptr;
 
         private:
-            std::shared_ptr<AssetLibrary>                                                   _assetLibrary;
-            std::shared_ptr<Options>                                                        _options;
+            std::shared_ptr<AssetLibrary>														_assetLibrary;
+            std::shared_ptr<Options>															_options;
 
-            std::shared_ptr<StreamingOptions>                                               _streamingOptions;
+            std::shared_ptr<StreamingOptions>													_streamingOptions;
 
-            std::shared_ptr<LinkedAsset>                                                    _linkedAsset;
+            std::shared_ptr<LinkedAsset>														_linkedAsset;
 
-            std::string                                                                     _filename;
-            std::string                                                                     _resolvedFilename;
-            int                                                                             _assetExtension;
-            int                                                                             _fileOffset;
+            std::string																			_filename;
+            std::string																			_resolvedFilename;
+            int																					_assetExtension;
+            int																					_fileOffset;
 
-            bool                                                                            _headerIsRead;
+            bool																				_headerIsRead;
 
-            int                                                                             _previousLod;
-            int                                                                             _currentLod;
-            bool                                                                            _busy;
+            int																					_previousLod;
+            int																					_currentLod;
+            bool																				_busy;
 
-            int                                                                             _nextLodOffset;
-            int                                                                             _nextLodSize;
+            int																					_nextLodOffset;
+            int																					_nextLodSize;
 
-            Signal<std::shared_ptr<LinkedAsset>, const Error&>::Slot                        _loaderErrorSlot;
-            Signal<std::shared_ptr<LinkedAsset>, const std::vector<unsigned char>&>::Slot   _loaderCompleteSlot;
+            Signal<std::shared_ptr<LinkedAsset>, const Error&>::Slot							_loaderErrorSlot;
+            Signal<std::shared_ptr<LinkedAsset>, const std::vector<unsigned char>&>::Slot		_loaderCompleteSlot;
 
-            bool                                                                            _complete;
+            bool																				_complete;
 
-            std::shared_ptr<data::Provider>                                                 _data;
-            Signal<std::shared_ptr<data::Provider>, const std::string&>::Slot               _dataPropertyChangedSlot;
+            std::shared_ptr<data::Provider>														_data;
+            Signal<std::shared_ptr<data::Provider>, const data::Provider::PropertyName&>::Slot  _dataPropertyChangedSlot;
 
-            int                                                                             _requiredLod;
-            float                                                                           _priority;
+            int																					_requiredLod;
+            float																				_priority;
 
-            Signal<Ptr>::Ptr                                                                _ready;
-            Signal<Ptr, float>::Ptr                                                         _progress;
-            Signal<Ptr>::Ptr                                                                _active;
-            Signal<Ptr>::Ptr                                                                _inactive;
+            Signal<Ptr>::Ptr																	_ready;
+            Signal<Ptr, float>::Ptr																_progress;
+            Signal<Ptr>::Ptr																	_active;
+            Signal<Ptr>::Ptr																	_inactive;
 
         public:
             inline

@@ -45,11 +45,11 @@ struct SurfaceIndexerHash
     {
         auto hashValue = std::size_t();
 
-        std::hash_combine(hashValue, surface->material());
+		minko::hash_combine<Material::Ptr, std::hash<Material::Ptr>>(hashValue, surface->material());
 
         for (const auto& vertexBuffer : surface->geometry()->vertexBuffers())
             for (const auto& attribute : vertexBuffer->attributes())
-                std::hash_combine(hashValue, attribute.name);
+                minko::hash_combine<std::string, std::hash<std::string>>(hashValue, *attribute.name);
 
         return hashValue;
     }

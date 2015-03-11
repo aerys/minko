@@ -138,9 +138,9 @@ AbstractLodScheduler::registerResource(Provider::Ptr data)
 
     insertedResource.propertyChangedSlot = insertedResource.data->propertyChanged().connect(
         [=](Provider::Ptr       provider,
-            const std::string&  propertyName)
+            const Provider::PropertyName&  propertyName)
         {
-            if (propertyName == "maxAvailableLod")
+            if (*propertyName == "maxAvailableLod")
             {
                 auto& resource = _resources.at(provider->uuid());
 
@@ -446,22 +446,22 @@ AbstractLodScheduler::frameBeginHandler(SceneManager::Ptr sceneManager, float ti
 }
 
 void
-AbstractLodScheduler::rootNodePropertyChangedHandler(Store&              store,
-                                                     Provider::Ptr       provider,
-                                                     const std::string&  propertyName)
+AbstractLodScheduler::rootNodePropertyChangedHandler(Store&									store,
+                                                     Provider::Ptr							provider,
+													 const data::Provider::PropertyName&	propertyName)
 {
-    if (propertyName == "canvas.viewport")
+    if (*propertyName == "canvas.viewport")
     {
         viewportChanged(provider->get<math::vec4>(propertyName));
     }
 }
 
 void
-AbstractLodScheduler::rendererNodePropertyChangedHandler(Store&              store,
-                                                         Provider::Ptr       provider,
-                                                         const std::string&  propertyName)
+AbstractLodScheduler::rendererNodePropertyChangedHandler(Store&									store,
+                                                         Provider::Ptr							provider,
+														 const data::Provider::PropertyName&	propertyName)
 {
-    if (propertyName == "worldToScreenMatrix")
+    if (*propertyName == "worldToScreenMatrix")
     {
         viewPropertyChanged(
             store.get<math::mat4>("worldToScreenMatrix"),

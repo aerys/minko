@@ -74,13 +74,13 @@ AbstractStreamedAssetParser::parse(const std::string&                 filename,
 {
     _dataPropertyChangedSlot = this->data()->propertyChanged().connect(
         [this](Provider::Ptr        provider,
-               const std::string&   propertyName)
+               const Provider::PropertyName& propertyName)
         {
-            if (propertyName == "requiredLod")
+            if (*propertyName == "requiredLod")
             {
                 requiredLod(provider->get<int>(propertyName));
             }
-            else if (propertyName == "priority")
+            else if (*propertyName == "priority")
             {
                 priority(provider->get<float>(propertyName));
             }

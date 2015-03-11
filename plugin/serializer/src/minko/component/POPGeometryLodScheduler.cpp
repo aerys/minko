@@ -111,7 +111,7 @@ POPGeometryLodScheduler::surfaceAdded(Surface::Ptr surface)
 		surfaceTarget->data().propertyChanged("modelToWorldMatrix").connect(
 			[=](Store&          	store,
             	Provider::Ptr       provider,
-            	const std::string&  propertyName)
+				const data::Provider::PropertyName&)
         	{
         	    invalidateLodRequirement(*resource->base);
         	}
