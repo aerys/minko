@@ -389,10 +389,8 @@ DrawCallPool::uniformBindingPropertyAddedHandler(DrawCall&                      
         delete resolvedBinding;
     }
 
-    if (input.type == ProgramInputs::Type::sampler2d)
-    {
+    if (input.type == ProgramInputs::Type::sampler2d || input.type == ProgramInputs::Type::samplerCube)
         samplerStatesBindingPropertyAddedHandler(drawCall, input, uniformBindingMap);
-    }
 }
 
 void

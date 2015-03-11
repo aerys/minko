@@ -380,6 +380,7 @@ DrawCall::setUniformValueFromStore(const ProgramInputs::UniformInput&   input,
             setUniformValue(_uniformFloat, input.location, 16, input.size, (!isArray ? math::value_ptr(store.get<math::mat4>(propertyName)) : math::value_ptr(store.get<std::vector<math::mat4>>(propertyName)[0])));
             break;
         case ProgramInputs::Type::sampler2d:
+        case ProgramInputs::Type::samplerCube:
             _samplers.push_back({
                 static_cast<uint>(_program->setTextureNames().size() + _samplers.size()),
                 store.getPointer<TextureSampler>(propertyName),
@@ -388,7 +389,6 @@ DrawCall::setUniformValueFromStore(const ProgramInputs::UniformInput&   input,
         break;
         case ProgramInputs::Type::float9:
         case ProgramInputs::Type::unknown:
-        case ProgramInputs::Type::samplerCube:
             throw std::runtime_error("unsupported program input type: " + ProgramInputs::typeToString(input.type));
         break;
     }
