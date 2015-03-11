@@ -551,13 +551,13 @@ OpenGLES2Context::createTexture(TextureType     type,
 
     if (assertPowerOfTwoSized)
     {
-	// make sure width is a power of 2
-	if (!((width != 0) && !(width & (width - 1))))
-		throw std::invalid_argument("width");
+	    // make sure width is a power of 2
+	    if (!((width != 0) && !(width & (width - 1))))
+		    throw std::invalid_argument("width");
 
-	// make sure height is a power of 2
-	if (!((height != 0) && !(height & (height - 1))))
-		throw std::invalid_argument("height");
+	    // make sure height is a power of 2
+	    if (!((height != 0) && !(height & (height - 1))))
+		    throw std::invalid_argument("height");
     }
     else
     {
@@ -938,8 +938,7 @@ OpenGLES2Context::setTextureAt(uint	position,
 		? GL_TEXTURE_2D
 		: GL_TEXTURE_CUBE_MAP;
 
-	if (_currentTexture[position] != texture ||
-		_currentBoundTexture != texture)
+	if (_currentTexture[position] != texture || _currentBoundTexture != texture)
 	{
 		glActiveTexture(GL_TEXTURE0 + position);
 		glBindTexture(glTarget, texture);
