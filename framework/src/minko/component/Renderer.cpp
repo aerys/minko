@@ -113,6 +113,14 @@ Renderer::clone(const CloneOption& option)
 */
 
 void
+Renderer::reset()
+{
+    _toCollect.clear();
+    _surfaceToDrawCallIterator.clear();
+    _drawCallPool.clear();
+}
+
+void
 Renderer::initializePostProcessingGeometry()
 {
 	auto context = _sceneManager->assets()->context();
@@ -226,6 +234,7 @@ Renderer::addedHandler(std::shared_ptr<Node> node,
 	), std::numeric_limits<float>::max());
 
 	//_lightMaskFilter->root(target->root());
+    reset();
 
 	rootDescendantAddedHandler(nullptr, target->root(), nullptr);
 }
@@ -298,7 +307,7 @@ Renderer::componentAddedHandler(std::shared_ptr<Node>				node,
     else if (perspectiveCamera)
     {
         _worldToScreenMatrixPropertyChangedSlot = perspectiveCamera->target()->data().propertyChanged("worldToScreenMatrix").connect(
-            [&](data::Store&, data::Provider::Ptr, const std::string&)
+            [&](data::Store&, data::Provider::Ptr, const data::Provider::PropertyName&)
             {
                 _mustZSort = true;
             }
@@ -313,14 +322,17 @@ Renderer::componentRemovedHandler(std::shared_ptr<Node>					node,
 {
 	auto surface = std::dynamic_pointer_cast<Surface>(cmp);
 	auto sceneManager = std::dynamic_pointer_cast<SceneManager>(cmp);
+    auto perspectiveCamera = std::dynamic_pointer_cast<PerspectiveCamera>(cmp);
 
 	if (surface)
 	{
 		unwatchSurface(surface, target);
 		removeSurface(surface);
 	}
-	else if (sceneManager)
-		setSceneManager(nullptr);
+    else if (sceneManager)
+        setSceneManager(nullptr);
+    else if (perspectiveCamera)
+        _worldToScreenMatrixPropertyChangedSlot = nullptr;
 }
 
 void
@@ -332,14 +344,12 @@ Renderer::addSurface(Surface::Ptr surface)
 	if (!checkSurfaceLayout(surface))
 		return;
 
-    std::unordered_map<std::string, std::string> variables = _variables;
+    render::EffectVariables variables = _variables;
 
-    auto& c = surface->target()->data();
-
-    variables["surfaceUuid"] = surface->uuid();
-    variables["geometryUuid"] = surface->geometry()->uuid();
-    variables["materialUuid"] = surface->material()->uuid();
-    variables["effectUuid"] = _effect ? _effect->uuid() : surface->effect()->uuid();
+	variables.push_back({ "surfaceUuid", surface->uuid() });
+	variables.push_back({ "geometryUuid", surface->geometry()->uuid() });
+	variables.push_back({ "materialUuid", surface->material()->uuid() });
+	variables.push_back({ "effectUuid", _effect ? _effect->uuid() : surface->effect()->uuid() });
 
     _surfaceToDrawCallIterator[surface] = _drawCallPool.addDrawCalls(
         _effect ? _effect : surface->effect(),
@@ -349,8 +359,6 @@ Renderer::addSurface(Surface::Ptr surface)
         target()->data(),
         surface->target()->data()
     );
-
-    auto drawCall = *(_surfaceToDrawCallIterator[surface].first);
 
     auto callback = std::bind(
         &Renderer::surfaceGeometryOrMaterialChangedHandler,
@@ -388,11 +396,11 @@ Renderer::surfaceGeometryOrMaterialChangedHandler(Surface::Ptr surface)
     // we completely remove the surface and re-add it again because
     // it's way simpler than just updating what has changed.
 
-    std::unordered_map<std::string, std::string> variables = _variables;
-    variables["surfaceUuid"] = surface->uuid();
-    variables["geometryUuid"] = surface->geometry()->uuid();
-    variables["materialUuid"] = surface->material()->uuid();
-    variables["effectUuid"] = _effect ? _effect->uuid() : surface->effect()->uuid();
+    render::EffectVariables variables = _variables;
+    variables.push_back({ "surfaceUuid", surface->uuid() });
+	variables.push_back({ "geometryUuid", surface->geometry()->uuid() });
+	variables.push_back({ "materialUuid", surface->material()->uuid() });
+	variables.push_back({ "effectUuid", _effect ? _effect->uuid() : surface->effect()->uuid() });
 
     _drawCallPool.invalidateDrawCalls(_surfaceToDrawCallIterator[surface], variables);
     //removeSurface(surface);
@@ -413,7 +421,7 @@ Renderer::render(render::AbstractContext::Ptr	context,
     if (!_enabled)
 		return;
 
-    const bool doZSort = _mustZSort || !_toCollect.empty();
+    const bool forceZSort = _mustZSort || !_toCollect.empty();
 
     // some surfaces have been added during the frame and collected
     // in _toCollect: we now have to take them into account to build
@@ -451,21 +459,13 @@ Renderer::render(render::AbstractContext::Ptr	context,
 			(_backgroundColor & 0xff) / 255.f
 		);
 
-    _drawCallPool.update();
+    _drawCallPool.update(forceZSort);
     
-    auto static counter = 0;
-
-    if (doZSort)
-    {
-        _drawCallPool.sortDrawCalls();
-        counter++;
-    }
-
     _mustZSort = false;
 
     auto drawCalls = _drawCallPool.drawCalls();
 
-    for (const DrawCall* drawCall : drawCalls)
+    for (const DrawCall* drawCall : _drawCallPool.drawCalls())
 	    drawCall->render(context, rt, _viewportBox, _backgroundColor);
 
 	context->setRenderToBackBuffer();
@@ -607,13 +607,6 @@ Renderer::filterChangedHandler(data::AbstractFilter::Ptr	filter,
 }
 
 void
-Renderer::nodeLayoutChangedHandler(NodePtr node, NodePtr target)
-{
-	for (auto surface : target->components<Surface>())
-		surfaceLayoutMaskChangedHandler(surface);
-}
-
-void
 Renderer::surfaceLayoutMaskChangedHandler(Surface::Ptr surface)
 {
 	if (checkSurfaceLayout(surface))
@@ -635,21 +628,23 @@ Renderer::watchSurface(SurfacePtr surface)
 
 	if (_nodeLayoutChangedSlot.count(node) == 0)
 	{
-		_nodeLayoutChangedSlot[node] = node->layoutChanged().connect(std::bind(
-			&Renderer::nodeLayoutChangedHandler,
-			std::static_pointer_cast<Renderer>(shared_from_this()),
-			std::placeholders::_1,
-			std::placeholders::_2
-		));
+		_nodeLayoutChangedSlot[node] = node->layoutChanged().connect(
+            [this](Node::Ptr n, Node::Ptr t)
+            {
+                for (auto surface : t->components<Surface>())
+                    surfaceLayoutMaskChangedHandler(surface);
+            }
+		);
 	}
 
 	if (_surfaceLayoutMaskChangedSlot.count(surface) == 0)
 	{
-		_surfaceLayoutMaskChangedSlot[surface] = surface->layoutMaskChanged().connect(std::bind(
-			&Renderer::surfaceLayoutMaskChangedHandler,
-			std::static_pointer_cast<Renderer>(shared_from_this()),
-			surface
-		));
+		_surfaceLayoutMaskChangedSlot[surface] = surface->layoutMaskChanged().connect(
+            [this](AbsCmpPtr s)
+            {
+                surfaceLayoutMaskChangedHandler(std::static_pointer_cast<Surface>(s));
+            }
+		);
 	}
 }
 

@@ -39,7 +39,7 @@ GeometryWriter::initialize()
 		std::bind(
 			GeometryWriter::serializeIndexStream,
 			std::placeholders::_1),
-		[=](std::shared_ptr < geometry::Geometry> geometry){return true; },
+        [=](std::shared_ptr<geometry::Geometry> geometry) { return true; },
 		0
 	);
 
@@ -60,7 +60,7 @@ GeometryWriter::initialize()
 			GeometryWriter::serializeVertexStream,
 			std::placeholders::_1
 		),
-		[=](std::shared_ptr < geometry::Geometry> geometry){return true; },
+        [=](std::shared_ptr<geometry::Geometry> geometry) { return true; },
 		0
 	);
 }
@@ -113,15 +113,15 @@ GeometryWriter::serializeVertexStream(std::shared_ptr<render::VertexBuffer> vert
     for (const auto& attribute : vertexBuffer->attributes())
 	{
 		serializedAttributes.push_back(msgpack::type::tuple<std::string, unsigned char, unsigned char>(
-            attribute.name,
+            *attribute.name,
             attribute.size,
             attribute.offset
         ));
 	}
 
 	std::string serializedVector = serialize::TypeSerializer::serializeVector<float>(vertexBuffer->data());
-
 	std::stringstream sbuf;
+
 	msgpack::type::tuple<std::string, std::vector<msgpack::type::tuple<std::string, unsigned char, unsigned char>>> res(
 		serializedVector,
 		serializedAttributes
@@ -158,6 +158,6 @@ GeometryWriter::indexBufferFitCharCompression(std::shared_ptr<geometry::Geometry
 {
 	std::vector<unsigned short>::iterator maxIndice = std::max_element(geometry->indices()->data().begin(), geometry->indices()->data().end());
 
-	return (*maxIndice <= 255);
+    return *maxIndice <= 255;
 
 }

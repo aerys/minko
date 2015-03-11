@@ -41,6 +41,7 @@ Options::Options() :
     _generateMipMaps(false),
     _resizeSmoothly(false),
     _isCubeTexture(false),
+    _isRectangleTexture(false),
     _startAnimation(true),
     _loadAsynchronously(false),
     _disposeIndexBufferAfterLoading(false),
@@ -78,6 +79,7 @@ Options::Options(const Options& copy) :
     _generateMipMaps(copy._generateMipMaps),
     _resizeSmoothly(copy._resizeSmoothly),
     _isCubeTexture(copy._isCubeTexture),
+	_isRectangleTexture(copy._isRectangleTexture),
     _startAnimation(copy._startAnimation),
     _disposeIndexBufferAfterLoading(copy._disposeIndexBufferAfterLoading),
     _disposeVertexBufferAfterLoading(copy._disposeVertexBufferAfterLoading),
@@ -119,7 +121,7 @@ Options::initialize()
 {
     resetNotInheritedValues();
     initializeDefaultFunctions();
-    
+
     if (_parsers.find("effect") == _parsers.end())
         registerParser<file::EffectParser>("effect");
 
@@ -220,7 +222,7 @@ Options::initializeDefaultFunctions()
             return effect;
         };
 
-    _textureFormatFunction = [=](const std::unordered_set<render::TextureFormat>& availableTextureFormats) ->render::TextureFormat
+    _textureFormatFunction = [=](const TextureFormatSet& availableTextureFormats) ->render::TextureFormat
     {
         static const auto defaultTextureFormats = std::list<render::TextureFormat>
         {

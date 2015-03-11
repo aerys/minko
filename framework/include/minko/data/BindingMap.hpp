@@ -49,6 +49,10 @@ namespace minko
                 defaultValues(m.defaultValues, true)
             {
             }
+
+            virtual
+            ~BindingMapBase()
+            {}
         };
 
         typedef BindingMapBase<data::Binding>   BindingMap;

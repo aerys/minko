@@ -27,7 +27,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::audio;
-using namespace minko::math;
 
 void
 PositionalSound::update(scene::Node::Ptr target)

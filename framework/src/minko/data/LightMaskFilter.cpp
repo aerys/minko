@@ -55,15 +55,15 @@ LightMaskFilter::root(Node::Ptr root)
 
 		for (auto& n : _numLightPropertyNames)
 		{
-			auto slot = _root->data().propertyChanged(n).connect(
-                [=](Store&, data::Provider::Ptr, const std::string&)
-                {
-				    lightsChangedHandler();
-			    },
-			    10.f
-            );
-
-			_rootPropertyChangedSlots.push_back(slot);
+			// auto slot = _root->data().propertyChanged(n).connect(
+            //     [=](Store&, data::Provider::Ptr, const std::string&)
+            //     {
+			// 	    lightsChangedHandler();
+			//     },
+			//     10.f
+            // );
+			//
+			// _rootPropertyChangedSlots.push_back(slot);
 		}
 
 		lightsChangedHandler();

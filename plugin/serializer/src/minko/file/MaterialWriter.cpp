@@ -19,8 +19,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/MaterialWriter.hpp"
 #include "minko/log/Logger.hpp"
+#include "minko/Flyweight.hpp"
+#include "minko/Any.hpp"
 #include "minko/render/Blending.hpp"
 #include "minko/render/TriangleCulling.hpp"
+
+#include "google/sparse_hash_map"
 
 using namespace minko;
 using namespace minko::file;
@@ -54,7 +58,7 @@ MaterialWriter::embed(std::shared_ptr<AssetLibrary>		assetLibrary,
 
 	for (const auto& value : material->data()->values())
 	{
-		std::string propertyName = value.first;
+		std::string propertyName = *value.first;
 
 		if (serializeMaterialValue<uint>(material, propertyName, assetLibrary, &serializedComplexProperties, &serializedBasicProperties, dependency))
 			continue;

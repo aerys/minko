@@ -36,7 +36,7 @@ using namespace minko;
 using namespace minko::file;
 using namespace minko::render;
 
-std::unordered_map<TextureFormat, TextureWriter::FormatWriterFunction> TextureWriter::_formatWriterFunctions = 
+std::unordered_map<TextureFormat, TextureWriter::FormatWriterFunction, Hash<TextureFormat>> TextureWriter::_formatWriterFunctions = 
 {
     { TextureFormat::RGB, std::bind(writeRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
     { TextureFormat::RGBA, std::bind(writeRGBATexture, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) },
@@ -112,7 +112,7 @@ TextureWriter::embed(AssetLibraryPtr               assetLibrary,
         else
         {
             auto length = blobStream.str().size() - offset;
-    
+
             formatHeaderData.push_back(msgpack::type::make_tuple<int, int, int>(
                 static_cast<int>(textureFormat),
                 offset,
@@ -127,15 +127,15 @@ TextureWriter::embed(AssetLibraryPtr               assetLibrary,
     const auto numFaces = static_cast<unsigned char>((texture->type() == TextureType::Texture2D ? 1 : 6));
     const auto numMipmaps = static_cast<unsigned char>((generateMipmaps ? math::getp2(width) + 1 : 0));
 
-    auto textureHeaderData = msgpack::type::make_tuple<int, int, unsigned char, unsigned char>(
+    msgpack::type::tuple<int, int, unsigned char, unsigned char> textureHeaderData(
         width,
         height,
         numFaces,
         numMipmaps
     );
 
-    headerData.a0 = textureHeaderData;
-    headerData.a1 = formatHeaderData;
+    headerData.get<0>() = textureHeaderData;
+    headerData.get<1>() = formatHeaderData;
 
     msgpack::pack(headerStream, headerData);
 

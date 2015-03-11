@@ -86,9 +86,9 @@ TEST_F(ProviderTest, PropertyAdded)
 	auto p = Provider::create();
 	auto v = 0;
 	auto _ = p->propertyAdded().connect(
-		[&](Provider::Ptr provider, const std::string& propertyName)
+		[&](Provider::Ptr provider, const Provider::PropertyName& propertyName)
 		{
-			if (provider == p && propertyName == "foo")
+			if (provider == p && *propertyName == "foo")
 				v = provider->get<int>("foo");
 		}
 	);
@@ -103,9 +103,9 @@ TEST_F(ProviderTest, PropertyRemoved)
 	auto p = Provider::create();
 	auto v = 0;
 	auto _ = p->propertyRemoved().connect(
-		[&](Provider::Ptr provider, const std::string& propertyName)
+		[&](Provider::Ptr provider, const Provider::PropertyName& propertyName)
 		{
-			if (provider == p && propertyName == "foo")
+			if (provider == p && *propertyName == "foo")
 				v = 42;
 		}
 	);
@@ -121,9 +121,9 @@ TEST_F(ProviderTest, PropertyChanged)
 	auto p = Provider::create();
 	auto v = 0;
 	auto _ = p->propertyChanged().connect(
-		[&](Provider::Ptr provider, const std::string& propertyName)
+		[&](Provider::Ptr provider, const Provider::PropertyName& propertyName)
 		{
-			if (provider == p && propertyName == "foo")
+			if (provider == p && *propertyName == "foo")
 				v = provider->get<int>("foo");
 		}
 	);
@@ -141,9 +141,9 @@ TEST_F(ProviderTest, ValueChangedNot)
 	p->set("foo", 42);
 
 	auto _ = p->propertyChanged().connect(
-		[&](Provider::Ptr provider, const std::string& propertyName)
+		[&](Provider::Ptr provider, const Provider::PropertyName& propertyName)
 		{
-			if (provider == p && propertyName == "foo")
+			if (provider == p && *propertyName == "foo")
 				v = provider->get<int>("foo");
 		}
 	);

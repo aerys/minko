@@ -69,6 +69,8 @@ namespace minko
             int                                                 _numFilesToParse;
 
         public:
+            virtual ~Loader() = default;
+
             inline static
             Ptr
             create()
@@ -171,7 +173,7 @@ namespace minko
 
             void
             protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol);
-
+            
             void
             protocolProgressHandler(std::shared_ptr<AbstractProtocol> protocol, float);
 

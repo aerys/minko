@@ -11,6 +11,13 @@ minko.project.library = function(name)
 
 	-- glm
 	includedirs { minko.sdk.path("/framework/lib/glm") }
+	-- sparsehash
+	includedirs { minko.sdk.path("/framework/lib/sparsehash/src") }
+	configuration { "windows" }
+		includedirs { minko.sdk.path("/framework/lib/sparsehash/include/windows") }
+		buildoptions { "/wd4996" }
+	configuration { "not windows*" }
+		includedirs { minko.sdk.path("/framework/lib/sparsehash/include") }
 
 	configuration { "debug"}
 		defines { "DEBUG" }
@@ -25,16 +32,17 @@ minko.project.library = function(name)
 
 	configuration { "vs*" }
 		defines {
-			"NOMINMAX",				-- do not define min/max as macro in windows.h
-			"_VARIADIC_MAX=10",		-- fix for faux variadic templates limited to 5 arguments by default
-			"_USE_MATH_DEFINES"		-- enable M_PI
+			"NOMINMAX",									    -- do not define min/max as macro in windows.h
+			"_VARIADIC_MAX=10",							    -- fix for faux variadic templates limited to 5 arguments by default
+			"_USE_MATH_DEFINES",						    -- enable M_PI
+			"_SILENCE_STDEXT_HASH_DEPRECATION_WARNINGS"		-- disable "<hash_map> is deprecated and will be REMOVED" error
 		}
 		flags {
-			-- "NoMinimalRebuild"
+			--"NoMinimalRebuild"
 		}
 		buildoptions {
 			"/wd4503",				-- remove warnings about too long type names
-			-- "/MP"					-- Multi Processor build (NoMinimalRebuild flag is needed)
+			--"/MP"					-- Multi Processor build (NoMinimalRebuild flag is needed)
 		}
 
 	configuration { "html5", "debug" }
@@ -223,8 +231,9 @@ minko.project.application = function(name)
 			cmd = cmd .. ' -s ERROR_ON_UNDEFINED_SYMBOLS=1'
 			-- disable exception catching
 			--cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=1'
-			-- allow memory pool to be dynamic
-			cmd = cmd .. ' -s ALLOW_MEMORY_GROWTH=1'
+		-- cmd = cmd .. ' -s ALLOW_MEMORY_GROWTH=1'
+		cmd = cmd .. ' -s NO_EXIT_RUNTIME=1'
+
 			--[[
 				optimize (very) long functions by breaking them into smaller ones
 

@@ -107,28 +107,28 @@ Loader::load()
 
             if (loadFile)
             {    
-                _files[filename] = protocol->file();
-    
-                _filesQueue.erase(std::find(_filesQueue.begin(), _filesQueue.end(), filename));
-                _loading.push_back(filename);
-    
-                _protocolSlots.push_back(protocol->error()->connect(std::bind(
-                    &Loader::protocolErrorHandler,
-                    shared_from_this(),
-                    std::placeholders::_1
-                    )));
-                _protocolSlots.push_back(protocol->complete()->connect(std::bind(
-                    &Loader::protocolCompleteHandler,
-                    shared_from_this(),
-                    std::placeholders::_1
+            _files[filename] = protocol->file();
+
+            _filesQueue.erase(std::find(_filesQueue.begin(), _filesQueue.end(), filename));
+            _loading.push_back(filename);
+
+            _protocolSlots.push_back(protocol->error()->connect(std::bind(
+                &Loader::protocolErrorHandler,
+                shared_from_this(),
+                std::placeholders::_1
                 )));
-                _protocolProgressSlots.push_back(protocol->progress()->connect(std::bind(
-                    &Loader::protocolProgressHandler,
-                    shared_from_this(),
-                    std::placeholders::_1,
-                    std::placeholders::_2
-                )));
-    
+            _protocolSlots.push_back(protocol->complete()->connect(std::bind(
+                &Loader::protocolCompleteHandler,
+                shared_from_this(),
+                std::placeholders::_1
+            )));
+            _protocolProgressSlots.push_back(protocol->progress()->connect(std::bind(
+                &Loader::protocolProgressHandler,
+                shared_from_this(),
+                std::placeholders::_1,
+                std::placeholders::_2
+            )));
+
                 protocol->load(filename, resolvedFilename, options);
             }
             else
@@ -147,7 +147,7 @@ Loader::protocolErrorHandler(std::shared_ptr<AbstractProtocol> protocol)
         std::string("Protocol error: ") + protocol->file()->filename() +
         std::string(", include paths: ") + std::to_string(_options->includePaths(), ",")
     );
-
+        
     errorThrown(error);
 }
 
@@ -180,6 +180,8 @@ Loader::protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol)
     _loading.erase(std::find(_loading.begin(), _loading.end(), filename));
     //_filenameToProtocol.erase(protocol->filename());
     _filenameToOptions.erase(filename);
+    _protocolSlots.clear();
+    _protocolProgressSlots.clear();
     
     _numFilesToParse++;
 
@@ -197,7 +199,7 @@ Loader::protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol)
     if (!parsed)
     {
         --_numFilesToParse;
-
+        
         finalize();
     }
 }
@@ -223,11 +225,11 @@ Loader::processData(const std::string&                      filename,
         ));
         
         _parserErrorSlots[parser] = parser->error()->connect(std::bind(
-            &Loader::parserErrorHandler,
-            shared_from_this(),
-            std::placeholders::_1,
-            std::placeholders::_2
-        ));
+                                                                       &Loader::parserErrorHandler,
+                                                                       shared_from_this(),
+                                                                       std::placeholders::_1,
+                                                                       std::placeholders::_2
+                                                                       ));
 
         parser->parse(filename, resolvedFilename, options, data, options->assetLibrary());
     }
@@ -235,11 +237,11 @@ Loader::processData(const std::string&                      filename,
     {
         if (options->storeDataIfNotParsed())
         {
-            if (extension != "glsl")
-                LOG_DEBUG("no parser found for extension '" << extension << "'");
+        if (extension != "glsl")
+            LOG_DEBUG("no parser found for extension '" << extension << "'");
 
-            options->assetLibrary()->blob(filename, data);
-        }
+        options->assetLibrary()->blob(filename, data);
+    }
     }
 
     return parser != nullptr;

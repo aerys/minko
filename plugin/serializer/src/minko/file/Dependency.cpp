@@ -486,12 +486,12 @@ Dependency::serialize(const std::string&                        parentFilename,
         switch (linkedAsset.linkType())
         {
         case LinkedAsset::LinkType::Copy:
-            linkedAssetData.a3 = linkedAsset.data();
+            linkedAssetData.get<3>() = linkedAsset.data();
             break;
 
         case LinkedAsset::LinkType::Internal:
         {
-            linkedAssetData.a0 = internalLinkedAssetDataOffset;
+            linkedAssetData.get<0>() = internalLinkedAssetDataOffset;
 
             internalLinkedAssets.emplace_back(linkedAsset.data().begin(), linkedAsset.data().end());
 
@@ -502,9 +502,9 @@ Dependency::serialize(const std::string&                        parentFilename,
 
         case LinkedAsset::LinkType::External:
         {
-            const auto validFilename = File::removePrefixPathFromFilename(linkedAssetData.a2);
+            const auto validFilename = File::removePrefixPathFromFilename(linkedAssetData.get<2>());
 
-            linkedAssetData.a2 = validFilename;
+            linkedAssetData.get<2>() = validFilename;
 
             break;
         }

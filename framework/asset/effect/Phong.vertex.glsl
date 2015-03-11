@@ -37,7 +37,7 @@ varying 	vec4 	vVertexScreenPosition;
 varying 	vec2 	vVertexUV;
 varying 	vec3 	vVertexNormal;
 varying 	vec3 	vVertexTangent;
-varying		vec4	vertexColor;
+varying		vec4	vVertexColor;
 
 void main(void)
 {
@@ -46,7 +46,7 @@ void main(void)
 	#endif // defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP
 
 	#if defined VERTEX_COLOR
-		vertexColor = vec4(packFloat8bitRGB(aColor), 1.0);
+		vVertexColor = vec4(packFloat8bitRGB(aColor), 1.0);
 	#endif // VERTEX_COLOR
 
 	vec4 worldPosition = vec4(aPosition, 1.0);

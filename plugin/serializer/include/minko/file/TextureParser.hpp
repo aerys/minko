@@ -21,6 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/AbstractSerializerParser.hpp"
 
+#include "minko/Hash.hpp"
+
 namespace minko
 {
     namespace file
@@ -47,7 +49,7 @@ namespace minko
             typedef std::shared_ptr<render::AbstractTexture> AbstractTexturePtr;
 
         private:
-            static std::unordered_map<render::TextureFormat, FormatParserFunction> _formatParserFunctions;
+            static std::unordered_map<render::TextureFormat, FormatParserFunction, Hash<render::TextureFormat>> _formatParserFunctions;
 
             unsigned int _textureHeaderSize;
             bool _dataEmbed;

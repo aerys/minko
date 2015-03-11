@@ -28,6 +28,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Program.hpp"
 #include "minko/render/States.hpp"
 #include "minko/render/VertexAttribute.hpp"
+#include "minko/Flyweight.hpp"
 
 namespace minko
 {
@@ -185,18 +186,19 @@ namespace minko
 			}
 
             std::pair<std::shared_ptr<Program>, const ProgramSignature*>
-            selectProgram(const std::unordered_map<std::string, std::string>&   translatedPropertyNames,
-						  const data::Store&	                            	targetData,
-						  const data::Store&	                            	rendererData,
-                          const data::Store&	                            	rootData);
+            selectProgram(const EffectVariables&    translatedPropertyNames,
+						  const data::Store&    	targetData,
+						  const data::Store&		rendererData,
+                          const data::Store&		rootData);
 
 			template <typename... T>
 			void
 			setUniform(const std::string& name, const T&... values)
 			{
-				_uniformFunctions[name] = std::bind(
-					&Pass::setUniformOnProgram<T...>, std::placeholders::_1, name, values...
-				);
+                _uniformFunctions[name] = [=](std::shared_ptr<Program> program)
+                {
+                    setUniformOnProgram<T...>(program, name, values...);
+                };
 
 				if (_programTemplate->isReady())
 					_programTemplate->setUniform(name, values...);
@@ -208,9 +210,10 @@ namespace minko
 			void
             setAttribute(const std::string& name, const VertexAttribute& attribute)
 			{
-				_attributeFunctions[name] = std::bind(
-					&Pass::setVertexAttributeOnProgram, std::placeholders::_1, name, attribute
-				);
+                _attributeFunctions[name] = [=](std::shared_ptr<Program> program)
+                {
+                    setVertexAttributeOnProgram(program, name, attribute);
+                };
 
 				if (_programTemplate->isReady())
 					_programTemplate->setAttribute(name, attribute);
@@ -222,7 +225,11 @@ namespace minko
 			void
 			define(const std::string& macroName)
 			{
-                _macroFunctions[macroName] = std::bind(&Pass::defineOnProgram, std::placeholders::_1, macroName);
+                _macroFunctions[macroName] = [=](std::shared_ptr<Program> program)
+                {
+                    defineOnProgram(program, macroName);
+                };
+
                 _programTemplate->define(macroName);
 			}
 
@@ -231,9 +238,10 @@ namespace minko
 			void
 			define(const std::string& macroName, T macroValue)
 			{
-                _macroFunctions[macroName] = std::bind(
-                    &Pass::defineOnProgramWithValue<T>, std::placeholders::_1, macroName, macroValue
-                );
+                _macroFunctions[macroName] = [=](std::shared_ptr<Program> program)
+                {
+                    defineOnProgramWithValue(program, macroName, macroValue);
+                };
                 _programTemplate->define(macroName, macroValue);
 			}
 

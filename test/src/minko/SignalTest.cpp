@@ -185,7 +185,7 @@ TEST_F(SignalTest, LockRemove)
 
 	ASSERT_EQ(s->numCallbacks(), 1);
 	ASSERT_EQ(v, 42);
-	ASSERT_EQ(w, 42);
+	ASSERT_EQ(w, 0);
 }
 
 TEST_F(SignalTest, Priority)
@@ -221,4 +221,58 @@ TEST_F(SignalTest, Priority)
 	s.execute();
 
 	ASSERT_EQ(i, 5);
+}
+
+//TEST_F(SignalTest, DeleteDuringExecute)
+//{
+//    Signal<int>* s = new Signal<int>();
+//    int j = 0;
+//
+//    auto _ = s->connect([&](int i)
+//    {
+//        delete s;
+//    }, 1.f);
+//
+//    auto __ = s->connect([&](int i)
+//    {
+//        j = i;
+//    }, 0.f);
+//
+//    s->execute(42);
+//
+//    ASSERT_EQ(j, 42);
+//}
+
+TEST_F(SignalTest, DisconnectSlotDuringExecute)
+{
+    Signal<int> s;
+
+    auto slot = s.connect([&](int i)
+    {
+        s.numCallbacks();
+    }, 0.f);
+
+    auto _ = s.connect([&](int i)
+    {
+        slot->disconnect();
+    }, 1.f);
+
+    s.execute(42);
+
+    ASSERT_EQ(s.numCallbacks(), 1);
+}
+
+TEST_F(SignalTest, SameCallbackTwice)
+{
+    Signal<int> s;
+    auto c = [](int i) { };
+
+    auto _ = s.connect(c);
+    auto __ = s.connect(c);
+
+    _ = nullptr;
+
+    s.execute(42);
+
+    ASSERT_EQ(s.numCallbacks(), 1);
 }

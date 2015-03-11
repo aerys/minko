@@ -51,7 +51,7 @@ sed -i "s/{{VERSION_CODE}}/$VERSION_CODE/" AndroidManifest.xml
 mkdir -p libs/armeabi-v7a/
 # mkdir -p libs/x86/
 
-cp *.so libs/armeabi-v7a/libmain.so
+cp ${TARGET_NAME} libs/armeabi-v7a/libmain.so
 # cp *.so libs/x86/libmain.so
 
 rm -rf assets

@@ -64,7 +64,7 @@ namespace minko
             Signal<Ptr>                             	_materialChanged;
             Signal<Ptr>                       	      	_effectChanged;
 
-			Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot	_componentRemovedSlot;
+            Signal<NodePtr, NodePtr, AbsCmpPtr>::Slot	_bubbleUpSlot;
 
 		public:
 			static

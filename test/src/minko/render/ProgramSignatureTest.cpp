@@ -37,7 +37,7 @@ ProgramSignatureTest::SetUp()
     targetCollection->pushBack(targetProvider);
     targetProvider->set("foo", 4242);
     _targetData.addCollection(targetCollection);
-    _variables["targetId"] = "0";
+    _variables.push_back(std::make_pair("targetId", "0"));
 
     _rendererProvider = data::Provider::create();
     _rendererData.addProvider(_rendererProvider);
@@ -50,7 +50,7 @@ ProgramSignatureTest::SetUp()
     _rootData.addCollection(rootCollection);
     _rootProvider->set("foo", 424242);
     _rootProvider->set("bar", true);
-    _variables["rootId"] = "0";
+    _variables.push_back(std::make_pair("rootId", "0"));
 }
 
 TEST_F(ProgramSignatureTest, TargetDefinedIntegerValue)

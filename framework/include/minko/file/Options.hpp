@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/SkinningMethod.hpp"
 #include "minko/file/EffectParser.hpp"
+#include "minko/Hash.hpp"
 
 namespace minko
 {
@@ -32,17 +33,19 @@ namespace minko
 			public std::enable_shared_from_this<Options>
 		{
 		private:
-			typedef std::shared_ptr<AbstractProtocol>						            AbsProtocolPtr;
-			typedef std::shared_ptr<data::Provider>										ProviderPtr;
-			typedef std::shared_ptr<material::Material>									MaterialPtr;
-			typedef std::shared_ptr<geometry::Geometry>									GeomPtr;
-			typedef std::shared_ptr<render::AbstractTexture>                            AbstractTexturePtr;
-			typedef std::shared_ptr<scene::Node>										NodePtr;
-			typedef std::shared_ptr<render::Effect>										EffectPtr;
-			typedef std::shared_ptr<Loader>                                             LoaderPtr;
-			typedef std::shared_ptr<AbstractParser>                                     AbsParserPtr;
-			typedef std::function<AbsParserPtr(void)>                                   ParserHandler;
-			typedef std::function<AbsProtocolPtr(void)>		                            ProtocolHandler;
+			typedef std::shared_ptr<AbstractProtocol>						        AbsProtocolPtr;
+			typedef std::shared_ptr<data::Provider>									ProviderPtr;
+			typedef std::shared_ptr<material::Material>								MaterialPtr;
+			typedef std::shared_ptr<geometry::Geometry>								GeomPtr;
+			typedef std::shared_ptr<render::AbstractTexture>						AbstractTexturePtr;
+			typedef std::shared_ptr<scene::Node>									NodePtr;
+			typedef std::shared_ptr<render::Effect>									EffectPtr;
+			typedef std::shared_ptr<Loader>                                         LoaderPtr;
+			typedef std::shared_ptr<AbstractParser>                                 AbsParserPtr;
+			typedef std::function<AbsParserPtr(void)>                               ParserHandler;
+			typedef std::function<AbsProtocolPtr(void)>		                        ProtocolHandler;
+			typedef Hash<render::TextureFormat>										TextureFormatHash;
+			typedef std::unordered_set<render::TextureFormat, TextureFormatHash>	TextureFormatSet;
 
 		public:
 			typedef std::shared_ptr<Options>											Ptr;
@@ -55,9 +58,7 @@ namespace minko
 			typedef std::function<const std::string(const std::string&)>				UriFunction;
 			typedef std::function<NodePtr(NodePtr)>										NodeFunction;
 			typedef std::function<EffectPtr(EffectPtr)>									EffectFunction;
-
-            typedef std::function<render::TextureFormat(const std::unordered_set<render::TextureFormat>&)>
-                                                                                        TextureFormatFunction;
+            typedef std::function<render::TextureFormat(const TextureFormatSet&)>		TextureFormatFunction;
 
 		private:
 			std::shared_ptr<render::AbstractContext>	        _context;
@@ -72,6 +73,7 @@ namespace minko
 			bool                                                _generateMipMaps;
 			bool										        _resizeSmoothly;
 			bool										        _isCubeTexture;
+            bool                                                _isRectangleTexture;
 			bool										        _startAnimation;
 			bool										        _loadAsynchronously;
             bool                                                _disposeIndexBufferAfterLoading;
@@ -97,7 +99,7 @@ namespace minko
             int                                                 _seekedLength;
 
 			static ProtocolFunction								_defaultProtocolFunction;
-		
+
 		public:
 			inline static
 			Ptr
@@ -256,6 +258,22 @@ namespace minko
 
 			inline
 			bool
+            isRectangleTexture() const
+            {
+                return _isRectangleTexture;
+            }
+
+            inline
+            Ptr
+            isRectangleTexture(bool value)
+            {
+                _isRectangleTexture = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            bool
 			disposeIndexBufferAfterLoading() const
 			{
 				return _disposeIndexBufferAfterLoading;
@@ -422,7 +440,7 @@ namespace minko
 
 				return shared_from_this();
 			}
-            
+
             inline
 			const ParserFunction&
 			parserFunction() const

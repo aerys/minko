@@ -93,7 +93,7 @@ Geometry::removeVertexBuffer(std::list<render::VertexBuffer::Ptr>::iterator vert
 	vertexBuffer->dispose();
 
 	for (auto attribute : vertexBuffer->attributes())
-		_data->unset(attribute.name);
+		_data->unset(*attribute.name);
 
 	_vertexSize	-= vertexBuffer->vertexSize();
 	_data->set("vertex.size", _vertexSize);
@@ -159,32 +159,29 @@ Geometry::computeNormals()
 
     unsigned int normalSize;
     unsigned int normalOffset;
+    std::vector<float>* normalsData;
 
     if (normalBuffer)
     {
+        normalsData = &normalBuffer->data();
 	    const auto& normalAttribute = normalBuffer->attribute("normal");
         normalSize = *normalAttribute.vertexSize;
         normalOffset = normalAttribute.offset;
     }
     else
     {
+        normalsData = new std::vector<float>(3 * numVertices, 0.0f);
         normalSize = 3;
         normalOffset = 0;
-
-        normalBuffer = VertexBuffer::create(xyzBuffer->context(), std::vector<float>(3 * numVertices, 0.0f));
-        normalBuffer->addAttribute("normal", normalSize, normalOffset);
-        addVertexBuffer(normalBuffer);
     }
-
-    std::vector<float>& normalsData = normalBuffer->data();
 
     for (auto i = 0u; i < numVertices; ++i)
     {
         const auto index = normalOffset + i * normalSize;
 
-        normalsData[index]      = 0.f;
-        normalsData[index + 1]  = 0.f;
-        normalsData[index + 2]  = 0.f;
+        (*normalsData)[index] = 0.f;
+        (*normalsData)[index + 1] = 0.f;
+        (*normalsData)[index + 2] = 0.f;
     }
 
 	for (unsigned int i = 0, offset = 0; i < numFaces; ++i)
@@ -202,9 +199,9 @@ Geometry::computeNormals()
 		{
 			const unsigned int index = normalOffset + normalSize * vertexIds[k];
 
-			normalsData[index]		+= faceNormal.x;
-			normalsData[index + 1]	+= faceNormal.y;
-			normalsData[index + 2]	+= faceNormal.z;
+			(*normalsData)[index] += faceNormal.x;
+			(*normalsData)[index + 1] += faceNormal.y;
+			(*normalsData)[index + 2] += faceNormal.z;
 		}
 	}
 
@@ -212,16 +209,25 @@ Geometry::computeNormals()
 	{
         const auto indexOffset = normalOffset + i * normalSize;
 
-		const float x				= normalsData[indexOffset];
-		const float y				= normalsData[indexOffset + 1];
-		const float z				= normalsData[indexOffset + 2];
-		const float lengthSquared	= x * x + y * y + z * z;
-		const float invLength		= lengthSquared > 1e-6f ? 1.0f / sqrtf(lengthSquared) : 1.0f;
+		const float x = (*normalsData)[indexOffset];
+        const float y = (*normalsData)[indexOffset + 1];
+        const float z = (*normalsData)[indexOffset + 2];
+		const float lengthSquared = x * x + y * y + z * z;
+		const float invLength = lengthSquared > 1e-6f ? 1.0f / sqrtf(lengthSquared) : 1.0f;
 
-		normalsData[indexOffset]		*= invLength;
-		normalsData[indexOffset + 1]	*= invLength;
-		normalsData[indexOffset + 2]	*= invLength;
+        (*normalsData)[indexOffset] *= invLength;
+        (*normalsData)[indexOffset + 1] *= invLength;
+        (*normalsData)[indexOffset + 2] *= invLength;
 	}
+
+    if (!normalBuffer)
+    {
+        normalBuffer = VertexBuffer::create(xyzBuffer->context(), *normalsData);
+        normalBuffer->addAttribute("normal", normalSize, normalOffset);
+        addVertexBuffer(normalBuffer);
+
+        delete normalsData;
+    }
 
 	return shared_from_this();
 }
