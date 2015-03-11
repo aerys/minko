@@ -30,13 +30,21 @@
 
                         void main(void)
                         {
-                            vVertexUV = vec2(aUV.x, 1 - aUV.y);
-                            gl_Position = vec4(aPosition, 1) * vec4(1., 1., 1., .5);
+                            vVertexUV = vec2(aUV.x, 1.0 - aUV.y);
+                            gl_Position = vec4(aPosition, 1.0) * vec4(1.0, 1.0, 1.0, 0.5);
                         }
                     ",
 
                     "fragmentShader"    :
                     "
+                        #ifdef GL_ES
+                            #ifdef GL_FRAGMENT_PRECISION_HIGH
+                                precision highp float;
+                            #else
+                                precision mediump float;
+                            #endif
+                        #endif
+
                         uniform vec2 uScreenSpaceLightPosition;
                         uniform sampler2D uBackbuffer;
                         uniform sampler2D uEmissionMap;
