@@ -64,10 +64,11 @@ TextureLodScheduler::surfaceAdded(Surface::Ptr surface)
 
     auto surfaceTarget = surface->target();
     auto material = surface->material();
+	auto values = material->data()->values();
 
-    for (const auto& propertyNameToValuePair : material->data()->values())
+    for (const auto& propertyNameToValuePair : values)
     {
-        const auto& propertyName = propertyNameToValuePair.first;
+        const auto propertyName = propertyNameToValuePair.first;
 
         if (!material->data()->propertyHasType<TextureSampler>(propertyName))
             continue;
