@@ -269,8 +269,46 @@ HTTPProtocol::load()
             }
         }));
 
-        std::vector<char> input(resolvedFilename().begin(), resolvedFilename().end());
-        worker->start(input);
+        const auto offset = _options->seekingOffset();
+        const auto length = _options->seekedLength();
+
+        std::stringstream inputStream;
+
+        const auto& resolvedFilename = this->resolvedFilename();
+        const auto resolvedFilenameSize = static_cast<int>(resolvedFilename.size());
+
+        const auto usernameSize = username.size();
+        const auto passwordSize = password.size();
+
+        const auto numAdditionalHeaders = additionalHeaders.size();
+
+        inputStream.write(reinterpret_cast<const char*>(&resolvedFilenameSize), 4);
+        inputStream.write(resolvedFilename.data(), resolvedFilenameSize);
+
+        inputStream.write(reinterpret_cast<const char*>(&usernameSize), 4);
+        inputStream.write(username.data(), usernameSize);
+        inputStream.write(reinterpret_cast<const char*>(&passwordSize), 4);
+        inputStream.write(password.data(), passwordSize);
+
+        inputStream.write(reinterpret_cast<const char*>(&numAdditionalHeaders), 4);
+
+        for (const auto& additionalHeader : additionalHeaders)
+        {
+            const auto& key = additionalHeader.first;
+            const auto& value = additionalHeader.second;
+
+            const auto keySize = static_cast<int>(key.size());
+            const auto valueSize = static_cast<int>(value.size());
+
+            inputStream.write(reinterpret_cast<const char*>(&keySize), 4);
+            inputStream.write(reinterpret_cast<const char*>(&valueSize), 4);
+            inputStream.write(key.data(), keySize);
+            inputStream.write(value.data(), valueSize);
+        }
+
+        auto inputString = inputStream.str();
+        
+        worker->start(std::vector<char>(inputString.begin(), inputString.end()));
     }
     else
     {
