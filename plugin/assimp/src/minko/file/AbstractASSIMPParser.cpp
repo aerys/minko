@@ -512,16 +512,24 @@ AbstractASSIMPParser::createCameras(const aiScene* scene)
 		const auto	aiPosition	= aiCamera->mPosition;
 		const auto	aiLookAt	= aiCamera->mLookAt;
 		const auto	aiUp		= aiCamera->mUp;
-		auto		position	= math::normalize(math::vec3(aiPosition.x, aiPosition.y, aiPosition.z));
-		auto		target		= math::normalize(math::vec3(aiPosition.x + aiLookAt.x, aiPosition.y + aiLookAt.y, aiPosition.z + aiLookAt.z));
-		auto		up			= math::normalize(math::vec3(aiUp.x, aiUp.y, aiUp.z));
 
-        if (math::vec3(aiPosition.x + aiLookAt.x, aiPosition.y + aiLookAt.y, aiPosition.z + aiLookAt.z) == math::vec3())
-        {
-            target = math::vec3(1e-6f, 1e-6f, 1e-6f);
-        }
+        auto position = math::vec3(aiPosition.x, aiPosition.y, aiPosition.z);
+        position = position != math::zero<math::vec3>()
+            ? math::normalize(position)
+            : position;
 
-        auto lookat = math::lookAt(position,target, up);
+        auto target = math::vec3(aiPosition.x + aiLookAt.x, aiPosition.y + aiLookAt.y, aiPosition.z + aiLookAt.z);
+        target = target != math::zero<math::vec3>()
+            ? math::normalize(target)
+            : math::vec3(1e-6f, 1e-6f, 1e-6f);
+
+        auto up = math::vec3(aiUp.x, aiUp.y, aiUp.z);
+        up = up != math::zero<math::vec3>()
+            ? math::normalize(up)
+            : up;
+
+        const auto lookat = math::lookAt(position, target, up);
+
         auto transform = Transform::create(math::inverse(lookat));
 		const auto	cameraName	= std::string(aiCamera->mName.data);
 		auto		cameraNode = scene::Node::create(cameraName + "_camera_" + std::to_string(i))
@@ -605,7 +613,9 @@ AbstractASSIMPParser::createLights(const aiScene* scene)
 			else
 				lightNode->addComponent(Transform::create());
 
-			auto lookAt		= math::normalize(position + direction);
+            auto lookAt = position + direction;
+            lookAt = lookAt != math::zero<math::vec3>() ? math::normalize(lookAt) : lookAt;
+
             auto matrix     = math::lookAt(position, lookAt, math::vec3(0.f, 1.f, 0.f));
 		}
 
