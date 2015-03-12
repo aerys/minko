@@ -305,7 +305,12 @@ Store::providerPropertyRemovedHandler(Provider::Ptr                 provider,
     executePropertySignal(provider, collection, propertyName, _propertyRemoved, *_propertyNameToRemovedSignal);
 
     auto formattedName = formatPropertyName(collection, provider, *propertyName);
-    auto it = _propertyNameToAddedSignal->find(formattedName);
+    
+    // Explicit typing required here since `map::erase` takes a `const_iterator`
+    // while find returns an `iterator` by default.
+    ChangedSignalMap::const_iterator it;
+    
+    it = _propertyNameToAddedSignal->find(formattedName);
     if (it != _propertyNameToAddedSignal->end() && it->second->numCallbacks() == 0)
     {
         delete it->second;
