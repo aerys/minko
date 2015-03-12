@@ -9,43 +9,43 @@
         }
         </style>
 
+        <script type="text/javascript">
+        var onValueChange = function(event)
+        {
+            Minko.sendMessage(event.target.id + "=" + event.target.value);
+        };
+        </script>
+
         <div id="side-panel">
             <form oninput="output.value = decay.valueAsNumber">
                 <label for="decay">decay</label>
                 <output for="decay" name="output"></output>
-                <input id="decay" name="decay" type="range" min="0.75" max="1.0" step="0.001" value="0.96815" onchange="onchange">
+                <input id="decay" name="decay" type="range" min="0.75" max="1.0" step="0.001" value="0.96815" oninput="onValueChange(event)">
             </form>
 
             <form oninput="output.value = weight.valueAsNumber">
                 <label for="weight">weight</label>
                 <output for="weight" name="output"></output>
-                <input id="weight" name="weight" type="range" min="0.0" max="1.0" step="0.001" value="0.58767" onchange="onchange">
+                <input id="weight" name="weight" type="range" min="0.0" max="1.0" step="0.001" value="0.58767" oninput="onValueChange(event)">
             </form>
 
             <form oninput="output.value = exposure.valueAsNumber">
                 <label for="exposure">exposure</label>
                 <output for="exposure" name="output"></output>
-                <input id="exposure" name="exposure" type="range" min="0.0" max="1.0" step="0.001" value="0.2" onchange="onchange">
+                <input id="exposure" name="exposure" type="range" min="0.0" max="1.0" step="0.001" value="0.2" oninput="onValueChange(event)">
             </form>
 
             <form oninput="output.value = density.valueAsNumber">
                 <label for="density">density</label>
                 <output for="density" name="output"></output>
-                <input id="density" name="density" type="range" min="0.0" max="1.0" step="0.001" value="0.926" onchange="onchange">
+                <input id="density" name="density" type="range" min="0.0" max="1.0" step="0.001" value="0.926" oninput="onValueChange(event)">
             </form>
 
             <form oninput="output.value = numSamples.valueAsNumber">
                 <label for="numSamples">numSamples</label>
                 <output for="numSamples" name="output"></output>
-                <input id="numSamples" name="numSamples" type="range" min="1" max="512" step="1" value="128" onchange="onchange">
+                <input id="numSamples" name="numSamples" type="range" min="1" max="512" step="1" value="128" oninput="onValueChange(event)">
             </form>
         </div>
-
-        <script type="text/javascript">
-        var onchange = function(event)
-        {
-            Minko.sendMessage(event.target.id + "=" + event.target.value);
-        };
-        </script>
     </body>
 </html>
