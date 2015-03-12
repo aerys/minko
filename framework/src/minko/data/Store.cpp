@@ -308,8 +308,12 @@ Store::providerPropertyRemovedHandler(Provider::Ptr                 provider,
     
     // Explicit typing required here since `map::erase` takes a `const_iterator`
     // while find returns an `iterator` by default.
+#if defined(DEBUG)
     ChangedSignalMap::const_iterator it;
-    
+#else
+	ChangedSignalMap::iterator it;
+#endif
+
     it = _propertyNameToAddedSignal->find(formattedName);
     if (it != _propertyNameToAddedSignal->end() && it->second->numCallbacks() == 0)
     {
