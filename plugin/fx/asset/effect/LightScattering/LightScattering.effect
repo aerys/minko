@@ -18,7 +18,12 @@
                     {
                         "uScreenSpaceLightPosition" : "material[${materialUuid}].screenSpaceLightPosition",
                         "uBackbuffer" : "material[${materialUuid}].backbuffer",
-                        "uEmissionMap" : "material[${materialUuid}].emissionMap"
+                        "uEmissionMap" : "material[${materialUuid}].emissionMap",
+                        "uDecay" : "material[${materialUuid}].decay",
+                        "uWeight" : "material[${materialUuid}].weight",
+                        "uExposure" : "material[${materialUuid}].exposure",
+                        "uDensity" : "material[${materialUuid}].density",
+                        "uNumSamples" : "material[${materialUuid}].numSamples"
                     },
 
                     "vertexShader"      :
@@ -49,12 +54,11 @@
                         uniform sampler2D uBackbuffer;
                         uniform sampler2D uEmissionMap;
 
-                        const float decay = 0.96815;
-                        const float weight = 0.58767;
-                        const float exposure = 0.2;
-                        const float density = 0.926;
-
-                        const int NUM_SAMPLES = 128;
+                        uniform float uDecay;
+                        uniform float uWeight;
+                        uniform float uExposure;
+                        uniform float uDensity;
+                        uniform int uNumSamples;
 
                         varying vec2 vVertexUV;
 
@@ -65,22 +69,22 @@
 
                             vec2 deltaTextCoord = vec2(vVertexUV.xy - uScreenSpaceLightPosition.xy);
                             vec2 textCoord = vVertexUV.xy;
-                            deltaTextCoord *= 1.0 / float(NUM_SAMPLES) * density;
+                            deltaTextCoord *= 1.0 / float(uNumSamples) * uDensity;
                             float illuminationDecay = 1.0;
 
-                            for (int i = 0; i < NUM_SAMPLES; i++)
+                            for (int i = 0; i < uNumSamples; i++)
                             {
                                 textCoord -= deltaTextCoord;
                                 vec4 sample = texture2D(uEmissionMap, textCoord);
 
-                                sample *= illuminationDecay * weight;
+                                sample *= illuminationDecay * uWeight;
 
                                 pixelLight += sample;
 
-                                illuminationDecay *= decay;
+                                illuminationDecay *= uDecay;
                              }
 
-                             pixelLight *= exposure;
+                             pixelLight *= uExposure;
 
                              // gl_FragColor = pixelLight;
                              gl_FragColor = pixelLight + pixelColor;

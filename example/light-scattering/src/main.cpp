@@ -19,6 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Minko.hpp"
 #include "minko/MinkoSDL.hpp"
+#include "minko/MinkoHtmlOverlay.hpp"
 
 #include "TextureDebugDisplay.hpp"
 
@@ -32,7 +33,6 @@ createRandomCube(geometry::Geometry::Ptr geom, render::Effect::Ptr effect)
 
     auto material = material::BasicMaterial::create()
         ->diffuseColor(math::vec4((r + 1.f) * .5f, 1.f));
-        // ->diffuseColor(math::vec4(0.f, 0.f, 0.f, 1.f));
 
     auto node = scene::Node::create()
         ->addComponent(Transform::create(
@@ -49,11 +49,16 @@ createRandomCube(geometry::Geometry::Ptr geom, render::Effect::Ptr effect)
 
 int main(int argc, char** argv)
 {
+    auto overlay        = HtmlOverlay::create(argc, argv);
     auto canvas         = Canvas::create("Minko Example - Light Scattering", 800, 600);
     auto sceneManager   = SceneManager::create(canvas);
-    auto root           = scene::Node::create("root")->addComponent(sceneManager);
+    auto root           = scene::Node::create("root");
     auto assets         = sceneManager->assets();
     auto context        = canvas->context();
+
+    root
+        ->addComponent(sceneManager)
+        ->addComponent(overlay);
 
     context->errorsEnabled(true);
 
@@ -79,11 +84,18 @@ int main(int argc, char** argv)
     auto ppRenderer = Renderer::create();
     auto ppScene = scene::Node::create()->addComponent(ppRenderer);
     auto ppTarget = render::Texture::create(context, math::clp2(canvas->width()), math::clp2(canvas->height()), false, true);
-    auto ppMaterial = material::BasicMaterial::create();
 
-    ppMaterial->data()->set("emissionMap", fwdTarget->sampler());
-    ppMaterial->data()->set("backbuffer", ppTarget->sampler());
     ppTarget->upload();
+
+    auto ppMaterial = material::BasicMaterial::create({
+        { "emissionMap", fwdTarget->sampler() },
+        { "backbuffer", ppTarget->sampler() },
+        { "decay", 0.96815f },
+        { "weight", 0.58767f },
+        { "exposure", 0.2f },
+        { "density", 0.926f },
+        { "numSamples", 128ul }
+    });
 
     // scene
     auto debugNode1 = scene::Node::create("debug1", scene::BuiltinLayout::DEBUG_ONLY);
@@ -193,6 +205,19 @@ int main(int argc, char** argv)
         // Blending fwdTarget with ppTarget, enabling light scattering.
         ppRenderer->render(context);
     });
+
+    auto onmessageSlot = overlay->onmessage()->connect([=](minko::dom::AbstractDOM::Ptr dom, std::string message)
+    {
+        auto key = message.substr(0, message.find("="));
+        auto value = message.substr(message.find("=") + 1);
+
+        if (key == "numSamples") // unsigned long
+            ppMaterial->data()->set(key, std::stoul(value));
+        else // float
+            ppMaterial->data()->set(key, std::stof(value));
+    });
+
+    overlay->load("html/interface.html");
 
     assets->loader()->load();
     canvas->run();
