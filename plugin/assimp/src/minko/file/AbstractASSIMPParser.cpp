@@ -960,7 +960,8 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
     for (auto animatedNode : animatedNodes->nodes())
     {
         auto animatedNodeDescendants = NodeSet::create(animatedNode)
-            ->descendants(true);
+            ->descendants(true)
+            ->where([](Node::Ptr animatedNodeDescendant) -> bool { return animatedNodeDescendant->hasComponent<Transform>(); });
 
         irrelevantTransformNodes.insert(
             animatedNodeDescendants->nodes().begin(),
