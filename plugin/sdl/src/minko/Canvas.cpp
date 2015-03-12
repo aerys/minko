@@ -495,10 +495,10 @@ Canvas::step()
 
         case SDL_MOUSEMOTION:
         {
-			int windowW;
-			int windowH;
+            int windowW;
+            int windowH;
 
-			SDL_GetWindowSize(_window, &windowW, &windowH);
+            SDL_GetWindowSize(_window, &windowW, &windowH);
 
 			auto x = event.motion.x;
 			auto y = event.motion.y;
@@ -507,13 +507,12 @@ Canvas::step()
 			{
                 x = int(float(_width) * float(event.motion.x) / float(windowW));
 				y = int(float(_height) * float(event.motion.y) / float(windowH));
-			}
+            }
 
-			_mouse->x(x);
-			_mouse->y(y);
+            _mouse->x(x);
+            _mouse->y(y);
 
             _mouse->move()->execute(_mouse, event.motion.xrel, event.motion.yrel);
-
             break;
         }
 
