@@ -159,6 +159,12 @@ namespace minko
                 if (_values.count(propertyName) != 0)
                 {
                     T* ptr = Any::cast<T>(&_values[propertyName]);
+
+#if DEBUG
+                    if (!ptr)
+                        throw std::invalid_argument("Property `" + *propertyName + "` does not exist or has an incorrect type.");
+#endif
+
                     auto changed = !(*ptr == value);
 
                     *ptr = value;
