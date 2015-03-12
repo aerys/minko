@@ -41,7 +41,7 @@ CRNTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
                          std::vector<unsigned char>&               out)
 {
 #ifndef MINKO_NO_CRNLIB
-    const auto textureFormatToCRNTextureFomat = std::unordered_map<TextureFormat, crn_format>
+    const auto textureFormatToCRNTextureFomat = std::unordered_map<TextureFormat, crn_format, Hash<TextureFormat>>
     {
         { TextureFormat::RGB_DXT1,      crn_format::cCRNFmtDXT1 },
         { TextureFormat::RGBA_DXT1,     crn_format::cCRNFmtDXT1 },
