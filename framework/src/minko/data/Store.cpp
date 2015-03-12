@@ -133,12 +133,14 @@ Store::operator=(Store&& other)
 void
 Store::initialize()
 {
+#ifndef DEBUG
     _propertyNameToChangedSignal->set_deleted_key("");
     _propertyNameToAddedSignal->set_deleted_key("");
     _propertyNameToRemovedSignal->set_deleted_key("");
     _propertySlots->set_deleted_key(nullptr);
     _collectionItemAddedSlots->set_deleted_key(nullptr);
     _collectionItemRemovedSlots->set_deleted_key(nullptr);
+#endif
 }
 
 void

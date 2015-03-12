@@ -47,10 +47,13 @@ namespace minko
             typedef Flyweight<std::string>                              FString;
 			typedef std::list<std::pair<FString, FString>>				FStringList;
 
+#if DEBUG
+			template <class K, typename... V>
+			using map = std::unordered_map<K, V...>;
+#else
 			template <typename... H>
 			using map = google::sparse_hash_map<H...>;
-			/*template <class K, class V, typename... H>
-			using map = std::unordered_map<K, V, H...>;*/
+#endif
 
         public:
             typedef Signal<Store&, ProviderPtr, const PropertyName&>	PropertyChangedSignal;

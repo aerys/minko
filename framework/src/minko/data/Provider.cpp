@@ -28,7 +28,16 @@ using namespace minko::data;
 Provider::Provider() :
     _values(new ValueMap())
 {
+#ifndef DEBUG
     _values->set_deleted_key("");
+#endif
+}
+
+Provider::Provider(const ValueMap& values) :
+	_values(new ValueMap())
+{
+	for (auto& p : values)
+        setValue(p.first, p.second);
 }
 
 Provider::~Provider()

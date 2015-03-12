@@ -58,6 +58,18 @@ namespace minko
 				return instance;
 			}
 
+			inline
+			static
+			Ptr
+			create(const data::Provider::ValueMap& values)
+			{
+				auto instance = Ptr(new BasicMaterial(values));
+
+				instance->initialize();
+
+				return instance;
+			}
+
 			Ptr
 			diffuseColor(const math::vec4&);
 
@@ -246,6 +258,8 @@ namespace minko
 
 		protected:
 			BasicMaterial();
+
+            BasicMaterial(const data::Provider::ValueMap& values);
 
             void
             initialize();

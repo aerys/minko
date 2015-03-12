@@ -130,7 +130,7 @@ solution "minko"
 		include 'plugin/png'
 		include 'plugin/sdl'
 		include 'plugin/serializer'
-        include 'plugin/video-camera'		
+        include 'plugin/video-camera'
 
 		if _OPTIONS['with-offscreen'] then
 			include 'plugin/offscreen'
@@ -173,6 +173,7 @@ solution "minko"
 		-- include 'example/keyboard'
 		-- include 'example/leap-motion'
 		include 'example/light'
+		include 'example/light-scattering'
 		-- include 'example/line-geometry'
 		-- include 'example/lua-scripts'
 		-- include 'example/multi-surfaces'

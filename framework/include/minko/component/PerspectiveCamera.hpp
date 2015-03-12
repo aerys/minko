@@ -61,9 +61,9 @@ namespace minko
 		public:
 			inline static
 			Ptr
-			create(float 				aspectRatio, 
-				   float 				fov				= .785f, 
-				   float 				zNear			= 0.1f, 
+			create(float 				aspectRatio,
+				   float 				fov				= .785f,
+				   float 				zNear			= 0.1f,
 				   float 				zFar			= 1000.f,
 				   const math::mat4& 	postProjection 	= math::mat4(1.f))
 			{
@@ -187,7 +187,7 @@ namespace minko
 
 			std::shared_ptr<math::Ray>
 			unproject(float x, float y);
-			
+
 			math::vec3
 			project(math::vec3 worldPosition);
 

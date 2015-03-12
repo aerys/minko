@@ -36,10 +36,13 @@ namespace minko
             public Uuid::enable_uuid
 		{
         private:
+#if DEBUG
+			template <class K, typename... V>
+			using map = std::unordered_map<K, V...>;
+#else
 			template <typename... H>
 			using map = google::sparse_hash_map<H...>;
-			/*template <class K, typename... V>
-			using map = std::unordered_map<K, V...>;*/
+#endif
 
             template <typename T>
             struct is_shared_ptr : std::false_type {};
@@ -75,6 +78,15 @@ namespace minko
 			create()
 			{
 				Ptr provider = std::make_shared<Provider>();
+
+				return provider;
+			}
+
+			static
+			Ptr
+			create(const ValueMap& values)
+			{
+				Ptr provider = std::make_shared<Provider>(values);
 
 				return provider;
 			}
@@ -148,6 +160,12 @@ namespace minko
                 if (hasProperty(propertyName))
                 {
                     T* ptr = Any::cast<T>(&getValue(propertyName));
+
+#if DEBUG
+                    if (!ptr)
+                        throw std::invalid_argument("Property `" + *propertyName + "` does not exist or has an incorrect type.");
+#endif
+
                     auto changed = !(*ptr == value);
 
                     *ptr = value;
@@ -186,7 +204,8 @@ namespace minko
             ~Provider();
 
 			Provider();
-		protected:
+
+			Provider(const ValueMap& values);
 
         private:
             Any&
