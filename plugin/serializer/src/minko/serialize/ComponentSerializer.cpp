@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/serialize/ComponentSerializer.hpp"
 #include "msgpack.hpp"
 #include "minko/Types.hpp"
-#include "minko/animation/AbstractTimeLine.hpp"
+#include "minko/animation/AbstractTimeline.hpp"
 #include "minko/animation/Matrix4x4TimeLine.hpp"
 #include "minko/component/Animation.hpp"
 #include "minko/component/Transform.hpp"
