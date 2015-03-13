@@ -342,23 +342,9 @@ HTTPProtocol::load()
 bool
 HTTPProtocol::fileExists(const std::string& filename)
 {
-#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
-    auto evalString = std::string();
-
-    evalString += "var xhr = new XMLHttpRequest();\n";
-
-    evalString += "xhr.open('HEAD', '" + filename + "', false);\n";
-
-    evalString += "xhr.send(null);\n";
-
-    evalString += "(xhr.status);";
-
-    auto status = emscripten_run_script_int(evalString.c_str());
-
-    return status != 404;
-#else
     auto username = std::string();
     auto password = std::string();
+
     const std::unordered_map<std::string, std::string>* additionalHeaders = nullptr;
 
     auto httpOptions = std::dynamic_pointer_cast<HTTPOptions>(_options);
@@ -371,6 +357,26 @@ HTTPProtocol::fileExists(const std::string& filename)
         additionalHeaders = &httpOptions->additionalHeaders();
     }
 
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+    auto evalString = std::string();
+
+    evalString += "var xhr = new XMLHttpRequest();\n";
+
+    evalString += "xhr.open('HEAD', '" + filename + "', false);\n";
+    
+    for (const auto& additionalHeader : *additionalHeaders)
+    {
+        evalString += "xhr.setRequestHeader('" + additionalHeader.first + "', '" + additionalHeader.second + "');\n";
+    }
+
+    evalString += "xhr.send(null);\n";
+
+    evalString += "(xhr.status);";
+
+    auto status = emscripten_run_script_int(evalString.c_str());
+
+    return (status >= 200 && status < 300);
+#else
     return HTTPRequest::fileExists(filename, username, password, additionalHeaders);
 #endif
 }
