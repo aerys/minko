@@ -144,7 +144,8 @@ namespace minko
 
             OctreeNodePtr
             ensurePartitionSizeIsValid(OctreeNodePtr       node,
-                                       const math::vec3&   maxSize);
+                                       const math::vec3&   maxSize,
+                                       const math::mat4&   transformMatrix);
 
             OctreeNodePtr
             buildPartitions(const std::vector<SurfacePtr>&  surfaces,

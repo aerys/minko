@@ -64,8 +64,6 @@ TextureLodScheduler::surfaceAdded(Surface::Ptr surface)
 
     auto surfaceTarget = surface->target();
     auto material = surface->material();
-	auto values = material->data()->values();
-
 
     auto textures = std::unordered_map<AbstractTexture::Ptr, Flyweight<std::string>>();
 

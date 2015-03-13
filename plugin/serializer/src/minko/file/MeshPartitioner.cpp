@@ -277,19 +277,23 @@ MeshPartitioner::pickBestPartitions(OctreeNodePtr     root,
 
 MeshPartitioner::OctreeNodePtr
 MeshPartitioner::ensurePartitionSizeIsValid(OctreeNodePtr       node,
-                                            const math::vec3&   maxSize)
+                                            const math::vec3&   maxSize,
+                                            const math::mat4&   transformMatrix)
 {
-    const auto nodeSize = node->_maxBound - node->_minBound;
+    const auto minBound = math::vec3(transformMatrix * math::vec4(node->_minBound, 1.f));
+    const auto maxBound = math::vec3(transformMatrix * math::vec4(node->_maxBound, 1.f));
+
+    const auto nodeSize = maxBound - minBound;
 
     if (nodeSize.x > maxSize.x ||
         nodeSize.y > maxSize.y ||
         nodeSize.z > maxSize.z)
     {
-        splitNode(node, math::mat4());
+        splitNode(node, transformMatrix);
 
         for (auto child : node->_children)
         {
-            ensurePartitionSizeIsValid(child, maxSize);
+            ensurePartitionSizeIsValid(child, maxSize, transformMatrix);
         }
     }
 
@@ -365,7 +369,7 @@ MeshPartitioner::buildPartitions(const std::vector<Surface::Ptr>&   surfaces,
     {
         auto transformMatrix = math::mat4();
 
-        if (transformPositions)
+        if (transformPositions && surface->target()->hasComponent<Transform>())
         {
             transformMatrix = surface->target()->component<Transform>()->modelToWorldMatrix();
         }
@@ -470,7 +474,8 @@ MeshPartitioner::buildPartitions(const std::vector<Surface::Ptr>&   surfaces,
     //    octreeRoot,
     //    _options._partitionMaxSizeFunction
     //        ? _options._partitionMaxSizeFunction(root)
-    //        : defaultPartitionMaxSizeFunction(root)
+    //        : defaultPartitionMaxSizeFunction(root),
+    //    math::mat4()
     //);
 
     for (auto i = 0; i < indices.size(); i += 3)
