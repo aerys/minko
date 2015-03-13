@@ -54,6 +54,7 @@ WriterOptions::WriterOptions() :
     _textureMaxResolution(math::ivec2(2048, 2048)),
     _mipFilter(MipFilter::LINEAR),
     _optimizeForNormalMapping(false),
+    _writeAnimations(false),
     _nullAssetUuids()
 {
 }

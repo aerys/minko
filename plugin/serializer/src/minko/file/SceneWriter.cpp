@@ -42,7 +42,7 @@ using namespace minko::file;
 
 std::map<const std::type_info*, SceneWriter::NodeWriterFunc> SceneWriter::_componentIdToWriteFunction;
 
-SceneWriter::SceneWriter()
+SceneWriter::SceneWriter(WriterOptions::Ptr writerOptions)
 {
 	_magicNumber = MINKO_SCENE_MAGIC_NUMBER;
 
@@ -110,21 +110,24 @@ SceneWriter::SceneWriter()
 		)
 	);
 
-	registerComponent(
-		&typeid(component::Animation),
-		std::bind(
-			&serialize::ComponentSerializer::serializeAnimation,
-			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
-		)
-	);
+    if (writerOptions->writeAnimations())
+    {
+	    registerComponent(
+	    	&typeid(component::Animation),
+	    	std::bind(
+	    		&serialize::ComponentSerializer::serializeAnimation,
+	    		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+	    	)
+	    );
 
-    registerComponent(
-		&typeid(component::Skinning),
-		std::bind(
-			&serialize::ComponentSerializer::serializeSkinning,
-			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
-		)
-	);
+        registerComponent(
+	    	&typeid(component::Skinning),
+	    	std::bind(
+	    		&serialize::ComponentSerializer::serializeSkinning,
+	    		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+	    	)
+	    );
+    }
 
 	registerComponent(
 		&typeid(component::BoundingBox),

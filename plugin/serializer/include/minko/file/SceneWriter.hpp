@@ -62,9 +62,9 @@ namespace minko
 
 			inline static
 			Ptr
-			create()
+			create(std::shared_ptr<WriterOptions> writerOptions)
 			{
-				return std::shared_ptr<SceneWriter>(new SceneWriter());
+				return std::shared_ptr<SceneWriter>(new SceneWriter(writerOptions));
 			}
 
 			std::string
@@ -91,7 +91,7 @@ namespace minko
 			}
 
 		protected:
-			SceneWriter();
+			SceneWriter(std::shared_ptr<WriterOptions> writerOptions);
 		};
 	}
 }

@@ -89,6 +89,8 @@ namespace minko
             render::MipFilter                   _mipFilter;
             bool                                _optimizeForNormalMapping;
 
+            bool                                _writeAnimations;
+
             std::set<std::string>               _nullAssetUuids;
 
         public:
@@ -125,6 +127,7 @@ namespace minko
                 instance->_textureMaxResolution = other->_textureMaxResolution;
                 instance->_mipFilter = other->_mipFilter;
                 instance->_optimizeForNormalMapping = other->_optimizeForNormalMapping;
+                instance->_writeAnimations = other->_writeAnimations;
                 instance->_nullAssetUuids = other->_nullAssetUuids;
 
                 return instance;
@@ -382,6 +385,22 @@ namespace minko
             optimizeForNormalMapping(bool value)
             {
                 _optimizeForNormalMapping = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            bool
+            writeAnimations() const
+            {
+                return _writeAnimations;
+            }
+
+            inline
+            Ptr
+            writeAnimations(bool value)
+            {
+                _writeAnimations = value;
 
                 return shared_from_this();
             }
