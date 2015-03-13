@@ -438,6 +438,8 @@ POPGeometryWriter::serializeHeader(msgpack::sbuffer&                    headerBu
         borderMaxDeltaPrecision = geometry->data()->get<int>("borderMaxDeltaPrecision");
     }
 
+    std::vector<msgpack::type::tuple<int, int, int, int, int, int>> lodInfo;
+
     msgpack::type::tuple<
         unsigned int,
         int, int, int, int, std::string, int, int,
@@ -459,7 +461,7 @@ POPGeometryWriter::serializeHeader(msgpack::sbuffer&                    headerBu
         isSharedPartition,
         borderMinPrecision,
         borderMaxDeltaPrecision,
-        {}
+        lodInfo
     );
 
     auto levels = std::list<int>();
