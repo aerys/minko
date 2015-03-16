@@ -130,7 +130,6 @@ AbstractWriter<Node::Ptr>::Ptr writer)
                 meshPartitionerFlags |= MeshPartitioner::Options::mergeSurfaces;
 
             auto meshPartitionerOptions = MeshPartitioner::Options();
-            meshPartitionerOptions._maxDepth = 20;
             meshPartitionerOptions._maxTriangleCountPerNode = 60000;
             meshPartitionerOptions._flags = meshPartitionerFlags;
             meshPartitionerOptions._borderMinPrecision = 5;

@@ -48,7 +48,6 @@ namespace minko
                     useBorderAsSharedTriangles |
                     uniformizeSize;
 
-                int                                                     _maxDepth;
                 int                                                     _maxTriangleCountPerNode;
 
                 unsigned int                                            _flags;
@@ -85,6 +84,8 @@ namespace minko
                     _maxBound(maxBound),
                     _triangles(1, std::vector<int>()),
                     _sharedTriangles(1, std::vector<int>()),
+                    _indices(1, std::set<int>()),
+                    _sharedIndices(1, std::set<int>()),
                     _parent(parent),
                     _children()
                 {
@@ -97,12 +98,17 @@ namespace minko
                 std::vector<std::vector<int>> _triangles;
                 std::vector<std::vector<int>> _sharedTriangles;
 
+                std::vector<std::set<int>> _indices;
+                std::vector<std::set<int>> _sharedIndices;
+
                 OctreeNodeWeakPtr _parent;
 
                 std::vector<OctreeNodePtr> _children;
             };
 
         private:
+            static const int MAX_NUM_INDICES_PER_GEOMETRY;
+
             Options _options;
 
             math::vec3 _worldMinBound;
@@ -183,6 +189,9 @@ namespace minko
             void
             splitNode(OctreeNodePtr     partitionNode,
                       const math::mat4& transformMatrix);
+
+            int
+            countTriangles(OctreeNodePtr partitionNode);
 
             static
             int

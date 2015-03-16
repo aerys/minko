@@ -37,6 +37,8 @@ using namespace minko::material;
 using namespace minko::render;
 using namespace minko::scene;
 
+const int MeshPartitioner::MAX_NUM_INDICES_PER_GEOMETRY = 65536;
+
 struct SurfaceIndexerHash
 {
     inline
@@ -804,26 +806,33 @@ MeshPartitioner::insertTriangle(OctreeNodePtr       partitionNode,
 {
     if (partitionNode->_children.empty())
     {
-        auto& triangles = partitionNode->_triangles.back();
-
-        if (triangles.size() < _options._maxTriangleCountPerNode)
+        if (countTriangles(partitionNode) < _options._maxTriangleCountPerNode)
         {
-            triangles.push_back(triangleIndex);
+            auto& triangles = partitionNode->_triangles.back();
+
+            const auto triangleIndices = std::vector<int>(
+                _indices.begin() + triangleIndex * 3,
+                _indices.begin() + (triangleIndex + 1) * 3
+            );
+
+            auto& indices = partitionNode->_indices.back();
+
+            const auto expectedNumIndices = indices.size() + triangleIndices.size();
+
+            if (expectedNumIndices >= MAX_NUM_INDICES_PER_GEOMETRY)
+            {
+                partitionNode->_triangles.push_back(std::vector<int>());
+                partitionNode->_indices.push_back(std::set<int>());
+            }
+
+            partitionNode->_triangles.back().push_back(triangleIndex);
+            partitionNode->_indices.back().insert(triangleIndices.begin(), triangleIndices.end());
 
             return;
         }
         else
         {
-            if (partitionNode->_depth >= _options._maxDepth)
-            {
-                partitionNode->_triangles.push_back(std::vector<int>{ triangleIndex });
-
-                return;
-            }
-            else
-            {
-                splitNode(partitionNode, transformMatrix);
-            }
+            splitNode(partitionNode, transformMatrix);
         }
     }
 
@@ -860,11 +869,25 @@ MeshPartitioner::insertTriangle(OctreeNodePtr       partitionNode,
     else
     {
         auto& sharedTriangles = partitionNode->_sharedTriangles;
+        auto& sharedIndices = partitionNode->_sharedIndices;
 
-        if (sharedTriangles.back().size() < _options._maxTriangleCountPerNode)
-            sharedTriangles.back().push_back(triangleIndex);
-        else
-            sharedTriangles.push_back(std::vector<int>{ triangleIndex });
+        const auto triangleIndices = std::vector<int>(
+            _indices.begin() + triangleIndex * 3,
+            _indices.begin() + (triangleIndex + 1) * 3
+        );
+
+        const auto expectedNumIndices = sharedIndices.back().size() + triangleIndices.size();
+
+        if (expectedNumIndices >= MAX_NUM_INDICES_PER_GEOMETRY)
+        {
+            sharedTriangles.push_back(std::vector<int>());
+            sharedIndices.push_back(std::set<int>());
+        }
+
+        sharedTriangles.back().push_back(triangleIndex);
+        sharedIndices.back().insert(triangleIndices.begin(), triangleIndices.end());
+
+        sharedTriangles.back().push_back(triangleIndex);
     }
 }
 
@@ -901,6 +924,18 @@ MeshPartitioner::splitNode(OctreeNodePtr        partitionNode,
     }
 
     partitionNode->_triangles = std::vector<std::vector<int>>(1, std::vector<int>());
+    partitionNode->_indices.clear();
+}
+
+int
+MeshPartitioner::countTriangles(OctreeNodePtr partitionNode)
+{
+    auto numTriangles = 0;
+
+    for (const auto& triangles : partitionNode->_triangles)
+        numTriangles += triangles.size();
+
+    return numTriangles;
 }
 
 int
