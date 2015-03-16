@@ -193,7 +193,11 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 	);
 
 	if (!scene)
+    {
         _error->execute(shared_from_this(), Error(_importer->GetErrorString()));
+
+        return;
+    }
 
 #ifdef DEBUG
 	std::cout << "AbstractASSIMPParser: scene parsed" << std::endl;
