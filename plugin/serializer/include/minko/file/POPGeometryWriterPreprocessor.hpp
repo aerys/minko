@@ -35,6 +35,10 @@ namespace minko
             typedef std::shared_ptr<scene::Node>                                NodePtr;
             typedef std::shared_ptr<AssetLibrary>                               AssetLibraryPtr;
 
+            typedef std::shared_ptr<component::Surface>                         SurfacePtr;
+
+            typedef std::shared_ptr<geometry::Geometry>                         GeometryPtr;
+
         public:
             ~POPGeometryWriterPreprocessor() = default;
 
@@ -53,6 +57,15 @@ namespace minko
 
         private:
             POPGeometryWriterPreprocessor();
+
+            void
+            markPOPGeometries(NodePtr root, std::unordered_set<NodePtr> ignoredNodes);
+
+            void
+            markPOPGeometry(NodePtr node, SurfacePtr surface, GeometryPtr geometry);
+
+            std::unordered_set<NodePtr>
+            collectAnimatedNodes(NodePtr root);
         };
     }
 }

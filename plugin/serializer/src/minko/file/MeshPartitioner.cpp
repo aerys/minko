@@ -39,46 +39,58 @@ using namespace minko::scene;
 
 const int MeshPartitioner::MAX_NUM_INDICES_PER_GEOMETRY = 65536;
 
-struct SurfaceIndexerHash
+MeshPartitioner::Options::Options() :
+    _maxTriangleCountPerNode(40000),
+    _flags(Options::none),
+    _borderMinPrecision(5u),
+    _borderMaxDeltaPrecision(2u),
+    _partitionMaxSizeFunction(defaultPartitionMaxSizeFunction),
+    _worldBoundsFunction(defaultWorldBoundsFunction),
+    _nodeFilterFunction(defaultNodeFilterFunction),
+    _surfaceIndexer(defaultSurfaceIndexer())
 {
-    inline
-    std::size_t
-    operator()(Surface::Ptr surface) const
+}
+
+MeshPartitioner::SurfaceIndexer
+MeshPartitioner::defaultSurfaceIndexer()
+{
+    auto surfaceIndexer = SurfaceIndexer();
+
+    surfaceIndexer.hash = [](Surface::Ptr surface) -> std::size_t
     {
         auto hashValue = std::size_t();
 
-		minko::hash_combine<Material::Ptr, std::hash<Material::Ptr>>(hashValue, surface->material());
+        minko::hash_combine<Material::Ptr, std::hash<Material::Ptr>>(hashValue, surface->material());
 
         for (const auto& vertexBuffer : surface->geometry()->vertexBuffers())
             for (const auto& attribute : vertexBuffer->attributes())
                 minko::hash_combine<std::string, std::hash<std::string>>(hashValue, *attribute.name);
 
         return hashValue;
-    }
-};
+    };
 
-struct SurfaceIndexerComparator
-{
-    inline
-    bool
-    operator()(Surface::Ptr left, Surface::Ptr right) const
+    surfaceIndexer.equal = [](Surface::Ptr left, Surface::Ptr right) -> bool
     {
         auto leftAttributes = std::vector<VertexAttribute>();
         auto rightAttributes = std::vector<VertexAttribute>();
 
         for (auto vertexBuffer : left->geometry()->vertexBuffers())
+        {
             leftAttributes.insert(
-            leftAttributes.end(),
-            vertexBuffer->attributes().begin(),
-            vertexBuffer->attributes().end()
-        );
+                leftAttributes.end(),
+                vertexBuffer->attributes().begin(),
+                vertexBuffer->attributes().end()
+            );
+        }
 
         for (auto vertexBuffer : right->geometry()->vertexBuffers())
+        {
             rightAttributes.insert(
-            rightAttributes.end(),
-            vertexBuffer->attributes().begin(),
-            vertexBuffer->attributes().end()
-        );
+                rightAttributes.end(),
+                vertexBuffer->attributes().begin(),
+                vertexBuffer->attributes().end()
+            );
+        }
 
         if (leftAttributes.size() != rightAttributes.size())
             return false;
@@ -88,8 +100,16 @@ struct SurfaceIndexerComparator
                 return false;
 
         return left->material() == right->material();
-    }
-};
+    };
+
+    return surfaceIndexer;
+}
+
+bool
+MeshPartitioner::defaultNodeFilterFunction(Node::Ptr node)
+{
+    return true;
+}
 
 MeshPartitioner::MeshPartitioner() :
     AbstractWriterPreprocessor<Node::Ptr>()
@@ -134,16 +154,14 @@ contains(math::Box::Ptr left, math::Box::Ptr right)
            right->topRight().z <= left->topRight().z;
 }
 
-static
 void
-defaultWorldBoundsFunction(Node::Ptr root, math::vec3& minBound, math::vec3& maxBound)
+MeshPartitioner::defaultWorldBoundsFunction(Node::Ptr root, math::vec3& minBound, math::vec3& maxBound)
 {
     bounds(root, minBound, maxBound);
 }
 
-static
 math::vec3
-defaultPartitionMaxSizeFunction(Node::Ptr root)
+MeshPartitioner::defaultPartitionMaxSizeFunction(Node::Ptr root)
 {
     auto minBound = math::vec3();
     auto maxBound = math::vec3();
@@ -156,12 +174,12 @@ defaultPartitionMaxSizeFunction(Node::Ptr root)
 std::vector<std::vector<Surface::Ptr>>
 MeshPartitioner::mergeSurfaces(const std::vector<Surface::Ptr>& surfaces)
 {
-    auto surfaceBuckets = std::unordered_map <
+    auto surfaceBuckets = std::unordered_map<
         Surface::Ptr,
         std::vector<Surface::Ptr>,
-        SurfaceIndexerHash,
-        SurfaceIndexerComparator
-    > ();
+        std::function<std::size_t(std::shared_ptr<Surface>)>,
+        std::function<bool(std::shared_ptr<Surface>, std::shared_ptr<Surface>)>
+    >(0, _options._surfaceIndexer.hash, _options._surfaceIndexer.equal);
 
     for (auto surface : surfaces)
         surfaceBuckets[surface].push_back(surface);
@@ -179,7 +197,17 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
 {
     auto meshNodes = NodeSet::create(node)
         ->descendants(true)
-        ->where([](Node::Ptr descendant) -> bool { return descendant->hasComponent<Surface>(); });
+        ->where([this](Node::Ptr descendant) -> bool
+        {
+            return (_options._nodeFilterFunction
+                ? _options._nodeFilterFunction(descendant)
+                : defaultNodeFilterFunction(descendant)) &&
+                descendant->hasComponent<Surface>();
+        }
+    );
+
+    if (meshNodes->nodes().empty())
+        return;
 
     if (_options._worldBoundsFunction)
         _options._worldBoundsFunction(node, _worldMinBound, _worldMaxBound);
@@ -569,6 +597,9 @@ MeshPartitioner::patchNodeFromPartitions(Node::Ptr          node,
                 minBound = math::vec3(worldToModelMatrix * math::vec4(minBound, 1.f));
                 maxBound = math::vec3(worldToModelMatrix * math::vec4(maxBound, 1.f));
             }
+
+            if (referenceGeometry->data()->hasProperty("type"))
+                newGeometry->data()->set("type", referenceGeometry->data()->get<std::string>("type"));
 
             newGeometry->data()->set("partitioningMaxDepth", maxDepth - _baseDepth);
             newGeometry->data()->set("partitioningDepth", pendingNode->_depth - _baseDepth);

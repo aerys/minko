@@ -19,8 +19,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/StreamingOptions.hpp"
 #include "minko/StreamingTypes.hpp"
+#include "minko/component/AbstractAnimation.hpp"
+#include "minko/component/Animation.hpp"
 #include "minko/component/MasterLodScheduler.hpp"
 #include "minko/component/POPGeometryLodScheduler.hpp"
+#include "minko/component/Skinning.hpp"
+#include "minko/component/Surface.hpp"
 #include "minko/component/TextureLodScheduler.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/deserialize/LodSchedulerDeserializer.hpp"
@@ -44,21 +48,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/StreamedTextureWriter.hpp"
 #include "minko/file/StreamedTextureWriterPreprocessor.hpp"
 #include "minko/file/WriterOptions.hpp"
+#include "minko/geometry/Bone.hpp"
+#include "minko/geometry/Skin.hpp"
+#include "minko/material/Material.hpp"
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/AbstractTexture.hpp"
 #include "minko/render/IndexBuffer.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/render/VertexBuffer.hpp"
 #include "minko/scene/Node.hpp"
+#include "minko/scene/NodeSet.hpp"
 #include "minko/serialize/LodSchedulerSerializer.hpp"
 
 using namespace minko;
+using namespace minko::animation;
 using namespace minko::component;
 using namespace minko::data;
 using namespace minko::deserialize;
 using namespace minko::extension;
 using namespace minko::file;
 using namespace minko::geometry;
+using namespace minko::material;
 using namespace minko::render;
 using namespace minko::scene;
 using namespace minko::serialize;
@@ -118,7 +128,12 @@ AbstractWriter<Node::Ptr>::Ptr writer)
             std::placeholders::_5,
             std::placeholders::_6,
             std::placeholders::_7),
-            [](std::shared_ptr<geometry::Geometry>) -> bool { return true; },
+            [](Geometry::Ptr geometry) -> bool
+            {
+                return
+                    geometry->data()->hasProperty("type") &&
+                    geometry->data()->get<std::string>("type") == "pop";
+            },
             11
         );
 
@@ -137,6 +152,23 @@ AbstractWriter<Node::Ptr>::Ptr writer)
 
             if (_streamingOptions->useSharedClusterHierarchyOnPartitioning())
                 meshPartitionerOptions._flags |= MeshPartitioner::Options::uniformizeSize;
+
+            meshPartitionerOptions._nodeFilterFunction = [](Node::Ptr node) -> bool
+            {
+                auto surfaces = node->components<Surface>();
+
+                if (surfaces.empty())
+                    return false;
+
+                for (auto surface : surfaces)
+                {
+                    if (surface->geometry()->data()->hasProperty("type") &&
+                        surface->geometry()->data()->get<std::string>("type") == "pop")
+                        return true;
+                }
+
+                return false;
+            };
 
             writer
                 ->registerPreprocessor(POPGeometryWriterPreprocessor::create())
