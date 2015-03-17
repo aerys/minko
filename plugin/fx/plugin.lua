@@ -24,7 +24,7 @@ function minko.plugin.fx:enable()
 	defines { "MINKO_PLUGIN_FX" }
 	
 	configuration { "not StaticLib" }
-		minko.plugin.links { "fx" }
+		-- minko.plugin.links { "fx" }
 		includedirs { minko.plugin.path("fx") .. "/include" }
 		
 		prelinkcommands {

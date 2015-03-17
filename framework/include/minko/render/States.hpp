@@ -51,9 +51,9 @@ namespace minko
             static const std::string                    PROPERTY_STENCIL_FUNCTION;
             static const std::string                    PROPERTY_STENCIL_REFERENCE;
             static const std::string                    PROPERTY_STENCIL_MASK;
-            static const std::string                    PROPERTY_STENCIL_FAIL_OP;
-            static const std::string                    PROPERTY_STENCIL_ZFAIL_OP;
-            static const std::string                    PROPERTY_STENCIL_ZPASS_OP;
+            static const std::string                    PROPERTY_STENCIL_FAIL_OPERATION;
+            static const std::string                    PROPERTY_STENCIL_ZFAIL_OPERATION;
+            static const std::string                    PROPERTY_STENCIL_ZPASS_OPERATION;
             static const std::string                    PROPERTY_SCISSOR_TEST;
             static const std::string                    PROPERTY_SCISSOR_BOX;
             static const std::string                    PROPERTY_TARGET;
@@ -71,9 +71,9 @@ namespace minko
             static const CompareMode			        DEFAULT_STENCIL_FUNCTION;
             static const int					        DEFAULT_STENCIL_REFERENCE;
             static const uint					        DEFAULT_STENCIL_MASK;
-            static const StencilOperation		        DEFAULT_STENCIL_FAIL_OP;
-            static const StencilOperation		        DEFAULT_STENCIL_ZFAIL_OP;
-            static const StencilOperation		        DEFAULT_STENCIL_ZPASS_OP;
+            static const StencilOperation		        DEFAULT_STENCIL_FAIL_OPERATION;
+            static const StencilOperation		        DEFAULT_STENCIL_ZFAIL_OPERATION;
+            static const StencilOperation		        DEFAULT_STENCIL_ZPASS_OPERATION;
             static const bool					        DEFAULT_SCISSOR_TEST;
             static const math::ivec4 			        DEFAULT_SCISSOR_BOX;
             static const TextureSampler                 DEFAULT_TARGET;
@@ -93,9 +93,9 @@ namespace minko
                    CompareMode				stencilFunction     = DEFAULT_STENCIL_FUNCTION,
                    int						stencilRef          = DEFAULT_STENCIL_REFERENCE,
                    uint						stencilMask         = DEFAULT_STENCIL_MASK,
-                   StencilOperation			stencilFailOp       = DEFAULT_STENCIL_FAIL_OP,
-                   StencilOperation			stencilZFailOp      = DEFAULT_STENCIL_ZFAIL_OP,
-                   StencilOperation			stencilZPassOp      = DEFAULT_STENCIL_ZPASS_OP,
+                   StencilOperation			stencilFailOp       = DEFAULT_STENCIL_FAIL_OPERATION,
+                   StencilOperation			stencilZFailOp      = DEFAULT_STENCIL_ZFAIL_OPERATION,
+                   StencilOperation			stencilZPassOp      = DEFAULT_STENCIL_ZPASS_OPERATION,
                    bool						scissorTest         = DEFAULT_SCISSOR_TEST,
                    const math::ivec4&		scissorBox          = DEFAULT_SCISSOR_BOX,
                    TextureSampler		    target              = DEFAULT_TARGET);
@@ -292,14 +292,14 @@ namespace minko
 			StencilOperation
 			stencilFailOperation() const
 			{
-                return _data->get<StencilOperation>(PROPERTY_STENCIL_FAIL_OP);
+                return _data->get<StencilOperation>(PROPERTY_STENCIL_FAIL_OPERATION);
 			}
 
             inline
             States&
             stencilFailOperation(StencilOperation value)
             {
-                _data->set(PROPERTY_STENCIL_FAIL_OP, value);
+                _data->set(PROPERTY_STENCIL_FAIL_OPERATION, value);
 
                 return *this;
             }
@@ -308,14 +308,14 @@ namespace minko
 			StencilOperation
 			stencilZFailOperation() const
 			{
-                return _data->get<StencilOperation>(PROPERTY_STENCIL_ZFAIL_OP);
+                return _data->get<StencilOperation>(PROPERTY_STENCIL_ZFAIL_OPERATION);
 			}
 
             inline
             States&
             stencilZFailOperation(StencilOperation value)
             {
-                _data->set(PROPERTY_STENCIL_ZFAIL_OP, value);
+                _data->set(PROPERTY_STENCIL_ZFAIL_OPERATION, value);
 
                 return *this;
             }
@@ -324,14 +324,14 @@ namespace minko
 			StencilOperation
 			stencilZPassOperation() const
 			{
-                return _data->get<StencilOperation>(PROPERTY_STENCIL_ZPASS_OP);
+                return _data->get<StencilOperation>(PROPERTY_STENCIL_ZPASS_OPERATION);
 			}
 
             inline
             States&
             stencilZPassOperation(StencilOperation value)
             {
-                _data->set(PROPERTY_STENCIL_ZPASS_OP, value);
+                _data->set(PROPERTY_STENCIL_ZPASS_OPERATION, value);
 
                 return *this;
             }

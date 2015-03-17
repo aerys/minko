@@ -1,0 +1,93 @@
+{
+    "name"  : "emission map",
+
+    "uniforms"   : {
+        "uModelToWorldMatrix"   : "modelToWorldMatrix",
+        "uUVOffset"             : "material[${materialUuid}].uvOffset",
+        "uUVScale"              : "material[${materialUuid}].uvScale",
+        "uDiffuseColor"         : "material[${materialUuid}].diffuseColor",
+        "uDiffuseMap"           : {
+            "binding"       : "material[${materialUuid}].diffuseMap",
+            "wrapMode"      : "repeat",
+            "textureFilter" : "linear",
+            "mipFilter"     : "linear"
+        },
+        "uDiffuseMapMaxAvailableLod" : "material[${materialUuid}].diffuseMap.maxAvailableLod",
+        "uDiffuseMapSize"        : "material[${materialUuid}].diffuseMap.size",
+        "uAlphaMap"             : "material[${materialUuid}].alphaMap",
+        "uAlphaThreshold"       : "material[${materialUuid}].alphaThreshold",
+        "uDiffuseCubeMap"       : "material[${materialUuid}].diffuseCubeMap",
+        "uBoneMatrices"         : "geometry[${geometryUuid}].boneMatrices",
+        "uNumBones"             : "geometry[${geometryUuid}].numBones",
+        "uFogColor"             : "material[$materialUuid].fogColor",
+        "uFogBounds"            : "material[$materialUuid].fogBounds",
+        "boneMatrices"          : "geometry[${geometryUuid}].boneMatrices",
+        "numBones"              : "geometry[${geometryUuid}].numBones",
+        "uWorldToScreenMatrix"  : {
+            "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" }
+        }
+    },
+
+    "macros" : {
+        "MODEL_TO_WORLD"        : "modelToWorldMatrix",
+        "HAS_NORMAL"            : "geometry[${geometryUuid}].normal",
+        "SKINNING_NUM_BONES"    : { "binding" : "geometry[$geometryUuid].numBones", "type" : "int" },
+        "DIFFUSE_MAP"           : "material[${materialUuid}].diffuseMap",
+        "DIFFUSE_MAP_LOD"       : "material[${materialUuid}].diffuseMapLodEnabled",
+        "DIFFUSE_CUBEMAP"       : "material[${materialUuid}].diffuseCubeMap",
+        "ALPHA_MAP"             : "material[${materialUuid}].alphaMap",
+        "ALPHA_THRESHOLD"       : "material[${materialUuid}].alphaThreshold",
+        "FOG_ENABLED"           : "material[${materialUuid}].fogEnabled",
+        "FOG_LIN"               : "material[${materialUuid}].fogLinear",
+        "FOG_EXP"               : "material[${materialUuid}].fogExponential",
+        "FOG_EXP2"              : "material[${materialUuid}].fogExponential2",
+        "UV_OFFSET"             : "material[${materialUuid}].uvOffset",
+        "UV_SCALE"              : "material[${materialUuid}].uvScale",
+        "FOG_TECHNIQUE"         : { "binding" : "material[$materialUuid].fogTechnique", "type" : "int" }
+    },
+
+    "states" : {
+        "blendingSource"        : { "binding" : "material[${materialUuid}].blendingSource" },
+        "blendingDestination"   : { "binding" : "material[${materialUuid}].blendingDestination" },
+        "triangleCulling"       : { "binding" : "material[${materialUuid}].triangleCulling" },
+        "zSorted"               : { "binding" : "material[${materialUuid}].zSorted" },
+        "depthMask"             : { "binding" : "material[${materialUuid}].depthMask" },
+        "depthFunction"         : { "binding" : "material[${materialUuid}].depthFunction" }
+    },
+
+    "techniques":
+    [
+        {
+            "passes":
+            [
+                {
+                    "attributes" :
+                    {
+                        "aPosition"     : "geometry[${geometryUuid}].position",
+                        "aUV"           : "geometry[${geometryUuid}].uv"
+                    },
+
+                    "uniforms"   :
+                    {
+                        "uIsLightSource" : {
+                            "binding": "material[${materialUuid}].isLightSource",
+                            "default": false
+                        }
+                    },
+
+                    "vertexShader" : "#pragma include \"../Basic.vertex.glsl\"",
+
+                    "fragmentShader" :
+                    "
+                        uniform int uIsLightSource;
+
+                        void main()
+                        {
+                            gl_FragColor = vec4(vec3(float(uIsLightSource)), 1.0);
+                        }
+                    "
+                }
+            ]
+        }
+    ]
+}

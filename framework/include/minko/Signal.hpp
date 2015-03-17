@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2013 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -43,11 +43,30 @@ namespace minko
 		typedef std::shared_ptr<SignalSlot<A...>>   Slot;
 
 	private:
-        CallbackCollection _callbacks;
+        CallbackCollection  _callbacks;
 
 	public:
         Signal()
         {
+        }
+
+		Signal(const Signal& other)
+		{
+		}
+
+        Signal(Signal&& other)
+        {
+            std::move(other._callbacks.begin(), other._callbacks.end(), _callbacks.begin());
+            assert(other._callbacks.size() == 0);
+        }
+
+        Signal&
+        operator=(Signal&& other)
+        {
+            std::move(other._callbacks.begin(), other._callbacks.end(), _callbacks.begin());
+            assert(other._callbacks.size() == 0);
+
+            return *this;
         }
 
         ~Signal()
@@ -59,6 +78,7 @@ namespace minko
                 if (slot)
                     slot->_signal = nullptr;
             }
+            _callbacks.clear();
         }
 
         inline
@@ -80,10 +100,10 @@ namespace minko
 		connect(Callback callback, float priority = 0)
 		{
 			auto connection = std::make_shared<SignalSlot<A...>>(this);
-			
+
             _callbacks.push_back(CallbackRecord(priority, callback, connection));
             connection->_it = std::prev(_callbacks.end());
-				
+
 			if (_callbacks.size() >= 2)
 			{
 				auto prec = std::prev(_callbacks.end(), 2);
@@ -104,8 +124,14 @@ namespace minko
 		execute(A... arguments) const
 		{
             auto callbacks = _callbacks;
-			for (auto& callback : callbacks)
-				std::get<1>(callback)(arguments...);
+            for (auto& callback : callbacks)
+                if (!std::get<2>(callback).expired())
+				    std::get<1>(callback)(arguments...);
+
+#ifdef DEBUG
+            for (auto& callback : _callbacks)
+                assert(!std::get<2>(callback).expired());
+#endif // DEBUG
 		}
 
         inline
@@ -130,10 +156,15 @@ namespace minko
             CallbackIterator  _it;
 
 		public:
-			const Signal<T...>&
+			SignalSlot(Signal<T...>* signal) :
+				_signal(signal)
+			{
+			}
+
+			const Signal<T...>*
 			signal()
 			{
-				return *_signal;
+				return _signal;
 			}
 
 			void
@@ -151,10 +182,6 @@ namespace minko
 				disconnect();
 			}
 
-			SignalSlot(Signal<T...>* signal) :
-				_signal(signal)
-			{
-			}
 		};
 
 	};

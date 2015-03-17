@@ -82,6 +82,8 @@ Geometry::addVertexBuffer(render::VertexBuffer::Ptr vertexBuffer)
 		std::placeholders::_1,
 		std::placeholders::_2
 	));
+
+    computeCenterPosition();
 }
 
 void
@@ -91,7 +93,7 @@ Geometry::removeVertexBuffer(std::list<render::VertexBuffer::Ptr>::iterator vert
 	vertexBuffer->dispose();
 
 	for (auto attribute : vertexBuffer->attributes())
-		_data->unset(attribute.name);
+		_data->unset(*attribute.name);
 
 	_vertexSize	-= vertexBuffer->vertexSize();
 	_data->set("vertex.size", _vertexSize);
@@ -136,8 +138,9 @@ Geometry::computeNormals()
 	if (numVertices == 0)
 		return shared_from_this();
 
-	if (vertexBuffer("normal"))
-		throw std::logic_error("The geometry already stores precomputed normals.");
+    auto normalBuffer = vertexBuffer("normal");
+    // if (normalBuffer)
+        // throw std::logic_error("The geometry already stores precomputed normals.");
 
     auto xyzBuffer = vertexBuffer("position");
 	if (!xyzBuffer)
@@ -150,11 +153,36 @@ Geometry::computeNormals()
 	std::vector<math::vec3> xyz(3);
 
 	const auto& xyzAttribute			= xyzBuffer->attribute("position");
-    const unsigned int xyzSize          = *xyzAttribute.vertexSize;
+    const unsigned int xyzSize          = *xyzAttribute.vertexSize; // xyzBuffer->vertexSize();
     const unsigned int xyzOffset        = xyzAttribute.offset;
     const std::vector<float>& xyzData   = xyzBuffer->data();
 
-	std::vector<float> normalsData(3 * numVertices, 0.0f);
+    unsigned int normalSize;
+    unsigned int normalOffset;
+    std::vector<float>* normalsData;
+
+    if (normalBuffer)
+    {
+        normalsData = &normalBuffer->data();
+	    const auto& normalAttribute = normalBuffer->attribute("normal");
+        normalSize = *normalAttribute.vertexSize;
+        normalOffset = normalAttribute.offset;
+    }
+    else
+    {
+        normalsData = new std::vector<float>(3 * numVertices, 0.0f);
+        normalSize = 3;
+        normalOffset = 0;
+    }
+
+    for (auto i = 0u; i < numVertices; ++i)
+    {
+        const auto index = normalOffset + i * normalSize;
+
+        (*normalsData)[index] = 0.f;
+        (*normalsData)[index + 1] = 0.f;
+        (*normalsData)[index + 2] = 0.f;
+    }
 
 	for (unsigned int i = 0, offset = 0; i < numFaces; ++i)
 	{
@@ -169,30 +197,37 @@ Geometry::computeNormals()
 
  		for (unsigned int k = 0; k < 3; ++k)
 		{
-			const unsigned int index = 3 * vertexIds[k];
+			const unsigned int index = normalOffset + normalSize * vertexIds[k];
 
-			normalsData[index]		+= faceNormal.x;
-			normalsData[index + 1]	+= faceNormal.y;
-			normalsData[index + 2]	+= faceNormal.z;
+			(*normalsData)[index] += faceNormal.x;
+			(*normalsData)[index + 1] += faceNormal.y;
+			(*normalsData)[index + 2] += faceNormal.z;
 		}
 	}
 
-	for (unsigned int i = 0, index = 0; i < numVertices; ++i, index += 3)
+	for (unsigned int i = 0; i < numVertices; ++i)
 	{
-		const float x				= normalsData[index];
-		const float y				= normalsData[index + 1];
-		const float z				= normalsData[index + 2];
-		const float lengthSquared	= x * x + y * y + z * z;
-		const float invLength		= lengthSquared > 1e-6f ? 1.0f / sqrtf(lengthSquared) : 1.0f;
+        const auto indexOffset = normalOffset + i * normalSize;
 
-		normalsData[index]		*= invLength;
-		normalsData[index + 1]	*= invLength;
-		normalsData[index + 2]	*= invLength;
+		const float x = (*normalsData)[indexOffset];
+        const float y = (*normalsData)[indexOffset + 1];
+        const float z = (*normalsData)[indexOffset + 2];
+		const float lengthSquared = x * x + y * y + z * z;
+		const float invLength = lengthSquared > 1e-6f ? 1.0f / sqrtf(lengthSquared) : 1.0f;
+
+        (*normalsData)[indexOffset] *= invLength;
+        (*normalsData)[indexOffset + 1] *= invLength;
+        (*normalsData)[indexOffset + 2] *= invLength;
 	}
 
-	VertexBuffer::Ptr normalsBuffer = VertexBuffer::create(xyzBuffer->context(), normalsData);
-	normalsBuffer->addAttribute("normal", 3, 0);
-	addVertexBuffer(normalsBuffer);
+    if (!normalBuffer)
+    {
+        normalBuffer = VertexBuffer::create(xyzBuffer->context(), *normalsData);
+        normalBuffer->addAttribute("normal", normalSize, normalOffset);
+        addVertexBuffer(normalBuffer);
+
+        delete normalsData;
+    }
 
 	return shared_from_this();
 }

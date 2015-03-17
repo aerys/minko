@@ -20,20 +20,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Provider.hpp"
 
 #include "minko/Uuid.hpp"
+#include "sparsehash/sparse_hash_map"
 
 using namespace minko;
 using namespace minko::data;
 
-Provider::Provider()
+Provider::Provider() :
+    _values(new ValueMap())
 {
+#ifndef DEBUG
+    _values->set_deleted_key("");
+#endif
+}
+
+Provider::Provider(const ValueMap& values) :
+	_values(new ValueMap())
+{
+	for (auto& p : values)
+        setValue(p.first, p.second);
+}
+
+Provider::~Provider()
+{
+    delete _values;
 }
 
 Provider::Ptr
 Provider::unset(const std::string& propertyName)
-{	
-    if (_values.count(propertyName) != 0)
+{
+    if (_values->count(propertyName) != 0)
 	{
-        _values.erase(propertyName);
+        _values->erase(propertyName);
 		_propertyRemoved.execute(shared_from_this(), propertyName);
 	}
 
@@ -44,7 +61,7 @@ Provider::Ptr
 Provider::clone()
 {
 	auto provider = Provider::create();
-	
+
 	provider->copyFrom(shared_from_this());
 
 	return provider;
@@ -53,8 +70,25 @@ Provider::clone()
 Provider::Ptr
 Provider::copyFrom(Provider::Ptr source)
 {
-    _values = source->_values;
+    *_values = *source->_values;
 
 	return shared_from_this();
 }
 
+Any&
+Provider::getValue(const PropertyName& propertyName) const
+{
+    return _values->find(propertyName)->second;
+}
+
+void
+Provider::setValue(const PropertyName& propertyName, Any value)
+{
+    (*_values)[propertyName] = value;
+}
+
+bool
+Provider::hasProperty(const PropertyName& propertyName) const
+{
+    return _values->count(propertyName) != 0;
+}

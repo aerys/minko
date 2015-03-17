@@ -1,33 +1,44 @@
 #ifdef VERTEX_SHADER
 
-#ifdef GL_FRAGMENT_PRECISION_HIGH
+#ifdef GL_ES
+# ifdef GL_FRAGMENT_PRECISION_HIGH
     precision highp float;
-#else
+# else
     precision mediump float;
+# endif
 #endif
 
-#pragma include("../Skinning.function.glsl")
+#pragma include "../Skinning.function.glsl"
 
-attribute vec3 position;
+attribute vec3 aPosition;
 
-uniform mat4 modelToWorldMatrix;
-uniform mat4 worldToScreenMatrix;
+#ifdef SKINNING_NUM_BONES
+attribute vec4 aBoneIdsA;
+attribute vec4 aBoneIdsB;
+attribute vec4 aBoneWeightsA;
+attribute vec4 aBoneWeightsB;
+uniform mat4 uBoneMatrices[SKINNING_NUM_BONES];
+#endif
 
-varying vec3 worldPosition;
+uniform mat4 uModelToWorldMatrix;
+uniform mat4 uWorldToScreenMatrix;
+
+varying vec3 vWorldPosition;
 
 void main(void)
 {
-	vec4 pos = vec4(position, 1.0f);
+	vec4 pos = vec4(aPosition, 1.0);
 
 	#ifdef NUM_BONES
-		pos = skinning_moveVertex(pos);
+		pos.xyz = skinning_moveVertex(pos.xyz, uBoneMatrices, aBoneIdsA, aBoneIdsB, aBoneWeightsA, aBoneWeightsB);
 	#endif // NUM_BONES
-	
-	pos = modelToWorldMatrix * pos;
-	
-	worldPosition = pos.xyz;
 
-	gl_Position =  worldToScreenMatrix * pos;
+    vWorldPosition = pos.xyz;
+	#ifdef MODEL_TO_WORLD
+		pos = uModelToWorldMatrix * pos;
+	#endif
+
+	gl_Position =  uWorldToScreenMatrix * pos;
 }
 
 #endif // VERTEX_SHADER

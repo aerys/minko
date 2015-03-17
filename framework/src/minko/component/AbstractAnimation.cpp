@@ -66,7 +66,7 @@ AbstractAnimation::AbstractAnimation(bool isLooping):
 }
 
 AbstractAnimation::AbstractAnimation(const AbstractAnimation& absAnimation, const CloneOption& option) :
-	AbstractComponent(absAnimation),
+	AbstractComponent(absAnimation._isLooping),
 	_maxTime(absAnimation._maxTime),
 	_loopMinTime(absAnimation._loopMinTime),
 	_loopMaxTime(absAnimation._loopMaxTime),
@@ -143,8 +143,8 @@ AbstractAnimation::targetRemoved(Node::Ptr node)
 
 /*virtual*/
 void
-AbstractAnimation::addedHandler(Node::Ptr node, 
-								Node::Ptr target, 
+AbstractAnimation::addedHandler(Node::Ptr node,
+								Node::Ptr target,
 								Node::Ptr parent)
 {
 	findSceneManager();
@@ -152,8 +152,8 @@ AbstractAnimation::addedHandler(Node::Ptr node,
 
 /*virtual*/
 void
-AbstractAnimation::removedHandler(Node::Ptr node, 
-								  Node::Ptr target, 
+AbstractAnimation::removedHandler(Node::Ptr node,
+								  Node::Ptr target,
 								  Node::Ptr parent)
 {
 	findSceneManager();
@@ -172,7 +172,7 @@ AbstractAnimation::findSceneManager()
 	if (roots->nodes().size() > 1)
 		throw std::logic_error("Renderer cannot be in two separate scenes.");
 	else if (roots->nodes().size() == 1)
-		setSceneManager(roots->nodes()[0]->component<SceneManager>());		
+		setSceneManager(roots->nodes()[0]->component<SceneManager>());
 	else
 		setSceneManager(nullptr);
 }
@@ -183,7 +183,7 @@ AbstractAnimation::setSceneManager(SceneManager::Ptr sceneManager)
 	if (sceneManager && sceneManager != _sceneManager)
 	{
 		_frameBeginSlot = sceneManager->frameBegin()->connect(std::bind(
-			&AbstractAnimation::frameBeginHandler, 
+			&AbstractAnimation::frameBeginHandler,
 			std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this()),
 			std::placeholders::_1,
             std::placeholders::_2,
@@ -234,7 +234,7 @@ AbstractAnimation::Ptr
 AbstractAnimation::seek(const std::string& labelName)
 {
 	auto masterAnim = std::dynamic_pointer_cast<MasterAnimation>(shared_from_this());
-	
+
 	return masterAnim ? masterAnim->seek(labelName) : seek(labelTime(labelName));
 }
 
@@ -332,8 +332,8 @@ AbstractAnimation::labelTime(const std::string& name) const
 }
 
 AbstractAnimation::Ptr
-AbstractAnimation::setPlaybackWindow(uint beginTime, 
-									 uint endTime, 
+AbstractAnimation::setPlaybackWindow(uint beginTime,
+									 uint endTime,
 									 bool forceRestart)
 {
 	_loopMinTime = beginTime;
@@ -353,13 +353,13 @@ AbstractAnimation::setPlaybackWindow(uint beginTime,
 }
 
 AbstractAnimation::Ptr
-AbstractAnimation::setPlaybackWindow(const std::string& beginLabelName, 
-									 const std::string& endLabelName, 
+AbstractAnimation::setPlaybackWindow(const std::string& beginLabelName,
+									 const std::string& endLabelName,
 									 bool forceRestart)
 {
 	return setPlaybackWindow(
-		labelTime(beginLabelName), 
-		labelTime(endLabelName), 
+		labelTime(beginLabelName),
+		labelTime(endLabelName),
 		forceRestart
 	);
 }
@@ -417,7 +417,7 @@ AbstractAnimation::updateNextLabelIds(uint time)
 	}
 
 	if (_nextLabelIds.empty())
-	{	
+	{
 		if (time != loopStartTime())
 			updateNextLabelIds(loopStartTime());
 	}
@@ -425,14 +425,14 @@ AbstractAnimation::updateNextLabelIds(uint time)
 	{
 		for (uint labelId = 0; labelId < _labels.size(); ++labelId)
 		{
-			if (_labels[labelId].time == loopStartTime() && 
-				std::find(_nextLabelIds.begin(), _nextLabelIds.end(), labelId) == _nextLabelIds.end())	
+			if (_labels[labelId].time == loopStartTime() &&
+				std::find(_nextLabelIds.begin(), _nextLabelIds.end(), labelId) == _nextLabelIds.end())
 				_nextLabelIds.push_back(labelId);
 		}
 	}
 }
 
-void 
+void
 AbstractAnimation::checkLabelHit(uint previousTime, uint newTime)
 {
 	if (!_isPlaying || _nextLabelIds.empty())
@@ -449,7 +449,7 @@ AbstractAnimation::checkLabelHit(uint previousTime, uint newTime)
 	{
 		if (previousTime <= newTime)
 		{
-			if ((newTime == nextLabelTime) 
+			if ((newTime == nextLabelTime)
 				|| (previousTime < nextLabelTime && nextLabelTime <= newTime))
 				trigger = true;
 		}
@@ -471,7 +471,7 @@ AbstractAnimation::checkLabelHit(uint previousTime, uint newTime)
 		}
 		else // previousTime < newTime
 		{
-			if (nextLabelTime < previousTime) 
+			if (nextLabelTime < previousTime)
 				trigger = true;
 			else if (newTime < nextLabelTime)
 				trigger = true;
@@ -487,8 +487,8 @@ AbstractAnimation::checkLabelHit(uint previousTime, uint newTime)
 			const auto& label = _labels[labelId];
 
 			_labelHit->execute(
-				std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this()), 
-				label.name, 
+				std::dynamic_pointer_cast<AbstractAnimation>(shared_from_this()),
+				label.name,
 				label.time
 			);
 		}
@@ -523,7 +523,7 @@ AbstractAnimation::update(uint rawGlobalTime)
 
 	const uint	globalTime		= _timeFunction(rawGlobalTime);
 	const uint	globalDeltaTime	= globalTime - _previousGlobalTime;
-	const int	deltaTime		= !_isReversed 
+	const int	deltaTime		= !_isReversed
 		? int(globalDeltaTime)
 		: - int(globalDeltaTime);
 
@@ -532,8 +532,8 @@ AbstractAnimation::update(uint rawGlobalTime)
 		_currentTime	= getNewLoopTime(_currentTime, deltaTime);
 	_previousGlobalTime	= globalTime;
 
-	const bool looped	= 
-		(!_isReversed && _currentTime < _previousTime) || 
+	const bool looped	=
+		(!_isReversed && _currentTime < _previousTime) ||
 		(_isReversed && _previousTime < _currentTime);
 
 	if (looped)

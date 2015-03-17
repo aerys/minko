@@ -5,11 +5,12 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	minko.plugin.enable("png")
 
 	files {
-		"**.hpp",
-		"**.h",
-		"**.cpp",
-		"**.c",
+		"src/**.hpp",
+		"src/**.h",
+		"src/**.cpp",
+		"src/**.c",
 		"include/**.hpp",
+		"lib/msgpack-c/src/**.cpp",
 		"lib/msgpack-c/include/**.hpp"
 	}
 
@@ -49,13 +50,53 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		}
 
 	if _OPTIONS['with-texture-compressor'] then
+		configuration {}
+			files {
+				"lib/crnlib/**.h",
+				"lib/crnlib/**.hpp",
+				"lib/crnlib/**.c",
+				"lib/crnlib/**.cpp"
+			}
+
+			includedirs {
+				"lib/crnlib/crnlib",
+				"lib/crnlib/inc"
+			}
+
+			excludes {
+				"lib/crnlib/crnlib/lzham_win32_threading.h",
+				"lib/crnlib/crnlib/lzham_win32_threading.cpp",
+				"lib/crnlib/crnlib/lzham_timer.h",
+				"lib/crnlib/crnlib/lzham_timer.cpp",
+				"lib/crnlib/crnlib/crn_winhdr.h"
+			}
+
+			defines {
+				"MINIZ_NO_TIME",
+				"CRNLIB_NO_ETC1"
+			}
+
+		configuration { "linux" }
+			excludes {
+				"lib/crnlib/crnlib/crn_threading_win32.h",
+				"lib/crnlib/crnlib/crn_threading_win32.cpp",
+				"lib/crnlib/crnlib/lzma_LzFindMt.h",
+				"lib/crnlib/crnlib/lzma_LzFindMt.cpp",
+				"lib/crnlib/crnlib/lzma_Threads.h",
+				"lib/crnlib/crnlib/lzma_Threads.cpp"
+			}
+
+		configuration { "linux", "debug" }
+			defines { "_DEBUG" }
+
 		configuration { "android or ios or html5" }
 			defines {
 				"MINKO_NO_PVRTEXTOOL",
-				"MINKO_NO_QCOMPRESS"
+				"MINKO_NO_QCOMPRESS",
+				"MINKO_NO_CRNLIB"
 			}
 
-		configuration { "linux64" }
+		configuration { "windows64 or linux64" }
 			defines {
 				"MINKO_NO_QCOMPRESS"
 			}
@@ -65,7 +106,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 				"lib/PVRTexTool/Include"
 			}
 
-		configuration { "windows or linux32 or osx" }
+		configuration { "windows32 or linux32 or osx" }
 			includedirs {
 				"lib/QCompress/Inc"
 			}
@@ -73,6 +114,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		configuration { }
 			defines {
 				"MINKO_NO_PVRTEXTOOL",
-				"MINKO_NO_QCOMPRESS"
+				"MINKO_NO_QCOMPRESS",
+				"MINKO_NO_CRNLIB"
 			}
 	end

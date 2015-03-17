@@ -91,7 +91,7 @@ HTTPProtocol::completeHandler(void* arg, void* data, unsigned int size)
     loader->_progress->execute(loader, 1.0);
     loader->_complete->execute(loader);
 
-    // HTTPProtocol::_runningLoaders.remove(loader);
+    HTTPProtocol::_runningLoaders.remove(loader);
 }
 
 void
@@ -113,7 +113,7 @@ HTTPProtocol::errorHandler(void* arg, int code, const char * message)
 
     loader->_error->execute(loader);
 
-    // HTTPProtocol::_runningLoaders.remove(loader);
+    HTTPProtocol::_runningLoaders.remove(loader);
 }
 
 void
@@ -130,14 +130,19 @@ HTTPProtocol::load()
 
     loader->progress()->execute(loader, 0.0);
 
-#if defined(EMSCRIPTEN)
-    if (options()->loadAsynchronously())
-    {
-        //EMSCRIPTEN < 1.13.1
-        //emscripten_async_wget_data(resolvedFilename().c_str(), loader.get(), &completeHandler, &errorHandler);
+    auto username = std::string();
+    auto password = std::string();
+    auto additionalHeaders = std::unordered_map<std::string, std::string>();
 
-        //EMSCRIPTEN >= 1.13.1
-        auto additionalHeader = std::string();
+    auto httpOptions = std::dynamic_pointer_cast<HTTPOptions>(_options);
+
+    if (httpOptions != nullptr)
+    {
+        username = httpOptions->username();
+        password = httpOptions->password();
+
+        additionalHeaders = httpOptions->additionalHeaders();
+    }
 
         auto seekingOffset = _options->seekingOffset();
         auto seekedLength = _options->seekedLength();
@@ -147,7 +152,38 @@ HTTPProtocol::load()
             auto rangeMin = std::to_string(seekingOffset);
             auto rangeMax = std::to_string(seekingOffset + seekedLength - 1);
 
-            additionalHeader = std::string("{ \"Range\" : \"bytes=") + rangeMin + "-" + rangeMax + "\" }";
+        additionalHeaders.insert(std::make_pair(
+            "Range",
+            "bytes=" + rangeMin + "-" + rangeMax
+        ));
+    }
+
+#if defined(EMSCRIPTEN)
+    if (options()->loadAsynchronously())
+    {
+        //EMSCRIPTEN < 1.13.1
+        //emscripten_async_wget_data(resolvedFilename().c_str(), loader.get(), &completeHandler, &errorHandler);
+
+        //EMSCRIPTEN >= 1.13.1
+        auto additionalHeadersJsonString = std::string();
+
+        if (!additionalHeaders.empty())
+        {
+            auto additionalHeaderCount = 0u;
+
+            additionalHeadersJsonString += "{ ";
+
+            for (const auto& additionalHeader : additionalHeaders)
+            {
+                additionalHeadersJsonString += std::string("\"" + additionalHeader.first + "\" : \"" + additionalHeader.second + "\"");
+
+                if (additionalHeaderCount < additionalHeaders.size() - 1)
+                    additionalHeadersJsonString += ", ";
+
+                ++additionalHeaderCount;
+            }
+
+            additionalHeadersJsonString += " }";
         }
 
         emscripten_async_wget2_data(
@@ -155,7 +191,7 @@ HTTPProtocol::load()
             "GET",
             "",
 #if defined(EMSCRIPTEN_WGET_HEADERS)
-            additionalHeader.c_str(),
+            additionalHeadersJsonString.c_str(),
 #endif
             loader.get(),
             0,
@@ -173,15 +209,9 @@ HTTPProtocol::load()
 
         eval += "xhr.overrideMimeType('text/plain; charset=x-user-defined');\n";
 
-        auto seekingOffset = _options->seekingOffset();
-        auto seekedLength = _options->seekedLength();
-
-        if (seekingOffset >= 0 && seekedLength > 0)
+        for (const auto& additionalHeader : additionalHeaders)
         {
-            auto rangeMin = std::to_string(seekingOffset);
-            auto rangeMax = std::to_string(seekingOffset + seekedLength - 1);
-
-            eval += "xhr.setRequestHeader('Range', 'bytes=" + rangeMin + "-" + rangeMax + "');\n";
+            eval += "xhr.setRequestHeader('" + additionalHeader.first + "', '" + additionalHeader.second + "');\n";
         }
 
         eval += "xhr.send(null);\n";
@@ -239,33 +269,72 @@ HTTPProtocol::load()
             }
         }));
 
-        std::vector<char> input(resolvedFilename().begin(), resolvedFilename().end());
-        worker->start(input);
+        const auto offset = _options->seekingOffset();
+        const auto length = _options->seekedLength();
+
+        std::stringstream inputStream;
+
+        const auto& resolvedFilename = this->resolvedFilename();
+        const auto resolvedFilenameSize = static_cast<int>(resolvedFilename.size());
+
+        const auto usernameSize = username.size();
+        const auto passwordSize = password.size();
+
+        const auto numAdditionalHeaders = additionalHeaders.size();
+
+        inputStream.write(reinterpret_cast<const char*>(&resolvedFilenameSize), 4);
+        inputStream.write(resolvedFilename.data(), resolvedFilenameSize);
+
+        inputStream.write(reinterpret_cast<const char*>(&usernameSize), 4);
+        inputStream.write(username.data(), usernameSize);
+        inputStream.write(reinterpret_cast<const char*>(&passwordSize), 4);
+        inputStream.write(password.data(), passwordSize);
+
+        inputStream.write(reinterpret_cast<const char*>(&numAdditionalHeaders), 4);
+
+        for (const auto& additionalHeader : additionalHeaders)
+        {
+            const auto& key = additionalHeader.first;
+            const auto& value = additionalHeader.second;
+
+            const auto keySize = static_cast<int>(key.size());
+            const auto valueSize = static_cast<int>(value.size());
+
+            inputStream.write(reinterpret_cast<const char*>(&keySize), 4);
+            inputStream.write(reinterpret_cast<const char*>(&valueSize), 4);
+            inputStream.write(key.data(), keySize);
+            inputStream.write(value.data(), valueSize);
+        }
+
+        auto inputString = inputStream.str();
+        
+        worker->start(std::vector<char>(inputString.begin(), inputString.end()));
     }
     else
     {
-        auto username = std::string();
-        auto password = std::string();
+        HTTPRequest request(resolvedFilename(), username, password, &additionalHeaders);
 
-        auto httpOptions = std::dynamic_pointer_cast<HTTPOptions>(_options);
+        auto requestIsSuccessfull = true;
 
-        if (httpOptions != nullptr)
+        auto requestErrorSlot = request.error()->connect([&](int error)
         {
-            username = httpOptions->username();
-            password = httpOptions->password();
-        }
+            requestIsSuccessfull = false;
 
-        HTTPRequest request(resolvedFilename(), username, password);
+            this->error()->execute(shared_from_this());
+        });
 
-        request.progress()->connect([&](float p){
+        auto requestProgressSlot = request.progress()->connect([&](float p){
             progressHandler(loader.get(), int(p * 100.f), 100);
         });
 
         request.run();
 
-        std::vector<char>& output = request.output();
+        if (requestIsSuccessfull)
+        {
+            std::vector<char>& output = request.output();
 
-        completeHandler(loader.get(), &*output.begin(), output.size());
+            completeHandler(loader.get(), &*output.begin(), output.size());
+        }
     }
 #endif
 }
@@ -273,23 +342,10 @@ HTTPProtocol::load()
 bool
 HTTPProtocol::fileExists(const std::string& filename)
 {
-#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
-    auto evalString = std::string();
-
-    evalString += "var xhr = new XMLHttpRequest();\n";
-
-    evalString += "xhr.open('HEAD', '" + filename + "', false);\n";
-
-    evalString += "xhr.send(null);\n";
-
-    evalString += "(xhr.status);";
-
-    auto status = emscripten_run_script_int(evalString.c_str());
-
-    return status != 404;
-#else
     auto username = std::string();
     auto password = std::string();
+
+    const std::unordered_map<std::string, std::string>* additionalHeaders = nullptr;
 
     auto httpOptions = std::dynamic_pointer_cast<HTTPOptions>(_options);
 
@@ -297,10 +353,41 @@ HTTPProtocol::fileExists(const std::string& filename)
     {
         username = httpOptions->username();
         password = httpOptions->password();
+
+        additionalHeaders = &httpOptions->additionalHeaders();
     }
 
-    return HTTPRequest::fileExists(filename, username, password);
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+    auto evalString = std::string();
+
+    evalString += "var xhr = new XMLHttpRequest();\n";
+
+    evalString += "xhr.open('HEAD', '" + filename + "', false);\n";
+    
+    for (const auto& additionalHeader : *additionalHeaders)
+    {
+        if (additionalHeader.first == "")
+            continue;
+
+        evalString += "xhr.setRequestHeader('" + additionalHeader.first + "', '" + additionalHeader.second + "');\n";
+    }
+
+    evalString += "xhr.send(null);\n";
+
+    evalString += "(xhr.status);";
+
+    auto status = emscripten_run_script_int(evalString.c_str());
+
+    return (status >= 200 && status < 300);
+#else
+    return HTTPRequest::fileExists(filename, username, password, additionalHeaders);
 #endif
+}
+
+bool
+HTTPProtocol::isAbsolutePath(const std::string& filename) const
+{
+    return filename.find("://") != std::string::npos;
 }
 
 #if defined(EMSCRIPTEN)

@@ -88,6 +88,18 @@ namespace minko
 
 			static
 			std::string
+			serializeAnimation(NodePtr 		        node,
+                               AbstractComponentPtr component,
+							   DependencyPtr 	    dependencies);
+
+            static
+			std::string
+			serializeSkinning(NodePtr 		        node,
+                              AbstractComponentPtr  component,
+							  DependencyPtr 	    dependencies);
+
+			static
+			std::string
 			serializeBoundingBox(NodePtr 		        node,
                                  AbstractComponentPtr   component,
 								 DependencyPtr 	        dependencies);

@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::render;
 
-std::map<TextureFormat, TextureFormatInfo::Entry> TextureFormatInfo::_formats =
+std::unordered_map<TextureFormat, TextureFormatInfo::Entry, Hash<TextureFormat>> TextureFormatInfo::_formats =
 {
     { TextureFormat::RGB,               Entry("RGB",                false,    24u,   24u, 1u,  1u,  false,  false) },
     { TextureFormat::RGBA,              Entry("RGBA",               false,    32u,   32u, 1u,  1u,  true,   false) },
@@ -113,4 +113,15 @@ bool
 TextureFormatInfo::hasSeparateAlphaChannel(TextureFormat format)
 {
     return _formats.at(format)._hasSeparateAlphaChannel;
+}
+
+std::list<TextureFormat>
+TextureFormatInfo::textureFormats()
+{
+    auto formats = std::list<TextureFormat>();
+
+    for (const auto& textureFormat : _formats)
+        formats.push_back(textureFormat.first);
+
+    return formats;
 }

@@ -47,6 +47,9 @@ namespace minko
             bool
             fileExists(const std::string& filename);
 
+            bool
+            isAbsolutePath(const std::string& filename) const;
+
         protected:
             FileProtocol();
 
@@ -55,7 +58,7 @@ namespace minko
             std::list<std::shared_ptr<FileProtocol>>
             _runningLoaders;
 
-            std::list<Any> _workerSlots;
+            std::unordered_map<std::shared_ptr<async::Worker>, Any> _workerSlots;
         };
     }
 }

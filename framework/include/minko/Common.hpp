@@ -78,6 +78,8 @@ namespace minko
 	class Any;
 	template<typename... A>
 	class Signal;
+    template<typename T>
+    class Flyweight;
 	class Color;
 	enum class CloneOption;
 	class AbstractCanvas;
@@ -157,6 +159,7 @@ namespace minko
 
 		class AbstractTexture;
 		class Texture;
+        class RectangleTexture;
 		class CubeTexture;
         struct TextureSampler;
 
@@ -169,6 +172,7 @@ namespace minko
         };
 
 		typedef std::function<std::string(const std::string&)> FormatNameFunction;
+		typedef std::list<std::pair<Flyweight<std::string>, Flyweight<std::string>>> EffectVariables;        
 	}
 
 	namespace scene

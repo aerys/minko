@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/render/CubeTexture.hpp"
+#include "minko/render/RectangleTexture.hpp"
 
 #include "lodepng.h"
 
@@ -54,23 +55,7 @@ PNGParser::parse(const std::string&                 filename,
 
     render::AbstractTexture::Ptr texture = nullptr;
 
-    if (!options->isCubeTexture())
-    {
-        auto texture2d = render::Texture::create(
-            options->context(),
-            width,
-            height,
-            options->generateMipmaps(),
-            false,
-            options->resizeSmoothly(),
-            render::TextureFormat::RGBA,
-            filename
-        );
-
-        texture = texture2d;
-        assetLibrary->texture(filename, texture2d);
-    }
-    else
+    if (options->isCubeTexture())
     {
         auto cubeTexture = render::CubeTexture::create(
             options->context(),
@@ -86,8 +71,41 @@ PNGParser::parse(const std::string&                 filename,
         texture = cubeTexture;
         assetLibrary->cubeTexture(filename, cubeTexture);
     }
+    else if (options->isRectangleTexture())
+    {
+        auto rectangleTexture = render::RectangleTexture::create(
+            options->context(),
+            width,
+            height,
+            render::TextureFormat::RGBA,
+            filename
+        );
 
-    texture->data(&*out.begin());
+        texture = rectangleTexture;
+        assetLibrary->rectangleTexture(filename, rectangleTexture);
+
+        texture->data(&*out.begin(), width, height);
+    }
+    else
+    {
+        auto texture2d = render::Texture::create(
+            options->context(),
+            width,
+            height,
+            options->generateMipmaps(),
+            false,
+            options->resizeSmoothly(),
+            render::TextureFormat::RGBA,
+            filename
+        );
+
+        texture = texture2d;
+        assetLibrary->texture(filename, texture2d);
+    }
+
+    if (!options->isRectangleTexture())
+        texture->data(&*out.begin());
+
     texture->upload();
     
     if (options->disposeTextureAfterLoading())

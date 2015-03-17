@@ -65,7 +65,7 @@ namespace minko
 
 				return mat;
 			}
-            
+
             inline
             const std::string&
             uuid() const
@@ -90,6 +90,14 @@ namespace minko
 		protected:
 			Material(const std::string& name) :
                 _provider(data::Provider::create())
+            {
+                _provider->set("name", name);
+                _provider->set("uuid", _provider->uuid());
+            }
+
+            Material(const std::string& name,
+                     const data::Provider::ValueMap& values) :
+                _provider(data::Provider::create(values))
             {
                 _provider->set("name", name);
                 _provider->set("uuid", _provider->uuid());

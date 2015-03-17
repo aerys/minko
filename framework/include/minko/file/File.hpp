@@ -83,6 +83,22 @@ namespace minko
             std::string
             canonizeFilename(const std::string& filename);
 
+            static
+            std::string
+            removePrefixPathFromFilename(const std::string& filename);
+
+            static
+            std::string
+            extractPrefixPathFromFilename(const std::string& filename);
+
+            static
+            std::string
+            getExtension(const std::string& filename);
+
+            static
+            std::string
+            replaceExtension(const std::string& filename, const std::string& extension);
+
         private:
             File() = default;
         };

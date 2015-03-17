@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Types.hpp"
 #include "minko/SerializerCommon.hpp"
 #include "minko/file/AbstractWriter.hpp"
+#include "minko/Hash.hpp"
 
 namespace minko
 {
@@ -39,15 +40,15 @@ namespace minko
                                        std::stringstream& blob)>                        FormatWriterFunction;
 
         private:
-            typedef std::shared_ptr<AssetLibrary>       AssetLibraryPtr;
-            typedef std::shared_ptr<Options>            OptionsPtr;
-            typedef std::shared_ptr<Dependency>         DependencyPtr;
-            typedef std::shared_ptr<WriterOptions>      WriterOptionsPtr;
+            typedef std::shared_ptr<AssetLibrary>               AssetLibraryPtr;
+            typedef std::shared_ptr<Options>                    OptionsPtr;
+            typedef std::shared_ptr<Dependency>                 DependencyPtr;
+            typedef std::shared_ptr<WriterOptions>              WriterOptionsPtr;
             typedef std::shared_ptr<render::AbstractTexture>    AbstractTexturePtr;
-            typedef std::shared_ptr<render::Texture>    TexturePtr;
+            typedef std::shared_ptr<render::Texture>            TexturePtr;
 
         private:
-            static std::unordered_map<render::TextureFormat, FormatWriterFunction> _formatWriterFunctions;
+            static std::unordered_map<render::TextureFormat, FormatWriterFunction, Hash<render::TextureFormat>> _formatWriterFunctions;
 
             int _headerSize;
 
@@ -69,15 +70,20 @@ namespace minko
             }
 
             std::string
-            embed(AssetLibraryPtr   assetLibrary,
-                  OptionsPtr        options,
-                  DependencyPtr     dependency,
-                  WriterOptionsPtr  writerOptions);
+            embed(AssetLibraryPtr               assetLibrary,
+                  OptionsPtr                    options,
+                  DependencyPtr                 dependency,
+                  WriterOptionsPtr              writerOptions,
+                  std::vector<unsigned char>&   embeddedHeaderData);
 
         protected:
             TextureWriter();
 
         private:
+            void
+            ensureTextureSizeIsValid(std::shared_ptr<render::AbstractTexture>   texture,
+                                     std::shared_ptr<WriterOptions>             writerOptions);
+
             static
             bool
             writeRGBATexture(AbstractTexturePtr abstractTexture,
@@ -97,7 +103,13 @@ namespace minko
                                     AbstractTexturePtr      abstractTexture,
                                     WriterOptionsPtr        writerOptions,
                                     std::stringstream&      blob);
+
+            static
+            bool
+            writeCRNCompressedTexture(render::TextureFormat   textureFormat,
+                                      AbstractTexturePtr      abstractTexture,
+                                      WriterOptionsPtr        writerOptions,
+                                      std::stringstream&      blob);
         };
     }
 }
-

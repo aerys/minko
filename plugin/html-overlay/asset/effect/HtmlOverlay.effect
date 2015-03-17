@@ -28,10 +28,12 @@
 		"passes" : [{
 			
 			"vertexShader" : "
-				#ifdef GL_FRAGMENT_PRECISION_HIGH
-				    precision highp float;
-				#else
-				    precision mediump float;
+				#ifdef GL_ES
+    				#ifdef GL_FRAGMENT_PRECISION_HIGH
+        				precision highp float;
+    				#else
+        				precision mediump float;
+    				#endif
 				#endif
 
 				attribute vec3 position;
@@ -49,8 +51,13 @@
 
 			"fragmentShader" : "
 				#ifdef GL_ES
-					precision mediump float;
-					precision mediump int;
+				    #ifdef GL_FRAGMENT_PRECISION_HIGH
+				        precision highp float;
+				        precision highp int;
+				    #else
+				        precision mediump float;
+						precision mediump int;
+				    #endif
 				#endif
 
 				uniform sampler2D overlaySampler;

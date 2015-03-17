@@ -67,6 +67,8 @@ JPEGParser::parse(const std::string&                filename,
             filename
         );
 
+        texture2d = std::static_pointer_cast<render::Texture>(options->textureFunction()(filename, texture2d));
+
         texture = texture2d;
         assetLibrary->texture(filename, texture2d);
     }
@@ -83,6 +85,8 @@ JPEGParser::parse(const std::string&                filename,
             filename
         );
 
+        cubeTexture = std::static_pointer_cast<render::CubeTexture>(options->textureFunction()(filename, cubeTexture));
+
         texture = cubeTexture;
         assetLibrary->cubeTexture(filename, cubeTexture);
     }
@@ -93,6 +97,9 @@ JPEGParser::parse(const std::string&                filename,
         texture->disposeData();
 
     free(bmpData);
+
+    if (options->disposeTextureAfterLoading())
+        texture->disposeData();
 
     complete()->execute(shared_from_this());
 }

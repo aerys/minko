@@ -53,7 +53,7 @@ namespace minko
 
                 auto p = data::Provider::create();
                 auto numProperties = 1 + std::abs(rand() % 32);
-                std::map<std::string, data::Binding> bindings;
+                std::unordered_map<std::string, data::Binding> bindings;
                 std::vector<ProgramInputs::UniformInput> inputs;
 
                 for (auto i = 0; i < numProperties; ++i)
@@ -69,7 +69,7 @@ namespace minko
                 }
                 rootData.addProvider(p);
 
-                DrawCall drawCall(nullptr, std::unordered_map<std::string, std::string>{}, rootData, rendererData, targetData);
+                DrawCall drawCall(0, nullptr, EffectVariables{}, rootData, rendererData, targetData);
 
                 bool uniformIsBound = true;
                 for (auto& input : inputs)

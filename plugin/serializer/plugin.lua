@@ -32,18 +32,15 @@ function minko.plugin.serializer:enable()
 
 		configuration { "windows64" }
 			links {
-				"PVRTexLib",
-				"TextureConverter"
+				"PVRTexLib"
 			}
 
 			libdirs {
-				minko.plugin.path("serializer") .. "/lib/PVRTexTool/Windows_x86_64/Dynamic",
-				minko.plugin.path("serializer") .. "/lib/QCompress/Lib/windows/x64"
+				minko.plugin.path("serializer") .. "/lib/PVRTexTool/Windows_x86_64/Dynamic"
 			}
 
 			prelinkcommands {
-				minko.action.copy(minko.plugin.path("serializer") .. "/lib/PVRTexTool/Windows_x86_64/Dynamic/*.dll"),
-				minko.action.copy(minko.plugin.path("serializer") .. "/lib/QCompress/Lib/windows/x64/*.dll")
+				minko.action.copy(minko.plugin.path("serializer") .. "/lib/PVRTexTool/Windows_x86_64/Dynamic/*.dll")
 			}
 
 		configuration { "linux32" }

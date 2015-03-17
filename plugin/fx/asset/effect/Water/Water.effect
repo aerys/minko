@@ -1,132 +1,129 @@
 {
 	"name"	: "water",
-		
-	"attributeBindings"	: {
-		"position"				: "geometry[${geometryId}].position",
-		"uv"					: "geometry[${geometryId}].uv",
-		"normal"				: "geometry[${geometryId}].normal",
-		"tangent"				: "geometry[${geometryId}].tangent"
-	},
-	
-	"uniformBindings"	: {
-		"diffuseColor"			: "material[${materialId}].diffuseColor",
-		"diffuseMap"			: "material[${materialId}].diffuseMap",
-		"normalMap"				: "material[${materialId}].normalMap",
-		"normalSpeed"			: "material[${materialId}].normalSpeed",
-		"depthMap"				: "material[${materialId}].depthMap",
-		"dudvMap"				: "material[${materialId}].dudvMap",
-		"dudvFactor"			: "material[${materialId}].dudvFactor",
-		"dudvSpeed"				: "material[${materialId}].dudvSpeed",
-		"reflectionMap"			: "material[${materialId}].reflectionMap",
-		"reflectivity"			: "material[${materialId}].reflectivity",
-		"waveOrigins"			: "material[${materialId}].waveOrigins",
-		"waveAmplitudes"		: "material[${materialId}].waveAmplitudes",
-		"waveLength"			: "material[${materialId}].waveLength",
-		"waveSpeed"				: "material[${materialId}].waveSpeed",
-		"waveSharpness"			: "material[${materialId}].waveSharpness",
-		"waveType"				: "material[${materialId}].waveType",
-		"normalSpeed"			: "material[${materialId}].normalSpeed",
-		"flowMap"				: "material[${materialId}].flowMap",
-		"flowMapCycle" 			: "material[${materialId}].flowMapCycle",
-		"flowMapOffset1"		: "material[${materialId}].flowMapOffset1",
-		"flowMapOffset2"		: "material[${materialId}].flowMapOffset2",
-		"noiseMap"				: "material[${materialId}].noiseMap",
-		"specularColor"			: { "property" : "material[${materialId}].specularColor", "default" : [ 1.0, 1.0, 1.0, 1.0 ] },
-		"environmentAlpha"		: "material[${materialId}].environmentAlpha",
-		"shininess"				: "material[${materialId}].shininess",
-		"modelToWorldMatrix"	: "transform.modelToWorldMatrix",
-		"worldToScreenMatrix"	: { "property" : "camera.worldToScreenMatrix", 		"source" : "renderer" },
-		"cameraPosition"		: { "property" : "camera.position", 				"source" : "renderer" },
-		"ambientLights"			: { "property" : "ambientLights",					"source" : "root" },
-		"directionalLights"		: { "property" : "directionalLights",				"source" : "root" },
-		"spotLights"			: { "property" : "spotLights",						"source" : "root" },
-		"pointLights"			: { "property" : "pointLights",						"source" : "root" },
-		"frameId"				: { "property" : "frameId",							"source" : "root" },
-		"flowMapScale"			: { "property" : "material[${materialId}].flowMapScale", 	"default" : 1.0},
-		"normalMapScale"		: { "property" : "material[${materialId}].normalMapScale", 	"default" : 1.0},
-		"fresnelMultiplier"		: "material[${materialId}].fresnelMultiplier",
-		"fresnelPow"			: "material[${materialId}].fresnelPow",
-		"fogColor"				: "material[${materialId}].fogColor",
-		"fogDensity"			: "material[${materialId}].fogDensity",
-		"fogStart"				: "material[${materialId}].fogStart",
-		"fogEnd"				: "material[${materialId}].fogEnd",
-		"normalMultiplier"		: "material[${materialId}].normalMultiplier"
+
+	"attribute"	: {
+		"aPosition"				: "geometry[${geometryUuid}].position",
+		"aUV"					: "geometry[${geometryUuid}].uv",
+		"aNormal"				: "geometry[${geometryUuid}].normal",
+		"aTangent"				: "geometry[${geometryUuid}].tangent"
 	},
 
-	"macroBindings"	: {
-		"DIFFUSE_MAP"			: "material[${materialId}].diffuseMap",
-		"NORMAL_MAP"			: "material[${materialId}].normalMap",
-		"NOISE_MAP"				: "material[${materialId}].noiseMap",
-		"REFLECTION_MAP"		: "material[${materialId}].reflectionMap",
-		"FLOW_MAP"				: "material[${materialId}].flowMap",
-		"SHININESS"				: "material[${materialId}].shininess",
-		"DUDV_MAP"				: "material[${materialId}].dudvMap",
-		"NUMWAVES"				: {"property" : "material[${materialId}].numWaves", "default" : 0},
+	"uniform" : {
+		"uDiffuseColor"			: "material[${materialUuid}].diffuseColor",
+		"uDiffuseMap"			: {
+			"binding" : "material[${materialUuid}].diffuseMap",
+			"wrapMode" : "repeat",
+			"textureFilter" : "linear",
+			"mipFilter" : "linear"
+		},
+		"uNormalMap"			: {
+			"binding" : "material[${materialUuid}].normalMap",
+			"wrapMode" : "repeat",
+			"textureFilter" : "linear",
+			"mipFilter" : "linear"
+		},
+		"uNormalSpeed"			: "material[${materialUuid}].normalSpeed",
+		"uDepthMap"				: {
+			"binding" : "material[${materialUuid}].depthMap",
+			"wrapMode" : "repeat",
+			"textureFilter" : "linear",
+			"mipFilter" : "linear"
+		},
+		"uDudvMap"				: "material[${materialUuid}].dudvMap",
+		"uDudvFactor"			: "material[${materialUuid}].dudvFactor",
+		"uDudvSpeed"			: "material[${materialUuid}].dudvSpeed",
+		"uReflectionMap"		: {
+			"binding" : "material[${materialUuid}].reflectionMap",
+			"wrapMode" : "repeat",
+			"textureFilter" : "linear",
+			"mipFilter" : "linear"
+		},
+		"uReflectivity"			: "material[${materialUuid}].reflectivity",
+		"uWaveOrigins"			: "material[${materialUuid}].waveOrigins",
+		"uWaveAmplitudes"		: "material[${materialUuid}].waveAmplitudes",
+		"uWaveLength"			: "material[${materialUuid}].waveLength",
+		"uWaveSpeed"			: "material[${materialUuid}].waveSpeed",
+		"uWaveSharpness"		: "material[${materialUuid}].waveSharpness",
+		"uWaveType"				: "material[${materialUuid}].waveType",
+		"uNormalSpeed"			: "material[${materialUuid}].normalSpeed",
+		"uFlowMap"				: {
+			"binding" : "material[${materialUuid}].flowMap",
+			"wrapMode" : "repeat",
+			"textureFilter" : "linear",
+			"mipFilter" : "linear"
+		},
+		"uFlowMapCycle" 		: "material[${materialUuid}].flowMapCycle",
+		"uFlowMapOffset1"		: "material[${materialUuid}].flowMapOffset1",
+		"uFlowMapOffset2"		: "material[${materialUuid}].flowMapOffset2",
+		"uNoiseMap"				: {
+			"binding" : "material[${materialUuid}].noiseMap",
+			"wrapMode" : "repeat",
+			"textureFilter" : "linear",
+			"mipFilter" : "linear"
+		},
+		"uSpecularColor"		: { "property" : "material[${materialUuid}].specularColor", "default" : [ 1.0, 1.0, 1.0, 1.0 ] },
+		"uEnvironmentAlpha"		: "material[${materialUuid}].environmentAlpha",
+		"uShininess"			: "material[${materialUuid}].shininess",
+		"uModelToWorldMatrix"	: "modelToWorldMatrix",
+		"uWorldToScreenMatrix"	: { "property" : "worldToScreenMatrix", "source" : "renderer" },
+		"uCameraPosition"		: { "property" : "cameraPosition", "source" : "renderer" },
+		"uAmbientLights"		: { "property" : "ambientLights", "source" : "root" },
+		"uDirectionalLights"	: { "property" : "directionalLights", "source" : "root" },
+		"uSpotLights"			: { "property" : "spotLights", "source" : "root" },
+		"uPointLights"			: { "property" : "pointLights", "source" : "root" },
+		"uFrameUuid"				: { "property" : "frameUuid",	"source" : "root" },
+		"uFlowMapScale"			: { "property" : "material[${materialUuid}].flowMapScale", "default" : 1.0},
+		"uNormalMapScale"		: { "property" : "material[${materialUuid}].normalMapScale", "default" : 1.0},
+		"uFresnelMultiplier"	: "material[${materialUuid}].fresnelMultiplier",
+		"uFresnelPow"			: "material[${materialUuid}].fresnelPow",
+		"uFogColor"				: "material[${materialUuid}].fogColor",
+		"uFogDensity"			: "material[${materialUuid}].fogDensity",
+		"uFogStart"				: "material[${materialUuid}].fogStart",
+		"uFogEnd"				: "material[${materialUuid}].fogEnd",
+		"uNormalMultiplier"		: "material[${materialUuid}].normalMultiplier"
+	},
+
+	"macros" : {
+		"DIFFUSE_MAP"			: "material[${materialUuid}].diffuseMap",
+		"NORMAL_MAP"			: "material[${materialUuid}].normalMap",
+		"NOISE_MAP"				: "material[${materialUuid}].noiseMap",
+		"REFLECTION_MAP"		: "material[${materialUuid}].reflectionMap",
+		"FLOW_MAP"				: "material[${materialUuid}].flowMap",
+		"SHININESS"				: "material[${materialUuid}].shininess",
+		"DUDV_MAP"				: "material[${materialUuid}].dudvMap",
+		"NUMWAVES"				: {"property" : "material[${materialUuid}].numWaves", "default" : 0},
 		"MODEL_TO_WORLD"		: "transform.modelToWorldMatrix",
-		"NUM_AMBIENT_LIGHTS"	: { "property" : "ambientLights.length",		"source" : "root" },
-		"PRECOMPUTED_AMBIENT"	: { "property" : "sumAmbients",					"source" : "root" },
-		"FOG_LIN"				: "material[${materialId}].fogLinear",
-		"FOG_EXP"				: "material[${materialId}].fogExponential",
-		"FOG_EXP2"				: "material[${materialId}].fogExponential2"
-	},
-		
-	"stateBindings"	: {
-        "blendMode"             : "material[${materialId}].blendMode",
-        "colorMask"             : "material[${materialId}].colorMask",
-        "depthMask"             : "material[${materialId}].depthMask",
-        "depthFunc"             : "material[${materialId}].depthFunc",
-        "triangleCulling"       : "material[${materialId}].triangleCulling",
-        "stencilFunc"           : "material[${materialId}].stencilFunc",
-        "stencilRef"            : "material[${materialId}].stencilRef",
-        "stencilMask"           : "material[${materialId}].stencilMask",
-        "stencilFailOp"         : "material[${materialId}].stencilFailOp",
-        "stencilZFailOp"        : "material[${materialId}].stencilZFailOp",
-        "stencilZPassOp"        : "material[${materialId}].stencilZPassOp",
-        "scissorBox.x"          : { "property" : "scissorBox.x",        "source" : "renderer" },
-        "scissorBox.y"          : { "property" : "scissorBox.y",        "source" : "renderer" },
-        "scissorBox.width"      : { "property" : "scissorBox.width",    "source" : "renderer" },
-        "scissorBox.height"     : { "property" : "scissorBox.height",   "source" : "renderer" },
-        "priority"              : "material[${materialId}].priority",
-        "zSort"					: "material[${materialId}].zSort"
+		"NUM_AMBIENT_LIGHTS"	: { "property" : "ambientLights.length", "source" : "root" },
+		"PRECOMPUTED_AMBIENT"	: { "property" : "sumAmbients", "source" : "root" },
+		"FOG_LIN"				: "material[${materialUuid}].fogLinear",
+		"FOG_EXP"				: "material[${materialUuid}].fogExponential",
+		"FOG_EXP2"				: "material[${materialUuid}].fogExponential2"
 	},
 
-	"samplerStates" : {
-		"diffuseMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
-		"normalMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
-		"specularMap"	: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
-		"flowMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
-		"noiseMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
-		"reflectionMap" : { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" },
-		"dudvMap"		: { "wrapMode" : "repeat", "textureFilter" : "linear", "mipFilter" : "linear" }
+	"states" : {
+		"priority" : "last"
 	},
-	
-    "colorMask"         : true,
-    "depthTest"         : [true, "less_equal"],
-    "triangleCulling"   : "back",
-	"stencilTest"		: ["always", 0, 1, ["keep", "keep", "keep"]],
-    "scissorTest"		: false,
-	"scissorBox"		: [0, 0, -1, -1],
 
-
-	"defaultTechnique"	: "opaque",
-	
 	"techniques" : [
 		{
-			"name"				: "waterPass",	
-			"blendMode"			: "alpha",
-   			"priority"          : "transparent",
-    		"zSort"             : true,
-			
-			"macroBindings" : {
-				"NUM_DIRECTIONAL_LIGHTS"	: { "property" : "directionalLights.length",	"source" : "root",	"max" : 8 },
-				"NUM_POINT_LIGHTS"			: { "property" : "pointLights.length", 			"source" : "root",	"max" : 8 },
-				"NUM_SPOT_LIGHTS"			: { "property" : "spotLights.length", 			"source" : "root",	"max" : 8 }
+			"name" : "water-pass",
+
+			"states" : {
+				"blendMode"	: "alpha",
+	   			"priority"  : "transparent",
+	    		"zSorted"	: true
 			},
-				
-			"passes"	: [
+
+			"macros" : {
+				"NUM_DIRECTIONAL_LIGHTS"	: { "property" : "directionalLights.length", "source" : "root",	"max" : 8 },
+				"NUM_POINT_LIGHTS"			: { "property" : "pointLights.length", "source" : "root", "max" : 8 },
+				"NUM_SPOT_LIGHTS"			: { "property" : "spotLights.length", "source" : "root", "max" : 8 }
+			},
+
+			"passes" : [
 			{
-				"vertexShader" 		: "#pragma include('Water.vertex.glsl')",
-				"fragmentShader" 	: "#pragma include('Water.fragment.glsl')"
+				"vertexShader" 		: "#pragma include \"Water.vertex.glsl\"",
+				"fragmentShader" 	: "#pragma include \"Water.fragment.glsl\""
 			}]
 		}
 	]

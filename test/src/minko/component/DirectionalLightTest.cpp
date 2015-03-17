@@ -43,7 +43,7 @@ TEST_F(DirectionalLightTest, AddLight)
     root->addChild(lights);
 
     ASSERT_TRUE(root->data().hasProperty("directionalLight.length"));
-    ASSERT_EQ(root->data().get<uint>("directionalLight.length"), 1);
+    ASSERT_EQ(root->data().get<int>("directionalLight.length"), 1);
     ASSERT_TRUE(root->data().hasProperty("directionalLight[0].color"));
     ASSERT_EQ(root->data().get<math::vec3>("directionalLight[0].color"), math::vec3(1.f));
     ASSERT_TRUE(root->data().hasProperty("directionalLight[0].diffuse"));
@@ -64,7 +64,7 @@ TEST_F(DirectionalLightTest, RemoveSingleLight)
     root->addChild(lights);
     lights->removeComponent(al);
 
-    ASSERT_EQ(root->data().get<uint>("directionalLight.length"), 0);
+    ASSERT_EQ(root->data().get<int>("directionalLight.length"), 0);
     ASSERT_FALSE(root->data().hasProperty("directionalLight[0].color"));
     ASSERT_FALSE(root->data().hasProperty("directionalLight[0].diffuse"));
     ASSERT_FALSE(root->data().hasProperty("directionalLight[0].specular"));
@@ -82,7 +82,7 @@ TEST_F(DirectionalLightTest, AddMultipleLights)
     al1->color(math::vec3(1.f, 0.f, 0.f));
     lights->addComponent(al1);
 
-    ASSERT_EQ(root->data().get<uint>("directionalLight.length"), 1);
+    ASSERT_EQ(root->data().get<int>("directionalLight.length"), 1);
     ASSERT_TRUE(root->data().hasProperty("directionalLight[0].color"));
     ASSERT_EQ(root->data().get<math::vec3>("directionalLight[0].color"), math::vec3(1.f, 0.f, 0.f));
     ASSERT_TRUE(root->data().hasProperty("directionalLight[0].diffuse"));
@@ -96,7 +96,7 @@ TEST_F(DirectionalLightTest, AddMultipleLights)
     al2->color(math::vec3(0.f, 1.f, 0.f));
     lights->addComponent(al2);
 
-    ASSERT_EQ(root->data().get<uint>("directionalLight.length"), 2);
+    ASSERT_EQ(root->data().get<int>("directionalLight.length"), 2);
     ASSERT_TRUE(root->data().hasProperty("directionalLight[1].color"));
     ASSERT_EQ(root->data().get<math::vec3>("directionalLight[1].color"), math::vec3(0.f, 1.f, 0.f));
     ASSERT_TRUE(root->data().hasProperty("directionalLight[1].diffuse"));
@@ -110,7 +110,7 @@ TEST_F(DirectionalLightTest, AddMultipleLights)
     al3->color(math::vec3(0.f, 0.f, 1.f));
     lights->addComponent(al3);
 
-    ASSERT_EQ(root->data().get<uint>("directionalLight.length"), 3);
+    ASSERT_EQ(root->data().get<int>("directionalLight.length"), 3);
     ASSERT_TRUE(root->data().hasProperty("directionalLight[2].color"));
     ASSERT_EQ(root->data().get<math::vec3>("directionalLight[2].color"), math::vec3(0.f, 0.f, 1.f));
     ASSERT_TRUE(root->data().hasProperty("directionalLight[2].diffuse"));
@@ -142,7 +142,7 @@ TEST_F(DirectionalLightTest, RemoveFirstLight)
 
     lights->removeComponent(al1);
 
-    ASSERT_EQ(root->data().get<uint>("directionalLight.length"), 2);
+    ASSERT_EQ(root->data().get<int>("directionalLight.length"), 2);
     ASSERT_TRUE(root->data().hasProperty("directionalLight[0].color"));
     ASSERT_EQ(root->data().get<math::vec3>("directionalLight[0].color"), math::vec3(0.f, 1.f, 0.f));
     ASSERT_TRUE(root->data().hasProperty("directionalLight[0].diffuse"));
@@ -183,7 +183,7 @@ TEST_F(DirectionalLightTest, RemoveNthLight)
 
     lights->removeComponent(al2);
 
-    ASSERT_EQ(root->data().get<uint>("directionalLight.length"), 2);
+    ASSERT_EQ(root->data().get<int>("directionalLight.length"), 2);
     ASSERT_TRUE(root->data().hasProperty("directionalLight[0].color"));
     ASSERT_EQ(root->data().get<math::vec3>("directionalLight[0].color"), math::vec3(1.f, 0.f, 0.f));
     ASSERT_TRUE(root->data().hasProperty("directionalLight[0].diffuse"));
@@ -224,7 +224,7 @@ TEST_F(DirectionalLightTest, RemoveLastLight)
 
     lights->removeComponent(al3);
 
-    ASSERT_EQ(root->data().get<uint>("directionalLight.length"), 2);
+    ASSERT_EQ(root->data().get<int>("directionalLight.length"), 2);
     ASSERT_TRUE(root->data().hasProperty("directionalLight[0].color"));
     ASSERT_EQ(root->data().get<math::vec3>("directionalLight[0].color"), math::vec3(1.f, 0.f, 0.f));
     ASSERT_TRUE(root->data().hasProperty("directionalLight[0].diffuse"));

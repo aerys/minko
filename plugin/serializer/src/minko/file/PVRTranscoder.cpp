@@ -48,7 +48,7 @@ PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
                          const Options&                            options)
 {
 #ifndef MINKO_NO_PVRTEXTOOL
-    const auto textureFormatToPvrTextureFomat = std::unordered_map<TextureFormat, unsigned long long>
+    const auto textureFormatToPvrTextureFomat = std::unordered_map<TextureFormat, unsigned long long, Hash<TextureFormat>>
     {
         { TextureFormat::RGB,               pvrtexture::PVRStandard8PixelType.PixelTypeID },
         { TextureFormat::RGBA,              pvrtexture::PVRStandard8PixelType.PixelTypeID },
@@ -195,7 +195,7 @@ PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
 
     auto debugOutputFileName = std::string("debug_") + TextureFormatInfo::name(outFormat) + "_" + std::to_string(pvrTextureId++);
 
-    debugOutputFileName = writerOptions->outputAssetUriFunction()(debugOutputFileName);
+    debugOutputFileName = writerOptions->textureUriFunction()(debugOutputFileName);
 
     pvrTexture->saveFile(debugOutputFileName.c_str());
 #endif

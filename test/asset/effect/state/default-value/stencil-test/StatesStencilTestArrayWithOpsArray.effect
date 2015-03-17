@@ -1,0 +1,7 @@
+{
+    "states" : {
+        "stencilTest" : ["equal", 1, 0, ["incr_wrap", "decr", "decr_wrap"]]
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

@@ -117,6 +117,7 @@ AbstractASSIMPParser::AbstractASSIMPParser() :
 
 AbstractASSIMPParser::~AbstractASSIMPParser()
 {
+    delete _importer;
 }
 
 void
@@ -130,7 +131,6 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 	std::cout << "AbstractASSIMPParser::parse()" << std::endl;
 #endif // DEBUG
 
-	resetParser();
 	initImporter();
 
 	int pos = resolvedFilename.find_last_of("\\/");
@@ -143,6 +143,7 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 	}
 
     _filename		= filename;
+    _resolvedFilename = resolvedFilename;
 	_assetLibrary	= assetLibrary;
 	_options		= options;
 
@@ -152,9 +153,9 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 
     auto ioHandler = new IOHandler(ioHandlerOptions, _assetLibrary);
 
-    ioHandler->errorFunction([this](IOHandler& self, const Error& error) -> void
+    ioHandler->errorFunction([this](IOHandler& self, const std::string& filename, const Error& error) -> void
     {
-        this->error()->execute(shared_from_this(), error);
+        this->error()->execute(shared_from_this(), Error("MissingAssetDependency", filename));
     });
 
     _importer->SetIOHandler(ioHandler);
@@ -163,11 +164,9 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 	std::cout << "AbstractASSIMPParser: preparing to parse" << std::endl;
 #endif // DEBUG
 
-	const aiScene* scene = _importer->ReadFileFromMemory(
-		&data[0],
-		data.size(),
-		//| aiProcess_GenSmoothNormals // assertion is raised by assimp
+    auto flags =
 		aiProcess_JoinIdenticalVertices
+        //| aiProcess_GenSmoothNormals // assertion is raised by assimp
 		| aiProcess_GenSmoothNormals
 		| aiProcess_SplitLargeMeshes
 		| aiProcess_LimitBoneWeights
@@ -176,12 +175,29 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 		//| aiProcess_OptimizeGraph // makes the mesh simply vanish
 		| aiProcess_FlipUVs
 		| aiProcess_SortByPType
-		| aiProcess_Triangulate,
+		| aiProcess_Triangulate
+        | aiProcess_ImproveCacheLocality;
+
+    if (!options->processUnusedAsset())
+    {
+        // this flags discards unused materials in addition to
+        // removing duplicated ones
+        flags |= aiProcess_RemoveRedundantMaterials;
+    }
+
+	const aiScene* scene = _importer->ReadFileFromMemory(
+		&data[0],
+		data.size(),
+		flags,
 		resolvedFilename.c_str()
 	);
 
 	if (!scene)
+    {
         _error->execute(shared_from_this(), Error(_importer->GetErrorString()));
+
+        return;
+    }
 
 #ifdef DEBUG
 	std::cout << "AbstractASSIMPParser: scene parsed" << std::endl;
@@ -208,6 +224,9 @@ AbstractASSIMPParser::allDependenciesLoaded(const aiScene* scene)
 
 	_symbol = scene::Node::create(_filename);
 	createSceneTree(_symbol, scene, scene->mRootNode, _options->assetLibrary());
+
+    if (_options->processUnusedAsset())
+        createUnusedMaterials(scene, _options->assetLibrary(), _options);
 
 #ifdef DEBUG_ASSIMP
 	printNode(std::cout << "\n", _symbol, 0) << std::endl;
@@ -246,7 +265,6 @@ AbstractASSIMPParser::allDependenciesLoaded(const aiScene* scene)
 	if (_numDependencies == _numLoadedDependencies)
 		finalize();
 
-	disposeNodeMaps();
 }
 
 void
@@ -321,10 +339,10 @@ AbstractASSIMPParser::getTransformFromAssimp(aiNode* ainode)
 Geometry::Ptr
 AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mesh, const std::string& meshName)
 {
-    auto existingGeometry = _assetLibrary->geometry(meshName);
+    /*auto existingGeometry = _assetLibrary->geometry(meshName);
 
     if (existingGeometry != nullptr)
-        return existingGeometry;
+        return existingGeometry;*/
 
 	unsigned int vertexSize = 0;
 
@@ -408,20 +426,41 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
 	return geometry;
 }
 
+const std::string&
+AbstractASSIMPParser::getValidAssetName(const std::string& name)
+{
+    auto validAssetNameIt = _validAssetNames.find(name);
+
+    if (validAssetNameIt != _validAssetNames.end())
+        return validAssetNameIt->second;
+
+    auto validAssetName = name;
+
+    validAssetName = File::removePrefixPathFromFilename(validAssetName);
+
+    const auto invalidSymbolRegex = std::regex("\\W+");
+
+    validAssetName = std::regex_replace(
+        validAssetName,
+        invalidSymbolRegex,
+        std::string()
+    );
+
+    auto newValidAssetNameIt = _validAssetNames.insert(std::make_pair(name, validAssetName));
+
+    return newValidAssetNameIt.first->second;
+}
+
 std::string
 AbstractASSIMPParser::getMaterialName(const std::string& materialName)
 {
-    static int currentId = 0;
-
-    return materialName.empty() ? std::string("default" + std::to_string(currentId++)) : materialName;
+    return getValidAssetName(materialName);
 }
 
 std::string
 AbstractASSIMPParser::getMeshName(const std::string& meshName)
 {
-    static int currentId = 0;
-
-    return meshName.empty() ? std::string("default" + std::to_string(currentId++)) : meshName;
+    return getValidAssetName(meshName);
 }
 
 void
@@ -477,10 +516,25 @@ AbstractASSIMPParser::createCameras(const aiScene* scene)
 		const auto	aiPosition	= aiCamera->mPosition;
 		const auto	aiLookAt	= aiCamera->mLookAt;
 		const auto	aiUp		= aiCamera->mUp;
-		auto		position	= math::normalize(math::vec3(aiPosition.x, aiPosition.y, aiPosition.z));
-		auto		target		= math::normalize(math::vec3(aiPosition.x + aiLookAt.x, aiPosition.y + aiLookAt.y, aiPosition.z + aiLookAt.z));
-		auto		up			= math::normalize(math::vec3(aiUp.x, aiUp.y, aiUp.z));
 
+        auto position = math::vec3(aiPosition.x, aiPosition.y, aiPosition.z);
+        position = position != math::zero<math::vec3>()
+            ? math::normalize(position)
+            : position;
+
+        auto target = math::vec3(aiPosition.x + aiLookAt.x, aiPosition.y + aiLookAt.y, aiPosition.z + aiLookAt.z);
+        target = target != math::zero<math::vec3>()
+            ? math::normalize(target)
+            : math::vec3(1e-6f, 1e-6f, 1e-6f);
+
+        auto up = math::vec3(aiUp.x, aiUp.y, aiUp.z);
+        up = up != math::zero<math::vec3>()
+            ? math::normalize(up)
+            : up;
+
+        const auto lookat = math::lookAt(position, target, up);
+
+        auto transform = Transform::create(math::inverse(lookat));
 		const auto	cameraName	= std::string(aiCamera->mName.data);
 		auto		cameraNode = scene::Node::create(cameraName + "_camera_" + std::to_string(i))
 			->addComponent(PerspectiveCamera::create(
@@ -489,9 +543,7 @@ AbstractASSIMPParser::createCameras(const aiScene* scene)
 				aiCamera->mClipPlaneNear,
 				aiCamera->mClipPlaneFar
 			))
-			->addComponent(Transform::create(
-                math::inverse(math::lookAt(position, target, up))
-			));
+			->addComponent(transform);
 
 		scene::Node::Ptr parentNode = !cameraName.empty()
 			? findNode(cameraName)
@@ -500,6 +552,19 @@ AbstractASSIMPParser::createCameras(const aiScene* scene)
 		if (parentNode)
 			parentNode->addChild(cameraNode);
 	}
+}
+
+void
+AbstractASSIMPParser::createUnusedMaterials(const aiScene*      scene,
+                                            AssetLibrary::Ptr   assetLibrary,
+                                            Options::Ptr        options)
+{
+    for (auto i = 0u; i < scene->mNumMaterials; ++i)
+    {
+        auto aiMaterial = scene->mMaterials[i];
+
+        createMaterial(aiMaterial);
+    }
 }
 
 void
@@ -552,7 +617,9 @@ AbstractASSIMPParser::createLights(const aiScene* scene)
 			else
 				lightNode->addComponent(Transform::create());
 
-			auto lookAt		= math::normalize(position + direction);
+            auto lookAt = position + direction;
+            lookAt = lookAt != math::zero<math::vec3>() ? math::normalize(lookAt) : lookAt;
+
             auto matrix     = math::lookAt(position, lookAt, math::vec3(0.f, 1.f, 0.f));
 		}
 
@@ -614,8 +681,7 @@ void
 AbstractASSIMPParser::parseDependencies(const std::string& 	filename,
 										const aiScene*		scene)
 {
-	std::set<std::string>	loadedFilenames;
-	aiString				path;
+	aiString path;
 
 	_numDependencies = 0;
 
@@ -634,25 +700,20 @@ AbstractASSIMPParser::parseDependencies(const std::string& 	filename,
 
 				if (texFound == AI_SUCCESS)
 				{
-					std::string filename(path.data);
+					const auto filename = std::string(path.data);
 
-					if (!filename.empty() &&
-						loadedFilenames.find(filename) == loadedFilenames.end())
-					{
-#ifdef DEBUG
-						std::cout << "ASSIMParser: loading texture '" << filename << "'..." << std::endl;
-#endif
-						loadedFilenames.insert(filename);
-					}
+                    const auto assetName = File::removePrefixPathFromFilename(filename);
+
+                    _textureFilenameToAssetName.insert(std::make_pair(filename, assetName));
 				}
 			}
 		}
 	}
 
-	_numDependencies = loadedFilenames.size();
+	_numDependencies = _textureFilenameToAssetName.size();
 
-	for (auto& name : loadedFilenames)
-		loadTexture(name, name, _options, scene);
+	for (auto& filenameToAssetNamePair : _textureFilenameToAssetName)
+		loadTexture(filenameToAssetNamePair.first, filenameToAssetNamePair.second, _options, scene);
 }
 
 void
@@ -672,9 +733,16 @@ AbstractASSIMPParser::loadTexture(const std::string&	textureFilename,
 								  Options::Ptr			options,
 								  const aiScene*		scene)
 {
+    const auto textureParentPrefixPath = File::extractPrefixPathFromFilename(_resolvedFilename);
+
+    const auto texturePrefixPath = File::extractPrefixPathFromFilename(textureFilename);
+
 	auto loader = Loader::create();
 
-    loader->options(options);
+    loader->options(options->clone());
+
+    loader->options()
+        ->includePaths().push_front(textureParentPrefixPath + "/" + texturePrefixPath);
 
 	_loaderCompleteSlots[loader] = loader->complete()->connect(std::bind(
 		&AbstractASSIMPParser::textureCompleteHandler,
@@ -687,16 +755,16 @@ AbstractASSIMPParser::loadTexture(const std::string&	textureFilename,
 	{
 		++_numLoadedDependencies;
 #ifdef DEBUG
-        std::cerr << "AbstractASSIMPParser: unable to find texture with filename '" << textureFilename << "'" << std::endl;
+        std::cerr << "AbstractASSIMPParser: unable to find texture with filename '" << assetName << "'" << std::endl;
 #endif // DEBUG
 
-        _error->execute(shared_from_this(), Error("MissingTextureDependency", "Missing texture dependency: '" + textureFilename + "'"));
+        _error->execute(shared_from_this(), Error("MissingTextureDependency", assetName));
 
         if (_numDependencies == _numLoadedDependencies)
             allDependenciesLoaded(scene);
 	});
 
-	loader->queue(textureFilename, options)->load();
+	loader->queue(assetName)->load();
 }
 
 void
@@ -710,26 +778,6 @@ AbstractASSIMPParser::textureCompleteHandler(file::Loader::Ptr loader, const aiS
 
 	if (_numDependencies == _numLoadedDependencies)
 		allDependenciesLoaded(scene);
-}
-
-void
-AbstractASSIMPParser::resetParser()
-{
-	_numDependencies		= 0;
-	_numLoadedDependencies	= 0;
-	_filename.clear();
-	_symbol	= nullptr;
-
-	disposeNodeMaps();
-}
-void
-AbstractASSIMPParser::disposeNodeMaps()
-{
-	_aiNodeToNode.clear();
-	_aiMeshToNode.clear();
-	_nameToNode.clear();
-	_nameToAnimMatrices.clear();
-	_alreadyAnimatedNodes.clear();
 }
 
 unsigned int
@@ -902,14 +950,41 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
 
 	meshNode->addComponent(MasterAnimation::create());
 
-	auto irrelevantTransforms = NodeSet::create(skeletonRoot)
-		->descendants(false)
-		->where([](Node::Ptr n){
-			return n->hasComponent<Transform>() && !n->hasComponent<Animation>() && !n->hasComponent<Surface>();
-		});
+    auto irrelevantTransformNodes = std::set<Node::Ptr>();
 
-	for (auto& n : irrelevantTransforms->nodes())
-		n->removeComponent(n->component<Transform>());
+    for (auto boneNode : boneNodes)
+    {
+        auto boneNodeDescendants = NodeSet::create(boneNode)
+            ->descendants(true)
+            ->where([](Node::Ptr descendant) -> bool { return descendant->hasComponent<Transform>(); });
+
+        irrelevantTransformNodes.insert(
+            boneNodeDescendants->nodes().begin(),
+            boneNodeDescendants->nodes().end()
+        );
+    }
+
+    auto animatedNodes = NodeSet::create(skeletonRoot)
+        ->descendants(true)
+        ->where([&](Node::Ptr descendant) -> bool
+        {
+            return descendant->hasComponent<Animation>() || descendant->hasComponent<Skinning>();
+        });
+
+    for (auto animatedNode : animatedNodes->nodes())
+    {
+        auto animatedNodeDescendants = NodeSet::create(animatedNode)
+            ->descendants(true)
+            ->where([](Node::Ptr animatedNodeDescendant) -> bool { return animatedNodeDescendant->hasComponent<Transform>(); });
+
+        irrelevantTransformNodes.insert(
+            animatedNodeDescendants->nodes().begin(),
+            animatedNodeDescendants->nodes().end()
+        );
+    }
+
+    for (auto irrelevantTransformNode : irrelevantTransformNodes)
+        irrelevantTransformNode->removeComponent(irrelevantTransformNode->component<Transform>());
 }
 
 Node::Ptr
@@ -1343,7 +1418,17 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
     if (existingMaterial != nullptr)
         return existingMaterial;
 
-	material->data()->set("blendMode",			getBlendingMode(aiMat));
+    const auto blendingMode = getBlendingMode(aiMat);
+
+    {
+        auto srcBlendingMode = static_cast<render::Blending::Source>(static_cast<uint>(blendingMode) & 0x00ff);
+        auto dstBlendingMode = static_cast<render::Blending::Destination>(static_cast<uint>(blendingMode) & 0xff00);
+
+        material->data()->set<render::Blending::Mode>("blendingMode", blendingMode);
+        material->data()->set<render::Blending::Source>(render::States::PROPERTY_BLENDING_SOURCE, srcBlendingMode);
+        material->data()->set<render::Blending::Destination>(render::States::PROPERTY_BLENDING_DESTINATION, dstBlendingMode);
+    }
+
 	material->data()->set("triangleCulling",	getTriangleCulling(aiMat));
 	material->data()->set("wireframe",			getWireframe(aiMat)); // bool
 
@@ -1365,22 +1450,27 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 		// Gouraud-like shading (-> no specular)
 		specularColor.w = 0.f;
 
-	if (opacity < 1.0f)
-	{
-		diffuseColor.w = opacity;
-		specularColor.w = opacity;
-		ambientColor.w = opacity;
-		emissiveColor.w = opacity;
-		reflectiveColor.w = opacity;
-		transparentColor.w = opacity;
+    auto transparent = opacity < 1.f;
 
+    if (transparent)
+    {
+        diffuseColor.w = opacity;
+        specularColor.w = opacity;
+        ambientColor.w = opacity;
+        emissiveColor.w = opacity;
+        reflectiveColor.w = opacity;
+        transparentColor.w = opacity;
+    }
+
+    if (transparent || !(blendingMode & render::Blending::Destination::ZERO))
+    {
 		material->data()->set("priority",	render::Priority::TRANSPARENT);
-		material->data()->set("zSort",		true);
+		material->data()->set("zSorted",	true);
 	}
 	else
 	{
 		material->data()->set("priority",	render::Priority::OPAQUE);
-		material->data()->set("zSort",		false);
+		material->data()->set("zSorted",	false);
 	}
 
 	for (auto& textureTypeAndName : _textureTypeToName)
@@ -1395,10 +1485,28 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 		aiString path;
 		if (aiMat->GetTexture(textureType, 0, &path) == AI_SUCCESS)
 		{
-			render::AbstractTexture::Ptr texture = _assetLibrary->texture(std::string(path.data));
+            const auto textureFilename = std::string(path.data);
 
-			if (texture)
-				material->data()->set(textureName, texture->sampler());
+            const auto textureAssetName = _textureFilenameToAssetName.at(textureFilename);
+
+			auto texture = _assetLibrary->texture(textureAssetName);
+
+            const auto textureIsValid = texture != nullptr;
+
+            texture = std::static_pointer_cast<render::Texture>(_options->textureFunction()(
+                textureAssetName,
+                texture
+            ));
+
+            if (!textureIsValid && texture != nullptr)
+                _assetLibrary->texture(textureAssetName, texture);
+
+            if (texture != nullptr)
+            {
+                material->data()->set(textureName, texture->sampler());
+
+                textureSet(material, textureName, texture);
+            }
 		}
 	}
 
@@ -1407,6 +1515,16 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
     _assetLibrary->material(materialName, processedMaterial);
 
     return processedMaterial;
+}
+
+void
+AbstractASSIMPParser::textureSet(material::Material::Ptr material, const std::string& textureTypeName, render::AbstractTexture::Ptr texture)
+{
+    if (textureTypeName == _textureTypeToName.at(aiTextureType_OPACITY) &&
+        !material->data()->hasProperty("alphaThreshold"))
+    {
+        material->data()->set("alphaThreshold", .01f);
+    }
 }
 
 material::Material::Ptr

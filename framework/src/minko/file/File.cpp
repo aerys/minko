@@ -161,3 +161,77 @@ File::canonizeFilename(const std::string& filename)
 
     return output;
 }
+
+std::string
+File::removePrefixPathFromFilename(const std::string& filename)
+{
+    const auto cleanFilename = sanitizeFilename(filename);
+
+    auto filenameWithoutPrefixPath = cleanFilename;
+
+    const auto lastSeparatorPosition = filenameWithoutPrefixPath.find_last_of("/");
+
+    if (lastSeparatorPosition != std::string::npos)
+        filenameWithoutPrefixPath = filenameWithoutPrefixPath.substr(lastSeparatorPosition + 1);
+
+    return filenameWithoutPrefixPath;
+}
+
+std::string
+File::extractPrefixPathFromFilename(const std::string& filename)
+{
+    const auto cleanFilename = sanitizeFilename(filename);
+
+    auto prefixPath = cleanFilename;
+
+    const auto lastSeparatorPosition = prefixPath.find_last_of("/");
+
+    if (lastSeparatorPosition != std::string::npos)
+        prefixPath = prefixPath.substr(0, lastSeparatorPosition);
+
+    return prefixPath;
+}
+
+std::string
+File::getExtension(const std::string& filename)
+{
+    auto extension = std::string();
+
+    const auto lastDotPosition = filename.find_last_of(".");
+
+    if (lastDotPosition != std::string::npos)
+    {
+        extension = filename.substr(lastDotPosition + 1);
+
+        std::transform(
+            extension.begin(),
+            extension.end(),
+            extension.begin(),
+            ::tolower
+        );
+    }
+
+    return extension;
+}
+
+std::string
+File::replaceExtension(const std::string& filename, const std::string& extension)
+{
+    auto transformedFilename = filename;
+
+    const auto lastDotPosition = transformedFilename.find_last_of(".");
+
+    if (lastDotPosition != std::string::npos)
+    {
+        auto previousExtension = transformedFilename.substr(lastDotPosition + 1);
+
+        transformedFilename = transformedFilename.substr(
+            0,
+            transformedFilename.size() - (previousExtension.size() + 1)
+        );
+    }
+
+    transformedFilename += std::string(".") + extension;
+
+    return transformedFilename;
+}

@@ -78,9 +78,9 @@ TEST_F(SurfaceTest, SingleSurface)
         _sceneManager->assets()->effect("effect/Basic.effect")
     ));
 
-    ASSERT_EQ(node->data().get<uint>("geometry.length"), 1);
-    ASSERT_EQ(node->data().get<uint>("material.length"), 1);
-    ASSERT_EQ(node->data().get<uint>("effect.length"), 1);
+    ASSERT_EQ(node->data().get<int>("geometry.length"), 1);
+    ASSERT_EQ(node->data().get<int>("material.length"), 1);
+    ASSERT_EQ(node->data().get<int>("effect.length"), 1);
     ASSERT_TRUE(node->data().hasProperty("geometry[0].position"));
     ASSERT_EQ(node->data().get<render::VertexAttribute>("geometry[0].position"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("position"));
     ASSERT_TRUE(node->data().hasProperty("geometry[0].uv"));
@@ -105,9 +105,9 @@ TEST_F(SurfaceTest, MultipleSurfaces)
         _sceneManager->assets()->effect("effect/Basic.effect")
     ));
 
-    ASSERT_EQ(node->data().get<uint>("geometry.length"), 2);
-    ASSERT_EQ(node->data().get<uint>("material.length"), 2);
-    ASSERT_EQ(node->data().get<uint>("effect.length"), 2);
+    ASSERT_EQ(node->data().get<int>("geometry.length"), 2);
+    ASSERT_EQ(node->data().get<int>("material.length"), 2);
+    ASSERT_EQ(node->data().get<int>("effect.length"), 2);
     ASSERT_TRUE(node->data().hasProperty("geometry[0].position"));
     ASSERT_EQ(node->data().get<render::VertexAttribute>("geometry[0].position"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("position"));
     ASSERT_TRUE(node->data().hasProperty("geometry[0].uv"));
@@ -142,9 +142,9 @@ TEST_F(SurfaceTest, RemoveFirstSurface)
         _sceneManager->assets()->effect("effect/Basic.effect")
     ));
 
-    ASSERT_EQ(node->data().get<uint>("geometry.length"), 3);
-    ASSERT_EQ(node->data().get<uint>("material.length"), 3);
-    ASSERT_EQ(node->data().get<uint>("effect.length"), 3);
+    ASSERT_EQ(node->data().get<int>("geometry.length"), 3);
+    ASSERT_EQ(node->data().get<int>("material.length"), 3);
+    ASSERT_EQ(node->data().get<int>("effect.length"), 3);
     ASSERT_TRUE(node->data().hasProperty("geometry[0].position"));
     ASSERT_EQ(node->data().get<render::VertexAttribute>("geometry[0].position"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("position"));
     ASSERT_TRUE(node->data().hasProperty("geometry[0].uv"));
@@ -166,9 +166,9 @@ TEST_F(SurfaceTest, RemoveFirstSurface)
 
     node->removeComponent(node->component<Surface>(0));
 
-    ASSERT_EQ(node->data().get<uint>("geometry.length"), 2);
-    ASSERT_EQ(node->data().get<uint>("material.length"), 2);
-    ASSERT_EQ(node->data().get<uint>("effect.length"), 2);
+    ASSERT_EQ(node->data().get<int>("geometry.length"), 2);
+    ASSERT_EQ(node->data().get<int>("material.length"), 2);
+    ASSERT_EQ(node->data().get<int>("effect.length"), 2);
     ASSERT_TRUE(node->data().hasProperty("geometry[0].position"));
     ASSERT_EQ(node->data().get<render::VertexAttribute>("geometry[0].position"), _sceneManager->assets()->geometry("sphere")->getVertexAttribute("position"));
     ASSERT_TRUE(node->data().hasProperty("geometry[0].uv"));
@@ -203,9 +203,9 @@ TEST_F(SurfaceTest, RemoveNthSurface)
         _sceneManager->assets()->effect("effect/Basic.effect")
     ));
 
-    ASSERT_EQ(node->data().get<uint>("geometry.length"), 3);
-    ASSERT_EQ(node->data().get<uint>("material.length"), 3);
-    ASSERT_EQ(node->data().get<uint>("effect.length"), 3);
+    ASSERT_EQ(node->data().get<int>("geometry.length"), 3);
+    ASSERT_EQ(node->data().get<int>("material.length"), 3);
+    ASSERT_EQ(node->data().get<int>("effect.length"), 3);
     ASSERT_TRUE(node->data().hasProperty("geometry[0].position"));
     ASSERT_EQ(node->data().get<render::VertexAttribute>("geometry[0].position"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("position"));
     ASSERT_TRUE(node->data().hasProperty("geometry[0].uv"));
@@ -227,9 +227,9 @@ TEST_F(SurfaceTest, RemoveNthSurface)
 
     node->removeComponent(node->component<Surface>(1));
 
-    ASSERT_EQ(node->data().get<uint>("geometry.length"), 2);
-    ASSERT_EQ(node->data().get<uint>("material.length"), 2);
-    ASSERT_EQ(node->data().get<uint>("effect.length"), 2);
+    ASSERT_EQ(node->data().get<int>("geometry.length"), 2);
+    ASSERT_EQ(node->data().get<int>("material.length"), 2);
+    ASSERT_EQ(node->data().get<int>("effect.length"), 2);
     ASSERT_TRUE(node->data().hasProperty("geometry[0].position"));
     ASSERT_EQ(node->data().get<render::VertexAttribute>("geometry[0].position"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("position"));
     ASSERT_TRUE(node->data().hasProperty("geometry[0].uv"));
@@ -264,9 +264,9 @@ TEST_F(SurfaceTest, RemoveLastSurface)
         _sceneManager->assets()->effect("effect/Basic.effect")
     ));
 
-    ASSERT_EQ(node->data().get<uint>("geometry.length"), 3);
-    ASSERT_EQ(node->data().get<uint>("material.length"), 3);
-    ASSERT_EQ(node->data().get<uint>("effect.length"), 3);
+    ASSERT_EQ(node->data().get<int>("geometry.length"), 3);
+    ASSERT_EQ(node->data().get<int>("material.length"), 3);
+    ASSERT_EQ(node->data().get<int>("effect.length"), 3);
     ASSERT_TRUE(node->data().hasProperty("geometry[0].position"));
     ASSERT_EQ(node->data().get<render::VertexAttribute>("geometry[0].position"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("position"));
     ASSERT_TRUE(node->data().hasProperty("geometry[0].uv"));
@@ -288,9 +288,9 @@ TEST_F(SurfaceTest, RemoveLastSurface)
 
     node->removeComponent(node->component<Surface>(2));
 
-    ASSERT_EQ(node->data().get<uint>("geometry.length"), 2);
-    ASSERT_EQ(node->data().get<uint>("material.length"), 2);
-    ASSERT_EQ(node->data().get<uint>("effect.length"), 2);
+    ASSERT_EQ(node->data().get<int>("geometry.length"), 2);
+    ASSERT_EQ(node->data().get<int>("material.length"), 2);
+    ASSERT_EQ(node->data().get<int>("effect.length"), 2);
     ASSERT_TRUE(node->data().hasProperty("geometry[0].position"));
     ASSERT_EQ(node->data().get<render::VertexAttribute>("geometry[0].position"), _sceneManager->assets()->geometry("cube")->getVertexAttribute("position"));
     ASSERT_TRUE(node->data().hasProperty("geometry[0].uv"));

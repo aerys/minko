@@ -44,47 +44,41 @@ std::map<uint, std::function<Any(std::tuple<uint, std::string&>&)>> MaterialPars
 
 MaterialParser::MaterialParser()
 {
-	_typeIdToReadFunction[VECTOR4]			= std::bind(&deserialize::TypeDeserializer::deserializeVector4,			std::placeholders::_1);
-	_typeIdToReadFunction[MATRIX4X4]		= std::bind(&deserialize::TypeDeserializer::deserializeMatrix4x4,		std::placeholders::_1);
-	_typeIdToReadFunction[VECTOR3]			= std::bind(&deserialize::TypeDeserializer::deserializeVector3,			std::placeholders::_1);
-	_typeIdToReadFunction[VECTOR2]			= std::bind(&deserialize::TypeDeserializer::deserializeVector2,			std::placeholders::_1);
-	_typeIdToReadFunction[BLENDING]			= std::bind(&deserialize::TypeDeserializer::deserializeBlending,		std::placeholders::_1);
-	_typeIdToReadFunction[TRIANGLECULLING]	= std::bind(&deserialize::TypeDeserializer::deserializeTriangleCulling, std::placeholders::_1);
+    _typeIdToReadFunction[VECTOR4]          = std::bind(&deserialize::TypeDeserializer::deserializeVector4,            std::placeholders::_1);
+    _typeIdToReadFunction[MATRIX4X4]        = std::bind(&deserialize::TypeDeserializer::deserializeMatrix4x4,        std::placeholders::_1);
+    _typeIdToReadFunction[VECTOR3]          = std::bind(&deserialize::TypeDeserializer::deserializeVector3,            std::placeholders::_1);
+    _typeIdToReadFunction[VECTOR2]          = std::bind(&deserialize::TypeDeserializer::deserializeVector2,            std::placeholders::_1);
+    _typeIdToReadFunction[BLENDING]         = std::bind(&deserialize::TypeDeserializer::deserializeBlending,        std::placeholders::_1);
+    _typeIdToReadFunction[TRIANGLECULLING]  = std::bind(&deserialize::TypeDeserializer::deserializeTriangleCulling, std::placeholders::_1);
 }
 
 void
-MaterialParser::parse(const std::string&				filename,
-					  const std::string&                resolvedFilename,
-					  Options::Ptr						options,
-					  const std::vector<unsigned char>&	data,
-					  AssetLibraryPtr					assetLibrary)
+MaterialParser::parse(const std::string&                filename,
+                      const std::string&                resolvedFilename,
+                      Options::Ptr                      options,
+                      const std::vector<unsigned char>& data,
+                      AssetLibraryPtr                   assetLibrary)
 {
     if (!readHeader(filename, data, 0x4D))
         return;
 
-	msgpack::object		msgpackObject;
-	msgpack::zone		mempool;
 	std::string 		folderpath = extractFolderPath(resolvedFilename);
-	extractDependencies(assetLibrary, data, _headerSize, _dependenciesSize, options, folderpath);
+    SerializedMaterial  serializedMaterial;
 
-	msgpack::type::tuple<std::vector<ComplexProperty>, std::vector<BasicProperty>> serializedMaterial;
-	msgpack::unpack((char*)&data[_headerSize + _dependenciesSize], _sceneDataSize, NULL, &mempool, &msgpackObject);
-	msgpackObject.convert(&serializedMaterial);
+    extractDependencies(assetLibrary, data, _headerSize, _dependencySize, options, folderpath);
 
-	std::vector<unsigned char>* d = (std::vector<unsigned char>*)&data;
-	d->clear();
-	d->shrink_to_fit();
+    unpack(serializedMaterial, data, _sceneDataSize, _headerSize + _dependencySize);
 
-	std::vector<ComplexProperty> complexProperties	= serializedMaterial.a0;
-	std::vector<BasicProperty>	 basicProperties	= serializedMaterial.a1;
+    std::vector<ComplexProperty>    complexProperties   = serializedMaterial.get<0>();
+    std::vector<BasicProperty>      basicProperties     = serializedMaterial.get<1>();
 
 	MaterialPtr material = options->material() ? material::Material::create(options->material()) : material::Material::create();
 
-	for (auto serializedComplexProperty : complexProperties)
-		deserializeComplexProperty(material, serializedComplexProperty);
+    for (auto serializedComplexProperty : complexProperties)
+        deserializeComplexProperty(material, serializedComplexProperty);
 
-	for (auto serializedBasicProperty : basicProperties)
-		deserializeBasicProperty(material, serializedBasicProperty);
+    for (auto serializedBasicProperty : basicProperties)
+        deserializeBasicProperty(material, serializedBasicProperty);
 
 	material = options->materialFunction()(material->name(), material);
 
@@ -99,31 +93,31 @@ MaterialParser::parse(const std::string&				filename,
 }
 
 void
-MaterialParser::deserializeComplexProperty(MaterialPtr			material,
-										   ComplexProperty		serializedProperty)
+MaterialParser::deserializeComplexProperty(MaterialPtr            material,
+                                           ComplexProperty        serializedProperty)
 {
-	uint type = serializedProperty.a1.a0 >> 24;
+    uint type = serializedProperty.get<1>().get<0>() >> 24;
 
-	std::tuple<uint, std::string&> serializedPropertyTuple(serializedProperty.a1.a0, serializedProperty.a1.a1);
+    std::tuple<uint, std::string&> serializedPropertyTuple(serializedProperty.get<1>().get<0>(), serializedProperty.get<1>().get<1>());
 
-	if (type == VECTOR4)
+    if (type == VECTOR4)
 		material->data()->set(
-			serializedProperty.a0, 
+			serializedProperty.get<0>(), 
 			Any::cast<math::vec4>(TypeDeserializer::deserializeVector4(serializedPropertyTuple))
         );
 	else if (type == MATRIX4X4)
 		material->data()->set(
-			serializedProperty.a0, 
+			serializedProperty.get<0>(), 
 			Any::cast<math::mat4>(TypeDeserializer::deserializeMatrix4x4(serializedPropertyTuple))
         );
 	else if (type == VECTOR2)
 		material->data()->set(
-			serializedProperty.a0, 
+			serializedProperty.get<0>(), 
 			Any::cast<math::vec2>(TypeDeserializer::deserializeVector2(serializedPropertyTuple))
         );
 	else if (type == VECTOR3)
 		material->data()->set(
-			serializedProperty.a0, 
+			serializedProperty.get<0>(), 
 			Any::cast<math::vec3>(TypeDeserializer::deserializeVector3(serializedPropertyTuple))
         );
 	else if (type == BLENDING)
@@ -141,65 +135,72 @@ MaterialParser::deserializeComplexProperty(MaterialPtr			material,
             material->data()->set("priority", render::Priority::TRANSPARENT);
             material->data()->set("zSorted", true);
         }
-	}
+    }
     else if (type == TRIANGLECULLING)
     {
         material->data()->set<render::TriangleCulling>(
-            serializedProperty.a0,
+            serializedProperty.get<0>(),
             Any::cast<render::TriangleCulling>(TypeDeserializer::deserializeTriangleCulling(serializedPropertyTuple))
         );
     }
     else if (type == TEXTURE)
     {
-        auto sampler = _dependencies->getTextureReference(Any::cast<uint>(TypeDeserializer::deserializeTextureId(serializedPropertyTuple)))->sampler();
+        auto textureDependencyId = Any::cast<uint>(TypeDeserializer::deserializeTextureId(serializedPropertyTuple));
 
-        material->data()->set(
-            serializedProperty.a0,
-            sampler
-        );
+        if (_dependency->textureReferenceExist(textureDependencyId))
+        {
+            auto sampler = _dependency->getTextureReference(textureDependencyId)->sampler();
 
-        material->data()->set(
-            SamplerStates::uniformNameToSamplerStateBindingName(
-                serializedProperty.a0,
-                SamplerStates::PROPERTY_WRAP_MODE
-            ),
-            sampler.wrapMode
-        );
+            material->data()->set(
+                serializedProperty.get<0>(),
+                sampler
+            );
 
-        material->data()->set(
-            SamplerStates::uniformNameToSamplerStateBindingName(
-                serializedProperty.a0,
-                SamplerStates::PROPERTY_TEXTURE_FILTER
-            ),
-            sampler.textureFilter
-        );
+            material->data()->set(
+                SamplerStates::uniformNameToSamplerStateBindingName(
+                    serializedProperty.get<0>(),
+                    SamplerStates::PROPERTY_WRAP_MODE
+                ),
+                sampler.wrapMode
+            );
 
-        material->data()->set(
-            SamplerStates::uniformNameToSamplerStateBindingName(
-                serializedProperty.a0,
-                SamplerStates::PROPERTY_MIP_FILTER
-            ),
-            sampler.mipFilter
-        );
+            material->data()->set(
+                SamplerStates::uniformNameToSamplerStateBindingName(
+                    serializedProperty.get<0>(),
+                    SamplerStates::PROPERTY_TEXTURE_FILTER
+                ),
+                sampler.textureFilter
+            );
+
+            material->data()->set(
+                SamplerStates::uniformNameToSamplerStateBindingName(
+                    serializedProperty.get<0>(),
+                    SamplerStates::PROPERTY_MIP_FILTER
+                ),
+                sampler.mipFilter
+            );
+        }
     }
-	else if (type == ENVMAPTYPE)
-	{
-		auto envMapType = Any::cast<render::EnvironmentMap2dType>(TypeDeserializer::deserializeEnvironmentMap2dType(serializedPropertyTuple));
+    else if (type == ENVMAPTYPE)
+    {
+        auto envMapType = Any::cast<render::EnvironmentMap2dType>(TypeDeserializer::deserializeEnvironmentMap2dType(serializedPropertyTuple));
 
-		material->data()->set<int>(serializedProperty.a0, int(envMapType));
+		material->data()->set<int>(serializedProperty.get<0>(), int(envMapType));
 	}
 }
 
 void
-MaterialParser::deserializeBasicProperty(MaterialPtr		material,
-										 BasicProperty		serializedProperty)
+MaterialParser::deserializeBasicProperty(MaterialPtr        material,
+                                         BasicProperty        serializedProperty)
 {
-    std::vector<float> serializedPropertyValue = deserialize::TypeDeserializer::deserializeVector<float>(serializedProperty.a1);
+    std::vector<float> serializedPropertyValue = deserialize::TypeDeserializer::deserializeVector<float>(serializedProperty.get<1>());
 
 	// TODO remove basic and complex property types and always specify property content type
 
-    if (serializedProperty.a0 == "zSorted")
+    if (serializedProperty.get<0>() == "zSorted")
         material->data()->set<bool>("zSorted", serializedPropertyValue[0]);
+    else if (serializedProperty.get<0>() == "environmentMap2dType")
+		material->data()->set<int>("environmentMap2dType", int(serializedPropertyValue[0]));
     else
-	    material->data()->set<float>(serializedProperty.a0, serializedPropertyValue[0]);
+	    material->data()->set<float>(serializedProperty.get<0>(), serializedPropertyValue[0]);
 }

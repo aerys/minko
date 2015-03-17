@@ -32,8 +32,10 @@ namespace minko
             typedef std::shared_ptr<HTTPOptions> Ptr;
 
         private:
-            std::string _username;
-            std::string _password;
+            std::string                                     _username;
+            std::string                                     _password;
+
+            std::unordered_map<std::string, std::string>    _additionalHeaders;
 
         public:
             inline
@@ -54,6 +56,8 @@ namespace minko
             create(file::Options::Ptr copy)
             {
                 auto instance = Ptr(new HTTPOptions(*copy));
+
+                instance->initialize();
 
                 return instance;
             };
@@ -91,6 +95,13 @@ namespace minko
                 _password = value;
 
                 return std::static_pointer_cast<HTTPOptions>(shared_from_this());
+            }
+
+            inline
+            std::unordered_map<std::string, std::string>&
+            additionalHeaders()
+            {
+                return _additionalHeaders;
             }
 
         protected:

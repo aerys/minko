@@ -33,14 +33,51 @@ namespace minko
         public:
             typedef std::shared_ptr<WriterOptions>                              Ptr;
 
+            struct EmbedMode
+            {
+                static const unsigned int None;
+                static const unsigned int Geometry;
+                static const unsigned int Material;
+                static const unsigned int Texture;
+                static const unsigned int All;
+            };
+
         private:
             typedef std::function<const std::string(const std::string&)>        UriFunction;
 
+            typedef std::function<
+                std::shared_ptr<geometry::Geometry>(
+                    const std::string&,
+                    std::shared_ptr<geometry::Geometry>
+                )
+            > GeometryFunction;
+
+            typedef std::function<
+                std::shared_ptr<material::Material>(
+                    const std::string&,
+                    std::shared_ptr<material::Material>
+                )
+            > MaterialFunction;
+
+            typedef std::function<
+                std::shared_ptr<render::AbstractTexture>(
+                    const std::string&,
+                    std::shared_ptr<render::AbstractTexture>
+                )
+            > TextureFunction;
+
         private:
-            bool                                _embedAll;
             bool                                _addBoundingBoxes;
 
-            UriFunction                         _outputAssetUriFunction;
+            unsigned int                        _embedMode;
+
+            UriFunction                         _geometryUriFunction;
+            UriFunction                         _materialUriFunction;
+            UriFunction                         _textureUriFunction;
+
+            GeometryFunction                    _geometryFunction;
+            MaterialFunction                    _materialFunction;
+            TextureFunction                     _textureFunction;
 
             serialize::ImageFormat              _imageFormat;
             std::list<render::TextureFormat>    _textureFormats;
@@ -51,6 +88,10 @@ namespace minko
             math::ivec2                         _textureMaxResolution;
             render::MipFilter                   _mipFilter;
             bool                                _optimizeForNormalMapping;
+
+            bool                                _writeAnimations;
+
+            std::set<std::string>               _nullAssetUuids;
 
         public:
             inline
@@ -70,9 +111,14 @@ namespace minko
             {
                 auto instance = WriterOptions::create();
 
-                instance->_embedAll = other->_embedAll;
                 instance->_addBoundingBoxes = other->_addBoundingBoxes;
-                instance->_outputAssetUriFunction = other->_outputAssetUriFunction;
+                instance->_embedMode = other->_embedMode;
+                instance->_geometryUriFunction = other->_geometryUriFunction;
+                instance->_materialUriFunction = other->_materialUriFunction;
+                instance->_textureUriFunction = other->_textureUriFunction;
+                instance->_geometryFunction = other->_geometryFunction;
+                instance->_materialFunction = other->_materialFunction;
+                instance->_textureFunction = other->_textureFunction;
                 instance->_imageFormat = other->_imageFormat;
                 instance->_textureFormats = other->_textureFormats;
                 instance->_compressTexture = other->_compressTexture;
@@ -81,25 +127,11 @@ namespace minko
                 instance->_textureMaxResolution = other->_textureMaxResolution;
                 instance->_mipFilter = other->_mipFilter;
                 instance->_optimizeForNormalMapping = other->_optimizeForNormalMapping;
+                instance->_writeAnimations = other->_writeAnimations;
+                instance->_nullAssetUuids = other->_nullAssetUuids;
 
                 return instance;
             }
-
-            inline
-			bool
-			embedAll() const
-			{
-				return _embedAll;
-			}
-
-			inline
-			Ptr
-			embedAll(bool value)
-			{
-				_embedAll = value;
-
-				return shared_from_this();
-			}
 
             inline
 			bool
@@ -118,17 +150,113 @@ namespace minko
 			}
 
             inline
+			unsigned int
+			embedMode() const
+			{
+				return _embedMode;
+			}
+
+			inline
+			Ptr
+			embedMode(unsigned int value)
+			{
+				_embedMode = value;
+
+				return shared_from_this();
+			}
+
+            inline
             const UriFunction&
-            outputAssetUriFunction() const
+            geometryUriFunction() const
             {
-                return _outputAssetUriFunction;
+                return _geometryUriFunction;
             }
 
             inline
             Ptr
-            outputAssetUriFunction(const UriFunction& func)
+            geometryUriFunction(const UriFunction& func)
             {
-                _outputAssetUriFunction = func;
+                _geometryUriFunction = func;
+
+                return shared_from_this();
+            }
+
+            inline
+            const UriFunction&
+            materialUriFunction() const
+            {
+                return _materialUriFunction;
+            }
+
+            inline
+            Ptr
+            materialUriFunction(const UriFunction& func)
+            {
+                _materialUriFunction = func;
+
+                return shared_from_this();
+            }
+
+            inline
+            const UriFunction&
+            textureUriFunction() const
+            {
+                return _textureUriFunction;
+            }
+
+            inline
+            Ptr
+            textureUriFunction(const UriFunction& func)
+            {
+                _textureUriFunction = func;
+
+                return shared_from_this();
+            }
+
+            inline
+            const GeometryFunction&
+            geometryFunction() const
+            {
+                return _geometryFunction;
+            }
+
+            inline
+            Ptr
+            geometryFunction(const GeometryFunction& func)
+            {
+                _geometryFunction = func;
+
+                return shared_from_this();
+            }
+
+            inline
+            const MaterialFunction&
+            materialFunction() const
+            {
+                return _materialFunction;
+            }
+
+            inline
+            Ptr
+            materialFunction(const MaterialFunction& func)
+            {
+                _materialFunction = func;
+
+                return shared_from_this();
+            }
+
+            inline
+            const TextureFunction&
+            textureFunction() const
+            {
+                return _textureFunction;
+            }
+
+            inline
+            Ptr
+            textureFunction(const TextureFunction& func)
+            {
+                _textureFunction = func;
 
                 return shared_from_this();
             }
@@ -259,6 +387,36 @@ namespace minko
                 _optimizeForNormalMapping = value;
 
                 return shared_from_this();
+            }
+
+            inline
+            bool
+            writeAnimations() const
+            {
+                return _writeAnimations;
+            }
+
+            inline
+            Ptr
+            writeAnimations(bool value)
+            {
+                _writeAnimations = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            std::set<std::string>&
+            nullAssetUuids()
+            {
+                return _nullAssetUuids;
+            }
+
+            inline
+            bool
+            assetIsNull(const std::string& uuid) const
+            {
+                return _nullAssetUuids.find(uuid) != _nullAssetUuids.end();
             }
 
         private:

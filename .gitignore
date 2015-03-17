@@ -23,6 +23,7 @@ Makefile
 *.cache
 *.vspx
 *.rsp
+*.etl
 .clang_complete
 .atom-build.json
 doc/html

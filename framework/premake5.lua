@@ -45,6 +45,29 @@ minko.project.library "minko-framework"
 	   "lib/glm"
 	}
 
+	-- sparsehash
+	files {
+		"lib/sparsehash/src/sparsehash/**.h",
+		"lib/sparsehash/src/sparsehash/**.cc"
+	}
+	configuration { "windows" }
+		buildoptions { "/wd4996" }
+		files {
+			--"lib/sparsehash/src/windows/**.cc",
+			"lib/sparsehash/include/windows/**.h"
+		}
+		includedirs {
+			"lib/sparsehash/include/windows"
+		}
+	configuration { "not windows*" }
+		files {
+			"lib/sparsehash/include/**.h"
+		}
+		includedirs {
+			"lib/sparsehash/include"
+		}
+	configuration {}
+
 	-- windows
 	configuration { "windows32" }
         includedirs { minko.sdk.path("/framework/lib/glew/include") }

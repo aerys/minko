@@ -1,0 +1,7 @@
+{
+    "states" : {
+        "target" : { "binding" : "material[${materialUuid}].target", "default" : { "name" : "test-render-target", "width" : 2048, "height" : 1024 } }
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

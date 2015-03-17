@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/Flyweight.hpp"
 
 namespace minko
 {
@@ -30,7 +31,7 @@ namespace minko
         public:
             const int* resourceId;
             const uint* vertexSize;
-            std::string name;
+            Flyweight<std::string> name;
             uint size;
             uint offset;
 

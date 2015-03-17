@@ -30,39 +30,41 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace minko
 {
-	namespace file
-	{
-		class AssetLibrary :
-			public std::enable_shared_from_this<AssetLibrary>
-		{
-		public:
-			typedef std::shared_ptr<AssetLibrary>				Ptr;
+    namespace file
+    {
+        class AssetLibrary :
+            public std::enable_shared_from_this<AssetLibrary>
+        {
+        public:
+            typedef std::shared_ptr<AssetLibrary>                           Ptr;
 
-		private:
-			typedef std::shared_ptr<render::AbstractContext>	AbsContextPtr;
-			typedef std::shared_ptr<render::Effect>				EffectPtr;
-			typedef std::shared_ptr<render::AbstractTexture>	AbsTexturePtr;
-			typedef std::shared_ptr<render::Texture>			TexturePtr;
-			typedef std::shared_ptr<render::CubeTexture>		CubeTexturePtr;
-			typedef std::shared_ptr<geometry::Geometry>			GeometryPtr;
-			typedef std::shared_ptr<file::AbstractParser>		AbsParserPtr;
-			typedef std::shared_ptr<file::Loader>		    	LoaderPtr;
-			typedef std::shared_ptr<scene::Node>				NodePtr;
-            typedef std::shared_ptr<component::AbstractScript>  AbsScriptPtr;
+        private:
+            typedef std::shared_ptr<render::AbstractContext>                AbsContextPtr;
+            typedef std::shared_ptr<render::Effect>                         EffectPtr;
+            typedef std::shared_ptr<render::AbstractTexture>                AbsTexturePtr;
+            typedef std::shared_ptr<render::Texture>                        TexturePtr;
+            typedef std::shared_ptr<render::CubeTexture>                    CubeTexturePtr;
+            typedef std::shared_ptr<render::RectangleTexture>               RectangleTexturePtr;
+            typedef std::shared_ptr<geometry::Geometry>                     GeometryPtr;
+            typedef std::shared_ptr<file::AbstractParser>                   AbsParserPtr;
+            typedef std::shared_ptr<file::Loader>                           LoaderPtr;
+            typedef std::shared_ptr<scene::Node>                            NodePtr;
+            typedef std::shared_ptr<component::AbstractScript>              AbsScriptPtr;
 			typedef std::shared_ptr<material::Material>		    MaterialPtr;
-            typedef std::shared_ptr<audio::Sound>               SoundPtr;
+            typedef std::shared_ptr<audio::Sound>                           SoundPtr;
 
-		private:
-			AbsContextPtr												    _context;
+        private:
+            AbsContextPtr                                                   _context;
             std::shared_ptr<Loader>                                         _loader;
 
-			std::unordered_map<std::string, MaterialPtr>				    _materials;
-			std::unordered_map<std::string, GeometryPtr>				    _geometries;
-			std::unordered_map<std::string, EffectPtr>					    _effects;
-			std::unordered_map<std::string, TexturePtr>				   	    _textures;
-			std::unordered_map<std::string, CubeTexturePtr>				    _cubeTextures;
-			std::unordered_map<std::string, NodePtr>					    _symbols;
-			std::unordered_map<std::string, std::vector<unsigned char>>	    _blobs;
+            std::unordered_map<std::string, MaterialPtr>                    _materials;
+            std::unordered_map<std::string, GeometryPtr>                    _geometries;
+            std::unordered_map<std::string, EffectPtr>                      _effects;
+            std::unordered_map<std::string, TexturePtr>                     _textures;
+            std::unordered_map<std::string, CubeTexturePtr>                 _cubeTextures;
+            std::unordered_map<std::string, RectangleTexturePtr>            _rectangleTextures;
+            std::unordered_map<std::string, NodePtr>                        _symbols;
+            std::unordered_map<std::string, std::vector<unsigned char>>     _blobs;
             std::unordered_map<std::string, AbsScriptPtr>                   _scripts;
             std::unordered_map<std::string, scene::Layout>				    _layouts;
             std::unordered_map<std::string, SoundPtr>                       _sounds;
@@ -70,27 +72,27 @@ namespace minko
             Signal<Ptr, std::shared_ptr<AbstractParser>>::Ptr               _parserError;
             Signal<Ptr>::Ptr                                                _ready;
 
-		public:
-			static
-			Ptr
-			create(AbsContextPtr context);
+        public:
+            static
+            Ptr
+            create(AbsContextPtr context);
 
-			inline
-			uint
-			numGeometries()
-			{
-				return _geometries.size();
-			}
+            inline
+            uint
+            numGeometries()
+            {
+                return _geometries.size();
+            }
 
-			inline
-			uint
-			numMaterials()
-			{
-				return _materials.size();
-			}
+            inline
+            uint
+            numMaterials()
+            {
+                return _materials.size();
+            }
 
-			inline
-			uint
+            inline
+            uint
 			numEffects()
 			{
 				return _effects.size();
@@ -98,17 +100,17 @@ namespace minko
 
 			inline
 			uint
-			numTextures()
-			{
-				return _textures.size();
-			}
+            numTextures()
+            {
+                return _textures.size();
+            }
 
-			inline
-			AbsContextPtr
-			context()
-			{
-				return _context;
-			}
+            inline
+            AbsContextPtr
+            context()
+            {
+                return _context;
+            }
 
             inline
             std::shared_ptr<Loader>
@@ -117,72 +119,81 @@ namespace minko
                 return _loader;
             }
 
-			GeometryPtr
-			geometry(const std::string& name);
+            void
+            disposeLoader();
 
-			Ptr
-			geometry(const std::string& name, GeometryPtr geometry);
+            GeometryPtr
+            geometry(const std::string& name);
 
-			const std::string&
-			geometryName(GeometryPtr geometry);
-			
-			Ptr
-			texture(const std::string& name, TexturePtr texture);
+            Ptr
+            geometry(const std::string& name, GeometryPtr geometry);
 
-			TexturePtr
-			texture(const std::string& name) const;
+            const std::string&
+            geometryName(GeometryPtr geometry);
+
+            Ptr
+            texture(const std::string& name, TexturePtr texture);
+
+            TexturePtr
+            texture(const std::string& name) const;
 
             std::shared_ptr<render::AbstractTexture>
-            getTextureByUuid(const std::string& uuid);
+            getTextureByUuid(const std::string& uuid, bool failIfNotReady = true);
 
-			Ptr
-			cubeTexture(const std::string& name, CubeTexturePtr texture);
+            Ptr
+            cubeTexture(const std::string& name, CubeTexturePtr texture);
 
-			CubeTexturePtr
-			cubeTexture(const std::string& name) const;
+            RectangleTexturePtr
+            rectangleTexture(const std::string& name) const;
 
-			const std::string&
-			textureName(AbsTexturePtr texture);
+            Ptr
+            rectangleTexture(const std::string& name, RectangleTexturePtr texture);
 
-			std::shared_ptr<material::Material>
-			material(const std::string& name);
+            CubeTexturePtr
+            cubeTexture(const std::string& name) const;
 
-			Ptr
-			material(const std::string& name, MaterialPtr material);
+            const std::string&
+            textureName(AbsTexturePtr texture);
 
-			const std::string&
-			materialName(MaterialPtr material);
+            std::shared_ptr<material::Material>
+            material(const std::string& name);
 
-			NodePtr
-			symbol(const std::string& name);
+            Ptr
+            material(const std::string& name, MaterialPtr material);
 
-			Ptr
-			symbol(const std::string& name, NodePtr symbol);
+            const std::string&
+            materialName(MaterialPtr material);
 
-			const std::string&
-			symbolName(NodePtr node);
+            NodePtr
+            symbol(const std::string& name);
 
-			EffectPtr
-			effect(const std::string& name);
+            Ptr
+            symbol(const std::string& name, NodePtr symbol);
 
-			Ptr
-			effect(const std::string& name, EffectPtr effect);
+            const std::string&
+            symbolName(NodePtr node);
 
-			const std::string&
-			effectName(EffectPtr effect);
+            EffectPtr
+            effect(const std::string& name);
 
-			const std::vector<unsigned char>&
-			blob(const std::string& name);
+            Ptr
+            effect(const std::string& name, EffectPtr effect);
 
-			Ptr
-			blob(const std::string& name, const std::vector<unsigned char>& blob);
+            const std::string&
+            effectName(EffectPtr effect);
 
-			inline
-			bool
-			hasBlob(const std::string& name)
-			{
-				return _blobs.count(name) != 0;
-			}
+            const std::vector<unsigned char>&
+            blob(const std::string& name);
+
+            Ptr
+            blob(const std::string& name, const std::vector<unsigned char>& blob);
+
+            inline
+            bool
+            hasBlob(const std::string& name)
+            {
+                return _blobs.count(name) != 0;
+            }
 
             AbsScriptPtr
             script(const std::string& name);
@@ -190,13 +201,13 @@ namespace minko
             AssetLibrary::Ptr
             script(const std::string& name, AbsScriptPtr script);
 
-			const std::string&
-			scriptName(AbsScriptPtr script);
+            const std::string&
+            scriptName(AbsScriptPtr script);
 
             scene::Layout
-			layout(const std::string& name);
+            layout(const std::string& name);
 
-			Ptr
+            Ptr
 			layout(const std::string& name, scene::Layout);
 
             audio::Sound::Ptr
@@ -205,8 +216,8 @@ namespace minko
             AssetLibrary::Ptr
             sound(const std::string& name, audio::Sound::Ptr sound);
 
-		private:
-			AssetLibrary(AbsContextPtr context);
-		};
-	}
+        private:
+            AssetLibrary(AbsContextPtr context);
+        };
+    }
 }

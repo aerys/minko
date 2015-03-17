@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Signal.hpp"
 #include "minko/data/Provider.hpp"
+#include "minko/Flyweight.hpp"
 
 namespace minko
 {
@@ -40,7 +41,7 @@ namespace minko
             typedef std::vector<ProviderPtr>        Items;
 
         private:
-            std::string                         _name;
+            Flyweight<std::string>              _name;
             Items                               _items;
 
             Signal<Collection&, ProviderPtr>    _itemAdded;
@@ -49,7 +50,7 @@ namespace minko
         public:
             static inline
             Ptr
-            create(const std::string& name)
+            create(const Flyweight<std::string>& name)
             {
                 return std::shared_ptr<Collection>(new Collection(name));
             }
@@ -72,7 +73,7 @@ namespace minko
             }
 
             inline
-            const std::string&
+            const Flyweight<std::string>&
             name()
             {
                 return _name;
@@ -182,7 +183,7 @@ namespace minko
             }
 
         private:
-            Collection(const std::string& name) :
+            Collection(const Flyweight<std::string>& name) :
                 _name(name)
             {
             }

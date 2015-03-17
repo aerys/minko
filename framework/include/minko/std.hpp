@@ -23,42 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace std
 {
-    template <class T>
-    inline
-    void
-    hash_combine(std::size_t & seed, const T & v)
-    {
-        std::hash<T> hasher;
-        seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    }
-
-    template<typename T, typename V>
-    struct pair_hash
-    {
-        inline
-        size_t
-        operator()(const std::pair<T, V>& key) const
-        {
-            size_t seed = 0;
-
-            hash_combine(seed, key.first);
-            hash_combine(seed, key.second);
-
-            return seed;
-        }
-    };
-
-    template<typename T, typename V>
-    struct pair_eq
-    {
-        inline
-        bool
-        operator()(const std::pair<T, V>& lhs, const std::pair<T, V>& rhs) const
-        {
-            return lhs.first == rhs.first && lhs.second == rhs.second;
-        }
-    };
-
     template<>
 	struct hash<minko::math::mat4>
 	{
@@ -201,17 +165,6 @@ namespace std
 	}
 #endif
 
-    template<>
-    struct hash<minko::render::TextureFormat>
-    {
-        inline
-        size_t
-        operator()(const minko::render::TextureFormat& x) const
-        {
-            return std::hash<unsigned int>()(static_cast<unsigned int>(x));
-        }
-    };
-
     inline
     std::string
     replaceAll(std::string str, const std::string& from, const std::string& to)
@@ -266,4 +219,104 @@ namespace std
 
         return result;
     }
+}
+
+// generic std::hash and std::equal_to specializations for std::pair
+namespace std
+{
+    /*template<typename T, typename V>
+    struct hash<pair<T, V>>
+    {
+        inline
+        size_t
+        operator()(const std::pair<T, V>& key) const
+        {
+            size_t seed = 0;
+
+            hash_combine(seed, key.first);
+            hash_combine(seed, key.second);
+
+            return seed;
+        }
+    };
+
+    template<typename T, typename V>
+    struct equal_to<pair<T, V>>
+    {
+        inline
+        bool
+        operator()(const std::pair<T, V>& lhs, const std::pair<T, V>& rhs) const
+        {
+            return lhs.first == rhs.first && lhs.second == rhs.second;
+        }
+    };*/
+}
+
+// generic std::equal_to specializations for std::shared_ptr
+namespace std
+{
+    /*template <typename T>
+    struct equal_to<shared_ptr<T>>
+    {
+        inline
+        bool
+        operator()(const shared_ptr<T>& lhs, const shared_ptr<T>& rhs) const
+        {
+            return lhs == rhs;
+        }
+    };*/
+}
+
+// generic std::hash and std::equal_to specializations for std::tuple
+// https://stackoverflow.com/questions/7110301/generic-hash-for-tuples-in-unordered-map-unordered-set
+namespace std
+{
+    //namespace
+    //{
+    //    // Recursive template code derived from Matthieu M.
+    //    template <class Tuple, size_t Index = std::tuple_size<Tuple>::value - 1>
+    //    struct HashValueImpl
+    //    {
+    //        static void apply(size_t& seed, Tuple const& tuple)
+    //        {
+    //            HashValueImpl<Tuple, Index-1>::apply(seed, tuple);
+    //            hash_combine(seed, std::get<Index>(tuple));
+    //        }
+    //    };
+
+    //    template <class Tuple>
+    //    struct HashValueImpl<Tuple,0>
+    //    {
+    //        static void apply(size_t& seed, Tuple const& tuple)
+    //        {
+    //            hash_combine(seed, std::get<0>(tuple));
+    //        }
+    //    };
+    //}
+
+    //template <typename ... T>
+    //struct hash<tuple<T...>>
+    //{
+    //    inline
+    //    size_t
+    //    operator()(tuple<T...> const& tt) const
+    //    {
+    //        size_t seed = 0;
+
+    //        HashValueImpl<tuple<T...> >::apply(seed, tt);
+
+    //        return seed;
+    //    }
+    //};
+
+    //template <typename ... T>
+    //struct equal_to<tuple<T...>>
+    //{
+    //    inline
+    //    bool
+    //    operator()(const tuple<T...>& lhs, const tuple<T...>& rhs) const
+    //    {
+    //        return lhs == rhs;
+    //    }
+    //};
 }

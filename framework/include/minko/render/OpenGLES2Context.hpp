@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/AbstractContext.hpp"
 #include "minko/render/ProgramInputs.hpp"
 #include "minko/render/Blending.hpp"
+#include "minko/Hash.hpp"
 
 namespace minko
 {
@@ -37,19 +38,20 @@ namespace minko
 			typedef std::shared_ptr<OpenGLES2Context> Ptr;
 
         private:
-            typedef std::unordered_map<unsigned int, unsigned int>		BlendFactorsMap;
-			typedef std::unordered_map<CompareMode, unsigned int>		CompareFuncsMap;
-			typedef std::unordered_map<StencilOperation, unsigned int>	StencilOperationMap;
-            typedef std::unordered_map<unsigned int, unsigned int>		TextureToBufferMap;
-			typedef std::pair<uint, uint>								TextureSize;
+            typedef std::unordered_map<uint, uint>							BlendFactorsMap;
+			typedef std::unordered_map<CompareMode, uint>					CompareFuncsMap;
+			typedef std::unordered_map<StencilOperation, uint>				StencilOperationMap;
+            typedef std::unordered_map<uint, uint>							TextureToBufferMap;
+			typedef std::pair<uint, uint>									TextureSize;
+			typedef Hash<TextureFormat>								TextFormatHash;
+			typedef std::unordered_map<TextureFormat, uint, TextFormatHash>	TextureFormats;
 
 		protected:
 	        static BlendFactorsMap					_blendingFactors;
 			static CompareFuncsMap					_compareFuncs;
 			static StencilOperationMap				_stencilOps;
 
-            static std::unordered_map<TextureFormat,
-                                      unsigned int>   _availableTextureFormats;
+            static TextureFormats  					_availableTextureFormats;
 
 			bool									_errorsEnabled;
 
@@ -60,25 +62,25 @@ namespace minko
 
             std::string                             _driverInfo;
 
-			std::list<unsigned int>	                _vertexBuffers;
-			std::list<unsigned int>	                _indexBuffers;
-			std::list<unsigned int>                 _programs;
-			std::list<unsigned int>                 _vertexShaders;
-			std::list<unsigned int>                 _fragmentShaders;
+			std::list<uint>	                		_vertexBuffers;
+			std::list<uint>	                		_indexBuffers;
+			std::list<uint>                 		_programs;
+			std::list<uint>                 		_vertexShaders;
+			std::list<uint>                 		_fragmentShaders;
 
             TextureToBufferMap                      _frameBuffers;
             TextureToBufferMap                      _renderBuffers;
 
-			unsigned int			                _viewportX;
-			unsigned int			                _viewportY;
-			unsigned int			                _viewportWidth;
-			unsigned int			                _viewportHeight;
-            unsigned int                              _oldViewportX;
-            unsigned int                              _oldViewportY;
-            unsigned int                              _oldViewportWidth;
-            unsigned int                              _oldViewportHeight;
+			uint			                _viewportX;
+			uint			                _viewportY;
+			uint			                _viewportWidth;
+			uint			                _viewportHeight;
+            uint                              _oldViewportX;
+            uint                              _oldViewportY;
+            uint                              _oldViewportWidth;
+            uint                              _oldViewportHeight;
 
-            unsigned int                            _currentTarget;
+            uint                            _currentTarget;
 			int						                _currentIndexBuffer;
 			std::vector<int>		                _currentVertexBuffer;
 			std::vector<int>		                _currentVertexSize;
@@ -113,7 +115,7 @@ namespace minko
 			}
 
             static
-            const std::unordered_map<TextureFormat, unsigned int>&
+            const std::unordered_map<TextureFormat, uint, Hash<TextureFormat>>&
             availableTextureFormats();
 
 			inline
@@ -177,8 +179,8 @@ namespace minko
 				  float blue			= 0.f,
 				  float alpha			= 0.f,
 				  float depth			= 1.f,
-				  unsigned int stencil	= 0,
-				  unsigned int mask		= 0xffffffff);
+				  uint stencil	= 0,
+				  uint mask		= 0xffffffff);
 
 			void
 			present();
@@ -221,50 +223,55 @@ namespace minko
 
 			uint
 			createTexture(TextureType	type,
-						  unsigned int  width,
-						  unsigned int  height,
+						  uint  width,
+						  uint  height,
 						  bool		    mipMapping,
                           bool          optimizeForRenderToTexture = false);
 
             uint
             createCompressedTexture(TextureType     type,
                                     TextureFormat   format,
-                                    unsigned int    width,
-                                    unsigned int    height,
+                                    uint    width,
+                                    uint    height,
                                     bool            mipMapping);
 
 
+            uint
+            createRectangleTexture(TextureType  type,
+                                   unsigned int width,
+                                   unsigned int height);
+
 			void
 			uploadTexture2dData(uint			texture,
-							    unsigned int 	width,
-							    unsigned int 	height,
-							    unsigned int 	mipLevel,
+							    uint 	width,
+							    uint 	height,
+							    uint 	mipLevel,
 							    void*			data);
 
 			void
 			uploadCubeTextureData(uint				texture,
 								  CubeTexture::Face face,
-							      unsigned int 		width,
-							      unsigned int 		height,
-							      unsigned int 		mipLevel,
+							      uint 		width,
+							      uint 		height,
+							      uint 		mipLevel,
 							      void*				data);
 
 			void
             uploadCompressedTexture2dData(uint          texture,
                                           TextureFormat format,
-                                          unsigned int  width,
-                                          unsigned int  height,
-                                          unsigned int  size,
-                                          unsigned int  mipLevel,
+                                          uint  width,
+                                          uint  height,
+                                          uint  size,
+                                          uint  mipLevel,
                                           void*         data);
 
             void
             uploadCompressedCubeTextureData(uint                texture,
                                             CubeTexture::Face   face,
                                             TextureFormat       format,
-                                            unsigned int        width,
-                                            unsigned int        height,
-                                            unsigned int        mipLevel,
+                                            uint        width,
+                                            uint        height,
+                                            uint        mipLevel,
                                             void*               data);
 
             void
@@ -351,7 +358,7 @@ namespace minko
 			setScissorTest(bool	scissorTest, const math::ivec4& scissorBox);
 
 			void
-			readPixels(unsigned int x, unsigned int y, unsigned int width, unsigned int height, unsigned char* pixels);
+			readPixels(uint x, uint y, uint width, uint height, unsigned char* pixels);
 
 			void
 			readPixels(unsigned char* pixels);
@@ -363,10 +370,10 @@ namespace minko
             setRenderToBackBuffer();
 
             void
-            setRenderToTexture(unsigned int texture, bool enableDepthAndStencil = false);
+            setRenderToTexture(uint texture, bool enableDepthAndStencil = false);
 
             void
-            generateMipmaps(unsigned int texture);
+            generateMipmaps(uint texture);
 
             bool
             supportsExtension(const std::string& extensionNameString);
@@ -384,7 +391,7 @@ namespace minko
 
 			static
 			ProgramInputs::Type
-			convertInputType(unsigned int);
+			convertInputType(uint);
 
             static
             BlendFactorsMap
@@ -398,14 +405,22 @@ namespace minko
 			StencilOperationMap
 			initializeStencilOperationsMap();
 
+            uint
+            createTexture(TextureType             type,
+                          unsigned int            width,
+                          unsigned int            height,
+                          bool                    mipMapping,
+                          bool                    optimizeForRenderToTexture,
+                          bool                    assertPowerOfTwoSized);
+
             void
             createRTTBuffers(TextureType	type,
 							 uint			texture,
-							 unsigned int	width,
-							 unsigned int   height);
+							 uint	width,
+							 uint   height);
 
 			void
-            getShaderSource(unsigned int    shader,
+            getShaderSource(uint    shader,
                             std::string&    output);
 
             inline
@@ -421,7 +436,7 @@ namespace minko
 #endif
             }
 
-            unsigned int
+            uint
             getError();
 
 			TextureType

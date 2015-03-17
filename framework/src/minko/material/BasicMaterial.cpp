@@ -36,6 +36,11 @@ BasicMaterial::BasicMaterial():
 {
 }
 
+BasicMaterial::BasicMaterial(const data::Provider::ValueMap& values):
+    Material("BasicMaterial", values)
+{
+}
+
 void
 BasicMaterial::initialize()
 {
@@ -476,7 +481,7 @@ BasicMaterial::stencilMask() const
 BasicMaterial::Ptr
 BasicMaterial::stencilFailOperation(StencilOperation value)
 {
-    data()->set(States::PROPERTY_STENCIL_FAIL_OP, value);
+    data()->set(States::PROPERTY_STENCIL_FAIL_OPERATION, value);
 
 	return std::static_pointer_cast<BasicMaterial>(shared_from_this());
 }
@@ -484,15 +489,15 @@ BasicMaterial::stencilFailOperation(StencilOperation value)
 StencilOperation
 BasicMaterial::stencilFailOperation() const
 {
-    return data()->hasProperty(States::PROPERTY_STENCIL_FAIL_OP)
-        ? data()->get<StencilOperation>(States::PROPERTY_STENCIL_FAIL_OP)
+    return data()->hasProperty(States::PROPERTY_STENCIL_FAIL_OPERATION)
+        ? data()->get<StencilOperation>(States::PROPERTY_STENCIL_FAIL_OPERATION)
 		: _defaultStates->stencilFailOperation();
 }
 
 BasicMaterial::Ptr
 BasicMaterial::stencilZFailOperation(StencilOperation value)
 {
-    data()->set(States::PROPERTY_STENCIL_ZFAIL_OP, value);
+    data()->set(States::PROPERTY_STENCIL_ZFAIL_OPERATION, value);
 
 	return std::static_pointer_cast<BasicMaterial>(shared_from_this());
 }
@@ -500,15 +505,15 @@ BasicMaterial::stencilZFailOperation(StencilOperation value)
 StencilOperation
 BasicMaterial::stencilZFailOperation() const
 {
-    return data()->hasProperty(States::PROPERTY_STENCIL_ZFAIL_OP)
-        ? data()->get<StencilOperation>(States::PROPERTY_STENCIL_ZFAIL_OP)
+    return data()->hasProperty(States::PROPERTY_STENCIL_ZFAIL_OPERATION)
+        ? data()->get<StencilOperation>(States::PROPERTY_STENCIL_ZFAIL_OPERATION)
 		: _defaultStates->stencilZFailOperation();
 }
 
 BasicMaterial::Ptr
 BasicMaterial::stencilZPassOperation(StencilOperation value)
 {
-    data()->set(States::PROPERTY_STENCIL_ZPASS_OP, value);
+    data()->set(States::PROPERTY_STENCIL_ZPASS_OPERATION, value);
 
 	return std::static_pointer_cast<BasicMaterial>(shared_from_this());
 }
@@ -516,8 +521,8 @@ BasicMaterial::stencilZPassOperation(StencilOperation value)
 StencilOperation
 BasicMaterial::stencilZPassOperation() const
 {
-    return data()->hasProperty(States::PROPERTY_STENCIL_ZPASS_OP)
-        ? data()->get<StencilOperation>(States::PROPERTY_STENCIL_ZPASS_OP)
+    return data()->hasProperty(States::PROPERTY_STENCIL_ZPASS_OPERATION)
+        ? data()->get<StencilOperation>(States::PROPERTY_STENCIL_ZPASS_OPERATION)
 		: _defaultStates->stencilZPassOperation();
 }
 

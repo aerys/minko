@@ -21,11 +21,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/scene/Node.hpp"
+#include "minko/component/Animation.hpp"
 #include "minko/component/BoundingBox.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/AmbientLight.hpp"
 #include "minko/component/DirectionalLight.hpp"
+#include "minko/component/Skinning.hpp"
 #include "minko/component/SpotLight.hpp"
 #include "minko/component/PointLight.hpp"
 #include "minko/component/Surface.hpp"
@@ -35,16 +37,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/serialize/ComponentSerializer.hpp"
 #include "minko/Types.hpp"
 
-#include <queue>
-#include <iostream>
-#include <fstream>
-
 using namespace minko;
 using namespace minko::file;
 
 std::map<const std::type_info*, SceneWriter::NodeWriterFunc> SceneWriter::_componentIdToWriteFunction;
 
-SceneWriter::SceneWriter()
+SceneWriter::SceneWriter(WriterOptions::Ptr writerOptions)
 {
 	_magicNumber = MINKO_SCENE_MAGIC_NUMBER;
 
@@ -112,6 +110,25 @@ SceneWriter::SceneWriter()
 		)
 	);
 
+    if (writerOptions->writeAnimations())
+    {
+	    registerComponent(
+	    	&typeid(component::Animation),
+	    	std::bind(
+	    		&serialize::ComponentSerializer::serializeAnimation,
+	    		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+	    	)
+	    );
+
+        registerComponent(
+	    	&typeid(component::Skinning),
+	    	std::bind(
+	    		&serialize::ComponentSerializer::serializeSkinning,
+	    		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+	    	)
+	    );
+    }
+
 	registerComponent(
 		&typeid(component::BoundingBox),
 		std::bind(
@@ -132,7 +149,8 @@ std::string
 SceneWriter::embed(AssetLibraryPtr                      assetLibrary,
                    OptionsPtr                           options,
                    DependencyPtr                        dependency,
-                   std::shared_ptr<WriterOptions>       writerOptions)
+                   std::shared_ptr<WriterOptions>       writerOptions,
+                   std::vector<unsigned char>&          embeddedHeaderData)
 {
 	std::stringstream								sbuf;
 	std::queue<std::shared_ptr<scene::Node>>		queue;

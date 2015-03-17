@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/MinkoASSIMP.hpp"
 #include "minko/MinkoSerializer.hpp"
 
-std::string MODEL_FILENAME = "cube.scene";
+std::string MODEL_FILENAME = "lights.scene";
 using namespace minko;
 using namespace minko::scene;
 using namespace minko::component;

@@ -1,0 +1,7 @@
+{
+	"states" : {
+        "zSorted" : true
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

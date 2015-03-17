@@ -12,6 +12,7 @@
 
     "uniforms"   : {
         "uModelToWorldMatrix"   : "modelToWorldMatrix",
+        "uWorldToScreenMatrix"  : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
         "uUVOffset"             : "material[${materialUuid}].uvOffset",
         "uUVScale"              : "material[${materialUuid}].uvScale",
         "uDiffuseColor"         : "material[${materialUuid}].diffuseColor",
@@ -22,26 +23,26 @@
             "mipFilter"     : "linear"
         },
         "uDiffuseMapMaxAvailableLod" : "material[${materialUuid}].diffuseMap.maxAvailableLod",
-        "uDiffuseMapSize"        : "material[${materialUuid}].diffuseMap.size",
+        "uDiffuseMapSize"       : "material[${materialUuid}].diffuseMap.size",
 		"uAlphaMap"				: "material[${materialUuid}].alphaMap",
 		"uAlphaThreshold"		: "material[${materialUuid}].alphaThreshold",
         "uDiffuseCubeMap"       : "material[${materialUuid}].diffuseCubeMap",
-		"uBoneMatrices"			: "geometry[${geometryUuid}].boneMatrices",
+		"uBoneMatrices[0]"		: "geometry[${geometryUuid}].boneMatrices",
 		"uNumBones"				: "geometry[${geometryUuid}].numBones",
-        "uWorldToScreenMatrix"  : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
-		"uFogColor"				: "material[$materialUuid].fogColor",
-        "uFogBounds"			: "material[$materialUuid].fogBounds",
-        "boneMatrices"			: "geometry[${geometryUuid}].boneMatrices",
-		"numBones"				: "geometry[${geometryUuid}].numBones",
-        "uWorldToScreenMatrix"  : {
-			"binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" }
-		}
+		"uFogColor"				: "material[${materialUuid}].fogColor",
+        "uFogBounds"			: "material[${materialUuid}].fogBounds",
+        "uPopLod"               : "geometry[${geometryUuid}].popLod",
+        "uPopBlendingLod"       : "geometry[${geometryUuid}].popBlendingLod",
+        "uPopFullPrecisionLod"  : "geometry[${geometryUuid}].popFullPrecisionLod",
+        "uPopMinBound"          : "geometry[${geometryUuid}].popMinBound",
+        "uPopMaxBound"          : "geometry[${geometryUuid}].popMaxBound"
     },
 
     "macros" : {
         "MODEL_TO_WORLD"        : "modelToWorldMatrix",
         "HAS_NORMAL"            : "geometry[${geometryUuid}].normal",
-        "SKINNING_NUM_BONES"    : { "binding" : "geometry[$geometryUuid].numBones", "type" : "int" },
+        "SKINNING_NUM_BONES"    : { "binding" : "geometry[${geometryUuid}].numBones", "type" : "int" },
+        "VERTEX_UV"             : "geometry[${geometryUuid}].uv",
         "DIFFUSE_MAP"           : "material[${materialUuid}].diffuseMap",
         "DIFFUSE_MAP_LOD" 		: "material[${materialUuid}].diffuseMapLodEnabled",
         "DIFFUSE_CUBEMAP"       : "material[${materialUuid}].diffuseCubeMap",
@@ -53,7 +54,9 @@
 		"FOG_EXP2"              : "material[${materialUuid}].fogExponential2",
         "UV_OFFSET"             : "material[${materialUuid}].uvOffset",
         "UV_SCALE"              : "material[${materialUuid}].uvScale",
-        "FOG_TECHNIQUE"			: { "binding" : "material[$materialUuid].fogTechnique", "type" : "int" }
+        "FOG_TECHNIQUE"			: { "binding" : "material[${materialUuid}].fogTechnique", "type" : "int" },
+        "POP_LOD_ENABLED"       : "geometry[${geometryUuid}].popLodEnabled",
+        "POP_BLENDING_ENABLED"  : "geometry[${geometryUuid}].popBlendingEnabled"
     },
 
 	"states" : {
@@ -61,6 +64,7 @@
 		"blendingDestination"	: { "binding" : "material[${materialUuid}].blendingDestination" },
         "triangleCulling"       : { "binding" : "material[${materialUuid}].triangleCulling" },
         "zSorted"               : { "binding" : "material[${materialUuid}].zSorted" },
+        "priority"              : { "binding" : "material[${materialUuid}].priority" },
         "depthMask"             : { "binding" : "material[${materialUuid}].depthMask" },
         "depthFunction"         : { "binding" : "material[${materialUuid}].depthFunction" }
     },

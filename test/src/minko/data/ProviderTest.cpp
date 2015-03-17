@@ -34,6 +34,40 @@ TEST_F(ProviderTest, Create)
 	}
 }
 
+TEST_F(ProviderTest, CreateAndInitialize)
+{
+	try
+	{
+		auto p = Provider::create({
+			{ "foo", 42 }
+		});
+
+		ASSERT_EQ(p->get<int>("foo"), 42);
+	}
+	catch (...)
+	{
+		ASSERT_TRUE(false);
+	}
+}
+
+TEST_F(ProviderTest, CreateAndInitializeDifferentTypes)
+{
+	try
+	{
+		auto p = Provider::create({
+			{ "foo", 42 },
+			{ "bar", 42.f }
+		});
+
+		ASSERT_EQ(p->get<int>("foo"), 42);
+		ASSERT_EQ(p->get<float>("bar"), 42.f);
+	}
+	catch (...)
+	{
+		ASSERT_TRUE(false);
+	}
+}
+
 TEST_F(ProviderTest, CreateCopy)
 {
 	try
@@ -86,9 +120,9 @@ TEST_F(ProviderTest, PropertyAdded)
 	auto p = Provider::create();
 	auto v = 0;
 	auto _ = p->propertyAdded().connect(
-		[&](Provider::Ptr provider, const std::string& propertyName)
+		[&](Provider::Ptr provider, const Provider::PropertyName& propertyName)
 		{
-			if (provider == p && propertyName == "foo")
+			if (provider == p && *propertyName == "foo")
 				v = provider->get<int>("foo");
 		}
 	);
@@ -103,9 +137,9 @@ TEST_F(ProviderTest, PropertyRemoved)
 	auto p = Provider::create();
 	auto v = 0;
 	auto _ = p->propertyRemoved().connect(
-		[&](Provider::Ptr provider, const std::string& propertyName)
+		[&](Provider::Ptr provider, const Provider::PropertyName& propertyName)
 		{
-			if (provider == p && propertyName == "foo")
+			if (provider == p && *propertyName == "foo")
 				v = 42;
 		}
 	);
@@ -121,9 +155,9 @@ TEST_F(ProviderTest, PropertyChanged)
 	auto p = Provider::create();
 	auto v = 0;
 	auto _ = p->propertyChanged().connect(
-		[&](Provider::Ptr provider, const std::string& propertyName)
+		[&](Provider::Ptr provider, const Provider::PropertyName& propertyName)
 		{
-			if (provider == p && propertyName == "foo")
+			if (provider == p && *propertyName == "foo")
 				v = provider->get<int>("foo");
 		}
 	);
@@ -141,9 +175,9 @@ TEST_F(ProviderTest, ValueChangedNot)
 	p->set("foo", 42);
 
 	auto _ = p->propertyChanged().connect(
-		[&](Provider::Ptr provider, const std::string& propertyName)
+		[&](Provider::Ptr provider, const Provider::PropertyName& propertyName)
 		{
-			if (provider == p && propertyName == "foo")
+			if (provider == p && *propertyName == "foo")
 				v = provider->get<int>("foo");
 		}
 	);
@@ -230,10 +264,10 @@ TEST_F(ProviderTest, CreateByCopy)
 {
 	auto p1 = Provider::create();
 
-	p1->set("test", 42.f);
+	p1->set("foo", 42.f);
 
 	auto p2 = Provider::create(p1);
 
-	ASSERT_EQ(p1->get<float>("test"), p2->get<float>("test"));
-	ASSERT_NE(p1->getUnsafePointer<float>("test"), p2->getUnsafePointer<float>("test"));
+	ASSERT_EQ(p1->get<float>("foo"), p2->get<float>("foo"));
+	ASSERT_NE(p1->getUnsafePointer<float>("foo"), p2->getUnsafePointer<float>("foo"));
 }

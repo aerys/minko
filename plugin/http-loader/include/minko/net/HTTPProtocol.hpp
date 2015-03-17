@@ -36,6 +36,8 @@ namespace minko
             typedef std::shared_ptr<HTTPProtocol>    Ptr;
 
         public:
+            virtual ~HTTPProtocol() = default;
+
             inline static
             Ptr
             create()
@@ -48,6 +50,9 @@ namespace minko
 
             bool
             fileExists(const std::string& filename);
+
+            bool
+            isAbsolutePath(const std::string& filename) const;
 
         protected:
             HTTPProtocol();

@@ -76,16 +76,13 @@ AbstractScript::addedOrRemovedHandler(scene::Node::Ptr node, scene::Node::Ptr ta
 
 void
 AbstractScript::targetRemoved(scene::Node::Ptr target)
-{
-    _started[target] = false;
-    stop(target);
-    
+{    
 	_componentAddedSlot     = nullptr;
 	_componentRemovedSlot   = nullptr;
     _frameBeginSlot         = nullptr;
 	_frameEndSlot           = nullptr;
-
-    if (running(target))
+    
+    if (running(target) && _started[target])
     {
         _started[target] = false;
         stop(target);
@@ -122,23 +119,22 @@ void
 AbstractScript::frameBeginHandler(SceneManager::Ptr sceneManager, float time, float deltaTime)
 {
     auto target = this->target();
-
+    
     _time = time;
     _deltaTime = deltaTime;
 
-    if (!_started[target] && ready(target))
+    if (!_started[target] && ready(target) && target != nullptr)
 	{
         _started[target] = true;
-
         start(target);
 	}
 
     if (running(target))
         update(target);
-	else
+    else if (_started[target])
     {
 		_started[target] = false;
-            stop(target);
+        stop(target);
     }
 }
 
@@ -172,14 +168,14 @@ AbstractScript::setSceneManager(SceneManager::Ptr sceneManager)
 {
 	if (sceneManager)
 	{
-		if (!_frameBeginSlot)
-			_frameBeginSlot = sceneManager->frameBegin()->connect(std::bind(
-				&AbstractScript::frameBeginHandler, 
-				std::static_pointer_cast<AbstractScript>(shared_from_this()),  
-				std::placeholders::_1, 
-				std::placeholders::_2, 
-				std::placeholders::_3
-			));
+        if (!_frameBeginSlot)
+            _frameBeginSlot = sceneManager->frameBegin()->connect(std::bind(
+                &AbstractScript::frameBeginHandler,
+                std::static_pointer_cast<AbstractScript>(shared_from_this()),
+                std::placeholders::_1,
+                std::placeholders::_2,
+                std::placeholders::_3
+            ));
 		if (!_frameEndSlot)
 			_frameEndSlot = sceneManager->frameEnd()->connect(std::bind(
 				&AbstractScript::frameEndHandler, 
@@ -191,8 +187,11 @@ AbstractScript::setSceneManager(SceneManager::Ptr sceneManager)
 	}
 	else if (_frameBeginSlot)
 	{
-		_started[target()] = false;
-		stop(target());
+        if (_started[target()])
+        {
+		    _started[target()] = false;
+		    stop(target());
+        }
 
 		_frameBeginSlot = nullptr;
 		_frameEndSlot   = nullptr;

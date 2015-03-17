@@ -20,7 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/Flyweight.hpp"
 #include "minko/data/Provider.hpp"
+
+#include "sparsehash/forward.h"
 
 namespace minko
 {
@@ -28,25 +31,37 @@ namespace minko
 	{
 		class Store
 		{
+		public:
+			typedef Flyweight<std::string>								PropertyName;
+            typedef Signal<Provider::Ptr, const PropertyName&>	        ProviderChangedSignal;
 
 		private:
-            typedef Signal<Provider::Ptr, const std::string&>	            ProviderChangedSignal;
-            typedef std::list<ProviderChangedSignal::Slot>                  ProviderChangedSignalSlotList;
+            typedef std::list<ProviderChangedSignal::Slot>              ProviderChangedSignalSlotList;
 
-			typedef std::shared_ptr<Provider>						        ProviderPtr;
-            typedef std::shared_ptr<Collection>						        CollectionPtr;
-			typedef std::shared_ptr<data::AbstractFilter>			        AbsFilterPtr;
-			typedef Signal<ProviderPtr, const std::string&>			        ProviderPropertyChangedSignal;
-			typedef ProviderPropertyChangedSignal::Slot				        ProviderPropertyChangedSlot;
-            typedef Signal<Collection&, ProviderPtr>::Slot                  CollectionChangedSignalSlot;
+			typedef std::shared_ptr<Provider>						    ProviderPtr;
+            typedef std::shared_ptr<Collection>						    CollectionPtr;
+			typedef std::shared_ptr<data::AbstractFilter>			    AbsFilterPtr;
+			typedef Signal<ProviderPtr, const PropertyName&>			ProviderPropertyChangedSignal;
+			typedef ProviderPropertyChangedSignal::Slot				    ProviderPropertyChangedSlot;
+            typedef Signal<Collection&, ProviderPtr>::Slot              CollectionChangedSignalSlot;
+            typedef Flyweight<std::string>                              FString;
+			typedef std::list<std::pair<FString, FString>>				FStringList;
+
+#if DEBUG
+			template <class K, typename... V>
+			using map = std::unordered_map<K, V...>;
+#else
+			template <typename... H>
+			using map = google::sparse_hash_map<H...>;
+#endif
 
         public:
-            typedef Signal<Store&, ProviderPtr, const std::string&>	PropertyChangedSignal;
+            typedef Signal<Store&, ProviderPtr, const PropertyName&>	PropertyChangedSignal;
 
         private:
-            typedef std::unordered_map<std::string, PropertyChangedSignal>  ChangedSignalSlotMap;
-            typedef std::map<ProviderPtr, ProviderChangedSignalSlotList>    ProviderToChangedSlotListMap;
-            typedef std::map<CollectionPtr, CollectionChangedSignalSlot>    CollectionToChangedSlotMap;
+            typedef map<PropertyName, PropertyChangedSignal*> 			ChangedSignalMap;
+            typedef map<ProviderPtr, ProviderChangedSignalSlotList> 	ProviderToChangedSlotListMap;
+            typedef map<CollectionPtr, CollectionChangedSignalSlot> 	CollectionToChangedSlotMap;
 
         private:
 			std::list<ProviderPtr>			_providers;
@@ -56,29 +71,32 @@ namespace minko
 			PropertyChangedSignal	    	_propertyAdded;
 			PropertyChangedSignal     		_propertyRemoved;
             PropertyChangedSignal           _propertyChanged;
-            ChangedSignalSlotMap            _propertyNameToChangedSignal;
-            ChangedSignalSlotMap            _propertyNameToAddedSignal;
-            ChangedSignalSlotMap            _propertyNameToRemovedSignal;
+            ChangedSignalMap*            	_propertyNameToChangedSignal;
+            ChangedSignalMap*            	_propertyNameToAddedSignal;
+            ChangedSignalMap*            	_propertyNameToRemovedSignal;
 
-            ProviderToChangedSlotListMap	_propertySlots;
-            CollectionToChangedSlotMap      _collectionItemAddedSlots;
-            CollectionToChangedSlotMap      _collectionItemRemovedSlots;
+            ProviderToChangedSlotListMap*	_propertySlots;
+            CollectionToChangedSlotMap*     _collectionItemAddedSlots;
+            CollectionToChangedSlotMap*     _collectionItemRemovedSlots;
 
 		public:
             Store();
 
-			Store(const Store& store, bool deepCopy = false);
+            Store(Store&& store);
 
-            ~Store()
-            {
+            Store(const Store& store);
 
-            }
+			Store(const Store& store, bool deepCopy);
+
+            Store& operator=(Store&&);
+
+            ~Store();
 
             template <typename T>
 			bool
-			propertyHasType(const std::string& propertyName) const
+			propertyHasType(const PropertyName& propertyName) const
 			{
-                auto providerAndToken = getProviderByPropertyName(propertyName);
+                auto providerAndToken = getProviderByPropertyName(*propertyName);
                 auto provider = std::get<0>(providerAndToken);
 
                 if (provider == nullptr)
@@ -89,9 +107,9 @@ namespace minko
 
 			template <typename T>
 			const T&
-			get(const std::string& propertyName) const
+			get(const PropertyName& propertyName) const
 			{
-                auto providerAndToken = getProviderByPropertyName(propertyName);
+                auto providerAndToken = getProviderByPropertyName(*propertyName);
                 auto provider = std::get<0>(providerAndToken);
 
                 if (provider == nullptr)
@@ -102,9 +120,9 @@ namespace minko
 
             template <typename T>
             const T*
-            getPointer(const std::string& propertyName) const
+            getPointer(const PropertyName& propertyName) const
             {
-                auto providerAndToken = getProviderByPropertyName(propertyName);
+                auto providerAndToken = getProviderByPropertyName(*propertyName);
                 auto provider = std::get<0>(providerAndToken);
 
                 if (provider == nullptr)
@@ -115,9 +133,9 @@ namespace minko
 
             template <typename T>
             T*
-            getUnsafePointer(const std::string& propertyName) const
+            getUnsafePointer(const PropertyName& propertyName) const
             {
-                auto providerAndToken = getProviderByPropertyName(propertyName);
+                auto providerAndToken = getProviderByPropertyName(*propertyName);
                 auto provider = std::get<0>(providerAndToken);
 
                 if (provider == nullptr)
@@ -131,9 +149,9 @@ namespace minko
 
 			template <typename T>
 			void
-			set(const std::string& propertyName, T value)
+			set(const PropertyName& propertyName, T value)
 			{
-                auto providerAndToken = getProviderByPropertyName(propertyName);
+                auto providerAndToken = getProviderByPropertyName(*propertyName);
                 auto provider = std::get<0>(providerAndToken);
 
                 if (provider == nullptr)
@@ -165,23 +183,23 @@ namespace minko
 
             inline
             PropertyChangedSignal&
-            propertyAdded(const std::string& propertyName)
+            propertyAdded(const PropertyName& propertyName)
             {
-                return _propertyNameToAddedSignal[propertyName];
+                return getOrInsertSignal(_propertyNameToAddedSignal, propertyName);
             }
 
             inline
             PropertyChangedSignal&
-            propertyRemoved(const std::string& propertyName)
+            propertyRemoved(const PropertyName& propertyName)
             {
-                return _propertyNameToRemovedSignal[propertyName];
+                return getOrInsertSignal(_propertyNameToRemovedSignal, propertyName);
             }
 
             inline
             PropertyChangedSignal&
-            propertyChanged(const std::string& propertyName)
+            propertyChanged(const PropertyName& propertyName)
             {
-                return _propertyNameToChangedSignal[propertyName];
+                return getOrInsertSignal(_propertyNameToChangedSignal, propertyName);
             }
 
             inline
@@ -232,36 +250,23 @@ namespace minko
 
             inline
 			bool
-			hasProperty(const std::string& propertyName) const
+            hasProperty(const PropertyName& propertyName) const
             {
-                return std::get<0>(getProviderByPropertyName(propertyName)) != nullptr;
+                return std::get<0>(getProviderByPropertyName(*propertyName)) != nullptr;
             }
 
-            inline
             bool
-            hasPropertyAddedSignal(const std::string& propertyName) const
-            {
-                return _propertyNameToAddedSignal.count(propertyName) != 0;
-            }
+            hasPropertyAddedSignal(const PropertyName& propertyName) const;
 
-            inline
             bool
-            hasPropertyRemovedSignal(const std::string& propertyName) const
-            {
-                return _propertyNameToRemovedSignal.count(propertyName) != 0;
-            }
+            hasPropertyRemovedSignal(const PropertyName& propertyName) const;
 
-            inline
             bool
-            hasPropertyChangedSignal(const std::string& propertyName) const
-            {
-                return _propertyNameToChangedSignal.count(propertyName) != 0;
-            }
+            hasPropertyChangedSignal(const PropertyName& propertyName) const;
 
             static
             const std::string
-            getActualPropertyName(const std::unordered_map<std::string, std::string>&   variables,
-                                  const std::string&                                    propertyName);
+            getActualPropertyName(const FStringList& variables, const FString& propertyName);
 
 		private:
 			std::pair<ProviderPtr, std::string>
@@ -270,12 +275,12 @@ namespace minko
 			void
 			providerPropertyAddedHandler(ProviderPtr        provider,
                                          CollectionPtr      collection,
-                                         const std::string& propertyName);
+                                         const FString& 	propertyName);
 
 			void
 			providerPropertyRemovedHandler(ProviderPtr          provider,
                                            CollectionPtr        collection,
-                                           const std::string&   propertyName);
+                                           const FString&   	propertyName);
 
             void
             doAddProvider(ProviderPtr provider, CollectionPtr collection = nullptr);
@@ -283,13 +288,13 @@ namespace minko
             void
             doRemoveProvider(ProviderPtr provider, CollectionPtr collection = nullptr);
 
-            std::string
+            PropertyName
             formatPropertyName(CollectionPtr        collection,
                                ProviderPtr          provider,
                                const std::string&   propertyName,
                                bool                 useUuid = false);
 
-            std::string
+            PropertyName
             formatPropertyName(CollectionPtr collection, const std::string& index, const std::string& propertyName);
 
             void
@@ -304,11 +309,20 @@ namespace minko
             updateCollectionLength(CollectionPtr collection);
 
             void
-            executePropertySignal(ProviderPtr                                                   provider,
-                                  CollectionPtr                                                 collection,
-                                  const std::string&                                            propertyName,
-                                  const PropertyChangedSignal&                                  anyChangedSignal,
-                                  const std::unordered_map<std::string, PropertyChangedSignal>& propertyNameToSignal);
+            executePropertySignal(ProviderPtr                   provider,
+                                  CollectionPtr                 collection,
+                                  const PropertyName&           propertyName,
+								  const PropertyChangedSignal&  anyChangedSignal,
+                                  const ChangedSignalMap& 		propertyNameToSignal);
+
+            void
+            copyFrom(const Store& store, bool deepCopy = false);
+
+            PropertyChangedSignal&
+            getOrInsertSignal(ChangedSignalMap* signals, const PropertyName& propertyName);
+
+            void
+            initialize();
 		};
 	}
 }

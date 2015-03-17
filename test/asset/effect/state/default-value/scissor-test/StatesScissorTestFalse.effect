@@ -1,0 +1,7 @@
+{
+    "states" : {
+        "scissorTest": false
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

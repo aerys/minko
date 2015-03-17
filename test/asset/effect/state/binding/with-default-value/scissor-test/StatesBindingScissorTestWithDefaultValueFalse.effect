@@ -1,0 +1,7 @@
+{
+    "states" : {
+        "scissorTest" : { "binding" : "material[${materialUuid}].scissorTest", "default" : false }
+    },
+
+    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+}

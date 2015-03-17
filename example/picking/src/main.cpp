@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::component;
-using namespace minko::math;
 
 Signal<scene::Node::Ptr>::Slot pickingMouseClick;
 Signal<scene::Node::Ptr>::Slot pickingMouseRightClick;
@@ -37,7 +36,7 @@ main(int argc, char** argv)
 
     auto sceneManager = SceneManager::create(canvas);
 
-    // setup assets
+    // Setup assets
     sceneManager->assets()->loader()->options()
         ->resizeSmoothly(true)
         ->generateMipmaps(true)
@@ -47,24 +46,29 @@ main(int argc, char** argv)
         ->queue("effect/Basic.effect")
         ->queue("effect/Picking.effect");
 
-    sceneManager->assets()
-        ->texture("renderTarget",          render::Texture::create(sceneManager->assets()->context(), 512, 512, false, true));
+    auto redMaterial = material::BasicMaterial::create();
+    redMaterial->diffuseColor(0xFF0000FF);
+
+    auto greenMaterial = material::BasicMaterial::create();
+    greenMaterial->diffuseColor(0xF0FF00FF);
+
+    auto blueMaterial = material::BasicMaterial::create();
+    blueMaterial->diffuseColor(0x0000FFFF);
 
     sceneManager->assets()
-        ->material("redMaterial",          material::BasicMaterial::create()->diffuseColor(0xFF0000FF))
-        ->material("greenMaterial",        material::BasicMaterial::create()->diffuseColor(0xF0FF00FF))
-        ->material("blueMaterial",         material::BasicMaterial::create()->diffuseColor(0x0000FFFF))
-        ->material("backgroundMaterial",   material::BasicMaterial::create()->diffuseMap(sceneManager->assets()->texture("renderTarget")))
-        ->geometry("cube",                 geometry::CubeGeometry::create(sceneManager->assets()->context()))
-        ->geometry("sphere",               geometry::SphereGeometry::create(sceneManager->assets()->context()))
-        ->geometry("plane",                geometry::QuadGeometry::create(sceneManager->assets()->context()));
+        ->material("redMaterial",           redMaterial)
+        ->material("greenMaterial",         greenMaterial)
+        ->material("blueMaterial",          blueMaterial)
+        ->geometry("cube",                  geometry::CubeGeometry::create(sceneManager->assets()->context()))
+        ->geometry("sphere",                geometry::SphereGeometry::create(sceneManager->assets()->context()))
+        ->geometry("quad",                 geometry::QuadGeometry::create(sceneManager->assets()->context()));
 
     auto root = scene::Node::create("root")
         ->addComponent(sceneManager);
 
     auto camera = scene::Node::create("camera")
         ->addComponent(Transform::create(
-            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 4.f))
+            math::inverse(math::lookAt(math::vec3(0.f, 0.f, 4.f), math::vec3(0.f), math::vec3(0.f, 1.f, 0.f)))
         ))
         ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
 
@@ -74,11 +78,12 @@ main(int argc, char** argv)
     {
         auto cube = scene::Node::create("cubeNode")
             ->addComponent(Surface::create(
-                sceneManager->assets()->geometry("cube"),
-                sceneManager->assets()->material("redMaterial"),
-                sceneManager->assets()->effect("effect/Basic.effect")))
-            ->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(Vector3::create(-1.4f))))
-            ->layouts(scene::Layout::Group::DEFAULT | scene::Layout::Group::PICKING);
+            sceneManager->assets()->geometry("cube"),
+            sceneManager->assets()->material("redMaterial"),
+            sceneManager->assets()->effect("effect/Basic.effect")))
+            ->addComponent(Transform::create(
+            math::translate(math::vec3(-1.4f, 0.f, 0.f))))
+            ->layout(scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::PICKING);
 
         auto sphere = scene::Node::create("sphereNode")
             ->addComponent(Surface::create(
@@ -86,20 +91,20 @@ main(int argc, char** argv)
                 sceneManager->assets()->material("greenMaterial"),
                 sceneManager->assets()->effect("effect/Basic.effect")))
             ->addComponent(Transform::create())
-            ->layouts(scene::Layout::Group::DEFAULT | scene::Layout::Group::PICKING);
+            ->layout(scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::PICKING);
 
-        auto teapot = scene::Node::create("planeNode")
+        auto quad = scene::Node::create("quadNode")
             ->addComponent(Surface::create(
-                sceneManager->assets()->geometry("plane"),
+                sceneManager->assets()->geometry("quad"),
                 sceneManager->assets()->material("blueMaterial"),
                 sceneManager->assets()->effect("effect/Basic.effect")))
-            ->addComponent(Transform::create(Matrix4x4::create()->appendTranslation(Vector3::create(1.4f))))
-            ->layouts(scene::Layout::Group::DEFAULT | scene::Layout::Group::PICKING);
+            ->addComponent(Transform::create(math::translate(math::vec3(1.4f, 0.f, 0.f))))
+            ->layout(scene::BuiltinLayout::DEFAULT | scene::BuiltinLayout::PICKING);
 
         root
             ->addChild(cube)
             ->addChild(sphere)
-            ->addChild(teapot);
+            ->addChild(quad);
 
         root->addComponent(Picking::create(camera, false, true));
 

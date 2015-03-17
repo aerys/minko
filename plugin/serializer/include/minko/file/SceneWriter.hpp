@@ -62,16 +62,17 @@ namespace minko
 
 			inline static
 			Ptr
-			create()
+			create(std::shared_ptr<WriterOptions> writerOptions)
 			{
-				return std::shared_ptr<SceneWriter>(new SceneWriter());
+				return std::shared_ptr<SceneWriter>(new SceneWriter(writerOptions));
 			}
 
 			std::string
             embed(AssetLibraryPtr                       assetLibrary,
                   OptionsPtr                            options,
                   DependencyPtr                         dependency,
-                  std::shared_ptr<WriterOptions>        writerOptions);
+                  std::shared_ptr<WriterOptions>        writerOptions,
+                  std::vector<unsigned char>&           embeddedHeaderData);
 
 			SerializedNode
 			writeNode(std::shared_ptr<scene::Node>			node,
@@ -90,7 +91,7 @@ namespace minko
 			}
 
 		protected:
-			SceneWriter();
+			SceneWriter(std::shared_ptr<WriterOptions> writerOptions);
 		};
 	}
 }
