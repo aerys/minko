@@ -33,6 +33,14 @@ namespace minko
 
             typedef std::shared_ptr<scene::Node> NodePtr;
 
+            typedef std::shared_ptr<component::Surface> SurfacePtr;
+
+            struct SurfaceIndexer
+            {
+                std::function<std::size_t(SurfacePtr)>      hash;
+                std::function<bool(SurfacePtr, SurfacePtr)> equal;
+            };
+
             struct Options
             {
                 static const unsigned int none = 0;
@@ -58,6 +66,11 @@ namespace minko
                 std::function<math::vec3(NodePtr)>                      _partitionMaxSizeFunction;
 
                 std::function<void(NodePtr, math::vec3&, math::vec3&)>  _worldBoundsFunction;
+
+                std::function<bool(NodePtr)>                            _nodeFilterFunction;
+                SurfaceIndexer                                          _surfaceIndexer;
+
+                Options();
             };
 
         private:
@@ -70,8 +83,6 @@ namespace minko
             typedef std::weak_ptr<OctreeNode> OctreeNodeWeakPtr;
 
             typedef std::shared_ptr<geometry::Geometry> GeometryPtr;
-
-            typedef std::shared_ptr<component::Surface> SurfacePtr;
 
             struct OctreeNode
             {
@@ -143,6 +154,22 @@ namespace minko
         private:
             MeshPartitioner();
 
+            static
+            SurfaceIndexer
+            defaultSurfaceIndexer();
+
+            static
+            bool
+            defaultNodeFilterFunction(NodePtr node);
+
+            static
+            void
+            defaultWorldBoundsFunction(NodePtr root, math::vec3& minBound, math::vec3& maxBound);
+
+            static
+            math::vec3
+            defaultPartitionMaxSizeFunction(NodePtr root);
+
             OctreeNodePtr
             pickBestPartitions(OctreeNodePtr      root,
                                const math::vec3&  modelMinBound,
@@ -173,7 +200,6 @@ namespace minko
             GeometryPtr
             createGeometry(GeometryPtr referenceGeometry, const std::vector<int>& triangleIndices);
 
-            static
             std::vector<std::vector<SurfacePtr>>
             mergeSurfaces(const std::vector<SurfacePtr>& surfaces);
 

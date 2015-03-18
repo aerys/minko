@@ -79,7 +79,7 @@ namespace minko
                 explicit
                 ResourceInfo(ProviderPtr data) :
                     data(data),
-                    lodRequirementIsInvalid(false),
+                    lodRequirementIsInvalid(true),
                     lodInfo()
                 {
                 }
