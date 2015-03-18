@@ -21,17 +21,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include <btBulletDynamicsCommon.h>
 #include "minko/math/tools.hpp"
+#include "minko/geometry/Geometry.hpp"
 #include <minko/component/bullet/Collider.hpp>
 #include <minko/component/bullet/ColliderData.hpp>
 #include <minko/component/bullet/AbstractPhysicsShape.hpp>
 #include <minko/component/bullet/SphereShape.hpp>
 #include <minko/component/bullet/BoxShape.hpp>
+#include <minko/component/bullet/ConvexHullShape.hpp>
 #include <minko/component/bullet/ConeShape.hpp>
 #include <minko/component/bullet/CylinderShape.hpp>
 
 using namespace minko;
-using namespace minko::math;
 using namespace minko::component;
+using namespace minko::geometry;
 
 bullet::PhysicsWorld::BulletCollider::BulletCollider():
     _bulletCollisionShape(nullptr),
@@ -92,6 +94,10 @@ bullet::PhysicsWorld::BulletCollider::initializeCollisionShape(AbstractPhysicsSh
         bulletShape = initializeCylinderShape(std::dynamic_pointer_cast<CylinderShape>(shape));
         break;
 
+    case AbstractPhysicsShape::CONVEXHULL:
+        bulletShape = initializeConvexHullShape(std::dynamic_pointer_cast<ConvexHullShape>(shape));
+        break;
+
     default:
         throw std::logic_error("Unsupported physics shape");
     }
@@ -133,6 +139,33 @@ bullet::PhysicsWorld::BulletCollider::initializeCylinderShape(CylinderShape::Ptr
     btVector3 halfExtents (cylinder->halfExtentX(), cylinder->halfExtentY(), cylinder->halfExtentZ());
 
     return std::shared_ptr<btCylinderShape>(new btCylinderShape(halfExtents));
+}
+
+std::shared_ptr<btCollisionShape>
+bullet::PhysicsWorld::BulletCollider::initializeConvexHullShape(ConvexHullShape::Ptr convexHull) const
+{
+    if (convexHull->getBtShape())
+        return convexHull->getBtShape();
+
+    auto geometry = convexHull->geometry();
+    auto vertexBuffer = geometry->vertexBuffer("position"); 
+    float* points = &vertexBuffer->data()[0];    
+    int vertexBufferSize = vertexBuffer->numVertices();
+
+    auto attr = vertexBuffer->attribute("position");
+    auto offset = vertexBuffer->attribute("position").offset;
+    
+    auto btShape = std::shared_ptr<btConvexHullShape>(
+        new btConvexHullShape(
+            points + offset, 
+            vertexBufferSize, 
+            vertexBuffer->vertexSize() * sizeof(float)
+        )
+    );
+    
+    convexHull->btShape(btShape);
+
+    return btShape;
 }
 
 std::shared_ptr<btMotionState>

@@ -366,6 +366,9 @@ HTTPProtocol::fileExists(const std::string& filename)
     
     for (const auto& additionalHeader : *additionalHeaders)
     {
+        if (additionalHeader.first == "")
+            continue;
+
         evalString += "xhr.setRequestHeader('" + additionalHeader.first + "', '" + additionalHeader.second + "');\n";
     }
 

@@ -210,17 +210,18 @@ namespace minko
                     typedef std::shared_ptr<BulletCollider> Ptr;
 
                 private:
-                    typedef std::shared_ptr<AbstractPhysicsShape>    AbsShapePtr;
-                    typedef std::shared_ptr<SphereShape>            SphereShapePtr;
-                    typedef std::shared_ptr<BoxShape>                BoxShapePtr;
-                    typedef std::shared_ptr<ConeShape>                ConeShapePtr;
-                    typedef std::shared_ptr<CylinderShape>            CylinderShapePtr;
+                    typedef std::shared_ptr<AbstractPhysicsShape>       AbsShapePtr;
+                    typedef std::shared_ptr<SphereShape>                SphereShapePtr;
+                    typedef std::shared_ptr<BoxShape>                   BoxShapePtr;
+                    typedef std::shared_ptr<ConeShape>                  ConeShapePtr;
+                    typedef std::shared_ptr<CylinderShape>              CylinderShapePtr;
+                    typedef std::shared_ptr<ConvexHullShape>            ConvexHullShapePtr;
 
-                    typedef std::shared_ptr<btCollisionShape>        btCollisionShapePtr;
-                    typedef std::shared_ptr<btMotionState>            btMotionStatePtr;
-                    typedef std::shared_ptr<btDefaultMotionState>    btDefaultMotionStatePtr;
-                    typedef std::shared_ptr<btCollisionObject>        btCollisionObjectPtr;
-                    typedef std::shared_ptr<btRigidBody>            btRigidBodyPtr;
+                    typedef std::shared_ptr<btCollisionShape>           btCollisionShapePtr;
+                    typedef std::shared_ptr<btMotionState>              btMotionStatePtr;
+                    typedef std::shared_ptr<btDefaultMotionState>       btDefaultMotionStatePtr;
+                    typedef std::shared_ptr<btCollisionObject>          btCollisionObjectPtr;
+                    typedef std::shared_ptr<btRigidBody>                btRigidBodyPtr;
 
                 private:
                     btCollisionShapePtr        _bulletCollisionShape;
@@ -262,6 +263,9 @@ namespace minko
 
                     btCollisionShapePtr
                     initializeCylinderShape(CylinderShapePtr) const;
+
+                    btCollisionShapePtr
+                    initializeConvexHullShape(ConvexHullShapePtr) const;
 
                     btMotionStatePtr
                     initializeMotionState(ColliderPtr) const;
