@@ -962,6 +962,15 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
             boneNodeDescendants->nodes().begin(),
             boneNodeDescendants->nodes().end()
         );
+
+        auto boneNodeParent = boneNode->parent();
+
+        while (boneNodeParent != skeletonRoot)
+        {
+            irrelevantTransformNodes.insert(boneNodeParent);
+
+            boneNodeParent = boneNodeParent->parent();
+        }
     }
 
     auto animatedNodes = NodeSet::create(skeletonRoot)
@@ -981,10 +990,19 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
             animatedNodeDescendants->nodes().begin(),
             animatedNodeDescendants->nodes().end()
         );
+
+        auto animatedNodeParent = animatedNode->parent();
+
+        while (animatedNodeParent != skeletonRoot)
+        {
+            irrelevantTransformNodes.insert(animatedNodeParent);
+
+            animatedNodeParent = animatedNodeParent->parent();
+        }
     }
 
     for (auto irrelevantTransformNode : irrelevantTransformNodes)
-        irrelevantTransformNode->removeComponent(irrelevantTransformNode->component<Transform>());
+        irrelevantTransformNode->component<Transform>()->matrix(math::mat4());
 }
 
 Node::Ptr

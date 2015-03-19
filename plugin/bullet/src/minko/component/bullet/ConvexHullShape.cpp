@@ -17,39 +17,30 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "minko/component/bullet/ConvexHullShape.hpp"
+#include "btBulletDynamicsCommon.h"
 
-#include "minko/Common.hpp"
+#include "minko/render/AbstractContext.hpp"
+#include "minko/geometry/LineGeometry.hpp"
 
-namespace minko
+using namespace minko;
+using namespace minko::component;
+using namespace minko::geometry;
+
+LineGeometry::Ptr
+bullet::ConvexHullShape::getGeometry(render::AbstractContext::Ptr context) const
 {
-    namespace component
+    auto lines = LineGeometry::create(context);
+
+    for (int i = 0; i < _btShape->getNumEdges(); i++)
     {
-        namespace bullet
-        {
-            class Collider;
-            class ColliderData;
-            class ColliderDebug;
-
-            class PhysicsWorld;
-
-            class AbstractPhysicsShape;
-            class BoxShape;
-            class ConeShape;
-            class CylinderShape;
-            class SphereShape;
-            class ConvexHullShape;
-
-        }
+        btVector3 pa;
+        btVector3 pb;
+        _btShape->getEdge(i, pa, pb);
+        //std::cout << "(" <<vtx->getX()<<","<<vtx->getY()<<","<<vtx->getZ()<<")"<<std::endl;
+        lines->moveTo(pa.getX(),pa.getY(),pa.getZ());
+        lines->lineTo(pb.getX(),pb.getY(),pb.getZ());
     }
-
-    namespace extension
-    {
-        class PhysicsExtension;
-    }
-
-    namespace lua
-    {
-        class BulletLuaBindingsCollection;
-    }
+    
+    return lines;
 }

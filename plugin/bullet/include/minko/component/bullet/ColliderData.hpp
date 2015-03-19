@@ -52,7 +52,7 @@ namespace minko
                 create(float        mass,
                        AbsShapePtr  shape,
                        float        restitution     = 0.0f,
-                       float        friction        = 0.5f,
+                       float        friction        = 0.8f,
                        float        rollingFriction = 0.0f,
                        math::vec3*  inertia         = nullptr)
                 {

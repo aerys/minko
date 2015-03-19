@@ -231,8 +231,8 @@ minko.project.application = function(name)
 			cmd = cmd .. ' -s ERROR_ON_UNDEFINED_SYMBOLS=1'
 			-- disable exception catching
 			--cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=1'
-		-- cmd = cmd .. ' -s ALLOW_MEMORY_GROWTH=1'
-		cmd = cmd .. ' -s NO_EXIT_RUNTIME=1'
+		 	cmd = cmd .. ' -s ALLOW_MEMORY_GROWTH=1'
+			cmd = cmd .. ' -s NO_EXIT_RUNTIME=1'
 
 			--[[
 				optimize (very) long functions by breaking them into smaller ones

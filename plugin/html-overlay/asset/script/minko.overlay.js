@@ -59,8 +59,11 @@ Minko.loadedHandler = function(event)
 	Minko.window.Minko = Minko;
 
 	Minko.document.body.oncontextmenu = function(event)
-	{ 
-		event.preventDefault(); 
+	{
+		if (event.dontPreventDefault)
+			return true;
+
+		event.preventDefault();
 		return false;
 	};
 
@@ -278,7 +281,11 @@ Minko.redispatchWheelEvent = function(event)
 		eventCopy[copiedProperties[k]] = event[copiedProperties[k]];
 
 	Minko.canvas.dispatchEvent(eventCopy);
-	event.preventDefault();
+
+	if (event.dontPreventDefault)
+		return true;
+	else
+		event.preventDefault();
 };
 
 Minko.identifiers = [];
