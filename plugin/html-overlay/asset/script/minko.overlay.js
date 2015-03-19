@@ -278,7 +278,6 @@ Minko.redispatchWheelEvent = function(event)
 		eventCopy[copiedProperties[k]] = event[copiedProperties[k]];
 
 	Minko.canvas.dispatchEvent(eventCopy);
-	event.preventDefault();
 };
 
 Minko.identifiers = [];
