@@ -101,6 +101,8 @@ POPGeometryLodScheduler::surfaceAdded(Surface::Ptr surface)
 
     auto surfaceInfo = SurfaceInfo(surface);
 
+    resource->geometry = geometry;
+
     auto resourceData = resource->base->data;
     resource->fullPrecisionLod = surface->geometry()->data()->get<float>("popFullPrecisionLod");
 
@@ -504,12 +506,12 @@ POPGeometryLodScheduler::blendingLod(const POPGeometryResourceInfo&    resource,
 {
     const auto requiredPrecisionLevel = surfaceInfo.requiredPrecisionLevel;
 
-    auto blendingLod = std::max<float>(resource.minAvailableLod, requiredPrecisionLevel);
+    auto blendingLod = requiredPrecisionLevel >= float(resource.maxLod + 1)
+        ? resource.fullPrecisionLod
+        : requiredPrecisionLevel;
 
+    blendingLod = std::max<float>(resource.minAvailableLod, blendingLod);
     blendingLod = std::min<float>(resource.maxAvailableLod, blendingLod);
-
-    if (requiredPrecisionLevel >= float(resource.maxLod + 1))
-        blendingLod = resource.fullPrecisionLod;
 
     return blendingLod;
 }
