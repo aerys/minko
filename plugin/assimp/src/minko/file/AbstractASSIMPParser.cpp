@@ -1468,6 +1468,9 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 		// Gouraud-like shading (-> no specular)
 		specularColor.w = 0.f;
 
+	if (shininess == 0.f)
+		material->data()->set("shininess", 64.0f);
+
     auto transparent = opacity < 1.f;
 
     if (transparent)
