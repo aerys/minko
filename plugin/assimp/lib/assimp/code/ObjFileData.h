@@ -198,7 +198,7 @@ struct Material
 	Material()
 		:	diffuse (0.6f,0.6f,0.6f)
 		,	alpha	(1.f)
-		,	shineness (0.0f)
+		,	shineness (16.0f)
 		,	illumination_model (1)
 		,	ior		(1.f)
 	{
