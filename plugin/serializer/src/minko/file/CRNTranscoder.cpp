@@ -26,6 +26,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #ifndef MINKO_NO_CRNLIB
 # include "crnlib.h"
+# include "crn_core.h"
+# include "crn_console.h"
 # include "crn_decomp.h"
 # include "dds_defs.h"
 #endif
@@ -41,6 +43,8 @@ CRNTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
                          std::vector<unsigned char>&               out)
 {
 #ifndef MINKO_NO_CRNLIB
+    crnlib::console::disable_output();
+
     const auto textureFormatToCRNTextureFomat = std::unordered_map<TextureFormat, crn_format, Hash<TextureFormat>>
     {
         { TextureFormat::RGB_DXT1,      crn_format::cCRNFmtDXT1 },
