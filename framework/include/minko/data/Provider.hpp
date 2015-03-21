@@ -81,6 +81,24 @@ namespace minko
 
 			static
 			Ptr
+			create(const ValueMap& values)
+			{
+				Ptr provider = std::shared_ptr<Provider>(new Provider(values));
+
+				return provider;
+			}
+
+			static
+			Ptr
+			create(std::initializer_list<std::pair<PropertyName, Any>> init)
+			{
+				Ptr provider = std::shared_ptr<Provider>(new Provider(init));
+
+				return provider;
+			}
+
+			static
+			Ptr
 			create(Ptr source)
 			{
 				return create()->copyFrom(source);
@@ -186,7 +204,10 @@ namespace minko
             ~Provider();
 
 			Provider();
-		protected:
+
+			Provider(const ValueMap& values);
+
+			Provider(std::initializer_list<std::pair<PropertyName, Any>> init);
 
         private:
             Any&
@@ -194,6 +215,7 @@ namespace minko
 
             void
             setValue(const PropertyName& propertyName, Any value);
+
 		};
 	}
 }

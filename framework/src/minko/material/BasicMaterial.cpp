@@ -36,6 +36,11 @@ BasicMaterial::BasicMaterial():
 {
 }
 
+BasicMaterial::BasicMaterial(const data::Provider::ValueMap& values):
+    Material("BasicMaterial", values)
+{
+}
+
 void
 BasicMaterial::initialize()
 {

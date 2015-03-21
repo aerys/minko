@@ -36,6 +36,19 @@ Provider::~Provider()
     delete _values;
 }
 
+Provider::Provider(const ValueMap& values) :
+	_values(new ValueMap(values))
+{
+    _values->set_deleted_key("");
+}
+
+Provider::Provider(std::initializer_list<std::pair<PropertyName, Any>> init) :
+    _values(new ValueMap())
+{
+    _values->set_deleted_key("");
+    _values->insert(init.begin(), init.end());    
+}
+
 Provider::Ptr
 Provider::unset(const std::string& propertyName)
 {
@@ -69,7 +82,12 @@ Provider::copyFrom(Provider::Ptr source)
 Any&
 Provider::getValue(const PropertyName& propertyName) const
 {
-    return _values->find(propertyName)->second;
+    const auto foundIt = _values->find(propertyName);
+
+    if (foundIt == _values->end())
+	    throw std::invalid_argument("propertyName");
+
+    return foundIt->second;
 }
 
 void

@@ -65,7 +65,30 @@ namespace minko
 
 				return mat;
 			}
-            
+
+			inline static
+			Ptr
+			create(const data::Provider::ValueMap& values, const std::string& name = "material")
+			{
+				auto instance = Ptr(new Material(name, values));
+
+                instance->initialize();
+
+                return instance;
+			}
+
+			inline static
+			Ptr
+			create(std::initializer_list<std::pair<data::Provider::PropertyName, Any>> 	init,
+				   const std::string& 													name = "material")
+			{
+				auto instance = Ptr(new Material(name, init));
+
+                instance->initialize();
+
+                return instance;
+			}
+
             inline
             const std::string&
             uuid() const
@@ -90,6 +113,22 @@ namespace minko
 		protected:
 			Material(const std::string& name) :
                 _provider(data::Provider::create())
+            {
+                _provider->set("name", name);
+                _provider->set("uuid", _provider->uuid());
+            }
+
+            Material(const std::string& name,
+                     const data::Provider::ValueMap& values) :
+                _provider(data::Provider::create(values))
+            {
+                _provider->set("name", name);
+                _provider->set("uuid", _provider->uuid());
+            }
+
+			Material(const std::string& name,
+                     const std::initializer_list<std::pair<data::Provider::PropertyName, Any>>& init) :
+                _provider(data::Provider::create(init))
             {
                 _provider->set("name", name);
                 _provider->set("uuid", _provider->uuid());
