@@ -208,7 +208,7 @@ float getShadow(sampler2D 	shadowMap,
 
 	if (shadowMapping_vertexIsInShadowMap(vertexLightPosition))
 	{
-		float shadowDepth = vertexLightPosition.z;
+		float shadowDepth = vertexLightPosition.z - bias;
 		vec2 depthUV = vertexLightPosition.xy / 2.0 + 0.5;
 
 		depthUV = vec2(depthUV.xy * viewport.zw + viewport.xy);
