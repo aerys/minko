@@ -67,6 +67,11 @@ minko.project.application = function(name)
 	-- 	"MINKO_APPLICATION_NAME=" .. name
 	-- }
 
+	prelinkcommands {
+		minko.action.copy(minko.sdk.path("/framework/asset")),
+		minko.action.copy("asset")
+	}
+
 	configuration { "windows32" }
 		libdirs {
 			minko.sdk.path("/framework/lib/glew/lib/windows32")
@@ -77,7 +82,6 @@ minko.project.application = function(name)
 			"glew32"
 		}
 		prelinkcommands {
-			minko.action.copy(minko.sdk.path("/framework/asset")),
 			minko.action.copy(minko.sdk.path("/framework/lib/glew/lib/windows32/*.dll"))
 		}
 
@@ -90,9 +94,6 @@ minko.project.application = function(name)
 		libdirs {
 			minko.sdk.path("/framework/bin/windows32/release")
 		}
-		prelinkcommands {
-			minko.action.copy("asset")
-		}
 
 	configuration { "windows64" }
 		libdirs { minko.sdk.path("/framework/lib/glew/lib/windows64") }
@@ -102,7 +103,6 @@ minko.project.application = function(name)
 			"glew32"
 		}
 		prelinkcommands {
-			minko.action.copy(minko.sdk.path("/framework/asset")),
 			minko.action.copy(minko.sdk.path("/framework/lib/glew/lib/windows64/*.dll"))
 		}
 
@@ -115,9 +115,6 @@ minko.project.application = function(name)
 		libdirs {
 			minko.sdk.path("/framework/bin/windows64/release")
 		}
-		prelinkcommands {
-			minko.action.copy("asset"),
-		}
 
 	configuration { "linux64" }
 		linkoptions { "-Wl,--no-as-needed" }
@@ -127,24 +124,15 @@ minko.project.application = function(name)
 			"m",
 			"pthread"
 		}
-		prelinkcommands {
-			minko.action.copy(minko.sdk.path("/framework/asset")),
-		}
 
 	configuration { "linux64", "debug" }
 		libdirs {
 			minko.sdk.path("/framework/bin/linux64/debug")
 		}
-		prelinkcommands {
-			minko.action.copy("asset"),
-		}
 
 	configuration { "linux64", "release" }
 		libdirs {
 			minko.sdk.path("/framework/bin/linux64/release")
-		}
-		prelinkcommands {
-			minko.action.copy("asset"),
 		}
 
 	configuration { "linux32" }
@@ -155,24 +143,15 @@ minko.project.application = function(name)
 			"m",
 			"pthread"
 		}
-		prelinkcommands {
-			minko.action.copy(minko.sdk.path("/framework/asset")),
-		}
 
 	configuration { "linux32", "debug" }
 		libdirs {
 			minko.sdk.path("/framework/bin/linux32/debug")
 		}
-		prelinkcommands {
-			minko.action.copy("asset"),
-		}
 
 	configuration { "linux32", "release" }
 		libdirs {
 			minko.sdk.path("/framework/bin/linux32/release")
-		}
-		prelinkcommands {
-			minko.action.copy("asset"),
 		}
 
 	configuration { "osx64" }
@@ -186,9 +165,6 @@ minko.project.application = function(name)
 		-- linkoptions {
 		-- 	"-Wl,-rpath,."
 		-- }
-		prelinkcommands {
-			minko.action.copy(minko.sdk.path("/framework/asset")),
-		}
 
 	configuration { "osx64", "debug" }
 		libdirs {
@@ -199,22 +175,13 @@ minko.project.application = function(name)
 		libdirs {
 			minko.sdk.path("/framework/bin/osx64/release")
 		}
-		prelinkcommands {
-			minko.action.copy("asset"),
-		}
 
 	configuration { "html5" }
-
 		links {
 			"minko-framework",
 		}
 
 		targetsuffix ".bc"
-
-		prelinkcommands {
-			minko.action.copy(minko.sdk.path("/framework/asset")),
-			minko.action.copy("asset"),
-		}
 
 	if premake.tools.gcc.tools.emscripten then
 		configuration { "html5", "release" }
@@ -314,11 +281,6 @@ minko.project.application = function(name)
 			"**.plist"
 		}
 
-		prelinkcommands {
-			minko.action.copy(minko.sdk.path("/framework/asset")),
-			minko.action.copy("asset")
-		}
-
 	configuration { "ios", "debug" }
 		libdirs {
 			minko.sdk.path("/framework/bin/ios/debug")
@@ -358,11 +320,6 @@ minko.project.application = function(name)
 			"-Wl,--undefined=Java_minko_plugin_htmloverlay_MinkoWebViewClient_webViewPageLoaded",
 			"-Wl,--undefined=Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnMessage",
 			"-Wl,--undefined=Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent"
-		}
-
-		prelinkcommands {
-			minko.action.copy(minko.sdk.path("/framework/asset")),
-			minko.action.copy("asset")
 		}
 
 	configuration { "android", "debug" }
