@@ -130,7 +130,7 @@ solution "minko"
 		include 'plugin/png'
 		include 'plugin/sdl'
 		include 'plugin/serializer'
-        include 'plugin/video-camera'		
+        include 'plugin/video-camera'
 
 		if _OPTIONS['with-offscreen'] then
 			include 'plugin/offscreen'
@@ -188,6 +188,7 @@ solution "minko"
 		-- include 'example/visibility'
 		-- include 'example/water'
 		include 'example/shadow-mapping'
+		include 'example/pbr'
 
 		if _OPTIONS['with-offscreen'] then
 			include 'example/offscreen'
