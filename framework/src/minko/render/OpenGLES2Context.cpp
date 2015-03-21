@@ -40,7 +40,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #  include "GLES2/gl2ext.h"
 # else
 #  if !defined(MINKO_PLUGIN_OFFSCREEN) // temporary
-#  include "GL/glew.h"
+#  	include "GL/glew.h"
 #  else
 #   include <windows.h>
 #   include <GL/gl.h>
@@ -55,7 +55,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #elif MINKO_PLATFORM == MINKO_PLATFORM_LINUX
 # include <GL/gl.h>
 # include <GL/glext.h>
-# include <GL/glu.h>
 #elif MINKO_PLATFORM == MINKO_PLATFORM_IOS
 # include <OpenGLES/ES2/gl.h>
 # include <OpenGLES/ES2/glext.h>
