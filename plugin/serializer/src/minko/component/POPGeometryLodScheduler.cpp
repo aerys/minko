@@ -192,8 +192,7 @@ POPGeometryLodScheduler::maxAvailableLodChanged(ResourceInfo&    resource,
     else
         popGeometryResource.minAvailableLod = std::min(maxAvailableLod, popGeometryResource.minAvailableLod);
 
-    if (maxAvailableLod < popGeometryResource.fullPrecisionLod)
-        popGeometryResource.maxAvailableLod = std::max(maxAvailableLod, popGeometryResource.maxAvailableLod);
+    popGeometryResource.maxAvailableLod = std::max(maxAvailableLod, popGeometryResource.maxAvailableLod);
 }
 
 POPGeometryLodScheduler::LodInfo
