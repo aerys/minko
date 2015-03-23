@@ -34,7 +34,7 @@ set -e
 
 ANDROID_SDK_VERSION="android-19"
 ANDROID_NDK_VERSION="android-ndk-r10"
-ANDROID_TOOLCHAIN="arm-linux-androideabi-4.8"
+ANDROID_TOOLCHAIN="arm-linux-androideabi-4.9"
 ANDROID_SYSTEM="linux-x86_64"
 ANDROID="${ANDROID_HOME}"
 
