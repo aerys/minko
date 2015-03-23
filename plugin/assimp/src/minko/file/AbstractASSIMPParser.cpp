@@ -1437,16 +1437,12 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
         return existingMaterial;
 
     const auto blendingMode = getBlendingMode(aiMat);
+    auto srcBlendingMode = static_cast<render::Blending::Source>(static_cast<uint>(blendingMode) & 0x00ff);
+    auto dstBlendingMode = static_cast<render::Blending::Destination>(static_cast<uint>(blendingMode) & 0xff00);
 
-    {
-        auto srcBlendingMode = static_cast<render::Blending::Source>(static_cast<uint>(blendingMode) & 0x00ff);
-        auto dstBlendingMode = static_cast<render::Blending::Destination>(static_cast<uint>(blendingMode) & 0xff00);
-
-        material->data()->set<render::Blending::Mode>("blendingMode", blendingMode);
-        material->data()->set<render::Blending::Source>(render::States::PROPERTY_BLENDING_SOURCE, srcBlendingMode);
-        material->data()->set<render::Blending::Destination>(render::States::PROPERTY_BLENDING_DESTINATION, dstBlendingMode);
-    }
-
+    material->data()->set<render::Blending::Mode>("blendingMode", blendingMode);
+    material->data()->set<render::Blending::Source>(render::States::PROPERTY_BLENDING_SOURCE, srcBlendingMode);
+    material->data()->set<render::Blending::Destination>(render::States::PROPERTY_BLENDING_DESTINATION, dstBlendingMode);
 	material->data()->set("triangleCulling",	getTriangleCulling(aiMat));
 	material->data()->set("wireframe",			getWireframe(aiMat)); // bool
 
@@ -1485,13 +1481,13 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 
     if (transparent || !(blendingMode & render::Blending::Destination::ZERO))
     {
-		material->data()->set("priority",	render::Priority::TRANSPARENT);
-		material->data()->set("zSorted",	true);
+		material->data()->set("priority", render::Priority::TRANSPARENT);
+		material->data()->set("zSorted", true);
 	}
 	else
 	{
-		material->data()->set("priority",	render::Priority::OPAQUE);
-		material->data()->set("zSorted",	false);
+		material->data()->set("priority", render::Priority::OPAQUE);
+		material->data()->set("zSorted", false);
 	}
 
 	for (auto& textureTypeAndName : _textureTypeToName)
@@ -1541,11 +1537,23 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 void
 AbstractASSIMPParser::textureSet(material::Material::Ptr material, const std::string& textureTypeName, render::AbstractTexture::Ptr texture)
 {
-    if (textureTypeName == _textureTypeToName.at(aiTextureType_OPACITY) &&
-        !material->data()->hasProperty("alphaThreshold"))
-    {
-        material->data()->set("alphaThreshold", .01f);
-    }
+	// Alpha map
+	if (textureTypeName == _textureTypeToName.at(aiTextureType_OPACITY))
+	{
+		material->data()->set("priority", render::Priority::TRANSPARENT);
+		material->data()->set("zSorted", true);
+
+		auto blendingMode = render::Blending::Mode::ALPHA;
+		auto srcBlendingMode = static_cast<render::Blending::Source>(static_cast<uint>(blendingMode) & 0x00ff);
+		auto dstBlendingMode = static_cast<render::Blending::Destination>(static_cast<uint>(blendingMode) & 0xff00);
+
+		material->data()->set<render::Blending::Mode>("blendingMode", blendingMode);
+		material->data()->set<render::Blending::Source>(render::States::PROPERTY_BLENDING_SOURCE, srcBlendingMode);
+		material->data()->set<render::Blending::Destination>(render::States::PROPERTY_BLENDING_DESTINATION, dstBlendingMode);
+
+		if (!material->data()->hasProperty("alphaThreshold"))
+			material->data()->set("alphaThreshold", .01f);
+	}
 }
 
 material::Material::Ptr
@@ -1657,7 +1665,7 @@ AbstractASSIMPParser::getBlendingMode(const aiMaterial* aiMat) const
 		}
 	}
 	else
-		return render::Blending::Mode::ALPHA;
+		return render::Blending::Mode::DEFAULT;
 }
 
 render::TriangleCulling
