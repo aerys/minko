@@ -45,10 +45,10 @@ namespace std
             if (i % 4 == 0)
                 str += "\n";
 
-            str += to_string(ptr[i]) + ", ";
+            str += minko::math::to_string(ptr[i]) + ", ";
         }
 
-		str += to_string(ptr[15]) + ")";
+		str += minko::math::to_string(ptr[15]) + ")";
 
 		return str;
 	}
