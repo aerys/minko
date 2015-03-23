@@ -71,6 +71,13 @@ MeshPartitioner::defaultSurfaceIndexer()
 
     surfaceIndexer.equal = [](Surface::Ptr left, Surface::Ptr right) -> bool
     {
+        auto leftMaterial = left->material();
+        auto rightMaterial = right->material();
+
+        if (leftMaterial->data()->hasProperty("zSorted") ||
+            rightMaterial->data()->hasProperty("zSorted"))
+            return false;
+
         auto leftAttributes = std::vector<VertexAttribute>();
         auto rightAttributes = std::vector<VertexAttribute>();
 
@@ -253,10 +260,15 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
         {
             auto partitionNode = buildPartitions(surfaceBucket, node, true, math::mat4());
 
+            auto newNodeName = std::string();
+
+            if (!surfaceBucket.empty())
+                newNodeName = surfaceBucket.front()->target()->name();
+
             for (auto surface : surfaceBucket)
                 surface->target()->removeComponent(surface);
 
-            auto newNode = Node::create()
+            auto newNode = Node::create(newNodeName)
                 ->addComponent(Transform::create())
                 ->addComponent(BoundingBox::create());
 
@@ -625,9 +637,7 @@ MeshPartitioner::patchNodeFromPartitions(Node::Ptr          node,
 
             if (_options._flags & Options::createOneNodePerSurface)
             {
-                static auto nameId = 0;
-
-                auto newNode = Node::create("node" + std::to_string(nameId++))
+                auto newNode = Node::create(node->name())
                     ->addComponent(Transform::create())
                     ->addComponent(BoundingBox::create(maxBound, minBound))
                     ->addComponent(newSurface);
