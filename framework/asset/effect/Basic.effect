@@ -22,8 +22,8 @@
             "textureFilter" : "linear",
             "mipFilter"     : "linear"
         },
-        "uDiffuseMapMaxAvailableLod" : "material[${materialUuid}].diffuseMap.maxAvailableLod",
-        "uDiffuseMapSize"       : "material[${materialUuid}].diffuseMap.size",
+        "uDiffuseMapMaxAvailableLod" : "material[${materialUuid}].diffuseMapMaxAvailableLod",
+        "uDiffuseMapSize"       : "material[${materialUuid}].diffuseMapSize",
 		"uAlphaMap"				: "material[${materialUuid}].alphaMap",
 		"uAlphaThreshold"		: "material[${materialUuid}].alphaThreshold",
         "uDiffuseCubeMap"       : "material[${materialUuid}].diffuseCubeMap",
