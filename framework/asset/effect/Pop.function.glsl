@@ -1,3 +1,6 @@
+#ifndef _POP_FUNCTION_GLSL_
+#define _POP_FUNCTION_GLSL_
+
 vec4
 pop_quantify(vec4 position, vec3 normal, float popLod, vec3 popMinBound, vec3 popMaxBound)
 {
@@ -47,3 +50,5 @@ vec4 pop_blend(vec4 position, vec3 normal, float popLod, float popBlendingLod, f
 		? position
 		: blendedQuantizedPosition;
 }
+
+#endif

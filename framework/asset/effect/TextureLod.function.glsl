@@ -1,3 +1,6 @@
+#ifndef _TEXTURELOD_FUNCTION_GLSL_
+#define _TEXTURELOD_FUNCTION_GLSL_
+
 #if __VERSION__ >= 110 || defined(GL_OES_standard_derivatives)
 
 float texturelod_mipmapLevel(sampler2D tex, vec2 uv, vec2 texSize)
@@ -42,3 +45,5 @@ vec4 texturelod_texture2D(sampler2D tex, vec2 uv, vec2 texSize, float baseLod, f
     return textureLod(tex, fract(uv), max(maxLod, requiredLod));
 #endif
 }
+
+#endif

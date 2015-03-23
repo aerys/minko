@@ -133,7 +133,7 @@ TextureLodScheduler::surfaceAdded(Surface::Ptr surface)
         ));
 
         material->data()->set(
-			textureName + std::string(".") + std::string("maxAvailableLod"),
+			textureName + std::string("MaxAvailableLod"),
             static_cast<float>(lodToMipLevel(
                 DEFAULT_LOD,
                 resource->texture->width(),
@@ -142,7 +142,7 @@ TextureLodScheduler::surfaceAdded(Surface::Ptr surface)
         );
 
         material->data()->set(
-			textureName + std::string(".") + std::string("size"),
+			textureName + std::string("Size"),
             math::vec2(texture->width(), texture->height())
         );
 
@@ -251,7 +251,7 @@ TextureLodScheduler::activeLodChanged(TextureResourceInfo&   resource,
 
     const auto& textureName = resource.textureName;
 
-    const auto maxAvailableLodPropertyName = textureName + std::string(".") + "maxAvailableLod";
+    const auto maxAvailableLodPropertyName = textureName + "MaxAvailableLod";
     const auto lodEnabledPropertyName = textureName + "LodEnabled";
 
     for (auto material : resource.materials)
