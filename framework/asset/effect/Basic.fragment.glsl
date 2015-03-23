@@ -1,5 +1,7 @@
 #ifdef FRAGMENT_SHADER
 
+#pragma include "TextureLod.extension.glsl"
+
 #ifdef GL_ES
     #ifdef GL_FRAGMENT_PRECISION_HIGH
         precision highp float;
@@ -7,8 +9,6 @@
         precision mediump float;
     #endif
 #endif
-
-#pragma include "TextureLod.extension.glsl"
 
 #pragma include "Fog.function.glsl"
 #pragma include "TextureLod.function.glsl"
