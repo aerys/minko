@@ -73,8 +73,27 @@ DrawCallPool::addDrawCalls(Effect::Ptr              effect,
     {
         DrawCall* drawCall = new DrawCall(_batchId, pass, variables, rootData, rendererData, targetData);
 
-        _drawCalls.push_back(drawCall);
         initializeDrawCall(*drawCall);
+
+        // if the draw call is meant only for post-processing, then it should only exist once
+        if (pass->isPostProcessing())
+        {
+            auto it = std::find_if(_drawCalls.begin(), _drawCalls.end(), [&](const DrawCall* d)
+            {
+                return d->program() == drawCall->program()
+                    && d->variables() == drawCall->variables();
+            });
+
+            // FIXME: cumbersome and wasteful to completely init. a DrawCall just to discard it
+            if (it != _drawCalls.end())
+            {
+                (*it)->batchIDs().push_back(_batchId);
+                delete drawCall;
+                continue;
+            }
+        }
+
+        _drawCalls.push_back(drawCall);
     }
 
     return _batchId;
@@ -85,8 +104,16 @@ DrawCallPool::removeDrawCalls(uint batchId)
 {
     _drawCalls.remove_if([&](DrawCall* drawCall)
     {
-        if (drawCall->batchId() == batchId)
+        auto& batchIDs = drawCall->batchIDs();
+        auto it = std::find(batchIDs.begin(), batchIDs.end(), batchId);
+
+        if (it != batchIDs.end())
         {
+            batchIDs.erase(it);
+
+            if (batchIDs.size() != 0)
+                return false;
+
             unwatchProgramSignature(
                 *drawCall,
                 drawCall->pass()->macroBindings(),
@@ -265,7 +292,7 @@ DrawCallPool::unwatchProgramSignature(DrawCall&                     drawCall,
             : targetData;
         auto propertyName = Store::getActualPropertyName(drawCall.variables(), macroBinding.propertyName);
         auto bindingKey = MacroBindingKey(propertyName, &macroBinding, &store);
-        
+
         DrawCallList* drawCalls = (*_macroToDrawCalls)[bindingKey];
 
         drawCalls->remove(&drawCall);
@@ -284,11 +311,11 @@ void
 DrawCallPool::initializeDrawCall(DrawCall& drawCall, bool forceRebind)
 {
     auto pass = drawCall.pass();
-    
+
     auto programAndSignature = pass->selectProgram(
         drawCall.variables(), drawCall.targetData(), drawCall.rendererData(), drawCall.rootData()
     );
-    
+
     auto program = programAndSignature.first;
 
     if (program == drawCall.program())
@@ -374,7 +401,7 @@ DrawCallPool::uniformBindingPropertyAddedHandler(DrawCall&                      
                 // Bind the signal to request a Z-sorting if one of these properties changed
                 _zSortUsefulPropertyChangedSlot->insert(
                     std::make_pair(
-                        std::make_pair(bindingPtr, &drawCall), 
+                        std::make_pair(bindingPtr, &drawCall),
                         resolvedBinding->store.propertyChanged().connect(
                             [&](data::Store&, data::Provider::Ptr, const data::Provider::PropertyName&)
                             {
@@ -483,7 +510,7 @@ DrawCallPool::update(bool forceZSort)
         for (auto& func : drawCallPtrAndFuncList.second)
             func();
     }
-    
+
     _drawCallToPropRebindFuncs->clear();
     _drawCallToPropRebindFuncs->resize(0);
 
@@ -503,7 +530,10 @@ DrawCallPool::invalidateDrawCalls(uint batchId, const EffectVariables& variables
 {
     for (DrawCall* drawCall : _drawCalls)
     {
-        if (drawCall->batchId() == batchId)
+        auto& batchIDs = drawCall->batchIDs();
+        auto it = std::find(batchIDs.begin(), batchIDs.end(), batchId);
+
+        if (it != batchIDs.end())
         {
             _invalidDrawCalls.insert(drawCall);
             drawCall->variables().clear();
