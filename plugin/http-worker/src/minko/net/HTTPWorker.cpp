@@ -44,11 +44,15 @@ namespace minko
 
             inputStream.read(reinterpret_cast<char*>(&usernameSize), 4);
             auto usernameData = std::vector<char>(usernameSize);
-            inputStream.read(usernameData.data(), usernameSize);
+
+            if (usernameSize > 0)
+                inputStream.read(usernameData.data(), usernameSize);
 
             inputStream.read(reinterpret_cast<char*>(&passwordSize), 4);
             auto passwordData = std::vector<char>(passwordSize);
-            inputStream.read(passwordData.data(), passwordSize);
+
+            if (passwordSize > 0)
+                inputStream.read(passwordData.data(), passwordSize);
 
             const auto url = std::string(urlData.begin(), urlData.end());
             const auto username = std::string(usernameData.begin(), usernameData.end());
