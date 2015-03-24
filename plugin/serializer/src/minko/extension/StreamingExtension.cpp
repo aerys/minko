@@ -41,6 +41,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/POPGeometryWriter.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/PNGWriter.hpp"
+#include "minko/file/POPGeometryCrackSolver.hpp"
 #include "minko/file/POPGeometryWriterPreprocessor.hpp"
 #include "minko/file/SceneParser.hpp"
 #include "minko/file/SceneWriter.hpp"
@@ -144,16 +145,19 @@ AbstractWriter<Node::Ptr>::Ptr writer)
             if (_streamingOptions->mergeSurfacesOnPartitioning())
                 meshPartitionerFlags |= MeshPartitioner::Options::mergeSurfaces;
 
-            auto meshPartitionerOptions = MeshPartitioner::Options();
-            meshPartitionerOptions._maxTriangleCountPerNode = 60000;
-            meshPartitionerOptions._flags = meshPartitionerFlags;
-            meshPartitionerOptions._borderMinPrecision = 5;
-            meshPartitionerOptions._borderMaxDeltaPrecision = 2;
-
             if (_streamingOptions->useSharedClusterHierarchyOnPartitioning())
-                meshPartitionerOptions._flags |= MeshPartitioner::Options::uniformizeSize;
+                meshPartitionerFlags |= MeshPartitioner::Options::uniformizeSize;
 
-            meshPartitionerOptions._nodeFilterFunction = [](Node::Ptr node) -> bool
+            if (_streamingOptions->applyCrackFreePolicyOnPartitioning())
+                meshPartitionerFlags |= MeshPartitioner::Options::markSplitGeometries;
+            else
+                meshPartitionerFlags |= MeshPartitioner::Options::convertSharedTriangleToGeometry;
+
+            auto meshPartitionerOptions = MeshPartitioner::Options();
+            meshPartitionerOptions.maxTriangleCountPerNode = 60000;
+            meshPartitionerOptions.flags = meshPartitionerFlags;
+
+            meshPartitionerOptions.nodeFilterFunction = [](Node::Ptr node) -> bool
             {
                 auto surfaces = node->components<Surface>();
 
@@ -173,6 +177,9 @@ AbstractWriter<Node::Ptr>::Ptr writer)
             writer
                 ->registerPreprocessor(POPGeometryWriterPreprocessor::create())
                 ->registerPreprocessor(MeshPartitioner::create(meshPartitionerOptions));
+
+            if (_streamingOptions->applyCrackFreePolicyOnPartitioning())
+                writer->registerPreprocessor(POPGeometryCrackSolver::create());
         }
     }
     

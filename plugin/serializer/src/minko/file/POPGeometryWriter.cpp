@@ -37,6 +37,7 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::file;
 using namespace minko::geometry;
+using namespace minko::render;
 using namespace minko::serialize;
 
 const int POPGeometryWriter::_fullPrecisionLevel = 32;
@@ -100,7 +101,7 @@ POPGeometryWriter::embed(AssetLibrary::Ptr              assetLibrary,
 }
 
 POPGeometryWriter::QuantizationIndex
-POPGeometryWriter::quantify(const math::vec3&   position,
+POPGeometryWriter::quantize(const math::vec3&   position,
                             int                 level,
                             int                 maxLevel,
                             const math::vec3&   minBound,
@@ -152,6 +153,21 @@ POPGeometryWriter::buildLodData(std::map<int, LodData>& lodData,
     auto assetLibrary = _assetLibrary;
 
     auto geometry = _geometry;
+
+    const auto hasProtectedFlagVertexAttribute = geometry->hasVertexAttribute("protected");
+    auto protectedFlagVertexBuffer = VertexBuffer::Ptr();
+    auto protectedFlagVertexAttributeSize = 0u;
+    auto protectedFlagVertexAttributeOffset = 0u;
+
+    if (hasProtectedFlagVertexAttribute)
+    {
+        protectedFlagVertexBuffer = geometry->vertexBuffer("protected");
+
+        const auto& protectedFlagVertexAttribute = geometry->getVertexAttribute("protected");
+
+        protectedFlagVertexAttributeSize = *protectedFlagVertexAttribute.vertexSize;
+        protectedFlagVertexAttributeOffset = protectedFlagVertexAttribute.offset;
+    }
 
     auto positionVertexBuffer = geometry->vertexBuffer("position");
 
@@ -226,6 +242,7 @@ POPGeometryWriter::buildLodData(std::map<int, LodData>& lodData,
         {
             unsigned short triangle[3] = { indices.at(i), indices.at(i + 1), indices.at(i + 2) };
             QuantizationIndex quantizedTriangle[3];
+            bool vertexIsProtected[3] = { false, false, false };
 
             for (int j = 0; j < 3; ++j)
             {
@@ -239,18 +256,25 @@ POPGeometryWriter::buildLodData(std::map<int, LodData>& lodData,
                     vertices[vertexPositionOffset + 2]
                 );
 
+                if (hasProtectedFlagVertexAttribute)
+                {
+                    vertexIsProtected[j] = protectedFlagVertexBuffer->data().at(
+                        vertexIndex * protectedFlagVertexAttributeSize + protectedFlagVertexAttributeOffset
+                    ) != 0.f;
+                }
+
                 auto actualLevel = precisionLevel;
 
                 math::vec3 quantizedPosition;
-                auto quantizationIndex = quantify(vertexPosition, actualLevel, maxLevel, minBound, maxBound, boxSize, false, quantizedPosition);
+                auto quantizationIndex = quantize(vertexPosition, actualLevel, maxLevel, minBound, maxBound, boxSize, false, quantizedPosition);
 
                 quantizedTriangle[j] = quantizationIndex;
             }
 
             auto triangleIsDegenerate =
-                quantizedTriangle[0] == quantizedTriangle[1] ||
-                quantizedTriangle[0] == quantizedTriangle[2] ||
-                quantizedTriangle[1] == quantizedTriangle[2];
+                (!vertexIsProtected[0] && !vertexIsProtected[1] && quantizedTriangle[0] == quantizedTriangle[1]) ||
+                (!vertexIsProtected[0] && !vertexIsProtected[2] && quantizedTriangle[0] == quantizedTriangle[2]) ||
+                (!vertexIsProtected[1] && !vertexIsProtected[2] && quantizedTriangle[1] == quantizedTriangle[2]);
 
             auto& targetTriangleContainer = triangleIsDegenerate ? currentOrderedBuffer : remainingIndices;
 

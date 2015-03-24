@@ -153,7 +153,7 @@ namespace minko
 
             static
             QuantizationIndex
-            quantify(const math::vec3&  position,
+            quantize(const math::vec3&  position,
                      int                level,
                      int                maxLevel,
                      const math::vec3&  minBound,

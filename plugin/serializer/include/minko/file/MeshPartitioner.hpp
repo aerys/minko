@@ -45,30 +45,30 @@ namespace minko
             {
                 static const unsigned int none = 0;
 
-                static const unsigned int mergeSurfaces                 = 1 << 0;
-                static const unsigned int createOneNodePerSurface       = 1 << 1;
-                static const unsigned int useBorderAsSharedTriangles    = 1 << 2;
-                static const unsigned int uniformizeSize                = 1 << 3;
+                static const unsigned int mergeSurfaces                     = 1 << 0;
+                static const unsigned int createOneNodePerSurface           = 1 << 1;
+                static const unsigned int uniformizeSize                    = 1 << 3;
+                static const unsigned int convertSharedTriangleToGeometry   = 1 << 4;
+                static const unsigned int markSplitGeometries               = 1 << 5;
 
-                static const unsigned int all                           =
-                    mergeSurfaces |
-                    createOneNodePerSurface |
-                    useBorderAsSharedTriangles |
-                    uniformizeSize;
+                static const unsigned int all                               = mergeSurfaces |
+                                                                              createOneNodePerSurface |
+                                                                              uniformizeSize |
+                                                                              convertSharedTriangleToGeometry |
+                                                                              markSplitGeometries;
 
-                int                                                     _maxTriangleCountPerNode;
+                int                                                     maxTriangleCountPerNode;
 
-                unsigned int                                            _flags;
+                unsigned int                                            flags;
 
-                unsigned int                                            _borderMinPrecision;
-                unsigned int                                            _borderMaxDeltaPrecision;
+                std::string                                             splitGeometryFlagPropertyName;
 
-                std::function<math::vec3(NodePtr)>                      _partitionMaxSizeFunction;
+                std::function<math::vec3(NodePtr)>                      partitionMaxSizeFunction;
 
-                std::function<void(NodePtr, math::vec3&, math::vec3&)>  _worldBoundsFunction;
+                std::function<void(NodePtr, math::vec3&, math::vec3&)>  worldBoundsFunction;
 
-                std::function<bool(NodePtr)>                            _nodeFilterFunction;
-                SurfaceIndexer                                          _surfaceIndexer;
+                std::function<bool(NodePtr)>                            nodeFilterFunction;
+                SurfaceIndexer                                          surfaceIndexer;
 
                 Options();
             };
@@ -191,11 +191,6 @@ namespace minko
                                     SurfacePtr      referenceSurface,
                                     OctreeNodePtr   partitionNode,
                                     AssetLibraryPtr assetLibrary);
-
-            void
-            processBorders(OctreeNodePtr   partitionNode,
-                           int             borderMinPrecision,
-                           int             borderMaxDeltaPrecision);
 
             GeometryPtr
             createGeometry(GeometryPtr referenceGeometry, const std::vector<int>& triangleIndices);

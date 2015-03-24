@@ -60,6 +60,7 @@ namespace minko
         private:
             IndexStreamPtr                 _indexStream;
             std::list<HalfEdgeList>        _subMeshesList;
+            HalfEdgeList                   _halfEdges;
 
         public:
             inline static
@@ -75,6 +76,13 @@ namespace minko
             {
                 return _subMeshesList;
             };
+
+            inline
+            const HalfEdgeList&
+            halfEdges() const
+            {
+                return _halfEdges;
+            }
 
         private:
             HalfEdgeCollection (std::shared_ptr<minko::render::IndexBuffer> indexStream);

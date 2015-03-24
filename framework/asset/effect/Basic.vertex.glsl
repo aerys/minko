@@ -19,6 +19,8 @@ attribute vec4 aBoneWeightsA;
 attribute vec4 aBoneWeightsB;
 #endif
 
+attribute float aPopProtected;
+
 uniform mat4 uModelToWorldMatrix;
 uniform mat4 uWorldToScreenMatrix;
 uniform vec2 uUVScale;
@@ -61,10 +63,16 @@ void main(void)
 	#endif
 
     #ifdef POP_LOD_ENABLED
+        float popProtected = 0.0;
+
+        #ifdef VERTEX_POP_PROTECTED
+            popProtected = aPopProtected;
+        #endif // VERTEX_POP_PROTECTED
+
         #ifdef POP_BLENDING_ENABLED
             pos = pop_blend(pos, vec3(0.0), uPopLod, uPopBlendingLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound);
         #else
-            pos = pop_quantify(pos, vec3(0.0), uPopLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound);
+            pos = pop_quantize(pos, vec3(0.0), uPopLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound);
         #endif // POP_BLENDING_ENABLED
     #endif // POP_LOD_ENABLED
 

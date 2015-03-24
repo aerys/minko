@@ -16,7 +16,8 @@
 					"aBoneIdsB"		: "geometry[${geometryUuid}].boneIdsB",
 					"aBoneWeightsA"	: "geometry[${geometryUuid}].boneWeightsA",
 					"aBoneWeightsB"	: "geometry[${geometryUuid}].boneWeightsB",
-					"aColor"		: "geometry[${geometryUuid}].color"
+					"aColor"		: "geometry[${geometryUuid}].color",
+					"aPopProtected"	: "geometry[${geometryUuid}].popProtected"
 				},
 
 				"uniforms" : {
@@ -229,7 +230,8 @@
 					"DIRECTIONAL_2_SHADOW_MAP"	: { "binding" : { "property" : "directionalLight[2].shadowMap", "source" : "root" } },
 					"DIRECTIONAL_3_SHADOW_MAP"	: { "binding" : { "property" : "directionalLight[3].shadowMap", "source" : "root" } },
         			"POP_LOD_ENABLED"       	: "geometry[${geometryUuid}].popLodEnabled",
-        			"POP_BLENDING_ENABLED"		: "geometry[${geometryUuid}].popBlendingEnabled"
+        			"POP_BLENDING_ENABLED"		: "geometry[${geometryUuid}].popBlendingEnabled",
+        			"VERTEX_POP_PROTECTED"		: "geometry[${geometryUuid}].popProtected"
 				},
 
 				"states" : {

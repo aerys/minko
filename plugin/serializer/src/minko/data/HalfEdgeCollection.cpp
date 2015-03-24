@@ -76,15 +76,11 @@ HalfEdgeCollection::initialize()
         }
     }
 
-    // debug
-    for (HalfEdgeMap::iterator it = map.begin(); it != map.end(); it++)
-    {
-        std::cout << it->first.first << "  " << it->first.second << std::endl;
-        std::cout << it->second << std::endl;
-    }
+    for (const auto& halfEdge : map)
+        _halfEdges.push_back(halfEdge.second);
 
-    HalfEdgeMap unmarked(map.begin(), map.end());
-    computeList(unmarked);
+    //HalfEdgeMap unmarked(map.begin(), map.end());
+    //computeList(unmarked);
 }
 
 void
