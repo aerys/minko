@@ -53,6 +53,7 @@ cp ${TARGET_NAME} libs/armeabi-v7a/libmain.so
 
 rm -rf assets
 mv asset assets
+chmod u+rwx -R assets
 
 ant $CONFIG
 
