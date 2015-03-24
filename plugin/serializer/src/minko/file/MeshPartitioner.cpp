@@ -74,8 +74,8 @@ MeshPartitioner::defaultSurfaceIndexer()
         auto leftMaterial = left->material();
         auto rightMaterial = right->material();
 
-        if (leftMaterial->data()->hasProperty("zSorted") ||
-            rightMaterial->data()->hasProperty("zSorted"))
+        if ((leftMaterial->data()->hasProperty("zSorted") && leftMaterial->data()->get<bool>("zSorted")) ||
+            (rightMaterial->data()->hasProperty("zSorted") && rightMaterial->data()->get<bool>("zSorted")))
             return false;
 
         auto leftAttributes = std::vector<VertexAttribute>();
