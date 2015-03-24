@@ -1446,41 +1446,8 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 	material->data()->set("triangleCulling",	getTriangleCulling(aiMat));
 	material->data()->set("wireframe",			getWireframe(aiMat)); // bool
 
-	float opacity		= setScalarProperty(material, "opacity",			aiMat, AI_MATKEY_OPACITY,				1.0f);
-	float shininess		= setScalarProperty(material, "shininess",			aiMat, AI_MATKEY_SHININESS,				0.0f);
-	float reflectivity	= setScalarProperty(material, "reflectivity",		aiMat, AI_MATKEY_REFLECTIVITY,			1.0f);
-	float shininessStr	= setScalarProperty(material, "shininessStrength",	aiMat, AI_MATKEY_SHININESS_STRENGTH,	1.0f);
-	float refractiveIdx	= setScalarProperty(material, "refractiveIndex",	aiMat, AI_MATKEY_REFRACTI,				1.0f);
-	float bumpScaling	= setScalarProperty(material, "bumpScaling",		aiMat, AI_MATKEY_BUMPSCALING,			1.0f);
-
-	auto diffuseColor		= setColorProperty(material, "diffuseColor",		aiMat, AI_MATKEY_COLOR_DIFFUSE);
-	auto specularColor		= setColorProperty(material, "specularColor",		aiMat, AI_MATKEY_COLOR_SPECULAR);
-	auto ambientColor		= setColorProperty(material, "ambientColor",		aiMat, AI_MATKEY_COLOR_AMBIENT);
-	auto emissiveColor		= setColorProperty(material, "emissiveColor",		aiMat, AI_MATKEY_COLOR_EMISSIVE);
-	auto reflectiveColor	= setColorProperty(material, "reflectiveColor",		aiMat, AI_MATKEY_COLOR_REFLECTIVE);
-	auto transparentColor	= setColorProperty(material, "transparentColor",	aiMat, AI_MATKEY_COLOR_TRANSPARENT);
-
-	if (shininess < 1.0f)
-		// Gouraud-like shading (-> no specular)
-		specularColor.w = 0.f;
-
-	if (shininess == 0.f)
-		material->data()->set("shininess", 64.0f);
-
-    auto transparent = opacity < 1.f;
-
-    if (transparent)
-    {
-        diffuseColor.w = opacity;
-        specularColor.w = opacity;
-        ambientColor.w = opacity;
-        emissiveColor.w = opacity;
-        reflectiveColor.w = opacity;
-        transparentColor.w = opacity;
-    }
-
-    if (transparent || !(blendingMode & render::Blending::Destination::ZERO))
-    {
+	if (!(blendingMode & render::Blending::Destination::ZERO))
+	{
 		material->data()->set("priority", render::Priority::TRANSPARENT);
 		material->data()->set("zSorted", true);
 	}
@@ -1490,12 +1457,55 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 		material->data()->set("zSorted", false);
 	}
 
+	float opacity = setScalarProperty(material, "opacity", aiMat, AI_MATKEY_OPACITY, 1.0f);
+	float shininess	= setScalarProperty(material, "shininess", aiMat, AI_MATKEY_SHININESS, 0.0f);
+	float reflectivity = setScalarProperty(material, "reflectivity", aiMat, AI_MATKEY_REFLECTIVITY, 1.0f);
+	float shininessStr = setScalarProperty(material, "shininessStrength", aiMat, AI_MATKEY_SHININESS_STRENGTH, 1.0f);
+	float refractiveIdx = setScalarProperty(material, "refractiveIndex", aiMat, AI_MATKEY_REFRACTI, 1.0f);
+	float bumpScaling = setScalarProperty(material, "bumpScaling", aiMat, AI_MATKEY_BUMPSCALING, 1.0f);
+
+	auto diffuseColor = setColorProperty(material, "diffuseColor", aiMat, AI_MATKEY_COLOR_DIFFUSE);
+	auto specularColor = setColorProperty(material, "specularColor", aiMat, AI_MATKEY_COLOR_SPECULAR);
+	auto ambientColor = setColorProperty(material, "ambientColor", aiMat, AI_MATKEY_COLOR_AMBIENT);
+	auto emissiveColor = setColorProperty(material, "emissiveColor", aiMat, AI_MATKEY_COLOR_EMISSIVE);
+	auto reflectiveColor = setColorProperty(material, "reflectiveColor", aiMat, AI_MATKEY_COLOR_REFLECTIVE);
+	auto transparentColor = setColorProperty(material, "transparentColor", aiMat, AI_MATKEY_COLOR_TRANSPARENT);
+
+	if (shininess < 1.0f)
+		// Gouraud-like shading (-> no specular)
+		specularColor.w = 0.f;
+
+	if (shininess == 0.f)
+		material->data()->set("shininess", 64.0f);
+
+    auto transparent = opacity < 1.f;
+	
+    if (transparent)
+    {
+        diffuseColor.w = opacity;
+        specularColor.w = opacity;
+        ambientColor.w = opacity;
+        emissiveColor.w = opacity;
+        reflectiveColor.w = opacity;
+        transparentColor.w = opacity;
+
+		material->data()->set("diffuseColor", diffuseColor);
+		material->data()->set("specularColor", specularColor);
+		material->data()->set("ambientColor", ambientColor);
+		material->data()->set("emissiveColor", emissiveColor);
+		material->data()->set("reflectiveColor", reflectiveColor);
+		material->data()->set("transparentColor", transparentColor);
+
+		enableTransparency(material);
+    }
+
 	for (auto& textureTypeAndName : _textureTypeToName)
 	{
-		const auto			textureType	= static_cast<aiTextureType>(textureTypeAndName.first);
-		const std::string&	textureName	= textureTypeAndName.second;
+		const auto textureType = static_cast<aiTextureType>(textureTypeAndName.first);
+		const std::string& textureName = textureTypeAndName.second;
 
-		const unsigned int	numTextures	= aiMat->GetTextureCount(textureType);
+		const unsigned int numTextures = aiMat->GetTextureCount(textureType);
+
 		if (numTextures == 0)
 			continue;
 
@@ -1540,16 +1550,7 @@ AbstractASSIMPParser::textureSet(material::Material::Ptr material, const std::st
 	// Alpha map
 	if (textureTypeName == _textureTypeToName.at(aiTextureType_OPACITY))
 	{
-		material->data()->set("priority", render::Priority::TRANSPARENT);
-		material->data()->set("zSorted", true);
-
-		auto blendingMode = render::Blending::Mode::ALPHA;
-		auto srcBlendingMode = static_cast<render::Blending::Source>(static_cast<uint>(blendingMode) & 0x00ff);
-		auto dstBlendingMode = static_cast<render::Blending::Destination>(static_cast<uint>(blendingMode) & 0xff00);
-
-		material->data()->set<render::Blending::Mode>("blendingMode", blendingMode);
-		material->data()->set<render::Blending::Source>(render::States::PROPERTY_BLENDING_SOURCE, srcBlendingMode);
-		material->data()->set<render::Blending::Destination>(render::States::PROPERTY_BLENDING_DESTINATION, dstBlendingMode);
+		enableTransparency(material);
 
 		if (!material->data()->hasProperty("alphaThreshold"))
 			material->data()->set("alphaThreshold", .01f);
@@ -1798,6 +1799,21 @@ AbstractASSIMPParser::createAnimations(const aiScene* scene, bool interpolate)
 		for (auto& nodeAndTimelines : nodeToTimelines)
 			nodeAndTimelines.first->addComponent(Animation::create(nodeAndTimelines.second));
 	}
+}
+
+void
+AbstractASSIMPParser::enableTransparency(material::Material::Ptr material)
+{
+	material->data()->set("priority", render::Priority::TRANSPARENT);
+	material->data()->set("zSorted", true);
+
+	auto blendingMode = render::Blending::Mode::ALPHA;
+	auto srcBlendingMode = static_cast<render::Blending::Source>(static_cast<uint>(blendingMode) & 0x00ff);
+	auto dstBlendingMode = static_cast<render::Blending::Destination>(static_cast<uint>(blendingMode) & 0xff00);
+
+	material->data()->set<render::Blending::Mode>("blendingMode", blendingMode);
+	material->data()->set<render::Blending::Source>(render::States::PROPERTY_BLENDING_SOURCE, srcBlendingMode);
+	material->data()->set<render::Blending::Destination>(render::States::PROPERTY_BLENDING_DESTINATION, dstBlendingMode);
 }
 
 #include "ASSIMPParserDebug.hpp"
