@@ -36,7 +36,7 @@ DrawCall::DrawCall(uint                   batchId,
                    data::Store&           rootData,
                    data::Store&           rendererData,
                    data::Store&           targetData) :
-    _batchId(batchId),
+    _batchIDs({ batchId }),
     _pass(pass),
     _variables(variables),
     _rootData(rootData),
@@ -91,6 +91,7 @@ DrawCall::getStore(data::Binding::Source source)
 void
 DrawCall::reset()
 {
+    _batchIDs.clear();
     _program = nullptr;
     _indexBuffer = 0;
     _firstIndex = 0;
@@ -446,14 +447,14 @@ DrawCall::setStateValueFromStore(const std::string&   stateName,
         else
             _priority = &States::DEFAULT_PRIORITY;
     }
-    else if (stateName == States::PROPERTY_ZSORTED) 
+    else if (stateName == States::PROPERTY_ZSORTED)
     {
         if (store.hasProperty(stateName))
             _zSorted = store.getUnsafePointer<bool>(stateName);
-        else 
+        else
             _zSorted = &States::DEFAULT_ZSORTED;
     }
-    else if (stateName == States::PROPERTY_BLENDING_SOURCE) 
+    else if (stateName == States::PROPERTY_BLENDING_SOURCE)
     {
         if (store.hasProperty(stateName))
             _blendingSourceFactor = store.getUnsafePointer<Blending::Source>(stateName);
@@ -467,96 +468,96 @@ DrawCall::setStateValueFromStore(const std::string&   stateName,
         else
             _blendingDestinationFactor = &States::DEFAULT_BLENDING_DESTINATION;
     }
-    else if (stateName == States::PROPERTY_COLOR_MASK) 
-    { 
-        if (store.hasProperty(stateName)) 
-            _colorMask = store.getUnsafePointer<bool>(stateName); 
-        else 
-            _colorMask = &States::DEFAULT_COLOR_MASK; 
+    else if (stateName == States::PROPERTY_COLOR_MASK)
+    {
+        if (store.hasProperty(stateName))
+            _colorMask = store.getUnsafePointer<bool>(stateName);
+        else
+            _colorMask = &States::DEFAULT_COLOR_MASK;
     }
     else if (stateName == States::PROPERTY_DEPTH_MASK)
     {
-        if (store.hasProperty(stateName)) 
+        if (store.hasProperty(stateName))
             _depthMask = store.getUnsafePointer<bool>(stateName);
-        else 
+        else
             _depthMask = &States::DEFAULT_DEPTH_MASK;
     }
-    else if (stateName == States::PROPERTY_DEPTH_FUNCTION) 
-    { 
-        if (store.hasProperty(stateName)) 
-            _depthFunc = store.getUnsafePointer<CompareMode>(stateName); 
-        else 
-            _depthFunc = &States::DEFAULT_DEPTH_FUNCTION; 
+    else if (stateName == States::PROPERTY_DEPTH_FUNCTION)
+    {
+        if (store.hasProperty(stateName))
+            _depthFunc = store.getUnsafePointer<CompareMode>(stateName);
+        else
+            _depthFunc = &States::DEFAULT_DEPTH_FUNCTION;
     }
     else if (stateName == States::PROPERTY_TRIANGLE_CULLING)
-    { 
-        if (store.hasProperty(stateName)) 
-            _triangleCulling = store.getUnsafePointer<TriangleCulling>(stateName); 
-        else 
-            _triangleCulling = &States::DEFAULT_TRIANGLE_CULLING; 
-    }
-    else if (stateName == States::PROPERTY_STENCIL_FUNCTION) 
-    { 
-        if (store.hasProperty(stateName)) 
-            _stencilFunction = store.getUnsafePointer<CompareMode>(stateName); 
-        else 
-            _stencilFunction = &States::DEFAULT_STENCIL_FUNCTION; 
-    }
-    else if (stateName == States::PROPERTY_STENCIL_REFERENCE) 
-    { 
-        if (store.hasProperty(stateName)) 
-            _stencilReference = store.getUnsafePointer<int>(stateName); 
-        else 
-            _stencilReference = &States::DEFAULT_STENCIL_REFERENCE; 
-    }
-    else if (stateName == States::PROPERTY_STENCIL_MASK) 
-    { 
-        if (store.hasProperty(stateName)) 
-            _stencilMask = store.getUnsafePointer<uint>(stateName); 
+    {
+        if (store.hasProperty(stateName))
+            _triangleCulling = store.getUnsafePointer<TriangleCulling>(stateName);
         else
-            _stencilMask = &States::DEFAULT_STENCIL_MASK; 
+            _triangleCulling = &States::DEFAULT_TRIANGLE_CULLING;
+    }
+    else if (stateName == States::PROPERTY_STENCIL_FUNCTION)
+    {
+        if (store.hasProperty(stateName))
+            _stencilFunction = store.getUnsafePointer<CompareMode>(stateName);
+        else
+            _stencilFunction = &States::DEFAULT_STENCIL_FUNCTION;
+    }
+    else if (stateName == States::PROPERTY_STENCIL_REFERENCE)
+    {
+        if (store.hasProperty(stateName))
+            _stencilReference = store.getUnsafePointer<int>(stateName);
+        else
+            _stencilReference = &States::DEFAULT_STENCIL_REFERENCE;
+    }
+    else if (stateName == States::PROPERTY_STENCIL_MASK)
+    {
+        if (store.hasProperty(stateName))
+            _stencilMask = store.getUnsafePointer<uint>(stateName);
+        else
+            _stencilMask = &States::DEFAULT_STENCIL_MASK;
     }
     else if (stateName == States::PROPERTY_STENCIL_FAIL_OPERATION)
-    { 
-        if (store.hasProperty(stateName)) 
-            _stencilFailOp = store.getUnsafePointer<StencilOperation>(stateName); 
-        else 
+    {
+        if (store.hasProperty(stateName))
+            _stencilFailOp = store.getUnsafePointer<StencilOperation>(stateName);
+        else
             _stencilFailOp = &States::DEFAULT_STENCIL_FAIL_OPERATION;
     }
     else if (stateName == States::PROPERTY_STENCIL_ZFAIL_OPERATION)
-    { 
-        if (store.hasProperty(stateName)) 
-            _stencilZFailOp = store.getUnsafePointer<StencilOperation>(stateName); 
-        else 
+    {
+        if (store.hasProperty(stateName))
+            _stencilZFailOp = store.getUnsafePointer<StencilOperation>(stateName);
+        else
             _stencilZFailOp = &States::DEFAULT_STENCIL_ZFAIL_OPERATION;
     }
     else if (stateName == States::PROPERTY_STENCIL_ZPASS_OPERATION)
-    { 
-        if (store.hasProperty(stateName)) 
-            _stencilZPassOp = store.getUnsafePointer<StencilOperation>(stateName); 
-        else 
+    {
+        if (store.hasProperty(stateName))
+            _stencilZPassOp = store.getUnsafePointer<StencilOperation>(stateName);
+        else
             _stencilZPassOp = &States::DEFAULT_STENCIL_ZPASS_OPERATION;
     }
-    else if (stateName == States::PROPERTY_SCISSOR_TEST) 
-    { 
-        if (store.hasProperty(stateName)) 
-            _scissorTest = store.getUnsafePointer<bool>(stateName); 
-        else 
-            _scissorTest = &States::DEFAULT_SCISSOR_TEST; 
+    else if (stateName == States::PROPERTY_SCISSOR_TEST)
+    {
+        if (store.hasProperty(stateName))
+            _scissorTest = store.getUnsafePointer<bool>(stateName);
+        else
+            _scissorTest = &States::DEFAULT_SCISSOR_TEST;
     }
     else if (stateName == States::PROPERTY_SCISSOR_BOX)
-    { 
-        if (store.hasProperty(stateName)) 
-            _scissorBox = store.getUnsafePointer<math::ivec4>(stateName); 
-        else 
-            _scissorBox = &States::DEFAULT_SCISSOR_BOX; 
+    {
+        if (store.hasProperty(stateName))
+            _scissorBox = store.getUnsafePointer<math::ivec4>(stateName);
+        else
+            _scissorBox = &States::DEFAULT_SCISSOR_BOX;
     }
     else if (stateName == States::PROPERTY_TARGET)
-    { 
-        if (store.hasProperty(stateName)) 
-            _target = store.getUnsafePointer<TextureSampler>(stateName); 
-        else 
-            _target = &States::DEFAULT_TARGET; 
+    {
+        if (store.hasProperty(stateName))
+            _target = store.getUnsafePointer<TextureSampler>(stateName);
+        else
+            _target = &States::DEFAULT_TARGET;
     }
 }
 

@@ -235,6 +235,9 @@ namespace minko
             parsePass(const Json::Value& node, Scope& scope, std::vector<PassPtr>& passes);
 
             void
+            checkPostProcessingPassBindings(const Scope& passScope);
+
+            void
             parsePasses(const Json::Value& node, Scope& scope, std::vector<PassPtr>& passes);
 
             void
@@ -296,8 +299,8 @@ namespace minko
             parseState(const Json::Value& node, const Scope& scope, StateBlock& stateBlock, const std::string& stateProperty);
 
             void
-            parsePriority(const Json::Value&    node, 
-                          const Scope&          scope, 
+            parsePriority(const Json::Value&    node,
+                          const Scope&          scope,
                           StateBlock&           stateBlock);
 
             void
