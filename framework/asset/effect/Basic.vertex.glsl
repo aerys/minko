@@ -70,9 +70,9 @@ void main(void)
         #endif // VERTEX_POP_PROTECTED
 
         #ifdef POP_BLENDING_ENABLED
-            pos = pop_blend(pos, vec3(0.0), uPopLod, uPopBlendingLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound);
+            pos = pop_blend(pos, vec3(0.0), uPopLod, uPopBlendingLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound, popProtected);
         #else
-            pos = pop_quantize(pos, vec3(0.0), uPopLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound);
+            pos = pop_quantize(pos, vec3(0.0), uPopLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound, popProtected);
         #endif // POP_BLENDING_ENABLED
     #endif // POP_LOD_ENABLED
 

@@ -154,16 +154,16 @@ POPGeometryWriter::buildLodData(std::map<int, LodData>& lodData,
 
     auto geometry = _geometry;
 
-    const auto hasProtectedFlagVertexAttribute = geometry->hasVertexAttribute("protected");
+    const auto hasProtectedFlagVertexAttribute = geometry->hasVertexAttribute("popProtected");
     auto protectedFlagVertexBuffer = VertexBuffer::Ptr();
     auto protectedFlagVertexAttributeSize = 0u;
     auto protectedFlagVertexAttributeOffset = 0u;
 
     if (hasProtectedFlagVertexAttribute)
     {
-        protectedFlagVertexBuffer = geometry->vertexBuffer("protected");
+        protectedFlagVertexBuffer = geometry->vertexBuffer("popProtected");
 
-        const auto& protectedFlagVertexAttribute = geometry->getVertexAttribute("protected");
+        const auto& protectedFlagVertexAttribute = geometry->getVertexAttribute("popProtected");
 
         protectedFlagVertexAttributeSize = *protectedFlagVertexAttribute.vertexSize;
         protectedFlagVertexAttributeOffset = protectedFlagVertexAttribute.offset;

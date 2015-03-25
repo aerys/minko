@@ -68,7 +68,10 @@ POPGeometryCrackSolver::acceptsGeometry(Node::Ptr node, Surface::Ptr surface, Ge
 void
 POPGeometryCrackSolver::processGeometry(Geometry::Ptr geometry, AssetLibrary::Ptr assetLibrary)
 {
-    auto halfEdges = HalfEdgeCollection::create(geometry->indices());
+    auto halfEdges = HalfEdgeCollection::create(std::vector<unsigned int>(
+        geometry->indices()->data().begin(),
+        geometry->indices()->data().end()
+    ));
 
     const auto numIndices = geometry->indices()->numIndices();
     const auto numVertices = geometry->numVertices();
@@ -120,7 +123,7 @@ POPGeometryCrackSolver::processGeometry(Geometry::Ptr geometry, AssetLibrary::Pt
     auto protectedFlagVertexBuffer = VertexBuffer::create(assetLibrary->context(), protectedFlagVertexBufferData);
 
     protectedFlagVertexBuffer->addAttribute(
-        "protected",
+        "popProtected",
         protectedFlagVertexAttributeSize,
         protectedFlagVertexAttributeOffset
     );

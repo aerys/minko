@@ -58,16 +58,16 @@ namespace minko
             typedef std::list<HalfEdgePtr>                                                   HalfEdgeList;
 
         private:
-            IndexStreamPtr                 _indexStream;
-            std::list<HalfEdgeList>        _subMeshesList;
-            HalfEdgeList                   _halfEdges;
+            std::vector<unsigned int>       _indices;
+            std::list<HalfEdgeList>         _subMeshesList;
+            HalfEdgeList                    _halfEdges;
 
         public:
             inline static
             std::shared_ptr<HalfEdgeCollection>
-            create(std::shared_ptr<minko::render::IndexBuffer> indexStream)
+            create(const std::vector<unsigned int>& indices)
             {
-                return std::shared_ptr<HalfEdgeCollection>(new HalfEdgeCollection(indexStream));
+                return std::shared_ptr<HalfEdgeCollection>(new HalfEdgeCollection(indices));
             }
 
             inline
@@ -85,7 +85,8 @@ namespace minko
             }
 
         private:
-            HalfEdgeCollection (std::shared_ptr<minko::render::IndexBuffer> indexStream);
+            explicit
+            HalfEdgeCollection(const std::vector<unsigned int>& indices);
 
             void
             initialize();
