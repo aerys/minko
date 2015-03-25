@@ -133,6 +133,7 @@ HTTPProtocol::load()
     auto username = std::string();
     auto password = std::string();
     auto additionalHeaders = std::unordered_map<std::string, std::string>();
+    auto verifyPeer = true;
 
     auto httpOptions = std::dynamic_pointer_cast<HTTPOptions>(_options);
 
@@ -142,15 +143,17 @@ HTTPProtocol::load()
         password = httpOptions->password();
 
         additionalHeaders = httpOptions->additionalHeaders();
+
+        verifyPeer = httpOptions->verifyPeer();
     }
 
-        auto seekingOffset = _options->seekingOffset();
-        auto seekedLength = _options->seekedLength();
+    auto seekingOffset = _options->seekingOffset();
+    auto seekedLength = _options->seekedLength();
 
-        if (seekingOffset >= 0 && seekedLength > 0)
-        {
-            auto rangeMin = std::to_string(seekingOffset);
-            auto rangeMax = std::to_string(seekingOffset + seekedLength - 1);
+    if (seekingOffset >= 0 && seekedLength > 0)
+    {
+        auto rangeMin = std::to_string(seekingOffset);
+        auto rangeMax = std::to_string(seekingOffset + seekedLength - 1);
 
         additionalHeaders.insert(std::make_pair(
             "Range",
@@ -275,20 +278,24 @@ HTTPProtocol::load()
         std::stringstream inputStream;
 
         const auto& resolvedFilename = this->resolvedFilename();
-        const auto resolvedFilenameSize = static_cast<int>(resolvedFilename.size());
+        const int resolvedFilenameSize = static_cast<int>(resolvedFilename.size());
 
-        const auto usernameSize = username.size();
-        const auto passwordSize = password.size();
+        const int usernameSize = username.size();
+        const int passwordSize = password.size();
 
-        const auto numAdditionalHeaders = additionalHeaders.size();
+        const int numAdditionalHeaders = additionalHeaders.size();
 
         inputStream.write(reinterpret_cast<const char*>(&resolvedFilenameSize), 4);
-        inputStream.write(resolvedFilename.data(), resolvedFilenameSize);
+        if (resolvedFilenameSize > 0)
+            inputStream.write(resolvedFilename.data(), resolvedFilenameSize);
 
         inputStream.write(reinterpret_cast<const char*>(&usernameSize), 4);
-        inputStream.write(username.data(), usernameSize);
+        if (usernameSize > 0)
+            inputStream.write(username.data(), usernameSize);
+
         inputStream.write(reinterpret_cast<const char*>(&passwordSize), 4);
-        inputStream.write(password.data(), passwordSize);
+        if (passwordSize > 0)
+            inputStream.write(password.data(), passwordSize);
 
         inputStream.write(reinterpret_cast<const char*>(&numAdditionalHeaders), 4);
 
@@ -297,14 +304,19 @@ HTTPProtocol::load()
             const auto& key = additionalHeader.first;
             const auto& value = additionalHeader.second;
 
-            const auto keySize = static_cast<int>(key.size());
-            const auto valueSize = static_cast<int>(value.size());
+            const int keySize = static_cast<int>(key.size());
+            const int valueSize = static_cast<int>(value.size());
 
             inputStream.write(reinterpret_cast<const char*>(&keySize), 4);
-            inputStream.write(reinterpret_cast<const char*>(&valueSize), 4);
+            if (keySize > 0)
+                inputStream.write(reinterpret_cast<const char*>(&valueSize), 4);
+
             inputStream.write(key.data(), keySize);
-            inputStream.write(value.data(), valueSize);
+            if (valueSize > 0)
+                inputStream.write(value.data(), valueSize);
         }
+
+        inputStream.write(reinterpret_cast<const char*>(&verifyPeer), 1);
 
         auto inputString = inputStream.str();
         
@@ -314,9 +326,11 @@ HTTPProtocol::load()
     {
         HTTPRequest request(resolvedFilename(), username, password, &additionalHeaders);
 
+        request.verifyPeer(verifyPeer);
+
         auto requestIsSuccessfull = true;
 
-        auto requestErrorSlot = request.error()->connect([&](int error)
+        auto requestErrorSlot = request.error()->connect([&](int error, const std::string& errorMessage)
         {
             requestIsSuccessfull = false;
 
@@ -347,6 +361,8 @@ HTTPProtocol::fileExists(const std::string& filename)
 
     const std::unordered_map<std::string, std::string>* additionalHeaders = nullptr;
 
+    auto verifyPeer = true;
+
     auto httpOptions = std::dynamic_pointer_cast<HTTPOptions>(_options);
 
     if (httpOptions != nullptr)
@@ -355,6 +371,8 @@ HTTPProtocol::fileExists(const std::string& filename)
         password = httpOptions->password();
 
         additionalHeaders = &httpOptions->additionalHeaders();
+
+        verifyPeer = httpOptions->verifyPeer();
     }
 
 #if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
@@ -364,12 +382,15 @@ HTTPProtocol::fileExists(const std::string& filename)
 
     evalString += "xhr.open('HEAD', '" + filename + "', false);\n";
     
-    for (const auto& additionalHeader : *additionalHeaders)
+    if (additionalHeaders != nullptr)
     {
-        if (additionalHeader.first == "")
-            continue;
+        for (const auto& additionalHeader : *additionalHeaders)
+        {
+            if (additionalHeader.first == "")
+                continue;
 
-        evalString += "xhr.setRequestHeader('" + additionalHeader.first + "', '" + additionalHeader.second + "');\n";
+            evalString += "xhr.setRequestHeader('" + additionalHeader.first + "', '" + additionalHeader.second + "');\n";
+        }
     }
 
     evalString += "xhr.send(null);\n";

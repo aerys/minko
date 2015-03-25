@@ -31,10 +31,11 @@ HTTPRequest::HTTPRequest(const std::string& url,
                          const std::unordered_map<std::string, std::string>* additionalHeaders) :
     _url(url),
     _progress(Signal<float>::create()),
-    _error(Signal<int>::create()),
+    _error(Signal<int, const std::string&>::create()),
     _complete(Signal<const std::vector<char>&>::create()),
     _username(username),
-    _password(password)
+    _password(password),
+    _verifyPeer(true)
 {
     if (additionalHeaders == nullptr)
         _additionalHeaders = std::unordered_map<std::string, std::string>();
@@ -42,19 +43,81 @@ HTTPRequest::HTTPRequest(const std::string& url,
         _additionalHeaders = *additionalHeaders;
 }
 
+static
+CURL*
+createCurl(const std::string&                                   url,
+           const std::string&                                   username,
+           const std::string&                                   password,
+           const std::unordered_map<std::string, std::string>&  additionalHeaders,
+           bool                                                 verifyPeer,
+           curl_slist*&                                         curlHeaderList,
+           char*                                                curlErrorBuffer)
+{
+    CURL* curl = curl_easy_init();
+
+    if (!curl)
+        throw std::runtime_error("cURL not enabled");
+
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+
+    curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, verifyPeer ? 1L : 0L);
+
+    curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
+
+    if (!username.empty())
+    {
+        curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+
+        const auto authenticationString = username + ":" + password;
+
+        curl_easy_setopt(curl, CURLOPT_USERPWD, authenticationString.c_str());
+    }
+
+    if (!additionalHeaders.empty())
+    {
+        for (const auto& additionalHeader : additionalHeaders)
+        {
+            curlHeaderList = curl_slist_append(
+                curlHeaderList,
+                std::string(additionalHeader.first + ":" + additionalHeader.second).c_str()
+            );
+        }
+
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, curlHeaderList);
+    }
+
+    if (curlErrorBuffer != nullptr)
+    {
+        curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curlErrorBuffer);
+    }
+
+    return curl;
+}
+
+static
+void
+disposeCurl(CURL* curl, curl_slist* curlHeaderList)
+{
+    curl_easy_cleanup(curl);
+
+    if (curlHeaderList != nullptr)
+    {
+        curl_slist_free_all(curlHeaderList);
+    }
+}
+
 void
 HTTPRequest::run()
 {
 	progress()->execute(0.0f);
 
-	CURL* curl = curl_easy_init();
+    const auto url = _url;
 
-	if (!curl)
-		throw std::runtime_error("cURL not enabled");
+    curl_slist* curlHeaderList = nullptr;
 
-	const auto url = _url;
+    char curlErrorBuffer[CURL_ERROR_SIZE];
 
-	curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    auto curl = createCurl(url, _username, _password, _additionalHeaders, _verifyPeer, curlHeaderList, curlErrorBuffer);
 
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &curlWriteHandler);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
@@ -62,50 +125,17 @@ HTTPRequest::run()
 	curl_easy_setopt(curl, CURLOPT_PROGRESSFUNCTION, &curlProgressHandler);
 	curl_easy_setopt(curl, CURLOPT_PROGRESSDATA, this);
 
-	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-
-	curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
-
-	if (!_username.empty())
-	{
-		curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-
-		const auto authenticationString = _username + ":" + _password;
-
-		curl_easy_setopt(curl, CURLOPT_USERPWD, authenticationString.c_str());
-	}
-
-	curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
-
-	curl_slist* headerList = nullptr;
-
-	const auto& additionalHeaders = _additionalHeaders;
-
-	if (!additionalHeaders.empty())
-	{
-		for (const auto& additionalHeader : additionalHeaders)
-		{
-			headerList = curl_slist_append(
-				headerList,
-				std::string(additionalHeader.first + ":" + additionalHeader.second).c_str()
-				);
-		}
-
-		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerList);
-	}
-
 	CURLcode res = curl_easy_perform(curl);
 
-	curl_easy_cleanup(curl);
-
-	if (headerList != nullptr)
-	{
-		curl_slist_free_all(headerList);
-	}
+    disposeCurl(curl, curlHeaderList);
 
 	if (res != CURLE_OK)
 	{
-		error()->execute(res);
+        const auto errorMessage = std::string(curlErrorBuffer);
+
+        LOG_ERROR(errorMessage);
+
+		error()->execute(res, errorMessage);
 	}
 	else
 	{
@@ -152,56 +182,38 @@ bool
 HTTPRequest::fileExists(const std::string& filename,
                         const std::string& username,
                         const std::string& password,
-                        const std::unordered_map<std::string, std::string> *additionalHeaders)
+                        const std::unordered_map<std::string, std::string> *additionalHeaders,
+                        bool verifyPeer)
 {
-    auto curl = curl_easy_init();
-
-    if (!curl)
-    {
-        LOG_ERROR("cURL is not enabled");
-
-        return false;
-    }
-
     const auto url = filename;
 
-    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_slist* curlHeaderList = nullptr;
+
+    char curlErrorBuffer[CURL_ERROR_SIZE];
+
+    auto curl = createCurl(
+        url,
+        username,
+        password,
+        additionalHeaders ? *additionalHeaders : std::unordered_map<std::string, std::string>(),
+        verifyPeer,
+        curlHeaderList,
+        curlErrorBuffer
+    );
 
     curl_easy_setopt(curl, CURLOPT_HEADER, false);
     curl_easy_setopt(curl, CURLOPT_NOBODY, true);
     curl_easy_setopt(curl, CURLOPT_FAILONERROR, true);
 
-    if (!username.empty())
-    {
-        curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-
-        const auto authenticationString = username + ":" + password;
-
-        curl_easy_setopt(curl, CURLOPT_USERPWD, authenticationString.c_str());
-    }
-
-    curl_slist* headerList = nullptr;
-
-    if (additionalHeaders)
-    {
-        for (const auto& additionalHeader : *additionalHeaders)
-        {
-            headerList = curl_slist_append(
-                headerList,
-                std::string(additionalHeader.first + ":" + additionalHeader.second).c_str()
-            );
-        }
-
-        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headerList);
-    }
-
     auto status = curl_easy_perform(curl);
 
-    curl_easy_cleanup(curl);
+    disposeCurl(curl, curlHeaderList);
 
-    if (headerList != nullptr)
+    if (status != CURLE_OK)
     {
-        curl_slist_free_all(headerList);
+        const auto errorMessage = std::string(curlErrorBuffer);
+
+        LOG_ERROR(errorMessage);
     }
 
     return status == CURLE_OK;

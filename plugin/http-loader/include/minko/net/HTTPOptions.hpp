@@ -37,6 +37,8 @@ namespace minko
 
             std::unordered_map<std::string, std::string>    _additionalHeaders;
 
+            bool                                            _verifyPeer;
+
         public:
             inline
             static
@@ -102,6 +104,22 @@ namespace minko
             additionalHeaders()
             {
                 return _additionalHeaders;
+            }
+
+            inline
+            bool
+            verifyPeer() const
+            {
+                return _verifyPeer;
+            }
+
+            inline
+            Ptr
+            verifyPeer(bool value)
+            {
+                _verifyPeer = value;
+
+                return std::static_pointer_cast<HTTPOptions>(shared_from_this());
             }
 
         protected:
