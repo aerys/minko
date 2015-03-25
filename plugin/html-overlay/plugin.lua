@@ -46,6 +46,13 @@ minko.plugin["html-overlay"].enable = function()
 		}
 
 	configuration { "android", "SharedLib" }
+		linkoptions {
+			"-Wl,--undefined=Java_minko_plugin_htmloverlay_InitWebViewTask_webViewInitialized",
+			"-Wl,--undefined=Java_minko_plugin_htmloverlay_MinkoWebViewClient_webViewPageLoaded",
+			"-Wl,--undefined=Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnMessage",
+			"-Wl,--undefined=Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent"
+		}
+		
 		prelinkcommands {
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/asset")
 		}
