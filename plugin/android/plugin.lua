@@ -29,11 +29,4 @@ function minko.plugin.android:enable()
 		-- undefined allow us to keep the existence of a global 
 		-- variable even if it's not explicitly used on Android
 		linkoptions { "-Wl,--undefined=gAndroidLogInitializing"}
-
-		if kind() ~= "StaticLib" then
-			postbuildcommands {
-				-- 'echo ' .. abis(),
-				'bash ' .. minko.plugin.path("android") .. '/script/build_android.sh ${TARGET} || ' .. minko.action.fail()
-			}
-		end
 end

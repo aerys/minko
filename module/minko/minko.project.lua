@@ -361,6 +361,14 @@ minko.project.application = function(name)
 			minko.action.copy("asset")
 		}
 
+		prebuildcommands {
+			minko.action.copy(minko.plugin.path("android") .. "/template/*")
+		}
+
+		postbuildcommands {
+			'bash ' .. minko.plugin.path("android") .. '/script/build_android.sh ${TARGET} || ' .. minko.action.fail()
+		}
+
 	configuration { "android", "debug" }
 		libdirs {
 			minko.sdk.path("/framework/bin/android/debug")

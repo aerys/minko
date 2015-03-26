@@ -32,9 +32,6 @@ PACKAGE=$(sed -r 's/lib(.*).so/com.\1/;s/-/\./g;s/\.([0-9]+)//g;s/(.*)/\L\1/' <<
 
 pushd $TARGET_DIR > /dev/null
 
-rm -rf src
-rsync -vr "${MINKO_HOME}/plugin/android/template/" .
-
 if [ -d "$CWD/android/" ]; then
 	rsync -vr "$CWD/android/" .
 fi
