@@ -11,7 +11,12 @@ if [ "$#" -ne 2 ]; then
     exit 1
 fi
 
-curDir=$(cygpath -w $(pwd))
+if [ $OSTYPE == "cygwin" ]; then
+	curDir=$(cygpath -w $(pwd))
+else
+	curDir=$(pwd)
+fi
+
 #echo "Current directory: $curDir"
 
 if [ -d $1 ]; then
