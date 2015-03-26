@@ -64,6 +64,10 @@ createCurl(const std::string&                                   url,
 
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl-agent/1.0");
 
+    // http://curl.haxx.se/libcurl/c/CURLOPT_FOLLOWLOCATION.html
+    // follow HTTP 3xx redirects
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+
     if (!username.empty())
     {
         curl_easy_setopt(curl, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
