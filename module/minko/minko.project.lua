@@ -366,7 +366,7 @@ minko.project.application = function(name)
 		}
 
 		prebuildcommands {
-			minko.action.copy(minko.plugin.path("android") .. "/template/*")
+			minko.action.copy(MINKO_HOME .. "/template/android/*")
 		}
 
 		postbuildcommands {
