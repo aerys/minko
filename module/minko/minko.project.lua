@@ -370,7 +370,7 @@ minko.project.application = function(name)
 		}
 
 		postbuildcommands {
-			'bash ' .. minko.plugin.path("android") .. '/script/build_android.sh ${TARGET} || ' .. minko.action.fail()
+			'bash ' .. MINKO_HOME .. '/tool/lin/script/build_android.sh ${TARGET} || ' .. minko.action.fail()
 		}
 
 	configuration { "android", "debug" }
