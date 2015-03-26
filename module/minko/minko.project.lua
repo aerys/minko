@@ -333,6 +333,10 @@ minko.project.application = function(name)
 
 		kind "SharedLib"
 
+		prelinkcommands {
+			'bash ' .. MINKO_HOME .. '/tool/lin/script/cpjf.sh ${CURDIR}/src/ ${TARGETDIR}/src/com/minko/ || ' .. minko.action.fail()
+		}
+
 		links {
 			"minko-framework",
 			"GLESv1_CM",
