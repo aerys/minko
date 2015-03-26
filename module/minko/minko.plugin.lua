@@ -45,6 +45,13 @@ minko.plugin.links = function(names)
 			configuration { platform, cfg, unpack(terms) }
 
 			for _, name in ipairs(names) do
+
+				if platform == "android" then
+					prelinkcommands {
+						'bash ' .. MINKO_HOME .. '/tool/lin/script/cpjf.sh ' .. minko.plugin.path(name) .. '/src/ ${TARGETDIR}/src/com/minko/ || ' .. minko.action.fail()
+					}
+				end
+
 				links { "minko-plugin-" .. name }
 
 				if MINKO_SDK_DIST then

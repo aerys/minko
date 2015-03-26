@@ -3,10 +3,10 @@ package minko.plugin.htmloverlay;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.util.Base64;
-import java.io.IOException;
-import java.io.InputStream;
 import android.webkit.JsResult;
 import android.util.Log;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class MinkoWebViewClient extends WebViewClient 
 {

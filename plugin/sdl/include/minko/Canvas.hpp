@@ -21,10 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include <chrono>
 
-#ifdef __ANDROID__
-# include "minko/MinkoAndroid.hpp"
-#endif
-
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
 #include "minko/render/AbstractContext.hpp"
