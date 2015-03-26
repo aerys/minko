@@ -40,7 +40,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
 # include "minko/SDLWebGLBackend.hpp"
 #elif MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
-# include "minko/MinkoAndroid.hpp"
+# include "minko/file/APKProtocol.hpp"
 #elif MINKO_PLATFORM == MINKO_PLATFORM_IOS
 // # include "SDL_opengles.h"
 // # include "SDL_syswm.h"

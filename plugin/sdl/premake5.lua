@@ -26,9 +26,6 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"src"
 	}
 
-	configuration { "android" }
-		minko.plugin.enable { "android" }
-
 	configuration { }
 	if _OPTIONS['with-offscreen'] then
 		minko.plugin.enable("offscreen")

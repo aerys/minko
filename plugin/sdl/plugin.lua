@@ -78,7 +78,6 @@ function minko.plugin.sdl:enable()
 		links { "SDL2", "SDL2_mixer" }
 		libdirs { minko.plugin.path("sdl") .. "/lib/sdl/lib/android" }
 		includedirs { minko.plugin.path("sdl") .. "/lib/sdl/src/core/android" }
-		minko.plugin.enable { "android" }
 
 	configuration { "ConsoleApp or WindowedApp" }
 		if _OPTIONS['with-offscreen'] then

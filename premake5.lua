@@ -110,7 +110,6 @@ solution "minko"
 
 	-- plugin
 	if not _OPTIONS['no-plugin'] then
-		include 'plugin/android'
 		--include 'plugin/lua'
 		--include 'plugin/angle'
 		include 'plugin/zlib'
