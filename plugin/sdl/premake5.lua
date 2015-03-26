@@ -49,6 +49,12 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"src/minko/audio/**.cpp"
 		}
 
+	configuration { "not android" }
+		excludes {
+			"include/minko/file/APKProtocol.hpp",
+			"src/minko/file/APKProtocol.cpp"
+		}
+
 	configuration { }
 
 	if _OPTIONS['with-offscreen'] then
