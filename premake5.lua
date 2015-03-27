@@ -128,6 +128,7 @@ solution "minko"
 		--include 'plugin/particles'
 		include 'plugin/png'
 		include 'plugin/sdl'
+		include 'plugin/sensors'
 		include 'plugin/serializer'
         include 'plugin/video-camera'
 
