@@ -37,18 +37,25 @@ namespace minko
             auto usernameSize = 0;
             auto passwordSize = 0;
             auto numAdditionalHeaders = 0;
+            auto verifyPeer = true;
 
             inputStream.read(reinterpret_cast<char*>(&urlSize), 4);
             auto urlData = std::vector<char>(urlSize);
-            inputStream.read(urlData.data(), urlSize);
+
+            if (urlSize > 0)
+                inputStream.read(urlData.data(), urlSize);
 
             inputStream.read(reinterpret_cast<char*>(&usernameSize), 4);
             auto usernameData = std::vector<char>(usernameSize);
-            inputStream.read(usernameData.data(), usernameSize);
+
+            if (usernameSize > 0)
+                inputStream.read(usernameData.data(), usernameSize);
 
             inputStream.read(reinterpret_cast<char*>(&passwordSize), 4);
             auto passwordData = std::vector<char>(passwordSize);
-            inputStream.read(passwordData.data(), passwordSize);
+
+            if (passwordSize > 0)
+                inputStream.read(passwordData.data(), passwordSize);
 
             const auto url = std::string(urlData.begin(), urlData.end());
             const auto username = std::string(usernameData.begin(), usernameData.end());
@@ -69,8 +76,11 @@ namespace minko
                 auto keyData = std::vector<char>(keySize);
                 auto valueData = std::vector<char>(valueSize);
 
-                inputStream.read(keyData.data(), keySize);
-                inputStream.read(valueData.data(), valueSize);
+                if (keySize > 0)
+                    inputStream.read(keyData.data(), keySize);
+
+                if (valueSize > 0)
+                    inputStream.read(valueData.data(), valueSize);
 
                 additionalHeaders.insert(std::make_pair(
                     std::string(keyData.begin(), keyData.end()),
@@ -78,7 +88,11 @@ namespace minko
                 ));
             }
 
+            inputStream.read(reinterpret_cast<char*>(&verifyPeer), 1);
+
             HTTPRequest request(url, username, password, additionalHeaders.empty() ? nullptr : &additionalHeaders);
+
+            request.verifyPeer(verifyPeer);
 
             auto _0 = request.progress()->connect([&](float p) {
                 Message message { "progress" };
@@ -86,7 +100,7 @@ namespace minko
                 post(message);
             });
 
-            auto _1 = request.error()->connect([&](int e) {
+            auto _1 = request.error()->connect([&](int e, const std::string& errorMessage) {
                 post(Message { "error" });
             });
 

@@ -216,6 +216,7 @@ namespace minko
                     typedef std::shared_ptr<ConeShape>                  ConeShapePtr;
                     typedef std::shared_ptr<CylinderShape>              CylinderShapePtr;
                     typedef std::shared_ptr<ConvexHullShape>            ConvexHullShapePtr;
+					typedef std::shared_ptr<CapsuleShape>				CapsuleShapePtr;
 
                     typedef std::shared_ptr<btCollisionShape>           btCollisionShapePtr;
                     typedef std::shared_ptr<btMotionState>              btMotionStatePtr;
@@ -266,6 +267,9 @@ namespace minko
 
                     btCollisionShapePtr
                     initializeConvexHullShape(ConvexHullShapePtr) const;
+
+					btCollisionShapePtr
+					initializeCapsuleShape(CapsuleShapePtr) const;
 
                     btMotionStatePtr
                     initializeMotionState(ColliderPtr) const;

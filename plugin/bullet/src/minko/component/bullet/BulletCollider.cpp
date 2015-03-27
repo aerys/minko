@@ -30,6 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <minko/component/bullet/ConvexHullShape.hpp>
 #include <minko/component/bullet/ConeShape.hpp>
 #include <minko/component/bullet/CylinderShape.hpp>
+#include <minko/component/bullet/CapsuleShape.hpp>
 
 using namespace minko;
 using namespace minko::component;
@@ -97,6 +98,10 @@ bullet::PhysicsWorld::BulletCollider::initializeCollisionShape(AbstractPhysicsSh
     case AbstractPhysicsShape::CONVEXHULL:
         bulletShape = initializeConvexHullShape(std::dynamic_pointer_cast<ConvexHullShape>(shape));
         break;
+
+	case AbstractPhysicsShape::CAPSULE:
+		bulletShape = initializeCapsuleShape(std::dynamic_pointer_cast<CapsuleShape>(shape));
+		break;
 
     default:
         throw std::logic_error("Unsupported physics shape");
@@ -166,6 +171,12 @@ bullet::PhysicsWorld::BulletCollider::initializeConvexHullShape(ConvexHullShape:
     convexHull->btShape(btShape);
 
     return btShape;
+}
+
+std::shared_ptr<btCollisionShape>
+bullet::PhysicsWorld::BulletCollider::initializeCapsuleShape(CapsuleShape::Ptr capsule) const
+{
+	return std::shared_ptr<btCapsuleShape>(new btCapsuleShape(capsule->radius(), capsule->height()));
 }
 
 std::shared_ptr<btMotionState>

@@ -41,7 +41,8 @@ namespace minko
                     BOX,
                     CONE,
                     CYLINDER,
-                    CONVEXHULL
+                    CONVEXHULL,
+					CAPSULE
                 };
 
             private:
