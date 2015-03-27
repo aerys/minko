@@ -96,7 +96,7 @@ namespace minko
             }
 
             Material(const std::string& name,
-                     const data::Provider::ValueMap& values) :
+                     const data::Provider::DefaultValueMap& values) :
                 _provider(data::Provider::create(values))
             {
                 _provider->set("name", name);

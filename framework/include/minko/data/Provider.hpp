@@ -61,9 +61,10 @@ namespace minko
             };
 
 		public:
-			typedef std::shared_ptr<Provider>	Ptr;
-			typedef Flyweight<std::string>		PropertyName;
-			typedef map<PropertyName, Any> 		ValueMap;
+			typedef std::shared_ptr<Provider>				Ptr;
+			typedef Flyweight<std::string>					PropertyName;
+			typedef map<PropertyName, Any> 					ValueMap;
+			typedef std::unordered_map<PropertyName, Any> 	DefaultValueMap;
 
 		private:
             ValueMap*							_values;
@@ -84,7 +85,7 @@ namespace minko
 
 			static
 			Ptr
-			create(const ValueMap& values)
+			create(const DefaultValueMap& values)
 			{
 				Ptr provider = std::make_shared<Provider>(values);
 
@@ -205,7 +206,7 @@ namespace minko
 
 			Provider();
 
-			Provider(const ValueMap& values);
+			Provider(const DefaultValueMap& values);
 
         private:
             Any&

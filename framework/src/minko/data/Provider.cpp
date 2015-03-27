@@ -33,7 +33,7 @@ Provider::Provider() :
 #endif
 }
 
-Provider::Provider(const ValueMap& values) :
+Provider::Provider(const DefaultValueMap& values) :
 	_values(new ValueMap())
 {
 	for (auto& p : values)
