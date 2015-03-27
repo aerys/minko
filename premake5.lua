@@ -183,6 +183,7 @@ solution "minko"
 		-- include 'example/physics'
 		include 'example/picking'
 		-- include 'example/raycasting'
+		include 'example/sensors'
 		include 'example/serializer'
 		-- include 'example/sky-box'
 		-- include 'example/stencil'
