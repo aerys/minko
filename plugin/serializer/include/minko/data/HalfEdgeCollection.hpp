@@ -31,7 +31,7 @@ namespace minko
         struct pair_hash
         {
             long
-            operator()(const std::pair<unsigned short, unsigned short> pair) const
+            operator()(const std::pair<unsigned int, unsigned int> pair) const
             {
                 return pair.first * 10000 + pair.second;
             }
@@ -41,8 +41,8 @@ namespace minko
         struct pair_comparer
         {
             bool
-            operator()(const std::pair<unsigned short, unsigned short> left,
-                       const std::pair<unsigned short, unsigned short> right) const
+            operator()(const std::pair<unsigned int, unsigned int> left,
+                       const std::pair<unsigned int, unsigned int> right) const
             {
                 return (left.first == right.first) && (left.second == right.second);
             }
@@ -50,11 +50,14 @@ namespace minko
 
         class HalfEdgeCollection
         {
+        public:
+            typedef std::shared_ptr<HalfEdgeCollection> Ptr;
+
         private:
             typedef std::shared_ptr<minko::render::IndexBuffer>                              IndexStreamPtr;
-            typedef std::pair<unsigned short, unsigned short>                                PairOfShort;
+            typedef std::pair<unsigned int, unsigned int>                                    PairOfUInt;
             typedef std::shared_ptr<HalfEdge>                                                HalfEdgePtr;
-            typedef std::unordered_map<PairOfShort, HalfEdgePtr, pair_hash, pair_comparer>   HalfEdgeMap;
+            typedef std::unordered_map<PairOfUInt, HalfEdgePtr, pair_hash, pair_comparer>    HalfEdgeMap;
             typedef std::list<HalfEdgePtr>                                                   HalfEdgeList;
 
         private:
@@ -63,11 +66,12 @@ namespace minko
             HalfEdgeList                    _halfEdges;
 
         public:
-            inline static
-            std::shared_ptr<HalfEdgeCollection>
+            inline 
+            static
+            Ptr
             create(const std::vector<unsigned int>& indices)
             {
-                return std::shared_ptr<HalfEdgeCollection>(new HalfEdgeCollection(indices));
+                return Ptr(new HalfEdgeCollection(indices));
             }
 
             inline

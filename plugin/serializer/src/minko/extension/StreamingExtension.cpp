@@ -41,7 +41,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/POPGeometryWriter.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/PNGWriter.hpp"
-#include "minko/file/POPGeometryCrackSolver.hpp"
 #include "minko/file/POPGeometryWriterPreprocessor.hpp"
 #include "minko/file/SceneParser.hpp"
 #include "minko/file/SceneWriter.hpp"
@@ -149,12 +148,9 @@ AbstractWriter<Node::Ptr>::Ptr writer)
                 meshPartitionerFlags |= MeshPartitioner::Options::uniformizeSize;
 
             if (_streamingOptions->applyCrackFreePolicyOnPartitioning())
-                meshPartitionerFlags |= MeshPartitioner::Options::markSplitGeometries;
-            else
-                meshPartitionerFlags |= MeshPartitioner::Options::convertSharedTriangleToGeometry;
+                meshPartitionerFlags |= MeshPartitioner::Options::applyCrackFreePolicy;
 
             auto meshPartitionerOptions = MeshPartitioner::Options();
-            meshPartitionerOptions.maxTriangleCountPerNode = 60000;
             meshPartitionerOptions.flags = meshPartitionerFlags;
 
             meshPartitionerOptions.nodeFilterFunction = [](Node::Ptr node) -> bool
@@ -177,9 +173,6 @@ AbstractWriter<Node::Ptr>::Ptr writer)
             writer
                 ->registerPreprocessor(POPGeometryWriterPreprocessor::create())
                 ->registerPreprocessor(MeshPartitioner::create(meshPartitionerOptions));
-
-            if (_streamingOptions->applyCrackFreePolicyOnPartitioning())
-                writer->registerPreprocessor(POPGeometryCrackSolver::create());
         }
     }
     

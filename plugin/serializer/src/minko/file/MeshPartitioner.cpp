@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/BoundingBox.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/Transform.hpp"
+#include "minko/data/HalfEdgeCollection.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/file/MeshPartitioner.hpp"
 #include "minko/geometry/Geometry.hpp"
@@ -31,18 +32,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::component;
+using namespace minko::data;
 using namespace minko::file;
 using namespace minko::geometry;
 using namespace minko::material;
 using namespace minko::render;
 using namespace minko::scene;
 
-const int MeshPartitioner::MAX_NUM_INDICES_PER_GEOMETRY = 65536;
-
 MeshPartitioner::Options::Options() :
-    maxTriangleCountPerNode(40000),
+    maxNumTrianglesPerNode(60000),
+    maxNumIndicesPerNode(65536),
     flags(Options::none),
-    splitGeometryFlagPropertyName("hasNeighbors"),
     partitionMaxSizeFunction(defaultPartitionMaxSizeFunction),
     worldBoundsFunction(defaultWorldBoundsFunction),
     nodeFilterFunction(defaultNodeFilterFunction),
@@ -201,6 +201,8 @@ MeshPartitioner::mergeSurfaces(const std::vector<Surface::Ptr>& surfaces)
 void
 MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
 {
+    _assetLibrary = assetLibrary;
+
     auto meshNodes = NodeSet::create(node)
         ->descendants(true)
         ->where([this](Node::Ptr descendant) -> bool
@@ -220,25 +222,7 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
     else
         defaultWorldBoundsFunction(node, _worldMinBound, _worldMaxBound);
 
-    if ((_options.flags & Options::mergeSurfaces) == 0u)
-    {
-        for (auto meshNode : meshNodes->nodes())
-        {
-            auto surfaces = meshNode->components<Surface>();
-            auto surfaceBuckets = mergeSurfaces(surfaces);
-
-            for (auto surface : meshNode->components<Surface>())
-                meshNode->removeComponent(surface);
-
-            for (const auto& surfaceBucket : surfaceBuckets)
-            {
-                auto partitionNode = buildPartitions(surfaceBucket, node, false, meshNode->component<Transform>()->modelToWorldMatrix());
-
-                patchNodeFromPartitions(meshNode, surfaceBucket.front(), partitionNode, assetLibrary);
-            }
-        }
-    }
-    else
+    if (_options.flags & Options::mergeSurfaces)
     {
         node->component<Transform>()->updateModelToWorldMatrix();
 
@@ -252,7 +236,18 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
 
         for (const auto& surfaceBucket : surfaceBuckets)
         {
-            auto partitionNode = buildPartitions(surfaceBucket, node, true, math::mat4());
+            auto partitionInfo = PartitionInfo();
+
+            for (auto surface : surfaceBucket)
+                partitionInfo.surfaces.push_back(surface);
+
+            partitionInfo.useRootSpace = true;
+
+            buildGlobalIndex(partitionInfo);
+
+            buildHalfEdges(partitionInfo);
+
+            buildPartitions(partitionInfo);
 
             auto newNodeName = std::string();
 
@@ -266,7 +261,7 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
                 ->addComponent(Transform::create())
                 ->addComponent(BoundingBox::create());
 
-            patchNodeFromPartitions(newNode, surfaceBucket.front(), partitionNode, assetLibrary);
+            patchNode(newNode, partitionInfo);
 
             node->addChild(newNode);
         }
@@ -277,25 +272,26 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
 }
 
 MeshPartitioner::OctreeNodePtr
-MeshPartitioner::pickBestPartitions(OctreeNodePtr     root,
-                                    const math::vec3& modelMinBound,
-                                    const math::vec3& modelMaxBound)
+MeshPartitioner::pickBestPartitions(OctreeNodePtr       root,
+                                    const math::vec3&   modelMinBound,
+                                    const math::vec3&   modelMaxBound,
+                                    PartitionInfo&      partitionInfo)
 {
-    auto currentMinBound = root->_minBound;
-    auto currentMaxBound = root->_maxBound;
+    auto currentMinBound = root->minBound;
+    auto currentMaxBound = root->maxBound;
 
     auto validNode = OctreeNodePtr();
 
-    if (!contains(math::Box::create(root->_maxBound, root->_minBound), math::Box::create(modelMaxBound, modelMinBound)))
+    if (!contains(math::Box::create(root->maxBound, root->minBound), math::Box::create(modelMaxBound, modelMinBound)))
         return root;
 
-    splitNode(root, math::mat4());
+    splitNode(root, partitionInfo);
 
-    for (auto child : root->_children)
+    for (auto child : root->children)
     {
-        if (contains(math::Box::create(child->_maxBound, child->_minBound), math::Box::create(modelMaxBound, modelMinBound)))
+        if (contains(math::Box::create(child->maxBound, child->minBound), math::Box::create(modelMaxBound, modelMinBound)))
         {
-            validNode = pickBestPartitions(child, modelMinBound, modelMaxBound);
+            validNode = pickBestPartitions(child, modelMinBound, modelMaxBound, partitionInfo);
 
             break;
         }
@@ -303,7 +299,7 @@ MeshPartitioner::pickBestPartitions(OctreeNodePtr     root,
 
     if (validNode == nullptr)
     {
-        root->_children.clear();
+        root->children.clear();
 
         return root;
     }
@@ -314,10 +310,10 @@ MeshPartitioner::pickBestPartitions(OctreeNodePtr     root,
 MeshPartitioner::OctreeNodePtr
 MeshPartitioner::ensurePartitionSizeIsValid(OctreeNodePtr       node,
                                             const math::vec3&   maxSize,
-                                            const math::mat4&   transformMatrix)
+                                            PartitionInfo&      partitionInfo)
 {
-    const auto minBound = math::vec3(transformMatrix * math::vec4(node->_minBound, 1.f));
-    const auto maxBound = math::vec3(transformMatrix * math::vec4(node->_maxBound, 1.f));
+    const auto minBound = node->minBound;
+    const auto maxBound = node->maxBound;
 
     const auto nodeSize = maxBound - minBound;
 
@@ -325,25 +321,470 @@ MeshPartitioner::ensurePartitionSizeIsValid(OctreeNodePtr       node,
         nodeSize.y > maxSize.y ||
         nodeSize.z > maxSize.z)
     {
-        splitNode(node, transformMatrix);
+        splitNode(node, partitionInfo);
 
-        for (auto child : node->_children)
+        for (auto child : node->children)
         {
-            ensurePartitionSizeIsValid(child, maxSize, transformMatrix);
+            ensurePartitionSizeIsValid(child, maxSize, partitionInfo);
         }
     }
 
     return node;
 }
 
-MeshPartitioner::OctreeNodePtr
-MeshPartitioner::buildPartitions(const std::vector<Surface::Ptr>&   surfaces,
-                                 Node::Ptr                          root,
-                                 bool                               transformPositions,
-                                 const math::mat4&                  transformMatrix)
+Geometry::Ptr
+MeshPartitioner::createGeometry(Geometry::Ptr                       referenceGeometry,
+                                const std::vector<unsigned int>&    triangleIndices,
+                                PartitionInfo&                      partitionInfo)
 {
-    if (surfaces.empty())
+    if (triangleIndices.empty())
         return nullptr;
+
+    const auto& indices = partitionInfo.indices;
+    const auto& vertices = partitionInfo.vertices;
+
+    auto geometry = Geometry::create();
+
+    auto vertexCount = 0;
+    auto indexCount = triangleIndices.size() * 3;
+
+    const auto vertexSize = referenceGeometry->vertexSize();
+
+    auto globalIndexToLocalIndexMap = std::unordered_map<unsigned int, unsigned short>(indexCount);
+    auto localIndexToGlobalIndexMap = std::unordered_map<unsigned short, unsigned int>(indexCount);
+
+    auto localIndices = std::vector<unsigned short>(indexCount);
+
+    auto currentIndex = 0;
+
+    for (auto i = 0; i < triangleIndices.size(); ++i)
+    {
+        for (auto j = 0; j < 3; ++j)
+        {
+            const auto globalIndex = indices.at(triangleIndices.at(i) * 3 + j);
+
+            auto result = globalIndexToLocalIndexMap.insert(std::make_pair(
+                globalIndex,
+                currentIndex
+            ));
+
+            if (result.second)
+            {
+                localIndices[i * 3 + j] = currentIndex;
+
+                localIndexToGlobalIndexMap.insert(std::make_pair(currentIndex, globalIndex));
+
+                ++currentIndex;
+
+                ++vertexCount;
+            }
+            else
+            {
+                localIndices[i * 3 + j] = result.first->second;
+            }
+        }
+    }
+
+    geometry->indices(IndexBuffer::create(referenceGeometry->indices()->context(), localIndices));
+
+    auto globalAttributeOffset = 0;
+
+    for (auto vertexBuffer : referenceGeometry->vertexBuffers())
+    {
+        auto localVertexSize = vertexBuffer->vertexSize();
+
+        auto vertexBufferData = std::vector<float>(vertexCount * localVertexSize);
+
+        for (auto i = 0; i < triangleIndices.size(); ++i)
+        {
+            auto triangleIndex = triangleIndices.at(i);
+
+            for (auto j = 0; j < 3; ++j)
+            {
+                auto globalIndex = indices.at(triangleIndex * 3 + j);
+                auto localIndex = globalIndexToLocalIndexMap.at(globalIndex);
+
+                std::copy(
+                    vertices.begin() + globalIndex * vertexSize + globalAttributeOffset,
+                    vertices.begin() + globalIndex * vertexSize + localVertexSize + globalAttributeOffset,
+                    vertexBufferData.begin() + localIndex * localVertexSize
+                );
+            }
+        }
+
+        auto newVertexBuffer = VertexBuffer::create(vertexBuffer->context(), vertexBufferData);
+
+        for (auto attribute : vertexBuffer->attributes())
+            newVertexBuffer->addAttribute(attribute.name, attribute.size, attribute.offset);
+
+        geometry->addVertexBuffer(newVertexBuffer);
+
+        globalAttributeOffset += localVertexSize;
+    }
+
+    if (geometry->hasVertexAttribute("normal"))
+    {
+        geometry->computeNormals();
+    }
+
+    if (geometry->hasVertexAttribute("position") &&
+        geometry->hasVertexAttribute("uv") &&
+        geometry->hasVertexAttribute("tangent"))
+    {
+        geometry->computeTangentSpace(!geometry->hasVertexAttribute("normal"));
+    }
+
+    if (_options.flags & Options::applyCrackFreePolicy)
+    {
+        markProtectedVertices(geometry, localIndexToGlobalIndexMap, partitionInfo);
+    }
+
+    return geometry;
+}
+
+void
+MeshPartitioner::markProtectedVertices(Geometry::Ptr                                            geometry,
+                                       const std::unordered_map<unsigned short, unsigned int>&  indices,
+                                       PartitionInfo&                                           partitionInfo)
+{
+    const auto numVertices = geometry->numVertices();
+
+    const auto protectedFlagVertexAttributeSize = 1u;
+    const auto protectedFlagVertexAttributeOffset = 0u;
+
+    auto protectedFlagVertexBufferData = std::vector<float>(numVertices * protectedFlagVertexAttributeSize);
+
+    for (auto index : geometry->indices()->data())
+    {
+        auto globalIndex = indices.at(index);
+
+        const auto protectedFlagVertexBufferDataOffset =
+            index * protectedFlagVertexAttributeSize + protectedFlagVertexAttributeOffset;
+
+        if (partitionInfo.protectedIndices.find(globalIndex) != partitionInfo.protectedIndices.end())
+        {
+            protectedFlagVertexBufferData[protectedFlagVertexBufferDataOffset] = 1.f;
+        }
+        else
+        {
+            protectedFlagVertexBufferData[protectedFlagVertexBufferDataOffset] = 0.f;
+        }
+    }
+
+    auto protectedFlagVertexBuffer = VertexBuffer::create(_assetLibrary->context(), protectedFlagVertexBufferData);
+
+    protectedFlagVertexBuffer->addAttribute(
+        "popProtected",
+        protectedFlagVertexAttributeSize,
+        protectedFlagVertexAttributeOffset
+    );
+
+    geometry->addVertexBuffer(protectedFlagVertexBuffer);
+}
+
+void
+MeshPartitioner::registerSharedTriangle(OctreeNodePtr    partitionNode,
+                                        unsigned int     triangleIndex,
+                                        PartitionInfo&   partitionInfo)
+{
+    auto& protectedIndices = partitionInfo.protectedIndices;
+
+    auto sharedIndices = std::vector<unsigned int>(3);
+
+    for (auto i = 0u; i < 3u; ++i)
+        sharedIndices[i] = partitionInfo.indices.at(triangleIndex * 3u + i);
+
+    for (auto sharedIndex : sharedIndices)
+    {
+        const auto position = math::make_vec3(&partitionInfo.vertices.at(
+            sharedIndex * partitionInfo.vertexSize + partitionInfo.positionAttributeOffset
+        ));
+
+        auto halfEdge = partitionInfo.halfEdges.at(sharedIndex);
+
+        auto candidateHalfEdges = std::unordered_set<HalfEdge::Ptr>();
+
+        candidateHalfEdges.insert(halfEdge);
+        candidateHalfEdges.insert(halfEdge->next());
+        candidateHalfEdges.insert(halfEdge->prec());
+
+        for (auto mergedIndex : partitionInfo.mergedIndices.at(position))
+        {
+            if (mergedIndex == sharedIndex)
+                continue;
+
+            auto mergedIndexHalfEdge = partitionInfo.halfEdges.at(mergedIndex);
+
+            for (auto i = 0u; i < 3u; ++i)
+            {
+                candidateHalfEdges.insert(mergedIndexHalfEdge->face().at(i));
+                candidateHalfEdges.insert(mergedIndexHalfEdge->next()->face().at(i));
+                candidateHalfEdges.insert(mergedIndexHalfEdge->prec()->face().at(i));
+            }
+
+            auto discontinousHalfEdges = std::queue<HalfEdge::Ptr>();
+            auto encounteredDiscontinousHalfEdges = std::unordered_set<unsigned int>();
+
+            for (auto i = 0u; i < 3u; ++i)
+            {
+                discontinousHalfEdges.push(mergedIndexHalfEdge->face().at(i));
+                discontinousHalfEdges.push(mergedIndexHalfEdge->next()->face().at(i));
+                discontinousHalfEdges.push(mergedIndexHalfEdge->prec()->face().at(i));
+            }
+
+            while (!discontinousHalfEdges.empty())
+            {
+                auto discontinousHalfEdge = discontinousHalfEdges.front();
+                discontinousHalfEdges.pop();
+
+                const auto discontinousHalfEdgeIndex = discontinousHalfEdge->startNodeId();
+
+                if (encounteredDiscontinousHalfEdges.find(discontinousHalfEdgeIndex) != encounteredDiscontinousHalfEdges.end())
+                    continue;
+
+                encounteredDiscontinousHalfEdges.insert(discontinousHalfEdgeIndex);
+                candidateHalfEdges.insert(discontinousHalfEdge);
+
+                const auto discontinousHalfEdgeVertexPosition = math::make_vec3(&partitionInfo.vertices.at(
+                    discontinousHalfEdgeIndex * partitionInfo.vertexSize + partitionInfo.positionAttributeOffset
+                ));
+
+                const auto& secondaryDiscontinousHalfEdgeIndices = partitionInfo.mergedIndices.at(
+                    discontinousHalfEdgeVertexPosition
+                );
+
+                for (auto secondaryDiscontinousHalfEdgeIndex : secondaryDiscontinousHalfEdgeIndices)
+                {
+                    if (secondaryDiscontinousHalfEdgeIndex == discontinousHalfEdgeIndex)
+                        continue;
+
+                    auto secondaryDiscontinousHalfEdge = partitionInfo.halfEdges.at(secondaryDiscontinousHalfEdgeIndex);
+
+                    for (auto i = 0u; i < 3u; ++i)
+                    {
+                        discontinousHalfEdges.push(secondaryDiscontinousHalfEdge->face().at(i));
+                        discontinousHalfEdges.push(secondaryDiscontinousHalfEdge->next()->face().at(i));
+                        discontinousHalfEdges.push(secondaryDiscontinousHalfEdge->prec()->face().at(i));
+                    }
+                }
+            }
+        }
+
+        for (auto halfEdge : candidateHalfEdges)
+        {
+            for (auto i = 0u; i < 3u; ++i)
+            {
+                partitionInfo.protectedIndices.insert(halfEdge->face().at(i)->startNodeId());
+            }
+        }
+    }
+}
+
+void
+MeshPartitioner::insertTriangle(OctreeNodePtr       partitionNode,
+                                unsigned int        triangleIndex,
+                                PartitionInfo&      partitionInfo)
+{
+    const auto& indices = partitionInfo.indices;
+    const auto& vertices = partitionInfo.vertices;
+
+    const auto vertexSize = partitionInfo.vertexSize;
+    const auto positionAttributeOffset = partitionInfo.positionAttributeOffset;
+
+    if (partitionNode->children.empty())
+    {
+        if (countTriangles(partitionNode) < _options.maxNumTrianglesPerNode)
+        {
+            auto& triangles = partitionNode->triangles.back();
+
+            const auto triangleIndices = std::vector<unsigned int>(
+                indices.begin() + triangleIndex * 3,
+                indices.begin() + (triangleIndex + 1) * 3
+            );
+
+            auto& indices = partitionNode->indices.back();
+
+            const auto expectedNumIndices = indices.size() + triangleIndices.size();
+
+            if (_options.flags & Options::applyCrackFreePolicy)
+            {
+                if (expectedNumIndices >= _options.maxNumIndicesPerNode)
+                {
+                    splitNode(partitionNode, partitionInfo);
+                }
+                else
+                {
+                    triangles.push_back(triangleIndex);
+
+                    return;
+                }
+            }
+            else
+            {
+                if (expectedNumIndices >= _options.maxNumIndicesPerNode)
+                {
+                    partitionNode->triangles.push_back(std::vector<unsigned int>());
+                    partitionNode->indices.push_back(std::set<unsigned int>());
+                }
+
+                partitionNode->triangles.back().push_back(triangleIndex);
+                partitionNode->indices.back().insert(triangleIndices.begin(), triangleIndices.end());
+
+                return;
+            }
+        }
+        else
+        {
+            splitNode(partitionNode, partitionInfo);
+        }
+    }
+
+    auto positions = std::vector<math::vec3>
+    {
+        math::make_vec3(
+            &vertices.at(indices.at(triangleIndex * 3 + 0) * vertexSize + positionAttributeOffset)),
+        math::make_vec3(
+            &vertices.at(indices.at(triangleIndex * 3 + 1) * vertexSize + positionAttributeOffset)),
+        math::make_vec3(
+            &vertices.at(indices.at(triangleIndex * 3 + 2) * vertexSize + positionAttributeOffset))
+    };
+
+    auto localIndices = std::vector<int>();
+
+    for (const auto& position : positions)
+    {
+        auto nodeCenter = (partitionNode->maxBound + partitionNode->minBound) * 0.5f;
+
+        auto x = position.x < nodeCenter.x ? 0 : 1;
+        auto y = position.y < nodeCenter.y ? 0 : 1;
+        auto z = position.z < nodeCenter.z ? 0 : 1;
+
+        localIndices.push_back(indexAt(x, y, z));
+    }
+
+    if (localIndices.at(0) == localIndices.at(1) &&
+        localIndices.at(1) == localIndices.at(2))
+    {
+        insertTriangle(partitionNode->children.at(localIndices.at(0)), triangleIndex, partitionInfo);
+    }
+    else
+    {
+        if (_options.flags & Options::applyCrackFreePolicy)
+        {
+            registerSharedTriangle(partitionNode, triangleIndex, partitionInfo);
+
+            insertTriangle(partitionNode->children.at(localIndices.at(0)), triangleIndex, partitionInfo);
+        }
+        else
+        {
+            auto& sharedTriangles = partitionNode->sharedTriangles;
+            auto& sharedIndices = partitionNode->sharedIndices;
+
+            const auto triangleIndices = std::vector<unsigned int>(
+                indices.begin() + triangleIndex * 3,
+                indices.begin() + (triangleIndex + 1) * 3
+            );
+
+            const auto expectedNumIndices = sharedIndices.back().size() + triangleIndices.size();
+
+            if (expectedNumIndices >= _options.maxNumIndicesPerNode)
+            {
+                sharedTriangles.push_back(std::vector<unsigned int>());
+                sharedIndices.push_back(std::set<unsigned int>());
+            }
+
+            sharedTriangles.back().push_back(triangleIndex);
+            sharedIndices.back().insert(triangleIndices.begin(), triangleIndices.end());
+        }
+    }
+}
+
+void
+MeshPartitioner::splitNode(OctreeNodePtr    partitionNode,
+                           PartitionInfo&   partitionInfo)
+{
+    partitionNode->children.resize(8);
+
+    auto nodeCenter = (partitionNode->maxBound + partitionNode->minBound) * 0.5f;
+    auto nodeHalfSize = (partitionNode->maxBound - partitionNode->minBound) * 0.5f;
+
+    for (auto x = 0; x < 2; ++x)
+    for (auto y = 0; y < 2; ++y)
+    for (auto z = 0; z < 2; ++z)
+    {
+        partitionNode->children[indexAt(x, y, z)] = OctreeNodePtr(new OctreeNode(
+            partitionNode->depth + 1,
+            partitionNode->minBound + math::vec3(
+                x * nodeHalfSize.x,
+                y * nodeHalfSize.y,
+                z * nodeHalfSize.z),
+            partitionNode->minBound + math::vec3(
+                (x + 1) * nodeHalfSize.x,
+                (y + 1) * nodeHalfSize.y,
+                (z + 1) * nodeHalfSize.z),
+            partitionNode));
+    }
+
+    for (const auto& triangles : partitionNode->triangles)
+    for (auto triangle : triangles)
+    {
+        insertTriangle(partitionNode, triangle, partitionInfo);
+    }
+
+    partitionNode->triangles = std::vector<std::vector<unsigned int>>(1, std::vector<unsigned int>());
+    partitionNode->indices.clear();
+}
+
+int
+MeshPartitioner::countTriangles(OctreeNodePtr partitionNode)
+{
+    auto numTriangles = 0;
+
+    for (const auto& triangles : partitionNode->triangles)
+        numTriangles += triangles.size();
+
+    return numTriangles;
+}
+
+int
+MeshPartitioner::indexAt(int x, int y, int z)
+{
+    return x + (y << 1) + (z << 2);
+}
+
+int
+MeshPartitioner::computeDepth(OctreeNodePtr partitionNode)
+{
+    auto depth = 0;
+
+    auto pendingNodes = std::queue<OctreeNodePtr>();
+
+    pendingNodes.push(partitionNode);
+
+    while (!pendingNodes.empty())
+    {
+        auto pendingNode = pendingNodes.front();
+
+        pendingNodes.pop();
+
+        for (auto childPartitionNode : pendingNode->children)
+        {
+            pendingNodes.push(childPartitionNode);
+        }
+
+        depth = std::max(depth, pendingNode->depth);
+    }
+
+    return depth;
+}
+
+bool
+MeshPartitioner::buildGlobalIndex(PartitionInfo& partitionInfo)
+{
+    const auto& surfaces = partitionInfo.surfaces;
+
+    if (surfaces.empty())
+        return false;
 
     auto indexCount = 0;
     auto vertexCount = 0;
@@ -359,43 +800,29 @@ MeshPartitioner::buildPartitions(const std::vector<Surface::Ptr>&   surfaces,
     auto referenceGeometry = surfaces.front()->geometry();
 
     const auto vertexSize = referenceGeometry->vertexSize();
-    _vertexSize = vertexSize;
 
-    {
-        auto attributeOffset = 0;
+    partitionInfo.vertexSize = vertexSize;
+    partitionInfo.positionAttributeOffset = 0u;
 
-        for (auto vertexBuffer : referenceGeometry->vertexBuffers())
-        {
-            if (vertexBuffer->hasAttribute("position"))
-            {
-                _positionAttributeOffset = attributeOffset + vertexBuffer->attribute("position").offset;
-
-                break;
-            }
-
-            attributeOffset += vertexBuffer->vertexSize();
-        }
-    }
-
-    auto& indices = _indices;
-    auto& vertices = _vertices;
+    auto& indices = partitionInfo.indices;
+    auto& vertices = partitionInfo.vertices;
 
     indices.resize(indexCount, 0);
     vertices.resize(vertexCount * vertexSize, 0.0f);
 
-    indices = std::vector<int>(indexCount, 0);
-    vertices = std::vector<float>(vertexCount * vertexSize, 0.0f);
+    auto indexOffset = 0u;
+    auto vertexOffset = 0u;
 
-    auto indexOffset = 0;
-    auto vertexOffset = 0;
+    auto& minBound = partitionInfo.minBound;
+    auto& maxBound = partitionInfo.maxBound;
 
-    auto minBound = math::vec3(
+    minBound = math::vec3(
         std::numeric_limits<float>::max(),
         std::numeric_limits<float>::max(),
         std::numeric_limits<float>::max()
     );
 
-    auto maxBound = math::vec3(
+    maxBound = math::vec3(
         -std::numeric_limits<float>::max(),
         -std::numeric_limits<float>::max(),
         -std::numeric_limits<float>::max()
@@ -403,11 +830,12 @@ MeshPartitioner::buildPartitions(const std::vector<Surface::Ptr>&   surfaces,
 
     for (auto surface : surfaces)
     {
+        auto target = surface->target();
         auto transformMatrix = math::mat4();
 
-        if (transformPositions && surface->target()->hasComponent<Transform>())
+        if (partitionInfo.useRootSpace && target->hasComponent<Transform>())
         {
-            transformMatrix = surface->target()->component<Transform>()->modelToWorldMatrix();
+            transformMatrix = target->component<Transform>()->modelToWorldMatrix();
         }
 
         auto geometry = surface->geometry();
@@ -443,11 +871,11 @@ MeshPartitioner::buildPartitions(const std::vector<Surface::Ptr>&   surfaces,
                     auto position = math::make_vec3(
                         &localVertices.at(localIndex * localVertexSize + positionAttributeOffset
                     ));
-        
-                    if (transformPositions)
+
+                    if (partitionInfo.useRootSpace)
                     {
                         position = math::vec3(transformMatrix * math::vec4(position, 1.0f));
-        
+
                         std::copy(
                             &position.x,
                             &position.x + 3,
@@ -473,6 +901,43 @@ MeshPartitioner::buildPartitions(const std::vector<Surface::Ptr>&   surfaces,
         vertexOffset += localVertexCount;
     }
 
+    return true;
+}
+
+bool
+MeshPartitioner::buildHalfEdges(PartitionInfo& partitionInfo)
+{
+    auto halfEdges = HalfEdgeCollection::create(partitionInfo.indices);
+
+    partitionInfo.halfEdges.resize(halfEdges->halfEdges().size());
+
+    for (auto halfEdge : halfEdges->halfEdges())
+    {
+        const auto index = halfEdge->startNodeId();
+
+        partitionInfo.halfEdges[index] = halfEdge;
+
+        const auto position = math::make_vec3(&partitionInfo.vertices.at(
+            index * partitionInfo.vertexSize + partitionInfo.positionAttributeOffset
+        ));
+
+        auto it = partitionInfo.mergedIndices.insert(std::make_pair(
+            position,
+            std::unordered_set<unsigned int>()
+        ));
+
+        it.first->second.insert(index);
+    }
+
+    return true;
+}
+
+bool
+MeshPartitioner::buildPartitions(PartitionInfo& partitionInfo)
+{
+    const auto minBound = partitionInfo.minBound;
+    const auto maxBound = partitionInfo.maxBound;
+
     auto rootPartitionMinBound = minBound;
     auto rootPartitionMaxBound = maxBound;
 
@@ -482,7 +947,9 @@ MeshPartitioner::buildPartitions(const std::vector<Surface::Ptr>&   surfaces,
         rootPartitionMaxBound = _worldMaxBound;
     }
 
-    auto octreeRoot = OctreeNodePtr(new OctreeNode(
+    auto& octreeRoot = partitionInfo.rootPartitionNode;
+
+    octreeRoot = OctreeNodePtr(new OctreeNode(
         0,
         rootPartitionMinBound,
         rootPartitionMaxBound,
@@ -494,16 +961,15 @@ MeshPartitioner::buildPartitions(const std::vector<Surface::Ptr>&   surfaces,
         auto nodeMinBound = minBound;
         auto nodeMaxBound = maxBound;
 
-        nodeMinBound = math::vec3(transformMatrix * math::vec4(nodeMinBound, 1.f));
-        nodeMaxBound = math::vec3(transformMatrix * math::vec4(nodeMaxBound, 1.f));
+        // fixme apply transform according to partitionInfo.useRootSpace
 
-        octreeRoot = pickBestPartitions(octreeRoot, nodeMinBound, nodeMaxBound);
+        octreeRoot = pickBestPartitions(octreeRoot, nodeMinBound, nodeMaxBound, partitionInfo);
 
-        _baseDepth = octreeRoot->_depth;
+        partitionInfo.baseDepth = octreeRoot->depth;
     }
     else
     {
-        _baseDepth = 0;
+        partitionInfo.baseDepth = 0;
     }
 
     //octreeRoot = ensurePartitionSizeIsValid(
@@ -514,29 +980,29 @@ MeshPartitioner::buildPartitions(const std::vector<Surface::Ptr>&   surfaces,
     //    math::mat4()
     //);
 
-    for (auto i = 0; i < indices.size(); i += 3)
+    for (auto i = 0; i < partitionInfo.indices.size(); i += 3)
     {
-        insertTriangle(octreeRoot, i / 3, transformMatrix);
+        insertTriangle(octreeRoot, i / 3, partitionInfo);
     }
 
-    return octreeRoot;
+    return true;
 }
 
-void
-MeshPartitioner::patchNodeFromPartitions(Node::Ptr          node,
-                                         Surface::Ptr       referenceSurface,
-                                         OctreeNodePtr      partitionNode,
-                                         AssetLibrary::Ptr  assetLibrary)
+bool
+MeshPartitioner::patchNode(Node::Ptr        node,
+                           PartitionInfo&   partitionInfo)
 {
+    auto partitionNode = partitionInfo.rootPartitionNode;
+
     const auto modelToWorldMatrix = node->component<Transform>()->modelToWorldMatrix();
     const auto worldToModelMatrix = math::inverse(modelToWorldMatrix);
 
+    auto referenceSurface = partitionInfo.surfaces.front();
     auto referenceGeometry = referenceSurface->geometry();
     auto referenceMaterial = referenceSurface->material();
     auto referenceEffect = referenceSurface->effect();
 
     static auto currentGeometryId = 0;
-    static auto currentMaterialId = 0;
 
     auto maxDepth = computeDepth(partitionNode);
 
@@ -550,18 +1016,18 @@ MeshPartitioner::patchNodeFromPartitions(Node::Ptr          node,
 
         pendingNodes.pop();
 
-        for (auto childPartitionNode : pendingNode->_children)
+        for (auto childPartitionNode : pendingNode->children)
         {
             pendingNodes.push(childPartitionNode);
         }
 
         auto newGeometries = std::list<Geometry::Ptr>();
 
-        if (!pendingNode->_children.empty())
+        if (!pendingNode->children.empty())
         {
-            for (const auto& triangles : pendingNode->_sharedTriangles)
+            for (const auto& triangles : pendingNode->sharedTriangles)
             {
-                auto newGeometry = createGeometry(referenceGeometry, triangles);
+                auto newGeometry = createGeometry(referenceGeometry, triangles, partitionInfo);
 
                 if (newGeometry == nullptr)
                     continue;
@@ -573,9 +1039,9 @@ MeshPartitioner::patchNodeFromPartitions(Node::Ptr          node,
         }
         else
         {
-            for (const auto& triangles : pendingNode->_triangles)
+            for (const auto& triangles : pendingNode->triangles)
             {
-                auto newGeometry = createGeometry(referenceGeometry, triangles);
+                auto newGeometry = createGeometry(referenceGeometry, triangles, partitionInfo);
 
                 if (newGeometry == nullptr)
                     continue;
@@ -589,8 +1055,8 @@ MeshPartitioner::patchNodeFromPartitions(Node::Ptr          node,
             if (newGeometry == nullptr)
                 continue;
 
-            auto minBound = pendingNode->_minBound;
-            auto maxBound = pendingNode->_maxBound;
+            auto minBound = pendingNode->minBound;
+            auto maxBound = pendingNode->maxBound;
 
             if (_options.flags & Options::uniformizeSize)
             {
@@ -598,17 +1064,13 @@ MeshPartitioner::patchNodeFromPartitions(Node::Ptr          node,
                 maxBound = math::vec3(worldToModelMatrix * math::vec4(maxBound, 1.f));
             }
 
-            if (_options.flags & Options::markSplitGeometries &&
-                (pendingNode->_depth > 0 || newGeometries.size() > 1u))
-            {
-                newGeometry->data()->set(_options.splitGeometryFlagPropertyName, true);
-            }
-
             if (referenceGeometry->data()->hasProperty("type"))
                 newGeometry->data()->set("type", referenceGeometry->data()->get<std::string>("type"));
 
-            newGeometry->data()->set("partitioningMaxDepth", maxDepth - _baseDepth);
-            newGeometry->data()->set("partitioningDepth", pendingNode->_depth - _baseDepth);
+            const auto baseDepth = partitionInfo.baseDepth;
+
+            newGeometry->data()->set("partitioningMaxDepth", maxDepth - baseDepth);
+            newGeometry->data()->set("partitioningDepth", pendingNode->depth - baseDepth);
             newGeometry->data()->set("partitioningMinBound", minBound);
             newGeometry->data()->set("partitioningMaxBound", maxBound);
 
@@ -618,7 +1080,7 @@ MeshPartitioner::patchNodeFromPartitions(Node::Ptr          node,
             if (geometryNameLastSeparatorPos != std::string::npos)
                 geometryName = geometryName.substr(geometryNameLastSeparatorPos + 1);
 
-            assetLibrary->geometry(
+            _assetLibrary->geometry(
                 geometryName,
                 newGeometry
             );
@@ -644,268 +1106,6 @@ MeshPartitioner::patchNodeFromPartitions(Node::Ptr          node,
             }
         }
     }
-}
 
-Geometry::Ptr
-MeshPartitioner::createGeometry(Geometry::Ptr referenceGeometry, const std::vector<int>& triangleIndices)
-{
-    if (triangleIndices.empty())
-        return nullptr;
-
-    auto geometry = Geometry::create();
-
-    auto vertexCount = 0;
-    auto indexCount = triangleIndices.size() * 3;
-
-    const auto vertexSize = referenceGeometry->vertexSize();
-
-    auto globalIndexToLocalIndexMap = std::unordered_map<int, unsigned short>(indexCount);
-
-    auto indices = std::vector<unsigned short>(indexCount);
-
-    auto currentIndex = 0;
-
-    for (auto i = 0; i < triangleIndices.size(); ++i)
-    {
-        for (auto j = 0; j < 3; ++j)
-        {
-            auto result = globalIndexToLocalIndexMap.insert(std::make_pair(
-                _indices.at(triangleIndices.at(i) * 3 + j),
-                currentIndex));
-
-            if (result.second)
-            {
-                indices[i * 3 + j] = currentIndex;
-
-                ++currentIndex;
-
-                ++vertexCount;
-            }
-            else
-            {
-                indices[i * 3 + j] = result.first->second;
-            }
-        }
-    }
-
-    geometry->indices(IndexBuffer::create(referenceGeometry->indices()->context(), indices));
-
-    auto globalAttributeOffset = 0;
-
-    for (auto vertexBuffer : referenceGeometry->vertexBuffers())
-    {
-        auto localVertexSize = vertexBuffer->vertexSize();
-
-        auto vertexBufferData = std::vector<float>(vertexCount * localVertexSize);
-
-        for (auto i = 0; i < triangleIndices.size(); ++i)
-        {
-            auto triangleIndex = triangleIndices.at(i);
-
-            for (auto j = 0; j < 3; ++j)
-            {
-                auto globalIndex = _indices.at(triangleIndex * 3 + j);
-                auto localIndex = globalIndexToLocalIndexMap.at(globalIndex);
-
-                std::copy(
-                    _vertices.begin() + globalIndex * vertexSize + globalAttributeOffset,
-                    _vertices.begin() + globalIndex * vertexSize + localVertexSize + globalAttributeOffset,
-                    vertexBufferData.begin() + localIndex * localVertexSize
-                );
-            }
-        }
-
-        auto newVertexBuffer = VertexBuffer::create(vertexBuffer->context(), vertexBufferData);
-
-        for (auto attribute : vertexBuffer->attributes())
-            newVertexBuffer->addAttribute(attribute.name, attribute.size, attribute.offset);
-
-        geometry->addVertexBuffer(newVertexBuffer);
-
-        globalAttributeOffset += localVertexSize;
-    }
-
-    if (geometry->hasVertexAttribute("normal"))
-    {
-        geometry->computeNormals();
-    }
-
-    if (geometry->hasVertexAttribute("position") &&
-        geometry->hasVertexAttribute("uv") &&
-        geometry->hasVertexAttribute("tangent"))
-    {
-        geometry->computeTangentSpace(!geometry->hasVertexAttribute("normal"));
-    }
-
-    return geometry;
-}
-
-void
-MeshPartitioner::insertTriangle(OctreeNodePtr       partitionNode,
-                                int                 triangleIndex,
-                                const math::mat4&   transformMatrix)
-{
-    if (partitionNode->_children.empty())
-    {
-        if (countTriangles(partitionNode) < _options.maxTriangleCountPerNode)
-        {
-            auto& triangles = partitionNode->_triangles.back();
-
-            const auto triangleIndices = std::vector<int>(
-                _indices.begin() + triangleIndex * 3,
-                _indices.begin() + (triangleIndex + 1) * 3
-            );
-
-            auto& indices = partitionNode->_indices.back();
-
-            const auto expectedNumIndices = indices.size() + triangleIndices.size();
-
-            if (expectedNumIndices >= MAX_NUM_INDICES_PER_GEOMETRY)
-            {
-                partitionNode->_triangles.push_back(std::vector<int>());
-                partitionNode->_indices.push_back(std::set<int>());
-            }
-
-            partitionNode->_triangles.back().push_back(triangleIndex);
-            partitionNode->_indices.back().insert(triangleIndices.begin(), triangleIndices.end());
-
-            return;
-        }
-        else
-        {
-            splitNode(partitionNode, transformMatrix);
-        }
-    }
-
-    auto positions = std::vector<math::vec3>
-    {
-        math::make_vec3(
-            &_vertices.at(_indices.at(triangleIndex * 3 + 0) * _vertexSize + _positionAttributeOffset)),
-        math::make_vec3(
-            &_vertices.at(_indices.at(triangleIndex * 3 + 1) * _vertexSize + _positionAttributeOffset)),
-        math::make_vec3(
-            &_vertices.at(_indices.at(triangleIndex * 3 + 2) * _vertexSize + _positionAttributeOffset))
-    };
-
-    auto localIndices = std::vector<int>();
-
-    for (const auto& position : positions)
-    {
-        const auto transformedPosition = math::vec3(transformMatrix * math::vec4(position, 1.f));
-
-        auto nodeCenter = (partitionNode->_maxBound + partitionNode->_minBound) * 0.5f;
-
-        auto x = transformedPosition.x < nodeCenter.x ? 0 : 1;
-        auto y = transformedPosition.y < nodeCenter.y ? 0 : 1;
-        auto z = transformedPosition.z < nodeCenter.z ? 0 : 1;
-
-        localIndices.push_back(indexAt(x, y, z));
-    }
-
-    if ((localIndices.at(0) == localIndices.at(1) &&
-        localIndices.at(1) == localIndices.at(2)) ||
-        (_options.flags & Options::convertSharedTriangleToGeometry) == 0u)
-    {
-        insertTriangle(partitionNode->_children.at(localIndices.at(0)), triangleIndex, transformMatrix);
-    }
-    else
-    {
-        auto& sharedTriangles = partitionNode->_sharedTriangles;
-        auto& sharedIndices = partitionNode->_sharedIndices;
-
-        const auto triangleIndices = std::vector<int>(
-            _indices.begin() + triangleIndex * 3,
-            _indices.begin() + (triangleIndex + 1) * 3
-        );
-
-        const auto expectedNumIndices = sharedIndices.back().size() + triangleIndices.size();
-
-        if (expectedNumIndices >= MAX_NUM_INDICES_PER_GEOMETRY)
-        {
-            sharedTriangles.push_back(std::vector<int>());
-            sharedIndices.push_back(std::set<int>());
-        }
-
-        sharedTriangles.back().push_back(triangleIndex);
-        sharedIndices.back().insert(triangleIndices.begin(), triangleIndices.end());
-    }
-}
-
-void
-MeshPartitioner::splitNode(OctreeNodePtr        partitionNode,
-                           const math::mat4&    transformMatrix)
-{
-    partitionNode->_children.resize(8);
-
-    auto nodeCenter = (partitionNode->_maxBound + partitionNode->_minBound) * 0.5f;
-    auto nodeHalfSize = (partitionNode->_maxBound - partitionNode->_minBound) * 0.5f;
-
-    for (auto x = 0; x < 2; ++x)
-    for (auto y = 0; y < 2; ++y)
-    for (auto z = 0; z < 2; ++z)
-    {
-        partitionNode->_children[indexAt(x, y, z)] = OctreeNodePtr(new OctreeNode(
-            partitionNode->_depth + 1,
-            partitionNode->_minBound + math::vec3(
-                x * nodeHalfSize.x,
-                y * nodeHalfSize.y,
-                z * nodeHalfSize.z),
-            partitionNode->_minBound + math::vec3(
-                (x + 1) * nodeHalfSize.x,
-                (y + 1) * nodeHalfSize.y,
-                (z + 1) * nodeHalfSize.z),
-            partitionNode));
-    }
-
-    for (const auto& triangles : partitionNode->_triangles)
-    for (auto triangle : triangles)
-    {
-        insertTriangle(partitionNode, triangle, transformMatrix);
-    }
-
-    partitionNode->_triangles = std::vector<std::vector<int>>(1, std::vector<int>());
-    partitionNode->_indices.clear();
-}
-
-int
-MeshPartitioner::countTriangles(OctreeNodePtr partitionNode)
-{
-    auto numTriangles = 0;
-
-    for (const auto& triangles : partitionNode->_triangles)
-        numTriangles += triangles.size();
-
-    return numTriangles;
-}
-
-int
-MeshPartitioner::indexAt(int x, int y, int z)
-{
-    return x + (y << 1) + (z << 2);
-}
-
-int
-MeshPartitioner::computeDepth(OctreeNodePtr partitionNode)
-{
-    auto depth = 0;
-
-    auto pendingNodes = std::queue<OctreeNodePtr>();
-
-    pendingNodes.push(partitionNode);
-
-    while (!pendingNodes.empty())
-    {
-        auto pendingNode = pendingNodes.front();
-
-        pendingNodes.pop();
-
-        for (auto childPartitionNode : pendingNode->_children)
-        {
-            pendingNodes.push(childPartitionNode);
-        }
-
-        depth = std::max(depth, pendingNode->_depth);
-    }
-
-    return depth;
+    return true;
 }
