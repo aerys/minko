@@ -47,12 +47,12 @@ namespace minko
             typedef Flyweight<std::string>                              FString;
 			typedef std::list<std::pair<FString, FString>>				FStringList;
 
-#if DEBUG
-			template <class K, typename... V>
-			using map = std::unordered_map<K, V...>;
+#ifdef MINKO_USE_SPARSE_HASH_MAP
+            template <typename... H>
+            using map = google::sparse_hash_map<H...>;
 #else
-			template <typename... H>
-			using map = google::sparse_hash_map<H...>;
+            template <class K, typename... V>
+            using map = std::unordered_map<K, V...>;
 #endif
 
         public:

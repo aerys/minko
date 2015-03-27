@@ -36,12 +36,12 @@ namespace minko
             public Uuid::enable_uuid
 		{
         private:
-#if DEBUG
-			template <class K, typename... V>
-			using map = std::unordered_map<K, V...>;
-#else
+#ifdef MINKO_USE_SPARSE_HASH_MAP
 			template <typename... H>
 			using map = google::sparse_hash_map<H...>;
+#else
+			template <class K, typename... V>
+			using map = std::unordered_map<K, V...>;
 #endif
 
             template <typename T>
