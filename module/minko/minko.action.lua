@@ -118,3 +118,24 @@ minko.action.zip = function(directory, archive)
 		os.execute('zip -r "' .. archive .. '" "' .. directory .. '"')
 	end
 end
+
+minko.action.cpjf = function(absoluteSrcDir, relativeDestDir)
+	local scriptLocation = MINKO_HOME .. '/tool/lin/script/cpjf.sh';
+
+	if string.startswith(os.getenv('OSTYPE'), 'CYGWIN') then
+		scriptLocation = os.capture('cygpath -u "' .. scriptLocation .. '"')
+		absoluteSrcDir = os.capture('cygpath -u "' .. absoluteSrcDir .. '"')
+	end
+
+	return 'bash ' .. scriptLocation .. ' ' .. absoluteSrcDir .. ' ' .. relativeDestDir .. ' || ' .. minko.action.fail()
+end
+
+minko.action.buildandroid = function()
+	local minkoHome = MINKO_HOME
+
+	if string.startswith(os.getenv('OSTYPE'), 'CYGWIN') then
+		minkoHome = os.capture('cygpath -u "' .. minkoHome .. '"')
+	end
+
+	return 'bash ' .. minkoHome .. '/tool/lin/script/build_android.sh ${TARGET} || ' .. minko.action.fail()
+end

@@ -334,7 +334,7 @@ minko.project.application = function(name)
 		kind "SharedLib"
 
 		prelinkcommands {
-			'bash ' .. MINKO_HOME .. '/tool/lin/script/cpjf.sh ${CURDIR}/src/ ${TARGETDIR}/src/com/minko/ || ' .. minko.action.fail()
+			minko.action.cpjf('${CURDIR}/src/', '${TARGETDIR}/src/com/minko/')
 		}
 
 		links {
@@ -370,7 +370,7 @@ minko.project.application = function(name)
 		}
 
 		postbuildcommands {
-			'bash ' .. MINKO_HOME .. '/tool/lin/script/build_android.sh ${TARGET} || ' .. minko.action.fail()
+			minko.action.buildandroid()
 		}
 
 	configuration { "android", "debug" }
