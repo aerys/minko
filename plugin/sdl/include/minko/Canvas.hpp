@@ -92,7 +92,6 @@ namespace minko
         SDL_Window*                                                             _window;
         float                                                                   _relativeTime;
         float                                                                   _frameDuration;
-        time_point                                                              _previousTime;
         time_point                                                              _startTime;
         float                                                                   _framerate;
         float                                                                   _desiredFramerate;
