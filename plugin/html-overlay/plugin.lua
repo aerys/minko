@@ -42,7 +42,6 @@ minko.plugin["html-overlay"].enable = function()
 		prelinkcommands {
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/asset"),
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/WebViewJavascriptBridge/WebViewJavascriptBridge.js.txt"),
-			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/WebViewJavascriptBridge/MinkoOverlay.js.txt"),
 		}
 
 	configuration { "android", "SharedLib" }
@@ -55,7 +54,6 @@ minko.plugin["html-overlay"].enable = function()
 		prelinkcommands {
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/asset"),
 			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/WebViewJavascriptBridge/WebViewJavascriptBridge.js.txt"),
-			minko.action.copy(minko.plugin.path("html-overlay") .. "/lib/WebViewJavascriptBridge/MinkoOverlay.js.txt"),
 		}
 
 	configuration { "windows32 or windows64", "ConsoleApp or WindowedApp" }
