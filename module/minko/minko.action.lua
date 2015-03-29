@@ -8,7 +8,7 @@ minko.action.fail = function()
 			return 'call "' .. path.translate(minko.sdk.path('/tool/win/script/fail.bat')) .. '" "$(Target)"'
 		end
 	elseif os.is('macosx') then
-		return 'bash ' .. minko.sdk.path('/tool/mac/script/fail.sh') .. ' ${TARGET}'		
+		return 'bash ' .. minko.sdk.path('/tool/mac/script/fail.sh') .. ' ${TARGET}'
 	else
 		return 'bash ' .. minko.sdk.path('/tool/lin/script/fail.sh') .. ' ${TARGET}'
 	end
@@ -90,31 +90,14 @@ minko.action.link = function(sourcePath)
 	end
 end
 
-minko.action.clean = function()
-	if not os.isfile("sdk.lua") then
-		error("cannot clean from outside the Minko SDK")
-	end
-
-	local cmd = 'git clean -X -d -f'
-
-	os.execute(cmd)
-	
-	for _, pattern in ipairs { "framework", "plugin/*", "test", "example/*" } do
-		local dirs = os.matchdirs(pattern)
-
-		for _, dir in ipairs(dirs) do
-			local cwd = os.getcwd()
-			os.chdir(dir)
-			os.execute(cmd)
-			os.chdir(cwd)
-		end
-	end
+minko.action.clean = function(directory)
+	return 'git clean -X -d -f ' .. directory;
 end
 
 minko.action.zip = function(directory, archive)
 	if os.is('windows') then
-		os.execute('7za a "' .. archive .. '" "' .. path.translate(directory) .. '"')
+		return '7za a "' .. archive .. '" "' .. path.translate(directory) .. '"'
 	else
-		os.execute('zip -r "' .. archive .. '" "' .. directory .. '"')
+		return 'zip -r "' .. archive .. '" "' .. directory .. '"'
 	end
 end

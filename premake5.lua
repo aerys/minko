@@ -302,7 +302,7 @@ newaction {
 			end
 		end
 
-		minko.action.zip(distDir, distDir .. '.zip')
+		os.execute(minko.action.zip(distDir, distDir .. '.zip'))
 	end
 }
 
@@ -318,7 +318,13 @@ newaction {
 	trigger			= "clean",
 	description		= "Remove generated files.",
 	execute			= function()
-		minko.action.clean()
+		for _, pattern in ipairs { "framework", "plugin/*", "test", "example/*" } do
+			local dirs = os.matchdirs(pattern)
+
+			for _, dir in ipairs(dirs) do
+				os.execute(minko.action.clean(dir))
+			end
+		end
 	end
 }
 
