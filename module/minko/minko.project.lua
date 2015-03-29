@@ -67,6 +67,11 @@ minko.project.application = function(name)
 	-- 	"MINKO_APPLICATION_NAME=" .. name
 	-- }
 
+	minko.package.assetdirs {
+		"asset", -- current directory
+		minko.sdk.path("/framework/asset")
+	}
+
 	configuration { "windows32" }
 		libdirs {
 			minko.sdk.path("/framework/lib/glew/lib/windows32")
@@ -200,7 +205,7 @@ minko.project.application = function(name)
 			minko.sdk.path("/framework/bin/osx64/release")
 		}
 		prelinkcommands {
-			minko.action.copy("asset"),
+			-- minko.action.copy("asset"),
 		}
 
 	configuration { "html5" }

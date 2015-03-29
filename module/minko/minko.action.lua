@@ -14,79 +14,103 @@ minko.action.fail = function()
 	end
 end
 
-minko.action.copy = function(sourcePath)
-	local cygwinEnv = false
-	if string.startswith(os.getenv('OSTYPE'), 'CYGWIN') then
-		cygwinEnv = true
-	end
+minko.action.copy = function(sourcepath, destpath)
+	-- print('minko.action.copy(' .. sourcepath .. ')')
 
-	if os.is('windows') and not cygwinEnv then
-		sourcePath = path.translate(sourcePath)
+	local iscygwin = not string.startswith(os.getenv('OSTYPE'), 'CYGWIN')
 
-		local targetDir = string.startswith(_ACTION, "gmake") and '$(subst /,\\,$(TARGETDIR))' or '$(TargetDir)'
+	if os.is('windows') and not iscygwin then
 
-		if os.isdir(sourcePath) then
-			targetDir = targetDir .. '\\' .. path.getbasename(sourcePath)
+		sourcepath = path.translate(sourcepath)
+
+		local targetdir = string.startswith(_ACTION, "gmake") and '$(subst /,\\,$(TARGETDIR))' or '$(TargetDir)'
+
+		destpath = destpath and path.join(targetdir, destpath) or targetdir
+
+		if os.isdir(sourcepath) then
+			destpath = path.join(destpath, path.getbasename(sourcepath))
 		end
 
-		local existenceTest = string.find(sourcePath, '*') and '' or ('if exist "' .. sourcePath .. '" ')
+		-- print(' -> xcopy /y /i /e "' .. path.translate(sourcepath) .. '" "' .. path.translate(destpath) .. '"')
 
-		return existenceTest .. 'xcopy /y /i /e "' .. sourcePath .. '" "' .. targetDir .. '"'
+		return 'mkdir "' .. path.translate(path.getdirectory(destpath)) .. '" & ' ..
+			   'xcopy /y /e "' .. path.translate(sourcepath) .. '" "' .. path.translate(destpath) .. '"'
+
 	elseif os.is("macosx") then
-		local targetDir = '${TARGETDIR}'
+
+		local targetdir = '${TARGETDIR}'
 
 		if (_ACTION == "xcode-osx") then
-			targetDir = '${TARGET_BUILD_DIR}'
+			targetdir = '${TARGET_BUILD_DIR}'
 		elseif (_ACTION == "xcode-ios") then
-			targetDir = '${TARGET_BUILD_DIR}/${TARGET_NAME}.app'
+			targetdir = '${TARGET_BUILD_DIR}/${TARGET_NAME}.app'
 		end
 
-		local existenceTest = string.find(sourcePath, '*') and '' or ('test -e ' .. sourcePath .. ' && ')
+		if not destpath then
+			destpath = path.getname(sourcepath)
+		end
 
-		return existenceTest .. 'cp -R ' .. sourcePath .. ' "' .. targetDir .. '" || :'
+		destpath = path.join(targetdir, destpath)
+
+		-- local destdir = os.isdir(sourcepath) and destpath or path.getdirectory(destpath)
+
+		if os.isdir(sourcepath) and not string.endswith(sourcepath, '/') then
+			sourcepath = sourcepath .. '/' -- cp will copy the content of the directory
+		end
+
+		-- print(' -> cp -R ' .. sourcepath .. ' "' .. destpath .. '"')
+
+		return 'mkdir -p "' .. path.getdirectory(destpath) .. '"; ' ..
+			   'cp -R "' .. sourcepath .. '" "' .. destpath .. '"'
+
 	else
-		local targetDir = '${TARGETDIR}'
-		if cygwinEnv then
-			sourcePath = os.capture('cygpath -u "' .. sourcePath .. '"')
-			targetDir = os.capture('cygpath -u "' .. targetDir .. '"')
+
+		local targetdir = '${TARGETDIR}'
+
+		if iscygwin then
+			sourcepath = os.capture('cygpath -u "' .. sourcepath .. '"')
+			targetdir = os.capture('cygpath -u "' .. targetdir .. '"')
 		end
 
-		local existenceTest = string.find(sourcePath, '*') and '' or ('test -e ' .. sourcePath .. ' && ')
+		destpath = destpath and path.join(targetdir, destpath) or targetdir
 
-		return existenceTest .. 'cp -R ' .. sourcePath .. ' "' .. targetDir .. '" || :'
+		return 'mkdir -p "' .. path.getdirectory(destpath) .. '"; ' ..
+			   'cp -R "' .. sourcepath .. '" "' .. destpath .. '"'
+
 	end
 end
 
-minko.action.link = function(sourcePath)
-	local cygwinEnv = false
-	if string.startswith(os.getenv('OSTYPE'), 'CYGWIN') then
-		cygwinEnv = true
-	end
+minko.action.link = function(sourcepath)
+	local iscygwin = not string.startswith(os.getenv('OSTYPE'), 'CYGWIN')
 
-	if os.is('windows') and not cygwinEnv then
+	if os.is('windows') and not iscygwin then
 		-- fixme: not needed yet
 	elseif os.is("macosx") then
-		local targetDir = '${TARGETDIR}'
+		local targetdir = '${TARGETDIR}'
 
 		if (_ACTION == "xcode-osx") then
-			targetDir = '${TARGET_BUILD_DIR}'
+			targetdir = '${TARGET_BUILD_DIR}'
 		elseif (_ACTION == "xcode-ios") then
-			targetDir = '${TARGET_BUILD_DIR}/${TARGET_NAME}.app'
+			targetdir = '${TARGET_BUILD_DIR}/${TARGET_NAME}.app'
 		end
 
-		local existenceTest = string.find(sourcePath, '*') and '' or ('test -e ' .. sourcePath .. ' && ')
+		local exists = string.find(sourcepath, '*') and '' or ('test -e ' .. sourcepath .. ' && ')
 
-		return existenceTest .. 'ln -s -f ' .. sourcePath .. ' "' .. targetDir .. '" || :'
+		destpath = destpath and path.join(targetdir, destpath) or targetdir
+
+		return exists .. 'ln -s -f ' .. sourcepath .. ' "' .. destpath .. '" || :'
 	else
-		local targetDir = '${TARGETDIR}'
-		if cygwinEnv then
-			sourcePath = os.capture('cygpath -u "' .. sourcePath .. '"')
-			targetDir = os.capture('cygpath -u "' .. targetDir .. '"')
+		local targetdir = '${TARGETDIR}'
+		if iscygwin then
+			sourcepath = os.capture('cygpath -u "' .. sourcepath .. '"')
+			targetdir = os.capture('cygpath -u "' .. targetdir .. '"')
 		end
 
-		local existenceTest = string.find(sourcePath, '*') and '' or ('test -e ' .. sourcePath .. ' && ')
+		local exists = string.find(sourcepath, '*') and '' or ('test -e ' .. sourcepath .. ' && ')
 
-		return existenceTest .. 'ln -s -f ' .. sourcePath .. ' "' .. targetDir .. '" || :'
+		destpath = destpath and path.join(targetdir, destpath) or targetdir
+
+		return exists .. 'ln -s -f ' .. sourcepath .. ' "' .. destpath .. '" || :'
 	end
 end
 
@@ -99,5 +123,33 @@ minko.action.zip = function(directory, archive)
 		return '7za a "' .. archive .. '" "' .. path.translate(directory) .. '"'
 	else
 		return 'zip -r "' .. archive .. '" "' .. directory .. '"'
+	end
+end
+
+minko.action.optimize = function(file)
+	local binary = 'minko-scene-converter'
+
+	local supported = {
+		dae = 'scene',
+		fbx = 'scene',
+		obj = 'scene',
+		png = 'texture'
+	}
+
+	assert(type(files) == 'table', '`optimize` action expects an array of files')
+
+	local sourceext = path.getextension(file)
+	local exportext = minko.package._action['optimize'].supported[sourceext]
+	if exportext ~= nil then
+		prelinkcommands {
+			table.concat({
+				minko.package._action['optimize'].binary,
+				'-v',
+				'-i',
+				file,
+				'-o',
+				file .. '.' .. exportext
+			}, ' ')
+		}
 	end
 end
