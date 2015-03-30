@@ -457,9 +457,6 @@ POPGeometryWriter::serializeHeader(msgpack::sbuffer&                    headerBu
         geometry->data()->get<bool>("isSharedPartition"))
     {
         isSharedPartition = true;
-
-        borderMinPrecision = geometry->data()->get<int>("borderMinPrecision");
-        borderMaxDeltaPrecision = geometry->data()->get<int>("borderMaxDeltaPrecision");
     }
 
     std::vector<msgpack::type::tuple<int, int, int, int, int, int>> lodInfo;
