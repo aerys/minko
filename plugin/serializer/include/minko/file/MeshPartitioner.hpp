@@ -163,6 +163,9 @@ namespace minko
                     std::unordered_set<unsigned int>,
                     Vec3Hash
                 >                           mergedIndices;
+                std::unordered_set<
+                    unsigned int
+                >                           markedDiscontinousIndices;
 
                 OctreeNodePtr               rootPartitionNode;
             };

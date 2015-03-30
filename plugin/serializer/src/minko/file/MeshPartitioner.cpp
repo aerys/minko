@@ -513,6 +513,12 @@ MeshPartitioner::registerSharedTriangle(OctreeNodePtr    partitionNode,
             if (mergedIndex == sharedIndex)
                 continue;
 
+            if (partitionInfo.markedDiscontinousIndices.find(mergedIndex) !=
+                partitionInfo.markedDiscontinousIndices.end())
+                continue;
+
+            partitionInfo.markedDiscontinousIndices.insert(mergedIndex);
+
             auto mergedIndexHalfEdge = partitionInfo.halfEdges.at(mergedIndex);
 
             for (auto i = 0u; i < 3u; ++i)
@@ -523,7 +529,6 @@ MeshPartitioner::registerSharedTriangle(OctreeNodePtr    partitionNode,
             }
 
             auto discontinousHalfEdges = std::queue<HalfEdge::Ptr>();
-            auto encounteredDiscontinousHalfEdges = std::unordered_set<unsigned int>();
 
             for (auto i = 0u; i < 3u; ++i)
             {
@@ -539,10 +544,12 @@ MeshPartitioner::registerSharedTriangle(OctreeNodePtr    partitionNode,
 
                 const auto discontinousHalfEdgeIndex = discontinousHalfEdge->startNodeId();
 
-                if (encounteredDiscontinousHalfEdges.find(discontinousHalfEdgeIndex) != encounteredDiscontinousHalfEdges.end())
+                if (partitionInfo.markedDiscontinousIndices.find(discontinousHalfEdgeIndex) !=
+                    partitionInfo.markedDiscontinousIndices.end())
                     continue;
 
-                encounteredDiscontinousHalfEdges.insert(discontinousHalfEdgeIndex);
+                partitionInfo.markedDiscontinousIndices.insert(discontinousHalfEdgeIndex);
+
                 candidateHalfEdges.insert(discontinousHalfEdge);
 
                 const auto discontinousHalfEdgeVertexPosition = math::make_vec3(&partitionInfo.vertices.at(
