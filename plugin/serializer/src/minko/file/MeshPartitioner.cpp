@@ -626,16 +626,12 @@ MeshPartitioner::insertTriangle(OctreeNodePtr       partitionNode,
     {
         if (countTriangles(partitionNode) < _options.maxNumTrianglesPerNode)
         {
-            auto& triangles = partitionNode->triangles.back();
-
             const auto triangleIndices = std::vector<unsigned int>(
                 indices.begin() + triangleIndex * 3,
                 indices.begin() + (triangleIndex + 1) * 3
             );
 
-            auto& indices = partitionNode->indices.back();
-
-            const auto expectedNumIndices = indices.size() + triangleIndices.size();
+            const auto expectedNumIndices = partitionNode->indices.back().size() + triangleIndices.size();
 
             if (_options.flags & Options::applyCrackFreePolicy)
             {
@@ -645,7 +641,8 @@ MeshPartitioner::insertTriangle(OctreeNodePtr       partitionNode,
                 }
                 else
                 {
-                    triangles.push_back(triangleIndex);
+                    partitionNode->triangles.back().push_back(triangleIndex);
+                    partitionNode->indices.back().insert(triangleIndices.begin(), triangleIndices.end());
 
                     return;
                 }
