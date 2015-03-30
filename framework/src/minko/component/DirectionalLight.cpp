@@ -228,7 +228,7 @@ DirectionalLight::computeShadowProjection(const math::mat4& view, const math::ma
 	// page 7
     auto splitFar = std::vector<float> { zFar, zFar, zFar, zFar };
     auto splitNear = std::vector<float> { zNear, zNear, zNear, zNear };
-	float lambda = .6f;
+	float lambda = .8f;
 	float j = 1.f;
 	for (auto i = 0u; i < _numShadowCascades - 1; ++i, j+= 1.f)
 	{
