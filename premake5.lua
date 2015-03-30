@@ -118,6 +118,7 @@ solution "minko"
 			['physics']				= true,
 			['picking']				= true,
 			['raycasting']			= false,
+			['section']				= true,
 			['sensors']				= true,
 			['serializer']			= true,
             ['sky-box']             = true,
