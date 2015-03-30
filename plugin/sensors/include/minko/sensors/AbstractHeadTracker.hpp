@@ -1,5 +1,5 @@
---[[
-Copyright (c) 2015 Aerys
+/*
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -15,33 +15,31 @@ BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR P
 NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-]]--
+*/
 
--- sensors plugin
-minko.plugin.sensors = {}
+#pragma once
 
-function minko.plugin.sensors:enable()
+#include "minko/Minko.hpp"
+#include "minko/Signal.hpp"
 
-	defines { "MINKO_PLUGIN_SENSORS" }
-	
-	minko.plugin.links { "sensors" }
-	minko.plugin.enable { "sdl" }
+namespace minko
+{
+    namespace sensors
+    {
+        class AbstractHeadTracker
+        {
+        public:
+            void
+            initialize();
 
-	includedirs {
-		minko.plugin.path("sensors") .. "/include"
-	}
+            virtual
+            void
+            startTracking() = 0;
 
-	prelinkcommands {
-		minko.action.copy(minko.plugin.path("sensors") .. "/asset"),
-	}
-
-	configuration { "android", "SharedLib" }
-		linkoptions {
-			"-Wl,--undefined=Java_minko_plugin_sensors_AndroidHeadTracker_minkoNativeOnHeadTrackerEvent"
-		}
-end
-
-newoption {
-	trigger		= "with-sensors",
-	description	= "Enable the Minko sensors plugin."
+            virtual
+            void
+            stopTracking() = 0;
+        };
+    }
 }
+

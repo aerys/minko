@@ -17,25 +17,57 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#pragma once
+
 #include "minko/Minko.hpp"
-#include "minko/MinkoSDL.hpp"
+#include "minko/sensors/AbstractHeadTracker.hpp"
 #include "minko/log/Logger.hpp"
-#include "minko/android/AndroidHeadTracker.hpp"
 
-using namespace minko;
+#include <jni.h>
 
-int
-main(int argc, char** argv)
+namespace minko
 {
-    LOG_INFO("Hello World");
+    namespace android
+    {
+        namespace sensors
+        {
+            class AndroidHeadTracker : public minko::sensors::AbstractHeadTracker
+            {
+            public:
+                typedef std::shared_ptr<AndroidHeadTracker> Ptr;
 
-    auto headTracker = android::sensors::AndroidHeadTracker::create();
-    
-    headTracker->initialize();
-    headTracker->startTracking();
+            private:
+                AndroidHeadTracker();
 
-	while(true)
-	{
+            public:
+                static
+                inline
+                Ptr
+                create()
+                {
+                    return std::shared_ptr<AndroidHeadTracker>(new AndroidHeadTracker());
+                }
 
-	}
+                void
+                initialize();
+
+                void
+                startTracking();
+
+                void
+                stopTracking();
+
+            private:
+
+                // JNI part
+
+                // Java Objects
+                jobject _headTracker = nullptr;
+
+                // Java Method IDs
+                jmethodID _startTrackingMethod = nullptr;
+                jmethodID _stopTrackingMethod = nullptr;
+            };
+        }
+    }
 }
