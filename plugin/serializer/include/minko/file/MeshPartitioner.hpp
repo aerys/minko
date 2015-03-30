@@ -274,6 +274,11 @@ namespace minko
             countTriangles(OctreeNodePtr partitionNode);
 
             static
+            math::vec3
+            positionAt(unsigned int         index,
+                       const PartitionInfo& partitionInfo);
+
+            static
             int
             computeDepth(OctreeNodePtr partitionNode);
         };

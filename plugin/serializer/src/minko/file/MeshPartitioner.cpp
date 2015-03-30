@@ -496,10 +496,12 @@ MeshPartitioner::registerSharedTriangle(OctreeNodePtr    partitionNode,
 
     for (auto sharedIndex : sharedIndices)
     {
-        const auto position = math::make_vec3(&partitionInfo.vertices.at(
-            sharedIndex * partitionInfo.vertexSize + partitionInfo.positionAttributeOffset
-        ));
+        auto sharedIndexPositions = std::vector<math::vec3>();
 
+        const auto position = positionAt(sharedIndex, partitionInfo);
+
+        sharedIndexPositions.push_back(position);
+        
         auto halfEdge = partitionInfo.halfEdges.at(sharedIndex);
 
         auto candidateHalfEdges = std::unordered_set<HalfEdge::Ptr>();
@@ -508,70 +510,95 @@ MeshPartitioner::registerSharedTriangle(OctreeNodePtr    partitionNode,
         candidateHalfEdges.insert(halfEdge->next());
         candidateHalfEdges.insert(halfEdge->prec());
 
-        for (auto mergedIndex : partitionInfo.mergedIndices.at(position))
+        if (halfEdge->adjacent() != nullptr)
         {
-            if (mergedIndex == sharedIndex)
-                continue;
+            candidateHalfEdges.insert(halfEdge->adjacent());
 
-            if (partitionInfo.markedDiscontinousIndices.find(mergedIndex) !=
-                partitionInfo.markedDiscontinousIndices.end())
-                continue;
+            sharedIndexPositions.push_back(positionAt(halfEdge->adjacent()->startNodeId(), partitionInfo));
+        }
 
-            partitionInfo.markedDiscontinousIndices.insert(mergedIndex);
+        if (halfEdge->next()->adjacent() != nullptr)
+        {
+            candidateHalfEdges.insert(halfEdge->next()->adjacent());
 
-            auto mergedIndexHalfEdge = partitionInfo.halfEdges.at(mergedIndex);
+            sharedIndexPositions.push_back(positionAt(halfEdge->next()->adjacent()->startNodeId(), partitionInfo));
+        }
 
-            for (auto i = 0u; i < 3u; ++i)
+        if (halfEdge->prec()->adjacent() != nullptr)
+        {
+            candidateHalfEdges.insert(halfEdge->prec()->adjacent());
+
+            sharedIndexPositions.push_back(positionAt(halfEdge->prec()->adjacent()->startNodeId(), partitionInfo));
+        }
+
+        for (const auto& sharedIndexPosition : sharedIndexPositions)
+        {
+            for (auto mergedIndex : partitionInfo.mergedIndices.at(sharedIndexPosition))
             {
-                candidateHalfEdges.insert(mergedIndexHalfEdge->face().at(i));
-                candidateHalfEdges.insert(mergedIndexHalfEdge->next()->face().at(i));
-                candidateHalfEdges.insert(mergedIndexHalfEdge->prec()->face().at(i));
-            }
+                if (mergedIndex == sharedIndex)
+                    continue;
 
-            auto discontinousHalfEdges = std::queue<HalfEdge::Ptr>();
-
-            for (auto i = 0u; i < 3u; ++i)
-            {
-                discontinousHalfEdges.push(mergedIndexHalfEdge->face().at(i));
-                discontinousHalfEdges.push(mergedIndexHalfEdge->next()->face().at(i));
-                discontinousHalfEdges.push(mergedIndexHalfEdge->prec()->face().at(i));
-            }
-
-            while (!discontinousHalfEdges.empty())
-            {
-                auto discontinousHalfEdge = discontinousHalfEdges.front();
-                discontinousHalfEdges.pop();
-
-                const auto discontinousHalfEdgeIndex = discontinousHalfEdge->startNodeId();
-
-                if (partitionInfo.markedDiscontinousIndices.find(discontinousHalfEdgeIndex) !=
+                if (partitionInfo.markedDiscontinousIndices.find(mergedIndex) !=
                     partitionInfo.markedDiscontinousIndices.end())
                     continue;
 
-                partitionInfo.markedDiscontinousIndices.insert(discontinousHalfEdgeIndex);
+                partitionInfo.markedDiscontinousIndices.insert(mergedIndex);
 
-                candidateHalfEdges.insert(discontinousHalfEdge);
+                auto mergedIndexHalfEdge = partitionInfo.halfEdges.at(mergedIndex);
 
-                const auto discontinousHalfEdgeVertexPosition = math::make_vec3(&partitionInfo.vertices.at(
-                    discontinousHalfEdgeIndex * partitionInfo.vertexSize + partitionInfo.positionAttributeOffset
-                ));
-
-                const auto& secondaryDiscontinousHalfEdgeIndices = partitionInfo.mergedIndices.at(
-                    discontinousHalfEdgeVertexPosition
-                );
-
-                for (auto secondaryDiscontinousHalfEdgeIndex : secondaryDiscontinousHalfEdgeIndices)
+                for (auto i = 0u; i < 3u; ++i)
                 {
-                    if (secondaryDiscontinousHalfEdgeIndex == discontinousHalfEdgeIndex)
+                    candidateHalfEdges.insert(mergedIndexHalfEdge->face().at(i));
+                    candidateHalfEdges.insert(mergedIndexHalfEdge->next()->face().at(i));
+                    candidateHalfEdges.insert(mergedIndexHalfEdge->prec()->face().at(i));
+                }
+
+                auto discontinousHalfEdges = std::queue<HalfEdge::Ptr>();
+
+                for (auto i = 0u; i < 3u; ++i)
+                {
+                    discontinousHalfEdges.push(mergedIndexHalfEdge->face().at(i));
+                    discontinousHalfEdges.push(mergedIndexHalfEdge->next()->face().at(i));
+                    discontinousHalfEdges.push(mergedIndexHalfEdge->prec()->face().at(i));
+                }
+
+                while (!discontinousHalfEdges.empty())
+                {
+                    auto discontinousHalfEdge = discontinousHalfEdges.front();
+                    discontinousHalfEdges.pop();
+
+                    const auto discontinousHalfEdgeIndex = discontinousHalfEdge->startNodeId();
+
+                    if (partitionInfo.markedDiscontinousIndices.find(discontinousHalfEdgeIndex) !=
+                        partitionInfo.markedDiscontinousIndices.end())
                         continue;
 
-                    auto secondaryDiscontinousHalfEdge = partitionInfo.halfEdges.at(secondaryDiscontinousHalfEdgeIndex);
+                    partitionInfo.markedDiscontinousIndices.insert(discontinousHalfEdgeIndex);
 
-                    for (auto i = 0u; i < 3u; ++i)
+                    candidateHalfEdges.insert(discontinousHalfEdge);
+
+                    const auto discontinousHalfEdgeVertexPosition = positionAt(
+                        discontinousHalfEdgeIndex,
+                        partitionInfo
+                    );
+
+                    const auto& secondaryDiscontinousHalfEdgeIndices = partitionInfo.mergedIndices.at(
+                        discontinousHalfEdgeVertexPosition
+                    );
+
+                    for (auto secondaryDiscontinousHalfEdgeIndex : secondaryDiscontinousHalfEdgeIndices)
                     {
-                        discontinousHalfEdges.push(secondaryDiscontinousHalfEdge->face().at(i));
-                        discontinousHalfEdges.push(secondaryDiscontinousHalfEdge->next()->face().at(i));
-                        discontinousHalfEdges.push(secondaryDiscontinousHalfEdge->prec()->face().at(i));
+                        if (secondaryDiscontinousHalfEdgeIndex == discontinousHalfEdgeIndex)
+                            continue;
+
+                        auto secondaryDiscontinousHalfEdge = partitionInfo.halfEdges.at(secondaryDiscontinousHalfEdgeIndex);
+
+                        for (auto i = 0u; i < 3u; ++i)
+                        {
+                            discontinousHalfEdges.push(secondaryDiscontinousHalfEdge->face().at(i));
+                            discontinousHalfEdges.push(secondaryDiscontinousHalfEdge->next()->face().at(i));
+                            discontinousHalfEdges.push(secondaryDiscontinousHalfEdge->prec()->face().at(i));
+                        }
                     }
                 }
             }
@@ -579,10 +606,7 @@ MeshPartitioner::registerSharedTriangle(OctreeNodePtr    partitionNode,
 
         for (auto halfEdge : candidateHalfEdges)
         {
-            for (auto i = 0u; i < 3u; ++i)
-            {
-                partitionInfo.protectedIndices.insert(halfEdge->face().at(i)->startNodeId());
-            }
+            partitionInfo.protectedIndices.insert(halfEdge->startNodeId());
         }
     }
 }
@@ -1115,4 +1139,13 @@ MeshPartitioner::patchNode(Node::Ptr        node,
     }
 
     return true;
+}
+
+math::vec3
+MeshPartitioner::positionAt(unsigned int         index,
+                            const PartitionInfo& partitionInfo)
+{
+    return math::make_vec3(&partitionInfo.vertices.at(
+        index * partitionInfo.vertexSize + partitionInfo.positionAttributeOffset
+    ));
 }
