@@ -38,55 +38,26 @@ computeClippingPlane(math::vec3 position, math::vec3 normal)
 
 int main(int argc, char** argv)
 {
-	std::string inputFileName;
-
-	for (auto i = 1; i < argc; ++i)
-	{
-		const auto arg = std::string(argv[i]);
-		if (arg == "-i")
-			inputFileName = std::string(argv[++i]);
-	}
-
 	auto canvas = Canvas::create("Minko Example - Section");
 	auto sceneManager = SceneManager::create(canvas);
 	auto defaultLoader = sceneManager->assets()->loader();
 	auto fxLoader = file::Loader::create(defaultLoader);
 
-	fxLoader->queue("effect/CrossSection.effect");
-
-	defaultLoader->options()
-		->generateMipmaps(true)
-		->registerParser<file::SceneParser>("scene");
-
-	auto fxComplete = fxLoader->complete()->connect([&](file::Loader::Ptr loader)
-	{
-		defaultLoader->options()->effect(sceneManager->assets()->effect("effect/CrossSection.effect"));
-		defaultLoader->options()->disposeTextureAfterLoading(true);
-		defaultLoader->queue(inputFileName);
-		defaultLoader->load();
-
-		//auto crossSectionEffect = sceneManager->assets()->effect("effect/CrossSection.effect");
-	});
+	fxLoader
+		->queue("effect/Basic.effect")
+		->queue("effect/CrossSection.effect");
 
 	auto fxError = defaultLoader->error()->connect([&](file::Loader::Ptr loader, const file::Error& error)
 	{
 		std::cout << "File loading error: " << error.what() << std::endl;
 	});
 	
-	auto root = scene::Node::create("root")
-		->addComponent(sceneManager);
+	auto root = scene::Node::create("root")->addComponent(sceneManager);
 
-	auto clippingPlanePosition = math::vec3();
-	auto clippingPlaneNormal = math::vec3(1, 0, 0);
-	auto rotationMatrix = math::mat4();
-
-	auto clippingPlane = computeClippingPlane(clippingPlanePosition, clippingPlaneNormal);
-	root->data().providers().front()->set("clippingPlane", clippingPlane);
-
-	auto renderer = Renderer::create(0x7f7f7fff);
+	root->data().providers().front()->set("clippingPlane", math::vec4());
 
 	auto camera = scene::Node::create("camera")
-		->addComponent(renderer)
+		->addComponent(Renderer::create(0x7f7f7fff))
 		->addComponent(Transform::create(
 		math::inverse(math::lookAt(math::vec3(0.f, 0.f, 10.f), math::zero<math::vec3>(), math::vec3(0.f, 1.f, 0.f))
 		)))
@@ -94,14 +65,38 @@ int main(int argc, char** argv)
 
 	root->addChild(camera);
 
-	auto _ = defaultLoader->complete()->connect([&](file::Loader::Ptr loader)
-	{
-		auto sceneNode = sceneManager->assets()->symbol(inputFileName);
-		
-		root->addChild(sceneNode);
+	sceneManager->assets()->geometry("teapot", geometry::TeapotGeometry::create(sceneManager->assets()->context()));
 
-		if (!sceneNode->hasComponent<Transform>())
-			sceneNode->addComponent(Transform::create());
+	auto clippingPlaneMesh = scene::Node::create("clippingPlane");
+
+	auto fxComplete = fxLoader->complete()->connect([&](file::Loader::Ptr loader)
+	{
+		auto surface = Surface::create(
+			sceneManager->assets()->geometry("teapot"),
+			material::BasicMaterial::create(),
+			sceneManager->assets()->effect("effect/CrossSection.effect")
+		);
+
+		auto mesh = scene::Node::create("mesh");
+		mesh->addComponent(surface);
+		mesh->addComponent(Transform::create());
+
+		auto transform = Transform::create();
+		transform->matrix(math::scale(math::vec3(30)) * transform->matrix());
+		transform->matrix(math::rotate((float)-M_PI_2, math::vec3(1.f, 0.f, 0.f)) * transform->matrix());
+		
+		auto clippingPlaneMeshSurface = Surface::create(
+			geometry::QuadGeometry::create(sceneManager->assets()->context()),
+			material::BasicMaterial::create(),
+			sceneManager->assets()->effect("effect/Basic.effect"));
+
+		//clippingPlaneMeshSurface->material()->data()->set("triangleCulling", minko::render::TriangleCulling::NONE);
+
+		clippingPlaneMesh->addComponent(transform);
+		clippingPlaneMesh->addComponent(clippingPlaneMeshSurface);
+
+		root->addChild(clippingPlaneMesh);
+		root->addChild(mesh);
 	});
 
 	auto yaw = float(M_PI) * 0.25f;
@@ -118,7 +113,7 @@ int main(int argc, char** argv)
 	// handle mouse signals
 	auto mouseWheel = canvas->mouse()->wheel()->connect([&](input::Mouse::Ptr m, int h, int v)
 	{
-		distance += float(v) * 1;
+		distance -= float(v) * 1;
 	});
 
 	mouseMove = canvas->mouse()->move()->connect([&](input::Mouse::Ptr m, int dx, int dy)
@@ -133,48 +128,69 @@ int main(int argc, char** argv)
 	// handle keyboard signals
 	auto keyDown = canvas->keyboard()->keyDown()->connect([&](input::Keyboard::Ptr k)
 	{
-		// Change position
-		if (k->keyIsDown(input::Keyboard::UP))
+		if (clippingPlaneMesh->hasComponent<Transform>())
 		{
-			clippingPlanePosition.y += .01f;
+			auto transform = clippingPlaneMesh->component<Transform>();
+			auto transformMatrix = transform->matrix();
+
+			// Change position
+			if (k->keyIsDown(input::Keyboard::UP))
+			{
+				transformMatrix *= math::translate(math::vec3(0.f, 0.f, 0.01f));
+			}
+			else if (k->keyIsDown(input::Keyboard::DOWN))
+			{
+				transformMatrix *= math::translate(math::vec3(0.f, 0.f, -0.01f));
+			}
+			else if (k->keyIsDown(input::Keyboard::LEFT))
+			{
+				transformMatrix *= math::translate(math::vec3(-0.01f, 0.f, 0.f));
+			}
+			else if (k->keyIsDown(input::Keyboard::RIGHT))
+			{
+				transformMatrix *= math::translate(math::vec3(0.01f, 0.f, 0.f));
+			}
+			// Change rotation
+			else if (k->keyIsDown(input::Keyboard::PAGE_UP))
+			{
+				transformMatrix *= math::rotate(-0.1f, math::vec3(1.f, 0.f, 0.f));
+			}
+			else if (k->keyIsDown(input::Keyboard::PAGE_DOWN))
+			{
+				transformMatrix *= math::rotate(0.1f, math::vec3(1.f, 0.f, 0.f));
+			}
+			else if (k->keyIsDown(input::Keyboard::HOME))
+			{
+				transformMatrix *= math::rotate(-0.1f, math::vec3(0.f, 1.f, 0.f));
+			}
+			else if (k->keyIsDown(input::Keyboard::END))
+			{
+				transformMatrix *= math::rotate(0.1f, math::vec3(0.f, 1.f, 0.f));
+			}
+			else if (k->keyIsDown(input::Keyboard::INSERT))
+			{
+				transformMatrix *= math::rotate(-0.1f, math::vec3(0.f, 0.f, 1.f));
+			}
+			else if (k->keyIsDown(input::Keyboard::DEL))
+			{
+				transformMatrix *= math::rotate(0.1f, math::vec3(0.f, 0.f, 1.f));
+			}
+
+			transform->matrix(transformMatrix);
+
+			auto surface = clippingPlaneMesh->component<Surface>();
+			auto vertexBuffer = surface->geometry()->vertexBuffer("normal");
+			auto normalAttribute = vertexBuffer->attribute("normal");
+			auto normalVector = math::vec3(
+				vertexBuffer->data()[normalAttribute.offset],
+				vertexBuffer->data()[normalAttribute.offset + 1],
+				vertexBuffer->data()[normalAttribute.offset + 2]
+			);
+
+			normalVector = math::normalize(math::mat3(transformMatrix) * normalVector);
+			auto clippingPlane = computeClippingPlane(transformMatrix[3].xyz, normalVector);
+			root->data().providers().front()->set("clippingPlane", clippingPlane);
 		}
-		else if (k->keyIsDown(input::Keyboard::DOWN))
-		{
-			clippingPlanePosition.y -= .01f;
-		}
-		else if (k->keyIsDown(input::Keyboard::LEFT))
-		{
-			clippingPlanePosition.x -= .01f;
-		}
-		else if (k->keyIsDown(input::Keyboard::RIGHT))
-		{
-			clippingPlanePosition.x += .01f;
-		}
-		// Change rotation
-		else if (k->keyIsDown(input::Keyboard::PAGE_UP))
-		{
-			rotationMatrix = rotationMatrix * math::rotate(-0.001f, math::vec3(0.f, 0.f, 1.f));
-			clippingPlaneNormal = math::vec3(rotationMatrix * math::vec4(clippingPlaneNormal, 1));
-		}
-		else if (k->keyIsDown(input::Keyboard::PAGE_DOWN))
-		{
-			rotationMatrix = rotationMatrix * math::rotate(0.001f, math::vec3(0.f, 0.f, 1.f));
-			clippingPlaneNormal = math::vec3(rotationMatrix * math::vec4(clippingPlaneNormal, 1));
-		}
-		else if (k->keyIsDown(input::Keyboard::HOME))
-		{
-			rotationMatrix = rotationMatrix * math::rotate(-0.001f, math::vec3(0.f, 1.f, 0.f));
-			clippingPlaneNormal = math::vec3(rotationMatrix * math::vec4(clippingPlaneNormal, 1));
-		}
-		else if (k->keyIsDown(input::Keyboard::END))
-		{
-			rotationMatrix = rotationMatrix * math::rotate(0.001f, math::vec3(0.f, 1.f, 0.f));
-			clippingPlaneNormal = math::vec3(rotationMatrix * math::vec4(clippingPlaneNormal, 1));
-		}
-		
-		clippingPlaneNormal = math::normalize(clippingPlaneNormal);
-		auto clippingPlane = computeClippingPlane(clippingPlanePosition, clippingPlaneNormal);
-		root->data().providers().front()->set("clippingPlane", clippingPlane);
 	});
 
 	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, unsigned int w, unsigned int h)
@@ -203,6 +219,7 @@ int main(int argc, char** argv)
 			lookAt,
 			math::vec3(0.f, 1.f, 0.f)
 			)));
+
 		sceneManager->nextFrame(time, deltaTime);
 	});
 
