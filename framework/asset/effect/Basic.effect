@@ -13,6 +13,27 @@
         "FOG_EXP2"          : "material[${materialUuid}].fogExponential2",
         "FOG_TECHNIQUE"     : { "binding" : "material[${materialUuid}].fogTechnique", "type" : "int" }
     },
+
+    "states" : {
+        "blendingMode"          : { "binding" : "material[${materialId}].blendingMode", "default" : ["one", "zero"] },
+        "colorMask"             : { "binding" : "material[${materialId}].colorMask", "default" : true },
+        "depthMask"             : { "binding" : "material[${materialId}].depthMask", "default" : [true, "less_equal"] },
+        "depthFunction"         : { "binding" : "material[${materialUuid}].depthFunction" },
+        "triangleCulling"       : { "binding" : "material[${materialId}].triangleCulling", "default" : "back" },
+        "stencilFunction"       : { "binding" : "material[${materialId}].stencilFunction", "default" : "always" },
+        "stencilReference"      : { "binding" : "material[${materialId}].stencilReference", "default" : 0 },
+        "stencilMask"           : { "binding" : "material[${materialId}].stencilMask", "default" : 1 },
+        "stencilFailOperation"  : { "binding" : "material[${materialId}].stencilFailOperation", "default" : "keep" },
+        "stencilZFailOperation" : { "binding" : "material[${materialId}].stencilZFailOperation", "default" : "keep" },
+        "stencilZPassOperation" : { "binding" : "material[${materialId}].stencilZPassOperation", "default" : "keep" },
+        "scissorTest"           : false,
+        "scissorBox"            : { "binding" : "material[${materialId}].scissorBox", "default" : [0, 0, -1, -1] },
+        "priority"              : { "binding" : "material[${materialId}].priority", "default" : "opaque" },
+        "zSorted"               : { "binding" : "material[${materialUuid}].zSorted" }
+    },
+
+    "defaultTechnique"  : "opaque",
+
     "techniques" : [
         {
             "name" : "default",
