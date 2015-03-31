@@ -92,6 +92,8 @@ namespace minko
         SDL_Window*                                                             _window;
         float                                                                   _relativeTime;
         float                                                                   _frameDuration;
+        float                                                                   _deltaTime;
+        time_point                                                              _previousTime;
         time_point                                                              _startTime;
         float                                                                   _framerate;
         float                                                                   _desiredFramerate;
@@ -322,6 +324,14 @@ namespace minko
         frameDuration() const
         {
             return _frameDuration;
+        }
+
+        // Time in millisecond since last frame.
+        inline
+        float
+        deltaTime() const
+        {
+            return _deltaTime;
         }
 
         // Time in milliseconds since application started.

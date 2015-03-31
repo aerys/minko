@@ -69,6 +69,7 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, int
     _flags(flags),
     _data(data::Provider::create()),
     _active(false),
+    _previousTime(std::chrono::high_resolution_clock::now()),
     _startTime(std::chrono::high_resolution_clock::now()),
     _framerate(0.f),
     _desiredFramerate(60.f),
@@ -900,8 +901,10 @@ Canvas::step()
 
     auto absoluteTime = std::chrono::high_resolution_clock::now();
 	_relativeTime   = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - _startTime).count(); // in milliseconds
+    _deltaTime = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - _previousTime).count(); // in milliseconds
+    _previousTime = absoluteTime;
 
-    _enterFrame->execute(that, _relativeTime, _frameDuration);
+    _enterFrame->execute(that, _relativeTime, _deltaTime);
     _backend->swapBuffers(that);
 
     _frameDuration  = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - absoluteTime).count(); // in milliseconds

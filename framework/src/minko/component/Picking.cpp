@@ -596,7 +596,6 @@ Picking::mouseLeftClickHandler(MousePtr mouse)
 void
 Picking::mouseRightDownHandler(MousePtr mouse)
 {
-
     if (_mouseRightDown->numCallbacks() > 0)
 	{
 		_executeRightDownHandler = true;
