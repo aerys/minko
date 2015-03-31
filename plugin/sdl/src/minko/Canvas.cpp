@@ -69,7 +69,6 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, int
     _flags(flags),
     _data(data::Provider::create()),
     _active(false),
-    _previousTime(std::chrono::high_resolution_clock::now()),
     _startTime(std::chrono::high_resolution_clock::now()),
     _framerate(0.f),
     _desiredFramerate(60.f),
@@ -900,22 +899,22 @@ Canvas::step()
 #endif
 
     auto absoluteTime = std::chrono::high_resolution_clock::now();
-    _relativeTime   = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - _startTime).count(); // in milliseconds
-    _frameDuration  = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - _previousTime).count(); // in milliseconds
+	_relativeTime   = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - _startTime).count(); // in milliseconds
 
     _enterFrame->execute(that, _relativeTime, _frameDuration);
-    _previousTime = absoluteTime;
-
     _backend->swapBuffers(that);
+
+    _frameDuration  = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - absoluteTime).count(); // in milliseconds
 
     // framerate in seconds
     _framerate = 1000.f / _frameDuration;
 
-    if (_framerate > _desiredFramerate)
+    auto remainingTime = (1000.f / _desiredFramerate) - _frameDuration;
+    
+    if (remainingTime > 0)
     {
-        _backend->wait(that, static_cast<uint>((1000.f / _desiredFramerate) - _frameDuration));
-
-        _framerate = _desiredFramerate;
+        _backend->wait(that, remainingTime);
+		_framerate = _desiredFramerate;
     }
 }
 
