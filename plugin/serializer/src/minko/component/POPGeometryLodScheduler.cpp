@@ -310,7 +310,7 @@ POPGeometryLodScheduler::computeRequiredLod(const POPGeometryResourceInfo&  reso
 
     auto unitSize = std::abs(2.0f * std::tan(0.5f * _fov) * targetDistance / viewportHeight);
 
-    requiredPrecisionLevel = std::log2(glm::length(worldMaxBound - worldMinBound) / (unitSize * popErrorBound));
+    requiredPrecisionLevel = std::log2(glm::length(worldMaxBound - worldMinBound) / (unitSize * (popErrorBound + 1)));
 
     auto ceiledRequiredPrecisionLevel = static_cast<int>(std::ceil(requiredPrecisionLevel));
 
