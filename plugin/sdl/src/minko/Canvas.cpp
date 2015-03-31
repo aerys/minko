@@ -524,8 +524,8 @@ Canvas::step()
 
         case SDL_MOUSEMOTION:
         {
-			int windowW;
-			int windowH;
+            int windowW;
+            int windowH;
 
             SDL_GetWindowSize(_window, &windowW, &windowH);
 
@@ -542,7 +542,6 @@ Canvas::step()
             _mouse->y(y);
 
             _mouse->move()->execute(_mouse, event.motion.xrel, event.motion.yrel);
-
             break;
         }
 
