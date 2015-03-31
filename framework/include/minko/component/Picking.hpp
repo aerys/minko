@@ -50,7 +50,7 @@ namespace minko
 			RendererPtr							        _renderer;
 			SceneManagerPtr						        _sceneManager;
 			MousePtr							        _mouse;
-            TouchPtr                                            _touch;
+            TouchPtr                                    _touch;
 			NodePtr								        _camera;
 			math::mat4							        _pickingProjection;	
 			std::map<SurfacePtr, uint>			        _surfaceToPickingId; 
@@ -69,6 +69,7 @@ namespace minko
 			Signal<NodePtr, NodePtr, NodePtr>::Slot		_removedSlot;
 			Signal<RendererPtr>::Slot					_renderingBeginSlot;
 			Signal<RendererPtr>::Slot					_renderingEndSlot;
+            Signal<SceneManagerPtr, float, float>::Slot _frameBeginSlot;
 			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot	_componentAddedSlot;
 			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot	_componentRemovedSlot;
 
@@ -82,12 +83,12 @@ namespace minko
 			Signal<NodePtr>::Ptr						_mouseOut;
 			Signal<NodePtr>::Ptr						_mouseMove;
 
-            Signal<NodePtr>::Ptr                                _touchDown;
-            Signal<NodePtr>::Ptr                                _touchUp;
-            Signal<NodePtr>::Ptr                                _touchMove;
-            Signal<NodePtr>::Ptr                                _tap;
-            Signal<NodePtr>::Ptr                                _doubleTap;
-            Signal<NodePtr>::Ptr                                _longHold;
+            Signal<NodePtr>::Ptr                        _touchDown;
+            Signal<NodePtr>::Ptr                        _touchUp;
+            Signal<NodePtr>::Ptr                        _touchMove;
+            Signal<NodePtr>::Ptr                        _tap;
+            Signal<NodePtr>::Ptr                        _doubleTap;
+            Signal<NodePtr>::Ptr                        _longHold;
 
 			unsigned char								_lastColor[4];
 			SurfacePtr									_lastPickedSurface;
@@ -95,33 +96,35 @@ namespace minko
 			Signal<MousePtr, int, int>::Slot			_mouseMoveSlot;
 			Signal<MousePtr>::Slot						_mouseRightDownSlot;
 			Signal<MousePtr>::Slot						_mouseLeftDownSlot;
-            Signal<MousePtr>::Slot                              _mouseRightUpSlot;
-            Signal<MousePtr>::Slot                              _mouseLeftUpSlot;
+            Signal<MousePtr>::Slot                      _mouseRightUpSlot;
+            Signal<MousePtr>::Slot                      _mouseLeftUpSlot;
 			Signal<MousePtr>::Slot						_mouseRightClickSlot;
 			Signal<MousePtr>::Slot						_mouseLeftClickSlot;
-            Signal<TouchPtr, int, float, float>::Slot           _touchDownSlot;
-            Signal<TouchPtr, int, float, float>::Slot           _touchUpSlot;
-            Signal<TouchPtr, int, float, float>::Slot           _touchMoveSlot;
-            Signal<TouchPtr, float, float>::Slot                _touchTapSlot;
-            Signal<TouchPtr, float, float>::Slot                _touchDoubleTapSlot;
-            Signal<TouchPtr, float, float>::Slot                _touchLongHoldSlot;
+            Signal<TouchPtr, int, float, float>::Slot   _touchDownSlot;
+            Signal<TouchPtr, int, float, float>::Slot   _touchUpSlot;
+            Signal<TouchPtr, int, float, float>::Slot   _touchMoveSlot;
+            Signal<TouchPtr, float, float>::Slot        _touchTapSlot;
+            Signal<TouchPtr, float, float>::Slot        _touchDoubleTapSlot;
+            Signal<TouchPtr, float, float>::Slot        _touchLongHoldSlot;
 
 			bool										_executeMoveHandler;
 			bool										_executeRightClickHandler;
 			bool										_executeLeftClickHandler;
 			bool										_executeRightDownHandler;
 			bool										_executeLeftDownHandler;
-            bool                                                _executeRightUpHandler;
-            bool                                                _executeLeftUpHandler;
-            bool                                                _executeTouchDownHandler;
-            bool                                                _executeTouchUpHandler;
-            bool                                                _executeTouchMoveHandler;
-            bool                                                _executeTapHandler;
-            bool                                                _executeDoubleTapHandler;
-            bool                                                _executeLongHoldHandler;
+            bool                                        _executeRightUpHandler;
+            bool                                        _executeLeftUpHandler;
+            bool                                        _executeTouchDownHandler;
+            bool                                        _executeTouchUpHandler;
+            bool                                        _executeTouchMoveHandler;
+            bool                                        _executeTapHandler;
+            bool                                        _executeDoubleTapHandler;
+            bool                                        _executeLongHoldHandler;
 
 			bool										_addPickingLayout;
-            bool                                                _emulateMouseWithTouch;
+            bool                                        _emulateMouseWithTouch;
+
+            bool                                        _enabled;
 
 		public:
 			inline static
@@ -334,6 +337,12 @@ namespace minko
 
             void
 			updateDescendants(NodePtr target);
+
+            void
+            enabled(bool enabled);
+
+            void
+            frameBeginHandler(SceneManagerPtr, float, float);
 		};
 	}
 }
