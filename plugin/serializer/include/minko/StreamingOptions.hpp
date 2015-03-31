@@ -77,6 +77,7 @@ namespace minko
 
         bool                                            _mergeSurfacesOnPartitioning;
         bool                                            _useSharedClusterHierarchyOnPartitioning;
+        bool                                            _applyCrackFreePolicyOnPartitioning;
 
         float                                           _popGeometryPriorityFactor;
         float                                           _streamedTexturePriorityFactor;
@@ -275,6 +276,22 @@ namespace minko
         useSharedClusterHierarchyOnPartitioning(bool value)
         {
             _useSharedClusterHierarchyOnPartitioning = value;
+
+            return shared_from_this();
+        }
+
+        inline
+        bool
+        applyCrackFreePolicyOnPartitioning() const
+        {
+            return _applyCrackFreePolicyOnPartitioning;
+        }
+
+        inline
+        Ptr
+        applyCrackFreePolicyOnPartitioning(bool value)
+        {
+            _applyCrackFreePolicyOnPartitioning = value;
 
             return shared_from_this();
         }

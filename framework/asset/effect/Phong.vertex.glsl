@@ -19,6 +19,7 @@ attribute 	vec3 	aTangent;
 attribute 	vec4	aBoneWeightsA;
 attribute 	vec4	aBoneWeightsB;
 attribute	float	aColor;
+attribute	float 	aPopProtected;
 
 uniform 	mat4 	uModelToWorldMatrix;
 uniform 	mat4 	uWorldToScreenMatrix;
@@ -56,10 +57,16 @@ void main(void)
 	#endif // SKINNING_NUM_BONES
 
 	#ifdef POP_LOD_ENABLED
+		float popProtected = 0.0;
+
+		#ifdef VERTEX_POP_PROTECTED
+			popProtected = aPopProtected;
+		#endif // VERTEX_POP_PROTECTED
+
 		#ifdef POP_BLENDING_ENABLED
-			worldPosition = pop_blend(worldPosition, aNormal, uPopLod, uPopBlendingLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound);
+			worldPosition = pop_blend(worldPosition, aNormal, uPopLod, uPopBlendingLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound, popProtected);
 		#else
-			worldPosition = pop_quantify(worldPosition, aNormal, uPopLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound);
+			worldPosition = pop_quantize(worldPosition, aNormal, uPopLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound, popProtected);
 		#endif // POP_BLENDING_ENABLED
 	#endif // POP_LOD_ENABLED
 

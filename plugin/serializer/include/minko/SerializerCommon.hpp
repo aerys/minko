@@ -9,7 +9,7 @@
 
 #define MINKO_SCENE_VERSION_MAJOR   0
 #define MINKO_SCENE_VERSION_MINOR	3
-#define MINKO_SCENE_VERSION_PATCH   0
+#define MINKO_SCENE_VERSION_PATCH   1
 
 namespace minko
 {
