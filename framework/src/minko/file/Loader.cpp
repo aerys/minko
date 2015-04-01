@@ -133,7 +133,13 @@ Loader::load()
             }
             else
             {
-                errorThrown(Error("ProtocolError", std::string("File does not exist: ") + filename));
+                auto error = Error(
+                    "ProtocolError",
+                    std::string("File does not exist: ") + filename +
+                    std::string(", include paths: ") + std::to_string(_options->includePaths(), ",")
+                );
+
+                errorThrown(error);
             }
         }
     }
