@@ -8,6 +8,11 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 		"asset/**"
 	}
 
+	minko.package.assets {
+		['**.effect'] = { 'embed' },
+		['**.glsl'] = { 'embed' }
+	}
+
 	includedirs { "src" }
 
 	-- plugins

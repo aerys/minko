@@ -7,7 +7,13 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 		"src/**.hpp",
 		"asset/**"
 	}
-	
+
+	minko.package.assets {
+		['**.effect'] = { 'embed' },
+		['**.glsl'] = { 'embed' },
+		['**.scene'] = { 'embed' }
+	}
+
 	includedirs { "src" }
 
 	-- plugins
