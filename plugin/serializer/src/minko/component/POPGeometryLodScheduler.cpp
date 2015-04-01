@@ -101,6 +101,8 @@ POPGeometryLodScheduler::surfaceAdded(Surface::Ptr surface)
 
     auto surfaceInfo = SurfaceInfo(surface);
 
+    resource->geometry = geometry;
+
     auto resourceData = resource->base->data;
     resource->fullPrecisionLod = surface->geometry()->data()->get<float>("popFullPrecisionLod");
 
@@ -190,8 +192,7 @@ POPGeometryLodScheduler::maxAvailableLodChanged(ResourceInfo&    resource,
     else
         popGeometryResource.minAvailableLod = std::min(maxAvailableLod, popGeometryResource.minAvailableLod);
 
-    if (maxAvailableLod < popGeometryResource.fullPrecisionLod)
-        popGeometryResource.maxAvailableLod = std::max(maxAvailableLod, popGeometryResource.maxAvailableLod);
+    popGeometryResource.maxAvailableLod = std::max(maxAvailableLod, popGeometryResource.maxAvailableLod);
 }
 
 POPGeometryLodScheduler::LodInfo
@@ -309,7 +310,7 @@ POPGeometryLodScheduler::computeRequiredLod(const POPGeometryResourceInfo&  reso
 
     auto unitSize = std::abs(2.0f * std::tan(0.5f * _fov) * targetDistance / viewportHeight);
 
-    requiredPrecisionLevel = std::log2(glm::length(worldMaxBound - worldMinBound) / (unitSize * popErrorBound));
+    requiredPrecisionLevel = std::log2(glm::length(worldMaxBound - worldMinBound) / (unitSize * (popErrorBound + 1)));
 
     auto ceiledRequiredPrecisionLevel = static_cast<int>(std::ceil(requiredPrecisionLevel));
 
@@ -504,12 +505,12 @@ POPGeometryLodScheduler::blendingLod(const POPGeometryResourceInfo&    resource,
 {
     const auto requiredPrecisionLevel = surfaceInfo.requiredPrecisionLevel;
 
-    auto blendingLod = std::max<float>(resource.minAvailableLod, requiredPrecisionLevel);
+    auto blendingLod = requiredPrecisionLevel >= float(resource.maxLod + 1)
+        ? resource.fullPrecisionLod
+        : requiredPrecisionLevel;
 
+    blendingLod = std::max<float>(resource.minAvailableLod, blendingLod);
     blendingLod = std::min<float>(resource.maxAvailableLod, blendingLod);
-
-    if (requiredPrecisionLevel >= float(resource.maxLod + 1))
-        blendingLod = resource.fullPrecisionLod;
 
     return blendingLod;
 }

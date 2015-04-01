@@ -94,6 +94,8 @@ ChromiumDOM::init(CefRefPtr<CefV8Context> context, CefRefPtr<CefFrame> frame)
 	_document = _global->GetValue("document");
 	window()->SetValue("Minko", _minkoObject, V8_PROPERTY_ATTRIBUTE_NONE);
 
+    _minkoObject->SetValue("platform", CefV8Value::CreateString("chromium"), V8_PROPERTY_ATTRIBUTE_NONE);
+
 	addLoadEventListener();
 	addSendMessageFunction();
     addDispatchMessageFunction();

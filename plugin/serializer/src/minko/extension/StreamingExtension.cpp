@@ -144,16 +144,16 @@ AbstractWriter<Node::Ptr>::Ptr writer)
             if (_streamingOptions->mergeSurfacesOnPartitioning())
                 meshPartitionerFlags |= MeshPartitioner::Options::mergeSurfaces;
 
-            auto meshPartitionerOptions = MeshPartitioner::Options();
-            meshPartitionerOptions._maxTriangleCountPerNode = 60000;
-            meshPartitionerOptions._flags = meshPartitionerFlags;
-            meshPartitionerOptions._borderMinPrecision = 5;
-            meshPartitionerOptions._borderMaxDeltaPrecision = 2;
-
             if (_streamingOptions->useSharedClusterHierarchyOnPartitioning())
-                meshPartitionerOptions._flags |= MeshPartitioner::Options::uniformizeSize;
+                meshPartitionerFlags |= MeshPartitioner::Options::uniformizeSize;
 
-            meshPartitionerOptions._nodeFilterFunction = [](Node::Ptr node) -> bool
+            if (_streamingOptions->applyCrackFreePolicyOnPartitioning())
+                meshPartitionerFlags |= MeshPartitioner::Options::applyCrackFreePolicy;
+
+            auto meshPartitionerOptions = MeshPartitioner::Options();
+            meshPartitionerOptions.flags = meshPartitionerFlags;
+
+            meshPartitionerOptions.nodeFilterFunction = [](Node::Ptr node) -> bool
             {
                 auto surfaces = node->components<Surface>();
 

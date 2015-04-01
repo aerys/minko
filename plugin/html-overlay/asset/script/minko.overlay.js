@@ -625,3 +625,6 @@ Minko.init = function(platform)
 		}
 	}
 }
+
+if (!Minko.platform)
+	Minko.platform = "unknown";
