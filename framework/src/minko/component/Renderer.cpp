@@ -58,6 +58,7 @@ Renderer::Renderer(std::shared_ptr<render::AbstractTexture> renderTarget,
 	_effect(effect),
 	_effectTechnique(effectTechnique),
     _clearBeforeRender(true),
+    _clearFlags(ClearFlags::COLOR | ClearFlags::DEPTH | ClearFlags::STENCIL),
 	_priority(priority),
 	_renderTarget(renderTarget),
 	_postProcessingGeom(nullptr),
@@ -471,6 +472,7 @@ Renderer::render(render::AbstractContext::Ptr	context,
 	if (_clearBeforeRender)
 	{
 		context->clear(
+            _clearFlags,
 			((_backgroundColor >> 24) & 0xff) / 255.f,
 			((_backgroundColor >> 16) & 0xff) / 255.f,
 			((_backgroundColor >> 8) & 0xff) / 255.f,

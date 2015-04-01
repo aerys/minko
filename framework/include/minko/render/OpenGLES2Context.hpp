@@ -182,13 +182,14 @@ namespace minko
 							  const uint height) override;
 
 			void
-			clear(float red 	= 0.f,
-				  float green	= 0.f,
-				  float blue	= 0.f,
-				  float alpha	= 0.f,
-				  float depth	= 1.f,
-				  uint stencil	= 0,
-				  uint mask		= 0xffffffff) override;
+			clear(uint clearFlags  = ClearFlags::COLOR | ClearFlags::DEPTH | ClearFlags::STENCIL,
+                  float red 	   = 0.f,
+				  float green	   = 0.f,
+				  float blue	   = 0.f,
+				  float alpha	   = 0.f,
+				  float depth	   = 1.f,
+				  uint stencil	   = 0,
+				  uint mask		   = 0xffffffff) override;
 
 			void
 			present() override;

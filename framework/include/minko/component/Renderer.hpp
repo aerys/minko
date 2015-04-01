@@ -72,6 +72,7 @@ namespace minko
             Signal<Ptr>::Ptr                                                        _beforePresent;
             AbsTexturePtr                                                           _renderTarget;
             bool                                                                    _clearBeforeRender;
+			uint																	_clearFlags;
             render::EffectVariables                                                 _variables;
 
             std::set<std::shared_ptr<Surface>>                                      _toCollect;
@@ -272,6 +273,12 @@ namespace minko
             }
 
             inline
+			void
+            clearFlags(uint clearFlags)
+            {
+                _clearFlags = clearFlags;
+            }
+
             render::EffectVariables&
             effectVariables()
             {
@@ -291,6 +298,13 @@ namespace minko
             {
                 changeEffectOrTechnique(_effect, technique);
             }
+
+			inline
+			void
+			effectTechnique(std::string value)
+			{
+				_effectTechnique = value;
+			}
 
             inline
             void

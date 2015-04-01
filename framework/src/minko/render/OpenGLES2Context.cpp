@@ -343,7 +343,8 @@ OpenGLES2Context::configureViewport(const uint x,
 }
 
 void
-OpenGLES2Context::clear(float 	red,
+OpenGLES2Context::clear(uint    clearFlags,
+                        float 	red,
 						float 	green,
 						float 	blue,
 						float 	alpha,
@@ -358,7 +359,8 @@ OpenGLES2Context::clear(float 	red,
 	// The initial values are all 0.
 	//
 	// glClearColor specify clear values for the color buffers
-	glClearColor(red, green, blue, alpha);
+    if ((clearFlags & ClearFlags::COLOR) == ClearFlags::COLOR)
+	    glClearColor(red, green, blue, alpha);
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glClearDepth.xml
 	//
@@ -367,11 +369,14 @@ OpenGLES2Context::clear(float 	red,
 	// depth Specifies the depth value used when the depth buffer is cleared. The initial value is 1.
 	//
 	// glClearDepth specify the clear value for the depth buffer
+    if ((clearFlags & ClearFlags::DEPTH) == ClearFlags::DEPTH)
+    {
 #ifdef GL_ES_VERSION_2_0
-	glClearDepthf(depth);
+        glClearDepthf(depth);
 #else
-	glClearDepth(depth);
+        glClearDepth(depth);
 #endif
+    }
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glClearStencil.xml
 	//
@@ -379,7 +384,7 @@ OpenGLES2Context::clear(float 	red,
 	// Specifies the index used when the stencil buffer is cleared. The initial value is 0.
 	//
 	// glClearStencil specify the clear value for the stencil buffer
-	if (_stencilBits)
+	if (_stencilBits && (clearFlags & ClearFlags::STENCIL) == ClearFlags::STENCIL)
 		glClearStencil(stencil);
 
 	// http://www.opengl.org/sdk/docs/man/xhtml/glClear.xml
@@ -390,9 +395,10 @@ OpenGLES2Context::clear(float 	red,
 	// GL_DEPTH_BUFFER_BIT, and GL_STENCIL_BUFFER_BIT.
 	//
 	// glClear clear buffers to preset values
-	mask = (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT) & mask;
-	if (mask & GL_DEPTH_BUFFER_BIT)
+	mask = clearFlags & mask;
+	if ((mask & GL_DEPTH_BUFFER_BIT) == GL_DEPTH_BUFFER_BIT)
 		glDepthMask(_currentDepthMask = true);
+
 	glClear(mask);
 }
 
