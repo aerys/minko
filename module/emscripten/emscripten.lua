@@ -26,22 +26,26 @@ if os.is('linux') then
 	table.inject(premake.tools.gcc, 'tools.emscripten', {
 		cc = MINKO_HOME .. '/tool/lin/script/emcc.sh',
 		cxx = MINKO_HOME .. '/tool/lin/script/em++.sh',
+		pkg = MINKO_HOME .. '/tool/lin/script/empkg.py',
 		ar = MINKO_HOME .. '/tool/lin/script/emar.sh'
 	})
 	table.inject(premake.tools.clang, 'tools.emscripten', {
 		cc = MINKO_HOME .. '/tool/lin/script/emcc.sh',
 		cxx = MINKO_HOME .. '/tool/lin/script/em++.sh',
+		pkg = MINKO_HOME .. '/tool/lin/script/empkg.py',
 		ar = MINKO_HOME .. '/tool/lin/script/emar.sh'
 	})
 elseif os.is('macosx') then
 	table.inject(premake.tools.gcc, 'tools.emscripten', {
 		cc = MINKO_HOME .. '/tool/mac/script/emcc.sh',
 		cxx = MINKO_HOME .. '/tool/mac/script/em++.sh',
+		pkg = MINKO_HOME .. '/tool/mac/script/empkg.py',
 		ar = MINKO_HOME .. '/tool/mac/script/emar.sh'
 	})
 	table.inject(premake.tools.clang, 'tools.emscripten', {
 		cc = MINKO_HOME .. '/tool/mac/script/emcc.sh',
 		cxx = MINKO_HOME .. '/tool/mac/script/em++.sh',
+		pkg = MINKO_HOME .. '/tool/mac/script/empkg.py',
 		ar = MINKO_HOME .. '/tool/mac/script/emar.sh'
 	})
 elseif os.is('windows') then

@@ -91,49 +91,55 @@ Loader::load()
                 for (const auto& includePath : includePaths)
                 {
                     resolvedFilename = options->uriFunction()(File::sanitizeFilename(includePath + '/' + filename));
-    
+
                     protocol = options->protocolFunction()(resolvedFilename);
 
                     protocol->options(options);
-    
+
                     if (protocol->fileExists(resolvedFilename))
                     {
                         loadFile = true;
-    
+
                         break;
                     }
                 }
             }
 
             if (loadFile)
-            {    
-            _files[filename] = protocol->file();
+            {
+                _files[filename] = protocol->file();
 
-            _filesQueue.erase(std::find(_filesQueue.begin(), _filesQueue.end(), filename));
-            _loading.push_back(filename);
+                _filesQueue.erase(std::find(_filesQueue.begin(), _filesQueue.end(), filename));
+                _loading.push_back(filename);
 
-            _protocolSlots.push_back(protocol->error()->connect(std::bind(
-                &Loader::protocolErrorHandler,
-                shared_from_this(),
-                std::placeholders::_1
+                _protocolSlots.push_back(protocol->error()->connect(std::bind(
+                    &Loader::protocolErrorHandler,
+                    shared_from_this(),
+                    std::placeholders::_1
+                    )));
+                _protocolSlots.push_back(protocol->complete()->connect(std::bind(
+                    &Loader::protocolCompleteHandler,
+                    shared_from_this(),
+                    std::placeholders::_1
                 )));
-            _protocolSlots.push_back(protocol->complete()->connect(std::bind(
-                &Loader::protocolCompleteHandler,
-                shared_from_this(),
-                std::placeholders::_1
-            )));
-            _protocolProgressSlots.push_back(protocol->progress()->connect(std::bind(
-                &Loader::protocolProgressHandler,
-                shared_from_this(),
-                std::placeholders::_1,
-                std::placeholders::_2
-            )));
+                _protocolProgressSlots.push_back(protocol->progress()->connect(std::bind(
+                    &Loader::protocolProgressHandler,
+                    shared_from_this(),
+                    std::placeholders::_1,
+                    std::placeholders::_2
+                )));
 
                 protocol->load(filename, resolvedFilename, options);
             }
             else
             {
-                errorThrown(Error("ProtocolError", std::string("File does not exist: ") + filename));
+                auto error = Error(
+                    "ProtocolError",
+                    std::string("File does not exist: ") + filename +
+                    std::string(", include paths: ") + std::to_string(_options->includePaths(), ",")
+                );
+
+                errorThrown(error);
             }
         }
     }
@@ -147,7 +153,7 @@ Loader::protocolErrorHandler(std::shared_ptr<AbstractProtocol> protocol)
         std::string("Protocol error: ") + protocol->file()->filename() +
         std::string(", include paths: ") + std::to_string(_options->includePaths(), ",")
     );
-        
+
     errorThrown(error);
 }
 
@@ -160,7 +166,7 @@ Loader::protocolProgressHandler(std::shared_ptr<AbstractProtocol> protocol, floa
 
     for (auto protocolAndProgress : _protocolToProgress)
         newTotalProgress += protocolAndProgress.second / _numFiles;
-    
+
     if (newTotalProgress > 1.0f)
         newTotalProgress = 1.0f;
 
@@ -182,7 +188,7 @@ Loader::protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol)
     _filenameToOptions.erase(filename);
     _protocolSlots.clear();
     _protocolProgressSlots.clear();
-    
+
     _numFilesToParse++;
 
     LOG_DEBUG("file '" << protocol->file()->filename() << "' loaded, "
@@ -199,7 +205,7 @@ Loader::protocolCompleteHandler(std::shared_ptr<AbstractProtocol> protocol)
     if (!parsed)
     {
         --_numFilesToParse;
-        
+
         finalize();
     }
 }
@@ -223,7 +229,7 @@ Loader::processData(const std::string&                      filename,
             shared_from_this(),
             std::placeholders::_1
         ));
-        
+
         _parserErrorSlots[parser] = parser->error()->connect(std::bind(
                                                                        &Loader::parserErrorHandler,
                                                                        shared_from_this(),
@@ -237,11 +243,11 @@ Loader::processData(const std::string&                      filename,
     {
         if (options->storeDataIfNotParsed())
         {
-        if (extension != "glsl")
-            LOG_DEBUG("no parser found for extension '" << extension << "'");
+            if (extension != "glsl")
+                LOG_DEBUG("no parser found for extension '" << extension << "'");
 
-        options->assetLibrary()->blob(filename, data);
-    }
+            options->assetLibrary()->blob(filename, data);
+        }
     }
 
     return parser != nullptr;
@@ -283,11 +289,13 @@ void
 Loader::errorThrown(const Error& error)
 {
     if (_error->numCallbacks() > 0)
+    {
         _error->execute(shared_from_this(), error);
+    }
     else
     {
         LOG_ERROR(error.type() << ": " << error.what());
-        
+
         throw error;
     }
 }

@@ -85,7 +85,8 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	configuration { "osx64" }
 		buildoptions {
-			"-Wno-attributes"
+			"-Wno-attributes",
+			"-Wno-deprecated-register"
 		}
 
 	configuration { "html5" }

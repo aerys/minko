@@ -20,7 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Provider.hpp"
 
 #include "minko/Uuid.hpp"
-#include "sparsehash/sparse_hash_map"
+
+#ifdef MINKO_USE_SPARSE_HASH_MAP
+# include "sparsehash/sparse_hash_map"
+#endif
 
 using namespace minko;
 using namespace minko::data;
@@ -28,12 +31,12 @@ using namespace minko::data;
 Provider::Provider() :
     _values(new ValueMap())
 {
-#ifndef DEBUG
+#ifdef MINKO_USE_SPARSE_HASH_MAP
     _values->set_deleted_key("");
 #endif
 }
 
-Provider::Provider(const ValueMap& values) :
+Provider::Provider(const DefaultValueMap& values) :
 	_values(new ValueMap())
 {
 	for (auto& p : values)

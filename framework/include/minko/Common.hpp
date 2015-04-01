@@ -70,6 +70,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "glm/gtx/color_space.hpp"
 #include "glm/gtx/string_cast.hpp"
 
+#ifndef MINKO_USE_SPARSE_HASH_MAP
+# ifndef DEBUG
+#  define MINKO_USE_SPARSE_HASH_MAP
+# endif
+#endif
+
 namespace minko
 {
     typedef unsigned int uint;
