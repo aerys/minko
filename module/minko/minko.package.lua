@@ -46,7 +46,6 @@ minko.package.assets = function(rules)
             end
 
             for j = 1, #files do
-                print(files[j])
                 if not inputfiles[files[j]] then
                     -- print("file " .. files[j])
                     inputfiles[files[j]] = {
