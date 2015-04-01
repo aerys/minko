@@ -19,10 +19,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Minko.hpp"
 #include "minko/MinkoSDL.hpp"
-#include "minko/MinkoSerializer.hpp"
 
 using namespace minko;
 using namespace minko::component;
+using namespace minko::render;
 
 math::vec4
 computeClippingPlane(math::vec3 position, math::vec3 normal)
@@ -43,9 +43,12 @@ int main(int argc, char** argv)
 	auto defaultLoader = sceneManager->assets()->loader();
 	auto fxLoader = file::Loader::create(defaultLoader);
 
+	canvas->context()->errorsEnabled(true);
+
 	fxLoader
 		->queue("effect/Basic.effect")
-		->queue("effect/CrossSection.effect");
+		->queue("effect/CrossSection.effect")
+		->queue("effect/ClippingPlane.effect");
 
 	auto fxError = defaultLoader->error()->connect([&](file::Loader::Ptr loader, const file::Error& error)
 	{
@@ -56,25 +59,48 @@ int main(int argc, char** argv)
 
 	root->data().providers().front()->set("clippingPlane", math::vec4());
 
-	auto camera = scene::Node::create("camera")
-		->addComponent(Renderer::create(0x7f7f7fff))
-		->addComponent(Transform::create(
-		math::inverse(math::lookAt(math::vec3(0.f, 0.f, 10.f), math::zero<math::vec3>(), math::vec3(0.f, 1.f, 0.f))
-		)))
-		->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
-
-	root->addChild(camera);
-
 	sceneManager->assets()->geometry("teapot", geometry::TeapotGeometry::create(sceneManager->assets()->context()));
 
 	auto clippingPlaneMesh = scene::Node::create("clippingPlane");
 
+    auto camera = scene::Node::create("camera");
+
 	auto fxComplete = fxLoader->complete()->connect([&](file::Loader::Ptr loader)
 	{
+        auto stencilBufferRenderer = Renderer::create(
+		    0x00ffffff, 
+		    nullptr, 
+		    sceneManager->assets()->effect("effect/CrossSection.effect"),
+		    "default",
+		    1000.f,
+		    "Stencil renderer"
+	    );
+    
+	    auto mainRenderer = Renderer::create(0x7f7f7fff);
+        mainRenderer->clearFlags(ClearFlags::DEPTH);
+
+	    camera
+		    ->addComponent(mainRenderer)
+            ->addComponent(stencilBufferRenderer)
+		    ->addComponent(
+		        Transform::create(
+				    math::inverse(
+					    math::lookAt(
+						    math::vec3(0.f, 0.f, 10.f), 
+						    math::zero<math::vec3>(), 
+						    math::vec3(0.f, 1.f, 0.f)
+					    )
+				    )
+			    )
+		    )
+		    ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
+
+	    root->addChild(camera);
+
 		auto surface = Surface::create(
 			sceneManager->assets()->geometry("teapot"),
 			material::BasicMaterial::create(),
-			sceneManager->assets()->effect("effect/CrossSection.effect")
+			sceneManager->assets()->effect("effect/ClippingPlane.effect")
 		);
 
 		auto mesh = scene::Node::create("mesh");
@@ -85,12 +111,25 @@ int main(int argc, char** argv)
 		transform->matrix(math::scale(math::vec3(30)) * transform->matrix());
 		transform->matrix(math::rotate((float)-M_PI_2, math::vec3(1.f, 0.f, 0.f)) * transform->matrix());
 		
+		auto clippingPlaneMeshMaterial = material::BasicMaterial::create();
+		clippingPlaneMeshMaterial->data()->set("diffuseColor", math::vec4(1.0f, 1.0f, 0.f, 1.f));
+        clippingPlaneMeshMaterial->data()->set("triangleCulling", minko::render::TriangleCulling::FRONT);
+
+        clippingPlaneMeshMaterial->data()
+            ->set("diffuseColor", math::vec4(1.0f, 0.f, 0.f, 1.f))
+            ->set("depthFunction", CompareMode::ALWAYS)
+            ->set("stencilFunction", CompareMode::EQUAL)
+            ->set("stencilReference", 1)
+            ->set("stencilMask", uint(1))
+            ->set("stencilFailOperation", StencilOperation::KEEP);
+
 		auto clippingPlaneMeshSurface = Surface::create(
 			geometry::QuadGeometry::create(sceneManager->assets()->context()),
-			material::BasicMaterial::create(),
-			sceneManager->assets()->effect("effect/Basic.effect"));
+			clippingPlaneMeshMaterial,
+			sceneManager->assets()->effect("effect/Basic.effect")
+		);
 
-		//clippingPlaneMeshSurface->material()->data()->set("triangleCulling", minko::render::TriangleCulling::NONE);
+        //surface->material()->data()->set("triangleCulling", minko::render::TriangleCulling::NONE);
 
 		clippingPlaneMesh->addComponent(transform);
 		clippingPlaneMesh->addComponent(clippingPlaneMeshSurface);
@@ -144,12 +183,13 @@ int main(int argc, char** argv)
 			}
 			else if (k->keyIsDown(input::Keyboard::LEFT))
 			{
-				transformMatrix *= math::translate(math::vec3(-0.01f, 0.f, 0.f));
+				transformMatrix *= math::translate(math::vec3(0.f, -0.01f, 0.f));
 			}
 			else if (k->keyIsDown(input::Keyboard::RIGHT))
 			{
-				transformMatrix *= math::translate(math::vec3(0.01f, 0.f, 0.f));
+				transformMatrix *= math::translate(math::vec3(0.f, 0.01f, 0.f));
 			}
+
 			// Change rotation
 			else if (k->keyIsDown(input::Keyboard::PAGE_UP))
 			{
@@ -210,15 +250,19 @@ int main(int argc, char** argv)
 		else if (pitch < minPitch)
 			pitch = minPitch;
 
-		camera->component<Transform>()->matrix(math::inverse(math::lookAt((
-			math::vec3(
-			lookAt.x + distance * std::cos(yaw) * std::sin(pitch),
-			lookAt.y + distance * std::cos(pitch),
-			lookAt.z + distance * std::sin(yaw) * std::sin(pitch)
-			)),
-			lookAt,
-			math::vec3(0.f, 1.f, 0.f)
-			)));
+		camera->component<Transform>()->matrix(
+			math::inverse(
+				math::lookAt(
+					math::vec3(
+						lookAt.x + distance * std::cos(yaw) * std::sin(pitch),
+						lookAt.y + distance * std::cos(pitch),
+						lookAt.z + distance * std::sin(yaw) * std::sin(pitch)
+					),
+					lookAt,
+					math::vec3(0.f, 1.f, 0.f)
+				)
+			)
+		);
 
 		sceneManager->nextFrame(time, deltaTime);
 	});

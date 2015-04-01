@@ -3,97 +3,172 @@
     "name"  	: "cross-section",
     	
     "attributes" : {
-        "aPosition"             : "geometry[${geometryUuid}].position",
-        "aNormal"               : "geometry[${geometryUuid}].normal",
-		"aBoneIdsA"				: "geometry[${geometryUuid}].boneIdsA",
-		"aBoneIdsB"				: "geometry[${geometryUuid}].boneIdsB",		
-		"aBoneWeightsA"			: "geometry[${geometryUuid}].boneWeightsA",
-		"aBoneWeightsB"			: "geometry[${geometryUuid}].boneWeightsB"
+        "aPosition"             : "geometry[${geometryUuid}].position"
     },
 	
 	"uniforms"	: {
-		"uNormalMap"			: "material[${materialId}].normalMap",
 		"uModelToWorldMatrix"	: "modelToWorldMatrix",
 		"uWorldToScreenMatrix"	: { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
-		"uCameraPosition"		: { "binding" : { "property" : "eyePosition", "source" : "renderer" } },
-		"uBoneMatrices[0]"	    : "geometry[${geometryId}].boneMatrices",
-		"uNumBones"				: "geometry[${geometryId}].numBones",
-		"fogColor"				: "material[${materialId}].fogColor",
-		"fogDensity"			: "material[${materialId}].fogDensity",
-		"fogStart"				: "material[${materialId}].fogStart",
-		"fogEnd"				: "material[${materialId}].fogEnd",
-        "uPopLod"               : "geometry[${geometryUuid}].popLod",
-        "uPopBlendingLod"       : "geometry[${geometryUuid}].popBlendingLod",
-        "uPopFullPrecisionLod"  : "geometry[${geometryUuid}].popFullPrecisionLod",
-        "uPopMinBound"          : "geometry[${geometryUuid}].popMinBound",
-        "uPopMaxBound"          : "geometry[${geometryUuid}].popMaxBound",
         "uClippingPlane"        : { "binding" : { "property" : "clippingPlane", "source" : "root" } }
 	},
     
     "macros" : {
-		"MODEL_TO_WORLD"		: "modelToWorldMatrix",
-		"SKINNING_NUM_BONES"	: { "binding" : "geometry[$geometryUuid].numBones", "type" : "int" },
-        "FOG_ENABLED"           : "material[${materialUuid}].fogEnabled",
-		"FOG_LIN"               : "material[${materialUuid}].fogLinear",
-		"FOG_EXP"               : "material[${materialUuid}].fogExponential",
-		"FOG_EXP2"              : "material[${materialUuid}].fogExponential2",
-        "POP_LOD_ENABLED"       : "geometry[${geometryUuid}].popLodEnabled",
-        "POP_BLENDING_ENABLED"  : "geometry[${geometryUuid}].popBlendingEnabled"
-    },
-	
-	"states" : {
-        "blendingMode"          : { "binding" : "material[${materialId}].blendingMode", "default" : ["one", "zero"] },
-        "colorMask"             : { "binding" : "material[${materialId}].colorMask", "default" : true },
-        "depthMask"             : { "binding" : "material[${materialId}].depthMask", "default" : [true, "less_equal"] },
-        "depthFunction"         : "material[${materialId}].depthFunction",
-        "triangleCulling"       : { "binding" : "material[${materialId}].triangleCulling", "default" : "back" },
-        "stencilFunction"       : { "binding" : "material[${materialId}].stencilFunction", "default" : "always" },
-        "stencilReference"      : { "binding" : "material[${materialId}].stencilReference", "default" : 0 },
-        "stencilMask"           : { "binding" : "material[${materialId}].stencilMask", "default" : 1 },
-        "stencilFailOperation"  : { "binding" : "material[${materialId}].stencilFailOperation", "default" : "keep" },
-        "stencilZFailOperation" : { "binding" : "material[${materialId}].stencilZFailOperation", "default" : "keep" },
-        "stencilZPassOperation" : { "binding" : "material[${materialId}].stencilZPassOperation", "default" : "keep" },
-        "scissorTest"			: false,
-        "scissorBox"          	: { "binding" : "material[${materialId}].scissorBox", "default" : [0, 0, -1, -1] },
-        "priority"              : { "binding" : "material[${materialId}].priority", "default" : "opaque" },
-        "zSorted"				: false
+		"MODEL_TO_WORLD"		: "modelToWorldMatrix"
     },
     
-    "defaultTechnique"  : "opaque",
+    "defaultTechnique"  : "default",
+
+    "states" : {
+        "triangleCulling" : "material[${materialUuid}].triangleCulling"
+    },
 
 	"techniques" : [
-    {
-        "name"      : "opaque",
-
-		"states" : {
-			"blendingMode" : ["one", "zero"],
-			"priority"  : "opaque",
-			"zSorted"     : "false"
-		},
-		
-		"passes"    : [
         {
-			"vertexShader"   : "#pragma include \"CrossSection.vertex.glsl\"",
-			"fragmentShader" : "#pragma include \"CrossSection.fragment.glsl\""
-		}
-        ]
-	},
-
-    {
-        "name"      : "transparent",
-
-		"states" : {
-			"blendingMode" : "alpha",
-			"priority"  : "transparent",
-			"zSorted"     : "true"
-		},
-
-        "passes"    : [
+            "name" : "default",
+            "passes" : [
+                "render-depth",
+                "render-back",
+                "render-front"
+            ]
+    	}
+    ],
+    "passes" : [
         {
-            "vertexShader"      : "#pragma include \"CrossSection.vertex.glsl\"",
-            "fragmentShader"    : "#pragma include \"CrossSection.fragment.glsl\""
+            // Draw capping polygons in depth buffer only
+            "name" : "render-depth",
+            "states" : {
+                "colorMask" : false,
+                "depthMask" : true,
+                "triangleCulling" : "none"
+            },
+
+            "vertexShader" : "
+                #ifdef GL_ES
+                    #ifdef GL_FRAGMENT_PRECISION_HIGH
+                        precision highp float;
+                    #else
+                        precision mediump float;
+                    #endif
+                #endif
+
+                uniform mat4 uModelToWorldMatrix;
+                uniform mat4 uWorldToScreenMatrix;
+                uniform vec4 uClippingPlane;
+
+                attribute vec3 aPosition;
+
+                varying float clipDist;
+
+                void main(void)
+                {
+                    vec4 pos = vec4(aPosition, 1.0);
+
+                    #ifdef MODEL_TO_WORLD
+                        pos = uModelToWorldMatrix * pos;
+                    #endif
+
+                    gl_Position = uWorldToScreenMatrix * pos;
+
+                    // Compute the distance between the vertex and the clip plane
+                    clipDist = dot(pos.xyz, uClippingPlane.xyz) - uClippingPlane.w;
+                }
+            ",
+            "fragmentShader" : "
+                uniform vec4 uClippingPlane;
+
+                varying float clipDist;
+
+                void main(void)
+                {
+                    if (clipDist + 0.00001 < -uClippingPlane.w * 2)
+                        discard;
+
+                    gl_FragColor = vec4(1.0, 0, 0, 0);
+                }
+            "
+        },
+        {
+            "name" : "render-back",
+            "states" : {
+                "colorMask" : false,
+                "depthMask" : false,
+                "stencilFunction" : "always",
+                "stencilZPassOperation" : "incr",
+                "triangleCulling" : "back"
+            },
+            "vertexShader" : "
+                #ifdef GL_ES
+                    #ifdef GL_FRAGMENT_PRECISION_HIGH
+                        precision highp float;
+                    #else
+                        precision mediump float;
+                    #endif
+                #endif
+
+                uniform mat4 uModelToWorldMatrix;
+                uniform mat4 uWorldToScreenMatrix;
+
+                attribute vec3 aPosition;
+
+                void main(void)
+                {
+                    vec4 pos = vec4(aPosition, 1.0);
+
+                    #ifdef MODEL_TO_WORLD
+                        pos = uModelToWorldMatrix * pos;
+                    #endif
+
+                    gl_Position = uWorldToScreenMatrix * pos;
+                }
+            ",
+            "fragmentShader" : "
+                void main(void)
+                {
+                    gl_FragColor = vec4(1.0, 0, 0, 0);
+                }
+            "
+        },
+        {
+            "name" : "render-front",
+            "states" : {
+                "colorMask" : false,
+                "depthMask" : false,
+                "stencilFunction" : "always",
+                "stencilZPassOperation" : "decr",
+                "triangleCulling" : "front"
+            },
+            "vertexShader" : "
+                #ifdef GL_ES
+                    #ifdef GL_FRAGMENT_PRECISION_HIGH
+                        precision highp float;
+                    #else
+                        precision mediump float;
+                    #endif
+                #endif
+
+                uniform mat4 uModelToWorldMatrix;
+                uniform mat4 uWorldToScreenMatrix;
+
+                attribute vec3 aPosition;
+
+                void main(void)
+                {
+                    vec4 pos = vec4(aPosition, 1.0);
+
+                    #ifdef MODEL_TO_WORLD
+                        pos = uModelToWorldMatrix * pos;
+                    #endif
+
+                    gl_Position = uWorldToScreenMatrix * pos;
+                }
+            ",
+            "fragmentShader" : "
+                void main(void)
+                {
+                    gl_FragColor = vec4(0, 0, 0, 0);
+                }
+            "
         }
-        ] 
-    }
     ]
+    
 }

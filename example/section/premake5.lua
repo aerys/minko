@@ -12,5 +12,3 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 
 	-- plugins
 	minko.plugin.enable("sdl")
-	minko.plugin.enable("serializer")
-

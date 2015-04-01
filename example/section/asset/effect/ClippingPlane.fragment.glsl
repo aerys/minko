@@ -20,7 +20,7 @@ varying vec3 vertexNormal;
 
 void main(void)
 {
-	if (clipDist < -uClippingPlane.w * 2)
+	if (clipDist + 0.00001 < -uClippingPlane.w * 2)
 		discard;
 
 	vec3 eyeVector = normalize(vertexPosition - uCameraPosition);

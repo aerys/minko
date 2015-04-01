@@ -1,0 +1,61 @@
+// clipping plane effect
+{
+    "name"  	: "clipping-plane",
+    	
+    "attributes" : {
+        "aPosition"             : "geometry[${geometryUuid}].position",
+        "aNormal"               : "geometry[${geometryUuid}].normal",
+		"aBoneIdsA"				: "geometry[${geometryUuid}].boneIdsA",
+		"aBoneIdsB"				: "geometry[${geometryUuid}].boneIdsB",		
+		"aBoneWeightsA"			: "geometry[${geometryUuid}].boneWeightsA",
+		"aBoneWeightsB"			: "geometry[${geometryUuid}].boneWeightsB"
+    },
+	
+	"uniforms"	: {
+		"uNormalMap"			: "material[${materialId}].normalMap",
+		"uModelToWorldMatrix"	: "modelToWorldMatrix",
+		"uWorldToScreenMatrix"	: { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
+		"uCameraPosition"		: { "binding" : { "property" : "eyePosition", "source" : "renderer" } },
+		"uBoneMatrices[0]"	    : "geometry[${geometryId}].boneMatrices",
+		"uNumBones"				: "geometry[${geometryId}].numBones",
+		"fogColor"				: "material[${materialId}].fogColor",
+		"fogDensity"			: "material[${materialId}].fogDensity",
+		"fogStart"				: "material[${materialId}].fogStart",
+		"fogEnd"				: "material[${materialId}].fogEnd",
+        "uPopLod"               : "geometry[${geometryUuid}].popLod",
+        "uPopBlendingLod"       : "geometry[${geometryUuid}].popBlendingLod",
+        "uPopFullPrecisionLod"  : "geometry[${geometryUuid}].popFullPrecisionLod",
+        "uPopMinBound"          : "geometry[${geometryUuid}].popMinBound",
+        "uPopMaxBound"          : "geometry[${geometryUuid}].popMaxBound",
+        "uClippingPlane"        : { "binding" : { "property" : "clippingPlane", "source" : "root" } }
+	},
+    
+    "macros" : {
+		"MODEL_TO_WORLD"		: "modelToWorldMatrix",
+		"SKINNING_NUM_BONES"	: { "binding" : "geometry[$geometryUuid].numBones", "type" : "int" },
+        "FOG_ENABLED"           : "material[${materialUuid}].fogEnabled",
+		"FOG_LIN"               : "material[${materialUuid}].fogLinear",
+		"FOG_EXP"               : "material[${materialUuid}].fogExponential",
+		"FOG_EXP2"              : "material[${materialUuid}].fogExponential2",
+        "POP_LOD_ENABLED"       : "geometry[${geometryUuid}].popLodEnabled",
+        "POP_BLENDING_ENABLED"  : "geometry[${geometryUuid}].popBlendingEnabled"
+    },
+	
+	"states" : {
+        "triangleCulling"       : "none"
+    },
+    
+    "defaultTechnique"  : "default",
+
+	"techniques" : [
+    {
+        "name"      : "default",
+		"passes"    : [
+        {
+			"vertexShader"   : "#pragma include \"ClippingPlane.vertex.glsl\"",
+			"fragmentShader" : "#pragma include \"ClippingPlane.fragment.glsl\""
+		}
+        ]
+	}
+    ]
+}
