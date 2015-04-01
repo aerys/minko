@@ -206,6 +206,7 @@ TeapotGeometry::initialize(std::shared_ptr<render::AbstractContext> context, con
 	indices(render::IndexBuffer::create(context, indicesData));
 
     computeCenterPosition();
+	computeNormals();
 }
 
 void
