@@ -8,6 +8,11 @@ minko.package = {
 --     ['effect/*.effect'] = { 'minify', 'copy' }
 -- }
 
+-- to simulate legacy behavior:
+-- minko.package.assets {
+--     ['*'] = { 'copy', 'embed' }
+-- }
+
 minko.package.assetdirs = function(directories)
     if type(directories) == 'string' then
         directories = { directories }
@@ -31,23 +36,34 @@ minko.package.assets = function(rules)
         local inputfiles = {}
 
         for i = 1, #minko.package._path do
-            local files = os.matchfiles(path.join(minko.package._path[i], rule))
+            local pattern = path.join(minko.package._path[i], rule)
+            local files = {}
+
+            if os.isfile(pattern) or os.isdir(pattern) then
+                files = { pattern }
+            elseif string.find(pattern, '*') then
+                files = os.matchfiles(pattern)
+            end
 
             for j = 1, #files do
-                inputfiles[#inputfiles + 1] = {
-                    file = files[j],
-                    path = minko.package._path[i],
-                    rule = rule
-                }
+                print(files[j])
+                if not inputfiles[files[j]] then
+                    -- print("file " .. files[j])
+                    inputfiles[files[j]] = {
+                        file = files[j],
+                        path = minko.package._path[i],
+                        rule = rule
+                    }
+                end
             end
         end
 
-        for i = 1, #inputfiles do
-            local path_ = inputfiles[i].path
-            local input = inputfiles[i].file
+        for k, v in pairs(inputfiles) do
+            local path_ = v.path
+            local input = v.file
             local output = nil
 
-            assert(not os.isdir(input), 'rules do not expect a directory')
+            -- assert(not os.isdir(input), 'rules do not expect a directory')
 
             for j = 1, #actions do
                 local action = actions[j]
@@ -67,7 +83,7 @@ minko.package.assets = function(rules)
 
                     local haystack = path.getabsolute(input)
                     local needle = path.getabsolute(path.getdirectory(path_))
-                    assert(string.find(haystack, needle) ~= nil, 'input file "' .. haystack .. '"is not in path "' .. needle .. '"')
+                    -- assert(string.find(haystack, needle) ~= nil, 'input file "' .. haystack .. '" is not in path "' .. needle .. '"')
 
                     output = string.sub(haystack, string.len(needle .. '/') + 1)
 

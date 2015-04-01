@@ -257,8 +257,6 @@ minko.project.application = function(name)
 			else
 				cmd = cmd .. ' --shell-file "' .. minko.sdk.path('/skeleton/template.html') .. '"'
 			end
-			-- include the app's 'asset' directory into the file system
-			cmd = cmd .. ' --preload-file ${TARGETDIR}/asset'
 
 			postbuildcommands {
 				cmd .. ' || ' .. minko.action.fail()
@@ -292,16 +290,30 @@ minko.project.application = function(name)
 			else
 				cmd = cmd .. ' --shell-file "' .. minko.sdk.path('/skeleton/template.html') .. '"'
 			end
-			-- include the app's 'asset' directory into the file system
-			cmd = cmd .. ' --preload-file ${TARGETDIR}/asset'
 
 			postbuildcommands {
+				-- minko.action.unless('${TARGETDIR}/' .. name .. '.html') ..
 				cmd .. ' || ' .. minko.action.fail()
 			}
 
 			libdirs {
 				minko.sdk.path("/framework/bin/html5/debug")
 			}
+
+		configuration { "html5" }
+			-- include the preloaded assets into the file system
+			local empkg = premake.tools.gcc.tools.emscripten.pkg
+			local cmd = empkg .. ' ${TARGETDIR}/' .. name .. '.data'
+
+			postbuildcommands {
+				-- minko.action.unless('${TARGETDIR}/' .. name .. '.data') ..
+				cmd .. ' || ' .. minko.action.fail()
+			}
+
+			prebuildcommands {
+				minko.action.remove('${TARGETDIR}/' .. name .. '.preload')
+			}
+
 	end
 
 	configuration { "ios" }

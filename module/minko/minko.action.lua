@@ -1,29 +1,53 @@
 minko.action = {}
 
-minko.action.fail = function()
-	if os.is('windows') then
+local function iscygwin()
+	return string.startswith(os.getenv('OSTYPE'), 'CYGWIN')
+end
+
+local function gettargetdir()
+	if os.is('windows') and not iscygwin() then
 		if string.startswith(_ACTION, "gmake") then
-			return 'call "' .. path.translate(minko.sdk.path('/tool/win/script/fail.bat')) .. '" ${TARGET}'
+			return '$(subst /,\\,$(TARGETDIR))'
 		else
-			return 'call "' .. path.translate(minko.sdk.path('/tool/win/script/fail.bat')) .. '" "$(Target)"'
+			return '$(TargetDir)'
 		end
-	elseif os.is('macosx') then
-		return 'bash ' .. minko.sdk.path('/tool/mac/script/fail.sh') .. ' ${TARGET}'
 	else
-		return 'bash ' .. minko.sdk.path('/tool/lin/script/fail.sh') .. ' ${TARGET}'
+		if (_ACTION == "xcode-osx") then
+			return '${TARGET_BUILD_DIR}'
+		elseif (_ACTION == "xcode-ios") then
+			return '${TARGET_BUILD_DIR}/${TARGET_NAME}.app'
+		else
+			return '${TARGETDIR}'
+		end
+	end
+end
+
+minko.action.fail = function(target)
+	if not target then
+		if os.is('windows') and not string.startswith(_ACTION, "gmake") then
+			target = '$(Target)'
+		else
+			target = '${TARGET}'
+		end
+	end
+
+	if os.is('windows') then
+		return 'call "' .. path.translate(minko.sdk.path('/tool/win/script/fail.bat')) .. '" "' .. target '"'
+	else
+		return 'bash ' .. minko.sdk.path('/tool/lin/script/fail.sh') .. ' "' .. target .. '"'
 	end
 end
 
 minko.action.copy = function(sourcepath, destpath)
 	-- print('minko.action.copy(' .. sourcepath .. ')')
 
-	local iscygwin = not string.startswith(os.getenv('OSTYPE'), 'CYGWIN')
+	-- default destpath will be the target directory
 
-	if os.is('windows') and not iscygwin then
+	local targetdir = gettargetdir()
+
+	if os.is('windows') and not iscygwin() then
 
 		sourcepath = path.translate(sourcepath)
-
-		local targetdir = string.startswith(_ACTION, "gmake") and '$(subst /,\\,$(TARGETDIR))' or '$(TargetDir)'
 
 		destpath = destpath and path.join(targetdir, destpath) or targetdir
 
@@ -36,15 +60,7 @@ minko.action.copy = function(sourcepath, destpath)
 		return 'mkdir "' .. path.translate(path.getdirectory(destpath)) .. '" & ' ..
 			   'xcopy /y /e "' .. path.translate(sourcepath) .. '" "' .. path.translate(destpath) .. '"'
 
-	elseif os.is("macosx") then
-
-		local targetdir = '${TARGETDIR}'
-
-		if (_ACTION == "xcode-osx") then
-			targetdir = '${TARGET_BUILD_DIR}'
-		elseif (_ACTION == "xcode-ios") then
-			targetdir = '${TARGET_BUILD_DIR}/${TARGET_NAME}.app'
-		end
+	else
 
 		if not destpath then
 			destpath = path.getname(sourcepath)
@@ -58,59 +74,58 @@ minko.action.copy = function(sourcepath, destpath)
 			sourcepath = sourcepath .. '/' -- cp will copy the content of the directory
 		end
 
+		if iscygwin() then
+			sourcepath = os.capture('cygpath -u "' .. sourcepath .. '"')
+			targetdir = os.capture('cygpath -u "' .. targetdir .. '"')
+		end
+
 		-- print(' -> cp -R ' .. sourcepath .. ' "' .. destpath .. '"')
 
 		return 'mkdir -p "' .. path.getdirectory(destpath) .. '"; ' ..
 			   'cp -R "' .. sourcepath .. '" "' .. destpath .. '"'
-
-	else
-
-		local targetdir = '${TARGETDIR}'
-
-		if iscygwin then
-			sourcepath = os.capture('cygpath -u "' .. sourcepath .. '"')
-			targetdir = os.capture('cygpath -u "' .. targetdir .. '"')
-		end
-
-		destpath = destpath and path.join(targetdir, destpath) or targetdir
-
-		return 'mkdir -p "' .. path.getdirectory(destpath) .. '"; ' ..
-			   'cp -R "' .. sourcepath .. '" "' .. destpath .. '"'
-
 	end
 end
 
 minko.action.link = function(sourcepath)
-	local iscygwin = not string.startswith(os.getenv('OSTYPE'), 'CYGWIN')
+	local targetdir = gettargetdir()
 
-	if os.is('windows') and not iscygwin then
+	if os.is('windows') and not iscygwin() then
 		-- fixme: not needed yet
-	elseif os.is("macosx") then
-		local targetdir = '${TARGETDIR}'
-
-		if (_ACTION == "xcode-osx") then
-			targetdir = '${TARGET_BUILD_DIR}'
-		elseif (_ACTION == "xcode-ios") then
-			targetdir = '${TARGET_BUILD_DIR}/${TARGET_NAME}.app'
-		end
-
-		local exists = string.find(sourcepath, '*') and '' or ('test -e ' .. sourcepath .. ' && ')
-
-		destpath = destpath and path.join(targetdir, destpath) or targetdir
-
-		return exists .. 'ln -s -f ' .. sourcepath .. ' "' .. destpath .. '" || :'
 	else
-		local targetdir = '${TARGETDIR}'
-		if iscygwin then
-			sourcepath = os.capture('cygpath -u "' .. sourcepath .. '"')
-			targetdir = os.capture('cygpath -u "' .. targetdir .. '"')
-		end
-
 		local exists = string.find(sourcepath, '*') and '' or ('test -e ' .. sourcepath .. ' && ')
 
 		destpath = destpath and path.join(targetdir, destpath) or targetdir
 
 		return exists .. 'ln -s -f ' .. sourcepath .. ' "' .. destpath .. '" || :'
+	end
+end
+
+minko.action.embed = function(sourcepath, destpath)
+	local targetdir = gettargetdir()
+	local preloadfilename = project().name .. '.preload'
+
+	preloadfilename = path.join(targetdir, preloadfilename)
+
+	local bin = (os.is('windows') and not iscygwin()) and '@echo' or 'echo'
+
+	return table.concat({
+		bin,
+		sourcepath .. '@' .. destpath,
+		'>>',
+		preloadfilename
+	}, ' ')
+end
+
+minko.action.unless = function(filepath)
+	-- if globbing, always execute command
+	if string.find(filepath, '*') then
+		return ''
+	end
+
+	if os.is('windows') and not iscygwin() then
+		return 'if not exist "' .. filepath .. '" '
+	else
+		return 'test -f ' .. filepath .. ' || '
 	end
 end
 
@@ -123,6 +138,14 @@ minko.action.zip = function(directory, archive)
 		return '7za a "' .. archive .. '" "' .. path.translate(directory) .. '"'
 	else
 		return 'zip -r "' .. archive .. '" "' .. directory .. '"'
+	end
+end
+
+minko.action.remove = function(filepath)
+	if os.is('windows') then
+		return 'erase /f /q ' .. filepath
+	else
+		return 'rm -f ' .. filepath
 	end
 end
 
