@@ -41,6 +41,10 @@ namespace minko
             static const Layout PICKING_DEPTH;
 			static const Layout CAST_SHADOW;
 			static const Layout TEXT;
+            static const Layout _RESERVED_3;
+            static const Layout _RESERVED_4;
+            static const Layout CLIPPING;
+            static const Layout CLIPPED;
         };
 
         struct LayoutMask

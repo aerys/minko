@@ -1,6 +1,6 @@
 // cross-section effect
 {
-    "name"  	: "cross-section",
+    "name"  	: "cross-section-stencil",
     	
     "attributes" : {
         "aPosition"             : "geometry[${geometryUuid}].position"
@@ -9,7 +9,7 @@
 	"uniforms"	: {
 		"uModelToWorldMatrix"	: "modelToWorldMatrix",
 		"uWorldToScreenMatrix"	: { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
-        "uClippingPlane"        : { "binding" : { "property" : "clippingPlane", "source" : "root" } }
+        "uCameraPosition"       : { "binding" : { "property" : "eyePosition", "source" : "renderer" } }
 	},
     
     "macros" : {
@@ -18,15 +18,10 @@
     
     "defaultTechnique"  : "default",
 
-    "states" : {
-        "triangleCulling" : "material[${materialUuid}].triangleCulling"
-    },
-
 	"techniques" : [
         {
             "name" : "default",
             "passes" : [
-                "render-depth",
                 "render-back",
                 "render-front"
             ]
@@ -34,68 +29,14 @@
     ],
     "passes" : [
         {
-            // Draw capping polygons in depth buffer only
-            "name" : "render-depth",
-            "states" : {
-                "colorMask" : false,
-                "depthMask" : true,
-                "triangleCulling" : "none"
-            },
-
-            "vertexShader" : "
-                #ifdef GL_ES
-                    #ifdef GL_FRAGMENT_PRECISION_HIGH
-                        precision highp float;
-                    #else
-                        precision mediump float;
-                    #endif
-                #endif
-
-                uniform mat4 uModelToWorldMatrix;
-                uniform mat4 uWorldToScreenMatrix;
-                uniform vec4 uClippingPlane;
-
-                attribute vec3 aPosition;
-
-                varying float clipDist;
-
-                void main(void)
-                {
-                    vec4 pos = vec4(aPosition, 1.0);
-
-                    #ifdef MODEL_TO_WORLD
-                        pos = uModelToWorldMatrix * pos;
-                    #endif
-
-                    gl_Position = uWorldToScreenMatrix * pos;
-
-                    // Compute the distance between the vertex and the clip plane
-                    clipDist = dot(pos.xyz, uClippingPlane.xyz) - uClippingPlane.w;
-                }
-            ",
-            "fragmentShader" : "
-                uniform vec4 uClippingPlane;
-
-                varying float clipDist;
-
-                void main(void)
-                {
-                    if (clipDist + 0.00001 < -uClippingPlane.w * 2)
-                        discard;
-
-                    gl_FragColor = vec4(1.0, 0, 0, 0);
-                }
-            "
-        },
-        {
             "name" : "render-back",
             "states" : {
                 "colorMask" : false,
                 "depthMask" : false,
-                "stencilFunction" : "always",
                 "stencilZPassOperation" : "incr",
                 "triangleCulling" : "back"
             },
+
             "vertexShader" : "
                 #ifdef GL_ES
                     #ifdef GL_FRAGMENT_PRECISION_HIGH
@@ -124,7 +65,7 @@
             "fragmentShader" : "
                 void main(void)
                 {
-                    gl_FragColor = vec4(1.0, 0, 0, 0);
+                    gl_FragColor = vec4(0, 0, 0, 0);
                 }
             "
         },
@@ -133,10 +74,10 @@
             "states" : {
                 "colorMask" : false,
                 "depthMask" : false,
-                "stencilFunction" : "always",
                 "stencilZPassOperation" : "decr",
                 "triangleCulling" : "front"
             },
+            
             "vertexShader" : "
                 #ifdef GL_ES
                     #ifdef GL_FRAGMENT_PRECISION_HIGH
@@ -150,6 +91,8 @@
                 uniform mat4 uWorldToScreenMatrix;
 
                 attribute vec3 aPosition;
+
+                varying float clipDist;
 
                 void main(void)
                 {

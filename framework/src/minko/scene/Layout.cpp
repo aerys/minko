@@ -34,6 +34,10 @@ const Layout BuiltinLayout::MINOR_OBJECT        = 1 << 8;
 const Layout BuiltinLayout::PICKING_DEPTH       = 1 << 9;
 const Layout BuiltinLayout::CAST_SHADOW			= 1 << 10;
 const Layout BuiltinLayout::TEXT				= 1 << 11;
+const Layout BuiltinLayout::_RESERVED_3         = 1 << 12;
+const Layout BuiltinLayout::_RESERVED_4         = 1 << 13;
+const Layout BuiltinLayout::CLIPPING            = 1 << 14;
+const Layout BuiltinLayout::CLIPPED             = 1 << 15;
 
 const Layout LayoutMask::NOTHING                    = 0;
 const Layout LayoutMask::COLLISIONS_DYNAMIC_DEFAULT = EVERYTHING & ~BuiltinLayout::STATIC;
