@@ -13,10 +13,11 @@ We'll document the procedure for Ubuntu. Please refer to your Linux distribution
 You can install either GCC:
 
 ```bash
-sudo apt-get install gcc-4.8 g++-4.8 
-sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 50 
+sudo apt-get install gcc-4.8 g++-4.8
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 50
 sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 50 
 ```
+
 Or Clang:
 
 ```bash
@@ -26,10 +27,12 @@ sudo apt-get install clang-3.4
 For older (< 13.10) versions of Ubuntu, you may have to add some PPAs first:
 
 ```bash
-sudo apt-get install python-software-properties 
-sudo add-apt-repository ppa:ubuntu-toolchain-r/test # GCC 4.8 
-wget -O - <http://llvm.org/apt/llvm-snapshot.gpg.key> | sudo apt-key add - # Clang 
-sudo apt-get update
+sudo apt-get update 
+sudo apt-get install python-software-properties
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+
+wget -O - <http://llvm.org/apt/llvm-snapshot.gpg.key> | sudo apt-key add -
+```
 
 Optionally, you can install `gcc-multilib` to allow cross-compilation between 32 and 64-bit Linux:
 
@@ -68,6 +71,8 @@ sudo apt-get install libudev-dev libxinerama-dev
 
 # HTML overlay (optional) 
 sudo apt-get install libgtk2.0-dev 
+
+# Fix for 64-bit Linux
 libgtkglext1-dev libudevpath=$([ \uname -m\ = x86_64 ] && echo "/lib/x86_64-linux-gnu" || echo "/lib/i386-linux-gnu") 
 sudo test -e $libudevpath/libudev.so.0 || sudo ln -s $libudevpath/libudev.so.1 $libudevpath/libudev.so.0 
 ```

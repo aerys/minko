@@ -13,6 +13,7 @@ minko.project.library = function(name)
 	includedirs { minko.sdk.path("/framework/lib/glm") }
 	-- sparsehash
 	includedirs { minko.sdk.path("/framework/lib/sparsehash/src") }
+
 	configuration { "windows" }
 		includedirs { minko.sdk.path("/framework/lib/sparsehash/include/windows") }
 		buildoptions { "/wd4996" }
@@ -67,6 +68,11 @@ minko.project.application = function(name)
 	-- 	"MINKO_APPLICATION_NAME=" .. name
 	-- }
 
+	minko.package.assetdirs {
+		"asset", -- current directory
+		minko.sdk.path("/framework/asset")
+	}
+
 	configuration { "windows32" }
 		libdirs {
 			minko.sdk.path("/framework/lib/glew/lib/windows32")
@@ -77,7 +83,7 @@ minko.project.application = function(name)
 			"glew32"
 		}
 		prelinkcommands {
-			minko.action.copy(minko.sdk.path("/framework/asset")),
+			-- minko.action.copy(minko.sdk.path("/framework/asset")),
 			minko.action.copy(minko.sdk.path("/framework/lib/glew/lib/windows32/*.dll"))
 		}
 
@@ -90,9 +96,9 @@ minko.project.application = function(name)
 		libdirs {
 			minko.sdk.path("/framework/bin/windows32/release")
 		}
-		prelinkcommands {
-			minko.action.copy("asset")
-		}
+		-- prelinkcommands {
+		-- 	minko.action.copy("asset")
+		-- }
 
 	configuration { "windows64" }
 		libdirs { minko.sdk.path("/framework/lib/glew/lib/windows64") }
@@ -102,7 +108,7 @@ minko.project.application = function(name)
 			"glew32"
 		}
 		prelinkcommands {
-			minko.action.copy(minko.sdk.path("/framework/asset")),
+			-- minko.action.copy(minko.sdk.path("/framework/asset")),
 			minko.action.copy(minko.sdk.path("/framework/lib/glew/lib/windows64/*.dll"))
 		}
 
@@ -115,9 +121,9 @@ minko.project.application = function(name)
 		libdirs {
 			minko.sdk.path("/framework/bin/windows64/release")
 		}
-		prelinkcommands {
-			minko.action.copy("asset"),
-		}
+		-- prelinkcommands {
+		-- 	minko.action.copy("asset"),
+		-- }
 
 	configuration { "linux64" }
 		linkoptions { "-Wl,--no-as-needed" }
@@ -127,25 +133,25 @@ minko.project.application = function(name)
 			"m",
 			"pthread"
 		}
-		prelinkcommands {
-			minko.action.copy(minko.sdk.path("/framework/asset")),
-		}
+		-- prelinkcommands {
+		-- 	minko.action.copy(minko.sdk.path("/framework/asset")),
+		-- }
 
 	configuration { "linux64", "debug" }
 		libdirs {
 			minko.sdk.path("/framework/bin/linux64/debug")
 		}
-		prelinkcommands {
-			minko.action.copy("asset"),
-		}
+		-- prelinkcommands {
+		-- 	minko.action.copy("asset"),
+		-- }
 
 	configuration { "linux64", "release" }
 		libdirs {
 			minko.sdk.path("/framework/bin/linux64/release")
 		}
-		prelinkcommands {
-			minko.action.copy("asset"),
-		}
+		-- prelinkcommands {
+		-- 	minko.action.copy("asset"),
+		-- }
 
 	configuration { "linux32" }
 		linkoptions { "-Wl,--no-as-needed" }
@@ -155,25 +161,25 @@ minko.project.application = function(name)
 			"m",
 			"pthread"
 		}
-		prelinkcommands {
-			minko.action.copy(minko.sdk.path("/framework/asset")),
-		}
+		-- prelinkcommands {
+		-- 	minko.action.copy(minko.sdk.path("/framework/asset")),
+		-- }
 
 	configuration { "linux32", "debug" }
 		libdirs {
 			minko.sdk.path("/framework/bin/linux32/debug")
 		}
-		prelinkcommands {
-			minko.action.copy("asset"),
-		}
+		-- prelinkcommands {
+		-- 	minko.action.copy("asset"),
+		-- }
 
 	configuration { "linux32", "release" }
 		libdirs {
 			minko.sdk.path("/framework/bin/linux32/release")
 		}
-		prelinkcommands {
-			minko.action.copy("asset"),
-		}
+		-- prelinkcommands {
+		-- 	minko.action.copy("asset"),
+		-- }
 
 	configuration { "osx64" }
 		links {
@@ -186,9 +192,9 @@ minko.project.application = function(name)
 		-- linkoptions {
 		-- 	"-Wl,-rpath,."
 		-- }
-		prelinkcommands {
-			minko.action.copy(minko.sdk.path("/framework/asset")),
-		}
+		-- prelinkcommands {
+		-- 	minko.action.copy(minko.sdk.path("/framework/asset")),
+		-- }
 
 	configuration { "osx64", "debug" }
 		libdirs {
@@ -199,9 +205,9 @@ minko.project.application = function(name)
 		libdirs {
 			minko.sdk.path("/framework/bin/osx64/release")
 		}
-		prelinkcommands {
-			minko.action.copy("asset"),
-		}
+		-- prelinkcommands {
+		-- 	minko.action.copy("asset"),
+		-- }
 
 	configuration { "html5" }
 
@@ -211,10 +217,10 @@ minko.project.application = function(name)
 
 		targetsuffix ".bc"
 
-		prelinkcommands {
-			minko.action.copy(minko.sdk.path("/framework/asset")),
-			minko.action.copy("asset"),
-		}
+		-- prelinkcommands {
+		-- 	minko.action.copy(minko.sdk.path("/framework/asset")),
+		-- 	minko.action.copy("asset"),
+		-- }
 
 	if premake.tools.gcc.tools.emscripten then
 		configuration { "html5", "release" }
@@ -251,8 +257,6 @@ minko.project.application = function(name)
 			else
 				cmd = cmd .. ' --shell-file "' .. minko.sdk.path('/skeleton/template.html') .. '"'
 			end
-			-- include the app's 'asset' directory into the file system
-			cmd = cmd .. ' --preload-file ${TARGETDIR}/asset'
 
 			postbuildcommands {
 				cmd .. ' || ' .. minko.action.fail()
@@ -276,6 +280,8 @@ minko.project.application = function(name)
 			cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=0'
 			-- allow memory pool to be dynamic
 			cmd = cmd .. ' -s ALLOW_MEMORY_GROWTH=1'
+			-- demangling C++ symbols
+			cmd = cmd .. ' -s DEMANGLE_SUPPORT=1'
 			-- use a separate *.mem file to initialize the app memory
 			cmd = cmd .. ' --memory-init-file 1'
 			-- set the app (or the sdk) template.html
@@ -284,16 +290,30 @@ minko.project.application = function(name)
 			else
 				cmd = cmd .. ' --shell-file "' .. minko.sdk.path('/skeleton/template.html') .. '"'
 			end
-			-- include the app's 'asset' directory into the file system
-			cmd = cmd .. ' --preload-file ${TARGETDIR}/asset'
 
 			postbuildcommands {
+				-- minko.action.unless('${TARGETDIR}/' .. name .. '.html') ..
 				cmd .. ' || ' .. minko.action.fail()
 			}
 
 			libdirs {
 				minko.sdk.path("/framework/bin/html5/debug")
 			}
+
+		configuration { "html5" }
+			-- include the preloaded assets into the file system
+			local empkg = premake.tools.gcc.tools.emscripten.pkg
+			local cmd = empkg .. ' ${TARGETDIR}/' .. name .. '.data'
+
+			postbuildcommands {
+				-- minko.action.unless('${TARGETDIR}/' .. name .. '.data') ..
+				cmd .. ' || ' .. minko.action.fail()
+			}
+
+			prebuildcommands {
+				minko.action.remove('${TARGETDIR}/' .. name .. '.preload')
+			}
+
 	end
 
 	configuration { "ios" }
@@ -314,10 +334,10 @@ minko.project.application = function(name)
 			"**.plist"
 		}
 
-		prelinkcommands {
-			minko.action.copy(minko.sdk.path("/framework/asset")),
-			minko.action.copy("asset")
-		}
+		-- prelinkcommands {
+		-- 	minko.action.copy(minko.sdk.path("/framework/asset"))
+		-- 	minko.action.copy("asset")
+		-- }
 
 	configuration { "ios", "debug" }
 		libdirs {

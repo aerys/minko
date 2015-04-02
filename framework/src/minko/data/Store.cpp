@@ -133,7 +133,7 @@ Store::operator=(Store&& other)
 void
 Store::initialize()
 {
-#ifndef DEBUG
+#ifdef MINKO_USE_SPARSE_HASH_MAP
     _propertyNameToChangedSignal->set_deleted_key("");
     _propertyNameToAddedSignal->set_deleted_key("");
     _propertyNameToRemovedSignal->set_deleted_key("");
@@ -305,13 +305,13 @@ Store::providerPropertyRemovedHandler(Provider::Ptr                 provider,
     executePropertySignal(provider, collection, propertyName, _propertyRemoved, *_propertyNameToRemovedSignal);
 
     auto formattedName = formatPropertyName(collection, provider, *propertyName);
-    
+
     // Explicit typing required here since `map::erase` takes a `const_iterator`
     // while find returns an `iterator` by default.
-#if defined(DEBUG)
-    ChangedSignalMap::const_iterator it;
+#ifdef MINKO_USE_SPARSE_HASH_MAP
+    ChangedSignalMap::iterator it;
 #else
-	ChangedSignalMap::iterator it;
+    ChangedSignalMap::const_iterator it;
 #endif
 
     it = _propertyNameToAddedSignal->find(formattedName);
