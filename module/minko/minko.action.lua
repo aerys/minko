@@ -78,6 +78,10 @@ minko.action.copy = function(sourcepath, destpath)
 
 		local destdir = path.getdirectory(destpath)
 
+		if string.find(path.getname(destpath), '*') then
+			destpath = path.getdirectory(destpath)
+		end
+
 		if os.isdir(sourcepath) and not string.endswith(sourcepath, '/') then
 			sourcepath = sourcepath .. '/' -- cp will copy the content of the directory
 		end
@@ -90,7 +94,7 @@ minko.action.copy = function(sourcepath, destpath)
 		-- print(' -> cp -R ' .. sourcepath .. ' "' .. destpath .. '"')
 
 		return 'mkdir -p "' .. destdir .. '"; ' ..
-			   'cp -R "' .. sourcepath .. '" "' .. destpath .. '"'
+			   'cp -R ' .. sourcepath .. ' ' .. destpath .. ''
 	end
 end
 
