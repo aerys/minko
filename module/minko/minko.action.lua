@@ -6,20 +6,24 @@ end
 
 local function gettargetdir()
 	if os.is('windows') and not iscygwin() then
-		if string.startswith(_ACTION, "gmake") then
-			return '$(subst /,\\,$(TARGETDIR))'
-		else
-			return '$(TargetDir)'
-		end
+		return '$(TARGETDIR)'
+	elseif (_ACTION == "xcode-osx") then
+		return '${TARGET_BUILD_DIR}'
+	elseif (_ACTION == "xcode-ios") then
+		return '${TARGET_BUILD_DIR}/${TARGET_NAME}.app'
 	else
-		if (_ACTION == "xcode-osx") then
-			return '${TARGET_BUILD_DIR}'
-		elseif (_ACTION == "xcode-ios") then
-			return '${TARGET_BUILD_DIR}/${TARGET_NAME}.app'
-		else
-			return '${TARGETDIR}'
-		end
+		return '${TARGETDIR}'
 	end
+end
+
+local function translate(filepath)
+	filepath = path.translate(filepath)
+
+	if os.is('windows') and not iscygwin() and string.startswith(_ACTION, "gmake") then
+		filepath = string.gsub(filepath, '%$%(TARGETDIR%)', '$(subst /,\\,$(TARGETDIR))')
+	end
+
+	return filepath
 end
 
 minko.action.fail = function(target)
@@ -32,7 +36,7 @@ minko.action.fail = function(target)
 	end
 
 	if os.is('windows') then
-		return 'call "' .. path.translate(minko.sdk.path('/tool/win/script/fail.bat')) .. '" "' .. target .. '"'
+		return 'call "' .. translate(minko.sdk.path('/tool/win/script/fail.bat')) .. '" "' .. target .. '"'
 	else
 		return 'bash ' .. minko.sdk.path('/tool/lin/script/fail.sh') .. ' "' .. target .. '"'
 	end
@@ -59,14 +63,14 @@ minko.action.copy = function(sourcepath, destpath)
 			destpath = path.getdirectory(destpath)
 		end
 
-		if os.isdir(sourcepath) and not string.endswith(sourcepath, '/') then
-			sourcepath = sourcepath .. '/' -- cp will copy the content of the directory
-		end
+		-- if os.isdir(sourcepath) and not string.endswith(sourcepath, '/') then
+		-- 	sourcepath = sourcepath .. '/' -- cp will copy the content of the directory
+		-- end
 
-		-- print(' -> xcopy /y /i /e "' .. path.translate(sourcepath) .. '" "' .. path.translate(destpath) .. '"')
+		-- print(' -> xcopy /y /i /e "' .. translate(sourcepath) .. '" "' .. translate(destpath) .. '"')
 
-		return 'mkdir "' .. path.translate(destdir) .. '" & ' ..
-			   'xcopy /y /e "' .. path.translate(sourcepath) .. '" "' .. path.translate(destpath) .. '"'
+		return 'mkdir "' .. translate(destdir) .. '" & ' ..
+			   'xcopy /y /e /i "' .. translate(sourcepath) .. '" "' .. translate(destpath) .. '"'
 
 	else
 
@@ -114,10 +118,8 @@ minko.action.embed = function(sourcepath, destpath)
 
 	preloadfilename = path.join(targetdir, preloadfilename)
 
-	local bin = (os.is('windows') and not iscygwin()) and '@echo' or 'echo'
-
 	return table.concat({
-		bin,
+		'echo',
 		sourcepath .. '@' .. destpath,
 		'>>',
 		preloadfilename
@@ -143,7 +145,7 @@ end
 
 minko.action.zip = function(directory, archive)
 	if os.is('windows') then
-		return '7za a "' .. archive .. '" "' .. path.translate(directory) .. '"'
+		return '7za a "' .. archive .. '" "' .. translate(directory) .. '"'
 	else
 		return 'zip -r "' .. archive .. '" "' .. directory .. '"'
 	end
@@ -153,7 +155,7 @@ minko.action.remove = function(filepath)
 	local targetdir = gettargetdir()
 
 	if os.is('windows') then
-		return 'erase /f /q ' .. targetdir .. '\\' .. path.translate(filepath)
+		return 'erase /f /q ' .. translate(path.join(targetdir, filepath))
 	else
 		return 'rm -f ' .. path.join(targetdir, filepath)
 	end
@@ -173,6 +175,7 @@ minko.action.optimize = function(file)
 
 	local sourceext = path.getextension(file)
 	local exportext = minko.package._action['optimize'].supported[sourceext]
+
 	if exportext ~= nil then
 		prelinkcommands {
 			table.concat({
