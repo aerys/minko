@@ -142,10 +142,12 @@ minko.action.zip = function(directory, archive)
 end
 
 minko.action.remove = function(filepath)
+	local targetdir = gettargetdir()
+
 	if os.is('windows') then
-		return 'erase /f /q ' .. filepath
+		return 'erase /f /q ' .. targetdir .. '\\' .. path.translate(filepath)
 	else
-		return 'rm -f ' .. filepath
+		return 'rm -f ' .. path.join(targetdir, filepath)
 	end
 end
 

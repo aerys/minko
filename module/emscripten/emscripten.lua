@@ -52,11 +52,13 @@ elseif os.is('windows') then
 	table.inject(premake.tools.gcc, 'tools.emscripten', {
 		cc = '"' .. EMSCRIPTEN .. '\\emcc.bat"',
 		cxx = 'call "%MINKO_HOME%\\tool\\win\\script\\em++.bat"',
+		pkg = 'python "%MINKO_HOME%\\tool\\lin\\script\\empkg.py"',
 		ar = '"' .. EMSCRIPTEN .. '\\emar.bat"'
 	})
 	table.inject(premake.tools.clang, 'tools.emscripten', {
 		cc = '"' .. EMSCRIPTEN .. '\\emcc.bat"',
 		cxx = 'call "%MINKO_HOME%\\tool\\win\\script\\em++.bat"',
+		pkg = 'python "%MINKO_HOME%\\tool\\lin\\script\\empkg.py"',
 		ar = '"' .. EMSCRIPTEN .. '\\emar.bat"'
 	})
 end
