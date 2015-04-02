@@ -39,7 +39,8 @@ Minko.loadedHandler = function(event)
 
 		Minko.document.addEventListener('touchmove', function(event)
 		{
-			event.preventDefault();
+			if (!event.dontPreventDefault)			
+				event.preventDefault();
 		});
 	}
 	else
@@ -537,8 +538,9 @@ Minko.androidEventHandler = function(event)
 	console.log('JS Event: ' + event.type + ' (' + event.currentTarget.minkoName + ')');
 	
 	// Workaround for API 19 to properly fire touchmove
-	if (event.type == "touchstart" || event.type == "touchend")
+	if (!event.dontPreventDefault && (event.type == "touchstart" || event.type == "touchend"))	
 		event.preventDefault();
+
 	
 	eventData = {};
 	eventData.type = event.type;
