@@ -47,17 +47,25 @@ minko.action.copy = function(sourcepath, destpath)
 
 	if os.is('windows') and not iscygwin() then
 
-		sourcepath = path.translate(sourcepath)
+		if not destpath then
+			destpath = path.getname(sourcepath)
+		end
 
-		destpath = destpath and path.join(targetdir, destpath) or targetdir
+		destpath = path.join(targetdir, destpath)
 
-		if os.isdir(sourcepath) then
-			destpath = path.join(destpath, path.getbasename(sourcepath))
+		local destdir = path.getdirectory(destpath)
+
+		if string.find(path.getname(destpath), '*') then
+			destpath = path.getdirectory(destpath)
+		end
+
+		if os.isdir(sourcepath) and not string.endswith(sourcepath, '/') then
+			sourcepath = sourcepath .. '/' -- cp will copy the content of the directory
 		end
 
 		-- print(' -> xcopy /y /i /e "' .. path.translate(sourcepath) .. '" "' .. path.translate(destpath) .. '"')
 
-		return 'mkdir "' .. path.translate(path.getdirectory(destpath)) .. '" & ' ..
+		return 'mkdir "' .. path.translate(destdir) .. '" & ' ..
 			   'xcopy /y /e "' .. path.translate(sourcepath) .. '" "' .. path.translate(destpath) .. '"'
 
 	else
@@ -68,7 +76,7 @@ minko.action.copy = function(sourcepath, destpath)
 
 		destpath = path.join(targetdir, destpath)
 
-		-- local destdir = os.isdir(sourcepath) and destpath or path.getdirectory(destpath)
+		local destdir = path.getdirectory(destpath)
 
 		if os.isdir(sourcepath) and not string.endswith(sourcepath, '/') then
 			sourcepath = sourcepath .. '/' -- cp will copy the content of the directory
@@ -81,7 +89,7 @@ minko.action.copy = function(sourcepath, destpath)
 
 		-- print(' -> cp -R ' .. sourcepath .. ' "' .. destpath .. '"')
 
-		return 'mkdir -p "' .. path.getdirectory(destpath) .. '"; ' ..
+		return 'mkdir -p "' .. destdir .. '"; ' ..
 			   'cp -R "' .. sourcepath .. '" "' .. destpath .. '"'
 	end
 end
@@ -142,10 +150,12 @@ minko.action.zip = function(directory, archive)
 end
 
 minko.action.remove = function(filepath)
+	local targetdir = gettargetdir()
+
 	if os.is('windows') then
-		return 'erase /f /q ' .. filepath
+		return 'erase /f /q ' .. targetdir .. '\\' .. path.translate(filepath)
 	else
-		return 'rm -f ' .. filepath
+		return 'rm -f ' .. path.join(targetdir, filepath)
 	end
 end
 

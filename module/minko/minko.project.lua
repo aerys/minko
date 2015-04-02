@@ -311,7 +311,7 @@ minko.project.application = function(name)
 			}
 
 			prebuildcommands {
-				minko.action.remove('${TARGETDIR}/' .. name .. '.preload')
+				minko.action.remove(name .. '.preload')
 			}
 
 	end
