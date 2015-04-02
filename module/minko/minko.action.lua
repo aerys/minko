@@ -32,7 +32,7 @@ minko.action.fail = function(target)
 	end
 
 	if os.is('windows') then
-		return 'call "' .. path.translate(minko.sdk.path('/tool/win/script/fail.bat')) .. '" "' .. target '"'
+		return 'call "' .. path.translate(minko.sdk.path('/tool/win/script/fail.bat')) .. '" "' .. target .. '"'
 	else
 		return 'bash ' .. minko.sdk.path('/tool/lin/script/fail.sh') .. ' "' .. target .. '"'
 	end
