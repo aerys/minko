@@ -32,7 +32,7 @@ public class MinkoWebView extends WebView
 			}
 			case MotionEvent.ACTION_UP:
 			{
-				if (System.currentTimeMillis() - lastEventTime < 1000)
+				/*if (System.currentTimeMillis() - lastEventTime < 1000)
 				{
 					// Cancel all touch actions
 					ev.setAction(MotionEvent.ACTION_CANCEL);
@@ -43,7 +43,7 @@ public class MinkoWebView extends WebView
 				}
 				
 				ev.setAction(MotionEvent.ACTION_UP);
-				lastEventTime = System.currentTimeMillis();
+				lastEventTime = System.currentTimeMillis();*/
 				
 				return super.onTouchEvent(ev);
 			}
