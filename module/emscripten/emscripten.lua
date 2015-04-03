@@ -66,15 +66,13 @@ end
 table.inject(premake.tools.gcc, 'cppflags.system.emscripten', {
 	"-MMD", "-MP",
 	"-DEMSCRIPTEN",
-	"-Wno-warn-absolute-paths",
-	"--tracing"
+	"-Wno-warn-absolute-paths"
 })
 
 table.inject(premake.tools.clang, 'cppflags.system.emscripten', {
 	"-MMD", "-MP",
 	"-DEMSCRIPTEN",
-	"-Wno-warn-absolute-paths",
-	"-D__EMSCRIPTEN_TRACING__"
+	"-Wno-warn-absolute-paths"
 })
 
 table.inject(premake.tools.gcc, 'cxxflags.system.emscripten', {
