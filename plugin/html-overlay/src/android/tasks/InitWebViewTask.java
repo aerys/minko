@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.ViewGroup;
 import android.view.View;
 import android.view.Display;
+import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.webkit.WebChromeClient;
@@ -18,6 +19,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.lang.Exception;
 import org.libsdl.app.*;
+import android.webkit.CookieManager;
 
 public class InitWebViewTask implements Runnable 
 {
@@ -54,7 +56,7 @@ public class InitWebViewTask implements Runnable
 		
         // Transparent background
         _webView.setBackgroundColor(0x00ff0000);
-        _webView.setLayerType(WebView.LAYER_TYPE_SOFTWARE, null);
+        _webView.setLayerType(WebView.LAYER_TYPE_HARDWARE, null);
 
 		// Scale to fit the page
         _webView.getSettings().setLoadWithOverviewMode(true);
@@ -72,12 +74,10 @@ public class InitWebViewTask implements Runnable
 			defaultFixedViewport();
 		}
 		
-		// Disable scroll bar
-		_webView.setVerticalScrollBarEnabled(false);
-		_webView.setHorizontalScrollBarEnabled(false);
+		CookieManager.getInstance().setAcceptFileSchemeCookies(true);
+		CookieManager.getInstance().setAcceptCookie(true);		
 		
-		// Disable scroll edge gradient
-		_webView.setOverScrollMode(View.OVER_SCROLL_NEVER);
+        _webView.requestFocus(View.FOCUS_DOWN);
 		
 		// Add the WebView
         layout.addView(_webView);
