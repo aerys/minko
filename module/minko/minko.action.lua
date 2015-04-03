@@ -19,8 +19,9 @@ end
 local function translate(filepath)
 	filepath = path.translate(filepath)
 
-	if os.is('windows') and not iscygwin() and string.startswith(_ACTION, "gmake") then
-		filepath = string.gsub(filepath, '%$%(TARGETDIR%)', '$(subst /,\\,$(TARGETDIR))')
+	if iscygwin() then
+		filepath = string.gsub(filepath, '([a-z]):', '/cygdrive/%1')
+		filepath = string.gsub(filepath, '\\', '/')
 	end
 
 	return filepath
@@ -28,102 +29,85 @@ end
 
 minko.action.fail = function(target)
 	if not target then
-		if os.is('windows') and not string.startswith(_ACTION, "gmake") then
+		if os.is('windows') and not iscygwin() then
 			target = '$(Target)'
 		else
 			target = '${TARGET}'
 		end
 	end
 
-	if os.is('windows') then
+	if os.is('windows') and not iscygwin() then
 		return 'call "' .. translate(minko.sdk.path('/tool/win/script/fail.bat')) .. '" "' .. target .. '"'
 	else
 		return 'bash ' .. minko.sdk.path('/tool/lin/script/fail.sh') .. ' "' .. target .. '"'
 	end
 end
 
-minko.action.copy = function(sourcepath, destpath)
+minko.action.copy = function(sourcepath, destpath, targetdir)
 	-- print('minko.action.copy(' .. sourcepath .. ')')
 
 	-- default destpath will be the target directory
 
-	local targetdir = gettargetdir()
+	if not targetdir then
+		targetdir = gettargetdir()
+	end
+
+	if not destpath then
+		destpath = path.getname(sourcepath)
+	end
+
+	destpath = path.join(targetdir, destpath)
+
+	local destdir = path.getdirectory(destpath)
+
+	if string.find(path.getname(destpath), '*') then
+		destpath = path.getdirectory(destpath)
+	end
+
+	if os.isdir(sourcepath) and not string.endswith(sourcepath, '/') then
+		sourcepath = sourcepath .. '/' -- cp will copy the content of the directory
+	end
 
 	if os.is('windows') and not iscygwin() then
-
-		if not destpath then
-			destpath = path.getname(sourcepath)
-		end
-
-		destpath = path.join(targetdir, destpath)
-
-		local destdir = path.getdirectory(destpath)
-
-		if string.find(path.getname(destpath), '*') then
-			destpath = path.getdirectory(destpath)
-		end
-
-		-- if os.isdir(sourcepath) and not string.endswith(sourcepath, '/') then
-		-- 	sourcepath = sourcepath .. '/' -- cp will copy the content of the directory
-		-- end
-
 		-- print(' -> xcopy /y /i /e "' .. translate(sourcepath) .. '" "' .. translate(destpath) .. '"')
 
 		return 'mkdir "' .. translate(destdir) .. '" & ' ..
-			   'xcopy /y /e /i "' .. translate(sourcepath) .. '" "' .. translate(destpath) .. '"'
-
+			   'xcopy /y /e /i "' .. translate(sourcepath) .. '" "' .. translate(destdir) .. '"'
 	else
-
-		if not destpath then
-			destpath = path.getname(sourcepath)
-		end
-
-		destpath = path.join(targetdir, destpath)
-
-		local destdir = path.getdirectory(destpath)
-
-		if os.isdir(sourcepath) and not string.endswith(sourcepath, '/') then
-			sourcepath = sourcepath .. '/' -- cp will copy the content of the directory
-		end
-
 		if iscygwin() then
-			sourcepath = os.capture('cygpath -u "' .. sourcepath .. '"')
-			targetdir = os.capture('cygpath -u "' .. targetdir .. '"')
+			sourcepath = translate(sourcepath)
+			targetdir = translate(targetdir)
 		end
 
 		-- print(' -> cp -R ' .. sourcepath .. ' "' .. destpath .. '"')
 
 		return 'mkdir -p "' .. destdir .. '"; ' ..
-			   'cp -R "' .. sourcepath .. '" "' .. destpath .. '"'
+			   'cp -R "' .. sourcepath .. '" "' .. destdir .. '"'
 	end
 end
 
-minko.action.link = function(sourcepath)
+minko.action.link = function(sourcepath, destpath)
 	local targetdir = gettargetdir()
 
+	if not destpath then
+		destpath = path.getname(sourcepath)
+	end
+
+	destpath = path.join(targetdir, destpath)
+
 	if os.is('windows') and not iscygwin() then
-		-- fixme: not needed yet
+		if os.isdir(sourcepath) then
+			return 'mklink /d "' .. destpath .. '" "' .. sourcepath .. '"'
+		else
+			return 'mklink "' .. destpath .. '" "' .. sourcepath .. '"'
+		end
 	else
-		local exists = string.find(sourcepath, '*') and '' or ('test -e ' .. sourcepath .. ' && ')
-
-		destpath = destpath and path.join(targetdir, destpath) or targetdir
-
-		return exists .. 'ln -s -f ' .. sourcepath .. ' "' .. destpath .. '" || :'
+		return 'ln -s -f "' .. sourcepath .. '"" "' .. destpath .. '"'
 	end
 end
 
 minko.action.embed = function(sourcepath, destpath)
-	local targetdir = gettargetdir()
-	local preloadfilename = project().name .. '.preload'
-
-	preloadfilename = path.join(targetdir, preloadfilename)
-
-	return table.concat({
-		'echo',
-		sourcepath .. '@' .. destpath,
-		'>>',
-		preloadfilename
-	}, ' ')
+	return minko.action.copy(sourcepath, destpath, path.join(gettargetdir(), 'embed'))
 end
 
 minko.action.unless = function(filepath)
@@ -140,7 +124,7 @@ minko.action.unless = function(filepath)
 end
 
 minko.action.clean = function(directory)
-	return 'git clean -X -d -f ' .. directory;
+	return 'git clean -X -d -f ' .. directory
 end
 
 minko.action.zip = function(directory, archive)
@@ -174,12 +158,12 @@ minko.action.optimize = function(file)
 	assert(type(files) == 'table', '`optimize` action expects an array of files')
 
 	local sourceext = path.getextension(file)
-	local exportext = minko.package._action['optimize'].supported[sourceext]
+	local exportext = supported[sourceext]
 
 	if exportext ~= nil then
 		prelinkcommands {
 			table.concat({
-				minko.package._action['optimize'].binary,
+				binary,
 				'-v',
 				'-i',
 				file,

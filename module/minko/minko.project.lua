@@ -310,10 +310,6 @@ minko.project.application = function(name)
 				cmd .. ' || ' .. minko.action.fail()
 			}
 
-			prebuildcommands {
-				minko.action.remove(name .. '.preload')
-			}
-
 	end
 
 	configuration { "ios" }

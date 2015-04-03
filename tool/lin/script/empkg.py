@@ -11,10 +11,14 @@ def main():
         print('usage: empkg.py <data file>', file=sys.stderr)
         sys.exit(1)
 
-    data = sys.argv[1]
+    targetdir = os.path.getdirectory(sys.argv[1])
+    data = os.path.getbasename(sys.argv[1])
     html = os.path.splitext(data)[0] + '.html'
-    preload = os.path.splitext(data)[0] + '.preload'
-    js = preload + '.js'
+    preload = os.path.splitext(data)[0] + '.preload.js'
+    embed = 'embed'
+
+    if not os.path.isdir(os.path.join(targetdir, embed)):
+        return
 
     if not os.path.isfile(html):
         print('no .html file found next to .data', file=sys.stderr)
@@ -24,23 +28,19 @@ def main():
 
     binary = os.path.join(EMSCRIPTEN, 'tools', 'file_packager.py')
 
-    files = []
-
-    if os.path.isfile(preload):
-        with open(preload, 'r') as f:
-            files += f.read().splitlines()
+    files = [os.path.join(embed, name) + '@' + name for name in os.listdir(os.path.join(targetdir, embed))]
 
     if os.getenv('verbose') != '0':
-        print(' '.join(['python', binary, data, '--js-output=' + js, '--preload'] + files))
+        print(' '.join(['python', binary, data, '--js-output=' + preload, '--preload'] + files))
 
-    subprocess.call(['python', binary, data, '--js-output=' + js, '--preload'] + files)
+    subprocess.call(['python', binary, data, '--js-output=' + preload, '--preload'] + files, cwd=targetdir)
 
     content = ""
 
     with open(html, "r") as f:
         content = f.read()
     with open(html, "w") as f:
-        script = '<script type="text/javascript" async src="' + os.path.basename(js) + '"></script>'
+        script = '<script type="text/javascript" async src="' + os.path.basename(preload) + '"></script>'
         f.write(content.replace('{{{ PRELOAD }}}', script))
 
 if __name__ == '__main__':
