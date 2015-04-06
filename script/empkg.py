@@ -4,6 +4,7 @@ from __future__ import print_function
 import os
 import os.path
 import sys
+import shutil
 import subprocess
 
 def main():
@@ -34,6 +35,8 @@ def main():
         print(' '.join(['python', binary, data, '--js-output=' + preload, '--preload'] + files))
 
     subprocess.call(['python', binary, data, '--js-output=' + preload, '--preload'] + files, cwd=targetdir)
+
+    shutil.rmtree(os.path.join(targetdir, embed))
 
     content = ""
 
