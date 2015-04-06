@@ -37,9 +37,9 @@ minko.action.fail = function(target)
 	end
 
 	if os.is('windows') and not iscygwin() then
-		return 'call "' .. translate(minko.sdk.path('/tool/win/script/fail.bat')) .. '" "' .. target .. '"'
+		return 'call "' .. translate(minko.sdk.path('/script/fail.bat')) .. '" "' .. target .. '"'
 	else
-		return 'bash ' .. minko.sdk.path('/tool/lin/script/fail.sh') .. ' "' .. target .. '"'
+		return 'sh ' .. minko.sdk.path('/script/fail.sh') .. ' "' .. target .. '"'
 	end
 end
 
