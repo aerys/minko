@@ -1,7 +1,5 @@
 @echo off
 
-@echo off
-
 setlocal
 
 rem Read the Git for Windows installation path from the Registry.
@@ -26,7 +24,7 @@ if "%GIT%"=="" (
 rem Make sure Git is in our temporary PATH.
 set PATH=%GIT%bin;%PATH%
 
-pushd ..\..\..
-tool\win\bin\premake5.exe clean
+pushd ..
+call script\premake5.bat clean
 popd
 pause
