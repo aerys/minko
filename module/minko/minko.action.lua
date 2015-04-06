@@ -1,11 +1,7 @@
 minko.action = {}
 
-local function iscygwin()
-	return string.startswith(os.getenv('OSTYPE'), 'CYGWIN')
-end
-
 local function gettargetdir()
-	if os.is('windows') and not iscygwin() then
+	if os.is('windows') and not os.iscygwin() then
 		return '$(TARGETDIR)'
 	elseif (_ACTION == "xcode-osx") then
 		return '${TARGET_BUILD_DIR}'
@@ -16,28 +12,17 @@ local function gettargetdir()
 	end
 end
 
-local function translate(filepath)
-	filepath = path.translate(filepath)
-
-	if iscygwin() then
-		filepath = string.gsub(filepath, '([a-z]):', '/cygdrive/%1')
-		filepath = string.gsub(filepath, '\\', '/')
-	end
-
-	return filepath
-end
-
 minko.action.fail = function(target)
 	if not target then
-		if os.is('windows') and not iscygwin() then
+		if os.is('windows') and not os.iscygwin() then
 			target = '$(Target)'
 		else
 			target = '${TARGET}'
 		end
 	end
 
-	if os.is('windows') and not iscygwin() then
-		return 'call "' .. translate(minko.sdk.path('/script/fail.bat')) .. '" "' .. target .. '"'
+	if os.is('windows') and not os.iscygwin() then
+		return 'call "' .. path.translate(minko.sdk.path('/script/fail.bat')) .. '" "' .. target .. '"'
 	else
 		return 'sh ' .. minko.sdk.path('/script/fail.sh') .. ' "' .. target .. '"'
 	end
@@ -72,15 +57,15 @@ minko.action.copy = function(sourcepath, destpath, targetdir)
 		sourcepath = sourcepath .. '/' -- cp will copy the content of the directory
 	end
 
-	if os.is('windows') and not iscygwin() then
-		-- print(' -> xcopy /y /i /e "' .. translate(sourcepath) .. '" "' .. translate(destpath) .. '"')
+	if os.is('windows') and not os.iscygwin() then
+		-- print(' -> xcopy /y /i /e "' .. path.translate(sourcepath) .. '" "' .. path.translate(destpath) .. '"')
 
-		return 'mkdir "' .. translate(destdir) .. '" & ' ..
-			   'xcopy /y /e /i "' .. translate(sourcepath) .. '" "' .. translate(destdir) .. '"'
+		return 'mkdir "' .. path.translate(destdir) .. '" & ' ..
+			   'xcopy /y /e /i "' .. path.translate(sourcepath) .. '" "' .. path.translate(destdir) .. '"'
 	else
-		if iscygwin() then
-			sourcepath = translate(sourcepath)
-			targetdir = translate(targetdir)
+		if os.iscygwin() then
+			sourcepath = path.translate(sourcepath)
+			targetdir = path.translate(targetdir)
 		end
 
 		-- print(' -> cp -R ' .. sourcepath .. ' "' .. destpath .. '"')
@@ -99,7 +84,7 @@ minko.action.link = function(sourcepath, destpath)
 
 	destpath = path.join(targetdir, destpath)
 
-	if os.is('windows') and not iscygwin() then
+	if os.is('windows') and not os.iscygwin() then
 		if os.isdir(sourcepath) then
 			return 'mklink /d "' .. destpath .. '" "' .. sourcepath .. '"'
 		else
@@ -120,7 +105,7 @@ minko.action.unless = function(filepath)
 		return ''
 	end
 
-	if os.is('windows') and not iscygwin() then
+	if os.is('windows') and not os.iscygwin() then
 		return 'if not exist "' .. filepath .. '" '
 	else
 		return 'test -f ' .. filepath .. ' || '
@@ -133,7 +118,7 @@ end
 
 minko.action.zip = function(directory, archive)
 	if os.is('windows') then
-		return '7za a "' .. archive .. '" "' .. translate(directory) .. '"'
+		return '7za a "' .. archive .. '" "' .. path.translate(directory) .. '"'
 	else
 		return 'zip -r "' .. archive .. '" "' .. directory .. '"'
 	end
@@ -143,7 +128,7 @@ minko.action.remove = function(filepath)
 	local targetdir = gettargetdir()
 
 	if os.is('windows') then
-		return 'erase /f /q ' .. translate(path.join(targetdir, filepath))
+		return 'erase /f /q ' .. path.translate(path.join(targetdir, filepath))
 	else
 		return 'rm -f ' .. path.join(targetdir, filepath)
 	end

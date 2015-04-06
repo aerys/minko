@@ -23,11 +23,13 @@ else
 end
 
 table.inject(premake.tools.gcc, 'tools.emscripten', {
-	cc = MINKO_HOME .. '/module/emscripten/emcc.sh',
-	cxx = MINKO_HOME .. '/module/emscripten/em++.sh',
-	pkg = MINKO_HOME .. '/module/emscripten/empkg.py',
-	ar = MINKO_HOME .. '/module/emscripten/emar.sh'
+	cc = path.cygpath(MINKO_HOME) .. '/module/emscripten/emcc.sh',
+	cxx = path.cygpath(MINKO_HOME) .. '/module/emscripten/em++.sh',
+	pkg = path.cygpath(MINKO_HOME) .. '/module/emscripten/empkg.py',
+	ar = path.cygpath(MINKO_HOME) .. '/module/emscripten/emar.sh'
 })
+
+print(premake.tools.gcc.tools.emscripten.cc)
 
 table.inject(premake.tools.gcc, 'cppflags.system.emscripten', {
 	"-MMD", "-MP",
