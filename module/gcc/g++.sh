@@ -3,8 +3,6 @@
 BIN="${CXX:-g++}"
 ARGS=""
 
-shift
-
 STATIC_LIBS=""
 SHARED_LIBS=""
 

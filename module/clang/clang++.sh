@@ -3,8 +3,6 @@
 BIN="clang++"
 ARGS=""
 
-shift
-
 STATIC_LIBS=""
 SHARED_LIBS=""
 
