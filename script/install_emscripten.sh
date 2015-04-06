@@ -32,12 +32,18 @@
 
 set -e
 
-EMSCRIPTEN_VERSION="1.22.0"
+EMSCRIPTEN_VERSION="1.29.0"
 
 EMSDK_WIKI="http://kripken.github.io/emscripten-site/docs/getting_started/downloads.html"
 EMSDK_URL="https://s3.amazonaws.com/mozilla-games/emscripten/releases"
 EMSDK_ARCHIVE="emsdk-${EMSCRIPTEN_VERSION}-portable-64bit.zip"
 EMSDK_SDK="sdk-${EMSCRIPTEN_VERSION}-64bit"
+
+if [[ $OSTYPE == "cygwin" ]]; then
+	echo "Install Emscripten for Windows with the official installer at:"
+	echo "  ${EMSDK_WIKI}"
+	exit 1
+fi
 
 if [[ -n "${EMSCRIPTEN}" ]]; then
 	if [[ ! -x "${EMSCRIPTEN}/emcc" ]]; then
