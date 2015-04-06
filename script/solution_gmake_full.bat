@@ -1,6 +1,6 @@
 @echo off
 
 pushd ..
-call script\premake5.bat $* gmake
+bash "%MINKO_HOME%\script\premake5.sh" %* gmake
 popd
 pause
