@@ -48,6 +48,10 @@ minko.action.copy = function(sourcepath, destpath, targetdir)
 
 	-- default destpath will be the target directory
 
+	if not os.isfile(sourcepath) and not os.isdir(sourcepath) then
+		return ''
+	end
+
 	if not targetdir then
 		targetdir = gettargetdir()
 	end
