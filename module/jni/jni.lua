@@ -57,17 +57,27 @@ local pathgpp = MINKO_HOME .. '/tool/lin/script/g++.sh';
 
 if os.is("windows") then
 	NDK_HOME = os.capture('cygpath -u "' .. NDK_HOME .. '"')
-	pathgpp = os.capture('cygpath -u "' .. pathgpp .. '"')
-	extension = '.exe'
+end
+
+if not os.isdir(NDK_HOME) then
+	error(color.fg.red .. 'NDK is not correctly installed: ' .. NDK_HOME .. color.reset)
+end
+
+local function find(binary)
+	matches = os.matchfiles(path.join(NDK_HOME, 'bin', '*-' .. binary))
+	if #matches == 0 then
+		error(color.fg.red .. binary .. ' not found in NDK' .. color.reset)
+	else
+		return matches[1]
+	end
 end
 
 table.inject(premake.tools.gcc, 'tools.android', {
-	cc			= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-gcc' .. extension,
-	cxx			= pathgpp .. ' ' .. NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-g++' .. extension,
-	ar			= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-ar' .. extension,
-	ld			= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-ld' .. extension,
-	ranlib		= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-ranlib' .. extension,
-	strip		= NDK_HOME .. '/bin/' .. TOOLCHAIN .. '-strip' .. extension,
+	cc			= find('gcc'),
+	cxx			= 'CXX="' .. find('g++') .. '" ' .. MINKO_HOME .. '/module/gcc/g++.sh',
+	ar			= find('ar'),
+	ld			= find('ld'),
+	strip		= find('strip')
 })
 
 table.inject(premake.tools.gcc, 'cppflags.system.android', {

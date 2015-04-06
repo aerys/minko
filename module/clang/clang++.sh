@@ -1,6 +1,6 @@
 #!/bin/bash
 
-BIN="$1"
+BIN="clang++"
 ARGS=""
 
 shift

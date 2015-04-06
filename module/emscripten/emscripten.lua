@@ -22,46 +22,12 @@ else
 	do return end
 end
 
-if os.is('linux') then
-	table.inject(premake.tools.gcc, 'tools.emscripten', {
-		cc = MINKO_HOME .. '/tool/lin/script/emcc.sh',
-		cxx = MINKO_HOME .. '/tool/lin/script/em++.sh',
-		pkg = MINKO_HOME .. '/tool/lin/script/empkg.py',
-		ar = MINKO_HOME .. '/tool/lin/script/emar.sh'
-	})
-	table.inject(premake.tools.clang, 'tools.emscripten', {
-		cc = MINKO_HOME .. '/tool/lin/script/emcc.sh',
-		cxx = MINKO_HOME .. '/tool/lin/script/em++.sh',
-		pkg = MINKO_HOME .. '/tool/lin/script/empkg.py',
-		ar = MINKO_HOME .. '/tool/lin/script/emar.sh'
-	})
-elseif os.is('macosx') then
-	table.inject(premake.tools.gcc, 'tools.emscripten', {
-		cc = MINKO_HOME .. '/tool/mac/script/emcc.sh',
-		cxx = MINKO_HOME .. '/tool/mac/script/em++.sh',
-		pkg = MINKO_HOME .. '/tool/mac/script/empkg.py',
-		ar = MINKO_HOME .. '/tool/mac/script/emar.sh'
-	})
-	table.inject(premake.tools.clang, 'tools.emscripten', {
-		cc = MINKO_HOME .. '/tool/mac/script/emcc.sh',
-		cxx = MINKO_HOME .. '/tool/mac/script/em++.sh',
-		pkg = MINKO_HOME .. '/tool/mac/script/empkg.py',
-		ar = MINKO_HOME .. '/tool/mac/script/emar.sh'
-	})
-elseif os.is('windows') then
-	table.inject(premake.tools.gcc, 'tools.emscripten', {
-		cc = '"' .. EMSCRIPTEN .. '\\emcc.bat"',
-		cxx = 'call "%MINKO_HOME%\\tool\\win\\script\\em++.bat"',
-		pkg = 'python "%MINKO_HOME%\\tool\\lin\\script\\empkg.py"',
-		ar = '"' .. EMSCRIPTEN .. '\\emar.bat"'
-	})
-	table.inject(premake.tools.clang, 'tools.emscripten', {
-		cc = '"' .. EMSCRIPTEN .. '\\emcc.bat"',
-		cxx = 'call "%MINKO_HOME%\\tool\\win\\script\\em++.bat"',
-		pkg = 'python "%MINKO_HOME%\\tool\\lin\\script\\empkg.py"',
-		ar = '"' .. EMSCRIPTEN .. '\\emar.bat"'
-	})
-end
+table.inject(premake.tools.gcc, 'tools.emscripten', {
+	cc = MINKO_HOME .. '/module/emscripten/emcc.sh',
+	cxx = MINKO_HOME .. '/module/emscripten/em++.sh',
+	pkg = MINKO_HOME .. '/module/emscripten/empkg.sh',
+	ar = MINKO_HOME .. '/module/emscripten/emar.sh'
+})
 
 table.inject(premake.tools.gcc, 'cppflags.system.emscripten', {
 	"-MMD", "-MP",
