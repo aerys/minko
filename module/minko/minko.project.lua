@@ -9,9 +9,8 @@ minko.project.library = function(name)
 	location "."
 	includedirs { minko.sdk.path("/framework/include") }
 
-	-- glm
 	includedirs { minko.sdk.path("/framework/lib/glm") }
-	-- sparsehash
+
 	includedirs { minko.sdk.path("/framework/lib/sparsehash/src") }
 
 	configuration { "windows" }
@@ -64,10 +63,6 @@ minko.project.application = function(name)
 
 	kind "ConsoleApp"
 
-	-- defines {
-	-- 	"MINKO_APPLICATION_NAME=" .. name
-	-- }
-
 	minko.package.assetdirs {
 		"asset", -- current directory
 		minko.sdk.path("/framework/asset")
@@ -83,7 +78,7 @@ minko.project.application = function(name)
 			"glew32"
 		}
 		prelinkcommands {
-			-- minko.action.copy(minko.sdk.path("/framework/asset")),
+			minko.action.copy(minko.sdk.path("/framework/asset")),
 			minko.action.copy(minko.sdk.path("/framework/lib/glew/lib/windows32/*.dll"))
 		}
 
@@ -96,9 +91,9 @@ minko.project.application = function(name)
 		libdirs {
 			minko.sdk.path("/framework/bin/windows32/release")
 		}
-		-- prelinkcommands {
-		-- 	minko.action.copy("asset")
-		-- }
+		prelinkcommands {
+			minko.action.copy("asset")
+		}
 
 	configuration { "windows64" }
 		libdirs { minko.sdk.path("/framework/lib/glew/lib/windows64") }
@@ -108,7 +103,7 @@ minko.project.application = function(name)
 			"glew32"
 		}
 		prelinkcommands {
-			-- minko.action.copy(minko.sdk.path("/framework/asset")),
+			minko.action.copy(minko.sdk.path("/framework/asset")),
 			minko.action.copy(minko.sdk.path("/framework/lib/glew/lib/windows64/*.dll"))
 		}
 
@@ -121,9 +116,9 @@ minko.project.application = function(name)
 		libdirs {
 			minko.sdk.path("/framework/bin/windows64/release")
 		}
-		-- prelinkcommands {
-		-- 	minko.action.copy("asset"),
-		-- }
+		prelinkcommands {
+			minko.action.copy("asset"),
+		}
 
 	configuration { "linux64" }
 		linkoptions { "-Wl,--no-as-needed" }
@@ -133,25 +128,25 @@ minko.project.application = function(name)
 			"m",
 			"pthread"
 		}
-		-- prelinkcommands {
-		-- 	minko.action.copy(minko.sdk.path("/framework/asset")),
-		-- }
+		prelinkcommands {
+			minko.action.copy(minko.sdk.path("/framework/asset")),
+		}
 
 	configuration { "linux64", "debug" }
 		libdirs {
 			minko.sdk.path("/framework/bin/linux64/debug")
 		}
-		-- prelinkcommands {
-		-- 	minko.action.copy("asset"),
-		-- }
+		prelinkcommands {
+			minko.action.copy("asset"),
+		}
 
 	configuration { "linux64", "release" }
 		libdirs {
 			minko.sdk.path("/framework/bin/linux64/release")
 		}
-		-- prelinkcommands {
-		-- 	minko.action.copy("asset"),
-		-- }
+		prelinkcommands {
+			minko.action.copy("asset"),
+		}
 
 	configuration { "linux32" }
 		linkoptions { "-Wl,--no-as-needed" }
@@ -161,25 +156,25 @@ minko.project.application = function(name)
 			"m",
 			"pthread"
 		}
-		-- prelinkcommands {
-		-- 	minko.action.copy(minko.sdk.path("/framework/asset")),
-		-- }
+		prelinkcommands {
+			minko.action.copy(minko.sdk.path("/framework/asset")),
+		}
 
 	configuration { "linux32", "debug" }
 		libdirs {
 			minko.sdk.path("/framework/bin/linux32/debug")
 		}
-		-- prelinkcommands {
-		-- 	minko.action.copy("asset"),
-		-- }
+		prelinkcommands {
+			minko.action.copy("asset"),
+		}
 
 	configuration { "linux32", "release" }
 		libdirs {
 			minko.sdk.path("/framework/bin/linux32/release")
 		}
-		-- prelinkcommands {
-		-- 	minko.action.copy("asset"),
-		-- }
+		prelinkcommands {
+			minko.action.copy("asset"),
+		}
 
 	configuration { "osx64" }
 		links {
@@ -189,12 +184,9 @@ minko.project.application = function(name)
 			"OpenGL.framework",
 			"IOKit.framework"
 		}
-		-- linkoptions {
-		-- 	"-Wl,-rpath,."
-		-- }
-		-- prelinkcommands {
-		-- 	minko.action.copy(minko.sdk.path("/framework/asset")),
-		-- }
+		prelinkcommands {
+			minko.action.copy(minko.sdk.path("/framework/asset")),
+		}
 
 	configuration { "osx64", "debug" }
 		libdirs {
@@ -205,9 +197,9 @@ minko.project.application = function(name)
 		libdirs {
 			minko.sdk.path("/framework/bin/osx64/release")
 		}
-		-- prelinkcommands {
-		-- 	minko.action.copy("asset"),
-		-- }
+		prelinkcommands {
+			minko.action.copy("asset"),
+		}
 
 	configuration { "html5" }
 
@@ -217,20 +209,23 @@ minko.project.application = function(name)
 
 		targetsuffix ".bc"
 
-		-- prelinkcommands {
-		-- 	minko.action.copy(minko.sdk.path("/framework/asset")),
-		-- 	minko.action.copy("asset"),
-		-- }
+		prelinkcommands {
+			minko.action.copy(minko.sdk.path("/framework/asset")),
+			minko.action.copy("asset"),
+		}
 
 	if premake.tools.gcc.tools.emscripten then
-		configuration { "html5", "release" }
-			local emcc = premake.tools.gcc.tools.emscripten.cc
-			local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O3 ' .. buildoptions()[1]
+		local emcc = premake.tools.gcc.tools.emscripten.cc
+		local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html '
 
+		configuration { "html5", "release" }
 			linkoptions {
 				"--llvm-lto 1"
 			}
 
+			-- optimization
+			cmd = cmd .. buildoptions()[1]
+			cmd = cmd .. ' -O3'
 			-- enable the closure compiler
 			cmd = cmd .. ' --closure 1 -s CLOSURE_ANNOTATIONS=1'
 			-- treat undefined symbol warnings as errors
@@ -267,12 +262,12 @@ minko.project.application = function(name)
 			}
 
 		configuration { "html5", "debug" }
-			local emcc = premake.tools.gcc.tools.emscripten.cc
-			local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html ' .. buildoptions()[1]
-
 			linkoptions {
 				"--llvm-lto 0"
 			}
+
+			-- disable optimization
+			cmd = cmd .. buildoptions()[1]
 
 			-- treat undefined symbol warnings as errors
 			-- cmd = cmd .. ' -s ERROR_ON_UNDEFINED_SYMBOLS=1'
@@ -330,10 +325,10 @@ minko.project.application = function(name)
 			"**.plist"
 		}
 
-		-- prelinkcommands {
-		-- 	minko.action.copy(minko.sdk.path("/framework/asset"))
-		-- 	minko.action.copy("asset")
-		-- }
+		prelinkcommands {
+			minko.action.copy(minko.sdk.path("/framework/asset")),
+			minko.action.copy("asset")
+		}
 
 	configuration { "ios", "debug" }
 		libdirs {
@@ -359,13 +354,11 @@ minko.project.application = function(name)
 			"log",
 			"android",
 			"stdc++",
-			-- "gnustl_static",
 		}
 
 		targetprefix "lib"
 		targetextension ".so"
 		linkoptions {
-			-- "-s",
 			"-shared",
 			"-pthread",
 			"-Wl,--no-undefined",

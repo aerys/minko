@@ -30,8 +30,8 @@ function minko.plugin.fx:enable()
 			path.join(minko.plugin.path("fx"), "include")
 		}
 
-		minko.package.assetdirs {
-			path.join(minko.plugin.path("fx"), "asset")
+		prelinkcommands {
+			minko.action.copy(path.join(minko.plugin.path("fx"), "asset"))
 		}
 end
 
