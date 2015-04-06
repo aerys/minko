@@ -25,7 +25,7 @@ end
 table.inject(premake.tools.gcc, 'tools.emscripten', {
 	cc = MINKO_HOME .. '/module/emscripten/emcc.sh',
 	cxx = MINKO_HOME .. '/module/emscripten/em++.sh',
-	pkg = MINKO_HOME .. '/module/emscripten/empkg.sh',
+	pkg = MINKO_HOME .. '/module/emscripten/empkg.py',
 	ar = MINKO_HOME .. '/module/emscripten/emar.sh'
 })
 

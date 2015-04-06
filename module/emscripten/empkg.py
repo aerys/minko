@@ -12,8 +12,8 @@ def main():
         print('usage: empkg.py <data file>', file=sys.stderr)
         sys.exit(1)
 
-    targetdir = os.path.getdirectory(sys.argv[1])
-    data = os.path.getbasename(sys.argv[1])
+    targetdir = os.path.dirname(sys.argv[1])
+    data = os.path.basename(sys.argv[1])
     html = os.path.splitext(data)[0] + '.html'
     preload = os.path.splitext(data)[0] + '.preload.js'
     embed = 'embed'
@@ -21,7 +21,7 @@ def main():
     if not os.path.isdir(os.path.join(targetdir, embed)):
         return
 
-    if not os.path.isfile(html):
+    if not os.path.isfile(os.path.join(targetdir, html)):
         print('no .html file found next to .data', file=sys.stderr)
         sys.exit(1)
 
@@ -40,9 +40,9 @@ def main():
 
     content = ""
 
-    with open(html, "r") as f:
+    with open(os.path.join(targetdir, html), "r") as f:
         content = f.read()
-    with open(html, "w") as f:
+    with open(os.path.join(targetdir, html), "w") as f:
         script = '<script type="text/javascript" async src="' + os.path.basename(preload) + '"></script>'
         f.write(content.replace('{{{ PRELOAD }}}', script))
 
