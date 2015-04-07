@@ -123,7 +123,6 @@ solution "minko"
 		include 'plugin/http-worker'
 		include 'plugin/jpeg'
 		--include 'plugin/leap'
-		--include 'plugin/oculus'
 		--include 'plugin/offscreen'
 		--include 'plugin/particles'
 		include 'plugin/png'
@@ -131,6 +130,7 @@ solution "minko"
 		include 'plugin/sensors'
 		include 'plugin/serializer'
         include 'plugin/video-camera'
+		include 'plugin/vr'
 
 		if _OPTIONS['with-offscreen'] then
 			include 'plugin/offscreen'
