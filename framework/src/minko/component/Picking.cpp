@@ -61,6 +61,7 @@ Picking::Picking() :
     _tap(Signal<NodePtr>::create()),
     _doubleTap(Signal<NodePtr>::create()),
     _longHold(Signal<NodePtr>::create()),
+    _lastDepthValue(0.f),
     _addPickingLayout(true),
     _emulateMouseWithTouch(true),
     _frameBeginSlot(nullptr),
@@ -206,6 +207,19 @@ Picking::targetAdded(NodePtr target)
     );
     _renderer->scissorBox(0, 0, 1, 1);
     _renderer->layoutMask(scene::BuiltinLayout::PICKING);
+    _renderer->enabled(false);
+
+    _depthRenderer = Renderer::create(
+        0xFFFF00FF,
+        nullptr,
+        _sceneManager->assets()->effect("effect/PickingDepth.effect"),
+        "default",
+        999.f,
+        "Depth Picking Renderer"
+    );
+    _depthRenderer->scissorBox(0, 0, 1, 1);
+    _depthRenderer->layoutMask(scene::BuiltinLayout::PICKING);
+    _depthRenderer->enabled(false);
 
 	updateDescendants(target);
 
@@ -229,6 +243,7 @@ Picking::targetAdded(NodePtr target)
 		addedHandler(target, target, target->parent());
 
 	target->addComponent(_renderer);
+    target->addComponent(_depthRenderer);
 
 	auto perspectiveCamera = _camera->component<component::PerspectiveCamera>();
 
@@ -242,6 +257,7 @@ void
 Picking::targetRemoved(NodePtr target)
 {
     _renderer = nullptr;
+    _depthRenderer = nullptr;
     _sceneManager = nullptr;
 
 	_addedSlot = nullptr;
@@ -268,6 +284,18 @@ Picking::addedHandler(NodePtr target, NodePtr child, NodePtr parent)
 
 		_renderingEndSlot = _renderer->beforePresent()->connect(std::bind(
 			&Picking::renderingEnd,
+			std::static_pointer_cast<Picking>(shared_from_this()),
+			std::placeholders::_1
+        ));
+
+		_depthRenderingBeginSlot = _depthRenderer->renderingBegin()->connect(std::bind(
+			&Picking::depthRenderingBegin,
+			std::static_pointer_cast<Picking>(shared_from_this()),
+			std::placeholders::_1
+        ));
+
+		_depthRenderingEndSlot = _depthRenderer->beforePresent()->connect(std::bind(
+			&Picking::depthRenderingEnd,
 			std::static_pointer_cast<Picking>(shared_from_this()),
 			std::placeholders::_1
         ));
@@ -431,21 +459,7 @@ Picking::removeSurfacesForNode(NodePtr node)
 void
 Picking::renderingBegin(RendererPtr renderer)
 {
-	float mouseX = (float)_mouse->x();
-	float mouseY = (float)_mouse->y();
-
-	auto perspectiveCamera	= _camera->component<component::PerspectiveCamera>();
-	auto projection	= math::perspective(
-		perspectiveCamera->fieldOfView(),
-		perspectiveCamera->aspectRatio(),
-		perspectiveCamera->zNear(),
-		perspectiveCamera->zFar()
-	);
-
-	projection[2][0] = mouseX / _context->viewportWidth() * 2.f;
-	projection[2][1] = (_context->viewportHeight() - mouseY) / _context->viewportHeight() * 2.f;
-
-	_pickingProvider->set("pickingProjection", projection);
+    updatePickingProjection();
 }
 
 void
@@ -455,92 +469,49 @@ Picking::renderingEnd(RendererPtr renderer)
 
     uint pickedSurfaceId = (_lastColor[0] << 16) + (_lastColor[1] << 8) + _lastColor[2];
 
-    if (_lastPickedSurface != _pickingIdToSurface[pickedSurfaceId])
+    auto surfaceIt = _pickingIdToSurface.find(pickedSurfaceId);
+
+    if (surfaceIt != _pickingIdToSurface.end())
     {
-        if (_lastPickedSurface && _mouseOut->numCallbacks() > 0)
-            _mouseOut->execute(_lastPickedSurface->target());
+        auto pickedSurface = surfaceIt->second;
 
-        _lastPickedSurface = _pickingIdToSurface[pickedSurfaceId];
-
-        if (_lastPickedSurface && _mouseOver->numCallbacks() > 0)
-            _mouseOver->execute(_lastPickedSurface->target());
+        renderDepth(_depthRenderer, pickedSurface);
     }
+}
 
-    if (_executeMoveHandler && _lastPickedSurface)
+void
+Picking::depthRenderingBegin(RendererPtr renderer)
+{
+}
+
+static
+float
+unpack(const math::vec4& depth)
+{
+    return math::dot(depth, math::vec4(1.0, 1.0 / 255.0, 1.0 / 65025.0, 1.0 / 16581375.0));
+}
+
+void
+Picking::depthRenderingEnd(RendererPtr renderer)
+{
+    uint pickedSurfaceId = (_lastColor[0] << 16) + (_lastColor[1] << 8) + _lastColor[2];
+
+    auto surfaceIt = _pickingIdToSurface.find(pickedSurfaceId);
+
+    if (surfaceIt != _pickingIdToSurface.end())
     {
-        _mouseMove->execute(_lastPickedSurface->target());
+        auto pickedSurface = surfaceIt->second;
+
+        _context->readPixels(0, 0, 1, 1, &_lastDepth[0]);
+
+        const auto zFar = _camera->data().get<float>("zFar");
+
+        const auto normalizedDepth = unpack(math::vec4(_lastDepth[0], _lastDepth[1], _lastDepth[2], _lastDepth[3]) / 255.f) * zFar;
+
+        _lastDepthValue = normalizedDepth;
+
+        dispatchEvents(pickedSurface, _lastDepthValue);
     }
-
-    if (_executeRightDownHandler && _lastPickedSurface)
-    {
-        _mouseRightDown->execute(_lastPickedSurface->target());
-    }
-
-    if (_executeLeftDownHandler && _lastPickedSurface)
-    {
-        _mouseLeftDown->execute(_lastPickedSurface->target());
-    }
-
-    if (_executeRightClickHandler && _lastPickedSurface)
-    {
-        _mouseRightClick->execute(_lastPickedSurface->target());
-    }
-
-    if (_executeLeftClickHandler && _lastPickedSurface)
-    {
-        _mouseLeftClick->execute(_lastPickedSurface->target());
-    }
-
-    if (_executeRightUpHandler && _lastPickedSurface)
-    {
-        _mouseRightUp->execute(_lastPickedSurface->target());
-    }
-
-    if (_executeLeftUpHandler && _lastPickedSurface)
-    {
-        _mouseLeftUp->execute(_lastPickedSurface->target());
-    }
-
-    if (_executeTouchDownHandler && _lastPickedSurface)
-    {
-        _touchDown->execute(_lastPickedSurface->target());
-    }
-
-    if (_executeTouchUpHandler && _lastPickedSurface)
-    {
-        _touchUp->execute(_lastPickedSurface->target());
-    }
-
-    if (_executeTouchMoveHandler && _lastPickedSurface)
-    {
-        _touchMove->execute(_lastPickedSurface->target());
-    }
-
-    if (_executeTapHandler && _lastPickedSurface)
-    {
-        _tap->execute(_lastPickedSurface->target());
-    }
-
-    if (_executeDoubleTapHandler && _lastPickedSurface)
-    {
-        _doubleTap->execute(_lastPickedSurface->target());
-    }
-
-    if (_executeLongHoldHandler && _lastPickedSurface)
-    {
-        _longHold->execute(_lastPickedSurface->target());
-    }
-
-    if (!(_mouseOver->numCallbacks() > 0 || _mouseOut->numCallbacks() > 0))
-        enabled(false);
-
-    _executeMoveHandler = false;
-    _executeRightDownHandler = false;
-    _executeLeftDownHandler = false;
-    _executeRightClickHandler = false;
-    _executeLeftClickHandler = false;
-    _executeRightUpHandler = false;
-    _executeLeftUpHandler = false;
 }
 
 void
@@ -734,4 +705,125 @@ Picking::frameBeginHandler(SceneManagerPtr, float, float)
     _renderer->enabled(true);
     _renderer->render(_sceneManager->canvas()->context());
     _renderer->enabled(false);
+}
+
+void
+Picking::renderDepth(RendererPtr renderer, SurfacePtr pickedSurface)
+{
+    // fixme: render only pickedSurface
+
+    renderer->enabled(true);
+    renderer->render(_sceneManager->canvas()->context());
+    renderer->enabled(false);
+}
+
+void
+Picking::dispatchEvents(SurfacePtr pickedSurface, float depth)
+{
+    if (_lastPickedSurface != pickedSurface)
+    {
+        if (_lastPickedSurface && _mouseOut->numCallbacks() > 0)
+            _mouseOut->execute(_lastPickedSurface->target());
+
+        _lastPickedSurface = pickedSurface;
+
+        if (_lastPickedSurface && _mouseOver->numCallbacks() > 0)
+            _mouseOver->execute(_lastPickedSurface->target());
+    }
+
+    if (_executeMoveHandler && _lastPickedSurface)
+    {
+        _mouseMove->execute(_lastPickedSurface->target());
+    }
+
+    if (_executeRightDownHandler && _lastPickedSurface)
+    {
+        _mouseRightDown->execute(_lastPickedSurface->target());
+    }
+
+    if (_executeLeftDownHandler && _lastPickedSurface)
+    {
+        _mouseLeftDown->execute(_lastPickedSurface->target());
+    }
+
+    if (_executeRightClickHandler && _lastPickedSurface)
+    {
+        _mouseRightClick->execute(_lastPickedSurface->target());
+    }
+
+    if (_executeLeftClickHandler && _lastPickedSurface)
+    {
+        _mouseLeftClick->execute(_lastPickedSurface->target());
+    }
+
+    if (_executeRightUpHandler && _lastPickedSurface)
+    {
+        _mouseRightUp->execute(_lastPickedSurface->target());
+    }
+
+    if (_executeLeftUpHandler && _lastPickedSurface)
+    {
+        _mouseLeftUp->execute(_lastPickedSurface->target());
+    }
+
+    if (_executeTouchDownHandler && _lastPickedSurface)
+    {
+        _touchDown->execute(_lastPickedSurface->target());
+    }
+
+    if (_executeTouchUpHandler && _lastPickedSurface)
+    {
+        _touchUp->execute(_lastPickedSurface->target());
+    }
+
+    if (_executeTouchMoveHandler && _lastPickedSurface)
+    {
+        _touchMove->execute(_lastPickedSurface->target());
+    }
+
+    if (_executeTapHandler && _lastPickedSurface)
+    {
+        _tap->execute(_lastPickedSurface->target());
+    }
+
+    if (_executeDoubleTapHandler && _lastPickedSurface)
+    {
+        _doubleTap->execute(_lastPickedSurface->target());
+    }
+
+    if (_executeLongHoldHandler && _lastPickedSurface)
+    {
+        _longHold->execute(_lastPickedSurface->target());
+    }
+
+    if (!(_mouseOver->numCallbacks() > 0 || _mouseOut->numCallbacks() > 0))
+        enabled(false);
+
+    _executeMoveHandler = false;
+    _executeRightDownHandler = false;
+    _executeLeftDownHandler = false;
+    _executeRightClickHandler = false;
+    _executeLeftClickHandler = false;
+    _executeRightUpHandler = false;
+    _executeLeftUpHandler = false;
+}
+
+void
+Picking::updatePickingProjection()
+{
+	float mouseX = (float)_mouse->x();
+	float mouseY = (float)_mouse->y();
+
+	auto perspectiveCamera	= _camera->component<component::PerspectiveCamera>();
+	auto projection	= math::perspective(
+		perspectiveCamera->fieldOfView(),
+		perspectiveCamera->aspectRatio(),
+		perspectiveCamera->zNear(),
+		perspectiveCamera->zFar()
+	);
+
+	projection[2][0] = mouseX / _context->viewportWidth() * 2.f;
+	projection[2][1] = (_context->viewportHeight() - mouseY) / _context->viewportHeight() * 2.f;
+
+	_pickingProvider->set("pickingProjection", projection);
 }
