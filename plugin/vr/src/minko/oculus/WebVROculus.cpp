@@ -95,10 +95,8 @@ WebVROculus::initializeOVRDevice(void* window)
     eval += "    }                                                           \n";
     eval += "}, false);                                                      \n";
     eval += "                                                                \n";
-    eval += "if (navigator.getVRDevices) {                                   \n";
+    eval += "if (navigator.getVRDevices !== undefined) {                     \n";
     eval += "    navigator.getVRDevices().then(vrDeviceCallback);            \n";
-    eval += "} else if (navigator.getVRDevices) {                         \n";
-    eval += "    navigator.mozGetVRDevices(vrDeviceCallback);                \n";
     eval += "}                                                               \n";
 
 
@@ -172,38 +170,40 @@ WebVROculus::updateCameraOrientation(scene::Node::Ptr target)
             _initialized = true;
     }
 
-    std::string eval = "window.vrHMDSensor.getState().orientation.x + ' ' + window.vrHMDSensor.getState().orientation.y + ' ' + window.vrHMDSensor.getState().orientation.z + ' ' + window.vrHMDSensor.getState().orientation.w;\n";
+    std::string eval = "if (window.vrHMDSensor.getState().orientation != null) { window.vrHMDSensor.getState().orientation.x + ' ' + window.vrHMDSensor.getState().orientation.y + ' ' + window.vrHMDSensor.getState().orientation.z + ' ' + window.vrHMDSensor.getState().orientation.w; }\n";
     auto s = std::string(emscripten_run_script_string(eval.c_str()));
 
-    //std::cout << s << std::endl;
+    if (s != "undefined")
+    {
+        std::array<float, 4> orientation;
+        std::stringstream ssOrientation(s);
 
-    std::array<float, 4> orientation;
-    std::stringstream ssOrientation(s);
+        ssOrientation >> orientation[0];
+        ssOrientation >> orientation[1];
+        ssOrientation >> orientation[2];
+        ssOrientation >> orientation[3];
 
-    ssOrientation >> orientation[0];
-    ssOrientation >> orientation[1];
-    ssOrientation >> orientation[2];
-    ssOrientation >> orientation[3];
+    	auto quaternion = math::quat(orientation[0], orientation[1], orientation[2], orientation[3]);
 
-    auto quaternion = math::quat(orientation[0], orientation[1], orientation[2], orientation[3]);
-
-    //std::cout << quaternion->toString() << std::endl;
-
-    auto matrix = glm::mat4_cast(quaternion);
-    target->component<Transform>()->matrix(matrix);
+    	auto matrix = glm::mat4_cast(quaternion);
+    	target->component<Transform>()->matrix(matrix);
+    }
 
     // Get position tracking
-    eval = "window.vrHMDSensor.getState().position.x + ' ' + window.vrHMDSensor.getState().position.y + ' ' + window.vrHMDSensor.getState().position.z;\n";
+    eval = "if (window.vrHMDSensor.getState().position != null) { window.vrHMDSensor.getState().position.x + ' ' + window.vrHMDSensor.getState().position.y + ' ' + window.vrHMDSensor.getState().position.z; }\n";
     s = std::string(emscripten_run_script_string(eval.c_str()));
 
-    std::array<float, 3> position;
-    std::stringstream ssPosition(s);
+    if (s != "undefined")
+    {
+        std::array<float, 3> position;
+        std::stringstream ssPosition(s);
 
-    ssPosition >> position[0];
-    ssPosition >> position[1];
-    ssPosition >> position[2];
+        ssPosition >> position[0];
+        ssPosition >> position[1];
+        ssPosition >> position[2];
 
-    target->component<Transform>()->matrix(math::translate(math::vec3(position[0], position[1], position[2])) * target->component<Transform>()->matrix());
+    	target->component<Transform>()->matrix(math::translate(math::vec3(position[0], position[1], position[2])) * target->component<Transform>()->matrix());
+	}
 }
 
 void
