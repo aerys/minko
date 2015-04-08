@@ -2,34 +2,37 @@
 {
 	"name" : "oculusvr",
 	
-	"attributeBindings" : {
-        "aPosition"             : "geometry[${geometryId}].screenPosNDC",
-        "aTimewarpLerpFactor"   : "geometry[${geometryId}].timeWarpFactor",
-        "aVignette"             : "geometry[${geometryId}].vignetteFactor",
-        "aTexCoord0"            : "geometry[${geometryId}].tanEyeAnglesR",
-        "aTexCoord1"            : "geometry[${geometryId}].tanEyeAnglesG",
-        "aTexCoord2"            : "geometry[${geometryId}].tanEyeAnglesB"
+	"attributes" : {
+        "aPosition"             : "geometry[${geometryUuid}].screenPosNDC",
+        "aTimewarpLerpFactor"   : "geometry[${geometryUuid}].timeWarpFactor",
+        "aVignette"             : "geometry[${geometryUuid}].vignetteFactor",
+        "aTexCoord0"            : "geometry[${geometryUuid}].tanEyeAnglesR",
+        "aTexCoord1"            : "geometry[${geometryUuid}].tanEyeAnglesG",
+        "aTexCoord2"            : "geometry[${geometryUuid}].tanEyeAnglesB"
 	},
 	
-	"uniformBindings" : {
-        "uEyeToSourceUVScale"   : "material[${materialId}].eyeToSourceUVScale",
-        "uEyeToSourceUVOffset"  : "material[${materialId}].eyeToSourceUVOffset",
-        "uEyeRotationStart"     : "material[${materialId}].eyeRotationStart",
-        "uEyeRotationEnd"       : "material[${materialId}].eyeRotationEnd",
-        "uTexture"              : "material[${materialId}].texture"
+	"uniforms" : {
+        "uEyeToSourceUVScale"   : "material[${materialUuid}].eyeToSourceUVScale",
+        "uEyeToSourceUVOffset"  : "material[${materialUuid}].eyeToSourceUVOffset",
+        "uEyeRotationStart"     : "material[${materialUuid}].eyeRotationStart",
+        "uEyeRotationEnd"       : "material[${materialUuid}].eyeRotationEnd",
+        "uTexture"              : {
+        	"binding" : "material[${materialUuid}].texture",
+        	"textureFilter" : "linear"
+    	}
 	},
 	
-	"triangleCulling" : "none",
-	"depthTest" : [ false, "less_equal" ],
-	"samplerStates" : {
-		"uTexture"	: { "textureFilter" : "linear" }
+	"states" : {
+		"triangleCulling" : "none",
+		"depthMask" : false,
+		"depthFunction" : "less_equal"
 	},
 	
 	"passes" : [
 		{
 			"name" : "oculus left",
-			"vertexShader" : "#pragma include('OculusVR.vertex.glsl')",
-			"fragmentShader" : "#pragma include('OculusVR.fragment.glsl')"
+			"vertexShader" : "#pragma include \"OculusVR.vertex.glsl\"",
+			"fragmentShader" : "#pragma include \"OculusVR.fragment.glsl\""
 		}
 	]
 }

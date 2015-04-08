@@ -177,7 +177,6 @@ solution "minko"
 		-- include 'example/line-geometry'
 		-- include 'example/lua-scripts'
 		-- include 'example/multi-surfaces'
-		-- include 'example/oculus'
 		-- include 'example/offscreen'
 		-- include 'example/particles'
 		-- include 'example/physics'
@@ -185,11 +184,12 @@ solution "minko"
 		-- include 'example/raycasting'
 		include 'example/sensors'
 		include 'example/serializer'
+		include 'example/shadow-mapping'
 		-- include 'example/sky-box'
 		-- include 'example/stencil'
 		-- include 'example/visibility'
+		include 'example/vr'
 		-- include 'example/water'
-		include 'example/shadow-mapping'
 
 		if _OPTIONS['with-offscreen'] then
 			include 'example/offscreen'
