@@ -375,15 +375,6 @@ NativeOculus::updateCameraOrientation(std::shared_ptr<scene::Node> target)
         auto cameraNode = eyeNum == 0 ? _leftCameraNode : _rightCameraNode;
         auto matrix = cameraNode->component<Transform>()->matrix();
 
-		/*
-        matrix->lock();
-        matrix->initialize((float*)view.M);
-        //matrix->transpose();
-        matrix->invert();
-        matrix->prependTranslation(viewAdjust.x, viewAdjust.y, viewAdjust.z);
-        matrix->unlock();
-		*/
-
 		matrix = glm::make_mat4((float*)view.M);
 		matrix *= math::translate(math::vec3(viewAdjust.x, viewAdjust.y, viewAdjust.z));
 
