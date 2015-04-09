@@ -16,22 +16,39 @@ attribute 	vec3 	aPosition;
 attribute 	vec2 	aUV;
 attribute 	vec3 	aNormal;
 attribute 	vec3 	aTangent;
-attribute 	vec4	aBoneWeightsA;
-attribute 	vec4	aBoneWeightsB;
+
+#ifdef SKINNING_NUM_BONES
+attribute vec4 aBoneWeightsA;
+attribute vec4 aBoneWeightsB;
+#endif
+
+#ifdef VERTEX_COLOR
 attribute	float	aColor;
+#endif
+
+#ifdef VERTEX_POP_PROTECTED
 attribute	float 	aPopProtected;
+#endif
 
 uniform 	mat4 	uModelToWorldMatrix;
 uniform 	mat4 	uWorldToScreenMatrix;
-uniform 	vec2 	uUVScale;
-uniform 	vec2 	uUVOffset;
-uniform 	mat4 	uLightWorldToScreenMatrix;
 
-uniform 	float 	uPopLod;
-uniform 	float 	uPopBlendingLod;
-uniform 	float 	uPopFullPrecisionLod;
-uniform 	vec3 	uPopMinBound;
-uniform 	vec3 	uPopMaxBound;
+#ifdef UV_SCALE
+uniform vec2 uUVScale;
+#endif
+#ifdef UV_OFFSET
+uniform vec2 uUVOffset;
+#endif
+
+#ifdef POP_LOD_ENABLED
+uniform float uPopLod;
+#ifdef POP_BLENDING_ENABLED
+uniform float uPopBlendingLod;
+#endif
+uniform float uPopFullPrecisionLod;
+uniform vec3 uPopMinBound;
+uniform vec3 uPopMaxBound;
+#endif
 
 varying 	vec3 	vVertexPosition;
 varying 	vec4 	vVertexScreenPosition;

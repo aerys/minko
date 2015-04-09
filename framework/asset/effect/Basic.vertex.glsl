@@ -19,18 +19,29 @@ attribute vec4 aBoneWeightsA;
 attribute vec4 aBoneWeightsB;
 #endif
 
+#ifdef VERTEX_POP_PROTECTED
 attribute float aPopProtected;
+#endif
 
 uniform mat4 uModelToWorldMatrix;
 uniform mat4 uWorldToScreenMatrix;
-uniform vec2 uUVScale;
-uniform vec2 uUVOffset;
 
+#ifdef UV_SCALE
+uniform vec2 uUVScale;
+#endif
+#ifdef UV_OFFSET
+uniform vec2 uUVOffset;
+#endif
+
+#ifdef POP_LOD_ENABLED
 uniform float uPopLod;
+#ifdef POP_BLENDING_ENABLED
 uniform float uPopBlendingLod;
+#endif
 uniform float uPopFullPrecisionLod;
 uniform vec3 uPopMinBound;
 uniform vec3 uPopMaxBound;
+#endif
 
 varying vec2 vVertexUV;
 varying vec3 vVertexUVW;
