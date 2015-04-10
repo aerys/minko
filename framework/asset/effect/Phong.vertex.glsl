@@ -16,21 +16,39 @@ attribute 	vec3 	aPosition;
 attribute 	vec2 	aUV;
 attribute 	vec3 	aNormal;
 attribute 	vec3 	aTangent;
-attribute 	vec4	aBoneWeightsA;
-attribute 	vec4	aBoneWeightsB;
+
+#ifdef SKINNING_NUM_BONES
+attribute vec4 aBoneWeightsA;
+attribute vec4 aBoneWeightsB;
+#endif
+
+#ifdef VERTEX_COLOR
 attribute	float	aColor;
+#endif
+
+#ifdef VERTEX_POP_PROTECTED
+attribute	float 	aPopProtected;
+#endif
 
 uniform 	mat4 	uModelToWorldMatrix;
 uniform 	mat4 	uWorldToScreenMatrix;
-uniform 	vec2 	uUVScale;
-uniform 	vec2 	uUVOffset;
-uniform 	mat4 	uLightWorldToScreenMatrix;
 
-uniform 	float 	uPopLod;
-uniform 	float 	uPopBlendingLod;
-uniform 	float 	uPopFullPrecisionLod;
-uniform 	vec3 	uPopMinBound;
-uniform 	vec3 	uPopMaxBound;
+#ifdef UV_SCALE
+uniform vec2 uUVScale;
+#endif
+#ifdef UV_OFFSET
+uniform vec2 uUVOffset;
+#endif
+
+#ifdef POP_LOD_ENABLED
+uniform float uPopLod;
+#ifdef POP_BLENDING_ENABLED
+uniform float uPopBlendingLod;
+#endif
+uniform float uPopFullPrecisionLod;
+uniform vec3 uPopMinBound;
+uniform vec3 uPopMaxBound;
+#endif
 
 varying 	vec3 	vVertexPosition;
 varying 	vec4 	vVertexScreenPosition;
@@ -42,7 +60,18 @@ varying		vec4	vVertexColor;
 void main(void)
 {
 	#if defined VERTEX_UV && (defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP)
-		vVertexUV = uUVScale * aUV + uUVOffset;
+		vec2 uvScale = vec2(1.0);
+		vec2 uvOffset = vec2(0.0);
+
+		#ifdef UV_SCALE
+			uvScale = uUVScale;
+		#endif // UV_SCALE
+
+		#ifdef UV_OFFSET
+			uvOffset = uUVOffset;
+		#endif // UV_OFFSET
+
+		vVertexUV = uvScale * aUV + uvOffset;
 	#endif // defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP
 
 	#if defined VERTEX_COLOR
@@ -56,10 +85,16 @@ void main(void)
 	#endif // SKINNING_NUM_BONES
 
 	#ifdef POP_LOD_ENABLED
+		float popProtected = 0.0;
+
+		#ifdef VERTEX_POP_PROTECTED
+			popProtected = aPopProtected;
+		#endif // VERTEX_POP_PROTECTED
+
 		#ifdef POP_BLENDING_ENABLED
-			worldPosition = pop_blend(worldPosition, aNormal, uPopLod, uPopBlendingLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound);
+			worldPosition = pop_blend(worldPosition, aNormal, uPopLod, uPopBlendingLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound, popProtected);
 		#else
-			worldPosition = pop_quantify(worldPosition, aNormal, uPopLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound);
+			worldPosition = pop_quantize(worldPosition, aNormal, uPopLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound, popProtected);
 		#endif // POP_BLENDING_ENABLED
 	#endif // POP_LOD_ENABLED
 

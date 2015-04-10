@@ -60,9 +60,9 @@ HalfEdge::getThirdVertex()
 }
 
 void
-HalfEdge::setFace(HalfEdgePtr he1,
-                  HalfEdgePtr he2,
-                  HalfEdgePtr he3)
+HalfEdge::setFace(Ptr he1,
+                  Ptr he2,
+                  Ptr he3)
 {
     _face.push_back(he1);
     _face.push_back(he2);

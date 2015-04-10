@@ -62,7 +62,9 @@ Picking::Picking() :
     _doubleTap(Signal<NodePtr>::create()),
     _longHold(Signal<NodePtr>::create()),
     _addPickingLayout(true),
-    _emulateMouseWithTouch(true)
+    _emulateMouseWithTouch(true),
+    _frameBeginSlot(nullptr),
+    _enabled(false)
 {
 }
 
@@ -530,7 +532,7 @@ Picking::renderingEnd(RendererPtr renderer)
     }
 
     if (!(_mouseOver->numCallbacks() > 0 || _mouseOut->numCallbacks() > 0))
-        _renderer->enabled(false);
+        enabled(false);
 
     _executeMoveHandler = false;
     _executeRightDownHandler = false;
@@ -547,7 +549,7 @@ Picking::mouseMoveHandler(MousePtr mouse, int dx, int dy)
 	if (_mouseOver->numCallbacks() > 0 || _mouseOut->numCallbacks() > 0)
 	{
 		_executeMoveHandler = true;
-		_renderer->enabled(true);
+		enabled(true);
 	}
 }
 
@@ -557,7 +559,7 @@ Picking::mouseRightUpHandler(MousePtr mouse)
     if (_mouseRightUp->numCallbacks() > 0)
     {
         _executeRightUpHandler = true;
-        _renderer->enabled(true);
+        enabled(true);
     }
 }
 
@@ -567,7 +569,7 @@ Picking::mouseLeftUpHandler(MousePtr mouse)
     if (_mouseLeftUp->numCallbacks() > 0)
     {
         _executeLeftUpHandler = true;
-        _renderer->enabled(true);
+        enabled(true);
     }
 }
 
@@ -577,7 +579,7 @@ Picking::mouseRightClickHandler(MousePtr mouse)
     if (_mouseRightClick->numCallbacks() > 0)
 	{
 		_executeRightClickHandler = true;
-		_renderer->enabled(true);
+		enabled(true);
 	}
 }
 
@@ -587,18 +589,17 @@ Picking::mouseLeftClickHandler(MousePtr mouse)
     if (_mouseLeftClick->numCallbacks() > 0)
 	{
 		_executeLeftClickHandler = true;
-		_renderer->enabled(true);
+		enabled(true);
 	}
 }
 
 void
 Picking::mouseRightDownHandler(MousePtr mouse)
 {
-
     if (_mouseRightDown->numCallbacks() > 0)
 	{
 		_executeRightDownHandler = true;
-		_renderer->enabled(true);
+		enabled(true);
 	}
 }
 
@@ -608,7 +609,7 @@ Picking::mouseLeftDownHandler(MousePtr mouse)
     if (_mouseLeftDown->numCallbacks() > 0)
 	{
 		_executeLeftDownHandler = true;
-		_renderer->enabled(true);
+		enabled(true);
 	}
 }
 
@@ -618,12 +619,12 @@ Picking::touchDownHandler(TouchPtr touch, int identifier, float x, float y)
     if (_touchDown->numCallbacks() > 0)
     {
         _executeTouchDownHandler = true;
-        _renderer->enabled(true);
+        enabled(true);
     }
     if (_emulateMouseWithTouch && _touch->numTouches() == 1 && _mouseLeftDown->numCallbacks() > 0)
     {
         _executeLeftDownHandler = true;
-        _renderer->enabled(true);
+        enabled(true);
     }
 }
 
@@ -633,12 +634,12 @@ Picking::touchUpHandler(TouchPtr touch, int identifier, float x, float y)
     if (_touchUp->numCallbacks() > 0)
     {
         _executeTouchUpHandler = true;
-        _renderer->enabled(true);
+        enabled(true);
     }
     if (_emulateMouseWithTouch && _touch->numTouches() == 1 && _mouseLeftUp->numCallbacks() > 0)
     {
         _executeLeftUpHandler = true;
-        _renderer->enabled(true);
+        enabled(true);
     }
 }
 
@@ -648,12 +649,12 @@ Picking::touchMoveHandler(TouchPtr touch, int identifier, float x, float y)
     if (_touchMove->numCallbacks() > 0)
     {
         _executeTouchMoveHandler = true;
-        _renderer->enabled(true);
+        enabled(true);
     }
     if (_emulateMouseWithTouch && _touch->numTouches() == 1 && _mouseMove->numCallbacks() > 0)
     {
         _executeMoveHandler = true;
-        _renderer->enabled(true);
+        enabled(true);
     }
 }
 
@@ -663,12 +664,12 @@ Picking::touchTapHandler(TouchPtr touch, float x, float y)
     if (_tap->numCallbacks() > 0)
     {
         _executeTapHandler = true;
-        _renderer->enabled(true);
+        enabled(true);
     }
     if (_emulateMouseWithTouch && _mouseLeftClick->numCallbacks() > 0)
     {
         _executeLeftClickHandler = true;
-        _renderer->enabled(true);
+        enabled(true);
     }
 }
 
@@ -678,7 +679,7 @@ Picking::touchDoubleTapHandler(TouchPtr touch, float x, float y)
     if (_doubleTap->numCallbacks() > 0)
     {
         _executeDoubleTapHandler = true;
-        _renderer->enabled(true);
+        enabled(true);
     }
 }
 
@@ -688,12 +689,12 @@ Picking::touchLongHoldHandler(TouchPtr touch, float x, float y)
     if (_doubleTap->numCallbacks() > 0)
     {
         _executeDoubleTapHandler = true;
-        _renderer->enabled(true);
+        enabled(true);
     }
     if (_emulateMouseWithTouch && _mouseRightClick->numCallbacks() > 0)
     {
         _executeRightClickHandler = true;
-        _renderer->enabled(true);
+        enabled(true);
     }
 }
 
@@ -703,4 +704,34 @@ Picking::updateDescendants(NodePtr target)
 	auto nodeSet = scene::NodeSet::create(target)->descendants(true);
 
 	_descendants = nodeSet->nodes();
+}
+
+void
+Picking::enabled(bool enabled)
+{
+    if (enabled && !_enabled)
+    {
+        _enabled = true;
+
+        _frameBeginSlot = _sceneManager->frameBegin()->connect(std::bind(
+		    &Picking::frameBeginHandler,
+		    std::static_pointer_cast<Picking>(shared_from_this()),
+		    std::placeholders::_1,
+		    std::placeholders::_2,
+		    std::placeholders::_3
+        ), 1000.0f);
+    }
+    else if (!enabled && _enabled)
+    {
+        _enabled = false;
+        _frameBeginSlot = nullptr;
+    }
+}
+
+void
+Picking::frameBeginHandler(SceneManagerPtr, float, float)
+{
+    _renderer->enabled(true);
+    _renderer->render(_sceneManager->canvas()->context());
+    _renderer->enabled(false);
 }

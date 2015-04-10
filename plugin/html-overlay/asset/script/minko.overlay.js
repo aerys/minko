@@ -61,7 +61,7 @@ Minko.loadedHandler = function(event)
 
 	Minko.document.body.oncontextmenu = function(event)
 	{
-		if (event.dontPreventDefault)
+		if (event.dontPreventDefault || event.ignoreOnMinko)
 			return true;
 
 		event.preventDefault();
@@ -100,6 +100,9 @@ Minko.addListener = function(accessor, type)
 		accessor.minkoEvents = [];
 	accessor.addEventListener(type, function(event)
 	{
+		if (event.ignoreOnMinko)
+			return;
+		
 		accessor.minkoEvents.push(event);
 	});
 };
@@ -231,6 +234,9 @@ Minko.getOffsetLeft = function(element) //EMSCRIPTEN
 
 Minko.redispatchKeyboardEvent = function(event) //EMSCRIPTEN
 {
+	if (event.ignoreOnMinko)
+		return;
+
 	var eventCopy = document.createEvent('Event');
 
 	eventCopy.initEvent(event.type, event.bubbles, event.cancelable);
@@ -247,6 +253,9 @@ Minko.redispatchKeyboardEvent = function(event) //EMSCRIPTEN
 
 Minko.redispatchMouseEvent = function(event) //EMSCRIPTEN
 {
+	if (event.ignoreOnMinko)
+		return;
+
 	if (event.type == 'mouseout' && event.target != event.currentTarget)
 		return;
 
@@ -269,6 +278,9 @@ Minko.redispatchMouseEvent = function(event) //EMSCRIPTEN
 
 Minko.redispatchWheelEvent = function(event)
 {
+	if (event.ignoreOnMinko)
+		return;
+
 	var eventCopy = document.createEvent('Event');
 
 	eventCopy.initEvent(event.type, event.bubbles, event.cancelable);
@@ -333,6 +345,9 @@ Minko.copyTouchList = function(touches)
 
 Minko.redispatchTouchEvent = function(event) //EMSCRIPTEN
 {
+	if (event.ignoreOnMinko)
+		return;
+
 	var eventCopy = document.createEvent('Event');
 
 	eventCopy.initEvent(event.type, event.bubbles, event.cancelable);
@@ -394,6 +409,9 @@ Minko.removePointerTouch = function(id)
 
 Minko.redispatchPointerEvent = function(event) //EMSCRIPTEN
 {
+	if (event.ignoreOnMinko)
+		return;
+
 	var eventCopy = document.createEvent('Event');
 
 	var type = event.type;
@@ -534,7 +552,10 @@ Minko.connectWebViewJavascriptBridge = function(callback) // iOS / OSX
 Minko.touchIds = [];
 
 Minko.androidEventHandler = function(event)
-{	
+{
+	if (event.ignoreOnMinko)
+		return;
+
 	console.log('JS Event: ' + event.type + ' (' + event.currentTarget.minkoName + ')');
 	
 	// Workaround for API 19 to properly fire touchmove
@@ -627,3 +648,6 @@ Minko.init = function(platform)
 		}
 	}
 }
+
+if (!Minko.platform)
+	Minko.platform = "unknown";

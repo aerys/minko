@@ -1,3 +1,6 @@
+#ifndef _TEXTURELOD_FUNCTION_GLSL_
+#define _TEXTURELOD_FUNCTION_GLSL_
+
 #if __VERSION__ >= 110 || defined(GL_OES_standard_derivatives)
 
 float texturelod_mipmapLevel(sampler2D tex, vec2 uv, vec2 texSize)
@@ -18,6 +21,9 @@ float texturelod_mipmapLevel(sampler2D tex, vec2 uv, vec2 texSize)
 
 vec4 texturelod_texture2D(sampler2D tex, vec2 uv, vec2 texSize, float baseLod, float maxLod, vec4 defaultColor)
 {
+    if (maxLod == baseLod)
+        return texture2D(tex, uv);
+
 #if __VERSION__ < 130
     #if defined(GL_OES_standard_derivatives) && defined(GL_EXT_shader_texture_lod)
         float requiredLod = texturelod_mipmapLevel(tex, uv, texSize);
@@ -42,3 +48,5 @@ vec4 texturelod_texture2D(sampler2D tex, vec2 uv, vec2 texSize, float baseLod, f
     return textureLod(tex, fract(uv), max(maxLod, requiredLod));
 #endif
 }
+
+#endif

@@ -280,6 +280,9 @@ namespace minko
 
             const std::string&
             getValidAssetName(const std::string& name);
+
+			void
+			enableTransparency(MaterialPtr material);
 		};
 	}
 }
