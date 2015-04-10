@@ -36,13 +36,22 @@ Provider::Provider() :
 Provider::Provider(const ValueMap& values) :
 	_values(new ValueMap())
 {
-	for (auto& p : values)
+    for (auto& p : values)
         setValue(p.first, p.second);
 }
 
 Provider::~Provider()
 {
     delete _values;
+}
+
+Provider::Ptr
+Provider::set(std::initializer_list<data::Provider::ValueType> values)
+{
+    for (auto& p : values)
+        setValue(p.first, p.second);
+
+	return shared_from_this();
 }
 
 Provider::Ptr

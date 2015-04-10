@@ -34,6 +34,8 @@ TEST_F(ProviderTest, Create)
 	}
 }
 
+// See http://kaba.hilvi.org/homepage/programming/bugs/vs2013.htm
+/*
 TEST_F(ProviderTest, CreateAndInitialize)
 {
 	try
@@ -66,6 +68,41 @@ TEST_F(ProviderTest, CreateAndInitializeDifferentTypes)
 	{
 		ASSERT_TRUE(false);
 	}
+}
+*/
+
+TEST_F(ProviderTest, CreateThenInitialize)
+{
+    try
+    {
+        auto p = Provider::create()->set({
+            { "foo", 42 }
+        });
+
+        ASSERT_EQ(p->get<int>("foo"), 42);
+    }
+    catch (...)
+    {
+        ASSERT_TRUE(false);
+    }
+}
+
+TEST_F(ProviderTest, CreateThenInitializeDifferentTypes)
+{
+    try
+    {
+        auto p = Provider::create()->set({
+            { "foo", 42 },
+            { "bar", 42.f }
+        });
+
+        ASSERT_EQ(p->get<int>("foo"), 42);
+        ASSERT_EQ(p->get<float>("bar"), 42.f);
+    }
+    catch (...)
+    {
+        ASSERT_TRUE(false);
+    }
 }
 
 TEST_F(ProviderTest, CreateCopy)

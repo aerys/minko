@@ -61,16 +61,17 @@ namespace minko
             };
 
 		public:
-			typedef std::shared_ptr<Provider>	Ptr;
-			typedef Flyweight<std::string>		PropertyName;
-			typedef map<PropertyName, Any> 		ValueMap;
+			typedef std::shared_ptr<Provider>	    Ptr;
+			typedef Flyweight<std::string>		    PropertyName;
+			typedef std::pair<PropertyName, Any>    ValueType;
+			typedef map<PropertyName, Any> 		    ValueMap;
 
 		private:
-            ValueMap*							_values;
+            ValueMap*							    _values;
 
-			Signal<Ptr, const PropertyName&>    _propertyAdded;
-            Signal<Ptr, const PropertyName&>	_propertyChanged;
-			Signal<Ptr, const PropertyName&>	_propertyRemoved;
+			Signal<Ptr, const PropertyName&>        _propertyAdded;
+            Signal<Ptr, const PropertyName&>	    _propertyChanged;
+			Signal<Ptr, const PropertyName&>	    _propertyRemoved;
 
 		public:
 			static
@@ -182,6 +183,9 @@ namespace minko
 
                 return shared_from_this();
             }
+
+            Ptr
+            set(std::initializer_list<data::Provider::ValueType> values);
 
             template <typename T>
 			bool

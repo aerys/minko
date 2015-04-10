@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <cstring>
 #include <exception>
 #include <functional>
+#include <initializer_list>
 #include <iostream>
 #include <list>
 #include <forward_list>
