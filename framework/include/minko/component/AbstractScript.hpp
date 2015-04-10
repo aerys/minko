@@ -109,6 +109,13 @@ namespace minko
 				return true;
 			}
 
+            virtual
+            float
+            priority()
+            {
+                return 0.0f;
+            }
+
 		protected:
 			virtual
 			void
