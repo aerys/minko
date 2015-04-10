@@ -517,40 +517,20 @@ AbstractASSIMPParser::createCameras(const aiScene* scene)
 		const auto	aiLookAt	= aiCamera->mLookAt;
 		const auto	aiUp		= aiCamera->mUp;
 
-        auto position = math::vec3(aiPosition.x, aiPosition.y, aiPosition.z);
-        position = position != math::zero<math::vec3>()
-            ? math::normalize(position)
-            : position;
-
-        auto target = math::vec3(aiPosition.x + aiLookAt.x, aiPosition.y + aiLookAt.y, aiPosition.z + aiLookAt.z);
-        target = target != math::zero<math::vec3>()
-            ? math::normalize(target)
-            : math::vec3(1e-6f, 1e-6f, 1e-6f);
-
-        auto up = math::vec3(aiUp.x, aiUp.y, aiUp.z);
-        up = up != math::zero<math::vec3>()
-            ? math::normalize(up)
-            : up;
-
-        const auto lookat = math::lookAt(position, target, up);
-
-        auto transform = Transform::create(math::inverse(lookat));
 		const auto	cameraName	= std::string(aiCamera->mName.data);
-		auto		cameraNode = scene::Node::create(cameraName + "_camera_" + std::to_string(i))
-			->addComponent(PerspectiveCamera::create(
-				aiCamera->mAspect,
-				aiCamera->mHorizontalFOV * aiCamera->mAspect, // need the vertical FOV
-				aiCamera->mClipPlaneNear,
-				aiCamera->mClipPlaneFar
-			))
-			->addComponent(transform);
 
-		scene::Node::Ptr parentNode = !cameraName.empty()
+		scene::Node::Ptr cameraNode = !cameraName.empty()
 			? findNode(cameraName)
 			: nullptr;
 
-		if (parentNode)
-			parentNode->addChild(cameraNode);
+        if (cameraNode)
+            cameraNode
+			    ->addComponent(PerspectiveCamera::create(
+				    aiCamera->mAspect,
+				    aiCamera->mHorizontalFOV * aiCamera->mAspect, // need the vertical FOV
+				    aiCamera->mClipPlaneNear,
+				    aiCamera->mClipPlaneFar
+			    ));
 	}
 }
 
