@@ -686,6 +686,8 @@ StreamingExtension::getStreamedAssetHeader(unsigned short                       
                 [&](LinkedAsset::Ptr                    linkedAssetThis,
                     const std::vector<unsigned char>&   linkedAssetData) -> void
                 {
+                    linkedAsset->filename(linkedAsset->lastResolvedFilename());
+
                     const auto streamedAssetHeaderSizeOffset = assetHeaderSize - 2;
 
                     streamedAssetHeaderSize = assetHeaderSize +
