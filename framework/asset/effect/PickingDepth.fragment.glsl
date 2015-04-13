@@ -10,14 +10,14 @@
 
 #pragma include "Pack.function.glsl"
 
-uniform vec3 uEyePosition;
+uniform vec3 uPickingOrigin;
 uniform float uZFar;
 
 varying vec3 vWorldPosition;
 
 void main(void)
 {
-    float distance = distance(uEyePosition, vWorldPosition);
+    float distance = distance(uPickingOrigin, vWorldPosition);
 
     distance = clamp(distance / uZFar, 0.0, 1.0);
 

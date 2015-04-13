@@ -131,6 +131,7 @@ namespace minko
             bool                                        _emulateMouseWithTouch;
 
             bool                                        _enabled;
+            bool                                        _renderDepth;
 
 		public:
 			inline static
@@ -255,6 +256,20 @@ namespace minko
 			{
 				return _lastPickedSurface;
 			}
+
+            inline
+            bool
+            renderDepth() const
+            {
+                return _renderDepth;
+            }
+
+            inline
+            void
+            renderDepth(bool value)
+            {
+                _renderDepth = value;
+            }
 
             inline
             float

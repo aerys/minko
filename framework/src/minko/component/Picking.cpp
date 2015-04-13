@@ -33,6 +33,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Transform.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/AbstractCanvas.hpp"
+#include "minko/math/Ray.hpp"
 
 using namespace minko;
 using namespace component;
@@ -65,7 +66,8 @@ Picking::Picking() :
     _addPickingLayout(true),
     _emulateMouseWithTouch(true),
     _frameBeginSlot(nullptr),
-    _enabled(false)
+    _enabled(false),
+    _renderDepth(true)
 {
 }
 
@@ -218,7 +220,7 @@ Picking::targetAdded(NodePtr target)
         "Depth Picking Renderer"
     );
     _depthRenderer->scissorBox(0, 0, 1, 1);
-    _depthRenderer->layoutMask(scene::BuiltinLayout::PICKING);
+    _depthRenderer->layoutMask(scene::BuiltinLayout::PICKING_DEPTH);
     _depthRenderer->enabled(false);
 
 	updateDescendants(target);
@@ -380,6 +382,8 @@ Picking::addSurface(SurfacePtr surface)
 
         if (_addPickingLayout)
             surface->target()->layout(target()->layout() | scene::BuiltinLayout::PICKING);
+
+        surface->layoutMask(surface->layoutMask() & ~scene::BuiltinLayout::PICKING_DEPTH);
 	}
 }
 
@@ -475,7 +479,8 @@ Picking::renderingEnd(RendererPtr renderer)
     {
         auto pickedSurface = surfaceIt->second;
 
-        renderDepth(_depthRenderer, pickedSurface);
+        if (renderDepth())
+            renderDepth(_depthRenderer, pickedSurface);
     }
 }
 
@@ -710,11 +715,17 @@ Picking::frameBeginHandler(SceneManagerPtr, float, float)
 void
 Picking::renderDepth(RendererPtr renderer, SurfacePtr pickedSurface)
 {
-    // fixme: render only pickedSurface
+    auto pickedSurfaceTarget = pickedSurface->target();
+
+    pickedSurfaceTarget->layout(pickedSurfaceTarget->layout() | scene::BuiltinLayout::PICKING_DEPTH);
+    pickedSurface->layoutMask(pickedSurface->layoutMask() | scene::BuiltinLayout::PICKING_DEPTH);
 
     renderer->enabled(true);
     renderer->render(_sceneManager->canvas()->context());
     renderer->enabled(false);
+
+    pickedSurfaceTarget->layout(pickedSurfaceTarget->layout() & ~scene::BuiltinLayout::PICKING_DEPTH);
+    pickedSurface->layoutMask(pickedSurface->layoutMask() & ~scene::BuiltinLayout::PICKING_DEPTH);
 }
 
 void
@@ -811,8 +822,11 @@ Picking::dispatchEvents(SurfacePtr pickedSurface, float depth)
 void
 Picking::updatePickingProjection()
 {
-	float mouseX = (float)_mouse->x();
-	float mouseY = (float)_mouse->y();
+	const auto mouseX = static_cast<float>(_mouse->x());
+	const auto mouseY = static_cast<float>(_mouse->y());
+
+    const auto normalizedMouseX = _mouse->normalizedX();
+    const auto normalizedMouseY = _mouse->normalizedY();
 
 	auto perspectiveCamera	= _camera->component<component::PerspectiveCamera>();
 	auto projection	= math::perspective(
@@ -826,4 +840,8 @@ Picking::updatePickingProjection()
 	projection[2][1] = (_context->viewportHeight() - mouseY) / _context->viewportHeight() * 2.f;
 
 	_pickingProvider->set("pickingProjection", projection);
+
+    auto pickingRay = perspectiveCamera->unproject(normalizedMouseX, normalizedMouseY);
+
+    _pickingProvider->set("pickingOrigin", pickingRay->origin());
 }

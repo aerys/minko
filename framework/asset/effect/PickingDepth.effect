@@ -14,7 +14,7 @@
     },
     
     "uniforms"   : {
-        "uEyePosition"          : { "binding" : { "property" : "eyePosition", "source" : "renderer" } },
+        "uPickingOrigin"        : { "binding" : { "property" : "pickingOrigin", "source" : "renderer" } },
         "uZFar"                 : { "binding" : { "property" : "zFar", "source" : "renderer" } },
         "uModelToWorldMatrix"   : "modelToWorldMatrix",
         "uWorldToViewMatrix"    : { "binding" : { "property" : "viewMatrix", "source" : "renderer"} },
