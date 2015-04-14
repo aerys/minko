@@ -45,6 +45,44 @@ AssetLibrary::create(AbsContextPtr context)
     return al;
 }
 
+AssetLibrary::Ptr
+AssetLibrary::create(AssetLibrary::Ptr original)
+{
+    auto al = create(original->_context);
+        
+    for (auto it = original->_materials.begin(); it != original->_materials.end(); ++it)
+        al->_materials[it->first] = it->second;
+
+    for (auto it = original->_geometries.begin(); it != original->_geometries.end(); ++it)
+        al->_geometries[it->first] = it->second;
+
+    for (auto it = original->_effects.begin(); it != original->_effects.end(); ++it)
+        al->_effects[it->first] = it->second;
+
+    for (auto it = original->_textures.begin(); it != original->_textures.end(); ++it)
+        al->_textures[it->first] = it->second;
+    
+    for (auto it = original->_cubeTextures.begin(); it != original->_cubeTextures.end(); ++it)
+        al->_cubeTextures[it->first] = it->second;
+
+    for (auto it = original->_rectangleTextures.begin(); it != original->_rectangleTextures.end(); ++it)
+        al->_rectangleTextures[it->first] = it->second;
+
+    for (auto it = original->_symbols.begin(); it != original->_symbols.end(); ++it)
+        al->_symbols[it->first] = it->second;
+
+    for (auto it = original->_blobs.begin(); it != original->_blobs.end(); ++it)
+        al->_blobs[it->first] = it->second;
+
+    for (auto it = original->_scripts.begin(); it != original->_scripts.end(); ++it)
+        al->_scripts[it->first] = it->second;
+
+    for (auto it = original->_layouts.begin(); it != original->_layouts.end(); ++it)
+        al->_layouts[it->first] = it->second;
+
+    return al;
+}
+
 AssetLibrary::AssetLibrary(std::shared_ptr<AbstractContext> context) :
     _context(context),
     _loader(Loader::create())

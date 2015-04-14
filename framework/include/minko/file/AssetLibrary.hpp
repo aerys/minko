@@ -50,7 +50,7 @@ namespace minko
             typedef std::shared_ptr<file::Loader>                           LoaderPtr;
             typedef std::shared_ptr<scene::Node>                            NodePtr;
             typedef std::shared_ptr<component::AbstractScript>              AbsScriptPtr;
-			typedef std::shared_ptr<material::Material>		    MaterialPtr;
+			typedef std::shared_ptr<material::Material>		                MaterialPtr;
             typedef std::shared_ptr<audio::Sound>                           SoundPtr;
 
         private:
@@ -76,6 +76,10 @@ namespace minko
             static
             Ptr
             create(AbsContextPtr context);
+
+            static
+            Ptr
+            create(Ptr);
 
             inline
             uint
