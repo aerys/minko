@@ -209,7 +209,6 @@ Picking::targetAdded(NodePtr target)
     );
     _renderer->scissorBox(0, 0, 1, 1);
     _renderer->layoutMask(scene::BuiltinLayout::PICKING);
-    _renderer->enabled(false);
 
     _depthRenderer = Renderer::create(
         0xFFFF00FF,
@@ -221,7 +220,6 @@ Picking::targetAdded(NodePtr target)
     );
     _depthRenderer->scissorBox(0, 0, 1, 1);
     _depthRenderer->layoutMask(scene::BuiltinLayout::PICKING_DEPTH);
-    _depthRenderer->enabled(false);
 
 	updateDescendants(target);
 
