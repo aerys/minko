@@ -108,6 +108,8 @@ namespace minko
                 std::unordered_map<ColliderPtr, NodeLayoutsChanged::Slot>           _colliderNodeLayoutChangedSlot;
                 std::unordered_map<ColliderPtr, LayoutMaskChanged::Slot>            _colliderLayoutMaskChangedSlot;
 
+                bool                                                                _paused;
+
             public:
                 static
                 Ptr
@@ -122,6 +124,20 @@ namespace minko
 
                 ~PhysicsWorld()
                 {
+                }
+                    
+                inline
+                void
+                paused(bool paused)
+                {
+                    _paused = paused;
+                }
+
+                inline
+                bool
+                paused()
+                {
+                    return _paused;
                 }
 
                 bool
