@@ -46,7 +46,7 @@ StreamedTextureWriterPreprocessor::StreamedTextureWriterPreprocessor() :
 void
 StreamedTextureWriterPreprocessor::process(Node::Ptr& node, AssetLibrary::Ptr assetLibrary)
 {
-    node->addComponent(TextureLodScheduler::create());
+    node->addComponent(TextureLodScheduler::create(assetLibrary));
 
     if (_options.flags & Options::computeVertexColor)
         computeVertexColorAttributes(node, assetLibrary);
