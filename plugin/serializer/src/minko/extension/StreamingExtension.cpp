@@ -364,8 +364,6 @@ StreamingExtension::deserializePOPGeometry(unsigned short					metaData,
 
     auto parser = POPGeometryParser::create(geometryData);
 
-    registerParser(parser);
-
     parser->streamingOptions(_streamingOptions);
     parser->dependency(dependencies);
 
@@ -405,6 +403,8 @@ StreamingExtension::deserializePOPGeometry(unsigned short					metaData,
     geometry = assetLibrary->geometry(uniqueFilename);
 
     dependencies->registerReference(assetRef, geometry);
+
+    registerPOPGeometryParser(parser, geometry);
 
     jobList.push_back(parser);
 
@@ -526,8 +526,6 @@ StreamingExtension::deserializeStreamedTexture(unsigned short											metaData
 
     auto parser = StreamedTextureParser::create(textureData);
 
-    registerParser(parser);
-
     parser->streamingOptions(_streamingOptions);
     parser->dependency(dependencies);
 
@@ -573,19 +571,51 @@ StreamingExtension::deserializeStreamedTexture(unsigned short											metaData
 
     dependencies->registerReference(assetRef, texture);
 
+    registerStreamedTextureParser(parser, texture);
+
     jobList.push_back(parser);
 
     _streamingOptions->masterLodScheduler()->registerTexture(texture, textureData);
 }
 
 void
+StreamingExtension::registerPOPGeometryParser(POPGeometryParser::Ptr    parser,
+                                              Geometry::Ptr             geometry)
+{
+    auto& parserEntry = registerParser(parser);
+
+    parserEntry.completeSlots.push_back(parser->AbstractParser::complete()->connect(
+        [=](AbstractParser::Ptr parserThis) -> void
+        {
+            _streamingOptions->masterLodScheduler()->unregisterGeometry(geometry);
+        },
+        1.f
+    ));
+}
+
+void
+StreamingExtension::registerStreamedTextureParser(StreamedTextureParser::Ptr    parser,
+                                                  AbstractTexture::Ptr          texture)
+{
+    auto& parserEntry = registerParser(parser);
+
+    parserEntry.completeSlots.push_back(parser->AbstractParser::complete()->connect(
+        [=](AbstractParser::Ptr parserThis) -> void
+        {
+            _streamingOptions->masterLodScheduler()->unregisterTexture(texture);
+        },
+        1.f
+    ));
+}
+
+StreamingExtension::ParserEntry&
 StreamingExtension::registerParser(AbstractStreamedAssetParser::Ptr parser)
 {
     auto parserEntryIt = _parsers.insert(std::make_pair(parser, ParserEntry()));
 
     auto& parserEntry = parserEntryIt.first->second;
 
-    parserEntry.completeSlot = parser->AbstractParser::complete()->connect(
+    parserEntry.completeSlots.push_back(parser->AbstractParser::complete()->connect(
         [this](AbstractParser::Ptr parserThis) -> void
         {
             _parsers.erase(std::static_pointer_cast<AbstractStreamedAssetParser>(parserThis));
@@ -595,7 +625,7 @@ StreamingExtension::registerParser(AbstractStreamedAssetParser::Ptr parser)
                 sceneStreamingComplete()->execute(std::static_pointer_cast<StreamingExtension>(shared_from_this()));
             }
         }
-    );
+    ));
 
     parserEntry.progressSlot = parser->progress()->connect(
         [this](AbstractStreamedAssetParser::Ptr parserThis, float progressRate) -> void
@@ -633,6 +663,8 @@ StreamingExtension::registerParser(AbstractStreamedAssetParser::Ptr parser)
             }
         }
     );
+
+    return parserEntry;
 }
 
 bool

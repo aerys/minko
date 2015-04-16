@@ -46,7 +46,7 @@ namespace minko
             struct ParserEntry
             {
                 Signal<std::shared_ptr<file::AbstractStreamedAssetParser>>::Slot          readySlot;
-                Signal<std::shared_ptr<file::AbstractParser>>::Slot                       completeSlot;
+                std::list<Signal<std::shared_ptr<file::AbstractParser>>::Slot>            completeSlots;
                 Signal<std::shared_ptr<file::AbstractStreamedAssetParser>, float>::Slot   progressSlot;
                 Signal<std::shared_ptr<file::AbstractStreamedAssetParser>>::Slot          activeSlot;
                 Signal<std::shared_ptr<file::AbstractStreamedAssetParser>>::Slot          inactiveSlot;
@@ -172,6 +172,14 @@ namespace minko
             }
 
             void
+            registerPOPGeometryParser(std::shared_ptr<file::POPGeometryParser>  parser,
+                                      std::shared_ptr<geometry::Geometry>       geometry);
+
+            void
+            registerStreamedTextureParser(std::shared_ptr<file::StreamedTextureParser>  parser,
+                                          std::shared_ptr<render::AbstractTexture>      texture);
+
+            ParserEntry&
             registerParser(std::shared_ptr<file::AbstractStreamedAssetParser> parser);
 
             bool
