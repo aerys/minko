@@ -19,18 +19,29 @@ attribute vec4 aBoneWeightsA;
 attribute vec4 aBoneWeightsB;
 #endif
 
+#ifdef VERTEX_POP_PROTECTED
 attribute float aPopProtected;
+#endif
 
 uniform mat4 uModelToWorldMatrix;
 uniform mat4 uWorldToScreenMatrix;
-uniform vec2 uUVScale;
-uniform vec2 uUVOffset;
 
+#ifdef UV_SCALE
+uniform vec2 uUVScale;
+#endif
+#ifdef UV_OFFSET
+uniform vec2 uUVOffset;
+#endif
+
+#ifdef POP_LOD_ENABLED
 uniform float uPopLod;
+#ifdef POP_BLENDING_ENABLED
 uniform float uPopBlendingLod;
+#endif
 uniform float uPopFullPrecisionLod;
 uniform vec3 uPopMinBound;
 uniform vec3 uPopMaxBound;
+#endif
 
 varying vec2 vVertexUV;
 varying vec3 vVertexUVW;
@@ -39,14 +50,25 @@ varying vec4 vVertexScreenPosition;
 void main(void)
 {
 	#if defined(VERTEX_UV) && (defined(DIFFUSE_MAP) || defined(ALPHA_MAP))
+        vec2 uvScale = vec2(1.0);
+        vec2 uvOffset = vec2(0.0);
+
+        #ifdef UV_SCALE
+            uvScale = uUVScale;
+        #endif // UV_SCALE
+
+        #ifdef UV_OFFSET
+            uvOffset = uUVOffset;
+        #endif // UV_OFFSET
+
 		vec2 uv = aUV;
 
 		#if defined(UV_SCALE)
-			uv *= uUVScale;
+			uv *= uvScale;
 		#endif
 
 		#if defined(UV_OFFSET)
-			uv += uUVOffset;
+			uv += uvOffset;
 		#endif
 
 		vVertexUV = uv;
