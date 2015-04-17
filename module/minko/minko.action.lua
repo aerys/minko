@@ -150,15 +150,15 @@ minko.action.optimize = function(file)
 	local exportext = supported[sourceext]
 
 	if exportext ~= nil then
-		prelinkcommands {
-			table.concat({
-				binary,
-				'-v',
-				'-i',
-				file,
-				'-o',
-				file .. '.' .. exportext
-			}, ' ')
-		}
+		return table.concat({
+			binary,
+			'-v',
+			'-i',
+			file,
+			'-o',
+			file .. '.' .. exportext
+		}, ' ')
+	else
+		return ''
 	end
 end

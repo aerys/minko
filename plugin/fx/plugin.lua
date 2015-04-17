@@ -33,6 +33,10 @@ function minko.plugin.fx:enable()
 		prelinkcommands {
 			minko.action.copy(path.join(minko.plugin.path("fx"), "asset"))
 		}
+
+		minko.package.assetdirs {
+			path.join(minko.plugin.path("fx"), "asset")
+		}
 end
 
 newoption {
