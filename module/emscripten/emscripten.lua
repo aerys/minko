@@ -29,8 +29,6 @@ table.inject(premake.tools.gcc, 'tools.emscripten', {
 	ar = path.cygpath(MINKO_HOME) .. '/module/emscripten/emar.sh'
 })
 
-print(premake.tools.gcc.tools.emscripten.cc)
-
 table.inject(premake.tools.gcc, 'cppflags.system.emscripten', {
 	"-MMD", "-MP",
 	"-DEMSCRIPTEN",

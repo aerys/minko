@@ -3,7 +3,7 @@ function os.iscygwin()
 end
 
 function path.cygpath(filepath)
-	filepath = path.translate(filepath)
+	filepath = path.translate(filepath, '/')
 
 	if os.iscygwin() then
 		local t = explode(':', filepath)
