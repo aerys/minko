@@ -422,18 +422,6 @@ MeshPartitioner::createGeometry(Geometry::Ptr                       referenceGeo
         globalAttributeOffset += localVertexSize;
     }
 
-    if (geometry->hasVertexAttribute("normal"))
-    {
-        geometry->computeNormals();
-    }
-
-    if (geometry->hasVertexAttribute("position") &&
-        geometry->hasVertexAttribute("uv") &&
-        geometry->hasVertexAttribute("tangent"))
-    {
-        geometry->computeTangentSpace(!geometry->hasVertexAttribute("normal"));
-    }
-
     if (_options.flags & Options::applyCrackFreePolicy)
     {
         markProtectedVertices(geometry, localIndexToGlobalIndexMap, partitionInfo);

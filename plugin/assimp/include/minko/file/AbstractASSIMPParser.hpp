@@ -134,6 +134,24 @@ namespace minko
             void
             initImporter();
 
+            const aiScene*
+            importScene(const std::string&					filename,
+						const std::string&					resolvedFilename,
+						std::shared_ptr<Options>			options,
+						const std::vector<unsigned char>&	data,
+						std::shared_ptr<AssetLibrary>	    assetLibrary);
+
+            unsigned int
+            getPostProcessingFlags(const aiScene*           scene,
+                                   std::shared_ptr<Options>	options);
+
+            const aiScene*
+            applyPostProcessing(const aiScene*  scene,
+                                unsigned int    postProcessingFlags);
+
+            void
+            convertScene(const aiScene* scene);
+
 			void
 			createSceneTree(NodePtr minkoNode, const aiScene* scene, aiNode* ainode, std::shared_ptr<AssetLibrary> assets);
 

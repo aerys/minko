@@ -20,7 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AbstractASSIMPParser.hpp"
 
 #include "IOHandler.hpp"
+#include "Logger.hpp"
 
+#include "assimp/DefaultLogger.hpp"
+#include "assimp/Logger.hpp"
 #include "assimp/Importer.hpp"      // C++ importer interface
 #include "assimp/scene.h"           // Output data structure
 #include "assimp/postprocess.h"     // Post processing flags
@@ -127,9 +130,15 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 							const std::vector<unsigned char>&	data,
 							std::shared_ptr<AssetLibrary>	    assetLibrary)
 {
-#ifdef DEBUG
-	std::cout << "AbstractASSIMPParser::parse()" << std::endl;
-#endif // DEBUG
+    Assimp::DefaultLogger::create(nullptr, Assimp::Logger::VERBOSE, aiDefaultLogStream::aiDefaultLogStream_STDOUT);
+
+    const auto severity =
+        Assimp::Logger::Debugging |
+        Assimp::Logger::Info |
+        Assimp::Logger::Err |
+        Assimp::Logger::Warn;
+
+    Assimp::DefaultLogger::get()->attachStream(new minko::file::Logger(), severity);
 
 	initImporter();
 
@@ -160,23 +169,78 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 
     _importer->SetIOHandler(ioHandler);
 
-#ifdef DEBUG
-	std::cout << "AbstractASSIMPParser: preparing to parse" << std::endl;
-#endif // DEBUG
+    const aiScene* scene = importScene(filename, resolvedFilename, options, data, assetLibrary);
 
-    auto flags =
+	if (!scene)
+        return;
+
+	parseDependencies(resolvedFilename, scene);
+
+	if (_numDependencies == 0)
+		allDependenciesLoaded(scene);
+
+    Assimp::DefaultLogger::kill();
+}
+
+const aiScene*
+AbstractASSIMPParser::importScene(const std::string&			    filename,
+			                      const std::string&			    resolvedFilename,
+			                      Options::Ptr		                options,
+			                      const std::vector<unsigned char>& data,
+			                      AssetLibrary::Ptr	                assetLibrary)
+{
+	const aiScene* scene = _importer->ReadFileFromMemory(
+		data.data(),
+		data.size(),
+		0u,
+		resolvedFilename.c_str()
+	);
+
+	if (!scene)
+    {
+        _error->execute(shared_from_this(), Error(_importer->GetErrorString()));
+
+        return nullptr;
+    }
+
+    return scene;
+}
+
+unsigned int
+AbstractASSIMPParser::getPostProcessingFlags(const aiScene*             scene,
+                                             Options::Ptr		        options)
+{
+    const auto numMaterials = scene->mNumMaterials;
+    const auto numTextures = scene->mNumTextures;
+
+    unsigned int flags =
 		aiProcess_JoinIdenticalVertices
-        //| aiProcess_GenSmoothNormals // assertion is raised by assimp
-		| aiProcess_GenSmoothNormals
+	    | aiProcess_GenSmoothNormals
 		| aiProcess_SplitLargeMeshes
 		| aiProcess_LimitBoneWeights
 		| aiProcess_GenUVCoords
 		| aiProcess_OptimizeMeshes
-		//| aiProcess_OptimizeGraph // makes the mesh simply vanish
 		| aiProcess_FlipUVs
 		| aiProcess_SortByPType
 		| aiProcess_Triangulate
-        | aiProcess_ImproveCacheLocality;
+        | aiProcess_ImproveCacheLocality
+        | aiProcess_RemoveComponent;
+
+    unsigned int removeComponentFlags = aiComponent_COLORS;
+
+    if (numMaterials || numTextures == 0u)
+    {
+        removeComponentFlags |= aiComponent_TEXCOORDS | aiComponent_TANGENTS_AND_BITANGENTS;
+    }
+
+    if (options->generateSmoothNormals())
+    {
+        removeComponentFlags |= aiComponent_NORMALS | aiComponent_TANGENTS_AND_BITANGENTS;
+
+        _importer->SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, options->normalMaxSmoothingAngle());
+    }
+
+    _importer->SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS, removeComponentFlags);
 
     if (!options->processUnusedAsset())
     {
@@ -185,36 +249,49 @@ AbstractASSIMPParser::parse(const std::string&					filename,
         flags |= aiProcess_RemoveRedundantMaterials;
     }
 
-	const aiScene* scene = _importer->ReadFileFromMemory(
-		&data[0],
-		data.size(),
-		flags,
-		resolvedFilename.c_str()
-	);
+    return flags;
+}
 
-	if (!scene)
+const aiScene*
+AbstractASSIMPParser::applyPostProcessing(const aiScene* scene, unsigned int postProcessingFlags)
+{
+    const aiScene* processedScene = _importer->ApplyPostProcessing(postProcessingFlags);
+
+    return processedScene;
+}
+
+void
+AbstractASSIMPParser::allDependenciesLoaded(const aiScene* scene)
+{
+    const auto postProcessingFlags = getPostProcessingFlags(scene, _options);
+
+    const aiScene* processedScene = applyPostProcessing(scene, postProcessingFlags);
+
+	if (!processedScene)
     {
         _error->execute(shared_from_this(), Error(_importer->GetErrorString()));
 
         return;
     }
 
-#ifdef DEBUG
-	std::cout << "AbstractASSIMPParser: scene parsed" << std::endl;
-#endif // DEBUG
-
-	parseDependencies(resolvedFilename, scene);
-
-#ifdef DEBUG
-	std::cout << "AbstractASSIMPParser: " << _numDependencies << " dependencies to load..." << std::endl;
-#endif // DEBUG
-
-	if (_numDependencies == 0)
-		allDependenciesLoaded(scene);
+    convertScene(scene);
 }
 
 void
-AbstractASSIMPParser::allDependenciesLoaded(const aiScene* scene)
+AbstractASSIMPParser::initImporter()
+{
+    if (_importer != nullptr)
+        return;
+
+    _importer = new Assimp::Importer();
+
+#if (defined ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION)
+    provideLoaders(*_importer);
+#endif // ! ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION
+}
+
+void
+AbstractASSIMPParser::convertScene(const aiScene* scene)
 {
 #ifdef DEBUG
 	std::cout << "AbstractASSIMPParser: " << _numDependencies << " dependencies loaded!" << std::endl;
@@ -264,20 +341,6 @@ AbstractASSIMPParser::allDependenciesLoaded(const aiScene* scene)
 
 	if (_numDependencies == _numLoadedDependencies)
 		finalize();
-
-}
-
-void
-AbstractASSIMPParser::initImporter()
-{
-    if (_importer != nullptr)
-        return;
-
-    _importer = new Assimp::Importer();
-
-#if (defined ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION)
-    provideLoaders(*_importer);
-#endif // ! ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION
 }
 
 void

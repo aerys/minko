@@ -74,6 +74,8 @@ namespace minko
 			bool										        _resizeSmoothly;
 			bool										        _isCubeTexture;
             bool                                                _isRectangleTexture;
+            bool                                                _generateSmoothNormals;
+            float                                               _normalMaxSmoothingAngle;
 			bool										        _startAnimation;
 			bool										        _loadAsynchronously;
             bool                                                _disposeIndexBufferAfterLoading;
@@ -268,6 +270,38 @@ namespace minko
             isRectangleTexture(bool value)
             {
                 _isRectangleTexture = value;
+
+                return shared_from_this();
+            }
+
+			inline
+			bool
+            generateSmoothNormals() const
+            {
+                return _generateSmoothNormals;
+            }
+
+            inline
+            Ptr
+            generateSmoothNormals(bool value)
+            {
+                _generateSmoothNormals = value;
+
+                return shared_from_this();
+            }
+
+			inline
+			float
+            normalMaxSmoothingAngle() const
+            {
+                return _normalMaxSmoothingAngle;
+            }
+
+            inline
+            Ptr
+            normalMaxSmoothingAngle(float value)
+            {
+                _normalMaxSmoothingAngle = value;
 
                 return shared_from_this();
             }
