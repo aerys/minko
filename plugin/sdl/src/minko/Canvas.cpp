@@ -131,7 +131,7 @@ Canvas::initialize()
 #endif
 
 #if MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
-	SetConsoleCtrlHandler([](DWORD type) -> BOOL WINAPI { return type == CTRL_CLOSE_EVENT; }, true);
+	SetConsoleCtrlHandler([](DWORD type) -> BOOL { return type == CTRL_CLOSE_EVENT; }, true);
 #endif
 }
 
@@ -915,7 +915,7 @@ Canvas::step()
     
     if (remainingTime > 0)
     {
-        _backend->wait(that, remainingTime);
+        _backend->wait(that, uint(remainingTime));
 		_framerate = _desiredFramerate;
     }
 }
