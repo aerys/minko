@@ -33,7 +33,8 @@ minko.action.copy = function(sourcepath, destpath, targetdir)
 
 	-- default destpath will be the target directory
 
-	if not os.isfile(sourcepath) and not os.isdir(sourcepath) then
+	if not string.find(path.getname(sourcepath), '*') and
+	   not os.isfile(sourcepath) and not os.isdir(sourcepath) then
 		return ''
 	end
 
@@ -47,28 +48,30 @@ minko.action.copy = function(sourcepath, destpath, targetdir)
 
 	destpath = path.join(targetdir, destpath)
 
-	local destdir = path.getdirectory(destpath)
-
 	if string.find(path.getname(destpath), '*') then
 		destpath = path.getdirectory(destpath)
 	end
 
-	if os.isdir(sourcepath) and not string.endswith(sourcepath, '/') then
-		sourcepath = sourcepath .. '/' -- cp will copy the content of the directory
-	end
+	local destdir = destpath
 
 	if os.is('windows') and not os.iscygwin() then
-		-- print(' -> xcopy /y /i /e "' .. path.translate(sourcepath) .. '" "' .. path.translate(destpath) .. '"')
+		-- print(' -> xcopy /y /i /e "' .. path.translate(sourcepath) .. '" "' .. path.translate(destdir) .. '"')
 
 		return 'mkdir "' .. path.translate(destdir) .. '" & ' ..
 			   'xcopy /y /e /i "' .. path.translate(sourcepath) .. '" "' .. path.translate(destdir) .. '"'
 	else
+		destdir = path.getdirectory(destpath)
+
+		if os.isdir(sourcepath) and not string.endswith(sourcepath, '/') then
+			sourcepath = sourcepath .. '/' -- cp will copy the content of the directory
+		end
+
 		if os.iscygwin() then
 			sourcepath = path.translate(sourcepath)
 			targetdir = path.translate(targetdir)
 		end
 
-		-- print(' -> cp -R ' .. sourcepath .. ' "' .. destpath .. '"')
+		-- print(' -> cp -R ' .. sourcepath .. ' "' .. destdir .. '"')
 
 		return 'mkdir -p "' .. destdir .. '"; ' ..
 			   'cp -R "' .. sourcepath .. '" "' .. destdir .. '"'
