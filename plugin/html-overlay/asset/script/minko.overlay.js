@@ -75,11 +75,15 @@ Minko.loadedHandler = function(event)
 			console.log('[Minko HTML Overlay] message received: ' + message);
 		}
 	}
-	Minko.messagesToSend = [];
 
-	Minko.sendMessage = function(message)
+	if (Minko.platform != "androidWebView")
 	{
-		Minko.messagesToSend.push(message);
+		Minko.messagesToSend = [];
+
+		Minko.sendMessage = function(message)
+		{
+			Minko.messagesToSend.push(message);
+		}
 	}
 
 	if (Minko.platform == "emscripten")
@@ -638,14 +642,14 @@ Minko.init = function(platform)
 	else if (platform == "androidWebView")
 	{
 		console.log("Init android!");
-		Minko.loadedHandler();
-		Minko.addListener = Minko.addListenerAndroid;
 		
 		Minko.sendMessage = function(message)
 		{
-			console.log("Send message: " + message);
 			MinkoNativeInterface.onMessage(message);
 		}
+
+		Minko.loadedHandler();
+		Minko.addListener = Minko.addListenerAndroid;
 	}
 }
 
