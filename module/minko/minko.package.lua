@@ -2,15 +2,15 @@ minko.package = {
     _path = {}
 }
 
--- supported actions are 'copy', 'link', 'embed', 'optimize', 'minify'
+-- supported actions are 'copy', 'link', 'embed', 'optimize'
 
 -- minko.package.assets {
---     ['effect/*.effect'] = { 'minify', 'copy' }
+--     ['effect/*.fbx'] = { 'optimize', 'copy' }
 -- }
 
 -- to simulate legacy behavior:
 -- minko.package.assets {
---     ['*'] = { 'copy', 'embed' }
+--     ['**'] = { 'copy', 'embed' }
 -- }
 
 minko.package.assetdirs = function(directories)
@@ -47,7 +47,7 @@ minko.package.assets = function(rules)
 
             for j = 1, #files do
                 if not inputfiles[files[j]] then
-                    -- print("file " .. files[j])
+                    -- print("matched file " .. files[j])
                     inputfiles[files[j]] = {
                         file = files[j],
                         path = minko.package._path[i],

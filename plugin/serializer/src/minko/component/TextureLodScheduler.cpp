@@ -271,10 +271,14 @@ TextureLodScheduler::activeLodChanged(TextureResourceInfo&   resource,
             resource.texture->height()
         ));
 
+        // fixme find proper alternative to unsetting *LodEnabled
+        // property, causing performance drop
+/*
         if (maxAvailableLod == maxLod)
         {
             material->data()->unset(lodEnabledPropertyName);
         }
+*/
 
         material->data()->set(maxAvailableLodPropertyName, mipLevel);
     }

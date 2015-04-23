@@ -47,7 +47,7 @@ Under Ubuntu 13.04+, the procedure is easier:
 ```bash
 sudo apt-get install -y python-software-properties python g++ make
 sudo add-apt-repository ppa:chris-lea/node.js
-sudo apt-get update 
+sudo apt-get update
 ```
 
 ```bash
@@ -58,13 +58,13 @@ export EMSCRIPTEN=/opt/emscripten
 sudo mkdir -m 777 ${EMSCRIPTEN}
 git clone https://github.com/kripken/emscripten ${EMSCRIPTEN}
 cd ${EMSCRIPTEN} && git checkout 1.27.0
-echo "EMSCRIPTEN=${EMSCRIPTEN}"->> ~/.profile 
+echo "EMSCRIPTEN=${EMSCRIPTEN}"->> ~/.profile
 ```
 
 
-Then you need to **install the latest Emscripten compiler backend based on LLVM aka "fastcomp"**. Just follow the instructions available on the [<https://github.com/kripken/emscripten/wiki/LLVM-Backend>#getting-fastcomp Getting Fastcomp page of the Emscripten wiki]. 
+Then you need to **install the latest Emscripten compiler backend based on LLVM aka "fastcomp"**. Just follow the instructions available on the [<https://github.com/kripken/emscripten/wiki/LLVM-Backend>#getting-fastcomp Getting Fastcomp page of the Emscripten wiki].
 
-Note: Currently, Minko supports **Emscripten 1.27.0**.
+Note: Currently, Minko supports **Emscripten 1.29.0**.
 
 Step 2: Building the SDK
 ------------------------
@@ -74,7 +74,7 @@ Step 2: Building the SDK
 To make things easy, just run the following batch script:
 
 ```bash
-> %MINKO_HOME%/tool/win/script/build_html5.bat 
+> %MINKO_HOME%/tool/win/script/build_html5.bat
 ```
 
 It will generate the required Makefiles and run Emscripten for you. By default, it will build the framework, the plugins, the examples and the tutorials. It might take some time, so feel free to customize this script to generate solution files that will exclude some projects (like the examples or the tutorials) that you don't need.
@@ -82,7 +82,7 @@ It will generate the required Makefiles and run Emscripten for you. By default, 
 For example, to compile only the framework, the plugins and the examples, you can run the following script:
 
 ```bash
-> %MINKO_HOME%/tool/win/script/build_html5_no_tutorial.bat 
+> %MINKO_HOME%/tool/win/script/build_html5_no_tutorial.bat
 ```
 
 ### Linux / OSX
@@ -95,35 +95,35 @@ For all the command lines below, `$MINKO_BIN` is either:
 The first step is to create the required solution/project Makefiles:
 
 ```bash
-$ $MINKO_BIN/premake5.sh gmake 
+$ $MINKO_BIN/premake5.sh gmake
 ```
 
 
 To learn more about the available options and how to disable the compilation of the examples or the tutorials to save some time, just read the help:
 
 ```bash
-$ $MINKO_BIN/premake5.sh gmake --help 
+$ $MINKO_BIN/premake5.sh gmake --help
 ```
 
 
 If you just want to compile the SDK to link your own applications, you don't need to compile the examples or the tutorials. The following command line will create the solution files excluding the tutorials and the examples:
 
 ```bash
-$ $MINKO_BIN/premake5.sh gmake --no-tutorial --no-example 
+$ $MINKO_BIN/premake5.sh gmake --no-tutorial --no-example
 ```
 
 
 When you're done, you should have a bunch of Makefiles. You can build the solution using the following command line:
 
 ```bash
-$ make config=html5_release 
+$ make config=html5_release
 ```
 
 
 If you want to leverage multicore processors, you can use the following command line (replace '4' by your actual number of cores):
 
 ```bash
-$ make -j4 config=html5_release 
+$ make -j4 config=html5_release
 ```
 
 It should speed up the compilation process significantly.

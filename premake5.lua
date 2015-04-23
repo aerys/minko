@@ -318,6 +318,8 @@ newaction {
 	trigger			= "clean",
 	description		= "Remove generated files.",
 	execute			= function()
+		os.execute(minko.action.clean("."))
+
 		for _, pattern in ipairs { "framework", "plugin/*", "test", "example/*" } do
 			local dirs = os.matchdirs(pattern)
 

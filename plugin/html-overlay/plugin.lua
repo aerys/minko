@@ -27,8 +27,12 @@ minko.plugin["html-overlay"].enable = function()
 		minko.plugin.path("html-overlay") .. "/include"
 	}
 
+	prelinkcommands {
+		minko.action.copy(path.join(minko.plugin.path("html-overlay"), "asset"))
+	}
+
 	minko.package.assetdirs {
-		minko.plugin.path("html-overlay") .. "/asset"
+		path.join(minko.plugin.path("html-overlay"), "asset")
 	}
 
 	minko.plugin.enable("sdl")

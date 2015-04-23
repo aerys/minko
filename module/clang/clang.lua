@@ -1,4 +1,3 @@
-
 dofile("module/clang/clang_complete.lua")
 
 table.inject(premake.tools.clang, 'cxxflags.system', {
@@ -11,5 +10,5 @@ table.inject(premake.tools.clang, 'ldflags.system', {
 
 table.inject(premake.tools.clang, 'tools', {
 	cc = 'clang',
-	cxx = MINKO_HOME .. '/tool/lin/script/clang++.sh clang++',
+	cxx = MINKO_HOME .. '/module/clang/clang++.sh',
 })
