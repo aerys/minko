@@ -130,7 +130,7 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 							const std::vector<unsigned char>&	data,
 							std::shared_ptr<AssetLibrary>	    assetLibrary)
 {
-    Assimp::DefaultLogger::create(nullptr, Assimp::Logger::VERBOSE, aiDefaultLogStream::aiDefaultLogStream_STDOUT);
+    Assimp::DefaultLogger::create(nullptr, Assimp::Logger::VERBOSE, aiDefaultLogStream::aiDefaultLogStream_FILE);
 
     const auto severity =
         Assimp::Logger::Debugging |
@@ -214,16 +214,18 @@ AbstractASSIMPParser::getPostProcessingFlags(const aiScene*             scene,
     const auto numTextures = scene->mNumTextures;
 
     unsigned int flags =
-		aiProcess_JoinIdenticalVertices
-	    | aiProcess_GenSmoothNormals
-		| aiProcess_SplitLargeMeshes
-		| aiProcess_LimitBoneWeights
-		| aiProcess_GenUVCoords
-		| aiProcess_OptimizeMeshes
-		| aiProcess_FlipUVs
-		| aiProcess_SortByPType
-		| aiProcess_Triangulate
+        aiProcess_JoinIdenticalVertices
+        | aiProcess_GenSmoothNormals
+        | aiProcess_SplitLargeMeshes
+        | aiProcess_LimitBoneWeights
+        | aiProcess_GenUVCoords
+        | aiProcess_OptimizeMeshes
+        | aiProcess_FlipUVs
+        | aiProcess_SortByPType
+        | aiProcess_Triangulate
         | aiProcess_ImproveCacheLocality
+        | aiProcess_FindInvalidData
+        | aiProcess_ValidateDataStructure
         | aiProcess_RemoveComponent;
 
     unsigned int removeComponentFlags = aiComponent_COLORS;
