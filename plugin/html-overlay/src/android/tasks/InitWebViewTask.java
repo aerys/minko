@@ -83,7 +83,7 @@ public class InitWebViewTask implements Runnable
         layout.addView(_webView);
 		
 		// Add a JavaScript interface
-		_jsInterface = new WebViewJSInterface();		
+		_jsInterface = new WebViewJSInterface(_sdlActivity);		
 		_webView.addJavascriptInterface(_jsInterface, "MinkoNativeInterface");
 		
 		// Increase WebView performances
