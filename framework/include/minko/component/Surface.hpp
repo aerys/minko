@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/component/AbstractComponent.hpp"
+#include "minko/data/Provider.hpp"
 #include "minko/Uuid.hpp"
 
 namespace minko
@@ -30,7 +31,7 @@ namespace minko
 	{
 		class Surface :
 			public AbstractComponent,
-            public Uuid::enable_uuid
+            public Uuid::has_uuid
 		{
 			friend render::DrawCallPool;
 
@@ -98,6 +99,13 @@ namespace minko
 			{
 			}
 
+            inline
+            const std::string&
+            uuid() const
+            {
+                return _provider->uuid();
+            }
+
 			inline
 			const std::string&
 			name() const
@@ -130,10 +138,10 @@ namespace minko
             geometry(std::shared_ptr<geometry::Geometry> geometry);
 
             void
-            firstIndex(unsigned short index);
+            firstIndex(unsigned int index);
 
             void
-            numIndices(unsigned short numIndices);
+            numIndices(unsigned int numIndices);
 
 			inline
 			std::shared_ptr<material::Material>
@@ -201,6 +209,9 @@ namespace minko
 
 			void
 			setEffectAndTechnique(EffectPtr, const std::string&);
+
+            void
+            initializeIndexRange(std::shared_ptr<geometry::Geometry> geometry);
 		};
 	}
 }

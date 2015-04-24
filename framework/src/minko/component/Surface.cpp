@@ -62,6 +62,8 @@ Surface::Surface(std::string		name,
 		throw std::invalid_argument("effect");
 	if (!_effect->hasTechnique(_technique))
 		throw std::logic_error("Effect does not provide a '" + _technique + "' technique.");
+
+    initializeIndexRange(geometry);
 }
 
 // TODO #Clone
@@ -149,19 +151,21 @@ Surface::geometry(geometry::Geometry::Ptr geometry)
     if (t)
         t->data().addProvider(_geometry->data(), GEOMETRY_COLLECTION_NAME);
 
+    initializeIndexRange(geometry);
+
     _geometryChanged.execute(std::static_pointer_cast<Surface>(shared_from_this()));
 }
 
 void
-Surface::firstIndex(unsigned short index)
+Surface::firstIndex(unsigned int index)
 {
-    // TODO
+    data()->set("firstIndex", index);
 }
 
 void
-Surface::numIndices(unsigned short numIndices)
+Surface::numIndices(unsigned int numIndices)
 {
-    // TODO
+    data()->set("numIndices", numIndices);
 }
 
 void
@@ -221,4 +225,15 @@ Surface::setEffectAndTechnique(Effect::Ptr			effect,
 
     if (changed)
         _effectChanged.execute(std::static_pointer_cast<Surface>(shared_from_this()));
+}
+
+void
+Surface::initializeIndexRange(Geometry::Ptr geometry)
+{
+    firstIndex(unsigned short(0u));
+    numIndices(unsigned short(
+        geometry->data()->hasProperty("numIndices")
+        ? geometry->data()->get<unsigned int>("numIndices")
+        : 0u
+    ));
 }
