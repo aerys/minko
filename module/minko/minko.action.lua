@@ -57,8 +57,8 @@ minko.action.copy = function(sourcepath, destpath, targetdir)
 	if os.is('windows') and not os.iscygwin() then
 		-- print(' -> xcopy /y /i /e "' .. path.translate(sourcepath) .. '" "' .. path.translate(destdir) .. '"')
 
-		return 'mkdir "' .. path.translate(destdir) .. '" & ' ..
-			   'xcopy /y /e /i "' .. path.translate(sourcepath) .. '" "' .. path.translate(destdir) .. '"'
+		return 'mkdir ' .. path.translate(destdir) .. ' & ' ..
+			   'xcopy /y /e /i ' .. path.translate(sourcepath) .. ' ' .. path.translate(destdir)
 	else
 		destdir = path.getdirectory(destpath)
 
@@ -73,8 +73,9 @@ minko.action.copy = function(sourcepath, destpath, targetdir)
 
 		-- print(' -> cp -R ' .. sourcepath .. ' "' .. destdir .. '"')
 
-		return 'mkdir -p "' .. destdir .. '"; ' ..
-			   'cp -R "' .. sourcepath .. '" "' .. destdir .. '"'
+
+		return 'mkdir -p ' .. destdir .. '; ' ..
+			   'cp -R ' .. sourcepath .. ' ' .. destdir
 	end
 end
 
