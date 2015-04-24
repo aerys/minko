@@ -59,9 +59,13 @@ LinkedAsset::resolve(Options::Ptr options)
                 _loaderErrorSlot = nullptr;
                 _loaderCompleteSlot = nullptr;
 
+                auto file = loaderThis->files().at(filename());
+
+                _lastResolvedFilename = file->resolvedFilename();
+
                 complete()->execute(
                     shared_from_this(),
-                    loaderThis->files().at(filename())->data()
+                    file->data()
                 );
             }
         );
