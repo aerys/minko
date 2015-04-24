@@ -148,8 +148,6 @@ POPGeometryParser::createPOPGeometry(AssetLibrary::Ptr      assetLibrary,
         popGeometry->addVertexBuffer(vertexBuffer);
     }
 
-    popGeometry->data()->set("numIndices", 0u);
-
     popGeometry->data()->set("popMinBound", _minBound);
     popGeometry->data()->set("popMaxBound", _maxBound);
 

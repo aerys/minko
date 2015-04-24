@@ -130,8 +130,9 @@ POPGeometryLodScheduler::surfaceAdded(Surface::Ptr surface)
 
     resource->maxLod = maxLodIt->second._level;
 
-	surface->geometry()->data()->set("popLod", 0.f);
-	surface->geometry()->data()->set("popLodEnabled", true);
+    surface->numIndices(0u);
+	surface->data()->set("popLod", 0.f);
+	surface->data()->set("popLodEnabled", true);
 
     if (blendingIsActive(*resource, surfaceInfo))
         blendingRangeChanged(*resource, surfaceInfo, _blendingRange);
@@ -268,11 +269,8 @@ POPGeometryLodScheduler::activeLodChanged(POPGeometryResourceInfo&   resource,
 		(activeLod._indexOffset + activeLod._indexCount)
 	);
 
-    // TODO use setter from Surface
-
-    surfaceInfo.surface->geometry()->data()->set("numIndices", numIndices);
-
-    surfaceInfo.surface->geometry()->data()->set("popLod", float(activeLod._precisionLevel));
+    surfaceInfo.surface->numIndices(numIndices);
+    surfaceInfo.surface->data()->set("popLod", float(activeLod._precisionLevel));
 }
 
 int
@@ -457,7 +455,7 @@ void
 POPGeometryLodScheduler::updateBlendingLod(const POPGeometryResourceInfo&    resource,
                                            SurfaceInfo&                      surfaceInfo)
 {
-    surfaceInfo.surface->geometry()->data()->set("popBlendingLod", blendingLod(resource, surfaceInfo));
+    surfaceInfo.surface->data()->set("popBlendingLod", blendingLod(resource, surfaceInfo));
 }
 
 void
@@ -486,16 +484,14 @@ POPGeometryLodScheduler::blendingRangeChanged(const POPGeometryResourceInfo&    
                                               SurfaceInfo&                      surfaceInfo,
                                               float                             blendingRange)
 {
-    auto geometry = surfaceInfo.surface->geometry();
-
     if (_blendingRange > 0.f)
     {
-        geometry->data()->set("popBlendingLod", blendingLod(resource, surfaceInfo));
-        geometry->data()->set("popBlendingEnabled", true);
+        surfaceInfo.surface->data()->set("popBlendingLod", blendingLod(resource, surfaceInfo));
+        surfaceInfo.surface->data()->set("popBlendingEnabled", true);
     }
     else
     {
-        geometry->data()->unset("popBlendingEnabled");
+        surfaceInfo.surface->data()->unset("popBlendingEnabled");
     }
 }
 
