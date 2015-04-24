@@ -97,6 +97,9 @@ namespace minko
                 std::vector<math::mat4>>			                _nameToAnimMatrices;
 			std::set<NodePtr>										_alreadyAnimatedNodes;
 
+            std::unordered_map<const aiMaterial*, MaterialPtr>      _aiMaterialToMaterial;
+            std::unordered_map<const aiMesh*, GeometryPtr>          _aiMeshToGeometry;
+
             std::set<std::string>                                   _meshNames;
 
             std::unordered_map<std::string, std::string>            _textureFilenameToAssetName;

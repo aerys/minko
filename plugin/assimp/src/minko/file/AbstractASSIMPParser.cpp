@@ -404,10 +404,10 @@ AbstractASSIMPParser::getTransformFromAssimp(aiNode* ainode)
 Geometry::Ptr
 AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mesh, const std::string& meshName)
 {
-    /*auto existingGeometry = _assetLibrary->geometry(meshName);
+    auto existingGeometry = _aiMeshToGeometry.find(mesh);
 
-    if (existingGeometry != nullptr)
-        return existingGeometry;*/
+    if (existingGeometry != _aiMeshToGeometry.end())
+        return existingGeometry->second;
 
 	unsigned int vertexSize = 0;
 
@@ -485,6 +485,8 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
 	geometry->indices(render::IndexBuffer::create(_assetLibrary->context(), indexData));
 
 	geometry = _options->geometryFunction()(meshName, geometry);
+
+    _aiMeshToGeometry.insert(std::make_pair(mesh, geometry));
 
     _assetLibrary->geometry(meshName, geometry);
 
@@ -1461,6 +1463,11 @@ AbstractASSIMPParser::convert(const aiVector3D&		scaling,
 material::Material::Ptr
 AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 {
+    auto existingMaterial = _aiMaterialToMaterial.find(aiMat);
+
+    if (existingMaterial != _aiMaterialToMaterial.end())
+        return existingMaterial->second;
+
     auto material = chooseMaterialByShadingMode(aiMat);
 
 	if (aiMat == nullptr)
@@ -1475,11 +1482,6 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
     }
 
     materialName = getMaterialName(materialName);
-
-    auto existingMaterial = _assetLibrary->material(materialName);
-
-    if (existingMaterial != nullptr)
-        return existingMaterial;
 
     const auto blendingMode = getBlendingMode(aiMat);
     auto srcBlendingMode = static_cast<render::Blending::Source>(static_cast<uint>(blendingMode) & 0x00ff);
@@ -1583,6 +1585,8 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 	}
 
     auto processedMaterial = _options->materialFunction()(materialName, material);
+
+    _aiMaterialToMaterial.insert(std::make_pair(aiMat, processedMaterial));
 
     _assetLibrary->material(materialName, processedMaterial);
 
