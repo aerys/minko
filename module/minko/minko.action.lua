@@ -168,7 +168,7 @@ minko.action.optimize = function(file)
 end
 
 minko.action.cpjf = function(absoluteSrcDir, relativeDestDir)
-	local scriptLocation = MINKO_HOME .. '/tool/lin/script/cpjf.sh';
+	local scriptLocation = MINKO_HOME .. '/script/cpjf.sh';
 
 	if string.startswith(os.getenv('OSTYPE'), 'CYGWIN') then
 		scriptLocation = os.capture('cygpath -u "' .. scriptLocation .. '"')
