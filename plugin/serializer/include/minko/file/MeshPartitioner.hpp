@@ -69,6 +69,9 @@ namespace minko
                 std::function<bool(NodePtr)>                            nodeFilterFunction;
                 SurfaceIndexer                                          surfaceIndexer;
 
+                std::function<bool(SurfacePtr)>                         validSurfacePredicate;
+                std::function<bool(SurfacePtr)>                         instanceSurfacePredicate;
+
                 Options();
             };
 
@@ -141,6 +144,7 @@ namespace minko
                 std::vector<SurfacePtr>     surfaces;
 
                 bool                        useRootSpace;
+                bool                        isInstance;
 
                 std::vector<unsigned int>   indices;
                 std::vector<float>          vertices;
@@ -168,6 +172,9 @@ namespace minko
                 >                           markedDiscontinousIndices;
 
                 OctreeNodePtr               rootPartitionNode;
+
+                PartitionInfo() = default;
+                ~PartitionInfo() = default;
             };
 
         private:
@@ -177,6 +184,8 @@ namespace minko
 
             math::vec3          _worldMinBound;
             math::vec3          _worldMaxBound;
+
+            std::unordered_map<GeometryPtr, std::vector<GeometryPtr>> _processedInstances;
 
         public:
             ~MeshPartitioner() = default;
@@ -205,6 +214,14 @@ namespace minko
 
             static
             bool
+            defaultValidSurfacePredicate(SurfacePtr surface);
+
+            static
+            bool
+            defaultInstanceSurfacePredicate(SurfacePtr surface);
+
+            static
+            bool
             defaultNodeFilterFunction(NodePtr node);
 
             static
@@ -214,6 +231,9 @@ namespace minko
             static
             math::vec3
             defaultPartitionMaxSizeFunction(NodePtr root);
+
+            void
+            findInstances(const std::vector<SurfacePtr>& surfaces);
 
             OctreeNodePtr
             pickBestPartitions(OctreeNodePtr        root,
@@ -254,8 +274,14 @@ namespace minko
                                    PartitionInfo&   partitionInfo);
 
             bool
-            patchNode(NodePtr           node,
-                      PartitionInfo&    partitionInfo);
+            buildGeometries(NodePtr                     node,
+                            PartitionInfo&              partitionInfo,
+                            std::vector<GeometryPtr>&   geometries);
+
+            bool
+            patchNode(NodePtr                           node,
+                      PartitionInfo&                    partitionInfo,
+                      const std::vector<GeometryPtr>&   geometries);
 
             static
             int

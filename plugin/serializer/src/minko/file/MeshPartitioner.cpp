@@ -46,7 +46,9 @@ MeshPartitioner::Options::Options() :
     partitionMaxSizeFunction(defaultPartitionMaxSizeFunction),
     worldBoundsFunction(defaultWorldBoundsFunction),
     nodeFilterFunction(defaultNodeFilterFunction),
-    surfaceIndexer(defaultSurfaceIndexer())
+    surfaceIndexer(defaultSurfaceIndexer()),
+    validSurfacePredicate(defaultValidSurfacePredicate),
+    instanceSurfacePredicate(defaultInstanceSurfacePredicate)
 {
 }
 
@@ -70,8 +72,14 @@ MeshPartitioner::defaultSurfaceIndexer()
 
     surfaceIndexer.equal = [](Surface::Ptr left, Surface::Ptr right) -> bool
     {
+        auto leftGeometry = left->geometry();
+        auto rightGeometry = right->geometry();
+
         auto leftMaterial = left->material();
         auto rightMaterial = right->material();
+
+        if (defaultInstanceSurfacePredicate(left) || defaultInstanceSurfacePredicate(right))
+            return false;
 
         if ((leftMaterial->data()->hasProperty("zSorted") && leftMaterial->data()->get<bool>("zSorted")) ||
             (rightMaterial->data()->hasProperty("zSorted") && rightMaterial->data()->get<bool>("zSorted")))
@@ -80,7 +88,7 @@ MeshPartitioner::defaultSurfaceIndexer()
         auto leftAttributes = std::vector<VertexAttribute>();
         auto rightAttributes = std::vector<VertexAttribute>();
 
-        for (auto vertexBuffer : left->geometry()->vertexBuffers())
+        for (auto vertexBuffer : leftGeometry->vertexBuffers())
         {
             leftAttributes.insert(
                 leftAttributes.end(),
@@ -89,7 +97,7 @@ MeshPartitioner::defaultSurfaceIndexer()
             );
         }
 
-        for (auto vertexBuffer : right->geometry()->vertexBuffers())
+        for (auto vertexBuffer : rightGeometry->vertexBuffers())
         {
             rightAttributes.insert(
                 rightAttributes.end(),
@@ -109,6 +117,28 @@ MeshPartitioner::defaultSurfaceIndexer()
     };
 
     return surfaceIndexer;
+}
+
+bool
+MeshPartitioner::defaultValidSurfacePredicate(Surface::Ptr surface)
+{
+    auto geometry = surface->geometry();
+
+    const auto indices = geometry->indices()->data();
+    const auto numVertices = geometry->numVertices();
+
+    for (auto index : indices)
+        if (index >= numVertices)
+            return false;
+
+    return true;
+}
+
+bool
+MeshPartitioner::defaultInstanceSurfacePredicate(Surface::Ptr surface)
+{
+    return surface->geometry()->data()->hasProperty("surfaceRefCount") &&
+           surface->geometry()->data()->get<unsigned int>("surfaceRefCount") > 1u;
 }
 
 bool
@@ -199,6 +229,36 @@ MeshPartitioner::mergeSurfaces(const std::vector<Surface::Ptr>& surfaces)
 }
 
 void
+MeshPartitioner::findInstances(const std::vector<Surface::Ptr>& surfaces)
+{
+    auto geometryToSurfaces = std::unordered_map<Geometry::Ptr, std::list<Surface::Ptr>>();
+
+    for (auto surface : surfaces)
+    {
+        auto surfaceIt = geometryToSurfaces.insert(std::make_pair(
+            surface->geometry(),
+            std::list<Surface::Ptr>()
+        ));
+
+        surfaceIt.first->second.push_back(surface);
+    }
+
+    const auto numSurfaces = surfaces.size();
+    const auto numGeometries = geometryToSurfaces.size();
+
+    for (auto geometryToSurfacesPair : geometryToSurfaces)
+    {
+        if  (geometryToSurfacesPair.second.size() > 1u)
+        {
+            geometryToSurfacesPair.first->data()->set(
+                "surfaceRefCount",
+                static_cast<unsigned int>(geometryToSurfacesPair.second.size())
+            );
+        }
+    }
+}
+
+void
 MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
 {
     _assetLibrary = assetLibrary;
@@ -232,38 +292,79 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
             for (auto surface : meshNode->components<Surface>())
                 surfaces.push_back(surface);
 
+        findInstances(surfaces);
+
         auto surfaceBuckets = mergeSurfaces(surfaces);
 
         for (const auto& surfaceBucket : surfaceBuckets)
         {
+            if (surfaceBucket.empty())
+                continue;
+
             auto partitionInfo = PartitionInfo();
 
             for (auto surface : surfaceBucket)
+            {
+                if (!_options.validSurfacePredicate(surface))
+                    continue;
+
                 partitionInfo.surfaces.push_back(surface);
+            }
 
-            partitionInfo.useRootSpace = true;
+            if (partitionInfo.surfaces.empty())
+                continue;
 
-            buildGlobalIndex(partitionInfo);
+            auto targetNode = surfaceBucket.front()->target();
 
-            buildHalfEdges(partitionInfo);
+            auto processGeometries = true;
 
-            buildPartitions(partitionInfo);
+            auto geometries = std::vector<Geometry::Ptr>();
 
-            auto newNodeName = std::string();
+            const auto isInstance = partitionInfo.surfaces.size() == 1u &&
+                                    _options.instanceSurfacePredicate(partitionInfo.surfaces.front());
 
-            if (!surfaceBucket.empty())
-                newNodeName = surfaceBucket.front()->target()->name();
+            if (isInstance)
+            {
+                auto processedInstanceIt = _processedInstances.find(partitionInfo.surfaces.front()->geometry());
+
+                if (processedInstanceIt != _processedInstances.end())
+                {
+                    processGeometries = false;
+
+                    geometries.assign(
+                        processedInstanceIt->second.begin(),
+                        processedInstanceIt->second.end()
+                    );
+                }
+            }
+            else
+            {
+                auto newNodeName = targetNode->name();
+
+                targetNode = Node::create(newNodeName)
+                    ->addComponent(Transform::create())
+                    ->addComponent(BoundingBox::create());
+
+                node->addChild(targetNode);
+            }
+
+            if (processGeometries)
+            {
+                partitionInfo.useRootSpace = !isInstance;
+
+                buildGlobalIndex(partitionInfo);
+
+                buildHalfEdges(partitionInfo);
+
+                buildPartitions(partitionInfo);
+
+                buildGeometries(targetNode, partitionInfo, geometries);
+            }
 
             for (auto surface : surfaceBucket)
                 surface->target()->removeComponent(surface);
 
-            auto newNode = Node::create(newNodeName)
-                ->addComponent(Transform::create())
-                ->addComponent(BoundingBox::create());
-
-            patchNode(newNode, partitionInfo);
-
-            node->addChild(newNode);
+            patchNode(targetNode, partitionInfo, geometries);
         }
 
         node->component<Transform>()->matrix(math::mat4());
@@ -944,8 +1045,9 @@ MeshPartitioner::buildPartitions(PartitionInfo& partitionInfo)
 }
 
 bool
-MeshPartitioner::patchNode(Node::Ptr        node,
-                           PartitionInfo&   partitionInfo)
+MeshPartitioner::buildGeometries(Node::Ptr                      node,
+                                 PartitionInfo&                 partitionInfo,
+                                 std::vector<Geometry::Ptr>&    geometries)
 {
     auto partitionNode = partitionInfo.rootPartitionNode;
 
@@ -1040,25 +1142,47 @@ MeshPartitioner::patchNode(Node::Ptr        node,
                 newGeometry
             );
 
-            auto newSurface = Surface::create(
-                newGeometry,
-                referenceMaterial,
-                referenceEffect
-            );
+            geometries.push_back(newGeometry);
+        }
+    }
 
-            if (_options.flags & Options::createOneNodePerSurface)
-            {
-                auto newNode = Node::create(node->name())
-                    ->addComponent(Transform::create())
-                    ->addComponent(BoundingBox::create(maxBound, minBound))
-                    ->addComponent(newSurface);
+    if (partitionInfo.isInstance)
+    {
+        _processedInstances.insert(std::make_pair(referenceGeometry, geometries));
+    }
 
-                node->addChild(newNode);
-            }
-            else
-            {
-                node->addComponent(newSurface);
-            }
+    return true;
+}
+
+bool
+MeshPartitioner::patchNode(Node::Ptr                            node,
+                           PartitionInfo&                       partitionInfo,
+                           const std::vector<Geometry::Ptr>&    geometries)
+{
+    auto referenceSurface = partitionInfo.surfaces.front();
+    auto referenceMaterial = referenceSurface->material();
+    auto referenceEffect = referenceSurface->effect();
+
+    for (auto geometry : geometries)
+    {
+        auto newSurface = Surface::create(
+            geometry,
+            referenceMaterial,
+            referenceEffect
+        );
+
+        if (_options.flags & Options::createOneNodePerSurface)
+        {
+            auto newNode = Node::create(node->name())
+                ->addComponent(Transform::create())
+                ->addComponent(BoundingBox::create())
+                ->addComponent(newSurface);
+
+            node->addChild(newNode);
+        }
+        else
+        {
+            node->addComponent(newSurface);
         }
     }
 
