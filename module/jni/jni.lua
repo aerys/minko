@@ -18,13 +18,13 @@ newoption {
    trigger     = "toolchain",
    description = "Android NDK toolchain"
 }
-do return end
+
 if _ACTION ~= "gmake" then
 	do return end
 end
 
 if not _OPTIONS["toolchain"] then
-   _OPTIONS["toolchain"] = "arm-linux-androideabi-4.8"
+   _OPTIONS["toolchain"] = "arm-linux-androideabi-4.9"
 end
 
 local ANDROID_HOME = os.getenv('ANDROID_HOME') or os.getenv('ANDROID');
@@ -46,10 +46,6 @@ if os.is("windows") and os.getenv('OSTYPE') == nil then
 	do return end
 end
 
-if os.is("windows") then
-	MINKO_HOME = os.capture('cygpath -u "' .. MINKO_HOME .. '"')
-end
-
 if not os.isdir(ANDROID_HOME .. "/toolchains") then
 	error(color.fg.red .. 'Cannot find NDK tools for Android. Please extract NDK in ${ANDROID_HOME}/ndk/android-ndk-<version>" and run `install_jni.sh` or `install_jni.bat`.' .. color.reset)
 end
@@ -57,16 +53,14 @@ end
 -- writing toolchain name in a fake symlink to avoid actual symlinks on Windows (requiring privileges)
 local NDK_HOME = ANDROID_HOME .. "/toolchains/" .. _OPTIONS["toolchain"]
 
-if os.is("windows") then
-	NDK_HOME = os.capture('cygpath -u "' .. NDK_HOME .. '"')
-end
 
 if not os.isdir(NDK_HOME) then
 	error(color.fg.red .. 'NDK is not correctly installed: ' .. NDK_HOME .. color.reset)
 end
 
 local function find(binary)
-	matches = os.matchfiles(path.join(NDK_HOME, 'bin', '*-' .. binary))
+	local extension = os.is("windows") and '.exe' or ''
+	matches = os.matchfiles(path.join(NDK_HOME, 'bin', '*-' .. binary .. extension))
 	if #matches == 0 then
 		error(color.fg.red .. binary .. ' not found in NDK' .. color.reset)
 	else
