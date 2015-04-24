@@ -92,7 +92,7 @@ solution "minko"
 		-- include 'tutorial/27-working-with-point-lights'
 		-- include 'tutorial/28-working-with-spot-lights'
 		-- include 'tutorial/29-hello-falling-cube'
-		include 'tutorial/30-applying-anti-aliasing-effect'
+		-- include 'tutorial/30-applying-anti-aliasing-effect'
 
 		if os.is("macosx")  and (_ACTION == "xcode-ios" or _ACTION == "xcode-osx") then
 			minko.project.library "all-tutorials"
@@ -301,7 +301,7 @@ newaction {
 			end
 		end
 
-		minko.action.zip(distDir, distDir .. '.zip')
+		os.execute(minko.action.zip(distDir, distDir .. '.zip'))
 	end
 }
 
@@ -317,7 +317,15 @@ newaction {
 	trigger			= "clean",
 	description		= "Remove generated files.",
 	execute			= function()
-		minko.action.clean()
+		os.execute(minko.action.clean("."))
+
+		for _, pattern in ipairs { "framework", "plugin/*", "test", "example/*" } do
+			local dirs = os.matchdirs(pattern)
+
+			for _, dir in ipairs(dirs) do
+				os.execute(minko.action.clean(dir))
+			end
+		end
 	end
 }
 

@@ -41,8 +41,10 @@ namespace minko
             typedef std::shared_ptr<data::Provider>             ProviderPtr;
 
             typedef std::shared_ptr<material::Material>         MaterialPtr;
-
+            
             typedef std::shared_ptr<render::AbstractTexture>    AbstractTexturePtr;
+
+            typedef std::shared_ptr<file::AssetLibrary>         AssetLibraryPtr;
 
             struct TextureResourceInfo
             {
@@ -71,13 +73,15 @@ namespace minko
 
             math::vec4                                                  _viewport;
 
+            AssetLibraryPtr                                             _assetLibrary;
+
         public:
             inline
             static
             Ptr
-            create()
+            create(AssetLibraryPtr assetLibrary)
             {
-                auto instance = Ptr(new TextureLodScheduler());
+                auto instance = Ptr(new TextureLodScheduler(assetLibrary));
 
                 return instance;
             }
@@ -108,7 +112,7 @@ namespace minko
             lodInfo(ResourceInfo& resource);
 
         private:
-            TextureLodScheduler();
+            TextureLodScheduler(AssetLibraryPtr assetLibrary);
 
             void
             activeLodChanged(TextureResourceInfo&   resource,

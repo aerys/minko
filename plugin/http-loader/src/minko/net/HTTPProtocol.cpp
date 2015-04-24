@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/net/HTTPProtocol.hpp"
 #include "minko/net/HTTPRequest.hpp"
 #include "minko/AbstractCanvas.hpp"
+#include "minko/log/Logger.hpp"
 
 #if defined(EMSCRIPTEN)
 # include "emscripten/emscripten.h"
@@ -60,7 +61,7 @@ HTTPProtocol::progressHandler(void* arg, int loadedBytes, int totalBytes)
 
     if (iterator == HTTPProtocol::_runningLoaders.end())
     {
-        std::cerr << "HTTPProtocol::progressHandler(): cannot find loader" << std::endl;
+        LOG_ERROR("cannot find loader");
         return;
     }
 
@@ -80,7 +81,7 @@ HTTPProtocol::completeHandler(void* arg, void* data, unsigned int size)
 
     if (iterator == HTTPProtocol::_runningLoaders.end())
     {
-        std::cerr << "HTTPProtocol::completeHandler(): cannot find loader" << std::endl;
+        LOG_ERROR("cannot find loader");
         return;
     }
 
@@ -105,11 +106,13 @@ HTTPProtocol::errorHandler(void* arg, int code, const char * message)
 
     if (iterator == HTTPProtocol::_runningLoaders.end())
     {
-        std::cerr << "HTTPProtocol::errorHandler(): cannot find loader" << std::endl;
+        LOG_ERROR("cannot find loader");
         return;
     }
 
     std::shared_ptr<HTTPProtocol> loader = *iterator;
+
+    LOG_ERROR(message);
 
     loader->_error->execute(loader);
 
@@ -319,7 +322,7 @@ HTTPProtocol::load()
         inputStream.write(reinterpret_cast<const char*>(&verifyPeer), 1);
 
         auto inputString = inputStream.str();
-        
+
         worker->start(std::vector<char>(inputString.begin(), inputString.end()));
     }
     else
@@ -381,7 +384,7 @@ HTTPProtocol::fileExists(const std::string& filename)
     evalString += "var xhr = new XMLHttpRequest();\n";
 
     evalString += "xhr.open('HEAD', '" + filename + "', false);\n";
-    
+
     if (additionalHeaders != nullptr)
     {
         for (const auto& additionalHeader : *additionalHeaders)
