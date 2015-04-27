@@ -22,12 +22,21 @@ else
 	do return end
 end
 
-table.inject(premake.tools.gcc, 'tools.emscripten', {
-	cc = path.cygpath(MINKO_HOME) .. '/module/emscripten/emcc.sh',
-	cxx = path.cygpath(MINKO_HOME) .. '/module/emscripten/em++.sh',
-	pkg = path.cygpath(MINKO_HOME) .. '/module/emscripten/empkg.py',
-	ar = path.cygpath(MINKO_HOME) .. '/module/emscripten/emar.sh'
-})
+if os.is('windows') then
+	table.inject(premake.tools.gcc, 'tools.emscripten', {
+		cc = '"' .. EMSCRIPTEN .. '\\emcc.bat"',
+		cxx = 'call "%MINKO_HOME%\\module\\emscripten\\em++.bat"',
+		pkg = 'python "%MINKO_HOME%\\module\\emscripten\\empkg.py"',
+		ar = '"' .. EMSCRIPTEN .. '\\emar.bat"'
+	})
+else
+	table.inject(premake.tools.gcc, 'tools.emscripten', {
+		cc = path.cygpath(MINKO_HOME) .. '/module/emscripten/emcc.sh',
+		cxx = path.cygpath(MINKO_HOME) .. '/module/emscripten/em++.sh',
+		pkg = path.cygpath(MINKO_HOME) .. '/module/emscripten/empkg.py',
+		ar = path.cygpath(MINKO_HOME) .. '/module/emscripten/emar.sh'
+	})
+end
 
 table.inject(premake.tools.gcc, 'cppflags.system.emscripten', {
 	"-MMD", "-MP",
