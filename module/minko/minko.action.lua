@@ -60,19 +60,20 @@ minko.action.copy = function(sourcepath, destpath, targetdir)
 		return 'mkdir ' .. path.translate(destdir) .. ' & ' ..
 			   'xcopy /y /e /i ' .. path.translate(sourcepath) .. ' ' .. path.translate(destdir)
 	else
-		destdir = path.getdirectory(destpath)
+		if destpath ~= gettargetdir() then
+			destdir = path.getdirectory(destpath)
+		end
 
 		if os.isdir(sourcepath) and not string.endswith(sourcepath, '/') then
 			sourcepath = sourcepath .. '/' -- cp will copy the content of the directory
 		end
 
 		if os.iscygwin() then
-			sourcepath = path.translate(sourcepath)
-			targetdir = path.translate(targetdir)
+			sourcepath = path.cygpath(path.translate(sourcepath))
+			targetdir = path.cygpath(path.translate(targetdir))
 		end
 
 		-- print(' -> cp -R ' .. sourcepath .. ' "' .. destdir .. '"')
-
 
 		return 'mkdir -p ' .. destdir .. '; ' ..
 			   'cp -R ' .. sourcepath .. ' ' .. destdir
@@ -185,5 +186,5 @@ minko.action.buildandroid = function()
 		minkoHome = os.capture('cygpath -u "' .. minkoHome .. '"')
 	end
 
-	return 'bash ' .. minkoHome .. '/tool/lin/script/build_android.sh ${TARGET} || ' .. minko.action.fail()
+	return 'bash ' .. minkoHome .. '/script/build_android.sh ${TARGET} || ' .. minko.action.fail()
 end
