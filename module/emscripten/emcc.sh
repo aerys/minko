@@ -8,6 +8,10 @@ fi
 YELLOW='1;33'
 RED='1;31'
 
+if [ $OSTYPE == "cygwin" ]; then
+	export EMSCRIPTEN=`cygpath -u "${EMSCRIPTEN}"`
+fi
+
 BIN="${EMSCRIPTEN}/emcc"
 ARGS=()
 
