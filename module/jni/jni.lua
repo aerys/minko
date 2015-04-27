@@ -70,7 +70,7 @@ end
 
 table.inject(premake.tools.gcc, 'tools.android', {
 	cc			= find('gcc'),
-	cxx			= 'CXX="' .. find('g++') .. '" ' .. MINKO_HOME .. '/module/gcc/g++.sh',
+	cxx			= 'CXX="' .. find('g++') .. '" ' .. path.cygpath(MINKO_HOME) .. '/module/gcc/g++.sh',
 	ar			= find('ar'),
 	ld			= find('ld'),
 	strip		= find('strip')
