@@ -12,6 +12,16 @@ local function gettargetdir()
 	end
 end
 
+local function translate(filepath)
+	filepath = path.translate(filepath)
+
+	if os.is('windows') and not os.iscygwin() and string.startswith(_ACTION, "gmake") then
+		filepath = string.gsub(filepath, '%$%(TARGETDIR%)', '$(subst /,\\,$(TARGETDIR))')
+	end
+
+	return filepath
+end
+
 minko.action.fail = function(target)
 	if not target then
 		if os.is('windows') and not os.iscygwin() then
@@ -54,16 +64,16 @@ minko.action.copy = function(sourcepath, destpath, targetdir)
 
 	local destdir = destpath
 
+	if destpath ~= gettargetdir() and not os.isdir(sourcepath) then
+		destdir = path.getdirectory(destpath)
+	end
+
 	if os.is('windows') and not os.iscygwin() then
-		-- print(' -> xcopy /y /i /e "' .. path.translate(sourcepath) .. '" "' .. path.translate(destdir) .. '"')
+		-- print(' -> xcopy /y /i /e "' .. translate(sourcepath) .. '" "' .. translate(destdir) .. '"')
 
-		return 'mkdir ' .. path.translate(destdir) .. ' & ' ..
-			   'xcopy /y /e /i ' .. path.translate(sourcepath) .. ' ' .. path.translate(destdir)
+		return 'mkdir ' .. translate(destdir) .. ' & ' ..
+			   'xcopy /y /e /i ' .. translate(sourcepath) .. ' ' .. translate(destdir)
 	else
-		if destpath ~= gettargetdir() then
-			destdir = path.getdirectory(destpath)
-		end
-
 		if os.isdir(sourcepath) and not string.endswith(sourcepath, '/') then
 			sourcepath = sourcepath .. '/' -- cp will copy the content of the directory
 		end
