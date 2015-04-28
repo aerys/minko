@@ -74,13 +74,13 @@ minko.action.copy = function(sourcepath, destpath, targetdir)
 		return 'mkdir ' .. translate(destdir) .. ' & ' ..
 			   'xcopy /y /e /i ' .. translate(sourcepath) .. ' ' .. translate(destdir)
 	else
-		if os.isdir(sourcepath) and not string.endswith(sourcepath, '/') then
-			sourcepath = sourcepath .. '/' -- cp will copy the content of the directory
+		if os.isdir(sourcepath) and not string.endswith(sourcepath, '/*') then
+			sourcepath = sourcepath .. '/*' -- cp will copy the content of the directory
 		end
 
 		if os.iscygwin() then
-			sourcepath = path.cygpath(path.translate(sourcepath))
-			targetdir = path.cygpath(path.translate(targetdir))
+			sourcepath = path.cygpath(translate(sourcepath))
+			targetdir = path.cygpath(translate(targetdir))
 		end
 
 		-- print(' -> cp -R ' .. sourcepath .. ' "' .. destdir .. '"')
