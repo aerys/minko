@@ -293,6 +293,9 @@ namespace minko
             return _context;
         }
 
+		void
+		swapBuffers();
+
         inline
         float
         framerate()

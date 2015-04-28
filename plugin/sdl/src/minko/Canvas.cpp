@@ -904,7 +904,7 @@ Canvas::step()
     _previousTime = absoluteTime;
 
     _enterFrame->execute(that, _relativeTime, _deltaTime);
-    _backend->swapBuffers(that);
+	swapBuffers();
 
     _frameDuration  = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - absoluteTime).count(); // in milliseconds
 
@@ -961,4 +961,10 @@ Canvas::getJoystickAxis(input::Joystick::Ptr joy, int axis)
         return -1;
 
     return SDL_JoystickGetAxis(_joysticks[id]->joystick(), axis);
+}
+
+void
+Canvas::swapBuffers()
+{
+	_backend->swapBuffers(shared_from_this());
 }
