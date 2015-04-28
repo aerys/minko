@@ -64,18 +64,22 @@ minko.action.copy = function(sourcepath, destpath, targetdir)
 
 	local destdir = destpath
 
-	if destpath ~= gettargetdir() and not os.isdir(sourcepath) then
-		destdir = path.getdirectory(destpath)
-	end
-
 	if os.is('windows') and not os.iscygwin() then
 		-- print(' -> xcopy /y /i /e "' .. translate(sourcepath) .. '" "' .. translate(destdir) .. '"')
+
+		if destpath ~= gettargetdir() and not os.isdir(sourcepath) then
+			destdir = path.getdirectory(destpath)
+		end
 
 		return 'mkdir ' .. translate(destdir) .. ' & ' ..
 			   'xcopy /y /e /i ' .. translate(sourcepath) .. ' ' .. translate(destdir)
 	else
-		if os.isdir(sourcepath) and not string.endswith(sourcepath, '/*') then
-			sourcepath = sourcepath .. '/*' -- cp will copy the content of the directory
+		if destpath ~= gettargetdir() then
+			destdir = path.getdirectory(destpath)
+		end
+
+		if os.isdir(sourcepath) and not string.endswith(sourcepath, '/') then
+			sourcepath = sourcepath .. '/' -- cp will copy the content of the directory
 		end
 
 		if os.iscygwin() then
