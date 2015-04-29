@@ -331,6 +331,14 @@ newaction {
 }
 
 newaction {
+	trigger			= "test",
+	description		= "Run the automated test suite.",
+	execute			= function()
+		os.execute("make minko-test")
+	end
+}
+
+newaction {
 	trigger			= "regroup",
 	description		= "Regroup all binaries into a single folder",
 	execute			= function()
