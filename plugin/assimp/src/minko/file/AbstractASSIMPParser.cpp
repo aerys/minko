@@ -294,8 +294,9 @@ AbstractASSIMPParser::initImporter()
 void
 AbstractASSIMPParser::convertScene(const aiScene* scene)
 {
+	LOG_DEBUG(_numDependencies << " dependencies loaded!");
+
 #ifdef DEBUG
-	std::cout << "AbstractASSIMPParser: " << _numDependencies << " dependencies loaded!" << std::endl;
 	if (_numDependencies != _numLoadedDependencies)
 		throw std::logic_error("_numDependencies != _numLoadedDependencies");
 #endif // DEBUG
@@ -598,7 +599,7 @@ AbstractASSIMPParser::createMeshSurface(scene::Node::Ptr 	minkoNode,
 	}
 #ifdef DEBUG
 	else
-		std::cerr << "Failed to find suitable effect for mesh '" << meshName << "' and no default effect provided." << std::endl;
+		LOG_ERROR("Failed to find suitable effect for mesh '" << meshName << "' and no default effect provided.");
 #endif // DEBUG
 }
 
@@ -652,9 +653,7 @@ AbstractASSIMPParser::createLights(const aiScene* scene)
 
 		if (aiLight->mType == aiLightSource_UNDEFINED)
 		{
-#ifdef DEBUG
-			std::cerr << "The type of the '" << lightName << "' has not been properly recognized." << std::endl;
-#endif // DEBUG
+			LOG_WARNING("The type of the '" << lightName << "' has not been properly recognized.");
 			continue;
 		}
 
@@ -829,9 +828,7 @@ AbstractASSIMPParser::loadTexture(const std::string&	textureFilename,
     _loaderErrorSlots[loader] = loader->error()->connect([=](Loader::Ptr textureLoader, const Error& error)
 	{
 		++_numLoadedDependencies;
-#ifdef DEBUG
-        std::cerr << "AbstractASSIMPParser: unable to find texture with filename '" << assetName << "'" << std::endl;
-#endif // DEBUG
+        LOG_DEBUG("Unable to find texture with filename '" << assetName << "'");
 
         _error->execute(shared_from_this(), Error("MissingTextureDependency", assetName));
 
@@ -845,9 +842,7 @@ AbstractASSIMPParser::loadTexture(const std::string&	textureFilename,
 void
 AbstractASSIMPParser::textureCompleteHandler(file::Loader::Ptr loader, const aiScene* scene)
 {
-#ifdef DEBUG
-	std::cerr << "AbstractASSIMPParser: " << _numLoadedDependencies << "/" << _numDependencies << " texture(s) loaded" << std::endl;
-#endif // DEBUG
+	LOG_DEBUG(_numLoadedDependencies << "/" << _numDependencies << " texture(s) loaded");
 
 	++_numLoadedDependencies;
 
@@ -882,9 +877,7 @@ AbstractASSIMPParser::getSkinNumFrames(const aiMesh* aimesh) const
 					numFrames = numNodeFrames;
 				else if (numFrames != numNodeFrames)
 				{
-#ifdef DEBUG_SKINNING
-					std::cerr << "Warning: Inconsistent number of frames between the different parts of a same mesh!" << std::endl;
-#endif // DEBUG_SKINNING
+					LOG_WARNING("Inconsistent number of frames between the different parts of a same mesh!");
 					numFrames = std::max(numFrames, numNodeFrames); // FIXME
 				}
 			}
@@ -927,12 +920,10 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
 	auto		meshNode	= _aiMeshToNode.find(aimesh)->second;
 	const uint	numBones	= aimesh->mNumBones;
 	const uint	numFrames	= getSkinNumFrames(aimesh);
+
 	if (numFrames == 0)
 	{
-#ifdef DEBUG
-		std::cerr << "Failed to flatten skinning information. Most likely involved nodes do not share a common animation." << std::endl;
-#endif // DEBUG
-
+		LOG_WARNING("Failed to flatten skinning information. Most likely involved nodes do not share a common animation.");
 		return;
 	}
 
@@ -1692,10 +1683,8 @@ AbstractASSIMPParser::chooseEffectByShadingMode(const aiMaterial* aiMat) const
 				case aiShadingMode_Minnaert:
 					if (_assetLibrary->effect("effect/Basic.effect"))
 						effect = _assetLibrary->effect("effect/Basic.effect");
-#ifdef DEBUG
 					else
-						std::cerr << "Basic effect not available in the asset library." << std::endl;
-#endif // DEBUG
+						LOG_ERROR("Basic effect not available in the asset library.");
 					break;
 
 				case aiShadingMode_Phong:
@@ -1704,10 +1693,8 @@ AbstractASSIMPParser::chooseEffectByShadingMode(const aiMaterial* aiMat) const
 				case aiShadingMode_Fresnel:
 					if (_assetLibrary->effect("effect/Phong.effect"))
 						effect = _assetLibrary->effect("effect/Phong.effect");
-#ifdef DEBUG
 					else
-						std::cerr << "Phong effect not available in the asset library." << std::endl;
-#endif // DEBUG
+						LOG_ERROR("Phong effect not available in the asset library.");
 					break;
 
 				case aiShadingMode_NoShading:

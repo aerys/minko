@@ -173,7 +173,7 @@ If everything went smooth, you should obtain something like this (the vantage po
 
 ![Cube with displaced vertex positions.](../../doc/image/CubePositionOffsets.jpeg "Cube with displaced vertex positions.")
 
-Step 1/2: Add your attributes to your effect in Minko (for the lazy and the reckless)
+Step 4: Add your attributes to your effect in Minko (for the lazy and the reckless)
 -------------------------------------------------------------------------------------
 
 While it is currently strongly advised to embed your vertex attribute into an instance of `geometry::Geometry`, it is still possible to bypass this mechanism and directly specify vertex attributes via an `render::Effect`. It is done by calling the `render::Effect::setVertexAttribute()` method. This approach has the marginal advantage to spare you extra code, but on the other hand forces you to precisely know the unfolding of the geometry the rendered `component::Surface` has been created with (namely how its index buffer access its associated vertex data).
@@ -182,43 +182,41 @@ Here, we will ditch our old `uColor` uniform variable and replace it with per ve
 
 But this time, we will not bind our new `aVertexColor` vertex attribute via the `attributeBindings` section of the effect file. Instead, we will directly pass over our vertex color data (stored in the `colorData` container in the following) to our custom effect instance.
 
-```
- render::Effect::Ptr getEffectWithAttribute(file::AssetLibrary::Ptr assets) {
-
-   
-const uint  numVertices = 36;
-   auto        colorData   = std::vector<float>(4 * numVertices, 0.0f); // vec4 per vertex
+```cpp
+render::Effect::Ptr getEffectWithAttribute(file::AssetLibrary::Ptr assets)
+{
+    const uint  numVertices = 36;
+    auto        colorData   = std::vector<float>(4 * numVertices, 0.0f); // vec4 per vertex
    
    ... // initialize the 'colorData' float array
 
    auto myCustomEffect = assets->effect("effect/MyCustomEffect.effect");
-
    myCustomEffect->setVertexAttribute("aVertexColor", 4, colorData);
 
    return myCustomEffect;
-
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv)
+{
+    ...
+    auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
+    {
+        ...
+        auto cube = scene::Node::create("cube")
+            ->addComponent(Transform::create(
+                Matrix4x4::create()->translation(0.f, 0.0f, -5.f)
+            ))
+            ->addComponent(Surface::create(
+                createGeometryWithAttribute(assets->context()), // geometry with add. vertex attribute
+                myCustomMaterial,
+                getEffectWithAttribute(assets)
+            ));
+        ...
+    });
 
- ...
- auto complete = sceneManager->assets()->complete()->connect([&](file::AssetLibrary::Ptr assets)
- {
-   ...
-   auto cube = scene::Node::create("cube")
-     ->addComponent(Transform::create(
-       Matrix4x4::create()->translation(0.f, 0.0f, -5.f)
-     ))
-     ->addComponent(Surface::create(
-       createGeometryWithAttribute(assets->context()), // geometry with add. vertex attribute
-       myCustomMaterial,
-       getEffectWithAttribute(assets)
-     ));
-   ...
- });
- sceneManager->assets()->load();
- return 0;
-
+    sceneManager->assets()->load();
+    canvas->run();
+    return 0;
 } 
 ```
 

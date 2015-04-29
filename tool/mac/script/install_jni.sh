@@ -1,1 +1,0 @@
-../../lin/script/install_jni.sh

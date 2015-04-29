@@ -1,6 +1,6 @@
 if not MINKO_HOME then
 	if os.getenv('MINKO_HOME') then
-		MINKO_HOME = os.getenv('MINKO_HOME');
+		MINKO_HOME = path.translate(os.getenv('MINKO_HOME'), '/')
 	else
 		error('You must define the environment variable MINKO_HOME.')
 	end
