@@ -334,7 +334,7 @@ newaction {
 	trigger			= "test",
 	description		= "Run the automated test suite.",
 	execute			= function()
-		os.execute("make minko-test")
+		dofile "test/test.lua"
 	end
 }
 

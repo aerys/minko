@@ -2,8 +2,6 @@ include "lib/googletest"
 
 minko.project.application "minko-test"
 
-	dofile "test.lua"
-
 	removeplatforms { "html5" }
 
 	files {
