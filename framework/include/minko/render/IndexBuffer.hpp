@@ -40,6 +40,7 @@ namespace minko
 
 		private:
 			std::vector<unsigned short>					_data;
+            std::vector<unsigned int>                   _wideIndexData;
 			unsigned int								_numIndices;
 
 			std::shared_ptr<Signal<Ptr>>				_changed;
@@ -88,6 +89,27 @@ namespace minko
 			data()
 			{
 				return _data;
+			}
+
+            inline
+            bool
+            hasWideIndexData() const
+            {
+                return !_wideIndexData.empty();
+            }
+
+			inline
+			const std::vector<unsigned int>&
+			wideIndexData() const
+			{
+				return _wideIndexData;
+			}
+
+			inline
+			std::vector<unsigned int>&
+			wideIndexData()
+			{
+				return _wideIndexData;
 			}
 
 			inline

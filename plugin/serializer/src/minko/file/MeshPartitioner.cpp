@@ -29,6 +29,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/VertexBuffer.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
+#include "minko/log/Logger.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -42,6 +43,7 @@ using namespace minko::scene;
 MeshPartitioner::Options::Options() :
     maxNumTrianglesPerNode(60000),
     maxNumIndicesPerNode(65536),
+    maxNumTrianglesPerSurfaceBucket(3000000),
     flags(Options::none),
     partitionMaxSizeFunction(defaultPartitionMaxSizeFunction),
     worldBoundsFunction(defaultWorldBoundsFunction),
@@ -60,6 +62,12 @@ MeshPartitioner::defaultSurfaceIndexer()
     surfaceIndexer.hash = [](Surface::Ptr surface) -> std::size_t
     {
         auto hashValue = std::size_t();
+
+        auto material = surface->material();
+
+        if (defaultInstanceSurfacePredicate(surface) ||
+            (material->data()->hasProperty("zSorted") && material->data()->get<bool>("zSorted")))
+            minko::hash_combine<std::string, std::hash<std::string>>(hashValue, surface->uuid());
 
         minko::hash_combine<Material::Ptr, std::hash<Material::Ptr>>(hashValue, surface->material());
 
@@ -124,12 +132,24 @@ MeshPartitioner::defaultValidSurfacePredicate(Surface::Ptr surface)
 {
     auto geometry = surface->geometry();
 
-    const auto indices = geometry->indices()->data();
-    const auto numVertices = geometry->numVertices();
+    if (geometry->indices()->hasWideIndexData())
+    {
+        const auto indices = geometry->indices()->wideIndexData();
+        const auto numVertices = geometry->numVertices();
 
-    for (auto index : indices)
-        if (index >= numVertices)
-            return false;
+        for (auto index : indices)
+            if (index >= numVertices)
+                return false;
+    }
+    else
+    {
+        const auto indices = geometry->indices()->data();
+        const auto numVertices = geometry->numVertices();
+
+        for (auto index : indices)
+            if (index >= numVertices)
+                return false;
+    }
 
     return true;
 }
@@ -258,6 +278,53 @@ MeshPartitioner::findInstances(const std::vector<Surface::Ptr>& surfaces)
     }
 }
 
+bool
+MeshPartitioner::surfaceBucketIsValid(const std::vector<SurfacePtr>& surfaceBucket) const
+{
+    if (surfaceBucket.size() == 1u)
+        return true;
+
+    auto numTriangles = 0u;
+
+    for (auto surface : surfaceBucket)
+    {
+        numTriangles += surface->geometry()->indices()->numIndices() / 3u;
+
+        if (numTriangles > _options.maxNumTrianglesPerSurfaceBucket)
+            return false;
+    }
+
+    return true;
+}
+
+void
+MeshPartitioner::splitSurfaceBucket(const std::vector<Surface::Ptr>&           surfaceBucket,
+                                    std::vector<std::vector<Surface::Ptr>>&    splitSurfaceBucket)
+{
+    if (surfaceBucket.size() == 1u)
+    {
+        splitSurfaceBucket.push_back(std::vector<Surface::Ptr>());
+
+        splitSurface(surfaceBucket.front(), splitSurfaceBucket.back());
+
+        return;
+    }
+
+    const auto begin = 0u;
+    const auto middle = surfaceBucket.size() / 2u;
+    const auto end = surfaceBucket.size();
+
+    splitSurfaceBucket.emplace_back(surfaceBucket.begin() + begin, surfaceBucket.begin() + middle);
+    splitSurfaceBucket.emplace_back(surfaceBucket.begin() + middle, surfaceBucket.begin() + end);
+}
+
+void
+MeshPartitioner::splitSurface(Surface::Ptr                 surface,
+                              std::vector<Surface::Ptr>&   splitSurface)
+{
+    splitSurface.push_back(surface);
+}
+
 void
 MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
 {
@@ -296,7 +363,35 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
 
         auto surfaceBuckets = mergeSurfaces(surfaces);
 
+        auto validSurfaceBuckets = std::vector<std::vector<Surface::Ptr>>();
+        auto pendingSurfaceBuckets = std::queue<std::vector<Surface::Ptr>>();
+
         for (const auto& surfaceBucket : surfaceBuckets)
+            pendingSurfaceBuckets.push(surfaceBucket);
+
+        while (!pendingSurfaceBuckets.empty())
+        {
+            const auto pendingSurfaceBucket = pendingSurfaceBuckets.front();
+            pendingSurfaceBuckets.pop();
+
+            if (surfaceBucketIsValid(pendingSurfaceBucket))
+            {
+                validSurfaceBuckets.push_back(pendingSurfaceBucket);
+
+                continue;
+            }
+
+            auto splitSurfaceBucket = std::vector<std::vector<Surface::Ptr>>();
+
+            this->splitSurfaceBucket(pendingSurfaceBucket, splitSurfaceBucket);
+
+            for (const auto& surfaceBucket : splitSurfaceBucket)
+                pendingSurfaceBuckets.push(surfaceBucket);
+        }
+
+        auto bucketIndex = 0u;
+
+        for (const auto& surfaceBucket : validSurfaceBuckets)
         {
             if (surfaceBucket.empty())
                 continue;
@@ -306,7 +401,11 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
             for (auto surface : surfaceBucket)
             {
                 if (!_options.validSurfacePredicate(surface))
+                {
+                    surface->target()->removeComponent(surface);
+
                     continue;
+                }
 
                 partitionInfo.surfaces.push_back(surface);
             }
@@ -320,10 +419,10 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
 
             auto geometries = std::vector<Geometry::Ptr>();
 
-            const auto isInstance = partitionInfo.surfaces.size() == 1u &&
+            partitionInfo.isInstance = partitionInfo.surfaces.size() == 1u &&
                                     _options.instanceSurfacePredicate(partitionInfo.surfaces.front());
 
-            if (isInstance)
+            if (partitionInfo.isInstance)
             {
                 auto processedInstanceIt = _processedInstances.find(partitionInfo.surfaces.front()->geometry());
 
@@ -350,7 +449,7 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
 
             if (processGeometries)
             {
-                partitionInfo.useRootSpace = !isInstance;
+                partitionInfo.useRootSpace = !partitionInfo.isInstance;
 
                 buildGlobalIndex(partitionInfo);
 
@@ -901,7 +1000,21 @@ MeshPartitioner::buildGlobalIndex(PartitionInfo& partitionInfo)
         const auto localIndexCount = geometry->indices()->numIndices();
         const auto localVertexCount = geometry->numVertices();
 
-        const auto& localIndices = geometry->indices()->data();
+        auto indexData = std::vector<unsigned int>();
+
+        if (!geometry->indices()->hasWideIndexData())
+        {
+            const auto& shortIndexData = geometry->indices()->data();
+
+            indexData.resize(shortIndexData.size());
+
+            for (auto i = 0u; i < shortIndexData.size(); ++i)
+                indexData[i] = static_cast<unsigned int>(shortIndexData.at(i));
+        }
+
+        const auto& localIndices = geometry->indices()->hasWideIndexData()
+            ? geometry->indices()->wideIndexData()
+            : indexData;
 
         auto globalVertexAttributeOffset = 0;
 

@@ -216,7 +216,6 @@ AbstractASSIMPParser::getPostProcessingFlags(const aiScene*             scene,
     unsigned int flags =
         aiProcess_JoinIdenticalVertices
         | aiProcess_GenSmoothNormals
-        | aiProcess_SplitLargeMeshes
         | aiProcess_LimitBoneWeights
         | aiProcess_GenUVCoords
         | aiProcess_OptimizeMeshes
@@ -449,16 +448,44 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
 		}
 	}
 
-	// make sure the flag 'aiProcess_Triangulate' is specified before importing the scene
-	std::vector<unsigned short>	indexData	(3 * mesh->mNumFaces, 0);
+    auto indices = render::IndexBuffer::Ptr();
 
-	for (unsigned int faceId = 0; faceId < mesh->mNumFaces; ++faceId)
-	{
-		const aiFace& face = mesh->mFaces[faceId];
+    const auto numIndices = mesh->mNumFaces * 3u;
 
-		for (unsigned int j = 0; j < 3; ++j)
-			indexData[j + 3*faceId] = face.mIndices[j];
-	}
+    if (numIndices > static_cast<unsigned int>(std::numeric_limits<unsigned short>::max()))
+    {
+	    std::vector<unsigned short>	indexData	(3 * mesh->mNumFaces, 0);
+
+	    for (unsigned int faceId = 0; faceId < mesh->mNumFaces; ++faceId)
+	    {
+	    	const aiFace& face = mesh->mFaces[faceId];
+
+	    	for (unsigned int j = 0; j < 3; ++j)
+            {
+	    		indexData[j + 3 * faceId] = face.mIndices[j];
+            }
+	    }
+
+        indices = render::IndexBuffer::create(_assetLibrary->context());
+    }
+    else
+    {
+	    std::vector<unsigned int> wideIndexData (3 * mesh->mNumFaces, 0);
+
+	    for (unsigned int faceId = 0; faceId < mesh->mNumFaces; ++faceId)
+	    {
+	    	const aiFace& face = mesh->mFaces[faceId];
+
+	    	for (unsigned int j = 0; j < 3; ++j)
+            {
+	    		wideIndexData[j + 3 * faceId] = face.mIndices[j];
+            }
+	    }
+
+        indices = render::IndexBuffer::create(_assetLibrary->context(), std::vector<unsigned short>());
+
+        indices->wideIndexData().assign(wideIndexData.begin(), wideIndexData.end());
+    }
 
 	// create the geometry's vertex and index buffers
 	auto geometry		= Geometry::create();
@@ -482,7 +509,8 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
 	}
 
 	geometry->addVertexBuffer(vertexBuffer);
-	geometry->indices(render::IndexBuffer::create(_assetLibrary->context(), indexData));
+
+	geometry->indices(indices);
 
 	geometry = _options->geometryFunction()(meshName, geometry);
 

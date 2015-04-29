@@ -60,6 +60,8 @@ namespace minko
                 int                                                     maxNumTrianglesPerNode;
                 int                                                     maxNumIndicesPerNode;
 
+                int                                                     maxNumTrianglesPerSurfaceBucket;
+
                 unsigned int                                            flags;
 
                 std::function<math::vec3(NodePtr)>                      partitionMaxSizeFunction;
@@ -234,6 +236,17 @@ namespace minko
 
             void
             findInstances(const std::vector<SurfacePtr>& surfaces);
+
+            bool
+            surfaceBucketIsValid(const std::vector<SurfacePtr>& surfaceBucket) const;
+
+            void
+            splitSurfaceBucket(const std::vector<SurfacePtr>&           surfaceBucket,
+                               std::vector<std::vector<SurfacePtr>>&    splitSurfaceBucket);
+
+            void
+            splitSurface(SurfacePtr                 surface,
+                         std::vector<SurfacePtr>&   splitSurface);
 
             OctreeNodePtr
             pickBestPartitions(OctreeNodePtr        root,

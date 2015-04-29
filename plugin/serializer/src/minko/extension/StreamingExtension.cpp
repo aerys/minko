@@ -139,7 +139,7 @@ AbstractWriter<Node::Ptr>::Ptr writer)
 
         if (writer != nullptr)
         {
-            auto meshPartitionerFlags = MeshPartitioner::Options::createOneNodePerSurface;
+            auto meshPartitionerFlags = MeshPartitioner::Options::none;
 
             if (_streamingOptions->mergeSurfacesOnPartitioning())
                 meshPartitionerFlags |= MeshPartitioner::Options::mergeSurfaces;
