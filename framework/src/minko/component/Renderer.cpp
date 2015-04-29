@@ -481,21 +481,22 @@ Renderer::render(render::AbstractContext::Ptr	context,
 void
 Renderer::clear(std::shared_ptr<AbstractCanvas> canvas)
 {
-	canvas->context()->clear(
+	auto backgroundColor = math::vec4(
 		((_backgroundColor >> 24) & 0xff) / 255.f,
 		((_backgroundColor >> 16) & 0xff) / 255.f,
 		((_backgroundColor >> 8) & 0xff) / 255.f,
 		(_backgroundColor & 0xff) / 255.f
 	);
 
+	clear(canvas, backgroundColor);
+}
+
+void
+Renderer::clear(std::shared_ptr<AbstractCanvas> canvas, math::vec4 clearColor)
+{
+	canvas->context()->clear(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 	canvas->swapBuffers();
-
-	canvas->context()->clear(
-		((_backgroundColor >> 24) & 0xff) / 255.f,
-		((_backgroundColor >> 16) & 0xff) / 255.f,
-		((_backgroundColor >> 8) & 0xff) / 255.f,
-		(_backgroundColor & 0xff) / 255.f
-	);
+	canvas->context()->clear(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 }
 
 void

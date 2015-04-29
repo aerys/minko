@@ -288,6 +288,9 @@ namespace minko
 			void
 			clear(std::shared_ptr<AbstractCanvas> canvas);
 
+			void
+			clear(std::shared_ptr<AbstractCanvas> canvas, math::vec4 clearColor);
+
 			inline
 			Signal<Ptr>::Ptr
 			renderingBegin()
