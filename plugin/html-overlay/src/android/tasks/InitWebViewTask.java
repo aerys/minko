@@ -88,7 +88,7 @@ public class InitWebViewTask implements Runnable
 		
 		// Increase WebView performances
 		_webView.getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
-        _webView.getSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
+        _webView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
 		
 		Log.i("minko-java", "[InitWebViewTask] WebView is now instantiated: " + _webView + ".");
 		webViewInitialized();
