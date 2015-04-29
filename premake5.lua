@@ -331,6 +331,14 @@ newaction {
 }
 
 newaction {
+	trigger			= "test",
+	description		= "Run the automated test suite.",
+	execute			= function()
+		dofile "test/test.lua"
+	end
+}
+
+newaction {
 	trigger			= "regroup",
 	description		= "Regroup all binaries into a single folder",
 	execute			= function()

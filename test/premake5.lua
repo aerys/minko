@@ -1,6 +1,6 @@
 include "lib/googletest"
 
-minko.project.application "minko-tests"
+minko.project.application "minko-test"
 
 	removeplatforms { "html5" }
 
