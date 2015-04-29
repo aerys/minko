@@ -230,10 +230,10 @@ Surface::setEffectAndTechnique(Effect::Ptr			effect,
 void
 Surface::initializeIndexRange(Geometry::Ptr geometry)
 {
-    firstIndex(unsigned short(0u));
-    numIndices(unsigned short(
+    firstIndex(0u);
+    numIndices(
         geometry->data()->hasProperty("numIndices")
         ? geometry->data()->get<unsigned int>("numIndices")
         : 0u
-    ));
+    );
 }
