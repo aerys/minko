@@ -73,6 +73,7 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, int
     _startTime(std::chrono::high_resolution_clock::now()),
     _framerate(0.f),
     _desiredFramerate(60.f),
+	_swapBuffersAtEnterFrame(true),
     _enterFrame(Signal<Canvas::Ptr, float, float>::create()),
     _resized(Signal<AbstractCanvas::Ptr, uint, uint>::create()),
     _fileDropped(Signal<const std::string&>::create()),
@@ -904,7 +905,9 @@ Canvas::step()
     _previousTime = absoluteTime;
 
     _enterFrame->execute(that, _relativeTime, _deltaTime);
-	swapBuffers();
+	
+	if (_swapBuffersAtEnterFrame)
+		swapBuffers();
 
     _frameDuration  = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - absoluteTime).count(); // in milliseconds
 

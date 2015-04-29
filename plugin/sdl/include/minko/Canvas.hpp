@@ -93,6 +93,7 @@ namespace minko
         time_point                                                              _startTime;
         float                                                                   _framerate;
         float                                                                   _desiredFramerate;
+		bool																	_swapBuffersAtEnterFrame;
 
 #if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID)
         std::shared_ptr<audio::SDLAudio>                                        _audio;
@@ -294,7 +295,21 @@ namespace minko
         }
 
 		void
-		swapBuffers();
+		swapBuffers() override;
+
+		inline
+		void
+		swapBuffersAtEnterFrame(bool value)
+		{
+			_swapBuffersAtEnterFrame = value;
+		}
+
+		inline
+		bool
+		swapBuffersAtEnterFrame()
+		{
+			return _swapBuffersAtEnterFrame;
+		}
 
         inline
         float
