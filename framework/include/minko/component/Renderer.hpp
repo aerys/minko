@@ -285,6 +285,12 @@ namespace minko
 			render(std::shared_ptr<render::AbstractContext> context,
 				   AbsTexturePtr 							renderTarget = nullptr);
 
+			void
+			clear(std::shared_ptr<AbstractCanvas> canvas);
+
+			void
+			clear(std::shared_ptr<AbstractCanvas> canvas, math::vec4 clearColor);
+
 			inline
 			Signal<Ptr>::Ptr
 			renderingBegin()

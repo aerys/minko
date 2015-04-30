@@ -1,1 +1,0 @@
-../../lin/script/solution_gmake_html5.sh

@@ -50,7 +50,7 @@ LodSchedulerDeserializer::deserializeTextureLodScheduler(SceneVersion      versi
                                                          AssetLibrary::Ptr assetLibrary,
                                                          Dependency::Ptr   dependency)
 {
-    auto lodScheduler = TextureLodScheduler::create();
+    auto lodScheduler = TextureLodScheduler::create(assetLibrary);
 
     return lodScheduler;
 }

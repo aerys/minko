@@ -40,7 +40,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
 # include "minko/SDLWebGLBackend.hpp"
 #elif MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
-# include "minko/MinkoAndroid.hpp"
+# include "minko/file/APKProtocol.hpp"
 #elif MINKO_PLATFORM == MINKO_PLATFORM_IOS
 // # include "SDL_opengles.h"
 // # include "SDL_syswm.h"
@@ -73,6 +73,7 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, int
     _startTime(std::chrono::high_resolution_clock::now()),
     _framerate(0.f),
     _desiredFramerate(60.f),
+	_swapBuffersAtEnterFrame(true),
     _enterFrame(Signal<Canvas::Ptr, float, float>::create()),
     _resized(Signal<AbstractCanvas::Ptr, uint, uint>::create()),
     _fileDropped(Signal<const std::string&>::create()),
@@ -131,7 +132,7 @@ Canvas::initialize()
 #endif
 
 #if MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS
-	SetConsoleCtrlHandler([](DWORD type) -> BOOL WINAPI { return type == CTRL_CLOSE_EVENT; }, true);
+	SetConsoleCtrlHandler([](DWORD type) -> BOOL { return type == CTRL_CLOSE_EVENT; }, true);
 #endif
 }
 
@@ -524,8 +525,8 @@ Canvas::step()
 
         case SDL_MOUSEMOTION:
         {
-			int windowW;
-			int windowH;
+            int windowW;
+            int windowH;
 
             SDL_GetWindowSize(_window, &windowW, &windowH);
 
@@ -542,7 +543,6 @@ Canvas::step()
             _mouse->y(y);
 
             _mouse->move()->execute(_mouse, event.motion.xrel, event.motion.yrel);
-
             break;
         }
 
@@ -599,14 +599,14 @@ Canvas::step()
             auto id = (int)(event.tfinger.fingerId);
 
             _touch->addTouch(id, x, y);
-            
+
             _mouse->x((int)_touch->averageX());
             _mouse->y((int)_touch->averageY());
 
             _touch->touchDown()->execute(
-                _touch, 
-                id, 
-                x, 
+                _touch,
+                id,
+                x,
                 y
             );
 
@@ -630,16 +630,16 @@ Canvas::step()
             auto x = event.tfinger.x * _width;
             auto y = event.tfinger.y * _height;
             auto id = (int)(event.tfinger.fingerId);
-            
+
             _mouse->x((int)_touch->averageX());
             _mouse->y((int)_touch->averageY());
 
             _touch->removeTouch(id);
 
             _touch->touchUp()->execute(
-                _touch, 
-                id, 
-                x, 
+                _touch,
+                id,
+                x,
                 y
             );
 
@@ -654,11 +654,11 @@ Canvas::step()
                     dY < input::SDLTouch::TAP_MOVE_THRESHOLD)
                 {
                     _touch->tap()->execute(_touch, x, y);
-                    
+
                     dX = std::abs(x - _touch->lastTapX()) * 0.75f;
                     dY = std::abs(y - _touch->lastTapY()) * 0.75f;
                     dT = _relativeTime - _touch->lastTapTime();
-                    
+
                     if (_touch->lastTapTime() != -1.0f &&
                         dT < input::SDLTouch::DOUBLE_TAP_DELAY_THRESHOLD &&
                         dX < input::SDLTouch::TAP_MOVE_THRESHOLD &&
@@ -692,19 +692,19 @@ Canvas::step()
 
             if (std::abs(_touch->lastTouchDownX() - x) > input::SDLTouch::TAP_MOVE_THRESHOLD || std::abs(_touch->lastTouchDownY() - y) > input::SDLTouch::TAP_MOVE_THRESHOLD)
                 _touch->lastTouchDownTime(-1.0f);
-            
+
             _touch->updateTouch(id, x, y);
-            
+
             _mouse->x((int)_touch->averageX());
             _mouse->y((int)_touch->averageY());
 
             _touch->touchMove()->execute(
-                _touch, 
+                _touch,
                 id,
                 dx,
                 dy
             );
-            
+
             // Gestures
 				if (event.tfinger.dx > input::SDLTouch::SWIPE_PRECISION)
             {
@@ -739,7 +739,7 @@ Canvas::step()
                         touch2 = _touch->touch(_touch->identifiers()[i]);
                 }
                 }
-                
+
                 if (hasTouch2)
                 {
                     auto dX1 = (x - dx) - touch2.x;
@@ -747,10 +747,10 @@ Canvas::step()
 
                     auto dX2 = x - touch2.x;
                     auto dY2 = y - touch2.y;
-                    
+
                     auto dist1 = std::sqrt(std::pow(dX1, 2) + std::pow(dY1, 2));
                     auto dist2 = std::sqrt(std::pow(dX2, 2) + std::pow(dY2, 2));
-                    
+
                     auto deltaDist = dist2 - dist1;
 
                     if (deltaDist != 0.f)
@@ -905,7 +905,9 @@ Canvas::step()
     _previousTime = absoluteTime;
 
     _enterFrame->execute(that, _relativeTime, _deltaTime);
-    _backend->swapBuffers(that);
+	
+	if (_swapBuffersAtEnterFrame)
+		swapBuffers();
 
     _frameDuration  = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - absoluteTime).count(); // in milliseconds
 
@@ -916,7 +918,7 @@ Canvas::step()
     
     if (remainingTime > 0)
     {
-        _backend->wait(that, remainingTime);
+        _backend->wait(that, uint(remainingTime));
 		_framerate = _desiredFramerate;
     }
 }
@@ -962,4 +964,10 @@ Canvas::getJoystickAxis(input::Joystick::Ptr joy, int axis)
         return -1;
 
     return SDL_JoystickGetAxis(_joysticks[id]->joystick(), axis);
+}
+
+void
+Canvas::swapBuffers()
+{
+	_backend->swapBuffers(shared_from_this());
 }

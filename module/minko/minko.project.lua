@@ -9,10 +9,10 @@ minko.project.library = function(name)
 	location "."
 	includedirs { minko.sdk.path("/framework/include") }
 
-	-- glm
 	includedirs { minko.sdk.path("/framework/lib/glm") }
-	-- sparsehash
+
 	includedirs { minko.sdk.path("/framework/lib/sparsehash/src") }
+
 	configuration { "windows" }
 		includedirs { minko.sdk.path("/framework/lib/sparsehash/include/windows") }
 		buildoptions { "/wd4996" }
@@ -63,9 +63,10 @@ minko.project.application = function(name)
 
 	kind "ConsoleApp"
 
-	-- defines {
-	-- 	"MINKO_APPLICATION_NAME=" .. name
-	-- }
+	minko.package.assetdirs {
+		"asset", -- current directory
+		minko.sdk.path("/framework/asset")
+	}
 
 	configuration { "windows32" }
 		libdirs {
@@ -183,9 +184,6 @@ minko.project.application = function(name)
 			"OpenGL.framework",
 			"IOKit.framework"
 		}
-		-- linkoptions {
-		-- 	"-Wl,-rpath,."
-		-- }
 		prelinkcommands {
 			minko.action.copy(minko.sdk.path("/framework/asset")),
 		}
@@ -217,14 +215,17 @@ minko.project.application = function(name)
 		}
 
 	if premake.tools.gcc.tools.emscripten then
-		configuration { "html5", "release" }
-			local emcc = premake.tools.gcc.tools.emscripten.cc
-			local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html -O3 ' .. buildoptions()[1]
+		local emcc = premake.tools.gcc.tools.emscripten.cc
+		local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html '
 
+		configuration { "html5", "release" }
 			linkoptions {
 				"--llvm-lto 1"
 			}
 
+			-- optimization
+			cmd = cmd .. buildoptions()[1]
+			cmd = cmd .. ' -O3'
 			-- enable the closure compiler
 			cmd = cmd .. ' --closure 1 -s CLOSURE_ANNOTATIONS=1'
 			-- treat undefined symbol warnings as errors
@@ -251,8 +252,6 @@ minko.project.application = function(name)
 			else
 				cmd = cmd .. ' --shell-file "' .. minko.sdk.path('/skeleton/template.html') .. '"'
 			end
-			-- include the app's 'asset' directory into the file system
-			cmd = cmd .. ' --preload-file ${TARGETDIR}/asset'
 
 			postbuildcommands {
 				cmd .. ' || ' .. minko.action.fail()
@@ -263,12 +262,12 @@ minko.project.application = function(name)
 			}
 
 		configuration { "html5", "debug" }
-			local emcc = premake.tools.gcc.tools.emscripten.cc
-			local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html ' .. buildoptions()[1]
-
 			linkoptions {
 				"--llvm-lto 0"
 			}
+
+			-- disable optimization
+			cmd = cmd .. buildoptions()[1]
 
 			-- treat undefined symbol warnings as errors
 			-- cmd = cmd .. ' -s ERROR_ON_UNDEFINED_SYMBOLS=1'
@@ -276,6 +275,8 @@ minko.project.application = function(name)
 			cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=0'
 			-- allow memory pool to be dynamic
 			cmd = cmd .. ' -s ALLOW_MEMORY_GROWTH=1'
+			-- demangling C++ symbols
+			cmd = cmd .. ' -s DEMANGLE_SUPPORT=1'
 			-- use a separate *.mem file to initialize the app memory
 			cmd = cmd .. ' --memory-init-file 1'
 			-- set the app (or the sdk) template.html
@@ -284,16 +285,26 @@ minko.project.application = function(name)
 			else
 				cmd = cmd .. ' --shell-file "' .. minko.sdk.path('/skeleton/template.html') .. '"'
 			end
-			-- include the app's 'asset' directory into the file system
-			cmd = cmd .. ' --preload-file ${TARGETDIR}/asset'
 
 			postbuildcommands {
+				-- minko.action.unless('${TARGETDIR}/' .. name .. '.html') ..
 				cmd .. ' || ' .. minko.action.fail()
 			}
 
 			libdirs {
 				minko.sdk.path("/framework/bin/html5/debug")
 			}
+
+		configuration { "html5" }
+			-- include the preloaded assets into the file system
+			local empkg = premake.tools.gcc.tools.emscripten.pkg
+			local cmd = empkg .. ' ${TARGETDIR}/' .. name .. '.data'
+
+			postbuildcommands {
+				-- minko.action.unless('${TARGETDIR}/' .. name .. '.data') ..
+				cmd .. ' || ' .. minko.action.fail()
+			}
+
 	end
 
 	configuration { "ios" }
@@ -333,6 +344,10 @@ minko.project.application = function(name)
 
 		kind "SharedLib"
 
+		prelinkcommands {
+			minko.action.cpjf('${CURDIR}/src/', '${TARGETDIR}/src/com/minko/')
+		}
+
 		links {
 			"minko-framework",
 			"GLESv1_CM",
@@ -343,26 +358,28 @@ minko.project.application = function(name)
 			"log",
 			"android",
 			"stdc++",
-			-- "gnustl_static",
 		}
 
 		targetprefix "lib"
 		targetextension ".so"
 		linkoptions {
-			-- "-s",
 			"-shared",
 			"-pthread",
 			"-Wl,--no-undefined",
-			"-Wl,--undefined=Java_org_libsdl_app_SDLActivity_nativeInit",
-			"-Wl,--undefined=Java_minko_plugin_htmloverlay_InitWebViewTask_webViewInitialized",
-			"-Wl,--undefined=Java_minko_plugin_htmloverlay_MinkoWebViewClient_webViewPageLoaded",
-			"-Wl,--undefined=Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnMessage",
-			"-Wl,--undefined=Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent"
+			"-Wl,--undefined=Java_org_libsdl_app_SDLActivity_nativeInit"
 		}
 
 		prelinkcommands {
 			minko.action.copy(minko.sdk.path("/framework/asset")),
 			minko.action.copy("asset")
+		}
+
+		prebuildcommands {
+			minko.action.copy(MINKO_HOME .. "/template/android/*")
+		}
+
+		postbuildcommands {
+			minko.action.buildandroid()
 		}
 
 	configuration { "android", "debug" }

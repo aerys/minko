@@ -28,10 +28,10 @@ using namespace minko::render;
 
 template<typename T>
 DrawCall*
-createDrawCallWithState(const std::string& effectFile, 
-                        const std::string& stateName, 
-                        T stateMaterialValue, 
-                        material::Material::Ptr material, 
+createDrawCallWithState(const std::string& effectFile,
+                        const std::string& stateName,
+                        T stateMaterialValue,
+                        material::Material::Ptr material,
                         data::Store& targetData)
 {
     auto fx = MinkoTests::loadEffect(effectFile);
@@ -40,16 +40,15 @@ createDrawCallWithState(const std::string& effectFile,
     data::Store rootData;
     data::Store rendererData;
 
-    std::unordered_map<std::string, std::string> variables = { { "materialUuid", material->uuid() } };
-
+    render::EffectVariables variables = { { "materialUuid", material->uuid() } };
 
     auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
-    variables.insert({ "geometryUuid", geom->uuid() });
+    variables.push_back({ "geometryUuid", geom->uuid() });
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
 
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
-    return *drawCalls.first;
+    return pool.drawCalls().front();
 }
 
 
@@ -810,8 +809,8 @@ TEST_F(DrawCallPoolTest, StatesBindingPriorityWithDefaultValueFirst)
     auto effectFile = "effect/state/binding/with-default-value/priority/StatesBindingPriorityWithDefaultValueFirst.effect";
 
     testStateBindingToDefaultValueSwap<float>(
-        stateMaterialValue, 
-        stateName, 
+        stateMaterialValue,
+        stateName,
         effectFile,
         [](DrawCall* d) { return d->priority(); }
     );
@@ -824,8 +823,8 @@ TEST_F(DrawCallPoolTest, StatesBindingPriorityWithDefaultValueBackground)
     auto effectFile = "effect/state/binding/with-default-value/priority/StatesBindingPriorityWithDefaultValueBackground.effect";
 
     testStateBindingToDefaultValueSwap<float>(
-        stateMaterialValue, 
-        stateName, 
+        stateMaterialValue,
+        stateName,
         effectFile,
         [](DrawCall* d) { return d->priority(); }
     );

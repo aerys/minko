@@ -19,6 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/Renderer.hpp"
 
+#include "minko/AbstractCanvas.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
 #include "minko/component/Surface.hpp"
@@ -32,8 +33,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/render/DrawCallPool.hpp"
 #include "minko/data/AbstractFilter.hpp"
-#include "minko/data/LightMaskFilter.hpp"
-#include "minko/data/Collection.hpp"
 #include "minko/geometry/Geometry.hpp"
 #include "minko/material/Material.hpp"
 
@@ -452,12 +451,14 @@ Renderer::render(render::AbstractContext::Ptr	context,
 		context->configureViewport(_viewportBox.x, _viewportBox.y, _viewportBox.z, _viewportBox.w);
 
 	if (_clearBeforeRender)
+	{
 		context->clear(
 			((_backgroundColor >> 24) & 0xff) / 255.f,
 			((_backgroundColor >> 16) & 0xff) / 255.f,
 			((_backgroundColor >> 8) & 0xff) / 255.f,
 			(_backgroundColor & 0xff) / 255.f
 		);
+	}
 
     _drawCallPool.update(forceZSort);
     
@@ -475,6 +476,27 @@ Renderer::render(render::AbstractContext::Ptr	context,
     context->present();
 
     _renderingEnd->execute(std::static_pointer_cast<Renderer>(shared_from_this()));
+}
+
+void
+Renderer::clear(std::shared_ptr<AbstractCanvas> canvas)
+{
+	auto backgroundColor = math::vec4(
+		((_backgroundColor >> 24) & 0xff) / 255.f,
+		((_backgroundColor >> 16) & 0xff) / 255.f,
+		((_backgroundColor >> 8) & 0xff) / 255.f,
+		(_backgroundColor & 0xff) / 255.f
+	);
+
+	clear(canvas, backgroundColor);
+}
+
+void
+Renderer::clear(std::shared_ptr<AbstractCanvas> canvas, math::vec4 clearColor)
+{
+	canvas->context()->clear(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
+	canvas->swapBuffers();
+	canvas->context()->clear(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 }
 
 void
