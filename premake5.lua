@@ -110,7 +110,6 @@ solution "minko"
 
 	-- plugin
 	if not _OPTIONS['no-plugin'] then
-		include 'plugin/android'
 		--include 'plugin/lua'
 		--include 'plugin/angle'
 		include 'plugin/zlib'
@@ -157,6 +156,7 @@ solution "minko"
 	if not _OPTIONS['no-example'] then
 		include 'example/assimp'
 		-- include 'example/audio'
+		include 'example/benchmark-cube'
 		include 'example/blending'
 		-- include 'example/clone'
 		include 'example/cube'

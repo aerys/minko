@@ -45,10 +45,10 @@ namespace std
             if (i % 4 == 0)
                 str += "\n";
 
-            str += to_string(ptr[i]) + ", ";
+            str += minko::math::to_string(ptr[i]) + ", ";
         }
 
-		str += to_string(ptr[15]) + ")";
+		str += minko::math::to_string(ptr[15]) + ")";
 
 		return str;
 	}
@@ -164,6 +164,21 @@ namespace std
 		return oss.str();
 	}
 #endif
+
+    inline
+    std::string
+    replaceAll(std::string str, const std::string& from, const std::string& to)
+    {
+        size_t start_pos = 0;
+
+        while ((start_pos = str.find(from, start_pos)) != std::string::npos)
+        {
+            str.replace(start_pos, from.length(), to);
+            start_pos += to.length(); // Handles case where 'to' is a substring of 'from'
+        }
+
+        return str;
+    }
 }
 
 // generic std::hash and std::equal_to specializations for std::pair

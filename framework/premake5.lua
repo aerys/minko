@@ -81,3 +81,8 @@ minko.project.library "minko-framework"
         includedirs { minko.sdk.path("/framework/lib/glew/include") }
         files { "lib/glew/**.h" }
 		libdirs { "lib/glew/lib/windows64" }
+
+	configuration { "not android" }
+		excludes {
+			"include/minko/log/AndroidLogSink.hpp"
+		}

@@ -7,7 +7,9 @@ function path.cygpath(filepath)
 
 	if os.iscygwin() then
 		local t = explode(':', filepath)
-		filepath = '/cygdrive/' .. string.lower(t[1]) .. string.gsub(t[2], '\\', '/')
+		if table.getn(t) == 2 then
+			filepath = '/cygdrive/' .. string.lower(t[1]) .. string.gsub(t[2], '\\', '/')
+		end
 	end
 
 	return filepath

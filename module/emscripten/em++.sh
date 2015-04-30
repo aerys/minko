@@ -5,6 +5,10 @@ if [[ -z "${EMSCRIPTEN}" ]]; then
 	exit 1
 fi
 
+if [ $OSTYPE == "cygwin" ]; then
+	export EMSCRIPTEN=`cygpath -u "${EMSCRIPTEN}"`
+fi
+	
 BIN="${EMSCRIPTEN}/em++"
 
 declare -a ARGS

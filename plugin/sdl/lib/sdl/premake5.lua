@@ -52,7 +52,3 @@ minko.project.library("SDL2")
 			"src/render/opengles/*.c",
 			"src/render/software/*.c",
 		}
-
-		includedirs {
-			minko.plugin.path("android") .. "/include"
-		}

@@ -18,18 +18,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/Common.hpp"
+#include "minko/MinkoSDL.hpp"
+
+#include "minko/dom/AbstractDOMTouchEvent.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/file/FileProtocol.hpp"
 #include "minko/file/AssetLibrary.hpp"
-
-#include "minko/MinkoSDL.hpp"
-
-#include "json/json.h"
+#include "minko/input/Touch.hpp"
+#include "minko/log/Logger.hpp"
 
 #include "SDL.h"
-
-#include "minko/dom/AbstractDOMTouchEvent.hpp"
-#include "minko/input/Touch.hpp"
+#include "json/json.h"
 
 #include "android/dom/AndroidWebViewDOMEngine.hpp"
 #include "android/dom/AndroidWebViewDOMMouseEvent.hpp"
