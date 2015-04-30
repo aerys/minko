@@ -1,8 +1,8 @@
 {
-    "name"  	: "picking",
+    "name"      : "picking-depth",
     
-	"priority"	: "opaque",
-	
+    "priority"  : "opaque",
+    
     "attributes" : {
         "aPosition"       : "geometry[${geometryUuid}].position",
         "aUV"             : "geometry[${geometryUuid}].uv",
@@ -14,12 +14,13 @@
     },
     
     "uniforms"   : {
-        "uPickingColor"          : "pickingColor",
-        "uModelToWorldMatrix"    : "modelToWorldMatrix",
-        "uWorldToViewMatrix"     : { "binding" : { "property" : "viewMatrix", "source" : "renderer"} },
-        "uPickingProjection"     : { "binding" : { "property" : "pickingProjection",    "source" : "renderer"} },
-		"boneMatrices"			: "geometry[${geometryUuid}].boneMatrices",
-		"numBones"				: "geometry[${geometryUuid}].numBones",
+        "uPickingOrigin"        : { "binding" : { "property" : "pickingOrigin", "source" : "renderer" } },
+        "uZFar"                 : { "binding" : { "property" : "zFar", "source" : "renderer" } },
+        "uModelToWorldMatrix"   : "modelToWorldMatrix",
+        "uWorldToViewMatrix"    : { "binding" : { "property" : "viewMatrix", "source" : "renderer"} },
+        "uPickingProjection"    : { "binding" : { "property" : "pickingProjection",    "source" : "renderer"} },
+        "boneMatrices"          : "geometry[${geometryUuid}].boneMatrices",
+        "numBones"              : "geometry[${geometryUuid}].numBones",
         "uPopLod"               : "geometry[${geometryUuid}].popLod",
         "uPopBlendingLod"       : "geometry[${geometryUuid}].popBlendingLod",
         "uPopFullPrecisionLod"  : "geometry[${geometryUuid}].popFullPrecisionLod",
@@ -37,10 +38,10 @@
         "VERTEX_POP_PROTECTED"  : "geometry[${geometryUuid}].popProtected"
     },
     
-	"techniques" : [{
-		"passes"    : [{
-             "vertexShader"      : "#pragma include \"Picking.vertex.glsl\"",
-             "fragmentShader"    : "#pragma include \"Picking.fragment.glsl\""
-		}]
-	}]
+    "techniques" : [{
+        "passes"    : [{
+             "vertexShader"      : "#pragma include \"PickingDepth.vertex.glsl\"",
+             "fragmentShader"    : "#pragma include \"PickingDepth.fragment.glsl\""
+        }]
+    }]
 }

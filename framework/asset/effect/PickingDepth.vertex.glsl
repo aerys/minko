@@ -12,7 +12,6 @@
 #pragma include "Pop.function.glsl"
 
 attribute vec3 aPosition;
-attribute vec2 aUV;
 
 #ifdef SKINNING_NUM_BONES
 attribute vec4 aBoneIdsA;
@@ -34,7 +33,7 @@ uniform 	float 	uPopFullPrecisionLod;
 uniform 	vec3 	uPopMinBound;
 uniform 	vec3 	uPopMaxBound;
 
-varying vec2 vertexUV;
+varying vec3 vWorldPosition;
 
 void main(void)
 {
@@ -71,6 +70,8 @@ void main(void)
 			pos = uModelToWorldMatrix * pos;
 		#endif
 	
+		vWorldPosition = pos.xyz;
+
 		gl_Position = uPickingProjection * (uWorldToViewMatrix * pos);
 		
 	#else //HAS_POSITION

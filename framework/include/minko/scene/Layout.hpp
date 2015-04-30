@@ -38,6 +38,7 @@ namespace minko
             static const Layout PICKING;
             static const Layout _RESERVED_3;
             static const Layout _RESERVED_4;
+            static const Layout PICKING_DEPTH;
         };
 
         struct LayoutMask
