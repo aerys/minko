@@ -4,19 +4,16 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 
 	files {
 		"src/**.cpp",
-		"src/**.hpp",
-		"asset/**"
+		"src/**.hpp"
 	}
 
 	includedirs { "src" }
 
 	-- plugins
 	minko.plugin.enable("sdl")
-	minko.plugin.enable("png")
 	
 	configuration { "html5" }
 		minko.package.assets {
 			['**.effect'] = { 'embed' },
-			['**.glsl'] = { 'embed' },
-			['**.png'] = { 'embed' }
+			['**.glsl'] = { 'embed' }
 		}

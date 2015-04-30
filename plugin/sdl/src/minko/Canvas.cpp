@@ -40,7 +40,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
 # include "minko/SDLWebGLBackend.hpp"
 #elif MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
-# include "minko/MinkoAndroid.hpp"
+# include "minko/file/APKProtocol.hpp"
 #elif MINKO_PLATFORM == MINKO_PLATFORM_IOS
 // # include "SDL_opengles.h"
 // # include "SDL_syswm.h"
@@ -73,6 +73,7 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, int
     _startTime(std::chrono::high_resolution_clock::now()),
     _framerate(0.f),
     _desiredFramerate(60.f),
+	_swapBuffersAtEnterFrame(true),
     _enterFrame(Signal<Canvas::Ptr, float, float>::create()),
     _resized(Signal<AbstractCanvas::Ptr, uint, uint>::create()),
     _fileDropped(Signal<const std::string&>::create()),
@@ -904,7 +905,9 @@ Canvas::step()
     _previousTime = absoluteTime;
 
     _enterFrame->execute(that, _relativeTime, _deltaTime);
-    _backend->swapBuffers(that);
+	
+	if (_swapBuffersAtEnterFrame)
+		swapBuffers();
 
     _frameDuration  = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - absoluteTime).count(); // in milliseconds
 
@@ -961,4 +964,10 @@ Canvas::getJoystickAxis(input::Joystick::Ptr joy, int axis)
         return -1;
 
     return SDL_JoystickGetAxis(_joysticks[id]->joystick(), axis);
+}
+
+void
+Canvas::swapBuffers()
+{
+	_backend->swapBuffers(shared_from_this());
 }

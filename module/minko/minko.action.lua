@@ -12,6 +12,16 @@ local function gettargetdir()
 	end
 end
 
+local function translate(filepath)
+	filepath = path.translate(filepath)
+
+	if os.is('windows') and not os.iscygwin() and string.startswith(_ACTION, "gmake") then
+		filepath = string.gsub(filepath, '%$%(TARGETDIR%)', '$(subst /,\\,$(TARGETDIR))')
+	end
+
+	return filepath
+end
+
 minko.action.fail = function(target)
 	if not target then
 		if os.is('windows') and not os.iscygwin() then
@@ -55,24 +65,29 @@ minko.action.copy = function(sourcepath, destpath, targetdir)
 	local destdir = destpath
 
 	if os.is('windows') and not os.iscygwin() then
-		-- print(' -> xcopy /y /i /e "' .. path.translate(sourcepath) .. '" "' .. path.translate(destdir) .. '"')
+		-- print(' -> xcopy /y /i /e "' .. translate(sourcepath) .. '" "' .. translate(destdir) .. '"')
 
-		return 'mkdir ' .. path.translate(destdir) .. ' & ' ..
-			   'xcopy /y /e /i ' .. path.translate(sourcepath) .. ' ' .. path.translate(destdir)
+		if destpath ~= gettargetdir() and not os.isdir(sourcepath) then
+			destdir = path.getdirectory(destpath)
+		end
+
+		return 'mkdir ' .. translate(destdir) .. ' & ' ..
+			   'xcopy /y /e /i ' .. translate(sourcepath) .. ' ' .. translate(destdir)
 	else
-		destdir = path.getdirectory(destpath)
+		if destpath ~= gettargetdir() then
+			destdir = path.getdirectory(destpath)
+		end
 
 		if os.isdir(sourcepath) and not string.endswith(sourcepath, '/') then
 			sourcepath = sourcepath .. '/' -- cp will copy the content of the directory
 		end
 
 		if os.iscygwin() then
-			sourcepath = path.translate(sourcepath)
-			targetdir = path.translate(targetdir)
+			sourcepath = path.cygpath(translate(sourcepath))
+			targetdir = path.cygpath(translate(targetdir))
 		end
 
 		-- print(' -> cp -R ' .. sourcepath .. ' "' .. destdir .. '"')
-
 
 		return 'mkdir -p ' .. destdir .. '; ' ..
 			   'cp -R ' .. sourcepath .. ' ' .. destdir
@@ -165,4 +180,25 @@ minko.action.optimize = function(file)
 	else
 		return ''
 	end
+end
+
+minko.action.cpjf = function(absoluteSrcDir, relativeDestDir)
+	local scriptLocation = MINKO_HOME .. '/script/cpjf.sh';
+
+	if string.startswith(os.getenv('OSTYPE'), 'CYGWIN') then
+		scriptLocation = os.capture('cygpath -u "' .. scriptLocation .. '"')
+		absoluteSrcDir = os.capture('cygpath -u "' .. absoluteSrcDir .. '"')
+	end
+
+	return 'bash ' .. scriptLocation .. ' ' .. absoluteSrcDir .. ' ' .. relativeDestDir .. ' || ' .. minko.action.fail()
+end
+
+minko.action.buildandroid = function()
+	local minkoHome = MINKO_HOME
+
+	if string.startswith(os.getenv('OSTYPE'), 'CYGWIN') then
+		minkoHome = os.capture('cygpath -u "' .. minkoHome .. '"')
+	end
+
+	return 'bash ' .. minkoHome .. '/script/build_android.sh ${TARGET} || ' .. minko.action.fail()
 end

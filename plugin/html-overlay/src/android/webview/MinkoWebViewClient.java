@@ -3,10 +3,10 @@ package minko.plugin.htmloverlay;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.util.Base64;
-import java.io.IOException;
-import java.io.InputStream;
 import android.webkit.JsResult;
 import android.util.Log;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class MinkoWebViewClient extends WebViewClient 
 {
@@ -36,19 +36,26 @@ public class MinkoWebViewClient extends WebViewClient
 	@Override
     public void onPageFinished(WebView view, String url) 
 	{
-        super.onPageFinished(view, url);
+		if (!url.contains("#"))
+		{
+	        super.onPageFinished(view, url);
 
-		// Inject JS Minko script into the webview
-        injectScriptFile(view, "script/minko.overlay.js");
+			// Inject JS Minko script into the webview
+	        injectScriptFile(view, "script/minko.overlay.js");
+			
+
+			// Load URL provided inside the webview
+			String evalString = "javascript: Minko.init('androidWebView');";
+			view.loadUrl(evalString);
+			
+			// Call native function to inform C++ code that the page is loaded
+			webViewPageLoaded();
+
+			Log.i("minko-java", "[MinkoWebViewClient] Page has FINISHED to load (url: " + url + ").");
+		}
 		
-		// Load URL provided inside the webview
-		String evalString = "javascript: Minko.init('androidWebView');";
-		view.loadUrl(evalString);
+
 		
-		// Call native function to inform C++ code that the page is loaded
-		webViewPageLoaded();
-		
-		Log.i("minko-java", "[MinkoWebViewClient] Page has finished to load (url: " + url + ").");
     }
 
     private void injectScriptFile(WebView view, String scriptFile) 

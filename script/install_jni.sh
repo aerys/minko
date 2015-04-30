@@ -43,7 +43,7 @@ fi
 
 ANDROID_SDK_VERSION="android-19"
 ANDROID_NDK_VERSION="android-ndk-r10d"
-ANDROID_TOOLCHAIN="arm-linux-androideabi-4.8"
+ANDROID_TOOLCHAIN="arm-linux-androideabi-4.9"
 ANDROID_SYSTEM="linux-x86_64"
 
 if [[ $OSTYPE == cygwin* ]]; then

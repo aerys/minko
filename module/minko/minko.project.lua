@@ -344,6 +344,10 @@ minko.project.application = function(name)
 
 		kind "SharedLib"
 
+		prelinkcommands {
+			minko.action.cpjf('${CURDIR}/src/', '${TARGETDIR}/src/com/minko/')
+		}
+
 		links {
 			"minko-framework",
 			"GLESv1_CM",
@@ -362,16 +366,20 @@ minko.project.application = function(name)
 			"-shared",
 			"-pthread",
 			"-Wl,--no-undefined",
-			"-Wl,--undefined=Java_org_libsdl_app_SDLActivity_nativeInit",
-			"-Wl,--undefined=Java_minko_plugin_htmloverlay_InitWebViewTask_webViewInitialized",
-			"-Wl,--undefined=Java_minko_plugin_htmloverlay_MinkoWebViewClient_webViewPageLoaded",
-			"-Wl,--undefined=Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnMessage",
-			"-Wl,--undefined=Java_minko_plugin_htmloverlay_WebViewJSInterface_minkoNativeOnEvent"
+			"-Wl,--undefined=Java_org_libsdl_app_SDLActivity_nativeInit"
 		}
 
 		prelinkcommands {
 			minko.action.copy(minko.sdk.path("/framework/asset")),
 			minko.action.copy("asset")
+		}
+
+		prebuildcommands {
+			minko.action.copy(MINKO_HOME .. "/template/android/*")
+		}
+
+		postbuildcommands {
+			minko.action.buildandroid()
 		}
 
 	configuration { "android", "debug" }

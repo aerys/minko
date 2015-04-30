@@ -13,7 +13,7 @@
         <activity android:name="MinkoActivity"
                   android:label="@string/app_name"
                   android:configChanges="orientation|screenSize|keyboardHidden"
-				  android:launchMode="singleTask">
+                  android:launchMode="singleTask">
 			
 			<!-- We can open the app without any file -->
 			<intent-filter>
