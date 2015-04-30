@@ -202,15 +202,65 @@ POPGeometryParser::nextLod(int      previousLod,
                            int&     nextLodOffset,
                            int&     nextLodSize)
 {
-    const auto estimatedNextLod = previousLod + std::min(
-        requiredLod - previousLod,
-        streamingOptions()->popGeometryLodRangeFetchingMaxSizeFunction()
-            ? streamingOptions()->popGeometryLodRangeFetchingMaxSizeFunction()(previousLod, requiredLod)
-            : 1
-    );
+    auto lodRangeMaxSize = 0;
+    auto lodRangeMinSize = 0;
+    auto lodRangeRequestMinSize = 0;
+    auto lodRangeRequestMaxSize = 0;
 
-    auto nextLodLowerIt = _lods.lower_bound(previousLod + 1);
-    auto nextLodUpperIt = _lods.lower_bound(estimatedNextLod);
+    if (streamingOptions()->popGeometryLodRangeFetchingBoundFunction())
+    {
+        streamingOptions()->popGeometryLodRangeFetchingBoundFunction()(
+            previousLod,
+            requiredLod,
+            lodRangeMinSize,
+            lodRangeMaxSize,
+            lodRangeRequestMinSize,
+            lodRangeRequestMaxSize
+        );
+    }
+
+    auto lowerLod = previousLod + 1;
+    auto upperLod = lowerLod;
+
+    auto requirementIsFulfilled = false;
+
+    do
+    {
+        if (upperLod >= _maxLod)
+            break;
+
+        const auto lodRangeSize = upperLod - lowerLod;
+
+        if (lodRangeMinSize > 0 &&
+            lodRangeSize < lodRangeMinSize)
+        {
+            ++upperLod;
+
+            continue;
+        }
+
+        if (lodRangeMaxSize > 0 &&
+            lodRangeSize >= lodRangeMaxSize)
+            break;
+
+        const auto lodRangeRequestSize = this->lodRangeRequestSize(lowerLod, upperLod);
+
+        if (lodRangeRequestMaxSize > 0 &&
+            lodRangeRequestSize >= lodRangeRequestMaxSize)
+            break;
+
+        if (lodRangeRequestMinSize == 0 || lodRangeRequestSize >= lodRangeRequestMinSize)
+        {
+            requirementIsFulfilled = true;
+        }
+        else
+        {
+            ++upperLod;
+        }
+    } while (!requirementIsFulfilled);
+
+    auto nextLodLowerIt = _lods.lower_bound(lowerLod);
+    auto nextLodUpperIt = _lods.lower_bound(upperLod);
 
     const auto& nextLodLowerBoundInfo = nextLodLowerIt->second;
     const LodInfo* nextLodUpperBoundInfo = nullptr;
@@ -409,4 +459,24 @@ POPGeometryParser::completed()
         this->data()->set("availableLods", availableLods);
         this->data()->set("maxAvailableLod", fullPrecisionLodInfo._level);
     }
+}
+
+int
+POPGeometryParser::lodRangeRequestSize(int lowerLod, int upperLod) const
+{
+    auto lowerLodIt = _lods.lower_bound(lowerLod);
+    auto upperLodIt = _lods.lower_bound(upperLod);
+
+    const auto& lowerLodInfo = lowerLodIt->second;
+    const LodInfo* upperLodInfo = nullptr;
+
+    if (upperLodIt != _lods.end())
+        upperLodInfo = &upperLodIt->second;
+    else
+        upperLodInfo = &_lods.rbegin()->second;
+
+    const auto lodRangeOffset = lowerLodInfo.blobOffset;
+    const auto lodRangeSize = (upperLodInfo->blobOffset + upperLodInfo->blobSize) - lodRangeOffset;
+
+    return lodRangeSize;
 }

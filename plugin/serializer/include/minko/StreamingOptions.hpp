@@ -55,43 +55,43 @@ namespace minko
         >                                                       StreamedTextureFunction;
 
     public:
-        static const int                                MAX_LOD;
-        static const int                                MAX_LOD_RANGE;
+        static const int                                        MAX_LOD;
+        static const int                                        MAX_LOD_RANGE;
 
     private:
-        bool                                            _disableProgressiveLodFetching;
+        bool                                                    _disableProgressiveLodFetching;
 
-        bool                                            _textureStreamingIsActive;
-        bool                                            _geometryStreamingIsActive;
+        bool                                                    _textureStreamingIsActive;
+        bool                                                    _geometryStreamingIsActive;
 
-        std::shared_ptr<component::MasterLodScheduler>  _masterLodScheduler;
+        std::shared_ptr<component::MasterLodScheduler>          _masterLodScheduler;
 
-        file::POPGeometryWriter::RangeFunction          _popGeometryWriterLodRangeFunction;
+        file::POPGeometryWriter::RangeFunction                  _popGeometryWriterLodRangeFunction;
 
-        int                                             _popGeometryErrorToleranceThreshold;
+        int                                                     _popGeometryErrorToleranceThreshold;
 
-        bool                                            _storeLodData;
+        bool                                                    _storeLodData;
 
-        std::function<int(SurfacePtr)>                  _popGeometryLodFunction;
-        std::function<int(SurfacePtr)>                  _streamedTextureLodFunction;
+        std::function<int(SurfacePtr)>                          _popGeometryLodFunction;
+        std::function<int(SurfacePtr)>                          _streamedTextureLodFunction;
 
-        bool                                            _mergeSurfacesOnPartitioning;
-        bool                                            _useSharedClusterHierarchyOnPartitioning;
-        bool                                            _applyCrackFreePolicyOnPartitioning;
+        bool                                                    _mergeSurfacesOnPartitioning;
+        bool                                                    _useSharedClusterHierarchyOnPartitioning;
+        bool                                                    _applyCrackFreePolicyOnPartitioning;
 
-        float                                           _popGeometryPriorityFactor;
-        float                                           _streamedTexturePriorityFactor;
+        float                                                   _popGeometryPriorityFactor;
+        float                                                   _streamedTexturePriorityFactor;
 
-        int                                             _popGeometryMaxPrecisionLevel;
-        int                                             _streamedTextureMaxMipLevel;
+        int                                                     _popGeometryMaxPrecisionLevel;
+        int                                                     _streamedTextureMaxMipLevel;
 
-        std::function<int(int, int)>                    _popGeometryLodRangeFetchingMaxSizeFunction;
-        std::function<int(int, int)>                    _streamedTextureLodRangeFetchingMaxSizeFunction;
+        std::function<void(int, int, int&, int&, int&, int&)>   _popGeometryLodRangeFetchingBoundFunction;
+        std::function<void(int, int, int&, int&, int&, int&)>   _streamedTextureLodRangeFetchingBoundFunction;
 
-        float                                           _popGeometryBlendingRange;
+        float                                                   _popGeometryBlendingRange;
 
-        POPGeometryFunction                             _popGeometryFunction;
-        StreamedTextureFunction                         _streamedTextureFunction;
+        POPGeometryFunction                                     _popGeometryFunction;
+        StreamedTextureFunction                                 _streamedTextureFunction;
 
     public:
         inline static
@@ -361,33 +361,33 @@ namespace minko
         }
 
         inline
-        const std::function<int(int, int)>&
-        popGeometryLodRangeFetchingMaxSizeFunction() const
+        const std::function<void(int, int, int&, int&, int&, int&)>&
+        popGeometryLodRangeFetchingBoundFunction() const
         {
-            return _popGeometryLodRangeFetchingMaxSizeFunction;
+            return _popGeometryLodRangeFetchingBoundFunction;
         }
 
         inline
         Ptr
-        popGeometryLodRangeFetchingMaxSizeFunction(const std::function<int(int, int)>& function)
+        popGeometryLodRangeFetchingBoundFunction(const std::function<void(int, int, int&, int&, int&, int&)>& function)
         {
-            _popGeometryLodRangeFetchingMaxSizeFunction = function;
+            _popGeometryLodRangeFetchingBoundFunction = function;
 
             return shared_from_this();
         }
 
         inline
-        const std::function<int(int, int)>&
-        streamedTextureLodRangeFetchingMaxSizeFunction() const
+        const std::function<void(int, int, int&, int&, int&, int&)>&
+        streamedTextureLodRangeFetchingBoundFunction() const
         {
-            return _streamedTextureLodRangeFetchingMaxSizeFunction;
+            return _streamedTextureLodRangeFetchingBoundFunction;
         }
 
         inline
         Ptr
-        streamedTextureLodRangeFetchingMaxSizeFunction(const std::function<int(int, int)>& function)
+        streamedTextureLodRangeFetchingBoundFunction(const std::function<void(int, int, int&, int&, int&, int&)>& function)
         {
-            _streamedTextureLodRangeFetchingMaxSizeFunction = function;
+            _streamedTextureLodRangeFetchingBoundFunction = function;
 
             return shared_from_this();
         }

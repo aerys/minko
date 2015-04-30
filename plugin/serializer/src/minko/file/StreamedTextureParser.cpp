@@ -127,11 +127,26 @@ StreamedTextureParser::nextLod(int     previousLod,
                                int&    nextLodOffset,
                                int&    nextLodSize)
 {
+    auto lodRangeMinSize = 0;
+    auto lodRangeMaxSize = 1;
+    auto lodRangeRequestMinSize = 0;
+    auto lodRangeRequestMaxSize = 0;
+
+    if (streamingOptions()->popGeometryLodRangeFetchingBoundFunction())
+    {
+        streamingOptions()->popGeometryLodRangeFetchingBoundFunction()(
+            previousLod,
+            requiredLod,
+            lodRangeMinSize,
+            lodRangeMaxSize,
+            lodRangeRequestMinSize,
+            lodRangeRequestMaxSize
+        );
+    }
+
     nextLod = previousLod + std::min(
         requiredLod - previousLod,
-        streamingOptions()->streamedTextureLodRangeFetchingMaxSizeFunction()
-            ? streamingOptions()->streamedTextureLodRangeFetchingMaxSizeFunction()(previousLod, requiredLod)
-            : 1
+        lodRangeMaxSize
     );
 
     nextLod = std::min(maxLod(), nextLod);
