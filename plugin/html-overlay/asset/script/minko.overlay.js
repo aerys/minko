@@ -39,7 +39,8 @@ Minko.loadedHandler = function(event)
 
 		Minko.document.addEventListener('touchmove', function(event)
 		{
-			event.preventDefault();
+			if (!event.dontPreventDefault)			
+				event.preventDefault();
 		});
 	}
 	else
@@ -59,8 +60,11 @@ Minko.loadedHandler = function(event)
 	Minko.window.Minko = Minko;
 
 	Minko.document.body.oncontextmenu = function(event)
-	{ 
-		event.preventDefault(); 
+	{
+		if (event.dontPreventDefault || event.ignoreOnMinko)
+			return true;
+
+		event.preventDefault();
 		return false;
 	};
 
@@ -71,11 +75,15 @@ Minko.loadedHandler = function(event)
 			console.log('[Minko HTML Overlay] message received: ' + message);
 		}
 	}
-	Minko.messagesToSend = [];
 
-	Minko.sendMessage = function(message)
+	if (Minko.platform != "androidWebView")
 	{
-		Minko.messagesToSend.push(message);
+		Minko.messagesToSend = [];
+
+		Minko.sendMessage = function(message)
+		{
+			Minko.messagesToSend.push(message);
+		}
 	}
 
 	if (Minko.platform == "emscripten")
@@ -96,6 +104,9 @@ Minko.addListener = function(accessor, type)
 		accessor.minkoEvents = [];
 	accessor.addEventListener(type, function(event)
 	{
+		if (event.ignoreOnMinko)
+			return;
+		
 		accessor.minkoEvents.push(event);
 	});
 };
@@ -227,6 +238,9 @@ Minko.getOffsetLeft = function(element) //EMSCRIPTEN
 
 Minko.redispatchKeyboardEvent = function(event) //EMSCRIPTEN
 {
+	if (event.ignoreOnMinko)
+		return;
+
 	var eventCopy = document.createEvent('Event');
 
 	eventCopy.initEvent(event.type, event.bubbles, event.cancelable);
@@ -243,6 +257,9 @@ Minko.redispatchKeyboardEvent = function(event) //EMSCRIPTEN
 
 Minko.redispatchMouseEvent = function(event) //EMSCRIPTEN
 {
+	if (event.ignoreOnMinko)
+		return;
+
 	if (event.type == 'mouseout' && event.target != event.currentTarget)
 		return;
 
@@ -265,6 +282,9 @@ Minko.redispatchMouseEvent = function(event) //EMSCRIPTEN
 
 Minko.redispatchWheelEvent = function(event)
 {
+	if (event.ignoreOnMinko)
+		return;
+
 	var eventCopy = document.createEvent('Event');
 
 	eventCopy.initEvent(event.type, event.bubbles, event.cancelable);
@@ -278,7 +298,11 @@ Minko.redispatchWheelEvent = function(event)
 		eventCopy[copiedProperties[k]] = event[copiedProperties[k]];
 
 	Minko.canvas.dispatchEvent(eventCopy);
-	event.preventDefault();
+
+	if (event.dontPreventDefault)
+		return true;
+	else
+		event.preventDefault();
 };
 
 Minko.identifiers = [];
@@ -325,6 +349,9 @@ Minko.copyTouchList = function(touches)
 
 Minko.redispatchTouchEvent = function(event) //EMSCRIPTEN
 {
+	if (event.ignoreOnMinko)
+		return;
+
 	var eventCopy = document.createEvent('Event');
 
 	eventCopy.initEvent(event.type, event.bubbles, event.cancelable);
@@ -386,6 +413,9 @@ Minko.removePointerTouch = function(id)
 
 Minko.redispatchPointerEvent = function(event) //EMSCRIPTEN
 {
+	if (event.ignoreOnMinko)
+		return;
+
 	var eventCopy = document.createEvent('Event');
 
 	var type = event.type;
@@ -526,12 +556,16 @@ Minko.connectWebViewJavascriptBridge = function(callback) // iOS / OSX
 Minko.touchIds = [];
 
 Minko.androidEventHandler = function(event)
-{	
+{
+	if (event.ignoreOnMinko)
+		return;
+
 	console.log('JS Event: ' + event.type + ' (' + event.currentTarget.minkoName + ')');
 	
 	// Workaround for API 19 to properly fire touchmove
-	if (event.type == "touchstart" || event.type == "touchend")
+	if (!event.dontPreventDefault && (event.type == "touchstart" || event.type == "touchend"))	
 		event.preventDefault();
+
 	
 	eventData = {};
 	eventData.type = event.type;
@@ -608,13 +642,16 @@ Minko.init = function(platform)
 	else if (platform == "androidWebView")
 	{
 		console.log("Init android!");
-		Minko.loadedHandler();
-		Minko.addListener = Minko.addListenerAndroid;
 		
 		Minko.sendMessage = function(message)
 		{
-			console.log("Send message: " + message);
 			MinkoNativeInterface.onMessage(message);
 		}
+
+		Minko.loadedHandler();
+		Minko.addListener = Minko.addListenerAndroid;
 	}
 }
+
+if (!Minko.platform)
+	Minko.platform = "unknown";

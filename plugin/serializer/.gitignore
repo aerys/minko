@@ -2,3 +2,4 @@ bin
 obj
 lib/PVRTexTool
 lib/QCompress
+lib/crnlib

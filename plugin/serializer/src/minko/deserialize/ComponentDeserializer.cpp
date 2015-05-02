@@ -30,6 +30,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Animation.hpp"
 #include "minko/component/Skinning.hpp"
 #include "minko/file/AssetLibrary.hpp"
+#include "minko/geometry/Bone.hpp"
+#include "minko/geometry/Skin.hpp"
 #include "minko/component/Renderer.hpp"
 #include "msgpack.hpp"
 #include "minko/deserialize/TypeDeserializer.hpp"
@@ -39,11 +41,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Effect.hpp"
 #include "minko/file/Options.hpp"
 #include "minko/animation/Matrix4x4Timeline.hpp"
-#include "minko/geometry/Bone.hpp"
 #include "minko/scene/NodeSet.hpp"
 #include "minko/scene/Node.hpp"
-
-#include "SkinningComponentDeserializer.hpp"
 
 using namespace minko;
 using namespace minko::deserialize;
@@ -64,7 +63,7 @@ ComponentDeserializer::deserializeTransform(file::SceneVersion sceneVersion,
 	auto transformMatrix = Any::cast<math::mat4>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
     
     // For .scene file of version 0.2.x or less we need to transpose transform matrices
-    if (sceneVersion.minor < 3)
+    if (sceneVersion.major <= 0 && sceneVersion.minor < 3)
     {
         transformMatrix = math::transpose(transformMatrix);
     }
@@ -264,8 +263,14 @@ ComponentDeserializer::deserializeAnimation(file::SceneVersion sceneVersion,
         std::tuple<uint, std::string&> serializedMatrixTuple(dst.get<2>()[i].get<0>(), dst.get<2>()[i].get<1>());
 
 		timetable.push_back(dst.get<1>()[i]);
-		matrices.push_back(math::transpose(Any::cast<math::mat4>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple))));
-    }
+
+        auto matrix = Any::cast<math::mat4>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
+
+        if (sceneVersion.major <= 0 && sceneVersion.minor < 3)
+            matrix = math::transpose(matrix);
+
+		matrices.push_back(matrix);
+	}
 
     timelines.push_back(animation::Matrix4x4Timeline::create("transform.matrix", duration, timetable, matrices, interpolate));
 
@@ -278,53 +283,73 @@ ComponentDeserializer::deserializeSkinning(file::SceneVersion sceneVersion,
 										   AssetLibraryPtr	assetLibrary,
 										   DependencyPtr	dependencies)
 {
-    typedef msgpack::type::tuple<std::string, std::string, std::string, SerializedMatrix>   boneType;
-    msgpack::type::tuple<std::vector<boneType>, std::string, short>                         dst;
+	msgpack::zone mempool;
+	msgpack::object deserialized;
+	msgpack::type::tuple<
+        std::vector<msgpack::type::tuple<std::string, std::string, std::string, std::vector<SerializedMatrix>>>,
+        std::string,
+        short
+    > dst;
 
-    unpack(dst, packed.data(), packed.size() - 1);
+    unpack(dst, packed.data(), packed.size(), 0u);
 
-    auto duration        = dst.get<2>();
-    auto skeletonName    = dst.get<1>();
-    auto root            = dependencies->loadedRoot();
+	const auto duration = dst.get<2>();
+	const auto skeletonName = dst.get<1>();
 
-    std::vector<std::shared_ptr<geometry::Bone>>    bones;
-    auto                                            numBones = dst.get<0>().size();
+	auto root = dependencies->loadedRoot();
 
-    std::vector<std::vector<uint>>                  bonesVertexIds;
-    std::vector<std::vector<float>>                 bonesWeights;
-    std::vector<scene::Node::Ptr>                   nodes;
-	std::vector<math::mat4>                         offsetMatrices;
-    std::vector<scene::Node::Ptr>                   boneNodes;
+	const auto numBones = dst.get<0>().size();
+    const auto numFrames = !dst.get<0>().empty() ? dst.get<0>().front().get<3>().size() : 0u;
 
-    for (uint i = 0; i < numBones; i++)
-    {
-        auto                            serializedBone  = dst.get<0>()[i];
-        std::tuple<uint, std::string&>  serializedMatrixTuple(serializedBone.get<3>().get<0>(), serializedBone.get<3>().get<1>());
-        std::string                     nodeName        = serializedBone.get<0>();
-        std::vector<uint>               vertexIntIds    = TypeDeserializer::deserializeVector<uint, uint>(serializedBone.get<1>());
-        std::vector<unsigned short>     vertexShortIds(vertexIntIds.begin(), vertexIntIds.end());
-        std::vector<float>              boneWeight      = TypeDeserializer::deserializeVector<float>(serializedBone.get<2>());
-        auto							offsetMatrix	= Any::cast<math::mat4>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
+    auto options = assetLibrary->loader()->options();
+    auto context = assetLibrary->context();
 
-        auto nodeSet = scene::NodeSet::create(root)
-            ->descendants(true, false)
-            ->where([&](scene::Node::Ptr n){ return n->name() == nodeName; });
+    auto skin = geometry::Skin::create(numBones, duration, numFrames);
 
-        if (!nodeSet->nodes().empty())
+	for (auto boneId = 0u; boneId < numBones; boneId++)
+	{
+		auto serializedBone = dst.get<0>().at(boneId);
+
+        for (auto frameId = 0u; frameId < numFrames; ++frameId)
         {
-            auto node = nodeSet->nodes()[0];
-			bones.push_back(geometry::Bone::create(node, offsetMatrix, vertexShortIds, boneWeight));
-			boneNodes.push_back(node);
-        }
-    }
+            const auto serializedMatrix = std::tuple<uint, std::string&>(
+                serializedBone.get<3>().at(frameId).get<0>(),
+                serializedBone.get<3>().at(frameId).get<1>()
+            );
 
-    return SkinningComponentDeserializer::computeSkinning(
-        assetLibrary->loader()->options(),
-        assetLibrary->context(),
-        bones,
-        boneNodes,
-        root->children().size() == 1 ? root->children().front() : root  // FIXME (for soccerpunch) there is one extra level wrt minko studio ! ->issues w/ precomputation and collider
-   );
+            const auto matrix = Any::cast<math::mat4>(TypeDeserializer::deserializeMatrix4x4(serializedMatrix));
+
+            skin->matrix(frameId, boneId, matrix);
+        }
+
+		const auto nodeName = serializedBone.get<0>();
+		const auto vertexIntIds = TypeDeserializer::deserializeVector<uint, uint>(serializedBone.get<1>());
+		const auto vertexShortIds = std::vector<unsigned short>(vertexIntIds.begin(), vertexIntIds.end());
+		const auto boneWeight = TypeDeserializer::deserializeVector<float>(serializedBone.get<2>());
+
+		auto nodeSet = scene::NodeSet::create(root)
+			->descendants(true, false)
+			->where([&](scene::Node::Ptr n){ return n->name() == nodeName; });
+
+		if (!nodeSet->nodes().empty())
+		{
+            auto node = nodeSet->nodes().front();
+
+            auto bone = geometry::Bone::create(node, math::mat4(), vertexShortIds, boneWeight);
+
+            skin->bone(boneId, bone);
+		}
+	}
+
+	auto skinning =  component::Skinning::create(
+        skin->reorganizeByVertices(),
+        options->skinningMethod(),
+        context,
+		root,
+		true
+    );
+
+    return skinning;
 }
 
 std::shared_ptr<component::AbstractComponent>

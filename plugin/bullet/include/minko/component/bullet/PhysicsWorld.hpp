@@ -108,6 +108,8 @@ namespace minko
                 std::unordered_map<ColliderPtr, NodeLayoutsChanged::Slot>           _colliderNodeLayoutChangedSlot;
                 std::unordered_map<ColliderPtr, LayoutMaskChanged::Slot>            _colliderLayoutMaskChangedSlot;
 
+                bool                                                                _paused;
+
             public:
                 static
                 Ptr
@@ -122,6 +124,20 @@ namespace minko
 
                 ~PhysicsWorld()
                 {
+                }
+                    
+                inline
+                void
+                paused(bool paused)
+                {
+                    _paused = paused;
+                }
+
+                inline
+                bool
+                paused()
+                {
+                    return _paused;
                 }
 
                 bool
@@ -210,17 +226,19 @@ namespace minko
                     typedef std::shared_ptr<BulletCollider> Ptr;
 
                 private:
-                    typedef std::shared_ptr<AbstractPhysicsShape>    AbsShapePtr;
-                    typedef std::shared_ptr<SphereShape>            SphereShapePtr;
-                    typedef std::shared_ptr<BoxShape>                BoxShapePtr;
-                    typedef std::shared_ptr<ConeShape>                ConeShapePtr;
-                    typedef std::shared_ptr<CylinderShape>            CylinderShapePtr;
+                    typedef std::shared_ptr<AbstractPhysicsShape>       AbsShapePtr;
+                    typedef std::shared_ptr<SphereShape>                SphereShapePtr;
+                    typedef std::shared_ptr<BoxShape>                   BoxShapePtr;
+                    typedef std::shared_ptr<ConeShape>                  ConeShapePtr;
+                    typedef std::shared_ptr<CylinderShape>              CylinderShapePtr;
+                    typedef std::shared_ptr<ConvexHullShape>            ConvexHullShapePtr;
+					typedef std::shared_ptr<CapsuleShape>				CapsuleShapePtr;
 
-                    typedef std::shared_ptr<btCollisionShape>        btCollisionShapePtr;
-                    typedef std::shared_ptr<btMotionState>            btMotionStatePtr;
-                    typedef std::shared_ptr<btDefaultMotionState>    btDefaultMotionStatePtr;
-                    typedef std::shared_ptr<btCollisionObject>        btCollisionObjectPtr;
-                    typedef std::shared_ptr<btRigidBody>            btRigidBodyPtr;
+                    typedef std::shared_ptr<btCollisionShape>           btCollisionShapePtr;
+                    typedef std::shared_ptr<btMotionState>              btMotionStatePtr;
+                    typedef std::shared_ptr<btDefaultMotionState>       btDefaultMotionStatePtr;
+                    typedef std::shared_ptr<btCollisionObject>          btCollisionObjectPtr;
+                    typedef std::shared_ptr<btRigidBody>                btRigidBodyPtr;
 
                 private:
                     btCollisionShapePtr        _bulletCollisionShape;
@@ -262,6 +280,12 @@ namespace minko
 
                     btCollisionShapePtr
                     initializeCylinderShape(CylinderShapePtr) const;
+
+                    btCollisionShapePtr
+                    initializeConvexHullShape(ConvexHullShapePtr) const;
+
+					btCollisionShapePtr
+					initializeCapsuleShape(CapsuleShapePtr) const;
 
                     btMotionStatePtr
                     initializeMotionState(ColliderPtr) const;

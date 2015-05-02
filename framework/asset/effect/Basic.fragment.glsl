@@ -1,5 +1,7 @@
 #ifdef FRAGMENT_SHADER
 
+#pragma include "TextureLod.extension.glsl"
+
 #ifdef GL_ES
     #ifdef GL_FRAGMENT_PRECISION_HIGH
         precision highp float;
@@ -8,26 +10,39 @@
     #endif
 #endif
 
-#pragma include "TextureLod.extension.glsl"
-
 #pragma include "Fog.function.glsl"
 #pragma include "TextureLod.function.glsl"
 
 uniform vec4 uDiffuseColor;
+
+#ifdef DIFFUSE_MAP
 uniform sampler2D uDiffuseMap;
+#endif
+
+#ifdef DIFFUSE_CUBEMAP
 uniform samplerCube	uDiffuseCubeMap;
+#endif
 
 // alpha
+#ifdef ALPHA_MAP
 uniform sampler2D uAlphaMap;
+#endif
+
+#ifdef ALPHA_THRESHOLD
 uniform float uAlphaThreshold;
+#endif
 
 // fog
+#ifdef FOG_TECHNIQUE
 uniform vec4 uFogColor;
 uniform vec2 uFogBounds;
+#endif
 
 // texture lod
+#ifdef DIFFUSE_MAP_LOD
 uniform float uDiffuseMapMaxAvailableLod;
 uniform vec2 uDiffuseMapSize;
+#endif
 
 varying vec2 vVertexUV;
 varying vec3 vVertexUVW;

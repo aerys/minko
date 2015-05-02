@@ -1,5 +1,7 @@
 #ifdef FRAGMENT_SHADER
 
+#pragma include "TextureLod.extension.glsl"
+
 #ifdef GL_ES
     #ifdef GL_FRAGMENT_PRECISION_HIGH
         precision highp float;
@@ -8,7 +10,6 @@
     #endif
 #endif
 
-#pragma include "TextureLod.extension.glsl"
 #pragma include "Envmap.function.glsl"
 #pragma include "Phong.function.glsl"
 #pragma include "TextureLod.function.glsl"
@@ -17,44 +18,80 @@
 
 // diffuse
 uniform vec4 uDiffuseColor;
+
+#ifdef DIFFUSE_MAP
 uniform sampler2D uDiffuseMap;
+#endif
 
 // alpha
+#ifdef ALPHA_MAP
 uniform sampler2D uAlphaMap;
+#endif
+#ifdef ALPHA_THRESHOLD
 uniform float uAlphaThreshold;
+#endif
 
 // fog
+#ifdef FOG_TECHNIQUE
 uniform vec4 uFogColor;
 uniform vec2 uFogBounds;
+#endif
 
-// phong
-uniform vec4 uSpecularColor;
+#ifdef NORMAL_MAP
 uniform sampler2D uNormalMap;
+#endif
+
+// specular
+uniform vec4 uSpecularColor;
+#ifdef SPECULAR_MAP
 uniform sampler2D uSpecularMap;
+#endif
+
+#ifdef SHININESS
 uniform float uShininess;
+#endif
+
 uniform vec3 uCameraPosition;
 
 // env. mapping
+#ifdef ENVIRONMENT_MAP_2D
 uniform sampler2D uEnvironmentMap2d;
 uniform int uEnvironmentMap2dType;
+#endif
+#ifdef ENVIRONMENT_CUBE_MAP
 uniform samplerCube uEnvironmentCubemap;
+#endif
+#ifdef ENVIRONMENT_ALPHA
 uniform float uEnvironmentAlpha;
+#endif
 
 // texture lod
+#ifdef DIFFUSE_MAP_LOD
 uniform float uDiffuseMapMaxAvailableLod;
 uniform vec2 uDiffuseMapSize;
+#endif
 
+#ifdef NORMAL_MAP_LOD
 uniform float uNormalMapMaxAvailableLod;
 uniform vec2 uNormalMapSize;
+#endif
 
+#ifdef SPECULAR_MAP_LOD
 uniform float uSpecularMapMaxAvailableLod;
 uniform vec2 uSpecularMapSize;
+#endif
 
 // directional lights
+#ifdef NUM_DIRECTIONAL_LIGHTS
+
+# if NUM_DIRECTIONAL_LIGHTS > 0
 uniform vec3 uDirLight0_direction;
 uniform vec3 uDirLight0_color;
 uniform float uDirLight0_diffuse;
+#  ifdef SHININESS
 uniform float uDirLight0_specular;
+#  endif
+#  ifdef DIRECTIONAL_0_SHADOW_MAP
 uniform sampler2D uDirLight0_shadowMap;
 uniform mat4 uDirLight0_viewProjection[SHADOW_MAPPING_MAX_NUM_CASCADES];
 uniform float uDirLight0_zNear[SHADOW_MAPPING_MAX_NUM_CASCADES];
@@ -64,11 +101,17 @@ uniform vec4 uDirLight0_shadowSplitFar;
 uniform float uDirLight0_shadowMapSize;
 uniform float uDirLight0_shadowSpread;
 uniform float uDirLight0_shadowBias;
+#  endif
+# endif
 
+# if NUM_DIRECTIONAL_LIGHTS > 1
 uniform vec3 uDirLight1_direction;
 uniform vec3 uDirLight1_color;
 uniform float uDirLight1_diffuse;
+#  ifdef SHININESS
 uniform float uDirLight1_specular;
+#  endif
+#  ifdef DIRECTIONAL_1_SHADOW_MAP
 uniform sampler2D uDirLight1_shadowMap;
 uniform mat4 uDirLight1_viewProjection[SHADOW_MAPPING_MAX_NUM_CASCADES];
 uniform float uDirLight1_zNear[SHADOW_MAPPING_MAX_NUM_CASCADES];
@@ -78,11 +121,17 @@ uniform vec4 uDirLight1_shadowSplitFar;
 uniform float uDirLight1_shadowMapSize;
 uniform float uDirLight1_shadowSpread;
 uniform float uDirLight1_shadowBias;
+#   endif
+# endif
 
+# if NUM_DIRECTIONAL_LIGHTS > 2
 uniform vec3 uDirLight2_direction;
 uniform vec3 uDirLight2_color;
 uniform float uDirLight2_diffuse;
+#  ifdef SHININESS
 uniform float uDirLight2_specular;
+#  endif
+#  ifdef DIRECTIONAL_2_SHADOW_MAP
 uniform sampler2D uDirLight2_shadowMap;
 uniform mat4 uDirLight2_viewProjection[SHADOW_MAPPING_MAX_NUM_CASCADES];
 uniform float uDirLight2_zNear[SHADOW_MAPPING_MAX_NUM_CASCADES];
@@ -92,11 +141,17 @@ uniform vec4 uDirLight2_shadowSplitFar;
 uniform float uDirLight2_shadowMapSize;
 uniform float uDirLight2_shadowSpread;
 uniform float uDirLight2_shadowBias;
+#   endif
+# endif
 
+# if NUM_DIRECTIONAL_LIGHTS > 3
 uniform vec3 uDirLight3_direction;
 uniform vec3 uDirLight3_color;
 uniform float uDirLight3_diffuse;
+#  ifdef SHININESS
 uniform float uDirLight3_specular;
+#  endif
+#  ifdef DIRECTIONAL_3_SHADOW_MAP
 uniform sampler2D uDirLight3_shadowMap;
 uniform mat4 uDirLight3_viewProjection[SHADOW_MAPPING_MAX_NUM_CASCADES];
 uniform float uDirLight3_zNear[SHADOW_MAPPING_MAX_NUM_CASCADES];
@@ -106,46 +161,85 @@ uniform vec4 uDirLight3_shadowSplitFar;
 uniform float uDirLight3_shadowMapSize;
 uniform float uDirLight3_shadowSpread;
 uniform float uDirLight3_shadowBias;
+#   endif
+# endif
+
+#endif
 
 // ambient lights
+#ifdef NUM_AMBIENT_LIGHTS
+
+# if NUM_AMBIENT_LIGHTS > 0
 uniform vec3 uAmbientLight0_color;
 uniform float uAmbientLight0_ambient;
+# endif
 
+# if NUM_AMBIENT_LIGHTS > 1
 uniform vec3 uAmbientLight1_color;
 uniform float uAmbientLight1_ambient;
+# endif
 
+# if NUM_AMBIENT_LIGHTS > 2
 uniform vec3 uAmbientLight2_color;
 uniform float uAmbientLight2_ambient;
+# endif
 
+# if NUM_AMBIENT_LIGHTS > 3
 uniform vec3 uAmbientLight3_color;
 uniform float uAmbientLight3_ambient;
+# endif
+
+#endif
 
 // point lights
+#ifdef NUM_POINT_LIGHTS
+
+# if NUM_POINT_LIGHTS > 0
 uniform vec3 uPointLight0_color;
 uniform float uPointLight0_diffuse;
-uniform float uPointLight0_specular;
 uniform vec3 uPointLight0_attenuationCoeffs;
 uniform vec3 uPointLight0_position;
+#  ifdef SHININESS
+uniform float uPointLight0_specular;
+#  endif
+# endif
 
+# if NUM_POINT_LIGHTS > 1
 uniform vec3 uPointLight1_color;
 uniform float uPointLight1_diffuse;
-uniform float uPointLight1_specular;
 uniform vec3 uPointLight1_attenuationCoeffs;
 uniform vec3 uPointLight1_position;
+#  ifdef SHININESS
+uniform float uPointLight1_specular;
+#  endif
+# endif
 
+# if NUM_POINT_LIGHTS > 2
 uniform vec3 uPointLight2_color;
 uniform float uPointLight2_diffuse;
-uniform float uPointLight2_specular;
 uniform vec3 uPointLight2_attenuationCoeffs;
 uniform vec3 uPointLight2_position;
+#  ifdef SHININESS
+uniform float uPointLight2_specular;
+#  endif
+# endif
 
+# if NUM_POINT_LIGHTS > 3
 uniform vec3 uPointLight3_color;
 uniform float uPointLight3_diffuse;
-uniform float uPointLight3_specular;
 uniform vec3 uPointLight3_attenuationCoeffs;
 uniform vec3 uPointLight3_position;
+#  ifdef SHININESS
+uniform float uPointLight3_specular;
+#  endif
+# endif
+
+#endif
 
 // spot lights
+#ifdef NUM_SPOT_LIGHTS
+
+# if NUM_SPOT_LIGHTS > 0
 uniform vec3 uSpotLight0_direction;
 uniform float uSpotLight0_diffuse;
 uniform vec3 uSpotLight0_position;
@@ -153,8 +247,12 @@ uniform float uSpotLight0_cosInnerConeAngle;
 uniform vec3 uSpotLight0_color;
 uniform float uSpotLight0_cosOuterConeAngle;
 uniform vec3 uSpotLight0_attenuationCoeffs;
+#  ifdef SHININESS
 uniform float uSpotLight0_specular;
+#  endif
+# endif
 
+# if NUM_SPOT_LIGHTS > 1
 uniform vec3 uSpotLight1_direction;
 uniform float uSpotLight1_diffuse;
 uniform vec3 uSpotLight1_position;
@@ -162,8 +260,12 @@ uniform float uSpotLight1_cosInnerConeAngle;
 uniform vec3 uSpotLight1_color;
 uniform float uSpotLight1_cosOuterConeAngle;
 uniform vec3 uSpotLight1_attenuationCoeffs;
+#  ifdef SHININESS
 uniform float uSpotLight1_specular;
+#  endif
+# endif
 
+# if NUM_SPOT_LIGHTS > 2
 uniform vec3 uSpotLight2_direction;
 uniform float uSpotLight2_diffuse;
 uniform vec3 uSpotLight2_position;
@@ -171,8 +273,12 @@ uniform float uSpotLight2_cosInnerConeAngle;
 uniform vec3 uSpotLight2_color;
 uniform float uSpotLight2_cosOuterConeAngle;
 uniform vec3 uSpotLight2_attenuationCoeffs;
+#  ifdef SHININESS
 uniform float uSpotLight2_specular;
+#  endif
+# endif
 
+# if NUM_SPOT_LIGHTS > 3
 uniform vec3 uSpotLight3_direction;
 uniform float uSpotLight3_diffuse;
 uniform vec3 uSpotLight3_position;
@@ -180,7 +286,12 @@ uniform float uSpotLight3_cosInnerConeAngle;
 uniform vec3 uSpotLight3_color;
 uniform float uSpotLight3_cosOuterConeAngle;
 uniform vec3 uSpotLight3_attenuationCoeffs;
+#  ifdef SHININESS
 uniform float uSpotLight3_specular;
+#  endif
+# endif
+
+#endif
 
 varying vec3 vVertexPosition;
 varying vec2 vVertexUV;

@@ -119,9 +119,6 @@ namespace minko
             invalidateDrawCalls(uint batchId, const EffectVariables& variables);
 
             void
-            sortDrawCalls();
-
-            void
             update(bool forceZSort = false);
 
 			void

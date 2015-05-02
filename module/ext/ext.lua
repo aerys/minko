@@ -40,7 +40,7 @@ function table.clone(t) -- deep-copy a table
     return target
 end
 
-local function explode(delimiter, value)
+function explode(delimiter, value)
 	local t = {}
 	local ll = 0
 	if (#string == 1) then
@@ -72,3 +72,6 @@ function table.inject(obj, key, value)
 		obj = obj[key]
 	end
 end
+
+-- cygwin
+dofile('module/ext/cygwin.lua')

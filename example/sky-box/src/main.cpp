@@ -61,7 +61,7 @@ main(int argc, char** argv)
 	auto camera = scene::Node::create("camera")
 		->addComponent(Renderer::create(0x7f7f7fff))
 		->addComponent(Transform::create(
-            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+            math::inverse(math::lookAt(math::vec3(0), math::vec3(0, 0, 3), math::vec3(0, 1, 0)))
         ))
         ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
 
@@ -126,7 +126,7 @@ createTransparentObject(float scale, float rotationY, file::AssetLibrary::Ptr as
 	assert(NUM_OBJECTS > 0);
 
 	auto		randomAxis	= math::normalize(math::vec3((float)rand(), (float)rand(), (float)rand()));
-	const float randomAng	= 2.0f * (float)PI * rand() / (float)RAND_MAX;
+	const float randomAng	= 2.0f * (float)M_PI * rand() / (float)RAND_MAX;
 
 	auto m = math::mat4(1.f);
 	m = math::rotate(m, randomAng, randomAxis);
@@ -139,8 +139,7 @@ createTransparentObject(float scale, float rotationY, file::AssetLibrary::Ptr as
 		->addComponent(Surface::create(
             assets->geometry("cube"),
 			material::BasicMaterial::create()
-				->diffuseColor(math::vec4(math::rgbColor(math::vec3((rotationY / (2.f * (float)PI)) * 360, 1.0f, 0.5f)), 0.5f))
-				->isTransparent(true, true)
+				->diffuseColor(math::vec4(math::rgbColor(math::vec3((rotationY / (2.f * (float)M_PI)) * 360, 1.0f, 0.5f)), 0.5f))
 				->triangleCulling(render::TriangleCulling::BACK),
 			assets->effect("effect/Basic.effect")
 		));

@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/extension/AbstractExtension.hpp"
 #include "minko/Common.hpp"
+#include "minko/deserialize/Unpacker.hpp"
 #include "minko/SerializerCommon.hpp"
 
 namespace minko
@@ -47,12 +48,20 @@ namespace minko
                 return extention;
             }
 
+
+            static
+            std::string
+            serializePhysics(std::shared_ptr<scene::Node>                       node,
+                               std::shared_ptr<component::AbstractComponent>    component,
+                                std::shared_ptr<file::Dependency>               dependency);
+
             static
             std::shared_ptr<component::AbstractComponent>
             deserializePhysics(file::SceneVersion                   sceneVersion,
                                std::string&                         serializedAnimation,
                                std::shared_ptr<file::AssetLibrary>  assetLibrary,
                                std::shared_ptr<file::Dependency>    dependencies);
+
         };
     }
 }

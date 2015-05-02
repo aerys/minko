@@ -26,9 +26,6 @@ minko.plugin["video-camera"].enable = function()
 	includedirs { minko.plugin.path("video-camera") .. "/include" }
 	defines { "MINKO_PLUGIN_VIDEO_CAMERA" }
 
-	configuration { "android" }
-        minko.plugin.enable("android")
-
 	configuration { "html5" }
 		prelinkcommands {
 			minko.action.copy(minko.plugin.path("video-camera") .. "/asset")

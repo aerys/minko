@@ -57,7 +57,7 @@ File::getCurrentWorkingDirectory()
 std::string
 File::getBinaryDirectory()
 {
-#if defined(_MSC_VER) // WINDOWS
+#if defined(_MSC_VER) // Windows
     TCHAR buffer[MAX_PATH];
 
     GetModuleFileName(NULL, buffer, MAX_PATH);
@@ -74,19 +74,8 @@ File::getBinaryDirectory()
     CFRelease(resourcesURL);
 
     return sanitizeFilename(path);
-#elif defined(EMSCRIPTEN) // HTML5
-    /*
-    std::string eval = "(document.location.href)";
-    char* buffer = emscripten_run_script_string(eval.c_str());
-    auto path = sanitizeFilename(std::string(buffer));
-    auto pos = path.find_last_of("/");
-    return path.substr(0, pos);
-    */
-# ifdef DEBUG
-    return "bin/html5/debug";
-# else //RELEASE
-    return "bin/html5/release";
-# endif
+#elif MINKO_PLATFORM == MINKO_PLATFORM_HTML5 // HTML5
+    return "";
 #elif MINKO_PLATFORM == MINKO_PLATFORM_LINUX // Linux
     char buffer[PATH_MAX];
     size_t l = readlink("/proc/self/exe", buffer, PATH_MAX);

@@ -33,58 +33,67 @@ namespace minko
                         const std::string& password = "",
                         const std::unordered_map<std::string, std::string>* additionalHeaders = nullptr);
 
+            inline
             void
-                run();
+            verifyPeer(bool value)
+            {
+                _verifyPeer = value;
+            }
+
+            void
+            run();
 
             std::vector<char>&
-                output()
+            output()
             {
-                    return _output;
-                }
+                return _output;
+            }
 
             Signal<float>::Ptr
-                progress()
+            progress()
             {
-                    return _progress;
-                }
+                return _progress;
+            }
 
-            Signal<int>::Ptr
-                error()
+            Signal<int, const std::string&>::Ptr
+            error()
             {
-                    return _error;
-                }
+                return _error;
+            }
 
             Signal<const std::vector<char>&>::Ptr
-                complete()
+            complete()
             {
-                    return _complete;
-                }
+                return _complete;
+            }
 
             static
-                size_t
-                curlWriteHandler(void* data, size_t size, size_t chunks, void* arg);
+            size_t
+            curlWriteHandler(void* data, size_t size, size_t chunks, void* arg);
 
             static
-                int
-                curlProgressHandler(void* arg, double total, double current, double, double);
+            int
+            curlProgressHandler(void* arg, double total, double current, double, double);
 
             static
             bool
             fileExists(const std::string& filename,
                        const std::string& username = "",
                        const std::string& password = "",
-                       const std::unordered_map<std::string, std::string> *additionalHeaders = nullptr);
+                       const std::unordered_map<std::string, std::string> *additionalHeaders = nullptr,
+                       bool verifyPeer = true);
 
         private:
             std::string _url;
             std::vector<char> _output;
             Signal<float>::Ptr _progress;
-            Signal<int>::Ptr _error;
+            Signal<int, const std::string&>::Ptr _error;
             Signal<const std::vector<char>&>::Ptr _complete;
             
             std::string _username;
             std::string _password;
             std::unordered_map<std::string, std::string> _additionalHeaders;
+            bool _verifyPeer;
         };
     }
 }

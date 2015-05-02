@@ -15,7 +15,7 @@
 			overflow: hidden;
 			overflow-x: hidden;
 			overflow-y: hidden;
-            -ms-touch-action: none; 
+            -ms-touch-action: none;
             -ms-scroll-chaining: none;
             -ms-overflow-style: none;
 		}
@@ -87,7 +87,7 @@
 			<span id="percentage"></span>
 		</figure>
 	</div>
-    
+
 	<canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
 	
 	<script>window.performance = window.performance || {now: Date.now};</script>
@@ -97,7 +97,7 @@
       var progressElement = document.getElementById('progress');
       var loaderElement = document.getElementById('loader');
 	  var percentageElement = document.getElementById('percentage');
-	  
+
 	  function resizeCanvas()
 	  {
 		if (Module && Module.setCanvasSize && (canvas.width != window.innerWidth || canvas.height != window.innerHeight))
@@ -122,7 +122,7 @@
           if (m) {
 			var loaded = parseInt(m[2])*100;
 			var total = parseInt(m[4])*100;
-		  
+
             text = m[1];
 			progressElement.value = loaded;
             progressElement.max = total;
@@ -148,7 +148,7 @@
 		TOTAL_MEMORY: 128 * 1024 * 1024
       };
       Module.setStatus('Downloading...');
-	  
+
 	  window.onresize = function(event)
 	  {
 		resizeCanvas();
@@ -159,6 +159,8 @@
 	  	event.preventDefault();
 	  }
     </script>
+
+    {{{ PRELOAD }}}
     {{{ SCRIPT }}}
   </body>
 </html>

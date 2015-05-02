@@ -20,7 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Provider.hpp"
 
 #include "minko/Uuid.hpp"
-#include "sparsehash/sparse_hash_map"
+
+#ifdef MINKO_USE_SPARSE_HASH_MAP
+# include "sparsehash/sparse_hash_map"
+#endif
 
 using namespace minko;
 using namespace minko::data;
@@ -28,7 +31,16 @@ using namespace minko::data;
 Provider::Provider() :
     _values(new ValueMap())
 {
+#ifdef MINKO_USE_SPARSE_HASH_MAP
     _values->set_deleted_key("");
+#endif
+}
+
+Provider::Provider(const DefaultValueMap& values) :
+	_values(new ValueMap())
+{
+    for (auto& p : values)
+        setValue(p.first, p.second);
 }
 
 Provider::~Provider()
@@ -36,17 +48,13 @@ Provider::~Provider()
     delete _values;
 }
 
-Provider::Provider(const ValueMap& values) :
-	_values(new ValueMap(values))
+Provider::Ptr
+Provider::set(std::initializer_list<data::Provider::ValueType> values)
 {
-    _values->set_deleted_key("");
-}
+    for (auto& p : values)
+        setValue(p.first, p.second);
 
-Provider::Provider(std::initializer_list<std::pair<PropertyName, Any>> init) :
-    _values(new ValueMap())
-{
-    _values->set_deleted_key("");
-    _values->insert(init.begin(), init.end());    
+	return shared_from_this();
 }
 
 Provider::Ptr

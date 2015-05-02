@@ -1,1 +1,0 @@
-../../lin/script/format_code.sh

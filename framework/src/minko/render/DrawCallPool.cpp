@@ -522,6 +522,8 @@ DrawCallPool::update(bool forceZSort)
                 return compareDrawCalls(a, b);
             }
         );
+
+		_mustZSort = false;
     }
 }
 
@@ -540,19 +542,6 @@ DrawCallPool::invalidateDrawCalls(uint batchId, const EffectVariables& variables
             drawCall->variables().insert(drawCall->variables().end(), variables.begin(), variables.end());
         }
     }
-}
-
-void
-DrawCallPool::sortDrawCalls()
-{
-    _drawCalls.sort(
-        std::bind(
-            &DrawCallPool::compareDrawCalls,
-            this,
-            std::placeholders::_1,
-            std::placeholders::_2
-        )
-    );
 }
 
 bool

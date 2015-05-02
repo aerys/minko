@@ -38,6 +38,8 @@ namespace minko
             class ConeShape;
             class CylinderShape;
             class SphereShape;
+            class ConvexHullShape;
+			class CapsuleShape;
         }
     }
 
