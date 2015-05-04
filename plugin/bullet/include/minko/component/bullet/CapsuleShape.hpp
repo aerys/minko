@@ -100,6 +100,16 @@ namespace minko
 
                 LineGeometryPtr
                 getGeometry(AbsContextPtr) const;
+                
+                inline
+                void
+                transform(math::mat4 value)
+                {
+                    _deltaTransform = value;
+                    _deltaTransformInverse = math::inverse(value);
+
+                     shapeChanged()->execute(shared_from_this());
+                }
 
             private:
                 CapsuleShape(float radius, float height):

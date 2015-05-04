@@ -87,7 +87,7 @@ int main(int argc, char** argv)
 
     ppTarget->upload();
 
-    auto ppMaterial = material::BasicMaterial::create({
+    auto ppMaterial = material::BasicMaterial::create()->set({
         { "emissionMap", fwdTarget->sampler() },
         { "backbuffer", ppTarget->sampler() },
         { "decay", 0.96815f },
@@ -123,9 +123,9 @@ int main(int argc, char** argv)
                 assets->effect("effect/Basic.effect")
             ));
 
-        auto sunMaterial = material::BasicMaterial::create({
+        auto sunMaterial = material::BasicMaterial::create()->set({
             { "diffuseColor", math::vec4(1.f, 0.32f, 0.05f, 1.f) },
-            { "isLightSource", true }
+            { "isLightSource", 1.0f }
         });
 
         helio

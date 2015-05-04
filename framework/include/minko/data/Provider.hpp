@@ -36,12 +36,12 @@ namespace minko
             public Uuid::enable_uuid
 		{
         private:
-#if DEBUG
-			template <class K, typename... V>
-			using map = std::unordered_map<K, V...>;
-#else
+#ifdef MINKO_USE_SPARSE_HASH_MAP
 			template <typename... H>
 			using map = google::sparse_hash_map<H...>;
+#else
+			template <class K, typename... V>
+			using map = std::unordered_map<K, V...>;
 #endif
 
             template <typename T>
@@ -61,16 +61,18 @@ namespace minko
             };
 
 		public:
-			typedef std::shared_ptr<Provider>	Ptr;
-			typedef Flyweight<std::string>		PropertyName;
-			typedef map<PropertyName, Any> 		ValueMap;
+			typedef std::shared_ptr<Provider>	            Ptr;
+			typedef Flyweight<std::string>		            PropertyName;
+			typedef std::pair<PropertyName, Any>            ValueType;
+			typedef map<PropertyName, Any> 		            ValueMap;
+			typedef std::unordered_map<PropertyName, Any> 	DefaultValueMap;
 
 		private:
-            ValueMap*							_values;
+            ValueMap*							            _values;
 
-			Signal<Ptr, const PropertyName&>    _propertyAdded;
-            Signal<Ptr, const PropertyName&>	_propertyChanged;
-			Signal<Ptr, const PropertyName&>	_propertyRemoved;
+			Signal<Ptr, const PropertyName&>                _propertyAdded;
+            Signal<Ptr, const PropertyName&>	            _propertyChanged;
+			Signal<Ptr, const PropertyName&>	            _propertyRemoved;
 
 		public:
 			static
@@ -84,7 +86,7 @@ namespace minko
 
 			static
 			Ptr
-			create(const ValueMap& values)
+			create(const DefaultValueMap& values)
 			{
 				Ptr provider = std::make_shared<Provider>(values);
 
@@ -183,6 +185,9 @@ namespace minko
                 return shared_from_this();
             }
 
+            Ptr
+            set(std::initializer_list<data::Provider::ValueType> values);
+
             template <typename T>
 			bool
             propertyHasType(const PropertyName& propertyName) const
@@ -205,7 +210,7 @@ namespace minko
 
 			Provider();
 
-			Provider(const ValueMap& values);
+			Provider(const DefaultValueMap& values);
 
         private:
             Any&

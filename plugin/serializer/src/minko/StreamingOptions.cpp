@@ -37,6 +37,7 @@ StreamingOptions::StreamingOptions() :
     _streamedTextureLodFunction(),
     _mergeSurfacesOnPartitioning(true),
     _useSharedClusterHierarchyOnPartitioning(false),
+    _applyCrackFreePolicyOnPartitioning(true),
     _popGeometryPriorityFactor(1.f),
     _streamedTexturePriorityFactor(1.f),
     _popGeometryMaxPrecisionLevel(16),

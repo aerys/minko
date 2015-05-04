@@ -1,1 +1,0 @@
-../../lin/script/dist.sh

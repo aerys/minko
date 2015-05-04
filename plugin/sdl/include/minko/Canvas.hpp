@@ -88,10 +88,12 @@ namespace minko
         SDL_Window*                                                             _window;
         float                                                                   _relativeTime;
         float                                                                   _frameDuration;
+        float                                                                   _deltaTime;
         time_point                                                              _previousTime;
         time_point                                                              _startTime;
         float                                                                   _framerate;
         float                                                                   _desiredFramerate;
+		bool																	_swapBuffersAtEnterFrame;
 
 #if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID)
         std::shared_ptr<audio::SDLAudio>                                        _audio;
@@ -292,6 +294,23 @@ namespace minko
             return _context;
         }
 
+		void
+		swapBuffers() override;
+
+		inline
+		void
+		swapBuffersAtEnterFrame(bool value)
+		{
+			_swapBuffersAtEnterFrame = value;
+		}
+
+		inline
+		bool
+		swapBuffersAtEnterFrame()
+		{
+			return _swapBuffersAtEnterFrame;
+		}
+
         inline
         float
         framerate()
@@ -319,6 +338,14 @@ namespace minko
         frameDuration() const
         {
             return _frameDuration;
+        }
+
+        // Time in millisecond since last frame.
+        inline
+        float
+        deltaTime() const
+        {
+            return _deltaTime;
         }
 
         // Time in milliseconds since application started.

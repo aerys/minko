@@ -43,9 +43,10 @@ using namespace minko::material;
 using namespace minko::render;
 using namespace minko::scene;
 
-TextureLodScheduler::TextureLodScheduler() :
+TextureLodScheduler::TextureLodScheduler(AssetLibraryPtr assetLibrary) :
     AbstractLodScheduler(),
-    _textureResources()
+    _textureResources(),
+    _assetLibrary(assetLibrary)
 {
 }
 
@@ -74,7 +75,7 @@ TextureLodScheduler::surfaceAdded(Surface::Ptr surface)
         if (!material->data()->propertyHasType<TextureSampler>(propertyName))
             continue;
 
-        auto texture = _sceneManager->assets()->getTextureByUuid(
+        auto texture = _assetLibrary->getTextureByUuid(
             material->data()->get<TextureSampler>(propertyName).uuid
         );
 
@@ -271,10 +272,14 @@ TextureLodScheduler::activeLodChanged(TextureResourceInfo&   resource,
             resource.texture->height()
         ));
 
+        // fixme find proper alternative to unsetting *LodEnabled
+        // property, causing performance drop
+/*
         if (maxAvailableLod == maxLod)
         {
             material->data()->unset(lodEnabledPropertyName);
         }
+*/
 
         material->data()->set(maxAvailableLodPropertyName, mipLevel);
     }

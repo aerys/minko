@@ -56,6 +56,10 @@ namespace minko
         std::shared_ptr<render::AbstractContext>
         context() = 0;
 
+		virtual
+		void
+		swapBuffers() = 0;
+
         virtual
         std::shared_ptr<input::Mouse>
         mouse() = 0;
