@@ -16,3 +16,48 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FO
 DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
+
+#pragma once
+
+#include "minko/Minko.hpp"
+#include "minko/Signal.hpp"
+#include "minko/component/AbstractComponent.hpp"
+#include "minko/sensors/AbstractHeadTracker.hpp"
+
+namespace minko
+{
+    namespace component
+    {
+        class HeadTracker :
+            public AbstractComponent,
+            public sensors::AbstractHeadTracker
+        {
+        public:
+            typedef std::shared_ptr<HeadTracker> Ptr;
+            
+            static
+            Ptr
+            create()
+            {
+                Ptr headTracker(new HeadTracker());
+                
+                return headTracker;
+            }
+            
+            void
+            initialize();
+            
+            void
+            startTracking();
+            
+            void
+            stopTracking();
+            
+        private:
+            HeadTracker();
+            
+            sensors::AbstractHeadTracker::Ptr _headTracker;
+        };
+    }
+}
+

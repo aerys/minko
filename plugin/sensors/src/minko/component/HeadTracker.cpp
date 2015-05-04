@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2014 Aerys
+Copyright (c) 2015 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -17,19 +17,44 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "minko/component/HeadTracker.hpp"
 
-#include "minko/Minko.hpp"
-#include "minko/Signal.hpp"
-#include "minko/component/AbstractComponent.hpp"
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+# include "android/AndroidHeadTracker.hpp"
+#endif
 
-namespace minko
+#if MINKO_PLATFORM == MINKO_PLATFORM_IOS
+# include "apple/IOSHeadTracker.hpp"
+#endif
+
+using namespace minko;
+using namespace minko::component;
+
+HeadTracker::HeadTracker() :
+    AbstractComponent(),
+    _headTracker(nullptr)
 {
-    namespace component
-    {
-        class HeadTracker
-        {
-        };
-    }
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+    _headTracker = android::sensors::AndroidHeadTracker::create();
+#elif MINKO_PLATFORM == MINKO_PLATFORM_IOS
+    _headTracker = apple::sensors::IOSHeadTracker::create();
+#endif
 }
 
+void
+HeadTracker::initialize()
+{
+    _headTracker->initialize();
+}
+
+void
+HeadTracker::startTracking()
+{
+    _headTracker->startTracking();
+}
+
+void
+HeadTracker::stopTracking()
+{
+    _headTracker->stopTracking();
+}
