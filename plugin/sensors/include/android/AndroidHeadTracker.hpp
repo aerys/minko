@@ -23,8 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/sensors/AbstractHeadTracker.hpp"
 #include "minko/log/Logger.hpp"
 
-#include <jni.h>
-
 namespace minko
 {
     namespace android
