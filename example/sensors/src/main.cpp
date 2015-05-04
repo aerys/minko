@@ -20,22 +20,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Minko.hpp"
 #include "minko/MinkoSDL.hpp"
 #include "minko/log/Logger.hpp"
-#include "minko/android/AndroidHeadTracker.hpp"
+#include "minko/component/HeadTracker.hpp"
 
 using namespace minko;
+using namespace minko::component;
 
 int
 main(int argc, char** argv)
 {
     LOG_INFO("Hello World");
-
-    auto headTracker = android::sensors::AndroidHeadTracker::create();
     
+    auto headTracker = HeadTracker::create();
     headTracker->initialize();
     headTracker->startTracking();
 
 	while(true)
 	{
-
 	}
 }
