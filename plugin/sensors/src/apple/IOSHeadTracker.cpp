@@ -17,32 +17,34 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "minko/Common.hpp"
+#include "apple/IOSHeadTracker.hpp"
 
-#include "minko/Minko.hpp"
-#include "minko/Signal.hpp"
+using namespace minko;
+using namespace apple::sensors;
 
-namespace minko
+IOSHeadTracker::IOSHeadTracker()
 {
-    namespace sensors
+}
+
+void IOSHeadTracker::initialize()
+{
+    this->manager = [[CMMotionManager alloc] init];
+}
+
+void
+IOSHeadTracker::startTracking()
+{
+    LOG_INFO("START TRACKING");
+    if (this->manager.isDeviceMotionAvailable && !this->manager.isDeviceMotionActive)
     {
-        class AbstractHeadTracker
-        {
-        public:
-            typedef std::shared_ptr<AbstractHeadTracker> Ptr;
-            
-            virtual
-            void
-            initialize() = 0;
-
-            virtual
-            void
-            startTracking() = 0;
-
-            virtual
-            void
-            stopTracking() = 0;
-        };
+        [this->manager startDeviceMotionUpdatesUsingReferenceFrame:CMAttitudeReferenceFrameXArbitraryZVertical];
     }
 }
 
+void
+IOSHeadTracker::stopTracking()
+{
+    LOG_INFO("STOP TRACKING");
+    [this->manager stopDeviceMotionUpdates];
+}

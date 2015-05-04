@@ -20,29 +20,49 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Minko.hpp"
-#include "minko/Signal.hpp"
+#include "minko/sensors/AbstractHeadTracker.hpp"
+#include "minko/log/Logger.hpp"
+
+#import <CoreMotion/CoreMotion.h>
 
 namespace minko
 {
-    namespace sensors
+    namespace apple
     {
-        class AbstractHeadTracker
+        namespace sensors
         {
-        public:
-            typedef std::shared_ptr<AbstractHeadTracker> Ptr;
-            
-            virtual
-            void
-            initialize() = 0;
+            class IOSHeadTracker : public minko::sensors::AbstractHeadTracker
+            {
+            public:
+                typedef std::shared_ptr<IOSHeadTracker> Ptr;
 
-            virtual
-            void
-            startTracking() = 0;
+            private:
+                IOSHeadTracker();
 
-            virtual
-            void
-            stopTracking() = 0;
-        };
+            public:
+                static
+                inline
+                Ptr
+                create()
+                {
+                    return std::shared_ptr<IOSHeadTracker>(new IOSHeadTracker());
+                }
+
+                void
+                initialize();
+
+                void
+                startTracking();
+
+                void
+                stopTracking();
+                
+                void
+                getLastHeadView();
+
+            private:
+                CMMotionManager *manager;
+            };
+        }
     }
 }
-
