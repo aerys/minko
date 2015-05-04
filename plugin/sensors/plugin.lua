@@ -31,13 +31,14 @@ function minko.plugin.sensors:enable()
 		minko.plugin.path("sensors") .. "/include"
 	}
 
-	prelinkcommands {
-		minko.action.copy(minko.plugin.path("sensors") .. "/asset"),
-	}
-
 	configuration { "android", "SharedLib" }
 		linkoptions {
 			"-Wl,--undefined=Java_minko_plugin_sensors_AndroidHeadTracker_minkoNativeOnHeadTrackerEvent"
+		}
+
+	configuration { "ios" }
+		links {
+			"CoreMotion.framework" -- To receive data from mobile device sensors
 		}
 end
 
