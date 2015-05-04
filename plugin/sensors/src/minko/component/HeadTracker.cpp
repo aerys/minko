@@ -58,3 +58,9 @@ HeadTracker::stopTracking()
 {
     _headTracker->stopTracking();
 }
+
+math::mat4
+HeadTracker::getLastHeadView()
+{
+    _headTracker->getLastHeadView();
+}

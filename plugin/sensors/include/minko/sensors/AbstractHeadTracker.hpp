@@ -42,6 +42,10 @@ namespace minko
             virtual
             void
             stopTracking() = 0;
+            
+            virtual
+            math::mat4
+            getLastHeadView() = 0;
         };
     }
 }

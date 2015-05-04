@@ -53,6 +53,9 @@ namespace minko
             void
             stopTracking();
             
+            math::mat4
+            getLastHeadView();
+            
         private:
             HeadTracker();
             

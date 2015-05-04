@@ -36,5 +36,6 @@ main(int argc, char** argv)
 
 	while(true)
 	{
+        headTracker->getLastHeadView();
 	}
 }

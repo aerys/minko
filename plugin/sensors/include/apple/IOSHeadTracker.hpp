@@ -57,11 +57,21 @@ namespace minko
                 void
                 stopTracking();
                 
-                void
+                math::mat4
                 getLastHeadView();
 
             private:
+                math::mat4
+                getRotateEulerMatrix(float x, float y, float z);
+                
+                math::mat4
+                glmMatrixFromCMRotationMatrix(CMRotationMatrix rotationMatrix);
+                
                 CMMotionManager *manager;
+                math::mat4 deviceToDisplay;
+                math::mat4 worldToInertialReferenceFrame;
+                NSTimeInterval referenceTimestamp;
+                NSTimeInterval lastGyroEventTimestamp;
             };
         }
     }
