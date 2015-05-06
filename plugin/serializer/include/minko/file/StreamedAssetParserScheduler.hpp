@@ -48,6 +48,7 @@ namespace minko
                 Signal<std::shared_ptr<LinkedAsset>, const std::vector<unsigned char>&>::Slot	loaderCompleteSlot;
 
                 Signal<std::shared_ptr<AbstractStreamedAssetParser>, float>::Slot               parserPriorityChangedSlot;
+                Signal<std::shared_ptr<AbstractStreamedAssetParser>>::Slot                      parserLodRequestCompleteSlot;
                 Signal<std::shared_ptr<AbstractParser>>::Slot                                   parserCompleteSlot;
 
                 inline
@@ -65,6 +66,7 @@ namespace minko
             std::list<ParserEntryPtr>   _activeEntries;
 
             int                         _maxNumActiveParsers;
+            bool                        _useJobBasedParsing;
 
             bool                        _complete;
             bool                        _sortingNeeded;
@@ -76,9 +78,9 @@ namespace minko
             inline
             static
             Ptr
-            create(std::shared_ptr<Options> options)
+            create(std::shared_ptr<Options> options, int maxNumActiveParsers, bool useJobBasedParsing)
             {
-                return Ptr(new StreamedAssetParserScheduler(options));
+                return Ptr(new StreamedAssetParserScheduler(options, maxNumActiveParsers, useJobBasedParsing));
             }
 
             void
@@ -117,7 +119,9 @@ namespace minko
 			afterLastStep() override;
 
         private:
-            StreamedAssetParserScheduler(std::shared_ptr<Options> options);
+            StreamedAssetParserScheduler(std::shared_ptr<Options>   options,
+                                         int                        maxNumActiveParsers,
+                                         bool                       useJobBasedParsing);
 
             void
             sortingNeeded();

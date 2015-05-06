@@ -27,13 +27,16 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::file;
 
-StreamedAssetParserScheduler::StreamedAssetParserScheduler(Options::Ptr options) :
+StreamedAssetParserScheduler::StreamedAssetParserScheduler(Options::Ptr options,
+                                                           int          maxNumActiveParsers,
+                                                           bool         useJobBasedParsing) :
     JobManager::Job(),
     _options(options),
     _entries(),
     _activeEntries(),
     _complete(false),
-    _maxNumActiveParsers(10),
+    _maxNumActiveParsers(maxNumActiveParsers),
+    _useJobBasedParsing(useJobBasedParsing),
     _sortingNeeded(false),
     _active(Signal<Ptr>::create()),
     _inactive(Signal<Ptr>::create())
@@ -81,7 +84,10 @@ StreamedAssetParserScheduler::complete()
 float
 StreamedAssetParserScheduler::priority()
 {
-    return 1.f;
+    if (!hasPendingRequest() || _activeEntries.size() >= _maxNumActiveParsers)
+        return 0.f;
+
+    return 10.f;
 }
 
 void
@@ -101,8 +107,8 @@ StreamedAssetParserScheduler::step()
     {
         auto entry = popHeadingParser();
 
-        const auto previousNumActiveEntries = _activeEntries.size();
-        const auto numActiveEntries = previousNumActiveEntries + 1;
+        const int previousNumActiveEntries = _activeEntries.size();
+        const int numActiveEntries = previousNumActiveEntries + 1;
 
         _activeEntries.push_back(entry);
 
@@ -156,7 +162,14 @@ StreamedAssetParserScheduler::removeEntry(ParserEntryPtr entry)
     entry->parserCompleteSlot = nullptr;
 
     _entries.remove(entry);
+
+    const int previousNumActiveEntries = _activeEntries.size();
+
     _activeEntries.remove(entry);
+
+    const int numActiveEntries = _activeEntries.size();
+
+    entryDeactivated(entry, numActiveEntries, previousNumActiveEntries);
 
     if (_entries.empty() && _activeEntries.empty())
     {
@@ -215,7 +228,14 @@ StreamedAssetParserScheduler::executeRequest(ParserEntryPtr entry)
 void
 StreamedAssetParserScheduler::requestComplete(ParserEntryPtr entry, const std::vector<unsigned char>& data)
 {
-    requestDisposed(entry);
+    entry->parserLodRequestCompleteSlot = entry->parser->lodRequestComplete()->connect(
+        [this, entry](AbstractStreamedAssetParser::Ptr parser)
+        {
+            requestDisposed(entry);
+        }
+    );
+
+    entry->parser->useJobBasedParsing(_useJobBasedParsing ? jobManager() : nullptr);
 
     entry->parser->parseLodRequest(data);
 }
@@ -225,9 +245,10 @@ StreamedAssetParserScheduler::requestDisposed(ParserEntryPtr entry)
 {
     entry->loaderErrorSlot = nullptr;
     entry->loaderCompleteSlot = nullptr;
+    entry->parserLodRequestCompleteSlot = nullptr;
 
-    const auto previousNumActiveEntries = _activeEntries.size();
-    const auto numActiveEntries = previousNumActiveEntries - 1;
+    const int previousNumActiveEntries = _activeEntries.size();
+    const int numActiveEntries = previousNumActiveEntries - 1;
 
     _activeEntries.remove(entry);
 

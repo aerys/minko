@@ -18,6 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/StreamingOptions.hpp"
+#include "minko/component/JobManager.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/file/AbstractStreamedAssetParser.hpp"
@@ -57,6 +58,7 @@ AbstractStreamedAssetParser::AbstractStreamedAssetParser(Provider::Ptr data) :
     _requiredLod(0),
     _priority(0.f),
     _priorityChanged(Signal<Ptr, float>::create()),
+    _lodRequestComplete(Signal<Ptr>::create()),
     _ready(Signal<Ptr>::create()),
     _progress(Signal<Ptr, float>::create())
 {
@@ -120,9 +122,35 @@ AbstractStreamedAssetParser::getNextLodRequestInfo(int& offset, int& size)
 void
 AbstractStreamedAssetParser::parseLodRequest(const std::vector<unsigned char>& data)
 {
-    parseLod(_previousLod, _currentLod, data, _options);
+    if (_jobManager)
+    {
+        auto parsingJob = ParsingJob::create(
+            [this, data]() -> void
+            {
+                parseLod(_previousLod, _currentLod, data, _options);
+            },
+            [this]()
+            {
+                lodRequestComplete()->execute(
+                    std::static_pointer_cast<AbstractStreamedAssetParser>(shared_from_this())
+                );
 
-    prepareNextLod();
+                prepareNextLod();
+            }
+        );
+
+        _jobManager->pushJob(parsingJob);
+    }
+    else
+    {
+        parseLod(_previousLod, _currentLod, data, _options);
+
+        lodRequestComplete()->execute(
+            std::static_pointer_cast<AbstractStreamedAssetParser>(shared_from_this())
+        );
+
+        prepareNextLod();
+    }
 }
 
 void
@@ -175,9 +203,9 @@ AbstractStreamedAssetParser::terminate()
 {
     _dataPropertyChangedSlot = nullptr;
 
-    this->AbstractParser::complete()->execute(shared_from_this());
-
     completed();
+
+    this->AbstractParser::complete()->execute(shared_from_this());
 }
 
 void

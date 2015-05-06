@@ -338,17 +338,13 @@ POPGeometryLodScheduler::computeLodPriority(const POPGeometryResourceInfo& 	reso
     const auto distanceFromEye = this->distanceFromEye(resource, surfaceInfo, _eyePosition);
     const auto distanceFactor = (1000.f - distanceFromEye) * 0.001f;
 
-    if (activeLod < 4)
+    if (activeLod < 2)
     {
         priority += 11.f + distanceFactor;
     }
-    else if (activeLod < 7)
-    {
-        priority += 9.f + distanceFactor;
-    }
     else
     {
-        priority += 1.f + distanceFactor;
+        priority += 9.f + distanceFactor;
     }
 
     return priority;

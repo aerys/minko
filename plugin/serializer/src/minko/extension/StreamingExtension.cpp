@@ -254,7 +254,7 @@ StreamingExtension::parserScheduler(Options::Ptr options, std::list<JobManager::
 {
     if (!_parserScheduler || _parserScheduler->complete())
     {
-        _parserScheduler = StreamedAssetParserScheduler::create(options);
+        _parserScheduler = StreamedAssetParserScheduler::create(options, 40, false);
 
         _parserSchedulerActiveSlot = _parserScheduler->active()->connect(
             [this](StreamedAssetParserScheduler::Ptr parserScheduler)

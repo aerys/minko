@@ -36,12 +36,89 @@ namespace minko
             typedef std::shared_ptr<AbstractStreamedAssetParser> Ptr;
 
         private:
+            class ParsingJob :
+                public component::JobManager::Job
+            {
+            public:
+                typedef std::shared_ptr<ParsingJob>                             Ptr;
+
+            private:
+                std::function<void()>               _parsingFunction;
+                std::function<void()>               _completeFunction;
+
+                bool                                _complete;
+                float                               _priority;
+
+            public:
+                inline
+                static
+                Ptr
+                create(std::function<void()>    parsingFunction,
+                       std::function<void()>    completeFunction,
+                       float                    priority = 1.f)
+                {
+                    return Ptr(new ParsingJob(
+                        parsingFunction,
+                        completeFunction,
+                        priority
+                    ));
+                }
+
+			    bool
+			    complete() override
+                {
+                    return _complete;
+                }
+
+			    void
+			    beforeFirstStep() override
+                {
+                }
+
+			    void
+			    step() override
+                {
+                    if (_parsingFunction)
+                        _parsingFunction();
+
+                    _complete = true;
+                }
+			
+			    float
+			    priority() override
+                {
+                    return _priority;
+                }
+			
+			    void
+			    afterLastStep() override
+                {
+                    if (_completeFunction)
+                        _completeFunction();
+                }
+
+            private:
+                explicit
+                ParsingJob(std::function<void()>    parsingFunction,
+                           std::function<void()>    completeFunction,
+                           float                    priority) :
+                    _parsingFunction(parsingFunction),
+                    _completeFunction(completeFunction),
+                    _complete(false),
+                    _priority(priority)
+                {
+                }
+            };
+
+        private:
             std::shared_ptr<AssetLibrary>														_assetLibrary;
             std::shared_ptr<Options>															_options;
 
             std::shared_ptr<StreamingOptions>													_streamingOptions;
 
             std::shared_ptr<LinkedAsset>														_linkedAsset;
+
+            std::shared_ptr<component::JobManager>                                              _jobManager;
 
             std::string																			_filename;
             std::string																			_resolvedFilename;
@@ -67,7 +144,8 @@ namespace minko
             int																					_requiredLod;
             float																				_priority;
 
-            Signal<Ptr, float>::Ptr                                                                  _priorityChanged;
+            Signal<Ptr, float>::Ptr                                                             _priorityChanged;
+            Signal<Ptr>::Ptr                                                                    _lodRequestComplete;
 
             Signal<Ptr>::Ptr																	_ready;
             Signal<Ptr, float>::Ptr																_progress;
@@ -95,10 +173,24 @@ namespace minko
             }
 
             inline
+            void
+            useJobBasedParsing(std::shared_ptr<component::JobManager> jobManager)
+            {
+                _jobManager = jobManager;
+            }
+
+            inline
             Signal<Ptr, float>::Ptr
             priorityChanged() const
             {
                 return _priorityChanged;
+            }
+
+            inline
+            Signal<Ptr>::Ptr
+            lodRequestComplete() const
+            {
+                return _lodRequestComplete;
             }
 
             inline
