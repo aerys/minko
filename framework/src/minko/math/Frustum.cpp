@@ -34,7 +34,7 @@ math::Frustum::updateFromMatrix(const math::mat4& matrix)
     _planes[static_cast<int>(PlanePosition::BOTTOM)] = math::normalize(transposedMatrix[3] + transposedMatrix[1]);
     _planes[static_cast<int>(PlanePosition::TOP)] = math::normalize(transposedMatrix[3] - transposedMatrix[1]);
 
-    _planes[static_cast<int>(PlanePosition::NEAR)] = math::normalize(transposedMatrix[2]);
+    _planes[static_cast<int>(PlanePosition::NEAR)] = math::normalize(transposedMatrix[3] + transposedMatrix[2]);
     _planes[static_cast<int>(PlanePosition::FAR)] = math::normalize(transposedMatrix[3] - transposedMatrix[2]);
 }
 
@@ -102,10 +102,12 @@ math::Frustum::testBoundingBox(math::Box::Ptr box)
 		_trbResult[planeId] = pa * xtrb + pb * ytrb + pc * ztrb + pd < 0.;
 	}
 
-	if ((_blfResult[(int)PlanePosition::LEFT]	&& _trbResult[(int)PlanePosition::RIGHT]) ||
-		(_blfResult[(int)PlanePosition::RIGHT]	&& _trbResult[(int)PlanePosition::LEFT]) ||
-		(_blfResult[(int)PlanePosition::TOP]	&& _trbResult[(int)PlanePosition::BOTTOM]) ||
-		(_blfResult[(int)PlanePosition::BOTTOM] && _trbResult[(int)PlanePosition::TOP]))
+	if (((_blfResult[(int)PlanePosition::LEFT]	&& _trbResult[(int)PlanePosition::RIGHT]) ||
+		(_blfResult[(int)PlanePosition::RIGHT]	&& _trbResult[(int)PlanePosition::LEFT])) &&
+		((_blfResult[(int)PlanePosition::TOP]	&& _trbResult[(int)PlanePosition::BOTTOM]) ||
+		(_blfResult[(int)PlanePosition::BOTTOM] && _trbResult[(int)PlanePosition::TOP])) &&
+        ((_blfResult[(int)PlanePosition::NEAR]	&& _trbResult[(int)PlanePosition::FAR]) ||
+		(_blfResult[(int)PlanePosition::FAR]	&& _trbResult[(int)PlanePosition::NEAR])))
 		return ShapePosition::AROUND;
 
 	for (uint planeId = 0; planeId < _planes.size(); ++planeId)
