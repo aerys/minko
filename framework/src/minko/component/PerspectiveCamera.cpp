@@ -117,8 +117,8 @@ PerspectiveCamera::updateMatrices(const math::mat4& modelToWorldMatrix)
     _view = math::inverse(modelToWorldMatrix);
 
 	_data
-		->set("eyePosition",	_position)
-  		->set("viewMatrix",     _view);
+		->set("eyePosition", _position)
+  		->set("viewMatrix", _view);
 
 	updateProjection(_fov, _aspectRatio, _zNear, _zFar);
 }
@@ -135,15 +135,13 @@ PerspectiveCamera::updateProjection(float fov, float aspectRatio, float zNear, f
 	_viewProjection = _projection * _view;
 
 	_data
-        ->set("zNear",                  _zNear)
-        ->set("zFar",                   _zFar)
-		->set("projectionMatrix",		_projection)
-  		->set("worldToScreenMatrix",	_viewProjection)
-        ->set("fov",                    fov)
-        ->set("aspectRatio",            aspectRatio)
-        ->set("zNear",                  zNear)
-        ->set("zFar",                   zFar);
-}
+        ->set("fov", _fov)
+        ->set("aspectRatio", _aspectRatio)
+        ->set("zNear", _zNear)
+        ->set("zFar", _zFar)
+		->set("projectionMatrix", _projection)
+		->set("worldToScreenMatrix", _viewProjection);
+  }
 
 std::shared_ptr<math::Ray>
 PerspectiveCamera::unproject(float x, float y)
