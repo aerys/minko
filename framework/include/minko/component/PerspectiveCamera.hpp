@@ -164,16 +164,6 @@ namespace minko
 			{
 				return _view;
 			}
-            
-            inline
-            void
-            viewMatrix(math::mat4 value)
-            {
-                _view = value;
-            	_data->set("viewMatrix", _view);
-
-                updateProjection(_fov, _aspectRatio, _zNear, _zFar);
-            }
 
 			inline
 			const math::mat4&
