@@ -23,31 +23,34 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace apple::sensors;
 
-IOSHeadTracker::IOSHeadTracker()
+IOSHeadTracker::IOSHeadTracker() :
+    _manager(nullptr),
+    _deviceToDisplay(math::mat4()),
+    _worldToInertialReferenceFrame(math::mat4())
 {
 }
 
 void IOSHeadTracker::initialize()
 {
-    this->manager = [[CMMotionManager alloc] init];
+    _manager = [[CMMotionManager alloc] init];
     
-    this->referenceTimestamp = 0;
-    this->lastGyroEventTimestamp = 0;
+    _referenceTimestamp = 0;
+    _lastGyroEventTimestamp = 0;
     
     // the inertial reference frame has z up and x forward, while the world has z out and x right
-    this->worldToInertialReferenceFrame = this->getRotateEulerMatrix(-90.f, 0.f, 90.f);
+    _worldToInertialReferenceFrame = this->getRotateEulerMatrix(-90.f, 0.f, 90.f);
     
     // this assumes the device is landscape with the home button on the right
-    this->deviceToDisplay = this->getRotateEulerMatrix(0.f, 0.f, -90.f);
+    _deviceToDisplay = this->getRotateEulerMatrix(0.f, 0.f, -90.f);
 }
 
 void
 IOSHeadTracker::startTracking()
 {
     LOG_INFO("START TRACKING");
-    if (this->manager.isDeviceMotionAvailable && !this->manager.isDeviceMotionActive)
+    if (_manager.isDeviceMotionAvailable && !_manager.isDeviceMotionActive)
     {
-        [this->manager startDeviceMotionUpdatesUsingReferenceFrame:CMAttitudeReferenceFrameXArbitraryZVertical];
+        [_manager startDeviceMotionUpdatesUsingReferenceFrame:CMAttitudeReferenceFrameXArbitraryZVertical];
     }
 }
 
@@ -55,7 +58,7 @@ void
 IOSHeadTracker::stopTracking()
 {
     LOG_INFO("STOP TRACKING");
-    [this->manager stopDeviceMotionUpdates];
+    [_manager stopDeviceMotionUpdates];
 }
 
 math::mat4
@@ -99,13 +102,13 @@ IOSHeadTracker::getRotateEulerMatrix(float x, float y, float z)
 math::mat4
 IOSHeadTracker::getLastHeadView()
 {
-    CMDeviceMotion *motion = this->manager.deviceMotion;
+    CMDeviceMotion *motion = _manager.deviceMotion;
     CMRotationMatrix rotationMatrix = motion.attitude.rotationMatrix;
     
     auto inertialReferenceFrameToDevice = math::transpose(glmMatrixFromCMRotationMatrix(rotationMatrix));
     
-    auto worldToDevice = inertialReferenceFrameToDevice * worldToInertialReferenceFrame;
-    auto worldToDisplay = deviceToDisplay * worldToDevice;
+    auto worldToDevice = inertialReferenceFrameToDevice * _worldToInertialReferenceFrame;
+    auto worldToDisplay = _deviceToDisplay * worldToDevice;
     
     return worldToDisplay;
 }

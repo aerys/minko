@@ -67,11 +67,11 @@ namespace minko
                 math::mat4
                 glmMatrixFromCMRotationMatrix(CMRotationMatrix rotationMatrix);
                 
-                CMMotionManager *manager;
-                math::mat4 deviceToDisplay;
-                math::mat4 worldToInertialReferenceFrame;
-                NSTimeInterval referenceTimestamp;
-                NSTimeInterval lastGyroEventTimestamp;
+                CMMotionManager *_manager;
+                math::mat4 _deviceToDisplay;
+                math::mat4 _worldToInertialReferenceFrame;
+                NSTimeInterval _referenceTimestamp;
+                NSTimeInterval _lastGyroEventTimestamp;
             };
         }
     }
