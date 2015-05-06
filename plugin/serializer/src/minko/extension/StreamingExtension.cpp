@@ -44,6 +44,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/POPGeometryWriterPreprocessor.hpp"
 #include "minko/file/SceneParser.hpp"
 #include "minko/file/SceneWriter.hpp"
+#include "minko/file/StreamedAssetParserScheduler.hpp"
 #include "minko/file/StreamedTextureParser.hpp"
 #include "minko/file/StreamedTextureWriter.hpp"
 #include "minko/file/StreamedTextureWriterPreprocessor.hpp"
@@ -248,6 +249,32 @@ StreamingExtension::initialize(StreamingOptions::Ptr streamingOptions)
     }
 }
 
+StreamedAssetParserScheduler::Ptr
+StreamingExtension::parserScheduler(Options::Ptr options, std::list<JobManager::Job::Ptr>& jobList)
+{
+    if (!_parserScheduler || _parserScheduler->complete())
+    {
+        _parserScheduler = StreamedAssetParserScheduler::create(options);
+
+        _parserSchedulerActiveSlot = _parserScheduler->active()->connect(
+            [this](StreamedAssetParserScheduler::Ptr parserScheduler)
+            {
+                sceneStreamingActive()->execute(std::static_pointer_cast<StreamingExtension>(shared_from_this()));
+            }
+        );
+
+        _parserSchedulerInactiveSlot = _parserScheduler->inactive()->connect(
+            [this](StreamedAssetParserScheduler::Ptr parserScheduler)
+            {
+                sceneStreamingInactive()->execute(std::static_pointer_cast<StreamingExtension>(shared_from_this()));
+            }
+        );
+
+        jobList.push_back(_parserScheduler);
+    }
+
+    return _parserScheduler;
+}
 
 msgpack::type::tuple<uint, short, std::string>
 StreamingExtension::serializePOPGeometry(Dependency::Ptr                dependency,
@@ -406,7 +433,9 @@ StreamingExtension::deserializePOPGeometry(unsigned short					metaData,
 
     registerPOPGeometryParser(parser, geometry);
 
-    jobList.push_back(parser);
+    auto parserScheduler = this->parserScheduler(options, jobList);
+
+    parserScheduler->addParser(parser);
 
     _streamingOptions->masterLodScheduler()->registerGeometry(geometry, geometryData);
 }
@@ -573,7 +602,9 @@ StreamingExtension::deserializeStreamedTexture(unsigned short											metaData
 
     registerStreamedTextureParser(parser, texture);
 
-    jobList.push_back(parser);
+    auto parserScheduler = this->parserScheduler(options, jobList);
+
+    parserScheduler->addParser(parser);
 
     _streamingOptions->masterLodScheduler()->registerTexture(texture, textureData);
 }
@@ -637,30 +668,6 @@ StreamingExtension::registerParser(AbstractStreamedAssetParser::Ptr parser)
             parserEntry.progressRate = progressRate;
 
             _totalProgressRate += (progressRate - previousProgressRate) / _parsers.size();
-        }
-    );
-
-    parserEntry.activeSlot = parser->active()->connect(
-        [this](AbstractStreamedAssetParser::Ptr) -> void
-        {
-            if (_numActiveParsers == 0)
-            {
-                sceneStreamingActive()->execute(std::static_pointer_cast<StreamingExtension>(shared_from_this()));
-            }
-
-            ++_numActiveParsers;
-        }
-    );
-
-    parserEntry.inactiveSlot = parser->inactive()->connect(
-        [this](AbstractStreamedAssetParser::Ptr) -> void
-        {
-            --_numActiveParsers;
-
-            if (_numActiveParsers == 0)
-            {
-                sceneStreamingInactive()->execute(std::static_pointer_cast<StreamingExtension>(shared_from_this()));
-            }
         }
     );
 

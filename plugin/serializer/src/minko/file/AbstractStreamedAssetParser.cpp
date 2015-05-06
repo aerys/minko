@@ -40,7 +40,6 @@ using namespace minko::render;
 
 AbstractStreamedAssetParser::AbstractStreamedAssetParser(Provider::Ptr data) :
     AbstractSerializerParser(),
-    JobManager::Job(),
     _linkedAsset(),
     _filename(),
     _resolvedFilename(),
@@ -48,7 +47,6 @@ AbstractStreamedAssetParser::AbstractStreamedAssetParser(Provider::Ptr data) :
     _headerIsRead(false),
     _previousLod(-1),
     _currentLod(-1),
-    _busy(false),
     _nextLodOffset(0),
     _nextLodSize(0),
     _loaderErrorSlot(),
@@ -58,10 +56,9 @@ AbstractStreamedAssetParser::AbstractStreamedAssetParser(Provider::Ptr data) :
     _dataPropertyChangedSlot(),
     _requiredLod(0),
     _priority(0.f),
+    _priorityChanged(Signal<Ptr, float>::create()),
     _ready(Signal<Ptr>::create()),
-    _progress(Signal<Ptr, float>::create()),
-    _active(Signal<Ptr>::create()),
-    _inactive(Signal<Ptr>::create())
+    _progress(Signal<Ptr, float>::create())
 {
 }
 
@@ -107,91 +104,25 @@ AbstractStreamedAssetParser::parse(const std::string&                 filename,
     ready()->execute(std::static_pointer_cast<AbstractStreamedAssetParser>(shared_from_this()));
 }
 
-bool
-AbstractStreamedAssetParser::complete()
-{
-    return _complete;
-}
-
-void
-AbstractStreamedAssetParser::beforeFirstStep()
-{
-}
-
-void
-AbstractStreamedAssetParser::step()
-{
-    if (nextLodIsReady())
-    {
-        _options->loadAsynchronously(true);
-
-        fetchNextLod(_options);
-    }
-}
-
 float
 AbstractStreamedAssetParser::priority()
 {
-    if (_busy)
-        return 0.f;
-
     return _priority;
 }
 
 void
-AbstractStreamedAssetParser::afterLastStep()
+AbstractStreamedAssetParser::getNextLodRequestInfo(int& offset, int& size)
 {
-    this->AbstractParser::complete()->execute(shared_from_this());
+    offset = _nextLodOffset;
+    size = _nextLodSize;
 }
 
 void
-AbstractStreamedAssetParser::loadRange(const std::string& filename,
-                                       Options::Ptr       options)
+AbstractStreamedAssetParser::parseLodRequest(const std::vector<unsigned char>& data)
 {
-    auto linkedAsset = _linkedAsset;
+    parseLod(_previousLod, _currentLod, data, _options);
 
-    auto loader = Loader::create();
-    auto loaderOptions = options
-        ->parserFunction([](const std::string& extension) -> AbstractParser::Ptr
-        {
-            return nullptr;
-        });
-
-    loader->options(loaderOptions);
-
-    _loaderErrorSlot = linkedAsset->error()->connect(
-        [=](LinkedAsset::Ptr    loaderThis,
-            const Error&        error) -> void
-    {
-        _error->execute(
-            shared_from_this(),
-            Error("StreamedAssetLoadingError", std::string("Failed to load streamed asset ") + filename)
-        );
-    });
-
-    _loaderCompleteSlot = linkedAsset->complete()->connect(
-        [=](LinkedAsset::Ptr                    loaderThis,
-            const std::vector<unsigned char>&   data) -> void
-    {
-        loadRangeComplete(data, loaderOptions);
-    });
-
-    linkedAsset->resolve(loaderOptions);
-}
-
-void
-AbstractStreamedAssetParser::loadRangeComplete(const std::vector<unsigned char>&  data,
-                                               Options::Ptr                       options)
-{
-    _loaderErrorSlot = nullptr;
-    _loaderCompleteSlot = nullptr;
-
-    if (_headerIsRead)
-    {
-        parseLod(_previousLod, _currentLod, data, options);
-
-        prepareNextLod();
-    }
+    prepareNextLod();
 }
 
 void
@@ -236,57 +167,15 @@ AbstractStreamedAssetParser::prepareNextLod()
         _previousLod = _currentLod;
 
         nextLod(_previousLod, _requiredLod, _currentLod, _nextLodOffset, _nextLodSize);
-
-        busy(false);
     }
-}
-
-bool
-AbstractStreamedAssetParser::nextLodIsReady()
-{
-    return !_busy &&
-           _currentLod >= _previousLod &&
-           _previousLod < _requiredLod;
-}
-
-void
-AbstractStreamedAssetParser::fetchNextLod(Options::Ptr options)
-{
-    if (_nextLodSize <= 0)
-    {
-        error()->execute(
-            shared_from_this(),
-            Error(
-                "AbstractStreamedAssetParserError",
-                std::string("next lod query length is null for asset: ") + _filename
-            )
-        );
-
-        return;
-    }
-
-    busy(true);
-
-    const auto& filename = _linkedAsset->filename();
-    const auto offset = _nextLodOffset;
-    const auto length = _nextLodSize;
-
-    auto blobOptions = options->clone()
-        ->seekingOffset(offset)
-        ->seekedLength(length)
-        ->storeDataIfNotParsed(false);
-
-    loadRange(filename, blobOptions);
 }
 
 void
 AbstractStreamedAssetParser::terminate()
 {
-    busy(false);
-
     _dataPropertyChangedSlot = nullptr;
 
-    _complete = true;
+    this->AbstractParser::complete()->execute(shared_from_this());
 
     completed();
 }
@@ -299,8 +188,7 @@ AbstractStreamedAssetParser::requiredLod(int requiredLod)
 
     _requiredLod = requiredLod;
 
-    if (!_busy)
-        nextLod(_previousLod, _requiredLod, _currentLod, _nextLodOffset, _nextLodSize);
+    nextLod(_previousLod, _requiredLod, _currentLod, _nextLodOffset, _nextLodSize);
 }
 
 void
@@ -308,21 +196,8 @@ AbstractStreamedAssetParser::priority(float priority)
 {
     _priority = priority;
 
-    priorityChanged()->execute(priority);
-}
-
-void
-AbstractStreamedAssetParser::busy(bool value)
-{
-    if (_busy == value)
-        return;
-
-    _busy = value;
-
-    priorityChanged()->execute(priority());
-
-    if (_busy)
-        active()->execute(std::static_pointer_cast<AbstractStreamedAssetParser>(shared_from_this()));
-    else
-        inactive()->execute(std::static_pointer_cast<AbstractStreamedAssetParser>(shared_from_this()));
+    priorityChanged()->execute(
+        std::static_pointer_cast<AbstractStreamedAssetParser>(shared_from_this()),
+        priority
+    );
 }
