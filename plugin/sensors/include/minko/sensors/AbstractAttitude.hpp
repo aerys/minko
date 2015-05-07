@@ -46,6 +46,10 @@ namespace minko
             virtual
             const math::mat4&
             rotationMatrix() = 0;
+            
+            virtual
+            const math::quat&
+            quaternion() = 0;
         };
     }
 }

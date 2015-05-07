@@ -60,18 +60,22 @@ namespace minko
                 const math::mat4&
                 rotationMatrix();
 
-                const math::vec4&
+                const math::quat&
                 quaternion();
 
             private:
 
-                const math::mat4&
+                math::mat4
                 getRotateEulerMatrix(float x, float y, float z);
                 
-                const math::mat4&
+                math::mat4
                 glmMatrixFromCMRotationMatrix(CMRotationMatrix rotationMatrix);
                 
                 CMMotionManager *_manager;
+                math::mat4 _rotationMatrix;
+                math::quat _quaternion;
+                math::mat4 _worldToInertialReferenceFrame;
+                math::mat4 _deviceToDisplay;
             };
         }
     }

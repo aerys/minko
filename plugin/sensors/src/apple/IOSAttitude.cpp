@@ -25,6 +25,8 @@ using namespace apple::sensors;
 
 IOSAttitude::IOSAttitude() :
     _manager(nullptr),
+    _rotationMatrix(math::mat4()),
+    _quaternion(math::quat()),
     _deviceToDisplay(math::mat4()),
     _worldToInertialReferenceFrame(math::mat4())
 {
@@ -44,7 +46,8 @@ void IOSAttitude::initialize()
 void
 IOSAttitude::startTracking()
 {
-    LOG_INFO("START TRACKING");
+    LOG_INFO("Start tracking");
+    
     if (_manager.isDeviceMotionAvailable && !_manager.isDeviceMotionActive)
     {
         [_manager startDeviceMotionUpdatesUsingReferenceFrame:CMAttitudeReferenceFrameXArbitraryZVertical];
@@ -54,7 +57,8 @@ IOSAttitude::startTracking()
 void
 IOSAttitude::stopTracking()
 {
-    LOG_INFO("STOP TRACKING");
+    LOG_INFO("Stop tracking");
+    
     [_manager stopDeviceMotionUpdates];
 }
 
@@ -69,10 +73,29 @@ IOSAttitude::rotationMatrix()
     auto worldToDevice = inertialReferenceFrameToDevice * _worldToInertialReferenceFrame;
     auto worldToDisplay = _deviceToDisplay * worldToDevice;
     
-    return worldToDisplay;
+    _rotationMatrix = worldToDisplay;
+    
+    return _rotationMatrix;
 }
 
-const math::mat4&
+const math::quat&
+IOSAttitude::quaternion()
+{
+    CMDeviceMotion *motion = _manager.deviceMotion;
+    CMQuaternion quaternion = motion.attitude.quaternion;
+    
+    _quaternion = math::quat();
+    _quaternion.x = quaternion.x;
+    _quaternion.y = quaternion.y;
+    _quaternion.z = quaternion.z;
+    _quaternion.w = quaternion.w;
+    
+    // TODO: Perform the same operations than into rotationMatrix()?
+    
+    return _quaternion;
+}
+
+math::mat4
 IOSAttitude::glmMatrixFromCMRotationMatrix(CMRotationMatrix rotationMatrix)
 {
     math::mat4 glmRotationMatrix(

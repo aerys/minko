@@ -64,3 +64,9 @@ Attitude::rotationMatrix()
 {
     return _attitudeManager->rotationMatrix();
 }
+
+const math::quat&
+Attitude::quaternion()
+{
+    return _attitudeManager->quaternion();
+}

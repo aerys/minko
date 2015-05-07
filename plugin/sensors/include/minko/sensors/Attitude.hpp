@@ -29,8 +29,17 @@ namespace minko
         class Attitude : AbstractAttitude
         {
         public:
-            Attitude();
-
+            typedef std::shared_ptr<Attitude> Ptr;
+            
+            static
+            Ptr
+            create()
+            {
+                Ptr attitude(new Attitude());
+                
+                return attitude;
+            }
+            
             void
             initialize() override;
 
@@ -43,7 +52,11 @@ namespace minko
             const math::mat4&
             rotationMatrix() override;
 
+            const math::quat&
+            quaternion() override;
         private:
+            Attitude();
+            
             std::shared_ptr<AbstractAttitude> _attitudeManager;
         };
     }
