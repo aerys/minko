@@ -467,7 +467,7 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
             }
 	    }
 
-        indices = render::IndexBuffer::create(_assetLibrary->context());
+        indices = render::IndexBuffer::create(_assetLibrary->context(), indexData);
     }
     else
     {
@@ -483,7 +483,7 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
             }
 	    }
 
-        indices = render::IndexBuffer::create(_assetLibrary->context(), std::vector<unsigned short>());
+        indices = render::IndexBuffer::create(_assetLibrary->context(), std::vector<unsigned short>(3 * mesh->mNumFaces, 0));
 
         indices->wideIndexData().assign(wideIndexData.begin(), wideIndexData.end());
     }
@@ -1603,11 +1603,20 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 		}
 	}
 
-    auto processedMaterial = _options->materialFunction()(materialName, material);
+    static auto materialNameId = 0;
+
+    auto uniqueMaterialName = materialName;
+
+    while (_assetLibrary->material(uniqueMaterialName))
+    {
+        uniqueMaterialName = materialName + "_" + std::to_string(materialNameId++);
+    }
+
+    auto processedMaterial = _options->materialFunction()(uniqueMaterialName, material);
 
     _aiMaterialToMaterial.insert(std::make_pair(aiMat, processedMaterial));
 
-    _assetLibrary->material(materialName, processedMaterial);
+    _assetLibrary->material(uniqueMaterialName, processedMaterial);
 
     return processedMaterial;
 }
