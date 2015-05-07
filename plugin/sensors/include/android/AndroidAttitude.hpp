@@ -58,7 +58,7 @@ namespace minko
                 const math::mat4&
                 rotationMatrix();
 
-                const math::vec4&
+                const math::quat&
                 quaternion();
 
             private:
@@ -66,7 +66,7 @@ namespace minko
                 // JNI part
 
                 // Java Objects
-                jobject _headTracker = nullptr;
+                jobject _attitude = nullptr;
 
                 // Java Method IDs
                 jmethodID _startTrackingMethod = nullptr;

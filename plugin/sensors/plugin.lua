@@ -33,7 +33,7 @@ function minko.plugin.sensors:enable()
 
 	configuration { "android", "SharedLib" }
 		linkoptions {
-			"-Wl,--undefined=Java_minko_plugin_sensors_AndroidHeadTracker_minkoNativeOnHeadTrackerEvent"
+			"-Wl,--undefined=Java_minko_plugin_sensors_AndroidAttitude_minkoNativeOnAttitudeEvent"
 		}
 
 	configuration { "ios" }

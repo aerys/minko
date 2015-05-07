@@ -56,7 +56,7 @@ void Java_minko_plugin_sensors_AndroidHeadTracker_minkoNativeOnHeadTrackerEvent(
 }
 #endif
 
-AndroidAttitude::AndroidHeadTracker()
+AndroidAttitude::AndroidAttitude()
 {
 }
 
@@ -71,39 +71,39 @@ void AndroidAttitude::initialize()
     // Get SDLActivity java class
     jclass sdlActivityClass = env->GetObjectClass(sdlActivity);
 
-    // Get AndroidHeadTracker class
-    jclass androidHeadTrackerClass = env->FindClass("minko/plugin/sensors/AndroidHeadTracker");
-    // Get AndroidHeadTracker constructor method
-    jmethodID androidHeadTrackerCtor = env->GetMethodID(androidHeadTrackerClass, "<init>", "(Landroid/app/Activity;)V");
-    // Instanciate an AndroidHeadTracker
-    _headTracker = env->NewGlobalRef(env->NewObject(androidHeadTrackerClass, androidHeadTrackerCtor, sdlActivity));
+    // Get AndroidAttitude class
+    jclass androidAttitudeClass = env->FindClass("minko/plugin/sensors/AndroidAttitude");
+    // Get AndroidAttitude constructor method
+    jmethodID androidAttitudeCtor = env->GetMethodID(androidAttitudeClass, "<init>", "(Landroid/app/Activity;)V");
+    // Instanciate an AndroidAttitude
+    _attitude = env->NewGlobalRef(env->NewObject(androidAttitudeClass, androidAttitudeCtor, sdlActivity));
 
     // Get JNI methods 
 
-    _startTrackingMethod = env->GetMethodID(androidHeadTrackerClass, "startTracking", "()V");
-    _stopTrackingMethod = env->GetMethodID(androidHeadTrackerClass, "stopTracking", "()V");
+    _startTrackingMethod = env->GetMethodID(androidAttitudeClass, "startTracking", "()V");
+    _stopTrackingMethod = env->GetMethodID(androidAttitudeClass, "stopTracking", "()V");
 }
 
 void
 AndroidAttitude::startTracking()
 {
-    LOG_INFO("START TRACKING");
+    LOG_INFO("Start tracking");
 
     // Retrieve the JNI environment from SDL 
     auto env = (JNIEnv*)SDL_AndroidGetJNIEnv();
 
-    env->CallVoidMethod(_headTracker, _startTrackingMethod);
+    env->CallVoidMethod(_attitude, _startTrackingMethod);
 }
 
 void
 AndroidAttitude::stopTracking()
 {
-    LOG_INFO("STOP TRACKING");
+    LOG_INFO("Stop tracking");
 
     // Retrieve the JNI environment from SDL 
     auto env = (JNIEnv*)SDL_AndroidGetJNIEnv();
 
-    env->CallVoidMethod(_headTracker, _stopTrackingMethod);
+    env->CallVoidMethod(_attitude, _stopTrackingMethod);
 }
 
 const math::mat4&
@@ -111,4 +111,11 @@ AndroidAttitude::rotationMatrix()
 {
     // TODO
     return math::mat4();
+}
+
+const math::quat&
+AndroidAttitude::quaternion()
+{
+    // TODO
+    return math::quat();
 }
