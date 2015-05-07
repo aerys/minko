@@ -20,10 +20,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Minko.hpp"
 #include "minko/MinkoSDL.hpp"
 #include "minko/log/Logger.hpp"
-#include "minko/component/HeadTracker.hpp"
+#include "minko/sensors/Attitude.hpp"
 
 using namespace minko;
 using namespace minko::component;
+using namespace minko::sensors;
 
 int
 main(int argc, char** argv)
@@ -31,9 +32,9 @@ main(int argc, char** argv)
     auto canvas = Canvas::create("Minko Example - Sensors");
     auto sceneManager = SceneManager::create(canvas);
 
-    auto headTracker = HeadTracker::create();
-    headTracker->initialize();
-    headTracker->startTracking();
+    auto attitude = Attitude::create();
+    attitude->initialize();
+    attitude->startTracking();
 
     sceneManager->assets()->loader()->queue("effect/Basic.effect");
 
@@ -117,6 +118,17 @@ main(int argc, char** argv)
         ));
     });
 
+    auto touchDown = false;
+    auto touchDownSlot = canvas->touch()->touchDown()->connect([&](input::Touch::Ptr t, int, float x, float y)
+    {
+        touchDown = true;
+    });
+    
+    auto touchUpSlot = canvas->touch()->touchUp()->connect([&](input::Touch::Ptr t, int, float x, float y)
+    {
+        touchDown = false;
+    });
+    
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
     {
         camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
@@ -130,13 +142,15 @@ main(int argc, char** argv)
 
         // Rebuild camera matrix with rotation matrix retrieve from sensors
         auto cameraPosition = camera->component<Transform>()->matrix()[3].xyz();
-        auto rotationMatrix = math::transpose(headTracker->getLastHeadView());
+        auto rotationMatrix = math::transpose(attitude->rotationMatrix());
         auto direction = math::vec3(-rotationMatrix[2][0], -rotationMatrix[2][1], -rotationMatrix[2][2]);
         auto newMatrix = math::translate(cameraPosition) * rotationMatrix;
 
         camera->component<Transform>()->matrix(newMatrix);
 
-        camera->component<Transform>()->matrix(math::translate(direction * 0.01f) * camera->component<Transform>()->matrix());
+        if (touchDown)
+            camera->component<Transform>()->matrix(math::translate(direction * 0.01f) * camera->component<Transform>()->matrix());
+        
         sceneManager->nextFrame(time, deltaTime);
     });
     
