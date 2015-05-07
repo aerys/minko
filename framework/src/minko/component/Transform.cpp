@@ -350,19 +350,107 @@ Transform::RootTransform::updateTransformsList()
 void
 Transform::RootTransform::sortNodes()
 {
-    // TODO fixme
-    // avoid using NodeSet
-    // instead, sort _nodes in place on a first pass
-    // then update _nodeTransformCache entries on a second pass
+    auto nodeDepths = std::map<int, std::list<scene::Node::Ptr>>();
 
-    auto sortedNodeSet = scene::NodeSet::create(_nodes.front()->root())
-        ->descendants(true, false)
-        ->where([this](scene::Node::Ptr descendant) -> bool
+    for (auto node : _nodes)
     {
-        return descendant->hasComponent<Transform>() && std::find(_nodes.begin(), _nodes.end(), descendant) != _nodes.end();
-    });
+        auto depth = 0;
 
-    _nodes.assign(sortedNodeSet->nodes().begin(), sortedNodeSet->nodes().end());
+        auto parent = node;
+
+        while (parent->parent() != nullptr)
+        {
+            ++depth;
+
+            parent = parent->parent();
+        }
+
+        nodeDepths[depth].push_back(node);
+    }
+
+    _nodes.clear();
+
+    auto parentIndices = std::unordered_map<scene::Node::Ptr, int>();
+
+    for (const auto& nodeDepth : nodeDepths)
+    {
+        const auto depth = nodeDepth.first;
+        const auto& nodes = nodeDepth.second;
+
+        auto localNodes = parentIndices.empty()
+            ? std::vector<std::list<scene::Node::Ptr>> { nodes }
+            : std::vector<std::list<scene::Node::Ptr>>(parentIndices.size());
+
+        if (!parentIndices.empty())
+        {
+            for (auto node : nodes)
+            {
+                auto parentIndex = 0;
+                auto parentIndexIt = parentIndices.find(node->parent());
+
+                if (parentIndexIt != parentIndices.end())
+                {
+                    parentIndex = parentIndexIt->second;
+                }
+                else
+                {
+                    for (auto parentSibling : node->parent()->parent()->children())
+                    {
+                        if (parentSibling == node->parent())
+                            break;
+
+                        ++parentIndex;
+                    }
+
+                    if (localNodes.size() <= parentIndex)
+                        localNodes.resize(parentIndex + 1);
+                }
+
+                localNodes[parentIndex].push_back(node);
+            }
+
+            parentIndices.clear();
+        }
+
+        auto parentIndexOffset = 0;
+
+        for (auto localNodesEntry : localNodes)
+        {
+            if (localNodesEntry.empty())
+                continue;
+
+            auto parentNode = localNodesEntry.front()->parent();
+            const auto& parentNodeChildren = parentNode->children();
+
+            auto localSortedNodes = std::vector<scene::Node::Ptr>(parentNodeChildren.size());
+
+            for (auto node : localNodesEntry)
+            {
+                auto nodeLocalIndex = 0;
+
+                for (auto child : parentNodeChildren)
+                {
+                    if (child == node)
+                        break;
+
+                    ++nodeLocalIndex;
+                }
+
+                localSortedNodes[nodeLocalIndex] = node;
+                parentIndices[node] = nodeLocalIndex + parentIndexOffset;
+            }
+
+            parentIndexOffset += localNodesEntry.size();
+
+            for (auto node : localSortedNodes)
+            {
+                if (node == nullptr)
+                    continue;
+
+                _nodes.push_back(node);
+            }
+        }
+    }
 }
 
 void
