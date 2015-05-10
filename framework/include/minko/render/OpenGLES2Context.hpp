@@ -61,6 +61,8 @@ namespace minko
 			std::unordered_map<uint, TextureType>   _textureTypes;
 
             std::string                             _driverInfo;
+			int										_oglMajorVersion;
+			int										_oglMinorVersion;
 
 			std::list<uint>	                		_vertexBuffers;
 			std::list<uint>	                		_indexBuffers;

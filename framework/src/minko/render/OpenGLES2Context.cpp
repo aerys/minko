@@ -192,6 +192,8 @@ OpenGLES2Context::OpenGLES2Context() :
 	_driverInfo = std::string(glVendor ? glVendor : "(unknown vendor)")
 		+ " " + std::string(glRenderer ? glRenderer : "(unknown renderer)")
 		+ " " + std::string(glVersion ? glVersion : "(unknown version)");
+	glGetIntegerv(GL_MAJOR_VERSION, &_oglMajorVersion);
+	glGetIntegerv(GL_MINOR_VERSION, &_oglMinorVersion);
 
 	// init. viewport x, y, width and height
 	std::vector<int> viewportSettings(4);
@@ -1721,16 +1723,21 @@ void
 OpenGLES2Context::generateMipmaps(uint texture)
 {
 	glBindTexture(GL_TEXTURE_2D, texture);
-	checkForErrors();
 
-	// In VirtualBox with a Windows 7 guest, GLEW does not properly bind the
-	// glGenerateMipMap function (issue: http://sourceforge.net/p/glew/bugs/273/).
-	// Yet, the glGenerateMipmapEXT function is properly bound. As a workaround,
-	// we use glGenerateMipmapEXT if glGenerateMipmap == NULL.
-	if (glGenerateMipmap == NULL)
-		glGenerateMipmapEXT(GL_TEXTURE_2D);
+	// glGenerateMipmap does not exist before OpenGL 3.0
+	// https://www.opengl.org/sdk/docs/man/html/glGenerateMipmap.xhtml
+	if (_oglMajorVersion < 3)
+	{
+		if (supportsExtension("GL_SGIS_generate_mipmap"))
+			glGenerateMipmapEXT(GL_TEXTURE_2D);
+#ifdef DEBUG
+		else
+			throw std::runtime_error("Missing OpenGL extension: 'GL_SGIS_generate_mipmap'.");
+#endif
+	}
 	else
 		glGenerateMipmap(GL_TEXTURE_2D);
+
 	checkForErrors();
 
 	_currentBoundTexture = texture;
