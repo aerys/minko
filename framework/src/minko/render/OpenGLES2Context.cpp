@@ -40,7 +40,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #  include "GLES2/gl2ext.h"
 # else
 #  if !defined(MINKO_PLUGIN_OFFSCREEN) // temporary
-#  include "GL/glew.h"
+#   include "GL/glew.h"
+//#   include "GL/glxew.h"
+#   include "GL/wglew.h"
 #  else
 #   include <windows.h>
 #   include <GL/gl.h>
@@ -1719,11 +1721,19 @@ void
 OpenGLES2Context::generateMipmaps(uint texture)
 {
 	glBindTexture(GL_TEXTURE_2D, texture);
-	glGenerateMipmap(GL_TEXTURE_2D);
+	checkForErrors();
+
+	// In VirtualBox with a Windows 7 guest, GLEW does not properly bind the
+	// glGenerateMipMap function (issue: http://sourceforge.net/p/glew/bugs/273/).
+	// Yet, the glGenerateMipmapEXT function is properly bound. As a workaround,
+	// we use glGenerateMipmapEXT if glGenerateMipmap == NULL.
+	if (glGenerateMipmap == NULL)
+		glGenerateMipmapEXT(GL_TEXTURE_2D);
+	else
+		glGenerateMipmap(GL_TEXTURE_2D);
+	checkForErrors();
 
 	_currentBoundTexture = texture;
-
-	checkForErrors();
 }
 
 void
