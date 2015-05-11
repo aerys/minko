@@ -192,8 +192,14 @@ OpenGLES2Context::OpenGLES2Context() :
 	_driverInfo = std::string(glVendor ? glVendor : "(unknown vendor)")
 		+ " " + std::string(glRenderer ? glRenderer : "(unknown renderer)")
 		+ " " + std::string(glVersion ? glVersion : "(unknown version)");
+
+#ifdef GL_ES_VERSION_2_0
+	_oglMajorVersion = 2;
+	_oglMinorVersion = 0;
+#else
 	glGetIntegerv(GL_MAJOR_VERSION, &_oglMajorVersion);
 	glGetIntegerv(GL_MINOR_VERSION, &_oglMinorVersion);
+#endif
 
 	// init. viewport x, y, width and height
 	std::vector<int> viewportSettings(4);
@@ -1724,18 +1730,21 @@ OpenGLES2Context::generateMipmaps(uint texture)
 {
 	glBindTexture(GL_TEXTURE_2D, texture);
 
-	// glGenerateMipmap does not exist before OpenGL 3.0
+	// glGenerateMipmap exists in OpenGL ES 2.0+ or OpenGL 3.0+
+	// https://www.khronos.org/opengles/sdk/docs/man/xhtml/glGenerateMipmap.xml
 	// https://www.opengl.org/sdk/docs/man/html/glGenerateMipmap.xhtml
+#ifndef GL_ES_VERSION_2_0
 	if (_oglMajorVersion < 3)
 	{
 		if (supportsExtension("GL_SGIS_generate_mipmap"))
 			glGenerateMipmapEXT(GL_TEXTURE_2D);
-#ifdef DEBUG
+# ifdef DEBUG
 		else
 			throw std::runtime_error("Missing OpenGL extension: 'GL_SGIS_generate_mipmap'.");
-#endif
+# endif
 	}
 	else
+#endif
 		glGenerateMipmap(GL_TEXTURE_2D);
 
 	checkForErrors();
