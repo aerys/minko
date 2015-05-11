@@ -126,6 +126,9 @@ namespace minko
             void
             sortingNeeded();
 
+            void
+            sortEntries();
+
             bool
             hasPendingRequest() const;
 

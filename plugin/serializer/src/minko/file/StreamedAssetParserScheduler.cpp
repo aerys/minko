@@ -84,6 +84,8 @@ StreamedAssetParserScheduler::complete()
 float
 StreamedAssetParserScheduler::priority()
 {
+    sortEntries();
+
     if (!hasPendingRequest() || _activeEntries.size() >= _maxNumActiveParsers)
         return 0.f;
 
@@ -93,15 +95,7 @@ StreamedAssetParserScheduler::priority()
 void
 StreamedAssetParserScheduler::step()
 {
-    if (_sortingNeeded)
-    {
-        _sortingNeeded = false;
-
-        _entries.sort([](ParserEntryPtr left, ParserEntryPtr right) -> bool
-        {
-            return left->parser->priority() < right->parser->priority();
-        });
-    }
+    sortEntries();
 
     while (hasPendingRequest() && _activeEntries.size() < _maxNumActiveParsers)
     {
@@ -132,6 +126,20 @@ void
 StreamedAssetParserScheduler::sortingNeeded()
 {
     _sortingNeeded = true;
+}
+
+void
+StreamedAssetParserScheduler::sortEntries()
+{
+    if (_sortingNeeded)
+    {
+        _sortingNeeded = false;
+
+        _entries.sort([](ParserEntryPtr left, ParserEntryPtr right) -> bool
+        {
+            return left->parser->priority() < right->parser->priority();
+        });
+    }
 }
 
 bool
