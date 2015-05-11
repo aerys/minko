@@ -420,6 +420,14 @@ Transform::RootTransform::sortNodes()
                 continue;
 
             auto parentNode = localNodesEntry.front()->parent();
+
+            if (!parentNode)
+            {
+                _nodes.push_back(localNodesEntry.front());
+
+                continue;
+            }
+
             const auto& parentNodeChildren = parentNode->children();
 
             auto localSortedNodes = std::vector<scene::Node::Ptr>(parentNodeChildren.size());
