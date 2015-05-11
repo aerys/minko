@@ -211,7 +211,20 @@ AbstractASSIMPParser::getPostProcessingFlags(const aiScene*             scene,
                                              Options::Ptr		        options)
 {
     const auto numMaterials = scene->mNumMaterials;
-    const auto numTextures = scene->mNumTextures;
+
+    auto numTextures = scene->mNumTextures;
+
+	for (auto materialId = 0u; materialId < numMaterials; ++materialId)
+    {
+        auto aiMat = scene->mMaterials[materialId];
+
+		for (const auto& textureTypeAndName : _textureTypeToName)
+		{
+            const auto textureType = static_cast<aiTextureType>(textureTypeAndName.first);
+
+            numTextures += aiMat->GetTextureCount(textureType);
+        }
+    }
 
     unsigned int flags =
         aiProcess_JoinIdenticalVertices
@@ -229,7 +242,7 @@ AbstractASSIMPParser::getPostProcessingFlags(const aiScene*             scene,
 
     unsigned int removeComponentFlags = aiComponent_COLORS;
 
-    if (numMaterials || numTextures == 0u)
+    if (numMaterials == 0u || numTextures == 0u)
     {
         removeComponentFlags |= aiComponent_TEXCOORDS | aiComponent_TANGENTS_AND_BITANGENTS;
     }
@@ -453,7 +466,7 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
 
     const auto numIndices = mesh->mNumFaces * 3u;
 
-    if (numIndices > static_cast<unsigned int>(std::numeric_limits<unsigned short>::max()))
+    if (numIndices <= static_cast<unsigned int>(std::numeric_limits<unsigned short>::max()))
     {
 	    std::vector<unsigned short>	indexData	(3 * mesh->mNumFaces, 0);
 
