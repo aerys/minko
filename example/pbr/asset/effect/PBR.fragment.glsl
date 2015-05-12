@@ -36,7 +36,6 @@ uniform float uRoughness;
 uniform float uMetalness;
 uniform sampler2D uRadianceMap;
 uniform sampler2D uIrradianceMap;
-uniform sampler2D uIntegrateBRDF;
 
 // texture lod
 uniform float uAlbedoMapMaxAvailableLod;
@@ -293,7 +292,6 @@ void main(void)
         specularAccum = pbr_envSpecular(
             specular,
             uRadianceMap,
-            uIntegrateBRDF,
             10,
             roughness,
             reflect(-eyeVector, normalVector),

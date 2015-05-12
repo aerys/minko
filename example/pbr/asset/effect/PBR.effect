@@ -197,7 +197,6 @@
         			"uPopMinBound"           			: "geometry[${geometryUuid}].popMinBound",
         			"uPopMaxBound"           			: "geometry[${geometryUuid}].popMaxBound",
 					"uIrradianceMap"					: "material[${materialUuid}].irradianceMap",
-					"uIntegrateBRDF"					: { "default" : "integrateBRDF.jpg" },
 					"uRadianceMap"						: {
 						"binding" : "material[${materialUuid}].radianceMap",
 						"wrapMode" : "clamp",

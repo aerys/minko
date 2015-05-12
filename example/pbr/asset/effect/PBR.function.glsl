@@ -31,7 +31,6 @@ vec3 pbr_fresnelSchlickWithRoughness(vec3 specularColor, vec3 e, vec3 n, float g
 
 vec3 pbr_envSpecular(vec3       specularColor,
                      sampler2D  radianceMap,
-                     sampler2D  integratedBRDF,
                      int        numMipmaps,
                      float      roughness,
                      vec3       worldSpaceReflectionVector,
@@ -45,7 +44,7 @@ vec3 pbr_envSpecular(vec3       specularColor,
         normalToLatLongUV(worldSpaceReflectionVector),
         mipMapIndex
     ).rgb;
-    vec2 envBRDF = texture2D(integratedBRDF, vec2(roughness, NoV)).xy;
+    // vec2 envBRDF = texture2D(integratedBRDF, vec2(roughness, NoV)).xy;
 
     return pbr_fresnelSchlickWithRoughness(specularColor, normal, view, 1.0 - roughness)
         * prefilteredColor;
