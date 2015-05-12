@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 
+#include "minko/render/TextureFormat.hpp"
 #include "minko/render/AbstractTexture.hpp"
 
 namespace minko
@@ -80,11 +81,17 @@ namespace minko
 
             void
             data(unsigned char*     data,
+                 Face               face,
                  int                widthGPU    = -1,
                  int                heightGPU   = -1);
 
             void
             resize(unsigned int width, unsigned int height, bool resizeSmoothly);
+
+            void
+            uploadMipLevel(uint            level,
+                           unsigned char*  data,
+                           Face            face);
 
             void
             upload();

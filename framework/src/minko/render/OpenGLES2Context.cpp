@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/WrapMode.hpp"
 #include "minko/render/TextureFilter.hpp"
 #include "minko/render/MipFilter.hpp"
+#include "minko/render/TextureFormat.hpp"
 #include "minko/render/TextureFormatInfo.hpp"
 #include "minko/render/TriangleCulling.hpp"
 #include "minko/render/StencilOperation.hpp"
@@ -326,7 +327,7 @@ OpenGLES2Context::drawTriangles(const uint indexBuffer, const uint firstIndex, c
 	// indices Specifies a pointer to the location where the indices are stored.
 	//
 	// glDrawElements render primitives from array data
-	glDrawElements(GL_TRIANGLES, numTriangles * 3, GL_UNSIGNED_SHORT, (const GLvoid*)firstIndex);
+	glDrawElements(GL_TRIANGLES, numTriangles * 3, GL_UNSIGNED_SHORT, reinterpret_cast<GLvoid*>(firstIndex));
 
 	checkForErrors();
 }
@@ -631,7 +632,7 @@ OpenGLES2Context::createTexture(TextureType     type,
 			 size > 0;
 			 size = size >> 1, w = w >> 1, h = h >> 1)
 		{
-			 if (type == TextureType::Texture2D)
+			if (type == TextureType::Texture2D)
 				glTexImage2D(GL_TEXTURE_2D, level, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 			else
 			{
@@ -880,7 +881,8 @@ OpenGLES2Context::uploadCompressedCubeTextureData(uint                texture,
                                                   unsigned int        mipLevel,
                                                   void*               data)
 {
-    // TODO
+    // FIXME
+	throw;
 }
 
 void

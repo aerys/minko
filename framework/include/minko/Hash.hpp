@@ -68,17 +68,6 @@ namespace minko
         }
     };
 
-    template<>
-    struct Hash<minko::render::TextureFormat>
-    {
-        inline
-        size_t
-        operator()(const minko::render::TextureFormat& x) const
-        {
-            return std::hash<unsigned int>()(static_cast<unsigned int>(x));
-        }
-    };
-
     // generic std::hash and std::equal_to specializations for std::pair
     template<typename T, typename V>
     struct Hash<std::pair<T, V>>
