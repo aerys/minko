@@ -98,7 +98,7 @@ namespace minko
                    StencilOperation			stencilZPassOp      = DEFAULT_STENCIL_ZPASS_OPERATION,
                    bool						scissorTest         = DEFAULT_SCISSOR_TEST,
                    const math::ivec4&		scissorBox          = DEFAULT_SCISSOR_BOX,
-                   TextureSampler		    target              = DEFAULT_TARGET);
+                   const TextureSampler&	target              = DEFAULT_TARGET);
 
             States(const States& states);
 
