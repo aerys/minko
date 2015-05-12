@@ -29,7 +29,7 @@ vec4 texturelod_texture(sampler2D tex, vec2 uv, float lod)
             return texture2DLod(tex, uv, lod);
         #endif
     #else
-        return defaultColor;
+        return vec4(0.0);
     #endif
 #else
     return textureLod(tex, uv, lod);
