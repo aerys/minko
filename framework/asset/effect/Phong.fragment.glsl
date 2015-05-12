@@ -216,7 +216,7 @@ float getShadow(sampler2D 	shadowMap,
 		#if SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_HARD
 			shadow = shadowMapping_texture2DCompare(shadowMap, depthUV, shadowDepth, near, far);
 		#elif SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_ESM
-			shadow = shadowMapping_ESM(shadowMap, depthUV, shadowDepth, near, far, 30.0);
+			shadow = shadowMapping_ESM(shadowMap, depthUV, shadowDepth, near, far, (far - near) * 1.5);
 		#elif SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_PCF
 			shadow = shadowMapping_PCF(shadowMap, vec2(size, size), depthUV, shadowDepth, near, far);
 		// #elif SHADOW_MAPPING_TECHNIQUE == SHADOW_MAPPING_TECHNIQUE_PCF_POISSON
@@ -318,7 +318,7 @@ void main(void)
 		float shadow;
 		vec3 dir;
         #ifdef NUM_DIRECTIONAL_LIGHTS
-        
+
 		#if NUM_DIRECTIONAL_LIGHTS > 0
 			shadow = 1.0;
 			dir = normalize(-uDirLight0_direction);
