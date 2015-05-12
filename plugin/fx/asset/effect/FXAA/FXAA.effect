@@ -21,11 +21,13 @@
 	"techniques" : [{
     	"passes"	: [{
 			"vertexShader" : "
-				// #ifdef GL_FRAGMENT_PRECISION_HIGH
-				//     precision highp float;
-				// #else
-				//     precision mediump float;
-				// #endif
+				#ifdef GL_ES
+					#ifdef GL_FRAGMENT_PRECISION_HIGH
+					    precision highp float;
+					#else
+					    precision mediump float;
+					#endif
+				#endif
 
 				attribute vec3 aPosition;
 				attribute vec2 aUV;
