@@ -50,7 +50,7 @@ vec4 saturate(vec4 x)
     return clamp(x, 0.0, 1.0);
 }
 
-vec2 normalToPanoramaUV(const vec3 dir)
+vec2 normalToLatLongUV(const vec3 dir)
 {
     float n = length(dir.xz);
     vec2 pos = vec2((n > 0.0000001) ? dir.x / n : 0.0, dir.y);
