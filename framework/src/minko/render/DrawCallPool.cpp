@@ -76,7 +76,7 @@ DrawCallPool::addDrawCalls(Effect::Ptr              effect,
         initializeDrawCall(*drawCall);
 
         // if the draw call is meant only for post-processing, then it should only exist once
-        if (pass->isPostProcessing())
+        if (!pass->isForward())
         {
             auto it = std::find_if(_drawCalls.begin(), _drawCalls.end(), [&](const DrawCall* d)
             {
@@ -615,7 +615,7 @@ DrawCallPool::bindDrawCall(DrawCall& drawCall, Pass::Ptr pass, Program::Ptr prog
         uniformBindingPropertyAddedHandler(drawCall, input, pass->uniformBindings(), forceRebind);
 
     // bind index buffer
-    if (!pass->isPostProcessing())
+    if (pass->isForward())
         drawCall.bindIndexBuffer();
 }
 

@@ -315,7 +315,8 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
 		render::Shader::Ptr fragmentShader;
         auto passName = _effectName + "-pass" + std::to_string(scope.passes.size());
         auto nameNode = node.get("name", 0);
-		auto isPostProcessing = false;
+		auto isForward = true;
+
         if (nameNode.isString())
             passName = nameNode.asString();
         // FIXME: throw otherwise
@@ -352,7 +353,7 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
 
 				vertexShader = pass->program()->vertexShader();
 				fragmentShader = pass->program()->fragmentShader();
-				isPostProcessing = pass->isPostProcessing();
+				isForward = pass->isForward();
 			}
 			// FIXME: throw otherwise
 		}
@@ -372,15 +373,15 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
 		else if (!fragmentShader)
 			throw std::runtime_error("Missing fragment shader for pass \"" + passName + "\"");
 
-		if (node.isMember("isPostProcessing"))
-			isPostProcessing = node.get("isPostProcessing", false).asBool();
+		if (node.isMember("forward"))
+			isForward = node.get("forward", true).asBool();
 
-        if (isPostProcessing)
-            checkPostProcessingPassBindings(passScope);
+        if (!isForward)
+            checkDeferredPassBindings(passScope);
 
         passes.push_back(Pass::create(
             passName,
-			isPostProcessing,
+			isForward,
             Program::create(passName, _options->context(), vertexShader, fragmentShader),
             passScope.attributeBlock.bindingMap,
             passScope.uniformBlock.bindingMap,
@@ -392,7 +393,7 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
 }
 
 void
-EffectParser::checkPostProcessingPassBindings(const Scope& passScope)
+EffectParser::checkDeferredPassBindings(const Scope& passScope)
 {
     for (auto& bindingNameAndValue : passScope.attributeBlock.bindingMap.bindings)
         if (bindingNameAndValue.second.source == data::Binding::Source::TARGET)

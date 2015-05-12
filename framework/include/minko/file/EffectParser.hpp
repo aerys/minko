@@ -235,7 +235,7 @@ namespace minko
             parsePass(const Json::Value& node, Scope& scope, std::vector<PassPtr>& passes);
 
             void
-            checkPostProcessingPassBindings(const Scope& passScope);
+            checkDeferredPassBindings(const Scope& passScope);
 
             void
             parsePasses(const Json::Value& node, Scope& scope, std::vector<PassPtr>& passes);

@@ -578,9 +578,9 @@ DrawCall::bindIndexBuffer()
 }
 
 data::ResolvedBinding*
-DrawCall::bindState(const std::string&        					            stateName,
-                    const std::unordered_map<std::string, data::Binding>&     bindings,
-                    const data::Store&                                        defaultValues)
+DrawCall::bindState(const std::string&        					             stateName,
+                    const std::unordered_map<std::string, data::Binding>&    bindings,
+                    const data::Store&                                       defaultValues)
 {
     auto binding = resolveBinding(
         stateName,
@@ -727,7 +727,7 @@ DrawCall::render(AbstractContext::Ptr   context,
     context->setScissorTest(*_scissorTest, *_scissorBox);
     context->setTriangleCulling(*_triangleCulling);
 
-    if (_pass->isPostProcessing())
+    if (!_pass->isForward())
         context->drawTriangles(0, 2);
     else
         context->drawTriangles(*_indexBuffer, *_firstIndex, *_numIndices / 3);
