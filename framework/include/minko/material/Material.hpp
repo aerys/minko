@@ -66,29 +66,6 @@ namespace minko
 				return mat;
 			}
 
-			inline static
-			Ptr
-			create(const data::Provider::ValueMap& values, const std::string& name = "material")
-			{
-				auto instance = Ptr(new Material(name, values));
-
-                instance->initialize();
-
-                return instance;
-			}
-
-			inline static
-			Ptr
-			create(std::initializer_list<std::pair<data::Provider::PropertyName, Any>> 	init,
-				   const std::string& 													name = "material")
-			{
-				auto instance = Ptr(new Material(name, init));
-
-                instance->initialize();
-
-                return instance;
-			}
-
             inline
             const std::string&
             uuid() const
@@ -110,6 +87,14 @@ namespace minko
                 return _provider;
             }
 
+            Ptr
+            set(std::initializer_list<data::Provider::ValueType> values)
+            {
+                _provider->set(values);
+
+                return shared_from_this();
+            }
+
 		protected:
 			Material(const std::string& name) :
                 _provider(data::Provider::create())
@@ -119,16 +104,8 @@ namespace minko
             }
 
             Material(const std::string& name,
-                     const data::Provider::ValueMap& values) :
+                     const data::Provider::DefaultValueMap& values) :
                 _provider(data::Provider::create(values))
-            {
-                _provider->set("name", name);
-                _provider->set("uuid", _provider->uuid());
-            }
-
-			Material(const std::string& name,
-                     const std::initializer_list<std::pair<data::Provider::PropertyName, Any>>& init) :
-                _provider(data::Provider::create(init))
             {
                 _provider->set("name", name);
                 _provider->set("uuid", _provider->uuid());

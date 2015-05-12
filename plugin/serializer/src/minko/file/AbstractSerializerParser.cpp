@@ -32,6 +32,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/Options.hpp"
 #include "minko/file/TextureParser.hpp"
 #include "minko/file/TextureWriter.hpp"
+#include "minko/log/Logger.hpp"
 #include "minko/material/Material.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/deserialize/Unpacker.hpp"
@@ -366,9 +367,9 @@ AbstractSerializerParser::readHeader(const std::string&					filename,
     _version.minor = readShort(data, 5);
     _version.patch = int(data[7]);
 
-    if (_version.major != MINKO_SCENE_VERSION_MAJOR || 
-        _version.minor > MINKO_SCENE_VERSION_MINOR || 
-        (_version.minor <= MINKO_SCENE_VERSION_MINOR && _version.patch < MINKO_SCENE_VERSION_PATCH))
+    if (_version.major != MINKO_SCENE_VERSION_MAJOR ||
+        _version.minor > MINKO_SCENE_VERSION_MINOR ||
+        (_version.minor == MINKO_SCENE_VERSION_MINOR && _version.patch > MINKO_SCENE_VERSION_PATCH))
 	{
 		auto fileVersion = std::to_string(_version.major) + "." + std::to_string(_version.minor) + "." + std::to_string(_version.patch);
 		auto sceneVersion = std::to_string(MINKO_SCENE_VERSION_MAJOR) + "." + std::to_string(MINKO_SCENE_VERSION_MINOR) + "." + std::to_string(MINKO_SCENE_VERSION_PATCH);
@@ -382,15 +383,13 @@ AbstractSerializerParser::readHeader(const std::string&					filename,
 	}
 
 	// Versions with the same MAJOR value but different MINOR or PATCH value should be compatible
-#if DEBUG
     if (_version.minor != MINKO_SCENE_VERSION_MINOR || _version.patch != MINKO_SCENE_VERSION_PATCH)
 	{
 		auto fileVersion = std::to_string(_version.major) + "." + std::to_string(_version.minor) + "." + std::to_string(_version.patch);
 		auto sceneVersion = std::to_string(MINKO_SCENE_VERSION_MAJOR) + "." + std::to_string(MINKO_SCENE_VERSION_MINOR) + "." + std::to_string(MINKO_SCENE_VERSION_PATCH);
 
-		std::cout << "Warning: file " + filename + " is v" + fileVersion + " while current version is v" + sceneVersion << std::endl;
+		LOG_WARNING("Warning: file " + filename + " is v" + fileVersion + " while current version is v" + sceneVersion);
 	}
-#endif
 
 	_fileSize = readUInt(data, 8);
 

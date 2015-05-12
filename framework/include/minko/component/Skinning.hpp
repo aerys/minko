@@ -107,6 +107,13 @@ namespace minko
 			AbsCmpPtr
 			clone(const CloneOption& option);
 
+            inline
+            SkinPtr
+            skin() const
+            {
+                return _skin;
+            }
+
         protected:
             void
             initialize();

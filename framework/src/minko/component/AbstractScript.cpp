@@ -95,11 +95,6 @@ AbstractScript::componentAddedHandler(scene::Node::Ptr			node,
 									  AbstractComponent::Ptr	component)
 {
 	findSceneManager();
-
-	//auto sceneManager = std::dynamic_pointer_cast<SceneManager>(component);
-
-	//if (sceneManager)
-	//	setSceneManager(sceneManager);
 }
 
 void
@@ -108,11 +103,6 @@ AbstractScript::componentRemovedHandler(scene::Node::Ptr		node,
 										AbstractComponent::Ptr	component)
 {
 	findSceneManager();
-
-	//auto sceneManager = std::dynamic_pointer_cast<SceneManager>(component);
-
-	//if (sceneManager)
-	//	setSceneManager(nullptr);
 }
 
 void
@@ -175,7 +165,7 @@ AbstractScript::setSceneManager(SceneManager::Ptr sceneManager)
                 std::placeholders::_1,
                 std::placeholders::_2,
                 std::placeholders::_3
-            ));
+            ), priority());
 		if (!_frameEndSlot)
 			_frameEndSlot = sceneManager->frameEnd()->connect(std::bind(
 				&AbstractScript::frameEndHandler, 

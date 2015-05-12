@@ -1,11 +1,6 @@
 minko.sdk = {}
 
 minko.sdk.path = function(p)
-	p = path.getabsolute(MINKO_HOME .. "/" .. p)
-
-	if os.is('windows') then
-		return path.translate(p)
-	else
-		return p
-	end
+	-- note: cannot use path.join() here because `p` can start with '/'
+	return path.getabsolute(MINKO_HOME .. "/" .. p)
 end

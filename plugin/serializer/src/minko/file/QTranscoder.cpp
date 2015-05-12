@@ -39,7 +39,7 @@ QTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
                        std::vector<unsigned char>&               out)
 {
 #ifndef MINKO_NO_QCOMPRESS
-    const auto textureFormatToQTextureFomat = std::unordered_map<TextureFormat, unsigned long long>
+    const auto textureFormatToQTextureFomat = std::unordered_map<TextureFormat, unsigned long long, Hash<TextureFormat>>
     {
         { TextureFormat::RGB,           Q_FORMAT_RGB_8I         },
         { TextureFormat::RGBA,          Q_FORMAT_RGBA_8I        },

@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/net/HTTPProtocol.hpp"
 #include "minko/net/HTTPRequest.hpp"
 #include "minko/AbstractCanvas.hpp"
+#include "minko/log/Logger.hpp"
 
 #if defined(EMSCRIPTEN)
 # include "emscripten/emscripten.h"
@@ -60,7 +61,7 @@ HTTPProtocol::progressHandler(void* arg, int loadedBytes, int totalBytes)
 
     if (iterator == HTTPProtocol::_runningLoaders.end())
     {
-        std::cerr << "HTTPProtocol::progressHandler(): cannot find loader" << std::endl;
+        LOG_ERROR("cannot find loader");
         return;
     }
 
@@ -80,7 +81,7 @@ HTTPProtocol::completeHandler(void* arg, void* data, unsigned int size)
 
     if (iterator == HTTPProtocol::_runningLoaders.end())
     {
-        std::cerr << "HTTPProtocol::completeHandler(): cannot find loader" << std::endl;
+        LOG_ERROR("cannot find loader");
         return;
     }
 
@@ -105,11 +106,13 @@ HTTPProtocol::errorHandler(void* arg, int code, const char * message)
 
     if (iterator == HTTPProtocol::_runningLoaders.end())
     {
-        std::cerr << "HTTPProtocol::errorHandler(): cannot find loader" << std::endl;
+        LOG_ERROR("cannot find loader");
         return;
     }
 
     std::shared_ptr<HTTPProtocol> loader = *iterator;
+
+    LOG_ERROR(message);
 
     loader->_error->execute(loader);
 
@@ -133,6 +136,7 @@ HTTPProtocol::load()
     auto username = std::string();
     auto password = std::string();
     auto additionalHeaders = std::unordered_map<std::string, std::string>();
+    auto verifyPeer = true;
 
     auto httpOptions = std::dynamic_pointer_cast<HTTPOptions>(_options);
 
@@ -142,15 +146,17 @@ HTTPProtocol::load()
         password = httpOptions->password();
 
         additionalHeaders = httpOptions->additionalHeaders();
+
+        verifyPeer = httpOptions->verifyPeer();
     }
 
-        auto seekingOffset = _options->seekingOffset();
-        auto seekedLength = _options->seekedLength();
+    auto seekingOffset = _options->seekingOffset();
+    auto seekedLength = _options->seekedLength();
 
-        if (seekingOffset >= 0 && seekedLength > 0)
-        {
-            auto rangeMin = std::to_string(seekingOffset);
-            auto rangeMax = std::to_string(seekingOffset + seekedLength - 1);
+    if (seekingOffset >= 0 && seekedLength > 0)
+    {
+        auto rangeMin = std::to_string(seekingOffset);
+        auto rangeMax = std::to_string(seekingOffset + seekedLength - 1);
 
         additionalHeaders.insert(std::make_pair(
             "Range",
@@ -269,16 +275,65 @@ HTTPProtocol::load()
             }
         }));
 
-        std::vector<char> input(resolvedFilename().begin(), resolvedFilename().end());
-        worker->start(input);
+        const auto offset = _options->seekingOffset();
+        const auto length = _options->seekedLength();
+
+        std::stringstream inputStream;
+
+        const auto& resolvedFilename = this->resolvedFilename();
+        const int resolvedFilenameSize = static_cast<int>(resolvedFilename.size());
+
+        const int usernameSize = username.size();
+        const int passwordSize = password.size();
+
+        const int numAdditionalHeaders = additionalHeaders.size();
+
+        inputStream.write(reinterpret_cast<const char*>(&resolvedFilenameSize), 4);
+        if (resolvedFilenameSize > 0)
+            inputStream.write(resolvedFilename.data(), resolvedFilenameSize);
+
+        inputStream.write(reinterpret_cast<const char*>(&usernameSize), 4);
+        if (usernameSize > 0)
+            inputStream.write(username.data(), usernameSize);
+
+        inputStream.write(reinterpret_cast<const char*>(&passwordSize), 4);
+        if (passwordSize > 0)
+            inputStream.write(password.data(), passwordSize);
+
+        inputStream.write(reinterpret_cast<const char*>(&numAdditionalHeaders), 4);
+
+        for (const auto& additionalHeader : additionalHeaders)
+        {
+            const auto& key = additionalHeader.first;
+            const auto& value = additionalHeader.second;
+
+            const int keySize = static_cast<int>(key.size());
+            const int valueSize = static_cast<int>(value.size());
+
+            inputStream.write(reinterpret_cast<const char*>(&keySize), 4);
+            if (keySize > 0)
+                inputStream.write(reinterpret_cast<const char*>(&valueSize), 4);
+
+            inputStream.write(key.data(), keySize);
+            if (valueSize > 0)
+                inputStream.write(value.data(), valueSize);
+        }
+
+        inputStream.write(reinterpret_cast<const char*>(&verifyPeer), 1);
+
+        auto inputString = inputStream.str();
+
+        worker->start(std::vector<char>(inputString.begin(), inputString.end()));
     }
     else
     {
         HTTPRequest request(resolvedFilename(), username, password, &additionalHeaders);
 
+        request.verifyPeer(verifyPeer);
+
         auto requestIsSuccessfull = true;
 
-        auto requestErrorSlot = request.error()->connect([&](int error)
+        auto requestErrorSlot = request.error()->connect([&](int error, const std::string& errorMessage)
         {
             requestIsSuccessfull = false;
 
@@ -304,24 +359,12 @@ HTTPProtocol::load()
 bool
 HTTPProtocol::fileExists(const std::string& filename)
 {
-#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
-    auto evalString = std::string();
-
-    evalString += "var xhr = new XMLHttpRequest();\n";
-
-    evalString += "xhr.open('HEAD', '" + filename + "', false);\n";
-
-    evalString += "xhr.send(null);\n";
-
-    evalString += "(xhr.status);";
-
-    auto status = emscripten_run_script_int(evalString.c_str());
-
-    return status != 404;
-#else
     auto username = std::string();
     auto password = std::string();
+
     const std::unordered_map<std::string, std::string>* additionalHeaders = nullptr;
+
+    auto verifyPeer = true;
 
     auto httpOptions = std::dynamic_pointer_cast<HTTPOptions>(_options);
 
@@ -331,8 +374,36 @@ HTTPProtocol::fileExists(const std::string& filename)
         password = httpOptions->password();
 
         additionalHeaders = &httpOptions->additionalHeaders();
+
+        verifyPeer = httpOptions->verifyPeer();
     }
 
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+    auto evalString = std::string();
+
+    evalString += "var xhr = new XMLHttpRequest();\n";
+
+    evalString += "xhr.open('HEAD', '" + filename + "', false);\n";
+
+    if (additionalHeaders != nullptr)
+    {
+        for (const auto& additionalHeader : *additionalHeaders)
+        {
+            if (additionalHeader.first == "")
+                continue;
+
+            evalString += "xhr.setRequestHeader('" + additionalHeader.first + "', '" + additionalHeader.second + "');\n";
+        }
+    }
+
+    evalString += "xhr.send(null);\n";
+
+    evalString += "(xhr.status);";
+
+    auto status = emscripten_run_script_int(evalString.c_str());
+
+    return (status >= 200 && status < 300);
+#else
     return HTTPRequest::fileExists(filename, username, password, additionalHeaders);
 #endif
 }

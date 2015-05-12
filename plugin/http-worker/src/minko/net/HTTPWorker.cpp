@@ -27,10 +27,72 @@ namespace minko
 {
     namespace net
     {
-        MINKO_DEFINE_WORKER(HTTPWorker, {
-            std::string url(input.begin(), input.end());
+        typedef std::unordered_map<std::string, std::string> StringStringUnorderedMap;
 
-            HTTPRequest request(url);
+        MINKO_DEFINE_WORKER(HTTPWorker,
+        {
+            std::stringstream inputStream(std::string(input.begin(), input.end()));
+
+            auto urlSize = 0;
+            auto usernameSize = 0;
+            auto passwordSize = 0;
+            auto numAdditionalHeaders = 0;
+            auto verifyPeer = true;
+
+            inputStream.read(reinterpret_cast<char*>(&urlSize), 4);
+            auto urlData = std::vector<char>(urlSize);
+
+            if (urlSize > 0)
+                inputStream.read(urlData.data(), urlSize);
+
+            inputStream.read(reinterpret_cast<char*>(&usernameSize), 4);
+            auto usernameData = std::vector<char>(usernameSize);
+
+            if (usernameSize > 0)
+                inputStream.read(usernameData.data(), usernameSize);
+
+            inputStream.read(reinterpret_cast<char*>(&passwordSize), 4);
+            auto passwordData = std::vector<char>(passwordSize);
+
+            if (passwordSize > 0)
+                inputStream.read(passwordData.data(), passwordSize);
+
+            const auto url = std::string(urlData.begin(), urlData.end());
+            const auto username = std::string(usernameData.begin(), usernameData.end());
+            const auto password = std::string(passwordData.begin(), passwordData.end());
+
+            inputStream.read(reinterpret_cast<char*>(&numAdditionalHeaders), 4);
+
+            StringStringUnorderedMap additionalHeaders;
+
+            for (auto i = 0; i < numAdditionalHeaders; ++i)
+            {
+                auto keySize = 0;
+                auto valueSize = 0;
+
+                inputStream.read(reinterpret_cast<char*>(&keySize), 4);
+                inputStream.read(reinterpret_cast<char*>(&valueSize), 4);
+
+                auto keyData = std::vector<char>(keySize);
+                auto valueData = std::vector<char>(valueSize);
+
+                if (keySize > 0)
+                    inputStream.read(keyData.data(), keySize);
+
+                if (valueSize > 0)
+                    inputStream.read(valueData.data(), valueSize);
+
+                additionalHeaders.insert(std::make_pair(
+                    std::string(keyData.begin(), keyData.end()),
+                    std::string(valueData.begin(), valueData.end())
+                ));
+            }
+
+            inputStream.read(reinterpret_cast<char*>(&verifyPeer), 1);
+
+            HTTPRequest request(url, username, password, additionalHeaders.empty() ? nullptr : &additionalHeaders);
+
+            request.verifyPeer(verifyPeer);
 
             auto _0 = request.progress()->connect([&](float p) {
                 Message message { "progress" };
@@ -38,7 +100,7 @@ namespace minko
                 post(message);
             });
 
-            auto _1 = request.error()->connect([&](int e) {
+            auto _1 = request.error()->connect([&](int e, const std::string& errorMessage) {
                 post(Message { "error" });
             });
 

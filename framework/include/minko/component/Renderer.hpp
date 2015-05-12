@@ -246,6 +246,20 @@ namespace minko
 				return _variables;
 			}
 
+			inline
+			const std::string&
+			effectTechnique() const
+			{
+				return _effectTechnique;
+			}
+
+			inline
+			void
+			effectTechnique(std::string value)
+			{
+				_effectTechnique = value;
+			}
+
             inline
             void
             clearBeforeRender(bool value)
@@ -270,6 +284,12 @@ namespace minko
 			void
 			render(std::shared_ptr<render::AbstractContext> context,
 				   AbsTexturePtr 							renderTarget = nullptr);
+
+			void
+			clear(std::shared_ptr<AbstractCanvas> canvas);
+
+			void
+			clear(std::shared_ptr<AbstractCanvas> canvas, math::vec4 clearColor);
 
 			inline
 			Signal<Ptr>::Ptr

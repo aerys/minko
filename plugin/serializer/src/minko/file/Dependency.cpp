@@ -283,9 +283,13 @@ Dependency::serializeGeometry(std::shared_ptr<Dependency>				dependency,
     serialize::AssetType        assetType;
     std::string                 content;
 
+    auto filename = assetLibrary->geometryName(geometry);
+
+    filename = writerOptions->geometryUriFunction()(filename);
+
     const auto assetIsNull = writerOptions->assetIsNull(geometry->uuid());
 
-    geometryWriter->data(geometry);
+    geometryWriter->data(writerOptions->geometryFunction()(filename, geometry));
 
     if (!assetIsNull && writerOptions->embedMode() & WriterOptions::EmbedMode::Geometry)
     {
@@ -297,27 +301,13 @@ Dependency::serializeGeometry(std::shared_ptr<Dependency>				dependency,
     {
         assetType = serialize::AssetType::GEOMETRY_ASSET;
 
-        static auto geometryNameId = 0;
-        auto filename = std::string();
-
-        try
-        {
-            filename = assetLibrary->geometryName(geometry) + ".geometry";
-        }
-        catch (const std::exception& exception)
-        {
-            filename = "geometry" + std::to_string(geometryNameId++) + ".geometry";
-        }
-
         if (!assetIsNull)
         {
-            auto completeFilename = writerOptions->outputAssetUriFunction()(filename);
-
             auto embeddedHeaderData = std::vector<unsigned char>();
-            geometryWriter->write(completeFilename, assetLibrary, options, writerOptions, dependency, userDefinedDependency, embeddedHeaderData);
+            geometryWriter->write(filename, assetLibrary, options, writerOptions, dependency, userDefinedDependency, embeddedHeaderData);
         }
 
-        content = filename;
+        content = File::removePrefixPathFromFilename(filename);
     }
 
     SerializedAsset res(assetType, resourceId, content);
@@ -333,20 +323,16 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
 							 std::shared_ptr<file::Options>				options,
                              std::shared_ptr<file::WriterOptions>       writerOptions)
 {
-    static const auto textureExtension = "texture";
+	auto writer = TextureWriter::create();
+    auto filename = assetLibrary->textureName(texture);
+    auto assetType = serialize::AssetType();
+    auto content = std::string();
 
-	auto writer                 = TextureWriter::create();
-    auto fileName = assetLibrary->textureName(texture);
-    auto assetType              = serialize::AssetType();
-    auto content                = std::string();
+    filename = writerOptions->textureUriFunction()(filename);
 
     const auto assetIsNull = writerOptions->assetIsNull(texture->uuid());
 
-    auto extension = fileName.substr(fileName.find_last_of(".") + 1);
-    if (extension != textureExtension)
-        fileName = fileName.substr(0, fileName.size() - (extension.size())) + std::string(textureExtension);
-
-    writer->data(texture);
+    writer->data(writerOptions->textureFunction()(filename, texture));
 
     if (!assetIsNull && writerOptions->embedMode() & WriterOptions::EmbedMode::Texture)
     {
@@ -358,18 +344,12 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
     {
         assetType = serialize::AssetType::TEXTURE_PACK_ASSET;
 
-        auto completeFileName = writerOptions->outputAssetUriFunction()(fileName);
-
-        // TODO fixme
-        // differentiate asset location relatively to scene root from asset name
-        auto assetName = fileName.substr(fileName.find_last_of("/\\") + 1);
-
         if (!assetIsNull)
         {
-            writer->write(completeFileName, assetLibrary, options, writerOptions, dependency);
+            writer->write(filename, assetLibrary, options, writerOptions, dependency);
         }
 
-        content = assetName;
+        content = File::removePrefixPathFromFilename(filename);
     }
 
     const auto hasHeaderSize = !assetIsNull;
@@ -392,51 +372,32 @@ Dependency::serializeMaterial(std::shared_ptr<Dependency>			dependency,
 							  std::shared_ptr<file::Options>		options,
                               std::shared_ptr<file::WriterOptions>  writerOptions)
 {
-	MaterialWriter::Ptr         materialWriter = MaterialWriter::create();
-    serialize::AssetType        assetType;
-    std::string                 content;
+	auto writer = MaterialWriter::create();
+    auto filename = assetLibrary->materialName(material);
+    auto assetType = serialize::AssetType();
+    auto content = std::string();
+
+    filename = writerOptions->materialUriFunction()(filename);
 
     const auto assetIsNull = writerOptions->assetIsNull(material->uuid());
 
-    materialWriter->data(material);
+    writer->data(writerOptions->materialFunction()(filename, material));
 
     if (!assetIsNull && writerOptions->embedMode() & WriterOptions::EmbedMode::Material)
     {
         assetType = serialize::AssetType::EMBED_MATERIAL_ASSET;
-        content = materialWriter->embedAll(assetLibrary, options, writerOptions, dependency);
+        content = writer->embedAll(assetLibrary, options, writerOptions, dependency);
     }
     else
     {
         assetType = serialize::AssetType::MATERIAL_ASSET;
 
-        static auto materialNameId = 0;
-        auto materialName = std::string();
-
-        try
-        {
-            materialName = assetLibrary->materialName(material) + ".material";
-        }
-        catch (std::exception exception)
-        {
-            materialName = "default" + std::to_string(materialNameId++) + ".material";
-        }
-
-        auto materialNameExtensionLocation = materialName.find_last_of(".");
-        auto materialNameExtension = std::string { };
-
-        if (materialNameExtensionLocation != std::string::npos)
-            materialNameExtension = materialName.substr(materialNameExtensionLocation + 1);
-
-        auto filename = materialName + (materialNameExtension == "material" ? "" : ".material");
-
-        auto completeFilename = writerOptions->outputAssetUriFunction()(filename);
-
         if (!assetIsNull)
         {
-            materialWriter->write(completeFilename, assetLibrary, options, writerOptions, dependency);
+            writer->write(filename, assetLibrary, options, writerOptions, dependency);
         }
 
-        content = filename;
+        content = File::removePrefixPathFromFilename(filename);
     }
 
     SerializedAsset res(assetType, resourceId, content);

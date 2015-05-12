@@ -34,13 +34,31 @@ namespace minko
             TextureFilter textureFilter;
             WrapMode wrapMode;
 
+            TextureSampler()
+            {
+            }
+
+            TextureSampler(const TextureSampler& rhs) :
+                uuid(rhs.uuid),
+                id(rhs.id),
+                mipFilter(rhs.mipFilter),
+                textureFilter(rhs.textureFilter),
+                wrapMode(rhs.wrapMode)
+            {
+            }
+
             TextureSampler(const std::string& uuid, int* id) :
                 uuid(uuid),
                 id(id),
                 mipFilter(SamplerStates::DEFAULT_MIP_FILTER),
                 textureFilter(SamplerStates::DEFAULT_TEXTURE_FILTER),
                 wrapMode(SamplerStates::DEFAULT_WRAP_MODE)
-            {}
+            {
+            }
+
+            ~TextureSampler()
+            {
+            }
 
             bool
             operator==(const TextureSampler& rhs) const

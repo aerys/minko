@@ -324,9 +324,12 @@ SceneParser::parseNode(std::vector<SerializedNode>&            nodePack,
 
     bool isSkinningFree = true; // FIXME
 
-    for (auto componentIndex2 : markedComponent)
-    {
-        isSkinningFree = false;
+	for (auto componentIndex2 : markedComponent)
+	{
+        if (_version.major <= 0 && _version.minor < 3)
+            continue;
+
+		isSkinningFree = false;
         std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[serialize::SKINNING](_version, componentPack[componentIndex2], assetLibrary, _dependency);
 
         for (scene::Node::Ptr node : componentIdToNodes[componentIndex2])

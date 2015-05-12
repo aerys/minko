@@ -133,12 +133,14 @@ Store::operator=(Store&& other)
 void
 Store::initialize()
 {
+#ifdef MINKO_USE_SPARSE_HASH_MAP
     _propertyNameToChangedSignal->set_deleted_key("");
     _propertyNameToAddedSignal->set_deleted_key("");
     _propertyNameToRemovedSignal->set_deleted_key("");
     _propertySlots->set_deleted_key(nullptr);
     _collectionItemAddedSlots->set_deleted_key(nullptr);
     _collectionItemRemovedSlots->set_deleted_key(nullptr);
+#endif
 }
 
 void
@@ -303,7 +305,16 @@ Store::providerPropertyRemovedHandler(Provider::Ptr                 provider,
     executePropertySignal(provider, collection, propertyName, _propertyRemoved, *_propertyNameToRemovedSignal);
 
     auto formattedName = formatPropertyName(collection, provider, *propertyName);
-    auto it = _propertyNameToAddedSignal->find(formattedName);
+
+    // Explicit typing required here since `map::erase` takes a `const_iterator`
+    // while find returns an `iterator` by default.
+#ifdef MINKO_USE_SPARSE_HASH_MAP
+    ChangedSignalMap::iterator it;
+#else
+    ChangedSignalMap::const_iterator it;
+#endif
+
+    it = _propertyNameToAddedSignal->find(formattedName);
     if (it != _propertyNameToAddedSignal->end() && it->second->numCallbacks() == 0)
     {
         delete it->second;
@@ -421,7 +432,7 @@ Store::doAddProvider(ProviderPtr provider, CollectionPtr collection)
         }
     ));
 
-    for (auto property : provider->values())
+    for (const auto& property : provider->values())
         providerPropertyAddedHandler(provider, collection, property.first);
 
     if (collection)
@@ -453,7 +464,7 @@ Store::doRemoveProvider(ProviderPtr provider, CollectionPtr collection)
         //return;
 
     // execute all the "property removed" signals
-    for (auto property : provider->values())
+    for (const auto& property : provider->values())
         providerPropertyRemovedHandler(provider, collection, property.first);
 
     // erase all the slots (property added, changed, removed) for this provider

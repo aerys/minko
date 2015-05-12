@@ -36,10 +36,13 @@ namespace minko
 
                 enum Type
                 {
+                    UNKNOWN,
                     SPHERE,
                     BOX,
                     CONE,
-                    CYLINDER
+                    CYLINDER,
+                    CONVEXHULL,
+					CAPSULE
                 };
 
             private:

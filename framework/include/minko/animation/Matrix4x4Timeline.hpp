@@ -36,8 +36,8 @@ namespace minko
 			typedef std::vector<std::pair<uint, math::mat4>>	MatrixTimetable;
 
 		private:
-			MatrixTimetable	_matrices;
-			bool			_interpolate;
+			MatrixTimetable	            _matrices;
+			bool			            _interpolate;
 
 		public:
 			inline static
@@ -72,6 +72,20 @@ namespace minko
 
 			AbstractTimeline::Ptr
 			clone();
+
+            inline
+            const std::vector<std::pair<uint, math::mat4>>&
+            matrices() const
+            {
+                return _matrices;
+            }
+
+            inline
+            bool
+            interpolate() const
+            {
+                return _interpolate;
+            }
 
 			void
 			update(uint time, data::Store& data, bool skipPropertyNameFormatting = true);

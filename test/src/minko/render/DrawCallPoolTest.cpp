@@ -42,14 +42,13 @@ createDrawCallWithState(const std::string& effectFile,
 
     render::EffectVariables variables = { { "materialUuid", material->uuid() } };
 
-
     auto geom = geometry::QuadGeometry::create(MinkoTests::canvas()->context());
     variables.push_back({ "geometryUuid", geom->uuid() });
     targetData.addProvider(geom->data(), component::Surface::GEOMETRY_COLLECTION_NAME);
 
     auto drawCalls = pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
 
-    return *drawCalls.first;
+    return pool.drawCalls().front();
 }
 
 

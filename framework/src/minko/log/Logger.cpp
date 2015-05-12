@@ -20,21 +20,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/log/Logger.hpp"
 #include "minko/log/ConsoleSink.hpp"
 
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+# include "minko/log/AndroidLogSink.hpp"
+#endif
+
 using namespace minko;
 using namespace minko::log;
 
-int gDefaultLogInitializing = []()
-{
-	Logger::initializing()->connect([](Logger::Ptr)
-	{
-		// Nothing.
-	}, 1);
-
-	return 0;
-}();
-
-Logger::Ptr
-Logger::_default = Logger::create(Logger::Level::Debug, ConsoleSink::create());
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+  Logger::Ptr
+  Logger::_default = Logger::create(Logger::Level::Debug, AndroidLogSink::create());
+#else
+  Logger::Ptr
+  Logger::_default = Logger::create(Logger::Level::Debug, ConsoleSink::create());
+#endif
 
 void
 Logger::operator()(const std::string&	message,

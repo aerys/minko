@@ -16,7 +16,8 @@
 					"aBoneIdsB"		: "geometry[${geometryUuid}].boneIdsB",
 					"aBoneWeightsA"	: "geometry[${geometryUuid}].boneWeightsA",
 					"aBoneWeightsB"	: "geometry[${geometryUuid}].boneWeightsB",
-					"aColor"		: "geometry[${geometryUuid}].color"
+					"aColor"		: "geometry[${geometryUuid}].color",
+					"aPopProtected"	: "geometry[${geometryUuid}].popProtected"
 				},
 
 				"uniforms" : {
@@ -31,8 +32,8 @@
 						"textureFilter" : "linear",
 						"mipFilter": "linear"
 					},
-					"uDiffuseMapMaxAvailableLod" 	: "material[${materialUuid}].diffuseMap.maxAvailableLod",
-					"uDiffuseMapSize" 				: "material[${materialUuid}].diffuseMap.size",
+					"uDiffuseMapMaxAvailableLod" 	: "material[${materialUuid}].diffuseMapMaxAvailableLod",
+					"uDiffuseMapSize" 				: "material[${materialUuid}].diffuseMapSize",
 					"uAlphaMap"						: "material[${materialUuid}].alphaMap",
 					"uAlphaThreshold"				: "material[${materialUuid}].alphaThreshold",
 					"uNormalMap"					: {
@@ -41,16 +42,16 @@
 						"textureFilter" : "linear",
 						"mipFilter": "linear"
 					},
-					"uNormalMapMaxAvailableLod" 	: "material[${materialUuid}].normalMap.maxAvailableLod",
-					"uNormalMapSize"				: "material[${materialUuid}].normalMap.size",
+					"uNormalMapMaxAvailableLod" 	: "material[${materialUuid}].normalMapMaxAvailableLod",
+					"uNormalMapSize"				: "material[${materialUuid}].normalMapSize",
 					"uSpecularMap"					: {
 						"binding" : "material[${materialUuid}].specularMap",
 						"wrapMode" : "repeat",
 						"textureFilter" : "linear",
 						"mipFilter": "linear"
 					},
-					"uSpecularMapMaxAvailableLod" 	: "material[${materialUuid}].specularMap.maxAvailableLod",
-					"uSpecularMapSize"				: "material[${materialUuid}].specularMap.size",
+					"uSpecularMapMaxAvailableLod" 	: "material[${materialUuid}].specularMapMaxAvailableLod",
+					"uSpecularMapSize"				: "material[${materialUuid}].specularMapSize",
 					"uSpecularColor"				: { "binding" : "material[${materialUuid}].specularColor", "default" : [[ 1.0, 1.0, 1.0, 1.0 ]] },
 					"uEnvironmentMap2d"				: "material[${materialUuid}].environmentMap2d",
 					"uEnvironmentMap2dType"			: "material[${materialUuid}].environmentMap2dType",
@@ -229,18 +230,9 @@
 					"DIRECTIONAL_2_SHADOW_MAP"	: { "binding" : { "property" : "directionalLight[2].shadowMap", "source" : "root" } },
 					"DIRECTIONAL_3_SHADOW_MAP"	: { "binding" : { "property" : "directionalLight[3].shadowMap", "source" : "root" } },
         			"POP_LOD_ENABLED"       	: "geometry[${geometryUuid}].popLodEnabled",
-        			"POP_BLENDING_ENABLED"		: "geometry[${geometryUuid}].popBlendingEnabled"
+        			"POP_BLENDING_ENABLED"		: "geometry[${geometryUuid}].popBlendingEnabled",
+        			"VERTEX_POP_PROTECTED"		: "geometry[${geometryUuid}].popProtected"
 				},
-
-				"states" : {
-					"blendingSource"		: { "binding" : "material[${materialUuid}].blendingSource" },
-					"blendingDestination"	: { "binding" : "material[${materialUuid}].blendingDestination" },
-			        "triangleCulling"       : { "binding" : "material[${materialUuid}].triangleCulling" },
-			        "zSorted"               : { "binding" : "material[${materialUuid}].zSorted" },
-			        "priority"              : { "binding" : "material[${materialUuid}].priority" },
-					"depthMask"             : { "binding" : "material[${materialUuid}].depthMask" },
-			        "depthFunction"         : { "binding" : "material[${materialUuid}].depthFunction" }
-			    },
 
 				"states" : {
 					"blendingSource"		: { "binding" : "material[${materialUuid}].blendingSource" },

@@ -57,8 +57,8 @@ const StencilOperation		States::DEFAULT_STENCIL_FAIL_OPERATION      = StencilOpe
 const StencilOperation		States::DEFAULT_STENCIL_ZFAIL_OPERATION     = StencilOperation::KEEP;
 const StencilOperation		States::DEFAULT_STENCIL_ZPASS_OPERATION     = StencilOperation::KEEP;
 const bool					States::DEFAULT_SCISSOR_TEST                = false;
-const math::ivec4			States::DEFAULT_SCISSOR_BOX                 = math::ivec4();
-const TextureSampler        States::DEFAULT_TARGET                      = TextureSampler("", nullptr);
+const math::ivec4			States::DEFAULT_SCISSOR_BOX;
+const TextureSampler        States::DEFAULT_TARGET("", nullptr);
 
 const std::array<std::string, 17> States::PROPERTY_NAMES = {
     PROPERTY_PRIORITY,
@@ -96,10 +96,10 @@ States::States(float					priority,
                StencilOperation			stencilZPassOp,
                bool						scissorTest,
                const math::ivec4&		scissorBox,
-               TextureSampler		    target) :
+               const TextureSampler&		    target) :
     _data(data::Provider::create())
 {
-    resetDefaultValues();
+    //resetDefaultValues();
 
     this->priority(priority);
     this->zSorted(zSorted);

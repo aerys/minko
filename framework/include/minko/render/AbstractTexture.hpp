@@ -149,6 +149,7 @@ namespace minko
 							bool				resizeSmoothly,
 							const std::string&	filename);
 
+            virtual
             ~AbstractTexture() = default;
 
 			uint

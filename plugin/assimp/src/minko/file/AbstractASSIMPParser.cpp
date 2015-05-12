@@ -127,9 +127,7 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 							const std::vector<unsigned char>&	data,
 							std::shared_ptr<AssetLibrary>	    assetLibrary)
 {
-#ifdef DEBUG
-	std::cout << "AbstractASSIMPParser::parse()" << std::endl;
-#endif // DEBUG
+	LOG_DEBUG("Parsing scene '" << filename << "'");
 
 	initImporter();
 
@@ -160,10 +158,6 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 
     _importer->SetIOHandler(ioHandler);
 
-#ifdef DEBUG
-	std::cout << "AbstractASSIMPParser: preparing to parse" << std::endl;
-#endif // DEBUG
-
     auto flags =
 		aiProcess_JoinIdenticalVertices
         //| aiProcess_GenSmoothNormals // assertion is raised by assimp
@@ -193,17 +187,17 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 	);
 
 	if (!scene)
+    {
         _error->execute(shared_from_this(), Error(_importer->GetErrorString()));
 
-#ifdef DEBUG
-	std::cout << "AbstractASSIMPParser: scene parsed" << std::endl;
-#endif // DEBUG
+        return;
+    }
+
+	LOG_DEBUG("Scene parsing complete '" << filename << "'");
 
 	parseDependencies(resolvedFilename, scene);
 
-#ifdef DEBUG
-	std::cout << "AbstractASSIMPParser: " << _numDependencies << " dependencies to load..." << std::endl;
-#endif // DEBUG
+	LOG_DEBUG(_numDependencies << " dependencies to load...");
 
 	if (_numDependencies == 0)
 		allDependenciesLoaded(scene);
@@ -212,8 +206,9 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 void
 AbstractASSIMPParser::allDependenciesLoaded(const aiScene* scene)
 {
+	LOG_DEBUG(_numDependencies << " dependencies loaded!");
+
 #ifdef DEBUG
-	std::cout << "AbstractASSIMPParser: " << _numDependencies << " dependencies loaded!" << std::endl;
 	if (_numDependencies != _numLoadedDependencies)
 		throw std::logic_error("_numDependencies != _numLoadedDependencies");
 #endif // DEBUG
@@ -499,7 +494,7 @@ AbstractASSIMPParser::createMeshSurface(scene::Node::Ptr 	minkoNode,
 	}
 #ifdef DEBUG
 	else
-		std::cerr << "Failed to find suitable effect for mesh '" << meshName << "' and no default effect provided." << std::endl;
+		LOG_ERROR("Failed to find suitable effect for mesh '" << meshName << "' and no default effect provided.");
 #endif // DEBUG
 }
 
@@ -512,33 +507,21 @@ AbstractASSIMPParser::createCameras(const aiScene* scene)
 		const auto	aiPosition	= aiCamera->mPosition;
 		const auto	aiLookAt	= aiCamera->mLookAt;
 		const auto	aiUp		= aiCamera->mUp;
-		auto		position	= math::normalize(math::vec3(aiPosition.x, aiPosition.y, aiPosition.z));
-		auto		target		= math::normalize(math::vec3(aiPosition.x + aiLookAt.x, aiPosition.y + aiLookAt.y, aiPosition.z + aiLookAt.z));
-		auto		up			= math::normalize(math::vec3(aiUp.x, aiUp.y, aiUp.z));
 
-        if (math::vec3(aiPosition.x + aiLookAt.x, aiPosition.y + aiLookAt.y, aiPosition.z + aiLookAt.z) == math::vec3())
-        {
-            target = math::vec3(1e-6f, 1e-6f, 1e-6f);
-        }
-
-        auto lookat = math::lookAt(position,target, up);
-        auto transform = Transform::create(math::inverse(lookat));
 		const auto	cameraName	= std::string(aiCamera->mName.data);
-		auto		cameraNode = scene::Node::create(cameraName + "_camera_" + std::to_string(i))
-			->addComponent(PerspectiveCamera::create(
-				aiCamera->mAspect,
-				aiCamera->mHorizontalFOV * aiCamera->mAspect, // need the vertical FOV
-				aiCamera->mClipPlaneNear,
-				aiCamera->mClipPlaneFar
-			))
-			->addComponent(transform);
 
-		scene::Node::Ptr parentNode = !cameraName.empty()
+		scene::Node::Ptr cameraNode = !cameraName.empty()
 			? findNode(cameraName)
 			: nullptr;
 
-		if (parentNode)
-			parentNode->addChild(cameraNode);
+        if (cameraNode)
+            cameraNode
+			    ->addComponent(PerspectiveCamera::create(
+				    aiCamera->mAspect,
+				    aiCamera->mHorizontalFOV * aiCamera->mAspect, // need the vertical FOV
+				    aiCamera->mClipPlaneNear,
+				    aiCamera->mClipPlaneFar
+			    ));
 	}
 }
 
@@ -565,9 +548,7 @@ AbstractASSIMPParser::createLights(const aiScene* scene)
 
 		if (aiLight->mType == aiLightSource_UNDEFINED)
 		{
-#ifdef DEBUG
-			std::cerr << "The type of the '" << lightName << "' has not been properly recognized." << std::endl;
-#endif // DEBUG
+			LOG_WARNING("The type of the '" << lightName << "' has not been properly recognized.");
 			continue;
 		}
 
@@ -605,7 +586,9 @@ AbstractASSIMPParser::createLights(const aiScene* scene)
 			else
 				lightNode->addComponent(Transform::create());
 
-			auto lookAt		= math::normalize(position + direction);
+            auto lookAt = position + direction;
+            lookAt = lookAt != math::zero<math::vec3>() ? math::normalize(lookAt) : lookAt;
+
             auto matrix     = math::lookAt(position, lookAt, math::vec3(0.f, 1.f, 0.f));
 		}
 
@@ -740,9 +723,7 @@ AbstractASSIMPParser::loadTexture(const std::string&	textureFilename,
     _loaderErrorSlots[loader] = loader->error()->connect([=](Loader::Ptr textureLoader, const Error& error)
 	{
 		++_numLoadedDependencies;
-#ifdef DEBUG
-        std::cerr << "AbstractASSIMPParser: unable to find texture with filename '" << assetName << "'" << std::endl;
-#endif // DEBUG
+        LOG_DEBUG("Unable to find texture with filename '" << assetName << "'");
 
         _error->execute(shared_from_this(), Error("MissingTextureDependency", assetName));
 
@@ -756,9 +737,7 @@ AbstractASSIMPParser::loadTexture(const std::string&	textureFilename,
 void
 AbstractASSIMPParser::textureCompleteHandler(file::Loader::Ptr loader, const aiScene* scene)
 {
-#ifdef DEBUG
-	std::cerr << "AbstractASSIMPParser: " << _numLoadedDependencies << "/" << _numDependencies << " texture(s) loaded" << std::endl;
-#endif // DEBUG
+	LOG_DEBUG(_numLoadedDependencies << "/" << _numDependencies << " texture(s) loaded");
 
 	++_numLoadedDependencies;
 
@@ -793,9 +772,7 @@ AbstractASSIMPParser::getSkinNumFrames(const aiMesh* aimesh) const
 					numFrames = numNodeFrames;
 				else if (numFrames != numNodeFrames)
 				{
-#ifdef DEBUG_SKINNING
-					std::cerr << "Warning: Inconsistent number of frames between the different parts of a same mesh!" << std::endl;
-#endif // DEBUG_SKINNING
+					LOG_WARNING("Inconsistent number of frames between the different parts of a same mesh!");
 					numFrames = std::max(numFrames, numNodeFrames); // FIXME
 				}
 			}
@@ -838,12 +815,10 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
 	auto		meshNode	= _aiMeshToNode.find(aimesh)->second;
 	const uint	numBones	= aimesh->mNumBones;
 	const uint	numFrames	= getSkinNumFrames(aimesh);
+
 	if (numFrames == 0)
 	{
-#ifdef DEBUG
-		std::cerr << "Failed to flatten skinning information. Most likely involved nodes do not share a common animation." << std::endl;
-#endif // DEBUG
-
+		LOG_WARNING("Failed to flatten skinning information. Most likely involved nodes do not share a common animation.");
 		return;
 	}
 
@@ -936,14 +911,59 @@ AbstractASSIMPParser::createSkin(const aiMesh* aimesh)
 
 	meshNode->addComponent(MasterAnimation::create());
 
-	auto irrelevantTransforms = NodeSet::create(skeletonRoot)
-		->descendants(false)
-		->where([](Node::Ptr n){
-			return n->hasComponent<Transform>() && !n->hasComponent<Animation>() && !n->hasComponent<Surface>();
-		});
+    auto irrelevantTransformNodes = std::set<Node::Ptr>();
 
-	for (auto& n : irrelevantTransforms->nodes())
-		n->removeComponent(n->component<Transform>());
+    for (auto boneNode : boneNodes)
+    {
+        auto boneNodeDescendants = NodeSet::create(boneNode)
+            ->descendants(true)
+            ->where([](Node::Ptr descendant) -> bool { return descendant->hasComponent<Transform>(); });
+
+        irrelevantTransformNodes.insert(
+            boneNodeDescendants->nodes().begin(),
+            boneNodeDescendants->nodes().end()
+        );
+
+        auto boneNodeParent = boneNode->parent();
+
+        while (boneNodeParent != skeletonRoot)
+        {
+            irrelevantTransformNodes.insert(boneNodeParent);
+
+            boneNodeParent = boneNodeParent->parent();
+        }
+    }
+
+    auto animatedNodes = NodeSet::create(skeletonRoot)
+        ->descendants(true)
+        ->where([&](Node::Ptr descendant) -> bool
+        {
+            return descendant->hasComponent<Animation>() || descendant->hasComponent<Skinning>();
+        });
+
+    for (auto animatedNode : animatedNodes->nodes())
+    {
+        auto animatedNodeDescendants = NodeSet::create(animatedNode)
+            ->descendants(true)
+            ->where([](Node::Ptr animatedNodeDescendant) -> bool { return animatedNodeDescendant->hasComponent<Transform>(); });
+
+        irrelevantTransformNodes.insert(
+            animatedNodeDescendants->nodes().begin(),
+            animatedNodeDescendants->nodes().end()
+        );
+
+        auto animatedNodeParent = animatedNode->parent();
+
+        while (animatedNodeParent != skeletonRoot)
+        {
+            irrelevantTransformNodes.insert(animatedNodeParent);
+
+            animatedNodeParent = animatedNodeParent->parent();
+        }
+    }
+
+    for (auto irrelevantTransformNode : irrelevantTransformNodes)
+        irrelevantTransformNode->component<Transform>()->matrix(math::mat4());
 }
 
 Node::Ptr
@@ -1378,39 +1398,49 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
         return existingMaterial;
 
     const auto blendingMode = getBlendingMode(aiMat);
+    auto srcBlendingMode = static_cast<render::Blending::Source>(static_cast<uint>(blendingMode) & 0x00ff);
+    auto dstBlendingMode = static_cast<render::Blending::Destination>(static_cast<uint>(blendingMode) & 0xff00);
 
-    {
-        auto srcBlendingMode = static_cast<render::Blending::Source>(static_cast<uint>(blendingMode) & 0x00ff);
-        auto dstBlendingMode = static_cast<render::Blending::Destination>(static_cast<uint>(blendingMode) & 0xff00);
-
-        material->data()->set<render::Blending::Mode>("blendingMode", blendingMode);
-        material->data()->set<render::Blending::Source>(render::States::PROPERTY_BLENDING_SOURCE, srcBlendingMode);
-        material->data()->set<render::Blending::Destination>(render::States::PROPERTY_BLENDING_DESTINATION, dstBlendingMode);
-    }
-
+    material->data()->set<render::Blending::Mode>("blendingMode", blendingMode);
+    material->data()->set<render::Blending::Source>(render::States::PROPERTY_BLENDING_SOURCE, srcBlendingMode);
+    material->data()->set<render::Blending::Destination>(render::States::PROPERTY_BLENDING_DESTINATION, dstBlendingMode);
 	material->data()->set("triangleCulling",	getTriangleCulling(aiMat));
 	material->data()->set("wireframe",			getWireframe(aiMat)); // bool
 
-	float opacity		= setScalarProperty(material, "opacity",			aiMat, AI_MATKEY_OPACITY,				1.0f);
-	float shininess		= setScalarProperty(material, "shininess",			aiMat, AI_MATKEY_SHININESS,				0.0f);
-	float reflectivity	= setScalarProperty(material, "reflectivity",		aiMat, AI_MATKEY_REFLECTIVITY,			1.0f);
-	float shininessStr	= setScalarProperty(material, "shininessStrength",	aiMat, AI_MATKEY_SHININESS_STRENGTH,	1.0f);
-	float refractiveIdx	= setScalarProperty(material, "refractiveIndex",	aiMat, AI_MATKEY_REFRACTI,				1.0f);
-	float bumpScaling	= setScalarProperty(material, "bumpScaling",		aiMat, AI_MATKEY_BUMPSCALING,			1.0f);
+	if (!(blendingMode & render::Blending::Destination::ZERO))
+	{
+		material->data()->set("priority", render::Priority::TRANSPARENT);
+		material->data()->set("zSorted", true);
+	}
+	else
+	{
+		material->data()->set("priority", render::Priority::OPAQUE);
+		material->data()->set("zSorted", false);
+	}
 
-	auto diffuseColor		= setColorProperty(material, "diffuseColor",		aiMat, AI_MATKEY_COLOR_DIFFUSE);
-	auto specularColor		= setColorProperty(material, "specularColor",		aiMat, AI_MATKEY_COLOR_SPECULAR);
-	auto ambientColor		= setColorProperty(material, "ambientColor",		aiMat, AI_MATKEY_COLOR_AMBIENT);
-	auto emissiveColor		= setColorProperty(material, "emissiveColor",		aiMat, AI_MATKEY_COLOR_EMISSIVE);
-	auto reflectiveColor	= setColorProperty(material, "reflectiveColor",		aiMat, AI_MATKEY_COLOR_REFLECTIVE);
-	auto transparentColor	= setColorProperty(material, "transparentColor",	aiMat, AI_MATKEY_COLOR_TRANSPARENT);
+	float opacity = setScalarProperty(material, "opacity", aiMat, AI_MATKEY_OPACITY, 1.0f);
+	float shininess	= setScalarProperty(material, "shininess", aiMat, AI_MATKEY_SHININESS, 0.0f);
+	float reflectivity = setScalarProperty(material, "reflectivity", aiMat, AI_MATKEY_REFLECTIVITY, 1.0f);
+	float shininessStr = setScalarProperty(material, "shininessStrength", aiMat, AI_MATKEY_SHININESS_STRENGTH, 1.0f);
+	float refractiveIdx = setScalarProperty(material, "refractiveIndex", aiMat, AI_MATKEY_REFRACTI, 1.0f);
+	float bumpScaling = setScalarProperty(material, "bumpScaling", aiMat, AI_MATKEY_BUMPSCALING, 1.0f);
+
+	auto diffuseColor = setColorProperty(material, "diffuseColor", aiMat, AI_MATKEY_COLOR_DIFFUSE);
+	auto specularColor = setColorProperty(material, "specularColor", aiMat, AI_MATKEY_COLOR_SPECULAR);
+	auto ambientColor = setColorProperty(material, "ambientColor", aiMat, AI_MATKEY_COLOR_AMBIENT);
+	auto emissiveColor = setColorProperty(material, "emissiveColor", aiMat, AI_MATKEY_COLOR_EMISSIVE);
+	auto reflectiveColor = setColorProperty(material, "reflectiveColor", aiMat, AI_MATKEY_COLOR_REFLECTIVE);
+	auto transparentColor = setColorProperty(material, "transparentColor", aiMat, AI_MATKEY_COLOR_TRANSPARENT);
 
 	if (shininess < 1.0f)
 		// Gouraud-like shading (-> no specular)
 		specularColor.w = 0.f;
 
-    auto transparent = opacity < 1.f;
+	if (shininess == 0.f)
+		material->data()->set("shininess", 64.0f);
 
+    auto transparent = opacity < 1.f;
+	
     if (transparent)
     {
         diffuseColor.w = opacity;
@@ -1419,25 +1449,24 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
         emissiveColor.w = opacity;
         reflectiveColor.w = opacity;
         transparentColor.w = opacity;
-    }
 
-    if (transparent || !(blendingMode & render::Blending::Destination::ZERO))
-    {
-		material->data()->set("priority",	render::Priority::TRANSPARENT);
-		material->data()->set("zSorted",	true);
-	}
-	else
-	{
-		material->data()->set("priority",	render::Priority::OPAQUE);
-		material->data()->set("zSorted",	false);
-	}
+		material->data()->set("diffuseColor", diffuseColor);
+		material->data()->set("specularColor", specularColor);
+		material->data()->set("ambientColor", ambientColor);
+		material->data()->set("emissiveColor", emissiveColor);
+		material->data()->set("reflectiveColor", reflectiveColor);
+		material->data()->set("transparentColor", transparentColor);
+
+		enableTransparency(material);
+    }
 
 	for (auto& textureTypeAndName : _textureTypeToName)
 	{
-		const auto			textureType	= static_cast<aiTextureType>(textureTypeAndName.first);
-		const std::string&	textureName	= textureTypeAndName.second;
+		const auto textureType = static_cast<aiTextureType>(textureTypeAndName.first);
+		const std::string& textureName = textureTypeAndName.second;
 
-		const unsigned int	numTextures	= aiMat->GetTextureCount(textureType);
+		const unsigned int numTextures = aiMat->GetTextureCount(textureType);
+
 		if (numTextures == 0)
 			continue;
 
@@ -1479,11 +1508,14 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 void
 AbstractASSIMPParser::textureSet(material::Material::Ptr material, const std::string& textureTypeName, render::AbstractTexture::Ptr texture)
 {
-    if (textureTypeName == _textureTypeToName.at(aiTextureType_OPACITY) &&
-        !material->data()->hasProperty("alphaThreshold"))
-    {
-        material->data()->set("alphaThreshold", .01f);
-    }
+	// Alpha map
+	if (textureTypeName == _textureTypeToName.at(aiTextureType_OPACITY))
+	{
+		enableTransparency(material);
+
+		if (!material->data()->hasProperty("alphaThreshold"))
+			material->data()->set("alphaThreshold", .01f);
+	}
 }
 
 material::Material::Ptr
@@ -1544,10 +1576,8 @@ AbstractASSIMPParser::chooseEffectByShadingMode(const aiMaterial* aiMat) const
 				case aiShadingMode_Minnaert:
 					if (_assetLibrary->effect("effect/Basic.effect"))
 						effect = _assetLibrary->effect("effect/Basic.effect");
-#ifdef DEBUG
 					else
-						std::cerr << "Basic effect not available in the asset library." << std::endl;
-#endif // DEBUG
+						LOG_ERROR("Basic effect not available in the asset library.");
 					break;
 
 				case aiShadingMode_Phong:
@@ -1556,10 +1586,8 @@ AbstractASSIMPParser::chooseEffectByShadingMode(const aiMaterial* aiMat) const
 				case aiShadingMode_Fresnel:
 					if (_assetLibrary->effect("effect/Phong.effect"))
 						effect = _assetLibrary->effect("effect/Phong.effect");
-#ifdef DEBUG
 					else
-						std::cerr << "Phong effect not available in the asset library." << std::endl;
-#endif // DEBUG
+						LOG_ERROR("Phong effect not available in the asset library.");
 					break;
 
 				case aiShadingMode_NoShading:
@@ -1595,7 +1623,7 @@ AbstractASSIMPParser::getBlendingMode(const aiMaterial* aiMat) const
 		}
 	}
 	else
-		return render::Blending::Mode::ALPHA;
+		return render::Blending::Mode::DEFAULT;
 }
 
 render::TriangleCulling
@@ -1728,6 +1756,21 @@ AbstractASSIMPParser::createAnimations(const aiScene* scene, bool interpolate)
 		for (auto& nodeAndTimelines : nodeToTimelines)
 			nodeAndTimelines.first->addComponent(Animation::create(nodeAndTimelines.second));
 	}
+}
+
+void
+AbstractASSIMPParser::enableTransparency(material::Material::Ptr material)
+{
+	material->data()->set("priority", render::Priority::TRANSPARENT);
+	material->data()->set("zSorted", true);
+
+	auto blendingMode = render::Blending::Mode::ALPHA;
+	auto srcBlendingMode = static_cast<render::Blending::Source>(static_cast<uint>(blendingMode) & 0x00ff);
+	auto dstBlendingMode = static_cast<render::Blending::Destination>(static_cast<uint>(blendingMode) & 0xff00);
+
+	material->data()->set<render::Blending::Mode>("blendingMode", blendingMode);
+	material->data()->set<render::Blending::Source>(render::States::PROPERTY_BLENDING_SOURCE, srcBlendingMode);
+	material->data()->set<render::Blending::Destination>(render::States::PROPERTY_BLENDING_DESTINATION, dstBlendingMode);
 }
 
 #include "ASSIMPParserDebug.hpp"
