@@ -36,7 +36,6 @@ DrawCall::DrawCall(uint                   batchId,
                    data::Store&           rootData,
                    data::Store&           rendererData,
                    data::Store&           targetData) :
-    _batchIDs({ batchId }),
     _pass(pass),
     _variables(variables),
     _rootData(rootData),
@@ -68,6 +67,8 @@ DrawCall::DrawCall(uint                   batchId,
     _modelToWorldMatrixPropertyRemovedSlot(nullptr),
     _worldToScreenMatrixPropertyRemovedSlot(nullptr)
 {
+    _batchIDs = { batchId };
+
     // For Z-sorting
     bindPositionalMembers();
 }

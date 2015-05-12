@@ -75,6 +75,8 @@ DrawCallPool::addDrawCalls(Effect::Ptr              effect,
 
         initializeDrawCall(*drawCall);
 
+        drawCall->batchIDs().push_back(_batchId);
+
         // if the draw call is meant only for post-processing, then it should only exist once
         if (pass->isPostProcessing())
         {
