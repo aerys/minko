@@ -638,7 +638,7 @@ Renderer::surfaceLayoutMaskChangedHandler(Surface::Ptr surface)
 	}
 	else
 	{
-		if (_surfaceToDrawCallIterator.count(surface) == 0)
+		if (_surfaceToDrawCallIterator.count(surface) != 0)
 			removeSurface(surface);
 	}
 }

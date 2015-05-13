@@ -80,8 +80,7 @@ DrawCallPool::addDrawCalls(Effect::Ptr              effect,
         {
             auto it = std::find_if(_drawCalls.begin(), _drawCalls.end(), [&](const DrawCall* d)
             {
-                return d->program() == drawCall->program()
-                    && d->variables() == drawCall->variables();
+                return d->program() == drawCall->program();
             });
 
             // FIXME: cumbersome and wasteful to completely init. a DrawCall just to discard it

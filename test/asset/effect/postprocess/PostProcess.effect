@@ -1,0 +1,16 @@
+{
+    "techniques" : [
+    {
+        "passes" : [{
+            "name": "pass1",
+            "vertexShader" : "#pragma include \"../dummy.glsl\"",
+            "fragmentShader" : "#pragma include \"../dummy.glsl\""
+        },
+        {
+            "name": "postProcessPass",
+            "isPostProcessing" : true, 
+            "vertexShader" : "#pragma include \"../dummy.glsl\"",
+            "fragmentShader" : "#pragma include \"../dummy.glsl\""
+        }]
+    }]
+}
