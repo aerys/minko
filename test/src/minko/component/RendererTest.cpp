@@ -158,3 +158,46 @@ TEST_F(RendererTest, OneSurfaceLayoutMaskPass)
 
     ASSERT_EQ(renderer->numDrawCalls(), 1);
 }
+
+TEST_F(RendererTest, PostProcessEffect)
+{
+    auto fx = MinkoTests::loadEffect("effect/postprocess/PostProcess.effect");
+    auto renderer = Renderer::create();
+    auto root = scene::Node::create()
+        ->addComponent(SceneManager::create(MinkoTests::canvas()))
+        ->addComponent(PerspectiveCamera::create(1.f))
+        ->addComponent(renderer);
+
+    auto material = material::BasicMaterial::create();
+    material->diffuseColor(math::vec4(1.f));
+
+    auto s1 = Surface::create(
+        geometry::CubeGeometry::create(MinkoTests::canvas()->context()),
+        material,
+        fx
+    );
+
+    auto s2 = Surface::create(
+        geometry::CubeGeometry::create(MinkoTests::canvas()->context()),
+        material,
+        fx
+    );
+
+    auto s3 = Surface::create(
+        geometry::CubeGeometry::create(MinkoTests::canvas()->context()),
+        material,
+        fx
+    );
+
+    root->addComponent(s1);
+    root->addComponent(s2);
+    root->addComponent(s3);
+    renderer->render(MinkoTests::canvas()->context());
+    ASSERT_EQ(renderer->numDrawCalls(), 4);
+    root->removeComponent(s1);
+    ASSERT_EQ(renderer->numDrawCalls(), 3);
+    root->removeComponent(s2);
+    ASSERT_EQ(renderer->numDrawCalls(), 2);
+    root->removeComponent(s3);
+    ASSERT_EQ(renderer->numDrawCalls(), 0);
+}
