@@ -92,7 +92,6 @@ DrawCall::getStore(data::Binding::Source source)
 void
 DrawCall::reset()
 {
-    _batchIDs.clear();
     _program = nullptr;
     _indexBuffer = 0;
     _firstIndex = 0;
