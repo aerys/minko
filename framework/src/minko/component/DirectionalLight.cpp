@@ -129,7 +129,7 @@ DirectionalLight::initializeShadowMapping()
 		_shadowRenderers[i] = renderer;
 	}
 
-	// computeShadowProjection(math::mat4(1.f), math::perspective(.785f, 1.f, 0.1f, 1000.f));
+	computeShadowProjection(math::mat4(1.f), math::perspective(.785f, 1.f, 0.1f, 1000.f));
 
 	return true;
 }
