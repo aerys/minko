@@ -492,7 +492,7 @@ Renderer::clear(std::shared_ptr<AbstractCanvas> canvas)
 }
 
 void
-Renderer::clear(std::shared_ptr<AbstractCanvas> canvas, math::vec4 clearColor)
+Renderer::clear(std::shared_ptr<AbstractCanvas> canvas, const math::vec4& clearColor)
 {
 	canvas->context()->clear(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 	canvas->swapBuffers();

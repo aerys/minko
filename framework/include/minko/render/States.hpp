@@ -361,7 +361,7 @@ namespace minko
 
             inline
             States&
-            scissorBox(math::ivec4 value)
+            scissorBox(const math::ivec4& value)
             {
                 _data->set(PROPERTY_SCISSOR_BOX, value);
 
