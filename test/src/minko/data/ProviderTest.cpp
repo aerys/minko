@@ -35,7 +35,7 @@ TEST_F(ProviderTest, Create)
 }
 
 // See http://kaba.hilvi.org/homepage/programming/bugs/vs2013.htm
-#if MINKO_COMPILER != MINKO_COMPILER_VC13
+#if MINKO_COMPILER != MINKO_COMPILER_VC12
 TEST_F(ProviderTest, CreateAndInitialize)
 {
 	try
