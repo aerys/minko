@@ -2,13 +2,13 @@
     "techniques" : [
     {
         "passes" : [{
-            "name": "pass1",
+            "name": "forward-pass",
             "vertexShader" : "#pragma include \"../dummy.glsl\"",
             "fragmentShader" : "#pragma include \"../dummy.glsl\""
         },
         {
-            "name": "postProcessPass",
-            "isPostProcessing" : true, 
+            "name": "deferred-pass",
+            "forward" : false,
             "vertexShader" : "#pragma include \"../dummy.glsl\"",
             "fragmentShader" : "#pragma include \"../dummy.glsl\""
         }]

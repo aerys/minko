@@ -44,7 +44,7 @@ TEST_F(DrawCallTest, Constructor)
     data::Store rendererData;
     data::Store targetData;
 
-    DrawCall drawCall(0, nullptr, EffectVariables{}, rootData, rendererData, targetData);
+    DrawCall drawCall(nullptr, EffectVariables{}, rootData, rendererData, targetData);
 }
 
 TEST_F(DrawCallTest, OneFloatUniformBindingFromRootData)
@@ -61,7 +61,7 @@ TEST_F(DrawCallTest, OneFloatUniformBindingFromRootData)
 
     std::unordered_map<std::string, data::Binding> bindings = { { "uFoo", { "foo", data::Binding::Source::ROOT } } };
 
-    DrawCall drawCall(0, nullptr, EffectVariables{}, rootData, rendererData, targetData);
+    DrawCall drawCall(nullptr, EffectVariables{}, rootData, rendererData, targetData);
    	ProgramInputs::UniformInput input("uFoo", 23, 1, ProgramInputs::Type::float1);
 
     bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues) != nullptr;
@@ -136,7 +136,7 @@ TEST_F(DrawCallTest, OneFloatUniformWithVariableBindingFromRootData)
     rootData.addProvider(p, "foos");
 
     std::unordered_map<std::string, data::Binding> bindings = { { "uFoo", { "foos[${bar}].foo", data::Binding::Source::ROOT } } };
-    DrawCall drawCall(0, nullptr, {{ "bar", "0" }}, rootData, rendererData, targetData);
+    DrawCall drawCall(nullptr, {{ "bar", "0" }}, rootData, rendererData, targetData);
     ProgramInputs::UniformInput input("uFoo", 23, 1, ProgramInputs::Type::float1);
 
     bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues) != nullptr;
@@ -163,7 +163,7 @@ TEST_F(DrawCallTest, OneIntUniformBindingFromRootData)
     rootData.addProvider(p);
 
     std::unordered_map<std::string, data::Binding> bindings = { { "uFoo", { "foo", data::Binding::Source::ROOT } } };
-    DrawCall drawCall(0, nullptr, EffectVariables{}, rootData, rendererData, targetData);
+    DrawCall drawCall(nullptr, EffectVariables{}, rootData, rendererData, targetData);
     ProgramInputs::UniformInput input("uFoo", 23, 1, ProgramInputs::Type::int1);
 
     bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues) != nullptr;
@@ -230,7 +230,7 @@ TEST_F(DrawCallTest, OneIntUniformWithVariableBindingFromRootData)
     rootData.addProvider(p, "foos");
 
     std::unordered_map<std::string, data::Binding> bindings = { { "uFoo", { "foos[${bar}].foo", data::Binding::Source::ROOT } } };
-    DrawCall drawCall(0, nullptr, { { "bar", "0" } }, rootData, rendererData, targetData);
+    DrawCall drawCall(nullptr, { { "bar", "0" } }, rootData, rendererData, targetData);
     ProgramInputs::UniformInput input("uFoo", 23, 1, ProgramInputs::Type::int1);
 
     bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues) != nullptr;
@@ -257,7 +257,7 @@ TEST_F(DrawCallTest, OneBoolUniformBindingFromRootData)
     rootData.addProvider(p);
 
     std::unordered_map<std::string, data::Binding> bindings = { { "uFoo", { "foo", data::Binding::Source::ROOT } } };
-    DrawCall drawCall(0, nullptr, EffectVariables{}, rootData, rendererData, targetData);
+    DrawCall drawCall(nullptr, EffectVariables{}, rootData, rendererData, targetData);
     ProgramInputs::UniformInput input("uFoo", 23, 1, ProgramInputs::Type::bool1);
 
     bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues) != nullptr;
@@ -324,7 +324,7 @@ TEST_F(DrawCallTest, OneBoolUniformWithVariableBindingFromRootData)
     rootData.addProvider(p, "foos");
 
     std::unordered_map<std::string, data::Binding> bindings = { { "uFoo", { "foos[${bar}].foo", data::Binding::Source::ROOT } } };
-    DrawCall drawCall(0, nullptr, { { "bar", "0" } }, rootData, rendererData, targetData);
+    DrawCall drawCall(nullptr, { { "bar", "0" } }, rootData, rendererData, targetData);
     ProgramInputs::UniformInput input("uFoo", 23, 1, ProgramInputs::Type::bool1);
 
     bool uniformIsBound = drawCall.bindUniform(input, bindings, defaultValues) != nullptr;
@@ -348,7 +348,7 @@ TEST_F(DrawCallTest, RenderTargetDefaultValue)
 
     defaultValues.addProvider(states.data());
 
-    DrawCall drawCall(0, nullptr, EffectVariables{}, rootData, rendererData, targetData);
+    DrawCall drawCall(nullptr, EffectVariables{}, rootData, rendererData, targetData);
 
     drawCall.bindStates(std::unordered_map<std::string, data::Binding>{}, defaultValues);
 
@@ -369,7 +369,7 @@ TEST_F(DrawCallTest, RenderTargetFromDefaultValues)
     states.target(texture->sampler());
     defaultValues.addProvider(states.data());
 
-    DrawCall drawCall(0, nullptr, EffectVariables{}, rootData, rendererData, targetData);
+    DrawCall drawCall(nullptr, EffectVariables{}, rootData, rendererData, targetData);
 
     drawCall.bindStates(std::unordered_map<std::string, data::Binding>{}, defaultValues);
 
@@ -393,7 +393,7 @@ TEST_F(DrawCallTest, RenderTargetBindingFromTargetData)
     targetData.addProvider(p);
 
     std::unordered_map<std::string, data::Binding> bindings = { { States::PROPERTY_TARGET, { States::PROPERTY_TARGET, data::Binding::Source::TARGET } } };
-    DrawCall drawCall(0, nullptr, EffectVariables{}, rootData, rendererData, targetData);
+    DrawCall drawCall(nullptr, EffectVariables{}, rootData, rendererData, targetData);
 
     drawCall.bindStates(bindings, defaultValues);
 
@@ -428,7 +428,7 @@ TEST_F(DrawCallTest, SamplerStatesImplicitDefaultValues)
         { samplerUniformName, { samplerUniformValue, data::Binding::Source::ROOT } },
     };
 
-    DrawCall drawCall(0, nullptr, { { "id", "0" } }, rootData, rendererData, targetData);
+    DrawCall drawCall(nullptr, { { "id", "0" } }, rootData, rendererData, targetData);
 
     auto location = 23;
     auto size = 0;
@@ -500,7 +500,7 @@ TEST_F(DrawCallTest, SamplerStatesWrapModeWithDefaultValueRepeat)
         { samplerUniformName, { samplerUniformValue, data::Binding::Source::ROOT } }
     };
 
-    DrawCall drawCall(0, nullptr, { { "id", "0" } }, rootData, rendererData, targetData);
+    DrawCall drawCall(nullptr, { { "id", "0" } }, rootData, rendererData, targetData);
 
     ProgramInputs::UniformInput input(samplerUniformName, location, size, ProgramInputs::Type::sampler2d);
 
@@ -567,7 +567,7 @@ TEST_F(DrawCallTest, SamplerStatesWrapModeWithDefaultValueClamp)
         { samplerUniformName, { samplerUniformValue, data::Binding::Source::ROOT } }
     };
 
-    DrawCall drawCall(0, nullptr, { { "id", "0" } }, rootData, rendererData, targetData);
+    DrawCall drawCall(nullptr, { { "id", "0" } }, rootData, rendererData, targetData);
 
     ProgramInputs::UniformInput input(samplerUniformName, location, size, ProgramInputs::Type::sampler2d);
 
@@ -634,7 +634,7 @@ TEST_F(DrawCallTest, SamplerStatesTextureFilterWithDefaultValueLinear)
         { samplerUniformName, { samplerUniformValue, data::Binding::Source::ROOT } }
     };
 
-    DrawCall drawCall(0, nullptr, { { "id", "0" } }, rootData, rendererData, targetData);
+    DrawCall drawCall(nullptr, { { "id", "0" } }, rootData, rendererData, targetData);
 
     ProgramInputs::UniformInput input(samplerUniformName, location, size, ProgramInputs::Type::sampler2d);
 
@@ -701,7 +701,7 @@ TEST_F(DrawCallTest, SamplerStatesTextureFilterWithDefaultValueNearest)
         { samplerUniformName, { samplerUniformValue, data::Binding::Source::ROOT } }
     };
 
-    DrawCall drawCall(0, nullptr, { { "id", "0" } }, rootData, rendererData, targetData);
+    DrawCall drawCall(nullptr, { { "id", "0" } }, rootData, rendererData, targetData);
 
     ProgramInputs::UniformInput input(samplerUniformName, location, size, ProgramInputs::Type::sampler2d);
 
@@ -768,7 +768,7 @@ TEST_F(DrawCallTest, SamplerStatesMipFilterWithDefaultValueLinear)
         { samplerUniformName, { samplerUniformValue, data::Binding::Source::ROOT } }
     };
 
-    DrawCall drawCall(0, nullptr, { { "id", "0" } }, rootData, rendererData, targetData);
+    DrawCall drawCall(nullptr, { { "id", "0" } }, rootData, rendererData, targetData);
 
     ProgramInputs::UniformInput input(samplerUniformName, location, size, ProgramInputs::Type::sampler2d);
 
@@ -835,7 +835,7 @@ TEST_F(DrawCallTest, SamplerStatesMipFilterWithDefaultValueLinearNearest)
         { samplerUniformName, { samplerUniformValue, data::Binding::Source::ROOT } }
     };
 
-    DrawCall drawCall(0, nullptr, { { "id", "0" } }, rootData, rendererData, targetData);
+    DrawCall drawCall(nullptr, { { "id", "0" } }, rootData, rendererData, targetData);
 
     ProgramInputs::UniformInput input(samplerUniformName, location, size, ProgramInputs::Type::sampler2d);
 
@@ -902,7 +902,7 @@ TEST_F(DrawCallTest, SamplerStatesMipFilterWithDefaultValueNone)
         { samplerUniformName, { samplerUniformValue, data::Binding::Source::ROOT } }
     };
 
-    DrawCall drawCall(0, nullptr, { { "id", "0" } }, rootData, rendererData, targetData);
+    DrawCall drawCall(nullptr, { { "id", "0" } }, rootData, rendererData, targetData);
 
     ProgramInputs::UniformInput input(samplerUniformName, location, size, ProgramInputs::Type::sampler2d);
 
@@ -969,7 +969,7 @@ TEST_F(DrawCallTest, SamplerStatesWrapModeWithVariableBindingFromRootData)
         { wrapModeUniformName, { wrapModeUniformValue, data::Binding::Source::ROOT } }
     };
 
-    DrawCall drawCall(0, nullptr, { { "id", "0" } }, rootData, rendererData, targetData);
+    DrawCall drawCall(nullptr, { { "id", "0" } }, rootData, rendererData, targetData);
 
     auto location = 23;
     auto size = 0;
@@ -1039,7 +1039,7 @@ TEST_F(DrawCallTest, SamplerStatesTextureFilterWithVariableBindingFromRootData)
         { textureFilterUniformName, { textureFilterUniformValue, data::Binding::Source::ROOT } }
     };
 
-    DrawCall drawCall(0, nullptr, { { "id", "0" } }, rootData, rendererData, targetData);
+    DrawCall drawCall(nullptr, { { "id", "0" } }, rootData, rendererData, targetData);
 
     ProgramInputs::UniformInput input(samplerUniformName, location, size, ProgramInputs::Type::sampler2d);
 
@@ -1106,7 +1106,7 @@ TEST_F(DrawCallTest, SamplerStatesMipFilterWithVariableBindingFromRootData)
         { mipFilterUniformName, { mipFilterUniformValue, data::Binding::Source::ROOT } }
     };
 
-    DrawCall drawCall(0, nullptr, { { "id", "0" } }, rootData, rendererData, targetData);
+    DrawCall drawCall(nullptr, { { "id", "0" } }, rootData, rendererData, targetData);
 
     ProgramInputs::UniformInput input(samplerUniformName, location, size, ProgramInputs::Type::sampler2d);
 

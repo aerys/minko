@@ -64,9 +64,12 @@ TEST_F(RendererTest, AddAndRemoveSurfaces)
     ASSERT_EQ(renderer->numDrawCalls(), 3);
 
     root->removeComponent(s1);
+    renderer->render(MinkoTests::canvas()->context());
     ASSERT_EQ(renderer->numDrawCalls(), 2);
+
     root->removeComponent(s2);
     root->removeComponent(s3);
+    renderer->render(MinkoTests::canvas()->context());
     ASSERT_EQ(renderer->numDrawCalls(), 0);
 }
 
@@ -161,7 +164,7 @@ TEST_F(RendererTest, OneSurfaceLayoutMaskPass)
 
 TEST_F(RendererTest, PostProcessEffect)
 {
-    auto fx = MinkoTests::loadEffect("effect/postprocess/PostProcess.effect");
+    auto fx = MinkoTests::loadEffect("effect/deferred/OneForwardPassOneDeferredPass.effect");
     auto renderer = Renderer::create();
     auto root = scene::Node::create()
         ->addComponent(SceneManager::create(MinkoTests::canvas()))

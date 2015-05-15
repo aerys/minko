@@ -71,7 +71,7 @@ DrawCallPool::addDrawCalls(Effect::Ptr              effect,
     _batchId++;
     for (const auto& pass : technique)
     {
-        DrawCall* drawCall = new DrawCall(_batchId, pass, variables, rootData, rendererData, targetData);
+        DrawCall* drawCall = new DrawCall(pass, variables, rootData, rendererData, targetData);
 
         initializeDrawCall(*drawCall);
 
@@ -110,10 +110,17 @@ DrawCallPool::removeDrawCalls(uint batchId)
 
         if (it != batchIDs.end())
         {
+            std::cout << "found draw call " << batchId << std::endl;
+            std::cout << std::to_string(batchIDs) << std::endl;
+
             batchIDs.erase(it);
+
+            std::cout << "num batch ids: " << batchIDs.size() << std::endl;
 
             if (batchIDs.size() != 0)
                 return false;
+
+            std::cout << "remove draw call " << batchId << std::endl;
 
             unwatchProgramSignature(
                 *drawCall,
