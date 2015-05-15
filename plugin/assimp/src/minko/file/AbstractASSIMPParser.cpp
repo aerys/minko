@@ -580,11 +580,20 @@ AbstractASSIMPParser::createMeshSurface(scene::Node::Ptr 	minkoNode,
 	if (mesh == nullptr)
 		return;
 
-	const auto	meshName	= getMeshName(std::string(mesh->mName.data));
-    
+    const auto meshName	= getMeshName(std::string(mesh->mName.data));
+
+    auto primitiveType = mesh->mPrimitiveTypes;
+
+    if (primitiveType != aiPrimitiveType::aiPrimitiveType_TRIANGLE)
+    {
+        LOG_WARNING("primitive type for mesh '" << meshName << "' is not TRIANGLE");
+
+        return;
+    }
+
     std::string realMeshName = meshName;
 
-    int id = 0;
+    static int id = 0;
 
     while (_meshNames.find(realMeshName) != _meshNames.end())
     {
