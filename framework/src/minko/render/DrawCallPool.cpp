@@ -392,7 +392,7 @@ DrawCallPool::uniformBindingPropertyAddedHandler(DrawCall&                      
         if (propertyExist && drawCall.zSorted())
         {
             auto propertyRelatedToZSort = false;
-            for (auto i = 0; i < _zSortUsefulPropertyNames.size(); i++)
+            for (auto i = 0u; i < _zSortUsefulPropertyNames.size(); i++)
             {
                 if (data::Store::getActualPropertyName(drawCall.variables(), _zSortUsefulPropertyNames[i]) == propertyName)
                     propertyRelatedToZSort = true;
