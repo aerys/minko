@@ -45,10 +45,11 @@ int main(int argc, char** argv)
 
 	options
 		->resizeSmoothly(true)
+        ->options->clone()->generateMipmaps(true)
 		->registerParser<file::JPEGParser>("jpg");
 
     assets->loader()
-        ->queue(MAP_DIFFUSE, options->clone()->generateMipmaps(true))
+        ->queue(MAP_DIFFUSE)
         ->queue(MAP_IRRADIANCE)
         ->queue(MAP_RADIANCE, options->clone()->parseMipMaps(true))
         ->queue("texture/ground.jpg")
