@@ -430,7 +430,7 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
 
             const auto uniqueTarget = targetNodeSet.size() == 1u;
 
-            auto targetNode = surfaceBucket.front()->target();
+            auto targetNode = partitionInfo.surfaces.front()->target();
 
             auto processGeometries = true;
 
@@ -477,7 +477,7 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
                 buildGeometries(targetNode, partitionInfo, geometries);
             }
 
-            for (auto surface : surfaceBucket)
+            for (auto surface : partitionInfo.surfaces)
                 surface->target()->removeComponent(surface);
 
             patchNode(targetNode, partitionInfo, geometries);
@@ -1094,7 +1094,9 @@ MeshPartitioner::buildHalfEdges(PartitionInfo& partitionInfo)
 {
     auto halfEdges = HalfEdgeCollection::create(partitionInfo.indices);
 
-    partitionInfo.halfEdges.resize(halfEdges->halfEdges().size());
+    const auto numVertices = partitionInfo.vertices.size() / partitionInfo.vertexSize;
+
+    partitionInfo.halfEdges.resize(numVertices);
 
     for (auto halfEdge : halfEdges->halfEdges())
     {
