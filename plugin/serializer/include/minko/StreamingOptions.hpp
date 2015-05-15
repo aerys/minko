@@ -90,6 +90,8 @@ namespace minko
 
         float                                                   _popGeometryBlendingRange;
 
+        int                                                     _maxNumActiveParsers;
+
         POPGeometryFunction                                     _popGeometryFunction;
         StreamedTextureFunction                                 _streamedTextureFunction;
 
@@ -404,6 +406,22 @@ namespace minko
         popGeometryBlendingRange(float value)
         {
             _popGeometryBlendingRange = math::clamp(value, 0.f, 1.f);
+
+            return shared_from_this();
+        }
+
+        inline
+        int
+        maxNumActiveParsers() const
+        {
+            return _maxNumActiveParsers;
+        }
+
+        inline
+        Ptr
+        maxNumActiveParsers(int value)
+        {
+            _maxNumActiveParsers = value;
 
             return shared_from_this();
         }
