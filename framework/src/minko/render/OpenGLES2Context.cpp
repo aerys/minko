@@ -68,6 +68,41 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include <EGL/egl.h>
 #endif
 
+#ifndef GL_ES_VERSION_2_0
+# undef glGenFramebuffers
+# define glGenFramebuffers glGenFramebuffersEXT
+
+# undef glBindFramebuffer
+# define glBindFramebuffer glBindFramebufferEXT
+
+# undef glFramebufferTexture2D
+# define glFramebufferTexture2D glFramebufferTexture2DEXT
+
+# undef glGenRenderbuffers
+# define glGenRenderbuffers glGenRenderbuffersEXT
+
+# undef glBindRenderbuffer
+# define glBindRenderbuffer glBindRenderbufferEXT
+
+# undef glRenderbufferStorage
+# define glRenderbufferStorage glRenderbufferStorageEXT
+
+# undef glFramebufferRenderbuffer
+# define glFramebufferRenderbuffer glFramebufferRenderbufferEXT
+
+# undef glCheckFramebufferStatus
+# define glCheckFramebufferStatus glCheckFramebufferStatusEXT
+
+# undef glDeleteFramebuffers
+# define glDeleteFramebuffers glDeleteFramebuffersEXT
+
+# undef glDeleteRenderbuffers
+# define glDeleteRenderbuffers glDeleteRenderbuffersEXT
+
+# undef glGenerateMipmap
+# define glGenerateMipmap glGenerateMipmapEXT
+#endif
+
 using namespace minko;
 using namespace minko::render;
 
