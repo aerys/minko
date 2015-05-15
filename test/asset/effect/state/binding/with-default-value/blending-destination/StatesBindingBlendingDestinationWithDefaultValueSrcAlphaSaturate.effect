@@ -3,5 +3,8 @@
         "blendingDestination" : { "binding" : "material[${materialUuid}].blendingDestination", "default" : "src_alpha_saturate" }
     },
 
-    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+    "techniques" : [{ "passes" : [{
+      "vertexShader" : "#pragma include \"../../../../dummy.glsl\"",
+      "fragmentShader" : "#pragma include \"../../../../dummy.glsl\""
+  }] }]
 }

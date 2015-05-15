@@ -162,7 +162,7 @@ TEST_F(RendererTest, OneSurfaceLayoutMaskPass)
     ASSERT_EQ(renderer->numDrawCalls(), 1);
 }
 
-TEST_F(RendererTest, PostProcessEffect)
+TEST_F(RendererTest, DeferredPassDrawCallCount)
 {
     auto fx = MinkoTests::loadEffect("effect/deferred/OneForwardPassOneDeferredPass.effect");
     auto renderer = Renderer::create();

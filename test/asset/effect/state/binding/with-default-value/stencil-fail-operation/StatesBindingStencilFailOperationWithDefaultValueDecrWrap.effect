@@ -3,5 +3,8 @@
         "stencilFailOperation" : { "binding" : "material[${materialUuid}].stencilFailOperation", "default" : "decr_wrap" }
     },
 
-    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+    "techniques" : [{ "passes" : [{
+      "vertexShader" : "#pragma include \"../../../../dummy.glsl\"",
+      "fragmentShader" : "#pragma include \"../../../../dummy.glsl\""
+  }] }]
 }
