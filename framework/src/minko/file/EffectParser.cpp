@@ -1417,10 +1417,14 @@ EffectParser::loadGLSLDependencies(GLSLBlockListPtr blocks, file::Options::Ptr o
         finalize();
 }
 
+#include <numeric>
+
 void
 EffectParser::dependencyErrorHandler(std::shared_ptr<Loader> loader, const Error& error, const std::string& filename)
 {
-    LOG_DEBUG("Unable to load dependency '" << filename << "', included paths are: " << std::to_string(loader->options()->includePaths()));
+    LOG_DEBUG("Unable to load dependency '" << filename << "', included paths are: " << 
+		std::accumulate(loader->options()->includePaths().begin(), loader->options()->includePaths().end(), std::string(),
+		[](const std::string& a, const std::string& b) -> std::string { return a + (a.length() > 0 ? "," : "") + b; }));
 
     _error->execute(shared_from_this(), file::Error("Unable to load dependencies."));
 }
