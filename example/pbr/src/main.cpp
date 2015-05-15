@@ -45,7 +45,7 @@ int main(int argc, char** argv)
 
 	options
 		->resizeSmoothly(true)
-        ->options->clone()->generateMipmaps(true)
+        ->generateMipmaps(true)
 		->registerParser<file::JPEGParser>("jpg");
 
     assets->loader()
@@ -79,7 +79,7 @@ int main(int argc, char** argv)
         auto skybox = scene::Node::create("skybox")
             ->addComponent(Surface::create(
                 geometry::CubeGeometry::create(context),
-                material::Material::create({
+                material::Material::create()->set({
                     { "diffuseLatLongMap", assets->texture(MAP_DIFFUSE)->sampler() },
                     { "gammaCorrection", 2.2f}
                 }),
@@ -87,7 +87,7 @@ int main(int argc, char** argv)
             ));
         root->addChild(skybox);
 
-        auto groundMaterial = material::Material::create({
+        auto groundMaterial = material::Material::create()->set({
             { "roughness",          1.f },
             { "metalness",          0.0f },
             { "specularColor",      math::vec4(0.f, 0.f, 0.f, 1.f) },
@@ -120,7 +120,7 @@ int main(int argc, char** argv)
             for (auto j = 0; j < numSpheres; j++)
             {
                 auto mesh = scene::Node::create("mesh", scene::BuiltinLayout::DEFAULT | 256);
-                auto mat = material::Material::create({
+                auto mat = material::Material::create()->set({
                     { "gammaCorrection",    2.2f },
                     { "albedoColor",        math::vec4(1.f, 1.f, 1.f, 1.f) },
                     { "specularColor",      math::vec4(1.f, 1.f, 1.f, 1.f) },
