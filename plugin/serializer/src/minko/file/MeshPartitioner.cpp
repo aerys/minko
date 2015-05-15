@@ -349,6 +349,16 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
     else
         defaultWorldBoundsFunction(node, _worldMinBound, _worldMaxBound);
 
+    auto mergedComponentRoot = Node::create()
+        ->addComponent(Transform::create());
+
+    if (node->hasComponent<Transform>())
+    {
+        mergedComponentRoot->component<Transform>()->matrix(math::inverse(
+            node->component<Transform>()->modelToWorldMatrix()
+        ));
+    }
+
     if (_options.flags & Options::mergeSurfaces)
     {
         node->component<Transform>()->updateModelToWorldMatrix();
@@ -413,6 +423,13 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
             if (partitionInfo.surfaces.empty())
                 continue;
 
+            auto targetNodeSet = std::unordered_set<Node::Ptr>();
+
+            for (auto surface : partitionInfo.surfaces)
+                targetNodeSet.insert(surface->target());
+
+            const auto uniqueTarget = targetNodeSet.size() == 1u;
+
             auto targetNode = surfaceBucket.front()->target();
 
             auto processGeometries = true;
@@ -436,7 +453,7 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
                     );
                 }
             }
-            else
+            else if (!uniqueTarget)
             {
                 auto newNodeName = targetNode->name();
 
@@ -444,12 +461,12 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
                     ->addComponent(Transform::create())
                     ->addComponent(BoundingBox::create());
 
-                node->addChild(targetNode);
+                mergedComponentRoot->addChild(targetNode);
             }
 
             if (processGeometries)
             {
-                partitionInfo.useRootSpace = !partitionInfo.isInstance;
+                partitionInfo.useRootSpace = !uniqueTarget && !partitionInfo.isInstance;
 
                 buildGlobalIndex(partitionInfo);
 
@@ -466,8 +483,7 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
             patchNode(targetNode, partitionInfo, geometries);
         }
 
-        node->component<Transform>()->matrix(math::mat4());
-        node->component<Transform>()->updateModelToWorldMatrix();
+        node->addChild(mergedComponentRoot);
     }
 }
 
@@ -990,7 +1006,7 @@ MeshPartitioner::buildGlobalIndex(PartitionInfo& partitionInfo)
 
         if (partitionInfo.useRootSpace && target->hasComponent<Transform>())
         {
-            transformMatrix = target->component<Transform>()->modelToWorldMatrix();
+            transformMatrix = target->component<Transform>()->modelToWorldMatrix(true);
         }
 
         auto geometry = surface->geometry();
