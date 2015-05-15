@@ -3,5 +3,8 @@
         "stencilReference" : { "binding" : "material[${materialUuid}].stencilReference", "default" : 1 }
     },
 
-    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+    "techniques" : [{ "passes" : [{
+      "vertexShader" : "#pragma include \"../../../../dummy.glsl\"",
+      "fragmentShader" : "#pragma include \"../../../../dummy.glsl\""
+  }] }]
 }

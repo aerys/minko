@@ -1,7 +1,0 @@
-{
-    "states" : {
-        "stencilFunction" : "less_equal"
-    },
-
-    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
-}

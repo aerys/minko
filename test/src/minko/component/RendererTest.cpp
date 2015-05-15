@@ -159,7 +159,7 @@ TEST_F(RendererTest, OneSurfaceLayoutMaskPass)
     ASSERT_EQ(renderer->numDrawCalls(), 1);
 }
 
-TEST_F(RendererTest, PostProcessEffect)
+TEST_F(RendererTest, DeferredPassDrawCallCount)
 {
     auto fx = MinkoTests::loadEffect("effect/postprocess/PostProcess.effect");
     auto renderer = Renderer::create();

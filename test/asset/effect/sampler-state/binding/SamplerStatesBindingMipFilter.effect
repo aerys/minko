@@ -2,11 +2,14 @@
 	"uniforms"   : {
         "diffuseMap"            : {
             "binding"       : "material[${materialUuid}].diffuseMap",
-            "mipFilter"      : { 
-				"binding"       : "material[${materialUuid}].diffuseMapMipFilter" 
+            "mipFilter"      : {
+				"binding"       : "material[${materialUuid}].diffuseMapMipFilter"
 			}
         }
     },
 
-    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+    "techniques" : [{ "passes" : [{
+		"vertexShader" : "#pragma include \"../../dummy.glsl\"",
+		"fragmentShader" : "#pragma include \"../../dummy.glsl\""
+	}] }]
 }

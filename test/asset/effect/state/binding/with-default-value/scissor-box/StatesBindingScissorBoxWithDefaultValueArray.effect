@@ -3,5 +3,8 @@
         "scissorBox" : { "binding" : "material[${materialUuid}].scissorBox", "default" : [1, 1, 42, 42] } 
     },
 
-    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+    "techniques" : [{ "passes" : [{
+      "vertexShader" : "#pragma include \"../../../../dummy.glsl\"",
+      "fragmentShader" : "#pragma include \"../../../../dummy.glsl\""
+  }] }]
 }
