@@ -110,17 +110,10 @@ DrawCallPool::removeDrawCalls(uint batchId)
 
         if (it != batchIDs.end())
         {
-            std::cout << "found draw call " << batchId << std::endl;
-            std::cout << std::to_string(batchIDs) << std::endl;
-
             batchIDs.erase(it);
-
-            std::cout << "num batch ids: " << batchIDs.size() << std::endl;
 
             if (batchIDs.size() != 0)
                 return false;
-
-            std::cout << "remove draw call " << batchId << std::endl;
 
             unwatchProgramSignature(
                 *drawCall,

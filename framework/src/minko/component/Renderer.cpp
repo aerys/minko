@@ -377,12 +377,10 @@ Renderer::addSurface(Surface::Ptr surface)
 void
 Renderer::removeSurface(Surface::Ptr surface)
 {
-	std::cout << "remove surface" << std::endl;
     if (_toCollect.erase(surface) == 0)
     {
 		if (_surfaceToDrawCallIterator.count(surface) != 0)
 		{
-			std::cout << "call removeDrawCalls " << _surfaceToDrawCallIterator[surface] << std::endl;
 	        _drawCallPool.removeDrawCalls(_surfaceToDrawCallIterator[surface]);
 	        _surfaceToDrawCallIterator.erase(surface);
 	        _surfaceChangedSlots.erase(surface);
