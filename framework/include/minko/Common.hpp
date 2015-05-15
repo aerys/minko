@@ -91,7 +91,7 @@ namespace minko
 	enum class CloneOption;
 	class AbstractCanvas;
     template<typename T>
-    class Hash;
+    struct Hash;
 
 	namespace render
 	{
