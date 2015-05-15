@@ -389,3 +389,179 @@ TEST_F(TransformTest, WrongModelToWorldIssue)
     ASSERT_EQ(n2->component<Transform>()->modelToWorldMatrix(), math::mat4());
     ASSERT_EQ(n21->component<Transform>()->modelToWorldMatrix(), math::mat4());
 }
+
+TEST_F(TransformTest, RemoveTransformRow)
+{
+    auto root = Node::create("root");
+
+    auto n0 = Node::create("n0");
+    auto n1 = Node::create("n1");
+
+    auto n00 = Node::create("n00");
+    auto n10 = Node::create("n10");
+
+    auto n000 = Node::create("n000");
+    auto n100 = Node::create("n100");
+
+    root->addComponent(Transform::create(math::translate(math::vec3(0.f, 0.f, 1.f))));
+
+    n0->addComponent(Transform::create(math::translate(math::vec3(-1.f, 0.f, 0.f))));
+    n1->addComponent(Transform::create(math::translate(math::vec3(1.f, 0.f, 0.f))));
+
+    n00->addComponent(Transform::create(math::translate(math::vec3(-1.f, 0.f, 0.f))));
+    n10->addComponent(Transform::create(math::translate(math::vec3(-1.f, 0.f, 0.f))));
+
+    n000->addComponent(Transform::create(math::translate(math::vec3(-1.f, 0.f, 0.f))));
+    n100->addComponent(Transform::create(math::translate(math::vec3(-1.f, 0.f, 0.f))));
+
+    root->addChild(n0);
+    root->addChild(n1);
+
+    n0->addChild(n00);
+    n1->addChild(n10);
+
+    n00->addChild(n000);
+    n10->addChild(n100);
+
+    root->component<Transform>()->updateModelToWorldMatrix();
+
+    ASSERT_EQ(root->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(0.f, 0.f, 1.f)));
+
+    ASSERT_EQ(n0->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(-1.f, 0.f, 1.f)));
+    ASSERT_EQ(n1->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(1.f, 0.f, 1.f)));
+
+    ASSERT_EQ(n00->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(-2.f, 0.f, 1.f)));
+    ASSERT_EQ(n10->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(0.f, 0.f, 1.f)));
+
+    ASSERT_EQ(n000->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(-3.f, 0.f, 1.f)));
+    ASSERT_EQ(n100->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(-1.f, 0.f, 1.f)));
+
+    n00->removeComponent(n00->component<Transform>());
+    n10->removeComponent(n10->component<Transform>());
+
+    root->component<Transform>()->updateModelToWorldMatrix();
+
+    ASSERT_EQ(root->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(0.f, 0.f, 1.f)));
+
+    ASSERT_EQ(n0->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(-1.f, 0.f, 1.f)));
+    ASSERT_EQ(n1->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(1.f, 0.f, 1.f)));
+
+    ASSERT_EQ(n000->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(-2.f, 0.f, 1.f)));
+    ASSERT_EQ(n100->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(0.f, 0.f, 1.f)));
+}
+
+TEST_F(TransformTest, RemoveMultipleTransformRow)
+{
+    auto root = Node::create("root");
+
+    auto n0 = Node::create("n0");
+    auto n1 = Node::create("n1");
+
+    auto n00 = Node::create("n00");
+    auto n10 = Node::create("n10");
+
+    auto n000 = Node::create("n000");
+    auto n100 = Node::create("n100");
+
+    root->addComponent(Transform::create(math::translate(math::vec3(0.f, 0.f, 1.f))));
+
+    n0->addComponent(Transform::create(math::translate(math::vec3(-1.f, 0.f, 0.f))));
+    n1->addComponent(Transform::create(math::translate(math::vec3(1.f, 0.f, 0.f))));
+
+    n00->addComponent(Transform::create(math::translate(math::vec3(-1.f, 0.f, 0.f))));
+    n10->addComponent(Transform::create(math::translate(math::vec3(-1.f, 0.f, 0.f))));
+
+    n000->addComponent(Transform::create(math::translate(math::vec3(-1.f, 0.f, 0.f))));
+    n100->addComponent(Transform::create(math::translate(math::vec3(-1.f, 0.f, 0.f))));
+
+    root->addChild(n0);
+    root->addChild(n1);
+
+    n0->addChild(n00);
+    n1->addChild(n10);
+
+    n00->addChild(n000);
+    n10->addChild(n100);
+
+    root->component<Transform>()->updateModelToWorldMatrix();
+
+    ASSERT_EQ(root->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(0.f, 0.f, 1.f)));
+
+    ASSERT_EQ(n0->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(-1.f, 0.f, 1.f)));
+    ASSERT_EQ(n1->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(1.f, 0.f, 1.f)));
+
+    ASSERT_EQ(n00->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(-2.f, 0.f, 1.f)));
+    ASSERT_EQ(n10->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(0.f, 0.f, 1.f)));
+
+    ASSERT_EQ(n000->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(-3.f, 0.f, 1.f)));
+    ASSERT_EQ(n100->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(-1.f, 0.f, 1.f)));
+
+    n0->removeComponent(n0->component<Transform>());
+    n1->removeComponent(n1->component<Transform>());
+
+    n00->removeComponent(n00->component<Transform>());
+    n10->removeComponent(n10->component<Transform>());
+
+    root->component<Transform>()->updateModelToWorldMatrix();
+
+    ASSERT_EQ(root->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(0.f, 0.f, 1.f)));
+
+    ASSERT_EQ(n000->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(-1.f, 0.f, 1.f)));
+    ASSERT_EQ(n100->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(-1.f, 0.f, 1.f)));
+}
+
+TEST_F(TransformTest, DiscreteRemoveTransform)
+{
+    auto root = Node::create("root");
+
+    auto n0 = Node::create("n0");
+    auto n1 = Node::create("n1");
+
+    auto n00 = Node::create("n00");
+    auto n01 = Node::create("n01");
+    auto n10 = Node::create("n10");
+    auto n11 = Node::create("n11");
+
+    auto n000 = Node::create("n000");
+    auto n100 = Node::create("n100");
+
+    root->addComponent(Transform::create(math::translate(math::vec3(0.f, 0.f, 1.f))));
+
+    n0->addComponent(Transform::create(math::translate(math::vec3(-1.f, 0.f, 0.f))));
+    n1->addComponent(Transform::create(math::translate(math::vec3(1.f, 0.f, 0.f))));
+
+    n00->addComponent(Transform::create(math::translate(math::vec3(-1.f, 0.f, 0.f))));
+    n01->addComponent(Transform::create(math::translate(math::vec3(1.f, 0.f, 0.f))));
+    n10->addComponent(Transform::create(math::translate(math::vec3(-1.f, 0.f, 0.f))));
+    n11->addComponent(Transform::create(math::translate(math::vec3(1.f, 0.f, 0.f))));
+
+    n000->addComponent(Transform::create(math::translate(math::vec3(-1.f, 0.f, 0.f))));
+    n100->addComponent(Transform::create(math::translate(math::vec3(-1.f, 0.f, 0.f))));
+
+    root->addChild(n0);
+    root->addChild(n1);
+
+    n0->addChild(n00);
+    n0->addChild(n01);
+    n1->addChild(n10);
+    n1->addChild(n11);
+
+    n00->addChild(n000);
+    n10->addChild(n100);
+
+    n00->removeComponent(n00->component<Transform>());
+    n10->removeComponent(n10->component<Transform>());
+
+    root->component<Transform>()->updateModelToWorldMatrix();
+
+    ASSERT_EQ(root->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(0.f, 0.f, 1.f)));
+
+    ASSERT_EQ(n0->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(-1.f, 0.f, 1.f)));
+    ASSERT_EQ(n1->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(1.f, 0.f, 1.f)));
+
+    ASSERT_EQ(n01->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(0.f, 0.f, 1.f)));
+    ASSERT_EQ(n11->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(2.f, 0.f, 1.f)));
+
+    ASSERT_EQ(n000->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(-2.f, 0.f, 1.f)));
+    ASSERT_EQ(n100->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(0.f, 0.f, 1.f)));
+}
