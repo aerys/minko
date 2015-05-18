@@ -359,132 +359,139 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
         ));
     }
 
+    node->component<Transform>()->updateModelToWorldMatrix();
+
+    auto surfaces = std::vector<Surface::Ptr>();
+
+    for (auto meshNode : meshNodes->nodes())
+        for (auto surface : meshNode->components<Surface>())
+        surfaces.push_back(surface);
+
+    findInstances(surfaces);
+
+    auto surfaceBuckets = std::vector<std::vector<Surface::Ptr>>();
+
     if (_options.flags & Options::mergeSurfaces)
     {
-        node->component<Transform>()->updateModelToWorldMatrix();
+        surfaceBuckets = mergeSurfaces(surfaces);
+    }
+    else
+    {
+        for (auto surface : surfaces)
+            surfaceBuckets.push_back({ surface });
+    }
 
-        auto surfaces = std::vector<Surface::Ptr>();
+    auto validSurfaceBuckets = std::vector<std::vector<Surface::Ptr>>();
+    auto pendingSurfaceBuckets = std::queue<std::vector<Surface::Ptr>>();
 
-        for (auto meshNode : meshNodes->nodes())
-            for (auto surface : meshNode->components<Surface>())
-                surfaces.push_back(surface);
+    for (const auto& surfaceBucket : surfaceBuckets)
+        pendingSurfaceBuckets.push(surfaceBucket);
 
-        findInstances(surfaces);
+    while (!pendingSurfaceBuckets.empty())
+    {
+        const auto pendingSurfaceBucket = pendingSurfaceBuckets.front();
+        pendingSurfaceBuckets.pop();
 
-        auto surfaceBuckets = mergeSurfaces(surfaces);
-
-        auto validSurfaceBuckets = std::vector<std::vector<Surface::Ptr>>();
-        auto pendingSurfaceBuckets = std::queue<std::vector<Surface::Ptr>>();
-
-        for (const auto& surfaceBucket : surfaceBuckets)
-            pendingSurfaceBuckets.push(surfaceBucket);
-
-        while (!pendingSurfaceBuckets.empty())
+        if (surfaceBucketIsValid(pendingSurfaceBucket))
         {
-            const auto pendingSurfaceBucket = pendingSurfaceBuckets.front();
-            pendingSurfaceBuckets.pop();
+            validSurfaceBuckets.push_back(pendingSurfaceBucket);
 
-            if (surfaceBucketIsValid(pendingSurfaceBucket))
-            {
-                validSurfaceBuckets.push_back(pendingSurfaceBucket);
-
-                continue;
-            }
-
-            auto splitSurfaceBucket = std::vector<std::vector<Surface::Ptr>>();
-
-            this->splitSurfaceBucket(pendingSurfaceBucket, splitSurfaceBucket);
-
-            for (const auto& surfaceBucket : splitSurfaceBucket)
-                pendingSurfaceBuckets.push(surfaceBucket);
+            continue;
         }
 
-        auto bucketIndex = 0u;
+        auto splitSurfaceBucket = std::vector<std::vector<Surface::Ptr>>();
 
-        for (const auto& surfaceBucket : validSurfaceBuckets)
+        this->splitSurfaceBucket(pendingSurfaceBucket, splitSurfaceBucket);
+
+        for (const auto& surfaceBucket : splitSurfaceBucket)
+            pendingSurfaceBuckets.push(surfaceBucket);
+    }
+
+    auto bucketIndex = 0u;
+
+    for (const auto& surfaceBucket : validSurfaceBuckets)
+    {
+        if (surfaceBucket.empty())
+            continue;
+
+        auto partitionInfo = PartitionInfo();
+
+        for (auto surface : surfaceBucket)
         {
-            if (surfaceBucket.empty())
-                continue;
-
-            auto partitionInfo = PartitionInfo();
-
-            for (auto surface : surfaceBucket)
+            if (!_options.validSurfacePredicate(surface))
             {
-                if (!_options.validSurfacePredicate(surface))
-                {
-                    surface->target()->removeComponent(surface);
-
-                    continue;
-                }
-
-                partitionInfo.surfaces.push_back(surface);
-            }
-
-            if (partitionInfo.surfaces.empty())
-                continue;
-
-            auto targetNodeSet = std::unordered_set<Node::Ptr>();
-
-            for (auto surface : partitionInfo.surfaces)
-                targetNodeSet.insert(surface->target());
-
-            const auto uniqueTarget = targetNodeSet.size() == 1u;
-
-            auto targetNode = partitionInfo.surfaces.front()->target();
-
-            auto processGeometries = true;
-
-            auto geometries = std::vector<Geometry::Ptr>();
-
-            partitionInfo.isInstance = partitionInfo.surfaces.size() == 1u &&
-                                    _options.instanceSurfacePredicate(partitionInfo.surfaces.front());
-
-            if (partitionInfo.isInstance)
-            {
-                auto processedInstanceIt = _processedInstances.find(partitionInfo.surfaces.front()->geometry());
-
-                if (processedInstanceIt != _processedInstances.end())
-                {
-                    processGeometries = false;
-
-                    geometries.assign(
-                        processedInstanceIt->second.begin(),
-                        processedInstanceIt->second.end()
-                    );
-                }
-            }
-            else if (!uniqueTarget)
-            {
-                auto newNodeName = targetNode->name();
-
-                targetNode = Node::create(newNodeName)
-                    ->addComponent(Transform::create())
-                    ->addComponent(BoundingBox::create());
-
-                mergedComponentRoot->addChild(targetNode);
-            }
-
-            if (processGeometries)
-            {
-                partitionInfo.useRootSpace = !uniqueTarget && !partitionInfo.isInstance;
-
-                buildGlobalIndex(partitionInfo);
-
-                buildHalfEdges(partitionInfo);
-
-                buildPartitions(partitionInfo);
-
-                buildGeometries(targetNode, partitionInfo, geometries);
-            }
-
-            for (auto surface : partitionInfo.surfaces)
                 surface->target()->removeComponent(surface);
 
-            patchNode(targetNode, partitionInfo, geometries);
+                continue;
+            }
+
+            partitionInfo.surfaces.push_back(surface);
         }
 
-        node->addChild(mergedComponentRoot);
+        if (partitionInfo.surfaces.empty())
+            continue;
+
+        auto targetNodeSet = std::unordered_set<Node::Ptr>();
+
+        for (auto surface : partitionInfo.surfaces)
+            targetNodeSet.insert(surface->target());
+
+        const auto uniqueTarget = targetNodeSet.size() == 1u;
+
+        auto targetNode = partitionInfo.surfaces.front()->target();
+
+        auto processGeometries = true;
+
+        auto geometries = std::vector<Geometry::Ptr>();
+
+        partitionInfo.isInstance = partitionInfo.surfaces.size() == 1u &&
+            _options.instanceSurfacePredicate(partitionInfo.surfaces.front());
+
+        if (partitionInfo.isInstance)
+        {
+            auto processedInstanceIt = _processedInstances.find(partitionInfo.surfaces.front()->geometry());
+
+            if (processedInstanceIt != _processedInstances.end())
+            {
+                processGeometries = false;
+
+                geometries.assign(
+                    processedInstanceIt->second.begin(),
+                    processedInstanceIt->second.end()
+                );
+            }
+        }
+        else if (!uniqueTarget)
+        {
+            auto newNodeName = targetNode->name();
+
+            targetNode = Node::create(newNodeName)
+                ->addComponent(Transform::create())
+                ->addComponent(BoundingBox::create());
+
+            mergedComponentRoot->addChild(targetNode);
+        }
+
+        if (processGeometries)
+        {
+            partitionInfo.useRootSpace = !uniqueTarget && !partitionInfo.isInstance;
+
+            buildGlobalIndex(partitionInfo);
+
+            buildHalfEdges(partitionInfo);
+
+            buildPartitions(partitionInfo);
+
+            buildGeometries(targetNode, partitionInfo, geometries);
+        }
+
+        for (auto surface : partitionInfo.surfaces)
+            surface->target()->removeComponent(surface);
+
+        patchNode(targetNode, partitionInfo, geometries);
     }
+
+    node->addChild(mergedComponentRoot);
 }
 
 MeshPartitioner::OctreeNodePtr

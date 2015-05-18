@@ -89,6 +89,9 @@ namespace minko
 			AbstractExtension::Ptr
 			bind();
 
+            void
+            loadingContextDisposed();
+
 			static
 			inline
 			Ptr
