@@ -231,7 +231,6 @@ AbstractASSIMPParser::getPostProcessingFlags(const aiScene*             scene,
         | aiProcess_GenSmoothNormals
         | aiProcess_LimitBoneWeights
         | aiProcess_GenUVCoords
-        | aiProcess_OptimizeMeshes
         | aiProcess_FlipUVs
         | aiProcess_SortByPType
         | aiProcess_Triangulate
@@ -364,6 +363,8 @@ AbstractASSIMPParser::createSceneTree(scene::Node::Ptr 				minkoNode,
 									  aiNode* 						ainode,
 									  std::shared_ptr<AssetLibrary> assets)
 {
+    parseMetadata(scene, ainode, minkoNode, _options);
+
 	minkoNode->addComponent(getTransformFromAssimp(ainode));
 
 	// create surfaces for each node mesh
@@ -395,6 +396,55 @@ AbstractASSIMPParser::createSceneTree(scene::Node::Ptr 				minkoNode,
 		createSceneTree(childNode, scene, aichild, assets);
 
         minkoNode->addChild(childNode);
+    }
+}
+
+void
+AbstractASSIMPParser::parseMetadata(const aiScene*            scene,
+                                    aiNode*                   ainode,
+                                    NodePtr                   minkoNode,
+                                    std::shared_ptr<Options>  options)
+{
+    if (!ainode->mMetaData)
+        return;
+
+    for (auto i = 0u; i < ainode->mMetaData->mNumProperties; ++i)
+    {
+        const auto& key = std::string(ainode->mMetaData->mKeys[i].data);
+        const auto& data = ainode->mMetaData->mValues[i];
+
+        auto dataString = std::string();
+
+        switch (data.mType)
+        {
+        case aiMetadataType::AI_AISTRING:
+            dataString = std::string(reinterpret_cast<aiString*>(data.mData)->data);
+            break;
+        case aiMetadataType::AI_AIVECTOR3D:
+        {
+            aiVector3D* vec3 = reinterpret_cast<aiVector3D*>(data.mData);
+
+            dataString = std::to_string(math::vec3(vec3->x, vec3->y, vec3->z));
+
+            break;
+        }
+        case aiMetadataType::AI_BOOL:
+            dataString = std::to_string(*reinterpret_cast<bool*>(data.mData));
+            break;
+        case aiMetadataType::AI_FLOAT:
+            dataString = std::to_string(*reinterpret_cast<float*>(data.mData));
+            break;
+        case aiMetadataType::AI_INT:
+            dataString = std::to_string(*reinterpret_cast<int*>(data.mData));
+            break;
+        case aiMetadataType::AI_UINT64:
+            dataString = std::to_string(*reinterpret_cast<std::uint64_t*>(data.mData));
+            break;
+        default:
+            break;
+        }
+
+        options->attributeFunction()(minkoNode, key, dataString);
     }
 }
 

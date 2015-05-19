@@ -173,7 +173,10 @@ AbstractWriter<Node::Ptr>::Ptr writer)
 
             writer
                 ->registerPreprocessor(POPGeometryWriterPreprocessor::create())
-                ->registerPreprocessor(MeshPartitioner::create(meshPartitionerOptions));
+                ->registerPreprocessor(MeshPartitioner::create(
+                    meshPartitionerOptions,
+                    streamingOptions
+                ));
         }
     }
     

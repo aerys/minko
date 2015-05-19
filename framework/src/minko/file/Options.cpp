@@ -104,6 +104,7 @@ Options::Options(const Options& copy) :
     _nodeFunction(copy._nodeFunction),
     _effectFunction(copy._effectFunction),
     _textureFormatFunction(copy._textureFormatFunction),
+    _attributeFunction(copy._attributeFunction),
     _loadAsynchronously(copy._loadAsynchronously),
     _seekingOffset(copy._seekingOffset),
     _seekedLength(copy._seekedLength)
@@ -284,6 +285,11 @@ Options::initializeDefaultFunctions()
 
         throw std::runtime_error(errorMessage);
     };
+
+    if (!_attributeFunction)
+        _attributeFunction = [](NodePtr node, const std::string& key, const std::string& value) -> void
+        {
+        };
 
     if (!_defaultProtocolFunction)
         _defaultProtocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>

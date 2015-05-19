@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/StreamingCommon.hpp"
 #include "minko/component/MasterLodScheduler.hpp"
 #include "minko/file/POPGeometryWriter.hpp"
+#include "minko/file/SurfaceOperator.hpp"
 
 namespace minko
 {
@@ -94,6 +95,8 @@ namespace minko
 
         POPGeometryFunction                                     _popGeometryFunction;
         StreamedTextureFunction                                 _streamedTextureFunction;
+
+        file::SurfaceOperator                                   _surfaceOperator;
 
     public:
         inline static
@@ -454,6 +457,22 @@ namespace minko
         streamedTextureFunction(const StreamedTextureFunction& func)
         {
             _streamedTextureFunction = func;
+
+            return shared_from_this();
+        }
+
+        inline
+        const file::SurfaceOperator&
+        surfaceOperator() const
+        {
+            return _surfaceOperator;
+        }
+
+        inline
+        Ptr
+        surfaceOperator(const file::SurfaceOperator& value)
+        {
+            _surfaceOperator = value;
 
             return shared_from_this();
         }

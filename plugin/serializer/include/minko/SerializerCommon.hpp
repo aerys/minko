@@ -51,6 +51,7 @@ namespace minko
         class WriterOptions;
         class LinkedAsset;
         struct SceneVersion;
+        class SurfaceOperator;
 	}
 
 	namespace serialize

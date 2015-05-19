@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/SerializerCommon.hpp"
+#include "minko/StreamingCommon.hpp"
 #include "minko/file/AbstractWriterPreprocessor.hpp"
 
 namespace minko
@@ -60,6 +61,7 @@ namespace minko
                 int                                                     maxNumTrianglesPerNode;
                 int                                                     maxNumIndicesPerNode;
 
+                int                                                     maxNumSurfacesPerSurfaceBucket;
                 int                                                     maxNumTrianglesPerSurfaceBucket;
 
                 unsigned int                                            flags;
@@ -180,14 +182,15 @@ namespace minko
             };
 
         private:
-            Options             _options;
+            Options                                                     _options;
+            std::shared_ptr<StreamingOptions>                           _streamingOptions;
 
-            AssetLibraryPtr     _assetLibrary;
+            AssetLibraryPtr                                             _assetLibrary;
 
-            math::vec3          _worldMinBound;
-            math::vec3          _worldMaxBound;
+            math::vec3                                                  _worldMinBound;
+            math::vec3                                                  _worldMaxBound;
 
-            std::unordered_map<GeometryPtr, std::vector<GeometryPtr>> _processedInstances;
+            std::unordered_map<GeometryPtr, std::vector<GeometryPtr>>   _processedInstances;
 
         public:
             ~MeshPartitioner() = default;
@@ -195,11 +198,12 @@ namespace minko
             inline
             static
             Ptr
-            create(Options options)
+            create(Options options, std::shared_ptr<StreamingOptions> streamingOptions)
             {
                 auto instance = Ptr(new MeshPartitioner());
 
                 instance->_options = options;
+                instance->_streamingOptions = streamingOptions;
 
                 return instance;
             }
@@ -271,6 +275,11 @@ namespace minko
 
             std::vector<std::vector<SurfacePtr>>
             mergeSurfaces(const std::vector<SurfacePtr>& surfaces);
+
+            bool
+            preprocessMergedSurface(PartitionInfo&  partitionInfo,
+                                    SurfacePtr      surface,
+                                    int             index);
 
             bool
             buildGlobalIndex(PartitionInfo& partitionInfo);

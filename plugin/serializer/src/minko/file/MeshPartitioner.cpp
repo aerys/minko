@@ -17,6 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "minko/StreamingOptions.hpp"
 #include "minko/component/BoundingBox.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/Transform.hpp"
@@ -43,6 +44,7 @@ using namespace minko::scene;
 MeshPartitioner::Options::Options() :
     maxNumTrianglesPerNode(60000),
     maxNumIndicesPerNode(65536),
+    maxNumSurfacesPerSurfaceBucket(255),
     maxNumTrianglesPerSurfaceBucket(3000000),
     flags(Options::none),
     partitionMaxSizeFunction(defaultPartitionMaxSizeFunction),
@@ -284,6 +286,9 @@ MeshPartitioner::surfaceBucketIsValid(const std::vector<SurfacePtr>& surfaceBuck
     if (surfaceBucket.size() == 1u)
         return true;
 
+    if (surfaceBucket.size() > _options.maxNumSurfacesPerSurfaceBucket)
+        return false;
+
     auto numTriangles = 0u;
 
     for (auto surface : surfaceBucket)
@@ -407,8 +412,6 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
             pendingSurfaceBuckets.push(surfaceBucket);
     }
 
-    auto bucketIndex = 0u;
-
     for (const auto& surfaceBucket : validSurfaceBuckets)
     {
         if (surfaceBucket.empty())
@@ -476,6 +479,16 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
         {
             partitionInfo.useRootSpace = !uniqueTarget && !partitionInfo.isInstance;
 
+            if (partitionInfo.surfaces.size() > 1u)
+            {
+                auto index = 0;
+
+                for (auto surface : partitionInfo.surfaces)
+                {
+                    preprocessMergedSurface(partitionInfo, surface, index++);
+                }
+            }
+
             buildGlobalIndex(partitionInfo);
 
             buildHalfEdges(partitionInfo);
@@ -485,10 +498,10 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
             buildGeometries(targetNode, partitionInfo, geometries);
         }
 
+        patchNode(targetNode, partitionInfo, geometries);
+
         for (auto surface : partitionInfo.surfaces)
             surface->target()->removeComponent(surface);
-
-        patchNode(targetNode, partitionInfo, geometries);
     }
 
     node->addChild(mergedComponentRoot);
@@ -957,6 +970,30 @@ MeshPartitioner::computeDepth(OctreeNodePtr partitionNode)
 }
 
 bool
+MeshPartitioner::preprocessMergedSurface(PartitionInfo& partitionInfo,
+                                         Surface::Ptr   surface,
+                                         int            index)
+{
+    const auto mergingMask = index;
+
+    surface->data()->set("mergingMask", mergingMask);
+
+    auto geometry = surface->geometry();
+
+    auto positionVertexBuffer = geometry->vertexBuffer("position");
+
+    auto mergingMaskData = std::vector<float>(geometry->numVertices(), mergingMask);
+
+    auto mergingMaskVertexBuffer = VertexBuffer::create(positionVertexBuffer->context(), mergingMaskData);
+
+    mergingMaskVertexBuffer->addAttribute("mergingMask", 1u, 0u);
+
+    geometry->addVertexBuffer(mergingMaskVertexBuffer);
+
+    return true;
+}
+
+bool
 MeshPartitioner::buildGlobalIndex(PartitionInfo& partitionInfo)
 {
     const auto& surfaces = partitionInfo.surfaces;
@@ -1301,6 +1338,8 @@ MeshPartitioner::patchNode(Node::Ptr                            node,
     auto referenceMaterial = referenceSurface->material();
     auto referenceEffect = referenceSurface->effect();
 
+    auto newSurfaces = std::list<Surface::Ptr>();
+
     for (auto geometry : geometries)
     {
         auto newSurface = Surface::create(
@@ -1308,6 +1347,8 @@ MeshPartitioner::patchNode(Node::Ptr                            node,
             referenceMaterial,
             referenceEffect
         );
+
+        newSurfaces.push_back(newSurface);
 
         if (_options.flags & Options::createOneNodePerSurface)
         {
@@ -1323,6 +1364,12 @@ MeshPartitioner::patchNode(Node::Ptr                            node,
             node->addComponent(newSurface);
         }
     }
+
+    if (_streamingOptions->surfaceOperator().substitutionFunction)
+        _streamingOptions->surfaceOperator().substitutionFunction(
+            std::list<Surface::Ptr>(partitionInfo.surfaces.begin(), partitionInfo.surfaces.end()),
+            newSurfaces
+        );
 
     return true;
 }

@@ -158,6 +158,12 @@ namespace minko
 			void
 			createSceneTree(NodePtr minkoNode, const aiScene* scene, aiNode* ainode, std::shared_ptr<AssetLibrary> assets);
 
+            void
+            parseMetadata(const aiScene*            scene,
+                          aiNode*                   ainode,
+                          NodePtr                   minkoNode,
+                          std::shared_ptr<Options>  options);
+
             GeometryPtr
             createMeshGeometry(NodePtr, aiMesh*, const std::string&);
 
