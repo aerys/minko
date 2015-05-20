@@ -175,25 +175,25 @@ ComponentDeserializer::deserializeSurface(file::SceneVersion sceneVersion,
 										  std::shared_ptr<file::AssetLibrary>	assetLibrary,
 										  std::shared_ptr<file::Dependency>		dependencies)
 {
-	msgpack::type::tuple<unsigned short, unsigned short, unsigned short, std::string>	dst;
-	msgpack::type::tuple<std::vector<SurfaceExtension>>									ext;
+	msgpack::type::tuple<std::string, unsigned short, unsigned short, unsigned short, std::string> dst;
+	msgpack::type::tuple<std::vector<SurfaceExtension>>	ext;
 
     unpack(dst, packed.data(), packed.size() - 1);
 
-	geometry::Geometry::Ptr		geometry	= dependencies->getGeometryReference(dst.get<0>());
-	material::Material::Ptr		material	= dependencies->getMaterialReference(dst.get<1>());
-	render::Effect::Ptr			effect		= dependencies->getEffectReference(dst.get<2>());
+    const auto& surfaceUuid = dst.get<0>();
+	geometry::Geometry::Ptr		geometry	= dependencies->getGeometryReference(dst.get<1>());
+	material::Material::Ptr		material	= dependencies->getMaterialReference(dst.get<2>());
+	render::Effect::Ptr			effect		= dependencies->getEffectReference(dst.get<3>());
 	std::string					technique	= "default";
 	bool						visible		= true;
 
-    if (dst.get<3>().size() > 0)
+    if (dst.get<4>().size() > 0)
     {
-        unpack(ext, dst.get<3>().data(), dst.get<3>().size());
+        unpack(ext, dst.get<4>().data(), dst.get<4>().size());
 
         for (int i = 0; i < ext.get<0>().size(); ++i)
         {
             auto extension = ext.get<0>()[i];
-
 
             if (extension.get<0>() == "visible")
             {
@@ -213,14 +213,13 @@ ComponentDeserializer::deserializeSurface(file::SceneVersion sceneVersion,
         effect = dependencies->options()->effect();
 
     std::shared_ptr<component::Surface> surface = component::Surface::create(
+        surfaceUuid,
         "",
         geometry,
         (material != nullptr ? material : assetLibrary->material("defaultMaterial")),
         (effect != nullptr ? effect : assetLibrary->effect("effect/Phong.effect")),
         technique
     );
-
-	//surface->visible(visible);
 
     return surface;
 }

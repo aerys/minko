@@ -86,6 +86,15 @@ namespace minko
 
 			static
 			Ptr
+			create(const std::string& uuid)
+			{
+				Ptr provider = std::make_shared<Provider>(uuid);
+
+				return provider;
+			}
+
+			static
+			Ptr
 			create(const DefaultValueMap& values)
 			{
 				Ptr provider = std::make_shared<Provider>(values);
@@ -209,6 +218,9 @@ namespace minko
             ~Provider();
 
 			Provider();
+            
+            explicit
+            Provider(const std::string& uuid);
 
 			Provider(const DefaultValueMap& values);
 

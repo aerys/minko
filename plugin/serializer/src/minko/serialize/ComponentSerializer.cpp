@@ -200,15 +200,18 @@ ComponentSerializer::serializeSurface(NodePtr		        node,
 	auto		        surface	= std::static_pointer_cast<component::Surface>(component);
 	std::stringstream	buffer;
 
+    const auto& surfaceUuid = surface->uuid();
 	uint materialId = dependencies->registerDependency(surface->material());
 	uint geometryId = dependencies->registerDependency(surface->geometry());
 	uint effectId	= dependencies->registerDependency(surface->effect());
 
-	msgpack::type::tuple<unsigned short, unsigned short, unsigned short, std::string> src(
+	msgpack::type::tuple<std::string, unsigned short, unsigned short, unsigned short, std::string> src(
+        surfaceUuid,
 		geometryId,
 		materialId,
 		effectId,
-		getSurfaceExtension(node, surface));
+		getSurfaceExtension(node, surface)
+    );
 
 	msgpack::pack(buffer, src);
 	msgpack::pack(buffer, type);

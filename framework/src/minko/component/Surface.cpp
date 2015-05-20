@@ -45,7 +45,7 @@ const std::string Surface::GEOMETRY_COLLECTION_NAME = "geometry";
 const std::string Surface::MATERIAL_COLLECTION_NAME = "material";
 const std::string Surface::EFFECT_COLLECTION_NAME = "effect";
 
-Surface::Surface(std::string		name,
+Surface::Surface(const std::string&	name,
 				 Geometry::Ptr 		geometry,
 				 Material::Ptr 		material,
 				 Effect::Ptr		effect,
@@ -62,6 +62,28 @@ Surface::Surface(std::string		name,
 		throw std::invalid_argument("effect");
 	if (!_effect->hasTechnique(_technique))
 		throw std::logic_error("Effect does not provide a '" + _technique + "' technique.");
+}
+
+Surface::Surface(const std::string& uuid,
+                 const std::string& name,
+				 Geometry::Ptr 		geometry,
+				 Material::Ptr 		material,
+				 Effect::Ptr		effect,
+				 const std::string&	technique) :
+	AbstractComponent(),
+	_name(name),
+	_geometry(geometry),
+	_material(material),
+	_effect(effect),
+    _provider(data::Provider::create(uuid)),
+	_technique(technique)
+{
+	if (_effect == nullptr)
+		throw std::invalid_argument("effect");
+	if (!_effect->hasTechnique(_technique))
+		throw std::logic_error("Effect does not provide a '" + _technique + "' technique.");
+
+    initializeIndexRange(geometry);
 }
 
 // TODO #Clone
