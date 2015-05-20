@@ -256,15 +256,15 @@ SceneParser::parseNode(std::vector<SerializedNode>&            nodePack,
 
     for (uint i = 0; i < nodePack.size(); ++i)
     {
-        scene::Node::Ptr    newNode            = scene::Node::create();
         uint                layouts            = nodePack[i].get<1>();
         uint                numChildren        = nodePack[i].get<2>();
         std::vector<uint>    componentsId    = nodePack[i].get<3>();
         std::string            uuid            = nodePack[i].get<4>();
 
+        scene::Node::Ptr    newNode            = scene::Node::create(uuid, "");
+
 		newNode->layout(layouts);
 		newNode->name(nodePack[i].get<0>());
-		newNode->uuid(uuid);
 
         for (uint componentId : componentsId)
             componentIdToNodes[componentId].push_back(newNode);

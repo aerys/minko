@@ -29,6 +29,16 @@ using namespace minko;
 using namespace minko::data;
 
 Provider::Provider() :
+    Uuid::enable_uuid(),
+    _values(new ValueMap())
+{
+#ifdef MINKO_USE_SPARSE_HASH_MAP
+    _values->set_deleted_key("");
+#endif
+}
+
+Provider::Provider(const std::string& uuid) :
+    Uuid::enable_uuid(uuid),
     _values(new ValueMap())
 {
 #ifdef MINKO_USE_SPARSE_HASH_MAP

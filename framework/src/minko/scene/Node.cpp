@@ -32,8 +32,15 @@ using namespace minko::scene;
 using namespace minko::component;
 
 Node::Node() :
+    Uuid::enable_uuid(),
 	_name(""),
-	_uuid(minko::Uuid::getUuid()),
+	_layout(BuiltinLayout::DEFAULT)
+{
+}
+
+Node::Node(const std::string& uuid, const std::string& name) :
+    Uuid::enable_uuid(uuid),
+    _name(name),
 	_layout(BuiltinLayout::DEFAULT)
 {
 }
