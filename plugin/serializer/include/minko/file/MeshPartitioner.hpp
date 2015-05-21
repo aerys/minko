@@ -119,22 +119,6 @@ namespace minko
                 std::vector<OctreeNodePtr>              children;
             };
 
-            struct Vec3Hash : public minko::Hash<math::vec3>
-            {
-                inline
-                std::size_t
-                operator()(const math::vec3& value) const
-                {
-                    auto seed = std::size_t();
-
-                    hash_combine<float, std::hash<float>>(seed, value.x);
-                    hash_combine<float, std::hash<float>>(seed, value.y);
-                    hash_combine<float, std::hash<float>>(seed, value.z);
-
-                    return seed;
-                }
-            };
-
             struct PartitionInfo
             {
                 NodePtr                     root;
@@ -161,7 +145,7 @@ namespace minko
                 std::unordered_map<
                     math::vec3,
                     std::unordered_set<unsigned int>,
-                    Vec3Hash
+                    Hash<math::vec3>
                 >                           mergedIndices;
                 std::unordered_set<
                     unsigned int

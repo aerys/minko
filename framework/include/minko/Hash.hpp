@@ -24,12 +24,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 namespace minko
 {
     template <typename T>
-    struct Hash
-    {
-        virtual
-        size_t
-        operator()(const T& x) const = 0;
-    };
+    struct Hash;
+
+    // Explicit specialisations of Hash are expected to expose operator().
+    //
+    // size_t
+    // operator()(const T& x) const;
 
     template <typename T>
     struct EqualTo
@@ -144,6 +144,23 @@ namespace minko
         operator()(const std::tuple<T...>& lhs, const std::tuple<T...>& rhs) const
         {
             return lhs == rhs;
+        }
+    };
+
+    template <>
+    struct Hash<math::vec3>
+    {
+        inline
+        std::size_t
+        operator()(const math::vec3& value) const
+        {
+            auto seed = std::size_t();
+
+            hash_combine<float, std::hash<float>>(seed, value.x);
+            hash_combine<float, std::hash<float>>(seed, value.y);
+            hash_combine<float, std::hash<float>>(seed, value.z);
+
+            return seed;
         }
     };
 }
