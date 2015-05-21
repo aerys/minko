@@ -63,6 +63,7 @@ Picking::Picking() :
     _doubleTap(Signal<NodePtr>::create()),
     _longHold(Signal<NodePtr>::create()),
     _lastDepthValue(0.f),
+    _lastMergingMask(0),
     _addPickingLayout(true),
     _emulateMouseWithTouch(true),
     _frameBeginSlot(nullptr),
@@ -494,6 +495,13 @@ unpack(const math::vec4& depth)
     return math::dot(depth, math::vec4(1.0, 1.0 / 255.0, 1.0 / 65025.0, 1.0 / 16581375.0));
 }
 
+static
+float
+unpack(const math::vec3& depth)
+{
+    return math::dot(depth, math::vec3(1.0, 1.0 / 255.0, 1.0 / 65025.0));
+}
+
 void
 Picking::depthRenderingEnd(RendererPtr renderer)
 {
@@ -509,9 +517,11 @@ Picking::depthRenderingEnd(RendererPtr renderer)
 
         const auto zFar = _camera->data().get<float>("zFar");
 
-        const auto normalizedDepth = unpack(math::vec4(_lastDepth[0], _lastDepth[1], _lastDepth[2], _lastDepth[3]) / 255.f) * zFar;
+        const auto normalizedDepth = unpack(math::vec3(_lastDepth[0], _lastDepth[1], _lastDepth[2]) / 255.f) * zFar;
 
         _lastDepthValue = normalizedDepth;
+
+        _lastMergingMask = _lastDepth[3];
 
         dispatchEvents(pickedSurface, _lastDepthValue);
     }

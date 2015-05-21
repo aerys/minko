@@ -5,7 +5,6 @@
 	
     "attributes" : {
         "aPosition"       : "geometry[${geometryUuid}].position",
-        "aUV"             : "geometry[${geometryUuid}].uv",
         "aBoneIdsA"       : "geometry[${geometryUuid}].boneIdsA",
         "aBoneIdsB"       : "geometry[${geometryUuid}].boneIdsB",
         "aBoneWeightsA"   : "geometry[${geometryUuid}].boneWeightsA",

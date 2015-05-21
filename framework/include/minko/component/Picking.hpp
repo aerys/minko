@@ -98,6 +98,7 @@ namespace minko
 			SurfacePtr									_lastPickedSurface;
             unsigned char                               _lastDepth[4];
             float                                       _lastDepthValue;
+            unsigned char                               _lastMergingMask;
 
 			Signal<MousePtr, int, int>::Slot			_mouseMoveSlot;
 			Signal<MousePtr>::Slot						_mouseRightDownSlot;
@@ -277,6 +278,13 @@ namespace minko
             {
                 return _lastDepthValue;
             }
+
+            inline
+            unsigned char
+            pickedMergingMask() const
+			{
+			    return _lastMergingMask;
+			}
 
         protected:
 			void

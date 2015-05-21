@@ -10,7 +10,8 @@
         "aBoneIdsB"       : "geometry[${geometryUuid}].boneIdsB",
         "aBoneWeightsA"   : "geometry[${geometryUuid}].boneWeightsA",
         "aBoneWeightsB"   : "geometry[${geometryUuid}].boneWeightsB",
-        "aPopProtected"   : "geometry[${geometryUuid}].popProtected"
+        "aPopProtected"   : "geometry[${geometryUuid}].popProtected",
+        "aMergingMask"    : "geometry[${geometryUuid}].mergingMask"
     },
     
     "uniforms"   : {
@@ -35,7 +36,8 @@
         "PICKING_COLOR"         : "pickingColor",
         "POP_LOD_ENABLED"       : "surface[${surfaceUuid}].popLodEnabled",
         "POP_BLENDING_ENABLED"  : "surface[${surfaceUuid}].popBlendingEnabled",
-        "VERTEX_POP_PROTECTED"  : "geometry[${geometryUuid}].popProtected"
+        "VERTEX_POP_PROTECTED"  : "geometry[${geometryUuid}].popProtected",
+        "VERTEX_MERGING_MASK"   : "geometry[${geometryUuid}].mergingMask"
     },
     
     "techniques" : [{
