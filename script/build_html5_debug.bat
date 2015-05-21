@@ -9,7 +9,7 @@ if not defined MINKO_HOME (
 	exit /b 1
 )
 
-call script\premake5.bat --no-test gmake
+call %MINKO_HOME%\script\premake5.bat --no-test gmake
 mingw32-make SHELL=cmd.exe config=html5_debug verbose=1
 
 popd
