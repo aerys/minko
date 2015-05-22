@@ -237,7 +237,6 @@ namespace minko
             void
             initialize();
 
-		private:
 			PhongMaterial();
 		};
 	}
