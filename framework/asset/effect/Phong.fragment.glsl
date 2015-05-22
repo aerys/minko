@@ -16,6 +16,17 @@
 #pragma include "ShadowMapping.function.glsl"
 #pragma include "Fog.function.glsl"
 
+#ifdef GAMMA_CORRECTION
+uniform float uGammaCorrection;
+#endif
+
+#ifdef UV_SCALE
+uniform vec2 uUVScale;
+#endif
+#ifdef UV_OFFSET
+uniform vec2 uUVOffset;
+#endif
+
 // diffuse
 uniform vec4 uDiffuseColor;
 
@@ -56,14 +67,14 @@ uniform vec3 uCameraPosition;
 // env. mapping
 #ifdef ENVIRONMENT_MAP_2D
 uniform sampler2D uEnvironmentMap2d;
-uniform int uEnvironmentMap2dType;
 #endif
 #ifdef ENVIRONMENT_CUBE_MAP
 uniform samplerCube uEnvironmentCubemap;
 #endif
-#ifdef ENVIRONMENT_ALPHA
-uniform float uEnvironmentAlpha;
-#endif
+
+// fresnel
+uniform float uFresnelReflectance;
+uniform float uFresnelExponent;
 
 // texture lod
 #ifdef DIFFUSE_MAP_LOD
@@ -358,6 +369,17 @@ void main(void)
 	float shininessCoeff = 1.0;
 	vec3 eyeVector = normalize(uCameraPosition - vVertexPosition); // always in world-space
 	vec3 normalVector = normalize(vVertexNormal); // always in world-space
+    vec2 uv = vVertexUV;
+
+    #if defined VERTEX_UV && (defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP)
+        #ifdef UV_SCALE
+            uv *= uUVScale;
+        #endif // UV_SCALE
+
+        #ifdef UV_OFFSET
+            uv += uUVOffset;
+        #endif // UV_OFFSET
+    #endif // defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP
 
 	#ifdef VERTEX_COLOR
 		diffuse = vVertexColor;
@@ -369,14 +391,14 @@ void main(void)
 
 	#if defined(DIFFUSE_MAP) && defined(VERTEX_UV)
 		#ifdef DIFFUSE_MAP_LOD
-			diffuse = texturelod_texture2D(uDiffuseMap, vVertexUV, uDiffuseMapSize, 0.0, uDiffuseMapMaxAvailableLod, diffuse);
+			diffuse = texturelod_texture2D(uDiffuseMap, uv, uDiffuseMapSize, 0.0, uDiffuseMapMaxAvailableLod, diffuse);
 		#else
-			diffuse = texture2D(uDiffuseMap, vVertexUV);
+			diffuse = texture2D(uDiffuseMap, uv);
 		#endif
 	#endif // DIFFUSE_MAP
 
 	#if defined(ALPHA_MAP) && defined(VERTEX_UV)
-		diffuse.a = texture2D(uAlphaMap, vVertexUV).r;
+		diffuse.a = texture2D(uAlphaMap, uv).r;
 	#endif // ALPHA_MAP
 
 	#ifdef ALPHA_THRESHOLD
@@ -387,12 +409,12 @@ void main(void)
 	#if defined(SHININESS) || ( (defined(ENVIRONMENT_MAP_2D) || defined(ENVIRONMENT_CUBE_MAP)) && !defined(ENVIRONMENT_ALPHA) )
 		#if defined(SPECULAR_MAP) && defined(VERTEX_UV)
 			#ifdef SPECULAR_MAP_LOD
-				specular = texturelod_texture2D(uSpecularMap, vVertexUV, uSpecularMapSize, 0.0, uSpecularMapMaxAvailableLod, uSpecularColor);
+				specular = texturelod_texture2D(uSpecularMap, uv, uSpecularMapSize, 0.0, uSpecularMapMaxAvailableLod, uSpecularColor);
 			#else
-				specular = texture2D(uSpecularMap, vVertexUV);
+				specular = texture2D(uSpecularMap, uv);
 			#endif
-		#elif defined(NORMAL_MAP) && defined(VERTEX_UV)
-			specular.a = texture2D(uNormalMap, vVertexUV).a; // ???
+		// #elif defined(NORMAL_MAP) && defined(VERTEX_UV)
+		// 	specular.a = texture2D(uNormalMap, uv).a; // ???
 		#endif // SPECULAR_MAP
 	#endif
 
@@ -418,9 +440,9 @@ void main(void)
 
 			// bring normal from tangent-space normal to world-space
 			#ifdef NORMAL_MAP_LOD
-				vec4 normalColor = texturelod_texture2D(uNormalMap, vVertexUV, uNormalMapSize, 0.0, uNormalMapMaxAvailableLod, vec4(0.0));
+				vec4 normalColor = texturelod_texture2D(uNormalMap, uv, uNormalMapSize, 0.0, uNormalMapMaxAvailableLod, vec4(0.0));
 			#else
-				vec4 normalColor = texture2D(uNormalMap, vVertexUV);
+				vec4 normalColor = texture2D(uNormalMap, uv);
 			#endif
 
 			normalVector = tangentToWorldMatrix * normalize(2.0 * normalColor.xyz - 1.0);
@@ -610,28 +632,32 @@ void main(void)
 
 	#endif // defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
 
+	vec3 phong = diffuse.rgb * (ambientAccum + diffuseAccum) + specular.a * specularAccum;
+
 	#if defined(ENVIRONMENT_MAP_2D) || defined(ENVIRONMENT_CUBE_MAP)
 
 		#if defined(ENVIRONMENT_MAP_2D)
-			vec4 envmapColor = envmap_sampleEnvironmentMap2D(uEnvironmentMap2d, uEnvironmentMap2dType, eyeVector, normalVector);
+			vec4 envmapColor = envmap_sampleEnvironmentMap2D(uEnvironmentMap2d, -eyeVector, normalVector);
 		#elif defined(ENVIRONMENT_CUBE_MAP)
 			vec4 envmapColor = envmap_sampleEnvironmentCubeMap(uEnvironmentCubemap, eyeVector, normalVector);
 		#endif
 
 		float reflectivity = specular.a;
+        float fresnel = uFresnelReflectance + (1.0 - uFresnelReflectance) * pow(1.0 - dot(normalVector, eyeVector), uFresnelExponent);
 
-		#ifdef ENVIRONMENT_ALPHA
-			reflectivity = uEnvironmentAlpha;
-		#endif // ENVIRONMENT_ALPHA
+        reflectivity *= fresnel;
 
-		diffuse.rgb = mix(diffuse.rgb, envmapColor.rgb, reflectivity);
+		// diffuse.rgb = mix(diffuse.rgb, envmapColor.rgb, reflectivity);
+        phong += envmapColor.rgb * reflectivity;
 	#endif // defined(ENVIRONMENT_MAP_2D) || defined(ENVIRONMENT_CUBE_MAP)
-
-	vec3 phong = diffuse.rgb * (ambientAccum + diffuseAccum) + specular.a * specularAccum;
 
 	#ifdef FOG_TECHNIQUE
 		phong = fog_sampleFog(phong, vVertexScreenPosition.z, uFogColor.xyz, uFogColor.a, uFogBounds.x, uFogBounds.y);
 	#endif
+
+    #ifdef GAMMA_CORRECTION
+        phong.rgb = pow(phong.rgb, vec3(1.0 / uGammaCorrection));
+    #endif
 
 	gl_FragColor = vec4(phong.rgb, diffuse.a);
 }
