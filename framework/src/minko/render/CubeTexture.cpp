@@ -55,9 +55,9 @@ CubeTexture::data(unsigned char*    data,
                   int                ,
                   int                )
 {
-    const unsigned int faceWidth    = _width >> 2;
-    const unsigned int faceHeight    = _height / 3;
-    const unsigned int faceSize        = faceWidth * faceHeight * sizeof(int);
+    const unsigned int faceWidth = _width >> 2;
+    const unsigned int faceHeight = _height / 3;
+    const unsigned int faceSize = faceWidth * faceHeight * sizeof(int);
 
     std::vector<unsigned char> rgba;
 
@@ -74,10 +74,10 @@ CubeTexture::data(unsigned char*    data,
     {
         rgba = std::vector<unsigned char>(faceSize, 0);
 
-        const uint startX    = std::min(faceXY[faceId].first    * faceWidth,    _width - 1);
-        const uint startY    = std::min(faceXY[faceId].second * faceHeight,    _height - 1);
-        const uint endX        = std::min(startX + faceWidth - 1,                _width - 1);
-        const uint endY        = std::min(startY + faceHeight - 1,                _height - 1);
+        const uint startX = std::min(faceXY[faceId].first * faceWidth, _width - 1);
+        const uint startY = std::min(faceXY[faceId].second * faceHeight, _height - 1);
+        const uint endX = std::min(startX + faceWidth - 1, _width - 1);
+        const uint endY = std::min(startY + faceHeight - 1, _height - 1);
 
         for (uint y = startY; y <= endY; ++y)
         {

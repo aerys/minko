@@ -230,6 +230,7 @@ namespace minko
 
             void
             setValue(const PropertyName& propertyName, Any value);
+
 		};
 	}
 }

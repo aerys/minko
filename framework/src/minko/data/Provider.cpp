@@ -100,7 +100,12 @@ Provider::copyFrom(Provider::Ptr source)
 Any&
 Provider::getValue(const PropertyName& propertyName) const
 {
-    return _values->find(propertyName)->second;
+    const auto foundIt = _values->find(propertyName);
+
+    if (foundIt == _values->end())
+	    throw std::invalid_argument("propertyName");
+
+    return foundIt->second;
 }
 
 void

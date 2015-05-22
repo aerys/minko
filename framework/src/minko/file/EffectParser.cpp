@@ -375,6 +375,9 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
 		if (node.isMember("isPostProcessing"))
 			isPostProcessing = node.get("isPostProcessing", false).asBool();
 
+        if (isPostProcessing)
+            checkPostProcessingPassBindings(passScope);
+
         passes.push_back(Pass::create(
             passName,
 			isPostProcessing,
@@ -386,6 +389,26 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
             passScope.stateBlock.states
         ));
     }
+}
+
+void
+EffectParser::checkPostProcessingPassBindings(const Scope& passScope)
+{
+    for (auto& bindingNameAndValue : passScope.attributeBlock.bindingMap.bindings)
+        if (bindingNameAndValue.second.source == data::Binding::Source::TARGET)
+            throw;
+
+    for (auto& bindingNameAndValue : passScope.uniformBlock.bindingMap.bindings)
+        if (bindingNameAndValue.second.source == data::Binding::Source::TARGET)
+            throw;
+
+    for (auto& bindingNameAndValue : passScope.stateBlock.bindingMap.bindings)
+        if (bindingNameAndValue.second.source == data::Binding::Source::TARGET)
+            throw;
+
+    for (auto& bindingNameAndValue : passScope.macroBlock.bindingMap.bindings)
+        if (bindingNameAndValue.second.source == data::Binding::Source::TARGET)
+            throw;
 }
 
 void
@@ -1146,7 +1169,7 @@ EffectParser::parseScissorBox(const Json::Value& node,
     if (!node.isNull() && node.isArray())
     {
         auto scissorBox = math::ivec4();
-        
+
         if (node[0].isInt())
             scissorBox.x = node[0].asInt();
         if (node[1].isInt())
@@ -1161,7 +1184,7 @@ EffectParser::parseScissorBox(const Json::Value& node,
 }
 
 void
-EffectParser::parseTarget(const Json::Value&    node, 
+EffectParser::parseTarget(const Json::Value&    node,
                           const Scope&          scope,
                           StateBlock&           stateBlock)
 {

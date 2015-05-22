@@ -245,8 +245,8 @@ Minko.redispatchKeyboardEvent = function(event) //EMSCRIPTEN
 
 	eventCopy.initEvent(event.type, event.bubbles, event.cancelable);
 
-	var copiedProperties = ['type', 'bubbles', 'cancelable', 'view', 
-	'ctrlKey', 'altKey', 'shiftKey', 'metaKey', 'keyCode', 'charCode', 
+	var copiedProperties = ['type', 'bubbles', 'cancelable', 'view',
+	'ctrlKey', 'altKey', 'shiftKey', 'metaKey', 'keyCode', 'charCode',
 	'which', 'key', 'detail', 'keyIdentifier'];
 
 	for(var k in copiedProperties)
@@ -273,9 +273,12 @@ Minko.redispatchMouseEvent = function(event) //EMSCRIPTEN
 	var screenY = pageY - document.body.scrollTop;
 
 	var eventCopy = document.createEvent('MouseEvents');
-	eventCopy.initMouseEvent(event.type, event.bubbles, event.cancelable, event.view, event.detail,
-		pageX, pageY, screenX, screenY, 
-		event.ctrlKey, event.altKey, event.shiftKey, event.metaKey, event.button, event.relatedTarget);
+
+	eventCopy.initMouseEvent(
+		event.type, event.bubbles, event.cancelable, event.view, event.detail,
+		pageX, pageY, screenX, screenY,
+		event.ctrlKey, event.altKey, event.shiftKey, event.metaKey, event.button, event.relatedTarget
+	);
 
 	Minko.canvas.dispatchEvent(eventCopy);
 }
@@ -289,10 +292,11 @@ Minko.redispatchWheelEvent = function(event)
 
 	eventCopy.initEvent(event.type, event.bubbles, event.cancelable);
 
-	var copiedProperties = ['detail', 
-		'wheelDelta', 'wheelDeltaX', 'wheelDeltaY', 'wheelDeltaZ', 
-		'delta', 'deltaMode', 'deltaX', 'deltaY', 'deltaZ', 
-		'which', 'key', 'detail', 'keyIdentifier'];
+	var copiedProperties = [
+		'wheelDelta', 'wheelDeltaX', 'wheelDeltaY', 'wheelDeltaZ',
+		'delta', 'deltaMode', 'deltaX', 'deltaY', 'deltaZ',
+		'which', 'key', 'detail', 'keyIdentifier'
+	];
 
 	for(var k in copiedProperties)
 		eventCopy[copiedProperties[k]] = event[copiedProperties[k]];

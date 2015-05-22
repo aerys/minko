@@ -26,11 +26,11 @@ using namespace minko;
 using namespace minko::component;
 using namespace minko::scene;
 
-const std::string      CUBE_TEXTURE    = "texture/cubemap_sea.jpg";
-const unsigned int	NUM_OBJECTS		= 15;
+const std::string   CUBE_TEXTURE    = "texture/cubemap_sea.jpg";
+const unsigned int  NUM_OBJECTS     = 15;
 
 Node::Ptr
-createTransparentObject(float, float rotationY, file::AssetLibrary::Ptr);
+createTransparentObject(float scale, float rotationY, file::AssetLibrary::Ptr);
 
 int
 main(int argc, char** argv)
@@ -38,110 +38,109 @@ main(int argc, char** argv)
     auto canvas = Canvas::create("Minko Example - Skybox");
     auto sceneManager = SceneManager::create(canvas);
 
-	// setup assets
+    // setup assets
     auto loader = sceneManager->assets()->loader();
 
-	loader->options()
+    loader->options()
         ->resizeSmoothly(true)
         ->generateMipmaps(true)
-		->registerParser<file::PNGParser>("png")
+        ->registerParser<file::PNGParser>("png")
         ->registerParser<file::JPEGParser>("jpg");
 
     loader
         ->queue(CUBE_TEXTURE, loader->options()->clone()->isCubeTexture(true))
-		->queue("effect/Basic.effect");
+        ->queue("effect/Basic.effect");
 
-	sceneManager->assets()
-		->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
-		->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context(), 16, 16));
+    sceneManager->assets()
+        ->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
+        ->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context(), 16, 16));
 
-	auto root = scene::Node::create("root")
-		->addComponent(sceneManager);
+    auto root = scene::Node::create("root")
+        ->addComponent(sceneManager);
 
-	auto camera = scene::Node::create("camera")
-		->addComponent(Renderer::create(0x7f7f7fff))
-		->addComponent(Transform::create(
-            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+    auto camera = scene::Node::create("camera")
+        ->addComponent(Renderer::create(0x7f7f7fff))
+        ->addComponent(Transform::create(
+            math::inverse(math::lookAt(math::vec3(0), math::vec3(0, 0, 3), math::vec3(0, 1, 0)))
         ))
         ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
 
-	auto sky = scene::Node::create("sky")
-		->addComponent(Transform::create(
-			math::scale(math::mat4(1.f), math::vec3(100.f))
-		));
+    auto sky = scene::Node::create("sky")
+        ->addComponent(Transform::create(
+            math::scale(math::mat4(1.f), math::vec3(100.f))
+        ));
 
-	auto objects = scene::Node::create("objects")
-		->addComponent(Transform::create(
-			//math::rotate(math::mat4(1.f), .2f, math::vec3(1.f, 0.f, 0.f))
-		));
+    auto objects = scene::Node::create("objects")
+        ->addComponent(Transform::create(
+            //math::rotate(math::mat4(1.f), .2f, math::vec3(1.f, 0.f, 0.f))
+        ));
 
-	auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
-	{
-		sky->addComponent(Surface::create(
-				sceneManager->assets()->geometry("cube"),
-				material::BasicMaterial::create()
+    auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
+    {
+        sky->addComponent(Surface::create(
+                sceneManager->assets()->geometry("cube"),
+                material::BasicMaterial::create()
                     ->diffuseCubeMap(sceneManager->assets()->cubeTexture(CUBE_TEXTURE))
-					->triangleCulling(render::TriangleCulling::FRONT),
-				sceneManager->assets()->effect("effect/Basic.effect")
-			));
+                    ->triangleCulling(render::TriangleCulling::FRONT),
+                sceneManager->assets()->effect("effect/Basic.effect")
+            ));
 
-		assert(NUM_OBJECTS > 0);
+        assert(NUM_OBJECTS > 0);
 
         const float scale = 1.25f * float(M_PI) / float(NUM_OBJECTS);
         const float dAngle = 2.0f * float(M_PI) / float(NUM_OBJECTS);
 
-		for (unsigned int objId = 0; objId < NUM_OBJECTS; ++objId)
+        for (unsigned int objId = 0; objId < NUM_OBJECTS; ++objId)
             objects->addChild(createTransparentObject(scale, objId * dAngle, sceneManager->assets()));
 
-		root
-			->addChild(camera)
-			->addChild(sky)
-			->addChild(objects);
-	});
+        root
+            ->addChild(camera)
+            ->addChild(sky)
+            ->addChild(objects);
+    });
 
-	auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
-	{
-		camera->component<PerspectiveCamera>()->aspectRatio((float)w / (float)h);
-	});
+    auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
+    {
+        camera->component<PerspectiveCamera>()->aspectRatio(float(w) / float(h));
+    });
 
-	auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
-	{
-		auto skyTransform = sky->component<Transform>();
-		auto objectsTransform = objects->component<Transform>();
+    auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
+    {
+        auto skyTransform = sky->component<Transform>();
+        auto objectsTransform = objects->component<Transform>();
 
-		skyTransform->matrix(math::rotate(skyTransform->matrix(), .001f, math::vec3(0.f, 1.f, 0.f)));
-		objectsTransform->matrix(math::rotate(objectsTransform->matrix(), -.02f, math::vec3(0.f, 1.f, 0.f)));
+        skyTransform->matrix(math::rotate(skyTransform->matrix(), .001f, math::vec3(0.f, 1.f, 0.f)));
+        objectsTransform->matrix(math::rotate(objectsTransform->matrix(), -.02f, math::vec3(0.f, 1.f, 0.f)));
 
-		sceneManager->nextFrame(time, deltaTime);
-	});
+        sceneManager->nextFrame(time, deltaTime);
+    });
 
     loader->load();
-	canvas->run();
+    canvas->run();
 }
 
 Node::Ptr
 createTransparentObject(float scale, float rotationY, file::AssetLibrary::Ptr assets)
 {
-	assert(assets);
-	assert(NUM_OBJECTS > 0);
+    assert(assets);
+    assert(NUM_OBJECTS > 0);
 
-	auto		randomAxis	= math::normalize(math::vec3((float)rand(), (float)rand(), (float)rand()));
-	const float randomAng	= 2.0f * (float)PI * rand() / (float)RAND_MAX;
+    auto        randomAxis  = math::normalize(math::vec3(float(std::rand()), float(std::rand()), float(std::rand())));
+    const float randomAng   = 2.0f * float(M_PI) * rand() / float(RAND_MAX);
 
-	auto m = math::mat4(1.f);
-	m = math::rotate(m, randomAng, randomAxis);
-	m = math::translate(m, math::vec3(1.f, 0.f, 0.f));
-	m = math::scale(m, math::vec3(scale));
-	m = math::rotate(m, rotationY, math::vec3(0.f, 1.f, 0.f));
+    auto m = math::mat4(1.f);
+    m = math::rotate(m, randomAng, randomAxis);
+    m = math::translate(m, math::vec3(1.f, 0.f, 0.f));
+    m = math::scale(m, math::vec3(scale));
+    m = math::rotate(m, rotationY, math::vec3(0.f, 1.f, 0.f));
 
-	return scene::Node::create()
-		->addComponent(Transform::create(m))
-		->addComponent(Surface::create(
+    return scene::Node::create()
+        ->addComponent(Transform::create(m))
+        ->addComponent(Surface::create(
             assets->geometry("cube"),
-			material::BasicMaterial::create()
-				->diffuseColor(math::vec4(math::rgbColor(math::vec3((rotationY / (2.f * (float)PI)) * 360, 1.0f, 0.5f)), 0.5f))
-				->isTransparent(true, true)
-				->triangleCulling(render::TriangleCulling::BACK),
-			assets->effect("effect/Basic.effect")
-		));
+            material::BasicMaterial::create()
+                ->diffuseColor(math::vec4(math::rgbColor(math::vec3((rotationY / (2.f * float(M_PI))) * 360, 1.0f, 0.5f)), 0.5f))
+                ->triangleCulling(render::TriangleCulling::BACK),
+            assets->effect("effect/Basic.effect")
+        ));
 }
