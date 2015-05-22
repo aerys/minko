@@ -491,3 +491,31 @@ PhongMaterial::alphaThreshold() const
 {
 	return data()->get<float>("alphaThreshold");
 }
+
+float
+PhongMaterial::fresnelReflectance()
+{
+	return data()->get<float>("fresnelReflectance");
+}
+
+PhongMaterial::Ptr
+PhongMaterial::fresnelReflectance(float value)
+{
+	data()->set("fresnelReflectance", value);
+
+	return std::static_pointer_cast<PhongMaterial>(shared_from_this());
+}
+
+float
+PhongMaterial::fresnelExponent()
+{
+	return data()->get<float>("fresnelExponent");
+}
+
+PhongMaterial::Ptr
+PhongMaterial::fresnelExponent(float value)
+{
+	data()->set("fresnelExponent", value);
+
+	return std::static_pointer_cast<PhongMaterial>(shared_from_this());
+}

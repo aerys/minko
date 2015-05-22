@@ -221,6 +221,18 @@ namespace minko
 			float
 			alphaThreshold() const;
 
+			float
+			fresnelReflectance();
+
+			Ptr
+			fresnelReflectance(float value);
+
+			float
+			fresnelExponent();
+
+			Ptr
+			fresnelExponent(float value);
+
         protected:
             void
             initialize();
