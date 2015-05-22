@@ -18,7 +18,8 @@
                 "uGammaCorrection" : "material[${materialUuid}].gammaCorrection",
                 "uZFar" : { "binding" : { "property" : "zFar", "source" : "renderer" } },
                 "uWorldToScreenMatrix" : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
-                "uEyePosition" : { "binding" : { "property" : "eyePosition", "source" : "renderer" } }
+                "uEyePosition" : { "binding" : { "property" : "eyePosition", "source" : "renderer" } },
+                "uFogColor"	: "material[${materialUuid}].fogColor"
             },
 
             "attributes" : {
@@ -34,7 +35,8 @@
             "macros" : {
                 "CUBE_MAP" : "material[${materialUuid}].diffuseCubeMap",
                 "LATLONG_MAP" : "material[${materialUuid}].diffuseLatLongMap",
-                "GAMMA_CORRECTION" : "material[${materialUuid}].gammaCorrection"
+                "GAMMA_CORRECTION" : "material[${materialUuid}].gammaCorrection",
+                "FOG_COLOR" : "material[${materialUuid}].fogColor"
             },
 
             "vertexShader" : "#pragma include \"Skybox.vertex.glsl\"",

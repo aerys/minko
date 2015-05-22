@@ -18,6 +18,10 @@
     uniform float uGammaCorrection;
 #endif
 
+#ifdef FOG_COLOR
+    uniform vec4 uFogColor;
+#endif
+
 varying vec3 vDirection;
 
 void main()
@@ -30,8 +34,12 @@ void main()
         color = texture2D(uLatLongMap, normalToLatLongUV(normalize(vDirection)));
     #endif
 
+    #ifdef FOG_TECHNIQUE
+        color.rgb = mix(color.rgb, uFogColor.rgb, pow(1.0 - saturate(vDirection.y), 30.0));
+    #endif
+
     #if defined(GAMMA_CORRECTION)
-        color.rgb = pow(color.rgb, vec3(1.0 / 2.2));
+        color.rgb = pow(color.rgb, vec3(1.0 / uGammaCorrection));
     #endif
 
     gl_FragColor = color;
