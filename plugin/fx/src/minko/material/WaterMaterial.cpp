@@ -24,23 +24,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::material;
 
-WaterMaterial::WaterMaterial(uint numWaves) :
-    _numWaves(numWaves)
+WaterMaterial::WaterMaterial(uint numWaves, const std::string& name) :
+    PhongMaterial(name),
+    _numWaves(numWaves),
+    _amplitudes(numWaves, 0.f),
+    _origins(numWaves * 2, math::vec2(1.f)),
+    _waveLength(numWaves, 0.f),
+    _speeds(numWaves, 0.f),
+    _sharpness(numWaves, 0.f),
+    _waveType(numWaves, 0)
 {
-
-}
-
-void
-WaterMaterial::initialize()
-{
-    BasicMaterial::initialize();
-
-    _amplitudes.resize(_numWaves, 1.f);
-    _origins.resize(_numWaves * 2, math::vec2(1.f, 0.f));
-    _waveLength.resize(_numWaves, 30.f);
-    _speeds.resize(_numWaves, 3.f);
-    _sharpness.resize(_numWaves, 0.2f);
-    _waveType.resize(_numWaves, 0);
     data()
         ->set("numWaves",       _numWaves)
         ->set("waveOrigin",     _origins)
@@ -49,27 +42,7 @@ WaterMaterial::initialize()
         ->set("waveSharpness",  _sharpness)
         ->set("waveSpeed",      _speeds)
         ->set("waveType",       _waveType);
-
-    // specularColor(0xffffffff);
-    // shininess(8.0f);
-    // reflectivity(0.0f);
-    // normalMapSpeed(0.005f);
-    // normalMapScale(0.01f);
-    // flowMapScale(1.f);
-    // flowMapCycle(1.f);
-    // flowMapOffset1(0.f);
-    // flowMapOffset2(0.f);
-    // dudvFactor(1.f);
-    // dudvSpeed(0.01f);
-    // fresnelPow(1.f);
-    // fresnelMultiplier(1.0f);
-    // fogColor(0x909090FF);
-    // fogDensity(0.001f);
-    // fogStart(100.f);
-    // fogEnd(400.0f);
-    // fogType(render::FogType::Exponential);
 }
-
 
 WaterMaterial::Ptr
 WaterMaterial::setDirection(int waveId, const math::vec2& direction)

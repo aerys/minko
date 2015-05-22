@@ -44,13 +44,9 @@ namespace minko
         public:
             inline static
             Ptr
-            create(uint numWaves)
+            create(uint numWaves, const std::string& name = "WaterMaterial")
             {
-                Ptr ptr = std::shared_ptr<WaterMaterial>(new WaterMaterial(numWaves));
-
-                ptr->initialize();
-
-                return ptr;
+                return std::shared_ptr<WaterMaterial>(new WaterMaterial(numWaves, name));
             }
 
             Ptr
@@ -144,10 +140,7 @@ namespace minko
             // reflectivity() const;
 
         private:
-            WaterMaterial(uint numWaves);
-
-            void
-            initialize();
+            WaterMaterial(uint numWaves, const std::string& name);
 
             template <typename T>
             void

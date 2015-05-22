@@ -88,10 +88,6 @@ namespace minko
             static
             Any
             deserializeTextureId(const std::tuple<uint, std::string&>& seriliazedTextureId);
-
-            static
-            Any
-            deserializeEnvironmentMap2dType(const std::tuple<uint, std::string&>&);
         };
     }
 }

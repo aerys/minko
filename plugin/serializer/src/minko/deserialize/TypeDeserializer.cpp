@@ -92,7 +92,7 @@ TypeDeserializer::deserializeMatrix4x4(const std::tuple<uint, std::string&>& ser
 {
 	std::vector<float> matrixValues(16, 0);
 	std::stringstream	stream;
-	
+
 	stream << std::get<1>(serializeMatrix);
 	//(&*serializeMatrix.a1.begin(), serializeMatrix.a1.size());
 	matrixValues[0] = 1;
@@ -132,17 +132,6 @@ TypeDeserializer::deserializeTriangleCulling(const std::tuple<uint, std::string&
     if (std::get<1>(seriliazedTriangleCulling) == "f")
         return Any(render::TriangleCulling::FRONT);
     return Any(render::TriangleCulling::NONE);
-}
-
-Any
-TypeDeserializer::deserializeEnvironmentMap2dType(const std::tuple<uint, std::string&>& serialized)
-{
-    if (std::get<1>(serialized) == "p")
-        return Any(render::EnvironmentMap2dType::Probe);
-    if (std::get<1>(serialized) == "b")
-        return Any(render::EnvironmentMap2dType::BlinnNewell);
-
-    return Any(render::EnvironmentMap2dType::Unset);
 }
 
 Any
