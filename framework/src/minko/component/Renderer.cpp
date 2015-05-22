@@ -634,7 +634,7 @@ Renderer::surfaceLayoutMaskChangedHandler(Surface::Ptr surface)
 	if (checkSurfaceLayout(surface))
 	{
 		if (_surfaceToDrawCallIterator.count(surface) == 0)
-			addSurface(surface);
+            _toCollect.insert(surface);
 	}
 	else
 	{
