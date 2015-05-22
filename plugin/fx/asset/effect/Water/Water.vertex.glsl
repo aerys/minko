@@ -1,105 +1,105 @@
 #ifdef VERTEX_SHADER
 
-#ifdef GL_FRAGMENT_PRECISION_HIGH
-    precision highp float;
-#else
-    precision mediump float;
+#ifdef GL_ES
+    #ifdef GL_FRAGMENT_PRECISION_HIGH
+        precision highp float;
+    #else
+        precision mediump float;
+    #endif
 #endif
 
-#pragma include("Water.function.glsl")
+#pragma include "Water.function.glsl"
 
-attribute vec3 position;
-attribute vec2 uv;
-attribute vec3 normal;
+attribute vec3 aPosition;
+attribute vec2 aUV;
 
-uniform float waveAmplitudes[NUMWAVES];
-uniform float waveOrigins[NUMWAVES * 2];
-uniform float waveSpeed[NUMWAVES];
-uniform float waveType[NUMWAVES];
-uniform float waveLength[NUMWAVES];
-uniform float waveSharpness[NUMWAVES];
-uniform float frameId;
-uniform mat4 modelToWorldMatrix;
-uniform mat4 worldToScreenMatrix;
+uniform float uWaveAmplitude[NUM_WAVES];
+uniform vec2 uWaveOrigin[NUM_WAVES];
+uniform float uWaveSpeed[NUM_WAVES];
+uniform int uWaveType[NUM_WAVES];
+uniform float uWaveLength[NUM_WAVES];
+uniform float uWaveSharpness[NUM_WAVES];
+uniform float uTime;
+uniform mat4 uModelToWorldMatrix;
+uniform mat4 uWorldToScreenMatrix;
 
-varying vec3 vertexPosition;
-varying vec2 vertexUV;
-varying vec3 vertexNormal;
-varying vec3 vertexTangent;
-varying vec4 vertexScreenPosition;
+varying vec3 vVertexPosition;
+varying vec2 vVertexUV;
+varying vec3 vVertexNormal;
+varying vec3 vVertexTangent;
+varying vec4 vVertexScreenPosition;
 
 void main(void)
 {
+    float t = uTime / 1000.;
+
 	#if defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP
-		vertexUV = uv;
+		vVertexUV = aUV + t * .0003;
 	#endif // defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP
 
-	vec4 worldPosition 	= vec4(position, 1.0);
+	vec4 worldPosition = vec4(aPosition, 1.0);
+    vec4 worldWavePosition = vec4(0.);
 
-	
 	#ifdef MODEL_TO_WORLD
-		worldPosition 	= modelToWorldMatrix * worldPosition;
+		worldPosition = uModelToWorldMatrix * worldPosition;
+        worldWavePosition = worldPosition;
 	#endif // MODEL_TO_WORLD
 
-	#ifdef NUMWAVES
-	for (int i = 0; i < NUMWAVES; ++i)
-	{
-		if (waveType[i] < 0.5)
-			worldPosition += addDirectionalWave(worldPosition, vec2(waveOrigins[i * 2], waveOrigins[i * 2 + 1]), waveAmplitudes[i], waveSpeed[i], waveLength[i], waveSharpness[i], frameId);
-		else
-			worldPosition += addCircularWave(worldPosition, vec2(waveOrigins[i * 2], waveOrigins[i * 2 + 1]), waveAmplitudes[i], waveSpeed[i], waveLength[i], waveSharpness[i], frameId);
-	}
-	#endif // NUMWAVES
-	
-	vertexPosition = worldPosition.xyz;
+	#ifdef NUM_WAVES
+        vec3 waveOffset = vec3(0.);
+    	for (int i = 0; i < NUM_WAVES; ++i)
+    	{
+            water_Wave wave = water_Wave(
+                uWaveType[i],
+                uWaveOrigin[i],
+                uWaveAmplitude[i],
+                uWaveSpeed[i],
+                uWaveLength[i],
+                uWaveSharpness[i]
+            );
 
-	
+            waveOffset += water_wavePosition(worldPosition.xyz, wave, t);
+    	}
+
+        worldWavePosition.xyz += waveOffset;
+	#endif // NUM_WAVES
+
+    vVertexPosition = worldWavePosition.xyz;
+
 	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS || defined ENVIRONMENT_MAP_2D || defined ENVIRONMENT_CUBE_MAP
-	
-		vertexTangent = vec3(0.0, 0.0, 1.0);
-		vertexNormal = vec3(0.0, 1.0, 0.0);
 
-		#ifdef NUMWAVES
+		vVertexTangent = vec3(0.0, 0.0, 1.0);
+		vVertexNormal = vec3(0.0, 1.0, 0.0);
 
-		for (int i = 0; i < NUMWAVES; ++i)
-		{
-			vec3 normalWave		= vec3(0.0, 0.0, 0.0);
-			vec3 tangentWave	= vec3(0.0, 0.0, 0.0);
+		#ifdef NUM_WAVES
+    		for (int i = 0; i < NUM_WAVES; ++i)
+    		{
+                water_Wave wave = water_Wave(
+                    uWaveType[i],
+                    uWaveOrigin[i],
+                    uWaveAmplitude[i],
+                    uWaveSpeed[i],
+                    uWaveLength[i],
+                    uWaveSharpness[i]
+                );
 
-			if (waveType[i] < 0.5)
-			{
-				normalWave = addNormalDirectionalWave(worldPosition, vec2(waveOrigins[i * 2], waveOrigins[i * 2 + 1]), waveAmplitudes[i], waveSpeed[i], waveLength[i], waveSharpness[i], frameId);
-				tangentWave = addTangentDirectionalWave(worldPosition, vec2(waveOrigins[i * 2], waveOrigins[i * 2 + 1]), waveAmplitudes[i], waveSpeed[i], waveLength[i], waveSharpness[i], frameId);
-			}
-			else
-			{
-				normalWave = addNormalCircularWave(worldPosition, vec2(waveOrigins[i * 2], waveOrigins[i * 2 + 1]), waveAmplitudes[i], waveSpeed[i], waveLength[i], waveSharpness[i], frameId);
-				tangentWave = addTangentCircularWave(worldPosition, vec2(waveOrigins[i * 2], waveOrigins[i * 2 + 1]), waveAmplitudes[i], waveSpeed[i], waveLength[i], waveSharpness[i], frameId);
-			}
+                vVertexNormal += water_waveNormal(worldPosition.xyz, wave, t);
+                #ifdef NORMAL_MAP
+                    vVertexTangent += water_waveTangent(worldPosition.xyz, wave, t);
+                #endif // NORMAL_MAP
+    		}
 
-			vertexNormal += normalWave;
-			vertexTangent += tangentWave;
-		}
-
-		#endif // NUMWAVES
-
-		vertexNormal 	= normalize(vertexNormal);
-		vertexTangent	= normalize(vertexTangent);
+    		vVertexNormal = normalize(vVertexNormal);
+            #ifdef NORMAL_MAP
+    		      vVertexTangent = normalize(vVertexTangent);
+            #endif // NORMAL_MAP
+		#endif // NUM_WAVES
 
 	#endif // NUM_DIRECTIONAL_LIGHTS || NUM_POINT_LIGHTS || NUM_SPOT_LIGHTS || ENVIRONMENT_MAP_2D || ENVIRONMENT_CUBE_MAP
 
-	#ifdef NORMAL_MAP
-		//vertexTangent = tangent;
-		#ifdef MODEL_TO_WORLD
-			vertexTangent = mat3(modelToWorldMatrix) * vertexTangent;
-		#endif // MODEL_TO_WORLD
-		vertexTangent = normalize(vertexTangent);
-	#endif // NORMAL_MAP
+	vVertexScreenPosition = uWorldToScreenMatrix * worldWavePosition;
 
-	gl_Position =  worldToScreenMatrix * worldPosition;
-
-	vertexScreenPosition = gl_Position;
-
+	gl_Position = vVertexScreenPosition;
 }
 
 #endif // VERTEX_SHADER

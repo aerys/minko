@@ -25,7 +25,7 @@ using namespace minko;
 using namespace minko::material;
 
 WaterMaterial::WaterMaterial(uint numWaves) :
-_numWaves(numWaves)
+    _numWaves(numWaves)
 {
 
 }
@@ -35,48 +35,47 @@ WaterMaterial::initialize()
 {
     BasicMaterial::initialize();
 
-    _amplitudes.resize(_numWaves, 0.001f);
-    _origins.resize(_numWaves * 2, 0.f);
-    _waveLength.resize(_numWaves, 0.1f);
-    _speeds.resize(_numWaves, 1.f);
-    _sharpness.resize(_numWaves, 0.f);
-    _waveType.resize(_numWaves, 0.f);
+    _amplitudes.resize(_numWaves, 1.f);
+    _origins.resize(_numWaves * 2, math::vec2(1.f, 0.f));
+    _waveLength.resize(_numWaves, 30.f);
+    _speeds.resize(_numWaves, 3.f);
+    _sharpness.resize(_numWaves, 0.2f);
+    _waveType.resize(_numWaves, 0);
     data()
         ->set("numWaves",       _numWaves)
-        ->set("waveOrigins",    _origins)
+        ->set("waveOrigin",     _origins)
         ->set("waveLength",     _waveLength)
-        ->set("waveAmplitudes", _amplitudes)
+        ->set("waveAmplitude",  _amplitudes)
         ->set("waveSharpness",  _sharpness)
         ->set("waveSpeed",      _speeds)
         ->set("waveType",       _waveType);
 
-    specularColor(0xffffffff);
-    shininess(8.0f);
-    reflectivity(0.0f);
-    normalMapSpeed(0.005f);
-    normalMapScale(0.01f);
-    flowMapScale(1.f);
-    flowMapCycle(1.f);
-    flowMapOffset1(0.f);
-    flowMapOffset2(0.f);
-    dudvFactor(1.f);
-    dudvSpeed(0.01f);
-    fresnelPow(1.f);
-    fresnelMultiplier(1.0f);
-    fogColor(0x909090FF);
-    fogDensity(0.001f);
-    fogStart(100.f);
-    fogEnd(400.0f);
-    fogType(render::FogType::Exponential);
+    // specularColor(0xffffffff);
+    // shininess(8.0f);
+    // reflectivity(0.0f);
+    // normalMapSpeed(0.005f);
+    // normalMapScale(0.01f);
+    // flowMapScale(1.f);
+    // flowMapCycle(1.f);
+    // flowMapOffset1(0.f);
+    // flowMapOffset2(0.f);
+    // dudvFactor(1.f);
+    // dudvSpeed(0.01f);
+    // fresnelPow(1.f);
+    // fresnelMultiplier(1.0f);
+    // fogColor(0x909090FF);
+    // fogDensity(0.001f);
+    // fogStart(100.f);
+    // fogEnd(400.0f);
+    // fogType(render::FogType::Exponential);
 }
 
 
 WaterMaterial::Ptr
 WaterMaterial::setDirection(int waveId, const math::vec2& direction)
 {
-    _origins[waveId * 2] = direction.x;
-    _origins[waveId * 2 + 1] = direction.y;
-    _waveType[waveId] = 0;
+    setWaveProperty("waveOrigin", waveId, direction);
+    setWaveProperty("waveType", waveId, 0);
 
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
 }
@@ -84,9 +83,8 @@ WaterMaterial::setDirection(int waveId, const math::vec2& direction)
 WaterMaterial::Ptr
 WaterMaterial::setCenter(int waveId, const math::vec2& origin)
 {
-    _origins[waveId * 2] = origin.x;
-    _origins[waveId * 2 + 1] = origin.y;
-    _waveType[waveId] = 1;
+    setWaveProperty("waveOrigin", waveId, origin);
+    setWaveProperty("waveType", waveId, 1);
 
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
 }
@@ -94,14 +92,15 @@ WaterMaterial::setCenter(int waveId, const math::vec2& origin)
 WaterMaterial::Ptr
 WaterMaterial::setAmplitude(int waveId, float amplitude)
 {
-    _amplitudes[waveId] = amplitude;
+    setWaveProperty("waveAmplitude", waveId, amplitude);
+
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
 }
 
 WaterMaterial::Ptr
-WaterMaterial::setWaveLenght(int waveId, float waveLenght)
+WaterMaterial::setWaveLength(int waveId, float waveLength)
 {
-    _waveLength[waveId] = waveLenght;
+    setWaveProperty("waveLength", waveId, waveLength);
 
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
 }
@@ -109,7 +108,7 @@ WaterMaterial::setWaveLenght(int waveId, float waveLenght)
 WaterMaterial::Ptr
 WaterMaterial::setSharpness(int waveId, float sharpness)
 {
-    _sharpness[waveId] = sharpness;
+    setWaveProperty("waveSharpness", waveId, sharpness);
 
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
 }
@@ -117,277 +116,146 @@ WaterMaterial::setSharpness(int waveId, float sharpness)
 WaterMaterial::Ptr
 WaterMaterial::setSpeed(int waveId, float speed)
 {
-    _speeds[waveId] = speed;
+    setWaveProperty("waveSpeed", waveId, speed);
 
     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
 }
 
-WaterMaterial::Ptr
-WaterMaterial::reflectionMap(render::AbstractTexture::Ptr value)
-{
-    if (value->type() == render::TextureType::CubeTexture)
-        throw new std::logic_error("Only 2d reflection maps are currently supported.");
+// WaterMaterial::Ptr
+// WaterMaterial::reflectionMap(render::AbstractTexture::Ptr value)
+// {
+//     if (value->type() == render::TextureType::CubeTexture)
+//         throw new std::logic_error("Only 2d reflection maps are currently supported.");
+//
+//     data()->set("reflectionMap", value->sampler());
+//
+//     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
+// }
 
-    data()->set("reflectionMap", value->sampler());
+// WaterMaterial::Ptr
+// WaterMaterial::depthMap(render::AbstractTexture::Ptr value)
+// {
+//     if (value->type() == render::TextureType::CubeTexture)
+//         throw new std::logic_error("Only 2d depth maps are currently supported.");
+//
+//     data()->set("depthMap", value->sampler());
+//
+//     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
+// }
 
-    return std::static_pointer_cast<WaterMaterial>(shared_from_this());
-}
+// WaterMaterial::Ptr
+// WaterMaterial::dudvMap(render::AbstractTexture::Ptr value)
+// {
+//     if (value->type() == render::TextureType::CubeTexture)
+//         throw new std::logic_error("Only 2d dudv maps are currently supported.");
+//
+//     data()->set("dudvMap", value->sampler());
+//
+//     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
+// }
+//
+// WaterMaterial::Ptr
+// WaterMaterial::dudvSpeed(float s)
+// {
+//     data()->set("dudvSpeed", s);
+//
+//     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
+// }
+//
+// float
+// WaterMaterial::dudvSpeed() const
+// {
+//     return data()->get<float>("dudvSpeed");
+// }
+//
+// WaterMaterial::Ptr
+// WaterMaterial::dudvFactor(float s)
+// {
+//     data()->set("dudvFactor", s);
+//
+//     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
+// }
+//
+// float
+// WaterMaterial::dudvFactor() const
+// {
+//     return data()->get<float>("dudvFactor");
+// }
 
-WaterMaterial::Ptr
-WaterMaterial::depthMap(render::AbstractTexture::Ptr value)
-{
-    if (value->type() == render::TextureType::CubeTexture)
-        throw new std::logic_error("Only 2d depth maps are currently supported.");
+// WaterMaterial::Ptr
+// WaterMaterial::flowMap(AbsTexturePtr value)
+// {
+//     if (value->type() == render::TextureType::CubeTexture)
+//         throw new std::logic_error("Only 2d flow maps are currently supported.");
+//
+//     data()->set("flowMap", value->sampler());
+//
+//     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
+// }
+//
+// WaterMaterial::Ptr
+// WaterMaterial::noiseMap(AbsTexturePtr value)
+// {
+//     if (value->type() == render::TextureType::CubeTexture)
+//         throw new std::logic_error("Only 2d noise maps are currently supported.");
+//
+//     data()->set("noiseMap", value->sampler());
+//
+//     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
+// }
 
-    data()->set("depthMap", value->sampler());
+// WaterMaterial::Ptr
+// WaterMaterial::flowMapScale(float value)
+// {
+//     data()->set("flowMapScale", value);
+//
+//     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
+// }
+//
+// float
+// WaterMaterial::flowMapScale() const
+// {
+//     return data()->get<float>("flowMapScale");
+// }
+//
+// WaterMaterial::Ptr
+// WaterMaterial::flowMapCycle(float value)
+// {
+//     data()->set("flowMapCycle", value);
+//
+//     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
+// }
+//
+// float
+// WaterMaterial::flowMapCycle() const
+// {
+//     return data()->get<float>("flowMapCycle");
+// }
 
-    return std::static_pointer_cast<WaterMaterial>(shared_from_this());
-}
-
-WaterMaterial::Ptr
-WaterMaterial::dudvMap(render::AbstractTexture::Ptr value)
-{
-    if (value->type() == render::TextureType::CubeTexture)
-        throw new std::logic_error("Only 2d dudv maps are currently supported.");
-
-    data()->set("dudvMap", value->sampler());
-
-    return std::static_pointer_cast<WaterMaterial>(shared_from_this());
-}
-
-WaterMaterial::Ptr
-WaterMaterial::dudvSpeed(float s)
-{
-    data()->set("dudvSpeed", s);
-
-    return std::static_pointer_cast<WaterMaterial>(shared_from_this());
-}
-
-float
-WaterMaterial::dudvSpeed() const
-{
-    return data()->get<float>("dudvSpeed");
-}
-
-WaterMaterial::Ptr
-WaterMaterial::dudvFactor(float s)
-{
-    data()->set("dudvFactor", s);
-
-    return std::static_pointer_cast<WaterMaterial>(shared_from_this());
-}
-
-float
-WaterMaterial::dudvFactor() const
-{
-    return data()->get<float>("dudvFactor");
-}
-
-WaterMaterial::Ptr
-WaterMaterial::fresnelMultiplier(float s)
-{
-    data()->set("fresnelMultiplier", s);
-
-    return std::static_pointer_cast<WaterMaterial>(shared_from_this());
-}
-
-float
-WaterMaterial::fresnelMultiplier() const
-{
-    return data()->get<float>("fresnelMultiplier");
-}
-
-
-WaterMaterial::Ptr
-WaterMaterial::normalMultiplier(float value)
-{
-    data()->set("normalMultiplier", value);
-
-    return std::static_pointer_cast<WaterMaterial>(shared_from_this());
-}
-
-float
-WaterMaterial::normalMultiplier() const
-{
-    return data()->get<float>("normalMultiplier");
-}
-
-WaterMaterial::Ptr
-WaterMaterial::fresnelPow(float value)
-{
-    data()->set("fresnelPow", value);
-
-    return std::static_pointer_cast<WaterMaterial>(shared_from_this());
-}
-
-float
-WaterMaterial::fresnelPow() const
-{
-    return data()->get<float>("fresnelPow");
-}
-
-WaterMaterial::Ptr
-WaterMaterial::normalMap(render::AbstractTexture::Ptr value)
-{
-    if (value->type() == render::TextureType::CubeTexture)
-        throw new std::logic_error("Only 2d normal maps are currently supported.");
-
-    data()->set("normalMap", value->sampler());
-
-    return std::static_pointer_cast<WaterMaterial>(shared_from_this());
-}
-
-
-WaterMaterial::Ptr
-WaterMaterial::flowMap(AbsTexturePtr value)
-{
-    if (value->type() == render::TextureType::CubeTexture)
-        throw new std::logic_error("Only 2d flow maps are currently supported.");
-
-    data()->set("flowMap", value->sampler());
-
-    return std::static_pointer_cast<WaterMaterial>(shared_from_this());
-}
-
-WaterMaterial::Ptr
-WaterMaterial::noiseMap(AbsTexturePtr value)
-{
-    if (value->type() == render::TextureType::CubeTexture)
-        throw new std::logic_error("Only 2d noise maps are currently supported.");
-
-    data()->set("noiseMap", value->sampler());
-
-    return std::static_pointer_cast<WaterMaterial>(shared_from_this());
-}
-
-WaterMaterial::Ptr
-WaterMaterial::normalMapSpeed(float s)
-{
-    data()->set("normalSpeed", s);
-
-    return std::static_pointer_cast<WaterMaterial>(shared_from_this());
-}
-
-float
-WaterMaterial::normalMapSpeed() const
-{
-    return data()->get<float>("normalSpeed");
-}
-
-WaterMaterial::Ptr
-WaterMaterial::specularColor(const math::vec4& color)
-{
-    data()->set("specularColor", color);
-
-    return std::static_pointer_cast<WaterMaterial>(shared_from_this());
-}
-
-WaterMaterial::Ptr
-WaterMaterial::specularColor(uint color)
-{
-    return specularColor(math::rgba(color));
-}
-
-const math::vec4&
-WaterMaterial::specularColor() const
-{
-    return data()->get<math::vec4>("specularColor");
-}
-
-WaterMaterial::Ptr
-WaterMaterial::shininess(float value)
-{
-    data()->set("shininess", value);
-
-    return std::static_pointer_cast<WaterMaterial>(shared_from_this());
-}
-
-float
-WaterMaterial::shininess() const
-{
-    return data()->get<float>("shininess");
-}
-
-WaterMaterial::Ptr
-WaterMaterial::normalMapScale(float value)
-{
-    data()->set("normalMapScale", value);
-
-    return std::static_pointer_cast<WaterMaterial>(shared_from_this());
-}
-
-float
-WaterMaterial::normalMapScale() const
-{
-    return data()->get<float>("normalMapScale");
-}
-
-WaterMaterial::Ptr
-WaterMaterial::flowMapScale(float value)
-{
-    data()->set("flowMapScale", value);
-
-    return std::static_pointer_cast<WaterMaterial>(shared_from_this());
-}
-
-float
-WaterMaterial::flowMapScale() const
-{
-    return data()->get<float>("flowMapScale");
-}
-
-WaterMaterial::Ptr
-WaterMaterial::flowMapCycle(float value)
-{
-    data()->set("flowMapCycle", value);
-
-    return std::static_pointer_cast<WaterMaterial>(shared_from_this());
-}
-
-float
-WaterMaterial::flowMapCycle() const
-{
-    return data()->get<float>("flowMapCycle");
-}
-
-WaterMaterial::Ptr
-WaterMaterial::reflectivity(float value)
-{
-    data()->set("reflectivity", value);
-
-    return std::static_pointer_cast<WaterMaterial>(shared_from_this());
-}
-
-float
-WaterMaterial::reflectivity() const
-{
-    return data()->get<float>("reflectivity");
-}
-
-WaterMaterial::Ptr
-WaterMaterial::flowMapOffset1(float value)
-{
-    data()->set("flowMapOffset1", value);
-
-    return std::static_pointer_cast<WaterMaterial>(shared_from_this());
-}
-
-float
-WaterMaterial::flowMapOffset1() const
-{
-    return data()->get<float>("flowMapOffset1");
-}
-
-WaterMaterial::Ptr
-WaterMaterial::flowMapOffset2(float value)
-{
-    data()->set("flowMapOffset2", value);
-
-    return std::static_pointer_cast<WaterMaterial>(shared_from_this());
-}
-
-float
-WaterMaterial::flowMapOffset2() const
-{
-    return data()->get<float>("flowMapOffset2");
-}
+// WaterMaterial::Ptr
+// WaterMaterial::flowMapOffset1(float value)
+// {
+//     data()->set("flowMapOffset1", value);
+//
+//     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
+// }
+//
+// float
+// WaterMaterial::flowMapOffset1() const
+// {
+//     return data()->get<float>("flowMapOffset1");
+// }
+//
+// WaterMaterial::Ptr
+// WaterMaterial::flowMapOffset2(float value)
+// {
+//     data()->set("flowMapOffset2", value);
+//
+//     return std::static_pointer_cast<WaterMaterial>(shared_from_this());
+// }
+//
+// float
+// WaterMaterial::flowMapOffset2() const
+// {
+//     return data()->get<float>("flowMapOffset2");
+// }
