@@ -25,8 +25,7 @@
 						"textureFilter" : "linear",
 						"mipFilter" : "linear"
 					},
-					"uNormalSpeed"			: "material[${materialUuid}].normalSpeed",
-					"uDepthMap"				: {
+					/*"uDepthMap" : {
 						"binding" : "material[${materialUuid}].depthMap",
 						"wrapMode" : "repeat",
 						"textureFilter" : "linear",
@@ -40,24 +39,22 @@
 						"wrapMode" : "repeat",
 						"textureFilter" : "linear",
 						"mipFilter" : "linear"
-					},
+					},*/
 					"uUVScale"           	: { "binding" : "material[${materialUuid}].uvScale" },
 					"uUVOffset"           	: { "binding" : "material[${materialUuid}].uUVOffset" },
-					"uReflectivity"			: "material[${materialUuid}].reflectivity",
 					"uWaveOrigin[0]"		: "material[${materialUuid}].waveOrigin",
 					"uWaveAmplitude[0]"		: "material[${materialUuid}].waveAmplitude",
 					"uWaveLength[0]"		: "material[${materialUuid}].waveLength",
 					"uWaveSpeed[0]"			: "material[${materialUuid}].waveSpeed",
 					"uWaveSharpness[0]"		: "material[${materialUuid}].waveSharpness",
 					"uWaveType[0]"			: "material[${materialUuid}].waveType",
-					"uNormalSpeed"			: "material[${materialUuid}].normalSpeed",
 					"uFlowMap"				: {
 						"binding" : "material[${materialUuid}].flowMap",
 						"wrapMode" : "repeat",
 						"textureFilter" : "linear",
 						"mipFilter" : "linear"
 					},
-					"uFlowMapCycle" 		: "material[${materialUuid}].flowMapCycle",
+					/*"uFlowMapCycle" 		: "material[${materialUuid}].flowMapCycle",
 					"uFlowMapOffset1"		: "material[${materialUuid}].flowMapOffset1",
 					"uFlowMapOffset2"		: "material[${materialUuid}].flowMapOffset2",
 					"uNoiseMap"				: {
@@ -65,12 +62,12 @@
 						"wrapMode" : "repeat",
 						"textureFilter" : "linear",
 						"mipFilter" : "linear"
-					},
-					"uSpecularColor"		: { "binding" : "material[${materialUuid}].specularColor", "default" : [[ 1.0, 1.0, 1.0, 1.0 ]] },
-					"uShininess"			: "material[${materialUuid}].shininess",
-					"uModelToWorldMatrix"	: "modelToWorldMatrix",
-					"uWorldToScreenMatrix"	: { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
-					"uCameraPosition"		: { "binding" : { "property" : "cameraPosition", "source" : "renderer" } },
+					},*/
+					"uSpecularColor"				: { "binding" : "material[${materialUuid}].specularColor", "default" : [[ 1.0, 1.0, 1.0, 1.0 ]] },
+					"uShininess"					: "material[${materialUuid}].shininess",
+					"uModelToWorldMatrix"			: "modelToWorldMatrix",
+					"uWorldToScreenMatrix"			: { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
+					"uCameraPosition"				: { "binding" : { "property" : "eyePosition", "source" : "renderer" } },
 					"uAmbientLight0_color"			: { "binding" : { "property" : "ambientLight[0].color", "source" : "root" } },
 					"uAmbientLight0_ambient"		: { "binding" : { "property" : "ambientLight[0].ambient", "source" : "root" } },
 					"uAmbientLight1_color"			: { "binding" : { "property" : "ambientLight[1].color", "source" : "root" } },
@@ -152,17 +149,13 @@
 						"mipFilter": "linear"
 					},
 					"uTime"					: { "binding" : { "property" : "time", "source" : "root" } },
-					"uFlowMapScale"			: { "binding" : { "property" : "material[${materialUuid}].flowMapScale", "default" : 1.0 } },
-					"uNormalMapScale"		: { "binding" : { "property" : "material[${materialUuid}].normalMapScale", "default" : 1.0 } },
+					/*"uFlowMapScale"			: { "binding" : { "property" : "material[${materialUuid}].flowMapScale", "default" : 1.0 } },*/
 					"uFresnelMultiplier"	: "material[${materialUuid}].fresnelMultiplier",
 					"uFresnelPow"			: "material[${materialUuid}].fresnelPow",
 					"uFogColor"				: "material[${materialUuid}].fogColor",
 					"uFogBounds"			: "material[${materialUuid}].fogBounds",
 					"uGammaCorrection" 		: "material[${materialUuid}].gammaCorrection",
-					"uEnvironmentMap2dType"	: "material[${materialUuid}].environmentMap2dType",
 					"uEnvironmentMap2d"		: "material[${materialUuid}].environmentMap2d",
-					"uNormalMultiplier"		: "material[${materialUuid}].normalMultiplier",
-					"uCameraPosition"		: { "binding" : { "property" : "eyePosition", "source" : "renderer" } },
 					"uFresnelReflectance"	: { "binding" : "material[${materialUuid}].fresnelReflectance", "default" : 0.1 },
 					"uFresnelExponent"		: { "binding" : "material[${materialUuid}].fresnelExponent", "default" : 5.0 }
 				},
@@ -175,16 +168,16 @@
 
 				"macros" : {
 					"VERTEX_UV"					: "geometry[${geometryUuid}].uv",
-					"UV_SCALE"           		: { "binding" : "material[${materialUuid}].uvScale" },
-					"UV_OFFSET"           		: { "binding" : "material[${materialUuid}].uUVOffset" },
+					"UV_SCALE"           		: "material[${materialUuid}].uvScale",
+					"UV_OFFSET"           		: "material[${materialUuid}].uUVOffset",
 					"MODEL_TO_WORLD"			: "modelToWorldMatrix",
 					"DIFFUSE_MAP"				: "material[${materialUuid}].diffuseMap",
 					"NORMAL_MAP"				: "material[${materialUuid}].normalMap",
-					"NOISE_MAP"					: "material[${materialUuid}].noiseMap",
+					/*"NOISE_MAP"					: "material[${materialUuid}].noiseMap",
 					"REFLECTION_MAP"			: "material[${materialUuid}].reflectionMap",
-					"FLOW_MAP"					: "material[${materialUuid}].flowMap",
-					"SHININESS"					: "material[${materialUuid}].shininess",
 					"DUDV_MAP"					: "material[${materialUuid}].dudvMap",
+					"FLOW_MAP"					: "material[${materialUuid}].flowMap",*/
+					"SHININESS"					: "material[${materialUuid}].shininess",
 					"NUM_WAVES"					: { "binding" : "material[${materialUuid}].numWaves", "type" : "int", "default" : 0 },
 					"NUM_AMBIENT_LIGHTS"		: { "binding" : { "property" : "ambientLight.length", "source" : "root" }, "type" : "int" },
 					"NUM_DIRECTIONAL_LIGHTS"    : { "binding" : { "property" : "directionalLight.length", "source" : "root" }, "type" : "int" },
