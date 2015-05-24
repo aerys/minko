@@ -187,7 +187,7 @@ solution "minko"
 		include 'example/sky-box'
 		-- include 'example/stencil'
 		-- include 'example/visibility'
-		-- include 'example/water'
+		include 'example/water'
 		include 'example/shadow-mapping'
 		include 'example/pbr'
 
