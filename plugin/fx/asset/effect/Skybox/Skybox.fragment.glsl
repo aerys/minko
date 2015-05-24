@@ -34,7 +34,7 @@ void main()
         color = texture2D(uLatLongMap, normalToLatLongUV(normalize(vDirection)));
     #endif
 
-    #ifdef FOG_TECHNIQUE
+    #if defined(FOG_COLOR)
         color.rgb = mix(color.rgb, uFogColor.rgb, pow(1.0 - saturate(vDirection.y), 30.0));
     #endif
 
