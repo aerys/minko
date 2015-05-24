@@ -34,7 +34,7 @@ void main(void)
     float t = uTime / 1000.;
 
 	#if defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP
-		vVertexUV = aUV + t * .0003;
+		vVertexUV = aUV + t * .001;
 	#endif // defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP
 
 	vec4 worldPosition = vec4(aPosition, 1.0);
