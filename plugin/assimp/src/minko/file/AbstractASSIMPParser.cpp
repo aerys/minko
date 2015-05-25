@@ -239,6 +239,11 @@ AbstractASSIMPParser::getPostProcessingFlags(const aiScene*             scene,
         | aiProcess_ValidateDataStructure
         | aiProcess_RemoveComponent;
 
+    if (options->optimizeForRendering())
+    {
+        flags |= aiProcess_SplitLargeMeshes;
+    }
+
     unsigned int removeComponentFlags = aiComponent_COLORS;
 
     if (numMaterials == 0u || numTextures == 0u)
@@ -516,7 +521,8 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
 
     const auto numIndices = mesh->mNumFaces * 3u;
 
-    if (numIndices <= static_cast<unsigned int>(std::numeric_limits<unsigned short>::max()))
+    if (_options->optimizeForRendering() ||
+        numIndices <= static_cast<unsigned int>(std::numeric_limits<unsigned short>::max()))
     {
 	    std::vector<unsigned short>	indexData	(3 * mesh->mNumFaces, 0);
 

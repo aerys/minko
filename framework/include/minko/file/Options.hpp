@@ -71,6 +71,7 @@ namespace minko
 			std::unordered_map<std::string, ParserHandler>	    _parsers;
 			std::unordered_map<std::string, ProtocolHandler>    _protocols;
 
+            bool                                                _optimizeForRendering;
 			bool                                                _generateMipMaps;
 			bool										        _resizeSmoothly;
 			bool										        _isCubeTexture;
@@ -178,6 +179,22 @@ namespace minko
 			userFlags()
 			{
 				return _userFlags;
+			}
+
+			inline
+			bool
+			optimizeForRendering() const
+			{
+				return _optimizeForRendering;
+			}
+
+			inline
+			Ptr
+			optimizeForRendering(bool value)
+			{
+				_optimizeForRendering = value;
+
+				return shared_from_this();
 			}
 
 			inline

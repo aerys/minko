@@ -38,6 +38,7 @@ Options::Options() :
     _includePaths(),
     _platforms(),
     _userFlags(),
+    _optimizeForRendering(true),
     _generateMipMaps(false),
     _resizeSmoothly(false),
     _isCubeTexture(false),
