@@ -567,7 +567,7 @@ DrawCall::bindIndexBuffer()
     auto indexBufferProperty = data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].indices");
 
     if (_targetData.hasProperty(indexBufferProperty))
-        _indexBuffer = const_cast<int*>(_targetData.getPointer<int>(indexBufferProperty));
+        _indexBuffer = _targetData.getPointer<int>(indexBufferProperty);
 
     auto surfaceFirstIndexProperty = data::Store::getActualPropertyName(
         _variables,
@@ -582,11 +582,11 @@ DrawCall::bindIndexBuffer()
         );
 
         if (_targetData.hasProperty(geometryFirstIndexProperty))
-            _firstIndex = const_cast<uint*>(_targetData.getPointer<uint>(geometryFirstIndexProperty));
+            _firstIndex = _targetData.getPointer<uint>(geometryFirstIndexProperty);
     }
     else
     {
-        _firstIndex = const_cast<uint*>(_targetData.getPointer<uint>(surfaceFirstIndexProperty));
+        _firstIndex = _targetData.getPointer<uint>(surfaceFirstIndexProperty);
     }
 
     auto surfaceNumIndicesProperty = data::Store::getActualPropertyName(
@@ -602,11 +602,11 @@ DrawCall::bindIndexBuffer()
         );
 
         if (_targetData.hasProperty(geometryNumIndicesProperty))
-            _numIndices = const_cast<uint*>(_targetData.getPointer<uint>(geometryNumIndicesProperty));
+            _numIndices = _targetData.getPointer<uint>(geometryNumIndicesProperty);
     }
     else
     {
-        _numIndices = const_cast<uint*>(_targetData.getPointer<uint>(surfaceNumIndicesProperty));
+        _numIndices = _targetData.getPointer<uint>(surfaceNumIndicesProperty);
     }
 }
 
