@@ -182,12 +182,12 @@ namespace minko
             void
             removeTechnique(const std::string& name);
 
+
+
 			template <typename T = material::Material>
 			std::shared_ptr<T>
-			createMaterial(const std::string& technique = "default")
+			initializeMaterial(std::shared_ptr<T> material, const std::string& technique = "default")
 			{
-				std::shared_ptr<T> material = T::create();
-
 				fillMaterial(material, technique);
 
 				return material;
