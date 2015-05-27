@@ -64,8 +64,8 @@ namespace minko
 			typedef std::shared_ptr<Provider>	            Ptr;
 			typedef Flyweight<std::string>		            PropertyName;
 			typedef std::pair<PropertyName, Any>            ValueType;
-			typedef map<PropertyName, Any> 		            ValueMap;
-			typedef std::unordered_map<PropertyName, Any> 	DefaultValueMap;
+			typedef map<PropertyName, Any*> 		        ValueMap;
+			typedef std::unordered_map<PropertyName, Any*> 	DefaultValueMap;
 
 		private:
             ValueMap*							            _values;
@@ -145,7 +145,7 @@ namespace minko
             typename std::enable_if<is_valid<T>::value, const T&>::type
             get(const PropertyName& propertyName) const
 			{
-                return *Any::unsafe_cast<T>(&getValue(propertyName));
+                return *Any::unsafe_cast<T>(getValue(propertyName));
 			}
 
             template <typename T>
@@ -153,7 +153,7 @@ namespace minko
             typename std::enable_if<is_valid<T>::value, const T*>::type
             getPointer(const PropertyName& propertyName) const
             {
-                return Any::unsafe_cast<T>(&getValue(propertyName));
+                return Any::unsafe_cast<T>(getValue(propertyName));
             }
 
             template <typename T>
@@ -161,7 +161,7 @@ namespace minko
             typename std::enable_if<is_valid<T>::value, T*>::type
             getUnsafePointer(const PropertyName& propertyName)
             {
-                return Any::unsafe_cast<T>(&getValue(propertyName));
+                return Any::unsafe_cast<T>(getValue(propertyName));
             }
 
             template <typename T>
@@ -170,7 +170,7 @@ namespace minko
             {
                 if (hasProperty(propertyName))
                 {
-                    T* ptr = Any::cast<T>(&getValue(propertyName));
+                    T* ptr = Any::cast<T>(getValue(propertyName));
 
 #if DEBUG
                     if (!ptr)
@@ -186,7 +186,7 @@ namespace minko
                 }
                 else
                 {
-                    setValue(propertyName, value);
+                    setValue(propertyName, new Any(value));
                     _propertyAdded.execute(shared_from_this(), propertyName);
                     _propertyChanged.execute(shared_from_this(), propertyName);
                 }
@@ -201,7 +201,7 @@ namespace minko
 			bool
             propertyHasType(const PropertyName& propertyName) const
 			{
-				return Any::cast<T>(&getValue(propertyName)) != nullptr;
+				return Any::cast<T>(getValue(propertyName)) != nullptr;
 			}
 
 			virtual
@@ -225,11 +225,11 @@ namespace minko
 			Provider(const DefaultValueMap& values);
 
         private:
-            Any&
+            Any*
             getValue(const PropertyName& propertyName) const;
 
             void
-            setValue(const PropertyName& propertyName, Any value);
+            setValue(const PropertyName& propertyName, Any* value);
 
 		};
 	}

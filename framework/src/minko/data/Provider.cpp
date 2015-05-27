@@ -62,7 +62,7 @@ Provider::Ptr
 Provider::set(std::initializer_list<data::Provider::ValueType> values)
 {
     for (auto& p : values)
-        setValue(p.first, p.second);
+        setValue(p.first, new Any(p.second));
 
 	return shared_from_this();
 }
@@ -70,8 +70,12 @@ Provider::set(std::initializer_list<data::Provider::ValueType> values)
 Provider::Ptr
 Provider::unset(const std::string& propertyName)
 {
-    if (_values->count(propertyName) != 0)
+    auto propertyIt = _values->find(propertyName);
+
+    if (propertyIt != _values->end())
 	{
+        delete propertyIt->second;
+
         _values->erase(propertyName);
 		_propertyRemoved.execute(shared_from_this(), propertyName);
 	}
@@ -92,12 +96,15 @@ Provider::clone()
 Provider::Ptr
 Provider::copyFrom(Provider::Ptr source)
 {
-    *_values = *source->_values;
+    _values->clear();
+
+    for (auto nameAndValue : *source->_values)
+        _values->insert({ nameAndValue.first, new Any(*nameAndValue.second) });
 
 	return shared_from_this();
 }
 
-Any&
+Any*
 Provider::getValue(const PropertyName& propertyName) const
 {
     const auto foundIt = _values->find(propertyName);
@@ -109,7 +116,7 @@ Provider::getValue(const PropertyName& propertyName) const
 }
 
 void
-Provider::setValue(const PropertyName& propertyName, Any value)
+Provider::setValue(const PropertyName& propertyName, Any* value)
 {
     (*_values)[propertyName] = value;
 }
