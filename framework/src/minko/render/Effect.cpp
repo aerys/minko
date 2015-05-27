@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/Pass.hpp"
 #include "minko/data/Provider.hpp"
+#include "minko/material/Material.hpp"
 
 using namespace minko;
 using namespace minko::render;
@@ -87,4 +88,35 @@ Effect::define(const std::string& macroName)
 	for (auto& technique : _techniques)
 		for (auto& pass : technique.second)
 			pass->define(macroName);
+}
+
+void
+Effect::fillMaterial(std::shared_ptr<material::Material>    material,
+                     const std::string&                     technique)
+{
+    auto& passes = _techniques[technique];
+
+    for (auto& pass : passes)
+    {
+        // material properties are set using uniforms, thus we only read the default values
+        // for uniforms
+        auto& defaultValues = pass->uniformBindings().defaultValues.providers().front();
+        for (auto& nameAndBinding : pass->uniformBindings().bindings)
+        {
+            auto uniformName = nameAndBinding.first;
+
+            if (defaultValues->hasProperty(uniformName))
+            {
+                auto pos = nameAndBinding.second.propertyName.find("material[${materialUuid}].");
+
+                if (pos == 0)
+                {
+                    material->data()->set({{
+                        nameAndBinding.second.propertyName.substr(pos + 26),
+                        defaultValues->values().find(uniformName)->second
+                    }});
+                }
+            }
+        }
+    }
 }
