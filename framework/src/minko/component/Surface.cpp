@@ -88,6 +88,28 @@ Surface::Surface(const std::string& uuid,
     initializeIndexRange(geometry);
 }
 
+Surface::Surface(const std::string& uuid,
+                 const std::string& name,
+				 Geometry::Ptr 		geometry,
+				 Material::Ptr 		material,
+				 Effect::Ptr		effect,
+				 const std::string&	technique) :
+	AbstractComponent(),
+	_name(name),
+	_geometry(geometry),
+	_material(material),
+	_effect(effect),
+    _provider(data::Provider::create(uuid)),
+	_technique(technique)
+{
+	if (_effect == nullptr)
+		throw std::invalid_argument("effect");
+	if (!_effect->hasTechnique(_technique))
+		throw std::logic_error("Effect does not provide a '" + _technique + "' technique.");
+
+    //initializeIndexRange(geometry);
+}
+
 // TODO #Clone
 /*
 Surface::Surface(const Surface& surface, const CloneOption& option) :

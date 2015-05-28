@@ -391,9 +391,12 @@ namespace minko
 
             void
             dispatchEvents(SurfacePtr pickedSurface, float depth);
-
+            
             void
             updatePickingProjection();
+
+            void
+            updatePickingOrigin();
 		};
 	}
 }
