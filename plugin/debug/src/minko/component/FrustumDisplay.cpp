@@ -167,7 +167,7 @@ FrustumDisplay::initializeFrustumGeometry(const std::vector<math::vec3>&        
     vb->addAttribute("position", 3);
     vb->upload();
 
-    auto ib = render::IndexBuffer::create(context, {
+    auto ib = render::IndexBuffer::create(context, std::vector<unsigned short> {
         0, 3, 1, 1, 3, 2, // near
         4, 5, 7, 5, 6, 7, // far
         4, 0, 5, 5, 0, 1, // top

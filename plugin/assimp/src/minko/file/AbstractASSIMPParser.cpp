@@ -469,6 +469,27 @@ AbstractASSIMPParser::getTransformFromAssimp(aiNode* ainode)
 	return Transform::create(convert(ainode->mTransformation));
 }
 
+template <typename T>
+static
+render::IndexBuffer::Ptr
+createIndexBuffer(aiMesh*                       mesh,
+                  render::AbstractContext::Ptr  context)
+{
+	auto indexData = std::vector<T>(3 * mesh->mNumFaces, 0);
+
+	for (auto faceId = 0u; faceId < mesh->mNumFaces; ++faceId)
+	{
+	    const aiFace& face = mesh->mFaces[faceId];
+
+	    for (unsigned int j = 0; j < 3; ++j)
+        {
+	    	indexData[j + 3 * faceId] = face.mIndices[j];
+        }
+	}
+
+    return render::IndexBuffer::create(context, indexData);
+}
+
 Geometry::Ptr
 AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mesh, const std::string& meshName)
 {
@@ -524,37 +545,11 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
     if (_options->optimizeForRendering() ||
         numIndices <= static_cast<unsigned int>(std::numeric_limits<unsigned short>::max()))
     {
-	    std::vector<unsigned short>	indexData	(3 * mesh->mNumFaces, 0);
-
-	    for (unsigned int faceId = 0; faceId < mesh->mNumFaces; ++faceId)
-	    {
-	    	const aiFace& face = mesh->mFaces[faceId];
-
-	    	for (unsigned int j = 0; j < 3; ++j)
-            {
-	    		indexData[j + 3 * faceId] = face.mIndices[j];
-            }
-	    }
-
-        indices = render::IndexBuffer::create(_assetLibrary->context(), indexData);
+        indices = createIndexBuffer<unsigned short>(mesh, _assetLibrary->context());
     }
     else
     {
-	    std::vector<unsigned int> wideIndexData (3 * mesh->mNumFaces, 0);
-
-	    for (unsigned int faceId = 0; faceId < mesh->mNumFaces; ++faceId)
-	    {
-	    	const aiFace& face = mesh->mFaces[faceId];
-
-	    	for (unsigned int j = 0; j < 3; ++j)
-            {
-	    		wideIndexData[j + 3 * faceId] = face.mIndices[j];
-            }
-	    }
-
-        indices = render::IndexBuffer::create(_assetLibrary->context(), std::vector<unsigned short>(3 * mesh->mNumFaces, 0));
-
-        indices->wideIndexData().assign(wideIndexData.begin(), wideIndexData.end());
+        indices = createIndexBuffer<unsigned int>(mesh, _assetLibrary->context());
     }
 
 	// create the geometry's vertex and index buffers

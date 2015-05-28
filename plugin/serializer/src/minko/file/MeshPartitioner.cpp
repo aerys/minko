@@ -129,31 +129,36 @@ MeshPartitioner::defaultSurfaceIndexer()
     return surfaceIndexer;
 }
 
+template <typename T>
+static
+bool
+validateGeometry(Geometry::Ptr geometry)
+{
+    auto indices = geometry->indices()->dataPointer<T>();
+
+    if (!indices)
+        return false;
+
+    const auto numVertices = geometry->numVertices();
+
+    for (auto index : *indices)
+        if (index >= numVertices)
+            return false;
+
+    return true;
+}
+
 bool
 MeshPartitioner::defaultValidSurfacePredicate(Surface::Ptr surface)
 {
     auto geometry = surface->geometry();
 
-    if (geometry->indices()->hasWideIndexData())
-    {
-        const auto indices = geometry->indices()->wideIndexData();
-        const auto numVertices = geometry->numVertices();
+    auto ushortDataPointer = geometry->indices()->dataPointer<unsigned short>();
 
-        for (auto index : indices)
-            if (index >= numVertices)
-                return false;
-    }
-    else
-    {
-        const auto indices = geometry->indices()->data();
-        const auto numVertices = geometry->numVertices();
+    if (ushortDataPointer)
+        return validateGeometry<unsigned short>(geometry);
 
-        for (auto index : indices)
-            if (index >= numVertices)
-                return false;
-    }
-
-    return true;
+    return validateGeometry<unsigned int>(geometry);
 }
 
 bool
@@ -1062,19 +1067,19 @@ MeshPartitioner::buildGlobalIndex(PartitionInfo& partitionInfo)
 
         auto indexData = std::vector<unsigned int>();
 
-        if (!geometry->indices()->hasWideIndexData())
+        auto ushortIndexDataPointer = geometry->indices()->dataPointer<unsigned short>();
+
+        if (ushortIndexDataPointer)
         {
-            const auto& shortIndexData = geometry->indices()->data();
+            indexData.resize(ushortIndexDataPointer->size());
 
-            indexData.resize(shortIndexData.size());
-
-            for (auto i = 0u; i < shortIndexData.size(); ++i)
-                indexData[i] = static_cast<unsigned int>(shortIndexData.at(i));
+            for (auto i = 0u; i < ushortIndexDataPointer->size(); ++i)
+                indexData[i] = static_cast<unsigned int>(ushortIndexDataPointer->at(i));
         }
 
-        const auto& localIndices = geometry->indices()->hasWideIndexData()
-            ? geometry->indices()->wideIndexData()
-            : indexData;
+        const auto& localIndices = ushortIndexDataPointer
+            ? indexData
+            : *geometry->indices()->dataPointer<unsigned int>();
 
         auto globalVertexAttributeOffset = 0;
 

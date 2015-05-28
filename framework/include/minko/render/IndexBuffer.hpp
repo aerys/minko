@@ -19,6 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
+#include "minko/Any.hpp"
 #include "minko/Common.hpp"
 #include "minko/Signal.hpp"
 
@@ -39,11 +40,10 @@ namespace minko
 			typedef std::shared_ptr<AbstractContext>	AbsContextPtr;
 
 		private:
-			std::vector<unsigned short>					_data;
-            std::vector<unsigned int>                   _wideIndexData;
-			unsigned int								_numIndices;
+			Any					            _data;
+			unsigned int				    _numIndices;
 
-			std::shared_ptr<Signal<Ptr>>				_changed;
+			std::shared_ptr<Signal<Ptr>>	_changed;
 
 		public:
 			inline static
@@ -61,6 +61,16 @@ namespace minko
 				Ptr ptr = std::shared_ptr<IndexBuffer>(new IndexBuffer(context, data));
 
 				ptr->upload();
+
+				return ptr;
+			}
+
+			inline static
+			Ptr
+			create(AbsContextPtr						context,
+				   const std::vector<unsigned int>&	    data)
+			{
+				Ptr ptr = std::shared_ptr<IndexBuffer>(new IndexBuffer(context, data));
 
 				return ptr;
 			}
@@ -88,28 +98,15 @@ namespace minko
 			std::vector<unsigned short>&
 			data()
 			{
-				return _data;
+				return *Any::unsafe_cast<std::vector<unsigned short>>(&_data);
 			}
 
+            template <typename T>
             inline
-            bool
-            hasWideIndexData() const
-            {
-                return !_wideIndexData.empty();
-            }
-
-			inline
-			const std::vector<unsigned int>&
-			wideIndexData() const
+            std::vector<T>*
+            dataPointer()
 			{
-				return _wideIndexData;
-			}
-
-			inline
-			std::vector<unsigned int>&
-			wideIndexData()
-			{
-				return _wideIndexData;
+			    return Any::cast<std::vector<T>>(&_data);
 			}
 
 			inline
@@ -141,7 +138,9 @@ namespace minko
 			bool
 			equals(Ptr indexBuffer)
 			{
-				return _data == indexBuffer->_data;
+                return
+                    dataPointer<unsigned short>() == indexBuffer->dataPointer<unsigned short>() ||
+                    dataPointer<unsigned int>() == indexBuffer->dataPointer<unsigned int>();
 			}
 
 			inline
@@ -155,7 +154,7 @@ namespace minko
 			inline
 			IndexBuffer(AbsContextPtr context) :
 				AbstractResource(context),
-				_data(),
+				_data(std::vector<unsigned short>()),
 				_numIndices(0),
 				_changed(Signal<IndexBuffer::Ptr>::create())
 			{
@@ -171,13 +170,23 @@ namespace minko
 			{
 			}
 
+			inline
+			IndexBuffer(AbsContextPtr						context,
+						const std::vector<unsigned int>&	data) :
+				AbstractResource(context),
+				_data(data),
+				_numIndices(data.size()),
+				_changed(Signal<IndexBuffer::Ptr>::create())
+			{
+			}
+
 			template <typename T>
 			IndexBuffer(AbsContextPtr	context,
 						T*				begin,
 						T*				end) :
 				AbstractResource(context),
-				_data(begin, end),
-				_numIndices(0),
+				_data(std::vector<T>(begin, end)),
+				_numIndices(dataPointer<T>()->size()),
 				_changed(Signal<Ptr>::create())
 			{
 			}
