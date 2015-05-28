@@ -83,7 +83,7 @@ Surface::Surface(const std::string& uuid,
 	if (!_effect->hasTechnique(_technique))
 		throw std::logic_error("Effect does not provide a '" + _technique + "' technique.");
 
-    initializeIndexRange(geometry);
+    //initializeIndexRange(geometry);
 }
 
 // TODO #Clone
