@@ -979,6 +979,10 @@ MeshPartitioner::preprocessMergedSurface(PartitionInfo& partitionInfo,
                                          Surface::Ptr   surface,
                                          int            index)
 {
+    if (surface->data()->hasProperty("mergingMask") ||
+        surface->geometry()->hasVertexAttribute("mergingMask"))
+        return true;
+
     const auto mergingMask = index;
 
     surface->data()->set("mergingMask", mergingMask);
