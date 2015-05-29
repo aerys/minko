@@ -1617,7 +1617,7 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 	if (shininess == 0.f)
 		material->data()->set("shininess", 64.0f);
 
-    auto transparent = opacity < 1.f;
+    auto transparent = opacity > 0.f && opacity < 1.f;
 	
     if (transparent)
     {
