@@ -55,8 +55,6 @@ namespace minko
 			math::mat4							        _pickingProjection;	
 			std::map<SurfacePtr, uint>			        _surfaceToPickingId; 
 			std::map<uint, SurfacePtr>			        _pickingIdToSurface;
-			std::map<SurfacePtr, ProviderPtr>	        _surfaceToProvider;
-            std::map<NodePtr, ProviderPtr>		        _targetToProvider;
 			uint							        	_pickingId;
 			ContextPtr					        		_context;
             ProviderPtr				        		    _pickingProvider;

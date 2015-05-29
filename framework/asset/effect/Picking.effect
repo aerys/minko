@@ -13,7 +13,7 @@
     },
     
     "uniforms"   : {
-        "uPickingColor"          : "pickingColor",
+        "uPickingColor"          : "surface[${surfaceUuid}].pickingColor",
         "uModelToWorldMatrix"    : "modelToWorldMatrix",
         "uWorldToViewMatrix"     : { "binding" : { "property" : "viewMatrix", "source" : "renderer"} },
         "uPickingProjection"     : { "binding" : { "property" : "pickingProjection",    "source" : "renderer"} },
@@ -30,7 +30,7 @@
         "HAS_POSITION"          : "geometry[${geometryUuid}].position",
         "MODEL_TO_WORLD"        : "modelToWorldMatrix",
         "SKINNING_NUM_BONES"    : { "binding" : "geometry[$geometryUuid].numBones", "type" : "int" },
-        "PICKING_COLOR"         : "pickingColor",
+        "PICKING_COLOR"         : "surface[${surfaceUuid}].pickingColor",
         "POP_LOD_ENABLED"       : "surface[${surfaceUuid}].popLodEnabled",
         "POP_BLENDING_ENABLED"  : "surface[${surfaceUuid}].popBlendingEnabled",
         "VERTEX_POP_PROTECTED"  : "geometry[${geometryUuid}].popProtected"

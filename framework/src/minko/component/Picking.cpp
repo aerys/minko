@@ -367,20 +367,12 @@ Picking::addSurface(SurfacePtr surface)
 		_surfaceToPickingId[surface] = _pickingId;
 		_pickingIdToSurface[_pickingId] = surface;
 
-		_surfaceToProvider[surface] = data::Provider::create();
-
-		_surfaceToProvider[surface]->set("pickingColor", math::vec4(
+		surface->data()->set("pickingColor", math::vec4(
 			((_pickingId >> 16) & 0xff) / 255.f,
 			((_pickingId >> 8) & 0xff) / 255.f,
 			((_pickingId)& 0xff) / 255.f,
 			1
 		));
-
-        if (_targetToProvider.find(surface->target()) == _targetToProvider.end())
-		{
-            _targetToProvider[surface->target()] = _surfaceToProvider[surface];
-            surface->target()->data().addProvider(_surfaceToProvider[surface]);
-		}
 
         if (_addPickingLayout)
             surface->target()->layout(target()->layout() | scene::BuiltinLayout::PICKING);
