@@ -175,27 +175,31 @@ ComponentDeserializer::deserializeSurface(file::SceneVersion sceneVersion,
 										  std::shared_ptr<file::AssetLibrary>	assetLibrary,
 										  std::shared_ptr<file::Dependency>		dependencies)
 {
-	msgpack::type::tuple<std::string, unsigned short, unsigned short, unsigned short, std::string> dst;
+	msgpack::type::tuple<unsigned short, unsigned short, unsigned short, std::string> dst;
 	msgpack::type::tuple<std::vector<SurfaceExtension>>	ext;
 
     unpack(dst, packed.data(), packed.size() - 1);
 
-    const auto& surfaceUuid = dst.get<0>();
-	geometry::Geometry::Ptr		geometry	= dependencies->getGeometryReference(dst.get<1>());
-	material::Material::Ptr		material	= dependencies->getMaterialReference(dst.get<2>());
-	render::Effect::Ptr			effect		= dependencies->getEffectReference(dst.get<3>());
-	std::string					technique	= "default";
-	bool						visible		= true;
+	geometry::Geometry::Ptr		geometry	= dependencies->getGeometryReference(dst.get<0>());
+	material::Material::Ptr		material	= dependencies->getMaterialReference(dst.get<1>());
+	render::Effect::Ptr			effect		= dependencies->getEffectReference(dst.get<2>());
+    auto uuid = std::string();
+	auto technique = std::string("default");
+	auto visible = true;
 
-    if (dst.get<4>().size() > 0)
+    if (dst.get<3>().size() > 0)
     {
-        unpack(ext, dst.get<4>().data(), dst.get<4>().size());
+        unpack(ext, dst.get<3>().data(), dst.get<3>().size());
 
         for (int i = 0; i < ext.get<0>().size(); ++i)
         {
             auto extension = ext.get<0>()[i];
 
-            if (extension.get<0>() == "visible")
+            if (extension.get<0>() == "uuid")
+            {
+                uuid = extension.get<1>();
+            }
+            else if (extension.get<0>() == "visible")
             {
                 visible = TypeDeserializer::deserializeVector<float>(extension.get<1>())[0] != 0.0;
             }
@@ -212,14 +216,32 @@ ComponentDeserializer::deserializeSurface(file::SceneVersion sceneVersion,
     if (effect == nullptr && dependencies->options()->effect() != nullptr)
         effect = dependencies->options()->effect();
 
-    std::shared_ptr<component::Surface> surface = component::Surface::create(
-        surfaceUuid,
-        "",
-        geometry,
-        (material != nullptr ? material : assetLibrary->material("defaultMaterial")),
-        (effect != nullptr ? effect : assetLibrary->effect("effect/Phong.effect")),
-        technique
-    );
+    auto surface = component::Surface::Ptr();
+
+    material = (material != nullptr ? material : assetLibrary->material("defaultMaterial"));
+    effect = (effect != nullptr ? effect : assetLibrary->effect("effect/Phong.effect"));
+
+    if (uuid.empty())
+    {
+        surface = component::Surface::create(
+            "",
+            geometry,
+            material,
+            effect,
+            technique
+        );
+    }
+    else
+    {
+        surface = component::Surface::create(
+            uuid,
+            "",
+            geometry,
+            material,
+            effect,
+            technique
+        );
+    }
 
     return surface;
 }
