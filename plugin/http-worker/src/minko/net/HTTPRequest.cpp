@@ -291,5 +291,5 @@ HTTPRequest::fileExists(const std::string& filename,
         LOG_ERROR(errorMessage);
     }
 
-    return status == CURLE_OK;
+    return requestSucceeded;
 }
