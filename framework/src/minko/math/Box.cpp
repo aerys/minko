@@ -169,5 +169,6 @@ Box::testBoundingBox(std::shared_ptr<math::Box> box)
 void
 Box::updateFromMatrix(const math::mat4& matrix)
 {
-	// FIXME
+    _bottomLeft = math::vec3(matrix * math::vec4(_bottomLeft, 1.f));
+    _topRight = math::vec3(matrix * math::vec4(_topRight, 1.f));
 }
