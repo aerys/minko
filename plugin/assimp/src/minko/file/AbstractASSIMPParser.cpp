@@ -318,7 +318,9 @@ AbstractASSIMPParser::convertScene(const aiScene* scene)
 		throw std::logic_error("_numDependencies != _numLoadedDependencies");
 #endif // DEBUG
 
-	_symbol = scene::Node::create(_filename);
+    const auto symbolRootName = File::removePrefixPathFromFilename(_filename);
+
+	_symbol = scene::Node::create(symbolRootName);
 	createSceneTree(_symbol, scene, scene->mRootNode, _options->assetLibrary());
 
     if (_options->processUnusedAsset())
