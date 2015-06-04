@@ -24,15 +24,21 @@ uniform mat4 uBoneMatrices[SKINNING_NUM_BONES];
 
 attribute float aPopProtected;
 
+#ifdef MODEL_TO_WORLD
 uniform mat4 uModelToWorldMatrix;
+#endif
 uniform mat4 uWorldToViewMatrix;
 uniform mat4 uPickingProjection;
 
+#ifdef POP_LOD_ENABLED
 uniform 	float 	uPopLod;
+#ifdef POP_BLENDING_ENABLED
 uniform 	float 	uPopBlendingLod;
+#endif
 uniform 	float 	uPopFullPrecisionLod;
 uniform 	vec3 	uPopMinBound;
 uniform 	vec3 	uPopMaxBound;
+#endif
 
 varying vec2 vertexUV;
 
