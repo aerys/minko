@@ -306,6 +306,8 @@ AbstractASSIMPParser::initImporter()
 #if (defined ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION)
     provideLoaders(*_importer);
 #endif // ! ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION
+
+    _importer->SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
 }
 
 void
