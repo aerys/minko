@@ -64,7 +64,7 @@ namespace minko
 			testBoundingBox(std::shared_ptr<math::Box> box);
 
 		private:
-			Frustum();
+			Frustum() = default;
 		};
 	}
 }

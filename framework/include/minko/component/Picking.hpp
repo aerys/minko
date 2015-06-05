@@ -55,8 +55,6 @@ namespace minko
 			math::mat4							        _pickingProjection;	
 			std::map<SurfacePtr, uint>			        _surfaceToPickingId; 
 			std::map<uint, SurfacePtr>			        _pickingIdToSurface;
-			std::map<SurfacePtr, ProviderPtr>	        _surfaceToProvider;
-            std::map<NodePtr, ProviderPtr>		        _targetToProvider;
 			uint							        	_pickingId;
 			ContextPtr					        		_context;
             ProviderPtr				        		    _pickingProvider;
@@ -98,6 +96,7 @@ namespace minko
 			SurfacePtr									_lastPickedSurface;
             unsigned char                               _lastDepth[4];
             float                                       _lastDepthValue;
+            unsigned char                               _lastMergingMask;
 
 			Signal<MousePtr, int, int>::Slot			_mouseMoveSlot;
 			Signal<MousePtr>::Slot						_mouseRightDownSlot;
@@ -278,6 +277,13 @@ namespace minko
                 return _lastDepthValue;
             }
 
+            inline
+            unsigned char
+            pickedMergingMask() const
+			{
+			    return _lastMergingMask;
+			}
+
         protected:
 			void
 			targetAdded(NodePtr target);
@@ -383,9 +389,12 @@ namespace minko
 
             void
             dispatchEvents(SurfacePtr pickedSurface, float depth);
-
+            
             void
             updatePickingProjection();
+
+            void
+            updatePickingOrigin();
 		};
 	}
 }

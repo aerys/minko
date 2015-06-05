@@ -46,10 +46,8 @@ namespace minko
             struct ParserEntry
             {
                 Signal<std::shared_ptr<file::AbstractStreamedAssetParser>>::Slot          readySlot;
-                Signal<std::shared_ptr<file::AbstractParser>>::Slot                       completeSlot;
+                std::list<Signal<std::shared_ptr<file::AbstractParser>>::Slot>            completeSlots;
                 Signal<std::shared_ptr<file::AbstractStreamedAssetParser>, float>::Slot   progressSlot;
-                Signal<std::shared_ptr<file::AbstractStreamedAssetParser>>::Slot          activeSlot;
-                Signal<std::shared_ptr<file::AbstractStreamedAssetParser>>::Slot          inactiveSlot;
 
                 float                                                                     progressRate;
 
@@ -60,20 +58,25 @@ namespace minko
             };
 
 		private:
-            std::shared_ptr<StreamingOptions>   _streamingOptions;
+            std::shared_ptr<StreamingOptions>                                   _streamingOptions;
 
-            Signal<Ptr>::Ptr                    _sceneStreamingComplete;
-            Signal<Ptr, float>::Ptr             _sceneStreamingProgress;
-            Signal<Ptr>::Ptr                    _sceneStreamingActive;
-            Signal<Ptr>::Ptr                    _sceneStreamingInactive;
+            Signal<Ptr>::Ptr                                                    _sceneStreamingComplete;
+            Signal<Ptr, float>::Ptr                                             _sceneStreamingProgress;
+            Signal<Ptr>::Ptr                                                    _sceneStreamingActive;
+            Signal<Ptr>::Ptr                                                    _sceneStreamingInactive;
+
+            Signal<std::shared_ptr<file::StreamedAssetParserScheduler>>::Slot   _parserSchedulerActiveSlot;
+            Signal<std::shared_ptr<file::StreamedAssetParserScheduler>>::Slot   _parserSchedulerInactiveSlot;
 
             std::unordered_map<
                 std::shared_ptr<file::AbstractStreamedAssetParser>,
                 ParserEntry
-            >                                   _parsers;
+            >                                                                   _parsers;
 
-            unsigned int                        _numActiveParsers;
-            float                               _totalProgressRate;
+            unsigned int                                                        _numActiveParsers;
+            float                                                               _totalProgressRate;
+
+            std::shared_ptr<file::StreamedAssetParserScheduler>                 _parserScheduler;
 
 		public:
             void
@@ -85,6 +88,9 @@ namespace minko
 
 			AbstractExtension::Ptr
 			bind();
+
+            void
+            loadingContextDisposed();
 
 			static
 			inline
@@ -164,6 +170,10 @@ namespace minko
         private:
             StreamingExtension();
 
+            std::shared_ptr<file::StreamedAssetParserScheduler>
+            parserScheduler(std::shared_ptr<file::Options>                          options,
+                            std::list<std::shared_ptr<component::JobManager::Job>>&	jobList);
+
             inline
             void
             streamingOptions(std::shared_ptr<StreamingOptions> value)
@@ -172,6 +182,14 @@ namespace minko
             }
 
             void
+            registerPOPGeometryParser(std::shared_ptr<file::POPGeometryParser>  parser,
+                                      std::shared_ptr<geometry::Geometry>       geometry);
+
+            void
+            registerStreamedTextureParser(std::shared_ptr<file::StreamedTextureParser>  parser,
+                                          std::shared_ptr<render::AbstractTexture>      texture);
+
+            ParserEntry&
             registerParser(std::shared_ptr<file::AbstractStreamedAssetParser> parser);
 
             bool

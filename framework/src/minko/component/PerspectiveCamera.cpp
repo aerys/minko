@@ -182,9 +182,9 @@ PerspectiveCamera::project(math::vec3 worldPosition)
 
     vector /= vector.w;
 
-    return {
+    return math::vec3(
        width * ((vector.x + 1.0f) * .5f),
 	   height * ((1.0f - ((vector.y + 1.0f) * .5f))),
        -(_view * pos).z
-    };
+    );
 }

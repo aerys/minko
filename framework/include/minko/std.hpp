@@ -34,6 +34,25 @@ namespace std
 		}
 	};
 
+#ifdef __ANDROID__
+	template <typename T>
+	inline
+	string
+	to_string(T v)
+	{
+		ostringstream oss;
+		oss << v;
+		return oss.str();
+	}
+
+    inline
+    unsigned long
+    stoul(const std::string& v)
+    {
+        return strtoul(v.c_str(), nullptr, 10);
+    }
+#endif
+
 	inline
 	std::string
 	to_string(const minko::math::mat4& matrix)
@@ -45,10 +64,10 @@ namespace std
             if (i % 4 == 0)
                 str += "\n";
 
-            str += minko::math::to_string(ptr[i]) + ", ";
+            str += std::to_string(ptr[i]) + ", ";
         }
 
-		str += minko::math::to_string(ptr[15]) + ")";
+		str += std::to_string(ptr[15]) + ")";
 
 		return str;
 	}
@@ -56,7 +75,7 @@ namespace std
     template<typename T, minko::math::precision P>
     inline
     std::string
-    to_string(const minko::math::detail::tvec1<T, P>& v)
+    to_string(const minko::math::tvec1<T, P>& v)
     {
         return minko::math::to_string(v);
     }
@@ -64,7 +83,7 @@ namespace std
     template<typename T, minko::math::precision P>
     inline
     std::string
-    to_string(const minko::math::detail::tvec2<T, P>& v)
+    to_string(const minko::math::tvec2<T, P>& v)
     {
         return minko::math::to_string(v);
     }
@@ -72,7 +91,7 @@ namespace std
     template<typename T, minko::math::precision P>
     inline
     std::string
-    to_string(const minko::math::detail::tvec3<T, P>& v)
+    to_string(const minko::math::tvec3<T, P>& v)
     {
         return minko::math::to_string(v);
     }
@@ -80,7 +99,7 @@ namespace std
     template<typename T, minko::math::precision P>
     inline
     std::string
-    to_string(const minko::math::detail::tvec4<T, P>& v)
+    to_string(const minko::math::tvec4<T, P>& v)
     {
         return minko::math::to_string(v);
     }
@@ -152,25 +171,6 @@ namespace std
 
         return s;
     }
-
-#ifdef __ANDROID__
-    template <typename T>
-    inline
-    string
-    to_string(T v)
-    {
-        ostringstream oss;
-        oss << v;
-        return oss.str();
-    }
-
-    inline
-    unsigned long
-    stoul(const std::string& v)
-    {
-        return strtoul(v.c_str(), nullptr, 10);
-    }
-#endif
 
     inline
     std::string

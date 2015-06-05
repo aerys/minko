@@ -66,6 +66,12 @@ namespace minko
         {
         }
 
+        Any(Any&& other) :
+            _content(other._content ? other._content : 0)
+        {
+            other._content = 0;
+        }
+
         ~Any()
         {
             delete _content;
@@ -87,9 +93,19 @@ namespace minko
         }
 
         Any&
-        operator=(Any rhs)
+        operator=(Any& rhs)
         {
             rhs.swap(*this);
+            return *this;
+        }
+
+        Any&
+        operator=(Any&& rhs)
+        {
+            _content = rhs._content;
+
+            rhs._content = 0;
+
             return *this;
         }
 

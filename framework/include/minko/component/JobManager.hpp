@@ -51,7 +51,7 @@ namespace minko
 				};
 
             protected:
-				std::shared_ptr<JobManager>		_jobManager;
+				std::weak_ptr<JobManager>		_jobManager;
 				bool							_running;
 				
                 Signal<float>::Ptr              _priorityChanged;
@@ -95,7 +95,7 @@ namespace minko
 				std::shared_ptr<JobManager>
 				jobManager()
 				{
-					return _jobManager;
+					return _jobManager.lock();
 				}
 
                 inline

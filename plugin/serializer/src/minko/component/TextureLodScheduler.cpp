@@ -353,7 +353,7 @@ TextureLodScheduler::computeLodPriority(const TextureResourceInfo& 	resource,
 
     if (activeLod < 3)
     {
-        priority += 10.f + distanceFactor;
+        priority += 8.f + distanceFactor;
     }
     else if (activeLod < 10)
     {

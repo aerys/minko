@@ -17,6 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "minko/component/BoundingBox.hpp"
 #include "minko/component/Culling.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/data/Store.hpp"
@@ -32,10 +33,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 
-Culling::Culling(ShapePtr shape, const std::string& bindProperty):
+Culling::Culling(ShapePtr shape, const std::string& bindProperty) :
     AbstractComponent(),
 	_frustum(shape),
-	_bindProperty(bindProperty)
+	_bindProperty(bindProperty),
+    _worldSize(50.f),
+    _maxDepth(7u)
 {
 }
 
@@ -47,10 +50,8 @@ Culling::targetAdded(NodePtr target)
 	if (target->components<component::PerspectiveCamera>().size() < 1)
 		throw std::logic_error("Culling must be added to a camera");
 
-	// compute scene bounding box
-
 	if (_octTree == nullptr)
-		_octTree = math::OctTree::create(50, 7, math::vec3(0.f));
+		_octTree = math::OctTree::create(worldSize(), maxDepth(), math::vec3(0.f));
 
 	if (target->root()->hasComponent<SceneManager>())
 		targetAddedToSceneHandler(nullptr, target, nullptr);
@@ -98,7 +99,7 @@ Culling::targetAddedToSceneHandler(NodePtr node, NodePtr target, NodePtr ancesto
 			std::placeholders::_1,
 			std::placeholders::_2,
 			std::placeholders::_3
-		));
+		), -1.f);
 	}
 }
 
@@ -137,11 +138,26 @@ Culling::worldToScreenChangedHandler(data::Store& data, const String& propertyNa
 		_frustum,
 		[&](NodePtr node)
 		{
-			//node->component<Surface>()->computedVisibility(renderer, true);
+            nodeCulled(node, true);
 		},
 		[&](NodePtr node)
 		{
-			//node->component<Surface>()->computedVisibility(renderer, false);
+            nodeCulled(node, false);
 		}
 	);
+}
+
+void
+Culling::nodeCulled(NodePtr node, bool insideFrustum)
+{
+    // fixme add layouts to handle computed visibility and arbitrary visibility states
+
+    if (insideFrustum)
+    {
+        node->layout(node->layout() | scene::BuiltinLayout::DEFAULT);
+    }
+    else
+    {
+        node->layout(node->layout() & ~scene::BuiltinLayout::DEFAULT);
+    }
 }

@@ -14,6 +14,7 @@ uniform vec3 uPickingOrigin;
 uniform float uZFar;
 
 varying vec3 vWorldPosition;
+varying float vMergingMask;
 
 void main(void)
 {
@@ -21,7 +22,11 @@ void main(void)
 
     distance = clamp(distance / uZFar, 0.0, 1.0);
 
-    gl_FragColor = packFloat8bitRGBA(distance);
+    vec4 color = vec4(packFloat8bitRGB(distance), 0.0);
+
+    color.a = vMergingMask / 255.0;
+
+    gl_FragColor = color;
 }
 
 #endif // FRAGMENT_SHADER

@@ -10,7 +10,8 @@
         "aBoneIdsB"       : "geometry[${geometryUuid}].boneIdsB",
         "aBoneWeightsA"   : "geometry[${geometryUuid}].boneWeightsA",
         "aBoneWeightsB"   : "geometry[${geometryUuid}].boneWeightsB",
-        "aPopProtected"   : "geometry[${geometryUuid}].popProtected"
+        "aPopProtected"   : "geometry[${geometryUuid}].popProtected",
+        "aMergingMask"    : "geometry[${geometryUuid}].mergingMask"
     },
     
     "uniforms"   : {
@@ -21,8 +22,8 @@
         "uPickingProjection"    : { "binding" : { "property" : "pickingProjection",    "source" : "renderer"} },
         "boneMatrices"          : "geometry[${geometryUuid}].boneMatrices",
         "numBones"              : "geometry[${geometryUuid}].numBones",
-        "uPopLod"               : "geometry[${geometryUuid}].popLod",
-        "uPopBlendingLod"       : "geometry[${geometryUuid}].popBlendingLod",
+        "uPopLod"               : "surface[${surfaceUuid}].popLod",
+        "uPopBlendingLod"       : "surface[${surfaceUuid}].popBlendingLod",
         "uPopFullPrecisionLod"  : "geometry[${geometryUuid}].popFullPrecisionLod",
         "uPopMinBound"          : "geometry[${geometryUuid}].popMinBound",
         "uPopMaxBound"          : "geometry[${geometryUuid}].popMaxBound"
@@ -32,10 +33,10 @@
         "HAS_POSITION"          : "geometry[${geometryUuid}].position",
         "MODEL_TO_WORLD"        : "modelToWorldMatrix",
         "SKINNING_NUM_BONES"    : { "binding" : "geometry[$geometryUuid].numBones", "type" : "int" },
-        "PICKING_COLOR"         : "pickingColor",
-        "POP_LOD_ENABLED"       : "geometry[${geometryUuid}].popLodEnabled",
-        "POP_BLENDING_ENABLED"  : "geometry[${geometryUuid}].popBlendingEnabled",
-        "VERTEX_POP_PROTECTED"  : "geometry[${geometryUuid}].popProtected"
+        "POP_LOD_ENABLED"       : "surface[${surfaceUuid}].popLodEnabled",
+        "POP_BLENDING_ENABLED"  : "surface[${surfaceUuid}].popBlendingEnabled",
+        "VERTEX_POP_PROTECTED"  : "geometry[${geometryUuid}].popProtected",
+        "VERTEX_MERGING_MASK"   : "geometry[${geometryUuid}].mergingMask"
     },
     
     "techniques" : [{
