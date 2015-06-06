@@ -8,7 +8,7 @@ Make sure you have the source code of Minko on your filesystem. You can get them
 Step 2: Installing the toolchain
 --------------------------------
 
-If you've never build a Minko application or the Minko SDK for OSX before, follow the [step 1 of the Targeting OSX tutorial](../tutorial/Targeting_Windows.md#step-1-install-the-toolchain).
+If you've never build a Minko application or the Minko SDK for OSX before, follow the [step 1 of the Targeting OSX tutorial](../tutorial/Targeting_OS_X.md#step-1-install-the-toolchain).
 
 Step 3: Generate the solution
 -----------------------------
