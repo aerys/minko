@@ -43,7 +43,7 @@ Where to go from there...
 Now the SDK sources are on your local machine, you can compile them. To do so, please read one of the following tutorials:
 
 -   To target Windows, follow the [Compiling the SDK for Windows](../tutorial/Compiling_the_SDK_for_Windows.md) tutorial.
--   To target OSX, follow the [Compiling the SDK for OSX](../tutorial/Compiling_the_SDK_for_OSX.md) tutorial.
+-   To target OS X, follow the [Compiling the SDK for OS X](../tutorial/Compiling_the_SDK_for_OS_X.md) tutorial.
 -   To target Linux, follow the [Compiling the SDK for Linux](../tutorial/Compiling_the_SDK_for_Linux.md) tutorial.
 -   To target HTML5, follow the [Compiling the SDK for HTML5](../tutorial/Compiling_the_SDK_for_HTML5.md) tutorial.
 -   To target iOS, follow the [Compiling the SDK for iOS](../tutorial/Compiling_the_SDK_for_iOS.md) tutorial.
