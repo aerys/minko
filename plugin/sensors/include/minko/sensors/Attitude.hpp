@@ -33,11 +33,12 @@ namespace minko
             
             static
             Ptr
-            create()
+            getInstance()
             {
-                Ptr attitude(new Attitude());
-                
-                return attitude;
+                if (_instance == nullptr)
+                    _instance = Ptr(new Attitude());
+
+                return _instance;
             }
             
             void
@@ -58,6 +59,8 @@ namespace minko
             Attitude();
             
             std::shared_ptr<AbstractAttitude> _attitudeManager;
+
+            static Ptr _instance;
         };
     }
 }

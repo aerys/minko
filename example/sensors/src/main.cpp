@@ -32,7 +32,7 @@ main(int argc, char** argv)
     auto canvas = Canvas::create("Minko Example - Sensors");
     auto sceneManager = SceneManager::create(canvas);
 
-    auto attitude = Attitude::create();
+    auto attitude = Attitude::getInstance();
     attitude->initialize();
     attitude->startTracking();
 

@@ -60,7 +60,11 @@ public class AndroidAttitude
 
 				_sensorManager = (SensorManager)_context.getSystemService("sensor");
 
-				Sensor sensor = _sensorManager.getDefaultSensor(11); // TYPE_ROTATION_VECTOR
+				Sensor sensor = _sensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
+				
+				if(sensor == null)
+					sensor = _sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+
 				_sensorManager.registerListener(_sensorEventListener, sensor, 0, handler);
 
 				Looper.loop();

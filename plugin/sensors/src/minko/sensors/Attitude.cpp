@@ -30,6 +30,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace sensors;
 
+std::shared_ptr<Attitude> Attitude::_instance = nullptr;
+
 Attitude::Attitude() :
     AbstractAttitude(),
     _attitudeManager(nullptr)
