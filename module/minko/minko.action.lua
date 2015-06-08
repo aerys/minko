@@ -83,8 +83,8 @@ minko.action.copy = function(sourcepath, destpath, targetdir)
 		end
 
 		if os.iscygwin() then
-			sourcepath = path.cygpath(translate(sourcepath))
-			targetdir = path.cygpath(translate(targetdir))
+			sourcepath = path.cygpath(sourcepath)
+			targetdir = path.cygpath(targetdir)
 		end
 
 		-- print(' -> cp -R ' .. sourcepath .. ' "' .. destdir .. '"')
