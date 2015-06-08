@@ -24,28 +24,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::render;
 
-
-
 void
 IndexBuffer::upload(uint	offset,
 					int		count)
 {
-	if (_data.empty())
+	if (data().empty())
 		return;
 
-	assert(count <= (int)_data.size());
+	assert(count <= (int)data().size());
 
 	if (_id == -1)
-    	_id = _context->createIndexBuffer(_data.size());
+    	_id = _context->createIndexBuffer(data().size());
 
 	const auto oldNumIndices	= _numIndices;
-	_numIndices					= count > 0 ? count : _data.size();
+	_numIndices					= count > 0 ? count : data().size();
 
 	_context->uploaderIndexBufferData(
 		_id,
 		offset,
         _numIndices,
-		&_data[offset]
+		&data()[offset]
 	);
 
 	if (_numIndices != oldNumIndices)
@@ -94,6 +92,6 @@ IndexBuffer::dispose()
 
 void IndexBuffer::disposeData()
 {
-    _data.clear();
-    _data.shrink_to_fit();
+    data().clear();
+    data().shrink_to_fit();
 }

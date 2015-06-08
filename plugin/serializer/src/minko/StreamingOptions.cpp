@@ -42,9 +42,10 @@ StreamingOptions::StreamingOptions() :
     _streamedTexturePriorityFactor(1.f),
     _popGeometryMaxPrecisionLevel(16),
     _streamedTextureMaxMipLevel(0),
-    _popGeometryLodRangeFetchingMaxSizeFunction(),
-    _streamedTextureLodRangeFetchingMaxSizeFunction(),
+    _popGeometryLodRangeFetchingBoundFunction(),
+    _streamedTextureLodRangeFetchingBoundFunction(),
     _popGeometryBlendingRange(0.f),
+    _maxNumActiveParsers(40),
     _popGeometryFunction(),
     _streamedTextureFunction()
 {

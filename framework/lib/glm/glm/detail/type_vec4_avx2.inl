@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// OpenGL Mathematics (glm.g-truc.net)
 ///
-/// Copyright (c) 2005 - 2014 G-Truc Creation (www.g-truc.net)
+/// Copyright (c) 2005 - 2015 G-Truc Creation (www.g-truc.net)
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
 /// in the Software without restriction, including without limitation the rights
@@ -12,6 +12,10 @@
 /// The above copyright notice and this permission notice shall be included in
 /// all copies or substantial portions of the Software.
 /// 
+/// Restrictions:
+///		By making use of the Software for military purposes, you choose to make
+///		a Bunny unhappy.
+/// 
 /// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 /// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 /// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -19,15 +23,19 @@
 /// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 /// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 /// THE SOFTWARE.
+///
+/// @ref core
+/// @file glm/detail/type_tvec4_avx2.inl
+/// @date 2014-12-01 / 2014-12-01
+/// @author Christophe Riccio
 ///////////////////////////////////////////////////////////////////////////////////
 
-namespace glm
+namespace glm{
+namespace detail
 {
-	GLM_FUNC_QUALIFIER dword uint10_10_10_2_cast
-	(
-		glm::vec4 const & v
-	)
-	{
-		return dword(uint(v.x * 2047.f) << 0 | uint(v.y * 2047.f) << 10 | uint(v.z * 2047.f) << 20 | uint(v.w * 3.f) << 30);
-	}
+
+}//namespace detail
+
+	
+
 }//namespace glm

@@ -85,7 +85,7 @@ namespace minko
             typedef std::array<data::ResolvedBinding*, 17>          StatesResolveBindings;
 
 		private:
-			uint								_batchId;
+			std::vector<uint>					_batchIDs;
             std::shared_ptr<Pass>               _pass;
             data::Store&                        _rootData;
             data::Store&                        _rendererData;
@@ -93,9 +93,9 @@ namespace minko
             EffectVariables                		_variables;
 
 			std::shared_ptr<Program>			_program;
-            int*								_indexBuffer;
-            uint*                               _firstIndex;
-            uint*								_numIndices;
+            const int*							_indexBuffer;
+            const uint*                         _firstIndex;
+            const uint*							_numIndices;
             std::vector<UniformValue<int>>      _uniformInt;
             std::vector<UniformValue<float>>    _uniformFloat;
             std::vector<UniformValue<int>>      _uniformBool;
@@ -139,10 +139,10 @@ namespace minko
                      data::Store&           targetData);
 
 			inline
-			uint
-			batchId() const
+			std::vector<uint>&
+			batchIDs()
 			{
-				return _batchId;
+				return _batchIDs;
 			}
 
             inline
@@ -336,7 +336,7 @@ namespace minko
             {
                 return *_scissorBox;
             }
-            
+
 			inline
 			const TextureSampler&
 			target()

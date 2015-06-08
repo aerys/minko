@@ -19,6 +19,8 @@ local function translate(filepath)
 		filepath = string.gsub(filepath, '%$%(TARGETDIR%)', '$(subst /,\\,$(TARGETDIR))')
 	end
 
+	filepath = '"' .. filepath  .. '"'
+
 	return filepath
 end
 

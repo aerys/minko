@@ -55,11 +55,11 @@ namespace minko
 			math::mat4							        _pickingProjection;	
 			std::map<SurfacePtr, uint>			        _surfaceToPickingId; 
 			std::map<uint, SurfacePtr>			        _pickingIdToSurface;
-			std::map<SurfacePtr, ProviderPtr>	        _surfaceToProvider;
-            std::map<NodePtr, ProviderPtr>		        _targetToProvider;
 			uint							        	_pickingId;
 			ContextPtr					        		_context;
             ProviderPtr				        		    _pickingProvider;
+
+            RendererPtr                                 _depthRenderer;
 
 			std::vector<NodePtr>						_descendants;
 
@@ -69,6 +69,8 @@ namespace minko
 			Signal<NodePtr, NodePtr, NodePtr>::Slot		_removedSlot;
 			Signal<RendererPtr>::Slot					_renderingBeginSlot;
 			Signal<RendererPtr>::Slot					_renderingEndSlot;
+			Signal<RendererPtr>::Slot					_depthRenderingBeginSlot;
+			Signal<RendererPtr>::Slot					_depthRenderingEndSlot;
             Signal<SceneManagerPtr, float, float>::Slot _frameBeginSlot;
 			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot	_componentAddedSlot;
 			Signal<NodePtr, NodePtr, AbsCtrlPtr>::Slot	_componentRemovedSlot;
@@ -92,6 +94,9 @@ namespace minko
 
 			unsigned char								_lastColor[4];
 			SurfacePtr									_lastPickedSurface;
+            unsigned char                               _lastDepth[4];
+            float                                       _lastDepthValue;
+            unsigned char                               _lastMergingMask;
 
 			Signal<MousePtr, int, int>::Slot			_mouseMoveSlot;
 			Signal<MousePtr>::Slot						_mouseRightDownSlot;
@@ -125,6 +130,7 @@ namespace minko
             bool                                        _emulateMouseWithTouch;
 
             bool                                        _enabled;
+            bool                                        _renderDepth;
 
 		public:
 			inline static
@@ -250,6 +256,34 @@ namespace minko
 				return _lastPickedSurface;
 			}
 
+            inline
+            bool
+            renderDepth() const
+            {
+                return _renderDepth;
+            }
+
+            inline
+            void
+            renderDepth(bool value)
+            {
+                _renderDepth = value;
+            }
+
+            inline
+            float
+            pickedDepth() const
+            {
+                return _lastDepthValue;
+            }
+
+            inline
+            unsigned char
+            pickedMergingMask() const
+			{
+			    return _lastMergingMask;
+			}
+
         protected:
 			void
 			targetAdded(NodePtr target);
@@ -293,6 +327,12 @@ namespace minko
 
 			void
 			renderingEnd(RendererPtr renderer);
+
+			void
+			depthRenderingBegin(RendererPtr renderer);
+
+			void
+			depthRenderingEnd(RendererPtr renderer);
 
             Picking();
 
@@ -343,6 +383,18 @@ namespace minko
 
             void
             frameBeginHandler(SceneManagerPtr, float, float);
+
+            void
+            renderDepth(RendererPtr renderer, SurfacePtr pickedSurface);
+
+            void
+            dispatchEvents(SurfacePtr pickedSurface, float depth);
+            
+            void
+            updatePickingProjection();
+
+            void
+            updatePickingOrigin();
 		};
 	}
 }

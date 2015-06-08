@@ -33,6 +33,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Transform.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/AbstractCanvas.hpp"
+#include "minko/math/Ray.hpp"
 
 using namespace minko;
 using namespace component;
@@ -61,10 +62,13 @@ Picking::Picking() :
     _tap(Signal<NodePtr>::create()),
     _doubleTap(Signal<NodePtr>::create()),
     _longHold(Signal<NodePtr>::create()),
+    _lastDepthValue(0.f),
+    _lastMergingMask(0),
     _addPickingLayout(true),
     _emulateMouseWithTouch(true),
     _frameBeginSlot(nullptr),
-    _enabled(false)
+    _enabled(false),
+    _renderDepth(true)
 {
 }
 
@@ -76,8 +80,9 @@ Picking::initialize(NodePtr             camera,
     _camera = camera;
     _emulateMouseWithTouch = emulateMouseWithTouch;
     _addPickingLayout = addPickingLayout;
-
+    
 	_pickingProvider->set("pickingProjection", _pickingProjection);
+	_pickingProvider->set("pickingOrigin", math::vec3());
 }
 
 void
@@ -206,6 +211,19 @@ Picking::targetAdded(NodePtr target)
     );
     _renderer->scissorBox(0, 0, 1, 1);
     _renderer->layoutMask(scene::BuiltinLayout::PICKING);
+    _renderer->enabled(false);
+
+    _depthRenderer = Renderer::create(
+        0xFFFF00FF,
+        nullptr,
+        _sceneManager->assets()->effect("effect/PickingDepth.effect"),
+        "default",
+        999.f,
+        "Depth Picking Renderer"
+    );
+    _depthRenderer->scissorBox(0, 0, 1, 1);
+    _depthRenderer->layoutMask(scene::BuiltinLayout::PICKING_DEPTH);
+    _depthRenderer->enabled(false);
 
 	updateDescendants(target);
 
@@ -229,6 +247,7 @@ Picking::targetAdded(NodePtr target)
 		addedHandler(target, target, target->parent());
 
 	target->addComponent(_renderer);
+    target->addComponent(_depthRenderer);
 
 	auto perspectiveCamera = _camera->component<component::PerspectiveCamera>();
 
@@ -242,6 +261,7 @@ void
 Picking::targetRemoved(NodePtr target)
 {
     _renderer = nullptr;
+    _depthRenderer = nullptr;
     _sceneManager = nullptr;
 
 	_addedSlot = nullptr;
@@ -268,6 +288,18 @@ Picking::addedHandler(NodePtr target, NodePtr child, NodePtr parent)
 
 		_renderingEndSlot = _renderer->beforePresent()->connect(std::bind(
 			&Picking::renderingEnd,
+			std::static_pointer_cast<Picking>(shared_from_this()),
+			std::placeholders::_1
+        ));
+
+		_depthRenderingBeginSlot = _depthRenderer->renderingBegin()->connect(std::bind(
+			&Picking::depthRenderingBegin,
+			std::static_pointer_cast<Picking>(shared_from_this()),
+			std::placeholders::_1
+        ));
+
+		_depthRenderingEndSlot = _depthRenderer->beforePresent()->connect(std::bind(
+			&Picking::depthRenderingEnd,
 			std::static_pointer_cast<Picking>(shared_from_this()),
 			std::placeholders::_1
         ));
@@ -335,23 +367,17 @@ Picking::addSurface(SurfacePtr surface)
 		_surfaceToPickingId[surface] = _pickingId;
 		_pickingIdToSurface[_pickingId] = surface;
 
-		_surfaceToProvider[surface] = data::Provider::create();
-
-		_surfaceToProvider[surface]->set("pickingColor", math::vec4(
+		surface->data()->set("pickingColor", math::vec4(
 			((_pickingId >> 16) & 0xff) / 255.f,
 			((_pickingId >> 8) & 0xff) / 255.f,
 			((_pickingId)& 0xff) / 255.f,
 			1
 		));
 
-        if (_targetToProvider.find(surface->target()) == _targetToProvider.end())
-		{
-            _targetToProvider[surface->target()] = _surfaceToProvider[surface];
-            surface->target()->data().addProvider(_surfaceToProvider[surface]);
-		}
-
         if (_addPickingLayout)
             surface->target()->layout(target()->layout() | scene::BuiltinLayout::PICKING);
+
+        surface->layoutMask(surface->layoutMask() & ~scene::BuiltinLayout::PICKING_DEPTH);
 	}
 }
 
@@ -429,10 +455,154 @@ Picking::removeSurfacesForNode(NodePtr node)
 }
 
 void
+Picking::updateDescendants(NodePtr target)
+{
+	auto nodeSet = scene::NodeSet::create(target)->descendants(true);
+
+	_descendants = nodeSet->nodes();
+}
+
+void
+Picking::enabled(bool enabled)
+{
+    if (enabled && !_enabled)
+    {
+        _enabled = true;
+
+        _frameBeginSlot = _sceneManager->frameBegin()->connect(std::bind(
+		    &Picking::frameBeginHandler,
+		    std::static_pointer_cast<Picking>(shared_from_this()),
+		    std::placeholders::_1,
+		    std::placeholders::_2,
+		    std::placeholders::_3
+        ), 1000.0f);
+    }
+    else if (!enabled && _enabled)
+    {
+        _enabled = false;
+        _frameBeginSlot = nullptr;
+    }
+}
+
+void
+Picking::frameBeginHandler(SceneManagerPtr, float, float)
+{
+    _renderer->enabled(true);
+    _renderer->render(_sceneManager->canvas()->context());
+    _renderer->enabled(false);
+}
+
+void
 Picking::renderingBegin(RendererPtr renderer)
 {
-	float mouseX = (float)_mouse->x();
-	float mouseY = (float)_mouse->y();
+    if (!_enabled)
+        return;
+
+    updatePickingProjection();
+}
+
+void
+Picking::renderingEnd(RendererPtr renderer)
+{
+    if (!_enabled)
+        return;
+
+    _context->readPixels(0, 0, 1, 1, &_lastColor[0]);
+
+    uint pickedSurfaceId = (_lastColor[0] << 16) + (_lastColor[1] << 8) + _lastColor[2];
+
+    auto surfaceIt = _pickingIdToSurface.find(pickedSurfaceId);
+
+    if (surfaceIt != _pickingIdToSurface.end())
+    {
+        auto pickedSurface = surfaceIt->second;
+
+        if (_renderDepth)
+            renderDepth(_depthRenderer, pickedSurface);
+        else
+            dispatchEvents(pickedSurface, _lastDepthValue);
+    }
+    else
+    {
+        dispatchEvents(nullptr, _lastDepthValue);
+    }
+}
+
+void
+Picking::renderDepth(RendererPtr renderer, SurfacePtr pickedSurface)
+{
+    if (!_enabled)
+        return;
+
+    auto pickedSurfaceTarget = pickedSurface->target();
+
+    pickedSurfaceTarget->layout(pickedSurfaceTarget->layout() | scene::BuiltinLayout::PICKING_DEPTH);
+    pickedSurface->layoutMask(pickedSurface->layoutMask() | scene::BuiltinLayout::PICKING_DEPTH);
+
+    renderer->enabled(true);
+    renderer->render(_sceneManager->canvas()->context());
+    renderer->enabled(false);
+
+    pickedSurfaceTarget->layout(pickedSurfaceTarget->layout() & ~scene::BuiltinLayout::PICKING_DEPTH);
+    pickedSurface->layoutMask(pickedSurface->layoutMask() & ~scene::BuiltinLayout::PICKING_DEPTH);
+}
+
+static
+float
+unpack(const math::vec4& depth)
+{
+    return math::dot(depth, math::vec4(1.0, 1.0 / 255.0, 1.0 / 65025.0, 1.0 / 16581375.0));
+}
+
+static
+float
+unpack(const math::vec3& depth)
+{
+    return math::dot(depth, math::vec3(1.0, 1.0 / 255.0, 1.0 / 65025.0));
+}
+
+void
+Picking::depthRenderingBegin(RendererPtr renderer)
+{
+    if (!_enabled)
+        return;
+    
+    updatePickingOrigin();
+}
+
+void
+Picking::depthRenderingEnd(RendererPtr renderer)
+{
+    if (!_enabled)
+        return;
+    
+    uint pickedSurfaceId = (_lastColor[0] << 16) + (_lastColor[1] << 8) + _lastColor[2];
+
+    auto surfaceIt = _pickingIdToSurface.find(pickedSurfaceId);
+
+    if (surfaceIt != _pickingIdToSurface.end())
+    {
+        auto pickedSurface = surfaceIt->second;
+
+        _context->readPixels(0, 0, 1, 1, &_lastDepth[0]);
+
+        const auto zFar = _camera->data().get<float>("zFar");
+
+        const auto normalizedDepth = unpack(math::vec3(_lastDepth[0], _lastDepth[1], _lastDepth[2]) / 255.f) * zFar;
+
+        _lastDepthValue = normalizedDepth;
+
+        _lastMergingMask = _lastDepth[3];
+
+        dispatchEvents(pickedSurface, _lastDepthValue);
+    }
+}
+
+void
+Picking::updatePickingProjection()
+{
+	const auto mouseX = static_cast<float>(_mouse->x());
+	const auto mouseY = static_cast<float>(_mouse->y());
 
 	auto perspectiveCamera	= _camera->component<component::PerspectiveCamera>();
 	auto projection	= math::perspective(
@@ -449,19 +619,28 @@ Picking::renderingBegin(RendererPtr renderer)
 }
 
 void
-Picking::renderingEnd(RendererPtr renderer)
+Picking::updatePickingOrigin()
 {
-    _context->readPixels(0, 0, 1, 1, &_lastColor[0]);
+	auto perspectiveCamera	= _camera->component<component::PerspectiveCamera>();
 
-    uint pickedSurfaceId = (_lastColor[0] << 16) + (_lastColor[1] << 8) + _lastColor[2];
+    const auto normalizedMouseX = _mouse->normalizedX();
+    const auto normalizedMouseY = _mouse->normalizedY();
 
-    if (_lastPickedSurface != _pickingIdToSurface[pickedSurfaceId])
+    auto pickingRay = perspectiveCamera->unproject(normalizedMouseX, normalizedMouseY);
+
+    _pickingProvider->set("pickingOrigin", pickingRay->origin());
+}
+
+void
+Picking::dispatchEvents(SurfacePtr pickedSurface, float depth)
+{
+    if (_lastPickedSurface != pickedSurface)
     {
         if (_lastPickedSurface && _mouseOut->numCallbacks() > 0)
             _mouseOut->execute(_lastPickedSurface->target());
 
-        _lastPickedSurface = _pickingIdToSurface[pickedSurfaceId];
-
+        _lastPickedSurface = pickedSurface;
+        
         if (_lastPickedSurface && _mouseOver->numCallbacks() > 0)
             _mouseOver->execute(_lastPickedSurface->target());
     }
@@ -696,42 +875,4 @@ Picking::touchLongHoldHandler(TouchPtr touch, float x, float y)
         _executeRightClickHandler = true;
         enabled(true);
     }
-}
-
-void
-Picking::updateDescendants(NodePtr target)
-{
-	auto nodeSet = scene::NodeSet::create(target)->descendants(true);
-
-	_descendants = nodeSet->nodes();
-}
-
-void
-Picking::enabled(bool enabled)
-{
-    if (enabled && !_enabled)
-    {
-        _enabled = true;
-
-        _frameBeginSlot = _sceneManager->frameBegin()->connect(std::bind(
-		    &Picking::frameBeginHandler,
-		    std::static_pointer_cast<Picking>(shared_from_this()),
-		    std::placeholders::_1,
-		    std::placeholders::_2,
-		    std::placeholders::_3
-        ), 1000.0f);
-    }
-    else if (!enabled && _enabled)
-    {
-        _enabled = false;
-        _frameBeginSlot = nullptr;
-    }
-}
-
-void
-Picking::frameBeginHandler(SceneManagerPtr, float, float)
-{
-    _renderer->enabled(true);
-    _renderer->render(_sceneManager->canvas()->context());
-    _renderer->enabled(false);
 }

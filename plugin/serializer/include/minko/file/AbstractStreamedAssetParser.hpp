@@ -21,8 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/StreamingCommon.hpp"
-#include "minko/component/JobManager.hpp"
 #include "minko/deserialize/Unpacker.hpp"
+#include "minko/data/Provider.hpp"
 #include "minko/file/AbstractSerializerParser.hpp"
 
 namespace minko
@@ -30,11 +30,85 @@ namespace minko
     namespace file
     {
         class AbstractStreamedAssetParser :
-            public AbstractSerializerParser,
-            public component::JobManager::Job
+            public AbstractSerializerParser
         {
         public:
             typedef std::shared_ptr<AbstractStreamedAssetParser> Ptr;
+
+        private:
+            class ParsingJob :
+                public component::JobManager::Job
+            {
+            public:
+                typedef std::shared_ptr<ParsingJob>                             Ptr;
+
+            private:
+                std::function<void()>               _parsingFunction;
+                std::function<void()>               _completeFunction;
+
+                bool                                _complete;
+                float                               _priority;
+
+            public:
+                inline
+                static
+                Ptr
+                create(std::function<void()>    parsingFunction,
+                       std::function<void()>    completeFunction,
+                       float                    priority = 1.f)
+                {
+                    return Ptr(new ParsingJob(
+                        parsingFunction,
+                        completeFunction,
+                        priority
+                    ));
+                }
+
+			    bool
+			    complete() override
+                {
+                    return _complete;
+                }
+
+			    void
+			    beforeFirstStep() override
+                {
+                }
+
+			    void
+			    step() override
+                {
+                    if (_parsingFunction)
+                        _parsingFunction();
+
+                    _complete = true;
+                }
+			
+			    float
+			    priority() override
+                {
+                    return _priority;
+                }
+			
+			    void
+			    afterLastStep() override
+                {
+                    if (_completeFunction)
+                        _completeFunction();
+                }
+
+            private:
+                explicit
+                ParsingJob(std::function<void()>    parsingFunction,
+                           std::function<void()>    completeFunction,
+                           float                    priority) :
+                    _parsingFunction(parsingFunction),
+                    _completeFunction(completeFunction),
+                    _complete(false),
+                    _priority(priority)
+                {
+                }
+            };
 
         private:
             std::shared_ptr<AssetLibrary>														_assetLibrary;
@@ -43,6 +117,8 @@ namespace minko
             std::shared_ptr<StreamingOptions>													_streamingOptions;
 
             std::shared_ptr<LinkedAsset>														_linkedAsset;
+
+            std::shared_ptr<component::JobManager>                                              _jobManager;
 
             std::string																			_filename;
             std::string																			_resolvedFilename;
@@ -53,7 +129,6 @@ namespace minko
 
             int																					_previousLod;
             int																					_currentLod;
-            bool																				_busy;
 
             int																					_nextLodOffset;
             int																					_nextLodSize;
@@ -69,10 +144,11 @@ namespace minko
             int																					_requiredLod;
             float																				_priority;
 
+            Signal<Ptr, float>::Ptr                                                             _priorityChanged;
+            Signal<Ptr>::Ptr                                                                    _lodRequestComplete;
+
             Signal<Ptr>::Ptr																	_ready;
             Signal<Ptr, float>::Ptr																_progress;
-            Signal<Ptr>::Ptr																	_active;
-            Signal<Ptr>::Ptr																	_inactive;
 
         public:
             inline
@@ -83,10 +159,38 @@ namespace minko
             }
 
             inline
+            std::shared_ptr<LinkedAsset>
+            linkedAsset() const
+            {
+                return _linkedAsset;
+            }
+
+            inline
             void
             linkedAsset(std::shared_ptr<LinkedAsset> linkedAsset)
             {
                 _linkedAsset = linkedAsset;
+            }
+
+            inline
+            void
+            useJobBasedParsing(std::shared_ptr<component::JobManager> jobManager)
+            {
+                _jobManager = jobManager;
+            }
+
+            inline
+            Signal<Ptr, float>::Ptr
+            priorityChanged() const
+            {
+                return _priorityChanged;
+            }
+
+            inline
+            Signal<Ptr>::Ptr
+            lodRequestComplete() const
+            {
+                return _lodRequestComplete;
             }
 
             inline
@@ -103,20 +207,6 @@ namespace minko
                 return _progress;
             }
 
-            inline
-            Signal<Ptr>::Ptr
-            active() const
-            {
-                return _active;
-            }
-
-            inline
-            Signal<Ptr>::Ptr
-            inactive() const
-            {
-                return _inactive;
-            }
-
             void
             parse(const std::string&                filename,
                   const std::string&                resolvedFilename,
@@ -124,20 +214,14 @@ namespace minko
                   const std::vector<unsigned char>& data,
                   std::shared_ptr<AssetLibrary>     assetLibrary);
 
-            bool
-            complete();
-
-            void
-            beforeFirstStep();
-
-            void
-            step();
-
             float
             priority();
 
             void
-            afterLastStep();
+            getNextLodRequestInfo(int& offset, int& size);
+
+            void
+            parseLodRequest(const std::vector<unsigned char>& data);
 
         protected:
             AbstractStreamedAssetParser(std::shared_ptr<data::Provider> data);
@@ -206,10 +290,6 @@ namespace minko
                       std::shared_ptr<Options>  options);
 
             void
-            loadRangeComplete(const std::vector<unsigned char>&     data,
-                              std::shared_ptr<Options>              options);
-
-            void
             parseLod(int                                previousLod,
                      int                                currentLod,
                      const std::vector<unsigned char>&  data,
@@ -222,12 +302,6 @@ namespace minko
             void
             prepareNextLod();
 
-            bool
-            nextLodIsReady();
-
-            void
-            fetchNextLod(std::shared_ptr<Options> options);
-
             void
             terminate();
 
@@ -236,9 +310,6 @@ namespace minko
 
             void
             priority(float priority);
-
-            void
-            busy(bool value);
 
             inline
             int

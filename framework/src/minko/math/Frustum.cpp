@@ -26,14 +26,16 @@ using namespace minko;
 void
 math::Frustum::updateFromMatrix(const math::mat4& matrix)
 {
-	const float* data	= math::value_ptr(matrix);
+    const auto transposedMatrix = math::transpose(matrix);
 
-	_planes[(int)PlanePosition::LEFT]	= math::normalize(math::vec4(data[12] + data[0], data[13] + data[1], data[14] + data[2], data[15] + data[3]));
-	_planes[(int)PlanePosition::TOP]	= math::normalize(math::vec4(data[12] - data[4], data[13] - data[5], data[14] - data[6], data[15] - data[7]));
-	_planes[(int)PlanePosition::RIGHT]	= math::normalize(math::vec4(data[12] - data[0], data[13] - data[1], data[14] - data[2], data[15] - data[3]));
-	_planes[(int)PlanePosition::BOTTOM]	= math::normalize(math::vec4(data[12] + data[4], data[13] + data[5], data[14] + data[6], data[15] + data[7]));
-	_planes[(int)PlanePosition::FAR]	= math::normalize(math::vec4(data[12] - data[8], data[13] - data[9], data[14] - data[10], data[15] - data[11]));
-	_planes[(int)PlanePosition::NEAR]	= math::normalize(math::vec4(data[8], data[9], data[10], data[11]));
+    _planes[static_cast<int>(PlanePosition::LEFT)] = math::normalize(transposedMatrix[3] + transposedMatrix[0]);
+    _planes[static_cast<int>(PlanePosition::RIGHT)] = math::normalize(transposedMatrix[3] - transposedMatrix[0]);
+
+    _planes[static_cast<int>(PlanePosition::BOTTOM)] = math::normalize(transposedMatrix[3] + transposedMatrix[1]);
+    _planes[static_cast<int>(PlanePosition::TOP)] = math::normalize(transposedMatrix[3] - transposedMatrix[1]);
+
+    _planes[static_cast<int>(PlanePosition::NEAR)] = math::normalize(transposedMatrix[3] + transposedMatrix[2]);
+    _planes[static_cast<int>(PlanePosition::FAR)] = math::normalize(transposedMatrix[3] - transposedMatrix[2]);
 }
 
 math::ShapePosition
@@ -100,10 +102,12 @@ math::Frustum::testBoundingBox(math::Box::Ptr box)
 		_trbResult[planeId] = pa * xtrb + pb * ytrb + pc * ztrb + pd < 0.;
 	}
 
-	if ((_blfResult[(int)PlanePosition::LEFT]	&& _trbResult[(int)PlanePosition::RIGHT]) ||
-		(_blfResult[(int)PlanePosition::RIGHT]	&& _trbResult[(int)PlanePosition::LEFT]) ||
-		(_blfResult[(int)PlanePosition::TOP]	&& _trbResult[(int)PlanePosition::BOTTOM]) ||
-		(_blfResult[(int)PlanePosition::BOTTOM] && _trbResult[(int)PlanePosition::TOP]))
+	if (((_blfResult[(int)PlanePosition::LEFT]	&& _trbResult[(int)PlanePosition::RIGHT]) ||
+		(_blfResult[(int)PlanePosition::RIGHT]	&& _trbResult[(int)PlanePosition::LEFT])) &&
+		((_blfResult[(int)PlanePosition::TOP]	&& _trbResult[(int)PlanePosition::BOTTOM]) ||
+		(_blfResult[(int)PlanePosition::BOTTOM] && _trbResult[(int)PlanePosition::TOP])) &&
+        ((_blfResult[(int)PlanePosition::NEAR]	&& _trbResult[(int)PlanePosition::FAR]) ||
+		(_blfResult[(int)PlanePosition::FAR]	&& _trbResult[(int)PlanePosition::NEAR])))
 		return ShapePosition::AROUND;
 
 	for (uint planeId = 0; planeId < _planes.size(); ++planeId)

@@ -46,7 +46,7 @@ FileProtocol::load()
 
     const auto& resolvedFilename = this->resolvedFilename();
     auto options = _options;
-    auto flags = std::ios::in | std::ios::ate | std::ios::binary;
+    auto flags = std::ios::in | std::ios::binary;
 
     auto cleanFilename = resolvedFilename;
 
@@ -57,7 +57,7 @@ FileProtocol::load()
         cleanFilename = resolvedFilename.substr(prefixPosition + 3);
     }
 
-    std::fstream file(cleanFilename, flags);
+    std::ifstream file(cleanFilename, flags);
 
     if (file.is_open())
     {
@@ -117,9 +117,13 @@ FileProtocol::load()
         }
         else
         {
+            file.seekg(0, std::ios::end);
+
             auto offset = options->seekingOffset();
 
-			auto length = options->seekedLength() > 0 ? options->seekedLength() : (unsigned int)file.tellg();
+			const auto length = options->seekedLength() > 0
+                ? static_cast<std::ifstream::pos_type>(options->seekedLength())
+                : file.tellg();
 
             // FIXME: use fixed size buffers and call _progress accordingly
 

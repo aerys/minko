@@ -3,8 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=0.5, maximum-scale=0.5, user-scalable=no"/>
-    <meta name="viewport" content="target-densitydpi=device-dpi, user-scalable=0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Powered by Minko</title>
     <style>
 		body, html {
@@ -90,7 +89,9 @@
 	</div>
 
 	<canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
-
+	
+	<script>window.performance = window.performance || {now: Date.now};</script>
+	
     <script type='text/javascript'>
       var statusElement = document.getElementById('status');
       var progressElement = document.getElementById('progress');

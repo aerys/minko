@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/component/AbstractComponent.hpp"
+#include "minko/data/Provider.hpp"
 #include "minko/Uuid.hpp"
 
 namespace minko
@@ -30,7 +31,7 @@ namespace minko
 	{
 		class Surface :
 			public AbstractComponent,
-            public Uuid::enable_uuid
+            public Uuid::has_uuid
 		{
 			friend render::DrawCallPool;
 
@@ -88,6 +89,18 @@ namespace minko
                 return std::shared_ptr<Surface>(new Surface(name, geometry, material, effect, technique));
 			}
 
+			static
+			Ptr
+			create(const std::string&                       uuid,
+                   const std::string&					    name,
+				   std::shared_ptr<geometry::Geometry> 		geometry,
+				   std::shared_ptr<material::Material>      material,
+				   std::shared_ptr<render::Effect>			effect,
+				   const std::string&						technique)
+			{
+                return std::shared_ptr<Surface>(new Surface(uuid, name, geometry, material, effect, technique));
+			}
+
             // TODO #Clone
             /*
 			AbstractComponent::Ptr
@@ -97,6 +110,13 @@ namespace minko
 			~Surface()
 			{
 			}
+
+            inline
+            const std::string&
+            uuid() const
+            {
+                return _provider->uuid();
+            }
 
 			inline
 			const std::string&
@@ -130,10 +150,10 @@ namespace minko
             geometry(std::shared_ptr<geometry::Geometry> geometry);
 
             void
-            firstIndex(unsigned short index);
+            firstIndex(unsigned int index);
 
             void
-            numIndices(unsigned short numIndices);
+            numIndices(unsigned int numIndices);
 
 			inline
 			std::shared_ptr<material::Material>
@@ -191,16 +211,26 @@ namespace minko
 			targetRemoved(NodePtr);
 
 		private:
-			Surface(std::string								name,
-					std::shared_ptr<geometry::Geometry>		geometry,
-					std::shared_ptr<material::Material>	    material,
-					std::shared_ptr<render::Effect>			effect,
-					const std::string&						technique);
+			Surface(const std::string&                  name,
+					std::shared_ptr<geometry::Geometry>	geometry,
+					std::shared_ptr<material::Material>	material,
+					std::shared_ptr<render::Effect>	    effect,
+					const std::string&	                technique);
+
+			Surface(const std::string&                  uuid,
+                    const std::string&                  name,
+					std::shared_ptr<geometry::Geometry>	geometry,
+					std::shared_ptr<material::Material>	material,
+					std::shared_ptr<render::Effect>	    effect,
+					const std::string&	                technique);
 
             Surface(const Surface& surface, const CloneOption& option);
 
 			void
 			setEffectAndTechnique(EffectPtr, const std::string&);
+
+            void
+            initializeIndexRange(std::shared_ptr<geometry::Geometry> geometry);
 		};
 	}
 }

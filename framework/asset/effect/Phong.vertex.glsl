@@ -1,12 +1,12 @@
 #ifdef VERTEX_SHADER
 
-#ifdef GL_ES
-    #ifdef GL_FRAGMENT_PRECISION_HIGH
-        precision highp float;
-    #else
-        precision mediump float;
-    #endif
-#endif
+// #ifdef GL_ES
+//     #ifdef GL_FRAGMENT_PRECISION_HIGH
+//         precision highp float;
+//     #else
+//         precision mediump float;
+//     #endif
+// #endif
 
 #pragma include "Skinning.function.glsl"
 #pragma include "Pop.function.glsl"

@@ -492,7 +492,7 @@ Renderer::clear(std::shared_ptr<AbstractCanvas> canvas)
 }
 
 void
-Renderer::clear(std::shared_ptr<AbstractCanvas> canvas, math::vec4 clearColor)
+Renderer::clear(std::shared_ptr<AbstractCanvas> canvas, const math::vec4& clearColor)
 {
 	canvas->context()->clear(clearColor.r, clearColor.g, clearColor.b, clearColor.a);
 	canvas->swapBuffers();
@@ -634,11 +634,11 @@ Renderer::surfaceLayoutMaskChangedHandler(Surface::Ptr surface)
 	if (checkSurfaceLayout(surface))
 	{
 		if (_surfaceToDrawCallIterator.count(surface) == 0)
-			addSurface(surface);
+            _toCollect.insert(surface);
 	}
 	else
 	{
-		if (_surfaceToDrawCallIterator.count(surface) == 0)
+		if (_surfaceToDrawCallIterator.count(surface) != 0)
 			removeSurface(surface);
 	}
 }

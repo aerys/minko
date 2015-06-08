@@ -53,6 +53,8 @@ JobManager::pushJob(Job::Ptr job)
         }))
     );
 
+    job->_jobManager = std::static_pointer_cast<JobManager>(shared_from_this());
+
     insertJob(job);
 
     return std::static_pointer_cast<JobManager>(shared_from_this());
@@ -95,7 +97,6 @@ JobManager::end(NodePtr target)
 
             if (!currentJob->running())
             {
-                currentJob->_jobManager = std::dynamic_pointer_cast<JobManager>(shared_from_this());
                 currentJob->running(true);
                 currentJob->beforeFirstStep();
             }

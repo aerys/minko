@@ -100,6 +100,7 @@ namespace minko
         class MeshPartitioner;
         class POPGeometryParser;
         class POPGeometryWriter;
+        class StreamedAssetParserScheduler;
         class StreamedTextureParser;
         class StreamedTextureWriter;
     }

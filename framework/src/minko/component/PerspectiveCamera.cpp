@@ -45,9 +45,11 @@ PerspectiveCamera::PerspectiveCamera(float			      fov,
   	_projection(math::perspective(fov, aspectRatio, zNear, zFar)),
   	_viewProjection(_projection),
     _position(),
+    _direction(0., 0., 1.f),
 	_postProjection(postPerspective)
 {
 	_data
+        ->set("eyeDirection",           _direction)
 		->set("eyePosition",		    _position)
   		->set("viewMatrix",				_view)
   		->set("projectionMatrix",		_projection)
@@ -114,9 +116,11 @@ void
 PerspectiveCamera::updateMatrices(const math::mat4& modelToWorldMatrix)
 {
 	_position = (modelToWorldMatrix * math::vec4(0.f, 0.f, 0.f, 1.f)).xyz();
+    _direction = math::normalize(math::mat3(modelToWorldMatrix) * math::vec3(0.f, 0.f, 1.f));
     _view = math::inverse(modelToWorldMatrix);
 
 	_data
+        ->set("eyeDirection",   _direction)
 		->set("eyePosition",	_position)
   		->set("viewMatrix",     _view);
 
@@ -178,9 +182,9 @@ PerspectiveCamera::project(math::vec3 worldPosition)
 
     vector /= vector.w;
 
-    return {
+    return math::vec3(
        width * ((vector.x + 1.0f) * .5f),
 	   height * ((1.0f - ((vector.y + 1.0f) * .5f))),
        -(_view * pos).z
-    };
+    );
 }

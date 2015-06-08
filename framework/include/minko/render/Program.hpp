@@ -187,21 +187,21 @@ namespace minko
 
             template <typename T, int P>
             Program&
-            setUniform(const std::string& name, math::detail::tvec2<T, P> value)
+            setUniform(const std::string& name, math::tvec2<T, P> value)
             {
                 return setUniform<T, 2>(name, 1, math::value_ptr(value));
             }
 
             template <typename T, int P>
             Program&
-            setUniform(const std::string& name, math::detail::tvec3<T, P> value)
+            setUniform(const std::string& name, math::tvec3<T, P> value)
             {
                 return setUniform<T, 3>(name, 1, math::value_ptr(value));
             }
 
             template <typename T, int P>
             Program&
-            setUniform(const std::string& name, math::detail::tvec4<T, P> value)
+            setUniform(const std::string& name, math::tvec4<T, P> value)
             {
                 return setUniform<T, 4>(name, 1, math::value_ptr(value));
             }

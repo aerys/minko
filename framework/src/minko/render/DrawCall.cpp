@@ -36,7 +36,6 @@ DrawCall::DrawCall(uint                   batchId,
                    data::Store&           rootData,
                    data::Store&           rendererData,
                    data::Store&           targetData) :
-    _batchId(batchId),
     _pass(pass),
     _variables(variables),
     _rootData(rootData),
@@ -68,6 +67,8 @@ DrawCall::DrawCall(uint                   batchId,
     _modelToWorldMatrixPropertyRemovedSlot(nullptr),
     _worldToScreenMatrixPropertyRemovedSlot(nullptr)
 {
+    _batchIDs = { batchId };
+
     // For Z-sorting
     bindPositionalMembers();
 }
@@ -380,6 +381,7 @@ DrawCall::setUniformValueFromStore(const ProgramInputs::UniformInput&   input,
             setUniformValue(_uniformFloat, input.location, 16, input.size, (!isArray ? math::value_ptr(store.get<math::mat4>(propertyName)) : math::value_ptr(store.get<std::vector<math::mat4>>(propertyName)[0])));
             break;
         case ProgramInputs::Type::sampler2d:
+        case ProgramInputs::Type::samplerCube:
             _samplers.push_back({
                 static_cast<uint>(_program->setTextureNames().size() + _samplers.size()),
                 store.getPointer<TextureSampler>(propertyName),
@@ -388,7 +390,6 @@ DrawCall::setUniformValueFromStore(const ProgramInputs::UniformInput&   input,
         break;
         case ProgramInputs::Type::float9:
         case ProgramInputs::Type::unknown:
-        case ProgramInputs::Type::samplerCube:
             throw std::runtime_error("unsupported program input type: " + ProgramInputs::typeToString(input.type));
         break;
     }
@@ -446,14 +447,14 @@ DrawCall::setStateValueFromStore(const std::string&   stateName,
         else
             _priority = &States::DEFAULT_PRIORITY;
     }
-    else if (stateName == States::PROPERTY_ZSORTED) 
+    else if (stateName == States::PROPERTY_ZSORTED)
     {
         if (store.hasProperty(stateName))
             _zSorted = store.getUnsafePointer<bool>(stateName);
-        else 
+        else
             _zSorted = &States::DEFAULT_ZSORTED;
     }
-    else if (stateName == States::PROPERTY_BLENDING_SOURCE) 
+    else if (stateName == States::PROPERTY_BLENDING_SOURCE)
     {
         if (store.hasProperty(stateName))
             _blendingSourceFactor = store.getUnsafePointer<Blending::Source>(stateName);
@@ -467,96 +468,96 @@ DrawCall::setStateValueFromStore(const std::string&   stateName,
         else
             _blendingDestinationFactor = &States::DEFAULT_BLENDING_DESTINATION;
     }
-    else if (stateName == States::PROPERTY_COLOR_MASK) 
-    { 
-        if (store.hasProperty(stateName)) 
-            _colorMask = store.getUnsafePointer<bool>(stateName); 
-        else 
-            _colorMask = &States::DEFAULT_COLOR_MASK; 
+    else if (stateName == States::PROPERTY_COLOR_MASK)
+    {
+        if (store.hasProperty(stateName))
+            _colorMask = store.getUnsafePointer<bool>(stateName);
+        else
+            _colorMask = &States::DEFAULT_COLOR_MASK;
     }
     else if (stateName == States::PROPERTY_DEPTH_MASK)
     {
-        if (store.hasProperty(stateName)) 
+        if (store.hasProperty(stateName))
             _depthMask = store.getUnsafePointer<bool>(stateName);
-        else 
+        else
             _depthMask = &States::DEFAULT_DEPTH_MASK;
     }
-    else if (stateName == States::PROPERTY_DEPTH_FUNCTION) 
-    { 
-        if (store.hasProperty(stateName)) 
-            _depthFunc = store.getUnsafePointer<CompareMode>(stateName); 
-        else 
-            _depthFunc = &States::DEFAULT_DEPTH_FUNCTION; 
+    else if (stateName == States::PROPERTY_DEPTH_FUNCTION)
+    {
+        if (store.hasProperty(stateName))
+            _depthFunc = store.getUnsafePointer<CompareMode>(stateName);
+        else
+            _depthFunc = &States::DEFAULT_DEPTH_FUNCTION;
     }
     else if (stateName == States::PROPERTY_TRIANGLE_CULLING)
-    { 
-        if (store.hasProperty(stateName)) 
-            _triangleCulling = store.getUnsafePointer<TriangleCulling>(stateName); 
-        else 
-            _triangleCulling = &States::DEFAULT_TRIANGLE_CULLING; 
-    }
-    else if (stateName == States::PROPERTY_STENCIL_FUNCTION) 
-    { 
-        if (store.hasProperty(stateName)) 
-            _stencilFunction = store.getUnsafePointer<CompareMode>(stateName); 
-        else 
-            _stencilFunction = &States::DEFAULT_STENCIL_FUNCTION; 
-    }
-    else if (stateName == States::PROPERTY_STENCIL_REFERENCE) 
-    { 
-        if (store.hasProperty(stateName)) 
-            _stencilReference = store.getUnsafePointer<int>(stateName); 
-        else 
-            _stencilReference = &States::DEFAULT_STENCIL_REFERENCE; 
-    }
-    else if (stateName == States::PROPERTY_STENCIL_MASK) 
-    { 
-        if (store.hasProperty(stateName)) 
-            _stencilMask = store.getUnsafePointer<uint>(stateName); 
+    {
+        if (store.hasProperty(stateName))
+            _triangleCulling = store.getUnsafePointer<TriangleCulling>(stateName);
         else
-            _stencilMask = &States::DEFAULT_STENCIL_MASK; 
+            _triangleCulling = &States::DEFAULT_TRIANGLE_CULLING;
+    }
+    else if (stateName == States::PROPERTY_STENCIL_FUNCTION)
+    {
+        if (store.hasProperty(stateName))
+            _stencilFunction = store.getUnsafePointer<CompareMode>(stateName);
+        else
+            _stencilFunction = &States::DEFAULT_STENCIL_FUNCTION;
+    }
+    else if (stateName == States::PROPERTY_STENCIL_REFERENCE)
+    {
+        if (store.hasProperty(stateName))
+            _stencilReference = store.getUnsafePointer<int>(stateName);
+        else
+            _stencilReference = &States::DEFAULT_STENCIL_REFERENCE;
+    }
+    else if (stateName == States::PROPERTY_STENCIL_MASK)
+    {
+        if (store.hasProperty(stateName))
+            _stencilMask = store.getUnsafePointer<uint>(stateName);
+        else
+            _stencilMask = &States::DEFAULT_STENCIL_MASK;
     }
     else if (stateName == States::PROPERTY_STENCIL_FAIL_OPERATION)
-    { 
-        if (store.hasProperty(stateName)) 
-            _stencilFailOp = store.getUnsafePointer<StencilOperation>(stateName); 
-        else 
+    {
+        if (store.hasProperty(stateName))
+            _stencilFailOp = store.getUnsafePointer<StencilOperation>(stateName);
+        else
             _stencilFailOp = &States::DEFAULT_STENCIL_FAIL_OPERATION;
     }
     else if (stateName == States::PROPERTY_STENCIL_ZFAIL_OPERATION)
-    { 
-        if (store.hasProperty(stateName)) 
-            _stencilZFailOp = store.getUnsafePointer<StencilOperation>(stateName); 
-        else 
+    {
+        if (store.hasProperty(stateName))
+            _stencilZFailOp = store.getUnsafePointer<StencilOperation>(stateName);
+        else
             _stencilZFailOp = &States::DEFAULT_STENCIL_ZFAIL_OPERATION;
     }
     else if (stateName == States::PROPERTY_STENCIL_ZPASS_OPERATION)
-    { 
-        if (store.hasProperty(stateName)) 
-            _stencilZPassOp = store.getUnsafePointer<StencilOperation>(stateName); 
-        else 
+    {
+        if (store.hasProperty(stateName))
+            _stencilZPassOp = store.getUnsafePointer<StencilOperation>(stateName);
+        else
             _stencilZPassOp = &States::DEFAULT_STENCIL_ZPASS_OPERATION;
     }
-    else if (stateName == States::PROPERTY_SCISSOR_TEST) 
-    { 
-        if (store.hasProperty(stateName)) 
-            _scissorTest = store.getUnsafePointer<bool>(stateName); 
-        else 
-            _scissorTest = &States::DEFAULT_SCISSOR_TEST; 
+    else if (stateName == States::PROPERTY_SCISSOR_TEST)
+    {
+        if (store.hasProperty(stateName))
+            _scissorTest = store.getUnsafePointer<bool>(stateName);
+        else
+            _scissorTest = &States::DEFAULT_SCISSOR_TEST;
     }
     else if (stateName == States::PROPERTY_SCISSOR_BOX)
-    { 
-        if (store.hasProperty(stateName)) 
-            _scissorBox = store.getUnsafePointer<math::ivec4>(stateName); 
-        else 
-            _scissorBox = &States::DEFAULT_SCISSOR_BOX; 
+    {
+        if (store.hasProperty(stateName))
+            _scissorBox = store.getUnsafePointer<math::ivec4>(stateName);
+        else
+            _scissorBox = &States::DEFAULT_SCISSOR_BOX;
     }
     else if (stateName == States::PROPERTY_TARGET)
-    { 
-        if (store.hasProperty(stateName)) 
-            _target = store.getUnsafePointer<TextureSampler>(stateName); 
-        else 
-            _target = &States::DEFAULT_TARGET; 
+    {
+        if (store.hasProperty(stateName))
+            _target = store.getUnsafePointer<TextureSampler>(stateName);
+        else
+            _target = &States::DEFAULT_TARGET;
     }
 }
 
@@ -564,16 +565,49 @@ void
 DrawCall::bindIndexBuffer()
 {
     auto indexBufferProperty = data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].indices");
+
     if (_targetData.hasProperty(indexBufferProperty))
-        _indexBuffer = const_cast<int*>(_targetData.getPointer<int>(indexBufferProperty));
+        _indexBuffer = _targetData.getPointer<int>(indexBufferProperty);
 
-    auto firstIndexProperty = data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].firstIndex");
-    if (_targetData.hasProperty(firstIndexProperty))
-        _firstIndex = const_cast<uint*>(_targetData.getPointer<uint>(firstIndexProperty));
+    auto surfaceFirstIndexProperty = data::Store::getActualPropertyName(
+        _variables,
+        "surface[${surfaceUuid}].firstIndex"
+    );
 
-    auto numIndicesProperty = data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].numIndices");
-    if (_targetData.hasProperty(numIndicesProperty))
-        _numIndices = const_cast<uint*>(_targetData.getPointer<uint>(numIndicesProperty));
+    if (!_targetData.hasProperty(surfaceFirstIndexProperty))
+    {
+        auto geometryFirstIndexProperty = data::Store::getActualPropertyName(
+            _variables,
+            "geometry[${geometryUuid}].firstIndex"
+        );
+
+        if (_targetData.hasProperty(geometryFirstIndexProperty))
+            _firstIndex = _targetData.getPointer<uint>(geometryFirstIndexProperty);
+    }
+    else
+    {
+        _firstIndex = _targetData.getPointer<uint>(surfaceFirstIndexProperty);
+    }
+
+    auto surfaceNumIndicesProperty = data::Store::getActualPropertyName(
+        _variables,
+        "surface[${surfaceUuid}].numIndices"
+    );
+
+    if (!_targetData.hasProperty(surfaceNumIndicesProperty))
+    {
+        auto geometryNumIndicesProperty = data::Store::getActualPropertyName(
+            _variables,
+            "geometry[${geometryUuid}].numIndices"
+        );
+
+        if (_targetData.hasProperty(geometryNumIndicesProperty))
+            _numIndices = _targetData.getPointer<uint>(geometryNumIndicesProperty);
+    }
+    else
+    {
+        _numIndices = _targetData.getPointer<uint>(surfaceNumIndicesProperty);
+    }
 }
 
 data::ResolvedBinding*
