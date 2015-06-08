@@ -23,32 +23,47 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "SDL.h"
 
+#include <jni.h>
+
 using namespace minko;
 using namespace android::sensors;
+
+math::mat4 AndroidAttitude::rotationMatrixValue;
+math::quat AndroidAttitude::quaternionValue;
+std::mutex AndroidAttitude::rotationMatrixMutex;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void Java_minko_plugin_sensors_AndroidHeadTracker_minkoNativeOnHeadTrackerEvent(JNIEnv* env, jobject obj, jstring message)
+JNIEXPORT void JNICALL Java_minko_plugin_sensors_AndroidAttitude_minkoNativeOnAttitudeEvent(JNIEnv* env, jobject obj, jfloatArray rotationMatrix, jfloatArray quaternion)
 {
-    const char *nativeMessage = env->GetStringUTFChars(message, 0);
+    jfloat* rotationMatrixFloat = env->GetFloatArrayElements(rotationMatrix, 0);
+    jfloat* quaternionFloat = env->GetFloatArrayElements(quaternion, 0);
+    
+    // Set the quaternion
+    AndroidAttitude::quaternionValue = math::quat();
+    AndroidAttitude::quaternionValue.x = quaternionFloat[0];
+    AndroidAttitude::quaternionValue.y = quaternionFloat[1];
+    AndroidAttitude::quaternionValue.z = quaternionFloat[2];
+    AndroidAttitude::quaternionValue.w = quaternionFloat[3];
 
-    // Don't forget to release jstring!
-    env->ReleaseStringUTFChars(message, 0);
+    // Set the rotation matrix
+    AndroidAttitude::rotationMatrixMutex.lock();
+    auto c = 0;
 
-    std::string eventType;
-    float timestamp;
-    math::vec3 orientation;
-    std::stringstream ssRotation(nativeMessage);
+    for(auto i = 0; i < 4; i++)
+    {
+        for(auto j = 0; j < 4; j++)
+        {
+            AndroidAttitude::rotationMatrixValue[i][j] = rotationMatrixFloat[c];
+            c++;
+        }
+    }
+    AndroidAttitude::rotationMatrixMutex.unlock();
 
-    ssRotation >> eventType;
-    ssRotation >> orientation.x;
-    ssRotation >> orientation.y;
-    ssRotation >> orientation.z;
-    ssRotation >> timestamp;
-
-    LOG_INFO("on Head Tracking event: " << nativeMessage);
+    env->ReleaseFloatArrayElements(rotationMatrix, rotationMatrixFloat, 0);
+    env->ReleaseFloatArrayElements(quaternion, quaternionFloat, 0);
 }
 
 /* Ends C function definitions when using C++ */
@@ -62,6 +77,15 @@ AndroidAttitude::AndroidAttitude()
 
 void AndroidAttitude::initialize()
 {
+    // The inertial reference frame has z up and x forward, while the world has z out and x right
+    _worldToInertialReferenceFrame = getRotateEulerMatrix(-90.f, 0.f, 0.f);
+    
+    // This assumes the device is landscape with the home button on the right
+    _deviceToDisplay = getRotateEulerMatrix(0.f, 0.f, 0.f);
+
+    // Defaut
+    AndroidAttitude::rotationMatrixValue = math::mat4();
+
     // JNI
 
     // Retrieve the JNI environment from SDL 
@@ -79,7 +103,6 @@ void AndroidAttitude::initialize()
     _attitude = env->NewGlobalRef(env->NewObject(androidAttitudeClass, androidAttitudeCtor, sdlActivity));
 
     // Get JNI methods 
-
     _startTrackingMethod = env->GetMethodID(androidAttitudeClass, "startTracking", "()V");
     _stopTrackingMethod = env->GetMethodID(androidAttitudeClass, "stopTracking", "()V");
 }
@@ -109,13 +132,58 @@ AndroidAttitude::stopTracking()
 const math::mat4&
 AndroidAttitude::rotationMatrix()
 {
-    // TODO
-    return math::mat4();
+    auto env = (JNIEnv*)SDL_AndroidGetJNIEnv();
+    
+    auto worldToDevice = rotationMatrixValue * _worldToInertialReferenceFrame;
+    auto worldToDisplay = _deviceToDisplay * worldToDevice;
+
+    rotationMatrixMutex.lock();
+    rotationMatrixValue = worldToDisplay;
+    rotationMatrixMutex.unlock();
+
+    return rotationMatrixValue;
 }
 
 const math::quat&
 AndroidAttitude::quaternion()
 {
-    // TODO
-    return math::quat();
+    return quaternionValue;
+}
+
+math::mat4
+AndroidAttitude::getRotateEulerMatrix(float x, float y, float z)
+{
+    x *= (float)(M_PI / 180.0f);
+    y *= (float)(M_PI / 180.0f);
+    z *= (float)(M_PI / 180.0f);
+    
+    float cx = (float) cos(x);
+    float sx = (float) sin(x);
+    float cy = (float) cos(y);
+    float sy = (float) sin(y);
+    float cz = (float) cos(z);
+    float sz = (float) sin(z);
+    float cxsy = cx * sy;
+    float sxsy = sx * sy;
+    
+    math::mat4 matrix;
+    
+    matrix[0][0] = cy * cz;
+    matrix[0][1] = -cy * sz;
+    matrix[0][2] = sy;
+    matrix[0][3] = 0.0f;
+    matrix[1][0] = cxsy * cz + cx * sz;
+    matrix[1][1] = -cxsy * sz + cx * cz;
+    matrix[1][2] = -sx * cy;
+    matrix[1][3] = 0.0f;
+    matrix[2][0] = -sxsy * cz + sx * sz;
+    matrix[2][1] = sxsy * sz + sx * cz;
+    matrix[2][2] = cx * cy;
+    matrix[2][3] = 0.0f;
+    matrix[3][0] = 0.0f;
+    matrix[3][1] = 0.0f;
+    matrix[3][2] = 0.0f;
+    matrix[3][3] = 1.0f;
+    
+    return matrix;
 }

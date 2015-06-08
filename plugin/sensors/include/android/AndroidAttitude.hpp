@@ -23,6 +23,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/sensors/AbstractAttitude.hpp"
 #include "minko/log/Logger.hpp"
 
+#include <jni.h>
+
 namespace minko
 {
     namespace android
@@ -61,8 +63,18 @@ namespace minko
                 const math::quat&
                 quaternion();
 
+                static math::mat4 rotationMatrixValue;
+                static math::quat quaternionValue;
+                static std::mutex rotationMatrixMutex;
+
             private:
 
+                math::mat4
+                getRotateEulerMatrix(float x, float y, float z);
+
+                math::mat4 _worldToInertialReferenceFrame;
+                math::mat4 _deviceToDisplay;
+                
                 // JNI part
 
                 // Java Objects

@@ -18,34 +18,28 @@ import org.libsdl.app.*;
 public class AndroidAttitude
 {
 	private Activity _sdlActivity;
-	private static final String TAG = "Attitude";
-	private static final double NS2S = 1.E-09D;
-	private static final int[] INPUT_SENSORS = { 1, 4 };
-	private final Context mContext;
-	private final float[] mTmpRotatedEvent = new float[3];
-	private Looper mSensorLooper;
-	private SensorEventListener mSensorEventListener;
-	private volatile boolean mTracking;
-	private long mLastGyroEventTimeNanos;
+	private final Context _context;
+	private Looper _sensorLooper;
+	private SensorManager _sensorManager;
+	private SensorEventListener _sensorEventListener;
+	private volatile boolean _tracking;
 
 	// Native functions
-	public native void minkoNativeOnAttitudeEvent(String message);
+	public native void minkoNativeOnAttitudeEvent(float[] rotationMatrix, float[] quaternion);
 
 	public AndroidAttitude(Activity sdlActivity)
 	{
 		_sdlActivity = sdlActivity;
-		mContext = SDLActivity.getContext();
+		_context = SDLActivity.getContext();
 	}
 
 	public void startTracking()
 	{
-		Log.i("minko-java", "[AndroidAttitude] Start tracking");
-
-		if (mTracking) {
+		if (_tracking) {
 			return;
 		}
 
-		mSensorEventListener = new SensorEventListener()
+		_sensorEventListener = new SensorEventListener()
 		{
 			public void onSensorChanged(SensorEvent event) {
 				AndroidAttitude.this.processSensorEvent(event);
@@ -61,66 +55,48 @@ public class AndroidAttitude
 			public void run() {
 				Looper.prepare();
 
-				mSensorLooper = Looper.myLooper();
+				_sensorLooper = Looper.myLooper();
 				Handler handler = new Handler();
 
-				SensorManager sensorManager = (SensorManager)mContext.getSystemService("sensor");
+				_sensorManager = (SensorManager)_context.getSystemService("sensor");
 
-				for (int sensorType : AndroidAttitude.INPUT_SENSORS) {
-					Sensor sensor = sensorManager.getDefaultSensor(sensorType);
-					sensorManager.registerListener(mSensorEventListener, sensor, 0, handler);
-				}
+				Sensor sensor = _sensorManager.getDefaultSensor(11); // TYPE_ROTATION_VECTOR
+				_sensorManager.registerListener(_sensorEventListener, sensor, 0, handler);
 
 				Looper.loop();
 			}
 		});
 
 		sensorThread.start();
-		mTracking = true;
+		_tracking = true;
 	}
 
 	public void stopTracking()
 	{
-		Log.i("minko-java", "[AndroidAttitude] Stop tracking");
-
-		if (!mTracking) {
+		if (!_tracking) {
 			return;
 		}
 
-		SensorManager sensorManager = (SensorManager)mContext.getSystemService("sensor");
+		SensorManager _sensorManager = (SensorManager)_context.getSystemService("sensor");
 
-		sensorManager.unregisterListener(mSensorEventListener);
-		mSensorEventListener = null;
+		_sensorManager.unregisterListener(_sensorEventListener);
+		_sensorEventListener = null;
 
-		mSensorLooper.quit();
-		mSensorLooper = null;
-		mTracking = false;
+		_sensorLooper.quit();
+		_sensorLooper = null;
+		_tracking = false;
 	}
 
-	private void processSensorEvent(SensorEvent event)
-	{
-		Log.i("minko-java", "[AndroidAttitude] Process sensor event");
+	private synchronized void processSensorEvent(SensorEvent event)
+	{		
+		float[] rotationVector = { -event.values[1], event.values[0], event.values[2] };
 
-		long timeNanos = System.nanoTime();
+		float[] quaternion = new float[4];
+		float[] rotationMatrix = new float[16];
 
-		mTmpRotatedEvent[0] = (-event.values[1]);
-		mTmpRotatedEvent[1] = event.values[0];
-		mTmpRotatedEvent[2] = event.values[2];
+		_sensorManager.getQuaternionFromVector(quaternion, rotationVector);
+		_sensorManager.getRotationMatrixFromVector(rotationMatrix, rotationVector);
 
-		String eventData = (-event.values[1]) + " " + event.values[0] + " " + event.values[2] + " " + event.timestamp;
-		
-		// TYPE_ACCELEROMETER
-		if (event.sensor.getType() == 1) 
-		{
-			eventData = "accelerometer " + eventData;
-		} 
-		// TYPE_GYROSCOPE
-		else if (event.sensor.getType() == 4) 
-		{
-			mLastGyroEventTimeNanos = timeNanos;
-			eventData = "gyroscope " + eventData;
-		}
-
-		minkoNativeOnAttitudeEvent(eventData);
+		minkoNativeOnAttitudeEvent(rotationMatrix, quaternion);
 	}
 }
