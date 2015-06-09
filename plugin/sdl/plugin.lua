@@ -74,7 +74,7 @@ function minko.plugin.sdl:enable()
 		removeincludedirs { minko.plugin.path("sdl") .. "/lib/sdl/include" }
 		includedirs { "SDL" }
 
-	configuration { "android", "SharedLib" }
+	configuration { "android" } --, "SharedLib" }
 		links { "SDL2", "SDL2_mixer" }
 		libdirs { minko.plugin.path("sdl") .. "/lib/sdl/lib/android" }
 		includedirs { minko.plugin.path("sdl") .. "/lib/sdl/src/core/android" }
