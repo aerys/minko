@@ -84,6 +84,7 @@ namespace minko
 
             bool                                _compressTexture;
             bool                                _generateMipmaps;
+            bool                                _useTextureSRGBSpace;
             bool                                _upscaleTextureWhenProcessedForMipmapping;
             math::ivec2                         _textureMaxResolution;
             render::MipFilter                   _mipFilter;
@@ -321,6 +322,22 @@ namespace minko
             generateMipmaps(bool value)
             {
                 _generateMipmaps = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            bool
+            useTextureSRGBSpace() const
+            {
+                return _useTextureSRGBSpace;
+            }
+
+            inline
+            Ptr
+            useTextureSRGBSpace(bool value)
+            {
+                _useTextureSRGBSpace = value;
 
                 return shared_from_this();
             }
