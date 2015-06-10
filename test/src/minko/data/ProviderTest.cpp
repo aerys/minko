@@ -35,7 +35,7 @@ TEST_F(ProviderTest, Create)
 }
 
 // See http://kaba.hilvi.org/homepage/programming/bugs/vs2013.htm
-/*
+#if MINKO_COMPILER != MINKO_COMPILER_VC12
 TEST_F(ProviderTest, CreateAndInitialize)
 {
 	try
@@ -69,7 +69,7 @@ TEST_F(ProviderTest, CreateAndInitializeDifferentTypes)
 		ASSERT_TRUE(false);
 	}
 }
-*/
+#endif
 
 TEST_F(ProviderTest, CreateThenInitialize)
 {
@@ -244,6 +244,23 @@ TEST_F(ProviderTest, IntegerPointerConsistency2)
     auto ptr2 = p->getPointer<int>("integer");
 
     ASSERT_EQ(ptr1, ptr2);
+}
+
+TEST_F(ProviderTest, IntegerPointerConsistency3)
+{
+    auto p = Provider::create();
+
+    p->set("foo", 42);
+    auto ptr1 = p->getPointer<int>("foo");
+
+    p->set("bar", 24);
+    auto ptr2 = p->getPointer<int>("bar");
+
+    for (auto i = 0; i < 100; i++)
+        p->set(std::to_string(i), i);
+
+    ASSERT_EQ(ptr1, p->getPointer<int>("foo"));
+    ASSERT_EQ(ptr2, p->getPointer<int>("bar"));
 }
 
 TEST_F(ProviderTest, TextureSamplerPointerConsistency)

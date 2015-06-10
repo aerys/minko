@@ -17,6 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "minko/StreamingOptions.hpp"
 #include "minko/component/BoundingBox.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/Transform.hpp"
@@ -29,6 +30,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/VertexBuffer.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
+#include "minko/log/Logger.hpp"
 
 using namespace minko;
 using namespace minko::component;
@@ -42,11 +44,15 @@ using namespace minko::scene;
 MeshPartitioner::Options::Options() :
     maxNumTrianglesPerNode(60000),
     maxNumIndicesPerNode(65536),
+    maxNumSurfacesPerSurfaceBucket(255),
+    maxNumTrianglesPerSurfaceBucket(3000000),
     flags(Options::none),
     partitionMaxSizeFunction(defaultPartitionMaxSizeFunction),
     worldBoundsFunction(defaultWorldBoundsFunction),
     nodeFilterFunction(defaultNodeFilterFunction),
-    surfaceIndexer(defaultSurfaceIndexer())
+    surfaceIndexer(defaultSurfaceIndexer()),
+    validSurfacePredicate(defaultValidSurfacePredicate),
+    instanceSurfacePredicate(defaultInstanceSurfacePredicate)
 {
 }
 
@@ -59,6 +65,12 @@ MeshPartitioner::defaultSurfaceIndexer()
     {
         auto hashValue = std::size_t();
 
+        auto material = surface->material();
+
+        if (defaultInstanceSurfacePredicate(surface) ||
+            (material->data()->hasProperty("zSorted") && material->data()->get<bool>("zSorted")))
+            minko::hash_combine<std::string, std::hash<std::string>>(hashValue, surface->uuid());
+
         minko::hash_combine<Material::Ptr, std::hash<Material::Ptr>>(hashValue, surface->material());
 
         for (const auto& vertexBuffer : surface->geometry()->vertexBuffers())
@@ -70,8 +82,14 @@ MeshPartitioner::defaultSurfaceIndexer()
 
     surfaceIndexer.equal = [](Surface::Ptr left, Surface::Ptr right) -> bool
     {
+        auto leftGeometry = left->geometry();
+        auto rightGeometry = right->geometry();
+
         auto leftMaterial = left->material();
         auto rightMaterial = right->material();
+
+        if (defaultInstanceSurfacePredicate(left) || defaultInstanceSurfacePredicate(right))
+            return false;
 
         if ((leftMaterial->data()->hasProperty("zSorted") && leftMaterial->data()->get<bool>("zSorted")) ||
             (rightMaterial->data()->hasProperty("zSorted") && rightMaterial->data()->get<bool>("zSorted")))
@@ -80,7 +98,7 @@ MeshPartitioner::defaultSurfaceIndexer()
         auto leftAttributes = std::vector<VertexAttribute>();
         auto rightAttributes = std::vector<VertexAttribute>();
 
-        for (auto vertexBuffer : left->geometry()->vertexBuffers())
+        for (auto vertexBuffer : leftGeometry->vertexBuffers())
         {
             leftAttributes.insert(
                 leftAttributes.end(),
@@ -89,7 +107,7 @@ MeshPartitioner::defaultSurfaceIndexer()
             );
         }
 
-        for (auto vertexBuffer : right->geometry()->vertexBuffers())
+        for (auto vertexBuffer : rightGeometry->vertexBuffers())
         {
             rightAttributes.insert(
                 rightAttributes.end(),
@@ -109,6 +127,45 @@ MeshPartitioner::defaultSurfaceIndexer()
     };
 
     return surfaceIndexer;
+}
+
+template <typename T>
+static
+bool
+validateGeometry(Geometry::Ptr geometry)
+{
+    auto indices = geometry->indices()->dataPointer<T>();
+
+    if (!indices)
+        return false;
+
+    const auto numVertices = geometry->numVertices();
+
+    for (auto index : *indices)
+        if (index >= numVertices)
+            return false;
+
+    return true;
+}
+
+bool
+MeshPartitioner::defaultValidSurfacePredicate(Surface::Ptr surface)
+{
+    auto geometry = surface->geometry();
+
+    auto ushortDataPointer = geometry->indices()->dataPointer<unsigned short>();
+
+    if (ushortDataPointer)
+        return validateGeometry<unsigned short>(geometry);
+
+    return validateGeometry<unsigned int>(geometry);
+}
+
+bool
+MeshPartitioner::defaultInstanceSurfacePredicate(Surface::Ptr surface)
+{
+    return surface->geometry()->data()->hasProperty("surfaceRefCount") &&
+           surface->geometry()->data()->get<unsigned int>("surfaceRefCount") > 1u;
 }
 
 bool
@@ -199,6 +256,86 @@ MeshPartitioner::mergeSurfaces(const std::vector<Surface::Ptr>& surfaces)
 }
 
 void
+MeshPartitioner::findInstances(const std::vector<Surface::Ptr>& surfaces)
+{
+    auto geometryToSurfaces = std::unordered_map<Geometry::Ptr, std::list<Surface::Ptr>>();
+
+    for (auto surface : surfaces)
+    {
+        auto surfaceIt = geometryToSurfaces.insert(std::make_pair(
+            surface->geometry(),
+            std::list<Surface::Ptr>()
+        ));
+
+        surfaceIt.first->second.push_back(surface);
+    }
+
+    const auto numSurfaces = surfaces.size();
+    const auto numGeometries = geometryToSurfaces.size();
+
+    for (auto geometryToSurfacesPair : geometryToSurfaces)
+    {
+        if  (geometryToSurfacesPair.second.size() > 1u)
+        {
+            geometryToSurfacesPair.first->data()->set(
+                "surfaceRefCount",
+                static_cast<unsigned int>(geometryToSurfacesPair.second.size())
+            );
+        }
+    }
+}
+
+bool
+MeshPartitioner::surfaceBucketIsValid(const std::vector<SurfacePtr>& surfaceBucket) const
+{
+    if (surfaceBucket.size() == 1u)
+        return true;
+
+    if (surfaceBucket.size() > _options.maxNumSurfacesPerSurfaceBucket)
+        return false;
+
+    auto numTriangles = 0u;
+
+    for (auto surface : surfaceBucket)
+    {
+        numTriangles += surface->geometry()->indices()->numIndices() / 3u;
+
+        if (numTriangles > _options.maxNumTrianglesPerSurfaceBucket)
+            return false;
+    }
+
+    return true;
+}
+
+void
+MeshPartitioner::splitSurfaceBucket(const std::vector<Surface::Ptr>&           surfaceBucket,
+                                    std::vector<std::vector<Surface::Ptr>>&    splitSurfaceBucket)
+{
+    if (surfaceBucket.size() == 1u)
+    {
+        splitSurfaceBucket.push_back(std::vector<Surface::Ptr>());
+
+        splitSurface(surfaceBucket.front(), splitSurfaceBucket.back());
+
+        return;
+    }
+
+    const auto begin = 0u;
+    const auto middle = surfaceBucket.size() / 2u;
+    const auto end = surfaceBucket.size();
+
+    splitSurfaceBucket.emplace_back(surfaceBucket.begin() + begin, surfaceBucket.begin() + middle);
+    splitSurfaceBucket.emplace_back(surfaceBucket.begin() + middle, surfaceBucket.begin() + end);
+}
+
+void
+MeshPartitioner::splitSurface(Surface::Ptr                 surface,
+                              std::vector<Surface::Ptr>&   splitSurface)
+{
+    splitSurface.push_back(surface);
+}
+
+void
 MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
 {
     _assetLibrary = assetLibrary;
@@ -222,26 +359,140 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
     else
         defaultWorldBoundsFunction(node, _worldMinBound, _worldMaxBound);
 
+    auto mergedComponentRoot = Node::create()
+        ->addComponent(Transform::create());
+
+    if (node->hasComponent<Transform>())
+    {
+        mergedComponentRoot->component<Transform>()->matrix(math::inverse(
+            node->component<Transform>()->modelToWorldMatrix()
+        ));
+    }
+
+    node->component<Transform>()->updateModelToWorldMatrix();
+
+    auto surfaces = std::vector<Surface::Ptr>();
+
+    for (auto meshNode : meshNodes->nodes())
+        for (auto surface : meshNode->components<Surface>())
+        surfaces.push_back(surface);
+
+    findInstances(surfaces);
+
+    auto surfaceBuckets = std::vector<std::vector<Surface::Ptr>>();
+
     if (_options.flags & Options::mergeSurfaces)
     {
-        node->component<Transform>()->updateModelToWorldMatrix();
+        surfaceBuckets = mergeSurfaces(surfaces);
+    }
+    else
+    {
+        for (auto surface : surfaces)
+            surfaceBuckets.push_back({ surface });
+    }
 
-        auto surfaces = std::vector<Surface::Ptr>();
+    auto validSurfaceBuckets = std::vector<std::vector<Surface::Ptr>>();
+    auto pendingSurfaceBuckets = std::queue<std::vector<Surface::Ptr>>();
 
-        for (auto meshNode : meshNodes->nodes())
-            for (auto surface : meshNode->components<Surface>())
-                surfaces.push_back(surface);
+    for (const auto& surfaceBucket : surfaceBuckets)
+        pendingSurfaceBuckets.push(surfaceBucket);
 
-        auto surfaceBuckets = mergeSurfaces(surfaces);
+    while (!pendingSurfaceBuckets.empty())
+    {
+        const auto pendingSurfaceBucket = pendingSurfaceBuckets.front();
+        pendingSurfaceBuckets.pop();
 
-        for (const auto& surfaceBucket : surfaceBuckets)
+        if (surfaceBucketIsValid(pendingSurfaceBucket))
         {
-            auto partitionInfo = PartitionInfo();
+            validSurfaceBuckets.push_back(pendingSurfaceBucket);
 
-            for (auto surface : surfaceBucket)
-                partitionInfo.surfaces.push_back(surface);
+            continue;
+        }
 
-            partitionInfo.useRootSpace = true;
+        auto splitSurfaceBucket = std::vector<std::vector<Surface::Ptr>>();
+
+        this->splitSurfaceBucket(pendingSurfaceBucket, splitSurfaceBucket);
+
+        for (const auto& surfaceBucket : splitSurfaceBucket)
+            pendingSurfaceBuckets.push(surfaceBucket);
+    }
+
+    for (const auto& surfaceBucket : validSurfaceBuckets)
+    {
+        if (surfaceBucket.empty())
+            continue;
+
+        auto partitionInfo = PartitionInfo();
+
+        for (auto surface : surfaceBucket)
+        {
+            if (!_options.validSurfacePredicate(surface))
+            {
+                surface->target()->removeComponent(surface);
+
+                continue;
+            }
+
+            partitionInfo.surfaces.push_back(surface);
+        }
+
+        if (partitionInfo.surfaces.empty())
+            continue;
+
+        auto targetNodeSet = std::unordered_set<Node::Ptr>();
+
+        for (auto surface : partitionInfo.surfaces)
+            targetNodeSet.insert(surface->target());
+
+        const auto uniqueTarget = targetNodeSet.size() == 1u;
+
+        auto targetNode = partitionInfo.surfaces.front()->target();
+
+        auto processGeometries = true;
+
+        auto geometries = std::vector<Geometry::Ptr>();
+
+        partitionInfo.isInstance = partitionInfo.surfaces.size() == 1u &&
+            _options.instanceSurfacePredicate(partitionInfo.surfaces.front());
+
+        if (partitionInfo.isInstance)
+        {
+            auto processedInstanceIt = _processedInstances.find(partitionInfo.surfaces.front()->geometry());
+
+            if (processedInstanceIt != _processedInstances.end())
+            {
+                processGeometries = false;
+
+                geometries.assign(
+                    processedInstanceIt->second.begin(),
+                    processedInstanceIt->second.end()
+                );
+            }
+        }
+        else if (!uniqueTarget)
+        {
+            auto newNodeName = targetNode->name();
+
+            targetNode = Node::create(newNodeName)
+                ->addComponent(Transform::create())
+                ->addComponent(BoundingBox::create());
+
+            mergedComponentRoot->addChild(targetNode);
+        }
+
+        if (processGeometries)
+        {
+            partitionInfo.useRootSpace = !uniqueTarget && !partitionInfo.isInstance;
+
+            if (partitionInfo.surfaces.size() > 1u)
+            {
+                auto index = 0;
+
+                for (auto surface : partitionInfo.surfaces)
+                {
+                    preprocessMergedSurface(partitionInfo, surface, index++);
+                }
+            }
 
             buildGlobalIndex(partitionInfo);
 
@@ -249,26 +500,16 @@ MeshPartitioner::process(Node::Ptr& node, AssetLibraryPtr assetLibrary)
 
             buildPartitions(partitionInfo);
 
-            auto newNodeName = std::string();
-
-            if (!surfaceBucket.empty())
-                newNodeName = surfaceBucket.front()->target()->name();
-
-            for (auto surface : surfaceBucket)
-                surface->target()->removeComponent(surface);
-
-            auto newNode = Node::create(newNodeName)
-                ->addComponent(Transform::create())
-                ->addComponent(BoundingBox::create());
-
-            patchNode(newNode, partitionInfo);
-
-            node->addChild(newNode);
+            buildGeometries(targetNode, partitionInfo, geometries);
         }
 
-        node->component<Transform>()->matrix(math::mat4());
-        node->component<Transform>()->updateModelToWorldMatrix();
+        patchNode(targetNode, partitionInfo, geometries);
+
+        for (auto surface : partitionInfo.surfaces)
+            surface->target()->removeComponent(surface);
     }
+
+    node->addChild(mergedComponentRoot);
 }
 
 MeshPartitioner::OctreeNodePtr
@@ -420,18 +661,6 @@ MeshPartitioner::createGeometry(Geometry::Ptr                       referenceGeo
         geometry->addVertexBuffer(newVertexBuffer);
 
         globalAttributeOffset += localVertexSize;
-    }
-
-    if (geometry->hasVertexAttribute("normal"))
-    {
-        geometry->computeNormals();
-    }
-
-    if (geometry->hasVertexAttribute("position") &&
-        geometry->hasVertexAttribute("uv") &&
-        geometry->hasVertexAttribute("tangent"))
-    {
-        geometry->computeTangentSpace(!geometry->hasVertexAttribute("normal"));
     }
 
     if (_options.flags & Options::applyCrackFreePolicy)
@@ -746,6 +975,34 @@ MeshPartitioner::computeDepth(OctreeNodePtr partitionNode)
 }
 
 bool
+MeshPartitioner::preprocessMergedSurface(PartitionInfo& partitionInfo,
+                                         Surface::Ptr   surface,
+                                         int            index)
+{
+    if (surface->data()->hasProperty("mergingMask") ||
+        surface->geometry()->hasVertexAttribute("mergingMask"))
+        return true;
+
+    const auto mergingMask = index;
+
+    surface->data()->set("mergingMask", mergingMask);
+
+    auto geometry = surface->geometry();
+
+    auto positionVertexBuffer = geometry->vertexBuffer("position");
+
+    auto mergingMaskData = std::vector<float>(geometry->numVertices(), mergingMask);
+
+    auto mergingMaskVertexBuffer = VertexBuffer::create(positionVertexBuffer->context(), mergingMaskData);
+
+    mergingMaskVertexBuffer->addAttribute("mergingMask", 1u, 0u);
+
+    geometry->addVertexBuffer(mergingMaskVertexBuffer);
+
+    return true;
+}
+
+bool
 MeshPartitioner::buildGlobalIndex(PartitionInfo& partitionInfo)
 {
     const auto& surfaces = partitionInfo.surfaces;
@@ -802,7 +1059,7 @@ MeshPartitioner::buildGlobalIndex(PartitionInfo& partitionInfo)
 
         if (partitionInfo.useRootSpace && target->hasComponent<Transform>())
         {
-            transformMatrix = target->component<Transform>()->modelToWorldMatrix();
+            transformMatrix = target->component<Transform>()->modelToWorldMatrix(true);
         }
 
         auto geometry = surface->geometry();
@@ -812,7 +1069,21 @@ MeshPartitioner::buildGlobalIndex(PartitionInfo& partitionInfo)
         const auto localIndexCount = geometry->indices()->numIndices();
         const auto localVertexCount = geometry->numVertices();
 
-        const auto& localIndices = geometry->indices()->data();
+        auto indexData = std::vector<unsigned int>();
+
+        auto ushortIndexDataPointer = geometry->indices()->dataPointer<unsigned short>();
+
+        if (ushortIndexDataPointer)
+        {
+            indexData.resize(ushortIndexDataPointer->size());
+
+            for (auto i = 0u; i < ushortIndexDataPointer->size(); ++i)
+                indexData[i] = static_cast<unsigned int>(ushortIndexDataPointer->at(i));
+        }
+
+        const auto& localIndices = ushortIndexDataPointer
+            ? indexData
+            : *geometry->indices()->dataPointer<unsigned int>();
 
         auto globalVertexAttributeOffset = 0;
 
@@ -876,7 +1147,9 @@ MeshPartitioner::buildHalfEdges(PartitionInfo& partitionInfo)
 {
     auto halfEdges = HalfEdgeCollection::create(partitionInfo.indices);
 
-    partitionInfo.halfEdges.resize(halfEdges->halfEdges().size());
+    const auto numVertices = partitionInfo.vertices.size() / partitionInfo.vertexSize;
+
+    partitionInfo.halfEdges.resize(numVertices);
 
     for (auto halfEdge : halfEdges->halfEdges())
     {
@@ -956,8 +1229,9 @@ MeshPartitioner::buildPartitions(PartitionInfo& partitionInfo)
 }
 
 bool
-MeshPartitioner::patchNode(Node::Ptr        node,
-                           PartitionInfo&   partitionInfo)
+MeshPartitioner::buildGeometries(Node::Ptr                      node,
+                                 PartitionInfo&                 partitionInfo,
+                                 std::vector<Geometry::Ptr>&    geometries)
 {
     auto partitionNode = partitionInfo.rootPartitionNode;
 
@@ -1052,27 +1326,59 @@ MeshPartitioner::patchNode(Node::Ptr        node,
                 newGeometry
             );
 
-            auto newSurface = Surface::create(
-                newGeometry,
-                referenceMaterial,
-                referenceEffect
-            );
-
-            if (_options.flags & Options::createOneNodePerSurface)
-            {
-                auto newNode = Node::create(node->name())
-                    ->addComponent(Transform::create())
-                    ->addComponent(BoundingBox::create(maxBound, minBound))
-                    ->addComponent(newSurface);
-
-                node->addChild(newNode);
-            }
-            else
-            {
-                node->addComponent(newSurface);
-            }
+            geometries.push_back(newGeometry);
         }
     }
+
+    if (partitionInfo.isInstance)
+    {
+        _processedInstances.insert(std::make_pair(referenceGeometry, geometries));
+    }
+
+    return true;
+}
+
+bool
+MeshPartitioner::patchNode(Node::Ptr                            node,
+                           PartitionInfo&                       partitionInfo,
+                           const std::vector<Geometry::Ptr>&    geometries)
+{
+    auto referenceSurface = partitionInfo.surfaces.front();
+    auto referenceMaterial = referenceSurface->material();
+    auto referenceEffect = referenceSurface->effect();
+
+    auto newSurfaces = std::list<Surface::Ptr>();
+
+    for (auto geometry : geometries)
+    {
+        auto newSurface = Surface::create(
+            geometry,
+            referenceMaterial,
+            referenceEffect
+        );
+
+        newSurfaces.push_back(newSurface);
+
+        if (_options.flags & Options::createOneNodePerSurface)
+        {
+            auto newNode = Node::create(node->name())
+                ->addComponent(Transform::create())
+                ->addComponent(BoundingBox::create())
+                ->addComponent(newSurface);
+
+            node->addChild(newNode);
+        }
+        else
+        {
+            node->addComponent(newSurface);
+        }
+    }
+
+    if (_streamingOptions->surfaceOperator().substitutionFunction)
+        _streamingOptions->surfaceOperator().substitutionFunction(
+            std::list<Surface::Ptr>(partitionInfo.surfaces.begin(), partitionInfo.surfaces.end()),
+            newSurfaces
+        );
 
     return true;
 }

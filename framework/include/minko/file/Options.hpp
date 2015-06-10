@@ -59,6 +59,7 @@ namespace minko
 			typedef std::function<NodePtr(NodePtr)>										NodeFunction;
 			typedef std::function<EffectPtr(EffectPtr)>									EffectFunction;
             typedef std::function<render::TextureFormat(const TextureFormatSet&)>		TextureFormatFunction;
+            typedef std::function<void(NodePtr, const std::string&, const std::string&)> AttributeFunction;
 
 		private:
 			std::shared_ptr<render::AbstractContext>	        _context;
@@ -70,10 +71,13 @@ namespace minko
 			std::unordered_map<std::string, ParserHandler>	    _parsers;
 			std::unordered_map<std::string, ProtocolHandler>    _protocols;
 
+            bool                                                _optimizeForRendering;
 			bool                                                _generateMipMaps;
 			bool										        _resizeSmoothly;
 			bool										        _isCubeTexture;
             bool                                                _isRectangleTexture;
+            bool                                                _generateSmoothNormals;
+            float                                               _normalMaxSmoothingAngle;
 			bool										        _startAnimation;
 			bool										        _loadAsynchronously;
             bool                                                _disposeIndexBufferAfterLoading;
@@ -95,6 +99,7 @@ namespace minko
 			NodeFunction								        _nodeFunction;
 			EffectFunction								        _effectFunction;
             TextureFormatFunction                               _textureFormatFunction;
+            AttributeFunction                                   _attributeFunction;
             int                                                 _seekingOffset;
             int                                                 _seekedLength;
 
@@ -174,6 +179,22 @@ namespace minko
 			userFlags()
 			{
 				return _userFlags;
+			}
+
+			inline
+			bool
+			optimizeForRendering() const
+			{
+				return _optimizeForRendering;
+			}
+
+			inline
+			Ptr
+			optimizeForRendering(bool value)
+			{
+				_optimizeForRendering = value;
+
+				return shared_from_this();
 			}
 
 			inline
@@ -268,6 +289,38 @@ namespace minko
             isRectangleTexture(bool value)
             {
                 _isRectangleTexture = value;
+
+                return shared_from_this();
+            }
+
+			inline
+			bool
+            generateSmoothNormals() const
+            {
+                return _generateSmoothNormals;
+            }
+
+            inline
+            Ptr
+            generateSmoothNormals(bool value)
+            {
+                _generateSmoothNormals = value;
+
+                return shared_from_this();
+            }
+
+			inline
+			float
+            normalMaxSmoothingAngle() const
+            {
+                return _normalMaxSmoothingAngle;
+            }
+
+            inline
+            Ptr
+            normalMaxSmoothingAngle(float value)
+            {
+                _normalMaxSmoothingAngle = value;
 
                 return shared_from_this();
             }
@@ -565,6 +618,22 @@ namespace minko
             textureFormatFunction(const TextureFormatFunction& func)
             {
                 _textureFormatFunction = func;
+
+                return shared_from_this();
+            }
+
+            inline
+            const AttributeFunction&
+            attributeFunction() const
+            {
+                return _attributeFunction;
+            }
+
+            inline
+            Ptr
+            attributeFunction(const AttributeFunction& func)
+            {
+                _attributeFunction = func;
 
                 return shared_from_this();
             }

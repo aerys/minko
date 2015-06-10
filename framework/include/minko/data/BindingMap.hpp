@@ -51,8 +51,7 @@ namespace minko
             }
 
             virtual
-            ~BindingMapBase()
-            {}
+            ~BindingMapBase() = default;
         };
 
         typedef BindingMapBase<data::Binding>   BindingMap;

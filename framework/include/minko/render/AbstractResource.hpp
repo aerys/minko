@@ -84,9 +84,8 @@ namespace minko
 			{
 			}
 
-			~AbstractResource()
-			{
-			}
+			virtual
+			~AbstractResource() = default;
 		};
 	}
 }

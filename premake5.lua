@@ -186,11 +186,12 @@ solution "minko"
 		-- include 'example/raycasting'
 		include 'example/sensors'
 		include 'example/serializer'
-		-- include 'example/sky-box'
+		include 'example/sky-box'
 		-- include 'example/stencil'
 		-- include 'example/visibility'
 		-- include 'example/water'
 		include 'example/shadow-mapping'
+		include 'example/pbr'
 
 		if _OPTIONS['with-offscreen'] then
 			include 'example/offscreen'

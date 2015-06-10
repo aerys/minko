@@ -32,7 +32,8 @@ Transform::Transform() :
 	_matrix(nullptr),
     _modelToWorld(nullptr),
 //	_worldToModel(1.),
-	_data(data::Provider::create())
+	_data(data::Provider::create()),
+    _dirty(false)
 {
 	_data
 		->set<math::mat4>("matrix", 			math::mat4(1.f))
@@ -267,6 +268,13 @@ Transform::RootTransform::updateTransformsList()
     _nodeTransformCache.clear();
     _nodeTransformCache.resize(_nodes.size(), NodeTransformCacheEntry());
 
+    for (auto node : _nodes)
+    {
+        auto transform = node->component<Transform>();
+
+        transform->_dirty = true;
+    }
+
     sortNodes();
 
     auto nodeId = 0;
@@ -350,16 +358,13 @@ Transform::RootTransform::updateTransformsList()
 void
 Transform::RootTransform::sortNodes()
 {
-    // TODO fixme
-    // avoid using NodeSet
-    // instead, sort _nodes in place on a first pass
-    // then update _nodeTransformCache entries on a second pass
-
     auto sortedNodeSet = scene::NodeSet::create(_nodes.front()->root())
         ->descendants(true, false)
         ->where([this](scene::Node::Ptr descendant) -> bool
     {
-        return descendant->hasComponent<Transform>() && std::find(_nodes.begin(), _nodes.end(), descendant) != _nodes.end();
+        auto transform = descendant->component<Transform>();
+
+        return transform != nullptr && transform->_dirty;
     });
 
     _nodes.assign(sortedNodeSet->nodes().begin(), sortedNodeSet->nodes().end());
@@ -424,6 +429,10 @@ Transform::RootTransform::updateTransforms()
             }
 
 	       	nodeCacheEntry._dirty = false;
+
+            auto transform = node->component<Transform>();
+
+            transform->_dirty = false;
 		}
 
         ++nodeId;

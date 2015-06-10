@@ -432,7 +432,7 @@ Store::doAddProvider(ProviderPtr provider, CollectionPtr collection)
         }
     ));
 
-    for (auto property : provider->values())
+    for (const auto& property : provider->values())
         providerPropertyAddedHandler(provider, collection, property.first);
 
     if (collection)
@@ -464,7 +464,7 @@ Store::doRemoveProvider(ProviderPtr provider, CollectionPtr collection)
         //return;
 
     // execute all the "property removed" signals
-    for (auto property : provider->values())
+    for (const auto& property : provider->values())
         providerPropertyRemovedHandler(provider, collection, property.first);
 
     // erase all the slots (property added, changed, removed) for this provider

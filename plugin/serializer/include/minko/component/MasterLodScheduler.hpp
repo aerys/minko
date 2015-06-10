@@ -77,11 +77,17 @@ namespace minko
             Ptr
             registerGeometry(GeometryPtr geometry, ProviderPtr data);
 
+            void
+            unregisterGeometry(GeometryPtr geometry);
+
             ProviderPtr
             geometryData(GeometryPtr geometry);
 
             Ptr
             registerTexture(AbstractTexturePtr texture, ProviderPtr data);
+
+            void
+            unregisterTexture(AbstractTexturePtr texture);
 
             ProviderPtr
             textureData(AbstractTexturePtr texture);

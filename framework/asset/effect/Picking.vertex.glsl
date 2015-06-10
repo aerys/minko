@@ -12,7 +12,6 @@
 #pragma include "Pop.function.glsl"
 
 attribute vec3 aPosition;
-attribute vec2 aUV;
 
 #ifdef SKINNING_NUM_BONES
 attribute vec4 aBoneIdsA;
@@ -34,14 +33,8 @@ uniform 	float 	uPopFullPrecisionLod;
 uniform 	vec3 	uPopMinBound;
 uniform 	vec3 	uPopMaxBound;
 
-varying vec2 vertexUV;
-
 void main(void)
 {
-	#ifdef DIFFUSE_MAP
-		vertexUV = aUV;
-	#endif
-	
 	#if defined(HAS_POSITION)
 		vec4 pos = vec4(aPosition, 1.0);
 

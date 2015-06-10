@@ -29,6 +29,16 @@ using namespace minko;
 using namespace minko::data;
 
 Provider::Provider() :
+    Uuid::enable_uuid(),
+    _values(new ValueMap())
+{
+#ifdef MINKO_USE_SPARSE_HASH_MAP
+    _values->set_deleted_key("");
+#endif
+}
+
+Provider::Provider(const std::string& uuid) :
+    Uuid::enable_uuid(uuid),
     _values(new ValueMap())
 {
 #ifdef MINKO_USE_SPARSE_HASH_MAP
@@ -52,7 +62,7 @@ Provider::Ptr
 Provider::set(std::initializer_list<data::Provider::ValueType> values)
 {
     for (auto& p : values)
-        setValue(p.first, p.second);
+        setValue(p.first, new Any(p.second));
 
 	return shared_from_this();
 }
@@ -60,8 +70,12 @@ Provider::set(std::initializer_list<data::Provider::ValueType> values)
 Provider::Ptr
 Provider::unset(const std::string& propertyName)
 {
-    if (_values->count(propertyName) != 0)
+    auto propertyIt = _values->find(propertyName);
+
+    if (propertyIt != _values->end())
 	{
+        delete propertyIt->second;
+
         _values->erase(propertyName);
 		_propertyRemoved.execute(shared_from_this(), propertyName);
 	}
@@ -82,19 +96,27 @@ Provider::clone()
 Provider::Ptr
 Provider::copyFrom(Provider::Ptr source)
 {
-    *_values = *source->_values;
+    _values->clear();
+
+    for (auto nameAndValue : *source->_values)
+        _values->insert({ nameAndValue.first, new Any(*nameAndValue.second) });
 
 	return shared_from_this();
 }
 
-Any&
+Any*
 Provider::getValue(const PropertyName& propertyName) const
 {
-    return _values->find(propertyName)->second;
+    const auto foundIt = _values->find(propertyName);
+
+    if (foundIt == _values->end())
+	    throw std::invalid_argument("propertyName");
+
+    return foundIt->second;
 }
 
 void
-Provider::setValue(const PropertyName& propertyName, Any value)
+Provider::setValue(const PropertyName& propertyName, Any* value)
 {
     (*_values)[propertyName] = value;
 }

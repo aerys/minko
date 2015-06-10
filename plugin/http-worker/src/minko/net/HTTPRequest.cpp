@@ -54,8 +54,19 @@ encodeUrl(const std::string& url)
 
     std::stringstream encodedUrlStream;
 
-    for (auto c : url)
+    for (auto i = 0u; i < url.size(); ++i)
     {
+        const auto c =  url.at(i);
+
+        if (c == '%')
+        {
+            encodedUrlStream << c << url.at(i + 1) << url.at(i + 2);
+
+            i += 2;
+
+            continue;
+        }
+
         if (::isalnum(c) || authorizedCharacters.find(c) != authorizedCharacters.end())
         {
             encodedUrlStream << c;
@@ -166,15 +177,24 @@ HTTPRequest::run()
 
 	CURLcode res = curl_easy_perform(curl);
 
+    auto responseCode = 0l;
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
+
     disposeCurl(curl, curlHeaderList);
 
-	if (res != CURLE_OK)
+    const auto requestSucceeded =
+        res == CURLE_OK &&
+        (responseCode == 200 || responseCode == 206);
+
+	if (!requestSucceeded)
 	{
-        const auto errorMessage = std::string(curlErrorBuffer);
+        const auto errorMessage =
+            "status: " + std::to_string(responseCode) +
+            (res != CURLE_OK ? ", error: " + std::string(curlErrorBuffer) : "");
 
         LOG_ERROR(errorMessage);
 
-		error()->execute(res, errorMessage);
+		error()->execute(responseCode, errorMessage);
 	}
 	else
 	{
@@ -253,14 +273,23 @@ HTTPRequest::fileExists(const std::string& filename,
 
     auto status = curl_easy_perform(curl);
 
+    auto responseCode = 0l;
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
+
     disposeCurl(curl, curlHeaderList);
 
-    if (status != CURLE_OK)
+    const auto requestSucceeded =
+        status == CURLE_OK &&
+        responseCode == 200;
+
+    if (!requestSucceeded)
     {
-        const auto errorMessage = std::string(curlErrorBuffer);
+        const auto errorMessage =
+            "status: " + std::to_string(responseCode) +
+            (status != CURLE_OK ? ", error: " + std::string(curlErrorBuffer) : "");
 
         LOG_ERROR(errorMessage);
     }
 
-    return status == CURLE_OK;
+    return requestSucceeded;
 }

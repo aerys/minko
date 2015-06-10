@@ -68,6 +68,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "glm/gtc/random.hpp"
 #include "glm/gtx/transform.hpp"
 #include "glm/gtx/matrix_interpolation.hpp"
+#include "glm/gtx/matrix_decompose.hpp"
 #include "glm/gtx/color_space.hpp"
 #include "glm/gtx/string_cast.hpp"
 

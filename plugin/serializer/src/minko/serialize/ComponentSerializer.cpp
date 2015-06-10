@@ -208,7 +208,8 @@ ComponentSerializer::serializeSurface(NodePtr		        node,
 		geometryId,
 		materialId,
 		effectId,
-		getSurfaceExtension(node, surface));
+		getSurfaceExtension(node, surface)
+    );
 
 	msgpack::pack(buffer, src);
 	msgpack::pack(buffer, type);
@@ -220,6 +221,8 @@ std::string
 ComponentSerializer::getSurfaceExtension(NodePtr node, SurfacePtr surface)
 {
 	std::vector<SimpleProperty> properties;
+
+    properties.emplace_back("uuid", surface->uuid());
 
 	std::string technique = surface->technique();
 

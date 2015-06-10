@@ -53,6 +53,7 @@ namespace minko
 			math::mat4										_projection;
 			math::mat4										_viewProjection;
             math::vec3	                 					_position;
+            math::vec3	                 					_direction;
 			math::mat4										_postProjection;
 
 			Signal<AbsCtrlPtr, NodePtr>::Slot				_targetAddedSlot;

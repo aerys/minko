@@ -1,7 +1,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 /// OpenGL Mathematics (glm.g-truc.net)
 ///
-/// Copyright (c) 2005 - 2014 G-Truc Creation (www.g-truc.net)
+/// Copyright (c) 2005 - 2015 G-Truc Creation (www.g-truc.net)
 /// Permission is hereby granted, free of charge, to any person obtaining a copy
 /// of this software and associated documentation files (the "Software"), to deal
 /// in the Software without restriction, including without limitation the rights
@@ -11,6 +11,10 @@
 /// 
 /// The above copyright notice and this permission notice shall be included in
 /// all copies or substantial portions of the Software.
+/// 
+/// Restrictions:
+///		By making use of the Software for military purposes, you choose to make
+///		a Bunny unhappy.
 /// 
 /// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 /// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -29,9 +33,9 @@
 /// dummy.cpp exist only a wordaround for CMake file.
 ///////////////////////////////////////////////////////////////////////////////////
 
-#define GLM_FORCE_RADIANS
 #define GLM_MESSAGES
-#include "../glm.hpp"
+#include <glm/glm.hpp>
+#include <glm/ext.hpp>
 #include <limits>
 
 struct material
@@ -41,7 +45,8 @@ struct material
 	glm::vec4 diffuse; // Dcm
 	glm::vec4 specular; // Scm
 	float shininess; // Srm
-};
+};
+
 struct light
 {
 	glm::vec4 ambient; // Acli
@@ -58,7 +63,8 @@ struct light
 	float constantAttenuation; // K0
 	float linearAttenuation; // K1
 	float quadraticAttenuation;// K2
-};
+};
+
 
 // Sample 1
 #include <glm/vec3.hpp>// glm::vec3
@@ -184,7 +190,43 @@ glm::vec3 lighting
 	return Color;
 }
 */
+
+
+template <typename T, glm::precision P, template<typename, glm::precision> class vecType>
+T normalizeDotA(vecType<T, P> const & x, vecType<T, P> const & y)
+{
+	return glm::dot(x, y) * glm::inversesqrt(glm::dot(x, x) * glm::dot(y, y));
+}
+
+#define GLM_TEMPLATE_GENTYPE typename T, glm::precision P, template<typename, glm::precision> class
+
+template <GLM_TEMPLATE_GENTYPE vecType>
+T normalizeDotB(vecType<T, P> const & x, vecType<T, P> const & y)
+{
+	return glm::dot(x, y) * glm::inversesqrt(glm::dot(x, x) * glm::dot(y, y));
+}
+
+template <typename vecType>
+typename vecType::value_type normalizeDotC(vecType const & a, vecType const & b)
+{
+	return glm::dot(a, b) * glm::inversesqrt(glm::dot(a, a) * glm::dot(b, b));
+}
+
 int main()
 {
+	glm::vec1 o(1);
+	glm::vec2 a(1);
+	glm::vec3 b(1);
+	glm::vec4 c(1);
+
+	glm::quat q;
+	glm::dualquat p;
+
+	glm::mat4 m(1);
+
+	float a0 = normalizeDotA(a, a);
+	float b0 = normalizeDotB(b, b);
+	float c0 = normalizeDotC(c, c);
+
 	return 0;
 }

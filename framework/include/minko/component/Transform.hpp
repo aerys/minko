@@ -50,6 +50,8 @@ namespace minko
 			Signal<NodePtr, NodePtr, NodePtr>::Slot 		_addedSlot;
 			Signal<NodePtr, NodePtr, NodePtr>::Slot 		_removedSlot;
 
+            bool                                            _dirty;
+
 		public:
 			inline static
 			Ptr

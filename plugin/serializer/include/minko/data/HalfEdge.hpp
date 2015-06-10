@@ -28,7 +28,8 @@ namespace minko
         class HalfEdge
         {
         public :
-            typedef std::shared_ptr<HalfEdge> Ptr;
+            typedef std::shared_ptr<HalfEdge>   Ptr;
+            typedef std::weak_ptr<HalfEdge>     WeakPtr;
 
         public:
             inline static
@@ -49,9 +50,9 @@ namespace minko
             Ptr                         _next;
             Ptr                         _prec;
             Ptr                         _adjacent;
-            std::vector<Ptr>            _face;
-            std::vector<Ptr>            _firstReverseFace;
-            std::vector<Ptr>            _secondReverseFace;
+            std::vector<WeakPtr>        _face;
+            std::vector<WeakPtr>        _firstReverseFace;
+            std::vector<WeakPtr>        _secondReverseFace;
             bool                        _marked;
 
         private :
@@ -147,14 +148,14 @@ namespace minko
             }
 
             inline
-            const std::vector<Ptr>&
+            const std::vector<WeakPtr>&
             face() const
             {
                 return _face;
             }
 
             inline
-            std::vector<Ptr>&
+            std::vector<WeakPtr>&
             face()
             {
                 return _face;
@@ -166,7 +167,7 @@ namespace minko
                     Ptr he3);
 
             inline
-            std::vector<Ptr>&
+            std::vector<WeakPtr>&
             secondReverseFace()
             {
                 if (_secondReverseFace.size() == 0)
@@ -180,7 +181,7 @@ namespace minko
             }
 
             inline
-            std::vector<Ptr>&
+            std::vector<WeakPtr>&
             firstReverseFace()
             {
                 if (_firstReverseFace.size() == 0)
