@@ -2,6 +2,9 @@ package minko.plugin.sensors;
 
 import android.app.Activity;
 import android.content.Context;
+import android.view.Display;
+import android.view.WindowManager;
+import android.view.Surface;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -24,6 +27,8 @@ public class AndroidAttitude
 	private SensorEventListener _sensorEventListener;
 	private volatile boolean _tracking;
 
+	private Display _display;
+
 	// Native functions
 	public native void minkoNativeOnAttitudeEvent(float[] rotationMatrix, float[] quaternion);
 
@@ -31,6 +36,8 @@ public class AndroidAttitude
 	{
 		_sdlActivity = sdlActivity;
 		_context = SDLActivity.getContext();
+
+		_display = ((WindowManager)_context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 	}
 
 	public void startTracking()
@@ -92,15 +99,31 @@ public class AndroidAttitude
 	}
 
 	private synchronized void processSensorEvent(SensorEvent event)
-	{		
-		float[] rotationVector = { -event.values[1], event.values[0], event.values[2] };
+	{
+		float[] rotationVector = { event.values[0], event.values[1], event.values[2] };
 
 		float[] quaternion = new float[4];
 		float[] rotationMatrix = new float[16];
+		float[] rotationMatrixTransformed = new float[16];
 
 		_sensorManager.getQuaternionFromVector(quaternion, rotationVector);
 		_sensorManager.getRotationMatrixFromVector(rotationMatrix, rotationVector);
 
-		minkoNativeOnAttitudeEvent(rotationMatrix, quaternion);
+		switch (_display.getRotation()) {
+			case Surface.ROTATION_0:
+			    _sensorManager.remapCoordinateSystem(rotationMatrix, _sensorManager.AXIS_X, _sensorManager.AXIS_Y, rotationMatrixTransformed);
+			    break;
+			case Surface.ROTATION_90:
+				_sensorManager.remapCoordinateSystem(rotationMatrix, _sensorManager.AXIS_Y, _sensorManager.AXIS_MINUS_X, rotationMatrixTransformed);
+			    break;
+			case Surface.ROTATION_180:
+			    _sensorManager.remapCoordinateSystem(rotationMatrix, _sensorManager.AXIS_MINUS_X, _sensorManager.AXIS_MINUS_Y, rotationMatrixTransformed);
+			    break;
+			case Surface.ROTATION_270:
+			    _sensorManager.remapCoordinateSystem(rotationMatrix, _sensorManager.AXIS_MINUS_Y, _sensorManager.AXIS_X, rotationMatrixTransformed);
+			    break;
+		}
+
+		minkoNativeOnAttitudeEvent(rotationMatrixTransformed, quaternion);
 	}
 }
