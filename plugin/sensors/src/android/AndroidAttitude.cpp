@@ -135,13 +135,8 @@ AndroidAttitude::rotationMatrix()
     auto env = (JNIEnv*)SDL_AndroidGetJNIEnv();
     
     auto worldToDevice = rotationMatrixValue * _worldToInertialReferenceFrame;
-    auto worldToDisplay = _deviceToDisplay * worldToDevice;
 
-    rotationMatrixMutex.lock();
-    rotationMatrixValue = worldToDisplay;
-    rotationMatrixMutex.unlock();
-
-    return rotationMatrixValue;
+    return _deviceToDisplay * worldToDevice;
 }
 
 const math::quat&
