@@ -117,7 +117,7 @@ Effect::fillMaterial(std::shared_ptr<material::Material>    material,
                 {
                     material->data()->set({{
                         nameAndBinding.second.propertyName.substr(pos + 26),
-                        defaultValues->values().find(uniformName)->second
+                        *defaultValues->values().find(uniformName)->second
                     }});
                 }
             }
