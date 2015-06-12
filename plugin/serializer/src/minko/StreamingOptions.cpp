@@ -31,7 +31,7 @@ StreamingOptions::StreamingOptions() :
     _geometryStreamingIsActive(false),
     _masterLodScheduler(),
     _popGeometryWriterLodRangeFunction(),
-    _popGeometryErrorToleranceThreshold(1),
+    _popGeometryErrorToleranceThreshold(3),
     _storeLodData(true),
     _popGeometryLodFunction(),
     _streamedTextureLodFunction(),
