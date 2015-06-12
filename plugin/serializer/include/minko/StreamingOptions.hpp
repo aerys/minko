@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/SerializerCommon.hpp"
 #include "minko/StreamingCommon.hpp"
 #include "minko/component/MasterLodScheduler.hpp"
+#include "minko/file/MeshPartitioner.hpp"
 #include "minko/file/POPGeometryWriter.hpp"
 #include "minko/file/SurfaceOperator.hpp"
 
@@ -76,9 +77,7 @@ namespace minko
         std::function<int(SurfacePtr)>                          _popGeometryLodFunction;
         std::function<int(SurfacePtr)>                          _streamedTextureLodFunction;
 
-        bool                                                    _mergeSurfacesOnPartitioning;
-        bool                                                    _useSharedClusterHierarchyOnPartitioning;
-        bool                                                    _applyCrackFreePolicyOnPartitioning;
+        file::MeshPartitioner::Options                          _meshPartitionerOptions;
 
         float                                                   _popGeometryPriorityFactor;
         float                                                   _streamedTexturePriorityFactor;
@@ -254,49 +253,17 @@ namespace minko
         }
 
         inline
-        bool
-        mergeSurfacesOnPartitioning() const
+        const file::MeshPartitioner::Options&
+        meshPartitionerOptions() const
         {
-            return _mergeSurfacesOnPartitioning;
+            return _meshPartitionerOptions;
         }
 
         inline
         Ptr
-        mergeSurfacesOnPartitioning(bool value)
+        meshPartitionerOptions(const file::MeshPartitioner::Options& value)
         {
-            _mergeSurfacesOnPartitioning = value;
-
-            return shared_from_this();
-        }
-
-        inline
-        bool
-        useSharedClusterHierarchyOnPartitioning() const
-        {
-            return _useSharedClusterHierarchyOnPartitioning;
-        }
-
-        inline
-        Ptr
-        useSharedClusterHierarchyOnPartitioning(bool value)
-        {
-            _useSharedClusterHierarchyOnPartitioning = value;
-
-            return shared_from_this();
-        }
-
-        inline
-        bool
-        applyCrackFreePolicyOnPartitioning() const
-        {
-            return _applyCrackFreePolicyOnPartitioning;
-        }
-
-        inline
-        Ptr
-        applyCrackFreePolicyOnPartitioning(bool value)
-        {
-            _applyCrackFreePolicyOnPartitioning = value;
+            _meshPartitionerOptions = value;
 
             return shared_from_this();
         }

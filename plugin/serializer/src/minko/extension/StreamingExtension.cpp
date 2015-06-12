@@ -140,36 +140,7 @@ AbstractWriter<Node::Ptr>::Ptr writer)
 
         if (writer != nullptr)
         {
-            auto meshPartitionerFlags = MeshPartitioner::Options::none;
-
-            if (_streamingOptions->mergeSurfacesOnPartitioning())
-                meshPartitionerFlags |= MeshPartitioner::Options::mergeSurfaces;
-
-            if (_streamingOptions->useSharedClusterHierarchyOnPartitioning())
-                meshPartitionerFlags |= MeshPartitioner::Options::uniformizeSize;
-
-            if (_streamingOptions->applyCrackFreePolicyOnPartitioning())
-                meshPartitionerFlags |= MeshPartitioner::Options::applyCrackFreePolicy;
-
-            auto meshPartitionerOptions = MeshPartitioner::Options();
-            meshPartitionerOptions.flags = meshPartitionerFlags;
-
-            meshPartitionerOptions.nodeFilterFunction = [](Node::Ptr node) -> bool
-            {
-                auto surfaces = node->components<Surface>();
-
-                if (surfaces.empty())
-                    return false;
-
-                for (auto surface : surfaces)
-                {
-                    if (surface->geometry()->data()->hasProperty("type") &&
-                        surface->geometry()->data()->get<std::string>("type") == "pop")
-                        return true;
-                }
-
-                return false;
-            };
+            const auto& meshPartitionerOptions = _streamingOptions->meshPartitionerOptions();
 
             writer
                 ->registerPreprocessor(POPGeometryWriterPreprocessor::create())

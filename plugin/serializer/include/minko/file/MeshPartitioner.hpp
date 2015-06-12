@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/Hash.hpp"
 #include "minko/SerializerCommon.hpp"
 #include "minko/StreamingCommon.hpp"
 #include "minko/file/AbstractWriterPreprocessor.hpp"
