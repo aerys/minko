@@ -1832,6 +1832,8 @@ OpenGLES2Context::createRTTBuffers(TextureType	type,
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + 5, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, texture, 0);
 	}
 
+	// FIXME: create & attach depth stencil texture under OGLES2
+    // see https://www.khronos.org/registry/gles/extensions/OES/OES_packed_depth_stencil.txt
 
 	uint renderBuffer = -1;
 
@@ -1843,12 +1845,23 @@ OpenGLES2Context::createRTTBuffers(TextureType	type,
 #ifdef GL_ES_VERSION_2_0
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT16, width, height);
 #else
+# ifndef MINKO_NO_STENCIL
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width, height);
+# else
 	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, width, height);
+# endif
 #endif
-	// FIXME: create & attach stencil buffer
-
+	
 	// attach to the FBO for depth
+#ifdef GL_ES_VERSION_2_0
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
+#else
+# ifndef MINKO_NO_STENCIL
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
+# else
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, renderBuffer);
+# endif
+#endif
 
 	auto status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (status != GL_FRAMEBUFFER_COMPLETE)
