@@ -113,76 +113,6 @@ StreamingExtension::bind()
 }
 
 void
-StreamingExtension::initializeForWriting(StreamingOptions::Ptr          streamingOptions,
-AbstractWriter<Node::Ptr>::Ptr writer)
-{
-    this->streamingOptions(streamingOptions);
-
-    if (_streamingOptions->geometryStreamingIsActive())
-    {
-        file::Dependency::setGeometryFunction(std::bind(
-            &StreamingExtension::serializePOPGeometry,
-            std::static_pointer_cast<StreamingExtension>(shared_from_this()),
-            std::placeholders::_1,
-            std::placeholders::_2,
-            std::placeholders::_3,
-            std::placeholders::_4,
-            std::placeholders::_5,
-            std::placeholders::_6,
-            std::placeholders::_7),
-            [](Geometry::Ptr geometry) -> bool
-            {
-                return
-                    geometry->data()->hasProperty("type") &&
-                    geometry->data()->get<std::string>("type") == "pop";
-            },
-            11
-        );
-
-        if (writer != nullptr)
-        {
-            const auto& meshPartitionerOptions = _streamingOptions->meshPartitionerOptions();
-
-            writer
-                ->registerPreprocessor(POPGeometryWriterPreprocessor::create())
-                ->registerPreprocessor(MeshPartitioner::create(
-                    meshPartitionerOptions,
-                    streamingOptions
-                ))
-                ->registerPreprocessor(SceneTreeFlattener::create());
-        }
-    }
-    
-
-    if (_streamingOptions->textureStreamingIsActive())
-    {
-        file::Dependency::setTextureFunction(std::bind(
-            &StreamingExtension::serializeStreamedTexture,
-            std::static_pointer_cast<StreamingExtension>(shared_from_this()),
-            std::placeholders::_1,
-            std::placeholders::_2,
-            std::placeholders::_3,
-            std::placeholders::_4,
-            std::placeholders::_5,
-            std::placeholders::_6
-        ));
-
-        if (writer != nullptr)
-        {
-            auto streamedTextureWriterPreprocessor = StreamedTextureWriterPreprocessor::create();
-            auto streamedTextureWriterPreprocessorOptions = StreamedTextureWriterPreprocessor::Options();
-
-            streamedTextureWriterPreprocessorOptions.flags =
-                StreamedTextureWriterPreprocessor::Options::computeVertexColor;
-
-            streamedTextureWriterPreprocessor->options(streamedTextureWriterPreprocessorOptions);
-
-            writer->registerPreprocessor(streamedTextureWriterPreprocessor);
-        }
-    }
-}
-
-void
 StreamingExtension::initialize(StreamingOptions::Ptr streamingOptions)
 {
     this->streamingOptions(streamingOptions);
@@ -203,6 +133,25 @@ StreamingExtension::initialize(StreamingOptions::Ptr streamingOptions)
             std::placeholders::_7,
             std::placeholders::_8)
         );
+
+        file::Dependency::setGeometryFunction(std::bind(
+            &StreamingExtension::serializePOPGeometry,
+            std::static_pointer_cast<StreamingExtension>(shared_from_this()),
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3,
+            std::placeholders::_4,
+            std::placeholders::_5,
+            std::placeholders::_6,
+            std::placeholders::_7),
+            [](Geometry::Ptr geometry) -> bool
+            {
+                return
+                    geometry->data()->hasProperty("type") &&
+                    geometry->data()->get<std::string>("type") == "pop";
+            },
+            11
+        );
     }
 
     if (streamingOptions->textureStreamingIsActive())
@@ -222,6 +171,17 @@ StreamingExtension::initialize(StreamingOptions::Ptr streamingOptions)
             	std::placeholders::_8
             )
         );
+
+        file::Dependency::setTextureFunction(std::bind(
+            &StreamingExtension::serializeStreamedTexture,
+            std::static_pointer_cast<StreamingExtension>(shared_from_this()),
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3,
+            std::placeholders::_4,
+            std::placeholders::_5,
+            std::placeholders::_6
+        ));
     }
 }
 
