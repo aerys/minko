@@ -33,25 +33,25 @@ namespace minko
 
     namespace file
     {
-        class AbstractMkParser;
         template <typename T>
         class AbstractWriter;
         template <typename T>
         class AbstractWriterPreprocessor;
-		class SceneParser;
-        struct SceneVersion;
-        class SceneWriter;
-		class GeometryWriter;
+		class Dependency;
 		class GeometryParser;
+		class GeometryWriter;
+        class LinkedAsset;
 		class MaterialParser;
 		class MaterialWriter;
-		class Dependency;
+		class MeshPartitioner;
+		class SceneParser;
+		class SceneTreeFlattener;
+        struct SceneVersion;
+        class SceneWriter;
+        class SurfaceOperator;
         class TextureParser;
         class TextureWriter;
         class WriterOptions;
-        class LinkedAsset;
-        struct SceneVersion;
-        class SurfaceOperator;
 	}
 
 	namespace serialize

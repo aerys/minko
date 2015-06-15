@@ -48,6 +48,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/StreamedTextureParser.hpp"
 #include "minko/file/StreamedTextureWriter.hpp"
 #include "minko/file/StreamedTextureWriterPreprocessor.hpp"
+#include "minko/file/SceneTreeFlattener.hpp"
 #include "minko/file/WriterOptions.hpp"
 #include "minko/geometry/Bone.hpp"
 #include "minko/geometry/Skin.hpp"
@@ -147,7 +148,8 @@ AbstractWriter<Node::Ptr>::Ptr writer)
                 ->registerPreprocessor(MeshPartitioner::create(
                     meshPartitionerOptions,
                     streamingOptions
-                ));
+                ))
+                ->registerPreprocessor(SceneTreeFlattener::create());
         }
     }
     
