@@ -1,0 +1,24 @@
+#!/bin/bash
+
+if [[ -z "${EMSCRIPTEN}" ]]; then
+	echo "EMSCRIPTEN is not defined" > /dev/stderr
+	exit 1
+fi
+
+if [ $OSTYPE == "cygwin" ]; then
+	export EMSCRIPTEN=`cygpath -u "${EMSCRIPTEN}"`
+fi
+
+BIN="${EMSCRIPTEN}/emar"
+ARGS=()
+
+for ARG in "$@"; do
+	if [[ "${ARG}" == "-rcs" ]]; then
+		ARGS+=("rcs")
+	else
+		ARGS+=("${ARG}")
+	fi
+done
+
+test "$verbose" != 0 && echo "${BIN} ${ARGS[@]}"
+python "${BIN}" "${ARGS[@]}"

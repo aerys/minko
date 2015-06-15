@@ -127,17 +127,70 @@ StreamedTextureParser::nextLod(int     previousLod,
                                int&    nextLodOffset,
                                int&    nextLodSize)
 {
-    nextLod = previousLod + std::min(
-        requiredLod - previousLod,
-        streamingOptions()->streamedTextureLodRangeFetchingMaxSizeFunction()
-            ? streamingOptions()->streamedTextureLodRangeFetchingMaxSizeFunction()(previousLod, requiredLod)
-            : 1
-    );
+    auto lodRangeMinSize = 0;
+    auto lodRangeMaxSize = 1;
+    auto lodRangeRequestMinSize = 0;
+    auto lodRangeRequestMaxSize = 0;
 
-    nextLod = std::min(maxLod(), nextLod);
+    if (streamingOptions()->streamedTextureLodRangeFetchingBoundFunction())
+    {
+        streamingOptions()->streamedTextureLodRangeFetchingBoundFunction()(
+            previousLod,
+            requiredLod,
+            lodRangeMinSize,
+            lodRangeMaxSize,
+            lodRangeRequestMinSize,
+            lodRangeRequestMaxSize
+        );
+    }
 
-    const auto& nextLodLowerBoundInfo = _mipLevelsInfo.at(lodToMipLevel(previousLod + 1));
-    const auto& nextLodUpperBoundInfo = _mipLevelsInfo.at(lodToMipLevel(nextLod));
+    auto lowerLod = previousLod + 1;
+    auto upperLod = lowerLod;
+
+    auto requirementIsFulfilled = false;
+
+    do
+    {
+        if (upperLod >= maxLod())
+            break;
+
+        const auto lodRangeSize = upperLod - lowerLod;
+
+        if (lodRangeMinSize > 0 &&
+            lodRangeSize < lodRangeMinSize)
+        {
+            ++upperLod;
+
+            continue;
+        }
+
+        if (lodRangeMaxSize > 0 &&
+            lodRangeSize >= lodRangeMaxSize)
+            break;
+
+        const auto lodRangeRequestSize = this->lodRangeRequestSize(lowerLod, upperLod);
+
+        if (lodRangeRequestMaxSize > 0 &&
+            lodRangeRequestSize >= lodRangeRequestMaxSize)
+            break;
+
+        if (lodRangeRequestMinSize == 0 || lodRangeRequestSize >= lodRangeRequestMinSize)
+        {
+            requirementIsFulfilled = true;
+        }
+        else
+        {
+            ++upperLod;
+        }
+    } while (!requirementIsFulfilled);
+
+    lowerLod = std::min(maxLod(), lowerLod);
+    upperLod = std::min(maxLod(), upperLod);
+
+    const auto& nextLodLowerBoundInfo = _mipLevelsInfo.at(lodToMipLevel(lowerLod));
+    const auto& nextLodUpperBoundInfo = _mipLevelsInfo.at(lodToMipLevel(upperLod));
+
+    nextLod = upperLod;
 
     nextLodOffset = std::get<0>(nextLodUpperBoundInfo);
     nextLodSize = std::get<0>(nextLodLowerBoundInfo) + std::get<1>(nextLodLowerBoundInfo) - nextLodOffset;
@@ -338,4 +391,16 @@ StreamedTextureParser::extractLodData(TextureFormat                        forma
     }
 
     return true;
+}
+
+int
+StreamedTextureParser::lodRangeRequestSize(int lowerLod, int upperLod) const
+{
+    const auto& nextLodLowerBoundInfo = _mipLevelsInfo.at(lodToMipLevel(lowerLod));
+    const auto& nextLodUpperBoundInfo = _mipLevelsInfo.at(lodToMipLevel(upperLod));
+
+    const auto nextLodOffset = std::get<0>(nextLodUpperBoundInfo);
+    const auto nextLodSize = std::get<0>(nextLodLowerBoundInfo) + std::get<1>(nextLodLowerBoundInfo) - nextLodOffset;
+
+    return nextLodSize;
 }

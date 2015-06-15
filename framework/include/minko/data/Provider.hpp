@@ -36,12 +36,12 @@ namespace minko
             public Uuid::enable_uuid
 		{
         private:
-#if DEBUG
-			template <class K, typename... V>
-			using map = std::unordered_map<K, V...>;
-#else
+#ifdef MINKO_USE_SPARSE_HASH_MAP
 			template <typename... H>
 			using map = google::sparse_hash_map<H...>;
+#else
+			template <class K, typename... V>
+			using map = std::unordered_map<K, V...>;
 #endif
 
             template <typename T>
@@ -61,16 +61,18 @@ namespace minko
             };
 
 		public:
-			typedef std::shared_ptr<Provider>	Ptr;
-			typedef Flyweight<std::string>		PropertyName;
-			typedef map<PropertyName, Any> 		ValueMap;
+			typedef std::shared_ptr<Provider>	            Ptr;
+			typedef Flyweight<std::string>		            PropertyName;
+			typedef std::pair<PropertyName, Any>            ValueType;
+			typedef map<PropertyName, Any*> 		        ValueMap;
+			typedef std::unordered_map<PropertyName, Any*> 	DefaultValueMap;
 
 		private:
-            ValueMap*							_values;
+            ValueMap*							            _values;
 
-			Signal<Ptr, const PropertyName&>    _propertyAdded;
-            Signal<Ptr, const PropertyName&>	_propertyChanged;
-			Signal<Ptr, const PropertyName&>	_propertyRemoved;
+			Signal<Ptr, const PropertyName&>                _propertyAdded;
+            Signal<Ptr, const PropertyName&>	            _propertyChanged;
+			Signal<Ptr, const PropertyName&>	            _propertyRemoved;
 
 		public:
 			static
@@ -84,7 +86,16 @@ namespace minko
 
 			static
 			Ptr
-			create(const ValueMap& values)
+			create(const std::string& uuid)
+			{
+				Ptr provider = std::make_shared<Provider>(uuid);
+
+				return provider;
+			}
+
+			static
+			Ptr
+			create(const DefaultValueMap& values)
 			{
 				Ptr provider = std::make_shared<Provider>(values);
 
@@ -134,7 +145,7 @@ namespace minko
             typename std::enable_if<is_valid<T>::value, const T&>::type
             get(const PropertyName& propertyName) const
 			{
-                return *Any::unsafe_cast<T>(&getValue(propertyName));
+                return *Any::unsafe_cast<T>(getValue(propertyName));
 			}
 
             template <typename T>
@@ -142,7 +153,7 @@ namespace minko
             typename std::enable_if<is_valid<T>::value, const T*>::type
             getPointer(const PropertyName& propertyName) const
             {
-                return Any::unsafe_cast<T>(&getValue(propertyName));
+                return Any::unsafe_cast<T>(getValue(propertyName));
             }
 
             template <typename T>
@@ -150,7 +161,7 @@ namespace minko
             typename std::enable_if<is_valid<T>::value, T*>::type
             getUnsafePointer(const PropertyName& propertyName)
             {
-                return Any::unsafe_cast<T>(&getValue(propertyName));
+                return Any::unsafe_cast<T>(getValue(propertyName));
             }
 
             template <typename T>
@@ -159,7 +170,7 @@ namespace minko
             {
                 if (hasProperty(propertyName))
                 {
-                    T* ptr = Any::cast<T>(&getValue(propertyName));
+                    T* ptr = Any::cast<T>(getValue(propertyName));
 
 #if DEBUG
                     if (!ptr)
@@ -175,7 +186,7 @@ namespace minko
                 }
                 else
                 {
-                    setValue(propertyName, value);
+                    setValue(propertyName, new Any(value));
                     _propertyAdded.execute(shared_from_this(), propertyName);
                     _propertyChanged.execute(shared_from_this(), propertyName);
                 }
@@ -183,11 +194,14 @@ namespace minko
                 return shared_from_this();
             }
 
+            Ptr
+            set(std::initializer_list<data::Provider::ValueType> values);
+
             template <typename T>
 			bool
             propertyHasType(const PropertyName& propertyName) const
 			{
-				return Any::cast<T>(&getValue(propertyName)) != nullptr;
+				return Any::cast<T>(getValue(propertyName)) != nullptr;
 			}
 
 			virtual
@@ -204,15 +218,19 @@ namespace minko
             ~Provider();
 
 			Provider();
+            
+            explicit
+            Provider(const std::string& uuid);
 
-			Provider(const ValueMap& values);
+			Provider(const DefaultValueMap& values);
 
         private:
-            Any&
+            Any*
             getValue(const PropertyName& propertyName) const;
 
             void
-            setValue(const PropertyName& propertyName, Any value);
+            setValue(const PropertyName& propertyName, Any* value);
+
 		};
 	}
 }

@@ -36,7 +36,7 @@ BasicMaterial::BasicMaterial():
 {
 }
 
-BasicMaterial::BasicMaterial(const data::Provider::ValueMap& values):
+BasicMaterial::BasicMaterial(const data::Provider::DefaultValueMap& values):
     Material("BasicMaterial", values)
 {
 }
@@ -169,9 +169,14 @@ BasicMaterial::diffuseMapMipFilter() const
 BasicMaterial::Ptr
 BasicMaterial::diffuseCubeMap(std::shared_ptr<render::AbstractTexture> texture)
 {
-	assert(texture->type() == TextureType::CubeTexture);
+#ifdef DEBUG
+    assert(texture == nullptr || texture->type() == TextureType::CubeTexture);
+#endif
 
-	data()->set("diffuseCubeMap", texture->id());
+    if (texture)
+        data()->set("diffuseCubeMap", texture->sampler());
+    else
+        data()->unset("diffuseCubeMap");
 
 	return std::static_pointer_cast<BasicMaterial>(shared_from_this());
 }

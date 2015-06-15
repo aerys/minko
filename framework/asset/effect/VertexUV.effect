@@ -15,8 +15,8 @@
 		"uWorldToScreenMatrix"	: { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
 		"uBoneMatrices[0]"		: "geometry[${geometryUuid}].boneMatrices",
 		"uNumBones"				: "geometry[${geometryUuid}].numBones",
-        "uPopLod"               : "geometry[${geometryUuid}].popLod",
-        "uPopBlendingLod"       : "geometry[${geometryUuid}].popBlendingLod",
+        "uPopLod"               : "surface[${surfaceUuid}].popLod",
+        "uPopBlendingLod"       : "surface[${surfaceUuid}].popBlendingLod",
         "uPopFullPrecisionLod"  : "geometry[${geometryUuid}].popFullPrecisionLod",
         "uPopMinBound"          : "geometry[${geometryUuid}].popMinBound",
         "uPopMaxBound"          : "geometry[${geometryUuid}].popMaxBound"
@@ -25,8 +25,8 @@
 	"macros"	: {
 		"MODEL_TO_WORLD"	 	: "modelToWorldMatrix",
 		"SKINNING_NUM_BONES"	: { "binding" : "geometry[$geometryUuid].numBones", "type" : "int" },
-        "POP_LOD_ENABLED"       : "geometry[${geometryUuid}].popLodEnabled",
-        "POP_BLENDING_ENABLED"  : "geometry[${geometryUuid}].popBlendingEnabled"
+        "POP_LOD_ENABLED"       : "surface[${surfaceUuid}].popLodEnabled",
+        "POP_BLENDING_ENABLED"  : "surface[${surfaceUuid}].popBlendingEnabled"
 	},
 
 	"states" : {

@@ -204,7 +204,7 @@ namespace minko
 			}
 
             inline
-			void viewport(math::ivec4 viewport)
+			void viewport(const math::ivec4& viewport)
             {
 				_viewportBox = viewport;
             }
@@ -284,6 +284,12 @@ namespace minko
 			void
 			render(std::shared_ptr<render::AbstractContext> context,
 				   AbsTexturePtr 							renderTarget = nullptr);
+
+			void
+			clear(std::shared_ptr<AbstractCanvas> canvas);
+
+			void
+			clear(std::shared_ptr<AbstractCanvas> canvas, const math::vec4& clearColor);
 
 			inline
 			Signal<Ptr>::Ptr

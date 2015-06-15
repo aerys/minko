@@ -61,7 +61,7 @@ namespace minko
 			inline
 			static
 			Ptr
-			create(const data::Provider::ValueMap& values)
+			create(const data::Provider::DefaultValueMap& values)
 			{
 				auto instance = Ptr(new BasicMaterial(values));
 
@@ -259,7 +259,7 @@ namespace minko
 		protected:
 			BasicMaterial();
 
-            BasicMaterial(const data::Provider::ValueMap& values);
+            BasicMaterial(const data::Provider::DefaultValueMap& values);
 
             void
             initialize();

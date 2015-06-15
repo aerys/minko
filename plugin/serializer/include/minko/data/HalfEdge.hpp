@@ -28,30 +28,31 @@ namespace minko
         class HalfEdge
         {
         public :
-            typedef std::shared_ptr<HalfEdge> HalfEdgePtr;
+            typedef std::shared_ptr<HalfEdge>   Ptr;
+            typedef std::weak_ptr<HalfEdge>     WeakPtr;
 
         public:
             inline static
-            HalfEdgePtr
+            Ptr
             create(unsigned int startNodeId,
                    unsigned int endNodeId,
                    unsigned int edgeId)
             {
-                auto he = std::shared_ptr<HalfEdge>(new HalfEdge(startNodeId, endNodeId, edgeId));
+                auto instance = Ptr(new HalfEdge(startNodeId, endNodeId, edgeId));
 
-                return he;
+                return instance;
             }
 
         private:
             unsigned int                _startNodeId;
             unsigned int                _endNodeId;
             unsigned int                _edgeId;
-            HalfEdgePtr                 _next;
-            HalfEdgePtr                 _prec;
-            HalfEdgePtr                 _adjacent;
-            std::vector<HalfEdgePtr>    _face;
-            std::vector<HalfEdgePtr>    _firstReverseFace;
-            std::vector<HalfEdgePtr>    _secondReverseFace;
+            Ptr                         _next;
+            Ptr                         _prec;
+            Ptr                         _adjacent;
+            std::vector<WeakPtr>        _face;
+            std::vector<WeakPtr>        _firstReverseFace;
+            std::vector<WeakPtr>        _secondReverseFace;
             bool                        _marked;
 
         private :
@@ -105,7 +106,7 @@ namespace minko
             }
 
             inline
-            HalfEdgePtr
+            Ptr
             next() const
             {
                 return _next;
@@ -113,13 +114,13 @@ namespace minko
 
             inline
             void
-            next(HalfEdgePtr value)
+            next(Ptr value)
             {
                 _next = value;
             }
 
             inline
-            HalfEdgePtr
+            Ptr
             prec() const
             {
                 return _prec;
@@ -127,13 +128,13 @@ namespace minko
 
             inline
             void
-            prec(HalfEdgePtr value)
+            prec(Ptr value)
             {
                 _prec = value;
             }
 
             inline
-            HalfEdgePtr
+            Ptr
             adjacent() const
             {
                 return _adjacent;
@@ -141,32 +142,32 @@ namespace minko
 
             inline
             void
-            adjacent(HalfEdgePtr value)
+            adjacent(Ptr value)
             {
                 _adjacent = value;
             }
 
             inline
-            const std::vector<HalfEdgePtr>&
+            const std::vector<WeakPtr>&
             face() const
             {
                 return _face;
             }
 
             inline
-            std::vector<HalfEdgePtr>&
+            std::vector<WeakPtr>&
             face()
             {
                 return _face;
             }
 
             void
-            setFace(HalfEdgePtr he1,
-                    HalfEdgePtr he2,
-                    HalfEdgePtr he3);
+            setFace(Ptr he1,
+                    Ptr he2,
+                    Ptr he3);
 
             inline
-            std::vector<HalfEdgePtr>&
+            std::vector<WeakPtr>&
             secondReverseFace()
             {
                 if (_secondReverseFace.size() == 0)
@@ -180,7 +181,7 @@ namespace minko
             }
 
             inline
-            std::vector<HalfEdgePtr>&
+            std::vector<WeakPtr>&
             firstReverseFace()
             {
                 if (_firstReverseFace.size() == 0)

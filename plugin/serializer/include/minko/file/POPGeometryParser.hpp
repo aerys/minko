@@ -144,6 +144,9 @@ namespace minko
             createPOPGeometry(std::shared_ptr<AssetLibrary> assetLibrary,
                               std::shared_ptr<Options>      options,
                               const std::string&            fileName);
+
+            int
+            lodRangeRequestSize(int lowerLod, int upperLod) const;
         };
     }
 }

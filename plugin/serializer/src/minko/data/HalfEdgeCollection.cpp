@@ -22,8 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::data;
 
-HalfEdgeCollection::HalfEdgeCollection(IndexStreamPtr indexStream) :
-    _indexStream(indexStream)
+HalfEdgeCollection::HalfEdgeCollection(const std::vector<unsigned int>& indices) :
+    _indices(indices)
 {
     initialize();
 }
@@ -31,16 +31,16 @@ HalfEdgeCollection::HalfEdgeCollection(IndexStreamPtr indexStream) :
 void
 HalfEdgeCollection::initialize()
 {
-    unsigned int                    id        = 0;
-    std::vector<unsigned short>        data    = _indexStream->data();
+    unsigned int id = 0;
+    const auto& data = _indices;
 
     HalfEdgeMap map;
 
     for (unsigned int i = 0; i < data.size(); i += 3)
     {
-        unsigned short t1 = data[i];
-        unsigned short t2 = data[i + 1];
-        unsigned short t3 = data[i + 2];
+        const auto t1 = data[i];
+        const auto t2 = data[i + 1];
+        const auto t3 = data[i + 2];
 
         HalfEdgePtr he1 = HalfEdge::create(t1, t2, id++);
         HalfEdgePtr he2 = HalfEdge::create(t2, t3, id++);
@@ -76,15 +76,11 @@ HalfEdgeCollection::initialize()
         }
     }
 
-    // debug
-    for (HalfEdgeMap::iterator it = map.begin(); it != map.end(); it++)
-    {
-        std::cout << it->first.first << "  " << it->first.second << std::endl;
-        std::cout << it->second << std::endl;
-    }
+    for (const auto& halfEdge : map)
+        _halfEdges.push_back(halfEdge.second);
 
-    HalfEdgeMap unmarked(map.begin(), map.end());
-    computeList(unmarked);
+    //HalfEdgeMap unmarked(map.begin(), map.end());
+    //computeList(unmarked);
 }
 
 void

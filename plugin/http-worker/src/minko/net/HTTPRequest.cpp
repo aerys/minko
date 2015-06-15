@@ -44,6 +44,43 @@ HTTPRequest::HTTPRequest(const std::string& url,
 }
 
 static
+std::string
+encodeUrl(const std::string& url)
+{
+    static const auto authorizedCharacters = std::set<char>
+    {
+         '/', ':', '~', '-', '.', '_'
+    };
+
+    std::stringstream encodedUrlStream;
+
+    for (auto i = 0u; i < url.size(); ++i)
+    {
+        const auto c =  url.at(i);
+
+        if (c == '%')
+        {
+            encodedUrlStream << c << url.at(i + 1) << url.at(i + 2);
+
+            i += 2;
+
+            continue;
+        }
+
+        if (::isalnum(c) || authorizedCharacters.find(c) != authorizedCharacters.end())
+        {
+            encodedUrlStream << c;
+        }
+        else
+        {
+            encodedUrlStream << "%" << std::hex << static_cast<int>(c);
+        }
+    }
+
+    return encodedUrlStream.str();
+}
+
+static
 CURL*
 createCurl(const std::string&                                   url,
            const std::string&                                   username,
@@ -56,9 +93,11 @@ createCurl(const std::string&                                   url,
     CURL* curl = curl_easy_init();
 
     if (!curl)
-        throw std::runtime_error("cURL not enabled");
+        return nullptr;
 
-    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    const auto encodedUrl = encodeUrl(url);
+
+    curl_easy_setopt(curl, CURLOPT_URL, encodedUrl.c_str());
 
     curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, verifyPeer ? 1L : 0L);
 
@@ -123,6 +162,13 @@ HTTPRequest::run()
 
     auto curl = createCurl(url, _username, _password, _additionalHeaders, _verifyPeer, curlHeaderList, curlErrorBuffer);
 
+    if (!curl)
+    {
+        error()->execute(1, "failed to initialize cURL context");
+
+        return;
+    }
+
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, &curlWriteHandler);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, this);
 
@@ -131,15 +177,24 @@ HTTPRequest::run()
 
 	CURLcode res = curl_easy_perform(curl);
 
+    auto responseCode = 0l;
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
+
     disposeCurl(curl, curlHeaderList);
 
-	if (res != CURLE_OK)
+    const auto requestSucceeded =
+        res == CURLE_OK &&
+        (responseCode == 200 || responseCode == 206);
+
+	if (!requestSucceeded)
 	{
-        const auto errorMessage = std::string(curlErrorBuffer);
+        const auto errorMessage =
+            "status: " + std::to_string(responseCode) +
+            (res != CURLE_OK ? ", error: " + std::string(curlErrorBuffer) : "");
 
         LOG_ERROR(errorMessage);
 
-		error()->execute(res, errorMessage);
+		error()->execute(responseCode, errorMessage);
 	}
 	else
 	{
@@ -205,20 +260,36 @@ HTTPRequest::fileExists(const std::string& filename,
         curlErrorBuffer
     );
 
+    if (!curl)
+    {
+        LOG_ERROR("failed to initialize cURL context");
+
+        return false;
+    }
+
     curl_easy_setopt(curl, CURLOPT_HEADER, false);
     curl_easy_setopt(curl, CURLOPT_NOBODY, true);
     curl_easy_setopt(curl, CURLOPT_FAILONERROR, true);
 
     auto status = curl_easy_perform(curl);
 
+    auto responseCode = 0l;
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &responseCode);
+
     disposeCurl(curl, curlHeaderList);
 
-    if (status != CURLE_OK)
+    const auto requestSucceeded =
+        status == CURLE_OK &&
+        responseCode == 200;
+
+    if (!requestSucceeded)
     {
-        const auto errorMessage = std::string(curlErrorBuffer);
+        const auto errorMessage =
+            "status: " + std::to_string(responseCode) +
+            (status != CURLE_OK ? ", error: " + std::string(curlErrorBuffer) : "");
 
         LOG_ERROR(errorMessage);
     }
 
-    return status == CURLE_OK;
+    return requestSucceeded;
 }

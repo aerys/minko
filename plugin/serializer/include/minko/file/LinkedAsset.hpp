@@ -44,6 +44,7 @@ namespace minko
             int                                                     _length;
 
             std::string                                             _filename;
+            std::string                                             _lastResolvedFilename;
             std::vector<unsigned char>                              _data;
 
             LinkType                                                _linkType;
@@ -114,6 +115,13 @@ namespace minko
             }
 
             inline
+            const std::string&
+            lastResolvedFilename() const
+            {
+                return _lastResolvedFilename;
+            }
+
+            inline
             const std::vector<unsigned char>&
             data() const
             {
@@ -167,6 +175,7 @@ namespace minko
                 _offset(0),
                 _length(0),
                 _filename(),
+                _lastResolvedFilename(),
                 _data(),
                 _linkType(LinkType::Internal),
                 _complete(Signal<Ptr, const std::vector<unsigned char>&>::create()),

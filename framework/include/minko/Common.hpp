@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <cstring>
 #include <exception>
 #include <functional>
+#include <initializer_list>
 #include <iostream>
 #include <list>
 #include <forward_list>
@@ -67,8 +68,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "glm/gtc/random.hpp"
 #include "glm/gtx/transform.hpp"
 #include "glm/gtx/matrix_interpolation.hpp"
+#include "glm/gtx/matrix_decompose.hpp"
 #include "glm/gtx/color_space.hpp"
 #include "glm/gtx/string_cast.hpp"
+
+#ifndef MINKO_USE_SPARSE_HASH_MAP
+# ifndef DEBUG
+#  define MINKO_USE_SPARSE_HASH_MAP
+# endif
+#endif
 
 namespace minko
 {

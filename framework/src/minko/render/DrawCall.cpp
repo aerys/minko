@@ -36,7 +36,6 @@ DrawCall::DrawCall(uint                   batchId,
                    data::Store&           rootData,
                    data::Store&           rendererData,
                    data::Store&           targetData) :
-    _batchIDs({ batchId }),
     _pass(pass),
     _variables(variables),
     _rootData(rootData),
@@ -68,6 +67,8 @@ DrawCall::DrawCall(uint                   batchId,
     _modelToWorldMatrixPropertyRemovedSlot(nullptr),
     _worldToScreenMatrixPropertyRemovedSlot(nullptr)
 {
+    _batchIDs = { batchId };
+
     // For Z-sorting
     bindPositionalMembers();
 }
@@ -565,16 +566,49 @@ void
 DrawCall::bindIndexBuffer()
 {
     auto indexBufferProperty = data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].indices");
+
     if (_targetData.hasProperty(indexBufferProperty))
-        _indexBuffer = const_cast<int*>(_targetData.getPointer<int>(indexBufferProperty));
+        _indexBuffer = _targetData.getPointer<int>(indexBufferProperty);
 
-    auto firstIndexProperty = data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].firstIndex");
-    if (_targetData.hasProperty(firstIndexProperty))
-        _firstIndex = const_cast<uint*>(_targetData.getPointer<uint>(firstIndexProperty));
+    auto surfaceFirstIndexProperty = data::Store::getActualPropertyName(
+        _variables,
+        "surface[${surfaceUuid}].firstIndex"
+    );
 
-    auto numIndicesProperty = data::Store::getActualPropertyName(_variables, "geometry[${geometryUuid}].numIndices");
-    if (_targetData.hasProperty(numIndicesProperty))
-        _numIndices = const_cast<uint*>(_targetData.getPointer<uint>(numIndicesProperty));
+    if (!_targetData.hasProperty(surfaceFirstIndexProperty))
+    {
+        auto geometryFirstIndexProperty = data::Store::getActualPropertyName(
+            _variables,
+            "geometry[${geometryUuid}].firstIndex"
+        );
+
+        if (_targetData.hasProperty(geometryFirstIndexProperty))
+            _firstIndex = _targetData.getPointer<uint>(geometryFirstIndexProperty);
+    }
+    else
+    {
+        _firstIndex = _targetData.getPointer<uint>(surfaceFirstIndexProperty);
+    }
+
+    auto surfaceNumIndicesProperty = data::Store::getActualPropertyName(
+        _variables,
+        "surface[${surfaceUuid}].numIndices"
+    );
+
+    if (!_targetData.hasProperty(surfaceNumIndicesProperty))
+    {
+        auto geometryNumIndicesProperty = data::Store::getActualPropertyName(
+            _variables,
+            "geometry[${geometryUuid}].numIndices"
+        );
+
+        if (_targetData.hasProperty(geometryNumIndicesProperty))
+            _numIndices = _targetData.getPointer<uint>(geometryNumIndicesProperty);
+    }
+    else
+    {
+        _numIndices = _targetData.getPointer<uint>(surfaceNumIndicesProperty);
+    }
 }
 
 data::ResolvedBinding*

@@ -87,6 +87,14 @@ namespace minko
                 return _provider;
             }
 
+            Ptr
+            set(std::initializer_list<data::Provider::ValueType> values)
+            {
+                _provider->set(values);
+
+                return shared_from_this();
+            }
+
 		protected:
 			Material(const std::string& name) :
                 _provider(data::Provider::create())
@@ -96,7 +104,7 @@ namespace minko
             }
 
             Material(const std::string& name,
-                     const data::Provider::ValueMap& values) :
+                     const data::Provider::DefaultValueMap& values) :
                 _provider(data::Provider::create(values))
             {
                 _provider->set("name", name);

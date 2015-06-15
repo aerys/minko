@@ -503,7 +503,7 @@ Geometry::cast(std::shared_ptr<math::Ray>	ray,
 			continue;
 
 		t = math::dot(edge2, qvec) * invDot;
-		if (t < minDistance)
+		if (t < minDistance && t > 0)
 		{
 			minDistance = t;
 			distance = t;

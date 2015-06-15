@@ -45,9 +45,11 @@ PerspectiveCamera::PerspectiveCamera(float			      fov,
   	_projection(math::perspective(fov, aspectRatio, zNear, zFar)),
   	_viewProjection(_projection),
     _position(),
+    _direction(0., 0., 1.f),
 	_postProjection(postPerspective)
 {
 	_data
+        ->set("eyeDirection",           _direction)
 		->set("eyePosition",		    _position)
   		->set("viewMatrix",				_view)
   		->set("projectionMatrix",		_projection)
@@ -114,9 +116,11 @@ void
 PerspectiveCamera::updateMatrices(const math::mat4& modelToWorldMatrix)
 {
 	_position = (modelToWorldMatrix * math::vec4(0.f, 0.f, 0.f, 1.f)).xyz();
+    _direction = math::normalize(math::mat3(modelToWorldMatrix) * math::vec3(0.f, 0.f, 1.f));
     _view = math::inverse(modelToWorldMatrix);
 
 	_data
+        ->set("eyeDirection",   _direction)
 		->set("eyePosition",	_position)
   		->set("viewMatrix",     _view);
 
@@ -135,15 +139,13 @@ PerspectiveCamera::updateProjection(float fov, float aspectRatio, float zNear, f
 	_viewProjection = _projection * _view;
 
 	_data
-        ->set("zNear",                  _zNear)
-        ->set("zFar",                   _zFar)
-		->set("projectionMatrix",		_projection)
-  		->set("worldToScreenMatrix",	_viewProjection)
-        ->set("fov",                    fov)
-        ->set("aspectRatio",            aspectRatio)
-        ->set("zNear",                  zNear)
-        ->set("zFar",                   zFar);
-}
+        ->set("fov", _fov)
+        ->set("aspectRatio", _aspectRatio)
+        ->set("zNear", _zNear)
+        ->set("zFar", _zFar)
+		->set("projectionMatrix", _projection)
+		->set("worldToScreenMatrix", _viewProjection);
+  }
 
 std::shared_ptr<math::Ray>
 PerspectiveCamera::unproject(float x, float y)
@@ -178,9 +180,9 @@ PerspectiveCamera::project(math::vec3 worldPosition)
 
     vector /= vector.w;
 
-    return {
+    return math::vec3(
        width * ((vector.x + 1.0f) * .5f),
 	   height * ((1.0f - ((vector.y + 1.0f) * .5f))),
        -(_view * pos).z
-    };
+    );
 }

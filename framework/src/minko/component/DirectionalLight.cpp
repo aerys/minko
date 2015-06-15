@@ -271,6 +271,12 @@ DirectionalLight::computeShadowProjection(const math::mat4& view, const math::ma
 		zNear = splitFar[i];
 	}
 
+	for (auto i = _numShadowCascades; i < MAX_NUM_SHADOW_CASCADES; ++i)
+	{
+		splitFar[i] = -std::numeric_limits<float>::max();
+		splitNear[i] = std::numeric_limits<float>::max();
+	}
+
 	data()->set("shadowSplitFar", math::make_vec4(&splitFar[0]));
 	data()->set("shadowSplitNear", math::make_vec4(&splitNear[0]));
 
@@ -313,8 +319,8 @@ DirectionalLight::updateWorldToScreenMatrix()
 		// 	->set("zNear" + istr, 			zNear)
 		// 	->set("zFar" + istr, 			zFar);
 
-		zNear.push_back((farMinusNear + farPlusNear) / 2.f);
-		zFar.push_back(farPlusNear - zNear.at(i));
+		zNear[i] = (farMinusNear + farPlusNear) / 2.f;
+		zFar[i] = farPlusNear - zNear[i];
 		viewProjections.push_back(projection * _view);
 	}
 

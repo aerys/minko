@@ -58,7 +58,8 @@ bullet::PhysicsWorld::PhysicsWorld():
     _addedOrRemovedSlot(nullptr),
     _colliderNodeLayoutChangedSlot(),
     _colliderPropertiesChangedSlot(),
-    _colliderLayoutMaskChangedSlot()
+    _colliderLayoutMaskChangedSlot(),
+    _paused(false)
 {
 }
 
@@ -330,6 +331,12 @@ bullet::PhysicsWorld::setGravity(const math::vec3& gravity)
 void
 bullet::PhysicsWorld::frameBeginHandler(std::shared_ptr<SceneManager> sceneManager, float time, float deltaTime)
 {
+    if (_paused)
+        return;
+
+    if (deltaTime > 100.f)
+        deltaTime = 100.f;
+
     _bulletDynamicsWorld->stepSimulation(deltaTime);
     updateColliders();
 }

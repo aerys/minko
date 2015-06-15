@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/data/Provider.hpp"
 #include "minko/data/Store.hpp"
 #include "minko/Signal.hpp"
+#include "minko/scene/Node.hpp"
 
 namespace minko
 {
@@ -52,6 +53,7 @@ namespace minko
 			math::mat4										_projection;
 			math::mat4										_viewProjection;
             math::vec3	                 					_position;
+            math::vec3	                 					_direction;
 			math::mat4										_postProjection;
 
 			Signal<AbsCtrlPtr, NodePtr>::Slot				_targetAddedSlot;

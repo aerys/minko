@@ -92,7 +92,7 @@ solution "minko"
 		-- include 'tutorial/27-working-with-point-lights'
 		-- include 'tutorial/28-working-with-spot-lights'
 		-- include 'tutorial/29-hello-falling-cube'
-		include 'tutorial/30-applying-anti-aliasing-effect'
+		-- include 'tutorial/30-applying-anti-aliasing-effect'
 
 		if os.is("macosx")  and (_ACTION == "xcode-ios" or _ACTION == "xcode-osx") then
 			minko.project.library "all-tutorials"
@@ -157,6 +157,7 @@ solution "minko"
 	if not _OPTIONS['no-example'] then
 		include 'example/assimp'
 		-- include 'example/audio'
+		include 'example/benchmark-cube'
 		include 'example/blending'
 		-- include 'example/clone'
 		include 'example/cube'
@@ -186,10 +187,12 @@ solution "minko"
 		include 'example/serializer'
 		include 'example/shadow-mapping'
 		-- include 'example/sky-box'
+		include 'example/sky-box'
 		-- include 'example/stencil'
 		-- include 'example/visibility'
 		include 'example/vr'
 		-- include 'example/water'
+		include 'example/pbr'
 
 		if _OPTIONS['with-offscreen'] then
 			include 'example/offscreen'
@@ -303,7 +306,7 @@ newaction {
 			end
 		end
 
-		minko.action.zip(distDir, distDir .. '.zip')
+		os.execute(minko.action.zip(distDir, distDir .. '.zip'))
 	end
 }
 
@@ -319,7 +322,23 @@ newaction {
 	trigger			= "clean",
 	description		= "Remove generated files.",
 	execute			= function()
-		minko.action.clean()
+		os.execute(minko.action.clean("."))
+
+		for _, pattern in ipairs { "framework", "plugin/*", "test", "example/*" } do
+			local dirs = os.matchdirs(pattern)
+
+			for _, dir in ipairs(dirs) do
+				os.execute(minko.action.clean(dir))
+			end
+		end
+	end
+}
+
+newaction {
+	trigger			= "test",
+	description		= "Run the automated test suite.",
+	execute			= function()
+		dofile "test/test.lua"
 	end
 }
 

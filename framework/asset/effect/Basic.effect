@@ -7,7 +7,8 @@
 		"aBoneIdsA"		  : "geometry[${geometryUuid}].boneIdsA",
 		"aBoneIdsB"		  : "geometry[${geometryUuid}].boneIdsB",
 		"aBoneWeightsA"   : "geometry[${geometryUuid}].boneWeightsA",
-		"aBoneWeightsB"   : "geometry[${geometryUuid}].boneWeightsB"
+		"aBoneWeightsB"   : "geometry[${geometryUuid}].boneWeightsB",
+        "aPopProtected"   : "geometry[${geometryUuid}].popProtected"
     },
 
     "uniforms"   : {
@@ -31,8 +32,8 @@
 		"uNumBones"				: "geometry[${geometryUuid}].numBones",
 		"uFogColor"				: "material[${materialUuid}].fogColor",
         "uFogBounds"			: "material[${materialUuid}].fogBounds",
-        "uPopLod"               : "geometry[${geometryUuid}].popLod",
-        "uPopBlendingLod"       : "geometry[${geometryUuid}].popBlendingLod",
+        "uPopLod"               : "surface[${surfaceUuid}].popLod",
+        "uPopBlendingLod"       : "surface[${surfaceUuid}].popBlendingLod",
         "uPopFullPrecisionLod"  : "geometry[${geometryUuid}].popFullPrecisionLod",
         "uPopMinBound"          : "geometry[${geometryUuid}].popMinBound",
         "uPopMaxBound"          : "geometry[${geometryUuid}].popMaxBound"
@@ -55,8 +56,9 @@
         "UV_OFFSET"             : "material[${materialUuid}].uvOffset",
         "UV_SCALE"              : "material[${materialUuid}].uvScale",
         "FOG_TECHNIQUE"			: { "binding" : "material[${materialUuid}].fogTechnique", "type" : "int" },
-        "POP_LOD_ENABLED"       : "geometry[${geometryUuid}].popLodEnabled",
-        "POP_BLENDING_ENABLED"  : "geometry[${geometryUuid}].popBlendingEnabled"
+        "POP_LOD_ENABLED"       : "surface[${surfaceUuid}].popLodEnabled",
+        "POP_BLENDING_ENABLED"  : "surface[${surfaceUuid}].popBlendingEnabled",
+        "VERTEX_POP_PROTECTED"  : "geometry[${geometryUuid}].popProtected"
     },
 
 	"states" : {

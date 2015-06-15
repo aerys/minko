@@ -1,1 +1,0 @@
-solution_gmake_gcc.sh

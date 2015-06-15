@@ -94,7 +94,7 @@ bullet::Collider::targetAdded(Node::Ptr target)
         )
     );
 
-    addedHandler(target, target->root(), target->parent());
+    addedHandler(target, target, target->parent());
 }
 
 void
@@ -102,7 +102,8 @@ bullet::Collider::targetRemoved(Node::Ptr target)
 {
     if (_physicsWorld != nullptr)
         _physicsWorld->removeCollider(std::static_pointer_cast<Collider>(shared_from_this()));
-
+    
+    _frameBeginSlot = nullptr;
     _physicsWorld = nullptr;
     _graphicsTransform = nullptr;
 
@@ -111,7 +112,7 @@ bullet::Collider::targetRemoved(Node::Ptr target)
 }
 
 void
-bullet::Collider::addedHandler(Node::Ptr node, Node::Ptr target, Node::Ptr ancestor)
+bullet::Collider::addedHandler(Node::Ptr target, Node::Ptr child, Node::Ptr ancestor)
 {
     if (target->root()->hasComponent<SceneManager>())
     {
@@ -121,7 +122,7 @@ bullet::Collider::addedHandler(Node::Ptr node, Node::Ptr target, Node::Ptr ances
         {
             _frameBeginSlot = nullptr;
 
-            initializeFromNode(node);
+            initializeFromNode(target);
 
             assert(_graphicsTransform);
         });
@@ -130,13 +131,18 @@ bullet::Collider::addedHandler(Node::Ptr node, Node::Ptr target, Node::Ptr ances
 }
 
 void
-bullet::Collider::removedHandler(Node::Ptr, Node::Ptr, Node::Ptr)
+bullet::Collider::removedHandler(Node::Ptr target, Node::Ptr child, Node::Ptr ancestor)
 {
-    //if (_physicsWorld != nullptr)
-    //    _physicsWorld->removeChild(std::static_pointer_cast<Collider>(shared_from_this()));
+    if (target->root()->hasComponent<SceneManager>())
+        return;
 
-    //_physicsWorld = nullptr;
-    //_graphicsTransform = nullptr;
+    if (_physicsWorld != nullptr)
+        _physicsWorld->removeCollider(std::static_pointer_cast<Collider>(shared_from_this()));
+
+    _frameBeginSlot = nullptr;
+    
+    _physicsWorld = nullptr;
+    _graphicsTransform = nullptr;
 }
 
 void

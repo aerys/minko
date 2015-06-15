@@ -47,6 +47,7 @@ EmscriptenDOM::sendMessage(const std::string& message, bool async)
 	std::string s = message;
 	s = std::replaceAll(s, "\\", "\\\\");
 	s = std::replaceAll(s, "'", "\\'");
+	s = std::replaceAll(s, "\n", " ");
 
 	std::string eval = "if (" + _jsAccessor + " !== undefined && " + _jsAccessor + ".window !== undefined && " + _jsAccessor + ".window.Minko !== undefined) " + _jsAccessor + ".window.Minko.dispatchMessage('" + s + "');";
 	//if (!async)

@@ -9,7 +9,7 @@
 
 #define MINKO_SCENE_VERSION_MAJOR   0
 #define MINKO_SCENE_VERSION_MINOR	3
-#define MINKO_SCENE_VERSION_PATCH   0
+#define MINKO_SCENE_VERSION_PATCH   1
 
 namespace minko
 {
@@ -51,6 +51,7 @@ namespace minko
         class WriterOptions;
         class LinkedAsset;
         struct SceneVersion;
+        class SurfaceOperator;
 	}
 
 	namespace serialize
