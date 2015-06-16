@@ -415,7 +415,10 @@ namespace minko
                       GLSLBlockList::iterator	insertIt);
 
             void
-            loadGLSLDependencies(GLSLBlockListPtr blocks, OptionsPtr options);
+            loadGLSLDependencies(GLSLBlockListPtr		    blocks,
+                                 GLSLBlockList::iterator    begin,
+                                 GLSLBlockList::iterator    end,
+                                 OptionsPtr                 options);
 
             void
             dependencyErrorHandler(std::shared_ptr<Loader>  loader,

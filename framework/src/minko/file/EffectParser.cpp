@@ -157,11 +157,12 @@ EffectParser::parse(const std::string&				    filename,
 	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1], root, false))
 		_error->execute(shared_from_this(), file::Error(resolvedFilename + ": " + reader.getFormattedErrorMessages()));
 
-	_options = options->clone();
+	_options = options;
 
     int pos	= resolvedFilename.find_last_of("/\\");
     if (pos != std::string::npos)
     {
+        _options = _options->clone();
         _options->includePaths().clear();
 		_options->includePaths().push_front(resolvedFilename.substr(0, pos));
     }
@@ -1361,6 +1362,7 @@ EffectParser::parseGLSL(const std::string&      glsl,
     auto i = 0;
     auto lastBlockEnd = 0;
     auto numIncludes = 0;
+    auto begin = insertIt;
 
     while (std::getline(stream, line))
     {
@@ -1385,15 +1387,16 @@ EffectParser::parseGLSL(const std::string&      glsl,
         insertIt = blocks->insert_after(insertIt, GLSLBlock(GLSLBlockType::TEXT, glsl.substr(lastBlockEnd)));
 
     if (numIncludes)
-        loadGLSLDependencies(blocks, options);
+        loadGLSLDependencies(blocks, begin, ++insertIt, options);
 }
 
 void
-EffectParser::loadGLSLDependencies(GLSLBlockListPtr blocks, file::Options::Ptr options)
+EffectParser::loadGLSLDependencies(GLSLBlockListPtr		   blocks,
+                                   GLSLBlockList::iterator begin,
+                                   GLSLBlockList::iterator end,
+                                   file::Options::Ptr      options)
 {
-    auto loader = Loader::create(options);
-
-    for (auto blockIt = blocks->begin(); blockIt != blocks->end(); blockIt++)
+    for (auto blockIt = begin; blockIt != end; blockIt++)
     {
         auto& block = *blockIt;
 
@@ -1413,6 +1416,8 @@ EffectParser::loadGLSLDependencies(GLSLBlockListPtr blocks, file::Options::Ptr o
             }
             else
             {
+                auto loader = Loader::create(options);
+
                 ++_numDependencies;
 
                 _loaderCompleteSlots[loader] = loader->complete()->connect(std::bind(
@@ -1470,7 +1475,7 @@ EffectParser::glslIncludeCompleteHandler(LoaderPtr 			        loader,
 
     auto file = loader->files().at(filename);
     auto resolvedFilename = file->resolvedFilename();
-    auto options = _options;
+    auto options = loader->options();
     auto pos = resolvedFilename.find_last_of("/\\");
 
     if (pos != std::string::npos)
@@ -1478,6 +1483,7 @@ EffectParser::glslIncludeCompleteHandler(LoaderPtr 			        loader,
         options = options->clone();
         options->includePaths().clear();
         options->includePaths().push_back(resolvedFilename.substr(0, pos));
+        std::cout << filename << ": " << std::to_string(options->includePaths(), ", ") << std::endl;
     }
 
     parseGLSL(std::string((const char*)&file->data()[0], file->data().size()), options, blocks, blockIt);
