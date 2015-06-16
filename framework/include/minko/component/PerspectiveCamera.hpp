@@ -190,7 +190,15 @@ namespace minko
 			unproject(float x, float y);
 
 			math::vec3
-			project(math::vec3 worldPosition);
+			project(const math::vec3& worldPosition) const;
+
+            static
+            math::vec3
+            project(const math::vec3&   worldPosition,
+                    unsigned int        viewportWidth,
+                    unsigned int        viewportHeight,
+                    const math::mat4&   viewMatrix,
+                    const math::mat4&   viewProjectionMatrix);
 
         protected:
             void

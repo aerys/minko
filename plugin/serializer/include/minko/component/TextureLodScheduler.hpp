@@ -95,6 +95,7 @@ namespace minko
 
             void
             viewPropertyChanged(const math::mat4&   worldToScreenMatrix,
+                                const math::mat4&   viewMatrix,
                                 const math::vec3&   eyePosition,
                                 float               fov,
                                 float               aspectRatio,

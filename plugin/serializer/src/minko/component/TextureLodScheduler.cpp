@@ -161,6 +161,7 @@ TextureLodScheduler::surfaceAdded(Surface::Ptr surface)
 
 void
 TextureLodScheduler::viewPropertyChanged(const math::mat4&   worldToScreenMatrix,
+                                         const math::mat4&   viewMatrix,
                                          const math::vec3&   eyePosition,
                                          float               fov,
                                          float               aspectRatio,
@@ -169,6 +170,7 @@ TextureLodScheduler::viewPropertyChanged(const math::mat4&   worldToScreenMatrix
 {
     AbstractLodScheduler::viewPropertyChanged(
         worldToScreenMatrix,
+        viewMatrix,
         eyePosition,
         fov,
         aspectRatio,

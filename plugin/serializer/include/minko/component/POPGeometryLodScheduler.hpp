@@ -99,6 +99,9 @@ namespace minko
 
             math::vec4                                                  _viewport;
 
+            math::mat4                                                  _worldToScreenMatrix;
+            math::mat4                                                  _viewMatrix;
+
             float                                                       _blendingRange;
 
         public:
@@ -130,6 +133,7 @@ namespace minko
 
             void
             viewPropertyChanged(const math::mat4&   worldToScreenMatrix,
+                                const math::mat4&   viewMatrix,
                                 const math::vec3&   eyePosition,
                                 float               fov,
                                 float               aspectRatio,
