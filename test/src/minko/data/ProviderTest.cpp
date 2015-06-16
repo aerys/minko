@@ -230,7 +230,7 @@ TEST_F(ProviderTest, IntegerPointerConsistency)
 
     p->set("integer", 42);
 
-    ASSERT_EQ(p->getPointer<int>("integer"), p->getPointer<int>("integer"));
+    ASSERT_EQ(p->getPointer<render::TextureSampler>("integer"), p->getPointer<render::TextureSampler>("integer"));
 }
 
 TEST_F(ProviderTest, IntegerPointerConsistency2)
@@ -256,11 +256,11 @@ TEST_F(ProviderTest, IntegerPointerConsistency3)
     p->set("bar", 24);
     auto ptr2 = p->getPointer<int>("bar");
 
-	for (auto i = 0; i < 100; i++)
-		p->set(std::to_string(i), i);
+    for (auto i = 0; i < 100; i++)
+        p->set(std::to_string(i), i);
 
     ASSERT_EQ(ptr1, p->getPointer<int>("foo"));
-	ASSERT_EQ(ptr2, p->getPointer<int>("bar"));
+    ASSERT_EQ(ptr2, p->getPointer<int>("bar"));
 }
 
 TEST_F(ProviderTest, TextureSamplerPointerConsistency)

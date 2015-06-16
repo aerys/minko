@@ -20,7 +20,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
+#include "minko/Hash.hpp"
 #include "minko/SerializerCommon.hpp"
+#include "minko/StreamingCommon.hpp"
 #include "minko/file/AbstractWriterPreprocessor.hpp"
 
 namespace minko
@@ -60,6 +62,9 @@ namespace minko
                 int                                                     maxNumTrianglesPerNode;
                 int                                                     maxNumIndicesPerNode;
 
+                int                                                     maxNumSurfacesPerSurfaceBucket;
+                int                                                     maxNumTrianglesPerSurfaceBucket;
+
                 unsigned int                                            flags;
 
                 std::function<math::vec3(NodePtr)>                      partitionMaxSizeFunction;
@@ -68,6 +73,9 @@ namespace minko
 
                 std::function<bool(NodePtr)>                            nodeFilterFunction;
                 SurfaceIndexer                                          surfaceIndexer;
+
+                std::function<bool(SurfacePtr)>                         validSurfacePredicate;
+                std::function<bool(SurfacePtr)>                         instanceSurfacePredicate;
 
                 Options();
             };
@@ -141,6 +149,7 @@ namespace minko
                 std::vector<SurfacePtr>     surfaces;
 
                 bool                        useRootSpace;
+                bool                        isInstance;
 
                 std::vector<unsigned int>   indices;
                 std::vector<float>          vertices;
@@ -168,15 +177,21 @@ namespace minko
                 >                           markedDiscontinousIndices;
 
                 OctreeNodePtr               rootPartitionNode;
+
+                PartitionInfo() = default;
+                ~PartitionInfo() = default;
             };
 
         private:
-            Options             _options;
+            Options                                                     _options;
+            std::shared_ptr<StreamingOptions>                           _streamingOptions;
 
-            AssetLibraryPtr     _assetLibrary;
+            AssetLibraryPtr                                             _assetLibrary;
 
-            math::vec3          _worldMinBound;
-            math::vec3          _worldMaxBound;
+            math::vec3                                                  _worldMinBound;
+            math::vec3                                                  _worldMaxBound;
+
+            std::unordered_map<GeometryPtr, std::vector<GeometryPtr>>   _processedInstances;
 
         public:
             ~MeshPartitioner() = default;
@@ -184,11 +199,12 @@ namespace minko
             inline
             static
             Ptr
-            create(Options options)
+            create(Options options, std::shared_ptr<StreamingOptions> streamingOptions)
             {
                 auto instance = Ptr(new MeshPartitioner());
 
                 instance->_options = options;
+                instance->_streamingOptions = streamingOptions;
 
                 return instance;
             }
@@ -205,6 +221,14 @@ namespace minko
 
             static
             bool
+            defaultValidSurfacePredicate(SurfacePtr surface);
+
+            static
+            bool
+            defaultInstanceSurfacePredicate(SurfacePtr surface);
+
+            static
+            bool
             defaultNodeFilterFunction(NodePtr node);
 
             static
@@ -214,6 +238,20 @@ namespace minko
             static
             math::vec3
             defaultPartitionMaxSizeFunction(NodePtr root);
+
+            void
+            findInstances(const std::vector<SurfacePtr>& surfaces);
+
+            bool
+            surfaceBucketIsValid(const std::vector<SurfacePtr>& surfaceBucket) const;
+
+            void
+            splitSurfaceBucket(const std::vector<SurfacePtr>&           surfaceBucket,
+                               std::vector<std::vector<SurfacePtr>>&    splitSurfaceBucket);
+
+            void
+            splitSurface(SurfacePtr                 surface,
+                         std::vector<SurfacePtr>&   splitSurface);
 
             OctreeNodePtr
             pickBestPartitions(OctreeNodePtr        root,
@@ -240,6 +278,11 @@ namespace minko
             mergeSurfaces(const std::vector<SurfacePtr>& surfaces);
 
             bool
+            preprocessMergedSurface(PartitionInfo&  partitionInfo,
+                                    SurfacePtr      surface,
+                                    int             index);
+
+            bool
             buildGlobalIndex(PartitionInfo& partitionInfo);
 
             bool
@@ -254,8 +297,14 @@ namespace minko
                                    PartitionInfo&   partitionInfo);
 
             bool
-            patchNode(NodePtr           node,
-                      PartitionInfo&    partitionInfo);
+            buildGeometries(NodePtr                     node,
+                            PartitionInfo&              partitionInfo,
+                            std::vector<GeometryPtr>&   geometries);
+
+            bool
+            patchNode(NodePtr                           node,
+                      PartitionInfo&                    partitionInfo,
+                      const std::vector<GeometryPtr>&   geometries);
 
             static
             int

@@ -20,7 +20,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AbstractASSIMPParser.hpp"
 
 #include "IOHandler.hpp"
+#include "Logger.hpp"
 
+#include "assimp/DefaultLogger.hpp"
+#include "assimp/Logger.hpp"
 #include "assimp/Importer.hpp"      // C++ importer interface
 #include "assimp/scene.h"           // Output data structure
 #include "assimp/postprocess.h"     // Post processing flags
@@ -127,7 +130,15 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 							const std::vector<unsigned char>&	data,
 							std::shared_ptr<AssetLibrary>	    assetLibrary)
 {
-	LOG_DEBUG("Parsing scene '" << filename << "'");
+    Assimp::DefaultLogger::create(nullptr, Assimp::Logger::VERBOSE, aiDefaultLogStream::aiDefaultLogStream_FILE);
+
+    const auto severity =
+        Assimp::Logger::Debugging |
+        Assimp::Logger::Info |
+        Assimp::Logger::Err |
+        Assimp::Logger::Warn;
+
+    Assimp::DefaultLogger::get()->attachStream(new minko::file::Logger(), severity);
 
 	initImporter();
 
@@ -158,19 +169,96 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 
     _importer->SetIOHandler(ioHandler);
 
-    auto flags =
-		aiProcess_JoinIdenticalVertices
-        //| aiProcess_GenSmoothNormals // assertion is raised by assimp
-		| aiProcess_GenSmoothNormals
-		| aiProcess_SplitLargeMeshes
-		| aiProcess_LimitBoneWeights
-		| aiProcess_GenUVCoords
-		| aiProcess_OptimizeMeshes
-		//| aiProcess_OptimizeGraph // makes the mesh simply vanish
-		| aiProcess_FlipUVs
-		| aiProcess_SortByPType
-		| aiProcess_Triangulate
-        | aiProcess_ImproveCacheLocality;
+    const aiScene* scene = importScene(filename, resolvedFilename, options, data, assetLibrary);
+
+	if (!scene)
+        return;
+
+	parseDependencies(resolvedFilename, scene);
+
+	if (_numDependencies == 0)
+		allDependenciesLoaded(scene);
+
+    Assimp::DefaultLogger::kill();
+}
+
+const aiScene*
+AbstractASSIMPParser::importScene(const std::string&			    filename,
+			                      const std::string&			    resolvedFilename,
+			                      Options::Ptr		                options,
+			                      const std::vector<unsigned char>& data,
+			                      AssetLibrary::Ptr	                assetLibrary)
+{
+	const aiScene* scene = _importer->ReadFileFromMemory(
+		data.data(),
+		data.size(),
+		0u,
+		resolvedFilename.c_str()
+	);
+
+	if (!scene)
+    {
+        _error->execute(shared_from_this(), Error(_importer->GetErrorString()));
+
+        return nullptr;
+    }
+
+    return scene;
+}
+
+unsigned int
+AbstractASSIMPParser::getPostProcessingFlags(const aiScene*             scene,
+                                             Options::Ptr		        options)
+{
+    const auto numMaterials = scene->mNumMaterials;
+
+    auto numTextures = scene->mNumTextures;
+
+	for (auto materialId = 0u; materialId < numMaterials; ++materialId)
+    {
+        auto aiMat = scene->mMaterials[materialId];
+
+		for (const auto& textureTypeAndName : _textureTypeToName)
+		{
+            const auto textureType = static_cast<aiTextureType>(textureTypeAndName.first);
+
+            numTextures += aiMat->GetTextureCount(textureType);
+        }
+    }
+
+    unsigned int flags =
+        aiProcess_JoinIdenticalVertices
+        | aiProcess_GenSmoothNormals
+        | aiProcess_LimitBoneWeights
+        | aiProcess_GenUVCoords
+        | aiProcess_FlipUVs
+        | aiProcess_SortByPType
+        | aiProcess_Triangulate
+        | aiProcess_ImproveCacheLocality
+        | aiProcess_FindInvalidData
+        | aiProcess_ValidateDataStructure
+        | aiProcess_RemoveComponent;
+
+    if (options->optimizeForRendering())
+    {
+        flags |= aiProcess_SplitLargeMeshes;
+    }
+
+    unsigned int removeComponentFlags = aiComponent_COLORS;
+
+    if (numMaterials == 0u || numTextures == 0u)
+    {
+        removeComponentFlags |= aiComponent_TEXCOORDS | aiComponent_TANGENTS_AND_BITANGENTS;
+    }
+
+    if (options->generateSmoothNormals())
+    {
+        removeComponentFlags |= aiComponent_NORMALS | aiComponent_TANGENTS_AND_BITANGENTS;
+
+        _importer->SetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE, options->normalMaxSmoothingAngle());
+    }
+
+    _importer->SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS, removeComponentFlags);
 
     if (!options->processUnusedAsset())
     {
@@ -179,32 +267,51 @@ AbstractASSIMPParser::parse(const std::string&					filename,
         flags |= aiProcess_RemoveRedundantMaterials;
     }
 
-	const aiScene* scene = _importer->ReadFileFromMemory(
-		&data[0],
-		data.size(),
-		flags,
-		resolvedFilename.c_str()
-	);
+    return flags;
+}
 
-	if (!scene)
+const aiScene*
+AbstractASSIMPParser::applyPostProcessing(const aiScene* scene, unsigned int postProcessingFlags)
+{
+    const aiScene* processedScene = _importer->ApplyPostProcessing(postProcessingFlags);
+
+    return processedScene;
+}
+
+void
+AbstractASSIMPParser::allDependenciesLoaded(const aiScene* scene)
+{
+    const auto postProcessingFlags = getPostProcessingFlags(scene, _options);
+
+    const aiScene* processedScene = applyPostProcessing(scene, postProcessingFlags);
+
+	if (!processedScene)
     {
         _error->execute(shared_from_this(), Error(_importer->GetErrorString()));
 
         return;
     }
 
-	LOG_DEBUG("Scene parsing complete '" << filename << "'");
-
-	parseDependencies(resolvedFilename, scene);
-
-	LOG_DEBUG(_numDependencies << " dependencies to load...");
-
-	if (_numDependencies == 0)
-		allDependenciesLoaded(scene);
+    convertScene(scene);
 }
 
 void
-AbstractASSIMPParser::allDependenciesLoaded(const aiScene* scene)
+AbstractASSIMPParser::initImporter()
+{
+    if (_importer != nullptr)
+        return;
+
+    _importer = new Assimp::Importer();
+
+#if (defined ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION)
+    provideLoaders(*_importer);
+#endif // ! ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION
+
+    _importer->SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
+}
+
+void
+AbstractASSIMPParser::convertScene(const aiScene* scene)
 {
 	LOG_DEBUG(_numDependencies << " dependencies loaded!");
 
@@ -213,7 +320,9 @@ AbstractASSIMPParser::allDependenciesLoaded(const aiScene* scene)
 		throw std::logic_error("_numDependencies != _numLoadedDependencies");
 #endif // DEBUG
 
-	_symbol = scene::Node::create(_filename);
+    const auto symbolRootName = File::removePrefixPathFromFilename(_filename);
+
+	_symbol = scene::Node::create(symbolRootName);
 	createSceneTree(_symbol, scene, scene->mRootNode, _options->assetLibrary());
 
     if (_options->processUnusedAsset())
@@ -255,20 +364,6 @@ AbstractASSIMPParser::allDependenciesLoaded(const aiScene* scene)
 
 	if (_numDependencies == _numLoadedDependencies)
 		finalize();
-
-}
-
-void
-AbstractASSIMPParser::initImporter()
-{
-    if (_importer != nullptr)
-        return;
-
-    _importer = new Assimp::Importer();
-
-#if (defined ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION)
-    provideLoaders(*_importer);
-#endif // ! ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION
 }
 
 void
@@ -277,6 +372,8 @@ AbstractASSIMPParser::createSceneTree(scene::Node::Ptr 				minkoNode,
 									  aiNode* 						ainode,
 									  std::shared_ptr<AssetLibrary> assets)
 {
+    parseMetadata(scene, ainode, minkoNode, _options);
+
 	minkoNode->addComponent(getTransformFromAssimp(ainode));
 
 	// create surfaces for each node mesh
@@ -312,6 +409,55 @@ AbstractASSIMPParser::createSceneTree(scene::Node::Ptr 				minkoNode,
 }
 
 void
+AbstractASSIMPParser::parseMetadata(const aiScene*            scene,
+                                    aiNode*                   ainode,
+                                    NodePtr                   minkoNode,
+                                    std::shared_ptr<Options>  options)
+{
+    if (!ainode->mMetaData)
+        return;
+
+    for (auto i = 0u; i < ainode->mMetaData->mNumProperties; ++i)
+    {
+        const auto& key = std::string(ainode->mMetaData->mKeys[i].data);
+        const auto& data = ainode->mMetaData->mValues[i];
+
+        auto dataString = std::string();
+
+        switch (data.mType)
+        {
+        case aiMetadataType::AI_AISTRING:
+            dataString = std::string(reinterpret_cast<aiString*>(data.mData)->data);
+            break;
+        case aiMetadataType::AI_AIVECTOR3D:
+        {
+            aiVector3D* vec3 = reinterpret_cast<aiVector3D*>(data.mData);
+
+            dataString = std::to_string(math::vec3(vec3->x, vec3->y, vec3->z));
+
+            break;
+        }
+        case aiMetadataType::AI_BOOL:
+            dataString = std::to_string(*reinterpret_cast<bool*>(data.mData));
+            break;
+        case aiMetadataType::AI_FLOAT:
+            dataString = std::to_string(*reinterpret_cast<float*>(data.mData));
+            break;
+        case aiMetadataType::AI_INT:
+            dataString = std::to_string(*reinterpret_cast<int*>(data.mData));
+            break;
+        case aiMetadataType::AI_UINT64:
+            dataString = std::to_string(*reinterpret_cast<std::uint64_t*>(data.mData));
+            break;
+        default:
+            break;
+        }
+
+        options->attributeFunction()(minkoNode, key, dataString);
+    }
+}
+
+void
 AbstractASSIMPParser::apply(Node::Ptr node, const std::function<Node::Ptr(Node::Ptr)>& func)
 {
 	func(node);
@@ -327,13 +473,34 @@ AbstractASSIMPParser::getTransformFromAssimp(aiNode* ainode)
 	return Transform::create(convert(ainode->mTransformation));
 }
 
+template <typename T>
+static
+render::IndexBuffer::Ptr
+createIndexBuffer(aiMesh*                       mesh,
+                  render::AbstractContext::Ptr  context)
+{
+	auto indexData = std::vector<T>(3 * mesh->mNumFaces, 0);
+
+	for (auto faceId = 0u; faceId < mesh->mNumFaces; ++faceId)
+	{
+	    const aiFace& face = mesh->mFaces[faceId];
+
+	    for (unsigned int j = 0; j < 3; ++j)
+        {
+	    	indexData[j + 3 * faceId] = face.mIndices[j];
+        }
+	}
+
+    return render::IndexBuffer::create(context, indexData);
+}
+
 Geometry::Ptr
 AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mesh, const std::string& meshName)
 {
-    /*auto existingGeometry = _assetLibrary->geometry(meshName);
+    auto existingGeometry = _aiMeshToGeometry.find(mesh);
 
-    if (existingGeometry != nullptr)
-        return existingGeometry;*/
+    if (existingGeometry != _aiMeshToGeometry.end())
+        return existingGeometry->second;
 
 	unsigned int vertexSize = 0;
 
@@ -375,16 +542,19 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
 		}
 	}
 
-	// make sure the flag 'aiProcess_Triangulate' is specified before importing the scene
-	std::vector<unsigned short>	indexData	(3 * mesh->mNumFaces, 0);
+    auto indices = render::IndexBuffer::Ptr();
 
-	for (unsigned int faceId = 0; faceId < mesh->mNumFaces; ++faceId)
-	{
-		const aiFace& face = mesh->mFaces[faceId];
+    const auto numIndices = mesh->mNumFaces * 3u;
 
-		for (unsigned int j = 0; j < 3; ++j)
-			indexData[j + 3*faceId] = face.mIndices[j];
-	}
+    if (_options->optimizeForRendering() ||
+        numIndices <= static_cast<unsigned int>(std::numeric_limits<unsigned short>::max()))
+    {
+        indices = createIndexBuffer<unsigned short>(mesh, _assetLibrary->context());
+    }
+    else
+    {
+        indices = createIndexBuffer<unsigned int>(mesh, _assetLibrary->context());
+    }
 
 	// create the geometry's vertex and index buffers
 	auto geometry		= Geometry::create();
@@ -408,9 +578,12 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
 	}
 
 	geometry->addVertexBuffer(vertexBuffer);
-	geometry->indices(render::IndexBuffer::create(_assetLibrary->context(), indexData));
+
+	geometry->indices(indices);
 
 	geometry = _options->geometryFunction()(meshName, geometry);
+
+    _aiMeshToGeometry.insert(std::make_pair(mesh, geometry));
 
     _assetLibrary->geometry(meshName, geometry);
 
@@ -462,11 +635,20 @@ AbstractASSIMPParser::createMeshSurface(scene::Node::Ptr 	minkoNode,
 	if (mesh == nullptr)
 		return;
 
-	const auto	meshName	= getMeshName(std::string(mesh->mName.data));
-    
+    const auto meshName	= getMeshName(std::string(mesh->mName.data));
+
+    auto primitiveType = mesh->mPrimitiveTypes;
+
+    if (primitiveType != aiPrimitiveType::aiPrimitiveType_TRIANGLE)
+    {
+        LOG_WARNING("primitive type for mesh '" << meshName << "' is not TRIANGLE");
+
+        return;
+    }
+
     std::string realMeshName = meshName;
 
-    int id = 0;
+    static int id = 0;
 
     while (_meshNames.find(realMeshName) != _meshNames.end())
     {
@@ -1377,6 +1559,11 @@ AbstractASSIMPParser::convert(const aiVector3D&		scaling,
 material::Material::Ptr
 AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 {
+    auto existingMaterial = _aiMaterialToMaterial.find(aiMat);
+
+    if (existingMaterial != _aiMaterialToMaterial.end())
+        return existingMaterial->second;
+
     auto material = chooseMaterialByShadingMode(aiMat);
 
 	if (aiMat == nullptr)
@@ -1391,11 +1578,6 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
     }
 
     materialName = getMaterialName(materialName);
-
-    auto existingMaterial = _assetLibrary->material(materialName);
-
-    if (existingMaterial != nullptr)
-        return existingMaterial;
 
     const auto blendingMode = getBlendingMode(aiMat);
     auto srcBlendingMode = static_cast<render::Blending::Source>(static_cast<uint>(blendingMode) & 0x00ff);
@@ -1439,7 +1621,7 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 	if (shininess == 0.f)
 		material->data()->set("shininess", 64.0f);
 
-    auto transparent = opacity < 1.f;
+    auto transparent = opacity > 0.f && opacity < 1.f;
 	
     if (transparent)
     {
@@ -1498,9 +1680,20 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 		}
 	}
 
-    auto processedMaterial = _options->materialFunction()(materialName, material);
+    static auto materialNameId = 0;
 
-    _assetLibrary->material(materialName, processedMaterial);
+    auto uniqueMaterialName = materialName;
+
+    while (_assetLibrary->material(uniqueMaterialName))
+    {
+        uniqueMaterialName = materialName + "_" + std::to_string(materialNameId++);
+    }
+
+    auto processedMaterial = _options->materialFunction()(uniqueMaterialName, material);
+
+    _aiMaterialToMaterial.insert(std::make_pair(aiMat, processedMaterial));
+
+    _assetLibrary->material(uniqueMaterialName, processedMaterial);
 
     return processedMaterial;
 }

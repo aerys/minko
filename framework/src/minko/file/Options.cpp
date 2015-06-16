@@ -38,11 +38,14 @@ Options::Options() :
     _includePaths(),
     _platforms(),
     _userFlags(),
+    _optimizeForRendering(true),
     _generateMipMaps(false),
     _parseMipMaps(false),
     _resizeSmoothly(false),
     _isCubeTexture(false),
     _isRectangleTexture(false),
+    _generateSmoothNormals(false),
+    _normalMaxSmoothingAngle(80.f),
     _startAnimation(true),
     _loadAsynchronously(false),
     _disposeIndexBufferAfterLoading(false),
@@ -75,6 +78,7 @@ Options::Options(const Options& copy) :
     _includePaths(copy._includePaths),
     _platforms(copy._platforms),
     _userFlags(copy._userFlags),
+    _optimizeForRendering(copy._optimizeForRendering),
     _parsers(copy._parsers),
     _protocols(copy._protocols),
     _generateMipMaps(copy._generateMipMaps),
@@ -82,6 +86,8 @@ Options::Options(const Options& copy) :
     _resizeSmoothly(copy._resizeSmoothly),
     _isCubeTexture(copy._isCubeTexture),
 	_isRectangleTexture(copy._isRectangleTexture),
+	_generateSmoothNormals(copy._generateSmoothNormals),
+	_normalMaxSmoothingAngle(copy._normalMaxSmoothingAngle),
     _startAnimation(copy._startAnimation),
     _disposeIndexBufferAfterLoading(copy._disposeIndexBufferAfterLoading),
     _disposeVertexBufferAfterLoading(copy._disposeVertexBufferAfterLoading),
@@ -102,6 +108,7 @@ Options::Options(const Options& copy) :
     _nodeFunction(copy._nodeFunction),
     _effectFunction(copy._effectFunction),
     _textureFormatFunction(copy._textureFormatFunction),
+    _attributeFunction(copy._attributeFunction),
     _loadAsynchronously(copy._loadAsynchronously),
     _seekingOffset(copy._seekingOffset),
     _seekedLength(copy._seekedLength)
@@ -282,6 +289,11 @@ Options::initializeDefaultFunctions()
 
         throw std::runtime_error(errorMessage);
     };
+
+    if (!_attributeFunction)
+        _attributeFunction = [](NodePtr node, const std::string& key, const std::string& value) -> void
+        {
+        };
 
     if (!_defaultProtocolFunction)
         _defaultProtocolFunction = [=](const std::string& filename) -> std::shared_ptr<AbstractProtocol>

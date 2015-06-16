@@ -17,12 +17,27 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/async/Worker.hpp"
+#pragma once
+
+#include "minko/Common.hpp"
+#include "minko/SerializerCommon.hpp"
+#include "minko/StreamingCommon.hpp"
 
 namespace minko
 {
     namespace file
     {
-        MINKO_DECLARE_WORKER(FileLoaderWorker);
+        class SurfaceOperator
+        {
+        public:
+            typedef std::shared_ptr<component::Surface>                 SurfacePtr;
+            typedef std::shared_ptr<scene::Node>                        NodePtr;
+
+            typedef std::function<void(const std::list<SurfacePtr>&,
+                                       const std::list<SurfacePtr>&)>   SubstitutionFunction;
+
+        public:
+            SubstitutionFunction substitutionFunction;
+        };
     }
 }

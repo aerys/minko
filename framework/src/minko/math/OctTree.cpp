@@ -60,19 +60,19 @@ math::OctTree::generateVisual(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 
 	if (_content.size() > 0)
 	{
-		math::mat4 t;
-
-		math::scale(t, math::vec3(1.f));
-		math::translate(t, _center);
+        auto matrix =
+            math::translate(_center) *
+            math::scale(math::vec3(edgeLength() * 2.f - 0.1f));
 
         auto material = material::BasicMaterial::create();
 
-        material->diffuseColor(0x00FF0030);
+        material->diffuseColor(0x00FF0020);
 		material->blendingMode(render::Blending::Mode::ALPHA);
         material->triangleCulling(render::TriangleCulling::NONE);
+        material->priority(render::Priority::TRANSPARENT);
 
 		node
-			->addComponent(component::Transform::create(t))
+			->addComponent(component::Transform::create(matrix))
 			->addComponent(component::Surface::create(
 				geometry::CubeGeometry::create(assetLibrary->context()),
 				material,
@@ -86,7 +86,7 @@ math::OctTree::generateVisual(std::shared_ptr<file::AssetLibrary>	assetLibrary,
 		for (auto octant : _children)
 			octant->generateVisual(assetLibrary, rootNode);
 
-	return rootNode;
+	return node;
 }
 
 void
@@ -131,8 +131,8 @@ math::OctTree::insert(std::shared_ptr<scene::Node> node)
 	if (!node->hasComponent<component::BoundingBox>())
 		node->addComponent(component::BoundingBox::create());
 
-	auto nodeBoundingBox 	= node->component<component::BoundingBox>();
-	//auto modelToWorld 		= node->component<component::Transform>()->modelToWorldMatrix(true);
+	auto nodeBoundingBox = node->component<component::BoundingBox>();
+	const auto& modelToWorld = node->component<component::Transform>()->modelToWorldMatrix(true);
 
 	// insert
 	uint optimalDepth	= std::min(computeDepth(node), _maxDepth);
@@ -237,8 +237,6 @@ math::OctTree::testFrustum(std::shared_ptr<math::AbstractShape>				frustum,
 	{
 		for (auto node : _childrenContent)
 			outsideFustumCallback(node);
-		for (auto node : _content)
-			insideFrustumCallback(node);
 	}
 }
 

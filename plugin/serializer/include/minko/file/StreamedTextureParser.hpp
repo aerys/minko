@@ -126,6 +126,9 @@ namespace minko
                            std::shared_ptr<AssetLibrary>        assetLibrary,
                            const DataChunk&                     lodData,
                            std::vector<unsigned char>&          extractedLodData);
+
+            int
+            lodRangeRequestSize(int lowerLod, int upperLod) const;
         };
     }
 }

@@ -21,6 +21,8 @@ attribute vec4 aBoneWeightsB;
 uniform mat4 uBoneMatrices[SKINNING_NUM_BONES];
 #endif
 
+attribute float aMergingMask;
+
 attribute float aPopProtected;
 
 uniform mat4 uModelToWorldMatrix;
@@ -33,14 +35,17 @@ uniform 	float 	uPopFullPrecisionLod;
 uniform 	vec3 	uPopMinBound;
 uniform 	vec3 	uPopMaxBound;
 
-varying vec3 vWorldPosition;
+varying 	vec3 	vWorldPosition;
+varying 	float 	vMergingMask;
 
 void main(void)
 {
-	#ifdef DIFFUSE_MAP
-		vertexUV = aUV;
+	vMergingMask = 0.0;
+
+	#if defined(VERTEX_MERGING_MASK)
+		vMergingMask = aMergingMask;
 	#endif
-	
+
 	#if defined(HAS_POSITION)
 		vec4 pos = vec4(aPosition, 1.0);
 

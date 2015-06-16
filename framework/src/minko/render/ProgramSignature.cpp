@@ -95,7 +95,7 @@ ProgramSignature::ProgramSignature(const data::MacroBindingMap& macroBindings,
             _mask |= 1 << macroId;
             _macros.push_back(propertyNameAndValue.first);
             _types.push_back(macroBindings.types.at(*propertyNameAndValue.first));
-            _values.push_back(propertyNameAndValue.second);
+            _values.push_back(*propertyNameAndValue.second);
 
             ++macroId;
         }

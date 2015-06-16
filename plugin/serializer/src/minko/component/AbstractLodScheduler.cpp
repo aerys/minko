@@ -499,15 +499,13 @@ AbstractLodScheduler::lodInfoChanged(ResourceInfo&    resource,
 void
 AbstractLodScheduler::updateCandidateNodes(Node::Ptr target)
 {
-    _candidateNodes = NodeSet::create(target)->descendants(true);
 }
 
 bool
 AbstractLodScheduler::nodeIsCandidate(Node::Ptr node)
 {
-    return std::find(
-        _candidateNodes->nodes().begin(),
-        _candidateNodes->nodes().end(),
-        node
-    ) != _candidateNodes->nodes().end();
+    // fixme
+    // filter node based on layout
+
+    return true;
 }

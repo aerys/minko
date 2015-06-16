@@ -23,7 +23,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/SerializerCommon.hpp"
 #include "minko/StreamingCommon.hpp"
 #include "minko/component/MasterLodScheduler.hpp"
+#include "minko/file/MeshPartitioner.hpp"
 #include "minko/file/POPGeometryWriter.hpp"
+#include "minko/file/SurfaceOperator.hpp"
 
 namespace minko
 {
@@ -55,43 +57,45 @@ namespace minko
         >                                                       StreamedTextureFunction;
 
     public:
-        static const int                                MAX_LOD;
-        static const int                                MAX_LOD_RANGE;
+        static const int                                        MAX_LOD;
+        static const int                                        MAX_LOD_RANGE;
 
     private:
-        bool                                            _disableProgressiveLodFetching;
+        bool                                                    _disableProgressiveLodFetching;
 
-        bool                                            _textureStreamingIsActive;
-        bool                                            _geometryStreamingIsActive;
+        bool                                                    _textureStreamingIsActive;
+        bool                                                    _geometryStreamingIsActive;
 
-        std::shared_ptr<component::MasterLodScheduler>  _masterLodScheduler;
+        std::shared_ptr<component::MasterLodScheduler>          _masterLodScheduler;
 
-        file::POPGeometryWriter::RangeFunction          _popGeometryWriterLodRangeFunction;
+        file::POPGeometryWriter::RangeFunction                  _popGeometryWriterLodRangeFunction;
 
-        int                                             _popGeometryErrorToleranceThreshold;
+        int                                                     _popGeometryErrorToleranceThreshold;
 
-        bool                                            _storeLodData;
+        bool                                                    _storeLodData;
 
-        std::function<int(SurfacePtr)>                  _popGeometryLodFunction;
-        std::function<int(SurfacePtr)>                  _streamedTextureLodFunction;
+        std::function<int(SurfacePtr)>                          _popGeometryLodFunction;
+        std::function<int(SurfacePtr)>                          _streamedTextureLodFunction;
 
-        bool                                            _mergeSurfacesOnPartitioning;
-        bool                                            _useSharedClusterHierarchyOnPartitioning;
-        bool                                            _applyCrackFreePolicyOnPartitioning;
+        file::MeshPartitioner::Options                          _meshPartitionerOptions;
 
-        float                                           _popGeometryPriorityFactor;
-        float                                           _streamedTexturePriorityFactor;
+        float                                                   _popGeometryPriorityFactor;
+        float                                                   _streamedTexturePriorityFactor;
 
-        int                                             _popGeometryMaxPrecisionLevel;
-        int                                             _streamedTextureMaxMipLevel;
+        int                                                     _popGeometryMaxPrecisionLevel;
+        int                                                     _streamedTextureMaxMipLevel;
 
-        std::function<int(int, int)>                    _popGeometryLodRangeFetchingMaxSizeFunction;
-        std::function<int(int, int)>                    _streamedTextureLodRangeFetchingMaxSizeFunction;
+        std::function<void(int, int, int&, int&, int&, int&)>   _popGeometryLodRangeFetchingBoundFunction;
+        std::function<void(int, int, int&, int&, int&, int&)>   _streamedTextureLodRangeFetchingBoundFunction;
 
-        float                                           _popGeometryBlendingRange;
+        float                                                   _popGeometryBlendingRange;
 
-        POPGeometryFunction                             _popGeometryFunction;
-        StreamedTextureFunction                         _streamedTextureFunction;
+        int                                                     _maxNumActiveParsers;
+
+        POPGeometryFunction                                     _popGeometryFunction;
+        StreamedTextureFunction                                 _streamedTextureFunction;
+
+        file::SurfaceOperator                                   _surfaceOperator;
 
     public:
         inline static
@@ -249,49 +253,17 @@ namespace minko
         }
 
         inline
-        bool
-        mergeSurfacesOnPartitioning() const
+        const file::MeshPartitioner::Options&
+        meshPartitionerOptions() const
         {
-            return _mergeSurfacesOnPartitioning;
+            return _meshPartitionerOptions;
         }
 
         inline
         Ptr
-        mergeSurfacesOnPartitioning(bool value)
+        meshPartitionerOptions(const file::MeshPartitioner::Options& value)
         {
-            _mergeSurfacesOnPartitioning = value;
-
-            return shared_from_this();
-        }
-
-        inline
-        bool
-        useSharedClusterHierarchyOnPartitioning() const
-        {
-            return _useSharedClusterHierarchyOnPartitioning;
-        }
-
-        inline
-        Ptr
-        useSharedClusterHierarchyOnPartitioning(bool value)
-        {
-            _useSharedClusterHierarchyOnPartitioning = value;
-
-            return shared_from_this();
-        }
-
-        inline
-        bool
-        applyCrackFreePolicyOnPartitioning() const
-        {
-            return _applyCrackFreePolicyOnPartitioning;
-        }
-
-        inline
-        Ptr
-        applyCrackFreePolicyOnPartitioning(bool value)
-        {
-            _applyCrackFreePolicyOnPartitioning = value;
+            _meshPartitionerOptions = value;
 
             return shared_from_this();
         }
@@ -361,33 +333,33 @@ namespace minko
         }
 
         inline
-        const std::function<int(int, int)>&
-        popGeometryLodRangeFetchingMaxSizeFunction() const
+        const std::function<void(int, int, int&, int&, int&, int&)>&
+        popGeometryLodRangeFetchingBoundFunction() const
         {
-            return _popGeometryLodRangeFetchingMaxSizeFunction;
+            return _popGeometryLodRangeFetchingBoundFunction;
         }
 
         inline
         Ptr
-        popGeometryLodRangeFetchingMaxSizeFunction(const std::function<int(int, int)>& function)
+        popGeometryLodRangeFetchingBoundFunction(const std::function<void(int, int, int&, int&, int&, int&)>& function)
         {
-            _popGeometryLodRangeFetchingMaxSizeFunction = function;
+            _popGeometryLodRangeFetchingBoundFunction = function;
 
             return shared_from_this();
         }
 
         inline
-        const std::function<int(int, int)>&
-        streamedTextureLodRangeFetchingMaxSizeFunction() const
+        const std::function<void(int, int, int&, int&, int&, int&)>&
+        streamedTextureLodRangeFetchingBoundFunction() const
         {
-            return _streamedTextureLodRangeFetchingMaxSizeFunction;
+            return _streamedTextureLodRangeFetchingBoundFunction;
         }
 
         inline
         Ptr
-        streamedTextureLodRangeFetchingMaxSizeFunction(const std::function<int(int, int)>& function)
+        streamedTextureLodRangeFetchingBoundFunction(const std::function<void(int, int, int&, int&, int&, int&)>& function)
         {
-            _streamedTextureLodRangeFetchingMaxSizeFunction = function;
+            _streamedTextureLodRangeFetchingBoundFunction = function;
 
             return shared_from_this();
         }
@@ -404,6 +376,22 @@ namespace minko
         popGeometryBlendingRange(float value)
         {
             _popGeometryBlendingRange = math::clamp(value, 0.f, 1.f);
+
+            return shared_from_this();
+        }
+
+        inline
+        int
+        maxNumActiveParsers() const
+        {
+            return _maxNumActiveParsers;
+        }
+
+        inline
+        Ptr
+        maxNumActiveParsers(int value)
+        {
+            _maxNumActiveParsers = value;
 
             return shared_from_this();
         }
@@ -436,6 +424,22 @@ namespace minko
         streamedTextureFunction(const StreamedTextureFunction& func)
         {
             _streamedTextureFunction = func;
+
+            return shared_from_this();
+        }
+
+        inline
+        const file::SurfaceOperator&
+        surfaceOperator() const
+        {
+            return _surfaceOperator;
+        }
+
+        inline
+        Ptr
+        surfaceOperator(const file::SurfaceOperator& value)
+        {
+            _surfaceOperator = value;
 
             return shared_from_this();
         }

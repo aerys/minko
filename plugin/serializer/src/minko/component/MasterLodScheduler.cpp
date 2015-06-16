@@ -43,6 +43,12 @@ MasterLodScheduler::registerGeometry(Geometry::Ptr geometry, Provider::Ptr data)
     return std::static_pointer_cast<MasterLodScheduler>(shared_from_this());
 }
 
+void
+MasterLodScheduler::unregisterGeometry(Geometry::Ptr geometry)
+{
+    _geometryToDataMap.erase(geometry);
+}
+
 Provider::Ptr
 MasterLodScheduler::geometryData(Geometry::Ptr geometry)
 {
@@ -57,6 +63,12 @@ MasterLodScheduler::registerTexture(AbstractTexture::Ptr texture, Provider::Ptr 
     _textureToDataMap.insert(std::make_pair(texture, data));
 
     return std::static_pointer_cast<MasterLodScheduler>(shared_from_this());
+}
+
+void
+MasterLodScheduler::unregisterTexture(AbstractTexture::Ptr texture)
+{
+    _textureToDataMap.erase(texture);
 }
 
 Provider::Ptr

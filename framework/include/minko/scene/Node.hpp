@@ -30,6 +30,7 @@ namespace minko
 	namespace scene
 	{
 		class Node :
+            public Uuid::enable_uuid,
 			public std::enable_shared_from_this<Node>
 		{
 		public:
@@ -52,8 +53,6 @@ namespace minko
 			Signal<Ptr, Ptr>				_layoutChanged;
 			Signal<Ptr, Ptr, AbsCmpPtr>		_componentAdded;
 			Signal<Ptr, Ptr, AbsCmpPtr>		_componentRemoved;
-
-			std::string						_uuid;
 
 		public:
             ~Node()
@@ -110,6 +109,17 @@ namespace minko
 				return node;
 			}
 
+            static
+            Ptr
+            create(const std::string& uuid, const std::string& name)
+            {
+                auto node = Ptr(new Node(uuid, name));
+
+				node->_root = node;
+
+                return node;
+            }
+
 			Ptr
 			clone(const CloneOption& option);
 
@@ -131,20 +141,6 @@ namespace minko
 			name() const
 			{
 				return _name;
-			}
-
-			inline
-			std::string
-			uuid() const
-			{
-				return _uuid;
-			}
-
-			inline
-			void
-			uuid(std::string uuid)
-			{
-				_uuid = uuid;
 			}
 
 			inline
@@ -303,6 +299,8 @@ namespace minko
 
 		protected:
 			Node();
+
+            Node(const std::string& uuid, const std::string& name);
 
 			void
 			updateRoot();

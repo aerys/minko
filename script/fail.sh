@@ -2,7 +2,7 @@
 
 TARGET=$1
 
-if [[ -z "${TARGET}" ]]; then
+if [ -z "${TARGET}" ]; then
 	echo "usage: fail.sh <target>" 1>&2
 	exit 1
 fi

@@ -43,6 +43,8 @@ namespace minko
 
 		private:
 			std::shared_ptr<math::OctTree>			        _octTree;
+            float                                           _worldSize;
+            unsigned int                                    _maxDepth;
 
 			std::string										_bindProperty;
 			std::shared_ptr<math::AbstractShape>			_frustum;
@@ -61,6 +63,38 @@ namespace minko
 			{
                 return std::shared_ptr<Culling>(new Culling(shape, bindPropertyName));
 			}
+
+            inline
+            float
+            worldSize() const
+            {
+                return _worldSize;
+            }
+
+            inline
+            Ptr
+            worldSize(float value)
+            {
+                _worldSize = value;
+
+                return std::static_pointer_cast<Culling>(shared_from_this());
+            }
+
+            inline
+            unsigned int
+            maxDepth() const
+            {
+                return _maxDepth;
+            }
+
+            inline
+            Ptr
+            maxDepth(unsigned int value)
+            {
+                _maxDepth = value;
+
+                return std::static_pointer_cast<Culling>(shared_from_this());
+            }
 
         protected:
 			void
@@ -84,6 +118,9 @@ namespace minko
 
 			void
 			targetAddedToSceneHandler(NodePtr node, NodePtr target, NodePtr ancestor);
+
+            void
+            nodeCulled(NodePtr node, bool insideFrustum);
 		};
 	}
 }
