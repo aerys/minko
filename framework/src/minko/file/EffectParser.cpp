@@ -1483,7 +1483,6 @@ EffectParser::glslIncludeCompleteHandler(LoaderPtr 			        loader,
         options = options->clone();
         options->includePaths().clear();
         options->includePaths().push_back(resolvedFilename.substr(0, pos));
-        std::cout << filename << ": " << std::to_string(options->includePaths(), ", ") << std::endl;
     }
 
     parseGLSL(std::string((const char*)&file->data()[0], file->data().size()), options, blocks, blockIt);
