@@ -16,7 +16,11 @@ What's important to understand is how critic it is to be able to write über sha
 That's where über shaders kick in: an über shader is a single shader program that will adapt its operations according to whether some options are enabled or not. To do this, Minko leverages the GLSL pre-processor:
 
 ```c
-#ifdef SOME_OPTION // do something... #else // do something else... #endif 
+#ifdef SOME_OPTION
+// do something...
+#else
+// do something else...
+#endif 
 ```
 
 
@@ -28,9 +32,12 @@ Step 1: Updating the fragment shader
 We will take the fragment shader explained in the [Step 3 of the Create your first custom effect tutorial](../tutorial/17-Creating_a_custom_effect.md#step-3-the-fragment-shader) and update it to use a texture if the `DIFFUSE_MAP` macro is defined:
 
 ```c
-#ifdef GL_ES precision mediump float; #endif
+#ifdef GL_ES
+precision mediump float;
+#endif
 
-uniform vec4 uDiffuseColor; uniform sampler2D uDiffuseMap;
+uniform vec4 uDiffuseColor;
+uniform sampler2D uDiffuseMap;
 
 varying vec2 vVertexUv;
 
@@ -49,9 +56,12 @@ void main(void) {
 To sample the `uDiffuseMap` texture, our fragment shader will also need the texture coordinates interpolated from the vertex data. Thus, we have to make sure the `vVertexUv` varying is properly filled by our vertex shader:
 
 ```c
-#ifdef GL_ES precision mediump float; #endif
+#ifdef GL_ES
+precision mediump float;
+#endif
 
-attribute vec3 aPosition; attribute vec2 aUv;
+attribute vec3 aPosition;
+attribute vec2 aUv;
 
 uniform mat4 uModelToWorldMatrix;
 uniform mat4 uWorldToScreenMatrix;
