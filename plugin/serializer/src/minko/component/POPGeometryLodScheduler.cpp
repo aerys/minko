@@ -20,9 +20,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/StreamingOptions.hpp"
 #include "minko/component/BoundingBox.hpp"
 #include "minko/component/MasterLodScheduler.hpp"
+#include "minko/component/PerspectiveCamera.hpp"
 #include "minko/component/POPGeometryLodScheduler.hpp"
 #include "minko/component/SceneManager.hpp"
+#include "minko/component/ScreenAreaLodPriorityModifier.hpp"
 #include "minko/component/Surface.hpp"
+#include "minko/component/Transform.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/geometry/Geometry.hpp"
@@ -39,6 +42,12 @@ using namespace minko::geometry;
 
 POPGeometryLodScheduler::POPGeometryLodScheduler() :
     AbstractLodScheduler(),
+    _eyePosition(),
+    _fov(0.f),
+    _aspectRatio(0.f),
+    _viewport(),
+    _worldToScreenMatrix(),
+    _viewMatrix(),
     _blendingRange(0.f)
 {
 }
@@ -101,6 +110,14 @@ POPGeometryLodScheduler::surfaceAdded(Surface::Ptr surface)
 
     auto surfaceInfo = SurfaceInfo(surface);
 
+    auto screenAreaLodPriorityModifier = ScreenAreaLodPriorityModifier::create();
+
+    screenAreaLodPriorityModifier->refreshRate(0.f);
+
+    screenAreaLodPriorityModifier->initialize(surface);
+
+    surfaceInfo.priorityModifiers.emplace_back(screenAreaLodPriorityModifier, 8.f);
+
     resource->geometry = geometry;
 
     auto resourceData = resource->base->data;
@@ -148,6 +165,7 @@ POPGeometryLodScheduler::surfaceRemoved(Surface::Ptr surface)
 
 void
 POPGeometryLodScheduler::viewPropertyChanged(const math::mat4&   worldToScreenMatrix,
+                                             const math::mat4&   viewMatrix,
                                              const math::vec3&   eyePosition,
                                              float               fov,
                                              float               aspectRatio,
@@ -156,6 +174,7 @@ POPGeometryLodScheduler::viewPropertyChanged(const math::mat4&   worldToScreenMa
 {
 	AbstractLodScheduler::viewPropertyChanged(
         worldToScreenMatrix,
+        viewMatrix,
         eyePosition,
         fov,
         aspectRatio,
@@ -166,6 +185,8 @@ POPGeometryLodScheduler::viewPropertyChanged(const math::mat4&   worldToScreenMa
     _eyePosition = eyePosition;
     _fov = fov;
     _aspectRatio = aspectRatio;
+    _worldToScreenMatrix = worldToScreenMatrix;
+    _viewMatrix = viewMatrix;
 
 	invalidateLodRequirement();
 }
@@ -197,7 +218,8 @@ POPGeometryLodScheduler::maxAvailableLodChanged(ResourceInfo&    resource,
 }
 
 POPGeometryLodScheduler::LodInfo
-POPGeometryLodScheduler::lodInfo(ResourceInfo& resource)
+POPGeometryLodScheduler::lodInfo(ResourceInfo&  resource,
+                                 float          time)
 {
 	auto lodInfo = LodInfo();
 
@@ -241,7 +263,7 @@ POPGeometryLodScheduler::lodInfo(ResourceInfo& resource)
 
         maxRequiredLod = std::max(requiredLod, maxRequiredLod);
 
-        const auto priority = computeLodPriority(popGeometryResource, surfaceInfo, requiredLod, activeLod);
+        const auto priority = computeLodPriority(popGeometryResource, surfaceInfo, requiredLod, activeLod, time);
 
         maxPriority = std::max(priority, maxPriority);
 	}
@@ -322,29 +344,35 @@ float
 POPGeometryLodScheduler::computeLodPriority(const POPGeometryResourceInfo& 	resource,
                                             SurfaceInfo&                    surfaceInfo,
 											int 							requiredLod,
-											int 							activeLod)
+											int 							activeLod,
+                                            float                           time)
 {
-    // TODO make abstraction for priority contribution factors
-    // apply frustum culling factor
-    // apply occlusion culling factor (BSP-tree?)
-
     if (activeLod >=  requiredLod)
         return 0.f;
 
-    // TODO provide streaming API priority computing function
+    auto priorityModifierValue = 0.f;
 
-    auto priority = 0.f;
+    for (auto priorityModifier : surfaceInfo.priorityModifiers)
+    {
+        priorityModifierValue += priorityModifier.second * priorityModifier.first->value(
+            surfaceInfo.surface,
+            _eyePosition,
+            _viewport,
+            _worldToScreenMatrix,
+            _viewMatrix,
+            time
+        );
+    }
 
-    const auto distanceFromEye = this->distanceFromEye(resource, surfaceInfo, _eyePosition);
-    const auto distanceFactor = (1000.f - distanceFromEye) * 0.001f;
+    auto priority = priorityModifierValue;
 
     if (activeLod < 2)
     {
-        priority += 11.f + distanceFactor;
+        priority += 11.f;
     }
     else
     {
-        priority += 9.f + distanceFactor;
+        priority += 9.f;
     }
 
     return priority;

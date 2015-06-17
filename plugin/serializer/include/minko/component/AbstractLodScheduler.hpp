@@ -263,7 +263,8 @@ namespace minko
 
             virtual
             LodInfo
-            lodInfo(ResourceInfo& resource) = 0;
+            lodInfo(ResourceInfo&   resource,
+                    float           time) = 0;
 
         private:
             static

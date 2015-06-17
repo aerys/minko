@@ -431,7 +431,7 @@ AbstractLodScheduler::frameBeginHandler(SceneManager::Ptr sceneManager, float ti
 
         resource.lodRequirementIsInvalid = false;
 
-        const auto lodInfo = this->lodInfo(resource);
+        const auto lodInfo = this->lodInfo(resource, time);
 
         if (!resource.lodInfo.equals(lodInfo))
         {

@@ -203,7 +203,8 @@ TextureLodScheduler::maxAvailableLodChanged(ResourceInfo&    resource,
 }
 
 TextureLodScheduler::LodInfo
-TextureLodScheduler::lodInfo(ResourceInfo& resource)
+TextureLodScheduler::lodInfo(ResourceInfo&  resource,
+                             float          time)
 {
     auto lodInfo = LodInfo();
 
@@ -231,7 +232,7 @@ TextureLodScheduler::lodInfo(ResourceInfo& resource)
 
         maxRequiredLod = std::max(requiredLod, maxRequiredLod);
 
-        const auto priority = computeLodPriority(textureResource, surface, requiredLod, activeLod);
+        const auto priority = computeLodPriority(textureResource, surface, requiredLod, activeLod, time);
 
         maxPriority = std::max(priority, maxPriority);
     }
@@ -343,7 +344,8 @@ float
 TextureLodScheduler::computeLodPriority(const TextureResourceInfo& 	resource,
                                         Surface::Ptr                surface,
 										int 						requiredLod,
-										int 						activeLod)
+										int 						activeLod,
+                                        float                       time)
 {
     if (activeLod >= requiredLod)
         return 0.f;

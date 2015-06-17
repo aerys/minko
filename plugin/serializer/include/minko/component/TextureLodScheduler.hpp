@@ -110,7 +110,8 @@ namespace minko
                                    int              maxAvailableLod);
 
             LodInfo
-            lodInfo(ResourceInfo& resource);
+            lodInfo(ResourceInfo&   resource,
+                    float           time);
 
         private:
             TextureLodScheduler(AssetLibraryPtr assetLibrary);
@@ -129,7 +130,8 @@ namespace minko
             computeLodPriority(const TextureResourceInfo&  resource,
                                SurfacePtr                  surface,
                                int                         requiredLod,
-                               int                         activeLod);
+                               int                         activeLod,
+                               float                       time);
 
             float
             distanceFromEye(const TextureResourceInfo&  resource,
