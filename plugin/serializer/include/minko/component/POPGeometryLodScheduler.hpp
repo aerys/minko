@@ -38,8 +38,6 @@ namespace minko
             typedef std::shared_ptr<MasterLodScheduler>         MasterLodSchedulerPtr;
             typedef std::shared_ptr<Surface>                    SurfacePtr;
 
-            typedef std::shared_ptr<AbstractLodPriorityModifier> AbstractLodPriorityModifierPtr;
-
             typedef std::shared_ptr<geometry::Geometry>         GeometryPtr;
 
             struct SurfaceInfo
@@ -50,13 +48,10 @@ namespace minko
 
                 float       requiredPrecisionLevel;
 
-                std::list<std::pair<AbstractLodPriorityModifierPtr, float>> priorityModifiers;
-
                 SurfaceInfo(SurfacePtr surface) :
                     surface(surface),
                     activeLod(-1),
-                    requiredPrecisionLevel(0),
-                    priorityModifiers()
+                    requiredPrecisionLevel(0)
                 {
                 }
             };

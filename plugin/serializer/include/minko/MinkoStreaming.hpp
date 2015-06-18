@@ -4,6 +4,7 @@
 #include "minko/component/AbstractLodScheduler.hpp"
 #include "minko/component/MasterLodScheduler.hpp"
 #include "minko/component/POPGeometryLodScheduler.hpp"
+#include "minko/component/ScreenSpaceAreaNotifier.hpp"
 #include "minko/component/TextureLodScheduler.hpp"
 #include "minko/deserialize/LodSchedulerDeserializer.hpp"
 #include "minko/extension/StreamingExtension.hpp"

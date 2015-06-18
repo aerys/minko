@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/PerspectiveCamera.hpp"
 #include "minko/component/POPGeometryLodScheduler.hpp"
 #include "minko/component/SceneManager.hpp"
-#include "minko/component/ScreenAreaLodPriorityModifier.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/data/Provider.hpp"
@@ -109,14 +108,6 @@ POPGeometryLodScheduler::surfaceAdded(Surface::Ptr surface)
 	}
 
     auto surfaceInfo = SurfaceInfo(surface);
-
-    auto screenAreaLodPriorityModifier = ScreenAreaLodPriorityModifier::create();
-
-    screenAreaLodPriorityModifier->refreshRate(0.f);
-
-    screenAreaLodPriorityModifier->initialize(surface);
-
-    surfaceInfo.priorityModifiers.emplace_back(screenAreaLodPriorityModifier, 8.f);
 
     resource->geometry = geometry;
 
@@ -350,21 +341,14 @@ POPGeometryLodScheduler::computeLodPriority(const POPGeometryResourceInfo& 	reso
     if (activeLod >=  requiredLod)
         return 0.f;
 
-    auto priorityModifierValue = 0.f;
+    auto priority = 0.f;
 
-    for (auto priorityModifier : surfaceInfo.priorityModifiers)
+    if (surfaceInfo.surface->target()->data().hasProperty("screenSpaceArea"))
     {
-        priorityModifierValue += priorityModifier.second * priorityModifier.first->value(
-            surfaceInfo.surface,
-            _eyePosition,
-            _viewport,
-            _worldToScreenMatrix,
-            _viewMatrix,
-            time
-        );
-    }
+        const auto maxScreenSpaceArea = _viewport.z * _viewport.w;
 
-    auto priority = priorityModifierValue;
+        priority += 8.f * surfaceInfo.surface->target()->data().get<float>("screenSpaceArea") / maxScreenSpaceArea;
+    }
 
     if (activeLod < 2)
     {

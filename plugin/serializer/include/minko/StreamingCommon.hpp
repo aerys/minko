@@ -78,11 +78,10 @@ namespace minko
 
     namespace component
     {
-        class AbstractLodPriorityModifier;
-        class ScreenAreaLodPriorityModifier;
         class AbstractLodScheduler;
         class MasterLodScheduler;
         class POPGeometryLodScheduler;
+        class ScreenSpaceAreaNotifier;
         class TextureLodScheduler;
     }
 

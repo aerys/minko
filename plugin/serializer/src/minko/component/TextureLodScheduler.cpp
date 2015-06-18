@@ -352,20 +352,24 @@ TextureLodScheduler::computeLodPriority(const TextureResourceInfo& 	resource,
 
     auto priority = 0.f;
 
-    const auto distanceFromEye = this->distanceFromEye(resource, surface, _eyePosition);
-    const auto distanceFactor = (1000.f - distanceFromEye) * 0.001f;
+    if (surface->target()->data().hasProperty("screenSpaceArea"))
+    {
+        const auto maxScreenSpaceArea = _viewport.z * _viewport.w;
+
+        priority += 8.f * surface->target()->data().get<float>("screenSpaceArea") / maxScreenSpaceArea;
+    }
 
     if (activeLod < 3)
     {
-        priority += 8.f + distanceFactor;
+        priority += 10.f;
     }
     else if (activeLod < 10)
     {
-        priority += 2.f + distanceFactor;
+        priority += 2.f;
     }
     else
     {
-        priority += 1.f + distanceFactor;
+        priority += 1.f;
     }
 
     return priority;
