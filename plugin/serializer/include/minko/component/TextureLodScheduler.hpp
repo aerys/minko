@@ -36,6 +36,7 @@ namespace minko
             typedef std::shared_ptr<scene::Node>                NodePtr;
 
             typedef std::shared_ptr<SceneManager>               SceneManagerPtr;
+            typedef std::shared_ptr<Renderer>                   RendererPtr;
             typedef std::shared_ptr<Surface>                    SurfacePtr;
 
             typedef std::shared_ptr<data::Provider>             ProviderPtr;
@@ -64,6 +65,7 @@ namespace minko
 
         private:
             SceneManagerPtr                                             _sceneManager;
+            RendererPtr                                                 _renderer;
 
             std::unordered_map<std::string, TextureResourceInfo>        _textureResources;
 
@@ -89,6 +91,9 @@ namespace minko
         protected:
             void
             sceneManagerSet(SceneManagerPtr sceneManager);
+
+            void
+            rendererSet(RendererPtr renderer);
 
             void
             surfaceAdded(SurfacePtr surface);

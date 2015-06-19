@@ -41,19 +41,22 @@ namespace minko
 
         typedef std::shared_ptr<render::AbstractTexture>        AbstractTexturePtr;
 
+        typedef std::function<float(
+            int,
+            int,
+            SurfacePtr,
+            const data::Store&,
+            const data::Store&,
+            const data::Store&
+        )>                                                      LodPriorityFunction;
+
     private:
         typedef std::shared_ptr<scene::Node>                    NodePtr;
         typedef std::shared_ptr<file::AbstractWriter<NodePtr>>  SceneWriter;
 
+        typedef std::function<GeometryPtr(GeometryPtr)>         POPGeometryFunction;
         typedef std::function<
-            std::shared_ptr<geometry::Geometry>(
-                std::shared_ptr<geometry::Geometry>
-            )
-        >                                                       POPGeometryFunction;
-        typedef std::function<
-            std::shared_ptr<render::AbstractTexture>(
-                std::shared_ptr<render::AbstractTexture>
-            )
+            AbstractTexturePtr(AbstractTexturePtr)
         >                                                       StreamedTextureFunction;
 
     public:
@@ -76,6 +79,9 @@ namespace minko
 
         std::function<int(SurfacePtr)>                          _popGeometryLodFunction;
         std::function<int(SurfacePtr)>                          _streamedTextureLodFunction;
+
+        LodPriorityFunction                                     _popGeometryLodPriorityFunction;
+        LodPriorityFunction                                     _streamedTextureLodPriorityFunction;
 
         file::MeshPartitioner::Options                          _meshPartitionerOptions;
 
@@ -248,6 +254,38 @@ namespace minko
         streamedTextureLodFunction(const std::function<int(SurfacePtr)>& function)
         {
             _streamedTextureLodFunction = function;
+
+            return shared_from_this();
+        }
+
+        inline
+        const LodPriorityFunction&
+        popGeometryLodPriorityFunction() const
+        {
+            return _popGeometryLodPriorityFunction;
+        }
+
+        inline
+        Ptr
+        popGeometryLodPriorityFunction(const LodPriorityFunction& function)
+        {
+            _popGeometryLodPriorityFunction = function;
+
+            return shared_from_this();
+        }
+
+        inline
+        const LodPriorityFunction&
+        streamedTextureLodPriorityFunction() const
+        {
+            return _streamedTextureLodPriorityFunction;
+        }
+
+        inline
+        Ptr
+        streamedTextureLodPriorityFunction(const LodPriorityFunction& function)
+        {
+            _streamedTextureLodPriorityFunction = function;
 
             return shared_from_this();
         }

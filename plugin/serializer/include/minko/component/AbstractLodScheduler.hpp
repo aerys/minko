@@ -214,6 +214,10 @@ namespace minko
 
             virtual
             void
+            rendererSet(RendererPtr renderer);
+
+            virtual
+            void
             masterLodSchedulerSet(MasterLodSchedulerPtr masterLodScheduler);
 
             virtual
@@ -278,9 +282,6 @@ namespace minko
             static
             AbstractComponent::Ptr
             defaultMasterLodSchedulerFunction(NodePtr node);
-
-            void
-            rendererSet(RendererPtr renderer);
 
             void
             nodeAddedHandler(NodePtr target, NodePtr node);

@@ -35,6 +35,7 @@ namespace minko
             typedef std::shared_ptr<scene::Node>                NodePtr;
         
             typedef std::shared_ptr<SceneManager>               SceneManagerPtr;
+            typedef std::shared_ptr<Renderer>                   RendererPtr;
             typedef std::shared_ptr<MasterLodScheduler>         MasterLodSchedulerPtr;
             typedef std::shared_ptr<Surface>                    SurfacePtr;
 
@@ -90,6 +91,7 @@ namespace minko
 
         private:
             SceneManagerPtr                                             _sceneManager;
+            RendererPtr                                                 _renderer;
 
             std::unordered_map<std::string, POPGeometryResourceInfo>    _popGeometryResources;
 
@@ -121,6 +123,9 @@ namespace minko
         protected:
             void
             sceneManagerSet(SceneManagerPtr sceneManager);
+
+            void
+            rendererSet(RendererPtr renderer);
 
             void
             masterLodSchedulerSet(MasterLodSchedulerPtr masterLodScheduler);

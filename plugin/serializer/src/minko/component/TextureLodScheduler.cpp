@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/SceneManager.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/MasterLodScheduler.hpp"
+#include "minko/component/Renderer.hpp"
 #include "minko/component/TextureLodScheduler.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/file/AssetLibrary.hpp"
@@ -56,6 +57,14 @@ TextureLodScheduler::sceneManagerSet(SceneManager::Ptr sceneManager)
     AbstractLodScheduler::sceneManagerSet(sceneManager);
 
     _sceneManager = sceneManager;
+}
+
+void
+TextureLodScheduler::rendererSet(Renderer::Ptr renderer)
+{
+    AbstractLodScheduler::rendererSet(renderer);
+
+    _renderer = renderer;
 }
 
 void
@@ -350,29 +359,21 @@ TextureLodScheduler::computeLodPriority(const TextureResourceInfo& 	resource,
     if (activeLod >= requiredLod)
         return 0.f;
 
-    auto priority = 0.f;
+    const auto& lodPriorityFunction = masterLodScheduler()->streamingOptions()->streamedTextureLodPriorityFunction();
 
-    if (surface->target()->data().hasProperty("screenSpaceArea"))
+    if (lodPriorityFunction)
     {
-        const auto maxScreenSpaceArea = _viewport.z * _viewport.w;
-
-        priority += 8.f * surface->target()->data().get<float>("screenSpaceArea") / maxScreenSpaceArea;
+        return lodPriorityFunction(
+            activeLod,
+            requiredLod,
+            surface,
+            surface->target()->data(),
+            _sceneManager->target()->data(),
+            _renderer->target()->data()
+        );
     }
 
-    if (activeLod < 3)
-    {
-        priority += 10.f;
-    }
-    else if (activeLod < 10)
-    {
-        priority += 2.f;
-    }
-    else
-    {
-        priority += 1.f;
-    }
-
-    return priority;
+    return requiredLod - activeLod;
 }
 
 float

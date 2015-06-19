@@ -60,6 +60,14 @@ POPGeometryLodScheduler::sceneManagerSet(SceneManager::Ptr sceneManager)
 }
 
 void
+POPGeometryLodScheduler::rendererSet(Renderer::Ptr renderer)
+{
+    AbstractLodScheduler::rendererSet(renderer);
+
+    _renderer = renderer;
+}
+
+void
 POPGeometryLodScheduler::masterLodSchedulerSet(MasterLodSchedulerPtr masterLodScheduler)
 {
     AbstractLodScheduler::masterLodSchedulerSet(masterLodScheduler);
@@ -341,25 +349,21 @@ POPGeometryLodScheduler::computeLodPriority(const POPGeometryResourceInfo& 	reso
     if (activeLod >=  requiredLod)
         return 0.f;
 
-    auto priority = 0.f;
+    const auto& lodPriorityFunction = masterLodScheduler()->streamingOptions()->popGeometryLodPriorityFunction();
 
-    if (surfaceInfo.surface->target()->data().hasProperty("screenSpaceArea"))
+    if (lodPriorityFunction)
     {
-        const auto maxScreenSpaceArea = _viewport.z * _viewport.w;
-
-        priority += 8.f * surfaceInfo.surface->target()->data().get<float>("screenSpaceArea") / maxScreenSpaceArea;
+        return lodPriorityFunction(
+            activeLod,
+            requiredLod,
+            surfaceInfo.surface,
+            surfaceInfo.surface->target()->data(),
+            _sceneManager->target()->data(),
+            _renderer->target()->data()
+        );
     }
 
-    if (activeLod < 2)
-    {
-        priority += 11.f;
-    }
-    else
-    {
-        priority += 9.f;
-    }
-
-    return priority;
+    return requiredLod - activeLod;
 }
 
 bool 
