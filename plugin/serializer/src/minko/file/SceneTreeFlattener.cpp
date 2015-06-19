@@ -59,12 +59,16 @@ SceneTreeFlattener::collapseNode(Node::Ptr                      node,
 
     for (auto child : node->children())
     {
-        auto childProtectedDescendant = collapseNode(child, node, root, retargetedSurfaces);
+        auto childRetargetedSurfaces = std::list<RetargetedSurface>();
+
+        auto childProtectedDescendant = collapseNode(child, node, root, childRetargetedSurfaces);
 
         if (!childProtectedDescendant)
             childrenToRemove.push_back(child);
 
         protectedDescendant |= childProtectedDescendant;
+
+        retargetedSurfaces.splice(retargetedSurfaces.end(), childRetargetedSurfaces);
     }
 
     for (auto child : childrenToRemove)
@@ -92,7 +96,7 @@ SceneTreeFlattener::collapseNode(Node::Ptr                      node,
 
         for (auto& retargetedSurface : retargetedSurfaces)
         {
-            retargetedSurface.matrix *= localTransformMatrix;
+            retargetedSurface.matrix = localTransformMatrix * retargetedSurface.matrix;
         }
 
         for (auto surface : surfaces)
@@ -113,7 +117,7 @@ SceneTreeFlattener::collapseNode(Node::Ptr                      node,
 void
 SceneTreeFlattener::patchNode(Node::Ptr node, const std::list<RetargetedSurface>& retargetedSurfaces)
 {
-    for (auto retargetedSurface : retargetedSurfaces)
+    for (const auto& retargetedSurface : retargetedSurfaces)
     {
         auto surfaceNode = Node::create(retargetedSurface.surface->target()->name())
             ->addComponent(Transform::create(retargetedSurface.matrix))
