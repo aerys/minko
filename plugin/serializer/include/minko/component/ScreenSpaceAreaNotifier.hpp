@@ -51,9 +51,10 @@ namespace minko
 
             typedef data::Store*                                    StorePtr;
 
-            struct SurfaceInfo
+            struct NodeEntry
             {
-                SurfacePtr                  surface;
+                NodePtr                     node;
+                ProviderPtr                 provider;
 
                 std::array<math::vec3, 8>   boxVertices;
 
@@ -68,8 +69,8 @@ namespace minko
                     const data::Provider::PropertyName&
                 >::Slot                     modelToWorldMatrixChangedSlot;
 
-                SurfaceInfo() :
-                    surface(),
+                NodeEntry() :
+                    node(),
                     boxVertices(),
                     updateNeeded(true),
                     previousValue(0.f),
@@ -106,8 +107,9 @@ namespace minko
             std::string                                                                     _propertyName;
             float                                                                           _updateRate;
 
-            std::unordered_map<SurfacePtr, SurfaceInfo>                                     _surfaces;
+            std::unordered_map<NodePtr, NodeEntry>                                          _nodeEntries;
 
+            bool                                                                            _updateNeeded;
             float                                                                           _updateTime;
             float                                                                           _previousTime;
 
@@ -216,16 +218,10 @@ namespace minko
             sceneManagerSet(SceneManagerPtr sceneManager);
 
             void
-            candidateNodeAdded(NodePtr target, NodePtr node);
+            candidateNodeAdded(NodePtr node);
 
             void
-            candidateNodeRemoved(NodePtr target, NodePtr node);
-
-            void
-            surfaceAdded(SurfacePtr surface);
-
-            void
-            surfaceRemoved(SurfacePtr surface);
+            candidateNodeRemoved(NodePtr node);
 
             void
             viewPropertyChanged(const math::mat4&   worldToScreenMatrix,
@@ -279,11 +275,11 @@ namespace minko
                                                const data::Provider::PropertyName&      propertyName);
 
             void
-            modelToWorldMatrixChanged(SurfaceInfo&      surfaceInfo,
+            modelToWorldMatrixChanged(NodeEntry&        nodeEntry,
                                       const math::mat4& modelToWorldMatrix);
 
             float
-            computeScreenSpaceArea(SurfaceInfo&        surfaceInfo,
+            computeScreenSpaceArea(NodeEntry&          nodeEntry,
                                    const math::vec3&   eyePosition,
                                    const math::vec4&   viewport,
                                    const math::mat4&   worldToScreenMatrix,

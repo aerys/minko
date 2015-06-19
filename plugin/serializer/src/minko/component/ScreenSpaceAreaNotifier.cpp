@@ -51,6 +51,7 @@ ScreenSpaceAreaNotifier::ScreenSpaceAreaNotifier() :
     _viewMatrix(),
     _propertyName(),
     _updateRate(0.f),
+    _updateNeeded(false),
     _updateTime(0.f),
     _previousTime(0.f)
 {
@@ -124,63 +125,59 @@ ScreenSpaceAreaNotifier::targetRemoved(Node::Ptr target)
 }
 
 void
-ScreenSpaceAreaNotifier::candidateNodeAdded(Node::Ptr target, Node::Ptr node)
+ScreenSpaceAreaNotifier::candidateNodeAdded(Node::Ptr node)
 {
-    auto meshNodes = NodeSet::create(node)
-        ->descendants(true)
-        ->where([](Node::Ptr descendant) -> bool { return descendant->hasComponent<Surface>(); });
+    auto nodeEntryIt = _nodeEntries.emplace(node, NodeEntry());
 
-    for (auto meshNode : meshNodes->nodes())
-    for (auto surface : meshNode->components<Surface>())
-        surfaceAdded(surface);
-}
-
-void
-ScreenSpaceAreaNotifier::candidateNodeRemoved(Node::Ptr target, Node::Ptr node)
-{
-    for (auto surface : node->components<Surface>())
-        surfaceRemoved(surface);
-}
-
-void
-ScreenSpaceAreaNotifier::surfaceAdded(Surface::Ptr surface)
-{
-    auto surfaceIt = _surfaces.emplace(surface, SurfaceInfo());
-
-    if (!surfaceIt.second)
+    if (!nodeEntryIt.second)
         return;
 
-    auto surfaceTarget = surface->target();
+    if (!node->hasComponent<BoundingBox>())
+        node->addComponent(BoundingBox::create());
 
-    if (!surfaceTarget->hasComponent<BoundingBox>())
-        surfaceTarget->addComponent(BoundingBox::create());
+    auto& nodeEntry = nodeEntryIt.first->second;
 
-    auto& surfaceInfo = surfaceIt.first->second;
+    nodeEntry.node = node;
+    
+    auto provider = Provider::create();
 
-    surfaceInfo.surface = surface;
+    node->data().addProvider(provider);
 
-	surfaceInfo.modelToWorldMatrixChangedSlot = surfaceTarget->data().propertyChanged("modelToWorldMatrix").connect(
-		[this, surface](Store&          	                store,
-            	        Provider::Ptr                       provider,
-				        const data::Provider::PropertyName& propertyName)
+    nodeEntry.provider = provider;
+
+	nodeEntry.modelToWorldMatrixChangedSlot = node->data().propertyChanged("modelToWorldMatrix").connect(
+		[this, node](Store&          	                 store,
+            	     Provider::Ptr                       provider,
+				     const data::Provider::PropertyName& propertyName)
         {
         	modelToWorldMatrixChanged(
-                _surfaces.at(surface),
+                _nodeEntries.at(node),
                 provider->get<math::mat4>(propertyName)
             );
         }
     );
 
-    modelToWorldMatrixChanged(surfaceInfo, surfaceTarget->data().get<math::mat4>("modelToWorldMatrix"));
+    modelToWorldMatrixChanged(
+        nodeEntry,
+        node->data().get<math::mat4>("modelToWorldMatrix")
+    );
 }
 
 void
-ScreenSpaceAreaNotifier::modelToWorldMatrixChanged(SurfaceInfo&      surfaceInfo,
+ScreenSpaceAreaNotifier::candidateNodeRemoved(Node::Ptr node)
+{
+    _nodeEntries.erase(node);
+}
+
+void
+ScreenSpaceAreaNotifier::modelToWorldMatrixChanged(NodeEntry&        nodeEntry,
                                                    const math::mat4& modelToWorldMatrix)
 {
-    auto surface = surfaceInfo.surface;
+    _updateNeeded = true;
 
-    auto box = surface->target()->component<BoundingBox>()->box();
+    nodeEntry.updateNeeded = true;
+
+    auto box = nodeEntry.node->component<BoundingBox>()->box();
 
     const auto bottomLeft = box->bottomLeft();
     const auto topRight = box->topRight();
@@ -189,7 +186,7 @@ ScreenSpaceAreaNotifier::modelToWorldMatrixChanged(SurfaceInfo&      surfaceInfo
     const auto height = box->height();
     const auto depth = box->depth();
 
-	surfaceInfo.boxVertices = std::array<math::vec3, 8>
+	nodeEntry.boxVertices = std::array<math::vec3, 8>
 	{{
 		math::vec3(bottomLeft),
 		math::vec3(bottomLeft.x + width, bottomLeft.y, bottomLeft.z),
@@ -204,12 +201,6 @@ ScreenSpaceAreaNotifier::modelToWorldMatrixChanged(SurfaceInfo&      surfaceInfo
 }
 
 void
-ScreenSpaceAreaNotifier::surfaceRemoved(Surface::Ptr surface)
-{
-    _surfaces.erase(surface);
-}
-
-void
 ScreenSpaceAreaNotifier::viewPropertyChanged(const math::mat4&   worldToScreenMatrix,
                                              const math::mat4&   viewMatrix,
                                              const math::vec3&   eyePosition,
@@ -218,8 +209,10 @@ ScreenSpaceAreaNotifier::viewPropertyChanged(const math::mat4&   worldToScreenMa
                                              float               zNear,
                                              float               zFar)
 {
-    for (auto& surfaceToSurfaceInfo : _surfaces)
-        surfaceToSurfaceInfo.second.updateNeeded = true;
+    _updateNeeded = true;
+
+    for (auto& nodeToNodeEntryPair : _nodeEntries)
+        nodeToNodeEntryPair.second.updateNeeded = true;
 
     _eyePosition = eyePosition;
     _fov = fov;
@@ -231,8 +224,10 @@ ScreenSpaceAreaNotifier::viewPropertyChanged(const math::mat4&   worldToScreenMa
 void
 ScreenSpaceAreaNotifier::viewportChanged(const math::vec4& viewport)
 {
-    for (auto& surfaceToSurfaceInfo : _surfaces)
-        surfaceToSurfaceInfo.second.updateNeeded = true;
+    _updateNeeded = true;
+
+    for (auto& nodeToNodeEntryPair : _nodeEntries)
+        nodeToNodeEntryPair.second.updateNeeded = true;
 
     _viewport = viewport;
 }
@@ -240,21 +235,26 @@ ScreenSpaceAreaNotifier::viewportChanged(const math::vec4& viewport)
 void
 ScreenSpaceAreaNotifier::update(float time)
 {
-    for (auto& surfaceToSurfaceInfoPair : _surfaces)
+    if (!_updateNeeded)
+        return;
+
+    _updateNeeded = false;
+
+    if (updateRate() <= 0.f)
     {
-        auto& surfaceInfo = surfaceToSurfaceInfoPair.second;
-
-        if (!surfaceInfo.updateNeeded)
-            continue;
-
-        surfaceInfo.updateNeeded = false;
-
-        if (updateRate() <= 0.f)
+        for (auto& nodeToNodeEntry : _nodeEntries)
         {
-            surfaceInfo.previousValue = surfaceInfo.targetValue;
+            auto& nodeEntry = nodeToNodeEntry.second;
+
+            if (!nodeEntry.updateNeeded)
+                continue;
+
+            nodeEntry.updateNeeded = false;
+
+            nodeEntry.previousValue = nodeEntry.targetValue;
         
-            surfaceInfo.targetValue = computeScreenSpaceArea(
-                surfaceInfo,
+            nodeEntry.targetValue = computeScreenSpaceArea(
+                nodeEntry,
                 _eyePosition,
                 _viewport,
                 _worldToScreenMatrix,
@@ -262,38 +262,53 @@ ScreenSpaceAreaNotifier::update(float time)
                 time
             );
 
-            surfaceInfo.surface->data()->set(
+            nodeEntry.provider->set(
                 propertyName(),
-                surfaceInfo.targetValue
+                nodeEntry.targetValue
             );
         }
-        else
+
+        return;
+    }
+
+    auto elapsedTime = time - _previousTime;
+
+    if (elapsedTime >= _updateTime)
+    {
+        elapsedTime = elapsedTime - _updateTime;
+
+        _previousTime = time;
+
+        for (auto& nodeToNodeEntry : _nodeEntries)
         {
-            auto elapsedTime = time - _previousTime;
+            auto& nodeEntry = nodeToNodeEntry.second;
 
-            if (elapsedTime >= _updateTime)
-            {
-                elapsedTime = elapsedTime - _updateTime;
+            if (!nodeEntry.updateNeeded)
+                continue;
 
-                _previousTime = time;
+            nodeEntry.updateNeeded = false;
 
-                surfaceInfo.previousValue = surfaceInfo.targetValue;
+            nodeEntry.previousValue = nodeEntry.targetValue;
         
-                surfaceInfo.targetValue = computeScreenSpaceArea(
-                    surfaceInfo,
-                    _eyePosition,
-                    _viewport,
-                    _worldToScreenMatrix,
-                    _viewMatrix,
-                    time
-                );
-            }
-
-            surfaceInfo.surface->data()->set(
-                propertyName(),
-                math::mix(surfaceInfo.previousValue, surfaceInfo.targetValue, elapsedTime / _updateTime)
+            nodeEntry.targetValue = computeScreenSpaceArea(
+                nodeEntry,
+                _eyePosition,
+                _viewport,
+                _worldToScreenMatrix,
+                _viewMatrix,
+                time
             );
         }
+    }
+
+    for (auto& nodeToNodeEntry : _nodeEntries)
+    {
+        auto& nodeEntry = nodeToNodeEntry.second;
+
+        nodeEntry.provider->set(
+            propertyName(),
+            math::mix(nodeEntry.previousValue, nodeEntry.targetValue, elapsedTime / _updateTime)
+        );
     }
 }
 
@@ -371,7 +386,12 @@ ScreenSpaceAreaNotifier::nodeAddedHandler(Node::Ptr target, Node::Ptr node)
     auto renderer = rendererFunction()(node);
     rendererSet(renderer == nullptr ? nullptr : std::static_pointer_cast<Renderer>(renderer));
 
-    candidateNodeAdded(target, node);
+    auto meshNodes = NodeSet::create(node)
+        ->descendants(true)
+        ->where([](Node::Ptr descendant) -> bool { return descendant->hasComponent<Surface>(); });
+
+    for (auto meshNode : meshNodes->nodes())
+        candidateNodeAdded(meshNode);
 }
 
 void
@@ -383,7 +403,12 @@ ScreenSpaceAreaNotifier::nodeRemovedHandler(Node::Ptr target, Node::Ptr node)
     auto renderer = rendererFunction()(node);
     rendererSet(renderer == nullptr ? nullptr : std::static_pointer_cast<Renderer>(renderer));
 
-    candidateNodeRemoved(target, node);
+    auto meshNodes = NodeSet::create(node)
+        ->descendants(true)
+        ->where([](Node::Ptr descendant) -> bool { return descendant->hasComponent<Surface>(); });
+
+    for (auto meshNode : meshNodes->nodes())
+        candidateNodeRemoved(meshNode);
 }
 
 void
@@ -405,7 +430,7 @@ ScreenSpaceAreaNotifier::componentAddedHandler(Node::Ptr target, AbstractCompone
 
     if (surface != nullptr)
     {
-        surfaceAdded(surface);
+        candidateNodeAdded(node);
     }
 }
 
@@ -428,7 +453,7 @@ ScreenSpaceAreaNotifier::componentRemovedHandler(Node::Ptr target, AbstractCompo
 
     if (surface != nullptr)
     {
-        surfaceRemoved(surface);
+        candidateNodeRemoved(node);
     }
 }
 
@@ -469,17 +494,17 @@ ScreenSpaceAreaNotifier::rendererNodePropertyChangedHandler(Store&              
 }
 
 float
-ScreenSpaceAreaNotifier::computeScreenSpaceArea(SurfaceInfo&        surfaceInfo,
+ScreenSpaceAreaNotifier::computeScreenSpaceArea(NodeEntry&          nodeEntry,
                                                 const math::vec3&   eyePosition,
                                                 const math::vec4&   viewport,
                                                 const math::mat4&   worldToScreenMatrix,
                                                 const math::mat4&   viewMatrix,
                                                 float               time)
 {
-    const auto& modelToWorldMatrix = surfaceInfo.surface->target()->component<Transform>()->modelToWorldMatrix(true);
+    const auto& modelToWorldMatrix = nodeEntry.node->component<Transform>()->modelToWorldMatrix(true);
 
     const auto screenArea = aabbApproxScreenSpaceArea(
-        surfaceInfo.boxVertices,
+        nodeEntry.boxVertices,
         modelToWorldMatrix,
         eyePosition,
         viewport,
