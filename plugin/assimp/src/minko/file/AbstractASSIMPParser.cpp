@@ -210,6 +210,9 @@ unsigned int
 AbstractASSIMPParser::getPostProcessingFlags(const aiScene*             scene,
                                              Options::Ptr		        options)
 {
+    if (scene->mNumMeshes == 0u)
+        return 0u;
+
     const auto numMaterials = scene->mNumMaterials;
 
     auto numTextures = scene->mNumTextures;
@@ -281,9 +284,12 @@ AbstractASSIMPParser::applyPostProcessing(const aiScene* scene, unsigned int pos
 void
 AbstractASSIMPParser::allDependenciesLoaded(const aiScene* scene)
 {
+    const aiScene* processedScene = scene;
+
     const auto postProcessingFlags = getPostProcessingFlags(scene, _options);
 
-    const aiScene* processedScene = applyPostProcessing(scene, postProcessingFlags);
+    if (postProcessingFlags != 0u)
+        processedScene = applyPostProcessing(scene, postProcessingFlags);
 
 	if (!processedScene)
     {
