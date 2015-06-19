@@ -84,7 +84,8 @@ SceneTreeFlattener::collapseNode(Node::Ptr                      node,
         node->components().size() >
         transforms.size() +
         boundingBoxes.size() +
-        surfaces.size();
+        surfaces.size() ||
+        (node->data().hasProperty("animated") && node->data().get<bool>("animated"));
 
     if (!nodeIsProtected)
     {
