@@ -30,13 +30,14 @@ using namespace android::sensors;
 
 math::mat4 AndroidAttitude::rotationMatrixValue;
 math::quat AndroidAttitude::quaternionValue;
+bool AndroidAttitude::magnetDown;
 std::mutex AndroidAttitude::rotationMatrixMutex;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-JNIEXPORT void JNICALL Java_minko_plugin_sensors_AndroidAttitude_minkoNativeOnAttitudeEvent(JNIEnv* env, jobject obj, jfloatArray rotationMatrix, jfloatArray quaternion)
+JNIEXPORT void JNICALL Java_minko_plugin_sensors_AndroidAttitude_minkoNativeOnAttitudeEvent(JNIEnv* env, jobject obj, jfloatArray rotationMatrix, jfloatArray quaternion, jboolean magnet)
 {
     jfloat* rotationMatrixFloat = env->GetFloatArrayElements(rotationMatrix, 0);
     jfloat* quaternionFloat = env->GetFloatArrayElements(quaternion, 0);
@@ -64,6 +65,8 @@ JNIEXPORT void JNICALL Java_minko_plugin_sensors_AndroidAttitude_minkoNativeOnAt
 
     env->ReleaseFloatArrayElements(rotationMatrix, rotationMatrixFloat, 0);
     env->ReleaseFloatArrayElements(quaternion, quaternionFloat, 0);
+
+    AndroidAttitude::magnetDown = magnet;
 }
 
 /* Ends C function definitions when using C++ */
