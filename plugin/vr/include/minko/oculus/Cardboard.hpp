@@ -23,27 +23,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "VRImpl.hpp"
 #include "minko/Signal.hpp"
 
-extern "C" 
-{
-    struct ovrHmdDesc_;
-    typedef const ovrHmdDesc_* ovrHmd;
-}
+#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+#include "minko/sensors/Attitude.hpp"
+#endif
 
 namespace minko
 {
     namespace oculus
     {
-        class NativeOculus : public VRImpl
+        class Cardboard : public VRImpl
         {
         private:
-            static ovrHmd                                       _hmd;
+            scene::Node::Ptr                                    _target;
             std::shared_ptr<scene::Node>                        _ppScene;
-            std::shared_ptr<component::Renderer>                _ppRenderer;
             uint                                                _renderTargetWidth;
             uint                                                _renderTargetHeight;
             std::shared_ptr<render::Texture>                    _renderTarget;
             std::array<std::pair<math::vec2, math::vec2>, 2>    _uvScaleOffset;
             float                                               _aspectRatio;
+#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+            std::shared_ptr<sensors::Attitude>                  _attitude;
+#endif
             std::shared_ptr<component::Renderer>                _leftRenderer;
             std::shared_ptr<component::Renderer>                _rightRenderer;
             std::shared_ptr<scene::Node>                        _leftCameraNode;
@@ -52,19 +52,13 @@ namespace minko
             std::shared_ptr<component::SceneManager>            _sceneManager;
             float                                               _zNear;
             float                                               _zFar;
-
-            void
-            initializePostProcessingRenderer();
-
-            void
-            renderEndHandler(
-                std::shared_ptr<component::SceneManager> sceneManager, 
-                uint frameId, 
-                std::shared_ptr<render::AbstractTexture> renderTarget
-            );
+            float                                               _viewportWidth;
+            float                                               _viewportHeight;
 
         public:
-            typedef std::shared_ptr<NativeOculus> Ptr;
+            typedef std::shared_ptr<Cardboard> Ptr;
+
+            ~Cardboard();
 
             void
             initialize(std::shared_ptr<component::SceneManager> sceneManager);
@@ -77,9 +71,6 @@ namespace minko
 
             void
             targetRemoved();
-
-            std::array<std::shared_ptr<geometry::Geometry>, 2>
-            createDistortionGeometry(std::shared_ptr<render::AbstractContext> context);
 
             void
             updateCameraOrientation(std::shared_ptr<scene::Node> target);
@@ -108,21 +99,17 @@ namespace minko
                 return _zFar;
             }
 
-            static
-            bool
-            detected();
-
             inline static
             Ptr
             create(int viewportWidth, int viewportHeight, float zNear, float zFar)
             {
-                auto ptr = std::shared_ptr<NativeOculus>(new NativeOculus(viewportWidth, viewportHeight, zNear, zFar));
+                auto ptr = std::shared_ptr<Cardboard>(new Cardboard(viewportWidth, viewportHeight, zNear, zFar));
 
                 return ptr;
             }
 
         private:
-            NativeOculus(int viewportWidth, int viewportHeight, float zNear, float zFar);
+            Cardboard(int viewportWidth, int viewportHeight, float zNear, float zFar);
         };
     }
 }

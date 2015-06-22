@@ -20,13 +20,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "OculusImpl.hpp"
+#include "VRImpl.hpp"
 
 namespace minko
 {
     namespace oculus
     {
-        class WebVROculus : public OculusImpl
+        class WebVROculus : public VRImpl
         {
         public:
             typedef std::shared_ptr<WebVROculus> Ptr;
@@ -51,13 +51,13 @@ namespace minko
             initialize(std::shared_ptr<component::SceneManager> sceneManager);
 
             void
-            initializeOVRDevice(void* window = nullptr);
+            initializeVRDevice(void* window = nullptr);
 
             void
             initializeCameras(std::shared_ptr<scene::Node> target);
 
             void
-            destroy();
+            targetRemoved();
 
             std::array<std::shared_ptr<geometry::Geometry>, 2>
             createDistortionGeometry(std::shared_ptr<render::AbstractContext> context);

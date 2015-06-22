@@ -26,8 +26,8 @@ namespace minko
 {
     namespace oculus
     {
-        class OculusImpl : 
-            public std::enable_shared_from_this<OculusImpl>
+        class VRImpl : 
+            public std::enable_shared_from_this<VRImpl>
         {
         public:
             virtual
@@ -36,7 +36,7 @@ namespace minko
 
             virtual
             void
-            initializeOVRDevice(void* window) = 0;
+            initializeVRDevice(void* window) = 0;
 
             virtual
             void
@@ -44,7 +44,7 @@ namespace minko
 
             virtual
             void
-            destroy() = 0;
+            targetRemoved() = 0;
 
             virtual
             void

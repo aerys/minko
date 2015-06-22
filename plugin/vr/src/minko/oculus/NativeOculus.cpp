@@ -94,7 +94,7 @@ NativeOculus::detected()
 }
 
 void
-NativeOculus::initializeOVRDevice(void* window)
+NativeOculus::initializeVRDevice(void* window)
 {
     _leftRenderer = Renderer::create();
     _rightRenderer = Renderer::create();
@@ -270,7 +270,7 @@ NativeOculus::initializePostProcessingRenderer()
 }
 
 void
-NativeOculus::destroy()
+NativeOculus::targetRemoved()
 {
     ovrHmd_Destroy(_hmd);
     ovr_Shutdown();

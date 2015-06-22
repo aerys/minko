@@ -51,7 +51,7 @@ _initialized(false)
 }
 
 void
-WebVROculus::initializeOVRDevice(void* window)
+WebVROculus::initializeVRDevice(void* window)
 {
     _leftRenderer = Renderer::create();
     _rightRenderer = Renderer::create();
@@ -138,7 +138,7 @@ WebVROculus::initializeCameras(scene::Node::Ptr target)
 }
 
 void
-WebVROculus::destroy()
+WebVROculus::targetRemoved()
 {
 }
 

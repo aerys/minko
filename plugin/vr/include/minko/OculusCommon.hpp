@@ -40,7 +40,7 @@ namespace minko
             float RightTan;
         };
 
-        class OculusImpl;
+        class VRImpl;
     }
 }
 

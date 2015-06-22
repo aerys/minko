@@ -1,12 +1,6 @@
 PROJECT_NAME = path.getname(os.getcwd())
 
-if not minko.platform.supports { "windows32", "windows64", "linux32", "linux64", "osx64" } then
-	return
-end
-
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
-
-	removeplatforms { "ios", "android" }
 
 	files {
 		"src/**.hpp",
@@ -19,6 +13,9 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"src",
 		"lib/opengl/include",
 	}
+
+	configuration { "android or ios" }
+		minko.plugin.enable("sensors")
 
 	configuration { "windows32 or windows64" }
 		files {
@@ -62,7 +59,13 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			"src/minko/oculus/WebVROculus.cpp",
 		}
 
-	configuration { "html5" }
+	configuration { "not android or ios" }
+		excludes {
+			"include/minko/oculus/Cardboard.hpp",
+			"src/minko/oculus/Cardboard.cpp",
+		}
+
+	configuration { "html5 or android or ios" }
 		excludes {
 			"include/minko/oculus/NativeOculus.hpp",
 			"src/minko/oculus/NativeOculus.cpp",

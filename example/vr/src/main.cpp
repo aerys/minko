@@ -99,10 +99,10 @@ main(int argc, char** argv)
 		camera = scene::Node::create("camera")
 			->addComponent(Transform::create());
 
-		auto oculusDetected = OculusVRCamera::detected();
+		auto oculusDetected = VRCamera::detected();
 		if (oculusDetected)
 		{
-			camera->addComponent(OculusVRCamera::create(canvas->width(), canvas->height(), 0.1f, 100.0f));
+			camera->addComponent(VRCamera::create(canvas->width(), canvas->height(), 0.1f, 100.0f));
 		}
 		else
 		{
@@ -110,7 +110,7 @@ main(int argc, char** argv)
 				->addComponent(PerspectiveCamera::create(canvas->aspectRatio(), 1.0f))
 				->addComponent(Renderer::create(0x050514ff));
 		}
-
+		
         spheres = createObjectGroup(NUM_SPHERES, false, SPHERES_DIST, SPHERES_PRIORITY, sceneManager->assets(), spheresAnimData);
         quads = createObjectGroup(NUM_QUADS, true, QUADS_DIST, QUADS_PRIORITY, sceneManager->assets(), quadsAnimData);
 
@@ -137,8 +137,8 @@ main(int argc, char** argv)
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint width, uint height)
     {
-		if (camera->hasComponent<OculusVRCamera>())
-			camera->component<OculusVRCamera>()->updateViewport(width, height);
+		if (camera->hasComponent<VRCamera>())
+			camera->component<VRCamera>()->updateViewport(width, height);
 		else if (camera->hasComponent<PerspectiveCamera>())
 			camera->component<PerspectiveCamera>()->aspectRatio(float(width) / float(height));
     });

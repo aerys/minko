@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/component/OculusVRCamera.hpp"
+#include "minko/component/VRCamera.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
 #include "minko/component/AbstractComponent.hpp"
@@ -26,8 +26,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/render/Effect.hpp"
 
-#include "minko/oculus/NativeOculus.hpp"
-#include "minko/oculus/WebVROculus.hpp"
+#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+#include "minko/oculus/Cardboard.hpp"
+#else
+	#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+	#include "minko/oculus/WebVROculus.hpp"
+	#else
+	#include "minko/oculus/NativeOculus.hpp"
+	#endif
+#endif
 
 using namespace minko;
 using namespace minko::scene;
@@ -36,53 +43,61 @@ using namespace minko::math;
 using namespace minko::oculus;
 using namespace minko::render;
 
-OculusVRCamera::OculusVRCamera(int viewportWidth, int viewportHeight, float zNear, float zFar) :
+VRCamera::VRCamera(int viewportWidth, int viewportHeight, float zNear, float zFar) :
     _sceneManager(nullptr),
     _addedSlot(nullptr),
     _removedSlot(nullptr),
-    _oculusImpl(nullptr)
+    _VRImpl(nullptr)
 {
 }
 
-OculusVRCamera::~OculusVRCamera()
+VRCamera::~VRCamera()
 {
-    _oculusImpl->destroy();
+    _VRImpl = nullptr;
 }
 
 void
-OculusVRCamera::updateViewport(int viewportWidth, int viewportHeight)
+VRCamera::updateViewport(int viewportWidth, int viewportHeight)
 {
-    _oculusImpl->updateViewport(viewportWidth, viewportHeight);
+    _VRImpl->updateViewport(viewportWidth, viewportHeight);
 }
 
 bool
-OculusVRCamera::detected()
+VRCamera::detected()
 {
-#ifdef EMSCRIPTEN
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
     return WebVROculus::detected();
 #else
-    return NativeOculus::detected();
+	#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+		return true;
+	#else
+		return NativeOculus::detected();
+	#endif
 #endif
 }
 
 void
-OculusVRCamera::initialize(int viewportWidth, int viewportHeight, float zNear, float zFar, void* window)
+VRCamera::initialize(int viewportWidth, int viewportHeight, float zNear, float zFar, void* window)
 {
 #ifdef EMSCRIPTEN
-    _oculusImpl = WebVROculus::create(viewportWidth, viewportHeight, zNear, zFar);
+	_VRImpl = WebVROculus::create(viewportWidth, viewportHeight, zNear, zFar);
 #else
-    _oculusImpl = NativeOculus::create(viewportWidth, viewportHeight, zNear, zFar);
+	#if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+		_VRImpl = Cardboard::create(viewportWidth, viewportHeight, zNear, zFar);
+	#else
+		_VRImpl = NativeOculus::create(viewportWidth, viewportHeight, zNear, zFar);
+	#endif
 #endif
 
     if (!detected())
         return;
 
     updateViewport(viewportWidth, viewportHeight);
-    initializeOVRDevice(window);
+    initializeVRDevice(window);
 }
 
 void
-OculusVRCamera::targetAdded(NodePtr target)
+VRCamera::targetAdded(NodePtr target)
 {
     _addedSlot = target->added().connect([=](scene::Node::Ptr n, scene::Node::Ptr t, scene::Node::Ptr p)
     {
@@ -95,25 +110,27 @@ OculusVRCamera::targetAdded(NodePtr target)
         findSceneManager();
     });
 
-    _oculusImpl->initializeCameras(target);
+    _VRImpl->initializeCameras(target);
 
     findSceneManager();
 }
 
 void
-OculusVRCamera::targetRemoved(NodePtr target)
+VRCamera::targetRemoved(NodePtr target)
 {
+    _VRImpl->targetRemoved();
+    _renderBeginSlot->disconnect();
     findSceneManager();
 }
 
 void
-OculusVRCamera::initializeOVRDevice(void* window)
+VRCamera::initializeVRDevice(void* window)
 {
-    _oculusImpl->initializeOVRDevice(window);
+    _VRImpl->initializeVRDevice(window);
 }
 
 void
-OculusVRCamera::findSceneManager()
+VRCamera::findSceneManager()
 {
     NodeSet::Ptr roots = NodeSet::create(target())
         ->roots()
@@ -123,7 +140,7 @@ OculusVRCamera::findSceneManager()
         });
 
     if (roots->nodes().size() > 1)
-        throw std::logic_error("OculusVRCamera cannot be in two separate scenes.");
+        throw std::logic_error("VRCamera cannot be in two separate scenes.");
     else if (roots->nodes().size() == 1)
         setSceneManager(roots->nodes()[0]->component<SceneManager>());
     else
@@ -131,7 +148,7 @@ OculusVRCamera::findSceneManager()
 }
 
 void
-OculusVRCamera::setSceneManager(SceneManager::Ptr sceneManager)
+VRCamera::setSceneManager(SceneManager::Ptr sceneManager)
 {
     if (_sceneManager == sceneManager)
         return;
@@ -141,15 +158,15 @@ OculusVRCamera::setSceneManager(SceneManager::Ptr sceneManager)
     auto context = sceneManager->assets()->context();
 
     _renderBeginSlot = sceneManager->renderingBegin()->connect(std::bind(
-        &OculusVRCamera::updateCameraOrientation,
-        std::static_pointer_cast<OculusVRCamera>(shared_from_this())
+        &VRCamera::updateCameraOrientation,
+        std::static_pointer_cast<VRCamera>(shared_from_this())
     ), 1000.f);
 
-    _oculusImpl->initialize(_sceneManager);
+    _VRImpl->initialize(_sceneManager);
 }
 
 void
-OculusVRCamera::updateCameraOrientation()
+VRCamera::updateCameraOrientation()
 {
-    _oculusImpl->updateCameraOrientation(target());
+    _VRImpl->updateCameraOrientation(target());
 }

@@ -29,11 +29,11 @@ namespace minko
 {
     namespace component
     {
-        class OculusVRCamera :
+        class VRCamera :
             public AbstractComponent
         {
         public:
-            typedef std::shared_ptr<OculusVRCamera> Ptr;
+            typedef std::shared_ptr<VRCamera> Ptr;
 
         private:
             typedef std::shared_ptr<scene::Node>				NodePtr;
@@ -48,7 +48,7 @@ namespace minko
             Signal<NodePtr, NodePtr, NodePtr>::Slot             _removedSlot;
             Signal<SceneMgrPtr, uint, AbsTexturePtr>::Slot      _renderBeginSlot;
 
-            std::shared_ptr<oculus::OculusImpl>                 _oculusImpl;
+            std::shared_ptr<oculus::VRImpl>                     _VRImpl;
 
         public:
             inline static
@@ -59,7 +59,7 @@ namespace minko
                    float zFar   = 1000.0f,
                    void* window = nullptr)
             {
-                auto ptr = std::shared_ptr<OculusVRCamera>(new OculusVRCamera(
+                auto ptr = std::shared_ptr<VRCamera>(new VRCamera(
                     viewportWidth, viewportHeight, zNear, zFar
                 ));
 
@@ -79,13 +79,13 @@ namespace minko
             detected();
 
         public:
-            ~OculusVRCamera(); // temporary solution
+            ~VRCamera();
 
         private:
-            OculusVRCamera(int viewportWidth, int viewportHeight, float zNear, float zFar);
+            VRCamera(int viewportWidth, int viewportHeight, float zNear, float zFar);
 
             void
-            initializeOVRDevice(void* window);
+            initializeVRDevice(void* window);
 
             void
             initialize(int viewportWidth, int viewportHeight, float zNear, float zFar, void* window);

@@ -34,7 +34,7 @@ minko.plugin.vr = {}
 
 function minko.plugin.vr:enable()
 
-	configuration { "windows32 or windows64 or linux32 or linux64 or osx64 or html5" }
+	configuration { "windows32 or windows64 or linux32 or linux64 or osx64 or html5 or android or ios" }
 		defines { "MINKO_PLUGIN_VR" }
 		minko.plugin.links { "vr" }
 
@@ -45,6 +45,9 @@ function minko.plugin.vr:enable()
 	prelinkcommands {
 		minko.action.copy(minko.plugin.path("vr") .. "/asset"),
 	}
+
+	configuration { "android or ios" }
+		minko.plugin.enable { "sensors" }
 
 	configuration { "windows32 or windows64" }
 		links { "winmm", "setupapi", "ws2_32" }
