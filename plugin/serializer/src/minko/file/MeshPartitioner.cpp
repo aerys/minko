@@ -1139,19 +1139,37 @@ MeshPartitioner::buildGlobalIndex(PartitionInfo& partitionInfo)
         vertexOffset += localVertexCount;
     }
 
+    for (auto surface : surfaces)
+    {
+        if (_options.instanceSurfacePredicate(surface))
+            continue;
+
+        surface->geometry()->disposeIndexBufferData();
+        surface->geometry()->disposeVertexBufferData();
+    }
+
     return true;
 }
 
 bool
 MeshPartitioner::buildHalfEdges(PartitionInfo& partitionInfo)
 {
-    auto halfEdges = HalfEdgeCollection::create(partitionInfo.indices);
+    auto halfEdgeCollection = HalfEdgeCollection::create(partitionInfo.indices);
+
+    const auto& halfEdges = halfEdgeCollection->halfEdges();
 
     const auto numVertices = partitionInfo.vertices.size() / partitionInfo.vertexSize;
 
     partitionInfo.halfEdges.resize(numVertices);
 
-    for (auto halfEdge : halfEdges->halfEdges())
+    partitionInfo.halfEdgeReferences.resize(halfEdges.size());
+    std::copy(
+        halfEdges.begin(),
+        halfEdges.end(),
+        partitionInfo.halfEdgeReferences.begin()
+    );
+
+    for (auto halfEdge : halfEdges)
     {
         const auto index = halfEdge->startNodeId();
 

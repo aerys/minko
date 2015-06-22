@@ -29,9 +29,9 @@ HalfEdge::HalfEdge(unsigned int startNodeId,
     _endNodeId(endNodeId),
     _edgeId(edgeId),
     _marked(false),
-    _adjacent(nullptr),
-    _next(nullptr),
-    _prec(nullptr)
+    _adjacent(),
+    _next(),
+    _prec()
 {
 }
 
