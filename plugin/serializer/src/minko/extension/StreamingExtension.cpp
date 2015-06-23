@@ -494,6 +494,23 @@ StreamingExtension::deserializeStreamedTexture(unsigned short											metaData
         linkedAsset
     ))
     {
+        if (linkedAsset != nullptr)
+        {
+            const auto filename = linkedAsset->filename();
+
+            auto texture = std::static_pointer_cast<Texture>(_streamingOptions->streamedTextureFunction()(
+                filename,
+                nullptr
+            ));
+
+            if (texture != nullptr)
+            {
+                dependencies->registerReference(assetRef, texture);
+
+                assetLibrary->texture(filename, texture);
+            }
+        }
+
         return;
     }
 
