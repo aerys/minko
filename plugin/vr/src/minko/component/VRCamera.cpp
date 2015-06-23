@@ -59,6 +59,20 @@ VRCamera::~VRCamera()
 void
 VRCamera::updateViewport(int viewportWidth, int viewportHeight)
 {
+    _viewportWidth = viewportWidth;
+    _viewportHeight = viewportHeight;
+
+    auto aspectRatio = (float)(viewportWidth / 2) / (float)viewportHeight;  
+
+    if (_leftCameraNode)
+    {
+        _leftCameraNode->component<PerspectiveCamera>()->aspectRatio(aspectRatio);
+    }
+    if (_rightCameraNode)
+    {
+        _rightCameraNode->component<PerspectiveCamera>()->aspectRatio(aspectRatio);
+    }
+
     _VRImpl->updateViewport(viewportWidth, viewportHeight);
 }
 
@@ -92,8 +106,32 @@ VRCamera::initialize(int viewportWidth, int viewportHeight, float zNear, float z
     if (!detected())
         return;
 
+    // Initialize both eyes' renderers
+    _leftRenderer = Renderer::create();
+    _rightRenderer = Renderer::create();
+
+    _rightRenderer->clearBeforeRender(false);
+
+    _leftRenderer->viewport(
+        math::ivec4(
+            0,
+            0,
+            viewportWidth / 2,
+            viewportHeight
+        )
+    );
+
+    _rightRenderer->viewport(
+        math::ivec4(
+            viewportWidth / 2,
+            0,
+            viewportWidth / 2,
+            viewportHeight
+        )
+    );
+
     updateViewport(viewportWidth, viewportHeight);
-    initializeVRDevice(window);
+    _VRImpl->initializeVRDevice(_leftRenderer, _rightRenderer, window);
 }
 
 void
@@ -110,23 +148,56 @@ VRCamera::targetAdded(NodePtr target)
         findSceneManager();
     });
 
-    _VRImpl->initializeCameras(target);
-
     findSceneManager();
+
+    // Initialize both eyes' cameras
+
+    auto aspectRatio = (float)(_viewportWidth / 2) / _viewportHeight;
+
+    auto leftCamera = PerspectiveCamera::create(
+        aspectRatio,
+        atan(45),
+        _VRImpl->zNear(),
+        _VRImpl->zFar()
+    );
+
+    _leftCameraNode = scene::Node::create("cameraLeftEye")
+        ->addComponent(Transform::create())
+        ->addComponent(leftCamera)
+        ->addComponent(_leftRenderer);
+
+    target->addChild(_leftCameraNode);
+
+    auto rightCamera = PerspectiveCamera::create(
+        aspectRatio,
+        atan(45),
+        _VRImpl->zNear(),
+        _VRImpl->zFar()
+    );
+
+    _rightCameraNode = scene::Node::create("cameraRightEye")
+        ->addComponent(Transform::create(math::translate(math::vec3(.5f, 0, 0))))
+        ->addComponent(rightCamera)
+        ->addComponent(_rightRenderer);
+
+    target->addChild(_rightCameraNode);
 }
 
 void
 VRCamera::targetRemoved(NodePtr target)
 {
+    _leftCameraNode->removeComponent(_leftRenderer);
+    _rightCameraNode->removeComponent(_rightRenderer);
+
+    _leftCameraNode->removeComponent(_leftCameraNode->component<PerspectiveCamera>());
+    _rightCameraNode->removeComponent(_rightCameraNode->component<PerspectiveCamera>());
+
+    target->removeChild(_leftCameraNode);
+    target->removeChild(_rightCameraNode);
+
     _VRImpl->targetRemoved();
     _renderBeginSlot->disconnect();
     findSceneManager();
-}
-
-void
-VRCamera::initializeVRDevice(void* window)
-{
-    _VRImpl->initializeVRDevice(window);
 }
 
 void

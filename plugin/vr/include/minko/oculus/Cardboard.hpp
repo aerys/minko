@@ -34,40 +34,27 @@ namespace minko
         class Cardboard : public VRImpl
         {
         private:
-            scene::Node::Ptr                                    _target;
             std::shared_ptr<scene::Node>                        _ppScene;
             uint                                                _renderTargetWidth;
             uint                                                _renderTargetHeight;
             std::shared_ptr<render::Texture>                    _renderTarget;
             std::array<std::pair<math::vec2, math::vec2>, 2>    _uvScaleOffset;
-            float                                               _aspectRatio;
+
 #if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
             std::shared_ptr<sensors::Attitude>                  _attitude;
 #endif
-            std::shared_ptr<component::Renderer>                _leftRenderer;
-            std::shared_ptr<component::Renderer>                _rightRenderer;
-            std::shared_ptr<scene::Node>                        _leftCameraNode;
-            std::shared_ptr<scene::Node>                        _rightCameraNode;
-            Signal<std::shared_ptr<component::SceneManager>, uint, std::shared_ptr<render::AbstractTexture>>::Slot      _renderEndSlot;
-            std::shared_ptr<component::SceneManager>            _sceneManager;
+            
             float                                               _zNear;
             float                                               _zFar;
-            float                                               _viewportWidth;
-            float                                               _viewportHeight;
 
         public:
             typedef std::shared_ptr<Cardboard> Ptr;
-
-            ~Cardboard();
 
             void
             initialize(std::shared_ptr<component::SceneManager> sceneManager);
 
             void
-            initializeCameras(std::shared_ptr<scene::Node> target);
-
-            void
-            initializeVRDevice(void* window = nullptr);
+            initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std::shared_ptr<component::Renderer> rightRenderer, void* window = nullptr);
 
             void
             targetRemoved();
@@ -78,23 +65,20 @@ namespace minko
             void
             updateViewport(int viewportWidth, int viewportHeight);
 
-            inline
             float
-            aspectRatio() const
-            {
-                return _aspectRatio;
-            }
+            getLeftEyeFov();
 
-            inline
             float
-            zNear() const
+            getRightEyeFov();
+
+            float
+            zNear()
             {
                 return _zNear;
             }
 
-            inline
             float
-            zFar() const
+            zFar()
             {
                 return _zFar;
             }

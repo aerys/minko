@@ -43,18 +43,15 @@ namespace minko
             uint                                                _renderTargetHeight;
             std::shared_ptr<render::Texture>                    _renderTarget;
             std::array<std::pair<math::vec2, math::vec2>, 2>    _uvScaleOffset;
-            float                                               _aspectRatio;
-            std::shared_ptr<component::Renderer>                _leftRenderer;
-            std::shared_ptr<component::Renderer>                _rightRenderer;
-            std::shared_ptr<scene::Node>                        _leftCameraNode;
-            std::shared_ptr<scene::Node>                        _rightCameraNode;
             Signal<std::shared_ptr<component::SceneManager>, uint, std::shared_ptr<render::AbstractTexture>>::Slot      _renderEndSlot;
-            std::shared_ptr<component::SceneManager>            _sceneManager;
             float                                               _zNear;
             float                                               _zFar;
 
+            std::shared_ptr<component::Renderer>                _leftRenderer;
+            std::shared_ptr<component::Renderer>                _rightRenderer;
+
             void
-            initializePostProcessingRenderer();
+            initializePostProcessingRenderer(std::shared_ptr<component::SceneManager> sceneManager);
 
             void
             renderEndHandler(
@@ -70,10 +67,7 @@ namespace minko
             initialize(std::shared_ptr<component::SceneManager> sceneManager);
 
             void
-            initializeCameras(std::shared_ptr<scene::Node> target);
-
-            void
-            initializeVRDevice(void* window = nullptr);
+            initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std::shared_ptr<component::Renderer> rightRenderer, void* window = nullptr);
 
             void
             targetRemoved();
@@ -87,6 +81,12 @@ namespace minko
             void
             updateViewport(int viewportWidth, int viewportHeight);
 
+            float
+            getLeftEyeFov();
+
+            float
+            getRightEyeFov();
+
             inline
             float
             aspectRatio() const
@@ -96,14 +96,14 @@ namespace minko
 
             inline
             float
-            zNear() const
+            zNear()
             {
                 return _zNear;
             }
 
             inline
             float
-            zFar() const
+            zFar()
             {
                 return _zFar;
             }

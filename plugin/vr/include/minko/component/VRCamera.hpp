@@ -50,6 +50,14 @@ namespace minko
 
             std::shared_ptr<oculus::VRImpl>                     _VRImpl;
 
+            std::shared_ptr<component::Renderer>                _leftRenderer;
+            std::shared_ptr<component::Renderer>                _rightRenderer;
+            std::shared_ptr<scene::Node>                        _leftCameraNode;
+            std::shared_ptr<scene::Node>                        _rightCameraNode;
+
+            float                                               _viewportWidth;
+            float                                               _viewportHeight;
+
         public:
             inline static
             Ptr
@@ -83,9 +91,6 @@ namespace minko
 
         private:
             VRCamera(int viewportWidth, int viewportHeight, float zNear, float zFar);
-
-            void
-            initializeVRDevice(void* window);
 
             void
             initialize(int viewportWidth, int viewportHeight, float zNear, float zFar, void* window);

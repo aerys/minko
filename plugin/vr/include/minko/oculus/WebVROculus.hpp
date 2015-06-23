@@ -33,15 +33,10 @@ namespace minko
 
         private:
             std::shared_ptr<file::AssetLibrary>     _assetLibrary;
-            std::shared_ptr<component::Renderer>    _leftRenderer;
-            std::shared_ptr<component::Renderer>    _rightRenderer;
 
             uint                                    _renderTargetWidth;
             uint                                    _renderTargetHeight;
 
-            std::shared_ptr<scene::Node>            _leftCameraNode;
-            std::shared_ptr<scene::Node>            _rightCameraNode;
-            float                                   _aspectRatio;
             float                                   _zNear;
             float                                   _zFar;
             bool                                    _initialized;
@@ -51,10 +46,7 @@ namespace minko
             initialize(std::shared_ptr<component::SceneManager> sceneManager);
 
             void
-            initializeVRDevice(void* window = nullptr);
-
-            void
-            initializeCameras(std::shared_ptr<scene::Node> target);
+            initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std::shared_ptr<component::Renderer> rightRenderer, void* window = nullptr);
 
             void
             targetRemoved();
@@ -62,11 +54,11 @@ namespace minko
             std::array<std::shared_ptr<geometry::Geometry>, 2>
             createDistortionGeometry(std::shared_ptr<render::AbstractContext> context);
 
-            EyeFOV
-            getDefaultLeftEyeFov();
+            float
+            getLeftEyeFov();
 
-            EyeFOV
-            getDefaultRightEyeFov();
+            float
+            getRightEyeFov();
 
             void
             updateCameraOrientation(std::shared_ptr<scene::Node> target);
@@ -77,6 +69,20 @@ namespace minko
             static
             bool
             detected();
+
+            inline
+            float
+            zNear()
+            {
+                return _zNear;
+            }
+
+            inline
+            float
+            zFar()
+            {
+                return _zFar;
+            }
 
             inline static
             Ptr

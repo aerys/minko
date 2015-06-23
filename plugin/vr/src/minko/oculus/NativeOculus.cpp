@@ -50,12 +50,7 @@ NativeOculus::NativeOculus(int viewportWidth, int viewportHeight, float zNear, f
     _ppRenderer(Renderer::create()),
     _zNear(zNear),
     _zFar(zFar),
-    _aspectRatio((float)viewportWidth / (float)viewportHeight),
-    _leftRenderer(nullptr),
-    _rightRenderer(nullptr),
-    _renderEndSlot(nullptr),
-    _leftCameraNode(nullptr),
-    _rightCameraNode(nullptr)
+    _renderEndSlot(nullptr)
 {
     _uvScaleOffset[0].first = math::vec2();
     _uvScaleOffset[0].second = math::vec2();
@@ -66,8 +61,6 @@ NativeOculus::NativeOculus(int viewportWidth, int viewportHeight, float zNear, f
 void
 NativeOculus::initialize(std::shared_ptr<component::SceneManager> sceneManager)
 {
-    _sceneManager = sceneManager;
-
     _renderEndSlot = sceneManager->renderingEnd()->connect(std::bind(
         &NativeOculus::renderEndHandler,
         std::static_pointer_cast<NativeOculus>(shared_from_this()),
@@ -77,7 +70,7 @@ NativeOculus::initialize(std::shared_ptr<component::SceneManager> sceneManager)
         )
     );
 
-    initializePostProcessingRenderer();
+    initializePostProcessingRenderer(std::shared_ptr<component::SceneManager> sceneManager);
 }
 
 bool
@@ -86,7 +79,7 @@ NativeOculus::detected()
     if (_hmd)
         return true;
 
-     ovr_Initialize();
+    ovr_Initialize();
 
     _hmd = ovrHmd_Create(0);
 
@@ -94,13 +87,10 @@ NativeOculus::detected()
 }
 
 void
-NativeOculus::initializeVRDevice(void* window)
+NativeOculus::initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std::shared_ptr<component::Renderer> rightRenderer, void* window)
 {
-    _leftRenderer = Renderer::create();
-    _rightRenderer = Renderer::create();
-
-    // Create renderer for each eye
-    _rightRenderer->clearBeforeRender(false);
+    _leftRenderer = leftRenderer;
+    _rightRenderer = rightRenderer;
 
     ovr_Initialize();
 
@@ -139,26 +129,6 @@ NativeOculus::initializeVRDevice(void* window)
     eyeRenderViewport[1].Pos = OVR::Vector2i((renderTargetSize.w + 1) / 2, 0);
     eyeRenderViewport[1].Size = eyeRenderViewport[0].Size;
 
-    // create 1 renderer/eye and init. their respective viewport
-    
-    _leftRenderer->viewport(
-		math::ivec4(
-			eyeRenderViewport[0].Pos.x,
-			eyeRenderViewport[0].Pos.y,
-			eyeRenderViewport[0].Size.w,
-			eyeRenderViewport[0].Size.h
-		)
-    );
-
-   
-    _rightRenderer->viewport(
-		math::ivec4(
-			eyeRenderViewport[1].Pos.x,
-			eyeRenderViewport[1].Pos.y,
-			eyeRenderViewport[1].Size.w,
-			eyeRenderViewport[1].Size.h
-		)
-    );
 
     ovrHmd_SetEnabledCaps(_hmd, ovrHmdCap_LowPersistence | ovrHmdCap_DynamicPrediction);
 
@@ -192,43 +162,9 @@ NativeOculus::initializeVRDevice(void* window)
 }
 
 void
-NativeOculus::initializeCameras(scene::Node::Ptr target)
+NativeOculus::initializePostProcessingRenderer(std::shared_ptr<component::SceneManager> sceneManager)
 {
-    auto aspectRatio = (float)_renderTargetWidth / (float)_renderTargetHeight;
-
-    auto leftCamera = PerspectiveCamera::create(
-        aspectRatio,
-        atan(_hmd->DefaultEyeFov[0].LeftTan + _hmd->DefaultEyeFov[0].RightTan),
-        _zNear,
-        _zFar
-    );
-
-    _leftCameraNode = scene::Node::create("oculusLeftEye")
-        ->addComponent(Transform::create())
-        ->addComponent(leftCamera)
-        ->addComponent(_leftRenderer);
-
-    target->addChild(_leftCameraNode);
-
-    auto rightCamera = PerspectiveCamera::create(
-        aspectRatio,
-        atan(_hmd->DefaultEyeFov[1].LeftTan + _hmd->DefaultEyeFov[1].RightTan),
-        _zNear,
-        _zFar
-        );
-
-    _rightCameraNode = scene::Node::create("oculusRightEye")
-        ->addComponent(Transform::create())
-        ->addComponent(rightCamera)
-        ->addComponent(_rightRenderer);
-
-    target->addChild(_rightCameraNode);
-}
-
-void
-NativeOculus::initializePostProcessingRenderer()
-{
-    auto context = _sceneManager->assets()->context();
+    auto context = sceneManager->assets()->context();
 
     _renderTarget = render::Texture::create(context, _renderTargetWidth, _renderTargetHeight, false, true);
     _renderTarget->upload();
@@ -236,13 +172,13 @@ NativeOculus::initializePostProcessingRenderer()
 	_rightRenderer->renderTarget(_renderTarget);
 
     auto geometries = createDistortionGeometry(context);
-    auto loader = file::Loader::create(_sceneManager->assets()->loader());
+    auto loader = file::Loader::create(sceneManager->assets()->loader());
 
     loader->queue("effect/OculusVR/OculusVR.effect");
 
     auto complete = loader->complete()->connect([&](file::Loader::Ptr loader)
     {
-        auto effect = _sceneManager->assets()->effect("effect/OculusVR/OculusVR.effect");
+        auto effect = sceneManager->assets()->effect("effect/OculusVR/OculusVR.effect");
 
         auto materialLeftEye = material::Material::create();
         materialLeftEye->data()
@@ -279,13 +215,7 @@ NativeOculus::targetRemoved()
 void
 NativeOculus::updateViewport(int viewportWidth, int viewportHeight)
 {
-    _aspectRatio = (float)viewportWidth / (float)viewportHeight;
     _ppRenderer->viewport(math::ivec4(0, 0, viewportWidth, viewportHeight));
-
-    /*if (_leftCameraNode)
-    _leftCameraNode->component<PerspectiveCamera>()->aspectRatio(_aspectRatio);
-    if (_rightCameraNode)
-    _rightCameraNode->component<PerspectiveCamera>()->aspectRatio(_aspectRatio);*/
 }
 
 std::array<std::shared_ptr<geometry::Geometry>, 2>
@@ -342,6 +272,18 @@ NativeOculus::createDistortionGeometry(std::shared_ptr<render::AbstractContext> 
     }
 
     return geometries;
+}
+
+float
+NativeOculus::getLeftEyeFov()
+{
+    return atan(_hmd->DefaultEyeFov[0].LeftTan + _hmd->DefaultEyeFov[0].RightTan);
+}
+
+float
+NativeOculus::getRightEyeFov()
+{
+    return atan(_hmd->DefaultEyeFov[1].LeftTan + _hmd->DefaultEyeFov[1].RightTan);
 }
 
 void

@@ -39,29 +39,15 @@ using namespace minko::math;
 using namespace minko::oculus;
 
 WebVROculus::WebVROculus(int viewportWidth, int viewportHeight, float zNear, float zFar) :
-_aspectRatio((float)viewportWidth / (float)viewportHeight),
-_zNear(zNear),
-_zFar(zFar),
-_leftRenderer(nullptr),
-_rightRenderer(nullptr),
-_leftCameraNode(nullptr),
-_rightCameraNode(nullptr),
-_initialized(false)
+    _zNear(zNear),
+    _zFar(zFar),
+    _initialized(false)
 {
 }
 
 void
-WebVROculus::initializeVRDevice(void* window)
+WebVROculus::initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std::shared_ptr<component::Renderer> rightRenderer, void* window)
 {
-    _leftRenderer = Renderer::create();
-    _rightRenderer = Renderer::create();
-
-    // Create renderer for each eye
-    _rightRenderer->clearBeforeRender(false);
-
-    _leftRenderer->viewport(math::ivec4(0, 0, 960, 1080));
-    _rightRenderer->viewport(math::ivec4(960, 0, 960, 1080));
-
     std::string eval = "";
 
     eval += "function vrDeviceCallback(vrdevs) {                             \n";
@@ -104,46 +90,17 @@ WebVROculus::initializeVRDevice(void* window)
 }
 
 void
-WebVROculus::initializeCameras(scene::Node::Ptr target)
-{
-    std::cout << "Aspect ratio: " << _aspectRatio << std::endl;
-
-    auto leftCamera = PerspectiveCamera::create(
-        _aspectRatio,
-        //0.78f,
-        1.91f,
-        _zNear,
-        _zFar
-    );
-
-    _leftCameraNode = scene::Node::create("oculusLeftEye")
-        ->addComponent(Transform::create())
-        ->addComponent(leftCamera)
-        ->addComponent(_leftRenderer);
-    target->addChild(_leftCameraNode);
-
-    auto rightCamera = PerspectiveCamera::create(
-        _aspectRatio,
-        //0.78f,
-        1.91f,
-        _zNear,
-        _zFar
-    );
-
-    _rightCameraNode = scene::Node::create("oculusRightEye")
-        ->addComponent(Transform::create())
-        ->addComponent(rightCamera)
-        ->addComponent(_rightRenderer);
-    target->addChild(_rightCameraNode);
-}
-
-void
 WebVROculus::targetRemoved()
 {
 }
 
 void
 WebVROculus::initialize(std::shared_ptr<component::SceneManager> sceneManager)
+{
+}
+
+void
+WebVROculus::updateViewport(int viewportWidth, int viewportHeight)
 {
 }
 
@@ -154,6 +111,18 @@ WebVROculus::detected()
     bool result = emscripten_run_script_int(eval.c_str()) != 0;
 
     return result;
+}
+
+float
+WebVROculus::getLeftEyeFov()
+{
+    return 1.91f;
+}
+
+float
+WebVROculus::getRightEyeFov()
+{
+    return 1.91f;
 }
 
 void
@@ -204,10 +173,4 @@ WebVROculus::updateCameraOrientation(scene::Node::Ptr target)
 
     	target->component<Transform>()->matrix(math::translate(math::vec3(position[0], position[1], position[2])) * target->component<Transform>()->matrix());
 	}
-}
-
-void
-WebVROculus::updateViewport(int viewportWidth, int viewportHeight)
-{
-    _aspectRatio = ((float)viewportWidth / 2.f) / (float)viewportHeight;
 }

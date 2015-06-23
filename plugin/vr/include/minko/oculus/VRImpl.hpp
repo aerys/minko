@@ -36,11 +36,7 @@ namespace minko
 
             virtual
             void
-            initializeVRDevice(void* window) = 0;
-
-            virtual
-            void
-            initializeCameras(std::shared_ptr<scene::Node> target) = 0;
+            initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std::shared_ptr<component::Renderer> rightRenderer, void* window = nullptr) = 0;
 
             virtual
             void
@@ -53,6 +49,22 @@ namespace minko
             virtual
             void
             updateCameraOrientation(std::shared_ptr<scene::Node> target) = 0;
+
+            virtual
+            float
+            getLeftEyeFov() = 0;
+
+            virtual
+            float
+            getRightEyeFov() = 0;
+
+            virtual
+            float
+            zNear() = 0;
+
+            virtual
+            float
+            zFar() = 0;
         };
     }
 }
