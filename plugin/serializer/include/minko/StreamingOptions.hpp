@@ -54,9 +54,11 @@ namespace minko
         typedef std::shared_ptr<scene::Node>                    NodePtr;
         typedef std::shared_ptr<file::AbstractWriter<NodePtr>>  SceneWriter;
 
-        typedef std::function<GeometryPtr(GeometryPtr)>         POPGeometryFunction;
         typedef std::function<
-            AbstractTexturePtr(AbstractTexturePtr)
+            GeometryPtr(const std::string&, GeometryPtr)
+        >                                                       POPGeometryFunction;
+        typedef std::function<
+            AbstractTexturePtr(const std::string&, AbstractTexturePtr)
         >                                                       StreamedTextureFunction;
 
     public:

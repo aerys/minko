@@ -63,11 +63,11 @@ POPGeometryParser::parsed(const std::string&                 filename,
 
     if (_geometry == nullptr)
     {
-        LOG_ERROR("failed to create texture from " << filename);
+        LOG_ERROR("failed to create geometry from " << filename);
 
         _error->execute(
             shared_from_this(),
-            Error("StreamedTextureParsingError", "streamed texture parsing error")
+            Error("POPGeometryParsingError", "geometry parsing error")
         );
     }
 }
@@ -187,7 +187,10 @@ POPGeometryParser::createPOPGeometry(AssetLibrary::Ptr      assetLibrary,
 
     if (streamingOptions()->popGeometryFunction())
     {
-        popGeometry = streamingOptions()->popGeometryFunction()(popGeometry);
+        popGeometry = streamingOptions()->popGeometryFunction()(
+            fileName,
+            popGeometry
+        );
     }
 
     assetLibrary->geometry(fileName, popGeometry);

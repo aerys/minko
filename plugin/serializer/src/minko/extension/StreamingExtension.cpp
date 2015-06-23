@@ -497,6 +497,8 @@ StreamingExtension::deserializeStreamedTexture(unsigned short											metaData
         return;
     }
 
+    const auto filename = File::removePrefixPathFromFilename(linkedAsset->filename());
+
     auto textureData = Provider::create();
 
     auto parser = StreamedTextureParser::create(textureData);
@@ -510,26 +512,10 @@ StreamingExtension::deserializeStreamedTexture(unsigned short											metaData
     }
 
     static auto textureId = 0u;
-    static const auto extensionName = "texture";
-
-    // TODO serialize texture name
-    const auto defaultName = std::to_string(textureId++) + "." + extensionName;
-
-    const auto filenameLastSeparatorPosition = defaultName.find_last_of("/");
-    const auto filenameWithExtension = defaultName.substr(
-        filenameLastSeparatorPosition == std::string::npos ? 0 : filenameLastSeparatorPosition + 1
-    );
-    const auto filename = filenameWithExtension.substr(0, filenameWithExtension.find_last_of("."));
-
-    auto uniqueFilename = filenameWithExtension;
-    while (assetLibrary->texture(uniqueFilename))
-    {
-        uniqueFilename = filename + std::to_string(textureId++) + "." + extensionName;
-    }
 
     parser->parse(
-        uniqueFilename,
-        uniqueFilename,
+        filename,
+        filename,
         options,
         streamedAssetHeaderData,
         assetLibrary
@@ -537,12 +523,7 @@ StreamingExtension::deserializeStreamedTexture(unsigned short											metaData
 
     auto texture = AbstractTexture::Ptr();
 
-    texture = assetLibrary->texture(uniqueFilename);
-
-    if (texture == nullptr)
-    {
-        texture = assetLibrary->cubeTexture(uniqueFilename);
-    }
+    texture = assetLibrary->texture(filename);
 
     dependencies->registerReference(assetRef, texture);
 

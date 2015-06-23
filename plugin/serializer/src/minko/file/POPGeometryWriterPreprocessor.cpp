@@ -54,7 +54,9 @@ POPGeometryWriterPreprocessor::process(Node::Ptr& node, AssetLibrary::Ptr assetL
     //   scene object descriptors specifying type of technique to apply
 
     // by default whole scene is streamed as a progressive ordered mesh
-    node->addComponent(POPGeometryLodScheduler::create());
+
+    if (!node->hasComponent<POPGeometryLodScheduler>())
+        node->addComponent(POPGeometryLodScheduler::create());
 
     auto animatedNodes = collectAnimatedNodes(node);
 
