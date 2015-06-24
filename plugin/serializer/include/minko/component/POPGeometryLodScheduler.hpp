@@ -39,11 +39,14 @@ namespace minko
             typedef std::shared_ptr<MasterLodScheduler>         MasterLodSchedulerPtr;
             typedef std::shared_ptr<Surface>                    SurfacePtr;
 
+            typedef std::shared_ptr<math::Box>                  BoxPtr;
+
             typedef std::shared_ptr<geometry::Geometry>         GeometryPtr;
 
             struct SurfaceInfo
             {
                 SurfacePtr  surface;
+                BoxPtr      box;
 
                 int         activeLod;
 
@@ -51,6 +54,7 @@ namespace minko
 
                 SurfaceInfo(SurfacePtr surface) :
                     surface(surface),
+                    box(),
                     activeLod(-1),
                     requiredPrecisionLevel(0)
                 {
