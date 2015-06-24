@@ -192,6 +192,9 @@ POPGeometryWriter::buildLodData(std::map<int, LodData>& lodData,
     auto partitioningDepth = 0;
     auto partitioningMaxDepth = 0;
 
+    const auto hasLodInfo = geometry->data()->hasProperty("availableLods");
+    const auto hasBoundInfo = geometry->data()->hasProperty("minBound") && geometry->data()->hasProperty("maxBound");
+
     if (partitioningIsActive)
     {
         partitioningMaxDepth = geometry->data()->get<int>("partitioningMaxDepth");
@@ -199,6 +202,11 @@ POPGeometryWriter::buildLodData(std::map<int, LodData>& lodData,
 
         minBound = geometry->data()->get<math::vec3>("partitioningMinBound");
         maxBound = geometry->data()->get<math::vec3>("partitioningMaxBound");
+    }
+    else if (hasBoundInfo)
+    {
+        minBound = geometry->data()->get<math::vec3>("minBound");
+        maxBound = geometry->data()->get<math::vec3>("maxBound");
     }
     else
     {
@@ -217,7 +225,19 @@ POPGeometryWriter::buildLodData(std::map<int, LodData>& lodData,
 
     auto levelToPrecisionLevelMap = std::unordered_map<int, int>();
 
-    levelToPrecisionLevelMap.insert(std::make_pair(_fullPrecisionLevel, _fullPrecisionLevel));
+    if (!hasLodInfo)
+    {
+        levelToPrecisionLevelMap.insert(std::make_pair(_fullPrecisionLevel, _fullPrecisionLevel));
+    }
+    else
+    {
+        const auto availableLods = geometry->data()->get<std::map<int, ProgressiveOrderedMeshLodInfo>>(
+            "availableLods"
+        );
+
+        for (const auto& availableLod : availableLods)
+            levelToPrecisionLevelMap.emplace(availableLod.second._level,  availableLod.second._precisionLevel);
+    }
 
     _minBound = minBound;
     _maxBound = maxBound;
@@ -236,7 +256,10 @@ POPGeometryWriter::buildLodData(std::map<int, LodData>& lodData,
         auto precisionLevel = std::max(level - partitioningDepth + partitioningMaxDepth + precisionLevelBias,
                                        minLevel);
 
-        levelToPrecisionLevelMap.insert(std::make_pair(level, precisionLevel));
+        if (!hasLodInfo)
+        {
+            levelToPrecisionLevelMap.insert(std::make_pair(level, precisionLevel));
+        }
 
         for (auto i = 0; i < indices.size(); i += 3)
         {

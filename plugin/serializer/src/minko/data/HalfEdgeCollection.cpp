@@ -46,6 +46,10 @@ HalfEdgeCollection::initialize()
         HalfEdgePtr he2 = HalfEdge::create(t2, t3, id++);
         HalfEdgePtr he3 = HalfEdge::create(t3, t1, id++);
 
+        _halfEdges.push_back(he1);
+        _halfEdges.push_back(he2);
+        _halfEdges.push_back(he3);
+
         HalfEdgePtr halfEdges [3] = {he1, he2, he3};
 
         for (int edgeId = 0; edgeId < 3; ++edgeId)
@@ -75,9 +79,6 @@ HalfEdgeCollection::initialize()
             adjacents[edgeId]->second->adjacent(halfEdges[edgeId]);
         }
     }
-
-    for (const auto& halfEdge : map)
-        _halfEdges.push_back(halfEdge.second);
 
     //HalfEdgeMap unmarked(map.begin(), map.end());
     //computeList(unmarked);

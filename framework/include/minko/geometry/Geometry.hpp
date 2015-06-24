@@ -131,9 +131,13 @@ namespace minko
 			indices(std::shared_ptr<render::IndexBuffer> indices)
 			{
 				_indexBuffer = indices;
-				_data->set("indices", indices->id());
-                _data->set("firstIndex", 0u);
-                _data->set("numIndices", indices->numIndices());
+
+                if (indices->isReady())
+                {
+				    _data->set("indices", indices->id());
+                    _data->set("firstIndex", 0u);
+                    _data->set("numIndices", indices->numIndices());
+                }
 			}
 
 			inline
