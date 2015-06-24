@@ -17,27 +17,26 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "SDL.h"
+#include "jni.h"
+
 #include "minko/Common.hpp"
 #include "minko/MinkoSDL.hpp"
 #include "android/AndroidAttitude.hpp"
 
-#include "SDL.h"
-
-#include <jni.h>
-
 using namespace minko;
 using namespace android::sensors;
 
+// Static fields
 math::mat4 AndroidAttitude::rotationMatrixValue;
 math::quat AndroidAttitude::quaternionValue;
-bool AndroidAttitude::magnetDown;
 std::mutex AndroidAttitude::rotationMatrixMutex;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-JNIEXPORT void JNICALL Java_minko_plugin_sensors_AndroidAttitude_minkoNativeOnAttitudeEvent(JNIEnv* env, jobject obj, jfloatArray rotationMatrix, jfloatArray quaternion, jboolean magnet)
+JNIEXPORT void JNICALL Java_minko_plugin_sensors_AndroidAttitude_minkoNativeOnAttitudeEvent(JNIEnv* env, jobject obj, jfloatArray rotationMatrix, jfloatArray quaternion)
 {
     jfloat* rotationMatrixFloat = env->GetFloatArrayElements(rotationMatrix, 0);
     jfloat* quaternionFloat = env->GetFloatArrayElements(quaternion, 0);
@@ -65,8 +64,6 @@ JNIEXPORT void JNICALL Java_minko_plugin_sensors_AndroidAttitude_minkoNativeOnAt
 
     env->ReleaseFloatArrayElements(rotationMatrix, rotationMatrixFloat, 0);
     env->ReleaseFloatArrayElements(quaternion, quaternionFloat, 0);
-
-    AndroidAttitude::magnetDown = magnet;
 }
 
 /* Ends C function definitions when using C++ */
@@ -135,11 +132,10 @@ AndroidAttitude::stopTracking()
 const math::mat4&
 AndroidAttitude::rotationMatrix()
 {
-    auto env = (JNIEnv*)SDL_AndroidGetJNIEnv();
-    
     auto worldToDevice = rotationMatrixValue * _worldToInertialReferenceFrame;
+    auto worldRotationMatrix = _deviceToDisplay * worldToDevice;
 
-    return _deviceToDisplay * worldToDevice;
+    return worldRotationMatrix;
 }
 
 const math::quat&

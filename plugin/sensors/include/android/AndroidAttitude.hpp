@@ -66,7 +66,6 @@ namespace minko
                 static math::mat4 rotationMatrixValue;
                 static math::quat quaternionValue;
                 static std::mutex rotationMatrixMutex;
-                static bool magnetDown;
 
             private:
 
