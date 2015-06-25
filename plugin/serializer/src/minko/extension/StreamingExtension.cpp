@@ -48,6 +48,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/file/StreamedTextureParser.hpp"
 #include "minko/file/StreamedTextureWriter.hpp"
 #include "minko/file/StreamedTextureWriterPreprocessor.hpp"
+#include "minko/file/SceneTreeFlattener.hpp"
 #include "minko/file/WriterOptions.hpp"
 #include "minko/geometry/Bone.hpp"
 #include "minko/geometry/Skin.hpp"
@@ -112,104 +113,6 @@ StreamingExtension::bind()
 }
 
 void
-StreamingExtension::initializeForWriting(StreamingOptions::Ptr          streamingOptions,
-AbstractWriter<Node::Ptr>::Ptr writer)
-{
-    this->streamingOptions(streamingOptions);
-
-    if (_streamingOptions->geometryStreamingIsActive())
-    {
-        file::Dependency::setGeometryFunction(std::bind(
-            &StreamingExtension::serializePOPGeometry,
-            std::static_pointer_cast<StreamingExtension>(shared_from_this()),
-            std::placeholders::_1,
-            std::placeholders::_2,
-            std::placeholders::_3,
-            std::placeholders::_4,
-            std::placeholders::_5,
-            std::placeholders::_6,
-            std::placeholders::_7),
-            [](Geometry::Ptr geometry) -> bool
-            {
-                return
-                    geometry->data()->hasProperty("type") &&
-                    geometry->data()->get<std::string>("type") == "pop";
-            },
-            11
-        );
-
-        if (writer != nullptr)
-        {
-            auto meshPartitionerFlags = MeshPartitioner::Options::none;
-
-            if (_streamingOptions->mergeSurfacesOnPartitioning())
-                meshPartitionerFlags |= MeshPartitioner::Options::mergeSurfaces;
-
-            if (_streamingOptions->useSharedClusterHierarchyOnPartitioning())
-                meshPartitionerFlags |= MeshPartitioner::Options::uniformizeSize;
-
-            if (_streamingOptions->applyCrackFreePolicyOnPartitioning())
-                meshPartitionerFlags |= MeshPartitioner::Options::applyCrackFreePolicy;
-
-            auto meshPartitionerOptions = MeshPartitioner::Options();
-            meshPartitionerOptions.flags = meshPartitionerFlags;
-
-            meshPartitionerOptions.nodeFilterFunction = [](Node::Ptr node) -> bool
-            {
-                auto surfaces = node->components<Surface>();
-
-                if (surfaces.empty())
-                    return false;
-
-                for (auto surface : surfaces)
-                {
-                    if (surface->geometry()->data()->hasProperty("type") &&
-                        surface->geometry()->data()->get<std::string>("type") == "pop")
-                        return true;
-                }
-
-                return false;
-            };
-
-            writer
-                ->registerPreprocessor(POPGeometryWriterPreprocessor::create())
-                ->registerPreprocessor(MeshPartitioner::create(
-                    meshPartitionerOptions,
-                    streamingOptions
-                ));
-        }
-    }
-    
-
-    if (_streamingOptions->textureStreamingIsActive())
-    {
-        file::Dependency::setTextureFunction(std::bind(
-            &StreamingExtension::serializeStreamedTexture,
-            std::static_pointer_cast<StreamingExtension>(shared_from_this()),
-            std::placeholders::_1,
-            std::placeholders::_2,
-            std::placeholders::_3,
-            std::placeholders::_4,
-            std::placeholders::_5,
-            std::placeholders::_6
-        ));
-
-        if (writer != nullptr)
-        {
-            auto streamedTextureWriterPreprocessor = StreamedTextureWriterPreprocessor::create();
-            auto streamedTextureWriterPreprocessorOptions = StreamedTextureWriterPreprocessor::Options();
-
-            streamedTextureWriterPreprocessorOptions.flags =
-                StreamedTextureWriterPreprocessor::Options::computeVertexColor;
-
-            streamedTextureWriterPreprocessor->options(streamedTextureWriterPreprocessorOptions);
-
-            writer->registerPreprocessor(streamedTextureWriterPreprocessor);
-        }
-    }
-}
-
-void
 StreamingExtension::initialize(StreamingOptions::Ptr streamingOptions)
 {
     this->streamingOptions(streamingOptions);
@@ -230,6 +133,25 @@ StreamingExtension::initialize(StreamingOptions::Ptr streamingOptions)
             std::placeholders::_7,
             std::placeholders::_8)
         );
+
+        file::Dependency::setGeometryFunction(std::bind(
+            &StreamingExtension::serializePOPGeometry,
+            std::static_pointer_cast<StreamingExtension>(shared_from_this()),
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3,
+            std::placeholders::_4,
+            std::placeholders::_5,
+            std::placeholders::_6,
+            std::placeholders::_7),
+            [](Geometry::Ptr geometry) -> bool
+            {
+                return
+                    geometry->data()->hasProperty("type") &&
+                    geometry->data()->get<std::string>("type") == "pop";
+            },
+            11
+        );
     }
 
     if (streamingOptions->textureStreamingIsActive())
@@ -249,6 +171,17 @@ StreamingExtension::initialize(StreamingOptions::Ptr streamingOptions)
             	std::placeholders::_8
             )
         );
+
+        file::Dependency::setTextureFunction(std::bind(
+            &StreamingExtension::serializeStreamedTexture,
+            std::static_pointer_cast<StreamingExtension>(shared_from_this()),
+            std::placeholders::_1,
+            std::placeholders::_2,
+            std::placeholders::_3,
+            std::placeholders::_4,
+            std::placeholders::_5,
+            std::placeholders::_6
+        ));
     }
 }
 
@@ -561,8 +494,27 @@ StreamingExtension::deserializeStreamedTexture(unsigned short											metaData
         linkedAsset
     ))
     {
+        if (linkedAsset != nullptr)
+        {
+            const auto filename = linkedAsset->filename();
+
+            auto texture = std::static_pointer_cast<Texture>(_streamingOptions->streamedTextureFunction()(
+                filename,
+                nullptr
+            ));
+
+            if (texture != nullptr)
+            {
+                dependencies->registerReference(assetRef, texture);
+
+                assetLibrary->texture(filename, texture);
+            }
+        }
+
         return;
     }
+
+    const auto filename = File::removePrefixPathFromFilename(linkedAsset->filename());
 
     auto textureData = Provider::create();
 
@@ -577,26 +529,10 @@ StreamingExtension::deserializeStreamedTexture(unsigned short											metaData
     }
 
     static auto textureId = 0u;
-    static const auto extensionName = "texture";
-
-    // TODO serialize texture name
-    const auto defaultName = std::to_string(textureId++) + "." + extensionName;
-
-    const auto filenameLastSeparatorPosition = defaultName.find_last_of("/");
-    const auto filenameWithExtension = defaultName.substr(
-        filenameLastSeparatorPosition == std::string::npos ? 0 : filenameLastSeparatorPosition + 1
-    );
-    const auto filename = filenameWithExtension.substr(0, filenameWithExtension.find_last_of("."));
-
-    auto uniqueFilename = filenameWithExtension;
-    while (assetLibrary->texture(uniqueFilename))
-    {
-        uniqueFilename = filename + std::to_string(textureId++) + "." + extensionName;
-    }
 
     parser->parse(
-        uniqueFilename,
-        uniqueFilename,
+        filename,
+        filename,
         options,
         streamedAssetHeaderData,
         assetLibrary
@@ -604,12 +540,7 @@ StreamingExtension::deserializeStreamedTexture(unsigned short											metaData
 
     auto texture = AbstractTexture::Ptr();
 
-    texture = assetLibrary->texture(uniqueFilename);
-
-    if (texture == nullptr)
-    {
-        texture = assetLibrary->cubeTexture(uniqueFilename);
-    }
+    texture = assetLibrary->texture(filename);
 
     dependencies->registerReference(assetRef, texture);
 

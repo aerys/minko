@@ -17,17 +17,17 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "SDL.h"
+#include "jni.h"
+
 #include "minko/Common.hpp"
 #include "minko/MinkoSDL.hpp"
 #include "android/AndroidAttitude.hpp"
 
-#include "SDL.h"
-
-#include <jni.h>
-
 using namespace minko;
 using namespace android::sensors;
 
+// Static fields
 math::mat4 AndroidAttitude::rotationMatrixValue;
 math::quat AndroidAttitude::quaternionValue;
 std::mutex AndroidAttitude::rotationMatrixMutex;
@@ -52,9 +52,9 @@ JNIEXPORT void JNICALL Java_minko_plugin_sensors_AndroidAttitude_minkoNativeOnAt
     AndroidAttitude::rotationMatrixMutex.lock();
     auto c = 0;
 
-    for(auto i = 0; i < 4; i++)
+    for (auto i = 0; i < 4; i++)
     {
-        for(auto j = 0; j < 4; j++)
+        for (auto j = 0; j < 4; j++)
         {
             AndroidAttitude::rotationMatrixValue[i][j] = rotationMatrixFloat[c];
             c++;
@@ -132,11 +132,10 @@ AndroidAttitude::stopTracking()
 const math::mat4&
 AndroidAttitude::rotationMatrix()
 {
-    auto env = (JNIEnv*)SDL_AndroidGetJNIEnv();
-    
     auto worldToDevice = rotationMatrixValue * _worldToInertialReferenceFrame;
+    auto worldRotationMatrix = _deviceToDisplay * worldToDevice;
 
-    return _deviceToDisplay * worldToDevice;
+    return worldRotationMatrix;
 }
 
 const math::quat&

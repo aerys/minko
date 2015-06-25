@@ -202,6 +202,7 @@ AbstractLodScheduler::surfaceRemoved(Surface::Ptr surface)
 
 void
 AbstractLodScheduler::viewPropertyChanged(const math::mat4&   worldToScreenMatrix,
+                                          const math::mat4&   viewMatrix,
                                           const math::vec3&   eyePosition,
                                           float               fov,
                                           float               aspectRatio,
@@ -258,9 +259,9 @@ AbstractLodScheduler::sceneManagerSet(SceneManager::Ptr sceneManager)
 
         auto& rootData = sceneManager->target()->data();
 
-        if (rootData.hasProperty("canvas.viewport"))
+        if (rootData.hasProperty("viewport"))
         {
-            viewportChanged(rootData.get<math::vec4>("canvas.viewport"));
+            viewportChanged(rootData.get<math::vec4>("viewport"));
         }
 
         _rootNodePropertyChangedSlot = sceneManager->target()->data().propertyChanged().connect(
@@ -430,7 +431,7 @@ AbstractLodScheduler::frameBeginHandler(SceneManager::Ptr sceneManager, float ti
 
         resource.lodRequirementIsInvalid = false;
 
-        const auto lodInfo = this->lodInfo(resource);
+        const auto lodInfo = this->lodInfo(resource, time);
 
         if (!resource.lodInfo.equals(lodInfo))
         {
@@ -450,7 +451,7 @@ AbstractLodScheduler::rootNodePropertyChangedHandler(Store&									store,
                                                      Provider::Ptr							provider,
 													 const data::Provider::PropertyName&	propertyName)
 {
-    if (*propertyName == "canvas.viewport")
+    if (*propertyName == "viewport")
     {
         viewportChanged(provider->get<math::vec4>(propertyName));
     }
@@ -465,6 +466,7 @@ AbstractLodScheduler::rendererNodePropertyChangedHandler(Store&									store,
     {
         viewPropertyChanged(
             store.get<math::mat4>("worldToScreenMatrix"),
+            store.get<math::mat4>("viewMatrix"),
             store.get<math::vec3>("eyePosition"),
             store.get<float>("fov"),
             store.get<float>("aspectRatio"),

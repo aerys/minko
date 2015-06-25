@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/SceneManager.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/MasterLodScheduler.hpp"
+#include "minko/component/Renderer.hpp"
 #include "minko/component/TextureLodScheduler.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/file/AssetLibrary.hpp"
@@ -56,6 +57,14 @@ TextureLodScheduler::sceneManagerSet(SceneManager::Ptr sceneManager)
     AbstractLodScheduler::sceneManagerSet(sceneManager);
 
     _sceneManager = sceneManager;
+}
+
+void
+TextureLodScheduler::rendererSet(Renderer::Ptr renderer)
+{
+    AbstractLodScheduler::rendererSet(renderer);
+
+    _renderer = renderer;
 }
 
 void
@@ -161,6 +170,7 @@ TextureLodScheduler::surfaceAdded(Surface::Ptr surface)
 
 void
 TextureLodScheduler::viewPropertyChanged(const math::mat4&   worldToScreenMatrix,
+                                         const math::mat4&   viewMatrix,
                                          const math::vec3&   eyePosition,
                                          float               fov,
                                          float               aspectRatio,
@@ -169,6 +179,7 @@ TextureLodScheduler::viewPropertyChanged(const math::mat4&   worldToScreenMatrix
 {
     AbstractLodScheduler::viewPropertyChanged(
         worldToScreenMatrix,
+        viewMatrix,
         eyePosition,
         fov,
         aspectRatio,
@@ -201,7 +212,8 @@ TextureLodScheduler::maxAvailableLodChanged(ResourceInfo&    resource,
 }
 
 TextureLodScheduler::LodInfo
-TextureLodScheduler::lodInfo(ResourceInfo& resource)
+TextureLodScheduler::lodInfo(ResourceInfo&  resource,
+                             float          time)
 {
     auto lodInfo = LodInfo();
 
@@ -229,7 +241,7 @@ TextureLodScheduler::lodInfo(ResourceInfo& resource)
 
         maxRequiredLod = std::max(requiredLod, maxRequiredLod);
 
-        const auto priority = computeLodPriority(textureResource, surface, requiredLod, activeLod);
+        const auto priority = computeLodPriority(textureResource, surface, requiredLod, activeLod, time);
 
         maxPriority = std::max(priority, maxPriority);
     }
@@ -341,30 +353,27 @@ float
 TextureLodScheduler::computeLodPriority(const TextureResourceInfo& 	resource,
                                         Surface::Ptr                surface,
 										int 						requiredLod,
-										int 						activeLod)
+										int 						activeLod,
+                                        float                       time)
 {
     if (activeLod >= requiredLod)
         return 0.f;
 
-    auto priority = 0.f;
+    const auto& lodPriorityFunction = masterLodScheduler()->streamingOptions()->streamedTextureLodPriorityFunction();
 
-    const auto distanceFromEye = this->distanceFromEye(resource, surface, _eyePosition);
-    const auto distanceFactor = (1000.f - distanceFromEye) * 0.001f;
-
-    if (activeLod < 3)
+    if (lodPriorityFunction)
     {
-        priority += 8.f + distanceFactor;
-    }
-    else if (activeLod < 10)
-    {
-        priority += 2.f + distanceFactor;
-    }
-    else
-    {
-        priority += 1.f + distanceFactor;
+        return lodPriorityFunction(
+            activeLod,
+            requiredLod,
+            surface,
+            surface->target()->data(),
+            _sceneManager->target()->data(),
+            _renderer->target()->data()
+        );
     }
 
-    return priority;
+    return requiredLod - activeLod;
 }
 
 float

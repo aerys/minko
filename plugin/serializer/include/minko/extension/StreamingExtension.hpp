@@ -80,10 +80,6 @@ namespace minko
 
 		public:
             void
-            initializeForWriting(std::shared_ptr<StreamingOptions>                                      streamingOptions,
-                                 std::shared_ptr<file::AbstractWriter<std::shared_ptr<scene::Node>>>    writer);
-
-            void
             initialize(std::shared_ptr<StreamingOptions> streamingOptions);
 
 			AbstractExtension::Ptr

@@ -214,6 +214,10 @@ namespace minko
 
             virtual
             void
+            rendererSet(RendererPtr renderer);
+
+            virtual
+            void
             masterLodSchedulerSet(MasterLodSchedulerPtr masterLodScheduler);
 
             virtual
@@ -235,6 +239,7 @@ namespace minko
             virtual
             void
             viewPropertyChanged(const math::mat4&   worldToScreenMatrix,
+                                const math::mat4&   viewMatrix,
                                 const math::vec3&   eyePosition,
                                 float               fov,
                                 float               aspectRatio,
@@ -262,7 +267,8 @@ namespace minko
 
             virtual
             LodInfo
-            lodInfo(ResourceInfo& resource) = 0;
+            lodInfo(ResourceInfo&   resource,
+                    float           time) = 0;
 
         private:
             static
@@ -276,9 +282,6 @@ namespace minko
             static
             AbstractComponent::Ptr
             defaultMasterLodSchedulerFunction(NodePtr node);
-
-            void
-            rendererSet(RendererPtr renderer);
 
             void
             nodeAddedHandler(NodePtr target, NodePtr node);

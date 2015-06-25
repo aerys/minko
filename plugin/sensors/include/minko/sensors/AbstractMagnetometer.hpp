@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2013 Aerys
+Copyright (c) 2015 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -17,34 +17,41 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "minko/StreamingOptions.hpp"
-#include "minko/StreamingTypes.hpp"
+#pragma once
 
-using namespace minko;
+#include "minko/Minko.hpp"
+#include "minko/Signal.hpp"
+#include "AbstractSensor.hpp"
 
-const int StreamingOptions::MAX_LOD = 32;
-const int StreamingOptions::MAX_LOD_RANGE = 32;
-
-StreamingOptions::StreamingOptions() :
-    _disableProgressiveLodFetching(false),
-    _textureStreamingIsActive(false),
-    _geometryStreamingIsActive(false),
-    _masterLodScheduler(),
-    _popGeometryWriterLodRangeFunction(),
-    _popGeometryErrorToleranceThreshold(3),
-    _storeLodData(true),
-    _popGeometryLodFunction(),
-    _streamedTextureLodFunction(),
-    _meshPartitionerOptions(),
-    _popGeometryPriorityFactor(1.f),
-    _streamedTexturePriorityFactor(1.f),
-    _popGeometryMaxPrecisionLevel(16),
-    _streamedTextureMaxMipLevel(0),
-    _popGeometryLodRangeFetchingBoundFunction(),
-    _streamedTextureLodRangeFetchingBoundFunction(),
-    _popGeometryBlendingRange(0.f),
-    _maxNumActiveParsers(40),
-    _popGeometryFunction(),
-    _streamedTextureFunction()
+namespace minko
 {
+    namespace sensors
+    {
+        class AbstractMagnetometer : AbstractSensor
+        {
+        public:
+            typedef std::shared_ptr<AbstractMagnetometer> Ptr;
+            
+            virtual
+            void
+            initialize() override = 0;
+
+            virtual
+            void
+            startTracking() override = 0;
+
+            virtual
+            void
+            stopTracking() override = 0;
+
+            virtual
+            const math::vec3&
+            getSensorValue() = 0;
+
+            virtual
+            Signal<float, float, float>::Ptr
+            onSensorChanged() = 0;
+        };
+    }
 }
+

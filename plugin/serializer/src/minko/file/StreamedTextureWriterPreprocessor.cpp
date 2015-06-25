@@ -114,15 +114,42 @@ StreamedTextureWriterPreprocessor::computeVertexColorAttributes(Geometry::Ptr   
 
     const auto numVertices = uvVertexBuffer->numVertices();
 
-    const auto colorVertexAttributeOffset = 0u;
-    const auto colorVertexAttributeSize = 1u;
+    auto colorVertexBuffer = VertexBuffer::Ptr();
 
-    auto colorVertexBufferData = std::vector<float>(numVertices * colorVertexAttributeSize);
+    if (geometry->hasVertexAttribute("color"))
+    {
+        colorVertexBuffer = geometry->vertexBuffer("color");
+    }
+
+    auto colorVertexAttributeOffset = 0u;
+    auto colorVertexAttributeSize = 1u;
+    auto colorVertexBufferVertexSize = colorVertexAttributeSize;
+
+    auto defaultColorVertexBufferData = std::vector<float>();
+
+    float* colorVertexBufferData = nullptr;
+
+    if (colorVertexBuffer != nullptr)
+    {
+        const auto& colorVertexAttribute = colorVertexBuffer->attribute("color");
+
+        colorVertexAttributeOffset = colorVertexAttribute.offset;
+        colorVertexAttributeSize = colorVertexAttribute.size;
+        colorVertexBufferVertexSize = *colorVertexAttribute.vertexSize;
+
+        colorVertexBufferData = colorVertexBuffer->data().data();
+    }
+    else
+    {
+        defaultColorVertexBufferData.resize(numVertices * colorVertexBufferVertexSize);
+
+        colorVertexBufferData = defaultColorVertexBufferData.data();
+    }
 
     for (auto i = 0u; i < numVertices; ++i)
     {
         const auto uvIndex = i * *uvVertexAttribute.vertexSize + uvVertexAttribute.offset;
-        const auto colorIndex = i * colorVertexAttributeSize + colorVertexAttributeOffset;
+        const auto colorIndex = i * colorVertexBufferVertexSize + colorVertexAttributeOffset;
 
         const auto uv = math::make_vec2(&uvVertexBuffer->data().at(uvIndex));
 
@@ -138,11 +165,18 @@ StreamedTextureWriterPreprocessor::computeVertexColorAttributes(Geometry::Ptr   
         }
     }
 
-    auto colorVertexBuffer = VertexBuffer::create(assetLibrary->context(), colorVertexBufferData);
+    if (colorVertexBuffer == nullptr)
+    {
+        auto colorVertexBuffer = VertexBuffer::create(
+            assetLibrary->context(),
+            colorVertexBufferData,
+            colorVertexBufferData + numVertices * colorVertexBufferVertexSize
+        );
 
-    colorVertexBuffer->addAttribute("color", colorVertexAttributeSize, colorVertexAttributeOffset);
+        colorVertexBuffer->addAttribute("color", colorVertexAttributeSize, colorVertexAttributeOffset);
 
-    geometry->addVertexBuffer(colorVertexBuffer);
+        geometry->addVertexBuffer(colorVertexBuffer);
+    }
 }
 
 void

@@ -81,6 +81,7 @@ namespace minko
         class AbstractLodScheduler;
         class MasterLodScheduler;
         class POPGeometryLodScheduler;
+        class ScreenSpaceAreaNotifier;
         class TextureLodScheduler;
     }
 

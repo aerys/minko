@@ -14,6 +14,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import org.libsdl.app.*;
+import java.util.ArrayList;
 
 /**
  * Provides head tracking information from the device IMU. 
@@ -25,9 +26,8 @@ public class AndroidAttitude
 	private Looper _sensorLooper;
 	private SensorManager _sensorManager;
 	private SensorEventListener _sensorEventListener;
-	private volatile boolean _tracking;
-
 	private Display _display;
+	private volatile boolean _tracking;
 
 	// Native functions
 	public native void minkoNativeOnAttitudeEvent(float[] rotationMatrix, float[] quaternion);
@@ -36,22 +36,26 @@ public class AndroidAttitude
 	{
 		_sdlActivity = sdlActivity;
 		_context = SDLActivity.getContext();
+		_sensorManager = (SensorManager)_context.getSystemService("sensor");
 
 		_display = ((WindowManager)_context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 	}
 
 	public void startTracking()
 	{
-		if (_tracking) {
+		if (_tracking)
 			return;
-		}
 
 		_sensorEventListener = new SensorEventListener()
 		{
-			public void onSensorChanged(SensorEvent event) {
+			@Override
+			public void onSensorChanged(SensorEvent event) 
+			{
 				AndroidAttitude.this.processSensorEvent(event);
 			}
 
+			// Need to be overriden
+			@Override
 			public void onAccuracyChanged(Sensor sensor, int accuracy)
 			{
 			}
@@ -59,14 +63,12 @@ public class AndroidAttitude
 		
 		Thread sensorThread = new Thread(new Runnable()
 		{
-			public void run() {
+			public void run() 
+			{
 				Looper.prepare();
 
 				_sensorLooper = Looper.myLooper();
 				Handler handler = new Handler();
-
-				_sensorManager = (SensorManager)_context.getSystemService("sensor");
-
 				Sensor sensor = _sensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
 				
 				if(sensor == null)
@@ -84,11 +86,8 @@ public class AndroidAttitude
 
 	public void stopTracking()
 	{
-		if (!_tracking) {
+		if (!_tracking)
 			return;
-		}
-
-		SensorManager _sensorManager = (SensorManager)_context.getSystemService("sensor");
 
 		_sensorManager.unregisterListener(_sensorEventListener);
 		_sensorEventListener = null;
@@ -109,7 +108,8 @@ public class AndroidAttitude
 		_sensorManager.getQuaternionFromVector(quaternion, rotationVector);
 		_sensorManager.getRotationMatrixFromVector(rotationMatrix, rotationVector);
 
-		switch (_display.getRotation()) {
+		switch (_display.getRotation()) 
+		{
 			case Surface.ROTATION_0:
 			    _sensorManager.remapCoordinateSystem(rotationMatrix, _sensorManager.AXIS_X, _sensorManager.AXIS_Y, rotationMatrixTransformed);
 			    break;

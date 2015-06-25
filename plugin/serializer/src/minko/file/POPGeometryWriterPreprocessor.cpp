@@ -22,6 +22,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/Skinning.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/POPGeometryLodScheduler.hpp"
+#include "minko/data/Provider.hpp"
+#include "minko/data/Store.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/file/POPGeometryWriterPreprocessor.hpp"
 #include "minko/geometry/Bone.hpp"
@@ -32,6 +34,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::component;
+using namespace minko::data;
 using namespace minko::file;
 using namespace minko::geometry;
 using namespace minko::scene;
@@ -51,7 +54,9 @@ POPGeometryWriterPreprocessor::process(Node::Ptr& node, AssetLibrary::Ptr assetL
     //   scene object descriptors specifying type of technique to apply
 
     // by default whole scene is streamed as a progressive ordered mesh
-    node->addComponent(POPGeometryLodScheduler::create());
+
+    if (!node->hasComponent<POPGeometryLodScheduler>())
+        node->addComponent(POPGeometryLodScheduler::create());
 
     auto animatedNodes = collectAnimatedNodes(node);
 
@@ -119,6 +124,15 @@ POPGeometryWriterPreprocessor::collectAnimatedNodes(Node::Ptr root)
 
             animatedNodes.insert(boneDescendants->nodes().begin(), boneDescendants->nodes().end());
         }
+    }
+
+    for (auto node : animatedNodes)
+    {
+        auto provider = Provider::create();
+
+        provider->set("animated", true);
+
+        node->data().addProvider(provider);
     }
 
     return animatedNodes;
