@@ -75,7 +75,7 @@ File::getBinaryDirectory()
 
     return sanitizeFilename(path);
 #elif MINKO_PLATFORM == MINKO_PLATFORM_HTML5 // HTML5
-    return "";
+    return ".";
 #elif MINKO_PLATFORM == MINKO_PLATFORM_LINUX // Linux
     char buffer[PATH_MAX];
     size_t l = readlink("/proc/self/exe", buffer, PATH_MAX);
