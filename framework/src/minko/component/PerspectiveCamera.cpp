@@ -139,15 +139,13 @@ PerspectiveCamera::updateProjection(float fov, float aspectRatio, float zNear, f
 	_viewProjection = _projection * _view;
 
 	_data
-        ->set("zNear",                  _zNear)
-        ->set("zFar",                   _zFar)
-		->set("projectionMatrix",		_projection)
-  		->set("worldToScreenMatrix",	_viewProjection)
-        ->set("fov",                    fov)
-        ->set("aspectRatio",            aspectRatio)
-        ->set("zNear",                  zNear)
-        ->set("zFar",                   zFar);
-}
+        ->set("fov", _fov)
+        ->set("aspectRatio", _aspectRatio)
+        ->set("zNear", _zNear)
+        ->set("zFar", _zFar)
+		->set("projectionMatrix", _projection)
+		->set("worldToScreenMatrix", _viewProjection);
+  }
 
 std::shared_ptr<math::Ray>
 PerspectiveCamera::unproject(float x, float y)
