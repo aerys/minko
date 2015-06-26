@@ -315,7 +315,7 @@ Transform::RootTransform::updateTransformsList()
                 previousAncestorCacheEntry._numChildren = numSiblings;
 
                 firstSiblingId = nodeId;
-                numSiblings = 1;
+                numSiblings = ancestor != nullptr ? 1 : 0;
 
                 previousAncestor = ancestor;
 
