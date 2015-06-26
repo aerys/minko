@@ -377,6 +377,7 @@ static bool logging = false;
     if (webView != _webView) { return; }
     
     _numRequestsLoading--;
+    NSLog(@"%@", error);
     
     __strong id strongDelegate = _webViewDelegate;
     if (strongDelegate && [strongDelegate respondsToSelector:@selector(webView:didFailLoadWithError:)]) {

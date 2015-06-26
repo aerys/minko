@@ -65,6 +65,7 @@ function minko.plugin.sdl:enable()
 	configuration { "ios", "ConsoleApp or WindowedApp" }
 		links {
 			"SDL2",
+			"SDL2_mixer",
 			"CoreAudio.framework",
 			"AudioToolbox.framework"
 		}

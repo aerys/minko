@@ -51,7 +51,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #endif
 
 // Audio only works for HTML5, Windows and Android
-#if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID)
+#if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID | MINKO_PLATFORM_IOS)
 # include "minko/audio/SDLAudio.hpp"
 #endif
 
@@ -85,7 +85,8 @@ Canvas::Canvas(const std::string& name, const uint width, const uint height, int
     _height(height),
     _x(0),
     _y(0),
-    _onWindow(false)
+    _onWindow(false),
+    _enableRendering(true)
 {
     _data->set("viewport", math::vec4(0.f, 0.f, (float)width, (float)height));
 }
@@ -222,7 +223,7 @@ Canvas::initializeWindow()
     }
 # endif
 
-# if (MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID)) && !defined(MINKO_PLUGIN_OFFSCREEN)
+# if (MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID | MINKO_PLATFORM_IOS)) && !defined(MINKO_PLUGIN_OFFSCREEN)
     _audio = audio::SDLAudio::create(shared_from_this());
 # endif
 #endif
@@ -875,11 +876,13 @@ Canvas::step()
 
 #if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
         case SDL_APP_DIDENTERBACKGROUND:
-            suspended()->execute(shared_from_this());
+                suspended()->execute(shared_from_this());
+                _enableRendering = false;
             break;
 
         case SDL_APP_DIDENTERFOREGROUND:
-            resumed()->execute(shared_from_this());
+                resumed()->execute(shared_from_this());
+                _enableRendering = true;
             break;
 #endif // MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
 
@@ -904,11 +907,14 @@ Canvas::step()
     _deltaTime = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(absoluteTime - _previousTime).count(); // in milliseconds
     _previousTime = absoluteTime;
 
-    _enterFrame->execute(that, _relativeTime, _deltaTime);
-	
-	if (_swapBuffersAtEnterFrame)
-		swapBuffers();
-
+    if (_enableRendering)
+    {
+        _enterFrame->execute(that, _relativeTime, _deltaTime);
+        
+        if (_swapBuffersAtEnterFrame)
+            swapBuffers();
+    }
+    
     _frameDuration  = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now() - absoluteTime).count(); // in milliseconds
 
     // framerate in seconds
@@ -937,7 +943,7 @@ Canvas::quit()
 {
     _active = false;
     
-#if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID)
+#if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID | MINKO_PLATFORM_IOS)
     _audio = nullptr;
 #endif
 }

@@ -30,6 +30,10 @@ minko.plugin["video-camera"].enable = function()
 		prelinkcommands {
 			minko.action.copy(minko.plugin.path("video-camera") .. "/asset")
 		}
+
+	configuration { "ios" }
+		buildoptions { "-x objective-c++" }
+		links { "AVFoundation.framework", "CoreVideo.framework", "CoreMedia.framework" }
 end
 
 newoption {

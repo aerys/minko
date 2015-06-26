@@ -156,7 +156,7 @@ solution "minko"
 	-- example
 	if not _OPTIONS['no-example'] then
 		include 'example/assimp'
-		-- include 'example/audio'
+		include 'example/audio'
 		include 'example/benchmark-cube'
 		include 'example/blending'
 		-- include 'example/clone'
@@ -181,7 +181,7 @@ solution "minko"
 		-- include 'example/oculus'
 		-- include 'example/offscreen'
 		-- include 'example/particles'
-		-- include 'example/physics'
+		include 'example/physics'
 		include 'example/picking'
 		-- include 'example/raycasting'
 		include 'example/sensors'
@@ -189,6 +189,7 @@ solution "minko"
 		include 'example/sky-box'
 		-- include 'example/stencil'
 		-- include 'example/visibility'
+		include 'example/video-camera'
 		-- include 'example/water'
 		include 'example/shadow-mapping'
 		include 'example/pbr'

@@ -73,19 +73,6 @@ JNIEXPORT void JNICALL Java_minko_plugin_sensors_AndroidAttitude_minkoNativeOnAt
 
 AndroidAttitude::AndroidAttitude()
 {
-}
-
-void AndroidAttitude::initialize()
-{
-    // The inertial reference frame has z up and x forward, while the world has z out and x right
-    _worldToInertialReferenceFrame = getRotateEulerMatrix(-90.f, 0.f, 0.f);
-    
-    // This assumes the device is landscape with the home button on the right
-    _deviceToDisplay = getRotateEulerMatrix(0.f, 0.f, 0.f);
-
-    // Defaut
-    AndroidAttitude::rotationMatrixValue = math::mat4();
-
     // JNI
 
     // Retrieve the JNI environment from SDL 
@@ -105,6 +92,19 @@ void AndroidAttitude::initialize()
     // Get JNI methods 
     _startTrackingMethod = env->GetMethodID(androidAttitudeClass, "startTracking", "()V");
     _stopTrackingMethod = env->GetMethodID(androidAttitudeClass, "stopTracking", "()V");
+    _isSupportedMethod = env->GetMethodID(androidAttitudeClass, "isSupported", "()Z");
+}
+
+void AndroidAttitude::initialize()
+{
+    // The inertial reference frame has z up and x forward, while the world has z out and x right
+    _worldToInertialReferenceFrame = getRotateEulerMatrix(-90.f, 0.f, 0.f);
+    
+    // This assumes the device is landscape with the home button on the right
+    _deviceToDisplay = getRotateEulerMatrix(0.f, 0.f, 0.f);
+
+    // Defaut
+    AndroidAttitude::rotationMatrixValue = math::mat4();
 }
 
 void
@@ -180,4 +180,15 @@ AndroidAttitude::getRotateEulerMatrix(float x, float y, float z)
     matrix[3][3] = 1.0f;
     
     return matrix;
+}
+
+bool
+AndroidAttitude::isSupported()
+{
+    // Retrieve the JNI environment from SDL 
+    auto env = (JNIEnv*)SDL_AndroidGetJNIEnv();
+
+    auto isSupported = (bool)env->CallObjectMethod(_attitude, _isSupportedMethod);
+
+    return isSupported;
 }

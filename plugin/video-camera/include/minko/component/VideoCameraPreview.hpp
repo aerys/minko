@@ -60,19 +60,22 @@ namespace minko
             Any _frameEndSlot;
 
             Any _videoCameraFrameReceivedSlot;
+            
+            bool _updatePreviewWhenFrameReceived;
 
 		public:
 			inline
 			static
 			Ptr
-			create(SceneManagerPtr sceneManager, AbstractContextPtr context, AbstractVideoCameraPtr videoCamera)
+			create(SceneManagerPtr sceneManager, AbstractContextPtr context, AbstractVideoCameraPtr videoCamera, bool updatePreviewWhenFrameReceived = true)
 			{
 				auto instance = Ptr(new VideoCameraPreview());
 
                 instance->_sceneManager = sceneManager;
                 instance->_context = context;
 				instance->_videoCamera = videoCamera;
-
+                instance->_updatePreviewWhenFrameReceived = updatePreviewWhenFrameReceived;
+                
                 instance->initialize();
 
 				return instance;

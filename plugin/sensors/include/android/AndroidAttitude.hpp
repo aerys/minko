@@ -63,6 +63,9 @@ namespace minko
                 const math::quat&
                 quaternion();
 
+                bool
+                isSupported();
+
                 static math::mat4 rotationMatrixValue;
                 static math::quat quaternionValue;
                 static std::mutex rotationMatrixMutex;
@@ -83,6 +86,7 @@ namespace minko
                 // Java Method IDs
                 jmethodID _startTrackingMethod = nullptr;
                 jmethodID _stopTrackingMethod = nullptr;
+                jmethodID _isSupportedMethod = nullptr;
             };
         }
     }

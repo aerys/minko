@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/sensors/AbstractAttitude.hpp"
 #include "minko/log/Logger.hpp"
 
-#import <CoreMotion/CoreMotion.h>
+#import "CoreMotion/CoreMotion.h"
 
 namespace minko
 {
@@ -49,19 +49,22 @@ namespace minko
                 }
 
                 void
-                initialize();
+                initialize() override;
 
                 void
-                startTracking();
+                startTracking() override;
 
                 void
-                stopTracking();
+                stopTracking() override;
                 
                 const math::mat4&
-                rotationMatrix();
+                rotationMatrix() override;
 
                 const math::quat&
-                quaternion();
+                quaternion() override;
+                
+                bool
+                isSupported() override;
 
             private:
 
@@ -71,11 +74,13 @@ namespace minko
                 math::mat4
                 glmMatrixFromCMRotationMatrix(CMRotationMatrix rotationMatrix);
                 
+                float
+                getDeviceOrientation();
+                
                 CMMotionManager *_manager;
                 math::mat4 _rotationMatrix;
                 math::quat _quaternion;
                 math::mat4 _worldToInertialReferenceFrame;
-                math::mat4 _deviceToDisplay;
             };
         }
     }

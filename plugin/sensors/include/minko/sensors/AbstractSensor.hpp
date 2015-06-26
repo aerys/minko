@@ -41,6 +41,10 @@ namespace minko
             virtual
             void
             stopTracking() = 0;
+            
+            virtual
+            bool
+            isSupported() = 0;
         };
     }
 }

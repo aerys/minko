@@ -17,6 +17,8 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include "UIKit/UIKit.h"
+
 #include "minko/Common.hpp"
 #include "apple/IOSAttitude.hpp"
 
@@ -27,7 +29,6 @@ IOSAttitude::IOSAttitude() :
     _manager(nullptr),
     _rotationMatrix(math::mat4()),
     _quaternion(math::quat()),
-    _deviceToDisplay(math::mat4()),
     _worldToInertialReferenceFrame(math::mat4())
 {
 }
@@ -38,9 +39,6 @@ void IOSAttitude::initialize()
 
     // The inertial reference frame has z up and x forward, while the world has z out and x right
     _worldToInertialReferenceFrame = getRotateEulerMatrix(-90.f, 0.f, 90.f);
-    
-    // This assumes the device is landscape with the home button on the right
-    _deviceToDisplay = getRotateEulerMatrix(0.f, 0.f, -90.f);
 }
 
 void
@@ -68,12 +66,12 @@ IOSAttitude::rotationMatrix()
     CMDeviceMotion *motion = _manager.deviceMotion;
     CMRotationMatrix rotationMatrix = motion.attitude.rotationMatrix;
     
-    auto inertialReferenceFrameToDevice = math::transpose(glmMatrixFromCMRotationMatrix(rotationMatrix));
+    // Correct for the rotation matrix not including the screen orientation:
+    auto deviceOrientationRadians = getDeviceOrientation();
     
-    auto worldToDevice = inertialReferenceFrameToDevice * _worldToInertialReferenceFrame;
-    auto worldToDisplay = _deviceToDisplay * worldToDevice;
-    
-    _rotationMatrix = worldToDisplay;
+    auto inertialReferenceFrameToDevice = math::rotate(deviceOrientationRadians, math::vec3(0.f, 0.f, 1.f)) * math::transpose(glmMatrixFromCMRotationMatrix(rotationMatrix));
+
+    _rotationMatrix = inertialReferenceFrameToDevice * _worldToInertialReferenceFrame;
     
     return _rotationMatrix;
 }
@@ -144,4 +142,27 @@ IOSAttitude::getRotateEulerMatrix(float x, float y, float z)
     matrix[3][3] = 1.0f;
     
     return matrix;
+}
+
+float
+IOSAttitude::getDeviceOrientation()
+{
+    UIDeviceOrientation orientation = [[UIDevice currentDevice] orientation];
+    float deviceOrientationRadians = 0.0f;
+    
+    if (orientation == UIDeviceOrientationLandscapeLeft)
+        deviceOrientationRadians = M_PI_2;
+    if (orientation == UIDeviceOrientationLandscapeRight)
+        deviceOrientationRadians = -M_PI_2;
+    if (orientation == UIDeviceOrientationPortraitUpsideDown)
+        deviceOrientationRadians = M_PI;
+    
+    return deviceOrientationRadians;
+}
+
+bool
+IOSAttitude::isSupported()
+{
+    // TODO: detect if device has gyroscope + accelerometer
+    return true;
 }

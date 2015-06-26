@@ -26,8 +26,9 @@ public class AndroidAttitude
 	private Looper _sensorLooper;
 	private SensorManager _sensorManager;
 	private SensorEventListener _sensorEventListener;
-	private Display _display;
 	private volatile boolean _tracking;
+	private boolean _isSupported;
+	private Display _display;
 
 	// Native functions
 	public native void minkoNativeOnAttitudeEvent(float[] rotationMatrix, float[] quaternion);
@@ -37,6 +38,8 @@ public class AndroidAttitude
 		_sdlActivity = sdlActivity;
 		_context = SDLActivity.getContext();
 		_sensorManager = (SensorManager)_context.getSystemService("sensor");
+		_isSupported = true;
+		_tracking = false;
 
 		_display = ((WindowManager)_context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 	}
@@ -74,14 +77,22 @@ public class AndroidAttitude
 				if(sensor == null)
 					sensor = _sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
 
+				if (sensor == null)
+				{
+					Log.i("minko-java", "[AndroidAttitude] Warning: Attitude sensors not found on this device.");
+					_isSupported = false;
+				}
+
 				_sensorManager.registerListener(_sensorEventListener, sensor, 0, handler);
+				
+				Log.i("minko-java", "[AndroidAttitude] START LOOP!");
+				_tracking = true;
 
 				Looper.loop();
 			}
 		});
 
 		sensorThread.start();
-		_tracking = true;
 	}
 
 	public void stopTracking()
@@ -125,5 +136,28 @@ public class AndroidAttitude
 		}
 
 		minkoNativeOnAttitudeEvent(rotationMatrixTransformed, quaternion);
+	}
+
+	public boolean isSupported()
+	{
+		if (!_tracking)
+		{
+			SensorManager sensorManager = (SensorManager)_context.getSystemService("sensor");
+
+			Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
+			
+			if(sensor == null)
+				sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+
+			if (sensor == null)
+			{
+				_isSupported = false;
+				Log.i("minko-java", "[AndroidAttitude] Warning: No Attitude sensors found on this device.");
+			}
+		}
+
+		Log.i("minko-java", "[AndroidAttitude] Is supported: " + _isSupported + " (tracking: " + _tracking + ")");
+
+		return _isSupported;
 	}
 }

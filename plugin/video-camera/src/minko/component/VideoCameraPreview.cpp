@@ -124,8 +124,10 @@ VideoCameraPreview::frameReceivedHandler(AbstractVideoCamera::Ptr           vide
     {
         initializeVideoPreviewTarget(width, height, format);
     }
-    else
+    else if (_updatePreviewWhenFrameReceived)
+    {
         updateVideoPreviewTarget(data, width, height, format);
+    }
 }
 
 void

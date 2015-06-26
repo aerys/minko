@@ -1,0 +1,92 @@
+{
+	"techniques" : [{
+		"passes" : [{
+			"attributes" : {
+		        "aPosition" : "geometry[${geometryUuid}].position",
+		        "aUv"		: "geometry[${geometryUuid}].uv"
+			},
+
+			"uniforms" : {
+				"uDiffuseMap": {
+					"binding" : "material[${materialUuid}].diffuseMap",
+					"textureFilter" : "linear",
+					"mipFilter": "none",
+					"wrapMode"      : "clamp"
+				},
+				"uViewport"   	: { "binding" : { "property" : "viewport", "source" : "root" } },
+                "cameraRatio"   : { "binding" : "material[${materialUuid}].cameraRatio", "default" : 1.33 }
+			},	
+            
+            "macros" : {
+                "DIFFUSE_MAP"   : "material[${materialUuid}].diffuseMap"
+            },
+
+            "states" : {
+				"priority" : "background",
+				"depthMask" : false,
+				"triangleCulling" : "none"
+			},
+
+			"vertexShader" : "
+				#ifdef GL_ES
+					precision mediump float;
+				#endif
+                
+				attribute vec3 aPosition;
+				attribute vec2 aUv;
+
+                uniform vec4 uViewport;
+                uniform float cameraRatio;
+
+				varying vec2 vUv;
+
+				void main()
+				{
+					vUv = aUv;
+
+					float screenRatio = uViewport.z / uViewport.w;
+                    
+                    // Crop to fit
+                    if (cameraRatio > screenRatio)
+                    {
+                        float rU = screenRatio / cameraRatio;
+                        float offsetU = (1.0 - rU) * 0.5;
+
+                        vUv = vec2(offsetU + (vUv.x * rU), vUv.y);
+                    }
+                    if (screenRatio > cameraRatio)
+                    {
+                        float rV = cameraRatio / screenRatio;
+                        float offsetV = (1.0 - rV) * 0.5;
+
+                        vUv = vec2(vUv.x, offsetV + (vUv.y * rV));
+                    }
+
+					gl_Position = vec4(aPosition, 1) * vec4(1.0, 1.0, 1.0, 0.5);
+				}
+			",
+			"fragmentShader" : "
+				#ifdef GL_ES
+					precision mediump float;
+				#endif
+
+				varying vec2 vUv;
+				varying vec2 vNormalizedPos;
+                
+				uniform sampler2D uDiffuseMap;
+
+				uniform vec4 gradientInt;
+				uniform vec4 gradientExt;
+
+				void main()
+				{
+	                #if defined(DIFFUSE_MAP)
+					    gl_FragColor = texture2D(uDiffuseMap, vUv);			    
+                    #else
+                        gl_FragColor = vec4(0.133, 0.133, 0.133, 1.0);
+                    #endif
+				}
+			"
+		}]
+	}]
+}
