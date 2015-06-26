@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/Common.hpp"
 #include "minko/OculusCommon.hpp"
+#include "minko/Signal.hpp"
 
 namespace minko
 {
@@ -65,6 +66,10 @@ namespace minko
             virtual
             float
             zFar() = 0;
+
+            virtual
+            Signal<>::Ptr
+            actionButtonPressed() = 0;
         };
     }
 }

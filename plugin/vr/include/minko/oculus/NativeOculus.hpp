@@ -108,6 +108,13 @@ namespace minko
                 return _zFar;
             }
 
+            inline
+            Signal<>::Ptr
+            actionButtonPressed()
+            {
+                return Signal<>::create();
+            }
+
             static
             bool
             detected();

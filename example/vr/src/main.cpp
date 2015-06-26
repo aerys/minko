@@ -91,6 +91,8 @@ main(int argc, char** argv)
     Node::Ptr quads;
     Node::Ptr camera;
 
+    Signal<>::Slot actionButtonPressed = nullptr;
+
     auto _ = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
     {
         auto root = scene::Node::create("root")
@@ -99,11 +101,10 @@ main(int argc, char** argv)
 		camera = scene::Node::create("camera")
 			->addComponent(Transform::create());
 
-		auto oculusDetected = VRCamera::detected();
-		if (oculusDetected)
-		{
+		auto HMDDetected = VRCamera::detected();
+
+		if (HMDDetected)
 			camera->addComponent(VRCamera::create(canvas->width(), canvas->height(), 0.1f, 100.0f));
-		}
 		else
 		{
 			camera
@@ -133,6 +134,14 @@ main(int argc, char** argv)
         root->addChild(camera);
         root->addChild(spheres);
         root->addChild(quads);
+
+        if (camera->hasComponent<VRCamera>())
+        {
+            actionButtonPressed = camera->component<VRCamera>()->actionButtonPressed()->connect([&]()
+            {
+                LOG_INFO("HMD Action Button Pressed!");
+            });
+        }
     });
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint width, uint height)

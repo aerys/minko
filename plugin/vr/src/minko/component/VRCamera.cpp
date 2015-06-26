@@ -241,3 +241,9 @@ VRCamera::updateCameraOrientation()
 {
     _VRImpl->updateCameraOrientation(target());
 }
+
+Signal<>::Ptr
+VRCamera::actionButtonPressed()
+{
+    return _VRImpl->actionButtonPressed();
+}

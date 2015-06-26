@@ -86,6 +86,9 @@ namespace minko
             bool
             detected();
 
+            Signal<>::Ptr
+            actionButtonPressed();
+
         public:
             ~VRCamera();
 

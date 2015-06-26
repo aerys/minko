@@ -84,6 +84,13 @@ namespace minko
                 return _zFar;
             }
 
+            inline
+            Signal<>::Ptr
+            actionButtonPressed()
+            {
+                return Signal<>::create();
+            }
+
             inline static
             Ptr
             create(int viewportWidth, int viewportHeight, float zNear, float zFar)
