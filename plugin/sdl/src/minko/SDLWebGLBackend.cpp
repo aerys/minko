@@ -24,10 +24,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # include "emscripten/emscripten.h"
 #endif
 #include "SDL.h"
+#include "SDL_syswm.h"
 
 using namespace minko;
 
 Canvas::Ptr currentCanvas;
+std::chrono::high_resolution_clock::time_point previousFrameTime = std::chrono::high_resolution_clock::now();
 
 SDLWebGLBackend::SDLWebGLBackend()
 {
@@ -36,6 +38,16 @@ SDLWebGLBackend::SDLWebGLBackend()
 void
 emscriptenMainLoop()
 {
+	auto t = std::chrono::high_resolution_clock::now();
+
+	auto frameTime = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(t - previousFrameTime).count();
+	auto targetFrameTime = 1000.f / currentCanvas->desiredFramerate();
+
+	if (frameTime < targetFrameTime)
+		return;
+
+	previousFrameTime = t;
+
     currentCanvas->step();
 }
 
@@ -54,14 +66,9 @@ SDLWebGLBackend::swapBuffers(std::shared_ptr<Canvas> canvas)
 void
 SDLWebGLBackend::run(std::shared_ptr<Canvas> canvas)
 {
-	if (currentCanvas)
-    	emscripten_cancel_main_loop();
-
     currentCanvas = canvas;
-
-    auto framerate = canvas->desiredFramerate() == 60.f ? 0.f : canvas->desiredFramerate();
     
-    emscripten_set_main_loop(emscriptenMainLoop, framerate, 1);
+    emscripten_set_main_loop(emscriptenMainLoop, 0, 1);
 }
 
 void
