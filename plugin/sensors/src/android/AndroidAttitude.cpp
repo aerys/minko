@@ -86,7 +86,7 @@ AndroidAttitude::AndroidAttitude()
     jclass androidAttitudeClass = env->FindClass("minko/plugin/sensors/AndroidAttitude");
     // Get AndroidAttitude constructor method
     jmethodID androidAttitudeCtor = env->GetMethodID(androidAttitudeClass, "<init>", "(Landroid/app/Activity;)V");
-    // Instanciate an AndroidAttitude
+    // Instanciate an AndroidAttitude java object
     _attitude = env->NewGlobalRef(env->NewObject(androidAttitudeClass, androidAttitudeCtor, sdlActivity));
 
     // Get JNI methods 
@@ -188,7 +188,7 @@ AndroidAttitude::isSupported()
     // Retrieve the JNI environment from SDL 
     auto env = (JNIEnv*)SDL_AndroidGetJNIEnv();
 
-    auto isSupported = (bool)env->CallObjectMethod(_attitude, _isSupportedMethod);
+    auto isSupported = (bool)env->CallBooleanMethod(_attitude, _isSupportedMethod);
 
     return isSupported;
 }
