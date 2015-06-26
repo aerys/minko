@@ -977,3 +977,14 @@ Canvas::swapBuffers()
 {
 	_backend->swapBuffers(shared_from_this());
 }
+
+void
+Canvas::desiredFramerate(float desiredFramerate)
+{
+    _desiredFramerate = desiredFramerate;
+
+#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+    if (_active)
+        _backend->run(shared_from_this());
+#endif
+}

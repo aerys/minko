@@ -54,8 +54,14 @@ SDLWebGLBackend::swapBuffers(std::shared_ptr<Canvas> canvas)
 void
 SDLWebGLBackend::run(std::shared_ptr<Canvas> canvas)
 {
+	if (currentCanvas)
+    	emscripten_cancel_main_loop();
+
     currentCanvas = canvas;
-    emscripten_set_main_loop(emscriptenMainLoop, 0, 1);
+
+    auto framerate = canvas->desiredFramerate() == 60.f ? 0.f : canvas->desiredFramerate();
+    
+    emscripten_set_main_loop(emscriptenMainLoop, framerate, 1);
 }
 
 void

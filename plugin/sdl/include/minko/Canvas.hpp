@@ -326,12 +326,8 @@ namespace minko
             return _desiredFramerate;
         }
 
-        inline
         void
-        desiredFramerate(float desiredFramerate)
-        {
-            _desiredFramerate = desiredFramerate;
-        }
+        desiredFramerate(float desiredFramerate);
 
         // Current frame execution time in milliseconds.
         inline
