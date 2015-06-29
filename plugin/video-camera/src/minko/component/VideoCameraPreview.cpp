@@ -67,7 +67,7 @@ VideoCameraPreview::initialize()
     _previewSurface = Surface::create(
         QuadGeometry::create(_context, 1, 1, 1, 1),
         material::BasicMaterial::create(),
-        _sceneManager->assets()->effect("effect/Basic.effect")
+        _sceneManager->assets()->effect("effect/Background.effect")
     );
 }
 
@@ -122,7 +122,7 @@ VideoCameraPreview::frameReceivedHandler(AbstractVideoCamera::Ptr           vide
         width != _videoPreviewTarget->width() ||
         height != _videoPreviewTarget->height())
     {
-        initializeVideoPreviewTarget(width, height, format);
+        initializeVideoPreviewTarget(data, width, height, format);
     }
     else if (_updatePreviewWhenFrameReceived)
     {
@@ -139,7 +139,10 @@ VideoCameraPreview::forceBackgroundUpdate()
 }
 
 void
-VideoCameraPreview::initializeVideoPreviewTarget(int width, int height, ImageFormatType format)
+VideoCameraPreview::initializeVideoPreviewTarget(const std::vector<unsigned char>&  data,
+                                                 int width,
+                                                 int height,
+                                                 ImageFormatType format)
 {
     if (_videoPreviewTarget != nullptr)
         _videoPreviewTarget->dispose();
@@ -156,10 +159,8 @@ VideoCameraPreview::initializeVideoPreviewTarget(int width, int height, ImageFor
         break;
     }
 
-    auto data = std::vector<unsigned char>(width * height * 4, 0);
-
     updateVideoPreviewTarget(data, width, height, format);
-
+    
     if (_previewSurface != nullptr)
     {
         _previewSurface->material()->data()->set("diffuseMap", _videoPreviewTarget->sampler());
@@ -176,7 +177,7 @@ VideoCameraPreview::updateVideoPreviewTarget(const std::vector<unsigned char>&  
     // TODO
     // setup specific (hardware) conversion for formats such as YUV
 
-    if (_videoPreviewTarget != nullptr)
+    if (_videoPreviewTarget != nullptr && width > 0 && height > 0)
     {
         _videoPreviewTarget->data(const_cast<unsigned char*>(data.data()), width, height);
         _videoPreviewTarget->upload();

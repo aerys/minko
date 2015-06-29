@@ -46,10 +46,11 @@ namespace minko
         private:
             typedef std::shared_ptr<component::SceneManager> SceneManagerPtr;
 
-            FrameSignal::Ptr _frameReceived;
-            IOSFrameSignal::Slot _iOSFrameReceivedSlot;
+            FrameSignal::Ptr        _frameReceived;
+            IOSFrameSignal::Slot    _iOSFrameReceivedSlot;
 
-            VideoSourceImpl* const _videoSourceImpl;
+            VideoSourceImpl* const  _videoSourceImpl;
+            bool                    _receivedFrameData;
 
         public:
             ~IOSVideoCamera();

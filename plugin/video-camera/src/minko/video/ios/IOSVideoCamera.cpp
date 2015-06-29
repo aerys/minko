@@ -29,7 +29,9 @@ using namespace minko::video;
 
 IOSVideoCamera::IOSVideoCamera() :
     _videoSourceImpl(new VideoSourceImpl()),
-    _frameReceived(FrameSignal::create())
+    _frameReceived(FrameSignal::create()),
+    _imageBuffer(),
+    _receivedFrameData(false)
 {
 }
 
@@ -44,6 +46,7 @@ IOSVideoCamera::initialize()
     _iOSFrameReceivedSlot = _videoSourceImpl->frameReceived->connect(
     [&](const std::vector<unsigned char>& data, int width, int height)
     {
+        _receivedFrameData = true;
         if (_imageBuffer.width != width || _imageBuffer.height != height)
             _rgbaFrame = std::vector<unsigned char>((width * height) * 4);
         
@@ -101,8 +104,11 @@ IOSVideoCamera::decodeBGRAFrame(const unsigned char* data,
 void
 IOSVideoCamera::requestFrame()
 {
-    // We retrieve a BGRA image buffer, so we need to convert it into RGBA format
-    decodeBGRAFrame(reinterpret_cast<unsigned char*>(_imageBuffer.data.data()), _rgbaFrame, _imageBuffer.width, _imageBuffer.height);
-    
-    _frameReceived->execute(shared_from_this(), _rgbaFrame, _imageBuffer.width, _imageBuffer.height, ImageFormatType::RGBA);
+    if (_receivedFrameData && _imageBuffer.width > 0 && _imageBuffer.height > 0)
+    {
+        // We retrieve a BGRA image buffer, so we need to convert it into RGBA format
+        decodeBGRAFrame(reinterpret_cast<unsigned char*>(_imageBuffer.data.data()), _rgbaFrame, _imageBuffer.width, _imageBuffer.height);
+        
+        _frameReceived->execute(shared_from_this(), _rgbaFrame, _imageBuffer.width, _imageBuffer.height, ImageFormatType::RGBA);
+    }
 }

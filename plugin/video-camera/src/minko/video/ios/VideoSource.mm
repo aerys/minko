@@ -145,15 +145,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
     size_t width = CVPixelBufferGetWidth(imageBuffer);
     size_t height = CVPixelBufferGetHeight(imageBuffer);
     size_t stride = CVPixelBufferGetBytesPerRow(imageBuffer);
-
+    
     // Unlock pixel buffer
     CVPixelBufferUnlockBaseAddress(imageBuffer, 0);
 
-    minko::video::VideoFrame frame = {width, height, stride, baseAddress};
-    
-    std::vector<unsigned char> data(frame.data, frame.data + (frame.stride * frame.height));
-    
-    self->frameReceived.execute(data, (int)frame.width, (int)frame.height);
+    self->frameData.assign(baseAddress, baseAddress + (stride * height));
+    self->frameReceived.execute(self->frameData, (int)width, (int)height);
 }
 
 - (void)start

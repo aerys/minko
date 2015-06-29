@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 {
 @public
     minko::Signal<const std::vector<unsigned char>&, int, int> frameReceived;
+    std::vector<unsigned char> frameData;
 }
 
 @property (nonatomic, strong) AVCaptureSession * captureSession;
@@ -42,15 +43,6 @@ namespace minko
 {
     namespace video
     {
-        struct VideoFrame
-        {
-            size_t width;
-            size_t height;
-            size_t stride;
-            
-            unsigned char * data;
-        };
-        
         struct VideoSourceImpl
         {
             VideoSourceImpl();

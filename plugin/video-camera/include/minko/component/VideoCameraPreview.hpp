@@ -125,7 +125,7 @@ namespace minko
             );
 
             void
-            initializeVideoPreviewTarget(int width, int height, video::ImageFormatType format);
+            initializeVideoPreviewTarget(const std::vector<unsigned char>& data, int width, int height, video::ImageFormatType format);
 
             void
             updateVideoPreviewTarget(const std::vector<unsigned char>& data, int width, int height, video::ImageFormatType format);
