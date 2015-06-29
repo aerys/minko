@@ -333,11 +333,10 @@ bullet::PhysicsWorld::frameBeginHandler(std::shared_ptr<SceneManager> sceneManag
 {
     if (_paused)
         return;
+    
+    deltaTime = deltaTime / 1000.0f;
 
-    if (deltaTime > 100.f)
-        deltaTime = 100.f;
-
-    _bulletDynamicsWorld->stepSimulation(deltaTime);
+    _bulletDynamicsWorld->stepSimulation(deltaTime, 10, 0.016f);
     updateColliders();
 }
 
