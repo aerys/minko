@@ -70,7 +70,7 @@ NativeOculus::initialize(std::shared_ptr<component::SceneManager> sceneManager)
         )
     );
 
-    initializePostProcessingRenderer(std::shared_ptr<component::SceneManager> sceneManager);
+    initializePostProcessingRenderer(sceneManager);
 }
 
 bool
