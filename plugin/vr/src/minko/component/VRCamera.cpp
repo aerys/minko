@@ -247,3 +247,9 @@ VRCamera::actionButtonPressed()
 {
     return _VRImpl->actionButtonPressed();
 }
+
+Signal<>::Ptr
+VRCamera::actionButtonReleased()
+{
+    return _VRImpl->actionButtonReleased();
+}

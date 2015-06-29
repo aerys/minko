@@ -48,6 +48,8 @@ Cardboard::Cardboard(int viewportWidth, int viewportHeight, float zNear, float z
     _magnetChangedSlot(nullptr),
     _magnetSensorData(),
     _magnetPressed(Signal<>::create()),
+    _magnetReleased(Signal<>::create()),
+    _isMagnetDown(false),
     _magnetOffset()
 {
     _uvScaleOffset[0].first = math::vec2();
@@ -144,10 +146,17 @@ Cardboard::evaluateMagnetModel()
         minimums[i] = computeMinimum(offsets);
     }
 
+    //LOG_INFO(minimums[0] << " - " << maximums[1]);
     if ((minimums[0] < 30.0F) && (maximums[1] > 130.0F))
     {
         _magnetSensorData.clear();
-        _magnetPressed->execute();
+
+        _isMagnetDown = !_isMagnetDown;
+
+        if(_isMagnetDown)
+            _magnetPressed->execute();
+        else
+            _magnetReleased->execute();
     }
 }
 

@@ -48,10 +48,12 @@ namespace minko
 
             float                                               _zNear;
             float                                               _zFar;
+            bool                                                _isMagnetDown;
             std::vector<std::vector<float>>                     _magnetSensorData;
             std::vector<float>                                  _magnetOffset;
             Signal<float, float, float>::Slot                   _magnetChangedSlot;
             Signal<>::Ptr                                       _magnetPressed;
+            Signal<>::Ptr                                       _magnetReleased;
 
         public:
             typedef std::shared_ptr<Cardboard> Ptr;
@@ -94,6 +96,13 @@ namespace minko
             actionButtonPressed()
             {
                 return _magnetPressed;
+            }
+
+            inline
+            Signal<>::Ptr
+            actionButtonReleased()
+            {
+                return _magnetReleased;
             }
 
             inline static

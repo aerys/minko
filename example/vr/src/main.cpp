@@ -92,6 +92,7 @@ main(int argc, char** argv)
     Node::Ptr camera;
 
     Signal<>::Slot actionButtonPressed = nullptr;
+    Signal<>::Slot actionButtonReleased = nullptr;
 
     auto _ = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
     {
@@ -140,6 +141,11 @@ main(int argc, char** argv)
             actionButtonPressed = camera->component<VRCamera>()->actionButtonPressed()->connect([&]()
             {
                 LOG_INFO("HMD Action Button Pressed!");
+            });
+
+            actionButtonReleased = camera->component<VRCamera>()->actionButtonReleased()->connect([&]()
+            {
+                LOG_INFO("HMD Action Button Released!");
             });
         }
     });

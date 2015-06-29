@@ -70,6 +70,10 @@ namespace minko
             virtual
             Signal<>::Ptr
             actionButtonPressed() = 0;
+
+            virtual
+            Signal<>::Ptr
+            actionButtonReleased() = 0;
         };
     }
 }

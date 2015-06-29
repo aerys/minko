@@ -89,6 +89,9 @@ namespace minko
             Signal<>::Ptr
             actionButtonPressed();
 
+             Signal<>::Ptr
+            actionButtonReleased();
+
         public:
             ~VRCamera();
 
