@@ -162,7 +162,7 @@ VRCamera::targetAdded(NodePtr target)
     );
 
     _leftCameraNode = scene::Node::create("cameraLeftEye")
-        ->addComponent(Transform::create())
+        ->addComponent(Transform::create(math::inverse(math::lookAt(math::vec3(0), math::vec3(0, 10, -10), math::vec3(0, 1, 0)))))
         ->addComponent(leftCamera)
         ->addComponent(_leftRenderer);
 
@@ -176,7 +176,7 @@ VRCamera::targetAdded(NodePtr target)
     );
 
     _rightCameraNode = scene::Node::create("cameraRightEye")
-        ->addComponent(Transform::create(math::translate(math::vec3(.5f, 0, 0))))
+        ->addComponent(Transform::create(math::inverse(math::lookAt(math::vec3(.5f, 0, 0), math::vec3(0.5f, 10, -10), math::vec3(0, 1, 0)))))
         ->addComponent(rightCamera)
         ->addComponent(_rightRenderer);
 
