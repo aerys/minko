@@ -100,7 +100,10 @@ StreamedTextureParser::createTexture(AssetLibrary::Ptr     assetLibrary,
 
         if (streamingOptions()->streamedTextureFunction())
         {
-            texture2d = std::static_pointer_cast<Texture>(streamingOptions()->streamedTextureFunction()(texture2d));
+            texture2d = std::static_pointer_cast<Texture>(streamingOptions()->streamedTextureFunction()(
+                filename,
+                texture2d
+            ));
         }
 
         assetLibrary->texture(filename, texture2d);
@@ -111,8 +114,6 @@ StreamedTextureParser::createTexture(AssetLibrary::Ptr     assetLibrary,
         break;
     }
     case TextureType::CubeTexture:
-
-        // TODO #CubeTexture; #Streaming; #CompressedTexture
 
         return nullptr;
     }
@@ -269,9 +270,6 @@ StreamedTextureParser::lodParsed(int                                 previousLod
             mipLevelDataSize = extractedLodData.size();
         }
 
-        const auto mipLevelWidth = std::max<int>(_textureWidth >> mipLevel, TextureFormatInfo::minimumWidth(_textureFormat));
-        const auto mipLevelHeight = std::max<int>(_textureHeight >> mipLevel, TextureFormatInfo::minimumHeight(_textureFormat));
-
         switch (_textureType)
         {
         case TextureType::Texture2D:
@@ -283,11 +281,19 @@ StreamedTextureParser::lodParsed(int                                 previousLod
                 const_cast<unsigned char*>(mipLevelData)
             );
 
+            if (mipLevel == 0)
+            {
+                const auto storeTextureData = !options->disposeTextureAfterLoading();
+
+                if (storeTextureData)
+                {
+                    texture2d->data(const_cast<unsigned char*>(mipLevelData));
+                }
+            }
+
             break;
         }
         case TextureType::CubeTexture:
-
-            // TODO #CubeTexture; #Streaming; #CompressedTexture
 
             break;
         }

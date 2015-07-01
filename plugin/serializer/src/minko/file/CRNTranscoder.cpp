@@ -68,6 +68,8 @@ CRNTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
             texture2d->data().end()
         );
 
+        const auto useSRGBSpace = writerOptions->useTextureSRGBSpace();
+
         crn_comp_params compressorParameters;
 
         compressorParameters.m_width = texture2d->width();
@@ -76,6 +78,7 @@ CRNTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
 
         compressorParameters.set_flag(cCRNCompFlagDXT1AForTransparency, outFormat == TextureFormat::RGBA_DXT1);
         compressorParameters.set_flag(cCRNCompFlagHierarchical, false);
+        compressorParameters.set_flag(cCRNCompFlagPerceptual, useSRGBSpace);
 
         compressorParameters.m_file_type = cCRNFileTypeDDS;
         compressorParameters.m_format = textureFormatToCRNTextureFomat.at(outFormat);
@@ -85,6 +88,7 @@ CRNTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
 
         crn_mipmap_params compressorMipParameters;
         compressorMipParameters.m_mode = generateMipmaps ? cCRNMipModeGenerateMips : cCRNMipModeNoMips;
+        compressorMipParameters.m_gamma_filtering = useSRGBSpace;
 
         unsigned int actualQualityLevel;
         float actualBitrate;

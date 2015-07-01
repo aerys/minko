@@ -139,15 +139,13 @@ PerspectiveCamera::updateProjection(float fov, float aspectRatio, float zNear, f
 	_viewProjection = _projection * _view;
 
 	_data
-        ->set("zNear",                  _zNear)
-        ->set("zFar",                   _zFar)
-		->set("projectionMatrix",		_projection)
-  		->set("worldToScreenMatrix",	_viewProjection)
-        ->set("fov",                    fov)
-        ->set("aspectRatio",            aspectRatio)
-        ->set("zNear",                  zNear)
-        ->set("zFar",                   zFar);
-}
+        ->set("fov", _fov)
+        ->set("aspectRatio", _aspectRatio)
+        ->set("zNear", _zNear)
+        ->set("zFar", _zFar)
+		->set("projectionMatrix", _projection)
+		->set("worldToScreenMatrix", _viewProjection);
+  }
 
 std::shared_ptr<math::Ray>
 PerspectiveCamera::unproject(float x, float y)
@@ -172,19 +170,36 @@ PerspectiveCamera::unproject(float x, float y)
 }
 
 math::vec3
-PerspectiveCamera::project(math::vec3 worldPosition)
+PerspectiveCamera::project(const math::vec3& worldPosition) const
 {
     auto context   = target()->root()->component<SceneManager>()->assets()->context();
-    auto width     = context->viewportWidth();
-    auto height    = context->viewportHeight();
-    auto pos       = math::vec4(worldPosition, 1.f);
-    auto vector    = _viewProjection * pos;
+
+    return project(
+        worldPosition,
+        context->viewportWidth(),
+        context->viewportHeight(),
+        _view,
+        _viewProjection
+    );
+}
+
+math::vec3
+PerspectiveCamera::project(const math::vec3&   worldPosition,
+                           unsigned int        viewportWidth,
+                           unsigned int        viewportHeight,
+                           const math::mat4&   viewMatrix,
+                           const math::mat4&   viewProjectionMatrix)
+{
+    const auto width = viewportWidth;
+    const auto height = viewportHeight;
+    const auto pos = math::vec4(worldPosition, 1.f);
+    auto vector = viewProjectionMatrix * pos;
 
     vector /= vector.w;
 
     return math::vec3(
        width * ((vector.x + 1.0f) * .5f),
 	   height * ((1.0f - ((vector.y + 1.0f) * .5f))),
-       -(_view * pos).z
+       -(viewMatrix * pos).z
     );
 }

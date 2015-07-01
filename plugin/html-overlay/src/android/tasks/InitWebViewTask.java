@@ -89,6 +89,9 @@ public class InitWebViewTask implements Runnable
 		// Increase WebView performances
 		_webView.getSettings().setRenderPriority(WebSettings.RenderPriority.HIGH);
         _webView.getSettings().setCacheMode(WebSettings.LOAD_DEFAULT);
+
+        // Don't require user interaction to play media content
+        _webView.getSettings().setMediaPlaybackRequiresUserGesture(false);
 		
 		Log.i("minko-java", "[InitWebViewTask] WebView is now instantiated: " + _webView + ".");
 		webViewInitialized();

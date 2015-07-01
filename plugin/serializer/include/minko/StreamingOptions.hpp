@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/SerializerCommon.hpp"
 #include "minko/StreamingCommon.hpp"
 #include "minko/component/MasterLodScheduler.hpp"
+#include "minko/file/MeshPartitioner.hpp"
 #include "minko/file/POPGeometryWriter.hpp"
 #include "minko/file/SurfaceOperator.hpp"
 
@@ -40,19 +41,24 @@ namespace minko
 
         typedef std::shared_ptr<render::AbstractTexture>        AbstractTexturePtr;
 
+        typedef std::function<float(
+            int,
+            int,
+            SurfacePtr,
+            const data::Store&,
+            const data::Store&,
+            const data::Store&
+        )>                                                      LodPriorityFunction;
+
     private:
         typedef std::shared_ptr<scene::Node>                    NodePtr;
         typedef std::shared_ptr<file::AbstractWriter<NodePtr>>  SceneWriter;
 
         typedef std::function<
-            std::shared_ptr<geometry::Geometry>(
-                std::shared_ptr<geometry::Geometry>
-            )
+            GeometryPtr(const std::string&, GeometryPtr)
         >                                                       POPGeometryFunction;
         typedef std::function<
-            std::shared_ptr<render::AbstractTexture>(
-                std::shared_ptr<render::AbstractTexture>
-            )
+            AbstractTexturePtr(const std::string&, AbstractTexturePtr)
         >                                                       StreamedTextureFunction;
 
     public:
@@ -76,9 +82,10 @@ namespace minko
         std::function<int(SurfacePtr)>                          _popGeometryLodFunction;
         std::function<int(SurfacePtr)>                          _streamedTextureLodFunction;
 
-        bool                                                    _mergeSurfacesOnPartitioning;
-        bool                                                    _useSharedClusterHierarchyOnPartitioning;
-        bool                                                    _applyCrackFreePolicyOnPartitioning;
+        LodPriorityFunction                                     _popGeometryLodPriorityFunction;
+        LodPriorityFunction                                     _streamedTextureLodPriorityFunction;
+
+        file::MeshPartitioner::Options                          _meshPartitionerOptions;
 
         float                                                   _popGeometryPriorityFactor;
         float                                                   _streamedTexturePriorityFactor;
@@ -254,49 +261,49 @@ namespace minko
         }
 
         inline
-        bool
-        mergeSurfacesOnPartitioning() const
+        const LodPriorityFunction&
+        popGeometryLodPriorityFunction() const
         {
-            return _mergeSurfacesOnPartitioning;
+            return _popGeometryLodPriorityFunction;
         }
 
         inline
         Ptr
-        mergeSurfacesOnPartitioning(bool value)
+        popGeometryLodPriorityFunction(const LodPriorityFunction& function)
         {
-            _mergeSurfacesOnPartitioning = value;
+            _popGeometryLodPriorityFunction = function;
 
             return shared_from_this();
         }
 
         inline
-        bool
-        useSharedClusterHierarchyOnPartitioning() const
+        const LodPriorityFunction&
+        streamedTextureLodPriorityFunction() const
         {
-            return _useSharedClusterHierarchyOnPartitioning;
+            return _streamedTextureLodPriorityFunction;
         }
 
         inline
         Ptr
-        useSharedClusterHierarchyOnPartitioning(bool value)
+        streamedTextureLodPriorityFunction(const LodPriorityFunction& function)
         {
-            _useSharedClusterHierarchyOnPartitioning = value;
+            _streamedTextureLodPriorityFunction = function;
 
             return shared_from_this();
         }
 
         inline
-        bool
-        applyCrackFreePolicyOnPartitioning() const
+        const file::MeshPartitioner::Options&
+        meshPartitionerOptions() const
         {
-            return _applyCrackFreePolicyOnPartitioning;
+            return _meshPartitionerOptions;
         }
 
         inline
         Ptr
-        applyCrackFreePolicyOnPartitioning(bool value)
+        meshPartitionerOptions(const file::MeshPartitioner::Options& value)
         {
-            _applyCrackFreePolicyOnPartitioning = value;
+            _meshPartitionerOptions = value;
 
             return shared_from_this();
         }

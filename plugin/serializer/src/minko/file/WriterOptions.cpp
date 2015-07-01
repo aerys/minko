@@ -50,6 +50,7 @@ WriterOptions::WriterOptions() :
     _textureFormats(),
     _compressTexture(true),
     _generateMipmaps(true),
+    _useTextureSRGBSpace(true),
     _upscaleTextureWhenProcessedForMipmapping(true),
     _textureMaxResolution(math::ivec2(2048, 2048)),
     _mipFilter(MipFilter::LINEAR),

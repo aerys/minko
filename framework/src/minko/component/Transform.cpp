@@ -292,7 +292,7 @@ Transform::RootTransform::updateTransformsList()
         while (ancestor != nullptr && !ancestor->hasComponent<Transform>())
             ancestor = ancestor->parent();
 
-        if (ancestor == nullptr)
+        if (previousAncestor == nullptr && ancestor == nullptr)
         {
             numSiblings = 0;
         }
@@ -315,11 +315,13 @@ Transform::RootTransform::updateTransformsList()
                 previousAncestorCacheEntry._numChildren = numSiblings;
 
                 firstSiblingId = nodeId;
-                numSiblings = 1;
+                numSiblings = ancestor != nullptr ? 1 : 0;
 
                 previousAncestor = ancestor;
 
-                ancestorId = _nodeToId.at(ancestor);
+                ancestorId = ancestor != nullptr
+                    ? _nodeToId.at(ancestor)
+                    : -1;
             }
         }
         else

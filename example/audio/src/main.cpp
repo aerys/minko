@@ -24,7 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::component;
-using namespace minko::math;
 using namespace minko::animation;
 
 int
@@ -58,38 +57,44 @@ main(int argc, char** argv)
     auto camera = scene::Node::create("camera")
         ->addComponent(Renderer::create(0x7f7f7fff))
         ->addComponent(Transform::create(
-            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+            math::inverse(
+                math::lookAt(
+                    math::vec3(0.f, 0.f, 3.f), math::vec3(), math::vec3(0, 1, 0)
+                )
+            )
         ))
         ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
 
     root->addChild(camera);
-
+    root->addChild(mesh);
+    
     std::vector<uint> timetable = { 0, 2000, 4000 };
 
-    std::vector<Matrix4x4::Ptr> matrices = {
-        Matrix4x4::create()->appendTranslation(-5),
-        Matrix4x4::create()->appendTranslation(+5),
-        Matrix4x4::create()->appendTranslation(-5),
+    std::vector<math::mat4> matrices = {
+        math::translate(math::vec3(-5, 0, 0)),
+        math::translate(math::vec3(5, 0, 0)),
+        math::translate(math::vec3(-5, 0, 0))
     };
 
     auto timeline = Matrix4x4Timeline::create("transform.matrix", 4000, timetable, matrices, true);
 
-    auto _ = sceneManager->assets()->loader()->complete()->connect([ = ](file::Loader::Ptr loader)
+    auto _ = sceneManager->assets()->loader()->complete()->connect([=](file::Loader::Ptr loader)
     {
+        auto cubeMaterial =  material::BasicMaterial::create();
+        cubeMaterial->diffuseColor(0xffff00ff);
+        
         mesh->addComponent(Surface::create(
                 geometry::CubeGeometry::create(sceneManager->assets()->context()),
-                material::BasicMaterial::create()->diffuseColor(0xffff00ff),
+                cubeMaterial,
                 sceneManager->assets()->effect("effect/Basic.effect")
             )
         );
 
         mesh->addComponent(Animation::create({ timeline })->play());
-
+        
         audio::Sound::Ptr sound = sceneManager->assets()->sound("audio/breakbeat.ogg");
         audio::SoundChannel::Ptr channel = sound->play(std::numeric_limits<int>::max());
 
-        root->addChild(mesh);
-        
         auto script = audio::PositionalSound::create(channel, camera);
         mesh->addComponent(script);
     });
@@ -101,7 +106,10 @@ main(int argc, char** argv)
 
     auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
     {
-        mesh->component<Transform>()->matrix()->appendRotationY(0.001f * deltaTime);
+        mesh->component<Transform>()->matrix(
+            math::rotate(0.001f * deltaTime, math::vec3(0.f, 1.f, 0.f)) *
+            mesh->component<Transform>()->matrix()
+        );
 
         sceneManager->nextFrame(time, deltaTime);
     });

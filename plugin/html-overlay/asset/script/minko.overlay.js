@@ -570,15 +570,16 @@ Minko.androidEventHandler = function(event)
 	if (!event.dontPreventDefault && (event.type == "touchstart" || event.type == "touchend"))	
 		event.preventDefault();
 
-	
+	var pixelRatio = window.devicePixelRatio;
+
 	eventData = {};
 	eventData.type = event.type;
-	eventData.clientX = event.clientX;
-	eventData.clientY = event.clientY;
-	eventData.pageX = event.pageX;
-	eventData.pageY = event.pageY;
-	eventData.screenX = event.screenX;
-	eventData.screenY = event.screenY;
+	eventData.clientX = event.clientX * pixelRatio;
+	eventData.clientY = event.clientY * pixelRatio;
+	eventData.pageX = event.pageX * pixelRatio;
+	eventData.pageY = event.pageY * pixelRatio;
+	eventData.screenX = event.screenX * pixelRatio;
+	eventData.screenY = event.screenY * pixelRatio;
 	
 	if (event.type.indexOf("touch") != -1)
 	{
@@ -602,8 +603,8 @@ Minko.androidEventHandler = function(event)
 			}
 			
 			eventData.changedTouches[i] = {};
-			eventData.changedTouches[i].clientX = event.changedTouches[i].clientX;
-			eventData.changedTouches[i].clientY = event.changedTouches[i].clientY;
+			eventData.changedTouches[i].clientX = event.changedTouches[i].clientX * pixelRatio;
+			eventData.changedTouches[i].clientY = event.changedTouches[i].clientY * pixelRatio;
 			eventData.changedTouches[i].identifier = event.changedTouches[i].identifier;
 		}
 	}

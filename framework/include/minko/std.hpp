@@ -35,15 +35,22 @@ namespace std
 	};
 
 #ifdef __ANDROID__
-	template <typename T>
-	inline
-	string
-	to_string(T v)
-	{
-		ostringstream oss;
-		oss << v;
-		return oss.str();
-	}
+    template <typename T>
+    inline
+    string
+    to_string(T v)
+    {
+        ostringstream oss;
+        oss << v;
+        return oss.str();
+    }
+
+    inline
+    unsigned long
+    stoul(const std::string& v)
+    {
+        return strtoul(v.c_str(), nullptr, 10);
+    }
 #endif
 
 	inline
@@ -100,7 +107,7 @@ namespace std
     template<typename T>
     inline
     std::string
-    to_string(const std::list<T>& list, const std::string& separator)
+    to_string(const std::list<T>& list, const std::string& separator = ", ")
     {
         std::string s = "";
 

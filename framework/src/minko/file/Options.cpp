@@ -77,6 +77,7 @@ Options::Options(const Options& copy) :
     _includePaths(copy._includePaths),
     _platforms(copy._platforms),
     _userFlags(copy._userFlags),
+    _optimizeForRendering(copy._optimizeForRendering),
     _parsers(copy._parsers),
     _protocols(copy._protocols),
     _generateMipMaps(copy._generateMipMaps),

@@ -10,7 +10,9 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"lib/**.cpp",
 		"lib/**.c",
 		"src/**.cpp",
-		"include/**.hpp"
+		"include/**.hpp",
+		"include/**.h",
+		"src/**.mm"
 	}
 
 	includedirs {
@@ -29,3 +31,12 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 			minko.plugin.path("video-camera") .. "/include/minko/video/HTML5VideoCamera.hpp",
 			minko.plugin.path("video-camera") .. "/src/minko/video/HTML5VideoCamera.cpp"
 		}
+
+	configuration { "not ios" }
+		excludes {
+			minko.plugin.path("video-camera") .. "/include/minko/video/ios/**",
+			minko.plugin.path("video-camera") .. "/src/minko/video/ios/**"
+		}
+
+	configuration { "ios" }
+		buildoptions { "-x objective-c++" } 

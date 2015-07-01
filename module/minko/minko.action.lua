@@ -58,8 +58,11 @@ minko.action.copy = function(sourcepath, destpath, targetdir)
 		destpath = path.getname(sourcepath)
 	end
 
-	destpath = path.join(targetdir, destpath)
-
+	if string.endswith(destpath, '/') then
+		destpath = path.join(targetdir, destpath) .. '/'
+	else
+		destpath = path.join(targetdir, destpath)
+	end
 	if string.find(path.getname(destpath), '*') then
 		destpath = path.getdirectory(destpath)
 	end
@@ -76,12 +79,14 @@ minko.action.copy = function(sourcepath, destpath, targetdir)
 		return 'mkdir ' .. translate(destdir) .. ' & ' ..
 			   'xcopy /y /e /i ' .. translate(sourcepath) .. ' ' .. translate(destdir)
 	else
-		if destpath ~= gettargetdir() then
+		if destpath ~= gettargetdir() and not string.endswith(destpath, '/') then
 			destdir = path.getdirectory(destpath)
 		end
 
-		if os.isdir(sourcepath) and not string.endswith(sourcepath, '/') then
-			sourcepath = sourcepath .. '/' -- cp will copy the content of the directory
+		if not os.is("macosx") then
+			if os.isdir(sourcepath) and not string.endswith(sourcepath, '/') then
+				sourcepath = sourcepath .. '/' -- cp will copy the content of the directory
+			end
 		end
 
 		if os.iscygwin() then

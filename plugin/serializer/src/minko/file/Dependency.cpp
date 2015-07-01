@@ -287,9 +287,11 @@ Dependency::serializeGeometry(std::shared_ptr<Dependency>				dependency,
 
     filename = writerOptions->geometryUriFunction()(filename);
 
-    const auto assetIsNull = writerOptions->assetIsNull(geometry->uuid());
+    auto targetGeometry = writerOptions->geometryFunction()(filename, geometry);
 
-    geometryWriter->data(writerOptions->geometryFunction()(filename, geometry));
+    const auto assetIsNull = writerOptions->assetIsNull(targetGeometry->uuid());
+
+    geometryWriter->data(writerOptions->geometryFunction()(filename, targetGeometry));
 
     if (!assetIsNull && writerOptions->embedMode() & WriterOptions::EmbedMode::Geometry)
     {
@@ -330,9 +332,11 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
 
     filename = writerOptions->textureUriFunction()(filename);
 
-    const auto assetIsNull = writerOptions->assetIsNull(texture->uuid());
+    auto targetTexture = writerOptions->textureFunction()(filename, texture);
 
-    writer->data(writerOptions->textureFunction()(filename, texture));
+    const auto assetIsNull = writerOptions->assetIsNull(targetTexture->uuid());
+
+    writer->data(writerOptions->textureFunction()(filename, targetTexture));
 
     if (!assetIsNull && writerOptions->embedMode() & WriterOptions::EmbedMode::Texture)
     {
@@ -379,9 +383,11 @@ Dependency::serializeMaterial(std::shared_ptr<Dependency>			dependency,
 
     filename = writerOptions->materialUriFunction()(filename);
 
-    const auto assetIsNull = writerOptions->assetIsNull(material->uuid());
+    auto targetMaterial = writerOptions->materialFunction()(filename, material);
 
-    writer->data(writerOptions->materialFunction()(filename, material));
+    const auto assetIsNull = writerOptions->assetIsNull(targetMaterial->uuid());
+
+    writer->data(writerOptions->materialFunction()(filename, targetMaterial));
 
     if (!assetIsNull && writerOptions->embedMode() & WriterOptions::EmbedMode::Material)
     {

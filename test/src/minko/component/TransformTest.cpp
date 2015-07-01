@@ -565,3 +565,52 @@ TEST_F(TransformTest, DiscreteRemoveTransform)
     ASSERT_EQ(n000->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(-2.f, 0.f, 1.f)));
     ASSERT_EQ(n100->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(0.f, 0.f, 1.f)));
 }
+
+TEST_F(TransformTest, EmptyAncestorPath)
+{
+    auto root = Node::create("root");
+
+    auto n0 = Node::create("n0");
+    auto n1 = Node::create("n1");
+    auto n2 = Node::create("n2");
+
+    auto n00 = Node::create("n00");
+    auto n10 = Node::create("n01");
+    auto n20 = Node::create("n20");
+
+    auto n100 = Node::create("n100");
+    auto n101 = Node::create("n101");
+
+    n0->addComponent(Transform::create(math::translate(math::vec3(-1.f, 0.f, 0.f))));
+    n1->addComponent(Transform::create(math::translate(math::vec3(0.f, 0.f, 0.f))));
+
+    n00->addComponent(Transform::create(math::translate(math::vec3(3.f, 0.f, 0.f))));
+    n10->addComponent(Transform::create(math::translate(math::vec3(5.f, 0.f, 0.f))));
+    n20->addComponent(Transform::create(math::translate(math::vec3(8.f, 0.f, 0.f))));
+
+    n100->addComponent(Transform::create(math::translate(math::vec3(-1.f, 0.f, 0.f))));
+    n101->addComponent(Transform::create(math::translate(math::vec3(1.f, 0.f, 0.f))));
+
+    root->addChild(n0);
+    root->addChild(n1);
+    root->addChild(n2);
+
+    n0->addChild(n00);
+    n1->addChild(n10);
+    n2->addChild(n20);
+
+    n10->addChild(n100);
+    n10->addChild(n101);
+
+    n0->component<Transform>()->updateModelToWorldMatrix();
+
+    ASSERT_EQ(n0->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(-1.f, 0.f, 0.f)));
+    ASSERT_EQ(n1->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(0.f, 0.f, 0.f)));
+
+    ASSERT_EQ(n00->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(2.f, 0.f, 0.f)));
+    ASSERT_EQ(n10->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(5.f, 0.f, 0.f)));
+    ASSERT_EQ(n20->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(8.f, 0.f, 0.f)));
+
+    ASSERT_EQ(n100->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(4.f, 0.f, 0.f)));
+    ASSERT_EQ(n101->component<Transform>()->modelToWorldMatrix(), math::translate(math::vec3(6.f, 0.f, 0.f)));
+}
