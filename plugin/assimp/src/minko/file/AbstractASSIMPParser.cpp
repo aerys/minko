@@ -859,6 +859,9 @@ AbstractASSIMPParser::parseDependencies(const std::string& 	filename,
 				{
 					const auto filename = std::string(path.data);
 
+                    if (filename.empty())
+                        continue;
+
                     const auto assetName = File::removePrefixPathFromFilename(filename);
 
                     _textureFilenameToAssetName.insert(std::make_pair(filename, assetName));
@@ -1651,7 +1654,7 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 	for (auto& textureTypeAndName : _textureTypeToName)
 	{
 		const auto textureType = static_cast<aiTextureType>(textureTypeAndName.first);
-		const std::string& textureName = textureTypeAndName.second;
+		const auto& textureName = textureTypeAndName.second;
 
 		const unsigned int numTextures = aiMat->GetTextureCount(textureType);
 
@@ -1663,7 +1666,12 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 		{
             const auto textureFilename = std::string(path.data);
 
-            const auto textureAssetName = _textureFilenameToAssetName.at(textureFilename);
+            auto textureAssetNameIt = _textureFilenameToAssetName.find(textureFilename);
+
+            if (textureAssetNameIt == _textureFilenameToAssetName.end())
+                continue;
+
+            const auto& textureAssetName = textureAssetNameIt->second;
 
 			auto texture = _assetLibrary->texture(textureAssetName);
 
