@@ -397,9 +397,9 @@ void main(void)
 
     #if defined(VERTEX_UV1) && defined(LIGHT_MAP)
         #ifdef LIGHT_MAP_LOD
-            diffuse = lightMapping_overlay(diffuse, texturelod_texture2D(uLightMap, vVertexUV1, uLightMapSize, 0.0, uLightMapMaxAvailableLod, vec4(1.0)));
+            diffuse = lightMapping_multiply(diffuse, texturelod_texture2D(uLightMap, vVertexUV1, uLightMapSize, 0.0, uLightMapMaxAvailableLod, vec4(1.0)));
         #else
-            diffuse = lightMapping_overlay(diffuse, texture2D(uLightMap, vVertexUV1));
+            diffuse = lightMapping_multiply(diffuse, texture2D(uLightMap, vVertexUV1));
         #endif
     #endif // VERTEX_UV1 && LIGHT_MAP
 
