@@ -12,11 +12,16 @@
 
 #pragma include "Fog.function.glsl"
 #pragma include "TextureLod.function.glsl"
+#pragma include "LightMapping.function.glsl"
 
 uniform vec4 uDiffuseColor;
 
 #ifdef DIFFUSE_MAP
 uniform sampler2D uDiffuseMap;
+#endif
+
+#ifdef LIGHT_MAP
+uniform sampler2D uLightMap;
 #endif
 
 #ifdef DIFFUSE_CUBEMAP
@@ -44,7 +49,13 @@ uniform float uDiffuseMapMaxAvailableLod;
 uniform vec2 uDiffuseMapSize;
 #endif
 
+#ifdef LIGHT_MAP_LOD
+uniform float uLightMapMaxAvailableLod;
+uniform vec2 uLightMapSize;
+#endif
+
 varying vec2 vVertexUV;
+varying vec2 vVertexUV1;
 varying vec3 vVertexUVW;
 varying vec4 vVertexScreenPosition;
 
@@ -73,6 +84,13 @@ void main(void)
 			discard;
 	#endif // ALPHA_THRESHOLD
 
+    #if defined(VERTEX_UV1) && defined(LIGHT_MAP)
+        #ifdef LIGHT_MAP_LOD
+            diffuse = lightMapping_overlay(diffuse, texturelod_texture2D(uLightMap, vVertexUV1, uLightMapSize, 0.0, uLightMapMaxAvailableLod, vec4(1.0)));
+        #else
+            diffuse = lightMapping_overlay(diffuse, texture2D(uLightMap, vVertexUV1));
+        #endif
+    #endif // VERTEX_UV1 && LIGHT_MAP
 
 	#ifdef FOG_TECHNIQUE
 		diffuse.rgb = fog_sampleFog(diffuse.rgb, vVertexScreenPosition.z, uFogColor.xyz, uFogColor.a, uFogBounds.x, uFogBounds.y);

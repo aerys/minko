@@ -10,6 +10,7 @@
 				"attributes" : {
 					"aPosition"		: "geometry[${geometryUuid}].position",
 					"aUV"			: "geometry[${geometryUuid}].uv",
+					"aUV1"			: "geometry[${geometryUuid}].uv1",
 					"aNormal"		: "geometry[${geometryUuid}].normal",
 					"aTangent"		: "geometry[${geometryUuid}].tangent",
 					"aBoneIdsA"		: "geometry[${geometryUuid}].boneIdsA",
@@ -34,6 +35,14 @@
 					},
 					"uDiffuseMapMaxAvailableLod" 	: "material[${materialUuid}].diffuseMapMaxAvailableLod",
 					"uDiffuseMapSize" 				: "material[${materialUuid}].diffuseMapSize",
+					"uLightMap"						: {
+						"binding" : "material[${materialUuid}].lightMap",
+						"wrapMode" : "repeat",
+						"textureFilter" : "linear",
+						"mipFilter": "linear"
+					},
+					"uLightMapMaxAvailableLod" 		: "material[${materialUuid}].lightMapMaxAvailableLod",
+					"uLightMapSize" 				: "material[${materialUuid}].lightMapSize",
 					"uAlphaMap"						: "material[${materialUuid}].alphaMap",
 					"uAlphaThreshold"				: "material[${materialUuid}].alphaThreshold",
 					"uNormalMap"					: {
@@ -206,9 +215,12 @@
 					"MODEL_TO_WORLD"			: "modelToWorldMatrix",
 					"SKINNING_NUM_BONES"		: { "binding" : "geometry[${geometryUuid}].numBones", "type" : "int" },
 					"DIFFUSE_MAP"				: "material[${materialUuid}].diffuseMap",
+					"DIFFUSE_MAP_LOD"			: "material[${materialUuid}].diffuseMapLodEnabled",
+					"LIGHT_MAP"					: "material[${materialUuid}].lightMap",
+					"LIGHT_MAP_LOD"				: "material[${materialUuid}].lightMapLodEnabled",
 					"VERTEX_COLOR"				: "geometry[${geometryUuid}].color",
 					"VERTEX_UV"					: "geometry[${geometryUuid}].uv",
-					"DIFFUSE_MAP_LOD"			: "material[${materialUuid}].diffuseMapLodEnabled",
+					"VERTEX_UV1"				: "geometry[${geometryUuid}].uv1",
 					"NORMAL_MAP"				: "material[${materialUuid}].normalMap",
 					"NORMAL_MAP_LOD"			: "material[${materialUuid}].normalMapLodEnabled",
 					"SPECULAR_MAP"				: "material[${materialUuid}].specularMap",
