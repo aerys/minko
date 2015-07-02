@@ -108,6 +108,9 @@ namespace minko
                 std::unordered_map<ColliderPtr, NodeLayoutsChanged::Slot>           _colliderNodeLayoutChangedSlot;
                 std::unordered_map<ColliderPtr, LayoutMaskChanged::Slot>            _colliderLayoutMaskChangedSlot;
 
+                int                                                                 _maxNumSteps;
+                float                                                               _baseFramerate;
+                
                 bool                                                                _paused;
 
             public:
@@ -151,6 +154,34 @@ namespace minko
 
                 void
                 setGravity(const math::vec3&);
+                
+                inline
+                void
+                maxNumSteps(int value)
+                {
+                    _maxNumSteps = value;
+                }
+
+                inline
+                int
+                maxNumSteps()
+                {
+                    return _maxNumSteps;
+                }
+
+                inline
+                void
+                baseFramerate(float value)
+                {
+                    _baseFramerate = value;
+                }
+
+                inline
+                float
+                baseFramerate()
+                {
+                    return _baseFramerate;
+                }
 
             private: // Only the Collider class should know of the following functions
                 void

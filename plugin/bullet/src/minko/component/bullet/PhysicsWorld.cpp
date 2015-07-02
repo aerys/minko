@@ -59,7 +59,9 @@ bullet::PhysicsWorld::PhysicsWorld():
     _colliderNodeLayoutChangedSlot(),
     _colliderPropertiesChangedSlot(),
     _colliderLayoutMaskChangedSlot(),
-    _paused(false)
+    _paused(false),
+    _maxNumSteps(0),
+    _baseFramerate(60.0f)
 {
 }
 
@@ -336,7 +338,10 @@ bullet::PhysicsWorld::frameBeginHandler(std::shared_ptr<SceneManager> sceneManag
     
     deltaTime = deltaTime / 1000.0f;
 
-    _bulletDynamicsWorld->stepSimulation(deltaTime, 10, 0.016f);
+    auto baseStepLength = 1.0f / _baseFramerate;
+            
+    _bulletDynamicsWorld->stepSimulation(deltaTime, _maxNumSteps, baseStepLength);
+
     updateColliders();
 }
 
