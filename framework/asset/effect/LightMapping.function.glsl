@@ -13,7 +13,7 @@ vec4 lightMapping_overlay(vec4 diffuseColor, vec4 lightMapSample)
 
 vec4 lightMapping_multiply(vec4 diffuseColor, vec4 lightMapSample)
 {
-    return vec4(diffuseColor.r) * lightMapSample;
+    return diffuseColor * vec4(lightMapSample.r);
 }
 
 #endif // _LIGHTMAPPING_FUNCTION_GLSL_
