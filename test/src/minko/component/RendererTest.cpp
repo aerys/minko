@@ -201,3 +201,32 @@ TEST_F(RendererTest, PostProcessEffect)
     root->removeComponent(s3);
     ASSERT_EQ(renderer->numDrawCalls(), 0);
 }
+
+TEST_F(RendererTest, RendererLayoutMaskChanged)
+{
+    auto fx = MinkoTests::loadEffect("effect/Basic.effect");
+    auto renderer = Renderer::create();
+    auto root = scene::Node::create()
+        ->addComponent(SceneManager::create(MinkoTests::canvas()))
+        ->addComponent(PerspectiveCamera::create(1.f))
+        ->addComponent(renderer);
+
+    auto material = material::BasicMaterial::create();
+    material->diffuseColor(math::vec4(1.f));
+
+    auto s = Surface::create(
+        geometry::CubeGeometry::create(MinkoTests::canvas()->context()),
+        material,
+        fx
+    );
+
+    root->addComponent(s);
+    renderer->render(MinkoTests::canvas()->context());
+    ASSERT_EQ(renderer->numDrawCalls(), 1);
+
+    renderer->layoutMask(0u);
+
+    renderer->render(MinkoTests::canvas()->context());
+
+    ASSERT_EQ(renderer->numDrawCalls(), 0);
+}

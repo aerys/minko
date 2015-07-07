@@ -117,6 +117,8 @@ POPGeometryLodScheduler::surfaceAdded(Surface::Ptr surface)
 
     auto surfaceInfo = SurfaceInfo(surface);
 
+    surfaceInfo.box = surfaceTarget->component<BoundingBox>()->box();
+
     resource->geometry = geometry;
 
     auto resourceData = resource->base->data;
@@ -304,7 +306,7 @@ POPGeometryLodScheduler::computeRequiredLod(const POPGeometryResourceInfo&  reso
 
     auto target = surfaceInfo.surface->target();
 
-    auto box = target->component<BoundingBox>()->box();
+    auto box = surfaceInfo.box;
 
     const auto worldMinBound = box->bottomLeft();
     const auto worldMaxBound = box->topRight();
@@ -434,7 +436,7 @@ POPGeometryLodScheduler::distanceFromEye(const POPGeometryResourceInfo&  resourc
                                          const math::vec3&               eyePosition)
 {
     auto target = surfaceInfo.surface->target();
-    auto box = target->component<BoundingBox>()->box();
+    auto box = surfaceInfo.box;
 
     const auto boxCenter = (box->bottomLeft() + box->topRight()) / 2.f;
 

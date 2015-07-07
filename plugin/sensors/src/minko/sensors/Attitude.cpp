@@ -72,3 +72,9 @@ Attitude::quaternion()
 {
     return _attitudeManager->quaternion();
 }
+
+bool
+Attitude::isSupported()
+{
+    return _attitudeManager->isSupported();
+}

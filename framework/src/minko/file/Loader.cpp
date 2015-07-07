@@ -46,10 +46,13 @@ Loader::queue(const std::string& filename)
 Loader::Ptr
 Loader::queue(const std::string& filename, std::shared_ptr<Options> options)
 {
+    if (filename.empty())
+        return std::static_pointer_cast<Loader>(shared_from_this());
+
     _filesQueue.push_back(filename);
     _filenameToOptions[filename] = (options ? options : _options);
 
-    return std::dynamic_pointer_cast<Loader>(shared_from_this());
+    return std::static_pointer_cast<Loader>(shared_from_this());
 }
 
 void

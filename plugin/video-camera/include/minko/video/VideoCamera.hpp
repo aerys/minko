@@ -23,10 +23,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
 # include "minko/video/AndroidVideoCamera.hpp"
-#endif
-
-#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+#elif MINKO_PLATFORM == MINKO_PLATFORM_HTML5
 # include "minko/video/HTML5VideoCamera.hpp"
+#elif MINKO_PLATFORM == MINKO_PLATFORM_IOS
+# include "minko/video/ios/IOSVideoCamera.hpp"
 #endif
 
 namespace minko
@@ -50,6 +50,8 @@ namespace minko
                 return AndroidVideoCamera::create();
 #elif MINKO_PLATFORM == MINKO_PLATFORM_HTML5
                 return HTML5VideoCamera::create();
+#elif MINKO_PLATFORM == MINKO_PLATFORM_IOS
+                return IOSVideoCamera::create();
 #else
                 return nullptr;
 #endif

@@ -17,54 +17,47 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#import <AVFoundation/AVFoundation.h>
 
-#include "minko/Minko.hpp"
-#include "AbstractAttitude.hpp"
+#include "minko/video/AbstractVideoCamera.hpp"
+
+@interface VideoSource : NSObject
+{
+@public
+    minko::Signal<const std::vector<unsigned char>&, int, int> frameReceived;
+    std::vector<unsigned char> frameData;
+}
+
+@property (nonatomic, strong) AVCaptureSession * captureSession;
+@property (nonatomic, strong) AVCaptureDeviceInput * deviceInput;
+
+- (BOOL)initializeWithDevicePosition:(AVCaptureDevicePosition)devicePosition;
+- (void)start;
+- (void)stop;
+
+@end
+
+// C++
 
 namespace minko
 {
-    namespace sensors
+    namespace video
     {
-        class Attitude : AbstractAttitude
+        struct VideoSourceImpl
         {
-        public:
-            typedef std::shared_ptr<Attitude> Ptr;
-            
-            static
-            Ptr
-            getInstance()
-            {
-                if (_instance == nullptr)
-                    _instance = Ptr(new Attitude());
-
-                return _instance;
-            }
+            VideoSourceImpl();
             
             void
-            initialize() override;
-
+            initialize();
+            
             void
-            startTracking() override;
-
+            start();
+            
             void
-            stopTracking() override;
+            stop();
             
-            const math::mat4&
-            rotationMatrix() override;
-
-            const math::quat&
-            quaternion() override;
-            
-            bool
-            isSupported() override;
-        private:
-            Attitude();
-            
-            std::shared_ptr<AbstractAttitude> _attitudeManager;
-
-            static Ptr _instance;
+            VideoSource *const proxy;
+            std::shared_ptr<Signal<const std::vector<unsigned char>&, int, int>> frameReceived;
         };
     }
 }
-

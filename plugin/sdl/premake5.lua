@@ -40,7 +40,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		buildoptions { "-x objective-c++" }
 
 	-- Audio only works for HTML5, Windows and Android
-	configuration { "linux32 or linux64 or osx64 or ios" }
+	configuration { "linux32 or linux64 or osx64" }
 		excludes {
 			"include/minko/audio/**.hpp",
 			"src/minko/audio/**.cpp"

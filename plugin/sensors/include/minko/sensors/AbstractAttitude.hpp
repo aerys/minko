@@ -50,6 +50,10 @@ namespace minko
             virtual
             const math::quat&
             quaternion() = 0;
+            
+            virtual
+            bool
+            isSupported() = 0;
         };
     }
 }
