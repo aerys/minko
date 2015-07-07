@@ -51,6 +51,10 @@ namespace minko
             virtual
             Signal<float, float, float>::Ptr
             onSensorChanged() = 0;
+
+            virtual
+            bool
+            isSupported() = 0;
         };
     }
 }
