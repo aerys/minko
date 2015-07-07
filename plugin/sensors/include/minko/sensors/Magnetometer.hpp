@@ -58,7 +58,9 @@ namespace minko
 
             Signal<float, float, float>::Ptr
             onSensorChanged() override;
-            
+
+            bool
+            isSupported() override;
         private:
             Magnetometer();
             
