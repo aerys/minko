@@ -49,7 +49,7 @@ namespace minko
 
             virtual
             void
-            updateCameraOrientation(std::shared_ptr<scene::Node> target) = 0;
+            updateCameraOrientation(std::shared_ptr<scene::Node> target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera) = 0;
 
             virtual
             float

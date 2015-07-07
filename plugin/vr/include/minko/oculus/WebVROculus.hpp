@@ -61,7 +61,7 @@ namespace minko
             getRightEyeFov();
 
             void
-            updateCameraOrientation(std::shared_ptr<scene::Node> target);
+            updateCameraOrientation(std::shared_ptr<scene::Node> target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera);
 
             void
             updateViewport(int viewportWidth, int viewportHeight);

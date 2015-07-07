@@ -119,9 +119,9 @@ NativeOculus::initializeVRDevice(std::shared_ptr<component::Renderer> leftRender
 
     // compute each viewport pos and size
     ovrRecti eyeRenderViewport[2];
-    ovrFovPort eyeFov[2] = { 
-        _hmd->DefaultEyeFov[0], 
-        _hmd->DefaultEyeFov[1] 
+    ovrFovPort eyeFov[2] = {
+        _hmd->DefaultEyeFov[0],
+        _hmd->DefaultEyeFov[1]
     };
 
     eyeRenderViewport[0].Pos = OVR::Vector2i(0, 0);
@@ -287,7 +287,7 @@ NativeOculus::getRightEyeFov()
 }
 
 void
-NativeOculus::updateCameraOrientation(std::shared_ptr<scene::Node> target)
+NativeOculus::updateCameraOrientation(std::shared_ptr<scene::Node> target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera)
 {
     static ovrPosef eyeRenderPose[2];
     const static float BodyYaw(0.f);
@@ -314,7 +314,7 @@ NativeOculus::updateCameraOrientation(std::shared_ptr<scene::Node> target)
             false
         );
 
-        auto cameraNode = eyeNum == 0 ? _leftCameraNode : _rightCameraNode;
+        auto cameraNode = eyeNum == 0 ? leftCamera : rightCamera;
         auto matrix = cameraNode->component<Transform>()->matrix();
 
 		matrix = glm::make_mat4((float*)view.M);

@@ -102,7 +102,7 @@ namespace minko
             initialize(int viewportWidth, int viewportHeight, float zNear, float zFar, void* window);
 
             void
-            updateCameraOrientation();
+            updateCameraOrientation(std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera);
 
             void
             targetAdded(NodePtr target);

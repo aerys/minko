@@ -109,24 +109,23 @@ VRCamera::initialize(int viewportWidth, int viewportHeight, float zNear, float z
     // Initialize both eyes' renderers
     _leftRenderer = Renderer::create();
     _rightRenderer = Renderer::create();
-
     _rightRenderer->clearBeforeRender(false);
 
     _leftRenderer->viewport(
         math::ivec4(
             0,
             0,
-            viewportWidth / 2,
-            viewportHeight
+			math::clp2(viewportWidth / 2),
+			math::clp2(viewportHeight)
         )
     );
 
     _rightRenderer->viewport(
         math::ivec4(
-            viewportWidth / 2,
+			math::clp2(viewportWidth / 2),
             0,
-            viewportWidth / 2,
-            viewportHeight
+			math::clp2(viewportWidth / 2),
+			math::clp2(viewportHeight)
         )
     );
 
@@ -176,7 +175,7 @@ VRCamera::targetAdded(NodePtr target)
     );
 
     _rightCameraNode = scene::Node::create("cameraRightEye")
-        ->addComponent(Transform::create(math::inverse(math::lookAt(math::vec3(.5f, 0, 0), math::vec3(0.5f, 10, -10), math::vec3(0, 1, 0)))))
+        ->addComponent(Transform::create(math::inverse(math::lookAt(math::vec3(1000.f, 0, 0), math::vec3(1000.f, 10, -10), math::vec3(0, 1, 0)))))
         ->addComponent(rightCamera)
         ->addComponent(_rightRenderer);
 
@@ -230,16 +229,18 @@ VRCamera::setSceneManager(SceneManager::Ptr sceneManager)
 
     _renderBeginSlot = sceneManager->renderingBegin()->connect(std::bind(
         &VRCamera::updateCameraOrientation,
-        std::static_pointer_cast<VRCamera>(shared_from_this())
+        std::static_pointer_cast<VRCamera>(shared_from_this()),
+        _leftCameraNode,
+        _rightCameraNode
     ), 1000.f);
 
     _VRImpl->initialize(_sceneManager);
 }
 
 void
-VRCamera::updateCameraOrientation()
+VRCamera::updateCameraOrientation(std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera)
 {
-    _VRImpl->updateCameraOrientation(target());
+    _VRImpl->updateCameraOrientation(target(), leftCamera, rightCamera);
 }
 
 Signal<>::Ptr

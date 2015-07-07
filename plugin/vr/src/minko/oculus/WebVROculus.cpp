@@ -126,7 +126,7 @@ WebVROculus::getRightEyeFov()
 }
 
 void
-WebVROculus::updateCameraOrientation(scene::Node::Ptr target)
+WebVROculus::updateCameraOrientation(scene::Node::Ptr target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera)
 {
     if (!_initialized)
     {
