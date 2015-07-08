@@ -73,6 +73,24 @@ VRCamera::updateViewport(int viewportWidth, int viewportHeight)
         _rightCameraNode->component<PerspectiveCamera>()->aspectRatio(aspectRatio);
     }
 
+    _leftRenderer->viewport(
+        math::ivec4(
+            0,
+            0,
+            math::clp2(viewportWidth / 2),
+            math::clp2(viewportHeight)
+        )
+    );
+
+    _rightRenderer->viewport(
+        math::ivec4(
+            math::clp2(viewportWidth / 2),
+            0,
+            math::clp2(viewportWidth / 2),
+            math::clp2(viewportHeight)
+        )
+    );
+
     _VRImpl->updateViewport(viewportWidth, viewportHeight);
 }
 
@@ -111,24 +129,6 @@ VRCamera::initialize(int viewportWidth, int viewportHeight, float zNear, float z
     _rightRenderer = Renderer::create();
     _rightRenderer->clearBeforeRender(false);
 
-    _leftRenderer->viewport(
-        math::ivec4(
-            0,
-            0,
-			math::clp2(viewportWidth / 2),
-			math::clp2(viewportHeight)
-        )
-    );
-
-    _rightRenderer->viewport(
-        math::ivec4(
-			math::clp2(viewportWidth / 2),
-            0,
-			math::clp2(viewportWidth / 2),
-			math::clp2(viewportHeight)
-        )
-    );
-
     updateViewport(viewportWidth, viewportHeight);
     _VRImpl->initializeVRDevice(_leftRenderer, _rightRenderer, window);
 }
@@ -161,7 +161,7 @@ VRCamera::targetAdded(NodePtr target)
     );
 
     _leftCameraNode = scene::Node::create("cameraLeftEye")
-        ->addComponent(Transform::create(math::inverse(math::lookAt(math::vec3(0), math::vec3(0, 10, -10), math::vec3(0, 1, 0)))))
+        ->addComponent(Transform::create(math::inverse(math::lookAt(math::vec3(-0.03f, 0, 0), math::vec3(-0.03f, 0, -1), math::vec3(0, 1, 0)))))
         ->addComponent(leftCamera)
         ->addComponent(_leftRenderer);
 
@@ -175,7 +175,7 @@ VRCamera::targetAdded(NodePtr target)
     );
 
     _rightCameraNode = scene::Node::create("cameraRightEye")
-        ->addComponent(Transform::create(math::inverse(math::lookAt(math::vec3(1000.f, 0, 0), math::vec3(1000.f, 10, -10), math::vec3(0, 1, 0)))))
+        ->addComponent(Transform::create(math::inverse(math::lookAt(math::vec3(0.03f, 0, 0), math::vec3(0.03f, 0, -1), math::vec3(0, 1, 0)))))
         ->addComponent(rightCamera)
         ->addComponent(_rightRenderer);
 

@@ -97,6 +97,20 @@ WebVROculus::targetRemoved()
 void
 WebVROculus::initialize(std::shared_ptr<component::SceneManager> sceneManager)
 {
+    std::string eval = "";
+
+    eval += "var renderCanvas = document.getElementById('canvas');   \n";
+    eval += "if (renderCanvas.mozRequestFullScreen) {                \n";
+    eval += "    renderCanvas.mozRequestFullScreen({                 \n";
+    eval += "        vrDisplay: vrHMD                                \n";
+    eval += "    });                                                 \n";
+    eval += "} else if (renderCanvas.webkitRequestFullscreen) {      \n";
+    eval += "    renderCanvas.webkitRequestFullscreen({              \n";
+    eval += "        vrDisplay: vrHMD,                               \n";
+    eval += "    });                                                 \n";
+    eval += "}                                                       \n";
+
+    //emscripten_run_script(eval.c_str());
 }
 
 void
@@ -152,13 +166,14 @@ WebVROculus::updateCameraOrientation(scene::Node::Ptr target, std::shared_ptr<sc
         ssOrientation >> orientation[2];
         ssOrientation >> orientation[3];
 
-    	auto quaternion = math::quat(orientation[0], orientation[1], orientation[2], orientation[3]);
+    	auto quaternion = math::quat(orientation[3], orientation[0], orientation[1], orientation[2]);
 
     	auto matrix = glm::mat4_cast(quaternion);
     	target->component<Transform>()->matrix(matrix);
     }
 
     // Get position tracking
+	/*
     eval = "if (window.vrHMDSensor.getState().position != null) { window.vrHMDSensor.getState().position.x + ' ' + window.vrHMDSensor.getState().position.y + ' ' + window.vrHMDSensor.getState().position.z; }\n";
     s = std::string(emscripten_run_script_string(eval.c_str()));
 
@@ -173,4 +188,5 @@ WebVROculus::updateCameraOrientation(scene::Node::Ptr target, std::shared_ptr<sc
 
     	target->component<Transform>()->matrix(math::translate(math::vec3(position[0], position[1], position[2])) * target->component<Transform>()->matrix());
 	}
+	*/
 }
