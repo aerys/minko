@@ -15,7 +15,7 @@ If you read the code for the `PerspectiveCamera::initialize()` method, you'll se
 -   `projectionMatrix`
 -   `worldToScreenMatrix`
 
-Those properties are declared in the `PerspectiveCamera::data()` provider, which is a `[data::StructureProvider`](data::StructureProvider`) with "camera" as a structure name. Therefore, all those properties are actually available with the `camera.` prefix. For example, the `viewMatrix` property can be bound using the `camera.viewMatrix` token.
+Those properties are declared in the `PerspectiveCamera::data()` provider, which is a `[data::StructureProvider](data::StructureProvider)` with "camera" as a structure name. Therefore, all those properties are actually available with the `camera.` prefix. For example, the `viewMatrix` property can be bound using the `camera.viewMatrix` token.
 
 Here is how we can bind the camera transform and projection in our effect using `uniformBindings`:
 
