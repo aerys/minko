@@ -254,7 +254,7 @@ AbstractASSIMPParser::getPostProcessingFlags(const aiScene*             scene,
 
     if (numMaterials == 0u || numTextures == 0u)
     {
-        removeComponentFlags |= aiComponent_TEXCOORDS | aiComponent_TANGENTS_AND_BITANGENTS;
+        removeComponentFlags |= aiComponent_TANGENTS_AND_BITANGENTS;
     }
 
     if (options->generateSmoothNormals())
