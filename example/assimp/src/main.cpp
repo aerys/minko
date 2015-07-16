@@ -28,7 +28,7 @@ using namespace minko::component;
 
 const uint            WINDOW_WIDTH    = 800;
 const uint            WINDOW_HEIGHT    = 600;
-const std::string    MODEL_FILENAME    = "pirate.dae";
+const std::string    MODEL_FILENAME    = "RB-BumbleBee.obj";
 
 const std::string    LABEL_RUN_START        = "run_start";
 const std::string    LABEL_RUN_STOP        = "run_stop";
@@ -88,12 +88,14 @@ main(int argc, char** argv)
         ->startAnimation(true)
         ->registerParser<file::OBJParser>("obj")
         ->registerParser<file::ColladaParser>("dae")
+        ->registerParser<file::MTLParser>("mtl")
         ->registerParser<file::PNGParser>("png")
         ->registerParser<file::JPEGParser>("jpg");
 
     auto fxLoader = file::Loader::create(sceneManager->assets()->loader())
         ->queue("effect/Basic.effect")
-        ->queue("effect/Phong.effect");
+        ->queue("effect/Phong.effect")
+        ->queue("effect/VertexUV.effect");
 
     auto fxComplete = fxLoader->complete()->connect([&](file::Loader::Ptr l)
     {
@@ -118,8 +120,8 @@ main(int argc, char** argv)
         ->addComponent(Transform::create(
             math::inverse(
                 math::lookAt(
-                    math::vec3(0.25f, 0.75f, 2.5f), 
-                    math::vec3(0.f, 0.75f, 0.f), 
+                    math::vec3(0.f, 0.0, 150.0f), 
+                    math::vec3(0.f, 0.0f, 0.f), 
                     math::vec3(0, 1, 0))
                 )
             )
@@ -127,6 +129,11 @@ main(int argc, char** argv)
         ->addComponent(PerspectiveCamera::create(canvas->aspectRatio())
         );
     root->addChild(camera);
+
+    auto error = sceneManager->assets()->loader()->error()->connect([=](file::Loader::Ptr loader, file::Error e)
+    {
+        std::cout << "error" << e.what() << std::endl;
+    });
 
     auto _ = sceneManager->assets()->loader()->complete()->connect([ = ](file::Loader::Ptr loader)
     {
@@ -143,7 +150,7 @@ main(int argc, char** argv)
         ->addComponent(DirectionalLight::create())
         ->addChild(model);
 
-        auto skinnedNodes = scene::NodeSet::create(model)
+        /*auto skinnedNodes = scene::NodeSet::create(model)
             ->descendants(true)
             ->where([](scene::Node::Ptr n)
         {
@@ -175,7 +182,7 @@ main(int argc, char** argv)
         labelHit    = anim->labelHit()->connect([](AbstractAnimation::Ptr, std::string name, uint time) { std::cout << "label '" << name << "'\thit at t = " << time << std::endl; });
 
         printAnimationInfo(anim);
-        idle(anim);
+        idle(anim);*/
     });
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
