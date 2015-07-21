@@ -29,8 +29,3 @@ function minko.plugin.bullet:enable()
 	-- TODO: Fix Lua part of Bullet plugin
 	--minko.plugin.enable("lua")
 end
-
-newoption {
-	trigger		= "with-bullet",
-	description	= "Enable the Minko Bullet plugin."
-}
