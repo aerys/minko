@@ -33,7 +33,9 @@ namespace minko
             typedef std::uint64_t                           MaskType;
 
 		private:
-			uint				                    		_mask;
+            static const uint                               _maxNumMacros;
+
+			MaskType				                    	_mask;
             std::vector<Any>	                    		_values;
             std::vector<data::MacroBindingMap::MacroType>   _types;
             std::vector<Flyweight<std::string>>             _macros;
