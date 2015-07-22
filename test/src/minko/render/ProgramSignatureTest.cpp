@@ -147,3 +147,20 @@ TEST_F(ProgramSignatureTest, DefaultIntValue)
     ASSERT_EQ(signature.types().size(), 1);
     ASSERT_EQ(signature.types()[0], data::MacroBindingMap::MacroType::INT);
 }
+
+TEST_F(ProgramSignatureTest, MaxNumMacros)
+{
+    data::MacroBindingMap macroBindings;
+
+    const auto maxNumMacros = sizeof(ProgramSignature::MaskType) * 8;
+
+    for (auto i = ProgramSignature::MaskType(0); i < maxNumMacros; ++i)
+    {
+        macroBindings.bindings["BAR" + std::to_string(i)] = { "bar", data::Binding::Source::TARGET };
+        macroBindings.types["BAR" + std::to_string(i)] = data::MacroBindingMap::MacroType::UNSET;
+    }
+
+    ProgramSignature signature(macroBindings, _variables, _targetData, _rendererData, _rootData);
+
+    ASSERT_EQ(signature.mask(), std::numeric_limits<ProgramSignature::MaskType>::max());
+}

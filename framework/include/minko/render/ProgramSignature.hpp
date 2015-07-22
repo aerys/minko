@@ -29,7 +29,7 @@ namespace minko
 	{
 		class ProgramSignature
 		{
-        private:
+        public:
             typedef std::uint64_t                           MaskType;
 
 		private:
@@ -63,7 +63,7 @@ namespace minko
             updateProgram(Program& program) const;
 
             inline
-			uint
+			MaskType
 			mask() const
 			{
 				return _mask;
