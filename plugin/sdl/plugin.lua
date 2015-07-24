@@ -81,7 +81,7 @@ function minko.plugin.sdl:enable()
 		includedirs { minko.plugin.path("sdl") .. "/lib/sdl/src/core/android" }
 
 	configuration { "ConsoleApp or WindowedApp" }
-		if minko.plugin.available('offscreen') then
+		if minko.plugin.requested("offscreen") then
 			minko.plugin.enable { "offscreen" }
 		end
 end

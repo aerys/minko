@@ -28,7 +28,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	configuration { }
 
-	if minko.plugin.available('offscreen') then
+	if minko.plugin.requested("offscreen") then
 		minko.plugin.enable("offscreen")
 	end
 
@@ -55,7 +55,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	configuration { }
 
-	if minko.plugin.available('offscreen') then
+	if minko.plugin.requested("offscreen") then
 		excludes {
 			"include/minko/audio/**.hpp",
 			"src/minko/audio/**.cpp"

@@ -110,105 +110,75 @@ solution "minko"
 
 	-- plugin
 	if not _OPTIONS['no-plugin'] then
-		--include 'plugin/lua'
-		--include 'plugin/angle'
-		include 'plugin/zlib'
-		include 'plugin/assimp'
-		include 'plugin/debug'
-		include 'plugin/devil'
-		include 'plugin/bullet'
-		include 'plugin/fx'
-		include 'plugin/html-overlay'
-		include 'plugin/http-loader'
-		include 'plugin/http-worker'
-		include 'plugin/jpeg'
-		--include 'plugin/leap'
-		--include 'plugin/oculus'
-		--include 'plugin/offscreen'
-		--include 'plugin/particles'
-		include 'plugin/png'
-		include 'plugin/sdl'
-		include 'plugin/sensors'
-		include 'plugin/serializer'
-        include 'plugin/video-camera'
+		local plugins = minko.plugin.list()
 
-		if _OPTIONS['with-offscreen'] then
-			include 'plugin/offscreen'
+		for _, plugin in ipairs(plugins) do
+			if minko.plugin.requested(plugin) then
+				include('plugin/' .. plugin)
+			end
 		end
 
-		-- work around the inability of Xcode to build all projects if no dependency exists between them
-		if os.is("macosx")  and (_ACTION == "xcode-ios" or _ACTION == "xcode-osx") then
-			minko.project.library "sdk"
-				targetdir "/tmp/minko/bin"
-				objdir "/tmp/minko/obj"
+		if string.find(_ACTION, 'xcode') then
+			-- work around the inability of Xcode to build all
+			-- projects if no dependency exists between them
+			minko.project.library 'sdk'
+				links { 'minko-framework' }
 
-				links { "minko-framework" }
-
-				local plugins = os.matchdirs('plugin/*')
-
-				for i, basedir in ipairs(plugins) do
-					local pluginName = path.getbasename(basedir)
-					links { "minko-plugin-" .. pluginName }
+				for _, plugin in ipairs(plugins) do
+					if minko.plugin.requested(plugin) then
+						links { 'minko-plugin-' .. plugin }
+					end
 				end
 		end
 	end
 
 	-- example
 	if not _OPTIONS['no-example'] then
-		include 'example/assimp'
-		include 'example/audio'
-		include 'example/benchmark-cube'
-		include 'example/blending'
-		-- include 'example/clone'
-		include 'example/cube'
-		-- include 'example/devil'
-		-- include 'example/effect-config'
-		-- include 'example/flares'
-		include 'example/fog'
-		-- include 'example/frustum'
-		-- include 'example/hologram'
-		include 'example/html-overlay'
-		-- include 'example/http'
-		-- include 'example/jobs'
-		-- include 'example/joystick'
-		-- include 'example/keyboard'
-		-- include 'example/leap-motion'
-		include 'example/light'
-		include 'example/light-scattering'
-		-- include 'example/line-geometry'
-		-- include 'example/lua-scripts'
-		-- include 'example/multi-surfaces'
-		-- include 'example/oculus'
-		-- include 'example/offscreen'
-		-- include 'example/particles'
-		include 'example/physics'
-		include 'example/picking'
-		-- include 'example/raycasting'
-		include 'example/sensors'
-		include 'example/serializer'
-		include 'example/sky-box'
-		-- include 'example/stencil'
-		-- include 'example/visibility'
-		include 'example/video-camera'
-		-- include 'example/water'
-		include 'example/shadow-mapping'
-		include 'example/pbr'
+		local examples = {
+			['assimp']				= true,
+			['audio']				= true,
+			['benchmark-cube']		= true,
+			['blending']			= true,
+			['clone']				= false,
+			['cube']				= true,
+			['devil']				= false,
+			['effect-config']		= false,
+			['flares']				= false,
+			['fog']					= true,
+			['frustum']				= false,
+			['hologram']			= false,
+			['html-overlay']		= true,
+			['http']				= false,
+			['jobs']				= false,
+			['joystick']			= false,
+			['keyboard']			= false,
+			['leap-motion']			= false,
+			['light']				= true,
+			['light-scattering']	= true,
+			['line-geometry']		= false,
+			['lua-scripts']			= minko.plugin.requested('lua'),
+			['multi-surfaces']		= false,
+			['oculus']				= false,
+			['offscreen']			= minko.plugin.requested('offscreen'),
+			['particles']			= minko.plugin.requested('particles'),
+			['physics']				= true,
+			['picking']				= true,
+			['raycasting']			= false,
+			['sensors']				= true,
+			['serializer']			= true,
+			['sky-box']				= true,
+			['stencil']				= false,
+			['visibility']			= false,
+			['video-camera']		= true,
+			['water']				= false,
+			['shadow-mapping']		= true,
+			['pbr']					= true,
+		}
 
-		if _OPTIONS['with-offscreen'] then
-			include 'example/offscreen'
-		end
-
-		if os.is("macosx")  and (_ACTION == "xcode-ios" or _ACTION == "xcode-osx") then
-			minko.project.library "all-examples"
-				targetdir "/tmp/minko/bin"
-				objdir "/tmp/minko/obj"
-
-				local examples = os.matchdirs('example/*')
-
-				for i, basedir in ipairs(examples) do
-					local exampleName = path.getbasename(basedir)
-					links { "minko-example-" .. exampleName }
-				end
+		for example, enabled in pairs(examples) do
+			if enabled then
+				include('example/' .. example)
+			end
 		end
 	end
 
@@ -374,7 +344,7 @@ newaction {
 
 			for i, basedir in ipairs(dirs) do
 
-			    local dirName = path.getbasename(basedir)
+				local dirName = path.getbasename(basedir)
 				local sourceDir = projectType .. '/' .. dirName .. '/bin/' .. platform .. '/' .. config
 				if os.isdir(sourceDir) then
 					print(dirName)

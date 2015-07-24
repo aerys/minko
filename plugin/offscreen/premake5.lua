@@ -9,7 +9,7 @@
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
-	
+
 	removeplatforms { "android", "ios", "html5" }
 
 	files {
@@ -20,8 +20,6 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"include/**.hpp",
 		"src/**.cpp"
 	}
-
-	
 
 	configuration {"linux32 or linux64"}
 		includedirs {
