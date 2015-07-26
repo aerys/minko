@@ -1,0 +1,28 @@
+{
+    "techniques" : [{
+        "name" : "base-technique",
+
+        "passes" : [{
+            "name" : "base-pass",
+
+            "macros" : {
+                "FOO" : { "binding" : "bar", "type" : "int", "default" : 42 }
+            },
+
+            "attributes" : {
+                "aPosition" : "geometry[${geometryUuid}].position"
+            },
+
+            "uniforms" : {
+                "uDiffuseColor" : { "binding" : "material[${materialUuid}].diffuseColor", "default" : [[ 1.0, 0.0, 0.0, 1.0 ]] }
+            },
+
+            "states" : {
+                "priority" : { "binding" : "material[${materialUuid}].priority", "default" : 42.0 }
+            },
+
+            "vertexShader" : "#pragma include \"../../dummy.glsl\"",
+            "fragmentShader" : "#pragma include \"../../dummy.glsl\""
+        }]
+    }]
+}
