@@ -38,6 +38,7 @@ using namespace minko::component;
 using namespace minko::data;
 using namespace minko::file;
 using namespace minko::geometry;
+using namespace minko::scene;
 
 POPGeometryLodScheduler::POPGeometryLodScheduler() :
     AbstractLodScheduler(),
@@ -115,7 +116,12 @@ POPGeometryLodScheduler::surfaceAdded(Surface::Ptr surface)
 		resource = &resourceIt->second;
 	}
 
-    auto surfaceInfo = SurfaceInfo(surface);
+    auto surfaceInfoIt = resource->surfaceToSurfaceInfoMap.emplace(surface, SurfaceInfo(surface));
+
+    if (!surfaceInfoIt.second)
+        return;
+
+    auto& surfaceInfo = surfaceInfoIt.first->second;
 
     surfaceInfo.box = surfaceTarget->component<BoundingBox>()->box();
 
@@ -123,8 +129,6 @@ POPGeometryLodScheduler::surfaceAdded(Surface::Ptr surface)
 
     auto resourceData = resource->base->data;
     resource->fullPrecisionLod = surface->geometry()->data()->get<float>("popFullPrecisionLod");
-
-	resource->surfaceToSurfaceInfoMap.insert(std::make_pair(surface, surfaceInfo));
 
 	resource->modelToWorldMatrixChangedSlots.insert(std::make_pair(
 		surfaceTarget,
@@ -137,6 +141,23 @@ POPGeometryLodScheduler::surfaceAdded(Surface::Ptr surface)
         	}
 		)
 	));
+
+    surfaceInfo.layoutChangedSlot = surfaceTarget->layoutChanged().connect(
+        [this, resource, surface](Node::Ptr node, Node::Ptr target)
+        {
+            if (node != target)
+                return;
+
+            layoutChanged(*resource, resource->surfaceToSurfaceInfoMap.at(surface));
+        }
+    );
+
+    surfaceInfo.layoutMaskChangedSlot = surface->layoutMaskChanged().connect(
+        [this, resource, surface](AbstractComponent::Ptr component)
+        {
+            layoutChanged(*resource, resource->surfaceToSurfaceInfoMap.at(surface));
+        }
+    );
 
 	const auto& availableLods = resourceData->get<std::map<int, ProgressiveOrderedMeshLodInfo>>("availableLods");
 
@@ -273,6 +294,13 @@ POPGeometryLodScheduler::lodInfo(ResourceInfo&  resource,
     lodInfo.priority = maxPriority;
 
 	return lodInfo;
+}
+
+void
+POPGeometryLodScheduler::layoutChanged(POPGeometryResourceInfo&  resource,
+                                       SurfaceInfo&              surfaceInfo)
+{
+    invalidateLodRequirement(*resource.base);
 }
 
 void

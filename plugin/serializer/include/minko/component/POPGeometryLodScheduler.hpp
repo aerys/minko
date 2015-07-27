@@ -34,6 +34,7 @@ namespace minko
         private:
             typedef std::shared_ptr<scene::Node>                NodePtr;
         
+            typedef std::shared_ptr<AbstractComponent>          AbstractComponentPtr;
             typedef std::shared_ptr<SceneManager>               SceneManagerPtr;
             typedef std::shared_ptr<Renderer>                   RendererPtr;
             typedef std::shared_ptr<MasterLodScheduler>         MasterLodSchedulerPtr;
@@ -45,16 +46,23 @@ namespace minko
 
             struct SurfaceInfo
             {
-                SurfacePtr  surface;
-                BoxPtr      box;
+                SurfacePtr                      surface;
+                BoxPtr                          box;
 
-                int         activeLod;
+                Signal<NodePtr, NodePtr>::Slot  layoutChangedSlot;
+                Signal<
+                    AbstractComponentPtr
+                >::Slot                         layoutMaskChangedSlot;
 
-                float       requiredPrecisionLevel;
+                int                             activeLod;
+
+                float                           requiredPrecisionLevel;
 
                 SurfaceInfo(SurfacePtr surface) :
                     surface(surface),
                     box(),
+                    layoutChangedSlot(),
+                    layoutMaskChangedSlot(),
                     activeLod(-1),
                     requiredPrecisionLevel(0)
                 {
@@ -162,6 +170,10 @@ namespace minko
 
         private:
             POPGeometryLodScheduler();
+
+            void
+            layoutChanged(POPGeometryResourceInfo&  resource,
+                          SurfaceInfo&              surfaceInfo);
 
             void
             activeLodChanged(POPGeometryResourceInfo&   resource,
