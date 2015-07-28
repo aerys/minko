@@ -1,3 +1,5 @@
+#ifdef FOG_TECHNIQUE
+
 #ifndef _FOG_FUNCTION_GLSL_
 #define _FOG_FUNCTION_GLSL_
 
@@ -31,3 +33,5 @@ fog_sampleFog(vec3 	fragColor,
 }
 
 #endif // _FOG_FUNCTION_GLSL_
+
+#endif // FOG_TECHNIQUE
