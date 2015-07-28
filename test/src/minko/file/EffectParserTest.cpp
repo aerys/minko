@@ -27,7 +27,7 @@ using namespace minko::file;
 
 Effect::Ptr
 EffectParserTest::loadEffect(const std::string& filename)
-{   
+{
     auto lib = AssetLibrary::create(MinkoTests::canvas()->context());
 
     lib->loader()->queue(filename);
@@ -128,6 +128,8 @@ TEST_F(EffectParserTest, MacroIntDefaultValue)
     ASSERT_EQ(fx->techniques().size(), 1);
     ASSERT_EQ(fx->techniques().at("default").size(), 1);
     ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty("TEST_INT_MACRO"));
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().types.count("TEST_INT_MACRO") != 0);
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().types["TEST_INT_MACRO"], data::MacroBindingMap::MacroType::INT);
     ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.get<int>("TEST_INT_MACRO"), 42);
 }
 
@@ -139,6 +141,8 @@ TEST_F(EffectParserTest, MacroInt2DefaultValue)
     ASSERT_EQ(fx->techniques().size(), 1);
     ASSERT_EQ(fx->techniques().at("default").size(), 1);
     ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty("TEST_INT2_MACRO"));
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().types.count("TEST_INT2_MACRO") != 0);
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().types["TEST_INT2_MACRO"], data::MacroBindingMap::MacroType::INT2);
     ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.get<math::ivec2>("TEST_INT2_MACRO"), math::ivec2(42, 23));
 }
 
@@ -150,6 +154,8 @@ TEST_F(EffectParserTest, MacroInt3DefaultValue)
     ASSERT_EQ(fx->techniques().size(), 1);
     ASSERT_EQ(fx->techniques().at("default").size(), 1);
     ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty("TEST_INT3_MACRO"));
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().types.count("TEST_INT3_MACRO") != 0);
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().types["TEST_INT3_MACRO"], data::MacroBindingMap::MacroType::INT3);
     ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.get<math::ivec3>("TEST_INT3_MACRO"), math::ivec3(42, 23, 13));
 }
 
@@ -161,6 +167,8 @@ TEST_F(EffectParserTest, MacroInt4DefaultValue)
     ASSERT_EQ(fx->techniques().size(), 1);
     ASSERT_EQ(fx->techniques().at("default").size(), 1);
     ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty("TEST_INT4_MACRO"));
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().types.count("TEST_INT4_MACRO") != 0);
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().types["TEST_INT4_MACRO"], data::MacroBindingMap::MacroType::INT4);
     ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.get<math::ivec4>("TEST_INT4_MACRO"), math::ivec4(42, 23, 13, 7));
 }
 
@@ -172,6 +180,8 @@ TEST_F(EffectParserTest, MacroFloatDefaultValue)
     ASSERT_EQ(fx->techniques().size(), 1);
     ASSERT_EQ(fx->techniques().at("default").size(), 1);
     ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty("TEST_FLOAT_MACRO"));
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().types.count("TEST_FLOAT_MACRO") != 0);
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().types["TEST_FLOAT_MACRO"], data::MacroBindingMap::MacroType::FLOAT);
     ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.get<float>("TEST_FLOAT_MACRO"), 42.24f);
 }
 
@@ -183,6 +193,8 @@ TEST_F(EffectParserTest, MacroFloat2DefaultValue)
     ASSERT_EQ(fx->techniques().size(), 1);
     ASSERT_EQ(fx->techniques().at("default").size(), 1);
     ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty("TEST_FLOAT2_MACRO"));
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().types.count("TEST_FLOAT2_MACRO") != 0);
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().types["TEST_FLOAT2_MACRO"], data::MacroBindingMap::MacroType::FLOAT2);
     ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.get<math::vec2>("TEST_FLOAT2_MACRO"), math::vec2(42.24f, 23.32f));
 }
 
@@ -194,6 +206,8 @@ TEST_F(EffectParserTest, MacroFloat3DefaultValue)
     ASSERT_EQ(fx->techniques().size(), 1);
     ASSERT_EQ(fx->techniques().at("default").size(), 1);
     ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty("TEST_FLOAT3_MACRO"));
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().types.count("TEST_FLOAT3_MACRO") != 0);
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().types["TEST_FLOAT3_MACRO"], data::MacroBindingMap::MacroType::FLOAT3);
     ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.get<math::vec3>("TEST_FLOAT3_MACRO"), math::vec3(42.24f, 23.32f, 13.31f));
 }
 
@@ -205,6 +219,8 @@ TEST_F(EffectParserTest, MacroFloat4DefaultValue)
     ASSERT_EQ(fx->techniques().size(), 1);
     ASSERT_EQ(fx->techniques().at("default").size(), 1);
     ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty("TEST_FLOAT4_MACRO"));
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().types.count("TEST_FLOAT4_MACRO") != 0);
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().types["TEST_FLOAT4_MACRO"], data::MacroBindingMap::MacroType::FLOAT4);
     ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.get<math::vec4>("TEST_FLOAT4_MACRO"), math::vec4(42.24f, 23.32f, 13.31f, 7.7f));
 }
 
@@ -216,6 +232,8 @@ TEST_F(EffectParserTest, MacroBoolDefaultValue)
     ASSERT_EQ(fx->techniques().size(), 1);
     ASSERT_EQ(fx->techniques().at("default").size(), 1);
     ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty("TEST_BOOL_MACRO"));
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().types.count("TEST_BOOL_MACRO") != 0);
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().types["TEST_BOOL_MACRO"], data::MacroBindingMap::MacroType::BOOL);
     ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.get<int>("TEST_BOOL_MACRO"), 1);
 }
 
@@ -227,6 +245,8 @@ TEST_F(EffectParserTest, MacroBool2DefaultValue)
     ASSERT_EQ(fx->techniques().size(), 1);
     ASSERT_EQ(fx->techniques().at("default").size(), 1);
     ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty("TEST_BOOL2_MACRO"));
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().types.count("TEST_BOOL2_MACRO") != 0);
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().types["TEST_BOOL2_MACRO"], data::MacroBindingMap::MacroType::BOOL2);
     ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.get<math::ivec2>("TEST_BOOL2_MACRO"), math::ivec2(1, 0));
 }
 
@@ -238,6 +258,8 @@ TEST_F(EffectParserTest, MacroBool3DefaultValue)
     ASSERT_EQ(fx->techniques().size(), 1);
     ASSERT_EQ(fx->techniques().at("default").size(), 1);
     ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty("TEST_BOOL3_MACRO"));
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().types.count("TEST_BOOL3_MACRO") != 0);
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().types["TEST_BOOL3_MACRO"], data::MacroBindingMap::MacroType::BOOL3);
     ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.get<math::ivec3>("TEST_BOOL3_MACRO"), math::ivec3(1, 0, 1));
 }
 
@@ -249,6 +271,8 @@ TEST_F(EffectParserTest, MacroBool4DefaultValue)
     ASSERT_EQ(fx->techniques().size(), 1);
     ASSERT_EQ(fx->techniques().at("default").size(), 1);
     ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty("TEST_BOOL4_MACRO"));
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().types.count("TEST_BOOL4_MACRO") != 0);
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().types["TEST_BOOL4_MACRO"], data::MacroBindingMap::MacroType::BOOL4);
     ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.get<math::ivec4>("TEST_BOOL4_MACRO"), math::ivec4(1, 0, 1, 0));
 }
 
@@ -2310,4 +2334,58 @@ TEST_F(EffectParserTest, SamplerStatesBindingMipFilterWithDefaultValueNone)
     auto defaultValue = MipFilter::NONE;
 
     checkSamplerStateBindingWithDefaultValue<MipFilter>(filename, samplerStateProperty, defaultValue);
+}
+
+TEST_F(EffectParserTest, ExtendedPass)
+{
+    auto fx = MinkoTests::loadEffect("effect/pass/extends/ExtendedPass.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty("FOO"));
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().types.count("FOO") != 0);
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().types["FOO"], data::MacroBindingMap::MacroType::INT);
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.get<int>("FOO"), 42);
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().bindings.count("FOO") != 0);
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().bindings["FOO"].propertyName, "bar");
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().bindings["FOO"].source, data::Binding::Source::TARGET);
+    ASSERT_TRUE(fx->techniques().at("default")[0]->attributeBindings().bindings.count("aPosition") != 0);
+    ASSERT_EQ(fx->techniques().at("default")[0]->attributeBindings().bindings["aPosition"].propertyName, "geometry[${geometryUuid}].position");
+    ASSERT_EQ(fx->techniques().at("default")[0]->attributeBindings().bindings["aPosition"].source, data::Binding::Source::TARGET);
+    ASSERT_TRUE(fx->techniques().at("default")[0]->uniformBindings().bindings.count("uDiffuseColor") != 0);
+    ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().bindings["uDiffuseColor"].propertyName, "material[${materialUuid}].diffuseColor");
+    ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().bindings["uDiffuseColor"].source, data::Binding::Source::TARGET);
+    ASSERT_TRUE(fx->techniques().at("default")[0]->stateBindings().defaultValues.hasProperty("priority"));
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().defaultValues.get<float>("priority"), 42.0);
+    ASSERT_TRUE(fx->techniques().at("default")[0]->stateBindings().bindings.count("priority") != 0);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings["priority"].propertyName, "material[${materialUuid}].priority");
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings["priority"].source, data::Binding::Source::TARGET);
+}
+
+TEST_F(EffectParserTest, ExtendedPassFromEffect)
+{
+    auto fx = MinkoTests::loadEffect("effect/pass/extends/ExtendedPassFromEffect.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty("FOO"));
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().types.count("FOO") != 0);
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().types["FOO"], data::MacroBindingMap::MacroType::INT);
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.get<int>("FOO"), 42);
+    ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().bindings.count("FOO") != 0);
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().bindings["FOO"].propertyName, "bar");
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().bindings["FOO"].source, data::Binding::Source::TARGET);
+    ASSERT_TRUE(fx->techniques().at("default")[0]->attributeBindings().bindings.count("aPosition") != 0);
+    ASSERT_EQ(fx->techniques().at("default")[0]->attributeBindings().bindings["aPosition"].propertyName, "geometry[${geometryUuid}].position");
+    ASSERT_EQ(fx->techniques().at("default")[0]->attributeBindings().bindings["aPosition"].source, data::Binding::Source::TARGET);
+    ASSERT_TRUE(fx->techniques().at("default")[0]->uniformBindings().bindings.count("uDiffuseColor") != 0);
+    ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().bindings["uDiffuseColor"].propertyName, "material[${materialUuid}].diffuseColor");
+    ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().bindings["uDiffuseColor"].source, data::Binding::Source::TARGET);
+    ASSERT_TRUE(fx->techniques().at("default")[0]->stateBindings().defaultValues.hasProperty("priority"));
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().defaultValues.get<float>("priority"), 42.0);
+    ASSERT_TRUE(fx->techniques().at("default")[0]->stateBindings().bindings.count("priority") != 0);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings["priority"].propertyName, "material[${materialUuid}].priority");
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings["priority"].source, data::Binding::Source::TARGET);
 }

@@ -24,25 +24,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::component;
 
+const std::string   ENVMAP          = "cloudySea";
+const std::string   MAP_DIFFUSE     = "texture/" + ENVMAP + "/" + ENVMAP + "-diffuse.jpg";
+const std::string   MAP_RADIANCE    = "texture/" + ENVMAP + "/" + ENVMAP + "-radiance.jpg";
+const std::string   MAP_IRRADIANCE  = "texture/" + ENVMAP + "/" + ENVMAP + "-irradiance.jpg";
+
 int main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Example - PBR", 800, 600);
     auto sceneManager = SceneManager::create(canvas);
     auto root = scene::Node::create("root")->addComponent(sceneManager);
     auto assets = sceneManager->assets();
+    auto context = canvas->context();
 
-    canvas->context()->errorsEnabled(true);
+    context->errorsEnabled(true);
+    std::cout << context->driverInfo() << std::endl;
 
 	// setup assets
-	assets->loader()->options()
+    auto options = assets->loader()->options();
+
+	options
 		->resizeSmoothly(true)
-		//->generateMipmaps(true)
+        ->generateMipmaps(true)
 		->registerParser<file::JPEGParser>("jpg");
 
     assets->loader()
-        ->queue("texture/skybox_irradiance.jpg", assets->loader()->options()->clone()->isCubeTexture(true))
-        ->queue("texture/normalmap.jpg")
+        ->queue(MAP_DIFFUSE)
+        ->queue(MAP_IRRADIANCE)
+        ->queue(MAP_RADIANCE, options->clone()->parseMipMaps(true))
+        ->queue("texture/ground.jpg")
         ->queue("effect/Basic.effect")
+        ->queue("effect/Skybox/Skybox.effect")
 		->queue("effect/PBR.effect");
 
 	auto camera = scene::Node::create("camera")
@@ -53,11 +65,6 @@ int main(int argc, char** argv)
 		->addComponent(PerspectiveCamera::create(800.f / 600.f, 0.785f, 0.1f, 50.f));
     root->addChild(camera);
 
-    auto groundMaterial = material::Material::create();
-    groundMaterial->data()
-        ->set("shininess", 0.1f)
-        ->set("diffuseColor", math::vec4(.8f, .8f, .8f, 1.f));
-
     auto light = scene::Node::create("light")
         ->addComponent(AmbientLight::create(0.4f))
         ->addComponent(DirectionalLight::create(1.f))
@@ -67,16 +74,30 @@ int main(int argc, char** argv)
     light->component<DirectionalLight>()->enableShadowMapping(512);
     root->addChild(light);
 
-    auto light2 = scene::Node::create("light2")
-        ->addComponent(DirectionalLight::create())
-        ->addComponent(Transform::create(math::inverse(
-            math::lookAt(math::vec3(-5.f, 5.f, 5.f), math::vec3(0.f), math::vec3(0.f, 1.f, 0.f))
-        )));
-    //light2->component<DirectionalLight>()->enableShadowMapping(512);
-    //root->addChild(light2);
-
 	auto _ = assets->loader()->complete()->connect([=](file::Loader::Ptr loader)
 	{
+        auto skybox = scene::Node::create("skybox")
+            ->addComponent(Surface::create(
+                geometry::CubeGeometry::create(context),
+                material::Material::create()->set({
+                    { "diffuseLatLongMap", assets->texture(MAP_DIFFUSE)->sampler() },
+                    { "gammaCorrection", 2.2f}
+                }),
+                assets->effect("effect/Skybox/Skybox.effect")
+            ));
+        root->addChild(skybox);
+
+        auto groundMaterial = material::Material::create()->set({
+            { "roughness",          1.f },
+            { "metalness",          0.0f },
+            { "specularColor",      math::vec4(0.f, 0.f, 0.f, 1.f) },
+            { "albedoMap",          assets->texture("texture/ground.jpg")->sampler() },
+            { "diffuseMap",          assets->texture("texture/ground.jpg")->sampler() },
+            { "albedoColor",        math::vec4(.8f, .8f, .8f, 1.f) },
+            { "irradianceMap",      assets->texture(MAP_IRRADIANCE)->sampler() },
+            { "radianceMap",        assets->texture(MAP_RADIANCE)->sampler() },
+            { "gammaCorrection",    2.2f }
+        });
         auto ground = scene::Node::create("ground", scene::BuiltinLayout::DEFAULT | 256)
             ->addComponent(Surface::create(
                 geometry::QuadGeometry::create(sceneManager->canvas()->context()),
@@ -92,64 +113,40 @@ int main(int argc, char** argv)
 
         auto sphereGeom = geometry::SphereGeometry::create(sceneManager->canvas()->context(), 40, 40)->computeTangentSpace(false);
         auto meshes = scene::Node::create("meshes");
-        const int numSpheres = 12;
+        const int numSpheres = 10;
 
         for (auto i = 0; i < numSpheres; i++)
         {
-            auto mesh = scene::Node::create("mesh", scene::BuiltinLayout::DEFAULT | 256);
-            auto mat = material::Material::create();
+            for (auto j = 0; j < numSpheres; j++)
+            {
+                auto mesh = scene::Node::create("mesh", scene::BuiltinLayout::DEFAULT | 256);
+                auto mat = material::Material::create()->set({
+                    { "gammaCorrection",    2.2f },
+                    { "albedoColor",        math::vec4(1.f, 1.f, 1.f, 1.f) },
+                    { "specularColor",      math::vec4(1.f, 1.f, 1.f, 1.f) },
+                    { "metalness",          (float)j / (float)(numSpheres - 1) },
+                    { "roughness",          (float)i / (float)(numSpheres - 1) },
+                    { "irradianceMap",      assets->texture(MAP_IRRADIANCE)->sampler() },
+                    { "radianceMap",        assets->texture(MAP_RADIANCE)->sampler() }//,
+                });
 
-            mat->data()
-                ->set("diffuseColor", math::vec4(.8f, .2f, .2f, 1.f))
-                //->set("irradianceCubeMap", assets->cubeTexture("texture/skybox_irradiance.jpg")->sampler())
-                //->set("normalMap", assets->texture("texture/normalmap.jpg")->sampler())
-                ->set("shininess", std::max((float)i / (float)numSpheres * 0.9f, 0.1f));
-            mesh->addComponent(Surface::create(sphereGeom, mat, assets->effect("effect/PBR.effect")));
-            mesh->addComponent(Transform::create(
-                math::translate(math::vec3(0.f, 0.f, (-(float)(numSpheres - 1) * .5f + (float)i)) * 1.25f)
-            ));
-            meshes->addChild(mesh);
-        }
-
-        for (auto i = 0; i < numSpheres; i++)
-        {
-            auto mesh = scene::Node::create("mesh", scene::BuiltinLayout::DEFAULT | 256);
-            auto mat = material::Material::create();
-
-            mat->data()
-                ->set("diffuseColor", math::vec4(.2f, .8f, .2f, 1.f))
-                //->set("normalMap", assets->texture("texture/normalmap.jpg")->sampler())
-                ->set("shininess", std::max((float)i / (float)numSpheres * 0.9f, 0.1f));
-            mesh->addComponent(Surface::create(sphereGeom, mat, assets->effect("effect/PBR.effect")));
-            mesh->addComponent(Transform::create(
-                math::translate(math::vec3(2.f, 0.f, (-(float)(numSpheres - 1) * .5f + (float)i)) * 1.25f)
-            ));
-            meshes->addChild(mesh);
-        }
-
-        for (auto i = 0; i < numSpheres; i++)
-        {
-            auto mesh = scene::Node::create("mesh", scene::BuiltinLayout::DEFAULT | 256);
-            auto mat = material::Material::create();
-
-            mat->data()
-                ->set("diffuseColor", math::vec4(.2f, .2f, .8f, 1.f))
-                //->set("normalMap", assets->texture("texture/normalmap.jpg")->sampler())
-                ->set("shininess", std::max((float)i / (float)numSpheres * 0.9f, 0.1f));
-            mesh->addComponent(Surface::create(sphereGeom, mat, assets->effect("effect/PBR.effect")));
-            mesh->addComponent(Transform::create(
-                math::translate(math::vec3(-2.f, 0.f, (-(float)(numSpheres - 1) * .5f + (float)i)) * 1.25f)
-            ));
-            meshes->addChild(mesh);
+                mesh->addComponent(Surface::create(sphereGeom, mat, assets->effect("effect/PBR.effect")));
+                mesh->addComponent(Transform::create(math::translate(math::vec3(
+                    (-(float)(numSpheres - 1) * .5f + (float)i) * 1.25f,
+                    0.f,
+                    (-(float)(numSpheres - 1) * .5f + (float)j) * 1.25f
+                ))));
+                meshes->addChild(mesh);
+            }
         }
         root->addChild(meshes);
 
         auto yaw = 0.f;
         auto pitch = float(M_PI) * .5f;
         auto minPitch = 0.f + 0.1f;
-        auto maxPitch = float(M_PI) - 0.1f;
+        auto maxPitch = float(M_PI) * .5f - .1f;
         auto lookAt = math::vec3(0.f, 0.f, 0.f);
-        auto distance = 20.f;
+        auto distance = 10.f;
 
         // handle mouse signals
         auto mouseWheel = canvas->mouse()->wheel()->connect([&](input::Mouse::Ptr m, int h, int v)
@@ -199,10 +196,6 @@ int main(int argc, char** argv)
             )));
 
             light->component<DirectionalLight>()->computeShadowProjection(
-                camera->component<PerspectiveCamera>()->viewMatrix(),
-                camera->component<PerspectiveCamera>()->projectionMatrix()
-            );
-            light2->component<DirectionalLight>()->computeShadowProjection(
                 camera->component<PerspectiveCamera>()->viewMatrix(),
                 camera->component<PerspectiveCamera>()->projectionMatrix()
             );

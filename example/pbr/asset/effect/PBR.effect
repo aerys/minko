@@ -22,15 +22,16 @@
 					"uWorldToScreenMatrix"			: { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
 			        "uUVScale"           			: { "binding" : "material[${materialUuid}].uvScale", "default" : [[ 1.0, 1.0 ]] },
 			        "uUVOffset"           			: { "binding" : "material[${materialUuid}].uvOffset", "default" : [[ 0.0, 0.0 ]] },
-					"uDiffuseColor"					: "material[${materialUuid}].diffuseColor",
-					"uDiffuseMap"					: {
-						"binding" : "material[${materialUuid}].diffuseMap",
+					"uGammaCorrection" 				: "material[${materialUuid}].gammaCorrection",
+					"uAlbedoColor"					: "material[${materialUuid}].albedoColor",
+					"uAlbedoMap"					: {
+						"binding" : "material[${materialUuid}].albedoMap",
 						"wrapMode" : "repeat",
 						"textureFilter" : "linear",
 						"mipFilter": "linear"
 					},
-					"uDiffuseMapMaxAvailableLod" 	: "material[${materialUuid}].diffuseMap.maxAvailableLod",
-					"uDiffuseMapSize" 				: "material[${materialUuid}].diffuseMap.size",
+					"uAlbedoMapMaxAvailableLod" 	: "material[${materialUuid}].albedoMap.maxAvailableLod",
+					"uAlbedoMapSize" 				: "material[${materialUuid}].albedoMap.size",
 					"uAlphaMap"						: "material[${materialUuid}].alphaMap",
 					"uAlphaThreshold"				: "material[${materialUuid}].alphaThreshold",
 					"uNormalMap"					: {
@@ -49,8 +50,9 @@
 					},
 					"uSpecularMapMaxAvailableLod" 	: "material[${materialUuid}].specularMap.maxAvailableLod",
 					"uSpecularMapSize"				: "material[${materialUuid}].specularMap.size",
-					"uSpecularColor"				: { "binding" : "material[${materialUuid}].specularColor", "default" : [[ 1.0, 1.0, 1.0, 1.0 ]] },
-					"uShininess"					: "material[${materialUuid}].shininess",
+					"uSpecularColor"				: { "binding" : "material[${materialUuid}].specularColor", "default" : [[ 0.5, 0.5, 0.5 ]] },
+					"uRoughness"					: "material[${materialUuid}].roughness",
+					"uMetalness"					: "material[${materialUuid}].metalness",
 					"uCameraPosition"				: { "binding" : { "property" : "eyePosition", "source" : "renderer" } },
 					"uCameraDirection"				: { "binding" : { "property" : "eyeDirection", "source" : "renderer" } },
 					"uBoneMatrices[0]"				: "geometry[${geometryUuid}].boneMatrices",
@@ -194,16 +196,22 @@
         			"uPopFullPrecisionLod"   			: "geometry[${geometryUuid}].popFullPrecisionLod",
         			"uPopMinBound"           			: "geometry[${geometryUuid}].popMinBound",
         			"uPopMaxBound"           			: "geometry[${geometryUuid}].popMaxBound",
-					"uIrradianceCubeMap"				: "material[${materialUuid}].irradianceCubeMap"
+					"uIrradianceMap"					: "material[${materialUuid}].irradianceMap",
+					"uRadianceMap"						: {
+						"binding" : "material[${materialUuid}].radianceMap",
+						"wrapMode" : "clamp",
+						"textureFilter" : "linear",
+						"mipFilter": "linear"
+					}
 				},
 
 				"macros" : {
 					"MODEL_TO_WORLD"			: "modelToWorldMatrix",
 					"SKINNING_NUM_BONES"		: { "binding" : "geometry[${geometryUuid}].numBones", "type" : "int" },
-					"DIFFUSE_MAP"				: "material[${materialUuid}].diffuseMap",
+					"ALBEDO_MAP"				: "material[${materialUuid}].albedoMap",
 					"VERTEX_COLOR"				: "geometry[${geometryUuid}].color",
 					"VERTEX_UV"					: "geometry[${geometryUuid}].uv",
-					"DIFFUSE_MAP_LOD"			: "material[${materialUuid}].diffuseMapLodEnabled",
+					"ALBEDO_MAP_LOD"			: "material[${materialUuid}].albedoMapLodEnabled",
 					"NORMAL_MAP"				: "material[${materialUuid}].normalMap",
 					"NORMAL_MAP_LOD"			: "material[${materialUuid}].normalMapLodEnabled",
 					"SPECULAR_MAP"				: "material[${materialUuid}].specularMap",
@@ -214,7 +222,6 @@
 					"ENVIRONMENT_CUBE_MAP"		: "material[${materialUuid}].environmentCubemap",
 					"ENVIRONMENT_ALPHA"			: "material[${materialUuid}].environmentAlpha",
 					"ENVIRONMENT_TYPE_2D"		: "material[${materialUuid}].environmentMap2dType",
-					"SHININESS"					: "material[${materialUuid}].shininess",
 					"FOG_TECHNIQUE"				: { "binding" : "material[${materialUuid}].fogTechnique", "type" : "int" },
 					"NUM_AMBIENT_LIGHTS"		: { "binding" : { "property" : "ambientLight.length", "source" : "root" }, "type" : "int" },
 					"NUM_DIRECTIONAL_LIGHTS"    : { "binding" : { "property" : "directionalLight.length", "source" : "root", "max" : 4 }, "type" : "int" },
@@ -226,7 +233,9 @@
 					"DIRECTIONAL_3_SHADOW_MAP"	: { "binding" : { "property" : "directionalLight[3].shadowMap", "source" : "root" } },
         			"POP_LOD_ENABLED"       	: "geometry[${geometryUuid}].popLodEnabled",
         			"POP_BLENDING_ENABLED"		: "geometry[${geometryUuid}].popBlendingEnabled",
-					"IRRADIANCE_CUBEMAP"		: "material[${materialUuid}].irradianceCubeMap"
+					"IRRADIANCE_MAP"			: "material[${materialUuid}].irradianceMap",
+					"RADIANCE_MAP"				: "material[${materialUuid}].radianceMap",
+					"GAMMA_CORRECTION" 			: "material[${materialUuid}].gammaCorrection"
 				},
 
 				"vertexShader" 		: "#pragma include \"PBR.vertex.glsl\"",

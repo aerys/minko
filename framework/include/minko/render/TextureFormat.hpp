@@ -20,43 +20,50 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "minko/Common.hpp"
-#include "minko/Signal.hpp"
-#include "minko/component/AbstractScript.hpp"
-#include "minko/FXCommon.hpp"
 
 namespace minko
 {
-    namespace component
+    namespace render
     {
-        class Water : public AbstractScript
+        enum class TextureFormat
         {
-        public:
-            typedef std::shared_ptr<Water>    Ptr;
+            RGB,
+            RGBA,
 
-        private:
-            typedef std::shared_ptr<scene::Node>    NodePtr;
+            RGB_DXT1,
+            RGBA_DXT1,
+            RGBA_DXT3,
+            RGBA_DXT5,
 
-        private:
-            std::shared_ptr<data::Provider>             _provider;
-            std::shared_ptr<material::WaterMaterial>    _waterMaterial;
+            RGB_ETC1,
+            RGBA_ETC1,
 
-            float _cycle;
-        public:
-            inline static
-            Ptr
-            create(float cycle, std::shared_ptr<material::WaterMaterial> mat)
-            {
-                return std::shared_ptr<Water>(new Water(cycle, mat));
-            }
+            RGB_PVRTC1_2BPP,
+            RGB_PVRTC1_4BPP,
+            RGBA_PVRTC1_2BPP,
+            RGBA_PVRTC1_4BPP,
 
-        private:
-            Water(float cycle, std::shared_ptr<material::WaterMaterial> mat);
+            RGBA_PVRTC2_2BPP,
+            RGBA_PVRTC2_4BPP,
 
-            void
-            start(NodePtr target);
+            RGB_ATITC,
+            RGBA_ATITC,
 
-            void
-            update(NodePtr target);
+            // supported from OES 3.0
+            RGB_ETC2,
+            RGBA_ETC2
         };
     }
+
+    template<>
+    struct Hash<render::TextureFormat>
+    {
+        inline
+        size_t
+        operator()(const minko::render::TextureFormat& x) const
+        {
+            return std::hash<unsigned int>()(static_cast<unsigned int>(x));
+        }
+    };
+
 }

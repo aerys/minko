@@ -242,36 +242,36 @@ namespace minko
                                    unsigned int height);
 
 			void
-			uploadTexture2dData(uint			texture,
+			uploadTexture2dData(uint	texture,
 							    uint 	width,
 							    uint 	height,
 							    uint 	mipLevel,
-							    void*			data);
+							    void*	data);
 
 			void
 			uploadCubeTextureData(uint				texture,
 								  CubeTexture::Face face,
-							      uint 		width,
-							      uint 		height,
-							      uint 		mipLevel,
+							      uint 				width,
+							      uint 				height,
+							      uint 				mipLevel,
 							      void*				data);
 
 			void
             uploadCompressedTexture2dData(uint          texture,
                                           TextureFormat format,
-                                          uint  width,
-                                          uint  height,
-                                          uint  size,
-                                          uint  mipLevel,
+                                          uint  		width,
+                                          uint  		height,
+                                          uint  		size,
+                                          uint  		mipLevel,
                                           void*         data);
 
             void
             uploadCompressedCubeTextureData(uint                texture,
                                             CubeTexture::Face   face,
                                             TextureFormat       format,
-                                            uint        width,
-                                            uint        height,
-                                            uint        mipLevel,
+                                            uint        		width,
+                                            uint        		height,
+                                            uint        		mipLevel,
                                             void*               data);
 
             void
@@ -281,9 +281,9 @@ namespace minko
 			deleteTexture(uint texture);
 
 			void
-			setTextureAt(uint			position,
-						 int			texture		= 0,
-						 int			location	= -1);
+			setTextureAt(uint	position,
+						 int	texture		= 0,
+						 int	location	= -1);
 
             void
             setSamplerStateAt(uint				position,

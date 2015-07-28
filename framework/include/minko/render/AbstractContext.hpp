@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/render/Blending.hpp"
+#include "minko/render/TextureFormat.hpp"
 #include "minko/render/CubeTexture.hpp"
 
 namespace minko

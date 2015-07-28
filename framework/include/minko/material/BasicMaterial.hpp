@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/Common.hpp"
 
 #include "minko/material/Material.hpp"
+#include "minko/material/FogTechnique.hpp"
 #include "minko/render/Blending.hpp"
 #include "minko/render/CompareMode.hpp"
 #include "minko/render/StencilOperation.hpp"
@@ -49,25 +50,20 @@ namespace minko
 		public:
 			inline static
 			Ptr
-			create()
+			create(const std::string& name = "BasicMaterial")
 			{
-				auto instance = Ptr(new BasicMaterial());
-
-				instance->initialize();
-
-				return instance;
+				return Ptr(new BasicMaterial(name));
 			}
 
-			inline
-			static
+			inline static
 			Ptr
-			create(const data::Provider::DefaultValueMap& values)
+			create(Ptr source)
 			{
-				auto instance = Ptr(new BasicMaterial(values));
+				auto pm = create(source->name());
 
-				instance->initialize();
+				pm->data()->copyFrom(source->data());
 
-				return instance;
+				return pm;
 			}
 
 			Ptr
@@ -97,48 +93,6 @@ namespace minko
 			render::ResourceId
 			diffuseMap() const;
 
-            Ptr
-            diffuseMapWrapMode(render::WrapMode);
-
-            render::WrapMode
-            diffuseMapWrapMode() const;
-
-            Ptr
-            diffuseMapTextureFilter(render::TextureFilter);
-
-            render::TextureFilter
-            diffuseMapTextureFilter() const;
-
-            Ptr
-            diffuseMapMipFilter(render::MipFilter);
-
-            render::MipFilter
-            diffuseMapMipFilter() const;
-
-			Ptr
-			diffuseCubeMap(AbsTexturePtr);
-
-			render::ResourceId
-			diffuseCubeMap() const;
-
-            Ptr
-            diffuseCubeMapWrapMode(render::WrapMode);
-
-            render::WrapMode
-            diffuseCubeMapWrapMode() const;
-
-            Ptr
-            diffuseCubeMapTextureFilter(render::TextureFilter);
-
-            render::TextureFilter
-            diffuseCubeMapTextureFilter() const;
-
-            Ptr
-            diffuseCubeMapMipFilter(render::MipFilter);
-
-            render::MipFilter
-            diffuseCubeMapMipFilter() const;
-
 			Ptr
 			fogColor(const math::vec4&);
 
@@ -147,12 +101,6 @@ namespace minko
 
 			math::vec4
 			fogColor() const;
-
-            Ptr
-            fogDensity(float);
-
-            float
-            fogDensity() const;
 
             Ptr
             fogStart(float);
@@ -167,10 +115,10 @@ namespace minko
             fogEnd() const;
 
             Ptr
-            fogType(render::FogType);
+            fogTechnique(material::FogTechnique);
 
-            render::FogType
-            fogType() const;
+            material::FogTechnique
+            fogTechnique() const;
 
 			Ptr
 			blendingMode(render::Blending::Source, render::Blending::Destination);
@@ -257,12 +205,7 @@ namespace minko
 			zSorted() const;
 
 		protected:
-			BasicMaterial();
-
-            BasicMaterial(const data::Provider::DefaultValueMap& values);
-
-            void
-            initialize();
+			BasicMaterial(const std::string& name);
 		};
 	}
 }

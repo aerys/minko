@@ -19,6 +19,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/AbstractTexture.hpp"
 #include "minko/render/AbstractContext.hpp"
+#include "minko/render/TextureFormat.hpp"
 
 using namespace minko;
 using namespace minko::render;
@@ -51,48 +52,47 @@ AbstractTexture::AbstractTexture(TextureType			type,
 
 /*static*/
 void
-AbstractTexture::resizeData(unsigned int width, 
-						    unsigned int height, 
-							std::vector<unsigned char>&	data, 
-							unsigned int newWidth, 
-							unsigned int newHeight,
-							bool resizeSmoothly,
+AbstractTexture::resizeData(unsigned int 				width,
+						    unsigned int 				height,
+							unsigned char* 				data,
+							unsigned int 				newWidth,
+							unsigned int 				newHeight,
+							bool 						resizeSmoothly,
 							std::vector<unsigned char>&	newData)
 {
-#ifdef DEBUG_TEXTURE
-	assert(data.size() == width * height * sizeof(int));
-#endif // DEBUG_TEXTURE
-
 	newData.clear();
 
-	if (data.empty() || newWidth == 0 || newHeight == 0)
+	if (newWidth == 0 || newHeight == 0)
 		return;
 
 	if (newWidth == width && newHeight == height)
 	{
-		newData.swap(data);
+		newData.resize(width * height * sizeof(int));
+		std::memcpy(&newData[0], data, width * height * sizeof(int));
 		return;
 	}
 
-	const auto	size	= newWidth * newHeight * sizeof(int);
-	const float	xFactor = ((float)width - 1.0f)/((float)newWidth - 1.0f); 
+	const auto	size = newWidth * newHeight * sizeof(int);
+	const float	xFactor = ((float)width - 1.0f)/((float)newWidth - 1.0f);
 	const float	yFactor = ((float)height - 1.0f)/((float)newHeight - 1.0f);
 
 	newData.resize(size);
 
-	uint	idx	= 0;
-	float	y	= 0.0f;
+	uint idx = 0;
+	float y = 0.0f;
 	for (uint q = 0; q < newHeight; ++q)
 	{
-		uint		j	= (uint) floorf(y);
-		const float dy	= y - (float)j;
+		uint j = (uint) floorf(y);
+		const float dy = y - (float)j;
+
 		if (j >= height)
 			j = height - 1;
 
-		float		x	= 0.0f;
+		float x	= 0.0f;
 		for (uint p = 0; p < newWidth; ++p)
 		{
-			uint		i	= (uint)floorf(x);
+			uint i = (uint)floorf(x);
+
 			if (i >= width)
 				i = width - 1;
 
@@ -105,22 +105,22 @@ AbstractTexture::resizeData(unsigned int width,
 				const float dx	= x - (float)i;
 				const float dxy = dx * dy;
 
-				const uint ijTR	= i < width - 1						? ijTL + 4						: ijTL;
-				const uint ijBL = j < height - 1						? ijTL + (width << 2)			: ijTL;
-				const uint ijBR = (i < width - 1) && (j < height - 1)	? ijTL + ((width + 1) << 2)	: ijTL;
+				const uint ijTR	= i < width - 1 ? ijTL + 4 : ijTL;
+				const uint ijBL = j < height - 1 ? ijTL + (width << 2) : ijTL;
+				const uint ijBR = (i < width - 1) && (j < height - 1) ? ijTL + ((width + 1) << 2) : ijTL;
 
-				const float	wTL	= 1.0f - dx - dy + dxy; 
+				const float	wTL	= 1.0f - dx - dy + dxy;
 				const float wTR = dx - dxy;
 				const float wBL = dy - dxy;
 				const float wBR = dxy;
-			
+
 				for (uint k = 0; k < 4; ++k)
 				{
-					const float color = wTL * data[ijTL + k] + 
-						wTR * data[ijTR + k] + 
-						wBL * data[ijBL + k] + 
+					const float color = wTL * data[ijTL + k] +
+						wTR * data[ijTR + k] +
+						wBL * data[ijBL + k] +
 						wBR * data[ijBR + k];
-	
+
 					newData[idx + k] = (unsigned char)floorf(color);
 				}
 			}
@@ -133,7 +133,7 @@ AbstractTexture::resizeData(unsigned int width,
 			}
 
 			idx	+= 4;
-			x	+= xFactor;
+			x += xFactor;
 		}
 		y += yFactor;
 	}
@@ -170,5 +170,6 @@ AbstractTexture::getMipmapHeight(uint level) const
 	assert(math::isp2(_heightGPU));
 
 	const uint p = math::getp2(_heightGPU);
+
 	return 1 << (p - level);
 }

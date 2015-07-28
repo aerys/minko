@@ -3,5 +3,8 @@
         "stencilTest" : ["equal", 1, 0, { "fail" : "zero", "zfail" : "replace", "zpass" : "incr" }]
     },
 
-    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+    "techniques" : [{ "passes" : [{
+      "vertexShader" : "#pragma include \"../../../dummy.glsl\"",
+      "fragmentShader" : "#pragma include \"../../../dummy.glsl\""
+  }] }]
 }

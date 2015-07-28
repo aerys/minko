@@ -202,7 +202,9 @@ DirectionalLight::computeBoundingSphere(const math::mat4& view, const math::mat4
 }
 
 void
-DirectionalLight::computeShadowProjection(const math::mat4& view, const math::mat4& projection)
+DirectionalLight::computeShadowProjection(const math::mat4& view,
+										  const math::mat4& projection,
+										  float 			zFar)
 {
     if (!_shadowMappingEnabled)
         return;
@@ -219,8 +221,9 @@ DirectionalLight::computeShadowProjection(const math::mat4& view, const math::ma
 		invProjection * math::vec4(-1.f, -1.f, 1.f, 1.f)
 	};
 
+	zFar = std::min(zFar, -(v[4] / v[4].w).z);
+
 	float zNear = -(v[0] / v[0].w).z;
-	float zFar = -(v[4] / v[4].w).z;
 	float fov = atanf(1.f / projection[1][1]) * 2.f;
 	float ratio = projection[1][1] / projection[0][0];
 

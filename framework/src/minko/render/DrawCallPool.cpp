@@ -71,12 +71,14 @@ DrawCallPool::addDrawCalls(Effect::Ptr              effect,
     _batchId++;
     for (const auto& pass : technique)
     {
-        DrawCall* drawCall = new DrawCall(_batchId, pass, variables, rootData, rendererData, targetData);
+        DrawCall* drawCall = new DrawCall(pass, variables, rootData, rendererData, targetData);
 
         initializeDrawCall(*drawCall);
 
+        drawCall->batchIDs().push_back(_batchId);
+
         // if the draw call is meant only for post-processing, then it should only exist once
-        if (pass->isPostProcessing())
+        if (!pass->isForward())
         {
             auto it = std::find_if(_drawCalls.begin(), _drawCalls.end(), [&](const DrawCall* d)
             {
@@ -389,7 +391,7 @@ DrawCallPool::uniformBindingPropertyAddedHandler(DrawCall&                      
         if (propertyExist && drawCall.zSorted())
         {
             auto propertyRelatedToZSort = false;
-            for (auto i = 0; i < _zSortUsefulPropertyNames.size(); i++)
+            for (auto i = 0u; i < _zSortUsefulPropertyNames.size(); i++)
             {
                 if (data::Store::getActualPropertyName(drawCall.variables(), _zSortUsefulPropertyNames[i]) == propertyName)
                     propertyRelatedToZSort = true;
@@ -603,7 +605,7 @@ DrawCallPool::bindDrawCall(DrawCall& drawCall, Pass::Ptr pass, Program::Ptr prog
         uniformBindingPropertyAddedHandler(drawCall, input, pass->uniformBindings(), forceRebind);
 
     // bind index buffer
-    if (!pass->isPostProcessing())
+    if (pass->isForward())
         drawCall.bindIndexBuffer();
 }
 

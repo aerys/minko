@@ -461,7 +461,7 @@ Renderer::render(render::AbstractContext::Ptr	context,
 	}
 
     _drawCallPool.update(forceZSort);
-    
+
     _mustZSort = false;
 
     auto drawCalls = _drawCallPool.drawCalls();

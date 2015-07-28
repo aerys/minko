@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/component/SkinningMethod.hpp"
 #include "minko/file/EffectParser.hpp"
+#include "minko/render/TextureFormat.hpp"
 #include "minko/Hash.hpp"
 
 namespace minko
@@ -48,18 +49,17 @@ namespace minko
 			typedef std::unordered_set<render::TextureFormat, TextureFormatHash>	TextureFormatSet;
 
 		public:
-			typedef std::shared_ptr<Options>											Ptr;
-
-			typedef std::function<MaterialPtr(const std::string&, MaterialPtr)>			MaterialFunction;
+			typedef std::shared_ptr<Options>													Ptr;
+			typedef std::function<MaterialPtr(const std::string&, MaterialPtr)>					MaterialFunction;
 			typedef std::function<AbstractTexturePtr(const std::string&, AbstractTexturePtr)>	TextureFunction;
-			typedef std::function<GeomPtr(const std::string&, GeomPtr)> 				GeometryFunction;
-			typedef std::function<AbsProtocolPtr(const std::string&)>	                ProtocolFunction;
-            typedef std::function<AbsParserPtr(const std::string&)>                     ParserFunction;
-			typedef std::function<const std::string(const std::string&)>				UriFunction;
-			typedef std::function<NodePtr(NodePtr)>										NodeFunction;
-			typedef std::function<EffectPtr(EffectPtr)>									EffectFunction;
-            typedef std::function<render::TextureFormat(const TextureFormatSet&)>		TextureFormatFunction;
-            typedef std::function<void(NodePtr, const std::string&, const std::string&)> AttributeFunction;
+			typedef std::function<GeomPtr(const std::string&, GeomPtr)> 						GeometryFunction;
+			typedef std::function<AbsProtocolPtr(const std::string&)>	                		ProtocolFunction;
+            typedef std::function<AbsParserPtr(const std::string&)>                     		ParserFunction;
+			typedef std::function<const std::string(const std::string&)>						UriFunction;
+			typedef std::function<NodePtr(NodePtr)>												NodeFunction;
+			typedef std::function<EffectPtr(EffectPtr)>											EffectFunction;
+            typedef std::function<render::TextureFormat(const TextureFormatSet&)>				TextureFormatFunction;
+            typedef std::function<void(NodePtr, const std::string&, const std::string&)> 		AttributeFunction;
 
 		private:
 			std::shared_ptr<render::AbstractContext>	        _context;
@@ -73,6 +73,7 @@ namespace minko
 
             bool                                                _optimizeForRendering;
 			bool                                                _generateMipMaps;
+			bool												_parseMipMaps;
 			bool										        _resizeSmoothly;
 			bool										        _isCubeTexture;
             bool                                                _isRectangleTexture;
@@ -209,6 +210,22 @@ namespace minko
 			generateMipmaps(bool generateMipmaps)
 			{
 				_generateMipMaps = generateMipmaps;
+
+				return shared_from_this();
+			}
+
+			inline
+			bool
+			parseMipMaps() const
+			{
+				return _parseMipMaps;
+			}
+
+			inline
+			Ptr
+			parseMipMaps(bool parseMipMaps)
+			{
+				_parseMipMaps = parseMipMaps;
 
 				return shared_from_this();
 			}

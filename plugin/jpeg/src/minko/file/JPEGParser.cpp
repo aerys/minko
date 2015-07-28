@@ -21,6 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/Options.hpp"
 #include "minko/file/AssetLibrary.hpp"
+#include "minko/file/MipMapChainParser.hpp"
 #include "minko/render/Texture.hpp"
 #include "minko/render/CubeTexture.hpp"
 
@@ -33,8 +34,8 @@ void
 JPEGParser::parse(const std::string&                filename,
                   const std::string&                resolvedFilename,
                   std::shared_ptr<Options>          options,
-                  const std::vector<unsigned char>&    data,
-                  std::shared_ptr<AssetLibrary>        assetLibrary)
+                  const std::vector<unsigned char>& data,
+                  std::shared_ptr<AssetLibrary>     assetLibrary)
 {
     int width;
     int height;
@@ -50,18 +51,46 @@ JPEGParser::parse(const std::string&                filename,
 
     auto format = render::TextureFormat::RGBA;
     if (comps == 3 || comps == 1)
-        format    = render::TextureFormat::RGB;
+        format = render::TextureFormat::RGB;
 
     render::AbstractTexture::Ptr texture = nullptr;
 
-    if (!options->isCubeTexture())
+    if (options->isCubeTexture())
     {
-        auto texture2d = render::Texture::create(
+        MipMapChainParser parser;
+
+        auto cubeTexture = parser.parseCubeTexture(
             options->context(),
             width,
             height,
-            options->generateMipmaps(),
-            false,
+            bmpData,
+            options->parseMipMaps(),
+            options->parseMipMaps() || options->generateMipmaps(),
+            options->resizeSmoothly(),
+            format,
+            filename
+        );
+
+        cubeTexture = std::static_pointer_cast<render::CubeTexture>(options->textureFunction()(filename, cubeTexture));
+
+        assetLibrary->cubeTexture(filename, cubeTexture);
+        texture = cubeTexture;
+    }
+    else if (options->isRectangleTexture())
+    {
+        throw; // FIXME: handle rectangle textures
+    }
+    else
+    {
+        MipMapChainParser parser;
+
+        auto texture2d = parser.parseTexture(
+            options->context(),
+            width,
+            height,
+            bmpData,
+            options->parseMipMaps(),
+            options->parseMipMaps() || options->generateMipmaps(),
             options->resizeSmoothly(),
             format,
             filename
@@ -72,27 +101,7 @@ JPEGParser::parse(const std::string&                filename,
         texture = texture2d;
         assetLibrary->texture(filename, texture2d);
     }
-    else
-    {
-        auto cubeTexture = render::CubeTexture::create(
-            options->context(),
-            width,
-            height,
-            options->generateMipmaps(),
-            false,
-            options->resizeSmoothly(),
-            format,
-            filename
-        );
 
-        cubeTexture = std::static_pointer_cast<render::CubeTexture>(options->textureFunction()(filename, cubeTexture));
-
-        texture = cubeTexture;
-        assetLibrary->cubeTexture(filename, cubeTexture);
-    }
-
-    texture->data(bmpData);
-    texture->upload();
     if (options->disposeTextureAfterLoading())
         texture->disposeData();
 

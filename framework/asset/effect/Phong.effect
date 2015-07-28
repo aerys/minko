@@ -67,6 +67,8 @@
 					"uEnvironmentCubemap"			: "material[${materialUuid}].environmentCubemap",
 					"uEnvironmentAlpha"				: "material[${materialUuid}].environmentAlpha",
 					"uShininess"					: "material[${materialUuid}].shininess",
+					"uFresnelReflectance"			: { "binding" : "material[${materialUuid}].fresnelReflectance", "default" : 0.1 },
+					"uFresnelExponent"				: { "binding" : "material[${materialUuid}].fresnelExponent", "default" : 5.0 },
 					"uCameraPosition"				: { "binding" : { "property" : "eyePosition", "source" : "renderer" } },
 					"uBoneMatrices[0]"				: "geometry[${geometryUuid}].boneMatrices",
 					"uNumBones"						: "geometry[${geometryUuid}].numBones",

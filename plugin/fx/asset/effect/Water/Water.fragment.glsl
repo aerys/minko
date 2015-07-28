@@ -16,45 +16,6 @@
 #pragma include "ShadowMapping.function.glsl"
 #pragma include "Fog.function.glsl"
 
-struct AmbientLight
-{
-	vec3 	color;
-	float 	ambient;
-};
-
-struct PointLight
-{
-	vec3	color;
-	float	diffuse;
-	float	specular;
-	vec3	attenuationCoeffs;
-	vec3	position;
-};
-
-struct SpotLight
-{
-	vec3	direction;
-	float	diffuse;
-	vec3	position;
-	float	cosInnerConeAngle;
-	vec3	color;
-	float	cosOuterConeAngle;
-	vec3	attenuationCoeffs;
-	float	specular;
-};
-
-#ifdef NUM_AMBIENT_LIGHTS
-	uniform AmbientLight uAmbientLights[NUM_AMBIENT_LIGHTS];
-#endif // NUM_AMBIENT_LIGHTS
-
-#ifdef NUM_POINT_LIGHTS
-	uniform PointLight uPointLights[NUM_POINT_LIGHTS];
-#endif // NUM_POINT_LIGHTS
-
-#ifdef NUM_SPOT_LIGHTS
-	uniform SpotLight uSpotLights[NUM_SPOT_LIGHTS];
-#endif // NUM_SPOT_LIGHTS
-
 // diffuse
 uniform vec4 uDiffuseColor;
 uniform sampler2D uDiffuseMap;
@@ -145,11 +106,11 @@ uniform float uDirLight3_shadowSpread;
 uniform float uDirLight3_shadowBias;
 // ! directional lights
 
-varying vec3 vertexPosition;
-varying vec2 vertexUV;
-varying vec3 vertexNormal;
-varying vec3 vertexTangent;
-varying vec4 vertexScreenPosition;
+varying vec3 vVertexPosition;
+varying vec2 vVertexUV;
+varying vec3 vVertexNormal;
+varying vec3 vVertexTangent;
+varying vec4 vVertexScreenPosition;
 
 float getShadow(sampler2D 	shadowMap,
 				mat4 		viewProj[SHADOW_MAPPING_MAX_NUM_CASCADES],
@@ -313,70 +274,6 @@ void main(void)
 					* phong_fresnel(specular.rgb, dir, eyeVector);
 			#endif // SHININESS
 		#endif // NUM_DIRECTIONAL_LIGHTS > 1
-
-
-		#ifdef NUM_POINT_LIGHTS
-		//---------------------
-			for (int i = 0; i < NUM_POINT_LIGHTS; ++i)
-			{
-				vec3 lightDirection = uPointLights[i].position - vertexPosition;
-				float distanceToLight = length(lightDirection);
-				lightDirection /= distanceToLight;
-
-				vec3 distVec = vec3(1.0, distanceToLight, distanceToLight * distanceToLight);
-				float attenuation = any(lessThan(uPointLights[i].attenuationCoeffs, vec3(0.0)))
-					? 1.0
-					: max(0.0, 1.0 - distanceToLight / dot(uPointLights[i].attenuationCoeffs, distVec));
-
-				diffuseAccum += phong_diffuseReflection(normalVector, lightDirection)
-					* uPointLights[i].color
-					* (uPointLights[i].diffuse * attenuation);
-
-				#if defined(SHININESS)
-					specularAccum += phong_specularReflection(normalVector, lightDirection, eyeVector, shininessCoeff)
-						* phong_fresnel(specular.rgb, lightDirection, eyeVector)
-						* uPointLights[i].color
-						* (uPointLights[i].specular * attenuation);
-				#endif // SHININESS
-			}
-		#endif // NUM_POINT_LIGHTS
-
-		#ifdef NUM_SPOT_LIGHTS
-		//--------------------
-			for (int i = 0; i < NUM_SPOT_LIGHTS; ++i)
-			{
-				vec3 lightDirection = uSpotLights[i].position - vertexPosition;
-				float distanceToLight = length(lightDirection);
-				lightDirection /= distanceToLight;
-
-				vec3 lightSpotDirection = uSpotLights[i].direction;
-				lightSpotDirection	= normalize(lightSpotDirection);
-				float cosSpot = dot(-lightDirection, lightSpotDirection);
-
-				if (uSpotLights[i].cosOuterConeAngle < cosSpot)
-				{
-					vec3 distVec = vec3(1.0, distanceToLight, distanceToLight * distanceToLight);
-					float attenuation = any(lessThan(uSpotLights[i].attenuationCoeffs, vec3(0.0)))
-						? 1.0
-						: max(0.0, 1.0 - distanceToLight / dot(uSpotLights[i].attenuationCoeffs, distVec));
-
-					float cutoff = cosSpot < uSpotLights[i].cosInnerConeAngle && uSpotLights[i].cosOuterConeAngle < uSpotLights[i].cosInnerConeAngle
-						? (cosSpot - uSpotLights[i].cosOuterConeAngle) / (uSpotLights[i].cosInnerConeAngle - uSpotLights[i].cosOuterConeAngle)
-						: 1.0;
-
-					diffuseAccum += phong_diffuseReflection(normalVector, lightDirection)
-						* uSpotLights[i].color
-						* uSpotLights[i].diffuse * attenuation * cutoff;
-
-					#ifdef SHININESS
-						specularAccum += phong_specularReflection(normalVector, lightDirection, eyeVector, shininessCoeff)
-							* phong_fresnel(uSpotLights[i].specular.rgb, lightDirection, eyeVector)
-							* uSpotLights[i].color
-							* (uSpotLights[i].specular * attenuation * cutoff);
-					#endif // SHININESS
-				}
-			}
-		#endif // NUM_SPOT_LIGHTS
 
 	#endif // defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
 

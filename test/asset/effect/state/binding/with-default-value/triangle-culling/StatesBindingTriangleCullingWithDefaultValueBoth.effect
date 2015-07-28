@@ -3,5 +3,8 @@
         "triangleCulling" : { "binding" : "material[${materialUuid}].triangleCulling", "default" : "both" }
     },
 
-    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+    "techniques" : [{ "passes" : [{
+      "vertexShader" : "#pragma include \"../../../../dummy.glsl\"",
+      "fragmentShader" : "#pragma include \"../../../../dummy.glsl\""
+  }] }]
 }

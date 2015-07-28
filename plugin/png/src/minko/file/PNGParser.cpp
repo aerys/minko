@@ -24,6 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Texture.hpp"
 #include "minko/render/CubeTexture.hpp"
 #include "minko/render/RectangleTexture.hpp"
+#include "minko/file/MipMapChainParser.hpp"
 
 #include "lodepng.h"
 
@@ -37,11 +38,11 @@ PNGParser::parse(const std::string&                 filename,
                  const std::vector<unsigned char>&  data,
                  std::shared_ptr<AssetLibrary>      assetLibrary)
 {
-    std::vector<unsigned char> out;
+    std::vector<unsigned char> bmpData;
     unsigned int width;
     unsigned int height;
 
-    unsigned error = lodepng::decode(out, width, height, &*data.begin(), data.size());
+    unsigned error = lodepng::decode(bmpData, width, height, &*data.begin(), data.size());
 
     if (error)
     {
@@ -49,7 +50,7 @@ PNGParser::parse(const std::string&                 filename,
 
         _error->execute(shared_from_this(), Error("file '" + filename + "' loading error (" + text + ")"));
         _complete->execute(shared_from_this());
-        
+
         return;
     }
 
@@ -57,57 +58,53 @@ PNGParser::parse(const std::string&                 filename,
 
     if (options->isCubeTexture())
     {
-        auto cubeTexture = render::CubeTexture::create(
+        MipMapChainParser parser;
+
+        auto cubeTexture = parser.parseCubeTexture(
             options->context(),
             width,
             height,
-            options->generateMipmaps(),
-            false,
+            &bmpData[0],
+            options->parseMipMaps(),
+            options->parseMipMaps() || options->generateMipmaps(),
             options->resizeSmoothly(),
             render::TextureFormat::RGBA,
             filename
         );
 
-        texture = cubeTexture;
+        cubeTexture = std::static_pointer_cast<render::CubeTexture>(options->textureFunction()(filename, cubeTexture));
+
         assetLibrary->cubeTexture(filename, cubeTexture);
+        texture = cubeTexture;
     }
     else if (options->isRectangleTexture())
     {
-        auto rectangleTexture = render::RectangleTexture::create(
-            options->context(),
-            width,
-            height,
-            render::TextureFormat::RGBA,
-            filename
-        );
-
-        texture = rectangleTexture;
-        assetLibrary->rectangleTexture(filename, rectangleTexture);
-
-        texture->data(&*out.begin(), width, height);
+        // FIXME: handle rectangle textures
     }
     else
     {
-        auto texture2d = render::Texture::create(
+        MipMapChainParser parser;
+
+        auto texture2d = parser.parseTexture(
             options->context(),
             width,
             height,
-            options->generateMipmaps(),
-            false,
+            &bmpData[0],
+            options->parseMipMaps(),
+            options->parseMipMaps() || options->generateMipmaps(),
             options->resizeSmoothly(),
             render::TextureFormat::RGBA,
             filename
         );
+
+        texture2d = std::static_pointer_cast<render::Texture>(options->textureFunction()(filename, texture2d));
 
         texture = texture2d;
         assetLibrary->texture(filename, texture2d);
     }
 
-    if (!options->isRectangleTexture())
-        texture->data(&*out.begin());
-
     texture->upload();
-    
+
     if (options->disposeTextureAfterLoading())
         texture->disposeData();
 

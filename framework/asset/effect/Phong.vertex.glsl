@@ -37,13 +37,6 @@ attribute	float 	aPopProtected;
 uniform 	mat4 	uModelToWorldMatrix;
 uniform 	mat4 	uWorldToScreenMatrix;
 
-#ifdef UV_SCALE
-uniform vec2 uUVScale;
-#endif
-#ifdef UV_OFFSET
-uniform vec2 uUVOffset;
-#endif
-
 #ifdef POP_LOD_ENABLED
 uniform float uPopLod;
 #ifdef POP_BLENDING_ENABLED
@@ -65,18 +58,7 @@ varying		vec4	vVertexColor;
 void main(void)
 {
 	#if defined VERTEX_UV && (defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP)
-		vec2 uvScale = vec2(1.0);
-		vec2 uvOffset = vec2(0.0);
-
-		#ifdef UV_SCALE
-			uvScale = uUVScale;
-		#endif // UV_SCALE
-
-		#ifdef UV_OFFSET
-			uvOffset = uUVOffset;
-		#endif // UV_OFFSET
-
-		vVertexUV = uvScale * aUV + uvOffset;
+		vVertexUV = aUV;
 	#endif // defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP
 
 	#if defined (VERTEX_UV1) && defined (LIGHT_MAP)

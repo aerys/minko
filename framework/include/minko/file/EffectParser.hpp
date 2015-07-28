@@ -231,11 +231,14 @@ namespace minko
             void
             parseTechniques(const Json::Value& node, Scope& scope, Techniques& techniques);
 
+            std::shared_ptr<render::Pass>
+            getPassToExtend(const Json::Value& extendNode, Scope& scope);
+
             void
             parsePass(const Json::Value& node, Scope& scope, std::vector<PassPtr>& passes);
 
             void
-            checkPostProcessingPassBindings(const Scope& passScope);
+            checkDeferredPassBindings(const Scope& passScope);
 
             void
             parsePasses(const Json::Value& node, Scope& scope, std::vector<PassPtr>& passes);
@@ -415,7 +418,10 @@ namespace minko
                       GLSLBlockList::iterator	insertIt);
 
             void
-            loadGLSLDependencies(GLSLBlockListPtr blocks, OptionsPtr options);
+            loadGLSLDependencies(GLSLBlockListPtr		    blocks,
+                                 GLSLBlockList::iterator    begin,
+                                 GLSLBlockList::iterator    end,
+                                 OptionsPtr                 options);
 
             void
             dependencyErrorHandler(std::shared_ptr<Loader>  loader,

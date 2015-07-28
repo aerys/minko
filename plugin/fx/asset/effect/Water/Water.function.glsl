@@ -1,78 +1,128 @@
-float w(float waveLength)
+/*
+GPU Gems - Effective Water Simulation from Physical Models
+http.developer.nvidia.com/GPUGems/gpugems_ch01.html
+*/
+
+#ifndef _WATER_FUNCTION_GLSL_
+#define _WATER_FUNCTION_GLSL_
+
+#define WATER_WAVE_DIRECTIONAL	0
+#define WATER_WAVE_CIRCULAR		1
+
+struct water_Wave {
+	int type;
+	vec2 momentum;
+	float amplitude;
+	float speed;
+	float length;
+	float sharpness;
+};
+
+float water_w(float waveLength)
 {
 	return 6.28000020980835 / waveLength;
 }
 
-float phi(float speed, float w)
+float water_phi(float speed, float w)
 {
 	return w * speed;
 }
 
-vec4 addDirectionalWave(vec4 position, vec2 direction, float amplitude, float speed, float waveLength, float sharpness, float time)
+vec3 water_addDirectionalWave(vec3 position, water_Wave wave, float time)
 {
-	direction = normalize(direction);
-
-	float frequency = w(waveLength);
-	
+	vec2 direction = normalize(wave.momentum);
+	float frequency = water_w(wave.length);
 	float angle		= dot(direction.xy, position.xz);
-	float waveling	= angle * frequency + time * phi(speed, frequency);
-	float y			= amplitude * sin(waveling);
+	float waveling	= angle * frequency + time * water_phi(wave.speed, frequency);
 
-	return vec4(sharpness * amplitude * direction.x * cos(waveling), y, sharpness * amplitude * direction.y * cos(waveling), 0.0);
+	return vec3(
+		wave.sharpness * wave.amplitude * direction.x * cos(waveling),
+		wave.amplitude * sin(waveling),
+		wave.sharpness * wave.amplitude * direction.y * cos(waveling)
+	);
 }
 
-vec4 addCircularWave(vec4 position, vec2 origin, float amplitude, float speed, float waveLength, float sharpness, float time)
+vec3 water_addCircularWave(vec3 position, water_Wave wave, float time)
 {
-	vec2 direction = normalize(position.xz - origin.xy);
+	wave.momentum = normalize(position.xz - wave.momentum.xy);
 
-	return addDirectionalWave(position, direction, amplitude, speed, waveLength, sharpness, time);
+	return water_addDirectionalWave(position, wave, time);
 }
 
-vec3 addNormalDirectionalWave(vec4 position, vec2 direction, float amplitude, float speed, float waveLength, float sharpness, float time)
+vec3 water_wavePosition(vec3 position, water_Wave wave, float time)
 {
-	vec2 nDirection = normalize(direction);
-	float frequency = w(waveLength);
-	float WA = frequency * amplitude;
-	float angle		= dot(nDirection.xy, position.xz);
-	float waveling  = frequency * angle + time * phi(speed, frequency);
-	
+	if (wave.type == WATER_WAVE_DIRECTIONAL)
+		return water_addDirectionalWave(position, wave, time);
+	else
+		return water_addCircularWave(position, wave, time);
+}
+
+vec3 water_addNormalDirectionalWave(vec3 position, water_Wave wave, float time)
+{
+	vec2 direction = normalize(wave.momentum);
+	float frequency = water_w(wave.length);
+	float wa = frequency * wave.amplitude;
+	float angle = dot(direction.xy, position.xz);
+	float waveling = angle * frequency + time * water_phi(wave.speed, frequency);
+
 	//float derivativX = dot(nDirection.xy, position.x);
 	//float derivativY = dot(nDirection.xy, position.y);
 
-	return vec3(-nDirection.x * WA * cos(waveling), -sharpness * WA * sin(waveling), -nDirection.y * WA * cos(waveling));
+	return vec3(
+		-direction.x * cos(waveling) * wa,
+		-wave.sharpness * sin(waveling) * wa,
+		-direction.y * cos(waveling) * wa
+	);
 }
 
-vec3 addNormalCircularWave(vec4 position, vec2 origin, float amplitude, float speed, float waveLength, float sharpness, float time)
+vec3 water_addNormalCircularWave(vec3 position, water_Wave wave, float time)
 {
-	vec2 direction = normalize(position.xz - origin.xy);
+	wave.momentum = normalize(position.xz - wave.momentum.xy);
 
-	return addNormalDirectionalWave(position, direction, amplitude, speed, waveLength, sharpness, time);
+	return water_addNormalDirectionalWave(position, wave, time);
 }
 
-vec3 addTangentDirectionalWave(vec4 position, vec2 direction, float amplitude, float speed, float waveLength, float sharpness, float time)
+vec3 water_waveNormal(vec3 position, water_Wave wave, float time)
 {
-	vec2 nDirection = normalize(direction);
-	float frequency = w(waveLength);
-	float WA		= frequency * amplitude;
-	float angle		= dot(nDirection.xy, position.xz);
-	float waveling  = frequency * angle + time * phi(speed, frequency);
-	
-	return vec3(-sharpness * nDirection.x * nDirection.y * WA * sin(waveling), 
-				nDirection.y * WA * cos(waveling), 
-				-sharpness * nDirection.y * nDirection.y * WA * sin(waveling));
+	if (wave.type == WATER_WAVE_DIRECTIONAL)
+		return water_addNormalDirectionalWave(position, wave, time);
+	else
+		return water_addNormalCircularWave(position, wave, time);
 }
 
-vec3 addTangentCircularWave(vec4 position, vec2 origin, float amplitude, float speed, float waveLength, float sharpness, float time)
+vec3 water_addTangentDirectionalWave(vec3 position, water_Wave wave, float time)
 {
-	vec2 direction = normalize(position.xz - origin.xy);
+	vec2 direction 	= normalize(wave.momentum);
+	float frequency = water_w(wave.length);
+	float wa		= frequency * wave.amplitude;
+	float angle		= dot(direction.xy, position.xz);
+	float waveling  = frequency * angle + time * water_phi(wave.speed, frequency);
 
-	return addNormalDirectionalWave(position, direction, amplitude, speed, waveLength, sharpness, time);
+	return vec3(
+		-wave.sharpness * direction.x * direction.y * wa * sin(waveling),
+		direction.y * wa * cos(waveling),
+		1.0 - wave.sharpness * direction.y * direction.y * wa * sin(waveling)
+	);
 }
 
-float fresnelFactor(vec3 normalVector, vec3 localView, float fresnelMultiplier, float fogPercent, float fresnelPow)
+vec3 water_addTangentCircularWave(vec3 position, water_Wave wave, float time)
+{
+	wave.momentum = normalize(position.xz - wave.momentum.xy);
+
+	return water_addTangentDirectionalWave(position, wave, time);
+}
+
+vec3 water_waveTangent(vec3 position, water_Wave wave, float time)
+{
+	if (wave.type == WATER_WAVE_DIRECTIONAL)
+		return water_addTangentDirectionalWave(position, wave, time);
+	else
+		return water_addTangentCircularWave(position, wave, time);
+}
+
+float water_fresnelFactor(vec3 normalVector, vec3 localView, float fresnelMultiplier, float fogPercent, float fresnelPow)
 {
 	float fresnel = dot(normalVector, localView) * fresnelMultiplier;
-
 	float fresnelTerm = 1.0 - fresnel;
 
 	fresnelTerm = pow(fresnelTerm, fresnelPow);
@@ -81,3 +131,5 @@ float fresnelFactor(vec3 normalVector, vec3 localView, float fresnelMultiplier, 
 
 	return fresnelTerm;
 }
+
+#endif

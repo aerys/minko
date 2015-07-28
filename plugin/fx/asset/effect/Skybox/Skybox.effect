@@ -1,0 +1,48 @@
+{
+    "name" : "skybox",
+
+    "techniques" : [{
+
+        "passes" : [{
+
+            "uniforms" : {
+                "uCubeMap" : {
+                    "binding" : "material[${materialUuid}].diffuseCubeMap",
+                    "mipFilter" : "linear",
+                    "textureFilter" : "linear"
+                },
+                "uLatLongMap" : {
+                    "binding" : "material[${materialUuid}].diffuseLatLongMap",
+                    "textureFilter" : "linear"
+                },
+                "uGammaCorrection" : "material[${materialUuid}].gammaCorrection",
+                "uZFar" : { "binding" : { "property" : "zFar", "source" : "renderer" } },
+                "uWorldToScreenMatrix" : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
+                "uEyePosition" : { "binding" : { "property" : "eyePosition", "source" : "renderer" } },
+                "uFogColor"	: "material[${materialUuid}].fogColor"
+            },
+
+            "attributes" : {
+                "aPosition" : "geometry[${geometryUuid}].position"
+            },
+
+            "states" : {
+                "triangleCulling" : "front",
+                "priority" : "first",
+                "depthMask" : false
+            },
+
+            "macros" : {
+                "CUBE_MAP" : "material[${materialUuid}].diffuseCubeMap",
+                "LATLONG_MAP" : "material[${materialUuid}].diffuseLatLongMap",
+                "GAMMA_CORRECTION" : "material[${materialUuid}].gammaCorrection",
+                "FOG_COLOR" : "material[${materialUuid}].fogColor"
+            },
+
+            "vertexShader" : "#pragma include \"Skybox.vertex.glsl\"",
+            "fragmentShader" : "#pragma include \"Skybox.fragment.glsl\""
+        }]
+
+    }]
+
+}

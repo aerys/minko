@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/CubeTexture.hpp"
 
 #include "minko/render/AbstractContext.hpp"
+#include "minko/render/TextureFormatInfo.hpp"
 
 using namespace minko;
 using namespace minko::render;
@@ -46,67 +47,19 @@ CubeTexture::CubeTexture(AbstractContext::Ptr    context,
     _data(std::vector<std::vector<unsigned char>>(6))
 {
     // keep only the GPU relevant size of each face
-    _widthGPU    = std::min(math::clp2(width >> 2), MAX_SIZE);
-    _heightGPU    = std::min(math::clp2(height / 3), MAX_SIZE);
+    _widthGPU = std::min(math::clp2(width), MAX_SIZE);
+    _heightGPU = std::min(math::clp2(height), MAX_SIZE);
 }
 
 void
-CubeTexture::data(unsigned char*    data,
-                  int                ,
-                  int                )
+CubeTexture::data(unsigned char*     data,
+                  Face               face,
+                  int                widthGPU,
+                  int                heightGPU)
 {
-    const unsigned int faceWidth = _width >> 2;
-    const unsigned int faceHeight = _height / 3;
-    const unsigned int faceSize = faceWidth * faceHeight * sizeof(int);
+    assert(math::isp2(_widthGPU) && math::isp2(_heightGPU));
 
-    std::vector<unsigned char> rgba;
-
-    std::pair<uint, uint> faceXY [6] = {
-        std::make_pair(2, 1), // positive x
-        std::make_pair(0, 1), // negative x
-        std::make_pair(1, 0), // positive y
-        std::make_pair(1, 2), // negative y
-        std::make_pair(1, 1), // positive z
-        std::make_pair(3, 1)  // negative z
-    };
-
-    for (int faceId = 0; faceId < 6; ++faceId)
-    {
-        rgba = std::vector<unsigned char>(faceSize, 0);
-
-        const uint startX = std::min(faceXY[faceId].first * faceWidth, _width - 1);
-        const uint startY = std::min(faceXY[faceId].second * faceHeight, _height - 1);
-        const uint endX = std::min(startX + faceWidth - 1, _width - 1);
-        const uint endY = std::min(startY + faceHeight - 1, _height - 1);
-
-        for (uint y = startY; y <= endY; ++y)
-        {
-            uint idx = ((y - startY) * faceWidth) << 2;
-
-            for (uint x = startX; x <= endX; ++x)
-            {
-                unsigned int xy = x + _width * y;
-
-                if (_format == TextureFormat::RGBA)
-                {
-                    xy <<= 2;
-                    for (unsigned int k = 0; k < 4; ++k)
-                        rgba[idx++] = data[xy++];
-                }
-                else if (_format == TextureFormat::RGB)
-                {
-                    xy *= 3;
-                    for (unsigned int k = 0; k < 3; ++k)
-                        rgba[idx++] = data[xy++];
-                    rgba[idx++] = std::numeric_limits<unsigned char>::max();
-                }
-            }
-        }
-
-        assert(math::isp2(_widthGPU) && math::isp2(_heightGPU));
-
-        resizeData(faceWidth, faceHeight, rgba, _widthGPU, _heightGPU, _resizeSmoothly, _data[faceId]);
-    }
+    resizeData(_width, _height, data, _widthGPU, _heightGPU, _resizeSmoothly, _data[static_cast<uint>(face)]);
 }
 
 void
@@ -121,7 +74,7 @@ CubeTexture::resize(unsigned int width, unsigned int height, bool resizeSmoothly
     {
         auto previousData = _data[faceId];
 
-        resizeData(previousWidth, previousHeight, previousData, width, height, resizeSmoothly, _data[faceId]);
+        resizeData(previousWidth, previousHeight, &previousData[0], width, height, resizeSmoothly, _data[faceId]);
     }
 
     _width = width << 2;
@@ -165,8 +118,8 @@ CubeTexture::upload()
         );
     }
 
-    if (_mipMapping)
-        _context->generateMipmaps(_id);
+    // if (_mipMapping)
+    //     _context->generateMipmaps(_id);
 }
 
 void
@@ -191,8 +144,26 @@ CubeTexture::disposeData()
     }
 }
 
-//void
-//CubeTexture::uploadMipLevel(uint    level,
-//                            unsigned char*)
-//{
-//}
+void
+CubeTexture::uploadMipLevel(uint            level,
+                            unsigned char*  data,
+                            Face            face)
+{
+    auto width = (_widthGPU >> level);
+    auto height = (_heightGPU >> level);
+
+    if (level == 0)
+    {
+        width = std::max(width, TextureFormatInfo::minimumWidth(_format));
+        height = std::max(height, TextureFormatInfo::minimumHeight(_format));
+    }
+
+    _context->uploadCubeTextureData(
+        _id,
+        face,
+        width,
+        height,
+        level,
+        data
+    );
+}

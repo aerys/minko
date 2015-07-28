@@ -69,7 +69,7 @@ namespace minko
                 }
                 rootData.addProvider(p);
 
-                DrawCall drawCall(0, nullptr, EffectVariables{}, rootData, rendererData, targetData);
+                DrawCall drawCall(nullptr, EffectVariables{}, rootData, rendererData, targetData);
 
                 bool uniformIsBound = true;
                 for (auto& input : inputs)

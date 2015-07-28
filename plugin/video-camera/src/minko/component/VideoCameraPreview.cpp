@@ -24,7 +24,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/geometry/QuadGeometry.hpp"
 #include "minko/material/BasicMaterial.hpp"
 #include "minko/render/AbstractContext.hpp"
-#include "minko/render/AbstractTexture.hpp"
 #include "minko/render/Effect.hpp"
 #include "minko/render/RectangleTexture.hpp"
 #include "minko/scene/Node.hpp"
@@ -135,7 +134,7 @@ VideoCameraPreview::forceBackgroundUpdate()
 {
     if (_previewSurface != nullptr && _videoPreviewTarget != nullptr)
 		_previewSurface->material()->data()->set("diffuseMap", _videoPreviewTarget->sampler());
-	
+
 }
 
 void

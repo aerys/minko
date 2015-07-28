@@ -86,7 +86,7 @@ RectangleTexture::resize(unsigned int width, unsigned int height, bool resizeSmo
 
     auto previousData = _data;
 
-    resizeData(previousWidth, previousHeight, previousData, width, height, resizeSmoothly, _data);
+    resizeData(previousWidth, previousHeight, &previousData[0], width, height, resizeSmoothly, _data);
 
     _width = width;
     _widthGPU = width;
