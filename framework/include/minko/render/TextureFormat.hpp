@@ -53,17 +53,5 @@ namespace minko
             RGB_ETC2,
             RGBA_ETC2
         };
-    }
-
-    template<>
-    struct Hash<render::TextureFormat>
-    {
-        inline
-        size_t
-        operator()(const minko::render::TextureFormat& x) const
-        {
-            return std::hash<unsigned int>()(static_cast<unsigned int>(x));
-        }
-    };
-
+    } 
 }
