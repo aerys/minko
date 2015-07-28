@@ -78,21 +78,23 @@ DrawCallPool::addDrawCalls(Effect::Ptr              effect,
         // if the draw call is meant only for post-processing, then it should only exist once
         if (pass->isPostProcessing())
         {
-            auto it = std::find_if(_drawCalls.begin(), _drawCalls.end(), [&](const DrawCall* d)
-            {
-                return d->program() == drawCall->program();
-            });
+            auto seekedDrawCall = findDrawCall(
+                [&](const DrawCall* d)
+                {
+                    return d->program() == drawCall->program();
+                }
+            );
 
             // FIXME: cumbersome and wasteful to completely init. a DrawCall just to discard it
-            if (it != _drawCalls.end())
+            if (seekedDrawCall != nullptr)
             {
-                (*it)->batchIDs().push_back(_batchId);
+                seekedDrawCall->batchIDs().push_back(_batchId);
                 delete drawCall;
                 continue;
             }
         }
 
-        _drawCalls.push_back(drawCall);
+        addDrawCall(drawCall);
     }
 
     return _batchId;
@@ -101,40 +103,50 @@ DrawCallPool::addDrawCalls(Effect::Ptr              effect,
 void
 DrawCallPool::removeDrawCalls(uint batchId)
 {
-    _drawCalls.remove_if([&](DrawCall* drawCall)
+    for (auto& priorityToDrawCalls : _drawCalls)
     {
-        auto& batchIDs = drawCall->batchIDs();
-        auto it = std::find(batchIDs.begin(), batchIDs.end(), batchId);
-
-        if (it != batchIDs.end())
+        for (auto& drawCalls : priorityToDrawCalls.second)
         {
-            batchIDs.erase(it);
+            drawCalls.erase(std::remove_if(
+                drawCalls.begin(),
+                drawCalls.end(),
+                [&](DrawCall* drawCall)
+                {
+                    auto& batchIDs = drawCall->batchIDs();
+                    auto it = std::find(batchIDs.begin(), batchIDs.end(), batchId);
 
-            if (batchIDs.size() != 0)
-                return false;
+                    if (it != batchIDs.end())
+                    {
+                        batchIDs.erase(it);
 
-            unwatchProgramSignature(
-                *drawCall,
-                drawCall->pass()->macroBindings(),
-                drawCall->rootData(),
-                drawCall->rendererData(),
-                drawCall->targetData()
-            );
-            unbindDrawCall(*drawCall);
+                        if (batchIDs.size() != 0)
+                            return false;
 
-            _invalidDrawCalls.erase(drawCall);
+                        unwatchProgramSignature(
+                            *drawCall,
+                            drawCall->pass()->macroBindings(),
+                            drawCall->rootData(),
+                            drawCall->rendererData(),
+                            drawCall->targetData()
+                        );
+                        unbindDrawCall(*drawCall);
 
-            delete drawCall;
+                        _invalidDrawCalls.erase(drawCall);
 
-            assert(_drawCallToPropRebindFuncs->count(drawCall) == 0);
-            for (auto it = _propChangedSlot->begin(); it != _propChangedSlot->end(); ++it)
-                assert(it->first.second != drawCall);
+                        delete drawCall;
 
-            return true;
+                        assert(_drawCallToPropRebindFuncs->count(drawCall) == 0);
+                        for (auto it = _propChangedSlot->begin(); it != _propChangedSlot->end(); ++it)
+                            assert(it->first.second != drawCall);
+
+                        return true;
+                    }
+
+                    return false;
+                }
+            ), drawCalls.end());
         }
-
-        return false;
-    });
+    }
 }
 
 void
@@ -223,7 +235,7 @@ DrawCallPool::hasMacroCallback(const MacroBindingKey& key)
 }
 
 void
-DrawCallPool::macroPropertyChangedHandler(const data::MacroBinding& macroBinding, const std::list<DrawCall*>* drawCalls)
+DrawCallPool::macroPropertyChangedHandler(const data::MacroBinding& macroBinding, const DrawCallList* drawCalls)
 {
     _invalidDrawCalls.insert(drawCalls->begin(), drawCalls->end());
 }
@@ -232,7 +244,7 @@ void
 DrawCallPool::macroPropertyAddedHandler(const data::MacroBinding&   macroBinding,
                                         const PropertyName&         propertyName,
                                         data::Store&                store,
-                                        const std::list<DrawCall*>* drawCalls)
+                                        const DrawCallList*         drawCalls)
 {
     MacroBindingKey key(propertyName, &macroBinding, &store);
 
@@ -253,7 +265,7 @@ void
 DrawCallPool::macroPropertyRemovedHandler(const data::MacroBinding&     macroBinding,
                                           const PropertyName&           propertyName,
                                           data::Store&                  store,
-                                          const std::list<DrawCall*>*   drawCalls)
+                                          const DrawCallList*           drawCalls)
 {
     // If the store still has the property, it means that it was not really removed
     // but that one of the copies of the properties was removed (ie same material added multiple
@@ -292,9 +304,9 @@ DrawCallPool::unwatchProgramSignature(DrawCall&                     drawCall,
         auto propertyName = Store::getActualPropertyName(drawCall.variables(), macroBinding.propertyName);
         auto bindingKey = MacroBindingKey(propertyName, &macroBinding, &store);
 
-        DrawCallList* drawCalls = (*_macroToDrawCalls)[bindingKey];
+        auto* drawCalls = (*_macroToDrawCalls)[bindingKey];
 
-        drawCalls->remove(&drawCall);
+        drawCalls->erase(std::remove(drawCalls->begin(), drawCalls->end(), &drawCall), drawCalls->end());
 
         if (drawCalls->size() == 0)
         {
@@ -383,7 +395,7 @@ DrawCallPool::uniformBindingPropertyAddedHandler(DrawCall&                      
                 }
             )
         ));
-
+            
         // If this draw call needs to be sorted
         // => we listen to the useful properties
         if (propertyExist && drawCall.zSorted())
@@ -498,7 +510,7 @@ DrawCallPool::stateBindingPropertyAddedHandler(const std::string&       stateNam
 }
 
 void
-DrawCallPool::update(bool forceZSort)
+DrawCallPool::update(bool forceSort, bool mustZSort)
 {
     for (auto* drawCallPtr : _invalidDrawCalls)
         initializeDrawCall(*drawCallPtr, true);
@@ -513,60 +525,48 @@ DrawCallPool::update(bool forceZSort)
     _drawCallToPropRebindFuncs->clear();
     _drawCallToPropRebindFuncs->resize(0);
 
-    if (_mustZSort || forceZSort)
-    {
-        _drawCalls.sort(
-            [&](DrawCall* a, DrawCall* b) -> bool
-            {
-                return compareDrawCalls(a, b);
-            }
-        );
+    const auto finalMustZSort = forceSort || _mustZSort || mustZSort;
 
-		_mustZSort = false;
+    if (forceSort || finalMustZSort)
+    {
+        _mustZSort = false;
+
+        sortDrawCalls(forceSort, finalMustZSort);
     }
 }
 
 void
 DrawCallPool::invalidateDrawCalls(uint batchId, const EffectVariables& variables)
 {
-    for (DrawCall* drawCall : _drawCalls)
-    {
-        auto& batchIDs = drawCall->batchIDs();
-        auto it = std::find(batchIDs.begin(), batchIDs.end(), batchId);
-
-        if (it != batchIDs.end())
+    foreachDrawCall(
+        [&](DrawCall* drawCall)
         {
-            _invalidDrawCalls.insert(drawCall);
-            drawCall->variables().clear();
-            drawCall->variables().insert(drawCall->variables().end(), variables.begin(), variables.end());
+            auto& batchIDs = drawCall->batchIDs();
+            auto it = std::find(batchIDs.begin(), batchIDs.end(), batchId);
+
+            if (it != batchIDs.end())
+            {
+                _invalidDrawCalls.insert(drawCall);
+                drawCall->variables().clear();
+                drawCall->variables().insert(drawCall->variables().end(), variables.begin(), variables.end());
+            }
         }
-    }
+    );
 }
 
 bool
 DrawCallPool::compareDrawCalls(DrawCall* a, DrawCall* b)
 {
-    const float aPriority = a->priority();
-    const float bPriority = b->priority();
-    const bool samePriority = fabsf(aPriority - bPriority) < 1e-3f;
+    return a < b;
+}
 
-    if (samePriority)
-    {
-        if (a->target().id == b->target().id)
-        {
-            if (a->zSorted() && b->zSorted())
-            {
-                auto aPosition = a->getEyeSpacePosition();
-                auto bPosition = b->getEyeSpacePosition();
+bool
+DrawCallPool::compareZSortedDrawCalls(DrawCall* a, DrawCall* b)
+{
+    const auto aPosition = a->getEyeSpacePosition();
+    const auto bPosition = b->getEyeSpacePosition();
 
-                return aPosition.z > bPosition.z;
-            }
-        }
-
-        return a->target().id < b->target().id;
-    }
-
-    return aPriority > bPriority;
+    return aPosition.z > bPosition.z;
 }
 
 void
@@ -582,6 +582,84 @@ DrawCallPool::clear()
     _propChangedSlot->resize(0);
     _drawCallToPropRebindFuncs->clear();
     _drawCallToPropRebindFuncs->resize(0);
+}
+
+void
+DrawCallPool::addDrawCall(DrawCall* drawCall)
+{
+    const auto priority = drawCall->priority();
+    const auto zSortedIndex = drawCall->zSorted() ? 1u : 0u;
+
+    // FIXME: listen to priority and zSorted property changes
+
+    _drawCalls[priority][zSortedIndex].push_back(drawCall);
+}
+
+void
+DrawCallPool::removeDrawCall(DrawCall* drawCall)
+{
+    auto& priorityToDrawCallsIt = _drawCalls.find(drawCall->priority());
+
+    if (priorityToDrawCallsIt == _drawCalls.end())
+        return;
+
+    const auto zSortedIndex = drawCall->zSorted() ? 1u : 0u;
+
+    auto& drawCalls = priorityToDrawCallsIt->second.at(zSortedIndex);
+
+    drawCalls.erase(
+        std::remove(drawCalls.begin(), drawCalls.end(), drawCall),
+        drawCalls.end()
+    );
+}
+
+DrawCall*
+DrawCallPool::findDrawCall(const std::function<bool(DrawCall*)>& predicate)
+{
+    for (const auto& priorityToDrawCalls : _drawCalls)
+    {
+        for (const auto& drawCalls : priorityToDrawCalls.second)
+        {
+            for (auto drawCall : drawCalls)
+            {
+                if (predicate(drawCall))
+                    return drawCall;
+            }
+        }
+    }
+
+    return nullptr;
+}
+
+void
+DrawCallPool::foreachDrawCall(const std::function<void(DrawCall*)>& function)
+{
+    for (const auto& priorityToDrawCalls : _drawCalls)
+    {
+        for (const auto& drawCalls : priorityToDrawCalls.second)
+        {
+            for (auto drawCall : drawCalls)
+            {
+                function(drawCall);
+            }
+        }
+    }
+}
+
+unsigned int
+DrawCallPool::numDrawCalls() const
+{
+    auto numDrawCalls = 0u;
+
+    for (const auto& priorityToDrawCalls : _drawCalls)
+    {
+        for (const auto& drawCalls : priorityToDrawCalls.second)
+        {
+            numDrawCalls += drawCalls.size();
+        }
+    }
+
+    return numDrawCalls;
 }
 
 void
@@ -621,4 +699,36 @@ DrawCallPool::unbindDrawCall(DrawCall& drawCall)
 
     _drawCallToPropRebindFuncs->erase(&drawCall);
     //_drawCallToPropRebindFuncs->clear();
+}
+
+void
+DrawCallPool::sortDrawCalls(bool sort, bool zSort)
+{
+    const std::function<bool(DrawCall*, DrawCall*)> comparisonFunctions[2] = 
+    {
+        &DrawCallPool::compareDrawCalls,
+        &DrawCallPool::compareZSortedDrawCalls
+    };
+
+    for (auto& priorityToDrawCalls : _drawCalls)
+    {
+        const auto begin = sort ? 0u : 1u;
+        const auto end = zSort ? 2u : 1u;
+
+        for (auto i = begin; i < end; ++i)
+        {
+            const auto& comparisonFunction = comparisonFunctions[i];
+
+            auto& drawCalls = priorityToDrawCalls.second.at(i);
+
+            std::sort(
+                drawCalls.begin(),
+                drawCalls.end(),
+                [&comparisonFunction](DrawCall* a, DrawCall* b) -> bool
+                {
+                    return comparisonFunction(a, b);
+                }
+            );
+        }
+    }
 }

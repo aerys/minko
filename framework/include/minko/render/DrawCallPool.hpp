@@ -59,7 +59,11 @@ namespace minko
                 }
             };*/
 
-            typedef std::list<DrawCall*>                                        DrawCallList;
+            typedef std::vector<DrawCall*>                                      DrawCallList;
+            typedef std::map<
+                float,
+                std::array<std::vector<DrawCall*>, 2u>
+            >                                                                   DrawCallContainer;
             typedef DrawCallList::iterator                                      DrawCallIterator;
             typedef data::Store::PropertyChangedSignal                          PropertyChanged;
             typedef std::pair<PropertyChanged::Slot, uint>                      ChangedSlot;
@@ -82,7 +86,7 @@ namespace minko
 
 		private:
 			uint							_batchId;
-            DrawCallList                 	_drawCalls;
+            DrawCallContainer             	_drawCalls;
             MacroToDrawCallsMap*            _macroToDrawCalls;
             std::unordered_set<DrawCall*>   _invalidDrawCalls;
             MacroToChangedSlotMap*          _macroChangedSlot;
@@ -98,7 +102,7 @@ namespace minko
 
             ~DrawCallPool();
 
-			const DrawCallList&
+			const DrawCallContainer&
             drawCalls()
             {
                 return _drawCalls;
@@ -119,10 +123,13 @@ namespace minko
             invalidateDrawCalls(uint batchId, const EffectVariables& variables);
 
             void
-            update(bool forceZSort = false);
+            update(bool forceSort = false, bool mustZSort = false);
 
 			void
 			clear();
+
+            unsigned int
+            numDrawCalls() const;
 
         private:
             void
@@ -143,16 +150,16 @@ namespace minko
             macroPropertyAddedHandler(const data::MacroBinding&     macroBinding,
                                       const PropertyName&           propertyName,
                                       data::Store&                  store,
-                                      const std::list<DrawCall*>*   drawCalls);
+                                      const DrawCallList*           drawCalls);
 
             void
             macroPropertyRemovedHandler(const data::MacroBinding&   macroBinding,
                                         const PropertyName&         propertyName,
                                         data::Store&                store,
-                                        const std::list<DrawCall*>* drawCalls);
+                                        const DrawCallList*         drawCalls);
 
             void
-            macroPropertyChangedHandler(const data::MacroBinding& macroBinding, const std::list<DrawCall*>* drawCalls);
+            macroPropertyChangedHandler(const data::MacroBinding& macroBinding, const DrawCallList* drawCalls);
 
             void
             initializeDrawCall(DrawCall& drawCall, bool forceRebind = false);
@@ -185,6 +192,18 @@ namespace minko
                                                      const ProgramInputs::UniformInput& input,
                                                      const data::BindingMap&            uniformBindingMap);
 
+            void
+            addDrawCall(DrawCall* drawCall);
+
+            void
+            removeDrawCall(DrawCall* drawCall);
+
+            DrawCall*
+            findDrawCall(const std::function<bool(DrawCall*)>& predicate);
+
+            void
+            foreachDrawCall(const std::function<void(DrawCall*)>& function);
+
 			void
 			bindDrawCall(DrawCall& 					drawCall,
 						 std::shared_ptr<Pass> 		pass,
@@ -194,8 +213,16 @@ namespace minko
 			void
 			unbindDrawCall(DrawCall& drawCall);
 
+            static
 			bool
 			compareDrawCalls(DrawCall* a, DrawCall* b);
+
+            static
+            bool
+            compareZSortedDrawCalls(DrawCall* a, DrawCall* b);
+
+            void
+            sortDrawCalls(bool sort, bool zSort);
         };
 	}
 }
