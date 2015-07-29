@@ -83,27 +83,26 @@
         "depthFunction"         : { "binding" : "material[${materialUuid}].depthFunction" }
     },
 
-    "defaultTechnique"  : "opaque",
+    "defaultTechnique"  : "basic-opaque-technique",
 
 	"techniques" : [
         {
-            "name" : "opaque",
-
+            "name" : "basic-opaque-technique",
     		"passes"    : [{
+                "name"              : "basic-opaque-pass",
     			"vertexShader"      : "#pragma include \"Basic.vertex.glsl\"",
                 "fragmentShader"    : "#pragma include \"Basic.fragment.glsl\""
     		}]
     	},
         {
-            "name" : "transparent",
-
+            "name" : "basic-transparent-technique",
 			"states" : {
 				"blendingMode" 	: "alpha",
 				"priority"  	: "transparent",
 				"zSorted"   	: true
 			},
-
             "passes" : [{
+                "name"              : "basic-transparent-pass",
                 "vertexShader"      : "#pragma include \"Basic.vertex.glsl\"",
                 "fragmentShader"    : "#pragma include \"Basic.fragment.glsl\""
             }]

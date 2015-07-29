@@ -1,8 +1,6 @@
 {
     "name"  	: "picking",
     
-	"priority"	: "opaque",
-	
     "attributes" : {
         "aPosition"       : "geometry[${geometryUuid}].position",
         "aBoneIdsA"       : "geometry[${geometryUuid}].boneIdsA",
@@ -37,7 +35,9 @@
     },
     
 	"techniques" : [{
+        "name" : "picking-technique",
 		"passes"    : [{
+            "name": "picking-pass",
              "vertexShader"      : "#pragma include \"Picking.vertex.glsl\"",
              "fragmentShader"    : "#pragma include \"Picking.fragment.glsl\""
 		}]

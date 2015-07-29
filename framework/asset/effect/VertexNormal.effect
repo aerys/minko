@@ -1,5 +1,5 @@
 {
-	"name" : "vertex-normal",
+	"name" : "normal",
 
 	"attributes" : {
 		"aPosition"		: "geometry[${geometryUuid}].position",
@@ -30,8 +30,10 @@
 	},
 
     "techniques" : [{
+    	"name"		: "normal-technique", 
     	"passes"	: [{
-		    "vertexShader" : "
+    		"name"			: "normal-pass",
+		    "vertexShader" 	: "
                 #ifdef GL_ES
                     #ifdef GL_FRAGMENT_PRECISION_HIGH
                         precision highp float;

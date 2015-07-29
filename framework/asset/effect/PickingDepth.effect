@@ -1,8 +1,6 @@
 {
     "name"      : "picking-depth",
     
-    "priority"  : "opaque",
-    
     "attributes" : {
         "aPosition"       : "geometry[${geometryUuid}].position",
         "aUV"             : "geometry[${geometryUuid}].uv",
@@ -40,9 +38,11 @@
     },
     
     "techniques" : [{
+        "name" : "picking-depth-technique",
         "passes"    : [{
-             "vertexShader"      : "#pragma include \"PickingDepth.vertex.glsl\"",
-             "fragmentShader"    : "#pragma include \"PickingDepth.fragment.glsl\""
+            "name" : "picking-depth-pass",
+            "vertexShader"      : "#pragma include \"PickingDepth.vertex.glsl\"",
+            "fragmentShader"    : "#pragma include \"PickingDepth.fragment.glsl\""
         }]
     }]
 }
