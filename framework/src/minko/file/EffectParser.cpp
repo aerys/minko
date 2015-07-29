@@ -289,6 +289,53 @@ EffectParser::parsePasses(const Json::Value& node, Scope& scope, std::vector<Pas
     // FIXME: throw otherwise
 }
 
+render::Pass::Ptr
+EffectParser::getPassToExtend(const Json::Value& extendNode, Scope& scope)
+{
+    render::Pass::Ptr pass;
+    std::string passName;
+
+    if (extendNode.isString())
+    {
+        passName = extendNode.asString();
+        pass = findPassByName(passName, scope);
+    }
+    else if (extendNode.isObject())
+    {
+        passName = extendNode["pass"].asString();
+
+        auto techniqueName = extendNode["technique"].asString();
+        auto effectFilename = extendNode["effect"].asString();
+
+        if (!_assetLibrary->effect(effectFilename))
+        {
+            auto options = _options->clone();
+            auto loader = file::Loader::create(_assetLibrary->loader());
+
+            options->loadAsynchronously(false);
+            loader->queue(effectFilename, options);
+            auto effectComplete = loader->complete()->connect([&](file::Loader::Ptr l)
+            {
+                auto effect = _assetLibrary->effect(effectFilename);
+
+                for (auto& techniqueNameAndPasses : effect->techniques())
+                    if (techniqueNameAndPasses.first == techniqueName)
+                        for (auto p : techniqueNameAndPasses.second)
+                            if (p->name() == passName)
+                                pass = p;
+            });
+            loader->load();
+        }
+    }
+    else
+        throw;
+
+    if (pass == nullptr)
+        throw std::runtime_error("Undefined base pass with name '" + passName + "'.");
+
+    return pass;
+}
+
 void
 EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassPtr>& passes)
 {
@@ -323,38 +370,29 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
 		if (node.isMember("extends"))
 		{
 			auto extendNode = node.get("extends", 0);
+            render::Pass::Ptr pass = getPassToExtend(extendNode, scope);
 
 			// if a pass "extends" another pass, then we have to init. its properties from that previously defined pass
-			if (extendNode.isString())
-			{
-				auto passName = extendNode.asString();
-				auto pass = findPassByName(passName, scope);
+            passScope.attributeBlock.bindingMap.bindings = pass->attributeBindings().bindings;
+            passScope.attributeBlock.bindingMap.defaultValues = data::Store(pass->attributeBindings().defaultValues, true);
 
-				if (pass == nullptr)
-					throw std::runtime_error("Undefined pass with name '" + passName + "'.");
+            passScope.uniformBlock.bindingMap.bindings = pass->uniformBindings().bindings;
+            passScope.uniformBlock.bindingMap.defaultValues = data::Store(pass->uniformBindings().defaultValues, true);
 
-                passScope.attributeBlock.bindingMap.bindings = pass->attributeBindings().bindings;
-                passScope.attributeBlock.bindingMap.defaultValues = data::Store(pass->attributeBindings().defaultValues, true);
+            passScope.stateBlock.bindingMap.bindings = pass->stateBindings().bindings;
+            passScope.stateBlock.states = render::States(pass->states());
+            passScope.stateBlock.bindingMap.defaultValues.removeProvider(
+                passScope.stateBlock.bindingMap.defaultValues.providers().front()
+            );
+            passScope.stateBlock.bindingMap.defaultValues.addProvider(passScope.stateBlock.states.data());
 
-                passScope.uniformBlock.bindingMap.bindings = pass->uniformBindings().bindings;
-                passScope.uniformBlock.bindingMap.defaultValues = data::Store(pass->uniformBindings().defaultValues, true);
+            passScope.macroBlock.bindingMap.bindings = pass->macroBindings().bindings;
+            passScope.macroBlock.bindingMap.defaultValues = data::Store(pass->macroBindings().defaultValues, true);
+            passScope.macroBlock.bindingMap.types = pass->macroBindings().types;
 
-				passScope.stateBlock.bindingMap.bindings = pass->stateBindings().bindings;
-				passScope.stateBlock.states = render::States(pass->states());
-				passScope.stateBlock.bindingMap.defaultValues.removeProvider(
-					passScope.stateBlock.bindingMap.defaultValues.providers().front()
-				);
-				passScope.stateBlock.bindingMap.defaultValues.addProvider(passScope.stateBlock.states.data());
-
-                passScope.macroBlock.bindingMap.bindings = pass->macroBindings().bindings;
-                passScope.macroBlock.bindingMap.defaultValues = data::Store(pass->macroBindings().defaultValues, true);
-                passScope.macroBlock.bindingMap.types = pass->macroBindings().types;
-
-				vertexShader = pass->program()->vertexShader();
-				fragmentShader = pass->program()->fragmentShader();
-				isPostProcessing = pass->isPostProcessing();
-			}
-			// FIXME: throw otherwise
+			vertexShader = pass->program()->vertexShader();
+			fragmentShader = pass->program()->fragmentShader();
+			isPostProcessing = pass->isPostProcessing();
 		}
 
         parseAttributes(node, passScope, passScope.attributeBlock);
@@ -1561,8 +1599,10 @@ EffectParser::finalize()
             auto vs = pass->program()->vertexShader();
             auto fs = pass->program()->fragmentShader();
 
-            vs->source("#define VERTEX_SHADER\n" + concatenateGLSLBlocks(_shaderToGLSL[vs]));
-            fs->source("#define FRAGMENT_SHADER\n" + concatenateGLSLBlocks(_shaderToGLSL[fs]));
+            if (_shaderToGLSL.count(vs) != 0)
+                vs->source("#define VERTEX_SHADER\n" + concatenateGLSLBlocks(_shaderToGLSL[vs]));
+            if (_shaderToGLSL.count(fs) != 0)
+                fs->source("#define FRAGMENT_SHADER\n" + concatenateGLSLBlocks(_shaderToGLSL[fs]));
         }
     }
 

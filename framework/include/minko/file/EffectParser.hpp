@@ -231,6 +231,9 @@ namespace minko
             void
             parseTechniques(const Json::Value& node, Scope& scope, Techniques& techniques);
 
+            std::shared_ptr<render::Pass>
+            getPassToExtend(const Json::Value& extendNode, Scope& scope);
+
             void
             parsePass(const Json::Value& node, Scope& scope, std::vector<PassPtr>& passes);
 
