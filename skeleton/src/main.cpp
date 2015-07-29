@@ -28,7 +28,7 @@ int main(int argc, char** argv)
 {
     auto canvas = Canvas::create("Minko Application", 800, 600);
 
-    auto sceneManager = SceneManager::create(canvas->context());
+    auto sceneManager = SceneManager::create(canvas);
 
     sceneManager->assets()->loader()
         ->queue("effect/Basic.effect");
