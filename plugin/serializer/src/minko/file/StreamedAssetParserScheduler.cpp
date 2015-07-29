@@ -37,7 +37,6 @@ StreamedAssetParserScheduler::StreamedAssetParserScheduler(Options::Ptr options,
     _complete(false),
     _maxNumActiveParsers(maxNumActiveParsers),
     _useJobBasedParsing(useJobBasedParsing),
-    _sortingNeeded(false),
     _active(Signal<Ptr>::create()),
     _inactive(Signal<Ptr>::create())
 {
@@ -46,9 +45,8 @@ StreamedAssetParserScheduler::StreamedAssetParserScheduler(Options::Ptr options,
 void
 StreamedAssetParserScheduler::addParser(AbstractStreamedAssetParser::Ptr parser)
 {
-    auto entry = ParserEntryPtr(new ParserEntry(parser));
-
-    _entries.push_back(entry);
+    auto entryIt = _entries.insert(ParserEntryPtr(new ParserEntry(parser)));
+    auto entry = *entryIt.first;
 
     entry->parserCompleteSlot = parser->AbstractParser::complete()->connect(
         [=](AbstractParser::Ptr parserThis)
@@ -58,8 +56,6 @@ StreamedAssetParserScheduler::addParser(AbstractStreamedAssetParser::Ptr parser)
     );
 
     startListeningToEntry(entry);
-
-    sortingNeeded();
 }
 
 void
@@ -84,8 +80,6 @@ StreamedAssetParserScheduler::complete()
 float
 StreamedAssetParserScheduler::priority()
 {
-    sortEntries();
-
     if (!hasPendingRequest() || _activeEntries.size() >= _maxNumActiveParsers)
         return 0.f;
 
@@ -95,8 +89,6 @@ StreamedAssetParserScheduler::priority()
 void
 StreamedAssetParserScheduler::step()
 {
-    sortEntries();
-
     while (hasPendingRequest() && _activeEntries.size() < _maxNumActiveParsers)
     {
         auto entry = popHeadingParser();
@@ -122,26 +114,6 @@ StreamedAssetParserScheduler::afterLastStep()
 {
 }
 
-void
-StreamedAssetParserScheduler::sortingNeeded()
-{
-    _sortingNeeded = true;
-}
-
-void
-StreamedAssetParserScheduler::sortEntries()
-{
-    if (_sortingNeeded)
-    {
-        _sortingNeeded = false;
-
-        _entries.sort([](ParserEntryPtr left, ParserEntryPtr right) -> bool
-        {
-            return left->parser->priority() < right->parser->priority();
-        });
-    }
-}
-
 bool
 StreamedAssetParserScheduler::hasPendingRequest() const
 {
@@ -151,15 +123,16 @@ StreamedAssetParserScheduler::hasPendingRequest() const
 StreamedAssetParserScheduler::ParserEntryPtr
 StreamedAssetParserScheduler::headingParser() const
 {
-    return _entries.back();
+    return *_entries.begin();
 }
 
 StreamedAssetParserScheduler::ParserEntryPtr
 StreamedAssetParserScheduler::popHeadingParser()
 {
-    auto entry = headingParser();
+    auto entryIt = _entries.begin();
+    auto entry = *entryIt;
 
-    _entries.pop_back();
+    _entries.erase(entryIt);
 
     return entry;
 }
@@ -169,7 +142,7 @@ StreamedAssetParserScheduler::removeEntry(ParserEntryPtr entry)
 {
     entry->parserCompleteSlot = nullptr;
 
-    _entries.remove(entry);
+    _entries.erase(entry);
 
     const int previousNumActiveEntries = _activeEntries.size();
 
@@ -262,21 +235,27 @@ StreamedAssetParserScheduler::requestDisposed(ParserEntryPtr entry)
 
     entryDeactivated(entry, numActiveEntries, previousNumActiveEntries);
 
-    _entries.push_back(entry);
+    _entries.insert(entry);
 
     startListeningToEntry(entry);
-
-    sortingNeeded();
 }
 
 void
 StreamedAssetParserScheduler::startListeningToEntry(ParserEntryPtr entry)
 {
-    entry->parserPriorityChangedSlot = entry->parser->priorityChanged()->connect(
-        [this](AbstractStreamedAssetParser::Ptr parser,
-               float                            priority)
+    entry->parserBeforePriorityChangedSlot = entry->parser->beforePriorityChanged()->connect(
+        [this, entry](AbstractStreamedAssetParser::Ptr  parser,
+               float                                    priority)
         {
-            sortingNeeded();
+            _entries.erase(entry);
+        }
+    );
+
+    entry->parserPriorityChangedSlot = entry->parser->priorityChanged()->connect(
+        [this, entry](AbstractStreamedAssetParser::Ptr  parser,
+               float                                    priority)
+        {
+            _entries.insert(entry);
         }
     );
 }
@@ -284,6 +263,7 @@ StreamedAssetParserScheduler::startListeningToEntry(ParserEntryPtr entry)
 void
 StreamedAssetParserScheduler::stopListeningToEntry(ParserEntryPtr entry)
 {
+    entry->parserBeforePriorityChangedSlot = nullptr;
     entry->parserPriorityChangedSlot = nullptr;
 }
 

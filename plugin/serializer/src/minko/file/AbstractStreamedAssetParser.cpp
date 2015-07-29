@@ -58,6 +58,7 @@ AbstractStreamedAssetParser::AbstractStreamedAssetParser(Provider::Ptr data) :
     _requiredLod(0),
     _priority(0.f),
     _priorityChanged(Signal<Ptr, float>::create()),
+    _beforePriorityChanged(Signal<Ptr, float>::create()),
     _lodRequestComplete(Signal<Ptr>::create()),
     _ready(Signal<Ptr>::create()),
     _progress(Signal<Ptr, float>::create())
@@ -222,6 +223,11 @@ AbstractStreamedAssetParser::requiredLod(int requiredLod)
 void
 AbstractStreamedAssetParser::priority(float priority)
 {
+    beforePriorityChanged()->execute(
+        std::static_pointer_cast<AbstractStreamedAssetParser>(shared_from_this()),
+        _priority
+    );
+
     _priority = priority;
 
     priorityChanged()->execute(

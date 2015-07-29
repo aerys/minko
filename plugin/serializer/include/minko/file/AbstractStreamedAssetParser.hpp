@@ -144,6 +144,7 @@ namespace minko
             int																					_requiredLod;
             float																				_priority;
 
+            Signal<Ptr, float>::Ptr                                                             _beforePriorityChanged;
             Signal<Ptr, float>::Ptr                                                             _priorityChanged;
             Signal<Ptr>::Ptr                                                                    _lodRequestComplete;
 
@@ -184,6 +185,13 @@ namespace minko
             priorityChanged() const
             {
                 return _priorityChanged;
+            }
+
+            inline
+            Signal<Ptr, float>::Ptr
+            beforePriorityChanged() const
+            {
+                return _beforePriorityChanged;
             }
 
             inline
