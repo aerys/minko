@@ -169,7 +169,7 @@ POPGeometryLodScheduler::surfaceAdded(Surface::Ptr surface)
 
     resource->maxLod = maxLodIt->second._level;
 
-    const auto lodRangeSize = resource->maxLod + 1;
+    const auto lodRangeSize = resource->fullPrecisionLod + 1;
 
     resource->lodToClosestValidLod.resize(lodRangeSize);
     resource->precisionLevelToClosestLod.resize(lodRangeSize);
@@ -273,7 +273,7 @@ POPGeometryLodScheduler::lodInfo(ResourceInfo&  resource,
         const auto& lod = popGeometryResource.lodToClosestValidLod.at(math::clamp(
             requiredLod,
             popGeometryResource.minLod,
-            popGeometryResource.maxLod
+            popGeometryResource.fullPrecisionLod
         ));
 
         if (lod.isValid())
@@ -361,7 +361,7 @@ POPGeometryLodScheduler::computeRequiredLod(const POPGeometryResourceInfo&  reso
         const auto& requiredLod = resource.precisionLevelToClosestLod.at(math::clamp(
             maxPrecisionLevel,
             resource.minLod,
-            resource.maxLod
+            resource.fullPrecisionLod
         ));
 
         return requiredLod._level;
@@ -380,7 +380,7 @@ POPGeometryLodScheduler::computeRequiredLod(const POPGeometryResourceInfo&  reso
     const auto& requiredLod = resource.precisionLevelToClosestLod.at(math::clamp(
         ceiledRequiredPrecisionLevel,
         resource.minLod,
-        resource.maxLod
+        resource.fullPrecisionLod
     ));
 
     return requiredLod._level;
@@ -479,7 +479,7 @@ void
 POPGeometryLodScheduler::updateClosestLods(POPGeometryResourceInfo& resource)
 {
     const auto lowerLod = resource.minLod;
-    const auto upperLod = resource.maxLod + 1;
+    const auto upperLod = resource.fullPrecisionLod + 1;
 
     for (auto lod = lowerLod; lod < upperLod; ++lod)
     {
