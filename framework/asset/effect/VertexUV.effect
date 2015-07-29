@@ -48,8 +48,10 @@
     },
 
 	"techniques" : [{
-		"passes" : [{
-			"vertexShader" : "
+		"name"		: "uv-technique",
+		"passes" 	: [{
+			"name"			: "uv-pass",
+			"vertexShader" 	: "
                 #ifdef GL_ES
                     #ifdef GL_FRAGMENT_PRECISION_HIGH
                         precision highp float;

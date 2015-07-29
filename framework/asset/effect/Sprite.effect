@@ -22,15 +22,15 @@
 	},
 
 	"techniques" : [{
-		"passes" : [{
-
-			"states" : {
+		"name" 		: "sprite-technique",
+		"passes" 	: [{
+			"name" 		: "sprite-pass",
+			"states" 	: {
 				"priority"			: "transparent",
 				"blendingMode"      : "additive",
 				"depthMask"         : false,
 				"triangleCulling"   : "none"
 			},
-
 			"vertexShader" 		: "#pragma include \"Sprite.vertex.glsl\"",
 			"fragmentShader" 	: "#pragma include \"Sprite.fragment.glsl\""
 		}]

@@ -1,0 +1,12 @@
+{
+    "techniques" : [{
+        "passes" : [{
+            "name" : "extended-base-pass",
+            "extends" : {
+                "effect" : "BaseEffect.effect",
+                "technique" : "base-technique",
+                "pass" : "base-pass"
+            }
+        }]
+    }]
+}

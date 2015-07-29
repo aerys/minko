@@ -1,11 +1,11 @@
 // line effect
 {
-    "name"  	: "line",
+    "name" : "line",
 
     "attributes" : {
-        "aStartPosition"	    : "geometry[$geometryUuid].startPosition",
-		"aStopPosition"			: "geometry[$geometryUuid].stopPosition",
-		"aWeights"				: "geometry[$geometryUuid].weights"
+        "aStartPosition"  : "geometry[$geometryUuid].startPosition",
+		"aStopPosition"   : "geometry[$geometryUuid].stopPosition",
+		"aWeights"        : "geometry[$geometryUuid].weights"
     },
 
     "uniforms"   : {
@@ -17,8 +17,8 @@
     },
 
     "macros" : {
-        "DIFFUSE_COLOR"         : "material[$materialUuid].diffuseColor",
-        "MODEL_TO_WORLD"        : "modelToWorldMatrix"
+        "DIFFUSE_COLOR"     : "material[$materialUuid].diffuseColor",
+        "MODEL_TO_WORLD"    : "modelToWorldMatrix"
     },
 
     "states" : {
@@ -31,8 +31,10 @@
     },
 
 	"techniques" : [{
+        "name"      : "line-technique",
 		"passes"    : [{
-			"vertexShader" : "#pragma include \"Line.vertex.glsl\"",
+            "name"           : "line-pass",
+			"vertexShader"   : "#pragma include \"Line.vertex.glsl\"",
 			"fragmentShader" : "#pragma include \"Line.fragment.glsl\""
 		}]
 	}]
