@@ -290,6 +290,31 @@ EffectParser::parsePasses(const Json::Value& node, Scope& scope, std::vector<Pas
 }
 
 render::Pass::Ptr
+EffectParser::findPassFromEffectFilename(const std::string& effectFilename, 
+                                         const std::string& techniqueName,
+                                         const std::string& passName)
+{
+    auto effect = _assetLibrary->effect(effectFilename);
+
+    if (effect == nullptr)
+        return nullptr;
+
+    for (auto& techniqueNameAndPasses : effect->techniques())
+    {
+        if (techniqueNameAndPasses.first == techniqueName)
+        {
+            for (auto p : techniqueNameAndPasses.second)
+            {
+                if (p->name() == passName)
+                    return p;
+            }
+        }
+    }
+
+    return nullptr;
+}
+
+render::Pass::Ptr
 EffectParser::getPassToExtend(const Json::Value& extendNode, Scope& scope)
 {
     render::Pass::Ptr pass;
@@ -316,15 +341,13 @@ EffectParser::getPassToExtend(const Json::Value& extendNode, Scope& scope)
             loader->queue(effectFilename, options);
             auto effectComplete = loader->complete()->connect([&](file::Loader::Ptr l)
             {
-                auto effect = _assetLibrary->effect(effectFilename);
-
-                for (auto& techniqueNameAndPasses : effect->techniques())
-                    if (techniqueNameAndPasses.first == techniqueName)
-                        for (auto p : techniqueNameAndPasses.second)
-                            if (p->name() == passName)
-                                pass = p;
+                pass = findPassFromEffectFilename(effectFilename, techniqueName, passName);
             });
             loader->load();
+        }
+        else
+        {
+            pass = findPassFromEffectFilename(effectFilename, techniqueName, passName);
         }
     }
     else

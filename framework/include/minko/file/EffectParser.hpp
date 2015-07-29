@@ -232,6 +232,11 @@ namespace minko
             parseTechniques(const Json::Value& node, Scope& scope, Techniques& techniques);
 
             std::shared_ptr<render::Pass>
+            findPassFromEffectFilename(const std::string& effectFilename,
+                                       const std::string& techniqueName,
+                                       const std::string& passName);
+
+            std::shared_ptr<render::Pass>
             getPassToExtend(const Json::Value& extendNode, Scope& scope);
 
             void
