@@ -26,6 +26,39 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::render;
 
+const std::vector<DrawCallPool::PropertyName> DrawCallPool::_zSortUsefulPropertyNames = {
+    "modelToWorldMatrix",
+    "material[${materialUuid}].priority",
+    "material[${materialUuid}].zSorted",
+    "geometry[${geometryUuid}].position"
+};
+
+const std::vector<DrawCallPool::PropertyName> DrawCallPool::_sortUsefulPropertyNames = {
+    "material[${materialUuid}].priority",
+    "material[${materialUuid}].zSorted",
+    "material[${materialUuid}].target"
+};
+
+bool
+DrawCallPool::SortPropertyKeyComparator::operator()(const SortPropertyTuple& left,
+                                                    const SortPropertyTuple& right) const
+{
+    const auto leftPriority = std::get<0>(left);
+    const auto rightPriority = std::get<0>(right);
+
+    const bool samePriority = fabsf(leftPriority - rightPriority) < 1e-3f;
+
+    if (samePriority)
+    {
+        const auto leftTargetId = std::get<1>(left);
+        const auto rightTargetId = std::get<1>(right);
+
+        return leftTargetId < rightTargetId;
+    }
+
+    return leftPriority > rightPriority;
+}
+
 DrawCallPool::DrawCallPool() :
     _batchId(0),
     _drawCalls(),
@@ -34,6 +67,7 @@ DrawCallPool::DrawCallPool() :
     _macroChangedSlot(new MacroToChangedSlotMap()),
     _propChangedSlot(new PropertyChangedSlotMap()),
     _drawCallToPropRebindFuncs(new PropertyRebindFuncMap()),
+    _sortUsefulPropertyChangedSlot(new PropertyChangedSlotMap()),
     _zSortUsefulPropertyChangedSlot(new PropertyChangedSlotMap()),
     _mustZSort(false)
 {
@@ -41,13 +75,6 @@ DrawCallPool::DrawCallPool() :
     _macroChangedSlot->set_deleted_key(MacroBindingKey("", nullptr, nullptr));
     _propChangedSlot->set_deleted_key(DrawCallKey(nullptr, nullptr));
     _drawCallToPropRebindFuncs->set_deleted_key(nullptr);
-
-    _zSortUsefulPropertyNames = {
-        "modelToWorldMatrix",
-        "material[${materialUuid}].priority",
-        "material[${materialUuid}].zSorted",
-        "geometry[${geometryUuid}].position"
-    };
 }
 
 DrawCallPool::~DrawCallPool()
@@ -103,9 +130,9 @@ DrawCallPool::addDrawCalls(Effect::Ptr              effect,
 void
 DrawCallPool::removeDrawCalls(uint batchId)
 {
-    for (auto& priorityToDrawCalls : _drawCalls)
+    for (auto& priorityAndTargetIdToDrawCalls : _drawCalls)
     {
-        for (auto& drawCalls : priorityToDrawCalls.second)
+        for (auto& drawCalls : priorityAndTargetIdToDrawCalls.second)
         {
             drawCalls.erase(std::remove_if(
                 drawCalls.begin(),
@@ -395,19 +422,52 @@ DrawCallPool::uniformBindingPropertyAddedHandler(DrawCall&                      
                 }
             )
         ));
-            
+
+        if (propertyExist)
+        {
+            auto propertyRelatedToSortIt = std::find_if(
+                _sortUsefulPropertyNames.begin(),
+                _sortUsefulPropertyNames.end(),
+                [&](const PropertyName& sortUsefulPropertyName) -> bool
+                {
+                    return
+                        data::Store::getActualPropertyName(drawCall.variables(), sortUsefulPropertyName) ==
+                        propertyName;
+                }
+            );
+
+            if (propertyRelatedToSortIt != _sortUsefulPropertyNames.end())
+            {
+                _sortUsefulPropertyChangedSlot->insert(
+                    std::make_pair(
+                        std::make_pair(bindingPtr, &drawCall),
+                        resolvedBinding->store.propertyChanged().connect(
+                            [&](data::Store&, data::Provider::Ptr, const data::Provider::PropertyName&)
+                            {
+                                _drawCallsToBeSorted.insert(&drawCall);
+                            }
+                        )
+                    )
+                );
+            }
+        }
+
         // If this draw call needs to be sorted
         // => we listen to the useful properties
         if (propertyExist && drawCall.zSorted())
         {
-            auto propertyRelatedToZSort = false;
-            for (auto i = 0; i < _zSortUsefulPropertyNames.size(); i++)
-            {
-                if (data::Store::getActualPropertyName(drawCall.variables(), _zSortUsefulPropertyNames[i]) == propertyName)
-                    propertyRelatedToZSort = true;
-            }
+            auto propertyRelatedToZSortIt = std::find_if(
+                _zSortUsefulPropertyNames.begin(),
+                _zSortUsefulPropertyNames.end(),
+                [&](const PropertyName& zSortUsefulPropertyName) -> bool
+                {
+                    return
+                        data::Store::getActualPropertyName(drawCall.variables(), zSortUsefulPropertyName) ==
+                        propertyName;
+                }
+            );
 
-            if (propertyRelatedToZSort)
+            if (propertyRelatedToZSortIt != _zSortUsefulPropertyNames.end())
             {
                 // Bind the signal to request a Z-sorting if one of these properties changed
                 _zSortUsefulPropertyChangedSlot->insert(
@@ -525,6 +585,14 @@ DrawCallPool::update(bool forceSort, bool mustZSort)
     _drawCallToPropRebindFuncs->clear();
     _drawCallToPropRebindFuncs->resize(0);
 
+    for (auto drawCall : _drawCallsToBeSorted)
+    {
+        removeDrawCall(drawCall);
+        addDrawCall(drawCall);
+    }
+
+    _drawCallsToBeSorted.clear();
+
     const auto finalMustZSort = forceSort || _mustZSort || mustZSort;
 
     if (forceSort || finalMustZSort)
@@ -555,12 +623,6 @@ DrawCallPool::invalidateDrawCalls(uint batchId, const EffectVariables& variables
 }
 
 bool
-DrawCallPool::compareDrawCalls(DrawCall* a, DrawCall* b)
-{
-    return a < b;
-}
-
-bool
 DrawCallPool::compareZSortedDrawCalls(DrawCall* a, DrawCall* b)
 {
     const auto aPosition = a->getEyeSpacePosition();
@@ -588,24 +650,26 @@ void
 DrawCallPool::addDrawCall(DrawCall* drawCall)
 {
     const auto priority = drawCall->priority();
+    const auto targetId = drawCall->target().id;
     const auto zSortedIndex = drawCall->zSorted() ? 1u : 0u;
 
-    // FIXME: listen to priority and zSorted property changes
-
-    _drawCalls[priority][zSortedIndex].push_back(drawCall);
+    _drawCalls[SortPropertyTuple(priority, targetId)][zSortedIndex].push_back(drawCall);
 }
 
 void
 DrawCallPool::removeDrawCall(DrawCall* drawCall)
 {
-    auto& priorityToDrawCallsIt = _drawCalls.find(drawCall->priority());
+    auto sortPropertiesToDrawCallsIt = _drawCalls.find(SortPropertyTuple(
+        drawCall->priority(),
+        drawCall->target().id
+    ));
 
-    if (priorityToDrawCallsIt == _drawCalls.end())
+    if (sortPropertiesToDrawCallsIt == _drawCalls.end())
         return;
 
     const auto zSortedIndex = drawCall->zSorted() ? 1u : 0u;
 
-    auto& drawCalls = priorityToDrawCallsIt->second.at(zSortedIndex);
+    auto& drawCalls = sortPropertiesToDrawCallsIt->second.at(zSortedIndex);
 
     drawCalls.erase(
         std::remove(drawCalls.begin(), drawCalls.end(), drawCall),
@@ -616,9 +680,9 @@ DrawCallPool::removeDrawCall(DrawCall* drawCall)
 DrawCall*
 DrawCallPool::findDrawCall(const std::function<bool(DrawCall*)>& predicate)
 {
-    for (const auto& priorityToDrawCalls : _drawCalls)
+    for (const auto& sortPropertiesToDrawCalls : _drawCalls)
     {
-        for (const auto& drawCalls : priorityToDrawCalls.second)
+        for (const auto& drawCalls : sortPropertiesToDrawCalls.second)
         {
             for (auto drawCall : drawCalls)
             {
@@ -634,9 +698,9 @@ DrawCallPool::findDrawCall(const std::function<bool(DrawCall*)>& predicate)
 void
 DrawCallPool::foreachDrawCall(const std::function<void(DrawCall*)>& function)
 {
-    for (const auto& priorityToDrawCalls : _drawCalls)
+    for (const auto& sortPropertiesToDrawCalls : _drawCalls)
     {
-        for (const auto& drawCalls : priorityToDrawCalls.second)
+        for (const auto& drawCalls : sortPropertiesToDrawCalls.second)
         {
             for (auto drawCall : drawCalls)
             {
@@ -651,9 +715,9 @@ DrawCallPool::numDrawCalls() const
 {
     auto numDrawCalls = 0u;
 
-    for (const auto& priorityToDrawCalls : _drawCalls)
+    for (const auto& sortPropertiesToDrawCalls : _drawCalls)
     {
-        for (const auto& drawCalls : priorityToDrawCalls.second)
+        for (const auto& drawCalls : sortPropertiesToDrawCalls.second)
         {
             numDrawCalls += drawCalls.size();
         }
@@ -704,31 +768,14 @@ DrawCallPool::unbindDrawCall(DrawCall& drawCall)
 void
 DrawCallPool::sortDrawCalls(bool sort, bool zSort)
 {
-    const std::function<bool(DrawCall*, DrawCall*)> comparisonFunctions[2] = 
+    for (auto& sortPropertiesToDrawCalls : _drawCalls)
     {
-        &DrawCallPool::compareDrawCalls,
-        &DrawCallPool::compareZSortedDrawCalls
-    };
+        auto& drawCalls = sortPropertiesToDrawCalls.second.at(1u);
 
-    for (auto& priorityToDrawCalls : _drawCalls)
-    {
-        const auto begin = sort ? 0u : 1u;
-        const auto end = zSort ? 2u : 1u;
-
-        for (auto i = begin; i < end; ++i)
-        {
-            const auto& comparisonFunction = comparisonFunctions[i];
-
-            auto& drawCalls = priorityToDrawCalls.second.at(i);
-
-            std::sort(
-                drawCalls.begin(),
-                drawCalls.end(),
-                [&comparisonFunction](DrawCall* a, DrawCall* b) -> bool
-                {
-                    return comparisonFunction(a, b);
-                }
-            );
-        }
+        std::sort(
+            drawCalls.begin(),
+            drawCalls.end(),
+            compareZSortedDrawCalls
+        );
     }
 }

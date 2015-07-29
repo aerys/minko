@@ -59,10 +59,21 @@ namespace minko
                 }
             };*/
 
+            typedef std::tuple<float, int*>                                     SortPropertyTuple;
+
+            struct SortPropertyKeyComparator
+            {
+                bool
+                operator()(const SortPropertyTuple& left,
+                           const SortPropertyTuple& right) const;
+            };
+
             typedef std::vector<DrawCall*>                                      DrawCallList;
+
             typedef std::map<
-                float,
-                std::array<std::vector<DrawCall*>, 2u>
+                SortPropertyTuple,
+                std::array<DrawCallList, 2u>,
+                SortPropertyKeyComparator
             >                                                                   DrawCallContainer;
             typedef DrawCallList::iterator                                      DrawCallIterator;
             typedef data::Store::PropertyChangedSignal                          PropertyChanged;
@@ -89,10 +100,13 @@ namespace minko
             DrawCallContainer             	_drawCalls;
             MacroToDrawCallsMap*            _macroToDrawCalls;
             std::unordered_set<DrawCall*>   _invalidDrawCalls;
+            std::unordered_set<DrawCall*>   _drawCallsToBeSorted;
             MacroToChangedSlotMap*          _macroChangedSlot;
             PropertyChangedSlotMap*         _propChangedSlot;
+            PropertyChangedSlotMap*         _sortUsefulPropertyChangedSlot;
+            static const std::vector<PropertyName> _sortUsefulPropertyNames;
             PropertyChangedSlotMap*         _zSortUsefulPropertyChangedSlot;
-            std::vector<std::string>        _zSortUsefulPropertyNames;
+            static const std::vector<PropertyName> _zSortUsefulPropertyNames;
             bool                            _mustZSort;
 
 			PropertyRebindFuncMap* 			_drawCallToPropRebindFuncs;
@@ -212,10 +226,6 @@ namespace minko
 
 			void
 			unbindDrawCall(DrawCall& drawCall);
-
-            static
-			bool
-			compareDrawCalls(DrawCall* a, DrawCall* b);
 
             static
             bool
