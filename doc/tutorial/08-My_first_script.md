@@ -97,7 +97,9 @@ The first thing to do in our C++ application code is to load the main header for
 Now, we have to initialize the Lua context to give it access to our canvas and root node without forget to add a `LuaScriptManager` thereto:
 
 ```cpp
-auto canvas = Canvas::create("Minko Tutorial - My first script", 800, 600); auto sceneManager = component::SceneManager::create(canvas); auto root = scene::Node::create("root")->addComponent(sceneManager);
+auto canvas = Canvas::create("Minko Tutorial - My first script", 800, 600);
+auto sceneManager = component::SceneManager::create(canvas);
+auto root = scene::Node::create("root")->addComponent(sceneManager);
 
 // initialization of Lua context LuaContext::initialize(argc, argv, root, canvas);
 
@@ -114,9 +116,11 @@ We can then use all the classes related to Lua scripting. Next we need to actual
 -   actually load our script(s) using `AssetLibrary::queue()` and/or `AssetLibrary::load()`.
 
 ```cpp
-// register the LuaScriptParser sceneManager->assets()->registerParser<[file::LuaScriptParser>](file::LuaScriptParser>)("lua");
+// register the LuaScriptParser
+sceneManager->assets()->registerParser<[file::LuaScriptParser>](file::LuaScriptParser>)("lua");
 
-// queue the "script/my_script.lua" script file sceneManager->assets()->queue("script/my_script.lua");
+// queue the "script/my_script.lua" script file
+sceneManager->assets()->queue("script/my_script.lua");
 
 if (assets->script("script/my_script.lua"))
 
