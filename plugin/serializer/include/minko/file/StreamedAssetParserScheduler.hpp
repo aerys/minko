@@ -66,15 +66,24 @@ namespace minko
                 bool
                 operator()(ParserEntryPtr left, ParserEntryPtr right) const
                 {
+                    static const auto epsilon = 1e-3f;
+
                     const auto leftPriority = left->parser->priority();
                     const auto rightPriority = right->parser->priority();
 
-                    const auto samePriority = math::abs(leftPriority - rightPriority) < 1e-3f;
+                    if (leftPriority > rightPriority)
+                        return true;
 
-                    if (!samePriority)
-                        return leftPriority > rightPriority;
+                    if (rightPriority > leftPriority)
+                        return false;
                     
-                    return left < right;
+                    if (left < right)
+                        return true;
+
+                    if (right < left)
+                        return false;
+
+                    return false;
                 }
             };
 

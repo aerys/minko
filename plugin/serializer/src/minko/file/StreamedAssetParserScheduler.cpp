@@ -140,6 +140,8 @@ StreamedAssetParserScheduler::popHeadingParser()
 void
 StreamedAssetParserScheduler::removeEntry(ParserEntryPtr entry)
 {
+    stopListeningToEntry(entry);
+
     entry->parserCompleteSlot = nullptr;
 
     _entries.erase(entry);
