@@ -7,7 +7,8 @@
 		"aBoneIdsA"		: "geometry[${geometryUuid}].boneIdsA",
 		"aBoneIdsB"		: "geometry[${geometryUuid}].boneIdsB",		
 		"aBoneWeightsA"	: "geometry[${geometryUuid}].boneWeightsA",
-		"aBoneWeightsB"	: "geometry[${geometryUuid}].boneWeightsB"
+		"aBoneWeightsB"	: "geometry[${geometryUuid}].boneWeightsB",
+        "aPopProtected" : "geometry[${geometryUuid}].popProtected"
 	},
 
 	"uniforms" : {
@@ -26,7 +27,8 @@
 		"MODEL_TO_WORLD"		: "modelToWorldMatrix",
 		"SKINNING_NUM_BONES"	: { "binding" : "geometry[$geometryUuid].numBones", "type" : "int" },
         "POP_LOD_ENABLED"       : "surface[${surfaceUuid}].popLodEnabled",
-        "POP_BLENDING_ENABLED"  : "surface[${surfaceUuid}].popBlendingEnabled"
+        "POP_BLENDING_ENABLED"  : "surface[${surfaceUuid}].popBlendingEnabled",
+        "VERTEX_POP_PROTECTED"  : "geometry[${geometryUuid}].popProtected"
 	},
 
     "techniques" : [{
@@ -42,7 +44,10 @@
                     #endif
                 #endif
 
+                #ifdef MODEL_TO_WORLD
 			    uniform mat4 uModelToWorldMatrix;
+                #endif
+                
 			    uniform mat4 uWorldToScreenMatrix;
 
 			    attribute vec3 aPosition;
@@ -53,11 +58,19 @@
 				attribute vec4 aBoneWeightsB;
 				#endif
 
-				uniform float uPopLod;
-				uniform float uPopBlendingLod;
-				uniform float uPopFullPrecisionLod;
-				uniform vec3 uPopMinBound;
-				uniform vec3 uPopMaxBound;
+                #ifdef VERTEX_POP_PROTECTED
+                attribute float aPopProtected;
+                #endif
+
+                #ifdef POP_LOD_ENABLED
+                uniform float uPopLod;
+                #ifdef POP_BLENDING_ENABLED
+                uniform float uPopBlendingLod;
+                #endif
+                uniform float uPopFullPrecisionLod;
+                uniform vec3 uPopMinBound;
+                uniform vec3 uPopMaxBound;
+                #endif
 
 			    varying vec3 worldNormal;
 
@@ -75,13 +88,19 @@
 					    n = skinning_moveVertex(n, aBoneWeightsA, aBoneWeightsB);
 				    #endif // SKINNING_NUM_BONES
 
-    				#ifdef POP_LOD_ENABLED
-    				    #ifdef POP_BLENDING_ENABLED
-    				        pos = pop_blend(pos, aNormal, uPopLod, uPopBlendingLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound);
-    				    #else
-    				        pos = pop_quantify(pos, aNormal, uPopLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound);
-    				    #endif // POP_BLENDING_ENABLED
-    				#endif // POP_LOD_ENABLED
+                    #ifdef POP_LOD_ENABLED
+                        float popProtected = 0.0;
+
+                        #ifdef VERTEX_POP_PROTECTED
+                            popProtected = aPopProtected;
+                        #endif // VERTEX_POP_PROTECTED
+
+                        #ifdef POP_BLENDING_ENABLED
+                            pos = pop_blend(pos, vec3(0.0), uPopLod, uPopBlendingLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound, popProtected);
+                        #else
+                            pos = pop_quantize(pos, vec3(0.0), uPopLod, uPopFullPrecisionLod, uPopMinBound, uPopMaxBound, popProtected);
+                        #endif // POP_BLENDING_ENABLED
+                    #endif // POP_LOD_ENABLED
 
 					worldNormal	= normalize(n.xyz);
 
