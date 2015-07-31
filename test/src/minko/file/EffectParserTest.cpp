@@ -2384,8 +2384,19 @@ TEST_F(EffectParserTest, ExtendedPassFromEffect)
     ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().bindings["uDiffuseColor"].propertyName, "material[${materialUuid}].diffuseColor");
     ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().bindings["uDiffuseColor"].source, data::Binding::Source::TARGET);
     ASSERT_TRUE(fx->techniques().at("default")[0]->stateBindings().defaultValues.hasProperty("priority"));
-    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().defaultValues.get<float>("priority"), 42.0);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().defaultValues.get<float>("priority"), 42.f);
     ASSERT_TRUE(fx->techniques().at("default")[0]->stateBindings().bindings.count("priority") != 0);
     ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings["priority"].propertyName, "material[${materialUuid}].priority");
     ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings["priority"].source, data::Binding::Source::TARGET);
+}
+
+TEST_F(EffectParserTest, AutoFixedPassPriorities)
+{
+    auto fx = MinkoTests::loadEffect("effect/pass/MultiplePasses.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 3);
+    ASSERT_GT(fx->techniques().at("default")[0]->states().priority(), fx->techniques().at("default")[1]->states().priority());
+    ASSERT_GT(fx->techniques().at("default")[1]->states().priority(), fx->techniques().at("default")[2]->states().priority());
 }
