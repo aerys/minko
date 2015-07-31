@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/SerializerCommon.hpp"
 #include "minko/StreamingCommon.hpp"
 #include "minko/component/MasterLodScheduler.hpp"
+#include "minko/data/Provider.hpp"
 #include "minko/file/MeshPartitioner.hpp"
 #include "minko/file/POPGeometryWriter.hpp"
 #include "minko/file/SurfaceOperator.hpp"
@@ -102,6 +103,8 @@ namespace minko
 
         POPGeometryFunction                                     _popGeometryFunction;
         StreamedTextureFunction                                 _streamedTextureFunction;
+
+        std::vector<data::Provider::PropertyName>               _popGeometryLodDependencyProperties;
 
         file::SurfaceOperator                                   _surfaceOperator;
 
@@ -466,6 +469,13 @@ namespace minko
             _streamedTextureFunction = func;
 
             return shared_from_this();
+        }
+
+        inline
+        std::vector<data::Provider::PropertyName>&
+        popGeometryLodDependencyProperties()
+        {
+            return _popGeometryLodDependencyProperties;
         }
 
         inline
