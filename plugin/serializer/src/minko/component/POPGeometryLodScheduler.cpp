@@ -128,17 +128,23 @@ POPGeometryLodScheduler::surfaceAdded(Surface::Ptr surface)
     auto resourceData = resource->base->data;
     resource->fullPrecisionLod = surface->geometry()->data()->get<float>("popFullPrecisionLod");
 
-	resource->modelToWorldMatrixChangedSlots.insert(std::make_pair(
-		surfaceTarget,
-		surfaceTarget->data().propertyChanged("modelToWorldMatrix").connect(
-			[=](Store&          	store,
-            	Provider::Ptr       provider,
-				const data::Provider::PropertyName&)
-        	{
-        	    invalidateLodRequirement(*resource->base);
-        	}
-		)
-	));
+    const auto& lodDependencyProperties =
+        this->masterLodScheduler()->streamingOptions()->popGeometryLodDependencyProperties();
+
+    for (const auto& propertyName : lodDependencyProperties)
+    {
+	    resource->modelToWorldMatrixChangedSlots.insert(std::make_pair(
+		    surfaceTarget,
+		    surfaceTarget->data().propertyChanged(propertyName).connect(
+			    [=](Store&          	store,
+            	    Provider::Ptr       provider,
+				    const data::Provider::PropertyName&)
+        	    {
+        	        invalidateLodRequirement(*resource->base);
+        	    }
+		    )
+	    ));
+    }
 
     surfaceInfo.layoutChangedSlot = surfaceTarget->layoutChanged().connect(
         [this, resource, surfaceInfoPtr](Node::Ptr node, Node::Ptr target)

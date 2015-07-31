@@ -89,7 +89,7 @@ namespace minko
                 std::vector<ProgressiveOrderedMeshLodInfo>  lodToClosestValidLod;
                 std::vector<ProgressiveOrderedMeshLodInfo>  precisionLevelToClosestLod;
 
-                std::unordered_map<
+                std::unordered_multimap<
                     NodePtr,
                     Signal<data::Store&, ProviderPtr, const data::Provider::PropertyName&>::Slot
                 >                                           modelToWorldMatrixChangedSlots;
