@@ -41,7 +41,7 @@ emscriptenMainLoop()
 	auto t = std::chrono::high_resolution_clock::now();
 
 	auto frameTime = 1e-6f * std::chrono::duration_cast<std::chrono::nanoseconds>(t - previousFrameTime).count();
-	auto targetFrameTime = (1000.f / (currentCanvas->desiredFramerate())) - 1.0f;
+	auto targetFrameTime = (1000.f / (currentCanvas->desiredFramerate())) - 2.0f;
 
 	if (frameTime < targetFrameTime)
 		return;
