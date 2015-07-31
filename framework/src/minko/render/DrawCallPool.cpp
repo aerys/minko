@@ -423,35 +423,6 @@ DrawCallPool::uniformBindingPropertyAddedHandler(DrawCall&                      
             )
         ));
 
-        if (propertyExist)
-        {
-            auto propertyRelatedToSortIt = std::find_if(
-                _sortUsefulPropertyNames.begin(),
-                _sortUsefulPropertyNames.end(),
-                [&](const PropertyName& sortUsefulPropertyName) -> bool
-                {
-                    return
-                        data::Store::getActualPropertyName(drawCall.variables(), sortUsefulPropertyName) ==
-                        propertyName;
-                }
-            );
-
-            if (propertyRelatedToSortIt != _sortUsefulPropertyNames.end())
-            {
-                _sortUsefulPropertyChangedSlot->insert(
-                    std::make_pair(
-                        std::make_pair(bindingPtr, &drawCall),
-                        resolvedBinding->store.propertyChanged().connect(
-                            [&](data::Store&, data::Provider::Ptr, const data::Provider::PropertyName&)
-                            {
-                                _drawCallsToBeSorted.insert(&drawCall);
-                            }
-                        )
-                    )
-                );
-            }
-        }
-
         // If this draw call needs to be sorted
         // => we listen to the useful properties
         if (propertyExist && drawCall.zSorted())
@@ -473,7 +444,7 @@ DrawCallPool::uniformBindingPropertyAddedHandler(DrawCall&                      
                 _zSortUsefulPropertyChangedSlot->insert(
                     std::make_pair(
                         std::make_pair(bindingPtr, &drawCall),
-                        resolvedBinding->store.propertyChanged().connect(
+                        resolvedBinding->store.propertyChanged(propertyName).connect(
                             [&](data::Store&, data::Provider::Ptr, const data::Provider::PropertyName&)
                             {
                                 _mustZSort = true;
@@ -564,6 +535,32 @@ DrawCallPool::stateBindingPropertyAddedHandler(const std::string&       stateNam
                 })
             )
         );
+
+        auto propertyRelatedToSortIt = std::find_if(
+            _sortUsefulPropertyNames.begin(),
+            _sortUsefulPropertyNames.end(),
+            [&](const PropertyName& sortUsefulPropertyName) -> bool
+            {
+                return
+                    data::Store::getActualPropertyName(drawCall.variables(), sortUsefulPropertyName) ==
+                    propertyName;
+            }
+        );
+
+        if (propertyRelatedToSortIt != _sortUsefulPropertyNames.end())
+        {
+            _sortUsefulPropertyChangedSlot->insert(
+                std::make_pair(
+                    std::make_pair(bindingPtr, &drawCall),
+                    resolvedBinding->store.propertyChanged(propertyName).connect(
+                        [&](data::Store&, data::Provider::Ptr, const data::Provider::PropertyName&)
+                        {
+                            _drawCallsToBeSorted.insert(&drawCall);
+                        }
+                    )
+                )
+            );
+        }
 
         delete resolvedBinding;
     }
@@ -659,22 +656,16 @@ DrawCallPool::addDrawCall(DrawCall* drawCall)
 void
 DrawCallPool::removeDrawCall(DrawCall* drawCall)
 {
-    auto sortPropertiesToDrawCallsIt = _drawCalls.find(SortPropertyTuple(
-        drawCall->priority(),
-        drawCall->target().id
-    ));
-
-    if (sortPropertiesToDrawCallsIt == _drawCalls.end())
-        return;
-
-    const auto zSortedIndex = drawCall->zSorted() ? 1u : 0u;
-
-    auto& drawCalls = sortPropertiesToDrawCallsIt->second.at(zSortedIndex);
-
-    drawCalls.erase(
-        std::remove(drawCalls.begin(), drawCalls.end(), drawCall),
-        drawCalls.end()
-    );
+    for (auto& sortPropertiesToDrawCalls : _drawCalls)
+    {
+        for (auto& drawCalls : sortPropertiesToDrawCalls.second)
+        {
+            drawCalls.erase(
+                std::remove(drawCalls.begin(), drawCalls.end(), drawCall),
+                drawCalls.end()
+            );
+        }
+    }
 }
 
 DrawCall*
