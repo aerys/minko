@@ -339,6 +339,9 @@ bullet::PhysicsWorld::frameBeginHandler(std::shared_ptr<SceneManager> sceneManag
     deltaTime = deltaTime / 1000.0f;
 
     auto baseStepLength = 1.0f / _baseFramerate;
+
+    if (_maxNumSteps > 0 && deltaTime > _maxNumSteps * baseStepLength)
+        deltaTime = baseStepLength;
             
     _bulletDynamicsWorld->stepSimulation(deltaTime, _maxNumSteps, baseStepLength);
 
