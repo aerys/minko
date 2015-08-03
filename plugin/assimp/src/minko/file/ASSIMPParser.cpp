@@ -33,7 +33,7 @@ void ASSIMPParser::provideLoaders(Assimp::Importer& importer)
 {
 }
 
-#if (defined ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION)
+#if !defined (ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION)
 std::set<std::string>
 ASSIMPParser::getSupportedFileExtensions()
 {
