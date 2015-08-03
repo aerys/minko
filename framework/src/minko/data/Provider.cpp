@@ -104,6 +104,13 @@ Provider::copyFrom(Provider::Ptr source)
 	return shared_from_this();
 }
 
+void
+Provider::merge(Provider::Ptr source)
+{
+    for (auto nameAndValue : *source->_values)
+        (*_values)[nameAndValue.first] = nameAndValue.second;
+}
+
 Any*
 Provider::getValue(const PropertyName& propertyName) const
 {
