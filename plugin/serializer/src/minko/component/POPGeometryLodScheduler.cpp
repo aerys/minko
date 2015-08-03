@@ -133,7 +133,7 @@ POPGeometryLodScheduler::surfaceAdded(Surface::Ptr surface)
 
     for (const auto& propertyName : lodDependencyProperties)
     {
-	    resource->modelToWorldMatrixChangedSlots.insert(std::make_pair(
+	    resource->propertyChangedSlots.insert(std::make_pair(
 		    surfaceTarget,
 		    surfaceTarget->data().propertyChanged(propertyName).connect(
 			    [=](Store&          	store,

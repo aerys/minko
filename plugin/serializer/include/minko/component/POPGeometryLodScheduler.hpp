@@ -92,7 +92,7 @@ namespace minko
                 std::unordered_multimap<
                     NodePtr,
                     Signal<data::Store&, ProviderPtr, const data::Provider::PropertyName&>::Slot
-                >                                           modelToWorldMatrixChangedSlots;
+                >                                           propertyChangedSlots;
                 std::vector<SurfaceInfo>                    surfaceInfoCollection;
 
                 POPGeometryResourceInfo() :
@@ -106,7 +106,7 @@ namespace minko
                     availableLods(nullptr),
                     lodToClosestValidLod(),
                     precisionLevelToClosestLod(),
-                    modelToWorldMatrixChangedSlots(),
+                    propertyChangedSlots(),
                     surfaceInfoCollection()
                 {
                 }

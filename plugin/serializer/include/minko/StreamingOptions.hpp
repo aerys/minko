@@ -105,6 +105,7 @@ namespace minko
         StreamedTextureFunction                                 _streamedTextureFunction;
 
         std::vector<data::Provider::PropertyName>               _popGeometryLodDependencyProperties;
+        std::vector<data::Provider::PropertyName>               _streamedTextureLodDependencyProperties;
 
         file::SurfaceOperator                                   _surfaceOperator;
 
@@ -476,6 +477,13 @@ namespace minko
         popGeometryLodDependencyProperties()
         {
             return _popGeometryLodDependencyProperties;
+        }
+
+        inline
+        std::vector<data::Provider::PropertyName>&
+        streamedTextureLodDependencyProperties()
+        {
+            return _streamedTextureLodDependencyProperties;
         }
 
         inline

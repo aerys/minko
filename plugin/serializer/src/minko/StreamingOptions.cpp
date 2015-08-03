@@ -46,6 +46,7 @@ StreamingOptions::StreamingOptions() :
     _maxNumActiveParsers(40),
     _popGeometryFunction(),
     _popGeometryLodDependencyProperties(),
+    _streamedTextureLodDependencyProperties(),
     _streamedTextureFunction()
 {
 }
