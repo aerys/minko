@@ -121,7 +121,10 @@ To create the cube, we mainly have to:
 The following code will do those 4 steps:
 
 ```cpp
-auto cube = scene::Node::create("cube"); auto cubeMaterial = material::BasicMaterial::create(); auto cubeGeometry = geometry::CubeGeometry(assets->context()); auto cubeEffect = assets->effect("effect/Basic.effect");
+auto cube = scene::Node::create("cube");
+auto cubeMaterial = material::BasicMaterial::create();
+auto cubeGeometry = geometry::CubeGeometry(assets->context());
+auto cubeEffect = assets->effect("effect/Basic.effect");
 
 cube->addComponent(Surface::create(cubeGeometry, cubeMaterial, cubeEffect); 
 ```

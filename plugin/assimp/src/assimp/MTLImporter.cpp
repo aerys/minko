@@ -85,48 +85,36 @@ const aiImporterDesc* MTLImporter::GetInfo () const
 
 // ------------------------------------------------------------------------------------------------
 //  Mtl-file import implementation
-void MTLImporter::InternReadFile( const std::string& pFile, aiScene* pScene, IOSystem* pIOHandler)
+void MTLImporter::InternReadFile( const std::string& filename, aiScene* pScene, IOSystem* pIOHandler)
 {
     DefaultIOSystem io;
     
     // Read file into memory
     const std::string mode = "rb";
-    boost::scoped_ptr<IOStream> file( pIOHandler->Open( pFile, mode));
-    if( !file.get() ) {
-        throw DeadlyImportError( "Failed to open file " + pFile + "." );
+    IOStream *pFile = pIOHandler->Open(filename);
+
+    if(!pFile)
+    {
+        throw DeadlyImportError( "Failed to open file " + filename + "." );
     }
 
     // Allocate buffer and read file into it
-    TextFileToBuffer(file.get(),m_Buffer);
+    TextFileToBuffer(pFile, m_Buffer);
+
+    pIOHandler->Close(pFile);
 
     // Get the model name
     std::string  strModelName;
-    std::string::size_type pos = pFile.find_last_of( "\\/" );
+    std::string::size_type pos = filename.find_last_of( "\\/" );
     if ( pos != std::string::npos ) 
     {
-        strModelName = pFile.substr(pos+1, pFile.size() - pos - 1);
+        strModelName = filename.substr(pos+1, filename.size() - pos - 1);
     }
     else
     {
-        strModelName = pFile;
+        strModelName = filename;
     }
-
-    // process all '\'
-    std::vector<char> ::iterator iter = m_Buffer.begin();
-    while (iter != m_Buffer.end())
-    {
-        if (*iter == '\\')
-        {
-            // remove '\'
-            iter = m_Buffer.erase(iter);
-            // remove next character
-            while (*iter == '\r' || *iter == '\n')
-                iter = m_Buffer.erase(iter);
-        }
-        else
-            ++iter;
-    }
-
+    
     // parse the file into a temporary representation
 	ObjFile::Model* model = new ObjFile::Model();
 	model->m_ModelName = strModelName;

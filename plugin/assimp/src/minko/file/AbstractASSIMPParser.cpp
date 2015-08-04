@@ -84,6 +84,8 @@ using namespace minko::geometry;
 /*static*/ const AbstractASSIMPParser::TextureTypeToName AbstractASSIMPParser::_textureTypeToName = AbstractASSIMPParser::initializeTextureTypeToName();
 /*static*/ const std::string AbstractASSIMPParser::PNAME_TRANSFORM = "transform.matrix";
 
+const unsigned int AbstractASSIMPParser::MAX_NUM_UV_CHANNELS = 2u;
+
 /*static*/
 AbstractASSIMPParser::TextureTypeToName
 AbstractASSIMPParser::initializeTextureTypeToName()
@@ -95,6 +97,7 @@ AbstractASSIMPParser::initializeTextureTypeToName()
 	typeToString[aiTextureType_OPACITY]		= "alphaMap";
 	typeToString[aiTextureType_NORMALS]		= "normalMap";
 	typeToString[aiTextureType_REFLECTION]	= "environmentMap2d"; // not sure about this one
+	typeToString[aiTextureType_LIGHTMAP]	= "lightMap";
 
 	return typeToString;
 }
@@ -210,6 +213,9 @@ unsigned int
 AbstractASSIMPParser::getPostProcessingFlags(const aiScene*             scene,
                                              Options::Ptr		        options)
 {
+    if (scene->mNumMeshes == 0u)
+        return 0u;
+
     const auto numMaterials = scene->mNumMaterials;
 
     auto numTextures = scene->mNumTextures;
@@ -248,7 +254,7 @@ AbstractASSIMPParser::getPostProcessingFlags(const aiScene*             scene,
 
     if (numMaterials == 0u || numTextures == 0u)
     {
-        removeComponentFlags |= aiComponent_TEXCOORDS | aiComponent_TANGENTS_AND_BITANGENTS;
+        removeComponentFlags |= aiComponent_TANGENTS_AND_BITANGENTS;
     }
 
     if (options->generateSmoothNormals())
@@ -281,9 +287,12 @@ AbstractASSIMPParser::applyPostProcessing(const aiScene* scene, unsigned int pos
 void
 AbstractASSIMPParser::allDependenciesLoaded(const aiScene* scene)
 {
+    const aiScene* processedScene = scene;
+
     const auto postProcessingFlags = getPostProcessingFlags(scene, _options);
 
-    const aiScene* processedScene = applyPostProcessing(scene, postProcessingFlags);
+    if (postProcessingFlags != 0u)
+        processedScene = applyPostProcessing(scene, postProcessingFlags);
 
 	if (!processedScene)
     {
@@ -509,7 +518,7 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
     if (mesh->HasNormals())
         vertexSize += 3;
     if (mesh->GetNumUVChannels() > 0)
-        vertexSize += 2;
+        vertexSize += std::min(mesh->GetNumUVChannels() * 2u, MAX_NUM_UV_CHANNELS * 2u);
 
 	std::vector<float>	vertexData	(vertexSize * mesh->mNumVertices, 0.0f);
 	unsigned int		vId			= 0;
@@ -533,9 +542,9 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
 			vertexData[vId++]	= vec.z;
 		}
 
-		if (mesh->GetNumUVChannels() > 0)
+        for (auto i = 0u; i < std::min(mesh->GetNumUVChannels(), MAX_NUM_UV_CHANNELS); ++i)
 		{
-			const aiVector3D&	vec = mesh->mTextureCoords[0][vertexId];
+			const aiVector3D&	vec = mesh->mTextureCoords[i][vertexId];
 
 			vertexData[vId++]	= vec.x;
 			vertexData[vId++]	= vec.y;
@@ -571,11 +580,13 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
 		vertexBuffer->addAttribute("normal", 3, attrOffset);
 		attrOffset	+= 3;
 	}
-	if (mesh->GetNumUVChannels() > 0)
-	{
-		vertexBuffer->addAttribute("uv", 2, attrOffset);
-		attrOffset	+= 2;
-	}
+    for (auto i = 0u; i < std::min(mesh->GetNumUVChannels(), MAX_NUM_UV_CHANNELS); ++i)
+    {
+        const auto attributeName = std::string("uv") + (i > 0u ? std::to_string(i) : std::string());
+
+        vertexBuffer->addAttribute(attributeName, 2, attrOffset);
+        attrOffset += 2;
+    }
 
 	geometry->addVertexBuffer(vertexBuffer);
 
@@ -852,6 +863,9 @@ AbstractASSIMPParser::parseDependencies(const std::string& 	filename,
 				if (texFound == AI_SUCCESS)
 				{
 					const auto filename = std::string(path.data);
+
+                    if (filename.empty())
+                        continue;
 
                     const auto assetName = File::removePrefixPathFromFilename(filename);
 
@@ -1645,7 +1659,7 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 	for (auto& textureTypeAndName : _textureTypeToName)
 	{
 		const auto textureType = static_cast<aiTextureType>(textureTypeAndName.first);
-		const std::string& textureName = textureTypeAndName.second;
+		const auto& textureName = textureTypeAndName.second;
 
 		const unsigned int numTextures = aiMat->GetTextureCount(textureType);
 
@@ -1657,7 +1671,12 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 		{
             const auto textureFilename = std::string(path.data);
 
-            const auto textureAssetName = _textureFilenameToAssetName.at(textureFilename);
+            auto textureAssetNameIt = _textureFilenameToAssetName.find(textureFilename);
+
+            if (textureAssetNameIt == _textureFilenameToAssetName.end())
+                continue;
+
+            const auto& textureAssetName = textureAssetNameIt->second;
 
 			auto texture = _assetLibrary->texture(textureAssetName);
 

@@ -6,7 +6,8 @@ Step 1: Binding the model to world matrix
 In the [Moving objects](../tutorial/04-Moving_objects.md) tutorial, we've seen that we can add custom 3D transforms to our scene nodes using the `Transform` component. If you take a look at the code for the `Transform::initialize()` method, you'll notice that this very component declares the `transform.modelToWorldMatrix` in it's `[data::Provider`](data::Provider`):
 
 ```cpp
-// Transform.cpp void Transform::initialize() {
+// Transform.cpp 
+void Transform::initialize() {
 
  // some other code...
 

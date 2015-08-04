@@ -35,14 +35,18 @@ namespace minko
             typedef std::shared_ptr<scene::Node>                NodePtr;
         
             typedef std::shared_ptr<SceneManager>               SceneManagerPtr;
+            typedef std::shared_ptr<Renderer>                   RendererPtr;
             typedef std::shared_ptr<MasterLodScheduler>         MasterLodSchedulerPtr;
             typedef std::shared_ptr<Surface>                    SurfacePtr;
+
+            typedef std::shared_ptr<math::Box>                  BoxPtr;
 
             typedef std::shared_ptr<geometry::Geometry>         GeometryPtr;
 
             struct SurfaceInfo
             {
                 SurfacePtr  surface;
+                BoxPtr      box;
 
                 int         activeLod;
 
@@ -50,6 +54,7 @@ namespace minko
 
                 SurfaceInfo(SurfacePtr surface) :
                     surface(surface),
+                    box(),
                     activeLod(-1),
                     requiredPrecisionLevel(0)
                 {
@@ -90,6 +95,7 @@ namespace minko
 
         private:
             SceneManagerPtr                                             _sceneManager;
+            RendererPtr                                                 _renderer;
 
             std::unordered_map<std::string, POPGeometryResourceInfo>    _popGeometryResources;
 
@@ -98,6 +104,9 @@ namespace minko
             float                                                       _aspectRatio;
 
             math::vec4                                                  _viewport;
+
+            math::mat4                                                  _worldToScreenMatrix;
+            math::mat4                                                  _viewMatrix;
 
             float                                                       _blendingRange;
 
@@ -120,6 +129,9 @@ namespace minko
             sceneManagerSet(SceneManagerPtr sceneManager);
 
             void
+            rendererSet(RendererPtr renderer);
+
+            void
             masterLodSchedulerSet(MasterLodSchedulerPtr masterLodScheduler);
 
             void
@@ -130,6 +142,7 @@ namespace minko
 
             void
             viewPropertyChanged(const math::mat4&   worldToScreenMatrix,
+                                const math::mat4&   viewMatrix,
                                 const math::vec3&   eyePosition,
                                 float               fov,
                                 float               aspectRatio,
@@ -144,7 +157,8 @@ namespace minko
                                    int              maxAvailableLod);
 
             LodInfo
-            lodInfo(ResourceInfo& resource);
+            lodInfo(ResourceInfo&   resource,
+                    float           time);
 
         private:
             POPGeometryLodScheduler();
@@ -165,7 +179,8 @@ namespace minko
             computeLodPriority(const POPGeometryResourceInfo&  resource,
                                SurfaceInfo&                    surfaceInfo,
                                int                             requiredLod,
-                               int                             activeLod);
+                               int                             activeLod,
+                               float                           time);
 
             bool
             findClosestValidLod(const POPGeometryResourceInfo& resource,

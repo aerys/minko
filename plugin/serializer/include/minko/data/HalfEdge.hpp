@@ -47,9 +47,9 @@ namespace minko
             unsigned int                _startNodeId;
             unsigned int                _endNodeId;
             unsigned int                _edgeId;
-            Ptr                         _next;
-            Ptr                         _prec;
-            Ptr                         _adjacent;
+            WeakPtr                     _next;
+            WeakPtr                     _prec;
+            WeakPtr                     _adjacent;
             std::vector<WeakPtr>        _face;
             std::vector<WeakPtr>        _firstReverseFace;
             std::vector<WeakPtr>        _secondReverseFace;
@@ -109,7 +109,7 @@ namespace minko
             Ptr
             next() const
             {
-                return _next;
+                return _next.lock();
             }
 
             inline
@@ -123,7 +123,7 @@ namespace minko
             Ptr
             prec() const
             {
-                return _prec;
+                return _prec.lock();
             }
 
             inline
@@ -137,7 +137,7 @@ namespace minko
             Ptr
             adjacent() const
             {
-                return _adjacent;
+                return _adjacent.lock();
             }
 
             inline

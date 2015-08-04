@@ -35,64 +35,65 @@ namespace minko
 			typedef std::shared_ptr<VideoCameraPreview> Ptr;
 
 		private:
-            typedef std::shared_ptr<SceneManager> 				SceneManagerPtr;
+            typedef std::shared_ptr<SceneManager> SceneManagerPtr;
 			typedef std::shared_ptr<video::AbstractVideoCamera> AbstractVideoCameraPtr;
 
-			typedef std::shared_ptr<AbstractComponent> 			AbstractComponentPtr;
-            typedef std::shared_ptr<Surface> 					SurfacePtr;
-            typedef std::shared_ptr<scene::Node> 				NodePtr;
+			typedef std::shared_ptr<AbstractComponent> AbstractComponentPtr;
+            typedef std::shared_ptr<Surface> SurfacePtr;
+            typedef std::shared_ptr<scene::Node> NodePtr;
 
-            typedef std::shared_ptr<render::AbstractContext> 	AbstractContextPtr;
-            typedef std::shared_ptr<render::AbstractTexture> 	AbstractTexturePtr;
-			typedef std::shared_ptr<render::RectangleTexture> 	RecTexturePtr;
+            typedef std::shared_ptr<render::AbstractContext> AbstractContextPtr;
+            typedef std::shared_ptr<render::AbstractTexture> AbstractTexturePtr;
 
 		private:
-            SceneManagerPtr 		_sceneManager;
-            AbstractContextPtr 		_context;
-			AbstractVideoCameraPtr 	_videoCamera;
+            SceneManagerPtr _sceneManager;
+            AbstractContextPtr _context;
+			AbstractVideoCameraPtr _videoCamera;
 
-            RecTexturePtr			_videoPreviewTarget;
-            SurfacePtr 				_previewSurface;
+            AbstractTexturePtr _videoPreviewTarget;
+            SurfacePtr _previewSurface;
 
-			Any 					_targetAddedSlot;
-            Any 					_targetRemovedSlot;
+			Any _targetAddedSlot;
+            Any _targetRemovedSlot;
 
-            Any 					_frameBeginSlot;
-            Any 					_frameEndSlot;
+            Any _frameBeginSlot;
+            Any _frameEndSlot;
 
-            Any 					_videoCameraFrameReceivedSlot;
+            Any _videoCameraFrameReceivedSlot;
+            
+            bool _updatePreviewWhenFrameReceived;
 
 		public:
 			inline
 			static
 			Ptr
-			create(SceneManagerPtr sceneManager, AbstractContextPtr context, AbstractVideoCameraPtr videoCamera)
+			create(SceneManagerPtr sceneManager, AbstractContextPtr context, AbstractVideoCameraPtr videoCamera, bool updatePreviewWhenFrameReceived = true)
 			{
 				auto instance = Ptr(new VideoCameraPreview());
 
                 instance->_sceneManager = sceneManager;
                 instance->_context = context;
 				instance->_videoCamera = videoCamera;
-
+                instance->_updatePreviewWhenFrameReceived = updatePreviewWhenFrameReceived;
+                
                 instance->initialize();
 
 				return instance;
 			}
 
             inline
-            SurfacePtr
-            previewSurface()
+            SurfacePtr 
+            previewSurface() 
             {
                 return _previewSurface;
             }
 
             inline
-            RecTexturePtr
+            AbstractTexturePtr
             videoPreviewTarget()
             {
                 return _videoPreviewTarget;
             }
-
             void
             forceBackgroundUpdate();
 
@@ -115,14 +116,16 @@ namespace minko
             frameEndHandler(SceneManagerPtr sceneManager, float time, float deltaTime);
 
             void
-            frameReceivedHandler(AbstractVideoCameraPtr 			videoCamera,
-                				 const std::vector<unsigned char>& 	data,
-                				 int 								width,
-                				 int 								height,
-                				 video::ImageFormatType 			format);
+            frameReceivedHandler(
+                AbstractVideoCameraPtr videoCamera,
+                const std::vector<unsigned char>& data,
+                int width,
+                int height,
+                video::ImageFormatType format
+            );
 
             void
-            initializeVideoPreviewTarget(int width, int height, video::ImageFormatType format);
+            initializeVideoPreviewTarget(const std::vector<unsigned char>& data, int width, int height, video::ImageFormatType format);
 
             void
             updateVideoPreviewTarget(const std::vector<unsigned char>& data, int width, int height, video::ImageFormatType format);

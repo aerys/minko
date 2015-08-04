@@ -8,7 +8,7 @@ Make sure you have the source code of Minko on your filesystem. You can get them
 Step 2: Installing the toolchain
 --------------------------------
 
-If you've never build a Minko application or the Minko SDK for OSX before, follow the [step 1 of the Targeting OSX tutorial](../tutorial/Targeting_Windows.md#step-1-install-the-toolchain).
+If you've never build a Minko application or the Minko SDK for OSX before, follow the [step 1 of the Targeting OSX tutorial](../tutorial/Targeting_OS_X.md#step-1-install-the-toolchain).
 
 Step 3: Generate the solution
 -----------------------------
@@ -16,21 +16,22 @@ Step 3: Generate the solution
 Minko uses Premake for its build system. Premake is a nice solution to have a cross-platform build system that can work across multiple IDEs such as Xcode, Visual Studio and even GNU Make. In order to build the SDK for OSX, we will generate a solution for `gmake`. We need to use a terminal to generate a `Makefile`-compatible solution:
 
 ```bash
-cd ${MINKO_HOME} tool/mac/scripts/premake5.sh gmake 
+cd ${MINKO_HOME}
+tool/mac/bin/premake5.sh gmake
 ```
 
 
 If we want to select your compiler, we can pass the `cc` option. Supported values are `gcc` and `clang`:
 
 ```bash
-tool/mac/scripts/premake5.sh --cc=clang gmake 
+tool/mac/bin/premake5.sh --cc=clang gmake
 ```
 
 
 To learn more about premake commands, run:
 
 ```bash
-tool/mac/scripts/premake5.sh help 
+tool/mac/bin/premake5.sh help
 ```
 
 
@@ -66,7 +67,7 @@ Step 5: Package
 The SDK is now built, but you might want to share or copy it so you don't have to deal with the sources again. We use a script to produce a distributable SDK.
 
 ```bash
-tool/mac/scripts/premake5.sh dist 
+tool/mac/bin/premake5.sh dist
 ```
 
 

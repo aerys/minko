@@ -693,7 +693,8 @@ Renderer::layoutMask(const scene::Layout value)
 	// completely reset the draw call pool
 	if (target() != nullptr)
 	{
-		_drawCallPool = DrawCallPool();
-		rootDescendantRemovedHandler(nullptr, target()->root(), nullptr);
+        _drawCallPool.clear();
+		
+        rootDescendantRemovedHandler(nullptr, target()->root(), nullptr);
 	}
 }

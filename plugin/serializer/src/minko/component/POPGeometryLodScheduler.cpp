@@ -20,9 +20,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/StreamingOptions.hpp"
 #include "minko/component/BoundingBox.hpp"
 #include "minko/component/MasterLodScheduler.hpp"
+#include "minko/component/PerspectiveCamera.hpp"
 #include "minko/component/POPGeometryLodScheduler.hpp"
 #include "minko/component/SceneManager.hpp"
 #include "minko/component/Surface.hpp"
+#include "minko/component/Transform.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/geometry/Geometry.hpp"
@@ -39,6 +41,12 @@ using namespace minko::geometry;
 
 POPGeometryLodScheduler::POPGeometryLodScheduler() :
     AbstractLodScheduler(),
+    _eyePosition(),
+    _fov(0.f),
+    _aspectRatio(0.f),
+    _viewport(),
+    _worldToScreenMatrix(),
+    _viewMatrix(),
     _blendingRange(0.f)
 {
 }
@@ -49,6 +57,14 @@ POPGeometryLodScheduler::sceneManagerSet(SceneManager::Ptr sceneManager)
     AbstractLodScheduler::sceneManagerSet(sceneManager);
 
     _sceneManager = sceneManager;
+}
+
+void
+POPGeometryLodScheduler::rendererSet(Renderer::Ptr renderer)
+{
+    AbstractLodScheduler::rendererSet(renderer);
+
+    _renderer = renderer;
 }
 
 void
@@ -101,6 +117,8 @@ POPGeometryLodScheduler::surfaceAdded(Surface::Ptr surface)
 
     auto surfaceInfo = SurfaceInfo(surface);
 
+    surfaceInfo.box = surfaceTarget->component<BoundingBox>()->box();
+
     resource->geometry = geometry;
 
     auto resourceData = resource->base->data;
@@ -148,6 +166,7 @@ POPGeometryLodScheduler::surfaceRemoved(Surface::Ptr surface)
 
 void
 POPGeometryLodScheduler::viewPropertyChanged(const math::mat4&   worldToScreenMatrix,
+                                             const math::mat4&   viewMatrix,
                                              const math::vec3&   eyePosition,
                                              float               fov,
                                              float               aspectRatio,
@@ -156,6 +175,7 @@ POPGeometryLodScheduler::viewPropertyChanged(const math::mat4&   worldToScreenMa
 {
 	AbstractLodScheduler::viewPropertyChanged(
         worldToScreenMatrix,
+        viewMatrix,
         eyePosition,
         fov,
         aspectRatio,
@@ -166,6 +186,8 @@ POPGeometryLodScheduler::viewPropertyChanged(const math::mat4&   worldToScreenMa
     _eyePosition = eyePosition;
     _fov = fov;
     _aspectRatio = aspectRatio;
+    _worldToScreenMatrix = worldToScreenMatrix;
+    _viewMatrix = viewMatrix;
 
 	invalidateLodRequirement();
 }
@@ -197,7 +219,8 @@ POPGeometryLodScheduler::maxAvailableLodChanged(ResourceInfo&    resource,
 }
 
 POPGeometryLodScheduler::LodInfo
-POPGeometryLodScheduler::lodInfo(ResourceInfo& resource)
+POPGeometryLodScheduler::lodInfo(ResourceInfo&  resource,
+                                 float          time)
 {
 	auto lodInfo = LodInfo();
 
@@ -241,7 +264,7 @@ POPGeometryLodScheduler::lodInfo(ResourceInfo& resource)
 
         maxRequiredLod = std::max(requiredLod, maxRequiredLod);
 
-        const auto priority = computeLodPriority(popGeometryResource, surfaceInfo, requiredLod, activeLod);
+        const auto priority = computeLodPriority(popGeometryResource, surfaceInfo, requiredLod, activeLod, time);
 
         maxPriority = std::max(priority, maxPriority);
 	}
@@ -283,7 +306,7 @@ POPGeometryLodScheduler::computeRequiredLod(const POPGeometryResourceInfo&  reso
 
     auto target = surfaceInfo.surface->target();
 
-    auto box = target->component<BoundingBox>()->box();
+    auto box = surfaceInfo.box;
 
     const auto worldMinBound = box->bottomLeft();
     const auto worldMaxBound = box->topRight();
@@ -322,32 +345,27 @@ float
 POPGeometryLodScheduler::computeLodPriority(const POPGeometryResourceInfo& 	resource,
                                             SurfaceInfo&                    surfaceInfo,
 											int 							requiredLod,
-											int 							activeLod)
+											int 							activeLod,
+                                            float                           time)
 {
-    // TODO make abstraction for priority contribution factors
-    // apply frustum culling factor
-    // apply occlusion culling factor (BSP-tree?)
-
     if (activeLod >=  requiredLod)
         return 0.f;
 
-    // TODO provide streaming API priority computing function
+    const auto& lodPriorityFunction = masterLodScheduler()->streamingOptions()->popGeometryLodPriorityFunction();
 
-    auto priority = 0.f;
-
-    const auto distanceFromEye = this->distanceFromEye(resource, surfaceInfo, _eyePosition);
-    const auto distanceFactor = (1000.f - distanceFromEye) * 0.001f;
-
-    if (activeLod < 2)
+    if (lodPriorityFunction)
     {
-        priority += 11.f + distanceFactor;
-    }
-    else
-    {
-        priority += 9.f + distanceFactor;
+        return lodPriorityFunction(
+            activeLod,
+            requiredLod,
+            surfaceInfo.surface,
+            surfaceInfo.surface->target()->data(),
+            _sceneManager->target()->data(),
+            _renderer->target()->data()
+        );
     }
 
-    return priority;
+    return requiredLod - activeLod;
 }
 
 bool 
@@ -418,7 +436,7 @@ POPGeometryLodScheduler::distanceFromEye(const POPGeometryResourceInfo&  resourc
                                          const math::vec3&               eyePosition)
 {
     auto target = surfaceInfo.surface->target();
-    auto box = target->component<BoundingBox>()->box();
+    auto box = surfaceInfo.box;
 
     const auto boxCenter = (box->bottomLeft() + box->topRight()) / 2.f;
 

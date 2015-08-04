@@ -67,7 +67,8 @@ Most effects needs some properties to be set to work properly. For the anti-alia
 -   **texcoordOffset**: that is the inverse of the texture dimensions along X and Y of the render target.
 
 ```cpp
-effect->setUniform("textureSampler", renderTarget); effect->setUniform("texcoordOffset", Vector2::create(1.0f / renderTarget->width(), 1.0f / renderTarget->height())); 
+effect->setUniform("textureSampler", renderTarget);
+effect->setUniform("texcoordOffset", Vector2::create(1.0f / renderTarget->width(), 1.0f / renderTarget->height())); 
 ```
 
 
@@ -77,7 +78,8 @@ Step 4 : Draw the scene
 The final initialization step is to create a second scene - completely different from your actual 3D scene - that will only hold a single surface made from the quad geometry that it supposed to represent our screen, a dummy Material and our post-processing effect:
 
 ```cpp
-auto renderer = Renderer::create(); auto postProcessingScene = scene::Node::create() ->addComponent(renderer) ->addComponent(
+auto renderer = Renderer::create();
+auto postProcessingScene = scene::Node::create() ->addComponent(renderer) ->addComponent(
 
    Surface::create(
        geometry::QuadGeometry::create(sceneManager->assets()->context()),

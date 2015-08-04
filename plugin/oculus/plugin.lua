@@ -52,8 +52,3 @@ function minko.plugin.oculus:enable()
 	configuration { "linux32 or linux64" }
 		links { "udev", "Xinerama", "X11", "pthread", "rt", "Xrandr" }
 end
-
-newoption {
-	trigger		= "with-oculus",
-	description	= "Enable the Minko OCULUS plugin."
-}

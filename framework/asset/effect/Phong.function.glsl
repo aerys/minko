@@ -5,18 +5,9 @@ float phong_diffuseReflection(vec3 normal, vec3 lightDirection)
 
 float phong_specularReflection(vec3 normal, vec3 lightDirection, vec3 viewVector, float shininess)
 {
-	float NdotL = dot(normal, lightDirection);
+	vec3 reflected = reflect(-lightDirection, normal);
 
-	if (NdotL < 0.0)
-	{
-		return 0.0;
-	}
-	else
-	{
-		vec3 reflected = 2.0 * NdotL * normal - lightDirection;
-
-		return pow(max(dot(reflected, viewVector), 0.0), shininess);
-	}
+	return pow(max(dot(reflected, viewVector), 0.0), shininess);
 }
 
 vec3 phong_fresnel(vec3 specularColor, vec3 lightDirection, vec3 eyeVector)

@@ -83,13 +83,15 @@ minko.action.copy = function(sourcepath, destpath, targetdir)
 			destdir = path.getdirectory(destpath)
 		end
 
-		if os.isdir(sourcepath) and not string.endswith(sourcepath, '/') then
-			sourcepath = sourcepath .. '/' -- cp will copy the content of the directory
+		if not os.is("macosx") then
+			if os.isdir(sourcepath) and not string.endswith(sourcepath, '/') then
+				sourcepath = sourcepath .. '/' -- cp will copy the content of the directory
+			end
 		end
 
 		if os.iscygwin() then
-			sourcepath = path.cygpath(translate(sourcepath))
-			targetdir = path.cygpath(translate(targetdir))
+			sourcepath = path.cygpath(sourcepath)
+			targetdir = path.cygpath(targetdir)
 		end
 
 		-- print(' -> cp -R ' .. sourcepath .. ' "' .. destdir .. '"')

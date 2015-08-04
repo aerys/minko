@@ -17,6 +17,10 @@ attribute 	vec2 	aUV;
 attribute 	vec3 	aNormal;
 attribute 	vec3 	aTangent;
 
+#ifdef VERTEX_UV1
+attribute 	vec2	aUV1;
+#endif
+
 #ifdef SKINNING_NUM_BONES
 attribute vec4 aBoneWeightsA;
 attribute vec4 aBoneWeightsB;
@@ -46,6 +50,7 @@ uniform vec3 uPopMaxBound;
 varying 	vec3 	vVertexPosition;
 varying 	vec4 	vVertexScreenPosition;
 varying 	vec2 	vVertexUV;
+varying 	vec2 	vVertexUV1;
 varying 	vec3 	vVertexNormal;
 varying 	vec3 	vVertexTangent;
 varying		vec4	vVertexColor;
@@ -55,6 +60,10 @@ void main(void)
 	#if defined VERTEX_UV && (defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP)
 		vVertexUV = aUV;
 	#endif // defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP
+
+	#if defined (VERTEX_UV1) && defined (LIGHT_MAP)
+		vVertexUV1 = aUV1;
+	#endif // VERTEX_UV1 && LIGHT_MAP
 
 	#if defined VERTEX_COLOR
 		vVertexColor = vec4(packFloat8bitRGB(aColor), 1.0);

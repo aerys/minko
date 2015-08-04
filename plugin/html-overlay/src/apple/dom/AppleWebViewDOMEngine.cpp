@@ -122,6 +122,11 @@ AppleWebViewDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr 
 
         // Load iframe containing bridge JS callback handler
         // [_webView loadRequest:request];
+        
+        // Disable audio restriction
+        _webView.mediaPlaybackRequiresUserAction = NO;
+        _webView.allowsInlineMediaPlayback = YES;
+        _webView.mediaPlaybackAllowsAirPlay = YES;
 
         _canvasResizedSlot = _canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint w, uint h)
         {

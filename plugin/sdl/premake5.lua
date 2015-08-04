@@ -27,7 +27,8 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 	}
 
 	configuration { }
-	if _OPTIONS['with-offscreen'] then
+
+	if minko.plugin.requested("offscreen") then
 		minko.plugin.enable("offscreen")
 	end
 
@@ -40,7 +41,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		buildoptions { "-x objective-c++" }
 
 	-- Audio only works for HTML5, Windows and Android
-	configuration { "linux32 or linux64 or osx64 or ios" }
+	configuration { "linux32 or linux64 or osx64" }
 		excludes {
 			"include/minko/audio/**.hpp",
 			"src/minko/audio/**.cpp"
@@ -54,7 +55,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	configuration { }
 
-	if _OPTIONS['with-offscreen'] then
+	if minko.plugin.requested("offscreen") then
 		excludes {
 			"include/minko/audio/**.hpp",
 			"src/minko/audio/**.cpp"

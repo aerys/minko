@@ -163,6 +163,7 @@ namespace minko
                 int                         baseDepth;
 
                 std::vector<HalfEdgePtr>    halfEdges;
+                std::list<HalfEdgePtr>      halfEdgeReferences;
 
                 std::unordered_set<
                     unsigned int

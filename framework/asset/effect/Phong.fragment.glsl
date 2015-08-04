@@ -15,6 +15,7 @@
 #pragma include "TextureLod.function.glsl"
 #pragma include "ShadowMapping.function.glsl"
 #pragma include "Fog.function.glsl"
+#pragma include "LightMapping.function.glsl"
 
 #ifdef GAMMA_CORRECTION
 uniform float uGammaCorrection;
@@ -32,6 +33,10 @@ uniform vec4 uDiffuseColor;
 
 #ifdef DIFFUSE_MAP
 uniform sampler2D uDiffuseMap;
+#endif
+
+#ifdef LIGHT_MAP
+uniform sampler2D uLightMap;
 #endif
 
 // alpha
@@ -80,6 +85,11 @@ uniform float uFresnelExponent;
 #ifdef DIFFUSE_MAP_LOD
 uniform float uDiffuseMapMaxAvailableLod;
 uniform vec2 uDiffuseMapSize;
+#endif
+
+#ifdef LIGHT_MAP_LOD
+uniform float uLightMapMaxAvailableLod;
+uniform vec2 uLightMapSize;
 #endif
 
 #ifdef NORMAL_MAP_LOD
@@ -306,6 +316,7 @@ uniform float uSpotLight3_specular;
 
 varying vec3 vVertexPosition;
 varying vec2 vVertexUV;
+varying vec2 vVertexUV1;
 varying vec3 vVertexNormal;
 varying vec3 vVertexTangent;
 varying vec4 vVertexScreenPosition;
@@ -405,6 +416,14 @@ void main(void)
 		if (diffuse.a < uAlphaThreshold)
 			discard;
 	#endif // ALPHA_THRESHOLD
+
+    #if defined(VERTEX_UV1) && defined(LIGHT_MAP)
+        #ifdef LIGHT_MAP_LOD
+            diffuse = lightMapping_multiply(diffuse, texturelod_texture2D(uLightMap, vVertexUV1, uLightMapSize, 0.0, uLightMapMaxAvailableLod, vec4(1.0)));
+        #else
+            diffuse = lightMapping_multiply(diffuse, texture2D(uLightMap, vVertexUV1));
+        #endif
+    #endif // VERTEX_UV1 && LIGHT_MAP
 
 	#if defined(SHININESS) || ( (defined(ENVIRONMENT_MAP_2D) || defined(ENVIRONMENT_CUBE_MAP)) && !defined(ENVIRONMENT_ALPHA) )
 		#if defined(SPECULAR_MAP) && defined(VERTEX_UV)

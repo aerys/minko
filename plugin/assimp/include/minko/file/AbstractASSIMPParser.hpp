@@ -80,6 +80,8 @@ namespace minko
 			static const TextureTypeToName							_textureTypeToName;
 			static const std::string								PNAME_TRANSFORM;
 
+            static const unsigned int                               MAX_NUM_UV_CHANNELS;
+
             unsigned int											_numDependencies;
 			unsigned int											_numLoadedDependencies;
             std::string												_filename;

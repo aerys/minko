@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 -- video-camera plugin
 minko.plugin["video-camera"] = {}
 
-minko.plugin["video-camera"].enable = function()   
+minko.plugin["video-camera"].enable = function()
 
 	minko.plugin.links { "video-camera" }
 	includedirs { minko.plugin.path("video-camera") .. "/include" }
@@ -30,9 +30,8 @@ minko.plugin["video-camera"].enable = function()
 		prelinkcommands {
 			minko.action.copy(minko.plugin.path("video-camera") .. "/asset")
 		}
-end
 
-newoption {
-	trigger			= "with-png",
-	description		= "Enable the Minko video-camera plugin."
-}
+	configuration { "ios" }
+		buildoptions { "-x objective-c++" }
+		links { "AVFoundation.framework", "CoreVideo.framework", "CoreMedia.framework" }
+end

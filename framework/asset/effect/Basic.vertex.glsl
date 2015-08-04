@@ -14,6 +14,10 @@
 attribute vec3 aPosition;
 attribute vec2 aUV;
 
+#ifdef VERTEX_UV1
+attribute vec2 aUV1;
+#endif
+
 #ifdef SKINNING_NUM_BONES
 attribute vec4 aBoneWeightsA;
 attribute vec4 aBoneWeightsB;
@@ -44,6 +48,7 @@ uniform vec3 uPopMaxBound;
 #endif
 
 varying vec2 vVertexUV;
+varying vec2 vVertexUV1;
 varying vec3 vVertexUVW;
 varying vec4 vVertexScreenPosition;
 
@@ -73,6 +78,10 @@ void main(void)
 
 		vVertexUV = uv;
 	#endif
+
+    #if defined (VERTEX_UV1) && defined (LIGHT_MAP)
+        vVertexUV1 = aUV1;
+    #endif // VERTEX_UV1 && LIGHT_MAP
 
 	#ifdef DIFFUSE_CUBEMAP
 		vVertexUVW = aPosition;

@@ -1,8 +1,3 @@
-newoption {
-	trigger		= "with-fx",
-	description	= "Enable the Minko FX plugin."
-}
-
 PROJECT_NAME = path.getname(os.getcwd())
 
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
