@@ -55,6 +55,7 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"ASSIMP_BUILD_NO_EXPORT",
 		"ASSIMP_BUILD_BOOST_WORKAROUND",
 		"ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION",
+		"ASSIMP_BUILD_NO_PLY_IMPORTER"
 	}
 
 	configuration { "vs*" }

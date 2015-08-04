@@ -81,11 +81,19 @@ namespace minko
                 int                                         maxAvailableLod;
                 int                                         fullPrecisionLod;
 
-                std::unordered_map<
+                const std::map<
+                    int,
+                    ProgressiveOrderedMeshLodInfo
+                >*                                          availableLods;
+
+                std::vector<ProgressiveOrderedMeshLodInfo>  lodToClosestValidLod;
+                std::vector<ProgressiveOrderedMeshLodInfo>  precisionLevelToClosestLod;
+
+                std::unordered_multimap<
                     NodePtr,
                     Signal<data::Store&, ProviderPtr, const data::Provider::PropertyName&>::Slot
-                >                                           modelToWorldMatrixChangedSlots;
-                std::unordered_map<SurfacePtr, SurfaceInfo> surfaceToSurfaceInfoMap;
+                >                                           propertyChangedSlots;
+                std::vector<SurfaceInfo>                    surfaceInfoCollection;
 
                 POPGeometryResourceInfo() :
                     base(nullptr),
@@ -95,8 +103,11 @@ namespace minko
                     minAvailableLod(-1),
                     maxAvailableLod(-1),
                     fullPrecisionLod(-1),
-                    modelToWorldMatrixChangedSlots(),
-                    surfaceToSurfaceInfoMap()
+                    availableLods(nullptr),
+                    lodToClosestValidLod(),
+                    precisionLevelToClosestLod(),
+                    propertyChangedSlots(),
+                    surfaceInfoCollection()
                 {
                 }
             };
@@ -105,7 +116,7 @@ namespace minko
             SceneManagerPtr                                             _sceneManager;
             RendererPtr                                                 _renderer;
 
-            std::unordered_map<std::string, POPGeometryResourceInfo>    _popGeometryResources;
+            std::unordered_map<ProviderPtr, POPGeometryResourceInfo>    _popGeometryResources;
 
             math::vec3                                                  _eyePosition;
             float                                                       _fov;
@@ -203,6 +214,9 @@ namespace minko
             findClosestLodByPrecisionLevel(const POPGeometryResourceInfo&  resource,
                                            int                             precisionLevel,
                                            ProgressiveOrderedMeshLodInfo&  result) const;
+
+            void
+            updateClosestLods(POPGeometryResourceInfo& resource);
 
             float
             distanceFromEye(const POPGeometryResourceInfo&  resource,

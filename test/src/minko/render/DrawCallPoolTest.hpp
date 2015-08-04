@@ -63,7 +63,9 @@ namespace minko
                 };
 
                 pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
-                auto drawCall = pool.drawCalls().front();
+
+                const auto& drawCalls = pool.drawCalls().begin()->second;
+                auto drawCall = drawCalls.at(0u).empty() ? drawCalls.at(1u).front() : drawCalls.at(0u).front();
                 auto stateDefaultValues = drawCall->pass()->stateBindings().defaultValues;
 
                 material->data()->set(stateName, stateMaterialValue);
@@ -119,7 +121,7 @@ namespace minko
                 };
 
                 pool.addDrawCalls(fx, "default", variables, rootData, rendererData, targetData);
-                auto drawCall = pool.drawCalls().front();
+                auto drawCall = pool.drawCalls().begin()->second.at(0u).front();
                 auto stateDefaultValues = drawCall->pass()->stateBindings().defaultValues;
 
                 material->data()->set(stateName, stateMaterialValue);

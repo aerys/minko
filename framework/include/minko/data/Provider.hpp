@@ -215,6 +215,9 @@ namespace minko
 			Ptr
 			copyFrom(Ptr source);
 
+            void
+            merge(Ptr source);
+
             ~Provider();
 
 			Provider();

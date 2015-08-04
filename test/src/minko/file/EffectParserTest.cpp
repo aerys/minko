@@ -2336,6 +2336,8 @@ TEST_F(EffectParserTest, SamplerStatesBindingMipFilterWithDefaultValueNone)
     checkSamplerStateBindingWithDefaultValue<MipFilter>(filename, samplerStateProperty, defaultValue);
 }
 
+/* Extended pass */
+
 TEST_F(EffectParserTest, ExtendedPass)
 {
     auto fx = MinkoTests::loadEffect("effect/pass/extends/ExtendedPass.effect");
@@ -2368,7 +2370,7 @@ TEST_F(EffectParserTest, ExtendedPassFromEffect)
     auto fx = MinkoTests::loadEffect("effect/pass/extends/ExtendedPassFromEffect.effect");
 
     ASSERT_NE(fx, nullptr);
-    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().size(), 3);
     ASSERT_EQ(fx->techniques().at("default").size(), 1);
     ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty("FOO"));
     ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().types.count("FOO") != 0);
@@ -2378,14 +2380,88 @@ TEST_F(EffectParserTest, ExtendedPassFromEffect)
     ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().bindings["FOO"].propertyName, "bar");
     ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().bindings["FOO"].source, data::Binding::Source::TARGET);
     ASSERT_TRUE(fx->techniques().at("default")[0]->attributeBindings().bindings.count("aPosition") != 0);
-    ASSERT_EQ(fx->techniques().at("default")[0]->attributeBindings().bindings["aPosition"].propertyName, "geometry[${geometryUuid}].position");
+    ASSERT_EQ(fx->techniques().at("default")[0]->attributeBindings().bindings["aPosition"].propertyName, "geometry[${geometryUuid}].position4");
     ASSERT_EQ(fx->techniques().at("default")[0]->attributeBindings().bindings["aPosition"].source, data::Binding::Source::TARGET);
     ASSERT_TRUE(fx->techniques().at("default")[0]->uniformBindings().bindings.count("uDiffuseColor") != 0);
     ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().bindings["uDiffuseColor"].propertyName, "material[${materialUuid}].diffuseColor");
     ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().bindings["uDiffuseColor"].source, data::Binding::Source::TARGET);
     ASSERT_TRUE(fx->techniques().at("default")[0]->stateBindings().defaultValues.hasProperty("priority"));
-    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().defaultValues.get<float>("priority"), 42.0);
+    ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().defaultValues.get<float>("priority"), 42.f);
     ASSERT_TRUE(fx->techniques().at("default")[0]->stateBindings().bindings.count("priority") != 0);
     ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings["priority"].propertyName, "material[${materialUuid}].priority");
     ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings["priority"].source, data::Binding::Source::TARGET);
+}
+
+TEST_F(EffectParserTest, ExtendedPassFromEffectWithExtendedPass)
+{
+    auto fx = MinkoTests::loadEffect("effect/pass/extends/ExtendedPassFromEffectWithExtendedPass.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 3);
+    ASSERT_EQ(fx->techniques().at("default").size(), 1);
+
+    // Test macro bindings
+    auto macroNames = std::vector<std::string>({ "FOO", "TEST" });
+    auto macroPropertyNames = std::vector<std::string>({ "bar", "testouille2" });
+    auto macroValues = std::vector<int>({ 42, 12 });
+
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().bindings.size(), 2);
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().types.size(), 2);
+    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.providers().size(), 1);
+
+    for (size_t i = 0; i < macroNames.size(); i++)
+    {
+        ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty(macroNames[i]));
+        ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().types.count(macroNames[i]) != 0);
+        ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().types[macroNames[i]], data::MacroBindingMap::MacroType::INT);
+        ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.get<int>(macroNames[i]), macroValues[i]);
+        ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().bindings.count(macroNames[i]) != 0);
+        ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().bindings[macroNames[i]].propertyName, macroPropertyNames[i]);
+        ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().bindings[macroNames[i]].source, data::Binding::Source::TARGET);
+    }
+
+    // Test attribute bindings
+    auto attributeNames = std::vector<std::string>({ "aPosition", "aNormal", "aUV" });
+    auto attributePropertyNames = std::vector<std::string>({ "geometry[${geometryUuid}].position5", "geometry[${geometryUuid}].normal", "geometry[${geometryUuid}].uv" });
+
+    for (size_t i = 0; i < attributeNames.size(); i++)
+    {
+        ASSERT_TRUE(fx->techniques().at("default")[0]->attributeBindings().bindings.count(attributeNames[i]) != 0);
+        ASSERT_EQ(fx->techniques().at("default")[0]->attributeBindings().bindings[attributeNames[i]].propertyName, attributePropertyNames[i]);
+        ASSERT_EQ(fx->techniques().at("default")[0]->attributeBindings().bindings[attributeNames[i]].source, data::Binding::Source::TARGET);
+    }
+
+    // Test uniform bindings
+    auto uniformNames = std::vector<std::string>({ "uDiffuseColor", "uModelToWorldMatrix", "uUVOffset" });
+    auto uniformPropertyNames = std::vector<std::string>({ "material[${materialUuid}].diffuseColor", "modelToWorldMatrix", "material[${materialUuid}].uvOffset" });
+
+    for (size_t i = 0; i < uniformNames.size(); i++)
+    {
+        ASSERT_TRUE(fx->techniques().at("default")[0]->uniformBindings().bindings.count(uniformNames[i]) != 0);
+        ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().bindings[uniformNames[i]].propertyName, uniformPropertyNames[i]);
+        ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().bindings[uniformNames[i]].source, data::Binding::Source::TARGET);
+    }
+
+    // Test state bindings
+    auto statesNames = std::vector<std::string>({ "priority", "triangleCulling", "zSorted" });
+    auto statesPropertyNames = std::vector<std::string>({ "material[${materialUuid}].priority", "material[${materialUuid}].triangleCulling", "material[${materialUuid}].zSorted" });
+    
+    for (size_t i = 0; i < statesNames.size(); i++)
+    {
+        ASSERT_TRUE(fx->techniques().at("default")[0]->stateBindings().defaultValues.hasProperty(statesNames[i]));
+        ASSERT_TRUE(fx->techniques().at("default")[0]->stateBindings().bindings.count(statesNames[i]) != 0);
+        ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings[statesNames[i]].propertyName, statesPropertyNames[i]);
+        ASSERT_EQ(fx->techniques().at("default")[0]->stateBindings().bindings[statesNames[i]].source, data::Binding::Source::TARGET);
+    }
+}
+
+TEST_F(EffectParserTest, AutoFixedPassPriorities)
+{
+    auto fx = MinkoTests::loadEffect("effect/pass/MultiplePasses.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 3);
+    ASSERT_GT(fx->techniques().at("default")[0]->states().priority(), fx->techniques().at("default")[1]->states().priority());
+    ASSERT_GT(fx->techniques().at("default")[1]->states().priority(), fx->techniques().at("default")[2]->states().priority());
 }

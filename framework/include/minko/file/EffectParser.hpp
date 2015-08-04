@@ -89,6 +89,9 @@ namespace minko
 
                 StateBlock()
                 {
+                    // we set the priority to a special value in order to know
+                    // wether it was actually read from the file or not
+                    states.priority(-1.f);
                     bindingMap.defaultValues.addProvider(states.data());
                 }
 
@@ -229,7 +232,15 @@ namespace minko
             parseConfiguration(const Json::Value& node);
 
             void
+            fixMissingPassPriorities(std::vector<PassPtr>& passes);
+
+            void
             parseTechniques(const Json::Value& node, Scope& scope, Techniques& techniques);
+
+            std::shared_ptr<render::Pass>
+            findPassFromEffectFilename(const std::string& effectFilename,
+                                       const std::string& techniqueName,
+                                       const std::string& passName);
 
             std::shared_ptr<render::Pass>
             getPassToExtend(const Json::Value& extendNode, Scope& scope);
