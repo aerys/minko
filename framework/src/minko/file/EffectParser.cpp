@@ -259,7 +259,7 @@ EffectParser::fixMissingPassPriorities(std::vector<render::Pass::Ptr>& passes)
                 }
 
                 if (nextPassWithPriority >= numPasses)
-                    pass->states().priority(States::DEFAULT_PRIORITY + (float)(numPasses - i));
+                    pass->states().priority(States::DEFAULT_PRIORITY + (float)(numPasses - i - 1));
                 else
                 {
                     pass->states().priority(
@@ -331,7 +331,7 @@ EffectParser::parsePasses(const Json::Value& node, Scope& scope, std::vector<Pas
 }
 
 render::Pass::Ptr
-EffectParser::getPassToExtend(const Json::Value& extendNode, Scope& scope)
+EffectParser::getPassToExtend(const Json::Value& extendNode)
 {
     render::Pass::Ptr pass;
     std::string passName;
@@ -339,7 +339,16 @@ EffectParser::getPassToExtend(const Json::Value& extendNode, Scope& scope)
     if (extendNode.isString())
     {
         passName = extendNode.asString();
-        pass = findPassByName(passName, scope);
+
+        // if the "extends" node is just a string, we're extending a "free" pass
+        // thus we have to look into the root scope
+        auto passIt = std::find_if(_globalScope.passes.begin(), _globalScope.passes.end(), [&](PassPtr p)
+        {
+            return p->name() == passName;
+        });
+
+        if (passIt != _globalScope.passes.end())
+            pass = *passIt;
     }
     else if (extendNode.isObject())
     {
@@ -355,6 +364,7 @@ EffectParser::getPassToExtend(const Json::Value& extendNode, Scope& scope)
 
             options->loadAsynchronously(false);
             loader->queue(effectFilename, options);
+            // FIXME: handle errors
             auto effectComplete = loader->complete()->connect([&](file::Loader::Ptr l)
             {
                 auto effect = _assetLibrary->effect(effectFilename);
@@ -380,19 +390,11 @@ EffectParser::getPassToExtend(const Json::Value& extendNode, Scope& scope)
 void
 EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassPtr>& passes)
 {
-    // If the pass is just a string, we assume it's referencing an existing pass defined in an
-    // ancestor scope. Thus, we loop up to the root global scope to find the pass by its name.
     if (node.isString())
     {
-		auto passName = node.asString();
-		auto pass = findPassByName(passName, scope);
-
-		if (pass == nullptr)
-			throw std::runtime_error("Undefined pass with name '" + passName + "'.");
-
-        passes.push_back(pass);
+        passes.push_back(Pass::create(getPassToExtend(node), true));
     }
-    else
+    else if (node.isObject())
     {
         // If the pass is an actual pass object, we parse all its data, create the corresponding
         // Pass object and add it to the vector.
@@ -405,14 +407,10 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
         auto nameNode = node.get("name", 0);
 		auto isForward = true;
 
-        if (nameNode.isString())
-            passName = nameNode.asString();
-        // FIXME: throw otherwise
-
 		if (node.isMember("extends"))
 		{
 			auto extendNode = node.get("extends", 0);
-            render::Pass::Ptr pass = getPassToExtend(extendNode, scope);
+            render::Pass::Ptr pass = getPassToExtend(extendNode);
 
 			// if a pass "extends" another pass, then we have to init. its properties from that previously defined pass
             passScope.attributeBlock.bindingMap.bindings = pass->attributeBindings().bindings;
@@ -435,7 +433,12 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
             vertexShader = pass->program()->vertexShader();
             fragmentShader = pass->program()->fragmentShader();
             isForward = pass->isForward();
+            passName = pass->name();
 		}
+
+        if (nameNode.isString())
+            passName = nameNode.asString();
+        // FIXME: throw otherwise
 
         parseAttributes(node, passScope, passScope.attributeBlock);
         parseUniforms(node, passScope, passScope.uniformBlock);
@@ -1020,7 +1023,7 @@ EffectParser::parsePriority(const Json::Value&	node,
         }
 
         if (priority < 0.f)
-            throw;
+            throw std::runtime_error("Invalid priority value: " + std::to_string(priority) + ".");
 
         stateBlock.states.priority(priority);
     }
@@ -1656,27 +1659,4 @@ EffectParser::finalize()
 
     _loaderCompleteSlots.clear();
     _loaderErrorSlots.clear();
-}
-
-render::Pass::Ptr
-EffectParser::findPassByName(const std::string& passName, const Scope& scope)
-{
-	const Scope* searchScope = &scope;
-	Pass::Ptr pass = nullptr;
-
-	do
-	{
-		auto passIt = std::find_if(searchScope->passes.begin(), searchScope->passes.end(), [&](PassPtr p)
-		{
-			return p->name() == passName;
-		});
-
-		if (passIt != searchScope->passes.end())
-			pass = *passIt;
-		else
-			searchScope = searchScope->parent;
-	}
-	while (searchScope != nullptr && pass == nullptr);
-
-	return pass;
 }
