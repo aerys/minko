@@ -240,6 +240,11 @@ namespace minko
             std::shared_ptr<render::Pass>
             getPassToExtend(const Json::Value& extendNode);
 
+            std::shared_ptr<render::Pass>
+            findPassFromEffectFilename(const std::string& effectFilename,
+                                       const std::string& techniqueName,
+                                       const std::string& passName);
+
             void
             parsePass(const Json::Value& node, Scope& scope, std::vector<PassPtr>& passes);
 

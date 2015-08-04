@@ -34,6 +34,7 @@ namespace minko
         private:
             typedef std::shared_ptr<scene::Node>                NodePtr;
         
+            typedef std::shared_ptr<AbstractComponent>          AbstractComponentPtr;
             typedef std::shared_ptr<SceneManager>               SceneManagerPtr;
             typedef std::shared_ptr<Renderer>                   RendererPtr;
             typedef std::shared_ptr<MasterLodScheduler>         MasterLodSchedulerPtr;
@@ -45,16 +46,23 @@ namespace minko
 
             struct SurfaceInfo
             {
-                SurfacePtr  surface;
-                BoxPtr      box;
+                SurfacePtr                      surface;
+                BoxPtr                          box;
 
-                int         activeLod;
+                Signal<NodePtr, NodePtr>::Slot  layoutChangedSlot;
+                Signal<
+                    AbstractComponentPtr
+                >::Slot                         layoutMaskChangedSlot;
 
-                float       requiredPrecisionLevel;
+                int                             activeLod;
+
+                float                           requiredPrecisionLevel;
 
                 SurfaceInfo(SurfacePtr surface) :
                     surface(surface),
                     box(),
+                    layoutChangedSlot(),
+                    layoutMaskChangedSlot(),
                     activeLod(-1),
                     requiredPrecisionLevel(0)
                 {
@@ -73,11 +81,19 @@ namespace minko
                 int                                         maxAvailableLod;
                 int                                         fullPrecisionLod;
 
-                std::unordered_map<
+                const std::map<
+                    int,
+                    ProgressiveOrderedMeshLodInfo
+                >*                                          availableLods;
+
+                std::vector<ProgressiveOrderedMeshLodInfo>  lodToClosestValidLod;
+                std::vector<ProgressiveOrderedMeshLodInfo>  precisionLevelToClosestLod;
+
+                std::unordered_multimap<
                     NodePtr,
                     Signal<data::Store&, ProviderPtr, const data::Provider::PropertyName&>::Slot
                 >                                           modelToWorldMatrixChangedSlots;
-                std::unordered_map<SurfacePtr, SurfaceInfo> surfaceToSurfaceInfoMap;
+                std::vector<SurfaceInfo>                    surfaceInfoCollection;
 
                 POPGeometryResourceInfo() :
                     base(nullptr),
@@ -87,8 +103,11 @@ namespace minko
                     minAvailableLod(-1),
                     maxAvailableLod(-1),
                     fullPrecisionLod(-1),
+                    availableLods(nullptr),
+                    lodToClosestValidLod(),
+                    precisionLevelToClosestLod(),
                     modelToWorldMatrixChangedSlots(),
-                    surfaceToSurfaceInfoMap()
+                    surfaceInfoCollection()
                 {
                 }
             };
@@ -97,7 +116,7 @@ namespace minko
             SceneManagerPtr                                             _sceneManager;
             RendererPtr                                                 _renderer;
 
-            std::unordered_map<std::string, POPGeometryResourceInfo>    _popGeometryResources;
+            std::unordered_map<ProviderPtr, POPGeometryResourceInfo>    _popGeometryResources;
 
             math::vec3                                                  _eyePosition;
             float                                                       _fov;
@@ -164,6 +183,10 @@ namespace minko
             POPGeometryLodScheduler();
 
             void
+            layoutChanged(POPGeometryResourceInfo&  resource,
+                          SurfaceInfo&              surfaceInfo);
+
+            void
             activeLodChanged(POPGeometryResourceInfo&   resource,
                              SurfaceInfo&               surfaceInfo,
                              int                        previousLod,
@@ -191,6 +214,9 @@ namespace minko
             findClosestLodByPrecisionLevel(const POPGeometryResourceInfo&  resource,
                                            int                             precisionLevel,
                                            ProgressiveOrderedMeshLodInfo&  result) const;
+
+            void
+            updateClosestLods(POPGeometryResourceInfo& resource);
 
             float
             distanceFromEye(const POPGeometryResourceInfo&  resource,

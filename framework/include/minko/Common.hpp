@@ -193,12 +193,6 @@ namespace minko
         //struct BindingMap;
         //struct MacroBindingMap;
 
-        template<typename T>
-        using UniformArray = std::pair<uint, const T*>;
-
-        template<typename T>
-        using UniformArrayPtr = std::shared_ptr<UniformArray<T>>;
-
 		class LightMaskFilter;
 	}
 

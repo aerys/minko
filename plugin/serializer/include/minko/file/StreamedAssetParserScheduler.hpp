@@ -47,6 +47,7 @@ namespace minko
                 Signal<std::shared_ptr<LinkedAsset>, const Error&>::Slot						loaderErrorSlot;
                 Signal<std::shared_ptr<LinkedAsset>, const std::vector<unsigned char>&>::Slot	loaderCompleteSlot;
 
+                Signal<std::shared_ptr<AbstractStreamedAssetParser>, float>::Slot               parserBeforePriorityChangedSlot;
                 Signal<std::shared_ptr<AbstractStreamedAssetParser>, float>::Slot               parserPriorityChangedSlot;
                 Signal<std::shared_ptr<AbstractStreamedAssetParser>>::Slot                      parserLodRequestCompleteSlot;
                 Signal<std::shared_ptr<AbstractParser>>::Slot                                   parserCompleteSlot;
@@ -59,17 +60,46 @@ namespace minko
                 }
             };
 
+            struct ParserEntryPriorityComparator
+            {
+                inline
+                bool
+                operator()(ParserEntryPtr left, ParserEntryPtr right) const
+                {
+                    static const auto epsilon = 1e-3f;
+
+                    const auto leftPriority = left->parser->priority();
+                    const auto rightPriority = right->parser->priority();
+
+                    if (leftPriority > rightPriority)
+                        return true;
+
+                    if (rightPriority > leftPriority)
+                        return false;
+                    
+                    if (left < right)
+                        return true;
+
+                    if (right < left)
+                        return false;
+
+                    return false;
+                }
+            };
+
         private:
             std::shared_ptr<Options>    _options;
 
-            std::list<ParserEntryPtr>   _entries;
+            std::set<
+                ParserEntryPtr,
+                ParserEntryPriorityComparator
+            >                           _entries;
             std::list<ParserEntryPtr>   _activeEntries;
 
             int                         _maxNumActiveParsers;
             bool                        _useJobBasedParsing;
 
             bool                        _complete;
-            bool                        _sortingNeeded;
 
             Signal<Ptr>::Ptr            _active;
             Signal<Ptr>::Ptr            _inactive;
@@ -122,12 +152,6 @@ namespace minko
             StreamedAssetParserScheduler(std::shared_ptr<Options>   options,
                                          int                        maxNumActiveParsers,
                                          bool                       useJobBasedParsing);
-
-            void
-            sortingNeeded();
-
-            void
-            sortEntries();
 
             bool
             hasPendingRequest() const;

@@ -29,11 +29,13 @@ namespace minko
 	{
 		class ProgramSignature
 		{
-        private:
-            typedef int                                     MaskType;
+        public:
+            typedef std::uint64_t                           MaskType;
 
 		private:
-			uint				                    		_mask;
+            static const uint                               _maxNumMacros;
+
+			MaskType				                    	_mask;
             std::vector<Any>	                    		_values;
             std::vector<data::MacroBindingMap::MacroType>   _types;
             std::vector<Flyweight<std::string>>             _macros;
@@ -61,7 +63,7 @@ namespace minko
             updateProgram(Program& program) const;
 
             inline
-			uint
+			MaskType
 			mask() const
 			{
 				return _mask;

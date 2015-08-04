@@ -35,8 +35,6 @@ namespace minko
 {
 	namespace render
 	{
-        class DrawCallZSorter;
-
         class DrawCall
 		{
         public:
@@ -131,7 +129,8 @@ namespace minko
             ChangedSlot                         _worldToScreenMatrixPropertyRemovedSlot;
 
 		public:
-            DrawCall(std::shared_ptr<Pass>  pass,
+            DrawCall(uint					batchId,
+					 std::shared_ptr<Pass>  pass,
                      const EffectVariables& variables,
                      data::Store&           rootData,
                      data::Store&           rendererData,

@@ -30,7 +30,8 @@ using namespace minko::render;
 const unsigned int DrawCall::MAX_NUM_TEXTURES       = 8;
 const unsigned int DrawCall::MAX_NUM_VERTEXBUFFERS  = 8;
 
-DrawCall::DrawCall(std::shared_ptr<Pass>  pass,
+DrawCall::DrawCall(uint                   batchId,
+                   std::shared_ptr<Pass>  pass,
                    const EffectVariables& variables,
                    data::Store&           rootData,
                    data::Store&           rendererData,
@@ -66,6 +67,8 @@ DrawCall::DrawCall(std::shared_ptr<Pass>  pass,
     _modelToWorldMatrixPropertyRemovedSlot(nullptr),
     _worldToScreenMatrixPropertyRemovedSlot(nullptr)
 {
+    _batchIDs = { batchId };
+
     // For Z-sorting
     bindPositionalMembers();
 }
@@ -608,9 +611,9 @@ DrawCall::bindIndexBuffer()
 }
 
 data::ResolvedBinding*
-DrawCall::bindState(const std::string&        					             stateName,
-                    const std::unordered_map<std::string, data::Binding>&    bindings,
-                    const data::Store&                                       defaultValues)
+DrawCall::bindState(const std::string&        					            stateName,
+                    const std::unordered_map<std::string, data::Binding>&     bindings,
+                    const data::Store&                                        defaultValues)
 {
     auto binding = resolveBinding(
         stateName,

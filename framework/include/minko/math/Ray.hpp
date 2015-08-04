@@ -56,12 +56,26 @@ namespace minko
 				return _direction;
 			}
 
+            inline
+            void
+            direction(const vec3& direction)
+            {
+                _direction = direction;
+            }
+
 			inline
 			vec3&
 			origin()
 			{
 				return _origin;
 			}
+
+            inline
+            void
+            origin(const vec3& origin)
+            {
+                _origin = origin;
+            }
 
 		private:
 			Ray(const vec3& origin, const vec3& direction) :
