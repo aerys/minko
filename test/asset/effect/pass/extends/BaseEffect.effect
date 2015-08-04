@@ -1,4 +1,9 @@
 {
+    "name" : "base-effect",
+    "attributes" : {
+        "aPosition" : "geometry[${geometryUuid}].position1"
+    },
+    "defaultTechnique" : "base-technique",
     "techniques" : [{
         "name" : "base-technique",
 
@@ -7,10 +12,6 @@
 
             "macros" : {
                 "FOO" : { "binding" : "bar", "type" : "int", "default" : 42 }
-            },
-
-            "attributes" : {
-                "aPosition" : "geometry[${geometryUuid}].position"
             },
 
             "uniforms" : {
@@ -23,6 +24,31 @@
 
             "vertexShader" : "#pragma include \"../../dummy.glsl\"",
             "fragmentShader" : "#pragma include \"../../dummy.glsl\""
+        }]
+    },
+    {
+        "name" : "base-technique-2",
+        "passes" : [{
+           "name" : "base-pass-2",
+
+            "attributes" : {
+                "aPosition" : "geometry[${geometryUuid}].position2"
+            },
+
+            "macros" : {
+                "BAR" : { "binding" : "foo", "type" : "int", "default" : 24 }
+            },
+
+            "uniforms" : {
+                "uModelToWorldMatrix" : "modelToWorldMatrix"
+            },
+
+            "states" : {
+                "triangleCulling" : { "binding" : "material[${materialUuid}].triangleCulling", "default" : "back" }
+            },
+
+            "vertexShader" : "#pragma include \"../../dummy.glsl\"",
+            "fragmentShader" : "#pragma include \"../../dummy.glsl\"" 
         }]
     }]
 }

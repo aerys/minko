@@ -395,35 +395,41 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
 			auto extendNode = node.get("extends", 0);
             render::Pass::Ptr pass = getPassToExtend(extendNode, scope);
 
-			// if a pass "extends" another pass, then we have to merge its properties with the already existing ones
+			// If a pass "extends" another pass, then we have to merge its properties with the already existing ones
             passScope.attributeBlock.bindingMap.bindings.insert(pass->attributeBindings().bindings.begin(), pass->attributeBindings().bindings.end());
             passScope.uniformBlock.bindingMap.bindings.insert(pass->uniformBindings().bindings.begin(), pass->uniformBindings().bindings.end());
-            passScope.stateBlock.bindingMap.bindings.insert(pass->stateBindings().bindings.begin(), pass->stateBindings().bindings.end());
             passScope.macroBlock.bindingMap.bindings.insert(pass->macroBindings().bindings.begin(), pass->macroBindings().bindings.end());
             passScope.macroBlock.bindingMap.types.insert(pass->macroBindings().types.begin(), pass->macroBindings().types.end());
+            passScope.stateBlock.bindingMap.bindings.insert(pass->stateBindings().bindings.begin(), pass->stateBindings().bindings.end());
 
-            if (passScope.attributeBlock.bindingMap.defaultValues.providers().size() > 0)
+            if (pass->attributeBindings().defaultValues.providers().size() > 0)
             {
-                for (auto provider : passScope.attributeBlock.bindingMap.defaultValues.providers())
-                    pass->attributeBindings().defaultValues.addProvider(provider);
+                if (passScope.attributeBlock.bindingMap.defaultValues.providers().size() == 0)
+                    passScope.attributeBlock.bindingMap.defaultValues = data::Store(pass->attributeBindings().defaultValues, true);
+
+                for (auto provider : pass->attributeBindings().defaultValues.providers())
+                    passScope.attributeBlock.bindingMap.defaultValues.providers().front()->merge(provider);
             }
             
-            if (passScope.uniformBlock.bindingMap.defaultValues.providers().size() > 0)
+            if (pass->uniformBindings().defaultValues.providers().size() > 0)
             {
-                for (auto provider : passScope.uniformBlock.bindingMap.defaultValues.providers())
-                    pass->uniformBindings().defaultValues.addProvider(provider);
+                if (passScope.uniformBlock.bindingMap.defaultValues.providers().size() == 0)
+                    passScope.uniformBlock.bindingMap.defaultValues = data::Store(pass->uniformBindings().defaultValues, true);
+
+                for (auto provider : pass->uniformBindings().defaultValues.providers())
+                    passScope.uniformBlock.bindingMap.defaultValues.providers().front()->merge(provider);
             }
 
-            if (passScope.macroBlock.bindingMap.defaultValues.providers().size() > 0)
+            if (pass->macroBindings().defaultValues.providers().size() > 0)
             {
-                for (auto provider : passScope.macroBlock.bindingMap.defaultValues.providers())
-                    pass->macroBindings().defaultValues.addProvider(provider);
+                if (passScope.macroBlock.bindingMap.defaultValues.providers().size() == 0)
+                    passScope.macroBlock.bindingMap.defaultValues = data::Store(pass->macroBindings().defaultValues, true);
+
+                for (auto provider : pass->macroBindings().defaultValues.providers())
+                    passScope.macroBlock.bindingMap.defaultValues.providers().front()->merge(provider);
             }
 
-            passScope.attributeBlock.bindingMap.defaultValues = data::Store(pass->attributeBindings().defaultValues, true);
-            passScope.uniformBlock.bindingMap.defaultValues = data::Store(pass->uniformBindings().defaultValues, true);
-            passScope.macroBlock.bindingMap.defaultValues = data::Store(pass->macroBindings().defaultValues, true);
-            passScope.stateBlock.bindingMap.defaultValues.providers().front()->merge(passScope.stateBlock.states.data());
+            passScope.stateBlock.bindingMap.defaultValues.providers().front()->merge(pass->stateBindings().defaultValues.providers().front());
 
 			vertexShader = pass->program()->vertexShader();
 			fragmentShader = pass->program()->fragmentShader();

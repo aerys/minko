@@ -1,0 +1,65 @@
+{
+    "attributes" : {
+        "aPosition" : "geometry[${geometryUuid}].position5"
+    },
+
+    "macros" : {
+        "TEST" : { "binding" : "testouille1", "type" : "int", "default" : 4242 }
+    },
+
+    "techniques" : [{
+        "name" : "test-technique-1",
+        "passes" : [{
+            "name" : "test-pass-1",
+            "macros" : {
+                "TEST" : { "binding" : "testouille2", "type" : "int", "default" : 12 }
+            },
+
+            "attributes" : {
+                "aUV" : "geometry[${geometryUuid}].uv"
+            },
+
+            "uniforms" : {
+                "uUVOffset" : "material[${materialUuid}].uvOffset"
+            },
+
+            "states" : {
+                "zSorted" : { "binding" : "material[${materialUuid}].zSorted" }
+            },
+
+            "extends" : {
+                "effect" : "ExtendedPassFromEffect.effect",
+                "technique" : "extended-base-technique",
+                "pass" : "extended-base-pass"
+            }
+        }]
+    },
+    {
+        "name" : "test-technique-2",
+        "passes" : 
+        [{
+            "name" : "test-pass-2",
+            "macros" : {
+                "TESTOUILLE" : { "binding" : "testouille", "type" : "int", "default" : 12 }
+            },
+
+            "attributes" : {
+                "aUV" : "geometry[${geometryUuid}].uv"
+            },
+
+            "uniforms" : {
+                "uUVOffset" : "material[${materialUuid}].uvOffset"
+            },
+
+            "states" : {
+                "zSorted" : { "binding" : "material[${materialUuid}].zSorted" }
+            },
+
+            "extends" : {
+                "effect" : "ExtendedPassFromEffect.effect",
+                "technique" : "extended-base-technique-2",
+                "pass" : "extended-base-pass-2"
+            }
+        }]
+    }]
+}
