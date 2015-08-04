@@ -475,7 +475,7 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
 
 			vertexShader = pass->program()->vertexShader();
 			fragmentShader = pass->program()->fragmentShader();
-			isPostProcessing = pass->isPostProcessing();
+		    isForward = pass->isForward();
 		}
 
         parseAttributes(node, passScope, passScope.attributeBlock);
