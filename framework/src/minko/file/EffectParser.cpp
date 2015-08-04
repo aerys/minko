@@ -234,6 +234,44 @@ EffectParser::parseConfiguration(const Json::Value& node)
 }
 
 void
+EffectParser::fixMissingPassPriorities(std::vector<render::Pass::Ptr>& passes)
+{
+    int numPasses = passes.size();
+
+    if (numPasses == 1 && passes[0]->states().priority() == -1.f)
+    {
+        passes[0]->states().priority(States::DEFAULT_PRIORITY);
+    }
+    else
+    {
+        for (int i = 0; i < numPasses; ++i)
+        {
+            auto pass = passes[i];
+
+            if (pass->stateBindings().defaultValues.get<float>("priority") == -1.f)
+            {
+                int nextPassWithPriority = i + 1;
+                while (nextPassWithPriority < numPasses
+                       && passes[nextPassWithPriority]->states().priority() == -1.f)
+                {
+                    ++nextPassWithPriority;
+                }
+
+                if (nextPassWithPriority >= numPasses)
+                    pass->states().priority(States::DEFAULT_PRIORITY + (float)(numPasses - i));
+                else
+                {
+                    pass->states().priority(
+                        (float)(nextPassWithPriority - i)
+                        + passes[nextPassWithPriority]->states().priority()
+                    );
+                }
+            }
+        }
+    }
+}
+
+void
 EffectParser::parseTechniques(const Json::Value& node, Scope& scope, Techniques& techniques)
 {
     auto techniquesNode = node.get("techniques", 0);
@@ -259,6 +297,8 @@ EffectParser::parseTechniques(const Json::Value& node, Scope& scope, Techniques&
             parseMacros(techniqueNode, techniqueScope, techniqueScope.macroBlock);
             parseStates(techniqueNode, techniqueScope, techniqueScope.stateBlock);
             parsePasses(techniqueNode, techniqueScope, techniques[techniqueName]);
+
+            fixMissingPassPriorities(techniques[techniqueName]);
 
             if (firstTechnique)
             {
@@ -954,7 +994,10 @@ EffectParser::parseStates(const Json::Value& node, const Scope& scope, StateBloc
 }
 
 void
-EffectParser::parseState(const Json::Value& node, const Scope& scope, StateBlock& stateBlock, const std::string& stateProperty)
+EffectParser::parseState(const Json::Value& node,
+                         const Scope&       scope,
+                         StateBlock&        stateBlock,
+                         const std::string& stateProperty)
 {
     if (stateProperty == States::PROPERTY_PRIORITY)
         parsePriority(node, scope, stateBlock);
@@ -1001,17 +1044,24 @@ EffectParser::parsePriority(const Json::Value&	node,
 {
     if (!node.isNull())
     {
+        float priority = 0.f;
+
         if (node.isInt())
-            stateBlock.states.priority((float)node.asInt());
+            priority = (float)node.asInt();
         else if (node.isDouble())
-            stateBlock.states.priority((float)node.asDouble());
+            priority = (float)node.asDouble();
         else if (node.isString())
-            stateBlock.states.priority(getPriorityValue(node.asString()));
+            priority = getPriorityValue(node.asString());
         else if (node.isArray())
         {
             if (node[0].isString() && node[1].isDouble())
-                stateBlock.states.priority(getPriorityValue(node[0].asString()) + (float)node[1].asDouble());
+                priority = getPriorityValue(node[0].asString()) + (float)node[1].asDouble();
         }
+
+        if (priority < 0.f)
+            throw;
+
+        stateBlock.states.priority(priority);
     }
 }
 
