@@ -1,0 +1,10 @@
+{
+    "states" : {
+        "blendingSource" : "one_minus_src_alpha"
+    },
+
+    "techniques" : [{ "passes" : [{
+      "vertexShader" : "#pragma include \"../../../dummy.glsl\"",
+      "fragmentShader" : "#pragma include \"../../../dummy.glsl\""
+  }] }]
+}

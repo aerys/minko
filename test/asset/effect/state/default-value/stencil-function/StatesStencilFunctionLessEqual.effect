@@ -1,0 +1,10 @@
+{
+    "states" : {
+        "stencilFunction" : "less_equal"
+    },
+
+    "techniques" : [{ "passes" : [{
+      "vertexShader" : "#pragma include \"../../../dummy.glsl\"",
+      "fragmentShader" : "#pragma include \"../../../dummy.glsl\""
+  }] }]
+}

@@ -2408,9 +2408,8 @@ TEST_F(EffectParserTest, ExtendedPassFromEffectWithExtendedPass)
     ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().bindings.size(), 2);
     ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().types.size(), 2);
     ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.providers().size(), 1);
-    ASSERT_EQ(fx->techniques().at("default")[0]->macroBindings().defaultValues.providers().front()->values().size(), 2);
 
-    for (auto i = 0; i < macroNames.size(); i++)
+    for (size_t i = 0; i < macroNames.size(); i++)
     {
         ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().defaultValues.hasProperty(macroNames[i]));
         ASSERT_TRUE(fx->techniques().at("default")[0]->macroBindings().types.count(macroNames[i]) != 0);
@@ -2425,7 +2424,7 @@ TEST_F(EffectParserTest, ExtendedPassFromEffectWithExtendedPass)
     auto attributeNames = std::vector<std::string>({ "aPosition", "aNormal", "aUV" });
     auto attributePropertyNames = std::vector<std::string>({ "geometry[${geometryUuid}].position5", "geometry[${geometryUuid}].normal", "geometry[${geometryUuid}].uv" });
 
-    for (auto i = 0; i < attributeNames.size(); i++)
+    for (size_t i = 0; i < attributeNames.size(); i++)
     {
         ASSERT_TRUE(fx->techniques().at("default")[0]->attributeBindings().bindings.count(attributeNames[i]) != 0);
         ASSERT_EQ(fx->techniques().at("default")[0]->attributeBindings().bindings[attributeNames[i]].propertyName, attributePropertyNames[i]);
@@ -2436,7 +2435,7 @@ TEST_F(EffectParserTest, ExtendedPassFromEffectWithExtendedPass)
     auto uniformNames = std::vector<std::string>({ "uDiffuseColor", "uModelToWorldMatrix", "uUVOffset" });
     auto uniformPropertyNames = std::vector<std::string>({ "material[${materialUuid}].diffuseColor", "modelToWorldMatrix", "material[${materialUuid}].uvOffset" });
 
-    for (auto i = 0; i < uniformNames.size(); i++)
+    for (size_t i = 0; i < uniformNames.size(); i++)
     {
         ASSERT_TRUE(fx->techniques().at("default")[0]->uniformBindings().bindings.count(uniformNames[i]) != 0);
         ASSERT_EQ(fx->techniques().at("default")[0]->uniformBindings().bindings[uniformNames[i]].propertyName, uniformPropertyNames[i]);
@@ -2447,7 +2446,7 @@ TEST_F(EffectParserTest, ExtendedPassFromEffectWithExtendedPass)
     auto statesNames = std::vector<std::string>({ "priority", "triangleCulling", "zSorted" });
     auto statesPropertyNames = std::vector<std::string>({ "material[${materialUuid}].priority", "material[${materialUuid}].triangleCulling", "material[${materialUuid}].zSorted" });
     
-    for (auto i = 0; i < statesNames.size(); i++)
+    for (size_t i = 0; i < statesNames.size(); i++)
     {
         ASSERT_TRUE(fx->techniques().at("default")[0]->stateBindings().defaultValues.hasProperty(statesNames[i]));
         ASSERT_TRUE(fx->techniques().at("default")[0]->stateBindings().bindings.count(statesNames[i]) != 0);
