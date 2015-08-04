@@ -218,6 +218,11 @@ A pass can also extend a base pass from a specific technique of another effect:
 }
 ```
 
+*Note*: It's important to notice that if you define the same property in your 2 
+effect files, the value that will stay is the one defined into the effect file 
+in which you extend the pass, not the one from the effect file of the extended 
+pass, regardless of the scope.
+
 ## Bindings
 
 ### Definition
