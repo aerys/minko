@@ -85,7 +85,7 @@ bullet::PhysicsWorld::initialize()
 
 void
 bullet::PhysicsWorld::targetAdded(Node::Ptr target)
-{
+{    
     setSceneManager(target->root()->component<SceneManager>());
 }
 
@@ -112,12 +112,12 @@ bullet::PhysicsWorld::setSceneManager(std::shared_ptr<SceneManager> sceneManager
 {
     if (sceneManager != _sceneManager || (!_componentAddedOrRemovedSlot && !_addedOrRemovedSlot))
     {
-        auto componentCallback = [&](Node::Ptr node, Node::Ptr target, AbstractComponent::Ptr cmp)
+        auto componentCallback = [&](Node::Ptr target, Node::Ptr node, AbstractComponent::Ptr cmp)
         {
             setSceneManager(target->root()->component<SceneManager>());
         };
 
-        auto nodeCallback = [&](Node::Ptr node, Node::Ptr target, Node::Ptr ancestor)
+        auto nodeCallback = [&](Node::Ptr target, Node::Ptr node, Node::Ptr ancestor)
         {
             setSceneManager(target->root()->component<SceneManager>());
         };
