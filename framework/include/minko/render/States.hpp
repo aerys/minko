@@ -102,6 +102,8 @@ namespace minko
 
             States(const States& states);
 
+            States(std::shared_ptr<data::Provider> data);
+
             void
             resetDefaultValues();
 
