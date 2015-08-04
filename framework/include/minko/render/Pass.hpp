@@ -79,8 +79,7 @@ namespace minko
 				   const data::BindingMap&			attributeBindings,
 				   const data::BindingMap&			uniformBindings,
 				   const data::BindingMap&			stateBindings,
-				   const data::MacroBindingMap&		macroBindings,
-                   const States&       				states)
+				   const data::MacroBindingMap&		macroBindings)
 			{
 				return std::shared_ptr<Pass>(new Pass(
 					name,
@@ -89,14 +88,13 @@ namespace minko
 					attributeBindings,
 					uniformBindings,
 					stateBindings,
-					macroBindings,
-                    states
+					macroBindings
 				));
 			}
 
 			inline static
 			Ptr
-			create(Ptr pass, float, bool deepCopy = false)
+			create(Ptr pass, bool deepCopy = false)
 			{
 				auto p = create(
 					pass->_name,
@@ -105,8 +103,7 @@ namespace minko
 					pass->_attributeBindings,
 					pass->_uniformBindings,
 					pass->_stateBindings,
-					pass->_macroBindings,
-					deepCopy ? States(pass->_states) : pass->_states
+					pass->_macroBindings
 				);
 
                 for (auto& signatureProgram : pass->_signatureToProgram)
@@ -252,8 +249,7 @@ namespace minko
 				 const data::BindingMap&			attributeBindings,
 				 const data::BindingMap&			uniformBindings,
 				 const data::BindingMap&			stateBindings,
-				 const data::MacroBindingMap&		macroBindings,
-                 const States&                      states);
+				 const data::MacroBindingMap&		macroBindings);
 
 			template <typename... T>
 			static
