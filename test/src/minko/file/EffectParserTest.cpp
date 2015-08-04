@@ -2397,6 +2397,19 @@ TEST_F(EffectParserTest, AutoFixedPassPriorities)
     ASSERT_NE(fx, nullptr);
     ASSERT_EQ(fx->techniques().size(), 1);
     ASSERT_EQ(fx->techniques().at("default").size(), 3);
-    ASSERT_GT(fx->techniques().at("default")[0]->states().priority(), fx->techniques().at("default")[1]->states().priority());
-    ASSERT_GT(fx->techniques().at("default")[1]->states().priority(), fx->techniques().at("default")[2]->states().priority());
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().priority(), 2002);
+    ASSERT_EQ(fx->techniques().at("default")[1]->states().priority(), 2001);
+    ASSERT_EQ(fx->techniques().at("default")[2]->states().priority(), 2000);
+}
+
+TEST_F(EffectParserTest, AutoFixedExtendedPassPriorities)
+{
+    auto fx = MinkoTests::loadEffect("effect/pass/extends/MultipleExtendedPasses.effect");
+
+    ASSERT_NE(fx, nullptr);
+    ASSERT_EQ(fx->techniques().size(), 1);
+    ASSERT_EQ(fx->techniques().at("default").size(), 3);
+    ASSERT_EQ(fx->techniques().at("default")[0]->states().priority(), 2002);
+    ASSERT_EQ(fx->techniques().at("default")[1]->states().priority(), 2001);
+    ASSERT_EQ(fx->techniques().at("default")[2]->states().priority(), 2000);
 }
