@@ -38,8 +38,3 @@ function minko.plugin.fx:enable()
 			path.join(minko.plugin.path("fx"), "asset")
 		}
 end
-
-newoption {
-	trigger		= "with-fx",
-	description	= "Enable the Minko FX plugin."
-}

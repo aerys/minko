@@ -1,4 +1,4 @@
-![logo](http://minko.io/wp-content/uploads/2014/03/minko_by_aerys_noir_gris.png)
+![logo](http://i.stack.imgur.com/gLloD.png)
 
 Minko
 =====

@@ -404,7 +404,7 @@ HTTPProtocol::fileExists(const std::string& filename)
 
     return (status >= 200 && status < 300);
 #else
-    return HTTPRequest::fileExists(filename, username, password, additionalHeaders);
+    return HTTPRequest::fileExists(filename, username, password, additionalHeaders, false);
 #endif
 }
 

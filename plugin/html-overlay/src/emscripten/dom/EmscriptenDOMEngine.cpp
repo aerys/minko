@@ -82,27 +82,35 @@ EmscriptenDOMEngine::initialize(AbstractCanvas::Ptr canvas, SceneManager::Ptr sc
 void
 EmscriptenDOMEngine::loadScript(std::string filename)
 {
+    auto path = "asset/" + filename;
     auto options = _sceneManager->assets()->loader()->options()->clone();
+    auto loader = file::Loader::create();
 
     options
     	->loadAsynchronously(false)
     	->storeDataIfNotParsed(false);
 
-    auto loader = file::Loader::create();
+    options->protocolFunction([=](const std::string&) -> std::shared_ptr<minko::file::AbstractProtocol>
+    {
+        auto defaultProtocol = options->getProtocol("http");
+
+        defaultProtocol->options(options->clone());
+
+        return defaultProtocol;
+    });
 
     loader->options(options);
 
     auto loaderComplete = loader->complete()->connect([=](file::Loader::Ptr loaderThis)
     {
-    	const auto& data = loaderThis->files().at(filename)->data();
-
-    	const auto eval = std::string(data.begin(), data.end());
+		const auto& data = loaderThis->files().at(path)->data();
+		const auto eval = std::string(data.begin(), data.end());
 
 		emscripten_run_script(eval.c_str());
-    });
+	});
 
 	loader
-		->queue(filename)
+		->queue(path)
 		->load();
 }
 

@@ -32,8 +32,3 @@ minko.plugin.angle.enable = function()
 			minko.action.copy(minko.plugin.path("angle") .. "/lib/win/ANGLE/lib/*.dll")
 		}
 end
-
-newoption {
-	trigger			= "with-angle",
-	description		= "Enable the ANGLE plugin to use the DirectX backend provided by the Google ANGLE project."
-}

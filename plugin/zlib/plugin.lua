@@ -17,7 +17,7 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]--
 
--- angle plugin
+-- zlib plugin
 minko.plugin.zlib = {}
 
 function minko.plugin.zlib:enable()
@@ -25,8 +25,3 @@ function minko.plugin.zlib:enable()
 	includedirs { minko.plugin.path("zlib") .. "/lib/zlib" }
 	defines { "MINKO_PLUGIN_ZLIB" }
 end
-
-newoption {
-	trigger			= "with-zlib",
-	description	= "Enable the zlib plugin to use the DirectX backend provided by the Google ANGLE project."
-}
