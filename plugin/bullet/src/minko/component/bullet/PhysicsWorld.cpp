@@ -540,6 +540,32 @@ bullet::PhysicsWorld::setColliderAngularVelocity(Collider::Ptr collider, const m
     rigidBody->setAngularVelocity(math::convert(value));
 }
 
+math::vec3
+bullet::PhysicsWorld::getColliderGravity(Collider::ConstPtr collider) const
+{
+    auto foundColliderIt = _colliderMap.find(std::const_pointer_cast<Collider>(collider));
+    
+    if (foundColliderIt == _colliderMap.end())
+        return math::vec3();
+
+    auto rigidBody = foundColliderIt->second->rigidBody();
+    auto vec = rigidBody->getGravity();
+    
+    return math::vec3(vec.x(), vec.y(), vec.z());
+}
+
+void
+bullet::PhysicsWorld::setColliderGravity(Collider::Ptr collider, const math::vec3& value)
+{
+    auto foundColliderIt = _colliderMap.find(collider);
+
+    if (foundColliderIt == _colliderMap.end())
+        return;
+
+    auto rigidBody = foundColliderIt->second->rigidBody();
+    rigidBody->setGravity(math::convert(value));
+}
+
 void
 bullet::PhysicsWorld::applyImpulse(Collider::Ptr        collider,
                                    const math::vec3&    impulse,
@@ -558,4 +584,28 @@ bullet::PhysicsWorld::applyImpulse(Collider::Ptr        collider,
         : math::convert(impulse);
 
     rigidBody->applyImpulse(impulseVector, math::convert(relPosition));
+}
+
+bool
+bullet::PhysicsWorld::raycast(const math::vec3& origin, const math::vec3& direction, float maxDist, math::vec3& hit) const
+{
+    btVector3 btFrom(origin.x, origin.y, origin.z);
+    btVector3 btTo(origin.x + direction.x * maxDist, origin.y + direction.y * maxDist, origin.z + direction.z * maxDist);
+
+    btCollisionWorld::ClosestRayResultCallback res(btFrom, btTo);
+
+    _bulletDynamicsWorld->rayTest(btFrom, btTo, res);
+
+    if(res.hasHit())
+    {
+        auto vec = res.m_hitPointWorld;
+        
+        hit.x = vec.x();
+        hit.y = vec.y();
+        hit.z = vec.z();
+
+        return true;
+    }
+
+    return false;
 }

@@ -295,6 +295,47 @@ bullet::Collider::angularVelocity(const math::vec3& value)
     return std::static_pointer_cast<Collider>(shared_from_this());
 }
 
+math::vec3
+bullet::Collider::gravity() const
+{
+    return _physicsWorld
+        ? _physicsWorld->getColliderGravity(
+            std::static_pointer_cast<const Collider>(shared_from_this())
+        )
+        : math::vec3();
+}
+
+bullet::Collider::Ptr
+bullet::Collider::gravity(const math::vec3& value)
+{
+    if (_physicsWorld)
+        _physicsWorld->setColliderGravity(
+            std::static_pointer_cast<Collider>(shared_from_this()),
+            value
+        );
+
+    return std::static_pointer_cast<Collider>(shared_from_this());
+}
+
+bool
+bullet::Collider::raycast(const math::vec3& direction, float maxDist, float* distance)
+{
+    if (_physicsWorld)
+    {
+        math::vec3 hit;
+        
+        auto pos = math::vec3(_graphicsTransform->modelToWorldMatrix()[3]);
+
+        if (_physicsWorld->raycast(pos, direction, maxDist, hit));
+        {   
+            distance[0] = math::distance(pos, hit);
+            return true;
+        }
+    }
+
+    return false;
+}
+
 bullet::Collider::Ptr
 bullet::Collider::applyImpulse(const math::vec3& impulse, const math::vec3& relPosition)
 {
