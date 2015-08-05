@@ -27,7 +27,7 @@ function minko.plugin.offscreen:enable()
 	minko.plugin.links { "offscreen" }
 	links { "OSMesa" }
 
-	removelinks { 
+	removelinks {
 		"GL",
 		"OpenGL32",
 		"glew32"
@@ -47,8 +47,3 @@ function minko.plugin.offscreen:enable()
 			minko.action.copy(minko.plugin.path("offscreen") .. "/lib/osmesa/windows/lib/*.dll")
 		}
 end
-
-newoption {
-	trigger			= "with-offscreen",
-	description		= "Enable the Minko Offscreen plugin."
-}

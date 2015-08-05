@@ -102,7 +102,8 @@ Note that because we will likely need to move and orient our camera, we also add
 Because all of our camera-related properties are now handled by data binding, we also have to update our code to comment (or simply remove) any corresponding `Effect::setUniform()`:
 
 ```cpp
-//myCustomEffect->setUniform("uViewMatrix", Matrix4x4::create()); //myCustomEffect->setUniform("uProjectionMatrix", Matrix4x4::create()->perspective((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT)); 
+//myCustomEffect->setUniform("uViewMatrix", Matrix4x4::create());
+//myCustomEffect->setUniform("uProjectionMatrix", Matrix4x4::create()->perspective((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT)); 
 ```
 
 

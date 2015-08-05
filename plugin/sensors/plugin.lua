@@ -23,7 +23,7 @@ minko.plugin.sensors = {}
 function minko.plugin.sensors:enable()
 
 	defines { "MINKO_PLUGIN_SENSORS" }
-	
+
 	minko.plugin.links { "sensors" }
 	minko.plugin.enable { "sdl" }
 
@@ -36,8 +36,3 @@ function minko.plugin.sensors:enable()
 			"CoreMotion.framework" -- To receive data from mobile device sensors
 		}
 end
-
-newoption {
-	trigger		= "with-sensors",
-	description	= "Enable the Minko sensors plugin."
-}

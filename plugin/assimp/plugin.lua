@@ -27,8 +27,3 @@ function minko.plugin.assimp:enable()
 	includedirs { minko.plugin.path("assimp") .. "/include" }
 	defines { "MINKO_PLUGIN_ASSIMP" }
 end
-
-newoption {
-	trigger = "with-assimp",
-	description = "Enable the Minko ASSIMP plugin."
-}

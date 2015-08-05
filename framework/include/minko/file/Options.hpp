@@ -78,6 +78,7 @@ namespace minko
             bool                                                _isRectangleTexture;
             bool                                                _generateSmoothNormals;
             float                                               _normalMaxSmoothingAngle;
+            bool                                                _includeAnimation;
 			bool										        _startAnimation;
 			bool										        _loadAsynchronously;
             bool                                                _disposeIndexBufferAfterLoading;
@@ -209,6 +210,22 @@ namespace minko
 			generateMipmaps(bool generateMipmaps)
 			{
 				_generateMipMaps = generateMipmaps;
+
+				return shared_from_this();
+			}
+
+			inline
+			bool
+			includeAnimation() const
+			{
+				return _includeAnimation;
+			}
+
+			inline
+			Ptr
+			includeAnimation(bool value)
+			{
+				_includeAnimation = value;
 
 				return shared_from_this();
 			}
