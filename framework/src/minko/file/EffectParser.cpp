@@ -1060,8 +1060,8 @@ EffectParser::parsePriority(const Json::Value&	node,
                 priority = getPriorityValue(node[0].asString()) + (float)node[1].asDouble();
         }
 
-        if (priority < 0.f)
-            throw;
+        /*if (priority < 0.f)
+            throw;*/
 
         stateBlock.states.priority(priority);
     }
