@@ -61,6 +61,8 @@ const std::string EffectParser::EXTRA_PROPERTY_STENCIL_FAIL_OP = "fail";
 const std::string EffectParser::EXTRA_PROPERTY_STENCIL_Z_FAIL_OP = "zfail";
 const std::string EffectParser::EXTRA_PROPERTY_STENCIL_Z_PASS_OP = "zpass";
 
+const float UNSET_PRIORIY_VALUE = -std::numeric_limits<float>::max();
+
 std::unordered_map<std::string, unsigned int> EffectParser::_blendingSourceMap = {
     { "zero", static_cast<uint>(render::Blending::Source::ZERO) },
     { "one", static_cast<uint>(render::Blending::Source::ONE) },
@@ -133,7 +135,7 @@ EffectParser::getPriorityValue(const std::string& name)
 
 	return foundPriorityIt != _priorityMap.end()
 		? foundPriorityIt->second
-		: _priorityMap["opaque"];
+		: _priorityMap.at("opaque");
 }
 
 EffectParser::EffectParser() :
@@ -239,7 +241,7 @@ EffectParser::fixMissingPassPriorities(std::vector<render::Pass::Ptr>& passes)
 {
     int numPasses = passes.size();
 
-    if (numPasses == 1 && passes[0]->states().priority() == -1.f)
+    if (numPasses == 1 && passes[0]->states().priority() == UNSET_PRIORITY_VALUE)
     {
         passes[0]->states().priority(States::DEFAULT_PRIORITY);
     }
@@ -249,11 +251,11 @@ EffectParser::fixMissingPassPriorities(std::vector<render::Pass::Ptr>& passes)
         {
             auto pass = passes[i];
 
-            if (pass->stateBindings().defaultValues.get<float>("priority") == -1.f)
+            if (pass->states().priority() == UNSET_PRIORITY_VALUE)
             {
                 int nextPassWithPriority = i + 1;
                 while (nextPassWithPriority < numPasses
-                       && passes[nextPassWithPriority]->states().priority() == -1.f)
+                       && passes[nextPassWithPriority]->states().priority() == UNSET_PRIORITY_VALUE)
                 {
                     ++nextPassWithPriority;
                 }
@@ -276,7 +278,6 @@ void
 EffectParser::parseTechniques(const Json::Value& node, Scope& scope, Techniques& techniques)
 {
     auto techniquesNode = node.get("techniques", 0);
-    auto firstTechnique = true;
 
     if (techniquesNode.isArray())
     {
@@ -289,7 +290,9 @@ EffectParser::parseTechniques(const Json::Value& node, Scope& scope, Techniques&
             auto techniqueNameNode = techniqueNode.get("name", 0);
             auto techniqueName = techniqueNameNode.isString()
                 ? techniqueNameNode.asString()
-                : firstTechnique ? "default" : "technique" + std::to_string(techniques.size());
+                : techniquesNode.size() == 1
+                    ? "default"
+                    : _effectName + "-technique-" + std::to_string(techniques.size());
 
             Scope techniqueScope(scope, scope);
 
@@ -300,12 +303,6 @@ EffectParser::parseTechniques(const Json::Value& node, Scope& scope, Techniques&
             parsePasses(techniqueNode, techniqueScope, techniques[techniqueName]);
 
             fixMissingPassPriorities(techniques[techniqueName]);
-
-            if (firstTechnique)
-            {
-                firstTechnique = false;
-                techniques["default"] = techniques[techniqueName];
-            }
         }
     }
     // FIXME: throw otherwise
@@ -468,8 +465,7 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
             passScope.attributeBlock.bindingMap,
             passScope.uniformBlock.bindingMap,
             passScope.stateBlock.bindingMap,
-            passScope.macroBlock.bindingMap,
-            passScope.stateBlock.states
+            passScope.macroBlock.bindingMap
         ));
     }
 }
@@ -1022,9 +1018,6 @@ EffectParser::parsePriority(const Json::Value&	node,
                 priority = getPriorityValue(node[0].asString()) + (float)node[1].asDouble();
         }
 
-        if (priority < 0.f)
-            throw std::runtime_error("Invalid priority value: " + std::to_string(priority) + ".");
-
         stateBlock.states.priority(priority);
     }
 }
@@ -1038,11 +1031,11 @@ EffectParser::parseBlendingMode(const Json::Value&	node,
     {
         auto blendingSrcString = node[0].asString();
         if (_blendingSourceMap.count(blendingSrcString))
-            stateBlock.states.blendingSourceFactor(static_cast<render::Blending::Source>(_blendingSourceMap[blendingSrcString]));
+            stateBlock.states.blendingSourceFactor(static_cast<render::Blending::Source>(_blendingSourceMap.at(blendingSrcString)));
 
         auto blendingDstString = node[1].asString();
         if (_blendingDestinationMap.count(blendingDstString))
-            stateBlock.states.blendingDestinationFactor(static_cast<render::Blending::Destination>(_blendingDestinationMap[blendingDstString]));
+            stateBlock.states.blendingDestinationFactor(static_cast<render::Blending::Destination>(_blendingDestinationMap.at(blendingDstString)));
     }
     else if (node.isString())
     {
@@ -1050,7 +1043,7 @@ EffectParser::parseBlendingMode(const Json::Value&	node,
 
         if (_blendingModeMap.count(blendingModeString))
         {
-            auto blendingMode = _blendingModeMap[blendingModeString];
+            auto blendingMode = _blendingModeMap.at(blendingModeString);
 
             stateBlock.states.blendingSourceFactor(static_cast<render::Blending::Source>(blendingMode & 0x00ff));
             stateBlock.states.blendingDestinationFactor(static_cast<render::Blending::Destination>(blendingMode & 0xff00));
@@ -1065,7 +1058,7 @@ EffectParser::parseBlendingSource(const Json::Value&    node,
 {
     if (node.isString())
     {
-        auto blendingSourceString = _blendingSourceMap[node.asString()];
+        auto blendingSourceString = _blendingSourceMap.at(node.asString());
 
         stateBlock.states.blendingSourceFactor(static_cast<render::Blending::Source>(blendingSourceString));
     }
@@ -1078,7 +1071,7 @@ EffectParser::parseBlendingDestination(const Json::Value&   node,
 {
     if (node.isString())
     {
-        auto blendingDestination = _blendingDestinationMap[node.asString()];
+        auto blendingDestination = _blendingDestinationMap.at(node.asString());
 
         stateBlock.states.blendingDestinationFactor(static_cast<render::Blending::Destination>(blendingDestination));
     }
@@ -1122,7 +1115,7 @@ EffectParser::parseDepthFunction(const Json::Value&	node,
         auto exist = _compareFuncMap.find(compareModeString) != _compareFuncMap.end();
 
         if (exist)
-            stateBlock.states.depthFunction(_compareFuncMap[compareModeString]);
+            stateBlock.states.depthFunction(_compareFuncMap.at(compareModeString));
     }
 }
 
@@ -1137,7 +1130,7 @@ EffectParser::parseTriangleCulling(const Json::Value&   node,
         auto exist = _triangleCullingMap.find(triangleCullingString) != _triangleCullingMap.end();
 
         if (exist)
-            stateBlock.states.triangleCulling(_triangleCullingMap[triangleCullingString]);
+            stateBlock.states.triangleCulling(_triangleCullingMap.at(triangleCullingString));
     }
 }
 
@@ -1175,7 +1168,7 @@ EffectParser::parseStencilFunction(const Json::Value&  node,
                                    StateBlock&         stateBlock)
 {
     if (node.isString())
-        stateBlock.states.stencilFunction(_compareFuncMap[node.asString()]);
+        stateBlock.states.stencilFunction(_compareFuncMap.at(node.asString()));
 }
 
 void
@@ -1204,11 +1197,11 @@ EffectParser::parseStencilOperations(const Json::Value& node,
     if (node.isArray())
     {
         if (node[0].isString())
-            stateBlock.states.stencilFailOperation(_stencilOpMap[node[0].asString()]);
+            stateBlock.states.stencilFailOperation(_stencilOpMap.at(node[0].asString()));
         if (node[1].isString())
-            stateBlock.states.stencilZFailOperation(_stencilOpMap[node[1].asString()]);
+            stateBlock.states.stencilZFailOperation(_stencilOpMap.at(node[1].asString()));
         if (node[2].isString())
-            stateBlock.states.stencilZPassOperation(_stencilOpMap[node[2].asString()]);
+            stateBlock.states.stencilZPassOperation(_stencilOpMap.at(node[2].asString()));
     }
     else
     {
@@ -1224,7 +1217,7 @@ EffectParser::parseStencilFailOperation(const Json::Value& node,
                                         StateBlock&        stateBlock)
 {
     if (node.isString())
-        stateBlock.states.stencilFailOperation(_stencilOpMap[node.asString()]);
+        stateBlock.states.stencilFailOperation(_stencilOpMap.at(node.asString()));
 }
 
 void
@@ -1233,7 +1226,7 @@ EffectParser::parseStencilZFailOperation(const Json::Value& node,
                                          StateBlock&        stateBlock)
 {
     if (node.isString())
-        stateBlock.states.stencilZFailOperation(_stencilOpMap[node.asString()]);
+        stateBlock.states.stencilZFailOperation(_stencilOpMap.at(node.asString()));
 }
 
 void
@@ -1242,7 +1235,7 @@ EffectParser::parseStencilZPassOperation(const Json::Value& node,
                                          StateBlock&        stateBlock)
 {
     if (node.isString())
-        stateBlock.states.stencilZPassOperation(_stencilOpMap[node.asString()]);
+        stateBlock.states.stencilZPassOperation(_stencilOpMap.at(node.asString()));
 }
 
 void

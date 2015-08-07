@@ -39,13 +39,15 @@ namespace Json {
 
 namespace minko
 {
-	namespace file
-	{
-		class EffectParser :
-			public AbstractParser
-		{
-		public:
-			typedef std::shared_ptr<EffectParser>	Ptr;
+    namespace file
+    {
+        class EffectParser :
+            public AbstractParser
+        {
+        public:
+            typedef std::shared_ptr<EffectParser>	Ptr;
+
+            static const float  UNSET_PRIORITY_VALUE;
 
         private:
             typedef std::shared_ptr<render::AbstractTexture>	            AbstractTexturePtr;
@@ -91,7 +93,7 @@ namespace minko
                 {
                     // we set the priority to a special value in order to know
                     // wether it was actually read from the file or not
-                    states.priority(-1.f);
+                    states.priority(EffectParser::UNSET_PRIORITY_VALUE);
                     bindingMap.defaultValues.addProvider(states.data());
                 }
 
@@ -155,7 +157,6 @@ namespace minko
                 }
             };
 
-		private:
             static const std::string    EXTRA_PROPERTY_BLENDING_MODE;
             static const std::string    EXTRA_PROPERTY_STENCIL_TEST;
             static const std::string    EXTRA_PROPERTY_STENCIL_OPS;
@@ -163,64 +164,62 @@ namespace minko
             static const std::string    EXTRA_PROPERTY_STENCIL_Z_FAIL_OP;
             static const std::string    EXTRA_PROPERTY_STENCIL_Z_PASS_OP;
 
+            static const std::unordered_map<std::string, unsigned int>				_blendingSourceMap;
+            static const std::unordered_map<std::string, unsigned int>				_blendingDestinationMap;
+            static const std::unordered_map<std::string, unsigned int>				_blendingModeMap;
+            static const std::unordered_map<std::string, render::CompareMode>		_compareFuncMap;
+            static const std::unordered_map<std::string, render::TriangleCulling>	_triangleCullingMap;
+            static const std::unordered_map<std::string, render::StencilOperation>	_stencilOpMap;
+            static const std::unordered_map<std::string, float>					    _priorityMap;
+            static const std::array<std::string, 2>                                 _extraStateNames;
 
-            static std::unordered_map<std::string, unsigned int>				_blendingSourceMap;
-            static std::unordered_map<std::string, unsigned int>				_blendingDestinationMap;
-            static std::unordered_map<std::string, unsigned int>				_blendingModeMap;
-            static std::unordered_map<std::string, render::CompareMode>			_compareFuncMap;
-            static std::unordered_map<std::string, render::TriangleCulling>		_triangleCullingMap;
-			static std::unordered_map<std::string, render::StencilOperation>	_stencilOpMap;
-			static std::unordered_map<std::string, float>					    _priorityMap;
-            static std::array<std::string, 2>                                   _extraStateNames;
-
-        private:
             std::string						_filename;
-			std::string						_resolvedFilename;
-			std::shared_ptr<file::Options>	_options;
-			std::shared_ptr<render::Effect> _effect;
-			std::string						_effectName;
-			std::shared_ptr<AssetLibrary>	_assetLibrary;
+            std::string						_resolvedFilename;
+            std::shared_ptr<file::Options>	_options;
+            std::shared_ptr<render::Effect> _effect;
+            std::string						_effectName;
+            std::shared_ptr<AssetLibrary>	_assetLibrary;
 
             Scope                           _globalScope;
             ShaderToGLSLBlocks              _shaderToGLSL;
-			unsigned int					_numDependencies;
-			unsigned int					_numLoadedDependencies;
+            unsigned int					_numDependencies;
+            unsigned int					_numLoadedDependencies;
             std::shared_ptr<data::Provider> _effectData;
 
             LoaderCompleteSlotMap           _loaderCompleteSlots;
             LoaderErrorSlotMap              _loaderErrorSlots;
 
-		public:
-			inline static
-			Ptr
-			create()
-			{
-				return std::shared_ptr<EffectParser>(new EffectParser());
-			}
+        public:
+            inline static
+            Ptr
+            create()
+            {
+                return std::shared_ptr<EffectParser>(new EffectParser());
+            }
 
-			inline
-			std::shared_ptr<render::Effect>
-			effect()
-			{
-				return _effect;
-			}
+            inline
+            std::shared_ptr<render::Effect>
+            effect()
+            {
+                return _effect;
+            }
 
-			inline
-			const std::string&
-			effectName()
-			{
-				return _effectName;
-			}
+            inline
+            const std::string&
+            effectName()
+            {
+                return _effectName;
+            }
 
-			void
-			parse(const std::string&				filename,
-				  const std::string&                resolvedFilename,
+            void
+            parse(const std::string&				filename,
+                  const std::string&                resolvedFilename,
                   std::shared_ptr<Options>          options,
-				  const std::vector<unsigned char>&	data,
-				  std::shared_ptr<AssetLibrary>		assetLibrary);
+                  const std::vector<unsigned char>&	data,
+                  std::shared_ptr<AssetLibrary>		assetLibrary);
 
-		private:
-			EffectParser();
+        private:
+            EffectParser();
 
             float
             getPriorityValue(const std::string& name);
@@ -451,13 +450,13 @@ namespace minko
             void
             loadTexture(const std::string&  textureFilename,
                         const std::string&  uniformName,
-						data::Provider::Ptr     defaultValues);
+                        data::Provider::Ptr     defaultValues);
 
             std::shared_ptr<render::States>
             createStates(const StateBlock& block);
 
             void
             finalize();
-		};
-	}
+        };
+    }
 }
