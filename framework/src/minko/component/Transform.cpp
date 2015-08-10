@@ -252,7 +252,10 @@ Transform::RootTransform::updateTransformsList()
         return;
 
     for (const auto& toRemove : _toRemove)
+    {
         _nodeToId.erase(toRemove);
+        _nodeToPropertyChangedSlot.erase(toRemove);
+    }
 
     _nodes.clear();
 
@@ -260,7 +263,18 @@ Transform::RootTransform::updateTransformsList()
         _nodes.push_back(nodeAndId.first);
 
     for (const auto& node : _toAdd)
+    {
         _nodes.push_back(node);
+        _nodeToPropertyChangedSlot.emplace(
+            node,
+            node->data().propertyChanged("matrix").connect([this, node](data::Store&                          store,
+                                                                        ProviderPtr                           provider,
+                                                                        const data::Provider::PropertyName&   propertyName)
+            {
+                _nodeTransformCache.at(_nodeToId.at(node))._dirty = true;
+            })
+        );
+    }
 
     _toAdd.clear();
     _toRemove.clear();

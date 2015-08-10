@@ -249,6 +249,10 @@ namespace minko
 			void
 			sample(const aiNodeAnim*, const std::vector<float>&, std::vector<math::mat4>&);
 
+            static
+            math::vec3
+            convert(const aiVector3t<float>& vec3);
+
 			static
 			math::mat4
 			convert(const aiVector3t<float>&, const aiQuaterniont<float>&, const aiVector3t<float>&);

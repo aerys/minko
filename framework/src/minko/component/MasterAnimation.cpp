@@ -85,20 +85,26 @@ MasterAnimation::targetAdded(Node::Ptr target)
 void
 MasterAnimation::initAnimations()
 {
-	auto descendants = NodeSet::create(_target->parent())->descendants(true);
+    auto target = this->target();
+    auto targetParent = target->parent();
+
+    auto rootNode = targetParent != nullptr ? targetParent : target;
+
+	auto descendants = NodeSet::create(rootNode)->descendants(true);
 	for (auto descendant : descendants->nodes())
 	{
-		if (descendant->hasComponent<Skinning>())
-		{
-			_animations.push_back(descendant->component<Skinning>());
-		}
+        for (auto skinning : descendant->components<Skinning>())
+            _animations.push_back(skinning);
+
+        for (auto animation : descendant->components<Animation>())
+            _animations.push_back(animation);
 	}
 
 	_maxTime = 0;
 
 	for (auto& animation : _animations)
 	{
-		_maxTime = std::max(_maxTime, animation->getMaxTime());
+		_maxTime = std::max(_maxTime, animation->maxTime());
 	}
 
 	setPlaybackWindow(0, _maxTime)->seek(0)->play();
