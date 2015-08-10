@@ -252,6 +252,9 @@ Minko.redispatchKeyboardEvent = function(event) //EMSCRIPTEN
 	for(var k in copiedProperties)
 		eventCopy[copiedProperties[k]] = event[copiedProperties[k]];
 
+	if (event.keyCode == 18 || event.keyCode == 17 || event.keyCode == 16)
+		event.preventDefault();
+
 	document.dispatchEvent(eventCopy);
 }
 
