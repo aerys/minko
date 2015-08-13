@@ -186,12 +186,13 @@ minko.project.application = function(name)
 
 	if premake.tools.gcc.tools.emscripten then
 		local emcc = premake.tools.gcc.tools.emscripten.cc
-		local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html '
 
 		configuration { "html5", "release" }
 			linkoptions {
 				"--llvm-lto 1"
 			}
+
+			local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html '
 
 			-- optimization
 			cmd = cmd .. buildoptions()[1]
@@ -235,6 +236,8 @@ minko.project.application = function(name)
 			linkoptions {
 				"--llvm-lto 0"
 			}
+
+			local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html '
 
 			-- disable optimization
 			cmd = cmd .. buildoptions()[1]
