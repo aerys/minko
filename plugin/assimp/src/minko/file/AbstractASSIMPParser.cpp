@@ -143,8 +143,6 @@ AbstractASSIMPParser::parse(const std::string&					filename,
 
     Assimp::DefaultLogger::get()->attachStream(new minko::file::Logger(), severity);
 
-	initImporter();
-
 	int pos = resolvedFilename.find_last_of("\\/");
 
     options = options->clone();
@@ -158,6 +156,8 @@ AbstractASSIMPParser::parse(const std::string&					filename,
     _resolvedFilename = resolvedFilename;
 	_assetLibrary	= assetLibrary;
 	_options		= options;
+
+	initImporter();
 
 	//fixme : find a way to handle loading dependencies asynchronously
     auto ioHandlerOptions = options->clone();
@@ -316,7 +316,7 @@ AbstractASSIMPParser::initImporter()
     provideLoaders(*_importer);
 #endif // ! ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION
 
-    _importer->SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
+    _importer->SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, _options->includeAnimation());
 }
 
 void
@@ -343,8 +343,12 @@ AbstractASSIMPParser::convertScene(const aiScene* scene)
 
 	createLights(scene);
 	createCameras(scene);
-	createSkins(scene); // must come before createAnimations
-	//createAnimations(scene);
+
+    if (_options->includeAnimation())
+    {	
+        createSkins(scene); // must come before createAnimations
+	    //createAnimations(scene);
+    }
 
 #ifdef DEBUG_ASSIMP
 	printNode(std::cout << "\n", _symbol, 0) << std::endl;
@@ -358,18 +362,21 @@ AbstractASSIMPParser::convertScene(const aiScene* scene)
 	// file::Options::nodeFunction
 	apply(_symbol, _options->nodeFunction());
 
-	// file::Options::startAnimation
-	auto animations = NodeSet::create(_symbol)
-		->descendants(true)
-		->where([](Node::Ptr n)
-		{
-			return n->hasComponent<component::AbstractAnimation>();
-		});
-	for (auto& n : animations->nodes())
-		if (_options->startAnimation())
-			n->component<component::AbstractAnimation>()->play();
-		else
-			n->component<component::AbstractAnimation>()->stop();
+    if (_options->includeAnimation())
+    {
+        // file::Options::startAnimation
+	    auto animations = NodeSet::create(_symbol)
+		    ->descendants(true)
+		    ->where([](Node::Ptr n)
+		    {
+			    return n->hasComponent<component::AbstractAnimation>();
+		    });
+	    for (auto& n : animations->nodes())
+		    if (_options->startAnimation())
+			    n->component<component::AbstractAnimation>()->play();
+		    else
+			    n->component<component::AbstractAnimation>()->stop();
+    }
 
 	if (_numDependencies == _numLoadedDependencies)
 		finalize();

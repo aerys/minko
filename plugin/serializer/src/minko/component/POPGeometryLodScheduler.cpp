@@ -38,7 +38,6 @@ using namespace minko::component;
 using namespace minko::data;
 using namespace minko::file;
 using namespace minko::geometry;
-using namespace minko::scene;
 
 POPGeometryLodScheduler::POPGeometryLodScheduler() :
     AbstractLodScheduler(),
@@ -92,7 +91,7 @@ POPGeometryLodScheduler::surfaceAdded(Surface::Ptr surface)
     if (geometryData == nullptr)
         return;
 
-	auto resourceIt = _popGeometryResources.find(geometryData);
+	auto resourceIt = _popGeometryResources.find(geometryData->uuid());
 
 	POPGeometryResourceInfo* resource = nullptr;
 
@@ -101,7 +100,7 @@ POPGeometryLodScheduler::surfaceAdded(Surface::Ptr surface)
         auto& resourceBase = registerResource(geometryData);
 
         auto newResourceIt = _popGeometryResources.insert(std::make_pair(
-            resourceBase.data,
+            resourceBase.uuid(),
             POPGeometryResourceInfo()
         ));
 
@@ -116,10 +115,7 @@ POPGeometryLodScheduler::surfaceAdded(Surface::Ptr surface)
 		resource = &resourceIt->second;
 	}
 
-    resource->surfaceInfoCollection.emplace_back(surface);
-
-    auto& surfaceInfo = resource->surfaceInfoCollection.back();
-    auto surfaceInfoPtr = &surfaceInfo;
+    auto surfaceInfo = SurfaceInfo(surface);
 
     surfaceInfo.box = surfaceTarget->component<BoundingBox>()->box();
 
@@ -128,59 +124,29 @@ POPGeometryLodScheduler::surfaceAdded(Surface::Ptr surface)
     auto resourceData = resource->base->data;
     resource->fullPrecisionLod = surface->geometry()->data()->get<float>("popFullPrecisionLod");
 
-    const auto& lodDependencyProperties =
-        this->masterLodScheduler()->streamingOptions()->popGeometryLodDependencyProperties();
+	resource->surfaceToSurfaceInfoMap.insert(std::make_pair(surface, surfaceInfo));
 
-    for (const auto& propertyName : lodDependencyProperties)
-    {
-	    resource->modelToWorldMatrixChangedSlots.insert(std::make_pair(
-		    surfaceTarget,
-		    surfaceTarget->data().propertyChanged(propertyName).connect(
-			    [=](Store&          	store,
-            	    Provider::Ptr       provider,
-				    const data::Provider::PropertyName&)
-        	    {
-        	        invalidateLodRequirement(*resource->base);
-        	    }
-		    )
-	    ));
-    }
+	resource->modelToWorldMatrixChangedSlots.insert(std::make_pair(
+		surfaceTarget,
+		surfaceTarget->data().propertyChanged("modelToWorldMatrix").connect(
+			[=](Store&          	store,
+            	Provider::Ptr       provider,
+				const data::Provider::PropertyName&)
+        	{
+        	    invalidateLodRequirement(*resource->base);
+        	}
+		)
+	));
 
-    surfaceInfo.layoutChangedSlot = surfaceTarget->layoutChanged().connect(
-        [this, resource, surfaceInfoPtr](Node::Ptr node, Node::Ptr target)
-        {
-            if (node != target)
-                return;
+	const auto& availableLods = resourceData->get<std::map<int, ProgressiveOrderedMeshLodInfo>>("availableLods");
 
-            layoutChanged(*resource, *surfaceInfoPtr);
-        }
-    );
+    resource->minLod = availableLods.begin()->second._level;
 
-    surfaceInfo.layoutMaskChangedSlot = surface->layoutMaskChanged().connect(
-        [this, resource, surfaceInfoPtr](AbstractComponent::Ptr component)
-        {
-            layoutChanged(*resource, *surfaceInfoPtr);
-        }
-    );
-
-    const auto* availableLods = resourceData->getPointer<std::map<int, ProgressiveOrderedMeshLodInfo>>("availableLods");
-
-    resource->availableLods = availableLods;
-
-    resource->minLod = availableLods->begin()->second._level;
-
-    auto maxLodIt = availableLods->rbegin();
+    auto maxLodIt = availableLods.rbegin();
     if (maxLodIt->second._level == resource->fullPrecisionLod)
         ++maxLodIt;
 
     resource->maxLod = maxLodIt->second._level;
-
-    const auto lodRangeSize = resource->fullPrecisionLod + 1;
-
-    resource->lodToClosestValidLod.resize(lodRangeSize);
-    resource->precisionLevelToClosestLod.resize(lodRangeSize);
-
-    updateClosestLods(*resource);
 
     surface->numIndices(0u);
 	surface->data()->set("popLod", 0.f);
@@ -242,7 +208,7 @@ POPGeometryLodScheduler::maxAvailableLodChanged(ResourceInfo&    resource,
 
     invalidateLodRequirement(resource);
 
-    auto& popGeometryResource = _popGeometryResources.at(resource.data);
+    auto& popGeometryResource = _popGeometryResources.at(resource.uuid());
 
     if (popGeometryResource.minAvailableLod < 0)
         popGeometryResource.minAvailableLod = maxAvailableLod;
@@ -250,8 +216,6 @@ POPGeometryLodScheduler::maxAvailableLodChanged(ResourceInfo&    resource,
         popGeometryResource.minAvailableLod = std::min(maxAvailableLod, popGeometryResource.minAvailableLod);
 
     popGeometryResource.maxAvailableLod = std::max(maxAvailableLod, popGeometryResource.maxAvailableLod);
-
-    updateClosestLods(popGeometryResource);
 }
 
 POPGeometryLodScheduler::LodInfo
@@ -260,14 +224,15 @@ POPGeometryLodScheduler::lodInfo(ResourceInfo&  resource,
 {
 	auto lodInfo = LodInfo();
 
-	auto& popGeometryResource = _popGeometryResources.at(resource.data);
+	auto& popGeometryResource = _popGeometryResources.at(resource.uuid());
 
     auto maxRequiredLod = 0;
     auto maxPriority = 0.f;
 
-	for (auto& surfaceInfo : popGeometryResource.surfaceInfoCollection)
+	for (auto& surfaceToActiveLodPair : popGeometryResource.surfaceToSurfaceInfoMap)
 	{
-		auto surface = surfaceInfo.surface;
+		auto surface = surfaceToActiveLodPair.first;
+        auto& surfaceInfo = surfaceToActiveLodPair.second;
 
 		const auto previousActiveLod = surfaceInfo.activeLod;
 
@@ -276,13 +241,8 @@ POPGeometryLodScheduler::lodInfo(ResourceInfo&  resource,
         auto requiredPrecisionLevel = 0.f;
 		const auto requiredLod = computeRequiredLod(popGeometryResource, surfaceInfo, requiredPrecisionLevel);
 
-        const auto& lod = popGeometryResource.lodToClosestValidLod.at(math::clamp(
-            requiredLod,
-            popGeometryResource.minLod,
-            popGeometryResource.fullPrecisionLod
-        ));
-
-        if (lod.isValid())
+	    auto lod = ProgressiveOrderedMeshLodInfo();
+        if (findClosestValidLod(popGeometryResource, requiredLod, lod))
             activeLod = lod._level;
 
         if (previousActiveLod != activeLod)
@@ -316,13 +276,6 @@ POPGeometryLodScheduler::lodInfo(ResourceInfo&  resource,
 }
 
 void
-POPGeometryLodScheduler::layoutChanged(POPGeometryResourceInfo&  resource,
-                                       SurfaceInfo&              surfaceInfo)
-{
-    invalidateLodRequirement(*resource.base);
-}
-
-void
 POPGeometryLodScheduler::activeLodChanged(POPGeometryResourceInfo&   resource,
                              			  SurfaceInfo&               surfaceInfo,
                              			  int                        previousLod,
@@ -331,7 +284,9 @@ POPGeometryLodScheduler::activeLodChanged(POPGeometryResourceInfo&   resource,
 {
 	auto provider = resource.base->data;
 
-	const auto& activeLod = resource.availableLods->at(lod);
+	const auto& availableLods = provider->get<std::map<int, ProgressiveOrderedMeshLodInfo>>("availableLods");
+
+	const auto& activeLod = availableLods.at(lod);
 
 	const auto numIndices = static_cast<unsigned int>(
 		(activeLod._indexOffset + activeLod._indexCount)
@@ -364,13 +319,10 @@ POPGeometryLodScheduler::computeRequiredLod(const POPGeometryResourceInfo&  reso
 
         requiredPrecisionLevel = maxPrecisionLevel;
 
-        const auto& requiredLod = resource.precisionLevelToClosestLod.at(math::clamp(
-            maxPrecisionLevel,
-            resource.minLod,
-            resource.fullPrecisionLod
-        ));
+        auto lod = ProgressiveOrderedMeshLodInfo();
+        auto requiredLod = findClosestLodByPrecisionLevel(resource, maxPrecisionLevel, lod) ? lod._level : DEFAULT_LOD;
 
-        return requiredLod._level;
+        return requiredLod;
     }
 
     const auto popErrorBound = masterLodScheduler()->streamingOptions()->popGeometryErrorToleranceThreshold();
@@ -383,13 +335,10 @@ POPGeometryLodScheduler::computeRequiredLod(const POPGeometryResourceInfo&  reso
 
     auto ceiledRequiredPrecisionLevel = static_cast<int>(std::ceil(requiredPrecisionLevel));
 
-    const auto& requiredLod = resource.precisionLevelToClosestLod.at(math::clamp(
-        ceiledRequiredPrecisionLevel,
-        resource.minLod,
-        resource.fullPrecisionLod
-    ));
+    auto lod = ProgressiveOrderedMeshLodInfo();
+    auto requiredLod = findClosestLodByPrecisionLevel(resource, ceiledRequiredPrecisionLevel, lod) ? lod._level : DEFAULT_LOD;
 
-    return requiredLod._level;
+    return requiredLod;
 }
 
 float
@@ -426,7 +375,7 @@ POPGeometryLodScheduler::findClosestValidLod(const POPGeometryResourceInfo& reso
 {
 	auto data = resource.base->data;
 
-    const auto& lods = *resource.availableLods;
+    const auto& lods = data->get<std::map<int, ProgressiveOrderedMeshLodInfo>>("availableLods");
 
     if (lods.empty())
         return false;
@@ -459,7 +408,7 @@ POPGeometryLodScheduler::findClosestLodByPrecisionLevel(const POPGeometryResourc
 {
 	auto data = resource.base->data;
 
-    const auto& lods = *resource.availableLods;
+    const auto& lods = data->get<std::map<int, ProgressiveOrderedMeshLodInfo>>("availableLods");
 
     if (lods.empty())
         return false;
@@ -481,26 +430,11 @@ POPGeometryLodScheduler::findClosestLodByPrecisionLevel(const POPGeometryResourc
     return true;
 }
 
-void
-POPGeometryLodScheduler::updateClosestLods(POPGeometryResourceInfo& resource)
-{
-    const auto lowerLod = resource.minLod;
-    const auto upperLod = resource.fullPrecisionLod + 1;
-
-    for (auto lod = lowerLod; lod < upperLod; ++lod)
-    {
-        findClosestValidLod(resource, lod, resource.lodToClosestValidLod.at(lod));
-        findClosestLodByPrecisionLevel(resource, lod, resource.precisionLevelToClosestLod.at(lod));
-    }
-}
-
 float
 POPGeometryLodScheduler::distanceFromEye(const POPGeometryResourceInfo&  resource,
                                          SurfaceInfo&                    surfaceInfo,
                                          const math::vec3&               eyePosition)
 {
-    static auto ray = math::Ray::create();
-
     auto target = surfaceInfo.surface->target();
     auto box = surfaceInfo.box;
 
@@ -509,9 +443,7 @@ POPGeometryLodScheduler::distanceFromEye(const POPGeometryResourceInfo&  resourc
     if (boxCenter == eyePosition)
         return 0.f;
 
-    ray->origin(eyePosition);
-    ray->direction(math::normalize(boxCenter - eyePosition));
-
+    auto ray = math::Ray::create(eyePosition, math::normalize(boxCenter - eyePosition));
     auto targetDistance = 0.f;
 
     if (!box->cast(ray, targetDistance))
@@ -552,8 +484,10 @@ POPGeometryLodScheduler::blendingRange(float value)
     {
         auto& resource = uuidToResourcePair.second;
 
-        for (auto& surfaceInfo : resource.surfaceInfoCollection)
+        for (auto& surfaceToSurfaceInfoPair : resource.surfaceToSurfaceInfoMap)
         {
+            auto& surfaceInfo = surfaceToSurfaceInfoPair.second;
+
             blendingRangeChanged(resource, surfaceInfo, _blendingRange);
         }
     }
