@@ -49,7 +49,7 @@ using namespace minko::render;
 const std::string EffectParser::EXTRA_PROPERTY_BLENDING_MODE = "blendingMode";
 const std::string EffectParser::EXTRA_PROPERTY_STENCIL_TEST = "stencilTest";
 
-std::array<std::string, 2> EffectParser::_extraStateNames = {
+const std::array<std::string, 2> EffectParser::_extraStateNames = {
     EffectParser::EXTRA_PROPERTY_BLENDING_MODE,
     EffectParser::EXTRA_PROPERTY_STENCIL_TEST
 };
@@ -61,9 +61,9 @@ const std::string EffectParser::EXTRA_PROPERTY_STENCIL_FAIL_OP = "fail";
 const std::string EffectParser::EXTRA_PROPERTY_STENCIL_Z_FAIL_OP = "zfail";
 const std::string EffectParser::EXTRA_PROPERTY_STENCIL_Z_PASS_OP = "zpass";
 
-const float UNSET_PRIORIY_VALUE = -std::numeric_limits<float>::max();
+const float EffectParser::UNSET_PRIORITY_VALUE = -std::numeric_limits<float>::max();
 
-std::unordered_map<std::string, unsigned int> EffectParser::_blendingSourceMap = {
+const std::unordered_map<std::string, unsigned int> EffectParser::_blendingSourceMap = {
     { "zero", static_cast<uint>(render::Blending::Source::ZERO) },
     { "one", static_cast<uint>(render::Blending::Source::ONE) },
     { "color", static_cast<uint>(render::Blending::Source::SRC_COLOR) },
@@ -74,7 +74,7 @@ std::unordered_map<std::string, unsigned int> EffectParser::_blendingSourceMap =
     { "one_minus_dst_alpha", static_cast<uint>(render::Blending::Source::ONE_MINUS_DST_ALPHA) },
 };
 
-std::unordered_map<std::string, unsigned int> EffectParser::_blendingDestinationMap = {
+const std::unordered_map<std::string, unsigned int> EffectParser::_blendingDestinationMap = {
     { "zero", static_cast<uint>(render::Blending::Destination::ZERO) },
     { "one", static_cast<uint>(render::Blending::Destination::ONE) },
     { "dst_color", static_cast<uint>(render::Blending::Destination::DST_COLOR) },
@@ -85,13 +85,13 @@ std::unordered_map<std::string, unsigned int> EffectParser::_blendingDestination
     { "one_minus_dst_alpha", static_cast<uint>(render::Blending::Destination::ONE_MINUS_DST_ALPHA) },
 };
 
-std::unordered_map<std::string, unsigned int> EffectParser::_blendingModeMap = {
+const std::unordered_map<std::string, unsigned int> EffectParser::_blendingModeMap = {
     { "default", static_cast<uint>(render::Blending::Mode::DEFAULT) },
     { "alpha", static_cast<uint>(render::Blending::Mode::ALPHA) },
     { "additive", static_cast<uint>(render::Blending::Mode::ADDITIVE) }
 };
 
-std::unordered_map<std::string, render::CompareMode> EffectParser::_compareFuncMap = {
+const std::unordered_map<std::string, render::CompareMode> EffectParser::_compareFuncMap = {
 	{ "always", render::CompareMode::ALWAYS },
 	{ "equal", render::CompareMode::EQUAL },
 	{ "greater", render::CompareMode::GREATER },
@@ -102,14 +102,14 @@ std::unordered_map<std::string, render::CompareMode> EffectParser::_compareFuncM
 	{ "not_equal", render::CompareMode::NOT_EQUAL }
 };
 
-std::unordered_map<std::string, render::TriangleCulling> EffectParser::_triangleCullingMap = {
+const std::unordered_map<std::string, render::TriangleCulling> EffectParser::_triangleCullingMap = {
     { "none", render::TriangleCulling::NONE },
     { "front", render::TriangleCulling::FRONT },
     { "back", render::TriangleCulling::BACK },
     { "both", render::TriangleCulling::BOTH }
 };
 
-std::unordered_map<std::string, render::StencilOperation> EffectParser::_stencilOpMap = {
+const std::unordered_map<std::string, render::StencilOperation> EffectParser::_stencilOpMap = {
 	{ "keep", render::StencilOperation::KEEP },
 	{ "zero", render::StencilOperation::ZERO },
 	{ "replace", render::StencilOperation::REPLACE },
@@ -120,7 +120,7 @@ std::unordered_map<std::string, render::StencilOperation> EffectParser::_stencil
 	{ "invert", render::StencilOperation::INVERT }
 };
 
-std::unordered_map<std::string, float> EffectParser::_priorityMap = {
+const std::unordered_map<std::string, float> EffectParser::_priorityMap = {
 	{ "first", Priority::FIRST },
 	{ "background", Priority::BACKGROUND },
 	{ "opaque", Priority::OPAQUE },
