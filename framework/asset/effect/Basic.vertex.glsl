@@ -79,9 +79,9 @@ void main(void)
 		vVertexUV = uv;
 	#endif
 
-    #if defined (VERTEX_UV1) && defined (LIGHT_MAP)
-        vVertexUV1 = aUV1;
-    #endif // VERTEX_UV1 && LIGHT_MAP
+    #if defined (VERTEX_UV) && !defined (VERTEX_UV1) && defined (LIGHT_MAP)
+        vVertexUV1 = aUV;
+    #endif // VERTEX_UV && !VERTEX_UV1 && LIGHT_MAP
 
 	#ifdef DIFFUSE_CUBEMAP
 		vVertexUVW = aPosition;

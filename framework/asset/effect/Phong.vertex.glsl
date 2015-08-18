@@ -79,9 +79,9 @@ void main(void)
 		vVertexUV = uvScale * aUV + uvOffset;
 	#endif // defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP
 
-	#if defined (VERTEX_UV1) && defined (LIGHT_MAP)
-		vVertexUV1 = aUV1;
-	#endif // VERTEX_UV1 && LIGHT_MAP
+    #if defined (VERTEX_UV) && !defined (VERTEX_UV1) && defined (LIGHT_MAP)
+        vVertexUV1 = aUV;
+    #endif // VERTEX_UV && !VERTEX_UV1 && LIGHT_MAP
 
 	#if defined VERTEX_COLOR
 		vVertexColor = vec4(packFloat8bitRGB(aColor), 1.0);
