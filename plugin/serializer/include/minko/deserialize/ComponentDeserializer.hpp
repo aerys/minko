@@ -55,7 +55,7 @@ namespace minko
 
             static
             AbsComponentPtr
-            deserializeAmbientLight(file::SceneVersion    sceneVersion, 
+            deserializeAmbientLight(file::SceneVersion    sceneVersion,
                                     std::string&	serializedAmbientLight,
                                     AssetLibraryPtr     assetLibrary,
                                     DependencyPtr       dependencies);
@@ -76,45 +76,52 @@ namespace minko
 
             static
             AbsComponentPtr
-            deserializeSpotLight(file::SceneVersion       sceneVersion,
+            deserializeSpotLight(file::SceneVersion	sceneVersion,
                                  std::string&	    serializedSpotLight,
-                                 AssetLibraryPtr        assetLibrary,
-                                 DependencyPtr          dependencies);
+                                 AssetLibraryPtr    assetLibrary,
+                                 DependencyPtr      dependencies);
 
             static
             AbsComponentPtr
-            deserializeSurface(file::SceneVersion     sceneVersion,
-                               std::string&		serializedSurface,
-                               AssetLibraryPtr          assetLibrary,
-                               DependencyPtr            dependencies);
+            deserializeSurface(file::SceneVersion   sceneVersion,
+                               std::string&			serializedSurface,
+                               AssetLibraryPtr      assetLibrary,
+                               DependencyPtr        dependencies);
 
             static
             AbsComponentPtr
-            deserializeRenderer(file::SceneVersion    sceneVersion,
-                                std::string&	serializedRenderer,
-                               AssetLibraryPtr          assetLibrary,
-                               DependencyPtr            dependencies);
+            deserializeRenderer(file::SceneVersion  sceneVersion,
+                                std::string&		serializedRenderer,
+                               AssetLibraryPtr      assetLibrary,
+                               DependencyPtr        dependencies);
 
             static
             AbsComponentPtr
-            deserializeAnimation(file::SceneVersion       sceneVersion,
+            deserializeAnimation(file::SceneVersion	sceneVersion,
                                  std::string&	    serializedAnimation,
-                                 AssetLibraryPtr        assetLibrary,
-                                 DependencyPtr          dependencies);
+                                 AssetLibraryPtr    assetLibrary,
+                                 DependencyPtr      dependencies);
 
             static
             AbsComponentPtr
-            deserializeSkinning(file::SceneVersion    sceneVersion,
-                                std::string&	serializedAnimation,
-                                AssetLibraryPtr         assetLibrary,
-                                DependencyPtr           dependencies);
+            deserializeSkinning(file::SceneVersion  sceneVersion,
+                                std::string&		serializedAnimation,
+                                AssetLibraryPtr     assetLibrary,
+                                DependencyPtr       dependencies);
 
             static
             AbsComponentPtr
-            deserializeBoundingBox(file::SceneVersion     sceneVersion,
-                                   std::string&	    serializedBoundingBox,
+            deserializeBoundingBox(file::SceneVersion	sceneVersion,
+                                   std::string&	    	serializedBoundingBox,
                                    AssetLibraryPtr      assetLibrary,
                                    DependencyPtr        dependencies);
+
+		    static
+			std::shared_ptr<component::AbstractComponent>
+			deserializeMetadata(file::SceneVersion	sceneVersion,
+			                    std::string&        packed,
+			                    AssetLibraryPtr   	assetLibrary,
+			                    DependencyPtr     	dependencies);
         };
     }
 }

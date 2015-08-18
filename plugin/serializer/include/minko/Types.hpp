@@ -41,7 +41,8 @@ namespace minko
 			SKINNING			    = 110,
             PARTICLES               = 60,
             COMPONENT_ID_EXTENSION  = 111,
-            COLLIDER                = 50
+            COLLIDER                = 50,
+			METADATA  				= 70,
 		};
 
 		enum MinkoTypes

@@ -180,7 +180,7 @@ namespace minko
         };
 
 		typedef std::function<std::string(const std::string&)> FormatNameFunction;
-		typedef std::list<std::pair<Flyweight<std::string>, Flyweight<std::string>>> EffectVariables;        
+		typedef std::list<std::pair<Flyweight<std::string>, Flyweight<std::string>>> EffectVariables;
 	}
 
 	namespace scene
@@ -220,6 +220,8 @@ namespace minko
 		class MasterAnimation;
 		class Animation;
 		class Skinning;
+
+        class Metadata;
 	}
 
 	namespace data

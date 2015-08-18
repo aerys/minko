@@ -33,6 +33,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/geometry/Bone.hpp"
 #include "minko/geometry/Skin.hpp"
 #include "minko/component/Renderer.hpp"
+#include "minko/component/Metadata.hpp"
 #include "msgpack.hpp"
 #include "minko/deserialize/TypeDeserializer.hpp"
 #include "minko/file/Dependency.hpp"
@@ -52,7 +53,7 @@ ComponentDeserializer::deserializeTransform(file::SceneVersion sceneVersion,
                                             std::string&                         packed,
 											std::shared_ptr<file::AssetLibrary>	assetLibrary,
 											std::shared_ptr<file::Dependency>	dependencies)
-{	
+{
 	msgpack::type::tuple<uint, std::string>		dst;
 
     minko::deserialize::unpack(dst, packed.data(), packed.size() - 1);
@@ -61,7 +62,7 @@ ComponentDeserializer::deserializeTransform(file::SceneVersion sceneVersion,
 	std::tuple<uint, std::string&> serializedMatrixTuple(_0, _1);
 
 	auto transformMatrix = Any::cast<math::mat4>(deserialize::TypeDeserializer::deserializeMatrix4x4(serializedMatrixTuple));
-    
+
     // For .scene file of version 0.2.x or less we need to transpose transform matrices
     if (sceneVersion.major <= 0 && sceneVersion.minor < 3)
     {
@@ -374,7 +375,7 @@ ComponentDeserializer::deserializeSkinning(file::SceneVersion sceneVersion,
 }
 
 std::shared_ptr<component::AbstractComponent>
-ComponentDeserializer::deserializeBoundingBox(file::SceneVersion sceneVersion,
+ComponentDeserializer::deserializeBoundingBox(file::SceneVersion                    sceneVersion,
                                               std::string&                          packed,
                                               std::shared_ptr<file::AssetLibrary>   assetLibrary,
                                               std::shared_ptr<file::Dependency>     dependencies)
@@ -387,8 +388,21 @@ ComponentDeserializer::deserializeBoundingBox(file::SceneVersion sceneVersion,
 
 	return component::BoundingBox::create(
         componentData[3],
-                                                    componentData[4],
-                                                    componentData[5],
+        componentData[4],
+        componentData[5],
         math::vec3(componentData[0], componentData[1], componentData[2])
     );
+}
+
+std::shared_ptr<component::AbstractComponent>
+ComponentDeserializer::deserializeMetadata(file::SceneVersion                    sceneVersion,
+                                           std::string&                          packed,
+                                           std::shared_ptr<file::AssetLibrary>   assetLibrary,
+                                           std::shared_ptr<file::Dependency>     dependencies)
+{
+    component::Metadata::Data data;
+
+    unpack(data, packed.data(), packed.size() - 1);
+
+	return component::Metadata::create(data);
 }

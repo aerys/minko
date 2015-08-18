@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Effect.hpp"
 #include "minko/component/Renderer.hpp"
 #include "minko/component/BoundingBox.hpp"
+#include "minko/component/Metadata.hpp"
 #include "minko/math/Box.hpp"
 #include "minko/serialize/TypeSerializer.hpp"
 #include "minko/file/Dependency.hpp"
@@ -397,4 +398,18 @@ ComponentSerializer::serializeBoundingBox(NodePtr 			    node,
 	msgpack::pack(buffer, type);
 
 	return buffer.str();
+}
+
+std::string
+ComponentSerializer::serializeMetadata(NodePtr              node,
+                                       AbstractComponentPtr component,
+                                       DependencyPtr 	    dependencies)
+{
+    auto metadata = std::dynamic_pointer_cast<component::Metadata>(component);
+
+    std::stringstream buffer;
+    msgpack::pack(buffer, metadata->data());
+    msgpack::pack(buffer, (int8_t)serialize::METADATA);
+
+    return buffer.str();
 }

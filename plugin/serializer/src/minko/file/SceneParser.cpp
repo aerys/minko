@@ -124,6 +124,13 @@ SceneParser::SceneParser()
         std::placeholders::_2,
         std::placeholders::_3,
         std::placeholders::_4));
+
+    registerComponent(serialize::METADATA,
+        std::bind(&deserialize::ComponentDeserializer::deserializeMetadata,
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
 }
 
 void
@@ -191,7 +198,7 @@ SceneParser::parseHeader(const std::string&					filename,
         ->parserFunction([](const std::string& extension) -> AbstractParser::Ptr
         {
             return nullptr;
-        }); 
+        });
 
     _embedContentLoaderCompleteSlot = embedContentLoader->complete()->connect(
         [=](Loader::Ptr embedContentLoaderThis) -> void

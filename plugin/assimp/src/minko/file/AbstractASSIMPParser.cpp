@@ -43,6 +43,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/PerspectiveCamera.hpp"
 #include "minko/component/AbstractAnimation.hpp"
 #include "minko/component/Animation.hpp"
+#include "minko/component/Metadata.hpp"
 #include "minko/animation/Matrix4x4Timeline.hpp"
 #include "minko/render/VertexBuffer.hpp"
 #include "minko/render/IndexBuffer.hpp"
@@ -345,7 +346,7 @@ AbstractASSIMPParser::convertScene(const aiScene* scene)
 	createCameras(scene);
 
     if (_options->includeAnimation())
-    {	
+    {
         createSkins(scene); // must come before createAnimations
 	    //createAnimations(scene);
     }
@@ -433,11 +434,12 @@ AbstractASSIMPParser::parseMetadata(const aiScene*            scene,
     if (!ainode->mMetaData)
         return;
 
+	component::Metadata::Data metadata;
+
     for (auto i = 0u; i < ainode->mMetaData->mNumProperties; ++i)
     {
         const auto& key = std::string(ainode->mMetaData->mKeys[i].data);
         const auto& data = ainode->mMetaData->mValues[i];
-
         auto dataString = std::string();
 
         switch (data.mType)
@@ -448,7 +450,6 @@ AbstractASSIMPParser::parseMetadata(const aiScene*            scene,
         case aiMetadataType::AI_AIVECTOR3D:
         {
             aiVector3D* vec3 = reinterpret_cast<aiVector3D*>(data.mData);
-
             dataString = std::to_string(math::vec3(vec3->x, vec3->y, vec3->z));
 
             break;
@@ -470,7 +471,11 @@ AbstractASSIMPParser::parseMetadata(const aiScene*            scene,
         }
 
         options->attributeFunction()(minkoNode, key, dataString);
+
+		metadata[key] = dataString;
     }
+
+	minkoNode->addComponent(component::Metadata::create(metadata));
 }
 
 void
@@ -715,13 +720,26 @@ AbstractASSIMPParser::createCameras(const aiScene* scene)
 			: nullptr;
 
         if (cameraNode)
+		{
+			float half_fovy = atanf(tanf(aiCamera->mHorizontalFOV * .5f)
+				* aiCamera->mAspect);
+
             cameraNode
 			    ->addComponent(PerspectiveCamera::create(
 				    aiCamera->mAspect,
-				    aiCamera->mHorizontalFOV * aiCamera->mAspect, // need the vertical FOV
+				    half_fovy,
 				    aiCamera->mClipPlaneNear,
 				    aiCamera->mClipPlaneFar
 			    ));
+			if (!cameraNode->hasComponent<Transform>())
+				cameraNode->addComponent(Transform::create());
+
+			cameraNode->component<Transform>()->matrix(math::inverse(math::lookAt(
+				math::vec3(aiPosition.x, aiPosition.y, aiPosition.z),
+				math::vec3(aiLookAt.x, aiLookAt.y, aiLookAt.z),
+				math::vec3(aiUp.x, aiUp.y, aiUp.z)
+			)));
+		}
 	}
 }
 
@@ -792,16 +810,15 @@ AbstractASSIMPParser::createLights(const aiScene* scene)
             auto matrix     = math::lookAt(position, lookAt, math::vec3(0.f, 1.f, 0.f));
 		}
 
-		const float			diffuse			= 1.0f;
-		const float			specular		= 1.0f;
+		const float	diffuse	= 1.0f;
+		const float	specular = 1.0f;
+		const math::vec3 color = math::vec3(aiDiffuseColor.r, aiDiffuseColor.g, aiDiffuseColor.b);
+
         switch (aiLight->mType)
         {
             case aiLightSource_DIRECTIONAL:
 				lightNode->addComponent(
-					DirectionalLight::create(
-						diffuse,
-						specular
-					)->color(math::vec3(aiDiffuseColor.r, aiDiffuseColor.g, aiDiffuseColor.b))
+					DirectionalLight::create(diffuse, specular)->color(color)
 				);
                 break;
 
@@ -813,7 +830,7 @@ AbstractASSIMPParser::createLights(const aiScene* scene)
 						aiLight->mAttenuationConstant,
 						aiLight->mAttenuationLinear,
 						aiLight->mAttenuationQuadratic
-					)->color(math::vec3(aiDiffuseColor.r, aiDiffuseColor.g, aiDiffuseColor.b))
+					)->color(color)
 				);
                 break;
 
@@ -827,7 +844,7 @@ AbstractASSIMPParser::createLights(const aiScene* scene)
 						aiLight->mAttenuationConstant,
 						aiLight->mAttenuationLinear,
 						aiLight->mAttenuationQuadratic
-					)->color(math::vec3(aiDiffuseColor.r, aiDiffuseColor.g, aiDiffuseColor.b))
+					)->color(color)
 				);
                 break;
 
@@ -1643,7 +1660,7 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
 		material->data()->set("shininess", 64.0f);
 
     auto transparent = opacity > 0.f && opacity < 1.f;
-	
+
     if (transparent)
     {
         diffuseColor.w = opacity;

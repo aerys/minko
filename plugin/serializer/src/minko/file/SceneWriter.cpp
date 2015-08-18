@@ -32,6 +32,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/PointLight.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/Renderer.hpp"
+#include "minko/component/Metadata.hpp"
 #include "minko/file/Dependency.hpp"
 #include "minko/file/WriterOptions.hpp"
 #include "minko/serialize/ComponentSerializer.hpp"
@@ -136,6 +137,14 @@ SceneWriter::SceneWriter(WriterOptions::Ptr writerOptions)
 			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
 		)
 	);
+
+	registerComponent(
+		&typeid(component::Metadata),
+		std::bind(
+			&serialize::ComponentSerializer::serializeMetadata,
+			std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+		)
+	);
 }
 
 void
@@ -157,7 +166,7 @@ SceneWriter::embed(AssetLibraryPtr                      assetLibrary,
 	std::vector<SerializedNode>						nodePack;
 	std::vector<std::string>						serializedControllerList;
 	std::map<AbstractComponentPtr, int>				controllerMap;
-	
+
 	queue.push(data());
 
 	while (queue.size() > 0)
