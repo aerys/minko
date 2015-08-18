@@ -290,6 +290,8 @@ Options::initializeDefaultFunctions()
         throw std::runtime_error(errorMessage);
     };
 
+    _material = material::Material::create();
+
     if (!_attributeFunction)
         _attributeFunction = [](NodePtr node, const std::string& key, const std::string& value) -> void
         {
