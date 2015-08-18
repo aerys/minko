@@ -85,6 +85,9 @@ namespace minko
             void
             initialize();
 
+            void
+            targetAdded(NodePtr target) override;
+
 		private:
 			Animation(const std::vector<AbsTimelinePtr>&, bool isLooping);
 

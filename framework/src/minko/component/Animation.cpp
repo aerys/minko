@@ -69,6 +69,12 @@ Animation::initialize()
 }
 
 void
+Animation::targetAdded(NodePtr target)
+{
+    AbstractAnimation::targetAdded(target);
+}
+
+void
 Animation::update()
 {
 	for (auto& timeline : _timelines)

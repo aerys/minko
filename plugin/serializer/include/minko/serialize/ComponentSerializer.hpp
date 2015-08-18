@@ -88,6 +88,12 @@ namespace minko
 
 			static
 			std::string
+			serializeMasterAnimation(NodePtr 		        node,
+                                     AbstractComponentPtr   component,
+							         DependencyPtr 	        dependencies);
+
+			static
+			std::string
 			serializeAnimation(NodePtr 		        node,
                                AbstractComponentPtr component,
 							   DependencyPtr 	    dependencies);

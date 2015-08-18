@@ -104,6 +104,13 @@ SceneParser::SceneParser()
         std::placeholders::_3,
         std::placeholders::_4));
 
+    registerComponent(serialize::MASTER_ANIMATION,
+        std::bind(&deserialize::ComponentDeserializer::deserializeMasterAnimation,
+        std::placeholders::_1,
+        std::placeholders::_2,
+        std::placeholders::_3,
+        std::placeholders::_4));
+
     registerComponent(serialize::ANIMATION,
         std::bind(&deserialize::ComponentDeserializer::deserializeAnimation,
         std::placeholders::_1,
@@ -315,7 +322,7 @@ SceneParser::parseNode(std::vector<SerializedNode>&            nodePack,
     {
         int8_t            dst = componentPack[componentIndex].at(componentPack[componentIndex].size() - 1);
 
-        if (dst == serialize::SKINNING)
+        if (dst == serialize::SKINNING || dst == serialize::MASTER_ANIMATION)
             markedComponent.insert(componentIndex);
         else
         {
@@ -331,18 +338,22 @@ SceneParser::parseNode(std::vector<SerializedNode>&            nodePack,
 
     bool isSkinningFree = true; // FIXME
 
-	for (auto componentIndex2 : markedComponent)
+	for (auto componentIndex : markedComponent)
 	{
         if (_version.major <= 0 && _version.minor < 3)
             continue;
 
-		isSkinningFree = false;
-        std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[serialize::SKINNING](_version, componentPack[componentIndex2], assetLibrary, _dependency);
+        int8_t dst = componentPack[componentIndex].at(componentPack[componentIndex].size() - 1);
 
-        for (scene::Node::Ptr node : componentIdToNodes[componentIndex2])
+		isSkinningFree = false;
+        std::shared_ptr<component::AbstractComponent> newComponent = _componentIdToReadFunction[dst](_version, componentPack[componentIndex], assetLibrary, _dependency);
+
+        for (scene::Node::Ptr node : componentIdToNodes[componentIndex])
 		{
             node->addComponent(newComponent);
-			node->addComponent(component::MasterAnimation::create());
+
+            if (!node->hasComponent<component::MasterAnimation>())
+			    node->addComponent(component::MasterAnimation::create());
 		}
     }
 

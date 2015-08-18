@@ -123,13 +123,6 @@ namespace minko
 
 			inline
 			uint
-			getMaxTime() const
-			{
-				return _maxTime;
-			}
-
-			inline
-			uint
 			loopStartTime() const
 			{
 				return !_isReversed ? _loopMinTime : _loopMaxTime;

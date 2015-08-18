@@ -27,7 +27,6 @@ namespace minko
 	{
 		enum ComponentId
 		{
-
 			TRANSFORM			    = 100,
 			PROJECTION_CAMERA	    = 101,
 			AMBIENT_LIGHT		    = 102,
@@ -39,10 +38,11 @@ namespace minko
 			BOUNDINGBOX			    = 108,
 			ANIMATION			    = 109,
 			SKINNING			    = 110,
-            PARTICLES               = 60,
-            COMPONENT_ID_EXTENSION  = 111,
             COLLIDER                = 50,
+            PARTICLES               = 60,
 			METADATA  				= 70,
+            MASTER_ANIMATION        = 90,
+            COMPONENT_ID_EXTENSION  = 111
 		};
 
 		enum MinkoTypes

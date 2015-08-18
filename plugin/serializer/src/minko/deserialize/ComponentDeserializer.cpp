@@ -28,6 +28,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/SpotLight.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/Animation.hpp"
+#include "minko/component/MasterAnimation.hpp"
 #include "minko/component/Skinning.hpp"
 #include "minko/file/AssetLibrary.hpp"
 #include "minko/geometry/Bone.hpp"
@@ -263,6 +264,14 @@ ComponentDeserializer::deserializeRenderer(file::SceneVersion sceneVersion,
     return renderer;
 }
 
+ComponentDeserializer::AbsComponentPtr
+ComponentDeserializer::deserializeMasterAnimation(file::SceneVersion    sceneVersion,
+                                                  std::string&          packed,
+											      AssetLibraryPtr	    assetLibrary,
+											      DependencyPtr	        dependencies)
+{
+    return component::MasterAnimation::create();
+}
 
 ComponentDeserializer::AbsComponentPtr
 ComponentDeserializer::deserializeAnimation(file::SceneVersion sceneVersion,
@@ -294,7 +303,7 @@ ComponentDeserializer::deserializeAnimation(file::SceneVersion sceneVersion,
 		matrices.push_back(matrix);
 	}
 
-    timelines.push_back(animation::Matrix4x4Timeline::create("transform.matrix", duration, timetable, matrices, interpolate));
+    timelines.push_back(animation::Matrix4x4Timeline::create("matrix", duration, timetable, matrices, interpolate));
 
     return component::Animation::create(timelines);
 }

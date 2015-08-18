@@ -104,6 +104,13 @@ namespace minko
 
             static
             AbsComponentPtr
+            deserializeMasterAnimation(file::SceneVersion       sceneVersion,
+                                       std::string&	            serializedAnimation,
+                                       AssetLibraryPtr          assetLibrary,
+                                       DependencyPtr            dependencies);
+			
+            static
+            AbsComponentPtr
             deserializeSkinning(file::SceneVersion  sceneVersion,
                                 std::string&		serializedAnimation,
                                 AssetLibraryPtr     assetLibrary,

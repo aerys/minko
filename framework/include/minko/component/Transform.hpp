@@ -213,6 +213,11 @@ namespace minko
                 std::list<NodePtr>                              _toAdd;
                 std::list<NodePtr>                              _toRemove;
 
+                std::unordered_map<
+                    NodePtr,
+                    Signal<data::Store&, ProviderPtr, const data::Provider::PropertyName&>::Slot
+                >                                               _nodeToPropertyChangedSlot;
+
             protected:
             	void
 				targetAdded(NodePtr target);

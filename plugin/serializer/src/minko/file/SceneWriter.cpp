@@ -22,6 +22,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/AbstractComponent.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/component/Animation.hpp"
+#include "minko/component/MasterAnimation.hpp"
 #include "minko/component/BoundingBox.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
 #include "minko/component/Transform.hpp"
@@ -113,6 +114,14 @@ SceneWriter::SceneWriter(WriterOptions::Ptr writerOptions)
 
     if (writerOptions->writeAnimations())
     {
+	    registerComponent(
+	    	&typeid(component::MasterAnimation),
+	    	std::bind(
+	    		&serialize::ComponentSerializer::serializeMasterAnimation,
+	    		std::placeholders::_1, std::placeholders::_2, std::placeholders::_3
+	    	)
+	    );
+
 	    registerComponent(
 	    	&typeid(component::Animation),
 	    	std::bind(

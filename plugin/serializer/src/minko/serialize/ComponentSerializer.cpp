@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/animation/AbstractTimeline.hpp"
 #include "minko/animation/Matrix4x4Timeline.hpp"
 #include "minko/component/Animation.hpp"
+#include "minko/component/MasterAnimation.hpp"
 #include "minko/component/Transform.hpp"
 #include "minko/component/PerspectiveCamera.hpp"
 #include "minko/component/AmbientLight.hpp"
@@ -255,6 +256,21 @@ ComponentSerializer::serializeRenderer(NodePtr			    node,
 	msgpack::pack(buffer, type);
 
 	return buffer.str();
+}
+
+std::string
+ComponentSerializer::serializeMasterAnimation(NodePtr			        node,
+                                              AbstractComponentPtr      component,
+                                              DependencyPtr	            dependencies)
+{
+    const auto type = static_cast<int8_t>(serialize::MASTER_ANIMATION);
+    auto animation = std::dynamic_pointer_cast<component::MasterAnimation>(component);
+
+    std::stringstream buffer;
+
+    msgpack::pack(buffer, type);
+
+    return buffer.str();
 }
 
 std::string
