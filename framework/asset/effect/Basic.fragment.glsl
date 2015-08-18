@@ -84,13 +84,13 @@ void main(void)
 			discard;
 	#endif // ALPHA_THRESHOLD
 
-    #if defined(VERTEX_UV1) && defined(LIGHT_MAP)
+    #if (defined (VERTEX_UV) || defined(VERTEX_UV1)) && defined(LIGHT_MAP)
         #ifdef LIGHT_MAP_LOD
             diffuse = lightMapping_multiply(diffuse, texturelod_texture2D(uLightMap, vVertexUV1, uLightMapSize, 0.0, uLightMapMaxAvailableLod, vec4(1.0)));
         #else
             diffuse = lightMapping_multiply(diffuse, texture2D(uLightMap, vVertexUV1));
         #endif
-    #endif // VERTEX_UV1 && LIGHT_MAP
+    #endif // (VERTEX_UV || VERTEX_UV1) && LIGHT_MAP
 
 	#ifdef FOG_TECHNIQUE
 		diffuse.rgb = fog_sampleFog(diffuse.rgb, vVertexScreenPosition.z, uFogColor.xyz, uFogColor.a, uFogBounds.x, uFogBounds.y);
