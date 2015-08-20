@@ -70,3 +70,47 @@ Touch::averageY()
 
     return y;
 }
+
+float
+Touch::averageDX()
+{
+    auto x = 0.f;
+    auto l = numTouches();
+
+    for (int i = 0; i < l; ++i)
+    {
+        x += _touches[_identifiers[i]].dX;
+    }
+
+    x /= l;
+
+    return x;
+}
+
+float
+Touch::averageDY()
+{
+    auto y = 0.f;
+    auto l = numTouches();
+
+    for (int i = 0; i < l; ++i)
+    {
+        y += _touches[_identifiers[i]].dY;
+    }
+
+    y /= l;
+
+    return y;
+}
+
+void
+Touch::resetDeltas()
+{
+    auto l = numTouches();
+
+    for (int i = 0; i < l; ++i)
+    {
+        _touches[_identifiers[i]].dX = 0;
+        _touches[_identifiers[i]].dY = 0;
+    }
+}

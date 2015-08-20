@@ -40,6 +40,9 @@ namespace minko
             int                             _x;
             int                             _y;
 
+            int                             _dX;
+            int                             _dY;
+
 			bool							_leftButtonIsDown;
 			bool							_rightButtonIsDown;
             bool                            _middleButtonIsDown;
@@ -101,6 +104,34 @@ namespace minko
             y(int y)
 			{
 				_y = y;
+			}
+
+			inline
+            int
+			dX() const
+			{
+				return _dX;
+			}
+
+			inline
+            int
+			dY() const
+			{
+				return _dY;
+			}
+
+            inline
+			void
+            dX(int dX)
+			{
+				_dX = dX;
+			}
+
+			inline
+			void
+            dY(int dY)
+			{
+				_dY = dY;
 			}
 
 			inline

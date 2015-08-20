@@ -38,30 +38,33 @@ namespace minko
             create(std::shared_ptr<Canvas> canvas);
         
             inline
-            void addTouch(int identifier, float x, float y)
+            void addTouch(int identifier, float x, float y, float dX, float dY)
             {
                 if (_touches.find(identifier) != _touches.end())
                 {
-                    updateTouch(identifier, x, y);
+                    updateTouch(identifier, x, y, dX, dY);
                 }
                 else
                 {
                     _identifiers.push_back(identifier);
-                    _touches[identifier] = math::vec2(x, y);
+
+                    _touches[identifier] = {x, y, dX, dY};
                 }
             }
 
             inline
-            void updateTouch(int identifier, float x, float y)
+            void updateTouch(int identifier, float x, float y, float dX, float dY)
             {
                 if (_touches.find(identifier) == _touches.end())
                 {
-                    addTouch(identifier, x, y);
+                    addTouch(identifier, x, y, dX, dY);
                 }
                 else
                 {
                     _touches[identifier].x = x;
                     _touches[identifier].y = y;
+                    _touches[identifier].dX = dX;
+                    _touches[identifier].dY = dY;
                 }
             }
 

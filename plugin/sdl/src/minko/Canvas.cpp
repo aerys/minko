@@ -438,7 +438,12 @@ Canvas::step()
     auto enteredOrLeftThisFrame = false;
 
     auto gotTextInput = false;
+    
+    _mouse->dX(0);
+    _mouse->dY(0);
 
+    _touch->resetDeltas();
+    
     while (SDL_PollEvent(&event))
     {
         switch (event.type)
@@ -530,23 +535,32 @@ Canvas::step()
             int windowH;
 
             SDL_GetWindowSize(_window, &windowW, &windowH);
-
+            
             auto x = event.motion.x;
             auto y = event.motion.y;
 
+            auto dX = event.motion.xrel;
+            auto dY = event.motion.yrel;
+
             if (windowW != _width || windowH != _height)
             {
-                x = int(float(_width) * float(event.motion.x) / float(windowW));
-                y = int(float(_height) * float(event.motion.y) / float(windowH));
+                x = int(float(_width) * float(x) / float(windowW));
+                y = int(float(_height) * float(y) / float(windowH));
+
+                dX = int(float(_width) * float(dX) / float(windowW));
+                dY = int(float(_height) * float(dY) / float(windowH));
             }
 
             _mouse->x(x);
             _mouse->y(y);
 
-            _mouse->move()->execute(_mouse, event.motion.xrel, event.motion.yrel);
+            _mouse->dX(_mouse->dX() + dX);
+            _mouse->dY(_mouse->dY() + dY);
+                        
+            _mouse->move()->execute(_mouse, dX, dY);
             break;
         }
-
+        
         case SDL_MOUSEBUTTONDOWN:
         {
             if (enteredOrLeftThisFrame)
@@ -559,6 +573,9 @@ Canvas::step()
                 break;
             case SDL_BUTTON_RIGHT:
                 _mouse->rightButtonDown()->execute(_mouse);
+                break;
+            case SDL_BUTTON_MIDDLE:
+                _mouse->middleButtonDown()->execute(_mouse);
                 break;
 #if MINKO_PLATFORM != MINKO_PLATFORM_HTML5
             case SDL_BUTTON_X1:
@@ -582,6 +599,9 @@ Canvas::step()
             case SDL_BUTTON_RIGHT:
                 _mouse->rightButtonUp()->execute(_mouse);
                 break;
+            case SDL_BUTTON_MIDDLE: 
+                _mouse->middleButtonUp()->execute(_mouse);
+                break;
             }
             break;
         }
@@ -599,7 +619,7 @@ Canvas::step()
             auto y = event.tfinger.y * _height;
             auto id = (int)(event.tfinger.fingerId);
 
-            _touch->addTouch(id, x, y);
+            _touch->addTouch(id, x, y, 0.f, 0.f);
 
             _mouse->x((int)_touch->averageX());
             _mouse->y((int)_touch->averageY());
@@ -694,10 +714,13 @@ Canvas::step()
             if (std::abs(_touch->lastTouchDownX() - x) > input::SDLTouch::TAP_MOVE_THRESHOLD || std::abs(_touch->lastTouchDownY() - y) > input::SDLTouch::TAP_MOVE_THRESHOLD)
                 _touch->lastTouchDownTime(-1.0f);
 
-            _touch->updateTouch(id, x, y);
+            _touch->updateTouch(id, x, y, dx, dy);
 
             _mouse->x((int)_touch->averageX());
             _mouse->y((int)_touch->averageY());
+
+            _mouse->dX((int)_touch->averageDX());
+            _mouse->dY((int)_touch->averageDY());
 
             _touch->touchMove()->execute(
                 _touch,
@@ -729,7 +752,7 @@ Canvas::step()
 
             if (_touch->numTouches() == 2)
             {
-                math::vec2 touch2;
+                input::Touch::TouchPoint touch2;
                 auto hasTouch2 = false;
 
                 for (auto i = 0u; i < _touch->identifiers().size(); ++i)
