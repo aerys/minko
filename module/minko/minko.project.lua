@@ -13,6 +13,9 @@ minko.project.library = function(name)
 
 	includedirs { minko.sdk.path("/framework/lib/sparsehash/src") }
 
+	includedirs { minko.sdk.path("/framework/lib/jsoncpp/src") }
+	defines { "JSON_IS_AMALGAMATION" }
+
 	configuration { "windows" }
 		includedirs { minko.sdk.path("/framework/lib/sparsehash/include/windows") }
 		buildoptions { "/wd4996" }
