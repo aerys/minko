@@ -49,7 +49,8 @@ MaterialParser::MaterialParser()
     _typeIdToReadFunction[VECTOR3]          = std::bind(&deserialize::TypeDeserializer::deserializeVector3,            std::placeholders::_1);
     _typeIdToReadFunction[VECTOR2]          = std::bind(&deserialize::TypeDeserializer::deserializeVector2,            std::placeholders::_1);
     _typeIdToReadFunction[BLENDING]         = std::bind(&deserialize::TypeDeserializer::deserializeBlending,        std::placeholders::_1);
-    _typeIdToReadFunction[TRIANGLECULLING]  = std::bind(&deserialize::TypeDeserializer::deserializeTriangleCulling, std::placeholders::_1);
+    _typeIdToReadFunction[TRIANGLECULLING] = std::bind(&deserialize::TypeDeserializer::deserializeTriangleCulling, std::placeholders::_1);
+    _typeIdToReadFunction[STRING] = std::bind(&deserialize::TypeDeserializer::deserializeString, std::placeholders::_1);
 }
 
 void
@@ -83,7 +84,7 @@ MaterialParser::parse(const std::string&                filename,
 	material = options->materialFunction()(material->name(), material);
 
     static auto nameId = 0;
-    auto uniqueName = filename;
+    auto uniqueName = material->name();
 
     while (assetLibrary->material(uniqueName) != nullptr)
         uniqueName = "material" + std::to_string(nameId++);
@@ -180,6 +181,12 @@ MaterialParser::deserializeComplexProperty(MaterialPtr            material,
                 sampler.mipFilter
             );
         }
+    }
+    else if (type == STRING)
+    {
+        const auto name = Any::cast<std::string>(TypeDeserializer::deserializeString(serializedPropertyTuple));
+
+        material->data()->set(serializedProperty.get<0>(), name);
     }
 }
 

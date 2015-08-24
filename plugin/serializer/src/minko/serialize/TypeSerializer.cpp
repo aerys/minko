@@ -189,3 +189,13 @@ TypeSerializer::serializeTexture(Any value)
 	return std::tuple<uint, std::string>(type, "");
 
 }
+
+std::tuple<uint, std::string>
+TypeSerializer::serializeString(Any value)
+{
+    const auto str = Any::cast<std::string>(value);
+
+    const auto type = STRING << 24;
+
+    return std::tuple<uint, std::string>(type, str);
+}

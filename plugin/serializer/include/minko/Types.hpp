@@ -57,7 +57,8 @@ namespace minko
 			BOOL			= 7,
 			BLENDING		= 8,
 			TRIANGLECULLING = 9,
-			ENVMAPTYPE		= 10
+			ENVMAPTYPE		= 10,
+            STRING          = 11
 		};
 
 		enum AssetType

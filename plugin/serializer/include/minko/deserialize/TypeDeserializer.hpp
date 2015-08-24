@@ -88,6 +88,10 @@ namespace minko
             static
             Any
             deserializeTextureId(const std::tuple<uint, std::string&>& seriliazedTextureId);
+
+            static
+            Any
+            deserializeString(const std::tuple<uint, std::string&>& serialized);
         };
     }
 }
