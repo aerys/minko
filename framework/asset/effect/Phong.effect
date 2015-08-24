@@ -4,7 +4,6 @@
         "name" : "default",
         "passes" : [
             {
-                "name" : "default",
                 "extends" : {
                     "effect"    : "BaseStreamingTemplate.effect",
                     "technique" : "base-streaming-technique",
