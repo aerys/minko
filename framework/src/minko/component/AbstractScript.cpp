@@ -121,7 +121,7 @@ AbstractScript::frameBeginHandler(SceneManager::Ptr sceneManager,
         start(target);
 	}
 
-    if (_started)
+    if (_started && _enabled)
         update(target);
 
 	if (!_started)
@@ -169,5 +169,17 @@ AbstractScript::setSceneManager(SceneManager::Ptr sceneManager)
 
 		_frameBeginSlot = nullptr;
 		_frameEndSlot   = nullptr;
+	}
+}
+
+void
+AbstractScript::enabled(bool v)
+{
+	if (v != _enabled)
+	{
+		_enabled = v;
+
+		if (target())
+			setSceneManager(target()->root()->component<SceneManager>());
 	}
 }
