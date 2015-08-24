@@ -36,7 +36,8 @@ namespace minko
 			typedef std::shared_ptr<Renderer>					RendererPtr;
 			typedef std::shared_ptr<AbstractComponent>			AbsCtrlPtr;
 			typedef std::shared_ptr<scene::Node>				NodePtr;
-			typedef std::shared_ptr<render::Texture>			TexturePtr;
+            typedef std::shared_ptr<render::Effect>			    EffectPtr;
+            typedef std::shared_ptr<render::Texture>			TexturePtr;
 			typedef std::shared_ptr<render::AbstractContext>	ContextPtr;
 			typedef std::shared_ptr<SceneManager>				SceneManagerPtr;
 			typedef std::shared_ptr<input::Mouse>				MousePtr;
@@ -58,6 +59,9 @@ namespace minko
 			uint							        	_pickingId;
 			ContextPtr					        		_context;
             ProviderPtr				        		    _pickingProvider;
+
+            EffectPtr                                   _pickingEffect;
+            EffectPtr                                   _pickingDepthEffect;
 
             RendererPtr                                 _depthRenderer;
 
@@ -135,11 +139,11 @@ namespace minko
 		public:
 			inline static
 			Ptr
-            create(NodePtr camera, bool addPickingLayoutToNodes = true, bool emulateMouseWithTouch = true)
+            create(NodePtr camera, bool addPickingLayoutToNodes = true, bool emulateMouseWithTouch = true, EffectPtr pickingEffect = nullptr, EffectPtr pickingDepthEffect = nullptr)
 			{
                 Ptr picking = std::shared_ptr<Picking>(new Picking());
 
-                picking->initialize(camera, addPickingLayoutToNodes, emulateMouseWithTouch);
+                picking->initialize(camera, addPickingLayoutToNodes, emulateMouseWithTouch, pickingEffect, pickingDepthEffect);
 
 				return picking;
 			}
@@ -293,7 +297,11 @@ namespace minko
 
 		private:
             void
-            initialize(NodePtr camera, bool addPickingLayout, bool emulateMouseWithTouch);
+            initialize(NodePtr      camera, 
+                       bool         addPickingLayout, 
+                       bool         emulateMouseWithTouch, 
+                       EffectPtr    pickingEffect = nullptr, 
+                       EffectPtr    pickingDepthEffect = nullptr);
 
 			void
             bindSignals();

@@ -18,7 +18,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 */
 
 #include "minko/component/Picking.hpp"
-#include "minko/render/Texture.hpp"
 #include "minko/component/Renderer.hpp"
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
@@ -29,8 +28,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/input/Mouse.hpp"
 #include "minko/input/Touch.hpp"
 #include "minko/component/Surface.hpp"
-#include "minko/material/BasicMaterial.hpp"
-#include "minko/component/Transform.hpp"
 #include "minko/data/Provider.hpp"
 #include "minko/AbstractCanvas.hpp"
 #include "minko/math/Ray.hpp"
@@ -44,9 +41,11 @@ Picking::Picking() :
     _mouse(nullptr),
     _touch(nullptr),
     _camera(nullptr),
-	_pickingId(0),
-	_pickingProjection(1.f),
-	_pickingProvider(data::Provider::create()),
+    _pickingId(0),
+    _pickingProjection(1.f),
+    _pickingProvider(data::Provider::create()),
+    _pickingEffect(nullptr),
+    _pickingDepthEffect(nullptr),
 	_mouseMove(Signal<NodePtr>::create()),
 	_mouseLeftClick(Signal<NodePtr>::create()),
 	_mouseRightClick(Signal<NodePtr>::create()),
@@ -75,11 +74,15 @@ Picking::Picking() :
 void
 Picking::initialize(NodePtr             camera,
                     bool                addPickingLayout, 
-                    bool                emulateMouseWithTouch)
+                    bool                emulateMouseWithTouch,
+                    EffectPtr           pickingEffect, 
+                    EffectPtr           pickingDepthEffect)
 {
     _camera = camera;
-    _emulateMouseWithTouch = emulateMouseWithTouch;
     _addPickingLayout = addPickingLayout;
+    _emulateMouseWithTouch = emulateMouseWithTouch;
+    _pickingEffect = pickingEffect;
+    _pickingDepthEffect = pickingDepthEffect;
     
 	_pickingProvider->set("pickingProjection", _pickingProjection);
 	_pickingProvider->set("pickingOrigin", math::vec3());
@@ -201,10 +204,13 @@ Picking::targetAdded(NodePtr target)
 
     bindSignals();
     
+    if (_pickingEffect == nullptr)
+        _pickingEffect = _sceneManager->assets()->effect("effect/Picking.effect");
+
     _renderer = Renderer::create(
         0xFFFF00FF,
         nullptr,
-        _sceneManager->assets()->effect("effect/Picking.effect"),
+        _pickingEffect,
         "default",
         1000.f,
         "Picking Renderer"
@@ -213,10 +219,13 @@ Picking::targetAdded(NodePtr target)
     _renderer->layoutMask(scene::BuiltinLayout::PICKING);
     _renderer->enabled(false);
 
+    if (_pickingDepthEffect == nullptr)
+        _pickingDepthEffect = _sceneManager->assets()->effect("effect/PickingDepth.effect");
+
     _depthRenderer = Renderer::create(
         0xFFFF00FF,
         nullptr,
-        _sceneManager->assets()->effect("effect/PickingDepth.effect"),
+        _pickingDepthEffect,
         "default",
         999.f,
         "Depth Picking Renderer"

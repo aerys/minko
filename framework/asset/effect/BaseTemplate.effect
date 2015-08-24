@@ -1,0 +1,68 @@
+{
+    "name" : "base-template",
+	"techniques" : [
+        {
+            "name" : "base-technique",
+    		"passes" : [
+                {
+                    "name" : "base-pass",
+                    "attributes" : {
+                        "aPosition" : "geometry[${geometryUuid}].position",
+                        "aUV"       : "geometry[${geometryUuid}].uv"
+                    },
+                    "uniforms"   : {
+                        "uModelToWorldMatrix"   : "modelToWorldMatrix",
+                        "uWorldToScreenMatrix"  : { "binding" : { "property" : "worldToScreenMatrix", "source" : "renderer" } },
+                        "uUVOffset"             : "material[${materialUuid}].uvOffset",
+                        "uUVScale"              : "material[${materialUuid}].uvScale",
+                        "uDiffuseColor"         : "material[${materialUuid}].diffuseColor",
+                        "uDiffuseMap"           : {
+                            "binding"       : "material[${materialUuid}].diffuseMap",
+                            "wrapMode"      : "repeat",
+                            "textureFilter" : "linear",
+                            "mipFilter"     : "linear"
+                        }
+                    },
+                    "macros" : {
+                        "MODEL_TO_WORLD"        : "modelToWorldMatrix",
+                        "DIFFUSE_MAP"           : "material[${materialUuid}].diffuseMap",
+                        "VERTEX_UV"             : "geometry[${geometryUuid}].uv",
+                        "UV_OFFSET"             : "material[${materialUuid}].uvOffset",
+                        "UV_SCALE"              : "material[${materialUuid}].uvScale"
+                    },
+                    "states" : {
+                        "priority"                  : { "binding" : "material[${materialUuid}].priority" },
+                        "zSorted"                   : { "binding" : "material[${materialUuid}].zSorted" },
+                        "blendingSource"            : { "binding" : "material[${materialUuid}].blendingSource" },
+                        "blendingDestination"       : { "binding" : "material[${materialUuid}].blendingDestination" },
+                        "colorMask"                 : { "binding" : "material[${materialUuid}].colorMask" },
+                        "depthMask"                 : { "binding" : "material[${materialUuid}].depthMask" },
+                        "depthFunction"             : { "binding" : "material[${materialUuid}].depthFunction" },
+                        "triangleCulling"           : { "binding" : "material[${materialUuid}].triangleCulling" },
+                        "stencilFunction"           : { "binding" : "material[${materialUuid}].stencilFunction" },
+                        "stencilReference"          : { "binding" : "material[${materialUuid}].stencilReference" },
+                        "stencilMask"               : { "binding" : "material[${materialUuid}].stencilMask" },
+                        "stencilFailOperation"      : { "binding" : "material[${materialUuid}].stencilFailOperation" },
+                        "stencilZFailOperation"     : { "binding" : "material[${materialUuid}].stencilZFailOperation" },
+                        "stencilZPassOperation"     : { "binding" : "material[${materialUuid}].stencilZPassOperation" },
+                        "scissorTest"               : { "binding" : "material[${materialUuid}].scissorTest" },
+                        "scissorBox"                : { "binding" : "material[${materialUuid}].scissorBox" },
+                        "target"                    : { "binding" : "material[${materialUuid}].target" }
+                    },
+                    "vertexShader" : "
+                        void main(void)
+                        {
+                            gl_Position = vec4(1.0);
+                        }
+                    ",
+                    "fragmentShader" : "
+                        void main(void)
+                        {
+                            gl_FragColor = vec4(1.0);
+                        }
+                    "
+        		}
+            ]
+    	}
+    ]
+}

@@ -9,17 +9,14 @@
 #endif
 
 #pragma include "TextureLod.extension.glsl"
-#pragma include "Envmap.function.glsl"
-#pragma include "Phong.function.glsl"
 #pragma include "TextureLod.function.glsl"
 #pragma include "ShadowMapping.function.glsl"
-#pragma include "Fog.function.glsl"
 #pragma include "Math.function.glsl"
 #pragma include "PBR.function.glsl"
 
-// diffuse
-uniform vec4 uDiffuseColor;
-uniform sampler2D uDiffuseMap;
+// camera
+uniform vec3 uCameraPosition;
+uniform vec3 uCameraDirection;
 
 // alpha
 uniform sampler2D uAlphaMap;
@@ -29,17 +26,20 @@ uniform float uAlphaThreshold;
 uniform vec4 uFogColor;
 uniform vec2 uFogBounds;
 
-// phong
-uniform vec4 uSpecularColor;
-uniform sampler2D uNormalMap;
+// pbr material
+uniform vec4 uAlbedoColor;
+uniform sampler2D uAlbedoMap;
+uniform vec3 uSpecularColor;
 uniform sampler2D uSpecularMap;
-uniform float uShininess;
-uniform vec3 uCameraPosition;
-uniform vec3 uCameraDirection;
+uniform sampler2D uNormalMap;
+uniform float uRoughness;
+uniform float uMetalness;
+uniform sampler2D uRadianceMap;
+uniform sampler2D uIrradianceMap;
 
 // texture lod
-uniform float uDiffuseMapMaxAvailableLod;
-uniform vec2 uDiffuseMapSize;
+uniform float uAlbedoMapMaxAvailableLod;
+uniform vec2 uAlbedoMapSize;
 
 uniform float uNormalMapMaxAvailableLod;
 uniform vec2 uNormalMapSize;
@@ -179,9 +179,6 @@ uniform float uSpotLight3_cosOuterConeAngle;
 uniform vec3 uSpotLight3_attenuationCoeffs;
 uniform float uSpotLight3_specular;
 
-// ibl
-uniform samplerCube uIrradianceCubeMap;
-
 varying vec3 vVertexPosition;
 varying vec2 vVertexUV;
 varying vec3 vVertexNormal;
@@ -239,52 +236,72 @@ float getShadow(sampler2D 	shadowMap,
 
 void main(void)
 {
+    float roughness = max(1e-4, uRoughness);
 	vec3 ambientAccum = vec3(0.0);
-	vec3 lighting = vec3(0.0);
+	vec3 diffuseAccum = vec3(0.0);
 	vec3 specularAccum	= vec3(0.0);
-	vec4 diffuse = uDiffuseColor;
-	vec4 specular = uSpecularColor;
-	float shininessCoeff = 1.0;
 	vec3 eyeVector = normalize(uCameraPosition - vVertexPosition); // always in world-space
 	vec3 normalVector = normalize(vVertexNormal); // always in world-space
 
+    // albedo color
+	vec4 albedo = uAlbedoColor;
 	#ifdef VERTEX_COLOR
-		diffuse = vVertexColor;
+		albedo = vVertexColor;
 	#endif // VERTEX_COLOR
 
-	#ifdef SHININESS
-		shininessCoeff = max(1.0, uShininess);
-	#endif // SHININESS
-
-	#if defined(DIFFUSE_MAP) && defined(VERTEX_UV)
-		#ifdef DIFFUSE_MAP_LOD
-			diffuse = texturelod_texture2D(uDiffuseMap, vVertexUV, uDiffuseMapSize, 0.0, uDiffuseMapMaxAvailableLod, diffuse);
+	#if defined(ALBEDO_MAP) && defined(VERTEX_UV)
+		#ifdef ALBEDO_MAP_LOD
+			albedo = texturelod_texture2D(uAlbedoMap, vVertexUV, uAlbedoMapSize, 0.0, uAlbedoMapMaxAvailableLod, albedo);
 		#else
-			diffuse = texture2D(uDiffuseMap, vVertexUV);
+			albedo = texture2D(uAlbedoMap, vVertexUV);
 		#endif
-	#endif // DIFFUSE_MAP
+	#endif // ALBEDO_MAP
 
 	#if defined(ALPHA_MAP) && defined(VERTEX_UV)
-		diffuse.a = texture2D(uAlphaMap, vVertexUV).r;
+		albedo.a = texture2D(uAlphaMap, vVertexUV).r;
 	#endif // ALPHA_MAP
 
 	#ifdef ALPHA_THRESHOLD
-		if (diffuse.a < uAlphaThreshold)
+		if (albedo.a < uAlphaThreshold)
 			discard;
 	#endif // ALPHA_THRESHOLD
 
-	#if defined(SHININESS) || ( (defined(ENVIRONMENT_MAP_2D) || defined(ENVIRONMENT_CUBE_MAP)) && !defined(ENVIRONMENT_ALPHA) )
-		#if defined(SPECULAR_MAP) && defined(VERTEX_UV)
-			#ifdef SPECULAR_MAP_LOD
-				specular = texturelod_texture2D(uSpecularMap, vVertexUV, uSpecularMapSize, 0.0, uSpecularMapMaxAvailableLod, uSpecularColor);
-			#else
-				specular = texture2D(uSpecularMap, vVertexUV);
-			#endif
-		#elif defined(NORMAL_MAP) && defined(VERTEX_UV)
-			specular.a = texture2D(uNormalMap, vVertexUV).a; // ???
-		#endif // SPECULAR_MAP
-	#endif
+    // specular color
+	vec3 specular = uSpecularColor;
+	#if defined(SPECULAR_MAP) && defined(VERTEX_UV)
+		#ifdef SPECULAR_MAP_LOD
+			specular = texturelod_texture2D(uSpecularMap, vVertexUV, uSpecularMapSize, 0.0, uSpecularMapMaxAvailableLod, uSpecularColor).rgb;
+		#else
+			specular = texture2D(uSpecularMap, vVertexUV).rgb;
+		#endif
+	#endif // SPECULAR_MAP
 
+    specular = mix(specular, albedo.rgb, uMetalness);
+    albedo.rgb = mix(albedo.rgb, vec3(0.0), uMetalness);
+
+    vec3 N = normalVector;
+    vec3 V = eyeVector;
+    float NoV = saturate(dot(N, V));
+
+    // image based lighting
+    #ifdef IRRADIANCE_MAP
+        diffuseAccum += pbr_envDiffuse(uIrradianceMap, normalVector);
+    #endif // IRRADIANCE_CUBEMAP
+
+    #ifdef RADIANCE_MAP
+        specularAccum = pbr_envSpecular(
+            specular,
+            uRadianceMap,
+            10,
+            roughness,
+            reflect(-eyeVector, normalVector),
+            NoV,
+            normalVector,
+            eyeVector
+        );
+    #endif // RADIANCE_CUBEMAP
+
+    // ambient lights
     #ifdef NUM_AMBIENT_LIGHTS
     	#if NUM_AMBIENT_LIGHTS > 0
             ambientAccum += uAmbientLight0_color * uAmbientLight0_ambient;
@@ -300,7 +317,7 @@ void main(void)
     	#endif // NUM_AMBIENT_LIGHTS > 3
     #endif
 
-	#if defined(NUM_DIRECTIONAL_LIGHTS) || defined(NUM_POINT_LIGHTS) || defined(NUM_SPOT_LIGHTS) || defined(IRRADIANCE_CUBEMAP)
+	#if defined(NUM_DIRECTIONAL_LIGHTS) || defined(NUM_POINT_LIGHTS) || defined(NUM_SPOT_LIGHTS) || defined(IRRADIANCE_CUBEMAP) || defined(RADIANCE_CUBEMAP)
 		#if defined(NORMAL_MAP) && defined(VERTEX_UV)
 			// warning: the normal vector must be normalized at this point!
 			mat3 tangentToWorldMatrix = phong_getTangentToWorldSpaceMatrix(normalVector, vVertexTangent);
@@ -315,211 +332,85 @@ void main(void)
 			normalVector = tangentToWorldMatrix * normalize(2.0 * normalColor.xyz - 1.0);
 		#endif // NORMAL_MAP
 
-        #ifdef IRRADIANCE_CUBEMAP
-            lighting = textureCube(uIrradianceCubeMap, normalVector).rgb;
-        #endif // IRRADIANCE_CUBEMAP
-
-        float roughness = saturate(1.0 - uShininess);
-        vec3 N = normalVector;
-        vec3 V = eyeVector;
-		vec3 L;
+    	vec3 L;
         vec3 H;
-		float shadow;
+    	float shadow;
         float NoL, NoH, VoH;
-        float NoV = saturate(dot(N, V));
         #ifdef NUM_DIRECTIONAL_LIGHTS
 
-		#if NUM_DIRECTIONAL_LIGHTS > 0
-			shadow = 1.0;
-			L = normalize(-uDirLight0_direction);
-            H = normalize(V + L);
-            NoL = saturate(dot(N, L));
-            NoH = saturate(dot(N, H));
-            VoH = saturate(dot(L, H));
-			#ifdef DIRECTIONAL_0_SHADOW_MAP
-				shadow = getShadow(uDirLight0_shadowMap, uDirLight0_viewProjection, uDirLight0_zNear, uDirLight0_zFar, uDirLight0_shadowSplitNear, uDirLight0_shadowSplitFar, uDirLight0_shadowMapSize, uDirLight0_shadowBias);
-			#endif
-            lighting += pbr_diffuse(uDirLight0_color * uDirLight0_diffuse, roughness, NoV, NoL, VoH) * shadow;
-			#if defined(SHININESS)
-                lighting += pbr_specular(uDirLight0_color * uDirLight0_diffuse, roughness, NoL, NoV, NoH, VoH) * shadow;
-			#endif // SHININESS
-		#endif // NUM_DIRECTIONAL_LIGHTS > 0
-		#if NUM_DIRECTIONAL_LIGHTS > 1
-			shadow = 1.0;
-            L = normalize(-uDirLight1_direction);
-            H = normalize(V + L);
-            NoL = saturate(dot(N, L));
-            NoH = saturate(dot(N, H));
-            VoH = saturate(dot(L, H));
-			#ifdef DIRECTIONAL_1_SHADOW_MAP
-				shadow = getShadow(uDirLight1_shadowMap, uDirLight1_viewProjection, uDirLight1_zNear, uDirLight1_zFar, uDirLight1_shadowSplitNear, uDirLight1_shadowSplitFar, uDirLight1_shadowMapSize, uDirLight1_shadowBias);
-			#endif
-            lighting += pbr_diffuse(uDirLight1_color * uDirLight1_diffuse, roughness, NoV, NoL, VoH) * shadow;
-            #if defined(SHININESS)
-                lighting += pbr_specular(uDirLight1_color * uDirLight1_diffuse, roughness, NoL, NoV, NoH, VoH) * shadow;
-            #endif // SHININESS
-		#endif // NUM_DIRECTIONAL_LIGHTS > 1
-		#if NUM_DIRECTIONAL_LIGHTS > 2
-			shadow = 1.0;
-			dir = normalize(-uDirLight2_direction);
-			#ifdef DIRECTIONAL_2_SHADOW_MAP
-				shadow = getShadow(uDirLight2_shadowMap, uDirLight2_viewProjection, uDirLight2_zNear, uDirLight2_zFar, uDirLight2_shadowSplitNear, uDirLight2_shadowSplitFar, uDirLight2_shadowMapSize, uDirLight2_shadowBias);
-			#endif
-			lighting += pbr_diffuse(uDirLight2_color * uDirLight2_diffuse, roughness, NoV, NoL, VoH) * shadow;
-			#if defined(SHININESS)
-				lighting += pbr_specular(uDirLight2_color * uDirLight2_diffuse, roughness, NoL, NoV, NoH, VoH) * shadow;
-			#endif // SHININESS
-		#endif // NUM_DIRECTIONAL_LIGHTS > 2
-		#if NUM_DIRECTIONAL_LIGHTS > 3
-			shadow = 1.0;
-			dir = normalize(-uDirLight3_direction);
-			#ifdef DIRECTIONAL_3_SHADOW_MAP
-				shadow = getShadow(uDirLight3_shadowMap, uDirLight3_viewProjection, uDirLight3_zNear, uDirLight3_zFar, uDirLight3_shadowSplitNear, uDirLight3_shadowSplitFar, uDirLight3_shadowMapSize, uDirLight3_shadowBias);
-			#endif
-			lighting += pbr_diffuse(uDirLight3_color * uDirLight3_diffuse, roughness, NoV, NoL, VoH) * shadow;
-			#if defined(SHININESS)
-				lighting += pbr_specular(uDirLight3_color * uDirLight3_diffuse, roughness, NoL, NoV, NoH, VoH) * shadow;
-			#endif // SHININESS
-		#endif // NUM_DIRECTIONAL_LIGHTS > 3
+    		#if NUM_DIRECTIONAL_LIGHTS > 0
+    			shadow = 1.0;
+    			L = normalize(-uDirLight0_direction);
+                H = normalize(V + L);
+                NoL = saturate(dot(N, L));
+                NoH = saturate(dot(N, H));
+                VoH = saturate(dot(L, H));
+    			#ifdef DIRECTIONAL_0_SHADOW_MAP
+    				shadow = getShadow(uDirLight0_shadowMap, uDirLight0_viewProjection, uDirLight0_zNear, uDirLight0_zFar, uDirLight0_shadowSplitNear, uDirLight0_shadowSplitFar, uDirLight0_shadowMapSize, uDirLight0_shadowBias);
+    			#endif
+                diffuseAccum += pbr_diffuse(uDirLight0_color * uDirLight0_diffuse, uRoughness, NoV, NoL, VoH) * shadow;
+                specularAccum += pbr_specular(specular.rgb, roughness, NoL, NoV, NoH, VoH) * shadow;
+    		#endif // NUM_DIRECTIONAL_LIGHTS > 0
+
+    		#if NUM_DIRECTIONAL_LIGHTS > 1
+    			shadow = 1.0;
+                L = normalize(-uDirLight1_direction);
+                H = normalize(V + L);
+                NoL = saturate(dot(N, L));
+                NoH = saturate(dot(N, H));
+                VoH = saturate(dot(L, H));
+    			#ifdef DIRECTIONAL_1_SHADOW_MAP
+    				shadow = getShadow(uDirLight1_shadowMap, uDirLight1_viewProjection, uDirLight1_zNear, uDirLight1_zFar, uDirLight1_shadowSplitNear, uDirLight1_shadowSplitFar, uDirLight1_shadowMapSize, uDirLight1_shadowBias);
+    			#endif
+                diffuseAccum += pbr_diffuse(uDirLight1_color * uDirLight1_diffuse, uRoughness, NoV, NoL, VoH) * shadow;
+                specularAccum += pbr_specular(specular.rgb, roughness, NoL, NoV, NoH, VoH) * shadow;
+    		#endif // NUM_DIRECTIONAL_LIGHTS > 1
+
+    		#if NUM_DIRECTIONAL_LIGHTS > 2
+    			shadow = 1.0;
+                L = normalize(-uDirLight2_direction);
+                H = normalize(V + L);
+                NoL = saturate(dot(N, L));
+                NoH = saturate(dot(N, H));
+                VoH = saturate(dot(L, H));
+    			#ifdef DIRECTIONAL_2_SHADOW_MAP
+    				shadow = getShadow(uDirLight2_shadowMap, uDirLight2_viewProjection, uDirLight2_zNear, uDirLight2_zFar, uDirLight2_shadowSplitNear, uDirLight2_shadowSplitFar, uDirLight2_shadowMapSize, uDirLight2_shadowBias);
+    			#endif
+    			diffuseAccum += pbr_diffuse(uDirLight2_color * uDirLight2_diffuse, uRoughness, NoV, NoL, VoH) * shadow;
+				specularAccum += pbr_specular(specular.rgb, roughness, NoL, NoV, NoH, VoH) * shadow;
+    		#endif // NUM_DIRECTIONAL_LIGHTS > 2
+
+    		#if NUM_DIRECTIONAL_LIGHTS > 3
+    			shadow = 1.0;
+                L = normalize(-uDirLight3_direction);
+                H = normalize(V + L);
+                NoL = saturate(dot(N, L));
+                NoH = saturate(dot(N, H));
+                VoH = saturate(dot(L, H));
+    			#ifdef DIRECTIONAL_3_SHADOW_MAP
+    				shadow = getShadow(uDirLight3_shadowMap, uDirLight3_viewProjection, uDirLight3_zNear, uDirLight3_zFar, uDirLight3_shadowSplitNear, uDirLight3_shadowSplitFar, uDirLight3_shadowMapSize, uDirLight3_shadowBias);
+    			#endif
+    			diffuseAccum += pbr_diffuse(uDirLight3_color * uDirLight3_diffuse, uRoughness, NoV, NoL, VoH) * shadow;
+				specularAccum += pbr_specular(specular.rgb, roughness, NoL, NoV, NoH, VoH) * shadow;
+    		#endif // NUM_DIRECTIONAL_LIGHTS > 3
 
         #endif // defined(NUM_DIRECTIONAL_LIGHTS)
 
-        float dist = 0.;
-        vec3 distVec = vec3(0.);
-        float att = 0.;
-        #ifdef NUM_POINT_LIGHTS
-    		#if NUM_POINT_LIGHTS > 0
-                dir = normalize(uPointLight0_position - vVertexPosition);
-                dist = length(uPointLight0_position - vVertexPosition);
-                distVec = vec3(1.0, dist, dist * dist);
-                att = any(lessThan(uPointLight0_attenuationCoeffs, vec3(0.0))) ? 1.0 : max(0.0, 1.0 - dist / dot(uPointLight0_attenuationCoeffs, distVec));
-                lighting += phong_diffuseReflection(normalVector, dir) * uPointLight0_color * uPointLight0_diffuse;// * att;
-                #if defined(SHININESS)
-                    specularAccum += phong_specularReflection(normalVector, dir, eyeVector, shininessCoeff) * uPointLight0_color * (uPointLight0_specular * att)
-                        * phong_fresnel(specular.rgb, dir, eyeVector);
-                #endif // defined(SHININESS)
-            #endif // NUM_POINT_LIGHTS > 0
-            #if NUM_POINT_LIGHTS > 1
-                dir = normalize(uPointLight1_position - vVertexPosition);
-                dist = length(uPointLight1_position - vVertexPosition);
-                distVec = vec3(1.0, dist, dist * dist);
-                att = any(lessThan(uPointLight1_attenuationCoeffs, vec3(0.0))) ? 1.0 : max(0.0, 1.0 - dist / dot(uPointLight1_attenuationCoeffs, distVec));
-                lighting += phong_diffuseReflection(normalVector, dir) * uPointLight1_color * uPointLight1_diffuse;// * att;
-                #if defined(SHININESS)
-                    specularAccum += phong_specularReflection(normalVector, dir, eyeVector, shininessCoeff) * uPointLight1_color * (uPointLight1_specular * att)
-                        * phong_fresnel(specular.rgb, dir, eyeVector);
-                #endif // defined(SHININESS)
-            #endif // NUM_POINT_LIGHTS > 1
-            #if NUM_POINT_LIGHTS > 2
-                dir = normalize(uPointLight2_position - vVertexPosition);
-                dist = length(uPointLight2_position - vVertexPosition);
-                distVec = vec3(1.0, dist, dist * dist);
-                att = any(lessThan(uPointLight2_attenuationCoeffs, vec3(0.0))) ? 1.0 : max(0.0, 1.0 - dist / dot(uPointLight2_attenuationCoeffs, distVec));
-                lighting += phong_diffuseReflection(normalVector, dir) * uPointLight2_color * uPointLight2_diffuse;// * att;
-                #if defined(SHININESS)
-                    specularAccum += phong_specularReflection(normalVector, dir, eyeVector, shininessCoeff) * uPointLight2_color * (uPointLight2_specular * att)
-                        * phong_fresnel(specular.rgb, dir, eyeVector);
-                #endif // defined(SHININESS)
-            #endif // NUM_POINT_LIGHTS > 2
-            #if NUM_POINT_LIGHTS > 3
-                dir = normalize(uPointLight3_position - vVertexPosition);
-                dist = length(uPointLight3_position - vVertexPosition);
-                distVec = vec3(1.0, dist, dist * dist);
-                att = any(lessThan(uPointLight3_attenuationCoeffs, vec3(0.0))) ? 1.0 : max(0.0, 1.0 - dist / dot(uPointLight3_attenuationCoeffs, distVec));
-                lighting += phong_diffuseReflection(normalVector, dir) * uPointLight3_color * uPointLight3_diffuse;// * att;
-                #if defined(SHININESS)
-                    specularAccum += phong_specularReflection(normalVector, dir, eyeVector, shininessCoeff) * uPointLight3_color * (uPointLight3_specular * att)
-                        * phong_fresnel(specular.rgb, dir, eyeVector);
-                #endif // defined(SHININESS)
-            #endif // NUM_POINT_LIGHTS > 3
-        #endif // defined(NUM_POINT_LIGHTS)
+	#endif // defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS || defined IRRADIANCE_CUBEMAP || defined RADIANCE_CUBEMAP
 
-        float cosSpot = 0.;
-        float cutoff = 0.;
-        #ifdef NUM_SPOT_LIGHTS
-    		#if NUM_SPOT_LIGHTS > 0
-                dir = normalize(uSpotLight0_position - vVertexPosition);
-                dist = length(uSpotLight0_position - vVertexPosition);
-                cosSpot = dot(-dir, uSpotLight0_direction);
-                if (uSpotLight0_cosOuterConeAngle < cosSpot)
-                {
-                    distVec = vec3(1.0, dist, dist * dist);
-                    att = any(lessThan(uSpotLight0_attenuationCoeffs, vec3(0.0))) ? 1.0 : max(0.0, 1.0 - dist / dot(uSpotLight0_attenuationCoeffs, distVec));
-                    cutoff = cosSpot < uSpotLight0_cosInnerConeAngle && uSpotLight0_cosOuterConeAngle < uSpotLight0_cosInnerConeAngle
-    					? (cosSpot - uSpotLight0_cosOuterConeAngle) / (uSpotLight0_cosInnerConeAngle - uSpotLight0_cosOuterConeAngle)
-    					: 1.0;
-                    lighting += phong_diffuseReflection(normalVector, dir) * uSpotLight0_color * uSpotLight0_diffuse * att * cutoff;
-                    #ifdef SHININESS
-    					specularAccum += phong_specularReflection(normalVector, dir, eyeVector, shininessCoeff) * uSpotLight0_color * uSpotLight0_specular * att * cutoff
-    						* phong_fresnel(specular.rgb, dir, eyeVector);
-    				#endif // defined(SHININESS)
-                }
-            #endif // NUM_SPOT_LIGHTS > 0
-            #if NUM_SPOT_LIGHTS > 1
-                dir = normalize(uSpotLight1_position - vVertexPosition);
-                dist = length(uSpotLight1_position - vVertexPosition);
-                cosSpot = dot(-dir, uSpotLight1_direction);
-                if (uSpotLight1_cosOuterConeAngle < cosSpot)
-                {
-                    distVec = vec3(1.0, dist, dist * dist);
-                    att = any(lessThan(uSpotLight1_attenuationCoeffs, vec3(0.0))) ? 1.0 : max(0.0, 1.0 - dist / dot(uSpotLight1_attenuationCoeffs, distVec));
-                    cutoff = cosSpot < uSpotLight1_cosInnerConeAngle && uSpotLight1_cosOuterConeAngle < uSpotLight1_cosInnerConeAngle
-    					? (cosSpot - uSpotLight1_cosOuterConeAngle) / (uSpotLight1_cosInnerConeAngle - uSpotLight1_cosOuterConeAngle)
-    					: 1.0;
-                    lighting += phong_diffuseReflection(normalVector, dir) * uSpotLight1_color * uSpotLight1_diffuse * att * cutoff;
-                    #ifdef SHININESS
-    					specularAccum += phong_specularReflection(normalVector, dir, eyeVector, shininessCoeff) * uSpotLight1_color * uSpotLight1_specular * att * cutoff
-    						* phong_fresnel(specular.rgb, dir, eyeVector);
-    				#endif // defined(SHININESS)
-                }
-            #endif // NUM_SPOT_LIGHTS > 1
-            #if NUM_SPOT_LIGHTS > 2
-                dir = normalize(uSpotLight2_position - vVertexPosition);
-                dist = length(uSpotLight2_position - vVertexPosition);
-                cosSpot = dot(-dir, uSpotLight2_direction);
-                if (uSpotLight2_cosOuterConeAngle < cosSpot)
-                {
-                    distVec = vec3(1.0, dist, dist * dist);
-                    att = any(lessThan(uSpotLight2_attenuationCoeffs, vec3(0.0))) ? 1.0 : max(0.0, 1.0 - dist / dot(uSpotLight2_attenuationCoeffs, distVec));
-                    cutoff = cosSpot < uSpotLight2_cosInnerConeAngle && uSpotLight2_cosOuterConeAngle < uSpotLight2_cosInnerConeAngle
-    					? (cosSpot - uSpotLight2_cosOuterConeAngle) / (uSpotLight2_cosInnerConeAngle - uSpotLight2_cosOuterConeAngle)
-    					: 1.0;
-                    lighting += phong_diffuseReflection(normalVector, dir) * uSpotLight2_color * uSpotLight2_diffuse * att * cutoff;
-                    #ifdef SHININESS
-    					specularAccum += phong_specularReflection(normalVector, dir, eyeVector, shininessCoeff) * uSpotLight2_color * uSpotLight2_specular * att * cutoff
-    						* phong_fresnel(specular.rgb, dir, eyeVector);
-    				#endif // defined(SHININESS)
-                }
-            #endif // NUM_SPOT_LIGHTS > 2
-            #if NUM_SPOT_LIGHTS > 3
-                dir = normalize(uSpotLight3_position - vVertexPosition);
-                dist = length(uSpotLight3_position - vVertexPosition);
-                cosSpot = dot(-dir, uSpotLight3_direction);
-                if (uSpotLight3_cosOuterConeAngle < cosSpot)
-                {
-                    distVec = vec3(1.0, dist, dist * dist);
-                    att = any(lessThan(uSpotLight3_attenuationCoeffs, vec3(0.0))) ? 1.0 : max(0.0, 1.0 - dist / dot(uSpotLight3_attenuationCoeffs, distVec));
-                    cutoff = cosSpot < uSpotLight3_cosInnerConeAngle && uSpotLight3_cosOuterConeAngle < uSpotLight3_cosInnerConeAngle
-    					? (cosSpot - uSpotLight3_cosOuterConeAngle) / (uSpotLight3_cosInnerConeAngle - uSpotLight3_cosOuterConeAngle)
-    					: 1.0;
-                    lighting += phong_diffuseReflection(normalVector, dir) * uSpotLight3_color * uSpotLight3_diffuse * att * cutoff;
-                    #ifdef SHININESS
-    					specularAccum += phong_specularReflection(normalVector, dir, eyeVector, shininessCoeff) * uSpotLight3_color * uSpotLight3_specular * att * cutoff
-    						* phong_fresnel(specular.rgb, dir, eyeVector);
-    				#endif // defined(SHININESS)
-                }
-            #endif // NUM_SPOT_LIGHTS > 3
-        #endif // defined(NUM_SPOT_LIGHTS)
-
-	#endif // defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
-
-	vec3 phong = diffuse.rgb * (ambientAccum + lighting) + specular.a * specularAccum;
+    vec3 specularLighting = specularAccum;// * specular;
+    vec3 diffuseLighting = diffuseAccum * albedo.rgb * (1.0 - specularLighting);
+    vec3 color = specularLighting + diffuseLighting;
 
 	#ifdef FOG_TECHNIQUE
-		phong = fog_sampleFog(phong, vVertexScreenPosition.z, uFogColor.xyz, uFogColor.a, uFogBounds.x, uFogBounds.y);
+		color = fog_sampleFog(color, vVertexScreenPosition.z, uFogColor.xyz, uFogColor.a, uFogBounds.x, uFogBounds.y);
 	#endif
 
-	gl_FragColor = vec4(phong.rgb, diffuse.a);
+    #ifdef GAMMA_CORRECTION
+        color = pow(color, vec3(1.0 / 2.2));
+    #endif
+
+	gl_FragColor = vec4(color, albedo.a);
 }
 
 #endif // FRAGMENT_SHADER

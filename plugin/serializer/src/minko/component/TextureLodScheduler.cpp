@@ -130,17 +130,23 @@ TextureLodScheduler::surfaceAdded(Surface::Ptr surface)
         resource->texture = texture;
         resource->surfaceToActiveLodMap.insert(std::make_pair(surface, DEFAULT_LOD));
 
-        resource->modelToWorldMatrixChangedSlots.insert(std::make_pair(
-            surfaceTarget,
-            surfaceTarget->data().propertyChanged("modelToWorldMatrix").connect(
-                [=](Store&								 store,
-                    Provider::Ptr						 provider,
-					const data::Provider::PropertyName&  propertyName)
-                {
-                    invalidateLodRequirement(*resource->base);
-                }
-            )
-        ));
+        const auto& lodDependencyProperties =
+            this->masterLodScheduler()->streamingOptions()->streamedTextureLodDependencyProperties();
+
+        for (const auto& propertyName : lodDependencyProperties)
+        {
+	        resource->propertyChangedSlots.insert(std::make_pair(
+		        surfaceTarget,
+		        surfaceTarget->data().propertyChanged(propertyName).connect(
+			        [=](Store&          	store,
+            	        Provider::Ptr       provider,
+				        const data::Provider::PropertyName&)
+        	        {
+        	            invalidateLodRequirement(*resource->base);
+        	        }
+		        )
+	        ));
+        }
 
         material->data()->set(
 			textureName + std::string("MaxAvailableLod"),

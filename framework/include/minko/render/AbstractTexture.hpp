@@ -44,14 +44,14 @@ namespace minko
 			const TextureType	_type;
             TextureSampler      _sampler;
             TextureFormat       _format;
-			unsigned int		_width;		
-			unsigned int		_height;	
+			unsigned int		_width;
+			unsigned int		_height;
 			unsigned int		_widthGPU;	// always power of 2
 			unsigned int		_heightGPU;	// always power of 2
             bool				_mipMapping;
 			bool				_resizeSmoothly;
 			bool				_optimizeForRenderToTexture;
-			std::string			_filename;			
+			std::string			_filename;
 
 		public:
             inline
@@ -122,17 +122,21 @@ namespace minko
 
 			virtual
 			void
-            data(unsigned char* data,
-				 int			widthGPU	= -1,
-				 int			heightGPU	= -1) = 0;
-
-			virtual
-			void
             resize(unsigned int width, unsigned int height, bool resizeSmoothly) = 0;
 
             virtual
             void
 			disposeData() = 0;
+
+			static
+			void
+			resizeData(unsigned int 				width,
+					   unsigned int 				height,
+					   unsigned char*				data,
+			           unsigned int 				newWidth,
+					   unsigned int 				newHeight,
+					   bool 						resizeSmoothly,
+					   std::vector<unsigned char>&	newData);
 
 		protected:
 			AbstractTexture(TextureType			type,
@@ -147,16 +151,6 @@ namespace minko
 
             virtual
             ~AbstractTexture() = default;
-
-			static
-			void
-			resizeData(unsigned int width, 
-					   unsigned int height, 
-					   std::vector<unsigned char>&	data, 
-			           unsigned int newWidth, 
-					   unsigned int newHeight,
-					   bool resizeSmoothly,
-					   std::vector<unsigned char>&	newData);
 
 			uint
 			getMipmapWidth(uint level) const;

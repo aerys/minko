@@ -40,7 +40,7 @@ TEST_F(ProviderTest, CreateAndInitialize)
 {
 	try
 	{
-		auto p = Provider::create({
+		auto p = Provider::create()->set({
 			{ "foo", 42 }
 		});
 
@@ -56,7 +56,7 @@ TEST_F(ProviderTest, CreateAndInitializeDifferentTypes)
 {
 	try
 	{
-		auto p = Provider::create({
+		auto p = Provider::create()->set({
 			{ "foo", 42 },
 			{ "bar", 42.f }
 		});

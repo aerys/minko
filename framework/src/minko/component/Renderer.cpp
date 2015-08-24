@@ -420,7 +420,7 @@ Renderer::render(render::AbstractContext::Ptr	context,
     if (!_enabled)
 		return;
 
-    const bool forceZSort = _mustZSort || !_toCollect.empty();
+    const bool forceSort = !_toCollect.empty();
 
     // some surfaces have been added during the frame and collected
     // in _toCollect: we now have to take them into account to build
@@ -460,14 +460,16 @@ Renderer::render(render::AbstractContext::Ptr	context,
 		);
 	}
 
-    _drawCallPool.update(forceZSort);
+    _drawCallPool.update(forceSort, _mustZSort);
     
     _mustZSort = false;
 
-    auto drawCalls = _drawCallPool.drawCalls();
+    const auto& drawCalls = _drawCallPool.drawCalls();
 
-    for (const DrawCall* drawCall : _drawCallPool.drawCalls())
-	    drawCall->render(context, rt, _viewportBox, _backgroundColor);
+    for (const auto& priorityToDrawCalls : drawCalls)
+        for (const auto& drawCalls : priorityToDrawCalls.second)
+            for (auto drawCall : drawCalls)
+                drawCall->render(context, rt, _viewportBox, _backgroundColor);
 
 	context->setRenderToBackBuffer();
 

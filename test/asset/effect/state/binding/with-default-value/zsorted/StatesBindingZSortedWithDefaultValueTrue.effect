@@ -3,5 +3,8 @@
         "zSorted" : { "binding" : "material[${materialUuid}].zSorted", "default" : true }
     },
 
-    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+    "techniques" : [{ "passes" : [{
+      "vertexShader" : "#pragma include \"../../../../dummy.glsl\"",
+      "fragmentShader" : "#pragma include \"../../../../dummy.glsl\""
+  }] }]
 }

@@ -57,10 +57,10 @@ namespace minko
                 std::unordered_set<MaterialPtr>                 materials;
                 std::unordered_map<SurfacePtr, int>             surfaceToActiveLodMap;
 
-                std::unordered_map<
+                std::unordered_multimap<
                     NodePtr,
                     Signal<data::Store&, ProviderPtr, const data::Provider::PropertyName&>::Slot
-                >                                               modelToWorldMatrixChangedSlots;
+                >                                               propertyChangedSlots;
             };
 
         private:

@@ -3,5 +3,8 @@
         "scissorTest" : { "binding" : "material[${materialUuid}].scissorTest", "default" : false }
     },
 
-    "techniques" : [{ "passes" : [{ "vertexShader" : "", "fragmentShader" : "" }] }]
+    "techniques" : [{ "passes" : [{
+      "vertexShader" : "#pragma include \"../../../../dummy.glsl\"",
+      "fragmentShader" : "#pragma include \"../../../../dummy.glsl\""
+  }] }]
 }

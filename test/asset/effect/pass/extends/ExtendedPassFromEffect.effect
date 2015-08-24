@@ -1,0 +1,63 @@
+{
+    "attributes" : {
+        "aNormal" : "geometry[${geometryUuid}].normal",
+        "aPosition" : "geometry[${geometryUuid}].position3"
+    },
+
+    "macros" : {
+        "TEST" : { "binding" : "test", "type" : "int", "default" : 1337 }
+    },
+
+    "states" : {
+       "priority" : { "binding" : "material[${materialUuid}].priority", "default" : 42.0 }
+    },
+
+    "techniques" : [{
+        "name" : "extended-base-technique",
+        "passes" : [{
+            "name" : "extended-base-pass",
+
+            "attributes" : {
+                "aPosition" : "geometry[${geometryUuid}].position4"
+            },
+
+            "macros" : {
+                "TEST" : { "binding" : "test", "type" : "int", "default" : 1337 }
+            },
+
+            "uniforms" : {
+                "uModelToWorldMatrix" : "modelToWorldMatrix"
+            },
+
+            "states" : {
+                "triangleCulling" : { "binding" : "material[${materialUuid}].triangleCulling", "default" : "back" }
+            },
+
+            "extends" : {
+                "effect" : "BaseEffect.effect",
+                "technique" : "base-technique",
+                "pass" : "base-pass"
+            }
+        }]
+    },
+    {
+        "name" : "extended-base-technique-2",
+        "passes" : [{
+            "name" : "extended-base-pass-2",
+
+            "macros" : {
+                "TEST2" : { "binding" : "test2", "type" : "int", "default" : 1338 }
+            },
+
+            "uniforms" : {
+                "uDiffuseColor" : { "binding" : "material[${materialUuid}].diffuseColor", "default" : [[ 1.0, 0.0, 0.0, 1.0 ]] }
+            },
+
+            "extends" : {
+                "effect" : "BaseEffect.effect",
+                "technique" : "base-technique-2",
+                "pass" : "base-pass-2"
+            }
+        }]
+    }]
+}

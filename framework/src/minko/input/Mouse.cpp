@@ -28,6 +28,8 @@ Mouse::Mouse(std::shared_ptr<AbstractCanvas> canvas) :
     _canvas(canvas),
     _x(0),
     _y(0),
+    _dX(0),
+    _dY(0),
     _leftButtonIsDown(false),
     _rightButtonIsDown(false),
     _middleButtonIsDown(false),

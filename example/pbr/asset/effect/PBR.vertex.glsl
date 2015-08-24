@@ -41,7 +41,7 @@ varying		vec4	vVertexColor;
 
 void main(void)
 {
-	#if defined VERTEX_UV && (defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP)
+	#if defined VERTEX_UV && (defined ALBEDO_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP)
 		vVertexUV = uUVScale * aUV + uUVOffset;
 	#endif // defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP
 
@@ -67,8 +67,7 @@ void main(void)
 		worldPosition = uModelToWorldMatrix * worldPosition;
 	#endif // MODEL_TO_WORLD
 
-	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS || defined ENVIRONMENT_MAP_2D || defined ENVIRONMENT_CUBE_MAP || defined IRRADIANCE_CUBEMAP
-
+	#if defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS || defined ENVIRONMENT_MAP_2D || defined IRRADIANCE_MAP || defined RADIANCE_MAP
 		vVertexPosition = worldPosition.xyz;
 		vVertexNormal = aNormal;
 
@@ -88,7 +87,6 @@ void main(void)
 			#endif // MODEL_TO_WORLD
 			vVertexTangent = normalize(vVertexTangent);
 		#endif // NORMAL_MAP
-
 	#endif // NUM_DIRECTIONAL_LIGHTS || NUM_POINT_LIGHTS || NUM_SPOT_LIGHTS || ENVIRONMENT_MAP_2D || ENVIRONMENT_CUBE_MAP || IRRADIANCE_CUBEMAP
 
 	vec4 screenPosition = uWorldToScreenMatrix * worldPosition;

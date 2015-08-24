@@ -152,6 +152,16 @@ namespace minko
                 Ptr
                 angularVelocity(const math::vec3&);
 
+                math::vec3
+                gravity() const;
+
+                Ptr
+                gravity(const math::vec3&);
+
+                bool
+                raycast(const math::vec3& direction, float maxDist, float* distance);
+
+
                 inline
                 math::vec3
                 angularFactor() const

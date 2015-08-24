@@ -58,8 +58,8 @@ Texture::data(unsigned char*    data,
         if (widthGPU > (int)MAX_SIZE)
             throw std::invalid_argument("widthGPU");
 
-        _width        = widthGPU;
-        _widthGPU    = widthGPU;
+        _width = widthGPU;
+        _widthGPU = widthGPU;
     }
     if (heightGPU >= 0)
     {
@@ -95,7 +95,7 @@ Texture::data(unsigned char*    data,
             }
         }
 
-        resizeData(_width, _height, rgba, _widthGPU, _heightGPU, _resizeSmoothly, _data);
+        resizeData(_width, _height, &rgba[0], _widthGPU, _heightGPU, _resizeSmoothly, _data);
     }
     else
     {
@@ -117,7 +117,7 @@ Texture::resize(unsigned int width, unsigned int height, bool resizeSmoothly)
 
     auto previousData = _data;
 
-    resizeData(previousWidth, previousHeight, previousData, width, height, resizeSmoothly, _data);
+    resizeData(previousWidth, previousHeight, &previousData[0], width, height, resizeSmoothly, _data);
 
     _width = width;
     _widthGPU = width;

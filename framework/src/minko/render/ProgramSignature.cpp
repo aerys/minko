@@ -31,6 +31,8 @@ using namespace minko;
 using namespace minko::render;
 using namespace minko::data;
 
+const uint ProgramSignature::_maxNumMacros = sizeof(MaskType) * 8;
+
 ProgramSignature::ProgramSignature(const data::MacroBindingMap& macroBindings,
                                    const EffectVariables&       variables,
                                    const Store&			        targetData,
@@ -38,10 +40,8 @@ ProgramSignature::ProgramSignature(const data::MacroBindingMap& macroBindings,
                                    const Store&			        rootData) :
     _mask(0)
 {
-    const uint maxNumMacros = sizeof(MaskType) * 8;
-
-    _values.reserve(maxNumMacros);
-    _macros.reserve(maxNumMacros);
+    _values.reserve(_maxNumMacros);
+    _macros.reserve(_maxNumMacros);
 
 	unsigned int macroId = 0;
 	for (const auto& macroNameAndBinding : macroBindings.bindings)
@@ -59,11 +59,11 @@ ProgramSignature::ProgramSignature(const data::MacroBindingMap& macroBindings,
 		{
             MacroBindingMap::MacroType type = macroBindings.types.at(macroName);
 
-			// WARNING: we do not support more than 32 macro bindings
-            if (macroId == maxNumMacros)
+			// WARNING: we do not support more than 64 macro bindings
+            if (macroId == _maxNumMacros)
 				throw;
 
-			_mask |= 1 << macroId; // update program signature
+			_mask |= MaskType(1) << macroId; // update program signature
 
             _macros.push_back(macroName);
             _types.push_back(type);
@@ -92,7 +92,7 @@ ProgramSignature::ProgramSignature(const data::MacroBindingMap& macroBindings,
     {
         for (const auto& propertyNameAndValue : provider->values())
         {
-            _mask |= 1 << macroId;
+            _mask |= MaskType(1) << macroId;
             _macros.push_back(propertyNameAndValue.first);
             _types.push_back(macroBindings.types.at(*propertyNameAndValue.first));
             _values.push_back(*propertyNameAndValue.second);
@@ -190,9 +190,9 @@ ProgramSignature::updateProgram(Program& program) const
     auto macroIndex = 0;
     auto valueIndex = 0;
 
-    for (auto j = 0; j < 32; ++j)
+    for (auto j = 0; j < _maxNumMacros; ++j)
     {
-        if ((_mask & (1 << j)) != 0)
+        if ((_mask & (MaskType(1) << j)) != 0)
         {
             switch (_types[typeIndex])
             {

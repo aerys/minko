@@ -30,8 +30,7 @@ using namespace minko::render;
 const unsigned int DrawCall::MAX_NUM_TEXTURES       = 8;
 const unsigned int DrawCall::MAX_NUM_VERTEXBUFFERS  = 8;
 
-DrawCall::DrawCall(uint                   batchId,
-                   std::shared_ptr<Pass>  pass,
+DrawCall::DrawCall(std::shared_ptr<Pass>  pass,
                    const EffectVariables& variables,
                    data::Store&           rootData,
                    data::Store&           rendererData,
@@ -67,8 +66,6 @@ DrawCall::DrawCall(uint                   batchId,
     _modelToWorldMatrixPropertyRemovedSlot(nullptr),
     _worldToScreenMatrixPropertyRemovedSlot(nullptr)
 {
-    _batchIDs = { batchId };
-
     // For Z-sorting
     bindPositionalMembers();
 }
@@ -611,9 +608,9 @@ DrawCall::bindIndexBuffer()
 }
 
 data::ResolvedBinding*
-DrawCall::bindState(const std::string&        					            stateName,
-                    const std::unordered_map<std::string, data::Binding>&     bindings,
-                    const data::Store&                                        defaultValues)
+DrawCall::bindState(const std::string&        					             stateName,
+                    const std::unordered_map<std::string, data::Binding>&    bindings,
+                    const data::Store&                                       defaultValues)
 {
     auto binding = resolveBinding(
         stateName,
@@ -760,7 +757,7 @@ DrawCall::render(AbstractContext::Ptr   context,
     context->setScissorTest(*_scissorTest, *_scissorBox);
     context->setTriangleCulling(*_triangleCulling);
 
-    if (_pass->isPostProcessing())
+    if (!_pass->isForward())
         context->drawTriangles(0, 2);
     else
         context->drawTriangles(*_indexBuffer, *_firstIndex, *_numIndices / 3);

@@ -411,3 +411,225 @@ TEST_F(DirectionalLightTest, TranslateXYZ)
         math::bvec3(true)
     );
 }
+
+TEST_F(DirectionalLightTest, OneCascadeNumDeferredPasses)
+{
+    auto fx = MinkoTests::loadEffect("effect/Basic.effect");
+    auto renderer = Renderer::create();
+    auto root = scene::Node::create("root", scene::BuiltinLayout::DEFAULT | 256)
+        ->addComponent(PerspectiveCamera::create(1.f))
+        ->addComponent(SceneManager::create(MinkoTests::canvas()))
+        ->addComponent(renderer);
+
+    auto light = scene::Node::create()->addComponent(
+        DirectionalLight::create()
+    );
+    light->component<DirectionalLight>()->enableShadowMapping(256, 1);
+    root->addChild(light);
+
+    auto material = material::BasicMaterial::create();
+    material->diffuseColor(math::vec4(1.f));
+
+    auto geom = geometry::CubeGeometry::create(MinkoTests::canvas()->context());
+
+    auto s1 = Surface::create(geom, material, fx);
+    auto s2 = Surface::create(geom, material, fx);
+    auto s3 = Surface::create(geom, material, fx);
+
+    root->addComponent(s1);
+    root->addComponent(s2);
+    root->addComponent(s3);
+
+    root->component<SceneManager>()->nextFrame(0.f, 0.f);
+
+    auto shadowRenderer = light->component<Renderer>();
+
+    ASSERT_EQ(renderer->numDrawCalls(), 3);
+    ASSERT_EQ(shadowRenderer->numDrawCalls(), 4);
+
+    root->removeComponent(s1);
+    ASSERT_EQ(renderer->numDrawCalls(), 2);
+    ASSERT_EQ(shadowRenderer->numDrawCalls(), 3);
+
+    root->removeComponent(s2);
+    ASSERT_EQ(renderer->numDrawCalls(), 1);
+    ASSERT_EQ(shadowRenderer->numDrawCalls(), 2);
+
+    root->removeComponent(s3);
+    ASSERT_EQ(renderer->numDrawCalls(), 0);
+    ASSERT_EQ(shadowRenderer->numDrawCalls(), 0);
+}
+
+TEST_F(DirectionalLightTest, TwoCascadesNumDeferredPasses)
+{
+    auto fx = MinkoTests::loadEffect("effect/Basic.effect");
+    auto renderer = Renderer::create();
+    auto root = scene::Node::create("root", scene::BuiltinLayout::DEFAULT | 256)
+        ->addComponent(PerspectiveCamera::create(1.f))
+        ->addComponent(SceneManager::create(MinkoTests::canvas()))
+        ->addComponent(renderer);
+
+    auto light = scene::Node::create()->addComponent(
+        DirectionalLight::create()
+    );
+    light->component<DirectionalLight>()->enableShadowMapping(256, 2);
+    root->addChild(light);
+
+    auto material = material::BasicMaterial::create();
+    material->diffuseColor(math::vec4(1.f));
+
+    auto geom = geometry::CubeGeometry::create(MinkoTests::canvas()->context());
+
+    auto s1 = Surface::create(geom, material, fx);
+    auto s2 = Surface::create(geom, material, fx);
+    auto s3 = Surface::create(geom, material, fx);
+
+    root->addComponent(s1);
+    root->addComponent(s2);
+    root->addComponent(s3);
+
+    root->component<SceneManager>()->nextFrame(0.f, 0.f);
+
+    auto shadowRenderer0 = light->component<Renderer>(0);
+    auto shadowRenderer1 = light->component<Renderer>(1);
+
+    ASSERT_EQ(renderer->numDrawCalls(), 3);
+    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 4);
+    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 4);
+
+    root->removeComponent(s1);
+    ASSERT_EQ(renderer->numDrawCalls(), 2);
+    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 3);
+    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 3);
+
+    root->removeComponent(s2);
+    ASSERT_EQ(renderer->numDrawCalls(), 1);
+    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 2);
+    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 2);
+
+    root->removeComponent(s3);
+    ASSERT_EQ(renderer->numDrawCalls(), 0);
+    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 0);
+    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 0);
+}
+
+TEST_F(DirectionalLightTest, ThreeCascadesNumDeferredPasses)
+{
+    auto fx = MinkoTests::loadEffect("effect/Basic.effect");
+    auto renderer = Renderer::create();
+    auto root = scene::Node::create("root", scene::BuiltinLayout::DEFAULT | 256)
+        ->addComponent(PerspectiveCamera::create(1.f))
+        ->addComponent(SceneManager::create(MinkoTests::canvas()))
+        ->addComponent(renderer);
+
+    auto light = scene::Node::create()->addComponent(
+        DirectionalLight::create()
+    );
+    light->component<DirectionalLight>()->enableShadowMapping(256, 3);
+    root->addChild(light);
+
+    auto material = material::BasicMaterial::create();
+    material->diffuseColor(math::vec4(1.f));
+
+    auto geom = geometry::CubeGeometry::create(MinkoTests::canvas()->context());
+
+    auto s1 = Surface::create(geom, material, fx);
+    auto s2 = Surface::create(geom, material, fx);
+    auto s3 = Surface::create(geom, material, fx);
+
+    root->addComponent(s1);
+    root->addComponent(s2);
+    root->addComponent(s3);
+
+    root->component<SceneManager>()->nextFrame(0.f, 0.f);
+
+    auto shadowRenderer0 = light->component<Renderer>(0);
+    auto shadowRenderer1 = light->component<Renderer>(1);
+    auto shadowRenderer2 = light->component<Renderer>(2);
+
+    ASSERT_EQ(renderer->numDrawCalls(), 3);
+    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 4);
+    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 4);
+    ASSERT_EQ(shadowRenderer2->numDrawCalls(), 4);
+
+    root->removeComponent(s1);
+    ASSERT_EQ(renderer->numDrawCalls(), 2);
+    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 3);
+    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 3);
+    ASSERT_EQ(shadowRenderer2->numDrawCalls(), 3);
+
+    root->removeComponent(s2);
+    ASSERT_EQ(renderer->numDrawCalls(), 1);
+    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 2);
+    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 2);
+    ASSERT_EQ(shadowRenderer2->numDrawCalls(), 2);
+
+    root->removeComponent(s3);
+    ASSERT_EQ(renderer->numDrawCalls(), 0);
+    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 0);
+    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 0);
+    ASSERT_EQ(shadowRenderer2->numDrawCalls(), 0);
+}
+
+TEST_F(DirectionalLightTest, FourCascadesNumDeferredPasses)
+{
+    auto fx = MinkoTests::loadEffect("effect/Basic.effect");
+    auto renderer = Renderer::create();
+    auto root = scene::Node::create("root", scene::BuiltinLayout::DEFAULT | 256)
+        ->addComponent(PerspectiveCamera::create(1.f))
+        ->addComponent(SceneManager::create(MinkoTests::canvas()))
+        ->addComponent(renderer);
+
+    auto light = scene::Node::create()->addComponent(
+        DirectionalLight::create()
+    );
+    light->component<DirectionalLight>()->enableShadowMapping(256, 4);
+    root->addChild(light);
+
+    auto material = material::BasicMaterial::create();
+    material->diffuseColor(math::vec4(1.f));
+
+    auto geom = geometry::CubeGeometry::create(MinkoTests::canvas()->context());
+
+    auto s1 = Surface::create(geom, material, fx);
+    auto s2 = Surface::create(geom, material, fx);
+    auto s3 = Surface::create(geom, material, fx);
+
+    root->addComponent(s1);
+    root->addComponent(s2);
+    root->addComponent(s3);
+
+    root->component<SceneManager>()->nextFrame(0.f, 0.f);
+
+    auto shadowRenderer0 = light->component<Renderer>(0);
+    auto shadowRenderer1 = light->component<Renderer>(1);
+    auto shadowRenderer2 = light->component<Renderer>(2);
+    auto shadowRenderer3 = light->component<Renderer>(3);
+
+    ASSERT_EQ(renderer->numDrawCalls(), 3);
+    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 4);
+    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 4);
+    ASSERT_EQ(shadowRenderer2->numDrawCalls(), 4);
+    ASSERT_EQ(shadowRenderer3->numDrawCalls(), 4);
+
+    root->removeComponent(s1);
+    ASSERT_EQ(renderer->numDrawCalls(), 2);
+    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 3);
+    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 3);
+    ASSERT_EQ(shadowRenderer2->numDrawCalls(), 3);
+    ASSERT_EQ(shadowRenderer3->numDrawCalls(), 3);
+
+    root->removeComponent(s2);
+    ASSERT_EQ(renderer->numDrawCalls(), 1);
+    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 2);
+    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 2);
+    ASSERT_EQ(shadowRenderer2->numDrawCalls(), 2);
+    ASSERT_EQ(shadowRenderer3->numDrawCalls(), 2);
+
+    root->removeComponent(s3);
+    ASSERT_EQ(renderer->numDrawCalls(), 0);
+    ASSERT_EQ(shadowRenderer0->numDrawCalls(), 0);
+    ASSERT_EQ(shadowRenderer1->numDrawCalls(), 0);
+    ASSERT_EQ(shadowRenderer2->numDrawCalls(), 0);
+    ASSERT_EQ(shadowRenderer3->numDrawCalls(), 0);
+}

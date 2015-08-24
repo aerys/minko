@@ -51,7 +51,7 @@ namespace minko
 
 		private:
 			const std::string		_name;
-			bool					_isPostProcessing;
+			bool					_isForward;
 			ProgramPtr				_programTemplate;
 			data::BindingMap		_attributeBindings;
 			data::BindingMap		_uniformBindings;
@@ -74,7 +74,7 @@ namespace minko
 			inline static
 			Ptr
 			create(const std::string&				name,
-				   bool								isPostProcessing,
+				   bool								isForward,
 				   std::shared_ptr<render::Program>	program,
 				   const data::BindingMap&			attributeBindings,
 				   const data::BindingMap&			uniformBindings,
@@ -84,7 +84,7 @@ namespace minko
 			{
 				return std::shared_ptr<Pass>(new Pass(
 					name,
-					isPostProcessing,
+					isForward,
 					program,
 					attributeBindings,
 					uniformBindings,
@@ -100,7 +100,7 @@ namespace minko
 			{
 				auto p = create(
 					pass->_name,
-					pass->_isPostProcessing,
+					pass->_isForward,
 					deepCopy ? Program::create(pass->_programTemplate, deepCopy) : pass->_programTemplate,
 					pass->_attributeBindings,
 					pass->_uniformBindings,
@@ -138,9 +138,9 @@ namespace minko
 
 			inline
 			bool
-			isPostProcessing() const
+			isForward() const
 			{
-				return _isPostProcessing;
+				return _isForward;
 			}
 
 			inline
@@ -247,7 +247,7 @@ namespace minko
 
 		private:
 			Pass(const std::string&					name,
-				 bool								isPostProcessing,
+				 bool								isForward,
 				 std::shared_ptr<render::Program>	program,
 				 const data::BindingMap&			attributeBindings,
 				 const data::BindingMap&			uniformBindings,

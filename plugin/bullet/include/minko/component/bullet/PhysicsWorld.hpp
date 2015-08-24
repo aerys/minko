@@ -203,6 +203,21 @@ namespace minko
                 setColliderAngularVelocity(ColliderPtr, const math::vec3&);
 
                 void
+                setColliderGravity(ColliderPtr, const math::vec3&);
+
+                math::vec3
+                getColliderGravity(ConstColliderPtr) const;
+                
+                bool
+                raycast(const math::vec3& origin, const math::vec3& direction, float maxDist, math::vec3& hit) const;
+
+                bool
+                raycast(const math::vec3& origin, const math::vec3& direction, math::vec3& hit)
+                {
+                    return raycast(origin, direction, 10000.f, hit);
+                }
+
+                void
                 applyImpulse(ColliderPtr, const math::vec3& impulse, bool isImpulseRelative, const math::vec3& relPosition);
 
             private:

@@ -109,7 +109,7 @@ vec3 brdf_F_Schlick(vec3 specularColor, float VoH)
 vec3 brdf_F_Fresnel(vec3 specularColor, float VoH)
 {
     vec3 specularColorSqrt = sqrt(clamp(vec3(0.0), vec3(0.99), specularColor));
-    vec3 n = (1.0 + specularColorSqrt) / (1.0- specularColorSqrt);
+    vec3 n = (1.0 + specularColorSqrt) / (1.0 - specularColorSqrt);
     vec3 g = sqrt(n * n + VoH * VoH - 1.0);
 
     return vec3(0.5 * square((g - VoH) / (g + VoH)) * (1.0 + square(((g + VoH) * VoH - 1.0) / ((g - VoH) * VoH + 1.0))));

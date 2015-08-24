@@ -102,22 +102,22 @@ MaterialParser::deserializeComplexProperty(MaterialPtr            material,
 
     if (type == VECTOR4)
 		material->data()->set(
-			serializedProperty.get<0>(), 
+			serializedProperty.get<0>(),
 			Any::cast<math::vec4>(TypeDeserializer::deserializeVector4(serializedPropertyTuple))
         );
 	else if (type == MATRIX4X4)
 		material->data()->set(
-			serializedProperty.get<0>(), 
+			serializedProperty.get<0>(),
 			Any::cast<math::mat4>(TypeDeserializer::deserializeMatrix4x4(serializedPropertyTuple))
         );
 	else if (type == VECTOR2)
 		material->data()->set(
-			serializedProperty.get<0>(), 
+			serializedProperty.get<0>(),
 			Any::cast<math::vec2>(TypeDeserializer::deserializeVector2(serializedPropertyTuple))
         );
 	else if (type == VECTOR3)
 		material->data()->set(
-			serializedProperty.get<0>(), 
+			serializedProperty.get<0>(),
 			Any::cast<math::vec3>(TypeDeserializer::deserializeVector3(serializedPropertyTuple))
         );
 	else if (type == BLENDING)
@@ -181,12 +181,6 @@ MaterialParser::deserializeComplexProperty(MaterialPtr            material,
             );
         }
     }
-    else if (type == ENVMAPTYPE)
-    {
-        auto envMapType = Any::cast<render::EnvironmentMap2dType>(TypeDeserializer::deserializeEnvironmentMap2dType(serializedPropertyTuple));
-
-		material->data()->set<int>(serializedProperty.get<0>(), int(envMapType));
-	}
 }
 
 void

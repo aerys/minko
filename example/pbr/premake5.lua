@@ -17,3 +17,11 @@ minko.project.application("minko-example-" .. PROJECT_NAME)
 	--minko.plugin.enable("serializer")
 	--minko.plugin.enable("particles")
 	--minko.plugin.enable("png")
+	minko.plugin.enable("fx")
+
+	configuration { "html5" }
+		minko.package.assets {
+			['**.effect'] = { 'embed' },
+			['**.glsl'] = { 'embed' },
+			['**.jpg'] = { 'embed' }
+		}

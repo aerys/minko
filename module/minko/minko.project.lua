@@ -189,23 +189,24 @@ minko.project.application = function(name)
 
 	if premake.tools.gcc.tools.emscripten then
 		local emcc = premake.tools.gcc.tools.emscripten.cc
-		local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html '
 
 		configuration { "html5", "release" }
 			linkoptions {
 				"--llvm-lto 1"
 			}
 
+			local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html '
+
 			-- optimization
 			cmd = cmd .. buildoptions()[1]
 			cmd = cmd .. ' -O3'
 			-- enable the closure compiler
-			cmd = cmd .. ' --closure 1 -s CLOSURE_ANNOTATIONS=1'
+			cmd = cmd .. ' --closure 1'
 			-- treat undefined symbol warnings as errors
 			cmd = cmd .. ' -s ERROR_ON_UNDEFINED_SYMBOLS=1'
 			-- disable exception catching
-			--cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=1'
-		 	cmd = cmd .. ' -s ALLOW_MEMORY_GROWTH=1'
+			cmd = cmd .. ' -s DISABLE_EXCEPTION_CATCHING=1'
+			cmd = cmd .. ' -s ALLOW_MEMORY_GROWTH=1'
 			cmd = cmd .. ' -s NO_EXIT_RUNTIME=1'
 
 			--[[
@@ -238,6 +239,8 @@ minko.project.application = function(name)
 			linkoptions {
 				"--llvm-lto 0"
 			}
+
+			local cmd = emcc .. ' ${TARGET} -o ${TARGETDIR}/' .. name .. '.html '
 
 			-- disable optimization
 			cmd = cmd .. buildoptions()[1]

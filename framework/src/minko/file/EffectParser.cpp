@@ -157,11 +157,12 @@ EffectParser::parse(const std::string&				    filename,
 	if (!reader.parse((const char*)&data[0], (const char*)&data[data.size() - 1], root, false))
 		_error->execute(shared_from_this(), file::Error(resolvedFilename + ": " + reader.getFormattedErrorMessages()));
 
-	_options = options->clone();
+	_options = options;
 
     int pos	= resolvedFilename.find_last_of("/\\");
     if (pos != std::string::npos)
     {
+        _options = _options->clone();
         _options->includePaths().clear();
 		_options->includePaths().push_front(resolvedFilename.substr(0, pos));
     }
@@ -234,6 +235,44 @@ EffectParser::parseConfiguration(const Json::Value& node)
 }
 
 void
+EffectParser::fixMissingPassPriorities(std::vector<render::Pass::Ptr>& passes)
+{
+    int numPasses = passes.size();
+
+    if (numPasses == 1 && passes[0]->states().priority() == -1.f)
+    {
+        passes[0]->states().priority(States::DEFAULT_PRIORITY);
+    }
+    else
+    {
+        for (int i = 0; i < numPasses; ++i)
+        {
+            auto pass = passes[i];
+
+            if (pass->stateBindings().defaultValues.get<float>("priority") == -1.f)
+            {
+                int nextPassWithPriority = i + 1;
+                while (nextPassWithPriority < numPasses
+                       && passes[nextPassWithPriority]->states().priority() == -1.f)
+                {
+                    ++nextPassWithPriority;
+                }
+
+                if (nextPassWithPriority >= numPasses)
+                    pass->states().priority(States::DEFAULT_PRIORITY + (float)(numPasses - i));
+                else
+                {
+                    pass->states().priority(
+                        (float)(nextPassWithPriority - i)
+                        + passes[nextPassWithPriority]->states().priority()
+                    );
+                }
+            }
+        }
+    }
+}
+
+void
 EffectParser::parseTechniques(const Json::Value& node, Scope& scope, Techniques& techniques)
 {
     auto techniquesNode = node.get("techniques", 0);
@@ -259,6 +298,8 @@ EffectParser::parseTechniques(const Json::Value& node, Scope& scope, Techniques&
             parseMacros(techniqueNode, techniqueScope, techniqueScope.macroBlock);
             parseStates(techniqueNode, techniqueScope, techniqueScope.stateBlock);
             parsePasses(techniqueNode, techniqueScope, techniques[techniqueName]);
+
+            fixMissingPassPriorities(techniques[techniqueName]);
 
             if (firstTechnique)
             {
@@ -289,6 +330,76 @@ EffectParser::parsePasses(const Json::Value& node, Scope& scope, std::vector<Pas
     // FIXME: throw otherwise
 }
 
+render::Pass::Ptr
+EffectParser::findPassFromEffectFilename(const std::string& effectFilename, 
+                                         const std::string& techniqueName,
+                                         const std::string& passName)
+{
+    auto effect = _assetLibrary->effect(effectFilename);
+
+    if (effect == nullptr)
+        return nullptr;
+
+    for (auto& techniqueNameAndPasses : effect->techniques())
+    {
+        if (techniqueNameAndPasses.first == techniqueName)
+        {
+            for (auto p : techniqueNameAndPasses.second)
+            {
+                if (p->name() == passName)
+                    return p;
+            }
+        }
+    }
+
+    return nullptr;
+}
+
+render::Pass::Ptr
+EffectParser::getPassToExtend(const Json::Value& extendNode, Scope& scope)
+{
+    render::Pass::Ptr pass;
+    std::string passName;
+
+    if (extendNode.isString())
+    {
+        passName = extendNode.asString();
+        pass = findPassByName(passName, scope);
+    }
+    else if (extendNode.isObject())
+    {
+        passName = extendNode["pass"].asString();
+
+        auto techniqueName = extendNode["technique"].asString();
+        auto effectFilename = extendNode["effect"].asString();
+
+        if (!_assetLibrary->effect(effectFilename))
+        {
+            auto options = _options->clone();
+            auto loader = file::Loader::create(_assetLibrary->loader());
+
+            options->loadAsynchronously(false);
+            loader->queue(effectFilename, options);
+            auto effectComplete = loader->complete()->connect([&](file::Loader::Ptr l)
+            {
+                pass = findPassFromEffectFilename(effectFilename, techniqueName, passName);
+            });
+            loader->load();
+        }
+        else
+        {
+            pass = findPassFromEffectFilename(effectFilename, techniqueName, passName);
+        }
+    }
+    else
+        throw;
+
+    if (pass == nullptr)
+        throw std::runtime_error("Undefined base pass with name '" + passName + "'.");
+
+    return pass;
+}
+
 void
 EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassPtr>& passes)
 {
@@ -315,7 +426,8 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
 		render::Shader::Ptr fragmentShader;
         auto passName = _effectName + "-pass" + std::to_string(scope.passes.size());
         auto nameNode = node.get("name", 0);
-		auto isPostProcessing = false;
+		auto isForward = true;
+
         if (nameNode.isString())
             passName = nameNode.asString();
         // FIXME: throw otherwise
@@ -323,38 +435,47 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
 		if (node.isMember("extends"))
 		{
 			auto extendNode = node.get("extends", 0);
+            render::Pass::Ptr pass = getPassToExtend(extendNode, scope);
 
-			// if a pass "extends" another pass, then we have to init. its properties from that previously defined pass
-			if (extendNode.isString())
-			{
-				auto passName = extendNode.asString();
-				auto pass = findPassByName(passName, scope);
+			// If a pass "extends" another pass, then we have to merge its properties with the already existing ones
+            passScope.attributeBlock.bindingMap.bindings.insert(pass->attributeBindings().bindings.begin(), pass->attributeBindings().bindings.end());
+            passScope.uniformBlock.bindingMap.bindings.insert(pass->uniformBindings().bindings.begin(), pass->uniformBindings().bindings.end());
+            passScope.macroBlock.bindingMap.bindings.insert(pass->macroBindings().bindings.begin(), pass->macroBindings().bindings.end());
+            passScope.macroBlock.bindingMap.types.insert(pass->macroBindings().types.begin(), pass->macroBindings().types.end());
+            passScope.stateBlock.bindingMap.bindings.insert(pass->stateBindings().bindings.begin(), pass->stateBindings().bindings.end());
 
-				if (pass == nullptr)
-					throw std::runtime_error("Undefined pass with name '" + passName + "'.");
+            if (pass->attributeBindings().defaultValues.providers().size() > 0)
+            {
+                if (passScope.attributeBlock.bindingMap.defaultValues.providers().size() == 0)
+                    passScope.attributeBlock.bindingMap.defaultValues = data::Store(pass->attributeBindings().defaultValues, true);
 
-                passScope.attributeBlock.bindingMap.bindings = pass->attributeBindings().bindings;
-                passScope.attributeBlock.bindingMap.defaultValues = data::Store(pass->attributeBindings().defaultValues, true);
+                for (auto provider : pass->attributeBindings().defaultValues.providers())
+                    passScope.attributeBlock.bindingMap.defaultValues.providers().front()->merge(provider);
+            }
+            
+            if (pass->uniformBindings().defaultValues.providers().size() > 0)
+            {
+                if (passScope.uniformBlock.bindingMap.defaultValues.providers().size() == 0)
+                    passScope.uniformBlock.bindingMap.defaultValues = data::Store(pass->uniformBindings().defaultValues, true);
 
-                passScope.uniformBlock.bindingMap.bindings = pass->uniformBindings().bindings;
-                passScope.uniformBlock.bindingMap.defaultValues = data::Store(pass->uniformBindings().defaultValues, true);
+                for (auto provider : pass->uniformBindings().defaultValues.providers())
+                    passScope.uniformBlock.bindingMap.defaultValues.providers().front()->merge(provider);
+            }
 
-				passScope.stateBlock.bindingMap.bindings = pass->stateBindings().bindings;
-				passScope.stateBlock.states = render::States(pass->states());
-				passScope.stateBlock.bindingMap.defaultValues.removeProvider(
-					passScope.stateBlock.bindingMap.defaultValues.providers().front()
-				);
-				passScope.stateBlock.bindingMap.defaultValues.addProvider(passScope.stateBlock.states.data());
+            if (pass->macroBindings().defaultValues.providers().size() > 0)
+            {
+                if (passScope.macroBlock.bindingMap.defaultValues.providers().size() == 0)
+                    passScope.macroBlock.bindingMap.defaultValues = data::Store(pass->macroBindings().defaultValues, true);
 
-                passScope.macroBlock.bindingMap.bindings = pass->macroBindings().bindings;
-                passScope.macroBlock.bindingMap.defaultValues = data::Store(pass->macroBindings().defaultValues, true);
-                passScope.macroBlock.bindingMap.types = pass->macroBindings().types;
+                for (auto provider : pass->macroBindings().defaultValues.providers())
+                    passScope.macroBlock.bindingMap.defaultValues.providers().front()->merge(provider);
+            }
 
-				vertexShader = pass->program()->vertexShader();
-				fragmentShader = pass->program()->fragmentShader();
-				isPostProcessing = pass->isPostProcessing();
-			}
-			// FIXME: throw otherwise
+            passScope.stateBlock.bindingMap.defaultValues.providers().front()->merge(pass->stateBindings().defaultValues.providers().front());
+
+			vertexShader = pass->program()->vertexShader();
+			fragmentShader = pass->program()->fragmentShader();
+		    isForward = pass->isForward();
 		}
 
         parseAttributes(node, passScope, passScope.attributeBlock);
@@ -372,15 +493,15 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
 		else if (!fragmentShader)
 			throw std::runtime_error("Missing fragment shader for pass \"" + passName + "\"");
 
-		if (node.isMember("isPostProcessing"))
-			isPostProcessing = node.get("isPostProcessing", false).asBool();
+		if (node.isMember("forward"))
+			isForward = node.get("forward", true).asBool();
 
-        if (isPostProcessing)
-            checkPostProcessingPassBindings(passScope);
+        if (!isForward)
+            checkDeferredPassBindings(passScope);
 
         passes.push_back(Pass::create(
             passName,
-			isPostProcessing,
+			isForward,
             Program::create(passName, _options->context(), vertexShader, fragmentShader),
             passScope.attributeBlock.bindingMap,
             passScope.uniformBlock.bindingMap,
@@ -392,7 +513,7 @@ EffectParser::parsePass(const Json::Value& node, Scope& scope, std::vector<PassP
 }
 
 void
-EffectParser::checkPostProcessingPassBindings(const Scope& passScope)
+EffectParser::checkDeferredPassBindings(const Scope& passScope)
 {
     for (auto& bindingNameAndValue : passScope.attributeBlock.bindingMap.bindings)
         if (bindingNameAndValue.second.source == data::Binding::Source::TARGET)
@@ -875,7 +996,10 @@ EffectParser::parseStates(const Json::Value& node, const Scope& scope, StateBloc
 }
 
 void
-EffectParser::parseState(const Json::Value& node, const Scope& scope, StateBlock& stateBlock, const std::string& stateProperty)
+EffectParser::parseState(const Json::Value& node,
+                         const Scope&       scope,
+                         StateBlock&        stateBlock,
+                         const std::string& stateProperty)
 {
     if (stateProperty == States::PROPERTY_PRIORITY)
         parsePriority(node, scope, stateBlock);
@@ -922,17 +1046,24 @@ EffectParser::parsePriority(const Json::Value&	node,
 {
     if (!node.isNull())
     {
+        float priority = 0.f;
+
         if (node.isInt())
-            stateBlock.states.priority((float)node.asInt());
+            priority = (float)node.asInt();
         else if (node.isDouble())
-            stateBlock.states.priority((float)node.asDouble());
+            priority = (float)node.asDouble();
         else if (node.isString())
-            stateBlock.states.priority(getPriorityValue(node.asString()));
+            priority = getPriorityValue(node.asString());
         else if (node.isArray())
         {
             if (node[0].isString() && node[1].isDouble())
-                stateBlock.states.priority(getPriorityValue(node[0].asString()) + (float)node[1].asDouble());
+                priority = getPriorityValue(node[0].asString()) + (float)node[1].asDouble();
         }
+
+        /*if (priority < 0.f)
+            throw;*/
+
+        stateBlock.states.priority(priority);
     }
 }
 
@@ -1360,6 +1491,7 @@ EffectParser::parseGLSL(const std::string&      glsl,
     auto i = 0;
     auto lastBlockEnd = 0;
     auto numIncludes = 0;
+    auto begin = insertIt;
 
     while (std::getline(stream, line))
     {
@@ -1384,15 +1516,16 @@ EffectParser::parseGLSL(const std::string&      glsl,
         insertIt = blocks->insert_after(insertIt, GLSLBlock(GLSLBlockType::TEXT, glsl.substr(lastBlockEnd)));
 
     if (numIncludes)
-        loadGLSLDependencies(blocks, options);
+        loadGLSLDependencies(blocks, begin, ++insertIt, options);
 }
 
 void
-EffectParser::loadGLSLDependencies(GLSLBlockListPtr blocks, file::Options::Ptr options)
+EffectParser::loadGLSLDependencies(GLSLBlockListPtr		   blocks,
+                                   GLSLBlockList::iterator begin,
+                                   GLSLBlockList::iterator end,
+                                   file::Options::Ptr      options)
 {
-    auto loader = Loader::create(options);
-
-    for (auto blockIt = blocks->begin(); blockIt != blocks->end(); blockIt++)
+    for (auto blockIt = begin; blockIt != end; blockIt++)
     {
         auto& block = *blockIt;
 
@@ -1412,6 +1545,8 @@ EffectParser::loadGLSLDependencies(GLSLBlockListPtr blocks, file::Options::Ptr o
             }
             else
             {
+                auto loader = Loader::create(options);
+
                 ++_numDependencies;
 
                 _loaderCompleteSlots[loader] = loader->complete()->connect(std::bind(
@@ -1482,7 +1617,7 @@ EffectParser::glslIncludeCompleteHandler(LoaderPtr 			        loader,
 
     auto file = loader->files().at(filename);
     auto resolvedFilename = file->resolvedFilename();
-    auto options = _options;
+    auto options = loader->options();
     auto pos = resolvedFilename.find_last_of("/\\");
 
     if (pos != std::string::npos)
@@ -1561,8 +1696,10 @@ EffectParser::finalize()
             auto vs = pass->program()->vertexShader();
             auto fs = pass->program()->fragmentShader();
 
-            vs->source("#define VERTEX_SHADER\n" + concatenateGLSLBlocks(_shaderToGLSL[vs]));
-            fs->source("#define FRAGMENT_SHADER\n" + concatenateGLSLBlocks(_shaderToGLSL[fs]));
+            if (_shaderToGLSL.count(vs) != 0)
+                vs->source("#define VERTEX_SHADER\n" + concatenateGLSLBlocks(_shaderToGLSL[vs]));
+            if (_shaderToGLSL.count(fs) != 0)
+                fs->source("#define FRAGMENT_SHADER\n" + concatenateGLSLBlocks(_shaderToGLSL[fs]));
         }
     }
 

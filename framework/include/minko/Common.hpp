@@ -91,6 +91,8 @@ namespace minko
 	class Color;
 	enum class CloneOption;
 	class AbstractCanvas;
+    template<typename T>
+    struct Hash;
 
 	namespace render
 	{
@@ -129,55 +131,12 @@ namespace minko
 			CubeTexture	= 1
 		};
 
-		enum class EnvironmentMap2dType
-		{
-			Unset		= -1,
-			Probe		= 0,
-			BlinnNewell	= 1
-		};
-
-		enum class TextureFormat
-		{
-			RGB,
-            RGBA,
-
-            RGB_DXT1,
-            RGBA_DXT1,
-            RGBA_DXT3,
-            RGBA_DXT5,
-
-            RGB_ETC1,
-            RGBA_ETC1,
-
-            RGB_PVRTC1_2BPP,
-            RGB_PVRTC1_4BPP,
-            RGBA_PVRTC1_2BPP,
-            RGBA_PVRTC1_4BPP,
-
-            RGBA_PVRTC2_2BPP,
-            RGBA_PVRTC2_4BPP,
-
-            RGB_ATITC,
-            RGBA_ATITC,
-
-            // supported from OES 3.0
-            RGB_ETC2,
-            RGBA_ETC2
-		};
-
+        enum class TextureFormat;
 		class AbstractTexture;
 		class Texture;
         class RectangleTexture;
 		class CubeTexture;
         struct TextureSampler;
-
-        enum class FogType
-        {
-            None,
-            Linear,
-            Exponential,
-            Exponential2,
-        };
 
 		typedef std::function<std::string(const std::string&)> FormatNameFunction;
 		typedef std::list<std::pair<Flyweight<std::string>, Flyweight<std::string>>> EffectVariables;
@@ -235,12 +194,6 @@ namespace minko
         struct MacroBinding;
         //struct BindingMap;
         //struct MacroBindingMap;
-
-        template<typename T>
-        using UniformArray = std::pair<uint, const T*>;
-
-        template<typename T>
-        using UniformArrayPtr = std::shared_ptr<UniformArray<T>>;
 
 		class LightMaskFilter;
 	}

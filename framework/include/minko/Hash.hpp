@@ -67,7 +67,7 @@ namespace minko
             return value;
         }
     };
-
+    
     template<>
     struct Hash<minko::render::TextureFormat>
     {

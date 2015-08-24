@@ -104,8 +104,18 @@ namespace minko
                 return _numShadowCascades;
             }
 
+            inline
             void
-            computeShadowProjection(const math::mat4& view, const math::mat4& projection);
+            computeShadowProjection(const math::mat4&   view,
+                                    const math::mat4&   projection)
+            {
+                computeShadowProjection(view, projection, std::numeric_limits<float>::max());
+            }
+
+            void
+            computeShadowProjection(const math::mat4&   view,
+                                    const math::mat4&   projection,
+                                    float               zFar);
 
             void
             enableShadowMapping(uint shadowMapSize  = DEFAULT_SHADOWMAP_SIZE,

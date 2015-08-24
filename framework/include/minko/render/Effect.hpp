@@ -182,6 +182,17 @@ namespace minko
             void
             removeTechnique(const std::string& name);
 
+
+
+			template <typename T = material::Material>
+			std::shared_ptr<T>
+			initializeMaterial(std::shared_ptr<T> material, const std::string& technique = "default")
+			{
+				fillMaterial(material, technique);
+
+				return material;
+			}
+
 		private:
             Effect(const std::string& name);
 
@@ -214,6 +225,10 @@ namespace minko
             {
                 pass->define(macroName, macroValue);
             }
+
+			void
+			fillMaterial(std::shared_ptr<material::Material> 	material,
+						 const std::string& 					technique);
 		};
 	}
 }

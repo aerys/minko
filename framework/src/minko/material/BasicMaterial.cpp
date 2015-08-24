@@ -31,20 +31,9 @@ using namespace minko::render;
 
 /*static*/ const std::shared_ptr<render::States> BasicMaterial::_defaultStates;
 
-BasicMaterial::BasicMaterial():
-	Material("BasicMaterial")
+BasicMaterial::BasicMaterial(const std::string& name):
+    Material(name)
 {
-}
-
-BasicMaterial::BasicMaterial(const data::Provider::DefaultValueMap& values):
-    Material("BasicMaterial", values)
-{
-}
-
-void
-BasicMaterial::initialize()
-{
-	diffuseColor(0xffffffff);
 }
 
 BasicMaterial::Ptr
@@ -119,117 +108,6 @@ BasicMaterial::diffuseMap() const
 }
 
 BasicMaterial::Ptr
-BasicMaterial::diffuseMapWrapMode(WrapMode wrapMode)
-{
-    data()->set("diffuseMapWrapMode", wrapMode);
-
-    return std::static_pointer_cast<BasicMaterial>(shared_from_this());
-}
-
-WrapMode
-BasicMaterial::diffuseMapWrapMode() const
-{
-    return (data()->hasProperty("diffuseMapWrapMode"))
-        ? data()->get<WrapMode>("diffuseMapWrapMode")
-        : render::SamplerStates::DEFAULT_WRAP_MODE;
-}
-
-BasicMaterial::Ptr
-BasicMaterial::diffuseMapTextureFilter(TextureFilter textureFilter)
-{
-    data()->set("diffuseMapTextureFilter", textureFilter);
-
-    return std::static_pointer_cast<BasicMaterial>(shared_from_this());
-}
-
-TextureFilter
-BasicMaterial::diffuseMapTextureFilter() const
-{
-    return (data()->hasProperty("diffuseMapTextureFilter"))
-        ? data()->get<TextureFilter>("diffuseMapTextureFilter")
-        : render::SamplerStates::DEFAULT_TEXTURE_FILTER;
-}
-
-BasicMaterial::Ptr
-BasicMaterial::diffuseMapMipFilter(MipFilter mipFilter)
-{
-    data()->set("diffuseMapMipFilter", mipFilter);
-
-    return std::static_pointer_cast<BasicMaterial>(shared_from_this());
-}
-
-MipFilter
-BasicMaterial::diffuseMapMipFilter() const
-{
-    return (data()->hasProperty("diffuseMapMipFilter"))
-        ? data()->get<MipFilter>("diffuseMapMipFilter")
-        : render::SamplerStates::DEFAULT_MIP_FILTER;
-}
-
-BasicMaterial::Ptr
-BasicMaterial::diffuseCubeMap(std::shared_ptr<render::AbstractTexture> texture)
-{
-#ifdef DEBUG
-    assert(texture == nullptr || texture->type() == TextureType::CubeTexture);
-#endif
-
-    if (texture)
-        data()->set("diffuseCubeMap", texture->sampler());
-    else
-        data()->unset("diffuseCubeMap");
-
-	return std::static_pointer_cast<BasicMaterial>(shared_from_this());
-}
-
-render::ResourceId
-BasicMaterial::diffuseCubeMap() const
-{
-	return data()->hasProperty("diffuseCubeMap")
-		? data()->get<render::ResourceId>("diffuseCubeMap")
-		: -1;
-}
-
-WrapMode
-BasicMaterial::diffuseCubeMapWrapMode() const
-{
-    return (data()->hasProperty("diffuseCubeMapWrapMode"))
-        ? data()->get<WrapMode>("diffuseCubeMapWrapMode")
-        : render::SamplerStates::DEFAULT_WRAP_MODE;
-}
-
-BasicMaterial::Ptr
-BasicMaterial::diffuseCubeMapTextureFilter(TextureFilter textureFilter)
-{
-    data()->set("diffuseCubeMapTextureFilter", textureFilter);
-
-    return std::static_pointer_cast<BasicMaterial>(shared_from_this());
-}
-
-TextureFilter
-BasicMaterial::diffuseCubeMapTextureFilter() const
-{
-    return (data()->hasProperty("diffuseCubeMapTextureFilter"))
-        ? data()->get<TextureFilter>("diffuseCubeMapTextureFilter")
-        : render::SamplerStates::DEFAULT_TEXTURE_FILTER;
-}
-
-BasicMaterial::Ptr
-BasicMaterial::diffuseCubeMapMipFilter(MipFilter mipFilter)
-{
-    data()->set("diffuseCubeMapMipFilter", mipFilter);
-
-    return std::static_pointer_cast<BasicMaterial>(shared_from_this());
-}
-
-MipFilter
-BasicMaterial::diffuseCubeMapMipFilter() const
-{
-    return (data()->hasProperty("diffuseCubeMapMipFilter"))
-        ? data()->get<MipFilter>("diffuseCubeMapMipFilter")
-        : render::SamplerStates::DEFAULT_MIP_FILTER;
-}
-
-BasicMaterial::Ptr
 BasicMaterial::fogColor(const math::vec4& value)
 {
 	data()->set("fogColor", value);
@@ -250,23 +128,9 @@ BasicMaterial::fogColor() const
 }
 
 BasicMaterial::Ptr
-BasicMaterial::fogDensity(float value)
-{
-    data()->set("fogDensity", value);
-
-    return std::static_pointer_cast<BasicMaterial>(shared_from_this());
-}
-
-float
-BasicMaterial::fogDensity() const
-{
-    return data()->get<float>("fogDensity");
-}
-
-BasicMaterial::Ptr
 BasicMaterial::fogStart(float value)
 {
-    data()->set("fogStart", value);
+    data()->getUnsafePointer<math::vec2>("fogBounds")->x = value;
 
     return std::static_pointer_cast<BasicMaterial>(shared_from_this());
 }
@@ -274,13 +138,13 @@ BasicMaterial::fogStart(float value)
 float
 BasicMaterial::fogStart() const
 {
-    return data()->get<float>("fogStart");
+    return data()->get<math::vec2>("fogBounds").x;
 }
 
 BasicMaterial::Ptr
 BasicMaterial::fogEnd(float value)
 {
-    data()->set("fogEnd", value);
+    data()->getUnsafePointer<math::vec2>("fogBounds")->y = value;
 
     return std::static_pointer_cast<BasicMaterial>(shared_from_this());
 }
@@ -288,47 +152,21 @@ BasicMaterial::fogEnd(float value)
 float
 BasicMaterial::fogEnd() const
 {
-    return data()->get<float>("fogEnd");
+    return data()->get<math::vec2>("fogBounds").y;
 }
 
 BasicMaterial::Ptr
-BasicMaterial::fogType(render::FogType value)
+BasicMaterial::fogTechnique(material::FogTechnique value)
 {
-    data()->unset("fogLinear");
-    data()->unset("fogExponential");
-    data()->unset("fogExponential2");
-
-    switch (value)
-    {
-    case render::FogType::Linear:
-        data()->set("fogLinear", true);
-        break;
-    case render::FogType::Exponential:
-        data()->set("fogExponential", true);
-        break;
-    case render::FogType::Exponential2:
-        data()->set("fogExponential2", true);
-        break;
-    default:
-        break;
-    }
+    data()->set("fogTechnique", value);
 
     return std::static_pointer_cast<BasicMaterial>(shared_from_this());
 }
 
-render::FogType
-BasicMaterial::fogType() const
+material::FogTechnique
+BasicMaterial::fogTechnique() const
 {
-    if (data()->hasProperty("fogLinear"))
-        return render::FogType::Linear;
-
-    if (data()->hasProperty("fogExponential"))
-        return render::FogType::Exponential;
-
-    if (data()->hasProperty("fogExponential2"))
-        return render::FogType::Exponential2;
-
-    return render::FogType::None;
+    return data()->get<material::FogTechnique>("fogTechnique");
 }
 
 BasicMaterial::Ptr
@@ -358,16 +196,16 @@ BasicMaterial::blendingMode(Blending::Mode value)
 Blending::Source
 BasicMaterial::blendingSourceFactor() const
 {
-	return data()->hasProperty("blendMode")
-		? Blending::Source(uint(data()->get<Blending::Mode>("blendMode")) & 0x00ff)
+	return data()->hasProperty("bleblendingModendMode")
+		? Blending::Source(uint(data()->get<Blending::Mode>("blendingMode")) & 0x00ff)
 		: _defaultStates->blendingSourceFactor();
 }
 
 Blending::Destination
 BasicMaterial::blendingDestinationFactor() const
 {
-	return data()->hasProperty("blendMode")
-		? Blending::Destination(uint(data()->get<Blending::Mode>("blendMode")) & 0xff00)
+	return data()->hasProperty("blendingMode")
+		? Blending::Destination(uint(data()->get<Blending::Mode>("blendingMode")) & 0xff00)
 		: _defaultStates->blendingDestinationFactor();
 }
 

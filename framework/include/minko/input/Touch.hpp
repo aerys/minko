@@ -34,10 +34,17 @@ namespace minko
         public:
             typedef std::shared_ptr<Touch>          Ptr;
 
+            typedef struct TouchPoint {
+                float x;
+                float y;
+                float dX;
+                float dY;
+            } TouchPoint;
+
         protected:
             std::shared_ptr<AbstractCanvas>             _canvas;
             
-            std::map<int, math::vec2>                   _touches; // identifier to x/y
+            std::map<int, TouchPoint>                   _touches; // identifier to x/y dx/dy
 
             std::vector<int>                            _identifiers;
 
@@ -57,7 +64,7 @@ namespace minko
 
         public:
             inline
-            std::map<int, math::vec2>
+            std::map<int, TouchPoint>
             touches()
             {
                 return _touches;
@@ -78,7 +85,7 @@ namespace minko
             }
 
             inline
-            math::vec2
+            TouchPoint
             touch(int identifier)
             {
                 return _touches[identifier];
@@ -166,6 +173,15 @@ namespace minko
 
             float
             averageY();
+
+            float
+            averageDX();
+
+            float
+            averageDY();
+
+            void
+            resetDeltas();
 
         protected:
             Touch(std::shared_ptr<AbstractCanvas> canvas);

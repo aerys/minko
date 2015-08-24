@@ -88,7 +88,7 @@
 
         {
             "name" : "shadow-mapping-boxblur",
-            "isPostProcessing" : true,
+            "forward" : false,
 
             "attributes" : {
                 "aPosition" : { "binding" : { "property" : "postProcessingPosition", "source" : "renderer" } },

@@ -159,7 +159,7 @@ namespace minko
 			unsigned int
 			numDrawCalls()
 			{
-				return _drawCallPool.drawCalls().size();
+				return _drawCallPool.numDrawCalls();
 			}
 
 			inline

@@ -26,6 +26,10 @@ namespace minko
 
         inline
         ProgressiveOrderedMeshLodInfo() :
+            _level(0),
+            _precisionLevel(0),
+            _indexOffset(0),
+            _indexCount(0),
             _isValid(false)
         {
         }

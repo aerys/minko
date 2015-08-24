@@ -1,6 +1,17 @@
 PROJECT_NAME = path.getname(os.getcwd())
 
--- minko.project.library("minko-plugin-" .. PROJECT_NAME)
+minko.project.library("minko-plugin-" .. PROJECT_NAME)
+
+	files {
+		"src/minko/material/WaterMaterial.cpp",
+		"include/minko/material/WaterMaterial.hpp",
+		"include/minko/MinkoFX.hpp"
+	}
+
+	includedirs {
+		"src",
+		"include"
+	}
 
 -- 	files {
 -- 		-- "src/**.cpp",
