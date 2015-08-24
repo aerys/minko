@@ -11,10 +11,9 @@
         "FOG_EXP2"      : "material[${materialUuid}].fogExponential2",
         "FOG_TECHNIQUE" : { "binding" : "material[${materialUuid}].fogTechnique", "type" : "int" }
     },
-    "defaultTechnique" : "basic-opaque-technique",
     "techniques" : [
         {
-            "name" : "basic-opaque-technique",
+            "name" : "default",
             "passes" : [
                 {
                     "name" : "basic-opaque-pass",
@@ -29,7 +28,7 @@
             ]
         },
         {
-            "name" : "basic-transparent-technique",
+            "name" : "transparent",
             "states" : {
                 "blendingMode"  : "alpha",
                 "priority"      : "transparent",
