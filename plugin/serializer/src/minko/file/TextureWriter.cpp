@@ -141,7 +141,9 @@ TextureWriter::embed(AssetLibraryPtr               assetLibrary,
 
     std::stringstream result;
 
-    result << headerSize << headerStream.str() << blobStream.str();
+    result.write(reinterpret_cast<const char*>(&headerSize), 2u);
+
+    result << headerStream.str() << blobStream.str();
 
     return result.str();
 }

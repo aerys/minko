@@ -461,7 +461,7 @@ AbstractSerializerParser::deserializeTexture(unsigned short     metaData,
                     headerData.begin() + textureHeaderSizeOffset + 2
                 ));
 
-                headerDataStream >> textureHeaderSize;
+                headerDataStream.read(reinterpret_cast<char*>(&textureHeaderSize), 2u);
             }
         );
 

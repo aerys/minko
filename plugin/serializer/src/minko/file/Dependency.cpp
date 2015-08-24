@@ -336,6 +336,8 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
 
     const auto assetIsNull = writerOptions->assetIsNull(targetTexture->uuid());
 
+    auto hasHeaderSize = !assetIsNull;
+
     writer->data(writerOptions->textureFunction()(filename, targetTexture));
 
     if (!assetIsNull && writerOptions->embedMode() & WriterOptions::EmbedMode::Texture)
@@ -346,6 +348,8 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
     }
     else
     {
+        hasHeaderSize = false;
+
         assetType = serialize::AssetType::TEXTURE_PACK_ASSET;
 
         if (!assetIsNull)
@@ -356,7 +360,6 @@ Dependency::serializeTexture(std::shared_ptr<Dependency>				dependency,
         content = File::removePrefixPathFromFilename(filename);
     }
 
-    const auto hasHeaderSize = !assetIsNull;
     const auto headerSize = writer->headerSize();
 
     const auto metadata = static_cast<unsigned int>(hasHeaderSize ? 1u << 31 : 0u) +
