@@ -142,7 +142,9 @@ AbstractASSIMPParser::parse(const std::string&					filename,
         Assimp::Logger::Err |
         Assimp::Logger::Warn;
 
+#ifdef DEBUG
     Assimp::DefaultLogger::get()->attachStream(new minko::file::Logger(), severity);
+#endif
 
 	int pos = resolvedFilename.find_last_of("\\/");
 
@@ -734,11 +736,11 @@ AbstractASSIMPParser::createCameras(const aiScene* scene)
 			if (!cameraNode->hasComponent<Transform>())
 				cameraNode->addComponent(Transform::create());
 
-			cameraNode->component<Transform>()->matrix(math::inverse(math::lookAt(
-				math::vec3(aiPosition.x, aiPosition.y, aiPosition.z),
-				math::vec3(aiLookAt.x, aiLookAt.y, aiLookAt.z),
-				math::vec3(aiUp.x, aiUp.y, aiUp.z)
-			)));
+			// cameraNode->component<Transform>()->matrix(math::inverse(math::lookAt(
+			// 	math::vec3(aiPosition.x, aiPosition.y, aiPosition.z),
+			// 	math::vec3(aiLookAt.x, aiLookAt.y, aiLookAt.z),
+			// 	math::vec3(aiUp.x, aiUp.y, aiUp.z)
+			// )));
 		}
 	}
 }
