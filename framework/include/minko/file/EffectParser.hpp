@@ -47,7 +47,7 @@ namespace minko
         public:
             typedef std::shared_ptr<EffectParser>	Ptr;
 
-            static const float  UNSET_PRIORITY_VALUE;
+            static const float UNSET_PRIORITY_VALUE;
 
         private:
             typedef std::shared_ptr<render::AbstractTexture>	            AbstractTexturePtr;

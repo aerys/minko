@@ -61,7 +61,7 @@ const std::string EffectParser::EXTRA_PROPERTY_STENCIL_FAIL_OP = "fail";
 const std::string EffectParser::EXTRA_PROPERTY_STENCIL_Z_FAIL_OP = "zfail";
 const std::string EffectParser::EXTRA_PROPERTY_STENCIL_Z_PASS_OP = "zpass";
 
-const float UNSET_PRIORIY_VALUE = -std::numeric_limits<float>::max();
+const float EffectParser::UNSET_PRIORITY_VALUE = -std::numeric_limits<float>::max();
 
 const std::unordered_map<std::string, unsigned int> EffectParser::_blendingSourceMap = {
     { "zero", static_cast<uint>(render::Blending::Source::ZERO) },
