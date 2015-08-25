@@ -77,17 +77,17 @@ VRCamera::updateViewport(int viewportWidth, int viewportHeight)
         math::ivec4(
             0,
             0,
-            math::clp2(viewportWidth / 2),
-            math::clp2(viewportHeight)
+            viewportWidth / 2,
+            viewportHeight
         )
     );
 
     _rightRenderer->viewport(
         math::ivec4(
-            math::clp2(viewportWidth / 2),
+            viewportWidth / 2,
             0,
-            math::clp2(viewportWidth / 2),
-            math::clp2(viewportHeight)
+            viewportWidth / 2,
+            viewportHeight
         )
     );
 

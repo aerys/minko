@@ -119,7 +119,6 @@ main(int argc, char** argv)
 		auto cubeMaterial = material::BasicMaterial::create();
 		cubeMaterial->diffuseCubeMap(sceneManager->assets()->cubeTexture(CUBE_TEXTURE));
 		cubeMaterial->triangleCulling(render::TriangleCulling::FRONT);
-		//cubeMaterial->diffuseColor(0xffffffff);
 
         auto cube = scene::Node::create("cube")
             ->addComponent(Transform::create(
@@ -131,7 +130,7 @@ main(int argc, char** argv)
                 sceneManager->assets()->effect("effect/Basic.effect")
             ));
 
-        //root->addChild(cube);
+        root->addChild(cube);
         root->addChild(camera);
         root->addChild(spheres);
         root->addChild(quads);
