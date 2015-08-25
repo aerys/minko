@@ -25,8 +25,3 @@ function minko.plugin.png:enable()
 	includedirs { minko.plugin.path("png") .. "/include" }
 	defines { "MINKO_PLUGIN_PNG" }
 end
-
-newoption {
-	trigger			= "with-png",
-	description		= "Enable the Minko PNG plugin."
-}

@@ -3,7 +3,10 @@ PROJECT_NAME = path.getname(os.getcwd())
 minko.project.library("minko-plugin-" .. PROJECT_NAME)
 
 	minko.plugin.enable("serializer")
-	minko.plugin.enable("lua")
+
+	if minko.plugin.requested("lua") then
+		minko.plugin.enable { "lua" }
+	end
 
 	files {
 		"include/**.hpp",

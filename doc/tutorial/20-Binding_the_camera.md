@@ -15,7 +15,7 @@ If you read the code for the `PerspectiveCamera::initialize()` method, you'll se
 -   `projectionMatrix`
 -   `worldToScreenMatrix`
 
-Those properties are declared in the `PerspectiveCamera::data()` provider, which is a `[data::StructureProvider`](data::StructureProvider`) with "camera" as a structure name. Therefore, all those properties are actually available with the `camera.` prefix. For example, the `viewMatrix` property can be bound using the `camera.viewMatrix` token.
+Those properties are declared in the `PerspectiveCamera::data()` provider, which is a `[data::StructureProvider](data::StructureProvider)` with "camera" as a structure name. Therefore, all those properties are actually available with the `camera.` prefix. For example, the `viewMatrix` property can be bound using the `camera.viewMatrix` token.
 
 Here is how we can bind the camera transform and projection in our effect using `uniformBindings`:
 
@@ -102,7 +102,8 @@ Note that because we will likely need to move and orient our camera, we also add
 Because all of our camera-related properties are now handled by data binding, we also have to update our code to comment (or simply remove) any corresponding `Effect::setUniform()`:
 
 ```cpp
-//myCustomEffect->setUniform("uViewMatrix", Matrix4x4::create()); //myCustomEffect->setUniform("uProjectionMatrix", Matrix4x4::create()->perspective((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT)); 
+//myCustomEffect->setUniform("uViewMatrix", Matrix4x4::create());
+//myCustomEffect->setUniform("uProjectionMatrix", Matrix4x4::create()->perspective((float)WINDOW_WIDTH / (float)WINDOW_HEIGHT)); 
 ```
 
 

@@ -47,7 +47,7 @@ namespace minko
             void
             provideLoaders(Assimp::Importer& importer);
 
-#if (defined ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION)
+#if !defined (ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION)
             static
             std::set<std::string>
             getSupportedFileExtensions();

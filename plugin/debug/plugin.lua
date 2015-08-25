@@ -25,8 +25,3 @@ function minko.plugin.debug:enable()
 	includedirs { minko.plugin.path("debug") .. "/include" }
 	defines { "MINKO_PLUGIN_DEBUG" }
 end
-
-newoption {
-	trigger		= "with-debug",
-	description	= "Enable the Minko debug plugin."
-}

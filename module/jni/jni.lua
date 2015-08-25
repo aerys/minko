@@ -35,8 +35,9 @@ if not ANDROID_HOME then
 end
 
 if not os.isfile(ANDROID_HOME .. "/tools/lib/sdk-common.jar") then
-	error(color.fg.red .. 'Cannot find SDK tools for Android. Make sure ANDROID_HOME points to a correct Android SDK directory ' ..
+	print(color.fg.yellow .. 'Cannot find SDK tools for Android. Make sure ANDROID_HOME points to a correct Android SDK directory ' ..
 		' (missing \'' .. ANDROID_HOME .. '/tools/lib/sdk-common.jar\')' .. color.reset)
+	do return end
 end
 
 -- if we try to build Android on Windows without Cygwin
@@ -47,7 +48,8 @@ if os.is("windows") and os.getenv('OSTYPE') == nil then
 end
 
 if not os.isdir(ANDROID_HOME .. "/toolchains") then
-	error(color.fg.red .. 'Cannot find NDK tools for Android. Please extract NDK in ${ANDROID_HOME}/ndk/android-ndk-<version>" and run `install_jni.sh` or `install_jni.bat`.' .. color.reset)
+	print(color.fg.yellow .. 'Cannot find NDK tools for Android. Please extract NDK in ${ANDROID_HOME}/ndk/android-ndk-<version>" and run `install_jni.sh` or `install_jni.bat`.' .. color.reset)
+	do return end
 end
 
 -- writing toolchain name in a fake symlink to avoid actual symlinks on Windows (requiring privileges)
@@ -55,7 +57,13 @@ local NDK_HOME = ANDROID_HOME .. "/toolchains/" .. _OPTIONS["toolchain"]
 
 
 if not os.isdir(NDK_HOME) then
-	error(color.fg.red .. 'NDK is not correctly installed: ' .. NDK_HOME .. color.reset)
+	print(color.fg.yellow .. 'NDK is not correctly installed: ' .. NDK_HOME .. color.reset)
+	do return end
+end
+
+if not os.capture("which ant") then
+	print(color.fg.yellow ..'Cannot find Ant. Make sure "ant" is available in your path.' .. color.reset)
+	do return end
 end
 
 local function find(binary)
@@ -87,7 +95,3 @@ table.inject(premake.tools.gcc, 'cxxflags.system.android', {
 table.inject(premake.tools.gcc, 'ldflags.system.android', {
 	"-Wl,--fix-cortex-a8",
 })
-
-if not os.capture("which ant") then
-	error(color.fg.red ..'Cannot find Ant. Make sure "ant" is available in your path.' .. color.reset)
-end

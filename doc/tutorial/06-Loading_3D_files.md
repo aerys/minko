@@ -47,7 +47,8 @@ Access loaded files
 Once the loaded complete signal of the assetLibrary is triggered you can access the different model with the `AssetLibrary::symbol(name)` method
 
 ```cpp
-auto objModel = assets->symbol("model/model.obj"); auto daeModel = assets->symbol("model/model.dae"); 
+auto objModel = assets->symbol("model/model.obj");
+auto daeModel = assets->symbol("model/model.dae");
 ```
 
 

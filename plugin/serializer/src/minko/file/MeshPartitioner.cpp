@@ -1066,6 +1066,9 @@ MeshPartitioner::buildGlobalIndex(PartitionInfo& partitionInfo)
 
         auto positionVertexBuffer = geometry->vertexBuffer("position");
 
+        auto normalVertexBuffer = geometry->vertexBuffer("normal");
+        auto tangentVertexBuffer = geometry->vertexBuffer("tangent");
+
         const auto localIndexCount = geometry->indices()->numIndices();
         const auto localVertexCount = geometry->numVertices();
 
@@ -1123,6 +1126,43 @@ MeshPartitioner::buildGlobalIndex(PartitionInfo& partitionInfo)
 
                     minBound = math::min(minBound, position);
                     maxBound = math::max(maxBound, position);
+                }
+
+                if (partitionInfo.useRootSpace)
+                {
+                    if (vertexBuffer == normalVertexBuffer)
+                    {
+                        const auto normalAttributeOffset = vertexBuffer->attribute("normal").offset;
+
+                        auto normal = math::make_vec3(
+                            &localVertices.at(localIndex * localVertexSize + normalAttributeOffset
+                        ));
+
+                        normal = math::mat3(transformMatrix) * normal;
+
+                        std::copy(
+                            &normal.x,
+                            &normal.x + 3,
+                            transformedLocalVertices.begin() + localIndex * localVertexSize + normalAttributeOffset
+                        );
+                    }
+
+                    if (vertexBuffer == tangentVertexBuffer)
+                    {
+                        const auto tangentAttributeOffset = vertexBuffer->attribute("tangent").offset;
+
+                        auto tangent = math::make_vec3(
+                            &localVertices.at(localIndex * localVertexSize + tangentAttributeOffset
+                        ));
+
+                        tangent = math::mat3(transformMatrix) * tangent;
+
+                        std::copy(
+                            &tangent.x,
+                            &tangent.x + 3,
+                            transformedLocalVertices.begin() + localIndex * localVertexSize + tangentAttributeOffset
+                        );
+                    }
                 }
 
                 std::copy(

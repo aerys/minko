@@ -78,10 +78,32 @@ configuration {}
 MINKO_SDK_DIST = true
 
 -- make plugins visible from an external project
-local plugins = os.matchdirs(MINKO_HOME .. '/plugin/*')
+local plugins = {
+	['lua'] = false,
+	['angle'] = false,
+	['zlib'] = true,
+	['assimp'] = true,
+	['debug'] = true,
+	['devil'] = true,
+	['bullet'] = true,
+	['fx'] = true,
+	['html-overlay'] = true,
+	['http-loader'] = true,
+	['http-worker'] = true,
+	['jpeg'] = true,
+	['leap'] = false,
+	['vr'] = true,
+	['offscreen'] = false,
+	['particles'] = false,
+	['png'] = true,
+	['sdl'] = true,
+	['sensors'] = true,
+	['serializer'] = true,
+	['video-camera'] = true,
+}
 
-for _, plugin in ipairs(plugins) do
-	minko.plugin.include(plugin)
+for plugin, enabled in pairs(plugins) do
+	minko.plugin.include(MINKO_HOME .. '/plugin/' .. plugin, enabled)
 end
 
 -- options
