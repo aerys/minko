@@ -334,7 +334,7 @@ AbstractASSIMPParser::convertScene(const aiScene* scene)
 
     const auto symbolRootName = File::removePrefixPathFromFilename(_filename);
 
-	_symbol = scene::Node::create(symbolRootName);
+	_symbol = createNode(scene, nullptr, symbolRootName);
 	createSceneTree(_symbol, scene, scene->mRootNode, _options->assetLibrary());
 
     if (_options->processUnusedAsset())
@@ -385,14 +385,45 @@ AbstractASSIMPParser::convertScene(const aiScene* scene)
 		finalize();
 }
 
+Node::Ptr
+AbstractASSIMPParser::createNode(const aiScene*     scene,
+                                 aiNode*            node,
+                                 const std::string& name)
+{
+    auto metadata = component::Metadata::Data();
+
+    if (node == nullptr || !parseMetadata(scene, node, _options, metadata))
+        return Node::create(name);
+
+    auto minkoNode = Node::Ptr();
+
+    auto uuidIt = metadata.find("minko_uuid");
+
+    if (uuidIt != metadata.end())
+    {
+        minkoNode = Node::create(uuidIt->second, name);
+    }
+    else
+    {
+        minkoNode = Node::create(name);
+    }
+
+    for (const auto& entry : metadata)
+    {
+        _options->attributeFunction()(minkoNode, entry.first, entry.second);
+    }
+
+    minkoNode->addComponent(Metadata::create(metadata));
+
+    return minkoNode;
+}
+
 void
 AbstractASSIMPParser::createSceneTree(scene::Node::Ptr 				minkoNode,
 									  const aiScene* 				scene,
 									  aiNode* 						ainode,
 									  std::shared_ptr<AssetLibrary> assets)
 {
-    parseMetadata(scene, ainode, minkoNode, _options);
-
 	minkoNode->addComponent(getTransformFromAssimp(ainode));
 
 	// create surfaces for each node mesh
@@ -413,8 +444,8 @@ AbstractASSIMPParser::createSceneTree(scene::Node::Ptr 				minkoNode,
 		if (aichild == nullptr)
 			continue;
 
-        auto childName	= std::string(aichild->mName.data);
-        auto childNode	= scene::Node::create(childName);
+        const auto childName = std::string(aichild->mName.data);
+        auto childNode = createNode(scene, aichild, childName);
 
 		_aiNodeToNode[aichild] = childNode;
 		if (!childName.empty())
@@ -427,16 +458,14 @@ AbstractASSIMPParser::createSceneTree(scene::Node::Ptr 				minkoNode,
     }
 }
 
-void
-AbstractASSIMPParser::parseMetadata(const aiScene*            scene,
-                                    aiNode*                   ainode,
-                                    NodePtr                   minkoNode,
-                                    std::shared_ptr<Options>  options)
+bool
+AbstractASSIMPParser::parseMetadata(const aiScene*                                scene,
+                                    aiNode*                                       ainode,
+                                    std::shared_ptr<Options>                      options,
+                                    std::unordered_map<std::string, std::string>& metadata)
 {
     if (!ainode->mMetaData)
-        return;
-
-	component::Metadata::Data metadata;
+        return false;
 
     for (auto i = 0u; i < ainode->mMetaData->mNumProperties; ++i)
     {
@@ -472,12 +501,10 @@ AbstractASSIMPParser::parseMetadata(const aiScene*            scene,
             break;
         }
 
-        options->attributeFunction()(minkoNode, key, dataString);
-
-		metadata[key] = dataString;
+        metadata[key] = dataString;
     }
 
-	minkoNode->addComponent(component::Metadata::create(metadata));
+    return true;
 }
 
 void
@@ -627,7 +654,7 @@ AbstractASSIMPParser::getValidAssetName(const std::string& name)
 
     validAssetName = File::removePrefixPathFromFilename(validAssetName);
 
-    const auto invalidSymbolRegex = std::regex("\\W+");
+    const auto invalidSymbolRegex = std::regex("[^a-zA-Z0-9^_\.-]+");
 
     validAssetName = std::regex_replace(
         validAssetName,
@@ -1744,6 +1771,7 @@ AbstractASSIMPParser::createMaterial(const aiMaterial* aiMat)
         uniqueMaterialName = materialName + "_" + std::to_string(materialNameId++);
     }
 
+    material->data()->set("name", uniqueMaterialName);
     auto processedMaterial = _options->materialFunction()(uniqueMaterialName, material);
 
     _aiMaterialToMaterial.insert(std::make_pair(aiMat, processedMaterial));
