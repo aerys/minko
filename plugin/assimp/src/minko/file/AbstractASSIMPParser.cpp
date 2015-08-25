@@ -269,7 +269,7 @@ AbstractASSIMPParser::getPostProcessingFlags(const aiScene*             scene,
 
     _importer->SetPropertyInteger(AI_CONFIG_PP_RVC_FLAGS, removeComponentFlags);
 
-    if (!options->processUnusedAsset())
+    if (!options->preserveMaterials())
     {
         // this flags discards unused materials in addition to
         // removing duplicated ones
@@ -337,7 +337,7 @@ AbstractASSIMPParser::convertScene(const aiScene* scene)
 	_symbol = createNode(scene, nullptr, symbolRootName);
 	createSceneTree(_symbol, scene, scene->mRootNode, _options->assetLibrary());
 
-    if (_options->processUnusedAsset())
+    if (_options->preserveMaterials())
         createUnusedMaterials(scene, _options->assetLibrary(), _options);
 
 #ifdef DEBUG_ASSIMP

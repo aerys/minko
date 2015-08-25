@@ -86,7 +86,7 @@ namespace minko
             bool                                                _disposeVertexBufferAfterLoading;
             bool                                                _disposeTextureAfterLoading;
             bool                                                _storeDataIfNotParsed;
-            bool                                                _processUnusedAsset;
+            bool                                                _preserveMaterials;
 			unsigned int								        _skinningFramerate;
 			component::SkinningMethod					        _skinningMethod;
 			std::shared_ptr<render::Effect>                     _effect;
@@ -425,16 +425,16 @@ namespace minko
 
 			inline
             bool
-            processUnusedAsset() const
+            preserveMaterials() const
             {
-                return _processUnusedAsset;
+                return _preserveMaterials;
             }
 
             inline
             Ptr
-            processUnusedAsset(bool value)
+            preserveMaterials(bool value)
             {
-                _processUnusedAsset = value;
+                _preserveMaterials = value;
 
                 return shared_from_this();
             }
