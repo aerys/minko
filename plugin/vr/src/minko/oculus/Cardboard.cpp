@@ -117,7 +117,7 @@ Cardboard::getRightEyeFov()
 }
 
 void
-Cardboard::updateCameraOrientation(std::shared_ptr<scene::Node> target)
+Cardboard::updateCameraOrientation(std::shared_ptr<scene::Node> target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera)
 {
 #if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
     auto rotationMatrix = math::transpose(_attitude->rotationMatrix());

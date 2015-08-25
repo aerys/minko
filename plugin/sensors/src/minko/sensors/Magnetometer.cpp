@@ -66,3 +66,10 @@ Magnetometer::onSensorChanged()
 {
     return _magnetometerManager->onSensorChanged();
 }
+
+bool
+Magnetometer::isSupported()
+{
+	// TODO: Detect if magnetometer is really supported
+	return true;
+}
