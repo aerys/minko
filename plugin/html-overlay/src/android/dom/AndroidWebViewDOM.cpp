@@ -51,6 +51,8 @@ AndroidWebViewDOM::sendMessage(const std::string& message, bool async)
 
 	m = std::replaceAll(m, "\\", "\\\\");
 	m = std::replaceAll(m, "'", "\\'");
+	m = std::replaceAll(m, "\n", " ");
+	m = std::replaceAll(m, "\"", "\\\"");
 
 	std::string eval = "if (" + _jsAccessor + ".window.Minko.dispatchMessage) " + _jsAccessor + ".window.Minko.dispatchMessage('" + m + "');";
 
