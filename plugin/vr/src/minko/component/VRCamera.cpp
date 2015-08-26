@@ -21,19 +21,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/scene/Node.hpp"
 #include "minko/scene/NodeSet.hpp"
 #include "minko/component/AbstractComponent.hpp"
-#include "minko/render/AbstractContext.hpp"
 #include "minko/component/SceneManager.hpp"
 #include "minko/file/AssetLibrary.hpp"
-#include "minko/render/Effect.hpp"
 
 #if MINKO_PLATFORM == MINKO_PLATFORM_IOS || MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
-#include "minko/oculus/Cardboard.hpp"
+# include "minko/oculus/Cardboard.hpp"
 #else
-	#if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
-	#include "minko/oculus/WebVROculus.hpp"
-	#else
-	#include "minko/oculus/NativeOculus.hpp"
-	#endif
+# if MINKO_PLATFORM == MINKO_PLATFORM_HTML5
+#  include "minko/oculus/WebVROculus.hpp"
+# else
+#  include "minko/oculus/NativeOculus.hpp"
+# endif
 #endif
 
 using namespace minko;
@@ -43,11 +41,14 @@ using namespace minko::math;
 using namespace minko::oculus;
 using namespace minko::render;
 
-VRCamera::VRCamera(int viewportWidth, int viewportHeight, float zNear, float zFar) :
+VRCamera::VRCamera() :
     _sceneManager(nullptr),
     _addedSlot(nullptr),
     _removedSlot(nullptr),
-    _VRImpl(nullptr)
+    _VRImpl(nullptr),
+    _viewportWidth(0.f),
+    _viewportHeight(0.f),
+    _rendererClearColor(0)
 {
 }
 
@@ -62,34 +63,16 @@ VRCamera::updateViewport(int viewportWidth, int viewportHeight)
     _viewportWidth = viewportWidth;
     _viewportHeight = viewportHeight;
 
-    auto aspectRatio = (float)(viewportWidth / 2) / (float)viewportHeight;  
+    auto aspectRatio = (viewportWidth / 2.f) / viewportHeight;  
 
     if (_leftCameraNode)
-    {
         _leftCameraNode->component<PerspectiveCamera>()->aspectRatio(aspectRatio);
-    }
+
     if (_rightCameraNode)
-    {
         _rightCameraNode->component<PerspectiveCamera>()->aspectRatio(aspectRatio);
-    }
 
-    _leftRenderer->viewport(
-        math::ivec4(
-            0,
-            0,
-            viewportWidth / 2,
-            viewportHeight
-        )
-    );
-
-    _rightRenderer->viewport(
-        math::ivec4(
-            viewportWidth / 2,
-            0,
-            viewportWidth / 2,
-            viewportHeight
-        )
-    );
+    _leftRenderer->viewport(math::ivec4(0, 0, viewportWidth / 2, viewportHeight));
+    _rightRenderer->viewport(math::ivec4(viewportWidth / 2, 0, viewportWidth / 2, viewportHeight));
 
     _VRImpl->updateViewport(viewportWidth, viewportHeight);
 }
@@ -109,7 +92,7 @@ VRCamera::detected()
 }
 
 void
-VRCamera::initialize(int viewportWidth, int viewportHeight, float zNear, float zFar, void* window)
+VRCamera::initialize(int viewportWidth, int viewportHeight, float zNear, float zFar, minko::uint rendererClearColor, void* window)
 {
 #ifdef EMSCRIPTEN
 	_VRImpl = WebVROculus::create(viewportWidth, viewportHeight, zNear, zFar);
@@ -125,8 +108,8 @@ VRCamera::initialize(int viewportWidth, int viewportHeight, float zNear, float z
         return;
 
     // Initialize both eyes' renderers
-    _leftRenderer = Renderer::create();
-    _rightRenderer = Renderer::create();
+    _leftRenderer = Renderer::create(rendererClearColor);
+    _rightRenderer = Renderer::create(rendererClearColor);
     _rightRenderer->clearBeforeRender(false);
 
     updateViewport(viewportWidth, viewportHeight);
@@ -141,7 +124,6 @@ VRCamera::targetAdded(NodePtr target)
         findSceneManager();
     });
 
-
     _removedSlot = target->removed().connect([=](scene::Node::Ptr n, scene::Node::Ptr t, scene::Node::Ptr p)
     {
         findSceneManager();
@@ -151,7 +133,7 @@ VRCamera::targetAdded(NodePtr target)
 
     // Initialize both eyes' cameras
 
-    auto aspectRatio = (float)(_viewportWidth / 2) / _viewportHeight;
+    auto aspectRatio = (_viewportWidth / 2.f) / _viewportHeight;
 
     auto leftCamera = PerspectiveCamera::create(
         aspectRatio,
@@ -211,7 +193,8 @@ VRCamera::findSceneManager()
 
     if (roots->nodes().size() > 1)
         throw std::logic_error("VRCamera cannot be in two separate scenes.");
-    else if (roots->nodes().size() == 1)
+    
+    if (roots->nodes().size() == 1)
         setSceneManager(roots->nodes()[0]->component<SceneManager>());
     else
         setSceneManager(nullptr);
@@ -224,8 +207,6 @@ VRCamera::setSceneManager(SceneManager::Ptr sceneManager)
         return;
 
     _sceneManager = sceneManager;
-
-    auto context = sceneManager->assets()->context();
 
     _renderBeginSlot = sceneManager->renderingBegin()->connect(std::bind(
         &VRCamera::updateCameraOrientation,

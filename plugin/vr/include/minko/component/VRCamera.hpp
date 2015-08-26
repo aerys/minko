@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/OculusCommon.hpp"
 #include "minko/Signal.hpp"
 #include "minko/component/AbstractComponent.hpp"
-#include "minko/component/PerspectiveCamera.hpp"
 
 namespace minko
 {
@@ -57,6 +56,7 @@ namespace minko
 
             float                                               _viewportWidth;
             float                                               _viewportHeight;
+            uint                                                _rendererClearColor;
 
         public:
             inline static
@@ -65,16 +65,15 @@ namespace minko
                    int viewportHeight,
                    float zNear  = 0.1f,
                    float zFar   = 1000.0f,
+                   uint rendererClearColor = 0,
                    void* window = nullptr)
             {
-                auto ptr = std::shared_ptr<VRCamera>(new VRCamera(
-                    viewportWidth, viewportHeight, zNear, zFar
-                ));
+                auto ptr = std::shared_ptr<VRCamera>(new VRCamera());
 
                 if (!ptr)
                     return nullptr;
 
-                ptr->initialize(viewportWidth, viewportHeight, zNear, zFar, window);
+                ptr->initialize(viewportWidth, viewportHeight, zNear, zFar, rendererClearColor, window);
 
                 return ptr;
             }
@@ -96,10 +95,10 @@ namespace minko
             ~VRCamera();
 
         private:
-            VRCamera(int viewportWidth, int viewportHeight, float zNear, float zFar);
+            VRCamera();
 
             void
-            initialize(int viewportWidth, int viewportHeight, float zNear, float zFar, void* window);
+            initialize(int viewportWidth, int viewportHeight, float zNear, float zFar, uint rendererClearColor, void* window);
 
             void
             updateCameraOrientation(std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera);
