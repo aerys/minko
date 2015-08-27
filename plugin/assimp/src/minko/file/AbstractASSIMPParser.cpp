@@ -654,7 +654,7 @@ AbstractASSIMPParser::getValidAssetName(const std::string& name)
 
     validAssetName = File::removePrefixPathFromFilename(validAssetName);
 
-    const auto invalidSymbolRegex = std::regex("[^a-zA-Z0-9^_\.-]+");
+    const auto invalidSymbolRegex = std::regex("[^a-zA-Z0-9_\\.-]+");
 
     validAssetName = std::regex_replace(
         validAssetName,
