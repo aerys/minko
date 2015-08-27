@@ -304,3 +304,32 @@ TEST_F(SurfaceTest, RemoveLastSurface)
     ASSERT_TRUE(node->data().hasProperty("material[1].diffuseColor"));
     ASSERT_EQ(node->data().get<math::vec4>("material[1].diffuseColor"), math::vec4(0.f, 1.f, 0.f, 1.f));
 }
+
+TEST_F(SurfaceTest, SurfaceSetNewMaterialWithProgramForking)
+{
+    try
+    {
+        auto node = scene::Node::create("a");
+
+        auto diffuseMap = render::Texture::create(_sceneManager->canvas()->context(), 32u, 32u);
+        diffuseMap->upload();
+
+        node->addComponent(Surface::create(
+            _sceneManager->assets()->geometry("cube"),
+            _sceneManager->assets()->material("red"),
+            _sceneManager->assets()->effect("effect/Basic.effect")
+        ));
+
+        _sceneManager->nextFrame(0.f, 0.f);
+
+        auto newMaterial = material::Material::create(_sceneManager->assets()->material("red"));
+        newMaterial->data()->set("diffuseMap", diffuseMap->sampler());
+        node->component<Surface>()->material(newMaterial);
+
+        _sceneManager->nextFrame(0.f, 0.f);
+    }
+    catch (...)
+    {
+        ASSERT_TRUE(false);
+    }
+}

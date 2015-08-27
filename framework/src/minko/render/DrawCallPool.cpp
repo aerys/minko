@@ -21,7 +21,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/data/ResolvedBinding.hpp"
 
-#include "sparsehash/sparse_hash_map"
+#ifdef MINKO_USE_SPARSE_HASH_MAP
+# include "sparsehash/sparse_hash_map"
+#endif
 
 using namespace minko;
 using namespace minko::render;
@@ -71,10 +73,12 @@ DrawCallPool::DrawCallPool() :
     _zSortUsefulPropertyChangedSlot(new PropertyChangedSlotMap()),
     _mustZSort(false)
 {
+#ifdef MINKO_USE_SPARSE_HASH_MAP
     _macroToDrawCalls->set_deleted_key(MacroBindingKey("", nullptr, nullptr));
     _macroChangedSlot->set_deleted_key(MacroBindingKey("", nullptr, nullptr));
     _propChangedSlot->set_deleted_key(DrawCallKey(nullptr, nullptr));
     _drawCallToPropRebindFuncs->set_deleted_key(nullptr);
+#endif
 }
 
 DrawCallPool::~DrawCallPool()
@@ -266,7 +270,10 @@ DrawCallPool::hasMacroCallback(const MacroBindingKey& key)
 void
 DrawCallPool::macroPropertyChangedHandler(const data::MacroBinding& macroBinding, const DrawCallList* drawCalls)
 {
-    _invalidDrawCalls.insert(drawCalls->begin(), drawCalls->end());
+    for (auto* drawCall : *drawCalls)
+    {
+        _invalidDrawCalls.emplace(drawCall, std::make_pair(false, EffectVariables()));
+    }
 }
 
 void
@@ -350,16 +357,33 @@ DrawCallPool::unwatchProgramSignature(DrawCall&                     drawCall,
 void
 DrawCallPool::initializeDrawCall(DrawCall& drawCall, bool forceRebind)
 {
+    auto invalidDrawCallIt = _invalidDrawCalls.find(&drawCall);
+    const auto variablesChanged = invalidDrawCallIt != _invalidDrawCalls.end() &&
+                                  invalidDrawCallIt->second.first;
+    auto newVariables = EffectVariables();
+
+    if (variablesChanged)
+        newVariables = invalidDrawCallIt->second.second;
+
+    const auto& variables = variablesChanged
+        ? newVariables
+        : drawCall.variables();
+
     auto pass = drawCall.pass();
 
     auto programAndSignature = pass->selectProgram(
-        drawCall.variables(), drawCall.targetData(), drawCall.rendererData(), drawCall.rootData()
+        variables, drawCall.targetData(), drawCall.rendererData(), drawCall.rootData()
     );
 
     auto program = programAndSignature.first;
 
     if (program == drawCall.program())
+    {
+        if (variablesChanged)
+            drawCall.variables().assign(variables.begin(), variables.end());
+
         return;
+    }
 
     if (drawCall.program())
     {
@@ -372,6 +396,9 @@ DrawCallPool::initializeDrawCall(DrawCall& drawCall, bool forceRebind)
         );
         unbindDrawCall(drawCall);
     }
+
+    if (variablesChanged)
+        drawCall.variables().assign(variables.begin(), variables.end());
 
     bindDrawCall(drawCall, pass, program, forceRebind);
 
@@ -393,7 +420,7 @@ DrawCallPool::uniformBindingPropertyAddedHandler(DrawCall&                      
                                                  const data::BindingMap&            uniformBindingMap,
                                                  bool                               forceRebind)
 {
-    if (!forceRebind && std::find(_invalidDrawCalls.begin(), _invalidDrawCalls.end(), &drawCall) != _invalidDrawCalls.end())
+    if (!forceRebind && _invalidDrawCalls.find(&drawCall) != _invalidDrawCalls.end())
         return;
 
     data::ResolvedBinding* resolvedBinding = drawCall.bindUniform(
@@ -508,7 +535,7 @@ DrawCallPool::stateBindingPropertyAddedHandler(const std::string&       stateNam
                                                const data::BindingMap&  stateBindingMap,
                                                bool                     forceRebind)
 {
-    if (!forceRebind && std::find(_invalidDrawCalls.begin(), _invalidDrawCalls.end(), &drawCall) != _invalidDrawCalls.end())
+    if (!forceRebind && _invalidDrawCalls.find(&drawCall) != _invalidDrawCalls.end())
         return;
 
     auto resolvedBinding = drawCall.bindState(stateName, stateBindingMap.bindings, stateBindingMap.defaultValues);
@@ -571,8 +598,12 @@ DrawCallPool::stateBindingPropertyAddedHandler(const std::string&       stateNam
 void
 DrawCallPool::update(bool forceSort, bool mustZSort)
 {
-    for (auto* drawCallPtr : _invalidDrawCalls)
+    for (auto& invalidDrawCall : _invalidDrawCalls)
+    {
+        auto* drawCallPtr = invalidDrawCall.first;
+
         initializeDrawCall(*drawCallPtr, true);
+    }
     _invalidDrawCalls.clear();
 
     for (auto drawCallPtrAndFuncList : *_drawCallToPropRebindFuncs)
@@ -582,7 +613,9 @@ DrawCallPool::update(bool forceSort, bool mustZSort)
     }
 
     _drawCallToPropRebindFuncs->clear();
+#ifdef MINKO_USE_SPARSE_HASH_MAP
     _drawCallToPropRebindFuncs->resize(0);
+#endif
 
     for (auto drawCall : _drawCallsToBeSorted)
     {
@@ -613,9 +646,7 @@ DrawCallPool::invalidateDrawCalls(uint batchId, const EffectVariables& variables
 
             if (it != batchIDs.end())
             {
-                _invalidDrawCalls.insert(drawCall);
-                drawCall->variables().clear();
-                drawCall->variables().insert(drawCall->variables().end(), variables.begin(), variables.end());
+                _invalidDrawCalls[drawCall] = std::make_pair(true, variables);
             }
         }
     );
@@ -635,14 +666,22 @@ DrawCallPool::clear()
 {
     _drawCalls.clear();
     _macroToDrawCalls->clear();
+#ifdef MINKO_USE_SPARSE_HASH_MAP
     _macroToDrawCalls->resize(0);
+#endif
     _invalidDrawCalls.clear();
     _macroChangedSlot->clear();
+#ifdef MINKO_USE_SPARSE_HASH_MAP
     _macroChangedSlot->resize(0);
+#endif
     _propChangedSlot->clear();
+#ifdef MINKO_USE_SPARSE_HASH_MAP
     _propChangedSlot->resize(0);
+#endif
     _drawCallToPropRebindFuncs->clear();
+#ifdef MINKO_USE_SPARSE_HASH_MAP
     _drawCallToPropRebindFuncs->resize(0);
+#endif
 }
 
 void

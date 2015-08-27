@@ -37,10 +37,13 @@ namespace minko
 		class DrawCallPool
 		{
         private:
+#ifdef MINKO_USE_SPARSE_HASH_MAP
             template <typename... H>
             using map = google::sparse_hash_map<H...>;
-            /*template <class K, typename... V>
-            using map = std::unordered_map<K, V...>;*/
+#else
+            template <class K, typename... V>
+            using map = std::unordered_map<K, V...>;
+#endif
 
             typedef std::pair<const data::Binding*, const DrawCall*> DrawCallKey;
             typedef Hash<DrawCallKey> DrawCallKeyHash;
@@ -99,7 +102,10 @@ namespace minko
 			uint							_batchId;
             DrawCallContainer             	_drawCalls;
             MacroToDrawCallsMap*            _macroToDrawCalls;
-            std::unordered_set<DrawCall*>   _invalidDrawCalls;
+            std::unordered_map<
+                DrawCall*,
+                std::pair<bool, EffectVariables>
+            >                               _invalidDrawCalls;
             std::unordered_set<DrawCall*>   _drawCallsToBeSorted;
             MacroToChangedSlotMap*          _macroChangedSlot;
             PropertyChangedSlotMap*         _propChangedSlot;
