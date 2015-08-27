@@ -379,11 +379,26 @@ DrawCall::setUniformValueFromStore(const ProgramInputs::UniformInput&   input,
             break;
         case ProgramInputs::Type::sampler2d:
         case ProgramInputs::Type::samplerCube:
-            _samplers.push_back({
-                static_cast<uint>(_program->setTextureNames().size() + _samplers.size()),
-                store.getPointer<TextureSampler>(propertyName),
-                input.location
-            });
+        {
+            auto samplerIt = std::find_if(
+                _samplers.begin(),
+                _samplers.end(),
+                [&input](const SamplerValue& samplerValue) -> bool { return samplerValue.location == input.location; }
+            );
+
+            if (samplerIt == _samplers.end())
+            {
+                _samplers.push_back({
+                    static_cast<uint>(_program->setTextureNames().size() + _samplers.size()),
+                    store.getPointer<TextureSampler>(propertyName),
+                    input.location
+                });
+            }
+            else
+            {
+                samplerIt->sampler = store.getPointer<TextureSampler>(propertyName);
+            }
+        }
         break;
         case ProgramInputs::Type::float9:
         case ProgramInputs::Type::unknown:
