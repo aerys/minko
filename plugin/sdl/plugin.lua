@@ -75,13 +75,13 @@ function minko.plugin.sdl:enable()
 		removeincludedirs { minko.plugin.path("sdl") .. "/lib/sdl/include" }
 		includedirs { "SDL" }
 
-	configuration { "android" } --, "SharedLib" }
+	configuration { "android" }
 		links { "SDL2", "SDL2_mixer" }
 		libdirs { minko.plugin.path("sdl") .. "/lib/sdl/lib/android" }
 		includedirs { minko.plugin.path("sdl") .. "/lib/sdl/src/core/android" }
 
 	configuration { "ConsoleApp or WindowedApp" }
-		if _OPTIONS['with-offscreen'] then
+		if minko.plugin.requested("offscreen") then
 			minko.plugin.enable { "offscreen" }
 		end
 end
@@ -95,8 +95,3 @@ function minko.plugin.sdl:dist(pluginDistDir)
 		os.mkdir(pluginDistDir .. "/lib/sdl/lib/windows64/lib")
 		minko.os.copyfiles(minko.plugin.path("sdl") .. "/lib/sdl/lib/windows64", pluginDistDir .. "/lib/sdl/lib/windows64")
 end
-
-newoption {
-	trigger			= "with-sdl",
-	description		= "Enable the Minko SDL plugin."
-}

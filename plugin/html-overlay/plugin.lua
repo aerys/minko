@@ -131,8 +131,3 @@ minko.plugin["html-overlay"].dist = function(pluginDistDir)
 		minko.os.copyfiles(minko.plugin.path("html-overlay") .. "/lib/linux64/", pluginDistDir .. "/lib/linux64/")
 		minko.os.copyfiles(minko.plugin.path("html-overlay") .. "/lib/resource/", pluginDistDir .. "/lib/resource/")
 end
-
-newoption {
-	trigger			= "with-html-overlay",
-	description		= "Enable the Minko HTML Overlay plugin."
-}

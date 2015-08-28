@@ -1,5 +1,4 @@
 -- devil plugin
-
 minko.plugin.devil = {}
 
 function minko.plugin.devil:enable()
@@ -9,8 +8,3 @@ function minko.plugin.devil:enable()
 
 	minko.plugin.enable("zlib")
 end
-
-newoption {
-	trigger			= "with-devil",
-	description		= "Enable the Minko DevIL plugin."
-}
