@@ -417,13 +417,21 @@ void main(void)
 			discard;
 	#endif // ALPHA_THRESHOLD
 
-    #if defined(VERTEX_UV1) && defined(LIGHT_MAP)
-        #ifdef LIGHT_MAP_LOD
-            diffuse = lightMapping_multiply(diffuse, texturelod_texture2D(uLightMap, vVertexUV1, uLightMapSize, 0.0, uLightMapMaxAvailableLod, vec4(1.0)));
+    #if (defined (VERTEX_UV) || defined(VERTEX_UV1)) && defined(LIGHT_MAP)
+        vec2 lightMapUV = vec2(0.0);
+
+        #ifdef VERTEX_UV1
+            lightMapUV = vVertexUV1;
         #else
-            diffuse = lightMapping_multiply(diffuse, texture2D(uLightMap, vVertexUV1));
+            lightMapUV = vVertexUV;
         #endif
-    #endif // VERTEX_UV1 && LIGHT_MAP
+
+        #ifdef LIGHT_MAP_LOD
+            diffuse = lightMapping_multiply(diffuse, texturelod_texture2D(uLightMap, lightMapUV, uLightMapSize, 0.0, uLightMapMaxAvailableLod, vec4(1.0)));
+        #else
+            diffuse = lightMapping_multiply(diffuse, texture2D(uLightMap, lightMapUV));
+        #endif
+    #endif // (VERTEX_UV || VERTEX_UV1) && LIGHT_MAP
 
 	#if defined(SHININESS) || ( (defined(ENVIRONMENT_MAP_2D) || defined(ENVIRONMENT_CUBE_MAP)) && !defined(ENVIRONMENT_ALPHA) )
 		#if defined(SPECULAR_MAP) && defined(VERTEX_UV)
