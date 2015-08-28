@@ -1,0 +1,38 @@
+// oculus vr post-processing effect
+{
+	"name" : "oculusvr",
+	
+	"attributes" : {
+        "aPosition"             : "geometry[${geometryUuid}].screenPosNDC",
+        "aTimewarpLerpFactor"   : "geometry[${geometryUuid}].timeWarpFactor",
+        "aVignette"             : "geometry[${geometryUuid}].vignetteFactor",
+        "aTexCoord0"            : "geometry[${geometryUuid}].tanEyeAnglesR",
+        "aTexCoord1"            : "geometry[${geometryUuid}].tanEyeAnglesG",
+        "aTexCoord2"            : "geometry[${geometryUuid}].tanEyeAnglesB"
+	},
+	
+	"uniforms" : {
+        "uEyeToSourceUVScale"   : "material[${materialUuid}].eyeToSourceUVScale",
+        "uEyeToSourceUVOffset"  : "material[${materialUuid}].eyeToSourceUVOffset",
+        "uEyeRotationStart"     : "material[${materialUuid}].eyeRotationStart",
+        "uEyeRotationEnd"       : "material[${materialUuid}].eyeRotationEnd",
+        "uTexture"              : {
+        	"binding" : "material[${materialUuid}].texture",
+        	"textureFilter" : "linear"
+    	}
+	},
+	
+	"states" : {
+		"triangleCulling" : "none",
+		"depthMask" : false,
+		"depthFunction" : "less_equal"
+	},
+	
+	"passes" : [
+		{
+			"name" : "oculus left",
+			"vertexShader" : "#pragma include \"OculusVR.vertex.glsl\"",
+			"fragmentShader" : "#pragma include \"OculusVR.fragment.glsl\""
+		}
+	]
+}

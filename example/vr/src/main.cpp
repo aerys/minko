@@ -25,7 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::scene;
 using namespace minko::component;
-using namespace minko::math;
 
 const std::string   CUBE_TEXTURE        = "texture/entrance_hall_hor.jpg";
 
@@ -41,7 +40,7 @@ const float         QUADS_MOVE_AMPL     = 2.0f;
 const float         QUADS_MOVE_SPEED    = 2.5f;
 const float         QUADS_PRIORITY      = render::Priority::TRANSPARENT + 1.0f;
 
-typedef std::pair<Transform::Ptr, Vector3::Ptr> AnimData;
+typedef std::pair<Transform::Ptr, math::vec3> AnimData;
 
 Node::Ptr
 createObjectGroup(unsigned int                  numObjects,
@@ -60,7 +59,7 @@ animateObjects(float                            moveAmplitude,
 int
 main(int argc, char** argv)
 {
-    auto canvas = Canvas::create("Minko Example - Oculus");
+    auto canvas = Canvas::create("Minko Example - VR");
 
     auto sceneManager = SceneManager::create(canvas);
 
@@ -75,14 +74,15 @@ main(int argc, char** argv)
         ->registerParser<file::JPEGParser>("jpg");
 
     sceneManager->assets()
-        ->geometry("cube",        geometry::CubeGeometry::create(sceneManager->assets()->context()))
-        ->geometry("quad",        geometry::QuadGeometry::create(sceneManager->assets()->context()))
-        ->geometry("sphere",    geometry::SphereGeometry::create(sceneManager->assets()->context(), 16, 16));
+        ->geometry("cube", geometry::CubeGeometry::create(sceneManager->assets()->context()))
+        ->geometry("quad", geometry::QuadGeometry::create(sceneManager->assets()->context()))
+        ->geometry("sphere", geometry::SphereGeometry::create(sceneManager->assets()->context(), 16, 16));
 
     loader
         ->queue(CUBE_TEXTURE, loader->options()->clone()->isCubeTexture(true))
         ->queue("effect/Basic.effect")
-        ->queue("effect/OculusVR/OculusVR.effect");
+        ->queue("effect/OculusVR/OculusVR.effect")
+    ;
 
     std::vector<AnimData> spheresAnimData;
     std::vector<AnimData> quadsAnimData;
@@ -91,49 +91,79 @@ main(int argc, char** argv)
     Node::Ptr quads;
     Node::Ptr camera;
 
+    Signal<>::Slot actionButtonPressed = nullptr;
+    Signal<>::Slot actionButtonReleased = nullptr;
+
     auto _ = sceneManager->assets()->loader()->complete()->connect([&](file::Loader::Ptr loader)
     {
         auto root = scene::Node::create("root")
             ->addComponent(sceneManager);
 
-        camera = scene::Node::create("camera")
-            ->addComponent(Transform::create())
-            ->addComponent(VRCamera::create(canvas->width(), canvas->height(), 0.1f, 100.0f));
+		camera = scene::Node::create("camera")
+			->addComponent(Transform::create());
 
+		auto HMDDetected = VRCamera::detected();
+
+		if (HMDDetected)
+			camera->addComponent(VRCamera::create(canvas->width(), canvas->height(), 0.1f, 100.0f));
+		else
+		{
+			camera
+				->addComponent(PerspectiveCamera::create(canvas->aspectRatio(), 1.0f))
+				->addComponent(Renderer::create(0x050514ff));
+		}
+		
         spheres = createObjectGroup(NUM_SPHERES, false, SPHERES_DIST, SPHERES_PRIORITY, sceneManager->assets(), spheresAnimData);
         quads = createObjectGroup(NUM_QUADS, true, QUADS_DIST, QUADS_PRIORITY, sceneManager->assets(), quadsAnimData);
 
+		auto cubeMaterial = material::BasicMaterial::create();
+		cubeMaterial->diffuseCubeMap(sceneManager->assets()->cubeTexture(CUBE_TEXTURE));
+		cubeMaterial->triangleCulling(render::TriangleCulling::FRONT);
+
         auto cube = scene::Node::create("cube")
             ->addComponent(Transform::create(
-                Matrix4x4::create()->appendScale(50.0f)
+                math::scale(math::vec3(50.0f)) * math::mat4()
             ))
             ->addComponent(Surface::create(
                 sceneManager->assets()->geometry("cube"),
-                material::BasicMaterial::create()
-                    ->diffuseCubeMap(sceneManager->assets()->cubeTexture(CUBE_TEXTURE))
-                    ->triangleCulling(render::TriangleCulling::FRONT),
-                    //->diffuseColor(0xffffffff),
-                sceneManager->assets()->effect("basic")
+                cubeMaterial,
+                sceneManager->assets()->effect("effect/Basic.effect")
             ));
 
+        root->addChild(cube);
         root->addChild(camera);
         root->addChild(spheres);
         root->addChild(quads);
-        root->addChild(cube);
+
+        if (camera->hasComponent<VRCamera>())
+        {
+            actionButtonPressed = camera->component<VRCamera>()->actionButtonPressed()->connect([&]()
+            {
+                LOG_INFO("HMD Action Button Pressed!");
+            });
+
+            actionButtonReleased = camera->component<VRCamera>()->actionButtonReleased()->connect([&]()
+            {
+                LOG_INFO("HMD Action Button Released!");
+            });
+        }
     });
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint width, uint height)
     {
-        camera->component<VRCamera>()->updateViewport(width, height);
+		if (camera->hasComponent<VRCamera>())
+			camera->component<VRCamera>()->updateViewport(width, height);
+		else if (camera->hasComponent<PerspectiveCamera>())
+			camera->component<PerspectiveCamera>()->aspectRatio(float(width) / float(height));
     });
 
     auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
     {
         //animateObjects(SPHERES_MOVE_AMPL, SPHERES_MOVE_SPEED, time, spheresAnimData);
-        spheres->component<Transform>()->matrix()->appendRotationY(.001f);
+        spheres->component<Transform>()->matrix(math::rotate(.001f, math::vec3(0, 1, 0)) * spheres->component<Transform>()->matrix());
 
         //animateObjects(QUADS_MOVE_AMPL, QUADS_MOVE_SPEED, time, quadsAnimData);
-        quads->component<Transform>()->matrix()->appendRotationY(-.0005f);
+        quads->component<Transform>()->matrix(math::rotate(-.0005f, math::vec3(0, 1, 0)) * quads->component<Transform>()->matrix());
 
         sceneManager->nextFrame(time, deltaTime);
     });
@@ -153,12 +183,12 @@ createObjectGroup(unsigned int              numObjects,
     nodeAnimData.clear();
     nodeAnimData.resize(numObjects);
 
-    const float invNumObjects   = 1.0f / float(numObjects);
-    const float maxSize         = float(M_PI) * distanceToEye * invNumObjects - 1e-2f;
-    const float minSize         = maxSize * 0.75f;
-    const float deltaAng        = 2.0f * float(M_PI) * invNumObjects;
-    const float cDelta          = std::cos(deltaAng);
-    const float sDelta          = std::sin(deltaAng);
+    const float invNumObjects = 1.0f / float(numObjects);
+    const float maxSize = float(M_PI) * distanceToEye * invNumObjects - 1e-2f;
+    const float minSize = maxSize * 0.75f;
+    const float deltaAng = 2.0f * float(M_PI) * invNumObjects;
+    const float cDelta = std::cos(deltaAng);
+    const float sDelta = std::sin(deltaAng);
 
     auto objectGroup = scene::Node::create(doQuads ? "quads" : "spheres")
         ->addComponent(Transform::create());
@@ -173,35 +203,40 @@ createObjectGroup(unsigned int              numObjects,
 
     for (uint i = 0; i < numObjects; ++i)
     {
-        auto color          = Color::hslaToRgba(((i + (doQuads ? numObjects >> 1 : 0)) % numObjects) * invNumObjects, 1.0f, 0.5f, 0.5f);
-        auto size           = minSize + (rand() / float(RAND_MAX)) * (maxSize - minSize);
+        auto color = math::vec4(math::rgbColor(math::vec3(((i + (doQuads ? numObjects >> 1 : 0)) % numObjects * invNumObjects) * 360, 1.0f, 0.5f)), 0.5f);
+        auto size = minSize + (rand() / float(RAND_MAX)) * (maxSize - minSize);
 
-        auto toEyeVector    = Vector3::create(cAng, 0.0f, sAng);
-
-        auto matrix         = Matrix4x4::create();
+        auto toEyeVector = math::vec3(cAng, 0.0f, sAng);
+        auto matrix = math::mat4();
 
         if (doQuads)
-            matrix
-                ->appendScale(2.0f * size, 3.0f * size, 1.0f)
-                ->append(Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(toEyeVector)->scaleBy(distanceToEye)));
+        {
+            matrix = math::scale(math::vec3(2.0f * size, 3.0f * size, 1.0f)) * matrix;
+            auto lookAt = math::inverse(math::lookAt(math::vec3(toEyeVector) * distanceToEye, math::vec3(), math::vec3(0, 1, 0)));
+            matrix = lookAt * matrix;
+        }
         else
-            matrix
-                ->appendScale(2.0f * size)
-                ->appendTranslation(Vector3::create(toEyeVector)->scaleBy(distanceToEye));
+        {
+            matrix = math::scale(math::vec3(2.0f * size)) * matrix;
+            matrix = math::translate(math::vec3(toEyeVector) * distanceToEye) * matrix;
+        }
 
-        auto transform      = Transform::create(matrix);
+        auto transform = Transform::create(matrix);
 
-        auto objectNode     = scene::Node::create((doQuads ? "quad_" : "sphere_") + std::to_string(i))
+        auto objectMaterial = material::BasicMaterial::create();
+        objectMaterial->data()
+            ->set("diffuseColor", color)
+            ->set("triangleCulling", doQuads ? render::TriangleCulling::FRONT : render::TriangleCulling::BACK)
+            ->set("priority", priority)
+            ->set("blendMode", render::Blending::Mode::ALPHA)
+            ->set("zsorted", false);
+
+        auto objectNode = scene::Node::create((doQuads ? "quad_" : "sphere_") + std::to_string(i))
             ->addComponent(transform)
             ->addComponent(Surface::create(
                 assets->geometry(doQuads? "quad" : "sphere"),
-                material::BasicMaterial::create()
-                    ->diffuseColor(color)
-                    ->triangleCulling(doQuads ? render::TriangleCulling::FRONT : render::TriangleCulling::BACK)
-                    ->set("priority", priority)
-                    ->set("blendMode", render::Blending::Mode::ALPHA)
-                    ->set("zsorted", false),
-                assets->effect("basic")
+                objectMaterial,
+                assets->effect("effect/Basic.effect")
             ));
 
         cPrev = cAng;
@@ -227,15 +262,13 @@ animateObjects(float                            moveAmplitude,
     const  float    fPrev       = 0.5f + 0.5f * cosf(prevTime * moveSpeed); // [0, 1]
     const  float    fCurr       = 0.5f + 0.5f * cosf(currTime * moveSpeed); // [0, 1]
 
-    auto        translation  = Vector3::create();
+    auto translation = math::vec3();
 
     for (auto& animData : nodeAnimData)
     {
-        translation
-            ->copyFrom(animData.second)
-            ->scaleBy(moveAmplitude * (fPrev - fCurr));
+        translation = animData.second * (moveAmplitude * (fPrev - fCurr));
 
-        animData.first->matrix()->appendTranslation(translation);
+        animData.first->matrix(math::translate(translation) * animData.first->matrix());
     }
 
     prevTime = currTime;

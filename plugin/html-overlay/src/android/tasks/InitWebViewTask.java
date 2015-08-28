@@ -93,6 +93,12 @@ public class InitWebViewTask implements Runnable
         // Don't require user interaction to play media content
         _webView.getSettings().setMediaPlaybackRequiresUserGesture(false);
 		
+		// Allow remote WebView debugging with Chrome DevTools for Android > 4.4
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) 
+		{
+			WebView.setWebContentsDebuggingEnabled(true);
+		}
+
 		Log.i("minko-java", "[InitWebViewTask] WebView is now instantiated: " + _webView + ".");
 		webViewInitialized();
     }
