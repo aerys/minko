@@ -350,7 +350,7 @@ AbstractASSIMPParser::convertScene(const aiScene* scene)
     if (_options->includeAnimation())
     {
         createSkins(scene);
-	    createAnimations(scene, true);
+	    //createAnimations(scene, true);
     }
 
 #ifdef DEBUG_ASSIMP
@@ -1975,163 +1975,44 @@ AbstractASSIMPParser::setScalarProperty(material::Material::Ptr	material,
 void
 AbstractASSIMPParser::createAnimations(const aiScene* scene, bool interpolate)
 {
-	auto nodeToTimelines = std::unordered_map<Node::Ptr, std::vector<animation::AbstractTimeline::Ptr>>();
+    sampleAnimations(scene);
 
-	for (auto i = 0u; i < scene->mNumAnimations; ++i)
-	{
-		const auto animation = scene->mAnimations[i];
+    auto nodeToTimelines = std::unordered_map<Node::Ptr, std::vector<animation::AbstractTimeline::Ptr>>();
 
-        const auto animationNumTicks = animation->mDuration;
-        const auto animationDuration = static_cast<unsigned int>(floor(1e3f * animationNumTicks / animation->mTicksPerSecond));
+    for (const auto& nameToMatricesPair : _nameToAnimMatrices)
+    {
+        auto node = _nameToNode.at(nameToMatricesPair.first);
+        const auto& matrices = nameToMatricesPair.second;
 
-		if (animation->mTicksPerSecond < 1e-6)
-			continue;
+        const auto numFrames = matrices.size();
+        const auto duration = numFrames * _options->skinningFramerate();
 
-		for (auto j = 0u; j < animation->mNumChannels; ++j)
-		{
-			const auto	channel	= animation->mChannels[j];
-			auto node = findNode(channel->mNodeName.data);
+        auto timetable = std::vector<unsigned int>(numFrames, 0u);
 
-			if (node == nullptr || _alreadyAnimatedNodes.count(node) > 0)
-				continue;
+        const auto timeStep = static_cast<float>(duration) / static_cast<float>(numFrames - 1);
 
-            const auto maxNumKeys = channel->mNumScalingKeys + channel->mNumRotationKeys + channel->mNumPositionKeys;
+        for (auto frameId = 1u; frameId < numFrames; ++frameId)
+        {
+            timetable[frameId] = static_cast<unsigned int>(timetable[frameId - 1] + timeStep);
+        }
 
-			auto timetable = std::vector<uint>(maxNumKeys, 0u);
-            auto matrices = std::vector<math::mat4>(maxNumKeys, math::mat4());
+        nodeToTimelines[node].push_back(animation::Matrix4x4Timeline::create(
+            PNAME_TRANSFORM,
+            duration,
+            timetable,
+            matrices,
+            interpolate
+        ));
+    }
 
-            auto tickDuration = -std::numeric_limits<double>::max();
-            auto keyId = 0u, scalingKeyId = 0u, rotationKeyId = 0u, positionKeyId = 0u;
+    // fixme: find actual animation root
+    auto animationRootNode = _nameToNode.at(_nameToAnimMatrices.begin()->first)->root();
 
-            while (scalingKeyId < channel->mNumScalingKeys ||
-                   rotationKeyId < channel->mNumRotationKeys ||
-                   positionKeyId < channel->mNumPositionKeys)
-            {
-                const auto& scalingKey = channel->mScalingKeys[std::min(scalingKeyId, channel->mNumScalingKeys - 1u)];
-                const auto& rotationKey = channel->mRotationKeys[std::min(rotationKeyId, channel->mNumRotationKeys - 1u)];
-                const auto& positionKey = channel->mPositionKeys[std::min(positionKeyId, channel->mNumPositionKeys - 1u)];
+	for (auto& nodeAndTimelines : nodeToTimelines)
+		nodeAndTimelines.first->addComponent(Animation::create(nodeAndTimelines.second));
 
-                const auto& previousScalingKey = scalingKeyId > 0 ? channel->mScalingKeys[scalingKeyId - 1u] : scalingKey;
-                const auto& previousRotationKey = rotationKeyId > 0 ? channel->mRotationKeys[rotationKeyId - 1u] : rotationKey;
-                const auto& previousPositionKey = positionKeyId > 0 ? channel->mPositionKeys[positionKeyId - 1u] : positionKey;
-
-                auto currentTime = std::numeric_limits<double>::max();
-
-                currentTime = scalingKeyId < channel->mNumScalingKeys
-                    ? std::min(scalingKey.mTime, currentTime)
-                    : currentTime;
-
-                currentTime = rotationKeyId < channel->mNumRotationKeys
-                    ? std::min(rotationKey.mTime, currentTime)
-                    : currentTime;
-
-                currentTime = positionKeyId < channel->mNumPositionKeys
-                    ? std::min(positionKey.mTime, currentTime)
-                    : currentTime;
-
-                tickDuration = std::max(currentTime, tickDuration);
-
-                auto scaling = convert(scalingKey.mValue);
-
-                if (scalingKeyId < channel->mNumScalingKeys)
-                {
-                    if (scalingKey.mTime != currentTime)
-                    {
-                        const auto ratio =
-                            (scalingKey.mTime - previousScalingKey.mTime) /
-                            (currentTime - previousScalingKey.mTime);
-
-                        scaling = math::mix(
-                            convert(previousScalingKey.mValue),
-                            convert(scalingKey.mValue),
-                            static_cast<float>(ratio)
-                        );
-                    }
-                    else
-                    {
-                        ++scalingKeyId;
-                    }
-                }
-
-                auto rotation = convert(rotationKey.mValue);
-
-                if (rotationKeyId < channel->mNumRotationKeys)
-                {
-                    if (rotationKey.mTime != currentTime)
-                    {
-                        const auto ratio =
-                            (rotationKey.mTime - previousRotationKey.mTime) /
-                            (currentTime - previousRotationKey.mTime);
-
-                        auto result = aiQuaternion();
-                        aiQuaternion::Interpolate(result, previousRotationKey.mValue, rotationKey.mValue, ratio);
-
-                        rotation = convert(result);
-                    }
-                    else
-                    {
-                        ++rotationKeyId;
-                    }
-                }
-
-                auto position = convert(positionKey.mValue);
-
-                if (positionKeyId < channel->mNumPositionKeys)
-                {
-                    if (positionKey.mTime != currentTime)
-                    {
-                        const auto ratio =
-                            (positionKey.mTime - previousPositionKey.mTime) /
-                            (currentTime - previousPositionKey.mTime);
-
-                        position = math::mix(
-                            convert(previousPositionKey.mValue),
-                            convert(positionKey.mValue),
-                            static_cast<float>(ratio)
-                        );
-                    }
-                    else
-                    {
-                        ++positionKeyId;
-                    }
-                }
-
-				const auto time	= static_cast<unsigned int>(floor(1e3f * currentTime / animation->mTicksPerSecond));
-
-				timetable[keyId] = time;
-				matrices[keyId]	= convert(
-                    aiVector3D(scaling.x, scaling.y, scaling.z),
-                    aiQuaternion(rotation.w, rotation.x, rotation.y, rotation.z),
-                    aiVector3D(position.x, position.y, position.z)
-                );
-
-                ++keyId;
-            }
-
-            const auto duration = animationDuration;
-            const auto numKeys = keyId;
-
-            timetable.resize(numKeys);
-            matrices.resize(numKeys);
-
-			nodeToTimelines[node].push_back(animation::Matrix4x4Timeline::create(
-				PNAME_TRANSFORM,
-				duration,
-				timetable,
-				matrices,
-				interpolate
-			));
-		}
-
-        // fixme: find actual animation root
-        auto animationRootNode = nodeToTimelines.begin()->first->root();
-
-		for (auto& nodeAndTimelines : nodeToTimelines)
-			nodeAndTimelines.first->addComponent(Animation::create(nodeAndTimelines.second));
-
-        if (!animationRootNode->hasComponent<MasterAnimation>())
-            animationRootNode->addComponent(MasterAnimation::create());
-	}
+    if (!animationRootNode->hasComponent<MasterAnimation>())
+        animationRootNode->addComponent(MasterAnimation::create());
 }
 
 void

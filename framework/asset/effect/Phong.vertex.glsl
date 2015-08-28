@@ -57,13 +57,24 @@ varying		vec4	vVertexColor;
 
 void main(void)
 {
-	#if defined VERTEX_UV && (defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP)
-		vVertexUV = aUV;
+	#if defined VERTEX_UV && (defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP || (defined LIGHT_MAP && !defined VERTEX_UV1))
+		vec2 uvScale = vec2(1.0);
+		vec2 uvOffset = vec2(0.0);
+
+		#ifdef UV_SCALE
+			uvScale = uUVScale;
+		#endif // UV_SCALE
+
+		#ifdef UV_OFFSET
+			uvOffset = uUVOffset;
+		#endif // UV_OFFSET
+
+		vVertexUV = uvScale * aUV + uvOffset;
 	#endif // defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP
 
-	#if defined (VERTEX_UV1) && defined (LIGHT_MAP)
-		vVertexUV1 = aUV1;
-	#endif // VERTEX_UV1 && LIGHT_MAP
+    #if defined (VERTEX_UV1) && defined (LIGHT_MAP)
+        vVertexUV1 = aUV1;
+    #endif // VERTEX_UV1 && LIGHT_MAP
 
 	#if defined VERTEX_COLOR
 		vVertexColor = vec4(packFloat8bitRGB(aColor), 1.0);
