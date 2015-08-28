@@ -43,7 +43,7 @@ namespace minko
 
                 return _instance;
             }
-            
+
             void
             initialize() override;
 
@@ -61,9 +61,10 @@ namespace minko
 
             bool
             isSupported() override;
+
         private:
             Magnetometer();
-            
+
             std::shared_ptr<AbstractMagnetometer> _magnetometerManager;
 
             static Ptr _instance;
