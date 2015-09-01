@@ -19,7 +19,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/MD5Parser.hpp"
 
-#include "../code/AssimpPCH.h"
 #include "assimp/Importer.hpp"
 #include "../code/MD5Loader.h"
 

@@ -20,6 +20,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #pragma once
 
 #include "BaseImporter.h"
+#include "../include/assimp/material.h"
+#include <vector>
 
 struct aiMesh;
 struct aiNode;

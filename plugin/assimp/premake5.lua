@@ -35,7 +35,13 @@ minko.project.library("minko-plugin-" .. PROJECT_NAME)
 		"lib/assimp/code/AssbinExporter.cpp",
 		"lib/assimp/code/3DSExporter.cpp",
 		"lib/assimp/code/Exporter.cpp",
-		"lib/assimp/code/AssimpCExport.cpp"
+		"lib/assimp/code/AssimpCExport.cpp",
+
+		"lib/assimp/contrib/openddlparser/code/OpenDDLParser.cpp",
+		"lib/assimp/contrib/openddlparser/code/DDLNode.cpp",
+		"lib/assimp/contrib/openddlparser/code/Value.cpp",
+		"lib/assimp/code/C4DImporter.cpp",
+		"lib/assimp/code/OpenGEXImporter.cpp"
 	}
 
 	includedirs {
