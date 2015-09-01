@@ -1019,7 +1019,7 @@ private:
         std::vector<unsigned int> indices;
 
         BOOST_FOREACH(MatIndexArray::value_type index, mindices) {
-            if(had.find(index) == had.end()) {
+            if(had.find(index) == had.end() && mesh.GetFaceIndexCounts().size() == mindices.size()) {
 
                 indices.push_back(ConvertMeshMultiMaterial(mesh, model, index, node_global_transform));
                 had.insert(index);

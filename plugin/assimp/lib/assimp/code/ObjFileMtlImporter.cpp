@@ -55,17 +55,22 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace Assimp    {
 
 // Material specific token
-static const std::string DiffuseTexture      = "map_Kd";
-static const std::string AmbientTexture      = "map_Ka";
-static const std::string SpecularTexture     = "map_Ks";
+static const std::string DiffuseTexture      = "map_kd";
+static const std::string AmbientTexture      = "map_ka";
+static const std::string SpecularTexture     = "map_ks";
 static const std::string OpacityTexture      = "map_d";
 static const std::string EmmissiveTexture    = "map_emissive";
-static const std::string BumpTexture1        = "map_bump";
-static const std::string BumpTexture2        = "map_Bump";
+static const std::string BumpTexture1        = "map_bump_old";
+static const std::string BumpTexture2        = "map_Bump_old";
 static const std::string BumpTexture3        = "bump";
-static const std::string NormalTexture       = "map_Kn";
+static const std::string NormalTexture1      = "map_Kn";
+static const std::string NormalTexture2      = "map_Normal";
+static const std::string NormalTexture3      = "map_normal";
+static const std::string NormalTexture4      = "map_bump";
+static const std::string NormalTexture5      = "map_Bump";
+static const std::string NormalTexture6      = "adobe_map_Normal";
 static const std::string DisplacementTexture = "disp";
-static const std::string SpecularityTexture  = "map_ns";
+static const std::string SpecularityTexture  = "map_ns"; 
 
 // texture option specific token
 static const std::string BlendUOption       = "-blendu";
@@ -328,7 +333,12 @@ void ObjFileMtlImporter::getTexture() {
         // Bump texture
         out = & m_pModel->m_pCurrentMaterial->textureBump;
         clampIndex = ObjFile::Material::TextureBumpType;
-    } else if (!ASSIMP_strincmp( pPtr,NormalTexture.c_str(), NormalTexture.size())) {
+    } else if (!ASSIMP_strincmp( pPtr, NormalTexture1.c_str(), NormalTexture1.size() ) ||
+               !ASSIMP_strincmp( pPtr, NormalTexture2.c_str(), NormalTexture2.size() ) ||
+               !ASSIMP_strincmp( pPtr, NormalTexture3.c_str(), NormalTexture3.size() ) ||
+               !ASSIMP_strincmp( pPtr, NormalTexture4.c_str(), NormalTexture4.size() ) ||
+               !ASSIMP_strincmp( pPtr, NormalTexture5.c_str(), NormalTexture5.size() ) ||
+               !ASSIMP_strincmp( pPtr, NormalTexture6.c_str(), NormalTexture6.size() )) { 
         // Normal map
         out = & m_pModel->m_pCurrentMaterial->textureNormal;
         clampIndex = ObjFile::Material::TextureNormalType;

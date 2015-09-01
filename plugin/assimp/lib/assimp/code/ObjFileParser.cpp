@@ -484,19 +484,33 @@ void ObjFileParser::getMaterialDesc()
 
     // Search for material
     std::map<std::string, ObjFile::Material*>::iterator it = m_pModel->m_MaterialMap.find( strName );
-    if ( it == m_pModel->m_MaterialMap.end() ) {
-        // Not found, use default material
-        m_pModel->m_pCurrentMaterial = m_pModel->m_pDefaultMaterial;
+
+    ObjFile::Material* material = nullptr;
+
+    if ( it == m_pModel->m_MaterialMap.end() )
+    {
+        material = new ObjFile::Material( *m_pModel->m_pDefaultMaterial );
+
+        material->MaterialName.Set( strName );
+
+        m_pModel->m_MaterialLib.push_back( strName );
+        m_pModel->m_MaterialMap[ strName ] = material;
+
         DefaultLogger::get()->error("OBJ: failed to locate material " + strName + ", skipping");
-    } else {
-        // Found, using detected material
-        m_pModel->m_pCurrentMaterial = (*it).second;
-        if ( needsNewMesh( strName ))
-        {
-            createMesh( strName  );
-        }
-        m_pModel->m_pCurrentMesh->m_uiMaterialIndex = getMaterialIndex( strName );
     }
+    else
+    {
+        material = it->second;
+    }
+
+    // Found, using detected material
+    m_pModel->m_pCurrentMaterial = material;
+
+    if ( needsNewMesh( strName ))
+    {
+        createMesh( "" );
+    }
+    m_pModel->m_pCurrentMesh->m_uiMaterialIndex = getMaterialIndex( strName );
 
     // Skip rest of line
     m_DataIt = skipLine<DataArrayIt>( m_DataIt, m_DataItEnd, m_uiLine );

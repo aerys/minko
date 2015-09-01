@@ -185,6 +185,9 @@ void GetImporterInstanceList(std::vector< BaseImporter* >& out)
     // (register_new_importers_here)
     // ----------------------------------------------------------------------------
     out.reserve(64);
+
+#if (!defined ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION)
+
 #if (!defined ASSIMP_BUILD_NO_X_IMPORTER)
     out.push_back( new XFileImporter());
 #endif
@@ -309,6 +312,8 @@ void GetImporterInstanceList(std::vector< BaseImporter* >& out)
 #ifndef ASSIMP_BUILD_NO_C4D_IMPORTER
     out.push_back( new C4DImporter() );
 #endif
+
+#endif // ! ASSIMP_BUILD_NO_IMPORTER_INSTANCIATION
 }
 
 } // namespace Assimp
