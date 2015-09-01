@@ -270,7 +270,16 @@ ComponentDeserializer::deserializeMasterAnimation(file::SceneVersion    sceneVer
 											      AssetLibraryPtr	    assetLibrary,
 											      DependencyPtr	        dependencies)
 {
-    return component::MasterAnimation::create();
+    auto masterAnimation = component::MasterAnimation::create();
+
+    auto labels = std::vector<std::pair<std::string, unsigned int>>();
+
+    unpack(labels, packed.data(), packed.size() - 1);
+
+    for (const auto& label : labels)
+        masterAnimation->addLabel(label.first, label.second);
+
+    return masterAnimation;
 }
 
 ComponentDeserializer::AbsComponentPtr
