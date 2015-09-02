@@ -35,7 +35,7 @@
     },
     
 	"techniques" : [{
-        "name" : "picking-technique",
+        "name" : "default",
 		"passes"    : [{
             "name": "picking-pass",
              "vertexShader"      : "#pragma include \"Picking.vertex.glsl\"",
