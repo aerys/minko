@@ -91,7 +91,8 @@ namespace minko
 
 			NodePtr													_symbol;
 
-			std::unordered_map<const aiNode*, NodePtr>				_aiNodeToNode;
+            std::unordered_map<NodePtr, const aiNode*>				_nodeToAiNode;
+            std::unordered_map<const aiNode*, NodePtr>				_aiNodeToNode;
 			std::unordered_map<const aiMesh*, NodePtr>				_aiMeshToNode;
 			std::unordered_map<std::string, NodePtr>				_nameToNode;
 			std::unordered_map<

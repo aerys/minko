@@ -350,7 +350,7 @@ AbstractASSIMPParser::convertScene(const aiScene* scene)
     if (_options->includeAnimation())
     {
         createSkins(scene);
-	    //createAnimations(scene, true);
+	    createAnimations(scene, true);
     }
 
 #ifdef DEBUG_ASSIMP
@@ -447,6 +447,7 @@ AbstractASSIMPParser::createSceneTree(scene::Node::Ptr 				minkoNode,
         const auto childName = std::string(aichild->mName.data);
         auto childNode = createNode(scene, aichild, childName);
 
+        _nodeToAiNode[childNode] = aichild;
 		_aiNodeToNode[aichild] = childNode;
 		if (!childName.empty())
 			_nameToNode[childName] = childNode;
@@ -1975,13 +1976,39 @@ AbstractASSIMPParser::setScalarProperty(material::Material::Ptr	material,
 void
 AbstractASSIMPParser::createAnimations(const aiScene* scene, bool interpolate)
 {
+    if (scene->mNumAnimations == 0u)
+        return;
+
     sampleAnimations(scene);
+
+    if (_nameToAnimMatrices.empty())
+        return;
 
     auto nodeToTimelines = std::unordered_map<Node::Ptr, std::vector<animation::AbstractTimeline::Ptr>>();
 
     for (const auto& nameToMatricesPair : _nameToAnimMatrices)
     {
         auto node = _nameToNode.at(nameToMatricesPair.first);
+        auto ainode = _nodeToAiNode.at(node);
+        auto aiParentNode = ainode;
+
+        auto isSkinned = false;
+
+        while (aiParentNode != nullptr && !isSkinned)
+        {
+            for (auto i = 0u; i < aiParentNode->mNumMeshes; ++i)
+            {
+                auto meshId = aiParentNode->mMeshes[i];
+
+                isSkinned |= scene->mMeshes[meshId]->mNumBones > 0u;
+            }
+
+            aiParentNode = aiParentNode->mParent;
+        }
+
+        if (isSkinned)
+            continue;
+
         const auto& matrices = nameToMatricesPair.second;
 
         const auto numFrames = matrices.size();
