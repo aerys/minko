@@ -199,7 +199,7 @@ AbstractASSIMPParser::importScene(const std::string&			    filename,
 		data.data(),
 		data.size(),
 		0u,
-		resolvedFilename.c_str()
+        File::getExtension(filename).c_str()
 	);
 
 	if (!scene)
