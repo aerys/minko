@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2015 Aerys
+Copyright (c) 2014 Aerys
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
 associated documentation files (the "Software"), to deal in the Software without restriction,
@@ -19,33 +19,61 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
+#include "minko/Common.hpp"
+#include "minko/OculusCommon.hpp"
+#include "minko/Signal.hpp"
+
 namespace minko
 {
-    namespace sensors
+    namespace oculus
     {
-        class AbstractSensor
+        class VRImpl : 
+            public std::enable_shared_from_this<VRImpl>
         {
         public:
-            virtual ~AbstractSensor()
-            {
-            }
+            virtual
+            void
+            initialize(std::shared_ptr<component::SceneManager> sceneManager) = 0;
 
             virtual
             void
-            initialize() = 0;
+            initializeVRDevice(std::shared_ptr<component::Renderer> leftRenderer, std::shared_ptr<component::Renderer> rightRenderer, void* window = nullptr) = 0;
 
             virtual
             void
-            startTracking() = 0;
+            targetRemoved() = 0;
 
             virtual
             void
-            stopTracking() = 0;
+            updateViewport(int viewportWidth, int viewportHeight) = 0;
 
             virtual
-            bool
-            isSupported() = 0;
+            void
+            updateCameraOrientation(std::shared_ptr<scene::Node> target, std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera) = 0;
+
+            virtual
+            float
+            getLeftEyeFov() = 0;
+
+            virtual
+            float
+            getRightEyeFov() = 0;
+
+            virtual
+            float
+            zNear() = 0;
+
+            virtual
+            float
+            zFar() = 0;
+
+            virtual
+            Signal<>::Ptr
+            actionButtonPressed() = 0;
+
+            virtual
+            Signal<>::Ptr
+            actionButtonReleased() = 0;
         };
     }
 }
-

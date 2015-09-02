@@ -213,10 +213,10 @@ namespace minko
                                                      const data::BindingMap&            uniformBindingMap);
 
             void
-            addDrawCall(DrawCall* drawCall);
+            addDrawCallToSortedBucket(DrawCall* drawCall);
 
             void
-            removeDrawCall(DrawCall* drawCall);
+            removeDrawCallFromSortedBucket(DrawCall* drawCall);
 
             DrawCall*
             findDrawCall(const std::function<bool(DrawCall*)>& predicate);
@@ -238,7 +238,7 @@ namespace minko
             compareZSortedDrawCalls(DrawCall* a, DrawCall* b);
 
             void
-            sortDrawCalls(bool sort, bool zSort);
+            zSortDrawCalls();
         };
 	}
 }

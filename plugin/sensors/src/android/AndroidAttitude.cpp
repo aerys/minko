@@ -52,9 +52,9 @@ JNIEXPORT void JNICALL Java_minko_plugin_sensors_AndroidAttitude_minkoNativeOnAt
     AndroidAttitude::rotationMatrixMutex.lock();
     auto c = 0;
 
-    for(auto i = 0; i < 4; i++)
+    for (auto i = 0; i < 4; i++)
     {
-        for(auto j = 0; j < 4; j++)
+        for (auto j = 0; j < 4; j++)
         {
             AndroidAttitude::rotationMatrixValue[i][j] = rotationMatrixFloat[c];
             c++;

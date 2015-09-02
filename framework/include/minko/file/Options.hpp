@@ -217,22 +217,6 @@ namespace minko
 
 			inline
 			bool
-			includeAnimation() const
-			{
-				return _includeAnimation;
-			}
-
-			inline
-			Ptr
-			includeAnimation(bool value)
-			{
-				_includeAnimation = value;
-
-				return shared_from_this();
-			}
-
-			inline
-			bool
 			parseMipMaps() const
 			{
 				return _parseMipMaps;
@@ -243,6 +227,22 @@ namespace minko
 			parseMipMaps(bool parseMipMaps)
 			{
 				_parseMipMaps = parseMipMaps;
+
+				return shared_from_this();
+			}
+
+			inline
+			bool
+			includeAnimation() const
+			{
+				return _includeAnimation;
+			}
+
+			inline
+			Ptr
+			includeAnimation(bool value)
+			{
+				_includeAnimation = value;
 
 				return shared_from_this();
 			}

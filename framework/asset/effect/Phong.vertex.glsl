@@ -37,6 +37,13 @@ attribute	float 	aPopProtected;
 uniform 	mat4 	uModelToWorldMatrix;
 uniform 	mat4 	uWorldToScreenMatrix;
 
+#ifdef UV_SCALE
+uniform vec2 uUVScale;
+#endif
+#ifdef UV_OFFSET
+uniform vec2 uUVOffset;
+#endif
+
 #ifdef POP_LOD_ENABLED
 uniform float uPopLod;
 #ifdef POP_BLENDING_ENABLED

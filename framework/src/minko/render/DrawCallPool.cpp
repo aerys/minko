@@ -77,6 +77,8 @@ DrawCallPool::DrawCallPool() :
     _macroToDrawCalls->set_deleted_key(MacroBindingKey("", nullptr, nullptr));
     _macroChangedSlot->set_deleted_key(MacroBindingKey("", nullptr, nullptr));
     _propChangedSlot->set_deleted_key(DrawCallKey(nullptr, nullptr));
+    _sortUsefulPropertyChangedSlot->set_deleted_key(DrawCallKey(nullptr, nullptr));
+    _zSortUsefulPropertyChangedSlot->set_deleted_key(DrawCallKey(nullptr, nullptr));
     _drawCallToPropRebindFuncs->set_deleted_key(nullptr);
 #endif
 }
@@ -127,7 +129,7 @@ DrawCallPool::addDrawCalls(Effect::Ptr              effect,
             }
         }
 
-        addDrawCall(drawCall);
+        addDrawCallToSortedBucket(drawCall);
     }
 
     return _batchId;
@@ -165,6 +167,7 @@ DrawCallPool::removeDrawCalls(uint batchId)
                         unbindDrawCall(*drawCall);
 
                         _invalidDrawCalls.erase(drawCall);
+                        _drawCallsToBeSorted.erase(drawCall);
 
                         delete drawCall;
 
@@ -619,19 +622,19 @@ DrawCallPool::update(bool forceSort, bool mustZSort)
 
     for (auto drawCall : _drawCallsToBeSorted)
     {
-        removeDrawCall(drawCall);
-        addDrawCall(drawCall);
+        removeDrawCallFromSortedBucket(drawCall);
+        addDrawCallToSortedBucket(drawCall);
     }
 
     _drawCallsToBeSorted.clear();
 
     const auto finalMustZSort = forceSort || _mustZSort || mustZSort;
 
-    if (forceSort || finalMustZSort)
+    if (finalMustZSort)
     {
         _mustZSort = false;
 
-        sortDrawCalls(forceSort, finalMustZSort);
+        zSortDrawCalls();
     }
 }
 
@@ -652,15 +655,6 @@ DrawCallPool::invalidateDrawCalls(uint batchId, const EffectVariables& variables
     );
 }
 
-bool
-DrawCallPool::compareZSortedDrawCalls(DrawCall* a, DrawCall* b)
-{
-    const auto aPosition = a->getEyeSpacePosition();
-    const auto bPosition = b->getEyeSpacePosition();
-
-    return aPosition.z > bPosition.z;
-}
-
 void
 DrawCallPool::clear()
 {
@@ -678,14 +672,23 @@ DrawCallPool::clear()
 #ifdef MINKO_USE_SPARSE_HASH_MAP
     _propChangedSlot->resize(0);
 #endif
+    _sortUsefulPropertyChangedSlot->clear();
+#ifdef MINKO_USE_SPARSE_HASH_MAP
+    _sortUsefulPropertyChangedSlot->resize(0);
+#endif
+    _zSortUsefulPropertyChangedSlot->clear();
+#ifdef MINKO_USE_SPARSE_HASH_MAP
+    _zSortUsefulPropertyChangedSlot->resize(0);
+#endif
     _drawCallToPropRebindFuncs->clear();
 #ifdef MINKO_USE_SPARSE_HASH_MAP
     _drawCallToPropRebindFuncs->resize(0);
 #endif
+    _drawCallsToBeSorted.clear();
 }
 
 void
-DrawCallPool::addDrawCall(DrawCall* drawCall)
+DrawCallPool::addDrawCallToSortedBucket(DrawCall* drawCall)
 {
     const auto priority = drawCall->priority();
     const auto targetId = drawCall->target().id;
@@ -695,7 +698,7 @@ DrawCallPool::addDrawCall(DrawCall* drawCall)
 }
 
 void
-DrawCallPool::removeDrawCall(DrawCall* drawCall)
+DrawCallPool::removeDrawCallFromSortedBucket(DrawCall* drawCall)
 {
     for (auto& sortPropertiesToDrawCalls : _drawCalls)
     {
@@ -793,12 +796,37 @@ DrawCallPool::unbindDrawCall(DrawCall& drawCall)
     }
     //_propChangedSlot->clear();
 
+    for (auto it = _sortUsefulPropertyChangedSlot->begin(); it != _sortUsefulPropertyChangedSlot->end();)
+    {
+        if (it->first.second == &drawCall)
+            _sortUsefulPropertyChangedSlot->erase(it++);
+        else
+            ++it;
+    }
+
+    for (auto it = _zSortUsefulPropertyChangedSlot->begin(); it != _zSortUsefulPropertyChangedSlot->end();)
+    {
+        if (it->first.second == &drawCall)
+            _zSortUsefulPropertyChangedSlot->erase(it++);
+        else
+            ++it;
+    }
+
     _drawCallToPropRebindFuncs->erase(&drawCall);
     //_drawCallToPropRebindFuncs->clear();
 }
 
+bool
+DrawCallPool::compareZSortedDrawCalls(DrawCall* a, DrawCall* b)
+{
+    const auto aPosition = a->getEyeSpacePosition();
+    const auto bPosition = b->getEyeSpacePosition();
+
+    return aPosition.z > bPosition.z;
+}
+
 void
-DrawCallPool::sortDrawCalls(bool sort, bool zSort)
+DrawCallPool::zSortDrawCalls()
 {
     for (auto& sortPropertiesToDrawCalls : _drawCalls)
     {

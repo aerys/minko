@@ -19,32 +19,55 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #pragma once
 
+#include "minko/Minko.hpp"
+#include "AbstractMagnetometer.hpp"
+
+#include "minko/Signal.hpp"
+
 namespace minko
 {
     namespace sensors
     {
-        class AbstractSensor
+        class Magnetometer : AbstractMagnetometer
         {
         public:
-            virtual ~AbstractSensor()
+            typedef std::shared_ptr<Magnetometer> Ptr;
+            typedef std::shared_ptr<AbstractMagnetometer> AbstractMagnetometerPtr;
+
+            static
+            Ptr
+            getInstance()
             {
+                if (_instance == nullptr)
+                    _instance = Ptr(new Magnetometer());
+
+                return _instance;
             }
 
-            virtual
             void
-            initialize() = 0;
+            initialize() override;
 
-            virtual
             void
-            startTracking() = 0;
+            startTracking() override;
 
-            virtual
             void
-            stopTracking() = 0;
+            stopTracking() override;
 
-            virtual
+            const math::vec3&
+            getSensorValue() override;
+
+            Signal<float, float, float>::Ptr
+            onSensorChanged() override;
+
             bool
-            isSupported() = 0;
+            isSupported() override;
+
+        private:
+            Magnetometer();
+
+            std::shared_ptr<AbstractMagnetometer> _magnetometerManager;
+
+            static Ptr _instance;
         };
     }
 }

@@ -17,35 +17,59 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#pragma once
+#include "minko/sensors/Magnetometer.hpp"
 
-namespace minko
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+# include "android/AndroidMagnetometer.hpp"
+#endif
+
+using namespace minko;
+using namespace sensors;
+
+std::shared_ptr<Magnetometer> Magnetometer::_instance = nullptr;
+
+Magnetometer::Magnetometer() :
+    AbstractMagnetometer(),
+    _magnetometerManager(nullptr)
 {
-    namespace sensors
-    {
-        class AbstractSensor
-        {
-        public:
-            virtual ~AbstractSensor()
-            {
-            }
-
-            virtual
-            void
-            initialize() = 0;
-
-            virtual
-            void
-            startTracking() = 0;
-
-            virtual
-            void
-            stopTracking() = 0;
-
-            virtual
-            bool
-            isSupported() = 0;
-        };
-    }
+#if MINKO_PLATFORM == MINKO_PLATFORM_ANDROID
+    _magnetometerManager = android::sensors::AndroidMagnetometer::create();
+#endif
 }
 
+void
+Magnetometer::initialize()
+{
+    _magnetometerManager->initialize();
+}
+
+void
+Magnetometer::startTracking()
+{
+    _magnetometerManager->startTracking();
+}
+
+void
+Magnetometer::stopTracking()
+{
+    _magnetometerManager->stopTracking();
+}
+
+const math::vec3&
+Magnetometer::getSensorValue()
+{
+    return _magnetometerManager->getSensorValue();
+}
+
+Signal<float, float, float>::Ptr
+Magnetometer::onSensorChanged()
+{
+    return _magnetometerManager->onSensorChanged();
+}
+
+bool
+Magnetometer::isSupported()
+{
+	// TODO: Detect if magnetometer is really supported
+	return true;
+}
