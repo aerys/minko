@@ -49,6 +49,13 @@ JPEGParser::parse(const std::string&                filename,
         (const unsigned char*)&data[0], data.size(), &width, &height, &comps, 3
     );
 
+    if (bmpData == nullptr)
+    {
+        error()->execute(shared_from_this(), Error("ParserError", "failed to decode JPEG file " + filename));
+
+        return;
+    }
+
     auto format = render::TextureFormat::RGBA;
     if (comps == 3 || comps == 1)
         format = render::TextureFormat::RGB;
