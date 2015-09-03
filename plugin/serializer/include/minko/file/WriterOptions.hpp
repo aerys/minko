@@ -83,6 +83,7 @@ namespace minko
             std::list<render::TextureFormat>    _textureFormats;
 
             bool                                _compressTexture;
+            float                               _compressedTextureQualityFactor;
             bool                                _generateMipmaps;
             bool                                _useTextureSRGBSpace;
             bool                                _upscaleTextureWhenProcessedForMipmapping;
@@ -122,6 +123,7 @@ namespace minko
                 instance->_textureFunction = other->_textureFunction;
                 instance->_imageFormat = other->_imageFormat;
                 instance->_textureFormats = other->_textureFormats;
+                instance->_compressedTextureQualityFactor = other->_compressedTextureQualityFactor;
                 instance->_compressTexture = other->_compressTexture;
                 instance->_generateMipmaps = other->_generateMipmaps;
                 instance->_upscaleTextureWhenProcessedForMipmapping = other->_upscaleTextureWhenProcessedForMipmapping;
@@ -290,6 +292,22 @@ namespace minko
             registerTextureFormat(render::TextureFormat textureFormat)
             {
                 _textureFormats.push_back(textureFormat);
+
+                return shared_from_this();
+            }
+
+            inline
+            float
+            compressedTextureQualityFactor() const
+            {
+                return _compressedTextureQualityFactor;
+            }
+
+            inline
+            Ptr
+            compressedTextureQualityFactor(float value)
+            {
+                _compressedTextureQualityFactor = math::clamp(value, 0.f, 1.f);
 
                 return shared_from_this();
             }
