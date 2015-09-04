@@ -253,7 +253,7 @@ AbstractASSIMPParser::getPostProcessingFlags(const aiScene*             scene,
         flags |= aiProcess_SplitLargeMeshes;
     }
 
-    unsigned int removeComponentFlags = aiComponent_COLORS;
+    unsigned int removeComponentFlags = 0u;
 
     if (numMaterials == 0u || numTextures == 0u)
     {
@@ -545,6 +545,13 @@ createIndexBuffer(aiMesh*                       mesh,
     return render::IndexBuffer::create(context, indexData);
 }
 
+static
+float
+packColor(const math::vec3& color)
+{
+    return math::dot(color, math::vec3(1.f, 1.f / 255.f, 1.f / 65025.f));
+}
+
 Geometry::Ptr
 AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mesh, const std::string& meshName)
 {
@@ -553,14 +560,16 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
     if (existingGeometry != _aiMeshToGeometry.end())
         return existingGeometry->second;
 
-	unsigned int vertexSize = 0;
+	unsigned int vertexSize = 0u;
 
     if (mesh->HasPositions())
-        vertexSize += 3;
+        vertexSize += 3u;
     if (mesh->HasNormals())
-        vertexSize += 3;
-    if (mesh->GetNumUVChannels() > 0)
+        vertexSize += 3u;
+    if (mesh->GetNumUVChannels() > 0u)
         vertexSize += std::min(mesh->GetNumUVChannels() * 2u, MAX_NUM_UV_CHANNELS * 2u);
+    if (mesh->HasVertexColors(0u))
+        vertexSize += 1u;
 
 	std::vector<float>	vertexData	(vertexSize * mesh->mNumVertices, 0.0f);
 	unsigned int		vId			= 0;
@@ -591,6 +600,15 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
 			vertexData[vId++]	= vec.x;
 			vertexData[vId++]	= vec.y;
 		}
+
+        if (mesh->HasVertexColors(0u))
+        {
+            const auto& color = mesh->mColors[0u][vertexId];
+
+            const auto packedColor = packColor(math::vec3(color.r, color.g, color.b));
+
+            vertexData[vId++] = packedColor;
+        }
 	}
 
     auto indices = render::IndexBuffer::Ptr();
@@ -611,23 +629,28 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
 	auto geometry		= Geometry::create();
 	auto vertexBuffer	= render::VertexBuffer::create(_assetLibrary->context(), vertexData);
 
-	unsigned int attrOffset = 0;
+	unsigned int attrOffset = 0u;
 	if (mesh->HasPositions())
 	{
 		vertexBuffer->addAttribute("position", 3, attrOffset);
-		attrOffset	+= 3;
+		attrOffset	+= 3u;
 	}
 	if (mesh->HasNormals())
 	{
 		vertexBuffer->addAttribute("normal", 3, attrOffset);
-		attrOffset	+= 3;
+		attrOffset	+= 3u;
 	}
     for (auto i = 0u; i < std::min(mesh->GetNumUVChannels(), MAX_NUM_UV_CHANNELS); ++i)
     {
         const auto attributeName = std::string("uv") + (i > 0u ? std::to_string(i) : std::string());
 
         vertexBuffer->addAttribute(attributeName, 2, attrOffset);
-        attrOffset += 2;
+        attrOffset += 2u;
+    }
+    if (mesh->HasVertexColors(0u))
+    {
+        vertexBuffer->addAttribute("color", 1u, attrOffset);
+        attrOffset += 1u;
     }
 
 	geometry->addVertexBuffer(vertexBuffer);
