@@ -61,7 +61,7 @@ Surface::Surface(const std::string&	name,
 	if (_effect == nullptr)
 		throw std::invalid_argument("effect");
 	if (!_effect->hasTechnique(_technique))
-		throw std::logic_error("Effect does not provide a '" + _technique + "' technique.");
+		throw std::logic_error("The effect \"" + effect->name() + "\" does not provide the \"" + _technique + "\" technique.");
 
     initializeIndexRange(geometry);
 }
@@ -83,7 +83,7 @@ Surface::Surface(const std::string& uuid,
 	if (_effect == nullptr)
 		throw std::invalid_argument("effect");
 	if (!_effect->hasTechnique(_technique))
-		throw std::logic_error("Effect does not provide a '" + _technique + "' technique.");
+		throw std::logic_error("The effect \"" + effect->name() + "\" does not provide the \"" + _technique + "\" technique.");
 
     initializeIndexRange(geometry);
 }
@@ -143,7 +143,7 @@ Surface::targetRemoved(scene::Node::Ptr target)
     // the pool anyway.
     // Solution: we wait for the componentRemoved() signal on the target's root. That's the same signal the
     // Renderer is listening too, but with a higher priority. Thus, when we will remove the providers the corresponding
-    // signals will be disconnected already. 
+    // signals will be disconnected already.
     _bubbleUpSlot = target->root()->componentRemoved().connect([this, target](Node::Ptr n, Node::Ptr t, AbsCmpPtr c)
     {
         _bubbleUpSlot = nullptr;
@@ -223,7 +223,7 @@ Surface::setEffectAndTechnique(Effect::Ptr			effect,
 	if (effect == nullptr)
 		throw std::invalid_argument("effect");
 	if (!effect->hasTechnique(technique))
-		throw std::logic_error("Effect does not provide a '" + technique + "' technique.");
+		throw std::logic_error("The effect \"" + effect->name() + "\" does not provide the \"" + _technique + "\" technique.");
 
     auto changed = false;
 
