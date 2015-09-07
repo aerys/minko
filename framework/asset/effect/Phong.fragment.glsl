@@ -380,9 +380,10 @@ void main(void)
 	float shininessCoeff = 1.0;
 	vec3 eyeVector = normalize(uCameraPosition - vVertexPosition); // always in world-space
 	vec3 normalVector = normalize(vVertexNormal); // always in world-space
-    vec2 uv = vVertexUV;
 
     #if defined VERTEX_UV && (defined DIFFUSE_MAP || defined NORMAL_MAP || defined SPECULAR_MAP || defined ALPHA_MAP)
+        vec2 uv = vVertexUV;
+
         #ifdef UV_SCALE
             uv *= uUVScale;
         #endif // UV_SCALE
