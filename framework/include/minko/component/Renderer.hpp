@@ -74,7 +74,6 @@ namespace minko
             bool                                                                    _clearBeforeRender;
             render::EffectVariables		        				                    _variables;
 
-
 			std::set<std::shared_ptr<Surface>>					                    _toCollect;
 			EffectPtr											                    _effect;
 			std::string											                    _effectTechnique;
@@ -84,7 +83,7 @@ namespace minko
 			bool                                                                    _mustZSort;
 
 			std::unordered_map<const render::DrawCall*, ZSortNeeded::Slot>          _drawCallToZSortNeededSlot;
-			
+
 			Signal<AbsCmpPtr, NodePtr>::Slot					                    _targetAddedSlot;
 			Signal<AbsCmpPtr, NodePtr>::Slot					                    _targetRemovedSlot;
 			Signal<NodePtr, NodePtr, NodePtr>::Slot				                    _addedSlot;
@@ -279,6 +278,13 @@ namespace minko
 			enabled(bool value)
 			{
 				_enabled = value;
+			}
+
+			inline
+			const render::DrawCallPool&
+			drawCallPool()
+			{
+				return _drawCallPool;
 			}
 
 			void
