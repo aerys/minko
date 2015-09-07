@@ -3,7 +3,7 @@
 	"name"	: "phong",
 
 	"techniques" : [{
-		"name" : "phong-technique",
+		"name" : "default",
 		"passes" : [
 			{
 				"name" : "phong-pass",
