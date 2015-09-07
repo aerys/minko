@@ -547,9 +547,9 @@ createIndexBuffer(aiMesh*                       mesh,
 
 static
 float
-packColor(const math::vec3& color)
+packColor(const math::vec4& color)
 {
-    return math::dot(color, math::vec3(1.f, 1.f / 255.f, 1.f / 65025.f));
+    return math::dot(color, math::vec4(1.f, 1.f / 255.f, 1.f / 65025.f, 1.f / 16581375.f));
 }
 
 Geometry::Ptr
@@ -569,7 +569,7 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
     if (mesh->GetNumUVChannels() > 0u)
         vertexSize += std::min(mesh->GetNumUVChannels() * 2u, MAX_NUM_UV_CHANNELS * 2u);
     if (mesh->HasVertexColors(0u))
-        vertexSize += 1u;
+        vertexSize += 4u;
 
 	std::vector<float>	vertexData	(vertexSize * mesh->mNumVertices, 0.0f);
 	unsigned int		vId			= 0;
@@ -605,9 +605,12 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
         {
             const auto& color = mesh->mColors[0u][vertexId];
 
-            const auto packedColor = packColor(math::vec3(color.r, color.g, color.b));
+            const auto packedColor = math::vec4(color.r, color.g, color.b, color.a);
 
-            vertexData[vId++] = packedColor;
+            vertexData[vId++] = packedColor.r;
+            vertexData[vId++] = packedColor.g;
+            vertexData[vId++] = packedColor.b;
+            vertexData[vId++] = packedColor.a;
         }
 	}
 
@@ -649,8 +652,8 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
     }
     if (mesh->HasVertexColors(0u))
     {
-        vertexBuffer->addAttribute("color", 1u, attrOffset);
-        attrOffset += 1u;
+        vertexBuffer->addAttribute("color", 4u, attrOffset);
+        attrOffset += 4u;
     }
 
 	geometry->addVertexBuffer(vertexBuffer);
