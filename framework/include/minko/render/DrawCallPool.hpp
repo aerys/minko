@@ -116,8 +116,9 @@ namespace minko
 
             ~DrawCallPool();
 
+			inline
 			const DrawCallContainer&
-            drawCalls()
+            drawCalls() const
             {
                 return _drawCalls;
             }
