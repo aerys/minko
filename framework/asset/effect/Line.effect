@@ -31,9 +31,9 @@
     },
 
 	"techniques" : [{
-        "name"      : "line-technique",
+        "name"      : "default",
 		"passes"    : [{
-            "name"           : "line-pass",
+            "name"           : "default",
 			"vertexShader"   : "#pragma include \"Line.vertex.glsl\"",
 			"fragmentShader" : "#pragma include \"Line.fragment.glsl\""
 		}]
