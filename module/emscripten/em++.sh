@@ -27,6 +27,6 @@ if [[ ${#STATIC_LIBS[0]} -eq 0 && ${#SHARED_LIBS[@]} -eq 0 ]]; then
 	test "$verbose" != 0 && echo "${BIN} ${ARGS[@]}"
 	python "${BIN}" "${ARGS[@]}"
 else
-	test "$verbose" != 0 && echo "${BIN} ${ARGS[@]} -Wl,--no-as-needed ${STATIC_LIBS[@]} ${STATIC_LIBS[@]} ${SHARED_LIBS[@]}"
-	python "${BIN}" "${ARGS[@]}" -Wl,--no-as-needed "${STATIC_LIBS[@]}" "${STATIC_LIBS[@]}" "${SHARED_LIBS[@]}"
+	test "$verbose" != 0 && echo "${BIN} ${ARGS[@]} -Wl,--start-group ${STATIC_LIBS[@]} ${SHARED_LIBS[@]} -Wl,--end-group"
+	python "${BIN}" "${ARGS[@]}" "-Wl,--start-group" "${STATIC_LIBS[@]}" "${SHARED_LIBS[@]}" "-Wl,--end-group"
 fi
