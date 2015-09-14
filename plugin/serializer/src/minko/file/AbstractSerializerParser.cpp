@@ -213,6 +213,34 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
 		_dependency->registerReference(asset.get<1>(), assetLibrary->material(_materialParser->_lastParsedAssetName));
 		_jobList.splice(_jobList.end(), _materialParser->_jobList);
 	}
+    else if (asset.get<0>() == serialize::AssetType::EFFECT_ASSET)
+    {
+        const auto& effectFilename = asset.get<2>();
+        const auto effectCompleteFilename = "effect/" + effectFilename;
+
+        auto effectLoaded = false;
+
+        auto effectLoader = Loader::create(options->clone());
+
+        effectLoader->options()->storeDataIfNotParsed(false);
+
+        auto errorSlot = effectLoader->error()->connect([](Loader::Ptr loaderThis, const Error& error)
+        {
+            LOG_ERROR(error.type() << ": " << error.what());
+        });
+
+        auto completeSlot = effectLoader->complete()->connect([&effectLoaded](Loader::Ptr loaderThis)
+        {
+            effectLoaded = true;
+        });
+
+        effectLoader
+            ->queue(effectCompleteFilename)
+            ->load();
+
+        if (effectLoaded)
+            _dependency->registerReference(asset.get<1>(), assetLibrary->effect(effectCompleteFilename));
+    }
     else if ((asset.get<0>() == serialize::AssetType::EMBED_TEXTURE_ASSET ||
         asset.get<0>() == serialize::AssetType::TEXTURE_ASSET) &&
 			(_dependency->textureReferenceExist(asset.get<1>()) == false || _dependency->getTextureReference(asset.get<1>()) == nullptr)) // texture

@@ -40,6 +40,48 @@ using namespace minko;
 using namespace minko::file;
 using namespace minko::render;
 
+#ifndef MINKO_NO_PVRTEXTOOL
+static
+pvrtexture::ECompressorQuality
+qualityFromQualityFactor(TextureFormat format, float qualityFactor)
+{
+    static const auto qualityFactorToETCCompressorQuality = std::vector<std::pair<float, pvrtexture::ECompressorQuality>>
+    {
+        { 0.1f,     pvrtexture::ECompressorQuality::eETCFast            },
+        { 0.25f,    pvrtexture::ECompressorQuality::eETCFastPerceptual  },
+        { 0.6f,     pvrtexture::ECompressorQuality::eETCSlow            },
+        { 1.f,      pvrtexture::ECompressorQuality::eETCSlowPerceptual  }
+    };
+
+    static const auto qualityFactorToPVRTCompressorQuality = std::vector<std::pair<float, pvrtexture::ECompressorQuality>>
+    {
+        { 0.1f,     pvrtexture::ECompressorQuality::ePVRTCFastest   },
+        { 0.25f,    pvrtexture::ECompressorQuality::ePVRTCFast      },
+        { 0.6f,     pvrtexture::ECompressorQuality::ePVRTCNormal    },
+        { 0.8f,     pvrtexture::ECompressorQuality::ePVRTCHigh      },
+        { 1.f,      pvrtexture::ECompressorQuality::ePVRTCBest      }
+    };
+
+    auto quality = pvrtexture::ECompressorQuality();
+
+    const auto& qualityFactorToCompressorQuality = format == TextureFormat::RGB_ETC1
+        ? qualityFactorToETCCompressorQuality
+        : qualityFactorToPVRTCompressorQuality;
+
+    for (const auto& qualityFactorToCompressorQualityPair : qualityFactorToETCCompressorQuality)
+    {
+        if (qualityFactor <= qualityFactorToCompressorQualityPair.first)
+        {
+            quality = qualityFactorToCompressorQualityPair.second;
+
+            break;
+        }
+    }
+
+    return quality;
+}
+#endif
+
 bool
 PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
                          std::shared_ptr<WriterOptions>            writerOptions,
@@ -80,12 +122,7 @@ PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
         pvrtexture::CPVRTextureHeader pvrHeader(
             textureFormatToPvrTextureFomat.at(texture->format()),
             texture->height(),
-            texture->width(),
-            1u,
-            1u,
-            1u,
-            1u,
-            ePVRTCSpacesRGB
+            texture->width()
         );
 
         pvrTexture = std::unique_ptr<pvrtexture::CPVRTexture>(new pvrtexture::CPVRTexture(pvrHeader, texture2d->data().data()));
@@ -96,7 +133,7 @@ PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
                 *pvrTexture,
                 textureFormatToPvrTextureFomat.at(TextureFormat::RGBA),
                 ePVRTVarTypeUnsignedByteNorm,
-                ePVRTCSpacesRGB))
+                ePVRTCSpacelRGB))
             {
                 return false;
             }
@@ -121,40 +158,17 @@ PVRTranscoder::transcode(std::shared_ptr<render::AbstractTexture>  texture,
             }
         }
 
-        auto compressorQuality = pvrtexture::ePVRTCNormal;
+        const auto compressorQuality = qualityFromQualityFactor(outFormat, writerOptions->compressedTextureQualityFactor());
 
-        if (options._flags & Options::fastCompression)
-        {
-            switch (outFormat)
-            {
-            case TextureFormat::RGB_ETC1:
-                compressorQuality = pvrtexture::eETCFast;
-                break;
-
-            default:
-                compressorQuality = pvrtexture::ePVRTCFast;
-                break;
-            }
-        }
-        else
-        {
-            switch (outFormat)
-            {
-            case TextureFormat::RGB_ETC1:
-                compressorQuality = pvrtexture::eETCSlow;
-                break;
-
-            default:
-                compressorQuality = pvrtexture::ePVRTCNormal;
-                break;
-            }
-        }
+        const auto colourSpace = writerOptions->useTextureSRGBSpace()
+            ? EPVRTColourSpace::ePVRTCSpacesRGB
+            : EPVRTColourSpace::ePVRTCSpacelRGB;
 
         if (!pvrtexture::Transcode(
             *pvrTexture,
             textureFormatToPvrTextureFomat.at(outFormat),
             ePVRTVarTypeUnsignedByteNorm,
-            ePVRTCSpacesRGB,
+            colourSpace,
             compressorQuality))
         {
             return false;

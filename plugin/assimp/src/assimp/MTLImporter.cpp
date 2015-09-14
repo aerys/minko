@@ -17,13 +17,18 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "AssimpPCH.h"
 #ifndef ASSIMP_BUILD_NO_MTL_IMPORTER
 
 #include "DefaultIOSystem.h"
-#include "assimp/MTLImporter.h"
+#include "ObjFileImporter.h"
 #include "ObjFileParser.h"
 #include "ObjFileData.h"
+#include <boost/scoped_ptr.hpp>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/ai_assert.h>
+#include <assimp/DefaultLogger.hpp>
+#include "assimp/MTLImporter.h"
 #include "ObjFileMtlImporter.h"
 
 static const aiImporterDesc desc = {

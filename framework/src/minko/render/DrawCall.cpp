@@ -36,10 +36,10 @@ DrawCall::DrawCall(std::shared_ptr<Pass>  pass,
                    data::Store&           rendererData,
                    data::Store&           targetData) :
     _pass(pass),
-    _variables(variables),
     _rootData(rootData),
     _rendererData(rendererData),
     _targetData(targetData),
+    _variables(variables),
     _indexBuffer(nullptr),
     _firstIndex(nullptr),
     _numIndices(nullptr),
@@ -90,9 +90,9 @@ void
 DrawCall::reset()
 {
     _program = nullptr;
-    _indexBuffer = 0;
-    _firstIndex = 0;
-    _numIndices = 0;
+    _indexBuffer = nullptr;
+    _firstIndex = nullptr;
+    _numIndices = nullptr;
     _uniformFloat.clear();
     _uniformInt.clear();
     _uniformBool.clear();

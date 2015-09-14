@@ -264,10 +264,16 @@ ComponentSerializer::serializeMasterAnimation(NodePtr			        node,
                                               DependencyPtr	            dependencies)
 {
     const auto type = static_cast<int8_t>(serialize::MASTER_ANIMATION);
-    auto animation = std::dynamic_pointer_cast<component::MasterAnimation>(component);
+    auto masterAnimation = std::dynamic_pointer_cast<component::MasterAnimation>(component);
+
+    auto labels = std::vector<std::pair<std::string, unsigned int>>(masterAnimation->numLabels());
+
+    for (auto i = 0u; i < masterAnimation->numLabels(); ++i)
+        labels[i] = std::make_pair(masterAnimation->labelName(i), masterAnimation->labelTime(i));
 
     std::stringstream buffer;
 
+    msgpack::pack(buffer, labels);
     msgpack::pack(buffer, type);
 
     return buffer.str();

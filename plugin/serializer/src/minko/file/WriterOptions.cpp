@@ -48,6 +48,7 @@ WriterOptions::WriterOptions() :
     _textureFunction([](const std::string& filename, AbstractTexture::Ptr texture) -> AbstractTexture::Ptr { return texture; }),
     _imageFormat(ImageFormat::PNG),
     _textureFormats(),
+    _compressedTextureQualityFactor(1.f),
     _compressTexture(true),
     _generateMipmaps(true),
     _useTextureSRGBSpace(true),

@@ -226,6 +226,15 @@ namespace minko
 							  std::shared_ptr<file::Options>		options,
                               std::shared_ptr<file::WriterOptions>  writerOptions);
 
+            static
+            SerializedAsset
+            serializeEffect(std::shared_ptr<file::Dependency>	    dependecies,
+                            std::shared_ptr<file::AssetLibrary>	    assetLibrary,
+                            std::shared_ptr<render::Effect>	        effect,
+                            uint								    resourceId,
+                            std::shared_ptr<file::Options>		    options,
+                            std::shared_ptr<file::WriterOptions>    writerOptions);
+
 			static
 			void
 			setMaterialFunction(MaterialWriterFunction materialFunc)

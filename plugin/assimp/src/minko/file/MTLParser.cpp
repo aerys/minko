@@ -19,7 +19,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/file/MTLParser.hpp"
 
-#include "../code/AssimpPCH.h"
 #include "assimp/Importer.hpp"
 #include "assimp/MTLImporter.h"
 

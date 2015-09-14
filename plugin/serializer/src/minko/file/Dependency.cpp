@@ -414,6 +414,26 @@ Dependency::serializeMaterial(std::shared_ptr<Dependency>			dependency,
 	return res;
 }
 
+Dependency::SerializedAsset
+Dependency::serializeEffect(std::shared_ptr<Dependency>			    dependency,
+                            std::shared_ptr<file::AssetLibrary>	    assetLibrary,
+                            std::shared_ptr<render::Effect>         effect,
+                            uint								    resourceId,
+                            std::shared_ptr<file::Options>		    options,
+                            std::shared_ptr<file::WriterOptions>    writerOptions)
+{
+    auto filename = assetLibrary->effectName(effect);
+    auto assetType = serialize::AssetType();
+    auto content = std::string();
+
+    assetType = serialize::AssetType::EFFECT_ASSET;
+    content = File::removePrefixPathFromFilename(filename);
+
+    SerializedAsset res(assetType, resourceId, content);
+
+    return res;
+}
+
 std::vector<Dependency::SerializedAsset>
 Dependency::serialize(const std::string&                        parentFilename,
                       std::shared_ptr<file::AssetLibrary>       assetLibrary,
@@ -459,6 +479,20 @@ Dependency::serialize(const std::string&                        parentFilename,
 
 		serializedAsset.push_back(res);
 	}
+
+    for (const auto& effectDependency : _effectDependencies)
+    {
+        auto result = serializeEffect(
+            shared_from_this(),
+            assetLibrary,
+            effectDependency.first,
+            effectDependency.second,
+            options,
+            writerOptions
+        );
+
+        serializedAsset.push_back(result);
+    }
 
     for (const auto& itTexture : _textureDependencies)
 	{

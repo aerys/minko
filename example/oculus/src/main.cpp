@@ -98,7 +98,7 @@ main(int argc, char** argv)
 
         camera = scene::Node::create("camera")
             ->addComponent(Transform::create())
-            ->addComponent(OculusVRCamera::create(canvas->width(), canvas->height(), 0.1f, 100.0f));
+            ->addComponent(VRCamera::create(canvas->width(), canvas->height(), 0.1f, 100.0f));
 
         spheres = createObjectGroup(NUM_SPHERES, false, SPHERES_DIST, SPHERES_PRIORITY, sceneManager->assets(), spheresAnimData);
         quads = createObjectGroup(NUM_QUADS, true, QUADS_DIST, QUADS_PRIORITY, sceneManager->assets(), quadsAnimData);
@@ -124,7 +124,7 @@ main(int argc, char** argv)
 
     auto resized = canvas->resized()->connect([&](AbstractCanvas::Ptr canvas, uint width, uint height)
     {
-        camera->component<OculusVRCamera>()->updateViewport(width, height);
+        camera->component<VRCamera>()->updateViewport(width, height);
     });
 
     auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)

@@ -199,7 +199,7 @@ AbstractASSIMPParser::importScene(const std::string&			    filename,
 		data.data(),
 		data.size(),
 		0u,
-		resolvedFilename.c_str()
+        File::getExtension(filename).c_str()
 	);
 
 	if (!scene)
@@ -253,7 +253,7 @@ AbstractASSIMPParser::getPostProcessingFlags(const aiScene*             scene,
         flags |= aiProcess_SplitLargeMeshes;
     }
 
-    unsigned int removeComponentFlags = aiComponent_COLORS;
+    unsigned int removeComponentFlags = 0u;
 
     if (numMaterials == 0u || numTextures == 0u)
     {
@@ -350,7 +350,7 @@ AbstractASSIMPParser::convertScene(const aiScene* scene)
     if (_options->includeAnimation())
     {
         createSkins(scene);
-	    //createAnimations(scene, true);
+	    createAnimations(scene, true);
     }
 
 #ifdef DEBUG_ASSIMP
@@ -447,6 +447,7 @@ AbstractASSIMPParser::createSceneTree(scene::Node::Ptr 				minkoNode,
         const auto childName = std::string(aichild->mName.data);
         auto childNode = createNode(scene, aichild, childName);
 
+        _nodeToAiNode[childNode] = aichild;
 		_aiNodeToNode[aichild] = childNode;
 		if (!childName.empty())
 			_nameToNode[childName] = childNode;
@@ -544,6 +545,13 @@ createIndexBuffer(aiMesh*                       mesh,
     return render::IndexBuffer::create(context, indexData);
 }
 
+static
+float
+packColor(const math::vec4& color)
+{
+    return math::dot(color, math::vec4(1.f, 1.f / 255.f, 1.f / 65025.f, 1.f / 16581375.f));
+}
+
 Geometry::Ptr
 AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mesh, const std::string& meshName)
 {
@@ -552,14 +560,16 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
     if (existingGeometry != _aiMeshToGeometry.end())
         return existingGeometry->second;
 
-	unsigned int vertexSize = 0;
+	unsigned int vertexSize = 0u;
 
     if (mesh->HasPositions())
-        vertexSize += 3;
+        vertexSize += 3u;
     if (mesh->HasNormals())
-        vertexSize += 3;
-    if (mesh->GetNumUVChannels() > 0)
+        vertexSize += 3u;
+    if (mesh->GetNumUVChannels() > 0u)
         vertexSize += std::min(mesh->GetNumUVChannels() * 2u, MAX_NUM_UV_CHANNELS * 2u);
+    if (mesh->HasVertexColors(0u))
+        vertexSize += 4u;
 
 	std::vector<float>	vertexData	(vertexSize * mesh->mNumVertices, 0.0f);
 	unsigned int		vId			= 0;
@@ -590,6 +600,18 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
 			vertexData[vId++]	= vec.x;
 			vertexData[vId++]	= vec.y;
 		}
+
+        if (mesh->HasVertexColors(0u))
+        {
+            const auto& color = mesh->mColors[0u][vertexId];
+
+            const auto packedColor = math::vec4(color.r, color.g, color.b, color.a);
+
+            vertexData[vId++] = packedColor.r;
+            vertexData[vId++] = packedColor.g;
+            vertexData[vId++] = packedColor.b;
+            vertexData[vId++] = packedColor.a;
+        }
 	}
 
     auto indices = render::IndexBuffer::Ptr();
@@ -610,23 +632,28 @@ AbstractASSIMPParser::createMeshGeometry(scene::Node::Ptr minkoNode, aiMesh* mes
 	auto geometry		= Geometry::create();
 	auto vertexBuffer	= render::VertexBuffer::create(_assetLibrary->context(), vertexData);
 
-	unsigned int attrOffset = 0;
+	unsigned int attrOffset = 0u;
 	if (mesh->HasPositions())
 	{
 		vertexBuffer->addAttribute("position", 3, attrOffset);
-		attrOffset	+= 3;
+		attrOffset	+= 3u;
 	}
 	if (mesh->HasNormals())
 	{
 		vertexBuffer->addAttribute("normal", 3, attrOffset);
-		attrOffset	+= 3;
+		attrOffset	+= 3u;
 	}
     for (auto i = 0u; i < std::min(mesh->GetNumUVChannels(), MAX_NUM_UV_CHANNELS); ++i)
     {
         const auto attributeName = std::string("uv") + (i > 0u ? std::to_string(i) : std::string());
 
         vertexBuffer->addAttribute(attributeName, 2, attrOffset);
-        attrOffset += 2;
+        attrOffset += 2u;
+    }
+    if (mesh->HasVertexColors(0u))
+    {
+        vertexBuffer->addAttribute("color", 4u, attrOffset);
+        attrOffset += 4u;
     }
 
 	geometry->addVertexBuffer(vertexBuffer);
@@ -1975,13 +2002,39 @@ AbstractASSIMPParser::setScalarProperty(material::Material::Ptr	material,
 void
 AbstractASSIMPParser::createAnimations(const aiScene* scene, bool interpolate)
 {
+    if (scene->mNumAnimations == 0u)
+        return;
+
     sampleAnimations(scene);
+
+    if (_nameToAnimMatrices.empty())
+        return;
 
     auto nodeToTimelines = std::unordered_map<Node::Ptr, std::vector<animation::AbstractTimeline::Ptr>>();
 
     for (const auto& nameToMatricesPair : _nameToAnimMatrices)
     {
         auto node = _nameToNode.at(nameToMatricesPair.first);
+        auto ainode = _nodeToAiNode.at(node);
+        auto aiParentNode = ainode;
+
+        auto isSkinned = false;
+
+        while (aiParentNode != nullptr && !isSkinned)
+        {
+            for (auto i = 0u; i < aiParentNode->mNumMeshes; ++i)
+            {
+                auto meshId = aiParentNode->mMeshes[i];
+
+                isSkinned |= scene->mMeshes[meshId]->mNumBones > 0u;
+            }
+
+            aiParentNode = aiParentNode->mParent;
+        }
+
+        if (isSkinned)
+            continue;
+
         const auto& matrices = nameToMatricesPair.second;
 
         const auto numFrames = matrices.size();
