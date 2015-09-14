@@ -417,6 +417,8 @@ void main(void)
 			discard;
 	#endif // ALPHA_THRESHOLD
 
+    vec4 lightMapDiffuse = vec4(0.0);
+
     #if (defined (VERTEX_UV) || defined(VERTEX_UV1)) && defined(LIGHT_MAP)
         vec2 lightMapUV = vec2(0.0);
 
@@ -427,9 +429,9 @@ void main(void)
         #endif
 
         #ifdef LIGHT_MAP_LOD
-            diffuse = lightMapping_multiply(diffuse, texturelod_texture2D(uLightMap, lightMapUV, uLightMapSize, 0.0, uLightMapMaxAvailableLod, vec4(1.0)));
+            lightMapDiffuse = texturelod_texture2D(uLightMap, lightMapUV, uLightMapSize, 0.0, uLightMapMaxAvailableLod, vec4(1.0));
         #else
-            diffuse = lightMapping_multiply(diffuse, texture2D(uLightMap, lightMapUV));
+            lightMapDiffuse = texture2D(uLightMap, lightMapUV);
         #endif
     #endif // (VERTEX_UV || VERTEX_UV1) && LIGHT_MAP
 
@@ -659,7 +661,7 @@ void main(void)
 
 	#endif // defined NUM_DIRECTIONAL_LIGHTS || defined NUM_POINT_LIGHTS || defined NUM_SPOT_LIGHTS
 
-	vec3 phong = diffuse.rgb * (ambientAccum + diffuseAccum) + specular.a * specularAccum;
+	vec3 phong = diffuse.rgb * (ambientAccum + diffuseAccum + lightMapDiffuse.rgb) + specular.a * specularAccum;
 
 	#if defined(ENVIRONMENT_MAP_2D) || defined(ENVIRONMENT_CUBE_MAP)
 
