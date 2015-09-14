@@ -145,6 +145,24 @@ IOSAttitude::getRotateEulerMatrix(float x, float y, float z)
 }
 
 float
+IOSAttitude::yaw()
+{
+    return _manager.deviceMotion.attitude.yaw;
+}
+
+float
+IOSAttitude::pitch()
+{
+    return _manager.deviceMotion.attitude.pitch;
+}
+
+float
+IOSAttitude::roll()
+{
+    return _manager.deviceMotion.attitude.roll;
+}
+
+float
 IOSAttitude::getDeviceOrientation()
 {
     UIDeviceOrientation orientation = [[UIDevice currentDevice] orientation];

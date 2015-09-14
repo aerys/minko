@@ -73,6 +73,24 @@ Attitude::quaternion()
     return _attitudeManager->quaternion();
 }
 
+float
+Attitude::yaw()
+{
+    return _attitudeManager->yaw();
+}
+
+float
+Attitude::pitch()
+{
+    return _attitudeManager->pitch();
+}
+
+float
+Attitude::roll()
+{
+    return _attitudeManager->roll();
+}
+
 bool
 Attitude::isSupported()
 {

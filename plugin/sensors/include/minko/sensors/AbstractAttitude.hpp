@@ -52,6 +52,18 @@ namespace minko
             quaternion() = 0;
             
             virtual
+            float
+            yaw() = 0;
+            
+            virtual
+            float
+            pitch() = 0;
+            
+            virtual
+            float
+            roll() = 0;
+            
+            virtual
             bool
             isSupported() = 0;
         };

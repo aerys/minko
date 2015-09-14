@@ -63,6 +63,15 @@ namespace minko
                 const math::quat&
                 quaternion() override;
                 
+                float
+                yaw() override;
+                
+                float
+                pitch() override;
+                
+                float
+                roll() override;
+                
                 bool
                 isSupported() override;
 
