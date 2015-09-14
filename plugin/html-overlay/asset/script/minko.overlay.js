@@ -28,7 +28,7 @@ Minko.loadedHandler = function(event)
 
 	delete Minko.window;
 	delete Minko.document;
-	delete Minko.onmessage;
+	//delete Minko.onmessage;
 
 	Minko.loaded = 1;
 
