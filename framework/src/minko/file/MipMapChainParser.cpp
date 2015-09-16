@@ -45,7 +45,7 @@ MipMapChainParser::parseTexture(std::shared_ptr<AbstractContext>   context,
                                 TextureFormat                      format,
                                 const std::string&                 filename)
 {
-    int numLevels = mipMapping && parseMipMaps ? std::ceil(math::log2(width)) : 1;
+    int numLevels = mipMapping && parseMipMaps ? std::ceil(math::log2(float(width))) : 1;
     int actualHeight = height;
 
     if (mipMapping && parseMipMaps && width * 2 - 1 != height)
