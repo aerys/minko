@@ -345,11 +345,8 @@ minko.project.application = function(name)
 			minko.action.copy("asset")
 		}
 
-		prebuildcommands {
-			minko.action.copy(MINKO_HOME .. "/template/android/*")
-		}
-
 		postbuildcommands {
+			minko.action.copy(MINKO_HOME .. "/template/android/*"),
 			minko.action.buildandroid()
 		}
 
