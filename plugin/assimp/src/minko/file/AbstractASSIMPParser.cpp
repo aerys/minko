@@ -741,22 +741,15 @@ AbstractASSIMPParser::createMeshSurface(scene::Node::Ptr 	minkoNode,
 	auto		material	= createMaterial(aiMat);
 	auto		effect		= chooseEffectByShadingMode(aiMat);
 
-	if (effect)
-	{
-		minkoNode->addComponent(
-			Surface::create(
-                realMeshName,
-				geometry,
-				material,
-				effect,
-				"default"
-			)
-		);
-	}
-#ifdef DEBUG
-	else
-		LOG_ERROR("Failed to find suitable effect for mesh '" << meshName << "' and no default effect provided.");
-#endif // DEBUG
+	minkoNode->addComponent(
+		Surface::create(
+            realMeshName,
+			geometry,
+			material,
+			effect,
+			"default"
+		)
+	);
 }
 
 void

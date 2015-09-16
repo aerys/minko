@@ -39,7 +39,7 @@ Dependency::MaterialWriterFunction	Dependency::_materialWriteFunction;
 
 Dependency::Dependency()
 {
-	_currentId = 0;
+	_currentId = 1;
 
 	setGeometryFunction(std::bind(&Dependency::serializeGeometry,
 		std::placeholders::_1,
