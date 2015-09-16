@@ -4,6 +4,8 @@
 # an absolute source folder to a relative destination directory
 # keeping the hierarchy of each file
 
+set -e
+
 if [ "$#" -ne 2 ]; then
     echo "usage: copy_java.sh absoluteSrcDir relativeDestDir" 2> /dev/null
     exit 1
