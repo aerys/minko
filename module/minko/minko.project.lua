@@ -184,6 +184,7 @@ minko.project.application = function(name)
 		links {
 			"minko-framework",
 		}
+		linkoptions { "-Wl,--no-as-needed" }
 
 		targetsuffix ".bc"
 
