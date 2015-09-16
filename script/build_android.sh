@@ -83,7 +83,7 @@ mv "bin/$APP_NAME-$CONFIG.apk" "bin/artifacts/$APP_NAME-$CONFIG.apk"
 
 if [ $DEVICE_STATE == "device" ]; then
 	$ANDROID/platform-tools/adb install -r "bin/artifacts/$APP_NAME-$CONFIG.apk"
-	$ANDROID/platform-tools/adb shell am start -n $PACKAGE/$PACKAGE.MinkoActivity
+	# $ANDROID/platform-tools/adb shell am start -n $PACKAGE/$PACKAGE.MinkoActivity
 fi
 
 #adb devices | tail -n +2 | cut -sf 1 | xargs -I {} adb -s {} install -r $TARGET_NAME-$CONFIG.apk
