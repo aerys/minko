@@ -193,6 +193,32 @@ Picking::bindSignals()
 }
 
 void
+Picking::unbindSignals()
+{
+    _mouseMoveSlot = nullptr;
+    _mouseLeftDownSlot = nullptr;
+    _mouseRightDownSlot = nullptr;
+    _mouseLeftClickSlot = nullptr;
+    _mouseRightClickSlot = nullptr;
+    _mouseLeftUpSlot = nullptr;
+    _mouseRightUpSlot = nullptr;
+    _touchDownSlot = nullptr;
+    _touchUpSlot = nullptr;
+    _touchMoveSlot = nullptr;
+    _touchTapSlot = nullptr;
+    _touchDoubleTapSlot = nullptr;
+    _touchLongHoldSlot = nullptr;
+
+    //_frameBeginSlot = nullptr;
+    _renderingBeginSlot = nullptr;
+    _renderingEndSlot = nullptr;
+    _depthRenderingBeginSlot = nullptr;
+    _depthRenderingEndSlot = nullptr;
+    _componentAddedSlot = nullptr;
+    _componentRemovedSlot = nullptr;
+}
+
+void
 Picking::targetAdded(NodePtr target)
 {
     _sceneManager = target->root()->component<SceneManager>();
@@ -415,6 +441,8 @@ Picking::removeSurface(SurfacePtr surface, NodePtr node)
 void
 Picking::removedHandler(NodePtr target, NodePtr child, NodePtr parent)
 {
+    unbindSignals();
+
 	if (std::find(_descendants.begin(), _descendants.end(), child) == _descendants.end())
 		return;
 
