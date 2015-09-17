@@ -184,7 +184,13 @@ ComponentDeserializer::deserializeSurface(file::SceneVersion sceneVersion,
 
 	geometry::Geometry::Ptr		geometry	= dependencies->getGeometryReference(dst.get<0>());
 	material::Material::Ptr		material	= dependencies->getMaterialReference(dst.get<1>());
-	render::Effect::Ptr			effect		= dependencies->getEffectReference(dst.get<2>());
+
+    const auto effectId = dst.get<2>();
+
+    auto effect = effectId != 0u
+        ? dependencies->getEffectReference(effectId)
+        : nullptr;
+
     auto uuid = std::string();
 	auto technique = std::string("default");
 	auto visible = true;
