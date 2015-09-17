@@ -290,24 +290,31 @@ AbstractSerializerParser::deserializeAsset(SerializedAsset&				asset,
              (_dependency->textureReferenceExist(asset.get<1>()) == false ||
              _dependency->getTextureReference(asset.get<1>()) == nullptr))
     {
-        resolvedPath = "texture_" + std::to_string(asset.get<1>());
+        const auto textureName = "texture_" + std::to_string(asset.get<1>());
 
-        if (assetLibrary->texture(resolvedPath) == nullptr)
+        auto uniqueTextureName = textureName;
+
+        while(assetLibrary->texture(uniqueTextureName) != nullptr)
         {
-            const auto hasTextureHeaderSize = (((metaData & 0xf000) >> 15) == 1 ? true : false);
-            auto textureHeaderSize = static_cast<unsigned int>(metaData & 0x0fff);
+            static auto textureId = 0;
 
-            _textureParser->textureHeaderSize(textureHeaderSize);
-            _textureParser->dataEmbed(true);
+            uniqueTextureName = textureName + std::to_string(textureId++);
+        }
 
-            _textureParser->parse(resolvedPath, assetCompletePath, options, data, assetLibrary);
+        const auto hasTextureHeaderSize = (((metaData & 0xf000) >> 15) == 1 ? true : false);
+        auto textureHeaderSize = static_cast<unsigned int>(metaData & 0x0fff);
 
-        	auto texture = assetLibrary->texture(resolvedPath);
+        _textureParser->textureHeaderSize(textureHeaderSize);
+        _textureParser->dataEmbed(true);
 
-        	if (options->disposeTextureAfterLoading())
-        	    texture->disposeData();
-		}
-		_dependency->registerReference(asset.get<1>(), assetLibrary->texture(resolvedPath));
+        _textureParser->parse(uniqueTextureName, assetCompletePath, options, data, assetLibrary);
+
+    	auto texture = assetLibrary->texture(uniqueTextureName);
+
+    	if (options->disposeTextureAfterLoading())
+    	    texture->disposeData();
+
+		_dependency->registerReference(asset.get<1>(), texture);
 	}
     else if (asset.get<0>() == serialize::AssetType::TEXTURE_PACK_ASSET)
     {
