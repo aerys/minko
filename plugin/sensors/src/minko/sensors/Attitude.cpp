@@ -61,7 +61,7 @@ Attitude::stopTracking()
     _attitudeManager->stopTracking();
 }
 
-const math::mat4& 
+math::mat4
 Attitude::rotationMatrix()
 {
     return _attitudeManager->rotationMatrix();

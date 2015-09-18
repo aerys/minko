@@ -60,7 +60,7 @@ IOSAttitude::stopTracking()
     [_manager stopDeviceMotionUpdates];
 }
 
-const math::mat4&
+math::mat4
 IOSAttitude::rotationMatrix()
 {
     CMDeviceMotion *motion = _manager.deviceMotion;

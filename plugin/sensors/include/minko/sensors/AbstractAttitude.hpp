@@ -44,7 +44,7 @@ namespace minko
             stopTracking() override = 0;
 
             virtual
-            const math::mat4&
+            math::mat4
             rotationMatrix() = 0;
             
             virtual

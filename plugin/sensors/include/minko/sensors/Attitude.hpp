@@ -50,7 +50,7 @@ namespace minko
             void
             stopTracking() override;
             
-            const math::mat4&
+            math::mat4
             rotationMatrix() override;
 
             const math::quat&

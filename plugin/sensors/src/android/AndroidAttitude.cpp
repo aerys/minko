@@ -129,7 +129,7 @@ AndroidAttitude::stopTracking()
     env->CallVoidMethod(_attitude, _stopTrackingMethod);
 }
 
-const math::mat4&
+math::mat4
 AndroidAttitude::rotationMatrix()
 {
     auto worldToDevice = rotationMatrixValue * _worldToInertialReferenceFrame;
