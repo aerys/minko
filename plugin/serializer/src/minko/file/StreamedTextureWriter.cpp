@@ -174,43 +174,23 @@ StreamedTextureWriter::ensureTextureSizeIsValid(AbstractTexture::Ptr    texture,
     auto newWidth = width;
     auto newHeight = height;
 
-    if (width != height)
+    if (newWidth != newHeight)
     {
         newWidth = newHeight = writerOptions->upscaleTextureWhenProcessedForMipmapping()
-            ? std::max<uint>(width, height)
-            : std::min<uint>(width, height);
+            ? std::max<uint>(newWidth, newHeight)
+            : std::min<uint>(newWidth, newHeight);
     }
 
-    newWidth = std::min<uint>(
-        newWidth,
-        static_cast<uint>(writerOptions->textureMaxResolution().x)
-    );
+    newWidth = static_cast<uint>(newWidth * writerOptions->textureScale().x);
+    newHeight = static_cast<uint>(newHeight * writerOptions->textureScale().y);
 
-    newHeight = std::min<uint>(
-        newHeight,
-        static_cast<uint>(writerOptions->textureMaxResolution().y)
-    );
+    newWidth = std::min<uint>(newWidth, writerOptions->textureMaxSize().x);
+    newHeight = std::min<uint>(newHeight, writerOptions->textureMaxSize().y);
 
-    if (width == newWidth &&
-        height == newHeight)
-        return;
-
-    switch (texture->type())
+    if (width != newWidth ||
+        height != newHeight)
     {
-    case TextureType::Texture2D:
-    {
-        auto texture2d = std::static_pointer_cast<Texture>(texture);
-
         texture->resize(newWidth, newHeight, true);
-
-        break;
-    }
-    case TextureType::CubeTexture:
-    {
-        // TODO
-
-        break;
-    }
     }
 }
 

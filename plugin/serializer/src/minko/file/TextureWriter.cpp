@@ -152,64 +152,30 @@ void
 TextureWriter::ensureTextureSizeIsValid(AbstractTexture::Ptr    texture,
                                         WriterOptions::Ptr      writerOptions)
 {
-    if (writerOptions->generateMipmaps())
+    const auto width = texture->width();
+    const auto height = texture->height();
+
+    auto newWidth = width;
+    auto newHeight = height;
+
+    if (writerOptions->generateMipmaps() &&
+        newWidth != newHeight)
     {
-        const auto width = texture->width();
-        const auto height = texture->height();
-
-        auto newWidth = width;
-        auto newHeight = height;
-
-        if (width != height)
-        {
-            newWidth = newHeight = writerOptions->upscaleTextureWhenProcessedForMipmapping()
-                ? std::max<uint>(width, height)
-                : std::min<uint>(width, height);
-        }
-
-        newWidth = std::min<uint>(
-            newWidth,
-            static_cast<uint>(writerOptions->textureMaxResolution().x)
-        );
-
-        newHeight = std::min<uint>(
-            newHeight,
-            static_cast<uint>(writerOptions->textureMaxResolution().y)
-        );
-
-        if (width == newWidth &&
-            height == newHeight)
-            return;
-
-        switch (texture->type())
-        {
-        case TextureType::Texture2D:
-        {
-            auto texture2d = std::static_pointer_cast<Texture>(texture);
-
-            texture->resize(newWidth, newHeight, true);
-
-            break;
-        }
-        case TextureType::CubeTexture:
-        {
-            // TODO
-
-            break;
-        }
-        }
+        newWidth = newHeight = writerOptions->upscaleTextureWhenProcessedForMipmapping()
+            ? std::max<uint>(newWidth, newHeight)
+            : std::min<uint>(newWidth, newHeight);
     }
-    else
+
+    newWidth = static_cast<uint>(newWidth * writerOptions->textureScale().x);
+    newHeight = static_cast<uint>(newHeight * writerOptions->textureScale().y);
+
+    newWidth = std::min<uint>(newWidth, writerOptions->textureMaxSize().x);
+    newHeight = std::min<uint>(newHeight, writerOptions->textureMaxSize().y);
+
+    if (width != newWidth ||
+        height != newHeight)
     {
-        if (texture->width() > writerOptions->textureMaxResolution().x ||
-            texture->height() > writerOptions->textureMaxResolution().y)
-        {
-            texture->resize(
-                std::min<uint>(texture->width(), writerOptions->textureMaxResolution().x),
-                std::min<uint>(texture->height(), writerOptions->textureMaxResolution().y),
-                true
-            );
-        }
+        texture->resize(newWidth, newHeight, true);
     }
 }
 

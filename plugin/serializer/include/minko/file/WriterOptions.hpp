@@ -87,7 +87,8 @@ namespace minko
             bool                                _generateMipmaps;
             bool                                _useTextureSRGBSpace;
             bool                                _upscaleTextureWhenProcessedForMipmapping;
-            math::ivec2                         _textureMaxResolution;
+            math::vec2                          _textureScale;
+            math::ivec2                         _textureMaxSize;
             render::MipFilter                   _mipFilter;
             bool                                _optimizeForNormalMapping;
 
@@ -127,7 +128,8 @@ namespace minko
                 instance->_compressTexture = other->_compressTexture;
                 instance->_generateMipmaps = other->_generateMipmaps;
                 instance->_upscaleTextureWhenProcessedForMipmapping = other->_upscaleTextureWhenProcessedForMipmapping;
-                instance->_textureMaxResolution = other->_textureMaxResolution;
+                instance->_textureMaxSize = other->_textureMaxSize;
+                instance->_textureScale = other->_textureScale;
                 instance->_mipFilter = other->_mipFilter;
                 instance->_optimizeForNormalMapping = other->_optimizeForNormalMapping;
                 instance->_writeAnimations = other->_writeAnimations;
@@ -378,16 +380,32 @@ namespace minko
 
             inline
             const math::ivec2&
-            textureMaxResolution() const
+            textureMaxSize() const
             {
-                return _textureMaxResolution;
+                return _textureMaxSize;
             }
 
             inline
             Ptr
-            textureMaxResolution(const math::ivec2& value)
+            textureMaxSize(const math::ivec2& value)
             {
-                _textureMaxResolution = value;
+                _textureMaxSize = value;
+
+                return shared_from_this();
+            }
+
+            inline
+            const math::vec2&
+            textureScale() const
+            {
+                return _textureScale;
+            }
+
+            inline
+            Ptr
+            textureScale(const math::vec2& value)
+            {
+                _textureScale = value;
 
                 return shared_from_this();
             }
