@@ -27,6 +27,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/JobManager.hpp"
 #include "minko/deserialize/Unpacker.hpp"
 #include "minko/extension/AbstractExtension.hpp"
+#include "minko/file/Dependency.hpp"
 
 namespace minko
 {
@@ -148,8 +149,7 @@ namespace minko
 			msgpack::type::tuple<uint, short, std::string>
 			serializeStreamedTexture(std::shared_ptr<file::Dependency>          dependency,
 									 std::shared_ptr<file::AssetLibrary>		assetLibrary,
-									 std::shared_ptr<render::AbstractTexture>	texture,
-									 uint										resourceId,
+									 const file::Dependency::TextureDependency& textureDependency,
 									 std::shared_ptr<file::Options>				options,
                                      std::shared_ptr<file::WriterOptions>       writerOptions);
 

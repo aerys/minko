@@ -36,6 +36,7 @@ namespace minko
             typedef std::shared_ptr<TextureWriter>                                      Ptr;
 
             typedef std::function<bool(std::shared_ptr<render::AbstractTexture>,
+                                       const std::string&,
                                        std::shared_ptr<WriterOptions>,
                                        std::stringstream& blob)>                        FormatWriterFunction;
 
@@ -50,6 +51,8 @@ namespace minko
         private:
             static std::unordered_map<render::TextureFormat, FormatWriterFunction, Hash<render::TextureFormat>> _formatWriterFunctions;
 
+            std::string _textureType;
+
             int _headerSize;
 
         public:
@@ -60,6 +63,13 @@ namespace minko
             create()
             {
                 return std::shared_ptr<TextureWriter>(new TextureWriter());
+            }
+
+            inline
+            void
+            textureType(const std::string& textureType)
+            {
+                _textureType = textureType;
             }
 
             inline
@@ -87,6 +97,7 @@ namespace minko
             static
             bool
             writeRGBATexture(AbstractTexturePtr abstractTexture,
+                             const std::string& textureType,
                              WriterOptionsPtr   writerOptions,
                              std::stringstream& blob);
 
@@ -94,6 +105,7 @@ namespace minko
             bool
             writePvrCompressedTexture(render::TextureFormat   textureFormat,
                                       AbstractTexturePtr      abstractTexture,
+                                      const std::string&      textureType,
                                       WriterOptionsPtr        writerOptions,
                                       std::stringstream&      blob);
 
@@ -101,6 +113,7 @@ namespace minko
             bool
             writeQCompressedTexture(render::TextureFormat   textureFormat,
                                     AbstractTexturePtr      abstractTexture,
+                                    const std::string&      textureType,
                                     WriterOptionsPtr        writerOptions,
                                     std::stringstream&      blob);
 
@@ -108,6 +121,7 @@ namespace minko
             bool
             writeCRNCompressedTexture(render::TextureFormat   textureFormat,
                                       AbstractTexturePtr      abstractTexture,
+                                      const std::string&      textureType,
                                       WriterOptionsPtr        writerOptions,
                                       std::stringstream&      blob);
         };

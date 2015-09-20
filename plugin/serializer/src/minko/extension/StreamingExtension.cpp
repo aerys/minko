@@ -179,8 +179,7 @@ StreamingExtension::initialize(StreamingOptions::Ptr streamingOptions)
             std::placeholders::_2,
             std::placeholders::_3,
             std::placeholders::_4,
-            std::placeholders::_5,
-            std::placeholders::_6
+            std::placeholders::_5
         ));
     }
 }
@@ -389,14 +388,17 @@ StreamingExtension::deserializePOPGeometry(unsigned short					metaData,
 msgpack::type::tuple<uint, short, std::string>
 StreamingExtension::serializeStreamedTexture(std::shared_ptr<file::Dependency>		dependency,
                                              std::shared_ptr<file::AssetLibrary>	assetLibrary,
-											 render::AbstractTexture::Ptr			texture,
-											 uint									resourceId,
+                                             const Dependency::TextureDependency&   textureDependency,
 											 std::shared_ptr<file::Options>			options,
                                              std::shared_ptr<file::WriterOptions>   writerOptions)
 {
+    auto texture = textureDependency.texture;
+    const auto dependencyId = static_cast<short>(textureDependency.dependencyId);
+
     const auto assetIsNull = writerOptions->assetIsNull(texture->uuid());
 
     auto writer = StreamedTextureWriter::create();
+    writer->textureType(*textureDependency.textureType);
 
     auto assetType = STREAMED_TEXTURE_ASSET;
 
@@ -464,7 +466,7 @@ StreamingExtension::serializeStreamedTexture(std::shared_ptr<file::Dependency>		
                           static_cast<unsigned int>((headerSize & 0x0fff) << 16) +
                           static_cast<unsigned int>(assetType);
 
-    return SerializedAsset(metadata, resourceId, content);
+    return SerializedAsset(metadata, dependencyId, content);
 }
 
 void
