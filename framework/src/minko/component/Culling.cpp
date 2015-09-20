@@ -29,16 +29,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/component/SceneManager.hpp"
 #include "minko/component/Surface.hpp"
 #include "minko/component/Renderer.hpp"
+#include "minko/log/Logger.hpp"
 
 using namespace minko;
 using namespace minko::component;
 
-Culling::Culling(ShapePtr shape, const std::string& bindProperty) :
+Culling::Culling(ShapePtr shape, const std::string& bindProperty, scene::Layout layout) :
     AbstractComponent(),
 	_frustum(shape),
 	_bindProperty(bindProperty),
     _worldSize(50.f),
-    _maxDepth(7u)
+    _maxDepth(7u),
+	_layout(layout)
 {
 }
 
@@ -47,8 +49,8 @@ Culling::targetAdded(NodePtr target)
 {
 	if (target->components<Culling>().size() > 1)
 		throw std::logic_error("The same camera node cannot have more than one Culling.");
-	if (target->components<component::PerspectiveCamera>().size() < 1)
-		throw std::logic_error("Culling must be added to a camera");
+	/*if (target->components<component::PerspectiveCamera>().size() < 1)
+		throw std::logic_error("Culling must be added to a camera");*/
 
 	if (_octTree == nullptr)
 		_octTree = math::OctTree::create(worldSize(), maxDepth(), math::vec3(0.f));
@@ -100,18 +102,20 @@ Culling::targetAddedToSceneHandler(NodePtr node, NodePtr target, NodePtr ancesto
 			std::placeholders::_2,
 			std::placeholders::_3
 		), -1.f);
+
+		addedHandler(target->root(), target->root(), target->root());
 	}
 }
 
 void
 Culling::addedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 {
-	auto layoutMask = this->layoutMask();
 	scene::NodeSet::Ptr nodeSet = scene::NodeSet::create(target)
         ->descendants(true)
-        ->where([layoutMask](NodePtr descendant)
+        ->where([&](NodePtr descendant)
 	    {
-		    return (descendant->layout() & scene::BuiltinLayout::IGNORE_CULLING) == 0;
+		    return (descendant->layout() & scene::BuiltinLayout::IGNORE_CULLING) == 0
+				&& descendant->hasComponent<Surface>();
 	    });
 
 	for (auto n : nodeSet->nodes())
@@ -121,7 +125,7 @@ Culling::addedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 void
 Culling::layoutChangedHandler(NodePtr node, NodePtr target)
 {
-    if ((target->layout() & scene::BuiltinLayout::IGNORE_CULLING) == 0)
+	if ((target->layout() & scene::BuiltinLayout::IGNORE_CULLING) == 0)
 		_octTree->insert(target);
 	else
 		_octTree->remove(target);
@@ -132,32 +136,15 @@ Culling::worldToScreenChangedHandler(data::Store& data, const String& propertyNa
 {
 	_frustum->updateFromMatrix(data.get<math::mat4>(propertyName));
 
-	auto renderer = target()->component<Renderer>();
-
 	_octTree->testFrustum(
 		_frustum,
 		[&](NodePtr node)
 		{
-            nodeCulled(node, true);
+			node->layout(node->layout() | _layout);
 		},
 		[&](NodePtr node)
 		{
-            nodeCulled(node, false);
+			node->layout(node->layout() & ~_layout);
 		}
 	);
-}
-
-void
-Culling::nodeCulled(NodePtr node, bool insideFrustum)
-{
-    // fixme add layouts to handle computed visibility and arbitrary visibility states
-
-    if (insideFrustum)
-    {
-        node->layout(node->layout() | scene::BuiltinLayout::DEFAULT);
-    }
-    else
-    {
-        node->layout(node->layout() & ~scene::BuiltinLayout::DEFAULT);
-    }
 }
