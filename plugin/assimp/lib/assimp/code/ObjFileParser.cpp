@@ -352,14 +352,14 @@ void ObjFileParser::getFace(aiPrimitiveType type)
 		else 
 		{
 			//OBJ USES 1 Base ARRAYS!!!!
-			const int iVal = atoi( pPtr );
+			char *pEnd;
+			const int iVal = strtol( pPtr, &pEnd, 10 );
 
-			// increment iStep position based off of the sign and # of digits
-			int tmp = iVal;
-			if (iVal < 0)
-			    ++iStep;
-			while ( ( tmp = tmp / 10 )!=0 )
-				++iStep;
+			iStep = pEnd - pPtr;
+			if (iStep == 0)
+			{
+				reportErrorTokenInFace();
+			}
 
 			if ( iVal > 0 )
 			{
