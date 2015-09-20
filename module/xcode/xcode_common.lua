@@ -1187,7 +1187,8 @@
 		-- printSetting(bs, 4,"ONLY_ACTIVE_ARCH" ,iif(premake.config.isDebugBuild(cfg),'YES','NO'))
 		xcode.PrintBuildSetting(4, 'OBJROOT = "' .. cfg.objdir .. '";', cfg)
 		xcode.PrintBuildSetting(4, 'ONLY_ACTIVE_ARCH = ' .. iif(premake.config.isDebugBuild(cfg), 'YES', 'NO') .. ';', cfg)
-		
+		xcode.PrintBuildSetting(4, 'ENABLE_BITCODE = NO;', cfg)
+
 		-- build list of "other" C/C++ flags
 		local checks = {
 			["-ffast-math"]          = cfg.flags.FloatFast,
