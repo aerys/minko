@@ -53,9 +53,10 @@ function minko.plugin.sdl:enable()
 	configuration { "osx64", "ConsoleApp or WindowedApp" }
 		links {
 			"SDL2",
+			"SDL2_mixer",
 			-- "CoreFoundation.framework",
 			"Carbon.framework",
-			-- "AudioToolbox.framework",
+			"AudioToolbox.framework",
 			"AudioUnit.framework",
 			"CoreAudio.framework",
 			"ForceFeedback.framework"

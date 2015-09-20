@@ -95,7 +95,7 @@ namespace minko
         float                                                                   _desiredFramerate;
 		bool																	_swapBuffersAtEnterFrame;
 
-#if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_ANDROID | MINKO_PLATFORM_IOS)
+#if MINKO_PLATFORM & (MINKO_PLATFORM_HTML5 | MINKO_PLATFORM_WINDOWS | MINKO_PLATFORM_OSX | MINKO_PLATFORM_ANDROID | MINKO_PLATFORM_IOS)
         std::shared_ptr<audio::SDLAudio>                                        _audio;
 #endif
         
