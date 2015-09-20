@@ -16,6 +16,6 @@ if not defined MINKO_HOME (
 )
 
 call "%EMSCRIPTEN%\..\..\emsdk_add_path.bat"
-"%MINKO_HOME%\tool\win\bin\premake5.exe" gmake
+"%MINKO_HOME%\script\premake5.bat" gmake
 mingw32-make SHELL=cmd.exe config=html5_release verbose=1
 pause

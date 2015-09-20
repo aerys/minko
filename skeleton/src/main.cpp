@@ -22,7 +22,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 using namespace minko;
 using namespace minko::component;
-using namespace minko::math;
 
 int main(int argc, char** argv)
 {
@@ -39,7 +38,9 @@ int main(int argc, char** argv)
     auto camera = scene::Node::create("camera")
         ->addComponent(Renderer::create(0x7f7f7fff))
         ->addComponent(Transform::create(
-            Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(0.f, 0.f, 3.f))
+          math::inverse(
+            math::lookAt(math::vec3(0.f, 0.f, 3.f), math::vec3(), math::vec3(0, 1, 0))
+	  )
         ))
         ->addComponent(PerspectiveCamera::create(canvas->aspectRatio()));
 
@@ -52,18 +53,18 @@ int main(int argc, char** argv)
     {
         mesh->addComponent(Surface::create(
             geometry::CubeGeometry::create(sceneManager->assets()->context()),
-            material::Material::create()
-                ->set("diffuseColor", Vector4::create(1.f, 1.f, 1.f, 1.f)),
+            material::Material::create(),
             sceneManager->assets()->effect("effect/Basic.effect")
         ));
 
+        mesh->component<Surface>()->material()->data()->set("diffuseColor", math::vec4(1.f,1.f,1.f,1.f));
         root->addChild(mesh);
 
         auto light = scene::Node::create("light")
             ->addComponent(AmbientLight::create())
             ->addComponent(DirectionalLight::create())
             ->addComponent(Transform::create(
-                Matrix4x4::create()->lookAt(Vector3::zero(), Vector3::create(-2.f, -1.f, -1.f))
+                math::lookAt(math::vec3(-2.f, -1.f, -1.f), math::vec3(), math::vec3(0, 1, 0))
             ));
 
         root->addChild(light);
@@ -76,7 +77,9 @@ int main(int argc, char** argv)
 
     auto enterFrame = canvas->enterFrame()->connect([&](Canvas::Ptr canvas, float time, float deltaTime)
     {
-        mesh->component<Transform>()->matrix()->appendRotationY(0.001f * deltaTime);
+	mesh->component<Transform>()->matrix(
+        	mesh->component<Transform>()->matrix() * math::rotate(0.001f * deltaTime, math::vec3(0,1,0))
+	);
         sceneManager->nextFrame(time, deltaTime);
     });
 
