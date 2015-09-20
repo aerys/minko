@@ -63,7 +63,7 @@ VRCamera::updateViewport(int viewportWidth, int viewportHeight)
     _viewportWidth = viewportWidth;
     _viewportHeight = viewportHeight;
 
-    auto aspectRatio = (viewportWidth / 2.f) / viewportHeight;  
+    auto aspectRatio = (viewportWidth / 2.f) / viewportHeight;
 
     if (_leftCameraNode)
         _leftCameraNode->component<PerspectiveCamera>()->aspectRatio(aspectRatio);
@@ -193,7 +193,7 @@ VRCamera::findSceneManager()
 
     if (roots->nodes().size() > 1)
         throw std::logic_error("VRCamera cannot be in two separate scenes.");
-    
+
     if (roots->nodes().size() == 1)
         setSceneManager(roots->nodes()[0]->component<SceneManager>());
     else
@@ -222,16 +222,4 @@ void
 VRCamera::updateCameraOrientation(std::shared_ptr<scene::Node> leftCamera, std::shared_ptr<scene::Node> rightCamera)
 {
     _VRImpl->updateCameraOrientation(target(), leftCamera, rightCamera);
-}
-
-Signal<>::Ptr
-VRCamera::actionButtonPressed()
-{
-    return _VRImpl->actionButtonPressed();
-}
-
-Signal<>::Ptr
-VRCamera::actionButtonReleased()
-{
-    return _VRImpl->actionButtonReleased();
 }
