@@ -117,7 +117,8 @@ main(int argc, char** argv)
         quads = createObjectGroup(NUM_QUADS, true, QUADS_DIST, QUADS_PRIORITY, sceneManager->assets(), quadsAnimData);
 
 		auto cubeMaterial = material::BasicMaterial::create();
-		cubeMaterial->diffuseCubeMap(sceneManager->assets()->cubeTexture(CUBE_TEXTURE));
+        cubeMaterial->diffuseColor(0xffffffff);
+		cubeMaterial->data()->set("diffuseCubeMap", sceneManager->assets()->cubeTexture(CUBE_TEXTURE)->sampler());
 		cubeMaterial->triangleCulling(render::TriangleCulling::FRONT);
 
         auto cube = scene::Node::create("cube")
