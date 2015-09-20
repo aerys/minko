@@ -143,7 +143,7 @@ Dependency::registerDependency(AbsTexturePtr texture, const std::string& texture
             textureType
         };
 
-        return _textureDependencies.emplace(texture, textureDependency).second;
+        return _textureDependencies.emplace(texture, textureDependency).first->second.dependencyId;
     }
     
     return dependencyIt->second.dependencyId;
