@@ -34,5 +34,5 @@ const Layout BuiltinLayout::_RESERVED_4         = 1 << 8;
 const Layout BuiltinLayout::PICKING_DEPTH       = 1 << 9;
 
 const Layout LayoutMask::NOTHING                    = 0;
-const Layout LayoutMask::COLLISIONS_DYNAMIC_DEFAULT = EVERYTHING;
+const Layout LayoutMask::COLLISIONS_DYNAMIC_DEFAULT = EVERYTHING & ~BuiltinLayout::STATIC;
 const Layout LayoutMask::EVERYTHING                 = 0xffffffff;
