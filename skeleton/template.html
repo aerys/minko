@@ -89,9 +89,9 @@
 	</div>
 
 	<canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
-	
+
 	<script>window.performance = window.performance || {now: Date.now};</script>
-	
+
     <script type='text/javascript'>
       var statusElement = document.getElementById('status');
       var progressElement = document.getElementById('progress');
@@ -148,6 +148,12 @@
 		TOTAL_MEMORY: 128 * 1024 * 1024
       };
       Module.setStatus('Downloading...');
+      if (typeof window === "object") {
+          Module['arguments'] = window.location.search.substr(1).trim().split('&');
+          // If no args were passed arguments = [''], in which case kill the single empty string.
+          if (!Module['arguments'][0])
+             Module['arguments'] = [];
+      }
 
 	  window.onresize = function(event)
 	  {
