@@ -453,6 +453,9 @@ namespace minko
 
 			bool
 			checkSurfaceLayout(SurfacePtr surface);
+
+            void
+            enableDrawCalls(SurfacePtr surface, bool enabled);
 		};
 	}
 }

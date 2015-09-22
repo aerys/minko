@@ -85,6 +85,8 @@ namespace minko
             typedef std::array<data::ResolvedBinding*, 17>          StatesResolveBindings;
 
 		private:
+            bool                                _enabled;
+
 			std::vector<uint>					_batchIDs;
             std::shared_ptr<Pass>               _pass;
             data::Store&                        _rootData;
@@ -136,6 +138,20 @@ namespace minko
                      data::Store&           rootData,
                      data::Store&           rendererData,
                      data::Store&           targetData);
+
+            inline
+            bool
+            enabled() const
+            {
+                return _enabled;
+            }
+
+            inline
+            void
+            enabled(bool value)
+            {
+                _enabled = value;
+            }
 
 			inline
 			std::vector<uint>&

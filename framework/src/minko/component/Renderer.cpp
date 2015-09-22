@@ -635,6 +635,11 @@ Renderer::surfaceLayoutMaskChangedHandler(Surface::Ptr surface)
 {
 	if (checkSurfaceLayout(surface))
 	{
+        if ((surface->target()->layout() & scene::BuiltinLayout::HIDDEN) != 0)
+            enableDrawCalls(surface, false);
+        else
+            enableDrawCalls(surface, true);
+
 		if (_surfaceToDrawCallIterator.count(surface) == 0)
             _toCollect.insert(surface);
 	}
@@ -699,4 +704,26 @@ Renderer::layoutMask(const scene::Layout value)
 		
         rootDescendantRemovedHandler(nullptr, target()->root(), nullptr);
 	}
+}
+
+void
+Renderer::enableDrawCalls(SurfacePtr surface, bool enabled)
+{
+    auto drawCallIt = _surfaceToDrawCallIterator.find(surface);
+
+    if (drawCallIt == _surfaceToDrawCallIterator.end())
+        return;
+
+    const auto drawCallId = drawCallIt->second;
+
+    for (const auto& priorityToDrawCalls : _drawCallPool.drawCalls())
+        for (const auto& drawCalls : priorityToDrawCalls.second)
+            for (auto drawCall : drawCalls)
+            {
+                if (drawCall->batchIDs().size() > 1u)
+                    throw std::runtime_error("");
+
+                if (drawCall->batchIDs().front() == drawCallId)
+                    drawCall->enabled(enabled);
+            }
 }

@@ -35,6 +35,7 @@ DrawCall::DrawCall(std::shared_ptr<Pass>  pass,
                    data::Store&           rootData,
                    data::Store&           rendererData,
                    data::Store&           targetData) :
+    _enabled(true),
     _pass(pass),
     _rootData(rootData),
     _rendererData(rendererData),
@@ -703,6 +704,9 @@ DrawCall::render(AbstractContext::Ptr   context,
                  const math::ivec4&     viewport,
                  uint                   clearColor) const
 {
+    if (!this->enabled())
+        return;
+
     context->setProgram(_program->id());
 
     auto hasOwnTarget = _target && _target->id;
