@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/AbstractResource.hpp"
 
-#ifdef MINKO_GLSL_OPTIMIZER
+#ifdef MINKO_GLSL_OPTIMIZER_ENABLED
     struct glslopt_ctx;
 #endif
 
@@ -47,7 +47,7 @@ namespace minko
 			Type		               _type;
 			std::string                _source;
             std::set<std::string>      _definedMacros;
-#ifdef MINKO_GLSL_OPTIMIZER
+#ifdef MINKO_GLSL_OPTIMIZER_ENABLED
             static const glslopt_ctx*  _glslOptimizer;
 #endif
 

@@ -95,7 +95,7 @@ minko.project.library "minko-framework"
 
 	-- handle no-glsl-optimizer option
 	if not _OPTIONS["no-glsl-optimizer"] then
-		defines { "MINKO_GLSL_OPTIMIZER" }
+		defines { "MINKO_GLSL_OPTIMIZER_ENABLED" }
 	end
 
 	-- windows

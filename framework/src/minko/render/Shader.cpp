@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 #include "minko/render/AbstractContext.hpp"
 
-#ifdef MINKO_GLSL_OPTIMIZER
+#ifdef MINKO_GLSL_OPTIMIZER_ENABLED
 # include "glsl_optimizer.h"
 #endif
 
@@ -46,7 +46,7 @@ Shader::upload()
 {
     _id = _type == Type::VERTEX_SHADER ? _context->createVertexShader() : _context->createFragmentShader();
 
-#ifdef MINKO_GLSL_OPTIMIZER
+#ifdef MINKO_GLSL_OPTIMIZER_ENABLED
     glslopt_shader* optimizedShader = nullptr;
 
     if (_type == Type::VERTEX_SHADER)
