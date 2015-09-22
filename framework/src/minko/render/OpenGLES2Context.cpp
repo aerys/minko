@@ -103,10 +103,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # define glGenerateMipmap glGenerateMipmapEXT
 #endif
 
-#ifdef MINKO_GLSL_OPTIMIZER
-# include "glsl_optimizer.h"
-#endif
-
 using namespace minko;
 using namespace minko::render;
 
@@ -207,9 +203,6 @@ OpenGLES2Context::OpenGLES2Context() :
 	_currentStencilFailOp(StencilOperation::UNSET),
 	_currentStencilZFailOp(StencilOperation::UNSET),
 	_currentStencilZPassOp(StencilOperation::UNSET)
-#ifdef MINKO_GLSL_OPTIMIZER
-    , _glslOptimizer(0)
-#endif
 {
 #if (MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS) && !defined(MINKO_PLUGIN_ANGLE) && !defined(MINKO_PLUGIN_OFFSCREEN)
 	glewInit();
@@ -217,10 +210,6 @@ OpenGLES2Context::OpenGLES2Context() :
 
 #if !defined(MINKO_NO_STENCIL)
 	glEnable(GL_STENCIL_TEST);
-#endif
-
-#ifdef MINKO_GLSL_OPTIMIZER
-    _glslOptimizer = glslopt_initialize(glslopt_target::kGlslTargetOpenGLES20);
 #endif
 
     glEnable(GL_DEPTH_TEST);
@@ -269,11 +258,6 @@ OpenGLES2Context::~OpenGLES2Context()
 
 	for (auto& fragmentShader : _fragmentShaders)
 		glDeleteShader(fragmentShader);
-
-#ifdef MINKO_GLSL_OPTIMIZER
-    if (_glslOptimizer)
-        delete _glslOptimizer;
-#endif
 }
 
 void
@@ -1220,9 +1204,9 @@ OpenGLES2Context::setShaderSource(const uint shader,
 	std::string src = "#version 120\n" + source;
 #endif // GL_ES_VERSION_2_0
 
-	const char* sourceString = src.c_str();
+    const char* sourceString = src.c_str();
 
-    glShaderSource(shader, 1, &sourceString, 0);
+	glShaderSource(shader, 1, &sourceString, 0);
 
 	checkForErrors();
 }

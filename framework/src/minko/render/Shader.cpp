@@ -28,6 +28,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 using namespace minko;
 using namespace minko::render;
 
+const glslopt_ctx* Shader::_glslOptimizer = glslopt_initialize(glslopt_target::kGlslTargetOpenGLES20);
+
 void
 Shader::dispose()
 {
@@ -48,9 +50,9 @@ Shader::upload()
     glslopt_shader* optimizedShader = nullptr;
 
     if (_type == Type::VERTEX_SHADER)
-        optimizedShader = glslopt_optimize(_context->glslOptimizer(), kGlslOptShaderVertex, _source.c_str(), 0);
+        optimizedShader = glslopt_optimize(const_cast<glslopt_ctx*>(_glslOptimizer), kGlslOptShaderVertex, _source.c_str(), 0);
     else
-        optimizedShader = glslopt_optimize(_context->glslOptimizer(), kGlslOptShaderFragment, _source.c_str(), 0);
+        optimizedShader = glslopt_optimize(const_cast<glslopt_ctx*>(_glslOptimizer), kGlslOptShaderFragment, _source.c_str(), 0);
 
     if (glslopt_get_status(optimizedShader))
     {

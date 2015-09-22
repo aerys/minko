@@ -26,10 +26,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/Blending.hpp"
 #include "minko/Hash.hpp"
 
-#ifdef MINKO_GLSL_OPTIMIZER
-    struct glslopt_ctx;
-#endif
-
 namespace minko
 {
 	namespace render
@@ -107,9 +103,6 @@ namespace minko
 			StencilOperation						_currentStencilFailOp;
 			StencilOperation						_currentStencilZFailOp;
 			StencilOperation						_currentStencilZPassOp;
-#ifdef MINKO_GLSL_OPTIMIZER
-            glslopt_ctx*                            _glslOptimizer;
-#endif
 
 		public:
 			~OpenGLES2Context();
@@ -131,14 +124,6 @@ namespace minko
 			{
 				return _errorsEnabled;
 			}
-
-#ifdef MINKO_GLSL_OPTIMIZER
-            glslopt_ctx*
-            glslOptimizer()
-            {
-                return _glslOptimizer;
-            }
-#endif
 
 			inline
 			void
