@@ -103,6 +103,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 # define glGenerateMipmap glGenerateMipmapEXT
 #endif
 
+#ifdef MINKO_GLSL_OPTIMIZER
+# include "glsl_optimizer.h"
+#endif
+
 using namespace minko;
 using namespace minko::render;
 
@@ -202,7 +206,8 @@ OpenGLES2Context::OpenGLES2Context() :
 	_currentStencilMask(0x1),
 	_currentStencilFailOp(StencilOperation::UNSET),
 	_currentStencilZFailOp(StencilOperation::UNSET),
-	_currentStencilZPassOp(StencilOperation::UNSET)
+	_currentStencilZPassOp(StencilOperation::UNSET),
+        _glslOptimizer(0)
 {
 #if (MINKO_PLATFORM == MINKO_PLATFORM_WINDOWS) && !defined(MINKO_PLUGIN_ANGLE) && !defined(MINKO_PLUGIN_OFFSCREEN)
 	glewInit();
@@ -210,6 +215,10 @@ OpenGLES2Context::OpenGLES2Context() :
 
 #if !defined(MINKO_NO_STENCIL)
 	glEnable(GL_STENCIL_TEST);
+#endif
+
+#ifdef MINKO_GLSL_OPTIMIZER
+    _glslOptimizer = glslopt_initialize(glslopt_target::kGlslTargetOpenGLES20);
 #endif
 
     glEnable(GL_DEPTH_TEST);
@@ -258,6 +267,11 @@ OpenGLES2Context::~OpenGLES2Context()
 
 	for (auto& fragmentShader : _fragmentShaders)
 		glDeleteShader(fragmentShader);
+
+#ifdef MINKO_GLSL_OPTIMIZER
+    if (_glslOptimizer)
+        delete _glslOptimizer;
+#endif
 }
 
 void
@@ -1204,9 +1218,28 @@ OpenGLES2Context::setShaderSource(const uint shader,
 	std::string src = "#version 120\n" + source;
 #endif // GL_ES_VERSION_2_0
 
-    const char* sourceString = src.c_str();
+	const char* sourceString = src.c_str();
 
-	glShaderSource(shader, 1, &sourceString, 0);
+#ifdef MINKO_GLSL_OPTIMIZER
+    auto type = std::find(_vertexShaders.begin(), _vertexShaders.end(), shader) != _vertexShaders.end()
+        ? kGlslOptShaderVertex
+        : kGlslOptShaderFragment;
+
+    auto optimizedShader = glslopt_optimize(_glslOptimizer, type, sourceString, 0);
+    if (glslopt_get_status(optimizedShader))
+    {
+        auto optimizedSource = glslopt_get_output(optimizedShader);
+        glShaderSource(shader, 1, &optimizedSource, 0);
+    }
+    else
+    {
+        std::cerr << glslopt_get_log(optimizedShader) << std::endl;
+        throw std::invalid_argument("source");
+    }
+    glslopt_shader_delete(optimizedShader);
+#else
+    glShaderSource(shader, 1, &sourceString, 0);
+#endif
 
 	checkForErrors();
 }
