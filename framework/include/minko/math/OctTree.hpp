@@ -42,21 +42,23 @@ namespace minko
 			static const uint _k = 2;
 
 		private:
-			uint								_maxDepth;
-			uint								_depth;
-			bool								_splitted; 
-			Ptr									_parent;
-			std::vector<Ptr>					_children; //x, y, z in {0, 1}, child index : x + y << 1 + z << 2 
-			std::list<NodePtr>					_content;
-			std::list<NodePtr>					_childrenContent;
-			float								_worldSize;
-			math::vec3							_center;
-			std::unordered_map<NodePtr, Ptr>	_nodeToOctant;
-			PropertyChangedSlotMap				_nodeToTransformChangedSlot;
-			std::shared_ptr<math::Box>			_octantBox;
+			uint								        _maxDepth;
+			uint								        _depth;
+			bool								        _splitted; 
+			Ptr									        _parent;
+			std::vector<Ptr>					        _children; //x, y, z in {0, 1}, child index : x + y << 1 + z << 2 
+			std::list<NodePtr>					        _content;
+			std::list<NodePtr>					        _childrenContent;
+			float								        _worldSize;
+			math::vec3							        _center;
+			std::unordered_map<NodePtr, std::list<Ptr>>	_nodeToOctants;
+			PropertyChangedSlotMap				        _nodeToTransformChangedSlot;
+			std::shared_ptr<math::Box>			        _octantBox;
 
-			bool 								_inside;
-			NodePtr 							_debugNode;
+			bool 								        _inside;
+			NodePtr 							        _debugNode;
+
+            std::unordered_map<NodePtr, unsigned int>   _nodeToInsideFrustumRefCountMap;
 			
 			//std::unordered_map<math::Matrix4x4, NodePtr>								_matrixToNode;
 
@@ -84,21 +86,24 @@ namespace minko
 			generateVisual(std::shared_ptr<file::AssetLibrary>	assetLibrary, 
 						   NodePtr								rootNode = nullptr);
 
-			uint
-			testFrustum(std::shared_ptr<math::Frustum> frustum);
-
 			void
 			testFrustum(std::shared_ptr<math::AbstractShape>				frustum, 
 						std::function<void(std::shared_ptr<scene::Node>)>	insideFrustumCallback,
 						std::function<void(std::shared_ptr<scene::Node>)>	outsideFustumCallback);
 
 		private:
-
 			bool
 			nodeChangedOctant(NodePtr node);
 
 			void
 			nodeModelToWorldChanged();
+
+            void
+            doInsert(Ptr octant, NodePtr node, unsigned int currentDepth, unsigned int optimalDepth);
+
+            void
+            doTestFrustum(std::shared_ptr<math::AbstractShape>          frustum,
+                          std::unordered_map<NodePtr, unsigned int>&    refCountMap);
 
 			void
 			split();
