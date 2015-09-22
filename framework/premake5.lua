@@ -93,6 +93,11 @@ minko.project.library "minko-framework"
 		"lib/glsl-optimizer/src/util",
 	}
 
+	-- handle no-glsl-optimizer option
+	if not _OPTIONS["no-glsl-optimizer"] then
+		defines { "MINKO_GLSL_OPTIMIZER" }
+	end
+
 	-- windows
 	configuration { "windows32" }
         includedirs { minko.sdk.path("/framework/lib/glew/include") }
@@ -111,3 +116,8 @@ minko.project.library "minko-framework"
 		excludes {
 			"include/minko/log/AndroidLogSink.hpp"
 		}
+
+	newoption {
+		trigger     = "no-glsl-optimizer",
+		description = "Use this option to disable the GLSL optimizer"
+	}
