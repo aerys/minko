@@ -132,6 +132,14 @@ namespace minko
 				return _errorsEnabled;
 			}
 
+#ifdef MINKO_GLSL_OPTIMIZER
+            glslopt_ctx*
+            glslOptimizer()
+            {
+                return _glslOptimizer;
+            }
+#endif
+
 			inline
 			void
 			errorsEnabled(bool errorsEnabled)

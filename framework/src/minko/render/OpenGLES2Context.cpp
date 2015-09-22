@@ -1220,26 +1220,7 @@ OpenGLES2Context::setShaderSource(const uint shader,
 
 	const char* sourceString = src.c_str();
 
-#ifdef MINKO_GLSL_OPTIMIZER
-    auto type = std::find(_vertexShaders.begin(), _vertexShaders.end(), shader) != _vertexShaders.end()
-        ? kGlslOptShaderVertex
-        : kGlslOptShaderFragment;
-
-    auto optimizedShader = glslopt_optimize(_glslOptimizer, type, sourceString, 0);
-    if (glslopt_get_status(optimizedShader))
-    {
-        auto optimizedSource = glslopt_get_output(optimizedShader);
-        glShaderSource(shader, 1, &optimizedSource, 0);
-    }
-    else
-    {
-        std::cerr << glslopt_get_log(optimizedShader) << std::endl;
-        throw std::invalid_argument("source");
-    }
-    glslopt_shader_delete(optimizedShader);
-#else
     glShaderSource(shader, 1, &sourceString, 0);
-#endif
 
 	checkForErrors();
 }

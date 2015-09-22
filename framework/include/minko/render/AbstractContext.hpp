@@ -25,6 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include "minko/render/TextureFormat.hpp"
 #include "minko/render/CubeTexture.hpp"
 
+#ifdef MINKO_GLSL_OPTIMIZER
+# include "glsl_optimizer.h"
+#endif
+
 namespace minko
 {
     namespace render
@@ -43,6 +47,12 @@ namespace minko
             virtual
             bool
             errorsEnabled() = 0;
+
+#ifdef MINKO_GLSL_OPTIMIZER
+            virtual
+            glslopt_ctx*
+            glslOptimizer() = 0;
+#endif
 
             virtual
             void
