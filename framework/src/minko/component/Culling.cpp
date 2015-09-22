@@ -125,10 +125,14 @@ Culling::addedHandler(NodePtr node, NodePtr target, NodePtr ancestor)
 void
 Culling::layoutChangedHandler(NodePtr node, NodePtr target)
 {
+    // FIXME
+
+/*
 	if ((target->layout() & scene::BuiltinLayout::IGNORE_CULLING) == 0)
 		_octTree->insert(target);
 	else
 		_octTree->remove(target);
+*/
 }
 
 void
@@ -140,11 +144,11 @@ Culling::worldToScreenChangedHandler(data::Store& data, const String& propertyNa
 		_frustum,
 		[&](NodePtr node)
 		{
-			node->layout(node->layout() | _layout);
+			node->layout(node->layout() & ~scene::BuiltinLayout::HIDDEN);
 		},
 		[&](NodePtr node)
 		{
-			node->layout(node->layout() & ~_layout);
+			node->layout(node->layout() | scene::BuiltinLayout::HIDDEN);
 		}
 	);
 }
